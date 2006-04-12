@@ -1,0 +1,41 @@
+
+Binary/Unary operator syntax
+
+Interface to web services
+	Plan to use Apache Axis2 to support asynchronous calls
+
+Misc sites
+	Clock
+	Persistent storage
+	Access to files
+
+	William: Here are my notes on things to add to the implementation.
+
+* User guide: how to set up and run. Which sites can be called
+  directly. What needs to be done to send mail from other locations.
+
+* Implementation guide: Overall system description. Documentations of
+  individual modules.
+
+* Allow execution of a file. The file contains a set of definitions
+  and one goal expression.
+
+* Allow "import" of a file into another file, i.e., textual inclusion.
+
+* Allow commenting large regions using, say, {- -}
+
+* Implement cell, word and channel as sites. This will permit reading
+  from keyboard and writing to display.
+
+* Receive response from sites.
+
+* Allow infix arithmetic and logical expressions as arguments of site
+  calls. I want to limit the expressions to side-effect free,
+  deterministic, immediate site calls. An easy solution is to convert
+  the expression to prefix form since you already support it.
+
+*  Design a Web site where students can input a file and run it.
+
+-- 
+Jayadev Misra
+	
