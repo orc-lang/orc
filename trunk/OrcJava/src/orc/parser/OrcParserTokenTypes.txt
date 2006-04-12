@@ -1,0 +1,29 @@
+// $ANTLR 2.7.4: OrcParser.g -> OrcParserTokenTypes.txt$
+OrcParser    // output token vocab name
+LITERAL_import="import"=4
+STRING=5
+LITERAL_def="def"=6
+NAME=7
+EQ=8
+LITERAL_webservice="webservice"=9
+LPAREN=10
+COMMA=11
+RPAREN=12
+LITERAL_where="where"=13
+SEMI=14
+LITERAL_in="in"=15
+PAR=16
+SEQ=17
+SEQPUB=18
+LBRACE=19
+RBRACE=20
+INT=21
+SL_COMMENT=22
+BEGIN_COMMENT=23
+END_COMMENT=24
+ML_COMMENT=25
+ESCAPE=26
+ALPHA=27
+DIGIT=28
+SEQ_OR_PUB=29
+WS=30

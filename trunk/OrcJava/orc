@@ -1,0 +1,15 @@
+#!/bin/bash
+# find the current directory
+dir=`dirname $0`        
+os=`uname`
+if test ${os:0:6} = "CYGWIN"
+then
+	if test ${dir:1:8} = "cygdrive"
+	then
+		dir="${dir:10:1}:/${dir:12}"
+	fi
+	java -cp "$dir/lib/orc.jar;$dir/lib/antlr.jar;$dir/lib/mail.jar;$dir/lib/activation.jar" orc.Orc $*
+else
+	java -cp "$dir/lib/orc.jar:$dir/lib/antlr.jar:$dir/lib/mail.jar:$dir/lib/activation.jar" orc.Orc $*
+fi
+

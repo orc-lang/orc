@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="javadoc">
+<target name="javadoc">
+<javadoc access="public" author="true" classpath="lib/antlr.jar;lib/activation.jar;lib/mail.jar" destdir="javadoc" doctitle="Orc Java (PRERELEASE 1)" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" packagenames="orc.runtime.nodes,orc.runtime.values,orc.ast,orc.parser,orc,orc.runtime,orc.runtime.sites" sourcepath="src" splitindex="true" use="true" version="true"/>
+</target>
+</project>
