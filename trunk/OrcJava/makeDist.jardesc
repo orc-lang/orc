@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jardesc>
-<jar path="C:/William/cvs/Orc/OrcJava1/orcDist.jar"/>
-<options buildIfNeeded="true" compress="true" descriptionLocation="/OrcJava1/makeDist.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="true" saveDescription="true" useSourceFolders="false"/>
+<jar path="C:/William/cvs/Orc/OrcJava/orcDist.jar"/>
+<options buildIfNeeded="true" compress="true" descriptionLocation="/OrcJava/makeDist.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="true" saveDescription="true" useSourceFolders="false"/>
 <selectedElements exportClassFiles="false" exportJavaFiles="true" exportOutputFolder="false">
-<folder path="/OrcJava1/doc"/>
-<file path="/OrcJava1/orc"/>
-<folder path="/OrcJava1/lib"/>
-<file path="/OrcJava1/README.txt"/>
-<file path="/OrcJava1/license.txt"/>
-<folder path="/OrcJava1/test"/>
-<file path="/OrcJava1/orc.bat"/>
+<file path="/OrcJava/orc"/>
+<folder path="/OrcJava/doc"/>
+<file path="/OrcJava/license.txt"/>
+<folder path="/OrcJava/lib"/>
+<file path="/OrcJava/README.txt"/>
+<folder path="/OrcJava/test"/>
+<file path="/OrcJava/orc.bat"/>
 </selectedElements>
 </jardesc>

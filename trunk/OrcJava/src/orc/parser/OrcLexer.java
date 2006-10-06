@@ -70,12 +70,6 @@ tryAgain:
 					theRetToken=_returnToken;
 					break;
 				}
-				case '{':
-				{
-					mML_COMMENT(true);
-					theRetToken=_returnToken;
-					break;
-				}
 				case 'A':  case 'B':  case 'C':  case 'D':
 				case 'E':  case 'F':  case 'G':  case 'H':
 				case 'I':  case 'J':  case 'K':  case 'L':
@@ -106,6 +100,12 @@ tryAgain:
 				case '"':
 				{
 					mSTRING(true);
+					theRetToken=_returnToken;
+					break;
+				}
+				case '}':
+				{
+					mRBRACE(true);
 					theRetToken=_returnToken;
 					break;
 				}
@@ -158,7 +158,15 @@ tryAgain:
 					break;
 				}
 				default:
-				{
+					if ((LA(1)=='/'||LA(1)=='{') && (LA(2)=='*'||LA(2)=='-')) {
+						mMULTI_LINE_COMMENT(true);
+						theRetToken=_returnToken;
+					}
+					else if ((LA(1)=='{') && (true)) {
+						mLBRACE(true);
+						theRetToken=_returnToken;
+					}
+				else {
 					if (LA(1)==EOF_CHAR) {uponEOF(); _returnToken = makeToken(Token.EOF_TYPE);}
 				else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 				}
@@ -218,21 +226,22 @@ tryAgain:
 		_ttype = BEGIN_COMMENT;
 		int _saveIndex;
 		
-		mLBRACE(false);
-		match('-');
-		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
-			_token = makeToken(_ttype);
-			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
+		switch ( LA(1)) {
+		case '/':
+		{
+			match("/*");
+			break;
 		}
-		_returnToken = _token;
-	}
-	
-	protected final void mLBRACE(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
-		int _ttype; Token _token=null; int _begin=text.length();
-		_ttype = LBRACE;
-		int _saveIndex;
-		
-		match('{');
+		case '{':
+		{
+			match("{-");
+			break;
+		}
+		default:
+		{
+			throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());
+		}
+		}
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
 			_token = makeToken(_ttype);
 			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
@@ -245,8 +254,22 @@ tryAgain:
 		_ttype = END_COMMENT;
 		int _saveIndex;
 		
-		match('-');
-		mRBRACE(false);
+		switch ( LA(1)) {
+		case '*':
+		{
+			match("*/");
+			break;
+		}
+		case '-':
+		{
+			match("-}");
+			break;
+		}
+		default:
+		{
+			throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());
+		}
+		}
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
 			_token = makeToken(_ttype);
 			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
@@ -254,22 +277,9 @@ tryAgain:
 		_returnToken = _token;
 	}
 	
-	protected final void mRBRACE(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
+	public final void mMULTI_LINE_COMMENT(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
 		int _ttype; Token _token=null; int _begin=text.length();
-		_ttype = RBRACE;
-		int _saveIndex;
-		
-		match('}');
-		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
-			_token = makeToken(_ttype);
-			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
-		}
-		_returnToken = _token;
-	}
-	
-	public final void mML_COMMENT(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
-		int _ttype; Token _token=null; int _begin=text.length();
-		_ttype = ML_COMMENT;
+		_ttype = MULTI_LINE_COMMENT;
 		int _saveIndex;
 		
 		mBEGIN_COMMENT(false);
@@ -277,7 +287,7 @@ tryAgain:
 		_loop32:
 		do {
 			// nongreedy exit test
-			if ((LA(1)=='-') && (LA(2)=='}')) break _loop32;
+			if ((LA(1)=='*'||LA(1)=='-') && (LA(2)=='/'||LA(2)=='}')) break _loop32;
 			if ((_tokenSet_0.member(LA(1))) && ((LA(2) >= '\u0003' && LA(2) <= '\u007f'))) {
 				matchNot('\n');
 			}
@@ -660,6 +670,32 @@ tryAgain:
 		_saveIndex=text.length();
 		match(">");
 		text.setLength(_saveIndex);
+		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
+			_token = makeToken(_ttype);
+			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
+		}
+		_returnToken = _token;
+	}
+	
+	public final void mLBRACE(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
+		int _ttype; Token _token=null; int _begin=text.length();
+		_ttype = LBRACE;
+		int _saveIndex;
+		
+		match('{');
+		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
+			_token = makeToken(_ttype);
+			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
+		}
+		_returnToken = _token;
+	}
+	
+	public final void mRBRACE(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
+		int _ttype; Token _token=null; int _begin=text.length();
+		_ttype = RBRACE;
+		int _saveIndex;
+		
+		match('}');
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
 			_token = makeToken(_ttype);
 			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));

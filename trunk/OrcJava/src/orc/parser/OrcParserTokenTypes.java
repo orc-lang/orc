@@ -31,7 +31,7 @@ public interface OrcParserTokenTypes {
 	int SL_COMMENT = 22;
 	int BEGIN_COMMENT = 23;
 	int END_COMMENT = 24;
-	int ML_COMMENT = 25;
+	int MULTI_LINE_COMMENT = 25;
 	int ESCAPE = 26;
 	int ALPHA = 27;
 	int DIGIT = 28;
