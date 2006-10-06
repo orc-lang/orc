@@ -1,21 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jardesc>
-<jar path="C:/William/cvs/Orc/OrcJava1/orcSrc.jar"/>
-<options buildIfNeeded="true" compress="true" descriptionLocation="/OrcJava1/makeSourceJAR.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="true" saveDescription="true" useSourceFolders="true"/>
+<jar path="C:/William/cvs/Orc/OrcJava/orcSrc.jar"/>
+<options buildIfNeeded="true" compress="true" descriptionLocation="/OrcJava/makeSourceJAR.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="true" saveDescription="true" useSourceFolders="true"/>
 <selectedElements exportClassFiles="false" exportJavaFiles="true" exportOutputFolder="false">
-<folder path="/OrcJava1/javadoc"/>
-<file path="/OrcJava1/makeDist.jardesc"/>
-<file path="/OrcJava1/javadoc.xml"/>
-<file path="/OrcJava1/.project"/>
-<folder path="/OrcJava1/lib"/>
-<file path="/OrcJava1/.classpath"/>
-<file path="/OrcJava1/README.txt"/>
-<javaElement handleIdentifier="=OrcJava1/src"/>
-<file path="/OrcJava1/doc/user.pdf"/>
-<file path="/OrcJava1/makeJAR.jardesc"/>
-<file path="/OrcJava1/license.txt"/>
-<file path="/OrcJava1/orc"/>
-<file path="/OrcJava1/orc.bat"/>
-<folder path="/OrcJava1/test"/>
+<file path="/OrcJava/.classpath"/>
+<file path="/OrcJava/orc"/>
+<javaElement handleIdentifier="=OrcJava/src"/>
+<file path="/OrcJava/license.txt"/>
+<file path="/OrcJava/makeJAR.jardesc"/>
+<folder path="/OrcJava/lib"/>
+<file path="/OrcJava/README.txt"/>
+<file path="/OrcJava/.project"/>
+<file path="/OrcJava/makeDist.jardesc"/>
+<folder path="/OrcJava/test"/>
+<file path="/OrcJava/orc.bat"/>
+<file path="/OrcJava/javadoc.xml"/>
 </selectedElements>
 </jardesc>

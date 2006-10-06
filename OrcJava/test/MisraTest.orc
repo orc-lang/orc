@@ -1,6 +1,6 @@
 -- Use M-x shell from emacs file. Then command 
 --  rorc MisraTest.orc  (M-p) to repeat command
---  File name: ~/eclipse_workspace/OrcJava1/test
+--  File name: ~/eclipse_workspace/OrcJava/test
 
 
 -- (fset 'nx

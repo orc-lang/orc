@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jardesc>
-<jar path="C:/William/cvs/Orc/OrcJava1/lib/orc.jar"/>
-<options buildIfNeeded="true" compress="true" descriptionLocation="/OrcJava1/makeJAR.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="true" saveDescription="true" useSourceFolders="false"/>
+<jar path="C:/William/cvs/Orc/OrcJava/lib/orc.jar"/>
+<options buildIfNeeded="true" compress="true" descriptionLocation="/OrcJava/makeJAR.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="true" saveDescription="true" useSourceFolders="false"/>
 <manifest generateManifest="true" manifestLocation="" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
 <sealing sealJar="false">
 <packagesToSeal/>
@@ -9,6 +9,6 @@
 </sealing>
 </manifest>
 <selectedElements exportClassFiles="false" exportJavaFiles="false" exportOutputFolder="true">
-<javaElement handleIdentifier="=OrcJava1/src"/>
+<javaElement handleIdentifier="=OrcJava/src"/>
 </selectedElements>
 </jardesc>

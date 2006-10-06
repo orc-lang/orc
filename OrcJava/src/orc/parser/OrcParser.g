@@ -147,36 +147,14 @@ SL_COMMENT:
      { newline(); $setType(Token.SKIP); }
      ;
 
+
 protected
-BEGIN_COMMENT: LBRACE '-';
+BEGIN_COMMENT: "/*" | "{-" ;
 protected
-END_COMMENT: '-' RBRACE;
+END_COMMENT: "*/" | "-}" ;
      	
-/*
-ML_COMMENT:
-	LBRACE '-' (options {
-        generateAmbigWarnings=false;
-      }:  { LA(2)!=RBRACE }? '-'
-      | '\n' {newline();}
-      | ~('-'|'\n')
-    )*
-    '-' RBRACE
-    {$setType(Token.SKIP);}
-;
 
-ML_COMMENT:
-	BEGIN_COMMENT ( options {
-        generateAmbigWarnings=false;
-      }:{LA(2) != '}'}? '-'
-	| '\n' {newline();} 
-	| ~('-'|'\n') )*
-	END_COMMENT
-    {$setType(Token.SKIP);}
-;
-*/
-
-
-ML_COMMENT:
+MULTI_LINE_COMMENT:
 	BEGIN_COMMENT ( options {greedy=false;} :'\n' {newline();} | ~'\n')* END_COMMENT
     {$setType(Token.SKIP);}
 ;
@@ -213,10 +191,8 @@ SEQPUB : ">!"! ( NAME )? ">"!  ;
 protected
 SEQ : ">"! ( NAME )? ">"!  ;
 
-protected
 LBRACE : '{';
 
-protected
 RBRACE : '}';
 
 SEQ_OR_PUB :

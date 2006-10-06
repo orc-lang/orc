@@ -567,7 +567,7 @@ public OrcParser(ParserSharedInputState state) {
 		"SL_COMMENT",
 		"BEGIN_COMMENT",
 		"END_COMMENT",
-		"ML_COMMENT",
+		"MULTI_LINE_COMMENT",
 		"ESCAPE",
 		"ALPHA",
 		"DIGIT",
