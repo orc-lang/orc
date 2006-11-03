@@ -25,7 +25,8 @@ public class Calc extends Site {
 		RAND,
 		ITEM, DOT,
 		CAT,
-		PRINT, PRINTLN
+		PRINT, PRINTLN,
+		CLOCK
 		} ;
 	Op op;
 	
@@ -53,10 +54,10 @@ public class Calc extends Site {
 				break;
 			}
 
-			case ADD: result = Integer.valueOf(intArg(args, 0) + intArg(args, 1)); break;
-			case SUB: result = Integer.valueOf(intArg(args, 0) - intArg(args, 1)); break;
-			case MUL: result = Integer.valueOf(intArg(args, 0) * intArg(args, 1)); break;
-			case DIV: result = Integer.valueOf(intArg(args, 0) / intArg(args, 1)); break;
+			case ADD: result = Long.valueOf(intArg(args, 0) + intArg(args, 1)); break;
+			case SUB: result = Long.valueOf(intArg(args, 0) - intArg(args, 1)); break;
+			case MUL: result = Long.valueOf(intArg(args, 0) * intArg(args, 1)); break;
+			case DIV: result = Long.valueOf(intArg(args, 0) / intArg(args, 1)); break;
 
 			case LE: result = Boolean.valueOf(intArg(args, 0) <= intArg(args, 1)); break;
 			case LT: result = Boolean.valueOf(intArg(args, 0) < intArg(args, 1)); break;
@@ -65,8 +66,15 @@ public class Calc extends Site {
 			case GT: result = Boolean.valueOf(intArg(args, 0) > intArg(args, 1)); break;
 			case GE: result = Boolean.valueOf(intArg(args, 0) >= intArg(args, 1)); break;
 			
-			case RAND: result = Integer.valueOf(random.nextInt(intArg(args, 0))); n = 1; break;
+			case RAND: result = Long.valueOf((long)random.nextInt((int)intArg(args, 0))); n = 1; break;
 
+			case CLOCK: {
+				result = Long.valueOf(System.currentTimeMillis());
+				n = 0;
+				break;
+			}
+				
+			
 			case AND: result = Boolean.valueOf(boolArg(args, 0) && boolArg(args, 1)); break;
 			case OR: result = Boolean.valueOf(boolArg(args, 0) || boolArg(args, 1)); break;
 			case NOT: result = Boolean.valueOf(!boolArg(args, 0)); n = 1; break;
@@ -80,13 +88,13 @@ public class Calc extends Site {
 			
 			case ITEM: {
 				Object v = args[0];
-				int m = intArg(args, 1);
+				int m = (int)intArg(args, 1);
 				n = 2;
 				if (v instanceof String)
 					if (args.length == 3)
 					{
 						n = 3;
-						result = ((String)v).substring(m, intArg(args, 2));
+						result = ((String)v).substring(m, (int)intArg(args, 2));
 					}
 					else 
 						result = ((String)v).substring(m, m + 1);

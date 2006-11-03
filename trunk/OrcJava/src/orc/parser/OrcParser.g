@@ -129,7 +129,7 @@ basic_expr[boolean asParam] returns [OrcProcess n = null]
 		  else
 		     n = new Call(name.getText(), args); }
 	| num:INT
-		{ n = new Literal(new Integer(num.getText())); }
+		{ n = new Literal(new Long(num.getText())); }
 	| str:STRING
 		{ n = new Literal(str.getText()); }
 	;

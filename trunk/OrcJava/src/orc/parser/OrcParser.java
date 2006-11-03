@@ -516,7 +516,7 @@ public OrcParser(ParserSharedInputState state) {
 			{
 				num = LT(1);
 				match(INT);
-				n = new Literal(new Integer(num.getText()));
+				n = new Literal(new Long(num.getText()));
 				break;
 			}
 			case STRING:
