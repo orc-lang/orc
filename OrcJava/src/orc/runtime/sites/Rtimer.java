@@ -21,16 +21,23 @@ public class Rtimer extends Site {
 	 * 
 	 */
 	public static JavaTimer javaTimer;
+	boolean absolute;
+	public Rtimer(boolean absolute)
+	{
+		this.absolute = absolute;
+	}
 
 	public void callSite(Object[] args, Token returnToken, OrcEngine engine) 
 	{
-		if (args.length != 1 || !(args[0] instanceof Integer))
+		if (args.length != 1 || !(args[0] instanceof Long))
 			throw new Error("Invalid argument in Rtimer" + args);
 		engine.addCall(1);
 
-		long n = ((Integer) args[0]).longValue();
+		long n = ((Long) args[0]).longValue();
 		if (javaTimer == null)
 			javaTimer = new JavaTimer(engine);
+		if (!absolute)
+			n += System.currentTimeMillis();
 		javaTimer.addEvent(n, returnToken);
 	}
 }
@@ -68,7 +75,7 @@ class JavaTimer implements Runnable {
 				engine.debug("Rtimer: Starting Timer Thread.",token);
 
 		}
-		long at = time + System.currentTimeMillis();
+		long at = time;
 		rtimerEventQueue.add(new RtimerQueueEntry(at, token));
 		if (engine.debugMode)
 			engine.debug("Rtimer: Adding event to Rtimer Event Queue.",token);

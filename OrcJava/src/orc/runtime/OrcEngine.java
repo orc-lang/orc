@@ -59,6 +59,7 @@ public class OrcEngine {
 		start.bind("or", new Calc(Calc.Op.OR));
 		start.bind("not", new Calc(Calc.Op.NOT));
 
+		start.bind("clock", new Calc(Calc.Op.CLOCK));
 		start.bind("random", new Calc(Calc.Op.RAND));
 		start.bind("if", new Calc(Calc.Op.IF));
 
@@ -67,7 +68,8 @@ public class OrcEngine {
 		start.bind("print", new Calc(Calc.Op.PRINT));
 		start.bind("println", new Calc(Calc.Op.PRINTLN));
 
-		start.bind("Rtimer", new Rtimer());
+		start.bind("Rtimer", new Rtimer(false/*relative*/));
+		start.bind("Atimer", new Rtimer(true/*absolute*/));
 		try {
 			start.bind("SendMail", new Mail());
 		} catch (Error e) {

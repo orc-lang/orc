@@ -62,8 +62,11 @@ public abstract class Site extends BaseValue implements Callable {
 	/**
 	 * Helper function for integers
 	 */
-	int intArg(Object[] args, int n) {
-		return ((Integer)args[n]).intValue();
+	long intArg(Object[] args, int n) {
+		if (args[n] instanceof Integer)
+			return ((Integer)args[n]).longValue();
+		else
+			return ((Long)args[n]).longValue();
 	}
 
 	/**
