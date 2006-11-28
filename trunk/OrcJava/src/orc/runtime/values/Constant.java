@@ -18,4 +18,8 @@ public class Constant extends BaseValue {
 	public Object asBasicValue() {
 		return value;
 	}
+	
+	public String toString() {
+		return value.toString();
+	}
 }

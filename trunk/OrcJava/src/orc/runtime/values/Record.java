@@ -8,11 +8,14 @@ import java.util.TreeMap;
 import java.util.List;
 import java.util.LinkedList;
 
+import orc.runtime.DotAccessible;
+
+
 /**
  * A record value container
  * @author dkitchin
  */
-public class Record extends BaseValue {
+public class Record extends BaseValue implements DotAccessible {
 
 	TreeMap<String,BaseValue> fields = new TreeMap<String,BaseValue>();
 
