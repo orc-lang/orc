@@ -1,1 +1,0 @@
-java -cp ..\..\..\lib\antlr.jar antlr.Tool -o . OrcParser.g
