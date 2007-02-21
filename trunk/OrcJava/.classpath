@@ -1,34 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/antlr.jar"/>
-	<classpathentry kind="lib" path="lib/mail.jar"/>
-	<classpathentry kind="lib" path="lib/activation.jar"/>
-	<classpathentry kind="lib" path="lib/annogen-0.1.0.jar"/>
-	<classpathentry kind="lib" path="lib/axis2-adb-0.94.jar"/>
-	<classpathentry kind="lib" path="lib/axis2-codegen-0.94.jar"/>
-	<classpathentry kind="lib" path="lib/axis2-core-0.94.jar"/>
-	<classpathentry kind="lib" path="lib/axis2-doom-0.94.jar"/>
-	<classpathentry kind="lib" path="lib/axis-wsdl4j-1.2.jar"/>
-	<classpathentry kind="lib" path="lib/backport-util-concurrent-2.0_01_pd.jar"/>
-	<classpathentry kind="lib" path="lib/commons-codec-1.3.jar"/>
-	<classpathentry kind="lib" path="lib/commons-httpclient-3.0.jar"/>
-	<classpathentry kind="lib" path="lib/commons-logging-1.0.4.jar"/>
-	<classpathentry kind="lib" path="lib/geronimo-spec-activation-1.0.2-rc4.jar"/>
-	<classpathentry kind="lib" path="lib/geronimo-spec-javamail-1.3.1-rc5.jar"/>
-	<classpathentry kind="lib" path="lib/geronimo-spec-jms-1.1-rc4.jar"/>
-	<classpathentry kind="lib" path="lib/jaxen-1.1-beta-7.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-1.2.12.jar"/>
-	<classpathentry kind="lib" path="lib/maven-itest-plugin-1.0.jar"/>
-	<classpathentry kind="lib" path="lib/orc.jar"/>
-	<classpathentry kind="lib" path="lib/servletapi-2.3.jar"/>
-	<classpathentry kind="lib" path="lib/stax-api-1.0.jar"/>
-	<classpathentry kind="lib" path="lib/ws-policy-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="lib/wstx-asl-2.8.1.jar"/>
-	<classpathentry kind="lib" path="lib/xbean-2.1.0.jar"/>
-	<classpathentry kind="lib" path="lib/xercesImpl-2.7.1.jar"/>
-	<classpathentry kind="lib" path="lib/xml-apis-1.3.02.jar"/>
-	<classpathentry kind="lib" path="lib/XmlSchema-SNAPSHOT.jar"/>
-	<classpathentry kind="output" path="classes"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="lib" path="lib/mail.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/activation.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/antlr-2.7.5.jar"/>
+	<classpathentry kind="var" path="ANTLR_HOME/antlr.jar" sourcepath="ANTLR_HOME/antlrsrc.zip"/>
+	<classpathentry kind="output" path="bin"/>
 </classpath>
