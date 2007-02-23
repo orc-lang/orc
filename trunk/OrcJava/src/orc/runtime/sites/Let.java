@@ -5,6 +5,7 @@ package orc.runtime.sites;
 
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
+import orc.runtime.values.GroupCell;
 import orc.runtime.values.Tuple;
 
 /**
@@ -12,15 +13,17 @@ import orc.runtime.values.Tuple;
  * @author wcook
  */
 public class Let extends Site {
+  private static final long serialVersionUID = 1L;
 
 	/**
 	 *  Outputs a single value or creates a tuple.
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.OrcEngine)
 	 */
-	void callSite(Object[] args, Token returnToken, OrcEngine engine) {
+	public void callSite(Object[] args, Token returnToken, GroupCell caller, OrcEngine engine) {
 
 		Object value = (args.length == 1) ? args[0] : new Tuple(args);
 		returnToken.setResult(value);
 		engine.activate(returnToken);
 	}
+
 }

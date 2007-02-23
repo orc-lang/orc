@@ -3,7 +3,7 @@
  */
 package orc.runtime.nodes;
 
-import java.util.List;
+import java.util.*;
 
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
@@ -14,18 +14,17 @@ import orc.runtime.values.Closure;
  * @author wcook
  */
 public class Define extends Node {
-
-	String name;
-	List<String> formals;
-	Node body;
+	private static final long serialVersionUID = 1L;
+	List<Definition> defs;
 	Node next;
+	
+	
 
-	public Define(String name, List<String> formals, Node body, Node next) {
-		this.name = name;
-		this.formals = formals;
-		this.body = body;
+	public Define(List<Definition> defs, Node next) {
+		this.defs = defs;
 		this.next = next;
 	}
+	
 
 	/** 
 	 * Creates a closure containing the body of the definition. The environment
@@ -44,13 +43,22 @@ public class Define extends Node {
 	 * @see orc.runtime.nodes.Node#process(orc.runtime.Token, orc.runtime.OrcEngine)
 	 */
 	public void process(Token t, OrcEngine engine) {
-		if (engine.debugMode)
-			engine.debug("Define " + name, t);
+		List<Closure> cs = new ArrayList<Closure>();
 		
-		// create a recursive closure
-		Closure c = new Closure(formals, body, null/*empty environment*/);
-		t.bind(name, c);
-		c.setEnvironment(t.getEnvironment());
+		for (Definition d : defs){
+		   if (engine.debugMode)
+			   engine.debug("Define " + d.name, t);
+		
+		   // create a recursive closure
+		   Closure c = new Closure(d.formals, d.body, null/*empty environment*/);
+		   cs.add(c);
+		   t.bind(d.name, c);
+		}
+		for (Closure c : cs){
+		  c.setEnvironment(t.getEnvironment());
+		}
+		
 		engine.activate(t.move(next));
 	}
+	
 }

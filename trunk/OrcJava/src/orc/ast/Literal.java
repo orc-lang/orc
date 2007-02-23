@@ -3,6 +3,8 @@
  */
 package orc.ast;
 
+import java.util.List;
+
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Param;
 
@@ -24,11 +26,18 @@ public class Literal extends OrcProcess {
 			return value.toString();
 	}
 	
+	/** 
+	 * A literal is already resolved.
+	 */
+	public OrcProcess resolveNames(List<String> bound, List<String> vals){
+		return this;
+	}
+	
 	/**
 	 * Creates a literal node 
 	 * @see orc.ast.OrcProcess#compile(orc.runtime.nodes.Node)
 	 */
-	public Node compile(Node output) {
+	public Node compile(Node output,List<orc.ast.Definition> defs) {
 		return new orc.runtime.nodes.Literal(value, output);
 	}
 
@@ -38,5 +47,11 @@ public class Literal extends OrcProcess {
 	 */
 	public Param asParam() {
 		return new orc.runtime.nodes.Literal(value, null);
+	}
+	public boolean isSimple() {
+		return true; 
+	}
+	public boolean isValue() {
+		return true; 
 	}
 }

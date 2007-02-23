@@ -11,6 +11,7 @@ import orc.runtime.Token;
  * @author wcook
  */
 public class Fork extends Node {
+	private static final long serialVersionUID = 1L;
 	Node left;
 	Node right;
 	public Fork(Node left, Node right) {

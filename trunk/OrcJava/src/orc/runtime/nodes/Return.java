@@ -11,6 +11,7 @@ import orc.runtime.Token;
  * @author wcook
  */
 public class Return extends Node {
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * To execute a return, the caller token and the result of the current

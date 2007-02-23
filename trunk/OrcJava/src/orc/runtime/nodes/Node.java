@@ -5,12 +5,13 @@ package orc.runtime.nodes;
 
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
+import java.io.*;
 
 /**
  * Abstract base class for compile nodes
  * @author wcook
  */
-public abstract class Node {
+public abstract class Node implements Serializable {
 	/**
 	 * The process method is the fundamental opreation in the execution engine.
 	 * It is called to perform the action of the node given a token and
@@ -19,4 +20,5 @@ public abstract class Node {
 	 * @param engine used to activate the next token
 	 */
 	public abstract void process(Token t, OrcEngine engine);
+	
 }

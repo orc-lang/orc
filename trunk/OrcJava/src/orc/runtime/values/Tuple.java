@@ -6,12 +6,14 @@ package orc.runtime.values;
 import java.util.Arrays;
 import java.util.List;
 
+import orc.runtime.sites.EvalSite;
+
 /**
  * A tuple value container
  * @author wcook
  */
-public class Tuple extends BaseValue {
-
+public class Tuple extends EvalSite {
+	private static final long serialVersionUID = 1L;
 	Object[] values;
 
 	public Tuple(Object[] values) {
@@ -20,6 +22,18 @@ public class Tuple extends BaseValue {
 
 	public Object at(int i) {
 		return values[i];
+	}
+	
+	// A tuple may be used as a site for array lookup
+	public Object evaluate(Object[] args)
+	{
+		int i = intArg(args,0);
+		
+		// Uses Perl's idiom for end-lookup using negative integers
+		if (i < 0) { i = size() + i; }
+		
+		// Note that this will still be out of bounds if |i| >= size
+		return at(i);
 	}
 	
 	public String toString() {

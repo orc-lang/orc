@@ -12,6 +12,7 @@ import orc.runtime.values.GroupCell;
  * @author wcook
  */
 public class Store extends Node {
+	private static final long serialVersionUID = 1L;
 	String var;
 	public Store(String var) {
 		this.var = var;

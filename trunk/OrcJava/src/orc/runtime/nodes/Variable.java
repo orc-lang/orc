@@ -3,15 +3,18 @@
  */
 package orc.runtime.nodes;
 
+import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.values.GroupCell;
 import orc.runtime.values.Value;
+import java.io.*;
 
 /**
  * A compiled variable node
  * @author wcook
  */
-public class Variable implements Param {
+public class Variable implements Param, Serializable {
+	private static final long serialVersionUID = 1L;
 	String var;
 
 	public Variable(String var) {
@@ -27,7 +30,7 @@ public class Variable implements Param {
 	 * waiting queue for the group.
 	 * @see orc.runtime.nodes.Param#waitOnUnboundVar(orc.runtime.Token)
 	 */
-	public boolean waitOnUnboundVar(Token t) {
+	public boolean waitOnUnboundVar(Token t,OrcEngine engine) {
 		Value holder = t.lookup(var);
 		GroupCell cell = holder.asUnboundCell();
 		if (cell == null)
@@ -45,6 +48,6 @@ public class Variable implements Param {
 	}
 	
 	public String toString() {
-		return var;
+		return "var{" + var + "}";
 	}
 }

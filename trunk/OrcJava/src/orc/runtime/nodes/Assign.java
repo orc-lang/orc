@@ -12,6 +12,7 @@ import orc.runtime.values.Constant;
  * @author wcook
  */
 public class Assign extends Node {
+	private static final long serialVersionUID = 1L;
 	String var;
 	Node next;
 
