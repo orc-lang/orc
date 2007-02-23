@@ -18,7 +18,7 @@ public class If extends PartialSite {
 	public Object evaluate(Object[] args) {
 		
 		if (boolArg(args,0)) 
-			return true;
+			return signal();
 		else
 			return null;
 	}
