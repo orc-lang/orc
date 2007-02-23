@@ -20,4 +20,9 @@ public interface Value {
 	 * @return any value
 	 */
 	Object asBasicValue();
+	
+	/**
+	 * If the container is bound, is it bound to somethin callable with no arguments?
+	 */
+	boolean Callable0();
 }

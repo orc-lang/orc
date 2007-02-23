@@ -3,6 +3,9 @@
  */
 package orc.runtime;
 
+import java.io.*;
+//import java.io.ObjectOutputStream;
+//import java.nio.channels.FileLock;
 import orc.runtime.nodes.Node;
 import orc.runtime.values.GroupCell;
 import orc.runtime.values.Value;
@@ -10,12 +13,13 @@ import orc.runtime.values.Value;
 /**
  * Representation of an active thread of execution. Tokens
  * move over the node graph as they are executed. They contain
- * an environment, and may be low to a group. They also 
+ * an environment, and may belong to a group. They also 
  * preserve the call chain and contain a value to be passed
  * to the next token.
  * @author wcook
  */
-public class Token {
+public class Token implements Serializable {
+	private static final long serialVersionUID = 1L;
 	protected Node node;
 	protected Environment env;
 	protected GroupCell group;
@@ -29,6 +33,8 @@ public class Token {
 		this.group = group;
 		this.result = result;
 	}
+	
+	
 
 	/**
 	 * If a token is alive, calls the node to perform the next action
@@ -77,6 +83,7 @@ public class Token {
 	 * @return		self
 	 */
 	public Token bind(String var, Value val) {
+		//System.out.println("binding " + var + " to " + val);
 		env = new Environment(var, val, env);
 		return this;
 	}
@@ -102,8 +109,39 @@ public class Token {
 		this.result = result;
 		return this;
 	}
+	public Token setEnv(Environment e) {
+		this.env = e;
+		return this;
+	}
 
 	public Token getCaller() {
 		return caller;
 	}
+	
+	/*
+	 * This was used to help diagnose where memory was being used.
+	 * It isn't needed now, but might be useful again someday.
+	 * If there is only one active token, it can be dumped to a file,
+	 * and then execution can resume again after reading the token from the file
+	 * and initializing the engine with that token active.
+	 * This can be done with the command line arguments -rundump file .
+	 * That capability might be useful, too, but isn't being used now.
+	 */
+	
+/*	public void dump(File f) {
+		boolean append = true;
+		try {
+		FileOutputStream fos = new FileOutputStream(f,append);
+		FileLock lock = fos.getChannel().lock(0,10,false);
+	    ObjectOutputStream out = new ObjectOutputStream(fos);
+	    out.writeObject(this);
+	    lock.release();
+	    out.close();
+	    fos.close();
+		}
+		catch (Exception e) {
+			System.err.println("Warning: did not dump token to file");
+		}
+	}*/
+	
 }

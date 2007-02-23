@@ -4,12 +4,14 @@
 package orc.runtime;
 
 import orc.runtime.values.Value;
+import java.io.*;
 
 /**
  * Lexical environment containing variable bindings
  * @author wcook
  */
-public class Environment {
+public class Environment implements Serializable {
+	private static final long serialVersionUID = 1L;
 	Environment parent;
 	String var;
 	Value value;
@@ -35,4 +37,17 @@ public class Environment {
 		else
 			return parent.lookup(var);
 	}
+	
+	/* 
+	 * This is something I tried, to see whether I could save memory in some recursions.
+	 * But it didn't help.  -- Mark B
+	public Environment destructiveSet(String var, Value val) {
+		if (this.var.equals(var))
+			this.value = val;
+		else 
+			this.parent = parent.destructiveSet(var,val);
+		return this;
+			
+	}
+	*/ 
 }

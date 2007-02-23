@@ -18,7 +18,7 @@ import orc.runtime.nodes.Return;
  * @author wcook
  */
 public class Closure extends BaseValue implements Callable {
-
+	private static final long serialVersionUID = 1L;
 	Node body;
 	List<String> formals;
 	Environment env;
@@ -28,9 +28,13 @@ public class Closure extends BaseValue implements Callable {
 		this.formals = formals;
 		this.env = env;
 	}
+	public boolean Callable0() {
+		return formals.size()==0; 
+	}
+
 
 	/** 
-	 * To create a class to a closure, a new token is created using the 
+	 * To create a call to a closure, a new token is created using the 
 	 * environment in which the closure was defined. This environment is
 	 * then extended to bind the formals to the actual arguments.
 	 * The caller of the new token is normally a token point to right
@@ -40,26 +44,45 @@ public class Closure extends BaseValue implements Callable {
 	 */
 	public void createCall(String label, Token callToken,
 			List<Param> args, Node nextNode, OrcEngine engine) {
-		if (engine.debugMode)
+		if (engine.debugMode){
 			engine.debug("Call " + label + Tuple.format('(', args, ", ", ')'),
 					callToken);
-
+			}
+		
 		GroupCell callGroup = callToken.getGroup();
 		
 		// check tail-call optimization
 		Token returnToken;
-		if (nextNode instanceof Return)
-			returnToken = callToken.getCaller(); // tail-call
-		else
-			returnToken = callToken.move(nextNode); // normal call
-
-		Token n = new Token(body, env, returnToken, callToken.getGroup(), null/*value*/);
 		
+		if (nextNode instanceof Return){
+			returnToken = callToken.getCaller(); // tail-call
+			}
+		else {
+			returnToken = callToken.move(nextNode); // normal call
+			
+			
+		}
+		Token n = new Token(body, env, returnToken, callGroup, null/*value*/);
 		int i = 0;
+		int numformals = formals.size();
 		for (Param e : args)
-			n.bind(formals.get(i++), e.getValue(callToken));
+			if (i < numformals)
+			  n.bind(formals.get(i++), e.getValue(callToken));
+			else {
+				// It would be good if the label were "F at line xxx" for a call on line xxx.
+				System.err.println("Too many arguments (" 
+					                 + args.size()+ " > " + numformals +
+					                 ") in call to " +
+					                 label
+					                 );
+		        System.err.println("Ignoring argument " + e);
+			}
+		
+		
+		
 		
 		engine.activate(n);
+		
 	}
 
 	public void setEnvironment(Environment env) {

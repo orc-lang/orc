@@ -3,6 +3,8 @@
  */
 package orc.ast;
 
+import java.util.*;
+
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Param;
 
@@ -24,16 +26,33 @@ public class Variable extends OrcProcess {
 	public Param asParam() {
 		return new orc.runtime.nodes.Variable(var);
 	}
-
+	
 	/** 
-	 * Cannot be used as a process. That is "x" alone is not a valid Orc program.1
-	 * @see orc.ast.OrcProcess#compile(orc.runtime.nodes.Node)
+	 * A variable is already resolved.
 	 */
-	public Node compile(Node output) {
-		throw new Error("Only used as a parameter");
+	public OrcProcess resolveNames(List<String> bound, List<String> vals){
+		return this;
 	}
 	
+
+
+	/** 
+	 * A variable v used as a process has to be compiled to
+	 * something that will treat it like let(v) if v is bound
+	 * but like a call v() if v is a definition.
+	 */
+	public Node compile(Node output,List<orc.ast.Definition> defs) {
+       	return new orc.runtime.nodes.Eval(var, output); 
+		}
+	
+	public boolean isSimple() {
+		return true; 
+	}
 	public String toString() {
 		return var;
+	}
+	
+	public String Name() {
+		return var; 
 	}
 }

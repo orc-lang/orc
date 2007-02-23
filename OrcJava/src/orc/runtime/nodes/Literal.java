@@ -13,7 +13,7 @@ import orc.runtime.values.Value;
  * @author wcook
  */
 public class Literal extends Node implements Param {
-
+	private static final long serialVersionUID = 1L;
 	Object value;
 	Node next;
 	
@@ -43,7 +43,7 @@ public class Literal extends Node implements Param {
 	 * Literals are never unbound. 
 	 * @see orc.runtime.nodes.Param#waitOnUnboundVar(orc.runtime.Token)
 	 */
-	public boolean waitOnUnboundVar(Token env) {
+	public boolean waitOnUnboundVar(Token env,OrcEngine engine) {
 		return false;
 	}
 

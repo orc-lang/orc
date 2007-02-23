@@ -19,9 +19,10 @@ site "op&&" = orc.lib.bool.And
 site "op||" = orc.lib.bool.Or
 site "op~" = orc.lib.bool.Not
 
-def ifnot(x) = if(~x) >> false
-def Or(a,b)  = let( if(a)   |   if(b)   |  a || b)
-def And(a,b) = let(ifnot(a) |  ifnot(b) |  a && b)
+def lett(x) = if(x) >> let(true)
+def letf(x) = if(~x) >> let(false)
+def Or(a,b)  = let(lett(a) | lett(b) | a || b)
+def And(a,b) = let(letf(a) | letf(b) | a && b)
 
 site Rtimer = orc.lib.time.Rtimer
 

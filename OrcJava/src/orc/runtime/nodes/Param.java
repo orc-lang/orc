@@ -3,6 +3,7 @@
  */
 package orc.runtime.nodes;
 
+import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.values.Value;
 
@@ -17,7 +18,7 @@ public interface Param {
 	 * @param env	the environment containing bindings
 	 * @return		true if the parameter is unbound
 	 */
-	boolean waitOnUnboundVar(Token env);
+	boolean waitOnUnboundVar(Token env,OrcEngine engine);
 
 	/**
 	 * Gets the value of a parameter in an environment
