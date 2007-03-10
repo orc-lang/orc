@@ -34,6 +34,7 @@ site localhost = orc.lib.net.Localhost
 site SendMail = orc.lib.net.Mail
 
 site Buffer = orc.lib.state.Buffer
+site SyncChannel = orc.lib.state.SyncChannel
 
 {- Temporary fix for boxing problem with proxied Java objects -}
 site unbox = orc.runtime.sites.java.Unbox
