@@ -15,7 +15,7 @@ import orc.runtime.values.GroupCell;
 /**
  * @author cawellington, dkitchin
  *
- * Implements the local site Buffer.
+ * Implements the local site Buffer, which creates buffers (asynchronous channels).
  *
  */
 public class Buffer extends EvalSite {
