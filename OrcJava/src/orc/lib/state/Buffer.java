@@ -75,7 +75,7 @@ public class Buffer extends EvalSite {
 				// If there are callers waiting, give this item to the top caller.
 				else {
 					Token consumer = pendingQueue.removeFirst();
-					consumer.setResult(item);
+					engine.siteReturn("Buffer.get", consumer, item);
 				}
 
 				// Since this is an asynchronous buffer, a put call always returns.
