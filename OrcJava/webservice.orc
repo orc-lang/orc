@@ -1,0 +1,1 @@
+Webservice("http://www.xmethods.net/sd/2001/DemoTemperatureService.wsdl") >W> W.getTemp("78705") >Z> unbox(Z)
