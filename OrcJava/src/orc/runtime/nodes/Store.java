@@ -3,9 +3,12 @@
  */
 package orc.runtime.nodes;
 
+
+import orc.ast.simple.arg.Var;
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.values.GroupCell;
+import orc.runtime.values.Value;
 
 /**
  * Compiled node used to store the value of a binding in a where clause.
@@ -13,8 +16,8 @@ import orc.runtime.values.GroupCell;
  */
 public class Store extends Node {
 	private static final long serialVersionUID = 1L;
-	String var;
-	public Store(String var) {
+	Var var;
+	public Store(Var var) {
 		this.var = var;
 	}
 
@@ -30,7 +33,7 @@ public class Store extends Node {
 			engine.debug("Store/Stop " + var + "=" + t.getResult(), t);
 		
 		GroupCell group = t.getGroup();
-		Object result = t.getResult();
+		Value result = t.getResult();
 		group.setValue(result, engine);
 	}
 }

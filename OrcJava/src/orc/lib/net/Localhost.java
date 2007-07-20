@@ -4,6 +4,9 @@
 package orc.lib.net;
 
 import orc.runtime.sites.PartialSite;
+import orc.runtime.values.Constant;
+import orc.runtime.values.Tuple;
+import orc.runtime.values.Value;
 
 /**
  * @author dkitchin, mbickford
@@ -13,15 +16,12 @@ import orc.runtime.sites.PartialSite;
  */
 public class Localhost extends PartialSite {
 
-	/* (non-Javadoc)
-	 * @see orc.runtime.sites.EvalSite#evaluate(java.lang.Object[])
-	 */
 	@Override
-	public Object evaluate(Object[] args) {
+	public Value evaluate(Tuple args) {
 		try
 		{
 			java.net.InetAddress localMachine = java.net.InetAddress.getLocalHost();	
-			return localMachine.getHostName();
+			return new Constant(localMachine.getHostName());
 		}
 		catch(java.net.UnknownHostException e)
 		{

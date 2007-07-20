@@ -14,6 +14,8 @@ import orc.runtime.Token;
 import orc.runtime.sites.java.MethodProxy;
 import orc.runtime.sites.java.ObjectProxy;
 import orc.runtime.values.GroupCell;
+import orc.runtime.values.Tuple;
+import orc.runtime.values.Value;
 
 import org.apache.axis.description.ServiceDesc;
 import org.apache.axis.encoding.TypeMapping;
@@ -60,12 +62,12 @@ public class Webservice extends EvalSite {
 	}
 
 	@Override
-	public void callSite(Object[] args, Token returnToken, GroupCell caller,
+	public void callSite(Tuple args, Token returnToken, GroupCell caller,
 			OrcEngine engine) {
 
 		try {
 			// take the passed URL and create java code from it
-			GeneratedFileInfo info = createJavaCode((String) args[0]);
+			GeneratedFileInfo info = createJavaCode(args.stringArg(0));
 
 			// compile that java code
 			compileJavaCode(info);
@@ -123,7 +125,7 @@ public class Webservice extends EvalSite {
 	}
 
 	@Override
-	public Object evaluate(Object[] args) {
+	public Value evaluate(Tuple args) {
 		return op;
 	}
 

@@ -3,6 +3,7 @@
  */
 package orc.runtime.nodes;
 
+import orc.ast.simple.arg.Var;
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.values.GroupCell;
@@ -14,10 +15,10 @@ import orc.runtime.values.GroupCell;
 public class Where extends Node {
 	private static final long serialVersionUID = 1L;
 	Node left;
-	String var;
+	Var var;
 	Node right;
 
-	public Where(Node left, String var, Node right) {
+	public Where(Node left, Var var, Node right) {
 		this.left = left;
 		this.var = var;
 		this.right = right;

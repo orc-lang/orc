@@ -4,6 +4,7 @@
 package orc.lib.str;
 
 import orc.runtime.sites.EvalSite;
+import orc.runtime.values.*;
 
 /**
  * @author dkitchin
@@ -11,16 +12,16 @@ import orc.runtime.sites.EvalSite;
  */
 public class Cat extends EvalSite {
 
-	/* (non-Javadoc)
-	 * @see orc.runtime.sites.EvalSite#evaluate(java.lang.Object[])
-	 */
-	@Override
-	public Object evaluate(Object[] args) {
+	public Value evaluate(Tuple args) {
 		
 		StringBuffer buf = new StringBuffer();
-		for (Object x : args)
-			buf.append(x.toString());
-		return buf.toString();
+		
+		for(int i = 0; i < args.size(); i++)
+		{
+			buf.append(args.stringArg(i));
+		}
+		
+		return new Constant(buf.toString());
 	}
 
 }

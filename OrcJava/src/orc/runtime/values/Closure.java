@@ -5,33 +5,33 @@ package orc.runtime.values;
 
 import java.util.List;
 
+import orc.ast.simple.arg.*;
 import orc.runtime.Environment;
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.nodes.Node;
-import orc.runtime.nodes.Param;
 import orc.runtime.nodes.Return;
 
 /**
- * Represents a standard closure: a function defined in an environment
+ * Represents a standard closure: a function defined in an environment.
  * 
- * @author wcook
+ * Note that a closure is not necessarily a Value, since it may contain unbound
+ * variables, and therefore cannot be used in arg position until all such variables
+ * become bound. 
+ * 
+ * @author wcook, dkitchin
  */
-public class Closure extends BaseValue implements Callable {
+public class Closure extends Value implements Callable {
 	private static final long serialVersionUID = 1L;
 	Node body;
-	List<String> formals;
+	List<Var> formals;
 	Environment env;
 
-	public Closure(List<String> formals, Node body, Environment env) {
+	public Closure(List<Var> formals, Node body, Environment env) {
 		this.body = body;
 		this.formals = formals;
 		this.env = env;
 	}
-	public boolean Callable0() {
-		return formals.size()==0; 
-	}
-
 
 	/** 
 	 * To create a call to a closure, a new token is created using the 
@@ -42,12 +42,14 @@ public class Closure extends BaseValue implements Callable {
 	 * is reused, rather than creating a new intermediate stack frame.
 	 * @see orc.runtime.values.Callable#createCall(java.lang.String, orc.runtime.Token, java.util.List, orc.runtime.nodes.Node, orc.runtime.OrcEngine)
 	 */
-	public void createCall(String label, Token callToken,
-			List<Param> args, Node nextNode, OrcEngine engine) {
+	public void createCall(Token callToken, List<Future> args, Node nextNode, OrcEngine engine) {
+		
+		/*
 		if (engine.debugMode){
 			engine.debug("Call " + label + Tuple.format('(', args, ", ", ')'),
 					callToken);
 			}
+		*/
 		
 		GroupCell callGroup = callToken.getGroup();
 		
@@ -62,26 +64,23 @@ public class Closure extends BaseValue implements Callable {
 			
 			
 		}
-		Token n = new Token(body, env, returnToken, callGroup, null/*value*/);
-		int i = 0;
-		int numformals = formals.size();
-		for (Param e : args)
-			if (i < numformals)
-			  n.bind(formals.get(i++), e.getValue(callToken));
-			else {
-				// It would be good if the label were "F at line xxx" for a call on line xxx.
-				System.err.println("Too many arguments (" 
-					                 + args.size()+ " > " + numformals +
-					                 ") in call to " +
-					                 label
-					                 );
-		        System.err.println("Ignoring argument " + e);
-			}
 		
+		Token t = new Token(body, env, returnToken, callGroup, null/*value*/, engine);
 		
+		for (Var v : formals)
+		{
+			t.bind(v, args.remove(0));
+		}
 		
-		
-		engine.activate(n);
+		/*
+		 * TODO: add error checking for arity mismatch (in either direction)
+		if (!args.isEmpty())
+		{
+			... given too many arguments ...
+		}
+		catch (NoSuchElementException) { ... too few arguments ... }
+		*/
+		engine.activate(t);
 		
 	}
 

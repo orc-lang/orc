@@ -4,6 +4,8 @@
 package orc.lib.bool;
 
 import orc.runtime.sites.PartialSite;
+import orc.runtime.values.Tuple;
+import orc.runtime.values.Value;
 
 /**
  * @author dkitchin
@@ -11,13 +13,9 @@ import orc.runtime.sites.PartialSite;
  */
 public class If extends PartialSite {
 
-	/* (non-Javadoc)
-	 * @see orc.runtime.sites.PartialSite#evaluate(java.lang.Object[])
-	 */
 	@Override
-	public Object evaluate(Object[] args) {
-		
-		if (boolArg(args,0)) 
+	public Value evaluate(Tuple args) {
+		if (args.boolArg(0)) 
 			return signal();
 		else
 			return null;

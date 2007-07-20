@@ -6,9 +6,11 @@ header {
 	package orc.parser;
 		
 	import java.util.*;
+	import java.io.File;
 	import java.io.FileInputStream;
 	import java.io.FileNotFoundException;
-	import orc.ast.*;
+	import orc.ast.extended.*;
+	
 } 
 
 class OrcParser extends Parser;
@@ -17,51 +19,67 @@ options {
 }
 
 
-startRule returns [OrcProcess n = null]
-	: n=expr EOF
+startRule returns [Expression e = null]
+	: e=expr EOF
     ;
 
-expr returns [OrcProcess n = null]
-	{
-		List<Definition> defs=null;
-		OrcProcess p;
-	}
-	: {defs = new ArrayList<Definition>(); }
-	   defs=defn_group p=expr
-	   { n=new Define(defs,p); } 
-	| n=where_expr
+decRule returns [List<Declaration> decList = null]
+	: decList=decls EOF
 	;
 
-declRule returns [List<EnvBinder> l = new ArrayList<EnvBinder>()]
+expr returns [Expression e = null]
 	{
-		EnvBinder b;	
+		List<Declaration> decList=null;
 	}
-	: (b=decl { l.add(b); })* 
-	  EOF
+	: decList=decls e=where_expr
+	  { for (Declaration d : decList) 
+	  		e=new Declare(d,e); }
 	;
 
-decl returns [EnvBinder b=null] 
-	: b=decl_site 
-	| b=decl_class
-	| b=decl_defs
+decls returns [List<Declaration> decList = new ArrayList<Declaration>()]
+	{
+		Declaration d;
+		List<Declaration> dl;	
+	}
+	: (d=decl { decList.add(d); } | dl=include { decList.addAll(dl); })* 
+	;
+
+include returns [List<Declaration> decList = null]
+	: "include" s:STRING
+		{
+			try
+			{
+				File f = new File(s.getText());	
+				OrcLexer flexer = new OrcLexer(new FileInputStream(f));
+				OrcParser fparser = new OrcParser(flexer);
+				decList = fparser.decRule();
+			}
+			catch (Exception e) { throw new Error("Error including file: " + s); }
+		}
+	;	
+
+decl returns [Declaration d=null] 
+	: d=decl_site 
+	| d=decl_class
+	| d=decl_defs
 	;
 	
-decl_site returns [LoadSite d=null]
+decl_site returns [Declaration d=null]
 	{
 		String cname;
 		String v;
 	}
 	: "site" v=ident_name EQ cname=class_name
-		{ d = new LoadSite(v,cname); }
+		{ d = new SiteDeclaration(v,cname); }
 	;
 	
-decl_class returns [LoadClass d=null]
+decl_class returns [Declaration d=null]
 	{
 		String cname;
 		String v;
 	}
 	: "class" v=ident_name EQ cname=class_name
-		{ d = new LoadClass(v,cname); }
+		{ d = new ClassDeclaration(v,cname); }
 	;
 
 class_name returns [String s=""]
@@ -71,28 +89,29 @@ ident_name returns [String s=""]
 	: a:NAME {s=a.getText();} | b:STRING {s=b.getText();}
 	;	
 
-decl_defs returns [LoadDefs d=null]
+decl_defs returns [Declaration d=null]
 	{
 		List<Definition> defs;
 	}
-	: defs=defn_group { d=new LoadDefs(defs); }
+	: defs=defn_group { d=new DefsDeclaration(defs); }
 	;
 
 defn_group returns [List<Definition> defs = new ArrayList<Definition>()]
 	{
-		Definition d;
+		Definition def;
 	}
-	: d=defn {defs.add(d);} (AMPERSAND d=defn {defs.add(d);})*
+	: def=defn {defs.add(def);}
+	  (options {greedy = true;} : def=defn {defs.add(def);} )?
 	;
 
 
-defn returns [Definition df=null]
+defn returns [Definition def=null]
 	{
-		OrcProcess body;
+		Expression body;
 		List<String> formals;
 	}	
 	: "def" name:NAME formals=formals_list EQ body=expr
-	   {df = new Definition(name.getText(), formals, body); }
+	   {def = new Definition(name.getText(), formals, body); }
 	;
 
 
@@ -105,129 +124,126 @@ formals_list returns [List<String> formals = new ArrayList<String>() ]
 	  )? 
 	;
 
-where_expr returns [OrcProcess n = null]
-	: n=par_expr (
+where_expr returns [Expression e = null]
+	{
+		Binding b;	
+	}
+	: e=par_expr (
 	  options {greedy = true;} : 
 		"where" 
-			{ AsymmetricParallelComposition
-				an = new AsymmetricParallelComposition(n);
-				n = an; }
-			binding_list[an]
+			b=binding { e = new Where(e,b.exp,b.var); } 
+			(SEMI b=binding { e = new Where(e,b.exp,b.var); })*
 		)?
 	;
 
-binding_list[AsymmetricParallelComposition n]
-	: binding[n] (options {greedy = true;} : SEMI binding[n] )*
+binding returns [Binding b = null]
+	{
+		Expression e;
+	}
+	: name:NAME "in" e=par_expr 
+		{ b = new Binding(name.getText(), e); }
 	;
 
-binding[AsymmetricParallelComposition n]
+par_expr returns [Expression e = null]
 	{
-		OrcProcess expr;
+		Expression e2;
 	}
-	: name:NAME "in" expr=par_expr 
-		{ n.addBinding(name.getText(), expr); }
-	;
-
-par_expr returns [OrcProcess n = null]
-	{
-		OrcProcess n2;
-	}
-	: n=seq_expr (
+	: e=seq_expr (
 	  options {greedy = true;} : 
-		PAR n2=seq_expr 
-			{ n = new ParallelComposition(n, n2); }
+		PAR e2=seq_expr 
+			{ e = new Parallel(e, e2); }
 		)*
 	;
 
-seq_expr returns [OrcProcess n = null]
+seq_expr returns [Expression e = null]
 	{
-		OrcProcess n2;
+		Expression e2;
 	}
-	: n = expression (
+	: e = op_expr (
 	   options {greedy = true;} : 
-		var:SEQ n2=seq_expr 
-			{ n = new SequentialComposition(n, var.getText(), false, n2); }
-		| var2:SEQPUB n2=seq_expr 
-			{ n = new SequentialComposition(n, var2.getText(), true, n2); }
+		var:SEQ e2=seq_expr 
+			{ e = new Sequential(e, e2, var.getText(), false); }
+	  | var2:SEQPUB e2=seq_expr 
+			{ e = new Sequential(e, e2, var2.getText(), true); }
 		)?
 	;
+
+
+
+op_expr returns [Expression n = null]
+  : {Expression p = null; List<Expression> args = null;} 
+    n=relationalExpression 
+    ( options {greedy = true;} : 
+      { args = new ArrayList<Expression>();
+   	    args.add(n);
+        }
+     (AND  {n = new Call("op&&", args);}
+      |OR  {n = new Call("op||", args);}
+      ) 
+      p=relationalExpression {args.add(p);})*
+  ;
 	
-
-// operators connect from expression to call_expr
-
-
-call_expr returns [OrcProcess n = null]
-	{
-		List<OrcProcess> args = null;
-		OrcProcess p;
-	}
-	: n=basic_expr
-	  (options {greedy = true;} :
-	    args = arguments 
-	   { n = new Call(n, args, LT(1)); }
-	  )*
-	;
+relationalExpression returns [Expression n = null]
+  : {Expression p = null; List<Expression> args = null;} 
+    n=addingExpression 
+    ( options {greedy = true;} : 
+      {args = new ArrayList<Expression>();
+   	   args.add(n);
+       }
+     (EQ       {n = new Call("op=", args);}
+      |NOT_EQ  {n = new Call("op/=", args);}
+      |GT      {n = new Call("op>", args);}
+      |GTE     {n = new Call("op>=", args);}
+      |LT      {n = new Call("op<", args);}
+      |LTE      {n = new Call("op<=", args);}
+      )
+      p=addingExpression {args.add(p);})*
+  ;
 	
-arguments returns [List<OrcProcess> args = new ArrayList<OrcProcess>();]
-	{OrcProcess p;}
-	: (DOT method:NAME
-	     { args.add(new Literal(method.getText())); }
-	     )
-	| ( options {greedy = true;} : 
-	    LPAREN 
-		 (p = expr { args.add(p); }
-		    ( COMMA p=expr { args.add(p); })*
-		 )?
-	    RPAREN 
-	  )
-	;
-
+addingExpression returns [Expression n = null]
+  : {Expression p = null; List<Expression> args = null; } 
+    n=multiplyingExpression 
+    (options {greedy = true;}:
+     {args = new ArrayList<Expression>();
+   	  args.add(n);
+      }
+    (PLUS   {n = new Call("op+", args);}
+     | MINUS {n = new Call("op-", args);}
+    ) 
+      p=multiplyingExpression {args.add(p);})*
+  ;
 	
-basic_expr returns [OrcProcess n = null]
-	{
-		List<OrcProcess> args = null;
-		OrcProcess p;
-	}
-	: name:NAME {n = new Name(name.getText());}
-	| num:INT
-		{ n = new Literal(new Integer(num.getText())); }
-	| str:STRING
-		{ n = new Literal(str.getText()); }
-	| "true"
-		{ n = new Literal(new Boolean(true)); }
-	| "false"
-		{ n = new Literal(new Boolean(false)); }
-				
-	| LPAREN p=expr n=tail_expr[p]
-	
-	// Brace enclosure is needed for closure/thunk syntax
-	//| LBRACE n=expr RBRACE
-	
-	// unit (the empty tuple) is a special case
-	| LPAREN RPAREN { n = new Call("let",new ArrayList<OrcProcess>()); }
-	;
-	
-// ANTLR needs to die in a fire. I should not need to do this conversion by hand. Ever. -dkitchin
-tail_expr[OrcProcess a] returns [OrcProcess n = null]
-	{
-		List<OrcProcess> args;
-	}	
-	: RPAREN { n = a; } 
-	| {args = new ArrayList<OrcProcess>(); args.add(a); }
-	   (COMMA a=expr {args.add(a);} )+ RPAREN
-	  {n = new Call("let",args);}
-	;	
-
-
-
-
-
-
-// operators
-
-booleanNegationExpression returns [OrcProcess n = null]
-  : {OrcProcess p = null;
-  	 List<OrcProcess> args = new ArrayList<OrcProcess>();}
+multiplyingExpression returns [Expression n = null]
+  : {Expression p = null; Token t = null; List<Expression> args = null;} 
+   n=signExpression
+   (options {greedy = true;} : 
+    {args = new ArrayList<Expression>();
+   	  args.add(n);
+      }
+   (TIMES {n = new Call("op*", args);}
+    |DIV  {n = new Call("op/", args);}
+    |MOD {n = new Call("op%", args);}
+    ) p=signExpression {args.add(p);})*
+  ;
+  
+signExpression returns [Expression n = null]
+  : {Expression p = null;
+  	 List<Expression> args = new ArrayList<Expression>();}
+     (MINUS {if (n == null) 
+     	        n = new Call("opu-", args);
+     	     else
+     	        n = new Call("opu-", n);}
+     )* 
+     p=booleanNegationExpression
+     {if (n == null) 
+     	   n = p;
+     	else 
+     	   args.add(p);}
+  ;
+  
+booleanNegationExpression returns [Expression n = null]
+  : {Expression p = null;
+  	 List<Expression> args = new ArrayList<Expression>();}
      (NOT {if (n == null) 
      	        n = new Call("op~", args);
      	     else 
@@ -240,82 +256,60 @@ booleanNegationExpression returns [OrcProcess n = null]
      	   args.add(p);}
   ;
 
-signExpression returns [OrcProcess n = null]
-  : {OrcProcess p = null;
-  	 List<OrcProcess> args = new ArrayList<OrcProcess>();}
-     (MINUS {if (n == null) 
-     	        n = new Call("opu-", args);
-     	     else 
-     	        n = new Call("opu-", n);}
-     )* 
-     p=booleanNegationExpression
-     {if (n == null) 
-     	   n = p;
-     	else 
-     	   args.add(p);}
-  ;
 
-
-multiplyingExpression returns [OrcProcess n = null]
-  : {OrcProcess p = null; Token t = null; List<OrcProcess> args = null;} 
-   n=signExpression
-   (options {greedy = true;} : 
-    {args = new ArrayList<OrcProcess>();
-   	  args.add(n);
-      }
-   (TIMES {n = new Call("op*", args);}
-    |DIV  {n = new Call("op/", args);}
-    |MOD {n = new Call("op%", args);}
-    ) p=signExpression {args.add(p);})*
-  ;
-
-addingExpression returns [OrcProcess n = null]
-  : {OrcProcess p = null; List<OrcProcess> args = null; } 
-    n=multiplyingExpression 
-    (options {greedy = true;}:
-     {args = new ArrayList<OrcProcess>();
-   	  args.add(n);
-      }
-    (PLUS   {n = new Call("op+", args);}
-     | MINUS {n = new Call("op-", args);}
-    ) 
-      p=multiplyingExpression {args.add(p);})*
-  ;
-
-relationalExpression returns [OrcProcess n = null]
-  : {OrcProcess p = null; List<OrcProcess> args = null;} 
-    n=addingExpression 
-    ( options {greedy = true;} : 
-      {args = new ArrayList<OrcProcess>();
-   	   args.add(n);
-       }
-     (EQ       {n = new Call("op=", args);}
-      |NOT_EQ  {n = new Call("op/=", args);}
-      |GT      {n = new Call("op>", args);}
-      |GTE     {n = new Call("op>=", args);}
-      |LT      {n = new Call("op<", args);}
-      |LTE      {n = new Call("op<=", args);}
-      ) 
-      p=addingExpression {args.add(p);})*
-  ;
-
-expression returns [OrcProcess n = null]
-  : {OrcProcess p = null; List<OrcProcess> args = null;} 
-    n=relationalExpression 
-    ( options {greedy = true;} : 
-      { args = new ArrayList<OrcProcess>();
-   	    args.add(n);
-        }
-     (AND  {n = new Call("op&&", args);}
-      |OR  {n = new Call("op||", args);}
-      ) 
-      p=relationalExpression {args.add(p);})*
-  ;
+call_expr returns [Expression e = null]
+	{
+		List<Expression> args = null;
+	}
+	: e=basic_expr
+	  (options {greedy = true;} :
+	     args = arguments { e = new Call(e, args); }
+	   | DOT f:NAME { e = new Dot(e, f.getText()); }
+	  )*
+	| "let" args = arguments { e = new Let(args); }
+	;
 	
-	
-	
+arguments returns [List<Expression> args = new ArrayList<Expression>();]
+	{Expression p;}
+	: LPAREN 
+		 (p=expr { args.add(p); }
+		    ( COMMA p=expr { args.add(p); })*
+		 )?
+	  RPAREN 
+	;
 
 	
+basic_expr returns [Expression n = null]
+	{
+		List<Expression> args = null;
+		Expression p;
+	}
+	: name:NAME {n = new Name(name.getText());}
+	| num:INT
+		{ n = new Literal(new Integer(num.getText())); }
+	| str:STRING
+		{ n = new Literal(str.getText()); }
+	| "true"
+		{ n = new Literal(new Boolean(true)); }
+	| "false"
+		{ n = new Literal(new Boolean(false)); }
+				
+	| LPAREN p=expr n=tail_expr[p]
+	;
+	
+// ANTLR needs to die in a fire. I should not need to do this conversion by hand. Ever. -dkitchin
+tail_expr[Expression a] returns [Expression n = null]
+	{
+		List<Expression> args;
+	}	
+	: RPAREN { n = a; }
+	| {args = new ArrayList<Expression>(); args.add(a); }
+	   (COMMA a=expr {args.add(a);} )+ RPAREN
+	  {n = new Tuple(args);}
+	;	
+
+
+
 
 class OrcLexer extends Lexer;
 

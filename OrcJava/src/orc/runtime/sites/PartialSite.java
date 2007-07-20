@@ -6,6 +6,8 @@ package orc.runtime.sites;
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.values.GroupCell;
+import orc.runtime.values.Tuple;
+import orc.runtime.values.Value;
 
 /**
  * Abstract class for sites with a partial and immediate semantics: evaluate as for a total
@@ -26,9 +28,9 @@ public abstract class PartialSite extends Site {
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
 	 */
 	@Override
-	public void callSite(Object[] args, Token returnToken, GroupCell caller,
+	public void callSite(Tuple args, Token returnToken, GroupCell caller,
 			OrcEngine engine) {
-		Object res = evaluate(args);
+		Value res = evaluate(args);
 		
 		if (res != null)
 		{
@@ -37,6 +39,6 @@ public abstract class PartialSite extends Site {
 		}
 	}
 	
-	abstract public Object evaluate(Object[] args);
+	abstract public Value evaluate(Tuple args);
 
 }

@@ -4,11 +4,11 @@
 package orc.runtime.sites.java;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
 import orc.runtime.sites.EvalSite;
+import orc.runtime.values.*;
 
 
 /**
@@ -40,9 +40,9 @@ public class ObjectProxy extends EvalSite {
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
 	 */
 	@Override
-	public Object evaluate(Object[] args) {
+	public Value evaluate(Tuple args) {
 
-		String methodName = (String)getArg(args, 0);
+		String methodName = args.stringArg(0);
 		List<Method> matching_methods = new LinkedList<Method>();
 		
 		for (Method m : wrapped_instance.getClass().getMethods())

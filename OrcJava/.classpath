@@ -2,7 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="var" path="ANTLR_HOME/antlr.jar" sourcepath="ANTLR_HOME/antlrsrc.zip"/>
 	<classpathentry kind="lib" path="lib/axis.jar"/>
 	<classpathentry kind="lib" path="lib/wsdl4j-1.5.1.jar"/>
 	<classpathentry kind="lib" path="lib/jaxrpc.jar"/>
@@ -11,5 +10,6 @@
 	<classpathentry kind="lib" path="lib/commons-logging-1.0.4.jar"/>
 	<classpathentry kind="lib" path="webservices"/>
 	<classpathentry kind="lib" path="lib/mail.jar"/>
+	<classpathentry kind="var" path="ANTLR_HOME/antlr.jar" sourcepath="ANTLR_HOME/antlrsrc.zip"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

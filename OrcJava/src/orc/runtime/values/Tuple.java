@@ -3,7 +3,6 @@
  */
 package orc.runtime.values;
 
-import java.util.Arrays;
 import java.util.List;
 
 import orc.runtime.sites.EvalSite;
@@ -14,20 +13,16 @@ import orc.runtime.sites.EvalSite;
  */
 public class Tuple extends EvalSite {
 	private static final long serialVersionUID = 1L;
-	Object[] values;
+	List<Value> values;
 
-	public Tuple(Object[] values) {
+	public Tuple(List<Value> values) {
 		this.values = values;
-	}
-
-	public Object at(int i) {
-		return values[i];
 	}
 	
 	// A tuple may be used as a site for array lookup
-	public Object evaluate(Object[] args)
+	public Value evaluate(Tuple args)
 	{
-		int i = intArg(args,0);
+		int i = args.intArg(0);
 		
 		// Uses Perl's idiom for end-lookup using negative integers
 		if (i < 0) { i = size() + i; }
@@ -37,7 +32,7 @@ public class Tuple extends EvalSite {
 	}
 	
 	public String toString() {
-		return format('[', Arrays.asList(values), ", ", ']');
+		return format('[', values, ", ", ']');
 	}
 
 	public static String format(char left, List items, String sep, char right) {
@@ -55,6 +50,74 @@ public class Tuple extends EvalSite {
 	}
 
 	public int size() {
-		return values.length;
+		return values.size();
 	}
+	
+	
+	public Value at(int i) {
+		return values.get(i);
+	}
+	
+	/**
+	 * Helper function to retrieve the nth element, with error checking
+	 */
+	public Object getArg(int n)
+	{
+		Value a = at(n);
+		try
+		 	{ return ((Constant)a).getValue(); }
+		catch (ArrayIndexOutOfBoundsException e)
+			{ throw new Error("Arity mismatch calling site '" + this.toString() + "'. Could not find argument #" + n); }
+		catch (ClassCastException e) 
+			{ throw new Error("Argument " + n + " to site '" + this.toString() + "' is not a native Java value"); } 
+	}
+	
+	/* Return the entire tuple as an object array */
+	public Object[] asArray()
+	{
+		int n = size();
+		Object[] a = new Object[n];
+		for (int i=0; i<n; i++)
+		{ 
+			a[i] = getArg(i); 
+		}
+		
+		return a;
+	}
+		
+	/**
+	 * Helper function for integers
+	 */
+	public int intArg(int n) {
+		
+		Object a = getArg(n);
+		try
+			{ return ((Integer)a).intValue(); }
+		catch (ClassCastException e) 
+			{ throw new Error("Argument " + n + " should be an int, got " + a.getClass().toString() + " instead."); } 
+	}
+
+	/**
+	 * Helper function for booleans
+	 */
+	public boolean boolArg(int n) {
+		
+		Object a = getArg(n);
+		try
+			{ return ((Boolean)a).booleanValue(); }
+		catch (ClassCastException e) 
+			{ throw new Error("Argument " + n + " to site '" + this.toString() + "' should be a boolean, got " + a.getClass().toString() + " instead."); } 
+	
+	}
+
+	/**
+	 * Helper function for strings
+	 */
+	public String stringArg(int n) {
+
+		Object a = getArg(n);
+		return a.toString();
+	}
+	
 }
+

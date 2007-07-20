@@ -160,9 +160,9 @@ public class Config {
 		return target;
 	}
 	
-	public Object[] getArgv()
+	public List<Object> getArgv()
 	{
-		return params.toArray();
+		return params;
 	}
 	
 	

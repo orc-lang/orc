@@ -17,12 +17,12 @@ import orc.runtime.Token;
  * tokens that arise from execution of a where definition
  * are associated with the same group. Once a value is
  * produced for the group, all these tokens are terminated.
- * @author wcook
+ * @author wcook, dkitchin
  */
-public class GroupCell implements Serializable , Value {
+public class GroupCell implements Serializable, Future {
 
 	private static final long serialVersionUID = 1L;
-	Object value;
+	Value value;
 	boolean bound;
 	boolean alive;
 	List<Token> waitList;
@@ -33,30 +33,6 @@ public class GroupCell implements Serializable , Value {
 		bound = false;
 		alive = true;
 		//calls = 0;
-	}
-
-	/** 
-	 * A group is unbound as long as no value has been produced
-	 * @see orc.runtime.values.Value#asUnboundCell()
-	 */
-	public GroupCell asUnboundCell() {
-		return bound ? null : this;
-	}
-	public boolean Callable0() {
-		return false;
-	}
-	//public void addCall(int n) {
-		//calls += n;
-	//}
-
-	/** 
-	 * Once the group is bound, its value can be accessed.
-	 * @see orc.runtime.values.Value#asBasicValue()
-	 */
-	public Object asBasicValue() {
-		if (!bound)
-			throw new Error("Getting value of unbound cell");
-		return value;
 	}
 
 	/**
@@ -86,7 +62,7 @@ public class GroupCell implements Serializable , Value {
 	 * @param value 	the value for the group 
 	 * @param engine	engine
 	 */
-	public void setValue(Object value, OrcEngine engine) {
+	public void setValue(Value value, OrcEngine engine) {
 		//int calls_killed;
 		this.value = value;
 		bound = true;
@@ -133,6 +109,32 @@ public class GroupCell implements Serializable , Value {
 		if (waitList == null)
 			waitList = new LinkedList<Token>();
 		waitList.add(t);
+	}
+
+	public Value forceArg(Token t) {
+		
+		if (bound)
+		{
+			return value.forceArg(t);
+		}
+		else
+		{
+			waitForValue(t);
+			return null;
+		}
+	}
+	
+	public Callable forceCall(Token t) {
+		
+		if (bound)
+		{
+			return value.forceCall(t);
+		}
+		else
+		{
+			waitForValue(t);
+			return null;
+		}
 	}
 
 }

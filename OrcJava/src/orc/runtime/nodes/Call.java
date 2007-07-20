@@ -3,13 +3,14 @@
  */
 package orc.runtime.nodes;
 
+import java.util.LinkedList;
 import java.util.List;
 
+import orc.ast.simple.arg.Argument;
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
-import orc.runtime.sites.java.ObjectProxy;
 import orc.runtime.values.Callable;
-import orc.runtime.values.Value;
+import orc.runtime.values.Future;
 
 /**
  * Compiled node for a call (either a site call or a definition call)
@@ -17,79 +18,56 @@ import orc.runtime.values.Value;
  */
 public class Call extends Node {
 	private static final long serialVersionUID = 1L;
-	String name;
-	List<Param> args;
-	antlr.Token tok;
+	Argument caller;
+	List<Argument> args;
 	Node next;
 
-	public Call(String name, List<Param> args, Node next, antlr.Token t) {
-		this.name = name;
+	public Call(Argument caller, List<Argument> args, Node next) {
+		this.caller = caller;
 		this.args = args;
-		this.next = next;
-		this.tok = t;
-		
+		this.next = next;	
 	}
 	
+	/*
+	 * TODO: Reintroduce debugging information into the AST so that it reaches here
 	public String Label() {
 		if (tok == null)
 			return name;
 		return name + " on line " + tok.getLine();
 	}
+	*/
 
 	/** 
 	 * Looks up the function to be called, then creates a call
 	 * token using the argument expressions.
-	 * TODO: why does this check for callable?
 	 * @see orc.runtime.nodes.Node#process(orc.runtime.Token, orc.runtime.OrcEngine)
 	 */
-	// TODO FIX BUG: Can't use blocked variables as callable entities
 	public void process(Token t, OrcEngine engine) {
 		
+		Callable target = t.call(caller);
 		
-		Value d = t.lookup(name);
+		/** 
+		 * target is null if the caller is still unbound, in which
+		 * case the calling token will be activated when the
+		 * caller value becomes available. Thus, we simply
+		 * return and wait for the token to enter the process
+		 * method again.
+		 */
+		if (target == null) { return; }
 		
-		// define call with return location
-	    if (d instanceof Callable ) {
-			Callable target = (Callable) d;
-			target.createCall(Label(), t, args, next, engine);
+		/**
+		 * Collect all of the environment's bindings for these args.
+		 * Note that some of them may still be unbound, since we are
+		 * not forcing the futures.
+		 */
+		List<Future> actuals = new LinkedList<Future>();
+		
+		for (Argument a : args)
+		{
+			actuals.add(t.lookup(a));
 		}
-	    else 
-	    {
-	    	Object v = d.asBasicValue();
-	    
-	    	if (v instanceof Callable) {
-	    		Callable target = (Callable) v;
-	    		target.createCall(Label(), t, args, next, engine);
-	    	}
-	    	/**
-		     * TODO: Fix this in a principled way. This is currently a hack that autoconverts ground
-		     * values v in call position to the equivalent of let(v).
-		     * 
-		     * The correct solution is to apply this conversion earlier in the compilation process,
-		     * probably to the AST as a normalization step.
-		     * 
-		     */ 
-	    	else
-	    	{
-	    		t.setResult(v);
-				t.move(next);
-				engine.activate(t);
-	    	}	
-	    	/*
-	    	else if (v instanceof Integer || v instanceof Boolean || v instanceof String)
-	    	{
-	    		t.setResult(v);
-				t.move(next);
-				engine.activate(t);
-	    	}
-	    	else
-	    	{
-	    		// This is an open object instance, and should be proxied.
-	    		ObjectProxy target = new ObjectProxy(v);
-	    		target.createCall(Label(), t, args, next, engine);
-	    	}
-	    	*/
-	    }
+		
+		target.createCall(t, actuals, next, engine);
 	}
 	
 }

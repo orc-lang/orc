@@ -6,7 +6,11 @@ package orc.runtime;
 import java.io.*;
 //import java.io.ObjectOutputStream;
 //import java.nio.channels.FileLock;
+import orc.ast.simple.arg.Argument;
+import orc.ast.simple.arg.Var;
 import orc.runtime.nodes.Node;
+import orc.runtime.values.Callable;
+import orc.runtime.values.Future;
 import orc.runtime.values.GroupCell;
 import orc.runtime.values.Value;
 
@@ -18,20 +22,22 @@ import orc.runtime.values.Value;
  * to the next token.
  * @author wcook
  */
-public class Token implements Serializable {
+public class Token implements Serializable, Comparable<Token> {
 	private static final long serialVersionUID = 1L;
 	protected Node node;
 	protected Environment env;
 	protected GroupCell group;
+	protected OrcEngine engine;
 	Token caller;
-	Object result;
+	Value result;
 
-	public Token(Node node, Environment env, Token caller, GroupCell group, Object result) {
+	public Token(Node node, Environment env, Token caller, GroupCell group, Value result, OrcEngine engine) {
 		this.node = node;
 		this.env = env;
 		this.caller = caller;
 		this.group = group;
 		this.result = result;
+		this.engine = engine;
 	}
 	
 	
@@ -73,7 +79,7 @@ public class Token implements Serializable {
 	 * @return	new token
 	 */
 	public Token copy() {
-		return new Token(node, env, caller, group, result);
+		return new Token(node, env, caller, group, result, engine);
 	}
 
 	/**
@@ -82,10 +88,14 @@ public class Token implements Serializable {
 	 * @param val	value for this variable
 	 * @return		self
 	 */
-	public Token bind(String var, Value val) {
+	public Token bind(Var var, Future f) {
 		//System.out.println("binding " + var + " to " + val);
-		env = new Environment(var, val, env);
+		env = new Environment(var, f, env);
 		return this;
+	}
+	
+	public void activate() {
+		engine.activate(this);
 	}
 
 	/**
@@ -93,19 +103,37 @@ public class Token implements Serializable {
 	 * @param var  	variable name
 	 * @return		value, or an exception if the variable is undefined
 	 */
-	public Value lookup(String var) {
-		return env.lookup(var);
+	public Future lookup(Argument a) {
+		if (a instanceof Var)
+		{
+			return env.lookup((Var)a);
+		}
+		else 
+		{
+			return a.asValue();
+		}
+		
 	}
 
+	public Callable call(Argument a) {
+		Future f = this.lookup(a);
+		return f.forceCall(this);
+	}
+	
+	public Value arg(Argument a) {
+		Future f = this.lookup(a);
+		return f.forceArg(this);
+	}
+	
 	public Environment getEnvironment() {
 		return env;
 	}
 
-	public Object getResult() {
+	public Value getResult() {
 		return result;
 	}
 
-	public Token setResult(Object result) {
+	public Token setResult(Value result) {
 		this.result = result;
 		return this;
 	}
@@ -117,6 +145,23 @@ public class Token implements Serializable {
 	public Token getCaller() {
 		return caller;
 	}
+	
+	/* TODO: replace this stub with a meaningful order on tokens */
+	public int compareTo(Token t) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
+	/*
+	 * TODO: Implement debug output through tokens
+	 */
+	/*
+	public void debug(String s)
+	{
+		if (engine.debugMode)
+		{ ... }
+	}
+	*/
 	
 	/*
 	 * This was used to help diagnose where memory was being used.

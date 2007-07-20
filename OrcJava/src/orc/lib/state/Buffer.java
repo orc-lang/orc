@@ -10,7 +10,10 @@ import orc.runtime.Token;
 import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.Site;
+import orc.runtime.values.Constant;
 import orc.runtime.values.GroupCell;
+import orc.runtime.values.Tuple;
+import orc.runtime.values.Value;
 
 /**
  * @author cawellington, dkitchin
@@ -24,7 +27,7 @@ public class Buffer extends EvalSite {
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
 	 */
 	@Override
-	public Object evaluate(Object args[]) {
+	public Value evaluate(Tuple args) {
 		return new BufferInstance();
 	}
 	
@@ -47,7 +50,7 @@ public class Buffer extends EvalSite {
 		
 		private class getMethod extends Site {
 			@Override
-			public void callSite(Object[] args, Token returnToken, GroupCell caller, OrcEngine engine) {
+			public void callSite(Tuple args, Token returnToken, GroupCell caller, OrcEngine engine) {
 
 				// If there are no buffered items, put this caller on the queue
 				if (localBuffer.isEmpty()) {
@@ -55,7 +58,7 @@ public class Buffer extends EvalSite {
 				}
 				// If there is an item available, pop it and return it.
 				else {
-					returnToken.setResult(localBuffer.removeFirst());
+					returnToken.setResult(new Constant(localBuffer.removeFirst()));
 					engine.activate(returnToken);
 				}
 
@@ -64,9 +67,9 @@ public class Buffer extends EvalSite {
 		
 		private class putMethod extends Site {
 			@Override
-			public void callSite(Object[] args, Token returnToken, GroupCell caller, OrcEngine engine) {
+			public void callSite(Tuple args, Token returnToken, GroupCell caller, OrcEngine engine) {
 
-				Object item = getArg(args,0);
+				Object item = args.getArg(0);
 				
 				// If there are no waiting callers, buffer this item.
 				if (pendingQueue.isEmpty()) {
@@ -75,7 +78,7 @@ public class Buffer extends EvalSite {
 				// If there are callers waiting, give this item to the top caller.
 				else {
 					Token consumer = pendingQueue.removeFirst();
-					engine.siteReturn("Buffer.get", consumer, item);
+					engine.siteReturn("Buffer.get", consumer, new Constant(item));
 				}
 
 				// Since this is an asynchronous buffer, a put call always returns.
