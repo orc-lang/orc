@@ -5,7 +5,10 @@ package orc.runtime.sites;
 
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
+import orc.runtime.values.Constant;
 import orc.runtime.values.GroupCell;
+import orc.runtime.values.Tuple;
+import orc.runtime.values.Value;
 
 /**
  * Abstract class for sites with a total and immediate semantics: evaluate the arguments and
@@ -26,13 +29,12 @@ public abstract class EvalSite extends Site {
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
 	 */
 	@Override
-	public void callSite(Object[] args, Token returnToken, GroupCell caller,
-			OrcEngine engine) {
+	public void callSite(Tuple args, Token returnToken, GroupCell caller, OrcEngine engine) {
 
-		returnToken.setResult(evaluate(args));
+		returnToken.setResult(new Constant(evaluate(args)));
 		engine.activate(returnToken);
 	}
 	
-	abstract public Object evaluate(Object[] args);
+	abstract public Value evaluate(Tuple args);
 
 }

@@ -3,7 +3,8 @@
  */
 package orc.runtime;
 
-import orc.runtime.values.Value;
+import orc.ast.simple.arg.Var;
+import orc.runtime.values.Future;
 import java.io.*;
 
 /**
@@ -13,10 +14,10 @@ import java.io.*;
 public class Environment implements Serializable {
 	private static final long serialVersionUID = 1L;
 	Environment parent;
-	String var;
-	Value value;
+	Var var;
+	Future value;
 
-	public Environment(String var, Value value, Environment parent) {
+	public Environment(Var var, Future value, Environment parent) {
 		this.var = var;
 		this.value = value;
 		this.parent = parent;
@@ -29,7 +30,7 @@ public class Environment implements Serializable {
 	 * @param var	variable name
 	 * @return		value, or error if binding exists
 	 */
-	public Value lookup(String var) {
+	public Future lookup(Var var) {
 		if (this.var.equals(var))
 			return value;
 		else if (parent == null)
@@ -38,16 +39,4 @@ public class Environment implements Serializable {
 			return parent.lookup(var);
 	}
 	
-	/* 
-	 * This is something I tried, to see whether I could save memory in some recursions.
-	 * But it didn't help.  -- Mark B
-	public Environment destructiveSet(String var, Value val) {
-		if (this.var.equals(var))
-			this.value = val;
-		else 
-			this.parent = parent.destructiveSet(var,val);
-		return this;
-			
-	}
-	*/ 
 }

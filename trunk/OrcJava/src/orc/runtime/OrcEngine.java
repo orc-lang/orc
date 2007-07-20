@@ -7,17 +7,15 @@ import java.util.LinkedList;
 import java.io.*;
 
 import orc.runtime.nodes.Node;
-import orc.runtime.sites.Let;
-import orc.runtime.sites.Zero;
 import orc.runtime.values.GroupCell;
-import orc.runtime.values.Tuple;
+import orc.runtime.values.Value;
 
 /**
  * The Orc Engine provides the main loop for executing active tokens.
  * @author wcook
  */
 public class OrcEngine {
-    Tuple params = null;
+
 	LinkedList<Token> activeTokens = new LinkedList<Token>();
 	LinkedList<Token> queuedReturns = new LinkedList<Token>();
 	
@@ -43,8 +41,7 @@ public class OrcEngine {
 	public void run(Node root, Environment env) {
 
 		GroupCell startGroup = new GroupCell();
-		Token start = new Token(root, env, null/* caller */, startGroup,
-				null/* value */);
+		Token start = new Token(root, env, null/* caller */, startGroup, null/* value */, this);
 
 		activeTokens.add(start);
         work();
@@ -118,8 +115,7 @@ public class OrcEngine {
 	 * @param token
 	 * @param value
 	 */
-	synchronized public void siteReturn(String label, Token token,
-			Object value) {
+	synchronized public void siteReturn(String label, Token token, Value value) {
 		token.setResult(value);
 		queuedReturns.add(token);
 		if (debugMode)

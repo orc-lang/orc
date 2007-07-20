@@ -1,24 +1,38 @@
-/*
- * Copyright 2005, The University of Texas at Austin. All rights reserved.
- */
 package orc.runtime.nodes;
 
 import java.util.List;
-import java.io.*;
+import orc.ast.simple.arg.Var;
 
 /**
- * Compiled node to create a definition
- * @author wcook
+ * 
+ * A unit of syntax that encapsulates an expression definition. 
+ * 
+ * Groups of mutually recursive definitions are embedded in the execution graph by a Def.
+ * 
+ * @author dkitchin
+ *
  */
-public class Definition implements Serializable {
-	private static final long serialVersionUID = 1L;
-	public String name;
-	public List<String> formals;
-	public Node body;
 
-	public Definition(String name, List<String> formals, Node body) {
+public class Definition {
+
+	public Var name;
+	public List<Var> formals;
+	public Node body;
+	
+	/**
+	 * Note that the constructor takes a bound Var as a name parameter. This is because the
+	 * binding of expression names occurs at the level of mutually recursive groups, not at
+	 * the level of the individual definitions.
+	 * 
+	 * @param name
+	 * @param formals
+	 * @param body
+	 */
+	public Definition(Var name, List<Var> formals, Node body)
+	{
 		this.name = name;
 		this.formals = formals;
 		this.body = body;
 	}
+	
 }

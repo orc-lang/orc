@@ -1,28 +1,39 @@
-/*
- * Copyright 2005, The University of Texas at Austin. All rights reserved.
- */
 package orc.runtime.values;
 
+import orc.runtime.Token;
+
 /**
- * Interface for value containers
- * @author wcook
+ * 
+ * A fully evaluated Orc value. This includes sites, tuples of fully evaluated values, 
+ * and native Java values.
+ * 
+ * However, it does not include unbound or partially-bound values, which are instead in 
+ * the broader category of Futures.
+ * 
+ * @author dkitchin
+ *
  */
-public interface Value {
+public class Value implements Future {
 
-	/**
-	 * Check if a value container is bound
-	 * @return true if it is unbound
-	 */
-	GroupCell asUnboundCell();
-
-	/**
-	 * If the container is bound, return the underlying java value
-	 * @return any value
-	 */
-	Object asBasicValue();
+	// A value is already computed, so it forces to itself.
+	public Value forceArg(Token t)
+	{
+		return this;
+	}
 	
-	/**
-	 * If the container is bound, is it bound to somethin callable with no arguments?
-	 */
-	boolean Callable0();
+	// If this value is callable, return it, otherwise return an error.
+	// This is the default behavior; subclasses may override it.
+	public Callable forceCall(Token t)
+	{
+		if (this instanceof Callable)
+		{
+			return (Callable)this;
+		}
+		else
+		{
+			throw new Error(this.toString() + " is not a callable value.");
+		}
+			
+	}
+	
 }

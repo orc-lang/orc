@@ -6,6 +6,7 @@ package orc.runtime.sites.java;
 import java.lang.reflect.Constructor;
 
 import orc.runtime.sites.EvalSite;
+import orc.runtime.values.*;
 
 
 
@@ -30,7 +31,7 @@ public class ClassProxy extends EvalSite {
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
 	 */
 	@Override
-	public Object evaluate(Object[] args) {
+	public Value evaluate(Tuple args) {
 
 				Object inst = null;
 				
@@ -40,7 +41,7 @@ public class ClassProxy extends EvalSite {
 				{
 					try
 					{
-						inst = cn.newInstance(args);
+						inst = cn.newInstance(args.asArray());
 					}
 					catch (IllegalArgumentException e) {}
 					catch (Exception e) { throw new Error("Error creating instance of " + wrapped_class.toString()); }

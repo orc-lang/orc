@@ -7,6 +7,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import orc.runtime.sites.EvalSite;
+import orc.runtime.values.*;
 
 /**
  * @author dkitchin
@@ -29,7 +30,7 @@ public class MethodProxy extends EvalSite {
 	 * @see orc.runtime.sites.EvalSite#evaluate(java.lang.Object[])
 	 */
 	@Override
-	public Object evaluate(Object[] args) {
+	public Value evaluate(Tuple args) {
 		
 		Object result = null;
 		
@@ -47,8 +48,7 @@ public class MethodProxy extends EvalSite {
 		if (result == null)
 			{ throw new Error("Argument types did not match any implementation for method '" + methodName + "'."); }
 
-		// Proxy the result so that it can be called along a chain.
-		return new ObjectProxy(result);
+		return new Constant(result);
 	}
 
 }

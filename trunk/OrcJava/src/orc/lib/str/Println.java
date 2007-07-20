@@ -4,6 +4,7 @@
 package orc.lib.str;
 
 import orc.runtime.sites.EvalSite;
+import orc.runtime.values.*;
 
 /**
  * @author dkitchin
@@ -17,13 +18,14 @@ public class Println extends EvalSite {
 	 * @see orc.runtime.sites.EvalSite#evaluate(java.lang.Object[])
 	 */
 	@Override
-	public Object evaluate(Object[] args) {
+	public Value evaluate(Tuple args) {
 		
-		for (Object x : args)
-		System.out.println(x.toString());
+		for(int i = 0; i < args.size(); i++)
+		{
+			System.out.println(args.stringArg(i));
+		}
 		
-		// TODO: There should be an explicit 'signal' value
-		return null;
+		return signal();
 	}
 
 }

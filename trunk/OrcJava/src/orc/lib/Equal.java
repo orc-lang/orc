@@ -4,6 +4,7 @@
 package orc.lib;
 
 import orc.runtime.sites.EvalSite;
+import orc.runtime.values.*;
 
 /**
  * @author dkitchin
@@ -15,19 +16,12 @@ public class Equal extends EvalSite {
 	 * @see orc.runtime.sites.EvalSite#evaluate(java.lang.Object[])
 	 */
 	@Override
-	public Object evaluate(Object[] args) {
+	public Value evaluate(Tuple args) {
 		
-		// typecase would be lovely here!
-		if (args[0] instanceof Boolean && args[1] instanceof Boolean)
-			return boolArg(args, 0) == boolArg(args, 1);
-
-		if (args[0] instanceof Integer && args[1] instanceof Integer)
-			return intArg(args, 0) == intArg(args, 1);
-
-		if (args[0] instanceof String && args[1] instanceof String)
-			return stringArg(args, 0).equals(stringArg(args,1));
+		Object a = args.getArg(0);
+		Object b = args.getArg(1);
+		return new Constant(a.equals(b));
 		
-		return args[0] == args[1];
 	}
 
 }

@@ -8,7 +8,6 @@ import java.util.List;
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.nodes.Node;
-import orc.runtime.nodes.Param;
 
 /**
  * Callable objects include sites and definitions
@@ -24,8 +23,7 @@ public interface Callable {
 	 * @param nextNode	next node after the call node, to which the result should be sent
 	 * @param engine	Orc engine
 	 */
-	void createCall(String label, Token caller, List<Param> args,
-			Node nextNode, OrcEngine engine);
+	void createCall(Token caller, List<Future> args, Node nextNode, OrcEngine engine);
 
 
 }

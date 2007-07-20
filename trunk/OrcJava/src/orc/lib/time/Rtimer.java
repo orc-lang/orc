@@ -8,7 +8,9 @@ import java.util.PriorityQueue;
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.sites.Site;
+import orc.runtime.values.Constant;
 import orc.runtime.values.GroupCell;
+import orc.runtime.values.Tuple;
 
 
 /**
@@ -24,14 +26,9 @@ public class Rtimer extends Site {
 	 */
 	public static JavaTimer javaTimer;
 
-	public void callSite(Object[] args, Token returnToken, GroupCell caller, OrcEngine engine) 
+	public void callSite(Tuple args, Token returnToken, GroupCell caller, OrcEngine engine) 
 	{
-		if (args.length != 1 || !(args[0] instanceof Integer))
-			throw new Error("Invalid argument in Rtimer" + args);
-		engine.addCall(1);
-		//caller.addCall(1);
-
-		long n = ((Integer) args[0]).longValue();
+		int n = args.intArg(0);
 		if (javaTimer == null)
 			javaTimer = new JavaTimer(engine,caller);
 		javaTimer.addEvent(n, returnToken);
@@ -110,7 +107,7 @@ class JavaTimer implements Runnable {
 						if (engine.debugMode)
 							engine.debug("Rtimer: Executed Event.",temp.getToken());
 						
-						engine.siteReturn("Rtimer", temp.getToken(), true);
+						engine.siteReturn("Rtimer", temp.getToken(), new Constant(true));
 											
 					}
 				}

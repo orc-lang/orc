@@ -10,7 +10,10 @@ import orc.runtime.Token;
 import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.Site;
+import orc.runtime.values.Constant;
 import orc.runtime.values.GroupCell;
+import orc.runtime.values.Tuple;
+import orc.runtime.values.Value;
 
 /**
  * @author dkitchin
@@ -24,7 +27,7 @@ public class SyncChannel extends EvalSite {
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
 	 */
 	@Override
-	public Object evaluate(Object args[]) {
+	public Value evaluate(Tuple args) {
 		return new SyncChannelInstance();
 	}
 	
@@ -60,7 +63,7 @@ public class SyncChannel extends EvalSite {
 		
 		private class getMethod extends Site {
 			@Override
-			public void callSite(Object[] args, Token returnToken, GroupCell caller, OrcEngine engine) {
+			public void callSite(Tuple args, Token returnToken, GroupCell caller, OrcEngine engine) {
 
 				// If there are no waiting senders, put this caller on the queue
 				if (senderQueue.isEmpty()) {
@@ -70,7 +73,7 @@ public class SyncChannel extends EvalSite {
 				else {
 					SenderItem si = senderQueue.removeFirst();
 					
-					returnToken.setResult(si.sent);
+					returnToken.setResult(new Constant(si.sent));
 					engine.activate(returnToken);
 					
 					engine.siteReturn("SyncChannel.put", si.sender, signal());
@@ -81,9 +84,9 @@ public class SyncChannel extends EvalSite {
 		
 		private class putMethod extends Site {
 			@Override
-			public void callSite(Object[] args, Token returnToken, GroupCell caller, OrcEngine engine) {
+			public void callSite(Tuple args, Token returnToken, GroupCell caller, OrcEngine engine) {
 
-				Object item = getArg(args,0);
+				Object item = args.getArg(0);
 				
 				// If there are no waiting receivers, put this sender on the queue
 				if (receiverQueue.isEmpty()) {
@@ -97,7 +100,7 @@ public class SyncChannel extends EvalSite {
 					returnToken.setResult(signal());
 					engine.activate(returnToken);
 					
-					engine.siteReturn("SyncChannel.get", receiver, item);
+					engine.siteReturn("SyncChannel.get", receiver, new Constant(item));
 				}
 				
 			}

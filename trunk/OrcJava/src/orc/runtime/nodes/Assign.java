@@ -3,9 +3,10 @@
  */
 package orc.runtime.nodes;
 
+import orc.ast.simple.arg.Var;
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
-import orc.runtime.values.Constant;
+import orc.runtime.values.Value;
 
 /**
  * Compiled node for assignment. 
@@ -13,10 +14,10 @@ import orc.runtime.values.Constant;
  */
 public class Assign extends Node {
 	private static final long serialVersionUID = 1L;
-	String var;
+	Var var;
 	Node next;
 
-	public Assign(String var, Node next) {
+	public Assign(Var var, Node next) {
 		this.var = var;
 		this.next = next;
 	}
@@ -31,8 +32,9 @@ public class Assign extends Node {
 		if (engine.debugMode)
 			engine.debug("Assign " + var + "=" + t.getResult(), t);
 
-		Object val = t.getResult();
-		t.bind(var, new Constant(val));
+		Value val = t.getResult();
+		t.bind(var, val);
 		engine.activate(t.move(next));
 	}
+
 }

@@ -6,6 +6,9 @@ package orc.runtime.sites;
 import java.util.HashMap;
 import java.util.Map;
 
+import orc.runtime.values.Tuple;
+import orc.runtime.values.Value;
+
 /**
  * @author dkitchin
  *
@@ -27,9 +30,9 @@ public abstract class DotSite extends EvalSite {
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
 	 */
 	@Override
-	public Object evaluate(Object[] args) {
+	public Value evaluate(Tuple args) {
 		
-		String f = (String)getArg(args,0);
+		String f = args.stringArg(0);
 		Site m = getMethod(f);
 		
 		if (m != null)

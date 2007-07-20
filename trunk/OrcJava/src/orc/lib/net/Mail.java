@@ -3,6 +3,8 @@
  */
 package orc.lib.net;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import javax.mail.Message;
@@ -14,8 +16,10 @@ import javax.mail.internet.MimeMessage;
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.sites.Site;
+import orc.runtime.values.Constant;
 import orc.runtime.values.GroupCell;
 import orc.runtime.values.Tuple;
+import orc.runtime.values.Value;
 
 /**
  * Implements mail sending
@@ -29,19 +33,24 @@ public class Mail extends Site {
 	 * TODO: there are many possible enhancements of this code
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.OrcEngine)
 	 */
-	public void callSite(Object[] args, Token returnToken, GroupCell caller, OrcEngine engine) {
-		if (args.length != 5)
+	public void callSite(Tuple args, Token returnToken, GroupCell caller, OrcEngine engine) {
+		if (args.size() != 5)
 			throw new Error("sendEmail(from, to, subject, message, smtp)");
 
-		String from = stringArg(args, 0);
+		String from = args.stringArg(0);
 		Tuple to;
-		if (args[1] instanceof Tuple)
-			to = (Tuple) args[1];
+		if (args.at(1) instanceof Tuple)
+			to = (Tuple) args.at(1);
 		else
-			to = new Tuple(new Object[]{stringArg(args, 1)});
-		String subject = stringArg(args, 2);
-		String message = stringArg(args, 3);
-		String smtp = stringArg(args, 4);
+		{
+			List<Value> vs = new ArrayList<Value>();
+			vs.add(new Constant(args.stringArg(1)));
+			to = new Tuple(vs);
+		}
+			
+		String subject = args.stringArg(2);
+		String message = args.stringArg(3);
+		String smtp = args.stringArg(4);
 
 		// Set the host smtp address
 		Properties props = new Properties();

@@ -4,23 +4,22 @@
 package orc.lib;
 
 import orc.runtime.sites.EvalSite;
+import orc.runtime.values.Constant;
+import orc.runtime.values.Tuple;
+import orc.runtime.values.Value;
 
 /**
  * @author dkitchin
  *
- * Just wraps Equal and negates it.
- *
  */
 public class Inequal extends EvalSite {
 
-	static Equal e = new Equal();
-	
-	/* (non-Javadoc)
-	 * @see orc.runtime.sites.EvalSite#evaluate(java.lang.Object[])
-	 */
-	@Override
-	public Object evaluate(Object[] args) {
-		return !((Boolean)e.evaluate(args));
+	public Value evaluate(Tuple args) {
+		
+		Object a = args.getArg(0);
+		Object b = args.getArg(1);
+		return new Constant(!a.equals(b));
+		
 	}
 
 }
