@@ -38,7 +38,7 @@ public class MethodProxy extends EvalSite {
 		{
 			try
 			{
-				result = m.invoke(self, args);
+				result = m.invoke(self, args.asArray());
 				break;
 			}
 			catch (IllegalArgumentException e) {}

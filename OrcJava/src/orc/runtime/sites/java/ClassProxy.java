@@ -54,7 +54,7 @@ public class ClassProxy extends EvalSite {
 				}
 	
 				// create a proxy for the object
-				return new ObjectProxy(inst);
+				return new Constant(inst);
 				 
 		
 	}

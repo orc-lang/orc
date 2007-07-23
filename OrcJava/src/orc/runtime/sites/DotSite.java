@@ -3,7 +3,7 @@
  */
 package orc.runtime.sites;
 
-import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.Map;
 
 import orc.runtime.values.Tuple;
@@ -22,7 +22,7 @@ public abstract class DotSite extends EvalSite {
 	
 	public DotSite()
 	{
-		methodMap = new HashMap<String,Site>();
+		methodMap = new TreeMap<String,Site>();
 		this.addMethods();
 	}
 	

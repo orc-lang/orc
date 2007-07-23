@@ -64,7 +64,7 @@ public abstract class Site extends Value implements Callable {
 	 * 
 	 * Currently, the canonical value is an empty tuple
 	 */
-	public Value signal() {
+	public static Value signal() {
 		return new Tuple(new LinkedList<Value>());
 	}
 }
