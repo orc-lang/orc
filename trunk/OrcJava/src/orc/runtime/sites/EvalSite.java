@@ -5,7 +5,6 @@ package orc.runtime.sites;
 
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
-import orc.runtime.values.Constant;
 import orc.runtime.values.GroupCell;
 import orc.runtime.values.Tuple;
 import orc.runtime.values.Value;
@@ -31,7 +30,7 @@ public abstract class EvalSite extends Site {
 	@Override
 	public void callSite(Tuple args, Token returnToken, GroupCell caller, OrcEngine engine) {
 
-		returnToken.setResult(new Constant(evaluate(args)));
+		returnToken.setResult(evaluate(args));
 		engine.activate(returnToken);
 	}
 	

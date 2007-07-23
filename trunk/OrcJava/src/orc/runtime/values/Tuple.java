@@ -63,13 +63,14 @@ public class Tuple extends EvalSite {
 	 */
 	public Object getArg(int n)
 	{
-		Value a = at(n);
-		try
-		 	{ return ((Constant)a).getValue(); }
-		catch (ArrayIndexOutOfBoundsException e)
-			{ throw new Error("Arity mismatch calling site '" + this.toString() + "'. Could not find argument #" + n); }
+		try {
+			Value a = at(n);
+			return ((Constant)a).getValue(); 
+		}
+		catch (IndexOutOfBoundsException e)
+			{ throw new Error("Arity mismatch calling site. Could not find argument #" + n); }
 		catch (ClassCastException e) 
-			{ throw new Error("Argument " + n + " to site '" + this.toString() + "' is not a native Java value"); } 
+			{ throw new Error("Argument " + n + " to site is not a native Java value"); } 
 	}
 	
 	/* Return the entire tuple as an object array */
@@ -97,6 +98,19 @@ public class Tuple extends EvalSite {
 			{ throw new Error("Argument " + n + " should be an int, got " + a.getClass().toString() + " instead."); } 
 	}
 
+	/**
+	 * Helper function for integers
+	 */
+	public long longArg(int n) {
+		
+		Object a = getArg(n);
+		try
+			{ return ((Integer)a).longValue(); }
+		catch (ClassCastException e) 
+			{ throw new Error("Argument " + n + " should be an int, got " + a.getClass().toString() + " instead."); } 
+	}
+
+	
 	/**
 	 * Helper function for booleans
 	 */

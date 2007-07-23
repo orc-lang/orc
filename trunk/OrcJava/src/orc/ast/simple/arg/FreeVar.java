@@ -16,7 +16,7 @@ import orc.runtime.values.Value;
  * @author dkitchin
  */
 
-public class FreeVar extends Argument {
+public class FreeVar extends Argument implements Comparable<FreeVar> {
 	
 	String key;
 	
@@ -24,27 +24,27 @@ public class FreeVar extends Argument {
 	{
 		this.key = key;
 	}
-
-	public boolean equals(Object o)
-	{
-		if (o instanceof FreeVar)
-		{
-			FreeVar f = (FreeVar)o;
-			return f.keycompare(this);
-		}
-		else
-		{
-			return o.equals(this);
-		}
-	}
-	
-	public boolean keycompare(FreeVar f)
-	{
-		return f.key.equals(this.key);
-	}
 	
 	public Value asValue()
 	{
 		throw new Error("Free variable " + key + " can never be bound to a value.");
+	}
+
+	public int compareTo(FreeVar f) {
+		String s = this.key;
+		String t = f.key;
+		return s.compareTo(t);
+	}
+	
+	public boolean equals(Object o) {
+		
+		if (o instanceof FreeVar)
+		{
+			return (this.compareTo((FreeVar)o) == 0);
+		}
+		else
+		{
+			return this.equals(o);
+		}
 	}
 }

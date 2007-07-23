@@ -73,9 +73,12 @@ public class OrcEngine {
 		if (max_publish != null && max_publish.intValue() <= num_published)
 			return false;
 		if (activeTokens.size() == 0) {
-			if (calls == 0)
+			/* Number of active calls is not currently used.
+			 * Might replace this with a more stable counting method later.
+			 */
+			//if (calls == 0)
 			//if (calls == 0 && waitList.size() == 0)
-				return false;
+				//return false;
 			try {
 				wait();
 			} catch (InterruptedException e) {

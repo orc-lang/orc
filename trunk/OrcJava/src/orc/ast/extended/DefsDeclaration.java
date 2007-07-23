@@ -1,9 +1,9 @@
 package orc.ast.extended;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import orc.ast.simple.arg.*;
 
@@ -34,7 +34,8 @@ public class DefsDeclaration implements Declaration {
 		// Map the names of each definition to a var
 		// This map must be constructed beforehand so that it can be used
 		// to substitute these names in each expression body
-		Map<FreeVar, Var> m = new HashMap<FreeVar, Var>();
+		Map<FreeVar, Var> m = new TreeMap<FreeVar, Var>();
+		
 		for(Definition d : defs)
 		{
 			m.put(new FreeVar(d.name), new Var());
