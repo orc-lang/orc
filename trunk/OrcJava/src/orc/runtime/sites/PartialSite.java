@@ -3,10 +3,8 @@
  */
 package orc.runtime.sites;
 
-import orc.runtime.OrcEngine;
+import orc.runtime.Args;
 import orc.runtime.Token;
-import orc.runtime.values.GroupCell;
-import orc.runtime.values.Tuple;
 import orc.runtime.values.Value;
 
 /**
@@ -16,9 +14,7 @@ import orc.runtime.values.Value;
  * 
  * Subclasses must implement the method evaluate, which takes an argument list and returns
  * a single value (possibly null).
- * 
- * TODO Make evaluate's return type more specific than Object.
- * 
+ *
  * @author dkitchin
  *
  */
@@ -28,17 +24,15 @@ public abstract class PartialSite extends Site {
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
 	 */
 	@Override
-	public void callSite(Tuple args, Token returnToken, GroupCell caller,
-			OrcEngine engine) {
-		Value res = evaluate(args);
+	public void callSite(Args args, Token caller) {
+		Value v = evaluate(args);
 		
-		if (res != null)
+		if (v != null)
 		{
-			returnToken.setResult(res);
-			engine.activate(returnToken);
+			caller.resume(v);
 		}
 	}
 	
-	abstract public Value evaluate(Tuple args);
+	abstract public Value evaluate(Args args);
 
 }

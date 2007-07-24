@@ -3,6 +3,7 @@
  */
 package orc.lib.str;
 
+import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.*;
 
@@ -12,7 +13,7 @@ import orc.runtime.values.*;
  */
 public class Cat extends EvalSite {
 
-	public Value evaluate(Tuple args) {
+	public Value evaluate(Args args) {
 		
 		StringBuffer buf = new StringBuffer();
 		

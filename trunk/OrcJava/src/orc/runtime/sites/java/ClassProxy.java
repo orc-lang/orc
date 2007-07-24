@@ -5,6 +5,7 @@ package orc.runtime.sites.java;
 
 import java.lang.reflect.Constructor;
 
+import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.*;
 
@@ -31,7 +32,7 @@ public class ClassProxy extends EvalSite {
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
 	 */
 	@Override
-	public Value evaluate(Tuple args) {
+	public Value evaluate(Args args) {
 
 				Object inst = null;
 				

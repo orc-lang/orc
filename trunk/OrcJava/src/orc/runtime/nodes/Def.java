@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Set;
 
 import orc.ast.simple.arg.Var;
-import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.values.Closure;
 import orc.runtime.values.Future;
@@ -48,7 +47,7 @@ public class Def extends Node {
 	 * 
 	 * @see orc.runtime.nodes.Node#process(orc.runtime.Token, orc.runtime.OrcEngine)
 	 */
-	public void process(Token t, OrcEngine engine) {
+	public void process(Token t) {
 		
 		List<Closure> cs = new ArrayList<Closure>();
 		
@@ -74,7 +73,7 @@ public class Def extends Node {
 		  c.setEnvironment(t.getEnvironment());
 		}
 		
-		engine.activate(t.move(next));
+		t.move(next).activate();
 	}
 	
 }

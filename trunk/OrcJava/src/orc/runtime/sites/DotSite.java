@@ -6,7 +6,7 @@ package orc.runtime.sites;
 import java.util.TreeMap;
 import java.util.Map;
 
-import orc.runtime.values.Tuple;
+import orc.runtime.Args;
 import orc.runtime.values.Value;
 
 /**
@@ -30,7 +30,7 @@ public abstract class DotSite extends EvalSite {
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
 	 */
 	@Override
-	public Value evaluate(Tuple args) {
+	public Value evaluate(Args args) {
 		
 		String f = args.stringArg(0);
 		Site m = getMethod(f);

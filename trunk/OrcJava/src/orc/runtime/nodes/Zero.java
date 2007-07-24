@@ -1,6 +1,5 @@
 package orc.runtime.nodes;
 
-import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 
 /**
@@ -16,7 +15,7 @@ public class Zero extends Node {
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	public void process(Token t, OrcEngine engine) {
+	public void process(Token t) {
 		// Do nothing.
 	}
 

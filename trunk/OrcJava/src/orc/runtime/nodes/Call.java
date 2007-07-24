@@ -7,7 +7,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import orc.ast.simple.arg.Argument;
-import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.values.Callable;
 import orc.runtime.values.Future;
@@ -42,7 +41,7 @@ public class Call extends Node {
 	 * token using the argument expressions.
 	 * @see orc.runtime.nodes.Node#process(orc.runtime.Token, orc.runtime.OrcEngine)
 	 */
-	public void process(Token t, OrcEngine engine) {
+	public void process(Token t) {
 		
 		Callable target = t.call(caller);
 		
@@ -67,7 +66,7 @@ public class Call extends Node {
 			actuals.add(t.lookup(a));
 		}
 		
-		target.createCall(t, actuals, next, engine);
+		target.createCall(t, actuals, next);
 	}
 	
 }

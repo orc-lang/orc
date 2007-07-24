@@ -3,9 +3,9 @@
  */
 package orc.lib;
 
+import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.Constant;
-import orc.runtime.values.Tuple;
 import orc.runtime.values.Value;
 
 /**
@@ -14,7 +14,7 @@ import orc.runtime.values.Value;
  */
 public class Inequal extends EvalSite {
 
-	public Value evaluate(Tuple args) {
+	public Value evaluate(Args args) {
 		
 		Object a = args.getArg(0);
 		Object b = args.getArg(1);

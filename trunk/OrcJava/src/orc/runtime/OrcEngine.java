@@ -4,11 +4,9 @@
 package orc.runtime;
 
 import java.util.LinkedList;
-import java.io.*;
 
 import orc.runtime.nodes.Node;
 import orc.runtime.values.GroupCell;
-import orc.runtime.values.Value;
 
 /**
  * The Orc Engine provides the main loop for executing active tokens.
@@ -53,10 +51,10 @@ public class OrcEngine {
 			if (debugMode){
 				debug("** Round,active,queued,calls " + (round++) + 
 						"," + activeTokens.size() +","+queuedReturns.size() + "," + calls +
-						" ***", null);
+						" ***");
 				}
 			while (activeTokens.size() > 0){
-				activeTokens.remove().process(this);
+				activeTokens.remove().process();
 			}
 	
 			if (queuedReturns.size() > 0 ){
@@ -97,42 +95,28 @@ public class OrcEngine {
 	}
 	
 	/**
-	 * Counts how many calls have been made
-	 * TODO: this is a hack only needed to identify when Orc
-	 * can terminate. Normally an Orc execution would terminate
-	 * when the first value is produced, and this count would
-	 * not be needed.
-	 * @param n
+	 * Activate a token by adding it to the queue of returning tokens
+	 * @param t	the token to be added
 	 */
-	public void addCall(int n) {
-		calls += n;
+	synchronized public void resume(Token t) {
+		queuedReturns.addLast(t);
+		notify();
 	}
+	
+	
 	public void addPub(int n) {
 		num_published += n;
 	}
 
-	/**
-	 * Called when a site returns a value. Add the corresponding
-	 * token to queue of returned sites
-	 * @param label
-	 * @param token
-	 * @param value
-	 */
-	synchronized public void siteReturn(String label, Token token, Value value) {
-		token.setResult(value);
-		queuedReturns.add(token);
+	public void debug(String s)
+	{
 		if (debugMode)
-			debug("ASYMC: " + label + " returned: " + value, token);
-		notify(); // wake up main thread
-	}
-
-	public void debug(String string, Token token) {
-		// if (token != null)
-		// System.out.print("[" + token.hashCode() + "] ");
-		System.out.println(string);
+			{ System.out.println(s); }
 	}
 	
+	
 	/* Read a token from a dump file. */
+	/*
 	public Token readToken(File dump){
 	 Token val = null;
 	 try {
@@ -148,15 +132,18 @@ public class OrcEngine {
     	}
     return val;
 	}
-	
+	*/
 	/**
 	 * Run Orc given a dump file containing a single active token.
 	 * @param dump file to read active token
 	 */
+	/*
 	public void run(File dump) {
 		activeTokens = new LinkedList<Token>();
 		Token val = readToken(dump);
 		activeTokens.add(val);
         work();
 	}
+	*/
+	
 }

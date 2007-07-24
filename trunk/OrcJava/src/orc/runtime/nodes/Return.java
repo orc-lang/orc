@@ -3,7 +3,6 @@
  */
 package orc.runtime.nodes;
 
-import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.values.Value;
 
@@ -22,12 +21,14 @@ public class Return extends Node {
 	 * the token is activated.
 	 * @see orc.runtime.nodes.Node#process(orc.runtime.Token, orc.runtime.OrcEngine)
 	 */
-	public void process(Token t, OrcEngine engine) {
+	public void process(Token t) {
+		/*
 		if (engine.debugMode)
 			engine.debug("Return " + t.getResult(), t);
-		
+		*/
 		Token caller = t.getCaller();
 		Value result = t.getResult();
-		engine.activate(caller.copy().setResult(result));
+
+		caller.copy().setResult(result).activate();
 	}
 }

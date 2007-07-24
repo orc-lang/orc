@@ -30,6 +30,7 @@ public class Token implements Serializable, Comparable<Token> {
 	protected OrcEngine engine;
 	Token caller;
 	Value result;
+	boolean debugMode;
 
 	public Token(Node node, Environment env, Token caller, GroupCell group, Value result, OrcEngine engine) {
 		this.node = node;
@@ -38,6 +39,7 @@ public class Token implements Serializable, Comparable<Token> {
 		this.group = group;
 		this.result = result;
 		this.engine = engine;
+		this.debugMode = engine.debugMode;
 	}
 	
 	
@@ -46,9 +48,9 @@ public class Token implements Serializable, Comparable<Token> {
 	 * If a token is alive, calls the node to perform the next action
 	 * @param engine
 	 */
-	public void process(OrcEngine engine) {
+	public void process() {
 		if (group.isAlive())
-			node.process(this, engine);
+			node.process(this);
 	}
 
 	public Node getNode() {
@@ -58,11 +60,42 @@ public class Token implements Serializable, Comparable<Token> {
 	public GroupCell getGroup() {
 		return group;
 	}
+	
+	public Environment getEnvironment() {
+		return env;
+	}
 
+	public Value getResult() {
+		return result;
+	}
+
+	public Token getCaller() {
+		return caller;
+	}
+	
+	public OrcEngine getEngine() {
+		return engine;
+	}
+
+	
+	
+	public Token setResult(Value result) {
+		this.result = result;
+		return this;
+	}
+	
+	
 	public Token setGroup(GroupCell group) {
 		this.group = group;
 		return this;
 	}
+	
+	public Token setEnv(Environment e) {
+		this.env = e;
+		return this;
+	}
+
+	
 
 	/**
 	 * Move to a node node
@@ -94,10 +127,6 @@ public class Token implements Serializable, Comparable<Token> {
 		return this;
 	}
 	
-	public void activate() {
-		engine.activate(this);
-	}
-
 	/**
 	 * Lookup a variable in the environment
 	 * @param var  	variable name
@@ -125,26 +154,8 @@ public class Token implements Serializable, Comparable<Token> {
 		return f.forceArg(this);
 	}
 	
-	public Environment getEnvironment() {
-		return env;
-	}
-
-	public Value getResult() {
-		return result;
-	}
-
-	public Token setResult(Value result) {
-		this.result = result;
-		return this;
-	}
-	public Token setEnv(Environment e) {
-		this.env = e;
-		return this;
-	}
-
-	public Token getCaller() {
-		return caller;
-	}
+	
+	
 	
 	/* TODO: replace this stub with a meaningful order on tokens */
 	public int compareTo(Token t) {
@@ -152,16 +163,34 @@ public class Token implements Serializable, Comparable<Token> {
 		return 0;
 	}
 	
-	/*
-	 * TODO: Implement debug output through tokens
-	 */
-	/*
+	
 	public void debug(String s)
 	{
-		if (engine.debugMode)
-		{ ... }
+		if (debugMode)
+			{ System.out.println(s); }
+//		 System.out.print("[" + token.hashCode() + "] ");
 	}
-	*/
+	
+	public void activate()
+	{
+		engine.activate(this);
+	}
+	
+	/*
+	 * TODO: Introduce priority on tokens, or an 'isImmediate' predicate on sites,
+	 * so that let and 'immediate' sites have priority over other site returns.
+	 */
+	public void resume(Value v)
+	{
+		this.result = v;
+		engine.resume(this);
+	}
+	
+	/* A return with no arguments simply returns a signal */
+	public void resume()
+	{
+		resume(Value.signal());
+	}
 	
 	/*
 	 * This was used to help diagnose where memory was being used.

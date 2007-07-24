@@ -5,14 +5,12 @@ package orc.lib.state;
 
 import java.util.LinkedList;
 
-import orc.runtime.OrcEngine;
+import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.Site;
 import orc.runtime.values.Constant;
-import orc.runtime.values.GroupCell;
-import orc.runtime.values.Tuple;
 import orc.runtime.values.Value;
 
 /**
@@ -27,7 +25,7 @@ public class SyncChannel extends EvalSite {
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
 	 */
 	@Override
-	public Value evaluate(Tuple args) {
+	public Value evaluate(Args args) {
 		return new SyncChannelInstance();
 	}
 	
@@ -35,9 +33,9 @@ public class SyncChannel extends EvalSite {
 	private class SenderItem {
 		
 		Token sender;
-		Object sent;
+		Value sent;
 		
-		SenderItem(Token sender, Object sent)
+		SenderItem(Token sender, Value sent)
 		{
 			this.sender = sender;
 			this.sent = sent;
@@ -63,20 +61,20 @@ public class SyncChannel extends EvalSite {
 		
 		private class getMethod extends Site {
 			@Override
-			public void callSite(Tuple args, Token returnToken, GroupCell caller, OrcEngine engine) {
+			public void callSite(Args args, Token receiver) {
 
 				// If there are no waiting senders, put this caller on the queue
 				if (senderQueue.isEmpty()) {
-					receiverQueue.addLast(returnToken);
+					receiverQueue.addLast(receiver);
 				}
 				// If there is a waiting sender, both sender and receiver return
 				else {
 					SenderItem si = senderQueue.removeFirst();
+					Token sender = si.sender;
+					Value item = si.sent;
 					
-					returnToken.setResult(new Constant(si.sent));
-					engine.activate(returnToken);
-					
-					engine.siteReturn("SyncChannel.put", si.sender, signal());
+					receiver.resume(new Constant(item));
+					sender.resume();
 				}
 
 			}
@@ -84,23 +82,21 @@ public class SyncChannel extends EvalSite {
 		
 		private class putMethod extends Site {
 			@Override
-			public void callSite(Tuple args, Token returnToken, GroupCell caller, OrcEngine engine) {
+			public void callSite(Args args, Token sender) {
 
-				Object item = args.getArg(0);
+				Value item = args.valArg(0);
 				
 				// If there are no waiting receivers, put this sender on the queue
 				if (receiverQueue.isEmpty()) {
-					senderQueue.addLast(new SenderItem(returnToken, item));
+					senderQueue.addLast(new SenderItem(sender, item));
 				}
 				
 				// If there is a waiting receiver, both receiver and sender return
 				else {
 					Token receiver = receiverQueue.removeFirst();
 					
-					returnToken.setResult(signal());
-					engine.activate(returnToken);
-					
-					engine.siteReturn("SyncChannel.get", receiver, new Constant(item));
+					receiver.resume(new Constant(item));
+					sender.resume();
 				}
 				
 			}

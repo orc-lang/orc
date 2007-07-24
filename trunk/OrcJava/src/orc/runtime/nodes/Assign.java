@@ -4,7 +4,6 @@
 package orc.runtime.nodes;
 
 import orc.ast.simple.arg.Var;
-import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.values.Value;
 
@@ -25,16 +24,16 @@ public class Assign extends Node {
 	/** 
 	 * When executed, extends the environment with a new binding.
 	 * The result value in the input token is bound to the variable name.
-	 * The next node is activated.
-	 * @see orc.runtime.nodes.Node#process(orc.runtime.Token, orc.runtime.OrcEngine)
+	 * The token moves to the next node and reactivates.
+	 * @see orc.runtime.nodes.Node#process(orc.runtime.Token)
 	 */
-	public void process(Token t, OrcEngine engine) {
-		if (engine.debugMode)
-			engine.debug("Assign " + var + "=" + t.getResult(), t);
+	public void process(Token t) {
+		
+		t.debug("Assign " + var + "=" + t.getResult());
 
 		Value val = t.getResult();
 		t.bind(var, val);
-		engine.activate(t.move(next));
+		t.move(next).activate();
 	}
 
 }

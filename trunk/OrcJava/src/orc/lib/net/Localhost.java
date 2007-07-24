@@ -3,9 +3,9 @@
  */
 package orc.lib.net;
 
+import orc.runtime.Args;
 import orc.runtime.sites.PartialSite;
 import orc.runtime.values.Constant;
-import orc.runtime.values.Tuple;
 import orc.runtime.values.Value;
 
 /**
@@ -17,7 +17,7 @@ import orc.runtime.values.Value;
 public class Localhost extends PartialSite {
 
 	@Override
-	public Value evaluate(Tuple args) {
+	public Value evaluate(Args args) {
 		try
 		{
 			java.net.InetAddress localMachine = java.net.InetAddress.getLocalHost();	

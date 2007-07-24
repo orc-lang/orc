@@ -7,7 +7,6 @@ import java.util.List;
 
 import orc.ast.simple.arg.*;
 import orc.runtime.Environment;
-import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Return;
@@ -40,9 +39,9 @@ public class Closure extends Value implements Callable {
 	 * The caller of the new token is normally a token point to right
 	 * after the call. However, for tail-calls the existing caller
 	 * is reused, rather than creating a new intermediate stack frame.
-	 * @see orc.runtime.values.Callable#createCall(java.lang.String, orc.runtime.Token, java.util.List, orc.runtime.nodes.Node, orc.runtime.OrcEngine)
+	 * @see orc.runtime.values.Callable#createCall(java.lang.String, orc.runtime.Token, java.util.List, orc.runtime.nodes.Node)
 	 */
-	public void createCall(Token callToken, List<Future> args, Node nextNode, OrcEngine engine) {
+	public void createCall(Token callToken, List<Future> args, Node nextNode) {
 		
 		/*
 		if (engine.debugMode){
@@ -65,7 +64,7 @@ public class Closure extends Value implements Callable {
 			
 		}
 		
-		Token t = new Token(body, env, returnToken, callGroup, null/*value*/, engine);
+		Token t = new Token(body, env, returnToken, callGroup, null/*value*/, callToken.getEngine());
 		
 		for (Var v : formals)
 		{
@@ -80,7 +79,7 @@ public class Closure extends Value implements Callable {
 		}
 		catch (NoSuchElementException) { ... too few arguments ... }
 		*/
-		engine.activate(t);
+		callToken.getEngine().activate(t);
 		
 	}
 

@@ -3,6 +3,7 @@
  */
 package orc.lib.comp;
 
+import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.*;
 
@@ -16,7 +17,7 @@ public abstract class IntCompareSite extends EvalSite {
 	 * @see orc.runtime.sites.EvalSite#evaluate(java.lang.Object[])
 	 */
 	@Override
-	public Value evaluate(Tuple args) {
+	public Value evaluate(Args args) {
 		
 		return new Constant(compare(args.intArg(0), args.intArg(1)));
 	}

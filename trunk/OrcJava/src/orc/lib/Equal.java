@@ -3,6 +3,7 @@
  */
 package orc.lib;
 
+import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.*;
 
@@ -16,7 +17,7 @@ public class Equal extends EvalSite {
 	 * @see orc.runtime.sites.EvalSite#evaluate(java.lang.Object[])
 	 */
 	@Override
-	public Value evaluate(Tuple args) {
+	public Value evaluate(Args args) {
 		
 		Object a = args.getArg(0);
 		Object b = args.getArg(1);

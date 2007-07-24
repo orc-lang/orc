@@ -5,14 +5,12 @@ package orc.lib.state;
 
 import java.util.LinkedList;
 
-import orc.runtime.OrcEngine;
+import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.Site;
 import orc.runtime.values.Constant;
-import orc.runtime.values.GroupCell;
-import orc.runtime.values.Tuple;
 import orc.runtime.values.Value;
 
 /**
@@ -27,18 +25,18 @@ public class Buffer extends EvalSite {
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
 	 */
 	@Override
-	public Value evaluate(Tuple args) {
+	public Value evaluate(Args args) {
 		return new BufferInstance();
 	}
 	
 	
 	private class BufferInstance extends DotSite {
 
-		private LinkedList<Object> localBuffer;
+		private LinkedList<Value> localBuffer;
 		private LinkedList<Token> pendingQueue;
 
 		BufferInstance() {
-			localBuffer = new LinkedList<Object>();
+			localBuffer = new LinkedList<Value>();
 			pendingQueue = new LinkedList<Token>();
 		}
 		
@@ -50,16 +48,15 @@ public class Buffer extends EvalSite {
 		
 		private class getMethod extends Site {
 			@Override
-			public void callSite(Tuple args, Token returnToken, GroupCell caller, OrcEngine engine) {
+			public void callSite(Args args, Token receiver) {
 
 				// If there are no buffered items, put this caller on the queue
 				if (localBuffer.isEmpty()) {
-					pendingQueue.addLast(returnToken);
+					pendingQueue.addLast(receiver);
 				}
 				// If there is an item available, pop it and return it.
 				else {
-					returnToken.setResult(new Constant(localBuffer.removeFirst()));
-					engine.activate(returnToken);
+					receiver.resume(localBuffer.removeFirst());
 				}
 
 			}
@@ -67,9 +64,9 @@ public class Buffer extends EvalSite {
 		
 		private class putMethod extends Site {
 			@Override
-			public void callSite(Tuple args, Token returnToken, GroupCell caller, OrcEngine engine) {
+			public void callSite(Args args, Token sender) {
 
-				Object item = args.getArg(0);
+				Value item = args.valArg(0);
 				
 				// If there are no waiting callers, buffer this item.
 				if (pendingQueue.isEmpty()) {
@@ -77,13 +74,12 @@ public class Buffer extends EvalSite {
 				}
 				// If there are callers waiting, give this item to the top caller.
 				else {
-					Token consumer = pendingQueue.removeFirst();
-					engine.siteReturn("Buffer.get", consumer, new Constant(item));
+					Token receiver = pendingQueue.removeFirst();
+					receiver.resume(new Constant(item));
 				}
 
 				// Since this is an asynchronous buffer, a put call always returns.
-				returnToken.setResult(signal());
-				engine.activate(returnToken);
+				sender.resume();
 			}
 		}
 

@@ -4,7 +4,6 @@
 package orc.runtime.nodes;
 
 import orc.ast.simple.arg.Var;
-import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.values.GroupCell;
 
@@ -34,12 +33,13 @@ public class Where extends Node {
 	 * call to a token.
 	 * @see orc.runtime.nodes.Node#process(orc.runtime.Token, orc.runtime.OrcEngine)
 	 */
-	public void process(Token t, OrcEngine engine) {
+	public void process(Token t) {
+		/*
 		if (engine.debugMode)
 			engine.debug("Where " + var, t);
-
+		 */
 		GroupCell cell = t.getGroup().createCell();
-		engine.activate(t.copy().bind(var, cell).move(left));
-		engine.activate(t.move(right).setGroup(cell));
+		t.copy().bind(var, cell).move(left).activate();
+		t.move(right).setGroup(cell).activate();
 	}
 }
