@@ -8,7 +8,6 @@ import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.List;
 
-import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 
 /**
@@ -62,7 +61,7 @@ public class GroupCell implements Serializable, Future {
 	 * @param value 	the value for the group 
 	 * @param engine	engine
 	 */
-	public void setValue(Value value, OrcEngine engine) {
+	public void setValue(Value value) {
 		//int calls_killed;
 		this.value = value;
 		bound = true;
@@ -71,7 +70,7 @@ public class GroupCell implements Serializable, Future {
 		//engine.addCall(-calls_killed);
 		if (waitList != null)
 			for (Token t : waitList)
-				engine.activate(t);
+				t.activate();
 	}
 
 	/**

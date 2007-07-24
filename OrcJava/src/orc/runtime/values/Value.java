@@ -36,4 +36,13 @@ public class Value implements Future {
 			
 	}
 	
+	/**
+	 * Static function to access the canonical 'signal' value
+	 * 
+	 * Currently, the signal value is an empty tuple
+	 */
+	public static Value signal() {
+		return new Tuple();
+	}
+	
 }

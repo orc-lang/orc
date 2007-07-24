@@ -13,11 +13,10 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-import orc.runtime.OrcEngine;
+import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.Site;
 import orc.runtime.values.Constant;
-import orc.runtime.values.GroupCell;
 import orc.runtime.values.Tuple;
 import orc.runtime.values.Value;
 
@@ -33,14 +32,14 @@ public class Mail extends Site {
 	 * TODO: there are many possible enhancements of this code
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.OrcEngine)
 	 */
-	public void callSite(Tuple args, Token returnToken, GroupCell caller, OrcEngine engine) {
-		if (args.size() != 5)
+	public void callSite(Args args, Token returnToken) {
+		if (args.getValues().size() != 5)
 			throw new Error("sendEmail(from, to, subject, message, smtp)");
 
 		String from = args.stringArg(0);
 		Tuple to;
-		if (args.at(1) instanceof Tuple)
-			to = (Tuple) args.at(1);
+		if (args.valArg(1) instanceof Tuple)
+			to = (Tuple) args.valArg(1);
 		else
 		{
 			List<Value> vs = new ArrayList<Value>();

@@ -5,7 +5,6 @@ package orc.runtime.nodes;
 
 
 import orc.ast.simple.arg.Var;
-import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.values.GroupCell;
 import orc.runtime.values.Value;
@@ -28,12 +27,13 @@ public class Store extends Node {
 	 * becomes bound and the execution of the group is suspended.
 	 * @see orc.runtime.nodes.Node#process(orc.runtime.Token, orc.runtime.OrcEngine)
 	 */
-	public void process(Token t, OrcEngine engine) {
+	public void process(Token t) {
+		/*
 		if (engine.debugMode)
 			engine.debug("Store/Stop " + var + "=" + t.getResult(), t);
-		
+		*/
 		GroupCell group = t.getGroup();
 		Value result = t.getResult();
-		group.setValue(result, engine);
+		group.setValue(result);
 	}
 }

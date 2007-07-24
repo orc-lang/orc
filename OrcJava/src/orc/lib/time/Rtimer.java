@@ -5,12 +5,9 @@ package orc.lib.time;
 
 import java.util.PriorityQueue;
 
-import orc.runtime.OrcEngine;
+import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.Site;
-import orc.runtime.values.GroupCell;
-import orc.runtime.values.Tuple;
-
 
 /**
  * Implements the RTimer site
@@ -25,11 +22,11 @@ public class Rtimer extends Site {
 	 */
 	public static JavaTimer javaTimer;
 
-	public void callSite(Tuple args, Token returnToken, GroupCell caller, OrcEngine engine) 
+	public void callSite(Args args, Token returnToken) 
 	{
 		long n = args.longArg(0);
 		if (javaTimer == null)
-			javaTimer = new JavaTimer(engine,caller);
+			javaTimer = new JavaTimer();
 		javaTimer.addEvent(n, returnToken);
 	}
 
@@ -51,13 +48,9 @@ class JavaTimer implements Runnable {
 
 	Thread t;
 	PriorityQueue<RtimerQueueEntry> rtimerEventQueue;
-	OrcEngine engine;
-	GroupCell caller;
 
-	public JavaTimer(OrcEngine engine, GroupCell caller) 
+	public JavaTimer() 
 	{
-		this.engine = engine;
-		this.caller = caller;
 		rtimerEventQueue = new PriorityQueue<RtimerQueueEntry>();
 	}
 	
@@ -66,14 +59,18 @@ class JavaTimer implements Runnable {
 		if (t == null) {
 			t = new Thread(this);
 			t.start();
+			/*
 			if (engine.debugMode)
 				engine.debug("Rtimer: Starting Timer Thread.",token);
+				*/
 
 		}
 		long at = time + System.currentTimeMillis();
 		rtimerEventQueue.add(new RtimerQueueEntry(at, token));
+		/*
 		if (engine.debugMode)
 			engine.debug("Rtimer: Adding event to Rtimer Event Queue.",token);
+			*/
 		t.interrupt();
 
 	}
@@ -93,8 +90,10 @@ class JavaTimer implements Runnable {
 					delay = temp.getTime() - System.currentTimeMillis();
 					if (delay > 0) {
 						// wait for first event
+						/*
 						if (engine.debugMode)
 							engine.debug("Rtimer: Waiting for " + delay,temp.getToken());
+							*/
 						wait(delay);
 					}
 					else
@@ -103,11 +102,12 @@ class JavaTimer implements Runnable {
 						rtimerEventQueue.remove();
 						//engine.addCall(-1);
 						//caller.addCall(-1);
+						/*
 						if (engine.debugMode)
 							engine.debug("Rtimer: Executed Event.",temp.getToken());
+							*/
 						
-						engine.siteReturn("Rtimer", temp.getToken(), Site.signal());
-											
+						temp.getToken().resume();						
 					}
 				}
 			} 

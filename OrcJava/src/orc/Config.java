@@ -15,7 +15,6 @@ import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.List;
 
-import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.nodes.Node;
 
@@ -199,9 +198,9 @@ public class Config {
 class PrintResult extends Node {
 	private static final long serialVersionUID = 1L;
 
-	public void process(Token t, OrcEngine engine) {
+	public void process(Token t) {
 		Object val = t.getResult();
-		engine.addPub(1); // keep track of how many values have been published
+		t.getEngine().addPub(1); // keep track of how many values have been published
 		System.out.println(val.toString());
 		System.out.flush();
 	}
@@ -221,11 +220,11 @@ class WriteResult extends Node {
 	public WriteResult(ObjectOutputStream s){
 		this.out = s;
 	}
-	public void process(Token t, OrcEngine engine) {
+	public void process(Token t) {
 		Object val = t.getResult();
 		try {
 			out.writeObject(val);
-			engine.addPub(1); // keep track of how many values have been published
+			t.getEngine().addPub(1); // keep track of how many values have been published
 		} catch (IOException e) {
 			System.out.println("Couldn't write a value to the output file.");
 			e.printStackTrace();

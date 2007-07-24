@@ -3,6 +3,7 @@
  */
 package orc.lib.str;
 
+import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.*;
 
@@ -18,7 +19,7 @@ public class Println extends EvalSite {
 	 * @see orc.runtime.sites.EvalSite#evaluate(java.lang.Object[])
 	 */
 	@Override
-	public Value evaluate(Tuple args) {
+	public Value evaluate(Args args) {
 		
 		for(int i = 0; i < args.size(); i++)
 		{

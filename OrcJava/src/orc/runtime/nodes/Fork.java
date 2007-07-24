@@ -3,7 +3,6 @@
  */
 package orc.runtime.nodes;
 
-import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 
 /**
@@ -24,12 +23,13 @@ public class Fork extends Node {
 	 * and a copy is activated on the left node.
 	 * @see orc.runtime.nodes.Node#process(orc.runtime.Token, orc.runtime.OrcEngine)
 	 */
-	public void process(Token t, OrcEngine engine) {
+	public void process(Token t) {
+		/*
 		if (engine.debugMode)
 			engine.debug("Fork", t);
-		
-		engine.activate(t.copy().move(left));
-		engine.activate(t.move(right));
+		*/
+		t.copy().move(left).activate();
+		t.move(right).activate();
 	}
 
 }

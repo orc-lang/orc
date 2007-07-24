@@ -9,6 +9,7 @@ import javax.wsdl.Definition;
 import javax.wsdl.Service;
 import javax.xml.namespace.QName;
 
+import orc.runtime.Args;
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.sites.java.MethodProxy;
@@ -62,8 +63,7 @@ public class Webservice extends EvalSite {
 	}
 
 	@Override
-	public void callSite(Tuple args, Token returnToken, GroupCell caller,
-			OrcEngine engine) {
+	public void callSite(Args args, Token caller) {
 
 		try {
 			// take the passed URL and create java code from it
@@ -110,10 +110,8 @@ public class Webservice extends EvalSite {
 
 			op = new ObjectProxy(stubObject);
 			
+			caller.resume(evaluate(args));
 			
-			returnToken.setResult(evaluate(args));
-			engine.activate(returnToken);
-
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -125,7 +123,7 @@ public class Webservice extends EvalSite {
 	}
 
 	@Override
-	public Value evaluate(Tuple args) {
+	public Value evaluate(Args args) {
 		return op;
 	}
 
