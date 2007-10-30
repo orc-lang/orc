@@ -10,14 +10,26 @@ header {
 	import java.io.FileInputStream;
 	import java.io.FileNotFoundException;
 	import orc.ast.extended.*;
-	
+	import orc.orcx.OrcX;
 } 
 
 class OrcParser extends Parser;
+
 options {
     k = 2;
 }
 
+{
+	protected OrcLexer myLexer;
+	protected OrcX myOrcx;
+	
+	public OrcParser(OrcLexer lexer, OrcX orcx) {
+		this((TokenStream)lexer);
+		myLexer = lexer;
+		myOrcx = orcx;
+	}
+
+}
 
 startRule returns [Expression e = null]
 	: e=expr EOF
@@ -293,8 +305,16 @@ basic_expr returns [Expression n = null]
 		{ n = new Literal(new Boolean(true)); }
 	| "false"
 		{ n = new Literal(new Boolean(false)); }
-				
 	| LPAREN p=expr n=tail_expr[p]
+	| LBRACE 
+		{ 
+			String q = "";
+			
+			/* TODO Kristi: Match between braces, capture the matched part in the string q */
+			
+			n = myOrcx.embed(q);
+		} 
+	  RBRACE
 	;
 	
 // ANTLR needs to die in a fire. I should not need to do this conversion by hand. Ever. -dkitchin
@@ -443,4 +463,3 @@ AMPERSAND  : '&' ;
 WS : ( ' ' | '\t' | '\n' { newline(); } | '\r' )+
      { $setType(Token.SKIP); }
    ;
-

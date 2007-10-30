@@ -1,0 +1,1 @@
+((let(1) | let(2)) >x> x*x) | { return "foo" }

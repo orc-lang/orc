@@ -9,9 +9,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.*;
 
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.storage.NativeBroker;
+import org.exist.util.Configuration;
+
 import orc.ast.extended.*;
 import orc.ast.simple.arg.FreeVar;
 import orc.ast.simple.arg.Var;
+import orc.orcx.OrcX;
 import orc.parser.OrcLexer;
 import orc.parser.OrcParser;
 import orc.runtime.Environment;
@@ -41,13 +47,16 @@ public class Orc {
 		
 		// Try to run Orc with these options
 		try {	
+				System.out.println("Configuring embedded languages...");
+				
+//				TODO: Replace null with a database broker for the persistent document set
+				OrcX orcx = new OrcX(new NativeBroker(BrokerPool.getInstance(), new Configuration())); 
 			
 				System.out.println("Parsing...");
 				// Parse the goal expression
 				OrcLexer lexer = new OrcLexer(cfg.getInstream());
-				OrcParser parser = new OrcParser(lexer);
+				OrcParser parser = new OrcParser(lexer, orcx);
 				orc.ast.extended.Expression e = parser.startRule();
-				
 				
 				System.out.println("Importing declarations...");
 				// Load declarations from files specified by the configuration options

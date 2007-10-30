@@ -4,7 +4,7 @@ import orc.runtime.values.Value;
 
 
 /**
- * Program constants, which occur in argument position. 
+ * Site values, which occur in argument position. 
  * 
  * @author dkitchin
  *
