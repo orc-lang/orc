@@ -1,30 +1,11 @@
 package orc.orcx;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
-
-import orc.parser.OrcLexer;
 import orc.runtime.values.Constant;
 import orc.runtime.values.Value;
 
-import org.exist.storage.DBBroker;
-import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.PathExpr;
-import org.exist.xquery.StaticXQueryException;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.parser.XQueryLexer;
-import org.exist.xquery.parser.XQueryParser;
-import org.exist.xquery.parser.XQueryTreeParser;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.StringValue;
-
-import antlr.RecognitionException;
-import antlr.TokenStreamException;
-import antlr.collections.AST;
 
 /**
  * 
@@ -43,6 +24,11 @@ public class OrcX {
 	
 	public OrcX() {
 		
+		/* One OrcX object is constructed to handle all embedded code.
+		 * The constructor should take any information needed to connect to a galax process,
+		 * request parsing, etc.
+		 */
+		
 	}
 	
 	
@@ -56,71 +42,30 @@ public class OrcX {
 	 */
 	public orc.ast.extended.Expression embed(String s) {
 		
-		
+		List<String> freevars = new ArrayList<String>();
+		int queryid = 0;
 		
 		/* TODO Kristi: implement this */
-		return new EmbeddedXQuery()
+		
+		return new EmbeddedXQuery(this, queryid, freevars);
 	}
 	
-
 	/**
-	 * Convert an XPath sequence into a list of Orc values
-	 * @param s a sequence as defined in the XPath semantics
-	 * @return A list of Orc values
-	 * @throws OrcXException 
+	 * 
+	 * Execute the XQuery referenced by the query id, using the given set of
+	 * values for its free variables.
+	 * 
+	 * @param queryid The integer ID for the query to run
+	 * @param vals Values for each of the free variables in the query
+	 * @return the value returned by the query evaluation
 	 */
-	public static List<Value> convertToValues(Sequence s) throws OrcXException {
+	public Value apply(int queryid, List<Value> vals) {
 		
-		SequenceIterator items = s.unorderedIterator();
-		List<Value> values = new LinkedList<Value>();
+		Value ret = Value.signal();
 		
-		while(items.hasNext()) {
-			Item i = items.nextItem();
-			values.add(convertToValue(i));
-		}
+		/* TODO Kristi: implement this */
 		
-		return values;
-	}
-	
-
-	public static Value convertToValue(Item item) throws OrcXException {
-		
-		Value result;
-		
-		if (item instanceof NodeValue) {
-			result = new XMLNode((NodeValue)item);
-		}
-		else {
-			try {
-				result = new Constant(item.getStringValue());
-			} catch (XPathException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				throw new OrcXException();
-			}
-		}
-		
-		return result;
-	}
-	
-
-	public static Sequence convertToSequence(Value val) throws OrcXException {
-		
-		Item result;
-		
-		if (val instanceof Constant) {
-			Constant c = (Constant)val;
-			result = new StringValue(c.getValue().toString());
-		}
-		else if (val instanceof XMLNode) {
-			XMLNode x = (XMLNode)val;
-			result = x.getNode();
-		}
-		else {
-			throw new OrcXException();
-		}
-		
-		return result.toSequence();
+		return ret;
 	}
 	
 }

@@ -20,11 +20,13 @@ public class EmbeddedXQuery extends orc.ast.extended.Expression {
 	
 	List<String> freevars;
 	int queryid;
+	OrcX owner;
 	
-	public EmbeddedXQuery(int queryid, List<String> freevars)
+	public EmbeddedXQuery(OrcX owner, int queryid, List<String> freevars)
 	{
-		this.queryid = queryid;
+		this.queryid = queryid;  
 		this.freevars = freevars;
+		this.owner = owner;
 	}
 	
 	@Override
@@ -39,7 +41,7 @@ public class EmbeddedXQuery extends orc.ast.extended.Expression {
 			names.add(s);
 		}
 		
-		return new Call(null,args);
+		return new Call(new orc.ast.simple.arg.Site(new OrcXSite(queryid, owner)), args);
 	}
 
 }
