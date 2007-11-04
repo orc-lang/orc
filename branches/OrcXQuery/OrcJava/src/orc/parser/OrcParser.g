@@ -295,6 +295,7 @@ basic_expr returns [Expression n = null]
 	{
 		List<Expression> args = null;
 		Expression p;
+//		String x;
 	}
 	: name:NAME {n = new Name(name.getText());}
 	| num:INT
@@ -306,16 +307,13 @@ basic_expr returns [Expression n = null]
 	| "false"
 		{ n = new Literal(new Boolean(false)); }
 	| LPAREN p=expr n=tail_expr[p]
-	| LBRACE 
+	| x:XQUERY
 		{ 
-			String q = "";
-			
-			/* TODO Kristi: Match between braces, capture the matched part in the string q */
-			
-			n = myOrcx.embed(q);
+			n = myOrcx.embed( x.getText() );
 		} 
-	  RBRACE
 	;
+	
+
 	
 // ANTLR needs to die in a fire. I should not need to do this conversion by hand. Ever. -dkitchin
 tail_expr[Expression a] returns [Expression n = null]
@@ -384,8 +382,9 @@ ML_COMMENT:
 ;
 
 
-
-
+XQUERY
+    :   '{' ( XQUERY | ~'}' )* '}'
+    ;
 
 
 
@@ -423,6 +422,8 @@ SEQ : ">"! ( NAME )? ">"!  ;
 LBRACE : '{';
 
 RBRACE : '}';
+
+//NOBRACE : (~('{' | '}'));
 
 SEQ_OR_PUB :
 	(SEQ) => SEQ { $setType(SEQ); }

@@ -46,7 +46,7 @@ public class OrcX {
 		int queryid = 0;
 		
 		/* TODO Kristi: implement this */
-		
+		System.err.println("Embedding XQuery: " + s);
 		return new EmbeddedXQuery(this, queryid, freevars);
 	}
 	

@@ -9,10 +9,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.*;
 
-import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
-import org.exist.storage.NativeBroker;
-import org.exist.util.Configuration;
+//import org.exist.storage.BrokerPool;
+//import org.exist.storage.DBBroker;
+//import org.exist.storage.NativeBroker;
+//import org.exist.util.Configuration;
 
 import orc.ast.extended.*;
 import orc.ast.simple.arg.FreeVar;
@@ -50,12 +50,13 @@ public class Orc {
 				System.out.println("Configuring embedded languages...");
 				
 //				TODO: Replace null with a database broker for the persistent document set
-				OrcX orcx = new OrcX(new NativeBroker(BrokerPool.getInstance(), new Configuration())); 
+				OrcX orcx = new OrcX(); 
 			
 				System.out.println("Parsing...");
 				// Parse the goal expression
 				OrcLexer lexer = new OrcLexer(cfg.getInstream());
 				OrcParser parser = new OrcParser(lexer, orcx);
+				//OrcParser parser = new OrcParser(lexer);
 				orc.ast.extended.Expression e = parser.startRule();
 				
 				System.out.println("Importing declarations...");
