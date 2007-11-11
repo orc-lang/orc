@@ -1,10 +1,14 @@
 package orc.orcx;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import orc.runtime.values.Constant;
 import orc.runtime.values.Value;
+
+import java.io.*;
+import java.net.*;
 
 
 /**
@@ -46,10 +50,26 @@ public class OrcX {
 		int queryid = 0;
 		
 		/* TODO Kristi: implement this */
-		System.err.println("Embedding XQuery: " + s);
+		//strip off external braces from string s
+		String substring = s.substring(1, s.length() -1);
+		System.err.println("Embedding XQuery: " + substring);
+		String results = HTTPUtils.send_galax("http://localhost:3001", HTTPUtils.GalaxCommand.compile_query, substring);
+		//TODO later: String results2 = HTTPUtils.send_galax("http://localhost:3001", HTTPUtils.GalaxCommand.xml_to_string, (new Integer(10)).toString());
+		String[] result_array = results.split("\n");
+		
+		//System.err.println("First item: "+ result_array[0]);
+		queryid = new Integer(result_array[0]);
+		
+		for(int i = 1; i < result_array.length; i++){
+			//System.err.println("Next item: " + result_array[i]);
+			freevars.add(result_array[i]);
+		}
+		//System.err.println("Results: " + results);
+        //System.exit(0);
+		  
 		return new EmbeddedXQuery(this, queryid, freevars);
 	}
-	
+
 	/**
 	 * 
 	 * Execute the XQuery referenced by the query id, using the given set of
@@ -64,8 +84,11 @@ public class OrcX {
 		Value ret = Value.signal();
 		
 		/* TODO Kristi: implement this */
-		
-		return ret;
+		String execute_this = new String(queryid + "\n");
+		for(Iterator i = vals.iterator(); i.hasNext(); )
+			execute_this += i.next() + "\n";
+		String results = HTTPUtils.send_galax("http://localhost:3001", HTTPUtils.GalaxCommand.execute_query, execute_this );
+		return new Constant(results);
 	}
 	
 }
