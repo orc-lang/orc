@@ -12,7 +12,7 @@ import orc.ast.simple.arg.FreeVar;
  * 
  * Simplification will convert this to a form of site call.
  * 
- * @author dkitchin
+ * @author dkitchin, kmorton
  *
  */
 public class EmbeddedXQuery extends orc.ast.extended.Expression {

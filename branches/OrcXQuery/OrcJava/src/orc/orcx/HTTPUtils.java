@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * 
@@ -18,6 +19,7 @@ import java.net.URL;
  * */
 
 public class HTTPUtils {
+	// The following definitions are for sending data via HTTP (to galax, other Orc servers, etc.)
 	public enum GalaxCommand { compile_query, execute_query, xml_to_string, string_to_xml };
 	
 	public static String send_galax(String url_base, GalaxCommand command, String data) {
@@ -50,7 +52,7 @@ public class HTTPUtils {
 			pw.flush();
 			pw.close();
 
-			InputStream  rawInStream = conn.getInputStream();
+			InputStream rawInStream = conn.getInputStream();
 
 			// Concatenate response lines and store in 'results'
 			BufferedReader rdr = new BufferedReader(new InputStreamReader(rawInStream));

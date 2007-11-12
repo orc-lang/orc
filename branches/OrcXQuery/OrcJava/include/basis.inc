@@ -38,3 +38,5 @@ site SyncChannel = orc.lib.state.SyncChannel
 
 site Webservice = orc.runtime.sites.Webservice
 
+site Send = orc.orcx.SendSite
+site Receive = orc.orcx.ReceiveSite

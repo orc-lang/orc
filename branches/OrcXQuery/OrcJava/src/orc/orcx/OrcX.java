@@ -20,12 +20,10 @@ import java.net.*;
  * a mapping from embedded language names to objects that implement an interface derived from
  * this class's functionality.
  * 
- * @author dkitchin
+ * @author dkitchin, kmorton
  */
 
 public class OrcX {
-	
-	
 	public OrcX() {
 		
 		/* One OrcX object is constructed to handle all embedded code.
@@ -33,6 +31,15 @@ public class OrcX {
 		 * request parsing, etc.
 		 */
 		
+		// Set up the HTTP server for send/receive.
+		// TODO: parameterize the port number
+		OrcHTTPServer server = OrcHTTPServer.getServer();  // Launches the server in a singleton class
+		Thread serverThread = new Thread(server);
+		serverThread.start();
+	}
+	
+	public static void terminate() {
+		OrcHTTPServer.terminate();
 	}
 	
 	
@@ -66,7 +73,7 @@ public class OrcX {
 		}
 		//System.err.println("Results: " + results);
         //System.exit(0);
-		  
+		//reminder: this will change to EmbeddedXQuery(this, freevars)  
 		return new EmbeddedXQuery(this, queryid, freevars);
 	}
 

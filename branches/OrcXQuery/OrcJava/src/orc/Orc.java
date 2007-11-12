@@ -50,7 +50,7 @@ public class Orc {
 				System.out.println("Configuring embedded languages...");
 				
 //				TODO: Replace null with a database broker for the persistent document set
-				OrcX orcx = new OrcX(); 
+				OrcX orcx = new OrcX();
 			
 				System.out.println("Parsing...");
 				// Parse the goal expression
@@ -119,8 +119,8 @@ public class Orc {
 				if (cfg.debugMode())
 					e.printStackTrace();
 			}
+			OrcX.terminate();
 			System.exit(0);
-
 	}
 	
 }
