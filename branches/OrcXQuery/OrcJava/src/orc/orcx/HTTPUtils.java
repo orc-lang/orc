@@ -39,7 +39,7 @@ public class HTTPUtils {
 			URL url = new URL(url_base + "/" + target);  //("http://localhost:3001/orcx-compile_query");
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 			conn.setRequestMethod("POST");
-//			conn.setAllowUserInteraction(false);
+			conn.setAllowUserInteraction(false);
 			conn.setDoOutput(true);
 			conn.setRequestProperty( "Content-Type", "text/plain" );
 			conn.setRequestProperty( "Content-Length", Integer.toString(data.length()));

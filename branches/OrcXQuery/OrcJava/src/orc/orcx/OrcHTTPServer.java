@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -58,7 +59,7 @@ public class OrcHTTPServer implements Runnable {
 	// Start the HTTP Server in a polling loop, writing data to a LinkedBlockingQueue
 	public void run() {
 		InputStreamReader is;
-		PrintStream os;
+		PrintWriter os;
 		Socket clientSocket = null;
 
         try {
@@ -70,35 +71,36 @@ public class OrcHTTPServer implements Runnable {
 		}
 		
 		try {
-			clientSocket = listener.accept();
-			is = new InputStreamReader(clientSocket.getInputStream());
-			os = new PrintStream(clientSocket.getOutputStream());
 
 			while (!listener.isClosed()) {
+				clientSocket = listener.accept();
+				is = new InputStreamReader(clientSocket.getInputStream());
 				BufferedReader rdr = new BufferedReader(is);
 				String line;
 
 				// Read transmitted data and process HTTP headers, content, etc.
-				// First line is the connection request
-				line = rdr.readLine();
-				if (!line.matches("\\s*POST \\S+ HTTP/\\S+")) {
-					System.err.println("Warning: Malformed POST request sent to Orc server on port: " + listenPort);
-				}
+				boolean first_line  = true;  // the first line should be the connection request info
 				boolean headers_done = false;
 				int content_length = 0;
 				String content = "";
-				while ((line = rdr.readLine()) != null) {
-					System.err.print("Got line: '");
-					for (int i=0; i < line.getBytes().length; i++) {
-						System.err.print(line.getBytes()[i] + ",");
+				//while ((line = rdr.readLine()) != null) {
+				while (true) {
+					if (first_line) {
+						// First line is the connection request
+						line = rdr.readLine();
+						if (!line.matches("\\s*POST \\S+ HTTP/\\S+")) {
+							System.err.println("Warning: Malformed POST request sent to Orc server on port: " + listenPort);
+						}
+						first_line = false;
 					}
-					System.err.println("'");
-					if (line.length() == 0) {
-						System.err.println("Got blank line");
-						headers_done = true;
-					}
-
 					if (!headers_done) {
+						line = rdr.readLine();
+					
+						if (line.length() == 0) {
+							headers_done = true;
+							continue;
+						}
+
 						// Split the headers by the ":" and process as needed.						 
 						// The only headers we care about are the connection header and the content length
 						String[] keyVal = line.split(":");
@@ -107,34 +109,40 @@ public class OrcHTTPServer implements Runnable {
 						}
 					}
 					else {
-						content += line;
-						System.err.println("Content so far: " + content);
+						char[] raw_content = new char[content_length];
+						int length = rdr.read(raw_content);
+						if (length != content_length) {
+							System.err.println("Warning: Mismatch in content length from POST request.");
+							System.err.println("Expected: " + content_length + ", but received: " + length);
+							System.err.println("Anything left? -- " + rdr.readLine());
+							break;
+						}
+						else {
+							content = new String(raw_content);
+							// Respond with "OK"
+							os = new PrintWriter(clientSocket.getOutputStream());
+							os.println("HTTP/1.0 200 OK");
+							os.println("Connection: close");
+							os.println("Content-Type: text/html");  // necessary if we're not returning content?
+							os.flush();
+							os.close();
+							try {
+								queue.put(content);
+							}
+							catch (Exception e) {
+								System.err.println("Error: Attempted to write to OrcX send/receive queue, received exception:");
+								System.err.println(e);
+							}
+							
+							// Reset content, content_length, headers_done and first_line
+							break;
+						}
 					}
-					if (content.length() >= content_length) {
-						break;
-					}
-				}
-				if (content.length() != content_length) {
-					System.err.println("Warning: Mismatch in content length from POST request.");
-				}
-				
-				// Respond with "OK"
-				os.println("HTTP/1.0 200 OK");
-				os.println("Connection: close");
-				os.println("Content-Type: text/html");  // necessary if we're not returning content?
-				
-				try {
-					System.err.println("Queueing content: " + content);
-					queue.put(content);
-				}
-				catch (Exception e) {
-					System.err.println("Error: Attempted to write to OrcX send/receive queue, received exception:");
-					System.err.println(e);
 				}
 			}
 		}   
 		catch (IOException e) {
-			System.err.println(e);
+			e.printStackTrace();
 		}
 	}
 }

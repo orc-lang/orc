@@ -4,4 +4,5 @@ def receiveLoop(count) =
 def metronome(count) =
   Rtimer(3000) >> (let(count) | metronome(count+1))
 
-metronome(0) | receiveLoop(0)
+receiveLoop(0)
+
