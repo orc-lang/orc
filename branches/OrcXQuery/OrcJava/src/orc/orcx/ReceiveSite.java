@@ -36,7 +36,7 @@ public class ReceiveSite extends Site {
 			}
 			catch (Exception e) {
 				System.err.println("Error: Attempted to read from OrcX send/receive queue, received exception:");
-				System.err.println(e);
+				e.printStackTrace();
 			}		
 		}
 		

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+#Script that starts up multiple instances of OrcX engines/servers as separate processes
+
+for ((i=1; i<=3; i+=1)); do
+  java -cp bin/:/Users/kristi/Desktop/eclipse/plugins/org.antlr_2.7.6/antlr.jar:/Users/kristi/Documents/workspace/OrcXQuery/lib/axis.jar:/Users/kristi/Documents/workspace/OrcXQuery/lib/mail.jar orc.Orc -port 310$i -l include/basis.inc TestSuite/node$i-multicast.orc > log-$i.txt 2>&1 &
+done
+

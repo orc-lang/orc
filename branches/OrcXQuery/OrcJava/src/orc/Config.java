@@ -39,6 +39,7 @@ public class Config {
 	List<Object> params;
 	Integer maxpub = null;
 	InputStream instream;
+	public static Integer port;
 	
 	public Config()
 	{
@@ -50,7 +51,6 @@ public class Config {
 	{
 		int i = 0;
 		
-		instream = System.in;
 		File outputfile = null;
 		Integer outport = null;
 		String outhost = null;
@@ -95,7 +95,13 @@ public class Config {
 				// add this file to the list of bindings to load
 				i++;
 				bindings.add(new File(args[i++]));
+			} 
+			else if (args[i].equals("-port")){
+				i++;
+				port = new Integer(args[i++]);
+				System.err.println("Lauching server on port "+port);
 			} else
+			
 				try {
 					instream = new FileInputStream(args[i++]);
 				} catch (FileNotFoundException e) {
@@ -103,9 +109,10 @@ public class Config {
 					e.printStackTrace();
 				}
 		}
-
 		
-		
+		if (instream == null) {
+			instream = System.in;
+		}
 		
 		if (outport != null){
         	Socket sock;

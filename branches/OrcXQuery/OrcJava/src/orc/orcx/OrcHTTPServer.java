@@ -9,6 +9,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import orc.Config;
+
 /**
  * 
  * Centralized class for handling interaction between Orc servers via HTTP
@@ -19,7 +21,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class OrcHTTPServer implements Runnable {
 	static private OrcHTTPServer singleton = null;
-	static private int listenPort = 3100;  // default port is 4000 for testing 
+	//static private int listenPort = 3100;  // default port is 4000 for testing 
+	static private int listenPort = Config.port;
 	static private ServerSocket listener = null;
 	static public LinkedBlockingQueue<String> queue = null;  // Support other datatypes than String?
 	
@@ -52,7 +55,7 @@ public class OrcHTTPServer implements Runnable {
 			System.err.println("Done closing listener");
 		} catch (IOException e) {
 			System.err.println("Warning: Unable to cleanly terminate the open socket, caught exception:");
-			System.err.println(e);
+			e.printStackTrace();
 		}
 	}
 
@@ -67,7 +70,7 @@ public class OrcHTTPServer implements Runnable {
 		}
 		catch (IOException e) {
 			System.err.println("Error: Failed to instantiate the OrcX HTTP Server for send/receive, caught exception: ");
-			System.err.println(e);
+			e.printStackTrace();
 		}
 		
 		try {
@@ -90,6 +93,7 @@ public class OrcHTTPServer implements Runnable {
 						line = rdr.readLine();
 						if (!line.matches("\\s*POST \\S+ HTTP/\\S+")) {
 							System.err.println("Warning: Malformed POST request sent to Orc server on port: " + listenPort);
+							break;
 						}
 						first_line = false;
 					}
@@ -131,9 +135,10 @@ public class OrcHTTPServer implements Runnable {
 							}
 							catch (Exception e) {
 								System.err.println("Error: Attempted to write to OrcX send/receive queue, received exception:");
-								System.err.println(e);
+								e.printStackTrace();
 							}
 							
+							clientSocket.close();
 							// Reset content, content_length, headers_done and first_line
 							break;
 						}
