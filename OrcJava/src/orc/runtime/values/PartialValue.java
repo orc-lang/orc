@@ -43,6 +43,8 @@ public class PartialValue implements Future {
 
 	public Callable forceCall(Token t) {
 		
+		// Don't need to force unbound variables for a value used in call position,
+		// since it can't leak variables in that case. Just force the underlying value.
 		return v.forceCall(t);
 	}
 	
