@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.Set;
 
 import orc.ast.simple.arg.Argument;
-import orc.ast.simple.arg.FreeVar;
+import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 
 /**
@@ -33,7 +33,7 @@ public abstract class Expression {
 	 * @param a The replacing variable or value
 	 * @param x The free variable whose occurrences will be replaced
 	 */
-	public abstract void subst(Argument a, FreeVar x);
+	public abstract Expression subst(Argument a, NamedVar x);
 	
 	
 	/**
@@ -42,12 +42,16 @@ public abstract class Expression {
 	 * 
 	 * @param m
 	 */
-	public void suball(Map<FreeVar, ? extends Argument> m)
+	public Expression suball(Map<NamedVar, ? extends Argument> m)
 	{
-		for (FreeVar x : m.keySet())
+		Expression result = this;
+		
+		for (NamedVar x : m.keySet())
 		{
-			this.subst(m.get(x),x);
+			result = result.subst(m.get(x),x);
 		}
+		
+		return result;
 	}
 	
 	/**

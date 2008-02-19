@@ -25,7 +25,7 @@ public class ClassDeclaration implements Declaration {
 
 	public orc.ast.simple.Expression bindto(orc.ast.simple.Expression target) {
 		
-		Class c;	
+		Class<?> c;	
 		try
 		{
 			c = ClassLoader.getSystemClassLoader().loadClass(classname);
@@ -33,10 +33,9 @@ public class ClassDeclaration implements Declaration {
 		catch (Exception e) { throw new Error("Failed to load class " + classname + " as a proxy."); }
 		
 		orc.ast.simple.arg.Argument a = new orc.ast.simple.arg.Site(new ClassProxy(c));
-		orc.ast.simple.arg.FreeVar x = new orc.ast.simple.arg.FreeVar(varname);
-		target.subst(a,x);
+		orc.ast.simple.arg.NamedVar x = new orc.ast.simple.arg.NamedVar(varname);
 		
-		return target;
+		return target.subst(a,x);
 	}
 	
 }

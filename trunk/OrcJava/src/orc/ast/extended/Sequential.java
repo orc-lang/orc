@@ -1,36 +1,31 @@
 package orc.ast.extended;
 
+import orc.ast.extended.pattern.Pattern;
+
 public class Sequential extends Expression {
 
 	public Expression left;
 	public Expression right;
-	public String var;
-	public boolean pub;
+	public Pattern p;
 	
-	public Sequential(Expression left, Expression right, String var, Boolean pub)
+	public Sequential(Expression left, Expression right, Pattern p)
 	{
 		this.left = left;
 		this.right = right;
-		this.var = var;
-		this.pub = pub;
+		this.p = p;
 	}
 	
 	@Override
 	public orc.ast.simple.Expression simplify() {
-		orc.ast.simple.Expression newleft = left.simplify();
-		orc.ast.simple.Expression newright = right.simplify();
 		
-		orc.ast.simple.arg.Var v = new orc.ast.simple.arg.Var();
-		orc.ast.simple.arg.FreeVar x = new orc.ast.simple.arg.FreeVar(var);
-		newleft.subst(v,x);
-		newright.subst(v,x);
+		orc.ast.simple.Expression source = left.simplify();
+		orc.ast.simple.Expression target = right.simplify();
+		orc.ast.simple.arg.Var t = new orc.ast.simple.arg.Var();
 		
-		if (pub) 
-		{
-			newright = new orc.ast.simple.Parallel(new orc.ast.simple.Let(v), newright);
-		}
+		source = p.match(source);
+		target = p.bind(target, t);
 		
-		return new orc.ast.simple.Sequential(newleft,newright,v);
+		return new orc.ast.simple.Sequential(source, target, t);
 	}
 
 }

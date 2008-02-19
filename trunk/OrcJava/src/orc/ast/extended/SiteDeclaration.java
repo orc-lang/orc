@@ -24,9 +24,9 @@ public class SiteDeclaration implements Declaration {
 	
 	public orc.ast.simple.Expression bindto(orc.ast.simple.Expression target) {
 		
-		Class c;
+		Class<?> c;
 		orc.ast.simple.arg.Argument a;
-		orc.ast.simple.arg.FreeVar x;
+		orc.ast.simple.arg.NamedVar x;
 		
 		try
 		{
@@ -43,9 +43,7 @@ public class SiteDeclaration implements Declaration {
 		}
 		catch (Exception e) { throw new Error("Failed to load class " + classname + " as a site."); }
 		
-		x = new orc.ast.simple.arg.FreeVar(varname);
-		target.subst(a,x);
-		
-		return target;
+		x = new orc.ast.simple.arg.NamedVar(varname);
+		return target.subst(a,x);
 	}
 }

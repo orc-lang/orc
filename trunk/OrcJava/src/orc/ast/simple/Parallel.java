@@ -3,7 +3,7 @@ package orc.ast.simple;
 import java.util.Set;
 
 import orc.ast.simple.arg.Argument;
-import orc.ast.simple.arg.FreeVar;
+import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.runtime.nodes.Fork;
 import orc.runtime.nodes.Node;
@@ -25,10 +25,9 @@ public class Parallel extends Expression {
 	}
 
 	@Override
-	public void subst(Argument a, FreeVar x) 
+	public Expression subst(Argument a, NamedVar x) 
 	{
-		left.subst(a,x);
-		right.subst(a,x);
+		return new Parallel(left.subst(a,x),right.subst(a,x));
 	}
 
 	@Override

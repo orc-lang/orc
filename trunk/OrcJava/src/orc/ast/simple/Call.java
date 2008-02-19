@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import orc.ast.simple.arg.Argument;
-import orc.ast.simple.arg.FreeVar;
+import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.runtime.nodes.Node;
 
@@ -19,6 +19,23 @@ public class Call extends Expression {
 	{
 		this.caller = caller;
 		this.args = args;
+	}
+	
+	/* Binary call constructor */
+	public Call(Argument caller, Argument arga, Argument argb)
+	{
+		this.caller = caller;
+		this.args = new LinkedList<Argument>();
+		this.args.add(arga);
+		this.args.add(argb);
+	}
+	
+	/* Unary call constructor */
+	public Call(Argument caller, Argument arg)
+	{
+		this.caller = caller;
+		this.args = new LinkedList<Argument>();
+		this.args.add(arg);
 	}
 	
 	/* Nullary call constructor */
@@ -34,17 +51,18 @@ public class Call extends Expression {
 	}
 
 	@Override
-	public void subst(Argument a, FreeVar x) {
+	public Expression subst(Argument a, NamedVar x) {
+		
+		Argument newcaller;
+		List<Argument> newargs = new LinkedList<Argument>();
 		
 		// Substitute on the call target
 		if (caller.equals(x))
-		{
-			caller = a;
-		}
+			newcaller = a;
+		else
+			newcaller = caller;
 		
 		// Substitute on the arguments
-		List<Argument> newargs = new LinkedList<Argument>();
-		
 		for (Argument b : args)
 		{
 			if (b.equals(x))
@@ -52,9 +70,8 @@ public class Call extends Expression {
 			else
 				newargs.add(b);
 		}
-		args = newargs;
 		
-		
+		return new Call(newcaller, newargs);
 	}
 
 	public Set<Var> vars()

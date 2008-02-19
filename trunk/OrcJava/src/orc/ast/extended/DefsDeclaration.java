@@ -34,11 +34,11 @@ public class DefsDeclaration implements Declaration {
 		// Map the names of each definition to a var
 		// This map must be constructed beforehand so that it can be used
 		// to substitute these names in each expression body
-		Map<FreeVar, Var> m = new TreeMap<FreeVar, Var>();
+		Map<NamedVar, Var> m = new TreeMap<NamedVar, Var>();
 		
 		for(Definition d : defs)
 		{
-			m.put(new FreeVar(d.name), new Var());
+			m.put(new NamedVar(d.name), new Var());
 		}
 	
 		
@@ -46,32 +46,27 @@ public class DefsDeclaration implements Declaration {
 		
 		for(Definition d : defs)
 		{
-			Var name = m.get(new FreeVar(d.name));
+			Var name = m.get(new NamedVar(d.name));
 			List<Var> formals = new LinkedList<Var>();
 			orc.ast.simple.Expression body = d.body.simplify();
-			
 			
 			// Bind formal arguments
 			for (String s : d.formals)
 			{
 				Var v = new Var();
 				formals.add(v);
-				body.subst(v,new FreeVar(s));
+				body = body.subst(v,new NamedVar(s));
 			}
 			
-			
-			
 			// Bind the names of all expressions in this recursive group
-			body.suball(m);
+			body = body.suball(m);
 			
 			newdefs.add(new orc.ast.simple.Definition(name, formals, body));
 			
 		}
 		
 		
-		target.suball(m);
-		
-		return new orc.ast.simple.Def(newdefs, target);
+		return new orc.ast.simple.Def(newdefs, target.suball(m));
 		
 		
 	}
