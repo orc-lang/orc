@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import orc.ast.simple.arg.Argument;
-import orc.ast.simple.arg.FreeVar;
+import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.runtime.nodes.Node;
 
@@ -40,8 +40,8 @@ public class Definition {
 		this.body = body;
 	}
 	
-	public void subst(Argument a, FreeVar x) {
-		this.body.subst(a, x);
+	public Definition subst(Argument a, NamedVar x) {
+		return new Definition(name, formals, body.subst(a, x));
 	}
 	
 	public Set<Var> vars()

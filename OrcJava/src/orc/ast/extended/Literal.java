@@ -2,7 +2,7 @@ package orc.ast.extended;
 
 public class Literal extends Expression {
 
-	public Object val;
+	Object val;
 	
 	public Literal(Object val)
 	{

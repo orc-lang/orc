@@ -40,7 +40,7 @@ public class Tuple extends EvalSite {
 	}
 	
 	public String toString() {
-		return format('[', values, ", ", ']');
+		return format('(', values, ", ", ')');
 	}
 
 	public static String format(char left, List items, String sep, char right) {

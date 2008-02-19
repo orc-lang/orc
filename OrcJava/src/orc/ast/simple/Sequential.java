@@ -3,7 +3,7 @@ package orc.ast.simple;
 import java.util.Set;
 
 import orc.ast.simple.arg.Argument;
-import orc.ast.simple.arg.FreeVar;
+import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.runtime.nodes.Assign;
 import orc.runtime.nodes.Node;
@@ -27,10 +27,9 @@ public class Sequential extends Expression {
 	}
 
 	@Override
-	public void subst(Argument a, FreeVar x) 
+	public Sequential subst(Argument a, NamedVar x) 
 	{
-		left.subst(a,x);
-		right.subst(a,x);
+		return new Sequential(left.subst(a,x), right.subst(a,x), v);
 	}
 	
 	public Set<Var> vars() {

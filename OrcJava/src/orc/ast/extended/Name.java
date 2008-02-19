@@ -11,11 +11,11 @@ public class Name extends Expression {
 	
 	@Override
 	public orc.ast.simple.Expression simplify() {
-		return new orc.ast.simple.Call(new orc.ast.simple.arg.FreeVar(name));
+		return new orc.ast.simple.Call(new orc.ast.simple.arg.NamedVar(name));
 	}
 
 	public Arg argify() {
-		return new simpleArg(new orc.ast.simple.arg.FreeVar(name));
+		return new simpleArg(new orc.ast.simple.arg.NamedVar(name));
 	}
 	
 }

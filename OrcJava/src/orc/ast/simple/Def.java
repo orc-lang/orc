@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import orc.ast.simple.arg.Argument;
-import orc.ast.simple.arg.FreeVar;
+import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.runtime.nodes.Node;
 
@@ -38,14 +38,15 @@ public class Def extends Expression {
 	}
 
 	@Override
-	public void subst(Argument a, FreeVar x) {
+	public Expression subst(Argument a, NamedVar x) {
 		
+		List<Definition> newdefs = new LinkedList<Definition>();
 		for (Definition d : defs)
 		{
-			d.subst(a,x);
+			newdefs.add(d.subst(a,x));
 		}
 		
-		body.subst(a,x);
+		return new Def(newdefs, body.subst(a,x));
 	}
 
 	@Override

@@ -10,6 +10,7 @@ header {
 	import java.io.FileInputStream;
 	import java.io.FileNotFoundException;
 	import orc.ast.extended.*;
+	import orc.ast.extended.pattern.*;
 	
 } 
 
@@ -126,22 +127,16 @@ formals_list returns [List<String> formals = new ArrayList<String>() ]
 
 where_expr returns [Expression e = null]
 	{
-		Binding b;	
+		Expression e2;
+		Pattern p;	
 	}
 	: e=par_expr (
-	  options {greedy = true;} : 
-		"where" 
-			b=binding { e = new Where(e,b.exp,b.var); } 
-			(SEMI b=binding { e = new Where(e,b.exp,b.var); })*
-		)?
-	;
-
-binding returns [Binding b = null]
-	{
-		Expression e;
-	}
-	: name:NAME "in" e=par_expr 
-		{ b = new Binding(name.getText(), e); }
+	  options {greedy = true;} 
+	    : LANGLE p=pattern LANGLE e2=par_expr 
+			{ e = new Where(e,e2,p); }
+		| LANGLE LANGLE e2=par_expr
+			{ e = new Where(e,e2,new WildcardPattern()); }		
+		)*
 	;
 
 par_expr returns [Expression e = null]
@@ -158,16 +153,16 @@ par_expr returns [Expression e = null]
 seq_expr returns [Expression e = null]
 	{
 		Expression e2;
+		Pattern p;
 	}
 	: e = op_expr (
-	   options {greedy = true;} : 
-		var:SEQ e2=seq_expr 
-			{ e = new Sequential(e, e2, var.getText(), false); }
-	  | var2:SEQPUB e2=seq_expr 
-			{ e = new Sequential(e, e2, var2.getText(), true); }
+	   options {greedy = true;} 
+	   		: RANGLE p=pattern RANGLE e2=seq_expr 
+				{ e = new Sequential(e, e2, p); }
+			| RANGLE RANGLE e2=seq_expr
+				{ e = new Sequential(e, e2, new WildcardPattern()); }
 		)?
 	;
-
 
 
 op_expr returns [Expression n = null]
@@ -192,9 +187,9 @@ relationalExpression returns [Expression n = null]
        }
      (EQ       {n = new Call("op=", args);}
       |NOT_EQ  {n = new Call("op/=", args);}
-      |GT      {n = new Call("op>", args);}
+      |GT      {n = new Call("op>.", args);}
       |GTE     {n = new Call("op>=", args);}
-      |LT      {n = new Call("op<", args);}
+      |LT      {n = new Call("op<.", args);}
       |LTE      {n = new Call("op<=", args);}
       )
       p=addingExpression {args.add(p);})*
@@ -285,15 +280,7 @@ basic_expr returns [Expression n = null]
 		Expression p;
 	}
 	: name:NAME {n = new Name(name.getText());}
-	| num:INT
-		{ n = new Literal(new Integer(num.getText())); }
-	| str:STRING
-		{ n = new Literal(str.getText()); }
-	| "true"
-		{ n = new Literal(new Boolean(true)); }
-	| "false"
-		{ n = new Literal(new Boolean(false)); }
-				
+	| n=literal_expr			
 	| LPAREN p=expr n=tail_expr[p]
 	;
 	
@@ -308,6 +295,133 @@ tail_expr[Expression a] returns [Expression n = null]
 	  {n = new Tuple(args);}
 	;	
 
+literal_expr returns [Literal l = null]
+	: num:INT
+		{ l = new Literal(new Integer(num.getText())); }
+	| str:STRING
+		{ l = new Literal(str.getText()); }
+	| "true"
+		{ l = new Literal(new Boolean(true)); }
+	| "false"
+		{ l = new Literal(new Boolean(false)); }
+	;
+
+
+
+
+pattern returns [Pattern p = null]
+	: p=tuple_pattern 
+		("as" var:NAME
+		{ p = new AsPattern(p,var.getText()); }
+		)?
+	;
+
+tuple_pattern returns [Pattern p = null]
+	{
+		List<Pattern> ps = null;
+		Pattern q;	
+	}
+	: 
+	  p=cons_pattern
+		(options {greedy = true;} :
+		 COMMA q=cons_pattern
+		 	{ if (ps == null) 
+		 		{	 
+		 		  ps = new LinkedList<Pattern>();
+		 		  ps.add(p);
+		 		  p = new TuplePattern(ps);
+		 		}
+		 	  ps.add(q); 
+		 	}
+		)*
+	; 
+
+cons_pattern returns [Pattern p = null]
+	{
+		Pattern q;
+	}
+	: p=basic_pattern 
+		(COLON q=cons_pattern 
+			{ p = new ConsPattern(p, q); }
+		)?
+	;
+	
+	
+basic_pattern returns [Pattern p = null]
+	{
+		Literal l;
+		List<Pattern> ps;
+		Pattern q;
+	}
+	: UNDERSCORE
+		{ p = new WildcardPattern(); }
+	| l=literal_expr
+		{ p = new LiteralPattern(l); }
+	| BANG q=basic_pattern
+		{ p = new PublishPattern(q); }
+	| site:NAME 
+	  ( options { greedy=true; } :
+	    LPAREN q=pattern RPAREN
+		{ p = new CallPattern(var.getText(),q); }
+	  )
+	| var:NAME
+		{ p = new VariablePattern(var.getText()); }
+	| LBRACKET RBRACKET
+		{ p = new NilPattern(); }
+	| LPAREN p=pattern RPAREN
+	;
+	
+	
+// ANTLR needs to die in a fire. I should not need to do this conversion by hand. Ever. -dkitchin
+tail_pattern returns [List<Pattern> ps = new LinkedList<Pattern>();]
+	{
+		Pattern p; 
+	}	
+	: (COMMA p=basic_pattern {ps.add(p);} )* RPAREN
+	;
+
+call_pattern returns [Expression e = null]
+	{
+		List<Expression> args = null;
+	}
+	: e=basic_expr
+	  (options {greedy = true;} :
+	     args = arguments { e = new Call(e, args); }
+	   | DOT f:NAME { e = new Dot(e, f.getText()); }
+	  )*
+	| "let" args = arguments { e = new Let(args); }
+	;
+	
+arguments_pattern returns [List<Expression> args = new ArrayList<Expression>();]
+	{Expression p;}
+	: LPAREN 
+		 (p=expr { args.add(p); }
+		    ( COMMA p=expr { args.add(p); })*
+		 )?
+	  RPAREN 
+	;
+
+	
+basic_expr_pattern returns [Expression n = null]
+	{
+		List<Expression> args = null;
+		Expression p;
+	}
+	: name:NAME {n = new Name(name.getText());}
+	| n=literal_expr			
+	| LPAREN p=expr n=tail_expr[p]
+	;
+	
+// ANTLR needs to die in a fire. I should not need to do this conversion by hand. Ever. -dkitchin
+tail_tuple_pattern[Expression a] returns [Expression n = null]
+	{
+		List<Expression> args;
+	}	
+	: RPAREN { n = a; }
+	| {args = new ArrayList<Expression>(); args.add(a); }
+	   (COMMA a=expr {args.add(a);} )+ RPAREN
+	  {n = new Tuple(args);}
+;
 
 
 
@@ -331,40 +445,10 @@ protected
 END_COMMENT: '-' RBRACE;
 
 
-
-
-     	
-/*
-ML_COMMENT:
-	LBRACE '-' (options {
-        generateAmbigWarnings=false;
-      }:  { LA(2)!=RBRACE }? '-'
-      | '\n' {newline();}
-      | ~('-'|'\n')
-    )*
-    '-' RBRACE
-    {$setType(Token.SKIP);}
-;
-
-ML_COMMENT:
-	BEGIN_COMMENT ( options {
-        generateAmbigWarnings=false;
-      }:{LA(2) != '}'}? '-'
-	| '\n' {newline();} 
-	| ~('-'|'\n') )*
-	END_COMMENT
-    {$setType(Token.SKIP);}
-;
-*/
-
-
 ML_COMMENT:
 	BEGIN_COMMENT ( options {greedy=false;} :'\n' {newline();} | ~'\n')* END_COMMENT
     {$setType(Token.SKIP);}
 ;
-
-
-
 
 
 
@@ -388,44 +472,59 @@ ESCAPE
          )
     ;
     
+UNDERSCORE : '_';
+    
 protected
-ALPHA : ( 'a'..'z' | 'A'..'Z' | '_') ;
+ALPHA : ( 'a'..'z' | 'A'..'Z' | UNDERSCORE) ;
 
 protected
 DIGIT : '0'..'9';
 
-protected
-SEQPUB : ">!"! ( NAME )? ">"!  ;
 
+/*
 protected
 SEQ : ">"! ( NAME )? ">"!  ;
+*/
 
 LBRACE : '{';
-
 RBRACE : '}';
 
+LANGLE : '<';
+RANGLE : '>';
+
+/*
 SEQ_OR_PUB :
 	(SEQ) => SEQ { $setType(SEQ); }
 	| (SEQPUB) => SEQPUB { $setType(SEQPUB); }
 	;
+	*/
+/*	
 protected	
 NILCASE: LBRACKET RBRACKET ARROW ;
+	*/
 	
-ARROW : "=>";
-PAR : '|';
-SEMI: ';';
-COMMA: ',';
-EQ: '=';
-LPAREN : '(';
-RPAREN : ')';
+ARROW      : "=>";
+PAR        : '|';
+SEMI       : ';';
+COMMA      : ',';
+COLON	   : ':';
+
+BANG	   : '!';
+
+EQ         : '=';
+LPAREN     : '(';
+RPAREN     : ')';
 DOT        : '.'   ;
 LBRACKET   : '['   ;
 RBRACKET   : ']'   ;
-NOT_EQ : "/="  ;
-NOT : "~";
-LT         : '<'   ;
+NOT_EQ 	   : "/="  ;
+NOT        : "~";
+
+// a hack
+LT         : "<."  ; 
+GT         : ">."  ;
+
 LTE        : "<="  ;
-GT         : '>'   ;
 GTE        : ">="  ;
 PLUS       : '+'   ;
 MINUS      : '-'   ;

@@ -1,29 +1,31 @@
 package orc.ast.extended;
 
+import orc.ast.extended.pattern.Pattern;
+
 public class Where extends Expression {
 
 	public Expression left;
 	public Expression right;
-	public String var;
+	public Pattern p;
 	
-	public Where(Expression left, Expression right, String var)
+	public Where(Expression left, Expression right, Pattern p)
 	{
 		this.left = left;
 		this.right = right;
-		this.var = var;
+		this.p = p;
 	}
 	
 	@Override
 	public orc.ast.simple.Expression simplify() {
-		orc.ast.simple.Expression newleft = left.simplify();
-		orc.ast.simple.Expression newright = right.simplify();
 		
-		orc.ast.simple.arg.Var v = new orc.ast.simple.arg.Var();
-		orc.ast.simple.arg.FreeVar x = new orc.ast.simple.arg.FreeVar(var);
-		newleft.subst(v,x);
-		newright.subst(v,x);
+		orc.ast.simple.Expression source = right.simplify();
+		orc.ast.simple.Expression target = left.simplify();
+		orc.ast.simple.arg.Var t = new orc.ast.simple.arg.Var();
 		
-		return new orc.ast.simple.Where(newleft,newright,v);
+		source = p.match(source);
+		target = p.bind(target, t);
+		
+		return new orc.ast.simple.Where(target, source,t);
 	}
 
 }

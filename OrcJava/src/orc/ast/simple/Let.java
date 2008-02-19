@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import orc.ast.simple.arg.Argument;
-import orc.ast.simple.arg.FreeVar;
+import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.runtime.nodes.Node;
 
@@ -39,7 +39,7 @@ public class Let extends Expression {
 	}
 
 	@Override
-	public void subst(Argument a, FreeVar x) {
+	public Expression subst(Argument a, NamedVar x) {
 		
 		List<Argument> newargs = new LinkedList<Argument>();
 		
@@ -50,7 +50,7 @@ public class Let extends Expression {
 			else
 				newargs.add(b);
 		}
-		args = newargs;
+		return new Let(newargs);
 	}
 	
 	public Set<Var> vars()

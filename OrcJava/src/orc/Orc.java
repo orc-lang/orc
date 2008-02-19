@@ -10,7 +10,7 @@ import java.io.FileInputStream;
 import java.util.*;
 
 import orc.ast.extended.*;
-import orc.ast.simple.arg.FreeVar;
+import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.parser.OrcLexer;
 import orc.parser.OrcParser;
@@ -73,7 +73,7 @@ public class Orc {
 				
 				// Bind a variable for argv, the tuple of command line parameters
 				Var argvar = new Var();
-				es.subst(argvar, new FreeVar("argv"));
+				es.subst(argvar, new NamedVar("argv"));
 				
 				System.out.println("Compiling to an execution graph...");
 				// Compile the AST, directing the output towards the configured target

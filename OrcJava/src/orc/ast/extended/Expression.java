@@ -42,7 +42,7 @@ public abstract class Expression {
 	/**
 	 * Variant type returned by the argify method.
 	 */
-	interface Arg 
+	public interface Arg 
 	{ 
 		/**
 		 * Extracts the Argument component of the Arg.
