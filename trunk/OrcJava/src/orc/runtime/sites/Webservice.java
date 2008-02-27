@@ -1,5 +1,6 @@
 package orc.runtime.sites;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,10 @@ import org.apache.axis.wsdl.toJava.GeneratedFileInfo;
 import org.apache.axis.wsdl.toJava.GeneratedFileInfo.Entry;
 
 public class Webservice extends EvalSite {
+    
+    private static final String OUTPUT_DIR = "webservices";
+    private static final String CLASSPATH = 
+        String.format("webservices%slib%saxis.jar%slib%sjaxrpc.jar", File.pathSeparator, File.separator, File.pathSeparator, File.separator);
 
     // Emitter is the class that does all of the file creation for the WSDL2Java
     // tool.  Using Emitter will allow us to get immediate access to the class names that it
@@ -27,7 +32,7 @@ public class Webservice extends EvalSite {
     // create the java code and get info about that code
     public GeneratedFileInfo createJavaCode(String url) throws Exception {
         emitter = new Emitter();
-        emitter.setOutputDir("./webservices/");
+        emitter.setOutputDir(OUTPUT_DIR);
         emitter.run(url);
         
         return emitter.getGeneratedFileInfo();
@@ -41,7 +46,7 @@ public class Webservice extends EvalSite {
             com.sun.tools.javac.Main
                     .compile(new String[] {
                             "-cp",
-                            "./webservices:./lib/axis.jar:./lib/jaxrpc.jar",
+                            CLASSPATH,
                             file });
         }
         
@@ -54,7 +59,7 @@ public class Webservice extends EvalSite {
         try {
             // take the passed URL and create java code from it
             GeneratedFileInfo info = createJavaCode(args.stringArg(0));
-
+            
             // compile that java code
             compileJavaCode(info);
             
