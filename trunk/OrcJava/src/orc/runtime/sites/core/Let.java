@@ -1,14 +1,11 @@
 /*
  * Copyright 2005, The University of Texas at Austin. All rights reserved.
  */
-package orc.runtime.sites;
-
-import java.util.List;
+package orc.runtime.sites.core;
 
 import orc.runtime.Args;
 import orc.runtime.Token;
-import orc.runtime.values.Tuple;
-import orc.runtime.values.Value;
+import orc.runtime.sites.Site;
 
 /**
  * Implements the built-in "let" site
@@ -23,11 +20,8 @@ public class Let extends Site {
 	 */
 	public void callSite(Args args, Token caller) {
 
-		List<Value> vs = args.getValues();
-		Value value = (vs.size() == 1) ? vs.get(0) : new Tuple(vs);
-		
 		// Note that a let does not resume like a normal site call; it sets the result and activates directly
-		caller.setResult(value).activate();
+		caller.setResult(args.condense()).activate();
 	}
 
 }

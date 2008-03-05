@@ -17,7 +17,7 @@ import orc.parser.OrcParser;
 import orc.runtime.Environment;
 import orc.runtime.OrcEngine;
 import orc.runtime.values.Constant;
-import orc.runtime.values.Tuple;
+import orc.runtime.values.TupleValue;
 import orc.runtime.values.Value;
 
 /**
@@ -50,8 +50,22 @@ public class Orc {
 				
 				
 				System.out.println("Importing declarations...");
-				// Load declarations from files specified by the configuration options
+				
 				LinkedList<Declaration> decls = new LinkedList<Declaration>();
+				
+				// Load declarations from the default includes directory.
+				File incdir = new File("./inc");
+				for (File f : incdir.listFiles())
+				{
+					// Include loading doesn't recurse into subdirectories.
+					if (f.isFile()) {
+						OrcLexer flexer = new OrcLexer(new FileInputStream(f));
+						OrcParser fparser = new OrcParser(flexer);
+						decls.addAll(fparser.decls());
+					}
+				}
+				
+				// Load declarations from files specified by the configuration options
 				for (File f : cfg.getBindings())
 				{
 					OrcLexer flexer = new OrcLexer(new FileInputStream(f));
@@ -88,7 +102,7 @@ public class Orc {
 				{ 
 					argv.add(new Constant(o));
 				}
-				env = new Environment(argvar, new Tuple(argv), env);
+				env = new Environment(argvar, new TupleValue(argv), env);
 		        
 				// Configure the runtime engine
 				OrcEngine engine = new OrcEngine(cfg.maxPubs());

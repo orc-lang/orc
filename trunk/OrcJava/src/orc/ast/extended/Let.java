@@ -9,6 +9,13 @@ public class Let extends Expression {
 
 	public List<Expression> args;
 	
+	// unary constructor
+	public Let(Expression arg)
+	{
+		this.args = new LinkedList<Expression>();
+		this.args.add(arg);
+	}
+	
 	public Let(List<Expression> args)
 	{
 		this.args = args;

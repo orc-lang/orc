@@ -1,9 +1,10 @@
 /**
  * 
  */
-package orc.lib.bool;
+package orc.runtime.sites.core;
 
 import orc.runtime.Args;
+import orc.runtime.OrcRuntimeTypeError;
 import orc.runtime.sites.PartialSite;
 import orc.runtime.values.Value;
 
@@ -14,7 +15,7 @@ import orc.runtime.values.Value;
 public class If extends PartialSite {
 
 	@Override
-	public Value evaluate(Args args) {
+	public Value evaluate(Args args) throws OrcRuntimeTypeError {
 		if (args.boolArg(0)) 
 			return Value.signal();
 		else

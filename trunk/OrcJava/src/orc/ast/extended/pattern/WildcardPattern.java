@@ -1,18 +1,17 @@
 package orc.ast.extended.pattern;
 
+import orc.ast.simple.Call;
 import orc.ast.simple.Expression;
 import orc.ast.simple.arg.Var;
 
-public class WildcardPattern implements Pattern {
+public class WildcardPattern extends Pattern {
 	
-	public WildcardPattern() {}
-	
-	public Expression bind(Expression g, Var t) {
+	public Expression bind(Var u, Expression g) {
 		return g;
 	}
 
-	public Expression match(Expression f) {
-		return f;
+	public Expression match(Var u) {
+		return new Call(Pattern.SOME, u);
 	}
 
 	public boolean strict() {

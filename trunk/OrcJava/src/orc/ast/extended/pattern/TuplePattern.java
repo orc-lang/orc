@@ -3,11 +3,12 @@ package orc.ast.extended.pattern;
 import java.util.LinkedList;
 import java.util.List;
 
+import orc.ast.simple.Call;
 import orc.ast.simple.Expression;
-import orc.ast.simple.Let;
+import orc.ast.simple.Where;
 import orc.ast.simple.arg.*;
 
-public class TuplePattern implements Pattern {
+public class TuplePattern extends Pattern {
 
 	List<Pattern> args;
 	
@@ -15,41 +16,38 @@ public class TuplePattern implements Pattern {
 		this.args = args;
 	}
 	
-	public Expression bind(Expression g, Var t) {
-		
-		Expression h = g;
+	public Expression bind(Var u, Expression g) {
 		
 		for(int i = 0; i < args.size(); i++) {
 			Pattern p = args.get(i);
-			Var u = new Var();
-			Expression ti = new orc.ast.simple.Call(t, new Constant(i));
-			
-			h = p.bind(h, u);
-			h = new orc.ast.simple.Where(h, ti, u);
+			Expression ui = new Call(u, new Constant(i));
+			g = p.bind(ui, g);
 		}
 		
-		return h;
+		return g;
 	}
 
-	public Expression match(Expression f) {
+	public Expression match(Var u) {
 	
-		List<Argument> letargs = new LinkedList<Argument>();
-		Expression h = new Let(letargs);
-		Var t = new Var();
-		
+		// lift(..., pi.match( u(i) ) ,...) 
+		List<Expression> es = new LinkedList<Expression>();
 		for(int i = 0; i < args.size(); i++) {
 			Pattern p = args.get(i);
-			Var u = new Var();
-			Expression ti = new orc.ast.simple.Call(t, new Constant(i));
-			
-			letargs.add(u);
-			
-			h = new orc.ast.simple.Where(h, p.match(ti), u);
+			Expression ui = new Call(u, new Constant(i));
+			es.add(p.match(ui));
 		}
+		Expression liftExpr = Pattern.lift(es);
 		
-		h = new orc.ast.simple.Sequential(f, h, t);
+		// u.fits
+		Expression sizeExpr = new Call(u, new Field("fits"));
 		
-		return h; 
+		// u.fits(n), where n is the tuple pattern size
+		Var s = new Var();
+		Argument n = new Constant(args.size());
+		Expression fitsExpr = new Where(new Call(s, n), sizeExpr, s);
+		
+		// if u.fits(n) then lift(...) else none()
+		return Pattern.ifexp(fitsExpr, liftExpr, new Call(Pattern.NONE)); 
 	}
 
 	public boolean strict() {

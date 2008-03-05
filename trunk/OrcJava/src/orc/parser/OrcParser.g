@@ -55,7 +55,7 @@ include returns [List<Declaration> decList = null]
 				OrcParser fparser = new OrcParser(flexer);
 				decList = fparser.decRule();
 			}
-			catch (Exception e) { throw new Error("Error including file: " + s); }
+			catch (Exception e) { throw new Error("Error including file '" + s + "': " + e.getMessage()); }
 		}
 	;	
 
@@ -63,6 +63,15 @@ decl returns [Declaration d=null]
 	: d=decl_site 
 	| d=decl_class
 	| d=decl_defs
+	| d=decl_val
+	;
+	
+decl_val returns [Declaration d=null]
+	{
+		Expression e;
+	}
+	: "val" x:NAME EQ e=expr
+		{ d = new ValDeclaration(x.getText(),e); }
 	;
 	
 decl_site returns [Declaration d=null]
@@ -117,11 +126,11 @@ defn returns [Definition def=null]
 
 
 formals_list returns [List<String> formals = new ArrayList<String>() ]
-	: ( LPAREN n:NAME 
+	: ( LPAREN ( n:NAME 
 			{ formals.add(n.getText()); }
 		( COMMA n2:NAME
 			{ formals.add(n2.getText()); }
-		)* RPAREN 
+		)* )? RPAREN 
 	  )? 
 	;
 
@@ -244,58 +253,97 @@ booleanNegationExpression returns [Expression n = null]
      	     else 
      	        n = new Call("op~", n);}
       )* 
-      p=call_expr
+      p=consExpression
        {if (n == null) 
      	   n = p;
      	else 
      	   args.add(p);}
   ;
 
+consExpression returns [Expression e = null]
+	{
+		Expression e2;
+	}
+	: e = basic_expr (
+	   options {greedy = true;} 
+	   		: COLON e2=consExpression 
+				{ e = new ConsExpr(e, e2); }
+		)?
+	;
 
-call_expr returns [Expression e = null]
+basic_expr returns [Expression e = null]
+	: e=invoke_expr
+	| e=tuple_expr 
+	| e=list_expr 
+	| e=silent_expr
+	| e=literal
+	;
+
+
+invoke_expr returns [Expression e = null]
 	{
 		List<Expression> args = null;
 	}
-	: e=basic_expr
+	: n:NAME
+	  { e = new Name(n.getText()); }
 	  (options {greedy = true;} :
 	     args = arguments { e = new Call(e, args); }
 	   | DOT f:NAME { e = new Dot(e, f.getText()); }
 	  )*
-	| "let" args = arguments { e = new Let(args); }
 	;
+	
 	
 arguments returns [List<Expression> args = new ArrayList<Expression>();]
-	{Expression p;}
+	{
+		Expression e;
+	}
 	: LPAREN 
-		 (p=expr { args.add(p); }
-		    ( COMMA p=expr { args.add(p); })*
+		 (e=expr { args.add(e); }
+		    ( COMMA e=expr { args.add(e); })*
 		 )?
 	  RPAREN 
-	;
-
-	
-basic_expr returns [Expression n = null]
-	{
-		List<Expression> args = null;
-		Expression p;
-	}
-	: name:NAME {n = new Name(name.getText());}
-	| n=literal_expr			
-	| LPAREN p=expr n=tail_expr[p]
-	;
-	
-// ANTLR needs to die in a fire. I should not need to do this conversion by hand. Ever. -dkitchin
-tail_expr[Expression a] returns [Expression n = null]
-	{
-		List<Expression> args;
-	}	
-	: RPAREN { n = a; }
-	| {args = new ArrayList<Expression>(); args.add(a); }
-	   (COMMA a=expr {args.add(a);} )+ RPAREN
-	  {n = new Tuple(args);}
 	;	
 
-literal_expr returns [Literal l = null]
+
+tuple_expr returns [Expression e = null]
+	{
+		List<Expression> es = new LinkedList<Expression>();	
+	}
+	: LPAREN 
+		(options {greedy = true; } :
+		  e=expr { es.add(e); }
+		    (COMMA e=expr { es.add(e); })*
+		)?
+	  RPAREN
+	    {
+	    	if (es.size() == 1)
+	    		{ e = es.get(0); }
+	    	else
+	    		{ e = new Let(es); } 
+	    }
+	; 
+
+
+list_expr returns [Expression e = null]
+	{
+		List<Expression> es = new LinkedList<Expression>();
+	}
+	: LBRACKET
+		(e=expr { es.add(e); }
+		  (COMMA e=expr { es.add(e); } )*
+		)?
+	  RBRACKET
+	  	{ e = new ListExpr(es); }
+	;
+
+
+silent_expr returns [Expression e = null]
+	: "null"
+		{ e = new Silent(); }
+	;
+
+
+literal returns [Literal l = null]
 	: num:INT
 		{ l = new Literal(new Integer(num.getText())); }
 	| str:STRING
@@ -305,7 +353,6 @@ literal_expr returns [Literal l = null]
 	| "false"
 		{ l = new Literal(new Boolean(false)); }
 	;
-
 
 
 
@@ -323,7 +370,7 @@ tuple_pattern returns [Pattern p = null]
 	}
 	: 
 	  p=cons_pattern
-		(options {greedy = true;} :
+		(options {greedy = true;} : 
 		 COMMA q=cons_pattern
 		 	{ if (ps == null) 
 		 		{	 
@@ -350,78 +397,41 @@ cons_pattern returns [Pattern p = null]
 basic_pattern returns [Pattern p = null]
 	{
 		Literal l;
-		List<Pattern> ps;
 		Pattern q;
 	}
 	: UNDERSCORE
 		{ p = new WildcardPattern(); }
-	| l=literal_expr
+	| l=literal
 		{ p = new LiteralPattern(l); }
 	| BANG q=basic_pattern
 		{ p = new PublishPattern(q); }
-	| site:NAME 
-	  ( options { greedy=true; } :
-	    LPAREN q=pattern RPAREN
-		{ p = new CallPattern(var.getText(),q); }
-	  )
 	| var:NAME
-		{ p = new VariablePattern(var.getText()); }
-	| LBRACKET RBRACKET
-		{ p = new NilPattern(); }
+		{ p = new VariablePattern(var.getText()); } 
+	  ( LPAREN q=pattern RPAREN
+		{ p = new CallPattern(var.getText(),q); }
+	  )?
+	| LBRACKET
+		{
+			List<Pattern> ps = new LinkedList<Pattern>();
+		}
+		(
+		 p=pattern { ps.add(p); }
+		  // Full list matching functionality (eg [x,y,z]) removed due to a parsing conflict
+		  // Parser would erroneously read as [(x,y,z)].
+		  // No way to fix this in ANTLR without making tuples always parenthesized,
+		  // i.e. (x,y) instead of x,y
+		  // and also complicating the grammar for site matching.
+		  // Therfore status is 'wontfix'.
+		  // (options {greedy = true;} : COMMA p=pattern { ps.add(p); } )*
+		)?
+	  RBRACKET
+	  	{ p = new ListPattern(ps); }
 	| LPAREN p=pattern RPAREN
+	| LPAREN RPAREN
+		{ p = new TuplePattern(new LinkedList<Pattern>()); }
 	;
 	
-	
-// ANTLR needs to die in a fire. I should not need to do this conversion by hand. Ever. -dkitchin
-tail_pattern returns [List<Pattern> ps = new LinkedList<Pattern>();]
-	{
-		Pattern p; 
-	}	
-	: (COMMA p=basic_pattern {ps.add(p);} )* RPAREN
-	;
 
-call_pattern returns [Expression e = null]
-	{
-		List<Expression> args = null;
-	}
-	: e=basic_expr
-	  (options {greedy = true;} :
-	     args = arguments { e = new Call(e, args); }
-	   | DOT f:NAME { e = new Dot(e, f.getText()); }
-	  )*
-	| "let" args = arguments { e = new Let(args); }
-	;
-	
-arguments_pattern returns [List<Expression> args = new ArrayList<Expression>();]
-	{Expression p;}
-	: LPAREN 
-		 (p=expr { args.add(p); }
-		    ( COMMA p=expr { args.add(p); })*
-		 )?
-	  RPAREN 
-	;
-
-	
-basic_expr_pattern returns [Expression n = null]
-	{
-		List<Expression> args = null;
-		Expression p;
-	}
-	: name:NAME {n = new Name(name.getText());}
-	| n=literal_expr			
-	| LPAREN p=expr n=tail_expr[p]
-	;
-	
-// ANTLR needs to die in a fire. I should not need to do this conversion by hand. Ever. -dkitchin
-tail_tuple_pattern[Expression a] returns [Expression n = null]
-	{
-		List<Expression> args;
-	}	
-	: RPAREN { n = a; }
-	| {args = new ArrayList<Expression>(); args.add(a); }
-	   (COMMA a=expr {args.add(a);} )+ RPAREN
-	  {n = new Tuple(args);}
-;
 
 
 
@@ -453,7 +463,7 @@ ML_COMMENT:
 
 
 
-// one-or-more letters followed by a newline
+
 NAME :   ALPHA ( ALPHA | DIGIT )*
     ;
 
@@ -480,30 +490,12 @@ ALPHA : ( 'a'..'z' | 'A'..'Z' | UNDERSCORE) ;
 protected
 DIGIT : '0'..'9';
 
-
-/*
-protected
-SEQ : ">"! ( NAME )? ">"!  ;
-*/
-
 LBRACE : '{';
 RBRACE : '}';
 
 LANGLE : '<';
 RANGLE : '>';
-
-/*
-SEQ_OR_PUB :
-	(SEQ) => SEQ { $setType(SEQ); }
-	| (SEQPUB) => SEQPUB { $setType(SEQPUB); }
-	;
-	*/
-/*	
-protected	
-NILCASE: LBRACKET RBRACKET ARROW ;
-	*/
 	
-ARROW      : "=>";
 PAR        : '|';
 SEMI       : ';';
 COMMA      : ',';
@@ -521,8 +513,8 @@ NOT_EQ 	   : "/="  ;
 NOT        : "~";
 
 // a hack
-LT         : "<."  ; 
-GT         : ">."  ;
+LT         : "<:"  ; 
+GT         : ":>"  ;
 
 LTE        : "<="  ;
 GTE        : ">="  ;
@@ -535,6 +527,7 @@ AND        : "&&"  ;
 OR         : "||" ;
 
 AMPERSAND  : '&' ;
+ATSIGN     : '@' ;
 
 
 

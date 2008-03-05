@@ -11,7 +11,7 @@ public class Name extends Expression {
 	
 	@Override
 	public orc.ast.simple.Expression simplify() {
-		return new orc.ast.simple.Call(new orc.ast.simple.arg.NamedVar(name));
+		return new orc.ast.simple.Let(new orc.ast.simple.arg.NamedVar(name));
 	}
 
 	public Arg argify() {

@@ -4,6 +4,7 @@
 package orc.lib.bool;
 
 import orc.runtime.Args;
+import orc.runtime.OrcRuntimeTypeError;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.*;
 
@@ -17,7 +18,7 @@ public abstract class BoolBinopSite extends EvalSite {
 	 * @see orc.runtime.sites.EvalSite#evaluate(java.lang.Object[])
 	 */
 	@Override
-	public Value evaluate(Args args) {
+	public Value evaluate(Args args) throws OrcRuntimeTypeError {
 		
 		return new Constant(compute(args.boolArg(0), args.boolArg(1)));
 	}

@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import orc.runtime.values.Constant;
+import orc.runtime.values.TupleValue;
 import orc.runtime.values.Value;
 
 /**
@@ -39,6 +40,29 @@ public class Args {
 	}
 	
 	/**
+	 * Classic 'let' functionality. 
+	 * Reduce a list of argument values into a single value as follows:
+	 * 
+	 * Zero arguments: return a signal
+	 * One argument: return that value
+	 * Two or more arguments: return a tuple of values
+	 * 
+	 */
+	public Value condense() {
+		
+		if (values.size() == 0) {
+			return Value.signal();
+		}
+		else if (values.size() == 1) {
+			return valArg(0);
+		}
+		else {
+			return new TupleValue(values);
+		}
+		
+	}
+	
+	/**
 	 * Helper function to retrieve the nth value, with error checking
 	 */
 	public Value valArg(int n)
@@ -53,21 +77,22 @@ public class Args {
 	
 	/**
 	 * Helper function to retrieve the nth element as an object, with error checking
+	 * @throws OrcRuntimeTypeError 
 	 */
-	public Object getArg(int n)
+	public Object getArg(int n) throws OrcRuntimeTypeError
 	{
 		try {
 			Value a = values.get(n);
 			return ((Constant)a).getValue(); 
 		}
 		catch (IndexOutOfBoundsException e)
-			{ throw new Error("Arity mismatch calling site. Could not find argument #" + n); }
+			{ throw new OrcRuntimeTypeError("Arity mismatch calling site. Could not find argument #" + n); }
 		catch (ClassCastException e) 
-			{ throw new Error("Argument " + n + " to site is not a native Java value"); } 
+			{ throw new OrcRuntimeTypeError("Argument " + n + " to site is not a native Java value"); } 
 	}
 	
 	/* Return the entire tuple as an object array */
-	public Object[] asArray()
+	public Object[] asArray() throws OrcRuntimeTypeError
 	{
 		int n = values.size();
 		Object[] a = new Object[n];
@@ -81,46 +106,50 @@ public class Args {
 		
 	/**
 	 * Helper function for integers
+	 * @throws OrcRuntimeTypeError 
 	 */
-	public int intArg(int n) {
+	public int intArg(int n) throws OrcRuntimeTypeError {
 		
 		Object a = getArg(n);
 		try
 			{ return ((Integer)a).intValue(); }
 		catch (ClassCastException e) 
-			{ throw new Error("Argument " + n + " should be an int, got " + a.getClass().toString() + " instead."); } 
+			{ throw new OrcRuntimeTypeError("Argument " + n + " should be an int, got " + a.getClass().toString() + " instead."); } 
 	}
 
 	/**
 	 * Helper function for longs
+	 * @throws OrcRuntimeTypeError 
 	 */
-	public long longArg(int n) {
+	public long longArg(int n) throws OrcRuntimeTypeError {
 		
 		Object a = getArg(n);
 		try
 			{ return ((Integer)a).longValue(); }
 		catch (ClassCastException e) 
-			{ throw new Error("Argument " + n + " should be an int, got " + a.getClass().toString() + " instead."); } 
+			{ throw new OrcRuntimeTypeError("Argument " + n + " should be an int, got " + a.getClass().toString() + " instead."); } 
 	}
 
 	
 	/**
 	 * Helper function for booleans
+	 * @throws OrcRuntimeTypeError 
 	 */
-	public boolean boolArg(int n) {
+	public boolean boolArg(int n) throws OrcRuntimeTypeError {
 		
 		Object a = getArg(n);
 		try
 			{ return ((Boolean)a).booleanValue(); }
 		catch (ClassCastException e) 
-			{ throw new Error("Argument " + n + " to site '" + this.toString() + "' should be a boolean, got " + a.getClass().toString() + " instead."); } 
+			{ throw new OrcRuntimeTypeError("Argument " + n + " to site '" + this.toString() + "' should be a boolean, got " + a.getClass().toString() + " instead."); } 
 	
 	}
 
 	/**
 	 * Helper function for strings
+	 * @throws OrcRuntimeTypeError 
 	 */
-	public String stringArg(int n) {
+	public String stringArg(int n) throws OrcRuntimeTypeError {
 
 		Object a = getArg(n);
 		return a.toString();

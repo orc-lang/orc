@@ -34,7 +34,7 @@ public class Let extends Expression {
 	
 	@Override
 	public Node compile(Node output) {
-		orc.ast.simple.arg.Site let = new orc.ast.simple.arg.Site(new orc.runtime.sites.Let());
+		orc.ast.simple.arg.Site let = new orc.ast.simple.arg.Site(new orc.runtime.sites.core.Let());
 		return new orc.runtime.nodes.Call(let, args, output);
 	}
 

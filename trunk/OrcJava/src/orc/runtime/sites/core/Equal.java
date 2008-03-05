@@ -1,9 +1,10 @@
 /**
  * 
  */
-package orc.lib;
+package orc.runtime.sites.core;
 
 import orc.runtime.Args;
+import orc.runtime.OrcRuntimeTypeError;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.*;
 
@@ -17,7 +18,7 @@ public class Equal extends EvalSite {
 	 * @see orc.runtime.sites.EvalSite#evaluate(java.lang.Object[])
 	 */
 	@Override
-	public Value evaluate(Args args) {
+	public Value evaluate(Args args) throws OrcRuntimeTypeError {
 		
 		Object a = args.getArg(0);
 		Object b = args.getArg(1);

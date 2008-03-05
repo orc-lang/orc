@@ -1,28 +1,18 @@
 package orc.ast.extended.pattern;
 
-import java.util.LinkedList;
-
+import orc.ast.simple.Call;
 import orc.ast.simple.Expression;
 import orc.ast.simple.arg.Var;
 
-public class NilPattern implements Pattern {
-
-	Pattern actual;
+public class NilPattern extends Pattern {
 	
-	public NilPattern() { 
-		actual = new CallPattern("nil", new LinkedList<Pattern>());
-	}
-	
-	public Expression bind(Expression g, Var t) {
-		return actual.bind(g,t);
+	public Expression bind(Var u, Expression g) {
+		return g;
 	}
 
-	public Expression match(Expression f) {
-		return actual.match(f);
+	public Expression match(Var u) {
+		
+		return new Call(Pattern.ISNIL, u);
 	}
 
-	public boolean strict() {
-		return true;
-	}
-	
 }

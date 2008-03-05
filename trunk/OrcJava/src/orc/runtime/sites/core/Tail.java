@@ -1,21 +1,22 @@
 /**
  * 
  */
-package orc.lib.bool;
+package orc.runtime.sites.core;
 
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
-import orc.runtime.values.*;
+import orc.runtime.values.Value;
 
 /**
  * @author dkitchin
  *
  */
-public class Not extends EvalSite {
-	
-	@Override
+public class Tail extends EvalSite {
+
+
 	public Value evaluate(Args args) {
-		return new Constant(!args.boolArg(0));
+				
+		return args.valArg(0).tail();
 	}
 
 }
