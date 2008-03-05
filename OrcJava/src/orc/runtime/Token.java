@@ -122,7 +122,7 @@ public class Token implements Serializable, Comparable<Token> {
 	 * @return		self
 	 */
 	public Token bind(Var var, Future f) {
-		//System.out.println("binding " + var + " to " + val);
+		// System.out.println("binding " + var + " to " + f);
 		env = new Environment(var, f, env);
 		return this;
 	}
