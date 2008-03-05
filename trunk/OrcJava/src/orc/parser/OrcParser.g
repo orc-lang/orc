@@ -33,7 +33,8 @@ expr returns [Expression e = null]
 		List<Declaration> decList=null;
 	}
 	: decList=decls e=where_expr
-	  { for (Declaration d : decList) 
+	  { Collections.reverse(decList);
+	  	for (Declaration d : decList) 
 	  		e=new Declare(d,e); }
 	;
 

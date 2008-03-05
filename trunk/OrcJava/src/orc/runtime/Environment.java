@@ -28,7 +28,7 @@ public class Environment implements Serializable {
 	 * TODO: should be compiled using activation frames and variable offsets.
 	 * Currently uses a linear search.
 	 * @param var	variable name
-	 * @return		value, or error if binding exists
+	 * @return		value, or error if no binding exists
 	 */
 	public Future lookup(Var var) {
 		if (this.var.equals(var))

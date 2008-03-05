@@ -11,7 +11,7 @@ public class ValDeclaration implements Declaration {
 	
 	public ValDeclaration(String name, orc.ast.extended.Expression source) {
 		this.name = name;
-		this.source = new orc.ast.extended.Let(source);
+		this.source = source;
 	}
 
 	
