@@ -8,11 +8,11 @@ import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.runtime.nodes.Node;
 
-public class Zero extends Expression {
+public class Silent extends Expression {
 
 	@Override
 	public Node compile(Node output) {
-		return new orc.runtime.nodes.Zero();
+		return new orc.runtime.nodes.Silent();
 	}
 
 	@Override

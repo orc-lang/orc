@@ -14,10 +14,11 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import orc.runtime.Args;
+import orc.runtime.OrcRuntimeTypeError;
 import orc.runtime.Token;
 import orc.runtime.sites.Site;
 import orc.runtime.values.Constant;
-import orc.runtime.values.Tuple;
+import orc.runtime.values.TupleValue;
 import orc.runtime.values.Value;
 
 /**
@@ -33,24 +34,34 @@ public class Mail extends Site {
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.OrcEngine)
 	 */
 	public void callSite(Args args, Token returnToken) {
-		if (args.getValues().size() != 5)
-			throw new Error("sendEmail(from, to, subject, message, smtp)");
+		
+		String from, subject, message, smtp;
+		TupleValue to;
+		try {
+			
+			if (args.getValues().size() != 5)
+				throw new OrcRuntimeTypeError("Wrong number of arguments");
 
-		String from = args.stringArg(0);
-		Tuple to;
-		if (args.valArg(1) instanceof Tuple)
-			to = (Tuple) args.valArg(1);
+			
+		from = args.stringArg(0);
+		
+		if (args.valArg(1) instanceof TupleValue)
+			to = (TupleValue) args.valArg(1);
 		else
 		{
 			List<Value> vs = new ArrayList<Value>();
 			vs.add(new Constant(args.stringArg(1)));
-			to = new Tuple(vs);
+			to = new TupleValue(vs);
 		}
 			
-		String subject = args.stringArg(2);
-		String message = args.stringArg(3);
-		String smtp = args.stringArg(4);
-
+		subject = args.stringArg(2);
+		message = args.stringArg(3);
+		smtp = args.stringArg(4);
+		}
+		catch (OrcRuntimeTypeError e) {
+			System.out.println("Malformed arguments to sendMail(from, to, subject, message, smtp); remaining silent. [" + e.getMessage() + "]");
+			return;
+		}
 		// Set the host smtp address
 		Properties props = new Properties();
 		props.setProperty("mail.smtp.host", smtp);

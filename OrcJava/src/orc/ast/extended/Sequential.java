@@ -1,6 +1,7 @@
 package orc.ast.extended;
 
 import orc.ast.extended.pattern.Pattern;
+import orc.ast.simple.arg.Var;
 
 public class Sequential extends Expression {
 
@@ -20,10 +21,10 @@ public class Sequential extends Expression {
 		
 		orc.ast.simple.Expression source = left.simplify();
 		orc.ast.simple.Expression target = right.simplify();
-		orc.ast.simple.arg.Var t = new orc.ast.simple.arg.Var();
+		Var t = new Var();
 		
-		source = p.match(source);
-		target = p.bind(target, t);
+		source = Pattern.filter(p.match(source));
+		target = p.bind(t, target);
 		
 		return new orc.ast.simple.Sequential(source, target, t);
 	}

@@ -44,6 +44,7 @@ public class Call extends Expression {
 		this.caller = caller;
 		this.args = new LinkedList<Argument>();
 	}
+	
 
 	@Override
 	public Node compile(Node output) {

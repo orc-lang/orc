@@ -4,7 +4,7 @@ import orc.ast.simple.Expression;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 
-public class AsPattern implements Pattern {
+public class AsPattern extends Pattern {
 
 	Pattern p;
 	NamedVar x;
@@ -14,15 +14,15 @@ public class AsPattern implements Pattern {
 		this.x = new NamedVar(s);
 	}
 
-	public Expression bind(Expression g, Var t) {
+	public Expression bind(Var u, Expression g) {
 		
-		Expression h = g.subst(t, x);
-		return p.bind(h,t);
+		Expression h = g.subst(u, x);
+		return p.bind(u,h);
 	}
 
-	public Expression match(Expression f) {
+	public Expression match(Var u) {
 		
-		return p.match(f);
+		return p.match(u);
 	}
 
 	public boolean strict() {

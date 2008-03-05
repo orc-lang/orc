@@ -5,7 +5,7 @@ import orc.ast.simple.Let;
 import orc.ast.simple.Parallel;
 import orc.ast.simple.arg.Var;
 
-public class PublishPattern implements Pattern {
+public class PublishPattern extends Pattern {
 
 	Pattern p;
 	
@@ -13,12 +13,12 @@ public class PublishPattern implements Pattern {
 		this.p = p;
 	}
 
-	public Expression bind(Expression g, Var t) {
-		return new Parallel(p.bind(g, t), new Let(t));
+	public Expression bind(Var u, Expression g) {
+		return new Parallel(p.bind(u, g), new Let(u));
 	}
 
-	public Expression match(Expression f) {
-		return p.match(f);
+	public Expression match(Var u) {
+		return p.match(u);
 	}
 
 	public boolean strict() {

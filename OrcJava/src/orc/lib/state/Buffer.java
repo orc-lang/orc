@@ -10,7 +10,6 @@ import orc.runtime.Token;
 import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.Site;
-import orc.runtime.values.Constant;
 import orc.runtime.values.Value;
 
 /**
@@ -75,7 +74,7 @@ public class Buffer extends EvalSite {
 				// If there are callers waiting, give this item to the top caller.
 				else {
 					Token receiver = pendingQueue.removeFirst();
-					receiver.resume(new Constant(item));
+					receiver.resume(item);
 				}
 
 				// Since this is an asynchronous buffer, a put call always returns.

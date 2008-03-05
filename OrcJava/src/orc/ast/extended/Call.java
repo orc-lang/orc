@@ -16,26 +16,38 @@ public class Call extends Expression {
 		this.caller = caller;
 		this.args = args;
 	}
+	public Call(Expression caller, Expression arg)
+	{
+		this.caller = caller;
+		this.args = new ArrayList<Expression>();
+		this.args.add(arg);
+	}
+	public Call(Expression caller)
+	{
+		this.caller = caller;
+		this.args = new ArrayList<Expression>();
+	}
 	
-	/* Alternate constructor for sites with string names, such as ops */
+	/* Alternate constructors for sites with string names, such as ops */
 	public Call(String s, List<Expression> args)
 	{
 		this.caller = new Name(s);
 		this.args = args;
 	}
-	
-	/* Special case alternate constructor for unary ops */
 	public Call(String s, Expression arg)
 	{
 		this.caller = new Name(s);
 		this.args = new ArrayList<Expression>();
 		this.args.add(arg);
 	}
+	public Call(String s)
+	{
+		this.caller = new Name(s);
+		this.args = new ArrayList<Expression>();
+	}
 	
 	@Override
 	public orc.ast.simple.Expression simplify() {
-				
-		if (caller instanceof Dot) { caller = new Quasidot((Dot)caller); }
 		
 		List<Argument> newargs = new LinkedList<Argument>();
 		Arg newcaller = caller.argify();

@@ -4,7 +4,7 @@ import orc.ast.extended.Literal;
 import orc.ast.simple.*;
 import orc.ast.simple.arg.*;
 
-public class LiteralPattern implements Pattern {
+public class LiteralPattern extends Pattern {
 
 	Argument lit;
 	
@@ -12,35 +12,22 @@ public class LiteralPattern implements Pattern {
 		this.lit = l.argify().asArg();
 	}
 	
-	public Expression bind(Expression g, Var t) {
-		
-		
-		
-		return null;
+	public Expression bind(Var u, Expression g) {
+		return g;
 	}
 
-	public Expression match(Expression f) {
+	public Expression match(Var u) {
+		// u = L
+		Expression test = new Call(Pattern.EQUAL, u, lit); 
 		
-		// t
-	    Var fResult = new Var();
+		// some(L)
+		Expression tc = new Call(Pattern.SOME, lit);
 		
-	    // t = L
-		Expression eqExpr = new Call(new NamedVar("op="), fResult, lit);
+		// none()
+		Expression fc = new Call(Pattern.NONE);
 		
-		// if(b) <b< (t = L)
-		Var eqResult = new Var();
-		Expression ifCall = new Call(new NamedVar("if"), eqResult);
-		Expression ifExpr = new Where(ifCall, eqExpr, eqResult);
-		
-		// f >t> ( if(b) <b< (t = L) )
-		Expression filter = new Sequential(f, ifExpr, fResult);
-		
-		// ( f >t> ( if(b) <b< (t = L) ) ) >> let(t)
-		return new Sequential(filter, new Let(fResult), new Var());
+		// if (u=L) then some(L) else none()
+		return Pattern.ifexp(test, tc, fc);
 	}
 	
-	public boolean strict() {
-		return true;
-	}
-
 }

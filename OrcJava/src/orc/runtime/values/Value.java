@@ -42,7 +42,34 @@ public class Value implements Future {
 	 * Currently, the signal value is an empty tuple
 	 */
 	public static Value signal() {
-		return new Tuple();
+		return new TupleValue();
 	}
+	
+	
+	/**
+	 * Test whether this value inhabits one of the option or list types. 
+	 */
+	public boolean isSome() { return false; }
+	public boolean isNone() { return false; }
+	public boolean isCons() { return false; }
+	public boolean isNil() { return false; }
+	
+	/**
+	 * Return the contained value v of an option some(v).
+	 * This method must throw an exception iff isSome() returns false.
+	 */
+	public Value untag() { throw new Error(); }
+	
+	/**
+	 * Return the head value of a cons-like data structure.
+	 * This method must throw an exception iff isCons() returns false.
+	 */
+	public Value head() { throw new Error(); }
+	
+	/**
+	 * Return the tail value of a cons-like data structure.
+	 * This method must throw an exception iff isCons() returns false.
+	 */
+	public Value tail() { throw new Error(); }
 	
 }

@@ -7,36 +7,63 @@ import java.util.LinkedList;
 import java.util.List;
 
 import orc.runtime.Args;
+import orc.runtime.OrcRuntimeTypeError;
 import orc.runtime.sites.EvalSite;
 
 /**
  * A tuple value container
  * @author wcook
  */
-public class Tuple extends EvalSite {
+public class TupleValue extends EvalSite {
 	private static final long serialVersionUID = 1L;
 
 	List<Value> values;
 
 	/* Constructor for the empty tuple */
-	public Tuple() {
+	public TupleValue() {
 		this.values = new LinkedList<Value>();
 	}
 	
-	public Tuple(List<Value> values) {
+	/* Constructor for binary tuples */
+	public TupleValue(Value v, Value w) {
+		this.values = new LinkedList<Value>();
+		this.values.add(v);
+		this.values.add(w);
+	}
+	
+	public TupleValue(List<Value> values) {
 		this.values = values;
 	}
 	
+	class FitSite extends EvalSite {
+		
+		int size;
+		public FitSite(int size) {
+			this.size = size;
+		}
+		
+		public Value evaluate(Args args) throws OrcRuntimeTypeError {
+			return new Constant(args.intArg(0) == this.size);
+		}
+	}
+	
 	// A tuple may be used as a site for array lookup
-	public Value evaluate(Args args)
+	public Value evaluate(Args args) throws OrcRuntimeTypeError
 	{
+		// TODO: Generalize this treatment of dot sites.
+		try {			
+			String s = args.stringArg(0);
+			
+			if (s.equals("fits")) {
+				return new FitSite(values.size());
+			}
+			else { throw new Exception(); }
+		}
+		catch (Exception e) {
 		int i = args.intArg(0);
 		
-		// Uses Perl's idiom for end-lookup using negative integers
-		if (i < 0) { i = size() + i; }
-		
-		// Note that this will still be out of bounds if |i| >= size
 		return at(i);
+		}
 	}
 	
 	public String toString() {
@@ -50,7 +77,7 @@ public class Tuple extends EvalSite {
 		for (Object x : items) {
 			if (i > 0)
 				buf.append(sep);
-			buf.append(x);
+			buf.append(x.toString());
 			i++;
 		}
 		buf.append(right);

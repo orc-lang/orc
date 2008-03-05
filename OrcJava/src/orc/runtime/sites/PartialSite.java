@@ -4,6 +4,7 @@
 package orc.runtime.sites;
 
 import orc.runtime.Args;
+import orc.runtime.OrcRuntimeTypeError;
 import orc.runtime.Token;
 import orc.runtime.values.Value;
 
@@ -25,14 +26,22 @@ public abstract class PartialSite extends Site {
 	 */
 	@Override
 	public void callSite(Args args, Token caller) {
-		Value v = evaluate(args);
 		
-		if (v != null)
-		{
-			caller.resume(v);
+		
+		try {
+			Value v = evaluate(args);
+			if (v != null)
+			{
+				caller.resume(v);
+			}
 		}
+		catch (OrcRuntimeTypeError e) {
+			System.out.println("Call failed due to a type error; remaining silent. [" + e.getMessage() + "]");
+		}
+		
+		
 	}
 	
-	abstract public Value evaluate(Args args);
+	abstract public Value evaluate(Args args) throws OrcRuntimeTypeError;
 
 }

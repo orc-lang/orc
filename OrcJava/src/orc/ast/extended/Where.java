@@ -22,8 +22,8 @@ public class Where extends Expression {
 		orc.ast.simple.Expression target = left.simplify();
 		orc.ast.simple.arg.Var t = new orc.ast.simple.arg.Var();
 		
-		source = p.match(source);
-		target = p.bind(target, t);
+		source = Pattern.filter(p.match(source));
+		target = p.bind(t, target);
 		
 		return new orc.ast.simple.Where(target, source,t);
 	}
