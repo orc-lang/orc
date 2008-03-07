@@ -34,6 +34,11 @@ public class Def extends Expression {
 			freeset.addAll(d.vars());
 		}
 		
+		for(Definition d : defs)
+		{
+			freeset.remove(d.name);
+		}
+		
 		return new orc.runtime.nodes.Def(newdefs, newbody, freeset);
 	}
 
@@ -52,9 +57,16 @@ public class Def extends Expression {
 	@Override
 	public Set<Var> vars() {
 		Set<Var> freeset = body.vars();
+		
+		// Standard notion of free vars
 		for (Definition d : defs)
 		{
 			freeset.addAll(d.vars());
+		}
+		
+		// Enforce visibility of mutual recursion
+		for (Definition d : defs)
+		{
 			freeset.remove(d.name);
 		}
 		

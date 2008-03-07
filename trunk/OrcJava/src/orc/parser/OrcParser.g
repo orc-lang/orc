@@ -119,18 +119,21 @@ defn_group returns [List<Definition> defs = new ArrayList<Definition>()]
 defn returns [Definition def=null]
 	{
 		Expression body;
-		List<String> formals;
+		List<Pattern> formals;
 	}	
 	: "def" name:NAME formals=formals_list EQ body=expr
-	   {def = new Definition(name.getText(), formals, body); }
+	   { def = new Definition(name.getText(), formals, body); }
 	;
 
 
-formals_list returns [List<String> formals = new ArrayList<String>() ]
-	: ( LPAREN ( n:NAME 
-			{ formals.add(n.getText()); }
-		( COMMA n2:NAME
-			{ formals.add(n2.getText()); }
+formals_list returns [List<Pattern> formals = new ArrayList<Pattern>()]
+	{
+		Pattern p;
+	}
+	: ( LPAREN ( p=pattern 
+			{ formals.add(p); }
+		( COMMA p=pattern
+			{ formals.add(p); }
 		)* )? RPAREN 
 	  )? 
 	;
@@ -358,31 +361,11 @@ literal returns [Literal l = null]
 
 
 pattern returns [Pattern p = null]
-	: p=tuple_pattern 
+	: p=cons_pattern 
 		("as" var:NAME
 		{ p = new AsPattern(p,var.getText()); }
 		)?
 	;
-
-tuple_pattern returns [Pattern p = null]
-	{
-		List<Pattern> ps = null;
-		Pattern q;	
-	}
-	: 
-	  p=cons_pattern
-		(options {greedy = true;} : 
-		 COMMA q=cons_pattern
-		 	{ if (ps == null) 
-		 		{	 
-		 		  ps = new LinkedList<Pattern>();
-		 		  ps.add(p);
-		 		  p = new TuplePattern(ps);
-		 		}
-		 	  ps.add(q); 
-		 	}
-		)*
-	; 
 
 cons_pattern returns [Pattern p = null]
 	{
@@ -406,30 +389,41 @@ basic_pattern returns [Pattern p = null]
 		{ p = new LiteralPattern(l); }
 	| BANG q=basic_pattern
 		{ p = new PublishPattern(q); }
-	| var:NAME
+	| var:NAME 
 		{ p = new VariablePattern(var.getText()); } 
-	  ( LPAREN q=pattern RPAREN
+	  ( q=tuple_pattern
 		{ p = new CallPattern(var.getText(),q); }
 	  )?
-	| LBRACKET
-		{
-			List<Pattern> ps = new LinkedList<Pattern>();
-		}
-		(
-		 p=pattern { ps.add(p); }
-		  // Full list matching functionality (eg [x,y,z]) removed due to a parsing conflict
-		  // Parser would erroneously read as [(x,y,z)].
-		  // No way to fix this in ANTLR without making tuples always parenthesized,
-		  // i.e. (x,y) instead of x,y
-		  // and also complicating the grammar for site matching.
-		  // Therfore status is 'wontfix'.
-		  // (options {greedy = true;} : COMMA p=pattern { ps.add(p); } )*
+	| p=list_pattern
+	| p=tuple_pattern
+	;
+	
+tuple_pattern returns [Pattern p = null]
+	{
+		List<Pattern> ps = new LinkedList<Pattern>(); 
+	}
+	: LPAREN
+	    (p=pattern { ps.add(p); }
+	     (options {greedy = true;} : COMMA p=pattern { ps.add(p); } )*
+		)?
+	  RPAREN
+	    { if (ps.size() == 1)
+	    	{ p = ps.get(0); }
+	      else
+	      	{ p = new TuplePattern(ps); }
+	    }
+	;
+	
+list_pattern returns [Pattern p = null]
+	{
+		List<Pattern> ps = new LinkedList<Pattern>(); 
+	}	
+	: LBRACKET
+		(p=pattern { ps.add(p); }
+		  (options {greedy = true;} : COMMA p=pattern { ps.add(p); } )*
 		)?
 	  RBRACKET
 	  	{ p = new ListPattern(ps); }
-	| LPAREN p=pattern RPAREN
-	| LPAREN RPAREN
-		{ p = new TuplePattern(new LinkedList<Pattern>()); }
 	;
 	
 

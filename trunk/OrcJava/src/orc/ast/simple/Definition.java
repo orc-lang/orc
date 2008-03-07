@@ -44,6 +44,8 @@ public class Definition {
 		return new Definition(name, formals, body.subst(a, x));
 	}
 	
+	// Does not validly compute the set of free vars if this definition is in a mutually recursive group.
+	// That determination must be accounted for elsewhere.
 	public Set<Var> vars()
 	{
 		Set<Var> freeset = body.vars();
@@ -51,6 +53,7 @@ public class Definition {
 		freeset.removeAll(formals);
 		return freeset;
 	}
+	
 	
 	public orc.runtime.nodes.Definition compile() {
 		
