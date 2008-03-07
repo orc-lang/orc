@@ -42,7 +42,7 @@ public class SyncChannel extends EvalSite {
 		}
 	}
 	
-	private class SyncChannelInstance extends DotSite {
+	protected class SyncChannelInstance extends DotSite {
 
 		// Invariant: senderQueue is empty or receiverQueue is empty
 		private LinkedList<SenderItem> senderQueue;

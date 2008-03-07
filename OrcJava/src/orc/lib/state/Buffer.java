@@ -29,7 +29,7 @@ public class Buffer extends EvalSite {
 	}
 	
 	
-	private class BufferInstance extends DotSite {
+	protected class BufferInstance extends DotSite {
 
 		private LinkedList<Value> localBuffer;
 		private LinkedList<Token> pendingQueue;

@@ -36,8 +36,8 @@ public abstract class Pattern {
 	protected static Argument SOME = new Site(new orc.runtime.sites.core.Some());
 	protected static Argument NONE = new Site(new orc.runtime.sites.core.None());
 	
-	protected static Argument ISSOME = new Site(new orc.runtime.sites.core.IsSome());
-	protected static Argument ISNONE = new Site(new orc.runtime.sites.core.IsNone());
+	public static Argument ISSOME = new Site(new orc.runtime.sites.core.IsSome());
+	public static Argument ISNONE = new Site(new orc.runtime.sites.core.IsNone());
 	
 	protected static Argument CONS = new Site(new orc.runtime.sites.core.Cons());
 	
