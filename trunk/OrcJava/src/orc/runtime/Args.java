@@ -54,7 +54,7 @@ public class Args {
 			return Value.signal();
 		}
 		else if (values.size() == 1) {
-			return valArg(0);
+			return values.get(0);
 		}
 		else {
 			return new TupleValue(values);
@@ -65,13 +65,13 @@ public class Args {
 	/**
 	 * Helper function to retrieve the nth value, with error checking
 	 */
-	public Value valArg(int n)
+	public Value valArg(int n) throws OrcRuntimeTypeError
 	{
 		try {
 			return values.get(n);
 		}
 		catch (IndexOutOfBoundsException e)
-			{ throw new Error("Arity mismatch calling site. Could not find argument #" + n); }
+			{ throw new OrcRuntimeTypeError("Arity mismatch calling site. Could not find argument #" + n); }
 	}
 	
 	

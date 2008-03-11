@@ -25,9 +25,11 @@ public class OrcEngine {
 	Integer max_publish = null;
 	public boolean debugMode = false;
 	
+	LogicalClock clock;
+	
 	public OrcEngine(Integer pub){
 		this.max_publish = pub;
-	
+		this.clock = new LogicalClock();
 	}
 
 	/**
@@ -48,18 +50,33 @@ public class OrcEngine {
 	public void work(){	
 	    int round = 1;
 		while (moreWork()) {
+			
+			/* If an active token is available, process it. */
+			if (activeTokens.size() > 0){
+				activeTokens.remove().process();
+				continue;
+			}
+			
+			// There are no active tokens available.
+			
+			/* If a site return is available, make it active.
+			 * This marks the beginning of a new round. 
+			 */
 			if (debugMode){
 				debug("** Round,active,queued,calls " + (round++) + 
 						"," + activeTokens.size() +","+queuedReturns.size() + "," + calls +
 						" ***");
 				}
-			while (activeTokens.size() > 0){
-				activeTokens.remove().process();
-			}
-	
+			
+			
 			if (queuedReturns.size() > 0 ){
 				activeTokens.add(queuedReturns.remove());
+				continue;
 			}
+			
+			// There are no site returns available.
+			
+			
 		}
 	}
 	
@@ -70,17 +87,23 @@ public class OrcEngine {
 	private synchronized boolean moreWork() {
 		if (max_publish != null && max_publish.intValue() <= num_published)
 			return false;
-		if (activeTokens.size() == 0) {
-			/* Number of active calls is not currently used.
-			 * Might replace this with a more stable counting method later.
-			 */
-			//if (calls == 0)
-			//if (calls == 0 && waitList.size() == 0)
-				//return false;
+		
+		/* If there are no active or queued tokens,
+		 * advance the logical clock to its next time point,
+		 * making all of the logical timer calls for that time
+		 * point available as site returns. 
+		 * 
+		 * If the logical clock cannot be advanced, suspend the engine.  
+		 * 
+		 * Note that ordinary site returns are considered to take zero logical time,
+		 * so any expression waiting on the logical clock may experience starvation
+		 * if there are an infinite number of rounds taking zero logical time.
+		 */
+		if (activeTokens.size() == 0 && queuedReturns.size() == 0 && !clock.advance()) {
+			/* There is no more work available. Wait for a site call to return */ 
 			try {
 				wait();
-			} catch (InterruptedException e) {
-			}
+			} catch (InterruptedException e) {}
 		}
 		return true;
 	}
@@ -114,6 +137,7 @@ public class OrcEngine {
 			{ System.out.println(s); }
 	}
 	
+	public LogicalClock getClock() { return clock; }
 	
 	/* Read a token from a dump file. */
 	/*

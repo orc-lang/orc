@@ -6,6 +6,7 @@ package orc.lib.state;
 import java.util.LinkedList;
 
 import orc.runtime.Args;
+import orc.runtime.OrcRuntimeTypeError;
 import orc.runtime.Token;
 import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;
@@ -63,7 +64,7 @@ public class Buffer extends EvalSite {
 		
 		private class putMethod extends Site {
 			@Override
-			public void callSite(Args args, Token sender) {
+			public void callSite(Args args, Token sender) throws OrcRuntimeTypeError {
 
 				Value item = args.valArg(0);
 				

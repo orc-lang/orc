@@ -8,4 +8,6 @@ site SendMail = orc.lib.net.Mail
 site Buffer = orc.lib.state.Buffer
 site SyncChannel = orc.lib.state.SyncChannel
 
+site Cell = orc.lib.state.Cell
+
 site Webservice = orc.runtime.sites.Webservice

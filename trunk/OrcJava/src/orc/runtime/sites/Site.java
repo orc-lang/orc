@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import orc.runtime.Args;
+import orc.runtime.OrcRuntimeTypeError;
 import orc.runtime.Token;
 import orc.runtime.nodes.Node;
 import orc.runtime.values.Future;
@@ -42,7 +43,12 @@ public abstract class Site extends Value implements Callable {
 				{ values.add(v); }
 		}
 		
-		callSite(new Args(values), callToken.move(nextNode));
+		try {
+			callSite(new Args(values), callToken.move(nextNode));
+		} catch (OrcRuntimeTypeError e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	
@@ -51,6 +57,6 @@ public abstract class Site extends Value implements Callable {
 	 * @param args			list of argument values
 	 * @param caller	where the result should be sent
 	 */
-	abstract public void callSite(Args args, Token caller);
+	abstract public void callSite(Args args, Token caller) throws OrcRuntimeTypeError;
 
 }

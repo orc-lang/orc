@@ -112,7 +112,7 @@ defn_group returns [List<Definition> defs = new ArrayList<Definition>()]
 		Definition def;
 	}
 	: def=defn {defs.add(def);}
-	  (options {greedy = true;} : def=defn {defs.add(def);} )?
+	  (options {greedy = true;} : def=defn {defs.add(def);} )*
 	;
 
 
