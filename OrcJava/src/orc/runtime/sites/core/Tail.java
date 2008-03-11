@@ -4,6 +4,7 @@
 package orc.runtime.sites.core;
 
 import orc.runtime.Args;
+import orc.runtime.OrcRuntimeTypeError;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.Value;
 
@@ -14,7 +15,7 @@ import orc.runtime.values.Value;
 public class Tail extends EvalSite {
 
 
-	public Value evaluate(Args args) {
+	public Value evaluate(Args args) throws OrcRuntimeTypeError {
 				
 		return args.valArg(0).tail();
 	}

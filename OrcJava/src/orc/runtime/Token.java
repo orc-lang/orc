@@ -30,7 +30,6 @@ public class Token implements Serializable, Comparable<Token> {
 	protected OrcEngine engine;
 	Token caller;
 	Value result;
-	boolean debugMode;
 
 	public Token(Node node, Environment env, Token caller, GroupCell group, Value result, OrcEngine engine) {
 		this.node = node;
@@ -39,7 +38,6 @@ public class Token implements Serializable, Comparable<Token> {
 		this.group = group;
 		this.result = result;
 		this.engine = engine;
-		this.debugMode = engine.debugMode;
 	}
 	
 	
@@ -122,7 +120,7 @@ public class Token implements Serializable, Comparable<Token> {
 	 * @return		self
 	 */
 	public Token bind(Var var, Future f) {
-		// System.out.println("binding " + var + " to " + f);
+		debug("binding " + var + " to " + f);
 		env = new Environment(var, f, env);
 		return this;
 	}
@@ -166,9 +164,7 @@ public class Token implements Serializable, Comparable<Token> {
 	
 	public void debug(String s)
 	{
-		if (debugMode)
-			{ System.out.println(s); }
-//		 System.out.print("[" + token.hashCode() + "] ");
+		engine.debug(s);
 	}
 	
 	public void activate()

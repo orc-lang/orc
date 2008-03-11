@@ -4,6 +4,7 @@
 package orc.runtime.sites.core;
 
 import orc.runtime.Args;
+import orc.runtime.OrcRuntimeTypeError;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.NoneValue;
 import orc.runtime.values.SomeValue;
@@ -16,7 +17,7 @@ import orc.runtime.values.Value;
 public class IsNil extends EvalSite {
 
 	@Override
-	public Value evaluate(Args args) {
+	public Value evaluate(Args args) throws OrcRuntimeTypeError {
 
 		Value v = args.valArg(0);
 		
