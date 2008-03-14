@@ -29,6 +29,7 @@ public abstract class EvalSite extends Site {
 		}
 		catch (OrcRuntimeTypeError e) {
 			System.out.println("Call failed due to a type error; remaining silent. [" + e.getMessage() + "]");
+			caller.die();
 		}
 	}
 	

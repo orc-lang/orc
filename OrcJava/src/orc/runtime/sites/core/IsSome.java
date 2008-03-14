@@ -22,7 +22,10 @@ public class IsSome extends Site {
 		
 		if (v.isSome()) {
 			caller.resume(v.untag());
-		}		
+		}
+		else {
+			caller.die();
+		}
 	}
 
 }

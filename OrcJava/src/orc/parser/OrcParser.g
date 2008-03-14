@@ -200,10 +200,10 @@ relationalExpression returns [Expression n = null]
        }
      (EQ       {n = new Call("op=", args);}
       |NOT_EQ  {n = new Call("op/=", args);}
-      |GT      {n = new Call("op>.", args);}
+      |GT      {n = new Call("op>", args);}
       |GTE     {n = new Call("op>=", args);}
-      |LT      {n = new Call("op<.", args);}
-      |LTE      {n = new Call("op<=", args);}
+      |LT      {n = new Call("op<", args);}
+      |LTE     {n = new Call("op<=", args);}
       )
       p=addingExpression {args.add(p);})*
   ;
@@ -277,6 +277,7 @@ consExpression returns [Expression e = null]
 
 basic_expr returns [Expression e = null]
 	: e=invoke_expr
+	| e=lambda_expr
 	| e=tuple_expr 
 	| e=list_expr 
 	| e=silent_expr
@@ -296,7 +297,6 @@ invoke_expr returns [Expression e = null]
 	  )*
 	;
 	
-	
 arguments returns [List<Expression> args = new ArrayList<Expression>();]
 	{
 		Expression e;
@@ -307,6 +307,17 @@ arguments returns [List<Expression> args = new ArrayList<Expression>();]
 		 )?
 	  RPAREN 
 	;	
+
+
+lambda_expr returns [Expression e = null]
+	{
+		Expression body;
+		List<Pattern> formals;
+	}	
+	: "lambda" formals=formals_list EQ body=expr
+	   { e = new Lambda(formals, body); }
+	;
+	
 
 
 tuple_expr returns [Expression e = null]

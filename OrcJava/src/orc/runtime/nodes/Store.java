@@ -35,5 +35,6 @@ public class Store extends Node {
 		GroupCell group = t.getGroup();
 		Value result = t.getResult();
 		group.setValue(result);
+		t.die();
 	}
 }

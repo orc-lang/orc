@@ -86,8 +86,8 @@ public class Cell extends EvalSite {
 					contents = val;
 					
 					/* Wake up all queued readers and report the written value to them. */
-					for (Token t : readQueue) {
-						t.resume(val);
+					for (Token reader : readQueue) {
+						reader.resume(val);
 					}
 					
 					/* Null out the read queue. 
@@ -99,7 +99,9 @@ public class Cell extends EvalSite {
 					/* A successful write publishes a signal. */
 					writer.resume();
 				}
-				// If the read queue is null, do nothing. The writer remains silent.
+				
+				/* A failed write kills the writer. */
+				writer.die();
 					
 					
 			}

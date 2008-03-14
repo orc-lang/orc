@@ -5,6 +5,7 @@ package orc.runtime.nodes;
 
 import orc.ast.simple.arg.Var;
 import orc.runtime.Token;
+import orc.runtime.regions.GroupRegion;
 import orc.runtime.values.GroupCell;
 
 /**
@@ -34,12 +35,10 @@ public class Where extends Node {
 	 * @see orc.runtime.nodes.Node#process(orc.runtime.Token, orc.runtime.OrcEngine)
 	 */
 	public void process(Token t) {
-		/*
-		if (engine.debugMode)
-			engine.debug("Where " + var, t);
-		 */
 		GroupCell cell = t.getGroup().createCell();
+		GroupRegion region = new GroupRegion(t.getRegion(), cell);
+		
 		t.copy().bind(var, cell).move(left).activate();
-		t.move(right).setGroup(cell).activate();
+		t.move(right).setGroup(cell).setRegion(region).activate();
 	}
 }
