@@ -26,12 +26,10 @@ public class GroupCell implements Serializable, Future {
 	boolean alive;
 	List<Token> waitList;
 	List<GroupCell> children;
-	//int calls;
 
 	public GroupCell() {
 		bound = false;
 		alive = true;
-		//calls = 0;
 	}
 
 	/**
@@ -56,40 +54,34 @@ public class GroupCell implements Serializable, Future {
 	 * This call defines the fundamental behavior of groups:
 	 * When the value is bound, all subgroups are killed
 	 * and all waiting tokens are activated.
-	 * Any outstanding calls from the group are subtracted from the total calls for the engine
-	 * so that we can exit from orc properly.
 	 * @param value 	the value for the group 
 	 * @param engine	engine
 	 */
 	public void setValue(Value value) {
-		//int calls_killed;
 		this.value = value;
 		bound = true;
-		//calls_killed = kill();
 		kill();
-		//engine.addCall(-calls_killed);
-		if (waitList != null)
-			for (Token t : waitList)
+		if (waitList != null) {
+			for (Token t : waitList) {
 				t.activate();
+			}
+			waitList = null;
+		}
+			
 	}
 
 	/**
 	 * Recursively kills all subgroups.
-	 * Return the number of calls that were outstanding in the killed group, so that
-	 * they can be removed from the total outstanding in the engine.
 	 * After the children are killed, set children to null so that the memory used by the 
 	 * killed objects can be recycled.
 	 */
-	//private int kill() {
+	
 	private void kill() {
-		//int answer = calls;
 		alive = false;
 		if (children != null)
 			for (GroupCell sub : children)
-				//answer += sub.kill();
 				sub.kill();
 		children = null;
-		//return answer;
 	}
 
 	/**
@@ -105,9 +97,15 @@ public class GroupCell implements Serializable, Future {
 	 * @param t
 	 */
 	public void waitForValue(Token t) {
-		if (waitList == null)
-			waitList = new LinkedList<Token>();
-		waitList.add(t);
+		if (alive) {
+			if (waitList == null)
+				waitList = new LinkedList<Token>();
+			waitList.add(t);
+		}
+		else {
+			// A token waiting on a dead group cell will remain silent forever.
+			t.die();
+		}
 	}
 
 	public Value forceArg(Token t) {
@@ -135,5 +133,18 @@ public class GroupCell implements Serializable, Future {
 			return null;
 		}
 	}
-
+	
+	// Close this cell because it will never be bound.
+	// All tokens waiting on this cell die.
+	public void close() {
+		if (alive) {
+			kill();
+			if (waitList != null) {
+				for (Token t : waitList) {
+					t.die();
+				}
+				waitList = null;
+			}
+		}
+	}
 }

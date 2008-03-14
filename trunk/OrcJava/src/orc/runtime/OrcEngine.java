@@ -3,9 +3,11 @@
  */
 package orc.runtime;
 
+import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 
 import orc.runtime.nodes.Node;
+import orc.runtime.regions.Execution;
 import orc.runtime.values.GroupCell;
 
 /**
@@ -17,15 +19,16 @@ public class OrcEngine {
 	LinkedList<Token> activeTokens = new LinkedList<Token>();
 	LinkedList<Token> queuedReturns = new LinkedList<Token>();
 	
-	int calls;
 	//number of values published by the root node.
 	//updated by PrintResult and WriteResult.
 	int num_published = 0;
 	// If max_publish is non null, then orc should exit after publishing that many values.
 	Integer max_publish = null;
-	public boolean debugMode = false;
-	
 	LogicalClock clock;
+	
+	int round = 1; 
+	
+	public boolean debugMode = false;
 	
 	public OrcEngine(Integer pub){
 		this.max_publish = pub;
@@ -39,17 +42,16 @@ public class OrcEngine {
 	 * @param root  node to run
 	 */
 	public void run(Node root, Environment env) {
-
-		GroupCell startGroup = new GroupCell();
-		Token start = new Token(root, env, null/* caller */, startGroup, null/* value */, this);
-
+		
+		Execution exec = new Execution(this);
+		Token start = new Token(root, env, exec);
 		activeTokens.add(start);
-        work();
+        work(exec);
 	}
 	
-	public void work(){	
-	    int round = 1;
-		while (moreWork()) {
+	public void work(Execution exec) {
+	   
+		while (moreWork(exec)) {
 			
 			/* If an active token is available, process it. */
 			if (activeTokens.size() > 0){
@@ -62,15 +64,9 @@ public class OrcEngine {
 			/* If a site return is available, make it active.
 			 * This marks the beginning of a new round. 
 			 */
-			if (debugMode){
-				debug("** Round,active,queued,calls " + (round++) + 
-						"," + activeTokens.size() +","+queuedReturns.size() + "," + calls +
-						" ***");
-				}
-			
-			
 			if (queuedReturns.size() > 0 ){
 				activeTokens.add(queuedReturns.remove());
+				round++; reportRound();
 				continue;
 			}
 			
@@ -84,7 +80,7 @@ public class OrcEngine {
 	 * Internal function to check if there is more work to do
 	 * @return true if more work
 	 */
-	private synchronized boolean moreWork() {
+	private synchronized boolean moreWork(Execution exec) {
 		if (max_publish != null && max_publish.intValue() <= num_published)
 			return false;
 		
@@ -99,13 +95,13 @@ public class OrcEngine {
 		 * so any expression waiting on the logical clock may experience starvation
 		 * if there are an infinite number of rounds taking zero logical time.
 		 */
-		if (activeTokens.size() == 0 && queuedReturns.size() == 0 && !clock.advance()) {
+		if (activeTokens.size() == 0 && queuedReturns.size() == 0 && !clock.advance() && exec.isRunning()) {
 			/* There is no more work available. Wait for a site call to return */ 
 			try {
 				wait();
 			} catch (InterruptedException e) {}
 		}
-		return true;
+		return exec.isRunning();
 	}
 
 	/**
@@ -114,7 +110,7 @@ public class OrcEngine {
 	 */
 	synchronized public void activate(Token t) {
 		activeTokens.addLast(t);
-		notify();
+		notifyAll();
 	}
 	
 	/**
@@ -123,9 +119,17 @@ public class OrcEngine {
 	 */
 	synchronized public void resume(Token t) {
 		queuedReturns.addLast(t);
-		notify();
+		notifyAll();
 	}
 	
+	/**
+	 * Force the engine to wake up any threads waiting in work loops.
+	 * This is used to make a thread aware of the completion of its execution
+	 * without knowing the identity of that thread.
+	 */
+	synchronized public void wake() {
+		notifyAll();
+	}
 	
 	public void addPub(int n) {
 		num_published += n;
@@ -135,6 +139,17 @@ public class OrcEngine {
 	{
 		if (debugMode)
 			{ System.out.println(s); }
+	}
+	
+	public void reportRound() {
+		if (debugMode){
+			debug("---\n" + 
+			      "Round:   " + round + "\n" +
+			      "Active:  " + activeTokens.size() + "\n" +
+			      "Queued:  " + queuedReturns.size() + "\n" +
+			      "L-Clock: " + clock.getTime() + "\n" +
+			      "---\n\n");
+			}
 	}
 	
 	public LogicalClock getClock() { return clock; }

@@ -30,5 +30,6 @@ public class Return extends Node {
 		Value result = t.getResult();
 
 		caller.copy().setResult(result).activate();
+		t.die();
 	}
 }

@@ -48,6 +48,7 @@ public abstract class Site extends Value implements Callable {
 		} catch (OrcRuntimeTypeError e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			callToken.die();
 		}
 	}
 

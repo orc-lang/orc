@@ -30,13 +30,16 @@ public abstract class PartialSite extends Site {
 		
 		try {
 			Value v = evaluate(args);
-			if (v != null)
-			{
+			if (v != null) {
 				caller.resume(v);
+			}
+			else {
+				caller.die();
 			}
 		}
 		catch (OrcRuntimeTypeError e) {
 			System.out.println("Call failed due to a type error; remaining silent. [" + e.getMessage() + "]");
+			caller.die();
 		}
 		
 		

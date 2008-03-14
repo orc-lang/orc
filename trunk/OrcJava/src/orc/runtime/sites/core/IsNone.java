@@ -23,7 +23,10 @@ public class IsNone extends Site {
 		
 		if (v.isNone()) {
 			caller.resume(Value.signal());
-		}		
+		}
+		else {
+			caller.die();
+		}
 	}
 
 }

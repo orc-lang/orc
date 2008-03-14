@@ -17,7 +17,7 @@ public class Silent extends Node {
 
 	@Override
 	public void process(Token t) {
-		// Do nothing.
+		t.die();
 	}
 
 }

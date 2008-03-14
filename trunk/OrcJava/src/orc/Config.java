@@ -203,6 +203,7 @@ class PrintResult extends Node {
 		t.getEngine().addPub(1); // keep track of how many values have been published
 		System.out.println(val.toString());
 		System.out.flush();
+		t.die();
 	}
 }
 
@@ -229,5 +230,6 @@ class WriteResult extends Node {
 			System.out.println("Couldn't write a value to the output file.");
 			e.printStackTrace();
 		}
+		t.die();
 	}
 }

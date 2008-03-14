@@ -50,7 +50,13 @@ public class Closure extends Value implements Callable {
 			}
 		*/
 		
-		GroupCell callGroup = callToken.getGroup();
+		if (args.size() != formals.size()) {
+			// On an arity mismatch between arguments and formals, the call remains silent.
+			System.out.println("Call failure: arity mismatch on call, expected " + formals.size() + " arguments, got " + args.size() + ".");
+			// TODO: Use typechecking to prevent this from occurring.
+			callToken.die();
+			return;
+		}
 		
 		// check tail-call optimization
 		Token returnToken;
@@ -59,28 +65,18 @@ public class Closure extends Value implements Callable {
 			returnToken = callToken.getCaller(); // tail-call
 			}
 		else {
-			returnToken = callToken.move(nextNode); // normal call
-			
-			
+			returnToken = callToken.move(nextNode); // normal call	
 		}
 		
-		Token t = new Token(body, env, returnToken, callGroup, null/*value*/, callToken.getEngine());
+		Token t = callToken.callcopy(body, env, returnToken);
+		callToken.die();
 		
 		for (Var v : formals)
 		{
 			t.bind(v, args.remove(0));
 		}
 		
-		/*
-		 * TODO: add error checking for arity mismatch (in either direction)
-		if (!args.isEmpty())
-		{
-			... given too many arguments ...
-		}
-		catch (NoSuchElementException) { ... too few arguments ... }
-		*/
-		callToken.getEngine().activate(t);
-		
+		t.activate();
 	}
 
 	public void setEnvironment(Environment env) {

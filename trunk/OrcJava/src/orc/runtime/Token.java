@@ -9,6 +9,8 @@ import java.io.*;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.Var;
 import orc.runtime.nodes.Node;
+import orc.runtime.regions.Execution;
+import orc.runtime.regions.Region;
 import orc.runtime.values.Callable;
 import orc.runtime.values.Future;
 import orc.runtime.values.GroupCell;
@@ -24,31 +26,55 @@ import orc.runtime.values.Value;
  */
 public class Token implements Serializable, Comparable<Token> {
 	private static final long serialVersionUID = 1L;
-	protected Node node;
+	protected Node node;	
 	protected Environment env;
 	protected GroupCell group;
+	protected Region region;
 	protected OrcEngine engine;
 	Token caller;
 	Value result;
-
-	public Token(Node node, Environment env, Token caller, GroupCell group, Value result, OrcEngine engine) {
+	boolean alive;
+	
+	public Token(Node node, Environment env, Token caller, GroupCell group, Region region, Value result, OrcEngine engine) {
 		this.node = node;
 		this.env = env;
 		this.caller = caller;
 		this.group = group;
 		this.result = result;
 		this.engine = engine;
+		this.region = region;
+		this.alive = true;
+		region.add(this);
 	}
 	
+	public Token(Node node, Environment env, Execution exec) {
+		this(node, env, null, new GroupCell(), exec, null, exec.getEngine());		
+	}
 	
 
+	// Signal that this token is dead
+	public void die() {
+		if (alive) {
+			alive = false;
+			region.remove(this);
+		}
+	}
+	
+	// An unreachable token is always dead.
+	public void finalize() { die(); } 
+		
+	
 	/**
 	 * If a token is alive, calls the node to perform the next action
 	 * @param engine
 	 */
 	public void process() {
-		if (group.isAlive())
+		if (group.isAlive()) {
 			node.process(this);
+		}
+		else {
+			die();
+		}
 	}
 
 	public Node getNode() {
@@ -74,6 +100,10 @@ public class Token implements Serializable, Comparable<Token> {
 	public OrcEngine getEngine() {
 		return engine;
 	}
+	
+	public Region getRegion() {
+		return region;
+	}
 
 	
 	
@@ -85,6 +115,16 @@ public class Token implements Serializable, Comparable<Token> {
 	
 	public Token setGroup(GroupCell group) {
 		this.group = group;
+		return this;
+	}
+
+	public Token setRegion(Region region) {
+		
+		// Migrate the token from one region to another
+		region.add(this);
+		this.region.remove(this);
+		
+		this.region = region;
 		return this;
 	}
 	
@@ -104,13 +144,28 @@ public class Token implements Serializable, Comparable<Token> {
 		this.node = node;
 		return this;
 	}
+	
+	/**
+	 * 
+	 * Create a copy of this token with the same dynamic characteristics,
+	 * but executing at a new point in the graph with a different environment.
+	 * Set the new caller's token to the token provided.
+	 * 
+	 * @param node
+	 * @param env
+	 * @param caller
+	 * @return
+	 */
+	public Token callcopy(Node node, Environment env, Token returnToken) {
+		return new Token(node, env, returnToken, group, region, null, engine);
+	}
 
 	/**
 	 * Create a copy of the token
 	 * @return	new token
 	 */
 	public Token copy() {
-		return new Token(node, env, caller, group, result, engine);
+		return new Token(node, env, caller, group, region, result, engine);
 	}
 
 	/**
