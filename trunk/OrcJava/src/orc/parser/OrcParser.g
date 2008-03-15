@@ -32,7 +32,7 @@ expr returns [Expression e = null]
 	{
 		List<Declaration> decList=null;
 	}
-	: decList=decls e=where_expr
+	: decList=decls e=semi_expr
 	  { Collections.reverse(decList);
 	  	for (Declaration d : decList) 
 	  		e=new Declare(d,e); }
@@ -137,6 +137,17 @@ formals_list returns [List<Pattern> formals = new ArrayList<Pattern>()]
 		)* )? RPAREN 
 	  )? 
 	;
+
+semi_expr returns [Expression e = null]
+	{
+		Expression e2;
+	}
+	: e=where_expr (
+	  options {greedy = true;} 
+	    : SEMI e2=where_expr
+			{ e = new Semi(e,e2); }		
+		)*
+	;	
 
 where_expr returns [Expression e = null]
 	{

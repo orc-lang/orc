@@ -59,6 +59,11 @@ public class LogicalClock {
 		
 	}
 	
+	/* Return true if there are no logical timer events waiting, false otherwise */
+	public boolean stuck() {
+		return eventQueue.isEmpty();
+	}
+	
 	/**
 	 * Class representing Ltimer Queue Entry 
 	 * @author dkitchin, based on RtimerQueueEntry by jayeshs

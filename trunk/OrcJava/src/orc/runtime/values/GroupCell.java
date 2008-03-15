@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import orc.runtime.Token;
+import orc.runtime.regions.GroupRegion;
 
 /**
  * A value container that is also a group. Groups are
@@ -26,6 +27,7 @@ public class GroupCell implements Serializable, Future {
 	boolean alive;
 	List<Token> waitList;
 	List<GroupCell> children;
+	GroupRegion region;
 
 	public GroupCell() {
 		bound = false;
@@ -67,7 +69,7 @@ public class GroupCell implements Serializable, Future {
 			}
 			waitList = null;
 		}
-			
+		region.close();	
 	}
 
 	/**
@@ -134,8 +136,10 @@ public class GroupCell implements Serializable, Future {
 		}
 	}
 	
-	// Close this cell because it will never be bound.
-	// All tokens waiting on this cell die.
+	/* GroupCell and GroupRegion refer to each other.
+	 * If a region is closed, it kills the associated cell,
+	 * even if that cell has not yet been bound.
+	 */
 	public void close() {
 		if (alive) {
 			kill();
@@ -147,4 +151,13 @@ public class GroupCell implements Serializable, Future {
 			}
 		}
 	}
+	
+	/* GroupCell and GroupRegion refer to each other.
+	 * If a cell is bound, it closes the associated region,
+	 * even if that region still has live tokens.
+	 */
+	public void setRegion(GroupRegion region) {
+		this.region = region;
+	}
+	
 }

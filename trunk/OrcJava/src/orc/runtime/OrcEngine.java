@@ -3,16 +3,14 @@
  */
 package orc.runtime;
 
-import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 
 import orc.runtime.nodes.Node;
 import orc.runtime.regions.Execution;
-import orc.runtime.values.GroupCell;
 
 /**
  * The Orc Engine provides the main loop for executing active tokens.
- * @author wcook
+ * @author wcook, dkitchin
  */
 public class OrcEngine {
 
@@ -22,8 +20,9 @@ public class OrcEngine {
 	//number of values published by the root node.
 	//updated by PrintResult and WriteResult.
 	int num_published = 0;
-	// If max_publish is non null, then orc should exit after publishing that many values.
+	// If max_publish is non null, then Orc should exit after publishing that many values.
 	Integer max_publish = null;
+	
 	LogicalClock clock;
 	
 	int round = 1; 
@@ -59,8 +58,6 @@ public class OrcEngine {
 				continue;
 			}
 			
-			// There are no active tokens available.
-			
 			/* If a site return is available, make it active.
 			 * This marks the beginning of a new round. 
 			 */
@@ -70,9 +67,8 @@ public class OrcEngine {
 				continue;
 			}
 			
-			// There are no site returns available.
-			
-			
+			/* Attempt to advance the logical clock. */
+			if (clock.advance()) { continue; }
 		}
 	}
 	
@@ -84,7 +80,9 @@ public class OrcEngine {
 		if (max_publish != null && max_publish.intValue() <= num_published)
 			return false;
 		
-		/* If there are no active or queued tokens,
+		/* If this execution has been halted, return false immediately.
+		 * 
+		 * If there are no active or queued tokens,
 		 * advance the logical clock to its next time point,
 		 * making all of the logical timer calls for that time
 		 * point available as site returns. 
@@ -95,7 +93,7 @@ public class OrcEngine {
 		 * so any expression waiting on the logical clock may experience starvation
 		 * if there are an infinite number of rounds taking zero logical time.
 		 */
-		if (activeTokens.size() == 0 && queuedReturns.size() == 0 && !clock.advance() && exec.isRunning()) {
+		if (exec.isRunning() && activeTokens.size() == 0 && queuedReturns.size() == 0 && clock.stuck()) {
 			/* There is no more work available. Wait for a site call to return */ 
 			try {
 				wait();
@@ -153,36 +151,5 @@ public class OrcEngine {
 	}
 	
 	public LogicalClock getClock() { return clock; }
-	
-	/* Read a token from a dump file. */
-	/*
-	public Token readToken(File dump){
-	 Token val = null;
-	 try {
-	    FileInputStream fis = new FileInputStream(dump);
-        ObjectInputStream in = new ObjectInputStream(fis);
-    	val = (Token) in.readObject();
-    	in.close();
-        fis.close();
-        
-        }
-    catch (Exception e) {
-    	System.exit(1);
-    	}
-    return val;
-	}
-	*/
-	/**
-	 * Run Orc given a dump file containing a single active token.
-	 * @param dump file to read active token
-	 */
-	/*
-	public void run(File dump) {
-		activeTokens = new LinkedList<Token>();
-		Token val = readToken(dump);
-		activeTokens.add(val);
-        work();
-	}
-	*/
 	
 }

@@ -44,7 +44,7 @@ public class Rtimer extends Site {
 
 /**
  * Helper class that runs the actual timer and calls Rtimer Events 
- * @author jayeshs
+ * @author jayeshs, dkitchin
  */
 
 class JavaTimer implements Runnable {
