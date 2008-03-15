@@ -1,28 +1,28 @@
 package orc.ast.extended;
 
-import orc.ast.simple.Expression;
-import orc.ast.simple.arg.NamedVar;
+import orc.ast.extended.pattern.Pattern;
 import orc.ast.simple.arg.Var;
 
 public class ValDeclaration implements Declaration {
 
-	String name;
-	orc.ast.extended.Expression source;
+	Pattern p;
+	Expression f;
 	
-	public ValDeclaration(String name, orc.ast.extended.Expression source) {
-		this.name = name;
-		this.source = source;
+	public ValDeclaration(Pattern p, Expression f) {
+		this.p = p;
+		this.f = f;
 	}
 
 	
-	public Expression bindto(Expression target) {
+	public orc.ast.simple.Expression bindto(orc.ast.simple.Expression target) {
 		
-		Var a = new Var();
-		NamedVar x = new NamedVar(name);
-		Expression newsource = source.simplify();
-		Expression newtarget = target.subst(a,x);
+		orc.ast.simple.Expression source = f.simplify();
+		Var t = new Var();
 		
-		return new orc.ast.simple.Where(newtarget, newsource, a);
+		source = Pattern.filter(p.match(source));
+		target = p.bind(t, target);
+		
+		return new orc.ast.simple.Where(target, source, t);
 	}
 
 
