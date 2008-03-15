@@ -70,9 +70,10 @@ decl returns [Declaration d=null]
 decl_val returns [Declaration d=null]
 	{
 		Expression e;
+		Pattern p;
 	}
-	: "val" x:NAME EQ e=expr
-		{ d = new ValDeclaration(x.getText(),e); }
+	: "val" p=pattern EQ e=expr
+		{ d = new ValDeclaration(p,e); }
 	;
 	
 decl_site returns [Declaration d=null]
