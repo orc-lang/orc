@@ -19,7 +19,7 @@ public class Ltimer extends Site {
 	public void callSite(Args args, Token caller) {
 		
 		try {
-			long delay = args.longArg(0);
+			int delay = args.intArg(0);
 			
 			// Add this token to its home engine's logical time event list 
 			caller.getEngine().getClock().addEvent(delay, caller);

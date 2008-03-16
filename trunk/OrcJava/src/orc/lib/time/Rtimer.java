@@ -115,7 +115,6 @@ class JavaTimer implements Runnable {
 						if (engine.debugMode)
 							engine.debug("Rtimer: Executed Event.",temp.getToken());
 							*/
-						
 						temp.getToken().resume();						
 					}
 				}

@@ -22,16 +22,16 @@ import orc.runtime.values.Constant;
 public class LogicalClock {
 
 	private Queue<LtimerQueueEntry> eventQueue;
-	private long currentTime;
+	private int currentTime;
 	
 	public LogicalClock() {
 		eventQueue = new PriorityQueue<LtimerQueueEntry>();
 		currentTime = 0;
 	}
 	
-	public long getTime() { return currentTime; }
+	public int getTime() { return currentTime; }
 	
-	public void addEvent(long time, Token token) {
+	public void addEvent(int time, Token token) {
 		eventQueue.add(new LtimerQueueEntry(time + currentTime, token));
 	}
 	
@@ -70,14 +70,14 @@ public class LogicalClock {
 	 */
 	class LtimerQueueEntry implements Comparable<LtimerQueueEntry> {
 
-		long time;
+		int time;
 		Token token;
 
-		public LtimerQueueEntry(long time, Token token) {
+		public LtimerQueueEntry(int time, Token token) {
 			this.token = token;
 			this.time = time;
 		}
-		public long getTime() {
+		public int getTime() {
 			return time;
 		}
 		public Token getToken() {
@@ -86,7 +86,7 @@ public class LogicalClock {
 
 		// sort the queue items earliest first
 		public int compareTo(LtimerQueueEntry n) {
-			long diff = time - n.time;
+			int diff = time - n.time;
 
 			if (diff == 0)
 				return 0;
