@@ -468,13 +468,13 @@ SL_COMMENT:
 
 
 protected
-BEGIN_COMMENT: LBRACE '-';
+BEGIN_COMMENT: "{-";
 protected
-END_COMMENT: '-' RBRACE;
+END_COMMENT: "-}";
 
 
 ML_COMMENT:
-	BEGIN_COMMENT ( options {greedy=false;} :'\n' {newline();} | ~'\n')* END_COMMENT
+	BEGIN_COMMENT ( options {greedy=false;} : ML_COMMENT | '\n' {newline();} | ~'\n')* END_COMMENT
     {$setType(Token.SKIP);}
 ;
 

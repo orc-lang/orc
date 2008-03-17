@@ -27,6 +27,8 @@ public class Println extends EvalSite {
 			System.out.println(args.stringArg(i));
 		}
 		
+		if (args.size() == 0) { System.out.println(); }
+		
 		return signal();
 	}
 
