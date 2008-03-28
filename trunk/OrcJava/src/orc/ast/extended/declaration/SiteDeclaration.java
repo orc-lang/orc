@@ -1,4 +1,4 @@
-package orc.ast.extended;
+package orc.ast.extended.declaration;
 
 import orc.runtime.sites.Site;
 

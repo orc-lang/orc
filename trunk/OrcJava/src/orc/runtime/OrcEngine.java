@@ -39,7 +39,11 @@ public class OrcEngine {
 	 * Creates an initial environment and then 
 	 * executes the main loop.
 	 * @param root  node to run
-	 */
+	 */ 
+	public void run(Node root) {
+		this.run(root, null);
+	}
+	
 	public void run(Node root, Environment env) {
 		
 		Execution exec = new Execution(this);
@@ -69,6 +73,12 @@ public class OrcEngine {
 			
 			/* Attempt to advance the logical clock. */
 			if (clock.advance()) { continue; }
+			
+			
+			/* 
+			Set<Token> accumulator = new HashSet<Token>();
+			exec.putContainedTokens(accumulator);
+			*/
 		}
 	}
 	

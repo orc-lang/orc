@@ -1,5 +1,7 @@
 package orc.ast.extended;
 
+import orc.ast.extended.declaration.Declaration;
+
 /**
  * 
  * A declaration together with its scope in the AST.

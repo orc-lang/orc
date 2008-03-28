@@ -1,4 +1,4 @@
-package orc.ast.extended;
+package orc.ast.extended.declaration;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import orc.ast.extended.Clause;
 import orc.ast.simple.arg.*;
 
 /**
