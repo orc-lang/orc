@@ -1,7 +1,8 @@
-package orc.ast.extended;
+package orc.ast.extended.declaration;
 
 import java.util.List;
 
+import orc.ast.extended.Expression;
 import orc.ast.extended.pattern.Pattern;
 
 /**

@@ -1,5 +1,6 @@
-package orc.ast.extended;
+package orc.ast.extended.declaration;
 
+import orc.ast.extended.Expression;
 import orc.ast.extended.pattern.Pattern;
 import orc.ast.simple.arg.Var;
 

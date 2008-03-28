@@ -14,16 +14,13 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import orc.ast.extended.*;
-import orc.ast.simple.arg.NamedVar;
-import orc.ast.simple.arg.Var;
+import orc.ast.extended.declaration.Declaration;
 import orc.parser.OrcLexer;
 import orc.parser.OrcParser;
 import orc.runtime.Environment;
 import orc.runtime.OrcEngine;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.result.QueueResult;
-import orc.runtime.values.Constant;
-import orc.runtime.values.TupleValue;
 import orc.runtime.values.Value;
 
 /**
@@ -55,7 +52,7 @@ public class Orc {
 		try {
 				System.out.println("Running...");
 		        // Run the Orc program
-		        engine.run(n, null);
+		        engine.run(n);
 		        
 			} catch (Exception e) {
 				System.err.println("exception: " + e);
