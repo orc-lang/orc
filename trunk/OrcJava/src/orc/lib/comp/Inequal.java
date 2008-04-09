@@ -3,8 +3,8 @@
  */
 package orc.lib.comp;
 
+import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
-import orc.runtime.OrcRuntimeTypeError;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.Constant;
 import orc.runtime.values.Value;
@@ -15,7 +15,7 @@ import orc.runtime.values.Value;
  */
 public class Inequal extends EvalSite {
 
-	public Value evaluate(Args args) throws OrcRuntimeTypeError {
+	public Value evaluate(Args args) throws OrcRuntimeTypeException {
 		
 		Object a = args.getArg(0);
 		Object b = args.getArg(1);

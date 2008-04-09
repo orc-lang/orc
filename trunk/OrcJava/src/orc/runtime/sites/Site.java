@@ -6,8 +6,9 @@ package orc.runtime.sites;
 import java.util.LinkedList;
 import java.util.List;
 
+import orc.error.OrcException;
+import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
-import orc.runtime.OrcRuntimeTypeError;
 import orc.runtime.Token;
 import orc.runtime.nodes.Node;
 import orc.runtime.values.Future;
@@ -30,7 +31,7 @@ public abstract class Site extends Value implements Callable {
 	 * 
 	 * @see orc.runtime.values.Callable#createCall(orc.runtime.Token, java.util.List, orc.runtime.nodes.Node)
 	 */
-	public void createCall(Token callToken, List<Future> args, Node nextNode) {
+	public void createCall(Token callToken, List<Future> args, Node nextNode) throws OrcException {
 
 		List<Value> values = new LinkedList<Value>();
 		
@@ -43,13 +44,7 @@ public abstract class Site extends Value implements Callable {
 				{ values.add(v); }
 		}
 		
-		try {
-			callSite(new Args(values), callToken.move(nextNode));
-		} catch (OrcRuntimeTypeError e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			callToken.die();
-		}
+		callSite(new Args(values), callToken.move(nextNode));
 	}
 
 	
@@ -58,6 +53,6 @@ public abstract class Site extends Value implements Callable {
 	 * @param args			list of argument values
 	 * @param caller	where the result should be sent
 	 */
-	abstract public void callSite(Args args, Token caller) throws OrcRuntimeTypeError;
+	abstract public void callSite(Args args, Token caller) throws OrcRuntimeTypeException;
 
 }

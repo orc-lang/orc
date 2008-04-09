@@ -3,8 +3,8 @@
  */
 package orc.runtime.sites;
 
+import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
-import orc.runtime.OrcRuntimeTypeError;
 import orc.runtime.Token;
 import orc.runtime.values.Value;
 
@@ -22,17 +22,11 @@ import orc.runtime.values.Value;
 public abstract class EvalSite extends Site {
 
 	@Override
-	public void callSite(Args args, Token caller) {
+	public void callSite(Args args, Token caller) throws OrcRuntimeTypeException {
 
-		try {
-			caller.resume(evaluate(args));
-		}
-		catch (OrcRuntimeTypeError e) {
-			System.out.println("Call failed due to a type error; remaining silent. [" + e.getMessage() + "]");
-			caller.die();
-		}
+		caller.resume(evaluate(args));
 	}
 	
-	abstract public Value evaluate(Args args) throws OrcRuntimeTypeError;
+	abstract public Value evaluate(Args args) throws OrcRuntimeTypeException;
 
 }

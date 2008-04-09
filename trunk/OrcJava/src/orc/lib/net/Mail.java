@@ -13,8 +13,8 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
-import orc.runtime.OrcRuntimeTypeError;
 import orc.runtime.Token;
 import orc.runtime.sites.Site;
 import orc.runtime.values.Constant;
@@ -40,7 +40,7 @@ public class Mail extends Site {
 		try {
 			
 			if (args.getValues().size() != 5)
-				throw new OrcRuntimeTypeError("Wrong number of arguments");
+				throw new OrcRuntimeTypeException("Wrong number of arguments");
 
 			
 		from = args.stringArg(0);
@@ -58,7 +58,7 @@ public class Mail extends Site {
 		message = args.stringArg(3);
 		smtp = args.stringArg(4);
 		}
-		catch (OrcRuntimeTypeError e) {
+		catch (OrcRuntimeTypeException e) {
 			System.out.println("Malformed arguments to sendMail(from, to, subject, message, smtp); remaining silent. [" + e.getMessage() + "]");
 			return;
 		}

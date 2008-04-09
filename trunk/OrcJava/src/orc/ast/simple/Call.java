@@ -48,7 +48,9 @@ public class Call extends Expression {
 
 	@Override
 	public Node compile(Node output) {
-		return new orc.runtime.nodes.Call(caller, args, output);
+		orc.runtime.nodes.Call c = new orc.runtime.nodes.Call(caller, args, output);
+		c.setDebugInfo(this);
+		return c;
 	}
 
 	@Override

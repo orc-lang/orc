@@ -3,8 +3,8 @@
  */
 package orc.runtime.sites.core;
 
+import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
-import orc.runtime.OrcRuntimeTypeError;
 import orc.runtime.Token;
 import orc.runtime.sites.Site;
 import orc.runtime.values.Value;
@@ -16,7 +16,7 @@ import orc.runtime.values.Value;
 public class IsSome extends Site {
 
 	@Override
-	public void callSite(Args args, Token caller) throws OrcRuntimeTypeError {
+	public void callSite(Args args, Token caller) throws OrcRuntimeTypeException {
 		
 		Value v = args.valArg(0);
 		

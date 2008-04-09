@@ -5,8 +5,8 @@ package orc.lib.time;
 
 import java.util.PriorityQueue;
 
+import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
-import orc.runtime.OrcRuntimeTypeError;
 import orc.runtime.Token;
 import orc.runtime.sites.Site;
 
@@ -32,7 +32,7 @@ public class Rtimer extends Site {
 			if (javaTimer == null)
 				javaTimer = new JavaTimer();
 			javaTimer.addEvent(n, returnToken);
-		} catch (OrcRuntimeTypeError e) {
+		} catch (OrcRuntimeTypeException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

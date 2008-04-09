@@ -3,8 +3,8 @@
  */
 package orc.runtime.sites.core;
 
+import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
-import orc.runtime.OrcRuntimeTypeError;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.NoneValue;
 import orc.runtime.values.SomeValue;
@@ -18,7 +18,7 @@ import orc.runtime.values.Value;
 public class IsCons extends EvalSite {
 
 
-	public Value evaluate(Args args) throws OrcRuntimeTypeError {
+	public Value evaluate(Args args) throws OrcRuntimeTypeException {
 		
 		Value v = args.valArg(0);
 		

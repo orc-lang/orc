@@ -3,8 +3,8 @@
  */
 package orc.runtime.sites.core;
 
+import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
-import orc.runtime.OrcRuntimeTypeError;
 import orc.runtime.sites.PartialSite;
 import orc.runtime.values.Value;
 
@@ -15,7 +15,7 @@ import orc.runtime.values.Value;
 public class If extends PartialSite {
 
 	@Override
-	public Value evaluate(Args args) throws OrcRuntimeTypeError {
+	public Value evaluate(Args args) throws OrcRuntimeTypeException {
 		if (args.boolArg(0)) 
 			return Value.signal();
 		else

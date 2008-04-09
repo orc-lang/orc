@@ -6,6 +6,7 @@ import java.util.Set;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
+import orc.error.Debug;
 
 /**
  * Base class for the simplified abstract syntax tree.
@@ -14,7 +15,7 @@ import orc.ast.simple.arg.Var;
  *
  */
 
-public abstract class Expression {
+public abstract class Expression extends Debug {
 
 	/**
 	 * Compiles abstract syntax tree into execution nodes.

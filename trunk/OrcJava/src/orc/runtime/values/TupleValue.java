@@ -6,8 +6,8 @@ package orc.runtime.values;
 import java.util.LinkedList;
 import java.util.List;
 
+import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
-import orc.runtime.OrcRuntimeTypeError;
 import orc.runtime.sites.EvalSite;
 
 /**
@@ -42,13 +42,13 @@ public class TupleValue extends EvalSite {
 			this.size = size;
 		}
 		
-		public Value evaluate(Args args) throws OrcRuntimeTypeError {
+		public Value evaluate(Args args) throws OrcRuntimeTypeException {
 			return new Constant(args.intArg(0) == this.size);
 		}
 	}
 	
 	// A tuple may be used as a site for array lookup
-	public Value evaluate(Args args) throws OrcRuntimeTypeError
+	public Value evaluate(Args args) throws OrcRuntimeTypeException
 	{
 		// TODO: Generalize this treatment of dot sites.
 		try {			
