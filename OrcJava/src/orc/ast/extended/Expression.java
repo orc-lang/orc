@@ -1,6 +1,7 @@
 package orc.ast.extended;
 
 import orc.ast.simple.arg.Argument;
+import orc.error.Debug;
 
 /**
  * Base class for the extended abstract syntax tree.
@@ -11,7 +12,7 @@ import orc.ast.simple.arg.Argument;
  * @author dkitchin, wcook
  */
 
-public abstract class Expression {
+public abstract class Expression extends Debug {
 	
 	/**
 	 * Simplify an expression which occurs in a call (non-nested) position.

@@ -6,8 +6,8 @@ package orc.runtime.sites;
 import java.util.TreeMap;
 import java.util.Map;
 
+import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
-import orc.runtime.OrcRuntimeTypeError;
 import orc.runtime.values.Value;
 
 /**
@@ -31,7 +31,7 @@ public abstract class DotSite extends EvalSite {
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
 	 */
 	@Override
-	public Value evaluate(Args args) throws OrcRuntimeTypeError {
+	public Value evaluate(Args args) throws OrcRuntimeTypeException {
 		
 		String f = args.stringArg(0);
 		Site m = getMethod(f);
@@ -39,7 +39,7 @@ public abstract class DotSite extends EvalSite {
 		if (m != null)
 			{ return m; }
 		else
-			{ throw new OrcRuntimeTypeError("Dotsite " + this.getClass().toString() + " does not have the method '" + f + "'."); }
+			{ throw new OrcRuntimeTypeException("Dotsite " + this.getClass().toString() + " does not have the method '" + f + "'."); }
 	}
 	
 	Site getMethod(String f)

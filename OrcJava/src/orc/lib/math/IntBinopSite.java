@@ -3,8 +3,8 @@
  */
 package orc.lib.math;
 
+import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
-import orc.runtime.OrcRuntimeTypeError;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.*;
 
@@ -18,7 +18,7 @@ public abstract class IntBinopSite extends EvalSite {
 	 * @see orc.runtime.sites.EvalSite#evaluate(java.lang.Object[])
 	 */
 	@Override
-	public Value evaluate(Args args) throws OrcRuntimeTypeError {
+	public Value evaluate(Args args) throws OrcRuntimeTypeException {
 		
 		return new Constant(compute(args.intArg(0), args.intArg(1)));
 	}

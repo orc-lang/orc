@@ -10,6 +10,7 @@ header {
 	import java.io.FileInputStream;
 	import java.io.FileNotFoundException;
 	import orc.ast.extended.*;
+	import orc.ast.extended.declaration.*;
 	import orc.ast.extended.pattern.*;
 	
 } 
@@ -180,7 +181,9 @@ seq_expr returns [Expression e = null]
 		Expression e2;
 		Pattern p;
 	}
-	: e = op_expr (
+	: e = op_expr 
+	  { e.setDebugInfo(LT(1)); }
+	  (
 	   options {greedy = true;} 
 	   		: RANGLE p=pattern RANGLE e2=seq_expr 
 				{ e = new Sequential(e, e2, p); }
@@ -304,8 +307,8 @@ invoke_expr returns [Expression e = null]
 	: n:NAME
 	  { e = new Name(n.getText()); }
 	  (options {greedy = true;} :
-	     args = arguments { e = new Call(e, args); }
-	   | DOT f:NAME { e = new Dot(e, f.getText()); }
+	     args = arguments { e = new Call(e, args); e.setDebugInfo(LT(1)); }
+	   | DOT f:NAME { e = new Dot(e, f.getText()); e.setDebugInfo(LT(1)); }
 	  )*
 	;
 	
@@ -388,6 +391,7 @@ pattern returns [Pattern p = null]
 		("as" var:NAME
 		{ p = new AsPattern(p,var.getText()); }
 		)?
+	  { p.setDebugInfo(LT(1)); } // not quite right, but it will do for now
 	;
 
 cons_pattern returns [Pattern p = null]

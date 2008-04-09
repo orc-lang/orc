@@ -8,6 +8,8 @@ import java.io.*;
 //import java.nio.channels.FileLock;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.Var;
+import orc.error.DebugInfo;
+import orc.error.OrcException;
 import orc.runtime.nodes.Node;
 import orc.runtime.regions.Execution;
 import orc.runtime.regions.Region;
@@ -53,7 +55,9 @@ public class Token implements Serializable, Comparable<Token> {
 	
 
 	// Signal that this token is dead
-	public void die() {
+	// Synchronized so that multiple threads don't simultaneously signal
+	// a token to die and perform duplicate region removals.
+	public synchronized void die() {
 		if (alive) {
 			alive = false;
 			region.remove(this);
@@ -65,11 +69,10 @@ public class Token implements Serializable, Comparable<Token> {
 		
 	
 	/**
-	 * If a token is alive, calls the node to perform the next action
-	 * @param engine
+	 * If a token is alive, calls the node to perform the next action.
 	 */
 	public void process() {
-		if (group.isAlive()) {
+		if (group.isAlive()) {	
 			node.process(this);
 		}
 		else {
@@ -241,6 +244,18 @@ public class Token implements Serializable, Comparable<Token> {
 	public void resume()
 	{
 		resume(Value.signal());
+	}
+	
+	
+	/* This token has encountered an error, and dies. */
+	public void error(DebugInfo info, OrcException problem) {
+		// TODO: Pipe debug output through engine rather than directly to console.
+		System.out.println();
+		System.out.println("Token " + this + " encountered an error. ");
+		System.out.println("Problem: " + problem.getMessage());
+		System.out.println("Source location: " + info.errorLocation());
+		System.out.println();
+		die();
 	}
 	
 	/*

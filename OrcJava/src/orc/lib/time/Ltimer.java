@@ -1,7 +1,7 @@
 package orc.lib.time;
 
+import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
-import orc.runtime.OrcRuntimeTypeError;
 import orc.runtime.Token;
 import orc.runtime.sites.Site;
 
@@ -24,7 +24,7 @@ public class Ltimer extends Site {
 			// Add this token to its home engine's logical time event list 
 			caller.getEngine().getClock().addEvent(delay, caller);
 			
-		} catch (OrcRuntimeTypeError e) {
+		} catch (OrcRuntimeTypeException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

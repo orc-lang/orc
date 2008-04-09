@@ -61,6 +61,8 @@ public class Call extends Expression {
 			e = a.bind(e);
 		}
 		
+		e.setDebugInfo(this);
+		
 		return e;
 	}
 

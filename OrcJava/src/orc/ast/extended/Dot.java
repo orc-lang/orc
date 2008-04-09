@@ -28,7 +28,8 @@ public class Dot extends Expression {
 	@Override
 	public orc.ast.simple.Expression simplify() {
 		
-		Expression e = new Call(target, new Field(field)); 			
+		Expression e = new Call(target, new Field(field));
+		e.setDebugInfo(this);
 		return e.simplify();
 	}
 

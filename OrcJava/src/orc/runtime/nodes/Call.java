@@ -7,6 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import orc.ast.simple.arg.Argument;
+import orc.error.DebugInfo;
+import orc.error.OrcException;
 import orc.runtime.Token;
 import orc.runtime.values.Callable;
 import orc.runtime.values.Future;
@@ -66,7 +68,14 @@ public class Call extends Node {
 			actuals.add(t.lookup(a));
 		}
 		
-		target.createCall(t, actuals, next);
+
+		try {
+			target.createCall(t, actuals, next);
+		}
+		catch (OrcException e) {
+			DebugInfo info = this.getDebugInfo();
+			t.error(info, e);
+		}
 	}
 	
 }

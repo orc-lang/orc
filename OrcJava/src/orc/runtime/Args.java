@@ -3,6 +3,7 @@ package orc.runtime;
 import java.util.LinkedList;
 import java.util.List;
 
+import orc.error.OrcRuntimeTypeException;
 import orc.runtime.values.Constant;
 import orc.runtime.values.TupleValue;
 import orc.runtime.values.Value;
@@ -65,34 +66,34 @@ public class Args {
 	/**
 	 * Helper function to retrieve the nth value, with error checking
 	 */
-	public Value valArg(int n) throws OrcRuntimeTypeError
+	public Value valArg(int n) throws OrcRuntimeTypeException
 	{
 		try {
 			return values.get(n);
 		}
 		catch (IndexOutOfBoundsException e)
-			{ throw new OrcRuntimeTypeError("Arity mismatch calling site. Could not find argument #" + n); }
+			{ throw new OrcRuntimeTypeException("Arity mismatch calling site. Could not find argument #" + n); }
 	}
 	
 	
 	/**
 	 * Helper function to retrieve the nth element as an object, with error checking
-	 * @throws OrcRuntimeTypeError 
+	 * @throws OrcRuntimeTypeException 
 	 */
-	public Object getArg(int n) throws OrcRuntimeTypeError
+	public Object getArg(int n) throws OrcRuntimeTypeException
 	{
 		try {
 			Value a = values.get(n);
 			return ((Constant)a).getValue(); 
 		}
 		catch (IndexOutOfBoundsException e)
-			{ throw new OrcRuntimeTypeError("Arity mismatch calling site. Could not find argument #" + n); }
+			{ throw new OrcRuntimeTypeException("Arity mismatch calling site. Could not find argument #" + n); }
 		catch (ClassCastException e) 
-			{ throw new OrcRuntimeTypeError("Argument " + n + " to site is not a native Java value"); } 
+			{ throw new OrcRuntimeTypeException("Argument " + n + " to site is not a native Java value"); } 
 	}
 	
 	/* Return the entire tuple as an object array */
-	public Object[] asArray() throws OrcRuntimeTypeError
+	public Object[] asArray() throws OrcRuntimeTypeException
 	{
 		int n = values.size();
 		Object[] a = new Object[n];
@@ -106,50 +107,50 @@ public class Args {
 		
 	/**
 	 * Helper function for integers
-	 * @throws OrcRuntimeTypeError 
+	 * @throws OrcRuntimeTypeException 
 	 */
-	public int intArg(int n) throws OrcRuntimeTypeError {
+	public int intArg(int n) throws OrcRuntimeTypeException {
 		
 		Object a = getArg(n);
 		try
 			{ return ((Integer)a).intValue(); }
 		catch (ClassCastException e) 
-			{ throw new OrcRuntimeTypeError("Argument " + n + " should be an int, got " + a.getClass().toString() + " instead."); } 
+			{ throw new OrcRuntimeTypeException("Argument " + n + " should be an int, got " + a.getClass().toString() + " instead."); } 
 	}
 
 	/**
 	 * Helper function for longs
-	 * @throws OrcRuntimeTypeError 
+	 * @throws OrcRuntimeTypeException 
 	 */
-	public long longArg(int n) throws OrcRuntimeTypeError {
+	public long longArg(int n) throws OrcRuntimeTypeException {
 		
 		Object a = getArg(n);
 		try
 			{ return ((Integer)a).longValue(); }
 		catch (ClassCastException e) 
-			{ throw new OrcRuntimeTypeError("Argument " + n + " should be an int, got " + a.getClass().toString() + " instead."); } 
+			{ throw new OrcRuntimeTypeException("Argument " + n + " should be an int, got " + a.getClass().toString() + " instead."); } 
 	}
 
 	
 	/**
 	 * Helper function for booleans
-	 * @throws OrcRuntimeTypeError 
+	 * @throws OrcRuntimeTypeException 
 	 */
-	public boolean boolArg(int n) throws OrcRuntimeTypeError {
+	public boolean boolArg(int n) throws OrcRuntimeTypeException {
 		
 		Object a = getArg(n);
 		try
 			{ return ((Boolean)a).booleanValue(); }
 		catch (ClassCastException e) 
-			{ throw new OrcRuntimeTypeError("Argument " + n + " to site '" + this.toString() + "' should be a boolean, got " + a.getClass().toString() + " instead."); } 
+			{ throw new OrcRuntimeTypeException("Argument " + n + " to site '" + this.toString() + "' should be a boolean, got " + a.getClass().toString() + " instead."); } 
 	
 	}
 
 	/**
 	 * Helper function for strings
-	 * @throws OrcRuntimeTypeError 
+	 * @throws OrcRuntimeTypeException 
 	 */
-	public String stringArg(int n) throws OrcRuntimeTypeError {
+	public String stringArg(int n) throws OrcRuntimeTypeException {
 
 		Object a = getArg(n);
 		return a.toString();

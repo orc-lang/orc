@@ -3,8 +3,8 @@
  */
 package orc.lib.str;
 
+import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
-import orc.runtime.OrcRuntimeTypeError;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.*;
 
@@ -14,7 +14,7 @@ import orc.runtime.values.*;
  */
 public class Cat extends EvalSite {
 
-	public Value evaluate(Args args) throws OrcRuntimeTypeError {
+	public Value evaluate(Args args) throws OrcRuntimeTypeException {
 		
 		StringBuffer buf = new StringBuffer();
 		
