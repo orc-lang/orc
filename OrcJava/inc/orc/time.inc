@@ -1,4 +1,7 @@
 site Rtimer = orc.lib.time.Rtimer
-site Ltimer = orc.lib.time.Ltimer
+site MakeTimer = orc.lib.time.MakeTimer
+
+{- Define a default logical timer -}
+val Ltimer = MakeTimer()
 
 def Metronome() = () | Rtimer(1000) >> Metronome()

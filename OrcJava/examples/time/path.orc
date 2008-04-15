@@ -12,10 +12,12 @@
 -} 
 
 def path(source, sink, cell, succ) =
+   
+    val timer = MakeTimer()
  
 	def run(n) = cell(n).read() >p> 
 	             succ(n) >(m,d)> 
-	               Ltimer(d) >> 
+	               timer(d) >> 
 	               cell(m).write(m:p) >>
 	               run(m)  
 	                 	

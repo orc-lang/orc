@@ -3,7 +3,9 @@
  */
 package orc.runtime;
 
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 
 import orc.runtime.nodes.Node;
 import orc.runtime.regions.Execution;
@@ -23,7 +25,7 @@ public class OrcEngine {
 	// If max_publish is non null, then Orc should exit after publishing that many values.
 	Integer max_publish = null;
 	
-	LogicalClock clock;
+	Set<LogicalClock> clocks;
 	
 	int round = 1; 
 	
@@ -31,7 +33,7 @@ public class OrcEngine {
 	
 	public OrcEngine(Integer pub){
 		this.max_publish = pub;
-		this.clock = new LogicalClock();
+		this.clocks = new HashSet<LogicalClock>();
 	}
 
 	/**
@@ -71,14 +73,10 @@ public class OrcEngine {
 				continue;
 			}
 			
-			/* Attempt to advance the logical clock. */
-			if (clock.advance()) { continue; }
-			
-			
-			/* 
-			Set<Token> accumulator = new HashSet<Token>();
-			exec.putContainedTokens(accumulator);
-			*/
+			/* Advance all logical clocks. */
+			for (LogicalClock clock : clocks) {
+				clock.advance();
+			}
 		}
 	}
 	
@@ -103,7 +101,14 @@ public class OrcEngine {
 		 * so any expression waiting on the logical clock may experience starvation
 		 * if there are an infinite number of rounds taking zero logical time.
 		 */
-		if (exec.isRunning() && activeTokens.size() == 0 && queuedReturns.size() == 0 && clock.stuck()) {
+		if (exec.isRunning() && activeTokens.size() == 0 && queuedReturns.size() == 0) {
+			
+			for (LogicalClock clock : clocks) { 
+				if (!clock.stuck()) { 
+					return exec.isRunning(); 
+				}
+			}
+			
 			/* There is no more work available. Wait for a site call to return */ 
 			try {
 				wait();
@@ -154,12 +159,17 @@ public class OrcEngine {
 			debug("---\n" + 
 			      "Round:   " + round + "\n" +
 			      "Active:  " + activeTokens.size() + "\n" +
-			      "Queued:  " + queuedReturns.size() + "\n" +
-			      "L-Clock: " + clock.getTime() + "\n" +
-			      "---\n\n");
+			      "Queued:  " + queuedReturns.size() + "\n");
+			for(LogicalClock clock : clocks) {
+			      debug("L-Clock: " + clock.getTime() + "\n");
+			}
+			debug("---\n\n");
 			}
 	}
 	
-	public LogicalClock getClock() { return clock; }
+	public boolean addClock(LogicalClock clock) {
+		return clocks.add(clock);
+	}
+
 	
 }

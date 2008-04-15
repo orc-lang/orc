@@ -24,6 +24,9 @@ def zip(x:xs,y:ys) = (x,y):zip(xs,ys)
 def unzip([]) = ([],[])
 def unzip((x,y):z) = (x:xs,y:ys) <(xs,ys)< unzip(z)
 
+def length([]) = 0
+def length(h:t) = 1 + length(t)
+
 
 
 

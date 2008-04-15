@@ -6,14 +6,14 @@ import java.util.Queue;
 import orc.runtime.values.Constant;
 /**
  * 
- * An event queue for site calls to the logical timer (Ltimer).
- * The Orc engine advances the logical clock whenever there are no
+ * An event queue for site calls to a logical timer (created by MakeTimer).
+ * The Orc engine advances all logical clocks whenever there are no
  * other queued tokens to process.
  * 
- * Since the logical clock is advanced only by the Orc engine, and
- * calls to Ltimer are cooperatively executed by the same engine,
- * the logical clock object does not need to run in a separate thread,
- * and does not require synchronization.
+ * Since logical clocks are advanced only by the Orc engine, and
+ * calls to such timers are cooperatively executed by the same engine,
+ * the logical clock objects do not need to run in a separate thread,
+ * (unlike Rtimer), and they do not require synchronization.
  * 
  * @author dkitchin
  *
