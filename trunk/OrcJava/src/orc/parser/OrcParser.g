@@ -230,7 +230,7 @@ addingExpression returns [Expression n = null]
      {args = new ArrayList<Expression>();
    	  args.add(n);
       }
-    (PLUS   {n = new Call("op+", args);}
+    (PLUS   {n = new Call("op+", args); }
      | MINUS {n = new Call("op-", args);}
     ) 
       p=multiplyingExpression {args.add(p);})*
