@@ -10,7 +10,6 @@ public abstract class Result extends Node {
 	public void process(Token t) {
 		Value val = t.getResult();	
 		emit(val);
-		t.getEngine().addPub(1);
 		t.die();
 	}
 

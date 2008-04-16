@@ -18,24 +18,11 @@ public class OrcEngine {
 
 	LinkedList<Token> activeTokens = new LinkedList<Token>();
 	LinkedList<Token> queuedReturns = new LinkedList<Token>();
-	
-	//number of values published by the root node.
-	//updated by PrintResult and WriteResult.
-	int num_published = 0;
-	// If max_publish is non null, then Orc should exit after publishing that many values.
-	Integer max_publish = null;
-	
-	Set<LogicalClock> clocks;
-	
+	Set<LogicalClock> clocks = new HashSet<LogicalClock>();
 	int round = 1; 
-	
 	public boolean debugMode = false;
 	
-	public OrcEngine(Integer pub){
-		this.max_publish = pub;
-		this.clocks = new HashSet<LogicalClock>();
-	}
-
+	
 	/**
 	 * Run Orc given a root node.
 	 * Creates an initial environment and then 
@@ -51,72 +38,59 @@ public class OrcEngine {
 		Execution exec = new Execution(this);
 		Token start = new Token(root, env, exec);
 		activeTokens.add(start);
-        work(exec);
+        
+		/* Run this execution to completion. */
+		while (exec.isRunning()) { step(exec); }
 	}
 	
-	public void work(Execution exec) {
-	   
-		while (moreWork(exec)) {
-			
-			/* If an active token is available, process it. */
-			if (activeTokens.size() > 0){
-				activeTokens.remove().process();
-				continue;
-			}
-			
-			/* If a site return is available, make it active.
-			 * This marks the beginning of a new round. 
-			 */
-			if (queuedReturns.size() > 0 ){
-				activeTokens.add(queuedReturns.remove());
-				round++; reportRound();
-				continue;
-			}
-			
-			/* Advance all logical clocks. */
-			for (LogicalClock clock : clocks) {
-				clock.advance();
-			}
-		}
-	}
-	
-	/**
-	 * Internal function to check if there is more work to do
-	 * @return true if more work
-	 */
-	private synchronized boolean moreWork(Execution exec) {
-		if (max_publish != null && max_publish.intValue() <= num_published)
-			return false;
+	/* Returns true if the Orc engine is still executing, false otherwise */
+	synchronized private boolean step(Execution exec) {
 		
-		/* If this execution has been halted, return false immediately.
-		 * 
-		 * If there are no active or queued tokens,
-		 * advance the logical clock to its next time point,
-		 * making all of the logical timer calls for that time
-		 * point available as site returns. 
-		 * 
-		 * If the logical clock cannot be advanced, suspend the engine.  
-		 * 
-		 * Note that ordinary site returns are considered to take zero logical time,
-		 * so any expression waiting on the logical clock may experience starvation
-		 * if there are an infinite number of rounds taking zero logical time.
-		 */
-		if (exec.isRunning() && activeTokens.size() == 0 && queuedReturns.size() == 0) {
-			
-			for (LogicalClock clock : clocks) { 
-				if (!clock.stuck()) { 
-					return exec.isRunning(); 
-				}
-			}
-			
-			/* There is no more work available. Wait for a site call to return */ 
-			try {
-				wait();
-			} catch (InterruptedException e) {}
+		if (!exec.isRunning()) { 
+			return false;
 		}
-		return exec.isRunning();
+		
+		/* If an active token is available, process it. */
+		if (activeTokens.size() > 0){
+			activeTokens.remove().process();
+			return true;
+		}
+		
+		
+		/* If a site return is available, make it active.
+		 * This marks the beginning of a new round. 
+		 */
+		if (queuedReturns.size() > 0 ){
+			activeTokens.add(queuedReturns.remove());
+			round++; reportRound();
+			return true;
+		}
+		
+		
+		/* If the engine is quiescent, advance all logical clocks. */
+		boolean progress = false;
+		
+		for (LogicalClock clock : clocks) {
+			progress = clock.advance() || progress;
+		}
+		
+		/* If some logical clock actually advanced, return. */
+		if (progress) { return true; }
+		
+		
+		/* If there is no more available work,
+		 * wait for a site call to return. 
+		 */
+		/*
+		try {
+			wait();
+		} 
+		catch (InterruptedException e) {}
+		*/
+		/* Done waiting; return to work. */
+		return true;
 	}
-
+	
 	/**
 	 * Activate a token by adding it to the queue of active tokens
 	 * @param t	the token to be added
@@ -144,10 +118,6 @@ public class OrcEngine {
 		notifyAll();
 	}
 	
-	public void addPub(int n) {
-		num_published += n;
-	}
-
 	public void debug(String s)
 	{
 		if (debugMode)

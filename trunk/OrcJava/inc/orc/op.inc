@@ -9,9 +9,10 @@ site "op<" = orc.lib.comp.Less
 site "op<=" = orc.lib.comp.Leq
 site "op>" = orc.lib.comp.Greater
 site "op>=" = orc.lib.comp.Greq
-site "op/=" = orc.lib.comp.Inequal
+
 
 site "op=" = orc.runtime.sites.core.Equal
+site "op/=" = orc.runtime.sites.core.Inequal
 
 site "op~" = orc.runtime.sites.core.Not
 
