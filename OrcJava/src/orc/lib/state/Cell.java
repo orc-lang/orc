@@ -99,9 +99,10 @@ public class Cell extends EvalSite {
 					/* A successful write publishes a signal. */
 					writer.resume();
 				}
-				
-				/* A failed write kills the writer. */
-				writer.die();
+				else {
+					/* A failed write kills the writer. */
+					writer.die();
+				}
 					
 					
 			}
