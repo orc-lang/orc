@@ -18,8 +18,9 @@ import orc.runtime.values.Value;
  * optimizations on the field lookup strategy.
  * 
  * This cannot in general be passed by value because many sites keep state in
- * the top level. You can avoid this problem by using anonymous inner classes
- * for the member sites.
+ * the top level. However that's a bad practice which you should strive to
+ * avoid. One way to do so is to use anonymous inner classes for the member
+ * sites.
  */
 public abstract class DotSite extends EvalSite {
 

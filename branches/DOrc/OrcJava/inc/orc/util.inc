@@ -1,6 +1,7 @@
 site cat = orc.lib.str.Cat
 site print = orc.lib.str.Print
 site println = orc.lib.str.Println
+site Printer = orc.lib.str.Printer
 
 site random = orc.lib.util.Random
 

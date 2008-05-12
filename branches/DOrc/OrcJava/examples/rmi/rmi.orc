@@ -14,7 +14,7 @@ def test4() = c.put(1)>>null | (c.put(2)>>null)@remote | c.get() | c.get()
 
 def test5() = x
 	<x< Rtimer(10000) | (Metronome() >> print(".") >> null)@remote
-	
+
 def test6() =
 	val c = Buffer()
 	def reader() = c.get() >x>
