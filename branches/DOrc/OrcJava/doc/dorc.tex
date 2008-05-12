@@ -49,6 +49,8 @@ surrounding \textsc{Orc} program
 \item The ability to participate in asymmetric composition
 \end{itemize}
 
+\section{Usage}
+
 \textsc{DOrc} introduces one new type of value and one new syntactic construct
 to the language. The new value type is a ``server'', which corresponds to a
 computer in a distributed computation\footnote{In distributed computing
@@ -58,7 +60,7 @@ graph-based implementation.}. The new syntactic construct is the ``remote
 expression'', which specifies that an expression should be evaluated on a
 specific server.
 
-\section{Servers and Meta-Servers}
+\subsection{Servers and Meta-Servers}
 
 Every server participates in one and only one distributed computation, and all
 servers in the computation share the same environment (variables and function
@@ -102,7 +104,7 @@ Use the site \texttt{Local} to get a reference to the current \textsc{DOrc}
 server. This is useful if you want to execute an expression on a
 remote server which executes some inner expression back on the local server.
 
-\section{Distributed Expressions}
+\subsection{Distributed Expressions}
 
 The added \textsc{DOrc} syntax is very simple: \texttt{f @ r} where \texttt{f}
 is an arbitrary expression and \texttt{r} is a variable which holds a reference
@@ -115,7 +117,7 @@ available, evaluate the expression \texttt{f} on the server specified by the
 value of \texttt{r}. The precise semantics of this expression are discussed in
 a later section, but for now this intuitive description should suffice.
 
-\section{Shared Sites}
+\subsection{Shared Sites}
 
 For the most part, you can think of site calls made in remote expressions as
 equivalent to the same site calls made in local expressions. For example, if
@@ -138,7 +140,7 @@ console where it was created.
 \item \texttt{Localhost} and \texttt{Local} refer to the current server, because that's useful.
 \end{itemize}
 
-\section{Examples}
+\subsection{Examples}
 
 Let us consider some examples of distributed programs. These are not very
 interesting because they are all equivalent to similar non-distributed
@@ -182,7 +184,7 @@ locally and one remotely. The local \texttt{Rtimer} publishes a value first,
 and when it does, all further computation of the parallel remote expression is
 terminated and no value will be published from it.
 
-\subsection{Semantics}
+\section{Semantics}
 
 The semantics of a remote expression are closely related to the timing
 semantics of \textsc{Orc}. Traditionally, \textsc{Orc} sites are classified
