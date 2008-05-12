@@ -1,7 +1,10 @@
 package orc.runtime.values;
 
+import java.io.Serializable;
+import java.rmi.RemoteException;
 import java.util.Set;
 
+import orc.runtime.RemoteToken;
 import orc.runtime.Token;
 
 /**
@@ -15,7 +18,6 @@ import orc.runtime.Token;
  */
 
 public class PartialValue implements Future {
-	
 	Value v;
 	Set<Future> freeset;
 	
@@ -29,14 +31,13 @@ public class PartialValue implements Future {
 		
 		// If there are unbound variables, try to force each one.
 		// Release the value only if all of the variables have been bound.
-		if (freeset != null)
-		{
-			for (Future f : freeset)
-			{
-				if (f.forceArg(t) == null)
-				{ return null; }
+		if (freeset != null) {
+			try {
+				for (Future f : freeset) f.forceArg(t);
+				freeset = null;
+			} catch (FutureUnboundException e) {
+				return null;
 			}
-			freeset = null;
 		}
 		return v.forceArg(t);
 	}
@@ -47,5 +48,4 @@ public class PartialValue implements Future {
 		// since it can't leak variables in that case. Just force the underlying value.
 		return v.forceCall(t);
 	}
-	
 }

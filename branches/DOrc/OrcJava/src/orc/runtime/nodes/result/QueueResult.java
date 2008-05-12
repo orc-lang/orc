@@ -25,4 +25,7 @@ public class QueueResult extends Result {
 		q.add(v);
 	}
 
+	public String toString() {
+		return "queue";
+	}
 }

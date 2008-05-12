@@ -32,4 +32,7 @@ public class WriteResult extends Result {
 
 	}
 
+	public String toString() {
+		return "write";
+	}
 }

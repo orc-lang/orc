@@ -43,6 +43,8 @@ public class Orc {
 		cfg.processArgs(args);	
 		
 		Node n = compile(cfg.getInstream(), cfg.getTarget(), cfg);
+		//System.out.println(n);
+		if (n == null) return;
         
 		// Configure the runtime engine
 		OrcEngine engine = new OrcEngine();
@@ -50,21 +52,24 @@ public class Orc {
 		
 		// Run Orc with these options
 		try {
-				System.out.println("Running...");
-		        // Run the Orc program
-		        engine.run(n);
-		        
-			} catch (Exception e) {
-				System.err.println("exception: " + e);
-				if (cfg.debugMode())
-					e.printStackTrace();
-			} catch (Error e) {
-				System.err.println(e.toString());
-				if (cfg.debugMode())
-					e.printStackTrace();
-			}
-		
-		System.exit(0);
+			System.out.println("Running...");
+		    // Run the Orc program
+		    engine.run(n);
+		} catch (Exception e) {
+			System.err.println("exception: " + e);
+			e.printStackTrace();
+		} catch (Error e) {
+			System.err.println(e.toString());
+			e.printStackTrace();
+		}
+		// If we reach this point there are no more active
+		// tokens but there may still be sleeping threads (timers or remote
+		// objects, for example). Therefore unless the user has requested
+		// "daemon mode", which will allow these threads to continue waiting
+		// for external events, we should shut down.
+		if (!cfg.daemonMode()) {
+			System.exit(0);
+		}
 	}
 	
 	protected static Node compile(InputStream source, Node target, Config cfg) {
@@ -189,9 +194,5 @@ public class Orc {
 			}
 			
 		return null;
-	}
-	
-	
+	}	
 }
-
-

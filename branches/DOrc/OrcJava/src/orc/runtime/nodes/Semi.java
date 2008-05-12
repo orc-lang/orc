@@ -3,6 +3,8 @@
  */
 package orc.runtime.nodes;
 
+import java.rmi.RemoteException;
+
 import orc.runtime.Token;
 import orc.runtime.regions.SemiRegion;
 
@@ -26,9 +28,7 @@ public class Semi extends Node {
 	 * @see orc.runtime.nodes.Node#process(orc.runtime.Token, orc.runtime.OrcEngine)
 	 */
 	public void process(Token t) {
-		
 		SemiRegion region = new SemiRegion(t.getRegion(), t.copy().move(right));
 		t.move(left).setRegion(region).activate();
 	}
-
 }

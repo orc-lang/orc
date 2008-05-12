@@ -36,4 +36,7 @@ public class Assign extends Node {
 		t.move(next).activate();
 	}
 
+	public String toString() {
+		return super.toString() + "(" + var +")";
+	}
 }

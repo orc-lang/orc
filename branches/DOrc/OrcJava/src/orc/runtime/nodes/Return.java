@@ -3,16 +3,16 @@
  */
 package orc.runtime.nodes;
 
+import java.rmi.RemoteException;
+
+import orc.error.OrcException;
 import orc.runtime.Token;
-import orc.runtime.values.Value;
 
 /**
  * Compiled node marking the end of a procedure
  * @author wcook
  */
 public class Return extends Node {
-	private static final long serialVersionUID = 1L;
-
 	/**
 	 * To execute a return, the caller token and the result of the current
 	 * execution are identified.
@@ -26,10 +26,11 @@ public class Return extends Node {
 		if (engine.debugMode)
 			engine.debug("Return " + t.getResult(), t);
 		*/
-		Token caller = t.getCaller();
-		Value result = t.getResult();
-
-		caller.copy().setResult(result).activate();
+		try {
+			t.getCaller().returnResult(t.getResult());
+		} catch (RemoteException e) {
+			t.error(new OrcException(e));
+		}
 		t.die();
 	}
 }

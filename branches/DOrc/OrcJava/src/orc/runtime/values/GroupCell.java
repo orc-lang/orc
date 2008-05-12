@@ -3,161 +3,125 @@
  */
 package orc.runtime.values;
 
-import java.io.Serializable;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.LinkedList;
-import java.util.Iterator;
 import java.util.List;
 
+import orc.runtime.RemoteCellGroup;
 import orc.runtime.Token;
-import orc.runtime.regions.GroupRegion;
 
 /**
- * A value container that is also a group. Groups are
- * essential to the evaluation of where clauses: all the 
- * tokens that arise from execution of a where definition
- * are associated with the same group. Once a value is
- * produced for the group, all these tokens are terminated.
- * @author wcook, dkitchin
+ * A value container that is associated with a group. There should be at least
+ * one group cell per server per group (typically exactly one). In order for
+ * this to work, the implementation is split into a serializable part (which
+ * holds the value) and a transient, non-serializable manager (which keeps track
+ * of the tokens waiting on the value at its node). When the cell is copied
+ * between servers, it creates a new manager to manage tokens on that server.
+ * 
+ * @author quark
  */
-public class GroupCell implements Serializable, Future {
-
-	private static final long serialVersionUID = 1L;
-	Value value;
-	boolean bound;
-	boolean alive;
-	List<Token> waitList;
-	List<GroupCell> children;
-	GroupRegion region;
-
-	public GroupCell() {
-		bound = false;
-		alive = true;
-	}
-
+public class GroupCell implements Future {
 	/**
-	 * Groups are organized into a tree. In this case a new
-	 * subgroup is created and returned.
-	 * When we add a new child cell, we can also remove any dead children
-	 * so that their memory can be recycled.
-	 * @return the new group
+	 * The non-serializable half of a group cell. Manages the token waiting list
+	 * and receives messages from the master group.
 	 */
-	public GroupCell createCell() {
-		GroupCell n = new GroupCell();
-		if (children == null)
-			children = new LinkedList<GroupCell>();
-		for (Iterator<GroupCell> it = children.iterator(); it.hasNext(); )
-		        if (!(it.next().alive))
-		            it.remove();
-		children.add(n);
-		return n;
-	}
-
-	/**
-	 * This call defines the fundamental behavior of groups:
-	 * When the value is bound, all subgroups are killed
-	 * and all waiting tokens are activated.
-	 * @param value 	the value for the group 
-	 * @param engine	engine
-	 */
-	public void setValue(Value value) {
-		this.value = value;
-		bound = true;
-		kill();
-		if (waitList != null) {
-			for (Token t : waitList) {
-				t.activate();
+	private class GroupCellManager implements RemoteGroupCell {
+		private List<Token> waitList = new LinkedList<Token>();
+		public GroupCellManager() {
+			try {
+				UnicastRemoteObject.exportObject(this, 0);
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				throw new RuntimeException(e);
 			}
+		}
+		public synchronized void die() {
+			state = State.DEAD;
+			for (Token t : waitList) t.die();
 			waitList = null;
 		}
-		region.close();	
-	}
-
-	/**
-	 * Recursively kills all subgroups.
-	 * After the children are killed, set children to null so that the memory used by the 
-	 * killed objects can be recycled.
-	 */
-	
-	private void kill() {
-		alive = false;
-		if (children != null)
-			for (GroupCell sub : children)
-				sub.kill();
-		children = null;
-	}
-
-	/**
-	 * Check if a group has been killed
-	 * @return true if the group has not been killed
-	 */
-	public boolean isAlive() {
-		return alive;
-	}
-
-	/**
-	 * Add a token to the waiting queue of this group
-	 * @param t
-	 */
-	public void waitForValue(Token t) {
-		if (alive) {
-			if (waitList == null)
-				waitList = new LinkedList<Token>();
-			waitList.add(t);
+		public synchronized void setValue(Value value) {
+			GroupCell.this.value = value;
+			state = State.BOUND;
+			for (Token t : waitList) t.activate();
+			waitList = null;
 		}
-		else {
-			// A token waiting on a dead group cell will remain silent forever.
-			t.die();
-		}
-	}
-
-	public Value forceArg(Token t) {
-		
-		if (bound)
-		{
-			return value.forceArg(t);
-		}
-		else
-		{
-			waitForValue(t);
-			return null;
-		}
-	}
-	
-	public Callable forceCall(Token t) {
-		
-		if (bound)
-		{
-			return value.forceCall(t);
-		}
-		else
-		{
-			waitForValue(t);
-			return null;
-		}
-	}
-	
-	/* GroupCell and GroupRegion refer to each other.
-	 * If a region is closed, it kills the associated cell,
-	 * even if that cell has not yet been bound.
-	 */
-	public void close() {
-		if (alive) {
-			kill();
-			if (waitList != null) {
-				for (Token t : waitList) {
-					t.die();
+		public synchronized Value getValue(Token t) throws FutureUnboundException {		
+			switch (state) {
+			case NEW:
+				try {
+					setValue(group.getValue(this));
+					return value;
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					throw new RuntimeException(e);
+				} catch (FutureUnboundException e) {
+					if (!e.alive) {
+						die();
+						return getValue(t);
+					} else {
+						state = State.WAITING;
+						// fall through
+					}
 				}
-				waitList = null;
+			case WAITING:
+				waitList.add(t);
+				throw new FutureUnboundException(true);
+			case BOUND:
+				return value;
+			case DEAD:
+				t.die();
+				throw new FutureUnboundException(false);
 			}
+			throw new AssertionError("Unexpected state.");
 		}
 	}
 	
-	/* GroupCell and GroupRegion refer to each other.
-	 * If a cell is bound, it closes the associated region,
-	 * even if that region still has live tokens.
-	 */
-	public void setRegion(GroupRegion region) {
-		this.region = region;
+	private enum State { NEW, WAITING, BOUND, DEAD };
+	private State state = State.NEW;
+	private Value value = null;
+	transient private GroupCellManager manager = null;
+	
+	private RemoteCellGroup group;
+
+	public GroupCell(RemoteCellGroup group) {
+		this.group = group;
+		manager = new GroupCellManager();
 	}
 	
+	/**
+	 * Serialization should be synchronized.
+	 */
+	private void writeObject(ObjectOutputStream out) throws IOException {
+		synchronized (manager) {
+			out.defaultWriteObject();
+		}
+	}
+
+	/**
+	 * When a group cell is copied to a new server it needs to create a new
+	 * manager.
+	 */
+	private void readObject(ObjectInputStream in)
+		throws IOException,	ClassNotFoundException
+	{
+		in.defaultReadObject();
+		manager = new GroupCellManager();
+		// while we were being copied to the new server,
+		// the group may have gotten a value, so we need
+		// to check for one
+		if (state == State.WAITING) state = State.NEW;
+	}
+
+	public Value forceArg(Token t) throws FutureUnboundException {
+		return manager.getValue(t).forceArg(t);
+	}
+	
+	public Callable forceCall(Token t) throws FutureUnboundException {
+		return manager.getValue(t).forceCall(t);
+	}
 }

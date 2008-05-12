@@ -6,13 +6,14 @@ package orc.lib.comp;
 import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
+import orc.runtime.sites.PassedByValueSite;
 import orc.runtime.values.*;
 
 /**
  * @author dkitchin
  *
  */
-public abstract class IntCompareSite extends EvalSite {
+public abstract class IntCompareSite extends EvalSite implements PassedByValueSite {
 
 	/* (non-Javadoc)
 	 * @see orc.runtime.sites.EvalSite#evaluate(java.lang.Object[])

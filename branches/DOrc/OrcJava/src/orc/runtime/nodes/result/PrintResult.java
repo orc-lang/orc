@@ -18,4 +18,7 @@ public class PrintResult extends Result {
 		System.out.flush();
 	}
 
+	public String toString() {
+		return "print";
+	}
 }

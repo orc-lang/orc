@@ -34,38 +34,23 @@ public class Let extends Expression {
 	
 	@Override
 	public Node compile(Node output) {
-		orc.ast.simple.arg.Site let = new orc.ast.simple.arg.Site(new orc.runtime.sites.core.Let());
-		return new orc.runtime.nodes.Call(let, args, output);
+		return new orc.runtime.nodes.Let(args, output);
 	}
 
 	@Override
 	public Expression subst(Argument a, NamedVar x) {
-		
-		List<Argument> newargs = new LinkedList<Argument>();
-		
-		for (Argument b : args)
-		{
-			if (b.equals(x))
-				newargs.add(a);
-			else
-				newargs.add(b);
+		List<Argument> newargs = new LinkedList<Argument>();		
+		for (Argument b : args) {
+			newargs.add(b.subst(a, x));
 		}
 		return new Let(newargs);
 	}
 	
-	public Set<Var> vars()
-	{
+	public Set<Var> vars() {
 		Set<Var> freeset = new HashSet<Var>();
-		
-		for(Argument a : args)
-		{
-			if (a instanceof Var)
-			{
-				freeset.add((Var)a);
-			}
+		for(Argument a : args)	{
+			a.addFree(freeset);
 		}
-		
 		return freeset;
 	}
-
 }

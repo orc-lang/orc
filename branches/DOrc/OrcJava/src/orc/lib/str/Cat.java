@@ -6,13 +6,14 @@ package orc.lib.str;
 import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
+import orc.runtime.sites.PassedByValueSite;
 import orc.runtime.values.*;
 
 /**
  * @author dkitchin
  *
  */
-public class Cat extends EvalSite {
+public class Cat extends EvalSite implements PassedByValueSite {
 
 	public Value evaluate(Args args) throws OrcRuntimeTypeException {
 		

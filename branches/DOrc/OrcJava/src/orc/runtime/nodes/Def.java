@@ -8,8 +8,8 @@ import java.util.Set;
 import orc.ast.simple.arg.Var;
 import orc.runtime.Token;
 import orc.runtime.values.Closure;
-import orc.runtime.values.Future;
 import orc.runtime.values.PartialValue;
+import orc.runtime.values.Future;
 
 public class Def extends Node {
 
@@ -75,5 +75,8 @@ public class Def extends Node {
 		
 		t.move(next).activate();
 	}
-	
+
+	public String toString() {
+		return super.toString() + defs;
+	}
 }

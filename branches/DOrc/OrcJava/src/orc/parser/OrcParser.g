@@ -283,11 +283,20 @@ consExpression returns [Expression e = null]
 	{
 		Expression e2;
 	}
-	: e = basic_expr (
+	: e = remoteExpression (
 	   options {greedy = true;} 
 	   		: COLON e2=consExpression 
 				{ e = new ConsExpr(e, e2); }
 		)?
+	;
+
+remoteExpression returns [Expression e = null]
+	{ Expression e2; }
+	:	e = basic_expr (
+			options {greedy = true;}
+			:	ATSIGN e2 = remoteExpression
+				{ e = new Remote(e2, e); }
+		)*
 	;
 
 basic_expr returns [Expression e = null]

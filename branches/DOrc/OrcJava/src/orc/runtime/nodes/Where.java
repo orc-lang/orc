@@ -3,7 +3,10 @@
  */
 package orc.runtime.nodes;
 
+import java.rmi.RemoteException;
+
 import orc.ast.simple.arg.Var;
+import orc.runtime.Group;
 import orc.runtime.Token;
 import orc.runtime.regions.GroupRegion;
 import orc.runtime.values.GroupCell;
@@ -35,10 +38,21 @@ public class Where extends Node {
 	 * @see orc.runtime.nodes.Node#process(orc.runtime.Token, orc.runtime.OrcEngine)
 	 */
 	public void process(Token t) {
-		GroupCell cell = t.getGroup().createCell();
-		GroupRegion region = new GroupRegion(t.getRegion(), cell);
-		
-		t.copy().bind(var, cell).move(left).activate();
-		t.move(right).setGroup(cell).setRegion(region).activate();
+		// Create a new group
+		Group group = new Group();
+		if (!t.getGroup().addChild(group)) {
+			// The parent group may have died while
+			// we were processing this token.
+			t.die();
+			return;
+		}
+		t.copy().bind(var, new GroupCell(group)).move(left).activate();
+		t.move(right)
+			.setGroup(group)
+			.setRegion(new GroupRegion(t.getRegion(), group))
+			.activate();
+	}
+	public String toString() {
+		return super.toString() + "(" + var +")";
 	}
 }

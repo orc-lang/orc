@@ -1,5 +1,6 @@
 package orc.runtime.nodes;
 
+import java.io.Serializable;
 import java.util.List;
 import orc.ast.simple.arg.Var;
 
@@ -13,7 +14,7 @@ import orc.ast.simple.arg.Var;
  *
  */
 
-public class Definition {
+public class Definition implements Serializable {
 
 	public Var name;
 	public List<Var> formals;
@@ -34,5 +35,8 @@ public class Definition {
 		this.formals = formals;
 		this.body = body;
 	}
-	
+
+	public String toString() {
+		return super.toString() + "(" + name + formals +")";
+	}
 }

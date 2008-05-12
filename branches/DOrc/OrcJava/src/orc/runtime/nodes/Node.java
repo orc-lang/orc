@@ -19,5 +19,4 @@ public abstract class Node extends Debug implements Serializable {
 	 * @param t      input token being processed 
 	 */
 	public abstract void process(Token t);
-		
 }

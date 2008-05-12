@@ -15,53 +15,44 @@ import javax.mail.internet.MimeMessage;
 
 import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
-import orc.runtime.Token;
+import orc.runtime.RemoteToken;
 import orc.runtime.sites.Site;
+import orc.runtime.sites.ThreadedSite;
 import orc.runtime.values.Constant;
 import orc.runtime.values.TupleValue;
 import orc.runtime.values.Value;
 
 /**
  * Implements mail sending
- * @author wcook
+ * @author wcook, quark
  */
-public class Mail extends Site {
-   private static final long serialVersionUID = 1L;
-
+public class Mail extends ThreadedSite {
 	/** 
 	 * Uses the java mail API to send a message via an SMTP server
 	 * TODO: there are many possible enhancements of this code
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.OrcEngine)
 	 */
-	public void callSite(Args args, Token returnToken) {
-		
+	@Override
+	public Value evaluate(Args args) throws OrcRuntimeTypeException {
 		String from, subject, message, smtp;
 		TupleValue to;
-		try {
-			
-			if (args.getValues().size() != 5)
-				throw new OrcRuntimeTypeException("Wrong number of arguments");
+		if (args.size() != 5)
+			throw new OrcRuntimeTypeException("Wrong number of arguments");
 
-			
 		from = args.stringArg(0);
-		
-		if (args.valArg(1) instanceof TupleValue)
+
+		if (args.valArg(1) instanceof TupleValue) {
 			to = (TupleValue) args.valArg(1);
-		else
-		{
+		} else {
 			List<Value> vs = new ArrayList<Value>();
 			vs.add(new Constant(args.stringArg(1)));
 			to = new TupleValue(vs);
 		}
-			
+
 		subject = args.stringArg(2);
 		message = args.stringArg(3);
 		smtp = args.stringArg(4);
-		}
-		catch (OrcRuntimeTypeException e) {
-			System.out.println("Malformed arguments to sendMail(from, to, subject, message, smtp); remaining silent. [" + e.getMessage() + "]");
-			return;
-		}
+
 		// Set the host smtp address
 		Properties props = new Properties();
 		props.setProperty("mail.smtp.host", smtp);
@@ -93,8 +84,8 @@ public class Mail extends Site {
 			msg.setContent(message, "text/plain");
 			Transport.send(msg);
 		} catch (Exception e) {
-			throw new Error(e.toString());
+			throw new OrcRuntimeTypeException(e);
 		}
+		return Value.signal();
 	}
-
 }

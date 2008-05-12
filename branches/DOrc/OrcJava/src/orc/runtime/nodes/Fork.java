@@ -31,5 +31,4 @@ public class Fork extends Node {
 		t.copy().move(left).activate();
 		t.move(right).activate();
 	}
-
 }

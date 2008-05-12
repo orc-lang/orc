@@ -3,9 +3,11 @@
  */
 package orc.runtime.sites;
 
+import java.rmi.RemoteException;
+
 import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
-import orc.runtime.Token;
+import orc.runtime.RemoteToken;
 import orc.runtime.values.Value;
 
 /**
@@ -22,8 +24,7 @@ import orc.runtime.values.Value;
 public abstract class EvalSite extends Site {
 
 	@Override
-	public void callSite(Args args, Token caller) throws OrcRuntimeTypeException {
-
+	public void callSite(Args args, RemoteToken caller) throws OrcRuntimeTypeException, RemoteException {
 		caller.resume(evaluate(args));
 	}
 	

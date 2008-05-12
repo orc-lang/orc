@@ -1,67 +1,32 @@
 package orc.runtime.regions;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 
-import orc.runtime.Token;
 
-public abstract class Region {
-
+public abstract class Region implements RemoteRegion {
 	int inhabitants = 0;
-	Set<Token> containedTokens;
-	Set<Region> containedRegions;
+	protected boolean open = true;
 	
-	public Region() {
-		inhabitants = 0;
-		containedTokens = new HashSet<Token>();
-		containedRegions = new HashSet<Region>();
-	}
-	
-	public void add(Token t) { 
-		inc(); 
-	
-		// for chcekpointing
-		containedTokens.add(t);
-	}
-	
-	public void add(Region r) { 
-		inc(); 
-		
-		// for chcekpointing
-		containedRegions.add(r);
-	}
-	
-	public void remove(Token t) { 
-		dec(); 
-		
-		// for chcekpointing
-		containedTokens.remove(t);
-	}
-	
-	public void remove(Region r) { 
-		dec(); 
-
-		// for chcekpointing
-		containedRegions.remove(r);
-	}
-
-	private void inc() {
+	public void grow() {
 		inhabitants++;
 	}
-	
-	private void dec() {
+		
+	public void shrink() {
 		inhabitants--;
 		if (inhabitants <= 0) { close(); }
 	}
-	
-	public abstract void close();
-	
-	// for checkpointing
-	public void putContainedTokens(Set<Token> acc) {
 
-		acc.addAll(containedTokens);
-		for (Region r : containedRegions) {
-			r.putContainedTokens(acc);
-		}
+	public boolean isOpen() { return open; }
+	
+	public void close() {
+		if (!open) return;
+		open = false;
+		onClose();
 	}
+	
+	/**
+	 * Override this to perform cleanup when the region closes.
+	 */
+	protected abstract void onClose();
 }

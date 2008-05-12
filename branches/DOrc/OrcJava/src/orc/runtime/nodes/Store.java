@@ -5,6 +5,7 @@ package orc.runtime.nodes;
 
 
 import orc.ast.simple.arg.Var;
+import orc.runtime.Group;
 import orc.runtime.Token;
 import orc.runtime.values.GroupCell;
 import orc.runtime.values.Value;
@@ -32,9 +33,10 @@ public class Store extends Node {
 		if (engine.debugMode)
 			engine.debug("Store/Stop " + var + "=" + t.getResult(), t);
 		*/
-		GroupCell group = t.getGroup();
-		Value result = t.getResult();
-		group.setValue(result);
+		t.getGroup().setValue(t.getResult());
 		t.die();
+	}
+	public String toString() {
+		return super.toString() + "(" + var +")";
 	}
 }

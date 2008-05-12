@@ -1,5 +1,8 @@
 package orc.ast.simple.arg;
 
+import java.io.Serializable;
+import java.util.Set;
+
 import orc.runtime.values.Value;
 
 /**
@@ -14,7 +17,13 @@ import orc.runtime.values.Value;
  *
  */
 
-public abstract class Argument {
-	
+public abstract class Argument implements Serializable {
 	public abstract Value asValue();
+	public Argument subst(Argument newArg, NamedVar oldArg) {
+		return equals(oldArg) ? newArg : this; 
+	}
+	public void addFree(Set<Var> freeset) {
+		// Do nothing; overridden for arguments which may
+		// be considered free in an expression
+	}
 }

@@ -5,6 +5,7 @@ package orc.lib.net;
 
 import orc.runtime.Args;
 import orc.runtime.sites.PartialSite;
+import orc.runtime.sites.PassedByValueSite;
 import orc.runtime.values.Constant;
 import orc.runtime.values.Value;
 
@@ -14,7 +15,7 @@ import orc.runtime.values.Value;
  * Return the name of the local host. If the lookup fails, the site remains silent.
  *
  */
-public class Localhost extends PartialSite {
+public class Localhost extends PartialSite implements PassedByValueSite {
 
 	@Override
 	public Value evaluate(Args args) {

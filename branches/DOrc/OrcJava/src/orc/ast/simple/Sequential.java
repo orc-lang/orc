@@ -32,12 +32,10 @@ public class Sequential extends Expression {
 		return new Sequential(left.subst(a,x), right.subst(a,x), v);
 	}
 	
-	public Set<Var> vars() {
-		
+	public Set<Var> vars() {	
 		Set<Var> s = left.vars();
 		s.addAll(right.vars());
 		s.remove(v);
 		return s;
 	}
-
 }

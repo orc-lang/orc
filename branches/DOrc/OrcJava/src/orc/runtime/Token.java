@@ -3,17 +3,15 @@
  */
 package orc.runtime;
 
-import java.io.*;
-//import java.io.ObjectOutputStream;
-//import java.nio.channels.FileLock;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.Var;
 import orc.error.DebugInfo;
 import orc.error.OrcException;
 import orc.runtime.nodes.Node;
-import orc.runtime.regions.Execution;
 import orc.runtime.regions.Region;
-import orc.runtime.values.Callable;
 import orc.runtime.values.Future;
 import orc.runtime.values.GroupCell;
 import orc.runtime.values.Value;
@@ -26,18 +24,22 @@ import orc.runtime.values.Value;
  * to the next token.
  * @author wcook
  */
-public class Token implements Serializable, Comparable<Token> {
+public class Token implements RemoteToken, Comparable<Token> {
 	private static final long serialVersionUID = 1L;
-	protected Node node;	
-	protected Environment env;
-	protected GroupCell group;
-	protected Region region;
-	protected OrcEngine engine;
-	Token caller;
-	Value result;
-	boolean alive;
-	
-	public Token(Node node, Environment env, Token caller, GroupCell group, Region region, Value result, OrcEngine engine) {
+	private Node node;
+	private Environment env;
+	private Group group;
+	private Region region;
+	private OrcEngine engine;
+	// FIXME: this is serving double duty for both remote and local calls.
+	// It might be clearer and possibly allow some optimization if it was split
+	// into caller (for local function calls) and remoteCaller (for remote
+	// computations).
+	private RemoteToken caller;
+	private Value result;
+	private boolean alive;
+
+	public Token(Node node, Environment env, RemoteToken caller, Group group, Region region, Value result, OrcEngine engine) {
 		this.node = node;
 		this.env = env;
 		this.caller = caller;
@@ -46,33 +48,31 @@ public class Token implements Serializable, Comparable<Token> {
 		this.engine = engine;
 		this.region = region;
 		this.alive = true;
-		region.add(this);
+		region.grow();
 	}
-	
-	public Token(Node node, Environment env, Execution exec) {
-		this(node, env, null, new GroupCell(), exec, null, exec.getEngine());		
-	}
-	
 
-	// Signal that this token is dead
+	/**
+	 * Prepare a token for transit to a remote server.
+	 */
+	public FrozenToken freeze(Node node, RemoteToken caller) {
+		return new FrozenToken(node, env, caller, group, region, result);
+	}
+
 	// Synchronized so that multiple threads don't simultaneously signal
 	// a token to die and perform duplicate region removals.
 	public synchronized void die() {
 		if (alive) {
 			alive = false;
-			region.remove(this);
+			region.shrink();
 		}
 	}
-	
-	// An unreachable token is always dead.
-	public void finalize() { die(); } 
-		
 	
 	/**
 	 * If a token is alive, calls the node to perform the next action.
 	 */
 	public void process() {
-		if (group.isAlive()) {	
+		if (group.isAlive()) {
+			debug("Processing token at " + node.toString());
 			node.process(this);
 		}
 		else {
@@ -80,11 +80,7 @@ public class Token implements Serializable, Comparable<Token> {
 		}
 	}
 
-	public Node getNode() {
-		return node;
-	}
-
-	public GroupCell getGroup() {
+	public Group getGroup() {
 		return group;
 	}
 	
@@ -95,8 +91,12 @@ public class Token implements Serializable, Comparable<Token> {
 	public Value getResult() {
 		return result;
 	}
+	
+	public void returnResult(Value result) {
+		copy().setResult(result).activate();
+	}
 
-	public Token getCaller() {
+	public RemoteToken getCaller() {
 		return caller;
 	}
 	
@@ -116,7 +116,7 @@ public class Token implements Serializable, Comparable<Token> {
 	}
 	
 	
-	public Token setGroup(GroupCell group) {
+	public Token setGroup(Group group) {
 		this.group = group;
 		return this;
 	}
@@ -124,20 +124,12 @@ public class Token implements Serializable, Comparable<Token> {
 	public Token setRegion(Region region) {
 		
 		// Migrate the token from one region to another
-		region.add(this);
-		this.region.remove(this);
+		region.grow();
+		this.region.shrink();
 		
 		this.region = region;
 		return this;
 	}
-	
-	public Token setEnv(Environment e) {
-		this.env = e;
-		return this;
-	}
-
-	
-
 	/**
 	 * Move to a node node
 	 * @param node  the node to move to
@@ -149,18 +141,12 @@ public class Token implements Serializable, Comparable<Token> {
 	}
 	
 	/**
-	 * 
-	 * Create a copy of this token with the same dynamic characteristics,
-	 * but executing at a new point in the graph with a different environment.
-	 * Set the new caller's token to the token provided.
-	 * 
-	 * @param node
-	 * @param env
-	 * @param caller
-	 * @return
+	 * Move to a node and also set a token to return to and new environment.
 	 */
-	public Token callcopy(Node node, Environment env, Token returnToken) {
-		return new Token(node, env, returnToken, group, region, null, engine);
+	public void call(Node node, RemoteToken caller, Environment env) {
+		move(node);
+		this.caller = caller;
+		this.env = env;
 	}
 
 	/**
@@ -189,29 +175,12 @@ public class Token implements Serializable, Comparable<Token> {
 	 * @return		value, or an exception if the variable is undefined
 	 */
 	public Future lookup(Argument a) {
-		if (a instanceof Var)
-		{
+		if (a instanceof Var) {
 			return env.lookup((Var)a);
-		}
-		else 
-		{
+		} else {
 			return a.asValue();
 		}
-		
 	}
-
-	public Callable call(Argument a) {
-		Future f = this.lookup(a);
-		return f.forceCall(this);
-	}
-	
-	public Value arg(Argument a) {
-		Future f = this.lookup(a);
-		return f.forceArg(this);
-	}
-	
-	
-	
 	
 	/* TODO: replace this stub with a meaningful order on tokens */
 	public int compareTo(Token t) {
@@ -245,7 +214,11 @@ public class Token implements Serializable, Comparable<Token> {
 	{
 		resume(Value.signal());
 	}
-	
+
+	/* This token has encountered an error, and dies. */
+	public void error(OrcException problem) {
+		error(node.getDebugInfo(), problem);
+	}
 	
 	/* This token has encountered an error, and dies. */
 	public void error(DebugInfo info, OrcException problem) {
@@ -255,7 +228,18 @@ public class Token implements Serializable, Comparable<Token> {
 		System.out.println("Problem: " + problem.getMessage());
 		System.out.println("Source location: " + info.errorLocation());
 		System.out.println();
+		problem.printStackTrace();
 		die();
+	}
+	
+	public String toString() {
+		return super.toString() + "(" + node + ")";
+	}
+
+	public LogicalClock newClock() {
+		LogicalClock clock = new LogicalClock();
+		engine.addClock(clock);
+		return clock;
 	}
 	
 	/*

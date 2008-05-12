@@ -3,13 +3,15 @@
  */
 package orc.lib.state;
 
+import java.rmi.RemoteException;
 import java.util.LinkedList;
 
 import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
-import orc.runtime.Token;
+import orc.runtime.RemoteToken;
 import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;
+import orc.runtime.sites.PassedByValueSite;
 import orc.runtime.sites.Site;
 import orc.runtime.values.Constant;
 import orc.runtime.values.Value;
@@ -20,38 +22,38 @@ import orc.runtime.values.Value;
  * Implements the local site SyncChannel, which creates synchronous channels.
  *
  */
-public class SyncChannel extends EvalSite {
+public class SyncChannel extends EvalSite implements PassedByValueSite {
 
 	/* (non-Javadoc)
-	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
+	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.RemoteToken, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
 	 */
 	@Override
 	public Value evaluate(Args args) {
-		return new SyncChannelInstance();
+		return new orc.runtime.values.Site(new SyncChannelInstance());
 	}
 	
 	
-	private class SenderItem {
+	private static class SenderItem {
 		
-		Token sender;
+		RemoteToken sender;
 		Value sent;
 		
-		SenderItem(Token sender, Value sent)
+		SenderItem(RemoteToken sender, Value sent)
 		{
 			this.sender = sender;
 			this.sent = sent;
 		}
 	}
 	
-	protected class SyncChannelInstance extends DotSite {
+	protected static class SyncChannelInstance extends DotSite {
 
 		// Invariant: senderQueue is empty or receiverQueue is empty
 		private LinkedList<SenderItem> senderQueue;
-		private LinkedList<Token> receiverQueue;
+		private LinkedList<RemoteToken> receiverQueue;
 
 		SyncChannelInstance() {
 			senderQueue = new LinkedList<SenderItem>();
-			receiverQueue = new LinkedList<Token>();
+			receiverQueue = new LinkedList<RemoteToken>();
 		}
 		
 		@Override
@@ -62,7 +64,7 @@ public class SyncChannel extends EvalSite {
 		
 		private class getMethod extends Site {
 			@Override
-			public void callSite(Args args, Token receiver) {
+			public void callSite(Args args, RemoteToken receiver) throws RemoteException {
 
 				// If there are no waiting senders, put this caller on the queue
 				if (senderQueue.isEmpty()) {
@@ -71,7 +73,7 @@ public class SyncChannel extends EvalSite {
 				// If there is a waiting sender, both sender and receiver return
 				else {
 					SenderItem si = senderQueue.removeFirst();
-					Token sender = si.sender;
+					RemoteToken sender = si.sender;
 					Value item = si.sent;
 					
 					receiver.resume(new Constant(item));
@@ -83,7 +85,7 @@ public class SyncChannel extends EvalSite {
 		
 		private class putMethod extends Site {
 			@Override
-			public void callSite(Args args, Token sender) throws OrcRuntimeTypeException {
+			public void callSite(Args args, RemoteToken sender) throws OrcRuntimeTypeException, RemoteException {
 
 				Value item = args.valArg(0);
 				
@@ -94,7 +96,7 @@ public class SyncChannel extends EvalSite {
 				
 				// If there is a waiting receiver, both receiver and sender return
 				else {
-					Token receiver = receiverQueue.removeFirst();
+					RemoteToken receiver = receiverQueue.removeFirst();
 					
 					receiver.resume(new Constant(item));
 					sender.resume();

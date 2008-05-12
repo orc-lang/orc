@@ -3,16 +3,16 @@
  */
 package orc.runtime;
 
+import java.io.Serializable;
+
 import orc.ast.simple.arg.Var;
 import orc.runtime.values.Future;
-import java.io.*;
 
 /**
  * Lexical environment containing variable bindings
  * @author wcook
  */
 public class Environment implements Serializable {
-	private static final long serialVersionUID = 1L;
 	Environment parent;
 	Var var;
 	Future value;
@@ -37,6 +37,5 @@ public class Environment implements Serializable {
 			throw new Error("Undefined variable: " + var);
 		else
 			return parent.lookup(var);
-	}
-	
+	}	
 }

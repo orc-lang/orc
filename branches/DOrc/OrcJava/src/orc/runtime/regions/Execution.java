@@ -1,24 +1,20 @@
 package orc.runtime.regions;
 
+import java.rmi.RemoteException;
+
 import orc.runtime.OrcEngine;
 
 public class Execution extends Region {
-
+	private static final long serialVersionUID = 1L;
 	OrcEngine engine;
-	boolean running;
-	
+
 	public Execution(OrcEngine engine) {
+		super();
 		this.engine = engine;
-		this.running = true;
-	}
-	
-	public OrcEngine getEngine() { return engine; }
-	public boolean isRunning() { return running; }
-	
-	@Override
-	public void close() {
-		running = false;
-		engine.wake();
 	}
 
+	@Override
+	protected void onClose() {
+		engine.terminate();
+	}
 }

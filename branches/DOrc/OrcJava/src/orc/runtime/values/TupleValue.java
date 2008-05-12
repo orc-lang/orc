@@ -3,95 +3,99 @@
  */
 package orc.runtime.values;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
+import orc.runtime.sites.PassedByValueSite;
 
 /**
  * A tuple value container
- * @author wcook
+ * @author wcook, quark
  */
-public class TupleValue extends EvalSite {
-	private static final long serialVersionUID = 1L;
-
-	List<Value> values;
-
-	/* Constructor for the empty tuple */
+public class TupleValue extends Site {
 	public TupleValue() {
-		this.values = new LinkedList<Value>();
+		super(new TupleValueSite());
 	}
-	
-	/* Constructor for binary tuples */
 	public TupleValue(Value v, Value w) {
-		this.values = new LinkedList<Value>();
-		this.values.add(v);
-		this.values.add(w);
+		super(new TupleValueSite(v, w));
 	}
-	
 	public TupleValue(List<Value> values) {
-		this.values = values;
+		super(new TupleValueSite(values));
 	}
-	
-	class FitSite extends EvalSite {
-		
+	public TupleValue(Value[] values) {
+		super(new TupleValueSite(values));
+	}
+	/**
+	 * Actual site implementation.
+	 * FIXME: this is sort of a hack, ideally this would
+	 * be an inner class but then we couldn't pass it to
+	 * the Site constructor.
+	 * @author quark
+	 */
+	private static class TupleValueSite extends EvalSite implements PassedByValueSite {
+		Value[] values;
+		public TupleValueSite() {
+			this.values = new Value[0];
+		}
+		public TupleValueSite(Value v, Value w) {
+			this.values = new Value[2];
+			this.values[0] = v;
+			this.values[1] = w;
+		}		
+		public TupleValueSite(List<Value> values) {
+			this.values = new Value[values.size()];
+			this.values = values.toArray(this.values);
+		}
+		public TupleValueSite(Value[] values) {
+			this.values = values;
+		}
+		// A tuple may be used as a site for array lookup
+		public Value evaluate(Args args) throws OrcRuntimeTypeException	{
+			// TODO: Generalize this treatment of dot sites.
+			try { 
+				String s = args.fieldName();
+				if (s.equals("fits")) {
+					return new Site(new FitSite(values.length));
+				}
+			} catch (OrcRuntimeTypeException e) {
+				// do nothing
+			}
+			return values[args.intArg(0)];
+		} 
+	}
+
+	static class FitSite extends EvalSite {
 		int size;
 		public FitSite(int size) {
 			this.size = size;
 		}
-		
 		public Value evaluate(Args args) throws OrcRuntimeTypeException {
 			return new Constant(args.intArg(0) == this.size);
 		}
 	}
 	
-	// A tuple may be used as a site for array lookup
-	public Value evaluate(Args args) throws OrcRuntimeTypeException
-	{
-		// TODO: Generalize this treatment of dot sites.
-		try {			
-			String s = args.stringArg(0);
-			
-			if (s.equals("fits")) {
-				return new FitSite(values.size());
-			}
-			else { throw new Exception(); }
-		}
-		catch (Exception e) {
-		int i = args.intArg(0);
-		
-		return at(i);
-		}
+	public Value at(int i) {
+		return ((TupleValueSite)this.site).values[i];
 	}
 	
-	public String toString() {
-		return format('(', values, ", ", ')');
+	public int size() {
+		return ((TupleValueSite)this.site).values.length;
 	}
 
-	public static String format(char left, List items, String sep, char right) {
+	public String toString() {
+		return format('(', ((TupleValueSite)this.site).values, ", ", ')');
+	}
+	
+	public static String format(char left, Object[] items, String sep, char right) {
 		StringBuffer buf = new StringBuffer();
 		buf.append(left);
-		int i = 0;
-		for (Object x : items) {
-			if (i > 0)
-				buf.append(sep);
-			buf.append(x.toString());
-			i++;
+		for (int i = 0; i < items.length; ++i) {
+			if (i > 0) buf.append(sep);
+			buf.append(items[i].toString());
 		}
 		buf.append(right);
 		return buf.toString();
 	}
-
-	public int size() {
-		return values.size();
-	}
-	
-	
-	public Value at(int i) {
-		return values.get(i);
-	}
-	
 }
-

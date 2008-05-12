@@ -6,13 +6,14 @@ package orc.runtime.sites.core;
 import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
+import orc.runtime.sites.PassedByValueSite;
 import orc.runtime.values.*;
 
 /**
  * @author dkitchin
  *
  */
-public class Not extends EvalSite {
+public class Not extends EvalSite implements PassedByValueSite {
 	
 	@Override
 	public Value evaluate(Args args) throws OrcRuntimeTypeException {

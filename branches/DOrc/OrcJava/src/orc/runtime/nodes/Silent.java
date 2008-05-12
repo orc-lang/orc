@@ -19,5 +19,4 @@ public class Silent extends Node {
 	public void process(Token t) {
 		t.die();
 	}
-
 }

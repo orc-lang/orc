@@ -3,10 +3,11 @@ package orc.lib.util;
 import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
 import orc.runtime.sites.PartialSite;
+import orc.runtime.sites.PassedByValueSite;
 import orc.runtime.values.Constant;
 import orc.runtime.values.Value;
 
-public class Random extends PartialSite {
+public class Random extends PartialSite implements PassedByValueSite {
 
 	java.util.Random rnd;
 	

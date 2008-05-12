@@ -32,7 +32,7 @@ public class Constant extends Value {
 	 */
 	public Callable forceCall(Token t)
 	{
-		return new ObjectProxy(value);
+		return new Site(new ObjectProxy(value));
 	}
 
 }

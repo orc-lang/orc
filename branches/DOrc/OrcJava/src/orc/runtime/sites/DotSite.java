@@ -12,10 +12,14 @@ import orc.runtime.values.Value;
 
 /**
  * @author dkitchin
- *
- * Dot-accessible sites should extend this class and declare their Orc-available methods using addMethods. 
- * The code is forward-compatible with many possible optimizations on the field lookup strategy.
  * 
+ * Dot-accessible sites should extend this class and declare their Orc-available
+ * methods using addMethods. The code is forward-compatible with many possible
+ * optimizations on the field lookup strategy.
+ * 
+ * This cannot in general be passed by value because many sites keep state in
+ * the top level. You can avoid this problem by using anonymous inner classes
+ * for the member sites.
  */
 public abstract class DotSite extends EvalSite {
 
@@ -33,11 +37,11 @@ public abstract class DotSite extends EvalSite {
 	@Override
 	public Value evaluate(Args args) throws OrcRuntimeTypeException {
 		
-		String f = args.stringArg(0);
+		String f = args.fieldName();
 		Site m = getMethod(f);
 		
 		if (m != null)
-			{ return m; }
+			{ return new orc.runtime.values.Site(m); }
 		else
 			{ throw new OrcRuntimeTypeException("Dotsite " + this.getClass().toString() + " does not have the method '" + f + "'."); }
 	}

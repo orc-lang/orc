@@ -3,6 +3,7 @@
  */
 package orc.runtime.values;
 
+import java.io.Serializable;
 import java.util.List;
 
 import orc.error.OrcException;
@@ -13,8 +14,7 @@ import orc.runtime.nodes.Node;
  * Callable objects include sites and definitions
  * @author wcook
  */
-public interface Callable {
-
+public interface Callable extends Serializable {
 	/**
 	 * Create a call to a callable value
 	 * @param label		name (used for debugging)
@@ -24,6 +24,4 @@ public interface Callable {
 	 * @param engine	Orc engine
 	 */
 	void createCall(Token caller, List<Future> args, Node nextNode) throws OrcException;
-
-
 }

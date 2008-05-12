@@ -3,14 +3,16 @@
  */
 package orc.lib.state;
 
+import java.rmi.RemoteException;
 import java.util.LinkedList;
 import java.util.Queue;
 
 import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
-import orc.runtime.Token;
+import orc.runtime.RemoteToken;
 import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;
+import orc.runtime.sites.PassedByValueSite;
 import orc.runtime.sites.Site;
 import orc.runtime.values.Value;
 
@@ -22,29 +24,25 @@ import orc.runtime.values.Value;
  * Read operations block if the reference is empty.
  * Write operatons always succeed.
  *
+ * While the actual ref cells cannot be passed by value, the factory can.
  */
-public class Ref extends EvalSite {
+public class Ref extends EvalSite implements PassedByValueSite {
 
 	/* (non-Javadoc)
-	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
+	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.RemoteToken, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
 	 */
 	@Override
 	public Value evaluate(Args args) {
-		
-		// If we were passed arguments, condense those arguments and store them in the ref as an initial value
-		if (args.size() > 0) {
-			return new RefInstance(args.condense());
-		}
-		// Otherwise, create an initially empty reference
-		else {
-			return new RefInstance();
-		}
+		return new orc.runtime.values.Site(
+				args.size() > 0
+				? new RefInstance(args.condense())
+				: new RefInstance());
 	}
 	
 	
-	protected class RefInstance extends DotSite {
+	protected static class RefInstance extends DotSite {
 
-		private Queue<Token> readQueue;
+		private Queue<RemoteToken> readQueue;
 		Value contents;
 
 		RefInstance() {
@@ -57,7 +55,7 @@ public class Ref extends EvalSite {
 			 * This allows the reference to contain a null value if needed, and it also
 			 * frees the memory associated with the read queue once the reference has been assigned.
 			 */
-			this.readQueue = new LinkedList<Token>();
+			this.readQueue = new LinkedList<RemoteToken>();
 		}
 		
 		/* Create the reference with an initial value already assigned.
@@ -76,7 +74,7 @@ public class Ref extends EvalSite {
 		
 		private class readMethod extends Site {
 			@Override
-			public void callSite(Args args, Token reader) {
+			public void callSite(Args args, RemoteToken reader) throws RemoteException {
 
 				/* If the read queue is not null, the ref has not been set.
 				 * Add this caller to the read queue.
@@ -93,7 +91,7 @@ public class Ref extends EvalSite {
 		
 		private class writeMethod extends Site {
 			@Override
-			public void callSite(Args args, Token writer) throws OrcRuntimeTypeException {
+			public void callSite(Args args, RemoteToken writer) throws OrcRuntimeTypeException, RemoteException {
 
 				Value val = args.valArg(0);
 				
@@ -104,7 +102,7 @@ public class Ref extends EvalSite {
 				if (readQueue != null) {
 					
 					/* Wake up all queued readers and report the written value to them. */
-					for (Token reader : readQueue) {
+					for (RemoteToken reader : readQueue) {
 						reader.resume(val);
 					}
 					
@@ -119,7 +117,5 @@ public class Ref extends EvalSite {
 				writer.resume();
 			}
 		}
-
-	}
-	
+	}	
 }

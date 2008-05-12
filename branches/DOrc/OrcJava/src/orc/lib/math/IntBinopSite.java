@@ -6,13 +6,14 @@ package orc.lib.math;
 import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
+import orc.runtime.sites.PassedByValueSite;
 import orc.runtime.values.*;
 
 /**
  * @author dkitchin
  *
  */
-public abstract class IntBinopSite extends EvalSite {
+public abstract class IntBinopSite extends EvalSite implements PassedByValueSite {
 
 	/* (non-Javadoc)
 	 * @see orc.runtime.sites.EvalSite#evaluate(java.lang.Object[])

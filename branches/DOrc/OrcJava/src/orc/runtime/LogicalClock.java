@@ -1,5 +1,6 @@
 package orc.runtime;
 
+import java.rmi.RemoteException;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
@@ -31,8 +32,8 @@ public class LogicalClock {
 	
 	public int getTime() { return currentTime; }
 	
-	public void addEvent(int time, Token token) {
-		eventQueue.add(new LtimerQueueEntry(time + currentTime, token));
+	public void addEvent(int time, RemoteToken caller) {
+		eventQueue.add(new LtimerQueueEntry(time + currentTime, caller));
 	}
 	
 	/* Return true if advancing the clock queued one or more events, false otherwise */
@@ -48,7 +49,12 @@ public class LogicalClock {
 		if (top != null) {
 			currentTime = top.getTime();
 			while(top != null && top.getTime() <= currentTime) {
-				eventQueue.remove().getToken().resume(new Constant(currentTime));
+				try {
+					eventQueue.remove().getToken().resume(new Constant(currentTime));
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					throw new RuntimeException(e);
+				}
 				top = eventQueue.peek();
 			}		
 			return true;
@@ -71,16 +77,16 @@ public class LogicalClock {
 	class LtimerQueueEntry implements Comparable<LtimerQueueEntry> {
 
 		int time;
-		Token token;
+		RemoteToken token;
 
-		public LtimerQueueEntry(int time, Token token) {
+		public LtimerQueueEntry(int time, RemoteToken token) {
 			this.token = token;
 			this.time = time;
 		}
 		public int getTime() {
 			return time;
 		}
-		public Token getToken() {
+		public RemoteToken getToken() {
 			return token;
 		}
 

@@ -3,6 +3,7 @@
  */
 package orc.runtime.nodes;
 
+import java.rmi.RemoteException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -12,6 +13,7 @@ import orc.error.OrcException;
 import orc.runtime.Token;
 import orc.runtime.values.Callable;
 import orc.runtime.values.Future;
+import orc.runtime.values.FutureUnboundException;
 
 /**
  * Compiled node for a call (either a site call or a definition call)
@@ -19,14 +21,14 @@ import orc.runtime.values.Future;
  */
 public class Call extends Node {
 	private static final long serialVersionUID = 1L;
-	Argument caller;
+	Argument callee;
 	List<Argument> args;
 	Node next;
 
-	public Call(Argument caller, List<Argument> args, Node next) {
-		this.caller = caller;
+	public Call(Argument callee, List<Argument> args, Node next) {
+		this.callee = callee;
 		this.args = args;
-		this.next = next;	
+		this.next = next;
 	}
 	
 	/*
@@ -44,17 +46,19 @@ public class Call extends Node {
 	 * @see orc.runtime.nodes.Node#process(orc.runtime.Token, orc.runtime.OrcEngine)
 	 */
 	public void process(Token t) {
-		
-		Callable target = t.call(caller);
-		
-		/** 
-		 * target is null if the caller is still unbound, in which
-		 * case the calling token will be activated when the
-		 * caller value becomes available. Thus, we simply
-		 * return and wait for the token to enter the process
-		 * method again.
-		 */
-		if (target == null) { return; }
+		Future f = t.lookup(callee);
+		Callable target;
+		try {
+			target = f.forceCall(t);
+		} catch (FutureUnboundException e1) {
+			/**
+			 * the caller is still unbound, in which case the calling token will
+			 * be activated when the caller value becomes available. Thus, we
+			 * simply return and wait for the token to enter the process method
+			 * again.
+			 */
+			return;
+		}
 		
 		/**
 		 * Collect all of the environment's bindings for these args.
@@ -71,11 +75,12 @@ public class Call extends Node {
 
 		try {
 			target.createCall(t, actuals, next);
-		}
-		catch (OrcException e) {
+		} catch (OrcException e) {
 			DebugInfo info = this.getDebugInfo();
 			t.error(info, e);
 		}
 	}
-	
+	public String toString() {
+		return super.toString() + "(" + callee + args +")";
+	}
 }

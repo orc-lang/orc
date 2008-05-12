@@ -5,6 +5,7 @@ package orc.runtime.sites.core;
 
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
+import orc.runtime.sites.PassedByValueSite;
 import orc.runtime.values.NoneValue;
 import orc.runtime.values.SomeValue;
 import orc.runtime.values.Value;
@@ -14,7 +15,7 @@ import orc.runtime.values.Value;
  * 
  * @author dkitchin
  */
-public class None extends EvalSite {
+public class None extends EvalSite implements PassedByValueSite {
 
 	@Override
 	public Value evaluate(Args args) {

@@ -3,7 +3,7 @@ package orc.runtime.values;
 import java.util.List;
 
 public class ConsValue extends ListValue {
-
+	private static final long serialVersionUID = 1L;
 	public Value h;
 	public Value t;
 	

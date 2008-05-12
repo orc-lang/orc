@@ -3,12 +3,13 @@
  */
 package orc.lib.state;
 
+import java.rmi.RemoteException;
 import java.util.LinkedList;
 import java.util.Queue;
 
 import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
-import orc.runtime.Token;
+import orc.runtime.RemoteToken;
 import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.Site;
@@ -29,13 +30,13 @@ public class Cell extends EvalSite {
 	 */
 	@Override
 	public Value evaluate(Args args) {
-		return new CellInstance();
+		return new orc.runtime.values.Site(new CellInstance());
 	}
 	
 	
-	protected class CellInstance extends DotSite {
+	protected static class CellInstance extends DotSite {
 
-		private Queue<Token> readQueue;
+		private Queue<RemoteToken> readQueue;
 		Value contents;
 
 		CellInstance() {
@@ -48,7 +49,7 @@ public class Cell extends EvalSite {
 			 * This allows the cell to contain a null value if needed, and it also
 			 * frees the memory associated with the read queue once the cell has been assigned.
 			 */
-			this.readQueue = new LinkedList<Token>();
+			this.readQueue = new LinkedList<RemoteToken>();
 		}
 		
 		@Override
@@ -59,7 +60,7 @@ public class Cell extends EvalSite {
 		
 		private class readMethod extends Site {
 			@Override
-			public void callSite(Args args, Token reader) {
+			public void callSite(Args args, RemoteToken reader) {
 
 				/* If the read queue is not null, the cell has not been set.
 				 * Add this caller to the read queue.
@@ -69,14 +70,19 @@ public class Cell extends EvalSite {
 				}
 				/* Otherwise, return the contents of the cell */
 				else {
-					reader.resume(contents);
+					try {
+						reader.resume(contents);
+					} catch (RemoteException e) {
+						// TODO Auto-generated catch block
+						throw new RuntimeException(e);
+					}
 				}
 			}
 		}
 		
 		private class writeMethod extends Site {
 			@Override
-			public void callSite(Args args, Token writer) throws OrcRuntimeTypeException {
+			public void callSite(Args args, RemoteToken writer) throws OrcRuntimeTypeException {
 
 				Value val = args.valArg(0);
 				
@@ -86,8 +92,13 @@ public class Cell extends EvalSite {
 					contents = val;
 					
 					/* Wake up all queued readers and report the written value to them. */
-					for (Token reader : readQueue) {
-						reader.resume(val);
+					for (RemoteToken reader : readQueue) {
+						try {
+							reader.resume(val);
+						} catch (RemoteException e) {
+							// TODO Auto-generated catch block
+							throw new RuntimeException(e);
+						}
 					}
 					
 					/* Null out the read queue. 
@@ -97,17 +108,22 @@ public class Cell extends EvalSite {
 					readQueue = null;
 					
 					/* A successful write publishes a signal. */
-					writer.resume();
-				}
-				else {
+					try {
+						writer.resume();
+					} catch (RemoteException e) {
+						// TODO Auto-generated catch block
+						throw new RuntimeException(e);
+					}
+				} else {
 					/* A failed write kills the writer. */
-					writer.die();
+					try {
+						writer.die();
+					} catch (RemoteException e) {
+						// TODO Auto-generated catch block
+						throw new RuntimeException(e);
+					}
 				}
-					
-					
 			}
 		}
-
 	}
-	
 }

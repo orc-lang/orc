@@ -34,6 +34,7 @@ public class Config {
 
 	Node target;
 	Boolean debug = false;
+	Boolean daemon = false;
 	List<File> bindings;
 	Integer maxpub = null;
 	InputStream instream;
@@ -56,6 +57,10 @@ public class Config {
 			if (args[i].equals("-debug")) {
 				i++;
 				debug = true;
+			}
+			else if (args[i].equals("-d")) {
+				i++;
+				daemon = true;
 			}
 			else if (args[i].equals("-pub")) {
 				// quit after publishing maxpub values
@@ -148,6 +153,11 @@ public class Config {
 	public Boolean debugMode()
 	{
 		return debug;
+	}
+	
+	public Boolean daemonMode()
+	{
+		return daemon;
 	}
 	
 	public Integer maxPubs()

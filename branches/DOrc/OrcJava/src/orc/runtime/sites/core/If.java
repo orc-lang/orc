@@ -6,13 +6,14 @@ package orc.runtime.sites.core;
 import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
 import orc.runtime.sites.PartialSite;
+import orc.runtime.sites.PassedByValueSite;
 import orc.runtime.values.Value;
 
 /**
  * @author dkitchin
  *
  */
-public class If extends PartialSite {
+public class If extends PartialSite implements PassedByValueSite {
 
 	@Override
 	public Value evaluate(Args args) throws OrcRuntimeTypeException {

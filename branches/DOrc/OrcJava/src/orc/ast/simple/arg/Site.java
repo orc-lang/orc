@@ -11,17 +11,19 @@ import orc.runtime.values.Value;
  */
 
 public class Site extends Argument {
-
-	public orc.runtime.sites.Site site;
+	private static final long serialVersionUID = 1L;
+	public orc.runtime.sites.RemoteSite site;
 	
-	public Site(orc.runtime.sites.Site site)
+	public Site(orc.runtime.sites.RemoteSite site)
 	{
 		this.site = site;
 	}
 	
 	public Value asValue()
 	{
-		return site;
+		return new orc.runtime.values.Site(site);
 	}
-	
+	public String toString() {
+		return super.toString() + "(" + site.getClass().getName() +")";
+	}
 }

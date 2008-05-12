@@ -5,10 +5,11 @@ package orc.runtime.values;
 
 import java.util.List;
 
-import orc.ast.simple.arg.*;
+import orc.ast.simple.arg.Var;
 import orc.error.OrcException;
 import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Environment;
+import orc.runtime.RemoteToken;
 import orc.runtime.Token;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Return;
@@ -23,7 +24,6 @@ import orc.runtime.nodes.Return;
  * @author wcook, dkitchin
  */
 public class Closure extends Value implements Callable {
-	private static final long serialVersionUID = 1L;
 	Node body;
 	List<Var> formals;
 	Environment env;
@@ -43,30 +43,26 @@ public class Closure extends Value implements Callable {
 	 * is reused, rather than creating a new intermediate stack frame.
 	 * @see orc.runtime.values.Callable#createCall(java.lang.String, orc.runtime.Token, java.util.List, orc.runtime.nodes.Node)
 	 */
-	public void createCall(Token callToken, List<Future> args, Node nextNode) throws OrcException {
-		
+	public void createCall(Token t, List<Future> args, Node nextNode) throws OrcException {
 		if (args.size() != formals.size()) {
 			throw new OrcRuntimeTypeException("Arity mismatch, expected " + formals.size() + " arguments, got " + args.size() + ".");
 		}
 		
 		// check tail-call optimization
-		Token returnToken;
-		
+		RemoteToken caller;
 		if (nextNode instanceof Return){
-			returnToken = callToken.getCaller(); // tail-call
-			}
-		else {
-			returnToken = callToken.move(nextNode); // normal call	
+			caller = t.getCaller(); // tail-call
+		} else {
+			// Make a copy of this token which will act as a template for tokens
+			// returned from the function.
+			caller = t.copy().move(nextNode); // normal call
+			// The copy should not count towards the parent region, so we kill
+			// it immediately.
+			((Token)caller).die();
 		}
 		
-		Token t = callToken.callcopy(body, env, returnToken);
-		callToken.die();
-		
-		for (Var v : formals)
-		{
-			t.bind(v, args.remove(0));
-		}
-		
+		t.call(body, caller, env);
+		for (Var v : formals) t.bind(v, args.remove(0));
 		t.activate();
 	}
 
@@ -74,4 +70,3 @@ public class Closure extends Value implements Callable {
 		this.env = env;
 	}
 }
-

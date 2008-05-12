@@ -3,13 +3,14 @@
  */
 package orc.lib.time;
 
-import orc.error.OrcRuntimeTypeException;
-import orc.runtime.Args;
-import orc.runtime.Token;
-import orc.runtime.sites.Site;
-
+import java.rmi.RemoteException;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import orc.error.OrcRuntimeTypeException;
+import orc.runtime.Args;
+import orc.runtime.RemoteToken;
+import orc.runtime.sites.Site;
 
 /**
  * Implements the RTimer site
@@ -21,12 +22,16 @@ public class Rtimer extends Site {
 	/** Scheduler thread for events */
 	private final Timer timer = new Timer();
 
-	public void callSite(Args args, final Token returnToken) throws OrcRuntimeTypeException {
+	public void callSite(Args args, final RemoteToken returnToken) throws OrcRuntimeTypeException {
 		timer.schedule(new TimerTask() {
 			public void run() {
-				returnToken.resume();
+				try {
+					returnToken.resume();
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					throw new RuntimeException(e);
+				}
 			}
-		}, args.longArg(0));	
+		}, args.longArg(0));
 	}
-
 }

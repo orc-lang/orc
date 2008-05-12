@@ -6,15 +6,16 @@ package orc.lib.str;
 import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
+import orc.runtime.sites.PassedByValueSite;
 import orc.runtime.values.*;
 
 /**
  * @author dkitchin
- *
- * Print arguments, converted to strings, in sequence, each followed by newlines.
- *
+ * 
+ * Print arguments, converted to strings, in sequence, each followed by
+ * newlines.
  */
-public class Println extends EvalSite {
+public class Println extends EvalSite implements PassedByValueSite {
 
 	/* (non-Javadoc)
 	 * @see orc.runtime.sites.EvalSite#evaluate(java.lang.Object[])
@@ -29,7 +30,7 @@ public class Println extends EvalSite {
 		
 		if (args.size() == 0) { System.out.println(); }
 		
-		return signal();
+		return Value.signal();
 	}
 
 }

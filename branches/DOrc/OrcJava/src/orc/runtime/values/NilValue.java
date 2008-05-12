@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class NilValue extends ListValue {
-
+	private static final long serialVersionUID = 1L;
 	public boolean isNil() { return true; }
 
 	public String toString() { return "[]"; }
