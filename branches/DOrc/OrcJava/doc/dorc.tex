@@ -53,7 +53,7 @@ surrounding \textsc{Orc} program
 
 \textsc{DOrc} introduces one new type of value and one new syntactic construct
 to the language. The new value type is a ``server'', which corresponds to a
-computer in a distributed computation\footnote{In distributed computing
+logical computer in a distributed computation\footnote{In distributed computing
 literature this is usually called a ``node'', but I have chosen ``server'' to
 avoid confusion with the term ``node'' used in the context of the \textsc{Orc}
 graph-based implementation.}. The new syntactic construct is the ``remote
@@ -62,16 +62,19 @@ specific server.
 
 \subsection{Servers and Meta-Servers}
 
+A ``server'' is a logical concept; it is entirely possible to have multiple
+\textsc{DOrc} servers running on the same physical computer.
+
 Every server participates in one and only one distributed computation, and all
 servers in the computation share the same environment (variables and function
-definitions). In order to enforce this restriction, it is impossible to obtain
-a reference to a server outside of the computation where it is being used. In
+definitions). This restriction is inforced by making it impossible to obtain a
+reference to a server outside of the computation in which it participates. In
 the context of evaluating a specific expression across two servers, one server
 (which initiated the computation) is the master and the other server (which is
-performing the evaluation) is the slave. However in the context of the program
-as a whole, each server may be participating in the evaluation of several
-expressions, and therefore there may be no clear master-slave structure to the
-overall computation.
+performing the evaluation) is the slave.  However in the context of the program
+as a whole, each server may participate in the evaluation of several
+expressions simultaneously, and therefore there may be no clear master-slave
+structure to the overall computation.
 
 To create a new server, a \textsc{DOrc} program calls a meta-server, which is
 simply an ordinary \textsc{Orc} site which returns servers. Each meta-server
@@ -106,16 +109,16 @@ remote server which executes some inner expression back on the local server.
 
 \subsection{Distributed Expressions}
 
-The added \textsc{DOrc} syntax is very simple: \texttt{f @ r} where \texttt{f}
-is an arbitrary expression and \texttt{r} is a variable which holds a reference
-to a \textsc{DOrc} server. The \texttt{@} operator has higher precedence than
-any other operator. As with site calls, \texttt{r} may be an expression instead
-of a variable, in which case it is equivalent to \texttt{f @ x <x< r}.
+A remote expression is of the form \texttt{f @ r} where \texttt{f} is an
+arbitrary expression and \texttt{r} is a variable which holds a reference to a
+\textsc{DOrc} server. The \texttt{@} operator has higher precedence than any
+other operator. As with site calls, \texttt{r} may be an expression instead of
+a variable, in which case it is equivalent to \texttt{f @ x <x< r}.
 
 The meaning of such an expression is: when the value of \texttt{r} is
 available, evaluate the expression \texttt{f} on the server specified by the
 value of \texttt{r}. The precise semantics of this expression are discussed in
-a later section, but for now this intuitive description should suffice.
+a later section.
 
 \subsection{Shared Sites}
 
@@ -152,37 +155,41 @@ until a new item is placed in the buffer by \texttt{c.put}. I will also assume
 that a remote server has been created and is available in the variable
 \texttt{r}.
 
-\texttt{1 @ r} is the simplest remote expression. It evaluates the constant
+\begin{description}
+\item[\texttt{1 @ r}] is the simplest remote expression. It evaluates the constant
 \texttt{1} at the remote server \texttt{r} and finally publishes the value
 \texttt{1} back to the local server.
 
-\texttt{(1 + 2)@r} is a slightly more complex expression. It actually carries
+\item[\texttt{(1 + 2)@r}] is a slightly more complex expression. It actually carries
 out some computation on \texttt{r}, evaluating \texttt{1+2} and publishing the
 result.
 
-\texttt{(Rtimer(1) | Rtimer(2))@r} will start two \texttt{Rtimers} on
+\item[\texttt{(Rtimer(1) | Rtimer(2))@r}] will start two \texttt{Rtimers} on
 \texttt{r} and publish values after 1 and 2 time units. This example
 illustrates that, unlike a site call, a remote expression may publish multiple
 values.
 
-\texttt{Rtimer(1)@r | Rtimer(2)@r} gives the exact same result as
+\item[\texttt{Rtimer(1)@r | Rtimer(2)@r}] gives the exact same result as
 \texttt{(Rtimer(1) | Rtimer(2))@r}, modulo timing concerns discussed in the
-next section. This example illustrates that it is entirely possible to initiate
-multiple computations on a server at the same time.
+next section. This example illustrates that it is possible to use a server
+multiple times. In this case, the server is used to execute two computations
+concurrently, but it could also be used to execute multiple computations in
+sequence, or with any degree of overlap in time.
 
-\texttt{c.get() | c.put(1)@r} places a value on the buffer at the remote
+\item[\texttt{c.get() | c.put(1)@r}] places a value on the buffer at the remote
 server, and retrieves it locally. Distributed expressions can communicate via
 sites just like local expressions.
 
-\texttt{(c.put(1) >> let(x))@r <x< Rtimer(1)} evaluates the \texttt{Rtimer}
+\item[\texttt{(c.put(1) >> let(x))@r <x< Rtimer(1)}] evaluates the \texttt{Rtimer}
 locally in parallel with the \texttt{c.put(1)} remotely. When the remote
 server reaches the \texttt{let(x)}, it must wait for the local server to
 publish a value to \texttt{x} before it can proceed.
 
-\texttt{let(x) <x< Rtimer(1) | Rtimer(2)@r} evaluates one \texttt{Rtimer}
+\item[\texttt{let(x) <x< (Rtimer(1) | Rtimer(2)@r)}] evaluates one \texttt{Rtimer}
 locally and one remotely. The local \texttt{Rtimer} publishes a value first,
 and when it does, all further computation of the parallel remote expression is
 terminated and no value will be published from it.
+\end{description}
 
 \section{Semantics}
 
@@ -215,21 +222,21 @@ communication can be attributed.
 
 I believe, but have not proven, that the expression \texttt{f@r} is exactly
 equivalent to \texttt{LET() >> f >x> LET(x)}, where \texttt{LET} is a
-non-immediate form of \texttt{let}, provided that all stateful sites (such as
-buffers) are also considered non-immediate.  The reasoning behind this is as
-follows: the local node can only communicate with the remote node via the
-initiation of the expression, through a stateful site, or through a future. The
-delay in the initiation of the expression is accounted for by the non-immediate
-site call \texttt{LET()}. Communication through stateful sites is also subject
-to the non-immediacy of these sites. The publication of a where value cannot by
-itself convey any timing information, and so can only be given a precise time
-relative to some event observed via another means.
+non-immediate form of \texttt{let}, and all stateful sites (such as buffers)
+are also considered non-immediate.  The reasoning behind this is as follows:
+the local node can only communicate with the remote node via the initiation of
+the expression, through a stateful site, or through a future. The delay in the
+initiation of the expression is accounted for by the non-immediate site call
+\texttt{LET()}. Communication through stateful sites is also subject to the
+non-immediacy of these sites. The publication of a where value cannot by itself
+convey any timing information, and so can only be given a precise time relative
+to some event observed via another means.
 
 A good example to illustrate the problems with distributed semantics is:
 \begin{verbatim}
-( let(a) <a< let(x) | let(y) )@r
-    <x< Rtimer(1) >> 1
-    <y< Rtimer(2) >> 2
+( let(a) <a< (let(x) | let(y)) )@r
+    <x< (Rtimer(1) >> 1)
+    <y< (Rtimer(2) >> 2)
 \end{verbatim}
 This example shows that even with the \texttt{LET}-based semantics described in
 the previous paragraph, the distributed communication mechanism must guarantee
@@ -446,14 +453,14 @@ mutable sites is free from deadlock. A proof sketch: in the absence of mutable
 sites, communication between any two concurrent computations is one-way. There
 can be no communication between the left and right sides of \texttt{|},
 \texttt{>x>} does not enable communication between concurrent instances of the
-right sub-expression, and \texttt{<x<} only allows communication from the left
-side to the right. Therefore if one side of such a combinator depends on the
+right sub-expression, and \texttt{<x<} only allows communication from the right
+side to the left. Therefore if one side of such a combinator depends on the
 other for progress, the converse cannot be true, so deadlock is impossible.
 
-Because \textsc{DOrc} does not change the core combinators, this statement
+\textsc{DOrc} does not change the core combinators, so this statement
 remains true provided the \textsc{DOrc} implementation itself is free from
 deadlock. I have not proven this latter result, but it should be fairly
-straightforward to do so. Because the \textsc{DOrc} implementation uses
+straightforward to do so. Since the \textsc{DOrc} implementation uses
 essentially the same communication structure as the original \textsc{Orc}
 implementation, assuming the original implementation is free from deadlock,
 the \textsc{DOrc} implementation only has to worry about distributed deadlock.
