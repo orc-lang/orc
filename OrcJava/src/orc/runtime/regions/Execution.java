@@ -13,12 +13,11 @@ public class Execution extends Region {
 	}
 	
 	public OrcEngine getEngine() { return engine; }
-	public boolean isRunning() { return running; }
 	
 	@Override
 	public void close() {
 		running = false;
-		engine.wake();
+		engine.terminate();
 	}
 
 }

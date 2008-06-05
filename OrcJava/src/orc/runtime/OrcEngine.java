@@ -3,26 +3,77 @@
  */
 package orc.runtime;
 
+import java.rmi.RemoteException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 
 import orc.runtime.nodes.Node;
 import orc.runtime.regions.Execution;
+import orc.runtime.regions.Region;
+import orc.runtime.values.GroupCell;
+import orc.runtime.values.Value;
 
 /**
  * The Orc Engine provides the main loop for executing active tokens.
- * @author wcook, dkitchin
+ * Tokens are always processed in a single thread, but tokens might
+ * be activated or resumed from other threads, so some synchronization
+ * is necessary. 
+ * 
+ * @author wcook, dkitchin, quark
  */
-public class OrcEngine {
+public class OrcEngine implements Runnable {
 
 	LinkedList<Token> activeTokens = new LinkedList<Token>();
 	LinkedList<Token> queuedReturns = new LinkedList<Token>();
 	Set<LogicalClock> clocks = new HashSet<LogicalClock>();
-	int round = 1; 
+	int round = 1;
 	public boolean debugMode = false;
+	/**
+	 * This flag is set by the Execution region when execution completes
+	 * to terminate the engine.
+	 */
+	private boolean halt = false;
+	/**
+	 * Track when the engine is blocked waiting for a site to return.
+	 */
+	private boolean isBlocked = false;
 	
+	public boolean isBlocked() { return isBlocked; }
+	public boolean isDead() { return !halt; }
+
+	/**
+	 * Process active nodes, running indefinitely until
+	 * signalled to stop by a call to terminate().
+	 * Typically you will use one of the other run methods
+	 * to queue an active token to process first.
+	 */
+	public void run() {
+		while (true) {
+			// FIXME: can we avoid synchronizing this whole block?
+			synchronized(this) {
+				if (halt) return;
+				if (!step()) {
+					isBlocked = true;
+					try {
+						wait();
+					} catch (InterruptedException e) {
+						// do nothing
+					}
+				}
+			}
+		}
+	}
 	
+	/**
+	 * Terminate execution.
+	 */
+	public synchronized void terminate() {
+		halt = true;
+		debug("Engine terminated.");
+		notify();
+	}
+
 	/**
 	 * Run Orc given a root node.
 	 * Creates an initial environment and then 
@@ -30,42 +81,37 @@ public class OrcEngine {
 	 * @param root  node to run
 	 */ 
 	public void run(Node root) {
-		this.run(root, null);
+		run(root, null);
 	}
-	
+
 	public void run(Node root, Environment env) {
-		
-		Execution exec = new Execution(this);
-		Token start = new Token(root, env, exec);
-		activeTokens.add(start);
-        
-		/* Run this execution to completion. */
-		while (exec.isRunning()) { step(exec); }
+		start(root, env);
+		run();
 	}
 	
-	/* Returns true if the Orc engine is still executing, false otherwise */
-	synchronized private boolean step(Execution exec) {
-		
-		if (!exec.isRunning()) { 
-			return false;
-		}
-		
+	public void start(Node root, Environment env) {
+		activate(new Token(root, env, null, new GroupCell(), new Execution(this), null, this));
+	}
+	
+	/**
+	 * Run one step (process one token, handle one site response, or advance
+	 * all logical clocks). Returns true if work was done.
+	 */
+	private boolean step() {
 		/* If an active token is available, process it. */
-		if (activeTokens.size() > 0){
+		if (!activeTokens.isEmpty()){
 			activeTokens.remove().process();
 			return true;
 		}
 		
-		
 		/* If a site return is available, make it active.
 		 * This marks the beginning of a new round. 
 		 */
-		if (queuedReturns.size() > 0 ){
+		if (!queuedReturns.isEmpty()){
 			activeTokens.add(queuedReturns.remove());
 			round++; reportRound();
 			return true;
 		}
-		
 		
 		/* If the engine is quiescent, advance all logical clocks. */
 		boolean progress = false;
@@ -75,20 +121,7 @@ public class OrcEngine {
 		}
 		
 		/* If some logical clock actually advanced, return. */
-		if (progress) { return true; }
-		
-		
-		/* If there is no more available work,
-		 * wait for a site call to return. 
-		 */
-		/*
-		try {
-			wait();
-		} 
-		catch (InterruptedException e) {}
-		*/
-		/* Done waiting; return to work. */
-		return true;
+		return progress;
 	}
 	
 	/**
@@ -97,7 +130,7 @@ public class OrcEngine {
 	 */
 	synchronized public void activate(Token t) {
 		activeTokens.addLast(t);
-		notifyAll();
+		notify();
 	}
 	
 	/**
@@ -106,22 +139,11 @@ public class OrcEngine {
 	 */
 	synchronized public void resume(Token t) {
 		queuedReturns.addLast(t);
-		notifyAll();
+		notify();
 	}
 	
-	/**
-	 * Force the engine to wake up any threads waiting in work loops.
-	 * This is used to make a thread aware of the completion of its execution
-	 * without knowing the identity of that thread.
-	 */
-	synchronized public void wake() {
-		notifyAll();
-	}
-	
-	public void debug(String s)
-	{
-		if (debugMode)
-			{ System.out.println(s); }
+	public void debug(String s) {
+		if (debugMode) System.out.println(s);
 	}
 	
 	public void reportRound() {
@@ -134,12 +156,10 @@ public class OrcEngine {
 			      debug("L-Clock: " + clock.getTime() + "\n");
 			}
 			debug("---\n\n");
-			}
+		}
 	}
 	
-	public boolean addClock(LogicalClock clock) {
+	public synchronized boolean addClock(LogicalClock clock) {
 		return clocks.add(clock);
 	}
-
-	
 }
