@@ -6,14 +6,15 @@
  */
 package orc;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.util.*;
+import java.io.FileReader;
+import java.io.Reader;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import orc.ast.extended.*;
+import orc.ast.extended.Declare;
 import orc.ast.extended.declaration.Declaration;
 import orc.parser.OrcLexer;
 import orc.parser.OrcParser;
@@ -69,7 +70,7 @@ public class Orc {
 		System.exit(0);
 	}
 	
-	protected static Node compile(InputStream source, Node target, Config cfg) {
+	public static orc.ast.simple.Expression compile(Reader source, Config cfg) {
 		
 		try {
 		
@@ -88,7 +89,7 @@ public class Orc {
 		{
 			// Include loading doesn't recurse into subdirectories.
 			if (f.isFile()) {
-				OrcLexer flexer = new OrcLexer(new FileInputStream(f));
+				OrcLexer flexer = new OrcLexer(new FileReader(f));
 				OrcParser fparser = new OrcParser(flexer);
 				decls.addAll(fparser.decls());
 			}
@@ -97,7 +98,7 @@ public class Orc {
 		// Load declarations from files specified by the configuration options
 		for (File f : cfg.getBindings())
 		{
-			OrcLexer flexer = new OrcLexer(new FileInputStream(f));
+			OrcLexer flexer = new OrcLexer(new FileReader(f));
 			OrcParser fparser = new OrcParser(flexer);
 			decls.addAll(fparser.decls());
 		}
@@ -111,8 +112,26 @@ public class Orc {
 		
 		//System.out.println("Simplifying the abstract syntax tree...");
 		// Simplify the AST
-		orc.ast.simple.Expression es = e.simplify();
+		return e.simplify();
 		
+		} catch (Exception e) {
+			System.err.println("exception: " + e);
+			if (cfg.debugMode())
+				e.printStackTrace();
+		} catch (Error e) {
+			System.err.println(e.toString());
+			if (cfg.debugMode())
+			e.printStackTrace();
+		}
+		
+		return null;		
+	}
+	
+	protected static Node compile(Reader source, Node target, Config cfg) {
+		
+		try {
+
+		orc.ast.simple.Expression es = compile(source, cfg);
 		
 		//System.out.println("Compiling to an execution graph...");
 		// Compile the AST, directing the output towards the configured target
@@ -137,7 +156,7 @@ public class Orc {
 	
 	public static OrcInstance runEmbedded(File source) { 
 		try {
-			return runEmbedded(new FileInputStream(source));
+			return runEmbedded(new FileReader(source));
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -145,7 +164,7 @@ public class Orc {
 		}
 	}
 	
-	public static OrcInstance runEmbedded(InputStream source) { 
+	public static OrcInstance runEmbedded(Reader source) { 
 		return runEmbedded(source, new Config());
 	}
 	
@@ -158,7 +177,7 @@ public class Orc {
 	 * @param cfg
 	 * @return
 	 */
-	public static OrcInstance runEmbedded(InputStream source, Config cfg) {
+	public static OrcInstance runEmbedded(Reader source, Config cfg) {
 		
 		BlockingQueue<Value> q = new LinkedBlockingQueue<Value>();
 	
@@ -191,9 +210,6 @@ public class Orc {
 			}
 			
 		return null;
-	}
-	
-	
+	}	
 }
-
 
