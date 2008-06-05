@@ -10,6 +10,7 @@ import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.Var;
 import orc.error.DebugInfo;
 import orc.error.OrcException;
+import orc.error.OrcRuntimeTypeException;
 import orc.runtime.nodes.Node;
 import orc.runtime.regions.Execution;
 import orc.runtime.regions.Region;
@@ -256,6 +257,11 @@ public class Token implements Serializable, Comparable<Token> {
 		System.out.println("Source location: " + info.errorLocation());
 		System.out.println();
 		die();
+	}
+
+	/* This token has encountered an error, and dies. */
+	public void error(OrcRuntimeTypeException problem) {
+		error(node.getDebugInfo(), problem);
 	}
 	
 	/*

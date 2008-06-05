@@ -43,6 +43,8 @@ public class Orc {
 		cfg.processArgs(args);	
 		
 		Node n = compile(cfg.getInstream(), cfg.getTarget(), cfg);
+		//System.out.println(n);
+		if (n == null) return;
         
 		// Configure the runtime engine
 		OrcEngine engine = new OrcEngine();
