@@ -12,10 +12,10 @@ import orc.runtime.values.Value;
 
 /**
  * @author dkitchin
- *
- * Dot-accessible sites should extend this class and declare their Orc-available methods using addMethods. 
- * The code is forward-compatible with many possible optimizations on the field lookup strategy.
  * 
+ * Dot-accessible sites should extend this class and declare their Orc-available
+ * methods using addMethods. The code is forward-compatible with many possible
+ * optimizations on the field lookup strategy.
  */
 public abstract class DotSite extends EvalSite {
 
@@ -33,7 +33,7 @@ public abstract class DotSite extends EvalSite {
 	@Override
 	public Value evaluate(Args args) throws OrcRuntimeTypeException {
 		
-		String f = args.stringArg(0);
+		String f = args.fieldName();
 		Site m = getMethod(f);
 		
 		if (m != null)

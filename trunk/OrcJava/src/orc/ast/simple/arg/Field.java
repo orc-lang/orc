@@ -10,7 +10,7 @@ import orc.runtime.values.Value;
  */
 
 public class Field extends Argument {
-	
+	private static final long serialVersionUID = 1L;
 	public String key;
 	
 	public Field(String key)
@@ -18,9 +18,10 @@ public class Field extends Argument {
 		this.key = key;
 	}
 	
-	public Value asValue()
-	{
-		return new orc.runtime.values.Constant(key);
+	public Value asValue() {
+		return new orc.runtime.values.Field(key);
 	}
-	
+	public String toString() {
+		return super.toString() + "(" + key + ")";
+	}
 }

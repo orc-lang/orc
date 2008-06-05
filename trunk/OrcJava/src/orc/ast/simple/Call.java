@@ -12,87 +12,62 @@ import orc.runtime.nodes.Node;
 
 public class Call extends Expression {
 
-	public Argument caller;
+	public Argument callee;
 	public List<Argument> args;
 	
-	public Call(Argument caller, List<Argument> args)
+	public Call(Argument callee, List<Argument> args)
 	{
-		this.caller = caller;
+		this.callee = callee;
 		this.args = args;
 	}
 	
 	/* Binary call constructor */
-	public Call(Argument caller, Argument arga, Argument argb)
+	public Call(Argument callee, Argument arga, Argument argb)
 	{
-		this.caller = caller;
+		this.callee = callee;
 		this.args = new LinkedList<Argument>();
 		this.args.add(arga);
 		this.args.add(argb);
 	}
 	
 	/* Unary call constructor */
-	public Call(Argument caller, Argument arg)
+	public Call(Argument callee, Argument arg)
 	{
-		this.caller = caller;
+		this.callee = callee;
 		this.args = new LinkedList<Argument>();
 		this.args.add(arg);
 	}
 	
 	/* Nullary call constructor */
-	public Call(Argument caller)
+	public Call(Argument callee)
 	{
-		this.caller = caller;
+		this.callee = callee;
 		this.args = new LinkedList<Argument>();
 	}
 	
 
 	@Override
 	public Node compile(Node output) {
-		orc.runtime.nodes.Call c = new orc.runtime.nodes.Call(caller, args, output);
+		orc.runtime.nodes.Call c = new orc.runtime.nodes.Call(callee, args, output);
 		c.setDebugInfo(this);
 		return c;
 	}
 
 	@Override
 	public Expression subst(Argument a, NamedVar x) {
-		
-		Argument newcaller;
 		List<Argument> newargs = new LinkedList<Argument>();
-		
-		// Substitute on the call target
-		if (caller.equals(x))
-			newcaller = a;
-		else
-			newcaller = caller;
-		
-		// Substitute on the arguments
-		for (Argument b : args)
-		{
-			if (b.equals(x))
-				newargs.add(a);
-			else
-				newargs.add(b);
+		for (Argument b : args)	{
+			newargs.add(b.subst(a, x));
 		}
-		
-		return new Call(newcaller, newargs);
+		return new Call(callee.subst(a, x), newargs);
 	}
 
-	public Set<Var> vars()
-	{
+	public Set<Var> vars() {
 		Set<Var> freeset = new HashSet<Var>();
-		
-		if (caller instanceof Var)
-		{ freeset.add((Var)caller); }
-		
-		for(Argument a : args)
-		{
-			if (a instanceof Var)
-			{
-				freeset.add((Var)a);
-			}
+		callee.addFree(freeset);
+		for(Argument a : args) {
+			a.addFree(freeset);
 		}
-		
 		return freeset;
 	}
-	
 }

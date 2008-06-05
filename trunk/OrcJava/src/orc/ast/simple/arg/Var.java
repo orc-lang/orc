@@ -1,5 +1,7 @@
 package orc.ast.simple.arg;
 
+import java.util.Set;
+
 import orc.runtime.values.Value;
 
 
@@ -13,12 +15,14 @@ import orc.runtime.values.Value;
  *
  */
 
-public class Var extends Argument 
-{
-
+public class Var extends Argument {
+	private static final long serialVersionUID = 1L;
 	public Value asValue()
 	{
 		throw new Error("Bound variable " + this.toString() + "can not be used as a value.");
 	}
-
+	@Override
+	public void addFree(Set<Var> freeset) {
+		freeset.add(this);
+	}
 }
