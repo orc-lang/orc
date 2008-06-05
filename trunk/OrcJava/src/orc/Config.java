@@ -4,12 +4,13 @@
 package orc;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
+import java.io.Reader;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
@@ -36,7 +37,7 @@ public class Config {
 	Boolean debug = false;
 	List<File> bindings;
 	Integer maxpub = null;
-	InputStream instream;
+	Reader instream;
 	
 	public Config()
 	{
@@ -47,7 +48,7 @@ public class Config {
 	{
 		int i = 0;
 		
-		instream = System.in;
+		instream = new InputStreamReader(System.in);
 		File outputfile = null;
 		Integer outport = null;
 		String outhost = null;
@@ -81,7 +82,7 @@ public class Config {
 			else {
 				// This is the name of the source file
 				try {
-					instream = new FileInputStream(args[i++]);
+					instream = new FileReader(args[i++]);
 				} catch (FileNotFoundException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -155,7 +156,7 @@ public class Config {
 		return maxpub;
 	}
 	
-	public InputStream getInstream()
+	public Reader getInstream()
 	{
 		return instream;
 	}
