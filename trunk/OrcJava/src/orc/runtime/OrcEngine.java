@@ -39,8 +39,8 @@ public class OrcEngine implements Runnable {
 	 */
 	private boolean isBlocked = false;
 	
-	public boolean isBlocked() { return isBlocked; }
-	public boolean isDead() { return !halt; }
+	public synchronized boolean isBlocked() { return isBlocked; }
+	public synchronized boolean isDead() { return halt; }
 
 	/**
 	 * Process active nodes, running indefinitely until
@@ -60,6 +60,7 @@ public class OrcEngine implements Runnable {
 					} catch (InterruptedException e) {
 						// do nothing
 					}
+					isBlocked = false;
 				}
 			}
 		}
