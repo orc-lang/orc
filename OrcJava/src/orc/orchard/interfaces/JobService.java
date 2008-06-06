@@ -50,9 +50,20 @@ public interface JobService extends Remote {
 	 */
 	public List<Publication> publications() throws InvalidJobStateException, RemoteException;
 	/**
-	 * Retrieve all publications made since the last call to listen() or publications().
-	 * If no publications were made, block until at least one is made.
+	 * Retrieve all publications after the given sequence number.
+	 * 
+	 * @return List of all publications.
 	 * @throws InvalidJobStateException if the job is not RUNNING or WAITING.
+	 */
+	public List<Publication> publications(int sequence) throws InvalidJobStateException, RemoteException;
+	/**
+	 * Retrieve all publications made since the last call to listen(). If no
+	 * publications were made, block until at least one is made. If you call
+	 * this method multiple times concurrently, it is not guaranteed that calls
+	 * will return in the order they were made.
+	 * 
+	 * @throws InvalidJobStateException
+	 *             if the job is not RUNNING or WAITING.
 	 */
 	public List<Publication> listen() throws InvalidJobStateException, UnsupportedFeatureException, RemoteException;
 }

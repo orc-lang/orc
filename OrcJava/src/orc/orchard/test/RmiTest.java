@@ -86,15 +86,20 @@ public class RmiTest {
 			System.out.println(executor.jobs());
 			System.out.println(job.state());
 			job.start();
+			System.out.println(job.state());
 			try {
-				Thread.sleep(5000);
+				Thread.sleep(3000);
 			} catch (InterruptedException e) {
 				// ignore
 			}
 			System.out.println("Done waiting");
+			System.out.println(job.listen().toString());
+			System.out.println(job.listen().toString());
+			System.out.println(job.listen().toString());
+			System.out.println(job.listen().toString());
+			System.out.println(job.listen().toString());
 			List<Publication> pubs = job.publications();
 			System.out.println(pubs.toString());
-			System.out.println(job.state());
 			job.abort();
 			System.out.println(job.state());
 		} catch (RemoteException e) {
