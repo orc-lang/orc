@@ -1,6 +1,8 @@
 package orc.orchard.interfaces;
 
-public interface Publication {
+import java.io.Serializable;
+
+public interface Publication extends Serializable {
 	/** Timestamp when the value was published. */
 	public java.util.Date getTimestamp();
 	/**
