@@ -5,6 +5,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
@@ -27,10 +28,14 @@ public class JobService extends UnicastRemoteObject implements orc.orchard.inter
 	private JobConfiguration configuration;
 	private Node node;
 	private OrcEngine engine = new OrcEngine();
-	/** Hold publications temporarily until they are needed by the client. */
-	private BlockingQueue<Publication> publicationBuffer = new LinkedBlockingQueue<Publication>();
-	/** History of all published values. */
-	private List<Publication> publications = new LinkedList<Publication>();
+	/**
+	 * Queue publications for retrieval by listen() and publications(). At one
+	 * point this was a blocking queue but that did not give me sufficient
+	 * control over the locking.
+	 */
+	private List<Publication> pubsBuff = new LinkedList<Publication>();
+	/** History of values published via listen(). */
+	private List<Publication> pubs = new LinkedList<Publication>();
 	private Logger logger;
 	
 	public JobService(JobConfiguration configuration, Expression expression, Logger logger_) throws RemoteException {
@@ -39,11 +44,13 @@ public class JobService extends UnicastRemoteObject implements orc.orchard.inter
 		this.logger = logger_;
 		this.node = expression.compile(new Result() {
 			int sequence = 1;
-			public synchronized void emit(Value v) {
+			public void emit(Value v) {
 				logger.info("received publication " + sequence);
-				publications.add(new orc.orchard.rmi.Publication(
-						sequence, new Date(), ((Constant)v).getValue()));
-				sequence++;
+				synchronized (pubsBuff) {
+					pubsBuff.add(new orc.orchard.rmi.Publication(
+							sequence++, new Date(), ((Constant)v).getValue()));
+					pubsBuff.notify();
+				}
 			}
 		});
 	}
@@ -67,13 +74,47 @@ public class JobService extends UnicastRemoteObject implements orc.orchard.inter
 	}
 
 	public List<Publication> listen() throws InvalidJobStateException, UnsupportedFeatureException {
-		throw new UnsupportedFeatureException("Not supported");
+		synchronized (pubsBuff) {
+			// wait for the buffer to fill up
+			while (pubsBuff.isEmpty()) {
+				try {
+					pubsBuff.wait();
+					break;
+				} catch (InterruptedException e) {
+					// keep waiting
+				}
+			}
+			// remember these publications for later
+			pubs.addAll(pubsBuff);
+			// drain the buffer
+			List<Publication> out = new LinkedList<Publication>(pubsBuff);
+			pubsBuff.clear();
+			return out;
+		}
 	}
 
-	public synchronized List<Publication> publications() throws InvalidJobStateException {
-		logger.info("publications");
-		publicationBuffer.drainTo(publications);
-		return publications;
+	public List<Publication> publications() throws InvalidJobStateException {
+		synchronized (pubsBuff) {
+			logger.info("publications");
+			List<Publication> out = new LinkedList<Publication>(pubs);
+			out.addAll(pubsBuff);
+			return out;
+		}
+	}
+
+	public List<Publication> publications(int sequence) throws InvalidJobStateException {
+		logger.info("publications(" + sequence + ")");
+		List<Publication> out = new LinkedList<Publication>();
+		try {
+			// sequence numbers are guaranteed to correspond to indices in the
+			// list, so we can skip directly to the next sequence number
+			ListIterator<Publication> it = publications().listIterator(sequence);
+			// copy all of the subsequent publications into the output list
+			while (it.hasNext()) out.add(it.next());
+		} catch (IndexOutOfBoundsException e) {
+			// ignore this error
+		}
+		return out;
 	}
 
 	public synchronized String state() {
