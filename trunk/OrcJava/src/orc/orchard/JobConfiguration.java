@@ -1,5 +1,7 @@
 package orc.orchard;
 
+import java.io.Serializable;
+
 /**
  * JAXB does bad things if you extend another class
  * which is not specifically designed to be JAXB-marshalled.
@@ -7,7 +9,7 @@ package orc.orchard;
  * is OK since it's trivial anyways.
  * @author quark
  */
-public class JobConfiguration implements orc.orchard.interfaces.JobConfiguration {
+public class JobConfiguration implements Serializable {
 	private boolean debuggable = false;
 	private boolean listenable = false;
 	private String protocol;

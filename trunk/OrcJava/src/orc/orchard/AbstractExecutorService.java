@@ -6,11 +6,6 @@ import java.util.UUID;
 import java.security.SecureRandom;
 import java.util.logging.Logger;
 
-import orc.orchard.error.InvalidOilException;
-import orc.orchard.error.QuotaException;
-import orc.orchard.error.UnsupportedFeatureException;
-import orc.orchard.interfaces.Oil;
-import orc.orchard.interfaces.JobConfiguration;
 
 /**
  * Standard implementation of an ExecutorService. Extenders should provide a
@@ -19,22 +14,20 @@ import orc.orchard.interfaces.JobConfiguration;
  * @author quark
  * 
  */
-public abstract class ExecutorService<O extends Oil, JC extends JobConfiguration>
-	implements orc.orchard.interfaces.ExecutorService<O, JC>
-{
+public abstract class AbstractExecutorService implements orc.orchard.ExecutorServiceInterface {
 	protected Logger logger;
 
-	protected ExecutorService(Logger logger) {
+	protected AbstractExecutorService(Logger logger) {
 		this.logger = logger;
 	}
 
-	protected ExecutorService() {
+	protected AbstractExecutorService() {
 		this(getDefaultLogger());
 	}
 	
-	protected abstract JC getDefaultJobConfiguration();
+	protected abstract JobConfiguration getDefaultJobConfiguration();
 	
-	public URI submit(O program) throws QuotaException, InvalidOilException, RemoteException
+	public URI submit(Oil program) throws QuotaException, InvalidOilException, RemoteException
 	{
 		logger.info("submit");
 		try {
@@ -57,7 +50,7 @@ public abstract class ExecutorService<O extends Oil, JC extends JobConfiguration
 	}
 
 	protected static Logger getDefaultLogger() {
-		Logger out = Logger.getLogger(ExecutorService.class.toString());
+		Logger out = Logger.getLogger(AbstractExecutorService.class.toString());
 		return out;
 	}
 }

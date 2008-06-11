@@ -12,9 +12,10 @@ import java.util.logging.Logger;
 import orc.ast.simple.Expression;
 import orc.orchard.Publication;
 import orc.orchard.JobConfiguration;
+import orc.orchard.AbstractJobService;
 
-public class JobService extends orc.orchard.JobService<JobConfiguration, Publication>
-	implements RemoteJobService
+public class JobService extends AbstractJobService
+	implements JobServiceInterface
 {
 	private URI baseURI;
 	public JobService(URI baseURI, Logger logger, JobConfiguration configuration, Expression expression) throws RemoteException, MalformedURLException {
@@ -36,10 +37,5 @@ public class JobService extends orc.orchard.JobService<JobConfiguration, Publica
 			// This indicates the user called finish() more than once, which we
 			// can safely ignore
 		}
-	}
-
-	@Override
-	protected Publication createPublication(int sequence, Date date, Object value) {
-		return new Publication(sequence, date, value);
 	}
 }

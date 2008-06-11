@@ -1,5 +1,6 @@
 package orc.orchard;
 
+import java.io.Serializable;
 import java.io.StringReader;
 
 import javax.xml.bind.annotation.XmlTransient;
@@ -15,7 +16,7 @@ import orc.ast.simple.Expression;
  * is OK since it's trivial anyways.
  * @author quark
  */
-public class Oil implements orc.orchard.interfaces.Oil {
+public class Oil implements Serializable {
 	private String program;
 
 	public Oil() {}
