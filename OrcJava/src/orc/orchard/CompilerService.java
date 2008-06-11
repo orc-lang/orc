@@ -1,12 +1,5 @@
-package orc.orchard.rmi;
+package orc.orchard;
 
-import java.io.InputStream;
-import java.io.StringReader;
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
-
-import orc.Config;
-import orc.Orc;
 import orc.orchard.error.InvalidProgramException;
 
 /**
@@ -15,7 +8,7 @@ import orc.orchard.error.InvalidProgramException;
  *
  */
 public class CompilerService implements
-		orc.orchard.interfaces.CompilerService
+		orc.orchard.interfaces.CompilerService<Oil>
 {
 	public Oil compile(String program) throws InvalidProgramException {
 		return new Oil(program);

@@ -1,11 +1,23 @@
-package orc.orchard.rmi;
+package orc.orchard;
 
-import java.io.Serializable;
-
-public class JobConfiguration implements orc.orchard.interfaces.JobConfiguration, Serializable {
+/**
+ * JAXB does bad things if you extend another class
+ * which is not specifically designed to be JAXB-marshalled.
+ * So we can't inherit any implementation of this class, which
+ * is OK since it's trivial anyways.
+ * @author quark
+ */
+public class JobConfiguration implements orc.orchard.interfaces.JobConfiguration {
 	private boolean debuggable = false;
 	private boolean listenable = false;
-	private String protocol = "Java RMI";
+	private String protocol;
+	
+	public JobConfiguration() {}
+	
+	public JobConfiguration(String protocol) {
+		this();
+		setProtocol(protocol);
+	}
 
 	public void setDebuggable(boolean debuggable) {
 		this.debuggable = debuggable;
