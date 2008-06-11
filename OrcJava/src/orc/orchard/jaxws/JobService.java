@@ -12,10 +12,10 @@ import javax.jws.WebService;
 import javax.xml.ws.Endpoint;
 
 import orc.ast.simple.Expression;
+import orc.orchard.InvalidJobStateException;
 import orc.orchard.JobConfiguration;
 import orc.orchard.Publication;
-import orc.orchard.error.InvalidJobStateException;
-import orc.orchard.error.UnsupportedFeatureException;
+import orc.orchard.UnsupportedFeatureException;
 
 /**
  * You'll notice a bunch of pointlessly-overridden methods annotated with WebMethod.
@@ -24,7 +24,7 @@ import orc.orchard.error.UnsupportedFeatureException;
  * @author quark
  */
 @WebService(endpointInterface="orc.orchard.jaxws.JobServiceInterface")
-public class JobService extends orc.orchard.JobService<JobConfiguration, Publication>
+public class JobService extends orc.orchard.AbstractJobService
 	implements JobServiceInterface
 {
 	private Endpoint endpoint;
@@ -45,10 +45,5 @@ public class JobService extends orc.orchard.JobService<JobConfiguration, Publica
 	@Override
 	protected void onFinish() throws RemoteException {
 		endpoint.stop();
-	}
-	
-	@Override
-	protected Publication createPublication(int sequence, Date date, Object value) {
-		return new Publication(sequence, date, value);
 	}
 }

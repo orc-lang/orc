@@ -1,5 +1,6 @@
 package orc.orchard;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -9,7 +10,7 @@ import java.util.Date;
  * is OK since it's trivial anyways.
  * @author quark
  */
-public class Publication implements orc.orchard.interfaces.Publication {
+public class Publication implements Serializable {
 	private int sequence;
 	private Date timestamp;
 	private Object value;

@@ -9,15 +9,15 @@ import java.util.logging.Logger;
 import javax.jws.WebService;
 import javax.xml.ws.Endpoint;
 
+import orc.orchard.InvalidOilException;
 import orc.orchard.JobConfiguration;
 import orc.orchard.Oil;
-import orc.orchard.error.InvalidOilException;
-import orc.orchard.error.QuotaException;
-import orc.orchard.error.UnsupportedFeatureException;
+import orc.orchard.QuotaException;
+import orc.orchard.UnsupportedFeatureException;
 
 
 @WebService(endpointInterface="orc.orchard.jaxws.ExecutorServiceInterface")
-public class ExecutorService extends orc.orchard.ExecutorService<Oil, JobConfiguration>
+public class ExecutorService extends orc.orchard.AbstractExecutorService
 	implements ExecutorServiceInterface
 {
 	private URI baseURI;

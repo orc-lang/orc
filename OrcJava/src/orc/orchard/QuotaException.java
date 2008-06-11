@@ -1,4 +1,4 @@
-package orc.orchard.error;
+package orc.orchard;
 
 public class QuotaException extends Exception {
 	public QuotaException(String arg0) {

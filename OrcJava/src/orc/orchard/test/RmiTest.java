@@ -8,14 +8,18 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.List;
 
-import orc.orchard.CompilerService;
-import orc.orchard.error.*;
+import orc.orchard.AbstractCompilerService;
+import orc.orchard.ExecutorServiceInterface;
+import orc.orchard.InvalidJobStateException;
+import orc.orchard.InvalidOilException;
+import orc.orchard.InvalidProgramException;
+import orc.orchard.JobServiceInterface;
 import orc.orchard.Oil;
-import orc.orchard.CompilerService;
+import orc.orchard.AbstractCompilerService;
 import orc.orchard.Publication;
-import orc.orchard.rmi.RemoteJobService;
-import orc.orchard.rmi.RemoteExecutorService;
-import orc.orchard.rmi.ExecutorService;
+import orc.orchard.QuotaException;
+import orc.orchard.UnsupportedFeatureException;
+import orc.orchard.java.CompilerService;
 
 public class RmiTest {
 	public static void main(String[] args) {
@@ -35,9 +39,9 @@ public class RmiTest {
 			}
 		}
 		CompilerService compiler = new CompilerService();
-		RemoteExecutorService executor;
+		ExecutorServiceInterface executor;
 		try {
-			executor = (RemoteExecutorService)Naming.lookup(executorURI.toString());
+			executor = (ExecutorServiceInterface)Naming.lookup(executorURI.toString());
 		} catch (MalformedURLException e) {
 			System.err.println("Invalid URI '" + executorURI + "'");
 			return;
@@ -69,9 +73,9 @@ public class RmiTest {
 			return;
 		}
 		System.out.println("Job URI: " + jobURI);
-		RemoteJobService job;
+		JobServiceInterface job;
 		try {
-			job = (RemoteJobService)Naming.lookup(jobURI.toString());
+			job = (JobServiceInterface)Naming.lookup(jobURI.toString());
 		} catch (MalformedURLException e) {
 			System.err.println("Invalid URI '" + jobURI + "'");
 			return;

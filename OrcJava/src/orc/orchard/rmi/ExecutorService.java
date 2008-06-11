@@ -11,14 +11,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import orc.orchard.InvalidOilException;
 import orc.orchard.JobConfiguration;
-import orc.orchard.error.InvalidOilException;
-import orc.orchard.error.QuotaException;
-import orc.orchard.error.UnsupportedFeatureException;
+import orc.orchard.QuotaException;
+import orc.orchard.UnsupportedFeatureException;
 import orc.orchard.Oil;
+import orc.orchard.AbstractExecutorService;
 
-public class ExecutorService extends orc.orchard.ExecutorService<Oil, JobConfiguration>
-	implements RemoteExecutorService
+public class ExecutorService extends AbstractExecutorService
+	implements ExecutorServiceInterface
 {
 	private URI baseURI;
 	
