@@ -8,9 +8,14 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.List;
 
+import orc.orchard.CompilerService;
 import orc.orchard.error.*;
-import orc.orchard.interfaces.*;
-import orc.orchard.rmi.CompilerService;
+import orc.orchard.Oil;
+import orc.orchard.CompilerService;
+import orc.orchard.Publication;
+import orc.orchard.rmi.RemoteJobService;
+import orc.orchard.rmi.RemoteExecutorService;
+import orc.orchard.rmi.ExecutorService;
 
 public class RmiTest {
 	public static void main(String[] args) {
@@ -29,10 +34,10 @@ public class RmiTest {
 				return;
 			}
 		}
-		CompilerService compiler = new orc.orchard.rmi.CompilerService();
-		ExecutorService executor;
+		CompilerService compiler = new CompilerService();
+		RemoteExecutorService executor;
 		try {
-			executor = (ExecutorService)Naming.lookup(executorURI.toString());
+			executor = (RemoteExecutorService)Naming.lookup(executorURI.toString());
 		} catch (MalformedURLException e) {
 			System.err.println("Invalid URI '" + executorURI + "'");
 			return;
@@ -52,7 +57,6 @@ public class RmiTest {
 		}
 		URI jobURI;
 		try {
-			System.out.println(executor.jobs());
 			jobURI = executor.submit(oil);
 		} catch (RemoteException e) {
 			System.err.println("Communication error: " + e.toString());
@@ -63,14 +67,11 @@ public class RmiTest {
 		} catch (InvalidOilException e) {
 			System.err.println("OIL error: " + e.toString());
 			return;
-		} catch (UnsupportedFeatureException e) {
-			// impossible by construction
-			throw new AssertionError(e);
 		}
 		System.out.println("Job URI: " + jobURI);
-		JobService job;
+		RemoteJobService job;
 		try {
-			job = (JobService)Naming.lookup(jobURI.toString());
+			job = (RemoteJobService)Naming.lookup(jobURI.toString());
 		} catch (MalformedURLException e) {
 			System.err.println("Invalid URI '" + jobURI + "'");
 			return;
@@ -83,7 +84,6 @@ public class RmiTest {
 		}
 		System.out.println("Bound job");
 		try {
-			System.out.println(executor.jobs());
 			System.out.println(job.state());
 			job.start();
 			System.out.println(job.state());
@@ -101,7 +101,6 @@ public class RmiTest {
 			List<Publication> pubs = job.publications();
 			System.out.println(pubs.toString());
 			job.abort();
-			System.out.println(job.state());
 		} catch (RemoteException e) {
 			System.err.println("Communication error: " + e.toString());
 			return;

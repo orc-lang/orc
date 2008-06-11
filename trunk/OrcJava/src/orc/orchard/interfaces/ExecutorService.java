@@ -12,31 +12,35 @@ import orc.orchard.error.QuotaException;
 import orc.orchard.error.UnsupportedFeatureException;
 
 /**
- * Broker used to register jobs for execution. 
+ * Broker used to register jobs for execution.
+ * 
+ * The bounded generics are acting as existential types. This allows
+ * implementors to provide concrete implementations of the argument types which
+ * are tailored to the needs of their implementation.
+ * 
+ * Because of the generics, this interface can't be used directly by client
+ * code, but it serves as documentation and ensures that implementors are
+ * providing the necessary methods.
+ * 
  * @author quark
  */
-public interface ExecutorService extends Remote {
-	/**
-	 * Register a new job for execution, using a default job configuration.
-	 *  
-	 * @param program Orc program to run. 
-	 * @return URI locating an instance of JobService.
-	 * @throws QuotaException if registering this job would exceed quotas.
-	 * @throws InvalidOilException if the program is invalid.
-	 */
-	public URI submit(Oil program) throws QuotaException, InvalidOilException, RemoteException;
+public interface ExecutorService<O extends Oil, JC extends JobConfiguration> extends Remote {
 	/**
 	 * Register a new job for execution, using the provided job configuration.
 	 * 
+	 * @return URI locating an instance of JobService.
+	 * @throws QuotaException
+	 *             if registering this job would exceed quotas.
+	 * @throws InvalidOilException
+	 *             if the program is invalid.
 	 * @throws UnsupportedFeatureException
 	 *             if the executor does not support some part of the
 	 *             configuration.
 	 */
-	public URI submit(Oil program, JobConfiguration configuration) throws QuotaException, InvalidOilException, UnsupportedFeatureException, RemoteException;
+	public URI submitConfigured(O program, JC configuration) throws QuotaException,
+			InvalidOilException, UnsupportedFeatureException, RemoteException;
 	/**
-	 * List registered job URIs.
-	 * 
-	 * @throws UnsupportedFeatureException if the executor does not support this method.
+	 * Register a new job for execution, using a default JobConfiguration.
 	 */
-	public Set<URI> jobs() throws UnsupportedFeatureException, RemoteException;
+	public URI submit(O program) throws QuotaException, InvalidOilException, RemoteException;
 }

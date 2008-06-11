@@ -1,42 +1,47 @@
-package orc.orchard.rmi;
+package orc.orchard.jaxws;
 
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.rmi.Naming;
 import java.rmi.RemoteException;
-import java.rmi.server.UID;
-import java.rmi.server.UnicastRemoteObject;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.jws.WebService;
+import javax.xml.ws.Endpoint;
+
 import orc.orchard.JobConfiguration;
+import orc.orchard.Oil;
 import orc.orchard.error.InvalidOilException;
 import orc.orchard.error.QuotaException;
 import orc.orchard.error.UnsupportedFeatureException;
-import orc.orchard.Oil;
 
+
+@WebService(endpointInterface="orc.orchard.jaxws.ExecutorServiceInterface")
 public class ExecutorService extends orc.orchard.ExecutorService<Oil, JobConfiguration>
-	implements RemoteExecutorService
+	implements ExecutorServiceInterface
 {
 	private URI baseURI;
+	
+	/** Exists only to satisfy a silly requirement of JAX-WS */
+	public ExecutorService() {
+		super(null);
+		throw new AssertionError("Do not call this method directly");
+	}
+	
+	protected JobConfiguration getDefaultJobConfiguration() {
+		return new JobConfiguration("JAX-WS");
+	}
 	
 	public ExecutorService(URI baseURI, Logger logger) throws RemoteException, MalformedURLException {
 		super(logger);
 		this.baseURI = baseURI;
 		logger.info("Binding to '" + baseURI + "'");
-		UnicastRemoteObject.exportObject(this, 0);
-		Naming.rebind(baseURI.toString(), this);
+		Endpoint.publish(baseURI.toString(), this);
 		logger.info("Bound to '" + baseURI + "'");
 	}
 
 	public ExecutorService(URI baseURI) throws RemoteException, MalformedURLException {
 		this(baseURI, getDefaultLogger());
-	}
-	
-	protected JobConfiguration getDefaultJobConfiguration() {
-		return new JobConfiguration("Java-RMI");
 	}
 
 	public URI submitConfigured(Oil program, JobConfiguration configuration)
@@ -63,7 +68,7 @@ public class ExecutorService extends orc.orchard.ExecutorService<Oil, JobConfigu
 	public static void main(String[] args) {
 		URI baseURI;
 		try {
-			baseURI = new URI("rmi://localhost/orchard");
+			baseURI = new URI("http://localhost:8080/orchard");
 		} catch (URISyntaxException e) {
 			// this is impossible by construction
 			throw new AssertionError(e);
@@ -74,7 +79,7 @@ public class ExecutorService extends orc.orchard.ExecutorService<Oil, JobConfigu
 			} catch (URISyntaxException e) {
 				System.err.println("Invalid URI '" + args[0] + "'");
 				return;
-			} 
+			}
 		}
 		try {
 			new ExecutorService(baseURI);

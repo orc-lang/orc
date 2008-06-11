@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<project name="Orc" default="wsgen" basedir=".">
+	<property name="bin" location="bin" />
+	<property name="lib" location="lib" />
+	<taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
+		<classpath>
+			<pathelement location="${lib}/jaxws-tools.jar" />
+		</classpath>
+	</taskdef>
+	<target name="wsgen" description="Generate web service artifacts">
+		<wsgen sei="orc.orchard.jaxws.ExecutorService" destdir="${bin}" classpath="${bin}"/>
+		<wsgen sei="orc.orchard.jaxws.JobService" destdir="${bin}" classpath="${bin}"/>
+	</target>
+</project>
