@@ -6,8 +6,10 @@ package orc.runtime;
 import java.io.*;
 //import java.io.ObjectOutputStream;
 //import java.nio.channels.FileLock;
+import orc.ast.oil.arg.Arg;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.Var;
+import orc.env.Env;
 import orc.error.DebugInfo;
 import orc.error.OrcException;
 import orc.error.OrcRuntimeTypeException;
@@ -30,7 +32,7 @@ import orc.runtime.values.Value;
 public class Token implements Serializable, Comparable<Token> {
 	private static final long serialVersionUID = 1L;
 	protected Node node;	
-	protected Environment env;
+	protected Env<Future> env;
 	protected GroupCell group;
 	protected Region region;
 	protected OrcEngine engine;
@@ -38,7 +40,7 @@ public class Token implements Serializable, Comparable<Token> {
 	Value result;
 	boolean alive;
 	
-	public Token(Node node, Environment env, Token caller, GroupCell group, Region region, Value result, OrcEngine engine) {
+	public Token(Node node, Env<Future> env, Token caller, GroupCell group, Region region, Value result, OrcEngine engine) {
 		this.node = node;
 		this.env = env;
 		this.caller = caller;
@@ -50,7 +52,7 @@ public class Token implements Serializable, Comparable<Token> {
 		region.add(this);
 	}
 	
-	public Token(Node node, Environment env, Execution exec) {
+	public Token(Node node, Env<Future> env, Execution exec) {
 		this(node, env, null, new GroupCell(), exec, null, exec.getEngine());		
 	}
 	
@@ -89,7 +91,7 @@ public class Token implements Serializable, Comparable<Token> {
 		return group;
 	}
 	
-	public Environment getEnvironment() {
+	public Env<Future> getEnvironment() {
 		return env;
 	}
 
@@ -132,7 +134,7 @@ public class Token implements Serializable, Comparable<Token> {
 		return this;
 	}
 	
-	public Token setEnv(Environment e) {
+	public Token setEnv(Env<Future> e) {
 		this.env = e;
 		return this;
 	}
@@ -160,7 +162,7 @@ public class Token implements Serializable, Comparable<Token> {
 	 * @param caller
 	 * @return
 	 */
-	public Token callcopy(Node node, Environment env, Token returnToken) {
+	public Token callcopy(Node node, Env<Future> env, Token returnToken) {
 		return new Token(node, env, returnToken, group, region, null, engine);
 	}
 
@@ -173,40 +175,41 @@ public class Token implements Serializable, Comparable<Token> {
 	}
 
 	/**
-	 * Extend the environment with a new variable/value pair
-	 * @param var	variable name
-	 * @param val	value for this variable
+	 * Push a new future onto the environment stack
+	 * @param f		future to push
 	 * @return		self
 	 */
-	public Token bind(Var var, Future f) {
-		debug("binding " + var + " to " + f);
-		env = new Environment(var, f, env);
+	public Token bind(Future f) {
+		env = env.add(f);
 		return this;
 	}
+
+	/**
+	 * Pop values off of the environment stack.
+	 * Used to leave binding scopes.
+	 * @return
+	 */
+	public Token unwind(int width) {
+		env = env.unwind(width);
+		return this;
+	}
+
 	
 	/**
 	 * Lookup a variable in the environment
 	 * @param var  	variable name
 	 * @return		value, or an exception if the variable is undefined
 	 */
-	public Future lookup(Argument a) {
-		if (a instanceof Var)
-		{
-			return env.lookup((Var)a);
-		}
-		else 
-		{
-			return a.asValue();
-		}
-		
+	public Future lookup(Arg a) {
+		return a.resolve(env);		
 	}
 
-	public Callable call(Argument a) {
+	public Callable call(Arg a) {
 		Future f = this.lookup(a);
 		return f.forceCall(this);
 	}
 	
-	public Value arg(Argument a) {
+	public Value arg(Arg a) {
 		Future f = this.lookup(a);
 		return f.forceArg(this);
 	}
@@ -228,6 +231,12 @@ public class Token implements Serializable, Comparable<Token> {
 	
 	public void activate()
 	{
+		engine.activate(this);
+	}
+	
+	public void activate(Value v)
+	{
+		this.setResult(v);
 		engine.activate(this);
 	}
 	
@@ -263,31 +272,5 @@ public class Token implements Serializable, Comparable<Token> {
 	public void error(OrcRuntimeTypeException problem) {
 		error(node.getDebugInfo(), problem);
 	}
-	
-	/*
-	 * This was used to help diagnose where memory was being used.
-	 * It isn't needed now, but might be useful again someday.
-	 * If there is only one active token, it can be dumped to a file,
-	 * and then execution can resume again after reading the token from the file
-	 * and initializing the engine with that token active.
-	 * This can be done with the command line arguments -rundump file .
-	 * That capability might be useful, too, but isn't being used now.
-	 */
-	
-/*	public void dump(File f) {
-		boolean append = true;
-		try {
-		FileOutputStream fos = new FileOutputStream(f,append);
-		FileLock lock = fos.getChannel().lock(0,10,false);
-	    ObjectOutputStream out = new ObjectOutputStream(fos);
-	    out.writeObject(this);
-	    lock.release();
-	    out.close();
-	    fos.close();
-		}
-		catch (Exception e) {
-			System.err.println("Warning: did not dump token to file");
-		}
-	}*/
 	
 }

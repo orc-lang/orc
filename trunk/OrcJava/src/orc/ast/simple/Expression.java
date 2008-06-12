@@ -6,7 +6,9 @@ import java.util.Set;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
+import orc.env.Env;
 import orc.error.Debug;
+import orc.runtime.nodes.Node;
 
 /**
  * Base class for the simplified abstract syntax tree.
@@ -16,15 +18,15 @@ import orc.error.Debug;
  */
 
 public abstract class Expression extends Debug {
-
+	
 	/**
-	 * Compiles abstract syntax tree into execution nodes.
-	 * Every node is compiled relative to an "output" node that represents
-	 * the "rest of the program". Thus the tree of compiled nodes is created bottom up.
-	 * @param output This is the node to which output (publications) will be directed.
+	 * Converts abstract syntax tree into a serializable form, used to generate
+	 * portable .oil (Orc Intermediate Language) files.
+	 * @param vars	The vars environment, used in content addressable mode to 
+	 * 				find the appropriate deBruijn index of a var.
 	 * @return A new node.
 	 */
-	public abstract orc.runtime.nodes.Node compile(orc.runtime.nodes.Node output);
+	public abstract orc.ast.oil.Expr convert(Env<Var> vars);
 	
 	
 	/**
@@ -60,4 +62,14 @@ public abstract class Expression extends Debug {
 	 * @return
 	 */
 	public abstract Set<Var> vars();
+
+	
+	/**
+	 * Intermediate step to allow a one-step compile from the simple AST.
+	 * Obviously this is only useful if the compilation and execution
+	 * environments are colocated.
+	 */
+	public Node compile(Node output) {
+		return this.convert(new Env<Var>()).compile(output);
+	}
 }

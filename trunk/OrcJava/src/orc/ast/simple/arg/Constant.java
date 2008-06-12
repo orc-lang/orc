@@ -1,6 +1,13 @@
 package orc.ast.simple.arg;
 
+
+import orc.ast.oil.arg.Arg;
+import orc.env.Env;
 import orc.runtime.values.Value;
+import orc.val.Bool;
+import orc.val.Int;
+import orc.val.Str;
+import orc.val.Val;
 
 
 /**
@@ -12,18 +19,32 @@ import orc.runtime.values.Value;
 
 public class Constant extends Argument {
 	private static final long serialVersionUID = 1L;
-	public Object val;
+	public Val v;
 	
-	public Constant(Object val)
-	{
-		this.val = val;
+	public Constant(Integer i) {
+		this.v = new Int(i);
 	}
 	
-	public Value asValue()
-	{
-		return new orc.runtime.values.Constant(val);
+	public Constant(String s) {
+		this.v = new Str(s);
 	}
+	
+	public Constant(boolean b) {
+		this.v = new Bool(b);
+	}
+	
+	public Constant(Val v)
+	{
+		this.v = v;
+	}
+	
 	public String toString() {
-		return super.toString() + "(" + val + ")";
+		return super.toString() + "(" + v.toString() + ")";
+	}
+
+	@Override
+	public Arg convert(Env<Var> vars) {
+		
+		return new orc.ast.oil.arg.Constant(v);
 	}
 }

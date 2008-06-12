@@ -16,9 +16,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import orc.ast.extended.Declare;
 import orc.ast.extended.declaration.Declaration;
+import orc.ast.oil.Expr;
+import orc.ast.simple.arg.Var;
+import orc.env.Env;
 import orc.parser.OrcLexer;
 import orc.parser.OrcParser;
-import orc.runtime.Environment;
 import orc.runtime.OrcEngine;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.result.QueueResult;
@@ -135,7 +137,9 @@ public class Orc {
 		
 		//System.out.println("Compiling to an execution graph...");
 		// Compile the AST, directing the output towards the configured target
-		return es.compile(target);
+		Expr ex = es.convert(new Env<Var>());
+		Node en = ex.compile(target);
+		return en;
 		
 		} catch (Exception e) {
 			System.err.println("exception: " + e);
@@ -190,7 +194,7 @@ public class Orc {
 		        engine.debugMode = cfg.debugMode();
 		        
 		        // Create an OrcInstance object, to be run in its own thread
-		        Environment env = null;
+		        Env env = new Env();
 		        OrcInstance inst = new OrcInstance(engine, n, env, q);
 		        
 		        // Run the Orc instance in its own thread

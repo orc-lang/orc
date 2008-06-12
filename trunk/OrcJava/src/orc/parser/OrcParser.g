@@ -12,6 +12,7 @@ header {
 	import orc.ast.extended.*;
 	import orc.ast.extended.declaration.*;
 	import orc.ast.extended.pattern.*;
+	import orc.val.*;
 	
 } 
 
@@ -375,13 +376,13 @@ silent_expr returns [Expression e = null]
 
 literal returns [Literal l = null]
 	: num:INT
-		{ l = new Literal(new Integer(num.getText())); }
+		{ l = new Literal(new Int(num.getText())); }
 	| str:STRING
-		{ l = new Literal(str.getText()); }
+		{ l = new Literal(new Str(str.getText())); }
 	| "true"
-		{ l = new Literal(new Boolean(true)); }
+		{ l = new Literal(new Bool(true)); }
 	| "false"
-		{ l = new Literal(new Boolean(false)); }
+		{ l = new Literal(new Bool(false)); }
 	;
 
 

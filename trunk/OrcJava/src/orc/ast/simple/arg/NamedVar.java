@@ -1,5 +1,8 @@
 package orc.ast.simple.arg;
 
+
+import orc.ast.oil.arg.Arg;
+import orc.env.Env;
 import orc.runtime.values.Value;
 
 
@@ -25,11 +28,6 @@ public class NamedVar extends Argument implements Comparable<NamedVar> {
 		this.key = key;
 	}
 	
-	public Value asValue()
-	{
-		throw new Error("Free variable " + key + " can never be bound to a value.");
-	}
-
 	public int compareTo(NamedVar f) {
 		String s = this.key;
 		String t = f.key;
@@ -49,5 +47,11 @@ public class NamedVar extends Argument implements Comparable<NamedVar> {
 	}
 	public String toString() {
 		return super.toString() + "(" + key + ")";
+	}
+
+	@Override
+	public Arg convert(Env<Var> vars) {
+		// TODO: Convert to dynamic lookup or catch as a type error
+		throw new Error("Variable " + key + " is unbound");
 	}
 }

@@ -6,9 +6,9 @@ package orc.runtime.values;
 import java.util.List;
 
 import orc.ast.simple.arg.*;
+import orc.env.Env;
 import orc.error.OrcException;
 import orc.error.OrcRuntimeTypeException;
-import orc.runtime.Environment;
 import orc.runtime.Token;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Return;
@@ -16,7 +16,7 @@ import orc.runtime.nodes.Return;
 /**
  * Represents a standard closure: a function defined in an environment.
  * 
- * Note that a closure is not necessarily a Value, since it may contain unbound
+ * Note that a closure is not necessarily a resolved value, since it may contain unbound
  * variables, and therefore cannot be used in arg position until all such variables
  * become bound. 
  * 
@@ -25,12 +25,12 @@ import orc.runtime.nodes.Return;
 public class Closure extends Value implements Callable {
 	private static final long serialVersionUID = 1L;
 	Node body;
-	List<Var> formals;
-	Environment env;
+	int arity;
+	Env env;
 
-	public Closure(List<Var> formals, Node body, Environment env) {
+	public Closure(int arity, Node body, Env env) {
+		this.arity = arity;
 		this.body = body;
-		this.formals = formals;
 		this.env = env;
 	}
 
@@ -45,8 +45,8 @@ public class Closure extends Value implements Callable {
 	 */
 	public void createCall(Token callToken, List<Future> args, Node nextNode) throws OrcException {
 		
-		if (args.size() != formals.size()) {
-			throw new OrcRuntimeTypeException("Arity mismatch, expected " + formals.size() + " arguments, got " + args.size() + ".");
+		if (args.size() != arity) {
+			throw new OrcRuntimeTypeException("Arity mismatch, expected " + arity + " arguments, got " + args.size() + ".");
 		}
 		
 		// check tail-call optimization
@@ -62,15 +62,15 @@ public class Closure extends Value implements Callable {
 		Token t = callToken.callcopy(body, env, returnToken);
 		callToken.die();
 		
-		for (Var v : formals)
+		for (Future f : args)
 		{
-			t.bind(v, args.remove(0));
+			t.bind(f);
 		}
 		
 		t.activate();
 	}
 
-	public void setEnvironment(Environment env) {
+	public void setEnvironment(Env env) {
 		this.env = env;
 	}
 }

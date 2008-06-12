@@ -1,47 +1,30 @@
 package orc.ast.simple;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import orc.ast.oil.Def;
+import orc.ast.oil.Expr;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
+import orc.env.Env;
 import orc.runtime.nodes.Node;
 
-public class Def extends Expression {
+public class Defs extends Expression {
 
 	public List<Definition> defs;
 	public Expression body;
 	
-	public Def(List<Definition> defs, Expression body)
+	public Defs(List<Definition> defs, Expression body)
 	{
 		this.defs = defs;
 		this.body = body;
 	}
 	
-	@Override
-	public Node compile(Node output) {
-		
-		List<orc.runtime.nodes.Definition> newdefs = new LinkedList<orc.runtime.nodes.Definition>();
-		Node newbody = body.compile(output);
-		
-		Set<Var> freeset = new HashSet<Var>();
-		for(Definition d : defs)
-		{
-			newdefs.add(d.compile());
-			freeset.addAll(d.vars());
-		}
-		
-		for(Definition d : defs)
-		{
-			freeset.remove(d.name);
-		}
-		
-		return new orc.runtime.nodes.Def(newdefs, newbody, freeset);
-	}
-
 	@Override
 	public Expression subst(Argument a, NamedVar x) {
 		
@@ -51,7 +34,7 @@ public class Def extends Expression {
 			newdefs.add(d.subst(a,x));
 		}
 		
-		return new Def(newdefs, body.subst(a,x));
+		return new Defs(newdefs, body.subst(a,x));
 	}
 
 	@Override
@@ -71,6 +54,27 @@ public class Def extends Expression {
 		}
 		
 		return freeset;
+	}
+
+	@Override
+	public Expr convert(Env<Var> vars) {
+		
+		List<Var> names = new ArrayList<Var>();
+		
+		for (Definition d : defs) {
+			names.add(d.name);
+		}
+		
+		Env<Var> newvars = vars.addAll(names);
+		
+		List<Def> newdefs = new ArrayList<Def>();
+		
+		for (Definition d : defs) {
+			Def newd = d.convert(newvars);
+			newdefs.add(newd);
+		}
+		
+		return new orc.ast.oil.Defs(newdefs, body.convert(newvars));
 	}
 
 	

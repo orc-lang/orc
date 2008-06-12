@@ -113,7 +113,7 @@ public class DefsDeclaration implements Declaration {
 		orc.ast.simple.Expression newtarget = target.suball(fnames);
 		
 		
-		return new orc.ast.simple.Def(newdefs, newtarget);
+		return new orc.ast.simple.Defs(newdefs, newtarget);
 	}
 	
 }
