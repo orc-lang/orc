@@ -34,7 +34,7 @@ public class Lambda extends Expression {
 		List<orc.ast.simple.Definition> defs = new LinkedList<orc.ast.simple.Definition>();
 		defs.add(new orc.ast.simple.Definition(f,params,lambody));
 		
-		return new orc.ast.simple.Def(defs, new orc.ast.simple.Let(f));		
+		return new orc.ast.simple.Defs(defs, new orc.ast.simple.Let(f));		
 	}
 
 }

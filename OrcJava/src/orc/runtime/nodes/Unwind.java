@@ -8,15 +8,22 @@ import orc.runtime.Token;
 import orc.runtime.values.Value;
 
 /**
- * Compiled node for assignment. 
- * @author dkitchin, wcook
+ * Compiled node for leaving the scope of a variable binding. 
+ * @author dkitchin
  */
-public class Assign extends Node {
+public class Unwind extends Node {
 	private static final long serialVersionUID = 1L;
 	Node next;
+	int width;
 
-	public Assign(Node next) {
+	public Unwind(Node next) {
 		this.next = next;
+		this.width = 1;
+	}
+
+	public Unwind(Node next, int width) {
+		this.next = next;
+		this.width = width;
 	}
 
 	/** 
@@ -26,9 +33,7 @@ public class Assign extends Node {
 	 * @see orc.runtime.nodes.Node#process(orc.runtime.Token)
 	 */
 	public void process(Token t) {
-		Value val = t.getResult();
-		t.bind(val);
-		t.move(next).activate();
+		t.unwind(width).move(next).activate();
 	}
 
 }

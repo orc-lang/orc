@@ -1,11 +1,14 @@
 package orc.ast.simple;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import orc.ast.oil.Def;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
+import orc.env.Env;
 import orc.runtime.nodes.Node;
 
 /**
@@ -53,13 +56,12 @@ public class Definition {
 		freeset.removeAll(formals);
 		return freeset;
 	}
+
+	public Def convert(Env<Var> vars) {
 	
-	
-	public orc.runtime.nodes.Definition compile() {
+		Env<Var> newvars = vars.addAll(formals);
 		
-		Node newbody = body.compile(new orc.runtime.nodes.Return());
-		
-		return new orc.runtime.nodes.Definition(name, formals, newbody);
+		return new orc.ast.oil.Def(formals.size(), body.convert(newvars));
 	}
 	
 }

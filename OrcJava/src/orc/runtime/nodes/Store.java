@@ -15,16 +15,12 @@ import orc.runtime.values.Value;
  */
 public class Store extends Node {
 	private static final long serialVersionUID = 1L;
-	Var var;
-	public Store(Var var) {
-		this.var = var;
-	}
-
+	
 	/**
 	 * Gets the group of the token and sets its value to be the result
 	 * of the input token. 
-	 * As a side effect of setting the value of a group, a "where" variable
-	 * becomes bound and the execution of the group is suspended.
+	 * As a side effect of setting the value of a group, a pull variable
+	 * becomes bound and the execution of the group is terminated.
 	 * @see orc.runtime.nodes.Node#process(orc.runtime.Token, orc.runtime.OrcEngine)
 	 */
 	public void process(Token t) {

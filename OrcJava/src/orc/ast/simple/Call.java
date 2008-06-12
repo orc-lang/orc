@@ -1,13 +1,17 @@
 package orc.ast.simple;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import orc.ast.oil.Expr;
+import orc.ast.oil.arg.Arg;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
+import orc.env.Env;
 import orc.runtime.nodes.Node;
 
 public class Call extends Expression {
@@ -45,14 +49,6 @@ public class Call extends Expression {
 		this.args = new LinkedList<Argument>();
 	}
 	
-
-	@Override
-	public Node compile(Node output) {
-		orc.runtime.nodes.Call c = new orc.runtime.nodes.Call(callee, args, output);
-		c.setDebugInfo(this);
-		return c;
-	}
-
 	@Override
 	public Expression subst(Argument a, NamedVar x) {
 		List<Argument> newargs = new LinkedList<Argument>();
@@ -70,4 +66,18 @@ public class Call extends Expression {
 		}
 		return freeset;
 	}
+
+	@Override
+	public Expr convert(Env<Var> vars) {
+		
+		Arg newcallee = callee.convert(vars);
+		
+		List<Arg> newargs = new ArrayList<Arg>();
+		for(Argument arg : args) {
+			newargs.add(arg.convert(vars));
+		}
+		
+		return new orc.ast.oil.Call(newcallee, newargs);
+	}
+
 }

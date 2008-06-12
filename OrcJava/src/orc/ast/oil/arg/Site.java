@@ -1,8 +1,7 @@
-package orc.ast.simple.arg;
+package orc.ast.oil.arg;
 
-
-import orc.ast.oil.arg.Arg;
 import orc.env.Env;
+import orc.runtime.values.Future;
 import orc.runtime.values.Value;
 
 
@@ -13,7 +12,7 @@ import orc.runtime.values.Value;
  *
  */
 
-public class Site extends Argument {
+public class Site extends Arg {
 
 	public orc.runtime.sites.Site site;
 	
@@ -23,10 +22,12 @@ public class Site extends Argument {
 	}
 	
 	@Override
-	public Arg convert(Env<Var> vars) {
-		
-		return new orc.ast.oil.arg.Site(site);
+	public Future resolve(Env env) {
+		return site;
+	}
+	
+	public String toString() {
+		return "[" + site.getClass().toString() + "]";
 	}
 
-	
 }

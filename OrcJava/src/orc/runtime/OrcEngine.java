@@ -8,9 +8,11 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 
+import orc.env.Env;
 import orc.runtime.nodes.Node;
 import orc.runtime.regions.Execution;
 import orc.runtime.regions.Region;
+import orc.runtime.values.Future;
 import orc.runtime.values.GroupCell;
 import orc.runtime.values.Value;
 
@@ -82,15 +84,15 @@ public class OrcEngine implements Runnable {
 	 * @param root  node to run
 	 */ 
 	public void run(Node root) {
-		run(root, null);
+		run(root, new Env<Future>());
 	}
 
-	public void run(Node root, Environment env) {
+	public void run(Node root, Env env) {
 		start(root, env);
 		run();
 	}
 	
-	public void start(Node root, Environment env) {
+	public void start(Node root, Env env) {
 		activate(new Token(root, env, null, new GroupCell(), new Execution(this), null, this));
 	}
 	

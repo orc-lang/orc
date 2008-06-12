@@ -2,9 +2,12 @@ package orc.ast.simple;
 
 import java.util.Set;
 
+import orc.ast.oil.Bar;
+import orc.ast.oil.Expr;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
+import orc.env.Env;
 import orc.runtime.nodes.Fork;
 import orc.runtime.nodes.Node;
 
@@ -20,11 +23,6 @@ public class Parallel extends Expression {
 	}
 	
 	@Override
-	public Node compile(Node output) {
-		return new Fork(left.compile(output), right.compile(output));
-	}
-
-	@Override
 	public Expression subst(Argument a, NamedVar x) 
 	{
 		return new Parallel(left.subst(a,x),right.subst(a,x));
@@ -36,6 +34,11 @@ public class Parallel extends Expression {
 		Set<Var> s = left.vars();
 		s.addAll(right.vars());
 		return s;
+	}
+
+	@Override
+	public Expr convert(Env<Var> vars) {
+		return new Bar(left.convert(vars), right.convert(vars));
 	}
 
 }

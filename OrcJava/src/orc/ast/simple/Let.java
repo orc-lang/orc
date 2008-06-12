@@ -1,13 +1,18 @@
 package orc.ast.simple;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import orc.ast.oil.Expr;
+import orc.ast.oil.arg.Arg;
+import orc.ast.oil.arg.Site;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
+import orc.env.Env;
 import orc.runtime.nodes.Node;
 
 public class Let extends Expression {
@@ -33,12 +38,6 @@ public class Let extends Expression {
 	}
 	
 	@Override
-	public Node compile(Node output) {
-		orc.ast.simple.arg.Site let = new orc.ast.simple.arg.Site(new orc.runtime.sites.core.Let());
-		return new orc.runtime.nodes.Call(let, args, output);
-	}
-
-	@Override
 	public Expression subst(Argument a, NamedVar x) {
 		List<Argument> newargs = new LinkedList<Argument>();		
 		for (Argument b : args) {
@@ -53,5 +52,25 @@ public class Let extends Expression {
 			a.addFree(freeset);
 		}
 		return freeset;
+	}
+
+	@Override
+	public Expr convert(Env<Var> vars) {
+		
+		// If there is only one arg, use it directly as an expression
+		if (args.size() == 1) {
+			return args.get(0).convert(vars);
+		}
+		
+		List<Arg> newargs = new ArrayList<Arg>();
+		for(Argument a : args) {
+			Arg newa = a.convert(vars);
+			newargs.add(newa);
+		}
+		
+		// Otherwise, use the tuple creation site
+		// TODO: Add an explicit zero-args case for unit 
+		Site tuple = new Site(new orc.runtime.sites.core.Let());
+		return new orc.ast.oil.Call(tuple, newargs);
 	}
 }

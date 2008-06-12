@@ -1,8 +1,9 @@
-package orc.ast.simple.arg;
+package orc.ast.oil.arg;
 
+import java.util.Set;
 
-import orc.ast.oil.arg.Arg;
 import orc.env.Env;
+import orc.runtime.values.Future;
 import orc.runtime.values.Value;
 
 
@@ -12,7 +13,7 @@ import orc.runtime.values.Value;
  * @author dkitchin
  */
 
-public class Field extends Argument {
+public class Field extends Arg {
 	private static final long serialVersionUID = 1L;
 	public String key;
 	
@@ -21,13 +22,13 @@ public class Field extends Argument {
 		this.key = key;
 	}
 	
+	public Future resolve(Env env) {
+		return new orc.runtime.values.Field(key);
+	}
+	
 	public String toString() {
-		return super.toString() + "(" + key + ")";
+		return "[." + key + "]";
 	}
 
-	@Override
-	public Arg convert(Env<Var> vars) {
-		
-		return new orc.ast.oil.arg.Field(key);
-	}
+
 }

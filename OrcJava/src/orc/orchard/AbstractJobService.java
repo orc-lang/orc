@@ -13,7 +13,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 
 import orc.ast.simple.Expression;
-import orc.runtime.Environment;
 import orc.runtime.OrcEngine;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.result.QueueResult;

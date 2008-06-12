@@ -2,6 +2,8 @@ package orc.ast.simple.arg;
 
 import java.util.Set;
 
+import orc.ast.oil.arg.Arg;
+import orc.env.Env;
 import orc.runtime.values.Value;
 
 
@@ -24,5 +26,10 @@ public class Var extends Argument {
 	@Override
 	public void addFree(Set<Var> freeset) {
 		freeset.add(this);
+	}
+	
+	@Override
+	public Arg convert(Env<Var> vars) {
+		return new orc.ast.oil.arg.Var(vars.search(this));
 	}
 }
