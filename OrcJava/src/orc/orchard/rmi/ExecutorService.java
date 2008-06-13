@@ -15,8 +15,8 @@ import orc.orchard.InvalidOilException;
 import orc.orchard.JobConfiguration;
 import orc.orchard.QuotaException;
 import orc.orchard.UnsupportedFeatureException;
-import orc.orchard.Oil;
 import orc.orchard.AbstractExecutorService;
+import orc.orchard.oil.Oil;
 
 public class ExecutorService extends AbstractExecutorService
 	implements ExecutorServiceInterface
@@ -50,7 +50,7 @@ public class ExecutorService extends AbstractExecutorService
 		}
 		try {
 			URI out = new URI(this.baseURI + "/" + jobID());
-			JobService service = new JobService(out, logger, configuration, program.getExpression());
+			JobService service = new JobService(out, logger, configuration, program.unmarshal());
 			return out;
 		} catch (MalformedURLException e) {
 			// this is impossible by construction

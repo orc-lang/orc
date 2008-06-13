@@ -12,6 +12,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 
+import orc.ast.oil.Expr;
 import orc.ast.simple.Expression;
 import orc.runtime.OrcEngine;
 import orc.runtime.nodes.Node;
@@ -61,7 +62,7 @@ public abstract class AbstractJobService implements orc.orchard.JobServiceInterf
 	 * Override this to handle any setup which needs to occur when the job is
 	 * started.
 	 */
-	protected AbstractJobService(Logger logger, JobConfiguration configuration, Expression expression) {
+	protected AbstractJobService(Logger logger, JobConfiguration configuration, Expr expression) {
 		this.configuration = configuration;
 		this.logger = logger;
 		Node node = expression.compile(new Result() {

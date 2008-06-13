@@ -7,6 +7,8 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Set;
 
+import orc.orchard.oil.Oil;
+
 
 /**
  * Broker used to register jobs for execution.
@@ -32,4 +34,14 @@ public interface ExecutorServiceInterface {
 	 * Register a new job for execution, using a default JobConfiguration.
 	 */
 	public URI submit(Oil program) throws QuotaException, InvalidOilException, RemoteException;
+	/**
+	 * Combine compilation and submission into a single step.
+	 * This is useful for simple clients that don't want to
+	 * bother calling a separate compiler.
+	 */
+	public URI compileAndSubmit(String program) throws QuotaException, InvalidProgramException, InvalidOilException, RemoteException;
+	/**
+	 * Combine compilation and submission into a single step.
+	 */
+	public URI compileAndSubmitConfigured(String program, JobConfiguration configuration) throws QuotaException, InvalidProgramException, InvalidOilException, UnsupportedFeatureException, RemoteException;
 }

@@ -29,6 +29,8 @@ public class Field extends Arg {
 	public String toString() {
 		return "[." + key + "]";
 	}
-
-
+	@Override
+	public orc.orchard.oil.Argument marshal() {
+		return new orc.orchard.oil.Field(key);
+	}
 }

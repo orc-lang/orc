@@ -1,5 +1,8 @@
 package orc.ast.oil.arg;
 
+import java.util.LinkedList;
+
+import orc.ast.oil.Def;
 import orc.env.Env;
 import orc.runtime.values.Future;
 import orc.val.Int;
@@ -23,5 +26,8 @@ public class Constant extends Arg {
 	public String toString() {
 		return "[" + v.toString() + "]";
 	}
-	
+	@Override
+	public orc.orchard.oil.Argument marshal() {
+		return new orc.orchard.oil.Constant(v.toObject());
+	}
 }

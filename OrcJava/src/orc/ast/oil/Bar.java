@@ -31,4 +31,8 @@ public class Bar extends Expr {
 		return "(" + left.toString() + " | " + right.toString() + ")";
 	}
 
+	@Override
+	public orc.orchard.oil.Expression marshal() {
+		return new orc.orchard.oil.Bar(left.marshal(), right.marshal());
+	}
 }

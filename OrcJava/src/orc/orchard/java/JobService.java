@@ -5,6 +5,7 @@ import java.rmi.RemoteException;
 import java.util.Date;
 import java.util.logging.Logger;
 
+import orc.ast.oil.Expr;
 import orc.ast.simple.Expression;
 import orc.orchard.AbstractJobService;
 import orc.orchard.JobConfiguration;
@@ -14,7 +15,7 @@ public class JobService extends AbstractJobService {
 	private ExecutorService executor;
 	private URI baseURI;
 	
-	public JobService(ExecutorService executor, URI baseURI, Logger logger, JobConfiguration configuration, Expression expression) {
+	public JobService(ExecutorService executor, URI baseURI, Logger logger, JobConfiguration configuration, Expr expression) {
 		super(logger, configuration, expression);
 		this.executor = executor;
 	}

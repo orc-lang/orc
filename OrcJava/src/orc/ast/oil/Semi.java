@@ -32,5 +32,9 @@ public class Semi extends Expr {
 	public String toString() {
 		return "(" + left.toString() + " ; " + right.toString() + ")";
 	}
-
+	
+	@Override
+	public orc.orchard.oil.Expression marshal() {
+		return new orc.orchard.oil.Semicolon(left.marshal(), right.marshal());
+	}
 }

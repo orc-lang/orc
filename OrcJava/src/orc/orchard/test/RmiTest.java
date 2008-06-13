@@ -14,15 +14,23 @@ import orc.orchard.InvalidJobStateException;
 import orc.orchard.InvalidOilException;
 import orc.orchard.InvalidProgramException;
 import orc.orchard.JobServiceInterface;
-import orc.orchard.Oil;
 import orc.orchard.AbstractCompilerService;
 import orc.orchard.Publication;
 import orc.orchard.QuotaException;
 import orc.orchard.UnsupportedFeatureException;
 import orc.orchard.java.CompilerService;
+import orc.orchard.oil.Oil;
 
 public class RmiTest {
 	public static void main(String[] args) {
+		CompilerService compiler = new CompilerService();
+		Oil oil;
+		try {
+			oil = compiler.compile("def M(x) = x | Rtimer(1000) >> M(x+1) M(1)");
+		} catch (InvalidProgramException e) {
+			// this is impossible by construction
+			throw new AssertionError(e);			
+		}
 		URI executorURI;
 		try {
 			executorURI = new URI("rmi://localhost/orchard");
@@ -38,7 +46,6 @@ public class RmiTest {
 				return;
 			}
 		}
-		CompilerService compiler = new CompilerService();
 		ExecutorServiceInterface executor;
 		try {
 			executor = (ExecutorServiceInterface)Naming.lookup(executorURI.toString());
@@ -51,13 +58,6 @@ public class RmiTest {
 		} catch (RemoteException e) {
 			System.err.println("Communication error: " + e.toString());
 			return;
-		}
-		Oil oil;
-		try {
-			oil = compiler.compile("def M(x) = x | Rtimer(1000) >> M(x+1) M(1)");
-		} catch (InvalidProgramException e) {
-			// this is impossible by construction
-			throw new AssertionError(e);			
 		}
 		URI jobURI;
 		try {

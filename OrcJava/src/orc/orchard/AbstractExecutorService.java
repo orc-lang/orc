@@ -6,6 +6,9 @@ import java.util.UUID;
 import java.security.SecureRandom;
 import java.util.logging.Logger;
 
+import orc.orchard.oil.Oil;
+import orc.orchard.java.CompilerService;
+
 
 /**
  * Standard implementation of an ExecutorService. Extenders should provide a
@@ -27,8 +30,7 @@ public abstract class AbstractExecutorService implements orc.orchard.ExecutorSer
 	
 	protected abstract JobConfiguration getDefaultJobConfiguration();
 	
-	public URI submit(Oil program) throws QuotaException, InvalidOilException, RemoteException
-	{
+	public URI submit(Oil program) throws QuotaException, InvalidOilException, RemoteException {
 		logger.info("submit");
 		try {
 			return submitConfigured(program, getDefaultJobConfiguration());
@@ -36,6 +38,16 @@ public abstract class AbstractExecutorService implements orc.orchard.ExecutorSer
 			// impossible by construction
 			throw new AssertionError(e);
 		}
+	}
+	
+	public URI compileAndSubmit(String program) throws QuotaException, InvalidProgramException, InvalidOilException, RemoteException {
+		CompilerService compiler = new CompilerService(logger);
+		return submit(compiler.compile(program));
+	}
+
+	public URI compileAndSubmitConfigured(String program, JobConfiguration configuration) throws QuotaException, InvalidProgramException, InvalidOilException, UnsupportedFeatureException, RemoteException {
+		CompilerService compiler = new CompilerService(logger);
+		return submitConfigured(compiler.compile(program), configuration);
 	}
 	
 	/**

@@ -9,9 +9,9 @@ import java.util.Map;
 import orc.orchard.AbstractExecutorService;
 import orc.orchard.InvalidOilException;
 import orc.orchard.JobConfiguration;
-import orc.orchard.Oil;
 import orc.orchard.QuotaException;
 import orc.orchard.UnsupportedFeatureException;
+import orc.orchard.oil.Oil;
 
 public class ExecutorService extends AbstractExecutorService {
 	/**
@@ -33,7 +33,7 @@ public class ExecutorService extends AbstractExecutorService {
 	{
 		try {
 			URI out = new URI(jobID());
-			jobs.put(out, new JobService(this, out, logger, configuration, program.getExpression()));
+			jobs.put(out, new JobService(this, out, logger, configuration, program.unmarshal()));
 			return out;
 		} catch (URISyntaxException e) {
 			// impossible by construction

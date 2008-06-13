@@ -1,6 +1,14 @@
 package orc.orchard;
 
+import java.io.StringReader;
 import java.util.logging.Logger;
+
+import orc.Config;
+import orc.Orc;
+import orc.ast.oil.Expr;
+import orc.ast.simple.arg.Var;
+import orc.env.Env;
+import orc.orchard.oil.Oil;
 
 
 /**
@@ -20,7 +28,16 @@ public abstract class AbstractCompilerService implements orc.orchard.CompilerSer
 	}
 
 	public Oil compile(String program) throws InvalidProgramException {
-		return new Oil(program);
+		orc.ast.simple.Expression ex0 = Orc.compile(new StringReader(program), new Config());
+		if (ex0 == null) {
+			// FIXME: obviously need more detail here
+			throw new InvalidProgramException("Syntax error");
+		}
+		orc.ast.oil.Expr ex1 = ex0.convert(new Env<Var>());
+		logger.info(ex1.toString());
+		orc.orchard.oil.Expression ex2 = ex1.marshal();
+		logger.info(ex2.toString());
+		return new Oil("1.0", ex2);
 	}
 	
 	protected static Logger getDefaultLogger() {

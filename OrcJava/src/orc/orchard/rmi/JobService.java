@@ -9,6 +9,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Date;
 import java.util.logging.Logger;
 
+import orc.ast.oil.Expr;
 import orc.ast.simple.Expression;
 import orc.orchard.Publication;
 import orc.orchard.JobConfiguration;
@@ -18,7 +19,7 @@ public class JobService extends AbstractJobService
 	implements JobServiceInterface
 {
 	private URI baseURI;
-	public JobService(URI baseURI, Logger logger, JobConfiguration configuration, Expression expression) throws RemoteException, MalformedURLException {
+	public JobService(URI baseURI, Logger logger, JobConfiguration configuration, Expr expression) throws RemoteException, MalformedURLException {
 		super(logger, configuration, expression);
 		this.baseURI = baseURI;
 		logger.info("Binding to '" + baseURI + "'");

@@ -6,14 +6,17 @@ import java.net.URISyntaxException;
 import java.rmi.RemoteException;
 import java.util.logging.Logger;
 
+import javax.annotation.Resource;
 import javax.jws.WebService;
 import javax.xml.ws.Endpoint;
+import javax.xml.ws.WebServiceContext;
+import javax.xml.ws.handler.MessageContext;
 
 import orc.orchard.InvalidOilException;
 import orc.orchard.JobConfiguration;
-import orc.orchard.Oil;
 import orc.orchard.QuotaException;
 import orc.orchard.UnsupportedFeatureException;
+import orc.orchard.oil.Oil;
 
 
 @WebService(endpointInterface="orc.orchard.jaxws.ExecutorServiceInterface")
@@ -21,11 +24,9 @@ public class ExecutorService extends orc.orchard.AbstractExecutorService
 	implements ExecutorServiceInterface
 {
 	private URI baseURI;
-	
-	/** Exists only to satisfy a silly requirement of JAX-WS */
+
 	public ExecutorService() {
-		super(null);
-		throw new AssertionError("Do not call this method directly");
+		super(getDefaultLogger());
 	}
 	
 	protected JobConfiguration getDefaultJobConfiguration() {
@@ -35,9 +36,6 @@ public class ExecutorService extends orc.orchard.AbstractExecutorService
 	public ExecutorService(URI baseURI, Logger logger) throws RemoteException, MalformedURLException {
 		super(logger);
 		this.baseURI = baseURI;
-		logger.info("Binding to '" + baseURI + "'");
-		Endpoint.publish(baseURI.toString(), this);
-		logger.info("Bound to '" + baseURI + "'");
 	}
 
 	public ExecutorService(URI baseURI) throws RemoteException, MalformedURLException {
@@ -54,7 +52,7 @@ public class ExecutorService extends orc.orchard.AbstractExecutorService
 		}
 		try {
 			URI out = new URI(this.baseURI + "/" + jobID());
-			JobService service = new JobService(out, logger, configuration, program.getExpression());
+			JobService service = new JobService(out, logger, configuration, program.unmarshal());
 			return out;
 		} catch (MalformedURLException e) {
 			// this is impossible by construction
@@ -82,7 +80,10 @@ public class ExecutorService extends orc.orchard.AbstractExecutorService
 			}
 		}
 		try {
-			new ExecutorService(baseURI);
+			ExecutorService executor = new ExecutorService(baseURI);
+			executor.logger.info("Binding to '" + baseURI + "'");
+			Endpoint.publish(baseURI.toString(), executor);
+			executor.logger.info("Bound to '" + baseURI + "'");
 		} catch (RemoteException e) {
 			System.err.println("Communication error: " + e.toString());
 			return;
