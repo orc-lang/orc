@@ -33,10 +33,8 @@ public abstract class AbstractCompilerService implements orc.orchard.CompilerSer
 			// FIXME: obviously need more detail here
 			throw new InvalidProgramException("Syntax error");
 		}
-		orc.ast.oil.Expr ex1 = ex0.convert(new Env<Var>());
-		logger.info(ex1.toString());
+		orc.ast.oil.Expr ex1 = ex0.convert(new Env<Var>());;
 		orc.orchard.oil.Expression ex2 = ex1.marshal();
-		logger.info(ex2.toString());
 		return new Oil("1.0", ex2);
 	}
 	
