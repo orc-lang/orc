@@ -1,5 +1,8 @@
 package orc.ast.oil.arg;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import orc.env.Env;
 import orc.runtime.values.Future;
 import orc.runtime.values.Value;
@@ -29,5 +32,13 @@ public class Site extends Arg {
 	public String toString() {
 		return "[" + site.getClass().toString() + "]";
 	}
-
+	@Override
+	public orc.orchard.oil.Argument marshal() {
+		try {
+			return new orc.orchard.oil.Site("orc", new URI(site.getClass().getName()));
+		} catch (URISyntaxException e) {
+			// impossible by construction
+			throw new AssertionError(e);
+		}
+	}
 }

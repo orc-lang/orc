@@ -1,8 +1,10 @@
 package orc.ast.oil.arg;
 
 import java.io.Serializable;
+import java.util.LinkedList;
 import java.util.Set;
 
+import orc.ast.oil.Def;
 import orc.ast.oil.Expr;
 import orc.env.Env;
 import orc.runtime.values.Future;
@@ -15,4 +17,7 @@ public abstract class Arg extends Expr {
 	}
 	
 	public abstract Future resolve(Env<Future> env);
+	
+	@Override
+	public abstract orc.orchard.oil.Argument marshal();
 }

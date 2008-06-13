@@ -6,29 +6,31 @@ import java.net.URISyntaxException;
 import java.rmi.RemoteException;
 import java.util.logging.Logger;
 
+import javax.annotation.Resource;
 import javax.jws.WebService;
 import javax.xml.ws.Endpoint;
+import javax.xml.ws.WebServiceContext;
+import javax.xml.ws.handler.MessageContext;
 
 import orc.orchard.AbstractCompilerService;
+import orc.orchard.InvalidProgramException;
 import orc.orchard.JobConfiguration;
+import orc.orchard.oil.Oil;
 
 @WebService(endpointInterface="orc.orchard.jaxws.CompilerServiceInterface")
 public class CompilerService extends AbstractCompilerService {
-	/** Exists only to satisfy a silly requirement of JAX-WS */
+	/**
+	 * Construct a service to run in an existing servlet context.
+	 */
 	public CompilerService() {
-		super(null);
-		throw new AssertionError("Do not call this method directly");
+		super(getDefaultLogger());
 	}
 	
-	public CompilerService(URI baseURI, Logger logger) throws RemoteException, MalformedURLException {
+	/**
+	 * Construct a service to run at a given URI using the standalone HTTP server.
+	 */
+	public CompilerService(Logger logger) {
 		super(logger);
-		logger.info("Binding to '" + baseURI + "'");
-		Endpoint.publish(baseURI.toString(), this);
-		logger.info("Bound to '" + baseURI + "'");
-	}
-
-	public CompilerService(URI baseURI) throws RemoteException, MalformedURLException {
-		this(baseURI, getDefaultLogger());
 	}
 
 	public static void main(String[] args) {
@@ -47,14 +49,9 @@ public class CompilerService extends AbstractCompilerService {
 				return;
 			}
 		}
-		try {
-			new CompilerService(baseURI);
-		} catch (RemoteException e) {
-			System.err.println("Communication error: " + e.toString());
-			return;
-		} catch (MalformedURLException e) {
-			System.err.println("Invalid URI '" + args[0] + "'");
-			return;
-		}
+		CompilerService compiler = new CompilerService();
+		compiler.logger.info("Binding to '" + baseURI + "'");
+		Endpoint.publish(baseURI.toString(), compiler);
+		compiler.logger.info("Bound to '" + baseURI + "'");
 	}
 }

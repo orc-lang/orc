@@ -41,4 +41,8 @@ public class Var extends Arg {
 	public String toString() {
 		return "[#" + index + "]";
 	}
+	@Override
+	public orc.orchard.oil.Argument marshal() {
+		return new orc.orchard.oil.Variable(index);
+	}
 }

@@ -36,6 +36,9 @@ public class Pull extends Expr {
 	public String toString() {
 		return "(" + left.toString() + " << " + right.toString() + ")";
 	}
-
 	
+	@Override
+	public orc.orchard.oil.Expression marshal() {
+		return new orc.orchard.oil.Pull(left.marshal(), right.marshal());
+	}
 }

@@ -8,7 +8,8 @@
 		</classpath>
 	</taskdef>
 	<target name="wsgen" description="Generate web service artifacts">
-		<wsgen sei="orc.orchard.jaxws.ExecutorService" destdir="${bin}" classpath="${bin}"/>
-		<wsgen sei="orc.orchard.jaxws.JobService" destdir="${bin}" classpath="${bin}"/>
+		<wsgen sei="orc.orchard.jaxws.CompilerService" destdir="${bin}" classpath="${bin}:${lib}/jsr181-api.jar" />
+		<wsgen sei="orc.orchard.jaxws.ExecutorService" destdir="${bin}" classpath="${bin}:${lib}/jsr181-api.jar" />
+		<wsgen sei="orc.orchard.jaxws.JobService" destdir="${bin}" classpath="${bin}:${lib}/jsr181-api.jar" />
 	</target>
 </project>

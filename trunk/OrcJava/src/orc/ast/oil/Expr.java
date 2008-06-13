@@ -59,4 +59,10 @@ public abstract class Expr extends Debug {
 	public void addIndices(Set<Integer> indices, int depth) {
 		return;
 	}
+	
+	/**
+	 * Marshal into a JAXB representation.
+	 * @return
+	 */
+	public abstract orc.orchard.oil.Expression marshal();
 }

@@ -11,6 +11,7 @@ import javax.jws.WebMethod;
 import javax.jws.WebService;
 import javax.xml.ws.Endpoint;
 
+import orc.ast.oil.Expr;
 import orc.ast.simple.Expression;
 import orc.orchard.InvalidJobStateException;
 import orc.orchard.JobConfiguration;
@@ -35,7 +36,7 @@ public class JobService extends orc.orchard.AbstractJobService
 		throw new AssertionError("Do not call this method directly");
 	}
 	
-	public JobService(URI baseURI, Logger logger, JobConfiguration configuration, Expression expression) throws RemoteException, MalformedURLException {
+	public JobService(URI baseURI, Logger logger, JobConfiguration configuration, Expr expression) throws RemoteException, MalformedURLException {
 		super(logger, configuration, expression);
 		logger.info("Binding to '" + baseURI + "'");
 		this.endpoint = Endpoint.publish(baseURI.toString(), this);

@@ -1,12 +1,12 @@
 package orc.ast.oil;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
-import orc.runtime.nodes.Node;
 
 /**
  * 
@@ -31,7 +31,7 @@ public class Def {
 	
 	public orc.runtime.nodes.Def compile() {
 		
-		Node newbody = body.compile(new orc.runtime.nodes.Return());
+		orc.runtime.nodes.Node newbody = body.compile(new orc.runtime.nodes.Return());
 		
 		return new orc.runtime.nodes.Def(arity, newbody);
 	}
@@ -46,5 +46,9 @@ public class Def {
 		for(int i = 0; i < arity; i++) 
 			args += "."; 
 		return "(def " + args + " " + body.toString() + ")";
+	}
+
+	public orc.orchard.oil.Definition marshal() {
+		return new orc.orchard.oil.Definition(arity, body.marshal());
 	}
 }

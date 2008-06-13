@@ -18,4 +18,9 @@ public class Null extends Expr {
 	public String toString() {
 		return "null";
 	}
+	
+	@Override
+	public orc.orchard.oil.Expression marshal() {
+		return new orc.orchard.oil.Null();
+	}
 }
