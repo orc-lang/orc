@@ -1,12 +1,13 @@
 package orc.orchard.oil;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
 import orc.orchard.InvalidOilException;
 
-public class Definition {
+public class Definition implements Serializable {
 	@XmlAttribute
 	public int arity;
 	public Expression body;

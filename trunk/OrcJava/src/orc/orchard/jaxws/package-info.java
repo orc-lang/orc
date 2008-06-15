@@ -5,9 +5,16 @@
  * I have added an Ant wsgen.xml file with the necessary tasks to build the
  * webservice stuff.
  * 
- * <p>To run a web service for testing, just run the corresponding Java file in
- * Eclipse, e.g. run ExecutorService. The "main" method will start a mini embedded
- * HTTP server at http://localhost:8080/orchard.
+ * <p>There are two separate implementations of the services depending on how
+ * you intend to deploy them (unfortunately some duplication seems to be
+ * unavoidable):
+ * <dl>
+ * <dt>standalone</dt><dd>Run without a separate servlet container.
+ * These are ideal for testing and development in Eclipse. Just run the Java class
+ * directly; the "main" method will start an embedded HTTP server.</dd>
+ * <dt>servlet</dt><dd>Packaged in a WAR to be run in a servlet container.
+ * These are typically how you would deploy the services in production.</dd>
+ * </dl>
  * 
  * <p>In theory it should be possible to integrate this stuff into Eclipse
  * automatically via the JDT-APT plugin (which is included in 3.2+).

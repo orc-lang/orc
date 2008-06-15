@@ -1,4 +1,4 @@
-package orc.orchard.jaxws;
+package orc.orchard.jaxws.standalone;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -15,10 +15,13 @@ import javax.xml.ws.handler.MessageContext;
 import orc.orchard.AbstractCompilerService;
 import orc.orchard.InvalidProgramException;
 import orc.orchard.JobConfiguration;
+import orc.orchard.jaxws.CompilerServiceInterface;
 import orc.orchard.oil.Oil;
 
 @WebService(endpointInterface="orc.orchard.jaxws.CompilerServiceInterface")
-public class CompilerService extends AbstractCompilerService {
+public class CompilerService extends AbstractCompilerService
+	implements CompilerServiceInterface
+{
 	/**
 	 * Construct a service to run in an existing servlet context.
 	 */
@@ -36,7 +39,7 @@ public class CompilerService extends AbstractCompilerService {
 	public static void main(String[] args) {
 		URI baseURI;
 		try {
-			baseURI = new URI("http://localhost:8080/orchardc");
+			baseURI = new URI("http://localhost:8080/orchard/compiler");
 		} catch (URISyntaxException e) {
 			// this is impossible by construction
 			throw new AssertionError(e);

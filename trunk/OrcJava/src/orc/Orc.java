@@ -73,6 +73,10 @@ public class Orc {
 	}
 	
 	public static orc.ast.simple.Expression compile(Reader source, Config cfg) {
+		return compile(source, cfg, true);
+	}
+	
+	public static orc.ast.simple.Expression compile(Reader source, Config cfg, boolean includeStdlib) {
 		
 		try {
 		
@@ -85,15 +89,17 @@ public class Orc {
 		//System.out.println("Importing declarations...");
 		LinkedList<Declaration> decls = new LinkedList<Declaration>();
 		
-		// Load declarations from the default includes directory.
-		File incdir = new File("./inc");
-		for (File f : incdir.listFiles())
-		{
-			// Include loading doesn't recurse into subdirectories.
-			if (f.isFile()) {
-				OrcLexer flexer = new OrcLexer(new FileReader(f));
-				OrcParser fparser = new OrcParser(flexer);
-				decls.addAll(fparser.decls());
+		if (includeStdlib) {
+			// Load declarations from the default includes directory.
+			File incdir = new File("./inc");
+			for (File f : incdir.listFiles())
+			{
+				// Include loading doesn't recurse into subdirectories.
+				if (f.isFile()) {
+					OrcLexer flexer = new OrcLexer(new FileReader(f));
+					OrcParser fparser = new OrcParser(flexer);
+					decls.addAll(fparser.decls());
+				}
 			}
 		}
 		

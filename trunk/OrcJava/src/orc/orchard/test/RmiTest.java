@@ -22,18 +22,18 @@ import orc.orchard.java.CompilerService;
 import orc.orchard.oil.Oil;
 
 public class RmiTest {
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InvalidOilException {
 		CompilerService compiler = new CompilerService();
 		Oil oil;
 		try {
-			oil = compiler.compile("def M(x) = x | Rtimer(1000) >> M(x+1) M(1)");
+			oil = compiler.compile("site Rtimer = orc.lib.time.Rtimer site \"op+\" = orc.lib.math.Add def M(x) = x | Rtimer(1000) >> M(x+1) M(1)");
 		} catch (InvalidProgramException e) {
 			// this is impossible by construction
 			throw new AssertionError(e);			
 		}
 		URI executorURI;
 		try {
-			executorURI = new URI("rmi://localhost/orchard");
+			executorURI = new URI("rmi://localhost/orchard/executor");
 		} catch (URISyntaxException e) {
 			// this is impossible by construction
 			throw new AssertionError(e);

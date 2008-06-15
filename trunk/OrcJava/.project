@@ -41,7 +41,7 @@
 			<arguments>
 				<dictionary>
 					<key>LaunchConfigHandle</key>
-					<value>&lt;project&gt;/.externalToolBuilders/WebServices.launch</value>
+					<value>&lt;project&gt;/.externalToolBuilders/wsgen.launch</value>
 				</dictionary>
 			</arguments>
 		</buildCommand>

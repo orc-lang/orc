@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <endpoints xmlns='http://java.sun.com/xml/ns/jax-ws/ri/runtime' version='2.0'>
 	<endpoint name='CompilerService'
-	 implementation='orc.orchard.jaxws.CompilerService'
+	 implementation='orc.orchard.jaxws.servlet.CompilerService'
 	 url-pattern='/compiler'/>
 	<endpoint name='ExecutorService'
-	 implementation='orc.orchard.jaxws.ExecutorService'
+	 implementation='orc.orchard.jaxws.servlet.ExecutorService'
 	 url-pattern='/executor'/>
+	<endpoint name='JobsService'
+	 implementation='orc.orchard.jaxws.servlet.JobsService'
+	 url-pattern='/jobs/*'/>
 </endpoints> 
