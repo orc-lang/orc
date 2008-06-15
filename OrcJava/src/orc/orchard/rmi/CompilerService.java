@@ -26,7 +26,7 @@ public class CompilerService extends AbstractCompilerService
 	public static void main(String[] args) {
 		URI baseURI;
 		try {
-			baseURI = new URI("rmi://localhost/orchardc");
+			baseURI = new URI("rmi://localhost/orchard/compiler");
 		} catch (URISyntaxException e) {
 			// this is impossible by construction
 			throw new AssertionError(e);

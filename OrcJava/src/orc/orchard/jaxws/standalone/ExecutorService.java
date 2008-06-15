@@ -1,4 +1,4 @@
-package orc.orchard.jaxws;
+package orc.orchard.jaxws.standalone;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -12,23 +12,41 @@ import javax.xml.ws.Endpoint;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.handler.MessageContext;
 
+import orc.ast.oil.Expr;
 import orc.orchard.InvalidOilException;
 import orc.orchard.JobConfiguration;
 import orc.orchard.QuotaException;
 import orc.orchard.UnsupportedFeatureException;
+import orc.orchard.jaxws.ExecutorServiceInterface;
+import orc.orchard.jaxws.JobServiceInterface;
 import orc.orchard.oil.Oil;
-
 
 @WebService(endpointInterface="orc.orchard.jaxws.ExecutorServiceInterface")
 public class ExecutorService extends orc.orchard.AbstractExecutorService
 	implements ExecutorServiceInterface
 {
+	public class JobService extends AbstractJobService {
+		private Endpoint endpoint;
+		public JobService(URI uri, JobConfiguration configuration, Expr expression) throws RemoteException, MalformedURLException {
+			super(uri, configuration, expression);
+			logger.info("Binding to '" + uri + "'");
+			this.endpoint = Endpoint.publish(uri.toString(),
+					new orc.orchard.jaxws.standalone.JobService(this));
+			logger.info("Bound to '" + uri + "'");
+		}
+		@Override
+		protected void onFinish() throws RemoteException {
+			endpoint.stop();
+		}
+	}
+	
 	private URI baseURI;
 
 	public ExecutorService() {
 		super(getDefaultLogger());
 	}
 	
+	@Override
 	protected JobConfiguration getDefaultJobConfiguration() {
 		return new JobConfiguration("JAX-WS");
 	}
@@ -42,22 +60,13 @@ public class ExecutorService extends orc.orchard.AbstractExecutorService
 		this(baseURI, getDefaultLogger());
 	}
 
-	public URI submitConfigured(Oil program, JobConfiguration configuration)
-		throws QuotaException, InvalidOilException,	UnsupportedFeatureException, RemoteException
-	{
-		logger.info("submit");
-		// validate configuration
-		if (configuration.getDebuggable()) {
-			throw new UnsupportedFeatureException("Debuggable jobs not supported yet.");
-		}
+	@Override
+	public URI createJob(JobConfiguration configuration, Expr expression) throws RemoteException {
 		try {
-			URI out = new URI(this.baseURI + "/" + jobID());
-			JobService service = new JobService(out, logger, configuration, program.unmarshal());
+			URI out = this.baseURI.resolve("jobs/" + jobID());
+			new JobService(out, configuration, expression);
 			return out;
 		} catch (MalformedURLException e) {
-			// this is impossible by construction
-			throw new AssertionError(e);
-		} catch (URISyntaxException e) {
 			// this is impossible by construction
 			throw new AssertionError(e);
 		}
@@ -66,7 +75,7 @@ public class ExecutorService extends orc.orchard.AbstractExecutorService
 	public static void main(String[] args) {
 		URI baseURI;
 		try {
-			baseURI = new URI("http://localhost:8080/orchard");
+			baseURI = new URI("http://localhost:8080/orchard/executor");
 		} catch (URISyntaxException e) {
 			// this is impossible by construction
 			throw new AssertionError(e);

@@ -84,7 +84,8 @@ public class OrcEngine implements Runnable {
 	 * @param root  node to run
 	 */ 
 	public void run(Node root) {
-		run(root, new Env<Future>());
+		start(root);
+		run();
 	}
 
 	public void run(Node root, Env env) {
@@ -92,7 +93,13 @@ public class OrcEngine implements Runnable {
 		run();
 	}
 	
+	public void start(Node root) {
+		start(root, new Env<Future>());
+	}
+	
 	public void start(Node root, Env env) {
+		assert(root != null);
+		assert(env != null);
 		activate(new Token(root, env, null, new GroupCell(), new Execution(this), null, this));
 	}
 	

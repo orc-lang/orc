@@ -10,7 +10,6 @@
 	<classpathentry kind="lib" path="webservices"/>
 	<classpathentry kind="lib" path="lib/mail.jar"/>
 	<classpathentry kind="lib" path="lib/tools.jar"/>
-	<classpathentry kind="var" path="ANTLR_HOME/antlr.jar"/>
 	<classpathentry kind="lib" path="lib/jaxws-api.jar"/>
 	<classpathentry kind="lib" path="lib/jaxws-tools.jar"/>
 	<classpathentry kind="lib" path="lib/jaxws-rt.jar"/>
@@ -30,5 +29,7 @@
 	<classpathentry kind="lib" path="lib/saaj-api.jar"/>
 	<classpathentry kind="lib" path="lib/saaj-impl.jar"/>
 	<classpathentry kind="lib" path="lib/sjsxp.jar"/>
+	<classpathentry kind="lib" path="/usr/share/java/servlet-api.jar"/>
+	<classpathentry kind="var" path="ANTLR_HOME/antlr.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<project name="Orc" default="dist" basedir=".">
+<project name="OrcMainline" default="dist" basedir=".">
 	<description>
 		Ant build file for Orc binary distribution.
 	</description>
@@ -11,6 +11,7 @@
 	<property name="lib" location="lib" />
 	<property name="inc" location="inc" />
 	<property name="dist" location="dist" />
+	<property name="war" location="war" />
 
 	<target name="dist" description="generate the distribution">
 		<!-- Create the distribution directory -->
@@ -40,26 +41,28 @@
 	</target>
 
 	<target name="clean" description="clean up">
-		<!-- Delete the ${dist} directory tree -->
+		<delete dir="${bin}" />
 		<delete dir="${dist}" />
+		<delete dir="${war}" />
+		<delete file="orchard.war" />
 	</target>
 
 	<target name="war" description="generate the war">
-		<mkdir dir="war" />
-		<mkdir dir="war/WEB-INF" />
-		<copy file="web.xml" tofile="war/WEB-INF/web.xml" />
-		<copy file="sun-jaxws.xml" tofile="war/WEB-INF/sun-jaxws.xml" />
+		<mkdir dir="${war}" />
+		<mkdir dir="${war}/WEB-INF" />
+		<copy file="web.xml" tofile="${war}/WEB-INF/web.xml" />
+		<copy file="sun-jaxws.xml" tofile="${war}/WEB-INF/sun-jaxws.xml" />
 
-		<mkdir dir="war/WEB-INF/lib" />
-		<copy todir="war/WEB-INF/lib">
+		<mkdir dir="${war}/WEB-INF/lib" />
+		<copy todir="${war}/WEB-INF/lib">
 			<fileset dir="${lib}">
 				<!-- FIXME: some of these are unnecessary at runtime -->
 				<include name="*.jar"/>
 			</fileset>
 		</copy>
 
-		<mkdir dir="war/WEB-INF/classes" />
-		<copy todir="war/WEB-INF/classes">
+		<mkdir dir="${war}/WEB-INF/classes" />
+		<copy todir="${war}/WEB-INF/classes">
 			<fileset dir="${bin}">
 				<!-- FIXME: some of these are unnecessary at runtime -->
 				<include name="**/*.class"/>
@@ -67,9 +70,39 @@
 		</copy>
 
 		<jar jarfile="orchard.war" update="true">
-			<fileset dir="war">
+			<fileset dir="${war}">
 				<include name="**/*"/>
 			</fileset>
 		</jar>
+	</target>
+	<taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
+		<classpath>
+			<pathelement location="${lib}/jaxws-tools.jar" />
+		</classpath>
+	</taskdef>
+	<path id="wsgen.classpath">
+		<pathelement location="${bin}"/>
+		<pathelement location="${lib}/jsr181-api.jar"/>
+		<pathelement location="${lib}/jsr250-api.jar"/>
+	</path>
+	<target name="wsgen" description="Generate web service artifacts">
+		<wsgen sei="orc.orchard.jaxws.standalone.CompilerService" destdir="${bin}">
+			<classpath><path refid="wsgen.classpath"/></classpath>
+		</wsgen>
+		<wsgen sei="orc.orchard.jaxws.standalone.ExecutorService" destdir="${bin}">
+			<classpath><path refid="wsgen.classpath"/></classpath>
+		</wsgen>
+		<wsgen sei="orc.orchard.jaxws.standalone.JobService" destdir="${bin}">
+			<classpath><path refid="wsgen.classpath"/></classpath>
+		</wsgen>
+		<wsgen sei="orc.orchard.jaxws.servlet.CompilerService" destdir="${bin}">
+			<classpath><path refid="wsgen.classpath"/></classpath>
+		</wsgen>
+		<wsgen sei="orc.orchard.jaxws.servlet.ExecutorService" destdir="${bin}">
+			<classpath><path refid="wsgen.classpath"/></classpath>
+		</wsgen>
+		<wsgen sei="orc.orchard.jaxws.servlet.JobsService" destdir="${bin}">
+			<classpath><path refid="wsgen.classpath"/></classpath>
+		</wsgen>
 	</target>
 </project>

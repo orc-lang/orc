@@ -4,6 +4,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UID;
 import java.rmi.server.UnicastRemoteObject;
@@ -11,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import orc.ast.oil.Expr;
 import orc.orchard.InvalidOilException;
 import orc.orchard.JobConfiguration;
 import orc.orchard.QuotaException;
@@ -21,6 +23,28 @@ import orc.orchard.oil.Oil;
 public class ExecutorService extends AbstractExecutorService
 	implements ExecutorServiceInterface
 {
+	public class JobService extends AbstractJobService implements JobServiceInterface {
+		public JobService(URI uri, JobConfiguration configuration, Expr expression) throws RemoteException, MalformedURLException {
+			super(uri, configuration, expression);
+			logger.info("Binding to '" + uri + "'");
+			UnicastRemoteObject.exportObject(this, 0);
+			Naming.rebind(uri.toString(), this);
+			logger.info("Bound to '" + uri + "'");
+		}
+		
+		public void onFinish() throws RemoteException {
+			try {
+				Naming.unbind(getURI().toString());
+			} catch (MalformedURLException e) {
+				// impossible by construction
+				throw new AssertionError(e);
+			} catch (NotBoundException e) {
+				// This indicates the user called finish() more than once, which we
+				// can safely ignore
+			}
+		}
+	}
+	
 	private URI baseURI;
 	
 	public ExecutorService(URI baseURI, Logger logger) throws RemoteException, MalformedURLException {
@@ -39,23 +63,14 @@ public class ExecutorService extends AbstractExecutorService
 	protected JobConfiguration getDefaultJobConfiguration() {
 		return new JobConfiguration("Java-RMI");
 	}
-
-	public URI submitConfigured(Oil program, JobConfiguration configuration)
-		throws QuotaException, InvalidOilException,	UnsupportedFeatureException, RemoteException
-	{
-		logger.info("submit");
-		// validate configuration
-		if (configuration.getDebuggable()) {
-			throw new UnsupportedFeatureException("Debuggable jobs not supported yet.");
-		}
+	
+	@Override
+	protected URI createJob(JobConfiguration configuration, Expr expression) throws UnsupportedFeatureException, RemoteException {
 		try {
-			URI out = new URI(this.baseURI + "/" + jobID());
-			JobService service = new JobService(out, logger, configuration, program.unmarshal());
+			URI out = baseURI.resolve("jobs/" + jobID());
+			JobService service = new JobService(out, configuration, expression);
 			return out;
 		} catch (MalformedURLException e) {
-			// this is impossible by construction
-			throw new AssertionError(e);
-		} catch (URISyntaxException e) {
 			// this is impossible by construction
 			throw new AssertionError(e);
 		}
@@ -64,7 +79,7 @@ public class ExecutorService extends AbstractExecutorService
 	public static void main(String[] args) {
 		URI baseURI;
 		try {
-			baseURI = new URI("rmi://localhost/orchard");
+			baseURI = new URI("rmi://localhost/orchard/executor");
 		} catch (URISyntaxException e) {
 			// this is impossible by construction
 			throw new AssertionError(e);

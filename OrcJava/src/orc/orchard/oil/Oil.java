@@ -2,6 +2,8 @@ package orc.orchard.oil;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Serializable;
+import java.io.StringReader;
 
 import javax.xml.bind.JAXB;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -11,7 +13,7 @@ import orc.orchard.InvalidOilException;
 import orc.orchard.InvalidProgramException;
 import orc.orchard.java.CompilerService;
 
-public class Oil {
+public class Oil implements Serializable {
 	@XmlAttribute
 	public String version;
 	public Expression expression;
@@ -25,6 +27,15 @@ public class Oil {
 	}
 	public orc.ast.oil.Expr unmarshal() throws InvalidOilException {
 		return expression.unmarshal();
+	}
+	public String toXML() {
+		ByteArrayOutputStream out = new ByteArrayOutputStream(); 
+		JAXB.marshal(this, out);
+		return out.toString();
+	}
+	public static Oil fromXML(String xml) {
+		StringReader in = new StringReader(xml);
+		return JAXB.unmarshal(in, Oil.class);
 	}
 	
 	/**
@@ -41,11 +52,9 @@ public class Oil {
 			// this is impossible by construction
 			throw new AssertionError(e);			
 		}
-		ByteArrayOutputStream out = new ByteArrayOutputStream(); 
-		JAXB.marshal(oil, out);
-		System.out.println(out.toString());
-		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		oil = JAXB.unmarshal(in, Oil.class);
+		String xml = oil.toXML();
+		System.out.println(xml);
+		oil = Oil.fromXML(xml);
 		System.out.println(oil.unmarshal().toString());
 	}
 }

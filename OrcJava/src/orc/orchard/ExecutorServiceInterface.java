@@ -44,4 +44,8 @@ public interface ExecutorServiceInterface {
 	 * Combine compilation and submission into a single step.
 	 */
 	public URI compileAndSubmitConfigured(String program, JobConfiguration configuration) throws QuotaException, InvalidProgramException, InvalidOilException, UnsupportedFeatureException, RemoteException;
+	/**
+	 * URIs of unfinished jobs started from this executor.
+	 */
+	public Set<URI> jobs() throws RemoteException;
 }
