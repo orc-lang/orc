@@ -21,22 +21,6 @@ public class Site extends Argument {
 	}
 	@Override
 	public orc.ast.oil.arg.Arg unmarshal() throws InvalidOilException {
-		orc.runtime.sites.Site site;
-		if (protocol.equals("orc")) {
-			Class klass;
-			try {
-				klass = Class.forName(location.toString());
-				site = (orc.runtime.sites.Site)klass.newInstance();
-			} catch (ClassNotFoundException e) {
-				throw new InvalidOilException(e);
-			} catch (InstantiationException e) {
-				throw new InvalidOilException(e);
-			} catch (IllegalAccessException e) {
-				throw new InvalidOilException(e);
-			}
-		} else {
-			throw new InvalidOilException("Unrecognized protocol " + protocol);
-		}
-		return new orc.ast.oil.arg.Site(site);
+		return new orc.ast.oil.arg.Site(orc.ast.sites.Site.build(protocol, location));
 	}
 }

@@ -25,14 +25,7 @@ public class ClassDeclaration implements Declaration {
 
 	public orc.ast.simple.Expression bindto(orc.ast.simple.Expression target) {
 		
-		Class<?> c;	
-		try
-		{
-			c = ClassLoader.getSystemClassLoader().loadClass(classname);
-		}
-		catch (Exception e) { throw new Error("Failed to load class " + classname + " as a proxy."); }
-		
-		orc.ast.simple.arg.Argument a = new orc.ast.simple.arg.Site(new ClassProxy(c));
+		orc.ast.simple.arg.Argument a = new orc.ast.simple.arg.Site(orc.ast.sites.Site.build(orc.ast.sites.Site.JAVA, classname));
 		orc.ast.simple.arg.NamedVar x = new orc.ast.simple.arg.NamedVar(varname);
 		
 		return target.subst(a,x);

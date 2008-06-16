@@ -17,16 +17,20 @@ import orc.runtime.values.Value;
 
 public class Site extends Arg {
 
-	public orc.runtime.sites.Site site;
+	public orc.ast.sites.Site site;
 	
-	public Site(orc.runtime.sites.Site site)
+	public Site(orc.ast.sites.Site site)
 	{
 		this.site = site;
 	}
 	
 	@Override
 	public Future resolve(Env env) {
-		return site;
+		/* TODO: Make this more efficient. 
+		 * Even though sites are semantically persistent, it's 
+		 * unhelpful to have many copies of the same object.
+		 */
+		return site.instantiate();
 	}
 	
 	public String toString() {
@@ -34,11 +38,6 @@ public class Site extends Arg {
 	}
 	@Override
 	public orc.orchard.oil.Argument marshal() {
-		try {
-			return new orc.orchard.oil.Site("orc", new URI(site.getClass().getName()));
-		} catch (URISyntaxException e) {
-			// impossible by construction
-			throw new AssertionError(e);
-		}
+		return new orc.orchard.oil.Site(site.getProtocol(), site.getLocation());
 	}
 }
