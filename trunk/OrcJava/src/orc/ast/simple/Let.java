@@ -70,7 +70,6 @@ public class Let extends Expression {
 		
 		// Otherwise, use the tuple creation site
 		// TODO: Add an explicit zero-args case for unit 
-		Site tuple = new Site(new orc.runtime.sites.core.Let());
-		return new orc.ast.oil.Call(tuple, newargs);
+		return new orc.ast.oil.Call(new orc.ast.oil.arg.Site(orc.ast.sites.Site.LET), newargs);
 	}
 }

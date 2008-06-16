@@ -7,7 +7,7 @@ import orc.runtime.values.Value;
 
 
 /**
- * Program constants, which occur in argument position. 
+ * Site values, which occur in argument position. 
  * 
  * @author dkitchin
  *
@@ -15,9 +15,9 @@ import orc.runtime.values.Value;
 
 public class Site extends Argument {
 
-	public orc.runtime.sites.Site site;
+	public orc.ast.sites.Site site;
 	
-	public Site(orc.runtime.sites.Site site)
+	public Site(orc.ast.sites.Site site)
 	{
 		this.site = site;
 	}

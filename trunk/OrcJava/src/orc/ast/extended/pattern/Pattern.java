@@ -30,26 +30,26 @@ import orc.error.Debug;
 public abstract class Pattern extends Debug {
 
 	
-	// Create singleton instances of sites often used in pattern matching
-	protected static Argument IF = new Site(new orc.runtime.sites.core.If());
-	protected static Argument NOT = new Site(new orc.runtime.sites.core.Not());
+	/* Sites often used in pattern matching */
+	protected static Argument IF = new Site(orc.ast.sites.Site.IF);
+	protected static Argument NOT = new Site(orc.ast.sites.Site.NOT);
 	
-	protected static Argument SOME = new Site(new orc.runtime.sites.core.Some());
-	protected static Argument NONE = new Site(new orc.runtime.sites.core.None());
+	protected static Argument SOME = new Site(orc.ast.sites.Site.SOME);
+	protected static Argument NONE = new Site(orc.ast.sites.Site.NONE);
 	
-	public static Argument ISSOME = new Site(new orc.runtime.sites.core.IsSome());
-	public static Argument ISNONE = new Site(new orc.runtime.sites.core.IsNone());
+	public static Argument ISSOME = new Site(orc.ast.sites.Site.ISSOME);
+	public static Argument ISNONE = new Site(orc.ast.sites.Site.ISNONE);
 	
-	protected static Argument CONS = new Site(new orc.runtime.sites.core.Cons());
+	protected static Argument CONS = new Site(orc.ast.sites.Site.CONS);
 	
-	protected static Argument ISCONS = new Site(new orc.runtime.sites.core.IsCons());
-	protected static Argument ISNIL = new Site(new orc.runtime.sites.core.IsNil());
+	protected static Argument ISCONS = new Site(orc.ast.sites.Site.ISCONS);
+	protected static Argument ISNIL = new Site(orc.ast.sites.Site.ISNIL);
 	
-	protected static Argument HEAD = new Site(new orc.runtime.sites.core.Head());
-	protected static Argument TAIL = new Site(new orc.runtime.sites.core.Tail());
+	protected static Argument HEAD = new Site(orc.ast.sites.Site.HEAD);
+	protected static Argument TAIL = new Site(orc.ast.sites.Site.TAIL);
 
-	protected static Argument EQUAL = new Site(new orc.runtime.sites.core.Equal());
-	
+	protected static Argument EQUAL = new Site(orc.ast.sites.Site.EQUAL);
+		
 	/**
 	 * @param f The source expression for values to be matched
 	 * @return A new expression publishing, for each publication !v of f,

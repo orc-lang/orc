@@ -24,25 +24,10 @@ public class SiteDeclaration implements Declaration {
 	
 	public orc.ast.simple.Expression bindto(orc.ast.simple.Expression target) {
 		
-		Class<?> c;
 		orc.ast.simple.arg.Argument a;
 		orc.ast.simple.arg.NamedVar x;
 		
-		try
-		{
-			c = ClassLoader.getSystemClassLoader().loadClass(classname);
-			
-			if (Site.class.isAssignableFrom(c)) 
-			{
-				a = new orc.ast.simple.arg.Site((orc.runtime.sites.Site)c.newInstance());
-			}
-			else
-			{ 
-				throw new Error("Class " + classname + " cannot be used as a site. It is not a subtype of Site."); 
-			}
-		}
-		catch (Exception e) { throw new Error("Failed to load class " + classname + " as a site."); }
-		
+		a = new orc.ast.simple.arg.Site(orc.ast.sites.Site.build(orc.ast.sites.Site.ORC, classname));
 		x = new orc.ast.simple.arg.NamedVar(varname);
 		return target.subst(a,x);
 	}
