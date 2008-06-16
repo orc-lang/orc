@@ -1,5 +1,8 @@
 package orc.ast.extended.declaration;
 
+import orc.ast.simple.arg.Argument;
+import orc.ast.simple.arg.NamedVar;
+import orc.ast.simple.arg.Var;
 import orc.runtime.sites.Site;
 
 /**
@@ -24,11 +27,22 @@ public class SiteDeclaration implements Declaration {
 	
 	public orc.ast.simple.Expression bindto(orc.ast.simple.Expression target) {
 		
+		
+		NamedVar x = new NamedVar(varname);
+		Var v = new Var();
+		
+		orc.ast.sites.Site s = orc.ast.sites.Site.build(orc.ast.sites.Site.ORC, classname);
+		Argument a = new orc.ast.simple.arg.Site(s);
+		
+		return new orc.ast.simple.Where(target.subst(v,x), new orc.ast.simple.Let(a), v);
+		
+		/*
 		orc.ast.simple.arg.Argument a;
 		orc.ast.simple.arg.NamedVar x;
 		
 		a = new orc.ast.simple.arg.Site(orc.ast.sites.Site.build(orc.ast.sites.Site.ORC, classname));
 		x = new orc.ast.simple.arg.NamedVar(varname);
 		return target.subst(a,x);
+		*/
 	}
 }

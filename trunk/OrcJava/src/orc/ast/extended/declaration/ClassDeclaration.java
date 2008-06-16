@@ -1,5 +1,8 @@
 package orc.ast.extended.declaration;
 
+import orc.ast.simple.arg.Argument;
+import orc.ast.simple.arg.NamedVar;
+import orc.ast.simple.arg.Var;
 import orc.runtime.sites.java.ClassProxy;
 
 /**
@@ -25,10 +28,20 @@ public class ClassDeclaration implements Declaration {
 
 	public orc.ast.simple.Expression bindto(orc.ast.simple.Expression target) {
 		
+		NamedVar x = new NamedVar(varname);
+		Var v = new Var();
+		
+		orc.ast.sites.Site s = orc.ast.sites.Site.build(orc.ast.sites.Site.JAVA, classname);
+		Argument a = new orc.ast.simple.arg.Site(s);
+		
+		return new orc.ast.simple.Where(target.subst(v,x), new orc.ast.simple.Let(a), v);
+		
+		/*
 		orc.ast.simple.arg.Argument a = new orc.ast.simple.arg.Site(orc.ast.sites.Site.build(orc.ast.sites.Site.JAVA, classname));
 		orc.ast.simple.arg.NamedVar x = new orc.ast.simple.arg.NamedVar(varname);
 		
 		return target.subst(a,x);
+		*/
 	}
 	
 }
