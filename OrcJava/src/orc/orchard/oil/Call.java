@@ -7,7 +7,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 
 import orc.ast.oil.arg.Arg;
-import orc.orchard.InvalidOilException;
+import orc.orchard.errors.InvalidOilException;
 
 public class Call extends Expression {
 	public Argument callee;

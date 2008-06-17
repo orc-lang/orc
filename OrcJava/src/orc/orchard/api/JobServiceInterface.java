@@ -1,8 +1,15 @@
-package orc.orchard;
+package orc.orchard.api;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
+
+import javax.jws.WebService;
+
+import orc.orchard.JobConfiguration;
+import orc.orchard.Publication;
+import orc.orchard.errors.InvalidJobStateException;
+import orc.orchard.errors.UnsupportedFeatureException;
 
 
 /**
@@ -10,7 +17,8 @@ import java.util.List;
  * 
  * @author quark
  */
-public interface JobServiceInterface {
+@WebService
+public interface JobServiceInterface extends Remote {
 	/**
 	 * @return the job's configuration.
 	 */
@@ -34,11 +42,10 @@ public interface JobServiceInterface {
 	 */
 	public void finish() throws InvalidJobStateException, RemoteException;
 	/**
-	 * Equivalent to finish(), but if the job is active, it will be safely
-	 * terminated (with the same semantics as the termination provided by
-	 * asymmetric composition).
+	 * Halt the job safely, using the same termination semantics as the "pull"
+	 * combinator.
 	 */
-	public void abort() throws RemoteException;
+	public void halt() throws RemoteException;
 	/**
 	 * What is the job's state? Possible return values:
 	 * NEW: not yet started.
@@ -67,8 +74,8 @@ public interface JobServiceInterface {
 	 * this method multiple times concurrently, it is not guaranteed that calls
 	 * will return in the order they were made.
 	 * 
-	 * @throws InvalidJobStateException
-	 *             if the job is not RUNNING or WAITING.
+	 * @throws InvalidJobStateException if the job is not RUNNING or WAITING.
+	 * @throws InterruptedException if the request times out.
 	 */
-	public List<Publication> listen() throws InvalidJobStateException, UnsupportedFeatureException, RemoteException;
+	public List<Publication> listen() throws InvalidJobStateException, UnsupportedFeatureException, RemoteException, InterruptedException;
 }

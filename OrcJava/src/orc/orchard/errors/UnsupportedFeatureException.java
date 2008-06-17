@@ -1,4 +1,4 @@
-package orc.orchard;
+package orc.orchard.errors;
 
 public class UnsupportedFeatureException extends Exception {
 	public UnsupportedFeatureException(String message) {

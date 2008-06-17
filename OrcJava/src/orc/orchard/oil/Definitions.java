@@ -7,7 +7,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import orc.orchard.InvalidOilException;
+import orc.orchard.errors.InvalidOilException;
 
 public class Definitions extends Expression {
 	@XmlElement(name="definition")
