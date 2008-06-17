@@ -5,7 +5,7 @@ import java.util.LinkedList;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
-import orc.orchard.InvalidOilException;
+import orc.orchard.errors.InvalidOilException;
 
 public class Definition implements Serializable {
 	@XmlAttribute

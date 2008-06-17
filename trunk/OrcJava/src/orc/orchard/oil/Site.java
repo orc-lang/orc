@@ -4,7 +4,7 @@ import java.net.URI;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
-import orc.orchard.InvalidOilException;
+import orc.orchard.errors.InvalidOilException;
 
 public class Site extends Argument {
 	@XmlAttribute

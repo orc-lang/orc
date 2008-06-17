@@ -9,6 +9,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.logging.Logger;
 
 import orc.orchard.AbstractCompilerService;
+import orc.orchard.api.CompilerServiceInterface;
 
 public class CompilerService extends AbstractCompilerService
 	implements CompilerServiceInterface

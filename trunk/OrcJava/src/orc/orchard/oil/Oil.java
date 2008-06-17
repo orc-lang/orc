@@ -9,8 +9,8 @@ import javax.xml.bind.JAXB;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import orc.orchard.InvalidOilException;
-import orc.orchard.InvalidProgramException;
+import orc.orchard.errors.InvalidOilException;
+import orc.orchard.errors.InvalidProgramException;
 import orc.orchard.java.CompilerService;
 
 public class Oil implements Serializable {

@@ -1,4 +1,4 @@
-package orc.orchard;
+package orc.orchard.errors;
 
 public class InvalidProgramException extends Exception {
 	public InvalidProgramException(String arg0) {

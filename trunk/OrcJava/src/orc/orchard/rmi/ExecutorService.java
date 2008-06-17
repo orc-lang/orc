@@ -13,35 +13,43 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import orc.ast.oil.Expr;
-import orc.orchard.InvalidOilException;
-import orc.orchard.JobConfiguration;
-import orc.orchard.QuotaException;
-import orc.orchard.UnsupportedFeatureException;
 import orc.orchard.AbstractExecutorService;
+import orc.orchard.AbstractJobService;
+import orc.orchard.Job;
+import orc.orchard.JobConfiguration;
+import orc.orchard.api.ExecutorServiceInterface;
+import orc.orchard.api.JobServiceInterface;
+import orc.orchard.errors.InvalidJobStateException;
+import orc.orchard.errors.InvalidOilException;
+import orc.orchard.errors.QuotaException;
+import orc.orchard.errors.UnsupportedFeatureException;
 import orc.orchard.oil.Oil;
 
 public class ExecutorService extends AbstractExecutorService
 	implements ExecutorServiceInterface
 {
 	public class JobService extends AbstractJobService implements JobServiceInterface {
-		public JobService(URI uri, JobConfiguration configuration, Expr expression) throws RemoteException, MalformedURLException {
-			super(uri, configuration, expression);
+		private URI uri;
+		public JobService(URI uri, Job job) throws RemoteException, MalformedURLException {
+			super(job);
+			this.uri = uri;
 			logger.info("Binding to '" + uri + "'");
 			UnicastRemoteObject.exportObject(this, 0);
 			Naming.rebind(uri.toString(), this);
 			logger.info("Bound to '" + uri + "'");
-		}
-		
-		public void onFinish() throws RemoteException {
-			try {
-				Naming.unbind(getURI().toString());
-			} catch (MalformedURLException e) {
-				// impossible by construction
-				throw new AssertionError(e);
-			} catch (NotBoundException e) {
-				// This indicates the user called finish() more than once, which we
-				// can safely ignore
-			}
+			job.onFinish(new Job.FinishListener() {
+				public void finished(Job _) throws RemoteException {
+					try {
+						Naming.unbind(JobService.this.uri.toString());
+					} catch (MalformedURLException e) {
+						// impossible by construction
+						throw new AssertionError(e);
+					} catch (NotBoundException e) {
+						// This indicates the user called finish() more than once, which we
+						// can safely ignore
+					}
+				}
+			});
 		}
 	}
 	
@@ -60,15 +68,11 @@ public class ExecutorService extends AbstractExecutorService
 		this(baseURI, getDefaultLogger());
 	}
 	
-	protected JobConfiguration getDefaultJobConfiguration() {
-		return new JobConfiguration("Java-RMI");
-	}
-	
 	@Override
-	protected URI createJob(JobConfiguration configuration, Expr expression) throws UnsupportedFeatureException, RemoteException {
+	protected URI createJobService(Job job) throws RemoteException {
 		try {
-			URI out = baseURI.resolve("jobs/" + jobID());
-			JobService service = new JobService(out, configuration, expression);
+			URI out = baseURI.resolve("jobs/" + job.getID());
+			new JobService(out, job);
 			return out;
 		} catch (MalformedURLException e) {
 			// this is impossible by construction

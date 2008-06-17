@@ -1,4 +1,4 @@
-package orc.orchard;
+package orc.orchard.api;
 
 import java.net.URI;
 import java.net.URL;
@@ -7,6 +7,13 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Set;
 
+import javax.jws.WebService;
+
+import orc.orchard.JobConfiguration;
+import orc.orchard.errors.InvalidOilException;
+import orc.orchard.errors.InvalidProgramException;
+import orc.orchard.errors.QuotaException;
+import orc.orchard.errors.UnsupportedFeatureException;
 import orc.orchard.oil.Oil;
 
 
@@ -15,7 +22,8 @@ import orc.orchard.oil.Oil;
  * 
  * @author quark
  */
-public interface ExecutorServiceInterface {
+@WebService
+public interface ExecutorServiceInterface extends Remote {
 	/**
 	 * Register a new job for execution, using the provided job configuration.
 	 * 

@@ -9,15 +9,14 @@ import java.rmi.RemoteException;
 import java.util.List;
 
 import orc.orchard.AbstractCompilerService;
-import orc.orchard.ExecutorServiceInterface;
-import orc.orchard.InvalidJobStateException;
-import orc.orchard.InvalidOilException;
-import orc.orchard.InvalidProgramException;
-import orc.orchard.JobServiceInterface;
-import orc.orchard.AbstractCompilerService;
 import orc.orchard.Publication;
-import orc.orchard.QuotaException;
-import orc.orchard.UnsupportedFeatureException;
+import orc.orchard.api.ExecutorServiceInterface;
+import orc.orchard.api.JobServiceInterface;
+import orc.orchard.errors.InvalidJobStateException;
+import orc.orchard.errors.InvalidOilException;
+import orc.orchard.errors.InvalidProgramException;
+import orc.orchard.errors.QuotaException;
+import orc.orchard.errors.UnsupportedFeatureException;
 import orc.orchard.java.CompilerService;
 import orc.orchard.oil.Oil;
 
@@ -97,14 +96,18 @@ public class RmiTest {
 				// ignore
 			}
 			System.out.println("Done waiting");
-			System.out.println(job.listen().toString());
-			System.out.println(job.listen().toString());
-			System.out.println(job.listen().toString());
-			System.out.println(job.listen().toString());
-			System.out.println(job.listen().toString());
+			for (int i = 0; i < 5; ++i) {
+				try {
+					System.out.println(job.listen().toString());
+				} catch (InterruptedException e) {
+					System.out.println("Timed out");
+					--i;
+				}
+			}
 			List<Publication> pubs = job.publications();
 			System.out.println(pubs.toString());
-			job.abort();
+			job.halt();
+			job.finish();
 		} catch (RemoteException e) {
 			System.err.println("Communication error: " + e.toString());
 			return;

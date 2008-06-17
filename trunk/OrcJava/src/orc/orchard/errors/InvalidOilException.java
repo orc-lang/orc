@@ -1,4 +1,4 @@
-package orc.orchard;
+package orc.orchard.errors;
 
 public class InvalidOilException extends Exception {
 	public InvalidOilException(String arg0) {

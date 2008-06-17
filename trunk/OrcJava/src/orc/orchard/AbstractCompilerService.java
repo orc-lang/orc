@@ -8,6 +8,7 @@ import orc.Orc;
 import orc.ast.oil.Expr;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
+import orc.orchard.errors.InvalidProgramException;
 import orc.orchard.oil.Oil;
 
 
@@ -16,11 +17,13 @@ import orc.orchard.oil.Oil;
  * @author quark
  *
  */
-public abstract class AbstractCompilerService implements orc.orchard.CompilerServiceInterface {
+public abstract class AbstractCompilerService implements orc.orchard.api.CompilerServiceInterface {
 	protected Logger logger;
+	protected Compiler compiler;
 
 	protected AbstractCompilerService(Logger logger) {
 		this.logger = logger;
+		this.compiler = new Compiler();
 	}
 
 	protected AbstractCompilerService() {
@@ -28,14 +31,7 @@ public abstract class AbstractCompilerService implements orc.orchard.CompilerSer
 	}
 
 	public Oil compile(String program) throws InvalidProgramException {
-		orc.ast.simple.Expression ex0 = Orc.compile(new StringReader(program), new Config());
-		if (ex0 == null) {
-			// FIXME: obviously need more detail here
-			throw new InvalidProgramException("Syntax error");
-		}
-		orc.ast.oil.Expr ex1 = ex0.convert(new Env<Var>());;
-		orc.orchard.oil.Expression ex2 = ex1.marshal();
-		return new Oil("1.0", ex2);
+		return compiler.compile(program);
 	}
 	
 	protected static Logger getDefaultLogger() {

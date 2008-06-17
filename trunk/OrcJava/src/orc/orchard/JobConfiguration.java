@@ -12,14 +12,8 @@ import java.io.Serializable;
 public class JobConfiguration implements Serializable {
 	private boolean debuggable = false;
 	private boolean listenable = false;
-	private String protocol;
 	
 	public JobConfiguration() {}
-	
-	public JobConfiguration(String protocol) {
-		this();
-		setProtocol(protocol);
-	}
 
 	public void setDebuggable(boolean debuggable) {
 		this.debuggable = debuggable;
@@ -29,10 +23,6 @@ public class JobConfiguration implements Serializable {
 		this.listenable = listenable;
 	}
 
-	public void setProtocol(String protocol) {
-		this.protocol = protocol;
-	}
-
 	public boolean getDebuggable() {
 		return debuggable;
 	}
@@ -40,9 +30,4 @@ public class JobConfiguration implements Serializable {
 	public boolean getListenable() {
 		return listenable;
 	}
-
-	public String getProtocol() {
-		return protocol;
-	}
-
 }

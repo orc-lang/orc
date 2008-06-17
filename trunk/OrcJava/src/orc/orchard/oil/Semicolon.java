@@ -1,6 +1,6 @@
 package orc.orchard.oil;
 
-import orc.orchard.InvalidOilException;
+import orc.orchard.errors.InvalidOilException;
 
 public class Semicolon extends Expression {
 	public Expression left;
