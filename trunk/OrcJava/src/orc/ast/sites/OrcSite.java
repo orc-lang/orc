@@ -28,18 +28,20 @@ public class OrcSite extends Site {
 		String classname = location.getSchemeSpecificPart();
 		try
 		{
-			Class<?> cls = ClassLoader.getSystemClassLoader().loadClass(classname);
+			Class<?> cls = Class.forName(classname);
 			
-			if (orc.runtime.sites.Site.class.isAssignableFrom(cls)) 
-			{
+			if (orc.runtime.sites.Site.class.isAssignableFrom(cls)) {
 				return (orc.runtime.sites.Site)cls.newInstance();
+			} else { 
+				throw new Error("Class " + cls + " cannot be used as a site because it is not a subtype of orc.runtime.sites.Site."); 
 			}
-			else
-			{ 
-				throw new Error("Class " + cls + " cannot be used as a site. It is not a subtype of Site."); 
-			}
+		} catch (ClassNotFoundException e) {
+			throw new Error("Failed to load class " + classname + " as a site. Class not found.");
+		} catch (InstantiationException e) {
+			throw new Error("Failed to load class " + classname + " as a site. Instantiation error.", e);
+		} catch (IllegalAccessException e) {
+			throw new Error("Failed to load class " + classname + " as a site. Constructor is not accessible.");
 		}
-		catch (Exception e) { throw new Error("Failed to load class " + classname + " as a site."); }
 	}
 
 }
