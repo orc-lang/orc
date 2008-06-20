@@ -1,0 +1,6 @@
+include "prelude/core.inc"
+include "prelude/op.inc"
+include "prelude/time.inc"
+include "prelude/util.inc"
+include "prelude/lib.inc"
+include "prelude/list.inc"

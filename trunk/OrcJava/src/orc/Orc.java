@@ -8,11 +8,17 @@ package orc;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import antlr.RecognitionException;
+import antlr.SemanticException;
+import antlr.TokenStreamException;
 
 import orc.ast.extended.Declare;
 import orc.ast.extended.declaration.Declaration;
@@ -72,11 +78,38 @@ public class Orc {
 		System.exit(0);
 	}
 	
-	public static orc.ast.simple.Expression compile(Reader source, Config cfg) {
+	public static orc.ast.simple.Expression compile(Reader source, Config cfg) throws RecognitionException {
 		return compile(source, cfg, true);
 	}
 	
-	public static orc.ast.simple.Expression compile(Reader source, Config cfg, boolean includeStdlib) {
+	/**
+	 * Open an include file. Include files are actually stored as class
+	 * resources, so that they will continue to work when Orc is deployed as a
+	 * servlet or JAR, so you can't use any old filename. Specifically, the
+	 * filename is always interpreted relatively to the orc.inc package, and you
+	 * can't use "." or ".." in paths.
+	 * 
+	 * <p>
+	 * TODO: support relative names correctly.
+	 * 
+	 * @param name
+	 *            of the include file relative to orc/inc (e.g. "prelude.inc")
+	 * @return Reader to read the file.
+	 * @throws FileNotFoundException
+	 *             if the resource is not found.
+	 */
+	public static Reader openInclude(String name) throws FileNotFoundException {
+		InputStream stream = Orc.class.getResourceAsStream("/orc/inc/"+name);
+		if (stream == null) {
+			throw new FileNotFoundException(
+					"Include file '"
+							+ name
+							+ "' not found; did you remember to put it in the orc.inc package?");
+		}
+		return new InputStreamReader(stream);
+	}
+	
+	public static orc.ast.simple.Expression compile(Reader source, Config cfg, boolean includeStdlib) throws RecognitionException {
 		
 		try {
 		
@@ -90,23 +123,16 @@ public class Orc {
 		LinkedList<Declaration> decls = new LinkedList<Declaration>();
 		
 		if (includeStdlib) {
-			// Load declarations from the default includes directory.
-			File incdir = new File("./inc");
-			for (File f : incdir.listFiles())
-			{
-				// Include loading doesn't recurse into subdirectories.
-				if (f.isFile()) {
-					OrcLexer flexer = new OrcLexer(new FileReader(f));
-					OrcParser fparser = new OrcParser(flexer);
-					decls.addAll(fparser.decls());
-				}
-			}
+			// Load declarations from the default include file.
+			OrcLexer flexer = new OrcLexer(openInclude("prelude.inc"));
+			OrcParser fparser = new OrcParser(flexer);
+			decls.addAll(fparser.decls());
 		}
 		
 		// Load declarations from files specified by the configuration options
-		for (File f : cfg.getBindings())
+		for (String f : cfg.getIncludes())
 		{
-			OrcLexer flexer = new OrcLexer(new FileReader(f));
+			OrcLexer flexer = new OrcLexer(openInclude(f));
 			OrcParser fparser = new OrcParser(flexer);
 			decls.addAll(fparser.decls());
 		}
@@ -122,17 +148,13 @@ public class Orc {
 		// Simplify the AST
 		return e.simplify();
 		
-		} catch (Exception e) {
-			System.err.println("exception: " + e);
-			if (cfg.debugMode())
-				e.printStackTrace();
-		} catch (Error e) {
-			System.err.println(e.toString());
-			if (cfg.debugMode())
-			e.printStackTrace();
-		}
-		
-		return null;		
+		} catch (FileNotFoundException e) {
+			throw new SemanticException(e.getMessage());
+		} catch (RecognitionException e) {
+			throw e;
+		} catch (TokenStreamException e) {
+			throw new SemanticException(e.getMessage());
+		}		
 	}
 	
 	protected static Node compile(Reader source, Node target, Config cfg) {
