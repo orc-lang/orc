@@ -17,7 +17,6 @@ import orc.orchard.errors.UnsupportedFeatureException;
  * 
  * @author quark
  */
-@WebService
 public interface JobServiceInterface extends Remote {
 	/**
 	 * @return the job's configuration.
@@ -31,10 +30,13 @@ public interface JobServiceInterface extends Remote {
 	 */
 	public void start() throws InvalidJobStateException, RemoteException;
 	/**
-	 * Indicate that the client is done with an inactive (not RUNNING or
-	 * WAITING) job. Once this method is called, the service provider is free to
-	 * garbage collect the service and the service URL may become invalid, so no
-	 * other methods should be called after this.
+	 * Indicate that the client is done with the job. The job will be halted if
+	 * necessary.
+	 * 
+	 * <p>
+	 * Once this method is called, the service provider is free to garbage
+	 * collect the service and the service URL may become invalid, so no other
+	 * methods should be called after this.
 	 * 
 	 * @throws InvalidJobStateException
 	 *             if the job is RUNNING or WAITING.
@@ -74,8 +76,14 @@ public interface JobServiceInterface extends Remote {
 	 * this method multiple times concurrently, it is not guaranteed that calls
 	 * will return in the order they were made.
 	 * 
-	 * @throws InvalidJobStateException if the job is not RUNNING or WAITING.
-	 * @throws InterruptedException if the request times out.
+	 * <p>
+	 * If the job finishes without publishing any more values, an empty list
+	 * will be returned.
+	 * 
+	 * @throws InvalidJobStateException
+	 *             if the job is not RUNNING or WAITING.
+	 * @throws InterruptedException
+	 *             if the request times out.
 	 */
 	public List<Publication> listen() throws InvalidJobStateException, UnsupportedFeatureException, RemoteException, InterruptedException;
 }

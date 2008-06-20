@@ -49,9 +49,11 @@
 
 	<target name="war" description="generate the war">
 		<mkdir dir="${war}" />
-		<mkdir dir="${war}/WEB-INF" />
-		<copy file="web.xml" tofile="${war}/WEB-INF/web.xml" />
-		<copy file="sun-jaxws.xml" tofile="${war}/WEB-INF/sun-jaxws.xml" />
+		<copy todir="${war}">
+			<fileset dir="web">
+				<include name="**/*"/>
+			</fileset>
+		</copy>
 
 		<mkdir dir="${war}/WEB-INF/lib" />
 		<copy todir="${war}/WEB-INF/lib">
@@ -60,14 +62,7 @@
 				<include name="*.jar"/>
 			</fileset>
 		</copy>
-
-		<mkdir dir="${war}/WEB-INF/classes" />
-		<copy todir="${war}/WEB-INF/classes">
-			<fileset dir="${bin}">
-				<!-- FIXME: some of these are unnecessary at runtime -->
-				<include name="**/*.class"/>
-			</fileset>
-		</copy>
+		<jar jarfile="${war}/WEB-INF/lib/orc.jar" basedir="${bin}" />
 
 		<jar jarfile="orchard.war" update="true">
 			<fileset dir="${war}">
@@ -86,22 +81,16 @@
 		<pathelement location="${lib}/jsr250-api.jar"/>
 	</path>
 	<target name="wsgen" description="Generate web service artifacts">
-		<wsgen sei="orc.orchard.jaxws.standalone.CompilerService" destdir="${bin}">
+		<wsgen sei="orc.orchard.soap.CompilerService" destdir="${bin}">
 			<classpath><path refid="wsgen.classpath"/></classpath>
 		</wsgen>
-		<wsgen sei="orc.orchard.jaxws.standalone.ExecutorService" destdir="${bin}">
+		<wsgen sei="orc.orchard.soap.ExecutorService" destdir="${bin}">
 			<classpath><path refid="wsgen.classpath"/></classpath>
 		</wsgen>
-		<wsgen sei="orc.orchard.jaxws.standalone.JobService" destdir="${bin}">
+		<wsgen sei="orc.orchard.soap.JobsService" destdir="${bin}">
 			<classpath><path refid="wsgen.classpath"/></classpath>
 		</wsgen>
-		<wsgen sei="orc.orchard.jaxws.servlet.CompilerService" destdir="${bin}">
-			<classpath><path refid="wsgen.classpath"/></classpath>
-		</wsgen>
-		<wsgen sei="orc.orchard.jaxws.servlet.ExecutorService" destdir="${bin}">
-			<classpath><path refid="wsgen.classpath"/></classpath>
-		</wsgen>
-		<wsgen sei="orc.orchard.jaxws.servlet.JobsService" destdir="${bin}">
+		<wsgen sei="orc.orchard.soap.StandaloneJobService" destdir="${bin}">
 			<classpath><path refid="wsgen.classpath"/></classpath>
 		</wsgen>
 	</target>

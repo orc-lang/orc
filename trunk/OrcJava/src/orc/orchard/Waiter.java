@@ -14,18 +14,22 @@ package orc.orchard;
  * implementations of asynchrony so the underlying implementation doesn't have
  * to know about them.
  * 
+ * <p>
+ * This is not thread-safe -- you are expected to call it from within
+ * a block synchronized on the monitor.
+ * 
  * @author quark
  */
 public interface Waiter {
 	/**
-	 * Suspend the current asynchronous call and release locks. When the call is
+	 * Suspend the current request and release locks. When the request is
 	 * resumed, any of the following may happen:
 	 * <ul>
 	 * <li>suspend returns.
 	 * <li>suspend throws InterruptedException.
 	 * <li>Call is retried with the same Waiter.
 	 * </ul>
-	 * Therefore the asynchronous call <i>must be reentrant</i>.
+	 * Therefore the request <i>must be reentrant</i>.
 	 *
 	 * @param monitor the monitor to wait on if a blocking implementation is used.
 	 * @throws InterruptedException if the call timed out.
@@ -35,10 +39,6 @@ public interface Waiter {
 	 * Signal that the asynchronous call should be resumed. This may mean that a
 	 * waiting call to suspend() returns, or that the asynchronous call is
 	 * simply retried.
-	 * 
-	 * @param monitor
-	 *            the monitor to wake if a blocking implementation is used. This
-	 *            should be the same monitor passed to suspend.
 	 */
-	public void resume(Object monitor);
+	public void resume();
 }

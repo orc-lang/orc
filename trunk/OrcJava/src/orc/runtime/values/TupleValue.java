@@ -75,4 +75,12 @@ public class TupleValue extends EvalSite {
 		buf.append(right);
 		return buf.toString();
 	}
+	@Override
+	public orc.orchard.oil.Value marshal() {
+		orc.orchard.oil.Value mvalues[] = new orc.orchard.oil.Value[values.length];
+		for (int i = 0; i < values.length; ++i) {
+			mvalues[i] = values[i].marshal();
+		}
+		return new orc.orchard.oil.Tuple(mvalues);
+	}
 }

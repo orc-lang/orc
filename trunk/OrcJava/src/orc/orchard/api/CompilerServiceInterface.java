@@ -12,7 +12,6 @@ import orc.orchard.oil.Oil;
  * Compile program text into OIL format.
  * @author quark
  */
-@WebService
 public interface CompilerServiceInterface extends Remote {
 	/**
 	 * Compile program text.

@@ -3,6 +3,8 @@ package orc.orchard;
 import java.io.Serializable;
 import java.util.Date;
 
+import orc.orchard.oil.Value;
+
 /**
  * JAXB does bad things if you extend another class
  * which is not specifically designed to be JAXB-marshalled.
@@ -13,11 +15,11 @@ import java.util.Date;
 public class Publication implements Serializable {
 	private int sequence;
 	private Date timestamp;
-	private Object value;
+	private Value value;
 	
 	public Publication() {}
 	
-	public Publication(int sequence, Date timestamp, Object value) {
+	public Publication(int sequence, Date timestamp, Value value) {
 		this();
 		this.setSequence(sequence);
 		this.setTimestamp(timestamp);
@@ -32,7 +34,7 @@ public class Publication implements Serializable {
 		return timestamp;
 	}
 	
-	public Object getValue() {
+	public Value getValue() {
 		return value;
 	}
 	
@@ -44,7 +46,7 @@ public class Publication implements Serializable {
 		this.timestamp = timestamp;
 	}
 
-	public void setValue(Object value) {
+	public void setValue(Value value) {
 		this.value = value;
 	}
 

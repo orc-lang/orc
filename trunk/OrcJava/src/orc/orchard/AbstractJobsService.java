@@ -13,37 +13,37 @@ import orc.orchard.errors.UnsupportedFeatureException;
  * @author quark
  */
 public abstract class AbstractJobsService implements orc.orchard.api.JobServiceInterface {
-	protected abstract Job currentJob() throws RemoteException;
+	protected abstract Job getCurrentJob() throws RemoteException;
 
 	public JobConfiguration configuration() throws RemoteException {
-		return currentJob().configuration();
+		return getCurrentJob().configuration();
 	}
 
 	public void finish() throws InvalidJobStateException, RemoteException {
-		currentJob().finish();
+		getCurrentJob().finish();
 	}
 	
 	public void halt() throws RemoteException {
-		currentJob().halt();
+		getCurrentJob().halt();
 	}
 
 	public List<Publication> listen() throws InvalidJobStateException, UnsupportedFeatureException, InterruptedException, RemoteException {
-		return currentJob().listen(new ThreadWaiter());
+		return getCurrentJob().listen(new ThreadWaiter());
 	}
 
 	public List<Publication> publications() throws InvalidJobStateException, RemoteException {
-		return currentJob().publications();
+		return getCurrentJob().publications();
 	}
 
 	public List<Publication> publicationsAfter(int sequence) throws InvalidJobStateException, RemoteException {
-		return currentJob().publicationsAfter(sequence);
+		return getCurrentJob().publicationsAfter(sequence);
 	}
 
 	public void start() throws InvalidJobStateException, RemoteException {
-		currentJob().start();
+		getCurrentJob().start();
 	}
 
 	public String state() throws RemoteException {
-		return currentJob().state();
+		return getCurrentJob().state();
 	}
 }
