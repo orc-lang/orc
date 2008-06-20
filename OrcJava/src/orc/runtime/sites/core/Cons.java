@@ -7,6 +7,7 @@ import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.ConsValue;
+import orc.runtime.values.ListValue;
 import orc.runtime.values.SomeValue;
 import orc.runtime.values.Value;
 
@@ -19,8 +20,11 @@ public class Cons extends EvalSite {
 
 	@Override
 	public Value evaluate(Args args) throws OrcRuntimeTypeException {
-		
-		return new ConsValue(args.valArg(0), args.valArg(1));
+		Value t = args.valArg(1);
+		if (!(t instanceof ListValue)) {
+			throw new OrcRuntimeTypeException("Cons expects second argument to be a list value; got a value of type " + t.getClass().toString());
+		}
+		return new ConsValue(args.valArg(0), (ListValue)t);
 	}
 
 }

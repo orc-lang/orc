@@ -73,5 +73,10 @@ public class Closure extends Value implements Callable {
 	public void setEnvironment(Env env) {
 		this.env = env;
 	}
+
+	@Override
+	public orc.orchard.oil.Value marshal() {
+		return new orc.orchard.oil.UnrepresentableValue(this.toString());
+	}
 }
 

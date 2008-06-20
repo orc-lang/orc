@@ -4,8 +4,9 @@ import java.util.LinkedList;
 import java.util.NoSuchElementException;
 
 /**
- * Manage waiters waiting for the same event.
- * This is NOT thread-safe!
+ * Manage waiters waiting for the same event. This is NOT thread-safe -- since
+ * you should only call it from within a synchronized block there is no need.
+ * 
  * @author quark
  */
 public class WaiterManager {
@@ -22,10 +23,12 @@ public class WaiterManager {
 		w.suspend(monitor);
 	}
 	public void resume() {
-		try {
-			queue.removeFirst().resume(monitor);
-		} catch (NoSuchElementException e) {
-			return;
+		if (queue.isEmpty()) return;
+		queue.removeFirst().resume();
+	}
+	public void resumeAll() {
+		while (!queue.isEmpty()) {
+			queue.removeFirst().resume();
 		}
 	}
 }

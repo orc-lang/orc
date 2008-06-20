@@ -2,6 +2,8 @@ package orc.orchard;
 
 import java.io.StringReader;
 
+import antlr.RecognitionException;
+
 import orc.Config;
 import orc.Orc;
 import orc.ast.simple.arg.Var;
@@ -11,10 +13,16 @@ import orc.orchard.oil.Oil;
 
 public final class Compiler {
 	public Oil compile(String program) throws InvalidProgramException {
-		orc.ast.simple.Expression ex0 = Orc.compile(new StringReader(program), new Config());
+		if (program == null) throw new InvalidProgramException("Null program!");
+		orc.ast.simple.Expression ex0;
+		try {
+			ex0 = Orc.compile(new StringReader(program), new Config());
+		} catch (RecognitionException e) {
+			throw new InvalidProgramException("Syntax error: " + e.getMessage());
+		}
 		if (ex0 == null) {
 			// FIXME: obviously need more detail here
-			throw new InvalidProgramException("Syntax error");
+			throw new InvalidProgramException("Syntax error in: " + program);
 		}
 		orc.ast.oil.Expr ex1 = ex0.convert(new Env<Var>());;
 		orc.orchard.oil.Expression ex2 = ex1.marshal();

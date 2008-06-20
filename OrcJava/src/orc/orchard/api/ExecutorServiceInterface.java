@@ -22,7 +22,6 @@ import orc.orchard.oil.Oil;
  * 
  * @author quark
  */
-@WebService
 public interface ExecutorServiceInterface extends Remote {
 	/**
 	 * Register a new job for execution, using the provided job configuration.

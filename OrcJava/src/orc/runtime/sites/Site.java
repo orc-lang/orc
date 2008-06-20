@@ -55,4 +55,7 @@ public abstract class Site extends Value implements Callable {
 	 */
 	abstract public void callSite(Args args, Token caller) throws OrcRuntimeTypeException;
 
+	public orc.orchard.oil.Value marshal() {
+		return new orc.orchard.oil.UnrepresentableValue(this.toString());
+	}
 }

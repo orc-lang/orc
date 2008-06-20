@@ -47,7 +47,7 @@ public class Oil implements Serializable {
 		CompilerService compiler = new CompilerService();
 		Oil oil;
 		try {
-			oil = compiler.compile("def M(x) = x | Rtimer(1000) >> M(x+1) M(1)");
+			oil = compiler.compile("1");
 		} catch (InvalidProgramException e) {
 			// this is impossible by construction
 			throw new AssertionError(e);			

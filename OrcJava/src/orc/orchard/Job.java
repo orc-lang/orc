@@ -74,8 +74,7 @@ public final class Job {
 			int sequence = 1;
 			public void emit(Value v) {
 				synchronized (pubsBuff) {
-					pubsBuff.add(new Publication(
-							sequence++, new Date(), ((Constant)v).getValue()));
+					pubsBuff.add(new Publication(sequence++, new Date(), v.marshal()));
 					pubsWaiters.resume();
 				}
 			}
@@ -87,11 +86,20 @@ public final class Job {
 	public synchronized void start() throws InvalidJobStateException {
 		if (!isNew) throw new InvalidJobStateException(state());
 		isNew = false;
-		new Thread(engine).start();
+		new Thread(new Runnable() {
+			public void run() {
+				engine.run();
+				// when the engine is complete, notify
+				// anybody waiting for further publications
+				synchronized (pubsBuff) {
+					pubsWaiters.resumeAll();
+				}
+			}
+		}).start();
 	}
 	
 	public synchronized void finish() throws InvalidJobStateException, RemoteException {
-		if (!engine.isDead()) throw new InvalidJobStateException(state());
+		halt();
 		for (FinishListener finisher : finishers) {
 			finisher.finished(this);
 		}
@@ -116,13 +124,12 @@ public final class Job {
 		throws InvalidJobStateException, UnsupportedFeatureException, InterruptedException
 	{
 		synchronized (pubsBuff) {
-			// wait for the buffer to fill up
-			while (pubsBuff.isEmpty()) {
+			// wait for the buffer to fill or engine to complete
+			while (pubsBuff.isEmpty() && !engine.isDead()) {
 				pubsWaiters.suspend(waiter);
 			}
-			// remember these publications for later
+			// drain and return the contents of the buffer
 			pubs.addAll(pubsBuff);
-			// drain the buffer
 			List<Publication> out = new LinkedList<Publication>(pubsBuff);
 			pubsBuff.clear();
 			return out;

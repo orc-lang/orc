@@ -5,7 +5,7 @@ import java.util.LinkedList;
 
 import javax.xml.bind.annotation.XmlTransient;
 
-public class Constant extends Argument {
+public class Constant extends Value {
 	public Object value;
 	public Constant() {}
 	public Constant(Object value) {

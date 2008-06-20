@@ -13,7 +13,7 @@ import orc.runtime.Token;
  * @author dkitchin
  *
  */
-public class Value implements Future {
+public abstract class Value implements Future {
 
 	// A value is already computed, so it forces to itself.
 	public Value forceArg(Token t)
@@ -70,6 +70,7 @@ public class Value implements Future {
 	 * Return the tail value of a cons-like data structure.
 	 * This method must throw an exception iff isCons() returns false.
 	 */
-	public Value tail() { throw new Error(); }
-	
+	public ListValue tail() { throw new Error(); }
+
+	public abstract orc.orchard.oil.Value marshal();
 }

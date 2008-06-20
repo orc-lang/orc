@@ -6,10 +6,12 @@ package orc.orchard;
  * @author quark
  */
 public class ThreadWaiter implements Waiter {
+	private Object monitor;
 	public void suspend(Object monitor) throws InterruptedException {
-		monitor.wait();
+		this.monitor = monitor;
+		this.monitor.wait();
 	}
-	public void resume(Object monitor) {
-		monitor.notify();
+	public void resume() {
+		this.monitor.notify();
 	}
 }

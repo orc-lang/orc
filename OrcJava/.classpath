@@ -10,12 +10,12 @@
 	<classpathentry kind="lib" path="webservices"/>
 	<classpathentry kind="lib" path="lib/mail.jar"/>
 	<classpathentry kind="lib" path="lib/tools.jar"/>
-	<classpathentry kind="lib" path="lib/jaxws-api.jar"/>
-	<classpathentry kind="lib" path="lib/jaxws-tools.jar"/>
-	<classpathentry kind="lib" path="lib/jaxws-rt.jar"/>
+	<classpathentry kind="lib" path="lib/jaxws-api.jar" sourcepath="lib/jaxws-sources.jar"/>
+	<classpathentry kind="lib" path="lib/jaxws-tools.jar" sourcepath="lib/jaxws-sources.jar"/>
+	<classpathentry kind="lib" path="lib/jaxws-rt.jar" sourcepath="lib/jaxws-sources.jar"/>
 	<classpathentry kind="lib" path="lib/streambuffer.jar"/>
-	<classpathentry kind="lib" path="lib/jaxb-api.jar"/>
-	<classpathentry kind="lib" path="lib/jaxb-impl.jar"/>
+	<classpathentry kind="lib" path="lib/jaxb-api.jar" sourcepath="lib/jaxb-api-src.zip"/>
+	<classpathentry kind="lib" path="lib/jaxb-impl.jar" sourcepath="lib/jaxb-impl.src.zip"/>
 	<classpathentry kind="lib" path="lib/jaxb-xjc.jar"/>
 	<classpathentry kind="lib" path="lib/stax-ex.jar"/>
 	<classpathentry kind="lib" path="lib/jsr181-api.jar"/>
@@ -31,5 +31,9 @@
 	<classpathentry kind="lib" path="lib/sjsxp.jar"/>
 	<classpathentry kind="var" path="ANTLR_HOME/antlr.jar"/>
 	<classpathentry kind="lib" path="lib/servlet-api.jar"/>
+	<classpathentry kind="lib" path="lib/velocity-1.5.jar"/>
+	<classpathentry kind="lib" path="lib/velocity-dep-1.5.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-util-6.1.11.jar"/>
+	<classpathentry kind="lib" path="lib/jettison-1.0.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

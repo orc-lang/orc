@@ -35,4 +35,8 @@ public class Constant extends Value {
 		return new ObjectProxy(value);
 	}
 
+	@Override
+	public orc.orchard.oil.Value marshal() {
+		return new orc.orchard.oil.Constant(value);
+	}
 }

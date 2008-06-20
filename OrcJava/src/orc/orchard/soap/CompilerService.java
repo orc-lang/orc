@@ -3,18 +3,34 @@ package orc.orchard.soap;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
 import javax.jws.WebService;
+import javax.xml.ws.BindingType;
 import javax.xml.ws.Endpoint;
 
 import orc.orchard.AbstractCompilerService;
 import orc.orchard.api.CompilerServiceInterface;
+import orc.orchard.errors.InvalidProgramException;
+import orc.orchard.oil.Oil;
 
-@WebService(endpointInterface="orc.orchard.api.CompilerServiceInterface")
-public class CompilerService extends AbstractCompilerService
-	// wsgen gives nonsense error methods about this class not implementing
-	// the appropriate methods if I don't put this here
-	implements CompilerServiceInterface
-{
+import org.jvnet.jax_ws_commons.json.JSONBindingID;
+
+/**
+ * HACK: We must explicitly declare every published web method in this class, we
+ * can't simply inherit them, for the following reasons:
+ * <ul>
+ * <li>JAX-WS ignores (does not publish) inherited methods. You can work around
+ * this by using an endpointInterface which includes all the methods you want to
+ * publish, but...
+ * </ul>
+ * JAX-WS JSON bindings don't work with endpointInterface at all.
+ * </ul>
+ * 
+ * @author quark
+ */
+@WebService
+public class CompilerService extends AbstractCompilerService {
 	/**
 	 * Construct a service to run in an existing servlet context.
 	 */
@@ -23,7 +39,7 @@ public class CompilerService extends AbstractCompilerService
 		super(getDefaultLogger());
 	}
 	
-	public CompilerService(URI baseURI) {
+	CompilerService(URI baseURI) {
 		this();
 		logger.info("Binding to '" + baseURI + "'");
 		Endpoint.publish(baseURI.toString(), this);
@@ -47,5 +63,11 @@ public class CompilerService extends AbstractCompilerService
 			}
 		}
 		new CompilerService(baseURI);
+	}
+
+	/** Do-nothing override */
+	@Override
+	public Oil compile(@WebParam(name="program") String program) throws InvalidProgramException {
+		return super.compile(program);
 	}
 }

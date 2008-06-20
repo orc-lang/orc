@@ -2,13 +2,15 @@ package orc.runtime.values;
 
 import java.util.List;
 
+import orc.error.OrcRuntimeTypeException;
+
 public class ConsValue extends ListValue {
 
-	public Value h;
-	public Value t;
+	private Value h;
+	private ListValue t;
 	
 	
-	public ConsValue(Value h, Value t) {
+	public ConsValue(Value h, ListValue t) {
 		this.h = h;
 		this.t = t;
 	}
@@ -16,7 +18,7 @@ public class ConsValue extends ListValue {
 	public boolean isCons() { return true; }
 	
 	public Value head() { return h; }
-	public Value tail() { return t; }
+	public ListValue tail() { return t; }
 	
 	
 	public String toString() {
@@ -25,8 +27,7 @@ public class ConsValue extends ListValue {
 
 	@Override
 	public List<Value> enlist() {
-		
-		List<Value> tl = ((ListValue)t).enlist();
+		List<Value> tl = t.enlist();
 		tl.add(0,h);
 		return tl;
 	}
