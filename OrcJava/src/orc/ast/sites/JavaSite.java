@@ -29,7 +29,7 @@ public class JavaSite extends Site {
 		String classname = location.getSchemeSpecificPart();
 		try
 		{
-			Class<?> cls = ClassLoader.getSystemClassLoader().loadClass(classname);
+			Class<?> cls = Class.forName(classname);
 			
 			if (orc.runtime.sites.Site.class.isAssignableFrom(cls)) 
 			{
