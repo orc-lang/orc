@@ -35,14 +35,9 @@ public class Config {
 
 	Node target;
 	Boolean debug = false;
-	List<File> bindings;
+	List<String> includes = new LinkedList<String>();
 	Integer maxpub = null;
 	Reader instream;
-	
-	public Config()
-	{
-		this.bindings = new LinkedList<File>();
-	}
 	
 	public void processArgs(String[] args)
 	{
@@ -77,7 +72,7 @@ public class Config {
 			else if (args[i].equals("-i")) {
 				// add this file to the list of bindings to load
 				i++;
-				bindings.add(new File(args[i++]));
+				includes.add(args[i++]);
 			} 
 			else {
 				// This is the name of the source file
@@ -161,9 +156,9 @@ public class Config {
 		return instream;
 	}
 	
-	public List<File> getBindings()
+	public List<String> getIncludes()
 	{
-		return bindings;
+		return includes;
 	}
 	
 }

@@ -13,6 +13,7 @@ header {
 	import orc.ast.extended.declaration.*;
 	import orc.ast.extended.pattern.*;
 	import orc.val.*;
+	import orc.Orc;
 	
 } 
 
@@ -51,14 +52,13 @@ decls returns [List<Declaration> decList = new ArrayList<Declaration>()]
 include returns [List<Declaration> decList = null]
 	: "include" s:STRING
 		{
-			try
-			{
-				File f = new File(s.getText());	
-				OrcLexer flexer = new OrcLexer(new FileInputStream(f));
+			try {
+				OrcLexer flexer = new OrcLexer(Orc.openInclude(s.getText()));
 				OrcParser fparser = new OrcParser(flexer);
 				decList = fparser.decRule();
+			} catch (FileNotFoundException e) {
+				throw new SemanticException(e.getMessage());
 			}
-			catch (Exception e) { throw new Error("Error including file '" + s + "': " + e.getMessage()); }
 		}
 	;	
 

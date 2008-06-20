@@ -1,6 +1,0 @@
-include "inc/orc/core.inc"
-include "inc/orc/op.inc"
-include "inc/orc/time.inc"
-include "inc/orc/util.inc"
-include "inc/orc/lib.inc"
-include "inc/orc/list.inc"
