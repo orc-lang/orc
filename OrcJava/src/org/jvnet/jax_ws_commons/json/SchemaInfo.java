@@ -23,10 +23,10 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.ws.WebServiceException;
 
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.codehaus.jettison.json.JSONTokener;
-import org.codehaus.jettison.mapped.JaxwsMappedXMLStreamWriter;
 import org.codehaus.jettison.mapped.MappedXMLStreamReader;
 import org.jvnet.jax_ws_commons.json.schema.CompositeJsonType;
 import org.jvnet.jax_ws_commons.json.schema.JsonOperation;
@@ -152,7 +152,42 @@ public final class SchemaInfo {
     }
 
     public XMLStreamWriter createXMLStreamWriter(Writer writer) throws XMLStreamException {
-        return new JaxwsMappedXMLStreamWriter(convention, writer);
+        return new MappedXMLStreamWriter(convention, writer) {
+        	// ORC: rewrote this to work correctly
+        	protected void writeJSONObject(JSONObject root) throws XMLStreamException {
+        		Object object;
+        		try {
+            		// extract the contents of the "Response" element,
+					// which should give us an object with a "return" element,
+					// if anything was returned
+        			root = root.getJSONObject((String)root.keys().next());
+        			// extract the content of that element
+        			object = root.get((String)root.keys().next());
+        		} catch (JSONException e) {
+        			// if the root element has no children, it's a
+        			// void method; return null
+        			object = null;
+        		}
+            	try {
+            		if (object == null) {
+            			this.writer.write("null");
+            		} else if (object instanceof JSONObject) {
+            			((JSONObject)object).write(this.writer);
+            		} else if (object instanceof JSONArray) {
+            			((JSONArray)object).write(this.writer);
+            		} else if (object.equals("")) {
+            			// special case for empty (void) messages
+            			this.writer.write("null");
+            		} else {
+            			this.writer.write(JSONObject.quote(object.toString()));
+            		}
+            	} catch (JSONException e) {
+            		throw new XMLStreamException(e);
+            	} catch (IOException e) {
+					throw new XMLStreamException(e);
+				}
+        	}
+        };
     }
 
     public XMLStreamReader createXMLStreamReader(JSONTokener tokener) throws JSONException, XMLStreamException {

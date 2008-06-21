@@ -30,6 +30,7 @@ import org.jvnet.jax_ws_commons.json.JSONBindingID;
  * @author quark
  */
 @WebService
+//@BindingType(JSONBindingID.JSON_BINDING)
 public class CompilerService extends AbstractCompilerService {
 	/**
 	 * Construct a service to run in an existing servlet context.
@@ -49,7 +50,7 @@ public class CompilerService extends AbstractCompilerService {
 	public static void main(String[] args) {
 		URI baseURI;
 		try {
-			baseURI = new URI("http://localhost:8080/orchard/compiler");
+			baseURI = new URI("http://localhost:8280/orchard/compiler");
 		} catch (URISyntaxException e) {
 			// this is impossible by construction
 			throw new AssertionError(e);
