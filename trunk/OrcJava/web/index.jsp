@@ -2,20 +2,27 @@
 <head>
 <title>Orchard Demo</title>
 <style type="text/css">
+#program {
+	border: 2px inset gray;
+	width: 600px;
+	height: 200px;
+}
 #publications {
 	border: 2px inset gray;
 	width: 600px;
-	height: 100px;
+	height: 200px;
 	overflow: auto;
 }
 div.publication {
 	border-bottom: 1px solid gray;
-}
-#program {
-	width: 600px;
+	font-family: monospace;
 }
 </style>
 <script language="javascript">
+function toArray(object) {
+	if (object.constructor == Array) return object;
+	else return [object];
+}
 /**
  * Load a service into the current page.
  * If a service with the same name was loaded, it will be replaced.
@@ -80,14 +87,18 @@ function onUnload() {
 	if (currentJob) currentJob.finish({});
 }
 function renderPublications(ps) {
-	if (ps.constructor != Array) ps = [ps];
 	var pubs = document.getElementById("publications");
+	ps = toArray(ps);
 	for (var k in ps) {
 		pubs.innerHTML += '<div class="publication">' + publicationToHTML(ps[k].value) + '</div>';
 	}
 	pubs.scrollTop = pubs.scrollHeight;
 }
-function publicationToHTML(v) {
+/**
+ * Convert arbitrary JSON values to
+ * pretty-printed HTML
+ */
+function jsonToHTML(v) {
 	function fromString(v) {
 		v = v.replace(/&/g, '&amp;');
 		v = v.replace(/</g, '&lt;');
@@ -118,6 +129,15 @@ function publicationToHTML(v) {
 			if (v.constructor == Array) return fromArray(v);
 			if (v.constructor == Object) return fromObject(v);
 	}
+}
+/**
+ * Convert publication values to HTML.
+ * These have a bit more structure than arbitrary JSON.
+ */
+function publicationToHTML(v) {
+	// FIXME: fix this once the server learns to
+	// generate JSON correctly
+	return jsonToHTML(v);
 }
 </script>
 <script language="javascript" src="json/executor?js"/></script>

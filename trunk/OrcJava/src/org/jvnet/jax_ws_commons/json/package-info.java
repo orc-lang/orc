@@ -10,13 +10,16 @@
  * <li>Updated to work with org.codehaus.jettison v1.0
  * <li>Fix &lt;script&gt; tag instructions in index.html
  * <li>Fix bug with serializing void returns
- * <li>Use jettison MappedXMLStreamReader/Writer instead of
- * customized versions, to fix JSON serialization bugs
+ * <li>Use jettison MappedXMLStreamReader
  * <li>Fix bug with serializing JSON strings on Javascript side
  * <li>Allow Javascript code to handle SOAP errors in return handler
  * rather than throwing an uncatchable exception
  * <li>Javascript code should post back to the original request URL.
  * <li>Support to call a function with the service object when it is ready.
+ * <li>Fix various bugs with MappedXMLStreamWriter
+ * <li>Fix serialization bug with returning String
+ * <li>Fix errors with unrecognized namespace when using xsi:type attributes
+ * (by hard-coding this namespace into the configuration).
  * </ul>
  * 
  * @author quark
