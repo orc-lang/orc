@@ -19,6 +19,12 @@ div.publication {
 }
 </style>
 <script language="javascript">
+function foreach(vs, f) {
+	vs = toArray(vs);
+	for (var i in vs) {
+		f(vs[i]);
+	}
+}
 function toArray(object) {
 	if (object.constructor == Array) return object;
 	else return [object];
@@ -88,17 +94,16 @@ function onUnload() {
 }
 function renderPublications(ps) {
 	var pubs = document.getElementById("publications");
-	ps = toArray(ps);
-	for (var k in ps) {
-		pubs.innerHTML += '<div class="publication">' + publicationToHTML(ps[k].value) + '</div>';
-	}
+	foreach(ps, function (p) {
+		pubs.innerHTML += '<div class="publication">' + publicationToHtml(p.value) + '</div>';
+	});
 	pubs.scrollTop = pubs.scrollHeight;
 }
 /**
  * Convert arbitrary JSON values to
  * pretty-printed HTML
  */
-function jsonToHTML(v) {
+function jsonToHtml(v) {
 	function fromString(v) {
 		v = v.replace(/&/g, '&amp;');
 		v = v.replace(/</g, '&lt;');
@@ -107,16 +112,16 @@ function jsonToHTML(v) {
 	function fromArray(v) {
 		if (v.length == 0) return '[]';
 		var out = '[';
-		out += publicationToHTML(v[0]);
+		out += jsonToHtml(v[0]);
 		for (var i = 1; i < v.length; ++i) {
-			out += ', ' + publicationToHTML(v[i]);
+			out += ', ' + jsonToHtml(v[i]);
 		}
 		return out + ']';
 	}
 	function fromObject(v) {
 		var out = '{';
 		for (var k in v) {
-			out += '<i>'+k+'</i>: ' + publicationToHTML(v[k]) + ', ';
+			out += '<i>'+k+'</i>: ' + jsonToHtml(v[k]) + ', ';
 		}
 		return out.substring(0, out.length-2) + '}';
 	}
@@ -131,16 +136,44 @@ function jsonToHTML(v) {
 	}
 }
 /**
+ * Convert publication values to JSON.
+ */
+function publicationToJson(v) {
+	if (v == null) return v;
+	switch (v["@xsi.type"]) {
+		// XSD types
+		case 'xs:string': return v.$;
+		case 'xs:integer':
+		case 'xs:long':
+		case 'xs:short':
+		case 'xs:int': return parseInt(v.$);
+		case 'xs:double':
+		case 'xs:decimal':
+		case 'xs:float': return parseFloat(v.$);
+		case 'xs:boolean': return v.$ == 'true';
+		// OIL types
+		// FIXME: server should use better namespace than ns2
+		case 'ns2:constant': return publicationToJson(v.value);
+		case 'ns2:list':
+		case 'ns2:tuple':
+			var tmp = [];
+			foreach (v.element, function (e) {
+				tmp[tmp.length] = publicationToJson(e);
+			});
+			return tmp;
+		default: return v;
+	}
+}
+/**
  * Convert publication values to HTML.
  * These have a bit more structure than arbitrary JSON.
  */
-function publicationToHTML(v) {
-	// FIXME: fix this once the server learns to
-	// generate JSON correctly
-	return jsonToHTML(v);
+function publicationToHtml(v) {
+	return jsonToHtml(publicationToJson(v))
 }
 </script>
 <script language="javascript" src="json/executor?js"/></script>
+<!-- <script language="javascript" src="mock-executor.js"/></script> -->
 </head>
 <body onunload="onUnload()">
 <textarea id="program" rows="5" cols="80">

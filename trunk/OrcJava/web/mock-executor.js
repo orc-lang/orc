@@ -12,7 +12,13 @@ executorService = {
 			},
 			listen: function (_, f) {
 				setTimeout(function () {
-					f(halt ? null : {value:{"@xsi:type":"int", "$":(n++)+""}});
+					f(halt ? null :
+						{"value":{"@xsi.type": "ns2:tuple", "@size": "2",
+							"element": [{"@xsi.type": "ns2:constant",
+									"value": {"@xsi.type": "xs:int", "$": (n++)+""}},
+								{"@xsi.type": "ns2:list",
+									"element": {"@xsi.type": "ns2:constant",
+										"value": {"@xsi.type": "xs:string", "$": "hi"}}}]}});					
 				}, 2000);
 			},
 			halt: function () {
