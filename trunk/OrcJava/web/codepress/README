@@ -1,0 +1,5 @@
+This is Codepress 0.9.6, downloaded from http://codepress.org/
+
+We have made the following changes to integrate with Orc:
+- Fixed auto-complete to work with HTML special characters (">", "<", and "&")
+- Added orc syntax highlighting
