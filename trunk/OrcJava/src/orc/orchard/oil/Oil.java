@@ -26,6 +26,7 @@ public class Oil implements Serializable {
 		return super.toString() + "(" + version + ", " + expression + ")";
 	}
 	public orc.ast.oil.Expr unmarshal() throws InvalidOilException {
+		if (expression == null) throw new InvalidOilException("Missing OIL expression.");
 		return expression.unmarshal();
 	}
 	public String toXML() {

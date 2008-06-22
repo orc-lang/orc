@@ -20,6 +20,7 @@
  * <li>Fix serialization bug with returning String
  * <li>Fix errors with unrecognized namespace when using xsi:type attributes
  * (by hard-coding this namespace into the configuration).
+ * <li>Support Javascript error handlers.
  * </ul>
  * 
  * @author quark

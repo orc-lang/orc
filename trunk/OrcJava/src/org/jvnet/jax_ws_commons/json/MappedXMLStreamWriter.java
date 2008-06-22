@@ -164,8 +164,7 @@ public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 		return namespaceContext;
 	}
 
-	public void setNamespaceContext(NamespaceContext context)
-			throws XMLStreamException {
+	public void setNamespaceContext(NamespaceContext context) throws XMLStreamException {
 		this.namespaceContext = context;
 	}
 

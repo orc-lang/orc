@@ -42,6 +42,7 @@ import orc.orchard.oil.Oil;
  * @author quark
  */
 @WebService
+//@BindingType(JSONBindingID.JSON_BINDING)
 public class ExecutorService extends AbstractExecutorService {
 	@Resource
 	private WebServiceContext context;

@@ -35,6 +35,7 @@ import orc.orchard.errors.UnsupportedFeatureException;
  * @author quark
  */
 @WebService
+//@BindingType(JSONBindingID.JSON_BINDING)
 public class StandaloneJobService extends AbstractJobService {
 	private Endpoint endpoint;
 	/** Added to satisfy stupid JAX-WS requirement. */

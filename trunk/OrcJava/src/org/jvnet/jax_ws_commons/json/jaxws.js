@@ -71,21 +71,41 @@
 		}
 		return out + "'";
 	},
+	
+	/** Reassign this to change the default error handler. */
+	onError : function(response, status, exception) {
+		if (exception) throw exception;
+		else throw {
+			response: response,
+			status: status
+		};
+	},
 
-
-	post : function(obj, func) {
+	post : function(message, onResult, onError) {
 		var req = this.createXmlHttpRequest();
+		if (!onError) onError = this.onError;
 		req.onreadystatechange = function() {
 			if (req.readyState == 4) {
-				if (req.responseText) {
-					if (func) func(eval('('+req.responseText+')'));
+				try {
+					var response = req.responseText
+						? eval('('+req.responseText+')')
+						: null;
+				} catch (e) {
+					onError(null, null, e);
+				}
+				if (req.status == 200) {
+					if (onResult) onResult(response);
 				} else {
-					throw "Error: no response (Status "+req.status+": "+req.statusText + ")";
+					onError(response, req.status);
 				}
 			}
 		};
-		req.open("POST", this.url, true);
-		req.setRequestHeader("Content-Type", "application/json");
-		req.send(this.toJSON(obj));
+		try {
+			req.open("POST", this.url, true);
+			req.setRequestHeader("Content-Type", "application/json");
+			req.send(this.toJSON(message));
+		} catch (e) {
+			onError(null, null, e);
+		}
 	},
 
