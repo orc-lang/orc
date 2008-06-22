@@ -76,9 +76,9 @@ final class ClientGenerator {
             ((WSDLBoundOperationImpl)op.operation).getReqPayloadName());
 
         shift(os);
-        os.printf("%s : function(obj, callback) {\n", op.methodName);
+        os.printf("%s : function(obj, onResult, onError) {\n", op.methodName);
         shift2(os);
-        os.printf("this.post({%s:obj},callback);\n", reqName);
+        os.printf("this.post({%s:obj}, onResult, onError);\n", reqName);
         shift(os);
         if (next) { os.append("},\n\n"); } else { os.append("}\n\n"); }
     }

@@ -17,8 +17,16 @@ div.publication {
 	border-bottom: 1px solid gray;
 	font-family: monospace;
 }
+div.error {
+	border: 3px solid red;
+	font-family: monospace;
+	color: red;
+	font-size: larger;
+}
 </style>
 <script language="javascript">
+var executorServiceUrl = "json/executor";
+//var executorServiceUrl = "mock-executor.js";
 function foreach(vs, f) {
 	vs = toArray(vs);
 	for (var i in vs) {
@@ -48,25 +56,38 @@ function loadService(name, url, onReady) {
 	script.src = url + "?js" + (onReady ? "&func="+encodeURIComponent(onReady) : "");
 	head.appendChild(script);
 }
+/**
+ * The currently-running job.
+ * Anybody who calls finish on it should unset
+ * this variable to indicate that the job is no
+ * longer valid.
+ */
 var currentJob = null;
 function onJobServiceReady(job) {
 	currentJob = job;
+	currentJob.onError = onError;
 	/**
 	 * Recursively listen for values
 	 * until the job finishes.
 	 */
 	function onPublish(v) {
 		if (!v) {
-				job.finish({}, onJobFinish);
-				return;
+			// the job may have already been stopped
+			// and therefore become inaccessible
+			// (i.e. by onUnload)
+			if (currentJob) {
+				currentJob.finish({}, onJobFinish);
+				currentJob = null;
+			}
+			return;
 		}
 		renderPublications(v);
-		job.listen({}, onPublish);
+		currentJob.listen({}, onPublish);
 	}
 	// Start the job and then listen for published values.
-	job.start({}, function () {
+	currentJob.start({}, function () {
 		document.getElementById("stopButton").disabled = false;
-		job.listen({}, onPublish);
+		currentJob.listen({}, onPublish);
 	});
 }
 function onJobFinish() {
@@ -171,16 +192,47 @@ function publicationToJson(v) {
 function publicationToHtml(v) {
 	return jsonToHtml(publicationToJson(v))
 }
+function onLoad() {
+	loadService("executorService", executorServiceUrl, "onExecutorServiceReady");
+}
+var executorService = null;
+function onExecutorServiceReady(service) {
+	executorService = service;
+	executorService.onError = onError;
+	document.getElementById("runButton").disabled = false;
+}
+function onError(response, code, exception) {
+	document.getElementById("stopButton").disabled = true;
+	document.getElementById("loading").style.visibility = "hidden";
+	// stop the current job, if possible
+	var job = currentJob;
+	if (job) {
+		// prevent this from running again
+		// even if finish has an error
+		currentJob = null;
+		job.finish({});
+	}
+	// unwrap response if possible
+	if (response) {
+		if (response.faultstring) {
+			response = response.faultstring;
+		}
+	} else {
+		response = exception;
+	}
+	var pubs = document.getElementById("publications");
+	pubs.innerHTML += '<div class="error">' + jsonToHtml(response) + '</div>';
+	pubs.scrollTop = pubs.scrollHeight;
+	document.getElementById("runButton").disabled = false;
+}
 </script>
-<script language="javascript" src="json/executor?js"/></script>
-<!-- <script language="javascript" src="mock-executor.js"/></script> -->
 </head>
-<body onunload="onUnload()">
+<body onunload="onUnload()" onload="onLoad()">
 <textarea id="program" rows="5" cols="80">
 def M(n) = n | Rtimer(2000) >> M(n+1)
 M(1)
 </textarea>
-<p><input type="submit" value="Run" onClick="onRunButton()" id="runButton">
+<p><input type="submit" value="Run" onClick="onRunButton()" id="runButton" disabled="true">
 &nbsp;<input type="submit" value="Stop" onClick="onStopButton()" id="stopButton" disabled="true">
 &nbsp;<img id="loading" src="loading.gif" width="126" height="22" style="visibility: hidden" align="top">
 <div id="publications"></div>

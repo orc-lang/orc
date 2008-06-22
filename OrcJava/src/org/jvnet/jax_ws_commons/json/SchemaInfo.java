@@ -161,8 +161,12 @@ public final class SchemaInfo {
 					// which should give us an object with a "return" element,
 					// if anything was returned
         			root = root.getJSONObject((String)root.keys().next());
-        			// extract the content of that element
-        			object = root.get((String)root.keys().next());
+        			// extract the content of that element, if it has only one child
+        			if (root.length() == 1) {
+        				object = root.get((String)root.keys().next());
+        			} else {
+        				object = root;
+        			}
         		} catch (JSONException e) {
         			// if the root element has no children, it's a
         			// void method; return null
