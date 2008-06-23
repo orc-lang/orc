@@ -4,6 +4,7 @@
 package orc.env;
 
 import orc.ast.simple.arg.Var;
+import orc.error.OrcError;
 import orc.runtime.values.Future;
 import java.io.*;
 import java.util.List;
@@ -52,7 +53,7 @@ public class Env<T> implements Serializable {
 	public T lookup(int index) {		
 		
 		if (index < 0) {
-			throw new Error("Invalid argument to lookup, index " + index + " is negative.");
+			throw new OrcError("Invalid argument to lookup, index " + index + " is negative.");
 		}
 		
 		for(ENode here = node; here != null; here = here.parent, index--) {
@@ -61,7 +62,7 @@ public class Env<T> implements Serializable {
 			}
 		}
 		
-		throw new Error("Unbound variable.");
+		throw new OrcError("Unbound variable.");
 	}
 		
 	/**

@@ -7,8 +7,9 @@ import java.util.List;
 
 import orc.ast.simple.arg.*;
 import orc.env.Env;
+import orc.error.ArityMismatchException;
 import orc.error.OrcException;
-import orc.error.OrcRuntimeTypeException;
+import orc.error.RuntimeTypeException;
 import orc.runtime.Token;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Return;
@@ -43,10 +44,10 @@ public class Closure extends Value implements Callable {
 	 * is reused, rather than creating a new intermediate stack frame.
 	 * @see orc.runtime.values.Callable#createCall(java.lang.String, orc.runtime.Token, java.util.List, orc.runtime.nodes.Node)
 	 */
-	public void createCall(Token callToken, List<Future> args, Node nextNode) throws OrcException {
+	public void createCall(Token callToken, List<Future> args, Node nextNode) throws ArityMismatchException {
 		
 		if (args.size() != arity) {
-			throw new OrcRuntimeTypeException("Arity mismatch, expected " + arity + " arguments, got " + args.size() + ".");
+			throw new ArityMismatchException(arity, args.size());
 		}
 		
 		// check tail-call optimization

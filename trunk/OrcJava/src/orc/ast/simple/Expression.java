@@ -7,7 +7,6 @@ import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
-import orc.error.Debug;
 import orc.runtime.nodes.Node;
 
 /**
@@ -17,7 +16,7 @@ import orc.runtime.nodes.Node;
  *
  */
 
-public abstract class Expression extends Debug {
+public abstract class Expression {
 	
 	/**
 	 * Converts abstract syntax tree into a serializable form, used to generate

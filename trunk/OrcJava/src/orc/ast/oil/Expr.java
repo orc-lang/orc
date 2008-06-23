@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import orc.ast.oil.arg.Var;
-import orc.error.Debug;
 
 /**
  * Base class for the portable (.oil, for Orc Intermediate Language) abstract syntax tree.
@@ -13,7 +12,7 @@ import orc.error.Debug;
  *
  */
 
-public abstract class Expr extends Debug {
+public abstract class Expr {
 	
 	/**
 	 * Compiles an oil syntax tree into an execution graph.

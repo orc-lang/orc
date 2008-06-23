@@ -13,7 +13,8 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-import orc.error.OrcRuntimeTypeException;
+import orc.error.JavaException;
+import orc.error.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.ThreadedSite;
 import orc.runtime.values.Constant;
@@ -31,11 +32,9 @@ public class Mail extends ThreadedSite {
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.OrcEngine)
 	 */
 	@Override
-	public Value evaluate(Args args) throws OrcRuntimeTypeException {
+	public Value evaluate(Args args) throws TokenException {
 		String from, subject, message, smtp;
 		TupleValue to;
-		if (args.size() != 5)
-			throw new OrcRuntimeTypeException("Wrong number of arguments");
 
 		from = args.stringArg(0);
 
@@ -80,7 +79,7 @@ public class Mail extends ThreadedSite {
 			msg.setContent(message, "text/plain");
 			Transport.send(msg);
 		} catch (Exception e) {
-			throw new OrcRuntimeTypeException(e);
+			throw new JavaException(e);
 		}
 		return Value.signal();
 	}

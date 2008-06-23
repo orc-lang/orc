@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.Set;
 
 import orc.env.Env;
+import orc.error.TokenException;
 import orc.runtime.nodes.Node;
 import orc.runtime.regions.Execution;
 import orc.runtime.regions.Region;
@@ -151,6 +152,26 @@ public class OrcEngine implements Runnable {
 		queuedReturns.addLast(t);
 		notify();
 	}
+	
+	
+	/**
+	 * 
+	 * A token owned by this engine has encountered an exception.
+	 * The token dies, remaining silent and leaving the execution,
+	 * and then calls this method so that the engine can report or 
+	 * otherwise handle the failure.
+	 * 
+	 * @param t
+	 * @param probme
+	 */
+	public void tokenError(Token t, TokenException problem) {
+		System.out.println();
+		System.out.println("Token " + t + " encountered an error. ");
+		System.out.println("Problem: " + problem);
+		System.out.println("Source location: " + problem.getSourceLocation());
+		System.out.println();
+	}
+	
 	
 	public void debug(String s) {
 		if (debugMode) System.out.println(s);

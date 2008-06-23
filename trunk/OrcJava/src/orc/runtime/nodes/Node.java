@@ -3,7 +3,8 @@
  */
 package orc.runtime.nodes;
 
-import orc.error.Debug;
+import orc.error.Debuggable;
+import orc.error.SourceLocation;
 import orc.runtime.Token;
 import java.io.*;
 
@@ -11,7 +12,7 @@ import java.io.*;
  * Abstract base class for compile nodes
  * @author wcook
  */
-public abstract class Node extends Debug implements Serializable {
+public abstract class Node implements Serializable {
 	
 	/**
 	 * The process method is the fundamental operation in the execution engine.
@@ -19,5 +20,5 @@ public abstract class Node extends Debug implements Serializable {
 	 * @param t      input token being processed 
 	 */
 	public abstract void process(Token t);
-		
+
 }

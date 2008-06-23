@@ -13,11 +13,13 @@ header {
 	import orc.ast.extended.declaration.*;
 	import orc.ast.extended.pattern.*;
 	import orc.val.*;
+	import orc.error.*;
 	import orc.Orc;
-	
+
 } 
 
-class OrcParser extends Parser;
+class OrcParser extends Parser; 
+
 options {
     k = 2;
 }
@@ -183,7 +185,6 @@ seq_expr returns [Expression e = null]
 		Pattern p;
 	}
 	: e = op_expr 
-	  { e.setDebugInfo(LT(1)); }
 	  (
 	   options {greedy = true;} 
 	   		: RANGLE p=pattern RANGLE e2=seq_expr 
@@ -308,8 +309,8 @@ invoke_expr returns [Expression e = null]
 	: n:NAME
 	  { e = new Name(n.getText()); }
 	  (options {greedy = true;} :
-	     args = arguments { e = new Call(e, args); e.setDebugInfo(LT(1)); }
-	   | DOT f:NAME { e = new Dot(e, f.getText()); e.setDebugInfo(LT(1)); }
+	     args = arguments { e = new Call(e, args); }
+	   | DOT f:NAME { e = new Dot(e, f.getText()); }
 	  )*
 	;
 	
@@ -392,7 +393,6 @@ pattern returns [Pattern p = null]
 		("as" var:NAME
 		{ p = new AsPattern(p,var.getText()); }
 		)?
-	  { p.setDebugInfo(LT(1)); } // not quite right, but it will do for now
 	;
 
 cons_pattern returns [Pattern p = null]

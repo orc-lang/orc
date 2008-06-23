@@ -50,7 +50,6 @@ public class Call extends Expr {
 	@Override
 	public Node compile(Node output) {
 		orc.runtime.nodes.Call c = new orc.runtime.nodes.Call(callee, args, output);
-		c.setDebugInfo(this);
 		return c;
 	}
 

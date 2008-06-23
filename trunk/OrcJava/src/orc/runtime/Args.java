@@ -3,7 +3,7 @@ package orc.runtime;
 import java.io.Serializable;
 import java.util.List;
 
-import orc.error.OrcRuntimeTypeException;
+import orc.error.TokenException;
 import orc.runtime.values.Constant;
 import orc.runtime.values.Field;
 import orc.runtime.values.TupleValue;
@@ -52,23 +52,23 @@ public class Args implements Serializable {
 	 * Helper function to retrieve the nth value (starting from 0), with error
 	 * checking
 	 */
-	public Value valArg(int n) throws OrcRuntimeTypeException {
+	public Value valArg(int n) throws TokenException {
 		try {
 			return values[n];
 		} catch (ArrayIndexOutOfBoundsException e) {
-			throw new OrcRuntimeTypeException("Arity mismatch calling site. Could not find argument #" + n);
+			throw new TokenException("Arity mismatch calling site. Could not find argument #" + n);
 		}
 	}
 	
-	public String fieldName() throws OrcRuntimeTypeException {
+	public String fieldName() throws TokenException {
 		if (values.length != 1) {
-			throw new OrcRuntimeTypeException("Arity mismatch resolving field reference.");
+			throw new TokenException("Arity mismatch resolving field reference.");
 		}
 		Value v = values[0];
 		if (v instanceof Field) {
 			return ((Field)v).getKey();
 		} else {
-			throw new OrcRuntimeTypeException("Bad type for field reference.");
+			throw new TokenException("Bad type for field reference.");
 		}
 	}
 	
@@ -76,24 +76,24 @@ public class Args implements Serializable {
 	 * Helper function to retrieve the nth element as an object (starting from
 	 * 0), with error checking
 	 * 
-	 * @throws OrcRuntimeTypeException
+	 * @throws TokenException
 	 */
-	public Object getArg(int n) throws OrcRuntimeTypeException
+	public Object getArg(int n) throws TokenException
 	{
 		try {
 			Value a = values[n];
 			return ((Constant)a).getValue(); 
 		}
 		catch (ArrayIndexOutOfBoundsException e) {
-			throw new OrcRuntimeTypeException("Arity mismatch calling site. Could not find argument #" + n);
+			throw new TokenException("Arity mismatch calling site. Could not find argument #" + n);
 		}
 		catch (ClassCastException e) {
-			throw new OrcRuntimeTypeException("Argument " + n + " to site is not a native Java value");
+			throw new TokenException("Argument " + n + " to site is not a native Java value");
 		} 
 	}
 	
 	/* Return the entire tuple as an object array */
-	public Object[] asArray() throws OrcRuntimeTypeException {
+	public Object[] asArray() throws TokenException {
 		int n = values.length;
 		Object[] a = new Object[n];
 		for (int i=0; i<n; i++) { 
@@ -104,50 +104,50 @@ public class Args implements Serializable {
 		
 	/**
 	 * Helper function for integers
-	 * @throws OrcRuntimeTypeException 
+	 * @throws TokenException 
 	 */
-	public int intArg(int n) throws OrcRuntimeTypeException {
+	public int intArg(int n) throws TokenException {
 		
 		Object a = getArg(n);
 		try
 			{ return ((Integer)a).intValue(); }
 		catch (ClassCastException e) 
-			{ throw new OrcRuntimeTypeException("Argument " + n + " should be an int, got " + a.getClass().toString() + " instead."); } 
+			{ throw new TokenException("Argument " + n + " should be an int, got " + a.getClass().toString() + " instead."); } 
 	}
 
 	/**
 	 * Helper function for longs
-	 * @throws OrcRuntimeTypeException 
+	 * @throws TokenException 
 	 */
-	public long longArg(int n) throws OrcRuntimeTypeException {
+	public long longArg(int n) throws TokenException {
 		
 		Object a = getArg(n);
 		try
 			{ return ((Integer)a).longValue(); }
 		catch (ClassCastException e) 
-			{ throw new OrcRuntimeTypeException("Argument " + n + " should be an int, got " + a.getClass().toString() + " instead."); } 
+			{ throw new TokenException("Argument " + n + " should be an int, got " + a.getClass().toString() + " instead."); } 
 	}
 
 	
 	/**
 	 * Helper function for booleans
-	 * @throws OrcRuntimeTypeException 
+	 * @throws TokenException 
 	 */
-	public boolean boolArg(int n) throws OrcRuntimeTypeException {
+	public boolean boolArg(int n) throws TokenException {
 		
 		Object a = getArg(n);
 		try
 			{ return ((Boolean)a).booleanValue(); }
 		catch (ClassCastException e) 
-			{ throw new OrcRuntimeTypeException("Argument " + n + " to site '" + this.toString() + "' should be a boolean, got " + a.getClass().toString() + " instead."); } 
+			{ throw new TokenException("Argument " + n + " to site '" + this.toString() + "' should be a boolean, got " + a.getClass().toString() + " instead."); } 
 	
 	}
 
 	/**
 	 * Helper function for strings
-	 * @throws OrcRuntimeTypeException 
+	 * @throws TokenException 
 	 */
-	public String stringArg(int n) throws OrcRuntimeTypeException {
+	public String stringArg(int n) throws TokenException {
 
 		Object a = getArg(n);
 		return a.toString();

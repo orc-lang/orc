@@ -10,9 +10,10 @@ import orc.ast.oil.arg.Arg;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
-import orc.error.DebugInfo;
 import orc.error.OrcException;
-import orc.error.OrcRuntimeTypeException;
+import orc.error.SourceLocation;
+import orc.error.TokenException;
+import orc.error.UncallableValueException;
 import orc.runtime.nodes.Node;
 import orc.runtime.regions.Execution;
 import orc.runtime.regions.Region;
@@ -198,13 +199,13 @@ public class Token implements Serializable, Comparable<Token> {
 	/**
 	 * Lookup a variable in the environment
 	 * @param var  	variable name
-	 * @return		value, or an exception if the variable is undefined
+	 * @return		value, or an error if the variable is undefined
 	 */
 	public Future lookup(Arg a) {
 		return a.resolve(env);		
 	}
 
-	public Callable call(Arg a) {
+	public Callable call(Arg a) throws UncallableValueException {
 		Future f = this.lookup(a);
 		return f.forceCall(this);
 	}
@@ -258,19 +259,14 @@ public class Token implements Serializable, Comparable<Token> {
 	
 	
 	/* This token has encountered an error, and dies. */
-	public void error(DebugInfo info, OrcException problem) {
-		// TODO: Pipe debug output through engine rather than directly to console.
-		System.out.println();
-		System.out.println("Token " + this + " encountered an error. ");
-		System.out.println("Problem: " + problem.getMessage());
-		System.out.println("Source location: " + info.errorLocation());
-		System.out.println();
+	public void error(TokenException problem) {
 		die();
+		engine.tokenError(this, problem);
 	}
 
-	/* This token has encountered an error, and dies. */
-	public void error(OrcRuntimeTypeException problem) {
-		error(node.getDebugInfo(), problem);
+	public void error(SourceLocation sourceLocation, OrcException e) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }

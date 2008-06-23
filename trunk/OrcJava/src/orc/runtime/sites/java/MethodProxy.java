@@ -8,7 +8,8 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import orc.runtime.Args;
-import orc.error.OrcRuntimeTypeException;
+import orc.error.JavaException;
+import orc.error.TokenException;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.*;
 
@@ -31,7 +32,7 @@ public class MethodProxy extends EvalSite {
      * @see orc.runtime.sites.EvalSite#evaluate(java.lang.Object[])
      */
     @Override
-    public Value evaluate(Args args) throws OrcRuntimeTypeException {
+    public Value evaluate(Args args) throws TokenException {
         for (Method m : wrapped_methods) {
             try {
             	Object result = m.invoke(self, args.asArray());             	
@@ -45,11 +46,11 @@ public class MethodProxy extends EvalSite {
             } catch (IllegalArgumentException e) {
             	// continue looking for a matching method
             } catch (IllegalAccessException e) {
-            	throw new OrcRuntimeTypeException(e);
+            	throw new JavaException(e);
 			} catch (InvocationTargetException e) {
-            	throw new OrcRuntimeTypeException(e);
+            	throw new JavaException(e);
 			}
         }
-        throw new OrcRuntimeTypeException("Argument types did not match any implementation for method '" + methodName + "'.");
+        throw new TokenException("Argument types did not match any implementation for method '" + methodName + "'.");
     }
 }
