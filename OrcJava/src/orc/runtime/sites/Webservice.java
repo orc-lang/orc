@@ -5,7 +5,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import orc.error.OrcRuntimeTypeException;
+import orc.error.JavaException;
+import orc.error.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.java.ObjectProxy;
 import orc.runtime.sites.java.ThreadedObjectProxy;
@@ -55,7 +56,7 @@ public class Webservice extends ThreadedSite {
 	}
 
 	@Override
-	public Value evaluate(Args args) throws OrcRuntimeTypeException {
+	public Value evaluate(Args args) throws TokenException {
 		try {
 			// take the passed URL and create java code from it
 			GeneratedFileInfo info = createJavaCode(args.stringArg(0));
@@ -118,7 +119,7 @@ public class Webservice extends ThreadedSite {
 			return new ThreadedObjectProxy(stubObject);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			throw new OrcRuntimeTypeException(e);
+			throw new JavaException(e);
 		}
 	}
 }

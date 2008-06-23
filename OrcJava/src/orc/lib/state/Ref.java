@@ -6,7 +6,7 @@ package orc.lib.state;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import orc.error.OrcRuntimeTypeException;
+import orc.error.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.DotSite;
@@ -93,7 +93,7 @@ public class Ref extends EvalSite {
 		
 		private class writeMethod extends Site {
 			@Override
-			public void callSite(Args args, Token writer) throws OrcRuntimeTypeException {
+			public void callSite(Args args, Token writer) throws TokenException {
 
 				Value val = args.valArg(0);
 				

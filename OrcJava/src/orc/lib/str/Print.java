@@ -3,7 +3,7 @@
  */
 package orc.lib.str;
 
-import orc.error.OrcRuntimeTypeException;
+import orc.error.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.Value;
@@ -20,7 +20,7 @@ public class Print extends EvalSite {
 	 * @see orc.runtime.sites.EvalSite#evaluate(java.lang.Object[])
 	 */
 	@Override
-	public Value evaluate(Args args) throws OrcRuntimeTypeException {
+	public Value evaluate(Args args) throws TokenException {
 		
 		for(int i = 0; i < args.size(); i++)
 		{

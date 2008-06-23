@@ -27,8 +27,8 @@ public class Unwind extends Node {
 	}
 
 	/** 
-	 * When executed, extends the environment with a new binding.
-	 * The result value in the input token is pushed onto the env stack.
+	 * When executed, pops the env stack to remove
+	 * the most recent binding.
 	 * The token moves to the next node and reactivates.
 	 * @see orc.runtime.nodes.Node#process(orc.runtime.Token)
 	 */

@@ -10,12 +10,13 @@ public class Call extends Expression {
 
 	public Expression caller;
 	public List<Expression> args;
-	
+		
 	public Call(Expression caller, List<Expression> args)
 	{
 		this.caller = caller;
 		this.args = args;
 	}
+	
 	public Call(Expression caller, Expression arg)
 	{
 		this.caller = caller;
@@ -52,6 +53,7 @@ public class Call extends Expression {
 		List<Argument> newargs = new LinkedList<Argument>();
 		Arg newcaller = caller.argify();
 		orc.ast.simple.Expression e = new orc.ast.simple.Call(newcaller.asArg(), newargs);
+		
 		e = newcaller.bind(e);
 		
 		for (Expression r : args)
@@ -60,8 +62,6 @@ public class Call extends Expression {
 			newargs.add(a.asArg());
 			e = a.bind(e);
 		}
-		
-		e.setDebugInfo(this);
 		
 		return e;
 	}

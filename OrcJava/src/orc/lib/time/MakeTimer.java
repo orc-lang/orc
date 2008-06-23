@@ -1,6 +1,6 @@
 package orc.lib.time;
 
-import orc.error.OrcRuntimeTypeException;
+import orc.error.TokenException;
 import orc.runtime.Args;
 import orc.runtime.LogicalClock;
 import orc.runtime.Token;
@@ -33,7 +33,7 @@ public class MakeTimer extends Site {
 		}
 		
 		@Override
-		public void callSite(Args args, Token caller) throws OrcRuntimeTypeException {
+		public void callSite(Args args, Token caller) throws TokenException {
 			
 			int delay = args.intArg(0);
 				

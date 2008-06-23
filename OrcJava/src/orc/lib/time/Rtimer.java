@@ -3,7 +3,7 @@
  */
 package orc.lib.time;
 
-import orc.error.OrcRuntimeTypeException;
+import orc.error.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.Site;
@@ -21,7 +21,7 @@ public class Rtimer extends Site {
 	/** Scheduler thread for events */
 	private final Timer timer = new Timer();
 
-	public void callSite(Args args, final Token returnToken) throws OrcRuntimeTypeException {
+	public void callSite(Args args, final Token returnToken) throws TokenException {
 		timer.schedule(new TimerTask() {
 			public void run() {
 				returnToken.resume();

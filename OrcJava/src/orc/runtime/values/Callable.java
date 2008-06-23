@@ -5,7 +5,7 @@ package orc.runtime.values;
 
 import java.util.List;
 
-import orc.error.OrcException;
+import orc.error.TokenException;
 import orc.runtime.Token;
 import orc.runtime.nodes.Node;
 
@@ -23,7 +23,7 @@ public interface Callable {
 	 * @param nextNode	next node after the call node, to which the result should be sent
 	 * @param engine	Orc engine
 	 */
-	void createCall(Token caller, List<Future> args, Node nextNode) throws OrcException;
+	void createCall(Token caller, List<Future> args, Node nextNode) throws TokenException;
 
 
 }

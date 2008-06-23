@@ -5,7 +5,7 @@ package orc.runtime.values;
 
 import java.util.List;
 
-import orc.error.OrcRuntimeTypeException;
+import orc.error.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 
@@ -30,14 +30,14 @@ public class TupleValue extends EvalSite {
 	public TupleValue(Value[] values) {
 		this.values = values;
 	}
-	public Value evaluate(Args args) throws OrcRuntimeTypeException	{
+	public Value evaluate(Args args) throws TokenException	{
 		// TODO: Generalize this treatment of dot sites.
 		try { 
 			String s = args.fieldName();
 			if (s.equals("fits")) {
 				return new FitSite(values.length);
 			}
-		} catch (OrcRuntimeTypeException e) {
+		} catch (TokenException e) {
 			// do nothing
 		}
 		return values[args.intArg(0)];
@@ -48,7 +48,7 @@ public class TupleValue extends EvalSite {
 		public FitSite(int size) {
 			this.size = size;
 		}
-		public Value evaluate(Args args) throws OrcRuntimeTypeException {
+		public Value evaluate(Args args) throws TokenException {
 			return new Constant(args.intArg(0) == this.size);
 		}
 	}

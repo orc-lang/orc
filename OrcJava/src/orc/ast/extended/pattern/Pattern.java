@@ -13,7 +13,6 @@ import orc.ast.simple.Where;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.Site;
 import orc.ast.simple.arg.Var;
-import orc.error.Debug;
 
 
 /**
@@ -27,7 +26,7 @@ import orc.error.Debug;
  * 
  */
 
-public abstract class Pattern extends Debug {
+public abstract class Pattern {
 
 	
 	/* Sites often used in pattern matching */

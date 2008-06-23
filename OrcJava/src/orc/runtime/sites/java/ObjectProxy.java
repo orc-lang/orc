@@ -7,7 +7,7 @@ import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
 
-import orc.error.OrcRuntimeTypeException;
+import orc.error.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.*;
@@ -34,11 +34,11 @@ public class ObjectProxy extends EvalSite {
 	 *      orc.runtime.OrcEngine)
 	 */
 	@Override
-	public Value evaluate(Args args) throws OrcRuntimeTypeException {
+	public Value evaluate(Args args) throws TokenException {
 		return getMethodProxy(args);
 	}
 	
-	protected MethodProxy getMethodProxy(Args args) throws OrcRuntimeTypeException {
+	protected MethodProxy getMethodProxy(Args args) throws TokenException {
 		String methodName = args.fieldName();
 		List<Method> matching_methods = new LinkedList<Method>();
 
@@ -54,7 +54,7 @@ public class ObjectProxy extends EvalSite {
 		}
 
 		if (matching_methods.isEmpty()) {
-			throw new OrcRuntimeTypeException("Class "
+			throw new TokenException("Class "
 					+ wrapped_instance.getClass().toString()
 					+ " does not have the method '" + methodName + "'.");
 		}

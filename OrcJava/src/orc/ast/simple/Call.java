@@ -55,7 +55,8 @@ public class Call extends Expression {
 		for (Argument b : args)	{
 			newargs.add(b.subst(a, x));
 		}
-		return new Call(callee.subst(a, x), newargs);
+		Call c = new Call(callee.subst(a, x), newargs);
+		return c;
 	}
 
 	public Set<Var> vars() {
@@ -77,7 +78,9 @@ public class Call extends Expression {
 			newargs.add(arg.convert(vars));
 		}
 		
-		return new orc.ast.oil.Call(newcallee, newargs);
+		orc.ast.oil.Call newcall = new orc.ast.oil.Call(newcallee, newargs);
+		
+		return newcall;
 	}
 
 }

@@ -6,8 +6,9 @@ package orc.runtime.sites;
 import java.util.LinkedList;
 import java.util.List;
 
+import orc.error.JavaException;
 import orc.error.OrcException;
-import orc.error.OrcRuntimeTypeException;
+import orc.error.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.nodes.Node;
@@ -31,7 +32,7 @@ public abstract class Site extends Value implements Callable {
 	 * 
 	 * @see orc.runtime.values.Callable#createCall(orc.runtime.Token, java.util.List, orc.runtime.nodes.Node)
 	 */
-	public void createCall(Token callToken, List<Future> args, Node nextNode) throws OrcException {
+	public void createCall(Token callToken, List<Future> args, Node nextNode) throws TokenException {
 
 		List<Value> values = new LinkedList<Value>();
 		
@@ -53,7 +54,7 @@ public abstract class Site extends Value implements Callable {
 	 * @param args			list of argument values
 	 * @param caller	where the result should be sent
 	 */
-	abstract public void callSite(Args args, Token caller) throws OrcRuntimeTypeException;
+	abstract public void callSite(Args args, Token caller) throws TokenException;
 
 	public orc.orchard.oil.Value marshal() {
 		return new orc.orchard.oil.UnrepresentableValue(this.toString());

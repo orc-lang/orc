@@ -3,7 +3,6 @@ package orc.ast.sites;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import orc.error.OrcRuntimeTypeException;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.java.ClassProxy;

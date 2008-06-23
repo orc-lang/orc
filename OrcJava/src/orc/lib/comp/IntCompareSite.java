@@ -3,7 +3,7 @@
  */
 package orc.lib.comp;
 
-import orc.error.OrcRuntimeTypeException;
+import orc.error.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.*;
@@ -18,7 +18,7 @@ public abstract class IntCompareSite extends EvalSite {
 	 * @see orc.runtime.sites.EvalSite#evaluate(java.lang.Object[])
 	 */
 	@Override
-	public Value evaluate(Args args) throws OrcRuntimeTypeException{
+	public Value evaluate(Args args) throws TokenException{
 		
 		return new Constant(compare(args.intArg(0), args.intArg(1)));
 	}

@@ -5,7 +5,7 @@ package orc.lib.state;
 
 import java.util.LinkedList;
 
-import orc.error.OrcRuntimeTypeException;
+import orc.error.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.DotSite;
@@ -83,7 +83,7 @@ public class SyncChannel extends EvalSite {
 		
 		private class putMethod extends Site {
 			@Override
-			public void callSite(Args args, Token sender) throws OrcRuntimeTypeException {
+			public void callSite(Args args, Token sender) throws TokenException {
 
 				Value item = args.valArg(0);
 				

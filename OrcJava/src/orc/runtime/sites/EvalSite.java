@@ -3,7 +3,7 @@
  */
 package orc.runtime.sites;
 
-import orc.error.OrcRuntimeTypeException;
+import orc.error.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.values.Value;
@@ -22,11 +22,11 @@ import orc.runtime.values.Value;
 public abstract class EvalSite extends Site {
 
 	@Override
-	public void callSite(Args args, Token caller) throws OrcRuntimeTypeException {
+	public void callSite(Args args, Token caller) throws TokenException {
 
 		caller.resume(evaluate(args));
 	}
 	
-	abstract public Value evaluate(Args args) throws OrcRuntimeTypeException;
+	abstract public Value evaluate(Args args) throws TokenException;
 
 }

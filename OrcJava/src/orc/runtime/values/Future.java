@@ -1,5 +1,6 @@
 package orc.runtime.values;
 
+import orc.error.UncallableValueException;
 import orc.runtime.Token;
 
 /**
@@ -21,7 +22,7 @@ import orc.runtime.Token;
 
 public interface Future {
 	
-	public Callable forceCall(Token t);
+	public Callable forceCall(Token t) throws UncallableValueException;
 	public Value forceArg(Token t);
 
 }

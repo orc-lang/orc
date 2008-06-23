@@ -1,6 +1,6 @@
 package orc.runtime.sites;
 
-import orc.error.OrcRuntimeTypeException;
+import orc.error.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.values.Value;
@@ -11,16 +11,16 @@ import orc.runtime.values.Value;
  * @author quark
  */
 public abstract class ThreadedSite extends Site {
-	public void callSite(final Args args, final Token caller) throws OrcRuntimeTypeException {
+	public void callSite(final Args args, final Token caller) {
 		new Thread() {
 			public void run() {
 				try {
 					caller.resume(evaluate(args));
-				} catch (OrcRuntimeTypeException e) {
+				} catch (TokenException e) {
 					caller.error(e);
 				}
 			}
 		}.start();
 	}
-	abstract public Value evaluate(Args args) throws OrcRuntimeTypeException;
+	abstract public Value evaluate(Args args) throws TokenException;
 }

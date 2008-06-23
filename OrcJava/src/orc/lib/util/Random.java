@@ -1,6 +1,6 @@
 package orc.lib.util;
 
-import orc.error.OrcRuntimeTypeException;
+import orc.error.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.PartialSite;
 import orc.runtime.values.Constant;
@@ -15,7 +15,7 @@ public class Random extends PartialSite {
 	}
 	
 	@Override
-	public Value evaluate(Args args) throws OrcRuntimeTypeException {
+	public Value evaluate(Args args) throws TokenException {
 		
 		int limit = args.intArg(0);
 		
