@@ -31,6 +31,7 @@ import orc.orchard.Job;
 import orc.orchard.JobConfiguration;
 import orc.orchard.Publication;
 import orc.orchard.ThreadWaiter;
+import orc.orchard.TokenError;
 import orc.orchard.Waiter;
 import orc.orchard.api.JobServiceInterface;
 import orc.orchard.errors.InvalidJobStateException;
@@ -81,8 +82,8 @@ public class JobsService extends AbstractJobsService {
 	 * FIXME: override this to use Jetty continuations once JAX-WS supports them
 	 */
 	@Override
-	public List<Publication> listen() throws InvalidJobStateException, UnsupportedFeatureException, InterruptedException, RemoteException { 
-		return super.listen();
+	protected Waiter getWaiter() {
+		return super.getWaiter();
 	}
 
 	// This annotation seems unnecessary but wsgen barfs trying to
@@ -133,14 +134,32 @@ public class JobsService extends AbstractJobsService {
 
 	/** Do-nothing override. */
 	@Override
-	public List<Publication> publications() throws InvalidJobStateException, RemoteException {
+	public List<Publication> publications() throws RemoteException {
 		return super.publications();
+	}
+	
+	/** Do-nothing override. */
+	@Override
+	public List<Publication> nextPublications() throws RemoteException, UnsupportedFeatureException, InterruptedException {
+		return super.nextPublications();
 	}
 
 	/** Do-nothing override. */
 	@Override
-	public List<Publication> publicationsAfter(@WebParam(name="sequence") int sequence) throws InvalidJobStateException, RemoteException {
+	public List<Publication> publicationsAfter(@WebParam(name="sequence") int sequence) throws RemoteException {
 		return super.publicationsAfter(sequence);
+	}
+	
+	/** Do-nothing override. */
+	@Override
+	public List<TokenError> errors() throws RemoteException {
+		return super.errors();
+	}
+	
+	/** Do-nothing override. */
+	@Override
+	public List<TokenError> nextErrors() throws RemoteException, UnsupportedFeatureException, InterruptedException {
+		return super.nextErrors();
 	}
 
 	/** Do-nothing override. */

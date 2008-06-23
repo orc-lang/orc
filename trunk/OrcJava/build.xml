@@ -81,16 +81,16 @@
 		<pathelement location="${lib}/jsr250-api.jar"/>
 	</path>
 	<target name="wsgen" description="Generate web service artifacts">
-		<wsgen sei="orc.orchard.soap.CompilerService" destdir="${bin}">
+		<wsgen sei="orc.orchard.soap.CompilerService" destdir="${bin}" xendorsed="true">
 			<classpath><path refid="wsgen.classpath"/></classpath>
 		</wsgen>
-		<wsgen sei="orc.orchard.soap.ExecutorService" destdir="${bin}">
+		<wsgen sei="orc.orchard.soap.ExecutorService" destdir="${bin}" xendorsed="true">
 			<classpath><path refid="wsgen.classpath"/></classpath>
 		</wsgen>
-		<wsgen sei="orc.orchard.soap.JobsService" destdir="${bin}">
+		<wsgen sei="orc.orchard.soap.JobsService" destdir="${bin}" xendorsed="true">
 			<classpath><path refid="wsgen.classpath"/></classpath>
 		</wsgen>
-		<wsgen sei="orc.orchard.soap.StandaloneJobService" destdir="${bin}">
+		<wsgen sei="orc.orchard.soap.StandaloneJobService" destdir="${bin}" xendorsed="true">
 			<classpath><path refid="wsgen.classpath"/></classpath>
 		</wsgen>
 	</target>
