@@ -98,7 +98,7 @@ public class RmiTest {
 			System.out.println("Done waiting");
 			for (int i = 0; i < 5; ++i) {
 				try {
-					System.out.println(job.listen().toString());
+					System.out.println(job.nextPublications().toString());
 				} catch (InterruptedException e) {
 					System.out.println("Timed out");
 					--i;

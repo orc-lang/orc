@@ -5,15 +5,8 @@
 		start: function (_, f) {
 			f();
 		},
-		listen: function (_, f) {
-			if (halt) {
-				return f(null);
-			} else if (n > 5) {
-				return this.onError({
-					faultstring: "Some error message",
-					faultactor: "Server"
-				});
-			}
+		nextPublications: function (_, f) {
+			if (halt) return f(null);
 			setTimeout(function () {
 				f({
 					"value": {
@@ -33,9 +26,29 @@
 							}
 						]
 					},
-					"timestamp":"xxx"
+					"timestamp":"publication timestamp "+n
 				});
 			}, 2000);
+		},
+		nextErrors: function (_, f) {
+			if (halt) return f(null);
+			if (n % 3 == 0) {
+				n++;
+				f({
+					timestamp:"error timestamp "+n,
+					message: "Error " + n,
+					location: {
+						filename: "test.orc",
+						line: 100,
+						column: 5
+					}
+				});
+			} else {
+				var _this = this;
+				setTimeout(function () {
+					_this.nextErrors(_, f);
+				}, 1000);
+			}
 		},
 		halt: function () {
 			halt = true;

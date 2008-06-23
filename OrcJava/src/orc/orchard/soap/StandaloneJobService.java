@@ -76,19 +76,19 @@ public class StandaloneJobService extends AbstractJobService {
 
 	/** Do-nothing override. */
 	@Override
-	public List<Publication> listen() throws InvalidJobStateException, UnsupportedFeatureException, InterruptedException, RemoteException {
-		return super.listen();
+	public List<Publication> nextPublications() throws UnsupportedFeatureException, InterruptedException, RemoteException {
+		return super.nextPublications();
 	}
 
 	/** Do-nothing override. */
 	@Override
-	public List<Publication> publications() throws InvalidJobStateException, RemoteException {
+	public List<Publication> publications() throws RemoteException {
 		return super.publications();
 	}
 
 	/** Do-nothing override. */
 	@Override
-	public List<Publication> publicationsAfter(@WebParam(name="sequence") int sequence) throws InvalidJobStateException, RemoteException {
+	public List<Publication> publicationsAfter(@WebParam(name="sequence") int sequence) throws RemoteException {
 		return super.publicationsAfter(sequence);
 	}
 

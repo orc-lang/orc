@@ -75,12 +75,27 @@ function loadService(name, url, onReady) {
 	script.src = url + "?js" + (onReady ? "&func="+encodeURIComponent(onReady) : "");
 	head.appendChild(script);
 }
+function renderTimestamp(value) {
+	document.getElementById("timestamp").innerHTML = value;
+}
 function renderPublications(ps) {
 	var pubs = document.getElementById("publications");
-	var timestamp = document.getElementById("timestamp");
 	foreach(ps, function (p) {
 		pubs.innerHTML += '<div class="publication">' + publicationToHtml(p.value) + '</div>';
-		timestamp.innerHTML = p.timestamp;
+		renderTimestamp(p.timestamp);
+	});
+	pubs.scrollTop = pubs.scrollHeight;
+}
+function renderTokenErrors(ps) {
+	var pubs = document.getElementById("publications");
+	foreach(ps, function (p) {
+		pubs.innerHTML += '<div class="error">'
+			+ p.message
+			+ ' at '
+			+ p.location.filename
+			+ ':' + p.location.line
+			+ '(' + p.location.column + ')</div>';
+		renderTimestamp(p.timestamp);
 	});
 	pubs.scrollTop = pubs.scrollHeight;
 }
@@ -174,7 +189,7 @@ function onJobServiceReady(job) {
 	 * Recursively listen for values
 	 * until the job finishes.
 	 */
-	function onPublish(v) {
+	function onPublications(v) {
 		if (!v) {
 			// the job may have already been stopped
 			// and therefore become inaccessible
@@ -186,12 +201,18 @@ function onJobServiceReady(job) {
 			return;
 		}
 		renderPublications(v);
-		currentJob.listen({}, onPublish);
+		currentJob.nextPublications({}, onPublications);
+	}
+	function onErrors(v) {
+			if (!v) return;
+			renderTokenErrors(v);
+			currentJob.nextErrors({}, onErrors);
 	}
 	// Start the job and then listen for published values.
 	currentJob.start({}, function () {
 		document.getElementById("stopButton").disabled = false;
-		currentJob.listen({}, onPublish);
+		currentJob.nextPublications({}, onPublications);
+		currentJob.nextErrors({}, onErrors);
 	});
 }
 function onJobFinish() {
@@ -250,6 +271,7 @@ function onError(response, code, exception) {
 	pubs.scrollTop = pubs.scrollHeight;
 	document.getElementById("runButton").disabled = false;
 }
+
 
 //////////////////////////////////////////////////////////
 // Go go gadget executor

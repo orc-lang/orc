@@ -8,6 +8,7 @@ import javax.jws.WebService;
 
 import orc.orchard.JobConfiguration;
 import orc.orchard.Publication;
+import orc.orchard.TokenError;
 import orc.orchard.errors.InvalidJobStateException;
 import orc.orchard.errors.UnsupportedFeatureException;
 
@@ -60,18 +61,16 @@ public interface JobServiceInterface extends Remote {
 	/**
 	 * Retrieve all publications.
 	 * @return List of all publications.
-	 * @throws InvalidJobStateException if the job is not RUNNING or WAITING.
 	 */
-	public List<Publication> publications() throws InvalidJobStateException, RemoteException;
+	public List<Publication> publications() throws RemoteException;
 	/**
 	 * Retrieve all publications after the given sequence number.
 	 * 
 	 * @return List of all publications.
-	 * @throws InvalidJobStateException if the job is not RUNNING or WAITING.
 	 */
-	public List<Publication> publicationsAfter(int sequence) throws InvalidJobStateException, RemoteException;
+	public List<Publication> publicationsAfter(int sequence) throws RemoteException;
 	/**
-	 * Retrieve all publications made since the last call to listen(). If no
+	 * Retrieve all publications made since the last call to nextPublications. If no
 	 * publications were made, block until at least one is made. If you call
 	 * this method multiple times concurrently, it is not guaranteed that calls
 	 * will return in the order they were made.
@@ -80,10 +79,19 @@ public interface JobServiceInterface extends Remote {
 	 * If the job finishes without publishing any more values, an empty list
 	 * will be returned.
 	 * 
-	 * @throws InvalidJobStateException
-	 *             if the job is not RUNNING or WAITING.
 	 * @throws InterruptedException
 	 *             if the request times out.
 	 */
-	public List<Publication> listen() throws InvalidJobStateException, UnsupportedFeatureException, RemoteException, InterruptedException;
+	public List<Publication> nextPublications() throws UnsupportedFeatureException, RemoteException, InterruptedException;
+	/**
+	 * Retrieve all token errors.
+	 * @return List of all token errors.
+	 */
+	public List<TokenError> errors() throws RemoteException;
+	/**
+	 * Retrieve all token errors thrown since the last call to nextErrors.
+	 * @return List of all token errors.
+	 * @see nextPublications
+	 */
+	public List<TokenError> nextErrors() throws UnsupportedFeatureException, RemoteException, InterruptedException;
 }
