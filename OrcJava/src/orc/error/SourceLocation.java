@@ -8,6 +8,9 @@ public class SourceLocation {
 	
 	public static final SourceLocation UNKNOWN = new UnknownLocation();
 	
+	/** No-arg constructor so that this can be serialized to XML by JAXB */
+	public SourceLocation() {}
+	
 	public SourceLocation(Integer line, Integer column, String filename) {
 		this.line = line;
 		this.column = column;

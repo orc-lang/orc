@@ -32,24 +32,16 @@ public abstract class AbstractJobsService implements orc.orchard.api.JobServiceI
 		getCurrentJob().halt();
 	}
 
-	public List<Publication> nextPublications() throws UnsupportedFeatureException, InterruptedException, RemoteException {
-		return getCurrentJob().nextPublications(getWaiter());
+	public List<JobEvent> listen() throws UnsupportedFeatureException, InterruptedException, RemoteException {
+		return getCurrentJob().listen(getWaiter());
 	}
 
-	public List<Publication> publications() throws RemoteException {
-		return getCurrentJob().publications();
+	public List<JobEvent> events() throws RemoteException {
+		return getCurrentJob().events();
 	}
 
-	public List<Publication> publicationsAfter(int sequence) throws RemoteException {
-		return getCurrentJob().publicationsAfter(sequence);
-	}
-	
-	public List<TokenError> nextErrors() throws UnsupportedFeatureException, InterruptedException, RemoteException {
-		return getCurrentJob().nextErrors(getWaiter());
-	}
-
-	public List<TokenError> errors() throws RemoteException {
-		return getCurrentJob().errors();
+	public List<JobEvent> eventsAfter(int sequence) throws RemoteException {
+		return getCurrentJob().eventsAfter(sequence);
 	}
 
 	public void start() throws InvalidJobStateException, RemoteException {

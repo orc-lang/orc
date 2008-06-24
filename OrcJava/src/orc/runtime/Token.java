@@ -263,10 +263,4 @@ public class Token implements Serializable, Comparable<Token> {
 		die();
 		engine.tokenError(this, problem);
 	}
-
-	public void error(SourceLocation sourceLocation, OrcException e) {
-		// TODO Auto-generated method stub
-		
-	}
-	
 }

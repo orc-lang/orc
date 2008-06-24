@@ -7,8 +7,9 @@ import java.util.List;
 import javax.jws.WebService;
 
 import orc.orchard.JobConfiguration;
-import orc.orchard.Publication;
-import orc.orchard.TokenError;
+import orc.orchard.JobEvent;
+import orc.orchard.PublicationEvent;
+import orc.orchard.TokenErrorEvent;
 import orc.orchard.errors.InvalidJobStateException;
 import orc.orchard.errors.UnsupportedFeatureException;
 
@@ -59,39 +60,28 @@ public interface JobServiceInterface extends Remote {
 	 */
 	public String state() throws RemoteException;
 	/**
-	 * Retrieve all publications.
-	 * @return List of all publications.
+	 * Retrieve all events.
+	 * @return List of all events.
 	 */
-	public List<Publication> publications() throws RemoteException;
+	public List<JobEvent> events() throws RemoteException;
 	/**
-	 * Retrieve all publications after the given sequence number.
+	 * Retrieve all events after the given sequence number.
 	 * 
 	 * @return List of all publications.
 	 */
-	public List<Publication> publicationsAfter(int sequence) throws RemoteException;
+	public List<JobEvent> eventsAfter(int sequence) throws RemoteException;
 	/**
-	 * Retrieve all publications made since the last call to nextPublications. If no
-	 * publications were made, block until at least one is made. If you call
+	 * Retrieve all events since the last call to listen. If no
+	 * events occurred, block until at least one occurs. If you call
 	 * this method multiple times concurrently, it is not guaranteed that calls
 	 * will return in the order they were made.
 	 * 
 	 * <p>
-	 * If the job finishes without publishing any more values, an empty list
+	 * If the job finishes without any more events happening, an empty list
 	 * will be returned.
 	 * 
 	 * @throws InterruptedException
 	 *             if the request times out.
 	 */
-	public List<Publication> nextPublications() throws UnsupportedFeatureException, RemoteException, InterruptedException;
-	/**
-	 * Retrieve all token errors.
-	 * @return List of all token errors.
-	 */
-	public List<TokenError> errors() throws RemoteException;
-	/**
-	 * Retrieve all token errors thrown since the last call to nextErrors.
-	 * @return List of all token errors.
-	 * @see nextPublications
-	 */
-	public List<TokenError> nextErrors() throws UnsupportedFeatureException, RemoteException, InterruptedException;
+	public List<JobEvent> listen() throws UnsupportedFeatureException, RemoteException, InterruptedException;
 }

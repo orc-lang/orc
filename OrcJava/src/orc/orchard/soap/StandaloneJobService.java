@@ -16,7 +16,8 @@ import org.jvnet.jax_ws_commons.json.JSONBindingID;
 import orc.orchard.AbstractJobService;
 import orc.orchard.Job;
 import orc.orchard.JobConfiguration;
-import orc.orchard.Publication;
+import orc.orchard.JobEvent;
+import orc.orchard.TokenErrorEvent;
 import orc.orchard.api.JobServiceInterface;
 import orc.orchard.errors.InvalidJobStateException;
 import orc.orchard.errors.UnsupportedFeatureException;
@@ -76,20 +77,20 @@ public class StandaloneJobService extends AbstractJobService {
 
 	/** Do-nothing override. */
 	@Override
-	public List<Publication> nextPublications() throws UnsupportedFeatureException, InterruptedException, RemoteException {
-		return super.nextPublications();
+	public List<JobEvent> listen() throws UnsupportedFeatureException, InterruptedException, RemoteException {
+		return super.listen();
 	}
 
 	/** Do-nothing override. */
 	@Override
-	public List<Publication> publications() throws RemoteException {
-		return super.publications();
+	public List<JobEvent> events() throws RemoteException {
+		return super.events();
 	}
 
 	/** Do-nothing override. */
 	@Override
-	public List<Publication> publicationsAfter(@WebParam(name="sequence") int sequence) throws RemoteException {
-		return super.publicationsAfter(sequence);
+	public List<JobEvent> eventsAfter(@WebParam(name="sequence") int sequence) throws RemoteException {
+		return super.eventsAfter(sequence);
 	}
 
 	/** Do-nothing override. */

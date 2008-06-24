@@ -26,7 +26,7 @@ import orc.orchard.AbstractExecutorService;
 import orc.orchard.AbstractJobService;
 import orc.orchard.Job;
 import orc.orchard.JobConfiguration;
-import orc.orchard.Publication;
+import orc.orchard.PublicationEvent;
 import orc.orchard.api.ExecutorServiceInterface;
 import orc.orchard.errors.InvalidJobStateException;
 import orc.orchard.errors.InvalidOilException;

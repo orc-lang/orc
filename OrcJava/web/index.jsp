@@ -45,7 +45,6 @@ if (document.location.search == "?mock") {
 
 //////////////////////////////////////////////////////////
 // Utility functions
-
 function foreach(vs, f) {
 	vs = toArray(vs);
 	for (var i in vs) {
@@ -78,25 +77,24 @@ function loadService(name, url, onReady) {
 function renderTimestamp(value) {
 	document.getElementById("timestamp").innerHTML = value;
 }
-function renderPublications(ps) {
+function renderPublication(p) {
 	var pubs = document.getElementById("publications");
-	foreach(ps, function (p) {
-		pubs.innerHTML += '<div class="publication">' + publicationToHtml(p.value) + '</div>';
-		renderTimestamp(p.timestamp);
-	});
+	pubs.innerHTML += '<div class="publication">' + publicationToHtml(p.value) + '</div>';
+	renderTimestamp(p.timestamp);
 	pubs.scrollTop = pubs.scrollHeight;
 }
-function renderTokenErrors(ps) {
+function renderTokenError(p) {
 	var pubs = document.getElementById("publications");
-	foreach(ps, function (p) {
-		pubs.innerHTML += '<div class="error">'
-			+ p.message
-			+ ' at '
-			+ p.location.filename
-			+ ':' + p.location.line
-			+ '(' + p.location.column + ')</div>';
-		renderTimestamp(p.timestamp);
-	});
+	pubs.innerHTML += '<div class="error">'
+		+ p.message
+		+ (p.location
+			? ' at '
+				+ p.location.filename
+				+ ':' + p.location.line
+				+ '(' + p.location.column + ')'
+			: '')
+		+ '</div>';
+	renderTimestamp(p.timestamp);
 	pubs.scrollTop = pubs.scrollHeight;
 }
 /**
@@ -189,30 +187,34 @@ function onJobServiceReady(job) {
 	 * Recursively listen for values
 	 * until the job finishes.
 	 */
-	function onPublications(v) {
-		if (!v) {
-			// the job may have already been stopped
-			// and therefore become inaccessible
-			// (i.e. by onUnload)
+	function onEvents(vs) {
+		if (!vs) {
 			if (currentJob) {
+				// finish the job
 				currentJob.finish({}, onJobFinish);
 				currentJob = null;
+			} else {
+				// the job was already finished
+				// (i.e. by onUnload)
 			}
 			return;
 		}
-		renderPublications(v);
-		currentJob.nextPublications({}, onPublications);
-	}
-	function onErrors(v) {
-			if (!v) return;
-			renderTokenErrors(v);
-			currentJob.nextErrors({}, onErrors);
+		foreach(vs, function (v) {
+			switch (v["@xsi.type"]) {
+			case "ns2:tokenErrorEvent":
+				renderTokenError(v);
+				break;
+			case "ns2:publicationEvent":
+				renderPublication(v);
+				break;
+			}
+		});
+		currentJob.listen({}, onEvents);
 	}
 	// Start the job and then listen for published values.
 	currentJob.start({}, function () {
 		document.getElementById("stopButton").disabled = false;
-		currentJob.nextPublications({}, onPublications);
-		currentJob.nextErrors({}, onErrors);
+		currentJob.listen({}, onEvents);
 	});
 }
 function onJobFinish() {
@@ -267,7 +269,7 @@ function onError(response, code, exception) {
 		response = exception;
 	}
 	var pubs = document.getElementById("publications");
-	pubs.innerHTML += '<div class="error">' + jsonToHtml(response) + '</div>';
+	pubs.innerHTML += '<div class="error">Service error: ' + jsonToHtml(response) + '</div>';
 	pubs.scrollTop = pubs.scrollHeight;
 	document.getElementById("runButton").disabled = false;
 }
