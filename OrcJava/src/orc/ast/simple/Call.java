@@ -12,12 +12,15 @@ import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
+import orc.error.Locatable;
+import orc.error.SourceLocation;
 import orc.runtime.nodes.Node;
 
-public class Call extends Expression {
+public class Call extends Expression implements Locatable {
 
 	public Argument callee;
 	public List<Argument> args;
+	public SourceLocation location = null;
 	
 	public Call(Argument callee, List<Argument> args)
 	{
@@ -81,6 +84,14 @@ public class Call extends Expression {
 		orc.ast.oil.Call newcall = new orc.ast.oil.Call(newcallee, newargs);
 		
 		return newcall;
+	}
+
+	public void setSourceLocation(SourceLocation location) {
+		this.location = location;
+	}
+
+	public SourceLocation getSourceLocation() {
+		return location;
 	}
 
 }

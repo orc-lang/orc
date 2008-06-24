@@ -12,7 +12,7 @@ package orc.error;
  * @author dkitchin
  *
  */
-public class TokenException extends ExecutionException implements Locatable {
+public abstract class TokenException extends ExecutionException implements Locatable {
 
 	SourceLocation loc = SourceLocation.UNKNOWN;
 	

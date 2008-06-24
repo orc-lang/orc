@@ -305,11 +305,12 @@ basic_expr returns [Expression e = null]
 invoke_expr returns [Expression e = null]
 	{
 		List<Expression> args = null;
+		// SourceLocation l = null;
 	}
 	: n:NAME
-	  { e = new Name(n.getText()); }
+	  { e = new Name(n.getText());}
 	  (options {greedy = true;} :
-	     args = arguments { e = new Call(e, args); }
+	     args = arguments { e = new Call(e, args); } // ((Call)e).setSourceLocation(l); }
 	   | DOT f:NAME { e = new Dot(e, f.getText()); }
 	  )*
 	;
