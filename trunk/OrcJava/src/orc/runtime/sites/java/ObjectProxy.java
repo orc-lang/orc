@@ -7,6 +7,7 @@ import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
 
+import orc.error.MessageNotUnderstoodException;
 import orc.error.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
@@ -54,9 +55,10 @@ public class ObjectProxy extends EvalSite {
 		}
 
 		if (matching_methods.isEmpty()) {
-			throw new TokenException("Class "
+			/* throw new TokenException("Class "
 					+ wrapped_instance.getClass().toString()
-					+ " does not have the method '" + methodName + "'.");
+					+ " does not have the method '" + methodName + "'."); */
+			throw new MessageNotUnderstoodException(methodName);
 		}
 
 		return new MethodProxy(matching_methods, wrapped_instance, methodName);	

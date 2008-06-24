@@ -9,6 +9,7 @@ import java.util.List;
 
 import orc.runtime.Args;
 import orc.error.JavaException;
+import orc.error.MethodTypeMismatchException;
 import orc.error.TokenException;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.*;
@@ -51,6 +52,7 @@ public class MethodProxy extends EvalSite {
             	throw new JavaException(e);
 			}
         }
-        throw new TokenException("Argument types did not match any implementation for method '" + methodName + "'.");
+        //throw new TokenException("Argument types did not match any implementation for method '" + methodName + "'.");
+        throw new MethodTypeMismatchException(methodName);
     }
 }

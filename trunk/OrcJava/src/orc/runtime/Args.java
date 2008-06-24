@@ -3,6 +3,9 @@ package orc.runtime;
 import java.io.Serializable;
 import java.util.List;
 
+import orc.error.ArgumentTypeMismatchException;
+import orc.error.ArityMismatchException;
+import orc.error.InsufficientArgsException;
 import orc.error.TokenException;
 import orc.runtime.values.Constant;
 import orc.runtime.values.Field;
@@ -56,19 +59,22 @@ public class Args implements Serializable {
 		try {
 			return values[n];
 		} catch (ArrayIndexOutOfBoundsException e) {
-			throw new TokenException("Arity mismatch calling site. Could not find argument #" + n);
+			//throw new TokenException("Arity mismatch calling site. Could not find argument #" + n);
+			throw new InsufficientArgsException(n, values.length);
 		}
 	}
 	
 	public String fieldName() throws TokenException {
 		if (values.length != 1) {
-			throw new TokenException("Arity mismatch resolving field reference.");
+			//throw new TokenException("Arity mismatch resolving field reference.");
+			throw new ArityMismatchException(1, values.length);
 		}
 		Value v = values[0];
 		if (v instanceof Field) {
 			return ((Field)v).getKey();
 		} else {
-			throw new TokenException("Bad type for field reference.");
+			//throw new TokenException("Bad type for field reference.");
+			throw new ArgumentTypeMismatchException(0, "message", v.getClass().toString());
 		}
 	}
 	
@@ -80,15 +86,22 @@ public class Args implements Serializable {
 	 */
 	public Object getArg(int n) throws TokenException
 	{
+		Value a;
+		
 		try {
-			Value a = values[n];
-			return ((Constant)a).getValue(); 
+			a = values[n];
 		}
 		catch (ArrayIndexOutOfBoundsException e) {
-			throw new TokenException("Arity mismatch calling site. Could not find argument #" + n);
+			//throw new TokenException("Arity mismatch calling site. Could not find argument #" + n);
+			throw new InsufficientArgsException(n, values.length);
+		}
+		
+		try {
+			return ((Constant)a).getValue();
 		}
 		catch (ClassCastException e) {
-			throw new TokenException("Argument " + n + " to site is not a native Java value");
+			//throw new TokenException("Argument " + n + " to site is not a native Java value");
+			throw new ArgumentTypeMismatchException(n, "native Java value", a.getClass().toString());
 		} 
 	}
 	
@@ -111,8 +124,10 @@ public class Args implements Serializable {
 		Object a = getArg(n);
 		try
 			{ return ((Integer)a).intValue(); }
-		catch (ClassCastException e) 
-			{ throw new TokenException("Argument " + n + " should be an int, got " + a.getClass().toString() + " instead."); } 
+		catch (ClassCastException e) { 
+			// throw new TokenException("Argument " + n + " should be an int, got " + a.getClass().toString() + " instead."); 
+			throw new ArgumentTypeMismatchException(n, "int", a.getClass().toString());
+		} 
 	}
 
 	/**
@@ -124,8 +139,10 @@ public class Args implements Serializable {
 		Object a = getArg(n);
 		try
 			{ return ((Integer)a).longValue(); }
-		catch (ClassCastException e) 
-			{ throw new TokenException("Argument " + n + " should be an int, got " + a.getClass().toString() + " instead."); } 
+		catch (ClassCastException e) {
+			throw new ArgumentTypeMismatchException(n, "long", a.getClass().toString());
+		}
+			// { throw new TokenException("Argument " + n + " should be an int, got " + a.getClass().toString() + " instead."); } 
 	}
 
 	
@@ -138,8 +155,10 @@ public class Args implements Serializable {
 		Object a = getArg(n);
 		try
 			{ return ((Boolean)a).booleanValue(); }
-		catch (ClassCastException e) 
-			{ throw new TokenException("Argument " + n + " to site '" + this.toString() + "' should be a boolean, got " + a.getClass().toString() + " instead."); } 
+		catch (ClassCastException e) {
+			throw new ArgumentTypeMismatchException(n, "bool", a.getClass().toString());
+		}
+			//{ throw new TokenException("Argument " + n + " to site '" + this.toString() + "' should be a boolean, got " + a.getClass().toString() + " instead."); } 
 	
 	}
 
