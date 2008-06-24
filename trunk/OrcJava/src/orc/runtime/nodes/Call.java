@@ -68,7 +68,7 @@ public class Call extends Node implements Debuggable {
 		}
 		catch (TokenException e) {
 			e.setSourceLocation(this.getSourceLocation());
-			t.error(this.getSourceLocation(), e);
+			t.error(e);
 		}
 	}
 

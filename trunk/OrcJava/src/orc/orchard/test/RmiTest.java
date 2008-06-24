@@ -9,7 +9,8 @@ import java.rmi.RemoteException;
 import java.util.List;
 
 import orc.orchard.AbstractCompilerService;
-import orc.orchard.Publication;
+import orc.orchard.JobEvent;
+import orc.orchard.PublicationEvent;
 import orc.orchard.api.ExecutorServiceInterface;
 import orc.orchard.api.JobServiceInterface;
 import orc.orchard.errors.InvalidJobStateException;
@@ -98,13 +99,13 @@ public class RmiTest {
 			System.out.println("Done waiting");
 			for (int i = 0; i < 5; ++i) {
 				try {
-					System.out.println(job.nextPublications().toString());
+					System.out.println(job.listen().toString());
 				} catch (InterruptedException e) {
 					System.out.println("Timed out");
 					--i;
 				}
 			}
-			List<Publication> pubs = job.publications();
+			List<JobEvent> pubs = job.events();
 			System.out.println(pubs.toString());
 			job.halt();
 			job.finish();

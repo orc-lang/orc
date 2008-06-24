@@ -29,9 +29,10 @@ import orc.orchard.AbstractExecutorService;
 import orc.orchard.AbstractJobsService;
 import orc.orchard.Job;
 import orc.orchard.JobConfiguration;
-import orc.orchard.Publication;
+import orc.orchard.JobEvent;
+import orc.orchard.PublicationEvent;
 import orc.orchard.ThreadWaiter;
-import orc.orchard.TokenError;
+import orc.orchard.TokenErrorEvent;
 import orc.orchard.Waiter;
 import orc.orchard.api.JobServiceInterface;
 import orc.orchard.errors.InvalidJobStateException;
@@ -131,35 +132,23 @@ public class JobsService extends AbstractJobsService {
 	public void halt() throws RemoteException {
 		super.halt();
 	}
-
-	/** Do-nothing override. */
-	@Override
-	public List<Publication> publications() throws RemoteException {
-		return super.publications();
-	}
 	
 	/** Do-nothing override. */
 	@Override
-	public List<Publication> nextPublications() throws RemoteException, UnsupportedFeatureException, InterruptedException {
-		return super.nextPublications();
+	public List<JobEvent> listen() throws UnsupportedFeatureException, InterruptedException, RemoteException {
+		return super.listen();
 	}
 
 	/** Do-nothing override. */
 	@Override
-	public List<Publication> publicationsAfter(@WebParam(name="sequence") int sequence) throws RemoteException {
-		return super.publicationsAfter(sequence);
+	public List<JobEvent> events() throws RemoteException {
+		return super.events();
 	}
-	
+
 	/** Do-nothing override. */
 	@Override
-	public List<TokenError> errors() throws RemoteException {
-		return super.errors();
-	}
-	
-	/** Do-nothing override. */
-	@Override
-	public List<TokenError> nextErrors() throws RemoteException, UnsupportedFeatureException, InterruptedException {
-		return super.nextErrors();
+	public List<JobEvent> eventsAfter(@WebParam(name="sequence") int sequence) throws RemoteException {
+		return super.eventsAfter(sequence);
 	}
 
 	/** Do-nothing override. */

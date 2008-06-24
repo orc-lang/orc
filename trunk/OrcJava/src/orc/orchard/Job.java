@@ -37,26 +37,31 @@ public final class Job {
 	/**
 	 * Thread-safe queue for events which clients can listen for. Currently
 	 * includes publications and token errors.
+	 * TODO: allow clients to decide which events they are interested in
+	 * and ignore all others.
 	 */
-	private static class EventStream<V> {
+	private static class EventStream {
 		/**
 		 * Queue publications for retrieval by listen() and events().
 		 */
-		private LinkedList<V> buffer = new LinkedList<V>();
+		private LinkedList<JobEvent> buffer = new LinkedList<JobEvent>();
 		/**
 		 * History of values published via listen().
 		 */
-		private LinkedList<V> events = new LinkedList<V>();
+		private LinkedList<JobEvent> events = new LinkedList<JobEvent>();
 		/**
 		 * Requests waiting on events.
 		 */
 		private WaiterManager waiters = new WaiterManager(this);
 		/** Is the queue closed? */
 		private boolean closed = false;
+		private int sequence = 0;
 		/**
 		 * Add an event to the stream.
 		 */
-		public synchronized void add(V value) {
+		public synchronized void add(JobEvent value) {
+			value.sequence = ++sequence;
+			value.timestamp = new Date();
 			buffer.add(value);
 			waiters.resume();	
 		}
@@ -66,22 +71,22 @@ public final class Job {
 		 * until new events arrive or the stream is closed.
 		 * Only when the stream is closed will this return an empty list.
 		 */
-		public synchronized List<V> listen(Waiter waiter) throws InterruptedException {
+		public synchronized List<JobEvent> listen(Waiter waiter) throws InterruptedException {
 			// wait for the buffer to fill or stream to close
 			while (buffer.isEmpty() && !closed) {
 				waiters.suspend(waiter);
 			}
 			// drain and return the contents of the buffer
 			events.addAll(buffer);
-			List<V> out = new LinkedList<V>(buffer);
+			List<JobEvent> out = new LinkedList<JobEvent>(buffer);
 			buffer.clear();
 			return out;
 		}
 		/**
 		 * Return all events added to the stream.
 		 */
-		public synchronized List<V> events() {
-			List<V> out = new LinkedList<V>(events);
+		public synchronized List<JobEvent> events() {
+			List<JobEvent> out = new LinkedList<JobEvent>(events);
 			out.addAll(buffer);
 			return out;
 		}
@@ -108,28 +113,22 @@ public final class Job {
 	/** The engine will handle all the interesting work of the job. */
 	private OrcEngine engine = new OrcEngine() {
 		public void tokenError(Token t, TokenException problem) {
-			TokenError e = new TokenError();
-			e.location = problem.getSourceLocation();
-			e.message = problem.getMessage();
-			e.timestamp = new Date();
+			TokenErrorEvent e = new TokenErrorEvent(problem);
 			// TODO: compute a stack trace based on the token's
 			// list of callers
-			errors.add(e);
+			events.add(e);
 		}
 	};
-	/** Values published to the engine's top level */
-	private EventStream<Publication> publications = new EventStream<Publication>();
-	/** Token errors from the engine. */
-	private EventStream<TokenError> errors = new EventStream<TokenError>();
+	/** Events which can be monitored. */
+	private EventStream events = new EventStream();
 	private LinkedList<FinishListener> finishers = new LinkedList<FinishListener>();
 
 	protected Job(String id, Expr expression, JobConfiguration configuration) {
 		this.id = id;
 		this.configuration = configuration;
 		Node node = expression.compile(new Result() {
-			int sequence = 1;
 			public synchronized void emit(Value v) {
-				publications.add(new Publication(sequence++, new Date(), v.marshal()));
+				events.add(new PublicationEvent(v.marshal()));
 			}
 		});
 		//engine.debugMode = true;
@@ -144,8 +143,7 @@ public final class Job {
 				engine.run();
 				// when the engine is complete, notify
 				// anybody waiting for further publications or errors
-				publications.close();
-				errors.close();
+				events.close();
 			}
 		}).start();
 	}
@@ -172,32 +170,29 @@ public final class Job {
 		return configuration;
 	}
 
-	public List<Publication> nextPublications(Waiter waiter)
+	/**
+	 * Return events which occurred since the last call to listen.
+	 * If no events have occurred, block using waiter until one occurs.
+	 * If/when the job completes (so no more events can occur), return
+	 * an empty list.
+	 * @see JobInterface.listen
+	 */
+	public List<JobEvent> listen(Waiter waiter)
 		throws UnsupportedFeatureException, InterruptedException
 	{
-		return publications.listen(waiter);
+		return events.listen(waiter);
 	}
 
-	public List<Publication> publications() {
-		return publications.events();
-	}
-	
-	public List<TokenError> nextErrors(Waiter waiter)
-		throws UnsupportedFeatureException, InterruptedException
-	{
-		return errors.listen(waiter);
-	}
-	
-	public List<TokenError> errors() {
-		return errors.events();
+	public List<JobEvent> events() {
+		return events.events();
 	}
 
-	public List<Publication> publicationsAfter(int sequence) {
-		List<Publication> out = new LinkedList<Publication>();
+	public List<JobEvent> eventsAfter(int sequence) {
+		List<JobEvent> out = new LinkedList<JobEvent>();
 		try {
 			// sequence numbers are guaranteed to correspond to indices in the
 			// list, so we can skip directly to the next sequence number
-			ListIterator<Publication> it = publications.events().listIterator(sequence);
+			ListIterator<JobEvent> it = events().listIterator(sequence);
 			// copy all of the subsequent publications into the output list
 			while (it.hasNext()) out.add(it.next());
 		} catch (IndexOutOfBoundsException e) {

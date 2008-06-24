@@ -5,10 +5,25 @@
 		start: function (_, f) {
 			f();
 		},
-		nextPublications: function (_, f) {
+		listen: function (_, f) {
 			if (halt) return f(null);
+			if (n%4 == 0) {
+				// simulate occasional token errors
+				n++;
+				return f({
+					"@xsi.type": "ns2:tokenErrorEvent",
+					timestamp:"error timestamp "+n,
+					message: "Error " + n,
+					location: {
+						filename: "test.orc",
+						line: 100,
+						column: 5
+					}
+				});
+			}
 			setTimeout(function () {
 				f({
+					"@xsi.type": "ns2:publicationEvent",
 					"value": {
 						"@xsi.type": "ns2:tuple",
 						"@size": "2",
@@ -28,27 +43,7 @@
 					},
 					"timestamp":"publication timestamp "+n
 				});
-			}, 2000);
-		},
-		nextErrors: function (_, f) {
-			if (halt) return f(null);
-			if (n % 3 == 0) {
-				n++;
-				f({
-					timestamp:"error timestamp "+n,
-					message: "Error " + n,
-					location: {
-						filename: "test.orc",
-						line: 100,
-						column: 5
-					}
-				});
-			} else {
-				var _this = this;
-				setTimeout(function () {
-					_this.nextErrors(_, f);
-				}, 1000);
-			}
+			}, 1000);
 		},
 		halt: function () {
 			halt = true;
