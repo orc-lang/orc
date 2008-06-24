@@ -36,11 +36,11 @@ public class OrcEngine implements Runnable {
 	 * This flag is set by the Execution region when execution completes
 	 * to terminate the engine.
 	 */
-	private boolean halt = false;
+	protected boolean halt = false;
 	/**
 	 * Track when the engine is blocked waiting for a site to return.
 	 */
-	private boolean isBlocked = false;
+	protected boolean isBlocked = false;
 	
 	public synchronized boolean isBlocked() { return isBlocked; }
 	public synchronized boolean isDead() { return halt; }
@@ -108,7 +108,7 @@ public class OrcEngine implements Runnable {
 	 * Run one step (process one token, handle one site response, or advance
 	 * all logical clocks). Returns true if work was done.
 	 */
-	private boolean step() {
+	protected boolean step() {
 		/* If an active token is available, process it. */
 		if (!activeTokens.isEmpty()){
 			activeTokens.remove().process();
@@ -153,6 +153,21 @@ public class OrcEngine implements Runnable {
 		notify();
 	}
 	
+	/**
+	 * Publish a result. This method is called by the Pub node
+	 * when a publication is 'escaping' the bottom of the
+	 * execution graph.
+	 * 
+	 * The default implementation prints the value's string
+	 * representation to the console. Change this behavior
+	 * by extending OrcEngine and overriding this method.
+	 * 
+	 * @param v
+	 */
+	public void pub(Value v) {
+		System.out.println(v.toString());
+		System.out.flush();
+	}
 	
 	/**
 	 * 

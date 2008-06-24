@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import orc.runtime.nodes.Node;
+import orc.runtime.nodes.Pub;
 import orc.runtime.nodes.result.PrintResult;
 import orc.runtime.nodes.result.WriteResult;
 
@@ -127,7 +128,7 @@ public class Config {
 			}
         }
         else 
-			target = new PrintResult();
+			target = new Pub();
 		
 		}
 	
