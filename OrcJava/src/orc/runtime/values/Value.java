@@ -70,7 +70,7 @@ public abstract class Value implements Future {
 	 * Return the tail value of a cons-like data structure.
 	 * This method must throw an exception iff isCons() returns false.
 	 */
-	public ListValue tail() { throw new Error(); }
+	public Value tail() { throw new Error(); }
 
 	public abstract orc.orchard.oil.Value marshal();
 }
