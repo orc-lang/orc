@@ -214,7 +214,6 @@ function onJobServiceReady(job) {
 			return;
 		}
 		foreach(vs, function (v) {
-			console.log(v);
 			switch (v["@xsi.type"]) {
 			case "ns2:tokenErrorEvent":
 				renderTokenError(v);

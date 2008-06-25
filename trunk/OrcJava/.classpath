@@ -37,5 +37,13 @@
 	<classpathentry kind="lib" path="lib/jettison-1.0.1.jar" sourcepath="lib/jettison-1.0.1-sources.jar"/>
 	<classpathentry kind="lib" path="lib/smack.jar"/>
 	<classpathentry kind="lib" path="lib/smackx.jar"/>
+	<classpathentry kind="lib" path="lib/gdata-base-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/gdata-calendar-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/gdata-calendar-meta-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/gdata-client-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/gdata-core-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/gdata-spreadsheet-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/gdata-spreadsheet-meta-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/htmlparser.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -7,6 +7,8 @@ See also TODO and FIXME tags in the source code.
 - web UI: slows down when editing very large programs
 - web UI: weird problems with inserting newlines before existing lines
 - syntax for curried defs (def x(a)(b)(c) = ... <=> val x = lambda (a) = lambda (b) = lambda (c) = ...)
+- fix JSON binding to convert directly from Java to JSON types
+- fix JSON binding to work with endpointInterface
 - standard cond, if, and case syntax
 - exception handling
 - finalizers for terminated tokens (may be incorporated into exception handling)
