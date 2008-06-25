@@ -19,8 +19,8 @@ def orchardChatQuery(recipient, query) =
 
 
 def Ben(q) = orchardChatQuery("bendelaware@gmail.com", q)
-
 def Adrian(q) = orchardChatQuery("adrianquark@gmail.com", q)
+def David(q) = orchardChatQuery("dkitchin@gmail.com", q)
 
 
 def Email(address, payload) = ("email", address, payload)
