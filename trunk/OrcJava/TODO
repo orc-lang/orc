@@ -1,0 +1,8 @@
+See also TODO and FIXME tags in the source code.
+
+- rewrite web services to generate classes dynamically for use in servlet scripts
+- add executor oil validation to only allow "safe" sites
+- supply stdout "print" events in webservices
+- recover from timeout in client "listen" calls (if necessary)
+- web UI: freezes when running examples/time/detector.orc (presumably due to too many publications); should we throttle them?
+- web UI: slows down when editing very large programs

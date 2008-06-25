@@ -15,4 +15,4 @@ def compose(f,g) =
   def h(x) = f(g(x))
     h 
 
-    
+def repeat(S) = S() >!v> repeat(S)

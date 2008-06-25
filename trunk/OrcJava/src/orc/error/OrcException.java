@@ -15,5 +15,9 @@ public class OrcException extends Exception {
 	public OrcException(String message) {
 		super(message);
 	}
+
+	public OrcException(String message, Throwable cause) {
+		super(message, cause);
+	}
 	
 }

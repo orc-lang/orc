@@ -61,19 +61,18 @@ public class Orc {
 		
 		// Run Orc with these options
 		try {
-				System.out.println("Running...");
-		        // Run the Orc program
-		        engine.run(n);
-		        
-			} catch (Exception e) {
-				System.err.println("exception: " + e);
-				if (cfg.debugMode())
-					e.printStackTrace();
-			} catch (Error e) {
-				System.err.println(e.toString());
-				if (cfg.debugMode())
-					e.printStackTrace();
-			}
+			System.out.println("Running...");
+			// Run the Orc program
+			engine.run(n);
+		} catch (Exception e) {
+			System.err.println("exception: " + e);
+			if (cfg.debugMode())
+				e.printStackTrace();
+		} catch (Error e) {
+			System.err.println(e.toString());
+			if (cfg.debugMode())
+				e.printStackTrace();
+		}
 		
 		System.exit(0);
 	}

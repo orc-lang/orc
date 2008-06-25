@@ -13,4 +13,8 @@ public class ExecutionException extends OrcException {
 		super(message);
 	}
 
+	public ExecutionException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
 }
