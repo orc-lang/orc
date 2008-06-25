@@ -3,6 +3,7 @@
  */
 package orc.runtime.values;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -13,11 +14,12 @@ import orc.runtime.Token;
 import orc.runtime.sites.java.ObjectProxy;
 
 /**
- * A value container for an arbitrary Java object, which
- * includes Orc literal atomic values.
+ * A value container for an arbitrary Java object, which includes Orc literal
+ * atomic values.
  * 
- * <p>This has overrides to support treating collections
- * as lists (i.e. list pattern matches will work on them).
+ * <p>
+ * This has overrides to support treating collections and arrays as lists (i.e.
+ * list pattern matches will work on them).
  * 
  * @author wcook, dkitchin, quark
  */
@@ -56,7 +58,11 @@ public class Constant extends Value {
 	 * Throws an exception if the value is not iterable.
 	 */
 	private Iterator asIterator() throws ClassCastException {
-		return ((Iterable)value).iterator();
+		try {
+			return ((Iterable)value).iterator();
+		} catch (ClassCastException _) {
+			return Arrays.asList((Object[])value).iterator();
+		}
 	}
 
 	@Override
