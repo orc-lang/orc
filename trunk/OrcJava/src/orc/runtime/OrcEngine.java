@@ -41,6 +41,11 @@ public class OrcEngine implements Runnable {
 	 * Track when the engine is blocked waiting for a site to return.
 	 */
 	protected boolean isBlocked = false;
+	/**
+	 * Currently this reference is just needed to keep pending tokens
+	 * from being garbage-collected prematurely.
+	 */
+	private Execution region;
 	
 	public synchronized boolean isBlocked() { return isBlocked; }
 	public synchronized boolean isDead() { return halt; }
@@ -101,7 +106,8 @@ public class OrcEngine implements Runnable {
 	public void start(Node root, Env env) {
 		assert(root != null);
 		assert(env != null);
-		activate(new Token(root, env, null, new GroupCell(), new Execution(this), null, this));
+		region = new Execution(this);
+		activate(new Token(root, env, null, new GroupCell(), region, null, this));
 	}
 	
 	/**
@@ -184,6 +190,11 @@ public class OrcEngine implements Runnable {
 		System.out.println("Token " + t + " encountered an error. ");
 		System.out.println("Problem: " + problem);
 		System.out.println("Source location: " + problem.getSourceLocation());
+		Throwable cause = problem.getCause();
+		if (debugMode && cause != null) {
+			System.out.println("Caused by:");
+			cause.printStackTrace();
+		}
 		System.out.println();
 	}
 	
