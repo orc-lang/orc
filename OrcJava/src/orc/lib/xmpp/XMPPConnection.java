@@ -64,7 +64,17 @@ public class XMPPConnection extends EvalSite {
 				@Override
 				public Value evaluate(Args args) throws TokenException {
 					try {
-						connection.login(args.stringArg(0), args.stringArg(1));
+						switch (args.size()) {
+						case 4:
+							connection.login(args.stringArg(0), args.stringArg(1), args.stringArg(2), args.boolArg(3));
+							break;
+						case 3:
+							connection.login(args.stringArg(0), args.stringArg(1), args.stringArg(2));
+							break;
+						default:
+							connection.login(args.stringArg(0), args.stringArg(1));
+							break;
+						}
 					} catch (XMPPException e) {
 						throw new SiteException("XMPP login error: " + e.getMessage(), e);
 					}
@@ -77,6 +87,9 @@ public class XMPPConnection extends EvalSite {
 					return new ChatSite(connection, args.stringArg(0));
 				}
 			});
+		}
+		public void finalize() {
+			connection.disconnect();
 		}
 	}
 	/**
