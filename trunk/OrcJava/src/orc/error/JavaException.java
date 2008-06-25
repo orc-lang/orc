@@ -11,12 +11,7 @@ package orc.error;
  *
  */
 public class JavaException extends SiteException {
-
-	public Exception problem;
-	
-	public JavaException(Exception problem) {
-		super(problem.getMessage());
-		this.problem = problem;
+	public JavaException(Exception cause) {
+		super(cause.getMessage(), cause);
 	}
-
 }

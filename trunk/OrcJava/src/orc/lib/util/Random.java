@@ -16,6 +16,9 @@ public class Random extends PartialSite {
 	
 	@Override
 	public Value evaluate(Args args) throws TokenException {
+		if (args.size() == 0) {
+			return new Constant(rnd.nextInt());
+		}
 		
 		int limit = args.intArg(0);
 		

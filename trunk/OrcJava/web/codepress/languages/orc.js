@@ -8,7 +8,7 @@ Language.syntax = [
 	// reserved words
 	{ input : /\b(val|def|class|site|include|lambda|as)\b/g, output : '<b>$1</b>' },
 	// builtins
-	{ input : /\b(if|let|some|none|isSome|isNone|Rtimer|Ltimer|null|true|false)\b/g, output : '<u>$1</u>' },
+	{ input : /\b(if|let|some|none|isSome|isNone|Rtimer|Ltimer|null|true|false|print|println)\b/g, output : '<u>$1</u>' },
 	// combinators
 	{ input : /(&gt;.*?&gt;|&lt;.*?&lt;|\|)/g, output : '<tt>$1</tt>' }
 ];

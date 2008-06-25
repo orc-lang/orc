@@ -112,11 +112,29 @@ public final class Job {
 	private JobConfiguration configuration;
 	/** The engine will handle all the interesting work of the job. */
 	private OrcEngine engine = new OrcEngine() {
+		private StringBuffer printBuffer = new StringBuffer();
+		/** Send token errors to the event stream. */
 		public void tokenError(Token t, TokenException problem) {
 			TokenErrorEvent e = new TokenErrorEvent(problem);
 			// TODO: compute a stack trace based on the token's
 			// list of callers
 			events.add(e);
+		}
+		/** Save prints in a buffer. */
+		public void print(String s) {
+			synchronized (printBuffer) {
+				printBuffer.append(s);
+			}
+		}
+		/** Send printed lines to the event stream. */
+		public void println(String s) {
+			String out; 
+			synchronized (printBuffer) {
+				printBuffer.append(s);
+				out = printBuffer.toString();
+				printBuffer = new StringBuffer();
+			}
+			events.add(new PrintlnEvent(out));
 		}
 	};
 	/** Events which can be monitored. */
@@ -127,7 +145,7 @@ public final class Job {
 		this.id = id;
 		this.configuration = configuration;
 		Node node = expression.compile(new Result() {
-			public synchronized void emit(Value v) {
+			public void emit(Value v) {
 				events.add(new PublicationEvent(v.marshal()));
 			}
 		});
