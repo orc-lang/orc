@@ -5,7 +5,9 @@ package orc.lib.str;
 
 import orc.error.TokenException;
 import orc.runtime.Args;
+import orc.runtime.Token;
 import orc.runtime.sites.EvalSite;
+import orc.runtime.sites.Site;
 import orc.runtime.values.Value;
 
 /**
@@ -14,20 +16,12 @@ import orc.runtime.values.Value;
  * Print arguments, converted to strings, in sequence.
  *
  */
-public class Print extends EvalSite {
-
-	/* (non-Javadoc)
-	 * @see orc.runtime.sites.EvalSite#evaluate(java.lang.Object[])
-	 */
+public class Print extends Site {
 	@Override
-	public Value evaluate(Args args) throws TokenException {
-		
-		for(int i = 0; i < args.size(); i++)
-		{
-			System.out.print(args.stringArg(i));
+	public void callSite(Args args, Token caller) throws TokenException {
+		for(int i = 0; i < args.size(); i++) {
+			caller.getEngine().print(args.stringArg(i));
 		}
-		
-		return signal();
+		caller.resume(Value.signal());
 	}
-
 }

@@ -10,7 +10,7 @@
 			if (n%4 == 0) {
 				// simulate occasional token errors
 				n++;
-				return f({
+				return f([{
 					"@xsi.type": "ns2:tokenErrorEvent",
 					timestamp:"error timestamp "+n,
 					message: "Error " + n,
@@ -19,7 +19,11 @@
 						line: 100,
 						column: 5
 					}
-				});
+				}, {
+					"@xsi.type": "ns2:printlnEvent",
+					timestamp:"println timestamp "+n,
+					line: "Printed line " + n
+				}]);
 			}
 			setTimeout(function () {
 				f({
@@ -38,7 +42,8 @@
 									"@xsi.type": "ns2:constant",
 									"value": {"@xsi.type": "xs:string", "$": "hi"}
 								}
-							}
+							},
+							{ "unexpected": [1,2] }
 						]
 					},
 					"timestamp":"publication timestamp "+n

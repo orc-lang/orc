@@ -118,7 +118,6 @@ CodePress = {
 		if(flag != 'init') { window.getSelection().getRangeAt(0).insertNode(document.createTextNode(cc));}
 		editor = CodePress.getEditor();
 		o = editor.innerHTML;
-		console.log(o);
 		o = o.replace(/<br>/g,'\n');
 		o = o.replace(/<.*?>/g,'');
 		x = z = this.split(o,flag);

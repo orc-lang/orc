@@ -13,9 +13,12 @@ div.publication {
 }
 div.error {
 	border: 3px solid red;
-	font-family: monospace;
 	color: red;
 	font-size: larger;
+}
+div.print {
+	border-bottom: 1px solid gray;
+	font-color: gray;
 }
 </style>
 </head>
@@ -52,7 +55,8 @@ function foreach(vs, f) {
 	}
 }
 function toArray(object) {
-	if (object.constructor == Array) return object;
+	if (!object) return [];
+	else if (object.constructor == Array) return object;
 	else return [object];
 }
 /**
@@ -97,69 +101,51 @@ function renderTokenError(p) {
 	renderTimestamp(p.timestamp);
 	pubs.scrollTop = pubs.scrollHeight;
 }
+function renderPrintln(p) {
+	var pubs = document.getElementById("publications");
+	pubs.innerHTML += '<div class="print">' + p.line + '</div>';
+	renderTimestamp(p.timestamp);
+	pubs.scrollTop = pubs.scrollHeight;
+}
+function escapeHTML(v) {
+	v = v.replace(/&/g, '&amp;');
+	v = v.replace(/</g, '&lt;');
+	// FIXME: escape other special characters
+	return v;
+}
 /**
  * Convert arbitrary JSON values to
  * pretty-printed HTML
  */
 function jsonToHtml(v) {
-	function fromString(v) {
-		v = v.replace(/&/g, '&amp;');
-		v = v.replace(/</g, '&lt;');
-		return '<b>'+v+'</b>';
-	}
-	function fromArray(v) {
-		if (v.length == 0) return '[]';
-		var out = '[';
-		out += jsonToHtml(v[0]);
-		for (var i = 1; i < v.length; ++i) {
-			out += ', ' + jsonToHtml(v[i]);
-		}
-		return out + ']';
-	}
-	function fromObject(v) {
-		var out = '{';
-		for (var k in v) {
-			out += '<i>'+k+'</i>: ' + jsonToHtml(v[k]) + ', ';
-		}
-		return out.substring(0, out.length-2) + '}';
-	}
 	switch (typeof v) {
 		case 'boolean':
-		case 'number': return v+'';
-		case 'string': return fromString(v);
+			return '<font color="blue">' + v + '</font>'
+		case 'number':
+			return v+'';
+		case 'string':
+			return '<font color="grey">"'
+				+ escapeHTML(v)
+					.replace('"', '\\"')
+					.replace('\\', '\\\\')
+				+ '"</font>';
 		case 'object':
 			if (v == null) return 'null';
-			if (v.constructor == Array) return fromArray(v);
-			if (v.constructor == Object) return fromObject(v);
-	}
-}
-/**
- * Convert publication values to JSON.
- */
-function publicationToJson(v) {
-	if (v == null) return v;
-	switch (v["@xsi.type"]) {
-		// XSD types
-		case 'xs:string': return v.$;
-		case 'xs:integer':
-		case 'xs:long':
-		case 'xs:short':
-		case 'xs:int': return parseInt(v.$);
-		case 'xs:double':
-		case 'xs:decimal':
-		case 'xs:float': return parseFloat(v.$);
-		case 'xs:boolean': return v.$ == 'true';
-		// OIL types
-		// FIXME: server should use better namespace than ns2
-		case 'ns2:constant': return publicationToJson(v.value);
-		case 'ns2:list':
-		case 'ns2:tuple':
-			var tmp = [];
-			foreach (v.element, function (e) {
-				tmp[tmp.length] = publicationToJson(e);
-			});
-			return tmp;
-		default: return v;
+			if (v.constructor == Array) {
+				var tmp = [];
+				for (var k in v) {
+					tmp[k] = jsonToHtml(v[k]);
+				}
+				return '[' + tmp.join(', ') + ']';
+			}
+			if (v.constructor == Object) {
+				var out = '{';
+				for (var k in v) {
+					out += jsonToHtml(k)+': ' + jsonToHtml(v[k]) + ', ';
+				}
+				return out.substring(0, out.length-2) + '}';
+			}
+			return '';
 	}
 }
 /**
@@ -167,7 +153,35 @@ function publicationToJson(v) {
  * These have a bit more structure than arbitrary JSON.
  */
 function publicationToHtml(v) {
-	return jsonToHtml(publicationToJson(v))
+	if (v == null) return null;
+	switch (v["@xsi.type"]) {
+		// XSD types
+		case 'xs:string': return jsonToHtml(v.$);
+		case 'xs:integer':
+		case 'xs:long':
+		case 'xs:short':
+		case 'xs:int': return jsonToHtml(parseInt(v.$));
+		case 'xs:double':
+		case 'xs:decimal':
+		case 'xs:float': return jsonToHtml(parseFloat(v.$));
+		case 'xs:boolean': return jsonToHtml(v.$ == 'true');
+		// OIL types
+		// FIXME: server should use better namespace than ns2
+		case 'ns2:constant': return publicationToHtml(v.value);
+		case 'ns2:list':
+			var tmp = [];
+			foreach (v.element, function (e) {
+				tmp[tmp.length] = publicationToHtml(e);
+			});
+			return '[' + tmp.join(', ') + ']';
+		case 'ns2:tuple':
+			var tmp = [];
+			foreach (v.element, function (e) {
+				tmp[tmp.length] = publicationToHtml(e);
+			});
+			return '(' + tmp.join(', ') + ')';
+		default: return '<i>' + jsonToHtml(v) + '</i>';
+	}
 }
 
 //////////////////////////////////////////////////////////
@@ -200,12 +214,16 @@ function onJobServiceReady(job) {
 			return;
 		}
 		foreach(vs, function (v) {
+			console.log(v);
 			switch (v["@xsi.type"]) {
 			case "ns2:tokenErrorEvent":
 				renderTokenError(v);
 				break;
 			case "ns2:publicationEvent":
 				renderPublication(v);
+				break;
+			case "ns2:printlnEvent":
+				renderPrintln(v);
 				break;
 			}
 		});

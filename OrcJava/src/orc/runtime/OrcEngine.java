@@ -219,4 +219,24 @@ public class OrcEngine implements Runnable {
 	public synchronized boolean addClock(LogicalClock clock) {
 		return clocks.add(clock);
 	}
+	/**
+	 * Print something (for use by the print and println sites). By default,
+	 * this prints to System.out, but this can be overridden to do something
+	 * else if appropriate.
+	 * 
+	 * @param string
+	 */
+	public void print(String string) {
+		System.out.print(string);
+	}
+	/**
+	 * Print something (for use by the print and println sites). By default,
+	 * this prints to System.out, but this can be overridden to do something
+	 * else if appropriate.
+	 * 
+	 * @param string
+	 */
+	public void println(String string) {
+		System.out.println(string);
+	}
 }
