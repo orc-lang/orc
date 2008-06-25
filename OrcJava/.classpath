@@ -35,5 +35,7 @@
 	<classpathentry kind="lib" path="lib/velocity-dep-1.5.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-util-6.1.11.jar"/>
 	<classpathentry kind="lib" path="lib/jettison-1.0.1.jar" sourcepath="lib/jettison-1.0.1-sources.jar"/>
+	<classpathentry kind="lib" path="lib/smack.jar"/>
+	<classpathentry kind="lib" path="lib/smackx.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

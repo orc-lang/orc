@@ -201,7 +201,7 @@
    <soapenv:Header/>
    <soapenv:Body>
       <soap:compileAndSubmit>
-         <program>1 | (1,1) | [1,1]</program>
+         <program>1:2</program>
       </soap:compileAndSubmit>
    </soapenv:Body>
 </soapenv:Envelope>]]></con:request></con:call></con:operation><con:operation isOneWay="false" action="" name="compileAndSubmitConfigured" bindingOperationName="compileAndSubmitConfigured" inputName="" receivesAttachments="false" sendsAttachments="false"><con:settings/><con:call name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8280/orchard/executor</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap.orchard.orc/">
@@ -678,7 +678,7 @@
       <xs:element name="return" type="xs:string" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
-</xs:schema>]]></con:content><con:type>http://www.w3.org/2001/XMLSchema</con:type></con:part></con:definitionCache></con:interface><con:interface name="StandaloneJobServicePortBinding" bindingName="{http://soap.orchard.orc/}StandaloneJobServicePortBinding" soapVersion="1_1" definition="http://localhost:8280/orchard/jobs/c611d869-0521-4436-ace9-bc7588986f3d?wsdl"><con:settings/><con:endpoints><con:endpoint>http://localhost:8280/orchard/jobs/4ed44574-21b9-4570-959b-c5f80b8b0001</con:endpoint></con:endpoints><con:operation isOneWay="false" action="" name="configuration" bindingOperationName="configuration" inputName="" receivesAttachments="false" sendsAttachments="false"><con:settings/><con:call name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap.orchard.orc/">
+</xs:schema>]]></con:content><con:type>http://www.w3.org/2001/XMLSchema</con:type></con:part></con:definitionCache></con:interface><con:interface name="StandaloneJobServicePortBinding" bindingName="{http://soap.orchard.orc/}StandaloneJobServicePortBinding" soapVersion="1_1" definition="http://localhost:8280/orchard/jobs/586e34be-f714-4fc3-9918-760e4afd30e7?wsdl"><con:settings/><con:endpoints><con:endpoint>http://localhost:8280/orchard/jobs/d131dcbb-59a2-4222-9cb3-62d6d744f487</con:endpoint></con:endpoints><con:operation isOneWay="false" action="" name="configuration" bindingOperationName="configuration" inputName="" receivesAttachments="false" sendsAttachments="false"><con:settings/><con:call name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap.orchard.orc/">
    <soapenv:Header/>
    <soapenv:Body>
       <soap:configuration/>
@@ -693,12 +693,12 @@
    <soapenv:Body>
       <soap:halt/>
    </soapenv:Body>
-</soapenv:Envelope>]]></con:request></con:call></con:operation><con:operation isOneWay="false" action="" name="listen" bindingOperationName="listen" inputName="" receivesAttachments="false" sendsAttachments="false"><con:settings/><con:call name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap.orchard.orc/">
+</soapenv:Envelope>]]></con:request></con:call></con:operation><con:operation isOneWay="false" action="" name="nextPublications" bindingOperationName="nextPublications" inputName="" receivesAttachments="false" sendsAttachments="false"><con:settings/><con:call name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap.orchard.orc/">
    <soapenv:Header/>
    <soapenv:Body>
       <soap:listen/>
    </soapenv:Body>
-</soapenv:Envelope>]]></con:request></con:call></con:operation><con:operation isOneWay="false" action="" name="publications" bindingOperationName="publications" inputName="" receivesAttachments="false" sendsAttachments="false"><con:settings/><con:call name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8280/orchard/jobs/4ed44574-21b9-4570-959b-c5f80b8b0001</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap.orchard.orc/">
+</soapenv:Envelope>]]></con:request></con:call></con:operation><con:operation isOneWay="false" action="" name="publications" bindingOperationName="publications" inputName="" receivesAttachments="false" sendsAttachments="false"><con:settings/><con:call name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap.orchard.orc/">
    <soapenv:Header/>
    <soapenv:Body>
       <soap:publications/>
@@ -710,22 +710,32 @@
          <sequence>?</sequence>
       </soap:publicationsAfter>
    </soapenv:Body>
-</soapenv:Envelope>]]></con:request></con:call></con:operation><con:operation isOneWay="false" action="" name="start" bindingOperationName="start" inputName="" receivesAttachments="false" sendsAttachments="false"><con:settings/><con:call name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8280/orchard/jobs/4ed44574-21b9-4570-959b-c5f80b8b0001</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap.orchard.orc/">
+</soapenv:Envelope>]]></con:request></con:call></con:operation><con:operation isOneWay="false" action="" name="start" bindingOperationName="start" inputName="" receivesAttachments="false" sendsAttachments="false"><con:settings/><con:call name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8280/orchard/jobs/d131dcbb-59a2-4222-9cb3-62d6d744f487</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap.orchard.orc/">
    <soapenv:Header/>
    <soapenv:Body>
       <soap:start/>
    </soapenv:Body>
-</soapenv:Envelope>]]></con:request></con:call></con:operation><con:operation isOneWay="false" action="" name="state" bindingOperationName="state" inputName="" receivesAttachments="false" sendsAttachments="false"><con:settings/><con:call name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap.orchard.orc/">
+</soapenv:Envelope>]]></con:request></con:call></con:operation><con:operation isOneWay="false" action="" name="state" bindingOperationName="state" inputName="" receivesAttachments="false" sendsAttachments="false"><con:settings/><con:call name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">http://localhost:8280/orchard/jobs/d131dcbb-59a2-4222-9cb3-62d6d744f487</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap.orchard.orc/">
    <soapenv:Header/>
    <soapenv:Body>
       <soap:state/>
    </soapenv:Body>
-</soapenv:Envelope>]]></con:request></con:call></con:operation><con:definitionCache rootPart="http://localhost:8280/orchard/jobs/c611d869-0521-4436-ace9-bc7588986f3d?wsdl" type="TEXT"><con:part><con:url>http://localhost:8280/orchard/jobs/c611d869-0521-4436-ace9-bc7588986f3d?wsdl</con:url><con:content><![CDATA[<!--Published by JAX-WS RI at http://jax-ws.dev.java.net. RI's version is JAX-WS RI 2.1.3-b02-.-->
+</soapenv:Envelope>]]></con:request></con:call></con:operation><con:operation isOneWay="false" action="" name="errors" bindingOperationName="errors" inputName="" receivesAttachments="false" sendsAttachments="false"><con:settings/><con:call name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8280/orchard/jobs/d131dcbb-59a2-4222-9cb3-62d6d744f487</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap.orchard.orc/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:errors/>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request></con:call></con:operation><con:operation isOneWay="false" action="" name="nextErrors" bindingOperationName="nextErrors" inputName="" receivesAttachments="false" sendsAttachments="false"><con:settings/><con:call name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap.orchard.orc/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:nextErrors/>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request></con:call></con:operation><con:definitionCache rootPart="http://localhost:8280/orchard/jobs/586e34be-f714-4fc3-9918-760e4afd30e7?wsdl" type="TEXT"><con:part><con:url>http://localhost:8280/orchard/jobs/586e34be-f714-4fc3-9918-760e4afd30e7?wsdl</con:url><con:content><![CDATA[<!--Published by JAX-WS RI at http://jax-ws.dev.java.net. RI's version is JAX-WS RI 2.1.3-b02-.-->
 <!--Generated by JAX-WS RI at http://jax-ws.dev.java.net. RI's version is JAX-WS RI 2.1.3-b02-.-->
 <definitions targetNamespace="http://soap.orchard.orc/" name="StandaloneJobServiceService" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://soap.orchard.orc/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.xmlsoap.org/wsdl/">
   <types>
     <xsd:schema>
-      <xsd:import namespace="http://soap.orchard.orc/" schemaLocation="http://localhost:8280/orchard/jobs/c611d869-0521-4436-ace9-bc7588986f3d?xsd=1"/>
+      <xsd:import namespace="http://soap.orchard.orc/" schemaLocation="http://localhost:8280/orchard/jobs/586e34be-f714-4fc3-9918-760e4afd30e7?xsd=1"/>
     </xsd:schema>
   </types>
   <message name="configuration">
@@ -734,14 +744,35 @@
   <message name="configurationResponse">
     <part name="parameters" element="tns:configurationResponse"/>
   </message>
+  <message name="errors">
+    <part name="parameters" element="tns:errors"/>
+  </message>
+  <message name="errorsResponse">
+    <part name="parameters" element="tns:errorsResponse"/>
+  </message>
   <message name="publications">
     <part name="parameters" element="tns:publications"/>
   </message>
   <message name="publicationsResponse">
     <part name="parameters" element="tns:publicationsResponse"/>
   </message>
-  <message name="InvalidJobStateException">
-    <part name="fault" element="tns:InvalidJobStateException"/>
+  <message name="nextPublications">
+    <part name="parameters" element="tns:nextPublications"/>
+  </message>
+  <message name="nextPublicationsResponse">
+    <part name="parameters" element="tns:nextPublicationsResponse"/>
+  </message>
+  <message name="UnsupportedFeatureException">
+    <part name="fault" element="tns:UnsupportedFeatureException"/>
+  </message>
+  <message name="InterruptedException">
+    <part name="fault" element="tns:InterruptedException"/>
+  </message>
+  <message name="nextErrors">
+    <part name="parameters" element="tns:nextErrors"/>
+  </message>
+  <message name="nextErrorsResponse">
+    <part name="parameters" element="tns:nextErrorsResponse"/>
   </message>
   <message name="publicationsAfter">
     <part name="parameters" element="tns:publicationsAfter"/>
@@ -755,6 +786,9 @@
   <message name="startResponse">
     <part name="parameters" element="tns:startResponse"/>
   </message>
+  <message name="InvalidJobStateException">
+    <part name="fault" element="tns:InvalidJobStateException"/>
+  </message>
   <message name="state">
     <part name="parameters" element="tns:state"/>
   </message>
@@ -767,18 +801,6 @@
   <message name="haltResponse">
     <part name="parameters" element="tns:haltResponse"/>
   </message>
-  <message name="listen">
-    <part name="parameters" element="tns:listen"/>
-  </message>
-  <message name="listenResponse">
-    <part name="parameters" element="tns:listenResponse"/>
-  </message>
-  <message name="UnsupportedFeatureException">
-    <part name="fault" element="tns:UnsupportedFeatureException"/>
-  </message>
-  <message name="InterruptedException">
-    <part name="fault" element="tns:InterruptedException"/>
-  </message>
   <message name="finish">
     <part name="parameters" element="tns:finish"/>
   </message>
@@ -790,15 +812,29 @@
       <input message="tns:configuration"/>
       <output message="tns:configurationResponse"/>
     </operation>
+    <operation name="errors">
+      <input message="tns:errors"/>
+      <output message="tns:errorsResponse"/>
+    </operation>
     <operation name="publications">
       <input message="tns:publications"/>
       <output message="tns:publicationsResponse"/>
-      <fault message="tns:InvalidJobStateException" name="InvalidJobStateException"/>
+    </operation>
+    <operation name="nextPublications">
+      <input message="tns:nextPublications"/>
+      <output message="tns:nextPublicationsResponse"/>
+      <fault message="tns:UnsupportedFeatureException" name="UnsupportedFeatureException"/>
+      <fault message="tns:InterruptedException" name="InterruptedException"/>
+    </operation>
+    <operation name="nextErrors">
+      <input message="tns:nextErrors"/>
+      <output message="tns:nextErrorsResponse"/>
+      <fault message="tns:UnsupportedFeatureException" name="UnsupportedFeatureException"/>
+      <fault message="tns:InterruptedException" name="InterruptedException"/>
     </operation>
     <operation name="publicationsAfter">
       <input message="tns:publicationsAfter"/>
       <output message="tns:publicationsAfterResponse"/>
-      <fault message="tns:InvalidJobStateException" name="InvalidJobStateException"/>
     </operation>
     <operation name="start">
       <input message="tns:start"/>
@@ -812,13 +848,6 @@
     <operation name="halt">
       <input message="tns:halt"/>
       <output message="tns:haltResponse"/>
-    </operation>
-    <operation name="listen">
-      <input message="tns:listen"/>
-      <output message="tns:listenResponse"/>
-      <fault message="tns:InvalidJobStateException" name="InvalidJobStateException"/>
-      <fault message="tns:UnsupportedFeatureException" name="UnsupportedFeatureException"/>
-      <fault message="tns:InterruptedException" name="InterruptedException"/>
     </operation>
     <operation name="finish">
       <input message="tns:finish"/>
@@ -837,6 +866,15 @@
         <soap:body use="literal"/>
       </output>
     </operation>
+    <operation name="errors">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
     <operation name="publications">
       <soap:operation soapAction=""/>
       <input>
@@ -845,8 +883,35 @@
       <output>
         <soap:body use="literal"/>
       </output>
-      <fault name="InvalidJobStateException">
-        <soap:fault name="InvalidJobStateException" use="literal"/>
+    </operation>
+    <operation name="nextPublications">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+      <fault name="UnsupportedFeatureException">
+        <soap:fault name="UnsupportedFeatureException" use="literal"/>
+      </fault>
+      <fault name="InterruptedException">
+        <soap:fault name="InterruptedException" use="literal"/>
+      </fault>
+    </operation>
+    <operation name="nextErrors">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+      <fault name="UnsupportedFeatureException">
+        <soap:fault name="UnsupportedFeatureException" use="literal"/>
+      </fault>
+      <fault name="InterruptedException">
+        <soap:fault name="InterruptedException" use="literal"/>
       </fault>
     </operation>
     <operation name="publicationsAfter">
@@ -857,9 +922,6 @@
       <output>
         <soap:body use="literal"/>
       </output>
-      <fault name="InvalidJobStateException">
-        <soap:fault name="InvalidJobStateException" use="literal"/>
-      </fault>
     </operation>
     <operation name="start">
       <soap:operation soapAction=""/>
@@ -891,24 +953,6 @@
         <soap:body use="literal"/>
       </output>
     </operation>
-    <operation name="listen">
-      <soap:operation soapAction=""/>
-      <input>
-        <soap:body use="literal"/>
-      </input>
-      <output>
-        <soap:body use="literal"/>
-      </output>
-      <fault name="InvalidJobStateException">
-        <soap:fault name="InvalidJobStateException" use="literal"/>
-      </fault>
-      <fault name="UnsupportedFeatureException">
-        <soap:fault name="UnsupportedFeatureException" use="literal"/>
-      </fault>
-      <fault name="InterruptedException">
-        <soap:fault name="InterruptedException" use="literal"/>
-      </fault>
-    </operation>
     <operation name="finish">
       <soap:operation soapAction=""/>
       <input>
@@ -924,22 +968,26 @@
   </binding>
   <service name="StandaloneJobServiceService">
     <port name="StandaloneJobServicePort" binding="tns:StandaloneJobServicePortBinding">
-      <soap:address location="http://localhost:8280/orchard/jobs/c611d869-0521-4436-ace9-bc7588986f3d"/>
+      <soap:address location="http://localhost:8280/orchard/jobs/586e34be-f714-4fc3-9918-760e4afd30e7"/>
     </port>
   </service>
-</definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part><con:part><con:url>http://localhost:8280/orchard/jobs/c611d869-0521-4436-ace9-bc7588986f3d?xsd=1</con:url><con:content><![CDATA[<!--Published by JAX-WS RI at http://jax-ws.dev.java.net. RI's version is JAX-WS RI 2.1.3-b02-.-->
+</definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part><con:part><con:url>http://localhost:8280/orchard/jobs/586e34be-f714-4fc3-9918-760e4afd30e7?xsd=1</con:url><con:content><![CDATA[<!--Published by JAX-WS RI at http://jax-ws.dev.java.net. RI's version is JAX-WS RI 2.1.3-b02-.-->
 <xs:schema version="1.0" targetNamespace="http://soap.orchard.orc/" xmlns:tns="http://soap.orchard.orc/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:element name="InterruptedException" type="tns:InterruptedException"/>
   <xs:element name="InvalidJobStateException" type="tns:InvalidJobStateException"/>
   <xs:element name="UnsupportedFeatureException" type="tns:UnsupportedFeatureException"/>
   <xs:element name="configuration" type="tns:configuration"/>
   <xs:element name="configurationResponse" type="tns:configurationResponse"/>
+  <xs:element name="errors" type="tns:errors"/>
+  <xs:element name="errorsResponse" type="tns:errorsResponse"/>
   <xs:element name="finish" type="tns:finish"/>
   <xs:element name="finishResponse" type="tns:finishResponse"/>
   <xs:element name="halt" type="tns:halt"/>
   <xs:element name="haltResponse" type="tns:haltResponse"/>
-  <xs:element name="listen" type="tns:listen"/>
-  <xs:element name="listenResponse" type="tns:listenResponse"/>
+  <xs:element name="nextErrors" type="tns:nextErrors"/>
+  <xs:element name="nextErrorsResponse" type="tns:nextErrorsResponse"/>
+  <xs:element name="nextPublications" type="tns:nextPublications"/>
+  <xs:element name="nextPublicationsResponse" type="tns:nextPublicationsResponse"/>
   <xs:element name="publications" type="tns:publications"/>
   <xs:element name="publicationsAfter" type="tns:publicationsAfter"/>
   <xs:element name="publicationsAfterResponse" type="tns:publicationsAfterResponse"/>
@@ -973,18 +1021,38 @@
       <xs:element name="message" type="xs:string" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
-  <xs:complexType name="listen">
+  <xs:complexType name="start">
     <xs:sequence/>
   </xs:complexType>
-  <xs:complexType name="listenResponse">
+  <xs:complexType name="startResponse">
+    <xs:sequence/>
+  </xs:complexType>
+  <xs:complexType name="halt">
+    <xs:sequence/>
+  </xs:complexType>
+  <xs:complexType name="haltResponse">
+    <xs:sequence/>
+  </xs:complexType>
+  <xs:complexType name="nextErrors">
+    <xs:sequence/>
+  </xs:complexType>
+  <xs:complexType name="nextErrorsResponse">
     <xs:sequence>
-      <xs:element name="return" type="tns:publication" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="return" type="tns:tokenError" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
-  <xs:complexType name="publication">
+  <xs:complexType name="tokenError">
     <xs:sequence>
-      <xs:element name="sequence" type="xs:int"/>
+      <xs:element name="message" type="xs:string" minOccurs="0"/>
+      <xs:element name="location" type="tns:sourceLocation" minOccurs="0"/>
       <xs:element name="timestamp" type="xs:dateTime" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="sourceLocation">
+    <xs:sequence>
+      <xs:element name="line" type="xs:int" minOccurs="0"/>
+      <xs:element name="column" type="xs:int" minOccurs="0"/>
+      <xs:element name="filename" type="xs:string" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="UnsupportedFeatureException">
@@ -997,17 +1065,180 @@
       <xs:element name="message" type="xs:string" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
-  <xs:complexType name="start">
+  <xs:complexType name="nextPublications">
     <xs:sequence/>
   </xs:complexType>
-  <xs:complexType name="startResponse">
+  <xs:complexType name="nextPublicationsResponse">
+    <xs:sequence>
+      <xs:element name="return" type="tns:publication" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="publication">
+    <xs:sequence>
+      <xs:element name="sequence" type="xs:int"/>
+      <xs:element name="timestamp" type="xs:dateTime" minOccurs="0"/>
+      <xs:element name="value" type="tns:value" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="value" abstract="true">
+    <xs:complexContent>
+      <xs:extension base="tns:argument">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="argument" abstract="true">
+    <xs:complexContent>
+      <xs:extension base="tns:expression">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="expression" abstract="true">
     <xs:sequence/>
   </xs:complexType>
-  <xs:complexType name="halt">
-    <xs:sequence/>
+  <xs:complexType name="bar">
+    <xs:complexContent>
+      <xs:extension base="tns:expression">
+        <xs:sequence>
+          <xs:element name="left" type="tns:expression" minOccurs="0"/>
+          <xs:element name="right" type="tns:expression" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
-  <xs:complexType name="haltResponse">
-    <xs:sequence/>
+  <xs:complexType name="call">
+    <xs:complexContent>
+      <xs:extension base="tns:expression">
+        <xs:sequence>
+          <xs:element name="callee" type="tns:argument" minOccurs="0"/>
+          <xs:element name="argument" type="tns:argument" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="definitions">
+    <xs:complexContent>
+      <xs:extension base="tns:expression">
+        <xs:sequence>
+          <xs:element name="definition" type="tns:definition" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="body" type="tns:expression" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="definition">
+    <xs:sequence>
+      <xs:element name="body" type="tns:expression" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="arity" type="xs:int" use="required"/>
+  </xs:complexType>
+  <xs:complexType name="null">
+    <xs:complexContent>
+      <xs:extension base="tns:expression">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="pull">
+    <xs:complexContent>
+      <xs:extension base="tns:expression">
+        <xs:sequence>
+          <xs:element name="left" type="tns:expression" minOccurs="0"/>
+          <xs:element name="right" type="tns:expression" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="push">
+    <xs:complexContent>
+      <xs:extension base="tns:expression">
+        <xs:sequence>
+          <xs:element name="left" type="tns:expression" minOccurs="0"/>
+          <xs:element name="right" type="tns:expression" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="semicolon">
+    <xs:complexContent>
+      <xs:extension base="tns:expression">
+        <xs:sequence>
+          <xs:element name="left" type="tns:expression" minOccurs="0"/>
+          <xs:element name="right" type="tns:expression" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="variable">
+    <xs:complexContent>
+      <xs:extension base="tns:argument">
+        <xs:sequence/>
+        <xs:attribute name="index" type="xs:int" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="constant">
+    <xs:complexContent>
+      <xs:extension base="tns:value">
+        <xs:sequence>
+          <xs:element name="value" type="xs:anyType" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="field">
+    <xs:complexContent>
+      <xs:extension base="tns:value">
+        <xs:sequence/>
+        <xs:attribute name="name" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="site">
+    <xs:complexContent>
+      <xs:extension base="tns:value">
+        <xs:sequence/>
+        <xs:attribute name="protocol" type="xs:string"/>
+        <xs:attribute name="location" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="unrepresentableValue">
+    <xs:complexContent>
+      <xs:extension base="tns:value">
+        <xs:sequence/>
+        <xs:attribute name="description" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="list">
+    <xs:complexContent>
+      <xs:extension base="tns:value">
+        <xs:sequence>
+          <xs:element name="element" type="tns:value" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="option">
+    <xs:complexContent>
+      <xs:extension base="tns:value">
+        <xs:sequence>
+          <xs:element name="value" type="tns:value" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tuple">
+    <xs:complexContent>
+      <xs:extension base="tns:value">
+        <xs:sequence>
+          <xs:element name="element" type="tns:value" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="size" type="xs:int" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
   <xs:complexType name="publications">
     <xs:sequence/>
@@ -1033,6 +1264,14 @@
   <xs:complexType name="stateResponse">
     <xs:sequence>
       <xs:element name="return" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="errors">
+    <xs:sequence/>
+  </xs:complexType>
+  <xs:complexType name="errorsResponse">
+    <xs:sequence>
+      <xs:element name="return" type="tns:tokenError" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 </xs:schema>]]></con:content><con:type>http://www.w3.org/2001/XMLSchema</con:type></con:part></con:definitionCache></con:interface><con:interface name="JobsServicePortBinding" bindingName="{http://soap.orchard.orc/}JobsServicePortBinding" soapVersion="1_1" definition="http://localhost:8080/orchard/json/jobs/d27a7c14-2946-412b-86ef-53033d86ad4a?wsdl"><con:settings/><con:endpoints><con:endpoint>http://localhost:8080/orchard/soap/jobs/d27a7c14-2946-412b-86ef-53033d86ad4a</con:endpoint></con:endpoints><con:operation isOneWay="false" action="" name="configuration" bindingOperationName="configuration" inputName="" receivesAttachments="false" sendsAttachments="false"><con:settings/><con:call name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">http://localhost:8080/orchard/soap/jobs/d27a7c14-2946-412b-86ef-53033d86ad4a</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://soap.orchard.orc/">
