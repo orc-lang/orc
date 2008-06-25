@@ -19,29 +19,21 @@ public abstract class Region {
 	
 	public void add(Token t) { 
 		inc(); 
-	
-		// for chcekpointing
 		containedTokens.add(t);
 	}
 	
 	public void add(Region r) { 
 		inc(); 
-		
-		// for chcekpointing
 		containedRegions.add(r);
 	}
 	
 	public void remove(Token t) { 
 		dec(); 
-		
-		// for chcekpointing
 		containedTokens.remove(t);
 	}
 	
 	public void remove(Region r) { 
 		dec(); 
-
-		// for chcekpointing
 		containedRegions.remove(r);
 	}
 
