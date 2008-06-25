@@ -30,16 +30,9 @@ public class JavaSite extends Site {
 		{
 			Class<?> cls = Class.forName(classname);
 			
-			if (orc.runtime.sites.Site.class.isAssignableFrom(cls)) 
-			{
-				return new ClassProxy(cls);
-			}
-			else
-			{ 
-				throw new Error("Class " + cls + " cannot be used as a site. It is not a subtype of Site."); 
-			}
+			return new ClassProxy(cls);
 		}
-		catch (Exception e) { throw new Error("Failed to load class " + classname + " as a proxy."); }
+		catch (Exception e) { throw new Error("Failed to load class " + classname + " as a proxy.", e); }
 	}
 
 }
