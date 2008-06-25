@@ -128,7 +128,8 @@ CodePress = {
 	
 		for(i=0;i<Language.syntax.length;i++) 
 			x = x.replace(Language.syntax[i].input,Language.syntax[i].output);
-
+			
+		x = x.replace(/\n([^])/g,'<br>$1');
 		editor.innerHTML = this.actions.history[this.actions.next()] = (flag=='scroll') ? x : o.split(z).join(x);
 		if(flag!='init') this.findString();
 	},
