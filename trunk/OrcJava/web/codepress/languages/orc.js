@@ -1,12 +1,14 @@
 Language.syntax = [
-	// comments
-	{ input : /(--.*?)<br>/g, output : '<i>$1</i><br>' },
+	// single-line comments
+	{ input : /(--.*)/g, output : '<i>$1</i>' },
+	// multi-line comments
+	{ input : /(\{-[^]*?-\})/g, output: '<i>$1</i>' },
 	// strings
-	{ input : /([^\\]|^)("([^"\\]|\\[^])*")/g, output : '$1<s>$2</s>' },
+	{ input : /([^\\]|^)("([^"\\\n]|\\[^])*")/g, output : '$1<s>$2</s>' },
 	// reserved words
-	{ input : /\b(var|def|class|site)\b/g, output : '<b>$1</b>' },
+	{ input : /\b(val|def|class|site|include|lambda|as)\b/g, output : '<b>$1</b>' },
 	// builtins
-	{ input : /\b(if|let|Rtimer|Ltimer)\b/g, output : '<u>$1</u>' },
+	{ input : /\b(if|let|some|none|isSome|isNone|Rtimer|Ltimer|null|true|false)\b/g, output : '<u>$1</u>' },
 	// combinators
 	{ input : /(&gt;.*?&gt;|&lt;.*?&lt;|\|)/g, output : '<tt>$1</tt>' }
 ];
@@ -22,7 +24,6 @@ Language.complete = [
 	{ input : '"', output : '"$0"' },
 	{ input : '(', output : '\($0\)' },
 	{ input : '[', output : '\[$0\]' },
-	{ input : '{', output : '{\n\t$0\n}' }
 ];
 
 Language.shortcuts = [];

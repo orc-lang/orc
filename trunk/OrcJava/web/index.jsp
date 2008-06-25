@@ -219,6 +219,7 @@ function onJobServiceReady(job) {
 }
 function onJobFinish() {
 	document.getElementById("runButton").disabled = false;
+	document.getElementById("stopButton").disabled = true;
 	document.getElementById("loading").style.visibility = "hidden";
 	document.getElementById("timestamp").style.visibility = "hidden";
 	currentJob = null;

@@ -48,7 +48,10 @@ CodePress = {
 			if(!CodePress.completeEnding(fromChar))
 			     CodePress.complete(fromChar);
 		}
-	    else if(chars.indexOf('|'+charCode+'|')!=-1||keyCode==13) { // syntax highlighting
+		else if(keyCode==13) { // syntax highlighting
+			top.setTimeout(function(){CodePress.syntaxHighlight('indent');},100);
+		}
+	    else if(chars.indexOf('|'+charCode+'|')!=-1) { // syntax highlighting
 			top.setTimeout(function(){CodePress.syntaxHighlight('generic');},100);
 		}
 		else if(keyCode==9 || evt.tabKey) {  // snippets activation (tab)
@@ -97,10 +100,16 @@ CodePress = {
 		if(!document.getElementsByTagName('pre')[0]) {
 			body = document.getElementsByTagName('body')[0];
 			if(!body.innerHTML) return body;
-			if(body.innerHTML=="<br>") body.innerHTML = "<pre> </pre>";
+			if(body.innerHTML=="\n") body.innerHTML = "<pre> </pre>";
 			else body.innerHTML = "<pre>"+body.innerHTML+"</pre>";
 		}
 		return document.getElementsByTagName('pre')[0];
+	},
+	
+	// ORC: auto-indent feature
+	autoIndent: function (text) {
+		return text.replace(new RegExp("^([ \t]+)(.*\n)"+cc, "m"),
+				"$1$2$1"+cc);
 	},
 	
 	// syntax highlighting parser
@@ -109,11 +118,13 @@ CodePress = {
 		if(flag != 'init') { window.getSelection().getRangeAt(0).insertNode(document.createTextNode(cc));}
 		editor = CodePress.getEditor();
 		o = editor.innerHTML;
+		console.log(o);
 		o = o.replace(/<br>/g,'\n');
 		o = o.replace(/<.*?>/g,'');
 		x = z = this.split(o,flag);
-		x = x.replace(/\n/g,'<br>');
-
+		// ORC: auto-indent
+		if (flag == "indent") x = CodePress.autoIndent(x);
+		
 		if(arguments[1]&&arguments[2]) x = x.replace(arguments[1],arguments[2]);
 	
 		for(i=0;i<Language.syntax.length;i++) 
@@ -153,7 +164,6 @@ CodePress = {
 		content = content.replace(/&/g,'&amp;');
 		content = content.replace(/</g,'&lt;');
 		content = content.replace(/>/g,'&gt;');
-		content = content.replace(/\n/g,'<br>');
 		return content;
 	},
 
@@ -244,7 +254,6 @@ CodePress = {
 		if(!document.getElementsByTagName('pre')[0] || editor.innerHTML == '')
 			editor = CodePress.getEditor();
 		var code = editor.innerHTML;
-		code = code.replace(/<br>/g,'\n');
 		code = code.replace(/\u2009/g,'');
 		code = code.replace(/<.*?>/g,'');
 		code = code.replace(/&lt;/g,'<');
