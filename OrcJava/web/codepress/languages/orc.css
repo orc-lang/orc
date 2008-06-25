@@ -1,10 +1,15 @@
 /* strings */
 s { color: gray; }
 /* reserved words */
-b { color: green; font-weight: bold; }
+b { color: green; font-weight: bold; font-size: 12px; }
 /* builtins */
 u { color: blue; }
 /* comments */
 i { color: brown; font-style: italic; }
 /* combinators */
-tt { font-weight: bold; }
+tt { font-weight: bold; font-size: 12px; }
+
+/*
+NB: bold fonts on my browser distort the line-height unless
+I explicitly set the font size 1px smaller.
+*/
