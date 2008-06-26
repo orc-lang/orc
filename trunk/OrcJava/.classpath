@@ -3,11 +3,8 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/axis.jar"/>
-	<classpathentry kind="lib" path="lib/wsdl4j-1.5.1.jar"/>
 	<classpathentry kind="lib" path="lib/jaxrpc.jar"/>
 	<classpathentry kind="lib" path="lib/commons-discovery-0.2.jar"/>
-	<classpathentry kind="lib" path="lib/commons-logging-1.0.4.jar"/>
-	<classpathentry kind="lib" path="webservices"/>
 	<classpathentry kind="lib" path="lib/mail.jar"/>
 	<classpathentry kind="lib" path="lib/tools.jar"/>
 	<classpathentry kind="lib" path="lib/jaxws-api.jar" sourcepath="lib/jaxws-sources.jar"/>
@@ -28,7 +25,6 @@
 	<classpathentry kind="lib" path="lib/resolver.jar"/>
 	<classpathentry kind="lib" path="lib/saaj-api.jar"/>
 	<classpathentry kind="lib" path="lib/saaj-impl.jar"/>
-	<classpathentry kind="lib" path="lib/sjsxp.jar"/>
 	<classpathentry kind="var" path="ANTLR_HOME/antlr.jar"/>
 	<classpathentry kind="lib" path="lib/servlet-api.jar"/>
 	<classpathentry kind="lib" path="lib/velocity-1.5.jar"/>
@@ -42,8 +38,10 @@
 	<classpathentry kind="lib" path="lib/gdata-calendar-meta-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/gdata-client-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/gdata-core-1.0.jar"/>
-	<classpathentry kind="lib" path="lib/gdata-spreadsheet-1.0.jar"/>
-	<classpathentry kind="lib" path="lib/gdata-spreadsheet-meta-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/commons-logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/cxf-2.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/wsdl4j-1.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/htmlparser.jar"/>
+	<classpathentry kind="lib" path="lib/GoogleSearch.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
