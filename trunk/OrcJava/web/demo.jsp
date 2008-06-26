@@ -10,6 +10,7 @@
 div.publication {
 	border-bottom: 1px solid gray;
 	font-family: monospace;
+	font-weight: bold;
 }
 div.error {
 	border: 3px solid red;
@@ -18,7 +19,7 @@ div.error {
 }
 div.print {
 	border-bottom: 1px solid gray;
-	font-color: gray;
+	font-color: #666666;
 }
 body {
 	font-family: sans-serif;
@@ -37,6 +38,10 @@ a {
 	color: black;
 	text-decoration: none;
 	font-variant: small-caps;
+}
+#program_cp {
+	font-weight: bold;
+	font-size: 20pt;
 }
 #comments {
 	padding-bottom: 1em;
@@ -71,6 +76,7 @@ a {
 </textarea>
 <p><input type="submit" value="Run" onClick="onRunButton()" id="runButton" disabled="true">
 &nbsp;<input type="submit" value="Stop" onClick="onStopButton()" id="stopButton" disabled="true">
+&nbsp;<input type="checkbox" onClick="program.toggleEditor()" checked>&nbsp;Syntax
 &nbsp;<img id="loading" src="loading.gif" width="126" height="22" style="visibility: hidden" align="top">
 &nbsp;<span id="timestamp" style="visibility: hidden"></span>
 <div id="publications" style="width: 100%; height: 30%"></div>
