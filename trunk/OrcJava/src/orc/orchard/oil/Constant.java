@@ -12,7 +12,7 @@ public class Constant extends Value {
 		this.value = value;
 	}
 	public String toString() {
-		return super.toString() + "(" + value + ")";
+		return super.toString() + "(" + value.getClass().toString() + "(" + value + "))";
 	}
 	@Override
 	public orc.ast.oil.arg.Arg unmarshal() {

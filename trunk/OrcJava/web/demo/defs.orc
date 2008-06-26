@@ -1,4 +1,5 @@
--- Definition of (recursive) expressions
+-- Definition of (recursive) expressions.
+-- Expression is called like a site, but may publish many values.
 
 def AskOnce(question) = Email(william,answer)
 	<answer< David(question) | Adrian(question)

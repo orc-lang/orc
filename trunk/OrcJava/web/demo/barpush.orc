@@ -1,4 +1,4 @@
--- A push (sequential composition) streaming results of two calls to another call
+-- Sequential composition evaluates the right hand side for every value published by the left-hand side.
 
 (
 	David("Write a message for William:")

@@ -1,7 +1,8 @@
-val phrase1 = "site:www.myspace.com 'Austin, TX' 'Band Members'"
-val phrase2 = "site:www.myspace.com 'Austin, Texas' 'Band Members'"
+-- Orchestrated music calendar demo
+val p1 = "site:www.myspace.com 'Austin, TX' 'Band Members'"
+val p2 = "site:www.myspace.com 'Austin, Texas' 'Band Members'"
 
-(GoogleSearch(phrase1) | GoogleSearch(phrase2)) >searchResults>
+(GoogleSearch(p1) | GoogleSearch(p2)) >searchResults>
 	each(searchResults.getResultElements()) >searchResult>
 		searchResult.getURL() >!mySpaceURL>
 		MySpace.scrapeMusicShows(mySpaceURL) >musicShows>
