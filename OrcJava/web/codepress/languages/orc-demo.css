@@ -1,0 +1,13 @@
+/* strings */
+pre > s, pre > s * { color: gray; }
+/* reserved words */
+pre > b { color: green; font-weight: bold; }
+/* builtins */
+pre > u { color: blue; }
+/* comments */
+pre > i, pre > i * { color: brown; font-style: italic; }
+/* combinators */
+pre > tt, pre > tt * { font-weight: bold; }
+
+/* Big fonts for demos */
+body, body * { font-size: 16pt; line-height: 20pt; }
