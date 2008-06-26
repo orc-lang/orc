@@ -23,7 +23,7 @@ div.print {
 </style>
 </head>
 <body onunload="onUnload()">
-<textarea id="program" class="codepress orc" style="width: 600px; height: 300px" wrap="off">
+<textarea spellcheck="false" id="program" class="codepress orc" style="width: 600px; height: 300px" wrap="off">
 -- Metronome which publishes every second
 def M(n) = ("Metronome", n) | Rtimer(1000) >> M(n+1)
 

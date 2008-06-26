@@ -5,3 +5,5 @@ We have made the following changes to integrate with Orc:
 - Added orc syntax highlighting
 - Added auto-indent
 - <br> is removed during syntax highlighting to make multi-line stuff easier
+- Fixed some bugs with enter key misbehaving
+- Force spellcheck disabled

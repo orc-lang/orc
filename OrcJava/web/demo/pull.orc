@@ -1,4 +1,4 @@
--- A pull (asymmetric composition) from two calls
+-- Asymmetric composition: use only the first value published by the right-hand side.
 
 cat(color, " wins.")
 	<color<  David("Choose a color.")

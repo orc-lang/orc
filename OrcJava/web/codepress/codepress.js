@@ -12,6 +12,7 @@
 CodePress = function(obj) {
 	var self = document.createElement('iframe');
 	self.textarea = obj;
+	self.spellcheck = "false"; // ORC: force disable browser spellcheck
 	self.textarea.disabled = true;
 	self.textarea.style.overflow = 'hidden';
 	self.style.height = self.textarea.clientHeight +'px';

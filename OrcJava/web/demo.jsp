@@ -5,11 +5,11 @@
 #publications {
 	border: 1px solid gray;
 	overflow: auto;
+	font-size: 20pt;
 }
 div.publication {
 	border-bottom: 1px solid gray;
 	font-family: monospace;
-	font-size: 20pt;
 }
 div.error {
 	border: 3px solid red;
@@ -22,6 +22,7 @@ div.print {
 }
 body {
 	font-family: sans-serif;
+	font-size: 20pt;
 }
 ul {
 	list-style-type: none;
@@ -38,8 +39,8 @@ a {
 	font-variant: small-caps;
 }
 #comments {
-	font-size: 20pt;
 	padding-bottom: 1em;
+	font-size: 20pt;
 }
 </style>
 </head>
@@ -47,25 +48,26 @@ a {
 <table width="100%" height="100%"><tr><td valign="top" width="100">
 <ul>
 <li><a href="#" onclick="loadCode('demo/call.orc')">Call</a></li>
-<li><a href="#" onclick="loadCode('demo/push.orc')">Push</a></li>
 <li><a href="#" onclick="loadCode('demo/bar.orc')">Bar</a></li>
+<li><a href="#" onclick="loadCode('demo/push.orc')">Push</a></li>
+<li><a href="#" onclick="loadCode('demo/pushbind.orc')">Push/Bind</a></li>
 <li><a href="#" onclick="loadCode('demo/barpush.orc')">Bar/Push</a></li>
 <li><a href="#" onclick="loadCode('demo/pull.orc')">Pull</a></li>
 <li><a href="#" onclick="loadCode('demo/pulldoesnotwait.orc')">Pull Doesn't Wait</a></li>
 <li><a href="#" onclick="loadCode('demo/fundamentals.orc')">Fundamental Sites</a></li>
-<li><a href="#" onclick="loadCode('demo/defs.orc')">Recursive Definitions</a></li>
-<li><a href="#" onclick="loadCode('demo/forkjoin.orc')">Fork/Join</a></li>
+<li><a href="#" onclick="loadCode('demo/defs.orc')">Expressions</a></li>
 <li><a href="#" onclick="loadCode('demo/metronome.orc')">Metronome</a></li>
-<li><a href="#" onclick="loadCode('demo/queryaccept.orc')">Metronome Use</a></li>
-<li><a href="#" onclick="loadCode('demo/parallelor.orc')">Parallel Or</a></li>
-<li><a href="#" onclick="loadCode('demo/priority.orc')">Priority</a></li>
-<li><a href="#" onclick="loadCode('demo/tally.orc')">Tally</a></li>
+<li><a href="#" onclick="loadCode('demo/queryaccept.orc')">Expression Use</a></li>
 <li><a href="#" onclick="loadCode('demo/timeout.orc')">Timeout</a></li>
+<li><a href="#" onclick="loadCode('demo/forkjoin.orc')">Fork/Join</a></li>
+<li><a href="#" onclick="loadCode('demo/priority.orc')">Priority</a></li>
+<li><a href="#" onclick="loadCode('demo/parallelor.orc')">Parallel Or</a></li>
+<li><a href="#" onclick="loadCode('demo/tally.orc')">Tally</a></li>
 <li><a href="#" onclick="loadCode('demo/music_calendar.orc')">Music Calendar</a></li>
 </ul>
 </td><td valign="top">
 <div id="comments"></div>
-<textarea id="program" class="codepress orc-demo linenumbers-off" style="width: 100%; height: 40%" wrap="off">
+<textarea spellcheck="false" id="program" class="codepress orc-demo linenumbers-off" style="width: 100%; height: 40%" wrap="off">
 </textarea>
 <p><input type="submit" value="Run" onClick="onRunButton()" id="runButton" disabled="true">
 &nbsp;<input type="submit" value="Stop" onClick="onStopButton()" id="stopButton" disabled="true">
