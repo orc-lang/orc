@@ -290,18 +290,22 @@ function loadCode(filename) {
 		currentJob.halt({});
 	}
 	document.getElementById("publications").innerHTML = "";
-	var xhr = createXmlHttpRequest();
-	xhr.onreadystatechange = function () {
-		if (xhr.readyState == 4) {
-			var parts = extractComments(xhr.responseText);
-			document.getElementById("comments").innerHTML =
-				escapeHtml(parts[0]).replace("\n", "<br>");
-			program.setCode(parts[1]);
-			program.editor.syntaxHighlight('init');
-		}
-	};
-	xhr.open("GET", filename, true);
-	xhr.send();
+	try {
+		var xhr = createXmlHttpRequest();
+		xhr.onreadystatechange = function () {
+			if (xhr.readyState == 4) {
+				var parts = extractComments(xhr.responseText);
+				document.getElementById("comments").innerHTML =
+					escapeHtml(parts[0]).replace("\n", "<br>");
+				program.setCode(parts[1]);
+				program.editor.syntaxHighlight('init');
+			}
+		};
+		xhr.open("GET", filename, true);
+		xhr.send("");
+	} catch (e) {
+		alert("Unable to load " + filename + " due to exception: " + e);
+	}
 }
 
 //////////////////////////////////////////////////////////
