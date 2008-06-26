@@ -3,6 +3,7 @@
  */
 package orc.runtime;
 
+import java.io.File;
 import java.rmi.RemoteException;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -190,6 +191,9 @@ public class OrcEngine implements Runnable {
 		System.out.println("Token " + t + " encountered an error. ");
 		System.out.println("Problem: " + problem);
 		System.out.println("Source location: " + problem.getSourceLocation());
+		if (debugMode) {
+			problem.printStackTrace();
+		}
 		Throwable cause = problem.getCause();
 		if (debugMode && cause != null) {
 			System.out.println("Caused by:");
@@ -238,5 +242,13 @@ public class OrcEngine implements Runnable {
 	 */
 	public void println(String string) {
 		System.out.println(string);
+	}
+	/**
+	 * Return path to the temporary directory for this engine.
+	 * FIXME: each engine should have a unique temporary directory.
+	 * @return
+	 */
+	public File getTmpdir() {
+		return new File(System.getProperty("java.io.tmpdir"));
 	}
 }

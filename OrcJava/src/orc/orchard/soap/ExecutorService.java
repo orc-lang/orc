@@ -1,5 +1,6 @@
 package orc.orchard.soap;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -90,12 +91,13 @@ public class ExecutorService extends AbstractExecutorService {
 		URI jobURI = baseURI.resolve("jobs/" + job.getID());
 		final ServletContext sc = getServletContext();
 		if (sc != null) {
-			sc.setAttribute(job.getID(), job);
+			sc.setAttribute("orc.orchard.soap."+job.getID(), job);
 			job.onFinish(new Job.FinishListener() {
 				public void finished(Job job) {
-					sc.removeAttribute(job.getID());
+					sc.removeAttribute("orc.orchard.soap."+job.getID());
 				}
 			});
+			job.setTmpdir((File)sc.getAttribute("javax.servlet.context.tempdir"));
 		} else {
 			try {
 				new StandaloneJobService(logger, jobURI, job);

@@ -110,7 +110,7 @@ public class JobsService extends AbstractJobsService {
 	@Override
 	protected Job getCurrentJob() throws RemoteException {
 		String jobID = getJobID();
-		Object out = getServletContext().getAttribute(jobID);
+		Object out = getServletContext().getAttribute("orc.orchard.soap."+jobID);
 		if (out == null) throw new RemoteException("Job '" + jobID + "' not found.");
 		return (Job)out;
 	}
