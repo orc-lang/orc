@@ -2,12 +2,16 @@ package orc.runtime.sites;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import orc.error.JavaException;
 import orc.error.TokenException;
 import orc.runtime.Args;
+import orc.runtime.Token;
 import orc.runtime.sites.java.ObjectProxy;
 import orc.runtime.sites.java.ThreadedObjectProxy;
 import orc.runtime.values.Value;
@@ -16,66 +20,78 @@ import org.apache.axis.wsdl.toJava.Emitter;
 import org.apache.axis.wsdl.toJava.GeneratedFileInfo;
 import org.apache.axis.wsdl.toJava.GeneratedFileInfo.Entry;
 
-public class Webservice extends ThreadedSite {
-	private static final String OUTPUT_DIR = "webservices";
-
-	private static final String CLASSPATH = String.format(
-			"webservices%slib%saxis.jar%slib%sjaxrpc.jar", File.pathSeparator,
-			File.separator, File.pathSeparator, File.separator);
-
+public class Webservice extends Site {
 	// Emitter is the class that does all of the file creation for the WSDL2Java
 	// tool. Using Emitter will allow us to get immediate access to the class
 	// names that it
 	// generates
 	private Emitter emitter;
-
 	private Class locator;
-
 	private Class stub;
 
 	ObjectProxy op;
 
 	// create the java code and get info about that code
-	public GeneratedFileInfo createJavaCode(String url) throws Exception {
+	public GeneratedFileInfo createJavaCode(String url, File tmpdir) throws Exception {
 		emitter = new Emitter();
-		emitter.setOutputDir(OUTPUT_DIR);
+		emitter.setOutputDir(tmpdir.toString());
 		emitter.run(url);
 
 		return emitter.getGeneratedFileInfo();
 	}
 
 	// compile all of the class files in real-time
-	public void compileJavaCode(GeneratedFileInfo info) {
-		List<String> fileNames = (ArrayList<String>) info.getFileNames();
-
-		for (String file : fileNames) {
-			com.sun.tools.javac.Main.compile(new String[] { "-cp", CLASSPATH,
-					file });
+	public void compileJavaCode(GeneratedFileInfo info, File tmpdir) {
+		List<String> fileNames = (ArrayList<String>)info.getFileNames();
+		String[] fileNamesArray = fileNames.toArray(new String[]{});
+		String[] args = new String[]{};
+		// combine file names and other args
+		String[] allArgs = new String[args.length + fileNamesArray.length];
+		for (int i = 0; i < args.length; i++) {
+			allArgs[i] = args[i];
 		}
-
+		for (int i = 0; i < fileNamesArray.length; i++) {
+			allArgs[args.length+i] = fileNamesArray[i];
+		}
+		// FIXME: this works in eclipse but not in servlet mode --
+		// it seems we need to explicitly supply a classpath which
+		// includes axis.jar and jaxrpc.jar?
+		com.sun.tools.javac.Main.compile(allArgs);
+	}
+	
+	public void callSite(final Args args, final Token caller) {
+		new Thread() {
+			public void run() {
+				try {
+					caller.resume(evaluate(args, caller.getEngine().getTmpdir()));
+				} catch (TokenException e) {
+					caller.error(e);
+				}
+			}
+		}.start();
 	}
 
-	@Override
-	public Value evaluate(Args args) throws TokenException {
+	public Value evaluate(Args args, File tmpdir) throws TokenException {
 		try {
 			// take the passed URL and create java code from it
-			GeneratedFileInfo info = createJavaCode(args.stringArg(0));
+			GeneratedFileInfo info = createJavaCode(args.stringArg(0), tmpdir);
 
+			URLClassLoader cl = new URLClassLoader(new URL[]{tmpdir.toURL()});
 			// compile that java code
-			compileJavaCode(info);
+			compileJavaCode(info, tmpdir);
 
 			List<Entry> stubs = (ArrayList<Entry>) info.findType("interface");
 
 			for (Entry e : stubs) {
-				Class c = Class.forName(e.className);
+				Class c = cl.loadClass(e.className);
 				if (c.getName().endsWith("Port")
 						|| c.getName().endsWith("PortType")) {
-					stub = Class.forName(e.className);
+					stub = cl.loadClass(e.className);
 					break;
 				}
 				for (Class iface : c.getInterfaces()) {
 					if (iface.getName().equals("java.rmi.Remote")) {
-						stub = Class.forName(e.className);
+						stub = cl.loadClass(e.className);
 						break;
 					}
 				}
@@ -89,7 +105,7 @@ public class Webservice extends ThreadedSite {
 
 			for (Entry e : services) {
 				if (e.className.endsWith("Locator")) {
-					locator = Class.forName(e.className);
+					locator = cl.loadClass(e.className);
 				}
 			}
 

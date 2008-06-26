@@ -1,5 +1,6 @@
 package orc.orchard;
 
+import java.io.File;
 import java.net.URI;
 import java.rmi.RemoteException;
 import java.util.Date;
@@ -110,10 +111,12 @@ public final class Job {
 	 * refer to it.
 	 */
 	private JobConfiguration configuration;
+	private File tmpdir;
 	/** The engine will handle all the interesting work of the job. */
 	private OrcEngine engine = new OrcEngine() {
 		private StringBuffer printBuffer = new StringBuffer();
 		/** Send token errors to the event stream. */
+		@Override
 		public void tokenError(Token t, TokenException problem) {
 			TokenErrorEvent e = new TokenErrorEvent(problem);
 			// TODO: compute a stack trace based on the token's
@@ -121,12 +124,14 @@ public final class Job {
 			events.add(e);
 		}
 		/** Save prints in a buffer. */
+		@Override
 		public void print(String s) {
 			synchronized (printBuffer) {
 				printBuffer.append(s);
 			}
 		}
 		/** Send printed lines to the event stream. */
+		@Override
 		public void println(String s) {
 			String out; 
 			synchronized (printBuffer) {
@@ -135,6 +140,12 @@ public final class Job {
 				printBuffer = new StringBuffer();
 			}
 			events.add(new PrintlnEvent(out));
+		}
+		/** Allow tmpdir to be reconfigured for servlet deployment. */
+		@Override
+		public File getTmpdir() {
+			if (tmpdir != null) return tmpdir;
+			else return super.getTmpdir();
 		}
 	};
 	/** Events which can be monitored. */
@@ -151,6 +162,12 @@ public final class Job {
 		});
 		//engine.debugMode = true;
 		engine.start(node);
+	}
+	
+	/** Allow tmpdir to be reconfigured for servlet deployment. */
+	public void setTmpdir(File tmpdir) {
+		System.out.println("Setting tmpdir to "+tmpdir);
+		this.tmpdir = tmpdir;
 	}
 
 	public synchronized void start() throws InvalidJobStateException {
