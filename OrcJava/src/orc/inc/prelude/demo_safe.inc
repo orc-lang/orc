@@ -11,8 +11,10 @@ def D("How is the weather?") = "partly cloudy"
 def D("What time is it?") = "nine in the afternoon"
 def D("True or false?") = "true"
 def D("Pick a number:" ) = "42"
+def D(s) = "message not understood"
 
 def A("What is your favorite food?") = "polytetrafluoroethylene"
+def A("What is your favorite color?") = "green"
 def A("Pick a movie you like:") = "The Graduate"
 def A("First element: ") = "1"
 def A("What's your favorite number?") = "7"
@@ -22,6 +24,7 @@ def A("How is the weather?") = "warm"
 def A("What time is it?") = "midnight"
 def A("True or false?") = "false"
 def A("Pick a number:" ) = "7"
+def A(s) = "I don't understand the question"
   
 def David(s) = Rtimer(500*Random(1,12)) >> D(s)
 def Adrian(s) = Rtimer(500*Random(2,7)) >> A(s)
