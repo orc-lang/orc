@@ -33,6 +33,15 @@ val william = "wcook@cs.utexas.edu"
 -- Generate a random number in the range [i,j] inclusive
 def Random(i,j) = random(j - i) + i + 1
 
+-- Determine whether a number is prime
+def isPrime(n) = 
+  def primeat(i) = 
+      if(b) >> (n % i /= 0) && primeat(i+1)
+    | if(~b) >> true
+        <b< i * i <= n
+  primeat(2)
+
+
 -- for "Music Calendar" demo
 site MySpace = orc.lib.music_calendar.MySpace
 site GoogleCalendar = orc.lib.music_calendar.GoogleCalendar
