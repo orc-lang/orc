@@ -1,6 +1,7 @@
 -- imports
 site MySpace = orc.lib.music_calendar.MySpace
 site GoogleCalendar = orc.lib.music_calendar.GoogleCalendar
+site Google = orc.lib.music_calendar.GoogleSearch
 
 -- declarations
 val Google = Webservice("http://api.google.com/GoogleSearch.wsdl")

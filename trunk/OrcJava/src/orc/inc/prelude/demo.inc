@@ -30,6 +30,17 @@ val william = "wcook@cs.utexas.edu"
 -- Generate a random number in the range [i,j] inclusive
 def Random(i,j) = random(j - i) + i + 1
 
+-- for "Music Calendar" demo
+site MySpace = orc.lib.music_calendar.MySpace
+site GoogleCalendar = orc.lib.music_calendar.GoogleCalendar
+site Google = orc.lib.music_calendar.GoogleSearch
+val GoogleDevKey = "dceJmvRQFHKEMK0xSxG9FqYOwqQVRDqQ"
+val GoogleCalendarUsername = "adrian-orchard-server@sixfingeredman.net"
+val GoogleCalendarPassword = "ckyogack"
+def GoogleSearch(keywords) = Google.doGoogleSearch(
+	GoogleDevKey, keywords, 0, 10, true, "", true, "", "", "")
+def AddMusicShows(musicShows) = GoogleCalendar.addMusicShows(
+	GoogleCalendarUsername, GoogleCalendarPassword,	musicShows) >> null
 
 {-
 def David(s) = Rtimer(random(5) * 500) >> "breakfast tacos"

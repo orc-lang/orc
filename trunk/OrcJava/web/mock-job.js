@@ -50,8 +50,9 @@
 				});
 			}, 1000);
 		},
-		halt: function () {
+		halt: function (_, f) {
 			halt = true;
+			if (f) f();
 		},
 		finish: function (_, f) {
 			if (f) f();
