@@ -254,6 +254,7 @@ CodePress = {
 		if(!document.getElementsByTagName('pre')[0] || editor.innerHTML == '')
 			editor = CodePress.getEditor();
 		var code = editor.innerHTML;
+		code = code.replace(/<br>/g,"\n");
 		code = code.replace(/\u2009/g,'');
 		code = code.replace(/<.*?>/g,'');
 		code = code.replace(/&lt;/g,'<');

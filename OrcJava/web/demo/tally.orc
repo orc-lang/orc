@@ -3,7 +3,7 @@
 -- Query a site for a number, but publish 0
 -- if it does not respond within 5 seconds
 def timeout(M) = 
-	n  <n<  M() | Rtimer(5000) >> 0
+	n  <n<  M() | Rtimer(8000) >> 0
 
 -- Tally up the responses from a list of sites,
 -- where each call is on a 5 second timeout
