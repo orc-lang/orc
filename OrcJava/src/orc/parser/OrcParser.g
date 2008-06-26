@@ -381,9 +381,9 @@ literal returns [Literal l = null]
 		{ l = new Literal(new Int(num.getText())); }
 	| str:STRING
 		{ l = new Literal(new Str(str.getText())); }
-	| "true"
+	| TRUE
 		{ l = new Literal(new Bool(true)); }
-	| "false"
+	| FALSE
 		{ l = new Literal(new Bool(false)); }
 	;
 
@@ -487,6 +487,8 @@ ML_COMMENT:
 
 
 
+TRUE : "true" ;
+FALSE : "false" ;
 
 NAME :   ALPHA ( ALPHA | DIGIT )*
     ;
@@ -552,8 +554,6 @@ OR         : "||" ;
 
 AMPERSAND  : '&' ;
 ATSIGN     : '@' ;
-
-
 
 
 WS : ( ' ' | '\t' | '\n' { newline(); } | '\r' )+
