@@ -111,7 +111,6 @@ public final class Job {
 	 * refer to it.
 	 */
 	private JobConfiguration configuration;
-	private File tmpdir;
 	/** The engine will handle all the interesting work of the job. */
 	private OrcEngine engine = new OrcEngine() {
 		private StringBuffer printBuffer = new StringBuffer();
@@ -141,12 +140,6 @@ public final class Job {
 			}
 			events.add(new PrintlnEvent(out));
 		}
-		/** Allow tmpdir to be reconfigured for servlet deployment. */
-		@Override
-		public File getTmpdir() {
-			if (tmpdir != null) return tmpdir;
-			else return super.getTmpdir();
-		}
 	};
 	/** Events which can be monitored. */
 	private EventStream events = new EventStream();
@@ -162,12 +155,6 @@ public final class Job {
 		});
 		//engine.debugMode = true;
 		engine.start(node);
-	}
-	
-	/** Allow tmpdir to be reconfigured for servlet deployment. */
-	public void setTmpdir(File tmpdir) {
-		System.out.println("Setting tmpdir to "+tmpdir);
-		this.tmpdir = tmpdir;
 	}
 
 	public synchronized void start() throws InvalidJobStateException {

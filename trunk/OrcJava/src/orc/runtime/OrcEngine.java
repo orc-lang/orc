@@ -243,12 +243,4 @@ public class OrcEngine implements Runnable {
 	public void println(String string) {
 		System.out.println(string);
 	}
-	/**
-	 * Return path to the temporary directory for this engine.
-	 * FIXME: each engine should have a unique temporary directory.
-	 * @return
-	 */
-	public File getTmpdir() {
-		return new File(System.getProperty("java.io.tmpdir"));
-	}
 }

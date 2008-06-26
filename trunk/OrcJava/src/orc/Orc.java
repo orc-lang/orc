@@ -8,6 +8,7 @@ package orc;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -15,10 +16,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import antlr.RecognitionException;
-import antlr.SemanticException;
-import antlr.TokenStreamException;
 
 import orc.ast.extended.Declare;
 import orc.ast.extended.declaration.Declaration;
@@ -31,6 +28,9 @@ import orc.runtime.OrcEngine;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.result.QueueResult;
 import orc.runtime.values.Value;
+import antlr.RecognitionException;
+import antlr.SemanticException;
+import antlr.TokenStreamException;
 
 /**
  * Main class for Orc. Parses Orc file and executes it.
@@ -241,6 +241,32 @@ public class Orc {
 			}
 			
 		return null;
-	}	
+	}
+	
+	private static String tmpdir = System.getProperty("java.io.tmpdir");
+	/**
+	 * Create a new temporary directory and return the path to that directory.
+	 * The directory will NOT be deleted automatically; you can use
+	 * deleteDirectory to do that when you are done with it.
+	 */
+	public static File createTmpdir(String prefix) throws IOException {
+        File out = new File(tmpdir, "orc-" + prefix + "-"
+        		+ new Integer(Thread.currentThread().hashCode()).toString());
+        if (!out.mkdir()) {
+            throw new IOException("Unable to create temporary directory " + out.getPath());
+        }
+        return out;
+	}
+	
+	/** Delete a directory recursively */
+	public static boolean deleteDirectory(File directory) {
+		boolean out = true;
+		File[] fileArray = directory.listFiles();
+		if (fileArray != null) {
+			for (File f : fileArray) {
+				out = deleteDirectory(f) && out;
+			}
+	    }
+		return directory.delete() && out;
+	}
 }
-
