@@ -1,3 +1,5 @@
--- Demonstrating a simple site call
+-- Fork-join using two pulls
 
-David("What is your favorite food?")
+(a,d)
+  <a< Adrian("First element: ")
+  <d< David("Second element: ")
