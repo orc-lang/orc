@@ -12,16 +12,19 @@ val chatConnection =
   c
  
 
+{- def chatParse(s) = r <r< (parseBool(s); parseInt(s); s) -}
+  
 
 def orchardChatQuery(recipient, query) =
   val chat = chatConnection.chat(recipient)
-  chat.send(query) >> chat.receive()
+  chat.send(query) >> chat.receive() {- >s> chatParse(s) -}
+  
 
 
-def Ben(q) = orchardChatQuery("bendelaware@gmail.com", q)
 def Adrian(q) = orchardChatQuery("adrianquark@gmail.com", q)
 def David(q) = orchardChatQuery("dkitchin@gmail.com", q)
 
+def Dynamic(s) = lambda (q) = orchardChatQuery(s,q)
 
 def Email(address, payload) = ("email", address, payload)
 
