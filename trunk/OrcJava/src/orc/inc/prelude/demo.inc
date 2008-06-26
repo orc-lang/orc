@@ -26,10 +26,6 @@ def David(q) = orchardChatQuery("dkitchin@gmail.com", q)
 
 def Dynamic(s) = lambda (q) = orchardChatQuery(s,q)
 
-def Email(address, payload) = ("email", address, payload)
-
-val william = "wcook@cs.utexas.edu"
-
 -- Generate a random number in the range [i,j] inclusive
 def Random(i,j) = random(j - i) + i + 1
 
@@ -53,8 +49,3 @@ def GoogleSearch(keywords) = Google.doGoogleSearch(
 	GoogleDevKey, keywords, 0, 10, true, "", true, "", "", "")
 def AddMusicShows(musicShows) = GoogleCalendar.addMusicShows(
 	GoogleCalendarUsername, GoogleCalendarPassword,	musicShows) >> null
-
-{-
-def David(s) = Rtimer(random(5) * 500) >> "breakfast tacos"
-def Adrian(s) = Rtimer(random(5) * 500) >> "polytetrafluoroethylene"
--}

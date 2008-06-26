@@ -1,7 +1,7 @@
 -- Definition of (recursive) expressions.
 -- Expression is called like a site, but may publish many values.
 
-def AskOnce(question) = Email(william,answer)
+def AskOnce(question) = cat("Response: ", answer)
 	<answer< David(question) | Adrian(question)
   
 def AskLoop(question, interval) =
