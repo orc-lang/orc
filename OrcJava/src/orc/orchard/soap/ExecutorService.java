@@ -97,7 +97,6 @@ public class ExecutorService extends AbstractExecutorService {
 					sc.removeAttribute("orc.orchard.soap."+job.getID());
 				}
 			});
-			job.setTmpdir((File)sc.getAttribute("javax.servlet.context.tempdir"));
 		} else {
 			try {
 				new StandaloneJobService(logger, jobURI, job);
