@@ -9,6 +9,3 @@ pre > tt, pre > tt * { font-style: normal; }
 
 /* Big fonts for demos */
 body, body * { font-size: 16pt; line-height: 20pt; font-weight: bold; color: blue; font-style: italic; }
-
-/* Fix Firefox bug with weird top offset. */
-body pre { display: inline; }

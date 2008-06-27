@@ -2,10 +2,12 @@
 
 if(3 /= 4) >> "three does not equal four"
 
-| if(false) >> "impossible!"   {- will never publish -}
+-- will never publish
+| if(false) >> "impossible!"
 
 -- wait three thousand milliseconds
 | Rtimer(3000) >> "...three seconds later..."
 
-| David("Favorite number?") >> null   {- will never publish -}
+-- will never publish
+| David("Favorite number?") >> null
 
