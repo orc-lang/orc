@@ -3,6 +3,8 @@
  */
 package orc.runtime.values;
 
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import orc.error.TokenException;
@@ -13,16 +15,20 @@ import orc.runtime.sites.EvalSite;
  * A tuple value container
  * @author wcook, quark
  */
-public class TupleValue extends EvalSite {
+public class TupleValue extends EvalSite implements Iterable {
 	Value[] values;
 	public TupleValue() {
 		this.values = new Value[0];
+	}
+	public TupleValue(Value v) {
+		this.values = new Value[1];
+		this.values[0] = v;
 	}
 	public TupleValue(Value v, Value w) {
 		this.values = new Value[2];
 		this.values[0] = v;
 		this.values[1] = w;
-	}		
+	}
 	public TupleValue(List<Value> values) {
 		this.values = new Value[values.size()];
 		this.values = values.toArray(this.values);
@@ -82,5 +88,11 @@ public class TupleValue extends EvalSite {
 			mvalues[i] = values[i].marshal();
 		}
 		return new orc.orchard.oil.Tuple(mvalues);
+	}
+	public List<Value> asList() {
+		return Arrays.asList(values);
+	}
+	public Iterator<Value> iterator() {
+		return asList().iterator();
 	}
 }

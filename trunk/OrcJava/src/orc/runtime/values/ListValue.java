@@ -1,5 +1,6 @@
 package orc.runtime.values;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -10,7 +11,7 @@ import java.util.List;
  * have a list structure. (If you want a degenerate cons, just use a
  * tuples.)
  */
-public abstract class ListValue extends Value { 
+public abstract class ListValue extends Value implements Iterable { 
 	
 	public abstract List<Value> enlist();
 	
@@ -33,5 +34,9 @@ public abstract class ListValue extends Value {
 			mlist.add(v.marshal());
 		}
 		return new orc.orchard.oil.List(mlist.toArray(new orc.orchard.oil.Value[]{}));
+	}
+	
+	public Iterator iterator() {
+		return enlist().iterator();
 	}
 }
