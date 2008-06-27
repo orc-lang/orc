@@ -1,16 +1,14 @@
-/* strings */
-pre > s, pre > s * { color: #666666; }
-/* reserved words */
-pre > b { color: green; font-weight: bold; }
-/* builtins */
-pre > u { color: blue; }
+/* literals */
+pre > s, pre > s * { color: green; font-style: normal; }
 /* comments */
-pre > i, pre > i * { color: brown; font-style: italic; }
+pre > i, pre > i * { color: black; font-weight: normal; font-style: normal; }
 /* combinators */
-pre > tt, pre > tt * { font-weight: bold; }
+pre > u, pre > u * { color: red; font-style: normal; }
+/* operators */
+pre > tt, pre > tt * { font-style: normal; }
 
 /* Big fonts for demos */
-body, body * { font-size: 16pt; line-height: 20pt; font-weight: bold; }
+body, body * { font-size: 16pt; line-height: 20pt; font-weight: bold; color: blue; font-style: italic; }
 
 /* Fix Firefox bug with weird top offset. */
 body pre { display: inline; }

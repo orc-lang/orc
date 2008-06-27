@@ -5,25 +5,16 @@ Language.syntax = [
 	{ input : /(\{-[^]*?-\})/g, output: '<i>$1</i>' },
 	// strings
 	{ input : /([^\\]|^)("([^"\\\n]|\\[^])*")/g, output : '$1<s>$2</s>' },
-	// reserved words
-	{ input : /\b(val|def|class|site|include|lambda|as)\b/g, output : '<b>$1</b>' },
-	// builtins
-	{ input : /\b(if|let|some|none|isSome|isNone|Rtimer|Ltimer|null|true|false|print|println)\b/g, output : '<u>$1</u>' },
-	// combinators
-	{ input : /(&gt;.*?&gt;|&lt;.*?&lt;|\|)/g, output : '<tt>$1</tt>' }
+	// literals
+	{ input : /\b(true|false|[1-9][0-9]*|0)\b/g, output : '<s>$1</s>' },
+	// keywords
+	{ input : /(\bval\b|\bdef\b|\bclass\b|\bsite\b|\binclude\b|\blambda\b|\bas\b|&gt;|&lt;|\|)/g, output : '<u>$1</u>' },
+	// operators
+	{ input : /([+*()=,-]+)/g, output: '<tt>$1</tt>' }
 ];
 
-Language.snippets = [
-	{ input : 'def', output : 'def $0() = ' },
-	{ input : 'if', output : 'if($0) >> ' }
-];
+Language.snippets = [];
 
-Language.complete = [
-	{ input : '>', output : '>$0>' },
-	{ input : '<', output : '<$0<' },
-	{ input : '"', output : '"$0"' },
-	{ input : '(', output : '\($0\)' },
-	{ input : '[', output : '\[$0\]' },
-];
+Language.complete = [];
 
 Language.shortcuts = [];
