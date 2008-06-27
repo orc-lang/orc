@@ -12,14 +12,11 @@ val chatConnection =
   c
  
 
-{- def chatParse(s) = r <r< (parseBool(s); parseInt(s); s) -}
-  
+def chatParse(s) = r <r< (parseBool(s); parseInt(s); s)  
 
 def orchardChatQuery(recipient, query) =
   val chat = chatConnection.chat(recipient)
-  chat.send(query) >> chat.receive() {- >s> chatParse(s) -}
-  
-
+  chat.send(query) >> chat.receive() >s> chatParse(s)
 
 def Adrian(q) = orchardChatQuery("adrianquark@gmail.com", q)
 def David(q) = orchardChatQuery("dkitchin@gmail.com", q)
@@ -36,6 +33,8 @@ def isPrime(n) =
     | if(~b) >> true
         <b< i * i <= n
   primeat(2)
+
+def Metronome(i) = i | Rtimer(1000) >> Metronome(i+1)
 
 
 -- for "Music Calendar" demo
