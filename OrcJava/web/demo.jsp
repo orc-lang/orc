@@ -29,20 +29,21 @@ body {
 	font-family: sans-serif;
 	font-size: 20pt;
 }
-ul {
+#menu {
 	list-style-type: none;
-	padding-left: 0px;
-	padding-right: 1em;
-	text-align: right;
+	padding-right: 1.1em;
+	direction: rtl;
 }
-li {
+#menu li {
 	margin-bottom: 1ex;
 	font-size: 10pt;
-}
-a {
 	color: black;
 	text-decoration: none;
 	font-variant: small-caps;
+	cursor: pointer;
+}
+#menu li.selected {
+	list-style-type: square;
 }
 #program_cp {
 	font-weight: bold;
@@ -56,25 +57,25 @@ a {
 </head>
 <body onunload="onUnload()">
 <table width="100%" height="100%"><tr><td valign="top" width="100">
-<ul>
-<li><a href="#" onclick="loadCode('demo/call.orc')">Call</a></li>
-<li><a href="#" onclick="loadCode('demo/bar.orc')">Bar</a></li>
-<li><a href="#" onclick="loadCode('demo/push.orc')">Push</a></li>
-<li><a href="#" onclick="loadCode('demo/pushbind.orc')">Push/Bind</a></li>
-<li><a href="#" onclick="loadCode('demo/barpush.orc')">Bar/Push</a></li>
-<li><a href="#" onclick="loadCode('demo/pull.orc')">Pull</a></li>
-<li><a href="#" onclick="loadCode('demo/pulldoesnotwait.orc')">Blocking</a></li>
-<li><a href="#" onclick="loadCode('demo/fundamentals.orc')">Fundamental Sites</a></li>
-<li><a href="#" onclick="loadCode('demo/metronome.orc')">Metronome</a></li>
-<li><a href="#" onclick="loadCode('demo/metronome2.orc')">Two Metronomes</a></li>
-<li><a href="#" onclick="loadCode('demo/queryaccept.orc')">Using Metronome</a></li>
-<li><a href="#" onclick="loadCode('demo/timeout.orc')">Timeout</a></li>
-<li><a href="#" onclick="loadCode('demo/delay.orc')">Delay</a></li>
-<li><a href="#" onclick="loadCode('demo/priority.orc')">Priority</a></li>
-<li><a href="#" onclick="loadCode('demo/forkjoin.orc')">Fork/Join</a></li>
-<li><a href="#" onclick="loadCode('demo/parallelor.orc')">Parallel Or</a></li>
-<li><a href="#" onclick="loadCode('demo/tally.orc')">Tally</a></li>
-<li><a href="#" onclick="loadCode('demo/music_calendar.orc')">Music Calendar</a></li>
+<ul id="menu">
+<li onclick="onMenu(this,'demo/call.orc')">Call</li>
+<li onclick="onMenu(this,'demo/bar.orc')">Bar</li>
+<li onclick="onMenu(this,'demo/push.orc')">Push</li>
+<li onclick="onMenu(this,'demo/pushbind.orc')">Push/Bind</li>
+<li onclick="onMenu(this,'demo/barpush.orc')">Bar/Push</li>
+<li onclick="onMenu(this,'demo/pull.orc')">Pull</li>
+<li onclick="onMenu(this,'demo/pulldoesnotwait.orc')">Blocking</li>
+<li onclick="onMenu(this,'demo/fundamentals.orc')">Fundamental Sites</li>
+<li onclick="onMenu(this,'demo/metronome.orc')">Metronome</li>
+<li onclick="onMenu(this,'demo/metronome2.orc')">Two Metronomes</li>
+<li onclick="onMenu(this,'demo/queryaccept.orc')">Using Metronome</li>
+<li onclick="onMenu(this,'demo/timeout.orc')">Timeout</li>
+<li onclick="onMenu(this,'demo/delay.orc')">Delay</li>
+<li onclick="onMenu(this,'demo/priority.orc')">Priority</li>
+<li onclick="onMenu(this,'demo/forkjoin.orc')">Fork/Join</li>
+<li onclick="onMenu(this,'demo/parallelor.orc')">Parallel Or</li>
+<li onclick="onMenu(this,'demo/tally.orc')">Tally</li>
+<li onclick="onMenu(this,'demo/music_calendar.orc')">Music Calendar</li>
 </ul>
 </td><td valign="top">
 <div id="comments"></div>
@@ -88,6 +89,17 @@ a {
 <div id="publications" style="width: 100%; height: 180px"></div>
 <script src="codepress/codepress.js" type="text/javascript"></script>
 <script src="ui.js" type="text/javascript"></script>
+<script type="text/javascript">
+function onMenu(link, file) {
+	var menu = document.getElementById('menu');
+	var items = menu.getElementsByTagName('li');
+	for (var i in items) {
+		items[i].className = "";
+	}
+	link.className = "selected";
+	loadCode(file);
+}
+</script>
 </td></tr></table>
 </body>
 </html>
