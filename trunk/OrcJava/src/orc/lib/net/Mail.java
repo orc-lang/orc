@@ -244,13 +244,13 @@ public class Mail extends DotSite {
 		}
 	}
 	/**
-	 * Filtered folder. All methods except "messages" return a new
-	 * filter, so you can compose filters in a functional style. I.e.
-	 * to get messages from "foo" with subject "bar":
-	 * .from("foo").subject("bar").messages()
-	 * 
+	 * Filter for a MailFolder. Methods on a filter return a new
+	 * filter, so you can create compound filters easily. I.e.
+	 * to filter mails from "foo" with subject "bar":
+	 * filter.from("foo").subject("bar")
+	 *  
+	 * <p>Filters include:
 	 * <ul>
-	 * <li>messages(): return filtered messages
 	 * <li>not(): negate filter
 	 * <li>and(MailFilter): intersect with another filter
 	 * <li>or(MailFilter): union with another filter
@@ -264,44 +264,40 @@ public class Mail extends DotSite {
 	 * <li>header(header, content): match any substring of a header 
 	 * </ul>
 	 * @author quark
+	 *
 	 */
 	public static class MailFilter extends DotSite {
-		private MailFolder folder;
 		private SearchTerm term;
-		public MailFilter(MailFolder folder, SearchTerm term) {
-			this.folder = folder;
+		public MailFilter(SearchTerm term) {
 			this.term = term;
 		}
-		public MailFilter(MailFolder folder) {
-			this(folder, null);
+		public MailFilter() {
+			this(null);
 		}
-		private MailFilter withTerm(SearchTerm otherTerm) {
-			return new MailFilter(folder, term == null
+		private MailFilter filter(SearchTerm otherTerm) {
+			return new MailFilter(term == null
 					? otherTerm
 					: new AndTerm(term, otherTerm));
 		}
+		private Value messages(Folder folder) throws TokenException {
+			try {
+				Message[] messages;
+				if (term == null) {
+					messages = folder.getMessages();
+				} else {
+					messages = folder.search(term);
+				}
+				Value[] messagesOut = new Value[messages.length];
+				for (int i = 0; i < messages.length; ++i) {
+					messagesOut[i] = new MailMessage(messages[i]);
+				}
+				return ListValue.make(Arrays.asList(messagesOut));
+			} catch (Exception e) {
+				throw new JavaException(e);
+			}
+		}
 		@Override
 		protected void addMethods() {
-			addMethod("messages", new ThreadedSite() {
-				public Value evaluate(Args args) throws TokenException {
-					try {
-						Folder realFolder = folder.folder;
-						Message[] messages;
-						if (term == null) {
-							messages = realFolder.getMessages();
-						} else {
-							messages = realFolder.search(term);
-						}
-						Value[] messagesOut = new Value[messages.length];
-						for (int i = 0; i < messages.length; ++i) {
-							messagesOut[i] = new MailMessage(messages[i]);
-						}
-						return ListValue.make(Arrays.asList(messagesOut));
-					} catch (Exception e) {
-						throw new JavaException(e);
-					}
-				}
-			});
 			addMethod("and", new EvalSite() {
 				@Override
 				public Value evaluate(Args args) throws TokenException {
@@ -311,7 +307,7 @@ public class Mail extends DotSite {
 					} catch (ClassCastException e) {
 						throw new ArgumentTypeMismatchException(e.toString());
 					}
-					return withTerm(otherTerm);
+					return filter(otherTerm);
 				}
 			});
 			addMethod("or", new EvalSite() {
@@ -324,7 +320,7 @@ public class Mail extends DotSite {
 					} catch (ClassCastException e) {
 						throw new ArgumentTypeMismatchException("Expected SearchTerm argument(s)");
 					}
-					return new MailFilter(folder, term == null
+					return new MailFilter(term == null
 							? otherTerm
 							: new OrTerm(term, otherTerm));
 				}
@@ -332,7 +328,7 @@ public class Mail extends DotSite {
 			addMethod("not", new EvalSite() {
 				@Override
 				public Value evaluate(Args args) throws TokenException {
-					return new MailFilter(folder, new NotTerm(term == null
+					return new MailFilter(new NotTerm(term == null
 							? new FlagTerm(new Flags(), false) // this should always match
 							: term));
 				}
@@ -341,7 +337,7 @@ public class Mail extends DotSite {
 				@Override
 				public Value evaluate(Args args) throws TokenException {
 					try {
-						return withTerm(new FromTerm(new InternetAddress(args.stringArg(0))));
+						return filter(new FromTerm(new InternetAddress(args.stringArg(0))));
 					} catch (AddressException e) {
 						throw new JavaException(e);
 					}
@@ -351,7 +347,7 @@ public class Mail extends DotSite {
 				@Override
 				public Value evaluate(Args args) throws TokenException {
 					try {
-						return withTerm(new RecipientTerm(Message.RecipientType.TO,
+						return filter(new RecipientTerm(Message.RecipientType.TO,
 								new InternetAddress(args.stringArg(0))));
 					} catch (AddressException e) {
 						throw new JavaException(e);
@@ -362,7 +358,7 @@ public class Mail extends DotSite {
 				@Override
 				public Value evaluate(Args args) throws TokenException {
 					try {
-						return withTerm(new RecipientTerm(Message.RecipientType.CC,
+						return filter(new RecipientTerm(Message.RecipientType.CC,
 								new InternetAddress(args.stringArg(0))));
 					} catch (AddressException e) {
 						throw new JavaException(e);
@@ -373,7 +369,7 @@ public class Mail extends DotSite {
 				@Override
 				public Value evaluate(Args args) throws TokenException {
 					try {
-						return withTerm(new RecipientTerm(Message.RecipientType.BCC,
+						return filter(new RecipientTerm(Message.RecipientType.BCC,
 								new InternetAddress(args.stringArg(0))));
 					} catch (AddressException e) {
 						throw new JavaException(e);
@@ -385,7 +381,7 @@ public class Mail extends DotSite {
 				public Value evaluate(Args args) throws TokenException {
 					try {
 						InternetAddress address = new InternetAddress(args.stringArg(0));
-						return withTerm(new OrTerm(new SearchTerm[]{
+						return filter(new OrTerm(new SearchTerm[]{
 								new RecipientTerm(Message.RecipientType.TO, address),
 								new RecipientTerm(Message.RecipientType.CC, address),
 								new RecipientTerm(Message.RecipientType.BCC, address) }));
@@ -397,19 +393,19 @@ public class Mail extends DotSite {
 			addMethod("body", new EvalSite() {
 				@Override
 				public Value evaluate(Args args) throws TokenException {
-					return withTerm(new BodyTerm(args.stringArg(0)));
+					return filter(new BodyTerm(args.stringArg(0)));
 				}
 			});
 			addMethod("subject", new EvalSite() {
 				@Override
 				public Value evaluate(Args args) throws TokenException {
-					return withTerm(new SubjectTerm(args.stringArg(0)));
+					return filter(new SubjectTerm(args.stringArg(0)));
 				}
 			});
 			addMethod("header", new EvalSite() {
 				@Override
 				public Value evaluate(Args args) throws TokenException {
-					return withTerm(new HeaderTerm(args.stringArg(0), args.stringArg(1)));
+					return filter(new HeaderTerm(args.stringArg(0), args.stringArg(1)));
 				}
 			});
 		}
@@ -423,11 +419,16 @@ public class Mail extends DotSite {
 	 * <li>name(): name of the folder
 	 * <li>fullName(): full path to the folder
 	 * <li>messages(): return all messages
-	 * <li>filter: create filtered views of the folder (see MailFilter)
+	 * <li>search(MailFilter): return filtered messages
 	 * <li>list(): return a list of sub-folders
-	 * <li>messageCount(): return number of messages in folder
-	 * <li>exists(): return true if this folder exists in the store 
+	 * <li>messageCount(): return total number of messages in folder (IGNORES FILTERS)
+	 * <li>exists(): return true if this folder exists in the store
+	 * <li>filter: construct a MailFilter 
 	 * </ul>
+	 *
+	 * <p>
+	 * FIXME: messageCount ignores filters.
+	 * 
 	 * @author quark
 	 */
 	public static class MailFolder extends DotSite {
@@ -474,7 +475,7 @@ public class Mail extends DotSite {
 					}
 				}
 			});
-			addMethod("filter", new MailFilter(this));
+			addMethod("filter", new MailFilter());
 			addMethod("messageCount", new ThreadedSite() {
 				@Override
 				public Value evaluate(Args args) throws TokenException {
@@ -516,17 +517,16 @@ public class Mail extends DotSite {
 				}
 			});
 			addMethod("messages", new ThreadedSite() {
-				@Override
+				public Value evaluate(Args args) throws TokenException {
+					return new MailFilter().messages(folder);
+				}
+			});
+			addMethod("search", new ThreadedSite() {
 				public Value evaluate(Args args) throws TokenException {
 					try {
-						Message[] messages = folder.getMessages();
-						Value[] messagesOut = new Value[messages.length];
-						for (int i = 0; i < messages.length; ++i) {
-							messagesOut[i] = new MailMessage(messages[i]);
-						}
-						return ListValue.make(Arrays.asList(messagesOut));
-					} catch (Exception e) {
-						throw new JavaException(e);
+						return ((MailFilter)args.valArg(0)).messages(folder);
+					} catch (ClassCastException e) {
+						throw new ArgumentTypeMismatchException(e.getMessage());
 					}
 				}
 			});
