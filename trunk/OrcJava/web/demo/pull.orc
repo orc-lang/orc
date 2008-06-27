@@ -1,4 +1,6 @@
--- Asymmetric composition: use only the first value published by the right-hand side.
+-- Asymmetric composition
+
+-- Use only the first value published by the right-hand side.
 
 cat(color, " wins.")
 	<color<  David("Choose a color.")
