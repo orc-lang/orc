@@ -21,6 +21,8 @@ import orc.runtime.sites.java.ObjectProxy;
  * This has overrides to support treating collections and arrays as lists (i.e.
  * list pattern matches will work on them).
  * 
+ * <p>FIXME: how well does this cope with Java nulls?
+ * 
  * @author wcook, dkitchin, quark
  */
 public class Constant extends Value {
@@ -75,6 +77,9 @@ public class Constant extends Value {
 	 * Throws an exception if the value is not iterable.
 	 */
 	private Iterator asIterator() throws ClassCastException {
+		if (value == null) {
+			throw new ClassCastException("Null value cannot be deconstructed.");
+		}
 		try {
 			return ((Iterable)value).iterator();
 		} catch (ClassCastException _) {
