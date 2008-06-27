@@ -65,6 +65,7 @@ a {
 <li><a href="#" onclick="loadCode('demo/pulldoesnotwait.orc')">Pull Doesn't Wait</a></li>
 <li><a href="#" onclick="loadCode('demo/fundamentals.orc')">Fundamental Sites</a></li>
 <li><a href="#" onclick="loadCode('demo/metronome.orc')">Metronome</a></li>
+<li><a href="#" onclick="loadCode('demo/metronome2.orc')">Two Metronomes</a></li>
 <li><a href="#" onclick="loadCode('demo/queryaccept.orc')">Using Metronome</a></li>
 <li><a href="#" onclick="loadCode('demo/timeout.orc')">Timeout</a></li>
 <li><a href="#" onclick="loadCode('demo/delay.orc')">Delay</a></li>
