@@ -91,15 +91,13 @@ function escapeHtml(v) {
 function jsonToHtml(v) {
 	switch (typeof v) {
 		case 'boolean':
-			return '<font color="blue">' + v + '</font>'
 		case 'number':
 			return v+'';
 		case 'string':
-			return '<font color="grey">"'
-				+ escapeHtml(v)
+			return '"' + escapeHtml(v)
 					.replace('"', '\\"')
 					.replace('\\', '\\\\')
-				+ '"</font>';
+				+ '"';
 		case 'object':
 			if (v == null) return 'null';
 			if (v.constructor == Array) {
