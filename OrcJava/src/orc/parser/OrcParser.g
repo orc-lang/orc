@@ -463,7 +463,7 @@ class OrcLexer extends Lexer;
 
 options {
     charVocabulary = '\3'..'\177';
-    k = 2;
+    k = 4;
 }
 
 SL_COMMENT: 
