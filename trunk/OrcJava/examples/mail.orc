@@ -13,6 +13,7 @@ Check a folder for messages at regular intervals.
 This method opens and closes the folder during each check.
 Return a list of messages when they become available
 (leaving the folder open so you can get the message content).
+FIXME: if this is terminated it can leave an open connection.
 -}
 def PollMail(folder, filter, interval) =
 	println("CHECKING") >>
@@ -27,6 +28,7 @@ Send an email to the given address(es).
 Return a site which can be used to poll for responses.
 Each time the returned site is called, it will return the 
 body of the next response.
+FIXME: if this is terminated it can leave an open connection.
 -}
 def MailQuery(to, subject, body) =
 	val from = cat("orchardserver","+",UUID(),"@gmail.com")
