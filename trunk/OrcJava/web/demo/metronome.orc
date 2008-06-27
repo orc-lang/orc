@@ -1,5 +1,5 @@
 -- Metronome: publish a signal every time unit.
 
-def Metronome() = () | Rtimer(1000) >> Metronome()
+def Metronome(i) = i | Rtimer(1000) >> Metronome(i+1)
 
-Metronome()
+Metronome(0)
