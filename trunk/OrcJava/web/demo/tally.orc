@@ -8,5 +8,4 @@ def timeout(M) = n <n< ( M() | Rtimer(10000) >> 0 )
 def tally([]) = 0
 def tally(first:rest) = timeout(first) + tally(rest)
 
-
 tally([David, Adrian])

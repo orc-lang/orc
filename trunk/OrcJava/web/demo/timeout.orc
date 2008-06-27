@@ -2,4 +2,4 @@
 
 cat("Answer: ", answer)
 	<answer< David("What is your favorite food?")
-	         | Rtimer(5000) >> "timed out"
+	         | Rtimer(8000) >> "timed out"
