@@ -81,7 +81,7 @@ a {
 <textarea spellcheck="false" id="program" class="codepress orc-demo linenumbers-off" style="width: 100%; height: 320px" wrap="off">
 </textarea>
 <p><input type="submit" value="Run" onClick="onRunButton()" id="runButton" disabled="true">
-&nbsp;<input type="submit" value="Stop" onClick="onStopButton()" id="stopButton" disabled="true">
+&nbsp;<input type="submit" value="Stop" onClick="onStopButton()" id="stopButton" disabled="true" style="visibility: hidden">
 &nbsp;<input type="checkbox" onClick="program.toggleEditor()" checked>&nbsp;Syntax
 &nbsp;<img id="loading" src="loading.gif" width="126" height="22" style="visibility: hidden" align="top">
 &nbsp;<span id="timestamp" style="visibility: hidden"></span>
