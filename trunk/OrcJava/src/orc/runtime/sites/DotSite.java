@@ -20,11 +20,11 @@ import orc.runtime.values.Value;
  */
 public abstract class DotSite extends EvalSite {
 
-	Map<String,Site> methodMap;
+	Map<String,Value> methodMap;
 	
 	public DotSite()
 	{
-		methodMap = new TreeMap<String,Site>();
+		methodMap = new TreeMap<String,Value>();
 		this.addMethods();
 	}
 	
@@ -35,7 +35,7 @@ public abstract class DotSite extends EvalSite {
 	public Value evaluate(Args args) throws TokenException {
 		
 		String f = args.fieldName();
-		Site m = getMethod(f);
+		Value m = getMethod(f);
 		
 		if (m != null)
 			{ return m; }
@@ -43,16 +43,14 @@ public abstract class DotSite extends EvalSite {
 			{ throw new MessageNotUnderstoodException(f); } 
 	}
 	
-	Site getMethod(String f)
-	{
+	Value getMethod(String f) {
 		return methodMap.get(f);
 	}
 
 	// Subclasses implement this method with a sequence of addMethod calls.
 	protected abstract void addMethods();	
 	
-	protected void addMethod(String f, Site s)
-	{
+	protected void addMethod(String f, Value s) {
 		methodMap.put(f, s);
 	}
 	
