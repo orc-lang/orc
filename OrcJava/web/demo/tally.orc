@@ -1,7 +1,7 @@
 -- Tally the responses received from a list of sites within 5 seconds
 
 -- Query a site for a number, but publish 0
--- if it does not respond within 5 seconds
+-- if it does not respond within 8 seconds
 def timeout(M) = 
 	n  <n<  M() | Rtimer(8000) >> 0
 
