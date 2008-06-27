@@ -1,6 +1,6 @@
 See also TODO and FIXME tags in the source code.
 
-- rewrite web services to generate classes dynamically for use in servlet scripts
+- allow web services to provide constructors for complex objects
 - add executor oil validation to only allow "safe" sites
 - recover from timeout in client "listen" calls (if necessary)
 - web UI: freezes when running examples/time/detector.orc (presumably due to too many publications); should we throttle them?
