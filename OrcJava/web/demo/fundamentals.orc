@@ -1,9 +1,11 @@
--- Fundamental sites
+-- Fundamental sites: if, null, Rtimer
+
 if(3 /= 4) >> "three does not equal four"
--- will never publish
-| if(false) >> "impossible!"
--- will never publish
-| ( 6 | "seven" | David("Favorite number?") )
-	>> null
+
+| if(false) >> "impossible!"   {- will never publish -}
+
 -- wait three thousand milliseconds
 | Rtimer(3000) >> "...three seconds later..."
+
+| David("Favorite number?") >> null   {- will never publish -}
+
