@@ -224,12 +224,14 @@ function onJobServiceReady(job) {
 	// Start the job and then listen for published values.
 	currentJob.start({}, function () {
 		document.getElementById("stopButton").disabled = false;
+		document.getElementById("stopButton").style.visibility = "";
 		currentJob.listen({}, onEvents);
 	});
 }
 function onJobFinish() {
 	document.getElementById("runButton").disabled = false;
 	document.getElementById("stopButton").disabled = true;
+	document.getElementById("stopButton").style.visibility = "hidden";
 	document.getElementById("loading").style.visibility = "hidden";
 	document.getElementById("timestamp").style.visibility = "hidden";
 	currentJob = null;
@@ -260,6 +262,7 @@ function onExecutorServiceReady(service) {
 }
 function onError(response, code, exception) {
 	document.getElementById("stopButton").disabled = true;
+	document.getElementById("stopButton").style.visibility = "hidden";
 	document.getElementById("loading").style.visibility = "hidden";
 	document.getElementById("timestamp").style.visibility = "hidden";
 	// stop the current job, if possible
