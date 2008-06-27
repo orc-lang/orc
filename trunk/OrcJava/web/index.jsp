@@ -1,4 +1,8 @@
 <html>
+<!--
+To play with this in your browser without running an Orchard server,
+load it as demo.jsp?mock
+-->
 <head>
 <title>Orchard Demo</title>
 <style type="text/css">

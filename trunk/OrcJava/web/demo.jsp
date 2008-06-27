@@ -1,4 +1,8 @@
 <html>
+<!--
+To play with this in your browser without running an Orchard server,
+load it as demo.jsp?mock
+-->
 <head>
 <title></title>
 <style type="text/css">
@@ -60,12 +64,12 @@ a {
 <li><a href="#" onclick="loadCode('demo/pull.orc')">Pull</a></li>
 <li><a href="#" onclick="loadCode('demo/pulldoesnotwait.orc')">Pull Doesn't Wait</a></li>
 <li><a href="#" onclick="loadCode('demo/fundamentals.orc')">Fundamental Sites</a></li>
-<li><a href="#" onclick="loadCode('demo/defs.orc')">Expressions</a></li>
 <li><a href="#" onclick="loadCode('demo/metronome.orc')">Metronome</a></li>
-<li><a href="#" onclick="loadCode('demo/queryaccept.orc')">Expression Use</a></li>
+<li><a href="#" onclick="loadCode('demo/queryaccept.orc')">Using Metronome</a></li>
 <li><a href="#" onclick="loadCode('demo/timeout.orc')">Timeout</a></li>
-<li><a href="#" onclick="loadCode('demo/forkjoin.orc')">Fork/Join</a></li>
+<li><a href="#" onclick="loadCode('demo/delay.orc')">Delay</a></li>
 <li><a href="#" onclick="loadCode('demo/priority.orc')">Priority</a></li>
+<li><a href="#" onclick="loadCode('demo/forkjoin.orc')">Fork/Join</a></li>
 <li><a href="#" onclick="loadCode('demo/parallelor.orc')">Parallel Or</a></li>
 <li><a href="#" onclick="loadCode('demo/tally.orc')">Tally</a></li>
 <li><a href="#" onclick="loadCode('demo/music_calendar.orc')">Music Calendar</a></li>
