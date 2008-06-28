@@ -84,7 +84,7 @@ body {
 <p><input type="submit" value="Run" onClick="onRunButton()" id="runButton" disabled="true">
 &nbsp;<input type="submit" value="Stop" onClick="onStopButton()" id="stopButton" disabled="true" style="visibility: hidden">
 &nbsp;<input type="checkbox" onClick="program.toggleEditor()" checked>&nbsp;Syntax
-&nbsp;<img id="loading" src="loading.gif" width="126" height="22" style="visibility: hidden" align="top">
+&nbsp;<img id="loading" src="loading.gif" style="visibility: hidden" align="top">
 &nbsp;<span id="timestamp" style="visibility: hidden"></span>
 <div id="publications" style="width: 100%; height: 180px"></div>
 <script src="codepress/codepress.js" type="text/javascript"></script>
