@@ -4,4 +4,7 @@
 -- Site calls that need the value block.
 
 "red" | color | cat("blue","-","green")
-	<color< David("Choose a color.")  
+
+  <color<
+
+    David("Choose a color.")  
