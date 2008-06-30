@@ -19,7 +19,9 @@ def orchardChatQuery(recipient, query) =
   chat.send(query) >> chat.receive() >s> chatParse(s)
 
 def Adrian(q) = orchardChatQuery("adrianquark@gmail.com", q)
+	>x> print("(Adrian says \"", x, "\")") >> println() >> x
 def David(q) = orchardChatQuery("dkitchin@gmail.com", q)
+	>x> print("(David says \"", x, "\")") >> println() >> x
 
 def Dynamic(s) = lambda (q) = orchardChatQuery(s,q)
 
