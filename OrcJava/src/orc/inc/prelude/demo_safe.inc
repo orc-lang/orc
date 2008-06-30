@@ -27,9 +27,9 @@ def A("Pick a number:" ) = 7
 def A(s) = "..."
   
 def David(s) = Rtimer(500*Random(1,12)) >> D(s)
-	>x> print("(David says \"", x, "\")") >> println() >> x
+	>x> println(cat("(David says \"", x, "\")")) >> x
 def Adrian(s) = Rtimer(500*Random(2,7)) >> A(s)
-	>x> print("(Adrian says \"", x, "\")") >> println() >> x
+	>x> println(cat("(Adrian says \"", x, "\")")) >> x
 
 
 -- Generate a random number in the range [i,j] inclusive
