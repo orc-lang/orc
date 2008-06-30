@@ -9,9 +9,9 @@ def D("Low priority response: ") = "low"
 def D("Choose a color.") = "tie dye"
 def D("How is the weather?") = "partly cloudy"
 def D("What time is it?") = "nine in the afternoon"
-def D("True or false?") = "true"
-def D("Pick a number:" ) = "42"
-def D(s) = "message not understood"
+def D("True or false?") = true
+def D("Pick a number:" ) = 42
+def D(s) = "..."
 
 def A("What is your favorite food?") = "polytetrafluoroethylene"
 def A("What is your favorite color?") = "green"
@@ -22,12 +22,14 @@ def A("High priority response: ") = "high"
 def A("Choose a color.") = "green"
 def A("How is the weather?") = "warm"
 def A("What time is it?") = "midnight"
-def A("True or false?") = "false"
-def A("Pick a number:" ) = "7"
-def A(s) = "I don't understand the question"
+def A("True or false?") = false
+def A("Pick a number:" ) = 7
+def A(s) = "..."
   
 def David(s) = Rtimer(500*Random(1,12)) >> D(s)
+	>x> print("(David says \"", x, "\")") >> println() >> x
 def Adrian(s) = Rtimer(500*Random(2,7)) >> A(s)
+	>x> print("(Adrian says \"", x, "\")") >> println() >> x
 
 
 -- Generate a random number in the range [i,j] inclusive
