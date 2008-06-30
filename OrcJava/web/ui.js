@@ -239,7 +239,11 @@ function onRunButton() {
 	document.getElementById("publications").innerHTML = "";
 	document.getElementById("loading").style.visibility = "";
 	document.getElementById("timestamp").style.visibility = "";
-	executorService.compileAndSubmit({program: program.getCode()}, function (url) {
+	var code = program.getCode();
+	if (query.safe) {
+		code = 'include "prelude/demo_safe.inc"\n' + code;
+	}
+	executorService.compileAndSubmit({program: code}, function (url) {
 		loadService("jobService", url, "onJobServiceReady");
 	});
 }
