@@ -1,8 +1,10 @@
 -- Give one site a higher priority than another using a delay
 
-x
+z
 
-  <x<   Adrian("High priority response: ")
-      | Rtimer(10000) >> u
-      
-  <u< David("Low priority response: ")
+  <z< ( high
+
+          <high<   Adrian("High priority response: ")
+                 | Rtimer(10000) >> low
+              
+          <low< David("Low priority response: ") )
