@@ -240,8 +240,9 @@ function onRunButton() {
 	document.getElementById("loading").style.visibility = "";
 	document.getElementById("timestamp").style.visibility = "";
 	var code = program.getCode();
-	if (query.safe) {
-		code = 'include "prelude/demo_safe.inc"\n' + code;
+	// Allow page to define an include file
+	if (orc_include) {
+		code = 'include "'+orc_include+'"\n' + code;
 	}
 	executorService.compileAndSubmit({program: code}, function (url) {
 		loadService("jobService", url, "onJobServiceReady");
