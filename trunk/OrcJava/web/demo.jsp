@@ -99,6 +99,12 @@ function onMenu(link, file) {
 	link.className = "selected";
 	loadCode(file);
 }
+// Include demo stuff
+if (query.safe) {
+	orc_include = "prelude/demo_safe.inc"
+} else {
+	orc_include = "prelude/demo_safe.inc"
+}
 </script>
 </td></tr></table>
 </body>
