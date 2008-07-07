@@ -1,0 +1,67 @@
+<?xml version="1.0" ?>
+<project name="Orchard" default="war" basedir=".">
+	<description>
+		Ant build file for Orc binary distribution.
+	</description>
+
+	<property environment="env"/>
+	
+	<!-- set global properties for this build -->
+	<property name="bin" location="bin" />
+	<property name="lib" location="lib" />
+	<property name="war" location="war" />
+
+	<target name="clean" description="clean up">
+		<delete dir="${bin}" />
+		<delete dir="${war}" />
+		<delete file="orchard.war" />
+	</target>
+
+	<target name="war" description="generate the war">
+		<mkdir dir="${war}" />
+		<copy todir="${war}">
+			<fileset dir="web">
+				<include name="**/*"/>
+			</fileset>
+		</copy>
+
+		<mkdir dir="${war}/WEB-INF/lib" />
+		<copy todir="${war}/WEB-INF/lib">
+			<fileset dir="${lib}">
+				<!-- FIXME: some of these are unnecessary at runtime -->
+				<include name="*.jar"/>
+			</fileset>
+		</copy>
+		<jar jarfile="${war}/WEB-INF/lib/orchard.jar" basedir="${bin}" />
+
+		<jar jarfile="orchard.war" update="true">
+			<fileset dir="${war}">
+				<include name="**/*"/>
+			</fileset>
+		</jar>
+	</target>
+	<taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
+		<classpath>
+			<pathelement location="${lib}/jaxws-tools.jar" />
+		</classpath>
+	</taskdef>
+	<path id="wsgen.classpath">
+		<pathelement location="${bin}"/>
+		<pathelement location="${lib}/jsr181-api.jar"/>
+		<pathelement location="${lib}/jsr250-api.jar"/>
+	</path>
+	<target name="wsgen" description="Generate web service artifacts">
+		<wsgen sei="orc.orchard.soap.CompilerService" destdir="${bin}" xendorsed="true">
+			<classpath><path refid="wsgen.classpath"/></classpath>
+		</wsgen>
+		<wsgen sei="orc.orchard.soap.ExecutorService" destdir="${bin}" xendorsed="true">
+			<classpath><path refid="wsgen.classpath"/></classpath>
+		</wsgen>
+		<wsgen sei="orc.orchard.soap.JobsService" destdir="${bin}" xendorsed="true">
+			<classpath><path refid="wsgen.classpath"/></classpath>
+		</wsgen>
+		<wsgen sei="orc.orchard.soap.StandaloneJobService" destdir="${bin}" xendorsed="true">
+			<classpath><path refid="wsgen.classpath"/></classpath>
+		</wsgen>
+	</target>
+</project>
