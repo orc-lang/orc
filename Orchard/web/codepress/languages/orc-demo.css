@@ -1,0 +1,11 @@
+/* literals */
+pre > s, pre > s * { color: green; font-style: normal; }
+/* comments */
+pre > i, pre > i * { color: black; font-weight: normal; font-style: normal; }
+/* combinators */
+pre > u, pre > u * { color: red; font-style: normal; }
+/* operators */
+pre > tt, pre > tt * { font-style: normal; }
+
+/* Big fonts for demos */
+body, body * { font-size: 16pt; line-height: 20pt; font-weight: bold; color: blue; font-style: italic; }
