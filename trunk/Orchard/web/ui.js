@@ -218,7 +218,7 @@ function onJobServiceReady(job) {
 			}
 		});
 		vs = toArray(vs);
-		currentJob.purge({sequence: vs[vs.length-1].publication}, function () {
+		currentJob.purge({sequence: vs[vs.length-1].sequence}, function () {
 			currentJob.events({}, onEvents);
 		});
 	}
@@ -226,7 +226,7 @@ function onJobServiceReady(job) {
 	currentJob.start({}, function () {
 		document.getElementById("stopButton").disabled = false;
 		document.getElementById("stopButton").style.visibility = "";
-		currentJob.listen({}, onEvents);
+		currentJob.events({}, onEvents);
 	});
 }
 function onJobFinish() {
@@ -319,7 +319,7 @@ CodePress.languages = { "orc-demo": "Orc-Demo", "orc": "Orc" };
 var query = parseQuery();
 var executorServiceUrl = query.mock
 	? "mock-executor.js"
-	: "json/executor";
+	: "json/executor/" + query.k;
 
 //////////////////////////////////////////////////////////
 // Go go gadget executor

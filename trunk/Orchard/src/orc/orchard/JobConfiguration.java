@@ -11,7 +11,6 @@ import java.io.Serializable;
  */
 public class JobConfiguration implements Serializable {
 	public boolean debuggable = false;
-	public int eventBufferSize = 100;
 	
 	public JobConfiguration() {}
 }

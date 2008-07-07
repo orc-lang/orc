@@ -6,6 +6,9 @@ load it as demo.jsp?mock
 <head>
 <title>Orchard Demo</title>
 <style type="text/css">
+#program_cp {
+	border: 1px solid gray;
+}
 #publications {
 	border: 1px solid gray;
 	overflow: auto;
