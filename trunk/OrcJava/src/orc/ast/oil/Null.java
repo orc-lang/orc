@@ -20,7 +20,7 @@ public class Null extends Expr {
 	}
 	
 	@Override
-	public orc.orchard.oil.Expression marshal() {
-		return new orc.orchard.oil.Null();
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

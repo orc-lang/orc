@@ -3,7 +3,7 @@
 
 val (orchardUID, orchardPass) = ("orchardserver", "ckyogack")
 
-site XMPPConnection = orc.lib.xmpp.XMPPConnection
+site XMPPConnection = orc.lib.net.XMPPConnection
 
 val chatConnection = 
   XMPPConnection("talk.google.com", 5222, "gmail.com") >c>

@@ -1,6 +1,5 @@
 package orc.error;
 
-import org.jivesoftware.smack.XMPPException;
 
 /**
  * 

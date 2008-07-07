@@ -11,6 +11,7 @@ import orc.error.MessageNotUnderstoodException;
 import orc.error.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
+import orc.runtime.sites.SimpleSite;
 import orc.runtime.values.*;
 
 /**
@@ -36,11 +37,17 @@ public class ObjectProxy extends EvalSite {
 	 */
 	@Override
 	public Value evaluate(Args args) throws TokenException {
-		return getMethodProxy(args);
+		String methodName;
+		try {
+			methodName = args.fieldName();
+		} catch (TokenException e) {
+			// If this looks like a site call, call the special method "apply".
+			return getMethodProxy("apply").evaluate(args);
+		}
+		return getMethodProxy(methodName);
 	}
 	
-	protected MethodProxy getMethodProxy(Args args) throws TokenException {
-		String methodName = args.fieldName();
+	protected MethodProxy getMethodProxy(String methodName) throws TokenException {
 		List<Method> matching_methods = new LinkedList<Method>();
 
 		// Why not use getMethod to find a method appropriate to the argument

@@ -12,12 +12,16 @@ import orc.error.JavaException;
 import orc.error.MethodTypeMismatchException;
 import orc.error.TokenException;
 import orc.runtime.sites.EvalSite;
+import orc.runtime.sites.SimpleSite;
 import orc.runtime.values.*;
 
 /**
+ * This extends SimpleSite so that methods can use orc.runtime.Continuation to
+ * take advantage of Orc's cooperative threading, if desired.
+ * 
  * @author dkitchin, quark
  */
-public class MethodProxy extends EvalSite {
+public class MethodProxy extends SimpleSite {
     List<Method> wrapped_methods;
     Object self;
     String methodName;

@@ -4,7 +4,7 @@ package orc.runtime.values;
 
 public abstract class OptionValue extends Value {
 	@Override
-	public orc.orchard.oil.Value marshal() {
-		return new orc.orchard.oil.Option(isNone() ? null : untag().marshal());
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

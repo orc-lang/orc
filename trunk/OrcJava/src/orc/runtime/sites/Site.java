@@ -15,6 +15,7 @@ import orc.runtime.nodes.Node;
 import orc.runtime.values.Future;
 import orc.runtime.values.Value;
 import orc.runtime.values.Callable;
+import orc.runtime.values.Visitor;
 
 /**
  * Base class for all sites
@@ -56,7 +57,8 @@ public abstract class Site extends Value implements Callable {
 	 */
 	abstract public void callSite(Args args, Token caller) throws TokenException;
 
-	public orc.orchard.oil.Value marshal() {
-		return new orc.orchard.oil.UnrepresentableValue(this.toString());
+	@Override
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

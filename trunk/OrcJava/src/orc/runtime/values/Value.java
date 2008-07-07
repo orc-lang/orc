@@ -72,5 +72,5 @@ public abstract class Value implements Future {
 	 */
 	public Value tail() { throw new Error(); }
 
-	public abstract orc.orchard.oil.Value marshal();
+	public abstract <E> E accept(Visitor<E> visitor);
 }

@@ -20,13 +20,9 @@ import orc.runtime.values.Value;
  *
  */
 public abstract class EvalSite extends Site {
-
 	@Override
 	public void callSite(Args args, Token caller) throws TokenException {
-
 		caller.resume(evaluate(args));
 	}
-	
-	abstract public Value evaluate(Args args) throws TokenException;
-
+	public abstract Value evaluate(Args args) throws TokenException;
 }

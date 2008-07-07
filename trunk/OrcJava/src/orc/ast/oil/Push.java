@@ -11,8 +11,8 @@ import orc.runtime.nodes.Unwind;
 
 public class Push extends Expr {
 
-	Expr left;
-	Expr right;
+	public Expr left;
+	public Expr right;
 	
 	public Push(Expr left, Expr right)
 	{
@@ -34,9 +34,9 @@ public class Push extends Expr {
 	public String toString() {
 		return "(" + left.toString() + " >> " + right.toString() + ")";
 	}
-
+	
 	@Override
-	public orc.orchard.oil.Expression marshal() {
-		return new orc.orchard.oil.Push(left.marshal(), right.marshal());
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }
