@@ -24,9 +24,7 @@ import orc.orchard.oil.Oil;
  */
 public abstract class AbstractExecutorService implements ExecutorServiceInterface {
 	protected Logger logger;
-	protected Executor executor;
-	
-	private static int maxEventBufferSize = 100;  
+	protected Executor executor;  
 
 	protected AbstractExecutorService(Logger logger) {
 		this.logger = logger;
@@ -54,13 +52,6 @@ public abstract class AbstractExecutorService implements ExecutorServiceInterfac
 	{
 		if (configuration.debuggable) {
 			throw new UnsupportedFeatureException("Debuggable jobs not supported yet.");
-		} else if (configuration.eventBufferSize < 0) {
-			throw new UnsupportedFeatureException(
-					"Configuration eventBufferSize must be greater than 0.");
-		} else if (configuration.eventBufferSize > maxEventBufferSize) {
-			throw new UnsupportedFeatureException(
-					"Configuration eventBufferSize must be less than "
-					+ new Integer(maxEventBufferSize) + ".");
 		}
 		Job job = executor.createJob(program, configuration);
 		URI out = createJobService(job);

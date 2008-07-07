@@ -52,17 +52,22 @@ public final class Job {
 		/** Next sequence number for events. */
 		private int sequence = 0;
 		/** Track the size of the buffer for throttling. */
-		private int bufferSize = 0;
+		private int bufferedSize = 0;
 		/** Maximum allowed size of buffer. */
-		private int maxBufferSize;
-		public EventBuffer(int maxBufferSize) {
-			this.maxBufferSize = maxBufferSize;
+		private int bufferSize = 100;
+		public EventBuffer() {}
+		/**
+		 * Set the maximum allowed size of the buffer.
+		 * @param bufferSize
+		 */
+		public void setBufferSize(int bufferSize) {
+			this.bufferSize = bufferSize;
 		}
 		/**
 		 * Add an event to the stream, blocking if the stream is full.
 		 */
 		public synchronized void add(JobEvent value) {
-			while (bufferSize >= maxBufferSize) {
+			while (bufferedSize >= bufferSize) {
 				System.out.println("Buffer full.");
 				try {
 					wait();
@@ -72,7 +77,7 @@ public final class Job {
 			}
 			value.sequence = ++sequence;
 			value.timestamp = new Date();
-			bufferSize++;
+			bufferedSize++;
 			buffer.add(value);
 			waiters.resume();
 		}
@@ -98,7 +103,7 @@ public final class Job {
 			while (it.hasNext()) {
 				if (it.next().sequence <= sequence) {
 					it.remove();
-					bufferSize--;
+					bufferedSize--;
 				} else break;
 			}
 			notify();
@@ -171,7 +176,7 @@ public final class Job {
 	protected Job(String id, Expr expression, JobConfiguration configuration) {
 		this.id = id;
 		this.configuration = configuration;
-		this.events = new EventBuffer(configuration.eventBufferSize);
+		this.events = new EventBuffer();
 		Node node = expression.compile();
 		//engine.debugMode = true;
 		engine.start(node);
@@ -250,5 +255,9 @@ public final class Job {
 	
 	public Date getStartDate() {
 		return (Date)startDate.clone();
+	}
+
+	public void setEventBufferSize(Integer eventBufferSize) {
+		if (eventBufferSize != null) events.setBufferSize(eventBufferSize);
 	}
 }

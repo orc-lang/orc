@@ -2,6 +2,7 @@ package orc.orchard.soap;
 
 import java.rmi.RemoteException;
 import java.util.List;
+
 import javax.annotation.Resource;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -11,17 +12,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.handler.MessageContext;
 
-import org.mortbay.util.ajax.Continuation;
-import org.mortbay.util.ajax.ContinuationSupport;
-
-import com.sun.xml.ws.developer.JAXWSProperties;
-
 import orc.orchard.AbstractJobsService;
 import orc.orchard.Job;
 import orc.orchard.JobConfiguration;
 import orc.orchard.JobEvent;
 import orc.orchard.Waiter;
 import orc.orchard.errors.InvalidJobStateException;
+
+import org.mortbay.util.ajax.Continuation;
+import org.mortbay.util.ajax.ContinuationSupport;
 
 /**
  * Multi-plex jobs in a single webservice. This looks up the actual job from the
@@ -62,6 +61,10 @@ public class JobsService extends AbstractJobsService {
 			continuation = ContinuationSupport.getContinuation(getServletRequest(), monitor);
 			continuation.suspend(0);
 		}
+		private HttpServletRequest getServletRequest() {
+			MessageContext mc = context.getMessageContext();
+			return (HttpServletRequest)mc.get(MessageContext.SERVLET_REQUEST);
+		}
 	}
 	
 	/**
@@ -71,15 +74,6 @@ public class JobsService extends AbstractJobsService {
 	protected Waiter getWaiter() {
 		return super.getWaiter();
 	}
-	
-	private String getDeveloperKey() {
-		String query = (String)context.getMessageContext().get(MessageContext.QUERY_STRING);
-		if (query != null) {
-			return query.substring(1);
-		} else {
-			return "";
-		}
-	}
 
 	// This annotation seems unnecessary but wsgen barfs trying to
 	// understand ServletContext if it's not here
@@ -88,25 +82,14 @@ public class JobsService extends AbstractJobsService {
 		MessageContext mc = context.getMessageContext();
 		return (ServletContext)mc.get(MessageContext.SERVLET_CONTEXT);
 	}
-	
-	@WebMethod(exclude=true)
-	private HttpServletRequest getServletRequest() {
-		MessageContext mc = context.getMessageContext();
-		return (HttpServletRequest)mc.get(MessageContext.SERVLET_REQUEST);
-	}
-	
-	private String getJobID() {
-		String path = (String)context.getMessageContext().get(
-				JAXWSProperties.HTTP_REQUEST_URL);
-		return path.substring(path.lastIndexOf('/')+1);
-	}
 
 	@Override
 	protected Job getCurrentJob() throws RemoteException {
 		Accounts accounts = (Accounts)getServletContext().getAttribute("orc.orchard.soap.accounts");
-		Account account = accounts.getAccount(getDeveloperKey());
-		Job job = account.getJob(getJobID());
-		if (job == null) throw new RemoteException("Job '" + getJobID() + "' not found.");
+		Account account = accounts.getAccount(URLHelper.getDeveloperKey(context));
+		String jobID = URLHelper.getJobID(context);
+		Job job = account.getJob(jobID);
+		if (job == null) throw new RemoteException("Job '" + jobID + "' not found.");
 		return job;
 	}
 	

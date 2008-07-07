@@ -21,12 +21,13 @@ import orc.orchard.errors.QuotaException;
 public abstract class Account {	
 	private Map<String, Job> jobs = new HashMap<String, Job>();
 	private Integer quota = null;
-	private PGInterval age = null;
+	private Integer eventBufferSize = null;
+	private PGInterval lifespan = null;
 	
 	public Account() {}
 
-	public synchronized void setAge(PGInterval age) {
-		this.age = age;
+	public synchronized void setLifespan(PGInterval lifespan) {
+		this.lifespan = lifespan;
 	}
 
 	public synchronized void setQuota(Integer quota) {
@@ -39,6 +40,7 @@ public abstract class Account {
 			throw new QuotaException();
 		}
 		job.setStartDate(new Date());
+		job.setEventBufferSize(eventBufferSize);
 		jobs.put(id, job);
 		job.onFinish(new Job.FinishListener() {
 			public void finished(Job job) {
@@ -65,14 +67,18 @@ public abstract class Account {
 	public abstract boolean isGuest();
 	
 	public synchronized void finishOldJobs() {
-		if (age == null) return;
+		if (lifespan == null) return;
 		Date now = new Date();
 		for (Job job : jobs.values()) {
 			Date death = job.getStartDate();
-			age.add(death);
+			lifespan.add(death);
 			if (death.before(now)) {
 				job.finish();
 			}
 		}
+	}
+
+	public void setEventBufferSize(Integer eventBufferSize) {
+		this.eventBufferSize = eventBufferSize;
 	} 
 }

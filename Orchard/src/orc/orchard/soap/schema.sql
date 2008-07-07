@@ -10,16 +10,16 @@ CREATE DATABASE orchard OWNER orchard WITH ENCODING 'UTF8';
 CREATE TABLE account_type (
 	account_type_id SERIAL,
 	account_type_name varchar(255) NOT NULL,
-	quota_running int,
-	quota_all int,
-	age_all interval,
+	quota int,
+	lifespan interval,
+	event_buffer_size int,
 	PRIMARY KEY (account_type_id)
 );
 
-INSERT INTO account_type (account_type_name, age_all)
-	VALUES ('guest', '1 day');
-INSERT INTO account_type (account_type_name, quota_all)
-	VALUES ('developer', 10);
+INSERT INTO account_type (account_type_name)
+	VALUES ('UT Developer');
+INSERT INTO account_type (account_type_name, quota)
+	VALUES ('Public Developer', 10);
 
 CREATE TABLE account (
 	account_id SERIAL,
@@ -34,4 +34,6 @@ CREATE TABLE account (
 );
 
 INSERT INTO account (account_type_id, username, salt, password_md5, email, developer_key)
-	VALUES (2, '', '', '', '', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11');
+	VALUES (1, 'quark', '', '', 'quark@cs.utexas.edu', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11');
+INSERT INTO account (account_type_id, username, salt, password_md5, email, developer_key)
+	VALUES (2, 'test', '', '', '', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12');

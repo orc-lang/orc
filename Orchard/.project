@@ -3,7 +3,7 @@
 	<name>Orchard</name>
 	<comment></comment>
 	<projects>
-		<project>OrcMainline</project>
+		<project>OrcJava</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

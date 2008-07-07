@@ -27,7 +27,7 @@ public class Accounts {
 			protected void onNoMoreJobs() {}	
 			public boolean isGuest() { return true; }
 		};
-		guest.setAge(new PGInterval(0, 0, 1, 0, 0, 0));
+		guest.setLifespan(new PGInterval(0, 0, 1, 0, 0, 0));
 	}
 	
 	/**
@@ -37,6 +37,10 @@ public class Accounts {
 	 */
 	public Account getAccount(String devKey) {
 		try {
+			// Check for obviously invalid accounts
+			if (devKey == null || devKey.equals("")) {
+				return guest;
+			}
 			return getAccountFromDB(devKey);
 		} catch (SQLException e) {
 			// FIXME: hack to support database connection errors,
@@ -53,10 +57,10 @@ public class Accounts {
 		}
 		// Fetch the account information
 		PreparedStatement sql = db.prepareStatement(
-				"SELECT account_id, quota_all, age_all" +
+				"SELECT account_id, quota, lifespan, event_buffer_size" +
 				" FROM account" +
 				" INNER JOIN account_type USING (account_type_id)" +
-				" WHERE developer_key = ?");
+				" WHERE developer_key = ?::uuid");
 		try {
 			sql.setString(1, devKey);
 			ResultSet rs = sql.executeQuery();
@@ -69,7 +73,8 @@ public class Accounts {
 				} else {
 					return getAccount((Integer)rs.getObject(1),
 							(Integer)rs.getObject(2),
-							(PGInterval)rs.getObject(3));
+							(PGInterval)rs.getObject(3),
+							(Integer)rs.getObject(4));
 				}
 			} finally {
 				rs.close();
@@ -79,7 +84,7 @@ public class Accounts {
 		}
 	}
 	
-	private synchronized Account getAccount(final Integer account_id, Integer quota, PGInterval age) {
+	private synchronized Account getAccount(final Integer account_id, Integer quota, PGInterval lifespan, Integer eventBufferSize) {
 		// Get the actual account object. If one already
 		// exists, return it.
 		Account out;
@@ -99,7 +104,8 @@ public class Accounts {
 			accounts.put(account_id, out);
 		}
 		out.setQuota(quota);
-		out.setAge(age);
+		out.setLifespan(lifespan);
+		out.setEventBufferSize(eventBufferSize);
 		return out;
 	}
 }

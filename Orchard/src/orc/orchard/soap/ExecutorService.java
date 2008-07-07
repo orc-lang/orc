@@ -4,19 +4,17 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.rmi.RemoteException;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.annotation.Resource;
-import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import javax.servlet.ServletContext;
 import javax.xml.ws.Endpoint;
 import javax.xml.ws.WebServiceContext;
-import javax.xml.ws.handler.MessageContext;
-
-import com.sun.xml.ws.developer.JAXWSProperties;
 
 import orc.orchard.AbstractExecutorService;
 import orc.orchard.Job;
@@ -42,6 +40,17 @@ public class ExecutorService extends AbstractExecutorService {
 	/** Cached URI of the service. */
 	private URI baseURI;
 	
+	static {
+		// Register the PostgreSQL driver.
+		try {
+			DriverManager.registerDriver(new org.postgresql.Driver());
+		} catch (SQLException e) {
+			// Somehow failed to create the driver?
+			// Should be impossible.
+			throw new AssertionError(e);
+		}
+	}
+	
 	public ExecutorService() {
 		super(getDefaultLogger());
 		accounts = new Accounts("jdbc:postgresql://localhost/orchard?user=orchard&password=ckyogack"); 
@@ -61,63 +70,37 @@ public class ExecutorService extends AbstractExecutorService {
 		logger.info("Bound to '" + baseURI + "'");
 	}
 	
-	/**
-	 * Initialize state which depends on the servlet context. Idempotent.
-	 * 
-	 * HACK: stupidly, we can't get at the servlet context during
-	 * "PostConstruct", so we have to call this at each request just in case we
-	 * haven't initialized yet.
-	 */
-	public void init() {
-		ServletContext sc = getServletContext();
-		if (sc != null)	sc.setAttribute("orc.orchard.soap.accounts", accounts);
-		if (baseURI == null) {
-			try {
-				baseURI = new URI((String)context.getMessageContext().get(
-						JAXWSProperties.HTTP_REQUEST_URL));
-			} catch (URISyntaxException e) {
-				// impossible by construction
-				throw new AssertionError(e);
-			}
-		}
-	}
-	
-	private String getDeveloperKey() {
-		String query = (String)context.getMessageContext().get(MessageContext.QUERY_STRING);
-		if (query != null) {
-			return query.substring(1);
-		} else {
-			return "";
-		}
-	}
-	
 	private Account getAccount() {
-		return accounts.getAccount(getDeveloperKey());
-	}
-	
-	// This annotation seems unnecessary but wsgen barfs trying to
-	// understand ServletContext if it's not here
-	@WebMethod(exclude=true)
-	private ServletContext getServletContext() {
-		MessageContext mc = context.getMessageContext();
-		if (mc == null) return null;
-		return (ServletContext)mc.get(MessageContext.SERVLET_CONTEXT);
+		return accounts.getAccount(URLHelper.getDeveloperKey(context));
 	}
 
 	@Override
 	protected URI createJobService(Job job) throws QuotaException, RemoteException {
-		init();
-		URI jobURI = baseURI.resolve("jobs/" + job.getID() + "?" + getDeveloperKey());
+		ServletContext sc = URLHelper.getServletContext(context);
 		getAccount().addJob(job.getID(), job);
-		if (getServletContext() == null) {
+		if (sc == null) {
+			// We're not running inside a servlet -- launch the standalone
+			// job service
 			try {
+				URI jobURI = baseURI.resolve("jobs/" + job.getID());
 				new StandaloneJobService(logger, jobURI, job);
+				return jobURI;
 			} catch (MalformedURLException e) {
 				// impossible by construction
 				throw new AssertionError(e);
 			}
+		} else {
+			// it is of course unnecessary to set the accounts object on every
+			// request, but the JAX-WS API doesn't provide any way to do
+			// post-init setup using the servlet context
+			sc.setAttribute("orc.orchard.soap.accounts", accounts);
+			try {
+				return URLHelper.getJobServiceURL(context, job.getID()).toURI();
+			} catch (URISyntaxException e1) {
+				// impossible by construction
+				throw new AssertionError(e1);
+			}
 		}
-		return jobURI;
 	}
 	
 	/**
