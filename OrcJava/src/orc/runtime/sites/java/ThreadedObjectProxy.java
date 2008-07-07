@@ -10,7 +10,7 @@ public class ThreadedObjectProxy extends ObjectProxy {
 		super(inst);
 	}
 	public Value evaluate(Args args) throws TokenException {
-		final MethodProxy proxy = (MethodProxy)getMethodProxy(args);
+		final MethodProxy proxy = (MethodProxy)getMethodProxy(args.fieldName());
 		return new ThreadedSite() {
 			public Value evaluate(Args args) throws TokenException {
 				return proxy.evaluate(args);

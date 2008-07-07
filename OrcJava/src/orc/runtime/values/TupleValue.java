@@ -15,7 +15,7 @@ import orc.runtime.sites.EvalSite;
  * A tuple value container
  * @author wcook, quark
  */
-public class TupleValue extends EvalSite implements Iterable {
+public class TupleValue extends EvalSite implements Iterable<Value> {
 	Value[] values;
 	public TupleValue() {
 		this.values = new Value[0];
@@ -81,18 +81,14 @@ public class TupleValue extends EvalSite implements Iterable {
 		buf.append(right);
 		return buf.toString();
 	}
-	@Override
-	public orc.orchard.oil.Value marshal() {
-		orc.orchard.oil.Value mvalues[] = new orc.orchard.oil.Value[values.length];
-		for (int i = 0; i < values.length; ++i) {
-			mvalues[i] = values[i].marshal();
-		}
-		return new orc.orchard.oil.Tuple(mvalues);
-	}
 	public List<Value> asList() {
 		return Arrays.asList(values);
 	}
 	public Iterator<Value> iterator() {
 		return asList().iterator();
+	}
+	@Override
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

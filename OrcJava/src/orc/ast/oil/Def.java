@@ -47,8 +47,4 @@ public class Def {
 			args += "."; 
 		return "(def " + args + " " + body.toString() + ")";
 	}
-
-	public orc.orchard.oil.Definition marshal() {
-		return new orc.orchard.oil.Definition(arity, body.marshal());
-	}
 }

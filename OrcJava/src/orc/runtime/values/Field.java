@@ -19,7 +19,7 @@ public class Field extends Value implements Serializable {
 		return super.toString() + "(" + key +")";
 	}
 	@Override
-	public orc.orchard.oil.Value marshal() {
-		return new orc.orchard.oil.Field(key);
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

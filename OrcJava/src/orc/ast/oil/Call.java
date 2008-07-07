@@ -73,12 +73,7 @@ public class Call extends Expr {
 	}
 	
 	@Override
-	public orc.orchard.oil.Expression marshal() {
-		LinkedList<orc.orchard.oil.Argument> arguments
-			= new LinkedList<orc.orchard.oil.Argument>();
-		for (Arg a : args) {
-			arguments.add(a.marshal());
-		}
-		return new orc.orchard.oil.Call(callee.marshal(), arguments.toArray(new orc.orchard.oil.Argument[]{}));
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

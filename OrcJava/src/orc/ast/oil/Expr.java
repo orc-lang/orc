@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import orc.ast.oil.arg.Var;
+import orc.runtime.nodes.Pub;
 
 /**
  * Base class for the portable (.oil, for Orc Intermediate Language) abstract syntax tree.
@@ -22,6 +23,10 @@ public abstract class Expr {
 	 * @return A new node.
 	 */
 	public abstract orc.runtime.nodes.Node compile(orc.runtime.nodes.Node output);
+	
+	public orc.runtime.nodes.Node compile() {
+		return compile(new Pub());
+	}
 	
 	
 	/**
@@ -59,9 +64,5 @@ public abstract class Expr {
 		return;
 	}
 	
-	/**
-	 * Marshal into a JAXB representation.
-	 * @return
-	 */
-	public abstract orc.orchard.oil.Expression marshal();
+	public abstract <E> E accept(Visitor<E> visitor);
 }

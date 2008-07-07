@@ -76,10 +76,11 @@ public class Token implements Serializable, Comparable<Token> {
 	 * If a token is alive, calls the node to perform the next action.
 	 */
 	public void process() {
-		if (group.isAlive()) {	
+		if (!alive) {
+			return;
+		} else if (group.isAlive()) {
 			node.process(this);
-		}
-		else {
+		} else {
 			die();
 		}
 	}

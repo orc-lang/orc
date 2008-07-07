@@ -7,8 +7,8 @@ import orc.runtime.nodes.Node;
 
 public class Bar extends Expr {
 
-	Expr left;
-	Expr right;
+	public Expr left;
+	public Expr right;
 	
 	public Bar(Expr left, Expr right)
 	{
@@ -30,9 +30,9 @@ public class Bar extends Expr {
 	public String toString() {
 		return "(" + left.toString() + " | " + right.toString() + ")";
 	}
-
+	
 	@Override
-	public orc.orchard.oil.Expression marshal() {
-		return new orc.orchard.oil.Bar(left.marshal(), right.marshal());
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

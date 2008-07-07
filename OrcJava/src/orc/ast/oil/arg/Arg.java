@@ -17,7 +17,4 @@ public abstract class Arg extends Expr {
 	}
 	
 	public abstract Future resolve(Env<Future> env);
-	
-	@Override
-	public abstract orc.orchard.oil.Argument marshal();
 }

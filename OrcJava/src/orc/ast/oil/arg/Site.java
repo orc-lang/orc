@@ -3,6 +3,7 @@ package orc.ast.oil.arg;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import orc.ast.oil.Visitor;
 import orc.env.Env;
 import orc.runtime.values.Future;
 import orc.runtime.values.Value;
@@ -36,8 +37,9 @@ public class Site extends Arg {
 	public String toString() {
 		return "[" + site.getClass().toString() + "]";
 	}
+	
 	@Override
-	public orc.orchard.oil.Argument marshal() {
-		return new orc.orchard.oil.Site(site.getProtocol(), site.getLocation());
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

@@ -3,10 +3,6 @@ package orc.ast.sites;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import javax.xml.bind.annotation.XmlAttribute;
-
-import orc.ast.simple.arg.Argument;
-
 /**
  * 
  * A portable representation of sites. When creating the execution graph, 

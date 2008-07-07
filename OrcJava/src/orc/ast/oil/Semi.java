@@ -9,8 +9,8 @@ import orc.runtime.nodes.Node;
 
 public class Semi extends Expr {
 
-	Expr left;
-	Expr right;
+	public Expr left;
+	public Expr right;
 	
 	public Semi(Expr left, Expr right)
 	{
@@ -34,7 +34,7 @@ public class Semi extends Expr {
 	}
 	
 	@Override
-	public orc.orchard.oil.Expression marshal() {
-		return new orc.orchard.oil.Semicolon(left.marshal(), right.marshal());
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

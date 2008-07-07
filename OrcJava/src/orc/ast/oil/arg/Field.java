@@ -2,6 +2,7 @@ package orc.ast.oil.arg;
 
 import java.util.Set;
 
+import orc.ast.oil.Visitor;
 import orc.env.Env;
 import orc.runtime.values.Future;
 import orc.runtime.values.Value;
@@ -29,8 +30,9 @@ public class Field extends Arg {
 	public String toString() {
 		return "[." + key + "]";
 	}
+	
 	@Override
-	public orc.orchard.oil.Argument marshal() {
-		return new orc.orchard.oil.Field(key);
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

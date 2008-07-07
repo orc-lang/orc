@@ -22,6 +22,7 @@ import orc.ast.extended.declaration.Declaration;
 import orc.ast.oil.Expr;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
+import orc.error.ParseError;
 import orc.parser.OrcLexer;
 import orc.parser.OrcParser;
 import orc.runtime.OrcEngine;
@@ -77,7 +78,7 @@ public class Orc {
 		System.exit(0);
 	}
 	
-	public static orc.ast.simple.Expression compile(Reader source, Config cfg) throws RecognitionException {
+	public static orc.ast.simple.Expression compile(Reader source, Config cfg) throws ParseError {
 		return compile(source, cfg, true);
 	}
 	
@@ -108,7 +109,7 @@ public class Orc {
 		return new InputStreamReader(stream);
 	}
 	
-	public static orc.ast.simple.Expression compile(Reader source, Config cfg, boolean includeStdlib) throws RecognitionException {
+	public static orc.ast.simple.Expression compile(Reader source, Config cfg, boolean includeStdlib) throws ParseError {
 		
 		try {
 		
@@ -148,11 +149,11 @@ public class Orc {
 		return e.simplify();
 		
 		} catch (FileNotFoundException e) {
-			throw new SemanticException(e.getMessage());
+			throw new ParseError(e.getMessage(), e);
 		} catch (RecognitionException e) {
-			throw e;
+			throw new ParseError("ANTLR recognition exception", e);
 		} catch (TokenStreamException e) {
-			throw new SemanticException(e.getMessage());
+			throw new ParseError(e.getMessage(), e);
 		}		
 	}
 	

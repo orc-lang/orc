@@ -39,16 +39,11 @@ public class OrcEngine implements Runnable {
 	 */
 	protected boolean halt = false;
 	/**
-	 * Track when the engine is blocked waiting for a site to return.
-	 */
-	protected boolean isBlocked = false;
-	/**
 	 * Currently this reference is just needed to keep pending tokens
 	 * from being garbage-collected prematurely.
 	 */
 	private Execution region;
 	
-	public synchronized boolean isBlocked() { return isBlocked; }
 	public synchronized boolean isDead() { return halt; }
 
 	/**
@@ -63,13 +58,11 @@ public class OrcEngine implements Runnable {
 			synchronized(this) {
 				if (halt) return;
 				if (!step()) {
-					isBlocked = true;
 					try {
 						wait();
 					} catch (InterruptedException e) {
 						// do nothing
 					}
-					isBlocked = false;
 				}
 			}
 		}
@@ -81,7 +74,7 @@ public class OrcEngine implements Runnable {
 	public synchronized void terminate() {
 		halt = true;
 		debug("Engine terminated.");
-		notify();
+		notifyAll();
 	}
 
 	/**
@@ -148,7 +141,7 @@ public class OrcEngine implements Runnable {
 	 */
 	synchronized public void activate(Token t) {
 		activeTokens.addLast(t);
-		notify();
+		notifyAll();
 	}
 	
 	/**
@@ -157,7 +150,7 @@ public class OrcEngine implements Runnable {
 	 */
 	synchronized public void resume(Token t) {
 		queuedReturns.addLast(t);
-		notify();
+		notifyAll();
 	}
 	
 	/**
@@ -242,5 +235,13 @@ public class OrcEngine implements Runnable {
 	 */
 	public void println(String string) {
 		System.out.println(string);
+	}
+	/** Provide access to a package static method. */
+	public void setCurrentToken(Token caller) {
+		Continuation.setCurrentToken(caller);
+	}
+	/** Provide access to a package static method. */
+	public Token getCurrentToken() {
+		return Continuation.getCurrentToken();
 	}
 }

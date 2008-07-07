@@ -11,8 +11,8 @@ import orc.runtime.nodes.Unwind;
 
 public class Pull extends Expr {
 
-	Expr left;
-	Expr right;
+	public Expr left;
+	public Expr right;
 	
 	public Pull(Expr left, Expr right)
 	{
@@ -38,7 +38,7 @@ public class Pull extends Expr {
 	}
 	
 	@Override
-	public orc.orchard.oil.Expression marshal() {
-		return new orc.orchard.oil.Pull(left.marshal(), right.marshal());
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

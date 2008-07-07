@@ -49,28 +49,6 @@ public class Constant extends Value {
 	{
 		return new ObjectProxy(value);
 	}
-
-	@Override
-	public orc.orchard.oil.Value marshal() {
-		// Check if the value corresponds to an atomic
-		// type which will be serializable by JAXB;
-		// otherwise the value is unrepresentable
-		// in Oil.
-		if (value instanceof String) {
-		} else if (value instanceof Boolean) {
-		} else if (value instanceof Number) {
-		} else if (value instanceof Character) {
-		} else if (value instanceof	java.util.Calendar) {
-		} else if (value instanceof	java.util.Date) {
-		} else if (value instanceof	javax.xml.namespace.QName) {
-		} else if (value instanceof	java.net.URI) {
-		} else if (value instanceof	javax.xml.datatype.Duration) {
-		} else if (value instanceof	java.util.UUID) {
-		} else {
-			return new orc.orchard.oil.UnrepresentableValue(value.toString());
-		}
-		return new orc.orchard.oil.Constant(value);
-	}
 	
 	/**
 	 * Produce a new iterator for this value.
@@ -124,5 +102,10 @@ public class Constant extends Value {
 		} catch (ClassCastException e) {
 			return false;
 		}
+	}
+	
+	@Override
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

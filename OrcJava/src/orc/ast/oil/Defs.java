@@ -54,14 +54,9 @@ public class Defs extends Expr {
 		repn += "\n)\n" + body.toString();
 		return repn;
 	}
-
+	
 	@Override
-	public orc.orchard.oil.Expression marshal() {
-		LinkedList<orc.orchard.oil.Definition> definitions
-			= new LinkedList<orc.orchard.oil.Definition>();
-		for (Def d : defs) {
-			definitions.add(d.marshal());
-		}
-		return new orc.orchard.oil.Definitions(definitions.toArray(new orc.orchard.oil.Definition[]{}), body.marshal());
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

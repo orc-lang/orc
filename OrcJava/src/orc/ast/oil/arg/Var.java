@@ -2,6 +2,7 @@ package orc.ast.oil.arg;
 
 import java.util.Set;
 
+import orc.ast.oil.Visitor;
 import orc.env.Env;
 import orc.runtime.nodes.Node;
 import orc.runtime.values.Future;
@@ -20,7 +21,7 @@ import orc.runtime.values.Value;
 public class Var extends Arg {
 	private static final long serialVersionUID = 1L;
 	
-	int index;
+	public int index;
 	
 	public Var(int index) {
 		this.index = index;
@@ -41,8 +42,9 @@ public class Var extends Arg {
 	public String toString() {
 		return "[#" + index + "]";
 	}
+	
 	@Override
-	public orc.orchard.oil.Argument marshal() {
-		return new orc.orchard.oil.Variable(index);
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

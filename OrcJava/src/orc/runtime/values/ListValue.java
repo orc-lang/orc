@@ -25,18 +25,13 @@ public abstract class ListValue extends Value implements Iterable {
 		
 		return l;
 	}
-
-	@Override
-	public orc.orchard.oil.Value marshal() { 
-		List<Value> list = enlist();
-		List<orc.orchard.oil.Value> mlist = new LinkedList<orc.orchard.oil.Value>();
-		for (Value v : list) {
-			mlist.add(v.marshal());
-		}
-		return new orc.orchard.oil.List(mlist.toArray(new orc.orchard.oil.Value[]{}));
-	}
 	
 	public Iterator iterator() {
 		return enlist().iterator();
+	}
+	
+	@Override
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }
