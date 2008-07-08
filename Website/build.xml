@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<project name="Website" default="war" basedir=".">
+	<description>
+	</description>
+	<target name="war" description="generate the war">
+		<jar jarfile="../root.war" update="true">
+			<fileset dir=".">
+				<include name="**/*"/>
+				<exclude name="**/CVS/*"/>
+			</fileset>
+		</jar>
+	</target>
+</project>
