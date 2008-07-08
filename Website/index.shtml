@@ -1,0 +1,51 @@
+<!--#include virtual="header.shtml" --> 
+
+<h2>What is Orc?</h2>
+
+<p><b><i>Orc</i></b> is a programming language and system for orchestrating distributed
+services. The Orc model allows for services &mdash; including messaging and data
+storage and manipulation &mdash; to be provided by distributed <b><i>sites</i></b>.</p>
+<p>Orc provides constructs to <b><i>orchestrate</i></b> the concurrent
+invocation of sites to achieve a goal, while managing time-outs, priorities,
+and failure of sites or communication.</p>
+
+<h2>What's it good for?</h2>
+<ul>
+<li>Workflows (business process automation)</li>
+<li>Discrete event simulation</li>
+<li>Web service mashups</li>
+<li>Modeling and reasoning about concurrent processes</li>
+</ul>
+
+<h2>Why should I care?</h2>
+<ul>
+<li>Structured concurrency makes programs easier to reason about formally.</li>
+<li>Three simple concurrency primitives model all common synchronous and asynchronous communication patterns.</li>
+<li>Light-weight threading allows for millions of threads, so you can more accurately model real-world processes.</li>
+<li>Orc integrates easily with existing services, supporting protocols such as:
+	<ul>
+	<li>SOAP/HTTP</li>
+	<li>SMTP, IMAP, POP3</li>
+	<li>XMPP (Jabber Messaging)</li>
+	<li>Java RMI</li>
+	</ul></li>
+</ul>
+
+<h2>A Sample Program</h2>
+
+<pre>
+<font color="brown">-- Ping a url every t milliseconds
+-- and email an admin if the ping fails</font>
+
+<font color="blue">def</font> PingTest(<i>t</i>, <i>url</i>) =
+  Rtimer(<i>t</i>) <font color="red">>></font> <i>pong</i> <font color="red">>></font> PingTest(<i>t</i>, <i>url</i>)
+    <font color="red">&lt;</font><i>pong</i><font color="red">&lt;</font>
+
+        Ping(<i>url</i>)
+      <font color="red">|</font> Rtimer(<i>t</i>) <font color="red">>></font> EmailAdmin(<font color="grey">"Ping failed"</font>)
+
+PingTest(10000, <font color="grey">"www.google.com"</font>)
+
+</pre>
+
+<!--#include virtual="footer.shtml" --> 

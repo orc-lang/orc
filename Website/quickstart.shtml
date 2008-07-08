@@ -1,0 +1,59 @@
+<!--#include virtual="header.shtml" --> 
+
+<h2>Install Prerequisites</h2>
+<ol>
+<li>Install <a href="http://java.sun.com/javase/6/webnotes/install/">Java</a>
+(&gt;= 1.5)
+</li>
+<li>Download 
+<a href="http://www.eclipse.org/downloads/">Eclipse</a>. These instructions
+assume version 3.2.2, but other versions should behave similarly.
+</li>
+<li>Install the
+<a href="http://antlreclipse.sourceforge.net/">ANTLR Eclipse plugin</a>.
+</li>
+</ol>
+
+<h2>Install Orc</h2>
+<ol>
+<li>Launch Eclipse</li>
+<li>Go to <i>File -&gt; New -&gt; Project ...</i></li>
+<li>Open <i>CVS</i>, choose <i>Projects from CVS</i>, and click <i>Next&nbsp;&gt;</i></li>
+<li>Choose <i>Create a new repository location</i> and click <i>Next&nbsp;&gt;</i></li>
+<li>Fill out the Repository Location Information as follows:
+	<dl class="aligned">
+	<dt>Host</dt><dd><tt>orc.cvs.sourceforge.net</tt></dd>
+	<dt>Repository path</dt><dd><tt>/cvsroot/orc</tt></dd>
+	<dt>User</dt><dd><tt>anonymous</tt></dd>
+	<dt>Password</dt><dd>(leave blank)</dd>
+	<dt>Connection type</dt><dd><tt>pserver</tt></dd>
+	</dl></li>
+<li>Choose <i>Use a specified module name</i>, enter <tt>OrcJava</tt>, and click <i>Finish</i></li>
+</ol>
+
+<h2>Running Orc Programs</h2>
+<ol>
+<li>Within Eclipse, open the Orc program you wish to run.</li>
+<li>Go to <i>Run -&gt; Run ...</i></li>
+<li>Right-click <i>Java Application</i> and select <i>New</i></li>
+<li>Fill out the Main form as follows:
+	<dl class="aligned">
+	<dt>Name</dt><dd><tt>Orc</tt></dd>
+	<dt>Project</dt><dd><tt>OrcJava</tt></dd>
+	<dt>Main class</dt><dd><tt>orc.Orc</tt></dd>
+	</dl></li>
+<li>Click the <i>Arguments</i> tab and fill out the form as follows:
+	<dl>
+	<dt>Program arguments</dt><dd><tt>${resource_loc}</tt></dd>
+	</dl></li>
+<li>Click <i>Apply</i></li>
+<li>Click <i>Run</i></li>
+</ol>
+
+<p>You only have to perform the above steps once. Then whenever you want to run an Orc program:</p>
+<ol>
+<li>Select the program (you can open it or simply select it in the Package Explorer or Navigator).</li>
+<li>Go to <i>Run -&gt; Run History -&gt; Orc</i> (or use the dropdown menu of the run icon in the toolbar).</li>
+</ol>
+
+<!--#include virtual="footer.shtml" --> 
