@@ -1,0 +1,20 @@
+<!--#include virtual="header.shtml" --> 
+
+<h2>License</h2>
+
+<p>Please read the <a href="license.shtml">license agreement</a> before downloading.</p>
+
+<h2>Download from Sourceforge</h2>
+<p>Download the <a href="https://sourceforge.net/project/platformdownload.php?group_id=33781">latest release</a> from sourceforge.net.</p>
+
+<h2>Download from CVS</h2>
+<p>Download development versions from sourceforge.net CVS:</p>
+<dl class="aligned">
+<dt>Host</dt><dd>orc.cvs.sourceforge.net</dd>
+<dt>Protocol</dt><dd>pserver</dd>
+<dt>Username</dt><dd>anonymous</dd>
+<dt>Repository</dt><dd>/cvsroot/orc</dd>
+<dt>Module</dt><dd>OrcJava</dd>
+</dl>
+
+<!--#include virtual="footer.shtml" --> 
