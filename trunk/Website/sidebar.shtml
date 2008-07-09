@@ -24,15 +24,15 @@
 <ul class="block">
 	<li><a href="http://groups.google.com/group/orc-lang/">Mailing List</a></li>
 	<li><a href="wiki">Wiki</a></li>
-	<li><a href="http://www.sourceforge.net/projects/orc">SourceForge.net Project</a></li>
+	<li><a href="http://sourceforge.net/projects/orc">SourceForge.net Project</a></li>
 </ul>
 
 <h2>Contact Us</h2>
 
 <ul class="block">
-	<li><b>Webmaster</b><br />quark at cs dot utexas dot edu</li>
-	<li><b>Academic inquiries</b><br />wcook at cs dot utexas dot edu</li>
-	<li><b>Commercial inquiries</b><br />dkitchin at cs dot utexas dot edu</li>
+	<li><b>Academic inquiries</b><br />research at orc.csres.utexas.edu</li>
+	<li><b>Commercial inquiries</b><br />commercial at orc.csres.utexas.edu</li>
+	<li><b>Webmaster</b><br />webmaster at orc.csres.utexas.edu</li>
 </ul>
 
 <!--#config timefmt="%Y-%m-%d" -->
