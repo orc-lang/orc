@@ -12,7 +12,7 @@
 <h2>Get Started</h2>
 
 <ul class="block">
-	<!-- <li><a href="#">Try Orc! (in your browser)</a></li> -->
+	<li><a href="/orchard">Try Orc! (in your browser)</a></li>
 	<li><a href="introduction.shtml">Introduction</a></li>
 	<li><a href="tutorial.shtml">Tutorial</a></li>
 	<li><a href="quickstart.shtml">Quick-Start Guide</a></li>
@@ -23,7 +23,7 @@
 
 <ul class="block">
 	<li><a href="http://groups.google.com/group/orc-lang/">Mailing List</a></li>
-	<li><a href="http://orc.wiki.sourceforge.net/">Wiki</a></li>
+	<li><a href="wiki">Wiki</a></li>
 	<li><a href="http://www.sourceforge.net/projects/orc">SourceForge.net Project</a></li>
 </ul>
 
