@@ -2,6 +2,7 @@
 
 <h1>Documentation</h1>
 <ul>
+  <li><a href="introduction.shtml">Introduction</a></li>
   <li><a href="tutorial.shtml">Tutorial</a></li>
   <li><a href="quickstart.shtml">Quick-Start Guide</a></li>
   <li><a href="userguide.pdf">User Guide</a></li>
