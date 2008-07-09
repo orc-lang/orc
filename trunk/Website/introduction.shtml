@@ -1,0 +1,35 @@
+<!--#include virtual="header.shtml" --> 
+
+<h1>Why Orc?</h1>
+
+<p>Orc is designed to solve a computational pattern inherent in many wide-area
+applications: acquire data from one or more remote services, perform some
+calculation with those data, and invoke yet other remote services with the
+results.  We call such services <i>sites</i> and the integration of sites
+<i>orchestration</i>.  Orchestration demands an understanding of the kinds of
+computations that can be performed efficiently over a wide-area network, where
+the delays associated with communication, unreliability of servers, and
+competition for resources from multiple clients are dominant concerns.</p>
+
+<p>The theory behind Orc is that smooth orchestration requires only three
+simple operators: parallel computation, sequencing, and selective pruning.
+Together, these operators prove powerful enough to express typical distributed
+communication patterns.</p>
+
+<p>Consider a typical wide-area computing problem. A client contacts two
+airlines simultaneously for price quotes.  He buys a ticket from either airline
+if its quoted price is no more than $300, the cheapest ticket if both quotes
+are above $300, and any ticket if the other airline does not provide a timely
+quote. The client should receive an indication if neither airline provides a
+timely quote.  Such problems are typically programmed using elaborate
+manipulations of low-level threads. We regard this as an orchestration problem
+in which each airline is a site; we can express such orchestrations very
+succinctly in Orc.</p>
+
+<p>To see how this is achieved and learn more about Orc's syntax and semantics,
+please proceed to the <a href="tutorial.shtml">Tutorial</a>.</p>
+
+<p><i>The preceeding was adapted from <b>Computation Orchestration: A Basis for
+Wide-Area Computing</b>, by Jayadev Misra and William R. Cook.</i></p>
+
+<!--#include virtual="footer.shtml" --> 

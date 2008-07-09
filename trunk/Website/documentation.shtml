@@ -2,9 +2,9 @@
 
 <h1>Documentation</h1>
 <ul>
+  <li><a href="tutorial.shtml">Tutorial</a></li>
   <li><a href="quickstart.shtml">Quick-Start Guide</a></li>
-  <li><a href="faq.shtml">FAQ</a></li>
-  <li><a href="userguide.pdf">User's Guide</a></li>
+  <li><a href="userguide.pdf">User Guide</a></li>
   <li><a href="http://orc.wiki.sourceforge.net/">Orc Wiki</a></li>
 </ul>
 <h2>Coming soon</h2>

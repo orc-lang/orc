@@ -13,10 +13,10 @@
 
 <ul class="block">
 	<!-- <li><a href="#">Try Orc! (in your browser)</a></li> -->
+	<li><a href="introduction.shtml">Introduction</a></li>
+	<li><a href="tutorial.shtml">Tutorial</a></li>
 	<li><a href="quickstart.shtml">Quick-Start Guide</a></li>
-	<li><a href="faq.shtml">FAQ</a></li>
-	<li><a href="userguide.pdf">User's Guide</a></li>
-	<li><a href="download.shtml">Download Orc</a></li>
+	<li><a href="userguide.pdf">User Guide</a></li>
 </ul>
 
 <h2>Get Involved</h2>
