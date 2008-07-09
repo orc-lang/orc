@@ -1,19 +1,15 @@
 <!--#include virtual="header.shtml" --> 
 
-<h2>Mailing List</h2>
-Visit the <a href="http://groups.google.com/group/orc-lang/">orc-lang</a> Google Group.
-<br /><img id="groupImg" height=26 width=132 alt="Google Groups"
-  src="images/google-groups.gif">
-<form action="http://groups.google.com/group/orc-lang/boxsubscribe">
-     Email: <input type=text name=email>
-     <input type=submit name="sub" value="Subscribe">
-</form>
-
-<h2>Wiki</h2>
-<p>Currently hosted by sourceforge: <a href="http://orc.wiki.sourceforge.net/">http://orc.wiki.sourceforge.net/</a></p>
-
-<h2>Projects Using Orc</h2>
-<p>See the <a href="projects.shtml">Projects</a> page.</p>
+<h2>Community Resources</h2>
+<ul>
+	<li><a href="http://groups.google.com/group/orc-lang/">Mailing List</a>
+	<br /><form action="http://groups.google.com/group/orc-lang/boxsubscribe">
+		Email: <input type=text name=email>
+		<input type=submit name="sub" value="Subscribe">
+	</form></li>
+	<li><a href="http://orc.wiki.sourceforge.net/">Wiki</a></li>
+	<li><a href="http://www.sourceforge.net/projects/orc">SourceForge.net Project</a></li>
+</ul>
 
 <h2>Project Members</h2>
 <h3>Current</h3>
@@ -29,11 +25,5 @@ Visit the <a href="http://groups.google.com/group/orc-lang/">orc-lang</a> Google
         <li><a href="http://www.cs.utexas.edu/~tfinster/">Thomas Finsterbusch</a></li>
 	<li>Evan Powell</li>
 </ul>
-
-<h2>Logos</h2>
-<div class="image"><a href="images/orchard-logo.svg"><img src="images/orchard-logo.png"></a>
-	<div class="caption">Orchard Project Logo (Distributed Orc Services)</div></div>
-<div class="image"><a href="images/orc-logo.svg"><img src="images/orc-logo.png"></a>
-	<div class="caption">Orc Project Logo</div></div>
 
 <!--#include virtual="footer.shtml" --> 
