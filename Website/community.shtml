@@ -7,7 +7,7 @@
 		Email: <input type=text name=email>
 		<input type=submit name="sub" value="Subscribe">
 	</form></li>
-	<li><a href="http://orc.wiki.sourceforge.net/">Wiki</a></li>
+	<li><a href="wiki">Wiki</a></li>
 	<li><a href="http://www.sourceforge.net/projects/orc">SourceForge.net Project</a></li>
 </ul>
 
