@@ -16,5 +16,5 @@ public interface CompilerServiceInterface extends Remote {
 	 * @return compiled program
 	 * @throws InvalidProgramException in case of compilation error.
 	 */
-	public Oil compile(String program) throws InvalidProgramException, RemoteException;
+	public Oil compile(String devKey, String program) throws InvalidProgramException, RemoteException;
 }

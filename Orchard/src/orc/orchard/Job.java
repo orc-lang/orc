@@ -1,6 +1,5 @@
 package orc.orchard;
 
-import java.net.URI;
 import java.rmi.RemoteException;
 import java.util.Date;
 import java.util.Iterator;
@@ -117,10 +116,6 @@ public final class Job {
 		}
 	}
 	
-	/** External identifier for this job. */
-	private String id;
-	/** URI for this job. */
-	private URI uri;
 	/** Has start() been called yet? */
 	private boolean isNew = true;
 	private Date startDate;
@@ -173,8 +168,7 @@ public final class Job {
 	private EventBuffer events;
 	private LinkedList<FinishListener> finishers = new LinkedList<FinishListener>();
 
-	protected Job(String id, Expr expression, JobConfiguration configuration) {
-		this.id = id;
+	protected Job(Expr expression, JobConfiguration configuration) {
 		this.configuration = configuration;
 		this.events = new EventBuffer();
 		Node node = expression.compile();
@@ -236,19 +230,7 @@ public final class Job {
 		else if (engine.isDead()) return "DONE";
 		else return "RUNNING";
 	}
-	
-	public String getID() {
-		return id;
-	}
 
-	public void setURI(URI uri) {
-		this.uri = uri;
-	}
-	
-	public URI getURI() {
-		return uri;
-	}
-	
 	public void setStartDate(Date startDate) {
 		this.startDate = startDate;
 	}

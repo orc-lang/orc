@@ -1,33 +1,19 @@
-package orc.orchard.soap;
+package orc.orchard;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.postgresql.util.PGInterval;
 
-/**
- * Provide access to accounts stored in a database.
- * @author quark
- */
-public class Accounts {
-	private Map<Integer, Account> accounts = new HashMap<Integer, Account>();
+public class DbAccounts extends AbstractAccounts {
 	private Connection db;
 	private String url;
-	private Account guest;
-	public Accounts(String url) {
+	public DbAccounts(String url) {
+		super();
 		this.url = url;
-		// create a special persistent guest account
-		guest = new Account() {
-			@Override
-			protected void onNoMoreJobs() {}	
-			public boolean isGuest() { return true; }
-		};
-		guest.setLifespan(new PGInterval(0, 0, 1, 0, 0, 0));
 	}
 	
 	/**
@@ -50,7 +36,7 @@ public class Accounts {
 			return guest;
 		}
 	}
-	
+
 	private Account getAccountFromDB(String devKey) throws SQLException {
 		if (db == null) {
 			db = DriverManager.getConnection(url);
@@ -82,30 +68,5 @@ public class Accounts {
 		} finally {	
 			sql.close();
 		}
-	}
-	
-	private synchronized Account getAccount(final Integer account_id, Integer quota, PGInterval lifespan, Integer eventBufferSize) {
-		// Get the actual account object. If one already
-		// exists, return it.
-		Account out;
-		if (accounts.containsKey(account_id)) {
-			out = accounts.get(account_id);
-		} else {
-			out = new Account() {
-				@Override
-				protected void onNoMoreJobs() {
-					synchronized (Accounts.this) {
-						// remove the account from the cache
-						accounts.remove(account_id);
-					}
-				}
-				public boolean isGuest() { return false; }
-			};
-			accounts.put(account_id, out);
-		}
-		out.setQuota(quota);
-		out.setLifespan(lifespan);
-		out.setEventBufferSize(eventBufferSize);
-		return out;
 	}
 }
