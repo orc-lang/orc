@@ -7,12 +7,12 @@
 	<property environment="env"/>
 	
 	<!-- set global properties for this build -->
-	<property name="bin" location="bin" />
+	<property name="build" location="build" />
 	<property name="lib" location="lib" />
 	<property name="war" location="war" />
 
 	<target name="clean" description="clean up">
-		<delete dir="${bin}" />
+		<delete dir="${build}" />
 		<delete dir="${war}" />
 		<delete file="orchard.war" />
 	</target>
@@ -32,7 +32,7 @@
 				<include name="*.jar"/>
 			</fileset>
 		</copy>
-		<jar jarfile="${war}/WEB-INF/lib/orchard.jar" basedir="${bin}" />
+		<jar jarfile="${war}/WEB-INF/lib/orchard.jar" basedir="${build}" />
 
 		<jar jarfile="orchard.war" update="true">
 			<fileset dir="${war}">
@@ -46,21 +46,15 @@
 		</classpath>
 	</taskdef>
 	<path id="wsgen.classpath">
-		<pathelement location="${bin}"/>
+		<pathelement location="${build}"/>
 		<pathelement location="${lib}/jsr181-api.jar"/>
 		<pathelement location="${lib}/jsr250-api.jar"/>
 	</path>
 	<target name="wsgen" description="Generate web service artifacts">
-		<wsgen sei="orc.orchard.soap.CompilerService" destdir="${bin}" xendorsed="true">
+		<wsgen sei="orc.orchard.soap.CompilerService" destdir="${build}" xendorsed="true">
 			<classpath><path refid="wsgen.classpath"/></classpath>
 		</wsgen>
-		<wsgen sei="orc.orchard.soap.ExecutorService" destdir="${bin}" xendorsed="true">
-			<classpath><path refid="wsgen.classpath"/></classpath>
-		</wsgen>
-		<wsgen sei="orc.orchard.soap.JobsService" destdir="${bin}" xendorsed="true">
-			<classpath><path refid="wsgen.classpath"/></classpath>
-		</wsgen>
-		<wsgen sei="orc.orchard.soap.StandaloneJobService" destdir="${bin}" xendorsed="true">
+		<wsgen sei="orc.orchard.soap.ExecutorService" destdir="${build}" xendorsed="true">
 			<classpath><path refid="wsgen.classpath"/></classpath>
 		</wsgen>
 	</target>
