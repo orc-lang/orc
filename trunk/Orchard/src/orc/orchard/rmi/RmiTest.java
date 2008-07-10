@@ -1,4 +1,4 @@
-package orc.orchard.test;
+package orc.orchard.rmi;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -10,7 +10,6 @@ import java.util.List;
 
 import orc.orchard.JobEvent;
 import orc.orchard.api.ExecutorServiceInterface;
-import orc.orchard.api.JobServiceInterface;
 import orc.orchard.errors.InvalidJobStateException;
 import orc.orchard.errors.InvalidOilException;
 import orc.orchard.errors.InvalidProgramException;
@@ -23,7 +22,7 @@ public class RmiTest {
 		CompilerService compiler = new CompilerService();
 		Oil oil;
 		try {
-			oil = compiler.compile("def M(x) = x | Rtimer(1000) >> M(x+1) M(1)");
+			oil = compiler.compile("", "def M(x) = x | Rtimer(1000) >> M(x+1) M(1)");
 		} catch (InvalidProgramException e) {
 			// this is impossible by construction
 			throw new AssertionError(e);			
@@ -45,6 +44,7 @@ public class RmiTest {
 		}
 		ExecutorServiceInterface executor;
 		try {
+			new ExecutorService(executorURI);
 			executor = (ExecutorServiceInterface)Naming.lookup(executorURI.toString());
 		} catch (MalformedURLException e) {
 			System.err.println("Invalid URI '" + executorURI + "'");
@@ -56,9 +56,9 @@ public class RmiTest {
 			System.err.println("Communication error: " + e.toString());
 			return;
 		}
-		URI jobURI;
+		String job;
 		try {
-			jobURI = executor.submit(oil);
+			job = executor.submit("", oil);
 		} catch (RemoteException e) {
 			System.err.println("Communication error: " + e.toString());
 			return;
@@ -69,25 +69,11 @@ public class RmiTest {
 			System.err.println("OIL error: " + e.toString());
 			return;
 		}
-		System.out.println("Job URI: " + jobURI);
-		JobServiceInterface job;
+		System.out.println("Job ID: " + job);
 		try {
-			job = (JobServiceInterface)Naming.lookup(jobURI.toString());
-		} catch (MalformedURLException e) {
-			System.err.println("Invalid URI '" + jobURI + "'");
-			return;
-		} catch (NotBoundException e) {
-			System.err.println("URI not bound '" + jobURI);
-			return;
-		} catch (RemoteException e) {
-			System.err.println("Communication error: " + e.toString());
-			return;
-		}
-		System.out.println("Bound job");
-		try {
-			System.out.println(job.state());
-			job.start();
-			System.out.println(job.state());
+			System.out.println(executor.jobState("", job));
+			executor.startJob("", job);
+			System.out.println(executor.jobState("", job));
 			try {
 				Thread.sleep(3000);
 			} catch (InterruptedException e) {
@@ -97,16 +83,16 @@ public class RmiTest {
 			for (int i = 0; i < 5; ++i) {
 				List<JobEvent> events;
 				try {
-					events = job.events();
+					events = executor.jobEvents("", job);
 					System.out.println(events.toString());
-					job.purge(events.get(events.size()-1).sequence);
+					executor.purgeJobEvents("", job, events.get(events.size()-1).sequence);
 				} catch (InterruptedException e) {
 					System.out.println("Timed out");
 					--i;
 				}
 			}
-			job.halt();
-			job.finish();
+			executor.haltJob("", job);
+			executor.finishJob("", job);
 		} catch (RemoteException e) {
 			System.err.println("Communication error: " + e.toString());
 			return;

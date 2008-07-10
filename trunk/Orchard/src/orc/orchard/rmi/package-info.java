@@ -6,7 +6,7 @@
  * <li>Start rmiregistry with the classpath pointing to the Orc classpath.
  * <li>Run {@link ExecutorService}. By default this starts the executor at
  * rmi://localhost/orchard
- * <li>Run {@link orc.orchard.test.RmiTest} to run a simple test.
+ * <li>Run {@link orc.orchard.rmi.RmiTest} to run a simple test.
  * </ol>
  * 
  * <p>Running across a network is somewhat more complicated.

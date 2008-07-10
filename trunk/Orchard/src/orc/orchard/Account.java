@@ -1,14 +1,15 @@
-package orc.orchard.soap;
+package orc.orchard;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.postgresql.util.PGInterval;
 
-import orc.orchard.Job;
 import orc.orchard.errors.QuotaException;
 
 /**
@@ -55,6 +56,10 @@ public abstract class Account {
 	
 	public synchronized List<Job> jobs() {
 		return new LinkedList<Job>(jobs.values());
+	}
+
+	public synchronized Set<String> jobIDs() {
+		return new HashSet<String>(jobs.keySet());
 	}
 	
 	private synchronized void removeJob(String id) {

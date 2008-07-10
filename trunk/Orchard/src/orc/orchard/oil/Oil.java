@@ -46,7 +46,7 @@ public class Oil implements Serializable {
 		CompilerService compiler = new CompilerService();
 		Oil oil;
 		try {
-			oil = compiler.compile("1");
+			oil = compiler.compile("", "1");
 		} catch (InvalidProgramException e) {
 			// this is impossible by construction
 			throw new AssertionError(e);			

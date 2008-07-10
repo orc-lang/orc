@@ -62,7 +62,7 @@ public class CompilerService extends AbstractCompilerService {
 
 	/** Do-nothing override */
 	@Override
-	public Oil compile(@WebParam(name="program") String program) throws InvalidProgramException {
-		return super.compile(program);
+	public Oil compile(@WebParam(name="devKey") String devKey, @WebParam(name="program") String program) throws InvalidProgramException {
+		return super.compile(devKey, program);
 	}
 }
