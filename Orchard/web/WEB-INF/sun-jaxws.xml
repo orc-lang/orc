@@ -3,25 +3,18 @@
 	<!-- SOAP services -->
 	<endpoint name='soap/compiler'
 	 implementation='orc.orchard.soap.CompilerService'
-	 url-pattern='/soap/compiler/*'/>
+	 url-pattern='/soap/compiler'/>
 	<endpoint name='soap/executor'
 	 implementation='orc.orchard.soap.ExecutorService'
-	 url-pattern='/soap/executor/*'/>
-	<endpoint name='soap/jobs'
-	 implementation='orc.orchard.soap.JobsService'
-	 url-pattern='/soap/jobs/*'/>
+	 url-pattern='/soap/executor'/>
 
 	<!-- JSON services -->
 	<endpoint name='json/compiler'
 	 implementation='orc.orchard.soap.CompilerService'
 	 binding="https://jax-ws-commons.dev.java.net/json/"
-	 url-pattern='/json/compiler/*'/>
+	 url-pattern='/json/compiler'/>
 	<endpoint name='json/executor'
 	 implementation='orc.orchard.soap.ExecutorService'
 	 binding="https://jax-ws-commons.dev.java.net/json/"
-	 url-pattern='/json/executor/*'/>
-	<endpoint name='json/jobs'
-	 implementation='orc.orchard.soap.JobsService'
-	 binding="https://jax-ws-commons.dev.java.net/json/"
-	 url-pattern='/json/jobs/*'/>
+	 url-pattern='/json/executor'/>
 </endpoints> 
