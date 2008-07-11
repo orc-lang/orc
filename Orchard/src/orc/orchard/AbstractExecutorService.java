@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
 
+import orc.ast.oil.Expr;
 import orc.orchard.api.ExecutorServiceInterface;
 import orc.orchard.errors.InvalidJobStateException;
 import orc.orchard.errors.InvalidOilException;
@@ -65,7 +66,19 @@ public abstract class AbstractExecutorService implements ExecutorServiceInterfac
 			throw new UnsupportedFeatureException("Debuggable jobs not supported yet.");
 		}
 		String id = createJobID();
-		accounts.getAccount(devKey).addJob(id, new Job(program.unmarshal(), configuration));
+		Expr expr = program.unmarshal();
+		OilSecurityValidator validator = new OilSecurityValidator();
+		expr.accept(validator);
+		if (validator.hasProblems()) {
+			StringBuffer sb = new StringBuffer();
+			sb.append("OIL security violations:");
+			for (OilSecurityValidator.SecurityProblem problem : validator.getProblems()) {
+				sb.append("\n");
+				sb.append(problem);
+			}
+			throw new InvalidOilException(sb.toString());
+		}
+		accounts.getAccount(devKey).addJob(id, new Job(expr, configuration));
 		return id;
 	}
 	
