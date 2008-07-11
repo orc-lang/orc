@@ -20,6 +20,7 @@ import orc.orchard.oil.Oil;
  * Standard implementation of an ExecutorService. Extenders should implement
  * createJobService.
  * 
+ * <p>TODO: add executor oil validation to only allow "safe" sites
  * @author quark
  * 
  */

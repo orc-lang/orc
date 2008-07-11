@@ -22,7 +22,7 @@ import org.apache.axis.wsdl.toJava.GeneratedFileInfo.Entry;
 /**
  * JAX-RPC-based webservice site.
  * Stubs for the service are generated and compiled on the fly.
- * 
+ * TODO: allow webservices to provide constructors for complex objects.
  * @author quark, unknown
  */
 public class Webservice extends ThreadedSite {

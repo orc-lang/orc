@@ -35,6 +35,9 @@ import org.mortbay.util.ajax.ContinuationSupport;
  * HACK: We must explicitly declare every published web method in this class, we
  * can't simply inherit them. See CompilerService for a full explanation.
  * 
+ * <p>TODO: develop a JSON binding which translates directly from Java types
+ * rather than going through XML.
+ * 
  * @author quark
  */
 @WebService
