@@ -19,7 +19,7 @@ import orc.runtime.values.Future;
  * Compiled node for a call (either a site call or a definition call)
  * @author wcook
  */
-public class Call extends Node implements Debuggable {
+public class Call extends Node {
 	private static final long serialVersionUID = 1L;
 	Arg caller;
 	List<Arg> args;
@@ -65,16 +65,8 @@ public class Call extends Node implements Debuggable {
 
 			target.createCall(t, actuals, next);
 			
-		}
-		catch (TokenException e) {
-			e.setSourceLocation(this.getSourceLocation());
+		} catch (TokenException e) {
 			t.error(e);
 		}
 	}
-
-	public SourceLocation getSourceLocation() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
 }
