@@ -1,5 +1,9 @@
 <!--#include virtual="header.shtml" --> 
 
+<link rel="stylesheet" type="text/css" href="/orchard/orc.css" media="screen"/>
+<script src="/orchard/jquery-1.2.6.min.js" type="text/javascript"></script>
+<script src="/orchard/orc.js" type="text/javascript"></script>
+
 <h1>Tutorial</h1>
 
 <h2>Sites</h2>
@@ -7,12 +11,15 @@
 <i>site</i>.  Sites are similar to procedures or functions in other languages,
 but they may be distributed and are therefore unreliable. A site can implement
 a very simple operation, like adding two numbers...</p>
-<pre>
+<pre class="orc">
 1 + 2
 </pre>
 <p>... or a very complex operation, like conversing with a person via an
 instant message or email:</p>
-<pre>
+<pre class="orc-prelude">
+def David(x) = Rtimer(1000) >> "Breakfast tacos"
+</pre>
+<pre class="orc">
 David("What is your favorite food?")
 </pre>
 
@@ -24,7 +31,11 @@ response.</p>
 <p>Two Orc expressions can be evaluated in parallel using the <tt>|</tt>
 (symmetric, parallel, or bar) combinator:</p>
 
-<pre>
+<pre class="orc-prelude">
+def David(x) = Rtimer(500) >> "Breakfast tacos"
+def Adrian(x) = Rtimer(1000) >> "Burnt sienna"
+</pre>
+<pre class="orc">
   David("What is your favorite food?")
 | Adrian("What is your favorite color?")
 </pre>
@@ -38,8 +49,18 @@ one value if they involve more than one concurrent computation.</p>
 combinator evaluates its right side as soon as the left side returns a
 value:</p>
 
-<pre>
-David("I'm about to ask Adrian about the weather.")
+<pre class="orc-prelude">
+def David(x) = 
+	println("(Talking to David...)") >>
+	Rtimer(1000) >>
+	println("(David says 'warm')")
+def Adrian(x) = println("(Talking to Adrian...)") >>
+	Rtimer(1000) >>
+	println("(Adrian says 'hot')") >>
+	"Hot"
+</pre>
+<pre class="orc">
+David("How is the weather?")
 
   >>
  
@@ -50,25 +71,38 @@ Adrian("How is the weather?")
 <p>Push allows you to bind a value produced by its left side and use it in the
 right side:</p>
 
-<pre>
+<pre class="orc-prelude">
+def David(x) = Rtimer(1000) >>
+	println("(David says 'balmy')") >>
+	"balmy"
+</pre>
+<pre class="orc">
 David("How is the weather?")
 
   >weather>
  
-print("The weather in Austin is ", weather)
+cat("The weather in Austin is ", weather)
 </pre>
 
 <p>The right side is evaluated independently for <i>every</i> value published
 by the left side:</p>
 
-<pre>
+<pre class="orc-prelude">
+def David(x) = Rtimer(1000) >>
+	println("(David says 'Pan's Labyrinth')") >>
+	"Pan's Labyrinth"
+def Adrian(x) = Rtimer(1500) >>
+	println("(Adrian says 'The Princess Bride')") >>
+	"The Princess Bride"
+</pre>
+<pre class="orc">
 (   David("Pick a movie you like:")
   | Adrian("Pick a movie you like:") )
 
   >movie>
  
 -- Will print for every response received
-print("I heard that ", movie, " is a good movie.")
+cat("I heard that ", movie, " is a good movie.")
 </pre>
 
 <p>The final combinator, <tt>&lt;&lt;</tt> (asymmetric, pull, or where),
@@ -76,9 +110,15 @@ combines the concepts of selection, blocking, and termination. It is used to
 select the first value published by an expression and then terminate that
 expression.</p>
 
-<pre>
+<pre class="orc-prelude">
+def David(x) = Rtimer(1000) >>
+	println("(David says 'azure')") >>
+	"azure"
+def Adrian(x) = null
+</pre>
+<pre class="orc">
 -- Only one response will be printed.
-print(color, " wins.")
+cat(color, " wins.")
 
   &lt;color&lt;
 
@@ -90,9 +130,17 @@ print(color, " wins.")
 needs the value produced by the right-hand side, it blocks until that value is
 available.</p>
 
-<pre>
+<pre class="orc-prelude">
+def David(x) = 
+	println("(Talking to David ...)") >>
+	Rtimer(3000) >>
+	println("(David says 'purple')") >>
+	"purple"
+def Adrian(x) = null
+</pre>
+<pre class="orc">
 -- "red" and "blue" are printed immediately
-print("red") | print(color) | print("blue")
+"red" | cat("light ", color) | "blue"
 
   &lt;color&lt;
 
@@ -104,7 +152,12 @@ print("red") | print(color) | print("blue")
 <p>Orc provides some fundamental sites which are necessary for writing
 useful expressions:</p>
 
-<pre>
+<pre class="orc-prelude">
+def David(x) = 
+	Rtimer(6000) >>
+	println("(David says '42')")
+</pre>
+<pre class="orc">
 -- if publishes a value if the condition is true
   if(3 /= 4) >> "three does not equal four"
 -- and does not publish if it is false
@@ -122,23 +175,35 @@ useful expressions:</p>
 
 <p>A timeout is expressed using a pull together with the built-in site
 <tt>Rtimer</tt>:</p>
-<pre>
--- If the answer is not received within 8 seconds,
--- use the default answer "timed out"
-print("Answer: ", answer)
+<pre class="orc-prelude">
+def Random(i,j) = random(j - i) + i + 1
+def David(x) = 
+	Rtimer(Random(3000,7000)) >>
+	"rutabaga"
+</pre>
+<pre class="orc">
+-- If the answer is not received within 5
+-- seconds, use the default answer "timed out"
+cat("Answer: ", answer)
 
   &lt;answer&lt;
   
       David("What is your favorite food?")
-    | Rtimer(8000) >> "timed out"
+    | Rtimer(5000) >> "timed out"
 </pre>
 
 <p>The opposite of a timeout is a delay: forcing a site to <i>wait</i> before
 publishing its response:</p>
-<pre>
--- Print the answer after 10 seconds or
+<pre class="orc-prelude">
+def David(x) = 
+	Rtimer(2500) >>
+	println("(David says 'grue')") >>
+	"grue"
+</pre>
+<pre class="orc">
+-- Print the answer after 5 seconds or
 -- when it is received, whichever is later.
-Rtimer(10000) >> print(u)
+Rtimer(5000) >> u
 
   &lt;u&lt;
 
@@ -147,8 +212,19 @@ Rtimer(10000) >> print(u)
 
 <p>A delay can be used to give one expression a higher priority:</p>
 
-<pre>
--- If Adrian responds within 10 seconds, use his
+<pre class="orc-prelude">
+def Random(i,j) = random(j - i) + i + 1
+def Adrian(x) = 
+	Rtimer(Random(3000,7000)) >>
+	println("(Adrian says 'HIGH')") >>
+	"HIGH"
+def David(x) = 
+	Rtimer(3000) >>
+	println("(David says 'LOW')") >>
+	"LOW"
+</pre>
+<pre class="orc">
+-- If Adrian responds within 5 seconds, use his
 -- answer, otherwise use whoever responds first.
 z
 
@@ -156,14 +232,24 @@ z
 
     ( high
 
-        &lt;high&lt;   Adrian("High priority response: ")
-               | Rtimer(10000) >> low
+      &lt;high&lt;   Adrian("High priority response: ")
+             | Rtimer(5000) >> low
             
-        &lt;low&lt; David("Low priority response: ") )
+      &lt;low&lt; David("Low priority response: ") )
 </pre>
 
 <p>A fork/join begins two processes in parallel and wait for both to complete:</p>
-<pre>
+<pre class="orc-prelude">
+def Adrian(x) = 
+	Rtimer(1000) >>
+	println("(Adrian says 'Hydrogen')") >>
+	"Hydrogen"
+def David(x) = 
+	Rtimer(3000) >>
+	println("(David says 'Helium')") >>
+	"Helium"
+</pre>
+<pre class="orc">
 -- Publish both Adrian and David's responses only
 -- when both have been received.
 (a,d)
@@ -176,10 +262,21 @@ z
 short-circuiting sequential "or" operation, we want to return <tt>true</tt> as
 soon as any expression evaluates to <tt>true</tt>, and <tt>false</tt> if all
 expressions evaluate to <tt>false</tt>:</p>
-<pre>
+<pre class="orc-prelude">
+def Random(i,j) = random(j - i) + i + 1
+def Adrian(x) = 
+	Rtimer(Random(1000,5000)) >>
+	println("(Adrian says 'true')") >>
+	true
+def David(x) = 
+	Rtimer(3000) >>
+	println("(David says 'false')") >>
+	false
+</pre>
+<pre class="orc">
 z &lt;z&lt; (   if(x) >> true
-	| if(y) >> true
-	| (x,y) >> false
+        | if(y) >> true
+        | (x || y)
 
             &lt;x&lt; David("True or false?")
             &lt;y&lt; Adrian("True or false?") )
@@ -193,7 +290,7 @@ not need to block if one of their arguments is not available when they are
 called, and they can publish multiple values.</p>
 
 <p>Here is a simple recursive function which publishes a number every second:</p>
-<pre>
+<pre class="orc">
 def Metronome(i) =
     i
   | Rtimer(1000) >> Metronome(i+1)
@@ -201,10 +298,31 @@ def Metronome(i) =
 Metronome(0)
 </pre>
 
+<p>Function publications can be interleaved with the parallel combinator:</p>
+<pre class="orc">
+def Metronome(t, i) =
+    i
+  | Rtimer(t) >> Metronome(t, i+1)
+
+Metronome(1100, 0) | Metronome(700, 100)
+</pre>
+
 <p>A common idiom in Orc is to treat an expression as a stream of values which
 may be filtered:</p>
 
-<pre>
+<pre class="orc-prelude">
+def isPrime(n) = 
+  def primeat(i) = 
+      if(b) >> (n % i /= 0) && primeat(i+1)
+    | if(~b) >> true
+        &lt;b&lt; i * i <= n
+  primeat(2)
+</pre>
+<pre class="orc">
+def Metronome(i) =
+    i
+  | Rtimer(1000) >> Metronome(i+1)
+
 -- Publish only prime numbers
 Metronome(2) >n> if(isPrime(n)) >> n
 </pre>
@@ -213,16 +331,27 @@ Metronome(2) >n> if(isPrime(n)) >> n
 functions (functions which take functions or sites as arguments), lists and
 tuples as basic datatypes, and pattern matching. The following example
 illustrates both:</p>
-<pre>
+<pre class="orc-prelude">
+def Random(i,j) = random(j - i) + i + 1
+def Adrian(x) = 
+	Rtimer(Random(3000,7000)) >>
+	println("(Adrian says '13')") >>
+	13
+def David(x) = 
+	Rtimer(3000) >>
+	println("(David says '10')") >>
+	10
+</pre>
+<pre class="orc">
 -- Query a site for a number, and default to 0
--- if it does not respond within 10 seconds
+-- if it does not respond within 5 seconds
 def timeout(M) = n
-    &lt;n&lt; M("Pick a number:") | Rtimer(10000) >> 0
+    &lt;n&lt; M("Pick a number:") | Rtimer(5000) >> 0
 
 -- Add up the responses from a list of sites
 -- in parallel
 def tally([]) = 0
-def tally(first:rest) = timeout(first) + tally(rest)
+def tally(x:xs) = timeout(x) + tally(xs)
 
 -- Ask David and Adrian for numbers
 tally([David, Adrian])
