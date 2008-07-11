@@ -21,6 +21,27 @@ public class RmiTest {
 	public static void main(String[] args) throws InvalidOilException {
 		CompilerService compiler = new CompilerService();
 		Oil oil;
+		// Check security validation
+		try {
+			oil = compiler.compile("", "class String = java.lang.String 1");
+			try {
+				System.out.println(oil);
+				new orc.orchard.java.ExecutorService().submit("", oil);
+				System.err.println("Failed to catch validation error.");
+				return;
+			} catch (InvalidOilException e) {
+				System.out.println(e.toString());
+			} catch (QuotaException e) {
+				System.err.println("Quota error: " + e.toString());
+				return;
+			} catch (RemoteException e) {
+				System.err.println("Communication error: " + e.toString());
+				return;
+			} 
+		} catch (InvalidProgramException e) {
+			// this is impossible by construction
+			throw new AssertionError(e);			
+		}
 		try {
 			oil = compiler.compile("", "def M(x) = x | Rtimer(1000) >> M(x+1) M(1)");
 		} catch (InvalidProgramException e) {

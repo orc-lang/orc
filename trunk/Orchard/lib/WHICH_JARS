@@ -1,7 +1,3 @@
-Core
-	tools.jar
-	antlr.jar
-
 Orchard SOAP
 	jaxb-api.jar
 	jaxb-impl.jar
@@ -25,7 +21,7 @@ Orchard SOAP
 	commons-logging-1.1.1.jar
 	sjsxp.jar
 
-Orchard JSON
+Orchard JSON (requires Orchard SOAP)
 	velocity-1.5.jar
 	velocity-dep-1.5.jar
 	jettison-1.0.1.jar
@@ -44,9 +40,11 @@ JAX-RPC Webservice
 	axis.jar
 	jaxrpc.jar
 	wsdl4j-1.6.1.jar
+	tools.jar
 
 CXF Webservice
 	cxf-2.1.1.jar
+	tools.jar
 
 Mail
 	mail.jar

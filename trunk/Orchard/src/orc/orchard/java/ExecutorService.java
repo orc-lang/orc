@@ -4,7 +4,7 @@ import orc.orchard.AbstractExecutorService;
 import orc.orchard.GuestOnlyAccounts;
 
 public class ExecutorService extends AbstractExecutorService {
-	protected ExecutorService() {
+	public ExecutorService() {
 		super(new GuestOnlyAccounts());
 	}
 }
