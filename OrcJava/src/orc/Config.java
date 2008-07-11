@@ -18,8 +18,12 @@ import java.util.List;
 
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Pub;
-import orc.runtime.nodes.result.PrintResult;
 import orc.runtime.nodes.result.WriteResult;
+
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
 
 /**
  * Class for processing configuration options. Such options could be provided via command line 
@@ -29,108 +33,58 @@ import orc.runtime.nodes.result.WriteResult;
  * site bindings or defining closures); it only collects the files that will provide those
  * bindings.
  * 
- * @author dkitchin
+ * @author dkitchin, quark
  *
  */
 public class Config {
 
-	Node target;
-	Boolean debug = false;
-	List<String> includes = new LinkedList<String>();
-	Integer maxpub = null;
-	Reader instream;
+	private Node target = new Pub();
+	private Boolean debug = false;
+	private List<String> includes = new LinkedList<String>();
+	private Integer maxpub = null;
+	private Reader instream = new InputStreamReader(System.in);
 	
-	public void processArgs(String[] args)
-	{
-		int i = 0;
-		
-		instream = new InputStreamReader(System.in);
-		File outputfile = null;
-		Integer outport = null;
-		String outhost = null;
-
-		while (i < args.length){
-			if (args[i].equals("-debug")) {
-				i++;
-				debug = true;
-			}
-			else if (args[i].equals("-pub")) {
-				// quit after publishing maxpub values
-				i++;
-				maxpub = new Integer(args[i++]);
-			}
-			else if (args[i].equals("-o")) {
-				// publish values to outputfile (as serialized Java objects)
-				i++;
-				outputfile = new File(args[i++]);
-			}
-			else if (args[i].equals("-os")) {
-               // publish values to socket (port, host) (as serialized Java objects)
-				i++;
-				outport = new Integer(args[i++]);
-				outhost = new String(args[i++]);
-			}
-			else if (args[i].equals("-i")) {
-				// add this file to the list of bindings to load
-				i++;
-				includes.add(args[i++]);
-			} 
-			else {
-				// This is the name of the source file
-				try {
-					instream = new FileReader(args[i++]);
-				} catch (FileNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
+	public void processArgs(String[] args) {
+		CmdLineParser parser = new CmdLineParser(this); 
+		try {
+			parser.parseArgument(args);
+		} catch (CmdLineException e1) {
+			System.err.println(e1.getMessage());
+			System.err.println("Usage: java -jar orc.jar [options] [file]");
+			parser.printUsage(System.err);
+			System.exit(1);
 		}
-
-		
-		
-		
-		if (outport != null){
-        	Socket sock;
-        	ObjectOutputStream oos;
-        	try{
-	        	sock = new Socket(outhost, outport);
-	        	oos = new ObjectOutputStream(sock.getOutputStream());
-		        target = new WriteResult(oos);
-	        	oos.close();
-	        	sock.close();
-        	}
-        	catch (UnknownHostException e) {
-		        System.err.println("Don't know about host: " + outhost +".");
-		        System.exit(1);
-		    } catch (IOException e) {
-		        System.err.println("Couldn't get I/O for the connection to: "
-		        		            + outhost + " on port " + outport +".");
-		        System.exit(1);
-		     
-		    } 
-		    
-		    }
-        else if (outputfile != null) {
-        	FileOutputStream fos;
-        	ObjectOutputStream oos;
-			try {
-				fos = new FileOutputStream(outputfile);
-				oos = new ObjectOutputStream(fos);
-				target = new WriteResult(oos);
-				oos.close();
-				fos.close();
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-        }
-        else 
-			target = new Pub();
-		
+	}
+	
+	@Option(name="-help",usage="Show command-line argument usage")
+	public void printUsage(boolean _) throws CmdLineException{
+		throw new CmdLineException("");
+	}
+	
+	@Option(name="-debug",usage="Enable debugging output")
+	public void setDebug(boolean debug) {
+		this.debug = debug;
+	}
+	
+	@Option(name="-i",usage="Include this file from the package orc.inc;" +
+			" may appear multiple times.")
+	public void setIncludes(String include) {
+		this.includes.add(include);
+	}
+	
+	@Option(name="-pub",usage="Stop after publishing this many values")
+	public void setMaxpub(int maxpub) {
+		this.maxpub = maxpub;
+	}
+	
+	@Argument(metaVar="file", usage="Input file. Omit to use STDIN.")
+	public void setInputFile(File file) throws CmdLineException {
+		try {
+			instream = new FileReader(file);
+		} catch (FileNotFoundException e) {
+			throw new CmdLineException("Could not find input file '"+file+"'");
 		}
+	}
 	
 	public void processEnvVars() 
 	{ 

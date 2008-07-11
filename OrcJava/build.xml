@@ -5,26 +5,24 @@
 	</description>
 
 	<!-- set global properties for this build -->
-	<property name="bin" location="bin" />
+	<property name="build" location="build" />
 	<property name="lib" location="lib" />
 
 	<target name="jar" description="generate the distribution">
-		<!-- Put everything in ${bin} into orc.jar -->
-		<jar jarfile="orc.jar" basedir="${bin}">
+		<!-- Put everything in ${build} into orc.jar -->
+		<jar jarfile="orc.jar" basedir="${build}">
+			<!-- Include runtime dependencies -->
+			<zipfileset src="${lib}/antlr.jar" />
+			<zipfileset src="${lib}/args4j-2.0.9.jar" />
 			<!-- Construct manifest file for this jar -->
 			<manifest>
 				<attribute name="Main-Class" value="orc.Orc"/>
 			</manifest>	
 		</jar>
-		
-		<jar jarfile="orc-deps.jar">
-			<zipfileset src="${lib}/antlr.jar" />
-		</jar>
 	</target>
 
 	<target name="clean" description="clean up">
-		<delete dir="${bin}" />
+		<delete dir="${build}" />
 		<delete file="orc.jar" />
-		<delete file="orc-deps.jar" />
 	</target>
 </project>

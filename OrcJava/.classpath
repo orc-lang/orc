@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry exported="true" kind="lib" path="lib/tools.jar"/>
 	<classpathentry kind="var" path="ANTLR_HOME/antlr.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="lib" path="lib/args4j-2.0.9.jar"/>
+	<classpathentry kind="output" path="build"/>
 </classpath>

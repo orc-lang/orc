@@ -1,13 +1,6 @@
 See also TODO and FIXME tags in the source code.
 
-- allow web services to provide constructors for complex objects
-- add executor oil validation to only allow "safe" sites
-- recover from timeout in client "listen" calls (if necessary)
-- web UI: freezes when running examples/time/detector.orc (presumably due to too many publications); should we throttle them?
-- web UI: slows down when editing very large programs
 - syntax for curried defs (def x(a)(b)(c) = ... <=> val x = lambda (a) = lambda (b) = lambda (c) = ...)
-- fix JSON binding to convert directly from Java to JSON types
-- fix JSON binding to work with endpointInterface
 - standard cond, if, and case syntax
 - exception handling
 - finalizers for terminated tokens (may be incorporated into exception handling)
