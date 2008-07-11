@@ -44,7 +44,6 @@
 	<classpathentry kind="lib" path="lib/velocity-dep-1.5.jar"/>
 	<classpathentry kind="lib" path="lib/wsdl4j-1.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/orc.jar"/>
-	<classpathentry kind="lib" path="lib/orc-deps.jar"/>
 	<classpathentry kind="lib" path="lib/tools.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

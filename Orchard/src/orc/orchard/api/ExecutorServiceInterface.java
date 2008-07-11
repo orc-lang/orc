@@ -132,6 +132,8 @@ public interface ExecutorServiceInterface extends Remote {
 	 * If the job finishes without any more events happening, an empty list will
 	 * be returned.
 	 * 
+	 * <p>FIXME: ensure clients like web/orc.js can recover from connection timeouts.
+	 * 
 	 * @throws InterruptedException
 	 *             if the request times out.
 	 */
