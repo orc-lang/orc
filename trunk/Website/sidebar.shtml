@@ -30,9 +30,9 @@
 <h2>Contact Us</h2>
 
 <ul class="block">
-	<li><b>Academic inquiries</b><br />research at orc.csres.utexas.edu</li>
-	<li><b>Commercial inquiries</b><br />commercial at orc.csres.utexas.edu</li>
-	<li><b>Webmaster</b><br />webmaster at orc.csres.utexas.edu</li>
+	<li><b>Academic inquiries</b><br /><small>academic at orc.csres.utexas.edu</small></li>
+	<li><b>Commercial inquiries</b><br /><small>commercial at orc.csres.utexas.edu</small></li>
+	<li><b>Webmaster</b><br /><small>webmaster at orc.csres.utexas.edu</small></li>
 </ul>
 
 <!--#config timefmt="%Y-%m-%d" -->
