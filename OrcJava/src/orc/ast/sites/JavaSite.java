@@ -20,7 +20,7 @@ public class JavaSite extends Site {
 	}
 
 	public String getProtocol() {
-		return ORC;
+		return JAVA;
 	}
 
 	public orc.runtime.sites.Site instantiate() {
