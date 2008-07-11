@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            name="Orc Editor"
+            extensions="orc"
+            icon="icons/sample.gif"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            class="edu.utexas.cs.orc.eclipse.editors.OrcEditor"
+            id="edu.utexas.cs.orc.eclipse.editors.OrcEditor">
+      </editor>
+   </extension>
+   <extension
+   		point="org.eclipse.debug.core.launchConfigurationTypes">
+   	<launchConfigurationType
+   		name="Orc"
+   		delegate="edu.utexas.cs.orc.eclipse.OrcLaunchConfigurationDelegate"
+   	    id="edu.utexas.cs.orc.eclipse.OrcLaunchConfiguration"
+        modes="run" />
+   </extension>
+
+</plugin>
