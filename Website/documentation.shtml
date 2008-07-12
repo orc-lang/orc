@@ -2,20 +2,17 @@
 
 <h1>Documentation</h1>
 <ul>
-  <li><a href="introduction.shtml">Introduction</a></li>
   <li><a href="tutorial.shtml">Tutorial</a></li>
-  <li><a href="quickstart.shtml">Quick-Start Guide</a></li>
   <li><a href="userguide.pdf">User Guide</a></li>
   <li><a href="wiki">Wiki</a></li>
+  <li><a href="/javadoc/HEAD/index.html">Javadoc</a></li>
 </ul>
 <h2>Coming soon</h2>
 <ul>
-  <li>Orc Tutorial</li>
   <li>Orc Cookbook</li>
   <li>Developer Guide</li>
   <li>Language Spec</li>
   <li>Reference Card</li>
-  <li>Javadoc</li>
 </ul>
 
 <!--#include virtual="footer.shtml" --> 
