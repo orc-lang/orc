@@ -9,7 +9,7 @@ concurrency primitives, the programmer <b><i>orchestrates</i></b> the
 invocation of sites to achieve a goal, while managing timeouts, priorities, and
 failures.</p>
 
-<p><a href="introduction.shtml">Learn more about Orc...</a></p>
+<p><a href="introduction.shtml">Learn more...</a></p>
 
 <h2>What is it for?</h2>
 <ul>
