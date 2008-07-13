@@ -29,7 +29,4 @@ succinctly in Orc.</p>
 <p>To see how this is achieved and learn more about Orc's syntax and semantics,
 please proceed to the <a href="tutorial.shtml">Tutorial</a>.</p>
 
-<p><i>The preceeding was adapted from <b>Computation Orchestration: A Basis for
-Wide-Area Computing</b>, by Jayadev Misra and William R. Cook.</i></p>
-
 <!--#include virtual="footer.shtml" --> 
