@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+<!-- created with Free Online Sitemap Generator www.xml-sitemaps.com -->
+
+<url>
+  <loc>http://orc.csres.utexas.edu/</loc>
+  <priority>1.00</priority>
+  <lastmod>2008-07-14T17:32:24+00:00</lastmod>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://orc.csres.utexas.edu/index.shtml</loc>
+  <priority>0.80</priority>
+  <lastmod>2008-07-14T17:32:24+00:00</lastmod>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://orc.csres.utexas.edu/download.shtml</loc>
+  <priority>0.80</priority>
+  <lastmod>2008-07-14T17:32:24+00:00</lastmod>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://orc.csres.utexas.edu/documentation.shtml</loc>
+  <priority>0.80</priority>
+  <lastmod>2008-07-14T17:32:24+00:00</lastmod>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://orc.csres.utexas.edu/research.shtml</loc>
+  <priority>0.80</priority>
+  <lastmod>2008-07-14T17:32:24+00:00</lastmod>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://orc.csres.utexas.edu/community.shtml</loc>
+  <priority>0.80</priority>
+  <lastmod>2008-07-14T17:32:24+00:00</lastmod>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://orc.csres.utexas.edu/introduction.shtml</loc>
+  <priority>0.80</priority>
+  <lastmod>2008-07-14T17:32:24+00:00</lastmod>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://orc.csres.utexas.edu/tutorial.shtml</loc>
+  <priority>0.80</priority>
+  <lastmod>2008-07-14T17:32:24+00:00</lastmod>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://orc.csres.utexas.edu/orchard/</loc>
+  <priority>0.80</priority>
+  <lastmod>2008-07-14T17:32:24+00:00</lastmod>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://orc.csres.utexas.edu/userguide.pdf</loc>
+  <priority>0.80</priority>
+  <lastmod>2008-07-14T17:32:24+00:00</lastmod>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://orc.csres.utexas.edu/wiki/</loc>
+  <priority>0.80</priority>
+  <lastmod>2008-07-14T17:32:24+00:00</lastmod>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://orc.csres.utexas.edu/license.shtml</loc>
+  <priority>0.64</priority>
+  <lastmod>2008-07-14T17:32:24+00:00</lastmod>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://orc.csres.utexas.edu/quickstart.shtml</loc>
+  <priority>0.64</priority>
+  <lastmod>2008-07-14T17:32:24+00:00</lastmod>
+  <changefreq>weekly</changefreq>
+</url>
+</urlset>
