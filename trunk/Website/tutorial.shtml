@@ -4,21 +4,19 @@
 <script src="/orchard/jquery-1.2.6.min.js" type="text/javascript"></script>
 <script src="/orchard/orc.js" type="text/javascript"></script>
 
-<h1>Tutorial</h1>
+<h1>Orc in 15 Minutes</h1>
 
 <p>This tutorial is interactive: when you see a code example with a <b>run</b>
-button, click it to see the result of running the program.</p>
+button, click it to run the program. The results of the program (the values it
+"publishes") will be printed below. For some examples, you may also see extra
+trace information printed (in parentheses like this: "(Doing something...)") to
+help you understand what the program is doing.</p>
 
 <h2>Sites</h2>
 <p>The fundamental unit of computation in an Orc program is called a
 <i>site</i>.  Sites are similar to procedures or functions in other languages,
-but they may be distributed and are therefore unreliable. A site can implement
-a very simple operation, like adding two numbers...</p>
-<pre class="orc">
-1 + 2
-</pre>
-<p>... or a very complex operation, like conversing with a person via an
-instant message or email:</p>
+but they may be distributed and are therefore unreliable.  A site can implement
+a complex distributed operation, like interacting with a person ...</p>
 <pre class="orc-prelude">
 def David(x) = Rtimer(1000) >> "Breakfast tacos"
 </pre>
@@ -26,13 +24,30 @@ def David(x) = Rtimer(1000) >> "Breakfast tacos"
 David("What is your favorite food?")
 </pre>
 
+<p>... or a very simple local operation, like adding two numbers:</p>
+<pre class="orc">
+1 + 2
+</pre>
+<p>Orc uses standard infix notation for sites which implement things like
+arithmetic and comparison, but despite the fancy notation these operators are
+still sites like any other.</p>
+
 <p>For the rest of these samples, we will use <tt>David</tt> and
 <tt>Adrian</tt> as examples of sites which query a person and return their
 response.</p>
 
 <h2>Combinators</h2>
-<p>Two Orc expressions can be evaluated in parallel using the <tt>|</tt>
-(symmetric, parallel, or bar) combinator:</p>
+<p>Orc has three basic combinators which are used to build concurrent expressions:</p>
+<ul>
+<li>Parallel or bar, written <tt>|</tt></li>
+<li>Sequential or push, written <tt>>></tt></li>
+<li>Asymmetric or pull, written <tt>&lt;&lt;</tt></li>
+</ul>
+<p>We will examine each in turn.</p>
+
+<h3>Parallel Combinator</h3>
+
+<p>Two Orc expressions can be evaluated in parallel using <tt>|</tt></p>
 
 <pre class="orc-prelude">
 def David(x) = Rtimer(500) >> "Breakfast tacos"
@@ -48,7 +63,9 @@ simultaneously, and <i>both</i> responses are returned. Note that Orc is unlike
 most functional programming languages in that expressions may return more than
 one value if they involve more than one concurrent computation.</p>
 
-<p>Sites can also be called in sequence. The <tt>>></tt> (sequencing, or push)
+<h3>Sequential Combinator</h3>
+
+<p>Sites can also be called in sequence. The <tt>>></tt> 
 combinator evaluates its right side as soon as the left side returns a
 value:</p>
 
@@ -108,10 +125,11 @@ def Adrian(x) = Rtimer(1500) >>
 cat("I heard that ", movie, " is a good movie.")
 </pre>
 
-<p>The final combinator, <tt>&lt;&lt;</tt> (asymmetric, pull, or where),
-combines the concepts of selection, blocking, and termination. It is used to
-select the first value published by an expression and then terminate that
-expression.</p>
+<h3>Asymmetric Combinator</h3>
+
+<p>The final combinator, <tt>&lt;&lt;</tt>, combines the concepts of selection,
+blocking, and termination. It is used to select the first value published by an
+expression and then terminate that expression.</p>
 
 <pre class="orc-prelude">
 def David(x) = Rtimer(1000) >>
@@ -150,143 +168,41 @@ def Adrian(x) = null
     David("Choose a color.")  
 </pre>
 
+<p>Site calls with expressions as arguments are just syntactic sugar for asymmetric composition:</p>
+
+<pre class="orc">
+-- These two expressions are equivalent
+  cat("3+4=", 3+4)
+| ( cat("3+4=", a) &lt;a&lt; 3 + 4 )
+</pre>
+
 <h2>Fundamental Sites</h2>
 
 <p>Orc provides some fundamental sites which are necessary for writing
-useful expressions:</p>
+useful expressions. The following examples illustrate the most basic ones.</p>
 
+<p><tt>if(condition)</tt> publishes only if <tt>condition</tt> is true:</p>
+<pre class="orc">
+  if(3 /= 4) >> "three does not equal four"
+| if(false) >> "impossible!"
+</pre>
+
+<p><tt>Rtimer(t)</tt> publishes after <tt>t</tt> milliseconds:</p>
+<pre class="orc">
+  "immediately"
+| Rtimer(3000) >> "...three seconds later..."
+| Rtimer(5000) >> "...five seconds later..."
+</pre>
+
+<p><tt>null</tt> is a special value which never publishes (similar to "bottom" or <tt>_|_</tt> in functional languages).
+It is commonly used with sequential composition to suppress published values:</p>
 <pre class="orc-prelude">
 def David(x) = 
-	Rtimer(6000) >>
+	Rtimer(2000) >>
 	println("(David says '42')")
 </pre>
 <pre class="orc">
--- if publishes a value if the condition is true
-  if(3 /= 4) >> "three does not equal four"
--- and does not publish if it is false
-| if(false) >> "impossible!"
-
--- Rtimer waits for some number of milliseconds
--- before publishing a value.
-| Rtimer(3000) >> "...three seconds later..."
-
--- null never publishes anything
-| David("Favorite number?") >> null
-</pre>
-
-<h2>Concurrency Idioms</h2>
-
-<p>A timeout is expressed using a pull together with the built-in site
-<tt>Rtimer</tt>:</p>
-<pre class="orc-prelude">
-def Random(i,j) = random(j - i) + i + 1
-def David(x) = 
-	Rtimer(Random(3000,7000)) >>
-	"rutabaga"
-</pre>
-<pre class="orc">
--- If the answer is not received within 5
--- seconds, use the default answer "timed out"
-cat("Answer: ", answer)
-
-  &lt;answer&lt;
-  
-      David("What is your favorite food?")
-    | Rtimer(5000) >> "timed out"
-</pre>
-
-<p>The above example is randomized, so try running it several times to see
-different results.</p>
-
-<p>The opposite of a timeout is a delay: forcing a site to <i>wait</i> before
-publishing its response:</p>
-<pre class="orc-prelude">
-def David(x) = 
-	Rtimer(2500) >>
-	println("(David says 'grue')") >>
-	"grue"
-</pre>
-<pre class="orc">
--- Print the answer after 5 seconds or
--- when it is received, whichever is later.
-Rtimer(5000) >> u
-
-  &lt;u&lt;
-
-    David("Pick a color: ")
-</pre>
-
-<p>A delay can be used to give one expression a higher priority:</p>
-
-<pre class="orc-prelude">
-def Random(i,j) = random(j - i) + i + 1
-def Adrian(x) = 
-	Rtimer(Random(3000,7000)) >>
-	println("(Adrian says 'HIGH')") >>
-	"HIGH"
-def David(x) = 
-	Rtimer(3000) >>
-	println("(David says 'LOW')") >>
-	"LOW"
-</pre>
-<pre class="orc">
--- If Adrian responds within 5 seconds, use his
--- answer, otherwise use whoever responds first.
-z
-
-  &lt;z&lt;
-
-    ( high
-
-      &lt;high&lt;   Adrian("High priority response: ")
-             | Rtimer(5000) >> low
-            
-      &lt;low&lt; David("Low priority response: ") )
-</pre>
-
-<p>Fork/join begins two processes in parallel and wait for both to complete:</p>
-<pre class="orc-prelude">
-def Adrian(x) = 
-	Rtimer(1000) >>
-	println("(Adrian says 'Hydrogen')") >>
-	"Hydrogen"
-def David(x) = 
-	Rtimer(3000) >>
-	println("(David says 'Helium')") >>
-	"Helium"
-null; -- to force a new expression
-</pre>
-<pre class="orc">
--- Publish both Adrian and David's responses only
--- when both have been received.
-(a,d)
-
-  &lt;a&lt; Adrian("First element: ")
-  &lt;d&lt; David("Second element: ")
-</pre>
-
-<p>"Parallel Or" is a more complex example. By analogy to a traditional
-short-circuiting sequential "or" operation, we want to return <tt>true</tt> as
-soon as any expression evaluates to <tt>true</tt>, and <tt>false</tt> if all
-expressions evaluate to <tt>false</tt>:</p>
-<pre class="orc-prelude">
-def Random(i,j) = random(j - i) + i + 1
-def Adrian(x) = 
-	Rtimer(Random(1000,5000)) >>
-	println("(Adrian says 'true')") >>
-	true
-def David(x) = 
-	Rtimer(3000) >>
-	println("(David says 'false')") >>
-	false
-</pre>
-<pre class="orc">
-z &lt;z&lt; (   if(x) >> true
-        | if(y) >> true
-        | (x || y)
-
-            &lt;x&lt; David("True or false?")
-            &lt;y&lt; Adrian("True or false?") )
+David("Favorite number?") >> null
 </pre>
 
 <h2>Functions</h2>
@@ -367,107 +283,9 @@ tally([David, Adrian])
 <p>Datatype constructors and patterns are just syntactic sugar for sequential
 site calls which you could write yourself, but they are still very useful.</p>
 
-<h2>Airline Quotes</h2>
-
-<p>We are now equipped to solve an interesting wide-area computing problem in Orc:</p>
-
-<p>A client contacts two airlines simultaneously for price quotes.  He buys a
-ticket from either airline if its quoted price is no more than $300, the
-cheapest ticket if both quotes are above $300, and any ticket if the other
-airline does not provide a timely quote. The client should receive an
-indication if neither airline provides a timely quote.</p>
-
-<p>We will assume that the airlines provide the sites <tt>Delta</tt> and
-<tt>United</tt> which return a dollar value quote. Getting quotes from
-both airlines is a case of the "fork/join" idiom:</p>
-<pre class="orc-prelude">
-def Random(i,j) = random(j - i) + i + 1
-def Airline(name) = 
-	Rtimer(Random(1000,5000)) >>
-	Random(200, 400) >q>
-	println(cat("(", name, " quotes ", q, ")")) >>
-	q
-def Delta() = Airline("Delta")
-def United() = Airline("United")
-
-null; -- to force a new expression
-</pre>
-<pre class="orc">
-(u,d)
-  &lt;d&lt; Delta()
-  &lt;u&lt; United()
-</pre>
-
-<p>The "first under $300" rules are a case of the "parallel or" idiom:</p>
-<pre class="orc-prelude">
-def Random(i,j) = random(j - i) + i + 1
-def Airline(name) = 
-	Rtimer(Random(1000,5000)) >>
-	Random(200, 400) >q>
-	println(cat("(", name, " quotes ", q, ")")) >>
-	q
-def Delta() = Airline("Delta")
-def United() = Airline("United")
-</pre>
-<pre class="orc">
--- Utility function: return y1 (or y2)
--- if x1 (or x2) is smaller
-def min(x1,y1,x2,y2) =
-    if(x1&lt;:x2) >> y1
-  | if(x2&lt;:x1) >> y2
-
-airline
-
-  &lt;airline&lt; (
-  
-      if(d&lt;:300) >> "Delta"
-    | if(u&lt;:300) >> "United"
-    | min(d,"Delta",u,"United")
-  
-      &lt;d&lt; Delta()
-      &lt;u&lt; United()
-  )
-</pre>
-
-<p>(Run the above example several times to see different results.)</p>
-
-<p>Now all we need to do is introduce timeouts to handle untimely quotes.
-We'll represent an untimely quote as an empty list and use pattern matching
-to easily distinguish timely and untimely quotes.</p>
-<pre class="orc-prelude">
-def Random(i,j) = random(j - i) + i + 1
-def Airline(name) = 
-	Rtimer(Random(1000,5000)) >>
-	Random(200, 400) >q>
-	println(cat("(", name, " quotes ", q, ")")) >>
-	q
-def Delta() = Airline("Delta")
-def United() = Airline("United")
-</pre>
-<pre class="orc">
-def min(x1,y1,x2,y2) =
-    if(x1&lt;:x2) >> y1
-  | if(x2&lt;:x1) >> y2
-
-airline
-
-  &lt;airline&lt; (
-
-      dd >[d]> if(d&lt;:300) >> "Delta"
-    | uu >[u]> if(u&lt;:300) >> "United"
-    | dd >[d]> uu >[u]> min(d,"Delta",u,"United") 
-    | dd >[d]> uu >[]> "Delta"
-    | dd >[]> uu >[u]> "United"
-    | dd >[]> uu >[]> "Timed out!"
-  
-      &lt;dd&lt; [Delta()] | Rtimer(3000) >> []
-      &lt;uu&lt; [United()] | Rtimer(3000) >> []
-  )
-</pre>
-
 <h2>Further Study</h2>
 
-<p>Now you are ready to <a href="/orchard">play with Orc</a> yourself.</p>
 <p>Please refer to the <a href="documentation.shtml">Documentation</a> page for further guidance.</p>
+<p>When you are ready, <a href="/orchard">play with Orc</a> yourself.</p>
 
 <!--#include virtual="footer.shtml" --> 
