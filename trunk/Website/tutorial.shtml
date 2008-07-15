@@ -252,8 +252,7 @@ Metronome(2) >n> if(isPrime(n)) >> n
 
 <p>Like any good functional programming language, Orc supports higher-order
 functions (functions which take functions or sites as arguments), lists and
-tuples as basic datatypes, and pattern matching. The following example
-illustrates both:</p>
+tuples as basic datatypes, and pattern matching.</p>
 <pre class="orc-prelude">
 def Random(i,j) = random(j - i) + i + 1
 def Adrian(x) = 
@@ -280,8 +279,8 @@ def tally(x:xs) = timeout(x) + tally(xs)
 tally([David, Adrian])
 </pre>
 
-<p>Datatype constructors and patterns are just syntactic sugar for sequential
-site calls which you could write yourself, but they are still very useful.</p>
+<p>Like infix operators, datatype constructors and patterns are just syntactic
+sugar for sequential site calls.</p>
 
 <h2>Further Study</h2>
 
