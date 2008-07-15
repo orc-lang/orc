@@ -112,8 +112,8 @@ def David(x) = Rtimer(1000) >>
 	println("(David says 'Pan's Labyrinth')") >>
 	"Pan's Labyrinth"
 def Adrian(x) = Rtimer(1500) >>
-	println("(Adrian says 'The Princess Bride')") >>
-	"The Princess Bride"
+	println("(Adrian says 'Unforgiven')") >>
+	"Unforgiven"
 </pre>
 <pre class="orc">
 (   David("Pick a movie you like:")
