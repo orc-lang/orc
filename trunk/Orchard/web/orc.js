@@ -151,6 +151,8 @@ function OrcWidget(code) {
 
 	/** Wrapper for the current job; unset as soon as the job stops. */
 	var job;
+	/** If codemirror is used, this is the editor. */
+	var codemirror;
 	var $loading = $('<div class="orc-loading" style="display: none"/>');
 	var $wrapper = $('<div class="orc-wrapper" />')
 		.width($(code).width()+2);
@@ -175,7 +177,7 @@ function OrcWidget(code) {
 
 	function getCode() {
 		return getCodeFrom($(code).parent().prev(".orc-prelude").get(0)) + "\n" +
-			getCodeFrom(code);
+			(codemirror ? codemirror.getCode() : getCodeFrom(code));
 	}
 
 	function appendEventHtml(html) {
@@ -280,6 +282,15 @@ function OrcWidget(code) {
 	// public members
 	this.ready = function () { $controls.show(); };
 	this.stop = stop;
+	this.codemirror = function(defaultConfig) {
+		var config = $.extend({}, defaultConfig, {
+			content: getCodeFrom(code),
+			readOnly: (code.tagName != "TEXTAREA"),
+			height: $(code).height(),
+		});
+		$(code).wrap("<div class='orc'></div>");
+		codemirror = new CodeMirror(CodeMirror.replace(code), config);
+	}
 
 	$(code).wrap($wrapper).after($controls).after($events);
 }
@@ -287,6 +298,7 @@ function OrcWidget(code) {
 /** Widget which is currently running. */
 var currentWidget;
 var query = parseQuery();
+var baseUrl = query.mock ? "" : "/orchard/";
 var executorServiceUrl = query.mock
 	? "mock-executor.js"
 	: "/orchard/json/executor?js";
@@ -294,6 +306,17 @@ var devKey = query.k ? query.k : "";
 var executor;
 
 var widgets = [];
+
+$.getScript(baseUrl + "codemirror-0.57-min.js", function() {
+	var config = {
+		stylesheet: baseUrl + "orc-syntax.css",
+		path: baseUrl,
+		parserfile: ["orc-parser.js"],
+		basefiles: ["codemirror-0.57-extra-min.js"],
+		textWrapping: false,
+	};
+	for (var i in widgets) widgets[i].codemirror(config);
+});
 
 $.getScript(executorServiceUrl, function() {
 	executor = executorService;
@@ -310,6 +333,7 @@ $.getScript(executorServiceUrl, function() {
 	}
 	for (var i in widgets) widgets[i].ready();
 });
+
 $(".orc").each(function (_, code) {
 	widgets[widgets.length] = new OrcWidget(code);
 });
