@@ -32,7 +32,10 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
 		if (program == null) throw new InvalidProgramException("Null program!");
 		orc.ast.simple.Expression ex0;
 		try {
-			ex0 = Orc.compile(new StringReader(program), new Config());
+			Config config = new Config();
+			// Include sites specifically for orchard services
+			config.addInclude("orchard.inc");
+			ex0 = Orc.compile(new StringReader(program), config);
 		} catch (ParseError e) {
 			throw new InvalidProgramException("Syntax error: " + e.getMessage());
 		}

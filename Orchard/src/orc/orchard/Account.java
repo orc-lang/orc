@@ -10,6 +10,7 @@ import java.util.Set;
 
 import org.postgresql.util.PGInterval;
 
+import orc.orchard.errors.InvalidJobException;
 import orc.orchard.errors.QuotaException;
 
 /**
@@ -50,8 +51,10 @@ public abstract class Account {
 		});
 	}
 	
-	public synchronized Job getJob(String id) {
-		return jobs.get(id);
+	public synchronized Job getJob(String id) throws InvalidJobException {
+		Job out = jobs.get(id);
+		if (out == null) throw new InvalidJobException();
+		else return out;
 	}
 	
 	public synchronized List<Job> jobs() {

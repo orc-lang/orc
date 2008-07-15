@@ -11,6 +11,16 @@ executorService = (function () {
 		startJob: function (_, f) {
 			f();
 		},
+		respondToPrompt: function (x) {
+			try {
+				console.log(x);
+			} catch (e) {}
+		},
+		cancelPrompt: function (x) {
+			try {
+				console.log(x);
+			} catch (e) {}
+		},
 		jobEvents: function (_, f) {
 			if (halt) return f(null);
 			if (n%4 == 0) {
@@ -32,6 +42,15 @@ executorService = (function () {
 					line: "Printed line " + n,
 					sequence: 2
 				}]);
+			} else if (n%6 == 0) {
+				n++;
+				return f({
+					"@xsi.type": "ns2:promptEvent",
+					timestamp:"error timestamp "+n,
+					promptID: 1,
+					message: "Say something",
+					sequence: 3
+				});
 			}
 			setTimeout(function () {
 				f({

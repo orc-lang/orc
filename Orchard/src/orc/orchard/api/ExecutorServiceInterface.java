@@ -7,9 +7,11 @@ import java.util.Set;
 
 import orc.orchard.JobConfiguration;
 import orc.orchard.JobEvent;
+import orc.orchard.errors.InvalidJobException;
 import orc.orchard.errors.InvalidJobStateException;
 import orc.orchard.errors.InvalidOilException;
 import orc.orchard.errors.InvalidProgramException;
+import orc.orchard.errors.InvalidPromptException;
 import orc.orchard.errors.QuotaException;
 import orc.orchard.errors.UnsupportedFeatureException;
 import orc.orchard.oil.Oil;
@@ -17,25 +19,6 @@ import orc.orchard.oil.Oil;
 
 /**
  * Broker used to create and manage running jobs.
- * 
- * <p>
- * Originally the executor only allow clients to create jobs and clients had to
- * use a separate service to manage running jobs. This created a lot of extra
- * work for both the client and the server for marginal benefit, so I combined
- * the services. Some examples of the "extra work" (mostly caused by the Java
- * web services and servlet environments):
- * <ul>
- * <li>Clients must support dynamically-generated web service proxies. (This is
- * really the killer issue, since some platforms like Java make this hard).
- * <li>It's awkward to pass information between the executor and job services.
- * It requires an out-of-band channel.
- * <li>It requires context to be encoded in the URL, which may not be practical
- * for some services. In RPC-style services it's best if all context is passed
- * explicitly as arguments.
- * <li>Building job URLs requires knowledge about the protocol, so it creates
- * more work to build a new protocol front-end.
- * <li>
- * </ul>
  * 
  * <p>
  * The lifecycle of a job:
@@ -56,6 +39,26 @@ import orc.orchard.oil.Oil;
  * <p>
  * Note that the job publication buffer has a fixed size, so if you don't call
  * purgeJobEvents regularly your job will be suspended when the buffer fills.
+ * 
+ *  * 
+ * <p>
+ * Originally the executor only allow clients to create jobs and clients had to
+ * use a separate service to manage running jobs. This did make the interfaces
+ * cleaner and required fewer arguments, but it created a lot of extra work for
+ * both the client and the server, so I combined the services. Some examples of
+ * the "extra work" (mostly caused by limitations of the Java web services and
+ * servlet environments):
+ * <ul>
+ * <li>Clients must support dynamically-generated web service proxies. (This is
+ * really the killer issue, since some platforms like Java make this hard).
+ * <li>It's awkward to pass information between the executor and job services.
+ * It requires an out-of-band channel.
+ * <li>It requires context to be encoded in the URL, which may not be practical
+ * for some services. In RPC-style services it's best if all context is passed
+ * explicitly as arguments.
+ * <li>Building job URLs requires knowledge about the protocol, so it creates
+ * a lot more work to build a new protocol front-end.
+ * </ul>
  * 
  * @author quark
  */
@@ -98,7 +101,7 @@ public interface ExecutorServiceInterface extends Remote {
 	 * @throws InvalidJobStateException
 	 *             if the job was already started, or was aborted.
 	 */
-	public void startJob(String devKey, String job) throws InvalidJobStateException, RemoteException;
+	public void startJob(String devKey, String job) throws InvalidJobException, InvalidJobStateException, RemoteException;
 	/**
 	 * Indicate that the client is done with the job. The job will be halted if
 	 * necessary.
@@ -112,12 +115,12 @@ public interface ExecutorServiceInterface extends Remote {
 	 *             if the job is RUNNING or WAITING.
 	 * @throws RemoteException
 	 */
-	public void finishJob(String devKey, String job) throws InvalidJobStateException, RemoteException;
+	public void finishJob(String devKey, String job) throws InvalidJobException, InvalidJobStateException, RemoteException;
 	/**
 	 * Halt the job safely, using the same termination semantics as the "pull"
 	 * combinator.
 	 */
-	public void haltJob(String devKey, String job) throws RemoteException;
+	public void haltJob(String devKey, String job) throws InvalidJobException, RemoteException;
 	/**
 	 * What is the job's state? Possible return values:
 	 * NEW: not yet started.
@@ -126,7 +129,7 @@ public interface ExecutorServiceInterface extends Remote {
 	 * DONE: finished executing. 
 	 * @return the current state of the job.
 	 */
-	public String jobState(String devKey, String job) throws RemoteException;
+	public String jobState(String devKey, String job) throws InvalidJobException, RemoteException;
 	/**
 	 * Retrieve events. If no events occurred, block until at least one occurs.
 	 * If the job finishes without any more events happening, an empty list will
@@ -137,13 +140,23 @@ public interface ExecutorServiceInterface extends Remote {
 	 * @throws InterruptedException
 	 *             if the request times out.
 	 */
-	public List<JobEvent> jobEvents(String devKey, String job) throws RemoteException, InterruptedException;
+	public List<JobEvent> jobEvents(String devKey, String job) throws InvalidJobException, InterruptedException, RemoteException;
 	/**
-	 * Purge all events from the event buffer with sequence number less than or
-	 * equal to the argument. The client is responsible for calling this method
-	 * regularly to keep the event buffer from filling up.
+	 * Purge all events from the event buffer which have been returned by
+	 * jobEvents. The client is responsible for calling this method regularly to
+	 * keep the event buffer from filling up.
 	 * 
 	 * @throws RemoteException
 	 */
-	public void purgeJobEvents(String devKey, String job, int sequence) throws RemoteException;
+	public void purgeJobEvents(String devKey, String job) throws InvalidJobException, RemoteException;
+	/**
+	 * Submit a response to a prompt (initiated by the Prompt site).
+	 * @throws InvalidPromptException if the promptID is not valid.
+	 */
+	public void respondToPrompt(String devKey, String job, int promptID, String response) throws InvalidJobException, InvalidPromptException, RemoteException;
+	/**
+	 * Cancel a prompt (initiated by the Prompt site).
+	 * @throws InvalidPromptException if the promptID is not valid.
+	 */
+	public void cancelPrompt(String devKey, String job, int promptID) throws InvalidJobException, InvalidPromptException, RemoteException;
 }

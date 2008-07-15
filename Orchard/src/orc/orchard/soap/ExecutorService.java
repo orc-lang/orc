@@ -21,9 +21,11 @@ import orc.orchard.DbAccounts;
 import orc.orchard.JobConfiguration;
 import orc.orchard.JobEvent;
 import orc.orchard.Waiter;
+import orc.orchard.errors.InvalidJobException;
 import orc.orchard.errors.InvalidJobStateException;
 import orc.orchard.errors.InvalidOilException;
 import orc.orchard.errors.InvalidProgramException;
+import orc.orchard.errors.InvalidPromptException;
 import orc.orchard.errors.QuotaException;
 import orc.orchard.errors.UnsupportedFeatureException;
 import orc.orchard.oil.Oil;
@@ -143,21 +145,24 @@ public class ExecutorService extends AbstractExecutorService {
 		return super.submitConfigured(devKey, program, configuration);
 	}
 
-	/** Do-nothing override. */
+	/** Do-nothing override. 
+	 * @throws InvalidJobException */
 	@Override
-	public void finishJob(@WebParam(name="devKey") String devKey, @WebParam(name="job") String job) throws InvalidJobStateException, RemoteException {
+	public void finishJob(@WebParam(name="devKey") String devKey, @WebParam(name="job") String job) throws InvalidJobStateException, RemoteException, InvalidJobException {
 		super.finishJob(devKey, job);
 	}
 
-	/** Do-nothing override. */
+	/** Do-nothing override. 
+	 * @throws InvalidJobException */
 	@Override
-	public void haltJob(@WebParam(name="devKey") String devKey, @WebParam(name="job") String job) throws RemoteException {
+	public void haltJob(@WebParam(name="devKey") String devKey, @WebParam(name="job") String job) throws RemoteException, InvalidJobException {
 		super.haltJob(devKey, job);
 	}
 
-	/** Do-nothing override. */
+	/** Do-nothing override. 
+	 * @throws InvalidJobException */
 	@Override
-	public List<JobEvent> jobEvents(@WebParam(name="devKey") String devKey, @WebParam(name="job") String job) throws RemoteException, InterruptedException {
+	public List<JobEvent> jobEvents(@WebParam(name="devKey") String devKey, @WebParam(name="job") String job) throws RemoteException, InterruptedException, InvalidJobException {
 		return super.jobEvents(devKey, job);
 	}
 
@@ -167,21 +172,37 @@ public class ExecutorService extends AbstractExecutorService {
 		return super.jobs(devKey);
 	}
 
-	/** Do-nothing override. */
+	/** Do-nothing override. 
+	 * @throws InvalidJobException */
 	@Override
-	public String jobState(@WebParam(name="devKey") String devKey, @WebParam(name="job") String job) throws RemoteException {
+	public String jobState(@WebParam(name="devKey") String devKey, @WebParam(name="job") String job) throws RemoteException, InvalidJobException {
 		return super.jobState(devKey, job);
 	}
 
-	/** Do-nothing override. */
+	/** Do-nothing override. 
+	 * @throws InvalidJobException */
 	@Override
-	public void purgeJobEvents(@WebParam(name="devKey") String devKey, @WebParam(name="job") String job, @WebParam(name="sequence") int sequence) throws RemoteException {
-		super.purgeJobEvents(devKey, job, sequence);
+	public void purgeJobEvents(@WebParam(name="devKey") String devKey, @WebParam(name="job") String job) throws RemoteException, InvalidJobException {
+		super.purgeJobEvents(devKey, job);
+	}
+
+	/** Do-nothing override. 
+	 * @throws InvalidJobException */
+	@Override
+	public void startJob(@WebParam(name="devKey") String devKey, @WebParam(name="job") String job) throws InvalidJobStateException, RemoteException, InvalidJobException {
+		super.startJob(devKey, job);
+	}
+	
+	/** Do-nothing override. 
+	 * @throws InvalidJobException */
+	@Override
+	public void respondToPrompt(@WebParam(name="devKey") String devKey, @WebParam(name="job") String job, @WebParam(name="promptID") int promptID, @WebParam(name="response") String response) throws InvalidPromptException, RemoteException, InvalidJobException {
+		super.respondToPrompt(devKey, job, promptID, response);
 	}
 
 	/** Do-nothing override. */
 	@Override
-	public void startJob(@WebParam(name="devKey") String devKey, @WebParam(name="job") String job) throws InvalidJobStateException, RemoteException {
-		super.startJob(devKey, job);
+	public void cancelPrompt(@WebParam(name="devKey") String devKey, @WebParam(name="job") String job, @WebParam(name="promptID") int promptID) throws InvalidJobException, InvalidPromptException, RemoteException {
+		super.cancelPrompt(devKey, job, promptID);
 	}
 }

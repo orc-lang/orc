@@ -30,6 +30,9 @@
 			<fileset dir="${lib}">
 				<!-- FIXME: some of these are unnecessary at runtime -->
 				<include name="*.jar"/>
+				<exclude name="yuicompressor-*.jar"/>
+				<exclude name="servlet-api.jar"/>
+				<exclude name="jetty-util-*.jar"/>
 			</fileset>
 		</copy>
 		<jar jarfile="${war}/WEB-INF/lib/orchard.jar" basedir="${build}" />
