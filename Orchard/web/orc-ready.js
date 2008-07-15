@@ -108,7 +108,7 @@ function OrcWidget(code) {
 	var $close = $('<input type="button" class="orc-close" value="close" style="display: none"/>')
 		.click(function () {
 			$close.hide();
-			$events.slideUp();
+			$events.slideUp("fast");
 		});
 	var $stop = $('<input type="button" class="orc-stop" value="stop" style="display: none"/>')
 		.click(stop);
@@ -193,7 +193,7 @@ function OrcWidget(code) {
 		$run.hide();
 		$loading.show();
 		$events.get(0).innerHTML = '';
-		$events.slideDown();
+		$events.slideDown("fast");
 		// If another job is running, it should stop
 		if (currentWidget) currentWidget.stop();
 		currentWidget = _this;
@@ -236,8 +236,14 @@ function OrcWidget(code) {
 			readOnly: (code.tagName != "TEXTAREA"),
 			height: $(code).height() + "px"
 		});
+		// weird DOM manipulation to:
+		// 1. put a border around the CodeMirror editor
+		// 2. get a handle to an element around the editor
+		//    (we'll use it to look for orc-prelude in getCode)
 		$(code).wrap("<div class='orc'></div>");
+		var div = $(code).parent().get(0);
 		codemirror = new CodeMirror(CodeMirror.replace(code), config);
+		code = div;
 	}
 
 	$(code).wrap($wrapper).after($controls).after($events);

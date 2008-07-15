@@ -2,7 +2,10 @@ executorService = (function () {
 	var n = 1;
 	var halt = false;
 	return {
-		compileAndSubmit: function (_, f) {
+		compileAndSubmit: function (x, f) {
+			try {
+				console.log(x.program);
+			} catch (e) {}
 			f("1");
 		},
 		startJob: function (_, f) {
