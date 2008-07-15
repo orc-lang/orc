@@ -234,7 +234,7 @@ function OrcWidget(code) {
 		var config = $.extend({}, defaultConfig, {
 			content: getCodeFrom(code),
 			readOnly: (code.tagName != "TEXTAREA"),
-			height: $(code).height(),
+			height: $(code).height() + "px"
 		});
 		$(code).wrap("<div class='orc'></div>");
 		codemirror = new CodeMirror(CodeMirror.replace(code), config);
