@@ -2,13 +2,18 @@ package orc.orchard;
 
 import java.rmi.RemoteException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import orc.ast.oil.Expr;
 import orc.error.TokenException;
+import orc.lib.net.Prompt.PromptCallback;
+import orc.lib.net.Prompt.Promptable;
 import orc.orchard.errors.InvalidJobStateException;
+import orc.orchard.errors.InvalidPromptException;
 import orc.orchard.oil.ValueMarshaller;
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
@@ -32,8 +37,7 @@ public final class Job {
 	}
 	
 	/**
-	 * Thread-safe buffer for events which clients can monitor. Currently
-	 * includes publications, token errors, and printlns.
+	 * Thread-safe buffer for events which clients can monitor.
 	 * TODO: allow clients to decide which events they are interested in
 	 * and ignore all others.
 	 */
@@ -54,6 +58,8 @@ public final class Job {
 		private int bufferedSize = 0;
 		/** Maximum allowed size of buffer. */
 		private int bufferSize = 100;
+		/** Number of events which are eligible to be purged. */
+		private int purgable = 0;
 		public EventBuffer() {}
 		/**
 		 * Set the maximum allowed size of the buffer.
@@ -92,19 +98,24 @@ public final class Job {
 			}
 			// return the contents of the buffer
 			List<JobEvent> out = new LinkedList<JobEvent>(buffer);
+			purgable = out.size();
 			return out;
 		}
 		/**
-		 * Discard events up to the given sequence number.
+		 * Discard events which have been returned by get.
 		 */
-		public synchronized void purge(int sequence) {
+		public synchronized void purge() {
+			// Because the buffer is FIFO, we just have
+			// to know how many events were returned by get
+			// and throw away that many.
 			Iterator<JobEvent> it = buffer.iterator();
-			while (it.hasNext()) {
-				if (it.next().sequence <= sequence) {
-					it.remove();
-					bufferedSize--;
-				} else break;
+			for (int i = 0; i < purgable; ++i) {
+				assert(it.hasNext());
+				it.next();
+				it.remove();
+				bufferedSize--;
 			}
+			purgable = 0;
 			notify();
 		}
 		/**
@@ -124,8 +135,8 @@ public final class Job {
 	 * refer to it.
 	 */
 	private JobConfiguration configuration;
-	/** The engine will handle all the interesting work of the job. */
-	private OrcEngine engine = new OrcEngine() {
+	
+	private class JobEngine extends OrcEngine implements Promptable {
 		private StringBuffer printBuffer = new StringBuffer();
 		/** Close the event stream when done running. */
 		@Override
@@ -163,7 +174,21 @@ public final class Job {
 		public void pub(Value v) {
 			events.add(new PublicationEvent(v.accept(new ValueMarshaller())));
 		}
-	};
+		
+		public void prompt(String message, PromptCallback callback) {
+			int promptID;
+			synchronized(pendingPrompts) {
+				promptID = nextPromptID++;
+				pendingPrompts.put(promptID, callback);
+			}
+			events.add(new PromptEvent(promptID, message));
+		}
+	}
+	private int nextPromptID = 1;
+	private Map<Integer, PromptCallback> pendingPrompts =
+		new HashMap<Integer, PromptCallback>();
+	/** The engine will handle all the interesting work of the job. */
+	private OrcEngine engine = new JobEngine();
 	/** Events which can be monitored. */
 	private EventBuffer events;
 	private LinkedList<FinishListener> finishers = new LinkedList<FinishListener>();
@@ -211,18 +236,18 @@ public final class Job {
 	}
 
 	/**
-	 * Return events which occurred since the last call to listen.
+	 * Return events which occurred since the job started or purgeEvents was last called.
 	 * If no events have occurred, block using waiter until one occurs.
 	 * If/when the job completes (so no more events can occur), return
 	 * an empty list.
 	 * @see JobInterface.listen
 	 */
-	public List<JobEvent> events(Waiter waiter) throws InterruptedException {
+	public List<JobEvent> getEvents(Waiter waiter) throws InterruptedException {
 		return events.get(waiter);
 	}
 
-	public void purgeEvents(int sequence) {
-		events.purge(sequence);
+	public void purgeEvents() {
+		events.purge();
 	}
 
 	public synchronized String state() {
@@ -241,5 +266,23 @@ public final class Job {
 
 	public void setEventBufferSize(Integer eventBufferSize) {
 		if (eventBufferSize != null) events.setBufferSize(eventBufferSize);
+	}
+	
+	/**
+	 * Submit a response to a prompt (initiated by the Prompt site).
+	 * @throws InvalidPromptException if promptID is invalid
+	 */
+	public void respondToPrompt(int promptID, String response) throws InvalidPromptException {
+		PromptCallback callback = pendingPrompts.get(promptID);
+		if (callback == null) throw new InvalidPromptException();
+		pendingPrompts.remove(promptID);
+		callback.respondToPrompt(response);
+	}
+
+	public void cancelPrompt(int promptID) throws InvalidPromptException {
+		PromptCallback callback = pendingPrompts.get(promptID);
+		if (callback == null) throw new InvalidPromptException();
+		pendingPrompts.remove(promptID);
+		callback.cancelPrompt();
 	}
 }

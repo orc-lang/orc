@@ -153,10 +153,19 @@ function OrcWidget(code) {
 		appendEventHtml('<div class="orc-print">' + p.line + '</div>');
 	}
 
+	function handlePrompt(v) {
+		var response = prompt(v.message);
+		console.log(response);
+		if (response != null) {
+			job('respondToPrompt', { promptID: v.promptID, response: response });
+		} else {
+			job('cancelPrompt', { promptID: v.promptID });
+		}
+	}
+
 	function onEvents(vs) {
 		if (!vs || !job) return stop();
-		vs = toArray(vs);
-		$.each(vs, function (_, v) {
+		$.each(toArray(vs), function (_, v) {
 			switch (v["@xsi.type"]) {
 			case "ns2:tokenErrorEvent":
 				renderTokenError(v);
@@ -167,9 +176,12 @@ function OrcWidget(code) {
 			case "ns2:printlnEvent":
 				renderPrintln(v);
 				break;
+			case "ns2:promptEvent":
+				handlePrompt(v);
+				break;
 			}
 		});
-		job('purgeJobEvents', {sequence: vs[vs.length-1].sequence}, function () {
+		job('purgeJobEvents', {}, function () {
 			job('jobEvents', {}, onEvents);
 		});
 	}
@@ -285,7 +297,7 @@ var config = {
 	stylesheet: baseUrl + "orc-syntax.css",
 	path: baseUrl,
 	parserfile: ["orc-parser.js"],
-	basefiles: ["codemirror-0.57-extra-min.js"],
+	basefiles: ["codemirror-20080715-extra-min.js"],
 	textWrapping: false,
 };
 for (var i in widgets) widgets[i].codemirror(config);

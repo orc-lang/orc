@@ -8,9 +8,11 @@ import java.util.logging.Logger;
 
 import orc.ast.oil.Expr;
 import orc.orchard.api.ExecutorServiceInterface;
+import orc.orchard.errors.InvalidJobException;
 import orc.orchard.errors.InvalidJobStateException;
 import orc.orchard.errors.InvalidOilException;
 import orc.orchard.errors.InvalidProgramException;
+import orc.orchard.errors.InvalidPromptException;
 import orc.orchard.errors.QuotaException;
 import orc.orchard.errors.UnsupportedFeatureException;
 import orc.orchard.java.CompilerService;
@@ -109,27 +111,35 @@ public abstract class AbstractExecutorService implements ExecutorServiceInterfac
 		return new ThreadWaiter();
 	}
 
-	public void finishJob(String devKey, String job) throws InvalidJobStateException, RemoteException {
+	public void finishJob(String devKey, String job) throws InvalidJobStateException, RemoteException, InvalidJobException {
 		accounts.getAccount(devKey).getJob(job).finish();
 	}
 
-	public void haltJob(String devKey, String job) throws RemoteException {
+	public void haltJob(String devKey, String job) throws RemoteException, InvalidJobException {
 		accounts.getAccount(devKey).getJob(job).halt();
 	}
 
-	public List<JobEvent> jobEvents(String devKey, String job) throws RemoteException, InterruptedException {
-		return accounts.getAccount(devKey).getJob(job).events(getWaiter());
+	public List<JobEvent> jobEvents(String devKey, String job) throws RemoteException, InterruptedException, InvalidJobException {
+		return accounts.getAccount(devKey).getJob(job).getEvents(getWaiter());
 	}
 
-	public String jobState(String devKey, String job) throws RemoteException {
+	public String jobState(String devKey, String job) throws RemoteException, InvalidJobException {
 		return accounts.getAccount(devKey).getJob(job).state();
 	}
 
-	public void purgeJobEvents(String devKey, String job, int sequence) throws RemoteException {
-		accounts.getAccount(devKey).getJob(job).purgeEvents(sequence);
+	public void purgeJobEvents(String devKey, String job) throws RemoteException, InvalidJobException {
+		accounts.getAccount(devKey).getJob(job).purgeEvents();
 	}
 
-	public void startJob(String devKey, String job) throws InvalidJobStateException, RemoteException {
+	public void startJob(String devKey, String job) throws InvalidJobStateException, RemoteException, InvalidJobException {
 		accounts.getAccount(devKey).getJob(job).start();
+	}
+
+	public void respondToPrompt(String devKey, String job, int promptID, String response) throws InvalidPromptException, RemoteException, InvalidJobException {
+		accounts.getAccount(devKey).getJob(job).respondToPrompt(promptID, response);
+	}
+
+	public void cancelPrompt(String devKey, String job, int promptID) throws InvalidJobException, InvalidPromptException, RemoteException {
+		accounts.getAccount(devKey).getJob(job).cancelPrompt(promptID);
 	}
 }
