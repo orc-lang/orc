@@ -13,7 +13,7 @@ load it as index.html?mock
 
 <p>Enter an Orc program in the text box below and then click the <b>run</b> button.</p>
 
-<textarea spellcheck="false" class="orc" style="width: 500px; height: 200px" wrap="off">
+<textarea spellcheck="false" class="orc" style="width: 500px; height: 200px">
 -- Metronome which publishes every second
 def M(n) = ("Metronome", n) | Rtimer(1000) >> M(n+1)
 
