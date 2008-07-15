@@ -4,10 +4,12 @@
 		<servlet-name>ssi</servlet-name>
 		<servlet-class>org.apache.catalina.ssi.SSIServlet</servlet-class>
 		<load-on-startup>1</load-on-startup>
+		<!--
 		<init-param>
 			<param-name>debug</param-name>
 			<param-value>1</param-value>
 		</init-param>
+		-->
 	</servlet>
 	<servlet>
 		<servlet-name>static</servlet-name>
