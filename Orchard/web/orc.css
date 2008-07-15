@@ -3,14 +3,15 @@
 	margin: 0;
 	overflow: auto;
 	font-family: monospace;
-	white-space: pre;
 	font-size: 13px;
+	background-color: white;
 }
 .orc-prelude {
 	display: none;
 }
 .orc-wrapper {
 	margin-bottom: 1em;
+	background-color: white;
 }
 .orc-events {
 	height: 60px;
