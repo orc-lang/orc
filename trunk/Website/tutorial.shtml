@@ -238,7 +238,7 @@ def isPrime(n) =
   def primeat(i) = 
       if(b) >> (n % i /= 0) && primeat(i+1)
     | if(~b) >> true
-        &lt;b&lt; i * i <= n
+        &lt;b&lt; i * i &lt;= n
   primeat(2)
 </pre>
 <pre class="orc">
