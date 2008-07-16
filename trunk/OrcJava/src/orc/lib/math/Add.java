@@ -48,7 +48,7 @@ public class Add extends EvalSite {
 		Object a = args.getArg(0);
 		Object b = args.getArg(1);
 		if (a instanceof String || b instanceof String) {
-			return new Constant(a.toString() + b.toString());
+			return new Constant(args.stringArg(0) + args.stringArg(1));
 		}
 		return new Constant(Args.applyNumericOperator(
 				args.numberArg(0), args.numberArg(1),

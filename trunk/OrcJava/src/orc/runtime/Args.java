@@ -178,9 +178,7 @@ public class Args implements Serializable {
 	 * @throws TokenException 
 	 */
 	public String stringArg(int n) throws TokenException {
-
-		Object a = getArg(n);
-		return a.toString();
+		return valArg(n).toString();
 	}
 	
 	
