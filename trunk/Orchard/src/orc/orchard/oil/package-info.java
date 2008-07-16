@@ -11,9 +11,7 @@
  * <p>When you change any of these files, make sure to recompile with
  * Build "Clean", so that the JAX-WS stuff can rebuild. 
  *
- * @see orc.orchard.jaxws
+ * @see orc.orchard.soap
  * @see orc.ast.oil
- * @see orc.ast.oil.arg
- * @see orc.ast.val
  */
 package orc.orchard.oil;
