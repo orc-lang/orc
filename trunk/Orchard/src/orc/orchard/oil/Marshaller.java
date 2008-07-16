@@ -53,7 +53,7 @@ public class Marshaller implements Visitor<Expression> {
 	}
 
 	public Expression visit(orc.ast.oil.arg.Constant arg) {
-		return new Constant(arg.v.toObject());
+		return new Constant(arg.v);
 	}
 	
 	public Expression visit(orc.ast.oil.arg.Field arg) {
