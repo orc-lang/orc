@@ -23,7 +23,6 @@ public class Semi extends Node {
 	/** 
 	 * The input token is activated on the right node,
 	 * and a copy is activated on the left node.
-	 * @see orc.runtime.nodes.Node#process(orc.runtime.Token, orc.runtime.OrcEngine)
 	 */
 	public void process(Token t) {
 		

@@ -5,6 +5,6 @@
  * integrated with arbitrary Java code, we can afford to
  * bend naming conventions.
  * 
- * <p>The {@link Orc} class is the main interface to users.
+ * <p>The {@link orc.Orc} class is the main interface to users.
  */
 package orc;

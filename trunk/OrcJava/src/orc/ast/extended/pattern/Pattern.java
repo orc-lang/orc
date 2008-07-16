@@ -52,8 +52,10 @@ public abstract class Pattern {
 	/**
 	 * @param f The source expression for values to be matched
 	 * @return A new expression publishing, for each publication !v of f,
-	 * 		some(v')	if p(v) => v' 
-	 *  	none	  	if p(v) => _|_
+	 * <pre>
+	 * some(v')	if p(v) => v' 
+	 * none	  	if p(v) => _|_
+	 * </pre>
 	 */
 	public abstract Expression match(Var u);
 	public abstract Expression bind(Var u, Expression g);
@@ -165,12 +167,7 @@ public abstract class Pattern {
 	 * Create an expression computing a monadic bind for options. 
 	 * I'd really rather be using Haskell here.
 	 * 
-	 * opbind(f,t,g) = f >s> ( (isSome(s) >t> g) >u> some(u) | isNone(s) >> none )
-	 * 
-	 * @param l
-	 * @param t
-	 * @param r
-	 * @return
+	 * <p><code>opbind(f,t,g) = f >s> ( (isSome(s) >t> g) >u> some(u) | isNone(s) >> none )</code>
 	 */
 	public static Expression opbind(Expression f, Var t, Expression g) {
 		
@@ -188,7 +185,6 @@ public abstract class Pattern {
 	 * Filter an expression by piping its publications through isSome.
 	 * Values some(v) will publish v, values none will be ignored.
 	 * @param e
-	 * @return
 	 */
 	public static Expression filter(Expression e) {
 		

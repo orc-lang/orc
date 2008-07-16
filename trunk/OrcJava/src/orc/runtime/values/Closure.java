@@ -42,7 +42,6 @@ public class Closure extends Value implements Callable {
 	 * The caller of the new token is normally a token point to right
 	 * after the call. However, for tail-calls the existing caller
 	 * is reused, rather than creating a new intermediate stack frame.
-	 * @see orc.runtime.values.Callable#createCall(java.lang.String, orc.runtime.Token, java.util.List, orc.runtime.nodes.Node)
 	 */
 	public void createCall(Token callToken, List<Future> args, Node nextNode) throws ArityMismatchException {
 		

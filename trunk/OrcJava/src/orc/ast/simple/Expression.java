@@ -59,7 +59,6 @@ public abstract class Expression {
 	
 	/**
 	 * Find the set of all unbound Vars (note: not FreeVars) in this expression.
-	 * @return
 	 */
 	public abstract Set<Var> vars();
 

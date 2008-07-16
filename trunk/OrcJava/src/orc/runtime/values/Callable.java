@@ -17,11 +17,9 @@ public interface Callable {
 
 	/**
 	 * Create a call to a callable value
-	 * @param label		name (used for debugging)
 	 * @param caller	token for which the call is being made: points to the call node
 	 * @param args		argument list
 	 * @param nextNode	next node after the call node, to which the result should be sent
-	 * @param engine	Orc engine
 	 */
 	void createCall(Token caller, List<Future> args, Node nextNode) throws TokenException;
 

@@ -56,9 +56,8 @@ public abstract class Expr {
 	 * which contain variables or subexpressions override this
 	 * behavior.
 	 * 
-	 * @param vars   The index set accumulator.
-	 * @param depth    The minimum index for a free variable. 
-	 * @return
+	 * @param indices   The index set accumulator.
+	 * @param depth    The minimum index for a free variable.
 	 */
 	public void addIndices(Set<Integer> indices, int depth) {
 		return;

@@ -57,7 +57,6 @@ public class GroupCell implements Serializable, Future {
 	 * When the value is bound, all subgroups are killed
 	 * and all waiting tokens are activated.
 	 * @param value 	the value for the group 
-	 * @param engine	engine
 	 */
 	public void setValue(Value value) {
 		this.value = value;
