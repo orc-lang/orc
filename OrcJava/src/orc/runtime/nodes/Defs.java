@@ -44,8 +44,6 @@ public class Defs extends Node {
 	 * Closures created in this way are protected by a PartialValue object,
 	 * preventing them from being used in argument position until all unbound
 	 * vars in all definition bodies become bound.
-	 * 
-	 * @see orc.runtime.nodes.Node#process(orc.runtime.Token, orc.runtime.OrcEngine)
 	 */
 	public void process(Token t) {
 		

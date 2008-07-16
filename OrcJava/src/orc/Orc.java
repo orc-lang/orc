@@ -185,10 +185,12 @@ public class Orc {
 		return null;
 	}
 
+	/** @deprecated */
 	public static OrcInstance runEmbedded(String source) { 
 		return runEmbedded(new File(source)); 
 	}
 	
+	/** @deprecated */
 	public static OrcInstance runEmbedded(File source) { 
 		try {
 			return runEmbedded(new FileReader(source));
@@ -199,6 +201,7 @@ public class Orc {
 		}
 	}
 	
+	/** @deprecated */
 	public static OrcInstance runEmbedded(Reader source) { 
 		return runEmbedded(source, new Config());
 	}
@@ -208,9 +211,9 @@ public class Orc {
 	 * Start a new Orc engine running this program in a separate thread.
 	 * Returns an OrcInstance object with information about the running instance.
 	 * 
+	 * @deprecated
 	 * @param source
 	 * @param cfg
-	 * @return
 	 */
 	public static OrcInstance runEmbedded(Reader source, Config cfg) {
 		

@@ -209,7 +209,6 @@ public class Args implements Serializable {
 	/**
 	 * Dispatch a binary operator based on the widest
 	 * type of two numbers.
-	 * @return
 	 */
 	public static <T> T applyNumericOperator(Number a, Number b, NumericBinaryOperator<T> op) {
 		if (a instanceof BigDecimal) {
@@ -257,7 +256,6 @@ public class Args implements Serializable {
 
 	/**
 	 * Dispatch a unary operator based on the type of a number.
-	 * @return
 	 */
 	public static <T> T applyNumericOperator(Number a, NumericUnaryOperator<T> op) {
 		if (a instanceof BigDecimal) {

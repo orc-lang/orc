@@ -145,8 +145,8 @@ public class Token implements Serializable, Comparable<Token> {
 
 	/**
 	 * Move to a node node
-	 * @param node  the node to move to
-	 * @return  returns self
+	 * @param node the node to move to
+	 * @return returns self
 	 */
 	public Token move(Node node) {
 		this.node = node;
@@ -158,11 +158,6 @@ public class Token implements Serializable, Comparable<Token> {
 	 * Create a copy of this token with the same dynamic characteristics,
 	 * but executing at a new point in the graph with a different environment.
 	 * Set the new caller's token to the token provided.
-	 * 
-	 * @param node
-	 * @param env
-	 * @param caller
-	 * @return
 	 */
 	public Token callcopy(Node node, Env<Future> env, Token returnToken) {
 		return new Token(node, env, returnToken, group, region, null, engine);
@@ -170,7 +165,7 @@ public class Token implements Serializable, Comparable<Token> {
 
 	/**
 	 * Create a copy of the token
-	 * @return	new token
+	 * @return new token
 	 */
 	public Token copy() {
 		return new Token(node, env, caller, group, region, result, engine);
@@ -195,12 +190,11 @@ public class Token implements Serializable, Comparable<Token> {
 		env = env.unwind(width);
 		return this;
 	}
-
 	
 	/**
 	 * Lookup a variable in the environment
-	 * @param var  	variable name
-	 * @return		value, or an error if the variable is undefined
+	 * @param var variable name
+	 * @return value, or an error if the variable is undefined
 	 */
 	public Future lookup(Arg a) {
 		return a.resolve(env);		

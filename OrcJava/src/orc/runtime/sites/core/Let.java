@@ -15,12 +15,11 @@ public class Let extends Site {
   private static final long serialVersionUID = 1L;
 
 	/**
-	 *  Outputs a single value or creates a tuple.
-	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.OrcEngine)
+	 * Outputs a single value or creates a tuple.
 	 */
 	public void callSite(Args args, Token caller) {
-
-		// Note that a let does not resume like a normal site call; it sets the result and activates directly
+		// Note that a let does not resume like a normal site call; it sets the result and activates directly;
+		// This is necessary to preserve the "immediate" semantics of Let.
 		caller.setResult(args.condense()).activate();
 	}
 

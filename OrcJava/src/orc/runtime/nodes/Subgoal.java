@@ -28,7 +28,6 @@ public class Subgoal extends Node {
 	 * associated with this group cell for execution of the 
 	 * left side of the pull. The token is then moved to the
 	 * right side and it is associated with the new group.
-	 * @see orc.runtime.nodes.Node#process(orc.runtime.Token, orc.runtime.OrcEngine)
 	 */
 	public void process(Token t) {
 		GroupCell cell = t.getGroup().createCell();

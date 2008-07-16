@@ -170,14 +170,10 @@ public class OrcEngine implements Runnable {
 	}
 	
 	/**
-	 * 
 	 * A token owned by this engine has encountered an exception.
 	 * The token dies, remaining silent and leaving the execution,
 	 * and then calls this method so that the engine can report or 
 	 * otherwise handle the failure.
-	 * 
-	 * @param t
-	 * @param probme
 	 */
 	public void tokenError(Token t, TokenException problem) {
 		System.out.println();

@@ -21,7 +21,6 @@ public class Store extends Node {
 	 * of the input token. 
 	 * As a side effect of setting the value of a group, a pull variable
 	 * becomes bound and the execution of the group is terminated.
-	 * @see orc.runtime.nodes.Node#process(orc.runtime.Token, orc.runtime.OrcEngine)
 	 */
 	public void process(Token t) {
 		/*

@@ -81,7 +81,6 @@ public abstract class Site {
 	 * and their locations are equal.
 	 * 
 	 * @param that  The site to which to compare.
-	 * @return
 	 */
 	public boolean equals(Site that) {
 		return (  this.getLocation().equals(that.getLocation())

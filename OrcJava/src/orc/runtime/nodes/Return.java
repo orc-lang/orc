@@ -19,7 +19,6 @@ public class Return extends Node {
 	 * The caller token points to the node after the call.  
 	 * The caller is then copied, the result of the caller is set, and 
 	 * the token is activated.
-	 * @see orc.runtime.nodes.Node#process(orc.runtime.Token, orc.runtime.OrcEngine)
 	 */
 	public void process(Token t) {
 		/*
