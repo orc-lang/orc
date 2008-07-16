@@ -2,12 +2,12 @@ package orc.ast.simple.arg;
 
 
 import orc.ast.oil.arg.Arg;
+import orc.ast.val.Bool;
+import orc.ast.val.Int;
+import orc.ast.val.Str;
+import orc.ast.val.Val;
 import orc.env.Env;
 import orc.runtime.values.Value;
-import orc.val.Bool;
-import orc.val.Int;
-import orc.val.Str;
-import orc.val.Val;
 
 
 /**

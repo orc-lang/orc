@@ -1,6 +1,6 @@
 package orc.ast.extended;
 
-import orc.val.Val;
+import orc.ast.val.Val;
 
 public class Literal extends Expression {
 
