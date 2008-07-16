@@ -11,16 +11,6 @@ public class Constant extends Value {
 	}
 	@Override
 	public orc.ast.oil.arg.Arg unmarshal() {
-		orc.ast.val.Val val;
-		if (value instanceof Integer) {
-			val = new orc.ast.val.Int((Integer)value);
-		} else if (value instanceof String) {
-			val = new orc.ast.val.Str((String)value);
-		} else if (value instanceof Boolean) {
-			val = new orc.ast.val.Bool((Boolean)value);
-		} else {
-			throw new AssertionError("Unexpected constant of type " + value.getClass().toString());
-		}
-		return new orc.ast.oil.arg.Constant(val);
+		return new orc.ast.oil.arg.Constant(value);
 	}
 }
