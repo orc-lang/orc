@@ -35,6 +35,9 @@ import antlr.TokenStreamException;
 
 /**
  * Main class for Orc. Parses Orc file and executes it.
+ * 
+ * <p>Run with the argument "-help" to get a list of command-line options.
+ * 
  * @author wcook, dkitchin
  */
 public class Orc {

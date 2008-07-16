@@ -4,7 +4,7 @@ package orc.error;
  * 
  * Error conditions that should never occur. The occurrence of such
  * an error at runtime indicates the violation of some language
- * invariant.
+ * invariant. In general this can substitute for AssertionError.
  * 
  * @author dkitchin
  *

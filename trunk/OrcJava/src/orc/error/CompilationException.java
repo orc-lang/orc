@@ -14,4 +14,8 @@ public class CompilationException extends OrcException {
 		super(message);
 	}
 
+	public CompilationException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
 }

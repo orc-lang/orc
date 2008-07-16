@@ -4,11 +4,11 @@ import java.util.LinkedList;
 
 import orc.ast.oil.Def;
 import orc.ast.oil.Visitor;
+import orc.ast.val.Int;
+import orc.ast.val.Str;
+import orc.ast.val.Val;
 import orc.env.Env;
 import orc.runtime.values.Future;
-import orc.val.Int;
-import orc.val.Val;
-import orc.val.Str;
 
 public class Constant extends Arg { 
 	

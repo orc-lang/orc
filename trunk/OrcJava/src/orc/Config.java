@@ -68,7 +68,7 @@ public class Config {
 	
 	@Option(name="-i",usage="Include this file from the package orc.inc;" +
 			" may appear multiple times.")
-	public void setIncludes(String include) {
+	public void addInclude(String include) {
 		this.includes.add(include);
 	}
 	

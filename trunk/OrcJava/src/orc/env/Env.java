@@ -50,9 +50,10 @@ public class Env<T> implements Serializable {
 	 * @param   index  Stack depth (a deBruijn index)
 	 * @return  The bound item
 	 */
-	public T lookup(int index) {		
+	public T lookup(int index) {
 		
 		if (index < 0) {
+			// this should be impossible
 			throw new OrcError("Invalid argument to lookup, index " + index + " is negative.");
 		}
 		

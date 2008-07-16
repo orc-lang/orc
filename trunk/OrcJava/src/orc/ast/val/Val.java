@@ -1,4 +1,4 @@
-package orc.val;
+package orc.ast.val;
 
 public abstract class Val {
 	

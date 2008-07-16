@@ -1,5 +1,23 @@
-A. Installation Instructions
-----------------------------
+User Installation Instructions
+------------------------------
+
+Most users will just want to get the orc JAR and
+run programs from the command line.
+
+Download it from: http://sourceforge.net/projects/orc
+
+Assuming you downloaded (for example) orc-0.9.1.jar,
+run at the command line:
+
+  java -jar orc-0.9.1.jar -help
+  
+to see command-line options.
+
+Developer Installation Instructions
+-----------------------------------
+
+If you plan to develop Orc within Eclipse, these
+instructions are for you.
 
 0. Install Java >= 1.5
    http://java.sun.com/javase/6/webnotes/install/
@@ -29,8 +47,8 @@ A. Installation Instructions
 
    <click finish>
 
-B. Running Orc programs
------------------------
+Running Orc programs in Eclipse
+-------------------------------
 
 Run -> Run... -> <right click> Java Application -> New
 
@@ -58,8 +76,8 @@ There are a variety of sample programs in examples/.
 Refer to the User's Guide in doc/userguide.pdf for more details of the Orc
 language.
 
-C. Importing Java objects
--------------------------
+Importing Java objects
+----------------------
 
 list_test.orc
 class List = java.util.ArrayList
@@ -73,8 +91,8 @@ List() >list>
         | println(list.get(2))) >>
     0
 
-D. Writing local Orc sites in Java, for loop example
-----------------------------------------------------
+Writing local Orc sites in Java, for loop example
+-------------------------------------------------
 
 basis.inc
 site GetItem = orc.runtime.sites.GetItem
@@ -130,8 +148,8 @@ List() >list>
     for(list) >item>
     println(item) >> 0
 
-E. Parsing XML using the Java library
--------------------------------------
+Parsing XML using the Java library
+----------------------------------
 
 books.xml
 <catalog>
@@ -184,8 +202,8 @@ DOMParser() >parser>
     println(element.getTextContent())
     >> 0
 
-F. Calling Webservices using WSDL (only on Linux)
--------------------------------------------------
+Calling Webservices using WSDL (only on Linux)
+----------------------------------------------
 
 google_search.orc
 Webservice("http://api.google.com/GoogleSearch.wsdl") >search>
