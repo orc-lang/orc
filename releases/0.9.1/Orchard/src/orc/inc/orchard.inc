@@ -1,0 +1,1 @@
+site Prompt = orc.lib.orchard.Prompt

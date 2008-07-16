@@ -1,0 +1,259 @@
+User Installation Instructions
+------------------------------
+
+Most users will just want to get the orc JAR and
+run programs from the command line.
+
+Download it from: http://sourceforge.net/projects/orc
+
+Assuming you downloaded (for example) orc-0.9.1.jar,
+run at the command line:
+
+  java -jar orc-0.9.1.jar -help
+  
+to see command-line options.
+
+Developer Installation Instructions
+-----------------------------------
+
+If you plan to develop Orc within Eclipse, these
+instructions are for you.
+
+0. Install Java >= 1.5
+   http://java.sun.com/javase/6/webnotes/install/
+
+1. Download Eclipse
+   http://www.eclipse.org/downloads/
+
+2. Install ANTLR plugin from within Eclipse
+   http://antlreclipse.sourceforge.net/
+   => follow Installation instructions
+
+3. Checkout Orc SourceForge project from within Eclipse using
+   Anonymous CVS Access (pserver)
+   https://sourceforge.net/cvs/?group_id=33781
+       
+   File -> New -> Project... -> CVS -> Projects from CVS
+
+   Host: orc.cvs.sourceforge.net
+   Repository path: /cvsroot/orc
+   User: anonymous
+   Password: <leave blank>
+   Connection type: pserver
+
+   <click next>
+
+   Use specified module name: OrcJava
+
+   <click finish>
+
+Running Orc programs in Eclipse
+-------------------------------
+
+Run -> Run... -> <right click> Java Application -> New
+
+Name: Orc
+Project: <browse to OrcMainline project>
+Main class: orc.Orc
+
+<click on Arguments tab>
+
+Program arguments: ${resource_loc}
+
+<click apply & close>
+
+<click on sample orc file once in Package Explorer, Navigator, or Editor so
+ that it's highlighted>
+
+<click on Run button>
+
+Note: ${resource_loc} is a variable whose value is the currently selected file
+in your workspace. Therefore, whenever you want to run Orc, you must ensure
+that you have an Orc source file selected.
+
+There are a variety of sample programs in examples/.
+
+Refer to the User's Guide in doc/userguide.pdf for more details of the Orc
+language.
+
+Importing Java objects
+----------------------
+
+list_test.orc
+class List = java.util.ArrayList
+
+List() >list>
+    list.add("Item A") >>
+    list.add("Item B") >>
+    list.add("Item C") >>
+    (println(list.get(0))
+        | println(list.get(1))
+        | println(list.get(2))) >>
+    0
+
+Writing local Orc sites in Java, for loop example
+-------------------------------------------------
+
+basis.inc
+site GetItem = orc.runtime.sites.GetItem
+site GetSize = orc.runtime.sites.GetSize
+def forLoop(list,i) = if(i < GetSize(list)) >> (let(GetItem(list,i)) | forLoop(list, i+1))
+def nop = 0
+def for(list) = forLoop(list,0)
+
+GetSize.java
+public class GetSize extends EvalSite {
+
+    @Override
+    public Value evaluate(Args args) {
+        Object iterable = args.getArg(0);
+       
+        if (iterable instanceof Collection) {
+            Collection collection = (Collection)iterable;
+            return new Constant(collection.size());
+        } else if (iterable.getClass().isArray()) {
+            return new Constant(Array.getLength(iterable));
+        } else {
+            throw new Error("Unknown iterable " + iterable.getClass().getCanonicalName());
+        }
+    }
+}
+
+GetItem.java
+public class GetItem extends EvalSite {
+
+    @Override
+    public Value evaluate(Args args) {
+      Object iterable = args.getArg(0);
+        int index = args.intArg(1);
+       
+       if (iterable instanceof Collection) {
+            Collection collection = (Collection)iterable;
+            return new Constant(collection.toArray()[index]);
+        } else if (iterable.getClass().isArray()) {
+            return new Constant(Array.get(iterable, index));
+        } else {
+            throw new Error("Unknown iterable " + iterable.getClass().getCanonicalName());
+        }
+    }
+}
+
+list_iter_test.orc
+class List = java.util.ArrayList
+
+List() >list>
+    list.add("Item A") >>
+    list.add("Item B") >>
+    list.add("Item C") >>
+    for(list) >item>
+    println(item) >> 0
+
+Parsing XML using the Java library
+----------------------------------
+
+books.xml
+<catalog>
+  <book id="101">
+    <title>XML in a Nutshell</title>
+    <author>Elliotte Rusty Harold, W. Scott Means</author>
+    <price>39.95</price>
+  </book>
+  <book id="121">
+    <title>Who Moved My Cheese</title>
+    <author>Spencer, M.D. Johnson, Kenneth H. Blanchard</author>
+    <price>19.95</price>
+  </book>
+</catalog>
+
+xml_test.orc
+class DOMParser = com.sun.org.apache.xerces.internal.parsers.DOMParser
+
+DOMParser() >parser>
+    parser.parse("books.xml") >>
+    parser.getDocument() >document>
+    document.getElementsByTagName("title") >elements>
+    println(elements.item(0).getTextContent())
+    >> 0
+
+GetSize.java
+...
+} else if (iterable instanceof NodeList) {
+    NodeList nodeList = (NodeList)iterable;
+    return new Constant(nodeList.getLength());
+}
+...
+
+GetItem.java
+...
+} else if (iterable instanceof NodeList) {
+    NodeList nodeList = (NodeList)iterable;
+    return new Constant(nodeList.item(index));
+}
+...
+
+xml_iter_test.orc
+class DOMParser = com.sun.org.apache.xerces.internal.parsers.DOMParser
+
+DOMParser() >parser>
+    parser.parse("books.xml") >>
+    parser.getDocument() >document>
+    document.getElementsByTagName("title") >elements>
+    for(elements) >element>
+    println(element.getTextContent())
+    >> 0
+
+Calling Webservices using WSDL (only on Linux)
+----------------------------------------------
+
+google_search.orc
+Webservice("http://api.google.com/GoogleSearch.wsdl") >search>
+    println("\n---------   Google Web Search on 'food'   ---------") >>
+   
+    search.doGoogleSearch("dceJmvRQFHKEMK0xSxG9FqYOwqQVRDqQ", "food", 0, 10, true, "", true, "", "", "") >results>
+   
+    print("Number of results: ") >>
+    println(results.getEstimatedTotalResultsCount()) >>
+   
+    print("Search time: ") >>
+    println(results.getSearchTime()) >>
+  
+    println("\nResult URLs: ") >>
+   
+    for(results.getResultElements()) >result>
+    println(result.getURL()) >>
+    0
+
+google_spell.orc
+Webservice("http://api.google.com/GoogleSearch.wsdl") >search>
+    println("\n---------   Google Spelling Suggestion for 'Britanny Spears'   ---------") >>
+   
+    search.doSpellingSuggestion("dceJmvRQFHKEMK0xSxG9FqYOwqQVRDqQ", "Britanny Spears") >suggestion>
+  
+    print("Did you mean: ") >>
+    println(suggestion) >>
+    0
+
+zipcodes.orc
+Webservice("http://www.jasongaylord.com/webservices/zipcodes.asmx?WSDL") >zip>
+   
+    zip.zipCodeToDetails("92109") >details>
+
+    println("\n---------   Zip Code details for '92109' ---------\n") >>
+
+    GetItem(details.get_any(), 1) >rawXML>
+    println(rawXML) >>
+    0
+
+urban_dictionary.orc
+-- Warning: don't call this Webservice if you're offended by _very_ strong language (NSFW)
+-- You have been warned.
+
+Webservice("http://api.urbandictionary.com/soap?wsdl") >urban_dict>
+    println("\n---------   Urban Dictionary Definition of the Day   ---------") >>
+
+    urban_dict.get_daily_definition() >definition>
+   
+    println(definition.getWord()) >>
+    println(definition.getDefinition()) >>
+    println(definition.getExample()) >>
+    0

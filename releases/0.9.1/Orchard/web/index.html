@@ -1,0 +1,27 @@
+<html>
+<!--
+To play with this in your browser without running an Orchard server,
+load it as index.html?mock
+-->
+<head>
+<title>Orchard Demo</title>
+<link rel="stylesheet" type="text/css" href="orc.css"/>
+</head>
+
+<div style="margin: 0 auto 0 auto; width: 500px">
+<h1>Try Orc!</h1>
+
+<p>Enter an Orc program in the text box below and then click the <b>run</b> button.</p>
+
+<pre class="orc-prelude">
+def David(x) = "Hello"
+</pre>
+<textarea spellcheck="false" class="orc" style="width: 500px; height: 200px">
+-- Metronome which publishes every second
+def M(n) = ("Metronome", n) | Rtimer(1000) >> M(n+1)
+
+M(1)
+</textarea>
+</div>
+<script src="orc.js" type="text/javascript"></script>
+</body>
