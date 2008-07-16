@@ -1,12 +1,10 @@
 package orc.ast.extended;
 
-import orc.ast.val.Val;
-
 public class Literal extends Expression {
 
-	Val val;
+	Object val;
 	
-	public Literal(Val val)
+	public Literal(Object val)
 	{
 		this.val = val;
 	}

@@ -9,10 +9,10 @@ header {
 	import java.io.File;
 	import java.io.FileInputStream;
 	import java.io.FileNotFoundException;
+	import java.math.BigInteger;
 	import orc.ast.extended.*;
 	import orc.ast.extended.declaration.*;
 	import orc.ast.extended.pattern.*;
-	import orc.val.*;
 	import orc.error.*;
 	import orc.Orc;
 
@@ -378,13 +378,13 @@ silent_expr returns [Expression e = null]
 
 literal returns [Literal l = null]
 	: num:INT
-		{ l = new Literal(new Int(num.getText())); }
+		{ l = new Literal(new BigInteger(num.getText())); }
 	| str:STRING
-		{ l = new Literal(new Str(str.getText())); }
+		{ l = new Literal(str.getText()); }
 	| TRUE
-		{ l = new Literal(new Bool(true)); }
+		{ l = new Literal(true); }
 	| FALSE
-		{ l = new Literal(new Bool(false)); }
+		{ l = new Literal(false); }
 	;
 
 
