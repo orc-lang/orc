@@ -10,8 +10,8 @@ import java.util.Map;
 
 import orc.ast.oil.Expr;
 import orc.error.TokenException;
-import orc.lib.net.Prompt.PromptCallback;
-import orc.lib.net.Prompt.Promptable;
+import orc.lib.orchard.Prompt.PromptCallback;
+import orc.lib.orchard.Prompt.Promptable;
 import orc.orchard.errors.InvalidJobStateException;
 import orc.orchard.errors.InvalidPromptException;
 import orc.orchard.oil.ValueMarshaller;

@@ -1,1 +1,1 @@
-site Prompt = orc.lib.net.Prompt
+site Prompt = orc.lib.orchard.Prompt
