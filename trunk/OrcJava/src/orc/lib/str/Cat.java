@@ -9,8 +9,9 @@ import orc.runtime.sites.EvalSite;
 import orc.runtime.values.*;
 
 /**
+ * Note that you can also use the syntax "a" + "b" for string concatenation.
+ * 
  * @author dkitchin
- *
  */
 public class Cat extends EvalSite {
 
@@ -25,5 +26,4 @@ public class Cat extends EvalSite {
 		
 		return new Constant(buf.toString());
 	}
-
 }
