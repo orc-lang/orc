@@ -240,7 +240,6 @@ public final class Job {
 	 * If no events have occurred, block using waiter until one occurs.
 	 * If/when the job completes (so no more events can occur), return
 	 * an empty list.
-	 * @see JobInterface.listen
 	 */
 	public List<JobEvent> getEvents(Waiter waiter) throws InterruptedException {
 		return events.get(waiter);

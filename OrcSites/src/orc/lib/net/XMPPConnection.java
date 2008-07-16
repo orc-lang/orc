@@ -22,7 +22,7 @@ import orc.runtime.values.Value;
 /**
  * Orc support for the XMPP (Jabber, Google Talk) messaging protocol.
  * 
- * <p>For the most part, the API follows that of Smack: {@link http://www.igniterealtime.org/projects/smack/}.
+ * <p>For the most part, the API follows that of <a href="http://www.igniterealtime.org/projects/smack/">Smack</a>.
  * This example program should get you started:
  * 
  * <pre>

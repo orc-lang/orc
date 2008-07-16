@@ -4,7 +4,7 @@
  * <p>To run these services locally:
  * <ol>
  * <li>Start rmiregistry with the classpath pointing to the Orc classpath.
- * <li>Run {@link ExecutorService}. By default this starts the executor at
+ * <li>Run {@link orc.orchard.rmi.ExecutorService}. By default this starts the executor at
  * rmi://localhost/orchard
  * <li>Run {@link orc.orchard.rmi.RmiTest} to run a simple test.
  * </ol>
