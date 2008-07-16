@@ -1,11 +1,14 @@
 package orc.runtime;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 
 import orc.error.ArgumentTypeMismatchException;
 import orc.error.ArityMismatchException;
 import orc.error.InsufficientArgsException;
+import orc.error.OrcError;
 import orc.error.TokenException;
 import orc.runtime.values.Constant;
 import orc.runtime.values.Field;
@@ -123,7 +126,7 @@ public class Args implements Serializable {
 		
 		Object a = getArg(n);
 		try
-			{ return ((Integer)a).intValue(); }
+			{ return ((Number)a).intValue(); }
 		catch (ClassCastException e) { 
 			// throw new TokenException("Argument " + n + " should be an int, got " + a.getClass().toString() + " instead."); 
 			throw new ArgumentTypeMismatchException(n, "int", a.getClass().toString());
@@ -138,13 +141,21 @@ public class Args implements Serializable {
 		
 		Object a = getArg(n);
 		try
-			{ return ((Integer)a).longValue(); }
+			{ return ((Number)a).longValue(); }
 		catch (ClassCastException e) {
 			throw new ArgumentTypeMismatchException(n, "long", a.getClass().toString());
 		}
 			// { throw new TokenException("Argument " + n + " should be an int, got " + a.getClass().toString() + " instead."); } 
 	}
 
+	public Number numberArg(int n) throws TokenException {
+		Object a = getArg(n);
+		try
+			{ return (Number)a; }
+		catch (ClassCastException e) {
+			throw new ArgumentTypeMismatchException(n, "Number", a.getClass().toString());
+		}
+	}
 	
 	/**
 	 * Helper function for booleans
@@ -172,4 +183,104 @@ public class Args implements Serializable {
 		return a.toString();
 	}
 	
+	
+	/** A unary operator on numbers */
+	public interface NumericUnaryOperator<T> {
+		public T apply(BigInteger a);
+		public T apply(BigDecimal a);
+		public T apply(int a);
+		public T apply(long a);
+		public T apply(byte a);
+		public T apply(short a);
+		public T apply(double a);
+		public T apply(float a);
+	}
+	
+	/** A binary operator on numbers */
+	public interface NumericBinaryOperator<T> {
+		public T apply(BigInteger a, BigInteger b);
+		public T apply(BigDecimal a, BigDecimal b);
+		public T apply(int a, int b);
+		public T apply(long a, long b);
+		public T apply(byte a, byte b);
+		public T apply(short a, short b);
+		public T apply(double a, double b);
+		public T apply(float a, float b);
+	}
+	
+	/**
+	 * Dispatch a binary operator based on the widest
+	 * type of two numbers.
+	 * @return
+	 */
+	public static <T> T applyNumericOperator(Number a, Number b, NumericBinaryOperator<T> op) {
+		if (a instanceof BigDecimal) {
+			if (b instanceof BigDecimal) {
+				return op.apply((BigDecimal) a, (BigDecimal) b);
+			} else {
+				return op.apply((BigDecimal) a, BigDecimal.valueOf(b.doubleValue()));
+			}
+		} else if (b instanceof BigDecimal) {
+			if (a instanceof BigDecimal) {
+				return op.apply((BigDecimal) a, (BigDecimal) b);
+			} else {
+				return op.apply(BigDecimal.valueOf(a.doubleValue()), (BigDecimal) b);
+			}
+		} else if (a instanceof Double || b instanceof Double) {
+			return op.apply(a.doubleValue(), b.doubleValue());
+		} else if (a instanceof Float || b instanceof Float) {
+			return op.apply(a.floatValue(), b.floatValue());
+		} else if (a instanceof BigInteger) {
+			if (b instanceof BigInteger) {
+				return op.apply((BigInteger) a, (BigInteger) b);
+			} else {
+				return op.apply((BigInteger) a, BigInteger.valueOf(b.longValue()));
+			}
+		} else if (b instanceof BigInteger) {
+			if (a instanceof BigInteger) {
+				return op.apply((BigInteger) a, (BigInteger) b);
+			} else {
+				return op.apply(BigInteger.valueOf(a.longValue()), (BigInteger) b);
+			}
+		} else if (a instanceof Long || b instanceof Long) {
+			return op.apply(a.longValue(), b.longValue());
+		} else if (a instanceof Integer || b instanceof Integer) {
+			return op.apply(a.intValue(), b.intValue());	
+		} else if (a instanceof Short || b instanceof Short) {
+			return op.apply(a.shortValue(), b.shortValue());
+		} else if (a instanceof Byte || b instanceof Byte) {
+			return op.apply(a.byteValue(), b.byteValue());
+		} else {
+			throw new OrcError("Unexpected Number type in ("
+					+ a.getClass().toString()
+					+ ", " + b.getClass().toString() + ")");
+		}
+	}
+
+	/**
+	 * Dispatch a unary operator based on the type of a number.
+	 * @return
+	 */
+	public static <T> T applyNumericOperator(Number a, NumericUnaryOperator<T> op) {
+		if (a instanceof BigDecimal) {
+			return op.apply((BigDecimal) a);
+		} else if (a instanceof Double) {
+			return op.apply(a.doubleValue());
+		} else if (a instanceof Float) {
+			return op.apply(a.floatValue());
+		} else if (a instanceof BigInteger) {
+			return op.apply((BigInteger) a);
+		} else if (a instanceof Long) {
+			return op.apply(a.longValue());
+		} else if (a instanceof Integer) {
+			return op.apply(a.intValue());	
+		} else if (a instanceof Short) {
+			return op.apply(a.shortValue());
+		} else if (a instanceof Byte) {
+			return op.apply(a.byteValue());
+		} else {
+			throw new OrcError("Unexpected Number type in ("
+					+ a.getClass().toString() + ")");
+		}
+	}
 }

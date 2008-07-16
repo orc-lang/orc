@@ -4,11 +4,8 @@
 package orc.runtime.values;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.NoSuchElementException;
 
 import orc.runtime.Token;
 import orc.runtime.sites.java.ObjectProxy;
