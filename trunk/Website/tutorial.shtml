@@ -14,27 +14,26 @@ what the program is doing.</p>
 
 <h2>Sites</h2>
 <p>The fundamental unit of computation in an Orc program is called a
-<i>site</i>.  Sites are similar to procedures or functions in other languages,
-but they may be distributed and are therefore unreliable.  A site can implement
-a complex distributed operation, like interacting with a person ...</p>
-<pre class="orc-prelude">
-def David(x) = Rtimer(1000) >> "Breakfast tacos"
-</pre>
+<i>site</i>.  Sites are similar to functions in other languages,
+but they may be distributed and are therefore unreliable. A site can implement
+a complex distributed operation, like interacting with a user ...</p>
 <pre class="orc">
-David("What is your favorite food?")
+Prompt("What is your favorite food?")
 </pre>
 
 <p>... or a very simple local operation, like adding two numbers:</p>
 <pre class="orc">
 1 + 2
 </pre>
-<p>Orc uses standard infix notation for sites which implement things like
-arithmetic and comparison, but despite the fancy notation these operators are
-still sites like any other.</p>
 
-<p>For the rest of this tutorial, we will use <tt>David</tt> and
-<tt>Adrian</tt> as examples of sites which query a person and return their
-response.</p>
+<p>Although Orc supports standard infix notation for sites which implement
+arithmetic and comparison operators, these are still considered sites like any
+other.</p>
+
+<p>This tutorial will make frequent use of the <tt>Prompt</tt> site, which
+prompts you to enter something and returns your response. For some examples we
+will also use a site called <tt>David</tt>, which you should think of as
+prompting David and returning his response.</p>
 
 <h2>Combinators</h2>
 <p>Orc has three basic combinators which are used to build concurrent expressions:</p>
@@ -50,78 +49,60 @@ response.</p>
 <p>Two Orc expressions can be evaluated in parallel using <tt>|</tt></p>
 
 <pre class="orc-prelude">
-def David(x) = Rtimer(500) >> "Breakfast tacos"
-def Adrian(x) = Rtimer(1000) >> "Burnt sienna"
+def David(x) = Rtimer(3000) >>
+	println("(David says 'Breakfast tacos')") >>
+	"Breakfast tacos"
 </pre>
 <pre class="orc">
   David("What is your favorite food?")
-| Adrian("What is your favorite color?")
+| Prompt("What is your favorite food?")
 </pre>
 
-<p>In the above example, <tt>David</tt> and <tt>Adrian</tt> are invoked
-simultaneously, and <i>both</i> responses are returned. Note that Orc is unlike
-most functional programming languages in that expressions may return more than
-one value if they involve more than one concurrent computation.</p>
+<p>In the above example, <tt>David</tt> and <tt>Prompt</tt> are invoked
+simultaneously, and <i>both</i> responses are published. Note that Orc is
+unlike most functional programming languages in that expressions may publish
+(return) more than one value if they involve more than one concurrent
+computation.</p>
 
 <h3>Sequential Combinator</h3>
 
-<p>Sites can also be called in sequence. The <tt>>></tt> 
-combinator evaluates its right side as soon as the left side returns a
-value:</p>
+<p>Sites can also be called in sequence. The <tt>>></tt> combinator evaluates
+its right side as soon as the left side returns a value:</p>
 
-<pre class="orc-prelude">
-def David(x) = 
-	println("(Talking to David...)") >>
-	Rtimer(1000) >>
-	println("(David says 'warm')")
-def Adrian(x) = println("(Talking to Adrian...)") >>
-	Rtimer(1000) >>
-	println("(Adrian says 'hot')") >>
-	"Hot"
-</pre>
 <pre class="orc">
-David("How is the weather?")
+Prompt("What is your name?")
 
   >>
  
--- Will run as soon as David responds
-Adrian("How is the weather?")
+Prompt("What is your favorite color?")
 </pre>
 
-<p>Push allows you to bind a value produced by its left side and use it in the
-right side:</p>
+<p>Notice that your first response was not published. <tt>>></tt> only
+publishes the value(s) published by the right side.  If you want to use a value
+published by the left side, you can bind it to a variable, like this:</p>
 
-<pre class="orc-prelude">
-def David(x) = Rtimer(1000) >>
-	println("(David says 'balmy')") >>
-	"balmy"
-</pre>
 <pre class="orc">
-David("How is the weather?")
+Prompt("What is your name?")
 
-  >weather>
+  >name>
  
-cat("The weather in Austin is ", weather)
+"Hello " + name
 </pre>
 
-<p>The right side is evaluated independently for <i>every</i> value published
-by the left side:</p>
+<p>If the left side publishes more than one value, the right side is evaluated
+independently for <i>each</i> value:</p>
 
 <pre class="orc-prelude">
-def David(x) = Rtimer(1000) >>
+def David(x) = Rtimer(5000) >>
 	println("(David says 'Pan's Labyrinth')") >>
 	"Pan's Labyrinth"
-def Adrian(x) = Rtimer(1500) >>
-	println("(Adrian says 'Unforgiven')") >>
-	"Unforgiven"
 </pre>
 <pre class="orc">
 (   David("Pick a movie you like:")
-  | Adrian("Pick a movie you like:") )
+  | Prompt("Pick a movie you like:") )
 
   >movie>
  
--- Will print for every response received
 cat("I heard that ", movie, " is a good movie.")
 </pre>
 
@@ -129,51 +110,43 @@ cat("I heard that ", movie, " is a good movie.")
 
 <p>The final combinator, <tt>&lt;&lt;</tt>, combines the concepts of selection,
 blocking, and termination. It is used to select the first value published by an
-expression and then terminate that expression.</p>
-
-<pre class="orc-prelude">
-def David(x) = Rtimer(1000) >>
-	println("(David says 'azure')") >>
-	"azure"
-def Adrian(x) = null
-</pre>
-<pre class="orc">
--- Only one response will be printed.
-cat(color, " wins.")
-
-  &lt;color&lt;
-
-        David("Choose a color.")
-      | Adrian("Choose a color.")  
-</pre>
-
-<p>Both sides of a pull begin evaluating immediately. When the left-hand side
-needs the value produced by the right-hand side, it blocks until that value is
-available.</p>
+expression and then terminate that expression. In the next example, both you
+and David will be asked to enter your names, and the first name entered will be
+published while the other is ignored.</p>
 
 <pre class="orc-prelude">
 def David(x) = 
-	println("(Talking to David ...)") >>
-	Rtimer(3000) >>
-	println("(David says 'purple')") >>
-	"purple"
-def Adrian(x) = null
+	Rtimer(5000) >>
+	"David"
 </pre>
 <pre class="orc">
--- "red" and "blue" are printed immediately
-"red" | cat("light ", color) | "blue"
+name + " wins."
+
+  &lt;name&lt;
+
+	David("What's your name?")
+      | Prompt("What's your name?")  
+</pre>
+
+<p>Both sides of the asymmetric combinator begin evaluating immediately, but
+when the left side needs the value produced by the right side, it blocks until
+that value is available. The next example will print "red" and "blue"
+immediately but must wait to print your color until you enter it:</p>
+
+<pre class="orc">
+"red" | "light " + color | "blue"
 
   &lt;color&lt;
 
-    David("Choose a color.")  
+    Prompt("Choose a color.")  
 </pre>
 
-<p>Site calls with expressions as arguments are just syntactic sugar for asymmetric composition:</p>
+<p>Site calls with expressions as arguments are just syntactic sugar for
+asymmetric composition. For example, these two expressions are equivalent:</p>
 
 <pre class="orc">
--- These two expressions are equivalent
-  cat("3+4=", 3+4)
-| ( cat("3+4=", a) &lt;a&lt; 3 + 4 )
+  "3+4=" + (3 + 4)
+| ( "3+4=" + a &lt;a&lt; 3 + 4 )
 </pre>
 
 <h2>Fundamental Sites</h2>
@@ -196,21 +169,16 @@ useful expressions. The following examples illustrate the most basic ones.</p>
 
 <p><tt>null</tt> is a special value which never publishes (similar to "bottom" or <tt>_|_</tt> in functional languages).
 It is commonly used with sequential composition to suppress published values:</p>
-<pre class="orc-prelude">
-def David(x) = 
-	Rtimer(2000) >>
-	println("(David says '42')")
-</pre>
 <pre class="orc">
-David("Favorite number?") >> null
+Prompt("I'm not listening...") >> null
 </pre>
 
 <h2>Functions</h2>
 
 <p>To facilitate the construction of large programs, Orc allows users to define
-named functions. Functions are called like sites, but unlike sites, they do
-not need to block if one of their arguments is not available when they are
-called, and they can publish multiple values.</p>
+functions.  Functions are called like sites, but unlike sites, they do not need
+to block if one of their arguments is not available when they are called, and
+they can publish multiple values.</p>
 
 <p>Here is a simple recursive function which publishes a number every second:</p>
 <pre class="orc">
@@ -252,17 +220,17 @@ Metronome(2) >n> if(isPrime(n)) >> n
 
 <p>Like any good functional programming language, Orc supports higher-order
 functions (functions which take functions or sites as arguments), lists and
-tuples as basic datatypes, and pattern matching.</p>
+tuples as basic datatypes, and pattern matching. Like infix operators, datatype
+constructors and patterns are just syntactic sugar for sequential site calls.</p>
+
+<p>The next example illustrates these features in a program that adds up all
+the responses received from a list of sites within 5 seconds.</p>
 <pre class="orc-prelude">
-def Random(i,j) = random(j - i) + i + 1
-def Adrian(x) = 
-	Rtimer(Random(3000,7000)) >>
-	println("(Adrian says '13')") >>
-	13
 def David(x) = 
 	Rtimer(3000) >>
 	println("(David says '10')") >>
 	10
+def PromptNumber(x) = Prompt(x) >n> parseInt(n)
 </pre>
 <pre class="orc">
 -- Query a site for a number, and default to 0
@@ -275,12 +243,11 @@ def timeout(M) = n
 def tally([]) = 0
 def tally(x:xs) = timeout(x) + tally(xs)
 
--- Ask David and Adrian for numbers
-tally([David, Adrian])
+-- Ask two sites for numbers
+tally([David, PromptNumber])
 </pre>
 
-<p>Like infix operators, datatype constructors and patterns are just syntactic
-sugar for sequential site calls.</p>
+<p></p>
 
 <h2>Further Study</h2>
 
