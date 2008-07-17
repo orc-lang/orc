@@ -40,15 +40,15 @@ function withExecutor(f) {
  * they enter their repsonse.
  */
 function prompt(message, handler) {
-	var $message = $('<p/>').text(message);
-	var $input = $('<input type="text" value="" size="60"/>');
+	var $message = $('<p>'+escapeHtml(message).replace(/\n/g, '<br />\n')+'</p>');
+	var $input = $('<input type="text" value="" />')
+		.keydown(function(event){
+			switch (event.keyCode) {
+			case 13: ok(); break;
+			case 27: cancel(); break;
+			}
+		});
 	var $root = $('<div/>').append($message).append($input);
-	$input.keydown(function(event){
-		switch (event.keyCode) {
-		case 13: ok(); break;
-		case 27: cancel(); break;
-		}
-	});
 	function close() {
 		$root.dialog('destroy');
 		$root.remove();
@@ -64,13 +64,14 @@ function prompt(message, handler) {
 	}
 	function init() {
 		$root.dialog({
+			dialogClass: 'orc-prompt',
 			title: "Orc Prompt",
 			resizable: false,
-			width: "500",
+			width: "460",
 			height: "", // automatic height
 			buttons: {
-				"OK": ok,
-				"Cancel": cancel
+				"Cancel": cancel,
+				"OK": ok
 			}
 		});
 		$input.focus();
@@ -78,10 +79,10 @@ function prompt(message, handler) {
 	if ($root.dialog) {
 		init();
 	} else {
-		$.getScript(baseUrl + 'jquery-ui-dialog-1.5.2.min.js', init);
+		$.getScript(baseUrl + 'jquery-ui-dialog-20080717-min.js', init);
 	}
 	return {
-		close: close,
+		close: close
 	};
 }
 
@@ -372,7 +373,7 @@ var config = {
 	path: baseUrl,
 	parserfile: ["orc-parser.js"],
 	basefiles: ["codemirror-20080715-extra-min.js"],
-	textWrapping: false,
+	textWrapping: false
 };
 for (var i in widgets) widgets[i].codemirror(config);
 

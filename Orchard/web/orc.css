@@ -59,42 +59,42 @@
 	float: left;
 }
 
-.ui-dialog {
+.orc-prompt {
 	border: 2px solid #666;
 	background-color: #eee;
 }
 
-.ui-dialog-titlebar {
+.orc-prompt .ui-dialog-titlebar {
 	background-color: #666;
 	cursor: pointer;
 }
 
-.ui-dialog-title {
+.orc-prompt .ui-dialog-title {
 	padding: 3px;
 	font: bold 10px Verdana,sans-serif;
 	color: white;
 }
 
-.ui-dialog-titlebar-close {
+.orc-prompt .ui-dialog-titlebar-close {
 	display: none;
 }
 
-.ui-dialog-content {
-	padding: 10px;
-}
-
-.ui-dialog-content p {
-	padding-top: 0px;
-	margin-top: 0px;
-}
-
-.ui-dialog-buttonpane {
-	height: 18px;
+.orc-prompt .ui-dialog-content p {
 	margin: 10px;
 }
 
-.ui-dialog-buttonpane button {
-	float: right;
+.orc-prompt .ui-dialog-content input {
+	width: 400px;
+	margin: 10px;
+	margin-bottom: 35px;
+}
+
+.orc-prompt .ui-dialog-buttonpane {
+	margin: 10px;
+	margin-left: 300px;
+}
+
+.orc-prompt .ui-dialog-buttonpane button {
 	margin-left: 5px;
 	font: bold 10px Verdana,sans-serif;
 	cursor: pointer;
