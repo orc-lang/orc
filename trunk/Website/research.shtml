@@ -2,26 +2,16 @@
 
 <h1>Publications</h1>
 
-<h2>General</h2>
+<h2>Introduction to Orc</h2>
 <ul>
     <li><strong><a href="http://www.cs.utexas.edu/~wcook/papers/OrcJSSM05/OrcJSSM.pdf">Computation 
       Orchestration: A Basis for Wide-Area Computing</a></strong> (<a href="http://springerlink.metapress.com/openurl.asp?genre=article&amp;id=doi:10.1007/s10270-006-0012-1">DOI</a>) <br>
-
-
-
-      Jayadev Misra and William R. Cook<br>
-
-
-
+    Jayadev Misra and William R. Cook<br>
     Journal of Software and Systems Modeling, May 2006.</li>
 
-
-
     <li><strong><a href="http://www.cs.utexas.edu/~wcook/papers/OrcImpDraft.pdf">Implementation Outline of Orc</a></strong><br>
-
-
-
-      William R. Cook and Jayadev Misra</li>
+    William R. Cook and Jayadev Misra<br />
+    Unpublished</li>
 
 
 
@@ -30,7 +20,7 @@
 <h2>Semantics &amp; Verification</h2>
 <ul>
     <li><a href="http://www.cs.utexas.edu/~wcook/Drafts/2007/TimedSemanticsDRAFT.pdf">
-    <span style="font-weight: bold;">A Timed Semantics of Orc</span></a><br>
+    <span style="font-weight: bold;">A Timed Semantics of Orc (Draft)</span></a><br>
 
 Ian Wehrman,&nbsp;David Kitchin,&nbsp;William R. Cook.&nbsp;Jayadev Misra<br>
 	(updated 11/2007)</li>
@@ -42,6 +32,13 @@ Ian Wehrman,&nbsp;David Kitchin,&nbsp;William R. Cook.&nbsp;Jayadev Misra<br>
 
 	Technical Report TR-07-65, University of Texas at Austin, Department
 	of Computer Sciences, 2007</li>
+
+    <li><a href="http://www.cs.utexas.edu/~wcook/papers/WS-FM07/events.pdf">
+    <strong>Event Structure Semantics of Orc</strong></a><br>
+    <a href="http://bpm07.fit.qut.edu.au/ws-fm07/">4th International Workshop on Web Services and Formal Methods</a> (WS-FM 2007)<br>
+
+	Sidney Rosario, David Kitchin, Albert Benveniste, William Cook, Stefan Haar, and Claude Jard<br>
+	Irisa and UT Austin
 
     <li><strong><a href="http://www.cs.utexas.edu/~wcook/papers/OrcSemantics06/OrcSemantics.pdf">A 
       Language for Task Orchestration and its Semantic Properties</a> </strong><a href="http://www.cs.utexas.edu/~wcook/papers/OrcSemantics06/OrcSemantics2up.pdf">(2up 
