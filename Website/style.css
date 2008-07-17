@@ -236,3 +236,8 @@ dl.aligned dt {
 tt {
 	font-size: 13px;
 }
+
+.ui-dialog-content {
+	font-size: 1.3em;
+	line-height: 1.3em;
+}
