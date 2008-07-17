@@ -12,6 +12,17 @@
 			<zipgroupfileset dir="${orc.location.lib}" includes="*.jar"/>
 		</jar>
 	</target>
+	
+	<target name="zip" depends="jar" description="generate the ZIP">
+		<zip basedir="." zipfile="${ant.project.name}-${orc.version}.zip">
+			<include name="${ant.project.name}-${orc.version}.jar"/>
+			<include name="README"/>
+			<include name="LICENSE"/>
+			<include name="INSTALL"/>
+			<include name="examples/**"/>
+			<include name="doc/**"/>
+		</zip>
+	</target>
 
 	<target name="clean" description="clean up">
 		<delete dir="${orc.location.build}" />
