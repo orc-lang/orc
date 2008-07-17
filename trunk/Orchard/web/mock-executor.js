@@ -23,6 +23,16 @@ executorService = (function () {
 		},
 		jobEvents: function (_, f) {
 			if (halt) return f(null);
+			if (n == 1) {
+				n++;
+				return f({
+					"@xsi.type": "ns2:promptEvent",
+					timestamp:"error timestamp "+n,
+					promptID: 1,
+					message: "Say something\nSay something\nSay something\nSay something",
+					sequence: 3
+				});
+			}
 			if (n%4 == 0) {
 				// simulate occasional token errors
 				n++;
@@ -42,15 +52,6 @@ executorService = (function () {
 					line: "Printed line " + n,
 					sequence: 2
 				}]);
-			} else if (n%6 == 0) {
-				n++;
-				return f({
-					"@xsi.type": "ns2:promptEvent",
-					timestamp:"error timestamp "+n,
-					promptID: 1,
-					message: "Say something",
-					sequence: 3
-				});
 			}
 			setTimeout(function () {
 				f({
