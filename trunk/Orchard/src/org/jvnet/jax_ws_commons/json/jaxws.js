@@ -40,7 +40,7 @@
 	stringToJSON: function(string) {
 		out = "'";
 		for (var i = 0; i < string.length; i++) {
-			var ch = string[i]
+			var ch = string.charAt(i);
 			switch (ch) {
 			case '\\':
 				out += '\\\\';
