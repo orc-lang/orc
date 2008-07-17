@@ -236,8 +236,8 @@ Metronome(2) >n> if(isPrime(n)) >> n
 
 <p>Like any good functional programming language, Orc supports higher-order
 functions (functions which take functions or sites as arguments), lists and
-tuples as basic datatypes, and pattern matching. Like infix operators, datatype
-constructors and patterns are just syntactic sugar for sequential site calls.</p>
+tuples as basic datatypes, and pattern matching. Datatype constructors and
+patterns are just syntactic sugar for sequential site calls.</p>
 
 <p>The next example illustrates these features in a program that adds up all
 the responses received from a list of sites within 5 seconds.</p>
