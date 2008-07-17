@@ -103,7 +103,7 @@ def David(x) = Rtimer(5000) >>
 
   >movie>
  
-cat("I heard that ", movie, " is a good movie.")
+"I heard that " + movie + " is a good movie."
 </pre>
 
 <h3>Asymmetric Combinator</h3>
