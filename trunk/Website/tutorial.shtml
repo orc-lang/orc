@@ -47,9 +47,7 @@ arithmetic and comparison operators, these are still considered sites like any
 other.</p>
 
 <p>This tutorial will make frequent use of the <tt>Prompt</tt> site, which
-prompts you to enter something and returns your response. For some examples we
-will also use a site called <tt>David</tt>, which you should think of as
-prompting David and returning his response.</p>
+prompts you to enter something and returns your response.</p>
 
 <a name="Combinators"><h2>Combinators <small>(<a href="#top">top</a>)</small></h2>
 <p>Orc has three basic combinators which are used to build concurrent expressions:</p>
@@ -64,21 +62,15 @@ prompting David and returning his response.</p>
 
 <p>Two Orc expressions can be evaluated in parallel using <tt>|</tt></p>
 
-<pre class="orc-prelude">
-def David(x) = Rtimer(3000) >>
-	println("(David says 'Breakfast tacos')") >>
-	"Breakfast tacos"
-</pre>
 <pre class="orc">
-  David("What is your favorite food?")
-| Prompt("What is your favorite food?")
+  Prompt("What is your favorite food?")
+| Prompt("What is your favorite color?")
 </pre>
 
-<p>In the above example, <tt>David</tt> and <tt>Prompt</tt> are invoked
-simultaneously, and <i>both</i> responses are published. Note that Orc is
-unlike most functional programming languages in that an expression may publish
-(return) more than one value if it involves more than one concurrent
-computation.</p>
+<p>In the above example, two <tt>Prompt</tt>s are invoked simultaneously, and
+<i>both</i> responses are published. Note that Orc is unlike most functional
+programming languages in that an expression may publish (return) more than one
+value if it involves more than one concurrent computation.</p>
 
 <a name="Sequential_Combinator"><h3>Sequential Combinator <small>(<a href="#top">top</a>)</small></h3>
 
@@ -108,13 +100,8 @@ Prompt("What is your name?")
 <p>If the left side publishes more than one value, the right side is evaluated
 independently for <i>each</i> value:</p>
 
-<pre class="orc-prelude">
-def David(x) = Rtimer(5000) >>
-	println("(David says 'Pan's Labyrinth')") >>
-	"Pan's Labyrinth"
-</pre>
 <pre class="orc">
-(   David("Pick a movie you like:")
+(   Prompt("Pick a movie you like:")
   | Prompt("Pick a movie you like:") )
 
   >movie>
@@ -126,22 +113,16 @@ def David(x) = Rtimer(5000) >>
 
 <p>The final combinator, <tt>&lt;&lt;</tt>, combines the concepts of selection,
 blocking, and termination. It is used to select the first value published by an
-expression and then terminate that expression. In the next example, both you
-and David will be asked to enter your names, and the first name entered will be
-published while the other is ignored.</p>
+expression and then terminate that expression. In the next example, you will be
+asked two questions and only your first answer will be published.</p>
 
-<pre class="orc-prelude">
-def David(x) = 
-	Rtimer(5000) >>
-	"David"
-</pre>
 <pre class="orc">
-name + " wins."
+name
 
   &lt;name&lt;
 
-	David("What's your name?")
-      | Prompt("What's your name?")  
+        Prompt("What's your name?")
+      | Prompt("What's your favorite color?")  
 </pre>
 
 <p>Both sides of the asymmetric combinator begin evaluating immediately, but
@@ -157,13 +138,25 @@ immediately but must wait to print your color until you enter it:</p>
     Prompt("Choose a color.")  
 </pre>
 
-<p>Site calls with expressions as arguments are just syntactic sugar for
-asymmetric composition. For example, these two expressions are equivalent:</p>
+<p>The &lt;&lt; syntax can sometimes be cumbersome, so Orc supports an
+alternative form that allows you to write the previous example like this
+instead:</p>
+
+<pre class="orc">
+val color = Prompt("Choose a color.")  
+"red" | "light " + color | "blue"
+</pre>
+
+<p>Furthermore, site calls with expressions as arguments are just syntactic
+sugar for asymmetric composition. For example, these two expressions are
+equivalent:</p>
 
 <pre class="orc">
   "3+4=" + (3 + 4)
-| ( "3+4=" + a &lt;a&lt; 3 + 4 )
+| ( "3+4=" + a ) &lt;a&lt; ( 3 + 4 )
 </pre>
+
+<p></p>
 
 <a name="Fundamental_Sites"><h2>Fundamental Sites <small>(<a href="#top">top</a>)</small></h2>
 
@@ -234,33 +227,36 @@ def Metronome(i) =
 Metronome(2) >n> if(isPrime(n)) >> n
 </pre>
 
-<p>Like any good functional programming language, Orc supports higher-order
-functions (functions which take functions or sites as arguments), lists and
-tuples as basic datatypes, and pattern matching. Datatype constructors and
-patterns are just syntactic sugar for sequential site calls.</p>
+<p>Like any good functional programming language, Orc supports nested
+functions, higher-order functions (functions which take functions or sites as
+arguments), and pattern matching. Datatype constructors and deconstructors
+for patterns are just syntactic sugar for site calls.</p>
 
-<p>The next example illustrates these features in a program that adds up all
-the responses received from a list of sites within 5 seconds.</p>
-<pre class="orc-prelude">
-def David(x) = 
-	Rtimer(3000) >>
-	println("(David says '10')") >>
-	10
-def PromptNumber(x) = Prompt(x) >n> parseInt(n)
-</pre>
+<p>The next example makes use of these features to simulate a simple booking
+agent: it gets quotes from a list of airlines, and returns the best quote under
+$200.</p>
 <pre class="orc">
--- Query a site for a number, and default to 0
--- if it does not respond within 5 seconds
-def timeout(M) = n
-    &lt;n&lt; M("Pick a number:") | Rtimer(5000) >> 0
+-- Create an airline data structure:
+-- a tuple of the name and a function
+-- which returns a quote
+def Airline(name) =
+    def getQuote() = (
+        Prompt(name + " quote ($)") >n>
+        parseInt(n)
+    )
+    (name, getQuote)
 
--- Add up the responses from a list of sites
--- in parallel
-def tally([]) = 0
-def tally(x:xs) = timeout(x) + tally(xs)
+-- Return the best quote under 200 dollars
+def bestQuote([]) =
+    ("None of the above", 200)
+def bestQuote((n, getQuote):rest) =
+    val (n2, q2) = bestQuote(rest)
+    val q = getQuote()
+      if(q &lt;: q2) >> (n, q)
+    | if(q2 &lt;= q) >> (n2, q2)
 
--- Ask two sites for numbers
-tally([David, PromptNumber])
+bestQuote([Airline("Delta"),
+           Airline("United")])
 </pre>
 
 <p></p>
