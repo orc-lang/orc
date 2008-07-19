@@ -227,31 +227,32 @@ Metronome(2) >n> if(isPrime(n)) >> n
 
 <p>Like any good functional programming language, Orc supports nested
 functions, higher-order functions (functions which take functions or sites as
-arguments), and pattern matching. Datatype constructors and deconstructors
-for patterns are just syntactic sugar for site calls.</p>
+arguments) and pattern matching. Datatype constructors and deconstructors for
+patterns are just syntactic sugar for site calls.</p>
 
 <p>The next example makes use of these features to simulate a simple booking
 agent: it gets quotes from a list of airlines, and returns the best quote under
-$200.</p>
+$200 received within 5 seconds.</p>
 <pre class="orc">
--- Create an airline data structure:
--- a tuple of the name and a function
--- which returns a quote
+-- Build a simulated airline quote site
 def Airline(name) =
-    def getQuote() = (
+    def MakeQuote() =
         Prompt(name + " quote ($)") >n>
-        parseInt(n)
-    )
-    (name, getQuote)
+        (name, parseInt(n))
+    MakeQuote
+
+-- Return the lesser of two quotes
+def min((n1,q1), (n2,q2)) =
+    if(q1 <: q2) >> (n1, q1)
+  | if(q2 <= q1) >> (n2, q2)
 
 -- Return the best quote under 200 dollars
-def bestQuote([]) =
-    ("None of the above", 200)
-def bestQuote((n, getQuote):rest) =
-    val (n2, q2) = bestQuote(rest)
-    val q = getQuote()
-      if(q &lt;: q2) >> (n, q)
-    | if(q2 &lt;= q) >> (n2, q2)
+-- within 5 seconds
+def bestQuote([]) = ("None of the above", 200)
+def bestQuote(airline:rest) =
+    val best = bestQuote(rest)
+    val current = airline() | Rtimer(5000) >> best
+    min(current, best)
 
 bestQuote([Airline("Delta"),
            Airline("United")])
