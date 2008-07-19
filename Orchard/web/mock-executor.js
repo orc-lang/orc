@@ -51,6 +51,12 @@ executorService = (function () {
 					timestamp:"println timestamp "+n,
 					line: "Printed line " + n,
 					sequence: 2
+				}, {
+					"@xsi.type": "ns2:promptEvent",
+					timestamp:"error timestamp "+n,
+					promptID: 1,
+					message: "Say something",
+					sequence: 3
 				}]);
 			}
 			setTimeout(function () {

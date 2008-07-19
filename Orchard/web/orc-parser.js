@@ -116,10 +116,10 @@ function readWord(source, _, ch1) {
 	var word = source.get();
 	switch (word) {
 	// literals
-	case "true": case "false":
+	case "true": case "false": case "null":
 		return { type:"boolean", content:word, style:"literal" };
 	// keywords
-	case "val": case "def": case "at": case "null":
+	case "val": case "def": case "at": case "include": case "site": case "class":
 		return { type:word, content:word, style:"keyword" };
 	default:
 		return { type:"variable", content:word, style:"variable" };
