@@ -61,8 +61,8 @@ prompts you to enter something and returns your response.</p>
 <p>Two Orc expressions can be evaluated in parallel using <tt>|</tt></p>
 
 <pre class="orc">
-  Prompt("What is your favorite food?")
-| Prompt("What is your favorite color?")
+  Prompt("Spoon or fork?")
+| Prompt("Bowl or saucer?")
 </pre>
 
 <p>In the above example, two <tt>Prompt</tt>s are invoked simultaneously, and
@@ -76,11 +76,11 @@ value if it involves more than one concurrent computation.</p>
 its right side as soon as the left side returns a value:</p>
 
 <pre class="orc">
-Prompt("What is your name?")
+Prompt("What was the last movie you saw?")
 
   >>
  
-Prompt("What is your favorite color?")
+Prompt("Was it good?")
 </pre>
 
 <p>Notice that your first response was not published. <tt>>></tt> only
@@ -115,12 +115,12 @@ expression and then terminate that expression. In the next example, you will be
 asked two questions and only your first answer will be published.</p>
 
 <pre class="orc">
-name
+fruit
 
-  &lt;name&lt;
+  &lt;fruit&lt;
 
-        Prompt("What's your name?")
-      | Prompt("What's your favorite color?")  
+        Prompt("Apples or oranges?")
+      | Prompt("Grapes or mangos?")
 </pre>
 
 <p>Both sides of the asymmetric combinator begin evaluating immediately, but
