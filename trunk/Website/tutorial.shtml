@@ -24,9 +24,7 @@
 
 <p>This tutorial is interactive: when you see a code example with a <b>run</b>
 button, click it to run the program. The results of the program (the values it
-"publishes") will be printed below. For some examples, you may also see extra
-trace information printed (in parentheses like this) to help you understand
-what the program is doing.</p>
+"publishes") will be printed below.</p>
 
 <a name="Sites"></a><h2>Sites <small>(<a href="#top">top</a>)</small></h2>
 <p>The fundamental unit of computation in an Orc program is called a
