@@ -14,8 +14,8 @@
 	background-color: white;
 }
 .orc-events {
-	height: 60px;
 	border: 1px solid #666;
+	border-top: 3px double #666;
 	margin-top: -1px;
 	overflow: auto;
 }
@@ -25,6 +25,11 @@
 	background-color: #ddd;
 	margin-top: -1px;
 	height: 18px;
+}
+.orc-prompts {
+	border: 1px solid #666;
+	margin-top: -1px;
+	overflow: auto;
 }
 .orc-stop, .orc-close, .orc-run {
 	border: 1px outset;
@@ -42,60 +47,63 @@
 	border-bottom: 1px solid #ddd;
 	font-family: monospace;
 	font-size: 13px;
+	display: none;
 }
 .orc-error {
 	border: 3px solid red;
 	color: red;
 	font-size: larger;
+	display: none;
 }
 .orc-print {
 	border-bottom: 1px solid #ddd;
 	font-color: gray;
+	display: none;
+}
+.orc-prompt {
+	border-bottom: 1px solid #ddd;
+	padding: 5px;
+	font-size: 13px;
+	display: none;
+}
+.orc-prompt p {
+	margin: 0;
+	margin-bottom: 5px;
+}
+.orc-prompt-input {
+	padding-right: 40px;
+	position: relative;
+	/* force IE to calculate layout correctly */
+	display: inline-block;
+}
+.orc-prompt-input input {
+	border: 3px double #ddd;
+	width: 100%;
+}
+.orc-prompt-input-close {
+	width: 16px;
+	height: 16px;
+	background-image: url("/orchard/images/close.gif");
+	background-repeat: no-repeat;
+	position: absolute;
+	right: 0px;
+	top: 5px;
+	cursor: pointer;
+}
+.orc-prompt-input-send {
+	width: 16px;
+	height: 16px;
+	background-image: url("/orchard/images/send.gif");
+	background-repeat: no-repeat;
+	position: absolute;
+	right: 20px;
+	top: 5px;
+	cursor: pointer;
 }
 .orc-loading {
 	width: 16px;
 	height: 16px;
 	background-image: url("/orchard/images/loading.gif");
+	background-repeat: no-repeat;
 	float: left;
-}
-
-.orc-prompt {
-	border: 2px solid #666;
-	background-color: #eee;
-}
-
-.orc-prompt .ui-dialog-titlebar {
-	background-color: #666;
-	cursor: pointer;
-}
-
-.orc-prompt .ui-dialog-title {
-	padding: 3px;
-	font: bold 10px Verdana,sans-serif;
-	color: white;
-}
-
-.orc-prompt .ui-dialog-titlebar-close {
-	display: none;
-}
-
-.orc-prompt .ui-dialog-content p {
-	margin: 10px;
-}
-
-.orc-prompt .ui-dialog-content input {
-	width: 400px;
-	margin: 10px;
-	margin-bottom: 35px;
-}
-
-.orc-prompt .ui-dialog-buttonpane {
-	margin: 10px;
-	margin-left: 300px;
-}
-
-.orc-prompt .ui-dialog-buttonpane button {
-	margin-left: 5px;
-	font: bold 10px Verdana,sans-serif;
-	cursor: pointer;
 }
