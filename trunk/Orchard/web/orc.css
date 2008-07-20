@@ -71,7 +71,7 @@
 	margin-bottom: 5px;
 }
 .orc-prompt-input {
-	padding-right: 40px;
+	padding-right: 46px;
 	position: relative;
 	/* force IE to calculate layout correctly */
 	display: inline-block;
@@ -87,7 +87,7 @@
 	background-repeat: no-repeat;
 	position: absolute;
 	right: 0px;
-	top: 5px;
+	top: 2px;
 	cursor: pointer;
 }
 .orc-prompt-input-send {
@@ -97,7 +97,7 @@
 	background-repeat: no-repeat;
 	position: absolute;
 	right: 20px;
-	top: 5px;
+	top: 2px;
 	cursor: pointer;
 }
 .orc-loading {
