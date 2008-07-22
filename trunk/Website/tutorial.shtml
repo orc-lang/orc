@@ -1,7 +1,6 @@
 <!--#include virtual="header.shtml" --> 
 
 <link rel="stylesheet" type="text/css" href="/orchard/orc.css" media="screen"/>
-<script src="/orchard/jquery-1.2.6.min.js" type="text/javascript"></script>
 <script src="/orchard/orc.js" type="text/javascript"></script>
 
 <a name="top"></a><h1>Orc in 15 Minutes</h1>

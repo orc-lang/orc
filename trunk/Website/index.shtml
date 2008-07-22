@@ -1,5 +1,7 @@
 <!--#include virtual="header.shtml" --> 
 
+<link rel="stylesheet" type="text/css" href="/orchard/orc.css" media="screen"/>
+
 <h2>Orc is ...</h2>
 
 <p>A novel language for distributed and concurrent programming. Orc provides
@@ -23,18 +25,22 @@ failures.</p>
 
 <h2>A Sample Program</h2>
 
-<pre>
-<font color="brown">-- Email an admin if a server does not
--- respond to a ping within t milliseconds</font>
-<font color="blue">def</font> PingTest(<i>t</i>, <i>server</i>) = pong
-  <font color="red">&lt;</font><i>pong</i><font color="red">&lt;</font>   Ping(<i>server</i>)
-         <font color="red">|</font> Rtimer(<i>t</i>) <font color="red">>></font> EmailAdmin(<font color="grey">"Ping failed"</font>)
+<p>Click <b>run</b> to run this program right now in your browser.</p>
 
-<font color="brown">-- Every minute, check if Google responds
--- within 10 seconds</font>
-Metronome(60000) >> PingTest(10000, <font color="grey">"www.google.com"</font>)
+<pre class="orc">
+include "net.inc"
+
+-- Search google and return the first
+-- page of results
+Prompt("Search Google for:") >term>
+Google(term) >pages>
+each(take(1, pages)) >results>
+    each(results()) >result>
+        (result.titleNoFormatting, result.url)
 </pre>
 
 <p><a href="tutorial.shtml">Tutorial with more sample programs...</a></p>
+
+<script src="/orchard/orc.js" type="text/javascript"></script>
 
 <!--#include virtual="footer.shtml" --> 
