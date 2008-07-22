@@ -12,9 +12,8 @@ import orc.runtime.values.Value;
 
 /**
  * NB: this is overloaded to operate on strings,
- * with implicit toString coercion (like Java).
+ * with implicit toString coercion (just like Java).
  * @author quark
- *
  */
 public class Add extends EvalSite {
 	private static class MyOperator implements NumericBinaryOperator<Number> {
@@ -45,13 +44,22 @@ public class Add extends EvalSite {
 	}
 	@Override
 	public Value evaluate(Args args) throws TokenException {
-		Object a = args.getArg(0);
-		Object b = args.getArg(1);
-		if (a instanceof String || b instanceof String) {
-			return new Constant(args.stringArg(0) + args.stringArg(1));
+		try {
+    		return new Constant(Args.applyNumericOperator(
+    				args.numberArg(0), args.numberArg(1),
+    				new MyOperator()));
+		} catch (TokenException _1) {
+			// If the arguments aren't both numbers, maybe
+			// one or the other is a string
+			try {
+				// the first argument is a string
+    			String a = args.stringArg(0);
+    			return new Constant(a + args.valArg(1).toString());
+    		} catch (TokenException _2) {
+				// the second argument is a string
+    			String b = args.stringArg(1);
+    			return new Constant(args.valArg(0).toString() + b);
+    		}
 		}
-		return new Constant(Args.applyNumericOperator(
-				args.numberArg(0), args.numberArg(1),
-				new MyOperator()));
 	}
 }
