@@ -27,7 +27,6 @@ def unzip((x,y):z) = (x:xs,y:ys) <(xs,ys)< unzip(z)
 def length([]) = 0
 def length(h:t) = 1 + length(t)
 
-
-
-
- 
+def take(0, _) = []
+def take(_, []) = []
+def take(n, h:t) = h:take(n-1, t)
