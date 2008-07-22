@@ -13,14 +13,17 @@ load it as index.html?mock
 
 <p>Enter an Orc program in the text box below and then click the <b>run</b> button.</p>
 
-<pre class="orc-prelude">
-def David(x) = "Hello"
-</pre>
 <textarea spellcheck="false" class="orc" style="width: 500px; height: 200px">
--- Metronome which publishes every second
-def M(n) = ("Metronome", n) | Rtimer(1000) >> M(n+1)
+include "fun.inc"
 
-M(1)
+def ElizaPrompt(init) =
+    val eliza = Eliza()
+    def loop(message) =
+        eliza(Prompt(message)) >response>
+        loop(response)
+    loop(init)
+
+ElizaPrompt("How do you do.  Please tell me your problem.")
 </textarea>
 </div>
 <script src="orc.js" type="text/javascript"></script>

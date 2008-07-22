@@ -185,11 +185,9 @@ function OrcWidget(code) {
 		if ($events.height() + $html.height() > 100) {
 			$events.height(100);
 		}
+		$html.show();
 		if ($events.css("height") != "auto") {
-			$html.show();
 			$events[0].scrollTop = $events[0].scrollHeight;
-		} else {
-			$html.slideDown("fast");
 		}
 	}
 
@@ -351,6 +349,8 @@ function OrcWidget(code) {
 		 * Handle errors.
 		 */
 		function onError(response, code, exception) {
+			// ignore errors which happened after we stopped the job
+			if (finished) return;
 			// Try to stop the job
 			stop();
 			renderError(response, code, exception);

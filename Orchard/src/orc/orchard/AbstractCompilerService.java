@@ -29,6 +29,7 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
 	}
 
 	public Oil compile(String devKey, String program) throws InvalidProgramException {
+		logger.info("compile(" + devKey + ", " + program + ")");
 		if (program == null) throw new InvalidProgramException("Null program!");
 		orc.ast.simple.Expression ex0;
 		try {

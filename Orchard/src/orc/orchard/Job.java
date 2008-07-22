@@ -271,14 +271,14 @@ public final class Job {
 	 * Submit a response to a prompt (initiated by the Prompt site).
 	 * @throws InvalidPromptException if promptID is invalid
 	 */
-	public void respondToPrompt(int promptID, String response) throws InvalidPromptException {
+	public synchronized void respondToPrompt(int promptID, String response) throws InvalidPromptException {
 		PromptCallback callback = pendingPrompts.get(promptID);
 		if (callback == null) throw new InvalidPromptException();
 		pendingPrompts.remove(promptID);
 		callback.respondToPrompt(response);
 	}
 
-	public void cancelPrompt(int promptID) throws InvalidPromptException {
+	public synchronized void cancelPrompt(int promptID) throws InvalidPromptException {
 		PromptCallback callback = pendingPrompts.get(promptID);
 		if (callback == null) throw new InvalidPromptException();
 		pendingPrompts.remove(promptID);
