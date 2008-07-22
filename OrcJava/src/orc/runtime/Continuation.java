@@ -41,6 +41,21 @@ public abstract class Continuation {
 		return new TokenContinuation(token);
 	}
 	
+	public interface Thunk {
+		public Value apply() throws TokenException;
+	}
+	
+	public static void withToken(Token caller, Thunk thunk) throws TokenException {
+		setCurrentToken(caller);
+		Value value = thunk.apply();
+		caller = getCurrentToken();
+		if (caller != null) {
+			// the site never suspended, so we can go ahead
+			// and resume with the value it returned
+			caller.resume(value);
+		}
+	}
+	
 	/** Package access so OrcEngine can use this. */
 	static void setCurrentToken(Token token) {
 		currentToken.set(token);

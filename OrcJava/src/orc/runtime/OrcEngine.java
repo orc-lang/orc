@@ -232,12 +232,4 @@ public class OrcEngine implements Runnable {
 	public void println(String string) {
 		System.out.println(string);
 	}
-	/** Provide access to a package static method. */
-	public void setCurrentToken(Token caller) {
-		Continuation.setCurrentToken(caller);
-	}
-	/** Provide access to a package static method. */
-	public Token getCurrentToken() {
-		return Continuation.getCurrentToken();
-	}
 }
