@@ -10,6 +10,9 @@
 		<jar jarfile="${ant.project.name}-${orc.version}.jar" basedir="${orc.location.build}">
 			<!-- Include library dependencies -->
 			<zipgroupfileset dir="${orc.location.lib}" includes="*.jar"/>
+			<manifest>
+				<attribute name="Main-Class" value="orc.Orc"/>
+			</manifest>	
 		</jar>
 	</target>
 	
