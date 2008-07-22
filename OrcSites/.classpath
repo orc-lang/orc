@@ -19,5 +19,6 @@
 	<classpathentry kind="lib" path="lib/smackx.jar"/>
 	<classpathentry kind="lib" path="lib/tools.jar"/>
 	<classpathentry kind="lib" path="lib/wsdl4j-1.6.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jettison-1.0.1.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>
