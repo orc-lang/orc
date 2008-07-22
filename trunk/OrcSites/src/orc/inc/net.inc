@@ -1,5 +1,7 @@
 site localhost = orc.lib.net.Localhost
 site Webservice = orc.lib.net.Webservice
+site Ping = orc.lib.net.Ping
+site Google = orc.lib.net.GoogleSearch
 
 site Mail = orc.lib.net.Mail
 
