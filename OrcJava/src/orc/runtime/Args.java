@@ -174,11 +174,19 @@ public class Args implements Serializable {
 	}
 
 	/**
-	 * Helper function for strings
+	 * Helper function for strings.
+	 * Note that this requires a strict String type.
+	 * If you don't care whether the argument is really a string,
+	 * use valArg(n).toString().
 	 * @throws TokenException 
 	 */
 	public String stringArg(int n) throws TokenException {
-		return valArg(n).toString();
+		Object a = getArg(n);
+		try {
+			return (String)a;
+		} catch (ClassCastException e) {
+			throw new ArgumentTypeMismatchException(n, "String", a.getClass().toString());
+		}
 	}
 	
 	

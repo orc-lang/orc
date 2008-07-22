@@ -21,7 +21,7 @@ public class Cat extends EvalSite {
 		
 		for(int i = 0; i < args.size(); i++)
 		{
-			buf.append(args.stringArg(i));
+			buf.append(args.valArg(i).toString());
 		}
 		
 		return new Constant(buf.toString());
