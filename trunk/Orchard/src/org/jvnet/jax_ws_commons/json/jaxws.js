@@ -90,13 +90,13 @@
 					var response = req.responseText
 						? eval('('+req.responseText+')')
 						: null;
+					if (req.status == 200) {
+						if (onResult) onResult(response);
+					} else {
+						onError(response, req.status);
+					}
 				} catch (e) {
 					onError(null, null, e);
-				}
-				if (req.status == 200) {
-					if (onResult) onResult(response);
-				} else {
-					onError(response, req.status);
 				}
 			}
 		};

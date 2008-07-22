@@ -52,7 +52,6 @@ public abstract class AbstractExecutorService implements ExecutorServiceInterfac
 	}
 	
 	public String submit(String devKey, Oil program) throws QuotaException, InvalidOilException, RemoteException {
-		logger.info("submit");
 		try {
 			return submitConfigured(devKey, program, getDefaultJobConfiguration());
 		} catch (UnsupportedFeatureException e) {
@@ -64,6 +63,7 @@ public abstract class AbstractExecutorService implements ExecutorServiceInterfac
 	public String submitConfigured(String devKey, Oil program, JobConfiguration configuration)
 		throws QuotaException, InvalidOilException,	UnsupportedFeatureException, RemoteException
 	{
+		logger.info("submit(" + devKey + ", ...)");
 		if (configuration.debuggable) {
 			throw new UnsupportedFeatureException("Debuggable jobs not supported yet.");
 		}
@@ -81,10 +81,12 @@ public abstract class AbstractExecutorService implements ExecutorServiceInterfac
 			throw new InvalidOilException(sb.toString());
 		}
 		accounts.getAccount(devKey).addJob(id, new Job(expr, configuration));
+		logger.info("submit(" + devKey + ", ...) => " + id);
 		return id;
 	}
 	
 	public Set<String> jobs(String devKey) {
+		logger.info("jobs(" + devKey + ")");
 		return accounts.getAccount(devKey).jobIDs();
 	}
 	
@@ -112,34 +114,42 @@ public abstract class AbstractExecutorService implements ExecutorServiceInterfac
 	}
 
 	public void finishJob(String devKey, String job) throws InvalidJobStateException, RemoteException, InvalidJobException {
+		logger.info("finishJob(" + devKey + ", " + job + ")");
 		accounts.getAccount(devKey).getJob(job).finish();
 	}
 
 	public void haltJob(String devKey, String job) throws RemoteException, InvalidJobException {
+		logger.info("haltJob(" + devKey + ", " + job + ")");
 		accounts.getAccount(devKey).getJob(job).halt();
 	}
 
 	public List<JobEvent> jobEvents(String devKey, String job) throws RemoteException, InterruptedException, InvalidJobException {
+		logger.info("jobEvents(" + devKey + ", " + job + ")");
 		return accounts.getAccount(devKey).getJob(job).getEvents(getWaiter());
 	}
 
 	public String jobState(String devKey, String job) throws RemoteException, InvalidJobException {
+		logger.info("jobState(" + devKey + ", " + job + ")");
 		return accounts.getAccount(devKey).getJob(job).state();
 	}
 
 	public void purgeJobEvents(String devKey, String job) throws RemoteException, InvalidJobException {
+		logger.info("purgeJobEvents(" + devKey + ", " + job + ")");
 		accounts.getAccount(devKey).getJob(job).purgeEvents();
 	}
 
 	public void startJob(String devKey, String job) throws InvalidJobStateException, RemoteException, InvalidJobException {
+		logger.info("startJob(" + devKey + ", " + job + ")");
 		accounts.getAccount(devKey).getJob(job).start();
 	}
 
 	public void respondToPrompt(String devKey, String job, int promptID, String response) throws InvalidPromptException, RemoteException, InvalidJobException {
+		logger.info("respondToPrompt(" + devKey + ", " + job + "," + promptID + ", ...)");
 		accounts.getAccount(devKey).getJob(job).respondToPrompt(promptID, response);
 	}
 
 	public void cancelPrompt(String devKey, String job, int promptID) throws InvalidJobException, InvalidPromptException, RemoteException {
+		logger.info("cancelPrompt(" + devKey + ", " + job + "," + promptID + ")");
 		accounts.getAccount(devKey).getJob(job).cancelPrompt(promptID);
 	}
 }
