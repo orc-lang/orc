@@ -11,7 +11,7 @@ import orc.runtime.values.Value;
  * 
  * @author quark
  */
-public class Continuation {
+public abstract class Continuation {
 	/**
 	 * Technically this doesn't need to be thread-local, since the current token
 	 * should only be read or written from the main engine thread. However making
@@ -38,7 +38,7 @@ public class Continuation {
 		}
 		// can only suspend once!
 		currentToken.set(null);
-		return new Continuation(token);
+		return new TokenContinuation(token);
 	}
 	
 	/** Package access so OrcEngine can use this. */
@@ -51,36 +51,19 @@ public class Continuation {
 		return (Token)currentToken.get();
 	}
 	
-	private Token token;
-	public Continuation(Token token) {
-		this.token = token;
-	}
-	
 	/**
 	 * Kill the continuation (indicate it will never return). May only be called
 	 * once.
 	 */
-	public synchronized void kill() {
-		if (token == null) {
-			throw new AssertionError("Tried to kill an old continuation.");
-		}
-		token.die();
-		token = null;
-	}
-	
-	public synchronized void error(TokenException e) {
-		if (token == null) {
-			throw new AssertionError("Tried to kill an old continuation.");
-		}
-		token.error(e);
-		token = null;
-	}
-	
+	public abstract void die();
+
 	/**
 	 * Signal an error. Well-behaved sites will call this instead of throwing an
 	 * exception, to allow Orc to handle the error correctly.
 	 */
-	public synchronized void error(Exception e) {
+	public abstract void error(TokenException e);
+	
+	public void error(Exception e) {
 		error(new JavaException(e));
 	}
 	
@@ -92,11 +75,63 @@ public class Continuation {
 	 * will occur in a separate thread, so it's up to the caller what to
 	 * do after resuming.
 	 */
-	public synchronized void resume(Value value) {
-		if (token == null) {
-			throw new AssertionError("Tried to resume an old continuation.");
-		}
-		token.resume(value);
-		token = null;
+	public abstract void resume(Value value);
+	
+	/**
+	 * Continuations which resume by resuming a token.
+	 * @author quark
+	 */
+	public static class TokenContinuation extends Continuation {
+    	private Token token;
+    	public TokenContinuation(Token token) {
+    		this.token = token;
+    	}
+    	
+    	public synchronized void die() {
+    		if (token == null) {
+    			throw new AssertionError("Tried to kill an old continuation.");
+    		}
+    		token.die();
+    		token = null;
+    	}
+    	
+    	public synchronized void error(TokenException e) {
+    		if (token == null) {
+    			throw new AssertionError("Tried to kill an old continuation.");
+    		}
+    		token.error(e);
+    		token = null;
+    	}
+    	
+    	public synchronized void resume(Value value) {
+    		if (token == null) {
+    			throw new AssertionError("Tried to resume an old continuation.");
+    		}
+    		token.resume(value);
+    		token = null;
+    	}
+	}
+	
+	/**
+	 * Continuation which resumes by resuming a parent continuation.
+	 * @author quark
+	 */
+	public static abstract class NestedContinuation extends Continuation {
+    	protected final Continuation parent;
+    	public NestedContinuation(Continuation parent) {
+    		this.parent = parent;
+    	}
+    	
+    	public void die() {
+    		parent.die();
+    	}
+    	
+    	public void error(TokenException e) {
+    		parent.error(e);
+    	}
+    	
+    	public void resume(Value value) {
+    		parent.resume(value);
+    	}
 	}
 }

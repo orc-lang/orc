@@ -16,4 +16,12 @@ public class OrcError extends Error {
 		super(message);
 	}
 
+	public OrcError(String arg0, Throwable arg1) {
+		super(arg0, arg1);
+	}
+
+	public OrcError(Throwable arg0) {
+		super(arg0);
+	}
+
 }
