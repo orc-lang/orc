@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<endpoints xmlns='http://java.sun.com/xml/ns/jax-ws/ri/runtime' version='2.0'>
+	<!-- SOAP services -->
+	<endpoint name='soap/compiler'
+	 implementation='orc.orchard.soap.CompilerService'
+	 url-pattern='/soap/compiler'/>
+	<endpoint name='soap/executor'
+	 implementation='orc.orchard.soap.ExecutorService'
+	 url-pattern='/soap/executor'/>
+
+	<!-- JSON services -->
+	<endpoint name='json/compiler'
+	 implementation='orc.orchard.soap.CompilerService'
+	 binding="https://jax-ws-commons.dev.java.net/json/"
+	 url-pattern='/json/compiler'/>
+	<endpoint name='json/executor'
+	 implementation='orc.orchard.soap.ExecutorService'
+	 binding="https://jax-ws-commons.dev.java.net/json/"
+	 url-pattern='/json/executor'/>
+</endpoints> 

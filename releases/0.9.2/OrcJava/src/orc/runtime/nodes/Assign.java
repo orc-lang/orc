@@ -1,0 +1,34 @@
+/*
+ * Copyright 2005, The University of Texas at Austin. All rights reserved.
+ */
+package orc.runtime.nodes;
+
+import orc.ast.simple.arg.Var;
+import orc.runtime.Token;
+import orc.runtime.values.Value;
+
+/**
+ * Compiled node for assignment. 
+ * @author dkitchin, wcook
+ */
+public class Assign extends Node {
+	private static final long serialVersionUID = 1L;
+	Node next;
+
+	public Assign(Node next) {
+		this.next = next;
+	}
+
+	/** 
+	 * When executed, extends the environment with a new binding.
+	 * The result value in the input token is pushed onto the env stack.
+	 * The token moves to the next node and reactivates.
+	 * @see orc.runtime.nodes.Node#process(orc.runtime.Token)
+	 */
+	public void process(Token t) {
+		Value val = t.getResult();
+		t.bind(val);
+		t.move(next).activate();
+	}
+
+}
