@@ -52,6 +52,14 @@ function escapeHtml(v) {
 }
 
 /**
+ * Despite the name this doesn't actually redirect,
+ * it justs opens a new window.
+ */
+function redirect(url) {
+	open(url);
+}
+
+/**
  * Convert arbitrary JSON values to
  * pretty-printed HTML
  */
@@ -337,6 +345,9 @@ function OrcWidget(code) {
 					break;
 				case "ns2:promptEvent":
 					onPrompt(v);
+					break;
+				case "ns2:redirectEvent":
+					redirect(v.url);
 					break;
 				}
 			});

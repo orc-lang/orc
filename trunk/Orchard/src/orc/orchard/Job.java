@@ -1,5 +1,6 @@
 package orc.orchard;
 
+import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.Date;
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import orc.ast.oil.Expr;
 import orc.error.TokenException;
 import orc.lib.orchard.Prompt.PromptCallback;
 import orc.lib.orchard.Prompt.Promptable;
+import orc.lib.orchard.Redirect.Redirectable;
 import orc.orchard.errors.InvalidJobStateException;
 import orc.orchard.errors.InvalidPromptException;
 import orc.orchard.oil.ValueMarshaller;
@@ -136,7 +138,7 @@ public final class Job {
 	 */
 	private JobConfiguration configuration;
 	
-	private class JobEngine extends OrcEngine implements Promptable {
+	private class JobEngine extends OrcEngine implements Promptable, Redirectable {
 		private StringBuffer printBuffer = new StringBuffer();
 		/** Close the event stream when done running. */
 		@Override
@@ -182,6 +184,10 @@ public final class Job {
 				pendingPrompts.put(promptID, callback);
 			}
 			events.add(new PromptEvent(promptID, message));
+		}
+
+		public void redirect(URL url) {
+			events.add(new RedirectEvent(url));
 		}
 	}
 	private int nextPromptID = 1;
