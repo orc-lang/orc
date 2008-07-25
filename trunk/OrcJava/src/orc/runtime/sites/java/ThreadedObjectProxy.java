@@ -4,6 +4,8 @@ import orc.error.TokenException;
 import orc.lib.util.ThreadSite;
 import orc.runtime.Args;
 import orc.runtime.Token;
+import orc.runtime.sites.Site;
+import orc.runtime.sites.java.ObjectProxy.DelegateCache;
 
 /**
  * Objects whose methods should always be called in new threads.
@@ -11,9 +13,10 @@ import orc.runtime.Token;
  * methods to block the interpreter.
  * @author quark
  */
-public class ThreadedObjectProxy extends ObjectProxy {
+public class ThreadedObjectProxy extends Site {
+	private DelegateCache delegates;
 	public ThreadedObjectProxy(Object inst) {
-		super(inst);
+		delegates = new DelegateCache(inst.getClass(), inst);
 	}
 	public void callSite(final Args args, final Token caller) throws TokenException {
 		String methodName;
@@ -21,9 +24,10 @@ public class ThreadedObjectProxy extends ObjectProxy {
 			methodName = args.fieldName();
 		} catch (TokenException e) {
 			// If this looks like a site call, call the special method "apply".
-			new ThreadedMethodProxy(getDelegate("apply")).callSite(args, caller);
+			ThreadSite.makeThreaded(new MethodProxy(delegates.get("apply")))
+				.callSite(args, caller);
 			return;
 		}
-		caller.resume(ThreadSite.makeThreaded(new MethodProxy(getDelegate(methodName))));
+		caller.resume(ThreadSite.makeThreaded(new MethodProxy(delegates.get(methodName))));
 	}
 }
