@@ -28,6 +28,11 @@ import orc.runtime.values.Value;
  * Allow a Java method to be used as an Orc site.
  * 
  * <p>MAGIC: pausible methods are run in a Kilim task.
+ * We actually go to some lengths to avoid running
+ * non-pausable methods in a Kilim task to ensure that
+ * if this site is wrapped by ThreadSite, the method
+ * will actually run in its own thread and not in the
+ * Kilim thread.
  * 
  * @author quark, dkitchin
  */
@@ -48,13 +53,10 @@ public class MethodProxy extends Site {
         	// FIXME: support varargs
         	if (parameterTypes.length != oargs.length)
         		continue;
-        	// skip non-public methods
-        	// FIXME: lift this check outside the loop
-        	if ((m.getModifiers() & Modifier.PUBLIC) == 0)
-        		continue;
         	// check argument types
         	for (int i = 0; i < parameterTypes.length; ++i) {
         		if (oargs[i] == null) continue;
+        		// FIXME: does not account for implicit numeric conversions
         		if (!parameterTypes[i].isAssignableFrom(oargs[i].getClass())) {
         			continue lookingForMethod;
         		}
@@ -106,7 +108,17 @@ public class MethodProxy extends Site {
         // Invoke the method inside a task
         KilimSite.runPausable(caller, new Callable() {
         	public @pausable Value call() throws Exception {
-                return wrapObject(pm, _invokePausable(pm, that, pargs));
+        		try {
+	                return wrapObject(pm, _invokePausable(pm, that, pargs));
+        		} catch (InvocationTargetException e) {
+        			// attempt to unwrap a reflected exception
+        			Throwable cause = e.getCause();
+        			if (cause instanceof Exception)
+        				throw (Exception)cause;
+        			if (cause instanceof RuntimeException)
+        				throw (RuntimeException)cause;
+        			throw e;
+        		}
         	}
         });
     }

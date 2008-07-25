@@ -4,18 +4,15 @@
 package orc.runtime.sites.java;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.util.LinkedList;
-import java.util.List;
 
 import orc.error.JavaException;
-import orc.error.MessageNotUnderstoodException;
 import orc.error.MethodTypeMismatchException;
 import orc.error.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
-import orc.runtime.sites.java.ObjectProxy.Delegate;
-import orc.runtime.values.*;
+import orc.runtime.sites.java.ObjectProxy.DelegateCache;
+import orc.runtime.values.Constant;
+import orc.runtime.values.Value;
 
 
 /**
@@ -23,10 +20,13 @@ import orc.runtime.values.*;
  */
 public class ClassProxy extends EvalSite {
 	private static final long serialVersionUID = 1L;
-	Class wrapped_class;
+	private Class wrapped_class;
+	private DelegateCache delegates;
+	
 
 	public ClassProxy(Class c) {
 		this.wrapped_class = c;
+		this.delegates = new DelegateCache(c, null);
 	}
 
 	@Override
@@ -43,21 +43,8 @@ public class ClassProxy extends EvalSite {
 			// do nothing
 		}
 		if (methodName != null) {
-			List<Method> matchingMethods = new LinkedList<Method>();
-			for (Method m : wrapped_class.getMethods()) {
-				if (m.getName().equals(methodName)) {
-					matchingMethods.add(m);
-				}
-			}
-
-			if (matchingMethods.isEmpty()) {
-				throw new MessageNotUnderstoodException(methodName);
-			}
-
-			return new MethodProxy(new Delegate(methodName,
-					matchingMethods.toArray(new Method[]{}), null));
+			return new MethodProxy(delegates.get(methodName));
 		}
-
 
 		Object inst = null;
 
@@ -66,9 +53,10 @@ public class ClassProxy extends EvalSite {
 		for (Constructor cn : wrapped_class.getConstructors()) {
 			try {
 				inst = cn.newInstance(args.asArray());
-			}
-			catch (IllegalArgumentException e) {}
-			catch (Exception e) {
+			} catch (IllegalArgumentException e) {
+				// if the arguments didn't match, try the
+				// next constructor
+			} catch (Exception e) {
 				throw new JavaException(e);
 			}
 		}

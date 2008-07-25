@@ -22,6 +22,10 @@ import orc.runtime.values.Value;
  * task throws an exception, the token is killed with an error. Otherwise
  * the token uses the return value.
  * 
+ * <p>Killing a token will not automatically exit the corresponding task,
+ * because we don't know what kind of cleanup may be necessary and tasks
+ * don't provide a good way to define such.
+ * 
  * @author quark
  * 
  */
@@ -63,9 +67,16 @@ public abstract class KilimSite extends Site {
         		// start evaluating the site
         		final Mailbox<ExitMsg> exit = new Mailbox<ExitMsg>();
         		Task task = new Task() {
-        			public @pausable void execute() throws Exception {
-        				normalExit[0] = thunk.call();
-    					exit(normalExit);
+        			public @pausable void execute() {
+        				try {
+	        				normalExit[0] = thunk.call();
+	    					exit(normalExit);
+        				} catch (Exception e) {
+        					// if we just throw the exception,
+        					// Kilim will print an unwanted
+        					// error message
+        					exit(e);
+        				}
         			}
         		};
         		task.informOnExit(exit);
@@ -75,7 +86,7 @@ public abstract class KilimSite extends Site {
     			if (result instanceof TokenException) {
     				// a token exception
     				caller.error((TokenException)result);
-    			} else if (result instanceof Throwable) {
+				} else if (result instanceof Throwable) {
     				// some other exception
     				caller.error(new JavaException((Throwable)result));
     			} else if (result == normalExit) {

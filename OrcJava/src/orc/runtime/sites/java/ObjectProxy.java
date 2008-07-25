@@ -4,6 +4,7 @@
 package orc.runtime.sites.java;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,7 +30,29 @@ import orc.runtime.values.Value;
  */
 public class ObjectProxy extends Site {
 	private static final long serialVersionUID = 1L;
+	private DelegateCache delegates;
+
+	public ObjectProxy(Object inst) {
+		delegates = new DelegateCache(inst.getClass(), inst);
+	}
 	
+	@Override
+	public void callSite(Args args, Token caller) throws TokenException {
+		String methodName;
+		try {
+			methodName = args.fieldName();
+		} catch (TokenException e) {
+			// If this looks like a site call, call the special method "apply".
+			new MethodProxy(delegates.get("apply")).callSite(args, caller);
+			return;
+		}
+		caller.resume(new MethodProxy(delegates.get(methodName)));
+	}
+	
+	/**
+	 * Handle for a method (known in the .NET world as a delegate).
+	 * @author quark
+	 */
 	public static class Delegate {
 		public String name;
 		public Method[] methods;
@@ -40,53 +63,55 @@ public class ObjectProxy extends Site {
 			this.that = that;
 		}
 	}
-
-	Object wrapped;
-	Map<String, Delegate> methods = new HashMap<String, Delegate>();
-
-	public ObjectProxy(Object inst) {
-		this.wrapped = inst;
-	}
 	
-	@Override
-	public void callSite(Args args, Token caller) throws TokenException {
-		String methodName;
-		try {
-			methodName = args.fieldName();
-		} catch (TokenException e) {
-			// If this looks like a site call, call the special method "apply".
-			new MethodProxy(getDelegate("apply")).callSite(args, caller);
-			return;
+	/**
+	 * Find and cache delegates by name.
+	 * @author quark
+	 */
+	public static class DelegateCache {
+		Map<String, Delegate> methods = new HashMap<String, Delegate>();
+		Object that;
+		Class type;
+		
+		/**
+		 * Both the type and receiver are required so that you
+		 * can use this for static methods (where the receiver is null).
+		 */
+		public DelegateCache(Class type, Object that) {
+			this.type = type;
+			this.that = that;
 		}
-		caller.resume(new MethodProxy(getDelegate(methodName)));
-	}
-	
-	protected Delegate getDelegate(String methodName) throws TokenException {
-		if (methods.containsKey(methodName)) {
-			return methods.get(methodName);
-		}
-
-		// Why not use getMethod to find a method appropriate to the argument
-		// types? Because getMethod ignores subtyping, so if the argument types
-		// don't exactly match any of the methods, one is chosen at random. I
-		// assume that's because Java expects method overloading to be resolved
-		// at compile time based on static types.
-		List<Method> matchingMethods = new LinkedList<Method>();
-		for (Method m : wrapped.getClass().getMethods()) {
-			if (m.getName().equals(methodName)) {
-				matchingMethods.add(m);
+		
+		protected Delegate get(String methodName) throws TokenException {
+			if (methods.containsKey(methodName)) {
+				return methods.get(methodName);
 			}
+	
+			// Why not use getMethod to find a method appropriate to the argument
+			// types? Because getMethod ignores subtyping, so if the argument types
+			// don't exactly match any of the methods, one is chosen at random. I
+			// assume that's because Java expects method overloading to be resolved
+			// at compile time based on static types.
+			List<Method> matchingMethods = new LinkedList<Method>();
+			for (Method m : type.getMethods()) {
+				if (m.getName().equals(methodName)) {
+		        	// skip non-public methods
+		        	if ((m.getModifiers() & Modifier.PUBLIC) == 0)
+		        		continue;
+					matchingMethods.add(m);
+				}
+			}
+	
+			if (matchingMethods.isEmpty()) {
+				/* throw new TokenException("Class "
+						+ wrapped.getClass().toString()
+						+ " does not have the method '" + methodName + "'."); */
+				throw new MessageNotUnderstoodException(methodName);
+			}
+	
+			Delegate out = new Delegate(methodName, matchingMethods.toArray(new Method[]{}), that);
+			methods.put(methodName, out);
+			return out;
 		}
-
-		if (matchingMethods.isEmpty()) {
-			/* throw new TokenException("Class "
-					+ wrapped.getClass().toString()
-					+ " does not have the method '" + methodName + "'."); */
-			throw new MessageNotUnderstoodException(methodName);
-		}
-
-		Delegate out = new Delegate(methodName, matchingMethods.toArray(new Method[]{}), wrapped);
-		methods.put(methodName, out);
-		return out;
 	}
 }
