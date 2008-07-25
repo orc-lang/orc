@@ -3,6 +3,6 @@ include "ui.inc"
 
 Prompt("Search for:") >term>
 Google(term) >pages>
-each(take(1, pages)) >results>
-    each(results()) >result>
-        (result.titleNoFormatting, result.url)
+each(take(1, pages)) >page>
+each(page()) >result>
+(result.titleNoFormatting, result.url)
