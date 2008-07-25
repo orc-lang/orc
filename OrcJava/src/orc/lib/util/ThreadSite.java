@@ -13,21 +13,24 @@ import orc.runtime.values.Value;
  * site which may be uncooperative.
  * @author quark
  */
-public class Thread extends EvalSite {
+public class ThreadSite extends EvalSite {
 	@Override
 	public Value evaluate(Args args) throws TokenException {
-		final Site thunk;
+		Site thunk;
 		try {
 			thunk = (Site)args.valArg(0);
 		} catch (ClassCastException e) {
 			throw new JavaException(e);
 		}
+		return makeThreaded(thunk);
+	}
+	public static Site makeThreaded(final Site site) {
 		return new Site() {
 			public void callSite(final Args args, final Token caller) {
 				new java.lang.Thread() {
 					public void run() {
 						try {
-							thunk.callSite(args, caller);
+							site.callSite(args, caller);
 						} catch (TokenException e) {
 							caller.error(e);
 						}

@@ -14,6 +14,7 @@ import orc.error.MethodTypeMismatchException;
 import orc.error.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
+import orc.runtime.sites.java.ObjectProxy.Delegate;
 import orc.runtime.values.*;
 
 
@@ -42,18 +43,19 @@ public class ClassProxy extends EvalSite {
 			// do nothing
 		}
 		if (methodName != null) {
-			List<Method> matching_methods = new LinkedList<Method>();
+			List<Method> matchingMethods = new LinkedList<Method>();
 			for (Method m : wrapped_class.getMethods()) {
 				if (m.getName().equals(methodName)) {
-					matching_methods.add(m);
+					matchingMethods.add(m);
 				}
 			}
 
-			if (matching_methods.isEmpty()) {
+			if (matchingMethods.isEmpty()) {
 				throw new MessageNotUnderstoodException(methodName);
 			}
 
-			return new MethodProxy(matching_methods, null, methodName);
+			return new MethodProxy(new Delegate(methodName,
+					matchingMethods.toArray(new Method[]{}), null));
 		}
 
 
