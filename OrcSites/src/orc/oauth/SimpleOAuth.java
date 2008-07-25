@@ -143,7 +143,7 @@ public class SimpleOAuth {
 				// but I'm not sure that makes any sense with OAuth.
 				break;
 			default:
-    			// abort if it is not a redirect
+				// abort if it is not a redirect
 				throw e;
 			}
 			List<OAuth.Parameter> headers = (List<OAuth.Parameter>)e.getParameters().get(OAuthProblemException.RESPONSE_HEADERS);
@@ -270,7 +270,7 @@ public class SimpleOAuth {
 		} catch (URISyntaxException e) {
 			throw new OAuthException(e);
 		}
-        response.requireParameters("oauth_token", "oauth_token_secret");
+		response.requireParameters("oauth_token", "oauth_token_secret");
 		accessor.requestToken = response.getParameter("oauth_token");
 		accessor.tokenSecret = response.getParameter("oauth_token_secret");
 	}
@@ -288,18 +288,18 @@ public class SimpleOAuth {
 	 */
 	public void setAccessToken(OAuthAccessor accessor, Collection<OAuth.Parameter> parameters)
 	throws IOException, OAuthException {
-        OAuthMessage response;
-        parameters.add(new OAuth.Parameter("oauth_token", accessor.requestToken));
+		OAuthMessage response;
+		parameters.add(new OAuth.Parameter("oauth_token", accessor.requestToken));
 		try {
 			response = invoke(accessor,
-			        accessor.consumer.serviceProvider.accessTokenURL,
-			        parameters, 10);
+					accessor.consumer.serviceProvider.accessTokenURL,
+					parameters, 10);
 		} catch (URISyntaxException e) {
 			throw new OAuthException(e);
 		}
-        response.requireParameters("oauth_token", "oauth_token_secret");
-        accessor.accessToken = response.getParameter("oauth_token");
-        accessor.tokenSecret = response.getParameter("oauth_token_secret");
+		response.requireParameters("oauth_token", "oauth_token_secret");
+		accessor.accessToken = response.getParameter("oauth_token");
+		accessor.tokenSecret = response.getParameter("oauth_token_secret");
 	}
 	
 	public URL getAuthorizationURL(OAuthAccessor accessor) throws IOException, OAuthException {
