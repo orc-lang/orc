@@ -36,7 +36,8 @@ import com.centerkey.utils.BareBonesBrowserLaunch;
 
 /**
  * Wrapper around the OAuth libraries which should simplify using them.
- * See the main method for an example.
+ * It's simple because it gets all the information it needs upfront in
+ * a properties file (or object).  See the main method for an example.
  * 
  * <p>All providers are configured with a properties file. A provider identified by NAME
  * must have the following properties defined:
@@ -100,7 +101,11 @@ public class SimpleOAuth {
 	}
 
 	public SimpleOAuth(String resource) throws IOException {
-		this(SimpleOAuth.class.getResource(resource));
+		URL resourceURL = SimpleOAuth.class.getResource(resource);
+		if (resourceURL == null)
+			throw new IOException("Could not find resource '"+resource+"'");
+		consumers = new ConsumerProperties(
+				ConsumerProperties.getProperties(resourceURL));
 	}
 
 	public SimpleOAuth(URL resource) throws IOException {
@@ -158,6 +163,9 @@ public class SimpleOAuth {
 		}
 	}
 
+	public PrivateKey getPrivateKey(String consumer) throws OAuthException {
+		return (PrivateKey)getConsumer(consumer).getProperty(RSA_SHA1.PRIVATE_KEY);
+	}
 
 	public OAuthConsumer getConsumer(String consumer) throws OAuthException {
 		OAuthConsumer out;
@@ -305,64 +313,23 @@ public class SimpleOAuth {
 			"oauth_callback", OAuth.addParameters(callback.toExternalForm())));
 	}
 	
-	public static void main(String[] args) {
-		 // create a request token
-		 SimpleOAuth oauth;
-		try {
-			oauth = new SimpleOAuth("/orc/oauth/oauth.properties");
-		} catch (IOException e) {
-			System.err.println("Could not load oauth properties: " + e.toString());
-			System.exit(1);
-			return;
-		}
-		 OAuthAccessor accessor;
-		try {
-			accessor = oauth.newAccessor("google");
-		} catch (OAuthException e) {
-			System.err.println("Could not find consumer: " + e.toString());
-			System.exit(1);
-			return;
-		}
-		try {
-			oauth.setRequestToken(accessor,
-					OAuth.newList("scope", "http://www.google.com/calendar/feeds/"));
-		} catch (OAuthProblemException e) {
-			System.err.println("Could not set request token: " + e.toString());
-			System.err.println(e.getParameters().toString());
-			e.printStackTrace();
-			System.exit(1);
-		} catch (Exception e) {
-			System.err.println("Could not set request token: " + e.toString());
-			e.printStackTrace();
-			System.exit(1);
-		}
-		 // prompt the user for authorization
-		 try {
-			BareBonesBrowserLaunch.openURL(
-					 oauth.getAuthorizationURL(accessor).toExternalForm());
-		} catch (Exception e) {
-			System.err.println("Could not get authorization URL: " + e.toString());
-			e.printStackTrace();
-			System.exit(1);
-		}
+	public static void main(String[] args) throws IOException, OAuthException {
+		// create a request token
+		SimpleOAuth oauth;
+		oauth = new SimpleOAuth("/oauth.properties");
+		OAuthAccessor accessor = oauth.newAccessor("google");
+		oauth.setRequestToken(accessor,
+				OAuth.newList("scope", "http://www.google.com/calendar/feeds/"));
+		// prompt the user for authorization
+		BareBonesBrowserLaunch.openURL(
+				 oauth.getAuthorizationURL(accessor).toExternalForm());
 		 int ok = JOptionPane.showConfirmDialog(null,
 				 "Did you authorize the token?");
 		 if (ok != 0) System.exit(1);
 		 // confirm authorization
-		 try {
-			oauth.setAccessToken(accessor);
-		} catch (OAuthProblemException e) {
-			System.err.println("Could not set access token: " + e.toString());
-			System.err.println(e.getParameters().toString());
-			e.printStackTrace();
-			System.exit(1);
-		} catch (Exception e) {
-			System.err.println("Could not set access token: " + e.toString());
-			e.printStackTrace();
-			System.exit(1);
-		}	
-		 System.out.println("'" + accessor.requestToken + "'");
-		 System.out.println("'" + accessor.tokenSecret + "'");
-		 System.out.println("'" + accessor.accessToken + "'");
+		oauth.setAccessToken(accessor);
+		System.out.println("'" + accessor.requestToken + "'");
+		System.out.println("'" + accessor.tokenSecret + "'");
+		System.out.println("'" + accessor.accessToken + "'");
 	}
 }
