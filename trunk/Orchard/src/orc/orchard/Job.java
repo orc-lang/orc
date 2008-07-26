@@ -28,14 +28,20 @@ import orc.runtime.values.Value;
  * resources.
  * 
  * @author quark
- * 
  */
 public final class Job {
+	public final static Globals<Job, Object> globals = new Globals<Job, Object>();
+	
+	
 	/**
 	 * Used to handle cleanup when the job finishes.
 	 */
-	public static interface FinishListener {
+	public interface FinishListener {
 		public void finished(Job job) throws RemoteException;
+	}
+	
+	public interface ProvidesGlobals {
+		public String addGlobal(Object object);
 	}
 	
 	/**
@@ -138,7 +144,8 @@ public final class Job {
 	 */
 	private JobConfiguration configuration;
 	
-	private class JobEngine extends OrcEngine implements Promptable, Redirectable {
+	private class JobEngine extends OrcEngine
+	implements Promptable, Redirectable, ProvidesGlobals {
 		private StringBuffer printBuffer = new StringBuffer();
 		/** Close the event stream when done running. */
 		@Override
@@ -149,6 +156,18 @@ public final class Job {
 		/** Send token errors to the event stream. */
 		@Override
 		public void tokenError(Token t, TokenException problem) {
+			System.err.println();
+			System.err.println("Token " + t + " encountered an error. ");
+			System.err.println("Problem: " + problem);
+			System.err.println("Source location: " + problem.getSourceLocation());
+			problem.printStackTrace();
+			Throwable cause = problem.getCause();
+			if (cause != null) {
+				System.err.println("Caused by:");
+				cause.printStackTrace();
+			}
+			System.err.println();
+			
 			TokenErrorEvent e = new TokenErrorEvent(problem);
 			// TODO: compute a stack trace based on the token's
 			// list of callers
@@ -189,6 +208,10 @@ public final class Job {
 		public void redirect(URL url) {
 			events.add(new RedirectEvent(url));
 		}
+		
+		public String addGlobal(Object value) {
+			return globals.add(Job.this, value);
+		}
 	}
 	private int nextPromptID = 1;
 	private Map<Integer, PromptCallback> pendingPrompts =
@@ -224,6 +247,7 @@ public final class Job {
 				e.printStackTrace();
 			}
 		}
+		globals.removeAll(this);
 	}
 	
 	/**
