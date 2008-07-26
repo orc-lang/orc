@@ -8,6 +8,9 @@
 	<path id="orc.classpath">
 		<fileset dir="${orc.location.lib}" includes="*.jar" />
 		<pathelement path="${orc.location.build}" />
+		<!-- FIXME: I hate having to hard-code these -->
+		<pathelement path="${orc.location.OrcJava.build}" />
+		<fileset dir="${orc.location.OrcJava.lib}" includes="*.jar" />
 	</path>
 
 	<target name="jar" description="generate the distribution">

@@ -113,7 +113,6 @@ public class MySpace extends DotSite {
                         }
                     }
                 }
-                System.out.println(show);
                 musicShows.add(show);
             }
         }

@@ -163,10 +163,6 @@ public class SimpleOAuth {
 		}
 	}
 
-	public PrivateKey getPrivateKey(String consumer) throws OAuthException {
-		return (PrivateKey)getConsumer(consumer).getProperty(RSA_SHA1.PRIVATE_KEY);
-	}
-
 	public OAuthConsumer getConsumer(String consumer) throws OAuthException {
 		OAuthConsumer out;
 		try {
@@ -303,14 +299,18 @@ public class SimpleOAuth {
 	}
 	
 	public URL getAuthorizationURL(OAuthAccessor accessor) throws IOException, OAuthException {
-		String out = OAuth.addParameters(accessor.consumer.serviceProvider.userAuthorizationURL,
-				"oauth_token", accessor.requestToken);
-		return new URL(out);
+		return getAuthorizationURL(accessor, accessor.consumer.callbackURL);
 	}
 	
-	public URL getAuthorizationURL(OAuthAccessor accessor, URL callback) throws IOException, OAuthException {
-		return new URL(OAuth.addParameters(getAuthorizationURL(accessor).toExternalForm(), 
-			"oauth_callback", OAuth.addParameters(callback.toExternalForm())));
+	public URL getAuthorizationURL(OAuthAccessor accessor, String callbackURL)
+	throws IOException, OAuthException {
+		String out = OAuth.addParameters(accessor.consumer.serviceProvider.userAuthorizationURL,
+				"oauth_token", accessor.requestToken);
+		if (callbackURL != null) {
+			out = OAuth.addParameters(out,
+				"oauth_callback", callbackURL);
+		}
+		return new URL(out);
 	}
 	
 	public static void main(String[] args) throws IOException, OAuthException {
