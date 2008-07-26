@@ -1,7 +1,8 @@
 package orc.runtime.sites;
 
+import java.util.concurrent.Callable;
+
 import kilim.ExitMsg;
-import kilim.Fiber;
 import kilim.Mailbox;
 import kilim.Scheduler;
 import kilim.Task;
@@ -10,6 +11,7 @@ import orc.error.JavaException;
 import orc.error.SiteException;
 import orc.error.TokenException;
 import orc.runtime.Args;
+import orc.runtime.Kilim;
 import orc.runtime.Token;
 import orc.runtime.values.Value;
 
@@ -42,70 +44,18 @@ public abstract class KilimSite extends Site {
 	 * FIXME: Kilim bugs out on interfaces
 	 * FIXME: Kilim bugs out on abstract methods
 	 */
-	public static class Callable {
-		public @pausable Value call() throws Exception {
+	public static class PausableCallable<V> {
+		public @pausable V call() throws Exception {
 			throw new AssertionError("Method not woven");
 		}
 	}
-	
-	/**
-	 * Utility method to run a pausable computation which generates a value
-	 * for a token.
-	 * @param caller token to return the value to
-	 * @param thunk computation returning a value
-	 */
-	public static void runPausable(final Token caller, final Callable thunk) {
-		// In order to deal with both regular and irregular exits,
-		// we have to set up a monitor task which spawns a child
-		// task, monitors its exit value, and then does something
-		// with the token depending on the exit value.
-		new Task() {
-			public @pausable void execute() {
-				// distinguished value which signals that a value
-				// was returned normally
-        		final Value[] normalExit = new Value[1];
-        		// start evaluating the site
-        		final Mailbox<ExitMsg> exit = new Mailbox<ExitMsg>();
-        		Task task = new Task() {
-        			public @pausable void execute() {
-        				try {
-	        				normalExit[0] = thunk.call();
-	    					exit(normalExit);
-        				} catch (Exception e) {
-        					// if we just throw the exception,
-        					// Kilim will print an unwanted
-        					// error message
-        					exit(e);
-        				}
-        			}
-        		};
-        		task.informOnExit(exit);
-        		task.start();
-        		// wait for the site to finish
-        		Object result = exit.get().result;
-    			if (result instanceof TokenException) {
-    				// a token exception
-    				caller.error((TokenException)result);
-				} else if (result instanceof Throwable) {
-    				// some other exception
-    				caller.error(new JavaException((Throwable)result));
-    			} else if (result == normalExit) {
-    				// a normal value
-    				caller.resume(normalExit[0]);
-        		} else {
-        			// any other value is irrelevant, it
-        			// signifies a dead token
-    				caller.die();
-        		}
-			}
-		}.start();
-	}
+
 
 	@Override
 	public void callSite(final Args args, final Token caller)
 	throws TokenException {
-		runPausable(caller, new Callable() {
-			public @pausable Value call() throws TokenException {
+		Kilim.runPausable(caller, new PausableCallable() {
+			public @pausable Object call() throws TokenException {
 				return evaluate(args);
 			}
 		});

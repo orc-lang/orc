@@ -5,7 +5,6 @@ package orc.runtime.sites.java;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 
 import kilim.Fiber;
 import kilim.State;
@@ -16,10 +15,10 @@ import orc.error.MethodTypeMismatchException;
 import orc.error.SiteException;
 import orc.error.TokenException;
 import orc.runtime.Args;
+import orc.runtime.Kilim;
 import orc.runtime.Token;
-import orc.runtime.sites.KilimSite;
 import orc.runtime.sites.Site;
-import orc.runtime.sites.KilimSite.Callable;
+import orc.runtime.sites.KilimSite.PausableCallable;
 import orc.runtime.sites.java.ObjectProxy.Delegate;
 import orc.runtime.values.Constant;
 import orc.runtime.values.Value;
@@ -106,8 +105,8 @@ public class MethodProxy extends Site {
         for (int i = 0; i < args.length; ++i) pargs[i] = args[i];
         
         // Invoke the method inside a task
-        KilimSite.runPausable(caller, new Callable() {
-        	public @pausable Value call() throws Exception {
+        Kilim.runPausable(caller, new PausableCallable() {
+        	public @pausable Object call() throws Exception {
         		try {
 	                return wrapObject(pm, _invokePausable(pm, that, pargs));
         		} catch (InvocationTargetException e) {
@@ -135,11 +134,18 @@ public class MethodProxy extends Site {
     }
     
     /**
-     * Hand-woven implementation of pausable invocation.
-     * This is necessary to weave the fiber into the reflective invocation.
-     */
+	 * Hand-woven implementation of pausable invocation. This is necessary to
+	 * weave the fiber into the reflective invocation.
+	 * 
+	 * <p>
+	 * FIXME: Kilim gives an error when I make this private: Error weaving
+	 * build. orc.runtime.sites.java.MethodProxy.access$0(
+	 * Ljava/lang/reflect/Method;Ljava/lang/Object;[
+	 * Ljava/lang/Object;)Ljava/lang/Object;
+	 * should be marked pausable. It calls pausable methods
+	 */
     @SuppressWarnings("unused")
-	private static Object _invokePausable(Method m, Object that, Object[] args, Fiber f)
+	public static Object _invokePausable(Method m, Object that, Object[] args, Fiber f)
     throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         if (f.pc == 1) {
             // resuming
