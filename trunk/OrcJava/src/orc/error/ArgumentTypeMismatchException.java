@@ -26,4 +26,7 @@ public class ArgumentTypeMismatchException extends RuntimeTypeException {
 		this.providedType = providedType;
 	}
 
+	public ArgumentTypeMismatchException(ClassCastException e) {
+		super(e.getMessage());
+	}
 }
