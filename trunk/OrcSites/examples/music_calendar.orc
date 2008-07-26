@@ -8,13 +8,15 @@ In order to run this demo, you must have:
 -}
 
 include "net.inc"
+include "ui.inc"
 
 -- imports
 site MySpace = orc.lib.music_calendar.MySpace
 site GoogleCalendarFactory = orc.lib.music_calendar.GoogleCalendar
 
 -- declarations
-val GoogleCalendar = GoogleCalendarFactory("oauth.properties", "google")
+val oauth = OAuthProvider("oauth.properties")
+val GoogleCalendar = GoogleCalendarFactory(oauth, "google")
 val phrase1 = "site:www.myspace.com 'Austin, TX' 'Band Members'"
 val phrase2 = "site:www.myspace.com 'Austin, Texas' 'Band Members'"
 
