@@ -372,8 +372,8 @@ function orcify(code, defaultConfig) {
 	// private members
 	var $code = $(code);
 	var $loading = $('<div class="orc-loading" style="display: none"/>');
-	var $widget = $('<div class="orc-wrapper" />')
-		.width($code.width()+2);
+	var $widget = $('<div class="orc-wrapper" />');
+		//.width($code.width()+2);
 	var $prompts = $('<div class="orc-prompts" style="display: none"/>');
 	var $events = $('<div class="orc-events" style="display: none"/>');
 	var $close = $('<button class="orc-close" style="display: none">close</button>')
