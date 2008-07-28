@@ -13,6 +13,7 @@ import orc.error.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Kilim;
 import orc.runtime.Token;
+import orc.runtime.Kilim.Pausable;
 import orc.runtime.values.Value;
 
 /**
@@ -32,30 +33,11 @@ import orc.runtime.values.Value;
  * 
  */
 public abstract class KilimSite extends Site {
-	static {
-		// FIXME: the scheduler should use a thread-local variable
-		// for the default, so that each Orc engine can have its own scheduler
-		Scheduler.setDefaultScheduler(new Scheduler(1));
-	}
-	
-	/**
-	 * Pausible computation which returns a value.
-	 * FIXME: Kilim bugs out when I make the return type generic.
-	 * FIXME: Kilim bugs out on interfaces
-	 * FIXME: Kilim bugs out on abstract methods
-	 */
-	public static class PausableCallable<V> {
-		public @pausable V call() throws Exception {
-			throw new AssertionError("Method not woven");
-		}
-	}
-
-
 	@Override
 	public void callSite(final Args args, final Token caller)
 	throws TokenException {
-		Kilim.runPausable(caller, new PausableCallable() {
-			public @pausable Object call() throws TokenException {
+		Kilim.runPausable(caller, new Pausable<Value>() {
+			public @pausable Value call() throws TokenException {
 				return evaluate(args);
 			}
 		});

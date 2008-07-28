@@ -61,7 +61,8 @@ public class OrcEngine implements Runnable {
 					try {
 						wait();
 					} catch (InterruptedException e) {
-						// do nothing
+						// terminate execution
+						return;
 					}
 				}
 			}
