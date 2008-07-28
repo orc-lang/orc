@@ -14,20 +14,9 @@ function withExecutor(f) {
 	if (executor) return f(executor);
 	$.getScript(executorUrl, function () {
 		executor = executorService;
-		executor.onError = function (response, code, exception) {
-			// If the job failed while stopping, job may not be set.
-			if (job) stop();
-			// unwrap response if possible
-			if (response) {
-				if (response.faultstring) response = response.faultstring;
-			} else {
-				response = exception;
-			}
-			alert(response);
-		}
 
 		$(window).unload(function () {
-			if (currentWidget) currentWidget.stop();
+			if (currentWidget) currentWidget.stopOrc();
 		});
 
 		f(executor);
@@ -148,32 +137,7 @@ function publicationToHtml(v) {
  * state of the job, so we can ignore callbacks which happen after the job
  * finishes.
  */
-function OrcWidget(code) {
-	var _this = this;
-	// private members
-
-	/** If codemirror is used, this is the editor. */
-	var codemirror;
-	var $loading = $('<div class="orc-loading" style="display: none"/>');
-	var $wrapper = $('<div class="orc-wrapper" />')
-		.width($(code).width()+2);
-	var $prompts = $('<div class="orc-prompts" style="display: none"/>');
-	var $events = $('<div class="orc-events" style="display: none"/>');
-	var $close = $('<button class="orc-close" style="display: none">close</button>')
-		.click(function () {
-			$close.hide();
-			$events.slideUp("fast");
-		});
-	var $stop = $('<button class="orc-stop" style="display: none">stop</button>')
-		.click(function() {
-			stopCurrentJob();
-		});
-	var $run = $('<button class="orc-run">run</button>')
-		.click(run);
-	var $controls = $('<div class="orc-controls" />')
-		.append($loading).append($close).append($stop).append($run);
-	$(code).wrap($wrapper).after($prompts).after($controls).after($events);
-
+function orcify(code, defaultConfig) {
 	function getCodeFrom(elem) {
 		if (!elem) return "";
 		if (elem.value) return elem.value;
@@ -181,8 +145,7 @@ function OrcWidget(code) {
 	}
 
 	function getCode() {
-		return getCodeFrom($(code).parent().prev(".orc-prelude")[0]) + "\n" +
-			(codemirror ? codemirror.getCode() : getCodeFrom(code));
+		return getCodeFrom(prelude) + "\n" + codemirror.getCode();
 	}
 
 	function appendEventHtml(html) {
@@ -392,8 +355,8 @@ function OrcWidget(code) {
 		$events.hide();
 		$events.css("height", "auto");
 		// If another job is running, it should stop
-		if (currentWidget) currentWidget.stop();
-		currentWidget = _this;
+		if (currentWidget) currentWidget.stopOrc();
+		currentWidget = $widget[0];
 		withExecutor(function (executor) {
 			executor.compileAndSubmit({devKey: devKey, program: getCode()}, function (id) {
 				stopCurrentJob = startJob(executor, id);
@@ -406,38 +369,76 @@ function OrcWidget(code) {
 		});
 	}
 
+	// private members
+	var $code = $(code);
+	var $loading = $('<div class="orc-loading" style="display: none"/>');
+	var $widget = $('<div class="orc-wrapper" />')
+		.width($code.width()+2);
+	var $prompts = $('<div class="orc-prompts" style="display: none"/>');
+	var $events = $('<div class="orc-events" style="display: none"/>');
+	var $close = $('<button class="orc-close" style="display: none">close</button>')
+		.click(function () {
+			$close.hide();
+			$events.slideUp("fast");
+		});
+	var $stop = $('<button class="orc-stop" style="display: none">stop</button>')
+		.click(function() {
+			stopCurrentJob();
+		});
+	var $run = $('<button class="orc-run">run</button>')
+		.click(run);
+	var $controls = $('<div class="orc-controls" />')
+		.append($loading).append($close).append($stop).append($run);
+	var id = $code.attr("id");
+	var config = $.extend({}, defaultConfig, {
+		content: getCodeFrom(code),
+		readOnly: (code.tagName != "TEXTAREA"),
+		height: $code.height() + "px"
+	});
+	// if this element exists, it contains text which is prepended to the
+	// program before running it
+	var prelude = $code.prev(".orc-prelude")[0];
+	// put a wrapper around the code area, to add a border
+	$code.wrap('<div class="orc" />');
+	$code.parent().wrap($widget).after($prompts).after($controls).after($events);
+	// for some reason wrap() makes a copy of $widget.
+	$widget = $code.parent().parent();
+	// replace the code with a codemirror editor
+	codemirror = new CodeMirror(CodeMirror.replace(code), config);
+	// if the code had an id, move it to the surrounding div
+	// (since we're about to replace the code element with codemirror)
+	if (id) $widget.attr("id", id);
+
+	var fontSize = 13;
+	function setFontSize(size) {
+		fontSize = size;
+		codemirror.win.document.body.style.fontSize = size + "px";
+		$widget.css("font-size", size + "px");
+	}
+
+
 	// public members
-	this.stop = function() {
+	$widget[0].stopOrc = function() {
 		stopCurrentJob();
 	};
-	this.codemirror = function(defaultConfig) {
-		var config = $.extend({}, defaultConfig, {
-			content: getCodeFrom(code),
-			readOnly: (code.tagName != "TEXTAREA"),
-			height: $(code).height() + "px"
-		});
-		// weird DOM manipulation to:
-		// 1. put a border around the CodeMirror editor
-		// 2. get a handle to an element around the editor
-		//    (we'll use it to look for orc-prelude in getCode)
-		$(code).wrap("<div class='orc'></div>");
-		var div = $(code).parent()[0];
-		codemirror = new CodeMirror(CodeMirror.replace(code), config);
-		code = div;
-	}
+	$widget[0].setOrcCode = function(code) {
+		stopCurrentJob();
+		$close.hide();
+		$events.slideUp("fast");
+		codemirror.setCode(code);
+	};
+	$widget[0].orcFontSizeUp = function() {
+		setFontSize(fontSize * 1.25);
+	};
+	$widget[0].orcFontSizeDown = function() {
+		setFontSize(fontSize * 0.8);
+	};
 }
 
 /** Widget which is currently running. */
 var currentWidget;
 var devKey = Orc.query.k ? Orc.query.k : "";
 var baseUrl = Orc.baseUrl;
-
-var widgets = [];
-
-$(".orc").each(function (_, code) {
-	widgets[widgets.length] = new OrcWidget(code);
-});
-
 var executorUrl = Orc.query.mock
 	? "mock-executor.js"
 	: "/orchard/json/executor?js";
@@ -449,6 +450,9 @@ var config = {
 	basefiles: ["codemirror-20080715-extra-min.js"],
 	textWrapping: false
 };
-for (var i in widgets) widgets[i].codemirror(config);
+
+$(".orc").each(function (_, code) {
+	orcify(code, config);
+});
 
 }); // end module
