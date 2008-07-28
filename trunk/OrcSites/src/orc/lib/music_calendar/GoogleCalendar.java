@@ -96,7 +96,7 @@ public class GoogleCalendar extends EvalSite {
             	public Object call() throws Exception {
             		addEventToCalendar(show.getTitle(), show.getTitle(), location, startDate, endDate);
             		// return a signal to indicate that the method finished
-            		return new Object();
+            		return Kilim.signal;
             	}
             });
 		}

@@ -25,6 +25,7 @@ GoogleCalendar.authenticate() >>
 (Google(phrase1) | Google(phrase2)) >pages>
 each(pages) >page>
 each(page()) >result>
+println("Scraping " + result.url) >>
 MySpace.scrapeMusicShows(result.url) >musicShows>
 each(musicShows) >musicShow>
 GoogleCalendar.addMusicShow(musicShow) >>

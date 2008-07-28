@@ -51,7 +51,7 @@ public class OAuthProviderSite extends EvalSite {
 					 if (ok != 0) throw new OAuthException("Authorization refused by user.");
 					 // confirm authorization
 					oauth.setAccessToken(accessor);
-					return new Object();
+					return Kilim.signal;
 				}
 			});
 			return accessor;
