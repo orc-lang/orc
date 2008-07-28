@@ -1,4 +1,4 @@
-<!--#include virtual="header.shtml" -->
+<!--#include virtual="template/header.shtml" -->
 
         <h2>License</h2>
         <p>
@@ -53,4 +53,4 @@ Submit commercialization requests to:
 
 <p>Return to <a href="download.shtml">Download</a>.
 
-<!--#include virtual="footer.shtml" -->
+<!--#include virtual="template/footer.shtml" -->

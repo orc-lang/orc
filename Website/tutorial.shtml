@@ -1,4 +1,4 @@
-<!--#include virtual="header.shtml" --> 
+<!--#include virtual="template/header.shtml" --> 
 
 <link rel="stylesheet" type="text/css" href="/orchard/orc.css" media="screen"/>
 <script src="/orchard/orc.js" type="text/javascript"></script>
@@ -36,8 +36,7 @@ Prompt("What is your favorite food?")
 
 <p>... or a very simple local operation, like adding two numbers:</p>
 <pre class="orc">
-1 + 2
-</pre>
+1 + 2</pre>
 
 <p>Although Orc supports standard infix notation for sites which implement
 arithmetic and comparison operators, these are still considered sites like any
@@ -61,8 +60,7 @@ prompts you to enter something and returns your response.</p>
 
 <pre class="orc">
   Prompt("Spoon or fork?")
-| Prompt("Bowl or saucer?")
-</pre>
+| Prompt("Bowl or saucer?")</pre>
 
 <p>In the above example, two <tt>Prompt</tt>s are invoked simultaneously, and
 <i>both</i> responses are published. Note that Orc is unlike most functional
@@ -79,8 +77,7 @@ Prompt("What was the last movie you saw?")
 
   >>
  
-Prompt("Was it good?")
-</pre>
+Prompt("Was it good?")</pre>
 
 <p>Notice that your first response was not published. <tt>>></tt> only
 publishes the value(s) published by the right side.  If you want to use a value
@@ -91,8 +88,7 @@ Prompt("What is your name?")
 
   >name>
  
-"Hello " + name
-</pre>
+"Hello " + name</pre>
 
 <p>If the left side publishes more than one value, the right side is evaluated
 independently for <i>each</i> value:</p>
@@ -103,8 +99,7 @@ independently for <i>each</i> value:</p>
 
   >movie>
  
-"I heard that " + movie + " is a good movie."
-</pre>
+"I heard that " + movie + " is a good movie."</pre>
 
 <a name="Asymmetric_Combinator"><h3>Asymmetric Combinator <small>(<a href="#top">top</a>)</small></h3>
 
@@ -119,8 +114,7 @@ fruit
   &lt;fruit&lt;
 
         Prompt("Apples or oranges?")
-      | Prompt("Grapes or mangos?")
-</pre>
+      | Prompt("Grapes or mangos?")</pre>
 
 <p>Both sides of the asymmetric combinator begin evaluating immediately, but
 when the left side needs the value produced by the right side, it blocks until
@@ -132,8 +126,7 @@ immediately but must wait to print your color until you enter it:</p>
 
   &lt;color&lt;
 
-    Prompt("Choose a color.")  
-</pre>
+    Prompt("Choose a color.")</pre>
 
 <p>The &lt;&lt; syntax can sometimes be cumbersome, so Orc supports an
 alternative form that allows you to write the previous example like this
@@ -141,8 +134,7 @@ instead:</p>
 
 <pre class="orc">
 val color = Prompt("Choose a color.")  
-"red" | "light " + color | "blue"
-</pre>
+"red" | "light " + color | "blue"</pre>
 
 <p>Furthermore, site calls with expressions as arguments are just syntactic
 sugar for asymmetric composition. For example, these two expressions are
@@ -150,8 +142,7 @@ equivalent:</p>
 
 <pre class="orc">
   "3+4=" + (3 + 4)
-| ( "3+4=" + a ) &lt;a&lt; ( 3 + 4 )
-</pre>
+| ( "3+4=" + a ) &lt;a&lt; ( 3 + 4 )</pre>
 
 <p></p>
 
@@ -163,21 +154,18 @@ useful expressions. The following examples illustrate the most basic ones.</p>
 <p><tt>if(condition)</tt> publishes only if <tt>condition</tt> is true:</p>
 <pre class="orc">
   if(3 /= 4) >> "three does not equal four"
-| if(false) >> "impossible!"
-</pre>
+| if(false) >> "impossible!"</pre>
 
 <p><tt>Rtimer(t)</tt> publishes after <tt>t</tt> milliseconds:</p>
 <pre class="orc">
   "immediately"
 | Rtimer(3000) >> "...three seconds later..."
-| Rtimer(5000) >> "...five seconds later..."
-</pre>
+| Rtimer(5000) >> "...five seconds later..."</pre>
 
 <p><tt>null</tt> is a special value which never publishes (similar to "bottom" or <tt>_|_</tt> in functional languages).
 It is commonly used with sequential composition to suppress published values:</p>
 <pre class="orc">
-Prompt("I'm not listening...") >> null
-</pre>
+Prompt("I'm not listening...") >> null</pre>
 
 <a name="Functions"><h2>Functions <small>(<a href="#top">top</a>)</small></h2>
 
@@ -192,8 +180,7 @@ def Metronome(i) =
     i
   | Rtimer(1000) >> Metronome(i+1)
 
-Metronome(0)
-</pre>
+Metronome(0)</pre>
 
 <p>Function publications can be interleaved with the parallel combinator:</p>
 <pre class="orc">
@@ -201,8 +188,7 @@ def Metronome(t, i) =
     i
   | Rtimer(t) >> Metronome(t, i+1)
 
-Metronome(1100, 0) | Metronome(700, 100)
-</pre>
+Metronome(1100, 0) | Metronome(700, 100)</pre>
 
 <p>A common idiom in Orc is to treat an expression as a stream of values which
 may be filtered:</p>
@@ -213,16 +199,14 @@ def isPrime(n) =
       if(b) >> (n % i /= 0) && primeat(i+1)
     | if(~b) >> true
         &lt;b&lt; i * i &lt;= n
-  primeat(2)
-</pre>
+  primeat(2)</pre>
 <pre class="orc">
 def Metronome(i) =
     i
   | Rtimer(1000) >> Metronome(i+1)
 
 -- Publish only prime numbers
-Metronome(2) >n> if(isPrime(n)) >> n
-</pre>
+Metronome(2) >n> if(isPrime(n)) >> n</pre>
 
 <p>Like any good functional programming language, Orc supports nested
 functions, higher-order functions (functions which take functions or sites as
@@ -242,8 +226,8 @@ def Airline(name) =
 
 -- Return the lesser of two quotes
 def min((n1,q1), (n2,q2)) =
-    if(q1 <: q2) >> (n1, q1)
-  | if(q2 <= q1) >> (n2, q2)
+    if(q1 &lt;: q2) >> (n1, q1)
+  | if(q2 &lt;= q1) >> (n2, q2)
 
 -- Return the best quote under 200 dollars
 -- within 5 seconds
@@ -254,8 +238,7 @@ def bestQuote(airline:rest) =
     min(current, best)
 
 bestQuote([Airline("Delta"),
-           Airline("United")])
-</pre>
+           Airline("United")])</pre>
 
 <p></p>
 
@@ -266,4 +249,4 @@ href="documentation.shtml">Documentation</a> page for further
 guidance.  When you are ready, <a href="/orchard">play with Orc</a>
 yourself.</p>
 
-<!--#include virtual="footer.shtml" --> 
+<!--#include virtual="template/footer.shtml" --> 

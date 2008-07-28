@@ -1,4 +1,4 @@
-<!--#include virtual="header.shtml" --> 
+<!--#include virtual="template/header.shtml" --> 
 
 <h1>Publications</h1>
 
@@ -113,4 +113,4 @@ Simulation using Orchestration
 </ul>
 
 
-<!--#include virtual="footer.shtml" --> 
+<!--#include virtual="template/footer.shtml" --> 

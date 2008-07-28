@@ -1,4 +1,4 @@
-<!--#include virtual="header.shtml" --> 
+<!--#include virtual="template/header.shtml" --> 
 
 <h2>License</h2>
 
@@ -36,4 +36,4 @@ For further assistance, please see the <a href="documentation.shtml">documentati
 quick start</a> describes how to check out and build the Orc Eclipse project
 and start running Orc programs.</p>
 
-<!--#include virtual="footer.shtml" --> 
+<!--#include virtual="template/footer.shtml" --> 

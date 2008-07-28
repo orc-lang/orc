@@ -45,16 +45,6 @@ blockquote {
 	padding-left: 26px
 }
 
-pre {
-	display: block;
-	background-color: #fff;
-	border: 1px solid #BCBAAC;
-	padding: 1em;
-	margin: 1em 0;
-	font-size: 13px;
-	font-weight: bold;
-}
-
 form,table {margin-bottom: 1.2em;}
 img {border: none;}
 label {display: block;}
@@ -235,9 +225,4 @@ dl.aligned dt {
 
 tt {
 	font-size: 13px;
-}
-
-.ui-dialog-content {
-	font-size: 1.3em;
-	line-height: 1.3em;
 }

@@ -1,4 +1,4 @@
-<!--#include virtual="header.shtml" --> 
+<!--#include virtual="template/header.shtml" --> 
 
 <link rel="stylesheet" type="text/css" href="/orchard/orc.css" media="screen"/>
 
@@ -36,11 +36,10 @@ Prompt("Search Google for:") >term>
 Google(term) >pages>
 each(take(1, pages)) >results>
     each(results()) >result>
-        (result.titleNoFormatting, result.url)
-</pre>
+        (result.titleNoFormatting, result.url)</pre>
 
 <p><a href="tutorial.shtml">Tutorial with more sample programs...</a></p>
 
 <script src="/orchard/orc.js" type="text/javascript"></script>
 
-<!--#include virtual="footer.shtml" --> 
+<!--#include virtual="template/footer.shtml" --> 
