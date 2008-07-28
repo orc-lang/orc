@@ -1,7 +1,7 @@
 include "net.inc"
 
--- Email an admin if a server does not
--- respond to a ping within t milliseconds
+-- Check if a server responds to
+-- a ping within t milliseconds
 def PingTest(t, server) = pong
   <pong<   Ping(server) >> "success"
          | Rtimer(t) >> "error"
