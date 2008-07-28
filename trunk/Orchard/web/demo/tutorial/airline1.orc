@@ -17,7 +17,7 @@ def min((n1,q1), (n2,q2)) =
   | if(q2 <= q1) >> (n2, q2)
 
 -- Return the best quote under 200 dollars
--- within 5 seconds
+-- within 10 seconds
 def bestQuote([]) = ("None of the above", 200)
 def bestQuote(airline:rest) =
     val best = bestQuote(rest)

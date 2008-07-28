@@ -1,5 +1,8 @@
 include "fun.inc"
 
+-- Weizenbaum's Regerian therapist "ELIZA":
+-- Prompt the user, feed their response to
+-- Eliza, and repeat with her response.
 def ElizaPrompt(init) =
     val eliza = Eliza()
     def loop(message) =
