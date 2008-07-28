@@ -6,7 +6,7 @@
 <meta name="description" content=""/>
 <meta name="keywords" content=""/> 
 <meta name="author" content=""/> 
-<link rel="stylesheet" type="text/css" href="style.css" media="screen"/>
+<link rel="stylesheet" type="text/css" href="template/style.css" media="screen"/>
 <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
 
 <title>Orc Language</title>
@@ -25,7 +25,10 @@
 </div>
 </div>
 
-<!--#include virtual="navigation.shtml" -->
+<div class="navigation">
+<!--#include virtual="../navigation.shtml" -->
+<div class="clearer"><span></span></div>
+</div>
 
 <div class="main" id="two-columns">
 

@@ -1,5 +1,5 @@
-<!--#include virtual="header.shtml" --> 
+<!--#include virtual="template/header.shtml" --> 
 
 <p>Coming soon...</p>
 
-<!--#include virtual="footer.shtml" --> 
+<!--#include virtual="template/footer.shtml" --> 

@@ -1,4 +1,4 @@
-<!--#include virtual="header.shtml" --> 
+<!--#include virtual="template/header.shtml" --> 
 
 <h2>Install Prerequisites</h2>
 <ol>
@@ -56,4 +56,4 @@ assume version 3.2.2, but other versions should behave similarly.
 <li>Go to <i>Run -&gt; Run History -&gt; Orc</i> (or use the dropdown menu of the run icon in the toolbar).</li>
 </ol>
 
-<!--#include virtual="footer.shtml" --> 
+<!--#include virtual="template/footer.shtml" --> 

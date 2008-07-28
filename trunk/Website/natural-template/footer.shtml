@@ -6,7 +6,7 @@
 
 <div class="content">
 
-<!--#include virtual="sidebar.shtml" -->
+<!--#include virtual="../sidebar.shtml" -->
 
 </div>
 

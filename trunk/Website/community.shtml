@@ -1,4 +1,4 @@
-<!--#include virtual="header.shtml" --> 
+<!--#include virtual="template/header.shtml" --> 
 
 <h2>Community Resources</h2>
 <ul>
@@ -27,4 +27,4 @@
 	<li>Evan Powell</li>
 </ul>
 
-<!--#include virtual="footer.shtml" --> 
+<!--#include virtual="template/footer.shtml" --> 
