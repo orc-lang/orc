@@ -45,7 +45,7 @@ other.</p>
 <p>This tutorial will make frequent use of the <tt>Prompt</tt> site, which
 prompts you to enter something and returns your response.</p>
 
-<a name="Combinators"><h2>Combinators <small>(<a href="#top">top</a>)</small></h2>
+<a name="Combinators"></a><h2>Combinators <small>(<a href="#top">top</a>)</small></h2>
 <p>Orc has three basic combinators which are used to build concurrent expressions:</p>
 <ul>
 <li>Parallel, or bar, written <tt>|</tt></li>
@@ -54,7 +54,7 @@ prompts you to enter something and returns your response.</p>
 </ul>
 <p>We will examine each in turn.</p>
 
-<a name="Parallel_Combinator"><h3>Parallel Combinator <small>(<a href="#top">top</a>)</small></h3>
+<a name="Parallel_Combinator"></a><h3>Parallel Combinator <small>(<a href="#top">top</a>)</small></h3>
 
 <p>Two Orc expressions can be evaluated in parallel using <tt>|</tt></p>
 
@@ -67,7 +67,7 @@ prompts you to enter something and returns your response.</p>
 programming languages in that an expression may publish (return) more than one
 value if it involves more than one concurrent computation.</p>
 
-<a name="Sequential_Combinator"><h3>Sequential Combinator <small>(<a href="#top">top</a>)</small></h3>
+<a name="Sequential_Combinator"></a><h3>Sequential Combinator <small>(<a href="#top">top</a>)</small></h3>
 
 <p>Sites can also be called in sequence. The <tt>>></tt> combinator evaluates
 its right side as soon as the left side returns a value:</p>
@@ -101,7 +101,7 @@ independently for <i>each</i> value:</p>
  
 "I heard that " + movie + " is a good movie."</pre>
 
-<a name="Asymmetric_Combinator"><h3>Asymmetric Combinator <small>(<a href="#top">top</a>)</small></h3>
+<a name="Asymmetric_Combinator"></a><h3>Asymmetric Combinator <small>(<a href="#top">top</a>)</small></h3>
 
 <p>The final combinator, <tt>&lt;&lt;</tt>, combines the concepts of selection,
 blocking, and termination. It is used to select the first value published by an
@@ -146,7 +146,7 @@ equivalent:</p>
 
 <p></p>
 
-<a name="Fundamental_Sites"><h2>Fundamental Sites <small>(<a href="#top">top</a>)</small></h2>
+<a name="Fundamental_Sites"></a><h2>Fundamental Sites <small>(<a href="#top">top</a>)</small></h2>
 
 <p>Orc provides some fundamental sites which are necessary for writing
 useful expressions. The following examples illustrate the most basic ones.</p>
@@ -167,7 +167,7 @@ It is commonly used with sequential composition to suppress published values:</p
 <pre class="orc">
 Prompt("I'm not listening...") >> null</pre>
 
-<a name="Functions"><h2>Functions <small>(<a href="#top">top</a>)</small></h2>
+<a name="Functions"></a><h2>Functions <small>(<a href="#top">top</a>)</small></h2>
 
 <p>To facilitate the construction of large programs, Orc allows users to define
 functions.  Functions are called like sites, but unlike sites, they do not need
@@ -242,7 +242,7 @@ bestQuote([Airline("Delta"),
 
 <p></p>
 
-<a name="Conclusion"><h2>Conclusion <small>(<a href="#top">top</a>)</small></h2>
+<a name="Conclusion"></a><h2>Conclusion <small>(<a href="#top">top</a>)</small></h2>
 
 <p>That concludes this Orc tutorial. Please refer to the <a
 href="documentation.shtml">Documentation</a> page for further
