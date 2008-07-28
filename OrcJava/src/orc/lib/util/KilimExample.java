@@ -1,5 +1,8 @@
 package orc.lib.util;
 
+import java.util.concurrent.Callable;
+
+import orc.runtime.Kilim;
 import kilim.Task;
 import kilim.pausable;
 
@@ -28,6 +31,16 @@ public class KilimExample {
 	/** Publish after millis milliseconds. */
 	public @pausable String sleep(Number millis) {
 		Task.sleep(millis.longValue());
+		return id;
+	}
+	
+	public @pausable String sleepThread(final Number millis) throws Exception {
+		Kilim.runThreaded(new Callable<Object>() {
+			public Object call() throws InterruptedException {
+				Thread.sleep(millis.longValue());
+				return Kilim.signal;
+			}
+		});
 		return id;
 	}
 	

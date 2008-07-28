@@ -17,8 +17,8 @@ import orc.error.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Kilim;
 import orc.runtime.Token;
+import orc.runtime.Kilim.Pausable;
 import orc.runtime.sites.Site;
-import orc.runtime.sites.KilimSite.PausableCallable;
 import orc.runtime.sites.java.ObjectProxy.Delegate;
 import orc.runtime.values.Constant;
 import orc.runtime.values.Value;
@@ -105,8 +105,8 @@ public class MethodProxy extends Site {
         for (int i = 0; i < args.length; ++i) pargs[i] = args[i];
         
         // Invoke the method inside a task
-        Kilim.runPausable(caller, new PausableCallable() {
-        	public @pausable Object call() throws Exception {
+        Kilim.runPausable(caller, new Pausable<Value>() {
+        	public @pausable Value call() throws Exception {
         		try {
 	                return wrapObject(pm, _invokePausable(pm, that, pargs));
         		} catch (InvocationTargetException e) {

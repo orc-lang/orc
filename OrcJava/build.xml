@@ -10,7 +10,7 @@
 		<pathelement path="${orc.location.build}" />
 	</path>
 
-	<target name="jar" description="generate the distribution">
+	<target name="jar" depends="kilim" description="generate the distribution">
 		<!-- Put everything in ${orc.location.build} into orc-sites.jar -->
 		<jar jarfile="${ant.project.name}-${orc.version}.jar" basedir="${orc.location.build}">
 			<!-- Include library dependencies -->
