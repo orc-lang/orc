@@ -88,7 +88,6 @@ public class GoogleCalendar extends EvalSite {
             		// MAGIC: this technique for getting the events
             		// URL is undocumented but works well
             		eventsURL = new URL(cal.getLink("alternate", null).getHref());
-					System.out.println(eventsURL);
             		// return a signal to indicate that the method finished
             		return Kilim.signal;
             	}
