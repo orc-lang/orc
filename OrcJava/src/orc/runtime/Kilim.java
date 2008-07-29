@@ -28,22 +28,44 @@ import kilim.pausable;
  * @author quark
  */
 public class Kilim {
-	static {
-		Scheduler.setDefaultScheduler(new Scheduler(10));
-	}
-	
 	/**
-	 * Used for {@link #runThreaded(Callable)} threads, to prevent
-	 * thread resource exhaustion.
+	 * The scheduler for the current Orc engine.
+	 * The box is necessary because values are "inherited" by
+	 * copying, and we need to "inherit" the value before it
+	 * is set.
 	 */
-	private static final BoundedThreadPool pool = new BoundedThreadPool(40);
+	static InheritableThreadLocal<Box<Scheduler>> scheduler =
+		new InheritableThreadLocal<Box<Scheduler>>();
+	/**
+	 * Delegate to the current scheduler.
+	 */
+	private static class DynamicScheduler extends Scheduler {
+		public DynamicScheduler() {
+			super(0);
+		}
+		@Override
+		public synchronized void schedule(Task task) {
+			scheduler.get().value.schedule(task);
+		}
+		@Override
+		public synchronized void shutdown() {
+			scheduler.get().value.shutdown();
+		}
+		@Override
+		public synchronized void dump() {
+			scheduler.get().value.dump();
+		}
+	}
+	static {
+		Scheduler.setDefaultScheduler(new DynamicScheduler());
+	}
 	
 	/**
 	 * Bounded thread pool with a pausable execute method.
 	 * 
 	 * @author quark
 	 */
-	public static class BoundedThreadPool {
+	private static class BoundedThreadPool {
 		private Semaphore semaphore;
 		private ThreadPoolExecutor executor;
 		public BoundedThreadPool(int size) {
@@ -54,7 +76,7 @@ public class Kilim {
 			// so there's a window where we may need an extra
 			// thread or two. Worst case, if every thread stops
 			// at once, we'll need twice as many threads.
-			executor = new ThreadPoolExecutor(0, size*2, 60, TimeUnit.SECONDS, new SynchronousQueue<Runnable>()) {
+			executor = new ThreadPoolExecutor(0, size*2, 30, TimeUnit.SECONDS, new SynchronousQueue<Runnable>()) {
 				@Override
 				protected void afterExecute(Runnable r, Throwable t) {
 					// TODO Auto-generated method stub
@@ -67,6 +89,38 @@ public class Kilim {
 			semaphore.acquire();
 			executor.execute(thread);
 		}
+		public void shutdownNow() {
+			executor.shutdownNow();
+		}
+	}
+	
+	/**
+	 * Used for {@link #runThreaded(Callable)} threads, to prevent
+	 * thread resource exhaustion.
+	 */
+	static InheritableThreadLocal<Box<BoundedThreadPool>> pool =
+		new InheritableThreadLocal<Box<BoundedThreadPool>>();
+	
+	/**
+	 * Initialize Kilim state for a new job.
+	 */
+	static void startEngine() {
+		Box<Scheduler> _scheduler = new Box<Scheduler>();
+		Box<BoundedThreadPool> _pool = new Box<BoundedThreadPool>();
+		scheduler.set(_scheduler);
+		pool.set(_pool);
+		_scheduler.value = new Scheduler(1);
+		_pool.value = new BoundedThreadPool(2);
+	}
+	
+	/**
+	 * Shutdown Kilim threads created for the current job.
+	 */
+	static void stopEngine() {
+		scheduler.get().value.shutdown();
+		pool.get().value.shutdownNow();
+		scheduler.set(null);
+		pool.set(null);
 	}
 	
 	/**
@@ -133,9 +187,8 @@ public class Kilim {
 	 * @param thunk
 	 */
 	public @pausable static void runThreaded(final Runnable thunk) {
-		pool.execute(thunk);
+		pool.get().value.execute(thunk);
 	}
-	
 
 	/**
 	 * Utility method to run a pausable computation which generates a value

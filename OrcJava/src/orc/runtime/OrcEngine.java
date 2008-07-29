@@ -8,6 +8,8 @@ import java.rmi.RemoteException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import orc.env.Env;
 import orc.error.TokenException;
@@ -43,6 +45,13 @@ public class OrcEngine implements Runnable {
 	 * from being garbage-collected prematurely.
 	 */
 	private Execution region;
+	/**
+	 * Scheduler thread for Rtimer. This is here instead
+	 * of the Rtimer site so we can easily cancel it when
+	 * the job completes.
+	 * @see #scheduleTimer(TimerTask, long)
+	 */
+	private Timer timer;
 	
 	public synchronized boolean isDead() { return halt; }
 
@@ -53,20 +62,25 @@ public class OrcEngine implements Runnable {
 	 * to queue an active token to process first.
 	 */
 	public void run() {
+		timer = new Timer();
+		Kilim.startEngine();
 		while (true) {
 			// FIXME: can we avoid synchronizing this whole block?
 			synchronized(this) {
-				if (halt) return;
+				if (halt) break;
 				if (!step()) {
 					try {
 						wait();
 					} catch (InterruptedException e) {
 						// terminate execution
-						return;
+						break;
 					}
 				}
 			}
 		}
+		timer.cancel();
+		timer = null;
+		Kilim.stopEngine();
 	}
 	
 	/**
@@ -232,5 +246,12 @@ public class OrcEngine implements Runnable {
 	 */
 	public void println(String string) {
 		System.out.println(string);
+	}
+	
+	/**
+	 * Schedule a timed task (used by Rtimer).
+	 */
+	public void scheduleTimer(TimerTask task, long delay) {
+		timer.schedule(task, delay);
 	}
 }

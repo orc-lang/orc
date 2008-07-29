@@ -18,15 +18,11 @@ import java.util.TimerTask;
 public class Rtimer extends Site {
 	private static final long serialVersionUID = 1L;
 
-	/** Scheduler thread for events */
-	private final Timer timer = new Timer();
-
 	public void callSite(Args args, final Token returnToken) throws TokenException {
-		timer.schedule(new TimerTask() {
+		returnToken.getEngine().scheduleTimer(new TimerTask() {
 			public void run() {
 				returnToken.resume();
 			}
 		}, args.longArg(0));	
 	}
-
 }
