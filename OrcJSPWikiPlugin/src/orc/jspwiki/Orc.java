@@ -23,13 +23,19 @@ public class Orc implements WikiPlugin {
 					baseURL + "orc.css\" media=\"screen\"/>");
 		}
 		String tag = "pre";
-		if (props.get("editable") != null) {
+		String editable = (String)props.get("editable");
+		if (editable != null && !editable.equals("false")) {
 			tag = "textarea";
 		}
+		String height = (String)props.get("height");
 		String body = (String)props.get("_body");
 		if (body != null) {
 			body = TextUtil.replaceEntities(body);
-			out.append("<"+tag+" class=\"orc\">");
+			out.append("<"+tag+" class=\"orc\"");
+			if (height != null) {
+				out.append(" style=\"height: " + height + "\"");
+			}
+			out.append(">");
 			out.append(body.trim());
 			out.append("</"+tag+">");
 		}
