@@ -3,6 +3,9 @@
  */
 jQuery(function ($) {
 
+// don't want to conflict with other libraries
+$.noConflict();
+
 // always cache!
 $.ajaxSetup({cache: true});
 
@@ -404,7 +407,7 @@ function orcify(code, defaultConfig) {
 	// for some reason wrap() makes a copy of $widget.
 	$widget = $code.parent().parent();
 	// replace the code with a codemirror editor
-	codemirror = new CodeMirror(CodeMirror.replace(code), config);
+	var codemirror = new CodeMirror(CodeMirror.replace(code), config);
 	// if the code had an id, move it to the surrounding div
 	// (since we're about to replace the code element with codemirror)
 	if (id) $widget.attr("id", id);

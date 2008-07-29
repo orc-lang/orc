@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import orc.Config;
 import orc.ast.oil.Expr;
 import orc.error.TokenException;
 import orc.lib.orchard.Prompt.PromptCallback;
@@ -146,6 +147,10 @@ public final class Job {
 	
 	private class JobEngine extends OrcEngine
 	implements Promptable, Redirectable, ProvidesGlobals {
+		public JobEngine(Config config) {
+			super(config);
+		}
+
 		private StringBuffer printBuffer = new StringBuffer();
 		/** Close the event stream when done running. */
 		@Override
@@ -217,7 +222,7 @@ public final class Job {
 	private Map<Integer, PromptCallback> pendingPrompts =
 		new HashMap<Integer, PromptCallback>();
 	/** The engine will handle all the interesting work of the job. */
-	private OrcEngine engine = new JobEngine();
+	private OrcEngine engine;
 	/** Events which can be monitored. */
 	private EventBuffer events;
 	private LinkedList<FinishListener> finishers = new LinkedList<FinishListener>();
@@ -225,6 +230,7 @@ public final class Job {
 	protected Job(Expr expression, JobConfiguration configuration) {
 		this.configuration = configuration;
 		this.events = new EventBuffer();
+		engine = new JobEngine(new Config());
 		Node node = expression.compile();
 		//engine.debugMode = true;
 		engine.start(node);

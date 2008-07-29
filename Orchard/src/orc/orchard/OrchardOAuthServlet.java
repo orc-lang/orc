@@ -15,6 +15,7 @@ import net.oauth.OAuthException;
 import net.oauth.OAuthMessage;
 import net.oauth.server.OAuthServlet;
 import orc.orchard.Job.ProvidesGlobals;
+import orc.runtime.Kilim;
 
 public class OrchardOAuthServlet extends HttpServlet {
 	public final static String MAILBOX = "orc.orchard.OrchardOAuthServlet.MAILBOX";
@@ -39,7 +40,7 @@ public class OrchardOAuthServlet extends HttpServlet {
         Mailbox mbox = (Mailbox)accessor.getProperty(MAILBOX);
         if (mbox == null) return;
         System.out.println("OrchardOAuthServlet: approving " + accessor.requestToken);
-        mbox.putb(new Object());
+        mbox.putb(Kilim.signal);
 	}
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

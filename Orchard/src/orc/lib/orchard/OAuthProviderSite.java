@@ -52,7 +52,7 @@ public class OAuthProviderSite extends Site {
 			Kilim.runThreaded(new Callable() {
 				public Object call() throws Exception {
 					oauth.setRequestToken(accessor, request);
-					return new Object();
+					return Kilim.signal;
 				}
 			});
 			// request authorization and wait for response
@@ -64,7 +64,7 @@ public class OAuthProviderSite extends Site {
 			Kilim.runThreaded(new Callable() {
 				public Object call() throws Exception {
 					oauth.setAccessToken(accessor);
-					return new Object();
+					return Kilim.signal;
 				}
 			});
 			return accessor;
