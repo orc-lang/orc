@@ -13,7 +13,9 @@ function parseQuery() {
 	var parts = document.location.search.substr(1).split("&");
 	var out = {};
 	var tmp;
-	for (var i in parts) {
+	// var i in parts breaks when used with some js libraries
+	// which extend the Array prototype
+	for (var i = 0; i < parts.length; ++i) {
 		tmp = parts[i].split("=");
 		out[tmp[0]] = tmp[1] ? tmp[1] : true;
 	}

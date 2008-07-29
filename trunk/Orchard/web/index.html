@@ -95,6 +95,7 @@ ElizaPrompt("How do you do.  Please tell me your problem.")
 <script src="orc.js" type="text/javascript"></script>
 <script type="text/javascript" src="jquery.treeview.min.js"></script>
 <script type="text/javascript">
+(function ($) {
 $("#menu").treeview({
 	animated: "fast",
 	unique: true
@@ -128,5 +129,6 @@ function loadOrcCode(url) {
 		}
 	});
 }
+})(jQuery);
 </script>
 </body>
