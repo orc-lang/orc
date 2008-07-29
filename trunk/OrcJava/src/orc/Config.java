@@ -43,6 +43,8 @@ public class Config {
 	private List<String> includes = new LinkedList<String>();
 	private Integer maxpub = null;
 	private Reader instream = new InputStreamReader(System.in);
+	private Integer numKilimThreads = 1;
+	private Integer numSiteThreads = 2;
 	
 	public void processArgs(String[] args) {
 		CmdLineParser parser = new CmdLineParser(this); 
@@ -116,4 +118,11 @@ public class Config {
 		return includes;
 	}
 	
+	public Integer getNumKilimThreads() {
+		return numKilimThreads;
+	}
+	
+	public Integer getNumSiteThreads() {
+		return numSiteThreads;
+	}
 }

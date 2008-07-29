@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import orc.Config;
 import orc.env.Env;
 import orc.error.TokenException;
 import orc.runtime.nodes.Node;
@@ -52,7 +53,13 @@ public class OrcEngine implements Runnable {
 	 * @see #scheduleTimer(TimerTask, long)
 	 */
 	private Timer timer;
+	private Config config;
 	
+	public OrcEngine(Config config) {
+		this.config = config;
+		this.debugMode = config.debugMode();
+	}
+
 	public synchronized boolean isDead() { return halt; }
 
 	/**
@@ -63,7 +70,8 @@ public class OrcEngine implements Runnable {
 	 */
 	public void run() {
 		timer = new Timer();
-		Kilim.startEngine();
+		Kilim.startEngine(config.getNumKilimThreads(),
+				config.getNumSiteThreads());
 		while (true) {
 			// FIXME: can we avoid synchronizing this whole block?
 			synchronized(this) {
