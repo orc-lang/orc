@@ -104,13 +104,13 @@ public class Kilim {
 	/**
 	 * Initialize Kilim state for a new job.
 	 */
-	static void startEngine() {
+	static void startEngine(int kilimThreads, int siteThreads) {
 		Box<Scheduler> _scheduler = new Box<Scheduler>();
 		Box<BoundedThreadPool> _pool = new Box<BoundedThreadPool>();
 		scheduler.set(_scheduler);
 		pool.set(_pool);
-		_scheduler.value = new Scheduler(1);
-		_pool.value = new BoundedThreadPool(2);
+		_scheduler.value = new Scheduler(kilimThreads);
+		_pool.value = new BoundedThreadPool(siteThreads);
 	}
 	
 	/**
@@ -205,14 +205,14 @@ public class Kilim {
 			public @pausable void execute() {
 				// distinguished value which signals that a value
 				// was returned normally
-        		final Value[] normalExit = new Value[1];
+				final Box<Value> box = new Box<Value>();
         		// start evaluating the site
         		final Mailbox<ExitMsg> exit = new Mailbox<ExitMsg>();
         		Task task = new Task() {
         			public @pausable void execute() {
         				try {
-	        				normalExit[0] = thunk.call();
-	    					exit(normalExit);
+        					box.value = thunk.call();
+	    					exit(box);
         				} catch (Exception e) {
         					// if we just throw the exception,
         					// Kilim will print an unwanted
@@ -224,16 +224,15 @@ public class Kilim {
         		task.informOnExit(exit);
         		task.start();
         		// wait for the site to finish
-        		Object result = exit.get().result;
-    			if (result instanceof TokenException) {
+        		Object out = exit.get().result;
+				if (out == box) {
+					caller.resume(((Box<Value>)out).value);
+				} else if (out instanceof TokenException) {
     				// a token exception
-    				caller.error((TokenException)result);
-				} else if (result instanceof Throwable) {
+    				caller.error((TokenException)out);
+				} else if (out instanceof Throwable) {
     				// some other exception
-    				caller.error(new JavaException((Throwable)result));
-    			} else if (result == normalExit) {
-    				// a normal value
-    				caller.resume(normalExit[0]);
+    				caller.error(new JavaException((Throwable)out));
         		} else {
         			// any other value is irrelevant, it
         			// signifies a dead token

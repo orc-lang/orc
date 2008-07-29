@@ -60,8 +60,7 @@ public class Orc {
 		if (n == null) return;
         
 		// Configure the runtime engine
-		OrcEngine engine = new OrcEngine();
-        engine.debugMode = cfg.debugMode();
+		OrcEngine engine = new OrcEngine(cfg);
 		
 		// Run Orc with these options
 		try {
@@ -222,7 +221,7 @@ public class Orc {
 				Node n = compile(source, new QueueResult(q), cfg);
 		        
 				// Configure the runtime engine.
-				OrcEngine engine = new OrcEngine();
+				OrcEngine engine = new OrcEngine(cfg);
 		        engine.debugMode = cfg.debugMode();
 		        
 		        // Create an OrcInstance object, to be run in its own thread

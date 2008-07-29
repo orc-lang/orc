@@ -1,7 +1,10 @@
 package orc.runtime.sites;
 
+import kilim.Task;
+import kilim.pausable;
 import orc.error.TokenException;
 import orc.runtime.Args;
+import orc.runtime.Kilim;
 import orc.runtime.Token;
 import orc.runtime.values.Value;
 
@@ -13,17 +16,17 @@ import orc.runtime.values.Value;
  */
 public abstract class ThreadedPartialSite extends Site {
 	public void callSite(final Args args, final Token caller) {
-		new Thread() {
-			public void run() {
-				try {
-					Value v = evaluate(args);
-					if (v != null)
-						caller.resume(v);
-					else
-						caller.die();
-				} catch (TokenException e) {
-					caller.error(e);
-				}
+		new Task() {
+			public @pausable void execute() {
+				Kilim.runThreaded(new Runnable() {
+					public void run() {
+						try {
+							caller.resume(evaluate(args));
+						} catch (TokenException e) {
+							caller.error(e);
+						}
+					}
+				});
 			}
 		}.start();
 	}
