@@ -5,7 +5,6 @@
 		<div class="sidenav">
 			<!--#include virtual="../sidebar.shtml" -->
 		</div>
-		<div class="clearer"><span></span></div>
 	</div>
 	<div class="clearer"><span></span></div>
 </div>
