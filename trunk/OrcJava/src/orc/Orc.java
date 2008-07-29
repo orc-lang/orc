@@ -77,8 +77,6 @@ public class Orc {
 			if (cfg.debugMode())
 				e.printStackTrace();
 		}
-		
-		System.exit(0);
 	}
 	
 	public static orc.ast.simple.Expression compile(Reader source, Config cfg) throws ParseError {
