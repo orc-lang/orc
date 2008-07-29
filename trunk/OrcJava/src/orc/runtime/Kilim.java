@@ -45,7 +45,12 @@ public class Kilim {
 		}
 		@Override
 		public synchronized void schedule(Task task) {
-			scheduler.get().value.schedule(task);
+			Scheduler current = scheduler.get().value;
+			// Setting the scheduler is necessary to ensure
+			// that this task can be resumed from different
+			// threads.  It's also more efficient.
+			task.setScheduler(current);
+			current.schedule(task);
 		}
 		@Override
 		public synchronized void shutdown() {
