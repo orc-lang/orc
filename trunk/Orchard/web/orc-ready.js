@@ -48,7 +48,11 @@ function escapeHtml(v) {
  * it justs opens a new window.
  */
 function redirect(url) {
-	open(url);
+	if (!open(url)) {
+		if (currentWidget) currentWidget.stopOrc();
+		alert("This Orc program needs to open a browser window.\n\n"+
+			"Please disable any popup blockers and run the program again.");
+	}
 }
 
 /**
