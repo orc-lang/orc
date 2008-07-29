@@ -19,7 +19,8 @@ public abstract class AbstractAccounts {
 			protected void onNoMoreJobs() {}	
 			public boolean isGuest() { return true; }
 		};
-		guest.setLifespan(new PGInterval(0, 0, 1, 0, 0, 0));
+		// jobs can run no more than 30 minutes
+		guest.setLifespan(new PGInterval(0, 0, 0, 0, 30, 0));
 	}
 	
 	public abstract Account getAccount(String devKey);
