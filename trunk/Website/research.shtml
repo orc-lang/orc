@@ -1,116 +1,98 @@
-<!--#include virtual="template/header.shtml" --> 
+<!--#include virtual="template/header.shtml" -->
 
-<h1>Publications</h1>
+<style type="text/css">
+.paper {
+	font-weight: bold;
+}
+.venue {
+	font-style: italic;
+}
+li.new {
+	list-style: url(images/new.gif);
+}
+</style>
 
-<h2>Introduction to Orc</h2>
+<a name="top" id="top"></a><h1>Publications</h1>
+
 <ul>
-    <li><strong><a href="http://www.cs.utexas.edu/~wcook/papers/OrcJSSM05/OrcJSSM.pdf">Computation 
-      Orchestration: A Basis for Wide-Area Computing</a></strong> (<a href="http://springerlink.metapress.com/openurl.asp?genre=article&amp;id=doi:10.1007/s10270-006-0012-1">DOI</a>) <br>
-    Jayadev Misra and William R. Cook<br>
-    Journal of Software and Systems Modeling, May 2006.</li>
+	<li><a href="#Introduction">Introduction to Orc</a></li>
 
-    <li><strong><a href="http://www.cs.utexas.edu/~wcook/papers/OrcImpDraft.pdf">Implementation Outline of Orc</a></strong><br>
-    William R. Cook and Jayadev Misra<br />
-    Unpublished</li>
+	<li><a href="#Semantics">Semantics &amp; Verification</a></li>
 
+	<li><a href="#Applications">Applications</a></li>
 
-
+	<li><a href="#Student_Reports">Student Reports</a></li>
 </ul>
 
-<h2>Semantics &amp; Verification</h2>
-<ul>
-    <li><a href="http://www.cs.utexas.edu/~wcook/Drafts/2007/TimedSemanticsDRAFT.pdf">
-    <span style="font-weight: bold;">A Timed Semantics of Orc (Draft)</span></a><br>
+<a name="Introduction" id="Introduction"></a><h2>Introduction to Orc <small>(<a href="#top">top</a>)</small></h2>
 
-Ian Wehrman,&nbsp;David Kitchin,&nbsp;William R. Cook.&nbsp;Jayadev Misra<br>
+<ul>
+	<li><a class="paper" href="http://www.cs.utexas.edu/~wcook/papers/OrcJSSM05/OrcJSSM.pdf">Computation Orchestration: A Basis for Wide-Area Computing</a> (<a href="http://springerlink.metapress.com/openurl.asp?genre=article&amp;id=doi:10.1007/s10270-006-0012-1">DOI</a>)<br />
+	Jayadev Misra and William R. Cook<br />
+	Journal of Software and Systems Modeling, May 2006.</li>
+
+	<li><a class="paper" href="http://www.cs.utexas.edu/~wcook/papers/OrcImpDraft.pdf">Implementation Outline of Orc</a><br />
+	William R. Cook and Jayadev Misra<br />
+	Unpublished</li>
+</ul>
+
+<a name="Semantics" id="Semantics"></a><h2>Semantics &amp; Verification <small>(<a href="#top">top</a>)</small></h2>
+
+<ul>
+	<li><a class="paper" href="http://www.cs.utexas.edu/~wcook/Drafts/2007/TimedSemanticsDRAFT.pdf">A Timed Semantics of Orc (Draft)</a><br />
+	Ian Wehrman,&nbsp;David Kitchin,&nbsp;William R. Cook.&nbsp;Jayadev Misra<br />
 	(updated 11/2007)</li>
 
-	<li><a href="http://www.cs.utexas.edu/~iwehrman/pub/tcs07-tr.pdf">	
-	<b>Properties of the Timed Operational and Denotational Semantics of Orc</b></a><br>
-	Ian Wehrman,&nbsp;David Kitchin,&nbsp;William R.
-	Cook.&nbsp;Jayadev Misra<br>
+	<li><a class="paper" href="http://www.cs.utexas.edu/~iwehrman/pub/tcs07-tr.pdf">Properties of the Timed Operational and Denotational Semantics of Orc</a><br />
+	Ian Wehrman,&nbsp;David Kitchin,&nbsp;William R. Cook.&nbsp;Jayadev Misra<br />
+	Technical Report TR-07-65, University of Texas at Austin, Department of Computer Sciences, 2007</li>
 
-	Technical Report TR-07-65, University of Texas at Austin, Department
-	of Computer Sciences, 2007</li>
+	<li><a class="paper" href="http://www.cs.utexas.edu/~wcook/papers/WS-FM07/events.pdf">Event Structure Semantics of Orc</a><br />
+	<a class="venue" href="http://bpm07.fit.qut.edu.au/ws-fm07/">4th International Workshop on Web Services and Formal Methods</a> (WS-FM 2007)<br />
+	Sidney Rosario, David Kitchin, Albert Benveniste, William Cook, Stefan Haar, and Claude Jard<br />
+	Irisa and UT Austin</li>
 
-    <li><a href="http://www.cs.utexas.edu/~wcook/papers/WS-FM07/events.pdf">
-    <strong>Event Structure Semantics of Orc</strong></a><br>
-    <a href="http://bpm07.fit.qut.edu.au/ws-fm07/">4th International Workshop on Web Services and Formal Methods</a> (WS-FM 2007)<br>
+	<li><a class="paper" href="http://www.cs.utexas.edu/~wcook/papers/OrcSemantics06/OrcSemantics.pdf">A Language for Task Orchestration and its Semantic Properties</a> <a href="http://www.cs.utexas.edu/~wcook/papers/OrcSemantics06/OrcSemantics2up.pdf">(2up for printing)</a><br />
+	David Kitchin, William R. Cook and Jayadev Misra<br />
+	<a class="venue" href="http://depend.cs.uni-sb.de/concur2006">Proc. of the International Conference on Concurrency Theory (CONCUR), 2006</a>.<br />
+	August 27-30, Bonn, Germany.<br />
+	Extended version: <a href="http://www.cs.utexas.edu/ftp/pub/techreports/index/html/Abstracts.2006.html#TR-06-32">UTCS Technical Rerport TR-06-32</a></li>
 
-	Sidney Rosario, David Kitchin, Albert Benveniste, William Cook, Stefan Haar, and Claude Jard<br>
-	Irisa and UT Austin
-
-    <li><strong><a href="http://www.cs.utexas.edu/~wcook/papers/OrcSemantics06/OrcSemantics.pdf">A 
-      Language for Task Orchestration and its Semantic Properties</a> </strong><a href="http://www.cs.utexas.edu/~wcook/papers/OrcSemantics06/OrcSemantics2up.pdf">(2up 
-      for printing)</a><strong><br>
-
-
-      </strong>David Kitchin, William R. Cook and Jayadev Misra<br>
-
-
-
-      <em></em><a href="http://depend.cs.uni-sb.de/concur2006"><em>Proc. of the International Conference on Concurrency Theory </em>(CONCUR), 2006</a>. <br>
-
-
-
-August 27-30, Bonn, Germany.<br>
-
-Extended version: <a href="http://www.cs.utexas.edu/ftp/pub/techreports/index/html/Abstracts.2006.html#TR-06-32">UTCS Technical Rerport TR-06-32</a></li>
-
-    <li><a href="http://www.cs.utexas.edu/users/psp/Semantics.Orc.pdf"><strong>A 
-      Tree Semantics of an Orchestration Language</strong></a><br>
-      Jayadev Misra, Tony Hoare and Galen Menzel<br>
-      Lecture Notes for NATO summer school, Marktoberdorf, August 2004</li>
+	<li><a class="paper" href="http://www.cs.utexas.edu/users/psp/Semantics.Orc.pdf">A Tree Semantics of an Orchestration Language</a><br />
+	Jayadev Misra, Tony Hoare and Galen Menzel<br />
+	Lecture Notes for NATO summer school, Marktoberdorf, August 2004</li>
 </ul>
 
-<h2>Applications</h2>
+<a name="Applications" id="Applications"></a><h2>Applications <small>(<a href="#top">top</a>)</small></h2>
+
 <ul>
-    <li><img src="images/new.gif" width="36" height="12" border="0"><a href="http://www.cs.utexas.edu/~wcook/Drafts/2008/OrcSimulation.pdf">
-    <span style="font-weight: bold;">
-Simulation using Orchestration
-(Extended Abstract)</span></a><br>
-	David Kitchin, Evan Powell, and Jayadev Misra<br>
-	</li>
-	<li><a href="ftp://ftp.cs.utexas.edu/pub/techreports/tr07-63.pdf">
-    <span style="font-weight: bold;">
-    Orc-X: Combining Orchestrations and XQuery</span></a>
-	<br>Kristi Morton, David Kitchin, William Cook
-    <br>The University of Texas at Austin, Department of Computer Sciences, December 2007, Report# TR-07-63. 
-    <li><strong><a href="http://www.cs.utexas.edu/~wcook/Drafts/2006/WSvsDO.pdf">Web 
-      Services versus Distributed Objects: A Case Study of Performance and Interface 
-      Design</a></strong><br>
+	<li class="new"><a class="paper" href="http://www.cs.utexas.edu/~wcook/Drafts/2008/OrcSimulation.pdf">Simulation using Orchestration (Extended Abstract)</a><br />
+	David Kitchin, Evan Powell, and Jayadev Misra<br /></li>
 
+	<li><a class="paper" href="ftp://ftp.cs.utexas.edu/pub/techreports/tr07-63.pdf">Orc-X: Combining Orchestrations and XQuery</a><br />
+	Kristi Morton, David Kitchin, William Cook<br />
+	The University of Texas at Austin, Department of Computer Sciences, December 2007, Report# TR-07-63.</li>
 
+	<li><a class="paper" href="http://www.cs.utexas.edu/~wcook/Drafts/2006/WSvsDO.pdf">Web Services versus Distributed Objects: A Case Study of Performance and Interface Design</a><br />
+	William R. Cook, Janel Barfield<br />
+	<a class="venue" href="http://conferences.computer.org/icws/2006/">Proc. of the IEEE International Conference on Web Services ( ICWS) 2006.<br /></a> September 18-22, Chicago, USA</li>
 
-      William R. Cook, Janel Barfield<br>
-
-
-      <a href="http://conferences.computer.org/icws/2006/"><em>Proc. of the</em> <em>IEEE International Conference on Web Services </em>( ICWS) 2006.<br>
-
-
-
-      </a>September 18-22, Chicago, USA</li>
-
-
-
-    <li><strong><a href="http://www.cs.utexas.edu/~wcook/papers/OrcWorkflow06/OrcWorkflow.pdf">Workflow 
-      Patterns in Orc</a></strong> (<a href="http://www.cs.utexas.edu/~wcook/papers/OrcWorkflow06/OrcWorkflow2up.pdf">2up 
-        for printing</a>) <br>
-
-
-
-      William R. Cook, Sourabh Patwardhan, and Jayadev Misra<br>
-
-
-
-  <em>Proc. of the International Conference on Coordination Models 
-    and Languages </em>(COORDINATION), 2006.<br>
-
-
-
-      (<a href="http://www.cs.utexas.edu/~wcook/papers/OrcWorkflow06/orc.pdf">slides from talk</a>)</li>
-	</li>
+	<li><a class="paper" href="http://www.cs.utexas.edu/~wcook/papers/OrcWorkflow06/OrcWorkflow.pdf">Workflow Patterns in Orc</a> (<a href="http://www.cs.utexas.edu/~wcook/papers/OrcWorkflow06/OrcWorkflow2up.pdf">2up for printing</a>)<br />
+	William R. Cook, Sourabh Patwardhan, and Jayadev Misra<br />
+	<span class="venue">Proc. of the International Conference on Coordination Models and Languages</span> (COORDINATION), 2006.<br />
+	(<a href="http://www.cs.utexas.edu/~wcook/papers/OrcWorkflow06/orc.pdf">slides from talk</a>)</li>
 </ul>
 
+<a name="Student_Reports" id="Student_Reports"></a><h2>Student Reports <small>(<a href="#top">top</a>)</small></h2>
 
-<!--#include virtual="template/footer.shtml" --> 
+<ul>
+	<li><a class="paper" href="reports/coonske_sp08.pdf">Transactional Orc</a><br />
+	Katherine E. Coons<br />
+	CS 395T Computation Orchestration, Spring 2008</li>
+
+	<li><a class="paper" href="reports/quark_sp08.pdf">Distributed Orc</a><br />
+	Adrian Quark<br />
+	CS 395T Computation Orchestration, Spring 2008</li>
+</ul>
+
+<!--#include virtual="template/footer.shtml" -->
