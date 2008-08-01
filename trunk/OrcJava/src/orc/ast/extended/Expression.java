@@ -5,6 +5,8 @@ import java.util.Iterator;
 
 import orc.ast.simple.arg.Argument;
 import orc.error.Debuggable;
+import orc.error.Locatable;
+import orc.error.SourceLocation;
 
 /**
  * Base class for the extended abstract syntax tree.
@@ -15,7 +17,8 @@ import orc.error.Debuggable;
  * @author dkitchin, wcook
  */
 
-public abstract class Expression {
+public abstract class Expression implements Locatable {
+	private SourceLocation location = SourceLocation.UNKNOWN;
 	
 	/**
 	 * Simplify an expression which occurs in a call (non-nested) position.
@@ -126,6 +129,14 @@ public abstract class Expression {
 		public orc.ast.simple.Expression bind(orc.ast.simple.Expression e) {
 			return new orc.ast.simple.Where(e,nested,v);
 		}
+	}
+	
+	public void setSourceLocation(SourceLocation location) {
+		this.location = location;
+	}
+
+	public SourceLocation getSourceLocation() {
+		return location;
 	}
 	
 	/**

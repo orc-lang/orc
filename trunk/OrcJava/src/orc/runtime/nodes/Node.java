@@ -4,6 +4,7 @@
 package orc.runtime.nodes;
 
 import orc.error.Debuggable;
+import orc.error.Locatable;
 import orc.error.SourceLocation;
 import orc.runtime.Token;
 import java.io.*;
@@ -12,7 +13,8 @@ import java.io.*;
  * Abstract base class for compile nodes
  * @author wcook
  */
-public abstract class Node implements Serializable {
+public abstract class Node implements Serializable, Locatable {
+	private SourceLocation location = SourceLocation.UNKNOWN;
 	
 	/**
 	 * The process method is the fundamental operation in the execution engine.
@@ -20,5 +22,12 @@ public abstract class Node implements Serializable {
 	 * @param t      input token being processed 
 	 */
 	public abstract void process(Token t);
+	
+	public void setSourceLocation(SourceLocation location) {
+		this.location = location;
+	}
 
+	public SourceLocation getSourceLocation() {
+		return location;
+	}
 }

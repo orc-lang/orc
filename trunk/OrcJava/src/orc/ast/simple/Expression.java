@@ -8,6 +8,8 @@ import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
+import orc.error.Locatable;
+import orc.error.SourceLocation;
 import orc.runtime.nodes.Node;
 
 /**
@@ -17,7 +19,8 @@ import orc.runtime.nodes.Node;
  *
  */
 
-public abstract class Expression {
+public abstract class Expression implements Locatable {
+	private SourceLocation location = SourceLocation.UNKNOWN;
 	
 	/**
 	 * Converts abstract syntax tree into a serializable form, used to generate
@@ -71,5 +74,12 @@ public abstract class Expression {
 	public Node compile(Node output) {
 		return this.convert(new Env<Var>()).compile(output);
 	}
+	
+	public void setSourceLocation(SourceLocation location) {
+		this.location = location;
+	}
 
+	public SourceLocation getSourceLocation() {
+		return location;
+	}
 }

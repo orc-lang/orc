@@ -29,6 +29,7 @@ public class Dot extends Expression {
 	public orc.ast.simple.Expression simplify() {
 		
 		Expression e = new Call(target, new Field(field));
+		e.setSourceLocation(getSourceLocation());
 		return e.simplify();
 	}
 

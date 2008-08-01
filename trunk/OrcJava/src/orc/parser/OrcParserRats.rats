@@ -1,7 +1,9 @@
 module orc.parser.OrcParserRats;
 
 header {
-	import java.util.*;
+	import java.util.List;
+	import java.util.LinkedList;
+	import java.util.ListIterator;
 	import java.io.FileNotFoundException;
 	import java.math.BigInteger;
 	import java.math.BigDecimal;
@@ -12,6 +14,32 @@ header {
 	import orc.Orc;
 	import xtc.util.Utilities;
 	import xtc.util.Action;
+	import xtc.tree.Location;
+}
+
+body {
+	/**
+	 * Attach a source index to a semantic value.
+	 */
+	private static class Indexed<E> {
+		public E value;
+		public int index;
+		public Indexed(E value, int index) {
+			this.value = value;
+			this.index = index;
+		}
+	}
+	/**
+	 * Attach a source location to a node.
+	 * It's really only necessary to use this with nodes
+	 * that could end up generating token errors where we'd
+	 * need to know the source location.
+	 */
+	private <E extends Locatable> E at(int start, E e) {
+		Location l = location(start);
+		e.setSourceLocation(new SourceLocation(l.file, l.line, l.column));
+		return e;
+	}
 }
 
 option constant;
@@ -178,46 +206,50 @@ Expression Sequent =
 	;
 
 Expression Disjunction = 
-	left:Conjunction OROR right:Disjunction {
-		yyValue = new Call("op||", left, right);
+	left:Conjunction index:OROR right:Disjunction {
+		yyValue = at(index, new Call("op||", left, right));
 	}
 	/ Conjunction
 	;
 	
 Expression Conjunction = 
-	left:Comparison ANDAND right:Conjunction {
-		yyValue = new Call("op&&", left, right);
+	left:Comparison index:ANDAND right:Conjunction {
+		yyValue = at(index, new Call("op&&", left, right));
 	}
 	/ Comparison
 	;
 	
 Expression Comparison = 
 	left:Comparable op:Comparator right:Comparable {
-		yyValue = new Call(op, left, right);
+		yyValue = at(op.index, new Call(op.value, left, right));
 	}
 	/ Comparable
 	;
 
-String Comparator =
-	EQ { yyValue = "op="; }
-	/ NEQ { yyValue = "op/="; }
-	/ GT { yyValue = "op>"; }
-	/ GEQ { yyValue = "op>="; }
-	/ LT { yyValue = "op<"; }
-	/ LEQ { yyValue = "op<="; }
+Indexed<String> Comparator =
+	value:(
+		EQ { yyValue = "op="; }
+		/ NEQ { yyValue = "op/="; }
+		/ GT { yyValue = "op>"; }
+		/ GEQ { yyValue = "op>="; }
+		/ LT { yyValue = "op<"; }
+		/ LEQ { yyValue = "op<="; }
+	) {
+		yyValue = new Indexed(value, yyStart);
+	}
 	;
 
 Expression Comparable =
 	NOT x:BasicExpression {
-		yyValue = new Call("op~", x);
+		yyValue = at(yyStart, new Call("op~", x));
 	}
 	/ Cons
 	/ Sum
 	;
 	
 Expression Cons =
-	left:Signed COLON right:(Cons / Signed) {
-		yyValue = new ConsExpr(left, right);
+	left:Signed index:COLON right:(Cons / Signed) {
+		yyValue = at(index, new ConsExpr(left, right));
 	}
 	;
 	
@@ -230,14 +262,18 @@ Action<Expression> SumTail =
 	op:SumOperator right:Product {
 		yyValue = new Action<Expression>() {
 			public Expression run(Expression left) {
-				return new Call(op, left, right);
+				return at(op.index, new Call(op.value, left, right));
 			}
 		};
 	}
 	;
-String SumOperator =
-	PLUS { yyValue = "op+"; }
-	/ MINUS { yyValue = "op-"; }
+Indexed<String> SumOperator =
+	value:(
+		PLUS { yyValue = "op+"; }
+		/ MINUS { yyValue = "op-"; }
+	) {
+		yyValue = new Indexed(value, yyStart);
+	}
 	;
 	
 Expression Product =
@@ -249,21 +285,25 @@ Action<Expression> ProductTail =
 	op:ProductOperator right:Signed {
 		yyValue = new Action<Expression>() {
 			public Expression run(Expression left) {
-				return new Call(op, left, right);
+				return at(op.index, new Call(op.value, left, right));
 			}
 		};
 	}
 	;
 
-String ProductOperator =
-	DIV { yyValue = "op/"; }
-	/ MOD { yyValue = "op%"; }
-	/ TIMES { yyValue = "op*"; }
+Indexed<String> ProductOperator =
+	value:(
+		DIV { yyValue = "op/"; }
+		/ MOD { yyValue = "op%"; }
+		/ TIMES { yyValue = "op*"; }
+	) {
+		yyValue = new Indexed(value, yyStart);
+	}
 	;
 
 Expression Signed =
 	MINUS x:BasicExpression {
-		yyValue = new Call("opu-", x);
+		yyValue = at(yyStart, new Call("opu-", x));
 	}
 	/ BasicExpression
 	;
@@ -278,31 +318,31 @@ Expression BasicExpression =
 		if (args.size() == 1) {
 			yyValue = args.get(0);
 		} else {
-			yyValue = new Let(args);
+			yyValue = at(yyStart, new Let(args));
 		}
 	}
 	/ LBRACKET args:ExpressionList RBRACKET {
-		yyValue = new ListExpr(args);
+		yyValue = at(yyStart, new ListExpr(args));
 	}
 	;
 	
 Expression Call =
 	seed:Identifier actions:CallTail* {
-		yyValue = apply(actions, new Name(seed));
+		yyValue = apply(actions, at(yyStart, new Name(seed)));
 	}
 	;
 Action<Expression> CallTail =
 	DOT right:Identifier {
 		yyValue = new Action<Expression>() {
 			public Expression run(Expression left) {
-				return new Dot(left, right);
+				return at(yyStart, new Dot(left, right));
 			}
 		};
 	}
 	/ LPAREN args:ExpressionList RPAREN {
 		yyValue = new Action<Expression>() {
 			public Expression run(Expression left) {
-				return new Call(left, args);
+				return at(yyStart, new Call(left, args));
 			}
 		};
 	}
@@ -324,15 +364,15 @@ List<Expression> ExpressionList =
 /////////////////////////////////////////////
 
 Pattern Pattern =
-	p:ConsPattern AS v:Identifier {
-		yyValue = new AsPattern(p, v);
+	p:ConsPattern index:AS v:Identifier {
+		yyValue = at(index, new AsPattern(p, v));
 	}
 	/ ConsPattern
 	;
 
 Pattern ConsPattern =
-	left:BasicPattern COLON right:ConsPattern {
-		yyValue = new ConsPattern(left, right);
+	left:BasicPattern index:COLON right:ConsPattern {
+		yyValue = at(index, new ConsPattern(left, right));
 	}
 	/ BasicPattern
 	;
@@ -344,20 +384,20 @@ Pattern BasicPattern =
 	/ literal:Literal {
 		yyValue = new LiteralPattern(literal);
 	}
-	/ name:Identifier LPAREN formals:PatternList RPAREN {
-		yyValue = new CallPattern(name, new TuplePattern(formals));
+	/ name:Identifier index:LPAREN formals:PatternList RPAREN {
+		yyValue = at(index, new CallPattern(name, new TuplePattern(formals)));
 	}
 	/ name:Identifier {
-		yyValue = new VariablePattern(name);
+		yyValue = at(yyStart, new VariablePattern(name));
 	}
 	/ BANG p:BasicPattern {
 		yyValue = new PublishPattern(p);
 	}
 	/ LPAREN formals:PatternList RPAREN {
-		yyValue = new TuplePattern(formals);
+		yyValue = at(yyStart, new TuplePattern(formals));
 	}
 	/ LBRACKET formals:PatternList RBRACKET {
-		yyValue = new ListPattern(formals);
+		yyValue = at(yyStart, new ListPattern(formals));
 	}
 	;
 
@@ -431,45 +471,45 @@ String WordToken = [a-zA-Z_] [a-zA-Z0-9_]*;
 // Keywords
 /////////////////////////////////////////////
 
-String DEF = "def" Space;
-String TRUE = "true" Space;
-String FALSE = "false" Space;
-String VAL = "val" Space;
-String CLASS = "class" Space;
-String SITE = "site" Space;
-String NULL = "null" Space;
-String INCLUDE = "include" Space;
-String LAMBDA = "lambda" Space;
-String AS = "as" Space;
-transient String EQ = "=" Space;
-transient String LBRACE = "{" Space;
-transient String RBRACE = "}" Space;
-transient String LANGLE = "<" Space;
-transient String RANGLE = ">" Space;
-transient String LPAREN = "(" Space;
-transient String RPAREN = ")" Space;
-transient String LBRACKET = "[" Space;
-transient String RBRACKET = "]" Space;
-transient String DOT = "." Space;
-transient String BANG = "!" Space;
-transient String BAR = "|" Space;
-transient String UNDERSCORE = "_" Space;
-transient String COMMA = "," Space;
-transient String SEMICOLON = ";" Space;
-transient String ANDAND = "&&" Space;
-transient String OROR = "||" Space;
-transient String NOT = "~" Space;
-transient String PLUS = "+" Space;
-transient String MINUS = "-" Space;
-transient String DIV = "/" Space;
-transient String MOD = "%" Space;
-transient String TIMES = "*" Space;
-transient String COLON = ":" Space;
-transient String LT = "<:" Space;
-transient String LEQ = "<=" Space;
-transient String GT = ":>" Space;
-transient String GEQ = ">=" Space;
-transient String NEQ = "/=" Space;
+int DEF = "def" Space { yyValue = yyStart; };
+int TRUE = "true" Space { yyValue = yyStart; };
+int FALSE = "false" Space { yyValue = yyStart; };
+int VAL = "val" Space { yyValue = yyStart; };
+int CLASS = "class" Space { yyValue = yyStart; };
+int SITE = "site" Space { yyValue = yyStart; };
+int NULL = "null" Space { yyValue = yyStart; };
+int INCLUDE = "include" Space { yyValue = yyStart; };
+int LAMBDA = "lambda" Space { yyValue = yyStart; };
+int AS = "as" Space { yyValue = yyStart; };
+transient int EQ = "=" Space { yyValue = yyStart; };
+transient int LBRACE = "{" Space { yyValue = yyStart; };
+transient int RBRACE = "}" Space { yyValue = yyStart; };
+transient int LANGLE = "<" Space { yyValue = yyStart; };
+transient int RANGLE = ">" Space { yyValue = yyStart; };
+transient int LPAREN = "(" Space { yyValue = yyStart; };
+transient int RPAREN = ")" Space { yyValue = yyStart; };
+transient int LBRACKET = "[" Space { yyValue = yyStart; };
+transient int RBRACKET = "]" Space { yyValue = yyStart; };
+transient int DOT = "." Space { yyValue = yyStart; };
+transient int BANG = "!" Space { yyValue = yyStart; };
+transient int BAR = "|" Space { yyValue = yyStart; };
+transient int UNDERSCORE = "_" Space { yyValue = yyStart; };
+transient int COMMA = "," Space { yyValue = yyStart; };
+transient int SEMICOLON = ";" Space { yyValue = yyStart; };
+transient int ANDAND = "&&" Space { yyValue = yyStart; };
+transient int OROR = "||" Space { yyValue = yyStart; };
+transient int NOT = "~" Space { yyValue = yyStart; };
+transient int PLUS = "+" Space { yyValue = yyStart; };
+transient int MINUS = "-" Space { yyValue = yyStart; };
+transient int DIV = "/" Space { yyValue = yyStart; };
+transient int MOD = "%" Space { yyValue = yyStart; };
+transient int TIMES = "*" Space { yyValue = yyStart; };
+transient int COLON = ":" Space { yyValue = yyStart; };
+transient int LT = "<:" Space { yyValue = yyStart; };
+transient int LEQ = "<=" Space { yyValue = yyStart; };
+transient int GT = ":>" Space { yyValue = yyStart; };
+transient int GEQ = ">=" Space { yyValue = yyStart; };
+transient int NEQ = "/=" Space { yyValue = yyStart; };
 	
 /////////////////////////////////////////////
 // Whitespace, Comments, etc.
