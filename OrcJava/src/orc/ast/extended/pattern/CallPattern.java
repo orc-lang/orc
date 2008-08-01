@@ -38,7 +38,11 @@ public class CallPattern extends Pattern {
 		
 		// m(u) <m< M.?
 		Var m = new Var();
-		Expression invertExpr = new Where(new Call(m, u), new Call(site, new Field("?")), m);
+		Expression call1 = new Call(site, new Field("?"));
+		call1.setSourceLocation(getSourceLocation());
+		Expression call2 = new Call(m, u);
+		call2.setSourceLocation(getSourceLocation());
+		Expression invertExpr = new Where(call2, call1, m);
 		
 		
 		// isSome(r) >s> p.match s

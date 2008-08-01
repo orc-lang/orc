@@ -8,11 +8,10 @@ import orc.ast.simple.arg.Argument;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
 
-public class Call extends Expression implements Locatable {
+public class Call extends Expression {
 
 	public Expression caller;
 	public List<Expression> args;
-	public SourceLocation location;
 		
 	public Call(Expression caller, List<Expression> args)
 	{
@@ -59,7 +58,7 @@ public class Call extends Expression implements Locatable {
 		List<Argument> newargs = new LinkedList<Argument>();
 		Arg newcaller = caller.argify();
 		orc.ast.simple.Expression e = new orc.ast.simple.Call(newcaller.asArg(), newargs);
-				
+		e.setSourceLocation(getSourceLocation());
 		e = newcaller.bind(e);
 		
 		for (Expression r : args)
@@ -72,15 +71,7 @@ public class Call extends Expression implements Locatable {
 		return e;
 	}
 
-	public void setSourceLocation(SourceLocation location) {
-		this.location = location;
-	}
-
-	public SourceLocation getSourceLocation() {
-		return location;
-	}
-
 	public String toString() {
-		return caller.toString() + "(" + join(args, ", ") + ")";
+		return caller.toString() + "(" + join(args, ", ") + "){-" + getSourceLocation() + "-}";
 	}
 }

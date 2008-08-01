@@ -52,6 +52,6 @@ public class NamedVar extends Argument implements Comparable<NamedVar> {
 	@Override
 	public Arg convert(Env<Var> vars) {
 		// TODO: Convert to dynamic lookup or catch as a type error
-		throw new Error("Variable " + key + " is unbound");
+		throw new Error("Variable " + key + " is unbound: " + getSourceLocation());
 	}
 }

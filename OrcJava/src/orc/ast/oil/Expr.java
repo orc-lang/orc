@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import orc.ast.oil.arg.Var;
+import orc.error.Locatable;
+import orc.error.SourceLocation;
 import orc.runtime.nodes.Pub;
 
 /**
@@ -13,7 +15,8 @@ import orc.runtime.nodes.Pub;
  *
  */
 
-public abstract class Expr {
+public abstract class Expr implements Locatable {
+	private SourceLocation location = SourceLocation.UNKNOWN;
 	
 	/**
 	 * Compiles an oil syntax tree into an execution graph.
@@ -64,4 +67,12 @@ public abstract class Expr {
 	}
 	
 	public abstract <E> E accept(Visitor<E> visitor);
+	
+	public void setSourceLocation(SourceLocation location) {
+		this.location = location;
+	}
+
+	public SourceLocation getSourceLocation() {
+		return location;
+	}
 }

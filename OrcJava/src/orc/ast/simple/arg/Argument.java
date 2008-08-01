@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Set;
 
 import orc.env.Env;
+import orc.error.Locatable;
+import orc.error.SourceLocation;
 import orc.runtime.values.Value;
 
 /**
@@ -18,7 +20,8 @@ import orc.runtime.values.Value;
  *
  */
 
-public abstract class Argument implements Serializable {
+public abstract class Argument implements Serializable, Locatable {
+	private SourceLocation location;
 	
 	public Argument subst(Argument newArg, NamedVar oldArg) {
 		return equals(oldArg) ? newArg : this; 
@@ -29,4 +32,12 @@ public abstract class Argument implements Serializable {
 	}
 	
 	public abstract orc.ast.oil.arg.Arg convert(Env<Var> vars);
+	
+	public void setSourceLocation(SourceLocation location) {
+		this.location = location;
+	}
+
+	public SourceLocation getSourceLocation() {
+		return location;
+	}
 }

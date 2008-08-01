@@ -16,11 +16,10 @@ import orc.error.Locatable;
 import orc.error.SourceLocation;
 import orc.runtime.nodes.Node;
 
-public class Call extends Expression implements Locatable {
+public class Call extends Expression {
 
 	public Argument callee;
 	public List<Argument> args;
-	public SourceLocation location = null;
 	
 	public Call(Argument callee, List<Argument> args)
 	{
@@ -59,6 +58,7 @@ public class Call extends Expression implements Locatable {
 			newargs.add(b.subst(a, x));
 		}
 		Call c = new Call(callee.subst(a, x), newargs);
+		c.setSourceLocation(getSourceLocation());
 		return c;
 	}
 
@@ -82,16 +82,8 @@ public class Call extends Expression implements Locatable {
 		}
 		
 		orc.ast.oil.Call newcall = new orc.ast.oil.Call(newcallee, newargs);
+		newcall.setSourceLocation(getSourceLocation());
 		
 		return newcall;
 	}
-
-	public void setSourceLocation(SourceLocation location) {
-		this.location = location;
-	}
-
-	public SourceLocation getSourceLocation() {
-		return location;
-	}
-
 }

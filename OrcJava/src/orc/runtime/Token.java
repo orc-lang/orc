@@ -255,6 +255,7 @@ public class Token implements Serializable, Comparable<Token> {
 	
 	/* This token has encountered an error, and dies. */
 	public void error(TokenException problem) {
+		problem.setSourceLocation(node.getSourceLocation());
 		engine.tokenError(this, problem);
 		// die after reporting the error, so the engine
 		// isn't halted before it gets a chance to report it

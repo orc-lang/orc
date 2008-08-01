@@ -13,20 +13,23 @@ import orc.ast.simple.Where;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.Site;
 import orc.ast.simple.arg.Var;
+import orc.error.Locatable;
+import orc.error.SourceLocation;
 
 
 /**
  * 
  * Base interface for the abstract syntax of patterns.
  * 
- * Patterns exist only in the extended abstract syntax. They desugar into a series of operations
- * which terminate in variable bindings.
+ * Patterns exist only in the extended abstract syntax. They desugar into a
+ * series of operations which terminate in variable bindings.
  * 
  * @author dkitchin
  * 
  */
 
-public abstract class Pattern {
+public abstract class Pattern implements Locatable {
+	private SourceLocation location = SourceLocation.UNKNOWN;
 
 	
 	/* Sites often used in pattern matching */
@@ -192,4 +195,11 @@ public abstract class Pattern {
 		return new Sequential(e, new Call(ISSOME, u), u); 
 	}
 	
+	public void setSourceLocation(SourceLocation location) {
+		this.location = location;
+	}
+
+	public SourceLocation getSourceLocation() {
+		return location;
+	}
 }
