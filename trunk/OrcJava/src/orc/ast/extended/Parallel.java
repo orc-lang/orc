@@ -15,5 +15,8 @@ public class Parallel extends Expression {
 	public orc.ast.simple.Expression simplify() {
 		return new orc.ast.simple.Parallel(left.simplify(), right.simplify());
 	}
-
+	
+	public String toString() {
+		return "(" + left + " | " + right + ")";
+	}
 }

@@ -37,4 +37,7 @@ public class Lambda extends Expression {
 		return new orc.ast.simple.Defs(defs, new orc.ast.simple.Let(f));		
 	}
 
+	public String toString() {
+		return "(lambda (" + join(formals, ", ") + ") = " + body + ")";
+	}
 }

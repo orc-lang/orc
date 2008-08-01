@@ -15,5 +15,8 @@ public class Semi extends Expression {
 	public orc.ast.simple.Expression simplify() {
 		return new orc.ast.simple.Semi(left.simplify(), right.simplify());
 	}
-
+	
+	public String toString() {
+		return "(" + left + " ; " + right + ")";
+	}
 }

@@ -1,5 +1,7 @@
 package orc.ast.extended;
 
+import xtc.util.Utilities;
+
 public class Literal extends Expression {
 
 	Object val;
@@ -17,5 +19,10 @@ public class Literal extends Expression {
 	public Arg argify() {
 		return new simpleArg(new orc.ast.simple.arg.Constant(val));
 	}
-
+	
+	public String toString() {
+		if (val instanceof String) {
+			return '"' + Utilities.escape((String)val, Utilities.JAVA_ESCAPES) + '"';
+		} else return val.toString();
+	}
 }

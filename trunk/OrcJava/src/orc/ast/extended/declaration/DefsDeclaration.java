@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import orc.ast.extended.Clause;
+import orc.ast.extended.Expression;
 import orc.ast.simple.arg.*;
 
 /**
@@ -116,4 +117,7 @@ public class DefsDeclaration implements Declaration {
 		return new orc.ast.simple.Defs(newdefs, newtarget);
 	}
 	
+	public String toString() {
+		return Expression.join(defs, "\n");
+	}
 }

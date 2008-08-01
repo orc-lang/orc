@@ -24,4 +24,9 @@ public class PublishPattern extends Pattern {
 	public boolean strict() {
 		return p.strict();
 	}
+	
+	
+	public String toString() {
+		return "!" + p;
+	}
 }

@@ -52,4 +52,7 @@ public class ConsPattern extends Pattern {
 		return topExpr;
 	}
 	
+	public String toString() {
+		return "(" + h + ":" + t +")";
+	}
 }

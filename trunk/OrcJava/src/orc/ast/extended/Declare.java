@@ -27,4 +27,7 @@ public class Declare extends Expression {
 		return d.bindto(e.simplify());
 	}
 
+	public String toString() {
+		return d + "\n" + e;
+	}
 }

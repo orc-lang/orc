@@ -26,4 +26,7 @@ public class VariablePattern extends Pattern {
 		return false;
 	}
 	
+	public String toString() {
+		return x.key.toString();
+	}
 }

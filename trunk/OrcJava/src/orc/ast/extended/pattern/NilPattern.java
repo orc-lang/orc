@@ -3,6 +3,7 @@ package orc.ast.extended.pattern;
 import orc.ast.simple.Call;
 import orc.ast.simple.Expression;
 import orc.ast.simple.arg.Var;
+import xtc.util.Utilities;
 
 public class NilPattern extends Pattern {
 	
@@ -14,5 +15,8 @@ public class NilPattern extends Pattern {
 		
 		return new Call(Pattern.ISNIL, u);
 	}
-
+	
+	public String toString() {
+		return "[]";
+	}
 }

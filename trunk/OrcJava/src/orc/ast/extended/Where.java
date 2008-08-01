@@ -1,6 +1,7 @@
 package orc.ast.extended;
 
 import orc.ast.extended.pattern.Pattern;
+import orc.ast.extended.pattern.WildcardPattern;
 
 public class Where extends Expression {
 
@@ -15,6 +16,11 @@ public class Where extends Expression {
 		this.p = p;
 	}
 	
+	public Where(Expression left, Expression right)
+	{
+		this(left, right, new WildcardPattern());
+	}
+	
 	@Override
 	public orc.ast.simple.Expression simplify() {
 		
@@ -27,5 +33,8 @@ public class Where extends Expression {
 		
 		return new orc.ast.simple.Where(target, source,t);
 	}
-
+	
+	public String toString() {
+		return "(" + left + " <"+p+"< " + right + ")";
+	}
 }

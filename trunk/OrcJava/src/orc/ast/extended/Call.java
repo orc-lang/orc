@@ -22,8 +22,7 @@ public class Call extends Expression implements Locatable {
 	
 	public Call(Expression caller, Expression arg)
 	{
-		this.caller = caller;
-		this.args = new ArrayList<Expression>();
+		this(caller);
 		this.args.add(arg);
 	}
 	public Call(Expression caller)
@@ -35,13 +34,17 @@ public class Call extends Expression implements Locatable {
 	/* Alternate constructors for sites with string names, such as ops */
 	public Call(String s, List<Expression> args)
 	{
-		this.caller = new Name(s);
-		this.args = args;
+		this(new Name(s), args);
+	}
+	public Call(String s, Expression left, Expression right)
+	{
+		this(s);
+		this.args.add(left);
+		this.args.add(right);
 	}
 	public Call(String s, Expression arg)
 	{
-		this.caller = new Name(s);
-		this.args = new ArrayList<Expression>();
+		this(s);
 		this.args.add(arg);
 	}
 	public Call(String s)
@@ -77,4 +80,7 @@ public class Call extends Expression implements Locatable {
 		return location;
 	}
 
+	public String toString() {
+		return caller.toString() + "(" + join(args, ", ") + ")";
+	}
 }

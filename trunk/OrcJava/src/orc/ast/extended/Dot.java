@@ -32,4 +32,7 @@ public class Dot extends Expression {
 		return e.simplify();
 	}
 
+	public String toString() {
+		return target + "." + field;
+	}
 }

@@ -26,5 +26,8 @@ public class ConsExpr extends Expression {
 		
 		return body;
 	}
-
+	
+	public String toString() {
+		return "(" + h + ":" + t + ")";
+	}
 }
