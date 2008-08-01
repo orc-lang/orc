@@ -124,7 +124,15 @@ Declaration Declaration =
 	;
 
 Definition Definition =
-	DEF name:Identifier LPAREN formals:PatternList RPAREN EQ body:Body {
+	DEF name:Identifier LPAREN formals:PatternList RPAREN
+	curried0:(LPAREN yyValue:PatternList RPAREN)*
+	EQ body0:Body {
+		List<List<Pattern>> curried = curried0.list();
+		ListIterator<List<Pattern>> it = curried.listIterator(curried.size());
+		Expression body = body0;
+		while (it.hasPrevious()) {
+			body = new Lambda(it.previous(), body);
+		}
 		yyValue = new Definition(name, formals, body);
 	}
 	;
