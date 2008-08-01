@@ -45,4 +45,7 @@ public class SiteDeclaration implements Declaration {
 		return target.subst(a,x);
 		*/
 	}
+	public String toString() {
+		return "site " + varname + " = " + classname;
+	}
 }

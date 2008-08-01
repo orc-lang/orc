@@ -27,5 +27,8 @@ public class Tuple extends Expression {
 		
 		return e;
 	}
-
+	
+	public String toString() {
+		return "(" + join(items, ", ") + ")";
+	}
 }

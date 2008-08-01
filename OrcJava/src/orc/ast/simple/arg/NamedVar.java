@@ -21,7 +21,7 @@ import orc.runtime.values.Value;
 
 public class NamedVar extends Argument implements Comparable<NamedVar> {
 	private static final long serialVersionUID = 1L;
-	String key;
+	public String key;
 	
 	public NamedVar(String key)
 	{

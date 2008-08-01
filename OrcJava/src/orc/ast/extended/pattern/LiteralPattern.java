@@ -3,13 +3,14 @@ package orc.ast.extended.pattern;
 import orc.ast.extended.Literal;
 import orc.ast.simple.*;
 import orc.ast.simple.arg.*;
+import xtc.util.Utilities;
 
 public class LiteralPattern extends Pattern {
 
-	Argument lit;
+	Literal lit;
 	
 	public LiteralPattern(Literal l) {
-		this.lit = l.argify().asArg();
+		this.lit = l;
 	}
 	
 	public Expression bind(Var u, Expression g) {
@@ -17,11 +18,12 @@ public class LiteralPattern extends Pattern {
 	}
 
 	public Expression match(Var u) {
+		Argument arg = lit.argify().asArg();
 		// u = L
-		Expression test = new Call(Pattern.EQUAL, u, lit); 
+		Expression test = new Call(Pattern.EQUAL, u, arg); 
 		
 		// some(L)
-		Expression tc = new Call(Pattern.SOME, lit);
+		Expression tc = new Call(Pattern.SOME, arg);
 		
 		// none()
 		Expression fc = new Call(Pattern.NONE);
@@ -30,4 +32,7 @@ public class LiteralPattern extends Pattern {
 		return Pattern.ifexp(test, tc, fc);
 	}
 	
+	public String toString() {
+		return lit.toString();
+	}
 }

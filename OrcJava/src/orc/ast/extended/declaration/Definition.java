@@ -28,5 +28,7 @@ public class Definition {
 		this.formals = formals;
 		this.body = body;
 	}
-	
+	public String toString() {
+		return "def " + name + " (" + Expression.join(formals, ", ") + ") = " + body;
+	}	
 }

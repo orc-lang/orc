@@ -18,5 +18,7 @@ public class WildcardPattern extends Pattern {
 		return false;
 	}
 
-	
+	public String toString() {
+		return "_";
+	}
 }

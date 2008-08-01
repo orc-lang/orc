@@ -53,5 +53,8 @@ public class TuplePattern extends Pattern {
 	public boolean strict() {
 		return true;
 	}
-
+	
+	public String toString() {
+		return "("+orc.ast.extended.Expression.join(args, ", ")+")";
+	}
 }

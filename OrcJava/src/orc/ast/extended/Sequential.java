@@ -1,6 +1,7 @@
 package orc.ast.extended;
 
 import orc.ast.extended.pattern.Pattern;
+import orc.ast.extended.pattern.WildcardPattern;
 import orc.ast.simple.arg.Var;
 
 public class Sequential extends Expression {
@@ -16,6 +17,11 @@ public class Sequential extends Expression {
 		this.p = p;
 	}
 	
+	public Sequential(Expression left, Expression right)
+	{
+		this(left, right, new WildcardPattern());
+	}
+	
 	@Override
 	public orc.ast.simple.Expression simplify() {
 		
@@ -28,5 +34,8 @@ public class Sequential extends Expression {
 		
 		return new orc.ast.simple.Sequential(source, target, t);
 	}
-
+	
+	public String toString() {
+		return "(" + left + " >"+p+"> " + right + ")";
+	}
 }

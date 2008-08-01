@@ -23,15 +23,11 @@ import orc.ast.oil.Expr;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
 import orc.error.ParseError;
-import orc.parser.OrcLexer;
 import orc.parser.OrcParser;
 import orc.runtime.OrcEngine;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.result.QueueResult;
 import orc.runtime.values.Value;
-import antlr.RecognitionException;
-import antlr.SemanticException;
-import antlr.TokenStreamException;
 
 /**
  * Main class for Orc. Parses Orc file and executes it.
@@ -78,7 +74,7 @@ public class Orc {
 		}
 	}
 	
-	public static orc.ast.simple.Expression compile(Reader source, Config cfg) throws ParseError {
+	public static orc.ast.simple.Expression compile(Reader source, Config cfg) throws ParseError, IOException {
 		return compile(source, cfg, true);
 	}
 	
@@ -109,32 +105,28 @@ public class Orc {
 		return new InputStreamReader(stream);
 	}
 	
-	public static orc.ast.simple.Expression compile(Reader source, Config cfg, boolean includeStdlib) throws ParseError {
-		
-		try {
-		
+	public static orc.ast.simple.Expression compile(Reader source, Config cfg, boolean includeStdlib) throws ParseError, IOException {
 		//System.out.println("Parsing...");
 		// Parse the goal expression
-		OrcLexer lexer = new OrcLexer(source);
-		OrcParser parser = new OrcParser(lexer);
-		orc.ast.extended.Expression e = parser.startRule();
+		OrcParser parser = new OrcParser(source);
+		orc.ast.extended.Expression e = parser.parseProgram();
+		
+		//System.out.println(e);
 		
 		//System.out.println("Importing declarations...");
 		LinkedList<Declaration> decls = new LinkedList<Declaration>();
 		
 		if (includeStdlib) {
 			// Load declarations from the default include file.
-			OrcLexer flexer = new OrcLexer(openInclude("prelude.inc"));
-			OrcParser fparser = new OrcParser(flexer);
-			decls.addAll(fparser.decls());
+			OrcParser fparser = new OrcParser(openInclude("prelude.inc"), "prelude.inc");
+			decls.addAll(fparser.parseModule());
 		}
 		
 		// Load declarations from files specified by the configuration options
 		for (String f : cfg.getIncludes())
 		{
-			OrcLexer flexer = new OrcLexer(openInclude(f));
-			OrcParser fparser = new OrcParser(flexer);
-			decls.addAll(fparser.decls());
+			OrcParser fparser = new OrcParser(openInclude(f), f);
+			decls.addAll(fparser.parseModule());
 		}
 		
 		// Add the declarations to the parse tree
@@ -147,14 +139,6 @@ public class Orc {
 		//System.out.println("Simplifying the abstract syntax tree...");
 		// Simplify the AST
 		return e.simplify();
-		
-		} catch (FileNotFoundException e) {
-			throw new ParseError(e.getMessage(), e);
-		} catch (RecognitionException e) {
-			throw new ParseError("ANTLR recognition exception", e);
-		} catch (TokenStreamException e) {
-			throw new ParseError(e.getMessage(), e);
-		}		
 	}
 	
 	protected static Node compile(Reader source, Node target, Config cfg) {

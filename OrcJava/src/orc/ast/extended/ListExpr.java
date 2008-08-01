@@ -22,5 +22,7 @@ public class ListExpr extends Expression {
 		return e.simplify();
 	}
 
-	
+	public String toString() {
+		return "[" + join(es, ", ") + "]";
+	}	
 }

@@ -31,4 +31,7 @@ public class ListPattern extends Pattern {
 		return actual.match(u);
 	}
 	
+	public String toString() {
+		return actual.toString();
+	}
 }

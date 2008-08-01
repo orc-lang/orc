@@ -43,5 +43,7 @@ public class ClassDeclaration implements Declaration {
 		return target.subst(a,x);
 		*/
 	}
-	
+	public String toString() {
+		return "class " + varname + " = " + classname;
+	}	
 }

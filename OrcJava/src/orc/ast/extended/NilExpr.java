@@ -10,4 +10,7 @@ public class NilExpr extends Expression {
 		return new orc.ast.simple.Call(new Site(orc.ast.sites.Site.NIL));
 	}
 
+	public String toString() {
+		return "[]";
+	} 
 }

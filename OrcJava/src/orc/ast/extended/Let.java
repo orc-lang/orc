@@ -37,4 +37,7 @@ public class Let extends Expression {
 		return e;
 	}
 
+	public String toString() {
+		return "(" + join(args, ", ") + ")";
+	}	
 }

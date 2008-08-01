@@ -18,4 +18,7 @@ public class Name extends Expression {
 		return new simpleArg(new orc.ast.simple.arg.NamedVar(name));
 	}
 	
+	public String toString() {
+		return name;
+	}
 }

@@ -14,7 +14,7 @@ import orc.ast.simple.arg.Var;
 
 public class CallPattern extends Pattern {
 
-	Argument site;
+	NamedVar site;
 	Pattern p;
 	
 	// Create a call based on a string name
@@ -57,5 +57,8 @@ public class CallPattern extends Pattern {
 		
 		return body;
 	}
-
+	
+	public String toString() {
+		return site.key + p.toString();
+	}
 }

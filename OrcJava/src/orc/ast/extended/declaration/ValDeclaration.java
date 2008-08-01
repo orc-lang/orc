@@ -26,7 +26,7 @@ public class ValDeclaration implements Declaration {
 		return new orc.ast.simple.Where(target, source, t);
 	}
 
-
-
-
+	public String toString() {
+		return "val " + p + " = " + f;
+	}
 }

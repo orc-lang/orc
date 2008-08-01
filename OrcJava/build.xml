@@ -14,7 +14,10 @@
 		<!-- Put everything in ${orc.location.build} into orc-sites.jar -->
 		<jar jarfile="${ant.project.name}-${orc.version}.jar" basedir="${orc.location.build}">
 			<!-- Include library dependencies -->
-			<zipgroupfileset dir="${orc.location.lib}" includes="*.jar"/>
+			<zipgroupfileset dir="${orc.location.lib}">
+				<include name="*.jar"/>
+				<exclude name="rats.jar"/>
+			</zipgroupfileset>
 			<manifest>
 				<attribute name="Main-Class" value="orc.Orc"/>
 			</manifest>	
@@ -48,6 +51,18 @@
 			<arg value="-d" />
 			<arg value="${orc.location.build}" />
 			<arg line="${orc.location.build}" />
+		</java>
+	</target>
+
+	<target name="rats" description="Build rats parser">
+		<java classname="xtc.parser.Rats" fork="yes">
+			<classpath>
+				<pathelement path="${orc.location.lib}/rats.jar" />
+			</classpath>
+			<arg value="-lgpl" />
+			<arg value="-out" />
+			<arg value="${orc.location.src}/orc/parser" />
+			<arg value="${orc.location.src}/orc/parser/OrcParserRats.rats" />
 		</java>
 	</target>
 </project>

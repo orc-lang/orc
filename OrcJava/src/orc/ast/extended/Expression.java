@@ -1,5 +1,8 @@
 package orc.ast.extended;
 
+import java.util.Collection;
+import java.util.Iterator;
+
 import orc.ast.simple.arg.Argument;
 import orc.error.Debuggable;
 
@@ -125,4 +128,17 @@ public abstract class Expression {
 		}
 	}
 	
+	/**
+	 * Utility method to join a sequence of items with a separator.
+	 */
+	public static String join(Collection<?> items, String separator) {
+		StringBuilder out = new StringBuilder();
+		Iterator<?> it = items.iterator();
+		if (it.hasNext()) out.append(it.next());
+		while (it.hasNext()) {
+			out.append(separator);
+			out.append(it.next());
+		}
+		return out.toString();
+	}
 }

@@ -30,4 +30,7 @@ public class AsPattern extends Pattern {
 		return p.strict();
 	}
 	
+	public String toString() {
+		return "(" + p + " as " + x.key +")";
+	}
 }
