@@ -1,5 +1,6 @@
 package orc.orchard;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.logging.Logger;
 
@@ -38,7 +39,9 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
 			config.addInclude("orchard.inc");
 			ex0 = Orc.compile(new StringReader(program), config);
 		} catch (ParseError e) {
-			throw new InvalidProgramException("Syntax error: " + e.getMessage());
+			throw new InvalidProgramException(e.getMessage());
+		} catch (IOException e) {
+			throw new InvalidProgramException("IO error: " + e.getMessage());
 		}
 		if (ex0 == null) {
 			// FIXME: obviously need more detail here

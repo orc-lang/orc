@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import kilim.Mailbox;
-import kilim.pausable;
+import kilim.Pausable;
 import net.oauth.OAuth;
 import net.oauth.OAuthAccessor;
 import orc.error.JavaException;
@@ -44,9 +44,9 @@ public class OAuthProviderSite extends Site {
 		}
 
 		@Override
-		public @pausable OAuthAccessor authenticate(final String consumer,
+		public OAuthAccessor authenticate(final String consumer,
 				final List<OAuth.Parameter> request)
-		throws Exception {
+		throws Pausable, Exception {
 			final OAuthAccessor accessor = oauth.newAccessor(consumer);
 			// get a request token
 			Kilim.runThreaded(new Callable() {
