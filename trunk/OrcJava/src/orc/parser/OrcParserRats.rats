@@ -171,10 +171,10 @@ Expression SeqExpression =
 	;
 
 Expression Sequent =
-	Disjunction
-	/ LAMBDA LPAREN formals:PatternList RPAREN EQ body:Body {
+	LAMBDA LPAREN formals:PatternList RPAREN EQ body:Body {
 		yyValue = new Lambda(formals, body);
 	}
+	/ Disjunction
 	;
 
 Expression Disjunction = 
