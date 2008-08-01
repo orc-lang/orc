@@ -6,7 +6,7 @@ import java.util.concurrent.Callable;
 
 import javax.swing.JOptionPane;
 
-import kilim.pausable;
+import kilim.Pausable;
 import net.oauth.OAuth;
 import net.oauth.OAuthAccessor;
 import net.oauth.OAuthException;
@@ -32,9 +32,9 @@ public class OAuthProviderSite extends EvalSite {
 		}
 
 		@Override
-		public @pausable OAuthAccessor authenticate(final String consumer,
+		public OAuthAccessor authenticate(final String consumer,
 				final List<OAuth.Parameter> request)
-		throws Exception {
+		throws Pausable, Exception {
 			final OAuthAccessor accessor = oauth.newAccessor(consumer);
 			Kilim.runThreaded(new Callable<Object>() {
 				public Object call() throws Exception {
