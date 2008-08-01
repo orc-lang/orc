@@ -207,7 +207,15 @@ Expression SeqExpression =
 	;
 
 Expression Sequent =
-	LAMBDA LPAREN formals:PatternList RPAREN EQ body:Body {
+	LAMBDA LPAREN formals:PatternList RPAREN
+	curried0:(LPAREN yyValue:PatternList RPAREN)*
+	EQ body0:Body {
+		List<List<Pattern>> curried = curried0.list();
+		ListIterator<List<Pattern>> it = curried.listIterator(curried.size());
+		Expression body = body0;
+		while (it.hasPrevious()) {
+			body = new Lambda(it.previous(), body);
+		}
 		yyValue = new Lambda(formals, body);
 	}
 	/ Disjunction
