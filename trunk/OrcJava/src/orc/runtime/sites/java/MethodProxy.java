@@ -7,9 +7,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import kilim.Fiber;
+import kilim.Pausable;
 import kilim.State;
 import kilim.Task;
-import kilim.pausable;
 import orc.error.JavaException;
 import orc.error.MethodTypeMismatchException;
 import orc.error.SiteException;
@@ -17,7 +17,7 @@ import orc.error.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Kilim;
 import orc.runtime.Token;
-import orc.runtime.Kilim.Pausable;
+import orc.runtime.Kilim.PausableCallable;
 import orc.runtime.sites.Site;
 import orc.runtime.sites.java.ObjectProxy.Delegate;
 import orc.runtime.values.Constant;
@@ -61,19 +61,26 @@ public class MethodProxy extends Site {
         		}
         	}
         	Object result;
-            if (!m.isAnnotationPresent(pausable.class)) {
-            	// non-pausable methods should be invoked directly
-            	invoke(caller, m, delegate.that, oargs);
-            } else {
+            if (isPausable(m)) {
             	// pausable methods are invoked within a Kilim task
             	invokePausable(caller, m, delegate.that, oargs);
+            } else {
+            	// non-pausable methods should be invoked directly
+            	invoke(caller, m, delegate.that, oargs);
             }
         	return;
         }
         throw new MethodTypeMismatchException(delegate.name);
     }
 	
-    public static void invoke(Token caller, Method m, Object that, Object[] args) {
+	private static boolean isPausable(Method m) {
+    	for (Class<?> exception : m.getExceptionTypes()) {
+    		if (exception == Pausable.class) return true;
+    	}
+    	return false;
+	}
+	
+    private static void invoke(Token caller, Method m, Object that, Object[] args) {
 		try {
     		caller.resume(wrapObject(m, m.invoke(that, args)));
 		} catch (Exception e) {
@@ -87,7 +94,7 @@ public class MethodProxy extends Site {
         else return new Constant(o);
     }
     
-    public static void invokePausable(Token caller,
+    private static void invokePausable(Token caller,
     		Method m, final Object that, final Object[] args) {
         // Find the woven method
         final Method pm;
@@ -105,8 +112,8 @@ public class MethodProxy extends Site {
         for (int i = 0; i < args.length; ++i) pargs[i] = args[i];
         
         // Invoke the method inside a task
-        Kilim.runPausable(caller, new Pausable<Value>() {
-        	public @pausable Value call() throws Exception {
+        Kilim.runPausable(caller, new PausableCallable<Value>() {
+        	public Value call() throws Pausable, Exception {
         		try {
 	                return wrapObject(pm, _invokePausable(pm, that, pargs));
         		} catch (InvocationTargetException e) {
@@ -127,10 +134,9 @@ public class MethodProxy extends Site {
      * The weaver translates calls to this into calls to
      * {@link Task#_invokePausable(Method, Object, Object[], Fiber)}
      */
-    @pausable
-    public static Object _invokePausable(Method m, Object that, Object[] args)
-    throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-    	throw new AssertionError("Unwoven method: public static Object MethodProxy#_invokePausable(Method, Object, Object[])");
+    private static Object _invokePausable(Method m, Object that, Object[] args)
+    throws Pausable, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+    	throw new AssertionError("Unwoven method: private static Object MethodProxy#_invokePausable(Method, Object, Object[])");
     }
     
     /**
@@ -145,7 +151,7 @@ public class MethodProxy extends Site {
 	 * should be marked pausable. It calls pausable methods
 	 */
     @SuppressWarnings("unused")
-	public static Object _invokePausable(Method m, Object that, Object[] args, Fiber f)
+	private static Object _invokePausable(Method m, Object that, Object[] args, Fiber f)
     throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         if (f.pc == 1) {
             // resuming

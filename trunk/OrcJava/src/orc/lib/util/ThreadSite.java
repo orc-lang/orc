@@ -1,7 +1,7 @@
 package orc.lib.util;
 
+import kilim.Pausable;
 import kilim.Task;
-import kilim.pausable;
 import orc.error.JavaException;
 import orc.error.TokenException;
 import orc.runtime.Args;
@@ -36,7 +36,7 @@ public class ThreadSite extends EvalSite {
 				// thread pool. The task doesn't do anything but
 				// wait for a thread to become available
 				new Task() {
-					public @pausable void execute() {
+					public void execute() throws Pausable {
 						Kilim.runThreaded(new Runnable() {
 							public void run() {
 								try {

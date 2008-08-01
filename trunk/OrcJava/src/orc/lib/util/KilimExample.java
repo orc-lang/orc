@@ -2,9 +2,9 @@ package orc.lib.util;
 
 import java.util.concurrent.Callable;
 
-import orc.runtime.Kilim;
+import kilim.Pausable;
 import kilim.Task;
-import kilim.pausable;
+import orc.runtime.Kilim;
 
 /**
  * This example class shows how to write a Java
@@ -19,22 +19,22 @@ public class KilimExample {
 	}
 	
 	/** Do not publish */
-	public @pausable void exit() {
+	public void exit() throws Pausable {
 		Task.exit(id + " exiting");
 	}
 	
 	/** Signal an error */
-	public @pausable void error() throws Exception {
+	public void error() throws Exception {
 		throw new Exception("ERROR");
 	}
 	
 	/** Publish after millis milliseconds. */
-	public @pausable String sleep(Number millis) {
+	public String sleep(Number millis) throws Pausable {
 		Task.sleep(millis.longValue());
 		return id;
 	}
 	
-	public @pausable String sleepThread(final Number millis) throws Exception {
+	public String sleepThread(final Number millis) throws Pausable, Exception {
 		Kilim.runThreaded(new Callable<Object>() {
 			public Object call() throws InterruptedException {
 				Thread.sleep(millis.longValue());

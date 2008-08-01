@@ -1,19 +1,13 @@
 package orc.runtime.sites;
 
-import java.util.concurrent.Callable;
-
-import kilim.ExitMsg;
-import kilim.Mailbox;
-import kilim.Scheduler;
+import kilim.Pausable;
 import kilim.Task;
-import kilim.pausable;
-import orc.error.JavaException;
 import orc.error.SiteException;
 import orc.error.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Kilim;
 import orc.runtime.Token;
-import orc.runtime.Kilim.Pausable;
+import orc.runtime.Kilim.PausableCallable;
 import orc.runtime.values.Value;
 
 /**
@@ -36,15 +30,14 @@ public abstract class KilimSite extends Site {
 	@Override
 	public void callSite(final Args args, final Token caller)
 	throws TokenException {
-		Kilim.runPausable(caller, new Pausable<Value>() {
-			public @pausable Value call() throws TokenException {
+		Kilim.runPausable(caller, new PausableCallable<Value>() {
+			public Value call() throws Pausable, TokenException {
 				return evaluate(args);
 			}
 		});
 	}
 
-	@pausable
-	public Value evaluate(Args args) throws TokenException {
+	public Value evaluate(Args args) throws Pausable, TokenException {
 		throw new SiteException("You must override KilimSite#evaluate(Args)");
 	}
 }

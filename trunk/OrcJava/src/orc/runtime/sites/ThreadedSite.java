@@ -1,15 +1,11 @@
 package orc.runtime.sites;
 
-import java.util.concurrent.Callable;
-
+import kilim.Pausable;
 import kilim.Task;
-import kilim.pausable;
-
 import orc.error.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Kilim;
 import orc.runtime.Token;
-import orc.runtime.Kilim.Pausable;
 import orc.runtime.values.Value;
 
 /**
@@ -19,7 +15,7 @@ import orc.runtime.values.Value;
 public abstract class ThreadedSite extends Site {
 	public void callSite(final Args args, final Token caller) {
 		new Task() {
-			public @pausable void execute() {
+			public void execute() throws Pausable {
 				Kilim.runThreaded(new Runnable() {
 					public void run() {
 						try {
