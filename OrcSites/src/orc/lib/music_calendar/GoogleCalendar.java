@@ -8,7 +8,8 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
 
-import kilim.pausable;
+import kilim.Pausable;
+
 import net.oauth.OAuth;
 import net.oauth.OAuthAccessor;
 import net.oauth.OAuthException;
@@ -75,7 +76,7 @@ public class GoogleCalendar extends EvalSite {
 		 * Authenticate with Google using OAuth.
 		 * Also creates a calendar as a side effect.
 		 */
-		public @pausable void authenticate() throws Exception {
+		public void authenticate() throws Pausable, Exception {
 			OAuthAccessor accessor = provider.authenticate(consumer,
 					OAuth.newList("scope", "http://www.google.com/calendar/feeds/"));
 			service.setAuthSubToken(accessor.accessToken,
@@ -124,7 +125,7 @@ public class GoogleCalendar extends EvalSite {
 		}
 		
 		/** Add a music show record. */
-		public @pausable void addMusicShow(final MusicShow show) throws Exception {
+		public void addMusicShow(final MusicShow show) throws Pausable, Exception {
 			synchronized (this) {
 				if (!authenticated) {
 					throw new OAuthException("Not authenticated.");

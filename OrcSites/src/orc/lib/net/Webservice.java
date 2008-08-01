@@ -41,9 +41,10 @@ public class Webservice extends ThreadedSite {
 	/**
 	 * Compile class files.
 	 */
-	private static void javac(File tmpdir, List<String> sourcesList) {
+	@SuppressWarnings("unchecked")
+	private static void javac(File tmpdir, List sourcesList) {
         // build argument list
-		String[] sources = sourcesList.toArray(new String[]{});
+		String[] sources = ((List<String>)sourcesList).toArray(new String[]{});
 		String[] args = new String[sources.length + 2];
 		args[0] = "-cp";
 		args[1] = classpath;
