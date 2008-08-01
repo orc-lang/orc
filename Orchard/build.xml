@@ -8,6 +8,7 @@
 	<path id="orc.classpath">
 		<fileset dir="${orc.location.lib}" includes="*.jar" />
 		<pathelement path="${orc.location.build}" />
+		<fileset dir="${orc.location.OrcJava.lib}" includes="*.jar" />
 	</path>
 	
 	<target name="war" depends="kilim" description="generate the war">
