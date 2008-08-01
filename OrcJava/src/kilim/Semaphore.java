@@ -31,7 +31,7 @@ public class Semaphore {
 	public Semaphore(int n) {
 		this.n = n;
 	}
-	public @pausable synchronized void acquire() {
+	public synchronized void acquire() throws Pausable {
 		final Object uniq = new Object();
 		while (n == 0) {
 			Waiter w = new Waiter(Task.getCurrentTask());

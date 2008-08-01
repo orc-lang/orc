@@ -1,25 +1,20 @@
 package orc.runtime;
 
-import java.util.LinkedList;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import orc.error.JavaException;
-import orc.error.TokenException;
-import orc.runtime.values.Value;
-
 import kilim.ExitMsg;
 import kilim.Fiber;
 import kilim.Mailbox;
-import kilim.PauseReason;
+import kilim.Pausable;
 import kilim.Scheduler;
 import kilim.Semaphore;
 import kilim.Task;
-import kilim.pausable;
+import orc.error.JavaException;
+import orc.error.TokenException;
+import orc.runtime.values.Value;
 
 /**
  * Utility methods for 
@@ -90,7 +85,7 @@ public class Kilim {
 				}
 			};
 		}
-		public @pausable void execute(Runnable thread) {
+		public void execute(Runnable thread) throws Pausable {
 			semaphore.acquire();
 			executor.execute(thread);
 		}
@@ -142,8 +137,8 @@ public class Kilim {
 	 * Pausable computation which returns a value.
 	 * FIXME: Kilim incorrectly adds methods to interfaces
 	 */
-	public abstract static class Pausable<V> {
-		public abstract @pausable V call() throws Exception;
+	public static abstract class PausableCallable<V> {
+		public abstract V call() throws Pausable, Exception;
 		/** FIXME: Kilim should add this method but it doesn't */
 		public V call(Fiber f) throws Exception {
 			throw new AssertionError("Unwoven method "
@@ -164,8 +159,8 @@ public class Kilim {
 	 * <p>FIXME: Kilim mailboxes cannot handle null messages so we
 	 * always have to return some object.
 	 */
-	public @pausable static <V> V runThreaded(final Callable<V> thunk)
-	throws Exception {
+	public static <V> V runThreaded(final Callable<V> thunk)
+	throws Pausable, Exception {
 		final Box<V> box = new Box<V>();
 		final Mailbox<Object> mbox = new Mailbox<Object>();
 		runThreaded(new Runnable() {
@@ -179,7 +174,7 @@ public class Kilim {
 			}
 		});
 		Object out = mbox.get();
-		if (out == box) return ((Box<V>)out).value;
+		if (out == box) return box.value;
 		else throw (Exception)out;
 	}
 	
@@ -191,7 +186,7 @@ public class Kilim {
 	 * 
 	 * @param thunk
 	 */
-	public @pausable static void runThreaded(final Runnable thunk) {
+	public static void runThreaded(final Runnable thunk) throws Pausable {
 		pool.get().value.execute(thunk);
 	}
 
@@ -201,20 +196,20 @@ public class Kilim {
 	 * @param caller token to return the value to
 	 * @param thunk computation returning a value
 	 */
-	public static void runPausable(final Token caller, final Pausable<Value> thunk) {
+	public static void runPausable(final Token caller, final PausableCallable<Value> thunk) {
 		// In order to deal with both regular and irregular exits,
 		// we have to set up a monitor task which spawns a child
 		// task, monitors its exit value, and then does something
 		// with the token depending on the exit value.
 		new Task() {
-			public @pausable void execute() {
+			public void execute() throws Pausable {
 				// distinguished value which signals that a value
 				// was returned normally
 				final Box<Value> box = new Box<Value>();
         		// start evaluating the site
         		final Mailbox<ExitMsg> exit = new Mailbox<ExitMsg>();
         		Task task = new Task() {
-        			public @pausable void execute() {
+        			public void execute() throws Pausable {
         				try {
         					box.value = thunk.call();
 	    					exit(box);
@@ -231,7 +226,7 @@ public class Kilim {
         		// wait for the site to finish
         		Object out = exit.get().result;
 				if (out == box) {
-					caller.resume(((Box<Value>)out).value);
+					caller.resume(box.value);
 				} else if (out instanceof TokenException) {
     				// a token exception
     				caller.error((TokenException)out);

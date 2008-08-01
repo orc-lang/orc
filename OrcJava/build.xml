@@ -17,6 +17,7 @@
 			<zipgroupfileset dir="${orc.location.lib}">
 				<include name="*.jar"/>
 				<exclude name="rats.jar"/>
+				<exclude name="kilimex.jar"/>
 			</zipgroupfileset>
 			<manifest>
 				<attribute name="Main-Class" value="orc.Orc"/>
