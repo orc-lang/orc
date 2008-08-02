@@ -8,8 +8,10 @@ import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
+import orc.error.CompilationException;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
+import orc.error.UnboundVariableException;
 import orc.runtime.nodes.Node;
 
 /**
@@ -29,7 +31,7 @@ public abstract class Expression implements Locatable {
 	 * 				find the appropriate deBruijn index of a var.
 	 * @return A new node.
 	 */
-	public abstract orc.ast.oil.Expr convert(Env<Var> vars);
+	public abstract orc.ast.oil.Expr convert(Env<Var> vars) throws CompilationException;
 	
 	
 	/**
@@ -71,7 +73,7 @@ public abstract class Expression implements Locatable {
 	 * Obviously this is only useful if the compilation and execution
 	 * environments are colocated.
 	 */
-	public Node compile(Node output) {
+	public Node compile(Node output) throws CompilationException {
 		return this.convert(new Env<Var>()).compile(output);
 	}
 	

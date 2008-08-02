@@ -12,6 +12,7 @@ import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
+import orc.error.CompilationException;
 import orc.runtime.nodes.Node;
 
 public class Defs extends Expression {
@@ -57,7 +58,7 @@ public class Defs extends Expression {
 	}
 
 	@Override
-	public Expr convert(Env<Var> vars) {
+	public Expr convert(Env<Var> vars) throws CompilationException {
 		
 		List<Var> names = new ArrayList<Var>();
 		

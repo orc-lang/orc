@@ -8,6 +8,7 @@ import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
+import orc.error.CompilationException;
 import orc.runtime.nodes.Fork;
 import orc.runtime.nodes.Node;
 
@@ -37,7 +38,7 @@ public class Parallel extends Expression {
 	}
 
 	@Override
-	public Expr convert(Env<Var> vars) {
+	public Expr convert(Env<Var> vars) throws CompilationException {
 		return new Bar(left.convert(vars), right.convert(vars));
 	}
 

@@ -22,6 +22,7 @@ import orc.ast.extended.declaration.Declaration;
 import orc.ast.oil.Expr;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
+import orc.error.CompilationException;
 import orc.error.ParseError;
 import orc.parser.OrcParser;
 import orc.runtime.OrcEngine;
@@ -41,8 +42,6 @@ public class Orc {
 	/**
 	 * 
 	 * Orc toplevel main function. Command line arguments are forwarded to Config for parsing.
-	 * 
-	 * @param args
 	 */
 	public static void main(String[] args) {
 		
@@ -51,27 +50,24 @@ public class Orc {
 		cfg.processEnvVars();
 		cfg.processArgs(args);	
 		
-		Node n = compile(cfg.getInstream(), cfg.getTarget(), cfg);
-		//System.out.println(n);
-		if (n == null) return;
+		Node n;
+		try {
+			n = compile(cfg.getInstream(), cfg.getTarget(), cfg);
+		} catch (CompilationException e) {
+			System.err.println(e);
+			return;
+		} catch (IOException e) {
+			System.err.println(e);
+			return;
+		}
         
 		// Configure the runtime engine
 		OrcEngine engine = new OrcEngine(cfg);
 		
 		// Run Orc with these options
-		try {
-			System.out.println("Running...");
-			// Run the Orc program
-			engine.run(n);
-		} catch (Exception e) {
-			System.err.println("exception: " + e);
-			if (cfg.debugMode())
-				e.printStackTrace();
-		} catch (Error e) {
-			System.err.println(e.toString());
-			if (cfg.debugMode())
-				e.printStackTrace();
-		}
+		System.out.println("Running...");
+		// Run the Orc program
+		engine.run(n);
 	}
 	
 	public static orc.ast.simple.Expression compile(Reader source, Config cfg) throws ParseError, IOException {
@@ -141,10 +137,7 @@ public class Orc {
 		return e.simplify();
 	}
 	
-	protected static Node compile(Reader source, Node target, Config cfg) {
-		
-		try {
-
+	protected static Node compile(Reader source, Node target, Config cfg) throws CompilationException, IOException {
 		orc.ast.simple.Expression es = compile(source, cfg);
 		
 		//System.out.println("Compiling to an execution graph...");
@@ -152,18 +145,6 @@ public class Orc {
 		Expr ex = es.convert(new Env<Var>());
 		Node en = ex.compile(target);
 		return en;
-		
-		} catch (Exception e) {
-			System.err.println("exception: " + e);
-			if (cfg.debugMode())
-				e.printStackTrace();
-		} catch (Error e) {
-			System.err.println(e.toString());
-			if (cfg.debugMode())
-			e.printStackTrace();
-		}
-		
-		return null;
 	}
 
 	/** @deprecated */

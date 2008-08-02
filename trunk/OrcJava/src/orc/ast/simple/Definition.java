@@ -9,6 +9,7 @@ import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
+import orc.error.CompilationException;
 import orc.runtime.nodes.Node;
 
 /**
@@ -57,7 +58,7 @@ public class Definition {
 		return freeset;
 	}
 
-	public Def convert(Env<Var> vars) {
+	public Def convert(Env<Var> vars) throws CompilationException {
 	
 		Env<Var> newvars = vars.addAll(formals);
 		

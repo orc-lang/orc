@@ -3,6 +3,7 @@ package orc.ast.simple.arg;
 
 import orc.ast.oil.arg.Arg;
 import orc.env.Env;
+import orc.error.UnboundVariableException;
 import orc.runtime.values.Value;
 
 
@@ -50,8 +51,7 @@ public class NamedVar extends Argument implements Comparable<NamedVar> {
 	}
 
 	@Override
-	public Arg convert(Env<Var> vars) {
-		// TODO: Convert to dynamic lookup or catch as a type error
-		throw new Error("Variable " + key + " is unbound: " + getSourceLocation());
+	public Arg convert(Env<Var> vars) throws UnboundVariableException {
+		throw new UnboundVariableException(key, getSourceLocation());
 	}
 }

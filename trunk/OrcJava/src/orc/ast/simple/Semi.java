@@ -7,6 +7,7 @@ import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
+import orc.error.CompilationException;
 import orc.runtime.nodes.Node;
 
 public class Semi extends Expression {
@@ -37,7 +38,7 @@ public class Semi extends Expression {
 
 
 	@Override
-	public Expr convert(Env<Var> vars) {
+	public Expr convert(Env<Var> vars) throws CompilationException {
 		return new orc.ast.oil.Semi(left.convert(vars), right.convert(vars));
 	}
 

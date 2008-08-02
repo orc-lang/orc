@@ -13,6 +13,7 @@ import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
+import orc.error.UnboundVariableException;
 import orc.runtime.nodes.Node;
 
 public class Let extends Expression {
@@ -55,7 +56,7 @@ public class Let extends Expression {
 	}
 
 	@Override
-	public Expr convert(Env<Var> vars) {
+	public Expr convert(Env<Var> vars) throws UnboundVariableException {
 		
 		// If there is only one arg, use it directly as an expression
 		if (args.size() == 1) {
