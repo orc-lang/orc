@@ -37,6 +37,15 @@ public class Token implements Serializable, Comparable<Token> {
 	protected GroupCell group;
 	protected Region region;
 	protected OrcEngine engine;
+	/**
+	 * The location of the token in the source code.
+	 * This is set whenever the token begins processing a new node.
+	 * Why not just use the location of the current node? Because
+	 * e.g. during a site call this.node actually points to the next
+	 * node, not the current one, so the source location would be
+	 * incorrect.
+	 */
+	private SourceLocation location;
 	Token caller;
 	Value result;
 	boolean alive;
@@ -79,6 +88,7 @@ public class Token implements Serializable, Comparable<Token> {
 		if (!alive) {
 			return;
 		} else if (group.isAlive()) {
+			location = node.getSourceLocation();
 			node.process(this);
 		} else {
 			die();
@@ -232,8 +242,8 @@ public class Token implements Serializable, Comparable<Token> {
 	
 	public void activate(Value v)
 	{
-		this.setResult(v);
-		engine.activate(this);
+		setResult(v);
+		activate();
 	}
 	
 	/*
@@ -255,7 +265,7 @@ public class Token implements Serializable, Comparable<Token> {
 	
 	/* This token has encountered an error, and dies. */
 	public void error(TokenException problem) {
-		problem.setSourceLocation(node.getSourceLocation());
+		problem.setSourceLocation(location);
 		engine.tokenError(this, problem);
 		// die after reporting the error, so the engine
 		// isn't halted before it gets a chance to report it
