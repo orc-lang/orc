@@ -23,7 +23,8 @@ public class Marshaller implements Visitor<Expression> {
 		}
 		return new Call(
 				(Argument)expr.callee.accept(this),
-				arguments.toArray(new Argument[]{}));
+				arguments.toArray(new Argument[]{}),
+				expr.getSourceLocation());
 	}
 	
 	public Expression visit(orc.ast.oil.Defs expr) {

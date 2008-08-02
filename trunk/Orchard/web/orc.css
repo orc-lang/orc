@@ -55,9 +55,10 @@
 	white-space: nowrap;
 }
 .orc-error {
-	border: 3px solid red;
+	font-family: monospace;
+	font-weight: bold;
+	white-space: pre;
 	color: red;
-	font-size: larger;
 	display: none;
 }
 .orc-print {
