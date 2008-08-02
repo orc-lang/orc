@@ -4,16 +4,20 @@ import java.util.Arrays;
 import java.util.LinkedList;
 
 import javax.xml.bind.annotation.XmlElement;
+
+import orc.error.SourceLocation;
 import orc.orchard.errors.InvalidOilException;
 
 public class Call extends Expression {
 	public Argument callee;
 	@XmlElement(name="argument")
 	public Argument[] arguments = new Argument[]{};
+	public SourceLocation location;
 	public Call() {}
-	public Call(Argument callee, Argument[] arguments) {
+	public Call(Argument callee, Argument[] arguments, SourceLocation location) {
 		this.callee = callee;
 		this.arguments = arguments;
+		this.location = location;
 	}
 	public String toString() {
 		return super.toString() + "(" + callee + ", " + Arrays.toString(arguments) + ")";
@@ -25,6 +29,8 @@ public class Call extends Expression {
 		for (Argument a : arguments) {
 			args.add(a.unmarshal());
 		}
-		return new orc.ast.oil.Call(callee.unmarshal(), args);
+		orc.ast.oil.Expr out = new orc.ast.oil.Call(callee.unmarshal(), args);
+		out.setSourceLocation(location);
+		return out;
 	}
 }

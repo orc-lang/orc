@@ -171,12 +171,12 @@ function orcify(code, defaultConfig) {
 
 	function renderTokenError(p) {
 		appendEventHtml('<div class="orc-error">'
-			+ p.message
+			+ escapeHtml(p.message)
 			+ (p.location
 				? ' at '
-					+ p.location.filename
+					+ escapeHtml(p.location.filename)
 					+ ':' + p.location.line
-					+ '(' + p.location.column + ')'
+					+ ':' + p.location.column
 				: '')
 			+ '</div>');
 	}

@@ -1,6 +1,11 @@
 include "fun.inc"
 
--- Weizenbaum's Rogerian therapist "ELIZA":
+{-
+Weizenbaum's Rogerian therapist "ELIZA",
+based on an implementation by Charles Hayden
+found at http://chayden.net/eliza/Eliza.html
+-}
+
 -- Prompt the user, feed their response to
 -- Eliza, and repeat with her response.
 def ElizaPrompt(init) =
