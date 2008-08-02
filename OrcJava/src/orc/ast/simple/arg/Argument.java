@@ -6,6 +6,7 @@ import java.util.Set;
 import orc.env.Env;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
+import orc.error.UnboundVariableException;
 import orc.runtime.values.Value;
 
 /**
@@ -31,7 +32,10 @@ public abstract class Argument implements Serializable, Locatable {
 		// be considered free in an expression
 	}
 	
-	public abstract orc.ast.oil.arg.Arg convert(Env<Var> vars);
+	/**
+	 * Convert to DeBruijn index.
+	 */
+	public abstract orc.ast.oil.arg.Arg convert(Env<Var> vars) throws UnboundVariableException;
 	
 	public void setSourceLocation(SourceLocation location) {
 		this.location = location;

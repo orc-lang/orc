@@ -28,7 +28,7 @@ import orc.runtime.values.Value;
  * an environment, and may belong to a group. They also 
  * preserve the call chain and contain a value to be passed
  * to the next token.
- * @author wcook
+ * @author wcook, dkitchin, quark
  */
 public class Token implements Serializable, Comparable<Token> {
 	private static final long serialVersionUID = 1L;

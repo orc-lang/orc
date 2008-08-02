@@ -12,6 +12,7 @@ import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
+import orc.error.CompilationException;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
 import orc.runtime.nodes.Node;
@@ -72,7 +73,7 @@ public class Call extends Expression {
 	}
 
 	@Override
-	public Expr convert(Env<Var> vars) {
+	public Expr convert(Env<Var> vars) throws CompilationException {
 		
 		Arg newcallee = callee.convert(vars);
 		

@@ -8,6 +8,7 @@ import orc.Config;
 import orc.Orc;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
+import orc.error.CompilationException;
 import orc.error.ParseError;
 import orc.orchard.errors.InvalidProgramException;
 import orc.orchard.oil.Marshaller;
@@ -47,7 +48,12 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
 			// FIXME: obviously need more detail here
 			throw new InvalidProgramException("Syntax error in: " + program);
 		}
-		orc.ast.oil.Expr ex1 = ex0.convert(new Env<Var>());;
+		orc.ast.oil.Expr ex1;
+		try {
+			ex1 = ex0.convert(new Env<Var>());
+		} catch (CompilationException e) {
+			throw new InvalidProgramException(e.getMessage());
+		};
 		orc.orchard.oil.Expression ex2 = ex1.accept(new Marshaller());
 		return new Oil("1.0", ex2);
 	}
