@@ -152,7 +152,7 @@ function orcify(code, defaultConfig) {
 	}
 
 	function getCode() {
-		return getCodeFrom(prelude) + "\n" + codemirror.getCode();
+		return getCodeFrom(prelude) + codemirror.getCode();
 	}
 
 	function appendEventHtml(html) {
@@ -396,10 +396,11 @@ function orcify(code, defaultConfig) {
 		.click(run);
 	var $controls = $('<div class="orc-controls" />')
 		.append($loading).append($close).append($stop).append($run);
+	var editable = (code.tagName == "TEXTAREA");
 	var id = $code.attr("id");
 	var config = $.extend({}, defaultConfig, {
 		content: getCodeFrom(code),
-		readOnly: (code.tagName != "TEXTAREA"),
+		readOnly: !editable,
 		height: $code.height() + "px"
 	});
 	// if this element exists, it contains text which is prepended to the
@@ -416,6 +417,7 @@ function orcify(code, defaultConfig) {
 	// (since we're about to replace the code element with codemirror)
 	if (id) $widget.attr("id", id);
 
+	// resizable fonts
 	var fontSize = 13;
 	function setFontSize(size) {
 		fontSize = size;
@@ -423,6 +425,26 @@ function orcify(code, defaultConfig) {
 		$widget.css("font-size", size + "px");
 	}
 
+	// implement drag-resize
+	var dragstarte;
+	var dragstarth;
+	var $frame;
+	function dragresize(e) {
+		var dy = e.clientY - dragstarte.clientY;
+		$frame.height(dragstarth + dy);
+	}
+	if (editable) {
+		$controls.css("cursor", "s-resize");
+		$controls.mousedown(function (e) {
+			$frame = $(codemirror.editor.parent.frame);
+			dragstarte = e;
+			dragstarth = $frame.height();
+			$(window).mousemove(dragresize);
+		});
+		$(window).mouseup(function () {
+			$(window).unbind('mousemove', dragresize);
+		});
+	}
 
 	// public members
 	$widget[0].stopOrc = function() {

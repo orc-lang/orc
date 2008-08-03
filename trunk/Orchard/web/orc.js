@@ -4,6 +4,8 @@
  *
  * If there is an element with class="orc-prelude" preceeding the class="orc"
  * element, its contents will be prepended to the code whenever it is compiled.
+ * Be warned that using this feature will throw off line numbers so you probably
+ * shouldn't use it for editable programs.
  *
  * @author quark
  */
