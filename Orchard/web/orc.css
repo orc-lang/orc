@@ -48,10 +48,12 @@
 .orc-stop {
 	background-color: #fcc;
 }
-.orc-publication {
+.orc-publication, .orc-error, .orc-print, .orc-prompt {
 	border-bottom: 1px solid #ddd;
-	font-family: monospace;
 	display: none;
+}
+.orc-publication {
+	font-family: monospace;
 	white-space: nowrap;
 }
 .orc-error {
@@ -59,17 +61,12 @@
 	font-weight: bold;
 	white-space: pre;
 	color: red;
-	display: none;
 }
 .orc-print {
-	border-bottom: 1px solid #ddd;
 	font-color: gray;
-	display: none;
 }
 .orc-prompt {
-	border-bottom: 1px solid #ddd;
 	padding: 5px;
-	display: none;
 }
 .orc-prompt p {
 	margin: 0;
