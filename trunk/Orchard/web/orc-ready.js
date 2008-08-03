@@ -430,7 +430,7 @@ function orcify(code, defaultConfig) {
 	var dragstarth;
 	var $frame;
 	function dragresize(e) {
-		var dy = e.clientY - dragstarte.clientY;
+		var dy = e.pageY - dragstarte.pageY;
 		$frame.height(dragstarth + dy);
 	}
 	if (editable) {
@@ -439,10 +439,10 @@ function orcify(code, defaultConfig) {
 			$frame = $(codemirror.editor.parent.frame);
 			dragstarte = e;
 			dragstarth = $frame.height();
-			$(window).mousemove(dragresize);
+			$(document).mousemove(dragresize);
 		});
-		$(window).mouseup(function () {
-			$(window).unbind('mousemove', dragresize);
+		$(document).mouseup(function () {
+			$(document).unbind('mousemove', dragresize);
 		});
 	}
 
