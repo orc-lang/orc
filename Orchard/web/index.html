@@ -6,6 +6,7 @@ load it as index.html?mock
 <head>
 <title>Orchard Demo</title>
 <link rel="stylesheet" type="text/css" href="orc.css"/>
+<link rel="stylesheet" type="text/css" href="indigo.css"/>
 <link rel="stylesheet" type="text/css" href="jquery.treeview.css"/>
 <style type="text/css">
 h1 {
@@ -19,7 +20,7 @@ h1 {
 }
 /* I don't like the link highlighting */
 #menu a {
-	color: black;
+	color: #466;
 	text-decoration: none;
 }
 #menu a.selected {
@@ -34,8 +35,9 @@ h1 {
 </style>
 </head>
 <body>
-<table border="0" padding="0" spacing="0" width="100%" height="100%">
-<tr><td width="200" valign="top" style="padding: 10px" id="menu-td">
+<div id="homelink" style="padding: 2px"><small>&lt; <a href="/">Back to Orc Home</a></small></div>
+<table border="0" padding="0" spacing="0" width="100%">
+<tr><td width="200" valign="top" style="padding: 0 10px 0 10px" id="menu-td">
 <h1>Examples</h1>
 <p>Click an example to load it.</p>
 <ul id="menu" class="filetree">
@@ -72,7 +74,7 @@ h1 {
 	<li><span class="file"><a class="demo-link" href="demo/misc/music_calendar.orc">Music Calendar</a></span></li>
 	</ul></li>
 </ul>
-</td><td valign="top" style="padding: 10px" id="main">
+</td><td valign="top" style="padding: 0 10px 0 10px" id="main">
 <div id="header">
 <h1>Try Orc!</h1>
 
@@ -111,6 +113,7 @@ $("#menu .demo-link").each(function () {
 window.toggleExamples = function() {
 	$('#menu-td').toggle();
 	$('#header').toggle();
+	$('#homelink').toggle();
 }
 
 function escapeHtml(v) {

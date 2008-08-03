@@ -126,6 +126,32 @@ function publicationToHtml(v) {
 }
 
 /**
+ * Return a mousemove function for a drag-resize.
+ * Takes the mousedown event and the element to resize.
+ */
+function dragResize(e0, top) {
+	var $top = $(top);
+	var th = $top.height();
+
+	function onmove(e) {
+		var dy = e.pageY - e0.pageY;
+		$top.height(th + dy);
+	}
+
+	// without this div, some mousemove events are
+	// lost to the iframe edit area
+	var $dragCover = $('<div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: s-resize" />');
+	$(document.body).append($dragCover);
+
+	$(document).mouseup(function (e) {
+		$(document).unbind('mousemove', onmove);
+		$dragCover.remove();
+	});
+
+	return onmove;
+}
+
+/**
  * Class which encapsulates the behavior of one widget. The basic lifecycle of
  * the widget is this:
  *
@@ -159,14 +185,14 @@ function orcify(code, defaultConfig) {
 		var $html = $(html);
 		$events.show();
 		$events.append($html);
-		// simulate max-height for IE's benefit
-		if ($events.height() + $html.height() > 100) {
+		var isauto = $events.css("height") == "auto";
+		if (isauto && $events.height() + $html.height() > 100) {
+			// simulate max-height for IE's benefit
 			$events.height(100);
+			isauto = false;
 		}
 		$html.show();
-		if ($events.css("height") != "auto") {
-			$events[0].scrollTop = $events[0].scrollHeight;
-		}
+		if (!isauto) $events[0].scrollTop = $events[0].scrollHeight;
 	}
 
 	function renderTokenError(p) {
@@ -376,6 +402,8 @@ function orcify(code, defaultConfig) {
 		});
 	}
 
+	function nobubble() { return false; }
+
 	// private members
 	var $code = $(code);
 	var $loading = $('<div class="orc-loading" style="display: none"/>');
@@ -387,13 +415,16 @@ function orcify(code, defaultConfig) {
 		.click(function () {
 			$close.hide();
 			$events.slideUp("fast");
-		});
+		})
+		.mousedown(nobubble);
 	var $stop = $('<button class="orc-stop" style="display: none">stop</button>')
 		.click(function() {
 			stopCurrentJob();
-		});
+		})
+		.mousedown(nobubble);
 	var $run = $('<button class="orc-run">run</button>')
-		.click(run);
+		.click(run)
+		.mousedown(nobubble);
 	var $controls = $('<div class="orc-controls" />')
 		.append($loading).append($close).append($stop).append($run);
 	var editable = (code.tagName == "TEXTAREA");
@@ -408,9 +439,10 @@ function orcify(code, defaultConfig) {
 	var prelude = $code.prev(".orc-prelude")[0];
 	// put a wrapper around the code area, to add a border
 	$code.wrap('<div class="orc" />');
-	$code.parent().wrap($widget).after($prompts).after($controls).after($events);
+	$code = $code.parent();
+	$code.wrap($widget).after($prompts).after($controls).after($events);
 	// for some reason wrap() makes a copy of $widget.
-	$widget = $code.parent().parent();
+	$widget = $code.parent();
 	// replace the code with a codemirror editor
 	var codemirror = new CodeMirror(CodeMirror.replace(code), config);
 	// if the code had an id, move it to the surrounding div
@@ -424,25 +456,11 @@ function orcify(code, defaultConfig) {
 		codemirror.win.document.body.style.fontSize = size + "px";
 		$widget.css("font-size", size + "px");
 	}
-
-	// implement drag-resize
-	var dragstarte;
-	var dragstarth;
-	var $frame;
-	function dragresize(e) {
-		var dy = e.pageY - dragstarte.pageY;
-		$frame.height(dragstarth + dy);
-	}
 	if (editable) {
+		// implement drag-resize
 		$controls.css("cursor", "s-resize");
 		$controls.mousedown(function (e) {
-			$frame = $(codemirror.editor.parent.frame);
-			dragstarte = e;
-			dragstarth = $frame.height();
-			$(document).mousemove(dragresize);
-		});
-		$(document).mouseup(function () {
-			$(document).unbind('mousemove', dragresize);
+			$(document).mousemove(dragResize(e, codemirror.editor.parent.frame));
 		});
 	}
 
