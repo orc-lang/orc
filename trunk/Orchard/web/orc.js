@@ -25,7 +25,6 @@ function parseQuery() {
 }
 
 var query = parseQuery();
-query.mock = true;
 var baseUrl = query.mock ? "" : "/orchard/";
 
 // load our dependencies
