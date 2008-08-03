@@ -1,0 +1,40 @@
+/* standard elements */
+* {
+	margin: 0;
+	padding: 0;
+}
+a {
+	color: #F70;
+}
+a:hover {
+	color: #C60;
+}
+body {
+	color: #466;
+	font: normal 11pt "Helvetica","Nimbus Sans L","Arial",sans-serif;
+	margin: 0;
+}
+input {
+	color: #555;
+}
+p,cite,code,ul {
+	margin-bottom: 10pt;
+}
+ul ul {
+	margin-bottom: 0;
+}
+h1,h2,h3 {
+	font-family: "Trebuchet MS",sans-serif;
+	color: #06C;
+	padding-top: 6px;
+}
+h1 {
+	margin-bottom: 4px;
+}
+cite {
+	background: url(img/quote.gif) no-repeat;
+	color: #666;
+	display: block;
+	padding-left: 28px;
+}
+small, .small {font: normal 10px Verdana,sans-serif;}
