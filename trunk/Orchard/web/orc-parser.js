@@ -107,6 +107,18 @@ function readCombinator(_, _, type) {
 
 function readNumber(source, _, ch1) {
 	source.nextWhile(isDigit);
+	if (source.peek() == ".") {
+		source.next();
+		source.nextWhile(isDigit);
+	}
+	if (source.peek() == "E" || source.peek() == "e") {
+		source.next();
+		switch (source.peek()) {
+		case "-": case "+":
+			source.next();
+		}
+		source.nextWhile(isDigit);
+	}
 	// FIXME: handle decimals
 	return { type:"number", style:"literal" };
 }
