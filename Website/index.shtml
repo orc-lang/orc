@@ -25,18 +25,16 @@ failures.</p>
 
 <h2>A Sample Program</h2>
 
-<p>Click <b>run</b> to run this program right now in your browser.</p>
+<p>The following example searches both Yahoo and Google for some search term
+obtained from the user and uses whichever results are returned first.</p>
 
 <pre class="orc">
-include "net.inc"
+include "search.inc"
 
--- Search google and return the first
--- page of results
-Prompt("Search Google for:") >term>
-Google(term) >pages>
-each(take(1, pages)) >results>
-    each(results()) >result>
-        (result.titleNoFormatting, result.url)</pre>
+each(results)
+  &lt;results&lt;
+    Prompt("Search for:") >term>
+    ( Yahoo(term) | Google(term) )</pre>
 
 <p><a href="tutorial.shtml">Tutorial with more sample programs...</a></p>
 
