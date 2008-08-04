@@ -8,7 +8,7 @@ import java.util.List;
 
 import orc.ast.extended.Expression;
 import orc.ast.extended.declaration.Declaration;
-import orc.error.ParseError;
+import orc.error.compiletime.ParsingException;
 import xtc.parser.ParseException;
 import xtc.parser.Result;
 
@@ -35,24 +35,24 @@ public class OrcParser {
 	 * Parse the input as a complete program (declarations plus goal
 	 * expression).
 	 */
-	public Expression parseProgram() throws ParseError, IOException {
+	public Expression parseProgram() throws ParsingException, IOException {
 		Result result = parser.pProgram(0);
 		try {
 			return (Expression)parser.value(result);
 		} catch (ParseException e) {
-			throw new ParseError(e.getMessage());
+			throw new ParsingException(e.getMessage());
 		}
 	}
 	
 	/**
 	 * Parse the input as a module (declarations only).
 	 */
-	public List<Declaration> parseModule() throws ParseError, IOException {
+	public List<Declaration> parseModule() throws ParsingException, IOException {
 		Result result = parser.pModule(0);
 		try {
 			return (List<Declaration>)parser.value(result);
 		} catch (ParseException e) {
-			throw new ParseError(e.getMessage());
+			throw new ParsingException(e.getMessage());
 		}
 	}
 	
@@ -60,7 +60,7 @@ public class OrcParser {
 	 * For testing purposes; parses a program from stdin or a file given as an
 	 * argument, and prints the parsed program.
 	 */
-	public static void main(String[] args) throws IOException, ParseError {
+	public static void main(String[] args) throws IOException, ParsingException {
 		Reader r;
 		if (args.length > 0) {
 			r = new FileReader(args[0]);

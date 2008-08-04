@@ -33,8 +33,8 @@ public abstract class Site {
 	public static Site CONS = buildCoreSite("Cons");
 	public static Site NIL = buildCoreSite("Nil");
 	
-	public static Site ISCONS = buildCoreSite("IsCons");
-	public static Site ISNIL = buildCoreSite("IsNil");
+	public static Site TRYCONS = buildCoreSite("TryCons");
+	public static Site TRYNIL = buildCoreSite("TryNil");
 
 	public static Site HEAD = buildCoreSite("Head");
 	public static Site TAIL = buildCoreSite("Tail");

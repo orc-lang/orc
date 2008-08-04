@@ -18,7 +18,14 @@ public class WildcardPattern extends Pattern {
 		return false;
 	}
 
+	@Override
+	public void process(Var fragment, PatternVisitor visitor) {
+		// Do nothing.
+	}
+
+	
 	public String toString() {
 		return "_";
 	}
+
 }

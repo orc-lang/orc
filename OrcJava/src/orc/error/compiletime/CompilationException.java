@@ -1,4 +1,7 @@
-package orc.error;
+package orc.error.compiletime;
+
+import orc.error.OrcException;
+
 
 /**
  * 

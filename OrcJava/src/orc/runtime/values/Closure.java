@@ -7,9 +7,9 @@ import java.util.List;
 
 import orc.ast.simple.arg.*;
 import orc.env.Env;
-import orc.error.ArityMismatchException;
 import orc.error.OrcException;
-import orc.error.RuntimeTypeException;
+import orc.error.runtime.ArityMismatchException;
+import orc.error.runtime.RuntimeTypeException;
 import orc.runtime.Token;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Return;

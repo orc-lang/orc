@@ -87,10 +87,12 @@ public class Env<T> implements Serializable {
 				return depth;
 			}
 		}
+
 		// this should be impossible, because any variable which
 		// is not in scope should have been created as a NamedVar,
 		// not a Var
-		throw new OrcError("Target not found in environment; can't return index.");
+		throw new OrcError("Target " + target + " not found in environment; can't return index.");
+
 	}
 
 	

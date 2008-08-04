@@ -5,9 +5,12 @@ package orc.runtime.sites.java;
 
 import java.lang.reflect.Constructor;
 
-import orc.error.JavaException;
-import orc.error.MethodTypeMismatchException;
-import orc.error.TokenException;
+import orc.error.runtime.JavaException;
+import orc.error.runtime.MessageNotUnderstoodException;
+import orc.error.runtime.MethodTypeMismatchException;
+import orc.error.runtime.TokenException;
+import orc.error.runtime.JavaException;
+import orc.error.runtime.MethodTypeMismatchException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.java.ObjectProxy.DelegateCache;

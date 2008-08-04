@@ -1,6 +1,6 @@
 package orc.runtime.values;
 
-import orc.error.UncallableValueException;
+import orc.error.runtime.UncallableValueException;
 import orc.runtime.Token;
 
 /**

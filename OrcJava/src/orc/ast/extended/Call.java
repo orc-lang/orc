@@ -7,6 +7,7 @@ import java.util.List;
 import orc.ast.simple.arg.Argument;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
+import orc.error.compiletime.CompilationException;
 
 public class Call extends Expression {
 
@@ -53,7 +54,7 @@ public class Call extends Expression {
 	}
 	
 	@Override
-	public orc.ast.simple.Expression simplify() {
+	public orc.ast.simple.Expression simplify() throws CompilationException {
 		
 		List<Argument> newargs = new LinkedList<Argument>();
 		Arg newcaller = caller.argify();

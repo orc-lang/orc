@@ -1,4 +1,7 @@
-package orc.error;
+package orc.error.compiletime;
+
+
+
 
 /**
  * Problem parsing the text of an Orc program. Mostly this
@@ -7,11 +10,11 @@ package orc.error;
  * 
  * @author quark
  */
-public class ParseError extends CompilationException {
-	public ParseError(String message, Throwable cause) {
+public class ParsingException extends CompilationException {
+	public ParsingException(String message, Throwable cause) {
 		super(message, cause);
 	}
-	public ParseError(String message) {
+	public ParsingException(String message) {
 		super(message);
 	}
 }

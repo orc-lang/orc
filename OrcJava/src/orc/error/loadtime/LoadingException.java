@@ -1,4 +1,6 @@
-package orc.error;
+package orc.error.loadtime;
+
+import orc.error.OrcException;
 
 /**
  * 

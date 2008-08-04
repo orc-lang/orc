@@ -2,7 +2,9 @@ package orc.ast.extended.declaration;
 
 import orc.ast.extended.Expression;
 import orc.ast.extended.pattern.Pattern;
+import orc.ast.extended.pattern.PatternVisitor;
 import orc.ast.simple.arg.Var;
+import orc.error.compiletime.CompilationException;
 
 public class ValDeclaration implements Declaration {
 
@@ -15,13 +17,17 @@ public class ValDeclaration implements Declaration {
 	}
 
 	
-	public orc.ast.simple.Expression bindto(orc.ast.simple.Expression target) {
+	public orc.ast.simple.Expression bindto(orc.ast.simple.Expression target) throws CompilationException {
 		
 		orc.ast.simple.Expression source = f.simplify();
+		
+		Var s = new Var();
 		Var t = new Var();
 		
-		source = Pattern.filter(p.match(source));
-		target = p.bind(t, target);
+		PatternVisitor pv = p.process(s);
+		
+		source = new orc.ast.simple.Sequential(source, pv.filter(), s);
+		target = pv.target(t, target);
 		
 		return new orc.ast.simple.Where(target, source, t);
 	}

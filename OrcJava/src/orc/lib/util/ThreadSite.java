@@ -2,8 +2,8 @@ package orc.lib.util;
 
 import kilim.Pausable;
 import kilim.Task;
-import orc.error.JavaException;
-import orc.error.TokenException;
+import orc.error.runtime.JavaException;
+import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Kilim;
 import orc.runtime.Token;

@@ -1,6 +1,7 @@
 package orc.ast.extended;
 
 import orc.ast.extended.declaration.Declaration;
+import orc.error.compiletime.CompilationException;
 
 /**
  * 
@@ -22,7 +23,7 @@ public class Declare extends Expression {
 	}
 	
 	@Override
-	public orc.ast.simple.Expression simplify() {
+	public orc.ast.simple.Expression simplify() throws CompilationException {
 		
 		return d.bindto(e.simplify());
 	}

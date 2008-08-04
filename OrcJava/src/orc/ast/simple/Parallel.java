@@ -8,9 +8,7 @@ import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
-import orc.error.CompilationException;
-import orc.runtime.nodes.Fork;
-import orc.runtime.nodes.Node;
+import orc.error.compiletime.CompilationException;
 
 public class Parallel extends Expression {
 

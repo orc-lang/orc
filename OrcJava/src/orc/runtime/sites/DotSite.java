@@ -6,8 +6,8 @@ package orc.runtime.sites;
 import java.util.TreeMap;
 import java.util.Map;
 
-import orc.error.MessageNotUnderstoodException;
-import orc.error.TokenException;
+import orc.error.runtime.MessageNotUnderstoodException;
+import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.values.Value;
 

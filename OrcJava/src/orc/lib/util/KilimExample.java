@@ -38,6 +38,7 @@ public class KilimExample {
 		Kilim.runThreaded(new Callable<Object>() {
 			public Object call() throws InterruptedException {
 				Thread.sleep(millis.longValue());
+				
 				return Kilim.signal;
 			}
 		});

@@ -1,6 +1,6 @@
 package orc.lib.time;
 
-import orc.error.TokenException;
+import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.LogicalClock;
 import orc.runtime.Token;

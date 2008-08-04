@@ -13,7 +13,7 @@ import java.util.TimerTask;
 
 import orc.Config;
 import orc.env.Env;
-import orc.error.TokenException;
+import orc.error.runtime.TokenException;
 import orc.runtime.nodes.Node;
 import orc.runtime.regions.Execution;
 import orc.runtime.regions.Region;

@@ -4,6 +4,7 @@ import java.util.List;
 
 import orc.ast.simple.Expression;
 import orc.ast.simple.arg.Var;
+import orc.error.compiletime.PatternException;
 
 public class ListPattern extends Pattern {
 
@@ -21,15 +22,25 @@ public class ListPattern extends Pattern {
 	}
 	
 	
-	public Expression bind(Var u, Expression g) {
-		
-		return actual.bind(u,g);
-	}
+//	public Expression bind(Var u, Expression g) {
+//		
+//		return actual.bind(u,g);
+//	}
+//
+//	public Expression match(Var u) {
+//		// TODO Auto-generated method stub
+//		return actual.match(u);
+//	}
 
-	public Expression match(Var u) {
-		// TODO Auto-generated method stub
-		return actual.match(u);
+
+	@Override
+	public void process(Var fragment, PatternVisitor visitor)
+			throws PatternException {
+		
+		actual.process(fragment, visitor);
 	}
+	
+	
 	
 	public String toString() {
 		return actual.toString();

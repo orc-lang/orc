@@ -6,7 +6,7 @@ package orc.runtime.sites.core;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import orc.error.TokenException;
+import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Args.NumericBinaryOperator;
 import orc.runtime.sites.EvalSite;

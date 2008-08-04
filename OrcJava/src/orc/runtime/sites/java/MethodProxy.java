@@ -5,15 +5,20 @@ package orc.runtime.sites.java;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
+import orc.runtime.Args;
+import orc.error.runtime.JavaException;
+import orc.error.runtime.MethodTypeMismatchException;
+import orc.error.runtime.SiteException;
+import orc.error.runtime.TokenException;
+import orc.runtime.sites.EvalSite;
+import orc.runtime.sites.SimpleSite;
+import orc.runtime.values.*;
 import kilim.Fiber;
 import kilim.Pausable;
 import kilim.State;
 import kilim.Task;
-import orc.error.JavaException;
-import orc.error.MethodTypeMismatchException;
-import orc.error.SiteException;
-import orc.error.TokenException;
+import orc.error.runtime.JavaException;
+import orc.error.runtime.MethodTypeMismatchException;
 import orc.runtime.Args;
 import orc.runtime.Kilim;
 import orc.runtime.Token;
@@ -22,6 +27,7 @@ import orc.runtime.sites.Site;
 import orc.runtime.sites.java.ObjectProxy.Delegate;
 import orc.runtime.values.Constant;
 import orc.runtime.values.Value;
+
 
 /**
  * Allow a Java method to be used as an Orc site.

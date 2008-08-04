@@ -7,12 +7,17 @@ import orc.ast.simple.Call;
 import orc.ast.simple.Expression;
 import orc.ast.simple.Let;
 import orc.ast.simple.Parallel;
+import orc.ast.simple.Semi;
 import orc.ast.simple.Sequential;
 import orc.ast.simple.Silent;
 import orc.ast.simple.Where;
 import orc.ast.simple.arg.Argument;
+import orc.ast.simple.arg.Constant;
+import orc.ast.simple.arg.Field;
 import orc.ast.simple.arg.Site;
 import orc.ast.simple.arg.Var;
+import orc.error.compiletime.NonlinearPatternException;
+import orc.error.compiletime.PatternException;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
 
@@ -31,169 +36,212 @@ import orc.error.SourceLocation;
 public abstract class Pattern implements Locatable {
 	private SourceLocation location = SourceLocation.UNKNOWN;
 
-	
-	/* Sites often used in pattern matching */
-	protected static Argument IF = new Site(orc.ast.sites.Site.IF);
-	protected static Argument NOT = new Site(orc.ast.sites.Site.NOT);
-	
-	protected static Argument SOME = new Site(orc.ast.sites.Site.SOME);
-	protected static Argument NONE = new Site(orc.ast.sites.Site.NONE);
-	
-	public static Argument ISSOME = new Site(orc.ast.sites.Site.ISSOME);
-	public static Argument ISNONE = new Site(orc.ast.sites.Site.ISNONE);
-	
-	protected static Argument CONS = new Site(orc.ast.sites.Site.CONS);
-	
-	protected static Argument ISCONS = new Site(orc.ast.sites.Site.ISCONS);
-	protected static Argument ISNIL = new Site(orc.ast.sites.Site.ISNIL);
-	
-	protected static Argument HEAD = new Site(orc.ast.sites.Site.HEAD);
-	protected static Argument TAIL = new Site(orc.ast.sites.Site.TAIL);
-
-	protected static Argument EQUAL = new Site(orc.ast.sites.Site.EQUAL);
-		
-	/**
-	 * @param f The source expression for values to be matched
-	 * @return A new expression publishing, for each publication !v of f,
-	 * <pre>
-	 * some(v')	if p(v) => v' 
-	 * none	  	if p(v) => _|_
-	 * </pre>
-	 */
-	public abstract Expression match(Var u);
-	public abstract Expression bind(Var u, Expression g);
-	
-	public Expression match(Expression f) {
-		Var t = new Var();
-		return new Sequential(f, match(t), t);
-	}
-	
-	public Expression bind(Expression f, Expression g) {
-		Var t = new Var();
-		return new Where(bind(t, g), f, t);
-	}
-	
 	/* Patterns are assumed to be strict unless set otherwise */
 	public boolean strict() {
 		return true;
 	}
 	
+	/** 
+	 * Visit a pattern recursively, creating two products:
+	 * 
+	 * An expression that will examine a value to determine
+	 * whether it matches a pattern, building an output tuple
+	 * of all value fragments which will be bound to variables.
+	 * 
+	 * An expression transformer that will examine such an
+	 * output tuple and bind its elements to variables in
+	 * a given expression.
+	 * 
+	 * @param fragment  A variable holding the current fragment of the value to be matched
+	 * @param visitor   A visitor object which accumulates an expression and a transformer
+	 * @throws PatternException  
+	 */
+	public abstract void process(Var fragment, PatternVisitor visitor) throws PatternException;
 	
-	/* Create a normalized if-then-else expression from three normalized expressions */
-	public static Expression ifexp(Expression test, Expression tc, Expression fc) {
-		
-		// b
+
+	/**
+	 * 
+	 * A different entry point for process, taking only a source variable.
+	 * Creates a new visitor, visits the pattern, and then returns that visitor. 
+	 * @throws PatternException 
+	 */
+	public PatternVisitor process(Var fragment) throws PatternException {
+		PatternVisitor pv = new PatternVisitor();
+		process(fragment, pv);
+		return pv;
+	}
+	
+	
+	
+	
+	
+	
+	/* Sites often used in pattern matching */
+	protected static Argument IF = new Site(orc.ast.sites.Site.IF);
+	protected static Argument EQUAL = new Site(orc.ast.sites.Site.EQUAL);
+	protected static Argument SOME = new Site(orc.ast.sites.Site.SOME);
+	protected static Argument NONE = new Site(orc.ast.sites.Site.NONE);
+	public static Argument TRYSOME = new Site(orc.ast.sites.Site.ISSOME);
+	public static Argument TRYNONE = new Site(orc.ast.sites.Site.ISNONE);
+	
+	/* This site might be replaced by a special message */
+	protected static Argument TRYCONS = new Site(orc.ast.sites.Site.TRYCONS);
+	
+	/* This site might not be necessary */
+	protected static Argument TRYNIL = new Site(orc.ast.sites.Site.TRYNIL);
+	
+	/**
+	 * 
+	 * Construct an expression comparing two arguments. 
+	 * The result expression returns a signal if the arguments are equal,
+	 * and remains silent otherwise.
+	 * 
+	 * @param s  An argument to compare
+	 * @param t  An argument to compare
+	 * @return   An expression publishing a signal if s=t, silent otherwise
+	 */
+	public static Expression compare(Argument s, Argument t) {
+
 		Var b = new Var();
 		
-		// if(b)
-		Expression ifb = new Call(IF,b);
-			
-		// if(~b)
-		Var tb = new Var();
-		Expression ifnotb = new Where(new Call(IF,tb), new Call(NOT,b), tb);
+		// s = t
+		Expression test = new Call(EQUAL, s, t);
 		
-		// if(b) >> tc
-		Expression tbranch = new Sequential(ifb, tc, new Var());
+		// (s = t) >b> if(b)
+		Expression comp = new Sequential(test, new Call(IF,b), b);
 		
-		// if(~b) >> fc
-		Expression fbranch = new Sequential(ifnotb, fc, new Var());
-		
-		// if(b) >> tc | if(~b) >> fc
-		Expression body = new Parallel(tbranch, fbranch);
-		
-		// ( ... ) <b< test
-		return new Where(body, test, b);
+		return comp;
 	}
 	
 	
-	/** 
-	 * Lifted application of a site to a list of optional arguments. If every argument
-	 * evaluates to some(vi), then the result is some(C(v1,...,vn)). If any argument
-	 * evaluates to none, the result is none.
+	/**
+	 * Construct an expression which publishes the ith element
+	 * of tuple s. 
 	 * 
-	 * lift(e1...en) = 
-	 *   ( some(s1, ... , sn) 
-	 *     .. <si< isSome(ti) .. )
-	 * | ( z >> none() 
-	 *     <z< isNone(t1) | ... | isNone(tn) ) 
-	 *     
-	 *     .. <ti< ei
-	 *     
-	 * If the argument passed for C is null, it is considered the identity site, and ignored.
-	 * This simply produces a lifted tuple.    
-	 *     
-	 **/
-	public static Expression lift(List<Expression> es) {
-		
-		List<Argument> sargs = new LinkedList<Argument>();
-		List<Argument> targs = new LinkedList<Argument>();
-		
-				
-		for (Expression e : es) {
-			sargs.add(new Var());  // populate si
-			targs.add(new Var());  // populate ti
-		}
-		
-		// some(s1, ... , sn)
-		Expression sbranch = new Call(SOME, sargs);
-		
-		// ... <si< isSome(ti)
-		for(int i = 0; i < sargs.size(); i++) {
-			Argument si = sargs.get(i);
-			Argument ti = targs.get(i);
-			sbranch = new Where(sbranch, new Call(ISSOME, ti), (Var)si);
-		}
-		
-		// isNone(t1) | ... | isNone(tn)
-		Expression ntest = new Silent();
-		for(Argument t : targs) {
-			ntest = new Parallel(new Call(ISNONE, t), ntest);
-		}
+	 * @param s An argument bound to a tuple
+	 * @param i An index into a tuple (starting at 0)
+	 * @return  An expression publishing s(i)
+	 */
+	public static Expression nth(Argument s, int i) {
+		return new Call(s,new Constant(i));
+	}
+	
+	/**
+	 * 
+	 * Constructs an expression which will try to deconstruct an
+	 * argument as if it were a list. It publishes (h,t) if the 
+	 * argument s is viewable as a list h:t, and remains silent
+	 * otherwise.
+	 * 
+	 * @param s 
+	 * @return
+	 */
+	public static Expression trycons(Argument s) {
+		// TODO: Make trycons a special message
+		return new Call(TRYCONS, s);
+	}
+	
+	/**
+	 * 
+	 * Constructs an expression which tests whether the argument
+	 * s can be treated as an empty list (nil). If so, it
+	 * publishes a signal; otherwise it remains silent.
+	 * 
+	 * @param s
+	 * @return
+	 */
+	public static Expression trynil(Argument s) {
+		// TODO: Make trynil the inverse of trycons
+		return new Call(TRYNIL, s);
+	}
 
-		// z >> none() <z< ...
-		Var z = new Var();
-		Expression nbranch = new Where(new Sequential(new Let(z), new Call(NONE), new Var()), ntest, z);
-		
-		
-		// some...   | z >> none...
-		Expression body = new Parallel(sbranch, nbranch);
-		
-		// ... <ti< ei
-		for(int i = 0; i < targs.size(); i++) {
-			body = new Where(body, es.get(i), (Var)targs.get(i));
-		}
-		
-		return body;
-	}
-	
 	/**
-	 * Create an expression computing a monadic bind for options. 
-	 * I'd really rather be using Haskell here.
 	 * 
-	 * <p><code>opbind(f,t,g) = f >s> ( (isSome(s) >t> g) >u> some(u) | isNone(s) >> none )</code>
+	 * Construct an expression to determine whether the argument
+	 * s may be viewed as a tuple of size n. If so, the expression
+	 * publishes a signal; otherwise it remains silent.
+	 * 
+	 * @param s  Argument to test
+	 * @param n  Target arity
+	 * @return
 	 */
-	public static Expression opbind(Expression f, Var t, Expression g) {
+	
+	public static Expression trysize(Argument s, int n) {
+		// TODO: Make this field name a special constant
 		
-		Var s = new Var();
-		Var u = new Var();
+		// s.fits
+		Expression fits = new Call(s, new Field("fits"));
 		
-		Expression sbranch = new Sequential(new Sequential(new Call(ISSOME, s), g, t), new Call(SOME, u), u);
-		Expression nbranch = new Sequential(new Call(ISNONE, s), new Call(NONE), new Var());
-		Expression body = new Parallel(sbranch, nbranch);
+		// m(n)
+		Var m = new Var();
+		Expression invoke = new Call(m, new Constant(n));
 		
-		return new Sequential(f, body, s);
+		// s.fits >m> m(n)
+		return new Sequential(fits, invoke, m); 
 	}
 	
 	/**
-	 * Filter an expression by piping its publications through isSome.
-	 * Values some(v) will publish v, values none will be ignored.
-	 * @param e
+	 * 
+	 * Construct an expression which tries to find the inverse
+	 * of the site m, and apply it to s. While the result will 
+	 * depend on the site itself, as a guideline the inverse 
+	 * should obey the following specification:
+	 * 
+	 * Let i = unapply(m,s).
+	 * If s = m(x) for some x, then i(s) = x.
+	 * Otherwise, i(s) remains silent.
+	 * 
+	 * Currently we find the inverse via a special message.
+	 * 
+	 * @param m  The site to unapply
+	 * @param s  Argument to the inversion
 	 */
-	public static Expression filter(Expression e) {
-		
-		Var u = new Var();
-		return new Sequential(e, new Call(ISSOME, u), u); 
+	public static Expression unapply(Argument m, Argument s) {
+		// TODO: Make this field name a special constant
+		return new Call(m, new Field("?"));
 	}
+	
+	
+	/**
+	 * Lifts a partial function to a total function, using
+	 * the ; combinator to detect a refusal to respond,
+	 * and publishing optional values instead of values.
+	 * 
+	 * <code> some(x) ; none </code>
+	 * 
+	 * @param x
+	 */
+	public static Expression lift(Var x) {
+		return new Semi(new Call(SOME, x), new Call(NONE));
+	}
+	
+	
+	/**
+	 * Constructs an optional case statement.
+	 * 
+	 * <code>
+	 * case arg of
+	 *   some(s) -> succ
+	 * |  none   -> fail
+	 * </code>
+	 * 
+	 * @param arg
+	 * @param s
+	 * @param succ
+	 * @param fail
+	 * @return
+	 */
+	public static Expression caseof(Var arg, Var s, Expression succ, Expression fail) {
+				
+		// trySome(arg) >s> succ
+		Expression someb = new Sequential(new Call(TRYSOME, arg), succ, s);
+		
+		// tryNone(arg) >> fail
+		Expression noneb = new Sequential(new Call(TRYNONE, arg), fail, new Var());
+		
+		// trySome... | tryNone...
+		return new Parallel(someb, noneb);
+	}	
 	
 	public void setSourceLocation(SourceLocation location) {
 		this.location = location;
