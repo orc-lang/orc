@@ -11,6 +11,8 @@
  * <li>Abstract implementations of services which contain all the non-binding-specific logic.
  * <li>Concrete bindings of services (in sub-packages).
  * <li>Exceptions.
+ * <li>Properties files. These contain sensitive information like developer keys
+ * and are therefore not checked in to version control.
  * </ul>
  * 
  * <p>Some conventions used by the interfaces:

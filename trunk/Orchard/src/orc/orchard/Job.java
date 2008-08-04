@@ -33,7 +33,6 @@ import orc.runtime.values.Value;
 public final class Job {
 	public final static Globals<Job, Object> globals = new Globals<Job, Object>();
 	
-	
 	/**
 	 * Used to handle cleanup when the job finishes.
 	 */
@@ -41,6 +40,9 @@ public final class Job {
 		public void finished(Job job) throws RemoteException;
 	}
 	
+	/**
+	 * Mark an engine which allows sites to export globals.
+	 */
 	public interface ProvidesGlobals {
 		public String addGlobal(Object object);
 	}
