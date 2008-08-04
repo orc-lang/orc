@@ -3,9 +3,9 @@ package orc.lib.orchard;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import orc.error.JavaException;
-import orc.error.SiteException;
-import orc.error.TokenException;
+import orc.error.runtime.JavaException;
+import orc.error.runtime.SiteException;
+import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;

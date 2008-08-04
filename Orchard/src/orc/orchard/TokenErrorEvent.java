@@ -1,7 +1,7 @@
 package orc.orchard;
 
 import orc.error.SourceLocation;
-import orc.error.TokenException;
+import orc.error.runtime.TokenException;
 
 public class TokenErrorEvent extends JobEvent {
 	public String message;

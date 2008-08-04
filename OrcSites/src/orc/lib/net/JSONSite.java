@@ -3,9 +3,9 @@ package orc.lib.net;
 import java.util.LinkedList;
 import java.util.List;
 
-import orc.error.JavaException;
-import orc.error.SiteException;
-import orc.error.TokenException;
+import orc.error.runtime.JavaException;
+import orc.error.runtime.SiteException;
+import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.Constant;
