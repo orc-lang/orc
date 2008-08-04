@@ -22,8 +22,8 @@ import orc.ast.extended.declaration.Declaration;
 import orc.ast.oil.Expr;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
-import orc.error.CompilationException;
-import orc.error.ParseError;
+import orc.error.compiletime.CompilationException;
+import orc.error.compiletime.ParsingException;
 import orc.parser.OrcParser;
 import orc.runtime.OrcEngine;
 import orc.runtime.nodes.Node;
@@ -70,7 +70,7 @@ public class Orc {
 		engine.run(n);
 	}
 	
-	public static orc.ast.simple.Expression compile(Reader source, Config cfg) throws ParseError, IOException {
+	public static orc.ast.simple.Expression compile(Reader source, Config cfg) throws CompilationException, IOException {
 		return compile(source, cfg, true);
 	}
 	
@@ -101,7 +101,8 @@ public class Orc {
 		return new InputStreamReader(stream);
 	}
 	
-	public static orc.ast.simple.Expression compile(Reader source, Config cfg, boolean includeStdlib) throws ParseError, IOException {
+	public static orc.ast.simple.Expression compile(Reader source, Config cfg, boolean includeStdlib) throws IOException, CompilationException {
+
 		//System.out.println("Parsing...");
 		// Parse the goal expression
 		OrcParser parser = new OrcParser(source);

@@ -13,7 +13,7 @@ import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
-import orc.error.UnboundVariableException;
+import orc.error.compiletime.UnboundVariableException;
 import orc.runtime.nodes.Node;
 
 public class Let extends Expression {

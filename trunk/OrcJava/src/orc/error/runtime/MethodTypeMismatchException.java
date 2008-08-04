@@ -1,4 +1,5 @@
-package orc.error;
+package orc.error.runtime;
+
 
 
 public class MethodTypeMismatchException extends RuntimeTypeException {

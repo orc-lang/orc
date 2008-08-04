@@ -3,7 +3,7 @@ package orc.ast.simple.arg;
 
 import orc.ast.oil.arg.Arg;
 import orc.env.Env;
-import orc.error.UnboundVariableException;
+import orc.error.compiletime.UnboundVariableException;
 import orc.runtime.values.Value;
 
 

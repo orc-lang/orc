@@ -9,7 +9,7 @@ import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
-import orc.error.CompilationException;
+import orc.error.compiletime.CompilationException;
 import orc.runtime.nodes.Node;
 
 /**

@@ -1,8 +1,10 @@
 package orc.ast.extended;
 
 import orc.ast.extended.pattern.Pattern;
+import orc.ast.extended.pattern.PatternVisitor;
 import orc.ast.extended.pattern.WildcardPattern;
 import orc.ast.simple.arg.Var;
+import orc.error.compiletime.CompilationException;
 
 public class Sequential extends Expression {
 
@@ -23,14 +25,18 @@ public class Sequential extends Expression {
 	}
 	
 	@Override
-	public orc.ast.simple.Expression simplify() {
+	public orc.ast.simple.Expression simplify() throws CompilationException {
 		
 		orc.ast.simple.Expression source = left.simplify();
 		orc.ast.simple.Expression target = right.simplify();
+		
+		Var s = new Var();
 		Var t = new Var();
 		
-		source = Pattern.filter(p.match(source));
-		target = p.bind(t, target);
+		PatternVisitor pv = p.process(s);
+		
+		source = new orc.ast.simple.Sequential(source, pv.filter(), s);
+		target = pv.target(t, target);
 		
 		return new orc.ast.simple.Sequential(source, target, t);
 	}

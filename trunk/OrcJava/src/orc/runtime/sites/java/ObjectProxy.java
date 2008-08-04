@@ -10,8 +10,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import orc.error.MessageNotUnderstoodException;
-import orc.error.TokenException;
+import orc.error.runtime.MessageNotUnderstoodException;
+import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.EvalSite;
@@ -38,14 +38,9 @@ public class ObjectProxy extends Site {
 	
 	@Override
 	public void callSite(Args args, Token caller) throws TokenException {
+		
 		String methodName;
-		try {
-			methodName = args.fieldName();
-		} catch (TokenException e) {
-			// If this looks like a site call, call the special method "apply".
-			new MethodProxy(delegates.get("apply")).callSite(args, caller);
-			return;
-		}
+		methodName = args.fieldName();
 		caller.resume(new MethodProxy(delegates.get(methodName)));
 	}
 	

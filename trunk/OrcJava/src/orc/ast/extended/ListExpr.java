@@ -2,6 +2,8 @@ package orc.ast.extended;
 
 import java.util.List;
 
+import orc.error.compiletime.CompilationException;
+
 
 public class ListExpr extends Expression {
 
@@ -11,7 +13,7 @@ public class ListExpr extends Expression {
 		this.es = es;
 	}
 
-	public orc.ast.simple.Expression simplify() {
+	public orc.ast.simple.Expression simplify() throws CompilationException {
 		
 		Expression e = new NilExpr();
 		

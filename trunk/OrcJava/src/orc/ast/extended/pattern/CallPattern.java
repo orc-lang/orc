@@ -11,6 +11,7 @@ import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.Field;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
+import orc.error.compiletime.PatternException;
 
 public class CallPattern extends Pattern {
 
@@ -29,40 +30,18 @@ public class CallPattern extends Pattern {
 		this.p = argpat;
 	}
 
-	public Expression bind(Var u, Expression g) {
+	@Override
+	public void process(Var fragment, PatternVisitor visitor)
+			throws PatternException {
 		
-		return p.bind(u,g);
-	}
-
-	public Expression match(Var u) {
-		
-		// m(u) <m< M.?
-		Var m = new Var();
-		Expression call1 = new Call(site, new Field("?"));
-		call1.setSourceLocation(getSourceLocation());
-		Expression call2 = new Call(m, u);
-		call2.setSourceLocation(getSourceLocation());
-		Expression invertExpr = new Where(call2, call1, m);
-		
-		
-		// isSome(r) >s> p.match s
-		Var r = new Var();
-		Var s = new Var();
-		Expression sbranch = new Sequential(new Call(Pattern.ISSOME, r), p.match(s), s);
-		
-		// isNone(r) >> none
-		Expression nbranch = new Sequential(new Call(Pattern.ISNONE, r), new Call(Pattern.NONE), new Var());
-		
-		// isSome... | isNone...
-		Expression body = new Parallel(sbranch, nbranch);
-		
-		// ... <r< m(u) <m< M.?
-		body = new Where(body, invertExpr, r);
-		
-		return body;
+		Var result = new Var();
+		visitor.assign(result, Pattern.unapply(site, fragment));
+		visitor.require(result);
+		p.process(result, visitor);
 	}
 	
 	public String toString() {
 		return site.key + p.toString();
 	}
+
 }

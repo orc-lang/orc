@@ -5,6 +5,7 @@ import java.util.List;
 
 import orc.ast.extended.pattern.Pattern;
 import orc.ast.simple.arg.Var;
+import orc.error.compiletime.CompilationException;
 
 public class Lambda extends Expression {
 
@@ -17,7 +18,7 @@ public class Lambda extends Expression {
 	}
 
 	@Override
-	public orc.ast.simple.Expression simplify() {
+	public orc.ast.simple.Expression simplify() throws CompilationException {
 		// TODO Auto-generated method stub
 		
 		Var f = new Var();
@@ -29,7 +30,7 @@ public class Lambda extends Expression {
 		
 		Clause c = new Clause(formals, body);
 		
-		orc.ast.simple.Expression lambody = c.simplify(params,new orc.ast.simple.Silent());
+		orc.ast.simple.Expression lambody = c.simplify(params, new orc.ast.simple.Silent());
 		
 		List<orc.ast.simple.Definition> defs = new LinkedList<orc.ast.simple.Definition>();
 		defs.add(new orc.ast.simple.Definition(f,params,lambody));

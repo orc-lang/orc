@@ -3,6 +3,8 @@ package orc.ast.extended;
 import java.util.LinkedList;
 import java.util.List;
 
+import orc.error.compiletime.CompilationException;
+
 public class Tuple extends Expression {
 
 	public List<Expression> items;
@@ -13,7 +15,7 @@ public class Tuple extends Expression {
 	}
 	
 	@Override
-	public orc.ast.simple.Expression simplify() {
+	public orc.ast.simple.Expression simplify() throws CompilationException {
 		
 		List<orc.ast.simple.arg.Argument> args = new LinkedList<orc.ast.simple.arg.Argument>();
 		orc.ast.simple.Expression e = new orc.ast.simple.Let(args);

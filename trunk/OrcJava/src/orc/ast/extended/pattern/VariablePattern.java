@@ -4,6 +4,7 @@ import orc.ast.simple.Call;
 import orc.ast.simple.Expression;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
+import orc.error.compiletime.NonlinearPatternException;
 
 public class VariablePattern extends Pattern {
 
@@ -14,16 +15,13 @@ public class VariablePattern extends Pattern {
 		x = new NamedVar(s);
 	}
 	
-	public Expression bind(Var u, Expression g) {
-		return g.subst(u, x);
-	}
-
-	public Expression match(Var u) {
-		return new Call(Pattern.SOME, u);
-	}
-
 	public boolean strict() {
 		return false;
+	}
+
+	@Override
+	public void process(Var fragment, PatternVisitor visitor) throws NonlinearPatternException {
+		visitor.subst(fragment, x);
 	}
 	
 	public String toString() {

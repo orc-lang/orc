@@ -1,5 +1,7 @@
 package orc.ast.extended;
 
+import orc.error.compiletime.CompilationException;
+
 /**
  * 
  * A dot expression (e.g "C.put(4)"). 
@@ -26,7 +28,7 @@ public class Dot extends Expression {
 	}
 	
 	@Override
-	public orc.ast.simple.Expression simplify() {
+	public orc.ast.simple.Expression simplify() throws CompilationException {
 		
 		Expression e = new Call(target, new Field(field));
 		e.setSourceLocation(getSourceLocation());

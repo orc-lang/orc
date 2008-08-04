@@ -1,4 +1,7 @@
-package orc.error;
+package orc.error.runtime;
+
+import orc.error.Locatable;
+import orc.error.SourceLocation;
 
 /**
  * 

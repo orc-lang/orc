@@ -2,7 +2,7 @@ package orc.runtime.sites;
 
 import kilim.Pausable;
 import kilim.Task;
-import orc.error.TokenException;
+import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Kilim;
 import orc.runtime.Token;

@@ -1,6 +1,6 @@
 package orc.runtime.sites.java;
 
-import orc.error.TokenException;
+import orc.error.runtime.TokenException;
 import orc.lib.util.ThreadSite;
 import orc.runtime.Args;
 import orc.runtime.Token;

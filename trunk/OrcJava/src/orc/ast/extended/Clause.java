@@ -2,11 +2,20 @@ package orc.ast.extended;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
+import orc.ast.extended.pattern.Attachment;
 import orc.ast.extended.pattern.Pattern;
+import orc.ast.extended.pattern.PatternVisitor;
+import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.Constant;
+import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.ast.simple.Expression;
+import orc.error.compiletime.CompilationException;
+import orc.error.compiletime.NonlinearPatternException;
+import orc.error.compiletime.PatternException;
 
 public class Clause {
 
@@ -18,85 +27,113 @@ public class Clause {
 		this.body = body;
 	}
 
-	public orc.ast.simple.Expression simplify(List<Var> formals, orc.ast.simple.Expression otherwise) {
+	public orc.ast.simple.Expression simplify(List<Var> formals, orc.ast.simple.Expression otherwise) throws CompilationException {
 		
-		// Capture the match expression for each strict pattern; lenient patterns are ignored.
-		List<Expression> matches = new LinkedList<Expression>();
-		
-		for (int i = 0; i < ps.size(); i++) {	
-			Pattern p = ps.get(i);
-			Var t = formals.get(i);
-	 
-			if (p.strict()) {
-				matches.add(p.match(t));
-			}
-		}
-		
-		// If no pattern is strict, shortcut the process.
-		if (matches.isEmpty()) {
-			
-			Expression bindExpr = body.simplify();
-			
-			for (int i = 0; i < ps.size(); i++) {	
-				Pattern p = ps.get(i);
-				Var t = formals.get(i);
-				bindExpr = p.bind(t, bindExpr);
-			}
-			
-			return bindExpr; 
-		}
-	
-		// Lift over all of the strict patterns
-		Expression matchExpr = Pattern.lift(matches);
-		
-		
-		// The overall option result of the lift
-		Var r = new Var();
-		
-		
-		// This will be bound to the tuple of match results if the match succeeds
-		Var u = new Var();
-		
-		
-		// Bind all of the patterns in the clause body
-		// If a pattern is strict, its binding is sourced from the tuple of match results.
-		// If a pattern is not strict, it is simply bound from the corresponding formal.
-		Expression bindExpr = body.simplify();
-		int uIndex = 0;
-		for (int i = 0; i < ps.size(); i++) {	
-			Pattern p = ps.get(i);
-			Var t = formals.get(i);
-	 
-			if (p.strict()) {
-				// Source directly if there is only one strict match
-				if (matches.size() == 1) {
-					bindExpr = p.bind(u, bindExpr);
-				}
-				// Otherwise, source from a tuple
-				else {
-					Expression ui = new orc.ast.simple.Call(u, new Constant(uIndex++));
-					bindExpr = p.bind(ui, bindExpr);
-				}
+		Expression newbody = body.simplify();
+		List<PatternVisitor> stricts = new LinkedList<PatternVisitor>();
 				
+		Set<NamedVar> allvars = new TreeSet<NamedVar>();
+		for(int i = 0; i < ps.size(); i++) {
+			Pattern p = ps.get(i);
+			Var arg = formals.get(i);
+			
+			// Push the argument through its matching pattern
+			PatternVisitor pv = p.process(arg);
+			
+			// Let's make sure this pattern didn't duplicate any existing variables
+			for (NamedVar x : pv.vars()) {
+				if (allvars.contains(x)) {
+					throw new NonlinearPatternException(x);
+				}
+				else {
+					allvars.add(x);
+				}
+			}
+			
+			// If this is a strict pattern, save its visitor. We'll process it later.
+			if (p.strict()) {
+				stricts.add(pv); 
 			}
 			else {
-				bindExpr = p.bind(t, bindExpr);
+				// Just substitute the argument directly, preserving non-strictness
+				newbody = pv.target(arg, newbody);
 			}
 		}
 		
+	
+		if (stricts.size() > 0) {
+			// If any pattern was strict, we need to put in its filter,
+			// and check all of the filters to make sure they succeeded.
+			
+			Var binds = new Var();
+			List<Attachment> filters = new LinkedList<Attachment>();
+			
+			if (stricts.size() == 1) {
+				// If there is only one strict pattern, we won't need a result tuple
+				PatternVisitor pv = stricts.get(0);
+				filters.add(new Attachment(new Var(), pv.filter()));
+				newbody = pv.target(binds, newbody);				
+			}
+			else /* size >= 2 */ { 
+				for(int i = 0; i < stricts.size(); i++) {
+					// Add this pattern's output as a component of the result tuple
+					PatternVisitor pv = stricts.get(i);
+					filters.add(new Attachment(new Var(), pv.filter()));
+					
+					// Pull that output from the result tuple on the other side
+					Expression lookup = Pattern.nth(binds, i);
+					Var x = new Var();
+					newbody = pv.target(x, newbody);				
+					newbody = new orc.ast.simple.Where(newbody, lookup, x);
+				}
+			}
+						
+			
+			Var z = new Var();
+			
+			/* Build the left hand side */
+			Expression caseof = Pattern.caseof(z, binds, newbody, otherwise);
+			
+			/* Build the right hand side */
+			Expression lift;
+			if (filters.size() == 1) {
+				Attachment a = filters.get(0);
+				lift = Pattern.lift(a.v);
+				lift = a.attach(lift);
+			}
+			else {
+				
+				// First, find all of the variable names and make a list [y1...yn]
+				List<Argument> ys = new LinkedList<Argument>();
+				for (Attachment a : filters) {
+					ys.add(a.v);
+				}
+				
+				/* Then construct: 
+				 * 
+				 * lift(yall) 
+				 * <yall< (y1, ... , yn)
+				 * <y1< filter1
+				 * ...
+				 * <yn< filtern
+				 * 
+				 */
+				Var yall = new Var();
+				lift = new orc.ast.simple.Where(Pattern.lift(yall), new orc.ast.simple.Let(ys), yall);
+				for (Attachment a : filters) {
+					lift = a.attach(lift);
+				}
+			}
+			
+			// Now put it all together.
+			newbody = new orc.ast.simple.Where(caseof, lift, z);
+		}
+		else {
+			// If there are no strict patterns, it suffices to just use the
+			// body as given, since no pattern can fail.
+		}
 		
-		// Success branch.
-		// isSome(r) >u> ...binds...
-		Expression sbranch = new orc.ast.simple.Sequential(new orc.ast.simple.Call(Pattern.ISSOME, r), bindExpr, u);
-		
-		// Failure branch.
-		// isNone(r) >> ...otherwise...
-		Expression nbranch = new orc.ast.simple.Sequential(new orc.ast.simple.Call(Pattern.ISNONE, r), otherwise, new Var());
-		
-		
-		
-		// Pipe the match result into these branches
-		return new orc.ast.simple.Sequential(matchExpr, new orc.ast.simple.Parallel(sbranch, nbranch), r);
+		return newbody;
 	}
 	
 	

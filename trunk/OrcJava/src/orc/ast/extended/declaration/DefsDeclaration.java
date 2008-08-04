@@ -9,6 +9,7 @@ import java.util.TreeMap;
 import orc.ast.extended.Clause;
 import orc.ast.extended.Expression;
 import orc.ast.simple.arg.*;
+import orc.error.compiletime.CompilationException;
 
 /**
  * A group of defined expressions, together as a declaration. 
@@ -31,7 +32,7 @@ public class DefsDeclaration implements Declaration {
 		this.defs = defs;
 	}
 	
-	public orc.ast.simple.Expression bindto(orc.ast.simple.Expression target) {
+	public orc.ast.simple.Expression bindto(orc.ast.simple.Expression target) throws CompilationException {
 		
 		
 		// Map each definition name to a list of its clauses
@@ -72,8 +73,7 @@ public class DefsDeclaration implements Declaration {
 			// and check to make sure every clause has the same number of patterns
 			for (Clause c : cs) {
 				if (c.ps.size() != n) {
-					// TODO: Make this a specific Orc compilation exception
-					throw new Error("Mismatched number of patterns in clauses of '" + name + "'");
+					throw new CompilationException("Mismatched number of arguments in clauses of '" + name + "'");
 				}
 			}
 			

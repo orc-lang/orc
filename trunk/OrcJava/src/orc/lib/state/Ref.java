@@ -6,7 +6,7 @@ package orc.lib.state;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import orc.error.TokenException;
+import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.DotSite;

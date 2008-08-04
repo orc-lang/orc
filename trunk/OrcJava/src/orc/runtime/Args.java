@@ -5,11 +5,11 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 
-import orc.error.ArgumentTypeMismatchException;
-import orc.error.ArityMismatchException;
-import orc.error.InsufficientArgsException;
 import orc.error.OrcError;
-import orc.error.TokenException;
+import orc.error.runtime.ArgumentTypeMismatchException;
+import orc.error.runtime.ArityMismatchException;
+import orc.error.runtime.InsufficientArgsException;
+import orc.error.runtime.TokenException;
 import orc.runtime.values.Constant;
 import orc.runtime.values.Field;
 import orc.runtime.values.TupleValue;

@@ -7,6 +7,7 @@ import orc.ast.simple.arg.Argument;
 import orc.error.Debuggable;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
+import orc.error.compiletime.CompilationException;
 
 /**
  * Base class for the extended abstract syntax tree.
@@ -25,7 +26,7 @@ public abstract class Expression implements Locatable {
 	 * 
 	 * @return The simplified expression
 	 */
-	public abstract orc.ast.simple.Expression simplify();
+	public abstract orc.ast.simple.Expression simplify() throws CompilationException;
 	
 	/**
 	 * Simplify an expression which occurs in an argument (nested) position.
@@ -38,8 +39,9 @@ public abstract class Expression implements Locatable {
 	 * their own without a binder will override this behavior.
 	 * 
 	 * @return The argified form of the expression
+	 * @throws CompilationException 
 	 */
-	protected Arg argify()
+	protected Arg argify() throws CompilationException
 	{
 		return new complexArg(new orc.ast.simple.arg.Var(), this.simplify());
 	}

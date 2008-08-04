@@ -6,7 +6,7 @@ import java.util.Set;
 import orc.env.Env;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
-import orc.error.UnboundVariableException;
+import orc.error.compiletime.UnboundVariableException;
 import orc.runtime.values.Value;
 
 /**

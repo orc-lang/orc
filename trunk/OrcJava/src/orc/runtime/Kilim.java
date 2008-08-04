@@ -12,8 +12,8 @@ import kilim.Pausable;
 import kilim.Scheduler;
 import kilim.Semaphore;
 import kilim.Task;
-import orc.error.JavaException;
-import orc.error.TokenException;
+import orc.error.runtime.JavaException;
+import orc.error.runtime.TokenException;
 import orc.runtime.values.Value;
 
 /**

@@ -5,7 +5,7 @@ package orc.runtime.values;
 
 import java.util.List;
 
-import orc.error.TokenException;
+import orc.error.runtime.TokenException;
 import orc.runtime.Token;
 import orc.runtime.nodes.Node;
 

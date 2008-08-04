@@ -1,7 +1,7 @@
 {- Heisenbug detector. Make sure your processor fan is working. -}
 
 def track(t, s) =
-  def report(n) = Rtimer(t) >> print(s, ": ", n, "\n")
+  def report(n) = Rtimer(t) >> print(s, ": ", n.toString(), "\n")
   def tick(n) = report(n) >> tick((n % 99) + 1)
   tick(1)
 

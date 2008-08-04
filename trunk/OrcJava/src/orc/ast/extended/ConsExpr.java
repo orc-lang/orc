@@ -3,6 +3,7 @@ package orc.ast.extended;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.Site;
 import orc.ast.simple.arg.Var;
+import orc.error.compiletime.CompilationException;
 
 public class ConsExpr extends Expression {
 
@@ -14,7 +15,7 @@ public class ConsExpr extends Expression {
 		this.t = t;
 	}
 
-	public orc.ast.simple.Expression simplify() {
+	public orc.ast.simple.Expression simplify() throws CompilationException {
 		
 		Var vh = new Var();
 		Var vt = new Var();

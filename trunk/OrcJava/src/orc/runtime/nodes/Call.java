@@ -10,7 +10,7 @@ import orc.ast.oil.arg.Arg;
 import orc.error.Debuggable;
 import orc.error.OrcException;
 import orc.error.SourceLocation;
-import orc.error.TokenException;
+import orc.error.runtime.TokenException;
 import orc.runtime.Token;
 import orc.runtime.values.Callable;
 import orc.runtime.values.Future;

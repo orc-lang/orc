@@ -6,9 +6,9 @@ package orc.runtime.sites;
 import java.util.LinkedList;
 import java.util.List;
 
-import orc.error.JavaException;
 import orc.error.OrcException;
-import orc.error.TokenException;
+import orc.error.runtime.JavaException;
+import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.nodes.Node;

@@ -8,10 +8,10 @@ import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
-import orc.error.CompilationException;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
-import orc.error.UnboundVariableException;
+import orc.error.compiletime.CompilationException;
+import orc.error.compiletime.UnboundVariableException;
 import orc.runtime.nodes.Node;
 
 /**

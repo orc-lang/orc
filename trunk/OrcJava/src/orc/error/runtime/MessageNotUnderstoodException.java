@@ -1,4 +1,6 @@
-package orc.error;
+package orc.error.runtime;
+
+
 
 public class MessageNotUnderstoodException extends TokenException {
 

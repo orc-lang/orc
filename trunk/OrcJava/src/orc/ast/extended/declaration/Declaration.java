@@ -1,5 +1,7 @@
 package orc.ast.extended.declaration;
 
+import orc.error.compiletime.CompilationException;
+
 /**
  * 
  * A unit of syntax that encapsulates some declaration. Declarations affect the environment, 
@@ -12,5 +14,5 @@ package orc.ast.extended.declaration;
  */
 public interface Declaration 
 { 
-	public orc.ast.simple.Expression bindto(orc.ast.simple.Expression target);
+	public orc.ast.simple.Expression bindto(orc.ast.simple.Expression target) throws CompilationException;
 }

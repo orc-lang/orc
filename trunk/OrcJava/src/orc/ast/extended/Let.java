@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import orc.ast.simple.arg.Argument;
+import orc.error.compiletime.CompilationException;
 
 public class Let extends Expression {
 
@@ -22,7 +23,7 @@ public class Let extends Expression {
 	}
 
 	@Override
-	public orc.ast.simple.Expression simplify() {
+	public orc.ast.simple.Expression simplify() throws CompilationException {
 				
 		List<Argument> newargs = new LinkedList<Argument>();
 		orc.ast.simple.Expression e = new orc.ast.simple.Let(newargs);
