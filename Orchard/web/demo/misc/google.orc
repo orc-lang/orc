@@ -2,6 +2,7 @@ include "net.inc"
 
 -- Search google and return the first
 -- page of results
+val Google = GoogleSearchFactory("orc/orchard/google.properties")
 Prompt("Search Google for:") >term>
 Google(term) >pages>
 each(take(1, pages)) >results>
