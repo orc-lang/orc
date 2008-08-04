@@ -8,8 +8,7 @@ import orc.Config;
 import orc.Orc;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
-import orc.error.CompilationException;
-import orc.error.ParseError;
+import orc.error.compiletime.CompilationException;
 import orc.orchard.errors.InvalidProgramException;
 import orc.orchard.oil.Marshaller;
 import orc.orchard.oil.Oil;
@@ -39,7 +38,7 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
 			// Include sites specifically for orchard services
 			config.addInclude("orchard.inc");
 			ex0 = Orc.compile(new StringReader(program), config);
-		} catch (ParseError e) {
+		} catch (CompilationException e) {
 			throw new InvalidProgramException(e.getMessage());
 		} catch (IOException e) {
 			throw new InvalidProgramException("IO error: " + e.getMessage());

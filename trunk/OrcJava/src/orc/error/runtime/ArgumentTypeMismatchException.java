@@ -1,6 +1,7 @@
 package orc.error.runtime;
 
 
+
 public class ArgumentTypeMismatchException extends RuntimeTypeException {
 
 	int position;
@@ -25,6 +26,10 @@ public class ArgumentTypeMismatchException extends RuntimeTypeException {
 		this.position = position;
 		this.expectedType = expectedType;
 		this.providedType = providedType;
+	}
+
+	public ArgumentTypeMismatchException(ClassCastException e) {
+		super(e.toString());
 	}
 
 }

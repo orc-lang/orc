@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import orc.error.JavaException;
-import orc.error.TokenException;
+import orc.error.runtime.JavaException;
+import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.ThreadedPartialSite;
 import orc.runtime.values.Constant;

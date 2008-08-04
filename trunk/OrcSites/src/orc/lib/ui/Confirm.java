@@ -2,7 +2,7 @@ package orc.lib.ui;
 
 import javax.swing.JOptionPane;
 
-import orc.error.TokenException;
+import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.ThreadedPartialSite;
 import orc.runtime.values.Constant;

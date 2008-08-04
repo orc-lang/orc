@@ -17,7 +17,6 @@ import kilim.Fiber;
 import kilim.Pausable;
 import kilim.State;
 import kilim.Task;
-import orc.error.runtime.JavaException;
 import orc.error.runtime.MethodTypeMismatchException;
 import orc.runtime.Args;
 import orc.runtime.Kilim;

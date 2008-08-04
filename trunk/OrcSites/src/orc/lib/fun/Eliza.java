@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import orc.error.SiteException;
-import orc.error.TokenException;
+import orc.error.runtime.SiteException;
+import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.PartialSite;

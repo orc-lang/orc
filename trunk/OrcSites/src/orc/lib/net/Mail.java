@@ -33,9 +33,9 @@ import javax.mail.search.RecipientTerm;
 import javax.mail.search.SearchTerm;
 import javax.mail.search.SubjectTerm;
 
-import orc.error.ArgumentTypeMismatchException;
-import orc.error.JavaException;
-import orc.error.TokenException;
+import orc.error.runtime.ArgumentTypeMismatchException;
+import orc.error.runtime.JavaException;
+import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;

@@ -11,7 +11,7 @@ import java.util.Map;
 
 import orc.Config;
 import orc.ast.oil.Expr;
-import orc.error.TokenException;
+import orc.error.runtime.TokenException;
 import orc.lib.orchard.Prompt.PromptCallback;
 import orc.lib.orchard.Prompt.Promptable;
 import orc.lib.orchard.Redirect.Redirectable;

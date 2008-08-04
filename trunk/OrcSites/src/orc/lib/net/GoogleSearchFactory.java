@@ -11,9 +11,9 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Properties;
 
-import orc.error.JavaException;
 import orc.error.OrcError;
-import orc.error.TokenException;
+import orc.error.runtime.JavaException;
+import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.ThreadedSite;

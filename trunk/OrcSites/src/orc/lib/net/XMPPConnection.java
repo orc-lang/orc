@@ -8,8 +8,8 @@ import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 
-import orc.error.SiteException;
-import orc.error.TokenException;
+import orc.error.runtime.SiteException;
+import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.EvalSite;

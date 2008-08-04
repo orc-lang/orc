@@ -9,13 +9,12 @@ import java.util.TimeZone;
 import java.util.concurrent.Callable;
 
 import kilim.Pausable;
-
 import net.oauth.OAuth;
 import net.oauth.OAuthAccessor;
 import net.oauth.OAuthException;
-import orc.error.ArgumentTypeMismatchException;
-import orc.error.JavaException;
-import orc.error.TokenException;
+import orc.error.runtime.ArgumentTypeMismatchException;
+import orc.error.runtime.JavaException;
+import orc.error.runtime.TokenException;
 import orc.oauth.OAuthProvider;
 import orc.runtime.Args;
 import orc.runtime.Kilim;
