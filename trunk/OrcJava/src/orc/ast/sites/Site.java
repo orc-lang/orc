@@ -35,9 +35,6 @@ public abstract class Site {
 	
 	public static Site TRYCONS = buildCoreSite("TryCons");
 	public static Site TRYNIL = buildCoreSite("TryNil");
-
-	public static Site HEAD = buildCoreSite("Head");
-	public static Site TAIL = buildCoreSite("Tail");
 	
 	public static Site EQUAL = buildCoreSite("Equal");
 	
