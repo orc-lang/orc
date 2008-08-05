@@ -7,7 +7,13 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import kilim.Pausable;
+import kilim.Task;
+
+import orc.runtime.Kilim;
 import orc.runtime.Token;
+import orc.runtime.Kilim.PausableCallable;
+import orc.runtime.Kilim.Promise;
 import orc.runtime.sites.java.ObjectProxy;
 
 /**
@@ -61,43 +67,58 @@ public class Constant extends Value {
 			return Arrays.asList((Object[])value).iterator();
 		}
 	}
-
-	@Override
-	public Value head() {
-		return new Constant(asIterator().next());
-	}
-
-	@Override
-	public Value tail() {
-		// Copy the remainder of the constant to an Orc list.
-		// This seems awfully inefficient, but I can't think
-		// of a better way to do it without being able to clone
-		// iterators.
-		ListValue l = new NilValue();
-		Iterator i = asIterator();
-		LinkedList<Value> tmpList = new LinkedList<Value>();
-		i.next();
-		while (i.hasNext()) tmpList.add(new Constant(i.next()));
-		return ListValue.make(tmpList);
-	}
-
-	@Override
-	public boolean isCons() {
-		try {
-			Iterator i = asIterator();
-			return i.hasNext();
-		} catch (ClassCastException e) {
-			return false;
+	
+	/**
+	 * ListValue view for iterators. Because iterators
+	 * are not cloneable and are mutable, we have to cache
+	 * the head and tail.
+	 * @author quark
+	 */
+	private static class IteratorListValue extends LazyListValue {
+		private Iterator iterator;
+		private TupleValue cons = null;
+		private boolean forced = false;
+		public IteratorListValue(Iterator iterator) {
+			this.iterator = iterator;
+		}
+		private void force() {
+			if (forced) return;
+			forced = true;
+			if (iterator.hasNext()) {
+				cons = new TupleValue(
+					new Constant(iterator.next()),
+					new IteratorListValue(iterator));
+			}
+		}
+		@Override
+		public void uncons(Token caller) {
+			force();
+			if (cons == null) caller.die();
+			else caller.resume(cons);
+		}
+		@Override
+		public void unnil(Token caller) {
+			force();
+			if (cons == null) caller.resume(new NilValue());
+			else caller.die();
 		}
 	}
 
 	@Override
-	public boolean isNil() {
+	public void uncons(Token caller) {
 		try {
-			Iterator i = asIterator();
-			return !i.hasNext();
+			new IteratorListValue(asIterator()).uncons(caller);
 		} catch (ClassCastException e) {
-			return false;
+			caller.die();
+		}
+	}
+	
+	@Override
+	public void unnil(Token caller) {
+		try {
+			new IteratorListValue(asIterator()).unnil(caller);
+		} catch (ClassCastException e) {
+			caller.die();
 		}
 	}
 	

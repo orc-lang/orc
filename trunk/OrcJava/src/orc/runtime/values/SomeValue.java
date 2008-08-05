@@ -2,16 +2,16 @@ package orc.runtime.values;
 
 /* Common ancestor for the option values */
 
-public class SomeValue extends OptionValue { 
+public class SomeValue<V extends Value> extends OptionValue<V> { 
 	
-	public Value content;
+	public V content;
 	
-	public SomeValue(Value content) {
+	public SomeValue(V content) {
 		this.content = content;
 	}
 	
 	public boolean isSome() { return true; }
 	
-	public Value untag() { return content; }
+	public V untag() { return content; }
 	
 }

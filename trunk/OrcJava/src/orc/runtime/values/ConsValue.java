@@ -3,6 +3,7 @@ package orc.runtime.values;
 import java.util.List;
 
 import orc.error.runtime.TokenException;
+import orc.runtime.Token;
 
 public class ConsValue extends ListValue {
 
@@ -15,11 +16,15 @@ public class ConsValue extends ListValue {
 		this.t = t;
 	}
 
-	public boolean isCons() { return true; }
+	@Override
+	public void uncons(Token caller) {
+		caller.resume(new TupleValue(this.h, this.t));
+	}
 	
-	public Value head() { return h; }
-	public ListValue tail() { return t; }
-	
+	@Override
+	public void unnil(Token caller) {
+		caller.die();
+	}	
 	
 	public String toString() {
 		return this.enlist().toString();
