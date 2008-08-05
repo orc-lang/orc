@@ -35,7 +35,7 @@ public class Site extends Arg {
 	}
 	
 	public String toString() {
-		return "[" + site.getClass().toString() + "]";
+		return "[" + site.toString() + "]";
 	}
 	
 	@Override

@@ -1,5 +1,7 @@
 package orc.runtime;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -148,6 +150,38 @@ public class Kilim {
 	}
 	
 	/**
+	 * Wrap a callable in a lazy, concurrency-safe promise.
+	 * FIXME: if the callable exits, waiters will NOT be notified.
+	 * @author quark
+	 */
+	public static class Promise<V> extends PausableCallable<V> { 
+		private enum State { NEW, FORCING, READY };
+		private State state = State.NEW;
+		private V value;
+		private final List<Mailbox> waiters = new LinkedList<Mailbox>();
+		private final PausableCallable<V> thunk;
+		public Promise(PausableCallable<V> thunk) {
+			this.thunk = thunk;
+		}
+		public synchronized V call() throws Pausable, Exception {
+			switch (state) {
+			case FORCING: 
+				Mailbox<V> inbox = new Mailbox<V>();
+				waiters.add(inbox);
+				return inbox.get();
+			case NEW: 
+				state = State.FORCING;
+				value = thunk.call();
+				for (Mailbox<V> outbox : waiters) {
+					outbox.put(value);
+				}
+			default: 
+				return value;
+			}
+		}
+	}
+	
+	/**
 	 * Spawn a thread to compute a value.
 	 * This is a common idiom in a Kilim computation, when you need
 	 * to make blocking calls.
@@ -196,7 +230,7 @@ public class Kilim {
 	 * @param caller token to return the value to
 	 * @param thunk computation returning a value
 	 */
-	public static void runPausable(final Token caller, final PausableCallable<Value> thunk) {
+	public static void runPausable(final Token caller, final PausableCallable<? extends Value> thunk) {
 		// In order to deal with both regular and irregular exits,
 		// we have to set up a monitor task which spawns a child
 		// task, monitors its exit value, and then does something

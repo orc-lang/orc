@@ -10,4 +10,6 @@ public interface Visitor<V> {
 	public V visit(OptionValue v);
 	public V visit(TupleValue v);
 	public V visit(Site v);
+	/** For any other value types. */
+	public V visit(Value value);
 }
