@@ -6,134 +6,26 @@ load it as index.html?mock
 <head>
 <title>Orchard Demo</title>
 <link rel="stylesheet" type="text/css" href="orc.css"/>
-<link rel="stylesheet" type="text/css" href="indigo.css"/>
-<link rel="stylesheet" type="text/css" href="jquery.treeview.css"/>
-<style type="text/css">
-h1 {
-	margin-top: 0;
-}
-.closed ul {
-	display: none;
-}
-.file a {
-	cursor: pointer;
-}
-/* I don't like the link highlighting */
-#menu a {
-	color: #466;
-	text-decoration: none;
-}
-#menu a.selected {
-	font-weight: bold;
-	background: none;
-	text-decoration: underline;
-}
-/* I don't like the red highlighting */
-.treeview .hover {
-	color: black;
-}
-</style>
 </head>
 <body>
-<div id="homelink" style="padding: 2px"><small>&lt; <a href="/">Back to Orc Home</a></small></div>
-<table border="0" padding="0" spacing="0" width="100%">
-<tr><td width="200" valign="top" style="padding: 0 10px 0 10px" id="menu-td">
-<h1>Examples</h1>
-<p>Click an example to load it.</p>
-<ul id="menu" class="filetree">
-<li><span class="folder">Tutorial Examples</span>
-	<ul>
-	<li><span class="file"><a class="demo-link" href="demo/tutorial/par.orc">Parallel</a></span></li>
-	<li><span class="file"><a class="demo-link" href="demo/tutorial/seq.orc">Sequential</a></span></li>
-	<li><span class="file"><a class="demo-link" href="demo/tutorial/parseq.orc">Parallel/Sequential</a></span></li>
-	<li><span class="file"><a class="demo-link" href="demo/tutorial/pull.orc">Asymmetric</a></span></li>
-	<li><span class="file"><a class="demo-link" href="demo/tutorial/parpull.orc">Parallel/Asymmetric</a></span></li>
-	<li><span class="file"><a class="demo-link" href="demo/tutorial/val.orc">Val Binding</a></span></li>
-	<li><span class="file"><a class="demo-link" href="demo/tutorial/implicit_pull.orc">Implicit Asymmetric</a></span></li>
-	<li><span class="file"><a class="demo-link" href="demo/tutorial/if.orc">If Site</a></span></li>
-	<li><span class="file"><a class="demo-link" href="demo/tutorial/null.orc">Null Site</a></span></li>
-	<li><span class="file"><a class="demo-link" href="demo/tutorial/rtimer.orc">Rtimer Site</a></span></li>
-	<li><span class="file"><a class="demo-link" href="demo/tutorial/metronome.orc">Metronome</a></span></li>
-	<li><span class="file"><a class="demo-link" href="demo/tutorial/prime.orc">Prime Numbers</a></span></li>
-	<li><span class="file"><a class="demo-link" href="demo/tutorial/airline1.orc">Airline</a></span></li>
-	</ul></li>
-<li class="closed"><span class="folder">Concurrency Idioms</a></span>
-	<ul>
-	<li><span class="file"><a class="demo-link" href="demo/concurrency/timeout.orc">Timeout</a></span></li>
-	<li><span class="file"><a class="demo-link" href="demo/concurrency/delay.orc">Delay</a></span></li>
-	<li><span class="file"><a class="demo-link" href="demo/concurrency/priority.orc">Priority</a></span></li>
-	<li><span class="file"><a class="demo-link" href="demo/concurrency/forkjoin.orc">Fork/Join</a></span></li>
-	<li><span class="file"><a class="demo-link" href="demo/concurrency/parallelor.orc">Parallel Or</a></span></li>
-	</ul></li>
-<li class="closed"><span class="folder">Miscellaneous</a></span>
-	<ul>
-	<li><span class="file"><a class="demo-link" href="demo/misc/eliza.orc">Eliza</a></span></li>
-	<li><span class="file"><a class="demo-link" href="demo/misc/google.orc">Google</a></span></li>
-	<li><span class="file"><a class="demo-link" href="demo/misc/ping.orc">Ping</a></span></li>
-	<li><span class="file"><a class="demo-link" href="demo/misc/path.orc">Shortest Path</a></span></li>
-	<li><span class="file"><a class="demo-link" href="demo/misc/music_calendar.orc">Music Calendar</a></span></li>
-	<li><span class="file"><a class="demo-link" href="demo/misc/search.orc">Web Search</a></span></li>
-	</ul></li>
-</ul>
-</td><td valign="top" style="padding: 0 10px 0 10px" id="main">
-<div id="header">
 <h1>Try Orc!</h1>
 
 Enter an Orc program in the text box below and then click the <b>run</b> button.
-</div>
-<div>
-<small>Font size:
+<br />Font size:
 <a href="#" style="cursor: pointer" onclick="document.getElementById('orc').orcFontSizeUp()">bigger</a> /
 <a href="#" style="cursor: pointer" onclick="document.getElementById('orc').orcFontSizeDown()">smaller</a>
-&nbsp;&nbsp;&nbsp;&nbsp;Examples: <a href="#" style="cursor: pointer" onclick="toggleExamples()">show/hide</a>
-</small>
-</div>
+<br />
 <textarea id="orc" spellcheck="false" class="orc" style="width: 700px; height: 300px">
+include "fun.inc"
+
+def ElizaPrompt(init) =
+    val eliza = Eliza()
+    def loop(message) =
+        eliza(Prompt(message)) >response>
+        loop(response)
+    loop(init)
+
+ElizaPrompt("How do you do.  Please tell me your problem.")
 </textarea>
-</td></tr></table>
 <script src="orc.js" type="text/javascript"></script>
-<script type="text/javascript" src="jquery.treeview.min.js"></script>
-<script type="text/javascript">
-(function ($) {
-$("#menu").treeview({
-	animated: "fast",
-	unique: true
-});
-
-$("#menu .demo-link").each(function () {
-	var $this = $(this);
-	var file = this.href;
-	this.href = "#";
-	$this.click(function () {
-		loadOrcCode(file);
-		$("#menu .demo-link").removeClass("selected");
-		$this.addClass("selected");
-	});
-});
-
-window.toggleExamples = function() {
-	$('#menu-td').toggle();
-	$('#header').toggle();
-	$('#homelink').toggle();
-}
-
-function escapeHtml(v) {
-	v = v.replace(/&/g, '&amp;');
-	v = v.replace(/</g, '&lt;');
-	// FIXME: escape other special characters
-	return v;
-}
-function loadOrcCode(url) {
-	$.ajax({
-		url: url,
-		success: function (data) {
-			document.getElementById("orc").setOrcCode(data);
-		},
-		error: function () {
-			alert("There was an error loading the example program.");
-		}
-	});
-}
-})(jQuery);
-</script>
 </body>
