@@ -275,8 +275,8 @@ def min((n1,q1), (n2,q2)) =
   | if(q2 &lt;: q1) >> (n2, q2)
 </pre>
 <pre class="orc">
--- Return the best quote at or under 200 dollars
--- within 15 seconds
+-- Return the best quote at or under $200
+-- received within 15 seconds
 def bestQuote([]) = ("None of the above", 200)
 def bestQuote(airline:rest) =
     val best = bestQuote(rest)
