@@ -2,8 +2,6 @@ package orc.runtime;
 
 import java.util.PriorityQueue;
 import java.util.Queue;
-
-import orc.runtime.values.Constant;
 /**
  * 
  * An event queue for site calls to a logical timer (created by MakeTimer).
@@ -48,12 +46,11 @@ public class LogicalClock {
 		if (top != null) {
 			currentTime = top.getTime();
 			while(top != null && top.getTime() <= currentTime) {
-				eventQueue.remove().getToken().resume(new Constant(currentTime));
+				eventQueue.remove().getToken().resume(currentTime);
 				top = eventQueue.peek();
 			}		
 			return true;
-		} 
-		else {
+		} else {
 			return false;
 		}
 		

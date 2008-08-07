@@ -1,0 +1,1 @@
+println(cat(Null())) >> null

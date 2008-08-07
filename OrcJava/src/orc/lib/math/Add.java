@@ -7,8 +7,6 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Args.NumericBinaryOperator;
 import orc.runtime.sites.EvalSite;
-import orc.runtime.values.Constant;
-import orc.runtime.values.Value;
 
 /**
  * NB: this is overloaded to operate on strings,
@@ -16,7 +14,8 @@ import orc.runtime.values.Value;
  * @author quark
  */
 public class Add extends EvalSite {
-	private static class MyOperator implements NumericBinaryOperator<Number> {
+	private static final MyOperator op = new MyOperator();
+	private static final class MyOperator implements NumericBinaryOperator<Number> {
 		public Number apply(BigInteger a, BigInteger b) {
 			return a.add(b);
 		}
@@ -43,22 +42,22 @@ public class Add extends EvalSite {
 		}
 	}
 	@Override
-	public Value evaluate(Args args) throws TokenException {
+	public Object evaluate(Args args) throws TokenException {
 		try {
-    		return new Constant(Args.applyNumericOperator(
+    		return Args.applyNumericOperator(
     				args.numberArg(0), args.numberArg(1),
-    				new MyOperator()));
+    				op);
 		} catch (TokenException _1) {
 			// If the arguments aren't both numbers, maybe
 			// one or the other is a string
 			try {
 				// the first argument is a string
     			String a = args.stringArg(0);
-    			return new Constant(a + args.valArg(1).toString());
+    			return a + String.valueOf(args.getArg(1));
     		} catch (TokenException _2) {
 				// the second argument is a string
     			String b = args.stringArg(1);
-    			return new Constant(args.valArg(0).toString() + b);
+    			return String.valueOf(args.getArg(0)) + b;
     		}
 		}
 	}

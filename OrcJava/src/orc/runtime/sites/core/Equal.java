@@ -10,13 +10,13 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Args.NumericBinaryOperator;
 import orc.runtime.sites.EvalSite;
-import orc.runtime.values.*;
 
 /**
  * @author dkitchin, quark
  */
 public class Equal extends EvalSite {
-	private static class MyComparisonOperator implements NumericBinaryOperator<Boolean> {
+	private static final NumericBinaryOperator<Boolean> op
+	= new NumericBinaryOperator<Boolean>() {
 		public Boolean apply(BigInteger a, BigInteger b) {
 			return a.equals(b);
 		}
@@ -41,20 +41,18 @@ public class Equal extends EvalSite {
 		public Boolean apply(float a, float b) {
 			return a == b;
 		}
-	}
+	};
 	
 	/* (non-Javadoc)
 	 * @see orc.runtime.sites.EvalSite#evaluate(java.lang.Object[])
 	 */
 	@Override
-	public Value evaluate(Args args) throws TokenException {
+	public Object evaluate(Args args) throws TokenException {
 		Object a = args.getArg(0);
 		Object b = args.getArg(1);
 		if (a instanceof Number && b instanceof Number) {
-			return new Constant(Args.applyNumericOperator(
-					(Number)a, (Number)b,
-					new MyComparisonOperator()));
+			return Args.applyNumericOperator((Number)a, (Number)b, op);
 		}
-		return new Constant(a.equals(b));	
+		return a.equals(b);	
 	}
 }

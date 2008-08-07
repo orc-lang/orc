@@ -7,13 +7,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import orc.ast.oil.arg.Arg;
-import orc.error.Debuggable;
-import orc.error.OrcException;
-import orc.error.SourceLocation;
 import orc.error.runtime.TokenException;
 import orc.runtime.Token;
 import orc.runtime.values.Callable;
-import orc.runtime.values.Future;
+import orc.runtime.values.Value;
 
 /**
  * Compiled node for a call (either a site call or a definition call)
@@ -38,8 +35,7 @@ public class Call extends Node {
 	public void process(Token t) {
 		
 		try {
-
-			Callable target = t.call(caller);
+			Callable target = Value.forceCall(t.lookup(caller), t);
 
 			/** 
 			 * target is null if the caller is still unbound, in which
@@ -48,17 +44,16 @@ public class Call extends Node {
 			 * return and wait for the token to enter the process
 			 * method again.
 			 */
-			if (target == null) { return; }
+			if (target == Value.futureNotReady) { return; }
 
 			/**
 			 * Collect all of the environment's bindings for these args.
 			 * Note that some of them may still be unbound, since we are
 			 * not forcing the futures.
 			 */
-			List<Future> actuals = new LinkedList<Future>();
+			List<Object> actuals = new LinkedList<Object>();
 
-			for (Arg a : args)
-			{
+			for (Arg a : args) {
 				actuals.add(t.lookup(a));
 			}
 

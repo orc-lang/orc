@@ -6,15 +6,12 @@ package orc.runtime.sites;
 import java.util.LinkedList;
 import java.util.List;
 
-import orc.error.OrcException;
-import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.nodes.Node;
-import orc.runtime.values.Future;
-import orc.runtime.values.Value;
 import orc.runtime.values.Callable;
+import orc.runtime.values.Value;
 import orc.runtime.values.Visitor;
 
 /**
@@ -33,22 +30,21 @@ public abstract class Site extends Value implements Callable {
 	 * 
 	 * @see orc.runtime.values.Callable#createCall(orc.runtime.Token, java.util.List, orc.runtime.nodes.Node)
 	 */
-	public void createCall(Token callToken, List<Future> args, Node nextNode) throws TokenException {
+	public void createCall(Token callToken, List<Object> args, Node nextNode) throws TokenException {
 
-		List<Value> values = new LinkedList<Value>();
+		List<Object> values = new LinkedList<Object>();
 		
-		for (Future f : args)
-		{	
-			Value v = f.forceArg(callToken);
-			if (v == null) 
-				{ return; }
-			else 
-				{ values.add(v); }
+		for (Object f : args) {	
+			Object v = Value.forceArg(f, callToken);
+			if (v == Value.futureNotReady) {
+				return;
+			} else {
+				values.add(v);
+			}
 		}
-		
+	
 		callSite(new Args(values), callToken.move(nextNode));
 	}
-
 	
 	/**
 	 * Must be implemented by subclasses to implement the site behavior

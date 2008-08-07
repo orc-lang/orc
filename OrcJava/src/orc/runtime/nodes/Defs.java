@@ -8,7 +8,6 @@ import java.util.Set;
 import orc.ast.oil.arg.Var;
 import orc.runtime.Token;
 import orc.runtime.values.Closure;
-import orc.runtime.values.Future;
 import orc.runtime.values.PartialValue;
 
 public class Defs extends Node {
@@ -55,7 +54,7 @@ public class Defs extends Node {
 		   Closure c = new Closure(d.arity, d.body, null/*empty environment*/);
 		   cs.add(c);
 		   
-		   Set<Future> freefutures = new HashSet<Future>();
+		   Set<Object> freefutures = new HashSet<Object>();
 		   for (Var fv : freeset)
 		   {
 			   freefutures.add(t.lookup(fv));

@@ -1,20 +1,13 @@
-/**
- * 
- */
 package orc.runtime.sites.java;
 
 import java.lang.reflect.Constructor;
 
 import orc.error.runtime.JavaException;
-import orc.error.runtime.MessageNotUnderstoodException;
-import orc.error.runtime.MethodTypeMismatchException;
 import orc.error.runtime.MethodTypeMismatchException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.java.ObjectProxy.DelegateCache;
-import orc.runtime.values.Constant;
-import orc.runtime.values.Value;
 
 
 /**
@@ -32,7 +25,7 @@ public class ClassProxy extends EvalSite {
 	}
 
 	@Override
-	public Value evaluate(Args args) throws TokenException {
+	public Object evaluate(Args args) throws TokenException {
 		
 		// If this looks like a field reference, assume it is a call to a static
 		// method and treat it accordingly. That means you can't call a
@@ -69,6 +62,6 @@ public class ClassProxy extends EvalSite {
 		}
 		
 		// create a proxy for the object
-		return new Constant(inst);
+		return inst;
 	}
 }

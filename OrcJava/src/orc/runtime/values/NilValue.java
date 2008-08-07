@@ -20,9 +20,9 @@ public class NilValue extends ListValue {
 	}
 
 	@Override
-	public List<Value> enlist() {
+	public List<Object> enlist() {
 		
-		return new LinkedList<Value>();
+		return new LinkedList<Object>();
 	}
 	
 	

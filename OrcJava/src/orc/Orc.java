@@ -23,12 +23,10 @@ import orc.ast.oil.Expr;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
-import orc.error.compiletime.ParsingException;
 import orc.parser.OrcParser;
 import orc.runtime.OrcEngine;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.result.QueueResult;
-import orc.runtime.values.Value;
 
 /**
  * Main class for Orc. Parses Orc file and executes it.
@@ -180,7 +178,7 @@ public class Orc {
 	 */
 	public static OrcInstance runEmbedded(Reader source, Config cfg) {
 		
-		BlockingQueue<Value> q = new LinkedBlockingQueue<Value>();
+		BlockingQueue<Object> q = new LinkedBlockingQueue<Object>();
 	
 		// Try to run Orc with these options
 		try {	

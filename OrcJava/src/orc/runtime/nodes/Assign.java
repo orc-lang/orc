@@ -3,9 +3,7 @@
  */
 package orc.runtime.nodes;
 
-import orc.ast.simple.arg.Var;
 import orc.runtime.Token;
-import orc.runtime.values.Value;
 
 /**
  * Compiled node for assignment. 
@@ -26,7 +24,7 @@ public class Assign extends Node {
 	 * @see orc.runtime.nodes.Node#process(orc.runtime.Token)
 	 */
 	public void process(Token t) {
-		Value val = t.getResult();
+		Object val = t.getResult();
 		t.bind(val);
 		t.move(next).activate();
 	}

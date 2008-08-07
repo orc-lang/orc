@@ -4,9 +4,6 @@ import java.util.Set;
 
 import orc.ast.oil.Visitor;
 import orc.env.Env;
-import orc.runtime.nodes.Node;
-import orc.runtime.values.Future;
-import orc.runtime.values.Value;
 
 
 /**
@@ -28,7 +25,7 @@ public class Var extends Arg {
 	}
 
 	@Override
-	public Future resolve(Env<Future> env) {
+	public Object resolve(Env<Object> env) {
 		return env.lookup(this.index);
 	}
 

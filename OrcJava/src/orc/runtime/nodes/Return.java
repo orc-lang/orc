@@ -4,7 +4,6 @@
 package orc.runtime.nodes;
 
 import orc.runtime.Token;
-import orc.runtime.values.Value;
 
 /**
  * Compiled node marking the end of a procedure
@@ -26,7 +25,7 @@ public class Return extends Node {
 			engine.debug("Return " + t.getResult(), t);
 		*/
 		Token caller = t.getCaller();
-		Value result = t.getResult();
+		Object result = t.getResult();
 
 		caller.copy().setResult(result).activate();
 		t.die();

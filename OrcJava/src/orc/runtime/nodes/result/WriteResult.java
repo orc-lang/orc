@@ -3,8 +3,6 @@ package orc.runtime.nodes.result;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 
-import orc.runtime.values.Value;
-
 /**
  * A special node that writes its output values on the given ObjectOutputStream.
  * Equivalent to (where F is the output file)
@@ -22,7 +20,7 @@ public class WriteResult extends Result {
 	}
 	
 	@Override
-	public void emit(Value v) {
+	public void emit(Object v) {
 		try {
 			out.writeObject(v);
 		} catch (IOException e) {

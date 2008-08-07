@@ -12,7 +12,6 @@ import orc.runtime.Token;
 import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.Site;
-import orc.runtime.values.Value;
 
 /**
  * @author dkitchin
@@ -28,7 +27,7 @@ public class Cell extends EvalSite {
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
 	 */
 	@Override
-	public Value evaluate(Args args) {
+	public Object evaluate(Args args) {
 		return new CellInstance();
 	}
 	
@@ -36,7 +35,7 @@ public class Cell extends EvalSite {
 	protected class CellInstance extends DotSite {
 
 		private Queue<Token> readQueue;
-		Value contents;
+		Object contents;
 
 		CellInstance() {
 			this.contents = null;
@@ -78,7 +77,7 @@ public class Cell extends EvalSite {
 			@Override
 			public void callSite(Args args, Token writer) throws TokenException {
 
-				Value val = args.valArg(0);
+				Object val = args.getArg(0);
 				
 				/* If the read queue is not null, the cell has not yet been set. */
 				if (readQueue != null) {

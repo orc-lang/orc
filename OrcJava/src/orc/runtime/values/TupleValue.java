@@ -15,28 +15,28 @@ import orc.runtime.sites.EvalSite;
  * A tuple value container
  * @author wcook, quark
  */
-public class TupleValue extends EvalSite implements Iterable<Value> {
-	Value[] values;
+public class TupleValue extends EvalSite implements Iterable<Object> {
+	Object[] values;
 	public TupleValue() {
-		this.values = new Value[0];
+		this.values = new Object[0];
 	}
-	public TupleValue(Value v) {
-		this.values = new Value[1];
+	public TupleValue(Object v) {
+		this.values = new Object[1];
 		this.values[0] = v;
 	}
-	public TupleValue(Value v, Value w) {
-		this.values = new Value[2];
+	public TupleValue(Object v, Object w) {
+		this.values = new Object[2];
 		this.values[0] = v;
 		this.values[1] = w;
 	}
-	public TupleValue(List<Value> values) {
-		this.values = new Value[values.size()];
+	public TupleValue(List<Object> values) {
+		this.values = new Object[values.size()];
 		this.values = values.toArray(this.values);
 	}
-	public TupleValue(Value[] values) {
+	public TupleValue(Object[] values) {
 		this.values = values;
 	}
-	public Value evaluate(Args args) throws TokenException	{
+	public Object evaluate(Args args) throws TokenException	{
 		// TODO: Generalize this treatment of dot sites.
 		try { 
 			String s = args.fieldName();
@@ -54,12 +54,12 @@ public class TupleValue extends EvalSite implements Iterable<Value> {
 		public FitSite(int size) {
 			this.size = size;
 		}
-		public Value evaluate(Args args) throws TokenException {
-			return new Constant(args.intArg(0) == this.size);
+		public Object evaluate(Args args) throws TokenException {
+			return args.intArg(0) == this.size;
 		}
 	}
 	
-	public Value at(int i) {
+	public Object at(int i) {
 		return values[i];
 	}
 	
@@ -81,10 +81,10 @@ public class TupleValue extends EvalSite implements Iterable<Value> {
 		buf.append(right);
 		return buf.toString();
 	}
-	public List<Value> asList() {
+	public List<Object> asList() {
 		return Arrays.asList(values);
 	}
-	public Iterator<Value> iterator() {
+	public Iterator<Object> iterator() {
 		return asList().iterator();
 	}
 	@Override

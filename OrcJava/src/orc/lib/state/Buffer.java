@@ -11,7 +11,6 @@ import orc.runtime.Token;
 import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.Site;
-import orc.runtime.values.Value;
 
 /**
  * @author cawellington, dkitchin
@@ -25,18 +24,18 @@ public class Buffer extends EvalSite {
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
 	 */
 	@Override
-	public Value evaluate(Args args) {
+	public Object evaluate(Args args) {
 		return new BufferInstance();
 	}
 	
 	
 	protected class BufferInstance extends DotSite {
 
-		private LinkedList<Value> localBuffer;
+		private LinkedList<Object> localBuffer;
 		private LinkedList<Token> pendingQueue;
 
 		BufferInstance() {
-			localBuffer = new LinkedList<Value>();
+			localBuffer = new LinkedList<Object>();
 			pendingQueue = new LinkedList<Token>();
 		}
 		
@@ -66,7 +65,7 @@ public class Buffer extends EvalSite {
 			@Override
 			public void callSite(Args args, Token sender) throws TokenException {
 
-				Value item = args.valArg(0);
+				Object item = args.getArg(0);
 				
 				// If there are no waiting callers, buffer this item.
 				if (pendingQueue.isEmpty()) {

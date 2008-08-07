@@ -19,7 +19,7 @@ public abstract class ThreadedSite extends Site {
 				Kilim.runThreaded(new Runnable() {
 					public void run() {
 						try {
-							Value out = evaluate(args);
+							Object out = evaluate(args);
 							if (out == null) caller.die();
 							else caller.resume(out);
 						} catch (TokenException e) {
@@ -30,5 +30,5 @@ public abstract class ThreadedSite extends Site {
 			}
 		}.start();
 	}
-	abstract public Value evaluate(Args args) throws TokenException;
+	abstract public Object evaluate(Args args) throws TokenException;
 }

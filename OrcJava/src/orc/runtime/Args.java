@@ -3,6 +3,8 @@ package orc.runtime;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import orc.error.OrcError;
@@ -10,8 +12,10 @@ import orc.error.runtime.ArgumentTypeMismatchException;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.InsufficientArgsException;
 import orc.error.runtime.TokenException;
-import orc.runtime.values.Constant;
 import orc.runtime.values.Field;
+import orc.runtime.values.LazyListValue;
+import orc.runtime.values.ListLike;
+import orc.runtime.values.NilValue;
 import orc.runtime.values.TupleValue;
 import orc.runtime.values.Value;
 
@@ -24,10 +28,10 @@ import orc.runtime.values.Value;
  */
 
 public class Args implements Serializable {
-	Value[] values;
+	Object[] values;
 	
-	public Args(List<Value> values) {
-		this.values = new Value[values.size()];
+	public Args(List<Object> values) {
+		this.values = new Object[values.size()];
 		this.values = values.toArray(this.values);
 	}
 	
@@ -44,7 +48,7 @@ public class Args implements Serializable {
 	 * Two or more arguments: return a tuple of values
 	 * 
 	 */
-	public Value condense() {
+	public Object condense() {
 		if (values.length == 0) {
 			return Value.signal();
 		} else if (values.length == 1) {
@@ -56,15 +60,17 @@ public class Args implements Serializable {
 	
 	/**
 	 * Helper function to retrieve the nth value (starting from 0), with error
-	 * checking
+	 * checking.
+	 * @deprecated
 	 */
 	public Value valArg(int n) throws TokenException {
+		Object a = getArg(n);
+		if (a == null) throw new ArgumentTypeMismatchException(n, "Value", "null");
 		try {
-			return values[n];
-		} catch (ArrayIndexOutOfBoundsException e) {
-			//throw new TokenException("Arity mismatch calling site. Could not find argument #" + n);
-			throw new InsufficientArgsException(n, values.length);
-		}
+			return (Value)a;
+		} catch (ClassCastException e) {
+			throw new ArgumentTypeMismatchException(n, "Value", a.getClass().toString());
+		} 
 	}
 	
 	public String fieldName() throws TokenException {
@@ -72,7 +78,8 @@ public class Args implements Serializable {
 			//throw new TokenException("Arity mismatch resolving field reference.");
 			throw new ArityMismatchException(1, values.length);
 		}
-		Value v = values[0];
+		Object v = values[0];
+		if (v == null) throw new ArgumentTypeMismatchException(0, "message", "null");
 		if (v instanceof Field) {
 			return ((Field)v).getKey();
 		} else {
@@ -87,35 +94,20 @@ public class Args implements Serializable {
 	 * 
 	 * @throws TokenException
 	 */
-	public Object getArg(int n) throws TokenException
-	{
-		Value a;
-		
+	public Object getArg(int n) throws TokenException {
 		try {
-			a = values[n];
-		}
-		catch (ArrayIndexOutOfBoundsException e) {
-			//throw new TokenException("Arity mismatch calling site. Could not find argument #" + n);
+			return values[n];
+		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new InsufficientArgsException(n, values.length);
 		}
-		
-		try {
-			return ((Constant)a).getValue();
-		}
-		catch (ClassCastException e) {
-			//throw new TokenException("Argument " + n + " to site is not a native Java value");
-			throw new ArgumentTypeMismatchException(n, "native Java value", a.getClass().toString());
-		} 
 	}
 	
-	/* Return the entire tuple as an object array */
+	/**
+	 * Return the entire tuple as an object array.
+	 * Please don't mutate the array.
+	 */
 	public Object[] asArray() throws TokenException {
-		int n = values.length;
-		Object[] a = new Object[n];
-		for (int i=0; i<n; i++) { 
-			a[i] = getArg(i);
-		}
-		return a;
+		return values;
 	}
 		
 	/**
@@ -123,8 +115,8 @@ public class Args implements Serializable {
 	 * @throws TokenException 
 	 */
 	public int intArg(int n) throws TokenException {
-		
 		Object a = getArg(n);
+		if (a == null) throw new ArgumentTypeMismatchException(n, "int", "null");
 		try
 			{ return ((Number)a).intValue(); }
 		catch (ClassCastException e) { 
@@ -138,8 +130,8 @@ public class Args implements Serializable {
 	 * @throws TokenException 
 	 */
 	public long longArg(int n) throws TokenException {
-		
 		Object a = getArg(n);
+		if (a == null) throw new ArgumentTypeMismatchException(n, "long", "null");
 		try
 			{ return ((Number)a).longValue(); }
 		catch (ClassCastException e) {
@@ -150,6 +142,7 @@ public class Args implements Serializable {
 
 	public Number numberArg(int n) throws TokenException {
 		Object a = getArg(n);
+		if (a == null) throw new ArgumentTypeMismatchException(n, "Number", "null");
 		try
 			{ return (Number)a; }
 		catch (ClassCastException e) {
@@ -162,12 +155,12 @@ public class Args implements Serializable {
 	 * @throws TokenException 
 	 */
 	public boolean boolArg(int n) throws TokenException {
-		
 		Object a = getArg(n);
+		if (a == null) throw new ArgumentTypeMismatchException(n, "boolean", "null");
 		try
 			{ return ((Boolean)a).booleanValue(); }
 		catch (ClassCastException e) {
-			throw new ArgumentTypeMismatchException(n, "bool", a.getClass().toString());
+			throw new ArgumentTypeMismatchException(n, "boolean", a.getClass().toString());
 		}
 			//{ throw new TokenException("Argument " + n + " to site '" + this.toString() + "' should be a boolean, got " + a.getClass().toString() + " instead."); } 
 	
@@ -182,6 +175,7 @@ public class Args implements Serializable {
 	 */
 	public String stringArg(int n) throws TokenException {
 		Object a = getArg(n);
+		if (a == null) throw new ArgumentTypeMismatchException(n, "String", "null");
 		try {
 			return (String)a;
 		} catch (ClassCastException e) {
@@ -189,6 +183,68 @@ public class Args implements Serializable {
 		}
 	}
 	
+	/**
+	 * ListValue view for iterators. Because iterators are not cloneable and are
+	 * mutable, we have to cache the head and tail.
+	 * 
+	 * @author quark
+	 */
+	private static class IteratorListValue extends LazyListValue {
+		private Iterator iterator;
+
+		private TupleValue cons = null;
+
+		private boolean forced = false;
+
+		public IteratorListValue(Iterator iterator) {
+			this.iterator = iterator;
+		}
+
+		private void force() {
+			if (forced)
+				return;
+			forced = true;
+			if (iterator.hasNext()) {
+				cons = new TupleValue(iterator.next(), new IteratorListValue(
+						iterator));
+			}
+		}
+
+		@Override
+		public void uncons(Token caller) {
+			force();
+			if (cons == null)
+				caller.die();
+			else
+				caller.resume(cons);
+		}
+
+		@Override
+		public void unnil(Token caller) {
+			force();
+			if (cons == null)
+				caller.resume(new NilValue());
+			else
+				caller.die();
+		}
+	}
+
+	public ListLike listLikeArg(int n) throws TokenException {
+		Object a = getArg(n);
+		if (a == null) {
+			throw new ArgumentTypeMismatchException(n, "ListLike", "null");
+		} else if (a instanceof ListLike) {
+			return (ListLike) a;
+		} else if (a instanceof Iterable) {
+			Iterator it = ((Iterable) a).iterator();
+			return new IteratorListValue(it);
+		} else if (a instanceof Object[]) {
+			Iterator it = Arrays.asList((Object[]) a).iterator();
+			return new IteratorListValue(it);
+		} else {
+			throw new ArgumentTypeMismatchException(n, "ListLike", a.getClass().toString());
+		}
+	}
 	
 	/** A unary operator on numbers */
 	public interface NumericUnaryOperator<T> {

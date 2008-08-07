@@ -5,17 +5,16 @@ import java.util.concurrent.BlockingQueue;
 import orc.env.Env;
 import orc.runtime.OrcEngine;
 import orc.runtime.nodes.Node;
-import orc.runtime.values.Value;
 
 public class OrcInstance implements Runnable {
 	
 	OrcEngine engine;
 	Node root;
 	Env env;
-	BlockingQueue<Value> q;
+	BlockingQueue<Object> q;
 	boolean running = false;
 	
-	public OrcInstance(OrcEngine engine, Node root, Env env, BlockingQueue<Value> q) {
+	public OrcInstance(OrcEngine engine, Node root, Env env, BlockingQueue<Object> q) {
 		this.engine = engine;
 		this.root = root;
 		this.env = env;
@@ -28,7 +27,7 @@ public class OrcInstance implements Runnable {
 		running = false;
 	}
 	
-	public BlockingQueue<Value> pubs() { 
+	public BlockingQueue<Object> pubs() { 
 		return q; 
 	}
 	

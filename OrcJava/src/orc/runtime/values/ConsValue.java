@@ -2,16 +2,15 @@ package orc.runtime.values;
 
 import java.util.List;
 
-import orc.error.runtime.TokenException;
 import orc.runtime.Token;
 
 public class ConsValue extends ListValue {
 
-	private Value h;
+	private Object h;
 	private ListValue t;
 	
 	
-	public ConsValue(Value h, ListValue t) {
+	public ConsValue(Object h, ListValue t) {
 		this.h = h;
 		this.t = t;
 	}
@@ -31,8 +30,8 @@ public class ConsValue extends ListValue {
 	}
 
 	@Override
-	public List<Value> enlist() {
-		List<Value> tl = t.enlist();
+	public List<Object> enlist() {
+		List<Object> tl = t.enlist();
 		tl.add(0,h);
 		return tl;
 	}

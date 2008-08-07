@@ -11,7 +11,8 @@ import orc.runtime.values.Constant;
 import orc.runtime.values.Value;
 
 public class Div extends EvalSite {
-	private static class MyOperator implements NumericBinaryOperator<Number> {
+	private static final MyOperator op = new MyOperator();
+	private static final class MyOperator implements NumericBinaryOperator<Number> {
 		public Number apply(BigInteger a, BigInteger b) {
 			return a.divide(b);
 		}
@@ -38,9 +39,9 @@ public class Div extends EvalSite {
 		}
 	}
 	@Override
-	public Value evaluate(Args args) throws TokenException {
-		return new Constant(Args.applyNumericOperator(
+	public Object evaluate(Args args) throws TokenException {
+		return Args.applyNumericOperator(
 				args.numberArg(0), args.numberArg(1),
-				new MyOperator()));
+				op);
 	}
 }

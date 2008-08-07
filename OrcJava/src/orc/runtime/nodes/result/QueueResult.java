@@ -2,8 +2,6 @@ package orc.runtime.nodes.result;
 
 import java.util.concurrent.BlockingQueue;
 
-import orc.runtime.values.Value;
-
 /**
  * A special node that adds its output values to the given value queue.
  * Equivalent to (where Q is the output channel):
@@ -14,14 +12,14 @@ import orc.runtime.values.Value;
  */
 public class QueueResult extends Result {
 
-	BlockingQueue<Value> q;
+	BlockingQueue<Object> q;
 	
-	public QueueResult(BlockingQueue<Value> q) {
+	public QueueResult(BlockingQueue<Object> q) {
 		this.q = q;
 	}
 	
 	@Override
-	public void emit(Value v) {
+	public void emit(Object v) {
 		q.add(v);
 	}
 

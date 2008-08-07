@@ -11,21 +11,15 @@ import orc.runtime.values.Value;
 
 /**
  * @author dkitchin
- *
  */
 public class IsSome extends Site {
-
 	@Override
 	public void callSite(Args args, Token caller) throws TokenException {
-		
-		Value v = args.valArg(0);
-		
-		if (v.isSome()) {
-			caller.resume(v.untag());
-		}
-		else {
+		Object v = args.getArg(0);
+		if (v instanceof Value && ((Value)v).isSome()) {
+			caller.resume(((Value)v).untag());
+		} else {
 			caller.die();
 		}
 	}
-
 }

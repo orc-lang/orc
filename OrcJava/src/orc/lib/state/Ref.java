@@ -12,7 +12,6 @@ import orc.runtime.Token;
 import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.Site;
-import orc.runtime.values.Value;
 
 /**
  * @author dkitchin
@@ -29,7 +28,7 @@ public class Ref extends EvalSite {
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
 	 */
 	@Override
-	public Value evaluate(Args args) {
+	public Object evaluate(Args args) {
 		
 		// If we were passed arguments, condense those arguments and store them in the ref as an initial value
 		if (args.size() > 0) {
@@ -45,7 +44,7 @@ public class Ref extends EvalSite {
 	protected class RefInstance extends DotSite {
 
 		private Queue<Token> readQueue;
-		Value contents;
+		Object contents;
 
 		RefInstance() {
 			this.contents = null;
@@ -63,7 +62,7 @@ public class Ref extends EvalSite {
 		/* Create the reference with an initial value already assigned.
 		 * In this case, we don't need a reader queue.
 		 */
-		RefInstance(Value initial) {
+		RefInstance(Object initial) {
 			this.contents = initial;
 			this.readQueue = null;
 		}
@@ -95,7 +94,7 @@ public class Ref extends EvalSite {
 			@Override
 			public void callSite(Args args, Token writer) throws TokenException {
 
-				Value val = args.valArg(0);
+				Object val = args.getArg(0);
 				
 				/* Set the contents of the ref */
 				contents = val;

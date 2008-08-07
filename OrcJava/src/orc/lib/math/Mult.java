@@ -7,11 +7,10 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Args.NumericBinaryOperator;
 import orc.runtime.sites.EvalSite;
-import orc.runtime.values.Constant;
-import orc.runtime.values.Value;
 
 public class Mult extends EvalSite {
-	private static class MyOperator implements NumericBinaryOperator<Number> {
+	private static final MyOperator op = new MyOperator();
+	private static final class MyOperator implements NumericBinaryOperator<Number> {
 		public Number apply(BigInteger a, BigInteger b) {
 			return a.multiply(b);
 		}
@@ -38,9 +37,9 @@ public class Mult extends EvalSite {
 		}
 	}
 	@Override
-	public Value evaluate(Args args) throws TokenException {
-		return new Constant(Args.applyNumericOperator(
+	public Object evaluate(Args args) throws TokenException {
+		return Args.applyNumericOperator(
 				args.numberArg(0), args.numberArg(1),
-				new MyOperator()));
+				op);
 	}
 }

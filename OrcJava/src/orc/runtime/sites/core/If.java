@@ -15,7 +15,7 @@ import orc.runtime.values.Value;
 public class If extends PartialSite {
 
 	@Override
-	public Value evaluate(Args args) throws TokenException {
+	public Object evaluate(Args args) throws TokenException {
 		if (args.boolArg(0)) 
 			return Value.signal();
 		else

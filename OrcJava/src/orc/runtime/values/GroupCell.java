@@ -4,10 +4,11 @@
 package orc.runtime.values;
 
 import java.io.Serializable;
-import java.util.LinkedList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
+import orc.error.runtime.UncallableValueException;
 import orc.runtime.Token;
 import orc.runtime.regions.GroupRegion;
 
@@ -22,7 +23,7 @@ import orc.runtime.regions.GroupRegion;
 public class GroupCell implements Serializable, Future {
 
 	private static final long serialVersionUID = 1L;
-	Value value;
+	Object value;
 	boolean bound;
 	boolean alive;
 	List<Token> waitList;
@@ -58,7 +59,7 @@ public class GroupCell implements Serializable, Future {
 	 * and all waiting tokens are activated.
 	 * @param value 	the value for the group 
 	 */
-	public void setValue(Value value) {
+	public void setValue(Object value) {
 		this.value = value;
 		bound = true;
 		kill();
@@ -109,29 +110,21 @@ public class GroupCell implements Serializable, Future {
 		}
 	}
 
-	public Value forceArg(Token t) {
-		
-		if (bound)
-		{
-			return value.forceArg(t);
-		}
-		else
-		{
+	public Object forceArg(Token t) {
+		if (bound) {
+			return Value.forceArg(value, t);
+		} else {
 			waitForValue(t);
-			return null;
+			return Value.futureNotReady;
 		}
 	}
 	
-	public Callable forceCall(Token t) {
-		
-		if (bound)
-		{
-			return value.forceCall(t);
-		}
-		else
-		{
+	public Callable forceCall(Token t) throws UncallableValueException {
+		if (bound) {
+			return Value.forceCall(value, t);
+		} else {
 			waitForValue(t);
-			return null;
+			return Value.futureNotReady;
 		}
 	}
 	

@@ -3,20 +3,17 @@
  */
 package orc.runtime;
 
-import java.io.*;
-//import java.io.ObjectOutputStream;
-//import java.nio.channels.FileLock;
+import java.io.Serializable;
+
 import orc.ast.oil.arg.Arg;
-import orc.ast.simple.arg.Argument;
-import orc.ast.simple.arg.Var;
 import orc.env.Env;
-import orc.error.OrcException;
 import orc.error.SourceLocation;
 import orc.error.runtime.TokenException;
 import orc.error.runtime.UncallableValueException;
 import orc.runtime.nodes.Node;
 import orc.runtime.regions.Execution;
 import orc.runtime.regions.Region;
+import orc.runtime.sites.java.ObjectProxy;
 import orc.runtime.values.Callable;
 import orc.runtime.values.Future;
 import orc.runtime.values.GroupCell;
@@ -33,7 +30,7 @@ import orc.runtime.values.Value;
 public class Token implements Serializable, Comparable<Token> {
 	private static final long serialVersionUID = 1L;
 	protected Node node;	
-	protected Env<Future> env;
+	protected Env<Object> env;
 	protected GroupCell group;
 	protected Region region;
 	protected OrcEngine engine;
@@ -47,10 +44,10 @@ public class Token implements Serializable, Comparable<Token> {
 	 */
 	private SourceLocation location;
 	Token caller;
-	Value result;
+	Object result;
 	boolean alive;
 	
-	public Token(Node node, Env<Future> env, Token caller, GroupCell group, Region region, Value result, OrcEngine engine) {
+	public Token(Node node, Env<Object> env, Token caller, GroupCell group, Region region, Object result, OrcEngine engine) {
 		this.node = node;
 		this.env = env;
 		this.caller = caller;
@@ -62,7 +59,7 @@ public class Token implements Serializable, Comparable<Token> {
 		region.add(this);
 	}
 	
-	public Token(Node node, Env<Future> env, Execution exec) {
+	public Token(Node node, Env<Object> env, Execution exec) {
 		this(node, env, null, new GroupCell(), exec, null, exec.getEngine());		
 	}
 	
@@ -103,11 +100,11 @@ public class Token implements Serializable, Comparable<Token> {
 		return group;
 	}
 	
-	public Env<Future> getEnvironment() {
+	public Env<Object> getEnvironment() {
 		return env;
 	}
 
-	public Value getResult() {
+	public Object getResult() {
 		return result;
 	}
 
@@ -125,7 +122,7 @@ public class Token implements Serializable, Comparable<Token> {
 
 	
 	
-	public Token setResult(Value result) {
+	public Token setResult(Object result) {
 		this.result = result;
 		return this;
 	}
@@ -146,7 +143,7 @@ public class Token implements Serializable, Comparable<Token> {
 		return this;
 	}
 	
-	public Token setEnv(Env<Future> e) {
+	public Token setEnv(Env<Object> e) {
 		this.env = e;
 		return this;
 	}
@@ -169,7 +166,7 @@ public class Token implements Serializable, Comparable<Token> {
 	 * but executing at a new point in the graph with a different environment.
 	 * Set the new caller's token to the token provided.
 	 */
-	public Token callcopy(Node node, Env<Future> env, Token returnToken) {
+	public Token callcopy(Node node, Env<Object> env, Token returnToken) {
 		return new Token(node, env, returnToken, group, region, null, engine);
 	}
 
@@ -186,7 +183,7 @@ public class Token implements Serializable, Comparable<Token> {
 	 * @param f		future to push
 	 * @return		self
 	 */
-	public Token bind(Future f) {
+	public Token bind(Object f) {
 		env = env.add(f);
 		return this;
 	}
@@ -206,22 +203,9 @@ public class Token implements Serializable, Comparable<Token> {
 	 * @param var variable name
 	 * @return value, or an error if the variable is undefined
 	 */
-	public Future lookup(Arg a) {
+	public Object lookup(Arg a) {
 		return a.resolve(env);		
 	}
-
-	public Callable call(Arg a) throws UncallableValueException {
-		Future f = this.lookup(a);
-		return f.forceCall(this);
-	}
-	
-	public Value arg(Arg a) {
-		Future f = this.lookup(a);
-		return f.forceArg(this);
-	}
-	
-	
-	
 	
 	/* TODO: replace this stub with a meaningful order on tokens */
 	public int compareTo(Token t) {
@@ -240,7 +224,7 @@ public class Token implements Serializable, Comparable<Token> {
 		engine.activate(this);
 	}
 	
-	public void activate(Value v)
+	public void activate(Object v)
 	{
 		setResult(v);
 		activate();
@@ -250,9 +234,9 @@ public class Token implements Serializable, Comparable<Token> {
 	 * TODO: Introduce priority on tokens, or an 'isImmediate' predicate on sites,
 	 * so that let and 'immediate' sites have priority over other site returns.
 	 */
-	public void resume(Value v)
+	public void resume(Object object)
 	{
-		this.result = v;
+		this.result = object;
 		engine.resume(this);
 	}
 	

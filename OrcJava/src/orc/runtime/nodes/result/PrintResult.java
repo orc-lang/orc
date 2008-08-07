@@ -1,7 +1,5 @@
 package orc.runtime.nodes.result;
 
-import orc.runtime.values.Value;
-
 /**
  * A special node that prints its output.
  * Equivalent to
@@ -13,7 +11,7 @@ import orc.runtime.values.Value;
 public class PrintResult extends Result {
 
 	@Override
-	public void emit(Value v) {
+	public void emit(Object v) {
 		System.out.println(v.toString());
 		System.out.flush();
 	}

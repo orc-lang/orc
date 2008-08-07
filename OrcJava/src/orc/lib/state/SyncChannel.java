@@ -11,8 +11,6 @@ import orc.runtime.Token;
 import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.Site;
-import orc.runtime.values.Constant;
-import orc.runtime.values.Value;
 
 /**
  * @author dkitchin
@@ -26,7 +24,7 @@ public class SyncChannel extends EvalSite {
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
 	 */
 	@Override
-	public Value evaluate(Args args) {
+	public Object evaluate(Args args) {
 		return new SyncChannelInstance();
 	}
 	
@@ -34,9 +32,9 @@ public class SyncChannel extends EvalSite {
 	private class SenderItem {
 		
 		Token sender;
-		Value sent;
+		Object sent;
 		
-		SenderItem(Token sender, Value sent)
+		SenderItem(Token sender, Object sent)
 		{
 			this.sender = sender;
 			this.sent = sent;
@@ -72,9 +70,9 @@ public class SyncChannel extends EvalSite {
 				else {
 					SenderItem si = senderQueue.removeFirst();
 					Token sender = si.sender;
-					Value item = si.sent;
+					Object item = si.sent;
 					
-					receiver.resume(new Constant(item));
+					receiver.resume(item);
 					sender.resume();
 				}
 
@@ -85,7 +83,7 @@ public class SyncChannel extends EvalSite {
 			@Override
 			public void callSite(Args args, Token sender) throws TokenException {
 
-				Value item = args.valArg(0);
+				Object item = args.getArg(0);
 				
 				// If there are no waiting receivers, put this sender on the queue
 				if (receiverQueue.isEmpty()) {
@@ -96,7 +94,7 @@ public class SyncChannel extends EvalSite {
 				else {
 					Token receiver = receiverQueue.removeFirst();
 					
-					receiver.resume(new Constant(item));
+					receiver.resume(item);
 					sender.resume();
 				}
 				
