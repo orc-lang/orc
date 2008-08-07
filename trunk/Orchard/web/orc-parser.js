@@ -131,7 +131,7 @@ function readWord(source, _, ch1) {
 	case "true": case "false":
 		return { type:"boolean", content:word, style:"literal" };
 	// keywords
-	case "val": case "def": case "at": case "include":
+	case "val": case "def": case "as": case "include":
 	case "site": case "class": case "null":
 		return { type:word, content:word, style:"keyword" };
 	default:
