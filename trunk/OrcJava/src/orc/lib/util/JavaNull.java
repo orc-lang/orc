@@ -1,18 +1,17 @@
-/**
- * 
- */
-package orc.runtime.sites.core;
+package orc.lib.util;
 
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 
 /**
- * @author dkitchin
+ * Access to Java's "null" value for use with Java
+ * objects being used as sites.
+ * @author quark
  */
-public class Not extends EvalSite {
+public class JavaNull extends EvalSite {
 	@Override
 	public Object evaluate(Args args) throws TokenException {
-		return !args.boolArg(0);
+		return null;
 	}
 }

@@ -6,7 +6,6 @@ package orc.lib.str;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
-import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.Site;
 import orc.runtime.values.Value;
 

@@ -16,12 +16,11 @@ public class Let extends Node {
 	
 	@Override
 	public void process(Token t) {
-		Value v = t.lookup(arg).forceArg(t);
+		Object v = Value.forceArg(t.lookup(arg), t);
 		
-		if (v == null) 
-			{ return; /* This token must wait for a variable to become bound */ }
-		else 
-			{ t.move(next); t.activate(v); }
+		if (v != Value.futureNotReady) {
+			t.move(next); t.activate(v);
+		}
 	}
 
 }

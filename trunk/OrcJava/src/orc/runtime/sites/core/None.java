@@ -6,8 +6,6 @@ package orc.runtime.sites.core;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.NoneValue;
-import orc.runtime.values.SomeValue;
-import orc.runtime.values.Value;
 
 /**
  * Implements the "none" option constructor site.
@@ -15,10 +13,8 @@ import orc.runtime.values.Value;
  * @author dkitchin
  */
 public class None extends EvalSite {
-
 	@Override
-	public Value evaluate(Args args) {
+	public Object evaluate(Args args) {
 		return new NoneValue();
 	}
-
 }

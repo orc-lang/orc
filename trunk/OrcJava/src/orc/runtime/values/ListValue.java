@@ -1,8 +1,9 @@
 package orc.runtime.values;
 
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
+
+import orc.runtime.Token;
 
 /**
  * Common ancestor for ConsValue and NilValue. Unlike scheme, the Cons
@@ -11,11 +12,11 @@ import java.util.List;
  * have a list structure. (If you want a degenerate cons, just use a
  * tuples.)
  */
-public abstract class ListValue extends Value implements Iterable { 
+public abstract class ListValue extends Value implements Iterable, ListLike { 
 	
-	public abstract List<Value> enlist();
+	public abstract List<Object> enlist();
 	
-	public static ListValue make(List<Value> vs) {
+	public static ListValue make(List<Object> vs) {
 		
 		ListValue l = new NilValue();
 		
@@ -34,4 +35,7 @@ public abstract class ListValue extends Value implements Iterable {
 	public <E> E accept(Visitor<E> visitor) {
 		return visitor.visit(this);
 	}
+	
+	public abstract void uncons(Token caller);
+	public abstract void unnil(Token caller);
 }

@@ -20,7 +20,6 @@ import orc.runtime.Token;
 import orc.runtime.Kilim.PausableCallable;
 import orc.runtime.sites.Site;
 import orc.runtime.sites.java.ObjectProxy.Delegate;
-import orc.runtime.values.Constant;
 import orc.runtime.values.Value;
 
 
@@ -83,16 +82,16 @@ public class MethodProxy extends Site {
 	
     private static void invoke(Token caller, Method m, Object that, Object[] args) {
 		try {
-    		caller.resume(wrapObject(m, m.invoke(that, args)));
+    		caller.resume(wrapResult(m, m.invoke(that, args)));
 		} catch (Exception e) {
 			caller.error(new JavaException(e));
 		}
     }
     
-    private static Value wrapObject(Method m, Object o) {
+    private static Object wrapResult(Method m, Object o) {
         if (m.getReturnType().getName().equals("void"))
         	return Value.signal();
-        else return new Constant(o);
+        else return o;
     }
     
     private static void invokePausable(Token caller,
@@ -113,10 +112,10 @@ public class MethodProxy extends Site {
         for (int i = 0; i < args.length; ++i) pargs[i] = args[i];
         
         // Invoke the method inside a task
-        Kilim.runPausable(caller, new PausableCallable<Value>() {
-        	public Value call() throws Pausable, Exception {
+        Kilim.runPausable(caller, new PausableCallable<Object>() {
+        	public Object call() throws Pausable, Exception {
         		try {
-	                return wrapObject(pm, _invokePausable(pm, that, pargs));
+	                return wrapResult(pm, _invokePausable(pm, that, pargs));
         		} catch (InvocationTargetException e) {
         			// attempt to unwrap a reflected exception
         			Throwable cause = e.getCause();

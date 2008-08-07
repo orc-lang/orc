@@ -1,11 +1,7 @@
 package orc.ast.oil.arg;
 
-import java.util.Set;
-
 import orc.ast.oil.Visitor;
 import orc.env.Env;
-import orc.runtime.values.Future;
-import orc.runtime.values.Value;
 
 
 /**
@@ -23,7 +19,7 @@ public class Field extends Arg {
 		this.key = key;
 	}
 	
-	public Future resolve(Env env) {
+	public Object resolve(Env env) {
 		return new orc.runtime.values.Field(key);
 	}
 	

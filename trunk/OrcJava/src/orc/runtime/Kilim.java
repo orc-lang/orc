@@ -16,7 +16,6 @@ import kilim.Semaphore;
 import kilim.Task;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
-import orc.runtime.values.Value;
 
 /**
  * Utility methods for 
@@ -29,7 +28,7 @@ public class Kilim {
 	 * The scheduler for the current Orc engine.
 	 * The box is necessary because values are "inherited" by
 	 * copying, and we need to "inherit" the value before it
-	 * is set.
+	 * is actually set.
 	 */
 	static InheritableThreadLocal<Box<Scheduler>> scheduler =
 		new InheritableThreadLocal<Box<Scheduler>>();
@@ -98,7 +97,8 @@ public class Kilim {
 	
 	/**
 	 * Used for {@link #runThreaded(Callable)} threads, to prevent
-	 * thread resource exhaustion.
+	 * thread resource exhaustion. This uses a box for the same
+	 * reason as {@link #scheduler}.
 	 */
 	static InheritableThreadLocal<Box<BoundedThreadPool>> pool =
 		new InheritableThreadLocal<Box<BoundedThreadPool>>();
@@ -111,6 +111,10 @@ public class Kilim {
 		Box<BoundedThreadPool> _pool = new Box<BoundedThreadPool>();
 		scheduler.set(_scheduler);
 		pool.set(_pool);
+		// both of these will start a bunch of threads
+		// when we construct them; using a box allows
+		// those threads to see the very objects which
+		// created them
 		_scheduler.value = new Scheduler(kilimThreads);
 		_pool.value = new BoundedThreadPool(siteThreads);
 	}
@@ -127,7 +131,7 @@ public class Kilim {
 	
 	/**
 	 * Kilim mailboxes can't accomodate null values, so this
-	 * acts as a basic signal or unit value.
+	 * acts as a basic signal or unit value when necessary.
 	 */
 	public static final Object signal = new Object();
 	
@@ -230,7 +234,7 @@ public class Kilim {
 	 * @param caller token to return the value to
 	 * @param thunk computation returning a value
 	 */
-	public static void runPausable(final Token caller, final PausableCallable<? extends Value> thunk) {
+	public static void runPausable(final Token caller, final PausableCallable<? extends Object> thunk) {
 		// In order to deal with both regular and irregular exits,
 		// we have to set up a monitor task which spawns a child
 		// task, monitors its exit value, and then does something
@@ -239,7 +243,7 @@ public class Kilim {
 			public void execute() throws Pausable {
 				// distinguished value which signals that a value
 				// was returned normally
-				final Box<Value> box = new Box<Value>();
+				final Box<Object> box = new Box<Object>();
         		// start evaluating the site
         		final Mailbox<ExitMsg> exit = new Mailbox<ExitMsg>();
         		Task task = new Task() {

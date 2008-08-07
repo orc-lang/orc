@@ -31,5 +31,5 @@ public abstract class ThreadedPartialSite extends Site {
 		}.start();
 	}
 
-	abstract public Value evaluate(Args args) throws TokenException;
+	abstract public Object evaluate(Args args) throws TokenException;
 }

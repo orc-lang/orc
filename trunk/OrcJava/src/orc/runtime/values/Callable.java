@@ -21,7 +21,5 @@ public interface Callable {
 	 * @param args		argument list
 	 * @param nextNode	next node after the call node, to which the result should be sent
 	 */
-	void createCall(Token caller, List<Future> args, Node nextNode) throws TokenException;
-
-
+	void createCall(Token caller, List<Object> args, Node nextNode) throws TokenException;
 }

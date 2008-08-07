@@ -4,10 +4,8 @@
 package orc.runtime.nodes;
 
 
-import orc.ast.simple.arg.Var;
 import orc.runtime.Token;
 import orc.runtime.values.GroupCell;
-import orc.runtime.values.Value;
 
 /**
  * Compiled node used to store the value of a binding in a where clause.
@@ -28,7 +26,7 @@ public class Store extends Node {
 			engine.debug("Store/Stop " + var + "=" + t.getResult(), t);
 		*/
 		GroupCell group = t.getGroup();
-		Value result = t.getResult();
+		Object result = t.getResult();
 		group.setValue(result);
 		t.die();
 	}

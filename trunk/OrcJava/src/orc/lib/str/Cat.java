@@ -15,15 +15,15 @@ import orc.runtime.values.*;
  */
 public class Cat extends EvalSite {
 
-	public Value evaluate(Args args) throws TokenException {
+	public Object evaluate(Args args) throws TokenException {
 		
 		StringBuffer buf = new StringBuffer();
 		
 		for(int i = 0; i < args.size(); i++)
 		{
-			buf.append(args.valArg(i).toString());
+			buf.append(String.valueOf(args.getArg(i)));
 		}
 		
-		return new Constant(buf.toString());
+		return buf.toString();
 	}
 }

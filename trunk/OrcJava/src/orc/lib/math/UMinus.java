@@ -10,15 +10,14 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Args.NumericUnaryOperator;
 import orc.runtime.sites.EvalSite;
-import orc.runtime.values.Constant;
-import orc.runtime.values.Value;
 
 /**
  * @author dkitchin
  *
  */
 public class UMinus extends EvalSite {
-	private static class MyOperator implements NumericUnaryOperator<Number> {
+	private static final MyOperator op = new MyOperator();
+	private static final class MyOperator implements NumericUnaryOperator<Number> {
 		public Number apply(BigInteger a) {
 			return a.negate();
 		}
@@ -45,8 +44,7 @@ public class UMinus extends EvalSite {
 		}
 	}
 	@Override
-	public Value evaluate(Args args) throws TokenException {
-		return new Constant(Args.applyNumericOperator(
-				args.numberArg(0), new MyOperator()));
+	public Object evaluate(Args args) throws TokenException {
+		return Args.applyNumericOperator(args.numberArg(0), op);
 	}
 }

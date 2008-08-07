@@ -27,7 +27,7 @@ public abstract class PartialSite extends Site {
 	@Override
 	public void callSite(Args args, Token caller) throws TokenException {
 		
-		Value v = evaluate(args);
+		Object v = evaluate(args);
 		if (v != null) {
 			caller.resume(v);
 		}
@@ -37,6 +37,6 @@ public abstract class PartialSite extends Site {
 		
 	}
 	
-	abstract public Value evaluate(Args args) throws TokenException;
+	abstract public Object evaluate(Args args) throws TokenException;
 
 }

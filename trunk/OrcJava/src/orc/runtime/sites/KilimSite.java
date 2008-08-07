@@ -3,13 +3,11 @@ package orc.runtime.sites;
 import kilim.Fiber;
 import kilim.Pausable;
 import kilim.Task;
-import orc.error.runtime.SiteException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Kilim;
 import orc.runtime.Token;
 import orc.runtime.Kilim.PausableCallable;
-import orc.runtime.values.Value;
 
 /**
  * Use <a href="http://kilim.malhar.net/">Kilim</a> to run a site with
@@ -31,16 +29,16 @@ public abstract class KilimSite extends Site {
 	@Override
 	public void callSite(final Args args, final Token caller)
 	throws TokenException {
-		Kilim.runPausable(caller, new PausableCallable<Value>() {
-			public Value call() throws Pausable, TokenException {
+		Kilim.runPausable(caller, new PausableCallable<Object>() {
+			public Object call() throws Pausable, TokenException {
 				return evaluate(args);
 			}
 		});
 	}
 	
-	public abstract Value evaluate(Args args) throws Pausable, TokenException;
+	public abstract Object evaluate(Args args) throws Pausable, TokenException;
 	/** FIXME: Kilim should add this method but it doesn't */
-	public Value evaluate(Args args, Fiber f) throws Pausable, TokenException {
+	public Object evaluate(Args args, Fiber f) throws Pausable, TokenException {
 		throw new AssertionError("Unwoven method "
 				+ this.getClass().toString()
 				+ "#call()");

@@ -6,7 +6,6 @@ package orc.runtime.sites;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
-import orc.runtime.values.Value;
 
 /**
  * Abstract class for sites with a total and immediate semantics: evaluate the arguments and
@@ -24,5 +23,5 @@ public abstract class EvalSite extends Site {
 	public void callSite(Args args, Token caller) throws TokenException {
 		caller.resume(evaluate(args));
 	}
-	public abstract Value evaluate(Args args) throws TokenException;
+	public abstract Object evaluate(Args args) throws TokenException;
 }

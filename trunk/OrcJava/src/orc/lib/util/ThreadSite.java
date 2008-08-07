@@ -9,7 +9,6 @@ import orc.runtime.Kilim;
 import orc.runtime.Token;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.Site;
-import orc.runtime.values.Value;
 
 /**
  * Wrap a site call in a (pooled) thread. This is useful if you have a Java
@@ -20,10 +19,10 @@ import orc.runtime.values.Value;
  */
 public class ThreadSite extends EvalSite {
 	@Override
-	public Value evaluate(Args args) throws TokenException {
+	public Object evaluate(Args args) throws TokenException {
 		Site thunk;
 		try {
-			thunk = (Site)args.valArg(0);
+			thunk = (Site)args.getArg(0);
 		} catch (ClassCastException e) {
 			throw new JavaException(e);
 		}

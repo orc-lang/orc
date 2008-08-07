@@ -2,6 +2,7 @@ package orc.runtime.values;
 
 import java.util.Set;
 
+import orc.error.runtime.UncallableValueException;
 import orc.runtime.Token;
 
 /**
@@ -17,35 +18,32 @@ import orc.runtime.Token;
 public class PartialValue implements Future {
 	
 	Value v;
-	Set<Future> freeset;
+	Set<Object> freeset;
 	
-	public PartialValue(Value v, Set<Future> freeset)
+	public PartialValue(Value v, Set<Object> freeset)
 	{
 		this.v = v;
 		this.freeset = freeset;
 	}
 
-	public Value forceArg(Token t) {
+	public Object forceArg(Token t) {
 		
 		// If there are unbound variables, try to force each one.
 		// Release the value only if all of the variables have been bound.
-		if (freeset != null)
-		{
-			for (Future f : freeset)
-			{
-				if (f.forceArg(t) == null)
-				{ return null; }
+		if (freeset != null) {
+			for (Object f : freeset) {
+				if (Value.forceArg(f, t) == Value.futureNotReady) {
+					return Value.futureNotReady;
+				}
 			}
 			freeset = null;
 		}
-		return v.forceArg(t);
+		return Value.forceArg(v, t);
 	}
 
-	public Callable forceCall(Token t) {
-		
+	public Callable forceCall(Token t) throws UncallableValueException {
 		// Don't need to force unbound variables for a value used in call position,
 		// since it can't leak variables in that case. Just force the underlying value.
-		return v.forceCall(t);
+		return Value.forceCall(v, t);
 	}
-	
 }

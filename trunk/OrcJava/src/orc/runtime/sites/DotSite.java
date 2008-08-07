@@ -3,13 +3,12 @@
  */
 package orc.runtime.sites;
 
-import java.util.TreeMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import orc.error.runtime.MessageNotUnderstoodException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
-import orc.runtime.values.Value;
 
 /**
  * @author dkitchin
@@ -20,11 +19,11 @@ import orc.runtime.values.Value;
  */
 public abstract class DotSite extends EvalSite {
 
-	Map<String,Value> methodMap;
+	Map<String,Object> methodMap;
 	
 	public DotSite()
 	{
-		methodMap = new TreeMap<String,Value>();
+		methodMap = new TreeMap<String,Object>();
 		this.addMethods();
 	}
 	
@@ -32,10 +31,10 @@ public abstract class DotSite extends EvalSite {
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
 	 */
 	@Override
-	public Value evaluate(Args args) throws TokenException {
+	public Object evaluate(Args args) throws TokenException {
 		
 		String f = args.fieldName();
-		Value m = getMethod(f);
+		Object m = getMethod(f);
 		
 		if (m != null)
 			{ return m; }
@@ -43,14 +42,14 @@ public abstract class DotSite extends EvalSite {
 			{ throw new MessageNotUnderstoodException(f); } 
 	}
 	
-	Value getMethod(String f) {
+	Object getMethod(String f) {
 		return methodMap.get(f);
 	}
 
 	// Subclasses implement this method with a sequence of addMethod calls.
 	protected abstract void addMethods();	
 	
-	protected void addMethod(String f, Value s) {
+	protected void addMethod(String f, Object s) {
 		methodMap.put(f, s);
 	}
 	

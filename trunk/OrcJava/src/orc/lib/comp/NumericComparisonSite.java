@@ -10,12 +10,9 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Args.NumericBinaryOperator;
 import orc.runtime.sites.EvalSite;
-import orc.runtime.values.Constant;
-import orc.runtime.values.Value;
 
 /**
- * @author dkitchin
- *
+ * @author quark
  */
 public abstract class NumericComparisonSite extends EvalSite {
 	private static class MyOperator implements NumericBinaryOperator<Integer> {
@@ -49,12 +46,12 @@ public abstract class NumericComparisonSite extends EvalSite {
 	 * @see orc.runtime.sites.EvalSite#evaluate(java.lang.Object[])
 	 */
 	@Override
-	public Value evaluate(Args args) throws TokenException{
+	public Object evaluate(Args args) throws TokenException{
 		int a = Args.applyNumericOperator(
 				args.numberArg(0), args.numberArg(1),
 				new MyOperator());
 		int b = 0;
-		return new Constant(compare(a, b));
+		return compare(a, b);
 	}
 
 	abstract public boolean compare(int a, int b);
