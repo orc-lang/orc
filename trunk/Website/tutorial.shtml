@@ -15,7 +15,7 @@
 	<li><a href="#Asymmetric_Combinator">Asymmetric Combinator</a></li>
 	</ul>
 <li><a href="#Functions">Functions</a>
-<li><a href="#Functional">Functional Programming</a>
+<li><a href="#Advanced">Advanced Techniques</a>
 <li><a href="#Conclusion">Conclusion</a>
 </li>
 </ul>
@@ -45,7 +45,7 @@ which is used to add numbers and concatenate strings:</p>
 operators, these are still considered sites like any other.</p>
 
 <a name="Combinators"></a><h2>Combinators <small>(<a href="#top">top</a>)</small></h2>
-<p>Orc has three basic combinators which are used to build concurrent expressions:</p>
+<p>Orc has three basic combinators, each to combine two expressions:</p>
 <ul>
 <li>Parallel, or bar, written <tt>|</tt></li>
 <li>Sequential, or push, written <tt>>></tt></li>
@@ -138,12 +138,15 @@ example like this:</p>
 val color = Prompt("Choose a color.")  
 "red" | ("light " + color) | "blue"</pre>
 
+<p>A variable introduced by a <tt>val</tt> declaration is scoped to the
+expression following the declaration.</p>
+
 <p>Site calls with expressions as arguments are just syntactic sugar for
-asymmetric composition. For example, these two expressions are equivalent:</p>
+asymmetric composition. For example, theae two expressions are equivalent:</p>
 
 <pre class="orc">
-  "3+4=" + (3 + 4)
-| ( "3+4=" + a ) &lt;a&lt; ( 3 + 4 )</pre>
+  1 + (2 + 3)
+| 1 + x &lt;x&lt; (2 + 3)</pre>
 
 <p></p>
 
@@ -187,39 +190,35 @@ def Metronome(i) =
 
 Metronome(0)</pre>
 
-<p>Function publications can be interleaved with the parallel combinator:</p>
+<p>Function publications can be interleaved with the parallel combinator.
+For example, we can interleave publications from two metronomes running at
+different rates and starting at different initial values:</p>
 <pre class="orc">
-def Metronome(t, i) =
+def TimedMetronome(t, i) =
     i
-  | Rtimer(t) >> Metronome(t, i+1)
+  | Rtimer(t) >> TimedMetronome(t, i+1)
 
-Metronome(1100, 0) | Metronome(700, 100)</pre>
+TimedMetronome(1100, 0) | TimedMetronome(700, 100)</pre>
 
 <p>A common idiom in Orc is to treat an expression as a stream of values which
-may be filtered. The next example publishes only prime numbers:</p>
+may be filtered. The next example publishes every two seconds (by suppressing
+publications where the current number of seconds is not even):</p>
 
-<pre class="orc-prelude">
-def isPrime(n) = 
-  def primeat(i) = 
-      if(b) >> (n % i /= 0) && primeat(i+1)
-    | if(~b) >> true
-        &lt;b&lt; i * i &lt;= n
-  primeat(2)</pre>
 <pre class="orc">
 def Metronome(i) =
     i
   | Rtimer(1000) >> Metronome(i+1)
 
-Metronome(2) >n> if(isPrime(n)) >> n</pre>
+Metronome(0) >n> if(n%2 = 0) >> n</pre>
 
-<a name="Functional"></a><h2>Functional Programming <small>(<a href="#top">top</a>)</small></h2>
+<a name="Advanced"></a><h2>Advanced Techniques <small>(<a href="#top">top</a>)</small></h2>
 
-<p>Like any good functional programming language, Orc supports nested
-functions, higher-order functions (functions which take functions or sites as
-arguments) and pattern matching.  We will explore these features using a simple
-but realistic example: an automated booking agent which gets quotes from a list
-of airlines and returns the best quote received under a certain price and
-within a certain time limit.</p>
+<p>Orc shares many features with functional programming languages, including
+nested functions, higher-order functions (functions which take functions or
+sites as arguments) and pattern matching.  We will explore these features using
+a simple but realistic example: an automated booking agent which gets quotes
+from a list of airlines and returns the best quote received under a certain
+price and within a certain time limit.</p>
 
 <p>First, we must provide a way to get a quote from an airline.  For
 simplicity, we will simulate an airline as a function which prompts the user
@@ -251,8 +250,8 @@ def Airline(name) =
 </pre>
 <pre class="orc">
 def min((_,dollar1) as quote1, (_,dollar2) as quote2) =
-    if(dollar1 &lt;: dollar2) >> quote1
-  | if(dollar2 &lt;= dollar1) >> quote2
+    if(dollar1 &lt;= dollar2) >> quote1
+  | if(dollar2 &lt;: dollar1) >> quote2
 
 -- Example usage
 val delta = Airline("Delta")
@@ -272,16 +271,16 @@ def Airline(name) =
     -- return the site
     MakeQuote
 def min((n1,q1), (n2,q2)) =
-    if(q1 &lt;: q2) >> (n1, q1)
-  | if(q2 &lt;= q1) >> (n2, q2)
+    if(q1 &lt;= q2) >> (n1, q1)
+  | if(q2 &lt;: q1) >> (n2, q2)
 </pre>
 <pre class="orc">
--- Return the best quote under 200 dollars
--- within 5 seconds
+-- Return the best quote at or under 200 dollars
+-- within 15 seconds
 def bestQuote([]) = ("None of the above", 200)
 def bestQuote(airline:rest) =
     val best = bestQuote(rest)
-    val current = airline() | Rtimer(5000) >> best
+    val current = airline() | Rtimer(15000) >> best
     min(current, best)
 
 bestQuote([Airline("Delta"), Airline("United")])</pre>
