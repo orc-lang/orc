@@ -8,7 +8,7 @@ import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.runtime.nodes.Node;
 
-public class Null extends Expr {
+public class Silent extends Expr {
 
 	@Override
 	public Node compile(Node output) {
@@ -16,7 +16,7 @@ public class Null extends Expr {
 	}
 	
 	public String toString() {
-		return "null";
+		return ".";
 	}
 	
 	@Override

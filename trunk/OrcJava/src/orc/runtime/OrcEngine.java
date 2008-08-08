@@ -183,7 +183,7 @@ public class OrcEngine implements Runnable {
 	 * @param v
 	 */
 	public void pub(Object v) {
-		System.out.println(v.toString());
+		System.out.println(String.valueOf(v));
 		System.out.flush();
 	}
 	

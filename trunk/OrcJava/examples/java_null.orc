@@ -1,1 +1,2 @@
-println(cat(Null())) >> null
+  println(cat(Null())) >>.
+| Null()

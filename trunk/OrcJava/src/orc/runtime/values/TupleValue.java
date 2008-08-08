@@ -76,7 +76,7 @@ public class TupleValue extends EvalSite implements Iterable<Object> {
 		buf.append(left);
 		for (int i = 0; i < items.length; ++i) {
 			if (i > 0) buf.append(sep);
-			buf.append(items[i].toString());
+			buf.append(String.valueOf(items[i]));
 		}
 		buf.append(right);
 		return buf.toString();
