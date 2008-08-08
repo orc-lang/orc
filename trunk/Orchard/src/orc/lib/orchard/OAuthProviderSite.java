@@ -21,7 +21,6 @@ import orc.runtime.Kilim;
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.sites.Site;
-import orc.runtime.values.Constant;
 
 public class OAuthProviderSite extends Site {
 	public static class PendingOAuthAccessor {
@@ -88,11 +87,11 @@ public class OAuthProviderSite extends Site {
 			/**
 			 * This implementation of OAuthProvider 
 			 */
-			caller.resume(new Constant(new WebOAuthProvider(
+			caller.resume(new WebOAuthProvider(
 					(ProvidesGlobals)engine,
 					(Redirectable)engine,
 					// force root-relative resource path
-					"/" + args.stringArg(0))));
+					"/" + args.stringArg(0)));
 		} catch (IOException e) {
 			throw new JavaException(e);
 		}

@@ -1,8 +1,8 @@
 package orc.orchard.oil;
 
-public class Null extends Expression {
+public class Silent extends Expression {
 	@Override
 	public orc.ast.oil.Expr unmarshal() {
-		return new orc.ast.oil.Null();
+		return new orc.ast.oil.Silent();
 	}
 }

@@ -1,17 +1,20 @@
 package orc.orchard;
 
-import orc.orchard.oil.Value;
+import javax.xml.bind.annotation.XmlSeeAlso;
+
+import orc.orchard.values.Value;
 
 /**
  * Job publications (published Orc values).
  * @author quark
  */
+@XmlSeeAlso(value={Value.class})
 public class PublicationEvent extends JobEvent {
-	public Value value;
+	public Object value;
 	
 	public PublicationEvent() {}
 	
-	public PublicationEvent(Value value) {
+	public PublicationEvent(Object value) {
 		this.value = value;
 	}
 }

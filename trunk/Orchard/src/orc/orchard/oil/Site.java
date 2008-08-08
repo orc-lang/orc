@@ -6,7 +6,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 
 import orc.orchard.errors.InvalidOilException;
 
-public class Site extends Value {
+public class Site extends Argument {
 	@XmlAttribute
 	public String protocol;
 	@XmlAttribute

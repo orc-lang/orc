@@ -17,11 +17,10 @@ import orc.lib.orchard.Prompt.Promptable;
 import orc.lib.orchard.Redirect.Redirectable;
 import orc.orchard.errors.InvalidJobStateException;
 import orc.orchard.errors.InvalidPromptException;
-import orc.orchard.oil.ValueMarshaller;
+import orc.orchard.values.ValueMarshaller;
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.nodes.Node;
-import orc.runtime.values.Value;
 
 /**
  * Standard implementation of a JobService. Extenders should only need to
@@ -199,8 +198,8 @@ public final class Job {
 			events.add(new PrintlnEvent(out));
 		}
 		@Override
-		public void pub(Value v) {
-			events.add(new PublicationEvent(v.accept(new ValueMarshaller())));
+		public void pub(Object v) {
+			events.add(new PublicationEvent(ValueMarshaller.visit(new ValueMarshaller(), v)));
 		}
 		
 		public void prompt(String message, PromptCallback callback) {

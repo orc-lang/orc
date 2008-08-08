@@ -112,8 +112,6 @@ function publicationToHtml(v) {
 		case 'xs:float': return jsonToHtml(parseFloat(v.$));
 		case 'xs:boolean': return jsonToHtml(v.$ == 'true');
 		// OIL types
-		// FIXME: server should use better namespace than ns2
-		case 'ns2:constant': return publicationToHtml(v.value);
 		case 'ns2:list':
 			var tmp = [];
 			$.each(toArray(v.element), function (i, e) {
