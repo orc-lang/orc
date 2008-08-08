@@ -8,9 +8,7 @@ import orc.error.runtime.SiteException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
-import orc.runtime.values.Constant;
 import orc.runtime.values.ListValue;
-import orc.runtime.values.Value;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -30,11 +28,11 @@ class JSONSite extends EvalSite {
 	private JSONSite(JSONObject root) {
 		this.root = root;
 	}
-	public static Value wrapJSON(Object o) {
+	public static Object wrapJSON(Object o) {
 		if (o instanceof JSONObject) {
 			return new JSONSite((JSONObject)o); 
 		} else if (o instanceof JSONArray) {
-			List<Value> out = new LinkedList<Value>();
+			List<Object> out = new LinkedList<Object>();
 			JSONArray a = (JSONArray)o;
 			for (int i = 0; i < a.length(); ++i) {
 				Object e;
@@ -48,11 +46,11 @@ class JSONSite extends EvalSite {
 			}
 			return ListValue.make(out);
 		} else {
-			return new Constant(o);
+			return o;
 		}
 	}
 	@Override
-	public Value evaluate(Args args) throws TokenException {
+	public Object evaluate(Args args) throws TokenException {
 		try {
 			if (root == null) {
 				throw new SiteException("Tried to get a property from" +

@@ -2,22 +2,21 @@ package orc.lib.net;
 
 import java.util.LinkedList;
 
+import orc.error.runtime.SiteException;
+import orc.error.runtime.TokenException;
+import orc.runtime.Args;
+import orc.runtime.Token;
+import orc.runtime.sites.DotSite;
+import orc.runtime.sites.EvalSite;
+import orc.runtime.sites.Site;
+import orc.runtime.sites.ThreadedSite;
+import orc.runtime.values.Value;
+
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
-
-import orc.error.runtime.SiteException;
-import orc.error.runtime.TokenException;
-import orc.runtime.Args;
-import orc.runtime.Token;
-import orc.runtime.sites.EvalSite;
-import orc.runtime.sites.DotSite;
-import orc.runtime.sites.Site;
-import orc.runtime.sites.ThreadedSite;
-import orc.runtime.values.Constant;
-import orc.runtime.values.Value;
 
 /**
  * Orc support for the XMPP (Jabber, Google Talk) messaging protocol.
@@ -67,7 +66,7 @@ public class XMPPConnection extends EvalSite {
 		protected void addMethods() {
 			addMethod("connect", new ThreadedSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
 						connection.connect();
 					} catch (XMPPException e) {
@@ -78,14 +77,14 @@ public class XMPPConnection extends EvalSite {
 			});
 			addMethod("disconnect", new ThreadedSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					connection.disconnect();
 					return Value.signal();
 				}
 			});
 			addMethod("login", new ThreadedSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
 						switch (args.size()) {
 						case 4:
@@ -106,7 +105,7 @@ public class XMPPConnection extends EvalSite {
 			});
 			addMethod("chat", new ThreadedSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					return new ChatSite(connection, args.stringArg(0));
 				}
 			});
@@ -124,7 +123,7 @@ public class XMPPConnection extends EvalSite {
 	private static class ChatSite extends DotSite implements MessageListener {
 		private Chat chat;
 		/** Buffer for received messages. */
-		private LinkedList<Value> received = new LinkedList<Value>();
+		private LinkedList<Object> received = new LinkedList<Object>();
 		/** Queue of tokens waiting to receive messages. */
 		private LinkedList<Token> receivers = new LinkedList<Token>();
 		public ChatSite(org.jivesoftware.smack.XMPPConnection connection, String account) {
@@ -136,7 +135,7 @@ public class XMPPConnection extends EvalSite {
 		 */
 		public void processMessage(Chat _, Message message) {
 			synchronized (received) {
-				Value v = new Constant(message.getBody());
+				Object v = message.getBody();
 				if (receivers.isEmpty()) {
 					received.add(v);
 				} else {
@@ -152,7 +151,7 @@ public class XMPPConnection extends EvalSite {
 			 */
 			addMethod("send", new ThreadedSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
 						chat.sendMessage(args.stringArg(0));
 					} catch (XMPPException e) {
@@ -179,7 +178,7 @@ public class XMPPConnection extends EvalSite {
 		}
 	}
 	@Override
-	public Value evaluate(Args args) throws TokenException {
+	public Object evaluate(Args args) throws TokenException {
 		ConnectionConfiguration config;
 		if (args.size() > 2) {
 			config = new ConnectionConfiguration(

@@ -8,8 +8,6 @@ import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.ThreadedPartialSite;
-import orc.runtime.values.Constant;
-import orc.runtime.values.Value;
 
 /**
  * Implement ping using {@link InetAddress#isReachable(int)}. Accepts the host
@@ -25,7 +23,7 @@ import orc.runtime.values.Value;
  */
 public class Ping extends ThreadedPartialSite {
 	@Override
-	public Value evaluate(Args args) throws TokenException {
+	public Object evaluate(Args args) throws TokenException {
 		try {
 			InetAddress host = InetAddress.getByName(args.stringArg(0));
 			long start = System.currentTimeMillis();
@@ -36,7 +34,7 @@ public class Ping extends ThreadedPartialSite {
 				System.err.println("Could not reach " + host.toString());
 				return null;
 			}
-			return new Constant(System.currentTimeMillis() - start);
+			return System.currentTimeMillis() - start;
 		} catch (UnknownHostException e) {
 			throw new JavaException(e);
 		} catch (IOException e) {

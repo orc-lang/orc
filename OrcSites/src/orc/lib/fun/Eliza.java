@@ -9,16 +9,14 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.PartialSite;
-import orc.runtime.values.Constant;
-import orc.runtime.values.Value;
 
 public class Eliza extends EvalSite {
 	@Override
-	public Value evaluate(Args args) throws TokenException {
+	public Object evaluate(Args args) throws TokenException {
 		final net.chayden.eliza.Eliza eliza = new net.chayden.eliza.Eliza();
 		String script;
 		if (args.size() > 0) {
-			script = args.stringArg(0);
+			script = "/" + args.stringArg(0);
 		} else {
 			script = "/net/chayden/eliza/eliza.script";
 		}
@@ -33,11 +31,11 @@ public class Eliza extends EvalSite {
 		}
 		return new PartialSite() {
 			@Override
-			public Value evaluate(Args args) throws TokenException {
+			public Object evaluate(Args args) throws TokenException {
 				synchronized (eliza) {
     				if (eliza.finished()) return null;
     				try {
-						return new Constant(eliza.processInput(args.stringArg(0)));
+						return eliza.processInput(args.stringArg(0));
 					} catch (IOException e) {
 						throw new SiteException("Error processing script", e);
 					}

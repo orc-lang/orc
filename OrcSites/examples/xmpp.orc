@@ -1,10 +1,17 @@
-site XMPPConnection = orc.lib.xmpp.XMPPConnection
+include "fun.inc"
+include "net.inc"
 
-def echo(chat) = lambda () = chat.receive() >x> chat.send(x)
+def ElizaChat(chat, init) =
+    val eliza = Eliza()
+    def loop(message) =
+        eliza(chat.send(message) >> chat.receive()) >response>
+        loop(response)
+    loop(init)
 
-chat.send("Hello!") >> null | repeat(echo(chat)) >> null
-	<chat<
-		c.connect() >>
-		c.login("USER", "PASS") >>
-		c.chat("USER@gmail.com")
-	<c< XMPPConnection("talk.google.com", 5222, "gmail.com")
+val chat =
+	val c = XMPPConnection("talk.google.com", 5222, "gmail.com")
+	c.connect() >>
+	c.login("orchardserver@gmail.com", "ckyogack") >>
+	c.chat("adrianquark@gmail.com")
+	
+ElizaChat(chat, "How do you do.  Please tell me your problem.")

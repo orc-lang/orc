@@ -16,8 +16,6 @@ import orc.oauth.OAuthProvider;
 import orc.runtime.Args;
 import orc.runtime.Kilim;
 import orc.runtime.sites.EvalSite;
-import orc.runtime.values.Constant;
-import orc.runtime.values.Value;
 
 import com.centerkey.utils.BareBonesBrowserLaunch;
 
@@ -59,14 +57,14 @@ public class OAuthProviderSite extends EvalSite {
 	}
 	
 	@Override
-	public Value evaluate(Args args) throws TokenException {
+	public Object evaluate(Args args) throws TokenException {
 		try {
 			/**
 			 * This implementation of OAuthProvider 
 			 */
-			return new Constant(new GuiOAuthProvider(
+			return new GuiOAuthProvider(
 					// force root-relative resource path
-					"/" + args.stringArg(0)));
+					"/" + args.stringArg(0));
 		} catch (IOException e) {
 			throw new JavaException(e);
 		}

@@ -41,8 +41,6 @@ import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.PartialSite;
 import orc.runtime.sites.ThreadedSite;
-import orc.runtime.values.Constant;
-import orc.runtime.values.ListValue;
 import orc.runtime.values.Value;
 
 /**
@@ -101,15 +99,15 @@ public class Mail extends DotSite {
 		return session;
 	}
 
-	private static Address[] toAddresses(Value v) throws TokenException {
+	private static Address[] toAddresses(Object v) throws TokenException {
 		try {
 			List<Address> out = new LinkedList<Address>();
 			if (v instanceof Iterable) {
-				for (Value x : (Iterable<Value>) v) {
-					out.add(new InternetAddress(((Constant) x).toString()));
+				for (Object x : (Iterable)v) {
+					out.add(new InternetAddress(x.toString()));
 				}
 			} else {
-				out.add(new InternetAddress(((Constant) v).toString()));
+				out.add(new InternetAddress(v.toString()));
 			}
 			return out.toArray(new Address[0]);
 		} catch (AddressException e) {
@@ -159,9 +157,9 @@ public class Mail extends DotSite {
 		protected void addMethods() {
 			addMethod("setReplyTo", new EvalSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
-						message.setReplyTo(toAddresses(args.valArg(0)));
+						message.setReplyTo(toAddresses(args.getArg(0)));
 						return Value.signal();
 					} catch (MessagingException e) {
 						throw new JavaException(e);
@@ -170,7 +168,7 @@ public class Mail extends DotSite {
 			});
 			addMethod("setText", new EvalSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
 						message.setText(args.stringArg(0));
 						return Value.signal();
@@ -181,7 +179,7 @@ public class Mail extends DotSite {
 			});
 			addMethod("setSubject", new EvalSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
 						message.setSubject(args.stringArg(0));
 						return Value.signal();
@@ -192,7 +190,7 @@ public class Mail extends DotSite {
 			});
 			addMethod("reply", new EvalSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
 						boolean replytoall = true;
 						if (args.size() > 0) {
@@ -206,9 +204,9 @@ public class Mail extends DotSite {
 			});
 			addMethod("subject", new EvalSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
-						return new Constant(message.getSubject());
+						return message.getSubject();
 					} catch (MessagingException e) {
 						throw new JavaException(e);
 					}
@@ -216,13 +214,11 @@ public class Mail extends DotSite {
 			});
 			addMethod("text", new EvalSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
 						String text = findText(message.getContent());
-						if (text == null)
-							return new Constant("");
-						else
-							return new Constant(text);
+						if (text == null) return "";
+						else return text;
 					} catch (MessagingException e) {
 						throw new JavaException(e);
 					} catch (IOException e) {
@@ -232,7 +228,7 @@ public class Mail extends DotSite {
 			});
 			addMethod("delete", new EvalSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
 						message.setFlag(Flags.Flag.DELETED, true);
 						return Value.signal();
@@ -243,7 +239,7 @@ public class Mail extends DotSite {
 			});
 			addMethod("save", new EvalSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
 						message.saveChanges();
 						return Value.signal();
@@ -299,7 +295,7 @@ public class Mail extends DotSite {
 					otherTerm));
 		}
 
-		private Value messages(Folder folder) throws TokenException {
+		private Object messages(Folder folder) throws TokenException {
 			try {
 				Message[] messages;
 				if (term == null) {
@@ -307,11 +303,11 @@ public class Mail extends DotSite {
 				} else {
 					messages = folder.search(term);
 				}
-				Value[] messagesOut = new Value[messages.length];
+				Object[] messagesOut = new Object[messages.length];
 				for (int i = 0; i < messages.length; ++i) {
 					messagesOut[i] = new MailMessage(messages[i]);
 				}
-				return ListValue.make(Arrays.asList(messagesOut));
+				return messagesOut;
 			} catch (Exception e) {
 				throw new JavaException(e);
 			}
@@ -321,10 +317,10 @@ public class Mail extends DotSite {
 		protected void addMethods() {
 			addMethod("and", new EvalSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					SearchTerm otherTerm;
 					try {
-						otherTerm = ((MailFilter) args.valArg(0)).term;
+						otherTerm = ((MailFilter)args.getArg(0)).term;
 					} catch (ClassCastException e) {
 						throw new ArgumentTypeMismatchException(e.toString());
 					}
@@ -333,11 +329,11 @@ public class Mail extends DotSite {
 			});
 			addMethod("or", new EvalSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 
 					SearchTerm otherTerm;
 					try {
-						otherTerm = ((MailFilter) args.valArg(0)).term;
+						otherTerm = ((MailFilter) args.getArg(0)).term;
 					} catch (ClassCastException e) {
 						throw new ArgumentTypeMismatchException(
 								"Expected SearchTerm argument(s)");
@@ -348,7 +344,7 @@ public class Mail extends DotSite {
 			});
 			addMethod("not", new EvalSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					return new MailFilter(new NotTerm(
 							term == null ? new FlagTerm(new Flags(), false) // this
 																			// should
@@ -359,7 +355,7 @@ public class Mail extends DotSite {
 			});
 			addMethod("from", new EvalSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
 						return filter(new FromTerm(new InternetAddress(args
 								.stringArg(0))));
@@ -370,7 +366,7 @@ public class Mail extends DotSite {
 			});
 			addMethod("to", new EvalSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
 						return filter(new RecipientTerm(
 								Message.RecipientType.TO, new InternetAddress(
@@ -382,7 +378,7 @@ public class Mail extends DotSite {
 			});
 			addMethod("cc", new EvalSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
 						return filter(new RecipientTerm(
 								Message.RecipientType.CC, new InternetAddress(
@@ -394,7 +390,7 @@ public class Mail extends DotSite {
 			});
 			addMethod("bcc", new EvalSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
 						return filter(new RecipientTerm(
 								Message.RecipientType.BCC, new InternetAddress(
@@ -406,7 +402,7 @@ public class Mail extends DotSite {
 			});
 			addMethod("recipient", new EvalSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
 						InternetAddress address = new InternetAddress(args
 								.stringArg(0));
@@ -424,19 +420,19 @@ public class Mail extends DotSite {
 			});
 			addMethod("body", new EvalSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					return filter(new BodyTerm(args.stringArg(0)));
 				}
 			});
 			addMethod("subject", new EvalSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					return filter(new SubjectTerm(args.stringArg(0)));
 				}
 			});
 			addMethod("header", new EvalSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					return filter(new HeaderTerm(args.stringArg(0), args
 							.stringArg(1)));
 				}
@@ -477,7 +473,7 @@ public class Mail extends DotSite {
 		protected void addMethods() {
 			addMethod("open", new ThreadedSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					int mode = Folder.READ_WRITE;
 					if (args.size() > 0) {
 						if (args.stringArg(0).equals("r")) {
@@ -494,9 +490,9 @@ public class Mail extends DotSite {
 			});
 			addMethod("name", new ThreadedSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
-						return new Constant(folder.getName());
+						return folder.getName();
 					} catch (Exception e) {
 						throw new JavaException(e);
 					}
@@ -504,9 +500,9 @@ public class Mail extends DotSite {
 			});
 			addMethod("fullName", new ThreadedSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
-						return new Constant(folder.getFullName());
+						return folder.getFullName();
 					} catch (Exception e) {
 						throw new JavaException(e);
 					}
@@ -515,9 +511,9 @@ public class Mail extends DotSite {
 			addMethod("filter", new MailFilter());
 			addMethod("messageCount", new ThreadedSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
-						return new Constant(folder.getMessageCount());
+						return folder.getMessageCount();
 					} catch (Exception e) {
 						throw new JavaException(e);
 					}
@@ -525,9 +521,9 @@ public class Mail extends DotSite {
 			});
 			addMethod("exists", new ThreadedSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
-						return new Constant(folder.exists());
+						return folder.exists();
 					} catch (Exception e) {
 						throw new JavaException(e);
 					}
@@ -535,7 +531,7 @@ public class Mail extends DotSite {
 			});
 			addMethod("list", new ThreadedSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
 						Folder[] folders;
 						if (args.size() > 0) {
@@ -543,25 +539,25 @@ public class Mail extends DotSite {
 						} else {
 							folders = folder.list();
 						}
-						Value[] foldersOut = new Value[folders.length];
+						Object[] foldersOut = new Object[folders.length];
 						for (int i = 0; i < folders.length; ++i) {
 							foldersOut[i] = new MailFolder(folders[i]);
 						}
-						return ListValue.make(Arrays.asList(foldersOut));
+						return foldersOut;
 					} catch (Exception e) {
 						throw new JavaException(e);
 					}
 				}
 			});
 			addMethod("messages", new ThreadedSite() {
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					return new MailFilter().messages(folder);
 				}
 			});
 			addMethod("search", new ThreadedSite() {
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
-						return ((MailFilter) args.valArg(0)).messages(folder);
+						return ((MailFilter) args.getArg(0)).messages(folder);
 					} catch (ClassCastException e) {
 						throw new ArgumentTypeMismatchException(e.toString());
 					}
@@ -569,7 +565,7 @@ public class Mail extends DotSite {
 			});
 			addMethod("close", new ThreadedSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					boolean expunge = true;
 					if (args.size() > 0) {
 						expunge = args.boolArg(0);
@@ -612,7 +608,7 @@ public class Mail extends DotSite {
 		protected void addMethods() {
 			addMethod("connect", new ThreadedSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
 						if (args.size() == 0) {
 							store.connect();
@@ -627,7 +623,7 @@ public class Mail extends DotSite {
 			});
 			addMethod("close", new ThreadedSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
 						store.close();
 					} catch (Exception e) {
@@ -638,7 +634,7 @@ public class Mail extends DotSite {
 			});
 			addMethod("folder", new ThreadedSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
 						return new MailFolder(store
 								.getFolder(args.stringArg(0)));
@@ -686,7 +682,7 @@ public class Mail extends DotSite {
 		protected void addMethods() {
 			addMethod("connect", new ThreadedSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
 						if (args.size() == 0) {
 							transport.connect();
@@ -702,9 +698,9 @@ public class Mail extends DotSite {
 			});
 			addMethod("send", new ThreadedSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
-						Message m = ((MailMessage) args.valArg(0)).message;
+						Message m = ((MailMessage) args.getArg(0)).message;
 						m.saveChanges();
 						transport.sendMessage(m, m.getAllRecipients());
 					} catch (ClassCastException e) {
@@ -717,7 +713,7 @@ public class Mail extends DotSite {
 			});
 			addMethod("close", new ThreadedSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					try {
 						transport.close();
 					} catch (Exception e) {
@@ -733,21 +729,18 @@ public class Mail extends DotSite {
 	protected void addMethods() {
 		addMethod("property", new PartialSite() {
 			@Override
-			public Value evaluate(Args args) throws TokenException {
-				Object v = properties.get(args.stringArg(0));
-				if (v == null)
-					return null;
-				return new Constant(v);
+			public Object evaluate(Args args) throws TokenException {
+				return properties.get(args.stringArg(0));
 			}
 		});
 		addMethod("withProperties", new EvalSite() {
 			@Override
-			public Value evaluate(Args args) throws TokenException {
+			public Object evaluate(Args args) throws TokenException {
 				Properties newProperties = (Properties) properties.clone();
 				Iterable properties;
 				try {
 					if (args.size() == 1) {
-						properties = (Iterable)args.valArg(0);
+						properties = (Iterable)args.getArg(0);
 					} else {
 						properties = Arrays.asList(args.asArray());
 					}
@@ -762,7 +755,7 @@ public class Mail extends DotSite {
 		});
 		addMethod("transport", new EvalSite() {
 			@Override
-			public Value evaluate(Args args) throws TokenException {
+			public Object evaluate(Args args) throws TokenException {
 				try {
 					if (args.size() == 0) {
 						return new MailTransport(getSession().getTransport());
@@ -777,7 +770,7 @@ public class Mail extends DotSite {
 		});
 		addMethod("store", new EvalSite() {
 			@Override
-			public Value evaluate(Args args) throws TokenException {
+			public Object evaluate(Args args) throws TokenException {
 				try {
 					if (args.size() == 0) {
 						return new MailStore(getSession().getStore());
@@ -793,7 +786,7 @@ public class Mail extends DotSite {
 		/** subject, body, to, from */
 		addMethod("message", new EvalSite() {
 			@Override
-			public Value evaluate(Args args) throws TokenException {
+			public Object evaluate(Args args) throws TokenException {
 				try {
 					MimeMessage m = new MimeMessage(getSession());
 					if (args.size() > 0) {
@@ -804,7 +797,7 @@ public class Mail extends DotSite {
 					}
 					if (args.size() > 2) {
 						m.setRecipients(Message.RecipientType.TO,
-								toAddresses(args.valArg(2)));
+								toAddresses(args.getArg(2)));
 					}
 					if (args.size() > 3) {
 						m.setFrom(new InternetAddress(args.stringArg(3)));

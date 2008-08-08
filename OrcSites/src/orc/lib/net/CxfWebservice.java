@@ -5,7 +5,6 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.ThreadedSite;
-import orc.runtime.values.Constant;
 import orc.runtime.values.TupleValue;
 import orc.runtime.values.Value;
 
@@ -38,7 +37,7 @@ public class CxfWebservice extends ThreadedSite {
 				/** Method proxy site */
 				return new ThreadedSite() {
 					@Override
-					public Value evaluate(Args args) throws TokenException {
+					public Object evaluate(Args args) throws TokenException {
 						try {
 							// invoke the service
 							Object[] out = client.invoke(methodName, args.asArray());
@@ -48,14 +47,10 @@ public class CxfWebservice extends ThreadedSite {
 								return Value.signal();
 							} else if (out.length == 1) {
 								// one result is returned as a constant
-								return new Constant(out[0]);
+								return out[0];
 							} else {
 								// multiple results are a tuple
-								Value[] tmp = new Value[out.length];
-								for (int i = 0; i < tmp.length; i++) {
-									tmp[i] = new Constant(out[i]);
-								}
-								return new TupleValue(tmp);
+								return new TupleValue(out);
 							}
 						} catch (Exception e) {
 							throw new JavaException(e);

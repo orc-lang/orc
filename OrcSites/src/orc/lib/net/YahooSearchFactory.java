@@ -17,7 +17,6 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.ThreadedSite;
-import orc.runtime.values.Value;
 
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -34,7 +33,7 @@ public class YahooSearchFactory extends EvalSite {
 			appid = p.getProperty("orc.lib.net.yahoo.appid");
 		}
 		@Override
-		public Value evaluate(Args args) throws TokenException {
+		public Object evaluate(Args args) throws TokenException {
 			// get the first page of results and the cursor
 			try {
 				String search = args.stringArg(0);
@@ -79,7 +78,7 @@ public class YahooSearchFactory extends EvalSite {
 		}
 	}
 	@Override
-	public Value evaluate(Args args) throws TokenException {
+	public Object evaluate(Args args) throws TokenException {
 		try {
 			return new YahooSearch("/" + args.stringArg(0));
 		} catch (IOException e) {

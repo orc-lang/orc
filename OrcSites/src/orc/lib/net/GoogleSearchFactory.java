@@ -95,7 +95,7 @@ public class GoogleSearchFactory extends EvalSite {
 					page = pages.getJSONObject(i).getString("start");
 					out = new ConsValue(new ThreadedSite() {
 						@Override
-						public Value evaluate(Args args) throws TokenException {
+						public Object evaluate(Args args) throws TokenException {
 							JSONObject root;
 							try {
 								root = requestJSON(new URL(url + "&start=" + page));
@@ -119,7 +119,7 @@ public class GoogleSearchFactory extends EvalSite {
 			// the first page, we already got the results, so it is much simpler
 			out = new ConsValue(new EvalSite() {
 				@Override
-				public Value evaluate(Args args) throws TokenException {
+				public Object evaluate(Args args) throws TokenException {
 					return JSONSite.wrapJSON(results);
 				}
 			}, out);
@@ -147,7 +147,7 @@ public class GoogleSearchFactory extends EvalSite {
 	}
 
 	@Override
-	public Value evaluate(Args args) throws TokenException {
+	public Object evaluate(Args args) throws TokenException {
 		try {
 			return new GoogleSearch("/" + args.stringArg(0));
 		} catch (IOException e) {
