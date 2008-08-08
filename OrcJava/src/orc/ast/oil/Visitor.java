@@ -15,7 +15,7 @@ public interface Visitor<E> {
 	public E visit(Bar expr);
 	public E visit(Call expr);
 	public E visit(Defs expr);
-	public E visit(Null expr);
+	public E visit(Silent expr);
 	public E visit(Pull expr);
 	public E visit(Push expr);
 	public E visit(Semi expr);

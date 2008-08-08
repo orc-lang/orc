@@ -3,6 +3,6 @@ def Counter(n) =
 	nr.put(n) >>
 	(lambda () =
 		nr.get() >!n>
-		nr.put(n+1) >> null)
+		nr.put(n+1) >> .)
 
 Counter(0) >c> Metronome() >> c()

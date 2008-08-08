@@ -49,13 +49,13 @@ public abstract class Walker implements Visitor<Void> {
 	public void enter(Defs expr) {};	
 	public void leave(Defs expr) {};
 
-	public Void visit(Null arg) {
+	public Void visit(Silent arg) {
 		this.enter(arg);
 		this.leave(arg);
 		return null;
 	}
-	public void enter(Null arg) {};
-	public void leave(Null arg) {};
+	public void enter(Silent arg) {};
+	public void leave(Silent arg) {};
 
 	public Void visit(Pull expr) {
 		this.enter(expr);

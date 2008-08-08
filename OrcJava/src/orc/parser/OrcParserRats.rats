@@ -148,10 +148,37 @@ List<Pattern> PatternList =
 	}
 	;
 	
-/////////////////////////////////////////////
-// Expressions
-/////////////////////////////////////////////
-	
+/*-----------------------------------------------------------
+Expressions
+
+For reference, here are Orc's operators
+listed according to precedence.
+
+Operator	Associativity	Precendence	Name
+-----------------------------------------------------------
+ ;		left		0		semicolon
+ <<		left		1		where
+ |		right		2		parallel
+ >>		right		3		sequence
+ ||		right		4		boolean or
+ &&		right		4		boolean and
+ =		none		5		equal
+ /=		none		5		not equal
+ :>		none		5		greater
+ >=		none		5		greater or equal
+ <:		none		5		less
+ <=		none		5		less or equal
+ ~		unary		6		boolean not
+ :		right		6		cons
+ +		left		6		addition
+ -		left		6		subtraction
+ *		left		7		multiplication
+ /		left		7		division
+ %		left		7		modulus
+ -		unary		8		unary minus
+ ()		none		9		application
+-----------------------------------------------------------*/
+
 Expression GoalExpression =
 	seed:WhereExpression actions:SemiExpressionTail* {
 		yyValue = apply(actions, seed);
@@ -182,22 +209,14 @@ Action<Expression> WhereExpressionTail =
 		};
 	}
 	;
-	
+
 Expression BarExpression =
-	seed:SeqExpression actions:BarExpressionTail* {
-		yyValue = apply(actions, seed);
+	left:SeqExpression BAR right:BarExpression {
+		yyValue = new Parallel(left, right);
 	}
+	/ SeqExpression
 	;
-Action<Expression> BarExpressionTail =
-	BAR right:SeqExpression {
-		yyValue = new Action<Expression>() {
-			public Expression run(Expression left) {
-				return new Parallel(left, right);
-			}
-		};
-	}
-	;
-	
+
 Expression SeqExpression =
 	left:Sequent RANGLE p:Pattern? RANGLE right:SeqExpression {
 		if (p == null) yyValue = new Sequential(left, right);
@@ -326,7 +345,12 @@ Expression Signed =
 
 Expression BasicExpression =
 	Literal
+	/ DOT {
+		yyValue = new Silent();
+	}
 	/ NULL {
+		// We're changing "null" to "." but
+		// for now we're still allowing it
 		yyValue = new Silent();
 	}
 	/ Call
