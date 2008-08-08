@@ -2,7 +2,7 @@ package orc.orchard.oil;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
-public class Field extends Value {
+public class Field extends Argument {
 	@XmlAttribute
 	public String name;
 	public Field() {}

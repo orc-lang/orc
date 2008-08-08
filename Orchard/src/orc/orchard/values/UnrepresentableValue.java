@@ -1,9 +1,6 @@
-package orc.orchard.oil;
+package orc.orchard.values;
 
 import javax.xml.bind.annotation.XmlAttribute;
-
-import orc.ast.oil.arg.Arg;
-import orc.orchard.errors.InvalidOilException;
 
 /**
  * FIXME: this is a hack so I can get everything to compile
@@ -21,9 +18,5 @@ public class UnrepresentableValue extends Value {
 	}
 	public String toString() {
 		return super.toString() + "(" + description + ")";
-	}
-	@Override
-	public Arg unmarshal() throws InvalidOilException {
-		throw new InvalidOilException("Unvalue " + this.toString() + " cannot be unmarshaled.");
 	}
 }

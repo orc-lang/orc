@@ -37,8 +37,8 @@ public class Marshaller implements Visitor<Expression> {
 				expr.body.accept(this));
 	}
 	
-	public Expression visit(orc.ast.oil.Null expr) {
-		return new Null();
+	public Expression visit(orc.ast.oil.Silent expr) {
+		return new Silent();
 	}
 	
 	public Expression visit(orc.ast.oil.Pull expr) {

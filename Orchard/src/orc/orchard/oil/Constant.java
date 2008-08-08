@@ -1,6 +1,8 @@
 package orc.orchard.oil;
 
-public class Constant extends Value {
+import orc.orchard.oil.Argument;
+
+public class Constant extends Argument {
 	public Object value;
 	public Constant() {}
 	public Constant(Object value) {

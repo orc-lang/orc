@@ -6,7 +6,6 @@ import orc.runtime.Args;
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.sites.Site;
-import orc.runtime.values.Constant;
 
 /**
  * Ask the user a question and return their response.
@@ -37,7 +36,7 @@ public class Prompt extends Site {
 		}
 		((Promptable)engine).prompt(prompt, new PromptCallback () {
 			public void respondToPrompt(String response) {
-				caller.resume(new Constant(response));	
+				caller.resume(response);	
 			}
 			public void cancelPrompt() {
 				caller.die();
