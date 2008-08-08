@@ -32,10 +32,6 @@ li.new {
 	<li><a class="paper" href="http://www.cs.utexas.edu/~wcook/papers/OrcJSSM05/OrcJSSM.pdf">Computation Orchestration: A Basis for Wide-Area Computing</a> (<a href="http://springerlink.metapress.com/openurl.asp?genre=article&amp;id=doi:10.1007/s10270-006-0012-1">DOI</a>)<br />
 	Jayadev Misra and William R. Cook<br />
 	Journal of Software and Systems Modeling, May 2006.</li>
-
-	<li><a class="paper" href="http://www.cs.utexas.edu/~wcook/papers/OrcImpDraft.pdf">Implementation Outline of Orc</a><br />
-	William R. Cook and Jayadev Misra<br />
-	Unpublished, 2005.</li>
 </ul>
 
 <a name="Semantics" id="Semantics"></a><h2>Semantics &amp; Verification <small>(<a href="#top">top</a>)</small></h2>
@@ -76,12 +72,6 @@ li.new {
 	Kristi Morton, David Kitchin, William Cook<br />
 	The University of Texas at Austin, Department of Computer Sciences, December 2007, Report# TR-07-63.</li>
 
-	<li><a class="paper" href="http://www.cs.utexas.edu/~wcook/Drafts/2006/WSvsDO.pdf">Web Services versus Distributed Objects: A Case Study of Performance and Interface Design</a><br />
-	William R. Cook, Janel Barfield<br />
-	<a class="venue" href="http://conferences.computer.org/icws/2006/">Proc. of the IEEE International Conference on Web Services (ICWS) 2006</a>.<br />
-	September 18-22, Chicago, USA<br />
-	(<a href="http://www.cs.utexas.edu/~wcook/papers/ICWS2006/wsvsdo.pdf">slides from talk</a>)</li>
-
 	<li><a class="paper" href="http://www.cs.utexas.edu/~wcook/papers/OrcWorkflow06/OrcWorkflow.pdf">Workflow Patterns in Orc</a> (<a href="http://www.cs.utexas.edu/~wcook/papers/OrcWorkflow06/OrcWorkflow2up.pdf">2up</a>)<br />
 	William R. Cook, Sourabh Patwardhan, and Jayadev Misra<br />
 	<span class="venue">Proc. of the International Conference on Coordination Models and Languages</span> (COORDINATION), 2006.<br />
@@ -103,6 +93,9 @@ li.new {
 <a name="Other" id="Other"></a><h2>Other Resources <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
+	<li><a class="paper" href="http://www.cs.utexas.edu/~wcook/papers/OrcImpDraft.pdf">Implementation Outline of Orc</a><br />
+	William R. Cook and Jayadev Misra<br />
+	Unpublished, 2005.</li>
 	<li><a href="references.bib">Selected Bibliography</a> (BibTeX format)</li>
 </ul>
 
