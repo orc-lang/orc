@@ -47,9 +47,12 @@ public class Inequal extends EvalSite {
 	public Object evaluate(Args args) throws TokenException {
 		Object a = args.getArg(0);
 		Object b = args.getArg(1);
-		if (a instanceof Number && b instanceof Number) {
+		if (a == null || b == null) {
+			return a != b;
+		} else if (a instanceof Number && b instanceof Number) {
 			return Args.applyNumericOperator((Number)a, (Number)b, op);
+		} else {
+			return !a.equals(b);
 		}
-		return !a.equals(b);
 	}
 }
