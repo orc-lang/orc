@@ -13,8 +13,6 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.DotSite;
 import orc.runtime.sites.PartialSite;
-import orc.runtime.values.Constant;
-import orc.runtime.values.Value;
 
 import org.htmlparser.Parser;
 import org.htmlparser.filters.LinkRegexFilter;
@@ -42,7 +40,7 @@ public class MySpace extends DotSite {
         private Map<String, Boolean> seenURLs = new HashMap<String, Boolean>();
         
         @Override
-        public Value evaluate(Args args) throws TokenException {
+        public Object evaluate(Args args) throws TokenException {
 
             try {
                 String myspaceURL = args.stringArg(0);
@@ -64,8 +62,7 @@ public class MySpace extends DotSite {
                 LinkTag link = (LinkTag)list.elementAt(0);
                 String showUrl = link.extractLink();
                 
-                List<MusicShow> musicShows = extractMusicShows(showUrl);
-                return new Constant(musicShows);
+                return extractMusicShows(showUrl);
             } catch (ParserException e) {
             	throw new JavaException(e);
             }

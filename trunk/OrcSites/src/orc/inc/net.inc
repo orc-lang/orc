@@ -3,6 +3,7 @@ site Webservice = orc.lib.net.Webservice
 site Ping = orc.lib.net.Ping
 site GoogleSearchFactory = orc.lib.net.GoogleSearchFactory
 site YahooSearchFactory = orc.lib.net.YahooSearchFactory
+site XMPPConnection = orc.lib.net.XMPPConnection
 
 site Mail = orc.lib.net.Mail
 
