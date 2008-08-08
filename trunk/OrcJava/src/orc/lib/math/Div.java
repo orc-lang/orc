@@ -7,8 +7,6 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Args.NumericBinaryOperator;
 import orc.runtime.sites.EvalSite;
-import orc.runtime.values.Constant;
-import orc.runtime.values.Value;
 
 public class Div extends EvalSite {
 	private static final MyOperator op = new MyOperator();
