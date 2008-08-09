@@ -40,7 +40,7 @@ public class OrcParser {
 		try {
 			return (Expression)parser.value(result);
 		} catch (ParseException e) {
-			throw new ParsingException(e.getMessage());
+			throw new ParsingException(e.getMessage(), e);
 		}
 	}
 	
