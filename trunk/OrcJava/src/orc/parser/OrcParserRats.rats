@@ -179,6 +179,15 @@ Operator	Associativity	Precendence	Name
  %		left		7		modulus
  -		unary		8		unary minus
  ()		none		9		application
+-----------------------------------------------------------
+
+A NOTE ABOUT < AND >
+In an expression like a > b > c > d, there is ambiguity about
+which parts are sequencing and which are comparisons. We
+could resolve this with precedence, but that might violate
+the principle of least suprise. Instead, we will disallow
+unparenthesized comparisons as immediate arguments of << and
+>>. See the Safe* productions.
 -----------------------------------------------------------*/
 
 Expression GoalExpression =
@@ -197,52 +206,6 @@ Action<Expression> SemiExpressionTail =
 	}
 	;
 	
-Expression MaybeWhereExpression =
-	WhereExpression
-	// See NaturalDisjunction for
-	// an explanation of why these
-	// alternatives are spelled out
-	/ BarExpression
-	/ SeqExpression
-	/ NaturalDisjunction
-	;
-Expression WhereExpression = 
-	seed:MaybeBarExpression actions:WhereExpressionTail+ {
-		yyValue = apply(actions, seed);
-	}
-	;
-Action<Expression> WhereExpressionTail =
-	LANGLE p:Pattern? LANGLE right:MaybeBarExpression {
-		yyValue = new Action<Expression>() {
-			public Expression run(Expression left) {
-				if (p == null) return new Where(left, right);
-				else return new Where(left, right, p);
-			}
-		};
-	}
-	;
-
-Expression MaybeBarExpression =
-	BarExpression
-	/ MaybeSeqExpression
-	;
-Expression BarExpression =
-	left:MaybeSeqExpression BAR right:MaybeBarExpression {
-		yyValue = new Parallel(left, right);
-	}
-	;
-	
-Expression MaybeSeqExpression =
-	SeqExpression
-	/ Disjunction
-	;
-Expression SeqExpression =
-	left:Disjunction RANGLE p:Pattern? RANGLE right:MaybeSeqExpression {
-		if (p == null) yyValue = new Sequential(left, right);
-		else yyValue = new Sequential(left, right, p);
-	}
-	;
-
 Expression Lambda = 
 	LAMBDA LPAREN formals:PatternList RPAREN
 	curried0:(LPAREN yyValue:PatternList RPAREN)*
@@ -257,35 +220,69 @@ Expression Lambda =
 	}
 	;
 	
-////////////////////////////////////////////////
-// The "Natural" family of expressions allow
-// < and > to be used for less and greater
-// respectively. However in order to avoid
-// parse ambiguity (for humans more than anything),
-// these expressions use a different precedence
+Expression MaybeWhereExpression =
+	// A "Safe" expression is one which does not contain
+	// the comparison operators < and > which might be
+	// confusing to humans
+	seed:SafeMaybeBarExpression actions:WhereExpressionTail+ {
+		yyValue = apply(actions, seed);
+	}
+	/ MaybeBarExpression
+	;
+Action<Expression> WhereExpressionTail =
+	LANGLE p:Pattern? LANGLE right:SafeMaybeBarExpression {
+		yyValue = new Action<Expression>() {
+			public Expression run(Expression left) {
+				if (p == null) return new Where(left, right);
+				else return new Where(left, right, p);
+			}
+		};
+	}
+	;
+
+Expression BarExpression =
+	left:MaybeSeqExpression BAR right:MaybeBarExpression {
+		yyValue = new Parallel(left, right);
+	}
+	;
+Expression MaybeBarExpression = BarExpression / MaybeSeqExpression;
+Expression SafeMaybeBarExpression = BarExpression / SafeMaybeSeqExpression;
 	
-Expression NaturalDisjunction = 
-	left:NaturalConjunction index:OROR right:NaturalDisjunction {
+Expression SeqExpression =
+	left:SafeMaybeDisjunction RANGLE p:Pattern? RANGLE right:SafeMaybeSeqExpression {
+		if (p == null) yyValue = new Sequential(left, right);
+		else yyValue = new Sequential(left, right, p);
+	}
+	;
+Expression MaybeSeqExpression = SeqExpression / MaybeDisjunction;
+Expression SafeMaybeSeqExpression = SeqExpression / SafeMaybeDisjunction;
+
+Expression Disjunction =
+	left:MaybeConjunction index:OROR right:MaybeDisjunction {
 		yyValue = at(index, new Call("op||", left, right));
 	}
-	/ NaturalConjunction
 	;
+Expression MaybeDisjunction = Disjunction / MaybeConjunction;
+Expression SafeMaybeDisjunction = Disjunction / SafeMaybeConjunction;
 	
-Expression NaturalConjunction = 
-	left:NaturalComparison index:ANDAND right:NaturalConjunction {
+Expression Conjunction = 
+	left:MaybeComparison index:ANDAND right:MaybeConjunction {
 		yyValue = at(index, new Call("op&&", left, right));
 	}
-	/ NaturalComparison
+	;
+Expression MaybeConjunction = Conjunction / MaybeComparison;
+Expression SafeMaybeConjunction =
+	Conjunction
+	/ SafeMaybeComparison
 	;
 
-Expression NaturalComparison = 
-	left:Comparable op:NaturalComparator right:Comparable {
+Expression MaybeComparison = 
+	left:Comparable op:Comparator right:Comparable {
 		yyValue = at(op.index, new Call(op.value, left, right));
 	}
-	/ Comparison
+	/ SafeMaybeComparison
 	;
-
-Indexed<String> NaturalComparator =
+Indexed<String> Comparator =
 	value:(
 		RANGLE { yyValue = "op>"; }
 		/ LANGLE{ yyValue = "op<"; }
@@ -293,29 +290,14 @@ Indexed<String> NaturalComparator =
 		yyValue = new Indexed(value, yyStart);
 	}
 	;
-
-Expression Disjunction = 
-	left:Conjunction index:OROR right:Disjunction {
-		yyValue = at(index, new Call("op||", left, right));
-	}
-	/ Conjunction
-	;
 	
-Expression Conjunction = 
-	left:Comparison index:ANDAND right:Conjunction {
-		yyValue = at(index, new Call("op&&", left, right));
-	}
-	/ Comparison
-	;
-	
-Expression Comparison = 
-	left:Comparable op:Comparator right:Comparable {
+Expression SafeMaybeComparison = 
+	left:Comparable op:SafeComparator right:Comparable {
 		yyValue = at(op.index, new Call(op.value, left, right));
 	}
 	/ Comparable
 	;
-
-Indexed<String> Comparator =
+Indexed<String> SafeComparator =
 	value:(
 		EQ { yyValue = "op="; }
 		/ NEQ { yyValue = "op/="; }
@@ -333,22 +315,23 @@ Expression Comparable =
 		yyValue = at(yyStart, new Call("op~", x));
 	}
 	/ Cons
-	/ Sum
+	/ MaybeSum
 	;
 	
 Expression Cons =
-	left:Signed index:COLON right:(Cons / Signed) {
+	left:MaybeSigned index:COLON right:MaybeCons {
 		yyValue = at(index, new ConsExpr(left, right));
 	}
 	;
+Expression MaybeCons = Cons / MaybeSigned;
 	
-Expression Sum =
-	seed:Product actions:SumTail* {
+Expression MaybeSum =
+	seed:MaybeProduct actions:SumTail* {
 		yyValue = apply(actions, seed);
 	}
 	;
 Action<Expression> SumTail =
-	op:SumOperator right:Product {
+	op:SumOperator right:MaybeProduct {
 		yyValue = new Action<Expression>() {
 			public Expression run(Expression left) {
 				return at(op.index, new Call(op.value, left, right));
@@ -365,13 +348,13 @@ Indexed<String> SumOperator =
 	}
 	;
 	
-Expression Product =
-	seed:Signed actions:ProductTail* {
+Expression MaybeProduct =
+	seed:MaybeSigned actions:ProductTail* {
 		yyValue = apply(actions, seed);
 	}
 	;
 Action<Expression> ProductTail =
-	op:ProductOperator right:Signed {
+	op:ProductOperator right:MaybeSigned {
 		yyValue = new Action<Expression>() {
 			public Expression run(Expression left) {
 				return at(op.index, new Call(op.value, left, right));
@@ -390,7 +373,7 @@ Indexed<String> ProductOperator =
 	}
 	;
 
-Expression Signed =
+Expression MaybeSigned =
 	MINUS x:BasicExpression {
 		yyValue = at(yyStart, new Call("opu-", x));
 	}
