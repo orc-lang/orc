@@ -157,6 +157,8 @@ listed according to precedence.
 Operator	Associativity	Precendence	Name
 -----------------------------------------------------------
  ;		left		0		semicolon
+ >		none		1		greater
+ <		none		1		less
  <<		left		1		where
  |		right		2		parallel
  >>		right		3		sequence
@@ -180,12 +182,13 @@ Operator	Associativity	Precendence	Name
 -----------------------------------------------------------*/
 
 Expression GoalExpression =
-	seed:WhereExpression actions:SemiExpressionTail* {
+	Lambda
+	/ seed:MaybeWhereExpression actions:SemiExpressionTail* {
 		yyValue = apply(actions, seed);
 	}
 	;
 Action<Expression> SemiExpressionTail =
-	SEMICOLON right:WhereExpression {
+	SEMICOLON right:MaybeWhereExpression {
 		yyValue = new Action<Expression>() {
 			public Expression run(Expression left) {
 				return new Semi(left, right);
@@ -194,13 +197,22 @@ Action<Expression> SemiExpressionTail =
 	}
 	;
 	
-Expression WhereExpression =
-	seed:BarExpression actions:WhereExpressionTail* {
+Expression MaybeWhereExpression =
+	WhereExpression
+	// See NaturalDisjunction for
+	// an explanation of why these
+	// alternatives are spelled out
+	/ BarExpression
+	/ SeqExpression
+	/ NaturalDisjunction
+	;
+Expression WhereExpression = 
+	seed:MaybeBarExpression actions:WhereExpressionTail+ {
 		yyValue = apply(actions, seed);
 	}
 	;
 Action<Expression> WhereExpressionTail =
-	LANGLE p:Pattern? LANGLE right:BarExpression {
+	LANGLE p:Pattern? LANGLE right:MaybeBarExpression {
 		yyValue = new Action<Expression>() {
 			public Expression run(Expression left) {
 				if (p == null) return new Where(left, right);
@@ -210,22 +222,28 @@ Action<Expression> WhereExpressionTail =
 	}
 	;
 
+Expression MaybeBarExpression =
+	BarExpression
+	/ MaybeSeqExpression
+	;
 Expression BarExpression =
-	left:SeqExpression BAR right:BarExpression {
+	left:MaybeSeqExpression BAR right:MaybeBarExpression {
 		yyValue = new Parallel(left, right);
 	}
-	/ SeqExpression
 	;
-
+	
+Expression MaybeSeqExpression =
+	SeqExpression
+	/ Disjunction
+	;
 Expression SeqExpression =
-	left:Sequent RANGLE p:Pattern? RANGLE right:SeqExpression {
+	left:Disjunction RANGLE p:Pattern? RANGLE right:MaybeSeqExpression {
 		if (p == null) yyValue = new Sequential(left, right);
 		else yyValue = new Sequential(left, right, p);
 	}
-	/ Sequent
 	;
 
-Expression Sequent =
+Expression Lambda = 
 	LAMBDA LPAREN formals:PatternList RPAREN
 	curried0:(LPAREN yyValue:PatternList RPAREN)*
 	EQ body0:Body {
@@ -237,7 +255,43 @@ Expression Sequent =
 		}
 		yyValue = new Lambda(formals, body);
 	}
-	/ Disjunction
+	;
+	
+////////////////////////////////////////////////
+// The "Natural" family of expressions allow
+// < and > to be used for less and greater
+// respectively. However in order to avoid
+// parse ambiguity (for humans more than anything),
+// these expressions use a different precedence
+	
+Expression NaturalDisjunction = 
+	left:NaturalConjunction index:OROR right:NaturalDisjunction {
+		yyValue = at(index, new Call("op||", left, right));
+	}
+	/ NaturalConjunction
+	;
+	
+Expression NaturalConjunction = 
+	left:NaturalComparison index:ANDAND right:NaturalConjunction {
+		yyValue = at(index, new Call("op&&", left, right));
+	}
+	/ NaturalComparison
+	;
+
+Expression NaturalComparison = 
+	left:Comparable op:NaturalComparator right:Comparable {
+		yyValue = at(op.index, new Call(op.value, left, right));
+	}
+	/ Comparison
+	;
+
+Indexed<String> NaturalComparator =
+	value:(
+		RANGLE { yyValue = "op>"; }
+		/ LANGLE{ yyValue = "op<"; }
+	) {
+		yyValue = new Indexed(value, yyStart);
+	}
 	;
 
 Expression Disjunction = 

@@ -73,6 +73,6 @@ public class Call extends Expression {
 	}
 
 	public String toString() {
-		return caller.toString() + "(" + join(args, ", ") + "){-" + getSourceLocation() + "-}";
+		return caller.toString() + "(" + join(args, ", ") + ")";
 	}
 }
