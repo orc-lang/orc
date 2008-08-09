@@ -8,6 +8,6 @@ public class Silent extends Expression {
 		return new orc.ast.simple.Silent();
 	}
 	public String toString() {
-		return "null";
+		return ".";
 	}
 }
