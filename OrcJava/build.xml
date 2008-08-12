@@ -66,4 +66,11 @@
 			<arg value="${orc.location.src}/orc/parser/OrcParserRats.rats" />
 		</java>
 	</target>
+	<target name="ChangeLog" description="ChangeLog">
+		<exec executable="cvs2cl">
+			<arg value="--hide-filenames" />
+			<arg value="--no-wrap" />
+			<arg value="-F" /> <arg value="TRUNK" />
+		</exec>
+	</target>
 </project>
