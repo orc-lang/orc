@@ -48,7 +48,7 @@ val sink = 3
 def succ(0) = (1,2) | (2,6) | (3,9)
 def succ(1) = (3,7)
 def succ(2) = (3,2)
-def succ(3) = null
+def succ(3) = stop
 
 {- Shortest path: [0,2,3] -}
 path(source, sink, cell, succ)

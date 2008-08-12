@@ -43,7 +43,7 @@ val phrases =
 -- execution
 (
     GoogleCalendar.authenticate() 
-  | println("Authenticating...") >> null
+  | println("Authenticating...") >> stop
 ) >>
 phrases >phrase>
 Google(phrase) >pages>
@@ -53,5 +53,5 @@ println("Scraping " + result.url) >>
 MySpace.scrapeMusicShows(result.url) >musicShows>
 each(musicShows) >musicShow>
 GoogleCalendar.addMusicShow(musicShow) >>
-null
+stop
 ; "DONE"

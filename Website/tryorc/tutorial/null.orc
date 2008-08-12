@@ -1,1 +1,1 @@
-Prompt("I'm not listening...") >> null
+Prompt("I'm not listening...") >> stop

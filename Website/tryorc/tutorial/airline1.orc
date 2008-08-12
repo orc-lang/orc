@@ -14,7 +14,7 @@ def Airline(name) =
 -- Return the lesser of two quotes
 def min((n1,q1), (n2,q2)) =
     if(q1 <= q2) >> (n1, q1)
-  | if(q2 <: q1) >> (n2, q2)
+  | if(q2 <  q1) >> (n2, q2)
 
 -- Return the best quote at or under $200
 -- received within 15 seconds
