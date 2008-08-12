@@ -11,5 +11,5 @@ val b = KilimBuffer()
 | t.signal() -- should publish
 | t.sleepThread(1000) >x> "1 "+x
 | t.sleepThread(1000) >x> "1 "+x
-| t.sleep(3000) >> b.put("3 buffered") >>.
+| t.sleep(3000) >> b.put("3 buffered") >> stop
 | b.get()

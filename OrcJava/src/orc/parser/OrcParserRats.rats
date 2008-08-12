@@ -148,22 +148,22 @@ List<Pattern> PatternList =
 	}
 	;
 	
-/*-----------------------------------------------------------
+/*---------------------------------------------------------
 Expressions
 
-For reference, here are Orc's operators
-listed according to precedence.
+For reference, here are Orc's operators listed according to
+precedence.
 
-Operator	Associativity	Precendence	Name
+Symbol	Assoc		Prec	Name
 -----------------------------------------------------------
  ;		left		0		semicolon
- >		none		1		greater
- <		none		1		less
+ >		none		1*		greater
+ <		none		1*		less
  <<		left		1		where
- |		right		2		parallel
+ |		right**		2		parallel
  >>		right		3		sequence
- ||		right		4		boolean or
- &&		right		4		boolean and
+ ||		right**		4		boolean or
+ &&		right**		4		boolean and
  =		none		5		equal
  /=		none		5		not equal
  :>		none		5		greater
@@ -179,15 +179,17 @@ Operator	Associativity	Precendence	Name
  %		left		7		modulus
  -		unary		8		unary minus
  ()		none		9		application
------------------------------------------------------------
 
-A NOTE ABOUT < AND >
-In an expression like a > b > c > d, there is ambiguity about
-which parts are sequencing and which are comparisons. We
-could resolve this with precedence, but that might violate
-the principle of least suprise. Instead, we will disallow
-unparenthesized comparisons as immediate arguments of << and
->>. See the Safe* productions.
+* An expression like (a > b > c > d) could be read as
+either ((a >b> c) > d) or (a > (b >c> d)). We could resolve
+this ambiguity with precedence, but that's likely to
+violate the principle of least suprise. So instead we just
+disallow unparenthesized comparisons in immediate arguments
+of << and >>. See the Safe_ productions.
+
+** These operators are semantically associative, but they
+are implemented as right-associative because it's slightly
+more efficient in Rats!.
 -----------------------------------------------------------*/
 
 Expression GoalExpression =
@@ -382,12 +384,12 @@ Expression MaybeSigned =
 
 Expression BasicExpression =
 	Literal
-	/ DOT {
+	/ STOP {
 		yyValue = new Silent();
 	}
 	/ NULL {
-		// We're changing "null" to "." but
-		// for now we're still allowing it
+		// We're changing "null" to "stop" but
+		// for now we're still allowing both
 		yyValue = new Silent();
 	}
 	/ Call
@@ -548,16 +550,17 @@ String WordToken = [a-zA-Z_] [a-zA-Z0-9_]*;
 // Keywords
 /////////////////////////////////////////////
 
-int DEF = "def" Space { yyValue = yyStart; };
-int TRUE = "true" Space { yyValue = yyStart; };
-int FALSE = "false" Space { yyValue = yyStart; };
-int VAL = "val" Space { yyValue = yyStart; };
-int CLASS = "class" Space { yyValue = yyStart; };
-int SITE = "site" Space { yyValue = yyStart; };
-int NULL = "null" Space { yyValue = yyStart; };
-int INCLUDE = "include" Space { yyValue = yyStart; };
-int LAMBDA = "lambda" Space { yyValue = yyStart; };
-int AS = "as" Space { yyValue = yyStart; };
+transient int DEF = "def" Space { yyValue = yyStart; };
+transient int TRUE = "true" Space { yyValue = yyStart; };
+transient int FALSE = "false" Space { yyValue = yyStart; };
+transient int VAL = "val" Space { yyValue = yyStart; };
+transient int CLASS = "class" Space { yyValue = yyStart; };
+transient int SITE = "site" Space { yyValue = yyStart; };
+transient int NULL = "null" Space { yyValue = yyStart; }; // DEPRECATED
+transient int STOP = "stop" Space { yyValue = yyStart; };
+transient int INCLUDE = "include" Space { yyValue = yyStart; };
+transient int LAMBDA = "lambda" Space { yyValue = yyStart; };
+transient int AS = "as" Space { yyValue = yyStart; };
 transient int EQ = "=" Space { yyValue = yyStart; };
 transient int LBRACE = "{" Space { yyValue = yyStart; };
 transient int RBRACE = "}" Space { yyValue = yyStart; };
