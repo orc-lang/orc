@@ -168,12 +168,12 @@ ones.</p>
 | Rtimer(3000) >> "...three seconds later..."
 | Rtimer(5000) >> "...five seconds later..."</pre>
 
-<p><tt>null</tt> is a special value which never publishes (similar to the
+<p><tt>stop</tt> is a special value which never publishes (similar to the
 concept of "bottom" or &perp; in functional languages).  It is commonly
 used with sequential composition to suppress published values, as in this
 example which waits for your response but does not publish it:</p>
 <pre class="orc">
-Prompt("I'm not listening...") >> null</pre>
+Prompt("I'm not listening...") >> stop</pre>
 
 <a name="Functions"></a><h2>Functions <small>(<a href="#top">top</a>)</small></h2>
 
@@ -251,7 +251,7 @@ def Airline(name) =
 <pre class="orc">
 def min((_,dollar1) as quote1, (_,dollar2) as quote2) =
     if(dollar1 &lt;= dollar2) >> quote1
-  | if(dollar2 &lt;: dollar1) >> quote2
+  | if(dollar2 &lt;  dollar1) >> quote2
 
 -- Example usage
 val delta = Airline("Delta")
@@ -272,7 +272,7 @@ def Airline(name) =
     MakeQuote
 def min((n1,q1), (n2,q2)) =
     if(q1 &lt;= q2) >> (n1, q1)
-  | if(q2 &lt;: q1) >> (n2, q2)
+  | if(q2 &lt;  q1) >> (n2, q2)
 </pre>
 <pre class="orc">
 -- Return the best quote at or under $200
