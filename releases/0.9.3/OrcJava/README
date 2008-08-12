@@ -1,0 +1,4 @@
+This package includes the core interpreter for the Orc language.
+See http://orc.csres.utexas.edu for more information.
+
+See INSTALL for information on using this package.
