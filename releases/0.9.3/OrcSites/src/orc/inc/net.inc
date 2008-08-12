@@ -77,9 +77,9 @@ def MailQuery(mail, to, subject, body) =
 		m
 	outbox.send(message) >>
 	outbox.close() >>
-	lambda () =
+	(lambda () =
 		PollMail(inbox, inbox.filter.to(from), 10000) >m:_>
 		m.text() >text>
 		m.delete() >>
 		inbox.close() >>
-		text
+		text)
