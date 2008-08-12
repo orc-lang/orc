@@ -13,6 +13,11 @@ run at the command line:
   
 to see command-line options.
 
+There are a variety of sample programs in examples/.
+
+Refer to the User's Guide in doc/userguide.pdf for more details of the Orc
+language.
+
 Developer Installation Instructions
 -----------------------------------
 
@@ -66,59 +71,3 @@ Program arguments: ${resource_loc}
 Note: ${resource_loc} is a variable whose value is the currently selected file
 in your workspace. Therefore, whenever you want to run Orc, you must ensure
 that you have an Orc source file selected.
-
-There are a variety of sample programs in examples/.
-
-Refer to the User's Guide in doc/userguide.pdf for more details of the Orc
-language.
-
-Importing Java objects
-----------------------
-
-list_test.orc
-class List = java.util.ArrayList
-
-List() >list>
-    list.add("Item A") >>
-    list.add("Item B") >>
-    list.add("Item C") >>
-    (   println(list.get(0))
-      | println(list.get(1))
-      | println(list.get(2))  ) >>
-    null
-
-Parsing XML using the Java library
-----------------------------------
-
-books.xml
-<catalog>
-  <book id="101">
-    <title>XML in a Nutshell</title>
-    <author>Elliotte Rusty Harold, W. Scott Means</author>
-    <price>39.95</price>
-  </book>
-  <book id="121">
-    <title>Who Moved My Cheese</title>
-    <author>Spencer, M.D. Johnson, Kenneth H. Blanchard</author>
-    <price>19.95</price>
-  </book>
-</catalog>
-
-xml_test.orc
-class DOMParser = com.sun.org.apache.xerces.internal.parsers.DOMParser
-
-DOMParser() >parser>
-    parser.parse("books.xml") >>
-    parser.getDocument() >document>
-    document.getElementsByTagName("title") >elements>
-    elements.item(0).getTextContent()
-
-xml_iter_test.orc
-class DOMParser = com.sun.org.apache.xerces.internal.parsers.DOMParser
-
-DOMParser() >parser>
-    parser.parse("books.xml") >>
-    parser.getDocument() >document>
-    document.getElementsByTagName("title") >elements>
-    each(elements) >element>
-    element.getTextContent()
