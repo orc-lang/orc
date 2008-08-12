@@ -31,4 +31,4 @@ println("Scraping " + result.url) >>
 MySpace.scrapeMusicShows(result.url) >musicShows>
 each(musicShows) >musicShow>
 GoogleCalendar.addMusicShow(musicShow) >>
-null
+stop
