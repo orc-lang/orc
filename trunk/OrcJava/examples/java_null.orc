@@ -1,2 +1,2 @@
-  println(cat(Null())) >>.
+  println(cat(Null())) >> stop
 | Null()
