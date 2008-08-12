@@ -156,40 +156,45 @@ precedence.
 
 Symbol	Assoc		Prec	Name
 -----------------------------------------------------------
- ;		left		0		semicolon
- >		none		1*		greater
- <		none		1*		less
- <<		left		1		where
- |		right**		2		parallel
- >>		right		3		sequence
- ||		right**		4		boolean or
- &&		right**		4		boolean and
- =		none		5		equal
- /=		none		5		not equal
- :>		none		5		greater
- >=		none		5		greater or equal
- <:		none		5		less
- <=		none		5		less or equal
- ~		unary		6		boolean not
- :		right		6		cons
- +		left		6		addition
- -		left		6		subtraction
- *		left		7		multiplication
- /		left		7		division
- %		left		7		modulus
- -		unary		8		unary minus
- ()		none		9		application
+ lambda	unary		0***	lambda
+ ;		left		1		semicolon
+ >		none		2*		greater
+ <		none		2*		less
+ <<		left		2		where
+ |		right**		3		parallel
+ >>		right		4		sequence
+ ||		right**		5		boolean or
+ &&		right**		5		boolean and
+ =		none		6		equal
+ /=		none		6		not equal
+ :>		none		6		greater
+ >=		none		6		greater or equal
+ <:		none		6		less
+ <=		none		6		less or equal
+ ~		unary		7		boolean not
+ :		right		7		cons
+ +		left		7		addition
+ -		left		7		subtraction
+ *		left		8		multiplication
+ /		left		8		division
+ %		left		8		modulus
+ -		unary		9		unary minus
+ ()		none		10		application
 
 * An expression like (a > b > c > d) could be read as
 either ((a >b> c) > d) or (a > (b >c> d)). We could resolve
 this ambiguity with precedence, but that's likely to
 violate the principle of least suprise. So instead we just
-disallow unparenthesized comparisons in immediate arguments
-of << and >>. See the Safe_ productions.
+disallow these operators unparenthesized inside << or >>.
+See the Safe_ productions.
 
 ** These operators are semantically associative, but they
 are implemented as right-associative because it's slightly
 more efficient in Rats!.
+
+*** I'm not sure whether I'd call lambda an operator, but
+the point is it binds very loosely, so everything to the right
+of a lambda is considered part of its body.
 -----------------------------------------------------------*/
 
 Expression GoalExpression =
@@ -224,8 +229,8 @@ Expression Lambda =
 	
 Expression MaybeWhereExpression =
 	// A "Safe" expression is one which does not contain
-	// the comparison operators < and > which might be
-	// confusing to humans
+	// the unparenthesized comparison operators < and >,
+	// which might confuse the parser
 	seed:SafeMaybeBarExpression actions:WhereExpressionTail+ {
 		yyValue = apply(actions, seed);
 	}
@@ -242,13 +247,18 @@ Action<Expression> WhereExpressionTail =
 	}
 	;
 
-Expression BarExpression =
+Expression MaybeBarExpression =
 	left:MaybeSeqExpression BAR right:MaybeBarExpression {
 		yyValue = new Parallel(left, right);
 	}
+	/ MaybeSeqExpression
 	;
-Expression MaybeBarExpression = BarExpression / MaybeSeqExpression;
-Expression SafeMaybeBarExpression = BarExpression / SafeMaybeSeqExpression;
+Expression SafeMaybeBarExpression =
+	left:SafeMaybeSeqExpression BAR right:SafeMaybeBarExpression {
+		yyValue = new Parallel(left, right);
+	}
+	/ SafeMaybeSeqExpression
+	;
 	
 Expression SeqExpression =
 	left:SafeMaybeDisjunction RANGLE p:Pattern? RANGLE right:SafeMaybeSeqExpression {
@@ -259,22 +269,29 @@ Expression SeqExpression =
 Expression MaybeSeqExpression = SeqExpression / MaybeDisjunction;
 Expression SafeMaybeSeqExpression = SeqExpression / SafeMaybeDisjunction;
 
-Expression Disjunction =
+Expression MaybeDisjunction =
 	left:MaybeConjunction index:OROR right:MaybeDisjunction {
 		yyValue = at(index, new Call("op||", left, right));
 	}
+	/ MaybeConjunction
 	;
-Expression MaybeDisjunction = Disjunction / MaybeConjunction;
-Expression SafeMaybeDisjunction = Disjunction / SafeMaybeConjunction;
+Expression SafeMaybeDisjunction =
+	left:SafeMaybeConjunction index:OROR right:SafeMaybeDisjunction {
+		yyValue = at(index, new Call("op||", left, right));
+	}
+	/ SafeMaybeConjunction
+	;
 	
-Expression Conjunction = 
+Expression MaybeConjunction = 
 	left:MaybeComparison index:ANDAND right:MaybeConjunction {
 		yyValue = at(index, new Call("op&&", left, right));
 	}
+	/ MaybeComparison
 	;
-Expression MaybeConjunction = Conjunction / MaybeComparison;
-Expression SafeMaybeConjunction =
-	Conjunction
+Expression SafeMaybeConjunction = 
+	left:SafeMaybeComparison index:ANDAND right:SafeMaybeConjunction {
+		yyValue = at(index, new Call("op&&", left, right));
+	}
 	/ SafeMaybeComparison
 	;
 
