@@ -1,4 +1,4 @@
-def each([]) = null
+def each([]) = stop
 def each(h:t) = h | each(t)
 
 def map(f,[]) = []
