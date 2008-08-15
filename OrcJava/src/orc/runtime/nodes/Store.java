@@ -26,8 +26,7 @@ public class Store extends Node {
 			engine.debug("Store/Stop " + var + "=" + t.getResult(), t);
 		*/
 		GroupCell group = t.getGroup();
-		Object result = t.getResult();
-		group.setValue(result);
+		group.setValue(t);
 		t.die();
 	}
 }

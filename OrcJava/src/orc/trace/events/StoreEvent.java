@@ -3,17 +3,19 @@ package orc.trace.events;
 import java.io.IOException;
 import java.io.Writer;
 
-import orc.trace.handles.LastHandle;
-import orc.trace.handles.RepeatHandle;
 import orc.trace.values.Value;
+import orc.trace.handles.Handle;
+import orc.trace.handles.RepeatHandle;
 
 /**
- * Return from a site call.
+ * Store a value to a future. Should be followed by a {@link FreeEvent} which
+ * indicates that all the effects of setting the future have been recorded.
+ * 
  * @author quark
  */
-public class ResumeEvent extends Event {
-	public final Value value;
-	public ResumeEvent(ForkEvent thread, Value value) {
+public class StoreEvent extends Event {
+	public Value value;
+	public StoreEvent(ForkEvent thread, Value value) {
 		super(new RepeatHandle<ForkEvent>(thread));
 		this.value = value;
 	}

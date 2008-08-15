@@ -8,8 +8,7 @@ import orc.trace.handles.RepeatHandle;
 import orc.trace.values.Value;
 
 /**
- * A top-level publication in a thread. This should always be followed by a
- * {@link DieEvent} for the same thread.
+ * A top-level publication in a thread.
  */
 public class PublishEvent extends Event {
 	public final Value value;

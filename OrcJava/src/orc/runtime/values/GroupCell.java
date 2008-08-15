@@ -11,6 +11,7 @@ import java.util.List;
 import orc.error.runtime.UncallableValueException;
 import orc.runtime.Token;
 import orc.runtime.regions.GroupRegion;
+import orc.trace.events.StoreEvent;
 
 /**
  * A value container that is also a group. Groups are
@@ -59,18 +60,33 @@ public class GroupCell implements Serializable, Future {
 	 * and all waiting tokens are activated.
 	 * @param value 	the value for the group 
 	 */
-	public void setValue(Object value) {
-		this.value = value;
+	public void setValue(Token token) {
+		assert(!bound);
+		this.value = token.getResult();
+		// trace the binding of the future;
+		// if this returns null, we avoid
+		// calling related trace methods
+		StoreEvent store = token.getTracer().store(this.value);
 		bound = true;
 		kill();
 		if (waitList != null) {
 			for (Token t : waitList) {
-				t.getTracer().unblock();
+				if (store != null) {
+					t.getTracer().unblock(store);
+				}
 				t.activate();
 			}
 			waitList = null;
 		}
-		region.close();	
+		if (store == null) {
+			// HACK: for efficiency, if we're not
+			// really tracing, we can run a cheaper
+			// close() operation
+			region.close();	
+		} else {
+			region.close(store);
+			token.getTracer().free(store);
+		}
 	}
 
 	/**

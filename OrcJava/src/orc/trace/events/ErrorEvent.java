@@ -9,8 +9,7 @@ import orc.trace.handles.RepeatHandle;
 import orc.trace.values.Value;
 
 /**
- * A fatal error in a thread. This should always be followed
- * by a {@link DieEvent} for the same thread.
+ * A fatal error in a thread.
  */
 public class ErrorEvent extends Event {
 	public final TokenException error;

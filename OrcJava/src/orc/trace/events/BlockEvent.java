@@ -7,6 +7,12 @@ import orc.trace.handles.LastHandle;
 import orc.trace.handles.RepeatHandle;
 import orc.trace.values.Value;
 
+/**
+ * Thread is blocked waiting for a Future. TODO: include a link to some
+ * corresponding Where event.
+ * 
+ * @author quark
+ */
 public class BlockEvent extends Event {
 	public BlockEvent(ForkEvent thread) {
 		super(new RepeatHandle<ForkEvent>(thread));

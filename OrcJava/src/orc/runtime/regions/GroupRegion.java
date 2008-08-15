@@ -1,6 +1,7 @@
 package orc.runtime.regions;
 
 import orc.runtime.values.GroupCell;
+import orc.trace.events.Event;
 
 public class GroupRegion extends Region {
 
@@ -29,5 +30,4 @@ public class GroupRegion extends Region {
 		}
 		
 	}
-
 }
