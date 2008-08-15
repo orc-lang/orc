@@ -14,7 +14,7 @@
 <a name="casual"></a>
 <h2>Casual Users</h2>
 
-<p>Use our <a href="/orchard">Try Orc!</a> feature to experiment with Orc in
+<p>Use our <a href="tryorc.shtml">Try Orc!</a> feature to experiment with Orc in
 your browser. We are currently working on extending the online job server to
 support user accounts so you can create long-running jobs; please <a
 href="mailto:webmaster at orc.cs.utexas.edu" class="obfuscated-email">contact
