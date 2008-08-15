@@ -21,13 +21,12 @@ public class Semi extends Node {
 	}
 
 	/** 
-	 * The input token is activated on the right node,
-	 * and a copy is activated on the left node.
+	 * The token is forked. The left branch is associated with a new region
+	 * that starts the right branch when it completes.
 	 */
 	public void process(Token t) {
-		
-		SemiRegion region = new SemiRegion(t.getRegion(), t.copy().move(right));
+		Token forked = t.fork();
+		SemiRegion region = new SemiRegion(t.getRegion(), forked.move(right));
 		t.move(left).setRegion(region).activate();
 	}
-
 }

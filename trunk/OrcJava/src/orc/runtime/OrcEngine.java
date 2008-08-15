@@ -3,6 +3,8 @@
  */
 package orc.runtime;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -11,10 +13,14 @@ import java.util.TimerTask;
 
 import orc.Config;
 import orc.env.Env;
+import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.runtime.nodes.Node;
 import orc.runtime.regions.Execution;
 import orc.runtime.values.GroupCell;
+import orc.trace.NullTracer;
+import orc.trace.OutputStreamTracer;
+import orc.trace.Tracer;
 
 /**
  * The Orc Engine provides the main loop for executing active tokens.
@@ -119,7 +125,9 @@ public class OrcEngine implements Runnable {
 		assert(root != null);
 		assert(env != null);
 		region = new Execution(this);
-		activate(new Token(root, env, null, new GroupCell(), region, null, this));
+		Tracer tracer = config.getTracer();
+		tracer.start();
+		activate(new Token(root, env, new GroupCell(), region, this, tracer));
 	}
 	
 	/**
@@ -167,6 +175,7 @@ public class OrcEngine implements Runnable {
 	 * @param t	the token to be added
 	 */
 	synchronized public void resume(Token t) {
+		t.getTracer().resume(t.getResult());
 		queuedReturns.addLast(t);
 		notifyAll();
 	}
@@ -234,20 +243,18 @@ public class OrcEngine implements Runnable {
 	 * Print something (for use by the print and println sites). By default,
 	 * this prints to System.out, but this can be overridden to do something
 	 * else if appropriate.
-	 * 
-	 * @param string
+	 * @see Token#print(String)
 	 */
-	public void print(String string) {
+	void print(String string) {
 		System.out.print(string);
 	}
 	/**
 	 * Print something (for use by the print and println sites). By default,
 	 * this prints to System.out, but this can be overridden to do something
 	 * else if appropriate.
-	 * 
-	 * @param string
+	 * @see Token#println(String)
 	 */
-	public void println(String string) {
+	void println(String string) {
 		System.out.println(string);
 	}
 	

@@ -32,37 +32,13 @@ public class Closure extends Value implements Callable {
 		this.env = env;
 	}
 
-	/** 
-	 * To create a call to a closure, a new token is created using the 
-	 * environment in which the closure was defined. This environment is
-	 * then extended to bind the formals to the actual arguments.
-	 * The caller of the new token is normally a token point to right
-	 * after the call. However, for tail-calls the existing caller
-	 * is reused, rather than creating a new intermediate stack frame.
-	 */
-	public void createCall(Token callToken, List<Object> args, Node nextNode) throws ArityMismatchException {
-		
+	public void createCall(Token t, List<Object> args, Node nextNode) throws ArityMismatchException {
 		if (args.size() != arity) {
 			throw new ArityMismatchException(arity, args.size());
 		}
 		
-		// check tail-call optimization
-		Token returnToken;
-		
-		if (nextNode instanceof Return){
-			returnToken = callToken.getCaller(); // tail-call
-			}
-		else {
-			returnToken = callToken.move(nextNode); // normal call	
-		}
-		
-		Token t = callToken.callcopy(body, env, returnToken);
-		callToken.die();
-		
-		for (Object f : args) {
-			t.bind(f);
-		}
-		
+		t.enterClosure(body, env, nextNode);
+		for (Object f : args) t.bind(f);
 		t.activate();
 	}
 

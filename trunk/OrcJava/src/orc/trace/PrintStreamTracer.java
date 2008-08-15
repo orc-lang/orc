@@ -1,0 +1,50 @@
+package orc.trace;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+
+import orc.error.OrcError;
+import orc.trace.events.Event;
+import orc.trace.events.ForkEvent;
+import orc.trace.handles.Handle;
+import orc.trace.values.Marshaller;
+
+/**
+ * Write trace events to stdout in human-readable form.
+ * FIXME: make which events are written configurable.
+ * 
+ * @author quark
+ */
+public final class PrintStreamTracer extends AbstractTracer {
+	private final OutputStreamWriter out;
+	public PrintStreamTracer(OutputStream out) {
+		this.out = new OutputStreamWriter(out);
+	}
+	protected PrintStreamTracer(ForkEvent fork, Marshaller marshaller, OutputStreamWriter out) {
+		super(fork, marshaller);
+		this.out = out;
+	}
+
+	@Override
+	protected Tracer forked(ForkEvent fork, Marshaller marshaller) {
+		return new PrintStreamTracer(fork, marshaller, out);
+	}
+
+	protected void record(Handle<? extends Event> event) {
+		synchronized (out) {
+			try {
+				event.get().prettyPrint(out);
+				out.write('\n');
+				out.flush();
+			} catch (IOException e) {
+				// FIXME: is there a better way to handle this?
+				// I don't want to pass the exception on to the
+				// caller since there's no way to recover from
+				// it.  Maybe we should just print an error
+				// message rather than kill the whole engine.
+				throw new OrcError(e);
+			}
+		}
+	}
+}

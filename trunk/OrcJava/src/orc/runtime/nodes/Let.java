@@ -19,7 +19,7 @@ public class Let extends Node {
 		Object v = Value.forceArg(t.lookup(arg), t);
 		
 		if (v != Value.futureNotReady) {
-			t.move(next); t.activate(v);
+			t.move(next); t.setResult(v).activate();
 		}
 	}
 

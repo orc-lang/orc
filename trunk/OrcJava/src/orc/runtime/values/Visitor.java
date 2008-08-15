@@ -14,15 +14,33 @@ public abstract class Visitor<V> {
 	public V visit(ListValue v) {
 		return this.visit((Value)v);
 	}
+	public V visit(NilValue v) {
+		return this.visit((ListValue)v);
+	}
+	public V visit(ConsValue v) {
+		return this.visit((ListValue)v);
+	}
 	public V visit(TupleValue v) {
 		return this.visit((Value)v);
+	}
+	public V visit(OptionValue v) {
+		return this.visit((Value)v);
+	}
+	public V visit(NoneValue v) {
+		return this.visit((OptionValue)v);
+	}
+	public V visit(SomeValue v) {
+		return this.visit((OptionValue)v);
 	}
 	public V visit(Site v) {
 		return this.visit((Value)v);
 	}
+	public V visit(Field v) {
+		return this.visit((Value)v);
+	}
 	
 	public final static <V> V visit(Visitor<V> visitor, Object value) {
-		if (value instanceof Value) {
+		if (value != null && value instanceof Value) {
 			return ((Value)value).accept(visitor);
 		} else {
 			return visitor.visit(value);

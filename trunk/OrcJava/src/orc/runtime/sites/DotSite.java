@@ -9,6 +9,10 @@ import java.util.TreeMap;
 import orc.error.runtime.MessageNotUnderstoodException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
+import orc.trace.values.DictValue;
+import orc.trace.values.Marshaller;
+import orc.trace.values.TraceableValue;
+import orc.trace.values.Value;
 
 /**
  * @author dkitchin
@@ -17,7 +21,7 @@ import orc.runtime.Args;
  * methods using addMethods. The code is forward-compatible with many possible
  * optimizations on the field lookup strategy.
  */
-public abstract class DotSite extends EvalSite {
+public abstract class DotSite extends EvalSite implements TraceableValue {
 
 	Map<String,Object> methodMap;
 	
@@ -52,5 +56,12 @@ public abstract class DotSite extends EvalSite {
 	protected void addMethod(String f, Object s) {
 		methodMap.put(f, s);
 	}
-	
+
+	public Value marshal(Marshaller tracer) {
+		DictValue out = new DictValue(getClass());
+		for (Map.Entry<String, Object> entry : methodMap.entrySet()) {
+			out.put(entry.getKey(), tracer.marshal(entry.getValue()));
+		}
+		return out;
+	}
 }

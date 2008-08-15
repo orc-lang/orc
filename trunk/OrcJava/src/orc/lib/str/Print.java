@@ -18,9 +18,11 @@ import orc.runtime.values.Value;
 public class Print extends Site {
 	@Override
 	public void callSite(Args args, Token caller) throws TokenException {
-		for(int i = 0; i < args.size(); i++) {
-			caller.getEngine().print(args.stringArg(i));
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < args.size(); i++) {
+			sb.append(args.stringArg(i));
 		}
+		caller.print(sb.toString());
 		caller.resume(Value.signal());
 	}
 }

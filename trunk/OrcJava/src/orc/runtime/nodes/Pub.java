@@ -8,7 +8,7 @@ public class Pub extends Node {
 
 	@Override
 	public void process(Token t) {
-		t.getEngine().pub(t.getResult());
+		t.publish();
 		t.die();
 	}
 	

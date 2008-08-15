@@ -154,47 +154,48 @@ Expressions
 For reference, here are Orc's operators listed according to
 precedence.
 
-Symbol	Assoc		Prec	Name
+Symbol   Assoc       Prec   Name
 -----------------------------------------------------------
- lambda	unary		0***	lambda
- ;		left		1		semicolon
- >		none		2*		greater
- <		none		2*		less
- <<		left		2		where
- |		right**		3		parallel
- >>		right		4		sequence
- ||		right**		5		boolean or
- &&		right**		5		boolean and
- =		none		6		equal
- /=		none		6		not equal
- :>		none		6		greater
- >=		none		6		greater or equal
- <:		none		6		less
- <=		none		6		less or equal
- ~		unary		7		boolean not
- :		right		7		cons
- +		left		7		addition
- -		left		7		subtraction
- *		left		8		multiplication
- /		left		8		division
- %		left		8		modulus
- -		unary		9		unary minus
- ()		none		10		application
+ lambda  unary       0***   lambda
+ ;       left        1      semicolon
+ <<      left        2      where
+ |       right**     3      parallel
+ >>      right       4      sequence
+ ||      right**     5      boolean or
+ &&      right**     5      boolean and
+ =       none        6      equal
+ /=      none        6      not equal
+ :>      none        6      greater
+ >       none        6*     greater
+ >=      none        6      greater or equal
+ <:      none        6      less
+ <       none        6*     less
+ <=      none        6      less or equal
+ ~       unary       7      boolean not
+ :       right       7      cons
+ +       left        7      addition
+ -       left        7      subtraction
+ *       left        8      multiplication
+ /       left        8      division
+ %       left        8      modulus
+ -       unary       9      unary minus
+ ()      none        10     application
 
 * An expression like (a > b > c > d) could be read as
 either ((a >b> c) > d) or (a > (b >c> d)). We could resolve
 this ambiguity with precedence, but that's likely to
 violate the principle of least suprise. So instead we just
 disallow these operators unparenthesized inside << or >>.
-See the Safe_ productions.
+This results in some unfortunate duplication of the lower-
+precedence operators: see the Safe_ productions.
 
 ** These operators are semantically associative, but they
 are implemented as right-associative because it's slightly
 more efficient in Rats!.
 
 *** I'm not sure whether I'd call lambda an operator, but
-the point is it binds very loosely, so everything to the right
-of a lambda is considered part of its body.
+the point is it binds very loosely, so everything to the
+right of a lambda is considered part of its body.
 -----------------------------------------------------------*/
 
 Expression GoalExpression =

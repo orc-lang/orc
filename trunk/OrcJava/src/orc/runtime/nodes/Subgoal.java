@@ -24,16 +24,15 @@ public class Subgoal extends Node {
 
 	/**
 	 * Executing a subgoal node creates a new group within the current group.
-	 * The input token is copied and the variable is 
-	 * associated with this group cell for execution of the 
-	 * left side of the pull. The token is then moved to the
-	 * right side and it is associated with the new group.
+	 * The token is forked, and the fork is associated with a new group cell
+	 * and region.
 	 */
 	public void process(Token t) {
 		GroupCell cell = t.getGroup().createCell();
 		GroupRegion region = new GroupRegion(t.getRegion(), cell);
 		
-		t.copy().bind(cell).move(left).activate();
-		t.move(right).setGroup(cell).setRegion(region).activate();
+		Token forked = t.fork();
+		t.bind(cell).move(left).activate();
+		forked.move(right).setGroup(cell).setRegion(region).activate();
 	}
 }

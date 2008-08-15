@@ -16,7 +16,7 @@ import orc.runtime.sites.EvalSite;
  * @author wcook, quark
  */
 public class TupleValue extends EvalSite implements Iterable<Object> {
-	Object[] values;
+	public Object[] values;
 	public TupleValue() {
 		this.values = new Object[0];
 	}

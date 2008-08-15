@@ -65,6 +65,7 @@ public class GroupCell implements Serializable, Future {
 		kill();
 		if (waitList != null) {
 			for (Token t : waitList) {
+				t.getTracer().unblock();
 				t.activate();
 			}
 			waitList = null;
@@ -102,9 +103,9 @@ public class GroupCell implements Serializable, Future {
 		if (alive) {
 			if (waitList == null)
 				waitList = new LinkedList<Token>();
+			t.getTracer().block();
 			waitList.add(t);
-		}
-		else {
+		} else {
 			// A token waiting on a dead group cell will remain silent forever.
 			t.die();
 		}

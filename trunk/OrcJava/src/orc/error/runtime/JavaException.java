@@ -15,11 +15,10 @@ package orc.error.runtime;
  *
  */
 public class JavaException extends SiteException {
-	public JavaException(Exception cause) {
+	public JavaException(Throwable cause) {
 		super(cause.toString(), cause);
 	}
-
-	public JavaException(Throwable out) {
-		super(out.toString());
+	public String toString() {
+		return getCause().toString();
 	}
 }
