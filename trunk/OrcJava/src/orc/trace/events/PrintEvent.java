@@ -7,6 +7,10 @@ import orc.trace.handles.RepeatHandle;
 import orc.trace.values.Value;
 import xtc.util.Utilities;
 
+/**
+ * Printing to stdout.
+ * @author quark
+ */
 public class PrintEvent extends Event {
 	public final String output;
 	public final boolean newline;

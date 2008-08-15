@@ -3,25 +3,24 @@ package orc.trace.events;
 import java.io.IOException;
 import java.io.Writer;
 
-import orc.trace.handles.LastHandle;
+import orc.trace.handles.Handle;
 import orc.trace.handles.RepeatHandle;
-import orc.trace.values.Value;
 
 /**
- * Return from a site call.
+ * Thread on right-hand side of a where clause was terminated.
  * @author quark
  */
-public class ResumeEvent extends Event {
-	public final Value value;
-	public ResumeEvent(ForkEvent thread, Value value) {
+public class ChokeEvent extends Event {
+	public Handle<StoreEvent> store;
+	public ChokeEvent(ForkEvent thread, StoreEvent store) {
 		super(new RepeatHandle<ForkEvent>(thread));
-		this.value = value;
+		this.store = new RepeatHandle<StoreEvent>(store);
 	}
 	@Override
 	public void prettyPrint(Writer out) throws IOException {
 		super.prettyPrint(out);
 		out.write("(");
-		value.prettyPrint(out, 1);
+		store.get().prettyPrint(out);
 		out.write(")");
 	}
 }

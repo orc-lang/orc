@@ -7,6 +7,10 @@ import java.util.Arrays;
 import orc.trace.handles.RepeatHandle;
 import orc.trace.values.AbstractValue;
 
+/**
+ * Spawning a new thread.
+ * @author quark
+ */
 public class ForkEvent extends Event {
 	public static ForkEvent ROOT = new ForkEvent() {
 		public void prettyPrint(Writer out) throws IOException {
@@ -25,7 +29,7 @@ public class ForkEvent extends Event {
 	public void prettyPrint(Writer out) throws IOException {
 		super.prettyPrint(out);
 		out.write("(");
-		out.write(Integer.toHexString(hashCode()));
+		out.write(label());
 		out.write(")");
 	}
 }

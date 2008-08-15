@@ -7,9 +7,12 @@ import orc.trace.events.DieEvent;
 import orc.trace.events.ErrorEvent;
 import orc.trace.events.Event;
 import orc.trace.events.ForkEvent;
+import orc.trace.events.ChokeEvent;
+import orc.trace.events.FreeEvent;
 import orc.trace.events.PrintEvent;
 import orc.trace.events.PublishEvent;
 import orc.trace.events.ResumeEvent;
+import orc.trace.events.StoreEvent;
 import orc.trace.events.UnblockEvent;
 import orc.trace.handles.FirstHandle;
 import orc.trace.handles.Handle;
@@ -58,27 +61,35 @@ public abstract class AbstractTracer implements Tracer {
 		record(new OnlyHandle<Event>(new CallEvent(thread,
 				marshaller.marshal(site), arguments2)));
 	}
-	public void die() {
-		record(new OnlyHandle<Event>(new DieEvent(thread)));
+	public void choke(StoreEvent store) {
+		record(new OnlyHandle<Event>(new ChokeEvent(thread, store)));
 	}
 	public void resume(Object value) {
 		record(new OnlyHandle<Event>(new ResumeEvent(thread, marshaller.marshal(value))));
 	}
+	public void die() {
+		record(new OnlyHandle<Event>(new DieEvent(thread)));
+	}
 	public void block() {
 		record(new OnlyHandle<Event>(new BlockEvent(thread)));
 	}
-	public void unblock() {
-		record(new OnlyHandle<Event>(new UnblockEvent(thread)));
+	public StoreEvent store(Object value) {
+		StoreEvent store = new StoreEvent(thread, marshaller.marshal(value));
+		record(new FirstHandle<Event>(store));
+		return store;
 	}
-
+	public void unblock(StoreEvent store) {
+		record(new OnlyHandle<Event>(new UnblockEvent(thread, store)));
+	}
+	public void free(Event event) {
+		record(new OnlyHandle<Event>(new FreeEvent(thread, event)));
+	}
 	public void error(TokenException error) {
 		record(new OnlyHandle<Event>(new ErrorEvent(thread, error)));
 	}
-
 	public void print(String value, boolean newline) {
 		record(new OnlyHandle<Event>(new PrintEvent(thread, value, newline)));
 	}
-
 	public void publish(Object value) {
 		record(new OnlyHandle<Event>(new PublishEvent(thread, marshaller.marshal(value))));
 	}

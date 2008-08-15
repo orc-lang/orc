@@ -12,8 +12,15 @@ public abstract class Event implements Serializable {
 		super();
 		this.thread = thread;
 	}
+	/**
+	 * Return a characteristic (but not guaranteed unique) 
+	 * human-readable label for the event.
+	 */
+	public String label() {
+		return Integer.toHexString(hashCode());
+	}
 	public void prettyPrint(Writer out) throws IOException {
-		out.write(Integer.toHexString(thread.get().hashCode()));
+		out.write(thread.get().label());
 		out.write(":");
 		out.write(getClass().getSimpleName());
 	}
