@@ -122,7 +122,7 @@ run it.
 <small>Font size:
 <a href="#" style="cursor: pointer" onclick="document.getElementById('orc').orcFontSizeUp()">bigger</a> /
 <a href="#" style="cursor: pointer" onclick="document.getElementById('orc').orcFontSizeDown()">smaller</a>
-&nbsp;&nbsp;&nbsp;&nbsp;Examples: <a href="#" style="cursor: pointer" onclick="toggleExamples()">show/hide</a>
+&nbsp;&nbsp;&nbsp;&nbsp;Full screen: <a href="#" style="cursor: pointer" onclick="toggleExamples()">toggle</a>
 </small>
 </div>
 <textarea id="orc" spellcheck="false" class="orc" style="width: 700px; height: 300px">
