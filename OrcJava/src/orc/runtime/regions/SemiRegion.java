@@ -19,6 +19,10 @@ public class SemiRegion extends Region {
 		parent.remove(this);
 	}
 
+	public Region getParent() {
+		return parent;
+	}
+
 	
 
 }
