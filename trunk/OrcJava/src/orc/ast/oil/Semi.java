@@ -5,7 +5,11 @@ import java.util.Set;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
+import orc.env.Env;
+import orc.error.compiletime.typing.TypeException;
+import orc.runtime.nodes.Leave;
 import orc.runtime.nodes.Node;
+import orc.type.Type;
 
 public class Semi extends Expr {
 
@@ -20,7 +24,7 @@ public class Semi extends Expr {
 	
 	@Override
 	public Node compile(Node output) {
-		return new orc.runtime.nodes.Semi(left.compile(output), right.compile(output));
+		return new orc.runtime.nodes.Semi(left.compile(new Leave(output)), right.compile(output));
 	}
 
 	@Override
@@ -36,5 +40,21 @@ public class Semi extends Expr {
 	@Override
 	public <E> E accept(Visitor<E> visitor) {
 		return visitor.visit(this);
+	}
+	
+	
+	@Override
+	public Type typesynth(Env<Type> ctx) throws TypeException {
+		
+		Type L = left.typesynth(ctx);
+		Type R = right.typesynth(ctx);
+		return L.join(R);
+	}
+
+	@Override
+	public void typecheck(Type T, Env<Type> ctx) throws TypeException {
+		
+		left.typecheck(T, ctx);
+		right.typecheck(T, ctx);
 	}
 }
