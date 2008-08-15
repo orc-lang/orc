@@ -6,8 +6,8 @@ import orc.runtime.Token;
 
 public class ConsValue extends ListValue {
 
-	private Object h;
-	private ListValue t;
+	public Object h;
+	public ListValue t;
 	
 	
 	public ConsValue(Object h, ListValue t) {
@@ -34,5 +34,10 @@ public class ConsValue extends ListValue {
 		List<Object> tl = t.enlist();
 		tl.add(0,h);
 		return tl;
+	}
+	
+	@Override
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

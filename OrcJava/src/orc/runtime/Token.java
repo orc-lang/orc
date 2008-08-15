@@ -11,6 +11,7 @@ import orc.error.SourceLocation;
 import orc.error.runtime.TokenException;
 import orc.error.runtime.UncallableValueException;
 import orc.runtime.nodes.Node;
+import orc.runtime.nodes.Return;
 import orc.runtime.regions.Execution;
 import orc.runtime.regions.Region;
 import orc.runtime.sites.java.ObjectProxy;
@@ -18,6 +19,7 @@ import orc.runtime.values.Callable;
 import orc.runtime.values.Future;
 import orc.runtime.values.GroupCell;
 import orc.runtime.values.Value;
+import orc.trace.Tracer;
 
 /**
  * Representation of an active thread of execution. Tokens
@@ -27,8 +29,24 @@ import orc.runtime.values.Value;
  * to the next token.
  * @author wcook, dkitchin, quark
  */
-public class Token implements Serializable, Comparable<Token> {
-	private static final long serialVersionUID = 1L;
+public final class Token implements Serializable, Comparable<Token> {
+	/**
+	 * Return pointer for a function call.
+	 * At one point we used a token for the return pointer,
+	 * but that was really an abuse of tokens.
+	 * @author quark
+	 */
+	protected static class Continuation {
+		public Node node;
+		public Env<Object> env;
+		public Continuation continuation;
+		public Continuation(Node node, Env<Object> env, Continuation continuation) {
+			this.node = node;
+			this.env = env;
+			this.continuation = continuation;
+		}
+	}
+	
 	protected Node node;	
 	protected Env<Object> env;
 	protected GroupCell group;
@@ -42,27 +60,29 @@ public class Token implements Serializable, Comparable<Token> {
 	 * node, not the current one, so the source location would be
 	 * incorrect.
 	 */
-	private SourceLocation location;
-	Token caller;
-	Object result;
-	boolean alive;
+	protected SourceLocation location;
+	protected Tracer tracer;
+	protected Continuation continuation;
+	protected Object result;
+	protected boolean alive;
 	
-	public Token(Node node, Env<Object> env, Token caller, GroupCell group, Region region, Object result, OrcEngine engine) {
+	/** Copy constructor */
+	protected Token(Node node, Env<Object> env, Continuation continuation, GroupCell group, Region region, Object result, OrcEngine engine, Tracer tracer) {
 		this.node = node;
 		this.env = env;
-		this.caller = caller;
+		this.continuation = continuation;
 		this.group = group;
 		this.result = result;
 		this.engine = engine;
 		this.region = region;
 		this.alive = true;
+		this.tracer = tracer;
 		region.add(this);
 	}
 	
-	public Token(Node node, Env<Object> env, Execution exec) {
-		this(node, env, null, new GroupCell(), exec, null, exec.getEngine());		
+	public Token(Node node, Env<Object> env, GroupCell group, Region region, OrcEngine engine, Tracer tracer) {
+		this(node, env, null, group, region, null, engine, tracer);
 	}
-	
 
 	// Signal that this token is dead
 	// Synchronized so that multiple threads don't simultaneously signal
@@ -71,12 +91,14 @@ public class Token implements Serializable, Comparable<Token> {
 		if (alive) {
 			alive = false;
 			region.remove(this);
+			tracer.die();
 		}
 	}
 	
 	// An unreachable token is always dead.
-	public void finalize() { die(); } 
-		
+	public void finalize() {
+		die();
+	} 
 	
 	/**
 	 * If a token is alive, calls the node to perform the next action.
@@ -108,10 +130,6 @@ public class Token implements Serializable, Comparable<Token> {
 		return result;
 	}
 
-	public Token getCaller() {
-		return caller;
-	}
-	
 	public OrcEngine getEngine() {
 		return engine;
 	}
@@ -119,36 +137,37 @@ public class Token implements Serializable, Comparable<Token> {
 	public Region getRegion() {
 		return region;
 	}
-
-	
 	
 	public Token setResult(Object result) {
 		this.result = result;
 		return this;
 	}
 	
-	
 	public Token setGroup(GroupCell group) {
 		this.group = group;
 		return this;
 	}
 
+	/**
+	 * Migrate the token from one region to another.
+	 */
 	public Token setRegion(Region region) {
-		
-		// Migrate the token from one region to another
+		// the order of operations ensures
+		// that we don't close a region prematurely
 		region.add(this);
 		this.region.remove(this);
-		
 		this.region = region;
 		return this;
+	}
+	
+	public Tracer getTracer() {
+		return tracer;
 	}
 	
 	public Token setEnv(Env<Object> e) {
 		this.env = e;
 		return this;
 	}
-
-	
 
 	/**
 	 * Move to a node node
@@ -161,21 +180,28 @@ public class Token implements Serializable, Comparable<Token> {
 	}
 	
 	/**
-	 * 
-	 * Create a copy of this token with the same dynamic characteristics,
-	 * but executing at a new point in the graph with a different environment.
-	 * Set the new caller's token to the token provided.
+	 * Enter a closure by moving to a new node and environment,
+	 * and setting the continuation for {@link #leaveClosure()}.
 	 */
-	public Token callcopy(Node node, Env<Object> env, Token returnToken) {
-		return new Token(node, env, returnToken, group, region, null, engine);
+	public Token enterClosure(Node node, Env<Object> env, Node next) {
+		if (next instanceof Return) {
+			// handle tail call specially
+			continuation = continuation.continuation;
+		} else {
+			continuation = new Continuation(next, this.env, continuation);
+		}
+		return setEnv(env).move(node);
 	}
-
+	
 	/**
-	 * Create a copy of the token
-	 * @return new token
+	 * Leave a closure by returning to the continuation set by
+	 * {@link #enterClosure(Node, Env, Node)}.
 	 */
-	public Token copy() {
-		return new Token(node, env, caller, group, region, result, engine);
+	public Token leaveClosure() {
+		setEnv(continuation.env);
+		move(continuation.node);
+		continuation = continuation.continuation;
+		return this;
 	}
 
 	/**
@@ -213,36 +239,25 @@ public class Token implements Serializable, Comparable<Token> {
 		return 0;
 	}
 	
-	
-	public void debug(String s)
-	{
+	public void debug(String s) {
 		engine.debug(s);
 	}
 	
-	public void activate()
-	{
+	public void activate() {
 		engine.activate(this);
-	}
-	
-	public void activate(Object v)
-	{
-		setResult(v);
-		activate();
 	}
 	
 	/*
 	 * TODO: Introduce priority on tokens, or an 'isImmediate' predicate on sites,
 	 * so that let and 'immediate' sites have priority over other site returns.
 	 */
-	public void resume(Object object)
-	{
+	public void resume(Object object) {
 		this.result = object;
 		engine.resume(this);
 	}
 	
 	/* A return with no arguments simply returns a signal */
-	public void resume()
-	{
+	public void resume() {
 		resume(Value.signal());
 	}
 	
@@ -250,9 +265,46 @@ public class Token implements Serializable, Comparable<Token> {
 	/* This token has encountered an error, and dies. */
 	public void error(TokenException problem) {
 		problem.setSourceLocation(location);
+		tracer.error(problem);
 		engine.tokenError(this, problem);
 		// die after reporting the error, so the engine
 		// isn't halted before it gets a chance to report it
 		die();
+	}
+
+	/**
+	 * Print something (for use by the print and println sites).
+	 */
+	public void print(String string) {
+		tracer.print(string, false);
+		engine.print(string);
+	}
+
+	/**
+	 * Print something (for use by the print and println sites).
+	 */
+	public void println(String string) {
+		tracer.print(string, true);
+		engine.println(string);
+	}
+
+	/**
+	 * Publish a value to the top level.
+	 */
+	public void publish() {
+		tracer.publish(result);
+		engine.pub(result);
+	}
+
+	/**
+	 * Fork a token.
+	 * The original token continues on the left while
+	 * the new token evaluates the right (this order
+	 * is arbitrary, but right-branching ensures
+	 * fewer tokens are created with left-associative
+	 * asymmetric combinators).
+	 */
+	public Token fork() {
+		return new Token(node, env, continuation, group, region, result, engine, tracer.fork());
 	}
 }

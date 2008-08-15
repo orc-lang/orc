@@ -5,6 +5,8 @@ import java.util.LinkedList;
 /**
  * Same as {@link java.util.concurrent.Semaphore}, but
  * for Kilim tasks.
+ * FIXME: {@link kilim.Task#pause(PauseReason)} is package-access-restricted,
+ * so we need to put this class in the kilim package to get access to it.
  * @author quark
  */
 public class Semaphore {

@@ -31,18 +31,20 @@ public abstract class Site extends Value implements Callable {
 	 * @see orc.runtime.values.Callable#createCall(orc.runtime.Token, java.util.List, orc.runtime.nodes.Node)
 	 */
 	public void createCall(Token callToken, List<Object> args, Node nextNode) throws TokenException {
-
-		List<Object> values = new LinkedList<Object>();
+		Object[] values = new Object[args.size()];
 		
+		int i = 0;
 		for (Object f : args) {	
 			Object v = Value.forceArg(f, callToken);
 			if (v == Value.futureNotReady) {
 				return;
 			} else {
-				values.add(v);
+				values[i] = v;
 			}
+			++i;
 		}
 	
+		callToken.getTracer().call(this, values);
 		callSite(new Args(values), callToken.move(nextNode));
 	}
 	

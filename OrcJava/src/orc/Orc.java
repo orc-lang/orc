@@ -25,8 +25,9 @@ import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.parser.OrcParser;
 import orc.runtime.OrcEngine;
+import orc.runtime.Token;
 import orc.runtime.nodes.Node;
-import orc.runtime.nodes.result.QueueResult;
+import orc.runtime.nodes.Pub;
 
 /**
  * Main class for Orc. Parses Orc file and executes it.
@@ -50,7 +51,7 @@ public class Orc {
 		
 		Node n;
 		try {
-			n = compile(cfg.getInstream(), cfg.getTarget(), cfg);
+			n = compile(cfg.getInstream(), new Pub(), cfg);
 		} catch (CompilationException e) {
 			System.err.println(e);
 			return;
@@ -66,10 +67,6 @@ public class Orc {
 		System.out.println("Running...");
 		// Run the Orc program
 		engine.run(n);
-	}
-	
-	public static orc.ast.simple.Expression compile(Reader source, Config cfg) throws CompilationException, IOException {
-		return compile(source, cfg, true);
 	}
 	
 	/**
@@ -99,7 +96,7 @@ public class Orc {
 		return new InputStreamReader(stream);
 	}
 	
-	public static orc.ast.simple.Expression compile(Reader source, Config cfg, boolean includeStdlib) throws IOException, CompilationException {
+	public static orc.ast.simple.Expression compile(Reader source, Config cfg) throws IOException, CompilationException {
 
 		//System.out.println("Parsing...");
 		// Parse the goal expression
@@ -111,7 +108,7 @@ public class Orc {
 		//System.out.println("Importing declarations...");
 		LinkedList<Declaration> decls = new LinkedList<Declaration>();
 		
-		if (includeStdlib) {
+		if (!cfg.getNoPrelude()) {
 			// Load declarations from the default include file.
 			OrcParser fparser = new OrcParser(openInclude("prelude.inc"), "prelude.inc");
 			decls.addAll(fparser.parseModule());
@@ -146,24 +143,26 @@ public class Orc {
 		return en;
 	}
 
-	/** @deprecated */
-	public static OrcInstance runEmbedded(String source) { 
+	/** @throws IOException 
+	 * @throws FileNotFoundException 
+	 * @throws CompilationException 
+	 * @deprecated */
+	public static OrcInstance runEmbedded(String source) throws CompilationException, FileNotFoundException, IOException { 
 		return runEmbedded(new File(source)); 
 	}
 	
-	/** @deprecated */
-	public static OrcInstance runEmbedded(File source) { 
-		try {
-			return runEmbedded(new FileReader(source));
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
-		}
+	/** @throws IOException 
+	 * @throws FileNotFoundException 
+	 * @throws CompilationException 
+	 * @deprecated */
+	public static OrcInstance runEmbedded(File source) throws CompilationException, FileNotFoundException, IOException { 
+		return runEmbedded(new FileReader(source));
 	}
 	
-	/** @deprecated */
-	public static OrcInstance runEmbedded(Reader source) { 
+	/** @throws IOException 
+	 * @throws CompilationException 
+	 * @deprecated */
+	public static OrcInstance runEmbedded(Reader source) throws CompilationException, IOException { 
 		return runEmbedded(source, new Config());
 	}
 	
@@ -175,40 +174,36 @@ public class Orc {
 	 * @deprecated
 	 * @param source
 	 * @param cfg
+	 * @throws IOException 
+	 * @throws CompilationException 
 	 */
-	public static OrcInstance runEmbedded(Reader source, Config cfg) {
-		
-		BlockingQueue<Object> q = new LinkedBlockingQueue<Object>();
+	public static OrcInstance runEmbedded(Reader source, Config cfg) throws CompilationException, IOException {
+		final BlockingQueue<Object> q = new LinkedBlockingQueue<Object>();
 	
 		// Try to run Orc with these options
-		try {	
-				Node n = compile(source, new QueueResult(q), cfg);
-		        
-				// Configure the runtime engine.
-				OrcEngine engine = new OrcEngine(cfg);
-		        engine.debugMode = cfg.debugMode();
-		        
-		        // Create an OrcInstance object, to be run in its own thread
-		        Env env = new Env();
-		        OrcInstance inst = new OrcInstance(engine, n, env, q);
-		        
-		        // Run the Orc instance in its own thread
-		        Thread t = new Thread(inst);
-		        t.start();
-		        
-		        // Return the instance object.
-		        return inst;
-			} catch (Exception e) {
-				System.err.println("exception: " + e);
-				if (cfg.debugMode())
-					e.printStackTrace();
-			} catch (Error e) {
-				System.err.println(e.toString());
-				if (cfg.debugMode())
-					e.printStackTrace();
+		Node result = new Node() {
+			@Override
+			public void process(Token t) {
+				q.add(t.getResult());
+				t.die();
 			}
-			
-		return null;
+		};
+		Node n = compile(source, result, cfg);
+        
+		// Configure the runtime engine.
+		OrcEngine engine = new OrcEngine(cfg);
+        engine.debugMode = cfg.debugMode();
+        
+        // Create an OrcInstance object, to be run in its own thread
+        Env env = new Env();
+        OrcInstance inst = new OrcInstance(engine, n, env, q);
+        
+        // Run the Orc instance in its own thread
+        Thread t = new Thread(inst);
+        t.start();
+        
+        // Return the instance object.
+        return inst;
 	}
 	
 	private static String tmpdir = System.getProperty("java.io.tmpdir");

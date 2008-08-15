@@ -27,12 +27,16 @@ import orc.runtime.values.Value;
  *
  */
 
-public class Args implements Serializable {
+public class Args implements Serializable, Iterable<Object> {
 	Object[] values;
 	
 	public Args(List<Object> values) {
 		this.values = new Object[values.size()];
 		this.values = values.toArray(this.values);
+	}
+	
+	public Args(Object[] values) {
+		this.values = values;
 	}
 	
 	public int size() {
@@ -342,5 +346,9 @@ public class Args implements Serializable {
 			throw new OrcError("Unexpected Number type in ("
 					+ a.getClass().toString() + ")");
 		}
+	}
+
+	public Iterator<Object> iterator() {
+		return Arrays.asList(values).iterator();
 	}
 }

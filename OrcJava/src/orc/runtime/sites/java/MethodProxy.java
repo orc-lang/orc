@@ -83,6 +83,8 @@ public class MethodProxy extends Site {
     private static void invoke(Token caller, Method m, Object that, Object[] args) {
 		try {
     		caller.resume(wrapResult(m, m.invoke(that, args)));
+		} catch (InvocationTargetException e) {
+			caller.error(new JavaException(e.getCause()));
 		} catch (Exception e) {
 			caller.error(new JavaException(e));
 		}

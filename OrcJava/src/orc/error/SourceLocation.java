@@ -1,6 +1,8 @@
 package orc.error;
 
-public class SourceLocation {
+import java.io.Serializable;
+
+public class SourceLocation implements Serializable {
 	public Integer line;
 	public Integer column;
 	public String filename;

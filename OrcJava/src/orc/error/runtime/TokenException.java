@@ -35,4 +35,7 @@ public abstract class TokenException extends ExecutionException implements Locat
 		this.loc = location;
 	}
 
+	public String toString() {
+		return loc + ": " + super.toString();
+	}
 }

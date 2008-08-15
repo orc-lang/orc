@@ -18,17 +18,13 @@ public class Fork extends Node {
 		this.right = right;
 	}
 
-	/** 
-	 * The input token is activated on the right node,
-	 * and a copy is activated on the left node.
-	 */
 	public void process(Token t) {
 		/*
 		if (engine.debugMode)
 			engine.debug("Fork", t);
 		*/
-		t.copy().move(left).activate();
-		t.move(right).activate();
+		Token forked = t.fork();
+		t.move(left).activate();
+		forked.move(right).activate();
 	}
-
 }

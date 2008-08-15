@@ -25,5 +25,8 @@ public class NilValue extends ListValue {
 		return new LinkedList<Object>();
 	}
 	
-	
+	@Override
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
+	}	
 }

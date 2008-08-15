@@ -9,16 +9,14 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.ObjectOutputStream;
 import java.io.Reader;
-import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.List;
 
-import orc.runtime.nodes.Node;
-import orc.runtime.nodes.Pub;
-import orc.runtime.nodes.result.WriteResult;
+import orc.trace.NullTracer;
+import orc.trace.OutputStreamTracer;
+import orc.trace.PrintStreamTracer;
+import orc.trace.Tracer;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -38,13 +36,14 @@ import org.kohsuke.args4j.Option;
  */
 public class Config {
 
-	private Node target = new Pub();
 	private Boolean debug = false;
+	private Tracer tracer = new NullTracer();
 	private List<String> includes = new LinkedList<String>();
 	private Integer maxpub = null;
 	private Reader instream = new InputStreamReader(System.in);
 	private Integer numKilimThreads = 1;
 	private Integer numSiteThreads = 2;
+	private Boolean noPrelude = false;
 	
 	public void processArgs(String[] args) {
 		CmdLineParser parser = new CmdLineParser(this); 
@@ -66,6 +65,26 @@ public class Config {
 	@Option(name="-debug",usage="Enable debugging output")
 	public void setDebug(boolean debug) {
 		this.debug = debug;
+	}
+	
+	@Option(name="-noprelude",usage="Do not implicitly include standard library (prelude).")
+	public void setNoPrelude(boolean noPrelude) {
+		this.noPrelude = noPrelude;
+	}
+	
+	@Option(name="-trace",usage="Specify a filename for tracing. The special filename \"-\" will write a human-readable trace to stdout.")
+	public void setTraceFile(File file) throws CmdLineException {
+		if (file.getPath().equals("-")) {
+			tracer = new PrintStreamTracer(System.err);
+		} else {
+			try {
+				tracer = new OutputStreamTracer(new FileOutputStream(file));
+			} catch (FileNotFoundException e) {
+				throw new CmdLineException("Could not find trace file '"+file+"'");
+			} catch (IOException e) {
+				throw new CmdLineException("Error opening trace file '"+file+"'");
+			}
+		}
 	}
 	
 	@Option(name="-i",usage="Include this file from the package orc.inc;" +
@@ -93,14 +112,13 @@ public class Config {
 		// TODO: implement environment variable processing of configuration options
 	}
 	
-	public Node getTarget()
-	{
-		return target;
-	}
-	
 	public Boolean debugMode()
 	{
 		return debug;
+	}
+	
+	public Boolean getNoPrelude() {
+		return noPrelude;
 	}
 	
 	public Integer maxPubs()
@@ -111,6 +129,10 @@ public class Config {
 	public Reader getInstream()
 	{
 		return instream;
+	}
+	
+	public Tracer getTracer() {
+		return tracer;
 	}
 	
 	public List<String> getIncludes()

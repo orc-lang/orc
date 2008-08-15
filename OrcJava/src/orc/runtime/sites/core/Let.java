@@ -20,7 +20,10 @@ public class Let extends Site {
 	public void callSite(Args args, Token caller) {
 		// Note that a let does not resume like a normal site call; it sets the result and activates directly;
 		// This is necessary to preserve the "immediate" semantics of Let.
-		caller.setResult(args.condense()).activate();
+		caller.setResult(args.condense());
+		// Need to trace the return even though it's weird
+		caller.getTracer().resume(caller.getResult());
+		// Activate the token
+		caller.activate();
 	}
-
 }
