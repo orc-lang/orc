@@ -35,13 +35,13 @@ public class TuplePattern extends Pattern {
 		}
 		return false;
 	}
-	public Term substitute(Frame frame) {
+	public Term evaluate(Frame frame) {
 		// used to check if all substituted subterms are values
 		boolean isValue = true;
 		// substitute in subterms
 		Term[] values1 = new Term[values.length];
 		for (int i = 0; i < values.length; ++i) {
-			values1[i] = values[i].substitute(frame);
+			values1[i] = values[i].evaluate(frame);
 			isValue = isValue && values1[i] instanceof Value;
 		}
 		if (isValue) {

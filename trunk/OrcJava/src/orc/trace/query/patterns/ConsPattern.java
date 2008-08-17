@@ -30,9 +30,9 @@ public class ConsPattern extends Pattern {
 		}
 		return false;
 	}
-	public Term substitute(Frame frame) {
-		Term head1 = head.substitute(frame);
-		Term tail1 = tail.substitute(frame);
+	public Term evaluate(Frame frame) {
+		Term head1 = head.evaluate(frame);
+		Term tail1 = tail.evaluate(frame);
 		if (head1 instanceof Value && tail1 instanceof ListValue) {
 			// if the variables are gone, use a value
 			return new ConsValue((Value)head1, (ListValue)tail1);

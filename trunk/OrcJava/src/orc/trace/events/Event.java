@@ -41,7 +41,7 @@ public abstract class Event implements Serializable, RecordTerm {
 	public boolean unify(Frame frame, Term that) {
 		return equals(that);
 	}
-	public Term substitute(Frame frame) {
+	public Term evaluate(Frame frame) {
 		return this;
 	}
 	public boolean occurs(Variable var) {
