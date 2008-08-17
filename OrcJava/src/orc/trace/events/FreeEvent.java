@@ -6,6 +6,7 @@ import java.io.Writer;
 import orc.trace.handles.Handle;
 import orc.trace.handles.LastHandle;
 import orc.trace.handles.RepeatHandle;
+import orc.trace.query.Term;
 
 /**
  * Dummy event used to free a handle to an event.
@@ -28,5 +29,9 @@ public class FreeEvent extends Event {
 		out.write("(");
 		event.get().prettyPrint(out, indent+1);
 		out.write(")");
+	}
+	public Term getProperty(String key) {
+		if (key.equals("event")) return event.get();
+		else return super.getProperty(key);
 	}
 }

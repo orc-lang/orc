@@ -9,7 +9,7 @@ import java.util.TreeMap;
 import orc.error.runtime.MessageNotUnderstoodException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
-import orc.trace.values.DictValue;
+import orc.trace.values.RecordValue;
 import orc.trace.values.Marshaller;
 import orc.trace.values.TraceableValue;
 import orc.trace.values.Value;
@@ -58,7 +58,7 @@ public abstract class DotSite extends EvalSite implements TraceableValue {
 	}
 
 	public Value marshal(Marshaller tracer) {
-		DictValue out = new DictValue(getClass());
+		RecordValue out = new RecordValue(getClass());
 		for (Map.Entry<String, Object> entry : methodMap.entrySet()) {
 			out.put(entry.getKey(), tracer.marshal(entry.getValue()));
 		}

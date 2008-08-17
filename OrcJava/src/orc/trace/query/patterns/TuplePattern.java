@@ -29,7 +29,7 @@ public class TuplePattern extends Pattern {
 			TupleValue that = (TupleValue)that_;
 			if (that.values.length != values.length) return false;
 			for (int i = 0; i < values.length; ++i) {
-				if (!values[i].unify(frame, that.values[i])) return false;
+				if (!frame.unify(values[i], that.values[i])) return false;
 			}
 			return true;
 		}

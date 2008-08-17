@@ -7,10 +7,11 @@ import java.io.Writer;
 
 import orc.trace.handles.Handle;
 import orc.trace.query.Frame;
+import orc.trace.query.RecordTerm;
 import orc.trace.query.Term;
 import orc.trace.query.patterns.Variable;
 
-public abstract class Event implements Serializable, Term {
+public abstract class Event implements Serializable, RecordTerm {
 	public final Handle<ForkEvent> thread;
 	public Event(final Handle<ForkEvent> thread) {
 		super();
@@ -45,5 +46,9 @@ public abstract class Event implements Serializable, Term {
 	}
 	public boolean occurs(Variable var) {
 		return false;
+	}
+	public Term getProperty(String key) {
+		if (key.equals("thread")) return thread.get();
+		return null;
 	}
 }

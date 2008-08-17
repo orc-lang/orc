@@ -3,6 +3,7 @@ package orc.trace.events;
 import java.io.IOException;
 import java.io.Writer;
 
+import orc.trace.query.Term;
 import orc.trace.values.Value;
 import orc.trace.handles.Handle;
 import orc.trace.handles.RepeatHandle;
@@ -25,5 +26,9 @@ public class StoreEvent extends Event {
 		out.write("(");
 		value.prettyPrint(out, indent+1);
 		out.write(")");
+	}
+	public Term getProperty(String key) {
+		if (key.equals("value")) return value;
+		else return super.getProperty(key);
 	}
 }

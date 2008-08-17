@@ -2,7 +2,6 @@ package orc.trace.values;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.io.Writer;
 
 import orc.trace.query.Frame;
 import orc.trace.query.Term;
@@ -17,9 +16,6 @@ public abstract class AbstractValue implements Value {
 		} catch (IOException e) {
 			throw new AssertionError(e);
 		}
-	}
-	public static void indent(Writer out, int indent) throws IOException {
-		for (int i = 0; i < indent; ++i) out.write('\t');
 	}
 	public boolean unify(Frame frame, Term value) {
 		return equals(value);

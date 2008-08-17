@@ -25,8 +25,8 @@ public class ConsPattern extends Pattern {
 				&& frame.unify(tail, that.tail);
 		} else if (that_ instanceof ConsValue) {
 			ConsValue that = (ConsValue)that_;
-			return head.unify(frame, that.head)
-				&& tail.unify(frame, that.tail);
+			return frame.unify(head, that.head)
+				&& frame.unify(tail, that.tail);
 		}
 		return false;
 	}

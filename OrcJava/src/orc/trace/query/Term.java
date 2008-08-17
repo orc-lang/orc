@@ -22,8 +22,9 @@ import orc.trace.values.Value;
 public interface Term {
 	/**
 	 * Unify this with that using the given environment.
-	 * If this is not an instance of {@link Pattern},
-	 * then neither is that.
+	 * Don't call this directly, use {@link Frame#unify(Term, Term)}.
+	 * If this is not an instance of {@link Variable}, then neither is that.
+	 * If this is not an instance of {@link Pattern}, then neither is that.
 	 */
 	public boolean unify(Frame frame, Term that);
 	/**

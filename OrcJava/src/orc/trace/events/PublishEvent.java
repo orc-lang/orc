@@ -5,6 +5,7 @@ import java.io.Writer;
 
 import orc.trace.handles.LastHandle;
 import orc.trace.handles.RepeatHandle;
+import orc.trace.query.Term;
 import orc.trace.values.Value;
 
 /**
@@ -22,5 +23,9 @@ public class PublishEvent extends Event {
 		out.write("(");
 		value.prettyPrint(out, indent+1);
 		out.write(")");
+	}
+	public Term getProperty(String key) {
+		if (key.equals("value")) return value;
+		else return super.getProperty(key);
 	}
 }
