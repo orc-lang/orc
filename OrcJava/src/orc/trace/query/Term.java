@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.Writer;
 
 import orc.trace.events.Event;
+import orc.trace.query.patterns.BindingPattern;
 import orc.trace.query.patterns.Pattern;
 import orc.trace.query.patterns.Variable;
 import orc.trace.values.Value;
@@ -24,13 +25,15 @@ public interface Term {
 	 * Unify this with that using the given environment.
 	 * Don't call this directly, use {@link Frame#unify(Term, Term)}.
 	 * If this is not an instance of {@link Variable}, then neither is that.
+	 * If this is not an instance of {@link BindingPattern}, then neither is that.
 	 * If this is not an instance of {@link Pattern}, then neither is that.
 	 */
 	public boolean unify(Frame frame, Term that);
 	/**
-	 * Substitute bound variables.
+	 * Substitute bound variables. If there are any unbound variables,
+	 * this may return a pattern.
 	 */
-	public Term substitute(Frame frame);
+	public Term evaluate(Frame frame);
 	/**
 	 * Check if a variable occurs in this term.
 	 */

@@ -26,8 +26,8 @@ public class SomePattern extends Pattern {
 		}
 		return false;
 	}
-	public Term substitute(Frame frame) {
-		Term content1 = content.substitute(frame);
+	public Term evaluate(Frame frame) {
+		Term content1 = content.evaluate(frame);
 		if (content1 instanceof Value) {
 			return new SomeValue((Value)content1);
 		} else {

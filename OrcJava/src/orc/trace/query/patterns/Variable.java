@@ -6,7 +6,7 @@ import java.io.Writer;
 import orc.trace.query.Frame;
 import orc.trace.query.Term;
 
-public class Variable extends Pattern {
+public class Variable extends BindingPattern {
 	private static int lastIndex = 0;
 	private int index;
 	public Variable() {
@@ -15,10 +15,10 @@ public class Variable extends Pattern {
 	public boolean unify(Frame frame, Term value) {
 		return frame.bind(this, value);
 	}
-	public Term substitute(Frame frame) {
+	public Term evaluate(Frame frame) {
 		Term term = frame.get(this);
 		if (term != null) {
-			return term.substitute(frame);
+			return term.evaluate(frame);
 		} else {
 			return this;
 		}

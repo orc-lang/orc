@@ -20,7 +20,7 @@ public abstract class AbstractValue implements Value {
 	public boolean unify(Frame frame, Term value) {
 		return equals(value);
 	}
-	public Term substitute(Frame frame) {
+	public Term evaluate(Frame frame) {
 		return this;
 	}
 	public boolean occurs(Variable var) {
