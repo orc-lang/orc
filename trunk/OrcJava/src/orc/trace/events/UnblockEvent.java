@@ -19,10 +19,10 @@ public class UnblockEvent extends Event {
 		this.store = new RepeatHandle<StoreEvent>(store);
 	}
 	@Override
-	public void prettyPrint(Writer out) throws IOException {
-		super.prettyPrint(out);
+	public void prettyPrint(Writer out, int indent) throws IOException {
+		super.prettyPrint(out, indent);
 		out.write("(");
-		store.get().prettyPrint(out);
+		store.get().prettyPrint(out, indent+1);
 		out.write(")");
 	}
 }

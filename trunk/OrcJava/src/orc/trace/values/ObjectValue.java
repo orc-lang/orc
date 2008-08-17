@@ -3,6 +3,9 @@ package orc.trace.values;
 import java.io.IOException;
 import java.io.Writer;
 
+import orc.trace.query.Frame;
+import orc.trace.query.patterns.Pattern;
+
 /**
  * The only thing we can reliably record about a Java
  * object is its identity. We could represent object
@@ -30,7 +33,7 @@ public class ObjectValue extends AbstractValue {
 	}
 	@Override
 	public boolean equals(Object that) {
-		return (that instanceof ObjectValue)
+		return that instanceof ObjectValue
 			&& ((ObjectValue)that).id == id;
 	}
 	@Override

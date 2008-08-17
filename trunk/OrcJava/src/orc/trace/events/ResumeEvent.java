@@ -18,10 +18,10 @@ public class ResumeEvent extends Event {
 		this.value = value;
 	}
 	@Override
-	public void prettyPrint(Writer out) throws IOException {
-		super.prettyPrint(out);
+	public void prettyPrint(Writer out, int indent) throws IOException {
+		super.prettyPrint(out, indent);
 		out.write("(");
-		value.prettyPrint(out, 1);
+		value.prettyPrint(out, indent+1);
 		out.write(")");
 	}
 }

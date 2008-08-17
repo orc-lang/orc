@@ -20,8 +20,8 @@ public class PrintEvent extends Event {
 		this.newline = newline;
 	}
 	@Override
-	public void prettyPrint(Writer out) throws IOException {
-		super.prettyPrint(out);
+	public void prettyPrint(Writer out, int indent) throws IOException {
+		super.prettyPrint(out, indent);
 		out.write("(");
 		out.write('"' + Utilities.escape((String)output, Utilities.JAVA_ESCAPES) + '"');
 		if (newline) out.write(", true");

@@ -18,8 +18,8 @@ public class ErrorEvent extends Event {
 		this.error = error;
 	}
 	@Override
-	public void prettyPrint(Writer out) throws IOException {
-		super.prettyPrint(out);
+	public void prettyPrint(Writer out, int indent) throws IOException {
+		super.prettyPrint(out, indent);
 		out.write("(");
 		out.write(error.toString());
 		out.write(")");

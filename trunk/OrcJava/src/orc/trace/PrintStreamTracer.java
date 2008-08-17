@@ -34,7 +34,7 @@ public final class PrintStreamTracer extends AbstractTracer {
 	protected void record(Handle<? extends Event> event) {
 		synchronized (out) {
 			try {
-				event.get().prettyPrint(out);
+				event.get().prettyPrint(out, 0);
 				out.write('\n');
 				out.flush();
 			} catch (IOException e) {

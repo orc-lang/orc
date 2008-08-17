@@ -13,10 +13,11 @@ import orc.trace.values.AbstractValue;
  */
 public class ForkEvent extends Event {
 	public static ForkEvent ROOT = new ForkEvent() {
-		public void prettyPrint(Writer out) throws IOException {
+		@Override
+		public void prettyPrint(Writer out, int indent) throws IOException {
 			out.write("ForkEvent.ROOT");
 			out.write("(");
-			out.write(Integer.toHexString(hashCode()));
+			out.write(label());
 			out.write(")");
 		}
 	};
@@ -26,8 +27,8 @@ public class ForkEvent extends Event {
 		super(new RepeatHandle<ForkEvent>(thread));
 	}
 	@Override
-	public void prettyPrint(Writer out) throws IOException {
-		super.prettyPrint(out);
+	public void prettyPrint(Writer out, int indent) throws IOException {
+		super.prettyPrint(out, indent);
 		out.write("(");
 		out.write(label());
 		out.write(")");

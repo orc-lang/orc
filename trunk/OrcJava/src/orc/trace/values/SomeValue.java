@@ -3,7 +3,10 @@ package orc.trace.values;
 import java.io.IOException;
 import java.io.Writer;
 
-public class SomeValue extends AbstractValue {
+import orc.trace.query.Frame;
+import orc.trace.query.patterns.Pattern;
+
+public class SomeValue extends OptionValue {
 	public final Value content;
 	public SomeValue(final Value content) {
 		super();

@@ -5,7 +5,7 @@ import java.io.Writer;
 import java.util.Arrays;
 
 import orc.trace.handles.RepeatHandle;
-import orc.trace.values.AbstractValue;
+import orc.trace.query.Terms;
 import orc.trace.values.Value;
 
 public class CallEvent extends Event {
@@ -17,12 +17,12 @@ public class CallEvent extends Event {
 		this.arguments = arguments;
 	}
 	@Override
-	public void prettyPrint(Writer out) throws IOException {
-		super.prettyPrint(out);
+	public void prettyPrint(Writer out, int indent) throws IOException {
+		super.prettyPrint(out, indent);
 		out.write("(");
-		site.prettyPrint(out, 1);
+		site.prettyPrint(out, indent+1);
 		out.write("(");
-		AbstractValue.prettyPrintList(out, 1, Arrays.asList(arguments), ",");
+		Terms.prettyPrintList(out, 1, Arrays.asList(arguments), ",");
 		out.write(")");
 		out.write(")");
 	}

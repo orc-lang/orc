@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.Writer;
 
-public class NoneValue extends AbstractValue {
+import orc.trace.query.Frame;
+import orc.trace.query.patterns.Pattern;
+
+public class NoneValue extends OptionValue {
 	public final static NoneValue singleton = new NoneValue();
 	private NoneValue() {}
 	public void prettyPrint(Writer out, int indent) throws IOException {

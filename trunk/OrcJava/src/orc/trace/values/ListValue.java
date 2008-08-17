@@ -7,10 +7,12 @@ import java.util.NoSuchElementException;
 
 import javax.naming.OperationNotSupportedException;
 
+import orc.trace.query.Terms;
+
 public abstract class ListValue extends AbstractValue implements Iterable<Value> {
 	public void prettyPrint(Writer out, int indent) throws IOException {
 		out.write("[");
-		prettyPrintList(out, indent+1, this, ", ");
+		Terms.prettyPrintList(out, indent+1, this, ", ");
 		out.write("]");
 	}
 	private static class ListIterator implements Iterator<Value> {

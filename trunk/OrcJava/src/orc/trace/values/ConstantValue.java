@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.Writer;
 
+import orc.trace.query.Frame;
+import orc.trace.query.patterns.Pattern;
 import xtc.util.Utilities;
 
 /**
@@ -21,5 +23,9 @@ public class ConstantValue extends AbstractValue {
 		if (constant instanceof String) {
 			out.write('"' + Utilities.escape((String)constant, Utilities.JAVA_ESCAPES) + '"');
 		} else out.write(constant.toString());
+	}
+	public boolean equals(Object that) {
+		return that instanceof ConstantValue
+				&& ((ConstantValue)that).constant.equals(constant);
 	}
 }
