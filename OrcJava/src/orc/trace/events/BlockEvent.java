@@ -18,7 +18,7 @@ public class BlockEvent extends Event {
 		super(new RepeatHandle<ForkEvent>(thread));
 	}
 	@Override
-	public void prettyPrint(Writer out) throws IOException {
-		super.prettyPrint(out);
+	public void prettyPrint(Writer out, int indent) throws IOException {
+		super.prettyPrint(out, indent);
 	}
 }

@@ -28,7 +28,7 @@ public class DumpTrace {
 		try {
 			while (true) {
 				event = in.readHandle();
-				event.get().prettyPrint(out);
+				event.get().prettyPrint(out, 0);
 				out.println();
 				out.flush();
 			}

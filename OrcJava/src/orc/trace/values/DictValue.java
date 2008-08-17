@@ -5,6 +5,8 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
+import orc.trace.query.Frame;
+
 /**
  * This doesn't correspond to any specific Orc
  * type but is instead intended to be used by
