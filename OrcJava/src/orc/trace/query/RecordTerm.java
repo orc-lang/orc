@@ -1,10 +1,8 @@
 package orc.trace.query;
 
-import orc.trace.query.patterns.RecordPattern;
-
 /**
- * A term with properties (like an object) which
- * can be deconstructed with {@link RecordPattern}.
+ * A term with properties (like an object).
+ * FIXME: need to figure out how to pattern match this.
  * @author quark
  */
 public interface RecordTerm extends Term {
