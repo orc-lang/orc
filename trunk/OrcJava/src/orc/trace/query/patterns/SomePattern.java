@@ -22,7 +22,7 @@ public class SomePattern extends Pattern {
 			return frame.unify(content, that.content);
 		} else if (that_ instanceof SomeValue) {
 			SomeValue that = (SomeValue)that_;
-			return content.unify(frame, that.content);
+			return frame.unify(content, that.content);
 		}
 		return false;
 	}

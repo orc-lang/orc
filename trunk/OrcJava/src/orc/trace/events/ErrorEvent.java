@@ -6,6 +6,8 @@ import java.io.Writer;
 import orc.error.runtime.TokenException;
 import orc.trace.handles.LastHandle;
 import orc.trace.handles.RepeatHandle;
+import orc.trace.query.Term;
+import orc.trace.values.ConstantValue;
 import orc.trace.values.Value;
 
 /**
@@ -23,5 +25,9 @@ public class ErrorEvent extends Event {
 		out.write("(");
 		out.write(error.toString());
 		out.write(")");
+	}
+	public Term getProperty(String key) {
+		if (key.equals("errorMessage")) return new ConstantValue(error.getMessage());
+		else return super.getProperty(key);
 	}
 }

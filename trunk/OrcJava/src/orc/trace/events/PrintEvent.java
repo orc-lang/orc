@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.Writer;
 
 import orc.trace.handles.RepeatHandle;
+import orc.trace.query.Term;
+import orc.trace.values.ConstantValue;
 import orc.trace.values.Value;
 import xtc.util.Utilities;
 
@@ -26,5 +28,10 @@ public class PrintEvent extends Event {
 		out.write('"' + Utilities.escape((String)output, Utilities.JAVA_ESCAPES) + '"');
 		if (newline) out.write(", true");
 		out.write(")");
+	}
+	public Term getProperty(String key) {
+		if (key.equals("output")) return new ConstantValue(output);
+		if (key.equals("newline")) return new ConstantValue(newline);
+		else return super.getProperty(key);
 	}
 }

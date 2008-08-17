@@ -5,7 +5,11 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
+import orc.runtime.sites.DotSite;
 import orc.trace.query.Frame;
+import orc.trace.query.RecordTerm;
+import orc.trace.query.Term;
+import orc.trace.query.Terms;
 
 /**
  * This doesn't correspond to any specific Orc
@@ -13,38 +17,26 @@ import orc.trace.query.Frame;
  * implementors of {@link TraceableValue} to
  * encode object-like immutable structures.
  */
-public class DictValue extends ObjectValue {
+public class RecordValue extends AbstractValue implements RecordTerm {
 	Map<String, Value> properties = new HashMap<String, Value>();
+	public final Class class_;
 	/**
 	 * Ok, so this isn't <i>really</i> immutable; you
 	 * have to call {@link #put(String, Value)} to actually
 	 * set the mapped values. Just promise not to change
 	 * anything after you serialize the object.
 	 */
-	public DictValue(Class class_) {
-		super(class_);
+	public RecordValue(Class class_) {
+		this.class_ = class_;
 	}
 	public void put(String key, Value value) {
 		properties.put(key, value);
 	}
 	public void prettyPrint(Writer out, int indent) throws IOException {
-		super.prettyPrint(out, indent);
-		if (properties.isEmpty()) {
-			out.write("{}");
-			return;
-		}
-		out.write("{\n");
-		indent++;
-		for (Map.Entry<String, Value> entry : properties.entrySet()) {
-			indent(out, indent);
-			out.write(entry.getKey());
-			out.write(": ");
-			entry.getValue().prettyPrint(out, indent);
-			out.write("\n");
-		}
-		
-		indent--;
-		indent(out, indent);
-		out.write("}");
+		out.write(class_.getName());
+		Terms.prettyPrintMap(out, indent, properties.entrySet());
+	}
+	public Term getProperty(String key) {
+		return properties.get(key);
 	}
 }

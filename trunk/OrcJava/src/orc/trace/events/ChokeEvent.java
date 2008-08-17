@@ -5,6 +5,7 @@ import java.io.Writer;
 
 import orc.trace.handles.Handle;
 import orc.trace.handles.RepeatHandle;
+import orc.trace.query.Term;
 
 /**
  * Thread on right-hand side of a where clause was terminated.
@@ -22,5 +23,9 @@ public class ChokeEvent extends Event {
 		out.write("(");
 		store.get().prettyPrint(out, indent+1);
 		out.write(")");
+	}
+	public Term getProperty(String key) {
+		if (key.equals("store")) return store.get();
+		else return super.getProperty(key);
 	}
 }

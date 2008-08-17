@@ -6,6 +6,7 @@ import java.io.Writer;
 import orc.trace.handles.Handle;
 import orc.trace.handles.LastHandle;
 import orc.trace.handles.RepeatHandle;
+import orc.trace.query.Term;
 import orc.trace.values.Value;
 
 /**
@@ -24,5 +25,9 @@ public class UnblockEvent extends Event {
 		out.write("(");
 		store.get().prettyPrint(out, indent+1);
 		out.write(")");
+	}
+	public Term getProperty(String key) {
+		if (key.equals("store")) return store.get();
+		else return super.getProperty(key);
 	}
 }
