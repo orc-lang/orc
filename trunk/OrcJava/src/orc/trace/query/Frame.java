@@ -6,7 +6,6 @@ import java.util.Map;
 import orc.trace.events.Event;
 import orc.trace.query.patterns.ConsPattern;
 import orc.trace.query.patterns.Pattern;
-import orc.trace.query.patterns.RecordPattern;
 import orc.trace.query.patterns.Variable;
 import orc.trace.values.ConstantValue;
 import orc.trace.values.NilValue;
@@ -29,7 +28,9 @@ public class Frame {
 	
 	public boolean bind(Variable v, Term p) {
 		assert(p != null);
-		if (bindings.containsKey(v)) {
+		if (v == p) {
+			return true;
+		} else if (bindings.containsKey(v)) {
 			return unify(bindings.get(v), p);
 		} else if (!p.occurs(v)) {
 			bindings.put(v, p);
@@ -61,9 +62,7 @@ public class Frame {
 	public static void main(String[] args) {
 		Frame frame = new Frame();
 		Variable x = new Variable();
-		RecordPattern rp = new RecordPattern();
-		rp.put("foo", new Variable());
-		Term left = new ConsPattern(x, rp);
+		Term left = new ConsPattern(x, new Variable());
 		RecordValue r = new RecordValue(new Object().getClass());
 		r.put("foo", new ConstantValue("bar"));
 		Term right = new ConsPattern(r, x);
