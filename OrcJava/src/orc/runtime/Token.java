@@ -275,17 +275,9 @@ public final class Token implements Serializable, Comparable<Token> {
 	/**
 	 * Print something (for use by the print and println sites).
 	 */
-	public void print(String string) {
-		tracer.print(string, false);
-		engine.print(string);
-	}
-
-	/**
-	 * Print something (for use by the print and println sites).
-	 */
-	public void println(String string) {
-		tracer.print(string, true);
-		engine.println(string);
+	public void print(String string, boolean newline) {
+		tracer.print(string, newline);
+		engine.print(string, newline);
 	}
 
 	/**
@@ -293,7 +285,7 @@ public final class Token implements Serializable, Comparable<Token> {
 	 */
 	public void publish() {
 		tracer.publish(result);
-		engine.pub(result);
+		engine.publish(result);
 	}
 
 	/**

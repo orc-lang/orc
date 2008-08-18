@@ -22,7 +22,7 @@ public class Print extends Site {
 		for (int i = 0; i < args.size(); i++) {
 			sb.append(args.stringArg(i));
 		}
-		caller.print(sb.toString());
+		caller.print(sb.toString(), false);
 		caller.resume(Value.signal());
 	}
 }
