@@ -3,12 +3,14 @@ package orc.trace;
 import orc.error.runtime.TokenException;
 import orc.trace.events.Event;
 import orc.trace.events.StoreEvent;
+import orc.trace.query.predicates.Predicate;
 
 /**
  * Do-nothing tracer, used when tracing is not enabled.
  * @author quark
  */
 public final class NullTracer implements Tracer {
+	public void setFilter(Predicate filter) {}
 	public void call(Object site, Object[] arguments) {}
 	public void die() {}
 	public void choke(StoreEvent store) {}

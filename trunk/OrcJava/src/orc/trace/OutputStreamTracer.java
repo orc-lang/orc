@@ -17,6 +17,7 @@ import orc.trace.handles.FirstHandle;
 import orc.trace.handles.Handle;
 import orc.trace.handles.HandleOutputStream;
 import orc.trace.handles.OnlyHandle;
+import orc.trace.query.predicates.Predicate;
 import orc.trace.values.ConsValue;
 import orc.trace.values.ConstantValue;
 import orc.trace.values.ListValue;
@@ -48,14 +49,14 @@ public class OutputStreamTracer extends AbstractTracer {
 		this.out = new HandleOutputStream(out, STREAM_RESET_INTERVAL);
 	}
 
-	protected OutputStreamTracer(ForkEvent thread, Marshaller marshaller, HandleOutputStream out) {
-		super(thread, marshaller);
-		this.out = out;
+	protected OutputStreamTracer(OutputStreamTracer that, ForkEvent fork) {
+		super(that, fork);
+		this.out = that.out;
 	}
 	
 	@Override
-	protected OutputStreamTracer forked(ForkEvent fork, Marshaller marshaller) {
-		return new OutputStreamTracer(fork, marshaller, out);
+	protected OutputStreamTracer forked(ForkEvent fork) {
+		return new OutputStreamTracer(this, fork);
 	}
 	@Override
 	protected void record(Handle<? extends Event> event) {

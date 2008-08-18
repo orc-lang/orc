@@ -17,6 +17,7 @@ import orc.trace.values.RecordValue;
  * @author quark
  */
 public abstract class Frame {
+	public static final Variable EVENT = new Variable();
 	public static final Frame EMPTY = new Frame() {
 		public Term get(Variable v) {
 			return null;

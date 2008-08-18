@@ -12,6 +12,7 @@ import orc.trace.events.Event;
 import orc.trace.events.ResumeEvent;
 import orc.trace.events.ForkEvent;
 import orc.trace.events.StoreEvent;
+import orc.trace.query.predicates.Predicate;
 import orc.trace.values.ConsValue;
 import orc.trace.values.ConstantValue;
 import orc.trace.values.NilValue;
@@ -36,6 +37,10 @@ import orc.trace.values.Value;
  * @author quark
  */
 public interface Tracer {
+	/**
+	 * Events must satisfy this predicate to be traced.
+	 */
+	public void setFilter(Predicate filter);
 	/**
 	 * Start a new engine.
 	 */

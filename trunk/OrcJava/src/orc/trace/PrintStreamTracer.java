@@ -21,14 +21,14 @@ public final class PrintStreamTracer extends AbstractTracer {
 	public PrintStreamTracer(OutputStream out) {
 		this.out = new OutputStreamWriter(out);
 	}
-	protected PrintStreamTracer(ForkEvent fork, Marshaller marshaller, OutputStreamWriter out) {
-		super(fork, marshaller);
-		this.out = out;
+	protected PrintStreamTracer(PrintStreamTracer that, ForkEvent fork) {
+		super(that, fork);
+		this.out = that.out;
 	}
 
 	@Override
-	protected Tracer forked(ForkEvent fork, Marshaller marshaller) {
-		return new PrintStreamTracer(fork, marshaller, out);
+	protected Tracer forked(ForkEvent fork) {
+		return new PrintStreamTracer(this, fork);
 	}
 
 	protected void record(Handle<? extends Event> event) {
