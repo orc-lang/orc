@@ -32,9 +32,9 @@ public class DumpTrace {
 	}
 	
 	@Option(name="-f",usage="Filter events according to the given predicate.\n" +
-			"Example: -f \"Current(call), call.type=\\\"call\\\", true+,\n" +
-			"             Current(resume), resume.type=\\\"resume\\\",\n" +
-			"             resume.thread=call.thread\"")
+			"Example: -f 'Current(call), call.type=\"call\", true+,\n" +
+			"             Current(resume), resume.type=\"resume\",\n" +
+			"             resume.thread=call.thread'")
 	public void setFilter(String predicate) throws CmdLineException{
 		Parser p = new Parser(new StringReader(predicate), "");
 		try {
