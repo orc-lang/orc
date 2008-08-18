@@ -17,11 +17,6 @@ import orc.trace.NullTracer;
 import orc.trace.OutputStreamTracer;
 import orc.trace.PrintStreamTracer;
 import orc.trace.Tracer;
-import orc.trace.events.CallEvent;
-import orc.trace.events.ResumeEvent;
-import orc.trace.query.Frame;
-import orc.trace.query.predicates.InstanceOfPredicate;
-import orc.trace.query.predicates.OrPredicate;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -90,11 +85,6 @@ public class Config {
 				throw new CmdLineException("Error opening trace file '"+file+"'");
 			}
 		}
-		/*
-		tracer.setFilter(new OrPredicate(
-				new InstanceOfPredicate(Frame.EVENT, ResumeEvent.class),
-				new InstanceOfPredicate(Frame.EVENT, CallEvent.class)));
-		*/
 	}
 	
 	@Option(name="-i",usage="Include this file from the package orc.inc;" +

@@ -1,6 +1,8 @@
 package orc.trace.query;
 
 import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -20,20 +22,29 @@ import orc.trace.values.RecordValue;
  * @author quark
  */
 public abstract class Frame {
+	/**
+	 * Construct a new frame for the given event stream.
+	 */
 	public static Frame newFrame(EventStream events) {
 		return new BindEvent(EMPTY, events);
 	}
+	/**
+	 * The empty frame.
+	 */
 	public static final Frame EMPTY = new Frame() {
 		public Term get(Variable v) {
 			return null;
 		}
-		public String toString() {
-			return "Frame.EMPTY";
+		public void prettyPrintHead(Writer out, int indent) throws IOException {
+			out.write("{");
 		}
 		protected EventStream events() throws NoSuchElementException {
 			throw new NoSuchElementException();
 		}
 	};
+	/**
+	 * Base class for any frame which extends another frame.
+	 */
 	private static abstract class Extended extends Frame {
 		private Frame parent;
 		public Extended(Frame parent) {
@@ -45,10 +56,13 @@ public abstract class Frame {
 		public EventStream events() throws NoSuchElementException {
 			return parent.events();
 		}
-		public String toString() {
-			return "+" + parent;
+		public void prettyPrintHead(Writer out, int indent) throws IOException {
+			parent.prettyPrintHead(out, indent);
 		}
 	}
+	/**
+	 * Frame which binds a variable.
+	 */
 	private static class BindVariable extends Extended {
 		private Variable variable;
 		private Term term;
@@ -63,8 +77,15 @@ public abstract class Frame {
 			else return super.get(v);
 		}
 	
-		public String toString() {
-			return variable + ":" + term + super.toString();
+		public void prettyPrintHead(Writer out, int indent) throws IOException {
+			super.prettyPrintHead(out, indent);
+			if (!variable.isAnonymous()) {
+				out.write("\n");
+				Terms.indent(out, indent+1);
+				variable.prettyPrint(out, indent+1);
+				out.write(":");
+				term.prettyPrint(out, indent+2);
+			}
 		}
 	}
 	private static class BindEvent extends Extended {
@@ -72,9 +93,6 @@ public abstract class Frame {
 		public BindEvent(Frame parent, EventStream stream) {
 			super(parent);
 			this.stream = stream;
-		}
-		public String toString() {
-			return stream + super.toString();
 		}
 		public EventStream events() {
 			return stream;
@@ -152,4 +170,23 @@ public abstract class Frame {
 			System.out.println("COULD NOT UNIFY");
 		}
 	}
+	
+	public String toString() {
+		try {
+			StringWriter writer = new StringWriter();
+			prettyPrint(writer, 0);
+			return writer.toString();
+		} catch (IOException e) {
+			throw new AssertionError(e);
+		}
+	}
+	
+	public void prettyPrint(Writer out, int indent) throws IOException {
+		prettyPrintHead(out, indent);
+		out.write("\n");
+		Terms.indent(out, indent);
+		out.write("}");
+	}
+	
+	protected abstract void prettyPrintHead(Writer out, int indent) throws IOException;
 }

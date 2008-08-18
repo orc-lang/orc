@@ -1,0 +1,209 @@
+module orc.trace.query.parser.ParserRats;
+
+header {
+	import java.math.BigInteger;
+	import java.math.BigDecimal;
+	import java.io.Serializable;
+	import java.util.Map;
+	import java.util.HashMap;
+	import xtc.util.Utilities;
+	import xtc.util.Action;
+	import xtc.util.Pair;
+	
+	import orc.trace.values.*;
+	import orc.trace.query.patterns.*;
+	import orc.trace.query.predicates.*;
+	import orc.trace.query.*;
+}
+
+body {
+	private Map<String, Variable> symbols = new HashMap<String, Variable>();
+	private Variable intern(String name) {
+		if (symbols.containsKey(name)) {
+			return symbols.get(name);
+		} else {
+			Variable out = new Variable(name);
+			symbols.put(name, out);
+			return out;
+		}
+	}
+}
+
+option constant;
+
+public Predicate Query = Space yyValue:Disjunction EndOfFile;
+
+Predicate Predicate = Disjunction;
+Predicate Disjunction =
+	left:Conjunction void:SEMICOLON right:Disjunction {
+		yyValue = new OrPredicate(left, right);
+	}
+	/ Conjunction
+	;
+
+Predicate Conjunction =
+	left:Regexp void:COMMA right:Conjunction {
+		yyValue = new AndPredicate(left, right);
+	}
+	/ Regexp
+	;
+
+Predicate Regexp =
+	p:Negation PLUS {
+		yyValue = new PlusPredicate(p);
+	}
+	/ p:Negation STAR {
+		yyValue = new OrPredicate(TruePredicate.singleton, new PlusPredicate(p));
+	}
+	/ Negation
+	;
+
+Predicate Negation =
+	void:NOT p:BasicPredicate {
+		yyValue = new NotPredicate(p);
+	}
+	/ BasicPredicate
+	;
+
+Predicate BasicPredicate =
+	left:Pattern void:EQ right:Pattern {
+		yyValue = new EqualPredicate(left, right);
+	}
+	/ void:LPAREN Predicate void:RPAREN
+	/ "Current":Identifier void:LPAREN p:Pattern void:RPAREN {
+		yyValue = new CurrentEventPredicate(p);
+	}
+	/ "Next":Identifier void:LPAREN void:RPAREN {
+		yyValue = NextEventPredicate.singleton;
+	}
+	/ void:TRUE {
+		yyValue = TruePredicate.singleton;
+	}
+	/ void:FALSE {
+		yyValue = FalsePredicate.singleton;
+	}
+	;
+
+Term Pattern = ConsPattern;
+
+Term ConsPattern =
+	left:BasicPattern index:COLON right:Pattern {
+		yyValue = new ConsPattern(left, right);
+	}
+	/ BasicPattern
+	;
+	
+Term BasicPattern =
+	UNDERSCORE {
+		yyValue = new Variable();
+	}
+	/ name:Identifier props:(void:DOT Identifier)* {
+		BindingPattern out = intern(name);
+		for (String key : props) {
+			out = new PropertyPattern(out, key);
+		}
+		yyValue = out;
+	}
+	/ literal:Literal {
+		yyValue = new ConstantValue(literal);
+	}
+	/ LPAREN ps:PatternList RPAREN {
+		yyValue = new TuplePattern(ps.list().toArray(new Pattern[]{}));
+	}
+	;
+	
+Pair<Term> PatternList =
+	f:Pattern fs:(void:COMMA fs:Pattern)* {
+		yyValue = new Pair(f, fs);
+	}
+	/ /* empty */ {
+		yyValue = Pair.empty();
+	}
+	;
+
+/////////////////////////////////////////////
+// Literals
+/////////////////////////////////////////////
+
+Serializable Literal =
+	Number
+	/ StringLiteral
+	/ TRUE { yyValue = true; }
+	/ FALSE { yyValue = false; }
+	;
+	
+Number Number = Float / Integer;
+BigDecimal Float =
+	rep:FloatToken Space {
+		try {
+			yyValue = BigDecimal.valueOf(Double.parseDouble(rep));
+		} catch (NumberFormatException e) {
+			// impossible by construction
+			throw new AssertionError(e);
+		}
+	}
+	;
+// Note that even if a number has no decimal, having an exponent
+// is enough to make it floating point
+String FloatToken = SignedIntegerToken ('.' [0-9]+ Exponent? / Exponent);
+String Exponent = [eE] [+\-]? IntegerToken;
+BigInteger Integer =
+	rep:SignedIntegerToken Space {
+		try {
+			yyValue = BigInteger.valueOf(Long.parseLong(rep));
+		} catch (NumberFormatException e) {
+			// impossible by construction
+			throw new AssertionError(e);
+		}
+	}
+	;
+String SignedIntegerToken = '-'? IntegerToken;
+String IntegerToken = '0' / [1-9] [0-9]*;
+	
+String StringLiteral =
+	string:StringLiteralToken Space {
+		yyValue = Utilities.unescape(string.substring(1, string.length()-1));
+	}
+	;
+String StringLiteralToken = ["] ( EscapeSequence / !["\\] _ )* ["] ;
+transient String EscapeSequence =
+   '\\' [btnfr"'\-\[\\\]] / UnicodeEscape / OctalEscape
+   ;
+transient String UnicodeEscape = '\\' 'u' HexDigit HexDigit HexDigit HexDigit ;
+transient String HexDigit = [0-9a-fA-F] ;
+transient String OctalEscape =
+	'\\' [0-3] OctalDigit OctalDigit
+	/ '\\' OctalDigit OctalDigit
+	/ '\\' OctalDigit
+	;
+transient String OctalDigit = [0-7];
+	
+String Identifier = WordToken Space;
+String WordToken = [a-zA-Z_] [a-zA-Z0-9_]*;
+
+/////////////////////////////////////////////
+// Keywords
+/////////////////////////////////////////////
+
+transient int TRUE = "true" Space { yyValue = yyStart; };
+transient int FALSE = "false" Space { yyValue = yyStart; };
+transient int EQ = "=" Space { yyValue = yyStart; };
+transient int LPAREN = "(" Space { yyValue = yyStart; };
+transient int RPAREN = ")" Space { yyValue = yyStart; };
+transient int LBRACKET = "[" Space { yyValue = yyStart; };
+transient int RBRACKET = "]" Space { yyValue = yyStart; };
+transient int DOT = "." Space { yyValue = yyStart; };
+transient int UNDERSCORE = "_" Space { yyValue = yyStart; };
+transient int COMMA = "," Space { yyValue = yyStart; };
+transient int SEMICOLON = ";" Space { yyValue = yyStart; };
+transient int NOT = "~" Space { yyValue = yyStart; };
+transient int STAR = "*" Space { yyValue = yyStart; };
+transient int PLUS = "+" Space { yyValue = yyStart; };
+transient int COLON = ":" Space { yyValue = yyStart; };
+	
+/////////////////////////////////////////////
+// Whitespace, Comments, etc.
+/////////////////////////////////////////////
+
+transient void Space = (' ' / '\t' / '\f' / '\r' / '\n')*;
+transient void EndOfFile = !_;
