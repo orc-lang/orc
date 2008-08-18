@@ -8,9 +8,15 @@ import orc.trace.query.Term;
 
 public class Variable extends BindingPattern {
 	private static int lastIndex = 0;
-	private int index;
+	private final String name;
+	private final boolean anonymous;
 	public Variable() {
-		index = ++lastIndex;
+		this.name = "_"+Integer.toString(++lastIndex);
+		this.anonymous = true;
+	}
+	public Variable(String name) {
+		this.name = name;
+		this.anonymous = false;
 	}
 	public Frame unify(Frame frame, Term value) {
 		return frame.bind(this, value);
@@ -23,8 +29,11 @@ public class Variable extends BindingPattern {
 			return this;
 		}
 	}
+	public boolean isAnonymous() {
+		return anonymous;
+	}
 	public void prettyPrint(Writer out, int indent) throws IOException {
-		out.write("?" + index);
+		out.write(name);
 	}
 	public boolean occurs(Variable v) {
 		return equals(v);

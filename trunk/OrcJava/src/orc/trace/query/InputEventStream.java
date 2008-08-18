@@ -13,7 +13,7 @@ import orc.trace.handles.HandleInputStream;
 public class InputEventStream implements EventStream {
 	private HandleInputStream in;
 	private Handle<Event> head;
-	private EventStream tail;
+	private InputEventStream tail;
 	public InputEventStream(InputStream in) throws IOException {
 		this(new HandleInputStream(in));
 	}
@@ -40,7 +40,7 @@ public class InputEventStream implements EventStream {
 		return head.get();
 	}
 	
-	public EventStream tail() throws NoSuchElementException {
+	public InputEventStream tail() throws NoSuchElementException {
 		force();
 		return tail;
 	}

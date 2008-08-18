@@ -28,7 +28,8 @@ public class PropertyPattern extends BindingPattern {
 		// Evaluate the record variable
 		Term record1 = record.evaluate(frame);
 		if (record1 instanceof RecordTerm) {
-			return frame.unify(((RecordTerm)record1).getProperty(key), value);
+			Term value1 = ((RecordTerm)record1).getProperty(key);
+			return frame.unify(value1, value);
 		} else {
 			// If it's not bound yet, we can't unify
 			return null;
