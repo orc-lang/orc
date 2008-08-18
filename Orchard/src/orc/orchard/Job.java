@@ -29,7 +29,7 @@ import orc.runtime.nodes.Node;
  * 
  * @author quark
  */
-public final class Job {
+public final class Job implements JobMBean {
 	public final static Globals<Job, Object> globals = new Globals<Job, Object>();
 	
 	/**
@@ -220,13 +220,13 @@ public final class Job {
 		}
 	}
 	private int nextPromptID = 1;
-	private Map<Integer, PromptCallback> pendingPrompts =
+	private final Map<Integer, PromptCallback> pendingPrompts =
 		new HashMap<Integer, PromptCallback>();
 	/** The engine will handle all the interesting work of the job. */
-	private OrcEngine engine;
+	private final OrcEngine engine;
 	/** Events which can be monitored. */
-	private EventBuffer events;
-	private LinkedList<FinishListener> finishers = new LinkedList<FinishListener>();
+	private final EventBuffer events;
+	private final LinkedList<FinishListener> finishers = new LinkedList<FinishListener>();
 
 	protected Job(Expr expression, JobConfiguration configuration) {
 		this.configuration = configuration;
@@ -238,7 +238,7 @@ public final class Job {
 	}
 
 	public synchronized void start() throws InvalidJobStateException {
-		if (!isNew) throw new InvalidJobStateException(state());
+		if (!isNew) throw new InvalidJobStateException(getState());
 		isNew = false;
 		new Thread(engine).start();
 	}
@@ -268,7 +268,7 @@ public final class Job {
 		engine.terminate();
 	}
 
-	public JobConfiguration configuration() {
+	public JobConfiguration getConfiguration() {
 		return configuration;
 	}
 
@@ -286,7 +286,7 @@ public final class Job {
 		events.purge();
 	}
 
-	public synchronized String state() {
+	public synchronized String getState() {
 		if (isNew) return "NEW";
 		else if (engine.isDead()) return "DONE";
 		else return "RUNNING";

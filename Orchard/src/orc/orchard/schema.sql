@@ -2,7 +2,7 @@ CREATE TABLE account_type (
 	account_type_id SERIAL,
 	account_type_name varchar(255) NOT NULL,
 	quota int,
-	lifespan interval,
+	lifespan int,
 	event_buffer_size int,
 	PRIMARY KEY (account_type_id)
 );
