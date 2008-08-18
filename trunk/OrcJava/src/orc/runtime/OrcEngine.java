@@ -191,7 +191,7 @@ public class OrcEngine implements Runnable {
 	 * 
 	 * @param v
 	 */
-	public void pub(Object v) {
+	public void publish(Object v) {
 		System.out.println(String.valueOf(v));
 		System.out.flush();
 	}
@@ -245,17 +245,12 @@ public class OrcEngine implements Runnable {
 	 * else if appropriate.
 	 * @see Token#print(String)
 	 */
-	void print(String string) {
-		System.out.print(string);
-	}
-	/**
-	 * Print something (for use by the print and println sites). By default,
-	 * this prints to System.out, but this can be overridden to do something
-	 * else if appropriate.
-	 * @see Token#println(String)
-	 */
-	void println(String string) {
-		System.out.println(string);
+	public void print(String string, boolean newline) {
+		if (newline) {
+			System.out.println(string);
+		} else {
+			System.out.print(string);
+		}
 	}
 	
 	/**

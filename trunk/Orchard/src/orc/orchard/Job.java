@@ -179,26 +179,26 @@ public final class Job {
 			// list of callers
 			events.add(e);
 		}
-		/** Save prints in a buffer. */
+		/** 
+		 * Save prints in a buffer.
+		 * Send completed lines to the event stream.
+		 */
 		@Override
-		public void print(String s) {
+		public void print(String s, boolean newline) {
+			String out = null; 
 			synchronized (printBuffer) {
 				printBuffer.append(s);
+				if (newline) {
+					out = printBuffer.toString();
+					printBuffer = new StringBuffer();
+				}
+			}
+			if (newline) {
+				events.add(new PrintlnEvent(out));
 			}
 		}
-		/** Send printed lines to the event stream. */
 		@Override
-		public void println(String s) {
-			String out; 
-			synchronized (printBuffer) {
-				printBuffer.append(s);
-				out = printBuffer.toString();
-				printBuffer = new StringBuffer();
-			}
-			events.add(new PrintlnEvent(out));
-		}
-		@Override
-		public void pub(Object v) {
+		public void publish(Object v) {
 			events.add(new PublicationEvent(ValueMarshaller.visit(new ValueMarshaller(), v)));
 		}
 		

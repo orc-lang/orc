@@ -19,10 +19,10 @@ public class Println extends Site {
 	@Override
 	public void callSite(Args args, Token caller) throws TokenException {
 		for(int i = 0; i < args.size(); i++) {
-			caller.println(args.stringArg(i));
+			caller.print(args.stringArg(i), true);
 		}
 		if (args.size() == 0) {
-			caller.println("");
+			caller.print("", true);
 		}
 		caller.resume(Value.signal());
 	}
