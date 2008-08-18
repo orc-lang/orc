@@ -31,4 +31,6 @@ public class StoreEvent extends Event {
 		if (key.equals("value")) return value;
 		else return super.getProperty(key);
 	}
+	@Override
+	public String getType() { return "store"; }
 }

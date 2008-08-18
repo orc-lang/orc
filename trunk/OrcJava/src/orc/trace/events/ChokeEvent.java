@@ -28,4 +28,6 @@ public class ChokeEvent extends Event {
 		if (key.equals("store")) return store.get();
 		else return super.getProperty(key);
 	}
+	@Override
+	public String getType() { return "choke"; }
 }

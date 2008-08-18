@@ -34,4 +34,6 @@ public class PrintEvent extends Event {
 		if (key.equals("newline")) return new ConstantValue(newline);
 		else return super.getProperty(key);
 	}
+	@Override
+	public String getType() { return "print"; }
 }

@@ -17,23 +17,27 @@ public class TuplePattern extends Pattern {
 		super();
 		this.values = values;
 	}
-	public boolean unify(Frame frame, Term that_) {
+	public Frame unify(Frame frame, Term that_) {
 		if (that_ instanceof TuplePattern) {
 			TuplePattern that = (TuplePattern)that_;
-			if (that.values.length != values.length) return false;
+			if (that.values.length != values.length) return null;
+			Frame out = frame;
 			for (int i = 0; i < values.length; ++i) {
-				if (!frame.unify(values[i], that.values[i])) return false;
+				out = out.unify(values[i], that.values[i]);
+				if (out == null) break;
 			}
-			return true;
+			return out;
 		} else if (that_ instanceof TupleValue) {
 			TupleValue that = (TupleValue)that_;
-			if (that.values.length != values.length) return false;
+			if (that.values.length != values.length) return null;
+			Frame out = frame;
 			for (int i = 0; i < values.length; ++i) {
-				if (!frame.unify(values[i], that.values[i])) return false;
+				out = out.unify(values[i], that.values[i]);
+				if (out == null) break;
 			}
-			return true;
+			return out;
 		}
-		return false;
+		return null;
 	}
 	public Term evaluate(Frame frame) {
 		// used to check if all substituted subterms are values

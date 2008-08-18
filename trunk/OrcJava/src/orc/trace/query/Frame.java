@@ -13,41 +13,61 @@ import orc.trace.values.RecordValue;
 
 /**
  * Environment of variable bindings.
+ * TODO: currently implmented as a linked list; make this more efficient.
  * @author quark
  */
-public class Frame {
-	private Map<Variable, Term> bindings = new HashMap<Variable, Term>();
+public abstract class Frame {
+	public static final Frame EMPTY = new Frame() {
+		public Term get(Variable v) {
+			return null;
+		}
+		public String toString() {
+			return "Frame.EMPTY";
+		}
+	};
+	public static class Binding extends Frame {
+		private Frame parent;
+		private Variable variable;
+		private Term term;
+		public Binding(Frame parent, Variable variable, Term term) {
+			this.parent = parent;
+			this.variable = variable;
+			this.term = term;
+		}
+	
+		public Term get(Variable v) {
+			if (variable.equals(v)) return term;
+			else return parent.get(v);
+		}
+	
+		public String toString() {
+			return variable + ":" + term + "+" + parent;
+		}
+	}
 	
 	/**
 	 * An unbound variable returns null.
 	 */
-	public Term get(Variable v) {
-		return bindings.get(v);
-	}
+	public abstract Term get(Variable v);
 	
-	public boolean bind(Variable v, Term p) {
+	public Frame bind(Variable v, Term p) {
 		assert(p != null);
-		if (v == p) {
-			return true;
-		} else if (bindings.containsKey(v)) {
-			return unify(bindings.get(v), p);
+		if (v == p) return this;
+		Term t = get(v);
+		if (t != null) {
+			return unify(t, p);
 		} else if (!p.occurs(v)) {
-			bindings.put(v, p);
-			return true;
+			return new Binding(this, v, p);
 		} else {
-			return false;
+			return null;
 		}
-	}
-	
-	public String toString() {
-		return bindings.toString();
 	}
 	
 	/**
 	 * Unify two patterns. Checks the type of each term to preserve invariants
 	 * of {@link Term#unify(Frame, Term)}.
 	 */
-	public boolean unify(Term left, Term right) {
+	public Frame unify(Term left, Term right) {
 		if (left instanceof Variable) {
 			return left.unify(this, right);
 		} else if (right instanceof Variable) {
@@ -64,7 +84,7 @@ public class Frame {
 	}
 	
 	public static void main(String[] args) {
-		Frame frame = new Frame();
+		Frame frame = Frame.EMPTY;
 		Variable x = new Variable();
 		Term left = new ConsPattern(x, new PropertyPattern(x, "foo"));
 		RecordValue r = new RecordValue(new Object().getClass());
@@ -74,11 +94,12 @@ public class Frame {
 		System.out.println(left);
 		System.out.print("RIGHT = ");
 		System.out.println(right);
-		if (frame.unify(left, right)) {
+		Frame frame1 = frame.unify(left, right);
+		if (frame1 != null) {
 			System.out.print("BINDINGS = ");
-			System.out.println(frame);
+			System.out.println(frame1);
 			System.out.print("RESULT = ");
-			System.out.println(left.evaluate(frame));
+			System.out.println(left.evaluate(frame1));
 		} else {
 			System.out.println("COULD NOT UNIFY");
 		}

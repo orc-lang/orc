@@ -33,4 +33,6 @@ public class ForkEvent extends Event {
 		out.write(label());
 		out.write(")");
 	}
+	@Override
+	public String getType() { return "fork"; }
 }

@@ -34,4 +34,6 @@ public class FreeEvent extends Event {
 		if (key.equals("event")) return event.get();
 		else return super.getProperty(key);
 	}
+	@Override
+	public String getType() { return "free"; }
 }

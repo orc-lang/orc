@@ -10,6 +10,7 @@ import orc.trace.query.Frame;
 import orc.trace.query.RecordTerm;
 import orc.trace.query.Term;
 import orc.trace.query.patterns.Variable;
+import orc.trace.values.ConstantValue;
 
 public abstract class Event implements Serializable, RecordTerm {
 	public final Handle<ForkEvent> thread;
@@ -38,8 +39,8 @@ public abstract class Event implements Serializable, RecordTerm {
 		out.write(":");
 		out.write(getClass().getSimpleName());
 	}
-	public boolean unify(Frame frame, Term that) {
-		return equals(that);
+	public Frame unify(Frame frame, Term that) {
+		return equals(that) ? frame : null;
 	}
 	public Term evaluate(Frame frame) {
 		return this;
@@ -49,6 +50,11 @@ public abstract class Event implements Serializable, RecordTerm {
 	}
 	public Term getProperty(String key) {
 		if (key.equals("thread")) return thread.get();
+		else if (key.equals("type")) return new ConstantValue(getType());
 		return null;
 	}
+	/**
+	 * Return a string name for the type of event. Used in pattern matching.
+	 */
+	public abstract String getType();
 }

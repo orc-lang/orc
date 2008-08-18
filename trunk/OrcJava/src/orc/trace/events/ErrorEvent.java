@@ -30,4 +30,6 @@ public class ErrorEvent extends Event {
 		if (key.equals("errorMessage")) return new ConstantValue(error.getMessage());
 		else return super.getProperty(key);
 	}
+	@Override
+	public String getType() { return "error"; }
 }
