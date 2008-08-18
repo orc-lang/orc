@@ -65,6 +65,15 @@
 			<arg value="${orc.location.src}/orc/parser" />
 			<arg value="${orc.location.src}/orc/parser/OrcParserRats.rats" />
 		</java>
+		<java classname="xtc.parser.Rats" fork="yes">
+			<classpath>
+				<pathelement path="${orc.location.lib}/rats.jar" />
+			</classpath>
+			<arg value="-lgpl" />
+			<arg value="-out" />
+			<arg value="${orc.location.src}/orc/trace/query/parser" />
+			<arg value="${orc.location.src}/orc/trace/query/parser/ParserRats.rats" />
+		</java>
 	</target>
 	<target name="ChangeLog" description="ChangeLog">
 		<exec executable="cvs2cl">
