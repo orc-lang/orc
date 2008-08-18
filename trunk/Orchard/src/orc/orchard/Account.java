@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.postgresql.util.PGInterval;
+import javax.management.ObjectName;
 
 import orc.orchard.errors.InvalidJobException;
 import orc.orchard.errors.QuotaException;
@@ -20,15 +20,15 @@ import orc.orchard.errors.QuotaException;
  * 
  * @author quark
  */
-public abstract class Account {	
+public abstract class Account implements AccountMBean {	
 	private Map<String, Job> jobs = new HashMap<String, Job>();
 	private Integer quota = null;
 	private Integer eventBufferSize = null;
-	private PGInterval lifespan = null;
+	private Integer lifespan = null;
 	
 	public Account() {}
 
-	public synchronized void setLifespan(PGInterval lifespan) {
+	public synchronized void setLifespan(Integer lifespan) {
 		this.lifespan = lifespan;
 	}
 
@@ -44,9 +44,12 @@ public abstract class Account {
 		job.setStartDate(new Date());
 		job.setEventBufferSize(eventBufferSize);
 		jobs.put(id, job);
+		final ObjectName jmxid = JMXUtilities.newObjectName(job, id);
+		JMXUtilities.registerMBean(job, jmxid);
 		job.onFinish(new Job.FinishListener() {
 			public void finished(Job job) {
 				removeJob(id);
+				JMXUtilities.unregisterMBean(jmxid);
 			}
 		});
 	}
@@ -61,7 +64,7 @@ public abstract class Account {
 		return new LinkedList<Job>(jobs.values());
 	}
 
-	public synchronized Set<String> jobIDs() {
+	public synchronized Set<String> getJobIDs() {
 		return new HashSet<String>(jobs.keySet());
 	}
 	
@@ -72,14 +75,14 @@ public abstract class Account {
 	
 	protected abstract void onNoMoreJobs();
 	
-	public abstract boolean isGuest();
+	public abstract boolean getIsGuest();
 	
 	public synchronized void finishOldJobs() {
 		if (lifespan == null) return;
+		final int lifespanmillis = lifespan * 1000;
 		Date now = new Date();
 		for (Job job : jobs.values()) {
-			Date death = job.getStartDate();
-			lifespan.add(death);
+			Date death = new Date(job.getStartDate().getTime() + lifespanmillis);
 			if (death.before(now)) {
 				job.finish();
 			}
@@ -88,5 +91,37 @@ public abstract class Account {
 
 	public void setEventBufferSize(Integer eventBufferSize) {
 		this.eventBufferSize = eventBufferSize;
-	} 
+	}
+	
+	public synchronized int getNumNewJobs() {
+		int out = 0;
+		for (Job job : jobs.values()) {
+			if (job.getState().equals("NEW")) out++;
+		}
+		return out;
+	}
+	
+	public synchronized int getNumRunningJobs() {
+		int out = 0;
+		for (Job job : jobs.values()) {
+			if (job.getState().equals("RUNNING")) out++;
+		}
+		return out;
+	}
+	
+	public synchronized int getNumDeadJobs() {
+		int out = 0;
+		for (Job job : jobs.values()) {
+			if (job.getState().equals("DEAD")) out++;
+		}
+		return out;
+	}
+
+	public synchronized Integer getLifespan() {
+		return lifespan;
+	}
+
+	public synchronized Integer getQuota() {
+		return quota;
+	}
 }

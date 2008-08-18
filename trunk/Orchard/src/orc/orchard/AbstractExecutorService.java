@@ -87,7 +87,7 @@ public abstract class AbstractExecutorService implements ExecutorServiceInterfac
 	
 	public Set<String> jobs(String devKey) {
 		logger.info("jobs(" + devKey + ")");
-		return accounts.getAccount(devKey).jobIDs();
+		return accounts.getAccount(devKey).getJobIDs();
 	}
 	
 	public String compileAndSubmit(String devKey, String program) throws QuotaException, InvalidProgramException, InvalidOilException, RemoteException {
@@ -130,7 +130,7 @@ public abstract class AbstractExecutorService implements ExecutorServiceInterfac
 
 	public String jobState(String devKey, String job) throws RemoteException, InvalidJobException {
 		logger.info("jobState(" + devKey + ", " + job + ")");
-		return accounts.getAccount(devKey).getJob(job).state();
+		return accounts.getAccount(devKey).getJob(job).getState();
 	}
 
 	public void purgeJobEvents(String devKey, String job) throws RemoteException, InvalidJobException {

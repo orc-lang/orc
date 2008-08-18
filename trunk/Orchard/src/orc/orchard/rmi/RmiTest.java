@@ -13,12 +13,18 @@ import orc.orchard.oil.Oil;
 
 public class RmiTest {
 	public static void main(String[] args) throws Exception {
+		// Create an executor
+		URI executorURI = new URI("rmi://localhost/orchard/executor");
+		new ExecutorService(executorURI);
+		ExecutorServiceInterface executor;
+		executor = (ExecutorServiceInterface)Naming.lookup(executorURI.toString());
+		
 		CompilerService compiler = new CompilerService();
 		// Check security validation
 		Oil oil = compiler.compile("", "class String = java.lang.String 1");
 		try {
 			System.out.println(oil);
-			new orc.orchard.java.ExecutorService().submit("", oil);
+			executor.submit("", oil);
 			System.err.println("Failed to catch validation error.");
 			return;
 		} catch (InvalidOilException e) {
@@ -27,12 +33,6 @@ public class RmiTest {
 
 		// Compile a program
 		oil = compiler.compile("", "def M(x) = x | Rtimer(1000) >> M(x+1) M(1)");
-		
-		// Create an executor
-		URI executorURI = new URI("rmi://localhost/orchard/executor");
-		new ExecutorService(executorURI);
-		ExecutorServiceInterface executor;
-		executor = (ExecutorServiceInterface)Naming.lookup(executorURI.toString());
 
 		// Submit the program
 		String job = executor.submit("", oil);
@@ -40,11 +40,7 @@ public class RmiTest {
 		System.out.println(executor.jobState("", job));
 		executor.startJob("", job);
 		System.out.println(executor.jobState("", job));
-		try {
-			Thread.sleep(3000);
-		} catch (InterruptedException e) {
-			// ignore
-		}
+		Thread.sleep(9000);
 		System.out.println("Done waiting");
 		for (int i = 0; i < 5; ++i) {
 			List<JobEvent> events;

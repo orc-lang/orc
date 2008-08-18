@@ -6,8 +6,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.postgresql.util.PGInterval;
-
 public class DbAccounts extends AbstractAccounts {
 	private Connection db;
 	private String url;
@@ -59,7 +57,7 @@ public class DbAccounts extends AbstractAccounts {
 				} else {
 					return getAccount((Integer)rs.getObject(1),
 							(Integer)rs.getObject(2),
-							(PGInterval)rs.getObject(3),
+							(Integer)rs.getObject(3),
 							(Integer)rs.getObject(4));
 				}
 			} finally {

@@ -3,29 +3,20 @@ package orc.orchard;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.postgresql.util.PGInterval;
-
 /**
  * Provide access to accounts stored in a database.
  * @author quark
  */
 public abstract class AbstractAccounts {
-	private Map<Integer, Account> accounts = new HashMap<Integer, Account>();
-	protected Account guest;
+	private final Map<Integer, Account> accounts = new HashMap<Integer, Account>();
+	protected final Account guest;
 	public AbstractAccounts() {
-		// create a special persistent guest account
-		guest = new Account() {
-			@Override
-			protected void onNoMoreJobs() {}	
-			public boolean isGuest() { return true; }
-		};
-		// jobs can run no more than 30 minutes
-		guest.setLifespan(new PGInterval(0, 0, 0, 0, 30, 0));
+		guest = new GuestAccount();
 	}
 	
 	public abstract Account getAccount(String devKey);
 	
-	protected synchronized Account getAccount(final Integer account_id, Integer quota, PGInterval lifespan, Integer eventBufferSize) {
+	protected synchronized Account getAccount(final Integer account_id, Integer quota, Integer lifespan, Integer eventBufferSize) {
 		// Get the actual account object. If one already
 		// exists, return it.
 		Account out;
@@ -40,7 +31,7 @@ public abstract class AbstractAccounts {
 						accounts.remove(account_id);
 					}
 				}
-				public boolean isGuest() { return false; }
+				public boolean getIsGuest() { return false; }
 			};
 			accounts.put(account_id, out);
 		}
