@@ -1,8 +1,11 @@
 package orc.trace.query;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
+import orc.trace.events.Event;
 import orc.trace.query.patterns.BindingPattern;
 import orc.trace.query.patterns.ConsPattern;
 import orc.trace.query.patterns.Pattern;
@@ -17,7 +20,9 @@ import orc.trace.values.RecordValue;
  * @author quark
  */
 public abstract class Frame {
-	public static final Variable EVENT = new Variable();
+	public static Frame newFrame(EventStream events) {
+		return new BindEvent(EMPTY, events);
+	}
 	public static final Frame EMPTY = new Frame() {
 		public Term get(Variable v) {
 			return null;
@@ -25,24 +30,54 @@ public abstract class Frame {
 		public String toString() {
 			return "Frame.EMPTY";
 		}
+		protected EventStream events() throws NoSuchElementException {
+			throw new NoSuchElementException();
+		}
 	};
-	public static class Binding extends Frame {
+	private static abstract class Extended extends Frame {
 		private Frame parent;
+		public Extended(Frame parent) {
+			this.parent = parent;
+		}
+		public Term get(Variable v) {
+			return parent.get(v);
+		}
+		public EventStream events() throws NoSuchElementException {
+			return parent.events();
+		}
+		public String toString() {
+			return "+" + parent;
+		}
+	}
+	private static class BindVariable extends Extended {
 		private Variable variable;
 		private Term term;
-		public Binding(Frame parent, Variable variable, Term term) {
-			this.parent = parent;
+		public BindVariable(Frame parent, Variable variable, Term term) {
+			super(parent);
 			this.variable = variable;
 			this.term = term;
 		}
 	
 		public Term get(Variable v) {
 			if (variable.equals(v)) return term;
-			else return parent.get(v);
+			else return super.get(v);
 		}
 	
 		public String toString() {
-			return variable + ":" + term + "+" + parent;
+			return variable + ":" + term + super.toString();
+		}
+	}
+	private static class BindEvent extends Extended {
+		private EventStream stream;
+		public BindEvent(Frame parent, EventStream stream) {
+			super(parent);
+			this.stream = stream;
+		}
+		public String toString() {
+			return stream + super.toString();
+		}
+		public EventStream events() {
+			return stream;
 		}
 	}
 	
@@ -50,6 +85,10 @@ public abstract class Frame {
 	 * An unbound variable returns null.
 	 */
 	public abstract Term get(Variable v);
+	/**
+	 * If no stream is available, throws an exception.
+	 */
+	protected abstract EventStream events() throws NoSuchElementException;
 	
 	public Frame bind(Variable v, Term p) {
 		assert(p != null);
@@ -58,10 +97,18 @@ public abstract class Frame {
 		if (t != null) {
 			return unify(t, p);
 		} else if (!p.occurs(v)) {
-			return new Binding(this, v, p);
+			return new BindVariable(this, v, p);
 		} else {
 			return null;
 		}
+	}
+	
+	public Event currentEvent() throws NoSuchElementException {
+		return events().head();
+	}
+	
+	public Frame nextEvent() throws NoSuchElementException {
+		return new BindEvent(this, events().tail());
 	}
 	
 	/**
