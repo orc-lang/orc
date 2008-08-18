@@ -18,4 +18,17 @@ public class OrPredicate implements Predicate {
 				new PredicateContinuation(frame, right))
 			.evaluate();
 	}
+	/**
+	 * Utility method to OR an array of predicates.
+	 * Right-associative for efficiency.
+	 */
+	public static Predicate or(Predicate ... ps) {
+		if (ps.length == 0) return TruePredicate.singleton;
+		if (ps.length == 1) return ps[0];
+		Predicate out = new OrPredicate(ps[ps.length-2], ps[ps.length-1]);
+		for (int i = ps.length-3; i >= 0; --i) {
+			out = new OrPredicate(ps[i], out);
+		}
+		return out;
+	}
 }

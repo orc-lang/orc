@@ -1,5 +1,7 @@
 package orc.trace;
 
+import java.util.NoSuchElementException;
+
 import orc.error.runtime.TokenException;
 import orc.trace.events.BlockEvent;
 import orc.trace.events.CallEvent;
@@ -18,6 +20,7 @@ import orc.trace.handles.FirstHandle;
 import orc.trace.handles.Handle;
 import orc.trace.handles.OnlyHandle;
 import orc.trace.query.Frame;
+import orc.trace.query.EventStream;
 import orc.trace.query.predicates.Predicate;
 import orc.trace.query.predicates.Result;
 import orc.trace.query.predicates.TruePredicate;
@@ -107,10 +110,20 @@ public abstract class AbstractTracer implements Tracer {
 		maybeRecord(new OnlyHandle<Event>(new PublishEvent(thread, marshaller.marshal(value))));
 	}
 	
-	protected void maybeRecord(Handle<? extends Event> event) {
+	protected void maybeRecord(final Handle<? extends Event> event) {
 		if (filter != null) {
-			Result result = filter.evaluate(
-					Frame.EMPTY.bind(Frame.EVENT, event.get()));
+			// we'll use a special frame containing only the
+			// current event
+			// TODO: make this able to scan in the stream
+			Frame frame = Frame.newFrame(new EventStream() {
+					public Event head() throws NoSuchElementException {
+						return event.get();
+					}
+					public EventStream tail() throws NoSuchElementException {
+						throw new NoSuchElementException();
+					}
+				});
+			Result result = filter.evaluate(frame);
 			if (result == Result.NO) return;
 		}
 		record(event);
