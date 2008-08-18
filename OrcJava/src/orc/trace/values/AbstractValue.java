@@ -17,8 +17,8 @@ public abstract class AbstractValue implements Value {
 			throw new AssertionError(e);
 		}
 	}
-	public boolean unify(Frame frame, Term value) {
-		return equals(value);
+	public Frame unify(Frame frame, Term that) {
+		return equals(that) ? frame : null;
 	}
 	public Term evaluate(Frame frame) {
 		return this;

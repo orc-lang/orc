@@ -18,17 +18,19 @@ public class ConsPattern extends Pattern {
 		this.head = head;
 		this.tail = tail;
 	}
-	public boolean unify(Frame frame, Term that_) {
+	public Frame unify(Frame frame, Term that_) {
 		if (that_ instanceof ConsPattern) {
 			ConsPattern that = (ConsPattern)that_;
-			return frame.unify(head, that.head)
-				&& frame.unify(tail, that.tail);
+			Frame frame1 = frame.unify(head, that.head);
+			if (frame1 == null) return null;
+			return frame1.unify(tail, that.tail);
 		} else if (that_ instanceof ConsValue) {
 			ConsValue that = (ConsValue)that_;
-			return frame.unify(head, that.head)
-				&& frame.unify(tail, that.tail);
+			Frame frame1 = frame.unify(head, that.head);
+			if (frame1 == null) return null;
+			return frame1.unify(tail, that.tail);
 		}
-		return false;
+		return null;
 	}
 	public Term evaluate(Frame frame) {
 		Term head1 = head.evaluate(frame);

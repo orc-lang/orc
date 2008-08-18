@@ -10,4 +10,6 @@ public class DieEvent extends Event {
 	public DieEvent(ForkEvent thread) {
 		super(new LastHandle<ForkEvent>(thread));
 	}
+	@Override
+	public String getType() { return "die"; }
 }

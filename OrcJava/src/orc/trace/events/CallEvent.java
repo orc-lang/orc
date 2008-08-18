@@ -31,4 +31,6 @@ public class CallEvent extends Event {
 		else if (key.equals("arguments")) return arguments;
 		else return super.getProperty(key);
 	}
+	@Override
+	public String getType() { return "call"; }
 }

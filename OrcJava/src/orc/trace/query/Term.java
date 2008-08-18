@@ -23,12 +23,13 @@ import orc.trace.values.Value;
 public interface Term {
 	/**
 	 * Unify this with that using the given environment.
+	 * Return null if the terms cannot be unified.
 	 * Don't call this directly, use {@link Frame#unify(Term, Term)}.
 	 * If this is not an instance of {@link Variable}, then neither is that.
 	 * If this is not an instance of {@link BindingPattern}, then neither is that.
 	 * If this is not an instance of {@link Pattern}, then neither is that.
 	 */
-	public boolean unify(Frame frame, Term that);
+	public Frame unify(Frame frame, Term that);
 	/**
 	 * Substitute bound variables. If there are any unbound variables,
 	 * this may return a pattern.

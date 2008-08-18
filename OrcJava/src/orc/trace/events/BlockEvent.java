@@ -21,4 +21,6 @@ public class BlockEvent extends Event {
 	public void prettyPrint(Writer out, int indent) throws IOException {
 		super.prettyPrint(out, indent);
 	}
+	@Override
+	public String getType() { return "block"; }
 }

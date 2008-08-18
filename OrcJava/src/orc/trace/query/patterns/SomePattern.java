@@ -16,7 +16,7 @@ public class SomePattern extends Pattern {
 		super();
 		this.content = content;
 	}
-	public boolean unify(Frame frame, Term that_) {
+	public Frame unify(Frame frame, Term that_) {
 		if (that_ instanceof SomePattern) {
 			SomePattern that = (SomePattern)that_;
 			return frame.unify(content, that.content);
@@ -24,7 +24,7 @@ public class SomePattern extends Pattern {
 			SomeValue that = (SomeValue)that_;
 			return frame.unify(content, that.content);
 		}
-		return false;
+		return null;
 	}
 	public Term evaluate(Frame frame) {
 		Term content1 = content.evaluate(frame);

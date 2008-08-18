@@ -24,14 +24,14 @@ public class PropertyPattern extends BindingPattern {
 		this.record = record;
 		this.key = key;
 	}
-	public boolean unify(Frame frame, Term value) {
+	public Frame unify(Frame frame, Term value) {
 		// Evaluate the record variable
 		Term record1 = record.evaluate(frame);
 		if (record1 instanceof RecordTerm) {
 			return frame.unify(((RecordTerm)record1).getProperty(key), value);
 		} else {
 			// If it's not bound yet, we can't unify
-			return false;
+			return null;
 		}
 	}
 	public Term evaluate(Frame frame) {

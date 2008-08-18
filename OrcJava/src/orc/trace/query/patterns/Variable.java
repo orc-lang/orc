@@ -12,7 +12,7 @@ public class Variable extends BindingPattern {
 	public Variable() {
 		index = ++lastIndex;
 	}
-	public boolean unify(Frame frame, Term value) {
+	public Frame unify(Frame frame, Term value) {
 		return frame.bind(this, value);
 	}
 	public Term evaluate(Frame frame) {
