@@ -29,13 +29,8 @@ import orc.orchard.oil.Oil;
 public abstract class AbstractExecutorService implements ExecutorServiceInterface {
 	protected Logger logger;
 	/** All executors share one account manager. */
-	private static Accounts accounts;
-	{
-		accounts = new Accounts(
+	private Accounts accounts = new Accounts(
 			"jdbc:postgresql://localhost/orchard?user=orchard&password=ckyogack");
-		JMXUtilities.registerMBean(accounts,
-				JMXUtilities.newObjectName(accounts, "accounts"));
-	}
 
 	protected AbstractExecutorService(Logger logger) {
 		this.logger = logger;

@@ -18,13 +18,7 @@ public class Accounts implements AccountsMBean {
 	private final Map<Integer, Account> accounts = new HashMap<Integer, Account>();
 	private Connection db;
 	protected String url;
-	/** All account managers can share a single guest account. */
-	protected static Account guest;
-	{
-		guest = new GuestAccount();
-		JMXUtilities.registerMBean(guest,
-				JMXUtilities.newObjectName(guest, "guest"));
-	}
+	protected Account guest = new GuestAccount();
 	
 	private class DbAccount extends Account {
 		private int account_id;
