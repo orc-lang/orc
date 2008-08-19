@@ -135,6 +135,9 @@ public final class Job implements JobMBean {
 			closed = true;
 			waiters.resumeAll();
 		}
+		public synchronized int getNumPublications() {
+			return sequence;
+		}
 	}
 	
 	/** Has start() been called yet? */
@@ -320,5 +323,8 @@ public final class Job implements JobMBean {
 		if (callback == null) throw new InvalidPromptException();
 		pendingPrompts.remove(promptID);
 		callback.cancelPrompt();
+	}
+	public int getNumPublications() {
+		return events.getNumPublications();
 	}
 }

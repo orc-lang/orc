@@ -18,7 +18,6 @@ import orc.orchard.errors.UnsupportedFeatureException;
 import orc.orchard.java.CompilerService;
 import orc.orchard.oil.Oil;
 
-
 /**
  * Standard implementation of an ExecutorService. Extenders should implement
  * createJobService.
@@ -29,15 +28,21 @@ import orc.orchard.oil.Oil;
  */
 public abstract class AbstractExecutorService implements ExecutorServiceInterface {
 	protected Logger logger;
-	private AbstractAccounts accounts; 
-
-	protected AbstractExecutorService(Logger logger, AbstractAccounts accounts) {
-		this.logger = logger;
-		this.accounts = accounts;
+	/** All executors share one account manager. */
+	private static Accounts accounts;
+	{
+		accounts = new Accounts(
+			"jdbc:postgresql://localhost/orchard?user=orchard&password=ckyogack");
+		JMXUtilities.registerMBean(accounts,
+				JMXUtilities.newObjectName(accounts, "accounts"));
 	}
 
-	protected AbstractExecutorService(AbstractAccounts accounts) {
-		this(getDefaultLogger(), accounts);
+	protected AbstractExecutorService(Logger logger) {
+		this.logger = logger;
+	}
+
+	protected AbstractExecutorService() {
+		this(getDefaultLogger());
 	}
 	
 	/**

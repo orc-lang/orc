@@ -17,7 +17,6 @@ import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.handler.MessageContext;
 
 import orc.orchard.AbstractExecutorService;
-import orc.orchard.DbAccounts;
 import orc.orchard.JobConfiguration;
 import orc.orchard.JobEvent;
 import orc.orchard.Waiter;
@@ -86,7 +85,7 @@ public class ExecutorService extends AbstractExecutorService {
 	}
 	
 	public ExecutorService() {
-		super(getDefaultLogger(), new DbAccounts("jdbc:postgresql://localhost/orchard?user=orchard&password=ckyogack"));
+		super(getDefaultLogger());
 	}
 	
 	/**
