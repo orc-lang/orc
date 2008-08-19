@@ -19,7 +19,6 @@ import javax.xml.ws.handler.MessageContext;
 
 import orc.orchard.AbstractExecutorService;
 import orc.orchard.JobConfiguration;
-import orc.orchard.JobEvent;
 import orc.orchard.Waiter;
 import orc.orchard.errors.InvalidJobException;
 import orc.orchard.errors.InvalidJobStateException;
@@ -28,6 +27,7 @@ import orc.orchard.errors.InvalidProgramException;
 import orc.orchard.errors.InvalidPromptException;
 import orc.orchard.errors.QuotaException;
 import orc.orchard.errors.UnsupportedFeatureException;
+import orc.orchard.events.JobEvent;
 import orc.orchard.oil.Oil;
 
 import org.jvnet.jax_ws_commons.json.JSONBindingID;

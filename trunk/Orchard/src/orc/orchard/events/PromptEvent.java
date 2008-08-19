@@ -1,4 +1,4 @@
-package orc.orchard;
+package orc.orchard.events;
 
 public class PromptEvent extends JobEvent {
 	public String message;

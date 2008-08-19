@@ -29,7 +29,7 @@ public final class JMXUtilities {
 		try {
 			String name = object.getClass().getPackage().getName()
 				+ ":type=" + object.getClass().getSimpleName()
-				+ ",name=" + id;
+				+ ",name=" + ObjectName.quote(id);
 			return new ObjectName(name); 
 		} catch (MalformedObjectNameException e) {
 			throw new OrcError(e);
