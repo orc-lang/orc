@@ -40,7 +40,7 @@ public class RmiTest {
 		System.out.println(executor.jobState("", job));
 		executor.startJob("", job);
 		System.out.println(executor.jobState("", job));
-		Thread.sleep(9000);
+		Thread.sleep(3000);
 		System.out.println("Done waiting");
 		for (int i = 0; i < 5; ++i) {
 			List<JobEvent> events;

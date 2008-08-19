@@ -9,14 +9,13 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.logging.Logger;
 
 import orc.orchard.AbstractExecutorService;
-import orc.orchard.GuestOnlyAccounts;
 import orc.orchard.api.ExecutorServiceInterface;
 
 public class ExecutorService extends AbstractExecutorService
 	implements ExecutorServiceInterface
 {	
 	public ExecutorService(URI baseURI, Logger logger) throws RemoteException, MalformedURLException {
-		super(logger, new GuestOnlyAccounts());
+		super(logger);
 		logger.info("Binding to '" + baseURI + "'");
 		UnicastRemoteObject.exportObject(this, 0);
 		Naming.rebind(baseURI.toString(), this);

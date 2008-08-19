@@ -7,4 +7,5 @@ public interface JobMBean {
 	public String getState();
 	public void halt();
 	public void finish();
+	public int getNumPublications();
 }
