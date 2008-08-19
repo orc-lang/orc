@@ -34,6 +34,19 @@ option constant;
 public Predicate Query = Space yyValue:Disjunction EndOfFile;
 
 Predicate Predicate = Disjunction;
+
+Predicate BinaryTemporal = 
+	left:Disjunction void:U right:BinaryTemporal {
+		yyValue = new UntilPredicate(left, right);
+	}
+	/ left:Disjunction void:R right:BinaryTemporal {
+		yyValue = new ReleasePredicate(left, right);
+	}
+	/ left:Disjunction void:W right:BinaryTemporal {
+		yyValue = new ReleasePredicate(right, new OrPredicate(right, left));
+	}
+	;
+
 Predicate Disjunction =
 	left:Conjunction void:SEMICOLON right:Disjunction {
 		yyValue = new OrPredicate(left, right);
@@ -42,40 +55,40 @@ Predicate Disjunction =
 	;
 
 Predicate Conjunction =
-	left:Regexp void:COMMA right:Conjunction {
+	left:Negation void:COMMA right:Conjunction {
 		yyValue = new AndPredicate(left, right);
-	}
-	/ Regexp
-	;
-
-Predicate Regexp =
-	p:Negation PLUS {
-		yyValue = new PlusPredicate(p);
-	}
-	/ p:Negation STAR {
-		yyValue = new OrPredicate(TruePredicate.singleton, new PlusPredicate(p));
 	}
 	/ Negation
 	;
 
 Predicate Negation =
-	void:NOT p:BasicPredicate {
+	void:NOT p:UnaryTemporal {
 		yyValue = new NotPredicate(p);
+	}
+	/ UnaryTemporal
+	;
+
+Predicate UnaryTemporal =
+	void:X p:Predicate {
+		yyValue = new NextPredicate(p);
+	}
+	/ void:F p:Predicate {
+		yyValue = new UntilPredicate(TruePredicate.singleton, p);
+	}
+	/ void:G p:Predicate {
+		yyValue = new ReleasePredicate(FalsePredicate.singleton, p);
 	}
 	/ BasicPredicate
 	;
-
+	
 Predicate BasicPredicate =
-	left:Pattern void:EQ right:Pattern {
+	void:AT p:Pattern {
+		yyValue = new CurrentEventPredicate(p);
+	}
+	/ left:Pattern void:EQ right:Pattern {
 		yyValue = new EqualPredicate(left, right);
 	}
 	/ void:LPAREN Predicate void:RPAREN
-	/ "Current":Identifier void:LPAREN p:Pattern void:RPAREN {
-		yyValue = new CurrentEventPredicate(p);
-	}
-	/ "Next":Identifier void:LPAREN void:RPAREN {
-		yyValue = NextEventPredicate.singleton;
-	}
 	/ void:TRUE {
 		yyValue = TruePredicate.singleton;
 	}
@@ -97,7 +110,7 @@ Term BasicPattern =
 	UNDERSCORE {
 		yyValue = new Variable();
 	}
-	/ name:Identifier props:(void:DOT Identifier)* {
+	/ name:Variable props:(void:DOT Variable)* {
 		BindingPattern out = intern(name);
 		for (String key : props) {
 			out = new PropertyPattern(out, key);
@@ -178,13 +191,20 @@ transient String OctalEscape =
 	;
 transient String OctalDigit = [0-7];
 	
-String Identifier = WordToken Space;
-String WordToken = [a-zA-Z_] [a-zA-Z0-9_]*;
+String Variable = VariableToken Space;
+String VariableToken = [a-z] [a-zA-Z0-9_]*;
 
 /////////////////////////////////////////////
 // Keywords
 /////////////////////////////////////////////
 
+transient int U = "U" Space { yyValue = yyStart; };
+transient int X = "X" Space { yyValue = yyStart; };
+transient int R = "R" Space { yyValue = yyStart; };
+transient int F = "F" Space { yyValue = yyStart; };
+transient int G = "G" Space { yyValue = yyStart; };
+transient int W = "W" Space { yyValue = yyStart; };
+transient int AT = "@" Space { yyValue = yyStart; };
 transient int TRUE = "true" Space { yyValue = yyStart; };
 transient int FALSE = "false" Space { yyValue = yyStart; };
 transient int EQ = "=" Space { yyValue = yyStart; };
@@ -196,9 +216,8 @@ transient int DOT = "." Space { yyValue = yyStart; };
 transient int UNDERSCORE = "_" Space { yyValue = yyStart; };
 transient int COMMA = "," Space { yyValue = yyStart; };
 transient int SEMICOLON = ";" Space { yyValue = yyStart; };
+// in Prolog this would be \+, but I like ~ much better
 transient int NOT = "~" Space { yyValue = yyStart; };
-transient int STAR = "*" Space { yyValue = yyStart; };
-transient int PLUS = "+" Space { yyValue = yyStart; };
 transient int COLON = ":" Space { yyValue = yyStart; };
 	
 /////////////////////////////////////////////
