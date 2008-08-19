@@ -62,12 +62,14 @@ public final class Job implements JobMBean {
 		private WaiterManager waiters = new WaiterManager(this);
 		/** Is the queue closed? */
 		private boolean closed = false;
+		/** Is the queue full? */
+		private boolean blocked = false;
 		/** Next sequence number for events. */
 		private int sequence = 0;
 		/** Track the size of the buffer for throttling. */
 		private int bufferedSize = 0;
 		/** Maximum allowed size of buffer. */
-		private int bufferSize = 100;
+		private int bufferSize = 10;
 		/** Number of events which are eligible to be purged. */
 		private int purgable = 0;
 		public EventBuffer() {}
@@ -80,14 +82,17 @@ public final class Job implements JobMBean {
 		}
 		/**
 		 * Add an event to the stream, blocking if the stream is full.
+		 * Returns false if interrupted.
 		 */
-		public synchronized void add(JobEvent value) {
+		public synchronized boolean add(JobEvent value) {
 			while (bufferedSize >= bufferSize) {
 				System.out.println("Buffer full.");
 				try {
+					blocked = true;
 					wait();
+					blocked = false;
 				} catch (InterruptedException e) {
-					// do nothing
+					return false;
 				}
 			}
 			value.sequence = ++sequence;
@@ -95,6 +100,7 @@ public final class Job implements JobMBean {
 			bufferedSize++;
 			buffer.add(value);
 			waiters.resume();
+			return true;
 		}
 		/**
 		 * Return buffered events. If necessaray, block (using the provided
@@ -135,8 +141,14 @@ public final class Job implements JobMBean {
 			closed = true;
 			waiters.resumeAll();
 		}
-		public synchronized int getNumPublications() {
+		public synchronized int getTotalNumEvents() {
 			return sequence;
+		}
+		/**
+		 * Is the queue blocked because it is full?
+		 */
+		public synchronized boolean isBlocked() {
+			return blocked;
 		}
 	}
 	
@@ -229,7 +241,10 @@ public final class Job implements JobMBean {
 	private final OrcEngine engine;
 	/** Events which can be monitored. */
 	private final EventBuffer events;
+	/** Tasks to run when the job finishes. */
 	private final LinkedList<FinishListener> finishers = new LinkedList<FinishListener>();
+	/** Thread in which the main engine is run. */
+	private Thread worker;
 
 	protected Job(Expr expression, JobConfiguration configuration) {
 		this.configuration = configuration;
@@ -243,7 +258,8 @@ public final class Job implements JobMBean {
 	public synchronized void start() throws InvalidJobStateException {
 		if (!isNew) throw new InvalidJobStateException(getState());
 		isNew = false;
-		new Thread(engine).start();
+		worker = new Thread(engine);
+		worker.start();
 	}
 	
 	public synchronized void finish() {
@@ -269,6 +285,9 @@ public final class Job implements JobMBean {
 
 	public synchronized void halt() {
 		engine.terminate();
+		// if the engine is blocked, interrupt it
+		// so it can halt
+		worker.interrupt();
 	}
 
 	public JobConfiguration getConfiguration() {
@@ -292,6 +311,7 @@ public final class Job implements JobMBean {
 	public synchronized String getState() {
 		if (isNew) return "NEW";
 		else if (engine.isDead()) return "DONE";
+		else if (events.isBlocked()) return "BLOCKED";
 		else return "RUNNING";
 	}
 
@@ -324,7 +344,7 @@ public final class Job implements JobMBean {
 		pendingPrompts.remove(promptID);
 		callback.cancelPrompt();
 	}
-	public int getNumPublications() {
-		return events.getNumPublications();
+	public int getTotalNumEvents() {
+		return events.getTotalNumEvents();
 	}
 }

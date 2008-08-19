@@ -109,6 +109,14 @@ public abstract class Account implements AccountMBean {
 		return out;
 	}
 	
+	public synchronized int getNumBlockedJobs() {
+		int out = 0;
+		for (Job job : jobs.values()) {
+			if (job.getState().equals("BLOCKED")) out++;
+		}
+		return out;
+	}
+	
 	public synchronized int getNumDeadJobs() {
 		int out = 0;
 		for (Job job : jobs.values()) {
