@@ -12,6 +12,7 @@ import javax.annotation.Resource;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.ws.BindingType;
 import javax.xml.ws.Endpoint;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.handler.MessageContext;
@@ -29,6 +30,7 @@ import orc.orchard.errors.QuotaException;
 import orc.orchard.errors.UnsupportedFeatureException;
 import orc.orchard.oil.Oil;
 
+import org.jvnet.jax_ws_commons.json.JSONBindingID;
 import org.mortbay.util.ajax.Continuation;
 import org.mortbay.util.ajax.ContinuationSupport;
 
@@ -42,7 +44,7 @@ import org.mortbay.util.ajax.ContinuationSupport;
  * @author quark
  */
 @WebService
-//@BindingType(JSONBindingID.JSON_BINDING)
+@BindingType(JSONBindingID.JSON_BINDING)
 public class ExecutorService extends AbstractExecutorService {
 	@Resource
 	private WebServiceContext context;

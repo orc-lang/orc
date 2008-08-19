@@ -125,7 +125,7 @@ public interface ExecutorServiceInterface extends Remote {
 	 * What is the job's state? Possible return values:
 	 * NEW: not yet started.
 	 * RUNNING: started and processing tokens.
-	 * WAITING: started and waiting for response from a site.
+	 * BLOCKED: blocked because event buffer is full.
 	 * DONE: finished executing. 
 	 * @return the current state of the job.
 	 */
