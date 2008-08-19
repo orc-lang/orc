@@ -1,4 +1,4 @@
-package orc.orchard;
+package orc.orchard.events;
 
 import java.io.Serializable;
 import java.util.Date;

@@ -1,4 +1,4 @@
-package orc.orchard;
+package orc.orchard.events;
 
 import javax.xml.bind.annotation.XmlSeeAlso;
 

@@ -1,4 +1,4 @@
-package orc.orchard;
+package orc.orchard.events;
 
 import orc.error.SourceLocation;
 import orc.error.runtime.TokenException;

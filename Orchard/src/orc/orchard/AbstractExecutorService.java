@@ -15,6 +15,7 @@ import orc.orchard.errors.InvalidProgramException;
 import orc.orchard.errors.InvalidPromptException;
 import orc.orchard.errors.QuotaException;
 import orc.orchard.errors.UnsupportedFeatureException;
+import orc.orchard.events.JobEvent;
 import orc.orchard.java.CompilerService;
 import orc.orchard.oil.Oil;
 
@@ -28,8 +29,7 @@ import orc.orchard.oil.Oil;
  */
 public abstract class AbstractExecutorService implements ExecutorServiceInterface {
 	protected Logger logger;
-	/** All executors share one account manager. */
-	private Accounts accounts = new Accounts(
+	private Accounts accounts = Accounts.getAccounts(
 			"jdbc:postgresql://localhost/orchard?user=orchard&password=ckyogack");
 
 	protected AbstractExecutorService(Logger logger) {
