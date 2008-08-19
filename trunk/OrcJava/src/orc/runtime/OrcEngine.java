@@ -26,7 +26,7 @@ import orc.trace.Tracer;
  * The Orc Engine provides the main loop for executing active tokens.
  * Tokens are always processed in a single thread, but tokens might
  * be activated or resumed from other threads, so some synchronization
- * is necessary. 
+ * is necessary.
  * 
  * @author wcook, dkitchin, quark
  */
@@ -74,18 +74,7 @@ public class OrcEngine implements Runnable {
 		Kilim.startEngine(config.getNumKilimThreads(),
 				config.getNumSiteThreads());
 		while (true) {
-			// FIXME: can we avoid synchronizing this whole block?
-			synchronized(this) {
-				if (halt) break;
-				if (!step()) {
-					try {
-						wait();
-					} catch (InterruptedException e) {
-						// terminate execution
-						break;
-					}
-				}
-			}
+			if (!step()) break;
 		}
 		timer.cancel();
 		timer = null;
@@ -132,33 +121,52 @@ public class OrcEngine implements Runnable {
 	
 	/**
 	 * Run one step (process one token, handle one site response, or advance
-	 * all logical clocks). Returns true if work was done.
+	 * all logical clocks). Return false if engine should halt.
 	 */
 	protected boolean step() {
-		/* If an active token is available, process it. */
-		if (!activeTokens.isEmpty()){
-			activeTokens.remove().process();
-			return true;
+		// the next token to process
+		Token todo;
+		
+		// synchronize while we decide what to do next;
+		// this block will either return from the function
+		// or set todo to a token to process
+		synchronized (this) {
+			if (halt) return false;
+			if (!activeTokens.isEmpty()) {
+				// If an active token is available, process it.
+				todo = activeTokens.remove();
+			} else if (!queuedReturns.isEmpty()) {
+				// If a site return is available, make it active.
+				// This marks the beginning of a new round. 
+				activeTokens.add(queuedReturns.remove());
+				round++;
+				reportRound();
+				return true;
+			} else {
+				// If the engine is quiescent, advance all logical clocks.
+				boolean progress = false;
+				
+				for (LogicalClock clock : clocks) {
+					progress = clock.advance() || progress;
+				}
+				
+				if (!progress) {
+					try {
+						// we will be notified when a site returns
+						// or the engine terminates
+						wait();
+					} catch (InterruptedException e) {
+						// return to the main loop and check for termination
+					}
+				}
+				return true;
+			}
 		}
-		
-		/* If a site return is available, make it active.
-		 * This marks the beginning of a new round. 
-		 */
-		if (!queuedReturns.isEmpty()){
-			activeTokens.add(queuedReturns.remove());
-			round++; reportRound();
-			return true;
-		}
-		
-		/* If the engine is quiescent, advance all logical clocks. */
-		boolean progress = false;
-		
-		for (LogicalClock clock : clocks) {
-			progress = clock.advance() || progress;
-		}
-		
-		/* If some logical clock actually advanced, return. */
-		return progress;
+		// notice that we do not synchronize while
+		// processing a token; we don't want to risk
+		// locking the engine if the processing blocks
+		todo.process();
+		return true;
 	}
 	
 	/**
@@ -239,6 +247,7 @@ public class OrcEngine implements Runnable {
 	public synchronized boolean addClock(LogicalClock clock) {
 		return clocks.add(clock);
 	}
+	
 	/**
 	 * Print something (for use by the print and println sites). By default,
 	 * this prints to System.out, but this can be overridden to do something
