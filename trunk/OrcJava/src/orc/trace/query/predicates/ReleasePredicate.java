@@ -3,20 +3,25 @@ package orc.trace.query.predicates;
 import orc.trace.query.Frame;
 
 /**
- * The temporal logic R operator. x R y is true if y is true until the first
+ * The temporal logic R operator. x R y is true if y is true through the first
  * position in which x is true (or forever if such a position does not exist).
  * 
+ * <p>The key difference between R and U is that R requires that both x and y
+ * are true at some point if y ever becomes false.
+ * 
+ * @see UntilPredicate
  * @author quark
  */
 public class ReleasePredicate implements Predicate {
 	private final Predicate predicate;
 	public ReleasePredicate(final Predicate left, final Predicate right) {
-		// a R b = a ; ~a, b, X (a R b)
-		this.predicate = OrPredicate.or(
-				left,
-				AndPredicate.and(
-						new NotPredicate(left),
-						right,
+		// a R b = b , (a ; (~ X true) ; (X a R b))
+		this.predicate = AndPredicate.and(
+				right,
+				OrPredicate.or(
+						// no more events
+						new NotPredicate(new NextPredicate(TruePredicate.singleton)),
+						left,
 						new NextPredicate(this)));
 	}
 	public Result evaluate(Frame frame) {

@@ -11,7 +11,7 @@ import orc.trace.query.Frame;
 public class UntilPredicate implements Predicate {
 	private final Predicate predicate;
 	public UntilPredicate(final Predicate left, final Predicate right) {
-		// a U b = b ; a, X (a U b)
+		// a U b = b ; a, X a U b
 		this.predicate = new OrPredicate(
 				right,
 				new AndPredicate(
