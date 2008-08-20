@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import orc.trace.events.Event;
-import orc.trace.query.EventStream.EndOfStream;
+import orc.trace.query.EventCursor.EndOfStream;
 import orc.trace.query.patterns.BindingPattern;
 import orc.trace.query.patterns.ConsPattern;
 import orc.trace.query.patterns.Pattern;
@@ -67,12 +67,15 @@ public class Frame {
 		}
 	}
 	
-	/** Empty event stream. */
-	private static final EventStream EMPTY_EVENTS = new EventStream() {
-		public Event head() throws EndOfStream {
+	/** Empty event cursor. */
+	private static final EventCursor EMPTY_EVENTS = new EventCursor() {
+		public Event current() throws EndOfStream {
 			throw new EndOfStream();
 		}
-		public EventStream tail() throws EndOfStream {
+		public EventCursor forward() throws EndOfStream {
+			throw new EndOfStream();
+		}
+		public EventCursor back() throws EndOfStream {
 			throw new EndOfStream();
 		}
 	};
@@ -88,9 +91,9 @@ public class Frame {
 	};
 	
 	/**
-	 * Construct a new frame for the given event stream.
+	 * Construct a new frame for the given cursor.
 	 */
-	public static Frame newFrame(EventStream events) {
+	public static Frame newFrame(EventCursor events) {
 		return new Frame(EMPTY_BINDING, events);
 	}
 	
@@ -101,12 +104,12 @@ public class Frame {
 	
 	/** The variable bindings. */
 	private Binding bindings;
-	/** The current event stream. */
-	private EventStream events;
+	/** The current event cursor. */
+	private EventCursor cursor;
 	
-	private Frame(Binding bindings, EventStream events) {
+	private Frame(Binding bindings, EventCursor events) {
 		this.bindings = bindings;
-		this.events = events;
+		this.cursor = events;
 	}
 	
 	/**
@@ -123,21 +126,21 @@ public class Frame {
 		if (t != null) {
 			return unify(t, p);
 		} else if (!p.occurs(v)) {
-			return new Frame(new FullBinding(this.bindings, v, p.evaluate(this)), events);
+			return new Frame(new FullBinding(this.bindings, v, p.evaluate(this)), cursor);
 		} else {
 			return null;
 		}
 	}
 	
 	public Event currentEvent() throws EndOfStream {
-		return events.head();
+		return cursor.current();
 	}
 	
 	/**
 	 * Return a frame pointing to the next event in the stream.
 	 */
 	public Frame forward() throws EndOfStream {
-		return new Frame(bindings, events.tail());
+		return new Frame(bindings, cursor.forward());
 	}
 	
 	/**
@@ -145,7 +148,7 @@ public class Frame {
 	 * but with bindings from this.
 	 */
 	public Frame rewind(Frame that) {
-		return new Frame(bindings, that.events);
+		return new Frame(bindings, that.cursor);
 	}
 	
 	/**
@@ -180,7 +183,7 @@ public class Frame {
 	
 	public void prettyPrint(Writer out, int indent) throws IOException {
 		try {
-			events.head().prettyPrint(out, indent);
+			cursor.current().prettyPrint(out, indent);
 			out.write(" ");
 		} catch (EndOfStream _) {
 			out.write("END ");

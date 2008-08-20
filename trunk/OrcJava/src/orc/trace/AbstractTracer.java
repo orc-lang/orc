@@ -18,7 +18,7 @@ import orc.trace.events.UnblockEvent;
 import orc.trace.handles.FirstHandle;
 import orc.trace.handles.Handle;
 import orc.trace.handles.OnlyHandle;
-import orc.trace.query.EventStream;
+import orc.trace.query.EventCursor;
 import orc.trace.query.Frame;
 import orc.trace.query.predicates.Predicate;
 import orc.trace.query.predicates.Result;
@@ -122,11 +122,14 @@ public abstract class AbstractTracer implements Tracer {
 			// we'll use a special frame containing only the
 			// current event
 			// TODO: make this able to scan in the stream
-			Frame frame = Frame.newFrame(new EventStream() {
-					public Event head() throws EndOfStream {
+			Frame frame = Frame.newFrame(new EventCursor() {
+					public Event current() throws EndOfStream {
 						return event.get();
 					}
-					public EventStream tail() throws EndOfStream {
+					public EventCursor forward() throws EndOfStream {
+						throw new EndOfStream();
+					}
+					public EventCursor back() throws EndOfStream {
 						throw new EndOfStream();
 					}
 				});
