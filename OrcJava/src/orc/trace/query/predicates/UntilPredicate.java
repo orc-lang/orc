@@ -8,17 +8,13 @@ import orc.trace.query.Frame;
  * 
  * @author quark
  */
-public class UntilPredicate implements Predicate {
-	private final Predicate predicate;
+public class UntilPredicate extends DerivedPredicate {
 	public UntilPredicate(final Predicate left, final Predicate right) {
 		// a U b = b ; a, X a U b
-		this.predicate = new OrPredicate(
+		setPredicate(new OrPredicate(
 				right,
 				new AndPredicate(
 						left,
-						new NextPredicate(this)));
-	}
-	public Result evaluate(Frame frame) {
-		return predicate.evaluate(frame);
+						new NextPredicate(this))));
 	}
 }

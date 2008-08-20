@@ -12,19 +12,15 @@ import orc.trace.query.Frame;
  * @see UntilPredicate
  * @author quark
  */
-public class ReleasePredicate implements Predicate {
-	private final Predicate predicate;
+public class ReleasePredicate extends DerivedPredicate {
 	public ReleasePredicate(final Predicate left, final Predicate right) {
 		// a R b = b , (a ; (~ X true) ; (X a R b))
-		this.predicate = AndPredicate.and(
+		setPredicate(new AndPredicate(
 				right,
 				OrPredicate.or(
 						// no more events
 						new NotPredicate(new NextPredicate(TruePredicate.singleton)),
 						left,
-						new NextPredicate(this)));
-	}
-	public Result evaluate(Frame frame) {
-		return predicate.evaluate(frame);
+						new NextPredicate(this))));
 	}
 }

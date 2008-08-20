@@ -2,6 +2,9 @@ package orc.trace.query.predicates;
 
 import orc.trace.query.Frame;
 
+/**
+ * Logical conjunction. Left is evaluated first.
+ */
 public class AndPredicate implements Predicate {
 	private final Predicate left;
 	private final Predicate right;
@@ -18,7 +21,7 @@ public class AndPredicate implements Predicate {
 	
 	/**
 	 * Utility method to AND an array of predicates.
-	 * Right-associative for efficiency.
+	 * Right-associative to optimize backtracking.
 	 */
 	public static Predicate and(Predicate ... ps) {
 		if (ps.length == 0) return FalsePredicate.singleton;
