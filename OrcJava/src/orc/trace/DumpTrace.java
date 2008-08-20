@@ -5,16 +5,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.NoSuchElementException;
 
-import orc.error.OrcError;
 import orc.error.compiletime.ParsingException;
-import orc.trace.query.EventStream;
 import orc.trace.query.FilteredEventStream;
 import orc.trace.query.InputEventStream;
+import orc.trace.query.EventStream.EndOfStream;
 import orc.trace.query.parser.Parser;
-import orc.trace.query.patterns.Variable;
-import orc.trace.query.predicates.CurrentEventPredicate;
 import orc.trace.query.predicates.Predicate;
 
 import org.kohsuke.args4j.Argument;
@@ -78,7 +74,7 @@ public class DumpTrace {
 					System.out.println(in1.frame().toString());
 					in1 = in1.tail();
 				}
-			} catch (NoSuchElementException _) {}
+			} catch (EndOfStream _) {}
 		} else {
 			InputEventStream in1 = this.in;
 			try {
@@ -86,7 +82,7 @@ public class DumpTrace {
 					System.out.println(in1.head().toString());
 					in1 = in1.tail();
 				}
-			} catch (NoSuchElementException _) {}
+			} catch (EndOfStream _) {}
 		}
 	}
 	

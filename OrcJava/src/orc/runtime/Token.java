@@ -108,6 +108,7 @@ public final class Token implements Serializable, Comparable<Token> {
 			return;
 		} else if (group.isAlive()) {
 			location = node.getSourceLocation();
+			tracer.setSourceLocation(location);
 			node.process(this);
 		} else {
 			die();

@@ -8,7 +8,7 @@ package orc.error;
  * @author dkitchin
  *
  */
-public interface Debuggable {
+public interface Located {
 	
 	public SourceLocation getSourceLocation();
 		

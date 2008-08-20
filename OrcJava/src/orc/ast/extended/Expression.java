@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import orc.ast.simple.arg.Argument;
-import orc.error.Debuggable;
+import orc.error.Located;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;

@@ -3,7 +3,6 @@ package orc.trace.query;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.NoSuchElementException;
 
 import orc.error.OrcError;
 import orc.trace.events.Event;
@@ -21,26 +20,26 @@ public class InputEventStream implements EventStream {
 		this.in = in;
 	}
 	
-	private void force() throws NoSuchElementException {
+	private void force() throws EndOfStream {
 		if (in == null) return;
 		try {
 			head = in.readHandle();
 			tail = new InputEventStream(in);
 			in = null;
-		} catch (EOFException _) {
-			throw new NoSuchElementException();
+		} catch (EOFException e) {
+			throw new EndOfStream();
 		} catch (IOException e) {
 			// FIXME: is there a better way to handle this?
 			throw new OrcError(e);
 		}
 	}
 	
-	public Event head() throws NoSuchElementException {
+	public Event head() throws EndOfStream {
 		force();
 		return head.get();
 	}
 	
-	public InputEventStream tail() throws NoSuchElementException {
+	public InputEventStream tail() throws EndOfStream {
 		force();
 		return tail;
 	}

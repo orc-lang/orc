@@ -1,6 +1,5 @@
 package orc.trace.query;
 
-import java.util.NoSuchElementException;
 
 import orc.trace.events.Event;
 
@@ -9,14 +8,13 @@ import orc.trace.events.Event;
  * @author quark
  */
 public interface EventStream {
+	public static class EndOfStream extends Exception {}
 	/**
 	 * Return the event at the head of the stream.
-	 * @throws NoSuchElementException if there are no more events.
 	 */
-	public Event head() throws NoSuchElementException;
+	public Event head() throws EndOfStream;
 	/**
 	 * Return the tail of the stream.
-	 * @throws NoSuchElementException if there are no more events.
 	 */
-	public EventStream tail() throws NoSuchElementException;
+	public EventStream tail() throws EndOfStream;
 }

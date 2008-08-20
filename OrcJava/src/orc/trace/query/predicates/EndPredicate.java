@@ -1,8 +1,7 @@
 package orc.trace.query.predicates;
 
-import java.util.NoSuchElementException;
-
 import orc.trace.query.Frame;
+import orc.trace.query.EventStream.EndOfStream;
 
 /**
  * Succeed if we are at the end of the stream.
@@ -13,7 +12,7 @@ public class EndPredicate implements Predicate {
 		try {
 			frame.forward();
 			return null;
-		} catch (NoSuchElementException _) {
+		} catch (EndOfStream _) {
 			return new Result(frame);
 		}
 	}

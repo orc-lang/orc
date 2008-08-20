@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import orc.error.Locatable;
 import orc.error.runtime.TokenException;
 import orc.runtime.values.Visitor;
 import orc.trace.events.CallEvent;
@@ -36,7 +37,7 @@ import orc.trace.values.Value;
  * 
  * @author quark
  */
-public interface Tracer {
+public interface Tracer extends Locatable {
 	/**
 	 * Events must satisfy this predicate to be traced.
 	 */
