@@ -22,7 +22,7 @@ public class FilteredEventStream implements EventStream {
 		while (true) {
 			Result r1 = predicate.evaluate(Frame.newFrame(stream));
 			if (r1 != null) {
-				frame = r1.frame;
+				frame = r1.getFrame();
 				return stream.head();
 			}
 			stream = stream.tail();

@@ -3,6 +3,10 @@ package orc.trace.query.predicates;
 import orc.trace.query.Frame;
 import orc.trace.query.Term;
 
+/**
+ * Unify two terms.
+ * @author quark
+ */
 public class EqualPredicate implements Predicate {
 	private final Term left;
 	private final Term right;

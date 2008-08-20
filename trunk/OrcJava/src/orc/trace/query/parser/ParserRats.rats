@@ -82,7 +82,7 @@ Predicate UnaryTemporal =
 	;
 	
 Predicate BasicPredicate =
-	void:AT p:Pattern {
+	void:AT p:BindingPattern {
 		yyValue = new CurrentEventPredicate(p);
 	}
 	/ left:Pattern void:EQ right:Pattern {
@@ -107,6 +107,16 @@ Term ConsPattern =
 	;
 	
 Term BasicPattern =
+	BindingPattern
+	/ literal:Literal {
+		yyValue = new ConstantValue(literal);
+	}
+	/ LPAREN ps:PatternList RPAREN {
+		yyValue = new TuplePattern(ps.list().toArray(new Pattern[]{}));
+	}
+	;
+	
+BindingPattern BindingPattern =
 	UNDERSCORE {
 		yyValue = new Variable();
 	}
@@ -116,12 +126,6 @@ Term BasicPattern =
 			out = new PropertyPattern(out, key);
 		}
 		yyValue = out;
-	}
-	/ literal:Literal {
-		yyValue = new ConstantValue(literal);
-	}
-	/ LPAREN ps:PatternList RPAREN {
-		yyValue = new TuplePattern(ps.list().toArray(new Pattern[]{}));
 	}
 	;
 	

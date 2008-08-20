@@ -1,10 +1,10 @@
-/**
- * 
- */
 package orc.trace.query.predicates;
 
 import orc.trace.query.Frame;
 
+/**
+ * Alternative.
+ */
 public class OrPredicate implements Predicate {
 	private final Predicate left;
 	private final Predicate right;
@@ -20,7 +20,7 @@ public class OrPredicate implements Predicate {
 	}
 	/**
 	 * Utility method to OR an array of predicates.
-	 * Right-associative for efficiency.
+	 * Right-associative to optimize backtracking.
 	 */
 	public static Predicate or(Predicate ... ps) {
 		if (ps.length == 0) return TruePredicate.singleton;
