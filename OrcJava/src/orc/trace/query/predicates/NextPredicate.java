@@ -1,7 +1,7 @@
 package orc.trace.query.predicates;
 
 import orc.trace.query.Frame;
-import orc.trace.query.EventStream.EndOfStream;
+import orc.trace.query.EventCursor.EndOfStream;
 
 /**
  * The temporal logic X operator. Evaluate a predicate

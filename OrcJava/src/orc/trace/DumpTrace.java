@@ -7,9 +7,9 @@ import java.io.IOException;
 import java.io.StringReader;
 
 import orc.error.compiletime.ParsingException;
-import orc.trace.query.FilteredEventStream;
-import orc.trace.query.InputEventStream;
-import orc.trace.query.EventStream.EndOfStream;
+import orc.trace.query.FilteredEventCursor;
+import orc.trace.query.InputStreamEventCursor;
+import orc.trace.query.EventCursor.EndOfStream;
 import orc.trace.query.parser.Parser;
 import orc.trace.query.predicates.Predicate;
 
@@ -19,7 +19,7 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
 public class DumpTrace {
-	private InputEventStream in;
+	private InputStreamEventCursor in;
 	private Predicate filter = null;
 
 	@Option(name="-help",usage="Show command-line argument usage")
@@ -45,7 +45,7 @@ public class DumpTrace {
 	@Argument(metaVar="file", required=true, usage="Input file. Omit to use STDIN.")
 	public void setInputFile(File file) throws CmdLineException {
 		try {
-			in = new InputEventStream(new FileInputStream(file));
+			in = new InputStreamEventCursor(new FileInputStream(file));
 		} catch (FileNotFoundException e) {
 			throw new CmdLineException("Could not find input file '"+file+"'");
 		} catch (IOException e) {
@@ -68,19 +68,19 @@ public class DumpTrace {
 	public void run() {
 		assert(in != null);
 		if (filter != null) {
-			FilteredEventStream in1 = new FilteredEventStream(this.in, filter);
+			FilteredEventCursor in1 = new FilteredEventCursor(this.in, filter);
 			try {
 				while (true) {
 					System.out.println(in1.frame().toString());
-					in1 = in1.tail();
+					in1 = in1.forward();
 				}
 			} catch (EndOfStream _) {}
 		} else {
-			InputEventStream in1 = this.in;
+			InputStreamEventCursor in1 = this.in;
 			try {
 				while (true) {
-					System.out.println(in1.head().toString());
-					in1 = in1.tail();
+					System.out.println(in1.current().toString());
+					in1 = in1.forward();
 				}
 			} catch (EndOfStream _) {}
 		}

@@ -9,14 +9,14 @@ import orc.trace.events.Event;
 import orc.trace.handles.Handle;
 import orc.trace.handles.HandleInputStream;
 
-public class InputEventStream implements EventStream {
+public class InputStreamEventCursor implements EventCursor {
 	private HandleInputStream in;
 	private Handle<Event> head;
-	private InputEventStream tail;
-	public InputEventStream(InputStream in) throws IOException {
+	private InputStreamEventCursor tail;
+	public InputStreamEventCursor(InputStream in) throws IOException {
 		this(new HandleInputStream(in));
 	}
-	private InputEventStream(HandleInputStream in) {
+	private InputStreamEventCursor(HandleInputStream in) {
 		this.in = in;
 	}
 	
@@ -24,7 +24,7 @@ public class InputEventStream implements EventStream {
 		if (in == null) return;
 		try {
 			head = in.readHandle();
-			tail = new InputEventStream(in);
+			tail = new InputStreamEventCursor(in);
 			in = null;
 		} catch (EOFException e) {
 			throw new EndOfStream();
@@ -34,13 +34,16 @@ public class InputEventStream implements EventStream {
 		}
 	}
 	
-	public Event head() throws EndOfStream {
+	public Event current() throws EndOfStream {
 		force();
 		return head.get();
 	}
 	
-	public InputEventStream tail() throws EndOfStream {
+	public InputStreamEventCursor forward() throws EndOfStream {
 		force();
 		return tail;
+	}
+	public EventCursor back() throws EndOfStream {
+		throw new EndOfStream();
 	}
 }
