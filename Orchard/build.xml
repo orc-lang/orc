@@ -11,7 +11,7 @@
 		<fileset dir="${orc.location.OrcJava.lib}" includes="*.jar" />
 	</path>
 	
-	<target name="war" depends="kilim" description="generate the war">
+	<target name="war" depends="kilim,minify" description="generate the war">
 		<mkdir dir="${orc.location.war}" />
 		<copy todir="${orc.location.war}">
 			<fileset dir="web">
@@ -65,7 +65,24 @@
 				</assertions>
 			<arg value="-d" />
 			<arg value="${orc.location.build}" />
-			<arg line="${orc.location.build}" />
+			<arg value="${orc.location.build}" />
+		</java>
+	</target>
+
+	<target name="minify" description="minify javascript files">
+		<java jar="${orc.location.lib}/yuicompressor-2.3.6.jar" fork="yes">
+			<arg value="--type" />
+			<arg value="js" />
+			<arg value="web/orc-ready.js" />
+			<arg value="-o" />
+			<arg value="web/orc-ready-min.js" />
+		</java>
+		<java jar="${orc.location.lib}/yuicompressor-2.3.6.jar" fork="yes">
+			<arg value="--type" />
+			<arg value="js" />
+			<arg value="web/orc-parser.js" />
+			<arg value="-o" />
+			<arg value="web/orc-parser-min.js" />
 		</java>
 	</target>
 

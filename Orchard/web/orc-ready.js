@@ -496,7 +496,7 @@ var executorUrl = Orc.query.mock
 var config = {
 	stylesheet: baseUrl + "orc-syntax.css",
 	path: baseUrl,
-	parserfile: ["orc-parser.js"],
+	parserfile: ["orc-parser-min.js"],
 	basefiles: ["codemirror-20080715-extra-min.js"],
 	textWrapping: false
 };

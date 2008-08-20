@@ -115,11 +115,11 @@ function readToken(source, setState) {
 	}
 }
 
-function readOperator(_, _, type) {
+function readOperator(_1, _2, type) {
 	return { type:type, style:"operator" };
 }
 
-function readCombinator(_, _, type) {
+function readCombinator(_1, _2, type) {
 	return { type:type, style:"combinator" };
 }
 
