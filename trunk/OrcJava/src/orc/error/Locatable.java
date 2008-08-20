@@ -12,7 +12,7 @@ package orc.error;
  *
  */
 
-public interface Locatable extends Debuggable {
+public interface Locatable extends Located {
 
 	public void setSourceLocation(SourceLocation location);
 	

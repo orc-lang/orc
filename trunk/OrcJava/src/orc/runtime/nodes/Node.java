@@ -3,7 +3,7 @@
  */
 package orc.runtime.nodes;
 
-import orc.error.Debuggable;
+import orc.error.Located;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
 import orc.runtime.Token;

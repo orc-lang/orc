@@ -1,8 +1,7 @@
 package orc.trace.query;
 
-import java.util.NoSuchElementException;
-
 import orc.trace.events.Event;
+import orc.trace.query.EventStream.EndOfStream;
 import orc.trace.query.predicates.Predicate;
 import orc.trace.query.predicates.Result;
 
@@ -16,7 +15,7 @@ public class FilteredEventStream implements EventStream {
 		this.predicate = predicate;
 	}
 
-	public Event head() throws NoSuchElementException {
+	public Event head() throws EndOfStream {
 		// repeat until we run out of elements or the
 		// predicate evaluates to true
 		while (true) {
@@ -29,12 +28,12 @@ public class FilteredEventStream implements EventStream {
 		}
 	}
 	
-	public Frame frame() throws NoSuchElementException {
+	public Frame frame() throws EndOfStream {
 		head();
 		return frame;
 	}
 
-	public FilteredEventStream tail() throws NoSuchElementException {
+	public FilteredEventStream tail() throws EndOfStream {
 		return new FilteredEventStream(stream.tail(), predicate);
 	}
 }

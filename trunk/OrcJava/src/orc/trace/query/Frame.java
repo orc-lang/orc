@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import orc.trace.events.Event;
+import orc.trace.query.EventStream.EndOfStream;
 import orc.trace.query.patterns.BindingPattern;
 import orc.trace.query.patterns.ConsPattern;
 import orc.trace.query.patterns.Pattern;
@@ -68,11 +69,11 @@ public class Frame {
 	
 	/** Empty event stream. */
 	private static final EventStream EMPTY_EVENTS = new EventStream() {
-		public Event head() throws NoSuchElementException {
-			throw new NoSuchElementException();
+		public Event head() throws EndOfStream {
+			throw new EndOfStream();
 		}
-		public EventStream tail() throws NoSuchElementException {
-			throw new NoSuchElementException();
+		public EventStream tail() throws EndOfStream {
+			throw new EndOfStream();
 		}
 	};
 	
@@ -115,13 +116,6 @@ public class Frame {
 		return bindings.get(v);
 	}
 	
-	/**
-	 * If no stream is available, throws an exception.
-	 */
-	protected EventStream events() throws NoSuchElementException {
-		return events;
-	}
-	
 	public Frame bind(Variable v, Term p) {
 		assert(p != null);
 		if (v == p) return this;
@@ -135,15 +129,15 @@ public class Frame {
 		}
 	}
 	
-	public Event currentEvent() throws NoSuchElementException {
-		return events().head();
+	public Event currentEvent() throws EndOfStream {
+		return events.head();
 	}
 	
 	/**
 	 * Return a frame pointing to the next event in the stream.
 	 */
-	public Frame forward() throws NoSuchElementException {
-		return new Frame(bindings, events().tail());
+	public Frame forward() throws EndOfStream {
+		return new Frame(bindings, events.tail());
 	}
 	
 	/**
@@ -188,7 +182,7 @@ public class Frame {
 		try {
 			events.head().prettyPrint(out, indent);
 			out.write(" ");
-		} catch (NoSuchElementException _) {
+		} catch (EndOfStream _) {
 			out.write("END ");
 		}
 		bindings.prettyPrint(out, indent);

@@ -1,5 +1,6 @@
 package orc.trace;
 
+import orc.error.SourceLocation;
 import orc.error.runtime.TokenException;
 import orc.trace.events.Event;
 import orc.trace.events.StoreEvent;
@@ -29,4 +30,8 @@ public final class NullTracer implements Tracer {
 	public void print(String value, boolean newline) {}
 	public void publish(Object value) {}
 	public void error(TokenException error) {}
+	public void setSourceLocation(SourceLocation location) {}
+	public SourceLocation getSourceLocation() {
+		return null;
+	}
 }

@@ -1,9 +1,7 @@
 package orc.trace.query.predicates;
 
-import java.util.NoSuchElementException;
-
 import orc.trace.query.Frame;
-import orc.trace.query.Term;
+import orc.trace.query.EventStream.EndOfStream;
 import orc.trace.query.patterns.BindingPattern;
 
 /**
@@ -20,7 +18,7 @@ public class CurrentEventPredicate implements Predicate {
 			frame =  variable.unify(frame, frame.currentEvent());
 			if (frame == null) return Result.NO;
 			else return new Result(frame);
-		} catch (NoSuchElementException e) {
+		} catch (EndOfStream e) {
 			return Result.NO;
 		}
 	}

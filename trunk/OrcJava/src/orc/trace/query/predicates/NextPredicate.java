@@ -1,8 +1,7 @@
 package orc.trace.query.predicates;
 
-import java.util.NoSuchElementException;
-
 import orc.trace.query.Frame;
+import orc.trace.query.EventStream.EndOfStream;
 
 /**
  * The temporal logic X operator. Evaluate a predicate
@@ -24,7 +23,7 @@ public class NextPredicate implements Predicate {
 							return new Result(nframe.rewind(frame));
 						}
 					}).evaluate();
-		} catch (NoSuchElementException _) {
+		} catch (EndOfStream _) {
 			return null;
 		}
 	}
