@@ -36,6 +36,8 @@ import orc.trace.values.Value;
 public abstract class AbstractTracer implements Tracer {
 	/** The current thread */
 	private final ForkEvent thread;
+	/** The last call made (for {@link ResumeEvent}). */
+	private CallEvent call;
 	/** Marshaller for values. */
 	private final Marshaller marshaller;
 	/** Events must satisfy this predicate to be traced. */
@@ -74,14 +76,17 @@ public abstract class AbstractTracer implements Tracer {
 		for (int i = 0; i < arguments.length; ++i) {
 			arguments2[i] = marshaller.marshal(arguments[i]);
 		}
-		maybeRecord(new OnlyHandle<Event>(new CallEvent(thread,
-				marshaller.marshal(site), arguments2)));
+		call = new CallEvent(thread, marshaller.marshal(site), arguments2);
+		maybeRecord(new FirstHandle<Event>(call));
 	}
 	public void choke(StoreEvent store) {
 		maybeRecord(new OnlyHandle<Event>(new ChokeEvent(thread, store)));
 	}
 	public void resume(Object value) {
-		maybeRecord(new OnlyHandle<Event>(new ResumeEvent(thread, marshaller.marshal(value))));
+		assert(call != null);
+		maybeRecord(new OnlyHandle<Event>(new ResumeEvent(
+				thread, marshaller.marshal(value), call)));
+		call = null;
 	}
 	public void die() {
 		maybeRecord(new OnlyHandle<Event>(new DieEvent(thread)));

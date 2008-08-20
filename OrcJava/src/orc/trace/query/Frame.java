@@ -17,68 +17,45 @@ import orc.trace.values.ConstantValue;
 import orc.trace.values.RecordValue;
 
 /**
- * Environment of variable bindings.
- * TODO: currently implmented as a linked list; make this more efficient.
+ * Immutable environment of variable bindings and a location in the event stream.
+ * TODO: currently implmented as a linked list; could be more efficient.
  * @author quark
  */
-public abstract class Frame {
+public class Frame {
 	/**
-	 * Construct a new frame for the given event stream.
+	 * Base type for variable bindings, stored as a linked list.
 	 */
-	public static Frame newFrame(EventStream events) {
-		return new BindEvent(EMPTY, events);
+	private static abstract class Binding {
+		public abstract Term get(Variable v);
+		
+		public void prettyPrint(Writer out, int indent) throws IOException {
+			prettyPrintHead(out, indent);
+			out.write("\n");
+			Terms.indent(out, indent);
+			out.write("}");
+		}
+		
+		protected abstract void prettyPrintHead(Writer out, int indent) throws IOException;
 	}
-	/**
-	 * The empty frame.
-	 */
-	public static final Frame EMPTY = new Frame() {
-		public Term get(Variable v) {
-			return null;
-		}
-		public void prettyPrintHead(Writer out, int indent) throws IOException {
-			out.write("{");
-		}
-		protected EventStream events() throws NoSuchElementException {
-			throw new NoSuchElementException();
-		}
-	};
-	/**
-	 * Base class for any frame which extends another frame.
-	 */
-	private static abstract class Extended extends Frame {
-		private Frame parent;
-		public Extended(Frame parent) {
-			this.parent = parent;
-		}
-		public Term get(Variable v) {
-			return parent.get(v);
-		}
-		public EventStream events() throws NoSuchElementException {
-			return parent.events();
-		}
-		public void prettyPrintHead(Writer out, int indent) throws IOException {
-			parent.prettyPrintHead(out, indent);
-		}
-	}
-	/**
-	 * Frame which binds a variable.
-	 */
-	private static class BindVariable extends Extended {
+	
+	/** A node of a binding linked list. */
+	private static class FullBinding extends Binding {
+		private Binding parent;
 		private Variable variable;
 		private Term term;
-		public BindVariable(Frame parent, Variable variable, Term term) {
-			super(parent);
+		public FullBinding(Binding parent, Variable variable, Term term) {
+			this.parent = parent;
 			this.variable = variable;
 			this.term = term;
 		}
 	
 		public Term get(Variable v) {
 			if (variable.equals(v)) return term;
-			else return super.get(v);
+			else return parent.get(v);
 		}
 	
 		public void prettyPrintHead(Writer out, int indent) throws IOException {
-			super.prettyPrintHead(out, indent);
+			parent.prettyPrintHead(out, indent);
 			if (!variable.isAnonymous()) {
 				out.write("\n");
 				Terms.indent(out, indent+1);
@@ -88,25 +65,62 @@ public abstract class Frame {
 			}
 		}
 	}
-	private static class BindEvent extends Extended {
-		private EventStream stream;
-		public BindEvent(Frame parent, EventStream stream) {
-			super(parent);
-			this.stream = stream;
+	
+	/** Empty event stream. */
+	private static final EventStream EMPTY_EVENTS = new EventStream() {
+		public Event head() throws NoSuchElementException {
+			throw new NoSuchElementException();
 		}
-		public EventStream events() {
-			return stream;
+		public EventStream tail() throws NoSuchElementException {
+			throw new NoSuchElementException();
 		}
+	};
+	
+	/** Empty binding list. */
+	private static final Binding EMPTY_BINDING = new Binding() {
+		public Term get(Variable v) {
+			return null;
+		}
+		public void prettyPrintHead(Writer out, int indent) throws IOException {
+			out.write("{");
+		}
+	};
+	
+	/**
+	 * Construct a new frame for the given event stream.
+	 */
+	public static Frame newFrame(EventStream events) {
+		return new Frame(EMPTY_BINDING, events);
+	}
+	
+	/**
+	 * Empty frame.
+	 */
+	public static final Frame EMPTY = new Frame(EMPTY_BINDING, EMPTY_EVENTS);
+	
+	/** The variable bindings. */
+	private Binding bindings;
+	/** The current event stream. */
+	private EventStream events;
+	
+	private Frame(Binding bindings, EventStream events) {
+		this.bindings = bindings;
+		this.events = events;
 	}
 	
 	/**
 	 * An unbound variable returns null.
 	 */
-	public abstract Term get(Variable v);
+	public Term get(Variable v) {
+		return bindings.get(v);
+	}
+	
 	/**
 	 * If no stream is available, throws an exception.
 	 */
-	protected abstract EventStream events() throws NoSuchElementException;
+	protected EventStream events() throws NoSuchElementException {
+		return events;
+	}
 	
 	public Frame bind(Variable v, Term p) {
 		assert(p != null);
@@ -115,7 +129,7 @@ public abstract class Frame {
 		if (t != null) {
 			return unify(t, p);
 		} else if (!p.occurs(v)) {
-			return new BindVariable(this, v, p);
+			return new Frame(new FullBinding(this.bindings, v, p.evaluate(this)), events);
 		} else {
 			return null;
 		}
@@ -125,8 +139,19 @@ public abstract class Frame {
 		return events().head();
 	}
 	
-	public Frame nextEvent() throws NoSuchElementException {
-		return new BindEvent(this, events().tail());
+	/**
+	 * Return a frame pointing to the next event in the stream.
+	 */
+	public Frame forward() throws NoSuchElementException {
+		return new Frame(bindings, events().tail());
+	}
+	
+	/**
+	 * Return a frame at the same stream as that,
+	 * but with bindings from this.
+	 */
+	public Frame rewind(Frame that) {
+		return new Frame(bindings, that.events);
 	}
 	
 	/**
@@ -149,28 +174,6 @@ public abstract class Frame {
 		}
 	}
 	
-	public static void main(String[] args) {
-		Frame frame = Frame.EMPTY;
-		Variable x = new Variable();
-		Term left = new ConsPattern(x, new PropertyPattern(x, "foo"));
-		RecordValue r = new RecordValue(new Object().getClass());
-		r.put("foo", new ConstantValue("bar"));
-		Term right = new ConsPattern(r, new ConstantValue("bar"));
-		System.out.print("LEFT = ");
-		System.out.println(left);
-		System.out.print("RIGHT = ");
-		System.out.println(right);
-		Frame frame1 = frame.unify(left, right);
-		if (frame1 != null) {
-			System.out.print("BINDINGS = ");
-			System.out.println(frame1);
-			System.out.print("RESULT = ");
-			System.out.println(left.evaluate(frame1));
-		} else {
-			System.out.println("COULD NOT UNIFY");
-		}
-	}
-	
 	public String toString() {
 		try {
 			StringWriter writer = new StringWriter();
@@ -182,11 +185,12 @@ public abstract class Frame {
 	}
 	
 	public void prettyPrint(Writer out, int indent) throws IOException {
-		prettyPrintHead(out, indent);
-		out.write("\n");
-		Terms.indent(out, indent);
-		out.write("}");
+		try {
+			events.head().prettyPrint(out, indent);
+			out.write(" ");
+		} catch (NoSuchElementException _) {
+			out.write("END ");
+		}
+		bindings.prettyPrint(out, indent);
 	}
-	
-	protected abstract void prettyPrintHead(Writer out, int indent) throws IOException;
 }

@@ -18,8 +18,7 @@ public class ReleasePredicate extends DerivedPredicate {
 		setPredicate(new AndPredicate(
 				right,
 				OrPredicate.or(
-						// no more events
-						new NotPredicate(new NextPredicate(TruePredicate.singleton)),
+						new EndPredicate(),
 						left,
 						new NextPredicate(this))));
 	}

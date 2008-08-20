@@ -13,10 +13,18 @@ public class NextPredicate implements Predicate {
 	public NextPredicate(final Predicate predicate) {
 		this.predicate = predicate;
 	}
-	public Result evaluate(Frame frame) {
+	public Result evaluate(final Frame frame) {
 		try {
-			return predicate.evaluate(frame.nextEvent());
-		} catch (NoSuchElementException e) {
+			// After evaluating the predicate at one position
+			// forward, rewind the event stream
+			return new AndContinuation(
+					new PredicateContinuation(frame.forward(), predicate),
+					new Predicate() {
+						public Result evaluate(Frame nframe) {
+							return new Result(nframe.rewind(frame));
+						}
+					}).evaluate();
+		} catch (NoSuchElementException _) {
 			return null;
 		}
 	}
