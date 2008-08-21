@@ -37,6 +37,7 @@ import org.kohsuke.args4j.Option;
 public class Config {
 
 	private Boolean debug = false;
+	private Boolean typecheck = false;
 	private Tracer tracer = new NullTracer();
 	private List<String> includes = new LinkedList<String>();
 	private Integer maxpub = null;
@@ -67,6 +68,11 @@ public class Config {
 		this.debug = debug;
 	}
 	
+	@Option(name="-typecheck",usage="Enable typechecking")
+	public void setTypeChecking(boolean typecheck) {
+		this.typecheck = typecheck;
+	}
+		
 	@Option(name="-noprelude",usage="Do not implicitly include standard library (prelude).")
 	public void setNoPrelude(boolean noPrelude) {
 		this.noPrelude = noPrelude;
@@ -147,4 +153,9 @@ public class Config {
 	public Integer getNumSiteThreads() {
 		return numSiteThreads;
 	}
+
+	public boolean typeCheckingMode() {
+		return typecheck;
+	}
+
 }

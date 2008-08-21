@@ -5,9 +5,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.Map.Entry;
 
-import orc.ast.extended.Clause;
 import orc.ast.extended.Expression;
+import orc.ast.extended.declaration.defn.AggregateDefn;
+import orc.ast.extended.declaration.defn.Clause;
+import orc.ast.extended.declaration.defn.Defn;
+import orc.ast.extended.declaration.defn.DefnClause;
+import orc.ast.simple.Definition;
 import orc.ast.simple.arg.*;
 import orc.error.compiletime.CompilationException;
 
@@ -25,9 +30,9 @@ import orc.error.compiletime.CompilationException;
 
 public class DefsDeclaration implements Declaration {
 
-	public List<Definition> defs;
+	public List<Defn> defs;
 	
-	public DefsDeclaration(List<Definition> defs)
+	public DefsDeclaration(List<Defn> defs)
 	{
 		this.defs = defs;
 	}
@@ -35,84 +40,38 @@ public class DefsDeclaration implements Declaration {
 	public orc.ast.simple.Expression bindto(orc.ast.simple.Expression target) throws CompilationException {
 		
 		
-		// Map each definition name to a list of its clauses
-		Map<String, List<Clause>> clauses = new TreeMap<String, List<Clause>>();
+		Map<String, AggregateDefn> dmap = new TreeMap<String, AggregateDefn>(); 
 		
-		for(Definition d : defs) {
+		// Aggregate all of the definitions in the list into the map
+		for (Defn d : defs) {
 			String name = d.name;
-			
-			if (!clauses.containsKey(name)) {
-				clauses.put(name, new LinkedList<Clause>());
+			if (!dmap.containsKey(name)) {
+				dmap.put(name, new AggregateDefn());
 			}
-			
-			clauses.get(name).add(new Clause(d.formals, d.body));
+			d.extend(dmap.get(name));
 		}
 		
-		// Map the names of each definition to a var
-		// This map must be constructed beforehand so that it can be used
-		// to substitute these names in each expression body
-		Map<NamedVar, Var> fnames = new TreeMap<NamedVar, Var>();
-		for(String name : clauses.keySet())
-		{
-			fnames.put(new NamedVar(name), new Var());
+		// Associate the names of the definitions with their bound variables
+		Map<NamedVar, Var> vmap = new TreeMap<NamedVar, Var>();
+		
+		for (Entry<String, AggregateDefn> e : dmap.entrySet()) {
+			NamedVar x = new NamedVar(e.getKey());
+			Var v = e.getValue().getVar();
+			vmap.put(x,v);
 		}
 		
-		// The new simplified definitions
+		// Create the new list of simplified definitions,
+		// with their names mutually bound.
+		
 		List<orc.ast.simple.Definition> newdefs = new LinkedList<orc.ast.simple.Definition>();
 		
-		
-		for(Map.Entry<String, List<Clause>> entry : clauses.entrySet()) 
-		{
-			String name = entry.getKey();
-			List<Clause> cs = entry.getValue();
-			
-			// Create a list of formal arguments for this set of clauses
-			// Use the length of the args for the first clause as the length of the formals list.
-			int n = cs.get(0).ps.size();
-			
-			// and check to make sure every clause has the same number of patterns
-			for (Clause c : cs) {
-				if (c.ps.size() != n) {
-					throw new CompilationException("Mismatched number of arguments in clauses of '" + name + "'");
-				}
-			}
-			
-			List<Var> formals = new LinkedList<Var>();
-			for(int i = 0; i < n; i++) {
-				formals.add(new Var());
-			}
-		
-			
-			// Default 'otherwise' clause is the silent expression
-			orc.ast.simple.Expression body = new orc.ast.simple.Silent();
-			
-			// Consider clauses in reverse order 
-			// Note: this reverses their order inside the clauses map too, 
-			// but we only need to use them once, so it's not a problem.
-			Collections.reverse(cs);
-			
-			for (Clause c : cs) {
-				// Simplify and prepend this clause to the expression body
-				body = c.simplify(formals,body);
-			}
-			
-			// Mutually bind all names of expressions in this group in the body of this expression
-			// This supports implicit mutual recursion
-			body = body.suball(fnames);
-			
-			// Find the bound name of this definition
-			Var varname = fnames.get(new NamedVar(name));
-			
-			// Add this simplified definition to this list of definitions 
-			newdefs.add(new orc.ast.simple.Definition(varname, formals, body));
+		for (AggregateDefn d : dmap.values()) {
+			Definition newd = d.simplify().suball(vmap);
+			newdefs.add(newd);
 		}
 		
-		
-		
-
 		// Bind all of these definition names in their scope
-		orc.ast.simple.Expression newtarget = target.suball(fnames);
-		
+		orc.ast.simple.Expression newtarget = target.suball(vmap);		
 		
 		return new orc.ast.simple.Defs(newdefs, newtarget);
 	}

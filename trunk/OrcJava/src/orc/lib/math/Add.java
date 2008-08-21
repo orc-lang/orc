@@ -7,6 +7,8 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Args.NumericBinaryOperator;
 import orc.runtime.sites.EvalSite;
+import orc.type.ArrowType;
+import orc.type.Type;
 
 /**
  * NB: this is overloaded to operate on strings,
@@ -60,5 +62,9 @@ public class Add extends EvalSite {
     			return String.valueOf(args.getArg(0)) + b;
     		}
 		}
+	}
+	
+	public static Type type() {
+		return new ArrowType(Type.NUMBER, Type.NUMBER, Type.NUMBER);
 	}
 }

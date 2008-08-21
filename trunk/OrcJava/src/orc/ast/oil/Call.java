@@ -9,7 +9,10 @@ import orc.ast.oil.arg.Arg;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
+import orc.env.Env;
+import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Node;
+import orc.type.Type;
 
 public class Call extends Expr {
 
@@ -77,4 +80,19 @@ public class Call extends Expr {
 	public <E> E accept(Visitor<E> visitor) {
 		return visitor.visit(this);
 	}
+
+
+	@Override
+	public Type typesynth(Env<Type> ctx) throws TypeException {
+		
+		Type S = callee.typesynth(ctx);
+		List<Type> T = new LinkedList<Type>();
+		
+		for (Arg a : args) {
+			T.add(a.typesynth(ctx));
+		}
+		
+		return S.call(T);
+	}
+	
 }

@@ -7,6 +7,8 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Args.NumericBinaryOperator;
 import orc.runtime.sites.EvalSite;
+import orc.type.ArrowType;
+import orc.type.Type;
 
 public class Div extends EvalSite {
 	private static final MyOperator op = new MyOperator();
@@ -41,5 +43,9 @@ public class Div extends EvalSite {
 		return Args.applyNumericOperator(
 				args.numberArg(0), args.numberArg(1),
 				op);
+	}
+	
+	public static Type type() {
+		return new ArrowType(Type.NUMBER, Type.NUMBER, Type.NUMBER);
 	}
 }

@@ -7,6 +7,9 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.Site;
+import orc.type.ArrowType;
+import orc.type.EllipsisArrowType;
+import orc.type.Type;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -24,5 +27,9 @@ public class Rtimer extends Site {
 				returnToken.resume();
 			}
 		}, args.longArg(0));	
+	}
+	
+	public static Type type() {
+		return new ArrowType(Type.NUMBER, Type.TOP);
 	}
 }

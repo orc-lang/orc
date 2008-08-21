@@ -10,6 +10,8 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Args.NumericUnaryOperator;
 import orc.runtime.sites.EvalSite;
+import orc.type.ArrowType;
+import orc.type.Type;
 
 /**
  * @author dkitchin
@@ -46,5 +48,9 @@ public class UMinus extends EvalSite {
 	@Override
 	public Object evaluate(Args args) throws TokenException {
 		return Args.applyNumericOperator(args.numberArg(0), op);
+	}
+	
+	public static Type type() {
+		return new ArrowType(Type.NUMBER, Type.NUMBER);
 	}
 }

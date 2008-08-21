@@ -6,7 +6,9 @@ import java.util.Set;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
+import orc.env.Env;
 import orc.runtime.nodes.Node;
+import orc.type.Type;
 
 public class Silent extends Expr {
 
@@ -23,4 +25,15 @@ public class Silent extends Expr {
 	public <E> E accept(Visitor<E> visitor) {
 		return visitor.visit(this);
 	}
+
+	@Override
+	public Type typesynth(Env<Type> ctx) {
+		return Type.BOT;
+	}
+	
+	@Override
+	public void typecheck(Type t, Env<Type> ctx) {
+		// Do nothing. Silent checks against all types.
+	}
+
 }

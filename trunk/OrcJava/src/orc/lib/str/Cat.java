@@ -7,6 +7,8 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.*;
+import orc.type.EllipsisArrowType;
+import orc.type.Type;
 
 /**
  * Note that you can also use the syntax "a" + "b" for string concatenation.
@@ -26,4 +28,9 @@ public class Cat extends EvalSite {
 		
 		return buf.toString();
 	}
+	
+	public static Type type() {
+		return new EllipsisArrowType(Type.STRING, Type.STRING);
+	}
+
 }

@@ -2,8 +2,11 @@ package orc.ast.oil;
 
 import java.util.Set;
 
+import orc.env.Env;
+import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Fork;
 import orc.runtime.nodes.Node;
+import orc.type.Type;
 
 public class Bar extends Expr {
 
@@ -35,4 +38,20 @@ public class Bar extends Expr {
 	public <E> E accept(Visitor<E> visitor) {
 		return visitor.visit(this);
 	}
+
+	@Override
+	public Type typesynth(Env<Type> ctx) throws TypeException {
+		
+		Type L = left.typesynth(ctx);
+		Type R = right.typesynth(ctx);
+		return L.join(R);
+	}
+
+	@Override
+	public void typecheck(Type T, Env<Type> ctx) throws TypeException {
+		
+		left.typecheck(T, ctx);
+		right.typecheck(T, ctx);
+	}
+
 }

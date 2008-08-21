@@ -1,6 +1,7 @@
-package orc.ast.extended.declaration;
+package orc.ast.extended.declaration.defn;
 
 import java.util.List;
+import java.util.Map;
 
 import orc.ast.extended.Expression;
 import orc.ast.extended.pattern.Pattern;
@@ -16,13 +17,12 @@ import orc.ast.extended.pattern.Pattern;
  *
  */
 
-public class Definition {
+public class DefnClause extends Defn {
 
-	public String name;
 	public List<Pattern> formals;
 	public Expression body;
 	
-	public Definition(String name, List<Pattern> formals, Expression body)
+	public DefnClause(String name, List<Pattern> formals, Expression body)
 	{
 		this.name = name;
 		this.formals = formals;
@@ -30,5 +30,9 @@ public class Definition {
 	}
 	public String toString() {
 		return "def " + name + " (" + Expression.join(formals, ", ") + ") = " + body;
+	}
+	
+	public void extend(AggregateDefn adef) {
+		adef.addClause(new Clause(formals, body));
 	}	
 }

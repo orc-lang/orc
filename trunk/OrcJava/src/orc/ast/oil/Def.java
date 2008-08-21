@@ -7,6 +7,10 @@ import java.util.Set;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
+import orc.env.Env;
+import orc.error.compiletime.typing.TypeException;
+import orc.type.ArrowType;
+import orc.type.Type;
 
 /**
  * 
@@ -22,11 +26,13 @@ public class Def {
 
 	public int arity;
 	public Expr body;
+	public ArrowType type;
 	
-	public Def(int arity, Expr body)
+	public Def(int arity, Expr body, ArrowType type)
 	{
 		this.arity = arity;
 		this.body = body;
+		this.type = type;
 	}	
 	
 	public orc.runtime.nodes.Def compile() {
@@ -47,4 +53,23 @@ public class Def {
 			args += "."; 
 		return "(def " + args + " " + body.toString() + ")";
 	}
+	
+	// Analagous to sites, we can ask for the type of a definition,
+	// but here it is not a static method.
+	public ArrowType type() {
+		return type;
+	}
+	
+	/* Make sure this definition checks against its stated type */
+	public void typecheck(Env<Type> ctx) throws TypeException {
+		
+		Env<Type> bodyctx = ctx;
+		
+		for (Type t : type.argTypes) {
+			bodyctx = bodyctx.add(t);
+		}
+
+		body.typecheck(type.resultType, bodyctx);
+	}
+	
 }

@@ -6,6 +6,8 @@ package orc.lib.bool;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
+import orc.type.ArrowType;
+import orc.type.Type;
 
 /**
  * @author dkitchin
@@ -24,4 +26,8 @@ public abstract class BoolBinopSite extends EvalSite {
 
 	abstract public boolean compute(boolean a, boolean b);
 	
+	public static Type type() {
+		return new ArrowType(Type.BOOLEAN, Type.BOOLEAN, Type.BOOLEAN);
+	}
+
 }
