@@ -140,10 +140,6 @@ cite {
 }
 
 /* content */
-.content {
-	/* fix IE6 display bug */
-	display: inline-block;
-}
 .content .descr {
 	color: #C60;
 	margin-bottom: 6px;
@@ -197,6 +193,16 @@ small, .small {font: normal 10px Verdana,sans-serif;}
 .container {
 	background: #fff url(img/bg.gif) repeat-x;
 	padding-bottom: 30px;
-	/* fix IE6 display bug */
-	display: inline-block;
+}
+
+/* IE display hacks */
+
+.content {
+	_display: inline-block;
+	min-height: 0;
+}
+
+.container {
+	_display: inline-block;
+	min-height: 0;
 }
