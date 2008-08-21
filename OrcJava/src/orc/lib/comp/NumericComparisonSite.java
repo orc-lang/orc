@@ -10,6 +10,8 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Args.NumericBinaryOperator;
 import orc.runtime.sites.EvalSite;
+import orc.type.ArrowType;
+import orc.type.Type;
 
 /**
  * @author quark
@@ -55,4 +57,8 @@ public abstract class NumericComparisonSite extends EvalSite {
 	}
 
 	abstract public boolean compare(int a, int b);
+	
+	public static Type type() {
+		return new ArrowType(Type.NUMBER, Type.NUMBER, Type.BOOLEAN);
+	}
 }

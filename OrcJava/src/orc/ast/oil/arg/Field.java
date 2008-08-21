@@ -2,6 +2,9 @@ package orc.ast.oil.arg;
 
 import orc.ast.oil.Visitor;
 import orc.env.Env;
+import orc.error.compiletime.typing.TypeException;
+import orc.type.Message;
+import orc.type.Type;
 
 
 /**
@@ -10,7 +13,7 @@ import orc.env.Env;
  * @author dkitchin
  */
 
-public class Field extends Arg {
+public class Field extends Arg implements Comparable<Field>{
 	private static final long serialVersionUID = 1L;
 	public String key;
 	
@@ -27,8 +30,21 @@ public class Field extends Arg {
 		return "[." + key + "]";
 	}
 	
+	public int compareTo(Field that) {
+		return this.key.compareTo(that.key);
+	}
+	
+	public boolean equals(Object that) {
+		return that.getClass().equals(Field.class) && (this.compareTo((Field)that) == 0);
+	}
+	
 	@Override
 	public <E> E accept(Visitor<E> visitor) {
 		return visitor.visit(this);
+	}
+
+	@Override
+	public Type typesynth(Env<Type> ctx) throws TypeException {
+		return new Message(this);
 	}
 }

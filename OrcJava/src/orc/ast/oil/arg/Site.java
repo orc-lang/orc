@@ -2,6 +2,8 @@ package orc.ast.oil.arg;
 
 import orc.ast.oil.Visitor;
 import orc.env.Env;
+import orc.error.compiletime.typing.TypeException;
+import orc.type.Type;
 
 
 /**
@@ -36,5 +38,10 @@ public class Site extends Arg {
 	@Override
 	public <E> E accept(Visitor<E> visitor) {
 		return visitor.visit(this);
+	}
+
+	@Override
+	public Type typesynth(Env<Type> ctx) throws TypeException {
+		return site.type();
 	}
 }

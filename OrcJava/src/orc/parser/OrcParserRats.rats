@@ -15,6 +15,8 @@ header {
 	import xtc.util.Utilities;
 	import xtc.util.Action;
 	import xtc.tree.Location;
+	import orc.type.Type;
+	import orc.ast.extended.declaration.defn.*;
 }
 
 body {
@@ -123,7 +125,7 @@ Declaration Declaration =
 	}
 	;
 
-Definition Definition =
+Defn Definition =
 	DEF name:Identifier LPAREN formals:PatternList RPAREN
 	curried0:(LPAREN yyValue:PatternList RPAREN)*
 	EQ body0:Body {
@@ -133,7 +135,22 @@ Definition Definition =
 		while (it.hasPrevious()) {
 			body = new Lambda(it.previous(), body);
 		}
-		yyValue = new Definition(name, formals, body);
+		yyValue = new DefnClause(name, formals, body);
+	}
+	/ DEF name:Identifier LPAREN argTypes:TypeList RPAREN
+	HASTYPE resultType:Type {
+		yyValue = new DefnType(name, argTypes, resultType);
+	}
+	;
+
+List<Type> TypeList = 
+	t:Type ts:(void:COMMA ts:Type)* {
+		List<Type> out = ts.list();
+		out.add(0, t);
+		yyValue = out;
+	}
+	/ /* empty */ {
+		yyValue = new LinkedList<Type>();
 	}
 	;
 
@@ -499,6 +516,19 @@ Pattern BasicPattern =
 	;
 
 /////////////////////////////////////////////
+// Types
+/////////////////////////////////////////////
+
+Type Type =
+	NUMBER { yyValue = Type.NUMBER; }
+	/ STRING { yyValue = Type.STRING; }
+	/ BOOLEAN { yyValue = Type.BOOLEAN; }
+	/ TOP { yyValue = Type.TOP; }
+	/ BOT { yyValue = Type.BOT; }
+	/ INTEGER { yyValue = Type.INTEGER; }
+	;
+
+/////////////////////////////////////////////
 // Literals
 /////////////////////////////////////////////
 
@@ -568,6 +598,8 @@ String WordToken = [a-zA-Z_] [a-zA-Z0-9_]*;
 // Keywords
 /////////////////////////////////////////////
 
+
+
 transient int DEF = "def" Space { yyValue = yyStart; };
 transient int TRUE = "true" Space { yyValue = yyStart; };
 transient int FALSE = "false" Space { yyValue = yyStart; };
@@ -579,6 +611,13 @@ transient int STOP = "stop" Space { yyValue = yyStart; };
 transient int INCLUDE = "include" Space { yyValue = yyStart; };
 transient int LAMBDA = "lambda" Space { yyValue = yyStart; };
 transient int AS = "as" Space { yyValue = yyStart; };
+transient int NUMBER = "Number" Space { yyValue = yyStart; };
+transient int INTEGER = "Integer" Space { yyValue = yyStart; };
+transient int BOOLEAN = "Boolean" Space { yyValue = yyStart; };
+transient int STRING = "String" Space { yyValue = yyStart; };
+transient int TOP = "Top" Space { yyValue = yyStart; };
+transient int BOT = "Bot" Space { yyValue = yyStart; };
+transient int HASTYPE = "::" Space { yyValue = yyStart; };
 transient int EQ = "=" Space { yyValue = yyStart; };
 transient int LBRACE = "{" Space { yyValue = yyStart; };
 transient int RBRACE = "}" Space { yyValue = yyStart; };

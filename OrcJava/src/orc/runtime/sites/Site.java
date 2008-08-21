@@ -6,6 +6,8 @@ package orc.runtime.sites;
 import java.util.LinkedList;
 import java.util.List;
 
+import orc.error.compiletime.typing.MissingTypeException;
+import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
@@ -13,6 +15,7 @@ import orc.runtime.nodes.Node;
 import orc.runtime.values.Callable;
 import orc.runtime.values.Value;
 import orc.runtime.values.Visitor;
+import orc.type.Type;
 
 /**
  * Base class for all sites
@@ -58,5 +61,9 @@ public abstract class Site extends Value implements Callable {
 	@Override
 	public <E> E accept(Visitor<E> visitor) {
 		return visitor.visit(this);
+	}
+	
+	public static Type type() throws TypeException {
+		throw new MissingTypeException();
 	}
 }

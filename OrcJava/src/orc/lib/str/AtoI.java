@@ -6,6 +6,9 @@ package orc.lib.str;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.PartialSite;
+import orc.type.ArrowType;
+import orc.type.EllipsisArrowType;
+import orc.type.Type;
 
 /**
  * @author dkitchin
@@ -23,5 +26,9 @@ public class AtoI extends PartialSite {
 			return null;
 		}
 	}
+	public static Type type() {
+		return new ArrowType(Type.STRING, Type.NUMBER);
+	}
+
 
 }

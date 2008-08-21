@@ -10,6 +10,8 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Args.NumericBinaryOperator;
 import orc.runtime.sites.EvalSite;
+import orc.type.ArrowType;
+import orc.type.Type;
 
 /**
  * @author dkitchin, quark
@@ -54,5 +56,9 @@ public class Inequal extends EvalSite {
 		} else {
 			return !a.equals(b);
 		}
+	}
+	
+	public static Type type() {
+		return new ArrowType(Type.BOT, Type.BOT, Type.BOOLEAN);
 	}
 }

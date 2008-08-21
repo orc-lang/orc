@@ -1,4 +1,4 @@
-package orc.ast.extended;
+package orc.ast.extended.declaration.defn;
 
 import java.util.LinkedList;
 import java.util.List;

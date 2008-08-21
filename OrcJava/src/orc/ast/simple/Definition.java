@@ -2,6 +2,7 @@ package orc.ast.simple;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import orc.ast.oil.Def;
@@ -11,6 +12,8 @@ import orc.ast.simple.arg.Var;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.runtime.nodes.Node;
+import orc.type.ArrowType;
+import orc.type.Type;
 
 /**
  * 
@@ -27,6 +30,7 @@ public class Definition {
 	public Var name;
 	public List<Var> formals;
 	public Expression body;
+	public ArrowType type;
 	
 	/**
 	 * Note that the constructor takes a bound Var as a name parameter. This is because the
@@ -37,15 +41,20 @@ public class Definition {
 	 * @param formals
 	 * @param body
 	 */
-	public Definition(Var name, List<Var> formals, Expression body)
+	public Definition(Var name, List<Var> formals, Expression body, ArrowType type)
 	{
 		this.name = name;
 		this.formals = formals;
 		this.body = body;
+		this.type = type;
 	}
 	
 	public Definition subst(Argument a, NamedVar x) {
-		return new Definition(name, formals, body.subst(a, x));
+		return new Definition(name, formals, body.subst(a, x), type);
+	}
+	
+	public Definition suball(Map<NamedVar, ? extends Argument> m) {
+		return new Definition(name, formals, body.suball(m), type);
 	}
 	
 	// Does not validly compute the set of free vars if this definition is in a mutually recursive group.
@@ -62,7 +71,7 @@ public class Definition {
 	
 		Env<Var> newvars = vars.addAll(formals);
 		
-		return new orc.ast.oil.Def(formals.size(), body.convert(newvars));
+		return new orc.ast.oil.Def(formals.size(), body.convert(newvars), type);
 	}
 	
 }

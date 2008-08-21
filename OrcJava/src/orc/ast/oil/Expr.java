@@ -4,9 +4,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 import orc.ast.oil.arg.Var;
+import orc.env.Env;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
+import orc.error.compiletime.typing.SubtypeFailureException;
+import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Pub;
+import orc.type.Type;
 
 /**
  * Base class for the portable (.oil, for Orc Intermediate Language) abstract syntax tree.
@@ -30,6 +34,27 @@ public abstract class Expr implements Locatable {
 	public orc.runtime.nodes.Node compile() {
 		return compile(new Pub());
 	}
+	
+	
+	/* Typechecking */
+	
+	/* Given a context, infer this expression's type */
+	public abstract Type typesynth(Env<Type> ctx) throws TypeException;
+	
+	
+	/* Check that this expression has type t in the given context. 
+	 * 
+	 * Some expressions will always have inferred types, so
+	 * the default checking behavior is to infer the type and make
+	 * sure that the inferred type is a subtype of the checked type.
+	 */
+	public void typecheck(Type T, Env<Type> ctx) throws TypeException {
+		Type S = typesynth(ctx);
+		if (!S.subtype(T)) {
+			throw new SubtypeFailureException(S,T);
+		}
+	}
+
 	
 	
 	/**

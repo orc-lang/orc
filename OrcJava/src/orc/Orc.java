@@ -27,6 +27,7 @@ import orc.parser.OrcParser;
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.nodes.Node;
+import orc.type.Type;
 import orc.runtime.nodes.Pub;
 
 /**
@@ -139,6 +140,13 @@ public class Orc {
 		//System.out.println("Compiling to an execution graph...");
 		// Compile the AST, directing the output towards the configured target
 		Expr ex = es.convert(new Env<Var>());
+		
+		// Optionally perform typechecking
+		if (cfg.typeCheckingMode()) {
+			Type rt = ex.typesynth(new Env<Type>());
+			System.out.println("Program typechecked successfully with result type " + rt);
+		}
+		
 		Node en = ex.compile(target);
 		return en;
 	}

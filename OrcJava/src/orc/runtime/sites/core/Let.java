@@ -3,9 +3,12 @@
  */
 package orc.runtime.sites.core;
 
+import orc.error.compiletime.typing.MissingTypeException;
+import orc.error.compiletime.typing.TypeException;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.Site;
+import orc.type.Type;
 
 /**
  * Implements the built-in "let" site
@@ -26,4 +29,9 @@ public class Let extends Site {
 		// Activate the token
 		caller.activate();
 	}
+	
+	public static Type type() throws TypeException {
+		return Type.LET;
+	}
+	
 }

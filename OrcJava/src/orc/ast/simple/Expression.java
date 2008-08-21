@@ -13,6 +13,7 @@ import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.UnboundVariableException;
 import orc.runtime.nodes.Node;
+import orc.type.Type;
 
 /**
  * Base class for the simplified abstract syntax tree.
@@ -22,7 +23,9 @@ import orc.runtime.nodes.Node;
  */
 
 public abstract class Expression implements Locatable {
+
 	private SourceLocation location = SourceLocation.UNKNOWN;
+	
 	
 	/**
 	 * Converts abstract syntax tree into a serializable form, used to generate
@@ -84,4 +87,5 @@ public abstract class Expression implements Locatable {
 	public SourceLocation getSourceLocation() {
 		return location;
 	}
+		
 }

@@ -3,6 +3,10 @@ package orc.ast.sites;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import orc.error.compiletime.typing.MissingTypeException;
+import orc.error.compiletime.typing.TypeException;
+import orc.type.Type;
+
 /**
  * 
  * A portable representation of sites. When creating the execution graph, 
@@ -82,6 +86,10 @@ public abstract class Site {
 	public boolean equals(Site that) {
 		return (  this.getLocation().equals(that.getLocation())
 			   && this.getProtocol().equals(that.getProtocol()) );
+	}
+
+	public Type type() throws TypeException {
+		throw new MissingTypeException();
 	}
 	
 }

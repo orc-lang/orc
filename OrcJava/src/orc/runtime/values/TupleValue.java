@@ -10,6 +10,7 @@ import java.util.List;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
+import orc.runtime.sites.PartialSite;
 
 /**
  * A tuple value container
@@ -49,13 +50,13 @@ public class TupleValue extends EvalSite implements Iterable<Object> {
 		return values[args.intArg(0)];
 	}
 
-	static class FitSite extends EvalSite {
+	static class FitSite extends PartialSite {
 		int size;
 		public FitSite(int size) {
 			this.size = size;
 		}
 		public Object evaluate(Args args) throws TokenException {
-			return args.intArg(0) == this.size;
+			return (args.intArg(0) == this.size ? Value.signal() : null);
 		}
 	}
 	

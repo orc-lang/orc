@@ -23,6 +23,4 @@ public class SemiRegion extends Region {
 		return parent;
 	}
 
-	
-
 }

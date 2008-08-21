@@ -23,16 +23,19 @@ public class JavaSite extends Site {
 		return JAVA;
 	}
 
-	public orc.runtime.sites.Site instantiate() {
-		
+	public Class classify() {
 		String classname = location.getSchemeSpecificPart();
 		try
 		{
 			Class<?> cls = Class.forName(classname);
-			
-			return new ClassProxy(cls);
+			return cls;
 		}
-		catch (Exception e) { throw new Error("Failed to load class " + classname + " as a proxy.", e); }
+		// TODO: Make this more informative than Error
+		catch (Exception e) { throw new Error("Failed to load class " + classname, e); }
 	}
-
+	
+	public orc.runtime.sites.Site instantiate() {
+		return new ClassProxy(classify());
+	}
+	
 }
