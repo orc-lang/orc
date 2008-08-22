@@ -7,8 +7,11 @@ import java.io.IOException;
 import java.io.StringReader;
 
 import orc.error.compiletime.ParsingException;
+import orc.trace.query.EventCursor;
 import orc.trace.query.FilteredEventCursor;
 import orc.trace.query.InputStreamEventCursor;
+import orc.trace.query.StrongBackwardEventCursor;
+import orc.trace.query.WeakBackwardEventCursor;
 import orc.trace.query.EventCursor.EndOfStream;
 import orc.trace.query.parser.Parser;
 import orc.trace.query.predicates.Predicate;
@@ -19,7 +22,7 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
 public class DumpTrace {
-	private InputStreamEventCursor in;
+	private EventCursor in;
 	private Predicate filter = null;
 
 	@Option(name="-help",usage="Show command-line argument usage")
@@ -28,9 +31,9 @@ public class DumpTrace {
 	}
 	
 	@Option(name="-f",usage="Filter events according to the given predicate.\n" +
-			"Example: -f 'Current(call), call.type=\"call\", true+,\n" +
-			"             Current(resume), resume.type=\"resume\",\n" +
-			"             resume.thread=call.thread'")
+			"Example: -f '@=call, call.type=\"call\",\n" +
+			"             F @=resume, resume.type=\"resume\",\n" +
+			"               resume.thread=call.thread'")
 	public void setFilter(String predicate) throws CmdLineException{
 		Parser p = new Parser(new StringReader(predicate), "");
 		try {
@@ -45,7 +48,9 @@ public class DumpTrace {
 	@Argument(metaVar="file", required=true, usage="Input file. Omit to use STDIN.")
 	public void setInputFile(File file) throws CmdLineException {
 		try {
-			in = new InputStreamEventCursor(new FileInputStream(file));
+			in = new StrongBackwardEventCursor(
+					new InputStreamEventCursor(
+							new FileInputStream(file)));
 		} catch (FileNotFoundException e) {
 			throw new CmdLineException("Could not find input file '"+file+"'");
 		} catch (IOException e) {
@@ -76,7 +81,7 @@ public class DumpTrace {
 				}
 			} catch (EndOfStream _) {}
 		} else {
-			InputStreamEventCursor in1 = this.in;
+			EventCursor in1 = this.in;
 			try {
 				while (true) {
 					System.out.println(in1.current().toString());

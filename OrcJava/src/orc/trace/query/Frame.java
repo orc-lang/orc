@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import orc.error.OrcError;
 import orc.trace.events.Event;
 import orc.trace.query.EventCursor.EndOfStream;
 import orc.trace.query.patterns.BindingPattern;
@@ -23,6 +24,8 @@ import orc.trace.values.RecordValue;
  * @author quark
  */
 public class Frame {
+	/** Special variable used to stand for the current event. */
+	public final static Variable CURRENT_EVENT = new Variable();
 	/**
 	 * Base type for variable bindings, stored as a linked list.
 	 */
@@ -75,7 +78,7 @@ public class Frame {
 		public EventCursor forward() throws EndOfStream {
 			throw new EndOfStream();
 		}
-		public EventCursor back() throws EndOfStream {
+		public EventCursor backward() throws EndOfStream {
 			throw new EndOfStream();
 		}
 	};
@@ -116,6 +119,15 @@ public class Frame {
 	 * An unbound variable returns null.
 	 */
 	public Term get(Variable v) {
+		if (v == CURRENT_EVENT) {
+			try {
+				return currentEvent();
+			} catch (EndOfStream e) {
+				return null;
+				// FIXME: currentEvent shouldn't be able
+				// to throw this exception
+			}
+		}
 		return bindings.get(v);
 	}
 	
@@ -137,10 +149,17 @@ public class Frame {
 	}
 	
 	/**
-	 * Return a frame pointing to the next event in the stream.
+	 * Return a frame located at the next event in the stream.
 	 */
 	public Frame forward() throws EndOfStream {
 		return new Frame(bindings, cursor.forward());
+	}
+	
+	/**
+	 * Return a frame located at the previous event in the stream.
+	 */
+	public Frame backward() throws EndOfStream {
+		return new Frame(bindings, cursor.backward());
 	}
 	
 	/**

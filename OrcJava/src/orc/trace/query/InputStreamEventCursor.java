@@ -43,7 +43,7 @@ public class InputStreamEventCursor implements EventCursor {
 		force();
 		return tail;
 	}
-	public EventCursor back() throws EndOfStream {
+	public InputStreamEventCursor backward() throws EndOfStream {
 		throw new EndOfStream();
 	}
 }
