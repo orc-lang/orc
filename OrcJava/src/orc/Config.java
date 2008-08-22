@@ -45,6 +45,7 @@ public class Config {
 	private Integer numKilimThreads = 1;
 	private Integer numSiteThreads = 2;
 	private Boolean noPrelude = false;
+	private String filename = "<stdin>";
 	
 	public void processArgs(String[] args) {
 		CmdLineParser parser = new CmdLineParser(this); 
@@ -108,6 +109,7 @@ public class Config {
 	public void setInputFile(File file) throws CmdLineException {
 		try {
 			instream = new FileReader(file);
+			filename = file.getPath();
 		} catch (FileNotFoundException e) {
 			throw new CmdLineException("Could not find input file '"+file+"'");
 		}
@@ -153,9 +155,13 @@ public class Config {
 	public Integer getNumSiteThreads() {
 		return numSiteThreads;
 	}
-
+	
 	public boolean typeCheckingMode() {
 		return typecheck;
 	}
-
+	
+	
+	public String getFilename() {
+		return filename;
+	}
 }

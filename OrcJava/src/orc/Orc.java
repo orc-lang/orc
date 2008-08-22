@@ -101,7 +101,7 @@ public class Orc {
 
 		//System.out.println("Parsing...");
 		// Parse the goal expression
-		OrcParser parser = new OrcParser(source);
+		OrcParser parser = new OrcParser(source, cfg.getFilename());
 		orc.ast.extended.Expression e = parser.parseProgram();
 		
 		//System.out.println(e);
