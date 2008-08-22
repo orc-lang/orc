@@ -64,7 +64,7 @@ public class OrcSite extends Site {
 		
 		Class cls = classify();
 		try {
-			return (Type)cls.getMethod("type", null).invoke(null, null);
+			return (Type)cls.getMethod("type", new Class[]{}).invoke(null, new Object[]{});
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			throw new MissingTypeException("Couldn't access type of site " + cls + " due to error: " + e);

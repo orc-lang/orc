@@ -28,8 +28,11 @@ public class Def {
 	public Expr body;
 	public ArrowType type;
 	
-	public Def(int arity, Expr body, ArrowType type)
-	{
+	public Def(int arity, Expr body) {
+		this(arity, body, null);
+	}
+	
+	public Def(int arity, Expr body, ArrowType type) {
 		this.arity = arity;
 		this.body = body;
 		this.type = type;
