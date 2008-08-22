@@ -16,8 +16,7 @@ import xtc.util.Utilities;
 public class PrintEvent extends Event {
 	public final String output;
 	public final boolean newline;
-	public PrintEvent(ForkEvent thread, String output, boolean newline) {
-		super(new RepeatHandle<ForkEvent>(thread));
+	public PrintEvent(String output, boolean newline) {
 		this.output = output;
 		this.newline = newline;
 	}

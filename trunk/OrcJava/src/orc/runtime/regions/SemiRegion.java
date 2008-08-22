@@ -14,9 +14,10 @@ public class SemiRegion extends Region {
 		this.parent.add(this);
 	}
 	
-	public void close() {
+	public void close(Token closer) {
+		t.getTracer().after(closer.getTracer().before());
 		t.activate();
-		parent.remove(this);
+		parent.remove(this, closer);
 	}
 
 	public Region getParent() {

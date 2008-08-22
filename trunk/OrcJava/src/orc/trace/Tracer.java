@@ -6,11 +6,14 @@ import java.util.Map;
 
 import orc.error.Locatable;
 import orc.error.runtime.TokenException;
+import orc.runtime.values.GroupCell;
 import orc.runtime.values.Visitor;
-import orc.trace.events.CallEvent;
+import orc.trace.events.BeforeEvent;
+import orc.trace.events.SendEvent;
 import orc.trace.events.DieEvent;
 import orc.trace.events.Event;
-import orc.trace.events.ResumeEvent;
+import orc.trace.events.PullEvent;
+import orc.trace.events.ReceiveEvent;
 import orc.trace.events.ForkEvent;
 import orc.trace.events.StoreEvent;
 import orc.trace.query.predicates.Predicate;
@@ -26,22 +29,15 @@ import orc.trace.values.TupleValue;
 import orc.trace.values.Value;
 
 /**
- * Interface for writing traces from a single Orc thread.
- * Methods correspond to events which may be traced.
+ * Interface for writing traces from a single Orc thread. Methods correspond to
+ * events which may be traced.
  * 
- * <p>What is a thread? Intuitively, it corresponds to:
- * <ul>
- * <li>a token in the execution DAG
- * <li>a connected sequence of evaluation steps
- * </ul>
+ * <p>FIXME: the event objects passed between trace methods should be more abstract,
+ * so it's possible to write tracers that don't use our event classes.
  * 
  * @author quark
  */
 public interface Tracer extends Locatable {
-	/**
-	 * Events must satisfy this predicate to be traced.
-	 */
-	public void setFilter(Predicate filter);
 	/**
 	 * Start a new engine.
 	 */
@@ -58,7 +54,7 @@ public interface Tracer extends Locatable {
 	/**
 	 * Call a site.
 	 */
-	public void call(Object site, Object[] arguments);
+	public void send(Object site, Object[] arguments);
 	/**
 	 * Store a value for a future. The return value should be used when tracing
 	 * the results of this store. When all events related to the store have been
@@ -68,7 +64,7 @@ public interface Tracer extends Locatable {
 	 * @see #unblock(StoreEvent)
 	 * @see #free(Event)
 	 */
-	public StoreEvent store(Object value);
+	public StoreEvent store(PullEvent event, Object value);
 	/**
 	 * Killed through the setting of a future.
 	 * Should be followed by {@link #die()}.
@@ -76,13 +72,13 @@ public interface Tracer extends Locatable {
 	public void choke(StoreEvent store);
 	/**
 	 * Return from a site call. Should be called after
-	 * {@link #call(Object, Object[])}.
+	 * {@link #send(Object, Object[])}.
 	 */
-	public void resume(Object value);
+	public void receive(Object value);
 	/**
 	 * Block a thread waiting for a future.
 	 */
-	public void block();
+	public void block(PullEvent pull);
 	/**
 	 * Receive a future we were waiting for.
 	 */
@@ -107,4 +103,23 @@ public interface Tracer extends Locatable {
 	 * Should be followed by {@link #die()}.
 	 */
 	public void error(TokenException error);
+	/**
+	 * Create a new future for a pull.
+	 * Should be followed by {@link #fork()}.
+	 */
+	public PullEvent pull();
+	/**
+	 * Leaving the left side of a semicolon combinator. If the thread is
+	 * "leaving" because it is dying, this will be followed by a {@link #die()};
+	 * otherwise it may be followed by any number of events which happen outside
+	 * the scope of the semicolon.
+	 * 
+	 * @return a BeforeEvent which you can pass to {@link #after(BeforeEvent)}.
+	 */
+	public BeforeEvent before();
+	/**
+	 * Indicate that the right side of a semicolon combinator is continuing.
+	 * @param before the BeforeEvent which triggered this event
+	 */
+	public void after(BeforeEvent before);
 }

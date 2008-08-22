@@ -2,8 +2,11 @@ package orc.trace;
 
 import orc.error.SourceLocation;
 import orc.error.runtime.TokenException;
+import orc.runtime.values.GroupCell;
+import orc.trace.events.AfterEvent;
+import orc.trace.events.BeforeEvent;
 import orc.trace.events.BlockEvent;
-import orc.trace.events.CallEvent;
+import orc.trace.events.SendEvent;
 import orc.trace.events.ChokeEvent;
 import orc.trace.events.DieEvent;
 import orc.trace.events.ErrorEvent;
@@ -12,7 +15,9 @@ import orc.trace.events.ForkEvent;
 import orc.trace.events.FreeEvent;
 import orc.trace.events.PrintEvent;
 import orc.trace.events.PublishEvent;
-import orc.trace.events.ResumeEvent;
+import orc.trace.events.PullEvent;
+import orc.trace.events.ReceiveEvent;
+import orc.trace.events.RootEvent;
 import orc.trace.events.StoreEvent;
 import orc.trace.events.UnblockEvent;
 import orc.trace.handles.FirstHandle;
@@ -27,117 +32,113 @@ import orc.trace.values.Value;
 
 /**
  * Base class for tracers.
- * FIXME: make which events are written configurable.
+ * TODO: make which events are written configurable.
  * 
  * @author quark
  */
 public abstract class AbstractTracer implements Tracer {
 	/** The current thread */
 	private final ForkEvent thread;
-	/** The last call made (for {@link ResumeEvent}). */
-	private CallEvent call;
+	/** The last call made (for {@link ReceiveEvent}). */
+	private SendEvent call;
+	/** The timestamp of the last call made (for {@link ReceiveEvent}). */
+	private long lastCallTime;
 	/** The current source location (used for all events). */
 	private SourceLocation location;
 	/** Marshaller for values. */
 	private final Marshaller marshaller;
-	/** Events must satisfy this predicate to be traced. */
-	protected Predicate filter;
 
 	public AbstractTracer() {
-		thread = ForkEvent.ROOT;
+		thread = new RootEvent();
 		marshaller = new Marshaller();
-		filter = null;
 		location = SourceLocation.UNKNOWN;
-	}
-	
-	public void setFilter(Predicate filter) {
-		this.filter = filter;
 	}
 
 	/** Copy constructor for use by {@link #forked(ForkEvent)}. */
 	protected AbstractTracer(AbstractTracer that, ForkEvent fork) {
-		this.marshaller = that.marshaller;
-		this.filter = that.filter;
+		// that.call should be null so we don't need to copy it
 		this.location = that.location;
+		this.marshaller = that.marshaller;
 		this.thread = fork;
 	}
 	
 	public void start() {
-		maybeRecord(new FirstHandle<Event>(thread));
+		// the root event is not annotated with a thread
+		thread.setSourceLocation(location);
+		record(new FirstHandle<Event>(thread));
+	}
+	public PullEvent pull() {
+		PullEvent pull = new PullEvent();
+		annotateAndRecord(new FirstHandle<Event>(pull));
+		return pull;
 	}
 	public Tracer fork() {
-		ForkEvent fork = new ForkEvent(thread);
-		maybeRecord(new FirstHandle<Event>(fork));
+		ForkEvent fork = new ForkEvent();
+		annotateAndRecord(new FirstHandle<Event>(fork));
 		// we can't fork during a site call, so no need
 		// to track the caller
 		return forked(fork);
 	}
-	public void call(Object site, Object[] arguments) {
+	public void send(Object site, Object[] arguments) {
 		// serialize arguments
 		Value[] arguments2 = new Value[arguments.length];
 		for (int i = 0; i < arguments.length; ++i) {
 			arguments2[i] = marshaller.marshal(arguments[i]);
 		}
-		call = new CallEvent(thread, marshaller.marshal(site), arguments2);
-		maybeRecord(new FirstHandle<Event>(call));
+		call = new SendEvent(marshaller.marshal(site), arguments2);
+		lastCallTime = System.currentTimeMillis();
+		annotateAndRecord(new FirstHandle<Event>(call));
 	}
 	public void choke(StoreEvent store) {
-		maybeRecord(new OnlyHandle<Event>(new ChokeEvent(thread, store)));
+		annotateAndRecord(new OnlyHandle<Event>(new ChokeEvent(store)));
 	}
-	public void resume(Object value) {
+	public void receive(Object value) {
 		assert(call != null);
-		maybeRecord(new OnlyHandle<Event>(new ResumeEvent(
-				thread, marshaller.marshal(value), call)));
+		int latency = (int)(System.currentTimeMillis() - lastCallTime);
+		annotateAndRecord(new OnlyHandle<Event>(new ReceiveEvent(
+				marshaller.marshal(value), call, latency)));
 		call = null;
 	}
 	public void die() {
-		maybeRecord(new OnlyHandle<Event>(new DieEvent(thread)));
+		annotateAndRecord(new OnlyHandle<Event>(new DieEvent()));
 	}
-	public void block() {
-		maybeRecord(new OnlyHandle<Event>(new BlockEvent(thread)));
+	public void block(PullEvent pull) {
+		annotateAndRecord(new OnlyHandle<Event>(new BlockEvent(pull)));
 	}
-	public StoreEvent store(Object value) {
-		StoreEvent store = new StoreEvent(thread, marshaller.marshal(value));
-		maybeRecord(new FirstHandle<Event>(store));
+	public StoreEvent store(PullEvent event, Object value) {
+		StoreEvent store = new StoreEvent(event, marshaller.marshal(value));
+		annotateAndRecord(new FirstHandle<Event>(store));
 		return store;
 	}
 	public void unblock(StoreEvent store) {
-		maybeRecord(new OnlyHandle<Event>(new UnblockEvent(thread, store)));
+		annotateAndRecord(new OnlyHandle<Event>(new UnblockEvent(store)));
 	}
 	public void free(Event event) {
-		maybeRecord(new OnlyHandle<Event>(new FreeEvent(thread, event)));
+		annotateAndRecord(new OnlyHandle<Event>(new FreeEvent(event)));
 	}
 	public void error(TokenException error) {
-		maybeRecord(new OnlyHandle<Event>(new ErrorEvent(thread, error)));
+		annotateAndRecord(new OnlyHandle<Event>(new ErrorEvent(error)));
 	}
 	public void print(String value, boolean newline) {
-		maybeRecord(new OnlyHandle<Event>(new PrintEvent(thread, value, newline)));
+		annotateAndRecord(new OnlyHandle<Event>(new PrintEvent(value, newline)));
 	}
 	public void publish(Object value) {
-		maybeRecord(new OnlyHandle<Event>(new PublishEvent(thread, marshaller.marshal(value))));
+		annotateAndRecord(new OnlyHandle<Event>(new PublishEvent(marshaller.marshal(value))));
 	}
-	
-	protected void maybeRecord(final Handle<? extends Event> event) {
-		if (filter != null) {
-			// we'll use a special frame containing only the
-			// current event
-			// TODO: make this able to scan in the stream
-			Frame frame = Frame.newFrame(new EventCursor() {
-					public Event current() throws EndOfStream {
-						return event.get();
-					}
-					public EventCursor forward() throws EndOfStream {
-						throw new EndOfStream();
-					}
-					public EventCursor backward() throws EndOfStream {
-						throw new EndOfStream();
-					}
-				});
-			Result result = filter.evaluate(frame);
-			if (result == Result.NO) return;
-		}
-		event.get().setSourceLocation(location);
-		record(event);
+	public BeforeEvent before() {
+		BeforeEvent out = new BeforeEvent();
+		annotateAndRecord(new FirstHandle<Event>(out));
+		return out;
+	}
+	public void after(BeforeEvent before) {
+		annotateAndRecord(new OnlyHandle<Event>(new AfterEvent(before)));
+	}
+
+	protected void annotateAndRecord(final Handle<? extends Event> eventh) {
+		Event event = eventh.get();
+		event.setSourceLocation(location);
+		event.setThread(thread);
+		record(eventh);
 	}
 	
 	protected abstract void record(Handle<? extends Event> event);

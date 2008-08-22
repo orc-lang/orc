@@ -11,6 +11,7 @@ import java.util.List;
 import orc.error.runtime.UncallableValueException;
 import orc.runtime.Token;
 import orc.runtime.regions.GroupRegion;
+import orc.trace.events.PullEvent;
 import orc.trace.events.StoreEvent;
 
 /**
@@ -30,6 +31,7 @@ public class GroupCell implements Serializable, Future {
 	List<Token> waitList;
 	List<GroupCell> children;
 	GroupRegion region;
+	private PullEvent event;
 
 	public GroupCell() {
 		bound = false;
@@ -66,7 +68,8 @@ public class GroupCell implements Serializable, Future {
 		// trace the binding of the future;
 		// if this returns null, we avoid
 		// calling related trace methods
-		StoreEvent store = token.getTracer().store(this.value);
+		StoreEvent store = token.getTracer().store(event, this.value);
+		event = null;
 		bound = true;
 		kill();
 		if (waitList != null) {
@@ -82,9 +85,9 @@ public class GroupCell implements Serializable, Future {
 			// HACK: for efficiency, if we're not
 			// really tracing, we can run a cheaper
 			// close() operation
-			region.close();	
+			region.close(token);
 		} else {
-			region.close(store);
+			region.close(store, token);
 			token.getTracer().free(store);
 		}
 	}
@@ -119,7 +122,7 @@ public class GroupCell implements Serializable, Future {
 		if (alive) {
 			if (waitList == null)
 				waitList = new LinkedList<Token>();
-			t.getTracer().block();
+			t.getTracer().block(event);
 			waitList.add(t);
 		} else {
 			// A token waiting on a dead group cell will remain silent forever.
@@ -169,4 +172,7 @@ public class GroupCell implements Serializable, Future {
 		this.region = region;
 	}
 	
+	public void setPullEvent(PullEvent event) {
+		this.event = event;
+	}
 }

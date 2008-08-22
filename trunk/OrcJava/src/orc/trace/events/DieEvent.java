@@ -7,8 +7,8 @@ import orc.trace.handles.LastHandle;
  * @author quark
  */
 public class DieEvent extends Event {
-	public DieEvent(ForkEvent thread) {
-		super(new LastHandle<ForkEvent>(thread));
+	public void setThread(ForkEvent thread) {
+		this.thread = new LastHandle<ForkEvent>(thread);
 	}
 	@Override
 	public String getType() { return "die"; }

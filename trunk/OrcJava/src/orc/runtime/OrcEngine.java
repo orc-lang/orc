@@ -183,7 +183,7 @@ public class OrcEngine implements Runnable {
 	 * @param t	the token to be added
 	 */
 	synchronized public void resume(Token t) {
-		t.getTracer().resume(t.getResult());
+		t.getTracer().receive(t.getResult());
 		queuedReturns.addLast(t);
 		notifyAll();
 	}
