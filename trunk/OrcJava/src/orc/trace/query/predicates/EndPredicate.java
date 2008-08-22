@@ -5,12 +5,18 @@ import orc.trace.query.EventCursor.EndOfStream;
 
 /**
  * Succeed if we are at the end of the stream.
- * Shortcut for ~ X true.
+ * 
+ * @see NextPredicate
  */
 public class EndPredicate implements Predicate {
+	private final boolean forward;
+	public EndPredicate(boolean forward) {
+		this.forward = forward;
+	}
 	public Result evaluate(Frame frame) {
 		try {
-			frame.forward();
+			if (forward) frame.forward();
+			else frame.backward();
 			return null;
 		} catch (EndOfStream _) {
 			return new Result(frame);

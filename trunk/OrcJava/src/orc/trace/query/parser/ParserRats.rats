@@ -37,13 +37,22 @@ Predicate Predicate = Disjunction;
 
 Predicate BinaryTemporal = 
 	left:Disjunction void:U right:BinaryTemporal {
-		yyValue = new UntilPredicate(left, right);
+		yyValue = new UntilPredicate(left, right, true);
+	}
+	/ left:Disjunction void:PU right:BinaryTemporal {
+		yyValue = new UntilPredicate(left, right, false);
 	}
 	/ left:Disjunction void:R right:BinaryTemporal {
-		yyValue = new ReleasePredicate(left, right);
+		yyValue = new ReleasePredicate(left, right, true);
+	}
+	/ left:Disjunction void:PR right:BinaryTemporal {
+		yyValue = new ReleasePredicate(left, right, false);
 	}
 	/ left:Disjunction void:W right:BinaryTemporal {
-		yyValue = new ReleasePredicate(right, new OrPredicate(right, left));
+		yyValue = new WeakUntilPredicate(left, right, true);
+	}
+	/ left:Disjunction void:PW right:BinaryTemporal {
+		yyValue = new WeakUntilPredicate(left, right, false);
 	}
 	;
 
@@ -70,22 +79,28 @@ Predicate Negation =
 
 Predicate UnaryTemporal =
 	void:X p:Predicate {
-		yyValue = new NextPredicate(p);
+		yyValue = new NextPredicate(p, true);
+	}
+	/ void:PX p:Predicate {
+		yyValue = new NextPredicate(p, false);
 	}
 	/ void:F p:Predicate {
-		yyValue = new UntilPredicate(TruePredicate.singleton, p);
+		yyValue = new UntilPredicate(TruePredicate.singleton, p, true);
+	}
+	/ void:PF p:Predicate {
+		yyValue = new UntilPredicate(TruePredicate.singleton, p, false);
 	}
 	/ void:G p:Predicate {
-		yyValue = new ReleasePredicate(FalsePredicate.singleton, p);
+		yyValue = new ReleasePredicate(FalsePredicate.singleton, p, true);
+	}
+	/ void:PG p:Predicate {
+		yyValue = new ReleasePredicate(FalsePredicate.singleton, p, false);
 	}
 	/ BasicPredicate
 	;
 	
 Predicate BasicPredicate =
-	void:AT p:BindingPattern {
-		yyValue = new CurrentEventPredicate(p);
-	}
-	/ left:Pattern void:EQ right:Pattern {
+	left:Pattern void:EQ right:Pattern {
 		yyValue = new EqualPredicate(left, right);
 	}
 	/ void:LPAREN Predicate void:RPAREN
@@ -120,12 +135,21 @@ BindingPattern BindingPattern =
 	UNDERSCORE {
 		yyValue = new Variable();
 	}
-	/ name:Variable props:(void:DOT Variable)* {
-		BindingPattern out = intern(name);
+	/ v:Variable props:(void:DOT Identifier)* {
+		BindingPattern out = v;
 		for (String key : props) {
 			out = new PropertyPattern(out, key);
 		}
 		yyValue = out;
+	}
+	;
+
+Variable Variable =
+	void:AT {
+		yyValue = Frame.CURRENT_EVENT;
+	}
+	/ name:Identifier {
+		yyValue = intern(name);
 	}
 	;
 	
@@ -195,7 +219,7 @@ transient String OctalEscape =
 	;
 transient String OctalDigit = [0-7];
 	
-String Variable = VariableToken Space;
+String Identifier = VariableToken Space;
 String VariableToken = [a-z] [a-zA-Z0-9_]*;
 
 /////////////////////////////////////////////
@@ -208,6 +232,15 @@ transient int R = "R" Space { yyValue = yyStart; };
 transient int F = "F" Space { yyValue = yyStart; };
 transient int G = "G" Space { yyValue = yyStart; };
 transient int W = "W" Space { yyValue = yyStart; };
+// the P* versions of the operators are the ones that
+// refer to the past; the regular operators
+// refer to the future
+transient int PU = "<U" Space { yyValue = yyStart; };
+transient int PX = "<X" Space { yyValue = yyStart; };
+transient int PR = "<R" Space { yyValue = yyStart; };
+transient int PF = "<F" Space { yyValue = yyStart; };
+transient int PG = "<G" Space { yyValue = yyStart; };
+transient int PW = "<W" Space { yyValue = yyStart; };
 transient int AT = "@" Space { yyValue = yyStart; };
 transient int TRUE = "true" Space { yyValue = yyStart; };
 transient int FALSE = "false" Space { yyValue = yyStart; };

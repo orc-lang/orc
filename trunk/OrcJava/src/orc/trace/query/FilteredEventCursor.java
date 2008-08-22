@@ -1,22 +1,21 @@
 package orc.trace.query;
 
 import orc.trace.events.Event;
-import orc.trace.query.EventCursor.EndOfStream;
 import orc.trace.query.predicates.Predicate;
 import orc.trace.query.predicates.Result;
 
 public class FilteredEventCursor implements EventCursor {
-	private EventCursor stream;
+	private EventCursor cursor;
 	private final Predicate predicate;
 	private Frame frame;
 	private boolean forward = true;
 	
-	public FilteredEventCursor(EventCursor stream, Predicate predicate) {
-		this(stream, predicate, true);
+	public FilteredEventCursor(EventCursor cursor, Predicate predicate) {
+		this(cursor, predicate, true);
 	}
 	
-	public FilteredEventCursor(EventCursor stream, Predicate predicate, boolean forward) {
-		this.stream = stream;
+	public FilteredEventCursor(EventCursor cursor, Predicate predicate, boolean forward) {
+		this.cursor = cursor;
 		this.predicate = predicate;
 		this.forward = forward;
 	}
@@ -25,13 +24,13 @@ public class FilteredEventCursor implements EventCursor {
 		// repeat until we run out of elements or the
 		// predicate evaluates to true
 		while (true) {
-			Result r1 = predicate.evaluate(Frame.newFrame(stream));
+			Result r1 = predicate.evaluate(Frame.newFrame(cursor));
 			if (r1 != null) {
 				frame = r1.getFrame();
-				return stream.current();
+				return cursor.current();
 			}
-			if (forward) stream = stream.forward();
-			else stream = stream.back();
+			if (forward) cursor = cursor.forward();
+			else cursor = cursor.backward();
 		}
 	}
 	
@@ -41,10 +40,10 @@ public class FilteredEventCursor implements EventCursor {
 	}
 
 	public FilteredEventCursor forward() throws EndOfStream {
-		return new FilteredEventCursor(stream.forward(), predicate, true);
+		return new FilteredEventCursor(cursor.forward(), predicate, true);
 	}
 
-	public EventCursor back() throws EndOfStream {
-		return new FilteredEventCursor(stream.back(), predicate, false);
+	public FilteredEventCursor backward() throws EndOfStream {
+		return new FilteredEventCursor(cursor.backward(), predicate, false);
 	}
 }

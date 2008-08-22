@@ -129,7 +129,7 @@ public abstract class AbstractTracer implements Tracer {
 					public EventCursor forward() throws EndOfStream {
 						throw new EndOfStream();
 					}
-					public EventCursor back() throws EndOfStream {
+					public EventCursor backward() throws EndOfStream {
 						throw new EndOfStream();
 					}
 				});
