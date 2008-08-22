@@ -1,6 +1,7 @@
 package orc.runtime.regions;
 
 import orc.runtime.OrcEngine;
+import orc.runtime.Token;
 
 public class Execution extends Region {
 
@@ -15,7 +16,7 @@ public class Execution extends Region {
 	public OrcEngine getEngine() { return engine; }
 	
 	@Override
-	public void close() {
+	public void close(Token closer) {
 		running = false;
 		engine.terminate();
 	}

@@ -1,5 +1,6 @@
 package orc.runtime.regions;
 
+import orc.runtime.Token;
 import orc.runtime.values.GroupCell;
 import orc.trace.events.Event;
 
@@ -22,12 +23,11 @@ public class GroupRegion extends Region {
 	 * inhabitants leave, so we must ensure that the close operations occur only
 	 * once using the 'open' flag.
 	 */
-	public void close() {
+	public void close(Token closer) {
 		if (open) {
 			open = false;
 			cell.close();
-			parent.remove(this);
+			parent.remove(this, closer);
 		}
-		
 	}
 }

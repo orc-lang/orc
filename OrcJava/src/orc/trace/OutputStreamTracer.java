@@ -8,11 +8,11 @@ import java.util.Map;
 
 import orc.error.OrcError;
 import orc.runtime.values.Visitor;
-import orc.trace.events.CallEvent;
+import orc.trace.events.SendEvent;
 import orc.trace.events.DieEvent;
 import orc.trace.events.Event;
 import orc.trace.events.ForkEvent;
-import orc.trace.events.ResumeEvent;
+import orc.trace.events.ReceiveEvent;
 import orc.trace.handles.FirstHandle;
 import orc.trace.handles.Handle;
 import orc.trace.handles.HandleOutputStream;

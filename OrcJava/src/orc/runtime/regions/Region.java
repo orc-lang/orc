@@ -28,13 +28,13 @@ public abstract class Region {
 		containedRegions.add(r);
 	}
 	
-	public void remove(Token t) { 
-		dec(); 
-		containedTokens.remove(t);
+	public void remove(Token closer) { 
+		dec(closer); 
+		containedTokens.remove(closer);
 	}
 	
-	public void remove(Region r) { 
-		dec(); 
+	public void remove(Region r, Token closer) { 
+		dec(closer); 
 		containedRegions.remove(r);
 	}
 
@@ -42,12 +42,12 @@ public abstract class Region {
 		inhabitants++;
 	}
 	
-	private void dec() {
+	private void dec(Token closer) {
 		inhabitants--;
-		if (inhabitants <= 0) { close(); }
+		if (inhabitants <= 0) { close(closer); }
 	}
 	
-	public abstract void close();
+	public abstract void close(Token closer);
 	
 	/**
 	 * Used when tracing, to both close the region and trace the "choking" of
@@ -56,13 +56,13 @@ public abstract class Region {
 	 * 
 	 * @param store The {@link StoreEvent} which triggered the closing.
 	 */
-	public void close(StoreEvent store) {
-		close();
+	public void close(StoreEvent store, Token closer) {
+		close(closer);
 		// if the region was already closed,
 		// it won't contain anything and so
 		// none of this will run
 		for (Region r : containedRegions) {
-			r.close(store);
+			r.close(store, closer);
 		}
 		containedRegions.clear();
 		for (Token t : containedTokens) {

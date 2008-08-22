@@ -25,7 +25,7 @@ public class Let extends Site {
 		// This is necessary to preserve the "immediate" semantics of Let.
 		caller.setResult(args.condense());
 		// Need to trace the return even though it's weird
-		caller.getTracer().resume(caller.getResult());
+		caller.getTracer().receive(caller.getResult());
 		// Activate the token
 		caller.activate();
 	}

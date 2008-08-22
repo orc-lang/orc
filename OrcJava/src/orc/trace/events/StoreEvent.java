@@ -6,6 +6,7 @@ import java.io.Writer;
 import orc.trace.query.Term;
 import orc.trace.values.Value;
 import orc.trace.handles.Handle;
+import orc.trace.handles.LastHandle;
 import orc.trace.handles.RepeatHandle;
 
 /**
@@ -16,8 +17,9 @@ import orc.trace.handles.RepeatHandle;
  */
 public class StoreEvent extends Event {
 	public Value value;
-	public StoreEvent(ForkEvent thread, Value value) {
-		super(new RepeatHandle<ForkEvent>(thread));
+	public Handle<PullEvent> pull;
+	public StoreEvent(PullEvent pull, Value value) {
+		this.pull = new LastHandle<PullEvent>(pull);
 		this.value = value;
 	}
 	@Override
@@ -25,9 +27,13 @@ public class StoreEvent extends Event {
 		super.prettyPrint(out, indent);
 		out.write("(");
 		value.prettyPrint(out, indent+1);
+		out.write(", ");
+		pull.get().prettyPrint(out, indent+1);
 		out.write(")");
 	}
+	@Override
 	public Term getProperty(String key) {
+		if (key.equals("pull")) return pull.get();
 		if (key.equals("value")) return value;
 		else return super.getProperty(key);
 	}

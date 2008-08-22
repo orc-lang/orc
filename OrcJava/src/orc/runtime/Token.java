@@ -291,13 +291,22 @@ public final class Token implements Serializable, Comparable<Token> {
 
 	/**
 	 * Fork a token.
-	 * The original token continues on the left while
-	 * the new token evaluates the right (this order
-	 * is arbitrary, but right-branching ensures
-	 * fewer tokens are created with left-associative
-	 * asymmetric combinators).
+	 * @see #fork(GroupCell, Region)
 	 */
 	public Token fork() {
-		return new Token(node, env, continuation, group, region, result, engine, tracer.fork());
+		return fork(group, region);
+	}
+	
+	/**
+	 * Fork a token with a specified group and region. By convention, the
+	 * original token continues on the left while the new token evaluates the
+	 * right (this order is arbitrary, but right-branching ensures fewer tokens
+	 * are created with the common left-associative asymmetric combinators).
+	 */
+	public Token fork(GroupCell group, Region region) {
+		return new Token(this.node, this.env, this.continuation,
+				group, region,
+				this.result, this.engine,
+				tracer.fork());
 	}
 }

@@ -10,11 +10,10 @@ import orc.trace.query.Terms;
 import orc.trace.values.TupleValue;
 import orc.trace.values.Value;
 
-public class CallEvent extends Event {
+public class SendEvent extends Event {
 	public final Value site;
 	public final TupleValue arguments;
-	public CallEvent(ForkEvent thread, Value site, Value[] arguments) {
-		super(new RepeatHandle<ForkEvent>(thread));
+	public SendEvent(Value site, Value[] arguments) {
 		this.site = site;
 		this.arguments = new TupleValue(arguments);
 	}
@@ -32,5 +31,5 @@ public class CallEvent extends Event {
 		else return super.getProperty(key);
 	}
 	@Override
-	public String getType() { return "call"; }
+	public String getType() { return "send"; }
 }

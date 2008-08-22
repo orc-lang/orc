@@ -15,8 +15,7 @@ import orc.trace.values.Value;
  */
 public class ErrorEvent extends Event {
 	public final TokenException error;
-	public ErrorEvent(ForkEvent thread, TokenException error) {
-		super(new RepeatHandle<ForkEvent>(thread));
+	public ErrorEvent(TokenException error) {
 		this.error = error;
 	}
 	@Override

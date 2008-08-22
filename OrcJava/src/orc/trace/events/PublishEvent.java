@@ -13,8 +13,7 @@ import orc.trace.values.Value;
  */
 public class PublishEvent extends Event {
 	public final Value value;
-	public PublishEvent(ForkEvent thread, Value value) {
-		super(new RepeatHandle<ForkEvent>(thread));
+	public PublishEvent(Value value) {
 		this.value = value;
 	}
 	@Override

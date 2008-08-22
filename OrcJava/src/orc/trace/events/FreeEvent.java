@@ -19,8 +19,7 @@ import orc.trace.query.Term;
 public class FreeEvent extends Event {
 	@SuppressWarnings("unused")
 	private Handle<Event> event;
-	public FreeEvent(ForkEvent thread, Event event) {
-		super(new RepeatHandle<ForkEvent>(thread));
+	public FreeEvent(Event event) {
 		this.event = new LastHandle<Event>(event);
 	}
 	@Override

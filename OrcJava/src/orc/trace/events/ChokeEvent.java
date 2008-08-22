@@ -13,8 +13,7 @@ import orc.trace.query.Term;
  */
 public class ChokeEvent extends Event {
 	public Handle<StoreEvent> store;
-	public ChokeEvent(ForkEvent thread, StoreEvent store) {
-		super(new RepeatHandle<ForkEvent>(thread));
+	public ChokeEvent(StoreEvent store) {
 		this.store = new RepeatHandle<StoreEvent>(store);
 	}
 	@Override

@@ -5,30 +5,33 @@ import java.io.Writer;
 
 import orc.trace.handles.Handle;
 import orc.trace.handles.LastHandle;
-import orc.trace.handles.RepeatHandle;
 import orc.trace.query.Term;
-import orc.trace.values.Value;
 
 /**
- * Resume after a {@link BlockEvent}.
+ * Indicate that a thread continued due to termination of the left side of a
+ * semicolon combinator.
+ * 
  * @author quark
  */
-public class UnblockEvent extends Event {
-	public Handle<StoreEvent> store;
-	public UnblockEvent(StoreEvent store) {
-		this.store = new RepeatHandle<StoreEvent>(store);
+public class AfterEvent extends Event {
+	public final Handle<BeforeEvent> before;
+	public AfterEvent(BeforeEvent before) {
+		this.before = new LastHandle<BeforeEvent>(before);
 	}
 	@Override
 	public void prettyPrint(Writer out, int indent) throws IOException {
 		super.prettyPrint(out, indent);
 		out.write("(");
-		store.get().prettyPrint(out, indent+1);
+		before.get().prettyPrint(out, indent+1);
 		out.write(")");
 	}
+	@Override
 	public Term getProperty(String key) {
-		if (key.equals("store")) return store.get();
+		if (key.equals("before")) return before.get();
 		else return super.getProperty(key);
 	}
 	@Override
-	public String getType() { return "unblock"; }
+	public String getType() {
+		return "after";
+	}
 }
