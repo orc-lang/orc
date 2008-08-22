@@ -11,16 +11,18 @@ import orc.trace.values.ConstantValue;
 import orc.trace.values.Value;
 
 /**
- * Return from a site call.
+ * Return from a site call. At one point this had a handle to the corresponding
+ * site call, but that's not really necessary (the call is just the preceeding
+ * {@link SendEvent} in the same thread) and we may not want to bother recording
+ * the call (which should be deterministic anyways).
+ * 
  * @author quark
  */
 public class ReceiveEvent extends Event {
 	public final Value value;
 	public final int latency;
-	public final Handle<SendEvent> call;
-	public ReceiveEvent(Value value, SendEvent call, int latency) {
+	public ReceiveEvent(Value value, int latency) {
 		this.value = value;
-		this.call = new LastHandle<SendEvent>(call);
 		this.latency = latency;
 	}
 	@Override
@@ -35,7 +37,6 @@ public class ReceiveEvent extends Event {
 	public Term getProperty(String key) {
 		if (key.equals("value")) return value;
 		if (key.equals("latency")) return new ConstantValue(latency);
-		if (key.equals("call")) return call.get();
 		else return super.getProperty(key);
 	}
 	@Override

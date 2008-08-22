@@ -13,8 +13,7 @@ import orc.trace.query.predicates.Predicate;
  * Do-nothing tracer, used when tracing is not enabled.
  * @author quark
  */
-public final class NullTracer implements Tracer {
-	public void setFilter(Predicate filter) {}
+public class NullTracer implements Tracer {
 	public void send(Object site, Object[] arguments) {}
 	public void die() {}
 	public void choke(StoreEvent store) {}
@@ -25,15 +24,11 @@ public final class NullTracer implements Tracer {
 	}
 	public void free(Event event) {}
 	public void start() {}
-	public void flush() {}
 	public void print(String value, boolean newline) {}
 	public void publish(Object value) {}
 	public void error(TokenException error) {}
 	public void setSourceLocation(SourceLocation location) {}
 	public SourceLocation getSourceLocation() {
-		return null;
-	}
-	public Tracer fork(GroupCell group) {
 		return null;
 	}
 	public void block(PullEvent pull) {}

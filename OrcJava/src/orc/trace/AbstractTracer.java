@@ -39,8 +39,6 @@ import orc.trace.values.Value;
 public abstract class AbstractTracer implements Tracer {
 	/** The current thread */
 	private final ForkEvent thread;
-	/** The last call made (for {@link ReceiveEvent}). */
-	private SendEvent call;
 	/** The timestamp of the last call made (for {@link ReceiveEvent}). */
 	private long lastCallTime;
 	/** The current source location (used for all events). */
@@ -56,7 +54,6 @@ public abstract class AbstractTracer implements Tracer {
 
 	/** Copy constructor for use by {@link #forked(ForkEvent)}. */
 	protected AbstractTracer(AbstractTracer that, ForkEvent fork) {
-		// that.call should be null so we don't need to copy it
 		this.location = that.location;
 		this.marshaller = that.marshaller;
 		this.thread = fork;
@@ -75,8 +72,6 @@ public abstract class AbstractTracer implements Tracer {
 	public Tracer fork() {
 		ForkEvent fork = new ForkEvent();
 		annotateAndRecord(new FirstHandle<Event>(fork));
-		// we can't fork during a site call, so no need
-		// to track the caller
 		return forked(fork);
 	}
 	public void send(Object site, Object[] arguments) {
@@ -85,19 +80,16 @@ public abstract class AbstractTracer implements Tracer {
 		for (int i = 0; i < arguments.length; ++i) {
 			arguments2[i] = marshaller.marshal(arguments[i]);
 		}
-		call = new SendEvent(marshaller.marshal(site), arguments2);
+		annotateAndRecord(new FirstHandle<Event>(new SendEvent(marshaller.marshal(site), arguments2)));
 		lastCallTime = System.currentTimeMillis();
-		annotateAndRecord(new FirstHandle<Event>(call));
 	}
 	public void choke(StoreEvent store) {
 		annotateAndRecord(new OnlyHandle<Event>(new ChokeEvent(store)));
 	}
 	public void receive(Object value) {
-		assert(call != null);
 		int latency = (int)(System.currentTimeMillis() - lastCallTime);
 		annotateAndRecord(new OnlyHandle<Event>(new ReceiveEvent(
-				marshaller.marshal(value), call, latency)));
-		call = null;
+				marshaller.marshal(value), latency)));
 	}
 	public void die() {
 		annotateAndRecord(new OnlyHandle<Event>(new DieEvent()));
