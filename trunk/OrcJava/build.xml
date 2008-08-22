@@ -51,7 +51,7 @@
 				</assertions>
 			<arg value="-d" />
 			<arg value="${orc.location.build}" />
-			<arg line="${orc.location.build}" />
+			<arg value="${orc.location.build}" />
 		</java>
 	</target>
 
