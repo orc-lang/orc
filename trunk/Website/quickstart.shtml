@@ -9,9 +9,6 @@
 <a href="http://www.eclipse.org/downloads/">Eclipse</a>. These instructions
 assume version 3.2.2, but other versions should behave similarly.
 </li>
-<li>Install the
-<a href="http://antlreclipse.sourceforge.net/">ANTLR Eclipse plugin</a>.
-</li>
 </ol>
 
 <h2>Install Orc</h2>
