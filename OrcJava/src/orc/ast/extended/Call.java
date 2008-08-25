@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import orc.ast.simple.WithLocation;
 import orc.ast.simple.arg.Argument;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
@@ -59,7 +60,6 @@ public class Call extends Expression {
 		List<Argument> newargs = new LinkedList<Argument>();
 		Arg newcaller = caller.argify();
 		orc.ast.simple.Expression e = new orc.ast.simple.Call(newcaller.asArg(), newargs);
-		e.setSourceLocation(getSourceLocation());
 		e = newcaller.bind(e);
 		
 		for (Expression r : args)
@@ -69,7 +69,7 @@ public class Call extends Expression {
 			e = a.bind(e);
 		}
 		
-		return e;
+		return new WithLocation(e, getSourceLocation());
 	}
 
 	public String toString() {

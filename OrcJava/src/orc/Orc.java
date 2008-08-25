@@ -140,6 +140,7 @@ public class Orc {
 		//System.out.println("Compiling to an execution graph...");
 		// Compile the AST, directing the output towards the configured target
 		Expr ex = es.convert(new Env<Var>());
+		//System.out.println(ex);
 		
 		// Optionally perform typechecking
 		if (cfg.typeCheckingMode()) {

@@ -19,9 +19,7 @@ import orc.type.Type;
  *
  */
 
-public abstract class Expr implements Locatable {
-	private SourceLocation location = SourceLocation.UNKNOWN;
-	
+public abstract class Expr {
 	/**
 	 * Compiles an oil syntax tree into an execution graph.
 	 * Every node is compiled relative to an "output" node that represents
@@ -30,11 +28,6 @@ public abstract class Expr implements Locatable {
 	 * @return A new node.
 	 */
 	public abstract orc.runtime.nodes.Node compile(orc.runtime.nodes.Node output);
-	
-	public orc.runtime.nodes.Node compile() {
-		return compile(new Pub());
-	}
-	
 	
 	/* Typechecking */
 	
@@ -92,12 +85,4 @@ public abstract class Expr implements Locatable {
 	}
 	
 	public abstract <E> E accept(Visitor<E> visitor);
-	
-	public void setSourceLocation(SourceLocation location) {
-		this.location = location;
-	}
-
-	public SourceLocation getSourceLocation() {
-		return location;
-	}
 }

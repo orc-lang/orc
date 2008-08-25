@@ -35,7 +35,7 @@ public class PatternSimplifier {
 	List<Argument> boundVars;
 	Map<NamedVar, Integer> bindingEntries;
 	Set<Integer> publishEntries;
-	List<Attachment> attachments;	
+	List<Attachment> attachments;
 	
 	public PatternSimplifier() 
 	{

@@ -227,7 +227,7 @@ public class Args implements Serializable, Iterable<Object> {
 		public void unnil(Token caller) {
 			force();
 			if (cons == null)
-				caller.resume(new NilValue());
+				caller.resume(Value.signal());
 			else
 				caller.die();
 		}

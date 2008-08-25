@@ -3,6 +3,7 @@ package orc.ast.extended;
 import orc.ast.extended.pattern.Pattern;
 import orc.ast.extended.pattern.PatternSimplifier;
 import orc.ast.extended.pattern.WildcardPattern;
+import orc.ast.simple.WithLocation;
 import orc.ast.simple.arg.Var;
 import orc.error.compiletime.CompilationException;
 
@@ -38,7 +39,9 @@ public class Sequential extends Expression {
 		source = new orc.ast.simple.Sequential(source, pv.filter(), s);
 		target = pv.target(t, target);
 		
-		return new orc.ast.simple.Sequential(source, target, t);
+		return new WithLocation(
+				new orc.ast.simple.Sequential(source, target, t),
+				getSourceLocation());
 	}
 	
 	public String toString() {

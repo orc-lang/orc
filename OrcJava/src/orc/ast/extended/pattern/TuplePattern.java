@@ -6,6 +6,7 @@ import java.util.List;
 import orc.ast.simple.Call;
 import orc.ast.simple.Expression;
 import orc.ast.simple.Where;
+import orc.ast.simple.WithLocation;
 import orc.ast.simple.arg.*;
 import orc.error.compiletime.PatternException;
 
@@ -60,7 +61,9 @@ public class TuplePattern extends Pattern {
 			throws PatternException {
 		
 		Var test = new Var();
-		visitor.assign(test, Pattern.trysize(fragment, args.size()));
+		visitor.assign(test, new WithLocation(
+				Pattern.trysize(fragment, args.size()),
+				getSourceLocation()));
 		visitor.require(test);
 		
 		for (int i = 0; i < args.size(); i++) {

@@ -7,6 +7,7 @@ import orc.ast.simple.Expression;
 import orc.ast.simple.Parallel;
 import orc.ast.simple.Sequential;
 import orc.ast.simple.Where;
+import orc.ast.simple.WithLocation;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.Field;
 import orc.ast.simple.arg.NamedVar;
@@ -35,7 +36,9 @@ public class CallPattern extends Pattern {
 			throws PatternException {
 		
 		Var result = new Var();
-		visitor.assign(result, Pattern.unapply(site, fragment));
+		visitor.assign(result, new WithLocation(
+				Pattern.unapply(site, fragment),
+				getSourceLocation()));
 		visitor.require(result);
 		p.process(result, visitor);
 	}

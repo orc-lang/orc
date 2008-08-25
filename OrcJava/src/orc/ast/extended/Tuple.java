@@ -3,6 +3,7 @@ package orc.ast.extended;
 import java.util.LinkedList;
 import java.util.List;
 
+import orc.ast.simple.WithLocation;
 import orc.error.compiletime.CompilationException;
 
 public class Tuple extends Expression {
@@ -27,7 +28,7 @@ public class Tuple extends Expression {
 			e = a.bind(e);
 		}
 		
-		return e;
+		return new WithLocation(e, getSourceLocation());
 	}
 	
 	public String toString() {

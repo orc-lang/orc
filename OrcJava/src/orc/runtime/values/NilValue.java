@@ -16,7 +16,7 @@ public class NilValue extends ListValue {
 	
 	@Override
 	public void unnil(Token caller) {
-		caller.resume(new NilValue());
+		caller.resume(Value.signal());
 	}
 
 	@Override

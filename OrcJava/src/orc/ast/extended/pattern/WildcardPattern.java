@@ -5,15 +5,6 @@ import orc.ast.simple.Expression;
 import orc.ast.simple.arg.Var;
 
 public class WildcardPattern extends Pattern {
-	
-	public Expression bind(Var u, Expression g) {
-		return g;
-	}
-
-	public Expression match(Var u) {
-		return new Call(Pattern.SOME, u);
-	}
-
 	public boolean strict() {
 		return false;
 	}
@@ -27,5 +18,4 @@ public class WildcardPattern extends Pattern {
 	public String toString() {
 		return "_";
 	}
-
 }

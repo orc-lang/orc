@@ -7,6 +7,7 @@ import java.io.Serializable;
 
 import orc.ast.oil.arg.Arg;
 import orc.env.Env;
+import orc.error.Locatable;
 import orc.error.SourceLocation;
 import orc.error.runtime.TokenException;
 import orc.error.runtime.UncallableValueException;
@@ -29,7 +30,7 @@ import orc.trace.Tracer;
  * to the next token.
  * @author wcook, dkitchin, quark
  */
-public final class Token implements Serializable, Comparable<Token> {
+public final class Token implements Serializable, Comparable<Token>, Locatable {
 	/**
 	 * Return pointer for a function call.
 	 * At one point we used a token for the return pointer,
@@ -107,8 +108,6 @@ public final class Token implements Serializable, Comparable<Token> {
 		if (!alive) {
 			return;
 		} else if (group.isAlive()) {
-			location = node.getSourceLocation();
-			tracer.setSourceLocation(location);
 			node.process(this);
 		} else {
 			die();
@@ -266,7 +265,7 @@ public final class Token implements Serializable, Comparable<Token> {
 	
 	/* This token has encountered an error, and dies. */
 	public void error(TokenException problem) {
-		problem.setSourceLocation(location);
+		problem.setSourceLocation(getSourceLocation());
 		tracer.error(problem);
 		engine.tokenError(this, problem);
 		// die after reporting the error, so the engine
@@ -309,5 +308,14 @@ public final class Token implements Serializable, Comparable<Token> {
 				group, region,
 				this.result, this.engine,
 				tracer.fork());
+	}
+
+	public void setSourceLocation(SourceLocation location) {
+		this.location = location;
+		tracer.setSourceLocation(location);
+	}
+
+	public SourceLocation getSourceLocation() {
+		return location;
 	}
 }
