@@ -81,4 +81,9 @@ public class MinimizeTracer extends DerivedTracer {
 	public void error(TokenException error) {
 		if (inSend) super.error(error);
 	}
+
+	@Override
+	public Tracer fork() {
+		return new MinimizeTracer(super.fork());
+	}
 }
