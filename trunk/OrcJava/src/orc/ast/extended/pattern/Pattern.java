@@ -56,7 +56,7 @@ public abstract class Pattern implements Locatable {
 	 * @param visitor   A visitor object which accumulates an expression and a transformer
 	 * @throws PatternException  
 	 */
-	public abstract void process(Var fragment, PatternVisitor visitor) throws PatternException;
+	public abstract void process(Var fragment, PatternSimplifier visitor) throws PatternException;
 	
 
 	/**
@@ -65,8 +65,8 @@ public abstract class Pattern implements Locatable {
 	 * Creates a new visitor, visits the pattern, and then returns that visitor. 
 	 * @throws PatternException 
 	 */
-	public PatternVisitor process(Var fragment) throws PatternException {
-		PatternVisitor pv = new PatternVisitor();
+	public PatternSimplifier process(Var fragment) throws PatternException {
+		PatternSimplifier pv = new PatternSimplifier();
 		process(fragment, pv);
 		return pv;
 	}
@@ -134,7 +134,6 @@ public abstract class Pattern implements Locatable {
 	 * otherwise.
 	 * 
 	 * @param s 
-	 * @return
 	 */
 	public static Expression trycons(Argument s) {
 		// TODO: Make trycons a special message
@@ -148,7 +147,6 @@ public abstract class Pattern implements Locatable {
 	 * publishes a signal; otherwise it remains silent.
 	 * 
 	 * @param s
-	 * @return
 	 */
 	public static Expression trynil(Argument s) {
 		// TODO: Make trynil the inverse of trycons
@@ -163,7 +161,6 @@ public abstract class Pattern implements Locatable {
 	 * 
 	 * @param s  Argument to test
 	 * @param n  Target arity
-	 * @return
 	 */
 	
 	public static Expression trysize(Argument s, int n) {
@@ -229,7 +226,6 @@ public abstract class Pattern implements Locatable {
 	 * @param s
 	 * @param succ
 	 * @param fail
-	 * @return
 	 */
 	public static Expression caseof(Var arg, Var s, Expression succ, Expression fail) {
 				

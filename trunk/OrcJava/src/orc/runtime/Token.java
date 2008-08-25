@@ -218,7 +218,8 @@ public final class Token implements Serializable, Comparable<Token> {
 	/**
 	 * Pop values off of the environment stack.
 	 * Used to leave binding scopes.
-	 * @return
+	 * @param width number of bindings to leave
+	 * @return self
 	 */
 	public Token unwind(int width) {
 		env = env.unwind(width);
@@ -230,8 +231,8 @@ public final class Token implements Serializable, Comparable<Token> {
 	 * @param var variable name
 	 * @return value, or an error if the variable is undefined
 	 */
-	public Object lookup(Arg a) {
-		return a.resolve(env);		
+	public Object lookup(Arg var) {
+		return var.resolve(env);
 	}
 	
 	/* TODO: replace this stub with a meaningful order on tokens */

@@ -20,7 +20,7 @@ public class VariablePattern extends Pattern {
 	}
 
 	@Override
-	public void process(Var fragment, PatternVisitor visitor) throws NonlinearPatternException {
+	public void process(Var fragment, PatternSimplifier visitor) throws NonlinearPatternException {
 		visitor.subst(fragment, x);
 	}
 	

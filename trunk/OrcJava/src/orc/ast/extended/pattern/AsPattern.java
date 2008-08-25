@@ -32,7 +32,7 @@ public class AsPattern extends Pattern {
 	}
 
 	@Override
-	public void process(Var fragment, PatternVisitor visitor)
+	public void process(Var fragment, PatternSimplifier visitor)
 			throws PatternException {
 		
 		visitor.subst(fragment, x);

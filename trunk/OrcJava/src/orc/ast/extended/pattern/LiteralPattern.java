@@ -33,7 +33,7 @@ public class LiteralPattern extends Pattern {
 //	}
 
 	@Override
-	public void process(Var fragment, PatternVisitor visitor)
+	public void process(Var fragment, PatternSimplifier visitor)
 			throws PatternException {
 		Var test = new Var();
 		visitor.assign(test, Pattern.compare(fragment, lit.argify().asArg()));

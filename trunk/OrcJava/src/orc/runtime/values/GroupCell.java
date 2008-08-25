@@ -60,7 +60,7 @@ public class GroupCell implements Serializable, Future {
 	 * This call defines the fundamental behavior of groups:
 	 * When the value is bound, all subgroups are killed
 	 * and all waiting tokens are activated.
-	 * @param value 	the value for the group 
+	 * @param token 	the token with the result value for the group 
 	 */
 	public void setValue(Token token) {
 		assert(!bound);

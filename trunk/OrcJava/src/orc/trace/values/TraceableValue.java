@@ -6,7 +6,7 @@ package orc.trace.values;
  * {@link Object#hashCode()} to allow traced representations to be cached
  * correctly.
  * 
- * @see Tracer#marshal(Object)
+ * @see Marshaller#marshal(Object)
  * @author quark
  */
 public interface TraceableValue {

@@ -8,8 +8,8 @@ import orc.runtime.Token;
  * composition). Any class implementing Future can be forced to try and obtain
  * its bound value.
  * 
- * @see Value#forceArg(Token)
- * @see Value#forceCall(Token)
+ * @see Value#forceArg(Object, Token)
+ * @see Value#forceCall(Object, Token)
  * @author dkitchin
  */
 

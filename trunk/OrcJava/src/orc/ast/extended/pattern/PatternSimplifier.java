@@ -22,7 +22,14 @@ import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.NonlinearPatternException;
 import orc.error.compiletime.SourceException;
 
-public class PatternVisitor {
+/**
+ * Used to help simplify patterns.
+ * This used to be called PatternVisitor, but it was renamed
+ * because it doesn't actually use the visitor pattern and we
+ * may want to someday introduce an actual abstract PatternVisitor.
+ * @author dkitchin
+ */
+public class PatternSimplifier {
 	
 	List<Argument> requiredVars;
 	List<Argument> boundVars;
@@ -30,7 +37,7 @@ public class PatternVisitor {
 	Set<Integer> publishEntries;
 	List<Attachment> attachments;	
 	
-	public PatternVisitor() 
+	public PatternSimplifier() 
 	{
 		this.requiredVars = new LinkedList<Argument>();
 		this.boundVars = new LinkedList<Argument>();
