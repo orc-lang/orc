@@ -29,6 +29,7 @@ public class PublishPattern extends Pattern {
 	@Override
 	public void process(Var fragment, PatternSimplifier visitor) throws PatternException {
 		p.process(fragment, visitor);
+		// FIXME: how to attach source location information to this?
 		visitor.publish(fragment);
 	}
 	

@@ -2,6 +2,7 @@ package orc.ast.extended;
 
 import java.util.List;
 
+import orc.ast.simple.WithLocation;
 import orc.error.compiletime.CompilationException;
 
 
@@ -21,7 +22,7 @@ public class ListExpr extends Expression {
 			e = new ConsExpr(es.get(i), e);
 		}
 		
-		return e.simplify();
+		return new WithLocation(e.simplify(), getSourceLocation());
 	}
 
 	public String toString() {

@@ -18,7 +18,7 @@ public class Silent extends Expr {
 	}
 	
 	public String toString() {
-		return ".";
+		return "stop";
 	}
 	
 	@Override

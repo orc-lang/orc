@@ -2,6 +2,7 @@ package orc.ast.extended.pattern;
 
 import orc.ast.simple.Call;
 import orc.ast.simple.Expression;
+import orc.ast.simple.WithLocation;
 import orc.ast.simple.arg.Var;
 import orc.error.compiletime.PatternException;
 import xtc.util.Utilities;
@@ -22,7 +23,9 @@ public class NilPattern extends Pattern {
 			throws PatternException {
 		
 		Var nilp = new Var();
-		visitor.assign(nilp, Pattern.trynil(fragment));
+		visitor.assign(nilp, new WithLocation(
+				Pattern.trynil(fragment),
+				getSourceLocation()));
 		visitor.require(nilp);
 	}
 	

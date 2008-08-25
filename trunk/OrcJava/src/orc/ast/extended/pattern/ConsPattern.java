@@ -8,6 +8,7 @@ import orc.ast.simple.Expression;
 import orc.ast.simple.Parallel;
 import orc.ast.simple.Sequential;
 import orc.ast.simple.Where;
+import orc.ast.simple.WithLocation;
 import orc.ast.simple.arg.Constant;
 import orc.ast.simple.arg.Field;
 import orc.ast.simple.arg.Var;
@@ -58,7 +59,9 @@ public class ConsPattern extends Pattern {
 			throws PatternException {
 		
 		Var pair = new Var();
-		visitor.assign(pair, Pattern.trycons(fragment));
+		visitor.assign(pair, new WithLocation(
+				Pattern.trycons(fragment),
+				getSourceLocation()));
 		visitor.require(pair);
 		
 		Var head = new Var();

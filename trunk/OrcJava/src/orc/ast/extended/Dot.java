@@ -1,5 +1,6 @@
 package orc.ast.extended;
 
+import orc.ast.simple.WithLocation;
 import orc.error.compiletime.CompilationException;
 
 /**
@@ -30,9 +31,9 @@ public class Dot extends Expression {
 	@Override
 	public orc.ast.simple.Expression simplify() throws CompilationException {
 		
-		Expression e = new Call(target, new Field(field));
-		e.setSourceLocation(getSourceLocation());
-		return e.simplify();
+		return new WithLocation(
+				new Call(target, new Field(field)).simplify(),
+				getSourceLocation());
 	}
 
 	public String toString() {

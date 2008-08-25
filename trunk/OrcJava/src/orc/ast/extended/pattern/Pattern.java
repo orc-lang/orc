@@ -11,6 +11,7 @@ import orc.ast.simple.Semi;
 import orc.ast.simple.Sequential;
 import orc.ast.simple.Silent;
 import orc.ast.simple.Where;
+import orc.ast.simple.WithLocation;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.Constant;
 import orc.ast.simple.arg.Field;
@@ -149,7 +150,6 @@ public abstract class Pattern implements Locatable {
 	 * @param s
 	 */
 	public static Expression trynil(Argument s) {
-		// TODO: Make trynil the inverse of trycons
 		return new Call(TRYNIL, s);
 	}
 

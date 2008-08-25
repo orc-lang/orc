@@ -3,6 +3,7 @@ package orc.ast.extended;
 import java.util.LinkedList;
 import java.util.List;
 
+import orc.ast.simple.WithLocation;
 import orc.ast.simple.arg.Argument;
 import orc.error.compiletime.CompilationException;
 
@@ -35,7 +36,7 @@ public class Let extends Expression {
 			e = a.bind(e);
 		}
 		
-		return e;
+		return new WithLocation(e, getSourceLocation());
 	}
 
 	public String toString() {

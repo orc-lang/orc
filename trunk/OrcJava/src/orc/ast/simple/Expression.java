@@ -22,11 +22,7 @@ import orc.type.Type;
  *
  */
 
-public abstract class Expression implements Locatable {
-
-	private SourceLocation location = SourceLocation.UNKNOWN;
-	
-	
+public abstract class Expression {
 	/**
 	 * Converts abstract syntax tree into a serializable form, used to generate
 	 * portable .oil (Orc Intermediate Language) files.
@@ -79,13 +75,4 @@ public abstract class Expression implements Locatable {
 	public Node compile(Node output) throws CompilationException {
 		return this.convert(new Env<Var>()).compile(output);
 	}
-	
-	public void setSourceLocation(SourceLocation location) {
-		this.location = location;
-	}
-
-	public SourceLocation getSourceLocation() {
-		return location;
-	}
-		
 }

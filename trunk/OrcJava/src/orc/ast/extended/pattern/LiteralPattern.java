@@ -36,7 +36,9 @@ public class LiteralPattern extends Pattern {
 	public void process(Var fragment, PatternSimplifier visitor)
 			throws PatternException {
 		Var test = new Var();
-		visitor.assign(test, Pattern.compare(fragment, lit.argify().asArg()));
+		visitor.assign(test, new WithLocation(
+				Pattern.compare(fragment, lit.argify().asArg()),
+				getSourceLocation()));
 		visitor.require(test);
 	}
 	
