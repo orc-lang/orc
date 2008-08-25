@@ -1,7 +1,7 @@
 package orc.ast.extended;
 
 import orc.ast.extended.pattern.Pattern;
-import orc.ast.extended.pattern.PatternVisitor;
+import orc.ast.extended.pattern.PatternSimplifier;
 import orc.ast.simple.arg.Var;
 import orc.error.compiletime.CompilationException;
 import orc.ast.extended.pattern.WildcardPattern;
@@ -33,7 +33,7 @@ public class Where extends Expression {
 		Var s = new Var();
 		Var t = new Var();
 		
-		PatternVisitor pv = p.process(s);
+		PatternSimplifier pv = p.process(s);
 		
 		source = new orc.ast.simple.Sequential(source, pv.filter(), s);
 		target = pv.target(t, target);

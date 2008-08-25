@@ -252,7 +252,7 @@ public class OrcEngine implements Runnable {
 	 * Print something (for use by the print and println sites). By default,
 	 * this prints to System.out, but this can be overridden to do something
 	 * else if appropriate.
-	 * @see Token#print(String)
+	 * @see Token#print(String, boolean)
 	 */
 	public void print(String string, boolean newline) {
 		if (newline) {

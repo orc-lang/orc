@@ -30,7 +30,17 @@ import orc.trace.values.Value;
 
 /**
  * Interface for writing traces from a single Orc thread. Methods correspond to
- * events which may be traced.
+ * events which may be traced. Some guidelines used to organize events:
+ * <ul>
+ * <li>Steps shared by several logical events are made explicit. So for example
+ * when a thread encounters an error, this results in {@link #error(TokenException)}
+ * followed by {@link #die()}. We could make the {@link #die()} implicit but making
+ * it explicit facilitates code reuse in the client and simplifies queries.
+ * <li>When two threads interact, at least two events are involved: one for the
+ * cause and one for the effect. This ensures that we can reconstruct the behavior
+ * of a thread looking only at events in that thread. The effect event includes
+ * a pointer back to the cause.
+ * </ul>
  * 
  * <p>FIXME: the event objects passed between trace methods should be more abstract,
  * so it's possible to write tracers that don't use our event classes.
@@ -58,7 +68,8 @@ public interface Tracer extends Locatable {
 	/**
 	 * Store a value for a future. The return value should be used when tracing
 	 * the results of this store. When all events related to the store have been
-	 * traced, call {@link #free(Event)}.
+	 * traced, call {@link #free(Event)}. If this returns null, clients are
+	 * free to <i>not</i> call {@link #choke(StoreEvent)}.
 	 * 
 	 * @see #choke(StoreEvent)
 	 * @see #unblock(StoreEvent)
@@ -93,9 +104,10 @@ public interface Tracer extends Locatable {
 	 */
 	public void publish(Object value);
 	/**
-	 * Indicate that an event will not appear after
-	 * the current point in the trace.
-	 * @param store
+	 * Indicate that an event will not appear after the current point in the
+	 * trace. Currently this is only used for the event returned by
+	 * {@link #store(PullEvent, Object)}, because there's no other easy way for
+	 * the tracer to know when the last relate event has been recorded.
 	 */
 	public void free(Event event);
 	/**

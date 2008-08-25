@@ -18,7 +18,7 @@ public class NilPattern extends Pattern {
 //	}
 
 	@Override
-	public void process(Var fragment, PatternVisitor visitor)
+	public void process(Var fragment, PatternSimplifier visitor)
 			throws PatternException {
 		
 		Var nilp = new Var();

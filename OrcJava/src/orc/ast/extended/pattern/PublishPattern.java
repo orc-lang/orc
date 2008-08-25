@@ -27,7 +27,7 @@ public class PublishPattern extends Pattern {
 	}
 
 	@Override
-	public void process(Var fragment, PatternVisitor visitor) throws PatternException {
+	public void process(Var fragment, PatternSimplifier visitor) throws PatternException {
 		p.process(fragment, visitor);
 		visitor.publish(fragment);
 	}

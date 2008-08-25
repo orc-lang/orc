@@ -5,12 +5,13 @@ import orc.trace.query.patterns.BindingPattern;
 
 public interface Predicate {
 	/**
-	 * Evaluate the predicate and update the frame with the resulting bindings.
-	 * If the predicate cannot be satisfied, return null. Otherwise return the
-	 * next alternative.
+	 * Evaluate the predicate using the given frame of variable bindings.
+	 * Return a result containing the frame extended with any new variable
+	 * bindings made while evaluating the predicate, plus a continuation
+	 * for the next alternative result produced by the predicate.
 	 * 
 	 * @param frame
-	 * @return
+	 * @return null if the predicate cannot be satisfied
 	 */
 	public Result evaluate(Frame frame);
 }

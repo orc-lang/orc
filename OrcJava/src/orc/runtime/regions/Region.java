@@ -52,7 +52,7 @@ public abstract class Region {
 	/**
 	 * Used when tracing, to both close the region and trace the "choking" of
 	 * all tokens within the region. If you're not tracing, it's more efficient
-	 * to call {@link #close()}.
+	 * to call {@link #close(Token)}.
 	 * 
 	 * @param store The {@link StoreEvent} which triggered the closing.
 	 */

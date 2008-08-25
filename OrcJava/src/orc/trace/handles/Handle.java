@@ -37,16 +37,21 @@ import java.io.ObjectOutput;
  */
 public abstract class Handle<E> implements Externalizable {
 	protected E value;
-	/** Required by {@link Externalizable}. */
+	/**
+	 * Required by {@link Externalizable}, but should never be called
+	 * when not deserializing.
+	 */
 	public Handle() {}
 	/**
-	 * @param last true if this is the last reference to the event which
-	 * will be serialized.
+	 * Create a handle to a value, which must be non-null.
 	 */
 	public Handle(E value) {
 		assert(value != null);
 		this.value = value;
 	}
+	/**
+	 * Get the value pointed to by this handle.
+	 */
 	public final E get() {
 		return value;
 	}
@@ -54,14 +59,20 @@ public abstract class Handle<E> implements Externalizable {
 	public final String toString() {
 		return value.toString();
 	}
+	/**
+	 * Handles are equal if the values they point to are equal.
+	 */
 	@Override
 	public final boolean equals(Object that) {
 		if (that instanceof Handle) {
 			return value.equals(((Handle)that).value);
 		} else return false;
 	}
+	/**
+	 * Handles which point to the same value should use the same hash code.
+	 */
 	@Override
 	public final int hashCode() {
-		return value.hashCode();
+		return Handle.class.hashCode() + value.hashCode();
 	}
 }

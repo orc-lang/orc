@@ -7,7 +7,7 @@ import java.util.TreeSet;
 
 import orc.ast.extended.pattern.Attachment;
 import orc.ast.extended.pattern.Pattern;
-import orc.ast.extended.pattern.PatternVisitor;
+import orc.ast.extended.pattern.PatternSimplifier;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.Constant;
 import orc.ast.simple.arg.NamedVar;
@@ -30,7 +30,7 @@ public class Clause {
 	public orc.ast.simple.Expression simplify(List<Var> formals, orc.ast.simple.Expression otherwise) throws CompilationException {
 		
 		Expression newbody = body.simplify();
-		List<PatternVisitor> stricts = new LinkedList<PatternVisitor>();
+		List<PatternSimplifier> stricts = new LinkedList<PatternSimplifier>();
 				
 		Set<NamedVar> allvars = new TreeSet<NamedVar>();
 		for(int i = 0; i < ps.size(); i++) {
@@ -38,7 +38,7 @@ public class Clause {
 			Var arg = formals.get(i);
 			
 			// Push the argument through its matching pattern
-			PatternVisitor pv = p.process(arg);
+			PatternSimplifier pv = p.process(arg);
 			
 			// Let's make sure this pattern didn't duplicate any existing variables
 			for (NamedVar x : pv.vars()) {
@@ -70,14 +70,14 @@ public class Clause {
 			
 			if (stricts.size() == 1) {
 				// If there is only one strict pattern, we won't need a result tuple
-				PatternVisitor pv = stricts.get(0);
+				PatternSimplifier pv = stricts.get(0);
 				filters.add(new Attachment(new Var(), pv.filter()));
 				newbody = pv.target(binds, newbody);				
 			}
 			else /* size >= 2 */ { 
 				for(int i = 0; i < stricts.size(); i++) {
 					// Add this pattern's output as a component of the result tuple
-					PatternVisitor pv = stricts.get(i);
+					PatternSimplifier pv = stricts.get(i);
 					filters.add(new Attachment(new Var(), pv.filter()));
 					
 					// Pull that output from the result tuple on the other side

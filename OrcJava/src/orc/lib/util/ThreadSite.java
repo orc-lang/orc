@@ -12,8 +12,9 @@ import orc.runtime.sites.Site;
 
 /**
  * Wrap a site call in a (pooled) thread. This is useful if you have a Java
- * site which may be uncooperative. If the site really must have its own
- * thread, use {@link UnsafeThreadSite} instead.
+ * site which may be uncooperative. Currently we do not allow you to create
+ * non-pooled threads since we want to place a strict bound on thread resource
+ * usage per engine.
  * 
  * @author quark
  */
