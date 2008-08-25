@@ -1,6 +1,7 @@
 package orc.trace;
 
 import orc.error.SourceLocation;
+import orc.error.runtime.TokenException;
 import orc.trace.events.BeforeEvent;
 import orc.trace.events.Event;
 import orc.trace.events.PullEvent;
@@ -8,7 +9,7 @@ import orc.trace.events.StoreEvent;
 
 /**
  * Wrap a tracer to ignore all but the events essential to reconstruct
- * the trace using the same (deterministic) engine:
+ * the trace using the same (deterministic) engine. The necessary events are:
  * <ul>
  * <li>fork: to match the thread structure
  * <li>receive: to record the timing and value of site responses
@@ -19,6 +20,7 @@ import orc.trace.events.StoreEvent;
  * @author quark
  */
 public class MinimizeTracer extends DerivedTracer {
+	private boolean inSend = false;
 	public MinimizeTracer(Tracer tracer) {
 		super(tracer);
 	}
@@ -60,5 +62,23 @@ public class MinimizeTracer extends DerivedTracer {
 	public void unblock(StoreEvent store) {}
 
 	@Override
-	public void send(Object site, Object[] arguments) {}
+	public void send(Object site, Object[] arguments) {
+		inSend = true;
+	}
+
+	@Override
+	public void receive(Object value) {
+		super.receive(value);
+		inSend = false;
+	}
+
+	@Override
+	public void die() {
+		if (inSend) super.die();
+	}
+
+	@Override
+	public void error(TokenException error) {
+		if (inSend) super.error(error);
+	}
 }
