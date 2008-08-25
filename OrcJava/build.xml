@@ -82,4 +82,19 @@
 			<arg value="-F" /> <arg value="TRUNK" />
 		</exec>
 	</target>
+	<target name="javadoc" description="Build Javadoc">
+		<delete dir="${orc.location.javadoc}" />
+		<javadoc destdir="${orc.location.javadoc}"
+				author="true"
+				access="protected"
+				source="1.5"
+				sourcepath="${orc.location.src}"
+				splitindex="true"
+				windowtitle="Orc ${orc.version}"
+				doctitle="Orc ${orc.version}"
+				use="true"
+				version="true">
+			<classpath refid="orc.classpath"/>
+		</javadoc>
+	</target>
 </project>
