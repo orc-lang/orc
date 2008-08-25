@@ -13,6 +13,7 @@ import java.io.Reader;
 import java.util.LinkedList;
 import java.util.List;
 
+import orc.trace.MinimizeTracer;
 import orc.trace.NullTracer;
 import orc.trace.OutputStreamTracer;
 import orc.trace.PrintStreamTracer;
@@ -79,8 +80,14 @@ public class Config {
 		this.noPrelude = noPrelude;
 	}
 	
-	@Option(name="-trace",usage="Specify a filename for tracing. The special filename \"-\" will write a human-readable trace to stdout.")
-	public void setTraceFile(File file) throws CmdLineException {
+	@Option(name="-mintrace",usage="Specify a filename for minimal tracing. The special filename \"-\" will write a human-readable trace to stdout.")
+	public void setMinimalTraceFile(File file) throws CmdLineException {
+		setFullTraceFile(file);
+		tracer = new MinimizeTracer(tracer);
+	}
+	
+	@Option(name="-trace",usage="Specify a filename for full tracing. The special filename \"-\" will write a human-readable trace to stdout.")
+	public void setFullTraceFile(File file) throws CmdLineException {
 		if (file.getPath().equals("-")) {
 			tracer = new PrintStreamTracer(System.err);
 		} else {
