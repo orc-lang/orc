@@ -3,7 +3,8 @@ package orc.trace.events;
 import java.io.IOException;
 import java.io.Writer;
 
-import orc.trace.query.Term;
+import orc.trace.Term;
+import orc.trace.values.ConstantValue;
 import orc.trace.values.Value;
 import orc.trace.TokenTracer.StoreTrace;
 import orc.trace.handles.Handle;
@@ -24,13 +25,11 @@ public class StoreEvent extends Event implements StoreTrace {
 		this.value = value;
 	}
 	@Override
-	public void prettyPrint(Writer out, int indent) throws IOException {
-		super.prettyPrint(out, indent);
-		out.write("(");
-		value.prettyPrint(out, indent+1);
-		out.write(", ");
-		pull.get().prettyPrint(out, indent+1);
-		out.write(")");
+	public void prettyPrintProperties(Writer out, int indent) throws IOException {
+		super.prettyPrintProperties(out, indent);
+		prettyPrintProperty(out, indent, "pull",
+				new ConstantValue(pull.get().getLabel()));
+		prettyPrintProperty(out, indent, "value", value);
 	}
 	@Override
 	public Term getProperty(String key) {

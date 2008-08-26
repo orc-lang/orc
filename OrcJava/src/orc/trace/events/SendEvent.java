@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Arrays;
 
+import orc.trace.Term;
+import orc.trace.Terms;
 import orc.trace.handles.RepeatHandle;
-import orc.trace.query.Term;
-import orc.trace.query.Terms;
 import orc.trace.values.TupleValue;
 import orc.trace.values.Value;
 
@@ -18,13 +18,12 @@ public class SendEvent extends Event {
 		this.arguments = new TupleValue(arguments);
 	}
 	@Override
-	public void prettyPrint(Writer out, int indent) throws IOException {
-		super.prettyPrint(out, indent);
-		out.write("(");
-		site.prettyPrint(out, indent+1);
-		arguments.prettyPrint(out, indent+1);
-		out.write(")");
+	public void prettyPrintProperties(Writer out, int indent) throws IOException {
+		super.prettyPrintProperties(out, indent);
+		prettyPrintProperty(out, indent, "site", site);
+		prettyPrintProperty(out, indent, "arguments", arguments);
 	}
+	@Override
 	public Term getProperty(String key) {
 		if (key.equals("site")) return site;
 		else if (key.equals("arguments")) return arguments;

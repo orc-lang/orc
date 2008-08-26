@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.io.Writer;
 
 import orc.error.runtime.TokenException;
+import orc.trace.Term;
 import orc.trace.handles.LastHandle;
 import orc.trace.handles.RepeatHandle;
-import orc.trace.query.Term;
 import orc.trace.values.ConstantValue;
 import orc.trace.values.Value;
 
@@ -19,14 +19,16 @@ public class ErrorEvent extends Event {
 		this.error = error;
 	}
 	@Override
-	public void prettyPrint(Writer out, int indent) throws IOException {
-		super.prettyPrint(out, indent);
-		out.write("(");
-		out.write(error.toString());
-		out.write(")");
+	public void prettyPrintProperties(Writer out, int indent) throws IOException {
+		super.prettyPrintProperties(out, indent);
+		prettyPrintProperty(out, indent, "errorMessage",
+				new ConstantValue(error.getMessage()));
+		prettyPrintProperty(out, indent, "errorType",
+				new ConstantValue(error.getClass().getName()));
 	}
 	public Term getProperty(String key) {
 		if (key.equals("errorMessage")) return new ConstantValue(error.getMessage());
+		if (key.equals("errorType")) return new ConstantValue(error.getClass().getName());
 		else return super.getProperty(key);
 	}
 	@Override

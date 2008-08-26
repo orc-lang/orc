@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.Writer;
 
-import orc.trace.query.Frame;
-import orc.trace.query.patterns.Pattern;
 import xtc.util.Utilities;
 
 /**

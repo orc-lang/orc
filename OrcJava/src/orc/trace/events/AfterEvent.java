@@ -3,9 +3,10 @@ package orc.trace.events;
 import java.io.IOException;
 import java.io.Writer;
 
+import orc.trace.Term;
 import orc.trace.handles.Handle;
 import orc.trace.handles.LastHandle;
-import orc.trace.query.Term;
+import orc.trace.values.ConstantValue;
 
 /**
  * Indicate that a thread continued due to termination of the left side of a
@@ -19,11 +20,10 @@ public class AfterEvent extends Event {
 		this.before = new LastHandle<BeforeEvent>(before);
 	}
 	@Override
-	public void prettyPrint(Writer out, int indent) throws IOException {
-		super.prettyPrint(out, indent);
-		out.write("(");
-		before.get().prettyPrint(out, indent+1);
-		out.write(")");
+	public void prettyPrintProperties(Writer out, int indent) throws IOException {
+		super.prettyPrintProperties(out, indent);
+		prettyPrintProperty(out, indent, "before",
+				new ConstantValue(before.get().getLabel()));
 	}
 	@Override
 	public Term getProperty(String key) {

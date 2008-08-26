@@ -2,11 +2,6 @@ package orc.trace;
 
 import orc.error.SourceLocation;
 import orc.error.runtime.TokenException;
-import orc.runtime.values.GroupCell;
-import orc.trace.TokenTracer.BeforeTrace;
-import orc.trace.TokenTracer.PullTrace;
-import orc.trace.TokenTracer.StoreTrace;
-import orc.trace.query.predicates.Predicate;
 
 /**
  * Base class for tracers which delegate to something else.

@@ -2,18 +2,16 @@ package orc.trace.events;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.io.Writer;
 
 import orc.error.Locatable;
 import orc.error.SourceLocation;
+import orc.trace.EventCursor;
+import orc.trace.RecordTerm;
+import orc.trace.Term;
+import orc.trace.Terms;
 import orc.trace.handles.Handle;
 import orc.trace.handles.RepeatHandle;
-import orc.trace.query.EventCursor;
-import orc.trace.query.Frame;
-import orc.trace.query.RecordTerm;
-import orc.trace.query.Term;
-import orc.trace.query.patterns.Variable;
 import orc.trace.values.ConstantValue;
 
 /**
@@ -24,6 +22,7 @@ public abstract class Event implements Serializable, RecordTerm, Locatable {
 	protected Handle<ForkEvent> thread;
 	protected SourceLocation location;
 	transient protected EventCursor cursor;
+	transient protected long seq;
 	
 	public void setThread(ForkEvent thread) {
 		this.thread = new RepeatHandle<ForkEvent>(thread);
@@ -59,23 +58,33 @@ public abstract class Event implements Serializable, RecordTerm, Locatable {
 	public void setCursor(EventCursor cursor) {
 		this.cursor = cursor;
 	}
+
+	/**
+	 * Get the sequence number, which uniquely
+	 * identifies this event.
+	 */
+	public long getSeq() {
+		return seq;
+	}
+
+	/**
+	 * Used by implementations of {@link EventCursor} to
+	 * set the event's sequence number.
+	 * Clients shouldn't call this.
+	 */
+	public void setSeq(long seq) {
+		this.seq = seq;
+	}
 	
 	/**
-	 * Return a characteristic (but not guaranteed unique) 
-	 * human-readable label for the event.
+	 * Return a human-readable short label for the event.
 	 */
-	public String label() {
-		return Integer.toHexString(hashCode());
+	public String getLabel() {
+		return getType() + ":" + Long.toHexString(getSeq());
 	}
 	
 	public String toString() {
-		try {
-			StringWriter writer = new StringWriter();
-			prettyPrint(writer, 0);
-			return writer.toString();
-		} catch (IOException e) {
-			throw new AssertionError(e);
-		}
+		return Terms.printToString(this);
 	}
 	
 	/**
@@ -92,23 +101,25 @@ public abstract class Event implements Serializable, RecordTerm, Locatable {
 		return null;
 	}
 	
-	public Frame unify(Frame frame, Term that) {
-		return equals(that) ? frame : null;
+	public void prettyPrintProperties(Writer out, int indent) throws IOException {
+		prettyPrintProperty(out, indent, "thread",
+				new ConstantValue(thread.get().getLabel()));
 	}
 	
-	public Term evaluate(Frame frame) {
-		return this;
-	}
-	
-	public boolean occurs(Variable var) {
-		return false;
+	protected void prettyPrintProperty(Writer out, int indent, String key, Term value) throws IOException {
+		out.write("\n");
+		Terms.indent(out, indent);
+		out.write(key);
+		out.write(": ");
+		value.prettyPrint(out, indent+1);
 	}
 	
 	public void prettyPrint(Writer out, int indent) throws IOException {
-		out.write(String.valueOf(location));
-		out.write(":");
-		out.write(thread.get().label());
-		out.write(":");
-		out.write(getClass().getSimpleName());
+		out.write(getLabel());
+		out.write(" {");
+		prettyPrintProperties(out, indent+1);
+		out.write("\n");
+		Terms.indent(out, indent);
+		out.write("}");
 	}
 }

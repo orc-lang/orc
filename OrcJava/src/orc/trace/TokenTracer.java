@@ -1,28 +1,7 @@
 package orc.trace;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
 import orc.error.Locatable;
 import orc.error.runtime.TokenException;
-import orc.runtime.values.GroupCell;
-import orc.runtime.values.Visitor;
-import orc.trace.events.SendEvent;
-import orc.trace.events.DieEvent;
-import orc.trace.events.ReceiveEvent;
-import orc.trace.events.ForkEvent;
-import orc.trace.query.predicates.Predicate;
-import orc.trace.values.ConsValue;
-import orc.trace.values.ConstantValue;
-import orc.trace.values.NilValue;
-import orc.trace.values.NoneValue;
-import orc.trace.values.NullValue;
-import orc.trace.values.ObjectValue;
-import orc.trace.values.SomeValue;
-import orc.trace.values.TraceableValue;
-import orc.trace.values.TupleValue;
-import orc.trace.values.Value;
 
 /**
  * Interface for writing traces from a single Orc thread. Methods correspond to

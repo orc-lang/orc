@@ -3,10 +3,11 @@ package orc.trace.events;
 import java.io.IOException;
 import java.io.Writer;
 
+import orc.trace.Term;
 import orc.trace.handles.Handle;
 import orc.trace.handles.LastHandle;
 import orc.trace.handles.RepeatHandle;
-import orc.trace.query.Term;
+import orc.trace.values.ConstantValue;
 
 /**
  * Dummy event used to free a handle to an event.
@@ -23,11 +24,10 @@ public class FreeEvent extends Event {
 		this.event = new LastHandle<Event>(event);
 	}
 	@Override
-	public void prettyPrint(Writer out, int indent) throws IOException {
-		super.prettyPrint(out, indent);
-		out.write("(");
-		event.get().prettyPrint(out, indent+1);
-		out.write(")");
+	public void prettyPrintProperties(Writer out, int indent) throws IOException {
+		super.prettyPrintProperties(out, indent);
+		prettyPrintProperty(out, indent, "event",
+				new ConstantValue(event.get().getLabel()));
 	}
 	public Term getProperty(String key) {
 		if (key.equals("event")) return event.get();

@@ -7,7 +7,7 @@ import java.util.NoSuchElementException;
 
 import javax.naming.OperationNotSupportedException;
 
-import orc.trace.query.Terms;
+import orc.trace.Terms;
 
 public abstract class ListValue extends AbstractValue implements Iterable<Value> {
 	public void prettyPrint(Writer out, int indent) throws IOException {

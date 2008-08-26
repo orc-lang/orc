@@ -3,10 +3,11 @@ package orc.trace.events;
 import java.io.IOException;
 import java.io.Writer;
 
+import orc.trace.Term;
 import orc.trace.handles.Handle;
 import orc.trace.handles.LastHandle;
 import orc.trace.handles.RepeatHandle;
-import orc.trace.query.Term;
+import orc.trace.values.ConstantValue;
 import orc.trace.values.Value;
 
 /**
@@ -20,11 +21,10 @@ public class BlockEvent extends Event {
 		this.pull = new RepeatHandle<PullEvent>(pull);
 	}
 	@Override
-	public void prettyPrint(Writer out, int indent) throws IOException {
-		super.prettyPrint(out, indent);
-		out.write("(");
-		pull.get().prettyPrint(out, indent+1);
-		out.write(")");
+	public void prettyPrintProperties(Writer out, int indent) throws IOException {
+		super.prettyPrintProperties(out, indent);
+		prettyPrintProperty(out, indent, "pull",
+				new ConstantValue(pull.get().getLabel()));
 	}
 	@Override
 	public String getType() { return "block"; }

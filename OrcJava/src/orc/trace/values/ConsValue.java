@@ -1,11 +1,5 @@
 package orc.trace.values;
 
-import java.util.Iterator;
-
-import orc.trace.query.Frame;
-import orc.trace.query.patterns.Pattern;
-
-import xtc.util.Utilities;
 
 public class ConsValue extends ListValue {
 	public final Value head;

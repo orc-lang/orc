@@ -1,6 +1,7 @@
-package orc.trace.query;
+package orc.trace;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Iterator;
 import java.util.Map;
@@ -38,5 +39,15 @@ public final class Terms {
 
 	public static void indent(Writer out, int indent) throws IOException {
 		for (int i = 0; i < indent; ++i) out.write('\t');
+	}
+	
+	public static String printToString(Term term) {
+		try {
+			StringWriter writer = new StringWriter();
+			term.prettyPrint(writer, 0);
+			return writer.toString();
+		} catch (IOException e) {
+			throw new AssertionError(e);
+		}
 	}
 }

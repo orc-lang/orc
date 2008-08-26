@@ -8,7 +8,6 @@ import orc.error.OrcError;
 import orc.trace.events.Event;
 import orc.trace.handles.Handle;
 import orc.trace.handles.HandleOutputStream;
-import orc.trace.query.InputStreamEventCursor;
 
 /**
  * Serialize and gzip events to an {@link OutputStream}.
