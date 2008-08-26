@@ -5,8 +5,6 @@ import java.io.Writer;
 
 import orc.trace.Term;
 import orc.trace.query.Frame;
-import orc.trace.values.ConsValue;
-import orc.trace.values.ListValue;
 import orc.trace.values.SomeValue;
 import orc.trace.values.Value;
 

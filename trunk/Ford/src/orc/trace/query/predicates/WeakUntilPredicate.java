@@ -1,6 +1,5 @@
 package orc.trace.query.predicates;
 
-import orc.trace.query.Frame;
 
 /**
  * The temporal logic W (Weak until) operator. x W y = x U y or G x.

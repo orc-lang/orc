@@ -1,7 +1,6 @@
 package orc.trace.query.predicates;
 
 import orc.trace.query.Frame;
-import orc.trace.query.patterns.BindingPattern;
 
 public interface Predicate {
 	/**
