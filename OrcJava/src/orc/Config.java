@@ -26,15 +26,15 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
 /**
- * Class for processing configuration options. Such options could be provided via command line 
- * arguments or obtained though environment variables, and could also be read from other sources. 
+ * Class for processing configuration options. Such options could be provided
+ * via command line arguments or obtained though environment variables, and
+ * could also be read from other sources or hard-coded.
  * 
- * Note that this class does not set up the runtime environment (for example, by instantiating
- * site bindings or defining closures); it only collects the files that will provide those
- * bindings.
+ * <p>This class uses annotations to map command-line arguments to calls to
+ * setter methods. See {@link #processArgs(String[])}.
  * 
  * @author dkitchin, quark
- *
+ * 
  */
 public class Config {
 
@@ -49,6 +49,9 @@ public class Config {
 	private Boolean noPrelude = false;
 	private String filename = "<stdin>";
 	
+	/**
+	 * Set properties based on command-line arguments.
+	 */
 	public void processArgs(String[] args) {
 		CmdLineParser parser = new CmdLineParser(this); 
 		try {
@@ -123,13 +126,14 @@ public class Config {
 		}
 	}
 	
-	public void processEnvVars() 
-	{ 
-		// TODO: implement environment variable processing of configuration options
+	/**
+	 * Set a custom tracer.
+	 */
+	public void setTracer(Tracer tracer) {
+		this.tracer = tracer;
 	}
 	
-	public Boolean debugMode()
-	{
+	public Boolean debugMode() {
 		return debug;
 	}
 	

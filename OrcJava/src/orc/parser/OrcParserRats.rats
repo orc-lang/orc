@@ -5,6 +5,7 @@ header {
 	import java.util.LinkedList;
 	import java.util.ListIterator;
 	import java.io.FileNotFoundException;
+	import java.io.File;
 	import java.math.BigInteger;
 	import java.math.BigDecimal;
 	import orc.ast.extended.*;
@@ -25,9 +26,9 @@ body {
 	 */
 	private <E extends Locatable> E at(int start, int end, E e) {
 		Location startl = location(start);
-		Location endl = location(end-2);
+		Location endl = location(end-1);
 		e.setSourceLocation(new SourceLocation(
-			startl.file, startl.line, startl.column,
+			new File(startl.file), startl.line, startl.column,
 			endl.line, endl.column));
 		return e;
 	}
@@ -35,7 +36,7 @@ body {
 		SourceLocation startl = start.getSourceLocation();
 		SourceLocation endl = end.getSourceLocation();
 		e.setSourceLocation(new SourceLocation(
-			startl.filename, startl.line, startl.column,
+			startl.file, startl.line, startl.column,
 			endl.endLine, endl.endColumn));
 		return e;
 	}
@@ -43,7 +44,7 @@ body {
 		SourceLocation startl = start.getSourceLocation();
 		Location endl = location(end-1);
 		e.setSourceLocation(new SourceLocation(
-			startl.filename, startl.line, startl.column,
+			startl.file, startl.line, startl.column,
 			endl.line, endl.column));
 		return e;
 	}
