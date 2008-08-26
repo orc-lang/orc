@@ -96,6 +96,9 @@ Predicate UnaryTemporal =
 	/ void:PG p:Predicate {
 		yyValue = new ReleasePredicate(FalsePredicate.singleton, p, false);
 	}
+	/ void:AT v:BindingPattern p:Predicate {
+		yyValue = new AtPredicate(v, p);
+	}
 	/ BasicPredicate
 	;
 	
@@ -145,7 +148,7 @@ BindingPattern BindingPattern =
 	;
 
 Variable Variable =
-	void:AT {
+	void:STAR {
 		yyValue = Frame.CURRENT_EVENT;
 	}
 	/ name:Identifier {
@@ -226,36 +229,37 @@ String VariableToken = [a-z] [a-zA-Z0-9_]*;
 // Keywords
 /////////////////////////////////////////////
 
-transient int U = "U" Space { yyValue = yyStart; };
-transient int X = "X" Space { yyValue = yyStart; };
-transient int R = "R" Space { yyValue = yyStart; };
-transient int F = "F" Space { yyValue = yyStart; };
-transient int G = "G" Space { yyValue = yyStart; };
-transient int W = "W" Space { yyValue = yyStart; };
+transient String U = "U" Space;
+transient String X = "X" Space;
+transient String R = "R" Space;
+transient String F = "F" Space;
+transient String G = "G" Space;
+transient String W = "W" Space;
 // the P* versions of the operators are the ones that
 // refer to the past; the regular operators
 // refer to the future
-transient int PU = "<U" Space { yyValue = yyStart; };
-transient int PX = "<X" Space { yyValue = yyStart; };
-transient int PR = "<R" Space { yyValue = yyStart; };
-transient int PF = "<F" Space { yyValue = yyStart; };
-transient int PG = "<G" Space { yyValue = yyStart; };
-transient int PW = "<W" Space { yyValue = yyStart; };
-transient int AT = "@" Space { yyValue = yyStart; };
-transient int TRUE = "true" Space { yyValue = yyStart; };
-transient int FALSE = "false" Space { yyValue = yyStart; };
-transient int EQ = "=" Space { yyValue = yyStart; };
-transient int LPAREN = "(" Space { yyValue = yyStart; };
-transient int RPAREN = ")" Space { yyValue = yyStart; };
-transient int LBRACKET = "[" Space { yyValue = yyStart; };
-transient int RBRACKET = "]" Space { yyValue = yyStart; };
-transient int DOT = "." Space { yyValue = yyStart; };
-transient int UNDERSCORE = "_" Space { yyValue = yyStart; };
-transient int COMMA = "," Space { yyValue = yyStart; };
-transient int SEMICOLON = ";" Space { yyValue = yyStart; };
+transient String PU = "<U" Space;
+transient String PX = "<X" Space;
+transient String PR = "<R" Space;
+transient String PF = "<F" Space;
+transient String PG = "<G" Space;
+transient String PW = "<W" Space;
+transient String STAR = "*" Space;
+transient String AT = "at" Space;
+transient String TRUE = "true" Space;
+transient String FALSE = "false" Space;
+transient String EQ = "=" Space;
+transient String LPAREN = "(" Space;
+transient String RPAREN = ")" Space;
+transient String LBRACKET = "[" Space;
+transient String RBRACKET = "]" Space;
+transient String DOT = "." Space;
+transient String UNDERSCORE = "_" Space;
+transient String COMMA = "," Space;
+transient String SEMICOLON = ";" Space;
 // in Prolog this would be \+, but I like ~ much better
-transient int NOT = "~" Space { yyValue = yyStart; };
-transient int COLON = ":" Space { yyValue = yyStart; };
+transient String NOT = "~" Space;
+transient String COLON = ":" Space;
 	
 /////////////////////////////////////////////
 // Whitespace, Comments, etc.
