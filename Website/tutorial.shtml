@@ -28,8 +28,8 @@ below it.</p>
 
 <a name="Sites"></a><h2>Sites <small>(<a href="#top">top</a>)</small></h2>
 <p>The fundamental unit of computation in an Orc program is called a
-<b>site</b>.  Sites are similar to functions in other languages, but they may
-be distributed and are therefore unreliable.  In this tutorial we will make
+<b>site</b>.  Sites are similar to functions or procedures in other languages,
+but they may be remote and therefore unreliable.  In this tutorial we will make
 frequent use of a <tt>Prompt</tt> site, which communicates with you (the user)
 by sending you a question and returning your response. For example:</p>
 <pre class="orc">
@@ -141,12 +141,13 @@ val color = Prompt("Choose a color.")
 <p>A variable introduced by a <tt>val</tt> declaration is scoped to the
 expression following the declaration.</p>
 
-<p>Site calls with expressions as arguments are just syntactic sugar for
-asymmetric composition. For example, theae two expressions are equivalent:</p>
+<p>If an argument to a site call is a compound expression (not just a variable
+or constant), then it is treated as syntactic sugar for an asymmetric
+composition.  For example, these two expressions are equivalent:</p>
 
 <pre class="orc">
-  1 + (2 + 3)
-| 1 + x &lt;x&lt; (2 + 3)</pre>
+  1 + x &lt;x&lt; (2 + 3)
+| 1 + (2 + 3)</pre>
 
 <p></p>
 
@@ -178,9 +179,12 @@ Prompt("I'm not listening...") >> stop</pre>
 <a name="Functions"></a><h2>Functions <small>(<a href="#top">top</a>)</small></h2>
 
 <p>To facilitate the construction of large programs, Orc allows users to define
-functions.  Functions are called like sites, but unlike sites, they do not need
-to block if one of their arguments is not available when they are called, and
-they can publish multiple values.</p>
+functions.  Function calls look and act like site calls, with two key
+differences:</p>
+<ol>
+<li>A site call must block if some of its arguments are not available, but a function call can begin evaluating immediately.</li>
+<li>A site call can publish at most one value, but a function call may publish many values.</li>
+</ol>
 
 <p>Here is a simple recursive function which publishes a number every second:</p>
 <pre class="orc">
