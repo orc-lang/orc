@@ -121,18 +121,22 @@ public class Frame {
 		return cursor.current();
 	}
 	
+	public Frame at(EventCursor cursor) {
+		return new Frame(bindings, cursor);
+	}
+	
 	/**
 	 * Return a frame located at the next event in the stream.
 	 */
 	public Frame forward() throws EndOfStream {
-		return new Frame(bindings, cursor.forward());
+		return at(cursor.forward());
 	}
 	
 	/**
 	 * Return a frame located at the previous event in the stream.
 	 */
 	public Frame backward() throws EndOfStream {
-		return new Frame(bindings, cursor.backward());
+		return at(cursor.backward());
 	}
 	
 	/**
@@ -140,7 +144,7 @@ public class Frame {
 	 * but with bindings from this.
 	 */
 	public Frame rewind(Frame that) {
-		return new Frame(bindings, that.cursor);
+		return at(that.cursor);
 	}
 	
 	/**
