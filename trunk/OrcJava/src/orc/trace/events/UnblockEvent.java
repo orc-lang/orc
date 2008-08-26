@@ -23,7 +23,7 @@ public class UnblockEvent extends Event {
 	public void prettyPrintProperties(Writer out, int indent) throws IOException {
 		super.prettyPrintProperties(out, indent);
 		prettyPrintProperty(out, indent, "store",
-				new ConstantValue(store.get().getLabel()));
+				new ConstantValue(store.get()));
 	}
 	public Term getProperty(String key) {
 		if (key.equals("store")) return store.get();
@@ -31,4 +31,8 @@ public class UnblockEvent extends Event {
 	}
 	@Override
 	public String getType() { return "unblock"; }
+	@Override
+	public <V> V accept(Visitor<V> visitor) {
+		return visitor.visit(this);
+	}
 }

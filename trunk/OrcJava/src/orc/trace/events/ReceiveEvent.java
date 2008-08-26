@@ -39,4 +39,8 @@ public class ReceiveEvent extends Event {
 	}
 	@Override
 	public String getType() { return "receive"; }
+	@Override
+	public <V> V accept(Visitor<V> visitor) {
+		return visitor.visit(this);
+	}
 }

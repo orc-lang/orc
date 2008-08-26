@@ -27,7 +27,7 @@ public class FreeEvent extends Event {
 	public void prettyPrintProperties(Writer out, int indent) throws IOException {
 		super.prettyPrintProperties(out, indent);
 		prettyPrintProperty(out, indent, "event",
-				new ConstantValue(event.get().getLabel()));
+				new ConstantValue(event.get()));
 	}
 	public Term getProperty(String key) {
 		if (key.equals("event")) return event.get();
@@ -35,4 +35,8 @@ public class FreeEvent extends Event {
 	}
 	@Override
 	public String getType() { return "free"; }
+	@Override
+	public <V> V accept(Visitor<V> visitor) {
+		return visitor.visit(this);
+	}
 }

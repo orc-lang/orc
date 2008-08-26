@@ -12,4 +12,8 @@ public class BeforeEvent extends Event implements BeforeTrace {
 	public String getType() {
 		return "before";
 	}
+	@Override
+	public <V> V accept(Visitor<V> visitor) {
+		return visitor.visit(this);
+	}
 }

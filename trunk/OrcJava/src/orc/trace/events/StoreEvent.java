@@ -28,7 +28,7 @@ public class StoreEvent extends Event implements StoreTrace {
 	public void prettyPrintProperties(Writer out, int indent) throws IOException {
 		super.prettyPrintProperties(out, indent);
 		prettyPrintProperty(out, indent, "pull",
-				new ConstantValue(pull.get().getLabel()));
+				new ConstantValue(pull.get()));
 		prettyPrintProperty(out, indent, "value", value);
 	}
 	@Override
@@ -39,4 +39,8 @@ public class StoreEvent extends Event implements StoreTrace {
 	}
 	@Override
 	public String getType() { return "store"; }
+	@Override
+	public <V> V accept(Visitor<V> visitor) {
+		return visitor.visit(this);
+	}
 }

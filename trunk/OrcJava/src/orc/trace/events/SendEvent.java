@@ -31,4 +31,8 @@ public class SendEvent extends Event {
 	}
 	@Override
 	public String getType() { return "send"; }
+	@Override
+	public <V> V accept(Visitor<V> visitor) {
+		return visitor.visit(this);
+	}
 }

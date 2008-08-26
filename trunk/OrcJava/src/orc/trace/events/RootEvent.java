@@ -12,7 +12,12 @@ import orc.trace.values.ConstantValue;
  */
 public class RootEvent extends ForkEvent {
 	@Override
-	public void prettyPrintProperties(Writer out, int indent) throws IOException {
-		// do nothing
+	public void prettyPrint(Writer out, int indent) throws IOException {
+		// the root event has no properties
+		out.write(toString());
+	}
+	@Override
+	public <V> V accept(Visitor<V> visitor) {
+		return visitor.visit(this);
 	}
 }

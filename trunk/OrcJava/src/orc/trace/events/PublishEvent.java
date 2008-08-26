@@ -29,4 +29,8 @@ public class PublishEvent extends Event {
 	}
 	@Override
 	public String getType() { return "publish"; }
+	@Override
+	public <V> V accept(Visitor<V> visitor) {
+		return visitor.visit(this);
+	}
 }

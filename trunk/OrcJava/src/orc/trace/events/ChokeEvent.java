@@ -21,7 +21,7 @@ public class ChokeEvent extends Event {
 	public void prettyPrintProperties(Writer out, int indent) throws IOException {
 		super.prettyPrintProperties(out, indent);
 		prettyPrintProperty(out, indent, "store",
-				new ConstantValue(store.get().getLabel()));
+				new ConstantValue(store.get()));
 	}
 	@Override
 	public Term getProperty(String key) {
@@ -30,4 +30,8 @@ public class ChokeEvent extends Event {
 	}
 	@Override
 	public String getType() { return "choke"; }
+	@Override
+	public <V> V accept(Visitor<V> visitor) {
+		return visitor.visit(this);
+	}
 }
