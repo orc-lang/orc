@@ -2,10 +2,10 @@ package orc.trace;
 
 import orc.error.SourceLocation;
 import orc.error.runtime.TokenException;
-import orc.trace.events.BeforeEvent;
+import orc.trace.TokenTracer.BeforeTrace;
+import orc.trace.TokenTracer.PullTrace;
+import orc.trace.TokenTracer.StoreTrace;
 import orc.trace.events.Event;
-import orc.trace.events.PullEvent;
-import orc.trace.events.StoreEvent;
 
 /**
  * Wrap a tracer to ignore all but the events essential to reconstruct
@@ -20,70 +20,76 @@ import orc.trace.events.StoreEvent;
  * @author quark
  */
 public class MinimizeTracer extends DerivedTracer {
-	private boolean inSend = false;
 	public MinimizeTracer(Tracer tracer) {
 		super(tracer);
 	}
 
 	@Override
-	public void after(BeforeEvent before) {}
-
-	@Override
-	public BeforeEvent before() {
-		return null;
+	protected TokenTracer newTokenTracer(TokenTracer tracer) {
+		return new MinimizeTokenTracer(tracer);
 	}
+	
+	private class MinimizeTokenTracer extends DerivedTokenTracer {
+		public MinimizeTokenTracer(TokenTracer tracer) {
+			super(tracer);
+		}
 
-	@Override
-	public void block(PullEvent pull) {}
-
-	@Override
-	public void choke(StoreEvent store) {}
-
-	@Override
-	public void print(String value, boolean newline) {}
-
-	@Override
-	public void publish(Object value) {}
-
-	@Override
-	public PullEvent pull() {
-		return null;
-	}
-
-	@Override
-	public void setSourceLocation(SourceLocation location) {}
-
-	@Override
-	public StoreEvent store(PullEvent event, Object value) {
-		return null;
-	}
-
-	@Override
-	public void unblock(StoreEvent store) {}
-
-	@Override
-	public void send(Object site, Object[] arguments) {
-		inSend = true;
-	}
-
-	@Override
-	public void receive(Object value) {
-		super.receive(value);
-		inSend = false;
-	}
-
-	@Override
-	public void die() {
-		if (inSend) super.die();
-	}
-
-	@Override
-	public void error(TokenException error) {
-		if (inSend) super.error(error);
-	}
-
-	@Override
-	public Tracer fork() {
-		return new MinimizeTracer(super.fork());
+		private boolean inSend = false;
+		@Override
+		public void after(BeforeTrace before) {}
+	
+		@Override
+		public BeforeTrace before() {
+			return null;
+		}
+	
+		@Override
+		public void block(PullTrace pull) {}
+	
+		@Override
+		public void choke(StoreTrace store) {}
+	
+		@Override
+		public void print(String value, boolean newline) {}
+	
+		@Override
+		public void publish(Object value) {}
+	
+		@Override
+		public PullTrace pull() {
+			return null;
+		}
+	
+		@Override
+		public void setSourceLocation(SourceLocation location) {}
+	
+		@Override
+		public StoreTrace store(PullTrace event, Object value) {
+			return null;
+		}
+	
+		@Override
+		public void unblock(StoreTrace store) {}
+	
+		@Override
+		public void send(Object site, Object[] arguments) {
+			inSend = true;
+		}
+	
+		@Override
+		public void receive(Object value) {
+			super.receive(value);
+			inSend = false;
+		}
+	
+		@Override
+		public void die() {
+			if (inSend) super.die();
+		}
+	
+		@Override
+		public void error(TokenException error) {
+			if (inSend) super.error(error);
+		}
 	}
 }

@@ -14,7 +14,7 @@ public interface EventCursor {
 	/**
 	 * Return the current event in the stream.
 	 */
-	public Event current() throws EndOfStream;
+	public Event current();
 	/**
 	 * Return a cursor to the next event in the stream.
 	 * Why "forward" instead of "next"? To avoid confusion

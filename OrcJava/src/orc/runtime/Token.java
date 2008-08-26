@@ -20,7 +20,7 @@ import orc.runtime.values.Callable;
 import orc.runtime.values.Future;
 import orc.runtime.values.GroupCell;
 import orc.runtime.values.Value;
-import orc.trace.Tracer;
+import orc.trace.TokenTracer;
 
 /**
  * Representation of an active thread of execution. Tokens
@@ -62,13 +62,13 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 	 * incorrect.
 	 */
 	protected SourceLocation location;
-	protected Tracer tracer;
+	protected TokenTracer tracer;
 	protected Continuation continuation;
 	protected Object result;
 	protected boolean alive;
 	
 	/** Copy constructor */
-	protected Token(Node node, Env<Object> env, Continuation continuation, GroupCell group, Region region, Object result, OrcEngine engine, Tracer tracer) {
+	protected Token(Node node, Env<Object> env, Continuation continuation, GroupCell group, Region region, Object result, OrcEngine engine, TokenTracer tracer) {
 		this.node = node;
 		this.env = env;
 		this.continuation = continuation;
@@ -81,7 +81,7 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 		region.add(this);
 	}
 	
-	public Token(Node node, Env<Object> env, GroupCell group, Region region, OrcEngine engine, Tracer tracer) {
+	public Token(Node node, Env<Object> env, GroupCell group, Region region, OrcEngine engine, TokenTracer tracer) {
 		this(node, env, null, group, region, null, engine, tracer);
 	}
 
@@ -160,7 +160,7 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 		return this;
 	}
 	
-	public Tracer getTracer() {
+	public TokenTracer getTracer() {
 		return tracer;
 	}
 	

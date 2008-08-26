@@ -10,7 +10,7 @@ import orc.error.compiletime.ParsingException;
 import orc.trace.query.EventCursor;
 import orc.trace.query.FilteredEventCursor;
 import orc.trace.query.InputStreamEventCursor;
-import orc.trace.query.StrongBackwardEventCursor;
+import orc.trace.query.BackwardEventCursor;
 import orc.trace.query.WeakBackwardEventCursor;
 import orc.trace.query.EventCursor.EndOfStream;
 import orc.trace.query.parser.Parser;
@@ -48,7 +48,7 @@ public class DumpTrace {
 	@Argument(metaVar="file", required=true, usage="Input file. Omit to use STDIN.")
 	public void setInputFile(File file) throws CmdLineException {
 		try {
-			in = new StrongBackwardEventCursor(
+			in = new BackwardEventCursor(
 					new InputStreamEventCursor(
 							new FileInputStream(file)));
 		} catch (FileNotFoundException e) {
@@ -73,10 +73,10 @@ public class DumpTrace {
 	public void run() {
 		assert(in != null);
 		if (filter != null) {
-			FilteredEventCursor in1 = new FilteredEventCursor(this.in, filter);
 			try {
+				FilteredEventCursor in1 = FilteredEventCursor.newForward(this.in, filter);
 				while (true) {
-					System.out.println(in1.frame().toString());
+					System.out.println(in1.getFrame().toString());
 					in1 = in1.forward();
 				}
 			} catch (EndOfStream _) {}

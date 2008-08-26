@@ -17,17 +17,21 @@ public class WeakBackwardEventCursor implements EventCursor {
 	private EventCursor cursor;
 	private WeakReference<WeakBackwardEventCursor> back;
 	
-	private WeakBackwardEventCursor(EventCursor cursor, WeakBackwardEventCursor back) {
-		this.cursor = cursor;
-		this.back = new WeakReference<WeakBackwardEventCursor>(back);
+	public WeakBackwardEventCursor(EventCursor cursor) {
+		this(cursor, (WeakReference<WeakBackwardEventCursor>)null);
 	}
 	
-	public WeakBackwardEventCursor(EventCursor cursor) {
+	private WeakBackwardEventCursor(EventCursor cursor, WeakBackwardEventCursor back) {
+		this(cursor, new WeakReference<WeakBackwardEventCursor>(back));
+	}
+	
+	private WeakBackwardEventCursor(EventCursor cursor, WeakReference<WeakBackwardEventCursor> back) {
 		this.cursor = cursor;
-		this.back = null;
+		this.back = back;
+		cursor.current().setCursor(this);
 	}
 
-	public Event current() throws EndOfStream {
+	public Event current() {
 		return cursor.current();
 	}
 

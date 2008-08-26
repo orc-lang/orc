@@ -5,6 +5,7 @@ import java.io.Writer;
 
 import orc.trace.query.Term;
 import orc.trace.values.Value;
+import orc.trace.TokenTracer.StoreTrace;
 import orc.trace.handles.Handle;
 import orc.trace.handles.LastHandle;
 import orc.trace.handles.RepeatHandle;
@@ -15,7 +16,7 @@ import orc.trace.handles.RepeatHandle;
  * 
  * @author quark
  */
-public class StoreEvent extends Event {
+public class StoreEvent extends Event implements StoreTrace {
 	public Value value;
 	public Handle<PullEvent> pull;
 	public StoreEvent(PullEvent pull, Value value) {

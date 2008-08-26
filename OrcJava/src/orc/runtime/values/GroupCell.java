@@ -11,8 +11,10 @@ import java.util.List;
 import orc.error.runtime.UncallableValueException;
 import orc.runtime.Token;
 import orc.runtime.regions.GroupRegion;
+import orc.trace.TokenTracer;
+import orc.trace.TokenTracer.PullTrace;
+import orc.trace.TokenTracer.StoreTrace;
 import orc.trace.events.PullEvent;
-import orc.trace.events.StoreEvent;
 
 /**
  * A value container that is also a group. Groups are
@@ -26,16 +28,17 @@ public class GroupCell implements Serializable, Future {
 
 	private static final long serialVersionUID = 1L;
 	Object value;
-	boolean bound;
-	boolean alive;
+	boolean bound = false;
+	boolean alive = true;
 	List<Token> waitList;
 	List<GroupCell> children;
 	GroupRegion region;
-	private PullEvent event;
+	private PullTrace pullTrace;
+	
+	public static final GroupCell ROOT = new GroupCell(null);
 
-	public GroupCell() {
-		bound = false;
-		alive = true;
+	private GroupCell(PullTrace pullTrace) {
+		this.pullTrace = pullTrace;
 	}
 
 	/**
@@ -43,10 +46,11 @@ public class GroupCell implements Serializable, Future {
 	 * subgroup is created and returned.
 	 * When we add a new child cell, we can also remove any dead children
 	 * so that their memory can be recycled.
+	 * @param pullTrace used to identify the group cell in traces (see {@link TokenTracer#pull()}).
 	 * @return the new group
 	 */
-	public GroupCell createCell() {
-		GroupCell n = new GroupCell();
+	public GroupCell createCell(PullTrace pull) {
+		GroupCell n = new GroupCell(pull);
 		if (children == null)
 			children = new LinkedList<GroupCell>();
 		for (Iterator<GroupCell> it = children.iterator(); it.hasNext(); )
@@ -68,8 +72,8 @@ public class GroupCell implements Serializable, Future {
 		// trace the binding of the future;
 		// if this returns null, we avoid
 		// calling related trace methods
-		StoreEvent store = token.getTracer().store(event, this.value);
-		event = null;
+		StoreTrace store = token.getTracer().store(pullTrace, this.value);
+		pullTrace = null;
 		bound = true;
 		kill();
 		if (waitList != null) {
@@ -88,7 +92,7 @@ public class GroupCell implements Serializable, Future {
 			region.close(token);
 		} else {
 			region.close(store, token);
-			token.getTracer().free(store);
+			token.getTracer().finishStore(store);
 		}
 	}
 
@@ -122,7 +126,7 @@ public class GroupCell implements Serializable, Future {
 		if (alive) {
 			if (waitList == null)
 				waitList = new LinkedList<Token>();
-			t.getTracer().block(event);
+			t.getTracer().block(pullTrace);
 			waitList.add(t);
 		} else {
 			// A token waiting on a dead group cell will remain silent forever.
@@ -170,9 +174,5 @@ public class GroupCell implements Serializable, Future {
 	 */
 	public void setRegion(GroupRegion region) {
 		this.region = region;
-	}
-	
-	public void setPullEvent(PullEvent event) {
-		this.event = event;
 	}
 }
