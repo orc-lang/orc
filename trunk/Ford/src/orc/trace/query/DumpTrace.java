@@ -10,6 +10,7 @@ import orc.error.compiletime.ParsingException;
 import orc.trace.BackwardEventCursor;
 import orc.trace.EventCursor;
 import orc.trace.InputStreamEventCursor;
+import orc.trace.Terms;
 import orc.trace.EventCursor.EndOfStream;
 import orc.trace.query.parser.Parser;
 import orc.trace.query.predicates.Predicate;
@@ -82,7 +83,7 @@ public class DumpTrace {
 			EventCursor in1 = in;
 			try {
 				while (true) {
-					System.out.println(in1.current().toString());
+					System.out.println(Terms.printToString(in1.current()));
 					in1 = in1.forward();
 				}
 			} catch (EndOfStream _) {}
