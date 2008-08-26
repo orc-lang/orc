@@ -1,6 +1,5 @@
 package orc.trace.query.predicates;
 
-import orc.trace.query.Frame;
 
 /**
  * The temporal logic U (Until) operator. x U y means that either y holds now,

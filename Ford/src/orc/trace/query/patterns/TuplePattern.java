@@ -7,7 +7,6 @@ import java.util.Arrays;
 import orc.trace.Term;
 import orc.trace.Terms;
 import orc.trace.query.Frame;
-import orc.trace.values.SomeValue;
 import orc.trace.values.TupleValue;
 import orc.trace.values.Value;
 

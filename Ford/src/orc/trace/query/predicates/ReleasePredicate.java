@@ -1,6 +1,5 @@
 package orc.trace.query.predicates;
 
-import orc.trace.query.Frame;
 
 /**
  * The temporal logic R (Releases) operator. x R y is true if y is true through
