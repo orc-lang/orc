@@ -9,6 +9,7 @@ import orc.error.Locatable;
 import orc.error.SourceLocation;
 import orc.trace.handles.Handle;
 import orc.trace.handles.RepeatHandle;
+import orc.trace.query.EventCursor;
 import orc.trace.query.Frame;
 import orc.trace.query.RecordTerm;
 import orc.trace.query.Term;
@@ -22,6 +23,7 @@ import orc.trace.values.ConstantValue;
 public abstract class Event implements Serializable, RecordTerm, Locatable {
 	protected Handle<ForkEvent> thread;
 	protected SourceLocation location;
+	transient protected EventCursor cursor;
 	
 	public void setThread(ForkEvent thread) {
 		this.thread = new RepeatHandle<ForkEvent>(thread);
@@ -40,6 +42,22 @@ public abstract class Event implements Serializable, RecordTerm, Locatable {
 	
 	public SourceLocation getSourceLocation() {
 		return location;
+	}
+	
+	/**
+	 * Get the event cursor which produced this event.
+	 */
+	public EventCursor getCursor() {
+		return cursor;
+	}
+
+	/**
+	 * Used by implementations of {@link EventCursor} to
+	 * associate this event with a location in an event stream.
+	 * Clients shouldn't call this.
+	 */
+	public void setCursor(EventCursor cursor) {
+		this.cursor = cursor;
 	}
 	
 	/**

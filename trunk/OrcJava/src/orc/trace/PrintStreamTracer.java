@@ -21,30 +21,21 @@ public final class PrintStreamTracer extends AbstractTracer {
 	public PrintStreamTracer(OutputStream out) {
 		this.out = new OutputStreamWriter(out);
 	}
-	protected PrintStreamTracer(PrintStreamTracer that, ForkEvent fork) {
-		super(that, fork);
-		this.out = that.out;
-	}
 
-	@Override
-	protected Tracer forked(ForkEvent fork) {
-		return new PrintStreamTracer(this, fork);
-	}
-
-	protected void record(Handle<? extends Event> event) {
-		synchronized (out) {
-			try {
-				event.get().prettyPrint(out, 0);
-				out.write('\n');
-				out.flush();
-			} catch (IOException e) {
-				// FIXME: is there a better way to handle this?
-				// I don't want to pass the exception on to the
-				// caller since there's no way to recover from
-				// it.  Maybe we should just print an error
-				// message rather than kill the whole engine.
-				throw new OrcError(e);
-			}
+	protected synchronized void record(Handle<? extends Event> event) {
+		try {
+			event.get().prettyPrint(out, 0);
+			out.write('\n');
+			out.flush();
+		} catch (IOException e) {
+			// FIXME: is there a better way to handle this?
+			// I don't want to pass the exception on to the
+			// caller since there's no way to recover from
+			// it.  Maybe we should just print an error
+			// message rather than kill the whole engine.
+			throw new OrcError(e);
 		}
 	}
+	
+	public void finish() {}
 }

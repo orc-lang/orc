@@ -12,28 +12,29 @@ import orc.trace.query.predicates.Result;
  * 
  * @author quark
  */
-public class StrongBackwardEventCursor implements EventCursor {
+public class BackwardEventCursor implements EventCursor {
 	private EventCursor cursor;
-	private StrongBackwardEventCursor back;
+	private BackwardEventCursor back;
 	
-	private StrongBackwardEventCursor(EventCursor cursor, StrongBackwardEventCursor back) {
+	private BackwardEventCursor(EventCursor cursor, BackwardEventCursor back) {
 		this.cursor = cursor;
 		this.back = back;
+		cursor.current().setCursor(this);
 	}
 	
-	public StrongBackwardEventCursor(EventCursor cursor) {
+	public BackwardEventCursor(EventCursor cursor) {
 		this(cursor, null);
 	}
 
-	public Event current() throws EndOfStream {
+	public Event current() {
 		return cursor.current();
 	}
 
-	public StrongBackwardEventCursor forward() throws EndOfStream {
-		return new StrongBackwardEventCursor(cursor.forward(), this);
+	public BackwardEventCursor forward() throws EndOfStream {
+		return new BackwardEventCursor(cursor.forward(), this);
 	}
 
-	public StrongBackwardEventCursor backward() throws EndOfStream {
+	public BackwardEventCursor backward() throws EndOfStream {
 		if (back == null) throw new EndOfStream();
 		return back;
 	}

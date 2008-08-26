@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import orc.runtime.Token;
-import orc.trace.events.StoreEvent;
+import orc.trace.TokenTracer.StoreTrace;
 
 public abstract class Region {
 
@@ -54,9 +54,9 @@ public abstract class Region {
 	 * all tokens within the region. If you're not tracing, it's more efficient
 	 * to call {@link #close(Token)}.
 	 * 
-	 * @param store The {@link StoreEvent} which triggered the closing.
+	 * @param store The {@link StoreTrace} which triggered the closing.
 	 */
-	public void close(StoreEvent store, Token closer) {
+	public void close(StoreTrace store, Token closer) {
 		close(closer);
 		// if the region was already closed,
 		// it won't contain anything and so

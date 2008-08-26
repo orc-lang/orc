@@ -3,8 +3,6 @@
  */
 package orc.runtime;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -13,13 +11,10 @@ import java.util.TimerTask;
 
 import orc.Config;
 import orc.env.Env;
-import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.runtime.nodes.Node;
 import orc.runtime.regions.Execution;
 import orc.runtime.values.GroupCell;
-import orc.trace.NullTracer;
-import orc.trace.OutputStreamTracer;
 import orc.trace.Tracer;
 
 /**
@@ -55,6 +50,8 @@ public class OrcEngine implements Runnable {
 	 */
 	private Timer timer;
 	private Config config;
+	/** We'll notify this when the computation is finished. */
+	private Tracer tracer;
 	
 	public OrcEngine(Config config) {
 		this.config = config;
@@ -79,6 +76,8 @@ public class OrcEngine implements Runnable {
 		timer.cancel();
 		timer = null;
 		Kilim.stopEngine();
+		tracer.finish();
+		tracer = null;
 	}
 	
 	/**
@@ -114,9 +113,8 @@ public class OrcEngine implements Runnable {
 		assert(root != null);
 		assert(env != null);
 		region = new Execution(this);
-		Tracer tracer = config.getTracer();
-		tracer.start();
-		activate(new Token(root, env, new GroupCell(), region, this, tracer));
+		tracer = config.getTracer();
+		activate(new Token(root, env, GroupCell.ROOT, region, this, tracer.start()));
 	}
 	
 	/**

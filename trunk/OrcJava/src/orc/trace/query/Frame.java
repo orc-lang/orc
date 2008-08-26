@@ -70,19 +70,6 @@ public class Frame {
 		}
 	}
 	
-	/** Empty event cursor. */
-	private static final EventCursor EMPTY_EVENTS = new EventCursor() {
-		public Event current() throws EndOfStream {
-			throw new EndOfStream();
-		}
-		public EventCursor forward() throws EndOfStream {
-			throw new EndOfStream();
-		}
-		public EventCursor backward() throws EndOfStream {
-			throw new EndOfStream();
-		}
-	};
-	
 	/** Empty binding list. */
 	private static final Binding EMPTY_BINDING = new Binding() {
 		public Term get(Variable v) {
@@ -93,22 +80,14 @@ public class Frame {
 		}
 	};
 	
-	/**
-	 * Construct a new frame for the given cursor.
-	 */
-	public static Frame newFrame(EventCursor events) {
-		return new Frame(EMPTY_BINDING, events);
-	}
-	
-	/**
-	 * Empty frame.
-	 */
-	public static final Frame EMPTY = new Frame(EMPTY_BINDING, EMPTY_EVENTS);
-	
 	/** The variable bindings. */
 	private Binding bindings;
 	/** The current event cursor. */
 	private EventCursor cursor;
+	
+	public Frame(EventCursor events) {
+		this(EMPTY_BINDING, events);
+	}
 	
 	private Frame(Binding bindings, EventCursor events) {
 		this.bindings = bindings;
@@ -120,13 +99,7 @@ public class Frame {
 	 */
 	public Term get(Variable v) {
 		if (v == CURRENT_EVENT) {
-			try {
-				return currentEvent();
-			} catch (EndOfStream e) {
-				return null;
-				// FIXME: currentEvent shouldn't be able
-				// to throw this exception
-			}
+			return currentEvent();
 		}
 		return bindings.get(v);
 	}
@@ -144,7 +117,7 @@ public class Frame {
 		}
 	}
 	
-	public Event currentEvent() throws EndOfStream {
+	public Event currentEvent() {
 		return cursor.current();
 	}
 	
@@ -201,12 +174,8 @@ public class Frame {
 	}
 	
 	public void prettyPrint(Writer out, int indent) throws IOException {
-		try {
-			cursor.current().prettyPrint(out, indent);
-			out.write(" ");
-		} catch (EndOfStream _) {
-			out.write("END ");
-		}
+		cursor.current().prettyPrint(out, indent);
+		out.write(" ");
 		bindings.prettyPrint(out, indent);
 	}
 }

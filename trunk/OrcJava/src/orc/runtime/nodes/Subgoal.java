@@ -28,10 +28,9 @@ public class Subgoal extends Node {
 	 * and region.
 	 */
 	public void process(Token t) {
-		GroupCell cell = t.getGroup().createCell();
+		GroupCell cell = t.getGroup().createCell(t.getTracer().pull());
 		GroupRegion region = new GroupRegion(t.getRegion(), cell);
 		
-		cell.setPullEvent(t.getTracer().pull());
 		Token forked = t.fork(cell, region);
 		t.bind(cell).move(left).activate();
 		forked.move(right).activate();

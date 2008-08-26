@@ -13,11 +13,12 @@ import java.io.Reader;
 import java.util.LinkedList;
 import java.util.List;
 
+import orc.trace.Tracer;
 import orc.trace.MinimizeTracer;
 import orc.trace.NullTracer;
 import orc.trace.OutputStreamTracer;
 import orc.trace.PrintStreamTracer;
-import orc.trace.Tracer;
+import orc.trace.TokenTracer;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;

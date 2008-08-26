@@ -3,6 +3,7 @@ package orc.trace.query;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.zip.GZIPInputStream;
 
 import orc.error.OrcError;
 import orc.trace.events.Event;
@@ -11,21 +12,27 @@ import orc.trace.handles.HandleInputStream;
 
 public class InputStreamEventCursor implements EventCursor {
 	private HandleInputStream in;
-	private Handle<Event> head;
+	private Event head;
 	private InputStreamEventCursor tail;
 	public InputStreamEventCursor(InputStream in) throws IOException {
-		this(new HandleInputStream(in));
+		this(new HandleInputStream(new GZIPInputStream(in)));
 	}
-	private InputStreamEventCursor(HandleInputStream in) {
+	private InputStreamEventCursor(HandleInputStream in) throws IOException {
+		Handle<Event> handle = in.readHandle();
 		this.in = in;
+		this.head = handle.get();
+		this.head.setCursor(this);
 	}
 	
-	private void force() throws EndOfStream {
-		if (in == null) return;
+	public Event current() {
+		return head;
+	}
+	
+	public InputStreamEventCursor forward() throws EndOfStream {
+		if (tail != null) return tail;
 		try {
-			head = in.readHandle();
 			tail = new InputStreamEventCursor(in);
-			in = null;
+			return tail;
 		} catch (EOFException e) {
 			throw new EndOfStream();
 		} catch (IOException e) {
@@ -34,15 +41,6 @@ public class InputStreamEventCursor implements EventCursor {
 		}
 	}
 	
-	public Event current() throws EndOfStream {
-		force();
-		return head.get();
-	}
-	
-	public InputStreamEventCursor forward() throws EndOfStream {
-		force();
-		return tail;
-	}
 	public InputStreamEventCursor backward() throws EndOfStream {
 		throw new EndOfStream();
 	}
