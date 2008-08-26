@@ -194,7 +194,7 @@ public class Frame {
 	}
 	
 	public void prettyPrint(Writer out, int indent) throws IOException {
-		cursor.current().prettyPrint(out, indent);
+		out.write(cursor.current().toString());
 		out.write(" ");
 		bindings.prettyPrint(out, indent);
 	}
