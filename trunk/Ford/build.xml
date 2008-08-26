@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<project name="ford" default="rats" basedir=".">
+	<description>
+		Ant build file for Orc binary distribution.
+	</description>
+	<target name="rats" description="Build rats parser">
+		<java classname="xtc.parser.Rats" fork="yes">
+			<classpath>
+				<pathelement path="${orc.location.OrcJava.lib}/rats.jar" />
+			</classpath>
+			<arg value="-lgpl" />
+			<arg value="-out" />
+			<arg value="${orc.location.src}/orc/trace/query/parser" />
+			<arg value="${orc.location.src}/orc/trace/query/parser/ParserRats.rats" />
+		</java>
+	</target>
+</project>
