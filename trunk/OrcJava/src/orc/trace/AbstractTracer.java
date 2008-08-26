@@ -1,16 +1,10 @@
 package orc.trace;
 
-import orc.error.Locatable;
 import orc.error.SourceLocation;
 import orc.error.runtime.TokenException;
-import orc.runtime.values.GroupCell;
-import orc.trace.TokenTracer.BeforeTrace;
-import orc.trace.TokenTracer.PullTrace;
-import orc.trace.TokenTracer.StoreTrace;
 import orc.trace.events.AfterEvent;
 import orc.trace.events.BeforeEvent;
 import orc.trace.events.BlockEvent;
-import orc.trace.events.SendEvent;
 import orc.trace.events.ChokeEvent;
 import orc.trace.events.DieEvent;
 import orc.trace.events.ErrorEvent;
@@ -22,15 +16,12 @@ import orc.trace.events.PublishEvent;
 import orc.trace.events.PullEvent;
 import orc.trace.events.ReceiveEvent;
 import orc.trace.events.RootEvent;
+import orc.trace.events.SendEvent;
 import orc.trace.events.StoreEvent;
 import orc.trace.events.UnblockEvent;
 import orc.trace.handles.FirstHandle;
 import orc.trace.handles.Handle;
 import orc.trace.handles.OnlyHandle;
-import orc.trace.query.EventCursor;
-import orc.trace.query.Frame;
-import orc.trace.query.predicates.Predicate;
-import orc.trace.query.predicates.Result;
 import orc.trace.values.Marshaller;
 import orc.trace.values.Value;
 

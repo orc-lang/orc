@@ -1,11 +1,7 @@
 package orc.trace.values;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.io.Writer;
-
-import orc.trace.query.Frame;
-import orc.trace.query.patterns.Pattern;
 
 public class FieldValue extends AbstractValue {
 	public final String name;

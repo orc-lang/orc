@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.Writer;
 
-import orc.trace.query.Term;
+import orc.trace.Term;
 
 /**
  * Supertype for traced value representations.

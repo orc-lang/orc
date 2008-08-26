@@ -1,4 +1,4 @@
-package orc.trace.query;
+package orc.trace;
 
 /**
  * A term with properties (like an object).

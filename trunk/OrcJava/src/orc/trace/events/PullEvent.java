@@ -16,11 +16,4 @@ public class PullEvent extends Event implements PullTrace {
 	public String getType() {
 		return "pull";
 	}
-	@Override
-	public void prettyPrint(Writer out, int indent) throws IOException {
-		super.prettyPrint(out, indent);
-		out.write("(");
-		out.write(label());
-		out.write(")");
-	}
 }

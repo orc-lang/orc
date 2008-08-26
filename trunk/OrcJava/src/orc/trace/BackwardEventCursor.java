@@ -1,10 +1,6 @@
-package orc.trace.query;
-
-import java.lang.ref.WeakReference;
+package orc.trace;
 
 import orc.trace.events.Event;
-import orc.trace.query.predicates.Predicate;
-import orc.trace.query.predicates.Result;
 
 /**
  * Wrap a cursor to provide strong backward references. This is likely to waste

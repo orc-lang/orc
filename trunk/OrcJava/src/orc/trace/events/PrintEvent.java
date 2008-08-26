@@ -3,8 +3,8 @@ package orc.trace.events;
 import java.io.IOException;
 import java.io.Writer;
 
+import orc.trace.Term;
 import orc.trace.handles.RepeatHandle;
-import orc.trace.query.Term;
 import orc.trace.values.ConstantValue;
 import orc.trace.values.Value;
 import xtc.util.Utilities;
@@ -21,13 +21,16 @@ public class PrintEvent extends Event {
 		this.newline = newline;
 	}
 	@Override
-	public void prettyPrint(Writer out, int indent) throws IOException {
-		super.prettyPrint(out, indent);
-		out.write("(");
-		out.write('"' + Utilities.escape((String)output, Utilities.JAVA_ESCAPES) + '"');
-		if (newline) out.write(", true");
-		out.write(")");
+	public void prettyPrintProperties(Writer out, int indent) throws IOException {
+		super.prettyPrintProperties(out, indent);
+		prettyPrintProperty(out, indent, "output",
+				new ConstantValue(output));
+		if (newline) {
+			prettyPrintProperty(out, indent, "newline",
+					new ConstantValue(true));
+		}
 	}
+	@Override
 	public Term getProperty(String key) {
 		if (key.equals("output")) return new ConstantValue(output);
 		if (key.equals("newline")) return new ConstantValue(newline);

@@ -4,10 +4,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Arrays;
 
-import orc.trace.query.Frame;
-import orc.trace.query.Terms;
-import orc.trace.query.patterns.Pattern;
-import orc.trace.query.patterns.TuplePattern;
+import orc.trace.Terms;
 
 public class TupleValue extends AbstractValue {
 	public final Value[] values;

@@ -1,4 +1,4 @@
-package orc.trace.query;
+package orc.trace;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -14,6 +14,11 @@ public class InputStreamEventCursor implements EventCursor {
 	private HandleInputStream in;
 	private Event head;
 	private InputStreamEventCursor tail;
+	/**
+	 * Sequence counter for events.
+	 * FIXME: this won't reset if you open multiple event streams.
+	 */
+	private static long seq = 0;
 	public InputStreamEventCursor(InputStream in) throws IOException {
 		this(new HandleInputStream(new GZIPInputStream(in)));
 	}
@@ -22,6 +27,7 @@ public class InputStreamEventCursor implements EventCursor {
 		this.in = in;
 		this.head = handle.get();
 		this.head.setCursor(this);
+		this.head.setSeq(seq++);
 	}
 	
 	public Event current() {

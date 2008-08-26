@@ -3,9 +3,6 @@ package orc.trace.values;
 import java.io.IOException;
 import java.io.Writer;
 
-import orc.trace.query.Frame;
-import orc.trace.query.patterns.Pattern;
-
 public class NullValue extends AbstractValue {
 	public final static NullValue singleton = new NullValue();
 	private NullValue() {}

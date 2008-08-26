@@ -1,4 +1,4 @@
-package orc.trace.query;
+package orc.trace;
 
 
 import orc.trace.events.Event;

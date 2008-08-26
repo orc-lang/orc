@@ -5,11 +5,9 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
-import orc.runtime.sites.DotSite;
-import orc.trace.query.Frame;
-import orc.trace.query.RecordTerm;
-import orc.trace.query.Term;
-import orc.trace.query.Terms;
+import orc.trace.RecordTerm;
+import orc.trace.Term;
+import orc.trace.Terms;
 
 /**
  * This doesn't correspond to any specific Orc
