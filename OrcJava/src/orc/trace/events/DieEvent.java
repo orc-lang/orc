@@ -12,4 +12,8 @@ public class DieEvent extends Event {
 	}
 	@Override
 	public String getType() { return "die"; }
+	@Override
+	public <V> V accept(Visitor<V> visitor) {
+		return visitor.visit(this);
+	}
 }

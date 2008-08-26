@@ -13,6 +13,7 @@ import orc.trace.Terms;
 import orc.trace.handles.Handle;
 import orc.trace.handles.RepeatHandle;
 import orc.trace.values.ConstantValue;
+import orc.trace.values.RecordValue;
 
 /**
  * Base class for trace events.
@@ -79,12 +80,9 @@ public abstract class Event implements Serializable, RecordTerm, Locatable {
 	/**
 	 * Return a human-readable short label for the event.
 	 */
-	public String getLabel() {
-		return getType() + ":" + Long.toHexString(getSeq());
-	}
-	
+	@Override
 	public String toString() {
-		return Terms.printToString(this);
+		return getType() + ":" + Long.toHexString(getSeq());
 	}
 	
 	/**
@@ -92,18 +90,34 @@ public abstract class Event implements Serializable, RecordTerm, Locatable {
 	 */
 	public abstract String getType();
 	
+	public abstract <V> V accept(Visitor<V> visitor);
+	
 	///////////////////////////////////////////////////
 	// Term unification for events
 	
 	public Term getProperty(String key) {
 		if (key.equals("thread")) return thread.get();
 		else if (key.equals("type")) return new ConstantValue(getType());
+		else if (key.equals("location")) return getSourceLocationTerm();
 		return null;
+	}
+	
+	public Term getSourceLocationTerm() {
+		SourceLocation l = getSourceLocation();
+		RecordValue r = new RecordValue(SourceLocation.class);
+		r.put("filename", new ConstantValue(l.file));
+		r.put("line", new ConstantValue(l.line));
+		r.put("column", new ConstantValue(l.column));
+		r.put("endLine", new ConstantValue(l.endLine));
+		r.put("endColumn", new ConstantValue(l.endColumn));
+		return r;
 	}
 	
 	public void prettyPrintProperties(Writer out, int indent) throws IOException {
 		prettyPrintProperty(out, indent, "thread",
-				new ConstantValue(thread.get().getLabel()));
+				new ConstantValue(thread.get()));
+		prettyPrintProperty(out, indent, "location",
+				new ConstantValue(getSourceLocation()));
 	}
 	
 	protected void prettyPrintProperty(Writer out, int indent, String key, Term value) throws IOException {
@@ -115,7 +129,7 @@ public abstract class Event implements Serializable, RecordTerm, Locatable {
 	}
 	
 	public void prettyPrint(Writer out, int indent) throws IOException {
-		out.write(getLabel());
+		out.write(toString());
 		out.write(" {");
 		prettyPrintProperties(out, indent+1);
 		out.write("\n");

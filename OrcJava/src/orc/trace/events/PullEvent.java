@@ -16,4 +16,8 @@ public class PullEvent extends Event implements PullTrace {
 	public String getType() {
 		return "pull";
 	}
+	@Override
+	public <V> V accept(Visitor<V> visitor) {
+		return visitor.visit(this);
+	}
 }

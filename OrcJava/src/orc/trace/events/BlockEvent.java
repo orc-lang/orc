@@ -24,7 +24,7 @@ public class BlockEvent extends Event {
 	public void prettyPrintProperties(Writer out, int indent) throws IOException {
 		super.prettyPrintProperties(out, indent);
 		prettyPrintProperty(out, indent, "pull",
-				new ConstantValue(pull.get().getLabel()));
+				new ConstantValue(pull.get()));
 	}
 	@Override
 	public String getType() { return "block"; }
@@ -32,5 +32,9 @@ public class BlockEvent extends Event {
 	public Term getProperty(String key) {
 		if (key.equals("pull")) return pull.get();
 		else return super.getProperty(key);
+	}
+	@Override
+	public <V> V accept(Visitor<V> visitor) {
+		return visitor.visit(this);
 	}
 }

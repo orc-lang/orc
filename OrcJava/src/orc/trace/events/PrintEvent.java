@@ -38,4 +38,8 @@ public class PrintEvent extends Event {
 	}
 	@Override
 	public String getType() { return "print"; }
+	@Override
+	public <V> V accept(Visitor<V> visitor) {
+		return visitor.visit(this);
+	}
 }

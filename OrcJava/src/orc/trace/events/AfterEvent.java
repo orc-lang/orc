@@ -23,7 +23,7 @@ public class AfterEvent extends Event {
 	public void prettyPrintProperties(Writer out, int indent) throws IOException {
 		super.prettyPrintProperties(out, indent);
 		prettyPrintProperty(out, indent, "before",
-				new ConstantValue(before.get().getLabel()));
+				new ConstantValue(before.get()));
 	}
 	@Override
 	public Term getProperty(String key) {
@@ -33,5 +33,9 @@ public class AfterEvent extends Event {
 	@Override
 	public String getType() {
 		return "after";
+	}
+	@Override
+	public <V> V accept(Visitor<V> visitor) {
+		return visitor.visit(this);
 	}
 }

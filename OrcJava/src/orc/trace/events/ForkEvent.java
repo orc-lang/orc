@@ -15,4 +15,8 @@ import orc.trace.values.ConstantValue;
 public class ForkEvent extends Event {
 	@Override
 	public String getType() { return "fork"; }
+	@Override
+	public <V> V accept(Visitor<V> visitor) {
+		return visitor.visit(this);
+	}
 }
