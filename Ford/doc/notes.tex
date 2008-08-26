@@ -1,0 +1,110 @@
+\documentclass{article}[12pt]
+
+\begin{document}
+\title{Forensic \textsc{Orc} Debugger (\textsc{Ford}) Notes}\author{Adrian Quark}\maketitle
+
+\section{Traces}
+
+Preliminaries:
+\begin{itemize}
+\item An Orc computation consists of sequences of {\em events} occurring in
+logical {\em threads}.
+\item Threads form a tree, where each thread is connected to the thread which
+spawned it.
+\end{itemize}
+
+The following minimal events must be traced to deterministically replay a computation:
+\begin{description}
+\item[root] The root of the thread tree.
+\item[fork] A fork event. By convention, the ``left'' branch of the fork (as
+dictated by the syntax) is evaluated by the same thread, while the right branch
+is evaluated by a new thread.
+\item[resume] A site call returning. The order in which site calls return (and
+the values they return) is the primary source of non-determinism in Orc
+computations.
+\end{description}
+
+A trace is a DAG of events:
+\begin{itemize}
+\item Edges are only allowed to point ``back'' in time, i.e. from an event to
+one which preceeded it in time.
+\item Each non-\texttt{root} event has a \texttt{parent} edge which
+points to its immediate predecessor in time in the same or parent logical
+thread.
+\item The \texttt{fork} event is the only event which may have more than one
+incoming \texttt{parent} edge.
+\item Each non-\texttt{root} event has a \texttt{thread} edge pointing to the
+closest \texttt{parent} ancestor \texttt{fork} or \texttt{root} event. This
+serves as the thread identifier for events in the same logical thread.
+\item Each \texttt{resume} event has an \texttt{after} edge pointing to the
+\texttt{resume} event which preceeded it in time. This serves to encode {\em
+possible} causal relationships between site calls in different threads; since
+we don't have any knowledge of site internals, we have to assume that all
+temporal relationships may reflect causal relationships.
+\end{itemize}
+
+A trace file contains a sequence of serialized events from the same trace,
+followed optionally by one or more indices.
+
+Events are serialized into the trace file in the order in which they occur in
+time.  \texttt{after} and \texttt{parent} edges are represented implicitly by
+the serialization order; all other edges are explicitly represented by
+references to already-serialized events.
+
+\section{Events}
+
+\begin{description}
+\item[sleep] Blocking to wait for a future to receive a value.
+\item[wake] Waking after a future has received a value.
+\item[enter] Entering an expression.
+\item[leave] Leave an expression (via a publication).
+\end{description}
+
+\section{User Interface}
+
+The debugger will be text-based, for rapid development. The concepts should be straightforward
+to extend to a graphical debugger.
+
+\begin{itemize}
+\item The interface will consist of a thread list followed by a command prompt.
+\item The thread list will display a "primary" thread together with zero or
+more "secondary" threads, each with a unique number.
+\item The command prompt will be used to enter commands such as:
+	\begin{itemize}
+	\item select a primary thread
+	\item hide a thread
+	\item hide all secondary threads
+	\item step forwards or backwards one event in the primary thread
+	\item display contextual information about the primary thread's current event
+	\item search for an event
+	\end{itemize}
+\item Each thread in the thread list will include the following information:
+	\begin{enumerate}
+	\item The source location and line of code which includes the start of the expression the thread is evaluating
+	\item The expression the thread is evaluating, elided if necessary to fit on a single line
+	\item The state of the thread (blocked, running, or terminated)
+	\end{enumerate}
+\item The primary thread will also display several lines of source code around the current expression, for context.
+\item Stepping involves simulating events from the primary event stream until
+the next (or previous) event for the primary thread is reached. Note that these
+events may include events in other threads, although such events will never
+change the primary thread directly.
+\item When any thread in the thread list forks, the new thread is appended to the thread list as a secondary thread.
+\item When any thread in the thread list terminates, it is removed from the
+thread list after the next forward step command.
+\item When stepping backwards past the point a secondary thread was created, it is removed from the thread list.
+\item When stepping backwards past the point the primary thread was created, it is replaced by the creating thread.
+\item Contextual information for the current event (accessible via the command line) includes:
+	\begin{itemize}
+	\item The value of any bound variable
+	\item For any unbound variable (future), the event which originated the future
+	\item For a blocked thread, the event which originated the future
+	\item For a terminated thread, the event which terminated it
+	\end{itemize}
+\item To search for an event, the user enters a query and is presented with a
+list of matching events. The user chooses one and it is selected as the primary
+thread. This feature will almost certainly require indices in the trace file
+for efficient operation.
+\end{itemize}
+
+\end{document}
