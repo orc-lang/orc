@@ -47,7 +47,6 @@ public class Orc {
 		
 		// Read configuration options from the environment and the command line
 		Config cfg = new Config();
-		cfg.processEnvVars();
 		cfg.processArgs(args);	
 		
 		Node n;

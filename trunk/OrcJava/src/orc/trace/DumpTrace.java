@@ -50,7 +50,7 @@ public class DumpTrace {
 		EventCursor in1 = in;
 		try {
 			while (true) {
-				System.out.println(in1.current().toString());
+				System.out.println(Terms.printToString(in1.current()));
 				in1 = in1.forward();
 			}
 		} catch (EndOfStream _) {}

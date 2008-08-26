@@ -1,5 +1,6 @@
 package orc.error;
 
+import java.io.File;
 import java.io.Serializable;
 
 public class SourceLocation implements Serializable {
@@ -7,9 +8,9 @@ public class SourceLocation implements Serializable {
 	public Integer column;
 	public Integer endLine;
 	public Integer endColumn;
-	public String filename;
+	public File file;
 	
-	public static final SourceLocation UNKNOWN = new SourceLocation("<unknown>", 0, 0, 0, 0) {
+	public static final SourceLocation UNKNOWN = new SourceLocation(null, 0, 0, 0, 0) {
 		public String toString() {
 			return "<unknown source location>";
 		}
@@ -18,10 +19,10 @@ public class SourceLocation implements Serializable {
 	/** No-arg constructor so that this can be serialized to XML by JAXB */
 	public SourceLocation() {}
 	
-	public SourceLocation(String filename,
+	public SourceLocation(File filename,
 			Integer line, Integer column,
 			Integer endLine, Integer endColumn) {
-		this.filename = filename;
+		this.file = filename;
 		this.line = line;
 		this.column = column;
 		this.endLine = endLine;
@@ -29,6 +30,7 @@ public class SourceLocation implements Serializable {
 	}
 	
 	public String toString() {
-		return filename + ":" + line + ":" + column + "-" + endLine + ":" + endColumn;
+		return file + ":" + line + ":" + column + "-" +
+			(endLine != line ? endLine + ":" : "") + endColumn;
 	}
 }
