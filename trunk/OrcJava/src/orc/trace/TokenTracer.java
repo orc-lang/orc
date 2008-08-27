@@ -51,13 +51,17 @@ public interface TokenTracer extends Locatable {
 	public void send(Object site, Object[] arguments);
 	/**
 	 * Store a value for a future. The return value should be used when tracing
-	 * the results of this store. When all events related to the store have been
-	 * traced, call {@link #finishStore(StoreTrace)}. If this returns null, clients are
-	 * free to <i>not</i> call {@link #choke(StoreTrace)}.
+	 * the results of this store. If this returns null, clients are free to
+	 * <i>not</i> call {@link #choke(StoreTrace)}.
 	 * 
-	 * @see #choke(StoreTrace)
-	 * @see #unblock(StoreTrace)
-	 * @see #finishStore(StoreTrace)
+	 * <p>
+	 * The engine guarantees that all
+	 * {@link #choke(orc.trace.TokenTracer.StoreTrace)} and
+	 * {@link #unblock(orc.trace.TokenTracer.StoreTrace)} events will occur
+	 * <i>before</i> the {@link #die()} event for this tracer.
+	 * 
+	 * @see #choke(orc.trace.TokenTracer.StoreTrace)
+	 * @see #unblock(orc.trace.TokenTracer.StoreTrace)
 	 */
 	public StoreTrace store(PullTrace event, Object value);
 	/**
@@ -87,11 +91,6 @@ public interface TokenTracer extends Locatable {
 	 * Should be followed by {@link #die()}.
 	 */
 	public void publish(Object value);
-	/**
-	 * Indicate that all the effects of a store event (see
-	 * {@link #store(PullTrace, Object)}) have been recorded.
-	 */
-	public void finishStore(StoreTrace event);
 	/**
 	 * Report an error.
 	 * Should be followed by {@link #die()}.

@@ -21,7 +21,6 @@ public class NullTracer implements Tracer {
 		public TokenTracer fork() {
 			return this;
 		}
-		public void finishStore(StoreTrace event) {}
 		public void print(String value, boolean newline) {}
 		public void publish(Object value) {}
 		public void error(TokenException error) {}

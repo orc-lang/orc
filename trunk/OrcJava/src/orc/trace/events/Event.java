@@ -96,7 +96,7 @@ public abstract class Event implements Serializable, RecordTerm, Locatable {
 	// Term unification for events
 	
 	public Term getProperty(String key) {
-		if (key.equals("thread")) return thread.get();
+		if (key.equals("thread")) return getThread();
 		else if (key.equals("type")) return new ConstantValue(getType());
 		else if (key.equals("location")) return getSourceLocationTerm();
 		return null;
@@ -115,7 +115,7 @@ public abstract class Event implements Serializable, RecordTerm, Locatable {
 	
 	public void prettyPrintProperties(Writer out, int indent) throws IOException {
 		prettyPrintProperty(out, indent, "thread",
-				new ConstantValue(thread.get()));
+				new ConstantValue(getThread()));
 		prettyPrintProperty(out, indent, "location",
 				new ConstantValue(getSourceLocation()));
 	}

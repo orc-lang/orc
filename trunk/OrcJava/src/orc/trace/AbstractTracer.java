@@ -38,6 +38,8 @@ public abstract class AbstractTracer implements Tracer {
 		private long lastCallTime;
 		/** The current source location (used for all events). */
 		private SourceLocation location;
+		/** Used to free any StoreEvent after the storing token dies. */
+		private StoreEvent store = null;
 		
 		private TokenTracerImpl(ForkEvent fork, SourceLocation location) {
 			this.thread = fork;
@@ -72,21 +74,26 @@ public abstract class AbstractTracer implements Tracer {
 					marshaller.marshal(value), latency)));
 		}
 		public void die() {
+			if (store != null) {
+				// free any store event; the interface contract
+				// guarantees that all references to this event
+				// are recorded before the token which produced
+				// it dies
+				annotateAndRecord(new OnlyHandle<Event>(new FreeEvent(store)));
+			}
 			annotateAndRecord(new OnlyHandle<Event>(new DieEvent()));
 		}
 		public void block(PullTrace pull) {
 			annotateAndRecord(new OnlyHandle<Event>(new BlockEvent((PullEvent)pull)));
 		}
 		public StoreTrace store(PullTrace event, Object value) {
-			StoreEvent store = new StoreEvent((PullEvent)event, marshaller.marshal(value));
+			// we'll record a FreeEvent for the store when the token dies
+			store = new StoreEvent((PullEvent)event, marshaller.marshal(value));
 			annotateAndRecord(new FirstHandle<Event>(store));
 			return store;
 		}
 		public void unblock(StoreTrace store) {
 			annotateAndRecord(new OnlyHandle<Event>(new UnblockEvent((StoreEvent)store)));
-		}
-		public void finishStore(StoreTrace event) {
-			annotateAndRecord(new OnlyHandle<Event>(new FreeEvent((StoreEvent)event)));
 		}
 		public void error(TokenException error) {
 			annotateAndRecord(new OnlyHandle<Event>(new ErrorEvent(error)));
@@ -122,7 +129,13 @@ public abstract class AbstractTracer implements Tracer {
 		}
 
 		public void useStored(StoreTrace storeTrace) {
-			// do nothing
+			// Do nothing: this event is not relevant
+			// to debugging traces. It would also be
+			// problematic to record because we can't
+			// tell when the last useStored occurs for
+			// a particular StoreEvent, so we can't mark
+			// the last appearance of that StoreEvent in
+			// the stream.
 		}
 	}
 	
@@ -135,7 +148,6 @@ public abstract class AbstractTracer implements Tracer {
 	
 	public TokenTracerImpl start() {
 		ForkEvent thread = new RootEvent();
-		// the root event is not annotated with a thread
 		thread.setSourceLocation(SourceLocation.UNKNOWN);
 		record(new FirstHandle<Event>(thread));
 		return new TokenTracerImpl(thread, SourceLocation.UNKNOWN);
