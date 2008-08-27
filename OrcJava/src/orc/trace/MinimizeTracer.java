@@ -91,5 +91,9 @@ public class MinimizeTracer extends DerivedTracer {
 		public void error(TokenException error) {
 			if (inSend) super.error(error);
 		}
+
+		public void useStored(StoreTrace storeTrace) {
+			// do nothing
+		}
 	}
 }

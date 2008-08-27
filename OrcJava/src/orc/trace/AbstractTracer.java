@@ -120,6 +120,10 @@ public abstract class AbstractTracer implements Tracer {
 		public SourceLocation getSourceLocation() {
 			return location;
 		}
+
+		public void useStored(StoreTrace storeTrace) {
+			// do nothing
+		}
 	}
 	
 	/** Marshaller for values. */

@@ -116,4 +116,10 @@ public interface TokenTracer extends Locatable {
 	 * @param before the BeforeEvent which triggered this event
 	 */
 	public void after(BeforeTrace before);
+	/**
+	 * Called when a token reads a value from a group cell which has
+	 * already been stored.
+	 * @param storeTrace the trace produced when {@link #store(orc.trace.TokenTracer.PullTrace, Object)} was called
+	 */
+	public void useStored(StoreTrace storeTrace);
 }

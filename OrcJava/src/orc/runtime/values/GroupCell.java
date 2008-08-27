@@ -34,6 +34,7 @@ public class GroupCell implements Serializable, Future {
 	List<GroupCell> children;
 	GroupRegion region;
 	private PullTrace pullTrace;
+	private StoreTrace storeTrace;
 	
 	public static final GroupCell ROOT = new GroupCell(null);
 
@@ -93,6 +94,7 @@ public class GroupCell implements Serializable, Future {
 		} else {
 			region.close(store, token);
 			token.getTracer().finishStore(store);
+			storeTrace = store;
 		}
 	}
 
@@ -136,6 +138,7 @@ public class GroupCell implements Serializable, Future {
 
 	public Object forceArg(Token t) {
 		if (bound) {
+			t.getTracer().useStored(storeTrace);
 			return Value.forceArg(value, t);
 		} else {
 			waitForValue(t);

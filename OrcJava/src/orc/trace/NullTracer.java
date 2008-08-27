@@ -41,5 +41,6 @@ public class NullTracer implements Tracer {
 		public BeforeTrace before() {
 			return null;
 		}
+		public void useStored(StoreTrace storeTrace) {}
 	};
 }

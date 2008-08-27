@@ -2,6 +2,7 @@ package orc.trace;
 
 import orc.error.SourceLocation;
 import orc.error.runtime.TokenException;
+import orc.trace.TokenTracer.StoreTrace;
 
 /**
  * Base class for tracers which delegate to something else.
@@ -98,6 +99,10 @@ public abstract class DerivedTracer implements Tracer {
 		
 		public void unblock(StoreTrace store) {
 			tracer.unblock(store);
+		}
+		
+		public void useStored(StoreTrace storeTrace) {
+			tracer.useStored(storeTrace);
 		}
 	}
 }
