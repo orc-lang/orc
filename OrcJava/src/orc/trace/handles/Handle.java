@@ -32,6 +32,13 @@ import java.io.ObjectOutput;
  * {@link ObjectInput}. It only works with subtypes of
  * {@link HandleOutputStream} and {@link HandleInputStream}.
  * 
+ * <p>
+ * FIXME: Handles do not deserialize circular references correctly.
+ * This should be straightforward to fix (if a handle detects that it
+ * needs to point to a value which is currently being read, it should
+ * register with the HandleInputStream to be updated once the value is
+ * read), but so far I haven't needed it.
+ * 
  * @see HandleOutputStream
  * @author quark
  */

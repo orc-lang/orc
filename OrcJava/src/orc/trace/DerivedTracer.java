@@ -61,10 +61,6 @@ public abstract class DerivedTracer implements Tracer {
 			return newTokenTracer(tracer.fork());
 		}
 		
-		public void finishStore(StoreTrace event) {
-			tracer.finishStore(event);
-		}
-		
 		public SourceLocation getSourceLocation() {
 			return tracer.getSourceLocation();
 		}

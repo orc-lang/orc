@@ -93,7 +93,6 @@ public class GroupCell implements Serializable, Future {
 			region.close(token);
 		} else {
 			region.close(store, token);
-			token.getTracer().finishStore(store);
 			storeTrace = store;
 		}
 	}
