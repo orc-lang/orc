@@ -148,6 +148,7 @@ public class GroupCell implements Serializable, Future {
 	
 	public Callable forceCall(Token t) throws UncallableValueException {
 		if (bound) {
+			t.getTracer().useStored(storeTrace);
 			return Value.forceCall(value, t);
 		} else {
 			waitForValue(t);
