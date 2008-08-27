@@ -12,6 +12,12 @@ This program will:
 4. Add those performances to your Google Calendar
    under the calendar "Orc Music Calendar"
 
+TO REMOVE the added calendar entries:
+- At the bottom of the "My Calendars" section to the
+  left of your calendar, click on "settings".
+- Find "Orc Music Calendar" under "Calendar Settings"
+  and click the trash can to its right.
+
 We make use of a technology called "OAuth" to
 access your Google Calendar without your username
 and password.  When you run the program, you will
