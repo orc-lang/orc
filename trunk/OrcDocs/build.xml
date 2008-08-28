@@ -1,0 +1,116 @@
+<?xml version="1.0"?>
+<!--
+  - Original Author:  Nathan A. Good <mail@nathanagood.com>
+  - Excerpted from "Build DocBook XML in Eclipse"
+  - at http://www.ibm.com/developerworks/xml/library/os-eclipse-docbook/index.html
+  -
+  -->
+<project name="docbook-src" default="usage">
+
+	<description>
+            This Ant build.xml file is used to transform DocBook XML to various other formats
+    </description>
+
+	<!--
+      - Configure basic properties that will be used in the file.
+      -->
+	<property name="docbook.xsl.dir" value="docbook-xsl" />
+	<property name="doc.dir" value="doc" />
+	<property name="src.dir" value="src" />
+	<property name="fo.dir" value="fo" />
+	<property name="html.stylesheet" value="${docbook.xsl.dir}/html/docbook.xsl" />
+	<property name="fo.stylesheet" value="${docbook.xsl.dir}/fo/docbook.xsl" />
+	<property name="xalan.lib.dir" value="lib" />
+
+	<!--
+      - Sets up the classpath for the Xalan and Xerces implementations
+      - that are to be used in this script, since the versions that ship
+      - with Ant may be out of date.
+      -->
+	<path id="xalan.classpath">
+		<fileset dir="${xalan.lib.dir}" id="xalan.fileset">
+			<include name="xalan.jar" />
+			<include name="xercesImpl.jar" />
+		</fileset>
+	</path>
+
+	<!--
+      - target:  usage
+      -->
+	<target name="usage" description="Prints the Ant build.xml usage">
+		<echo message="Use -projecthelp to get a list of the available targets." />
+	</target>
+
+	<!--
+      - target:  clean
+      -->
+	<target name="clean" description="Cleans up generated files.">
+		<delete dir="${doc.dir}" />
+		<delete dir="${fo.dir}" />
+	</target>
+
+	<!--
+      - target:  depends
+      -->
+	<target name="depends">
+		<mkdir dir="${doc.dir}" />
+		<mkdir dir="${doc.dir}/html" />
+		<mkdir dir="${doc.dir}/pdf" />
+	</target>
+
+	<!--
+      - target:  build-html
+      - description:  Iterates through a directory and transforms
+      -     .xml files into .html files using the DocBook XSL.
+      -->
+	<target name="build-html" depends="depends" 
+        description="Generates HTML files from DocBook XML">
+		<xslt style="${html.stylesheet}" extension=".html" 
+            basedir="${src.dir}" destdir="${doc.dir}/html">
+			<classpath refid="xalan.classpath" />
+			<param name="section.autolabel" expression="1"/>
+			<param name="section.label.includes.component.label" expression="1"/>
+			<param name="section.autolabel.max.depth" expression="1"/>
+			<param name="html.stylesheet" expression="style.css" />
+		</xslt>
+		<!-- Copy the stylesheet to the same directory as the HTML files -->
+		<copy todir="${doc.dir}/html">
+			<fileset dir="css">
+				<include name="style.css" />
+			</fileset>
+		</copy>
+	</target>
+	
+	<!--
+	    - target:  build-pdf
+	    - description:  Iterates through a directory and transforms
+	    -     .xml files into .fo files which can then be turned into DocBook XML
+	    -     files.
+	    -->
+	<target name="build-pdf" depends="depends" 
+	    description="Generates PDF files from DocBook XML">
+	    <xslt style="${fo.stylesheet}" extension=".fo" 
+	        basedir="${src.dir}" destdir="${fo.dir}">
+	        <classpath refid="xalan.classpath" />
+	        <include name="root.xml" />
+	    </xslt>
+
+	    <property name="fop.home" value="lib/fop" />
+
+	    <taskdef name="fop" classname="org.apache.fop.tools.anttasks.Fop">
+	        <classpath>
+	            <fileset dir="${fop.home}/lib">
+	                <include name="*.jar" />
+	            </fileset>
+	            <fileset dir="${fop.home}/build">
+	                <include name="fop.jar" />
+	                <include name="fop-hyph.jar" />
+	            </fileset>
+	        </classpath>
+	    </taskdef>
+
+	    <fop format="application/pdf" fofile="${fo.dir}/root.fo" 
+	        outfile="${doc.dir}/pdf/root.pdf" />
+	</target>
+
+</project>
