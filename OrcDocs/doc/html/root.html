@@ -1,16 +1,20 @@
-<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title></title><link href="style.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="book" lang="en"><div class="titlepage"><hr></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="chapter"><a href="#language">1. The Orc Programming Language</a></span></dt><dd><dl><dt><span class="section"><a href="#N2001A">1.1. Introduction</a></span></dt><dt><span class="section"><a href="#language.base">1.2. Base Expressions</a></span></dt><dd><dl><dt><span class="section"><a href="#N20044">Constants</a></span></dt><dt><span class="section"><a href="#N2007F">Variables</a></span></dt><dt><span class="section"><a href="#N20087">Call</a></span></dt><dt><span class="section"><a href="#language.base.oeprators">Operators</a></span></dt><dt><span class="section"><a href="#N20199">If</a></span></dt><dt><span class="section"><a href="#N201BA">Data structures</a></span></dt><dt><span class="section"><a href="#N201F0">Messages</a></span></dt><dt><span class="section"><a href="#N20237">Stop</a></span></dt></dl></dd><dt><span class="section"><a href="#language.combinators">1.3. Combinators</a></span></dt><dd><dl><dt><span class="section"><a href="#language.combinators.bar">Bar ( | )</a></span></dt><dt><span class="section"><a href="#language.combinators.push">Push ( &gt;&gt; )</a></span></dt><dt><span class="section"><a href="#language.combinators.pull">Pull ( &lt;&lt; )</a></span></dt><dt><span class="section"><a href="#language.combinators.before">Before ( ; )</a></span></dt></dl></dd><dt><span class="section"><a href="#language.patterns">1.4. Patterns</a></span></dt><dd><dl><dt><span class="section"><a href="#N202EE">Syntax</a></span></dt><dt><span class="section"><a href="#N203CF">Occurrences</a></span></dt><dt><span class="section"><a href="#N20406">Patterns as views</a></span></dt></dl></dd><dt><span class="section"><a href="#language.declarations">1.5. Declarations</a></span></dt><dd><dl><dt><span class="section"><a href="#language.declarations.val">Val</a></span></dt><dt><span class="section"><a href="#N20451">Functions</a></span></dt><dt><span class="section"><a href="#N204DC">Services</a></span></dt><dt><span class="section"><a href="#N20503">Includes</a></span></dt></dl></dd><dt><span class="section"><a href="#N2050F">1.6. Comments</a></span></dt></dl></dd></dl></div>
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title></title><link href="style.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="book" lang="en"><div class="titlepage"><hr></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="chapter"><a href="#N2000E">1. Introducing Orc</a></span></dt><dt><span class="chapter"><a href="#language">2. The Orc Programming Language</a></span></dt><dd><dl><dt><span class="section"><a href="#N2001F">2.1. Introduction</a></span></dt><dt><span class="section"><a href="#language.base">2.2. Base Expressions</a></span></dt><dd><dl><dt><span class="section"><a href="#N20049">Constants</a></span></dt><dt><span class="section"><a href="#N20084">Variables</a></span></dt><dt><span class="section"><a href="#N2008C">Call</a></span></dt><dt><span class="section"><a href="#language.base.oeprators">Operators</a></span></dt><dt><span class="section"><a href="#N2019E">If</a></span></dt><dt><span class="section"><a href="#N201BF">Data structures</a></span></dt><dt><span class="section"><a href="#N201F5">Messages</a></span></dt><dt><span class="section"><a href="#N2023C">Stop</a></span></dt></dl></dd><dt><span class="section"><a href="#language.combinators">2.3. Combinators</a></span></dt><dd><dl><dt><span class="section"><a href="#language.combinators.bar">Bar ( | )</a></span></dt><dt><span class="section"><a href="#language.combinators.push">Push ( &gt;&gt; )</a></span></dt><dt><span class="section"><a href="#language.combinators.pull">Pull ( &lt;&lt; )</a></span></dt><dt><span class="section"><a href="#language.combinators.before">Before ( ; )</a></span></dt></dl></dd><dt><span class="section"><a href="#language.patterns">2.4. Patterns</a></span></dt><dd><dl><dt><span class="section"><a href="#N202F3">Syntax</a></span></dt><dt><span class="section"><a href="#N203D4">Occurrences</a></span></dt><dt><span class="section"><a href="#N2040B">Patterns as views</a></span></dt></dl></dd><dt><span class="section"><a href="#language.declarations">2.5. Declarations</a></span></dt><dd><dl><dt><span class="section"><a href="#language.declarations.val">Val</a></span></dt><dt><span class="section"><a href="#N20456">Functions</a></span></dt><dt><span class="section"><a href="#N2050D">Services</a></span></dt><dt><span class="section"><a href="#N20534">Includes</a></span></dt></dl></dd><dt><span class="section"><a href="#N20540">2.6. Comments</a></span></dt></dl></dd></dl></div>
+
+<div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="N2000E"></a>Chapter&nbsp;1.&nbsp;Introducing Orc</h2></div></div></div>
+
+</div>
 
 
 <span class="date"></span>
 
-<div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="language"></a>Chapter&nbsp;1.&nbsp;The Orc Programming Language</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#N2001A">1.1. Introduction</a></span></dt><dt><span class="section"><a href="#language.base">1.2. Base Expressions</a></span></dt><dd><dl><dt><span class="section"><a href="#N20044">Constants</a></span></dt><dt><span class="section"><a href="#N2007F">Variables</a></span></dt><dt><span class="section"><a href="#N20087">Call</a></span></dt><dt><span class="section"><a href="#language.base.oeprators">Operators</a></span></dt><dt><span class="section"><a href="#N20199">If</a></span></dt><dt><span class="section"><a href="#N201BA">Data structures</a></span></dt><dt><span class="section"><a href="#N201F0">Messages</a></span></dt><dt><span class="section"><a href="#N20237">Stop</a></span></dt></dl></dd><dt><span class="section"><a href="#language.combinators">1.3. Combinators</a></span></dt><dd><dl><dt><span class="section"><a href="#language.combinators.bar">Bar ( | )</a></span></dt><dt><span class="section"><a href="#language.combinators.push">Push ( &gt;&gt; )</a></span></dt><dt><span class="section"><a href="#language.combinators.pull">Pull ( &lt;&lt; )</a></span></dt><dt><span class="section"><a href="#language.combinators.before">Before ( ; )</a></span></dt></dl></dd><dt><span class="section"><a href="#language.patterns">1.4. Patterns</a></span></dt><dd><dl><dt><span class="section"><a href="#N202EE">Syntax</a></span></dt><dt><span class="section"><a href="#N203CF">Occurrences</a></span></dt><dt><span class="section"><a href="#N20406">Patterns as views</a></span></dt></dl></dd><dt><span class="section"><a href="#language.declarations">1.5. Declarations</a></span></dt><dd><dl><dt><span class="section"><a href="#language.declarations.val">Val</a></span></dt><dt><span class="section"><a href="#N20451">Functions</a></span></dt><dt><span class="section"><a href="#N204DC">Services</a></span></dt><dt><span class="section"><a href="#N20503">Includes</a></span></dt></dl></dd><dt><span class="section"><a href="#N2050F">1.6. Comments</a></span></dt></dl></div>
+<div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="language"></a>Chapter&nbsp;2.&nbsp;The Orc Programming Language</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#N2001F">2.1. Introduction</a></span></dt><dt><span class="section"><a href="#language.base">2.2. Base Expressions</a></span></dt><dd><dl><dt><span class="section"><a href="#N20049">Constants</a></span></dt><dt><span class="section"><a href="#N20084">Variables</a></span></dt><dt><span class="section"><a href="#N2008C">Call</a></span></dt><dt><span class="section"><a href="#language.base.oeprators">Operators</a></span></dt><dt><span class="section"><a href="#N2019E">If</a></span></dt><dt><span class="section"><a href="#N201BF">Data structures</a></span></dt><dt><span class="section"><a href="#N201F5">Messages</a></span></dt><dt><span class="section"><a href="#N2023C">Stop</a></span></dt></dl></dd><dt><span class="section"><a href="#language.combinators">2.3. Combinators</a></span></dt><dd><dl><dt><span class="section"><a href="#language.combinators.bar">Bar ( | )</a></span></dt><dt><span class="section"><a href="#language.combinators.push">Push ( &gt;&gt; )</a></span></dt><dt><span class="section"><a href="#language.combinators.pull">Pull ( &lt;&lt; )</a></span></dt><dt><span class="section"><a href="#language.combinators.before">Before ( ; )</a></span></dt></dl></dd><dt><span class="section"><a href="#language.patterns">2.4. Patterns</a></span></dt><dd><dl><dt><span class="section"><a href="#N202F3">Syntax</a></span></dt><dt><span class="section"><a href="#N203D4">Occurrences</a></span></dt><dt><span class="section"><a href="#N2040B">Patterns as views</a></span></dt></dl></dd><dt><span class="section"><a href="#language.declarations">2.5. Declarations</a></span></dt><dd><dl><dt><span class="section"><a href="#language.declarations.val">Val</a></span></dt><dt><span class="section"><a href="#N20456">Functions</a></span></dt><dt><span class="section"><a href="#N2050D">Services</a></span></dt><dt><span class="section"><a href="#N20534">Includes</a></span></dt></dl></dd><dt><span class="section"><a href="#N20540">2.6. Comments</a></span></dt></dl></div>
 
 <p>
 In this chapter, we describe the full capabilities of the Orc programming language. This is intended
 to be a comprehensive reference for the Orc programmer.  
 </p>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N2001A"></a>1.1.&nbsp;Introduction</h2></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N2001F"></a>2.1.&nbsp;Introduction</h2></div></div></div>
 <p>
 Orc more strongly resembles functional programming languages such as Haskell and ML than imperative
 languages such as Java and C. The reader is assumed to have at least a passing familiarity with the
@@ -28,10 +32,10 @@ or it might never publish at all. An expression which never publishes is called
 </p>
 
 <p>
-An Orc program is built up from <a class="link" href="#language.base" title="1.2.&nbsp;Base Expressions">base expressions</a>, the simplest 
-programs. These are connected by <a class="link" href="#language.combinators" title="1.3.&nbsp;Combinators">combinators</a> to form 
+An Orc program is built up from <a class="link" href="#language.base" title="2.2.&nbsp;Base Expressions">base expressions</a>, the simplest 
+programs. These are connected by <a class="link" href="#language.combinators" title="2.3.&nbsp;Combinators">combinators</a> to form 
 larger expressions. Such expressions may also be enclosed by 
-<a class="link" href="#language.declarations" title="1.5.&nbsp;Declarations">declarations</a> which define functions, compute values, or 
+<a class="link" href="#language.declarations" title="2.5.&nbsp;Declarations">declarations</a> which define functions, compute values, or 
 introduce new sites. Orc expressions are always compositional: two expressions joined by a combinator
 form an expression, and an expression prefixed by a declaration also forms an expression.
 </p>
@@ -40,12 +44,12 @@ form an expression, and an expression prefixed by a declaration also forms an ex
 
 
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="language.base"></a>1.2.&nbsp;Base Expressions</h2></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="language.base"></a>2.2.&nbsp;Base Expressions</h2></div></div></div>
 <p>
 An Orc program is built up from base expressions. A base expression on its own is always a valid Orc program. 
 </p>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20044"></a>Constants</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20049"></a>Constants</h3></div></div></div>
 <p>
 The simplest program one can write is a constant value. Orc supports the following set of constants:
 
@@ -74,7 +78,7 @@ When evaluated, a constant simply publishes that value immediately.
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N2007F"></a>Variables</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20084"></a>Variables</h3></div></div></div>
 <p>
 An identifier on its own is a valid expression; it represents a variable. It waits for that variable to 
 be bound, and then publishes that bound value. If the variable is already bound when the expression is 
@@ -84,7 +88,7 @@ becomes bound.
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20087"></a>Call</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N2008C"></a>Call</h3></div></div></div>
 <p>
 An identifier followed by a parenthesized sequence of <em class="firstterm">arguments</em> is a call.
 A call may have zero arguments, in which case we write an identifier followed by empty parens <code class="code">()</code>.
@@ -147,7 +151,7 @@ Accordingly, any Orc expression can be used as an operand; it undergoes the same
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20199"></a>If</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N2019E"></a>If</h3></div></div></div>
 <p>
 The expression <code class="code">if(b)</code>, where <code class="code">b</code> is some boolean expression,
 will publish a signal if <code class="code">b</code> evaluates to true, and otherwise remains silent.
@@ -161,7 +165,7 @@ is always available.
 </p>
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N201BA"></a>Data structures</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N201BF"></a>Data structures</h3></div></div></div>
 <p>
 Orc supports two basic data structures:
 
@@ -185,13 +189,13 @@ Again, as with operators, each data structuring operation is actually a site cal
 
 <p>
 To learn more about inspecting and using these data structures after they have been
-created, read about <a class="link" href="#language.patterns" title="1.4.&nbsp;Patterns">patterns</a>.
+created, read about <a class="link" href="#language.patterns" title="2.4.&nbsp;Patterns">patterns</a>.
 </p>
 
 </div>
 
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N201F0"></a>Messages</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N201F5"></a>Messages</h3></div></div></div>
 <p>
 In many object-oriented programming languages, one calls a method or accesses a field of an
 object using the dot operator; for example, <code class="code">obj.m()</code> calls the method
@@ -225,7 +229,7 @@ will recognize this technique as <span class="emphasis"><em>currying</em></span>
 </div>
 
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20237"></a>Stop</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N2023C"></a>Stop</h3></div></div></div>
 <p>
 <code class="code">stop</code> is a special base expression which is silent and does no computation. 
 It is typically used together with a <a class="link" href="#language.combinators.push" title="Push ( >> )">push</a>
@@ -237,7 +241,7 @@ to silence the publications of another expression.
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="language.combinators"></a>1.3.&nbsp;Combinators</h2></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="language.combinators"></a>2.3.&nbsp;Combinators</h2></div></div></div>
 
 <div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="language.combinators.bar"></a>Bar ( <code class="code">|</code> )</h3></div></div></div>
 <p>
@@ -260,7 +264,7 @@ no variable binding occurs.
 
 <p>
 The variable name within the combinator may be replaced with an arbitrary pattern 
-(see <a class="link" href="#language.patterns" title="1.4.&nbsp;Patterns">Patterns</a>). 
+(see <a class="link" href="#language.patterns" title="2.4.&nbsp;Patterns">Patterns</a>). 
 </p>
 
 <p>
@@ -286,7 +290,7 @@ no variable binding occurs.
 
 <p>
 The variable name within the combinator may be replaced with an arbitrary pattern 
-(see <a class="link" href="#language.patterns" title="1.4.&nbsp;Patterns">Patterns</a>). 
+(see <a class="link" href="#language.patterns" title="2.4.&nbsp;Patterns">Patterns</a>). 
 </p>
 
 <p>
@@ -335,7 +339,7 @@ and iteration over strictly finite data.
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="language.patterns"></a>1.4.&nbsp;Patterns</h2></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="language.patterns"></a>2.4.&nbsp;Patterns</h2></div></div></div>
 
 <p>
 A <em class="firstterm">pattern</em> is a special construct that may take the place of a variable binding. It examines the structure
@@ -359,14 +363,14 @@ This is particularly true when <a class="link" href="#">views</a> are used.
 
 
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N202EE"></a>Syntax</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N202F3"></a>Syntax</h3></div></div></div>
 
 <p>
 This section describes the syntax of patterns. All patterns are assumed to be refutable 
 unless stated otherwise. 
 </p>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N202F5"></a>Variable</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N202FA"></a>Variable</h4></div></div></div>
 <p>
 Variables are the most basic patterns.
 A variable pattern simply binds the matched value to that variable. 
@@ -378,7 +382,7 @@ pattern may not mention the same variable more than once.
 </p>
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N20303"></a>Wildcard</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N20308"></a>Wildcard</h4></div></div></div>
 <p>
 A wildcard pattern, written <code class="code">_</code>,  matches any value, and does not bind any variables. 
 It is the same as binding a variable which is not used anywhere. Like variables, wildcards are irrefutable.
@@ -391,13 +395,13 @@ are just shorthand for (<code class="code">&gt;_&gt;</code>) and (<code class="c
 </p>
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N2031D"></a>Literal</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N20322"></a>Literal</h4></div></div></div>
 A literal pattern can be any <a class="link" href="#">constant value</a>.
 It will only match that value, and will refuse any others.
 </div>
 
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N20326"></a>Tuple</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N2032B"></a>Tuple</h4></div></div></div>
 <p>
 A tuple of patterns matches only a tuple value of exactly the same size; it refuses any other value.
 It recursively matches the elements of the tuple against its own member patterns.
@@ -418,7 +422,7 @@ will publish <code class="code">2</code> and <code class="code">3</code> but not
 </div>
 
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N20343"></a>List</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N20348"></a>List</h4></div></div></div>
 <p>
 A list of patterns matches a list value of exactly the same length, refusing any other value.
 It recursively matches each item of the list value against each of its member patterns. 
@@ -438,7 +442,7 @@ publishes only <code class="code">11</code>; the pattern refuses the other two l
 </div>
 
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N20354"></a>Cons</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N20359"></a>Cons</h4></div></div></div>
 <p>
 It is also possible to use the cons (<code class="code">:</code>) operator in a pattern, to split a list into its head and tail.
 
@@ -453,7 +457,7 @@ Note that a cons pattern refuses the empty list.
 </p>
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N20368"></a>Bang</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N2036D"></a>Bang</h4></div></div></div>
 
 <p>
 A bang pattern, written <code class="code">!p</code>, will publish the value that matches the pattern 
@@ -479,7 +483,7 @@ the overall pattern <code class="code">(1,!x,y)</code> refuses the value <code c
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N2039A"></a>As</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N2039F"></a>As</h4></div></div></div>
 <p>
 The pattern <code class="code">p as x</code> can be used to capture a whole subpattern <code class="code">p</code> and bind it to the variable <code class="code">x</code>.
 This pattern is refutable only if <code class="code">p</code> is refutable.
@@ -493,7 +497,7 @@ This publishes <code class="code">(2,3)</code>.
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N203B4"></a>Site</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N203B9"></a>Site</h4></div></div></div>
 <p>
 A site pattern, written <code class="code">M(p,...,p)</code>, matches any value which was published by a call to the
 site <code class="code">M</code> with arguments that match the tuple <code class="code">(p,...,p)</code>. 
@@ -510,11 +514,11 @@ Site patterns provide a generalized version of datatype matching, as seen in the
 </div>
 
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N203CF"></a>Occurrences</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N203D4"></a>Occurrences</h3></div></div></div>
 <p>These are the syntactic contexts in which a pattern may replace a normal variable binding.
 The effect of a pattern may be subtly different depending on the syntactic context in which it appears.</p>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N203D6"></a>In a push</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N203DB"></a>In a push</h4></div></div></div>
 <p>
 A pattern may replace the variable name in a push combinator. When the left side publishes a value, that value
 is checked against the pattern. If it matches, a new copy of the right hand side starts with all of the pattern's
@@ -523,7 +527,7 @@ hand side is created.
 </p>
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N203DE"></a>In a pull</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N203E3"></a>In a pull</h4></div></div></div>
 <p>
 A pattern may replace the variable name in a pull combinator. When the right side publishes a value, that value
 is checked against the pattern. If it matches, the pattern's variables become bound in the left side and the
@@ -532,7 +536,7 @@ and the right side continues to execute as normal.
 </p>
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N203E6"></a>In a <code class="code">val</code> declaration</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N203EB"></a>In a <code class="code">val</code> declaration</h4></div></div></div>
 <p>
 A pattern may replace the variable name in a 
 <a class="link" href="#language.declarations.val" title="Val"><code class="code">val</code> declaration</a>. Since a val is just a shorthand
@@ -542,7 +546,7 @@ whereas if if matches, the pattern's variables are bound and the expression term
 </p>
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N203F7"></a>As function arguments</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N203FC"></a>As function arguments</h4></div></div></div>
 <p>
 A pattern may replace any formal parameter in a function clause. Whenever that function is called, its
 arguments are matched against the argument patterns of each clause in linear order. If every argument
@@ -561,7 +565,7 @@ will refuse without knowing the bound value.
 </div>
 
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20406"></a>Patterns as views</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N2040B"></a>Patterns as views</h3></div></div></div>
 <p>
 In addition to matching data structures constructed within Orc, patterns can also be used to match
 external data structures and values. In this setting, a pattern does not necessarily observe the
@@ -584,7 +588,7 @@ is matched against.
 </div>
 
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="language.declarations"></a>1.5.&nbsp;Declarations</h2></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="language.declarations"></a>2.5.&nbsp;Declarations</h2></div></div></div>
 
 <p>
 In addition to using combinators, Orc expressions can also be built up by adding declarations. 
@@ -625,20 +629,40 @@ declaration is exactly the same as writing:
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20451"></a>Functions</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20456"></a>Functions</h3></div></div></div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N20455"></a>Introduction</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N2045A"></a>Introduction</h4></div></div></div>
+
+Like most other programming languages, Orc has the capability to define <em class="firstterm">functions</em>,
+which take arguments and are invoked in the same way as sites. Functions are defined using the keyword
+<code class="code">def</code>, in the following way:
 
 <p>
+<code class="code">def F(</code><span class="emphasis"><em>args</em></span><code class="code">) = </code><span class="emphasis"><em>expr</em></span>
+</p>
+
+<code class="code">F</code> is the name of the function. It may have any number of arguments; if it has zero arguments,
+empty parentheses are still written <code class="code">()</code>. <span class="emphasis"><em>expr</em></span> is the body of the expression.
+
+<p>
+For example, the expression
+
 <pre class="programlisting">
 def E(x,y) = x | y | x+y
 E(2,3)
 </pre>
+
+publishes the values 2, 3, and 5.
+
 </p>
+
+</div>
+
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N20480"></a>Leniency</h4></div></div></div>
 
 <p>
 As discussed in the <a class="link" href="#">section on calls</a>, functions are lenient,
-or 'call-by-name'. Function calls do not need to wait for all of their arguments to be bound
+or 'call-by-name'. Function calls do not need to wait for all of their arguments to be bound:
 
 <pre class="programlisting">
 E(a,b) 
@@ -652,10 +676,9 @@ expression <code class="code">a | b | a+b</code> in its place.
 
 </p>
 
-
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N20473"></a>Recursion</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N20498"></a>Recursion</h4></div></div></div>
 
 Definitions can be recursive; that is, the name of a definition is bound in its own body.
 
@@ -668,7 +691,7 @@ This publishes 3, 2, and 1.
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N2047B"></a>Mutual Recursion</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N204A0"></a>Mutual Recursion</h4></div></div></div>
 
 Mutual recursion is also supported: 
 
@@ -686,11 +709,31 @@ def odd(n) =
 There is no special keyword for mutual recursion; any contiguous sequence of definitions is assumed to be 
 mutually recursive.
 
+</div>
+
+
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N204A8"></a>Closure</h4></div></div></div>
+
+<p>
+Definitions are actually values, just like any other value. Defining an expression creates a special 
+value called a <em class="firstterm">closure</em> and binds it. Thus, it can be published, or put into a data structure, 
+like any other value:
+
+<pre class="programlisting">
+f(1) | f(3)
+&lt;f&lt; 
+(def E(x) = x+1
+ E)
+</pre>
+
+This publishes 2 and 4. It defines the expression <code class="code">E</code>, then publishes that 
+definition as a closure, which is then bound to the variable <code class="code">f</code> and called twice. 
+</p>
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N20483"></a>Lexical Closure</h4></div></div></div>
 
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N204BC"></a>Lexical Closure</h4></div></div></div>
 <p>
 Like any other declaration, a function definition may appear within the context of any expression. This
 means that variables from that context may appear in the body of the function:
@@ -710,9 +753,9 @@ val pi = 2.71828
 area(10)
 </pre>
 
-This is called lexical closure: the body of the function is 'closed' because it remembers the values of all of its 
-free variables, and the closure is 'lexical' because it occurs when the function is defined, not when
-it is used.
+This is called lexical closure: the body of the function is a closure because it remembers the values 
+of all of its free variables, and the closure is 'lexical' because it occurs when the function is defined, 
+not when it is used.
 
 <div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3>
 Lexical closure has an interesting subtlety when combined with variables that are in scope but have
@@ -723,24 +766,9 @@ to become bound. Thus, the function name itself is unbound until the closure can
 
 </p>
 
-
-Definitions are actually values, just like any other value. Defining an expression creates a special 
-value called a <code class="code">closure</code> and binds it. Thus, it can be published, or put into a data structure, 
-like any other value:
-
-<pre class="programlisting">
-f(1) | f(3)
-&lt;f&lt; 
-(def E(x) = x+1
- E)
-</pre>
-
-This publishes 2 and 4. It defines the expression <code class="code">E</code>, then publishes that 
-definition as a closure, which is then bound to the variable <code class="code">f</code> and called twice. 
-
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N204AC"></a>Anonymouns Functions</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N204D9"></a>Anonymouns Functions</h4></div></div></div>
 Sometimes one would like to create a closure directly without bothering to name the defined expression. 
 There is a special keyword <code class="code">lambda</code> for this purpose:
 
@@ -751,12 +779,7 @@ lambda (x) = x+1
 
 </div>
 
-
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N204B7"></a>Currying</h4></div></div></div>
-
-</div>
-
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N204BC"></a>Patterns</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N204E4"></a>Patterns</h4></div></div></div>
 
 A defined expression, just like the push and pull combinators, may have patterns instead of variables as its arguments:
 
@@ -769,20 +792,13 @@ Otherwise, the call remains silent.
 
 Note that using patterns as arguments interacts with the call-by-name semantics of defined expressions: 
 if a pattern is refutable, then the body of the expression cannot execute until that argument is bound.
-
-
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N204C4"></a>Clauses</h4></div></div></div>
+
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N204EC"></a>Clauses</h4></div></div></div>
 
 <p>
-A function may have multiple clauses, each of which has a sequence of patterns to match each formal argument, 
-and a body expression. All clauses of a function must have the same number of arguments. Clauses are matched 
-in linear order. 
-</p> 
-
-
-The combination of functions and pattern matching offers a much more powerful capability: 
+The combination of functions and pattern matching offers a powerful capability: 
 <em class="firstterm">clausal</em> definition of functions. We can define expressions which execute 
 different code depending on the structure of their arguments. Here's an example:
 
@@ -796,12 +812,21 @@ one which matches the empty list, and one which matches any nonempty list. If it
 list, it returns 0, the appropriate sum for an empty list. If the argument is a nonempty list, it adds 
 the first element of that list to the sum of all of the other elements. In this way, it recursively finds 
 the sum of the list.
+</p>
 
-Any contiguous sequence of definitions with the same name and different arguments is interpreted as 
-a clausal definition, where each individual definition is a clause of the larger function. When the 
-function is called, the clauses are tried in the order in which they appear until a match is found. 
+<p>
+A function may have multiple clauses, each of which has a sequence of patterns to match each formal argument, 
+and a body expression. All clauses of a function must have the same number of arguments. Any contiguous sequence 
+of definitions with the same name and different arguments is interpreted as  a clausal definition, where each
+individual definition is a clause of the larger function. 
+</p>
+
+<p>
+When the function is called, the clauses are tried in the order in which they appear until a match is found. 
 If no clause matches, the call remains silent.
+</p>
 
+<p>
 Mutual recursion and clausal definitions are allowed to occur together.
 For example, this definition takes a list and publishes a new list with every other element repeated:
 
@@ -812,19 +837,21 @@ def mutter([]) = []
 def mutter(h:t) = h:stutter(t)
 </pre>
 
-</div>
-
-
+</p>
 
 </div>
 
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N204DC"></a>Services</h3></div></div></div>
+
+</div>
+
+
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N2050D"></a>Services</h3></div></div></div>
 <p>
 Certain declarations are used to provide access to external services.
 </p>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N204E3"></a>Sites</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N20514"></a>Sites</h4></div></div></div>
 
 <p>
 A <code class="code">site</code> declaration instantiates a Java object to be used as a site in an Orc program:
@@ -837,7 +864,7 @@ site Buffer = orc.lib.state.Buffer
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N204F1"></a>Classes</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N20522"></a>Classes</h4></div></div></div>
 <p>
 
 A <code class="code">class</code> declaration looks very similar to a <code class="code">site</code> declaration, 
@@ -860,7 +887,7 @@ large standard library, available to the Orc programmer.
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20503"></a>Includes</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20534"></a>Includes</h3></div></div></div>
 <p>
 An include declaration names a file containing a sequence of declarations. It loads all
 of those declarations in the order given in the file, as if they had been written 
@@ -879,7 +906,7 @@ include "inc/orc/list.inc"
 </div>
 
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N2050F"></a>1.6.&nbsp;Comments</h2></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N20540"></a>2.6.&nbsp;Comments</h2></div></div></div>
 <p>
 The implementation supports two kinds of comments.   
 

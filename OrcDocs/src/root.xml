@@ -2,9 +2,9 @@
 <!DOCTYPE chapter PUBLIC " -//OASIS//DTD DocBook XML V5.0//EN" "../docbook-xml/dtd/docbook.dtd" >
 
 <book>
-<!-- 
-<chapter><title>Introducing Orc</title>
 
+<chapter><title>Introducing Orc</title>
+<!-- 
 <para>
 To learn more about Orc and its community of users, <ulink url="http://orc.csres.utexas.edu">visit our website</ulink>.
 </para>
@@ -59,9 +59,9 @@ consult <link linkend="language">the language reference</link>.
 </section>
  
 </section>
-
-</chapter>
 -->
+</chapter>
+
 
 <date/>
 
@@ -827,16 +827,36 @@ declaration is exactly the same as writing:
 
 <section><title>Introduction</title>
 
+Like most other programming languages, Orc has the capability to define <firstterm>functions</firstterm>,
+which take arguments and are invoked in the same way as sites. Functions are defined using the keyword
+<code>def</code>, in the following way:
+
 <para>
+<code>def F(</code><emphasis>args</emphasis><code>) = </code><emphasis>expr</emphasis>
+</para>
+
+<code>F</code> is the name of the function. It may have any number of arguments; if it has zero arguments,
+empty parentheses are still written <code>()</code>. <emphasis>expr</emphasis> is the body of the expression.
+
+<para>
+For example, the expression
+
 <programlisting><![CDATA[
 def E(x,y) = x | y | x+y
 E(2,3)
 ]]></programlisting>
+
+publishes the values 2, 3, and 5.
+
 </para>
+
+</section>
+
+<section><title>Leniency</title>
 
 <para>
 As discussed in the <link linkend="language.base.calls">section on calls</link>, functions are lenient,
-or 'call-by-name'. Function calls do not need to wait for all of their arguments to be bound
+or 'call-by-name'. Function calls do not need to wait for all of their arguments to be bound:
 
 <programlisting><![CDATA[
 E(a,b) 
@@ -849,7 +869,6 @@ The call <code>E(a,b)</code> occurs immediately, effectively executing the
 expression <code>a | b | a+b</code> in its place.
 
 </para>
-
 
 </section>
 
@@ -884,11 +903,31 @@ def odd(n) =
 There is no special keyword for mutual recursion; any contiguous sequence of definitions is assumed to be 
 mutually recursive.
 
+</section>
+
+
+<section><title>Closure</title>
+
+<para>
+Definitions are actually values, just like any other value. Defining an expression creates a special 
+value called a <firstterm>closure</firstterm> and binds it. Thus, it can be published, or put into a data structure, 
+like any other value:
+
+<programlisting><![CDATA[
+f(1) | f(3)
+<f< 
+(def E(x) = x+1
+ E)
+]]></programlisting>
+
+This publishes 2 and 4. It defines the expression <code>E</code>, then publishes that 
+definition as a closure, which is then bound to the variable <code>f</code> and called twice. 
+</para>
 
 </section>
 
-<section><title>Lexical Closure</title>
 
+<section><title>Lexical Closure</title>
 <para>
 Like any other declaration, a function definition may appear within the context of any expression. This
 means that variables from that context may appear in the body of the function:
@@ -908,9 +947,9 @@ val pi = 2.71828
 area(10)
 ]]></programlisting>
 
-This is called lexical closure: the body of the function is 'closed' because it remembers the values of all of its 
-free variables, and the closure is 'lexical' because it occurs when the function is defined, not when
-it is used.
+This is called lexical closure: the body of the function is a closure because it remembers the values 
+of all of its free variables, and the closure is 'lexical' because it occurs when the function is defined, 
+not when it is used.
 
 <note>
 Lexical closure has an interesting subtlety when combined with variables that are in scope but have
@@ -920,21 +959,6 @@ to become bound. Thus, the function name itself is unbound until the closure can
 </note>  
 
 </para>
-
-
-Definitions are actually values, just like any other value. Defining an expression creates a special 
-value called a closure and binds it. Thus, it can be published, or put into a data structure, 
-like any other value:
-
-<programlisting><![CDATA[
-f(1) | f(3)
-<f< 
-(def E(x) = x+1
- E)
-]]></programlisting>
-
-This publishes 2 and 4. It defines the expression <code>E</code>, then publishes that 
-definition as a closure, which is then bound to the variable <code>f</code> and called twice. 
 
 </section>
 
@@ -946,11 +970,6 @@ There is a special keyword <code>lambda</code> for this purpose:
 lambda (x) = x+1
 {-    equivalent to (def E(x) = x+1  E)    -}
 ]]></programlisting>
-
-</section>
-
-
-<section><title>Currying</title>
 
 </section>
 
@@ -967,20 +986,13 @@ Otherwise, the call remains silent.
 
 Note that using patterns as arguments interacts with the call-by-name semantics of defined expressions: 
 if a pattern is refutable, then the body of the expression cannot execute until that argument is bound.
-
-
 </section>
+
 
 <section><title>Clauses</title>
 
 <para>
-A function may have multiple clauses, each of which has a sequence of patterns to match each formal argument, 
-and a body expression. All clauses of a function must have the same number of arguments. Clauses are matched 
-in linear order. 
-</para> 
-
-
-The combination of functions and pattern matching offers a much more powerful capability: 
+The combination of functions and pattern matching offers a powerful capability: 
 <firstterm>clausal</firstterm> definition of functions. We can define expressions which execute 
 different code depending on the structure of their arguments. Here's an example:
 
@@ -994,12 +1006,21 @@ one which matches the empty list, and one which matches any nonempty list. If it
 list, it returns 0, the appropriate sum for an empty list. If the argument is a nonempty list, it adds 
 the first element of that list to the sum of all of the other elements. In this way, it recursively finds 
 the sum of the list.
+</para>
 
-Any contiguous sequence of definitions with the same name and different arguments is interpreted as 
-a clausal definition, where each individual definition is a clause of the larger function. When the 
-function is called, the clauses are tried in the order in which they appear until a match is found. 
+<para>
+A function may have multiple clauses, each of which has a sequence of patterns to match each formal argument, 
+and a body expression. All clauses of a function must have the same number of arguments. Any contiguous sequence 
+of definitions with the same name and different arguments is interpreted as  a clausal definition, where each
+individual definition is a clause of the larger function. 
+</para>
+
+<para>
+When the function is called, the clauses are tried in the order in which they appear until a match is found. 
 If no clause matches, the call remains silent.
+</para>
 
+<para>
 Mutual recursion and clausal definitions are allowed to occur together.
 For example, this definition takes a list and publishes a new list with every other element repeated:
 
@@ -1009,6 +1030,8 @@ def stutter(h:t) = h:h:mutter(t)
 def mutter([]) = []
 def mutter(h:t) = h:stutter(t)
 ]]></programlisting>
+
+</para>
 
 </section>
 
