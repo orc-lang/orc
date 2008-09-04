@@ -45,32 +45,14 @@ public class MethodProxy extends Site {
 	@Override
 	public void callSite(Args args, Token caller) throws TokenException {
     	Object[] oargs = args.asArray();
-    	lookingForMethod:
-        for (Method m : delegate.methods) {
-        	Class[] parameterTypes = m.getParameterTypes();
-        	// skip methods with the wrong number of arguments
-        	// FIXME: support varargs
-        	if (parameterTypes.length != oargs.length)
-        		continue;
-        	// check argument types
-        	for (int i = 0; i < parameterTypes.length; ++i) {
-        		if (oargs[i] == null) continue;
-        		// FIXME: does not account for implicit numeric conversions
-        		if (!parameterTypes[i].isAssignableFrom(oargs[i].getClass())) {
-        			continue lookingForMethod;
-        		}
-        	}
-        	Object result;
-            if (isPausable(m)) {
-            	// pausable methods are invoked within a Kilim task
-            	invokePausable(caller, m, delegate.that, oargs);
-            } else {
-            	// non-pausable methods should be invoked directly
-            	invoke(caller, m, delegate.that, oargs);
-            }
-        	return;
+    	Method m = delegate.resolve(oargs);
+        if (isPausable(m)) {
+        	// pausable methods are invoked within a Kilim task
+        	invokePausable(caller, m, delegate.that, oargs);
+        } else {
+        	// non-pausable methods should be invoked directly
+        	invoke(caller, m, delegate.that, oargs);
         }
-        throw new MethodTypeMismatchException(delegate.name);
     }
 	
 	private static boolean isPausable(Method m) {
@@ -121,11 +103,14 @@ public class MethodProxy extends Site {
         		} catch (InvocationTargetException e) {
         			// attempt to unwrap a reflected exception
         			Throwable cause = e.getCause();
-        			if (cause instanceof Exception)
+        			if (cause instanceof Exception) {
         				throw (Exception)cause;
-        			if (cause instanceof RuntimeException)
-        				throw (RuntimeException)cause;
-        			throw e;
+        			} else if (cause instanceof Error) {
+        				throw (Error)cause;
+        			} else {
+        				// some other Throwable which can't be thrown directly
+	        			throw e;
+        			}
         		}
         	}
         });
@@ -144,13 +129,6 @@ public class MethodProxy extends Site {
     /**
 	 * Hand-woven implementation of pausable invocation. This is necessary to
 	 * weave the fiber into the reflective invocation.
-	 * 
-	 * <p>
-	 * FIXME: Kilim gives an error when I make this private: Error weaving
-	 * build. orc.runtime.sites.java.MethodProxy.access$0(
-	 * Ljava/lang/reflect/Method;Ljava/lang/Object;[
-	 * Ljava/lang/Object;)Ljava/lang/Object;
-	 * should be marked pausable. It calls pausable methods
 	 */
     @SuppressWarnings("unused")
 	private static Object _invokePausable(Method m, Object that, Object[] args, Fiber f)

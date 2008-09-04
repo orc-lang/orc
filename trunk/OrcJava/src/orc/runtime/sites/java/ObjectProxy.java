@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import orc.error.runtime.MessageNotUnderstoodException;
+import orc.error.runtime.MethodTypeMismatchException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
@@ -56,6 +57,28 @@ public class ObjectProxy extends Site {
 			this.name = name;
 			this.methods = methods;
 			this.that = that;
+		}
+		public Method resolve(Object[] arguments) throws MethodTypeMismatchException {
+			// FIXME: should use a cache and other techniques
+			// to speed up resolution
+	    	lookingForMethod:
+	        for (Method m : methods) {
+	        	Class[] parameterTypes = m.getParameterTypes();
+	        	// skip methods with the wrong number of arguments
+	        	// FIXME: support varargs
+	        	if (parameterTypes.length != arguments.length)
+	        		continue;
+	        	// check argument types
+	        	for (int i = 0; i < parameterTypes.length; ++i) {
+	        		if (arguments[i] == null) continue;
+	        		// FIXME: does not account for implicit numeric conversions
+	        		if (!parameterTypes[i].isAssignableFrom(arguments[i].getClass())) {
+	        			continue lookingForMethod;
+	        		}
+	        	}
+	        	return m;
+	        }
+	        throw new MethodTypeMismatchException(name);
 		}
 	}
 	
