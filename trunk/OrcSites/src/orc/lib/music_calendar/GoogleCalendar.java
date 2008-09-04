@@ -139,11 +139,10 @@ public class GoogleCalendar extends EvalSite {
                     
             final String location = String.format("%s, %s, %s", show.getLocation(), show.getCity(), show.getState());
             
-            Kilim.runThreaded(new Callable<Object>() {
-            	public Object call() throws Exception {
+            Kilim.runThreaded(new Callable<Void>() {
+            	public Void call() throws Exception {
             		addEventToCalendar(show.getTitle(), show.getTitle(), location, startDate, endDate);
-            		// return a signal to indicate that the method finished
-            		return Kilim.signal;
+            		return null;
             	}
             });
 		}
