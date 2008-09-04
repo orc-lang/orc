@@ -19,7 +19,6 @@ public interface Visitor<V> {
 	public V visit(PublishEvent event);
 	public V visit(PullEvent event);
 	public V visit(ReceiveEvent event);
-	public V visit(RootEvent event);
 	public V visit(SendEvent event);
 	public V visit(StoreEvent event);
 	public V visit(UnblockEvent event);

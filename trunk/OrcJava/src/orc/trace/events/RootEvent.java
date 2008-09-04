@@ -20,8 +20,4 @@ public class RootEvent extends ForkEvent {
 		// circular reference here.
 		return this;
 	}
-	@Override
-	public <V> V accept(Visitor<V> visitor) {
-		return visitor.visit(this);
-	}
 }
