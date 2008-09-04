@@ -34,8 +34,8 @@ public class OAuthProviderSite extends EvalSite {
 				final List<OAuth.Parameter> request)
 		throws Pausable, Exception {
 			final OAuthAccessor accessor = oauth.newAccessor(consumer);
-			Kilim.runThreaded(new Callable<Object>() {
-				public Object call() throws Exception {
+			Kilim.runThreaded(new Callable<Void>() {
+				public Void call() throws Exception {
 					oauth.setRequestToken(accessor, request);
 					// prompt the user for authorization;
 					// do not provide a callback URL
@@ -49,7 +49,7 @@ public class OAuthProviderSite extends EvalSite {
 					 if (ok != 0) throw new OAuthException("Authorization refused by user.");
 					 // confirm authorization
 					oauth.setAccessToken(accessor);
-					return Kilim.signal;
+					return null;
 				}
 			});
 			return accessor;

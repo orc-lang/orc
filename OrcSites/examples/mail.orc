@@ -1,12 +1,7 @@
-val user = "USER"
-val pass = "PASS"
+include "net.inc"
 
-val mymail = GMail.withProperties(
-	"mail.from", cat(user, "@gmail.com"),
-	"mail.user", cat(user, "@gmail.com"),
-	"mail.password", pass,
-	"mail.from.user", user)
+val TO = "test@example.com"
 
-MailQuery(mymail, "test@example.com",
-	"hi from orc", "please respond") >r>
-r()
+val mailer = MailerFactory("mail.properties")
+val get = MailQuery(mailer, TO, "query", "please respond")
+get()
