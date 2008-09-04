@@ -3,8 +3,10 @@
  */
 package orc.runtime;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -52,6 +54,11 @@ public class OrcEngine implements Runnable {
 	private Config config;
 	/** We'll notify this when the computation is finished. */
 	private Tracer tracer;
+	/**
+	 * Used to share execution-global values between sites.
+	 * By convention, keys should be prefixed with a 
+	 */
+	private Map<Object, Object> properties = new HashMap<Object, Object>();
 	
 	public OrcEngine(Config config) {
 		this.config = config;
@@ -211,7 +218,7 @@ public class OrcEngine implements Runnable {
 	public void tokenError(Token t, TokenException problem) {
 		System.out.println();
 		System.out.println("Token " + t + " encountered an error. ");
-		System.out.println("Problem: " + problem);
+		System.out.println("Problem: " + problem.getMessage());
 		System.out.println("Source location: " + problem.getSourceLocation());
 		if (debugMode) {
 			problem.printStackTrace();
@@ -265,5 +272,13 @@ public class OrcEngine implements Runnable {
 	 */
 	public void scheduleTimer(TimerTask task, long delay) {
 		timer.schedule(task, delay);
+	}
+	
+	public Object getProperty(Object key) {
+		return properties.get(key);
+	}
+	
+	public void setProperty(Object key, Object value) {
+		properties.put(key, value);
 	}
 }
