@@ -1,13 +1,13 @@
-def isPrime(n) = 
-  def primeat(i) = 
-      if(b) >> (n % i /= 0) && primeat(i+1)
+def isPrime(n) =
+  def primeat(i) =
+      if(b) >> (n % i /= 0) && primeat(i+2)
     | if(~b) >> true
         <b< i * i <= n
-  primeat(2)
+  primeat(3)
 
 def Metronome(i) =
     i
-  | Rtimer(1000) >> Metronome(i+1)
+  | Rtimer(1000) >> Metronome(i+2)
 
 -- Publish only prime numbers
-Metronome(2) >n> if(isPrime(n)) >> n
+2 | Metronome(3) >n> if(isPrime(n)) >> n
