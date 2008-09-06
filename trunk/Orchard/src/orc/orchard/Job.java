@@ -27,6 +27,7 @@ import orc.orchard.values.ValueMarshaller;
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.nodes.Node;
+import orc.runtime.nodes.Pub;
 
 /**
  * Standard implementation of a JobService. Extenders should only need to
@@ -256,7 +257,7 @@ public final class Job implements JobMBean {
 		this.configuration = configuration;
 		this.events = new EventBuffer();
 		engine = new JobEngine(new Config());
-		Node node = expression.compile();
+		Node node = expression.compile(new Pub());
 		//engine.debugMode = true;
 		engine.start(node);
 	}
