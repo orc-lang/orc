@@ -5,7 +5,7 @@ import java.util.List;
 
 import orc.ast.oil.Walker;
 import orc.ast.oil.arg.Site;
-import orc.error.Debuggable;
+import orc.error.Located;
 import orc.error.SourceLocation;
 
 /**
@@ -18,7 +18,7 @@ public class OilSecurityValidator extends Walker {
 	public boolean hasProblems() {	return hasProblems; }
 	public List<SecurityProblem> getProblems() { return problems; }
 	
-	public static class SecurityProblem implements Debuggable {
+	public static class SecurityProblem implements Located {
 		private String message;
 		private SourceLocation location;
 		public SecurityProblem(String message, SourceLocation location) {
@@ -41,7 +41,17 @@ public class OilSecurityValidator extends Walker {
 	@Override
 	public void enter(Site site) {
 		String protocol = site.site.getProtocol();
-		if (!protocol.equals(orc.ast.sites.Site.ORC)) {
+		String location = site.site.getLocation().toString();
+		if (protocol.equals(orc.ast.sites.Site.JAVA)) {
+			if (!location.startsWith("orc.lib.orchard")) {
+				hasProblems = true;
+				// FIXME: once we have source location information, use it
+				problems.add(new SecurityProblem(
+						"Site URL '"+location+"' not" +
+						" allowed.",
+						null));
+			}
+		} else if (!protocol.equals(orc.ast.sites.Site.ORC)) {
 			hasProblems = true;
 			// FIXME: once we have source location information, use it
 			problems.add(new SecurityProblem(
