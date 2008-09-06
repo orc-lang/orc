@@ -86,6 +86,14 @@ public abstract class Walker implements Visitor<Void> {
 	}
 	public void enter(Semi expr) {};
 	public void leave(Semi expr) {};
+	
+	public Void visit(WithLocation expr) {
+		this.enter(expr);
+		this.leave(expr);
+		return null;
+	}
+	public void enter(WithLocation expr) {};
+	public void leave(WithLocation expr) {};
 
 	public Void visit(Constant arg) {
 		this.enter(arg);
