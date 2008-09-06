@@ -11,4 +11,7 @@ public class TokenErrorEvent extends JobEvent {
 		location = problem.getSourceLocation();
 		message = problem.getMessage();
 	}
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
+	}
 }

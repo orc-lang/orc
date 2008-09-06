@@ -17,4 +17,8 @@ public class PublicationEvent extends JobEvent {
 	public PublicationEvent(Object value) {
 		this.value = value;
 	}
+	
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
+	}
 }

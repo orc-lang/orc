@@ -10,4 +10,7 @@ public class RedirectEvent extends JobEvent {
 	public RedirectEvent(URL url) {
 		this.url = url;
 	}
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
+	}
 }
