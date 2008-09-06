@@ -13,4 +13,5 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 public abstract class JobEvent implements Serializable {
 	public int sequence;
 	public Date timestamp;
+	public abstract <E> E accept(Visitor<E> visit);
 }

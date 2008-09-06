@@ -10,4 +10,7 @@ public class PromptEvent extends JobEvent {
 		this.promptID = promptID;
 		this.message = message;
 	}
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
+	}
 }

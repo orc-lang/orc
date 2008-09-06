@@ -19,4 +19,7 @@ public class PrintlnEvent extends JobEvent {
 	public PrintlnEvent(String line) {
 		this.line = line;
 	}
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
+	}
 }
