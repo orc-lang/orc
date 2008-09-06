@@ -23,8 +23,7 @@ public class Marshaller implements Visitor<Expression> {
 		}
 		return new Call(
 				(Argument)expr.callee.accept(this),
-				arguments.toArray(new Argument[]{}),
-				expr.getSourceLocation());
+				arguments.toArray(new Argument[]{}));
 	}
 	
 	public Expression visit(orc.ast.oil.Defs expr) {
@@ -51,6 +50,10 @@ public class Marshaller implements Visitor<Expression> {
 	
 	public Expression visit(orc.ast.oil.Semi expr) {
 		return new Semicolon(expr.left.accept(this), expr.right.accept(this));
+	}
+	
+	public Expression visit(orc.ast.oil.WithLocation expr) {
+		return new WithLocation(expr.expr.accept(this), expr.location);
 	}
 
 	public Expression visit(orc.ast.oil.arg.Constant arg) {
