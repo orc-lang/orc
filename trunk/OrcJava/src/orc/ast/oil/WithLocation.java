@@ -12,8 +12,8 @@ import orc.type.Type;
  * @author quark
  */
 public class WithLocation extends Expr implements Located {
-	private final Expr expr;
-	private final SourceLocation location;
+	public final Expr expr;
+	public final SourceLocation location;
 	public WithLocation(Expr expr, SourceLocation location) {
 		this.expr = expr;
 		this.location = location;

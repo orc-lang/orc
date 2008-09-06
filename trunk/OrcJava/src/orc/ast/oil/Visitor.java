@@ -19,6 +19,7 @@ public interface Visitor<E> {
 	public E visit(Pull expr);
 	public E visit(Push expr);
 	public E visit(Semi expr);
+	public E visit(WithLocation expr);
 	public E visit(Constant arg);
 	public E visit(Field arg);
 	public E visit(Site arg);
