@@ -4,6 +4,11 @@ def each(h:t) = h | each(t)
 def map(f,[]) = []
 def map(f,h:t) = f(h):map(f,t)
 
+def fork(ps) =
+	def par([]) = stop
+	def par(h:t) = h() | par(t)
+	par(ps) >> stop ; ()
+
 def rev(l) = 
 	def tailrev([],x) = x
 	def tailrev(h:t,x) = tailrev(t,h:x)
