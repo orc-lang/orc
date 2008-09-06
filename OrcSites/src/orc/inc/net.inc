@@ -10,8 +10,7 @@ site MailerFactory = orc.lib.net.MailerFactory
 {-
 Simplified mail sending interface.
 -}
-def SendMail(to, subject, body) =
-	val mailer = MailerFactory("mail.properties")
+def SendMail(mailer, to, subject, body) =
 	val message = mailer.newMessage(subject, body, to)
 	val transport = mailer.getTransport()
 	transport.connect() >>
