@@ -55,6 +55,12 @@ public class Globals<H,V> {
 		return key;
 	}
 	
+	public synchronized V get(String key) {
+		Entry e = globals.get(key);
+		if (e == null) return null;
+		return e.value;
+	}
+	
 	public synchronized V remove(String key) {
 		Entry e = globals.remove(key);
 		if (e == null) return null;
