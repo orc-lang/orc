@@ -180,6 +180,7 @@ precedence.
 Symbol   Assoc       Prec   Name
 -----------------------------------------------------------
  lambda  unary       0***   lambda
+ if      none        0***	if/then/else
  ;       left        1      semicolon
  <<      left        2      where
  |       right**     3      parallel
@@ -218,12 +219,18 @@ more efficient in Rats!.
 
 *** I'm not sure whether I'd call lambda an operator, but
 the point is it binds very loosely, so everything to the
-right of a lambda is considered part of its body.
+right of a lambda is considered part of its body. Likewise
+for the else clause of if.
 -----------------------------------------------------------*/
 
 Expression GoalExpression =
 	Lambda
-	/ seed:MaybeWhereExpression actions:SemiExpressionTail* {
+	/ IfThenElse
+	/ SemiExpression
+	;
+	
+Expression SemiExpression =
+	seed:MaybeWhereExpression actions:SemiExpressionTail* {
 		yyValue = apply(actions, seed);
 	}
 	;
@@ -236,6 +243,15 @@ Action<Expression> SemiExpressionTail =
 				return yyValue;
 			}
 		};
+	}
+	;
+
+Expression IfThenElse =
+	IF condition:MaybeDisjunction THEN consequent:GoalExpression ELSE alternative:GoalExpression {
+		yyValue = new IfThenElse(condition, consequent, alternative);
+	}
+	/ IF condition:MaybeDisjunction THEN consequent:GoalExpression {
+		yyValue = new IfThenElse(condition, consequent);
 	}
 	;
 	
@@ -641,6 +657,9 @@ transient String STOP = "stop" Space;
 transient String INCLUDE = "include" Space;
 transient String LAMBDA = "lambda" Space;
 transient String AS = "as" Space;
+transient String IF = "if" Space;
+transient String THEN = "then" Space;
+transient String ELSE = "else" Space;
 transient String NUMBER_TYPE = "Number" Space;
 transient String INTEGER_TYPE = "Integer" Space;
 transient String BOOLEAN_TYPE = "Boolean" Space;
