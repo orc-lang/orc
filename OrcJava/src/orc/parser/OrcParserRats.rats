@@ -180,10 +180,10 @@ precedence.
 Symbol   Assoc       Prec   Name
 -----------------------------------------------------------
  lambda  unary       0***   lambda
- if      none        0***	if/then/else
  ;       left        1      semicolon
  <<      left        2      where
  |       right**     3      parallel
+ if      none        4      if/then/else
  >>      right       4      sequence
  ||      right**     5      boolean or
  &&      right**     5      boolean and
@@ -225,7 +225,6 @@ for the else clause of if.
 
 Expression GoalExpression =
 	Lambda
-	/ IfThenElse
 	/ SemiExpression
 	;
 	
@@ -246,15 +245,6 @@ Action<Expression> SemiExpressionTail =
 	}
 	;
 
-Expression IfThenElse =
-	IF condition:MaybeDisjunction THEN consequent:GoalExpression ELSE alternative:GoalExpression {
-		yyValue = new IfThenElse(condition, consequent, alternative);
-	}
-	/ IF condition:MaybeDisjunction THEN consequent:GoalExpression {
-		yyValue = new IfThenElse(condition, consequent);
-	}
-	;
-	
 Expression Lambda = 
 	LAMBDA LPAREN formals:PatternList RPAREN
 	curried0:(LPAREN yyValue:PatternList RPAREN)*
@@ -315,8 +305,25 @@ Expression SeqExpression =
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
-Expression MaybeSeqExpression = SeqExpression / MaybeDisjunction;
-Expression SafeMaybeSeqExpression = SeqExpression / SafeMaybeDisjunction;
+Expression MaybeSeqExpression = SeqExpression / IfThenElse / MaybeDisjunction;
+Expression SafeMaybeSeqExpression = SeqExpression / SafeIfThenElse / SafeMaybeDisjunction;
+	
+Expression IfThenElse =
+	IF condition:MaybeDisjunction THEN consequent:MaybeSeqExpression ELSE alternative:MaybeSeqExpression {
+		yyValue = new IfThenElse(condition, consequent, alternative);
+	}
+	/ IF condition:MaybeDisjunction THEN consequent:MaybeSeqExpression {
+		yyValue = new IfThenElse(condition, consequent);
+	}
+	;
+Expression SafeIfThenElse =
+	IF condition:MaybeDisjunction THEN consequent:MaybeSeqExpression ELSE alternative:SafeMaybeSeqExpression {
+		yyValue = new IfThenElse(condition, consequent, alternative);
+	}
+	/ IF condition:MaybeDisjunction THEN consequent:SafeMaybeSeqExpression {
+		yyValue = new IfThenElse(condition, consequent);
+	}
+	;
 
 Expression MaybeDisjunction =
 	left:MaybeConjunction void:OROR right:MaybeDisjunction {

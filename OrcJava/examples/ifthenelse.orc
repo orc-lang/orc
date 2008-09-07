@@ -1,6 +1,6 @@
 def downfrom(n) =
   if n = 0
   then 0
-  else n | downfrom(n-1)
+  else (n | downfrom(n-1))
 
 downfrom(5)
