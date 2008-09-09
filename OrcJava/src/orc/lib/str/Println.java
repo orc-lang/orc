@@ -21,7 +21,7 @@ public class Println extends Site {
 	@Override
 	public void callSite(Args args, Token caller) throws TokenException {
 		for(int i = 0; i < args.size(); i++) {
-			caller.print(args.stringArg(i), true);
+			caller.print(String.valueOf(args.getArg(i)), true);
 		}
 		if (args.size() == 0) {
 			caller.print("", true);

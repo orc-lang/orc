@@ -22,7 +22,7 @@ public class Print extends Site {
 	public void callSite(Args args, Token caller) throws TokenException {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < args.size(); i++) {
-			sb.append(args.stringArg(i));
+			sb.append(String.valueOf(args.getArg(i)));
 		}
 		caller.print(sb.toString(), false);
 		caller.resume(Value.signal());
