@@ -1,6 +1,6 @@
 include "forms.inc"
 
-val span = DateRange(Date(2008, 8, 10), Date(2008, 8, 15))
+val span = DateRange(Date(108, 8, 10), Date(108, 8, 15))
 val invitees = [
   "Adrian Quark",
   "David Kitchin" ]
