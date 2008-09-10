@@ -16,6 +16,11 @@
 		<servlet-class>orc.orchard.OrchardOAuthServlet</servlet-class>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
+	<servlet>
+		<servlet-name>FormsServlet</servlet-name>
+		<servlet-class>orc.orchard.FormsServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
 	<servlet-mapping>
 		<servlet-name>OrchardService</servlet-name>
 		<url-pattern>/soap/*</url-pattern>
@@ -27,6 +32,10 @@
 	<servlet-mapping>
 		<servlet-name>OrchardOAuthServlet</servlet-name>
 		<url-pattern>/oauth</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>FormsServlet</servlet-name>
+		<url-pattern>/FormsServlet</url-pattern>
 	</servlet-mapping>
 	<session-config>
 		<session-timeout>30</session-timeout>
