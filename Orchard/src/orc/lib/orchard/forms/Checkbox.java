@@ -3,10 +3,10 @@ package orc.lib.orchard.forms;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-public class Checkbox extends Field<Boolean> {
+public class Checkbox extends SingleField<Boolean> {
 
 	public Checkbox(String key, String label) {
-		super(key, label, false);
+		super(key, label, null);
 	}
 
 	@Override
@@ -14,11 +14,11 @@ public class Checkbox extends Field<Boolean> {
 		out.write("<input type='checkbox'" +
 				" id='" + key + "'" +
 				" name='" + key + "'" +
-				(value ? " checked" : "") + ">");
+				(posted == null ? "" : " checked") + ">");
 	}
 
 	@Override
-	public Boolean requestToValue(String value) throws ValidationException {
-		return (value != null);
+	public Boolean requestToValue(String posted) throws ValidationException {
+		return (posted != null);
 	}
 }
