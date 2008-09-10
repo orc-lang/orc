@@ -189,9 +189,9 @@ function orcify(code, defaultConfig) {
 		$events.show();
 		$events.append($html);
 		var isauto = $events.css("height") == "auto";
-		if (isauto && $events.height() + $html.height() > 100) {
+		if (isauto && $events.height() + $html.height() > 250) {
 			// simulate max-height for IE's benefit
-			$events.height(100);
+			$events.height(250);
 			isauto = false;
 		}
 		$html.show();
@@ -215,7 +215,7 @@ function orcify(code, defaultConfig) {
 	}
 
 	function renderPrintln(p) {
-		appendEventHtml('<div class="orc-print">' + p.line + '</div>');
+		appendEventHtml('<div class="orc-print">' + escapeHtml(p.line).replace(/\n/g, '<br />\n') + '</div>');
 	}
 
 	function prompt(message, onSubmit) {
@@ -496,7 +496,7 @@ var executorUrl = Orc.query.mock
 var config = {
 	stylesheet: baseUrl + "orc-syntax.css",
 	path: baseUrl,
-	parserfile: ["orc-parser-min.js"],
+	parserfile: [(Orc.query.mock?"orc-parser.js":"orc-parser-min.js")],
 	basefiles: ["codemirror-20080715-extra-min.js"],
 	textWrapping: false
 };
