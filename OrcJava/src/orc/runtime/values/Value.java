@@ -58,7 +58,7 @@ public abstract class Value {
 			// FIXME: if f is an Orc Value, we are allowing users
 			// to call native methods on it. Is that ok? We could
 			// easily check and disallow calling of non-Callable Values.
-			return new ObjectProxy(f);
+			return ObjectProxy.proxyFor(f);
 		}
 	}
 

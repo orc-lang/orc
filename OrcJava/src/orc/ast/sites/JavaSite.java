@@ -35,7 +35,7 @@ public class JavaSite extends Site {
 	}
 	
 	public orc.runtime.sites.Site instantiate() {
-		return new ClassProxy(classify());
+		return ClassProxy.forClass(classify());
 	}
 	
 }

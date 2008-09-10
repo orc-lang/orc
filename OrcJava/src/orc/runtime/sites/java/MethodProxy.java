@@ -19,7 +19,6 @@ import orc.runtime.Kilim;
 import orc.runtime.Token;
 import orc.runtime.Kilim.PausableCallable;
 import orc.runtime.sites.Site;
-import orc.runtime.sites.java.ObjectProxy.Delegate;
 import orc.runtime.values.Value;
 
 
@@ -36,10 +35,12 @@ import orc.runtime.values.Value;
  * @author quark, dkitchin
  */
 public class MethodProxy extends Site {
-	Delegate delegate;
+	MethodHandle delegate;
+	Object instance;
     
-    public MethodProxy(Delegate delegate) {
+    public MethodProxy(Object instance, MethodHandle delegate) {
     	this.delegate = delegate;
+    	this.instance = instance;
     }
 
 	@Override
@@ -48,10 +49,10 @@ public class MethodProxy extends Site {
     	Method m = delegate.resolve(oargs);
         if (isPausable(m)) {
         	// pausable methods are invoked within a Kilim task
-        	invokePausable(caller, m, delegate.that, oargs);
+        	invokePausable(caller, m, instance, oargs);
         } else {
         	// non-pausable methods should be invoked directly
-        	invoke(caller, m, delegate.that, oargs);
+        	invoke(caller, m, instance, oargs);
         }
     }
 	
