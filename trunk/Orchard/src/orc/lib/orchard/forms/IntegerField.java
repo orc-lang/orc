@@ -3,10 +3,10 @@ package orc.lib.orchard.forms;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-public class IntegerField extends Field<Integer> {
+public class IntegerField extends SingleField<Integer> {
 
 	public IntegerField(String key, String label) {
-		super(key, label, null);
+		super(key, label, "");
 	}
 
 	@Override
@@ -14,15 +14,15 @@ public class IntegerField extends Field<Integer> {
 		out.write("<input type='textbox'" +
 				" id='" + key + "'" +
 				" name='" + key + "'" +
-				" value='" + (value == null ? "" : value) + "'" +
+				" value='" + posted + "'" +
 				">");	
 	}
 
 	@Override
-	public Integer requestToValue(String value) throws ValidationException {
+	public Integer requestToValue(String posted) throws ValidationException {
 		try {
-			if (value.equals("")) return null;
-			return Integer.parseInt(value);
+			if (posted.equals("")) return null;
+			return Integer.parseInt(posted);
 		} catch (NumberFormatException e) {
 			throw new ValidationException(label + " must be an integer.");
 		}

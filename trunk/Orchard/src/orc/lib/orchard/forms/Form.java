@@ -20,7 +20,7 @@ public class Form extends Aggregate {
 		for (Map.Entry<String, String> hidden : hiddens.entrySet()) {
 			out.write("<input type='hidden'" +
 					" name='" + hidden.getKey() + "'" +
-					" value='" + Field.escapeHtml(hidden.getValue()) + "'" +
+					" value='" + SingleField.escapeHtml(hidden.getValue()) + "'" +
 					">");
 		}
 		super.render(out);
