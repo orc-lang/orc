@@ -151,6 +151,7 @@ function readWord(source, _, ch1) {
 	// keywords
 	case "val": case "def": case "as": case "include":
 	case "site": case "class": case "null": case "stop":
+	case "if": case "then": case "else":
 		return { type:word, content:word, style:"keyword" };
 	default:
 		return { type:"variable", content:word, style:"variable" };
@@ -234,6 +235,8 @@ function newParser(source) {
 	/** Get the next token and change its style based on the parse state. */
 	function next() {
 		var out = nextToken();
+		// if we're in a pattern, apply the "pattern" style
+		if (inPattern) out.style += " pattern";
 		if (out.content == "\n") {
 			if (tabstop == null) tabstop = 0;
 			var _tabstop = tabstop;
@@ -255,8 +258,6 @@ function newParser(source) {
 					}
 				} while (tmp.type == "whitespace");
 			}
-			// if we're in a pattern, apply the "pattern" style
-			if (inPattern) out.style += " pattern";
 			// decide whether < or > is an operator or combinator
 			if (out.type == "<" || out.type == ">") {
 				if (inPattern) {
