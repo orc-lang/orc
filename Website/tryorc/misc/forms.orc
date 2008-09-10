@@ -1,18 +1,6 @@
 include "forms.inc"
 
-def WebPrompt(fields) =
-  Form() >form>
-  FieldGroup("main", "Form") >group>
-  fork(map(
-    lambda (field)() = group.addPart(field),
-    fields)) >>
-  form.addPart(group) >>
-  SendForm(form) >receiver>
-  Redirect(receiver.getURL()) >>
-  receiver.get() >>
-  form.getValue().get("main")
-
-WebPrompt([
+WebPrompt("Personal Information", [
   Textbox("first", "First Name"),
   Textbox("last", "Last Name"),
   IntegerField("age", "Age"),
