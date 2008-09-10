@@ -26,7 +26,7 @@ public class DateRangesField extends Field<DateRanges> {
 
 	@Override
 	public void renderControl(PrintWriter out) throws IOException {
-		out.write("<table class='DateRangesField'>");
+		out.write("<table cellspacing='0' class='DateRangesField'>");
 		renderHeader(out);
 		for (int hour = minHour; hour < maxHour; ++hour) {
 			renderHour(out, hour);
@@ -122,6 +122,7 @@ public class DateRangesField extends Field<DateRanges> {
 	
 	private void readTimeIDs(String[] timeIDs) {
 		value = new DateRanges();
+		if (timeIDs == null) return;
 		for (String timeID : timeIDs) {
 			DateRange range = fromTimeID(timeID);
 			value.union(new DateRanges(range));
