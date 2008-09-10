@@ -17,6 +17,11 @@ def getN(channel, n) =
     channel.get():getN(channel, n-1)
   else []
 
+def member(item, []) = false
+def member(item, h:t) =
+  if item = h then true
+  else member(item, t)
+
 def mergeRanges(accum:rest) =
   def f(next, accum) = accum.intersect(next)
   foldl(f, rest, accum) >>
@@ -38,12 +43,25 @@ def inviteQuorum(invitees, quorum) =
     getN(c, quorum)
     | each(invitees) >invitee>
       invite(span, invitee) >response>
-      c.put(response) >> stop
+      c.put((invitee, response)) >> stop
   )
+
+def notify(time, invitees, responders) =
+  each(invitees) >invitee>
+  if member(invitee, responders) then
+    println(invitee + ": meeting is at " + time) >>
+    stop
+  else
+    println(invitee + ": if possible, come to meeting at " + time) >>
+    stop
+  ; "DONE"
 
 -- Main orchestration
 
 inviteQuorum(invitees, quorum) >responses>
-mergeRanges(responses) >times>
-let("Meeting starts: " + pickMeetingTime(times)
-    ; "No acceptable meeting found")
+unzip(responses) >(responders,ranges)>
+mergeRanges(ranges) >times>
+let(
+  pickMeetingTime(times) >time>
+  notify(time, invitees, responders)
+  ; "No acceptable meeting found")
