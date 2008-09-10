@@ -110,7 +110,7 @@ public class Args implements Serializable, Iterable<Object> {
 	 * Return the entire tuple as an object array.
 	 * Please don't mutate the array.
 	 */
-	public Object[] asArray() throws TokenException {
+	public Object[] asArray() {
 		return values;
 	}
 		
