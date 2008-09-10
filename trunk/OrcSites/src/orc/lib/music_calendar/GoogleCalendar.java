@@ -19,8 +19,6 @@ import orc.oauth.OAuthProvider;
 import orc.runtime.Args;
 import orc.runtime.Kilim;
 import orc.runtime.sites.EvalSite;
-import orc.runtime.sites.java.ObjectProxy;
-import orc.runtime.values.Value;
 
 import com.google.gdata.client.calendar.CalendarService;
 import com.google.gdata.data.DateTime;
@@ -172,11 +170,11 @@ public class GoogleCalendar extends EvalSite {
 	}
 
 	@Override
-	public Value evaluate(Args args) throws TokenException {
+	public Object evaluate(Args args) throws TokenException {
 		try {
-			return new ObjectProxy(new GoogleCalendarInstance(
+			return new GoogleCalendarInstance(
 					(OAuthProvider)args.getArg(0),
-					args.stringArg(1)));
+					args.stringArg(1));
 		} catch (IOException e) {
 			throw new JavaException(e);
 		} catch (ClassCastException e) {
