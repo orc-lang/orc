@@ -70,7 +70,7 @@
 			<classpath refid="xalan.classpath" />
 			<param name="section.autolabel" expression="1"/>
 			<param name="section.label.includes.component.label" expression="1"/>
-			<param name="section.autolabel.max.depth" expression="1"/>
+			<param name="section.autolabel.max.depth" expression="8"/>
 			<param name="html.stylesheet" expression="style.css" />
 		</xslt>
 		<!-- Copy the stylesheet to the same directory as the HTML files -->
