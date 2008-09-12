@@ -12,16 +12,37 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 
-import javax.mail.*;
+import javax.mail.Address;
+import javax.mail.Authenticator;
+import javax.mail.Flags;
+import javax.mail.Folder;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.NoSuchProviderException;
+import javax.mail.Part;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Store;
+import javax.mail.Transport;
+import javax.mail.URLName;
 import javax.mail.Message.RecipientType;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import javax.mail.search.*;
+import javax.mail.search.AndTerm;
+import javax.mail.search.BodyTerm;
+import javax.mail.search.FlagTerm;
+import javax.mail.search.FromTerm;
+import javax.mail.search.HeaderTerm;
+import javax.mail.search.NotTerm;
+import javax.mail.search.OrTerm;
+import javax.mail.search.RecipientTerm;
+import javax.mail.search.SearchTerm;
+import javax.mail.search.SubjectTerm;
 
 import kilim.Fiber;
 import kilim.Pausable;
-import kilim.Task;
 import orc.error.OrcError;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
@@ -284,24 +305,25 @@ public class MailerFactory extends EvalSite {
 		/**
 		 * Create a new message.
 		 */
-		public MailerFactory.OrcMessage newMessage(String subject, String body, Object to) throws AddressException, MessagingException {
+		public OrcMessage newMessage(String subject, String body, Object to) throws AddressException, MessagingException {
 			MimeMessage m = new MimeMessage(getSession());
 			m.setSubject(subject);
 			m.setText(body);
 			m.setRecipients(Message.RecipientType.TO, toAddresses(to));
-			return new MailerFactory.OrcMessage(m);
+			return new OrcMessage(m);
 		}
 		/**
 		 * Create a new message.
 		 */
-		public MailerFactory.OrcMessage newMessage(InputStream in) throws MessagingException {
-			return new MailerFactory.OrcMessage(new MimeMessage(getSession(), in));
+		public OrcMessage newMessage(InputStream in) throws MessagingException {
+			MimeMessage m = new MimeMessage(getSession(), in);
+			return new OrcMessage(m);
 		}
 		/**
 		 * Create a new message.
 		 */
-		public MailerFactory.OrcMessage newMessage() throws MessagingException {
-			return new MailerFactory.OrcMessage(new MimeMessage(getSession()));
+		public OrcMessage newMessage() throws MessagingException {
+			return new OrcMessage(new MimeMessage(getSession()));
 		}
 		/**
 		 * Create a new MailFilter.
@@ -324,7 +346,6 @@ public class MailerFactory extends EvalSite {
 			String uniq = java.util.UUID.randomUUID().toString();
 			
 			String out = from.substring(0, at) + separator + uniq + from.substring(at);
-			System.out.println(out);
 			return new InternetAddress(out);
 		}
 	}
@@ -340,8 +361,13 @@ public class MailerFactory extends EvalSite {
 			this.quota = quota;
 			this.transport = transport;
 		}
-		public void close() throws MessagingException {
-			transport.close();
+		public void close() throws MessagingException, Pausable {
+			runThreaded(new Callable<Void>() {
+				public Void call() throws MessagingException {
+					transport.close();
+					return null;
+				}
+			});
 		}
 		public void connect() throws MessagingException, Pausable {
 			runThreaded(new Callable<Void>() {
@@ -364,7 +390,10 @@ public class MailerFactory extends EvalSite {
 		 */
 		public void send(OrcMessage arg0) throws MessagingException, Pausable {
 			arg0.message.saveChanges();
+			boolean wasConnected = transport.isConnected();
+			if (!wasConnected) connect();
 			sendMessage(arg0, arg0.message.getAllRecipients());
+			if (!wasConnected) close();
 		}
 		public void sendMessage(final OrcMessage arg0, final Address[] arg1) throws MessagingException, Pausable {
 			try {
@@ -510,10 +539,10 @@ public class MailerFactory extends EvalSite {
 			});
 		}
 		
-		public MailerFactory.OrcMessage[] getMessages() throws MessagingException, Pausable {
-			return runThreaded(new Callable<MailerFactory.OrcMessage[]>() {
-				public MailerFactory.OrcMessage[] call() throws MessagingException {
-					return MailerFactory.OrcMessage.wrap(folder.getMessages());
+		public OrcMessage[] getMessages() throws MessagingException, Pausable {
+			return runThreaded(new Callable<OrcMessage[]>() {
+				public OrcMessage[] call() throws MessagingException {
+					return OrcMessage.wrap(folder.getMessages());
 				}
 			});
 		}
@@ -542,7 +571,6 @@ public class MailerFactory extends EvalSite {
 		}
 	
 		public OrcMessage(Message message) {
-			super();
 			this.message = message;
 		}
 	
