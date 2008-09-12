@@ -59,6 +59,7 @@ public class OrcEngine implements Runnable {
 	 * By convention, keys should be prefixed with a 
 	 */
 	private Map<Object, Object> properties = new HashMap<Object, Object>();
+	public final static Globals<OrcEngine, Object> globals = new Globals<OrcEngine, Object>();
 	
 	public OrcEngine(Config config) {
 		this.config = config;
@@ -85,6 +86,7 @@ public class OrcEngine implements Runnable {
 		Kilim.stopEngine();
 		tracer.finish();
 		tracer = null;
+		globals.removeAll(this);
 	}
 	
 	/**
@@ -280,5 +282,9 @@ public class OrcEngine implements Runnable {
 	
 	public void setProperty(Object key, Object value) {
 		properties.put(key, value);
+	}
+	
+	public String addGlobal(Object value) {
+		return globals.add(this, value);
 	}
 }
