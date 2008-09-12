@@ -7,6 +7,7 @@ import orc.ast.simple.arg.Var;
 import orc.error.OrcError;
 import orc.runtime.values.Future;
 import java.io.*;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -18,10 +19,10 @@ import java.util.List;
  */
 public class Env<T> implements Serializable {
 	
-	ENode node;
+	ENode<T> node;
 
 	// Environment given a specific node
-	protected Env(ENode node) {
+	protected Env(ENode<T> node) {
 		this.node = node;
 	}
 	
@@ -30,15 +31,24 @@ public class Env<T> implements Serializable {
 	}
 
 	public Env<T> add(T item) {
-		return new Env<T>(new ENode(node, item));
+		return new Env<T>(new ENode<T>(node, item));
+	}
+	
+	/** Return a list of items in the order they were added. */
+	public List<T> items() {
+		LinkedList<T> out = new LinkedList<T>();
+		for(ENode<T> here = node; here != null; here = here.parent) {
+			out.addFirst(here.item);
+		}
+		return out;
 	}
 	
 	public Env<T> addAll(List<T> items) {
 		
-		ENode here = node;
+		ENode<T> here = node;
 		
 		for(T item : items) {
-			here = new ENode(here, item);
+			here = new ENode<T>(here, item);
 		}
 		
 		return new Env<T>(here);
@@ -57,7 +67,7 @@ public class Env<T> implements Serializable {
 			throw new OrcError("Invalid argument to lookup, index " + index + " is negative.");
 		}
 		
-		for(ENode here = node; here != null; here = here.parent, index--) {
+		for(ENode<T> here = node; here != null; here = here.parent, index--) {
 			if (index == 0) {
 				return here.item;
 			}
@@ -82,7 +92,7 @@ public class Env<T> implements Serializable {
 		
 		int depth = 0;
 		
-		for(ENode here = node; here != null; here = here.parent, depth++) {
+		for(ENode<T> here = node; here != null; here = here.parent, depth++) {
 			if (target.equals(here.item)) {
 				return depth;
 			}
@@ -99,12 +109,12 @@ public class Env<T> implements Serializable {
 	/**
 	 * Individual entries in the environment.
 	 */ 
-	protected class ENode {
+	protected static class ENode<T> {
 		
 		T item;
-		ENode parent;
+		ENode<T> parent;
 		
-		ENode(ENode parent, T item) {
+		ENode(ENode<T> parent, T item) {
 			this.parent = parent;
 			this.item = item;
 		}
@@ -112,11 +122,14 @@ public class Env<T> implements Serializable {
 
 	public Env<T> unwind(int width) {
 		
-		ENode here = node;
+		ENode<T> here = node;
 		for(int i = 0; i < width; i++) {
 			here = here.parent;
 		}
 		return new Env<T>(here);
 	}
 	
+	public String toString() {
+		return items().toString();
+	}
 }

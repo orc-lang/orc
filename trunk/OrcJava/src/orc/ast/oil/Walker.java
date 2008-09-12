@@ -35,12 +35,12 @@ public abstract class Walker implements Visitor<Void> {
 
 	public Void visit(Defs expr) {
 		this.enter(expr);
-		expr.body.accept(this);
 		for (Def def : expr.defs) {
 			this.enter(def);
 			def.body.accept(this);
 			this.leave(def);
 		}
+		expr.body.accept(this);
 		this.leave(expr);
 		return null;
 	}
@@ -89,6 +89,7 @@ public abstract class Walker implements Visitor<Void> {
 	
 	public Void visit(WithLocation expr) {
 		this.enter(expr);
+		expr.expr.accept(this);
 		this.leave(expr);
 		return null;
 	}

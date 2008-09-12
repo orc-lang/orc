@@ -28,7 +28,7 @@ public class WithLocation extends Expr implements Located {
 
 	@Override
 	public <E> E accept(Visitor<E> visitor) {
-		return expr.accept(visitor);
+		return visitor.visit(this);
 	}
 
 	@Override

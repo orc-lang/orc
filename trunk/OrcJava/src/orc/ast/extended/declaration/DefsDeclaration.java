@@ -13,6 +13,7 @@ import orc.ast.extended.declaration.defn.Clause;
 import orc.ast.extended.declaration.defn.Defn;
 import orc.ast.extended.declaration.defn.DefnClause;
 import orc.ast.simple.Definition;
+import orc.ast.simple.WithLocation;
 import orc.ast.simple.arg.*;
 import orc.error.compiletime.CompilationException;
 
@@ -28,7 +29,7 @@ import orc.error.compiletime.CompilationException;
  * @author dkitchin
  */
 
-public class DefsDeclaration implements Declaration {
+public class DefsDeclaration extends Declaration {
 
 	public List<Defn> defs;
 	
@@ -73,7 +74,9 @@ public class DefsDeclaration implements Declaration {
 		// Bind all of these definition names in their scope
 		orc.ast.simple.Expression newtarget = target.suball(vmap);		
 		
-		return new orc.ast.simple.Defs(newdefs, newtarget);
+		return new WithLocation(
+				new orc.ast.simple.Defs(newdefs, newtarget),
+				getSourceLocation());
 	}
 	
 	public String toString() {

@@ -20,7 +20,6 @@ import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.NonlinearPatternException;
-import orc.error.compiletime.SourceException;
 
 /**
  * Used to help simplify patterns.

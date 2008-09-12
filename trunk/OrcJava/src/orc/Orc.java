@@ -1,9 +1,3 @@
-/*
- * Created on Jun 27, 2005
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Generation - Code and Comments
- */
 package orc;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -20,6 +14,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import orc.ast.extended.Declare;
 import orc.ast.extended.declaration.Declaration;
 import orc.ast.oil.Expr;
+import orc.ast.oil.UnguardedRecursionChecker;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
@@ -27,8 +22,8 @@ import orc.parser.OrcParser;
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.nodes.Node;
-import orc.type.Type;
 import orc.runtime.nodes.Pub;
+import orc.type.Type;
 
 /**
  * Main class for Orc. Parses Orc file and executes it.
@@ -146,6 +141,8 @@ public class Orc {
 			Type rt = ex.typesynth(new Env<Type>());
 			System.out.println("Program typechecked successfully with result type " + rt);
 		}
+		
+		UnguardedRecursionChecker.check(ex);
 		
 		Node en = ex.compile(target);
 		return en;

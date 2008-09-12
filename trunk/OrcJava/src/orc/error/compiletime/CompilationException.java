@@ -1,6 +1,8 @@
 package orc.error.compiletime;
 
+import orc.error.Locatable;
 import orc.error.OrcException;
+import orc.error.SourceLocation;
 
 
 /**
@@ -11,7 +13,8 @@ import orc.error.OrcException;
  * @author dkitchin
  *
  */
-public class CompilationException extends OrcException {
+public class CompilationException extends OrcException implements Locatable {
+	protected SourceLocation location;
 
 	public CompilationException(String message) {
 		super(message);
@@ -21,4 +24,19 @@ public class CompilationException extends OrcException {
 		super(message, cause);
 	}
 
+	public void setSourceLocation(SourceLocation location) {
+		this.location = location;
+	}
+
+	public SourceLocation getSourceLocation() {
+		return location;
+	}
+	
+	public String getMessage() {
+		if (location != null) {
+			return "At " + location + ": " + super.getMessage();
+		} else {
+			return super.getMessage();
+		}
+	}
 }
