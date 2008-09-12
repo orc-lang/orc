@@ -113,7 +113,7 @@ h1 {
 	<li><span class="file"><a class="demo-link" href="tryorc/misc/emailq.orc">Receive Email</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/misc/forms.orc">Web Forms</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/misc/meeting.orc">Meeting Request</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/misc/meeting.orc">Meeting Request Email</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/misc/email_meeting.orc">Meeting Request Email</a></span></li>
 	</ul></li>
 </ul>
 </td><td valign="top" style="padding: 0 10px 0 10px" id="main">
