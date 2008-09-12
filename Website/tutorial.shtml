@@ -293,7 +293,7 @@ bestQuote([Airline("Delta"), Airline("United")])</pre>
 
 <p>That concludes this Orc tutorial. Please refer to the <a
 href="documentation.shtml">Documentation</a> page for further
-guidance.  When you are ready, <a href="/orchard">play with Orc</a>
+guidance.  When you are ready, <a href="tryorc.shtml">play with Orc</a>
 yourself.</p>
 
 <!--#include virtual="template/footer.shtml" --> 
