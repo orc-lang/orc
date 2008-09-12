@@ -14,12 +14,12 @@ import net.oauth.OAuthAccessor;
 import net.oauth.OAuthException;
 import net.oauth.OAuthMessage;
 import net.oauth.server.OAuthServlet;
-import orc.orchard.Job.ProvidesGlobals;
 import orc.runtime.Kilim;
+import orc.runtime.OrcEngine;
 
 public class OrchardOAuthServlet extends HttpServlet {
 	public final static String MAILBOX = "orc.orchard.OrchardOAuthServlet.MAILBOX";
-	public static String getCallbackURL(OAuthAccessor accessor, Mailbox mbox, ProvidesGlobals globals)
+	public static String getCallbackURL(OAuthAccessor accessor, Mailbox mbox, OrcEngine globals)
 	throws IOException {
 		accessor.setProperty(MAILBOX, mbox);
 		String key = globals.addGlobal(accessor);
@@ -34,7 +34,7 @@ public class OrchardOAuthServlet extends HttpServlet {
         final OAuthMessage requestMessage = OAuthServlet.getMessage(request, null);
         requestMessage.requireParameters("oauth_token", "k");
         
-        OAuthAccessor accessor = (OAuthAccessor)Job.globals.remove(
+        OAuthAccessor accessor = (OAuthAccessor)OrcEngine.globals.remove(
         		requestMessage.getParameter("k"));
         if (accessor == null) return;
         Mailbox mbox = (Mailbox)accessor.getProperty(MAILBOX);

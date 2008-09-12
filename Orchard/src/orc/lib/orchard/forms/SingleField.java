@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 
 public abstract class SingleField<V> extends Field<V> {
 	protected String posted;
+	@SuppressWarnings("serial")
 	public static class ValidationException extends Exception {
 		private String message;
 		public ValidationException(String message) {

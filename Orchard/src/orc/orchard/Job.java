@@ -37,20 +37,11 @@ import orc.runtime.nodes.Pub;
  * @author quark
  */
 public final class Job implements JobMBean {
-	public final static Globals<Job, Object> globals = new Globals<Job, Object>();
-	
 	/**
 	 * Used to handle cleanup when the job finishes.
 	 */
 	public interface FinishListener {
 		public void finished(Job job) throws RemoteException;
-	}
-	
-	/**
-	 * Mark an engine which allows sites to export globals.
-	 */
-	public interface ProvidesGlobals {
-		public String addGlobal(Object object);
 	}
 	
 	/**
@@ -169,7 +160,7 @@ public final class Job implements JobMBean {
 	private JobConfiguration configuration;
 	
 	private class JobEngine extends OrcEngine
-	implements Promptable, Redirectable, ProvidesGlobals {
+	implements Promptable, Redirectable {
 		public JobEngine(Config config) {
 			super(config);
 		}
@@ -236,10 +227,6 @@ public final class Job implements JobMBean {
 		public void redirect(URL url) {
 			events.add(new RedirectEvent(url));
 		}
-		
-		public String addGlobal(Object value) {
-			return globals.add(Job.this, value);
-		}
 	}
 	private int nextPromptID = 1;
 	private final Map<Integer, PromptCallback> pendingPrompts =
@@ -280,7 +267,6 @@ public final class Job implements JobMBean {
 				e.printStackTrace();
 			}
 		}
-		globals.removeAll(this);
 	}
 	
 	/**

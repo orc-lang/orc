@@ -15,7 +15,6 @@ import orc.error.runtime.TokenException;
 import orc.lib.orchard.Redirect.Redirectable;
 import orc.oauth.OAuthProvider;
 import orc.orchard.OrchardOAuthServlet;
-import orc.orchard.Job.ProvidesGlobals;
 import orc.runtime.Args;
 import orc.runtime.Kilim;
 import orc.runtime.OrcEngine;
@@ -32,9 +31,9 @@ public class OAuthProviderSite extends Site {
 	 * and prompt the user to confirm authorization.
 	 */
 	private static class WebOAuthProvider extends OAuthProvider {
-		private ProvidesGlobals globals;
+		private OrcEngine globals;
 		private Redirectable redirectable;
-		public WebOAuthProvider(ProvidesGlobals globals,
+		public WebOAuthProvider(OrcEngine globals,
 				Redirectable redirectable, String properties)
 		throws IOException {
 			super(properties);
@@ -73,11 +72,6 @@ public class OAuthProviderSite extends Site {
 	@Override
 	public void callSite(Args args, Token caller) throws TokenException {
 		OrcEngine engine = caller.getEngine();
-		if (!(engine instanceof ProvidesGlobals)) {
-			throw new SiteException(
-					"This site is not supported on the engine " +
-					engine.getClass().toString());
-		}
 		if (!(engine instanceof Redirectable)) {
 			throw new SiteException(
 					"This site is not supported on the engine " +
@@ -88,20 +82,12 @@ public class OAuthProviderSite extends Site {
 			 * This implementation of OAuthProvider 
 			 */
 			caller.resume(new WebOAuthProvider(
-					(ProvidesGlobals)engine,
+					engine,
 					(Redirectable)engine,
 					// force root-relative resource path
 					"/" + args.stringArg(0)));
 		} catch (IOException e) {
 			throw new JavaException(e);
-		}
-	}
-	
-	@SuppressWarnings("unused")
-	private static class MockGlobals implements ProvidesGlobals {
-		public String addGlobal(Object object) {
-			System.out.println("Adding " + object.toString());
-			return "KEY";
 		}
 	}
 	
