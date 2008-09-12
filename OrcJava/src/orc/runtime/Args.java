@@ -13,7 +13,6 @@ import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.InsufficientArgsException;
 import orc.error.runtime.TokenException;
 import orc.runtime.values.Field;
-import orc.runtime.values.LazyListValue;
 import orc.runtime.values.ListLike;
 import orc.runtime.values.NilValue;
 import orc.runtime.values.TupleValue;
@@ -193,7 +192,7 @@ public class Args implements Serializable, Iterable<Object> {
 	 * 
 	 * @author quark
 	 */
-	private static class IteratorListValue extends LazyListValue {
+	private static class IteratorListValue implements ListLike {
 		private Iterator iterator;
 
 		private TupleValue cons = null;
@@ -214,7 +213,6 @@ public class Args implements Serializable, Iterable<Object> {
 			}
 		}
 
-		@Override
 		public void uncons(Token caller) {
 			force();
 			if (cons == null)
@@ -223,7 +221,6 @@ public class Args implements Serializable, Iterable<Object> {
 				caller.resume(cons);
 		}
 
-		@Override
 		public void unnil(Token caller) {
 			force();
 			if (cons == null)
