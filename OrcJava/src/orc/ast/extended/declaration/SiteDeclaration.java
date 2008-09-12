@@ -1,5 +1,6 @@
 package orc.ast.extended.declaration;
 
+import orc.ast.simple.WithLocation;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
@@ -14,7 +15,7 @@ import orc.runtime.sites.Site;
  * @author dkitchin
  */
 
-public class SiteDeclaration implements Declaration {
+public class SiteDeclaration extends Declaration {
 
 	public String varname;
 	public String classname;
@@ -34,7 +35,9 @@ public class SiteDeclaration implements Declaration {
 		orc.ast.sites.Site s = orc.ast.sites.Site.build(orc.ast.sites.Site.ORC, classname);
 		Argument a = new orc.ast.simple.arg.Site(s);
 		
-		return new orc.ast.simple.Where(target.subst(v,x), new orc.ast.simple.Let(a), v);
+		return new WithLocation(
+			new orc.ast.simple.Where(target.subst(v,x), new orc.ast.simple.Let(a), v),
+			getSourceLocation());
 		
 		/*
 		orc.ast.simple.arg.Argument a;

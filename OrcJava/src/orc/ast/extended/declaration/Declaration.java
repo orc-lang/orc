@@ -1,5 +1,7 @@
 package orc.ast.extended.declaration;
 
+import orc.error.Locatable;
+import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;
 
 /**
@@ -12,7 +14,15 @@ import orc.error.compiletime.CompilationException;
  * @author dkitchin
  *
  */
-public interface Declaration 
-{ 
-	public orc.ast.simple.Expression bindto(orc.ast.simple.Expression target) throws CompilationException;
+public abstract class Declaration implements Locatable { 
+	protected SourceLocation location;
+	public abstract orc.ast.simple.Expression bindto(orc.ast.simple.Expression target) throws CompilationException;
+
+	public void setSourceLocation(SourceLocation location) {
+		this.location = location;
+	}
+
+	public SourceLocation getSourceLocation() {
+		return location;
+	}
 }

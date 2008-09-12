@@ -16,5 +16,5 @@ public abstract class Arg extends Expr {
 		return new orc.runtime.nodes.Let(this, output);
 	}
 	
-	public abstract Object resolve(Env<Object> env);
+	public abstract <T> T resolve(Env<T> env);
 }

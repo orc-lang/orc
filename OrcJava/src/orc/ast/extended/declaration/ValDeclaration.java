@@ -3,10 +3,11 @@ package orc.ast.extended.declaration;
 import orc.ast.extended.Expression;
 import orc.ast.extended.pattern.Pattern;
 import orc.ast.extended.pattern.PatternSimplifier;
+import orc.ast.simple.WithLocation;
 import orc.ast.simple.arg.Var;
 import orc.error.compiletime.CompilationException;
 
-public class ValDeclaration implements Declaration {
+public class ValDeclaration extends Declaration {
 
 	Pattern p;
 	Expression f;
@@ -29,7 +30,9 @@ public class ValDeclaration implements Declaration {
 		source = new orc.ast.simple.Sequential(source, pv.filter(), s);
 		target = pv.target(t, target);
 		
-		return new orc.ast.simple.Where(target, source, t);
+		return new WithLocation(
+				new orc.ast.simple.Where(target, source, t),
+				getSourceLocation());
 	}
 
 	public String toString() {

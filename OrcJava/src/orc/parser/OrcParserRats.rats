@@ -22,16 +22,20 @@ header {
 
 body {
 	/**
-	 * Attach a source location to a node.
+	 * Attach a source location to an expression. Used like this:
+	 * <code>yyValue = at(yyStart, yyCount, yyValue)</code>
 	 */
 	private <E extends Locatable> E at(int start, int end, E e) {
 		Location startl = location(start);
-		Location endl = location(end-1);
+		Location endl = location(end-2);
 		e.setSourceLocation(new SourceLocation(
 			new File(startl.file), startl.line, startl.column,
 			endl.line, endl.column));
 		return e;
 	}
+	/**
+	 * Attach a source location to an infix binary operator.
+	 */
 	private <E extends Locatable> E at(Locatable start, Locatable end, E e) {
 		SourceLocation startl = start.getSourceLocation();
 		SourceLocation endl = end.getSourceLocation();
@@ -40,9 +44,12 @@ body {
 			endl.endLine, endl.endColumn));
 		return e;
 	}
+	/**
+	 * Attach a source location to a postfix operator.
+	 */
 	private <E extends Locatable> E at(Locatable start, int end, E e) {
 		SourceLocation startl = start.getSourceLocation();
-		Location endl = location(end-1);
+		Location endl = location(end-2);
 		e.setSourceLocation(new SourceLocation(
 			startl.file, startl.line, startl.column,
 			endl.line, endl.column));
@@ -117,17 +124,21 @@ List<Declaration> Include =
 Declaration Declaration =
 	SITE name:(Identifier / StringLiteral) EQ className:ClassName {
 		yyValue = new SiteDeclaration(name, className);
+		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ CLASS name:Identifier EQ className:ClassName {
 		yyValue = new ClassDeclaration(name, className);
+		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ defs:Definition+ {
 		// a block of definitions is treated as a single
 		// declaration (akin to a letrec)
 		yyValue = new DefsDeclaration(defs.list());
+		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ VAL p:Pattern EQ e:Body {
 		yyValue = new ValDeclaration(p, e);
+		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
 
@@ -490,12 +501,17 @@ Literal Literal =
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
+
+Expression Variable =
+	seed:Identifier {
+		yyValue = new Name(seed);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	;
 	
 Expression Call =
-	seed:Identifier actions:CallTail* {
-		yyValue = new Name(seed);
-		yyValue = at(yyStart, yyStart+seed.length(), yyValue);
-		yyValue = apply(actions, yyValue);
+	seed:Variable actions:CallTail* {
+		yyValue = apply(actions, seed);
 	}
 	;
 Action<Expression> CallTail =

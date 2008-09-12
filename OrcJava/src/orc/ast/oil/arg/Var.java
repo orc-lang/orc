@@ -27,7 +27,7 @@ public class Var extends Arg {
 	}
 
 	@Override
-	public Object resolve(Env<Object> env) {
+	public <T> T resolve(Env<T> env) {
 		return env.lookup(this.index);
 	}
 

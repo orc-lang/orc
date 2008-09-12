@@ -1,8 +1,6 @@
 package orc.error.compiletime;
 
-import orc.error.compiletime.SourceException;
-
-public class PatternException extends SourceException {
+public class PatternException extends CompilationException {
 
 	public PatternException(String message) {
 		super(message);
