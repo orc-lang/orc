@@ -1,6 +1,6 @@
 def isPrime(n) = 
   def primeat(i) = 
-  	val b = i * i <= n
+    val b = i * i <= n
       if(b) >> (n % i /= 0) && primeat(i+1)
     | if(~b) >> true
   primeat(2)
