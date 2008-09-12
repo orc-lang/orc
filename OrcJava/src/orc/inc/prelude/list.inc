@@ -31,6 +31,11 @@ def take(0, _) = []
 def take(_, []) = []
 def take(n, h:t) = h:take(n-1, t)
 
+def member(item, []) = false
+def member(item, h:t) =
+  if item = h then true
+  else member(item, t)
+
 def ForkJoin(ps) =
 	def par([]) = stop
 	def par(h:t) = h() | par(t)
