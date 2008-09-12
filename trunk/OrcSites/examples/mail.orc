@@ -1,7 +1,10 @@
 include "net.inc"
 
+val mailer = MailerFactory("mail.properties")
 val TO = "test@example.com"
 
-val mailer = MailerFactory("mail.properties")
-val get = MailQuery(mailer, TO, "query", "please respond")
-get()
+val message = mailer.newMessage("Hello", "Hello", TO)
+val transport = mailer.getTransport()
+transport.connect() >>
+transport.send(message) >>
+transport.close()
