@@ -43,7 +43,7 @@ public class OilSecurityValidator extends Walker {
 		String protocol = site.site.getProtocol();
 		String location = site.site.getLocation().toString();
 		if (protocol.equals(orc.ast.sites.Site.JAVA)) {
-			if (!location.startsWith("orc.lib.orchard")) {
+			if (!location.startsWith("orc.lib.")) {
 				hasProblems = true;
 				// FIXME: once we have source location information, use it
 				problems.add(new SecurityProblem(

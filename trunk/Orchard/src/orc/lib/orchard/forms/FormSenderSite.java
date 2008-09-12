@@ -11,12 +11,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import kilim.Mailbox;
 import kilim.Pausable;
-
 import orc.error.runtime.ArgumentTypeMismatchException;
-import orc.error.runtime.SiteException;
 import orc.error.runtime.TokenException;
-import orc.orchard.Job;
-import orc.orchard.Job.ProvidesGlobals;
 import orc.runtime.Args;
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
@@ -27,7 +23,7 @@ public class FormSenderSite extends Site {
 		private Mailbox<Map<String, Object>> outbox = new Mailbox<Map<String, Object>>();
 		private Form form;
 		private String key;
-		public FormReceiver(ProvidesGlobals globals, Form form) {
+		public FormReceiver(OrcEngine globals, Form form) {
 			this.form = form;
 			this.key = globals.addGlobal(this);
 		}
@@ -46,13 +42,8 @@ public class FormSenderSite extends Site {
 	@Override
 	public void callSite(Args args, Token caller) throws TokenException {
 		OrcEngine engine = caller.getEngine();
-		if (!(engine instanceof ProvidesGlobals)) {
-			throw new SiteException(
-					"This site is not supported on the engine " +
-					engine.getClass().toString());
-		}
 		try {
-			caller.resume(new FormReceiver((ProvidesGlobals)engine, (Form)args.getArg(0)));
+			caller.resume(new FormReceiver(engine, (Form)args.getArg(0)));
 		} catch (ClassCastException e) {
 			throw new ArgumentTypeMismatchException(e);
 		}
@@ -83,7 +74,7 @@ public class FormSenderSite extends Site {
 			send(response, "The URL is missing the required parameter 'k'.");
 			return;
 		}
-		FormReceiver f = (FormReceiver)Job.globals.get(key);
+		FormReceiver f = (FormReceiver)OrcEngine.globals.get(key);
 		if (f == null) {
 			send(response, "The URL is no longer valid.");
 			return;
@@ -95,7 +86,7 @@ public class FormSenderSite extends Site {
 		if (request.getParameter("x") != null) {
 			f.form.readRequest(request, errors);
 			if (errors.isEmpty()) {
-				Job.globals.remove(key);
+				OrcEngine.globals.remove(key);
 				f.send();
 				send(response, "Thank you for your response.");
 				return;

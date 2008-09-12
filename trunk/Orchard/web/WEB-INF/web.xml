@@ -21,6 +21,11 @@
 		<servlet-class>orc.orchard.FormsServlet</servlet-class>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
+	<servlet>
+		<servlet-name>MailListenerServlet</servlet-name>
+		<servlet-class>orc.orchard.MailListenerServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
 	<servlet-mapping>
 		<servlet-name>OrchardService</servlet-name>
 		<url-pattern>/soap/*</url-pattern>
@@ -36,6 +41,10 @@
 	<servlet-mapping>
 		<servlet-name>FormsServlet</servlet-name>
 		<url-pattern>/FormsServlet</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>MailListenerServlet</servlet-name>
+		<url-pattern>/MailListenerServlet</url-pattern>
 	</servlet-mapping>
 	<session-config>
 		<session-timeout>30</session-timeout>
