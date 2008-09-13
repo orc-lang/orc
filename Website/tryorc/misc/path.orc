@@ -7,31 +7,27 @@ In Prcoeedings of AMAST, 2008
 -}
 
 {- 
-source and sink are node identifiers 
-
-cell is a mapping from node identifiers 
-  to initially empty write-once cells
-  
-succ is an expression which takes a node 
-  identifiers and publishes the identifiers 
-  of all of its immediate neighbors
+Source and sink are node identifiers.
+Cell is a mapping from from node identifiers 
+to initially-empty write-once cells.
+Succ is a function which takes a node
+identifier and publishes the identifiers
+of all of its immediate neighbors.
 -} 
 def path(source, sink, cell, succ) =
-   
-    val timer = MakeTimer()
- 
-	def run(n) = cell(n).read() >p> 
-	             succ(n) >(m,d)> 
-	               timer(d) >> 
-	               cell(m).write(m:p) >>
-	               run(m)  
-	                 	
-	rev(cell(sink).read()) 
-	  << cell(source).write([source])
-	  << run(source)
+  val timer = MakeTimer()
+  def run(n,p) =
+    cell(n).write(p) >>
+    succ(n) >(m,d)>
+    timer(d) >>
+    run(m,m:p)
+  run(source, [source])
+  ; rev(cell(sink).read())
 
+-- A small test graph
+val source = 0
+val sink = 3
 
-{- A small test graph, defined procedurally -}
 val cell0 = Cell()
 val cell1 = Cell()
 val cell2 = Cell()
@@ -42,13 +38,10 @@ def cell(1) = cell1
 def cell(2) = cell2
 def cell(3) = cell3
 
-val source = 0
-val sink = 3
-
 def succ(0) = (1,2) | (2,6) | (3,9)
 def succ(1) = (3,7)
 def succ(2) = (3,2)
 def succ(3) = stop
 
-{- Shortest path: [0,2,3] -}
-path(source, sink, cell, succ)
+-- Shortest path: [0,2,3]
+
