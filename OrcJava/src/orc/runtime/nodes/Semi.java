@@ -26,6 +26,7 @@ public class Semi extends Node {
 	 */
 	public void process(Token t) {
 		Token forked = t.fork();
+		forked.unsetPending();
 		SemiRegion region = new SemiRegion(t.getRegion(), forked.move(right));
 		t.move(left).setRegion(region).activate();
 	}

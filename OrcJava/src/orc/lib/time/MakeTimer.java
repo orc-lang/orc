@@ -21,9 +21,8 @@ import orc.type.Type;
 public class MakeTimer extends Site {
 	
 	public void callSite(Args args, Token caller) {
-		
 		LogicalClock clock = new LogicalClock();
-		caller.getEngine().addClock(clock);
+		caller.getEngine().addLogicalClock(clock);
 		caller.resume(new LTimer(clock));
 	}
 	

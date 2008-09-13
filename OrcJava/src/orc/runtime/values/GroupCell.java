@@ -82,6 +82,7 @@ public class GroupCell implements Serializable, Future {
 				if (store != null) {
 					t.getTracer().unblock(store);
 				}
+				t.setPending();
 				t.activate();
 			}
 			waitList = null;
@@ -129,6 +130,7 @@ public class GroupCell implements Serializable, Future {
 				waitList = new LinkedList<Token>();
 			t.getTracer().block(pullTrace);
 			waitList.add(t);
+			t.unsetPending();
 		} else {
 			// A token waiting on a dead group cell will remain silent forever.
 			t.die();
