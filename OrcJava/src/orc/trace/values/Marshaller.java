@@ -30,7 +30,7 @@ public class Marshaller {
 		}
 		@Override
 		public Value visit(orc.runtime.values.SomeValue v) {
-			return new SomeValue(marshal(v));
+			return new SomeValue(marshal(v.content));
 		}
 		@Override
 		public Value visit(orc.runtime.values.Field v) {
