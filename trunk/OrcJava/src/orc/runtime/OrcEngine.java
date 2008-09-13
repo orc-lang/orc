@@ -303,6 +303,7 @@ public class OrcEngine implements Runnable {
 	}
 
 	synchronized void removePendingToken(Token token) {
+		assert(pendingTokens > 0);
 		--pendingTokens;
 		// we shouldn't advance the clocks immediately
 		// even if the pending tokens are all freed,

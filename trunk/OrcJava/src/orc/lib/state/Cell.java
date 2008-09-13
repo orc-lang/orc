@@ -16,9 +16,9 @@ import orc.runtime.sites.Site;
 /**
  * @author dkitchin
  *
- * Write-once mutable cell. 
- * Read operations block if the cell is empty.
- * Write operatons block if the cell is full.
+ * Write-once cell. 
+ * Read operations block while the cell is empty.
+ * Write operatons fail once the cell is full.
  *
  */
 public class Cell extends EvalSite {
