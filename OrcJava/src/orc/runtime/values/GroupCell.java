@@ -166,6 +166,9 @@ public class GroupCell implements Serializable, Future {
 			kill();
 			if (waitList != null) {
 				for (Token t : waitList) {
+					// setPending so that the token can unsetPending when it
+					// dies
+					t.setPending();
 					t.die();
 				}
 				waitList = null;

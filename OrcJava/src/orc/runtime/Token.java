@@ -79,7 +79,7 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 		this.alive = true;
 		this.tracer = tracer;
 		region.add(this);
-		engine.addPendingToken(this);
+		setPending();
 	}
 	
 	public Token(Node node, Env<Object> env, GroupCell group, Region region, OrcEngine engine, TokenTracer tracer) {
@@ -93,7 +93,7 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 		if (alive) {
 			alive = false;
 			region.remove(this);
-			engine.removePendingToken(this);
+			unsetPending();
 			tracer.die();
 		}
 	}
