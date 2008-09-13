@@ -16,6 +16,7 @@ public class SemiRegion extends Region {
 	
 	public void close(Token closer) {
 		t.getTracer().after(closer.getTracer().before());
+		t.setPending();
 		t.activate();
 		parent.remove(this, closer);
 	}
@@ -23,5 +24,4 @@ public class SemiRegion extends Region {
 	public Region getParent() {
 		return parent;
 	}
-
 }
