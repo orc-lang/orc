@@ -90,7 +90,7 @@ function jsonToHtml(v) {
 				}
 				return out.substring(0, out.length-2) + '}';
 			}
-			return '';
+			return v+""; // toString
 	}
 }
 
@@ -201,9 +201,9 @@ function orcify(code, defaultConfig) {
 	function renderTokenError(p) {
 		appendEventHtml('<div class="orc-error">'
 			+ escapeHtml(p.message)
-			+ (p.location
+			+ (p.location && p.location.file
 				? ' at '
-					+ escapeHtml(p.location.filename)
+					+ escapeHtml(p.location.file)
 					+ ':' + p.location.line
 					+ ':' + p.location.column
 				: '')
