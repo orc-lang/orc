@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="ASCII"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+<xsl:stylesheet exclude-result-prefixes="d"
+                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:d="http://docbook.org/ns/docbook"
+version="1.0">
 
 <!-- This file is generated from param.xweb -->
 
@@ -138,7 +140,7 @@
   <xsl:attribute name="hyphenate">false</xsl:attribute>
   <xsl:attribute name="text-align">
     <xsl:choose>
-      <xsl:when test="((parent::article | parent::articleinfo | parent::info/parent::article) and not(ancestor::book) and not(self::bibliography))         or (parent::slides | parent::slidesinfo)">center</xsl:when>
+      <xsl:when test="((parent::d:article | parent::d:articleinfo | parent::d:info/parent::d:article) and not(ancestor::d:book) and not(self::d:bibliography))         or (parent::d:slides | parent::d:slidesinfo)">center</xsl:when>
       <xsl:otherwise>left</xsl:otherwise>
     </xsl:choose>
   </xsl:attribute>
@@ -302,6 +304,7 @@ set       toc,title
 <xsl:param name="headers.on.blank.pages" select="1"/>
 <xsl:param name="highlight.default.language"/>
 <xsl:param name="highlight.source" select="0"/>
+<xsl:param name="highlight.xslthl.config"/>
 <xsl:param name="hyphenate">true</xsl:param>
 <xsl:param name="hyphenate.verbatim" select="0"/>
 <xsl:param name="hyphenate.verbatim.characters"/>

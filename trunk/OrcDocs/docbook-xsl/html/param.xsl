@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="ASCII"?>
 <!-- This file is generated from param.xweb -->
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+<xsl:stylesheet exclude-result-prefixes="d"
+                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:d="http://docbook.org/ns/docbook"
+version="1.0">
 
 <!-- ********************************************************************
      $Id$
@@ -190,6 +192,7 @@ set       toc,title
 <xsl:param name="header.rule" select="1"/>
 <xsl:param name="highlight.default.language"/>
 <xsl:param name="highlight.source" select="0"/>
+<xsl:param name="highlight.xslthl.config"/>
 <xsl:param name="html.append"/>
 <xsl:param name="html.base"/>
 <xsl:param name="html.cellpadding"/>
