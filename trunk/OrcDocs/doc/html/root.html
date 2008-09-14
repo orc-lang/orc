@@ -1,8 +1,8 @@
-<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title></title><link href="style.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="book" lang="en"><div class="titlepage"><hr></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="chapter"><a href="#N2000E">1. The Orc Programming Language</a></span></dt><dd><dl><dt><span class="section"><a href="#N20012">1.1. Introduction</a></span></dt><dd><dl><dt><span class="section"><a href="#N2003E">1.1.1. Base Expression</a></span></dt><dt><span class="section"><a href="#N20049">1.1.2. Cor</a></span></dt></dl></dd><dt><span class="section"><a href="#N20055">1.2. Cor</a></span></dt><dd><dl><dt><span class="section"><a href="#N20074">1.2.1. Constants</a></span></dt><dt><span class="section"><a href="#language.base.oeprators">1.2.2. Operators</a></span></dt><dt><span class="section"><a href="#N20218">1.2.3. Conditionals</a></span></dt><dt><span class="section"><a href="#N2031C">1.2.4. Variables</a></span></dt><dt><span class="section"><a href="#N20361">1.2.5. Data Structures</a></span></dt><dt><span class="section"><a href="#N20402">1.2.6. Patterns</a></span></dt><dt><span class="section"><a href="#N2047D">1.2.7. Functions</a></span></dt><dt><span class="section"><a href="#N2054E">1.2.8. Comments</a></span></dt></dl></dd><dt><span class="section"><a href="#N20569">1.3. Communicating with external services</a></span></dt><dd><dl><dt><span class="section"><a href="#N20576">1.3.1. Calling a site</a></span></dt><dt><span class="section"><a href="#N20599">1.3.2. Declaring sites</a></span></dt></dl></dd><dt><span class="section"><a href="#N205A8">1.4. The concurrency combinators of Orc</a></span></dt><dd><dl><dt><span class="section"><a href="#N205B2">1.4.1. Bar: Parallelism and publications</a></span></dt><dt><span class="section"><a href="#N205EC">1.4.2. Push: Capturing publications</a></span></dt><dt><span class="section"><a href="#N2062A">1.4.3. Pull: Making val concurrent</a></span></dt></dl></dd><dt><span class="section"><a href="#N20657">1.5. Additional Features</a></span></dt><dd><dl><dt><span class="section"><a href="#N2065E">1.5.1. Special call forms</a></span></dt><dt><span class="section"><a href="#N206C7">1.5.2. Special patterns</a></span></dt><dt><span class="section"><a href="#N20741">1.5.3. The before combinator</a></span></dt></dl></dd></dl></dd></dl></div>
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title></title><link href="style.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="book" lang="en"><div class="titlepage"><hr></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="chapter"><a href="#N2000F">1. The Orc Programming Language</a></span></dt><dd><dl><dt><span class="section"><a href="#N20013">1.1. Introduction</a></span></dt><dd><dl><dt><span class="section"><a href="#N2003F">1.1.1. Base Expression</a></span></dt><dt><span class="section"><a href="#N2004A">1.1.2. Cor</a></span></dt></dl></dd><dt><span class="section"><a href="#N20056">1.2. Cor</a></span></dt><dd><dl><dt><span class="section"><a href="#N20075">1.2.1. Constants</a></span></dt><dt><span class="section"><a href="#language.base.oeprators">1.2.2. Operators</a></span></dt><dt><span class="section"><a href="#N20219">1.2.3. Conditionals</a></span></dt><dt><span class="section"><a href="#N2031D">1.2.4. Variables</a></span></dt><dt><span class="section"><a href="#N20363">1.2.5. Data Structures</a></span></dt><dt><span class="section"><a href="#N20404">1.2.6. Patterns</a></span></dt><dt><span class="section"><a href="#N2047F">1.2.7. Functions</a></span></dt><dt><span class="section"><a href="#N20551">1.2.8. Comments</a></span></dt></dl></dd><dt><span class="section"><a href="#N2056C">1.3. Communicating with external services</a></span></dt><dd><dl><dt><span class="section"><a href="#N20579">1.3.1. Calling a site</a></span></dt><dt><span class="section"><a href="#N2059D">1.3.2. Declaring sites</a></span></dt></dl></dd><dt><span class="section"><a href="#N205AC">1.4. The concurrency combinators of Orc</a></span></dt><dd><dl><dt><span class="section"><a href="#N205B6">1.4.1. Bar: Parallelism and publications</a></span></dt><dt><span class="section"><a href="#N205F0">1.4.2. Push: Capturing publications</a></span></dt><dt><span class="section"><a href="#N2062E">1.4.3. Pull: Making val concurrent</a></span></dt></dl></dd><dt><span class="section"><a href="#N2065B">1.5. Additional Features</a></span></dt><dd><dl><dt><span class="section"><a href="#N20662">1.5.1. Special call forms</a></span></dt><dt><span class="section"><a href="#N206CB">1.5.2. Special patterns</a></span></dt><dt><span class="section"><a href="#N20747">1.5.3. The before combinator</a></span></dt></dl></dd></dl></dd></dl></div>
 
-<div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="N2000E"></a>Chapter&nbsp;1.&nbsp;The Orc Programming Language</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#N20012">1.1. Introduction</a></span></dt><dd><dl><dt><span class="section"><a href="#N2003E">1.1.1. Base Expression</a></span></dt><dt><span class="section"><a href="#N20049">1.1.2. Cor</a></span></dt></dl></dd><dt><span class="section"><a href="#N20055">1.2. Cor</a></span></dt><dd><dl><dt><span class="section"><a href="#N20074">1.2.1. Constants</a></span></dt><dt><span class="section"><a href="#language.base.oeprators">1.2.2. Operators</a></span></dt><dt><span class="section"><a href="#N20218">1.2.3. Conditionals</a></span></dt><dt><span class="section"><a href="#N2031C">1.2.4. Variables</a></span></dt><dt><span class="section"><a href="#N20361">1.2.5. Data Structures</a></span></dt><dt><span class="section"><a href="#N20402">1.2.6. Patterns</a></span></dt><dt><span class="section"><a href="#N2047D">1.2.7. Functions</a></span></dt><dt><span class="section"><a href="#N2054E">1.2.8. Comments</a></span></dt></dl></dd><dt><span class="section"><a href="#N20569">1.3. Communicating with external services</a></span></dt><dd><dl><dt><span class="section"><a href="#N20576">1.3.1. Calling a site</a></span></dt><dt><span class="section"><a href="#N20599">1.3.2. Declaring sites</a></span></dt></dl></dd><dt><span class="section"><a href="#N205A8">1.4. The concurrency combinators of Orc</a></span></dt><dd><dl><dt><span class="section"><a href="#N205B2">1.4.1. Bar: Parallelism and publications</a></span></dt><dt><span class="section"><a href="#N205EC">1.4.2. Push: Capturing publications</a></span></dt><dt><span class="section"><a href="#N2062A">1.4.3. Pull: Making val concurrent</a></span></dt></dl></dd><dt><span class="section"><a href="#N20657">1.5. Additional Features</a></span></dt><dd><dl><dt><span class="section"><a href="#N2065E">1.5.1. Special call forms</a></span></dt><dt><span class="section"><a href="#N206C7">1.5.2. Special patterns</a></span></dt><dt><span class="section"><a href="#N20741">1.5.3. The before combinator</a></span></dt></dl></dd></dl></div>
+<div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="N2000F"></a>Chapter&nbsp;1.&nbsp;The Orc Programming Language</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#N20013">1.1. Introduction</a></span></dt><dd><dl><dt><span class="section"><a href="#N2003F">1.1.1. Base Expression</a></span></dt><dt><span class="section"><a href="#N2004A">1.1.2. Cor</a></span></dt></dl></dd><dt><span class="section"><a href="#N20056">1.2. Cor</a></span></dt><dd><dl><dt><span class="section"><a href="#N20075">1.2.1. Constants</a></span></dt><dt><span class="section"><a href="#language.base.oeprators">1.2.2. Operators</a></span></dt><dt><span class="section"><a href="#N20219">1.2.3. Conditionals</a></span></dt><dt><span class="section"><a href="#N2031D">1.2.4. Variables</a></span></dt><dt><span class="section"><a href="#N20363">1.2.5. Data Structures</a></span></dt><dt><span class="section"><a href="#N20404">1.2.6. Patterns</a></span></dt><dt><span class="section"><a href="#N2047F">1.2.7. Functions</a></span></dt><dt><span class="section"><a href="#N20551">1.2.8. Comments</a></span></dt></dl></dd><dt><span class="section"><a href="#N2056C">1.3. Communicating with external services</a></span></dt><dd><dl><dt><span class="section"><a href="#N20579">1.3.1. Calling a site</a></span></dt><dt><span class="section"><a href="#N2059D">1.3.2. Declaring sites</a></span></dt></dl></dd><dt><span class="section"><a href="#N205AC">1.4. The concurrency combinators of Orc</a></span></dt><dd><dl><dt><span class="section"><a href="#N205B6">1.4.1. Bar: Parallelism and publications</a></span></dt><dt><span class="section"><a href="#N205F0">1.4.2. Push: Capturing publications</a></span></dt><dt><span class="section"><a href="#N2062E">1.4.3. Pull: Making val concurrent</a></span></dt></dl></dd><dt><span class="section"><a href="#N2065B">1.5. Additional Features</a></span></dt><dd><dl><dt><span class="section"><a href="#N20662">1.5.1. Special call forms</a></span></dt><dt><span class="section"><a href="#N206CB">1.5.2. Special patterns</a></span></dt><dt><span class="section"><a href="#N20747">1.5.3. The before combinator</a></span></dt></dl></dd></dl></div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N20012"></a>1.1.&nbsp;Introduction</h2></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N20013"></a>1.1.&nbsp;Introduction</h2></div></div></div>
 
 <p>
 Orc is a programming language designed to make distributed and
@@ -22,10 +22,10 @@ learn more about Orc and its community of users, visit our website:
 
 <p>
 This chapter describes the Orc programming language. The language is
-built around <em class="firstterm">expressions</em>. Given that <code class="code">f</code>, 
-<code class="code">g</code> and <code class="code">h</code> are Orc expressions, an expression is defined by
+built around <em class="firstterm">expressions</em>. Given that <code class="code"><span class="hl-variable">f</span></code>, 
+<code class="code"><span class="hl-variable">g</span></code> and <code class="code"><span class="hl-variable">h</span></code> are Orc expressions, an expression is defined by
 
-<code class="code">f</code> <code class="code">::=</code> base expression | <code class="code">g | h</code> | <code class="code">g &gt;x&gt; h</code> | <code class="code">g &lt;x&lt; h</code>
+<code class="code"><span class="hl-variable">f</span></code> <code class="code">::=</code> base expression | <code class="code"><span class="hl-variable">g</span><span class="hl-combinator"> | </span><span class="hl-variable">h</span></code> | <code class="code"><span class="hl-variable">g</span> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">h</span></code> | <code class="code"><span class="hl-variable">g</span> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> <span class="hl-variable">h</span></code>
 
 The language supports a variety of other ways of writing expressions
 in structured manner, but they are all based on the constructs shown
@@ -37,7 +37,7 @@ features that support the concurrency combinators in Section ... . Next, we
 describe base expressions. 
 </p>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N2003E"></a>1.1.1.&nbsp;Base Expression</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N2003F"></a>1.1.1.&nbsp;Base Expression</h3></div></div></div>
 
 <p>
 Base expressions are either calls to
@@ -47,13 +47,13 @@ or simple (functional) expressions that can evaluated locally, (next Section ..)
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20049"></a>1.1.2.&nbsp;Cor</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N2004A"></a>1.1.2.&nbsp;Cor</h3></div></div></div>
 <p>
 Cor is a functional subset of Orc. The original Orc
 calculus [reference] did not include a functional subset; thus to
 compute 3+4, an external service for addition was called with the
 arguments 3 and 4. We retain the underlying philosophy of Orc, but
-we also allow the user to simply write <code class="code">3+4</code>, or even functional
+we also allow the user to simply write <code class="code"><span class="hl-literal">3</span>+<span class="hl-literal">4</span></code>, or even functional
 programs in a restricted language, which are then translated to calls
 on appropriate services.
 </p>
@@ -62,7 +62,7 @@ on appropriate services.
 
 </div> 
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N20055"></a>1.2.&nbsp;Cor</h2></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N20056"></a>1.2.&nbsp;Cor</h2></div></div></div>
  
 <p>
 In this section we introduce <span class="emphasis"><em>Cor</em></span>, a subset of the Orc language.
@@ -81,14 +81,14 @@ result</em> of the expression.
 <p>
 In the following subsections we'll introduce the concepts of Cor. First, we'll talk about
 simple constants, such as numbers and truth values, and the operations that we can perform
-on those values. Then we'll introduce conditionals (<code class="code">if/then/else</code>). Then we'll 
+on those values. Then we'll introduce conditionals (<code class="code"><span class="hl-keyword">if</span>/<span class="hl-keyword">then</span>/<span class="hl-keyword">else</span></code>). Then we'll 
 introduce variables and binding, as a way to give a name to the value of an expression. 
 After that, we'll talk about constructing data structures, and examining those structures
 using patterns. Lastly, we'll introduce functions.
 </p> 
 
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20074"></a>1.2.1.&nbsp;Constants</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20075"></a>1.2.1.&nbsp;Constants</h3></div></div></div>
 <p>
 The simplest expression one can write is a constant. It evaluates trivially
 to that constant value. 
@@ -99,11 +99,11 @@ to that constant value.
 Cor has three types of constants, and thus for the moment three types of values:
 
 <div class="itemizedlist"><ul type="disc"><li>
-Integers: <code class="code"> ... -1, 0, 1 ... </code>
+Integers: <code class="code"> ... -<span class="hl-literal">1</span>, <span class="hl-literal">0</span>, <span class="hl-literal">1</span> ... </code>
 </li><li>
-Booleans: <code class="code">true</code> and <code class="code">false</code>
+Booleans: <code class="code"><span class="hl-literal">true</span></code> and <code class="code"><span class="hl-literal">false</span></code>
 </li><li>
-Strings: <code class="code">"orc"</code>, <code class="code">"ceci n'est pas une |"</code>
+Strings: <code class="code"><span class="hl-literal">"orc"</span></code>, <code class="code"><span class="hl-literal">"ceci n'est pas une |"</span></code>
 </li></ul></div>
 </p>
 
@@ -118,7 +118,7 @@ overridden by adding parentheses.
 </p>
 
 <p>
-<div class="itemizedlist"><p class="title"><b>Examples</b></p><ul type="disc"><li><code class="code">1+2</code> evaluates to <code class="code">3</code>.</li><li><code class="code">(98+2)*17</code> evaluates to <code class="code">1700</code>.</li><li><code class="code">4 = 20 / 5</code> evaluates to <code class="code">true</code>.</li><li><code class="code">3-5 &gt;= 5-3 </code> evaluates to <code class="code">false</code>.</li><li><code class="code">true &amp;&amp; (false || true)</code> evaluates to <code class="code">true</code>.</li><li><code class="code">"leap" + "frog"</code> evaluates to <code class="code">"leapfrog"</code>.</li></ul></div>
+<div class="itemizedlist"><p class="title"><b>Examples</b></p><ul type="disc"><li><code class="code"><span class="hl-literal">1</span>+<span class="hl-literal">2</span></code> evaluates to <code class="code"><span class="hl-literal">3</span></code>.</li><li><code class="code">(<span class="hl-literal">98</span>+<span class="hl-literal">2</span>)*<span class="hl-literal">17</span></code> evaluates to <code class="code"><span class="hl-literal">1700</span></code>.</li><li><code class="code"><span class="hl-literal">4</span> = <span class="hl-literal">20</span> / <span class="hl-literal">5</span></code> evaluates to <code class="code"><span class="hl-literal">true</span></code>.</li><li><code class="code"><span class="hl-literal">3</span>-<span class="hl-literal">5</span> <span class="hl-combinator">&gt;</span>= <span class="hl-literal">5</span>-<span class="hl-literal">3</span> </code> evaluates to <code class="code"><span class="hl-literal">false</span></code>.</li><li><code class="code"><span class="hl-literal">true</span> &amp;&amp; (<span class="hl-literal">false</span> || <span class="hl-literal">true</span>)</code> evaluates to <code class="code"><span class="hl-literal">true</span></code>.</li><li><code class="code"><span class="hl-literal">"leap"</span> + <span class="hl-literal">"frog"</span></code> evaluates to <code class="code"><span class="hl-literal">"leapfrog"</span></code>.</li></ul></div>
 </p>
 
 <p>
@@ -138,7 +138,7 @@ The <code class="code">=</code> operator can compare values of any type.
 </p>
 
 <p>
-<div class="itemizedlist"><p class="title"><b>Examples</b></p><ul type="disc"><li><code class="code">10 = true</code> evaluates to <code class="code">false</code>.</li></ul></div>
+<div class="itemizedlist"><p class="title"><b>Examples</b></p><ul type="disc"><li><code class="code"><span class="hl-literal">10</span> = <span class="hl-literal">true</span></code> evaluates to <code class="code"><span class="hl-literal">false</span></code>.</li></ul></div>
 </p>
 
 <p>
@@ -149,7 +149,7 @@ subexpression.
 </p>
 
 <p>
-<div class="itemizedlist"><p class="title"><b>Examples</b></p><ul type="disc"><li><code class="code">10 / 0</code> is silent.</li><li><code class="code">6 + false</code> is silent.</li><li><code class="code">3 + 1/0</code> is silent.</li><li><code class="code">4 + true = 5</code> is silent.</li></ul></div>
+<div class="itemizedlist"><p class="title"><b>Examples</b></p><ul type="disc"><li><code class="code"><span class="hl-literal">10</span> / <span class="hl-literal">0</span></code> is silent.</li><li><code class="code"><span class="hl-literal">6</span> + <span class="hl-literal">false</span></code> is silent.</li><li><code class="code"><span class="hl-literal">3</span> + <span class="hl-literal">1</span>/<span class="hl-literal">0</span></code> is silent.</li><li><code class="code"><span class="hl-literal">4</span> + <span class="hl-literal">true</span> = <span class="hl-literal">5</span></code> is silent.</li></ul></div>
 </p>
 
 <p>
@@ -160,16 +160,16 @@ of an expression; instead, an expression with a type error is simply silent when
 </div>
 
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20218"></a>1.2.3.&nbsp;Conditionals</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20219"></a>1.2.3.&nbsp;Conditionals</h3></div></div></div>
 
 <p>
 A conditional expression in Cor is of the form 
-<code class="code">if</code> <span class="emphasis"><em>b</em></span> <code class="code">then&gt;</code> <span class="emphasis"><em>f</em></span> <code class="code">else</code> <span class="emphasis"><em>g</em></span>. 
+<code class="code"><span class="hl-keyword">if</span></code> <span class="emphasis"><em>b</em></span> <code class="code"><span class="hl-keyword">then</span>&gt;</code> <span class="emphasis"><em>f</em></span> <code class="code"><span class="hl-keyword">else</span></code> <span class="emphasis"><em>g</em></span>. 
 Its meaning is similar to that in other languages: the value
 of the expression is the value of <span class="emphasis"><em>f</em></span> if <span class="emphasis"><em>b</em></span> is true, 
 or the value of <span class="emphasis"><em>g</em></span> if <span class="emphasis"><em>b</em></span> is false. Note that <span class="emphasis"><em>f</em></span> is 
 evaluated only if <span class="emphasis"><em>b</em></span> is true and <span class="emphasis"><em>g</em></span> only if <span class="emphasis"><em>b</em></span> is false. 
-Thus, evaluation of <code class="code">if 3 = 3 then 5 else 1/0</code> does not cause any error. 
+Thus, evaluation of <code class="code"><span class="hl-keyword">if</span> <span class="hl-literal">3</span> = <span class="hl-literal">3</span> <span class="hl-keyword">then</span> <span class="hl-literal">5</span> <span class="hl-keyword">else</span> <span class="hl-literal">1</span>/<span class="hl-literal">0</span></code> does not cause any error. 
 </p>
 
 <p>
@@ -186,62 +186,62 @@ where <span class="emphasis"><em>v</em></span> denotes a value.
 <div class="informaltable"><a name="cond-table"></a> 
 
 
-<table border="0" width="50%"><colgroup><col align="center"><col align="center"><col align="center"><col align="center"></colgroup><thead><tr><th align="center"><span class="emphasis"><em>bexp</em></span></th><th align="center"><span class="emphasis"><em>texp</em></span></th><th align="center"><span class="emphasis"><em>fexp</em></span></th><th align="center"><span class="emphasis"><em>result</em></span></th></tr></thead><tbody><tr><td align="center"><code class="code">true</code></td><td align="center"><span class="emphasis"><em>v</em></span></td><td align="center">-</td><td align="center"><span class="emphasis"><em>v</em></span></td></tr><tr><td align="center"><code class="code">true</code></td><td align="center">silent</td><td align="center">-</td><td align="center">silent</td></tr><tr><td align="center"><code class="code">false</code></td><td align="center">-</td><td align="center"><span class="emphasis"><em>v</em></span></td><td align="center"><span class="emphasis"><em>v</em></span></td></tr><tr><td align="center"><code class="code">false</code></td><td align="center">-</td><td align="center">silent</td><td align="center">silent</td></tr><tr><td align="center">silent</td><td align="center">-</td><td align="center">-</td><td align="center">silent</td></tr></tbody></table>
+<table border="0" width="50%"><colgroup><col align="center"><col align="center"><col align="center"><col align="center"></colgroup><thead><tr><th align="center"><span class="emphasis"><em>bexp</em></span></th><th align="center"><span class="emphasis"><em>texp</em></span></th><th align="center"><span class="emphasis"><em>fexp</em></span></th><th align="center"><span class="emphasis"><em>result</em></span></th></tr></thead><tbody><tr><td align="center"><code class="code"><span class="hl-literal">true</span></code></td><td align="center"><span class="emphasis"><em>v</em></span></td><td align="center">-</td><td align="center"><span class="emphasis"><em>v</em></span></td></tr><tr><td align="center"><code class="code"><span class="hl-literal">true</span></code></td><td align="center">silent</td><td align="center">-</td><td align="center">silent</td></tr><tr><td align="center"><code class="code"><span class="hl-literal">false</span></code></td><td align="center">-</td><td align="center"><span class="emphasis"><em>v</em></span></td><td align="center"><span class="emphasis"><em>v</em></span></td></tr><tr><td align="center"><code class="code"><span class="hl-literal">false</span></code></td><td align="center">-</td><td align="center">silent</td><td align="center">silent</td></tr><tr><td align="center">silent</td><td align="center">-</td><td align="center">-</td><td align="center">silent</td></tr></tbody></table>
 </div>
 
 </p>
 
 <p>
-<div class="itemizedlist"><p class="title"><b>Examples</b></p><ul type="disc"><li><code class="code">if true then 4 else 5</code> evaluates to <code class="code">5</code>.</li><li><code class="code">if  2 &lt; 3 &amp;&amp; 5 &lt; 4  then "blue" else "green"</code> evaluates to "green".</li><li><code class="code">if  true || "fish"  then "yes" else "no"</code> is silent.</li><li><code class="code">if  false || false  then 4+true else 4+5</code> is silent.</li><li><code class="code">if 0 &lt; 5 then 0/5 else 5/0</code> evaluates to 0.</li></ul></div>
+<div class="itemizedlist"><p class="title"><b>Examples</b></p><ul type="disc"><li><code class="code"><span class="hl-keyword">if</span> <span class="hl-literal">true</span> <span class="hl-keyword">then</span> <span class="hl-literal">4</span> <span class="hl-keyword">else</span> <span class="hl-literal">5</span></code> evaluates to <code class="code"><span class="hl-literal">5</span></code>.</li><li><code class="code"><span class="hl-keyword">if</span>  <span class="hl-literal">2</span> &lt; <span class="hl-literal">3</span> &amp;&amp; <span class="hl-literal">5</span> &lt; <span class="hl-literal">4</span>  <span class="hl-keyword">then</span> <span class="hl-literal">"blue"</span> <span class="hl-keyword">else</span> <span class="hl-literal">"green"</span></code> evaluates to "green".</li><li><code class="code"><span class="hl-keyword">if</span>  <span class="hl-literal">true</span> || <span class="hl-literal">"fish"</span>  <span class="hl-keyword">then</span> <span class="hl-literal">"yes"</span> <span class="hl-keyword">else</span> <span class="hl-literal">"no"</span></code> is silent.</li><li><code class="code"><span class="hl-keyword">if</span>  <span class="hl-literal">false</span> || <span class="hl-literal">false</span>  <span class="hl-keyword">then</span> <span class="hl-literal">4</span>+<span class="hl-literal">true</span> <span class="hl-keyword">else</span> <span class="hl-literal">4</span>+<span class="hl-literal">5</span></code> is silent.</li><li><code class="code"><span class="hl-keyword">if</span> <span class="hl-literal">0</span> &lt; <span class="hl-literal">5</span> <span class="hl-keyword">then</span> <span class="hl-literal">0</span>/<span class="hl-literal">5</span> <span class="hl-keyword">else</span> <span class="hl-literal">5</span>/<span class="hl-literal">0</span></code> evaluates to 0.</li></ul></div>
 </p>
 
 
 </div>
 
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N2031C"></a>1.2.4.&nbsp;Variables</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N2031D"></a>1.2.4.&nbsp;Variables</h3></div></div></div>
 
 <p>
 A <em class="firstterm">variable</em> is a way of naming the value of some expression so that we can use it later.
-Expression <code class="code">x</code>, where x is some variable name, evaluates to the result <em class="firstterm">bound</em>
+Expression <code class="code"><span class="hl-variable">x</span></code>, where x is some variable name, evaluates to the result <em class="firstterm">bound</em>
 to the variable x.
 </p>
 
 <p>
 Variables are bound using a <em class="firstterm">declaration</em>. A declaration is a statement that has no value 
-of its own but instead binds one or more variables. The simplest declaration is <code class="code">val</code>, which 
+of its own but instead binds one or more variables. The simplest declaration is <code class="code"><span class="hl-keyword">val</span></code>, which 
 evaluates an expression and binds its result to a variable. Declarations follow the rules of 
 <a class="ulink" href="http://en.wikipedia.org/wiki/Lexical_scope" target="_top">lexical scoping</a>.
 </p>
 
 <p>
 <pre class="programlisting">
-val x = 1 + 2 + 3 + 4 + 5
-val y = x + x
+<span class="hl-keyword">val</span> <span class="hl-variable">x</span> = <span class="hl-literal">1</span> + <span class="hl-literal">2</span> + <span class="hl-literal">3</span> + <span class="hl-literal">4</span> + <span class="hl-literal">5</span>
+<span class="hl-keyword">val</span> <span class="hl-variable">y</span> = <span class="hl-variable">x</span> + <span class="hl-variable">x</span>
 </pre>
 
-These declarations bind variable <code class="code">x</code> to 15 and variable <code class="code">y</code> to 30.
+These declarations bind variable <code class="code"><span class="hl-variable">x</span></code> to 15 and variable <code class="code"><span class="hl-variable">y</span></code> to 30.
 </p>
 
 
 <p>
-If the expression on the right side of a <code class="code">val</code> is silent, then the variable is not bound, but 
+If the expression on the right side of a <code class="code"><span class="hl-keyword">val</span></code> is silent, then the variable is not bound, but 
 evaluation of other declarations and expressions can continue. If an evaluated expression depends on that
 variable, that expression is silent.
 
-<pre class="programlisting">
-val x = 1/0
-val y = 4+5
-if false then x else y
+<pre class="orc">
+<span class="hl-keyword">val</span> <span class="hl-variable">x</span> = <span class="hl-literal">1</span>/<span class="hl-literal">0</span>
+<span class="hl-keyword">val</span> <span class="hl-variable">y</span> = <span class="hl-literal">4</span>+<span class="hl-literal">5</span>
+<span class="hl-keyword">if</span> <span class="hl-literal">false</span> <span class="hl-keyword">then</span> <span class="hl-variable">x</span> <span class="hl-keyword">else</span> <span class="hl-variable">y</span>
 </pre>
 
-Evaluation of the declaration and <code class="code">val y = 4+5</code> and the expression <code class="code">if false then x else y</code>
-may continue even though <code class="code">x</code> is not bound. The expression evaluates to 9.
+Evaluation of the declaration and <code class="code"><span class="hl-keyword">val</span> <span class="hl-variable">y</span> = <span class="hl-literal">4</span>+<span class="hl-literal">5</span></code> and the expression <code class="code"><span class="hl-keyword">if</span> <span class="hl-literal">false</span> <span class="hl-keyword">then</span> <span class="hl-variable">x</span> <span class="hl-keyword">else</span> <span class="hl-variable">y</span></code>
+may continue even though <code class="code"><span class="hl-variable">x</span></code> is not bound. The expression evaluates to 9.
 
 </p>
 
 <div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3>
-<code class="code">val</code> expresses a limited form of concurrency called <span class="emphasis"><em>declarative concurrency</em></span> (add
+<code class="code"><span class="hl-keyword">val</span></code> expresses a limited form of concurrency called <span class="emphasis"><em>declarative concurrency</em></span> (add
 biblio reference to CTMCP). A declaration may be evaluated in parallel with the declarations and expressions that
 follow it; any expression which uses a variable introduced by a declaration that is still evaluating will wait for
 that evaluation to complete. However, since Cor is a purely declarative language, and cannot express state changes
@@ -252,7 +252,7 @@ Cor.
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20361"></a>1.2.5.&nbsp;Data Structures</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20363"></a>1.2.5.&nbsp;Data Structures</h3></div></div></div>
 
 <p>
 Cor supports two basic data structures, <em class="firstterm">tuples</em> and <em class="firstterm">lists</em>.
@@ -266,7 +266,7 @@ If any of the expressions is silent, then the whole tuple expression is silent.
 </p>
 
 <p>
-<div class="itemizedlist"><p class="title"><b>Examples</b></p><ul type="disc"><li><code class="code">(1+2, 7)</code> evaluates to <code class="code">(3,7)</code>.</li><li><code class="code"> ("true" + "false", true || false, true &amp;&amp; false) </code> evaluates to <code class="code">("truefalse", true, false)</code>.</li><li><code class="code">(2/2, 2/1, 2/0)</code> is silent.</li></ul></div>
+<div class="itemizedlist"><p class="title"><b>Examples</b></p><ul type="disc"><li><code class="code">(<span class="hl-literal">1</span>+<span class="hl-literal">2</span>, <span class="hl-literal">7</span>)</code> evaluates to <code class="code">(<span class="hl-literal">3</span>,<span class="hl-literal">7</span>)</code>.</li><li><code class="code"> (<span class="hl-literal">"true"</span> + <span class="hl-literal">"false"</span>, <span class="hl-literal">true</span> || <span class="hl-literal">false</span>, <span class="hl-literal">true</span> &amp;&amp; <span class="hl-literal">false</span>) </code> evaluates to <code class="code">(<span class="hl-literal">"truefalse"</span>, <span class="hl-literal">true</span>, <span class="hl-literal">false</span>)</code>.</li><li><code class="code">(<span class="hl-literal">2</span>/<span class="hl-literal">2</span>, <span class="hl-literal">2</span>/<span class="hl-literal">1</span>, <span class="hl-literal">2</span>/<span class="hl-literal">0</span>)</code> is silent.</li></ul></div>
 </p>
 
 <p>
@@ -277,7 +277,7 @@ If any of the expressions is silent, then the whole list expression is silent.
 </p>
 
 <p>
-<div class="itemizedlist"><p class="title"><b>Examples</b></p><ul type="disc"><li><code class="code">[1,2+3] </code> evaluates to <code class="code">[1,5]</code>.</li><li><code class="code"> [true &amp;&amp; true]  </code> evaluates to <code class="code">[true]</code>.</li><li><code class="code">[]</code> evaluates trivially to <code class="code">[]</code>, the empty list.</li><li><code class="code">[5, 5 + true, 5]</code> is silent.</li></ul></div>
+<div class="itemizedlist"><p class="title"><b>Examples</b></p><ul type="disc"><li><code class="code">[<span class="hl-literal">1</span>,<span class="hl-literal">2</span>+<span class="hl-literal">3</span>] </code> evaluates to <code class="code">[<span class="hl-literal">1</span>,<span class="hl-literal">5</span>]</code>.</li><li><code class="code"> [<span class="hl-literal">true</span> &amp;&amp; <span class="hl-literal">true</span>]  </code> evaluates to <code class="code">[<span class="hl-literal">true</span>]</code>.</li><li><code class="code">[]</code> evaluates trivially to <code class="code">[]</code>, the empty list.</li><li><code class="code">[<span class="hl-literal">5</span>, <span class="hl-literal">5</span> + <span class="hl-literal">true</span>, <span class="hl-literal">5</span>]</code> is silent.</li></ul></div>
 </p>
 
 <p>
@@ -289,20 +289,20 @@ result of <span class="emphasis"><em>h</em></span> and whose remaining elements 
 </p>
 
 <p>
-<div class="itemizedlist"><p class="title"><b>Examples</b></p><ul type="disc"><li><code class="code">(1+3):[2+5,6]</code> evaluates to <code class="code">[4,7,6]</code>.</li><li><code class="code">2:2:5:[] </code> evaluates to <code class="code">[2,2,5]</code>.</li><li>Suppose <code class="code">t</code> is bound to [3,5]. Then <code class="code">1:t</code> evaluates to <code class="code">[1,3,5]</code>.</li><li><code class="code">2:3</code> is silent, because <code class="code">3</code> is not a list.</li></ul></div>
+<div class="itemizedlist"><p class="title"><b>Examples</b></p><ul type="disc"><li><code class="code">(<span class="hl-literal">1</span>+<span class="hl-literal">3</span>):[<span class="hl-literal">2</span>+<span class="hl-literal">5</span>,<span class="hl-literal">6</span>]</code> evaluates to <code class="code">[<span class="hl-literal">4</span>,<span class="hl-literal">7</span>,<span class="hl-literal">6</span>]</code>.</li><li><code class="code"><span class="hl-literal">2</span>:<span class="hl-literal">2</span>:<span class="hl-literal">5</span>:[] </code> evaluates to <code class="code">[<span class="hl-literal">2</span>,<span class="hl-literal">2</span>,<span class="hl-literal">5</span>]</code>.</li><li>Suppose <code class="code"><span class="hl-variable">t</span></code> is bound to [3,5]. Then <code class="code"><span class="hl-literal">1</span>:<span class="hl-variable">t</span></code> evaluates to <code class="code">[<span class="hl-literal">1</span>,<span class="hl-literal">3</span>,<span class="hl-literal">5</span>]</code>.</li><li><code class="code"><span class="hl-literal">2</span>:<span class="hl-literal">3</span></code> is silent, because <code class="code"><span class="hl-literal">3</span></code> is not a list.</li></ul></div>
 </p>
 
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20402"></a>1.2.6.&nbsp;Patterns</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20404"></a>1.2.6.&nbsp;Patterns</h3></div></div></div>
 
 <p>
 We have seen how to construct data structures. But how do we examine them, and use them? We use <em class="firstterm">patterns</em>.
 </p>
 
 <p>
-A pattern is a powerful way to bind variables. When writing <code class="code">val</code> declarations, instead of just
+A pattern is a powerful way to bind variables. When writing <code class="code"><span class="hl-keyword">val</span></code> declarations, instead of just
 binding one variable, we can replace the variable name with a more complex pattern that follows the structure of the
 value, and matches its components. A pattern's structure is called its <em class="firstterm">shape</em>; a
 pattern may take the shape of any structured value. A pattern can hierarchically match a value, going deep into its 
@@ -311,47 +311,47 @@ structure. It can also bind an entire structure to a variable.
 </p>
 
 <p>
-<div class="itemizedlist"><p class="title"><b>Examples</b></p><ul type="disc"><li><code class="code">val (x,y) = (2+3,2*3)</code> binds <code class="code">x</code> to 5 and <code class="code">y</code> to 6.</li><li>
-<code class="code">val [a,b,c] = ["one", "two", "three"]</code> binds <code class="code">a</code> to "one", 
-<code class="code">b</code> to "two", and <code class="code">c</code> to "three".
+<div class="itemizedlist"><p class="title"><b>Examples</b></p><ul type="disc"><li><code class="code"><span class="hl-keyword">val</span> (<span class="hl-variable">x</span>,<span class="hl-variable">y</span>) = (<span class="hl-literal">2</span>+<span class="hl-literal">3</span>,<span class="hl-literal">2</span>*<span class="hl-literal">3</span>)</code> binds <code class="code"><span class="hl-variable">x</span></code> to 5 and <code class="code"><span class="hl-variable">y</span></code> to 6.</li><li>
+<code class="code"><span class="hl-keyword">val</span> [<span class="hl-variable">a</span>,<span class="hl-variable">b</span>,<span class="hl-variable">c</span>] = [<span class="hl-literal">"one"</span>, <span class="hl-literal">"two"</span>, <span class="hl-literal">"three"</span>]</code> binds <code class="code"><span class="hl-variable">a</span></code> to "one", 
+<code class="code"><span class="hl-variable">b</span></code> to "two", and <code class="code"><span class="hl-variable">c</span></code> to "three".
 </li><li>
-<code class="code">val ((a,b),c) = ((1, true), (2, false))</code> binds <code class="code">a</code> to 1, <code class="code">b</code> to <code class="code">true</code>,
-and <code class="code">c</code> to <code class="code">(2,false)</code>.
+<code class="code"><span class="hl-keyword">val</span> ((<span class="hl-variable">a</span>,<span class="hl-variable">b</span>),<span class="hl-variable">c</span>) = ((<span class="hl-literal">1</span>, <span class="hl-literal">true</span>), (<span class="hl-literal">2</span>, <span class="hl-literal">false</span>))</code> binds <code class="code"><span class="hl-variable">a</span></code> to 1, <code class="code"><span class="hl-variable">b</span></code> to <code class="code"><span class="hl-literal">true</span></code>,
+and <code class="code"><span class="hl-variable">c</span></code> to <code class="code">(<span class="hl-literal">2</span>,<span class="hl-literal">false</span>)</code>.
 </li></ul></div>
 </p>
 
 <p>
 A pattern must not use a variable name more than once; patterns are <em class="firstterm">linear</em>. 
-For example, <code class="code">(x,y,x)</code> is not a valid pattern.
+For example, <code class="code">(<span class="hl-variable">x</span>,<span class="hl-variable">y</span>,<span class="hl-variable">x</span>)</code> is not a valid pattern.
 </p>
 
 <p>
-Note that a pattern may fail to match a value, if it does not have the same shape as that value. In a <code class="code">val</code>
+Note that a pattern may fail to match a value, if it does not have the same shape as that value. In a <code class="code"><span class="hl-keyword">val</span></code>
 declaration, this has the same effect as evaluating a silent expression. No variable in the pattern is bound, and
 if any one of those variables is later evalauted, it is silent.
 </p>
 
 <p>
 It is often useful to ignore parts of the value that are not relevant. We can use the
-wildcard pattern, written <code class="code">_</code>, to do this; it matches any shape and binds no
+wildcard pattern, written <code class="code"><span class="hl-variable">_</span></code>, to do this; it matches any shape and binds no
 variables.
 </p>
 
 <p>
-<div class="itemizedlist"><p class="title"><b>Examples</b></p><ul type="disc"><li><code class="code">val (x,_,_) = (1,(2,2),[3,3,3])</code> binds <code class="code">x</code> to 1.</li><li><code class="code">val [[_,x],[_,y]] = [[1,3],[2,4]]</code> binds <code class="code">x</code> to 3 and <code class="code">y</code> to 4.</li></ul></div>
+<div class="itemizedlist"><p class="title"><b>Examples</b></p><ul type="disc"><li><code class="code"><span class="hl-keyword">val</span> (<span class="hl-variable">x</span>,<span class="hl-variable">_</span>,<span class="hl-variable">_</span>) = (<span class="hl-literal">1</span>,(<span class="hl-literal">2</span>,<span class="hl-literal">2</span>),[<span class="hl-literal">3</span>,<span class="hl-literal">3</span>,<span class="hl-literal">3</span>])</code> binds <code class="code"><span class="hl-variable">x</span></code> to 1.</li><li><code class="code"><span class="hl-keyword">val</span> [[<span class="hl-variable">_</span>,<span class="hl-variable">x</span>],[<span class="hl-variable">_</span>,<span class="hl-variable">y</span>]] = [[<span class="hl-literal">1</span>,<span class="hl-literal">3</span>],[<span class="hl-literal">2</span>,<span class="hl-literal">4</span>]]</code> binds <code class="code"><span class="hl-variable">x</span></code> to 3 and <code class="code"><span class="hl-variable">y</span></code> to 4.</li></ul></div>
 </p>
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N2047D"></a>1.2.7.&nbsp;Functions</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N2047F"></a>1.2.7.&nbsp;Functions</h3></div></div></div>
 
 <p>
 Like most other programming languages, Cor has the capability to define <em class="firstterm">functions</em>,
 which are expressions that have a defined name, and have some number of parameters. Functions are declared 
-using the keyword <code class="code">def</code>, in the following way.
+using the keyword <code class="code"><span class="hl-keyword">def</span></code>, in the following way.
 
 <pre class="programlisting">
-def add(x,y) = x+y
+<span class="hl-keyword">def</span> <span class="hl-site">add</span>(<span class="hl-variable">x</span>,<span class="hl-variable">y</span>) = <span class="hl-variable">x</span>+<span class="hl-variable">y</span>
 </pre>
 
 The expression on the right of the <code class="code">=</code> is called the <em class="firstterm">body</em> of the function.
@@ -365,56 +365,56 @@ names bound to the values of the arguments. The result of the call is the result
 </p>
 
 <p>
-<div class="itemizedlist"><p class="title"><b>Examples</b></p><ul type="disc"><li><code class="code">add(10,10*10)</code> evaluates to <code class="code">110</code>.</li><li><code class="code">add(add(5,3),5)</code> evaluates to <code class="code">13</code>.</li></ul></div>
+<div class="itemizedlist"><p class="title"><b>Examples</b></p><ul type="disc"><li><code class="code"><span class="hl-site">add</span>(<span class="hl-literal">10</span>,<span class="hl-literal">10</span>*<span class="hl-literal">10</span>)</code> evaluates to <code class="code"><span class="hl-literal">110</span></code>.</li><li><code class="code"><span class="hl-site">add</span>(<span class="hl-site">add</span>(<span class="hl-literal">5</span>,<span class="hl-literal">3</span>),<span class="hl-literal">5</span>)</code> evaluates to <code class="code"><span class="hl-literal">13</span></code>.</li></ul></div>
 </p>
 
 <p>
 A call may have zero arguments, in which case we write <code class="code">()</code> for the arguments.
 
 <pre class="programlisting">
-def zero() = 0
+<span class="hl-keyword">def</span> <span class="hl-site">zero</span>() = <span class="hl-literal">0</span>
 </pre>
 </p>
 
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N204BA"></a>1.2.7.1.&nbsp;Non-strict evaluation</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N204BC"></a>1.2.7.1.&nbsp;Non-strict evaluation</h4></div></div></div>
 
 <p>
 Function calls are not strict in their arguments. Even if some of the argument expressions
-to a call are silent, the function body will still be evaluated. Any variable 
-
+to a call are silent, the function body will still be evaluated. Any argument variable
+that corresponds to a silent expression will be silent if it is used in the function body.
 </p>
 
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N204C2"></a>1.2.7.2.&nbsp;Recursion</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N204C4"></a>1.2.7.2.&nbsp;Recursion</h4></div></div></div>
 
 <p>
 Definitions can be recursive; that is, the name of a definition is bound in its own body.
 
 <pre class="programlisting">
-def sumto(n) = if n &lt; 1 then 0 else n + sumto(n-1)
+<span class="hl-keyword">def</span> <span class="hl-site">sumto</span>(<span class="hl-variable">n</span>) = <span class="hl-keyword">if</span> <span class="hl-variable">n</span> &lt; <span class="hl-literal">1</span> <span class="hl-keyword">then</span> <span class="hl-literal">0</span> <span class="hl-keyword">else</span> <span class="hl-variable">n</span> + <span class="hl-site">sumto</span>(<span class="hl-variable">n</span>-<span class="hl-literal">1</span>)
 </pre>
 
-Then, <code class="code">sumto(5)</code> evaluates to 15.
+Then, <code class="code"><span class="hl-site">sumto</span>(<span class="hl-literal">5</span>)</code> evaluates to 15.
 </p>  
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N204D0"></a>1.2.7.3.&nbsp;Mutual Recursion</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N204D2"></a>1.2.7.3.&nbsp;Mutual Recursion</h4></div></div></div>
 
 Mutual recursion is also supported: 
 
 <pre class="programlisting">
-def even(n) = 
-  if (n &gt; 0) then odd(n-1)
-  else if (n &lt; 0) then odd(n+1)
-  else true
-def odd(n) = 
-  if (n &gt; 0) then even(n-1)
-  else if (n &lt; 0) then even(n+1)
-  else false
+<span class="hl-keyword">def</span> <span class="hl-site">even</span>(<span class="hl-variable">n</span>) = 
+  <span class="hl-keyword">if</span> (<span class="hl-variable">n</span> &gt; <span class="hl-literal">0</span>) <span class="hl-keyword">then</span> <span class="hl-site">odd</span>(<span class="hl-variable">n</span>-<span class="hl-literal">1</span>)
+  <span class="hl-keyword">else</span> <span class="hl-keyword">if</span> (<span class="hl-variable">n</span> &lt; <span class="hl-literal">0</span>) <span class="hl-keyword">then</span> <span class="hl-site">odd</span>(<span class="hl-variable">n</span>+<span class="hl-literal">1</span>)
+  <span class="hl-keyword">else</span> <span class="hl-literal">true</span>
+<span class="hl-keyword">def</span> <span class="hl-site">odd</span>(<span class="hl-variable">n</span>) = 
+  <span class="hl-keyword">if</span> (<span class="hl-variable">n</span> &gt; <span class="hl-literal">0</span>) <span class="hl-keyword">then</span> <span class="hl-site">even</span>(<span class="hl-variable">n</span>-<span class="hl-literal">1</span>)
+  <span class="hl-keyword">else</span> <span class="hl-keyword">if</span> (<span class="hl-variable">n</span> &lt; <span class="hl-literal">0</span>) <span class="hl-keyword">then</span> <span class="hl-site">even</span>(<span class="hl-variable">n</span>+<span class="hl-literal">1</span>)
+  <span class="hl-keyword">else</span> <span class="hl-literal">false</span>
 </pre>
 
 There is no special keyword for mutual recursion; any contiguous sequence of function declarations is assumed to be 
@@ -422,7 +422,7 @@ mutually recursive.
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N204D8"></a>1.2.7.4.&nbsp;Closure</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N204DA"></a>1.2.7.4.&nbsp;Closure</h4></div></div></div>
 
 <p>
 Functions are actually values, just like any other value. Defining a function creates a special value called a 
@@ -430,9 +430,9 @@ Functions are actually values, just like any other value. Defining a function cr
 a closure can be put into a data structure, or bound to some other variable, just like any other value.
 
 <pre class="programlisting">
-def a(x) = x-3
-def b(y) = y*4
-val funs = (a,b)
+<span class="hl-keyword">def</span> <span class="hl-site">a</span>(<span class="hl-variable">x</span>) = <span class="hl-variable">x</span>-<span class="hl-literal">3</span>
+<span class="hl-keyword">def</span> <span class="hl-site">b</span>(<span class="hl-variable">y</span>) = <span class="hl-variable">y</span>*<span class="hl-literal">4</span>
+<span class="hl-keyword">val</span> <span class="hl-variable">funs</span> = (<span class="hl-variable">a</span>,<span class="hl-variable">b</span>)
 </pre>
 </p>
 
@@ -441,12 +441,12 @@ Like any other value, a closure can be passed as an argument to another function
 has <span class="emphasis"><em>higher-order</em></span> functions.
 
 <pre class="programlisting">
-def onetwosum(f) = f(1) + f(2)
-def triple(x) = x * 3
-onetwosum(triple)
+<span class="hl-keyword">def</span> <span class="hl-site">onetwosum</span>(<span class="hl-variable">f</span>) = <span class="hl-site">f</span>(<span class="hl-literal">1</span>) + <span class="hl-site">f</span>(<span class="hl-literal">2</span>)
+<span class="hl-keyword">def</span> <span class="hl-site">triple</span>(<span class="hl-variable">x</span>) = <span class="hl-variable">x</span> * <span class="hl-literal">3</span>
+<span class="hl-site">onetwosum</span>(<span class="hl-variable">triple</span>)
 </pre>
 
-Then, <code class="code">onetwosum(triple)</code> is <code class="code">triple(1) + triple(2)</code>, which is <code class="code">1 * 3 + 2 * 3</code>, which evaluates to <code class="code">9</code>.
+Then, <code class="code"><span class="hl-site">onetwosum</span>(<span class="hl-variable">triple</span>)</code> is <code class="code"><span class="hl-site">triple</span>(<span class="hl-literal">1</span>) + <span class="hl-site">triple</span>(<span class="hl-literal">2</span>)</code>, which is <code class="code"><span class="hl-literal">1</span> * <span class="hl-literal">3</span> + <span class="hl-literal">2</span> * <span class="hl-literal">3</span></code>, which evaluates to <code class="code"><span class="hl-literal">9</span></code>.
 
 </p>
 
@@ -457,34 +457,34 @@ Since all declarations (including function declarations) in Cor are lexically sc
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N20501"></a>1.2.7.5.&nbsp;Lambda</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N20503"></a>1.2.7.5.&nbsp;Lambda</h4></div></div></div>
 
 <p>
 Sometimes one would like to create a closure directly, without bothering to give it a name. 
-There is a special keyword <code class="code">lambda</code> for this purpose. By writing a function
-definition with the keyword <code class="code">lambda</code> instead of a function name, that definition
+There is a special keyword <code class="code"><span class="hl-keyword">lambda</span></code> for this purpose. By writing a function
+definition with the keyword <code class="code"><span class="hl-keyword">lambda</span></code> instead of a function name, that definition
 becomes an expression which evaluates to a closure. 
 
-<pre class="programlisting">
-def onetwosum(f) = f(1) + f(2)
-onetwosum( lambda(x) = x * 3 )
-{- 
+<pre class="orc">
+<span class="hl-keyword">def</span> <span class="hl-site">onetwosum</span>(<span class="hl-variable">f</span>) = <span class="hl-site">f</span>(<span class="hl-literal">1</span>) + <span class="hl-site">f</span>(<span class="hl-literal">2</span>)
+<span class="hl-site">onetwosum</span>( <span class="hl-keyword">lambda</span>(<span class="hl-variable">x</span>) = <span class="hl-variable">x</span> * <span class="hl-literal">3</span> )
+<span class="hl-comment">{- 
   identical to:
  
   def onetwosum(f) = f(1) + f(2)
   def triple(x) = x * 3
   onetwosum(triple)
--}
+-}</span>
 </pre>
 
-Then, <code class="code">onetwosum( lambda(x) = x * 3 )</code> evaluates to 9. 
+Then, <code class="code"><span class="hl-site">onetwosum</span>( <span class="hl-keyword">lambda</span>(<span class="hl-variable">x</span>) = <span class="hl-variable">x</span> * <span class="hl-literal">3</span> )</code> evaluates to 9. 
 
 </p>
 
 </div>
 
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N20515"></a>1.2.7.6.&nbsp;Clauses</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N20518"></a>1.2.7.6.&nbsp;Clauses</h4></div></div></div>
 
 <p>
 The combination of functions and pattern matching offers a powerful capability: 
@@ -497,11 +497,11 @@ different code depending on the structure of their arguments.
 Here's an example.
 
 <pre class="programlisting">
-def sum([]) = 0
-def sum(h:t) = h + sum(t)
+<span class="hl-keyword">def</span> <span class="hl-site">sum</span>([]) = <span class="hl-literal">0</span>
+<span class="hl-keyword">def</span> <span class="hl-site">sum</span>(<span class="hl-variable">h</span>:<span class="hl-variable">t</span>) = <span class="hl-variable">h</span> + <span class="hl-site">sum</span>(<span class="hl-variable">t</span>)
 </pre>
 
-<code class="code">sum(L)</code> publishes the sum of the numbers in the list <code class="code">L</code>. It has two clauses: 
+<code class="code"><span class="hl-site">sum</span>(<span class="hl-variable">L</span>)</code> publishes the sum of the numbers in the list <code class="code"><span class="hl-variable">L</span></code>. It has two clauses: 
 one which matches the empty list, and one which matches any nonempty list. If its argument is an empty 
 list, it returns 0, the appropriate sum for an empty list. If the argument is a nonempty list, it adds 
 the first element of that list to the sum of all of the other elements. In this way, it recursively finds 
@@ -526,16 +526,16 @@ A constant pattern is a match only for the same constant value. We can use this 
 of a recursive function in a straightforward way.
 
 <pre class="programlisting">
-{- Fibonacci numbers -}
-def fib(1) = 1
-def fib(n) = if (n &lt; 1) then 0 else fib(n-1) + fib(n-2)
+<span class="hl-comment">{- Fibonacci numbers -}</span>
+<span class="hl-keyword">def</span> <span class="hl-site">fib</span>(<span class="hl-literal">1</span>) = <span class="hl-literal">1</span>
+<span class="hl-keyword">def</span> <span class="hl-site">fib</span>(<span class="hl-variable">n</span>) = <span class="hl-keyword">if</span> (<span class="hl-variable">n</span> &lt; <span class="hl-literal">1</span>) <span class="hl-keyword">then</span> <span class="hl-literal">0</span> <span class="hl-keyword">else</span> <span class="hl-site">fib</span>(<span class="hl-variable">n</span>-<span class="hl-literal">1</span>) + <span class="hl-site">fib</span>(<span class="hl-variable">n</span>-<span class="hl-literal">2</span>)
 </pre>
 
 <pre class="programlisting">
-{- Take up to the first n elements from a list -}
-def take(0,_) = []
-def take(_,[]) = []
-def take(n,h:t) = h:(take(n-1,t))
+<span class="hl-comment">{- Take up to the first n elements from a list -}</span>
+<span class="hl-keyword">def</span> <span class="hl-site">take</span>(<span class="hl-literal">0</span>,<span class="hl-variable">_</span>) = []
+<span class="hl-keyword">def</span> <span class="hl-site">take</span>(<span class="hl-variable">_</span>,[]) = []
+<span class="hl-keyword">def</span> <span class="hl-site">take</span>(<span class="hl-variable">n</span>,<span class="hl-variable">h</span>:<span class="hl-variable">t</span>) = <span class="hl-variable">h</span>:(<span class="hl-site">take</span>(<span class="hl-variable">n</span>-<span class="hl-literal">1</span>,<span class="hl-variable">t</span>))
 </pre>
 </p>
 
@@ -544,13 +544,13 @@ Mutual recursion and clausal definitions are allowed to occur together.
 For example, this function takes a list and evaluates to a new list with every other element repeated:
 
 <pre class="programlisting">
-def stutter([]) = []
-def stutter(h:t) = h:h:mutter(t)
-def mutter([]) = []
-def mutter(h:t) = h:stutter(t)
+<span class="hl-keyword">def</span> <span class="hl-site">stutter</span>([]) = []
+<span class="hl-keyword">def</span> <span class="hl-site">stutter</span>(<span class="hl-variable">h</span>:<span class="hl-variable">t</span>) = <span class="hl-variable">h</span>:<span class="hl-variable">h</span>:<span class="hl-site">mutter</span>(<span class="hl-variable">t</span>)
+<span class="hl-keyword">def</span> <span class="hl-site">mutter</span>([]) = []
+<span class="hl-keyword">def</span> <span class="hl-site">mutter</span>(<span class="hl-variable">h</span>:<span class="hl-variable">t</span>) = <span class="hl-variable">h</span>:<span class="hl-site">stutter</span>(<span class="hl-variable">t</span>)
 </pre>
 
-<code class="code">stutter([1,2,3])</code> evaluates to <code class="code">[1,1,2,3,3]</code>.
+<code class="code"><span class="hl-site">stutter</span>([<span class="hl-literal">1</span>,<span class="hl-literal">2</span>,<span class="hl-literal">3</span>])</code> evaluates to <code class="code">[<span class="hl-literal">1</span>,<span class="hl-literal">1</span>,<span class="hl-literal">2</span>,<span class="hl-literal">3</span>,<span class="hl-literal">3</span>]</code>.
 </p>
 
 <p>
@@ -558,10 +558,10 @@ Clauses of mutually recursive functions may also be interleaved, to make
 them easier to read.
 
 <pre class="programlisting">
-def even(0) = true
-def odd(0) = false
-def even(n) = odd(if n &gt; 0 then n-1 else n+1)
-def odd(n) = even(if n &gt; 0 then n-1 else n+1)
+<span class="hl-keyword">def</span> <span class="hl-site">even</span>(<span class="hl-literal">0</span>) = <span class="hl-literal">true</span>
+<span class="hl-keyword">def</span> <span class="hl-site">odd</span>(<span class="hl-literal">0</span>) = <span class="hl-literal">false</span>
+<span class="hl-keyword">def</span> <span class="hl-site">even</span>(<span class="hl-variable">n</span>) = <span class="hl-site">odd</span>(<span class="hl-keyword">if</span> <span class="hl-variable">n</span> &gt; <span class="hl-literal">0</span> <span class="hl-keyword">then</span> <span class="hl-variable">n</span>-<span class="hl-literal">1</span> <span class="hl-keyword">else</span> <span class="hl-variable">n</span>+<span class="hl-literal">1</span>)
+<span class="hl-keyword">def</span> <span class="hl-site">odd</span>(<span class="hl-variable">n</span>) = <span class="hl-site">even</span>(<span class="hl-keyword">if</span> <span class="hl-variable">n</span> &gt; <span class="hl-literal">0</span> <span class="hl-keyword">then</span> <span class="hl-variable">n</span>-<span class="hl-literal">1</span> <span class="hl-keyword">else</span> <span class="hl-variable">n</span>+<span class="hl-literal">1</span>)
 </pre>
 
 </p>
@@ -570,35 +570,35 @@ def odd(n) = even(if n &gt; 0 then n-1 else n+1)
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N2054E"></a>1.2.8.&nbsp;Comments</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20551"></a>1.2.8.&nbsp;Comments</h3></div></div></div>
 <p>
 Cor has two kinds of comments.   
 
 </p>
 
 <p>
-A line which begins with two dashes (<code class="code">--</code>), preceded only by whitespace, is a single line comment.
+A line which begins with two dashes (<code class="code"><span class="hl-comment">--</span></code>), preceded only by whitespace, is a single line comment.
 The region from the two dashes to the next encountered newline, inclusive, is ignored.  
 <pre class="programlisting">
--- This is a single line comment.
-	 -- This is also a single line comment.
+<span class="hl-comment">-- This is a single line comment.</span>
+	 <span class="hl-comment">-- This is also a single line comment.</span>
 </pre>
 </p>
 
 <p>
-Multiline comments are enclosed by matching braces of the form <code class="code">{- -}</code>. 
+Multiline comments are enclosed by matching braces of the form <code class="code"><span class="hl-comment">{- -}</span></code>. 
 Multiline comments may be nested. They may appear anywhere, even in the middle of an expression.
 
 <pre class="programlisting">
-{- 
+<span class="hl-comment">{- 
    This is a
    multiline comment.
--}
+-}</span>
    
-{- Multiline comments {- can be nested -} -}
+<span class="hl-comment">{- Multiline comments {- can be nested -}</span> -}
 
-{- They may appear anywhere, -} 
-1 + {- even in the middle of an expression. -} 2 + 3
+<span class="hl-comment">{- They may appear anywhere, -}</span> 
+<span class="hl-literal">1</span> + <span class="hl-comment">{- even in the middle of an expression. -}</span> <span class="hl-literal">2</span> + <span class="hl-literal">3</span>
 </pre>
 
 </p>
@@ -608,7 +608,7 @@ Multiline comments may be nested. They may appear anywhere, even in the middle o
 </div>
 
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N20569"></a>1.3.&nbsp;Communicating with external services</h2></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N2056C"></a>1.3.&nbsp;Communicating with external services</h2></div></div></div>
 
 <p>
 Cor is a pure declarative language. It has no state, since variables are bound at most once 
@@ -623,16 +623,16 @@ Sites are called using the same syntax as a function call, but with a slightly d
 meaning. Sites are values, introduced and bound to variables by a special declaration.
 </p>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20576"></a>1.3.1.&nbsp;Calling a site</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20579"></a>1.3.1.&nbsp;Calling a site</h3></div></div></div>
 
 <p>
-Suppose that the variable <code class="code">Google</code> is bound to a site which sends a 
+Suppose that the variable <code class="code"><span class="hl-variable">Google</span></code> is bound to a site which sends a 
 string to the Google search engine and returns the URL of the top result. A call to
-<code class="code">Google</code> looks just like a function call.
+<code class="code"><span class="hl-variable">Google</span></code> looks just like a function call.
 
 <pre class="programlisting">
-{- Get the top search result for "computation orchestration" -}
-Google("computation orchestration")
+<span class="hl-comment">{- Get the top search result for "computation orchestration" -}</span>
+<span class="hl-site">Google</span>(<span class="hl-literal">"computation orchestration"</span>)
 </pre>
 
 When the Google service determines the top result for this search, it responds with
@@ -656,12 +656,12 @@ A site is sometimes called purely for its effect on the external world; its retu
 value is irrelevant. Many sites which do not need to return a meaningful value will
 instead return a <em class="firstterm">signal</em>: a special value which carries no 
 information (analogous to the unit value <code class="code">()</code> in ML). The signal value
-can be written as <code class="code">signal</code> within Orc programs.
+can be written as <code class="code"><span class="hl-keyword">signal</span></code> within Orc programs.
 
-<pre class="programlisting">
--- Print a string to some output console
--- The return value of this site call is a signal
-print("Hello, World!")
+<pre class="orc">
+<span class="hl-comment">-- Print a string to some output console</span>
+<span class="hl-comment">-- The return value of this site call is a signal</span>
+<span class="hl-site">println</span>(<span class="hl-literal">"Hello, World!"</span>)
 </pre>
 </p>
 
@@ -669,18 +669,18 @@ print("Hello, World!")
 </div>
 
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20599"></a>1.3.2.&nbsp;Declaring sites</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N2059D"></a>1.3.2.&nbsp;Declaring sites</h3></div></div></div>
 
 <p>
-Sites are bound to variables by a <code class="code">site</code> declaration. This declaration makes
+Sites are bound to variables by a <code class="code"><span class="hl-keyword">site</span></code> declaration. This declaration makes
 some external service available as a site and binds that site to the given variable.
 
 This example instantiates a Java object to be used as a site in an Orc program, specifically
 a Java object which provides an asynchronous buffer service.
 
 <pre class="programlisting">
-{-  Define the Buffer site  -}
-site Buffer = orc.lib.state.Buffer
+<span class="hl-comment">{-  Define the Buffer site  -}</span>
+<span class="hl-keyword">site</span> <span class="hl-variable">Buffer</span> = <span class="hl-variable">orc</span>.<span class="hl-variable">lib</span>.<span class="hl-variable">state</span>.<span class="hl-variable">Buffer</span>
 </pre>
 </p>
 
@@ -690,7 +690,7 @@ site Buffer = orc.lib.state.Buffer
 </div>
 
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N205A8"></a>1.4.&nbsp;The concurrency combinators of Orc</h2></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N205AC"></a>1.4.&nbsp;The concurrency combinators of Orc</h2></div></div></div>
 
 <p>
 The Cor language has no concurrency. We extend Cor's simple model with powerful
@@ -700,13 +700,13 @@ in useful ways. We also generalize the simple notion of evaluation to a more
 powerful notion that makes more sense in a concurrent context.
 </p>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N205B2"></a>1.4.1.&nbsp;Bar: Parallelism and publications</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N205B6"></a>1.4.1.&nbsp;Bar: Parallelism and publications</h3></div></div></div>
 
 <p>
 The first combinator we introduce is the bar combinator, written <code class="code">|</code>. Two
 expressions combined by <code class="code">|</code> evaluate in parallel with each other.
 But what is the value of such an expression? For example, what is the value of 
-<code class="code">1+2 | 3+4</code> ? 
+<code class="code"><span class="hl-literal">1</span>+<span class="hl-literal">2</span><span class="hl-combinator"> | </span><span class="hl-literal">3</span>+<span class="hl-literal">4</span></code> ? 
 </p>
 
 <p>
@@ -724,25 +724,25 @@ those execution publishes a value, the combined execution publishes that value.
 </p>   
 
 <p>
-<div class="itemizedlist"><p class="title"><b>Examples</b></p><ul type="disc"><li><code class="code">3+4</code> publishes 7.</li><li><code class="code">3/0 | 3/1</code> publishes <code class="code">3</code>.</li><li><code class="code">1 | 2 | 1+2</code> publishes 1, 2, and 3, in unspecified order.</li></ul></div>
+<div class="itemizedlist"><p class="title"><b>Examples</b></p><ul type="disc"><li><code class="code"><span class="hl-literal">3</span>+<span class="hl-literal">4</span></code> publishes 7.</li><li><code class="code"><span class="hl-literal">3</span>/<span class="hl-literal">0</span><span class="hl-combinator"> | </span><span class="hl-literal">3</span>/<span class="hl-literal">1</span></code> publishes <code class="code"><span class="hl-literal">3</span></code>.</li><li><code class="code"><span class="hl-literal">1</span><span class="hl-combinator"> | </span><span class="hl-literal">2</span><span class="hl-combinator"> | </span><span class="hl-literal">1</span>+<span class="hl-literal">2</span></code> publishes 1, 2, and 3, in unspecified order.</li></ul></div>
 </p>
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N205EC"></a>1.4.2.&nbsp;Push: Capturing publications</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N205F0"></a>1.4.2.&nbsp;Push: Capturing publications</h3></div></div></div>
 
 <p>
 Now that we have expressions which publish multiple values, what can we do with those
-publications? The push combinator, written <code class="code">&gt;x&gt;</code>, combines an
+publications? The push combinator, written <code class="code">&gt;<span class="hl-variable">x</span>&gt;</code>, combines an
 expression which publishes some values with another expression which will use those
 values.
 </p>
 
 <p>
-<span class="emphasis"><em>f</em></span> <code class="code">&gt;x&gt;</code> <span class="emphasis"><em>g</em></span> executes
+<span class="emphasis"><em>f</em></span> <code class="code">&gt;<span class="hl-variable">x</span>&gt;</code> <span class="emphasis"><em>g</em></span> executes
 only the expression <span class="emphasis"><em>f</em></span>. Each time that <span class="emphasis"><em>f</em></span> publishes
 a value <span class="emphasis"><em>v</em></span>, a new parallel copy of <span class="emphasis"><em>g</em></span> executes, in which 
-the variable <code class="code">x</code> is bound to that value <span class="emphasis"><em>v</em></span>. The combined
+the variable <code class="code"><span class="hl-variable">x</span></code> is bound to that value <span class="emphasis"><em>v</em></span>. The combined
 execution does not publish the value <span class="emphasis"><em>v</em></span>; it is <em class="firstterm">hidden</em>.
 However, whenever some copy of <span class="emphasis"><em>g</em></span> publishes a value, the combined
 execution also publishes that value.
@@ -753,22 +753,22 @@ The variable is optional; a push without a variable is written <code class="code
 </p>
 
 <p>
-<code class="code">stop</code> is a special expression which is always silent. 
+<code class="code"><span class="hl-keyword">stop</span></code> is a special expression which is always silent. 
 It is typically used together with a push to silence the publications of another expression.
 </p>
 
 </div>
 
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N2062A"></a>1.4.3.&nbsp;Pull: Making <code class="code">val</code> concurrent</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N2062E"></a>1.4.3.&nbsp;Pull: Making <code class="code"><span class="hl-keyword">val</span></code> concurrent</h3></div></div></div>
 
 <p>
-The pull combinator, written <span class="emphasis"><em>g</em></span> <code class="code">&lt;x&lt;</code> <span class="emphasis"><em>f</em></span>,
+The pull combinator, written <span class="emphasis"><em>g</em></span> <code class="code">&lt;<span class="hl-variable">x</span>&lt;</code> <span class="emphasis"><em>f</em></span>,
 allows us to block a computation waiting for a result, or terminate a computation. In fact,
 we have already seen this combinator: it is often useful to write it as a declaration of
-the form <code class="code">val x =</code> <span class="emphasis"><em>f</em></span> preceding an expression <span class="emphasis"><em>g</em></span>.
+the form <code class="code"><span class="hl-keyword">val</span> <span class="hl-variable">x</span> =</code> <span class="emphasis"><em>f</em></span> preceding an expression <span class="emphasis"><em>g</em></span>.
 In a functional setting, its behavior is exactly as previously described. However, in a concurrent 
-setting, <code class="code">val</code> takes on two new properties.
+setting, <code class="code"><span class="hl-keyword">val</span></code> takes on two new properties.
 </p>
 
 <p>
@@ -795,54 +795,56 @@ becomes silent.
 
 
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N20657"></a>1.5.&nbsp;Additional Features</h2></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N2065B"></a>1.5.&nbsp;Additional Features</h2></div></div></div>
 
 <p>
 Orc has some advanced features that are useful in writing certain kinds of programs.
 </p>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N2065E"></a>1.5.1.&nbsp;Special call forms</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20662"></a>1.5.1.&nbsp;Special call forms</h3></div></div></div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N20662"></a>1.5.1.1.&nbsp;The <code class="code">.</code> notation</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N20666"></a>1.5.1.1.&nbsp;The <code class="code">.</code> notation</h4></div></div></div>
 
 <p>
 In many object-oriented programming languages, one calls a method or accesses a field of an
-object using the dot operator; for example, <code class="code">obj.m()</code> calls the method
-<code class="code">m</code> of the object <code class="code">obj</code>. 
+object using the dot operator; for example, <code class="code"><span class="hl-variable">obj</span>.<span class="hl-site">m</span>()</code> calls the method
+<code class="code"><span class="hl-variable">m</span></code> of the object <code class="code"><span class="hl-variable">obj</span></code>. 
 </p>
 
 <p>
 There is a special kind of call in Orc which serves a similar purpose. One may write
-<code class="code">x.msg</code>, for any identifiers <code class="code">x</code> and <code class="code">msg</code>. This attempts
-to send the <em class="firstterm">message</em> 'msg' to the value bound to <code class="code">x</code>. 
+<code class="code"><span class="hl-variable">x</span>.<span class="hl-variable">msg</span></code>, for any identifiers <code class="code"><span class="hl-variable">x</span></code> and <code class="code"><span class="hl-variable">msg</span></code>. This attempts
+to send the <em class="firstterm">message</em> 'msg' to the value bound to <code class="code"><span class="hl-variable">x</span></code>. 
 The message may not be understood, in which case no publication occurs. 
 </p>
 
 <p>
 Typically this capability is used so that sites may be treated like objects, with multiple
-methods and fields. For example, a channel <code class="code">c</code> might understand the messages
-<code class="code">get</code> and <code class="code">put</code>, to get values from and put values on that channel,
-respectively. Such calls would be written <code class="code">c.get()</code>, or <code class="code">c.put(6)</code>.
+methods and fields. For example, a channel <code class="code"><span class="hl-variable">c</span></code> might understand the messages
+<code class="code"><span class="hl-variable">get</span></code> and <code class="code"><span class="hl-variable">put</span></code>, to get values from and put values on that channel,
+respectively. Such calls would be written <code class="code"><span class="hl-variable">c</span>.<span class="hl-site">get</span>()</code>, or <code class="code"><span class="hl-variable">c</span>.<span class="hl-site">put</span>(<span class="hl-literal">6</span>)</code>.
 
 <div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3>
-Such calls actually occur in two steps: first <code class="code">c.put</code> sends the message
-<code class="code">put</code> to the value <code class="code">c</code>; this publishes a site whose only purpose
+Such calls actually occur in two steps: first <code class="code"><span class="hl-variable">c</span>.<span class="hl-variable">put</span></code> sends the message
+<code class="code"><span class="hl-variable">put</span></code> to the value <code class="code"><span class="hl-variable">c</span></code>; this publishes a site whose only purpose
 is to put values to that channel. Then, that 'put site' is called on the argument
-<code class="code">6</code>, sending 6 on that channel. Readers familiar with functional programming
+<code class="code"><span class="hl-literal">6</span></code>, sending 6 on that channel. Readers familiar with functional programming
 will recognize this technique as <span class="emphasis"><em>currying</em></span>.
 </div>
 </p>
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N206AC"></a>1.5.1.2.&nbsp;Currying</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N206B0"></a>1.5.1.2.&nbsp;Currying</h4></div></div></div>
 
 <p>
 It is sometimes useful to <span class="emphasis"><em>stage</em></span> the arguments to a function; that is,
 rather than writing a function on two arguments, one instead writes a function on one
 argument which returns a function taking the second argument and performing the remainder
-of the evaluation.
+of the evaluation. (form of curried applications)
 </p>
+
+
 
 <p>
 This technique is known as <span class="emphasis"><em>currying</em></span> and it is common in functional
@@ -854,13 +856,13 @@ closures. However, there is additional support in defining functions directly in
 For example, instead of writing
 
 <pre class="programlisting">
-def f(x) = lambda(y) = x+y
+<span class="hl-keyword">def</span> <span class="hl-site">f</span>(<span class="hl-variable">x</span>) = <span class="hl-keyword">lambda</span>(<span class="hl-variable">y</span>) = <span class="hl-variable">x</span>+<span class="hl-variable">y</span>
 </pre>
 
 it is also permissible to simply write
 
 <pre class="programlisting">
-def f(x)(y) = x+y
+<span class="hl-keyword">def</span> <span class="hl-site">f</span>(<span class="hl-variable">x</span>)(<span class="hl-variable">y</span>) = <span class="hl-variable">x</span>+<span class="hl-variable">y</span>
 </pre>
 
 Separate stages of application are separated by parentheses around their argument lists.
@@ -871,71 +873,71 @@ Separate stages of application are separated by parentheses around their argumen
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N206C7"></a>1.5.2.&nbsp;Special patterns</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N206CB"></a>1.5.2.&nbsp;Special patterns</h3></div></div></div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N206CB"></a>1.5.2.1.&nbsp;Bang pattern</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N206CF"></a>1.5.2.1.&nbsp;Bang pattern</h4></div></div></div>
 
 <p>
-A bang pattern, written <code class="code">!p</code>, will publish the value that matches the pattern 
-<code class="code">p</code> if the match is successful. This pattern is refutable only if <code class="code">p</code> is refutable.
+A bang pattern, written <code class="code">!<span class="hl-variable">p</span></code>, will publish the value that matches the pattern 
+<code class="code"><span class="hl-variable">p</span></code> if the match is successful. This pattern is refutable only if <code class="code"><span class="hl-variable">p</span></code> is refutable.
 
-<pre class="programlisting">
-(1,2,3)  &gt;(x,!y,!z)&gt; stop
+<pre class="orc">
+(<span class="hl-literal">1</span>,<span class="hl-literal">2</span>,<span class="hl-literal">3</span>)  <span class="hl-combinator">&gt;</span>(<span class="hl-variable">x</span>,!<span class="hl-variable">y</span>,!<span class="hl-variable">z</span>)<span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
 </pre>
 
-This publishes <code class="code">2</code> and <code class="code">3</code>. 
+This publishes <code class="code"><span class="hl-literal">2</span></code> and <code class="code"><span class="hl-literal">3</span></code>. 
 </p>
 
 <p>
 Note that a bang pattern will not publish if the overall match fails, even if its particular match succeeds:
 
-<pre class="programlisting">
-( (1,2,3) | (4,5,6) )  &gt;(1,!x,y)&gt;  stop
+<pre class="orc">
+( (<span class="hl-literal">1</span>,<span class="hl-literal">2</span>,<span class="hl-literal">3</span>)<span class="hl-combinator"> | </span>(<span class="hl-literal">4</span>,<span class="hl-literal">5</span>,<span class="hl-literal">6</span>) )  <span class="hl-combinator">&gt;</span>(<span class="hl-literal">1</span>,!<span class="hl-variable">x</span>,<span class="hl-variable">y</span>)<span class="hl-combinator">&gt;</span>  <span class="hl-keyword">stop</span>
 </pre>
 
-This publishes only <code class="code">2</code>. Even though the pattern <code class="code">x</code> matches the value <code class="code">5</code>, 
-the overall pattern <code class="code">(1,!x,y)</code> refuses the value <code class="code">(4,5,6)</code>, so <code class="code">5</code> is not published.
+This publishes only <code class="code"><span class="hl-literal">2</span></code>. Even though the pattern <code class="code"><span class="hl-variable">x</span></code> matches the value <code class="code"><span class="hl-literal">5</span></code>, 
+the overall pattern <code class="code">(<span class="hl-literal">1</span>,!<span class="hl-variable">x</span>,<span class="hl-variable">y</span>)</code> refuses the value <code class="code">(<span class="hl-literal">4</span>,<span class="hl-literal">5</span>,<span class="hl-literal">6</span>)</code>, so <code class="code"><span class="hl-literal">5</span></code> is not published.
 </p>
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N206FD"></a>1.5.2.2.&nbsp;As pattern</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N20703"></a>1.5.2.2.&nbsp;As pattern</h4></div></div></div>
 
 <p>
 In taking apart a value with a pattern, it is often useful to capture intermediate results.
 
 <pre class="programlisting">
-val (a,b) = ((1,2),(3,4))
-val (ax,ay) = a
-val (bx,by) = b
+<span class="hl-keyword">val</span> (<span class="hl-variable">a</span>,<span class="hl-variable">b</span>) = ((<span class="hl-literal">1</span>,<span class="hl-literal">2</span>),(<span class="hl-literal">3</span>,<span class="hl-literal">4</span>))
+<span class="hl-keyword">val</span> (<span class="hl-variable">ax</span>,<span class="hl-variable">ay</span>) = <span class="hl-variable">a</span>
+<span class="hl-keyword">val</span> (<span class="hl-variable">bx</span>,<span class="hl-variable">by</span>) = <span class="hl-variable">b</span>
 </pre>
 
-We can use the <code class="code">as</code> keyword to simplify this process, giving a name to an entire
+We can use the <code class="code"><span class="hl-keyword">as</span></code> keyword to simplify this process, giving a name to an entire
 subpattern. Here is an equivalent version of the above code.
 
 <pre class="programlisting">
-val ((ax,ay) as a, (bx,by) as b) = ((1,2),(3,4))
+<span class="hl-keyword">val</span> ((<span class="hl-variable">ax</span>,<span class="hl-variable">ay</span>) <span class="hl-keyword">as</span> <span class="hl-variable">a</span>, (<span class="hl-variable">bx</span>,<span class="hl-variable">by</span>) <span class="hl-keyword">as</span> <span class="hl-variable">b</span>) = ((<span class="hl-literal">1</span>,<span class="hl-literal">2</span>),(<span class="hl-literal">3</span>,<span class="hl-literal">4</span>))
 </pre>
 </p>
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N2070E"></a>1.5.2.3.&nbsp;Site patterns</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N20714"></a>1.5.2.3.&nbsp;Site patterns</h4></div></div></div>
 
 <p>
-A site pattern, written <code class="code">M(p,...,p)</code>, matches any value which was published by a call to the
-site <code class="code">M</code> with arguments that match the tuple <code class="code">(p,...,p)</code>. 
+A site pattern, written <code class="code"><span class="hl-site">M</span>(<span class="hl-variable">p</span>,...,<span class="hl-variable">p</span>)</code>, matches any value which was published by a call to the
+site <code class="code"><span class="hl-variable">M</span></code> with arguments that match the tuple <code class="code">(<span class="hl-variable">p</span>,...,<span class="hl-variable">p</span>)</code>. 
 </p>
 
 <p>
-Site patterns provide a generalized version of datatype matching, as seen in the <code class="code">case .. of</code>
- or <code class="code">match .. with </code> constructs provided by Haskell and ML.
+Site patterns provide a generalized version of datatype matching, as seen in the <code class="code"><span class="hl-variable">case</span> .. <span class="hl-variable">of</span></code>
+ or <code class="code"><span class="hl-variable">match</span> .. <span class="hl-variable">with</span> </code> constructs provided by Haskell and ML.
 </p> 
 
 </div>
 
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N20728"></a>1.5.2.4.&nbsp;Patterns as views</h4></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N2072E"></a>1.5.2.4.&nbsp;Patterns as views</h4></div></div></div>
 
 <p>
 In addition to matching data structures constructed within Orc, patterns can also be used to match
@@ -955,7 +957,7 @@ is matched against.
 The concept of views and view patterns is not new in programming languages; it has been demonstrated
 in other languages, most notably <a class="ulink" href="http://www.scala-lang.org/" target="_top">Scala</a>. In fact, the 
 underlying implementation strategy for using sites as view patterns is very similar to the use of
-extractor objects and the <code class="code">unapply</code> method in Scala.
+extractor objects and the <code class="code"><span class="hl-variable">unapply</span></code> method in Scala.
 </div>
 
 
@@ -964,13 +966,13 @@ extractor objects and the <code class="code">unapply</code> method in Scala.
 
 </div>
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20741"></a>1.5.3.&nbsp;The before combinator</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N20747"></a>1.5.3.&nbsp;The before combinator</h3></div></div></div>
 
 <p>
 Orc has a fourth concurrent combinator: the <em class="firstterm">before</em> combinator,
-written <code class="code">f ; g</code>. The before combinator executes its left side, publishing 
+written <code class="code"><span class="hl-variable">f</span> ; <span class="hl-variable">g</span></code>. The before combinator executes its left side, publishing 
 each of its publications as they occur. When the left side has completely finished 
-executing (i.e. it is equivalent to <a class="link" href="#"><code class="code">stop</code></a>), 
+executing (i.e. it is equivalent to <a class="link" href="#"><code class="code"><span class="hl-keyword">stop</span></code></a>), 
 then the right side executes.
 </p>
 
@@ -980,7 +982,7 @@ processing, as denoted by <code class="code">;</code> in other languages. It was
 original formulation of the Orc concurrency calculus; it has been added to support computation
 and iteration over strictly finite data. Sequential programs conflate the concept of
 producing a value with the concept of termination. Orc separates these two concepts; variable
-binding combinators like <code class="code">&gt;x&gt;</code> and <code class="code">&lt;x&lt;</code> handle
+binding combinators like <code class="code">&gt;<span class="hl-variable">x</span>&gt;</code> and <code class="code">&lt;<span class="hl-variable">x</span>&lt;</code> handle
 values, whereas <code class="code">;</code> detects the completion of an execution.
 </p>
 
@@ -993,4 +995,4 @@ values, whereas <code class="code">;</code> detects the completion of an executi
 
 
  
-</div></body></html>
+</div><script type="text/javascript" src="/orchard/orc.js"></script></body></html>

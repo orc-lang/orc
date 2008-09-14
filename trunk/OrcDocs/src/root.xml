@@ -408,7 +408,7 @@ If the expression on the right side of a <code>val</code> is silent, then the va
 evaluation of other declarations and expressions can continue. If an evaluated expression depends on that
 variable, that expression is silent.
 
-<programlisting><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 val x = 1/0
 val y = 4+5
 if false then x else y
@@ -668,7 +668,7 @@ There is a special keyword <code>lambda</code> for this purpose. By writing a fu
 definition with the keyword <code>lambda</code> instead of a function name, that definition
 becomes an expression which evaluates to a closure. 
 
-<programlisting><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 def onetwosum(f) = f(1) + f(2)
 onetwosum( lambda(x) = x * 3 )
 {- 
@@ -861,10 +861,10 @@ instead return a <firstterm>signal</firstterm>: a special value which carries no
 information (analogous to the unit value <code>()</code> in ML). The signal value
 can be written as <code>signal</code> within Orc programs.
 
-<programlisting><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 -- Print a string to some output console
 -- The return value of this site call is a signal
-print("Hello, World!")
+println("Hello, World!")
 ]]></programlisting>
 </para>
 
@@ -1088,7 +1088,7 @@ Separate stages of application are separated by parentheses around their argumen
 A bang pattern, written <code>!p</code>, will publish the value that matches the pattern 
 <code>p</code> if the match is successful. This pattern is refutable only if <code>p</code> is refutable.
 
-<programlisting><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 (1,2,3)  >(x,!y,!z)> stop
 ]]></programlisting>
 
@@ -1098,7 +1098,7 @@ This publishes <code>2</code> and <code>3</code>.
 <para>
 Note that a bang pattern will not publish if the overall match fails, even if its particular match succeeds:
 
-<programlisting><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 ( (1,2,3) | (4,5,6) )  >(1,!x,y)>  stop
 ]]></programlisting>
 

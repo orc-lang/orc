@@ -18,8 +18,9 @@
 	<property name="doc.dir" value="doc" />
 	<property name="src.dir" value="src" />
 	<property name="fo.dir" value="fo" />
-	<property name="html.stylesheet" value="${docbook.xsl.dir}/html/docbook.xsl" />
-	<property name="fo.stylesheet" value="${docbook.xsl.dir}/fo/docbook.xsl" />
+	<property name="html.stylesheet" value="${src.dir}/xsl/html.xsl" />
+	<property name="fo.stylesheet" value="${src.dir}/xsl/fo.xsl" />
+	<property name="xslthl.config" value="file://${user.dir}/${src.dir}/highlighting/xslthl-config.xml" />
 	<property name="xalan.lib.dir" value="lib" />
 
 	<!--
@@ -31,6 +32,7 @@
 		<fileset dir="${xalan.lib.dir}" id="xalan.fileset">
 			<include name="xalan.jar" />
 			<include name="xercesImpl.jar" />
+			<include name="xslthl-2.0.0.jar" />
 		</fileset>
 	</path>
 
@@ -67,11 +69,17 @@
         description="Generates HTML files from DocBook XML">
 		<xslt style="${html.stylesheet}" extension=".html" 
             basedir="${src.dir}" destdir="${doc.dir}/html">
+	        <include name="root.xml" />
 			<classpath refid="xalan.classpath" />
+			<param name="orc.demo" expression="1"/>
 			<param name="section.autolabel" expression="1"/>
 			<param name="section.label.includes.component.label" expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
 			<param name="html.stylesheet" expression="style.css" />
+			
+			<param name="highlight.source" expression="1"/>
+			<param name="highlight.default.language" expression="orc"/>
+	    	<param name="highlight.xslthl.config" expression="${xslthl.config}" />
 		</xslt>
 		<!-- Copy the stylesheet to the same directory as the HTML files -->
 		<copy todir="${doc.dir}/html">
@@ -93,6 +101,10 @@
 	        basedir="${src.dir}" destdir="${fo.dir}">
 	        <classpath refid="xalan.classpath" />
 	        <include name="root.xml" />
+	        	
+			<param name="highlight.source" expression="1"/>
+			<param name="highlight.default.language" expression="orc"/>
+	    	<param name="highlight.xslthl.config" expression="${xslthl.config}" />
 	    </xslt>
 
 	    <property name="fop.home" value="lib/fop" />
