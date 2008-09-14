@@ -1,2 +1,25 @@
+/* Copied from Orchard/web/orc-syntax.css */
 
+span.hl-keyword {
+	color: blue;
+}
 
+span.hl-variable {
+	font-style: italic;
+}
+
+span.hl-combinator {
+	color: red;
+}
+
+span.hl-comment {
+	color: #A70;
+}
+
+span.hl-literal {
+	color: #090;
+}
+
+span.hl-pattern {
+	text-decoration: underline;
+}
