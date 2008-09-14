@@ -18,10 +18,6 @@ span.literal {
 	color: #090;
 }
 
-span.pattern {
-	text-decoration: underline;
-}
-
 .editbox {
 	font-family: monospace;
 	font-size: 14px;
