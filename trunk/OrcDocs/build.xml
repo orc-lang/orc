@@ -100,6 +100,9 @@
 	    <xslt style="${fo.stylesheet}" extension=".fo" 
 	        basedir="${src.dir}" destdir="${fo.dir}">
 	        <classpath refid="xalan.classpath" />
+	    	<param name="section.autolabel" expression="1"/>
+	    	<param name="section.label.includes.component.label" expression="1"/>
+	    	<param name="section.autolabel.max.depth" expression="8"/>
 	        <include name="root.xml" />
 	        	
 			<param name="highlight.source" expression="1"/>
