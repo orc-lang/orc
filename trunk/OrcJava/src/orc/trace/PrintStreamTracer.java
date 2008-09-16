@@ -18,12 +18,14 @@ import orc.trace.values.Marshaller;
  */
 public final class PrintStreamTracer extends AbstractTracer {
 	private final OutputStreamWriter out;
+	private int seq = 0;
 	public PrintStreamTracer(OutputStream out) {
 		this.out = new OutputStreamWriter(out);
 	}
 
 	protected synchronized void record(Handle<? extends Event> event) {
 		try {
+			event.get().setSeq(seq++);
 			event.get().prettyPrint(out, 0);
 			out.write('\n');
 			out.flush();
