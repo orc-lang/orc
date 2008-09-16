@@ -15,9 +15,8 @@
       - Configure basic properties that will be used in the file.
       -->
 	<property name="docbook.xsl.dir" value="docbook-xsl" />
-	<property name="doc.dir" value="doc" />
+	<property name="build.dir" value="build" />
 	<property name="src.dir" value="src" />
-	<property name="fo.dir" value="fo" />
 	<property name="html.stylesheet" value="${src.dir}/xsl/html.xsl" />
 	<property name="fo.stylesheet" value="${src.dir}/xsl/fo.xsl" />
 	<property name="xslthl.config" value="file://${user.dir}/${src.dir}/highlighting/xslthl-config.xml" />
@@ -47,17 +46,17 @@
       - target:  clean
       -->
 	<target name="clean" description="Cleans up generated files.">
-		<delete dir="${doc.dir}" />
-		<delete dir="${fo.dir}" />
+		<delete dir="${build.dir}" />
 	</target>
 
 	<!--
       - target:  depends
       -->
 	<target name="depends">
-		<mkdir dir="${doc.dir}" />
-		<mkdir dir="${doc.dir}/html" />
-		<mkdir dir="${doc.dir}/pdf" />
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${build.dir}/html" />
+		<mkdir dir="${build.dir}/pdf" />
+		<mkdir dir="${build.dir}/fo" />
 	</target>
 
 	<!--
@@ -68,7 +67,7 @@
 	<target name="build-html" depends="depends" 
         description="Generates HTML files from DocBook XML">
 		<xslt style="${html.stylesheet}" extension=".html" 
-            basedir="${src.dir}" destdir="${doc.dir}/html">
+            basedir="${src.dir}" destdir="${build.dir}/html">
 	        <include name="root.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="orc.demo" expression="1"/>
@@ -82,7 +81,7 @@
 	    	<param name="highlight.xslthl.config" expression="${xslthl.config}" />
 		</xslt>
 		<!-- Copy the stylesheet to the same directory as the HTML files -->
-		<copy todir="${doc.dir}/html">
+		<copy todir="${build.dir}/html">
 			<fileset dir="css">
 				<include name="style.css" />
 			</fileset>
@@ -98,7 +97,7 @@
 	<target name="build-pdf" depends="depends" 
 	    description="Generates PDF files from DocBook XML">
 	    <xslt style="${fo.stylesheet}" extension=".fo" 
-	        basedir="${src.dir}" destdir="${fo.dir}">
+	        basedir="${src.dir}" destdir="${build.dir}/fo">
 	        <classpath refid="xalan.classpath" />
 	    	<param name="section.autolabel" expression="1"/>
 	    	<param name="section.label.includes.component.label" expression="1"/>
@@ -124,8 +123,8 @@
 	        </classpath>
 	    </taskdef>
 
-	    <fop format="application/pdf" fofile="${fo.dir}/root.fo" 
-	        outfile="${doc.dir}/pdf/root.pdf" />
+	    <fop format="application/pdf" fofile="${build.dir}/fo/root.fo" 
+	        outfile="${build.dir}/pdf/root.pdf" />
 	</target>
 
 </project>
