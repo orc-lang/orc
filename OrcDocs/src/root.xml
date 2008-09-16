@@ -636,8 +636,7 @@ variable, that expression is silent.
 <programlisting language="orc-demo"><![CDATA[
 val x = 1/0
 val y = 4+5
-if false then x else y
-]]></programlisting>
+if false then x else y]]></programlisting>
 
 Evaluation of the declaration and <code>val y = 4+5</code> and the expression <code>if false then x else y</code>
 may continue even though <code>x</code> is not bound. The expression evaluates to 9.
@@ -920,8 +919,7 @@ onetwosum( lambda(x) = x * 3 )
   identical to:
   def triple(x) = x * 3
   onetwosum(triple)
--}
-]]></programlisting>
+-}]]></programlisting>
 
 Then, <code>onetwosum( lambda(x) = x * 3 )</code> evaluates to 9. 
 
