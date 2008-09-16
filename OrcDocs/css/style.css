@@ -24,9 +24,13 @@ span.hl-pattern {
 	text-decoration: underline;
 }
 
-.programlisting, .orc {
+.programlisting, .orc, .orc-wrapper {
 	background-color: LightGray;
 	padding: 2ex;
 	width: 60%;
 	margin-left: 5%;	
+}
+
+.orc-wrapper .orc {
+	width: 100%;
 }
