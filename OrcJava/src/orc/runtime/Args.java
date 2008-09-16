@@ -11,6 +11,7 @@ import orc.error.OrcError;
 import orc.error.runtime.ArgumentTypeMismatchException;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.InsufficientArgsException;
+import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.runtime.values.Field;
 import orc.runtime.values.ListLike;
@@ -275,47 +276,51 @@ public class Args implements Serializable, Iterable<Object> {
 	 * Dispatch a binary operator based on the widest
 	 * type of two numbers.
 	 */
-	public static <T> T applyNumericOperator(Number a, Number b, NumericBinaryOperator<T> op) {
-		if (a instanceof BigDecimal) {
-			if (b instanceof BigDecimal) {
-				return op.apply((BigDecimal) a, (BigDecimal) b);
-			} else {
-				return op.apply((BigDecimal) a, BigDecimal.valueOf(b.doubleValue()));
-			}
-		} else if (b instanceof BigDecimal) {
+	public static <T> T applyNumericOperator(Number a, Number b, NumericBinaryOperator<T> op) throws TokenException {
+		try {
 			if (a instanceof BigDecimal) {
-				return op.apply((BigDecimal) a, (BigDecimal) b);
+				if (b instanceof BigDecimal) {
+					return op.apply((BigDecimal) a, (BigDecimal) b);
+				} else {
+					return op.apply((BigDecimal) a, BigDecimal.valueOf(b.doubleValue()));
+				}
+			} else if (b instanceof BigDecimal) {
+				if (a instanceof BigDecimal) {
+					return op.apply((BigDecimal) a, (BigDecimal) b);
+				} else {
+					return op.apply(BigDecimal.valueOf(a.doubleValue()), (BigDecimal) b);
+				}
+			} else if (a instanceof Double || b instanceof Double) {
+				return op.apply(a.doubleValue(), b.doubleValue());
+			} else if (a instanceof Float || b instanceof Float) {
+				return op.apply(a.floatValue(), b.floatValue());
+			} else if (a instanceof BigInteger) {
+				if (b instanceof BigInteger) {
+					return op.apply((BigInteger) a, (BigInteger) b);
+				} else {
+					return op.apply((BigInteger) a, BigInteger.valueOf(b.longValue()));
+				}
+			} else if (b instanceof BigInteger) {
+				if (a instanceof BigInteger) {
+					return op.apply((BigInteger) a, (BigInteger) b);
+				} else {
+					return op.apply(BigInteger.valueOf(a.longValue()), (BigInteger) b);
+				}
+			} else if (a instanceof Long || b instanceof Long) {
+				return op.apply(a.longValue(), b.longValue());
+			} else if (a instanceof Integer || b instanceof Integer) {
+				return op.apply(a.intValue(), b.intValue());	
+			} else if (a instanceof Short || b instanceof Short) {
+				return op.apply(a.shortValue(), b.shortValue());
+			} else if (a instanceof Byte || b instanceof Byte) {
+				return op.apply(a.byteValue(), b.byteValue());
 			} else {
-				return op.apply(BigDecimal.valueOf(a.doubleValue()), (BigDecimal) b);
+				throw new OrcError("Unexpected Number type in ("
+						+ a.getClass().toString()
+						+ ", " + b.getClass().toString() + ")");
 			}
-		} else if (a instanceof Double || b instanceof Double) {
-			return op.apply(a.doubleValue(), b.doubleValue());
-		} else if (a instanceof Float || b instanceof Float) {
-			return op.apply(a.floatValue(), b.floatValue());
-		} else if (a instanceof BigInteger) {
-			if (b instanceof BigInteger) {
-				return op.apply((BigInteger) a, (BigInteger) b);
-			} else {
-				return op.apply((BigInteger) a, BigInteger.valueOf(b.longValue()));
-			}
-		} else if (b instanceof BigInteger) {
-			if (a instanceof BigInteger) {
-				return op.apply((BigInteger) a, (BigInteger) b);
-			} else {
-				return op.apply(BigInteger.valueOf(a.longValue()), (BigInteger) b);
-			}
-		} else if (a instanceof Long || b instanceof Long) {
-			return op.apply(a.longValue(), b.longValue());
-		} else if (a instanceof Integer || b instanceof Integer) {
-			return op.apply(a.intValue(), b.intValue());	
-		} else if (a instanceof Short || b instanceof Short) {
-			return op.apply(a.shortValue(), b.shortValue());
-		} else if (a instanceof Byte || b instanceof Byte) {
-			return op.apply(a.byteValue(), b.byteValue());
-		} else {
-			throw new OrcError("Unexpected Number type in ("
-					+ a.getClass().toString()
-					+ ", " + b.getClass().toString() + ")");
+		} catch (ArithmeticException e) {
+			throw new JavaException(e);
 		}
 	}
 
