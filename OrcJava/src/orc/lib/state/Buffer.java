@@ -43,6 +43,13 @@ public class Buffer extends EvalSite {
 		protected void addMethods() {
 			addMethod("get", new getMethod());	
 			addMethod("put", new putMethod());
+			addMethod("getnb", new Site() {
+				@Override
+				public void callSite(Args args, Token receiver) {
+					if (localBuffer.isEmpty()) receiver.die();
+					else receiver.resume(localBuffer.removeFirst());
+				}
+			});
 		}
 		
 		private class getMethod extends Site {

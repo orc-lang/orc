@@ -4,10 +4,13 @@ def each(h:t) = h | each(t)
 def map(f,[]) = []
 def map(f,h:t) = f(h):map(f,t)
 
-def rev(l) = 
-	def tailrev([],x) = x
-	def tailrev(h:t,x) = tailrev(t,h:x)
-	tailrev(l,[]) 
+def reverse(l) = 
+  def tailrev([],x) = x
+  def tailrev(h:t,x) = tailrev(t,h:x)
+  tailrev(l,[]) 
+
+def index(h:t, 0) = h
+def index(h:t, n) = index(t, n-1)
 
 def append([],l) = l
 def append(h:t,l) = h:append(t,l)
@@ -15,7 +18,7 @@ def append(h:t,l) = h:append(t,l)
 def foldl(f,[],s) = s
 def foldl(f,h:t,s) = foldl(f,t,f(h,s))
 
-def foldr(f,l,s) = foldl(f,rev(l),s)
+def foldr(f,l,s) = foldl(f,reverse(l),s)
 
 def zip([],_) = []
 def zip(_,[]) = []

@@ -13,6 +13,7 @@ import orc.error.runtime.TokenException;
 import orc.error.runtime.UncallableValueException;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Return;
+import orc.runtime.nodes.Silent;
 import orc.runtime.regions.Execution;
 import orc.runtime.regions.Region;
 import orc.runtime.sites.java.ObjectProxy;
@@ -189,6 +190,9 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 		if (next instanceof Return) {
 			// handle tail call specially
 			continuation = continuation.continuation;
+		} else if (next instanceof Silent) {
+			// handle silent tail call specially
+			continuation = new Continuation(next, this.env, null);
 		} else {
 			continuation = new Continuation(next, this.env, continuation);
 		}

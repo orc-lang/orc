@@ -168,8 +168,7 @@ public class OrcEngine implements Runnable {
 				reportRound();
 				return true;
 			} else {
-				if (advanceLogicalClocks())
-					return true;
+				if (advanceLogicalClocks()) return true;
 				try {
 					// we will be notified when a site returns
 					// or the engine terminates
@@ -231,19 +230,19 @@ public class OrcEngine implements Runnable {
 	 * method so that the engine can report or otherwise handle the failure.
 	 */
 	public void tokenError(Token t, TokenException problem) {
-		System.out.println();
-		System.out.println("Token " + t + " encountered an error. ");
-		System.out.println("Problem: " + problem.getMessage());
-		System.out.println("Source location: " + problem.getSourceLocation());
+		System.err.println();
+		System.err.println("Token " + t + " encountered an error. ");
+		System.err.println("Problem: " + problem.getMessage());
+		System.err.println("Source location: " + problem.getSourceLocation());
 		if (debugMode) {
 			problem.printStackTrace();
 		}
 		Throwable cause = problem.getCause();
 		if (debugMode && cause != null) {
-			System.out.println("Caused by:");
+			System.err.println("Caused by:");
 			cause.printStackTrace();
 		}
-		System.out.println();
+		System.err.println();
 	}
 
 	public void debug(String s) {
