@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!--  
 <!DOCTYPE chapter PUBLIC " -//OASIS//DTD DocBook XML V5.0//EN" "../docbook-xml/dtd/docbook.dtd" >
+-->
 
 <book>
 
@@ -82,10 +85,11 @@ in a subsequent section.
 </para>
 
 <para>
-
-<informaltable id="cor-ebnf-table" frame="none" rowsep="0" colsep="0"> 
+<table id="cor-ebnf-table" frame="none" rowsep="0" colsep="0">
+<title>Syntax of the Functional Subset of Orc (Cor)</title> 
 <?dbhtml table-width="80%" ?>
 <?dbfo table-width="80%" ?>
+<?dbfo keep-together="always" ?>
 <tgroup cols="5" >
 <colspec colnum="1" colwidth="1*" align="right"/>
 <colspec colnum="2" colwidth="1*" align="center"/>
@@ -304,7 +308,7 @@ in a subsequent section.
 
 </tbody>
 </tgroup>
-</informaltable>
+</table>
 </para>
 
 
@@ -360,9 +364,10 @@ overridden by adding parentheses.
 <para>
 Here is the full set of operators that Cor supports:
 
-<informaltable id="ops-table" frame="none" rowsep="0" colsep="0"> 
+<table id="ops-table" frame="none" rowsep="0" colsep="0"> 
 <?dbhtml table-width="80%" ?>
 <?dbfo table-width="95%" ?>
+<?dbfo keep-together="always" ?>
 <tgroup cols="8" >
 <colspec colnum="1" colname="arith-names" colwidth="1*" align="left"/>
 <colspec colnum="2" colname="arith-ops" colwidth="4*" align="left"/>
@@ -461,7 +466,7 @@ Here is the full set of operators that Cor supports:
 
 </tbody>
 </tgroup>
-</informaltable>
+</table>
 
 </para>
 
@@ -527,6 +532,7 @@ The behavior of conditionals is summarized by the following table
 <informaltable id="cond-table" frame="none" rowsep="0" colsep="0"> 
 <?dbhtml table-width="60%" ?>
 <?dbfo table-width="80%" ?>
+<?dbfo keep-together="always" ?>
 <tgroup cols="4" >
 <colspec colnum="1" colname="E" colwidth="1*" align="center"/>
 <colspec colnum="2" colname="F" colwidth="1*" align="center"/>
@@ -1078,13 +1084,15 @@ concurrent, stateful context of Orc.
 
 <para>
 The following figure summarizes the new syntax that Orc introduces, as an extension
-of the syntax of Cor.
+of the syntax of Cor. The original Cor grammar rules are abbreviated by ellipses (...). 
 </para>
 
 <para>
-<informaltable id="orc-ebnf-table" frame="none" rowsep="0" colsep="0"> 
+<table id="orc-ebnf-table" frame="none" rowsep="0" colsep="0"> 
+<title>Basic Orc Syntax</title> 
 <?dbhtml table-width="80%" ?>
 <?dbfo table-width="80%" ?>
+<?dbfo keep-together="always" ?>
 <tgroup cols="5" >
 <colspec colnum="1" colname="bexp" colwidth="1*" align="right"/>
 <colspec colnum="2" colname="texp" colwidth="1*" align="center"/>
@@ -1151,7 +1159,7 @@ of the syntax of Cor.
 <entry>E <code>|</code> E</entry>
 
 <entry></entry>
-<entry><emphasis>bar combinator</emphasis></entry>
+<entry><emphasis>parallel combinator</emphasis></entry>
 </row>
 
 
@@ -1159,7 +1167,7 @@ of the syntax of Cor.
 <entry></entry>
 <entry>|</entry>
 
-<entry>E <code><![CDATA[>]]></code>P<code><![CDATA[>]]></code> E</entry>
+<entry>E<code><![CDATA[ >]]></code>P<code><![CDATA[> ]]></code>E</entry>
 
 <entry></entry>
 <entry><emphasis>sequential combinator</emphasis></entry>
@@ -1169,7 +1177,7 @@ of the syntax of Cor.
 <entry></entry>
 <entry>|</entry>
 
-<entry>E <code><![CDATA[<]]></code>P<code><![CDATA[<]]></code> E</entry>
+<entry>E<code><![CDATA[ <]]></code>P<code><![CDATA[< ]]></code>E</entry>
 
 <entry></entry>
 <entry><emphasis>asymmetric combinator</emphasis></entry>
@@ -1192,7 +1200,7 @@ of the syntax of Cor.
 
 </tbody>
 </tgroup>
-</informaltable>
+</table>
 </para>
 
 <section><title>Communicating with external services</title>
@@ -1251,7 +1259,7 @@ can be written as <code>signal</code> within Orc programs.
 <programlisting language="orc-demo"><![CDATA[
 -- Use the 'print' site to print a string to an output console
 -- The return value of this site call is a signal
-println("Hello, World!")
+print("Hello, World!")
 ]]></programlisting>
 </para>
 
@@ -1338,14 +1346,14 @@ Google("cupcake") | Yahoo("cupcake")
 
 <para>
 Now that we have expressions which publish multiple values, what can we do with those
-publications? The sequential combinator, written F <code><![CDATA[>x>]]></code> G, 
+publications? The sequential combinator, written F<code><![CDATA[ >x> ]]></code>G, 
 combines the expression F, which publishes some values, with another expression G 
 which will use those values as they are published, using <code>x</code> to transmit
 the values from from F to G.
 </para>
 
 <para>
-The execution of F <code><![CDATA[>x>]]></code> G executes F. Whenever F publishes a value, 
+The execution of F<code><![CDATA[ >x> ]]></code>G executes F. Whenever F publishes a value, 
 a new copy of G is executed in parallel with F (and with any previous copies of G); in that
 copy of G, <code>x</code> is bound to the value published by F. Values published by copies
 of G are published by the whole expression, but the values published by F are not published
@@ -1387,7 +1395,7 @@ by the whole expression; they are consumed by the variable binding.
 
 
 <para>
-The sequential combinator may be written as F <code><![CDATA[>]]></code>P<code><![CDATA[>]]></code> G, 
+The sequential combinator may be written as F<code><![CDATA[ >]]></code>P<code><![CDATA[> ]]></code>G, 
 where P is a pattern instead of just a variable name. Any value published by F is matched against the 
 pattern P. If this match is successful, a new copy of G is started with all of the bindings from the match. 
 Otherwise, the published value is simply ignored, and no new copy of G is executed.
@@ -1413,13 +1421,13 @@ Otherwise, the published value is simply ignored, and no new copy of G is execut
 
 
 <para>
-We may also omit the variable entirely, writing <code><![CDATA[>>]]></code>. This
-is equivalent to using a wildcard pattern: <code><![CDATA[>_>]]></code>
+We may also omit the variable entirely, writing <code><![CDATA[ >> ]]></code>. This
+is equivalent to using a wildcard pattern: <code><![CDATA[ >_> ]]></code>
 </para>
 
 <para>
 We may want to execute an expression just for its effects, and hide all of its publications.
-We can do this using <code><![CDATA[>>]]></code> together with the special expression 
+We can do this using <code><![CDATA[ >> ]]></code> together with the special expression 
 <code>stop</code>, which is always silent.  
 </para>
 
@@ -1440,13 +1448,13 @@ We can do this using <code><![CDATA[>>]]></code> together with the special expre
 <section><title>The asymmetric combinator</title>
 
 <para>
-The asymmetric combinator, written F <code><![CDATA[<x<]]></code> G, allows us to block 
+The asymmetric combinator, written F<code><![CDATA[ <x< ]]></code>G, allows us to block 
 a computation waiting for a result, or terminate a computation.
 </para> 
 
 <para>
 As with the sequential combinator, we consider the simple, one-variable case first. 
-The execution of F <code><![CDATA[<x<]]></code> G starts executing F and G in parallel. Whenever
+The execution of F<code><![CDATA[ <x< ]]></code>G starts executing F and G in parallel. Whenever
 F publishes a value, that value is published by the entire execution. When G publishes
 its first value, that value is bound to x in F, and then G is immediately <firstterm>terminated</firstterm>.
 </para>
@@ -1459,7 +1467,7 @@ with an external service, that communication is allowed to complete but the resp
 <para>
 <programlisting><![CDATA[
 -- Publish either 5 or 6, but not both
-x+2 <x< 3 | 4
+x+2 <x< (3 | 4)
 ]]></programlisting>
 </para>  
 
@@ -1497,18 +1505,22 @@ it is ignored. The right side continues to execute and will publish one of <code
 <code>(5,0)</code>.
 </para> 
 
+<!-- 
 <para>
-The pattern is optional; without a variable the combinator is written <code><![CDATA[<<]]></code>. It
+The pattern is optional; without a variable the combinator is written <code><![CDATA[ << ]]></code>. It
 is equivalent to using a wildcard: <code><![CDATA[<_<]]></code>
 </para>
 
 <para>
 <programlisting><![CDATA[
--- Print only one of "true" or "false" to the console.
--- Publish no values.
+{- 
+  Print only one of "true" or "false" to the console.
+  Publish no values.
+-}
 stop << print("true") | print("false")
 ]]></programlisting>
 </para>
+ -->
 
 
 </section>
@@ -1539,13 +1551,15 @@ of a variable name.
 </section>
 
 
+
 <section><title>Nested expressions</title>
 
 <para>
 Orc expressions with concurrency combinators may occur as subexpressions of Cor expressions, 
 such as arithmetic operations or function call arguments. Such expressions may publish many 
-values and perform many communications, as in <code>(1 | 2) + 3</code>. What do these
-expressions mean in a purely functional context?
+values and perform many communications. What do these expressions mean in a purely functional 
+context, where only one value is expected? For example, what does <code>2 + (3 | 4)</code>
+publish? 
 </para>
 
 <para>
@@ -1554,6 +1568,7 @@ The specific syntactic contexts we are interested in are as follows (E is any Or
 <informaltable id="value-context-table" frame="none" rowsep="0" colsep="0"> 
 <?dbhtml table-width="40%" ?>
 <?dbfo table-width="80%" ?>
+<?dbfo keep-together="always" ?>
 <tgroup cols="2">
 <colspec colnum="1" colwidth="1*" align="left"/>
 <colspec colnum="2" colwidth="1*" align="right"/>
@@ -1590,22 +1605,37 @@ The specific syntactic contexts we are interested in are as follows (E is any Or
 </para>
 
 <para>
-Roughly speaking, these are contexts where only one value is expected.
+These are the contexts where only one value is expected from E.
 </para>
 
 <para>
-Whenever an Orc expression F appears in such a Cor context E[], it is 
+Whenever an Orc expression appears in such a Cor context, it is 
 treated as if it was on the right side of an asymmetric combinator,
 using a fresh variable name to fill in the hole. Thus, E[F] (where F
 is an Orc expression and E is a Cor context) translates to 
-E[<code>x</code>] <code><![CDATA[<x<]]></code> F.
+E[<code>x</code>] <code><![CDATA[ <x< ]]></code> F.
 </para>
 
 <para>
 In other words, the expression executes until it publishes its first
 value, and then it is terminated. That value is used in the context
-as if it were the result of evaluation a Cor expression.
+as if it were the result of evaluating a Cor expression.
 </para>
+
+<para>
+<programlisting><![CDATA[
+-- Publish either 5 or 6
+2 + (3 | 4)
+]]></programlisting>
+</para>
+
+<para>
+<programlisting><![CDATA[
+-- Publish exactly one of 0, 1, 2 or 3
+(0 | 2) + (0 | 1)
+]]></programlisting>
+</para>
+
 
 </section>
 
@@ -1613,11 +1643,37 @@ as if it were the result of evaluation a Cor expression.
 <section><title>Functions</title>
 
 <para>
+The body of a function in Orc may be any Orc expression; thus, function
+bodies in Orc are executed rather than evaluated, and may engage in communication
+and publish multiple values.
+</para>
+
+<para>
+A function call in Orc, as in Cor, binds the values of its actual parameters
+to its formal parameters, and then executes the function body with those bindings.
+Whenever the function body publishes a value, the function call publishes that
+value. Thus, unlike a site call, or a pure functional Cor call, an Orc function
+call may publish many values.
+</para>
+
+<para>
+<programlisting><![CDATA[
+-- Publish all integers in the interval [0,n], in arbitrary order. 
+Range(n) = if (n < 0) 
+             then stop 
+             else (n | Range(n-1)) 
+
+-- Publishes 0, 1, 2, and 3 in arbitrary order.
+Range(3)
+]]></programlisting>
+</para>
+
+<para>
 In the context of Orc, function calls are not strict. When a function
 is called, the function body and the arguments are actually evaluated
 in parallel. Whenever an execution in the function body reaches one of 
 the argument variables, it blocks until the corresponding argument 
-expression publishes a value.
+expression publishes a value. 
 </para>
 
 </section>
@@ -1629,6 +1685,56 @@ expression publishes a value.
 
 <section><title>Time</title>
 
+<para>
+Orc is designed to communicate with the external world, and one of the
+most important characteristics of the external world is the passage of
+time. Orc implicitly interacts with the passage of time by calling external
+services which take time to respond. However, Orc can also explicitly
+wait for some amount of time, using the special site <code>Rtimer</code>. 
+</para>
+
+<para>
+The site <code>Rtimer</code> is a relative timer. It takes as an argument
+an amount of time to wait. It waits for exactly that amount of time,
+and then responds with a signal. By default, this argument is in
+milliseconds.
+</para>
+
+<para>
+<programlisting><![CDATA[
+-- Print "red", wait for 3 seconds (3000 ms), and then print "green" 
+print("red") >> Rtimer(3000) >> print("green") >> stop
+]]></programlisting>
+</para>
+
+<para>
+The timer can be used together with recursion to create a <firstterm>metronome</firstterm>:
+an expression which publishes values at fixed time intervals. The following example
+defines a metronome which publishes a signal once per second, indefinitely.
+</para>
+
+<para>
+<programlisting><![CDATA[
+def Metronome() = signal | Rtimer(1000) >> Metronome()
+]]></programlisting>
+</para>
+
+<para>
+We can also use <code>Rtimer</code> together with the asymmetric combinator 
+to enforce a timeout.
+</para>
+
+<para>
+<programlisting><![CDATA[
+-- Publish the result of a Google search
+-- If it takes more than 5 seconds, time  
+result <result< Google("impatience") | Rtimer(5000) >> "Search timed out (wait > 5 sec)."
+]]></programlisting>
+</para>
+
+
+
+We present many more examples of programming techniques using time in <link linkend="chapter.methodology">Chapter 2</link>.
 
 </section>
 
@@ -1649,9 +1755,11 @@ in this section.
 </para>
 
 <para>
-<informaltable id="advanced-ebnf-table" frame="none" rowsep="0" colsep="0"> 
+<table id="advanced-ebnf-table" frame="none" rowsep="0" colsep="0">
+<title>Advanced Orc Syntax</title> 
 <?dbhtml table-width="80%" ?>
 <?dbfo table-width="80%" ?>
+<?dbfo keep-together="always" ?>
 <tgroup cols="5" >
 <colspec colnum="1" colname="bexp" colwidth="1*" align="right"/>
 <colspec colnum="2" colname="texp" colwidth="1*" align="center"/>
@@ -1797,7 +1905,7 @@ in this section.
 
 </tbody>
 </tgroup>
-</informaltable>
+</table>
 </para>
 
 
@@ -2071,8 +2179,8 @@ We determine when an expression is done executing using the following rules.
 <listitem>A site call is done when it has published a value or it is known 
 that the request will never receive a response.</listitem>
 <listitem>F <code>|</code> G is done when its subexpressions F and G are done.</listitem>
-<listitem>F <code><![CDATA[>x>]]></code> G when F is done and all created copies of G are done.</listitem>
-<listitem>F <code><![CDATA[<x<]]></code> G is done when F is done, and G is either 
+<listitem>F<code><![CDATA[ >x> ]]></code>G is done when F is done and all copies of G are done.</listitem>
+<listitem>F<code><![CDATA[ <x< ]]></code>G is done when F is done, and G is either 
 done or has been terminated after publishing a value.</listitem>
 <listitem>F <code>;</code> G is done when its subexpressions F and G are done.</listitem>
 <listitem><code>stop</code> is done.</listitem>
@@ -2086,7 +2194,7 @@ processing, as denoted by <code>;</code> in other languages. It was not present 
 original formulation of the Orc concurrency calculus; it has been added to support computation
 and iteration over strictly finite data. Sequential programs conflate the concept of
 producing a value with the concept of completion. Orc separates these two concepts; variable
-binding combinators like <code><![CDATA[>x>]]></code> and <code><![CDATA[<x<]]></code> handle
+binding combinators like <code><![CDATA[ >x> ]]></code> and <code><![CDATA[ <x< ]]></code> handle
 values, whereas <code>;</code> detects the completion of an execution.
 </para>
 
@@ -2105,11 +2213,40 @@ values, whereas <code>;</code> detects the completion of an execution.
 Under construction.
 
 <!-- 
-- forkjoin, delay, parallel or
+- forkjoin
+- parallel or
+- timeout
+- delay
+- priority
+- metronome 
+- repeat	 metronome(t) >> f
+- throttle   def E() = Rtimer(t) | f ; E()
 - dining philosophers
 - shortest path
 - meeting scheduler
  -->
+ 
+ <!-- 
+ 
+ <para>
+We can use <code>Metronome</code> and the sequential combinator to 'drive' 
+another expression, so that copies of that expression will execute at
+regular intervals.
+</para>
+
+<para>
+<programlisting><![CDATA[
+{-
+   Publish "tick" once every second.
+   Publish "tock" once every second, with an initial 500ms delay.
+   The publications alternate: tick tock tick tock ...
+-}   
+  Metronome() >> "tick"
+| Rtimer(500) >> Metronome() >> "tock"
+]]></programlisting>
+</para>
+ 
+  -->
 
 </chapter>
 
@@ -2126,9 +2263,11 @@ Under construction.
 
 <para>
 
-<informaltable id="full-ebnf-grammar" frame="none" rowsep="0" colsep="0"> 
+<table id="full-ebnf-grammar" frame="none" rowsep="0" colsep="0">
+<title>Complete Syntax of Orc</title> 
 <?dbhtml table-width="80%" ?>
 <?dbfo table-width="80%" ?>
+<?dbfo keep-together="always" ?>
 <tgroup cols="5" >
 <colspec colnum="1" colwidth="1*" align="right"/>
 <colspec colnum="2" colwidth="1*" align="center"/>
@@ -2247,7 +2386,7 @@ Under construction.
 <entry></entry>
 <entry>|</entry>
 
-<entry>E <code><![CDATA[>]]></code>P<code><![CDATA[>]]></code> E</entry>
+<entry>E<code><![CDATA[ >]]></code>P<code><![CDATA[> ]]></code>E</entry>
 
 <entry></entry>
 <entry><emphasis>sequential combinator</emphasis></entry>
@@ -2257,7 +2396,7 @@ Under construction.
 <entry></entry>
 <entry>|</entry>
 
-<entry>E <code><![CDATA[<]]></code>P<code><![CDATA[<]]></code> E</entry>
+<entry>E<code><![CDATA[ <]]></code>P<code><![CDATA[< ]]></code>E</entry>
 
 <entry></entry>
 <entry><emphasis>asymmetric combinator</emphasis></entry>
@@ -2496,7 +2635,7 @@ Under construction.
 
 </tbody>
 </tgroup>
-</informaltable>
+</table>
 </para>
 
 

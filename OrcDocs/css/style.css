@@ -23,3 +23,10 @@ span.hl-literal {
 span.hl-pattern {
 	text-decoration: underline;
 }
+
+.programlisting, .orc {
+	background-color: LightGray;
+	padding: 2ex;
+	width: 60%;
+	margin-left: 5%;	
+}
