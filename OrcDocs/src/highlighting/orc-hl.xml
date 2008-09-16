@@ -47,7 +47,7 @@
 
 <highlighter type='regex'>
   <style>site</style>
-  <pattern>\b\w+\b(?=\s*\()|\|\|</pattern>
+  <pattern><![CDATA[\b\w+\b(?=\s*\()|\|\||<=|>=]]></pattern>
   <flags>MULTILINE</flags>
 </highlighter>
 
@@ -58,7 +58,7 @@
 
 <highlighter type='regex'>
   <style>combinator</style>
-  <pattern><![CDATA[(?<=\s)(<|>)(?=\S)|(?<=\S)(<|>)(?=\s)|\||;]]></pattern>
+  <pattern><![CDATA[(?<=\s)(<|>)((?=\S)|$)|((?<=\S)|^)(<|>)(?=\s)|\||;]]></pattern>
   <flags>MULTILINE</flags>
 </highlighter>
 
