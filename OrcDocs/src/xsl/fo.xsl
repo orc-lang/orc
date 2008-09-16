@@ -9,7 +9,7 @@
 <xsl:output method="xml" indent="no"/>
 
 <xsl:template match='xslthl:literal' mode="xslthl">
-  <fo:inline font-weight="bold" font-style="italic"><xsl:apply-templates mode="xslthl"/></fo:inline>
+  <xsl:apply-templates mode="xslthl"/>
 </xsl:template>
 
 <xsl:template match='xslthl:combinator' mode="xslthl">
