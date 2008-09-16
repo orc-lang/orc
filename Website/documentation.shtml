@@ -3,7 +3,11 @@
 <h1>Documentation</h1>
 <ul>
   <li><a href="tutorial.shtml">Orc in 15 Minutes</a>: tutorial and introduction to the language.</li>
-  <li><a href="userguide.pdf">Reference Guide</a></li>
+  <li>User Guide
+    <ul>
+      <li><a href="userguide/html/root.html">HTML</a> (single page)</li>
+      <li><a href="userguide/pdf/root.pdf">PDF</a> (for printing)</li>
+    </ul>
   <li><a href="wiki">Wiki</a>: community-supported documentation.</li>
   <li>Javadoc: for developers interested in implementing Orc sites in Java, or extending the Orc implementation.
     <ul>
