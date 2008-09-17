@@ -123,7 +123,7 @@ in a subsequent section.
 <entry></entry>
 <entry>|</entry>
 
-<entry>E <emphasis>operator</emphasis> E</entry>
+<entry>E <emphasis>op</emphasis> E</entry>
 
 <entry></entry>
 <entry><emphasis>operator</emphasis></entry>
@@ -1534,7 +1534,7 @@ it is ignored. The right side continues to execute and will publish one of <code
 
 
 
-<section><title>Revising Cor expressions</title>
+<section><title>Revisiting Cor expressions</title>
 
 <para>
 Now that we have introduced concurrency and state, some of the assumptions we
@@ -1544,8 +1544,8 @@ made when describing the behavior of functional expressions in Cor no longer hol
 <section><title><code>val</code></title>
 
 <para>
-It turns out that <code>val x = g</code> followed by expression <code>f</code> is 
-actually just a prefix form of the asymmetric combinator <code><![CDATA[f <x< g]]></code>.
+The declaration <code>val x = </code>G, followed by expression F, is 
+actually just a prefix form of the asymmetric combinator F<code><![CDATA[ <x< ]]></code>G.
 Thus, <code>val</code> shares all of the behavior of the asymmetric combinator,
 which we have already described. This is also true when a pattern is used instead
 of a variable name.
@@ -1553,6 +1553,23 @@ of a variable name.
 
 </section>
 
+<section><title><code>if</code></title>
+
+<para>
+The conditional expression <code>if</code> E <code>then</code> F <code>else</code> G
+is actually a derived form based on a site named <code>if</code>. The <code>if</code>
+site takes a boolean argument; it returns a signal if that argument is <code>true</code>,
+or remains silent if the argument is <code>false</code>. When the <code>else</code>
+branch of a conditional is unnecessary,we can use the <code>if</code> site and the 
+sequential combinator to write the simpler expression <code>if(</code>E<code>) >> </code>F.
+</para>
+
+<para>
+<code>if</code> E <code>then</code> F <code>else</code> G is equivalent to
+to <code><![CDATA[( if(b) >> ]]></code>F<code><![CDATA[ | if(~b) >> ]]></code>G<code><![CDATA[ ) <b< ]]></code>E.
+</para>
+
+</section>
 
 
 <section><title>Treating Orc expressions functionally</title>
@@ -1579,27 +1596,27 @@ The specific syntactic contexts we are interested in are as follows (E is any Or
 
 <row>
 <entry>E <emphasis>op</emphasis> E</entry>
-<entry><emphasis>operators</emphasis></entry>
+<entry><emphasis>operand</emphasis></entry>
 </row>
 
 <row>
 <entry><code>if</code> E <code>then</code> ...</entry>
-<entry><emphasis>conditionals</emphasis></entry>
+<entry><emphasis>conditional test</emphasis></entry>
 </row>
 
 <row>
 <entry>X<code>(</code> ... <code>,</code> E <code>,</code> ... <code>)</code></entry>
-<entry><emphasis>calls</emphasis></entry>
+<entry><emphasis>call argument</emphasis></entry>
 </row>
 
 <row>
 <entry><code>(</code> ... <code>,</code> E <code>,</code> ... <code>)</code></entry>
-<entry><emphasis>tuples</emphasis></entry>
+<entry><emphasis>tuple element</emphasis></entry>
 </row>
 
 <row>
 <entry><code>[</code> ... <code>,</code> E <code>,</code> ... <code>]</code></entry>
-<entry><emphasis>lists</emphasis></entry>
+<entry><emphasis>list element</emphasis></entry>
 </row>
 
 </tbody>
@@ -1632,8 +1649,7 @@ the expression.
 To be precise, whenever an Orc expression appears in a Cor context, it is treated as if it was 
 on the right side of an asymmetric combinator, using a fresh variable name to fill in the hole. 
 Thus, C[E] (where E is an Orc expression and C is a Cor context) translates to the Orc expression 
-C[<code>x</code>] <code><![CDATA[ <x< ]]></code> E. This translation repeats until no Orc
-expression appears within a Cor context. 
+C[<code>x</code>] <code><![CDATA[ <x< ]]></code> E. 
 </para>
 
 </section>
@@ -1657,22 +1673,22 @@ call may publish many values.
 
 <para>
 <programlisting language="orc-demo"><![CDATA[
--- Publish all integers in the interval [0,n], in arbitrary order. 
-Range(n) = if (n < 0) 
-             then stop 
-             else (n | Range(n-1)) 
+-- Publish all integers in the interval 1..n, in arbitrary order. 
+def Range(n) = if (n > 0) then (n | Range(n-1)) else stop 
 
--- Publishes 0, 1, 2, and 3 in arbitrary order.
+-- Publish 1, 2, and 3 in arbitrary order.
 Range(3)
 ]]></programlisting>
 </para>
 
 <para>
-In the context of Orc, function calls are not strict. When a function
-is called, the function body and the arguments are actually evaluated
-in parallel. Whenever an execution in the function body reaches one of 
-the argument variables, it blocks until the corresponding argument 
-expression publishes a value. 
+In the context of Orc, function calls are not strict. When a function call executes,
+it begins to execute the function body immediately, and also executes the argument
+expressions in parallel. When an argument expression publishes a value, it is terminated,
+and the corresponding formal parameter is bound to that value in the execution of
+the function body. Whenever an execution in the function body uses a formal parameter
+that has not been bound yet, that execution suspends until that parameter is bound
+to a value.
 </para>
 
 </section>
@@ -1725,9 +1741,13 @@ to enforce a timeout.
 
 <para>
 <programlisting><![CDATA[
--- Publish the result of a Google search
--- If it takes more than 5 seconds, time  
-result <result< Google("impatience") | Rtimer(5000) >> "Search timed out (wait > 5 sec)."
+{-
+  Publish the result of a Google search.
+  If it takes more than 5 seconds, time out.
+-}
+result 
+  <result< ( Google("impatience") 
+           | Rtimer(5000) >> "Search timed out.")
 ]]></programlisting>
 </para>
 
@@ -1747,7 +1767,8 @@ We present many more examples of programming techniques using time in <link link
 <para>
 In this section we introduce some advanced features of Orc. These include curried
 function definitions and curried calls, a special syntax for writing calls in
-an object-oriented style, extensions to pattern matching, and new declarations.
+an object-oriented style, extensions to pattern matching, new forms of declarations,
+and a new concurrency combinator.
 </para>
 
 <para>
@@ -1844,7 +1865,7 @@ an object-oriented style, extensions to pattern matching, and new declarations.
 <entry><code>!</code>P</entry>
 
 <entry></entry>
-<entry><emphasis>bang pattern</emphasis></entry>
+<entry><emphasis>publish pattern</emphasis></entry>
 </row>
 
 
@@ -1865,7 +1886,7 @@ an object-oriented style, extensions to pattern matching, and new declarations.
 <entry>X<code>(</code> P <code>,</code> ... <code>,</code> P <code>)</code></entry>
 
 <entry></entry>
-<entry><emphasis>call pattern</emphasis></entry>
+<entry><emphasis>site pattern</emphasis></entry>
 </row>
 
 <row>
@@ -1919,11 +1940,12 @@ object using the dot operator; for example, <code>obj.m()</code> calls the metho
 There is a special kind of site call in Orc which serves a similar purpose. One may write
 <code>x.msg</code>, for any identifiers <code>x</code> and <code>msg</code>. This attempts
 to treat the value bound to <code>x</code> as a site, and call it with a special 
-<firstterm>message</firstterm> value. If the value cannot be interpreted as a site, no call is made. 
-If that site understands the message <code>msg</code> (for example, if <code>x</code> is 
+<firstterm>message</firstterm> value. 
+If the site understands the message <code>msg</code> (for example, if <code>x</code> is 
 bound to a Java object with a field called <code>msg</code>), the site interprets the message 
-and responds with some appropriate value. If the value is a site, but it does not 
+and responds with some appropriate value. If the site does not 
 understand the message sent to it, it does not respond, and no publication occurs. 
+If the value cannot be interpreted as a site, no call is made. 
 </para>
 
 <para>
@@ -1934,10 +1956,10 @@ respectively. Such calls would be written <code>c.get()</code>, or <code>c.put(6
 </para>
 
 <para>
-Such calls actually occur in two steps: first <code>c.put</code> sends the message
-<code>put</code> to the value <code>c</code>; this publishes a site whose only purpose
-is to put values to that channel. Then, that 'put site' is called on the argument
-<code>6</code>, sending 6 on that channel. Readers familiar with functional programming
+A call such as <code>c.put(6)</code> actually occurs in two steps. First <code>c.put</code> sends the message
+<code>put</code> to the site <code>c</code>; this publishes a site whose only purpose
+is to put values on the channel. Next, that site is called on the argument
+<code>6</code>, sending 6 on the channel. Readers familiar with functional programming
 will recognize this technique as <emphasis>currying</emphasis>.
 </para>
 </section>
@@ -1954,17 +1976,11 @@ of the evaluation.
 
 <para>
 This technique is known as <emphasis>currying</emphasis> and it is common in functional
-programming languages. It is obviously supported in Orc since it is possible to define
-closures. However, there is additional support for making curried function calls, and
-for defining functions directly in a curried way.
-</para>
+programming languages. We can write curried functions using closures. Suppose we want to 
+define a curried addition function on two arguments, and later apply that function to the 
+arguments 3 and 4. We could write such a program in the following way:
 
-<para>
-Suppose we want to define a curried addition function on two arguments, and later 
-apply that function to the arguments 3 and 4. The verbose way to write such 
-a program is as follows:
-
-<programlisting><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 def add(a) = ( lambda(b) = a+b )  
 val f = add(3)
 f(4)
@@ -1974,9 +1990,10 @@ f(4)
 
 <para>
 When defining a curried function, we have abstracted it in two steps, and when
-applying it we have written two separate calls. However, Orc has a special syntax
-for curried definitions and curried applications that will simplify both of
-these steps.
+applying it we have written two separate calls. However, this is verbose and
+not very clear. Orc has a special syntax for curried definitions and curried 
+applications that will simplify both of these steps. Here is the previous
+program, written in this simplified syntax:
 
 <programlisting language="orc-demo"><![CDATA[
 def add(a)(b) = a+b
@@ -1993,28 +2010,36 @@ a similar way.
 
 </section>
 
-<section><title>Special patterns</title>
+<section><title>Extensions to pattern matching</title>
 
-<section><title>Bang pattern</title>
+<section><title>Publish pattern</title>
 
 <para>
-A bang pattern, written <code>!p</code>, will publish the value that matches the pattern 
+A publish pattern, written <code>!p</code>, will publish the value that matches the pattern 
 <code>p</code> if the match is successful.
+</para>
 
+<para>
 <programlisting language="orc-demo"><![CDATA[
 (1,2,3)  >(x,!y,!z)> stop
 ]]></programlisting>
+</para>
 
+<para>
 This publishes <code>2</code> and <code>3</code>. 
 </para>
 
 <para>
-Note that a bang pattern will not publish if the overall match fails, even if its particular match succeeds:
+Note that a publish pattern will not publish if the overall match fails, even if its particular match succeeds:
+</para>
 
+<para>
 <programlisting language="orc-demo"><![CDATA[
 ( (1,2,3) | (4,5,6) )  >(1,!x,y)>  stop
 ]]></programlisting>
+</para>
 
+<para>
 This publishes only <code>2</code>. Even though the pattern <code>x</code> matches the value <code>5</code>, 
 the overall pattern <code>(1,!x,y)</code> does not match the value <code>(4,5,6)</code>, so <code>5</code> 
 is not published.
@@ -2043,11 +2068,12 @@ val ((ax,ay) as a, (bx,by) as b) = ((1,2),(3,4))
 
 </section>
 
-<section><title>Site patterns</title>
+<section><title>Site pattern</title>
 
 <para>
 A site pattern, written <code>M(p,...,p)</code>, matches any value which was published by a call to the
-site <code>M</code> with arguments that match the tuple <code>(p,...,p)</code>. 
+site <code>M</code> with arguments that match the tuple <code>(p,...,p)</code>. Site patterns only work
+for sites which have unique inverses; they are usually used on sites which tag or structure data.
 </para>
 
 <para>
@@ -2084,9 +2110,9 @@ extractor objects and the <code>unapply</code> method in Scala.
 
 </section>
 
-<section><title>Special declarations</title>
+<section><title>New forms of declarations</title>
 
-<section><title>Class declarations</title>
+<section><title><code>class</code> declaration</title>
 
 <para>
 When Orc is run on top of an object-oriented programming language, classes
@@ -2116,7 +2142,7 @@ are accessed using the <code>.</code> notation, just as one would expect in Java
 </section>
 
 
-<section><title>Included declarations</title>
+<section><title><code>include</code> declaration</title>
 
 <para>
 It is often convenient to group related declarations into units that can be
@@ -2162,7 +2188,7 @@ its declarations occur twice.
 
 <para>
 Orc has a fourth concurrency combinator: the <firstterm>after</firstterm> combinator,
-written <code>f ; g</code>. The after combinator executes its left side, publishing 
+written F<code> ; </code>G. The after combinator executes its left side, publishing 
 each of its publications as they occur. When the left side is done executing, then 
 the right side executes.
 </para>
@@ -2172,8 +2198,9 @@ We determine when an expression is done executing using the following rules.
 
 <itemizedlist>
 <listitem>Any Cor expression is done when it is fully evaluated.</listitem>
-<listitem>A site call is done when it has published a value or it is known 
-that the request will never receive a response.</listitem>
+<listitem>A site call is done when it has published a value. A site may
+also <firstterm>refuse</firstterm> a call, in which case the call publishes
+not value and is done.</listitem>
 <listitem>F <code>|</code> G is done when its subexpressions F and G are done.</listitem>
 <listitem>F<code><![CDATA[ >x> ]]></code>G is done when F is done and all copies of G are done.</listitem>
 <listitem>F<code><![CDATA[ <x< ]]></code>G is done when F is done, and G is either 
@@ -2198,6 +2225,14 @@ values, whereas <code>;</code> detects the completion of an execution.
 
 
 </section>
+
+<!-- 
+<section><title>Simplified Orc</title>
+
+Discuss Cor as syntactic sugar for a simpler Orc calculus.
+
+</section>
+ -->
 
 
 
@@ -2604,7 +2639,7 @@ Under construction.
 <entry><code>!</code>P</entry>
 
 <entry></entry>
-<entry><emphasis>bang pattern</emphasis></entry>
+<entry><emphasis>publish pattern</emphasis></entry>
 </row>
 
 
@@ -2625,7 +2660,7 @@ Under construction.
 <entry>X<code>(</code> P <code>,</code> ... <code>,</code> P <code>)</code></entry>
 
 <entry></entry>
-<entry><emphasis>call pattern</emphasis></entry>
+<entry><emphasis>site pattern</emphasis></entry>
 </row>
 
 
