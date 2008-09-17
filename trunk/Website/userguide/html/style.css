@@ -25,7 +25,7 @@ span.hl-pattern {
 }
 
 .programlisting, .orc, .orc-wrapper {
-	background-color: LightGray;
+	background-color: #E0E0E7;
 	padding: 2ex;
 	width: 60%;
 	margin-left: 5%;	
