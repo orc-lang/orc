@@ -23,6 +23,10 @@ public class Let extends Expression {
 		this.args = args;
 	}
 
+	public Let() {
+		this.args = new LinkedList<Expression>();
+	}
+	
 	@Override
 	public orc.ast.simple.Expression simplify() throws CompilationException {
 				

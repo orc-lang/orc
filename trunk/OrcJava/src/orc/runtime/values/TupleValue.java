@@ -69,6 +69,7 @@ public class TupleValue extends EvalSite implements Iterable<Object> {
 	}
 
 	public String toString() {
+		if (values.length == 0) return "signal";
 		return format('(', values, ", ", ')');
 	}
 	
@@ -91,5 +92,16 @@ public class TupleValue extends EvalSite implements Iterable<Object> {
 	@Override
 	public <E> E accept(Visitor<E> visitor) {
 		return visitor.visit(this);
+	}
+	
+	public boolean equals(Object that_) {
+		if (that_ == null) return false;
+		if (!(that_ instanceof TupleValue)) return false;
+		TupleValue that = (TupleValue)that_;
+		if (that.values.length != this.values.length) return false;
+		for (int i = 0; i < this.values.length; ++i) {
+			if (!this.values[i].equals(that.values[i])) return false;
+		}
+		return true;
 	}
 }
