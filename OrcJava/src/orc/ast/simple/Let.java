@@ -15,6 +15,7 @@ import orc.ast.simple.arg.Var;
 import orc.env.Env;
 import orc.error.compiletime.UnboundVariableException;
 import orc.runtime.nodes.Node;
+import orc.runtime.values.Value;
 
 public class Let extends Expression {
 
@@ -57,9 +58,11 @@ public class Let extends Expression {
 
 	@Override
 	public Expr convert(Env<Var> vars) throws UnboundVariableException {
-		
-		// If there is only one arg, use it directly as an expression
-		if (args.size() == 1) {
+		if (args.size() == 0) {
+			// If there is no arg, use the signal value
+			return new orc.ast.oil.arg.Constant(Value.signal());
+		} else  if (args.size() == 1) {
+			// If there is only one arg, use it directly as an expression
 			return args.get(0).convert(vars);
 		}
 		

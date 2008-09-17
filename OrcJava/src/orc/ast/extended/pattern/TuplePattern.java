@@ -18,6 +18,10 @@ public class TuplePattern extends Pattern {
 		this.args = args;
 	}
 	
+	public TuplePattern() {
+		this.args = new LinkedList<Pattern>();
+	}
+	
 //	public Expression bind(Var u, Expression g) {
 //		
 //		for(int i = 0; i < args.size(); i++) {
