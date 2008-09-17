@@ -24,7 +24,8 @@
 <h3>Past</h3>
 <ul>
         <li><a href="http://www.cs.utexas.edu/~tfinster/">Thomas Finsterbusch</a></li>
-	<li>Evan Powell</li>
+        <li><a href="http://www.cs.utexas.edu/~kmorton/">Kristi Morton</a></li>
+		<li>Evan Powell</li>
 </ul>
 
 <!--#include virtual="template/footer.shtml" --> 
