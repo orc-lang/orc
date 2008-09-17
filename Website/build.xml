@@ -3,7 +3,7 @@
 	<description>
 	</description>
 	<target name="war" description="generate the war">
-		<jar jarfile="../../jetty/webapps/orc.war" update="true">
+		<jar jarfile="../root.war" update="true">
 			<fileset dir=".">
 				<include name="**/*"/>
 				<exclude name="**/CVS/*"/>
