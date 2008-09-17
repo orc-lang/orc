@@ -22,7 +22,7 @@ def path(source, sink, cell, succ) =
     timer(d) >>
     run(m,m:p)
   run(source, [source])
-  ; rev(cell(sink).read())
+  ; reverse(cell(sink).read())
 
 -- A small test graph
 val source = 0
@@ -44,4 +44,4 @@ def succ(2) = (3,2)
 def succ(3) = stop
 
 -- Shortest path: [0,2,3]
-
+path(source, sink, cell, succ)

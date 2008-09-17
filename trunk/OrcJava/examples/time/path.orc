@@ -22,7 +22,7 @@ def path(source, sink, cell, succ) =
     timer(d) >>
     run(m,m:p)
   run(source, [source])
-  ; rev(cell(sink).read())
+  ; reverse(cell(sink).read())
 
 -- A small test graph
 val source = 0
