@@ -170,6 +170,9 @@ public final class Job implements JobMBean {
 		@Override
 		public void run() {
 			super.run();
+			// flush the buffer if anything is left
+			String printed = printBuffer.toString();
+			if (printed.length() > 0) events.add(new PrintlnEvent(printed));
 			events.close();
 		}
 		/** Send token errors to the event stream. */
