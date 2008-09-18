@@ -42,4 +42,4 @@ def member(item, h:t) =
 def ForkJoin(ps) =
 	def par([]) = stop
 	def par(h:t) = h() | par(t)
-	par(ps) >> stop ; ()
+	par(ps) >> stop ; signal
