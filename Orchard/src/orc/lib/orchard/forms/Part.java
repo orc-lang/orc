@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
 
 public interface Part<V> {
 	/** Render this form part to the given response using its printwriter. 
@@ -13,7 +12,9 @@ public interface Part<V> {
 	/** Return the value of the part. */
 	public V getValue();
 	/** Read a value from the request. Append any error messages to the given list. */
-	public void readRequest(HttpServletRequest request, List<String> errors);
+	public void readRequest(FormData request, List<String> errors);
 	/** A unique name for this part. */
 	public String getKey();
+	/** True if this part needs to use form/multipart encoding */
+	public boolean isMultipart();
 }

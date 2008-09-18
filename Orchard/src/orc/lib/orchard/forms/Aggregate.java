@@ -7,7 +7,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
 
 public abstract class Aggregate implements Part<Map<String, Object>> {
 	protected String key;
@@ -29,7 +28,7 @@ public abstract class Aggregate implements Part<Map<String, Object>> {
 		parts.add(part);
 	}
 
-	public void readRequest(HttpServletRequest request, List<String> errors) {
+	public void readRequest(FormData request, List<String> errors) {
 		for (Part<?> part : parts) {
 			part.readRequest(request, errors);
 		}
@@ -43,5 +42,12 @@ public abstract class Aggregate implements Part<Map<String, Object>> {
 
 	public String getKey() {
 		return key;
+	}
+	
+	public boolean isMultipart() {
+		for (Part<?> part : parts) {
+			if (part.isMultipart()) return true;
+		}
+		return false;
 	}
 }

@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
 
 public class Button implements Part<Boolean> {
 	private String key;
@@ -30,8 +29,12 @@ public class Button implements Part<Boolean> {
 	public Boolean getValue() {
 		return clicked;
 	}
+	
+	public boolean isMultipart() {
+		return false;
+	}
 
-	public void readRequest(HttpServletRequest request, List<String> errors) {
+	public void readRequest(FormData request, List<String> errors) {
 		clicked = (request.getParameter(key) != null);
 	}
 }

@@ -52,6 +52,10 @@ public abstract class Field<V> implements Part<V> {
 		renderControl(out);
 		out.write("</label>");
 	}
+	
+	public boolean isMultipart() {
+		return false;
+	}
 
 	public abstract void renderControl(PrintWriter out) throws IOException;
 }
