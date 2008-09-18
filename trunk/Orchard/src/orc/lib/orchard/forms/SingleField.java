@@ -2,7 +2,6 @@ package orc.lib.orchard.forms;
 
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
 
 public abstract class SingleField<V> extends Field<V> {
 	protected String posted;
@@ -22,7 +21,7 @@ public abstract class SingleField<V> extends Field<V> {
 		this.posted = posted;
 	}
 
-	public void readRequest(HttpServletRequest request, List<String> errors) {
+	public void readRequest(FormData request, List<String> errors) {
 		try {
 			posted = request.getParameter(key);
 			value = requestToValue(posted);

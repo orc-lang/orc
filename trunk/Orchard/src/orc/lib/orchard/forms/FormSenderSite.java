@@ -6,8 +6,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import kilim.Mailbox;
 import kilim.Pausable;
@@ -68,8 +72,19 @@ public class FormSenderSite extends Site {
 		out.close();
 	}
 	
-	public static void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		String key = request.getParameter("k");
+	public static void service(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+		FormData data;
+		if (ServletFileUpload.isMultipartContent(request)) {
+			try {
+				data = new MultipartFormData(request);
+			} catch (FileUploadException e) {
+				throw new ServletException(e);
+			}
+		} else {
+			data = new PlainFormData(request);
+		}
+		
+		String key = data.getParameter("k");
 		if (key == null) {
 			send(response, "The URL is missing the required parameter 'k'.");
 			return;
@@ -83,8 +98,8 @@ public class FormSenderSite extends Site {
 		List<String> errors = new LinkedList<String>();
 		
 		// process request, if any
-		if (request.getParameter("x") != null) {
-			f.form.readRequest(request, errors);
+		if (data.getParameter("x") != null) {
+			f.form.readRequest(data, errors);
 			if (errors.isEmpty()) {
 				OrcEngine.globals.remove(key);
 				f.send();
