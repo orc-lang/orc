@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import orc.error.runtime.InsufficientArgsException;
 import orc.error.runtime.MethodTypeMismatchException;
 
 /**
@@ -167,8 +168,10 @@ public abstract class InvokableHandle<M> {
 		}
 	}
 
-	public M resolve(Object[] arguments) throws MethodTypeMismatchException {
+	public M resolve(Object[] arguments) throws MethodTypeMismatchException, InsufficientArgsException {
 		List<M> possible = byArity[arity(arguments)];
+		if (possible == null)
+			throw new InsufficientArgsException("Wrong number of arguments.");
 		switch (possible.size()) {
 		case 0: throw new MethodTypeMismatchException(name);
 		case 1:
