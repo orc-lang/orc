@@ -119,6 +119,7 @@ function publicationToHtml(v) {
 			});
 			return '[' + tmp.join(', ') + ']';
 		case 'ns2:tuple':
+			if (!v.element) return 'signal';
 			var tmp = [];
 			$.each(toArray(v.element), function (i, e) {
 				tmp[i] = publicationToHtml(e);
