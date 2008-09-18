@@ -3,9 +3,8 @@ include "mail.inc"
 
 -- Configuration
 
--- dates are given in the form (Year-1900, Month-1, Day)
--- date range is inclusive on the bottom and exclusive on the top
-val span = DateRange(Date(108, 8, 11), Date(108, 8, 12))
+val span = DateRange(LocalDateTime(2008, 9, 11), LocalDateTime(2008, 9, 12))
+val format = DateTimeFormat.forStyle("SS")
 val requestor = Prompt("Your email address:")
 val invitees = [ ("Full Name", "test@example.com") ]
 val quorum = 1 -- number of responses required
@@ -73,6 +72,7 @@ unzip(responses) >(responders,ranges)>
 mergeRanges(ranges) >times>
 let(
   pickMeetingTime(times) >time>
+  format.print(time) >time>
   println("Chosen time: " + time) >>
   notify(time, invitees, responders)
   ; SendMail(requestor, "Meeting Request Failed", "The invitees could not agree on a meeting time.")) >>

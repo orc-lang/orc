@@ -2,13 +2,13 @@ include "forms.inc"
 
 -- Configuration
 
-val span = DateRange(Date(108, 8, 10), Date(108, 8, 15))
+val span = DateRange(LocalDateTime(2008, 9, 11), LocalDateTime(2008, 9, 12))
+val format = DateTimeFormat.forStyle("SS")
 val quorum = 2
 val invitees = [
   "Adrian Quark",
   "David Kitchin",
-  "Jayadev Misra",
-  "William Cook" ]
+  "Jayadev Misra" ]
 
 -- Utility functions
 
@@ -63,5 +63,6 @@ unzip(responses) >(responders,ranges)>
 mergeRanges(ranges) >times>
 let(
   pickMeetingTime(times) >time>
+  format.print(time) >time>
   notify(time, invitees, responders)
   ; "No acceptable meeting found")
