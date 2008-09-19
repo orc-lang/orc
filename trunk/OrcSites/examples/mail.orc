@@ -1,4 +1,4 @@
-include "net.inc"
+include "mail.inc"
 
 val mailer = MailerFactory("mail.properties")
 val TO = "test@example.com"
