@@ -19,7 +19,7 @@ import orc.error.compiletime.CompilationException;
  */
 
 public abstract class Expression implements Locatable {
-	private SourceLocation location = SourceLocation.UNKNOWN;
+	private SourceLocation location;
 	
 	/**
 	 * Simplify an expression which occurs in a call (non-nested) position.

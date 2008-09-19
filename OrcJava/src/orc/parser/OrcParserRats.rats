@@ -325,17 +325,21 @@ Expression SafeMaybeSeqExpression = SeqExpression / SafeIfThenElse / SafeMaybeDi
 Expression IfThenElse =
 	IF condition:MaybeDisjunction THEN consequent:MaybeSeqExpression ELSE alternative:MaybeSeqExpression {
 		yyValue = new IfThenElse(condition, consequent, alternative);
+		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ IF condition:MaybeDisjunction THEN consequent:MaybeSeqExpression {
 		yyValue = new IfThenElse(condition, consequent);
+		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
 Expression SafeIfThenElse =
 	IF condition:MaybeDisjunction THEN consequent:MaybeSeqExpression ELSE alternative:SafeMaybeSeqExpression {
 		yyValue = new IfThenElse(condition, consequent, alternative);
+		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ IF condition:MaybeDisjunction THEN consequent:SafeMaybeSeqExpression {
 		yyValue = new IfThenElse(condition, consequent);
+		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
 

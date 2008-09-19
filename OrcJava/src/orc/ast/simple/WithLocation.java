@@ -20,6 +20,7 @@ public class WithLocation extends Expression implements Located {
 	private final SourceLocation location;
 	
 	public WithLocation(final Expression expr, final SourceLocation location) {
+		assert(location != null);
 		this.expr = expr;
 		this.location = location;
 	}
