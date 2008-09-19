@@ -6,6 +6,8 @@ import java.util.List;
 import orc.runtime.Token;
 
 public class NilValue extends ListValue {
+	public static final NilValue singleton = new NilValue();
+	private NilValue() {}
 
 	public String toString() { return "[]"; }
 	

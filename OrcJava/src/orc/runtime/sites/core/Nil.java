@@ -16,7 +16,7 @@ public class Nil extends EvalSite {
 
 	@Override
 	public Object evaluate(Args args) {
-		return new NilValue();
+		return NilValue.singleton;
 	}
 
 }
