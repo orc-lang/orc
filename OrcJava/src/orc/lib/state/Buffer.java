@@ -11,6 +11,7 @@ import orc.runtime.Token;
 import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.Site;
+import orc.runtime.values.ListValue;
 
 /**
  * @author cawellington, dkitchin
@@ -50,6 +51,12 @@ public class Buffer extends EvalSite {
 					else receiver.resume(localBuffer.removeFirst());
 				}
 			});
+			addMethod("getAll", new EvalSite() {
+				@Override
+				public Object evaluate(Args args) throws TokenException {
+					return ListValue.make(localBuffer);
+				}
+			});	
 		}
 		
 		private class getMethod extends Site {
