@@ -1,6 +1,7 @@
 package orc.runtime.sites.java;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -82,6 +83,8 @@ public class ClassProxy extends EvalSite {
 		Constructor c = constructor.resolve(argsArray);
 		try {
 			return c.newInstance(argsArray);
+		} catch (InvocationTargetException e) {
+			throw new JavaException(e.getCause());
 		} catch (Exception e) {
 			throw new JavaException(e);
 		}
