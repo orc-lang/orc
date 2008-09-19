@@ -2323,12 +2323,13 @@ Discuss Cor as syntactic sugar for a simpler Orc calculus.
 
 </chapter>
 
-<!--  
+
 <chapter id="chapter.methodology"><title>Programming Methodology</title>
 
 Under construction.
+
 </chapter>
- -->
+
 <!-- 
 (We'll make use of some sites available in the Standard Library, specifically
 the Communication sites)
@@ -2424,13 +2425,13 @@ def E() = Rtimer(t) | f ; E()
 
  -->
 
-<!-- 
+ 
 <chapter id="chapter.services"><title>Accessing and Creating External Services</title>
 
 Under construction.
 
 </chapter>
- -->
+
 
 <!-- 
 <chapter><title>Execution Environment</title>
@@ -2832,7 +2833,7 @@ Under construction.
 
 </appendix>
 
-<!--  
+
 <appendix id="appendix.library"><title>Standard Library</title>
 Under construction.
 </appendix>
@@ -2842,7 +2843,7 @@ Under construction.
 
 Under construction.
 </appendix>
--->
+
 <!-- 
 <para>
 
