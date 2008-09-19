@@ -48,7 +48,8 @@ import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Kilim;
-import orc.runtime.sites.EvalSite;
+import orc.runtime.Token;
+import orc.runtime.sites.Site;
 
 /**
  * Wrapper around JavaMail API for reading and sending mail. For the most part
@@ -79,7 +80,7 @@ import orc.runtime.sites.EvalSite;
  * 
  * @author quark
  */
-public class MailerFactory extends EvalSite {
+public class MailerFactory extends Site {
 	/**
 	 * Keep track of an outgoing mail quota.
 	 * FIXME: Kilim incorrectly adds methods to an interface
@@ -898,9 +899,10 @@ public class MailerFactory extends EvalSite {
 	}
 
 	@Override
-	public Object evaluate(Args args) throws TokenException {
+	public void callSite(Args args, Token caller) throws TokenException {
+		caller.requireCapability("send mail", true);
 		try {
-			return new Mailer("/" + args.stringArg(0));
+			caller.resume(new Mailer("/" + args.stringArg(0)));
 		} catch (IOException e) {
 			throw new JavaException(e);
 		}
