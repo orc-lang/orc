@@ -26,13 +26,15 @@
 	</target>
 	
 	<target name="zip" depends="jar" description="generate the ZIP">
-		<zip basedir="." zipfile="${ant.project.name}-${orc.version}.zip">
-			<include name="${ant.project.name}-${orc.version}.jar"/>
-			<include name="README"/>
-			<include name="LICENSE"/>
-			<include name="INSTALL"/>
-			<include name="examples/**"/>
-			<include name="doc/**"/>
+		<zip zipfile="${ant.project.name}-${orc.version}.zip">
+			<zipfileset prefix="${ant.project.name}-${orc.version}" dir=".">
+				<include name="${ant.project.name}-${orc.version}.jar"/>
+				<include name="README"/>
+				<include name="LICENSE"/>
+				<include name="INSTALL"/>
+				<include name="examples/**/*.orc"/>
+				<include name="doc/**/*.pdf"/>
+			</zipfileset>
 		</zip>
 	</target>
 
@@ -87,5 +89,6 @@
 				version="true">
 			<classpath refid="orc.classpath"/>
 		</javadoc>
+		<zip zipfile="${ant.project.name}-${orc.version}-doc.zip" basedir="${orc.location.javadoc}" />
 	</target>
 </project>
