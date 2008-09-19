@@ -88,7 +88,7 @@ public class GoogleSearchFactory extends EvalSite {
 			}
 			
 			// build a list of pages
-			ListValue out = new NilValue();
+			ListValue out = NilValue.singleton;
 			for (int i = pages.length()-1; i > 1; --i) {
 				final String page;
 				try {
