@@ -14,7 +14,6 @@ import orc.orchard.errors.InvalidOilException;
 import orc.orchard.errors.InvalidProgramException;
 import orc.orchard.errors.InvalidPromptException;
 import orc.orchard.errors.QuotaException;
-import orc.orchard.errors.UnsupportedFeatureException;
 import orc.orchard.events.JobEvent;
 import orc.orchard.java.CompilerService;
 import orc.orchard.oil.Oil;
@@ -51,36 +50,13 @@ public abstract class AbstractExecutorService implements ExecutorServiceInterfac
 		return UUID.randomUUID().toString();
 	}
 	
-	public String submit(String devKey, Oil program) throws QuotaException, InvalidOilException, RemoteException {
-		try {
-			return submitConfigured(devKey, program, getDefaultJobConfiguration());
-		} catch (UnsupportedFeatureException e) {
-			// impossible by construction
-			throw new AssertionError(e);
-		}
-	}
-	
-	public String submitConfigured(String devKey, Oil program, JobConfiguration configuration)
-		throws QuotaException, InvalidOilException,	UnsupportedFeatureException, RemoteException
+	public String submit(String devKey, Oil program)
+	throws QuotaException, InvalidOilException,	RemoteException
 	{
 		logger.info("submit(" + devKey + ", ...)");
-		if (configuration.debuggable) {
-			throw new UnsupportedFeatureException("Debuggable jobs not supported yet.");
-		}
 		String id = createJobID();
 		Expr expr = program.unmarshal();
-		OilSecurityValidator validator = new OilSecurityValidator();
-		expr.accept(validator);
-		if (validator.hasProblems()) {
-			StringBuffer sb = new StringBuffer();
-			sb.append("OIL security violations:");
-			for (OilSecurityValidator.SecurityProblem problem : validator.getProblems()) {
-				sb.append("\n");
-				sb.append(problem);
-			}
-			throw new InvalidOilException(sb.toString());
-		}
-		accounts.getAccount(devKey).addJob(id, new Job(expr, configuration));
+		accounts.getAccount(devKey).addJob(id, expr);
 		logger.info("submit(" + devKey + ", ...) => " + id);
 		return id;
 	}
@@ -93,15 +69,6 @@ public abstract class AbstractExecutorService implements ExecutorServiceInterfac
 	public String compileAndSubmit(String devKey, String program) throws QuotaException, InvalidProgramException, InvalidOilException, RemoteException {
 		CompilerService compiler = new CompilerService(logger);
 		return submit(devKey, compiler.compile(devKey, program));
-	}
-
-	public String compileAndSubmitConfigured(String devKey, String program, JobConfiguration configuration) throws QuotaException, InvalidProgramException, InvalidOilException, UnsupportedFeatureException, RemoteException {
-		CompilerService compiler = new CompilerService(logger);
-		return submitConfigured(devKey, compiler.compile(devKey, program), configuration);
-	}
-	
-	protected static JobConfiguration getDefaultJobConfiguration() {
-		return new JobConfiguration();
 	}
 	
 	protected static Logger getDefaultLogger() {

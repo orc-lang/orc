@@ -10,7 +10,10 @@ import java.util.Set;
 
 import javax.management.ObjectName;
 
+import orc.Config;
+import orc.ast.oil.Expr;
 import orc.orchard.errors.InvalidJobException;
+import orc.orchard.errors.InvalidOilException;
 import orc.orchard.errors.QuotaException;
 
 /**
@@ -23,26 +26,60 @@ import orc.orchard.errors.QuotaException;
 public abstract class Account implements AccountMBean {	
 	private Map<String, Job> jobs = new HashMap<String, Job>();
 	private Integer quota = null;
-	private Integer eventBufferSize = null;
 	private Integer lifespan = null;
-	
+	private boolean canSendMail = false;
+	private boolean canImportJava = false;
+
 	public Account() {}
 
-	public synchronized void setLifespan(Integer lifespan) {
+	public void setLifespan(Integer lifespan) {
 		this.lifespan = lifespan;
 	}
 
-	public synchronized void setQuota(Integer quota) {
+	public void setQuota(Integer quota) {
 		this.quota = quota;
 	}
+	
+	public boolean getCanSendMail() {
+		return canSendMail;
+	}
 
-	public synchronized void addJob(final String id, Job job) throws QuotaException {
+	public void setCanSendMail(boolean canSendMail) {
+		this.canSendMail = canSendMail;
+	}
+	
+	public boolean getCanImportJava() {
+		return canImportJava;
+	}
+
+	public void setCanImportJava(boolean canImportJava) {
+		this.canImportJava = canImportJava;
+	}
+
+	public synchronized void addJob(final String id, Expr expr) throws QuotaException, InvalidOilException {
+		Config config = new Config();
+		config.setCapability("send mail", canSendMail);
+		
+		if (!canImportJava) {
+			OilSecurityValidator validator = new OilSecurityValidator();
+			expr.accept(validator);
+			if (validator.hasProblems()) {
+				StringBuffer sb = new StringBuffer();
+				sb.append("OIL security violations:");
+				for (OilSecurityValidator.SecurityProblem problem : validator.getProblems()) {
+					sb.append("\n");
+					sb.append(problem);
+				}
+				throw new InvalidOilException(sb.toString());
+			}
+		}
+		
+		Job job = new Job(expr, config);
 		finishOldJobs();
 		if (quota != null && jobs.size() >= quota) {
 			throw new QuotaException();
 		}
 		job.setStartDate(new Date());
-		job.setEventBufferSize(eventBufferSize);
 		jobs.put(id, job);
 		final ObjectName jmxid = JMXUtilities.newObjectName(job, id);
 		JMXUtilities.registerMBean(job, jmxid);
@@ -89,10 +126,6 @@ public abstract class Account implements AccountMBean {
 		}
 	}
 
-	public void setEventBufferSize(Integer eventBufferSize) {
-		this.eventBufferSize = eventBufferSize;
-	}
-	
 	public synchronized int getNumNewJobs() {
 		int out = 0;
 		for (Job job : jobs.values()) {
@@ -125,11 +158,11 @@ public abstract class Account implements AccountMBean {
 		return out;
 	}
 
-	public synchronized Integer getLifespan() {
+	public Integer getLifespan() {
 		return lifespan;
 	}
 
-	public synchronized Integer getQuota() {
+	public Integer getQuota() {
 		return quota;
 	}
 }

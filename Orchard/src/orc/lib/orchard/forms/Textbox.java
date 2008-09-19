@@ -3,6 +3,8 @@ package orc.lib.orchard.forms;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import orc.lib.net.XMLUtils;
+
 public class Textbox extends SingleField<String> {
 
 	public Textbox(String key, String label) {
@@ -19,7 +21,7 @@ public class Textbox extends SingleField<String> {
 		out.write("<input type='textbox'" +
 				" id='" + key + "'" +
 				" name='" + key + "'" +
-				" value='" + escapeHtml(posted) + "'" +
+				" value='" + XMLUtils.escapeXML(posted) + "'" +
 				">");	
 	}
 }

@@ -50,6 +50,8 @@ public final class Job implements JobMBean {
 	 * and ignore all others.
 	 */
 	private static class EventBuffer {
+		/** Maximum allowed size of buffer. */
+		private int bufferSize;
 		/**
 		 * Queue publications for retrieval by listen() and events().
 		 */
@@ -66,18 +68,12 @@ public final class Job implements JobMBean {
 		private int sequence = 0;
 		/** Track the size of the buffer for throttling. */
 		private int bufferedSize = 0;
-		/** Maximum allowed size of buffer. */
-		private int bufferSize = 10;
 		/** Number of events which are eligible to be purged. */
 		private int purgable = 0;
-		public EventBuffer() {}
-		/**
-		 * Set the maximum allowed size of the buffer.
-		 * @param bufferSize
-		 */
-		public void setBufferSize(int bufferSize) {
+		public EventBuffer(int bufferSize) {
 			this.bufferSize = bufferSize;
 		}
+		
 		/**
 		 * Add an event to the stream, blocking if the stream is full.
 		 * Returns false if interrupted.
@@ -153,11 +149,6 @@ public final class Job implements JobMBean {
 	/** Has start() been called yet? */
 	private boolean isNew = true;
 	private Date startDate;
-	/**
-	 * This is stored here in case the job implementation or client needs to
-	 * refer to it.
-	 */
-	private JobConfiguration configuration;
 	
 	private class JobEngine extends OrcEngine
 	implements Promptable, Redirectable {
@@ -243,10 +234,9 @@ public final class Job implements JobMBean {
 	/** Thread in which the main engine is run. */
 	private Thread worker;
 
-	protected Job(Expr expression, JobConfiguration configuration) {
-		this.configuration = configuration;
-		this.events = new EventBuffer();
-		engine = new JobEngine(new Config());
+	protected Job(Expr expression, Config config) {
+		this.events = new EventBuffer(10);
+		engine = new JobEngine(config);
 		Node node = expression.compile(new Pub());
 		//engine.debugMode = true;
 		engine.start(node);
@@ -286,10 +276,6 @@ public final class Job implements JobMBean {
 		worker.interrupt();
 	}
 
-	public JobConfiguration getConfiguration() {
-		return configuration;
-	}
-
 	/**
 	 * Return events which occurred since the job started or purgeEvents was last called.
 	 * If no events have occurred, block using waiter until one occurs.
@@ -319,10 +305,6 @@ public final class Job implements JobMBean {
 		return (Date)startDate.clone();
 	}
 
-	public void setEventBufferSize(Integer eventBufferSize) {
-		if (eventBufferSize != null) events.setBufferSize(eventBufferSize);
-	}
-	
 	/**
 	 * Submit a response to a prompt (initiated by the Prompt site).
 	 * @throws InvalidPromptException if promptID is invalid
