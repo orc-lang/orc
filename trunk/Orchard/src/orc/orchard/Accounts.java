@@ -73,7 +73,8 @@ public abstract class Accounts implements AccountsMBean {
 		public boolean getIsGuest() { return false; }
 	};
 	
-	protected synchronized Account getAccount(final Integer account_id, Integer quota, Integer lifespan, Integer eventBufferSize) {
+	protected synchronized Account getAccount(ResultSet rs) throws SQLException {
+		int account_id = rs.getInt("account_id");
 		// Get the actual account object. If one already
 		// exists, return it.
 		Account out;
@@ -82,10 +83,11 @@ public abstract class Accounts implements AccountsMBean {
 		} else {
 			out = new CachedAccount(account_id);
 			accounts.put(account_id, out);
+			out.setQuota((Integer)rs.getObject("quota"));
+			out.setLifespan((Integer)rs.getObject("lifespan"));
+			out.setCanSendMail(rs.getBoolean("can_send_mail"));
+			out.setCanImportJava(rs.getBoolean("can_import_java"));
 		}
-		out.setQuota(quota);
-		out.setLifespan(lifespan);
-		out.setEventBufferSize(eventBufferSize);
 		return out;
 	}
 	
@@ -139,7 +141,7 @@ class DbAccounts extends Accounts {
 	private Account getAccountFromDB(String devKey) throws SQLException {
 		// Fetch the account information
 		PreparedStatement sql = db.prepareStatement(
-				"SELECT account_id, quota, lifespan, event_buffer_size" +
+				"SELECT *" +
 				" FROM account" +
 				" INNER JOIN account_type USING (account_type_id)" +
 				" WHERE developer_key = ?::uuid");
@@ -153,10 +155,7 @@ class DbAccounts extends Accounts {
 					System.out.println("Account '" + devKey + "' not found, using guest account.");
 					return guest;
 				} else {
-					return getAccount((Integer)rs.getObject(1),
-							(Integer)rs.getObject(2),
-							(Integer)rs.getObject(3),
-							(Integer)rs.getObject(4));
+					return getAccount(rs);
 				}
 			} finally {
 				rs.close();

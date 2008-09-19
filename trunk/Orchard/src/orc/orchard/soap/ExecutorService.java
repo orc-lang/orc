@@ -18,7 +18,6 @@ import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.handler.MessageContext;
 
 import orc.orchard.AbstractExecutorService;
-import orc.orchard.JobConfiguration;
 import orc.orchard.Waiter;
 import orc.orchard.errors.InvalidJobException;
 import orc.orchard.errors.InvalidJobStateException;
@@ -26,7 +25,6 @@ import orc.orchard.errors.InvalidOilException;
 import orc.orchard.errors.InvalidProgramException;
 import orc.orchard.errors.InvalidPromptException;
 import orc.orchard.errors.QuotaException;
-import orc.orchard.errors.UnsupportedFeatureException;
 import orc.orchard.events.JobEvent;
 import orc.orchard.oil.Oil;
 
@@ -130,20 +128,8 @@ public class ExecutorService extends AbstractExecutorService {
 
 	/** Do-nothing override. */
 	@Override
-	public String compileAndSubmitConfigured(@WebParam(name="devKey") String devKey, @WebParam(name="program") String program, @WebParam(name="configuration") JobConfiguration configuration) throws QuotaException, InvalidProgramException, InvalidOilException, UnsupportedFeatureException, RemoteException {
-		return super.compileAndSubmitConfigured(devKey, program, configuration);
-	}
-
-	/** Do-nothing override. */
-	@Override
 	public String submit(@WebParam(name="devKey") String devKey, @WebParam(name="program") Oil program) throws QuotaException, InvalidOilException, RemoteException {
 		return super.submit(devKey, program);
-	}
-
-	/** Do-nothing override. */
-	@Override
-	public String submitConfigured(@WebParam(name="devKey") String devKey, @WebParam(name="program") Oil program, @WebParam(name="configuration") JobConfiguration configuration) throws QuotaException, InvalidOilException, UnsupportedFeatureException, RemoteException {
-		return super.submitConfigured(devKey, program, configuration);
 	}
 
 	/** Do-nothing override. 

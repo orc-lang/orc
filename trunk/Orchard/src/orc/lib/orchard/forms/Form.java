@@ -5,6 +5,8 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 
+import orc.lib.net.XMLUtils;
+
 public class Form extends Aggregate {
 	private Map<String, String> hiddens = new HashMap<String, String>();
 	public Form() {
@@ -22,7 +24,7 @@ public class Form extends Aggregate {
 		for (Map.Entry<String, String> hidden : hiddens.entrySet()) {
 			out.write("<input type='hidden'" +
 					" name='" + hidden.getKey() + "'" +
-					" value='" + SingleField.escapeHtml(hidden.getValue()) + "'" +
+					" value='" + XMLUtils.escapeXML(hidden.getValue()) + "'" +
 					">");
 		}
 		super.render(out);

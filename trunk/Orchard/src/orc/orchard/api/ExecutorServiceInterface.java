@@ -5,14 +5,12 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Set;
 
-import orc.orchard.JobConfiguration;
 import orc.orchard.errors.InvalidJobException;
 import orc.orchard.errors.InvalidJobStateException;
 import orc.orchard.errors.InvalidOilException;
 import orc.orchard.errors.InvalidProgramException;
 import orc.orchard.errors.InvalidPromptException;
 import orc.orchard.errors.QuotaException;
-import orc.orchard.errors.UnsupportedFeatureException;
 import orc.orchard.events.JobEvent;
 import orc.orchard.oil.Oil;
 
@@ -64,21 +62,13 @@ import orc.orchard.oil.Oil;
  */
 public interface ExecutorServiceInterface extends Remote {
 	/**
-	 * Register a new job for execution, using the provided job configuration.
+	 * Register a new job for execution.
 	 * 
 	 * @return String Job ID of new job.
 	 * @throws QuotaException
 	 *             if registering this job would exceed quotas.
 	 * @throws InvalidOilException
 	 *             if the program is invalid.
-	 * @throws UnsupportedFeatureException
-	 *             if the executor does not support some part of the
-	 *             configuration.
-	 */
-	public String submitConfigured(String devKey, Oil program, JobConfiguration configuration) throws QuotaException,
-			InvalidOilException, UnsupportedFeatureException, RemoteException;
-	/**
-	 * Register a new job for execution, using a default JobConfiguration.
 	 */
 	public String submit(String devKey, Oil program) throws QuotaException, InvalidOilException, RemoteException;
 	/**
@@ -87,10 +77,6 @@ public interface ExecutorServiceInterface extends Remote {
 	 * bother calling a separate compiler.
 	 */
 	public String compileAndSubmit(String devKey, String program) throws QuotaException, InvalidProgramException, InvalidOilException, RemoteException;
-	/**
-	 * Combine compilation and submission into a single step.
-	 */
-	public String compileAndSubmitConfigured(String devKey, String program, JobConfiguration configuration) throws QuotaException, InvalidProgramException, InvalidOilException, UnsupportedFeatureException, RemoteException;
 	/**
 	 * URIs of unfinished jobs started from this executor.
 	 */
