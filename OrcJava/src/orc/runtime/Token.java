@@ -9,6 +9,7 @@ import orc.ast.oil.arg.Arg;
 import orc.env.Env;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
+import orc.error.runtime.CapabilityException;
 import orc.error.runtime.TokenException;
 import orc.error.runtime.UncallableValueException;
 import orc.runtime.nodes.Node;
@@ -331,5 +332,14 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 	
 	public void unsetPending() {
 		engine.removePendingToken(this);
+	}
+	
+	public void requireCapability(String name, boolean ifNull) throws CapabilityException {
+		Boolean ok = getEngine().getConfig().hasCapability(name);
+		if (ok == null) {
+			if (!ifNull) throw new CapabilityException(name);
+		} else if (!ok) {
+			throw new CapabilityException(name);
+		}
 	}
 }
