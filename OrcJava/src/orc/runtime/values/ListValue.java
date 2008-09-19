@@ -3,6 +3,7 @@ package orc.runtime.values;
 import java.util.Iterator;
 import java.util.List;
 
+import orc.runtime.ReverseListIterator;
 import orc.runtime.Token;
 
 /**
@@ -16,14 +17,20 @@ public abstract class ListValue extends Value implements Iterable, ListLike {
 	
 	public abstract List<Object> enlist();
 	
-	public static ListValue make(List<Object> vs) {
-		
-		ListValue l = new NilValue();
-		
-		for(int i = vs.size() - 1; i >= 0; i--) {
-			l = new ConsValue(vs.get(i), l);
+	public static ListValue make(Object[] vs) {
+		ListValue l = NilValue.singleton;
+		for (int i = vs.length - 1; i >= 0; i--) {
+			l = new ConsValue(vs[i], l);
 		}
-		
+		return l;
+	}
+	
+	public static ListValue make(List<Object> vs) {
+		ListValue l = NilValue.singleton;
+		Iterator i = new ReverseListIterator<Object>(vs);
+		while (i.hasNext()) {
+			l = new ConsValue(i.next(), l);
+		}
 		return l;
 	}
 	
