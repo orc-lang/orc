@@ -187,6 +187,25 @@ public class Args implements Serializable, Iterable<Object> {
 		}
 	}
 	
+	private static class StringListValue implements ListLike {
+		private String value;
+		public StringListValue(String value) {
+			this.value = value;
+		}
+		
+		public void uncons(Token caller) {
+			if (value.equals("")) caller.die();
+			else caller.resume(new TupleValue(
+					value.substring(0, 1),
+					value.substring(1)));
+		}
+
+		public void unnil(Token caller) {
+			if (value.equals("")) caller.resume(Value.signal());
+			else caller.die();
+		}
+	}
+	
 	/**
 	 * ListValue view for iterators. Because iterators are not cloneable and are
 	 * mutable, we have to cache the head and tail.
@@ -237,12 +256,17 @@ public class Args implements Serializable, Iterable<Object> {
 			throw new ArgumentTypeMismatchException(n, "ListLike", "null");
 		} else if (a instanceof ListLike) {
 			return (ListLike) a;
+		} else if (a instanceof String) {
+			return new StringListValue((String)a);
 		} else if (a instanceof Iterable) {
 			Iterator it = ((Iterable) a).iterator();
 			return new IteratorListValue(it);
 		} else if (a instanceof Object[]) {
-			Iterator it = Arrays.asList((Object[]) a).iterator();
-			return new IteratorListValue(it);
+			// FIXME: we should be able to iterate
+			// over primitive arrays, but that requires
+			// a different approach (asList won't work
+			// with primitive arrays).
+			return new IteratorListValue(Arrays.asList((Object[])a).iterator());
 		} else {
 			throw new ArgumentTypeMismatchException(n, "ListLike", a.getClass().toString());
 		}
