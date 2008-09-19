@@ -30,10 +30,9 @@ public class Dot extends Expression {
 	
 	@Override
 	public orc.ast.simple.Expression simplify() throws CompilationException {
-		
-		return new WithLocation(
-				new Call(target, new Field(field)).simplify(),
-				getSourceLocation());
+		Call call = new Call(target, new Field(field));
+		call.setSourceLocation(getSourceLocation());
+		return call.simplify();
 	}
 
 	public String toString() {
