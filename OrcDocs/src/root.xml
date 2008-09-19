@@ -1219,28 +1219,23 @@ slightly different meaning. Sites are introduced and bound to variables by a spe
 declaration.  
 </para>
 
-<para>
-A site is a value, just like an integer or a list. It may be bound to a variable, passed 
-as an argument, or published by an execution, just like any other value.
-</para> 
-
 <section><title>Calling a site</title>
 
 <para>
-Suppose that the variable <code>Google</code> is bound to a site which sends a 
-string to the Google search engine and returns the URL of the top result. A call to
-<code>Google</code> looks just like a function call.
+Suppose that the variable <code>Google</code> is bound to a site which invokes the
+Google search engine service in "I'm Feeling Lucky" mode. A call to <code>Google</code> 
+looks just like a function call. Calling <code>Google</code> requests the URL of the top 
+result for the given search term.
 
 <programlisting><![CDATA[
 {- Get the top search result for "computation orchestration" -}
 Google("computation orchestration")
 ]]></programlisting>
 
-When the Google search engine determines the top result for this search, it responds with
-some URL. The site call then publishes that response. Note that the service might
-never respond: Google's servers might be down, the network might be down, or the search 
-might yield no result URL. If the service fails to respond, the site call remains
-silent.
+Once the Google search service determines the top result, it sends a response. The site 
+call then publishes that response. Note that the service might never respond: Google's 
+servers might be down, the network might be down, or the search might yield no result URL. 
+If the service fails to respond, the site call remains silent.
 </para>
 
 
@@ -1252,6 +1247,22 @@ arguments must be bound before the call can proceed. If any argument is silent, 
 Second, a site call publishes at most one value, since at most one response is received.
 </para>
 
+<para>
+A site is a value, just like an integer or a list. It may be bound to a variable, passed 
+as an argument, or published by an execution, just like any other value.
+</para> 
+
+<para>
+<programlisting><![CDATA[
+{-
+  Create a search site from a search engine URL,
+  bind the variable Search to that site,
+  then use that site to search for a term.
+-}
+val Search = SearchEngine("http://www.google.com/")
+Search("first class value")
+]]></programlisting>
+</para>
 
 <para>
 A site is sometimes called purely for its effect on the external world; its return
@@ -1279,8 +1290,8 @@ println("Hello, World!")
 
 <para>
 A <code>site</code> declaration makes some service available as a site and
-binds it to a variable. The service might be an object in the host language,
-e.g. a class instance in Java, or an external service on the web accessed 
+binds it to a variable. The service might be an object in the host language 
+(e.g. a class instance in Java), or an external service on the web which is accessed 
 through some protocol like SOAP or REST, or even a primitive operation like addition. 
 We will discuss the particulars of these declarations, and the guidelines for accessing 
 web-based services or creating one's own services, in <link linkend="chapter.services">Chapter 3</link>. 
@@ -1313,8 +1324,9 @@ site Buffer = orc.lib.state.Buffer
 <section><title>The concurrency combinators of Orc</title>
 
 <para>
-Orc has three concurrency <firstterm>combinators</firstterm>: parallel, sequential, and asymmetric.
-The combinators connect expressions together.
+Orc has three <firstterm>combinators</firstterm>: parallel, sequential, and asymmetric.  A combinator 
+forms an expression from two component expressions. Each combinator captures a different aspect of 
+concurrency.
 </para>
 
 <section><title>The parallel combinator</title>
@@ -1329,8 +1341,8 @@ the whole execution does so as well.
 
 <para>
 <programlisting language="orc-demo"><![CDATA[
--- Publish 1, 2, and 3 in parallel  
-1 | 2 | 1+2
+-- Publish 1 and 2 in parallel  
+1 | 1+1
 ]]></programlisting>
 </para>  
 
@@ -1348,6 +1360,18 @@ Google("cupcake") | Yahoo("cupcake")
 ]]></programlisting>
 </para>  
 
+The parallel combinator is fully associative: (F <code>|</code> G) <code>|</code> H,
+F <code>|</code> (G <code>|</code> H), and F <code>|</code> G <code>|</code> H are all
+equivalent. It is also commutative: F <code>|</code> G is equivalent to G <code>|</code> F.  
+
+<para>
+<programlisting language="orc-demo"><![CDATA[
+-- Publish 1, 2, and 3 in parallel  
+1+1 | 1 | 1+2
+]]></programlisting>
+</para>  
+
+
 </section>
 
 <section><title>The sequential combinator</title>
@@ -1355,9 +1379,9 @@ Google("cupcake") | Yahoo("cupcake")
 <para>
 Now that we have expressions which publish multiple values, what can we do with those
 publications? The sequential combinator, written F<code><![CDATA[ >x> ]]></code>G, 
-combines the expression F, which publishes some values, with another expression G 
-which will use those values as they are published, using <code>x</code> to transmit
-the values from from F to G.
+combines the expression F, which may publish some values, with another expression G, 
+which will use the values as they are published; <code>x</code> transmits the values
+from F to G.
 </para>
 
 <para>
@@ -1420,9 +1444,9 @@ Otherwise, the published value is simply ignored, and no new copy of G is execut
 
 <para>
 <programlisting language="orc-demo"><![CDATA[
--- Publish x from any tuple of the form (1,x)
+-- Filter out values of the form (_,false)
 -- Publishes 4 and 6  
-( (1,4) | (2,5) | (1,6) )  >(1,x)> x
+( (4,true) | (5,false) | (6,true) )  >(x,true)> x
 ]]></programlisting>
 </para>
  
@@ -1449,6 +1473,28 @@ We can do this using <code><![CDATA[ >> ]]></code> together with the special exp
 ]]></programlisting>
 </para>
 
+<para>
+The sequential combinator is right associative: F<code><![CDATA[ >x> ]]></code>G<code><![CDATA[ >y> ]]></code>H
+is equivalent to F<code><![CDATA[ >x> (]]></code>G<code><![CDATA[ >y> ]]></code>H<code>)</code>. It has higher
+precedence than the parallel combinator: F<code><![CDATA[ >x> ]]></code>G <code>|</code> H is equivalent to
+<code>(</code>F<code><![CDATA[ >x> ]]></code>G <code>) |</code> H.
+</para>
+
+<para>
+The right associativity of the sequential combinator makes it easy to bind variables in sequence and use
+them together.
+</para>
+
+<para>
+<programlisting language="orc-demo"><![CDATA[
+{- 
+  Publish the cross product of {1,2} and {3,4}:
+  (1,3), (1,4), (2,3), and (2,4).
+-}
+(1 | 2) >x> (3 | 4) >y> (x,y)
+]]></programlisting>
+</para>
+
 
 </section>
 
@@ -1466,9 +1512,9 @@ publish any values.
 </para>
 
 <para>
-During the execution of F, any execution that depends on <code>x</code> will be
-suspended until <code>x</code> is bound (to the first value published by G). If G
-never publishes a value, those executions are suspended forever. 
+During the execution of F, any part of the execution that depends on <code>x</code> 
+will be suspended until <code>x</code> is bound (to the first value published by G). If G
+never publishes a value, that part of the execution is suspended forever. 
 </para>
 
 <para>
@@ -1488,12 +1534,10 @@ println(result) <result< ( Google("cupcake") | Yahoo("cupcake") )
 
 <para>
 Though a terminated execution may not make any new calls, the calls
-that it has already made will continue as normal; their responses are simply
+that it has already made will continue normally; their responses are simply
 ignored. This may have surprising consequences when a call has side effects,
 as in the following example.
-</para>
 
-<para>
 <programlisting language="orc-demo"><![CDATA[
 {- 
   This example actually prints both "true" and "false" to the
@@ -1501,6 +1545,12 @@ as in the following example.
 -}
 stop <x< println("true") | println("false")
 ]]></programlisting>
+
+Both of the <code>println</code> calls are initiated before either one of
+them publishes a value and terminates the expression. Once the expression
+is terminated, no new calls occur, but the other <code>println</code> call
+still proceeds and still has the effect of printing its message to the
+console.
 </para>
 
 
@@ -1522,8 +1572,15 @@ x*x <(x,true)< ( (3,true) | (4,false) | (5,true) )
 Note that even if <code>(4,false)</code> is published before <code>(3,true)</code> or <code>(5,true)</code>, 
 it is ignored. The right side continues to execute and will publish one of <code>(3,true)</code> or 
 <code>(5,true)</code>.
-</para> 3
+</para>
 
+
+<para>
+The asymmetric combinator is left associative: F<code><![CDATA[ <x< ]]></code>G<code><![CDATA[ <y< ]]></code>H
+is equivalent to <code>(</code>F<code><![CDATA[ <x< ]]></code>G<code><![CDATA[) <y< ]]></code>H. It has lower
+precedence than the parallel combinator: F<code><![CDATA[ <x< ]]></code>G <code>|</code> H is equivalent to
+F<code><![CDATA[ <x< (]]></code>G <code>|</code> H<code>)</code>.
+</para>
 
 
 </section>
@@ -1537,8 +1594,8 @@ it is ignored. The right side continues to execute and will publish one of <code
 <section><title>Revisiting Cor expressions</title>
 
 <para>
-Now that we have introduced concurrency and state, some of the assumptions we
-made when describing the behavior of functional expressions in Cor no longer hold.
+Some Cor expressions have new behaviors in the context of Orc, due to the introduction
+of concurrency and of sites.
 </para>
 
 <section><title><code>val</code></title>
@@ -1547,8 +1604,8 @@ made when describing the behavior of functional expressions in Cor no longer hol
 The declaration <code>val x = </code>G, followed by expression F, is 
 actually just a prefix form of the asymmetric combinator F<code><![CDATA[ <x< ]]></code>G.
 Thus, <code>val</code> shares all of the behavior of the asymmetric combinator,
-which we have already described. This is also true when a pattern is used instead
-of a variable name.
+which we have already described. (This is also true when a pattern is used instead
+of variable name <code>x</code>).
 </para>
 
 </section>
@@ -1559,14 +1616,17 @@ of a variable name.
 The conditional expression <code>if</code> E <code>then</code> F <code>else</code> G
 is actually a derived form based on a site named <code>if</code>. The <code>if</code>
 site takes a boolean argument; it returns a signal if that argument is <code>true</code>,
-or remains silent if the argument is <code>false</code>. When the <code>else</code>
-branch of a conditional is unnecessary,we can use the <code>if</code> site and the 
-sequential combinator to write the simpler expression <code>if(</code>E<code>) >> </code>F.
+or remains silent if the argument is <code>false</code>.
 </para>
 
 <para>
-<code>if</code> E <code>then</code> F <code>else</code> G is equivalent to
-to <code><![CDATA[( if(b) >> ]]></code>F<code><![CDATA[ | if(~b) >> ]]></code>G<code><![CDATA[ ) <b< ]]></code>E.
+<code>if</code> E <code>then</code> F <code>else</code> G is equivalent 
+to <code>(<![CDATA[ if(b) >> ]]></code>F<code><![CDATA[ | if(~b) >> ]]></code>G<code>)<![CDATA[ <b< ]]></code>E.
+</para>
+
+<para>
+ When the <code>else</code> branch of a conditional is unneeded, we can use the <code>if</code> 
+ site and the sequential combinator to write the simpler expression <code>if(</code>E<code>) >> </code>F.
 </para>
 
 </section>
@@ -1575,8 +1635,8 @@ to <code><![CDATA[( if(b) >> ]]></code>F<code><![CDATA[ | if(~b) >> ]]></code>G<
 <section><title>Treating Orc expressions functionally</title>
 
 <para>
-An Orc expression with concurrency combinators may occur as a subexpression of a Cor expression,
-for example as an operand to an arithmetic operation, or as an argument to a function call. The
+We let Orc expressions with concurrency combinators occur as subexpressions of Cor expressions,
+for example as operands to arithmetic operations, or as arguments to function calls. The
 execution of an Orc expression may publish many values and perform many site calls. What does
 such an expression mean in a purely functional context, where only one value is expected? For 
 example, what does <code>2 + (3 | 4)</code> publish? 
@@ -1648,7 +1708,7 @@ the expression.
 <para>
 To be precise, whenever an Orc expression appears in a Cor context, it is treated as if it was 
 on the right side of an asymmetric combinator, using a fresh variable name to fill in the hole. 
-Thus, C[E] (where E is an Orc expression and C is a Cor context) translates to the Orc expression 
+Thus, C[E] (where E is an Orc expression and C is a Cor context) is equivalent to the expression 
 C[<code>x</code>] <code><![CDATA[ <x< ]]></code> E. 
 </para>
 
@@ -1674,10 +1734,10 @@ call may publish many values.
 <para>
 <programlisting language="orc-demo"><![CDATA[
 -- Publish all integers in the interval 1..n, in arbitrary order. 
-def Range(n) = if (n > 0) then (n | Range(n-1)) else stop 
+def range(n) = if (n > 0) then (n | range(n-1)) else stop 
 
 -- Publish 1, 2, and 3 in arbitrary order.
-Range(3)
+range(3)
 ]]></programlisting>
 </para>
 
@@ -1723,14 +1783,13 @@ println("red") >> Rtimer(3000) >> println("green") >> stop
 </para>
 
 <para>
-The timer can be used together with recursion to create a <firstterm>metronome</firstterm>:
-an expression which publishes values at fixed time intervals. The following example
-defines a metronome which publishes a signal once per second, indefinitely.
+The following example defines a metronome, which publishes a signal once 
+per second, indefinitely.
 </para>
 
 <para>
 <programlisting><![CDATA[
-def Metronome() = signal | Rtimer(1000) >> Metronome()
+def metronome() = signal | Rtimer(1000) >> metronome()
 ]]></programlisting>
 </para>
 
@@ -1753,7 +1812,7 @@ result
 
 
 
-We present many more examples of programming techniques using time in <link linkend="chapter.methodology">Chapter 2</link>.
+We present many more examples of programming techniques using real time in <link linkend="chapter.methodology">Chapter 2</link>.
 
 </section>
 
@@ -1772,16 +1831,22 @@ and a new concurrency combinator.
 </para>
 
 <para>
+The following figure summarizes further extensions to the syntax of Orc. 
+The Orc and Cor grammar rules presented earlier are abbreviated by ellipses (...).
+The item G+ means "one or more instances of G concatenated together". 
+</para>
+
+<para>
 <table id="advanced-ebnf-table" frame="none" rowsep="0" colsep="0">
 <title>Advanced Syntax of Orc</title> 
 <?dbhtml table-width="80%" ?>
-<?dbfo table-width="80%" ?>
+<?dbfo table-width="100%" ?>
 <?dbfo keep-together="always" ?>
 <tgroup cols="5" >
 <colspec colnum="1" colname="bexp" colwidth="1*" align="right"/>
 <colspec colnum="2" colname="texp" colwidth="1*" align="center"/>
 <colspec colnum="3" colname="fexp" colwidth="10*" align="left"/>
-<colspec colnum="4" colname="whole exp" colwidth="6*" align="left"/>
+<colspec colnum="4" colname="whole exp" colwidth="5*" align="left"/>
 <colspec colnum="5" colname="whole exp" colwidth="7*" align="left"/>
 <tbody>
 
@@ -1879,6 +1944,7 @@ and a new concurrency combinator.
 <entry><emphasis>as pattern</emphasis></entry>
 </row>
 
+<!-- 
 <row>
 <entry></entry>
 <entry>|</entry>
@@ -1888,6 +1954,7 @@ and a new concurrency combinator.
 <entry></entry>
 <entry><emphasis>site pattern</emphasis></entry>
 </row>
+ -->
 
 <row>
 <entry>D</entry>
@@ -1976,7 +2043,7 @@ of the evaluation.
 
 <para>
 This technique is known as <emphasis>currying</emphasis> and it is common in functional
-programming languages. We can write curried functions using closures. Suppose we want to 
+programming languages. We can write curried functions using <link linkend="cor.closures">closures</link>. Suppose we want to 
 define a curried addition function on two arguments, and later apply that function to the 
 arguments 3 and 4. We could write such a program in the following way:
 
@@ -1985,6 +2052,11 @@ def add(a) = ( lambda(b) = a+b )
 val f = add(3)
 f(4)
 ]]></programlisting>
+
+This defines a function <code>add</code> which, given an argument <code>a</code>, creates a function
+which will take an argument <code>b</code> and add <code>a</code> to <code>b</code>. It then creates the
+function which adds <code>3</code> to its argument, binds that to <code>f</code>, and then invokes
+<code>f</code> on <code>4</code> to yield <code>3+4</code>.
 
 </para>
 
@@ -2058,7 +2130,7 @@ val (ax,ay) = a
 val (bx,by) = b
 ]]></programlisting>
 
-We can use the <code>as</code> keyword to simplify this process, giving a name to an entire
+We can use the <code>as</code> keyword to simplify this program fragment, giving a name to an entire
 subpattern. Here is an equivalent version of the above code.
 
 <programlisting><![CDATA[
@@ -2068,6 +2140,7 @@ val ((ax,ay) as a, (bx,by) as b) = ((1,2),(3,4))
 
 </section>
 
+<!-- 
 <section><title>Site pattern</title>
 
 <para>
@@ -2107,6 +2180,7 @@ extractor objects and the <code>unapply</code> method in Scala.
 </para>
 
 </section>
+ -->
 
 </section>
 
@@ -2149,7 +2223,8 @@ It is often convenient to group related declarations into units that can be
 shared between programs. The <code>include</code> declaration offers a simple
 way to do this. It names a source file containing a sequence of Orc declarations;
 those declarations are incorporated into the program as if they had textually
-replaced the include declaration.
+replaced the include declaration. An included file may itself contain 
+<code>include</code> declarations. 
 </para>
 
 <para>
@@ -2174,9 +2249,9 @@ sum([1,2,3])
 </para>
 
 <para>
-Note that these declarations still obey the rules of lexical scope. Also,
-Orc does not detect shared declarations; if the same file is included twice,
-its declarations occur twice.
+Note that these declarations still obey the rules of lexical scope. Also, Orc 
+does not detect shared declarations; if the same file is included twice, its 
+declarations occur twice.
 </para>
 
 </section>
@@ -2190,17 +2265,16 @@ its declarations occur twice.
 Orc has a fourth concurrency combinator: the <firstterm>after</firstterm> combinator,
 written F<code> ; </code>G. The after combinator executes its left side, publishing 
 each of its publications as they occur. When the left side is done executing, then 
-the right side executes.
+the right side starts executing.
 </para>
 
 <para>
 We determine when an expression is done executing using the following rules.
 
 <itemizedlist>
-<listitem>Any Cor expression is done when it is fully evaluated.</listitem>
-<listitem>A site call is done when it has published a value. A site may
-also <firstterm>refuse</firstterm> a call, in which case the call publishes
-not value and is done.</listitem>
+<listitem>Any fully evaluated or silent Cor expression is done.</listitem>
+<listitem>A site call is done when it has published a value. A site call is also
+done if the site <firstterm>refuses</firstterm> the call, as explained below.</listitem>
 <listitem>F <code>|</code> G is done when its subexpressions F and G are done.</listitem>
 <listitem>F<code><![CDATA[ >x> ]]></code>G is done when F is done and all copies of G are done.</listitem>
 <listitem>F<code><![CDATA[ <x< ]]></code>G is done when F is done, and G is either 
@@ -2209,6 +2283,19 @@ done or has been terminated after publishing a value.</listitem>
 <listitem><code>stop</code> is done.</listitem>
 </itemizedlist>
 
+</para>
+
+<para>
+A site refuses a call when it knows that it will never respond to that call. This may happen
+for a variety of reasons. A site may be specifically designed to never respond under
+certain circumstances; for example, <code>if(false)</code> will never respond, so <code>if</code> 
+refuses that call. A site may depend on some connection that has failed in a detectable
+way; for example, <code>Google("five tons of flax")</code> if it is running on a computer
+which has no internet connection. A site may require some resource which is unavailable;
+for example, a site call based on a website may fail if the website itself is down or has 
+moved (a 404 error). Generally speaking, any underlying exception or error which prevents 
+the site call from ever continuing will trigger a refusal. Refusal is used only to implement 
+the after combinator; it is not used elsewhere in the language.
 </para>
 
 <para>
@@ -2234,33 +2321,71 @@ Discuss Cor as syntactic sugar for a simpler Orc calculus.
 </section>
  -->
 
-
-
 </chapter>
 
- 
+<!--  
 <chapter id="chapter.methodology"><title>Programming Methodology</title>
 
 Under construction.
-
-<!-- 
-- forkjoin
-- parallel or
-- timeout
-- delay
-- priority
-- metronome 
-- repeat	 metronome(t) >> f
-- throttle   def E() = Rtimer(t) | f ; E()
-- dining philosophers
-- shortest path
-- meeting scheduler
+</chapter>
  -->
- 
- <!-- 
- 
- <para>
-We can use <code>Metronome</code> and the sequential combinator to 'drive' 
+<!-- 
+(We'll make use of some sites available in the Standard Library, specifically
+the Communication sites)
+
+<section><title>Programming Style</title>
+
+often convenient & more readable to use <code>val</code> instead of asymmetric.
+
+always remember that <code>val</code> executes in parallel!
+
+by convention, sites, and funs that return at most one value, start with a Capital
+Letter. Multi-publication functions are in lowercase.
+
+
+</section>
+
+<section><title>Common Techniques</title>
+</section>
+
+<section><title>Fork-join</title>
+</section>
+
+<section><title>Explicit Wait</title>
+</section>
+
+<section><title>Synchronization</title>
+just a combination of fork-join and wait
+</section>
+
+<section><title>Parallel Or</title>
+</section>
+
+<section><title>Arbitration</title>
+val b =
+if b then P else Q 
+</section>
+
+
+<section><title>Timeout</title>
+let(z) where z in
+( M >x> let(x,true) | Rtimer(t) >x> let(x,false) )
+</section>
+
+<section><title>Delay</title>
+</section>
+
+<section><title>Priority</title>
+</section>
+
+
+<section><title>Metronome</title>
+</section>
+
+<section><title>Repeat</title>
+
+<para>
+We can use <code>Metronome</code> and the sequential combinator to repeat 
 another expression, so that copies of that expression will execute at
 regular intervals.
 </para>
@@ -2276,18 +2401,51 @@ regular intervals.
 | Rtimer(500) >> Metronome() >> "tock"
 ]]></programlisting>
 </para>
- 
-  -->
 
-</chapter>
+</section>
+
+<section><title>Throttle</title>
+def E() = Rtimer(t) | f ; E()
+</section>
 
 
+<section><title>Larger Examples</title>
+
+<section><title>Dining Philosophers</title>
+</section>
+
+<section><title>Shortest Path</title>
+</section>
+
+<section><title>Meeting Scheduler</title>
+</section>
+
+</section>
+
+ -->
+
+<!-- 
 <chapter id="chapter.services"><title>Accessing and Creating External Services</title>
 
 Under construction.
 
 </chapter>
+ -->
 
+<!-- 
+<chapter><title>Execution Environment</title>
+</chapter>
+-->
+
+<!-- 
+<chapter><title>Debugging</title>
+</chapter>
+ -->
+ 
+<!-- 
+<chapter><title>The Implementation</title>
+</chapter>
+-->
 
 
 <appendix><title>Complete Syntax of Orc</title>
@@ -2297,13 +2455,13 @@ Under construction.
 <table id="full-ebnf-grammar" frame="none" rowsep="0" colsep="0">
 <title>Complete Syntax of Orc</title> 
 <?dbhtml table-width="80%" ?>
-<?dbfo table-width="80%" ?>
+<?dbfo table-width="100%" ?>
 <?dbfo keep-together="always" ?>
 <tgroup cols="5" >
 <colspec colnum="1" colwidth="1*" align="right"/>
 <colspec colnum="2" colwidth="1*" align="center"/>
 <colspec colnum="3" colwidth="10*" align="left"/>
-<colspec colnum="4" colwidth="4*" align="left"/>
+<colspec colnum="4" colwidth="5*" align="left"/>
 <colspec colnum="5" colwidth="7*" align="left"/>
 <tbody>
 
@@ -2542,7 +2700,7 @@ Under construction.
 <entry></entry>
 <entry>|</entry>
 
-<entry><code>site</code> X <code>=</code> <emphasis>URL</emphasis></entry>
+<entry><code>site</code> X <code>=</code> <emphasis>address</emphasis></entry>
 
 <entry></entry>
 <entry><emphasis>site declaration</emphasis></entry>
@@ -2653,6 +2811,8 @@ Under construction.
 <entry><emphasis>as pattern</emphasis></entry>
 </row>
 
+
+<!-- 
 <row>
 <entry></entry>
 <entry>|</entry>
@@ -2662,7 +2822,7 @@ Under construction.
 <entry></entry>
 <entry><emphasis>site pattern</emphasis></entry>
 </row>
-
+ -->
 
 </tbody>
 </tgroup>
@@ -2672,7 +2832,7 @@ Under construction.
 
 </appendix>
 
-
+<!--  
 <appendix id="appendix.library"><title>Standard Library</title>
 Under construction.
 </appendix>
@@ -2681,7 +2841,8 @@ Under construction.
 <appendix><title>FAQ</title>
 
 Under construction.
-
+</appendix>
+-->
 <!-- 
 <para>
 
@@ -2690,25 +2851,11 @@ val x = def E() = 5  E
 E is different from E() !
 
 </para>
+
+Why don't nested expressions decode into >x> instead of <x<?
  -->
-</appendix>
 
- 
-<!-- 
-<chapter><title>Execution Environment</title>
-<para></para>
-</chapter>
 
-<chapter><title>Debugging</title>
-<para></para>
-</chapter>
 
-<chapter><title>The Implementation</title>
-<para></para>
-
-To answer: why don't nested expressions decode into >x> instead of <x<?
-
-</chapter>
- -->
  
 </book>
