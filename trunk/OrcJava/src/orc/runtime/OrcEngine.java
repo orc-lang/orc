@@ -327,4 +327,8 @@ public class OrcEngine implements Runnable {
 		}
 		return out;
 	}
+	
+	public Config getConfig() {
+		return config;
+	}
 }

@@ -10,6 +10,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -48,6 +49,7 @@ public class Config {
 	private Integer numSiteThreads = 2;
 	private Boolean noPrelude = false;
 	private String filename = "<stdin>";
+	private HashMap<String, Boolean> caps = new HashMap<String, Boolean>();
 	
 	/**
 	 * Set properties based on command-line arguments.
@@ -172,8 +174,15 @@ public class Config {
 		return typecheck;
 	}
 	
-	
 	public String getFilename() {
 		return filename;
+	}
+	
+	public Boolean hasCapability(String name) {
+		return caps.get(name);
+	}
+	
+	public void setCapability(String name, Boolean value) {
+		caps.put(name, value);
 	}
 }
