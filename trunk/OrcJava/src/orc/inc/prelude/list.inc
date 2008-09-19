@@ -32,14 +32,13 @@ def length(h:t) = 1 + length(t)
 
 def take(0, _) = []
 def take(_, []) = []
-def take(n, h:t) = h:take(n-1, t)
+def take(n, x:xs) = x:take(n-1, xs)
+
+def drop(0, xs) = xs
+def drop(_, []) = []
+def drop(n, x:xs) = drop(n-1, xs)
 
 def member(item, []) = false
 def member(item, h:t) =
   if item = h then true
   else member(item, t)
-
-def ForkJoin(ps) =
-	def par([]) = stop
-	def par(h:t) = h() | par(t)
-	par(ps) >> stop ; signal
