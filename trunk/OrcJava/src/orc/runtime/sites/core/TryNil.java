@@ -16,10 +16,6 @@ import orc.runtime.sites.Site;
 public class TryNil extends Site {
 	@Override
 	public void callSite(Args args, Token caller) throws TokenException {
-		try {
-			args.listLikeArg(0).unnil(caller);
-		} catch (ArgumentTypeMismatchException _) {
-			caller.die();
-		}
+		args.listLikeArg(0).unnil(caller);
 	}
 }

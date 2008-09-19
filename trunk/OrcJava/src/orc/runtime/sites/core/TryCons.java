@@ -21,10 +21,6 @@ import orc.runtime.values.Value;
 public class TryCons extends Site {
 	@Override
 	public void callSite(Args args, Token caller) throws TokenException {
-		try {
-			args.listLikeArg(0).uncons(caller);
-		} catch (ArgumentTypeMismatchException _) {
-			caller.die();
-		}
+		args.listLikeArg(0).uncons(caller);
 	}
 }
