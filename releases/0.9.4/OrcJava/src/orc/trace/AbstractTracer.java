@@ -35,7 +35,7 @@ public abstract class AbstractTracer implements Tracer {
 		/** The current thread */
 		private final ForkEvent thread;
 		/** The timestamp of the last call made (for {@link ReceiveEvent}). */
-		private long lastCallTime;
+		private long lastCallTime = 0;
 		/** The current source location (used for all events). */
 		private SourceLocation location;
 		/** Used to free any StoreEvent after the storing token dies. */
@@ -69,9 +69,16 @@ public abstract class AbstractTracer implements Tracer {
 			annotateAndRecord(new OnlyHandle<Event>(new ChokeEvent((StoreEvent)store)));
 		}
 		public void receive(Object value) {
-			int latency = (int)(System.currentTimeMillis() - lastCallTime);
-			annotateAndRecord(new OnlyHandle<Event>(new ReceiveEvent(
-					marshaller.marshal(value), latency)));
+			if (lastCallTime == 0) {
+				// if a corresponding send event was not called, then
+				// don't record any latency
+				annotateAndRecord(new OnlyHandle<Event>(new ReceiveEvent(
+						marshaller.marshal(value))));
+			} else {
+				int latency = (int)(System.currentTimeMillis() - lastCallTime);
+				annotateAndRecord(new OnlyHandle<Event>(new ReceiveEvent(
+						marshaller.marshal(value), latency)));
+			}
 		}
 		public void die() {
 			if (store != null) {
