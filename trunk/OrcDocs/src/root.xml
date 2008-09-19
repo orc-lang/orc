@@ -4,8 +4,18 @@
 <!DOCTYPE chapter PUBLIC " -//OASIS//DTD DocBook XML V5.0//EN" "../docbook-xml/dtd/docbook.dtd" >
 -->
 
-<book>
+<book><title>Orc User Guide</title>
 
+<!-- <author/> -->
+
+<!-- 
+<preface><title>Introduction</title>
+
+Some introduction.
+
+</preface>
+ -->
+ 
 <chapter><title>The Orc Programming Language</title>
 
 <section><title>Introduction</title>
@@ -368,7 +378,7 @@ Here is the full set of operators that Cor supports:
 <?dbhtml table-width="80%" ?>
 <?dbfo table-width="95%" ?>
 <?dbfo keep-together="always" ?>
-<title>Operators</title>
+<title>Operators of Cor</title>
 <tgroup cols="8" >
 <colspec colnum="1" colname="arith-names" colwidth="1*" align="left"/>
 <colspec colnum="2" colname="arith-ops" colwidth="4*" align="left"/>
