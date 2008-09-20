@@ -2042,6 +2042,7 @@ will recognize this technique as <emphasis>currying</emphasis>.
 </section>
 
 
+<!-- FIXME: this section is incorrect, curried application is not allowed because it creates too much syntactic ambiguity. Uncomment once we resolve.
 <section><title>Currying</title>
 
 <para>
@@ -2088,6 +2089,7 @@ a similar way.
 </para>
 
 </section>
+-->
 
 
 </section>
