@@ -22,9 +22,10 @@
 
 <a name="Introduction"></a><h2>Introduction <small>(<a href="#top">top</a>)</small></h2>
 
-<p>This tutorial is interactive: when you see a code example with a <b>run</b>
-button, click it to run the program. The results of the program will be printed
-below it.</p>
+<p>In this tutorial you will learn the basic concepts of Orc through a series
+of interactive examples.  When you see a code example with a <b>run</b> button,
+click it to run the program. The results of the program will be printed below
+it.</p>
 
 <a name="Sites"></a><h2>Sites <small>(<a href="#top">top</a>)</small></h2>
 <p>The fundamental unit of computation in an Orc program is called a
@@ -36,8 +37,8 @@ by sending you a question and returning your response. For example:</p>
 Prompt("What is your favorite food?")
 </pre>
 
-<p>Some sites may be implemented locally for efficiency, such as <tt>+</tt>,
-which is used to add numbers and concatenate strings:</p>
+<p>Sites needn't always be remote.  For example, the <tt>+</tt> site which is
+used to add numbers and concatenate strings is usually implemented locally.</p>
 <pre class="orc">
 1 + 2</pre>
 
