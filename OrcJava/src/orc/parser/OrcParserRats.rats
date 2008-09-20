@@ -11,6 +11,7 @@ header {
 	
 	import xtc.util.Utilities;
 	import xtc.util.Action;
+	import xtc.util.Pair;
 	import xtc.tree.Location;
 	
 	import orc.Orc;
@@ -402,7 +403,7 @@ String SafeComparator =
 	;
 
 Expression Comparable =
-	NOT x:BasicExpression {
+	NOT x:DotExpression {
 		yyValue = new Call("op~", x);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
@@ -463,18 +464,15 @@ String ProductOperator =
 	;
 
 Expression MaybeSigned =
-	MINUS x:BasicExpression {
+	MINUS x:DotExpression {
 		yyValue = new Call("opu-", x);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ BasicExpression
+	/ DotExpression
 	;
 
-/* FIXME: variables with keywords as prefixes break */
-
-Expression BasicExpression =
-	Literal
-	/ SIGNAL {
+Expression DotExpression =
+	SIGNAL {
 		yyValue = new Let();
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
@@ -488,7 +486,16 @@ Expression BasicExpression =
 		yyValue = new Silent();
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ Call
+	/ seed:BasicExpression tail:DotTail* {
+		yyValue = apply(tail, seed);
+	}
+	;
+
+Expression BasicExpression =
+	Literal
+	/ seed:Variable tail:CallTail {
+		yyValue = apply(tail, seed);
+	}
 	/ LPAREN args:ExpressionList RPAREN {
 		if (args.size() == 1) {
 			yyValue = args.get(0);
@@ -516,35 +523,47 @@ Literal Literal =
 	;
 
 Expression Variable =
-	seed:Identifier {
-		yyValue = new Name(seed);
+	name:Identifier {
+		yyValue = new Name(name);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
 	
-Expression Call =
-	seed:Variable actions:CallTail* {
-		yyValue = apply(actions, seed);
-	}
-	;
-Action<Expression> CallTail =
-	DOT right:Identifier {
+/*
+ * A dot may look like either a field reference or
+ * a method call.
+ */
+Action<Expression> DotTail =
+	DOT right:Identifier call:CallTail {
 		yyValue = new Action<Expression>() {
 			public Expression run(Expression left) {
 				Expression yyValue = new Dot(left, right);
 				yyValue = at(left, yyCount, yyValue);
-				return yyValue;
+				return apply(call, yyValue);
 			}
 		};
 	}
-	/ LPAREN args:ExpressionList RPAREN {
-		yyValue = new Action<Expression>() {
-			public Expression run(Expression left) {
-				Expression yyValue = new Call(left, args);
-				yyValue = at(left, yyCount, yyValue);
-				return yyValue;
-			}
-		};
+	;
+	
+/*
+ * In order to partly avoid ambiguity between calls
+ * and tuples, you can't follow a call immediately with
+ * another call. So this returns either a single-element
+ * pair which applies a call, or an empty pair.
+ */
+Pair<Action<Expression>> CallTail =
+	LPAREN args:ExpressionList RPAREN {
+		yyValue = new Pair<Action<Expression>>(
+			new Action<Expression>() {
+				public Expression run(Expression left) {
+					Expression yyValue = new Call(left, args);
+					yyValue = at(left, yyCount, yyValue);
+					return yyValue;
+				}
+			}, Pair.EMPTY);
+	}
+	/ /* empty */ {
+		yyValue = Pair.EMPTY;
 	}
 	;
 	

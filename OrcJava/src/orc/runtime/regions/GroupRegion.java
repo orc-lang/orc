@@ -8,7 +8,6 @@ public class GroupRegion extends Region {
 
 	Region parent;
 	GroupCell cell;
-	boolean open;
 	
 	/* Create a new group region with the given parent and coupled group cell */
 	public GroupRegion(Region parent, GroupCell cell) {
@@ -16,18 +15,10 @@ public class GroupRegion extends Region {
 		this.cell = cell;
 		this.parent.add(this);
 		this.cell.setRegion(this);
-		this.open = true;
 	}
 	
-	/* A GroupRegion may be closed preemptively by a GroupCell, before all of its
-	 * inhabitants leave, so we must ensure that the close operations occur only
-	 * once using the 'open' flag.
-	 */
-	public void close(Token closer) {
-		if (open) {
-			open = false;
-			cell.close();
-			parent.remove(this, closer);
-		}
+	protected void reallyClose(Token closer) {
+		cell.close();
+		parent.remove(this, closer);
 	}
 }

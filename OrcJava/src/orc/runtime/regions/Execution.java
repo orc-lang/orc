@@ -4,21 +4,16 @@ import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 
 public class Execution extends Region {
-
-	OrcEngine engine;
-	boolean running;
+	private OrcEngine engine;
 	
 	public Execution(OrcEngine engine) {
 		this.engine = engine;
-		this.running = true;
 	}
 	
 	public OrcEngine getEngine() { return engine; }
 	
 	@Override
-	public void close(Token closer) {
-		running = false;
+	protected void reallyClose(Token closer) {
 		engine.terminate();
 	}
-
 }
