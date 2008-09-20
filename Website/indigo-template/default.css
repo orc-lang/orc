@@ -30,8 +30,11 @@ body {
 input {
 	color: #555;
 }
-p,cite,code,ul {
+p,cite,code,ul,ol {
 	margin-bottom: 10pt;
+}
+ol li {
+	margin-left: 18px;
 }
 ul ul {
 	margin-bottom: 0;
@@ -144,7 +147,7 @@ cite {
 	color: #C60;
 	margin-bottom: 6px;
 }
-.content li {
+.content ul li {
 	list-style: url(img/li.gif);
 	margin-left: 18px;
 }
