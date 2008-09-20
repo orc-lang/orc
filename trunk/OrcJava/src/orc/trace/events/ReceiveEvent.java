@@ -21,6 +21,10 @@ import orc.trace.values.Value;
 public class ReceiveEvent extends Event {
 	public final Value value;
 	public final int latency;
+	public ReceiveEvent(Value value) {
+		// use a dummy value of -1 for unknown latency
+		this(value, -1);
+	}
 	public ReceiveEvent(Value value, int latency) {
 		this.value = value;
 		this.latency = latency;

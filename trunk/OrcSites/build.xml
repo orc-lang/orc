@@ -24,11 +24,13 @@
 	</target>
 	
 	<target name="zip" depends="jar" description="generate the ZIP">
-		<zip basedir="." zipfile="${ant.project.name}-${orc.version}.zip">
-			<include name="${ant.project.name}-${orc.version}.jar"/>
-			<include name="README"/>
-			<include name="LICENSE"/>
-			<include name="examples/**"/>
+		<zip zipfile="${ant.project.name}-${orc.version}.zip">
+			<zipfileset prefix="${ant.project.name}-${orc.version}" dir=".">
+				<include name="${ant.project.name}-${orc.version}.jar"/>
+				<include name="README"/>
+				<include name="LICENSE"/>
+				<include name="examples/**/*.orc"/>
+			</zipfileset>
 		</zip>
 	</target>
 
@@ -49,5 +51,21 @@
 			<arg value="${orc.location.build}" />
 			<arg value="${orc.location.build}" />
 		</java>
+	</target>
+	<target name="javadoc" description="Build Javadoc">
+		<delete dir="${orc.location.javadoc}" />
+		<javadoc destdir="${orc.location.javadoc}"
+				author="true"
+				access="protected"
+				source="1.5"
+				sourcepath="${orc.location.src}"
+				splitindex="true"
+				windowtitle="{$ant.project.name} ${orc.version}"
+				doctitle="{$ant.project.name} ${orc.version}"
+				use="true"
+				version="true">
+			<classpath refid="orc.classpath"/>
+		</javadoc>
+		<zip zipfile="${ant.project.name}-${orc.version}-doc.zip" basedir="${orc.location.javadoc}" />
 	</target>
 </project>

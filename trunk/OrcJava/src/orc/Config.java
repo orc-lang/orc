@@ -9,17 +9,17 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-import orc.trace.Tracer;
 import orc.trace.MinimizeTracer;
 import orc.trace.NullTracer;
 import orc.trace.OutputStreamTracer;
 import orc.trace.PrintStreamTracer;
-import orc.trace.TokenTracer;
+import orc.trace.Tracer;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -43,13 +43,15 @@ public class Config {
 	private Boolean typecheck = false;
 	private Tracer tracer = new NullTracer();
 	private List<String> includes = new LinkedList<String>();
-	private Integer maxpub = null;
+	private Integer maxPubs = null;
 	private Reader instream = new InputStreamReader(System.in);
 	private Integer numKilimThreads = 1;
 	private Integer numSiteThreads = 2;
 	private Boolean noPrelude = false;
 	private String filename = "<stdin>";
 	private HashMap<String, Boolean> caps = new HashMap<String, Boolean>();
+	private PrintStream stdout = System.out;
+	private PrintStream stderr = System.err;
 	
 	/**
 	 * Set properties based on command-line arguments.
@@ -114,8 +116,8 @@ public class Config {
 	}
 	
 	@Option(name="-pub",usage="Stop after publishing this many values")
-	public void setMaxpub(int maxpub) {
-		this.maxpub = maxpub;
+	public void setMaxPubs(int maxPubs) {
+		this.maxPubs = maxPubs;
 	}
 	
 	@Argument(metaVar="file", usage="Input file. Omit to use STDIN.")
@@ -143,13 +145,11 @@ public class Config {
 		return noPrelude;
 	}
 	
-	public Integer maxPubs()
-	{
-		return maxpub;
+	public int getMaxPubs() {
+		return maxPubs == null ? 0 : maxPubs;
 	}
 	
-	public Reader getInstream()
-	{
+	public Reader getInstream() {
 		return instream;
 	}
 	
@@ -184,5 +184,21 @@ public class Config {
 	
 	public void setCapability(String name, Boolean value) {
 		caps.put(name, value);
+	}
+	
+	public synchronized PrintStream getStdout() {
+		return stdout;
+	}
+	
+	public void setStdout(PrintStream stdout) {
+		this.stdout = stdout;
+	}
+
+	public synchronized PrintStream getStderr() {
+		return stderr;
+	}
+	
+	public void setStderr(PrintStream stderr) {
+		this.stderr = stderr;
 	}
 }

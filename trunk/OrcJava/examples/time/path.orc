@@ -43,5 +43,8 @@ def succ(1) = (3,7)
 def succ(2) = (3,2)
 def succ(3) = stop
 
--- Shortest path: [0,2,3]
+{-
+OUTPUT:
+[0, 2, 3]
+-}
 path(source, sink, cell, succ)
