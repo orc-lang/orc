@@ -13,11 +13,13 @@
 	<target name="jar" depends="kilim" description="generate the distribution">
 		<!-- Put everything in ${orc.location.build} into orc-sites.jar -->
 		<jar jarfile="${ant.project.name}-${orc.version}.jar" basedir="${orc.location.build}">
+			<exclude name="orc/test/**"/>
 			<!-- Include library dependencies -->
 			<zipgroupfileset dir="${orc.location.lib}">
 				<include name="*.jar"/>
 				<exclude name="rats.jar"/>
 				<exclude name="kilimex.jar"/>
+				<exclude name="junit-*.jar"/>
 			</zipgroupfileset>
 			<manifest>
 				<attribute name="Main-Class" value="orc.Orc"/>

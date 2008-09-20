@@ -1,6 +1,15 @@
--- some interleaving of of 1 2 3 with 1 2 3
--- followed by 1 2 3
-
+{-
+OUTPUT:
+1
+1
+2
+2
+3
+3
+1
+2
+3
+-}
 class LinkedList = java.util.LinkedList
 val l = LinkedList()
 

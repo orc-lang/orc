@@ -3,9 +3,8 @@
  */
 package orc.runtime;
 
+import java.io.PrintStream;
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Timer;
@@ -68,6 +67,10 @@ public class OrcEngine implements Runnable {
 	private Timer timer;
 
 	private Config config;
+	private PrintStream stdout;
+	private PrintStream stderr;
+	private int maxpubs;
+	private int pubs = 0;
 
 	/** We'll notify this when the computation is finished. */
 	private Tracer tracer;
@@ -76,6 +79,9 @@ public class OrcEngine implements Runnable {
 
 	public OrcEngine(Config config) {
 		this.config = config;
+		this.maxpubs = config.getMaxPubs();
+		this.stdout = config.getStdout();
+		this.stderr = config.getStderr();
 		this.debugMode = config.debugMode();
 	}
 
@@ -89,6 +95,7 @@ public class OrcEngine implements Runnable {
 	 * to queue an active token to process first.
 	 */
 	public void run() {
+		if (debugMode) System.out.println("Running...");
 		timer = new Timer();
 		Kilim.startEngine(config.getNumKilimThreads(), config
 				.getNumSiteThreads());
@@ -220,8 +227,10 @@ public class OrcEngine implements Runnable {
 	 * @param v
 	 */
 	public void publish(Object v) {
-		System.out.println(String.valueOf(v));
-		System.out.flush();
+		stdout.println(String.valueOf(v));
+		stdout.flush();
+		// check if we have reached the maximum allowed number of publications
+		if (maxpubs > 0 && maxpubs == ++pubs) terminate();
 	}
 
 	/**
@@ -230,24 +239,20 @@ public class OrcEngine implements Runnable {
 	 * method so that the engine can report or otherwise handle the failure.
 	 */
 	public void tokenError(Token t, TokenException problem) {
-		System.err.println();
-		System.err.println("Token " + t + " encountered an error. ");
-		System.err.println("Problem: " + problem.getMessage());
-		System.err.println("Source location: " + problem.getSourceLocation());
+		stderr.println("Error: " + problem.getMessage());
+		stderr.println("Source location: " + problem.getSourceLocation());
 		if (debugMode) {
-			problem.printStackTrace();
+			problem.printStackTrace(stderr);
 		}
 		Throwable cause = problem.getCause();
 		if (debugMode && cause != null) {
-			System.err.println("Caused by:");
-			cause.printStackTrace();
+			stderr.println("Caused by:");
+			cause.printStackTrace(stderr);
 		}
-		System.err.println();
 	}
 
 	public void debug(String s) {
-		if (debugMode)
-			System.out.println(s);
+		if (debugMode) System.out.println(s);
 	}
 
 	public void reportRound() {
@@ -273,16 +278,16 @@ public class OrcEngine implements Runnable {
 
 	/**
 	 * Print something (for use by the print and println sites). By default,
-	 * this prints to System.out, but this can be overridden to do something
+	 * this prints to stdout, but this can be overridden to do something
 	 * else if appropriate.
 	 * 
 	 * @see Token#print(String, boolean)
 	 */
 	public void print(String string, boolean newline) {
 		if (newline) {
-			System.out.println(string);
+			stdout.println(string);
 		} else {
-			System.out.print(string);
+			stdout.print(string);
 		}
 	}
 

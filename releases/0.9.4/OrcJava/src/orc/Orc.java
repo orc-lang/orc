@@ -58,8 +58,6 @@ public class Orc {
 		// Configure the runtime engine
 		OrcEngine engine = new OrcEngine(cfg);
 		
-		// Run Orc with these options
-		System.out.println("Running...");
 		// Run the Orc program
 		engine.run(n);
 	}
@@ -128,7 +126,11 @@ public class Orc {
 		return e.simplify();
 	}
 	
-	protected static Node compile(Reader source, Node target, Config cfg) throws CompilationException, IOException {
+	public static Node compile(Config cfg) throws CompilationException, IOException {
+		return compile(cfg.getInstream(), new Pub(), cfg);
+	}
+	
+	public static Node compile(Reader source, Node target, Config cfg) throws CompilationException, IOException {
 		orc.ast.simple.Expression es = compile(source, cfg);
 		
 		//System.out.println("Compiling to an execution graph...");

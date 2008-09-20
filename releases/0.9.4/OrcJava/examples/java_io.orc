@@ -14,5 +14,12 @@ def GetContent(in) =
   loop(in.read(buf)) >>
   out.toString()
 
-InputStreamReader(FileInputStream("examples/java_io.orc")) >reader>
+InputStreamReader(FileInputStream("examples/java_io_sample.txt")) >reader>
 GetContent(reader)
+{-
+OUTPUT:
+'Twas brillig, and the slithy toves
+Did gyre and gimble in the wabe;
+All mimsy were the borogoves,
+And the mome raths outgrabe.
+-}

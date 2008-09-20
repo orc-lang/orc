@@ -4,21 +4,32 @@ class Long = java.lang.Long
 class Integer = java.lang.Integer
 class Short = java.lang.Short
 
+val x = Integer.valueOf(3)
+
 -- test coercion
-3 >x> (
-    println(x.getClass()) >> stop
-  | println(Integer.toString(x)) >> stop
-)
+println(x.getClass()) >>
+println(Integer.toString(x)) >>
+stop
 ;
 -- test widening
-Integer.valueOf(3) >x> (
-    println(x.getClass()) >> stop
-  | println(Long.toString(x)) >> stop
-  | println(Double.toString(x)) >> stop
-)
+println(x.getClass()) >>
+println(Long.toString(x)) >>
+println(Double.toString(x)) >>
+stop
 ;
 -- test narrowing (error is expected)
-Integer.valueOf(3) >x> (
-    println(x.getClass()) >> stop
-  | println(Short.toString(x)) >> stop
-)
+println(x.getClass()) >>
+println(Short.toString(x)) >>
+stop
+
+{-
+OUTPUT:
+class java.lang.Integer
+3
+class java.lang.Integer
+3
+3.0
+class java.lang.Integer
+Error: java.lang.IllegalArgumentException: argument type mismatch
+Source location: examples/java_numbers.orc:22:9-25
+-}
