@@ -13,7 +13,7 @@ public class Execution extends Region {
 	public OrcEngine getEngine() { return engine; }
 	
 	@Override
-	public synchronized void close(Token closer) {
+	protected void reallyClose(Token closer) {
 		engine.terminate();
 	}
 }

@@ -17,11 +17,7 @@ public class GroupRegion extends Region {
 		this.cell.setRegion(this);
 	}
 	
-	/* A GroupRegion may be closed preemptively by a GroupCell, before all of its
-	 * inhabitants leave, so we must ensure that the close operations occur only
-	 * once using the 'open' flag.
-	 */
-	public synchronized void close(Token closer) {
+	protected void reallyClose(Token closer) {
 		cell.close();
 		parent.remove(this, closer);
 	}

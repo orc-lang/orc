@@ -22,13 +22,13 @@ public abstract class Region {
 	
 	public Region() {}
 	
-	public synchronized void add(Token t) { 
+	public final synchronized void add(Token t) { 
 		assert(!closed);
 		inc(); 
 		containedTokens.add(t);
 	}
 	
-	public synchronized void add(Region r) { 
+	public final synchronized void add(Region r) { 
 		assert(!closed);
 		inc(); 
 		containedRegions.add(r);
@@ -55,7 +55,13 @@ public abstract class Region {
 		if (inhabitants <= 0) { close(closer); }
 	}
 	
-	public abstract void close(Token closer);
+	public final synchronized void close(Token closer) {
+		if (closed) return;
+		closed = true;
+		reallyClose(closer);
+	}
+	
+	protected abstract void reallyClose(Token closer);
 	
 	/**
 	 * Used when tracing, to both close the region and trace the "choking" of
@@ -64,9 +70,10 @@ public abstract class Region {
 	 * 
 	 * @param store The {@link StoreTrace} which triggered the closing.
 	 */
-	public synchronized void close(StoreTrace store, Token closer) {
+	public final synchronized void close(StoreTrace store, Token closer) {
 		if (closed) return;
-		close(closer);
+		closed = true;
+		reallyClose(closer);
 		// if the region was already closed,
 		// it won't contain anything and so
 		// none of this will run
