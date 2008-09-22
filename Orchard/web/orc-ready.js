@@ -444,7 +444,7 @@ function orcify(code, defaultConfig) {
 	// put a wrapper around the code area, to add a border
 	$code.wrap('<div class="orc" />');
 	$code = $code.parent();
-	$code.wrap($widget).after($prompts).after($controls).after($events);
+	$code.wrap($widget).after($events).after($prompts).after($controls);
 	// for some reason wrap() makes a copy of $widget.
 	$widget = $code.parent();
 	// replace the code with a codemirror editor
