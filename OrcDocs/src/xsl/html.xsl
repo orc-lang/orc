@@ -46,6 +46,9 @@ Customize syntax highlighting.
 <xsl:template match='xslthl:combinator' mode="xslthl">
   <span class="hl-combinator"><xsl:apply-templates mode="xslthl"/></span>
 </xsl:template>
+<xsl:template match='xslthl:combinator[text()="FATBAR"]' mode="xslthl">
+  <span class="hl-combinator">|</span>
+</xsl:template>
 
 <xsl:template match='xslthl:variable' mode="xslthl">
   <span class="hl-variable"><xsl:apply-templates mode="xslthl"/></span>
