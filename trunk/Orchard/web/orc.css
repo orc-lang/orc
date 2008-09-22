@@ -18,7 +18,6 @@
 }
 .orc-events {
 	border: 1px solid #666;
-	border-top: 3px double #666;
 	margin-top: -1px;
 	overflow: auto;
 }
@@ -31,6 +30,7 @@
 }
 .orc-prompts {
 	border: 1px solid #666;
+	border-bottom: 3px double #666;
 	margin-top: -1px;
 	overflow: auto;
 }
