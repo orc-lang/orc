@@ -1173,7 +1173,7 @@ The original Cor grammar rules are abbreviated by ellipses (...).
 <entry></entry>
 <entry>|</entry>
 
-<entry>E <code>|</code> E</entry>
+<entry>E <code>FATBAR</code> E</entry>
 
 <entry></entry>
 <entry><emphasis>parallel combinator</emphasis></entry>
@@ -2577,7 +2577,7 @@ Under construction.
 <entry></entry>
 <entry>|</entry>
 
-<entry>E <code>|</code> E</entry>
+<entry>E <code>FATBAR</code> E</entry>
 
 <entry></entry>
 <entry><emphasis>parallel combinator</emphasis></entry>

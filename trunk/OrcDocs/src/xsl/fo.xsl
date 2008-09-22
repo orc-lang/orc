@@ -15,7 +15,7 @@
 <xsl:template match='xslthl:combinator' mode="xslthl">
   <fo:inline font-weight="bold"><xsl:apply-templates mode="xslthl"/></fo:inline>
 </xsl:template>
-<xsl:template match='xslthl:combinator[text()="|"]' mode="xslthl">
+<xsl:template match='xslthl:combinator[text()="FATBAR"]' mode="xslthl">
   <fo:inline font-family="ZapfDingbats">&#x2759;</fo:inline>
 </xsl:template>
 

@@ -45,21 +45,26 @@
   <keyword>as</keyword>
 </highlighter>
 
+<!-- operators -->
 <highlighter type='regex'>
   <style>site</style>
-  <pattern><![CDATA[\b\w+\b(?=\s*\()|\|\||<=|>=]]></pattern>
-  <flags>MULTILINE</flags>
+  <pattern><![CDATA[\|\||<=|>=]]></pattern>
+</highlighter>
+
+<highlighter type='regex'>
+  <style>combinator</style>
+  <pattern><![CDATA[(?<=\s)(<|>)((?=\S)|$)|((?<=\S)|^)(<|>)(?=\s)|\||;|\bFATBAR\b]]></pattern>
+</highlighter>
+
+<!-- site calls -->
+<highlighter type='regex'>
+  <style>site</style>
+  <pattern>\b\w+\b(?=\s*\()></pattern>
 </highlighter>
 
 <highlighter type='regex'>
   <style>variable</style>
   <pattern>\b\w+\b</pattern>
-</highlighter>
-
-<highlighter type='regex'>
-  <style>combinator</style>
-  <pattern><![CDATA[(?<=\s)(<|>)((?=\S)|$)|((?<=\S)|^)(<|>)(?=\s)|\||;]]></pattern>
-  <flags>MULTILINE</flags>
 </highlighter>
 
 </highlighters>
