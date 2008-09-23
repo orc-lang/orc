@@ -1,0 +1,57 @@
+<html>
+<!--
+To play with this in your browser without running an Orchard server,
+load it as index.html?mock
+-->
+<head>
+<title>Orc Demo</title>
+<link rel="stylesheet" type="text/css" href="/orchard/orc.css"/>
+<link rel="stylesheet" type="text/css" href="jquery.treeview.css"/>
+<link rel="stylesheet" type="text/css" href="tryorc-menu.css"/>
+</head>
+<body>
+<div id="homelink" style="padding: 2px"><small>&lt; <a href="/">Back to Orc Home</a></small></div>
+<table border="0" padding="0" spacing="0" width="100%">
+<tr><td width="200" valign="top" style="padding: 0 10px 0 10px" id="menu-td">
+<h1>Examples</h1>
+<p>Click an example to load it.</p>
+<ul id="menu" class="filetree">
+<li class="closed"><span class="folder">Email</a></span>
+	<ul>
+	<li><span class="file"><a class="demo-link" href="tryorc/misc/email.orc">Send Email</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/misc/emailq.orc">Receive Email</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/misc/email_meeting.orc">Meeting Request Email</a></span></li>
+	</ul></li>
+<li class="closed"><span class="folder">Big Demos</a></span>
+	<ul>
+	<li><span class="file"><a class="demo-link" href="tryorc/misc/spell_io.orc">Spell-Check Gutenberg</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/misc/music_calendar.orc">Music Calendar</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/misc/meeting.orc">Meeting Request</a></span></li>
+	</ul></li>
+<li class="closed"><span class="folder">Other</a></span>
+	<ul>
+	<li><span class="file"><a class="demo-link" href="tryorc/misc/chat.orc">Google Talk</a></span></li>
+	</ul></li>
+</ul>
+</td><td valign="top" style="padding: 0 10px 0 10px" id="main">
+<div id="header">
+<h1>Try Orc!</h1>
+
+Enter an Orc program in the text box below and then click the <b>run</b>
+button. You may also load an example from the left panel, and then modify or
+run it.
+</div>
+<div>
+<small>Font size:
+<a href="#" style="cursor: pointer" onclick="document.getElementById('orc').orcFontSizeUp()">bigger</a> /
+<a href="#" style="cursor: pointer" onclick="document.getElementById('orc').orcFontSizeDown()">smaller</a>
+&nbsp;&nbsp;&nbsp;&nbsp;Full screen: <a href="#" style="cursor: pointer" onclick="toggleExamples()">toggle</a>
+</small>
+</div>
+<textarea id="orc" spellcheck="false" class="orc" style="width: 700px; height: 300px">
+</textarea>
+</td></tr></table>
+<script src="/orchard/orc.js" type="text/javascript"></script>
+<script type="text/javascript" src="jquery.treeview.min.js"></script>
+<script type="text/javascript" src="tryorc-menu.js"></script>
+</body>

@@ -6,69 +6,8 @@ load it as index.html?mock
 <head>
 <title>Orc Demo</title>
 <link rel="stylesheet" type="text/css" href="/orchard/orc.css"/>
-<style type="text/css">
-/* scavenged from templates-indigo/default.css */
-* {
-	margin: 0;
-	padding: 0;
-}
-a {
-	color: #F70;
-}
-a:hover {
-	color: #C60;
-}
-body {
-	color: #466;
-	font: normal 11pt "Helvetica","Nimbus Sans L","Arial",sans-serif;
-	margin: 0;
-	background-color: #fff;
-}
-input {
-	color: #555;
-}
-p,cite,code,ul {
-	margin-bottom: 10pt;
-}
-ul ul {
-	margin-bottom: 0;
-}
-h1,h2,h3 {
-	font-family: "Trebuchet MS",sans-serif;
-	color: #06C;
-	padding-top: 6px;
-}
-h1 {
-	margin-bottom: 4px;
-}
-small, .small {font: normal 10px Verdana,sans-serif;}
-</style>
 <link rel="stylesheet" type="text/css" href="jquery.treeview.css"/>
-<style type="text/css">
-h1 {
-	margin-top: 0;
-}
-.closed ul {
-	display: none;
-}
-.file a {
-	cursor: pointer;
-}
-/* I don't like the link highlighting */
-#menu a {
-	color: #466;
-	text-decoration: none;
-}
-#menu a.selected {
-	font-weight: bold;
-	background: none;
-	text-decoration: underline;
-}
-/* I don't like the red highlighting */
-.treeview .hover {
-	color: black;
-}
-</style>
+<link rel="stylesheet" type="text/css" href="tryorc-menu.css"/>
 </head>
 <body>
 <div id="homelink" style="padding: 2px"><small>&lt; <a href="/">Back to Orc Home</a></small></div>
@@ -134,47 +73,5 @@ run it.
 </td></tr></table>
 <script src="/orchard/orc.js" type="text/javascript"></script>
 <script type="text/javascript" src="jquery.treeview.min.js"></script>
-<script type="text/javascript">
-(function ($) {
-$("#menu").treeview({
-	animated: "fast",
-	unique: true
-});
-
-$("#menu .demo-link").each(function () {
-	var $this = $(this);
-	var file = this.href;
-	this.href = "#";
-	$this.click(function () {
-		loadOrcCode(file);
-		$("#menu .demo-link").removeClass("selected");
-		$this.addClass("selected");
-	});
-});
-
-window.toggleExamples = function() {
-	$('#menu-td').toggle();
-	$('#header').toggle();
-	$('#homelink').toggle();
-}
-
-function escapeHtml(v) {
-	v = v.replace(/&/g, '&amp;');
-	v = v.replace(/</g, '&lt;');
-	// FIXME: escape other special characters
-	return v;
-}
-function loadOrcCode(url) {
-	$.ajax({
-		url: url,
-		success: function (data) {
-			document.getElementById("orc").setOrcCode(data);
-		},
-		error: function () {
-			alert("There was an error loading the example program.");
-		}
-	});
-}
-})(jQuery);
-</script>
+<script type="text/javascript" src="tryorc-menu.js"></script>
 </body>
