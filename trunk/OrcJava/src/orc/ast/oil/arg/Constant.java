@@ -15,8 +15,8 @@ public class Constant extends Arg {
 	}
 
 	@Override
-	public Object resolve(Env<Object> env) {
-		return v;
+	public <T> T resolve(Env<T> env) {
+		return (T)v;
 	}
 	
 	public String toString() {

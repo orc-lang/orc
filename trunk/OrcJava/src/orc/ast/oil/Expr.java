@@ -2,8 +2,11 @@ package orc.ast.oil;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 import orc.ast.oil.arg.Var;
+import orc.ast.sites.JavaSite;
+import orc.ast.sites.OrcSite;
 import orc.env.Env;
 import orc.error.Locatable;
 import orc.error.SourceLocation;

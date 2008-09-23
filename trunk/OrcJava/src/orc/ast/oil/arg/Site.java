@@ -23,12 +23,12 @@ public class Site extends Arg {
 	}
 	
 	@Override
-	public Object resolve(Env<Object> env) {
+	public <T> T resolve(Env<T> env) {
 		/* TODO: Make this more efficient. 
 		 * Even though sites are semantically persistent, it's 
 		 * unhelpful to have many copies of the same object.
 		 */
-		return site.instantiate();
+		return (T)site.instantiate();
 	}
 	
 	public String toString() {

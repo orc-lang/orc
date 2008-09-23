@@ -1,3 +1,4 @@
+{-
 include "prelude/op.inc"
 site cat = orc.lib.str.Cat
 site print = orc.lib.str.Print
@@ -24,10 +25,13 @@ def Metronome() = ...
 def f(Number) :: Number
 def f(n) = if(n > 1) >> n*f(n-1) | if(n <= 1) >> 1 
 
-
 def g(Number, Number) :: Number
 def g(a,b) = b+a
 
+f :: Integer -> Integer -> Integer
+f x y = x + y
 
 f(3) | (4,5) >(a,b)> g(b,a)
+-}
+
 
