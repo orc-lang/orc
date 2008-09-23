@@ -1,6 +1,7 @@
 site "op+" = orc.lib.math.Add
 site "op-" = orc.lib.math.Sub
 site "op*" = orc.lib.math.Mult
+site "op**" = orc.lib.math.Exponent
 site "op/" = orc.lib.math.Div
 site "op%" = orc.lib.math.Mod
 site "opu-" = orc.lib.math.UMinus

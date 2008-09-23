@@ -217,8 +217,9 @@ Symbol   Assoc       Prec   Name
  *       left        8      multiplication
  /       left        8      division
  %       left        8      modulus
- -       unary       9      unary minus
- ()      none        10     application
+ **		 left        9      exponent
+ -       unary       10     unary minus
+ ()      none        11     application
 
 * An expression like (a > b > c > d) could be read as
 either ((a >b> c) > d) or (a > (b >c> d)). We could resolve
@@ -441,12 +442,12 @@ String SumOperator =
 	;
 	
 Expression MaybeProduct =
-	seed:MaybeSigned actions:ProductTail* {
+	seed:MaybeExponent actions:ProductTail* {
 		yyValue = apply(actions, seed);
 	}
 	;
 Action<Expression> ProductTail =
-	op:ProductOperator right:MaybeSigned {
+	op:ProductOperator right:MaybeExponent {
 		yyValue = new Action<Expression>() {
 			public Expression run(Expression left) {
 				Expression yyValue = new Call(op, left, right);
@@ -462,6 +463,29 @@ String ProductOperator =
 	/ MOD { yyValue = "op%"; }
 	/ TIMES { yyValue = "op*"; }
 	;
+	
+	
+Expression MaybeExponent =
+	seed:MaybeSigned actions:ExponentTail* {
+		yyValue = apply(actions, seed);
+	}
+	;
+Action<Expression> ExponentTail =
+	op:ExponentOperator right:MaybeSigned {
+		yyValue = new Action<Expression>() {
+			public Expression run(Expression left) {
+				Expression yyValue = new Call(op, left, right);
+				yyValue = at(left, right, yyValue);
+				return yyValue;
+			}
+		};
+	}
+	;
+
+String ExponentOperator =
+	EXPONENT { yyValue = "op**"; }
+	;
+	
 
 Expression MaybeSigned =
 	MINUS x:DotExpression {
@@ -754,6 +778,7 @@ transient String MINUS = "-" Space;
 transient String DIV = "/" Space;
 transient String MOD = "%" Space;
 transient String TIMES = "*" Space;
+transient String EXPONENT = "**" Space;
 transient String COLON = ":" Space;
 transient String LT = "<:" Space;
 transient String LEQ = "<=" Space;
