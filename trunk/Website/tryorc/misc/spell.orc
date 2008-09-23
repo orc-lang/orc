@@ -1,13 +1,14 @@
 include "net.inc"
 include "forms.inc"
 
+val YahooSpell = YahooSpellFactory("orc/orchard/yahoo.properties")
+
 def spellCheck(word:words, i) =
-  def process([]) =
-    spellCheck(words, i+1)
-  def process(suggestions) =
-    (i, word, suggestions) | process([])
-  GoogleSpellUnofficial(word) >words>
-  process(words)
+    GoogleSpellUnofficial(word) >(_:_) as suggs>
+      ("G", i, word, suggs)
+  | YahooSpell(word) >(_:_) as suggs>
+      ("Y", i, word, suggs)
+  | spellCheck(words, i+1)  
 
 WebPrompt("File Upload", [
   FormInstructions("instructions",
