@@ -3,6 +3,7 @@ site print = orc.lib.str.Print
 site println = orc.lib.str.Println
 
 site random = orc.lib.util.Random
+site urandom = orc.lib.util.URandom
 site UUID = orc.lib.util.UUID
 site Thread = orc.lib.util.ThreadSite
 site Null = orc.lib.util.JavaNull
