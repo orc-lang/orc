@@ -12,29 +12,19 @@
 	</path>
 	
 	<target name="war" depends="kilim,minify" description="generate the war">
-		<mkdir dir="${orc.location.war}" />
-		<copy todir="${orc.location.war}">
+		<jar jarfile="${ant.project.name}.war" update="true">
 			<fileset dir="web">
 				<include name="**/*"/>
 			</fileset>
-		</copy>
-
-		<mkdir dir="${orc.location.war}/WEB-INF/lib" />
-		<copy todir="${orc.location.war}/WEB-INF/lib">
-			<fileset dir="${orc.location.lib}">
-				<!-- FIXME: some of these are unnecessary at runtime -->
+			<zipfileset prefix="WEB-INF/classes" dir="${orc.location.build}"/>
+			<zipfileset prefix="WEB-INF/lib" dir="${orc.location.lib}">
+				<!-- FIXME: some of these may be unnecessary at runtime -->
 				<include name="*.jar"/>
+				<exclude name="jetty-*.jar"/>
 				<exclude name="yuicompressor-*.jar"/>
 				<exclude name="servlet-api.jar"/>
 				<exclude name="jetty-util-*.jar"/>
-			</fileset>
-		</copy>
-		<jar jarfile="${orc.location.war}/WEB-INF/lib/${ant.project.name}-${orc.version}.jar" basedir="${orc.location.build}" />
-
-		<jar jarfile="${ant.project.name}.war" update="true">
-			<fileset dir="${orc.location.war}">
-				<include name="**/*"/>
-			</fileset>
+			</zipfileset>
 		</jar>
 	</target>
 	<taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">

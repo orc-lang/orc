@@ -16,5 +16,5 @@ public interface Part<V> {
 	/** A unique name for this part. */
 	public String getKey();
 	/** True if this part needs to use form/multipart encoding */
-	public boolean isMultipart();
+	public boolean needsMultipartEncoding();
 }

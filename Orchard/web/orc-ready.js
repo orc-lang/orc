@@ -433,11 +433,6 @@ function orcify(code, defaultConfig) {
 		.append($loading).append($close).append($stop).append($run);
 	var editable = (code.tagName == "TEXTAREA");
 	var id = $code.attr("id");
-	var config = $.extend({}, defaultConfig, {
-		content: getCodeFrom(code),
-		readOnly: !editable,
-		height: $code.height() + "px"
-	});
 	// if this element exists, it contains text which is prepended to the
 	// program before running it
 	var prelude = $code.prev(".orc-prelude")[0];
@@ -447,6 +442,18 @@ function orcify(code, defaultConfig) {
 	$code.wrap($widget).after($events).after($prompts).after($controls);
 	// for some reason wrap() makes a copy of $widget.
 	$widget = $code.parent();
+	var config = $.extend({}, defaultConfig, {
+		content: getCodeFrom(code),
+		readOnly: !editable,
+		height: $code.height() + "px",
+		initCallback: function () {
+			if (code.onOrcReady) {
+				code.onOrcReady($widget[0]);
+				code.onOrcReady = null;
+			}
+			$widget[0].orcReady = true;
+		}
+	});
 	// replace the code with a codemirror editor
 	var codemirror = new CodeMirror(CodeMirror.replace(code), config);
 	// if the code had an id, move it to the surrounding div
@@ -498,6 +505,7 @@ var config = {
 	stylesheet: baseUrl + "orc-syntax.css",
 	path: baseUrl,
 	parserfile: [(Orc.query.mock?"orc-parser.js":"orc-parser-min.js")],
+//	basefiles: ["codemirror/util.js", "codemirror/stringstream.js", "codemirror/select.js", "codemirror/undo.js", "codemirror/editor.js", "codemirror/tokenize.js"],
 	basefiles: ["codemirror-20080715-extra-min.js"],
 	textWrapping: false
 };

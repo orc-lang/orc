@@ -17,7 +17,7 @@ public class UploadField extends Field<FileItem> {
 		out.write("<input type='file' name='"+key+"'>");
 	}
 	
-	public boolean isMultipart() {
+	public boolean needsMultipartEncoding() {
 		return true;
 	}
 
