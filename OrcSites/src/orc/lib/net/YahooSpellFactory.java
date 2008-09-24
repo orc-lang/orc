@@ -46,8 +46,16 @@ public class YahooSpellFactory extends EvalSite {
 						"&appid=" + appid +
 						"&output=json";
 				JSONObject root = JSONUtils.getURL(new URL(url));
-				JSONObject response = root.getJSONObject("ResultSet");
-				return new ConsValue(response.getString("Result"), NilValue.singleton);
+				Object response = root.get("ResultSet");
+				if (response instanceof String) {
+					// indicates no result was returned
+					return NilValue.singleton;
+				} else {
+					return new ConsValue(((JSONObject)response).getString("Result"), NilValue.singleton);
+				}
+			} catch (ClassCastException e) {
+				// should be impossible
+				throw new OrcError(e);
 			} catch (UnsupportedEncodingException e) {
 				// should be impossible
 				throw new OrcError(e);
