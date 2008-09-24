@@ -10,4 +10,4 @@
 
 -- signals(5) >> random(10)
 
--- signals(4) >> SendMail("misra@cs.utexas.edu", "testing, testing", "wow")
+-- signals(4) >> SendMail("misra@cs.utexas.edu", "Orc Demo", "Orc is great!")
