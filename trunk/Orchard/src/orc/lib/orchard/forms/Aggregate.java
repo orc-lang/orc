@@ -44,9 +44,9 @@ public abstract class Aggregate implements Part<Map<String, Object>> {
 		return key;
 	}
 	
-	public boolean isMultipart() {
+	public boolean needsMultipartEncoding() {
 		for (Part<?> part : parts) {
-			if (part.isMultipart()) return true;
+			if (part.needsMultipartEncoding()) return true;
 		}
 		return false;
 	}

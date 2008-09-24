@@ -24,7 +24,8 @@ public abstract class SingleField<V> extends Field<V> {
 	public void readRequest(FormData request, List<String> errors) {
 		try {
 			posted = request.getParameter(key);
-			value = requestToValue(posted);
+			if (posted.equals("")) value = null;
+			else value = requestToValue(posted);
 		} catch (ValidationException e) {
 			errors.add(e.getMessage());
 		}

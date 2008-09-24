@@ -30,7 +30,7 @@ public class Button implements Part<Boolean> {
 		return clicked;
 	}
 	
-	public boolean isMultipart() {
+	public boolean needsMultipartEncoding() {
 		return false;
 	}
 

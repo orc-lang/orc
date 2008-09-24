@@ -34,7 +34,12 @@ document.write("<script src='", baseUrl, "codemirror-20080715-min.js'><\/script>
 // load the rest of our code after jQuery and other services are ready
 document.write("<script src='", baseUrl, (query.mock?"orc-ready.js":"orc-ready-min.js"), "'><\/script>");
 
+function whenReady(node, f) {
+	if (node.orcReady) f(node);
+	else node.onOrcReady = f;
+}
+
 // public exports
-return {query: query, baseUrl: baseUrl}
+return {query: query, baseUrl: baseUrl, whenReady: whenReady}
 
 })(); // end module

@@ -19,7 +19,7 @@ public class Form extends Aggregate {
 
 	public void render(PrintWriter out) throws IOException {
 		out.write("<form method='post'");
-		if (isMultipart()) out.write(" enctype='multipart/form-data'");
+		if (needsMultipartEncoding()) out.write(" enctype='multipart/form-data'");
 		out.write(">");
 		for (Map.Entry<String, String> hidden : hiddens.entrySet()) {
 			out.write("<input type='hidden'" +

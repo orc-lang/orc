@@ -20,7 +20,7 @@ public class FormInstructions implements Part<String> {
 		return value;
 	}
 
-	public boolean isMultipart() {
+	public boolean needsMultipartEncoding() {
 		return false;
 	}
 

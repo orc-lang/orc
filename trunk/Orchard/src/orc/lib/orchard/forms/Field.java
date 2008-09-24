@@ -18,6 +18,10 @@ public abstract class Field<V> implements Part<V> {
 	public String getKey() {
 		return key;
 	}
+	
+	public String getLabel() {
+		return label;
+	}
 
 	public V getValue() {
 		return value;
@@ -29,7 +33,7 @@ public abstract class Field<V> implements Part<V> {
 		out.write("</label>");
 	}
 	
-	public boolean isMultipart() {
+	public boolean needsMultipartEncoding() {
 		return false;
 	}
 

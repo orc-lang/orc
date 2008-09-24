@@ -24,8 +24,3 @@ CREATE TABLE account (
 	UNIQUE (username),
 	PRIMARY KEY (account_id)
 );
-
-INSERT INTO account (account_type_id, username, salt, password_md5, email, developer_key)
-	VALUES (1, 'quark', '', '', 'quark@cs.utexas.edu', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11');
-INSERT INTO account (account_type_id, username, salt, password_md5, email, developer_key)
-	VALUES (2, 'test', '', '', '', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12');
