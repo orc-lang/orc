@@ -1,4 +1,4 @@
-(function ($) {
+jQuery(function ($) {
 $("#menu").treeview({
 	animated: "fast",
 	unique: true
@@ -14,6 +14,10 @@ $("#menu .demo-link").each(function () {
 		$this.addClass("selected");
 	});
 });
+
+window.clearProgram = function() {
+	document.getElementById("orc").setOrcCode("");
+}
 
 window.toggleExamples = function() {
 	$('#menu-td').toggle();
@@ -38,4 +42,12 @@ function loadOrcCode(url) {
 		}
 	});
 }
-})(jQuery);
+
+/* FIXME: why doesn't this work?
+Orc.whenReady(document.getElementById("orc"), function () {
+	var file = document.location.hash ? document.location.hash.substring(1) : null;
+	if (file) loadOrcCode(file);
+});
+*/
+
+});
