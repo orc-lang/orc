@@ -29,8 +29,10 @@ load it as index.html?mock
 	<li><span class="file"><a class="demo-link" href="tryorc/demo/pull1.orc">Asymmetric (1)</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/demo/pull2.orc">Asymmetric (2)</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/demo/pull3.orc">Asymmetric (3)</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/demo/def1.orc">Def (1)</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/demo/def2.orc">Def (2)</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/demo/pull4.orc">Asymmetric (4)</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/demo/def1.orc">Def</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/demo/def2.orc">Fibonacci</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/demo/tally.orc">Tally</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/demo/paror.orc">Parallel Or</a></span></li>
 	</ul></li>
 <li class="closed"><span class="folder">Other</a></span>
@@ -51,10 +53,13 @@ load it as index.html?mock
 &nbsp;&nbsp;&nbsp;&nbsp;Clear program: <a href="#" style="cursor: pointer" onclick="clearProgram()">clear</a>
 </small>
 </div>
+<!-- library functions specifically for the demo -->
 <div class="orc-prelude">
 include "mail.inc"
 def rbool() = random(2) &gt;x&gt; (x = 0)
 def signals(n) = if(n&gt;0) &gt;&gt; (signal | signals(n-1))
+def biasedBool(p) = random(1000) &gt;x&gt; (x&lt;= p*1000)
+def rrandSignal(t,p) = if(biasedBool(p)) &gt;&gt; random(t) &gt;s&gt; Rtimer(s)
 </div>
 <textarea id="orc" spellcheck="false" class="orc" style="width: 700px; height: 300px">
 </textarea>
