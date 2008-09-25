@@ -93,6 +93,7 @@ li.new {
 <a name="Other" id="Other"></a><h2>Other Resources <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
+	<li><a href="398.pdf">CS398T Orc Introduction Slides</a> (PDF)</li>
 	<li><a class="paper" href="http://www.cs.utexas.edu/~wcook/papers/OrcImpDraft.pdf">Implementation Outline of Orc</a><br />
 	William R. Cook and Jayadev Misra<br />
 	Unpublished, 2005.</li>
