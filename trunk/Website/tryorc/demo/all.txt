@@ -1,4 +1,4 @@
--- 3+4
+-- 3+4  -- = add(3, 4)
 
 -- if(true)
 
@@ -54,30 +54,26 @@ number
 
 
     ------------------
-{-
 x
 
    <x<   random(1000) >x> Rtimer(x) >> x
        | random(1000) >x> Rtimer(x) >> x
 
-   if(~b) >> println("first alternative after " + x + " milliseconds") 
- >>stop
-| if(b)  >> println("second alternative after " + x + " milliseconds") 
- >>stop
+    ------------------
+
+   if(~b) >> println("first alternative after " + x + " milliseconds") >>stop
+| if(b)  >> println("second alternative after " + x + " milliseconds") >>stop
 
    <(x,b)<   random(1000) >x> Rtimer(x) >> (x,false)
            | random(1000) >x> Rtimer(x) >> (x,true)
--}
 
                  ---------------
 
 {-
 def signals(n) = if(n>0) >> (signal | signals(n-1))
 signals(10) >>
-  (  if(~b) >> println("first alternative after " + x + " milliseconds") 
- >>stop
-   | if(b)  >> println("second alternative after " + x + " 
-milliseconds") >>stop
+  (  if(~b) >> println("first alternative after " + x + " milliseconds") >>stop
+   | if(b)  >> println("second alternative after " + x + " milliseconds") >>stop
 
      <(x,b)<   random(1000) >x> Rtimer(x) >> (x,false)
              | random(1000) >x> Rtimer(x) >> (x,true)
@@ -96,6 +92,18 @@ def gen(i,t) = i | Rtimer(t) >> gen(i+1,t)
 def fib(m,n) = n | Rtimer(50) >> fib(n, m+n)
 
 fib(0,1)
+
+    ------------------
+def biasedBool(p) = random(1000) >x> (x<= p*1000)
+def rrandSignal(t,p) = if(biasedBool(p)) >> random(t) >s> Rtimer(s)
+
+val n = 10 -- number of sites
+val t= 12  -- max time within which a site responds
+val p = 0.9 -- probability of response
+def tally(0) =   0
+def tally(k) =  (rrandSignal(t,p)>>  1 | Rtimer(10) >> 0) + tally(k-1)
+
+tally(n)
 
     ------------------
 -- Parallel-or
