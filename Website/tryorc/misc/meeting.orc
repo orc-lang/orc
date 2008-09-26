@@ -2,7 +2,7 @@ include "forms.inc"
 
 -- Configuration
 
-val span = DateRange(LocalDateTime(2008, 9, 11), LocalDateTime(2008, 9, 12))
+val span = DateRange(LocalDateTime(2008, 9, 29), LocalDateTime(2008, 10, 4))
 val format = DateTimeFormat.forStyle("SS")
 val quorum = 2
 val invitees = [
@@ -11,6 +11,14 @@ val invitees = [
   "Jayadev Misra" ]
 
 -- Utility functions
+
+def invite(span, name) =
+  def send(span, name) =
+    WebPrompt(name + ": Meeting Request", [
+    DateRangesField("times", "When Are You Available?", span, 9, 17),
+    Button("submit", "Submit") ]) >data>
+    data.get("times")
+  send(span, name)
 
 def getN(channel, n) =
   if n > 0 then
@@ -30,12 +38,6 @@ def mergeRanges(accum:rest) =
 def pickMeetingTime(times) =
   times.getRanges() >ranges>
   if ranges.size() > 0 then ranges.first().getStart()
-
-def invite(span, name) =
-  WebPrompt(name + ": Meeting Request", [
-    DateRangesField("times", "When Are You Available?", span, 9, 17),
-    Button("submit", "Submit") ]) >data>
-    data.get("times")
 
 def inviteQuorum(invitees, quorum) =
   let(
