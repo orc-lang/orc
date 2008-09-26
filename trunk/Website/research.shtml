@@ -29,6 +29,9 @@ li.new {
 <a name="Introduction" id="Introduction"></a><h2>Introduction to Orc <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
+	<li class="new"><a class="paper" href="papers/structured_interacting_computations_2008.pdf">Structured Interacting Computations</a><br />
+	William Cook and Jayadev Misra<br />
+	Proceedings of "Software-Intensive Systems", Springer Verlag, LNCS 5380, pp139 --145, 2008.</li>
 	<li><a class="paper" href="http://www.cs.utexas.edu/~wcook/papers/OrcJSSM05/OrcJSSM.pdf">Computation Orchestration: A Basis for Wide-Area Computing</a> (<a href="http://springerlink.metapress.com/openurl.asp?genre=article&amp;id=doi:10.1007/s10270-006-0012-1">DOI</a>)<br />
 	Jayadev Misra and William R. Cook<br />
 	Journal of Software and Systems Modeling, May 2006.</li>
@@ -81,11 +84,11 @@ li.new {
 <a name="Student_Reports" id="Student_Reports"></a><h2>Student Reports <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
-	<li><a class="paper" href="reports/coonske_sp08.pdf">Transactional Orc</a><br />
+	<li><a class="paper" href="papers/coonske_sp08.pdf">Transactional Orc</a><br />
 	Katherine E. Coons<br />
 	CS 395T Computation Orchestration, Spring 2008</li>
 
-	<li><a class="paper" href="reports/quark_sp08.pdf">Distributed Orc</a><br />
+	<li><a class="paper" href="papers/quark_sp08.pdf">Distributed Orc</a><br />
 	Adrian Quark<br />
 	CS 395T Computation Orchestration, Spring 2008</li>
 </ul>
@@ -93,7 +96,7 @@ li.new {
 <a name="Other" id="Other"></a><h2>Other Resources <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
-	<li><a href="398.pdf">CS398T Orc Introduction Slides</a> (PDF)</li>
+	<li><a href="papers/398.pdf">CS398T Orc Introduction Slides</a> (PDF)</li>
 	<li><a class="paper" href="http://www.cs.utexas.edu/~wcook/papers/OrcImpDraft.pdf">Implementation Outline of Orc</a><br />
 	William R. Cook and Jayadev Misra<br />
 	Unpublished, 2005.</li>
