@@ -2,6 +2,8 @@
 
 <h1>Why Orc?</h1>
 
+<p><i>For a thorough discussion of Orc's motivation, please see our position paper, <a class="paper" href="papers/structured_interacting_computations_2008.pdf" target="_blank">Structured Interacting Computations</a> <img src="images/new-window.gif" alt="opens in new window" border="0" />.</i></p>
+
 <p>Orc is designed to solve a computational pattern inherent in many wide-area
 applications: acquire data from one or more remote services, perform some
 calculation with those data, and invoke yet other remote services with the
@@ -12,8 +14,8 @@ the delays associated with communication, unreliability of servers, and
 competition for resources from multiple clients are dominant concerns.</p>
 
 <p>The theory behind Orc is that smooth orchestration requires only three
-simple operators: parallel computation, sequencing, and selective pruning.
-Together, these operators prove powerful enough to express typical distributed
+simple combinators: parallel computation, sequencing, and selective pruning.
+Together, these combinators prove powerful enough to express typical distributed
 communication patterns.</p>
 
 <p>Consider a typical wide-area computing problem. A client contacts two

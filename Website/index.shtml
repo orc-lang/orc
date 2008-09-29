@@ -22,12 +22,11 @@ dive in to <a href="tutorial.shtml">Orc in 15 minutes</a>.</p>
 <li>Web service mashups</li>
 </ul>
 
-<p><a href="community.shtml">The Orc community...</a></p>
-
 <h2>A Sample Program</h2>
 
 <p>The following example searches both Yahoo and Google for some search term
-obtained from the user and uses whichever results are returned first.</p>
+obtained from the user and displays the first few results from whichever site
+responds first.</p>
 
 <pre class="orc">
 include "search.inc"
