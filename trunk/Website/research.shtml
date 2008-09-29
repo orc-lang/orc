@@ -32,7 +32,7 @@ li.new {
 	<li class="new"><a class="paper" href="papers/structured_interacting_computations_2008.pdf">Structured Interacting Computations</a><br />
 	William Cook and Jayadev Misra<br />
 	Proceedings of "Software-Intensive Systems", Springer Verlag, LNCS 5380, pp139 --145, 2008.</li>
-	<li><a class="paper" href="http://www.cs.utexas.edu/~wcook/papers/OrcJSSM05/OrcJSSM.pdf">Computation Orchestration: A Basis for Wide-Area Computing</a> (<a href="http://springerlink.metapress.com/openurl.asp?genre=article&amp;id=doi:10.1007/s10270-006-0012-1">DOI</a>)<br />
+	<li><a class="paper" href="papers/OrcJSSM.pdf">Computation Orchestration: A Basis for Wide-Area Computing</a> (<a href="http://springerlink.metapress.com/openurl.asp?genre=article&amp;id=doi:10.1007/s10270-006-0012-1">DOI</a>)<br />
 	Jayadev Misra and William R. Cook<br />
 	Journal of Software and Systems Modeling, May 2006.</li>
 </ul>
@@ -40,26 +40,26 @@ li.new {
 <a name="Semantics" id="Semantics"></a><h2>Semantics &amp; Verification <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
-	<li class="new"><span class="paper">A Timed semantics of Orc</span> (<a href="http://www.cs.utexas.edu/~wcook/Drafts/2007/TimedSemanticsDRAFT.pdf">DRAFT</a>) (<a href="http://dx.doi.org/10.1016/j.tcs.2008.04.037">DOI</a>)<br />
+	<li class="new"><span class="paper">A Timed semantics of Orc</span> (<a href="papers/TimedSemanticsDRAFT.pdf">DRAFT</a>) (<a href="http://dx.doi.org/10.1016/j.tcs.2008.04.037">DOI</a>)<br />
 	Ian Wehrman,&nbsp;David Kitchin,&nbsp;William R. Cook.&nbsp;Jayadev Misra<br />
 	Theoretical Computer Science, August 2008.</li>
 
-	<li><a class="paper" href="http://www.cs.utexas.edu/~iwehrman/pub/tcs07-tr.pdf">Properties of the Timed Operational and Denotational Semantics of Orc</a><br />
+	<li><a class="paper" href="papers/tcs07-tr.pdf">Properties of the Timed Operational and Denotational Semantics of Orc</a><br />
 	Ian Wehrman,&nbsp;David Kitchin,&nbsp;William R. Cook.&nbsp;Jayadev Misra<br />
 	University of Texas at Austin, Department of Computer Sciences, 2007, Report# TR-07-65</li>
 
-	<li><a class="paper" href="http://www.cs.utexas.edu/~wcook/papers/WS-FM07/events.pdf">Event Structure Semantics of Orc</a><br />
+	<li><a class="paper" href="papers/events.pdf">Event Structure Semantics of Orc</a><br />
 	Sidney Rosario, David Kitchin, Albert Benveniste, William Cook, Stefan Haar, and Claude Jard<br />
 	<a class="venue" href="http://bpm07.fit.qut.edu.au/ws-fm07/">4th International Workshop on Web Services and Formal Methods</a> (WS-FM 2007)<br />
 	Irisa and UT Austin</li>
 
-	<li><a class="paper" href="http://www.cs.utexas.edu/~wcook/papers/OrcSemantics06/OrcSemantics.pdf">A Language for Task Orchestration and its Semantic Properties</a> (<a href="http://www.cs.utexas.edu/~wcook/papers/OrcSemantics06/OrcSemantics2up.pdf">2up</a>)  (<a href="http://dx.doi.org/10.1007/11817949_32">DOI</a>)<br />
+	<li><a class="paper" href="papers/OrcSemantics.pdf">A Language for Task Orchestration and its Semantic Properties</a> (<a href="papers/OrcSemantics2up.pdf">2up</a>)  (<a href="http://dx.doi.org/10.1007/11817949_32">DOI</a>)<br />
 	David Kitchin, William R. Cook and Jayadev Misra<br />
 	<a class="venue" href="http://depend.cs.uni-sb.de/concur2006">Proc. of the International Conference on Concurrency Theory (CONCUR), 2006</a>.<br />
 	August 27-30, Bonn, Germany.<br />
 	Extended version: <a href="http://www.cs.utexas.edu/ftp/pub/techreports/index/html/Abstracts.2006.html#TR-06-32">UTCS Technical Rerport TR-06-32</a></li>
 
-	<li><a class="paper" href="http://www.cs.utexas.edu/users/psp/Semantics.Orc.pdf">A Tree Semantics of an Orchestration Language</a><br />
+	<li><a class="paper" href="papers/Semantics.Orc.pdf">A Tree Semantics of an Orchestration Language</a><br />
 	Jayadev Misra, Tony Hoare and Galen Menzel<br />
 	Lecture Notes for NATO summer school, Marktoberdorf, August 2004</li>
 </ul>
@@ -67,18 +67,18 @@ li.new {
 <a name="Applications" id="Applications"></a><h2>Applications <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
-	<li class="new"><span class="paper">Simulation using Orchestration</span> (<a href="http://www.cs.utexas.edu/~wcook/Drafts/2008/OrcSimulation.pdf">DRAFT</a>)<br />
+	<li class="new"><span class="paper">Simulation using Orchestration</span> (<a href="papers/OrcSimulation.pdf">DRAFT</a>)<br />
 	David Kitchin, Evan Powell, and Jayadev Misra<br />
 	In <span class="venue">Proceedings of AMAST</span>, 2008</li>
 
-	<li><a class="paper" href="ftp://ftp.cs.utexas.edu/pub/techreports/tr07-63.pdf">Orc-X: Combining Orchestrations and XQuery</a><br />
+	<li><a class="paper" href="papers/tr07-63.pdf">Orc-X: Combining Orchestrations and XQuery</a><br />
 	Kristi Morton, David Kitchin, William Cook<br />
 	The University of Texas at Austin, Department of Computer Sciences, December 2007, Report# TR-07-63.</li>
 
-	<li><a class="paper" href="http://www.cs.utexas.edu/~wcook/papers/OrcWorkflow06/OrcWorkflow.pdf">Workflow Patterns in Orc</a> (<a href="http://www.cs.utexas.edu/~wcook/papers/OrcWorkflow06/OrcWorkflow2up.pdf">2up</a>)<br />
+	<li><a class="paper" href="papers/OrcWorkflow.pdf">Workflow Patterns in Orc</a> (<a href="papers/OrcWorkflow2up.pdf">2up</a>)<br />
 	William R. Cook, Sourabh Patwardhan, and Jayadev Misra<br />
 	<span class="venue">Proc. of the International Conference on Coordination Models and Languages</span> (COORDINATION), 2006.<br />
-	(<a href="http://www.cs.utexas.edu/~wcook/papers/OrcWorkflow06/orc.pdf">slides from talk</a>)</li>
+	(<a href="papers/workflow_slides.pdf">slides from talk</a>)</li>
 </ul>
 
 <a name="Student_Reports" id="Student_Reports"></a><h2>Student Reports <small>(<a href="#top">top</a>)</small></h2>
@@ -97,7 +97,7 @@ li.new {
 
 <ul>
 	<li><a href="papers/398.pdf">CS398T Orc Introduction Slides</a> (PDF)</li>
-	<li><a class="paper" href="http://www.cs.utexas.edu/~wcook/papers/OrcImpDraft.pdf">Implementation Outline of Orc</a><br />
+	<li><a class="paper" href="papers/OrcImpDraft.pdf">Implementation Outline of Orc</a><br />
 	William R. Cook and Jayadev Misra<br />
 	Unpublished, 2005.</li>
 	<li><a href="references.bib">Selected Bibliography</a> (BibTeX format)</li>
