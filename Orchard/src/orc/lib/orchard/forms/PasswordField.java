@@ -5,14 +5,9 @@ import java.io.PrintWriter;
 
 import orc.lib.net.XMLUtils;
 
-public class PasswordField extends SingleField<String> {
+public class PasswordField extends Textbox {
 	public PasswordField(String key, String label) {
-		super(key, label, "");
-	}
-
-	@Override
-	public String requestToValue(String posted) throws ValidationException {
-		return posted;
+		super(key, label);
 	}
 
 	@Override

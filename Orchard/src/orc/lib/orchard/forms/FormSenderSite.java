@@ -33,7 +33,7 @@ public class FormSenderSite extends Site {
 		}
 		public String getURL() {
 			// FIXME: remove this hard-coded URL
-			return "http://orc.csres.utexas.edu/orchard/FormsServlet?k=" + key;
+			return "https://orc.csres.utexas.edu/orchard/FormsServlet?k=" + key;
 		}
 		public Map<String, Object> get() throws Pausable {
 			return outbox.get();

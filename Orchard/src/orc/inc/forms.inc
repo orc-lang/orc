@@ -17,9 +17,7 @@ class DateRangesField = orc.lib.orchard.forms.DateRangesField
 def WebPrompt(title, fields) =
   Form() >form>
   FieldGroup("main", title) >group>
-  ForkJoin(map(
-    lambda (field)() = group.addPart(field),
-    fields)) >>
+  map(group.addPart, fields) >>
   form.addPart(group) >>
   SendForm(form) >receiver>
   Redirect(receiver.getURL()) >>

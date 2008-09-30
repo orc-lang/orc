@@ -181,8 +181,23 @@ function orcify(code, defaultConfig) {
 		else return $(elem).text();
 	}
 
+	var prelude;
+	var postlude;
+	function extractLude(program) {
+		var tmp = program.split(/\s*{- EXAMPLE -}\s*/);
+		if (tmp.length == 1) {
+			prelude = "";
+			postlude = "";
+			return tmp[0];
+		} else {
+			prelude = tmp[0];
+			postlude = tmp[2] ? tmp[2] : "";
+			return tmp[1];
+		}
+	}
+
 	function getCode() {
-		return getCodeFrom(prelude) + codemirror.getCode();
+		return prelude + "\n" + codemirror.getCode() + "\n" + postlude;
 	}
 
 	function appendEventHtml(html) {
@@ -433,9 +448,6 @@ function orcify(code, defaultConfig) {
 		.append($loading).append($close).append($stop).append($run);
 	var editable = (code.tagName == "TEXTAREA");
 	var id = $code.attr("id");
-	// if this element exists, it contains text which is prepended to the
-	// program before running it
-	var prelude = $code.prev(".orc-prelude")[0];
 	// put a wrapper around the code area, to add a border
 	$code.wrap('<div class="orc" />');
 	$code = $code.parent();
@@ -443,7 +455,7 @@ function orcify(code, defaultConfig) {
 	// for some reason wrap() makes a copy of $widget.
 	$widget = $code.parent();
 	var config = $.extend({}, defaultConfig, {
-		content: getCodeFrom(code),
+		content: extractLude(getCodeFrom(code)),
 		readOnly: !editable,
 		height: $code.height() + "px",
 		initCallback: function () {
@@ -483,7 +495,7 @@ function orcify(code, defaultConfig) {
 		stopCurrentJob();
 		$close.hide();
 		$events.slideUp("fast");
-		codemirror.setCode(code);
+		codemirror.setCode(extractLude(code));
 	};
 	$widget[0].orcFontSizeUp = function() {
 		setFontSize(fontSize * 1.25);
