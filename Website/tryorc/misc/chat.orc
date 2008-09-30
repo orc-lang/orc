@@ -1,3 +1,7 @@
+{-
+Requests your Google Talk account information and the username of a friend,
+logs into Google Talk and starts a conversation with your friend.
+-}
 include "fun.inc"
 include "net.inc"
 include "forms.inc"

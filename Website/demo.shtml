@@ -46,14 +46,6 @@ load it as index.html?mock
 &nbsp;&nbsp;&nbsp;&nbsp;Clear program: <a href="#" style="cursor: pointer" onclick="clearProgram()">clear</a>
 </small>
 </div>
-<!-- library functions specifically for the demo -->
-<div class="orc-prelude">
-include "mail.inc"
-def rbool() = random(2) &gt;x&gt; (x = 0)
-def signals(n) = if(n&gt;0) &gt;&gt; (signal | signals(n-1))
-def biasedBool(p) = random(1000) &gt;x&gt; (x&lt;= p*1000)
-def rrandSignal(t,p) = if(biasedBool(p)) &gt;&gt; random(t) &gt;s&gt; Rtimer(s)
-</div>
 <textarea id="orc" spellcheck="false" class="orc" style="width: 700px; height: 300px">
 </textarea>
 </td></tr></table>

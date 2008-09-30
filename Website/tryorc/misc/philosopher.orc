@@ -2,14 +2,19 @@
 Dining Philosophers.
 Originally by Joseph Cooper,
 minor modifications by Adrian Quark.
+
+Runs a simulation of 5 philosophers for 10 time steps, printing out
+every action of the philosophers (grabbing and releasing forks,
+thinking, eating, etc). See the variables below to customize.
 -}
 
-val numberOfPhilosophers = 10
--- ratio of real time to simulated time
+-- How many philosophers are there?
+val numberOfPhilosophers = 5
+-- Ratio of real time to simulated time:
 -- 1 means 1 second = 1 logical step
 val slowdown = 1
--- number of steps to simulate
-val time = 1000
+-- Number of simulated time steps to allow
+val time = 10
 
 def makeFork(n) =
   Buffer() >f>

@@ -1,3 +1,4 @@
+-- Send a mail to someone
 include "mail.inc"
 
 val to = Prompt("To:")

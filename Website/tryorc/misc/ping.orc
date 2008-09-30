@@ -1,3 +1,8 @@
+{-
+Ping the localhost. Not very interesting, since it always
+succeeds, but firewall issues mean that pinging other
+servers does not work correctly.
+-}
 include "net.inc"
 
 -- Check if a server responds to

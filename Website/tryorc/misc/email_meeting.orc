@@ -1,13 +1,20 @@
+{-
+Schedules a meeting via email.
+See the variables under "Configuration" below to customize.
+-}
 include "forms.inc"
 include "mail.inc"
 
 -- Configuration
 
+-- The range of possible dates (Year, Month, Day), with an exclusive upper bound
 val span = DateRange(LocalDateTime(2008, 9, 11), LocalDateTime(2008, 9, 12))
+-- Enter a list of people to invite, of the form: [(name, email)]
+val invitees = [ ("Full Name", "test@example.com") ]
+-- Number of responses required to schedule the meeting
+val quorum = 1
 val format = DateTimeFormat.forStyle("SS")
 val requestor = Prompt("Your email address:")
-val invitees = [ ("Full Name", "test@example.com") ]
-val quorum = 1 -- number of responses required
 def requestBody(name, url) =
   "Greetings " + name + ",\n" +
   "Click on the below URL to choose time slots when you are available for a 1-hour meeting.\n" +

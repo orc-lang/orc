@@ -1,3 +1,5 @@
+include "mail.inc"
+{- EXAMPLE -}
 -- 3 + 4 >x> x + 5  -- = 3 + 4 + 5
 
 -- wait for up to 3 seconds, randomly

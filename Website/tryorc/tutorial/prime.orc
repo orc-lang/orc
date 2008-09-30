@@ -4,7 +4,7 @@ def isPrime(n) =
     | if(~b) >> true
         <b< i * i <= n
   primeat(3)
-
+{- EXAMPLE -}
 def Metronome(i) =
     i
   | Rtimer(1000) >> Metronome(i+2)
