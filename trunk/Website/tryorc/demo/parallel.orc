@@ -1,3 +1,5 @@
+def rbool() = random(2) >x> (x = 0)
+{- EXAMPLE -}
 -- 2 | 3
 
 -- 2 | 3 | 4

@@ -1,10 +1,24 @@
+{-
+Schedule a meeting. A window will pop up with a calendar for each invitee to
+choose when they are available. Once enough responses have been received, Orc
+will print a message for each invitee informing them of the meeting time.
+
+Normally the invitees would receive a link via email and a notification via
+email of the scheduled meeting, but that doesn't work very well for demos,
+hence the popups.
+
+See the variables under "Configuration" below to customize.
+-}
 include "forms.inc"
 
 -- Configuration
 
+-- The range of possible dates (Year, Month, Day), with an exclusive upper bound
 val span = DateRange(LocalDateTime(2008, 9, 29), LocalDateTime(2008, 10, 4))
 val format = DateTimeFormat.forStyle("SS")
+-- Number of responses required to schedule the meeting
 val quorum = 2
+-- Names of invitees
 val invitees = [
   "Adrian Quark",
   "David Kitchin",

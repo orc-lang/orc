@@ -1,10 +1,18 @@
+{-
+Download Lewis Carroll's "Alice Through the Looking Glass"
+from Project Gutenberg http://www.gutenberg.org,
+unzips it, finds the "JABBERWOCKY" poem, and sends
+the first few lines to Google to spell check.
+Prints out a list of corrections, with the number
+of the word, the misspelled word, and a list of
+suggested spellings.
+-}
 include "net.inc"
 
 class InputStreamReader = java.io.InputStreamReader
 class BufferedReader = java.io.BufferedReader
 class ZipInputStream = java.util.zip.ZipInputStream
 class URL = java.net.URL
-val YahooSpell = YahooSpellFactory("orc/orchard/yahoo.properties")
 
 def openURL(url) =
   URL(url) >url>
@@ -22,10 +30,8 @@ def skipto(reader, phrase) =
   else skipto(reader, phrase)
   
 def spellCheck(word:words, i) =
-    YahooSpell(word) >(_:_) as suggs>
-    ("Y", i, word, suggs)
-  | GoogleSpellUnofficial(word) >(_:_) as suggs>
-    ("G", i, word, suggs)
+  GoogleSpellUnofficial(word) >(_:_) as suggs>
+  (i, word, suggs)
   | spellCheck(words, i+1)  
   
 val url = "http://www.gutenberg.org/files/12/12.zip"

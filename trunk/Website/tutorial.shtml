@@ -243,7 +243,7 @@ Airline("Delta") >delta> delta()</pre>
 <p>Next we need a utility function which returns the lesser of two quotes.
 It uses pattern matching to extract the dollar value to be compared from the
 quote tuple:</p>
-<pre class="orc-prelude">
+<pre class="orc">
 def Airline(name) =
     -- define a function which can be called
     -- like a site
@@ -252,8 +252,8 @@ def Airline(name) =
         (name, parseInt(n))
     -- return the site
     MakeQuote
-</pre>
-<pre class="orc">
+
+{- EXAMPLE -}
 def min((_,dollar1) as quote1, (_,dollar2) as quote2) =
     if(dollar1 &lt;= dollar2) >> quote1
   | if(dollar2 &lt;  dollar1) >> quote2
@@ -266,7 +266,7 @@ min(delta(), united())</pre>
 <p>Finally we can put everything together with a function that uses
 pattern matching and recursion to return the best quote from a list
 of airline sites:</p>
-<pre class="orc-prelude">
+<pre class="orc">
 def Airline(name) =
     -- define a function which can be called
     -- like a site
@@ -278,8 +278,8 @@ def Airline(name) =
 def min((n1,q1), (n2,q2)) =
     if(q1 &lt;= q2) >> (n1, q1)
   | if(q2 &lt;  q1) >> (n2, q2)
-</pre>
-<pre class="orc">
+
+{- EXAMPLE -}
 -- Return the best quote at or under $200
 -- received within 15 seconds
 def bestQuote([]) = ("None of the above", 200)

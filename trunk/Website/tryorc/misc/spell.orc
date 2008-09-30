@@ -1,3 +1,8 @@
+{-
+Spell-check the first 20 words of a text file
+which you will be prompted to upload. We'll try
+both Google and Yahoo spell-checkers.
+-}
 include "net.inc"
 include "forms.inc"
 
