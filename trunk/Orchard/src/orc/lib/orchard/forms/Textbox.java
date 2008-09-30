@@ -13,6 +13,7 @@ public class Textbox extends SingleField<String> {
 
 	@Override
 	public String requestToValue(String posted) throws ValidationException {
+		if (posted.equals("")) return null;
 		return posted;
 	}
 
