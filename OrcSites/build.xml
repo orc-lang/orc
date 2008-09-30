@@ -21,6 +21,7 @@
 				includes="*.jar"
 				excludes="orc-*.jar"/>
 		</jar>
+		<jar jarfile="${ant.project.name}-${orc.version}-nodep.jar" basedir="${orc.location.build}" />
 	</target>
 	
 	<target name="zip" depends="jar" description="generate the ZIP">

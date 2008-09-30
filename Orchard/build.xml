@@ -17,14 +17,15 @@
 				<include name="**/*"/>
 			</fileset>
 			<zipfileset prefix="WEB-INF/classes" dir="${orc.location.build}"/>
+			<!-- these should be deployed separately to keep the WAR small
 			<zipfileset prefix="WEB-INF/lib" dir="${orc.location.lib}">
-				<!-- FIXME: some of these may be unnecessary at runtime -->
 				<include name="*.jar"/>
 				<exclude name="jetty-*.jar"/>
 				<exclude name="yuicompressor-*.jar"/>
 				<exclude name="servlet-api.jar"/>
 				<exclude name="jetty-util-*.jar"/>
 			</zipfileset>
+			-->
 		</jar>
 	</target>
 	<taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
