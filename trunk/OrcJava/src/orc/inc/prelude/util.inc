@@ -41,3 +41,5 @@ def lines(text) =
 
 def unlines(line:lines) = cat(line, "\n", unlines(lines))
 def unlines([]) = ""
+
+def signals(n) = if n > 0 then (signal | signals(n-1))
