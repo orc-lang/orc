@@ -75,7 +75,9 @@ button. You may also load an example from the left panel, and then modify or
 run it.
 </div>
 <div>
-<small>Font size:
+<small>
+<b style="float: right"><a href="#" onclick="document.getElementById('orc').displayOrcHelp()">HELP!</a></b>
+Font size:
 <a href="#" style="cursor: pointer" onclick="document.getElementById('orc').orcFontSizeUp()">bigger</a> /
 <a href="#" style="cursor: pointer" onclick="document.getElementById('orc').orcFontSizeDown()">smaller</a>
 &nbsp;&nbsp;&nbsp;&nbsp;Full screen: <a href="#" style="cursor: pointer" onclick="toggleExamples()">toggle</a>
