@@ -1,7 +1,7 @@
 <html>
 <!--
 To play with this in your browser without running an Orchard server,
-load it as index.html?mock
+load it as tryorc.shtml?mock
 -->
 <head>
 <title>Orc Demo</title>
@@ -28,7 +28,6 @@ load it as index.html?mock
 	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/rtimer.orc">Rtimer Site</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/metronome.orc">Metronome</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/prime.orc">Prime Numbers</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/demo/tally.orc">Tally</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/airline1.orc">Airline</a></span></li>
 	</ul></li>
 <li class="closed"><span class="folder">Concurrency Idioms</a></span>
@@ -39,6 +38,15 @@ load it as index.html?mock
 	<li><span class="file"><a class="demo-link" href="tryorc/concurrency/forkjoin.orc">Fork/Join</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/concurrency/parallelor.orc">Parallel Or</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/concurrency/interrupt.orc">Interrupt</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/concurrency/mapreduce.orc">Map/Reduce</a></span></li>
+	</ul></li>
+<li class="closed"><span class="folder">Randomized Demos</a></span>
+	<ul>
+	<li><span class="file"><a class="demo-link" href="tryorc/demo/pull4.orc">Asymmetric</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/demo/tally.orc">Tally</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/demo/dice.orc">Dice</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/demo/walk.orc">Random Walk</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/demo/paror.orc">Parallel Or</a></span></li>
 	</ul></li>
 <li class="closed"><span class="folder">Libraries</a></span>
 	<ul>
@@ -56,6 +64,7 @@ load it as index.html?mock
 	<li><span class="file"><a class="demo-link" href="tryorc/misc/music_calendar.orc">Music Calendar</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/misc/meeting.orc">Meeting Request</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/misc/philosopher.orc">Dining Philosophers</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/concurrency/mapreduce.orc">Map/Reduce</a></span></li>
 	</ul></li>
 <li class="closed" id="restricted_demos" style="display: none"><span class="folder">Restricted</a></span>
 	<ul>
