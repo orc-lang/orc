@@ -8,7 +8,8 @@ import orc.test.parser.OrcParserTest;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-	OrcParserTest.class
+	OrcParserTest.class,
+	ExamplesTest.class
 })
 public class AllTests {
 	public static void main(String[] args) {

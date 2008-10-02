@@ -1,5 +1,7 @@
 package orc.ast.oil.arg;
 
+import java.util.Set;
+
 import orc.ast.oil.Visitor;
 import orc.env.Env;
 import orc.error.compiletime.typing.TypeException;
@@ -46,5 +48,10 @@ public class Field extends Arg implements Comparable<Field>{
 	@Override
 	public Type typesynth(Env<Type> ctx) throws TypeException {
 		return new Message(this);
+	}
+	
+	@Override
+	public void addIndices(Set<Integer> indices, int depth) {
+		return;
 	}
 }

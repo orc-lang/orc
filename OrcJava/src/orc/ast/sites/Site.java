@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 
 import orc.error.compiletime.typing.MissingTypeException;
 import orc.error.compiletime.typing.TypeException;
+import orc.error.runtime.SiteResolutionException;
 import orc.type.Type;
 
 /**
@@ -73,7 +74,7 @@ public abstract class Site {
 	
 	public abstract URI getLocation();
 	public abstract String getProtocol();	
-	public abstract orc.runtime.sites.Site instantiate();
+	public abstract orc.runtime.sites.Site instantiate() throws SiteResolutionException;
 
 	/**
 	 * Equality on sites.

@@ -7,6 +7,7 @@ import java.util.Set;
 import orc.ast.oil.Def;
 import orc.ast.oil.Expr;
 import orc.env.Env;
+import orc.error.runtime.SiteResolutionException;
 import orc.runtime.values.Future;
 import orc.runtime.values.Value;
 
@@ -16,5 +17,5 @@ public abstract class Arg extends Expr {
 		return new orc.runtime.nodes.Let(this, output);
 	}
 	
-	public abstract <T> T resolve(Env<T> env);
+	public abstract <T> T resolve(Env<T> env) throws SiteResolutionException;
 }
