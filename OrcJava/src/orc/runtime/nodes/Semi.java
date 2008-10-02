@@ -13,8 +13,8 @@ import orc.runtime.regions.SemiRegion;
  */
 public class Semi extends Node {
 	private static final long serialVersionUID = 1L;
-	Node left;
-	Node right;
+	public Node left;
+	public Node right;
 	public Semi(Node left, Node right) {
 		this.left = left;
 		this.right = right;
@@ -29,5 +29,9 @@ public class Semi extends Node {
 		forked.unsetPending();
 		SemiRegion region = new SemiRegion(t.getRegion(), forked.move(right));
 		t.move(left).setRegion(region).activate();
+	}
+	
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

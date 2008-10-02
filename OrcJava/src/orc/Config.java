@@ -201,4 +201,14 @@ public class Config {
 	public void setStderr(PrintStream stderr) {
 		this.stderr = stderr;
 	}
+
+	/**
+	 * Change this to return true to use JUNG to visualize
+	 * the DAG and token movement. This is still extremely
+	 * experimental, so it's not even a command-line argument.
+	 * @return
+	 */
+	public boolean getUseVisualizer() {
+		return false;
+	}
 }

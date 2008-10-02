@@ -1,13 +1,14 @@
 package orc.runtime.nodes;
 
 import orc.ast.oil.arg.Arg;
+import orc.error.runtime.SiteResolutionException;
 import orc.runtime.Token;
 import orc.runtime.values.Value;
 
 public class Let extends Node {
 
-	Arg arg;
-	Node next;
+	public Arg arg;
+	public Node next;
 	
 	public Let(Arg arg, Node next) {
 		this.arg = arg;
@@ -16,11 +17,24 @@ public class Let extends Node {
 	
 	@Override
 	public void process(Token t) {
-		Object v = Value.forceArg(t.lookup(arg), t);
+		Object v;
+		try {
+			v = Value.forceArg(t.lookup(arg), t);
+		} catch (SiteResolutionException e) {
+			t.error(e);
+			return;
+		}
 		
 		if (v != Value.futureNotReady) {
 			t.move(next); t.setResult(v).activate();
 		}
 	}
-
+	
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
+	}
+	
+	public String toString() {
+		return "Let(" + arg + ")";
+	}
 }

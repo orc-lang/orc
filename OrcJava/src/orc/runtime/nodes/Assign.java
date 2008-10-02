@@ -11,7 +11,7 @@ import orc.runtime.Token;
  */
 public class Assign extends Node {
 	private static final long serialVersionUID = 1L;
-	Node next;
+	public Node next;
 
 	public Assign(Node next) {
 		this.next = next;
@@ -29,4 +29,7 @@ public class Assign extends Node {
 		t.move(next).activate();
 	}
 
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
+	}
 }

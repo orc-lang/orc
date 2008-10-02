@@ -14,6 +14,7 @@ import orc.Config;
 import orc.env.Env;
 import orc.error.runtime.TokenException;
 import orc.runtime.nodes.Node;
+import orc.runtime.nodes.Visualizer;
 import orc.runtime.regions.Execution;
 import orc.runtime.values.GroupCell;
 import orc.trace.Tracer;
@@ -74,6 +75,9 @@ public class OrcEngine implements Runnable {
 
 	/** We'll notify this when the computation is finished. */
 	private Tracer tracer;
+	
+	/** For debugging visualization */
+	private Visualizer viz;
 
 	public final static Globals<OrcEngine, Object> globals = new Globals<OrcEngine, Object>();
 
@@ -146,6 +150,7 @@ public class OrcEngine implements Runnable {
 		assert (env != null);
 		region = new Execution(this);
 		tracer = config.getTracer();
+		viz = config.getUseVisualizer() ? new Visualizer(root) : null;
 		activate(new Token(root, env, GroupCell.ROOT, region, this, tracer
 				.start()));
 	}
@@ -186,6 +191,7 @@ public class OrcEngine implements Runnable {
 				return true;
 			}
 		}
+		if (viz != null) viz.pick(todo.node);
 		// notice that we do not synchronize while
 		// processing a token; we don't want to risk
 		// locking the engine if the processing blocks

@@ -20,4 +20,11 @@ public abstract class Node implements Serializable {
 	 * @param t      input token being processed 
 	 */
 	public abstract void process(Token t);
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
+	}
+	
+	public String toString() {
+		return getClass().getSimpleName();
+	}
 }
