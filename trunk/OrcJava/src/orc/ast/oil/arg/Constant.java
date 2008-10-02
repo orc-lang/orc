@@ -1,5 +1,7 @@
 package orc.ast.oil.arg;
 
+import java.util.Set;
+
 import orc.ast.oil.Visitor;
 import orc.env.Env;
 import orc.error.compiletime.typing.TypeException;
@@ -47,5 +49,9 @@ public class Constant extends Arg {
 			// TODO: Expand to cover arbitrary Java classes
 			return Type.TOP;
 		}
+	}
+	@Override
+	public void addIndices(Set<Integer> indices, int depth) {
+		return;
 	}
 }

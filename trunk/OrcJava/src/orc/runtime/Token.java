@@ -10,6 +10,7 @@ import orc.env.Env;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
 import orc.error.runtime.CapabilityException;
+import orc.error.runtime.SiteResolutionException;
 import orc.error.runtime.TokenException;
 import orc.error.runtime.UncallableValueException;
 import orc.runtime.nodes.Node;
@@ -189,8 +190,8 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 	 */
 	public Token enterClosure(Node node, Env<Object> env, Node next) {
 		if (next instanceof Return) {
-			// handle tail call specially
-			continuation = continuation.continuation;
+			// tail call should return directly to our current continuation
+			// rather than going through us
 		} else if (next instanceof Silent) {
 			// handle silent tail call specially
 			continuation = new Continuation(next, this.env, null);
@@ -236,8 +237,9 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 	 * Lookup a variable in the environment
 	 * @param var variable name
 	 * @return value, or an error if the variable is undefined
+	 * @throws SiteResolutionException 
 	 */
-	public Object lookup(Arg var) {
+	public Object lookup(Arg var) throws SiteResolutionException {
 		return var.resolve(env);
 	}
 	

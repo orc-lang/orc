@@ -36,4 +36,8 @@ public class Silent extends Expr {
 		// Do nothing. Silent checks against all types.
 	}
 
+	@Override
+	public void addIndices(Set<Integer> indices, int depth) {
+		return;
+	}
 }

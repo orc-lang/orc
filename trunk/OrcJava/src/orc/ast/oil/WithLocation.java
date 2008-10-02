@@ -1,5 +1,7 @@
 package orc.ast.oil;
 
+import java.util.Set;
+
 import orc.env.Env;
 import orc.error.Located;
 import orc.error.SourceLocation;
@@ -38,5 +40,10 @@ public class WithLocation extends Expr implements Located {
 	
 	public String toString() {
 		return "{-" + location + "-}(" + expr +")";
+	}
+	
+	@Override
+	public void addIndices(Set<Integer> indices, int depth) {
+		expr.addIndices(indices, depth);
 	}
 }

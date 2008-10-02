@@ -45,7 +45,7 @@ public class Def {
 		return new orc.runtime.nodes.Def(arity, newbody);
 	}
 	
-	public void addVars(Set<Integer> indices, int depth) {
+	public void addIndices(Set<Integer> indices, int depth) {
 		body.addIndices(indices, depth + arity);
 	}
 	

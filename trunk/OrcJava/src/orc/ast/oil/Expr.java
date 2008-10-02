@@ -58,7 +58,7 @@ public abstract class Expr {
 	 * 
 	 * @return 	The set of free variables.
 	 */
-	public Set<Var> freeVars() {
+	public final Set<Var> freeVars() {
 		Set<Integer> indices = new HashSet<Integer>();
 		this.addIndices(indices, 0);
 		
@@ -83,9 +83,7 @@ public abstract class Expr {
 	 * @param indices   The index set accumulator.
 	 * @param depth    The minimum index for a free variable.
 	 */
-	public void addIndices(Set<Integer> indices, int depth) {
-		return;
-	}
+	public abstract void addIndices(Set<Integer> indices, int depth);
 	
 	public abstract <E> E accept(Visitor<E> visitor);
 }

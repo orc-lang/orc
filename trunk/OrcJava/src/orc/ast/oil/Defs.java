@@ -44,7 +44,7 @@ public class Defs extends Expr {
 	public void addIndices(Set<Integer> indices, int depth) {
 		
 		for (Def d : defs) {
-			d.addVars(indices, depth + defs.size());
+			d.addIndices(indices, depth + defs.size());
 		}
 	}
 	
