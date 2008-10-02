@@ -144,7 +144,7 @@ function dragResize(e0, top) {
 
 	// without this div, some mousemove events are
 	// lost to the iframe edit area
-	var $dragCover = $('<div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: s-resize" />');
+	var $dragCover = $('<div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: s-resize;" />');
 	$(document.body).append($dragCover);
 
 	$(document).mouseup(function (e) {
@@ -198,6 +198,59 @@ function orcify(code, defaultConfig) {
 
 	function getCode() {
 		return prelude + "\n" + codemirror.getCode() + "\n" + postlude;
+	}
+
+	function startOfLine(node) {
+		while (node && node.nodeName != "BR")
+			node = node.previousSibling;
+		return node;
+	}
+	function endOfLine(node) {
+		while (node && node.nextSibling && node.nextSibling.nodeName != "BR")
+			node = node.nextSibling;
+		return node;
+	}
+	function toggleComment(editor) {
+		var selection = editor.selectedText();
+		if (selection) {
+			// toggle multi-line-comment around selected area
+			if (/^\s*{-/.test(selection)) {
+				selection = selection.replace(/^(\s*){-/, "$1");
+				selection = selection.replace(/-}(\s*)$/, "$1");
+			} else {
+				selection = selection.replace(/{-/, "");
+				selection = selection.replace(/-}/, "");
+				selection = "{-" + selection + "-}";
+			}
+			editor.replaceSelection(selection);
+		} else {
+			// toggle single-line-comment at current line;
+			// this works by selecting the whole line and replacing it,
+			// because I couldn't find an easy way to just insert stuff
+			// using the codemirror API. as a side effect, this loses
+			// the current selection
+			var select = editor.win.select;
+			// copied in part from indentAtCursor
+			if (!editor.container.firstChild) return;
+			var cursor = select.selectionTopNode(editor.container, false)
+				|| editor.container.firstChild;
+			// select the line
+			select.setCursorPos(editor.container, {node: startOfLine(cursor), offset: 0}, {node: endOfLine(cursor), offset: 0});
+			var selection = editor.selectedText();
+			if (/^\s*--/.test(selection)) {
+				selection = selection.replace(/^(\s*)--/, "$1");
+			} else {
+				selection = "--" + selection;
+			}
+			editor.replaceSelection(selection);
+			// reset cursor to the start of the line
+			cursor = select.cursorPos(editor.container, true);
+			select.setCursorPos(editor.container, cursor, cursor);
+		}
+	}
+
+	function displayHelp() {
+		window.open("/orchard/help.html", "OrchardHelp", "width=500,height=500,scrollbars=yes");
 	}
 
 	function appendEventHtml(html) {
@@ -267,8 +320,8 @@ function orcify(code, defaultConfig) {
 		var $input = $prompt.find("input")
 			.keydown(function(event){
 				switch (event.keyCode) {
-				case 13: ok(); break;
-				case 27: cancel(); break;
+				case 13: ok(); return false;
+				case 27: cancel(); return false;
 				}
 			});
 		$prompt.find(".orc-prompt-input-close").click(cancel);
@@ -454,11 +507,42 @@ function orcify(code, defaultConfig) {
 	$code.wrap($widget).after($events).after($prompts).after($controls);
 	// for some reason wrap() makes a copy of $widget.
 	$widget = $code.parent();
+	var program = extractLude(getCodeFrom(code));
+	// redraw the program in case the height changes due to hidden code
+	if (!editable) $(code).text(program);
 	var config = $.extend({}, defaultConfig, {
-		content: extractLude(getCodeFrom(code)),
+		content: program,
 		readOnly: !editable,
 		height: $code.height() + "px",
-		initCallback: function () {
+		initCallback: function (cm) {
+			// monkey-patch keyDown to handle our own hotkeys
+			var _keyDown = cm.editor.keyDown;
+			cm.editor.keyDown = function (event) {
+				if (event.ctrlKey) {
+					if (event.keyCode == 13) { // enter
+						run();
+						event.stop();
+						return;
+					} else if (event.keyCode == 191) { // forward slash
+						toggleComment(this);
+						event.stop();
+						return;
+					} else if (event.keyCode == 76) { // L
+						this.reparseBuffer();
+						event.stop();
+						return;
+					}
+				} else if (event.keyCode == 27) { // escape
+					stopCurrentJob();
+					event.stop();
+					return;
+				} else if (event.keyCode == 112) { // F1
+					displayHelp();
+					event.stop();
+					return;
+				}
+				_keyDown.apply(this, arguments);
+			}
 			if (code.onOrcReady) {
 				code.onOrcReady($widget[0]);
 				code.onOrcReady = null;
@@ -466,6 +550,7 @@ function orcify(code, defaultConfig) {
 			$widget[0].orcReady = true;
 		}
 	});
+	program = null;
 	// replace the code with a codemirror editor
 	var codemirror = new CodeMirror(CodeMirror.replace(code), config);
 	// if the code had an id, move it to the surrounding div
@@ -483,13 +568,16 @@ function orcify(code, defaultConfig) {
 		// implement drag-resize
 		$controls.css("cursor", "s-resize");
 		$controls.mousedown(function (e) {
-			$(document).mousemove(dragResize(e, codemirror.editor.parent.frame));
+			$(document).mousemove(dragResize(e, codemirror.frame));
 		});
 	}
 
 	// public members
 	$widget[0].stopOrc = function() {
 		stopCurrentJob();
+	};
+	$widget[0].displayOrcHelp = function() {
+		displayHelp();
 	};
 	$widget[0].setOrcCode = function(code) {
 		stopCurrentJob();
@@ -518,7 +606,7 @@ var config = {
 	path: baseUrl,
 	parserfile: [(Orc.query.mock?"orc-parser.js":"orc-parser-min.js")],
 //	basefiles: ["codemirror/util.js", "codemirror/stringstream.js", "codemirror/select.js", "codemirror/undo.js", "codemirror/editor.js", "codemirror/tokenize.js"],
-	basefiles: ["codemirror-20080715-extra-min.js"],
+	basefiles: ["codemirror-extra-min.js"],
 	textWrapping: false
 };
 

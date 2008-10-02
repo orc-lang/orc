@@ -15,17 +15,15 @@
 		<jar jarfile="${ant.project.name}.war" update="true">
 			<fileset dir="web">
 				<include name="**/*"/>
+				<exclude name="codemirror/**"/>
 			</fileset>
 			<zipfileset prefix="WEB-INF/classes" dir="${orc.location.build}"/>
-			<!-- these should be deployed separately to keep the WAR small
 			<zipfileset prefix="WEB-INF/lib" dir="${orc.location.lib}">
 				<include name="*.jar"/>
 				<exclude name="jetty-*.jar"/>
 				<exclude name="yuicompressor-*.jar"/>
 				<exclude name="servlet-api.jar"/>
-				<exclude name="jetty-util-*.jar"/>
 			</zipfileset>
-			-->
 		</jar>
 	</target>
 	<taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
@@ -75,6 +73,37 @@
 			<arg value="-o" />
 			<arg value="web/orc-parser-min.js" />
 		</java>
+
+		<!-- codemirror and codemirror-extra -->
+		<java jar="${orc.location.lib}/yuicompressor-2.3.6.jar" fork="yes">
+			<arg value="--type" />
+			<arg value="js" />
+			<arg value="web/codemirror/codemirror.js" />
+			<arg value="-o" />
+			<arg value="codemirror-min.tmp" />
+		</java>
+		<concat destfile="web/codemirror-min.js">
+			<filelist files="web/codemirror/README codemirror-min.tmp"/>
+		</concat>
+		<delete file="codemirror-min.tmp"/>
+		<concat destfile="codemirror-extra.tmp">
+			<fileset dir="web/codemirror">
+				<include name="*.js"/>
+				<exclude name="codemirror.js"/>
+			</fileset>
+		</concat>
+		<java jar="${orc.location.lib}/yuicompressor-2.3.6.jar" fork="yes">
+			<arg value="--type" />
+			<arg value="js" />
+			<arg value="codemirror-extra.tmp" />
+			<arg value="-o" />
+			<arg value="codemirror-extra-min.tmp" />
+		</java>
+		<delete file="codemirror-extra.tmp"/>
+		<concat destfile="web/codemirror-extra-min.js">
+			<filelist files="web/codemirror/README codemirror-extra-min.tmp"/>
+		</concat>
+		<delete file="codemirror-extra-min.tmp"/>
 	</target>
 
 	<target name="clean" description="clean up">
