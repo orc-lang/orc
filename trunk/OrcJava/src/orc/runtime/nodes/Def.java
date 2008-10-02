@@ -23,5 +23,4 @@ public class Def {
 		this.arity = arity;
 		this.body = body;
 	}
-	
 }

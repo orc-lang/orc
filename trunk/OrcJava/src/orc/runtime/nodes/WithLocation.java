@@ -13,8 +13,8 @@ import orc.runtime.Token;
  * @author quark
  */
 public class WithLocation extends Node implements Located {
-	private final Node next;
-	private final SourceLocation location;
+	public final Node next;
+	public final SourceLocation location;
 	public WithLocation(final Node next, final SourceLocation location) {
 		super();
 		this.next = next;
@@ -27,5 +27,8 @@ public class WithLocation extends Node implements Located {
 	}
 	public SourceLocation getSourceLocation() {
 		return location;
+	}
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

@@ -14,7 +14,7 @@ import orc.runtime.values.Value;
  */
 public class Leave extends Node {
 	private static final long serialVersionUID = 1L;
-	Node next;
+	public Node next;
 
 	public Leave(Node next) {
 		this.next = next;
@@ -32,5 +32,8 @@ public class Leave extends Node {
 		
 		t.setRegion(region.getParent()).move(next).activate();
 	}
-
+	
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
+	}
 }

@@ -29,4 +29,8 @@ public class Store extends Node {
 		group.setValue(t);
 		t.die();
 	}
+	
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
+	}
 }

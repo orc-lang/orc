@@ -11,8 +11,8 @@ import orc.runtime.Token;
  */
 public class Fork extends Node {
 	private static final long serialVersionUID = 1L;
-	Node left;
-	Node right;
+	public Node left;
+	public Node right;
 	public Fork(Node left, Node right) {
 		this.left = left;
 		this.right = right;
@@ -26,5 +26,9 @@ public class Fork extends Node {
 		Token forked = t.fork();
 		t.move(left).activate();
 		forked.move(right).activate();
+	}
+	
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

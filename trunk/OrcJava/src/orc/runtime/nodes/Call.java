@@ -18,12 +18,12 @@ import orc.runtime.values.Value;
  */
 public class Call extends Node {
 	private static final long serialVersionUID = 1L;
-	Arg caller;
-	List<Arg> args;
-	Node next;
+	public Arg callee;
+	public List<Arg> args;
+	public Node next;
 
-	public Call(Arg caller, List<Arg> args, Node next) {
-		this.caller = caller;
+	public Call(Arg callee, List<Arg> args, Node next) {
+		this.callee = callee;
 		this.args = args;
 		this.next = next;	
 	}
@@ -35,12 +35,12 @@ public class Call extends Node {
 	public void process(Token t) {
 		
 		try {
-			Callable target = Value.forceCall(t.lookup(caller), t);
+			Callable target = Value.forceCall(t.lookup(callee), t);
 
 			/** 
-			 * target is null if the caller is still unbound, in which
+			 * target is null if the callee is still unbound, in which
 			 * case the calling token will be activated when the
-			 * caller value becomes available. Thus, we simply
+			 * callee value becomes available. Thus, we simply
 			 * return and wait for the token to enter the process
 			 * method again.
 			 */
@@ -62,5 +62,13 @@ public class Call extends Node {
 		} catch (TokenException e) {
 			t.error(e);
 		}
+	}
+	
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
+	}
+	
+	public String toString() {
+		return "Call(" + callee + ", " + args + ")";
 	}
 }

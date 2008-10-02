@@ -13,8 +13,8 @@ import orc.runtime.values.Value;
  */
 public class Unwind extends Node {
 	private static final long serialVersionUID = 1L;
-	Node next;
-	int width;
+	public Node next;
+	public int width;
 
 	public Unwind(Node next) {
 		this.next = next;
@@ -36,4 +36,7 @@ public class Unwind extends Node {
 		t.unwind(width).move(next).activate();
 	}
 
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
+	}
 }
