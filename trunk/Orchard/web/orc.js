@@ -30,7 +30,7 @@ var baseUrl = query.mock ? "" : "/orchard/";
 
 // load our dependencies
 document.write("<script src='", baseUrl, "jquery-1.2.6-min.js'><\/script>");
-document.write("<script src='", baseUrl, "codemirror-20080715-min.js'><\/script>");
+document.write("<script src='", baseUrl, "codemirror-min.js'><\/script>");
 // load the rest of our code after jQuery and other services are ready
 document.write("<script src='", baseUrl, (query.mock?"orc-ready.js":"orc-ready-min.js"), "'><\/script>");
 
