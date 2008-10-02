@@ -27,12 +27,12 @@ import orc.trace.events.PullEvent;
 public class GroupCell implements Serializable, Future {
 
 	private static final long serialVersionUID = 1L;
-	Object value;
-	boolean bound = false;
-	boolean alive = true;
-	List<Token> waitList;
-	List<GroupCell> children;
-	GroupRegion region;
+	private Object value;
+	private boolean bound = false;
+	private boolean alive = true;
+	private List<Token> waitList;
+	private List<GroupCell> children;
+	private GroupRegion region;
 	private PullTrace pullTrace;
 	private StoreTrace storeTrace;
 	
