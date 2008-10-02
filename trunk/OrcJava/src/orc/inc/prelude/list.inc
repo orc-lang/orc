@@ -42,3 +42,24 @@ def member(item, []) = false
 def member(item, h:t) =
   if item = h then true
   else member(item, t)
+
+def mergeBy(lt, xs, []) = xs
+def mergeBy(lt, [], ys) = ys
+def mergeBy(lt, x:xs, y:ys) =
+  if lt(y,x) then y:mergeBy(lt,x:xs,ys)
+  else x:mergeBy(lt,xs,y:ys)
+
+def sortBy(lt, []) = []
+def sortBy(lt, [x]) = [x]
+def sortBy(lt, xs) =
+  length(xs)/2 >half>
+  (take(half,xs), drop(half,xs)) >(front, back)>
+  mergeBy(lt, sortBy(lt, front), sortBy(lt, back))
+
+def groupBy(eq, []) = []
+def groupBy(eq, (k,v):kvs) =
+  def helper(k,vs, []) = [(k,vs)]
+  def helper(k,vs, (k2,v):kvs) =
+    if eq(k2,k) then helper(k, v:vs, kvs)
+    else (k,vs):helper(k2, [v], kvs)
+  helper(k,[v], kvs)
