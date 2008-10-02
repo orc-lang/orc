@@ -272,6 +272,7 @@ Expression Lambda =
 			body = new Lambda(it.previous(), body);
 		}
 		yyValue = new Lambda(formals, body);
+		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
 	
