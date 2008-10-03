@@ -1,5 +1,6 @@
 site Rtimer = orc.lib.time.Rtimer
 site MakeTimer = orc.lib.time.MakeTimer
+site Clock = orc.lib.time.Clock
 
 {- Define a default logical timer -}
 val Ltimer = MakeTimer()
