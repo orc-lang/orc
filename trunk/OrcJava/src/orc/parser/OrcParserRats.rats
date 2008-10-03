@@ -194,34 +194,34 @@ precedence.
 
 Symbol   Assoc       Prec   Name
 -----------------------------------------------------------
- lambda  unary       0***   lambda
+ lambda  unary       0[3]   lambda
  ;       left        1      semicolon
  <<      left        2      where
- |       right**     3      parallel
+ |       right[2]    3      parallel
  if      none        4      if/then/else
  >>      right       4      sequence
- ||      right**     5      boolean or
- &&      right**     5      boolean and
+ ||      right[2]    5      boolean or
+ &&      right[2]    5      boolean and
  =       none        6      equal
  /=      none        6      not equal
  :>      none        6      greater
- >       none        6*     greater
+ >       none        6[1]   greater
  >=      none        6      greater or equal
  <:      none        6      less
- <       none        6*     less
+ <       none        6[1]   less
  <=      none        6      less or equal
  ~       unary       7      boolean not
  :       right       7      cons
  +       left        7      addition
- -       left        7      subtraction
+ -       left[4]     7      subtraction
  *       left        8      multiplication
  /       left        8      division
  %       left        8      modulus
  **		 left        9      exponent
  -       unary       10     unary minus
- ()      none        11     application
+ ()      none[4]     11     application
 
-* An expression like (a > b > c > d) could be read as
+[1] An expression like (a > b > c > d) could be read as
 either ((a >b> c) > d) or (a > (b >c> d)). We could resolve
 this ambiguity with precedence, but that's likely to
 violate the principle of least suprise. So instead we just
@@ -229,14 +229,22 @@ disallow these operators unparenthesized inside << or >>.
 This results in some unfortunate duplication of the lower-
 precedence operators: see the NoCmp_ productions.
 
-** These operators are semantically associative, but they
+[2] These operators are semantically associative, but they
 are implemented as right-associative because it's slightly
 more efficient in Rats!.
 
-*** I'm not sure whether I'd call lambda an operator, but
+[3] I'm not sure whether I'd call lambda an operator, but
 the point is it binds very loosely, so everything to the
 right of a lambda is considered part of its body. Likewise
 for the else clause of if.
+
+[4] These operators may not be preceeded by a newline, to
+avoid ambiguity about where an expression ends.  So if you
+have a newline in front of a minus, the parser assumes
+it's a unary minus, and if you have a newline in front of
+a paren, the parser assumes it's a tuple (as opposed to a
+function application).  Hopefully these rules match how
+people intuitively use these operators.
 -----------------------------------------------------------*/
 
 Expression GoalExpression =
@@ -419,6 +427,12 @@ Expression Cons =
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
+
+///////////////////////////////////////////////////////////
+// NOTE: from here down, in the expression syntax,
+// expression productions cannot end with a newline.
+// Anywhere a newline is permitted, it must be explicitly
+// by following the production with "Space".
 	
 /* Ends without newline */
 Expression MaybeSum =
@@ -745,7 +759,7 @@ transient String TOP_TYPE = "Top":Word Space;
 transient String BOT_TYPE = "Bot":Word Space;
 transient String DOUBLE_COLON = "::" Space;
 transient String EQ = "=" Space;
-transient String LBRACE = "{" Space;
+transient String LBRACE = "{" ![\-] Space; // make sure it's not a comment
 transient String RBRACE = "}" Space;
 transient String LANGLE = "<" Space;
 transient String RANGLE = ">" Space;
@@ -763,7 +777,7 @@ transient String ANDAND = "&&" Space;
 transient String OROR = "||" Space;
 transient String NOT = "~" Space;
 transient String PLUS = "+" Space;
-transient String MINUS = "-" ![\-] Space;
+transient String MINUS = "-" ![\-] Space; // make sure it's not a comment
 transient String DIV = "/" Space;
 transient String MOD = "%" Space;
 transient String TIMES = "*" Space;
@@ -779,7 +793,9 @@ transient String NEQ = "/=" Space;
 // Whitespace, Comments, etc.
 /////////////////////////////////////////////
 
+/* HSpace is horizontal space only */
 transient void HSpace = (' ' / '\t' / '\f' / SingleLineComment)*;
+/* Space is both horizontal and vertical space */
 transient void Space = (' ' / '\t' / '\f' / '\r' / '\n' / EndLineComment / MultiLineComment)*;
 
 transient void EndLineComment = "--" ( ![\n\r] _ )* (EndOfLine / EndOfFile);
