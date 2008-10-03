@@ -110,7 +110,7 @@ List<Declaration> Declarations =
  * Include files are parsed in place.
  */
 List<Declaration> Include =
-	INCLUDE filename:StringLiteral ^{
+	INCLUDE filename:StringLiteral Space ^{
 		try {
 			OrcParserRats parser = new OrcParserRats(Orc.openInclude(filename), filename);
 			Result result = parser.pDeclarations(0);
@@ -126,11 +126,11 @@ List<Declaration> Include =
 	;
 
 Declaration Declaration =
-	SITE name:(Identifier / StringLiteral) EQ className:ClassName {
+	SITE name:(Identifier / StringLiteral) Space EQ className:ClassName {
 		yyValue = new SiteDeclaration(name, className);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ CLASS name:Identifier EQ className:ClassName {
+	/ CLASS name:Identifier Space EQ className:ClassName {
 		yyValue = new ClassDeclaration(name, className);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
@@ -147,8 +147,8 @@ Declaration Declaration =
 	;
 
 Defn Definition =
-	DEF name:Identifier LPAREN formals:PatternList RPAREN
-	curried0:(LPAREN yyValue:PatternList RPAREN)*
+	DEF name:Identifier Space LPAREN formals:PatternList RPAREN Space
+	curried0:(LPAREN yyValue:PatternList RPAREN Space)*
 	EQ body0:Body {
 		List<List<Pattern>> curried = curried0.list();
 		ListIterator<List<Pattern>> it = curried.listIterator(curried.size());
@@ -158,7 +158,7 @@ Defn Definition =
 		}
 		yyValue = new DefnClause(name, formals, body);
 	}
-	/ DEF name:Identifier LPAREN argTypes:TypeList RPAREN
+	/ DEF name:Identifier Space LPAREN argTypes:TypeList RPAREN Space
 	DOUBLE_COLON resultType:Type {
 		yyValue = new DefnType(name, argTypes, resultType);
 	}
@@ -227,7 +227,7 @@ this ambiguity with precedence, but that's likely to
 violate the principle of least suprise. So instead we just
 disallow these operators unparenthesized inside << or >>.
 This results in some unfortunate duplication of the lower-
-precedence operators: see the Safe_ productions.
+precedence operators: see the NoCmp_ productions.
 
 ** These operators are semantically associative, but they
 are implemented as right-associative because it's slightly
@@ -262,8 +262,8 @@ Action<Expression> SemiExpressionTail =
 	;
 
 Expression Lambda = 
-	LAMBDA LPAREN formals:PatternList RPAREN
-	curried0:(LPAREN yyValue:PatternList RPAREN)*
+	LAMBDA LPAREN formals:PatternList RPAREN Space
+	curried0:(LPAREN yyValue:PatternList RPAREN Space)*
 	EQ body0:Body {
 		List<List<Pattern>> curried = curried0.list();
 		ListIterator<List<Pattern>> it = curried.listIterator(curried.size());
@@ -277,16 +277,16 @@ Expression Lambda =
 	;
 	
 Expression MaybeWhereExpression =
-	// A "Safe" expression is one which does not contain
+	// A "NoCmp" expression is one which does not contain
 	// the unparenthesized comparison operators < and >,
 	// which might confuse the parser
-	seed:SafeMaybeBarExpression actions:WhereExpressionTail+ {
+	seed:NoCmpMaybeBarExpression actions:WhereExpressionTail+ {
 		yyValue = apply(actions, seed);
 	}
 	/ MaybeBarExpression
 	;
 Action<Expression> WhereExpressionTail =
-	LANGLE p:Pattern? LANGLE right:SafeMaybeBarExpression {
+	LANGLE p:Pattern? LANGLE right:NoCmpMaybeBarExpression {
 		yyValue = new Action<Expression>() {
 			public Expression run(Expression left) {
 				Expression yyValue;
@@ -307,23 +307,23 @@ Expression MaybeBarExpression =
 	}
 	/ MaybeSeqExpression
 	;
-Expression SafeMaybeBarExpression =
-	left:SafeMaybeSeqExpression BAR right:SafeMaybeBarExpression {
+Expression NoCmpMaybeBarExpression =
+	left:NoCmpMaybeSeqExpression BAR right:NoCmpMaybeBarExpression {
 		yyValue = new Parallel(left, right);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ SafeMaybeSeqExpression
+	/ NoCmpMaybeSeqExpression
 	;
 	
 Expression SeqExpression =
-	left:SafeMaybeDisjunction RANGLE p:Pattern? RANGLE right:SafeMaybeSeqExpression {
+	left:NoCmpMaybeDisjunction RANGLE p:Pattern? RANGLE right:NoCmpMaybeSeqExpression {
 		if (p == null) yyValue = new Sequential(left, right);
 		else yyValue = new Sequential(left, right, p);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
 Expression MaybeSeqExpression = SeqExpression / IfThenElse / MaybeDisjunction;
-Expression SafeMaybeSeqExpression = SeqExpression / SafeIfThenElse / SafeMaybeDisjunction;
+Expression NoCmpMaybeSeqExpression = SeqExpression / NoCmpIfThenElse / NoCmpMaybeDisjunction;
 	
 Expression IfThenElse =
 	IF condition:MaybeDisjunction THEN consequent:MaybeSeqExpression ELSE alternative:MaybeSeqExpression {
@@ -335,12 +335,12 @@ Expression IfThenElse =
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
-Expression SafeIfThenElse =
-	IF condition:MaybeDisjunction THEN consequent:MaybeSeqExpression ELSE alternative:SafeMaybeSeqExpression {
+Expression NoCmpIfThenElse =
+	IF condition:MaybeDisjunction THEN consequent:MaybeSeqExpression ELSE alternative:NoCmpMaybeSeqExpression {
 		yyValue = new IfThenElse(condition, consequent, alternative);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ IF condition:MaybeDisjunction THEN consequent:SafeMaybeSeqExpression {
+	/ IF condition:MaybeDisjunction THEN consequent:NoCmpMaybeSeqExpression {
 		yyValue = new IfThenElse(condition, consequent);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
@@ -353,12 +353,12 @@ Expression MaybeDisjunction =
 	}
 	/ MaybeConjunction
 	;
-Expression SafeMaybeDisjunction =
-	left:SafeMaybeConjunction void:OROR right:SafeMaybeDisjunction {
+Expression NoCmpMaybeDisjunction =
+	left:NoCmpMaybeConjunction void:OROR right:NoCmpMaybeDisjunction {
 		yyValue = new Call("op||", left, right);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ SafeMaybeConjunction
+	/ NoCmpMaybeConjunction
 	;
 	
 Expression MaybeConjunction = 
@@ -368,12 +368,12 @@ Expression MaybeConjunction =
 	}
 	/ MaybeComparison
 	;
-Expression SafeMaybeConjunction = 
-	left:SafeMaybeComparison void:ANDAND right:SafeMaybeConjunction {
+Expression NoCmpMaybeConjunction = 
+	left:NoCmpMaybeComparison void:ANDAND right:NoCmpMaybeConjunction {
 		yyValue = new Call("op&&", left, right);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ SafeMaybeComparison
+	/ NoCmpMaybeComparison
 	;
 
 Expression MaybeComparison = 
@@ -381,21 +381,21 @@ Expression MaybeComparison =
 		yyValue = new Call(op, left, right);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ SafeMaybeComparison
+	/ NoCmpMaybeComparison
 	;
 String Comparator =
 	RANGLE { yyValue = "op>"; }
 	/ LANGLE{ yyValue = "op<"; }
 	;
 	
-Expression SafeMaybeComparison = 
-	left:Comparable op:SafeComparator right:Comparable {
+Expression NoCmpMaybeComparison = 
+	left:Comparable op:NoCmpComparator right:Comparable {
 		yyValue = new Call(op, left, right);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ Comparable
 	;
-String SafeComparator =
+String NoCmpComparator =
 	EQ { yyValue = "op="; }
 	/ NEQ { yyValue = "op/="; }
 	/ GT { yyValue = "op>"; }
@@ -405,22 +405,22 @@ String SafeComparator =
 	;
 
 Expression Comparable =
-	NOT x:DotExpression {
+	NOT x:DotExpression Space {
 		yyValue = new Call("op~", x);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ Cons
-	/ MaybeSum
+	/ MaybeSum Space
 	;
 	
 Expression Cons =
-	left:MaybeSigned void:COLON right:MaybeCons {
+	left:MaybeSigned Space void:COLON right:(Cons / MaybeSigned Space) {
 		yyValue = new ConsExpr(left, right);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
-Expression MaybeCons = Cons / MaybeSigned;
 	
+/* Ends without newline */
 Expression MaybeSum =
 	seed:MaybeProduct actions:SumTail* {
 		yyValue = apply(actions, seed);
@@ -438,56 +438,57 @@ Action<Expression> SumTail =
 	}
 	;
 String SumOperator =
-	PLUS { yyValue = "op+"; }
+	Space PLUS { yyValue = "op+"; }
 	/ MINUS { yyValue = "op-"; }
 	;
 	
+/* Ends without newline */
 Expression MaybeProduct =
-	seed:MaybeExponent actions:ProductTail* {
+	seed:MaybeExponent Space actions:ProductTail {
 		yyValue = apply(actions, seed);
 	}
+	/ MaybeExponent
 	;
-Action<Expression> ProductTail =
-	op:ProductOperator right:MaybeExponent {
-		yyValue = new Action<Expression>() {
-			public Expression run(Expression left) {
-				Expression yyValue = new Call(op, left, right);
-				yyValue = at(left, right, yyValue);
-				return yyValue;
-			}
-		};
+Pair<Action<Expression>> ProductTail =
+	op:ProductOperator right:MaybeExponent rest:(Space ProductTail)? {
+		yyValue = new Pair<Action<Expression>>(new Action<Expression>() {
+				public Expression run(Expression left) {
+					Expression yyValue = new Call(op, left, right);
+					yyValue = at(left, right, yyValue);
+					return yyValue;
+				}
+			}, rest == null ? Pair.EMPTY : rest);
 	}
 	;
-
 String ProductOperator =
 	DIV { yyValue = "op/"; }
 	/ MOD { yyValue = "op%"; }
 	/ TIMES { yyValue = "op*"; }
 	;
 	
-	
+/* Ends without newline */
 Expression MaybeExponent =
-	seed:MaybeSigned actions:ExponentTail* {
+	seed:MaybeSigned Space actions:ExponentTail {
 		yyValue = apply(actions, seed);
 	}
+	/ MaybeSigned
 	;
-Action<Expression> ExponentTail =
-	op:ExponentOperator right:MaybeSigned {
-		yyValue = new Action<Expression>() {
-			public Expression run(Expression left) {
-				Expression yyValue = new Call(op, left, right);
-				yyValue = at(left, right, yyValue);
-				return yyValue;
-			}
-		};
+Pair<Action<Expression>> ExponentTail =
+	op:ExponentOperator right:MaybeSigned rest:(Space ExponentTail)? {
+		yyValue = new Pair<Action<Expression>>(new Action<Expression>() {
+				public Expression run(Expression left) {
+					Expression yyValue = new Call(op, left, right);
+					yyValue = at(left, right, yyValue);
+					return yyValue;
+				}
+			}, rest == null ? Pair.EMPTY : rest);
 	}
 	;
-
 String ExponentOperator =
 	EXPONENT { yyValue = "op**"; }
 	;
 	
-
+/* Ends without newline */
 Expression MaybeSigned =
 	MINUS x:DotExpression {
 		yyValue = new Call("opu-", x);
@@ -496,6 +497,7 @@ Expression MaybeSigned =
 	/ DotExpression
 	;
 
+/* Ends without newline */
 Expression DotExpression =
 	SIGNAL {
 		yyValue = new Let();
@@ -511,16 +513,38 @@ Expression DotExpression =
 		yyValue = new Silent();
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ seed:BasicExpression tail:DotTail* {
+	/ seed:BasicExpression tail:CallTail {
 		yyValue = apply(tail, seed);
+	}
+	/ seed:BasicExpression
+	;
+	
+/* Ends without newline */
+Pair<Action<Expression>> CallTail =
+	LPAREN args:ExpressionList RPAREN rest:CallTail? {
+		yyValue = new Pair<Action<Expression>>(new Action<Expression>() {
+				public Expression run(Expression left) {
+					Expression yyValue = new Call(left, args);
+					yyValue = at(left, yyCount, yyValue);
+					return yyValue;
+				}
+			}, rest == null ? Pair.EMPTY : rest);
+	}
+	/ Space DOT right:Identifier rest:CallTail? {
+		yyValue = new Pair<Action<Expression>>(new Action<Expression>() {
+				public Expression run(Expression left) {
+					Expression yyValue = new Dot(left, right);
+					yyValue = at(left, yyCount, yyValue);
+					return yyValue;
+				}
+			}, rest == null ? Pair.EMPTY : rest);
 	}
 	;
-
+	
+/* Ends without newline */
 Expression BasicExpression =
 	Literal
-	/ seed:Variable tail:CallTail {
-		yyValue = apply(tail, seed);
-	}
+	/ Variable
 	/ LPAREN args:ExpressionList RPAREN {
 		if (args.size() == 1) {
 			yyValue = args.get(0);
@@ -535,6 +559,7 @@ Expression BasicExpression =
 	}
 	;
 
+/* Ends without newline */
 Literal Literal =
 	literal:(
 		Number
@@ -547,48 +572,11 @@ Literal Literal =
 	}
 	;
 
+/* Ends without newline */
 Expression Variable =
 	name:Identifier {
 		yyValue = new Name(name);
 		yyValue = at(yyStart, yyCount, yyValue);
-	}
-	;
-	
-/*
- * A dot may look like either a field reference or
- * a method call.
- */
-Action<Expression> DotTail =
-	DOT right:Identifier call:CallTail {
-		yyValue = new Action<Expression>() {
-			public Expression run(Expression left) {
-				Expression yyValue = new Dot(left, right);
-				yyValue = at(left, yyCount, yyValue);
-				return apply(call, yyValue);
-			}
-		};
-	}
-	;
-	
-/*
- * In order to partly avoid ambiguity between calls
- * and tuples, you can't follow a call immediately with
- * another call. So this returns either a single-element
- * pair which applies a call, or an empty pair.
- */
-Pair<Action<Expression>> CallTail =
-	LPAREN args:ExpressionList RPAREN {
-		yyValue = new Pair<Action<Expression>>(
-			new Action<Expression>() {
-				public Expression run(Expression left) {
-					Expression yyValue = new Call(left, args);
-					yyValue = at(left, yyCount, yyValue);
-					return yyValue;
-				}
-			}, Pair.EMPTY);
-	}
-	/ /* empty */ {
-		yyValue = Pair.EMPTY;
 	}
 	;
 	
@@ -608,7 +596,7 @@ List<Expression> ExpressionList =
 /////////////////////////////////////////////
 
 Pattern Pattern =
-	p:ConsPattern index:AS v:Identifier {
+	p:ConsPattern index:AS v:Identifier Space {
 		yyValue = new AsPattern(p, v);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
@@ -628,7 +616,7 @@ Pattern BasicPattern =
 		yyValue = new WildcardPattern();
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ literal:Literal {
+	/ literal:Literal Space {
 		yyValue = new LiteralPattern(literal);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
@@ -636,11 +624,11 @@ Pattern BasicPattern =
 		yyValue = new TuplePattern();
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ name:Identifier index:LPAREN formals:PatternList RPAREN {
+	/ name:Identifier Space index:LPAREN formals:PatternList RPAREN Space {
 		yyValue = new CallPattern(name, new TuplePattern(formals));
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ name:Identifier {
+	/ name:Identifier Space {
 		yyValue = new VariablePattern(name);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
@@ -648,7 +636,7 @@ Pattern BasicPattern =
 		yyValue = new PublishPattern(p);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ LPAREN formals:PatternList RPAREN {
+	/ LPAREN formals:PatternList RPAREN Space {
 		if (formals.size() == 1) {
 			yyValue = formals.get(0);
 		} else {
@@ -656,7 +644,7 @@ Pattern BasicPattern =
 			yyValue = at(yyStart, yyCount, yyValue);
 		}
 	}
-	/ LBRACKET formals:PatternList RBRACKET {
+	/ LBRACKET formals:PatternList RBRACKET Space {
 		yyValue = new ListPattern(formals);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
@@ -681,7 +669,7 @@ Type Type =
 	
 Number Number = Float / Integer;
 BigDecimal Float =
-	rep:FloatToken Space {
+	rep:FloatToken HSpace {
 		try {
 			yyValue = BigDecimal.valueOf(Double.parseDouble(rep));
 		} catch (NumberFormatException e) {
@@ -695,7 +683,7 @@ BigDecimal Float =
 String FloatToken = SignedIntegerToken ('.' [0-9]+ Exponent? / Exponent);
 String Exponent = [eE] [+\-]? IntegerToken;
 BigInteger Integer =
-	rep:SignedIntegerToken Space {
+	rep:SignedIntegerToken HSpace {
 		try {
 			yyValue = BigInteger.valueOf(Long.parseLong(rep));
 		} catch (NumberFormatException e) {
@@ -708,7 +696,7 @@ String SignedIntegerToken = '-'? IntegerToken;
 String IntegerToken = '0' / [1-9] [0-9]*;
 	
 String StringLiteral =
-	string:StringLiteralToken Space {
+	string:StringLiteralToken HSpace {
 		yyValue = Utilities.unescape(string.substring(1, string.length()-1));
 	}
 	;
@@ -727,7 +715,7 @@ transient String OctalDigit = [0-7];
 	
 String ClassName = ClassNameToken Space;
 String ClassNameToken = Word ('.' Word)*;
-String Identifier = Word Space;
+String Identifier = Word HSpace;
 String Word = [a-zA-Z_] [a-zA-Z0-9_]*;
 
 /////////////////////////////////////////////
@@ -744,11 +732,11 @@ transient String AS = "as":Word Space;
 transient String IF = "if":Word Space;
 transient String THEN = "then":Word Space;
 transient String ELSE = "else":Word Space;
-transient String NULL = "null":Word Space;
-transient String STOP = "stop":Word Space;
-transient String SIGNAL = "signal":Word Space;
-transient String TRUE = "true":Word Space;
-transient String FALSE = "false":Word Space;
+transient String NULL = "null":Word HSpace;
+transient String STOP = "stop":Word HSpace;
+transient String SIGNAL = "signal":Word HSpace;
+transient String TRUE = "true":Word HSpace;
+transient String FALSE = "false":Word HSpace;
 transient String NUMBER_TYPE = "Number":Word Space;
 transient String INTEGER_TYPE = "Integer":Word Space;
 transient String BOOLEAN_TYPE = "Boolean":Word Space;
@@ -762,9 +750,9 @@ transient String RBRACE = "}" Space;
 transient String LANGLE = "<" Space;
 transient String RANGLE = ">" Space;
 transient String LPAREN = "(" Space;
-transient String RPAREN = ")" Space;
+transient String RPAREN = ")" HSpace;
 transient String LBRACKET = "[" Space;
-transient String RBRACKET = "]" Space;
+transient String RBRACKET = "]" HSpace;
 transient String DOT = "." Space;
 transient String BANG = "!" Space;
 transient String BAR = "|" Space;
@@ -775,7 +763,7 @@ transient String ANDAND = "&&" Space;
 transient String OROR = "||" Space;
 transient String NOT = "~" Space;
 transient String PLUS = "+" Space;
-transient String MINUS = "-" Space;
+transient String MINUS = "-" ![\-] Space;
 transient String DIV = "/" Space;
 transient String MOD = "%" Space;
 transient String TIMES = "*" Space;
@@ -791,10 +779,12 @@ transient String NEQ = "/=" Space;
 // Whitespace, Comments, etc.
 /////////////////////////////////////////////
 
-transient void Space = (' ' / '\t' / '\f' / '\r' / '\n' / SingleLineComment / MultiLineComment)*;
+transient void HSpace = (' ' / '\t' / '\f' / SingleLineComment)*;
+transient void Space = (' ' / '\t' / '\f' / '\r' / '\n' / EndLineComment / MultiLineComment)*;
 
-transient void SingleLineComment = "--" ( ![\n\r] _ )* (EndOfLine / EndOfFile);
+transient void EndLineComment = "--" ( ![\n\r] _ )* (EndOfLine / EndOfFile);
 transient void MultiLineComment = "{-" ( [\-] ![}] / EndOfLine / ![\-\n\r] _ )* "-}";
+transient void SingleLineComment = "{-" ( [\-] ![}] / ![\-\n\r] _ )* "-}";
 	
 transient void EndOfFile = !_;
 transient void EndOfLine = "\r\n" / '\r' / '\n';
