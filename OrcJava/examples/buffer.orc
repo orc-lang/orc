@@ -1,5 +1,10 @@
 val c = Buffer()
-c.get() | Rtimer(3000) >> c.put(3) >> stop
+c.get()
+| c.get()
+| Rtimer(1000) >>
+  c.put(3) >>
+  c.close() >>
+  stop
 
 {-
 OUTPUT:
