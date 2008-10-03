@@ -1,5 +1,8 @@
 package orc.runtime.sites.java;
 
+import java.lang.reflect.Field;
+
+import orc.error.runtime.MessageNotUnderstoodException;
 import orc.error.runtime.TokenException;
 import orc.lib.util.ThreadSite;
 import orc.runtime.Args;
@@ -7,9 +10,11 @@ import orc.runtime.Token;
 import orc.runtime.sites.Site;
 
 /**
- * Objects whose methods should always be called in new threads.
- * This is to be avoided, but it's safer than allowing native
- * methods to block the interpreter.
+ * Objects whose methods should always be called in new threads. This is to be
+ * avoided if possible, but it's safer than allowing native methods to block the
+ * interpreter. The main reason you might need this is when wrapping some other
+ * proxy, like a webservices proxy.
+ * 
  * @author quark
  */
 public class ThreadedObjectProxy extends Site {
@@ -20,15 +25,28 @@ public class ThreadedObjectProxy extends Site {
 		this.classProxy = ClassProxy.forClass(instance.getClass());
 	}
 	public void callSite(final Args args, final Token caller) throws TokenException {
-		String methodName;
+		String member;
 		try {
-			methodName = args.fieldName();
+			member = args.fieldName();
 		} catch (TokenException e) {
 			// If this looks like a site call, call the special method "apply".
 			ThreadSite.makeThreaded(new MethodProxy(instance, classProxy.getMethod("apply")))
 				.callSite(args, caller);
 			return;
 		}
-		caller.resume(ThreadSite.makeThreaded(new MethodProxy(instance, classProxy.getMethod(methodName))));
+		try {
+			// try and return a method handle
+			caller.resume(ThreadSite.makeThreaded(
+					new MethodProxy(instance, classProxy.getMethod(member))));
+		} catch (MessageNotUnderstoodException e) {
+			try {
+				// if a method was not found, return a field value
+				caller.resume(classProxy.getField(member).get(instance));
+			} catch (IllegalAccessException _) {
+				throw e;
+			} catch (NoSuchFieldException _) {
+				throw e;
+			}
+		}
 	}
 }

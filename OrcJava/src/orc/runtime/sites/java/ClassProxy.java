@@ -1,6 +1,7 @@
 package orc.runtime.sites.java;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -64,18 +65,18 @@ public class ClassProxy extends EvalSite {
 
 	@Override
 	public Object evaluate(Args args) throws TokenException {
-		// If this looks like a field reference, assume it is a call to a static
+		// If this looks like a field reference, assume it is a reference to a static
 		// method and treat it accordingly. That means you can't call a
 		// constructor with a field as the first argument, which is OK since it
 		// is impossible to create a bare field literal in Orc anyways.
-		String methodName = null;
+		String member = null;
 		try {
-			methodName = args.fieldName(); 
+			member = args.fieldName(); 
 		} catch (TokenException e) {
 			// do nothing
 		}
-		if (methodName != null) {
-			return new MethodProxy(null, getMethod(methodName));
+		if (member != null) {
+			return getMember(null, member);
 		}
 		
 		// Otherwise it's a constructor call
@@ -91,9 +92,41 @@ public class ClassProxy extends EvalSite {
 	}
 	
 	/**
+	 * Get the value of an object member (method or field). If a method
+	 * and field have the same name, the method is prefered. Since in Java
+	 * method values aren't first class we wrap these in a MethodProxy.
+	 */
+	public Object getMember(Object self, String name) throws MessageNotUnderstoodException {
+		try {
+			MethodHandle handle = getMethod(name);
+			return new MethodProxy(self, handle);
+		} catch (MessageNotUnderstoodException e) {
+			try {
+				Field field = getField(name);
+				return field.get(self);
+				// Errors accessing the field are ignored,
+				// as if we never looked for the filed at all.
+				// I'm not sure if this is the right approach.
+			} catch (IllegalAccessException _) {
+				throw e;
+			} catch (NoSuchFieldException _) {
+				throw e;
+			}
+		}
+	}
+	
+	/**
+	 * Look up a field by name.
+	 * FIXME: should distinguish between static and non-static fields?
+	 */
+	public Field getField(String name) throws SecurityException, NoSuchFieldException {
+		return type.getField(name);
+	}
+	
+	/**
 	 * Look up a method by name. Method handles are cached so that
 	 * future lookups can go faster.
-	 * FIXME: should distinguish between static and non-static calls.
+	 * FIXME: should distinguish between static and non-static methods?
 	 */
 	public MethodHandle getMethod(String methodName) throws MessageNotUnderstoodException {
 		if (methods.containsKey(methodName)) {
