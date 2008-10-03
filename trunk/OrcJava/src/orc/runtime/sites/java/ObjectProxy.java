@@ -105,16 +105,16 @@ public class ObjectProxy extends Site {
 	
 	@Override
 	public void callSite(Args args, Token caller) throws TokenException {
-		String methodName;
+		String member;
 		try {
-			methodName = args.fieldName();
+			member = args.fieldName();
 		} catch (TokenException e) {
 			// If this looks like a site call, call the special method "apply".
 			new MethodProxy(instance, classProxy.getMethod("apply"))
 				.callSite(args, caller);
 			return;
 		}
-		caller.resume(new MethodProxy(instance, classProxy.getMethod(methodName)));
+		caller.resume(classProxy.getMember(instance, member));
 	}
 	
 	public Object getProxiedObject() {
