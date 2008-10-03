@@ -57,6 +57,15 @@ public class Buffer extends EvalSite {
 					return ListValue.make(localBuffer);
 				}
 			});	
+			addMethod("close", new EvalSite() {
+				@Override
+				public Object evaluate(Args args) throws TokenException {
+					for (Token pending : pendingQueue) {
+						pending.die();
+					}
+					return signal();
+				}
+			});	
 		}
 		
 		private class getMethod extends Site {
