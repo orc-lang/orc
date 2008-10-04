@@ -38,8 +38,7 @@
 </ul>
 
 <h1>Supporting Agencies</h1>
-<p><small>This research is supported by funding from the <b>National Science Foundation</b>
-	and the <b>National Security Administration</b>.</small></p>
+<p><small>This research is supported in part by funding from the <b>National Science Foundation</b>.</small></p>
 
 <!--#config timefmt="%Y-%m-%d" -->
 <p style="padding-top: 1em"><small>Last updated <!--#flastmod file="$DOCUMENT_NAME" --></small></p>
