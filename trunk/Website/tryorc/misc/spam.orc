@@ -26,9 +26,12 @@ def SendMailFrom(from, to, subject, body) =
 -- returns (name, address)
 def parseRecipients(text) =
   def parseRecipient(line) =
-    val splitAt = line.lastIndexOf(" ")
+    val line = line.trim()
+    val space = line.lastIndexOf(" ")
+    val tab = line.lastIndexOf("\t")
+    val splitAt = if space < tab then tab else space
     if splitAt > 0 then
-    (line.substring(0, splitAt),
+    (line.substring(0, splitAt).trim(),
      line.substring(splitAt+1))
     else ("", line)
   map(parseRecipient, lines(text))
@@ -39,7 +42,7 @@ WebPrompt("Upload Data", [
     Mandatory(Textbox("from", "From")),
     Mandatory(Textbox("subject", "Subject")),
     FormInstructions("recipientsi",
-      "Recipients should be one per line: name and email address, separated by a space."),
+      "Recipients should be one per line: name and email address, separated by space."),
   Mandatory(UploadField("recipients", "Recipients")),
     FormInstructions("bodyi",
      "Any appearance of {{NAME}} in the email body will be replaced by the recipient name."),
