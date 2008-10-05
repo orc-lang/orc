@@ -6,6 +6,7 @@ package orc.runtime.sites.java;
 
 import java.lang.reflect.Array;
 
+import orc.error.runtime.JavaException;
 import orc.error.runtime.MessageNotUnderstoodException;
 import orc.error.runtime.TokenException;
 import orc.lib.util.ThreadSite;
@@ -43,16 +44,26 @@ public class ObjectProxy extends Site {
 			addMethod("get", new EvalSite() {
 				@Override
 				public Object evaluate(Args args) throws TokenException {
-					return Array.get(proxy.instance, args.intArg(0));
+					try {
+						return Array.get(proxy.instance, args.intArg(0));
+					} catch (ArrayIndexOutOfBoundsException e) {
+						throw new JavaException(e);
+					}
 				}
 			});
 			addMethod("set", new EvalSite() {
 				@Override
 				public Object evaluate(Args args) throws TokenException {
-					Array.set(proxy.instance, args.intArg(0),
-							InvokableHandle.coerce(
-									proxy.instance.getClass().getComponentType(),
-									args.getArg(1)));
+					try {
+						Array.set(proxy.instance, args.intArg(0),
+								InvokableHandle.coerce(
+										proxy.instance.getClass().getComponentType(),
+										args.getArg(1)));
+					} catch (IllegalArgumentException e) {
+						throw new JavaException(e);
+					} catch (ArrayIndexOutOfBoundsException e) {
+						throw new JavaException(e);
+					}
 					return signal();
 				}
 			});
