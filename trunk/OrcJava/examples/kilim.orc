@@ -9,11 +9,11 @@ val b = KilimBuffer()
   | t.error() >> t.signal() -- should not publish
 ) ; (
   t.signal() -- should publish
-  | t.sleep(5000) >x> "5 "+x
-  | t.sleep(2000) >x> "2 "+x
-  | t.sleepThread(1000) >x> "1 "+x
-  | t.sleepThread(1000) >x> "1 "+x
-  | t.sleep(3000) >> b.put("3 buffered") >> stop
+  | t.sleep(500) >x> "5 "+x
+  | t.sleep(200) >x> "2 "+x
+  | t.sleepThread(100) >x> "1 "+x
+  | t.sleepThread(100) >x> "1 "+x
+  | t.sleep(300) >> b.put("3 buffered") >> stop
   | b.get()
 )
 
