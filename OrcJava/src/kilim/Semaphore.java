@@ -34,22 +34,18 @@ public class Semaphore {
 		this.n = n;
 	}
 	public synchronized void acquire() throws Pausable {
-		final Object uniq = new Object();
-		while (n == 0) {
+		if (n == 0) {
 			Waiter w = new Waiter(Task.getCurrentTask());
 			waiters.add(w);
 	        Task.pause(w);
-		}
-		--n;
+		} else --n;
 	}
-	public void release() {
-		Waiter w;
-		synchronized (this) {
-			++n;
-			w = waiters.poll();
-		}
-		if (w != null) {
-			w.resume();
-		}
+	public synchronized void release() {
+		Waiter w = waiters.poll();
+		if (w != null) w.resume();
+		else ++n;
+	}
+	public int observe() {
+		return n;
 	}
 }
