@@ -21,6 +21,7 @@ import orc.error.compiletime.NonlinearPatternException;
 import orc.error.compiletime.PatternException;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
+import orc.runtime.sites.Constructor;
 
 
 /**
@@ -190,12 +191,15 @@ public abstract class Pattern implements Locatable {
 	 * 
 	 * Currently we find the inverse via a special message.
 	 * 
+	 * @see Constructor
+	 * 
 	 * @param m  The site to unapply
 	 * @param s  Argument to the inversion
 	 */
 	public static Expression unapply(Argument m, Argument s) {
-		// TODO: Make this field name a special constant
-		return new Call(m, new Field("?"));
+		Var i = new Var();
+		// TODO: Make the field name "?" a special constant
+		return new Sequential(new Call(m, new Field("?")), new Call(i, s), i);
 	}
 	
 	
