@@ -1,5 +1,5 @@
 {--
-site random() :: Integer
+* site random() :: Integer
 Return a random Integer value
 chosen from the range of all possible 32-bit Integer values.
 
@@ -11,20 +11,20 @@ If the argument is 0, fail silently.
 site random = orc.lib.util.Random
 
 {--
-site urandom() :: Double
+* site urandom() :: Double
 Returns a pseudorandom, uniformly distributed Double value
 between 0 and 1, inclusive.
 --}
 site urandom = orc.lib.util.URandom
 
 {--
-site UUID() :: String
+* site UUID() :: String
 Return a random (type 4) UUID represented as a string.
 --}
 site UUID = orc.lib.util.UUID
 
 {--
-site Thread(Site) :: Site
+* site Thread(Site) :: Site
 Given a site, return a new site which calls the original site
 in a separate thread.  This is necessary when calling
 a Java site which does not cooperate with Orc's scheduler
@@ -37,14 +37,20 @@ uncooperative sites that can be called simultaneously.
 site Thread = orc.lib.util.ThreadSite
 
 {--
-def signals(Integer) :: Signal
+* def signals(Integer) :: Signal
 Publish the given number of signals, simultaneously.
+
+<programlisting language="orc-demo"><![CDATA[
+signals(5)]]></programlisting>
 --}
 def signals(n) = if n > 0 then (signal | signals(n-1))
 
 {--
-def for(Integer, Integer) :: Integer
+* def for(Integer, Integer) :: Integer
 Publish all values in the given half-open range, simultaneously.
+
+<programlisting language="orc-demo"><![CDATA[
+for(1,6)]]></programlisting>
 --}
 def for(low, high) =
   if low >= high then stop

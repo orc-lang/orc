@@ -45,9 +45,9 @@ DocNode DocNode =
 	}
 	;
 
-String DocType = StartDocType RestOfLine ;
+String DocType = StartDocType yyValue:RestOfLine ;
 String DocDescription = ( !(StartDocType / EndDoc) RestOfLine EndLine )*;
-String StartDocType = ("site" / "pattern" / "def" / "val") Space ;
+String StartDocType = "*" Space ;
 transient String StartDoc = "{--" Space? ;
 transient String EndDoc = Space? [\-]+ [}] ;
 	
