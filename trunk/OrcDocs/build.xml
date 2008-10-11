@@ -58,17 +58,28 @@
 		<mkdir dir="${build.dir}/pdf" />
 		<mkdir dir="${build.dir}/fo" />
 	</target>
+	
+	<target name="xinclude" depends="depends">
+		<taskdef name="xinclude" classname="gr.abiss.xcluder.XercesXcluder">
+			<classpath>
+				<fileset dir="lib">
+					<include name="*.jar" />
+				</fileset>
+			</classpath>
+		</taskdef>
+		<xinclude in="${src.dir}/root.xml" out="${src.dir}/all.xml" />
+	</target>
 
 	<!--
       - target:  build-html
       - description:  Iterates through a directory and transforms
       -     .xml files into .html files using the DocBook XSL.
       -->
-	<target name="build-html" depends="depends" 
+	<target name="build-html" depends="xinclude" 
         description="Generates HTML files from DocBook XML">
 		<xslt style="${html.stylesheet}" extension=".html" 
-            basedir="${src.dir}" destdir="${build.dir}/html">
-	        <include name="root.xml" />
+				basedir="${src.dir}" destdir="${build.dir}/html">
+			<include name="all.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="orc.demo" expression="1"/>
 			<param name="section.autolabel" expression="1"/>
@@ -78,7 +89,7 @@
 			
 			<param name="highlight.source" expression="1"/>
 			<param name="highlight.default.language" expression="orc"/>
-	    	<param name="highlight.xslthl.config" expression="${xslthl.config}" />
+			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
 		</xslt>
 		<!-- Copy the stylesheet to the same directory as the HTML files -->
 		<copy todir="${build.dir}/html">
@@ -87,25 +98,25 @@
 			</fileset>
 		</copy>
 	</target>
-	
+
 	<!--
 	    - target:  build-pdf
 	    - description:  Iterates through a directory and transforms
 	    -     .xml files into .fo files which can then be turned into DocBook XML
 	    -     files.
 	    -->
-	<target name="build-pdf" depends="depends" 
-	    description="Generates PDF files from DocBook XML">
+	<target name="build-pdf" depends="xinclude" 
+		    description="Generates PDF files from DocBook XML">
 	    <xslt style="${fo.stylesheet}" extension=".fo" 
-	        basedir="${src.dir}" destdir="${build.dir}/fo">
+			basedir="${src.dir}" destdir="${build.dir}/fo">
 	        <classpath refid="xalan.classpath" />
 	    	<param name="section.autolabel" expression="1"/>
 	    	<param name="section.label.includes.component.label" expression="1"/>
 	    	<param name="section.autolabel.max.depth" expression="8"/>
-	        <include name="root.xml" />
+	        <include name="all.xml" />
 	        	
-			<param name="highlight.source" expression="1"/>
-			<param name="highlight.default.language" expression="orc"/>
+		<param name="highlight.source" expression="1"/>
+		<param name="highlight.default.language" expression="orc"/>
 	    	<param name="highlight.xslthl.config" expression="${xslthl.config}" />
 	    </xslt>
 
@@ -123,8 +134,8 @@
 	        </classpath>
 	    </taskdef>
 
-	    <fop format="application/pdf" fofile="${build.dir}/fo/root.fo" 
-	        outfile="${build.dir}/pdf/root.pdf" />
+	    <fop format="application/pdf" fofile="${build.dir}/fo/all.fo" 
+	        outfile="${build.dir}/pdf/all.pdf" />
 	</target>
 
 </project>
