@@ -24,7 +24,7 @@ Return a random (type 4) UUID represented as a string.
 site UUID = orc.lib.util.UUID
 
 {--
-site Thread<A,B,...>(Site<A,B,...>) :: Site<A,B,...>
+site Thread(Site) :: Site
 Given a site, return a new site which calls the original site
 in a separate thread.  This is necessary when calling
 a Java site which does not cooperate with Orc's scheduler
@@ -44,7 +44,7 @@ def signals(n) = if n > 0 then (signal | signals(n-1))
 
 {--
 def for(Integer, Integer) :: Integer
-Publish all values in the given half-open range.
+Publish all values in the given half-open range, simultaneously.
 --}
 def for(low, high) =
   if low >= high then stop

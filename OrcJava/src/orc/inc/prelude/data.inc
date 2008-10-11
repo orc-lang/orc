@@ -57,10 +57,10 @@ site Cell = orc.lib.state.Cell
 
 {--
 site Ref<A>() :: Ref<A>
+Create an empty rewritable reference.
+
 site Ref<A>(A) :: Ref<A>
-Create a rewritable reference. If no argument is provided, the
-reference will be considered empty, otherwise it will be initialized
-with the provided value.
+Create a rewritable reference containing the provided value.
 
 site Ref<A>.read() :: A
 Read the value of the reference. If the reference is empty, block until it is no longer empty.
@@ -77,22 +77,24 @@ Return a Java null value.
 site Null = orc.lib.util.JavaNull
 
 {--
-site Array<A>(Integer, String) :: Array<A>
-Create a new primitive array of the given size with the given primitive type.
-The primitive type should match the element type of the array, although a
-typechecker may not be able to verify this.
-
 site Array<A>(Integer) :: Array<A>
 Create a new array of the given size.
 
+site Array<A>(Integer, String) :: Array<A>
+Create a new primitive array of the given size with the given primitive type.
+The primitive type should match the element type of the array, although a
+typechecker may not be able to verify this. This constructor is only necessary
+when interfacing with certain Java libraries; most programs will just use the 
+<code>Array&lt;A&gt;(Integer)</code> constructor.
+
 site Array<A>.get(Integer) :: A
-Get an element of the array, counting from 0.
+Get the element of the array given by the index, counting from 0.
 
 site Array<A>.set(Integer, A) :: Signal
-Set an element of the array, counting from 0.
+Set the element of the array given by the index, counting from 0.
 
 site Array<A>.slice(Integer, Integer) :: Array<A>
-Return a copy of a portion of the array with indices covered by the given
+Return a copy of the portion of the array with indices covered by the given
 half-open range. The result array is still indexed counting from 0.
 --}
 site Array = orc.lib.util.JavaArray
@@ -119,7 +121,7 @@ site None = orc.runtime.sites.core.None
 site Left<A>(A) :: Either<A>
 Construct a "left" member of a union.
 
-pattern Left<A>(Either<A>) :: ()
+pattern Left<A>(Either<A>) :: A
 Deconstruct a "left" member of a union.
 --}
 site Left = orc.lib.data.Left
@@ -128,20 +130,20 @@ site Left = orc.lib.data.Left
 site Right<A>(A) :: Either<A>
 Construct a "right" member of a union.
 
-pattern Right<A>(Either<A>) :: ()
+pattern Right<A>(Either<A>) :: A
 Deconstruct a "right" member of a union.
 --}
 site Right = orc.lib.data.Right
 
 {--
 def fst<A,B>(A,B) :: A
-Return the first element of a 2-tuple.
+Return the first element of a pair.
 --}
 def fst((x,_)) = x
 
 {--
 def snd<A,B>(A,B) :: B
-Return the second element of a 2-tuple.
+Return the second element of a pair.
 --}
 def snd((_,y)) = y
 

@@ -9,13 +9,13 @@ site let = orc.runtime.sites.core.Let
 
 {--
 site if(Boolean) :: Signal
-Fails silently if the argument is false.
+Fail silently if the argument is false.
 --}
 site if = orc.runtime.sites.core.If
 
 {--
 site error(String) :: Bot
-Fails with the given error message.
+Fail with the given error message.
 --}
 site error = orc.runtime.sites.core.Error
 
@@ -53,9 +53,8 @@ site (**) = orc.lib.math.Exponent
 
 {--
 site (/)(Number, Number) :: Number
-Performs division appropriate to the types of the arguments. If both arguments
-are integral, performs integral division. If either argument is floating-point,
-performs floating-point division.
+If both arguments are integral, perform integral division. Otherwise,
+perform floating-point division.
 --}
 site (/) = orc.lib.math.Div
 
@@ -63,7 +62,7 @@ site (/) = orc.lib.math.Div
 site (%)(Number, Number) :: Number
 <code>a % b</code> computes the remainder of <code>a / b</code>, satisfying the equation <code>a = (a/b)*b+(a%b)</code>.
 For a full description, see the
-<link xlink:href="http://java.sun.com/docs/books/jls/third_edition/html/expressions.html#15.17.3">Java Language Specification, 3rd edition</link>.
+<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://java.sun.com/docs/books/jls/third_edition/html/expressions.html#15.17.3">Java Language Specification, 3rd edition</link>.
 --}
 site (%) = orc.lib.math.Mod
 
@@ -94,7 +93,7 @@ site (>=) = orc.lib.comp.Greq
 {--
 site (=)(Top, Top) :: Boolean
 Is the left argument equivalent to the right?  Values are considered equivalent
-if one can be substituted for another without affecting the behavior of the
+if one can be substituted locally for another without affecting the behavior of the
 program.  Therefore two different immutable objects are equivalent if they
 share equivalent content, while two different mutable objects are never
 equivalent.
@@ -107,7 +106,7 @@ site (=) = orc.runtime.sites.core.Equal
 
 {--
 site (/=)(Top, Top) :: Boolean
-Is it not the case that the left argument is equal to the right,
+Is it not the case that the left argument is equivalent to the right,
 as described for <code>(=)</code>?
 --}
 site (/=) = orc.runtime.sites.core.Inequal

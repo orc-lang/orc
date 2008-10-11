@@ -24,7 +24,7 @@ def reverse(l) =
 
 {--
 def filter<A>(lambda (A) :: Boolean, [A]) :: [A]
-Return a list with only those elements which satisfy the predicate.
+Return a list containing only those elements which satisfy the predicate.
 --}
 def filter(p,[]) = []
 def filter(p,x:xs) =
@@ -77,14 +77,14 @@ def index(h:t, n) = index(t, n-1)
 
 {--
 def append<A>([A], [A]) :: [A]
-Append two lists.
+Concatenate two lists.
 --}
 def append([],l) = l
 def append(h:t,l) = h:append(t,l)
 
 {--
 def foldl<A,B>(lambda (B, A) :: B, B, [A]) :: B
-Apply a function iteratively to a list.
+Reduce a list using the given left-associative binary operation and initial value.
 Given the list <code>[x1, x2, x3, ...]</code> and initial value <code>x0</code>,
 returns <code>f(... f(f(f(x0, x1), x2), x3) ...)</code>
 --}
@@ -101,7 +101,7 @@ def foldl1(_,[]) = error("foldl1: empty list")
 
 {--
 def foldr<A,B>(lambda (A, B) :: B, B, [A]) :: B
-Apply a function iteratively to a list.
+Reduce a list using the given right-associative binary operation and initial value.
 Given the list <code>[..., x3, x2, x1]</code> and initial value <code>x0</code>,
 returns <code>f(... f(x3, f(x2, f(x1, x0))) ...)</code>
 --}

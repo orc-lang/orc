@@ -1,8 +1,6 @@
 {--
 site apply<A,B>(lambda (A, ...) :: B, [A]) :: B
-Apply a function to a list of arguments. Currently
-this does not work on arbitrary sequences, only
-on actual Orc lists.
+Apply a function to a list of arguments.
 --}
 site apply = orc.lib.util.Apply
 
@@ -49,7 +47,7 @@ Return a thunk which applies a function to a single argument.
 def delay(f, x)() = f(x)
 
 {--
-def compose<A,B,C>(lambda (B) :: C, lambda (A) :: B)(A) :: B
+def compose<A,B,C>(lambda (B) :: C, lambda (A) :: B)(A) :: C
 Compose two single-argument functions.
 --}
 def compose(f,g)(x) = f(g(x))
