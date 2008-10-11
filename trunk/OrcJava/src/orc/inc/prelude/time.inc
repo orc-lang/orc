@@ -1,9 +1,36 @@
+{--
+site Rtimer(Integer) :: Signal
+Publish a signal after the given number of milliseconds.
+--}
 site Rtimer = orc.lib.time.Rtimer
-site MakeTimer = orc.lib.time.MakeTimer
-site Clock = orc.lib.time.Clock
 
-{- Define a default logical timer -}
+{--
+site Clock()() :: Integer
+A call to <code>Clock</code> creates a new relative clock.
+Calling a relative clock returns the number
+of milliseconds which have elapsed since the
+clock was created.
+--}
+site Clock = orc.lib.time.Clock 
+
+{--
+site Ltimer(Integer) :: Signal
+Publish a signal after the given number of logical timesteps.
+A logical timestep is complete as soon as all outstanding site
+calls (other than calls to <code>Ltimer</code>) have published.
+--}
+site MakeTimer = orc.lib.time.MakeTimer
 val Ltimer = MakeTimer()
 
+{--
+def Metronome() :: Signal
+Publish a signal every second, indefinitely.
+--}
 def Metronome() = signal | Rtimer(1000) >> Metronome()
+
+{--
+def MetronomeT(Integer) :: Signal
+Publish a signal at regular intervals, indefinitely. The period is given by the
+argument, in milliseconds.
+--}
 def MetronomeT(t) = signal | Rtimer(t) >> MetronomeT(t)
