@@ -64,7 +64,7 @@ def mapper(name, numbers) =
   map(makeTuple, numbers)
 
 def reducer(number, counts) =
-  foldl(lambda (a,b) = a + b, counts, 0)
+  foldl((+), 0, counts)
 
 val data = [
   ("primes", [2, 3, 5, 7, 11]),
