@@ -51,7 +51,7 @@ def lines(text) =
   
 {--
 def unlines([String]) :: String
-Append a linefeed to each string in the sequence
+Append a linefeed, "\n", to each string in the sequence
 and concatenate the results.
 --}
 def unlines(line:lines) = cat(line, "\n", unlines(lines))
@@ -59,7 +59,7 @@ def unlines([]) = ""
   
 {--
 def words(String) :: [String]
-Split a string into words, which are sequences of characters separated by whitespace.
+Split a string into words, which are sequences of non-whitespace characters separated by whitespace.
 --}
 def words(text) = text.trim().split("\\s+")
 

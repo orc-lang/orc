@@ -28,6 +28,8 @@ public class MakeDoc {
 		for (String file : args) {
 			files.add(new DocNodes(file, parseFile(file)));
 		}
+		System.out.println("<?xml version=\"1.0\"?>");
+		System.out.println("<sect1><title>Reference</title>");
 		for (DocNodes file : files) {
 			System.out.println("<sect2><title>");
 			System.out.println(escapeXML(file.file));
@@ -43,6 +45,7 @@ public class MakeDoc {
 			}
 			System.out.println("</sect2>");
 		}
+		System.out.println("</sect1>");
 	}
 	
 	public static List<DocNode> parseFile(String file) throws ParseException, IOException {

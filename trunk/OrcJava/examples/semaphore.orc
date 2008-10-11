@@ -1,5 +1,3 @@
-class Semaphore = kilim.Semaphore
-
 val s = Semaphore(1)
 
 signals(50) >>

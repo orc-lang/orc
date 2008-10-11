@@ -44,12 +44,11 @@ public class Semaphore extends EvalSite {
 			addMethod("release", new Site() {
 				@Override
 				public void callSite(Args args, Token sender) throws TokenException {
-					Object item = args.getArg(0);
 					if (waiters.isEmpty()) {
 						++n;
 					} else {
 						Token waiter = waiters.removeFirst();
-						waiter.resume(item);
+						waiter.resume();
 					}
 					sender.resume();
 				}
