@@ -10,6 +10,10 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.ThreadedSite;
 
+/**
+ * Read an InputStreamReader into a String.
+ * @author quark
+ */
 public class ReadText extends ThreadedSite {
 	@Override
 	public Object evaluate(Args args) throws TokenException {

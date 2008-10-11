@@ -9,7 +9,7 @@ package orc.lib.comp;
  */
 public class Greater extends NumericComparisonSite {
 	@Override
-	public boolean compare(int a, int b) {
-		return a > b;
+	public boolean compare(int a) {
+		return a > 0;
 	}
 }

@@ -6,6 +6,7 @@ package orc.lib.comp;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import orc.error.runtime.ArgumentTypeMismatchException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Args.NumericBinaryOperator;
@@ -48,15 +49,25 @@ public abstract class NumericComparisonSite extends EvalSite {
 	 * @see orc.runtime.sites.EvalSite#evaluate(java.lang.Object[])
 	 */
 	@Override
-	public Object evaluate(Args args) throws TokenException{
-		int a = Args.applyNumericOperator(
-				args.numberArg(0), args.numberArg(1),
-				new MyOperator());
-		int b = 0;
-		return compare(a, b);
+	public Object evaluate(Args args) throws TokenException {
+		Object arg0 = args.getArg(0);
+		Object arg1 = args.getArg(1);
+		try {
+			if (arg0 instanceof Number && arg1 instanceof Number) {
+				int a = Args.applyNumericOperator(
+						(Number)arg0, (Number)arg1,
+						new MyOperator());
+				return compare(a);
+			} else {
+				int a = ((Comparable)arg0).compareTo(arg1);
+				return compare(a);
+			}
+		} catch (ClassCastException e) {
+			throw new ArgumentTypeMismatchException(e);
+		}
 	}
 
-	abstract public boolean compare(int a, int b);
+	abstract public boolean compare(int a);
 	
 	public static Type type() {
 		return new ArrowType(Type.NUMBER, Type.NUMBER, Type.BOOLEAN);
