@@ -36,7 +36,7 @@ def getN(channel, n) =
 
 def mergeRanges(accum:rest) =
   def f(next, accum) = accum.intersect(next) >> accum
-  foldl(f, rest, accum) >> accum
+  foldl(f, accum, rest) >> accum
 
 def pickMeetingTime(times) =
   times.getRanges() >ranges>

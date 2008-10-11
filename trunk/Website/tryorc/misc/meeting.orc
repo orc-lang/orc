@@ -46,7 +46,7 @@ def member(item, h:t) =
 
 def mergeRanges(accum:rest) =
   def f(next, accum) = accum.intersect(next)
-  foldl(f, rest, accum) >>
+  foldl(f, accum, rest) >>
   accum
 
 def pickMeetingTime(times) =
