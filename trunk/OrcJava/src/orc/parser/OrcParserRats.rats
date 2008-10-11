@@ -113,7 +113,7 @@ List<Declaration> Include =
 	INCLUDE filename:StringLiteral Space ^{
 		try {
 			OrcParserRats parser = new OrcParserRats(Orc.openInclude(filename), filename);
-			Result result = parser.pDeclarations(0);
+			Result result = parser.pModule(0);
 			if (result.hasValue()) {
 				yyResult = new SemanticValue(result.semanticValue(), yyBase);
 			} else {
@@ -126,7 +126,7 @@ List<Declaration> Include =
 	;
 
 Declaration Declaration =
-	SITE name:(Identifier / StringLiteral) Space EQ className:ClassName {
+	SITE name:(Identifier / BareOperator) Space EQ className:ClassName {
 		yyValue = new SiteDeclaration(name, className);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
@@ -356,14 +356,14 @@ Expression NoCmpIfThenElse =
 
 Expression MaybeDisjunction =
 	left:MaybeConjunction void:OROR right:MaybeDisjunction {
-		yyValue = new Call("op||", left, right);
+		yyValue = new Call("||", left, right);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ MaybeConjunction
 	;
 Expression NoCmpMaybeDisjunction =
 	left:NoCmpMaybeConjunction void:OROR right:NoCmpMaybeDisjunction {
-		yyValue = new Call("op||", left, right);
+		yyValue = new Call("||", left, right);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ NoCmpMaybeConjunction
@@ -371,14 +371,14 @@ Expression NoCmpMaybeDisjunction =
 	
 Expression MaybeConjunction = 
 	left:MaybeComparison void:ANDAND right:MaybeConjunction {
-		yyValue = new Call("op&&", left, right);
+		yyValue = new Call("&&", left, right);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ MaybeComparison
 	;
 Expression NoCmpMaybeConjunction = 
 	left:NoCmpMaybeComparison void:ANDAND right:NoCmpMaybeConjunction {
-		yyValue = new Call("op&&", left, right);
+		yyValue = new Call("&&", left, right);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ NoCmpMaybeComparison
@@ -391,10 +391,7 @@ Expression MaybeComparison =
 	}
 	/ NoCmpMaybeComparison
 	;
-String Comparator =
-	RANGLE { yyValue = "op>"; }
-	/ LANGLE{ yyValue = "op<"; }
-	;
+String Comparator = RANGLE / LANGLE ;
 	
 Expression NoCmpMaybeComparison = 
 	left:Comparable op:NoCmpComparator right:Comparable {
@@ -403,18 +400,11 @@ Expression NoCmpMaybeComparison =
 	}
 	/ Comparable
 	;
-String NoCmpComparator =
-	EQ { yyValue = "op="; }
-	/ NEQ { yyValue = "op/="; }
-	/ GT { yyValue = "op>"; }
-	/ GEQ { yyValue = "op>="; }
-	/ LT { yyValue = "op<"; }
-	/ LEQ { yyValue = "op<="; }
-	;
+String NoCmpComparator = EQ / NEQ / GT / GEQ / LT / LEQ ;
 
 Expression Comparable =
 	NOT x:DotExpression Space {
-		yyValue = new Call("op~", x);
+		yyValue = new Call("~", x);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ Cons
@@ -451,10 +441,7 @@ Action<Expression> SumTail =
 		};
 	}
 	;
-String SumOperator =
-	Space PLUS { yyValue = "op+"; }
-	/ MINUS { yyValue = "op-"; }
-	;
+String SumOperator = Space PLUS / MINUS ;
 	
 /* Ends without newline */
 Expression MaybeProduct =
@@ -474,11 +461,7 @@ Pair<Action<Expression>> ProductTail =
 			}, rest == null ? Pair.EMPTY : rest);
 	}
 	;
-String ProductOperator =
-	DIV { yyValue = "op/"; }
-	/ MOD { yyValue = "op%"; }
-	/ TIMES { yyValue = "op*"; }
-	;
+String ProductOperator = DIV / MOD / TIMES ;
 	
 /* Ends without newline */
 Expression MaybeExponent =
@@ -498,14 +481,12 @@ Pair<Action<Expression>> ExponentTail =
 			}, rest == null ? Pair.EMPTY : rest);
 	}
 	;
-String ExponentOperator =
-	EXPONENT { yyValue = "op**"; }
-	;
+String ExponentOperator = EXPONENT ;
 	
 /* Ends without newline */
 Expression MaybeSigned =
 	MINUS x:DotExpression {
-		yyValue = new Call("opu-", x);
+		yyValue = new Call("0-", x);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ DotExpression
@@ -559,6 +540,10 @@ Pair<Action<Expression>> CallTail =
 Expression BasicExpression =
 	Literal
 	/ Variable
+	/ op:BareOperator {
+		yyValue = new Name(op);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
 	/ LPAREN args:ExpressionList RPAREN {
 		if (args.size() == 1) {
 			yyValue = args.get(0);
@@ -571,6 +556,16 @@ Expression BasicExpression =
 		yyValue = new ListExpr(args);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
+	;
+
+/* Ends without newline */
+String BareOperator =
+	LPAREN yyValue:(
+		ANDAND / OROR / NOT / COLON
+		/ NoCmpComparator / Comparator
+		/ ExponentOperator / ProductOperator / SumOperator
+		/ "0" MINUS { yyValue = "0-"; }
+	) RPAREN
 	;
 
 /* Ends without newline */
@@ -638,7 +633,7 @@ Pattern BasicPattern =
 		yyValue = new TuplePattern();
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ name:Identifier Space index:LPAREN formals:PatternList RPAREN Space {
+	/ name:Identifier Space LPAREN formals:PatternList RPAREN Space {
 		yyValue = new CallPattern(name, new TuplePattern(formals));
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
