@@ -4,7 +4,9 @@
 <!DOCTYPE chapter PUBLIC " -//OASIS//DTD DocBook XML V5.0//EN" "../docbook-xml/dtd/docbook.dtd" >
 -->
 
-<book xmlns:xlink="http://www.w3.org/1999/xlink">
+<book
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:xi="http://www.w3.org/2001/XInclude">
 <title>Orc User Guide</title>
 
 <!-- <author/> -->
@@ -875,7 +877,7 @@ mutually recursive.
 
 </section>
 
-<section><title>Closure</title>
+<section id="cor.closures"><title>Closures</title>
 
 <para>
 Functions are actually values, just like any other value. Defining a function creates a special value called a 
@@ -2043,7 +2045,6 @@ will recognize this technique as <emphasis>currying</emphasis>.
 </section>
 
 
-<!-- FIXME: this section is incorrect, curried application is not allowed because it creates too much syntactic ambiguity. Uncomment once we resolve.
 <section><title>Currying</title>
 
 <para>
@@ -2090,8 +2091,6 @@ a similar way.
 </para>
 
 </section>
--->
-
 
 </section>
 
@@ -2863,6 +2862,19 @@ Orc, the entire Java standard library is available to Orc programs via
 to provide convenience for the most common Orc idioms, not the complete set of
 features needed for general-purpose programming.
 </para>
+
+<para>
+The standard library is divided into groups of related declarations:
+</para>
+<itemizedlist>
+<listitem>core.inc: Essential primitive sites and operators.</listitem>
+<listitem>data.inc: General concurrent and sequential data structures.</listitem>
+<listitem>functional.inc: Higher-order functional programming idioms.</listitem>
+<listitem>list.inc: Operations on lists.</listitem>
+<listitem>text.inc: Operations on strings.</listitem>
+<listitem>time.inc: Real and logical time.</listitem>
+<listitem>util.inc: Miscellaneous utility functions.</listitem>
+</itemizedlist>
  
 </sect1>
 
@@ -2879,19 +2891,18 @@ parameter types, and finally the return type.
 Declaration keywords include <code>site</code>, <code>def</code>,
 <code>val</code>, and <code>pattern</code>. The first three keywords
 should be familiar. The last, <code>pattern</code>, indicates a binding
-for a site which can be used in a pattern match: such a site must take
+for a site which can be used in a pattern match: the site must take
 one argument (the value to be matched against), and return a tuple (the
-values to bind to pattern variables). E.g.
+values to bind to pattern variables). For example,
 <code>pattern M(Integer) :: (Integer, Integer)</code>
 would be used like <code>3 &gt;M(x,y)&gt; x+y</code>.
 </para>
 
 <para>
 Object members (methods and fields) are each declared separately. The name of a
-member is written in the form Type.member, e.g.  <code>Foo.get</code> is the
-name of the <code>get</code> member of an object of type <code>Foo</code>.  The
-object type can include type parameters which may be referenced by the member
-type.
+member is written in the form Type.member, e.g.  <code>Foo.get</code> refers to
+the <code>get</code> member of an object of type <code>Foo</code>.  The object
+type can include type parameters which may be referenced by the member type.
 </para>
 
 <para>
@@ -2912,634 +2923,9 @@ equivalent to <code>site Foo() :: lambda () :: Signal</code>.
  
 </sect1>
 
-<sect1><title>Reference</title>
-<!-- FIXME: need to move this to an include -->
+<xi:include href="stdlib.xml"/>
 
-<para>
-The standard library is divided into groups of related declarations:
-</para>
-<itemizedlist>
-<listitem>core.inc: Essential primitive sites and operators.</listitem>
-<listitem>data.inc: General concurrent and sequential data structures.</listitem>
-<listitem>functional.inc: Higher-order functional programming idioms.</listitem>
-<listitem>list.inc: Operations on lists.</listitem>
-<listitem>text.inc: Operations on strings.</listitem>
-<listitem>time.inc: Real and logical time.</listitem>
-<listitem>util.inc: Miscellaneous utility functions.</listitem>
-</itemizedlist>
-
-<sect2><title>
-core.inc
-</title>
-<sect3><title>
-<code>site let&lt;A&gt;(A) :: A</code>
-</title>
-<para>When applied to a single argument, return that argument (behaving as the identity function).</para></sect3>
-<sect3><title>
-<code>site let&lt;A, ...&gt;(A, ...) :: (A, ...)</code>
-</title>
-<para>When applied to zero, two, or more arguments, return the arguments in a tuple.</para></sect3>
-<sect3><title>
-<code>site if(Boolean) :: Signal</code>
-</title>
-<para>Fails silently if the argument is false.</para></sect3>
-<sect3><title>
-<code>site error(String) :: Bot</code>
-</title>
-<para>Fails with the given error message.</para></sect3>
-<sect3><title>
-<code>site (+)(Number, Number) :: Number</code>
-</title>
-<para>Add two numbers.</para></sect3>
-<sect3><title>
-<code>site (-)(Number, Number) :: Number</code>
-</title>
-<para>Subtract the right argument from the left.</para></sect3>
-<sect3><title>
-<code>site (0-)(Number) :: Number</code>
-</title>
-<para>Return the additive inverse of the argument.
-This site is written without the 0 when it appears
-as an operator, i.e. <code>-a</code></para></sect3>
-<sect3><title>
-<code>site (*)(Number, Number) :: Number</code>
-</title>
-<para>Multiply two numbers.</para></sect3>
-<sect3><title>
-<code>site (**)(Number, Number) :: Number</code>
-</title>
-<para><code>a ** b</code> computes <code>a</code> to the <code>b</code>th power.</para></sect3>
-<sect3><title>
-<code>site (/)(Number, Number) :: Number</code>
-</title>
-<para>Performs division appropriate to the types of the arguments. If both arguments
-are integral, performs integral division. If either argument is floating-point,
-performs floating-point division.</para></sect3>
-<sect3><title>
-<code>site (%)(Number, Number) :: Number</code>
-</title>
-<para><code>a % b</code> computes the remainder of <code>a / b</code>, satisfying the equation <code>a = (a/b)*b+(a%b)</code>.
-For a full description, see the
-<link xlink:href="http://java.sun.com/docs/books/jls/third_edition/html/expressions.html#15.17.3">Java Language Specification, 3rd edition</link>.</para></sect3>
-<sect3><title>
-<code>site (&lt;)(Comparable, Comparable) :: Boolean</code>
-</title>
-<para>Is the left argument less than the right?</para></sect3>
-<sect3><title>
-<code>site (&lt;=)(Comparable, Comparable) :: Boolean</code>
-</title>
-<para>Is the left argument less than or equal to the right?</para></sect3>
-<sect3><title>
-<code>site (&gt;)(Comparable, Comparable) :: Boolean</code>
-</title>
-<para>Is the left argument greater than the right?</para></sect3>
-<sect3><title>
-<code>site (&gt;=)(Comparable, Comparable) :: Boolean</code>
-</title>
-<para>Is the left argument greater than or equal to the right?</para></sect3>
-<sect3><title>
-<code>site (=)(Top, Top) :: Boolean</code>
-</title>
-<para>Is the left argument equivalent to the right?  Values are considered equivalent
-if one can be substituted for another without affecting the behavior of the
-program.  Therefore two different immutable objects are equivalent if they
-share equivalent content, while two different mutable objects are never
-equivalent.</para>
-<para>When <code>a</code> and <code>b</code> are arbitrary Java objects, <code>a =
-b</code> is interpreted as <code>a.equals(b)</code>, which may not follow the
-rules given above.</para></sect3>
-<sect3><title>
-<code>site (/=)(Top, Top) :: Boolean</code>
-</title>
-<para>Is it not the case that the left argument is equal to the right,
-as described for <code>(=)</code>?</para></sect3>
-<sect3><title>
-<code>site (~)(Boolean) :: Boolean</code>
-</title>
-<para>Compute the logical negation of the argument.</para></sect3>
-<sect3><title>
-<code>site (&amp;&amp;)(Boolean, Boolean) :: Boolean</code>
-</title>
-<para>Compute the logical conjunction of the arguments. This is not a short-circuiting
-operator; both arguments must be evaluated and available before the result is
-computed.</para></sect3>
-<sect3><title>
-<code>site (||)(Boolean, Boolean) :: Boolean</code>
-</title>
-<para>Compute the logical disjunction of the arguments. This is not a short-circuiting
-operator; both arguments must be evaluated and available before the result is
-computed.</para></sect3>
-</sect2>
-<sect2><title>
-data.inc
-</title>
-<sect3><title>
-<code>site Semaphore(Integer) :: Semaphore</code>
-</title>
-<para>Construct a semaphore with the given number of available items.</para></sect3>
-<sect3><title>
-<code>site Semaphore.acquire() :: Signal</code>
-</title>
-<para>Acquire an item. If none are available, block until one becomes available.</para></sect3>
-<sect3><title>
-<code>site Semaphore.release() :: Signal</code>
-</title>
-<para>Release an item.  This may be called to add items beyond
-the initial number of available items with which the semaphore was constructed.</para></sect3>
-<sect3><title>
-<code>site Buffer&lt;A&gt;() :: Buffer&lt;A&gt;</code>
-</title>
-<para>Create a new buffer (FIFO channel) of unlimited size.</para></sect3>
-<sect3><title>
-<code>site Buffer&lt;A&gt;.get() :: A</code>
-</title>
-<para>Get an item from the buffer. If no items are available, block until one becomes available.</para></sect3>
-<sect3><title>
-<code>site Buffer&lt;A&gt;.getnb() :: A</code>
-</title>
-<para>Get an item from the buffer. If no items are available, fail silently.</para></sect3>
-<sect3><title>
-<code>site Buffer&lt;A&gt;.put(A) :: Signal</code>
-</title>
-<para>Put an item in the buffer.</para></sect3>
-<sect3><title>
-<code>site Buffer&lt;A&gt;.close() :: Signal</code>
-</title>
-<para>Close the buffer. This has the effect of immediately causing any blocked calls
-to <code>get</code> to fail silently. In addition, any subsequent calls to
-<code>get</code> or <code>put</code> will fail silently.</para></sect3>
-<sect3><title>
-<code>site SyncChannel&lt;A&gt;() :: SyncChannel&lt;A&gt;</code>
-</title>
-<para>Create a synchronous channel.</para></sect3>
-<sect3><title>
-<code>site SyncChannel&lt;A&gt;.get() :: A</code>
-</title>
-<para>Receive an item over the channel. If no sender is available, block until one becomes available.</para></sect3>
-<sect3><title>
-<code>site SyncChannel&lt;A&gt;.put(A) :: Signal</code>
-</title>
-<para>Send an item over the channel. If no receiver is available, block until one becomes available.</para></sect3>
-<sect3><title>
-<code>site Cell&lt;A&gt;() :: Cell&lt;A&gt;</code>
-</title>
-<para>Create a write-once cell.</para></sect3>
-<sect3><title>
-<code>site Cell&lt;A&gt;.read() :: A</code>
-</title>
-<para>Read a value from the cell. If the cell does not yet have a value, block until it receives one.</para></sect3>
-<sect3><title>
-<code>site Cell&lt;A&gt;.write() :: Signal</code>
-</title>
-<para>Write a value to the cell. If the cell already has a value, fail silently.</para></sect3>
-<sect3><title>
-<code>site Ref&lt;A&gt;() :: Ref&lt;A&gt;</code>
-</title>
-<para></para></sect3>
-<sect3><title>
-<code>site Ref&lt;A&gt;(A) :: Ref&lt;A&gt;</code>
-</title>
-<para>Create a rewritable reference. If no argument is provided, the
-reference will be considered empty, otherwise it will be initialized
-with the provided value.</para></sect3>
-<sect3><title>
-<code>site Ref&lt;A&gt;.read() :: A</code>
-</title>
-<para>Read the value of the reference. If the reference is empty, block until it is no longer empty.</para></sect3>
-<sect3><title>
-<code>site Ref&lt;A&gt;.write() :: Signal</code>
-</title>
-<para>Write a value to the reference.</para></sect3>
-<sect3><title>
-<code>site Null() :: Bot</code>
-</title>
-<para>Return a Java null value.</para></sect3>
-<sect3><title>
-<code>site Array&lt;A&gt;(Integer, String) :: Array&lt;A&gt;</code>
-</title>
-<para>Create a new primitive array of the given size with the given primitive type.
-The primitive type should match the element type of the array, although a
-typechecker may not be able to verify this.</para></sect3>
-<sect3><title>
-<code>site Array&lt;A&gt;(Integer) :: Array&lt;A&gt;</code>
-</title>
-<para>Create a new array of the given size.</para></sect3>
-<sect3><title>
-<code>site Array&lt;A&gt;.get(Integer) :: A</code>
-</title>
-<para>Get an element of the array, counting from 0.</para></sect3>
-<sect3><title>
-<code>site Array&lt;A&gt;.set(Integer, A) :: Signal</code>
-</title>
-<para>Set an element of the array, counting from 0.</para></sect3>
-<sect3><title>
-<code>site Array&lt;A&gt;.slice(Integer, Integer) :: Array&lt;A&gt;</code>
-</title>
-<para>Return a copy of a portion of the array with indices covered by the given
-half-open range. The result array is still indexed counting from 0.</para></sect3>
-<sect3><title>
-<code>site Some&lt;A&gt;(A) :: Option&lt;A&gt;</code>
-</title>
-<para>Construct an available optional value.</para></sect3>
-<sect3><title>
-<code>pattern Some&lt;A&gt;(Option&lt;A&gt;) :: (A)</code>
-</title>
-<para>Deconstruct an available optional value.</para></sect3>
-<sect3><title>
-<code>site None&lt;A&gt;(A) :: Option&lt;A&gt;</code>
-</title>
-<para>Construct an unavailable optional value.</para></sect3>
-<sect3><title>
-<code>pattern None&lt;A&gt;(Option&lt;A&gt;) :: ()</code>
-</title>
-<para>Deconstruct an unavailable optional value.</para></sect3>
-<sect3><title>
-<code>site Left&lt;A&gt;(A) :: Either&lt;A&gt;</code>
-</title>
-<para>Construct a "left" member of a union.</para></sect3>
-<sect3><title>
-<code>pattern Left&lt;A&gt;(Either&lt;A&gt;) :: ()</code>
-</title>
-<para>Deconstruct a "left" member of a union.</para></sect3>
-<sect3><title>
-<code>site Right&lt;A&gt;(A) :: Either&lt;A&gt;</code>
-</title>
-<para>Construct a "right" member of a union.</para></sect3>
-<sect3><title>
-<code>pattern Right&lt;A&gt;(Either&lt;A&gt;) :: ()</code>
-</title>
-<para>Deconstruct a "right" member of a union.</para></sect3>
-<sect3><title>
-<code>def fst&lt;A,B&gt;(A,B) :: A</code>
-</title>
-<para>Return the first element of a 2-tuple.</para></sect3>
-<sect3><title>
-<code>def snd&lt;A,B&gt;(A,B) :: B</code>
-</title>
-<para>Return the second element of a 2-tuple.</para></sect3>
-<sect3><title>
-<code>def swap&lt;A,B&gt;((A,B)) :: (B,A)</code>
-</title>
-<para>Swap the elements of a pair.</para></sect3>
-</sect2>
-<sect2><title>
-functional.inc
-</title>
-<sect3><title>
-<code>site apply&lt;A,B&gt;(lambda (A, ...) :: B, [A]) :: B</code>
-</title>
-<para>Apply a function to a list of arguments. Currently
-this does not work on arbitrary sequences, only
-on actual Orc lists.</para></sect3>
-<sect3><title>
-<code>def curry&lt;A,B,C&gt;(lambda (A,B) :: C)(A)(B) :: C</code>
-</title>
-<para>Curry a function of two arguments.</para></sect3>
-<sect3><title>
-<code>def curry3&lt;A,B,C,D&gt;(lambda (A,B,C) :: D)(A)(B)(C) :: D</code>
-</title>
-<para>Curry a function of three arguments.</para></sect3>
-<sect3><title>
-<code>def uncurry&lt;A,B,C&gt;(lambda (A)(B) :: C)(A, B) :: C</code>
-</title>
-<para>Uncurry a function of two arguments.</para></sect3>
-<sect3><title>
-<code>def uncurry3&lt;A,B,C,D&gt;(lambda (A)(B)(C) :: D)(A,B,C) :: D</code>
-</title>
-<para>Uncurry a function of three arguments.</para></sect3>
-<sect3><title>
-<code>def flip&lt;A,B,C&gt;(lambda (A, B) :: C)(B, A) :: C</code>
-</title>
-<para>Flip the order of parameters of a two-argument function.</para></sect3>
-<sect3><title>
-<code>def const&lt;A&gt;(A)() :: A</code>
-</title>
-<para>Create a function which returns a constant value.</para></sect3>
-<sect3><title>
-<code>def delay&lt;A,B&gt;(lambda (A) :: B, A)() :: B</code>
-</title>
-<para>Return a thunk which applies a function to a single argument.</para></sect3>
-<sect3><title>
-<code>def compose&lt;A,B,C&gt;(lambda (B) :: C, lambda (A) :: B)(A) :: B</code>
-</title>
-<para>Compose two single-argument functions.</para></sect3>
-<sect3><title>
-<code>def until&lt;A&gt;(lambda (A) :: Boolean, lambda (A) :: A)(A)</code>
-</title>
-<para>Iterate a function until a predicate returns false.
-Publishes every value returned by the function.</para></sect3>
-<sect3><title>
-<code>def while&lt;A&gt;(lambda (A) :: Boolean, lambda (A) :: A)(A)</code>
-</title>
-<para>Iterate a function while a predicate returns true.
-Publishes every value passed to the function.</para></sect3>
-<sect3><title>
-<code>def repeat&lt;A&gt;(lambda () :: A) :: A</code>
-</title>
-<para>Call a function sequentially, publishing
-each value returned by the function until it no longer returns.</para></sect3>
-<sect3><title>
-<code>def fork&lt;A&gt;([lambda () :: A]) :: A</code>
-</title>
-<para>Call a list of functions in parallel, publishing
-all values published by the functions.</para></sect3>
-<sect3><title>
-<code>def sequence&lt;A&gt;([lambda () :: A]) :: Signal</code>
-</title>
-<para>Call a list of functions in sequence, publishing
-a signal whenever the last function publishes.</para></sect3>
-<sect3><title>
-<code>def join&lt;A&gt;([lambda () :: A]) :: Signal</code>
-</title>
-<para>Call a list of functions in parallel and publish
-a signal once all functions have completed.</para></sect3>
-<sect3><title>
-<code>def por(lambda () :: Boolean, lambda () :: Boolean) :: Boolean</code>
-</title>
-<para>Parallel or. Evaluate two boolean functions in parallel, publishing
-a value as soon as possible, and terminating any unnecessary ongoing
-computation.</para></sect3>
-<sect3><title>
-<code>def pand(lambda () :: Boolean, lambda () :: Boolean) :: Boolean</code>
-</title>
-<para>Parallel and. Evaluate two boolean functions in parallel, publishing
-a value as soon as possible, and terminating any unnecessary ongoing
-computation.</para></sect3>
-<sect3><title>
-<code>def collect&lt;A&gt;(lambda () :: A) :: [A]</code>
-</title>
-<para>Run a function, collecting all publications in a list.</para></sect3>
-</sect2>
-<sect2><title>
-list.inc
-</title>
-<sect3><title>
-<code>def each&lt;A&gt;([A]) :: A</code>
-</title>
-<para>Publish every value in a sequence, simultaneously.</para></sect3>
-<sect3><title>
-<code>def map&lt;A,B&gt;(lambda (A) :: B, [A]) :: [B]</code>
-</title>
-<para>Apply a function to every element of a sequence (in parallel),
-producing a list of the results.</para></sect3>
-<sect3><title>
-<code>def reverse&lt;A&gt;([A]) :: [A]</code>
-</title>
-<para>Reverse a list.</para></sect3>
-<sect3><title>
-<code>def filter&lt;A&gt;(lambda (A) :: Boolean, [A]) :: [A]</code>
-</title>
-<para>Return a list with only those elements which satisfy the predicate.</para></sect3>
-<sect3><title>
-<code>def head&lt;A&gt;([A]) :: A</code>
-</title>
-<para>Return the first element of a sequence.</para></sect3>
-<sect3><title>
-<code>def tail&lt;A&gt;([A]) :: [A]</code>
-</title>
-<para>Return all but the first element of a sequence.</para></sect3>
-<sect3><title>
-<code>def init&lt;A&gt;([A]) :: [A]</code>
-</title>
-<para>Return all but the last element of a sequence.</para></sect3>
-<sect3><title>
-<code>def last&lt;A&gt;([A]) :: A</code>
-</title>
-<para>Return the last element of a sequence.</para></sect3>
-<sect3><title>
-<code>def empty&lt;A&gt;([A]) :: Boolean</code>
-</title>
-<para>Is the sequence empty?</para></sect3>
-<sect3><title>
-<code>def index&lt;A&gt;(Integer, [A]) :: A</code>
-</title>
-<para>Return the nth element of a list, counting from 0.</para></sect3>
-<sect3><title>
-<code>def append&lt;A&gt;([A], [A]) :: [A]</code>
-</title>
-<para>Append two lists.</para></sect3>
-<sect3><title>
-<code>def foldl&lt;A,B&gt;(lambda (B, A) :: B, B, [A]) :: B</code>
-</title>
-<para>Apply a function iteratively to a list.
-Given the list <code>[x1, x2, x3, ...]</code> and initial value <code>x0</code>,
-returns <code>f(... f(f(f(x0, x1), x2), x3) ...)</code></para></sect3>
-<sect3><title>
-<code>def foldl1&lt;A&gt;(lambda (A, A) :: A, [A]) :: A</code>
-</title>
-<para>A special case of <code>foldl</code> which uses the last element of the list as the
-initial value.</para></sect3>
-<sect3><title>
-<code>def foldr&lt;A,B&gt;(lambda (A, B) :: B, B, [A]) :: B</code>
-</title>
-<para>Apply a function iteratively to a list.
-Given the list <code>[..., x3, x2, x1]</code> and initial value <code>x0</code>,
-returns <code>f(... f(x3, f(x2, f(x1, x0))) ...)</code></para></sect3>
-<sect3><title>
-<code>def foldr1&lt;A&gt;(lambda (A, A) :: A, [A]) :: A</code>
-</title>
-<para>A special case of <code>foldr</code> which uses the last element of the list as the
-initial value.</para></sect3>
-<sect3><title>
-<code>def zip&lt;A,B&gt;([A], [B]) :: (A, B)</code>
-</title>
-<para>Combine two lists into a list of pairs.
-The length of the shortest list determines the length of the result.</para></sect3>
-<sect3><title>
-<code>def unzip&lt;A,B&gt;([(A,B)]) :: ([A], [B])</code>
-</title>
-<para>Split a list of pairs into a pair of lists.</para></sect3>
-<sect3><title>
-<code>def length&lt;A&gt;([A]) :: Integer</code>
-</title>
-<para>Return the number of elements in a list.</para></sect3>
-<sect3><title>
-<code>def take&lt;A&gt;(Integer, [A]) :: [A]</code>
-</title>
-<para>Return the first <code>n</code> elements of a list.</para></sect3>
-<sect3><title>
-<code>def drop&lt;A&gt;(Integer, [A]) :: [A]</code>
-</title>
-<para>Return the elements of a list after the first <code>n</code>.</para></sect3>
-<sect3><title>
-<code>def member&lt;A&gt;(A, [A]) :: Boolean</code>
-</title>
-<para>Is the given item a member of the list?</para></sect3>
-<sect3><title>
-<code>def merge&lt;A extends Comparable&gt;([A], [A]) :: [A]</code>
-</title>
-<para>Merge two lists.</para></sect3>
-<sect3><title>
-<code>def mergeBy&lt;A&gt;(lambda (A,A) :: Boolean, [A], [A]) :: [A]</code>
-</title>
-<para>Merge two lists using the given less-than relation.</para></sect3>
-<sect3><title>
-<code>def sort&lt;A extends Comparable&gt;([A]) :: [A]</code>
-</title>
-<para>Sort a list.</para></sect3>
-<sect3><title>
-<code>def sortBy&lt;A&gt;(lambda (A,A) :: Boolean, [A]) :: [A]</code>
-</title>
-<para>Sort a list using the given less-than relation.</para></sect3>
-<sect3><title>
-<code>def group&lt;A,B&gt;([(A,B)]) :: [(A,[B])]</code>
-</title>
-<para>Given a list of pairs, group together the second
-elements of all pairs with equal first elements.</para></sect3>
-<sect3><title>
-<code>def groupBy&lt;A,B&gt;(lambda (A,A) :: Boolean, [(A,B)]) :: [(A,[B])]</code>
-</title>
-<para>Given a list of pairs, group together the second
-elements of all pairs with equal first elements,
-using the given equality relation.</para></sect3>
-<sect3><title>
-<code>def range(Integer, Integer) :: [Integer]</code>
-</title>
-<para>Generate a list of integers in the given half-open range.</para></sect3>
-<sect3><title>
-<code>def any&lt;A&gt;(lambda (A) :: Boolean, [A]) :: Boolean</code>
-</title>
-<para>Do any the elements of the list match the predicate?
-Uses parallel-or to return a result as soon as possible and terminate
-unnecessary computation.</para></sect3>
-<sect3><title>
-<code>def all&lt;A&gt;(lambda (A) :: Boolean, [A]) :: Boolean</code>
-</title>
-<para>Do all the elements of the list match the predicate?
-Uses parallel-and to return a result as soon as possible and terminate
-unnecessary computation.</para></sect3>
-<sect3><title>
-<code>def sum([Number]) :: Number</code>
-</title>
-<para>Compute the sum of all numbers in a list.</para></sect3>
-</sect2>
-<sect2><title>
-text.inc
-</title>
-<sect3><title>
-<code>site cat(Top, ...) :: String</code>
-</title>
-<para>Concatenate one or more values as strings.
-For Java objects, this will call <code>toString()</code> to convert
-the object to a String.</para></sect3>
-<sect3><title>
-<code>site print(Top, ...) :: Signal</code>
-</title>
-<para>Print one or more values as strings, concatenated,
-to standard output.
-For Java objects, this will call <code>toString()</code> to convert
-the object to a String.</para></sect3>
-<sect3><title>
-<code>site println(Top, ...) :: Signal</code>
-</title>
-<para>Print one or more values as strings, concatenated,
-to standard output, with each value followed by a newline.
-For Java objects, this will call <code>toString()</code> to convert
-the object to a String.</para></sect3>
-<sect3><title>
-<code>site parseInt(String) :: BigInteger</code>
-</title>
-<para>Parse a string as a BigInteger.</para></sect3>
-<sect3><title>
-<code>site parseBool(String) :: Boolean</code>
-</title>
-<para>Parse a string as a Boolean (true/false).</para></sect3>
-<sect3><title>
-<code>def lines(String) :: [String]</code>
-</title>
-<para>Split a string into lines, which are substrings
-terminated by an endline or the end of the string.
-DOS, Mac, and Unix endline conventions are all accepted.
-Endline characters are not included in the result.</para></sect3>
-<sect3><title>
-<code>def unlines([String]) :: String</code>
-</title>
-<para>Append a linefeed to each string in the sequence
-and concatenate the results.</para></sect3>
-<sect3><title>
-<code>def words(String) :: [String]</code>
-</title>
-<para>Split a string into words, which are sequences of characters separated by whitespace.</para></sect3>
-<sect3><title>
-<code>def unwords([String]) :: String</code>
-</title>
-<para>Concatenate a sequence of strings with a single space between
-each string.</para></sect3>
-</sect2>
-<sect2><title>
-time.inc
-</title>
-<sect3><title>
-<code>site Rtimer(Integer) :: Signal</code>
-</title>
-<para>Publish a signal after the given number of milliseconds.</para></sect3>
-<sect3><title>
-<code>site Clock()() :: Integer</code>
-</title>
-<para>A call to <code>Clock</code> creates a new relative clock.
-Calling a relative clock returns the number
-of milliseconds which have elapsed since the
-clock was created.</para></sect3>
-<sect3><title>
-<code>site Ltimer(Integer) :: Signal</code>
-</title>
-<para>Publish a signal after the given number of logical timesteps.
-A logical timestep is complete as soon as all outstanding site
-calls (other than calls to <code>Ltimer</code>) have published.</para></sect3>
-<sect3><title>
-<code>def Metronome() :: Signal</code>
-</title>
-<para>Publish a signal every second, indefinitely.</para></sect3>
-<sect3><title>
-<code>def MetronomeT(Integer) :: Signal</code>
-</title>
-<para>Publish a signal at regular intervals, indefinitely. The period is given by the
-argument, in milliseconds.</para></sect3>
-</sect2>
-<sect2><title>
-util.inc
-</title>
-<sect3><title>
-<code>site random() :: Integer</code>
-</title>
-<para>Return a random Integer value
-chosen from the range of all possible 32-bit Integer values.</para></sect3>
-<sect3><title>
-<code>site random(Integer) :: Integer</code>
-</title>
-<para>Return a pseudorandom, uniformly distributed Integer value
-between 0 (inclusive) and the specified value (exclusive).
-If the argument is 0, fail silently.</para></sect3>
-<sect3><title>
-<code>site urandom() :: Double</code>
-</title>
-<para>Returns a pseudorandom, uniformly distributed Double value
-between 0 and 1, inclusive.</para></sect3>
-<sect3><title>
-<code>site UUID() :: String</code>
-</title>
-<para>Return a random (type 4) UUID represented as a string.</para></sect3>
-<sect3><title>
-<code>site Thread&lt;A,B,...&gt;(Site&lt;A,B,...&gt;) :: Site&lt;A,B,...&gt;</code>
-</title>
-<para>Given a site, return a new site which calls the original site
-in a separate thread.  This is necessary when calling
-a Java site which does not cooperate with Orc's scheduler
-and may block for an unpredictable amount of time.</para>
-<para>A limited number of threads are reserved in a pool for use
-by this site, so there is a limit to the number of blocking,
-uncooperative sites that can be called simultaneously.</para></sect3>
-<sect3><title>
-<code>def signals(Integer) :: Signal</code>
-</title>
-<para>Publish the given number of signals, simultaneously.</para></sect3>
-<sect3><title>
-<code>def for(Integer, Integer) :: Integer</code>
-</title>
-<para>Publish all values in the given half-open range.</para></sect3>
-</sect2>
-
-</sect1></appendix>
+</appendix>
 
  
 <appendix><title>FAQ</title>
