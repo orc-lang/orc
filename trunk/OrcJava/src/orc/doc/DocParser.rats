@@ -1,0 +1,86 @@
+module orc.doc.DocParser;
+
+header {
+	import java.util.List;
+	import java.util.LinkedList;
+	import java.util.ListIterator;
+	import java.io.FileNotFoundException;
+	import java.io.File;
+	
+	import xtc.util.Utilities;
+	import xtc.util.Action;
+	import xtc.util.Pair;
+}
+
+option constant;
+
+public List<DocNode> Content =
+	docs:(DocumentationBlock / Filler)* {
+		List<DocNode> out = new LinkedList<DocNode>();
+		for (List<DocNode> nodes : docs) {
+			out.addAll(nodes);
+		}
+		yyValue = out;
+	}
+	;
+
+List<DocNode> Filler =
+	(EndLineComment / MultiLineComment / StringLiteral / _) {
+		yyValue = new LinkedList<DocNode>();
+	}
+	;
+	
+//////////////////////////////////////////////////////
+// Doc nodes
+	
+List<DocNode> DocumentationBlock =
+	void:StartDoc void:EndLine? nodes:DocNode* void:EndDoc {
+		yyValue = nodes.list();
+	}
+	;
+
+DocNode DocNode =
+	type:DocType void:EndLine desc:DocDescription {
+		yyValue = new DocNode(type, desc);
+	}
+	;
+
+String DocType = StartDocType RestOfLine ;
+String DocDescription = ( !(StartDocType / EndDoc) RestOfLine EndLine )*;
+String StartDocType = ("site" / "pattern" / "def" / "val") Space ;
+transient String StartDoc = "{--" Space? ;
+transient String EndDoc = Space? [\-]+ [}] ;
+	
+//////////////////////////////////////////////////////
+// String literals
+
+String StringLiteral =
+	string:StringLiteralToken {
+		yyValue = Utilities.unescape(string.substring(1, string.length()-1));
+	}
+	;
+String StringLiteralToken = ["] ( EscapeSequence / !["\\] _ )* ["] ;
+transient String EscapeSequence =
+   '\\' [btnfr"'\-\[\\\]] / UnicodeEscape / OctalEscape
+   ;
+transient String UnicodeEscape = '\\' 'u' HexDigit HexDigit HexDigit HexDigit ;
+transient String HexDigit = [0-9a-fA-F] ;
+transient String OctalEscape =
+	'\\' [0-3] OctalDigit OctalDigit
+	/ '\\' OctalDigit OctalDigit
+	/ '\\' OctalDigit
+	;
+transient String OctalDigit = [0-7] ;
+
+/////////////////////////////////////////////
+// Whitespace, Comments, etc.
+/////////////////////////////////////////////
+
+transient String Space = (' ' / '\t' / '\f')+ ;
+transient String RestOfLine = ( ![\n\r] _ )* ;
+
+transient void EndLineComment = "--" ( ![\n\r] _ )* ( EndLine / EndFile ) ;
+transient void MultiLineComment = "{-" ( [\-] ![}] / EndLine / ![\-\n\r] _ )* "-}" ;
+	
+transient String EndFile = !_ ;
+transient String EndLine = "\r\n" / '\r' / '\n' ;
