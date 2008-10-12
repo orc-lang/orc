@@ -47,6 +47,13 @@ Return a thunk which applies a function to a single argument.
 def delay(f, x)() = f(x)
 
 {--
+* def ignore<A,B>(lambda () :: B)(A) :: B
+From a function of no arguments, create a function
+of one argument, which is ignored.
+--}
+def ignore(f)(_) = f()
+
+{--
 * def compose<A,B,C>(lambda (B) :: C, lambda (A) :: B)(A) :: C
 Compose two single-argument functions.
 --}

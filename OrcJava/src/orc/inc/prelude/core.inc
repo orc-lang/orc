@@ -62,8 +62,12 @@ site (**) = orc.lib.math.Exponent
 
 {--
 * site (/)(Number, Number) :: Number
-If both arguments are integral, perform integral division. Otherwise,
-perform floating-point division.
+If both arguments have integral types, perform integral division, rounding
+towards zero. Otherwise, perform floating-point division. For example:
+
+<programlisting language="orc-demo"><![CDATA[
+  7 / 3 -- publishes 2
+| 7 / 3.0 -- publishes 2.333...]]></programlisting>
 --}
 site (/) = orc.lib.math.Div
 
@@ -144,7 +148,7 @@ site (||) = orc.lib.bool.Or
 
 {--
 * site (:)<A>(A, [A]) :: [A]
-Append an element to a list.
+Prepend an element to a list.
 
 * pattern (:)<A>([A]) :: (A, [A])
 Deconstruct a list into a head and tail.
