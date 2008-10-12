@@ -40,12 +40,13 @@ List<DocNode> DocumentationBlock =
 	;
 
 DocNode DocNode =
-	type:DocType void:EndLine desc:DocDescription {
+	StartDocType type:RestOfLine void:EndLine desc:DocDescription {
 		yyValue = new DocNode(type, desc);
 	}
 	;
 
-String DocType = StartDocType yyValue:RestOfLine ;
+String DocDecl = (![ \t\f] _)+ ;
+String DocName = _ (![<(] _)+ ;
 String DocDescription = ( !(StartDocType / EndDoc) RestOfLine EndLine )*;
 String StartDocType = "*" Space ;
 transient String StartDoc = "{--" Space? ;
@@ -76,7 +77,7 @@ transient String OctalDigit = [0-7] ;
 // Whitespace, Comments, etc.
 /////////////////////////////////////////////
 
-transient String Space = (' ' / '\t' / '\f')+ ;
+transient String Space = [ \t\f]+ ;
 transient String RestOfLine = ( ![\n\r] _ )* ;
 
 transient void EndLineComment = "--" ( ![\n\r] _ )* ( EndLine / EndFile ) ;

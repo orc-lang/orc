@@ -30,12 +30,25 @@ public class MakeDoc {
 		}
 		System.out.println("<?xml version=\"1.0\"?>");
 		System.out.println("<sect1><title>Reference</title>");
+		int anchor;
+		anchor = 0;
 		for (DocNodes file : files) {
 			System.out.println("<sect2><title>");
 			System.out.println(escapeXML(file.file));
 			System.out.println("</title>");
+			System.out.println("<informaltable cellspacing=\"5\">");
+			int anchor_ = anchor;
 			for (DocNode doc : file.nodes) {
-				System.out.println("<sect3><title>");
+				System.out.println("<tr><th align=\"left\" valign=\"top\">");
+				System.out.println("<link linkend=\"orc.doc.node"+(anchor++)+"\"><code>"
+						+ escapeXML(extractName(doc.type)) + "</code></link>");
+				System.out.println("</th><td>");
+				System.out.println(firstSentence(doc.description));
+				System.out.println("</td></tr>");
+			}
+			System.out.println("</informaltable>");
+			for (DocNode doc : file.nodes) {
+				System.out.println("<sect3 id=\"orc.doc.node"+(anchor_++)+"\"><title>");
 				System.out.println("<code>" + escapeXML(doc.type) + "</code>");
 				System.out.println("</title>");
 				System.out.print("<para>");
@@ -46,6 +59,16 @@ public class MakeDoc {
 			System.out.println("</sect2>");
 		}
 		System.out.println("</sect1>");
+	}
+	
+	public static String extractName(String type) {
+		String out = type.replaceAll("[a-z]+\\s+(.[^(]+)\\(.*", "$1");
+		return out.replaceAll("<[^>]+>", "");
+	}
+	
+	public static String firstSentence(String para) {
+		String[] parts = para.split("(?<=[.?!])\\s+", 2);
+		return parts[0];
 	}
 	
 	public static List<DocNode> parseFile(String file) throws ParseException, IOException {
