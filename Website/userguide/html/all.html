@@ -1,18 +1,18 @@
 <html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Orc User Guide</title><link href="style.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="book" lang="en"><div class="titlepage"><div><div><h1 class="title"><a name="N10001"></a>Orc User Guide</h1></div></div><hr></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="chapter"><a href="#N10007">1. The Orc Programming Language</a></span></dt><dd><dl><dt><span class="section"><a href="#N1000A">1.1. Introduction</a></span></dt><dt><span class="section"><a href="#N1001C">1.2. Cor: A Functional Subset</a></span></dt><dd><dl><dt><span class="section"><a href="#N101BB">1.2.1. Constants</a></span></dt><dt><span class="section"><a href="#language.base.oeprators">1.2.2. Operators</a></span></dt><dt><span class="section"><a href="#N10313">1.2.3. Conditionals</a></span></dt><dt><span class="section"><a href="#N103C0">1.2.4. Variables</a></span></dt><dt><span class="section"><a href="#N103F7">1.2.5. Data Structures</a></span></dt><dt><span class="section"><a href="#N10471">1.2.6. Patterns</a></span></dt><dt><span class="section"><a href="#N104DA">1.2.7. Functions</a></span></dt><dt><span class="section"><a href="#N105A2">1.2.8. Comments</a></span></dt></dl></dd><dt><span class="section"><a href="#N105B7">1.3. Orc: Orchestrating services</a></span></dt><dd><dl><dt><span class="section"><a href="#N10689">1.3.1. Communicating with external services</a></span></dt><dt><span class="section"><a href="#N106D1">1.3.2. The concurrency combinators of Orc</a></span></dt><dt><span class="section"><a href="#N107F0">1.3.3. Revisiting Cor expressions</a></span></dt><dt><span class="section"><a href="#N108E0">1.3.4. Time</a></span></dt></dl></dd><dt><span class="section"><a href="#N10909">1.4. Advanced Features of Orc</a></span></dt><dd><dl><dt><span class="section"><a href="#N109FB">1.4.1. Special call forms</a></span></dt><dt><span class="section"><a href="#N10A87">1.4.2. Extensions to pattern matching</a></span></dt><dt><span class="section"><a href="#N10ACD">1.4.3. New forms of declarations</a></span></dt><dt><span class="section"><a href="#N10B04">1.4.4. The after combinator</a></span></dt></dl></dd></dl></dd><dt><span class="chapter"><a href="#chapter.methodology">2. Programming Methodology</a></span></dt><dt><span class="chapter"><a href="#chapter.services">3. Accessing and Creating External Services</a></span></dt><dt><span class="appendix"><a href="#N10B55">A. Complete Syntax of Orc</a></span></dt><dt><span class="appendix"><a href="#appendix.library">B. Standard Library</a></span></dt><dd><dl><dt><span class="sect1"><a href="#N10DBE">B.1. Overview</a></span></dt><dt><span class="sect1"><a href="#N10DD9">B.2. Notation</a></span></dt><dt><span class="sect1"><a href="#N10E2B">B.3. Reference</a></span></dt><dd><dl><dt><span class="sect2"><a href="#N10E2F">B.3.1. 
 core.inc
-</a></span></dt><dt><span class="sect2"><a href="#N10F19">B.3.2. 
+</a></span></dt><dt><span class="sect2"><a href="#N110C2">B.3.2. 
 data.inc
-</a></span></dt><dt><span class="sect2"><a href="#N11087">B.3.3. 
+</a></span></dt><dt><span class="sect2"><a href="#N114BA">B.3.3. 
 functional.inc
-</a></span></dt><dt><span class="sect2"><a href="#N1112C">B.3.4. 
+</a></span></dt><dt><span class="sect2"><a href="#N116BF">B.3.4. 
 list.inc
-</a></span></dt><dt><span class="sect2"><a href="#N11263">B.3.5. 
+</a></span></dt><dt><span class="sect2"><a href="#N11A32">B.3.5. 
 text.inc
-</a></span></dt><dt><span class="sect2"><a href="#N112B7">B.3.6. 
+</a></span></dt><dt><span class="sect2"><a href="#N11B2A">B.3.6. 
 time.inc
-</a></span></dt><dt><span class="sect2"><a href="#N112EE">B.3.7. 
+</a></span></dt><dt><span class="sect2"><a href="#N11BC0">B.3.7. 
 util.inc
-</a></span></dt></dl></dd></dl></dd><dt><span class="appendix"><a href="#N11331">C. FAQ</a></span></dt></dl></div><div class="list-of-tables"><p><b>List of Tables</b></p><dl><dt>1.1. <a href="#cor-ebnf-table">Syntax of the Functional Subset of Orc (Cor)</a></dt><dt>1.2. <a href="#ops-table">Operators of Cor</a></dt><dt>1.3. <a href="#orc-ebnf-table">Basic Syntax of Orc</a></dt><dt>1.4. <a href="#advanced-ebnf-table">Advanced Syntax of Orc</a></dt><dt>A.1. <a href="#full-ebnf-grammar">Complete Syntax of Orc</a></dt></dl></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="N10007"></a>Chapter&nbsp;1.&nbsp;The Orc Programming Language</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#N1000A">1.1. Introduction</a></span></dt><dt><span class="section"><a href="#N1001C">1.2. Cor: A Functional Subset</a></span></dt><dd><dl><dt><span class="section"><a href="#N101BB">1.2.1. Constants</a></span></dt><dt><span class="section"><a href="#language.base.oeprators">1.2.2. Operators</a></span></dt><dt><span class="section"><a href="#N10313">1.2.3. Conditionals</a></span></dt><dt><span class="section"><a href="#N103C0">1.2.4. Variables</a></span></dt><dt><span class="section"><a href="#N103F7">1.2.5. Data Structures</a></span></dt><dt><span class="section"><a href="#N10471">1.2.6. Patterns</a></span></dt><dt><span class="section"><a href="#N104DA">1.2.7. Functions</a></span></dt><dt><span class="section"><a href="#N105A2">1.2.8. Comments</a></span></dt></dl></dd><dt><span class="section"><a href="#N105B7">1.3. Orc: Orchestrating services</a></span></dt><dd><dl><dt><span class="section"><a href="#N10689">1.3.1. Communicating with external services</a></span></dt><dt><span class="section"><a href="#N106D1">1.3.2. The concurrency combinators of Orc</a></span></dt><dt><span class="section"><a href="#N107F0">1.3.3. Revisiting Cor expressions</a></span></dt><dt><span class="section"><a href="#N108E0">1.3.4. Time</a></span></dt></dl></dd><dt><span class="section"><a href="#N10909">1.4. Advanced Features of Orc</a></span></dt><dd><dl><dt><span class="section"><a href="#N109FB">1.4.1. Special call forms</a></span></dt><dt><span class="section"><a href="#N10A87">1.4.2. Extensions to pattern matching</a></span></dt><dt><span class="section"><a href="#N10ACD">1.4.3. New forms of declarations</a></span></dt><dt><span class="section"><a href="#N10B04">1.4.4. The after combinator</a></span></dt></dl></dd></dl></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N1000A"></a>1.1.&nbsp;Introduction</h2></div></div></div><p>
+</a></span></dt></dl></dd></dl></dd><dt><span class="appendix"><a href="#N11C71">C. FAQ</a></span></dt></dl></div><div class="list-of-tables"><p><b>List of Tables</b></p><dl><dt>1.1. <a href="#cor-ebnf-table">Syntax of the Functional Subset of Orc (Cor)</a></dt><dt>1.2. <a href="#ops-table">Operators of Cor</a></dt><dt>1.3. <a href="#orc-ebnf-table">Basic Syntax of Orc</a></dt><dt>1.4. <a href="#advanced-ebnf-table">Advanced Syntax of Orc</a></dt><dt>A.1. <a href="#full-ebnf-grammar">Complete Syntax of Orc</a></dt></dl></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="N10007"></a>Chapter&nbsp;1.&nbsp;The Orc Programming Language</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#N1000A">1.1. Introduction</a></span></dt><dt><span class="section"><a href="#N1001C">1.2. Cor: A Functional Subset</a></span></dt><dd><dl><dt><span class="section"><a href="#N101BB">1.2.1. Constants</a></span></dt><dt><span class="section"><a href="#language.base.oeprators">1.2.2. Operators</a></span></dt><dt><span class="section"><a href="#N10313">1.2.3. Conditionals</a></span></dt><dt><span class="section"><a href="#N103C0">1.2.4. Variables</a></span></dt><dt><span class="section"><a href="#N103F7">1.2.5. Data Structures</a></span></dt><dt><span class="section"><a href="#N10471">1.2.6. Patterns</a></span></dt><dt><span class="section"><a href="#N104DA">1.2.7. Functions</a></span></dt><dt><span class="section"><a href="#N105A2">1.2.8. Comments</a></span></dt></dl></dd><dt><span class="section"><a href="#N105B7">1.3. Orc: Orchestrating services</a></span></dt><dd><dl><dt><span class="section"><a href="#N10689">1.3.1. Communicating with external services</a></span></dt><dt><span class="section"><a href="#N106D1">1.3.2. The concurrency combinators of Orc</a></span></dt><dt><span class="section"><a href="#N107F0">1.3.3. Revisiting Cor expressions</a></span></dt><dt><span class="section"><a href="#N108E0">1.3.4. Time</a></span></dt></dl></dd><dt><span class="section"><a href="#N10909">1.4. Advanced Features of Orc</a></span></dt><dd><dl><dt><span class="section"><a href="#N109FB">1.4.1. Special call forms</a></span></dt><dt><span class="section"><a href="#N10A87">1.4.2. Extensions to pattern matching</a></span></dt><dt><span class="section"><a href="#N10ACD">1.4.3. New forms of declarations</a></span></dt><dt><span class="section"><a href="#N10B04">1.4.4. The after combinator</a></span></dt></dl></dd></dl></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N1000A"></a>1.1.&nbsp;Introduction</h2></div></div></div><p>
 Orc is a programming language designed to make distributed and
 concurrent programs simple and intuitive to write. Orc expresses
 orchestration, a type of structured concurrency. It emphasizes the
@@ -1294,17 +1294,17 @@ Under construction.
                             </td></tr></tbody></table></div></div><br class="table-break">
 </p></div><div class="appendix" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="appendix.library"></a>Appendix&nbsp;B.&nbsp;Standard Library</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="#N10DBE">B.1. Overview</a></span></dt><dt><span class="sect1"><a href="#N10DD9">B.2. Notation</a></span></dt><dt><span class="sect1"><a href="#N10E2B">B.3. Reference</a></span></dt><dd><dl><dt><span class="sect2"><a href="#N10E2F">B.3.1. 
 core.inc
-</a></span></dt><dt><span class="sect2"><a href="#N10F19">B.3.2. 
+</a></span></dt><dt><span class="sect2"><a href="#N110C2">B.3.2. 
 data.inc
-</a></span></dt><dt><span class="sect2"><a href="#N11087">B.3.3. 
+</a></span></dt><dt><span class="sect2"><a href="#N114BA">B.3.3. 
 functional.inc
-</a></span></dt><dt><span class="sect2"><a href="#N1112C">B.3.4. 
+</a></span></dt><dt><span class="sect2"><a href="#N116BF">B.3.4. 
 list.inc
-</a></span></dt><dt><span class="sect2"><a href="#N11263">B.3.5. 
+</a></span></dt><dt><span class="sect2"><a href="#N11A32">B.3.5. 
 text.inc
-</a></span></dt><dt><span class="sect2"><a href="#N112B7">B.3.6. 
+</a></span></dt><dt><span class="sect2"><a href="#N11B2A">B.3.6. 
 time.inc
-</a></span></dt><dt><span class="sect2"><a href="#N112EE">B.3.7. 
+</a></span></dt><dt><span class="sect2"><a href="#N11BC0">B.3.7. 
 util.inc
 </a></span></dt></dl></dd></dl></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N10DBE"></a>B.1.&nbsp;Overview</h2></div></div></div><p>
 The standard library is a set of declarations implicitly available to all Orc
@@ -1352,55 +1352,259 @@ syntactic sugar for currying, e.g.  <code class="code"><span class="hl-keyword">
 equivalent to <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Foo</span>() :: <span class="hl-keyword">lambda</span> () :: <span class="hl-variable">Signal</span></code>.
 </p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N10E2B"></a>B.3.&nbsp;Reference</h2></div></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10E2F"></a>B.3.1.&nbsp;
 core.inc
-</h3></div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10E32"></a>B.3.1.1.&nbsp;
+</h3></div></div></div><table cellspacing="5"><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node0" title="B.3.1.1.&nbsp; site let<A>(A) :: A">
+                                <code class="code"><span class="hl-variable">let</span></code>
+                            </a>
+</th>
+                        <td>
+When applied to a single argument, return that argument (behaving as the identity function).
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node1" title="B.3.1.2.&nbsp; site let<A, ...>(A, ...) :: (A, ...)">
+                                <code class="code"><span class="hl-variable">let</span></code>
+                            </a>
+</th>
+                        <td>
+When applied to zero, two, or more arguments, return the arguments in a tuple.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node2" title="B.3.1.3.&nbsp; site if(Boolean) :: Signal">
+                                <code class="code"><span class="hl-keyword">if</span></code>
+                            </a>
+</th>
+                        <td>
+Fail silently if the argument is false.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node3" title="B.3.1.4.&nbsp; site error(String) :: Bot">
+                                <code class="code"><span class="hl-variable">error</span></code>
+                            </a>
+</th>
+                        <td>
+Fail with the given error message.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node4" title="B.3.1.5.&nbsp; site (+)(Number, Number) :: Number">
+                                <code class="code">(+)</code>
+                            </a>
+</th>
+                        <td>
+Add two numbers.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node5" title="B.3.1.6.&nbsp; site (-)(Number, Number) :: Number">
+                                <code class="code">(-)</code>
+                            </a>
+</th>
+                        <td>
+Subtract the right argument from the left.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node6" title="B.3.1.7.&nbsp; site (0-)(Number) :: Number">
+                                <code class="code">(<span class="hl-literal">0</span>-)</code>
+                            </a>
+</th>
+                        <td>
+Return the additive inverse of the argument.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node7" title="B.3.1.8.&nbsp; site (*)(Number, Number) :: Number">
+                                <code class="code">(*)</code>
+                            </a>
+</th>
+                        <td>
+Multiply two numbers.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node8" title="B.3.1.9.&nbsp; site (**)(Number, Number) :: Number">
+                                <code class="code">(**)</code>
+                            </a>
+</th>
+                        <td>
+<code class="code"><span class="hl-variable">a</span> ** <span class="hl-variable">b</span></code> computes <code class="code"><span class="hl-variable">a</span></code> to the <code class="code"><span class="hl-variable">b</span></code>th power.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node9" title="B.3.1.10.&nbsp; site (/)(Number, Number) :: Number">
+                                <code class="code">(/)</code>
+                            </a>
+</th>
+                        <td>
+If both arguments have integral types, perform integral division, rounding
+towards zero.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node10" title="B.3.1.11.&nbsp; site (%)(Number, Number) :: Number">
+                                <code class="code">(%)</code>
+                            </a>
+</th>
+                        <td>
+<code class="code"><span class="hl-variable">a</span> % <span class="hl-variable">b</span></code> computes the remainder of <code class="code"><span class="hl-variable">a</span> / <span class="hl-variable">b</span></code>, satisfying the equation <code class="code"><span class="hl-variable">a</span> = (<span class="hl-variable">a</span>/<span class="hl-variable">b</span>)*<span class="hl-variable">b</span>+(<span class="hl-variable">a</span>%<span class="hl-variable">b</span>)</code>.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node11" title="B.3.1.12.&nbsp; site (<)(Comparable, Comparable) :: Boolean">
+                                <code class="code">(&lt;)</code>
+                            </a>
+</th>
+                        <td>
+Is the left argument less than the right?
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node12" title="B.3.1.13.&nbsp; site (<=)(Comparable, Comparable) :: Boolean">
+                                <code class="code">(<span class="hl-site">&lt;=</span>)</code>
+                            </a>
+</th>
+                        <td>
+Is the left argument less than or equal to the right?
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node13" title="B.3.1.14.&nbsp; site (>)(Comparable, Comparable) :: Boolean">
+                                <code class="code">(&gt;)</code>
+                            </a>
+</th>
+                        <td>
+Is the left argument greater than the right?
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node14" title="B.3.1.15.&nbsp; site (>=)(Comparable, Comparable) :: Boolean">
+                                <code class="code">(<span class="hl-site">&gt;=</span>)</code>
+                            </a>
+</th>
+                        <td>
+Is the left argument greater than or equal to the right?
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node15" title="B.3.1.16.&nbsp; site (=)(Top, Top) :: Boolean">
+                                <code class="code">(=)</code>
+                            </a>
+</th>
+                        <td>
+Is the left argument equivalent to the right?
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node16" title="B.3.1.17.&nbsp; site (/=)(Top, Top) :: Boolean">
+                                <code class="code">(/=)</code>
+                            </a>
+</th>
+                        <td>
+Is it not the case that the left argument is equivalent to the right,
+as described for <code class="code">(=)</code>?
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node17" title="B.3.1.18.&nbsp; site (~)(Boolean) :: Boolean">
+                                <code class="code">(~)</code>
+                            </a>
+</th>
+                        <td>
+Compute the logical negation of the argument.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node18" title="B.3.1.19.&nbsp; site (&amp;&amp;)(Boolean, Boolean) :: Boolean">
+                                <code class="code">(&amp;&amp;)</code>
+                            </a>
+</th>
+                        <td>
+Compute the logical conjunction of the arguments.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node19" title="B.3.1.20.&nbsp; site (||)(Boolean, Boolean) :: Boolean">
+                                <code class="code">(<span class="hl-site">||</span>)</code>
+                            </a>
+</th>
+                        <td>
+Compute the logical disjunction of the arguments.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node20" title="B.3.1.21.&nbsp; site (:)<A>(A, [A]) :: [A]">
+                                <code class="code">(:)</code>
+                            </a>
+</th>
+                        <td>
+Prepend an element to a list.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node21" title="B.3.1.22.&nbsp; pattern (:)<A>([A]) :: (A, [A])">
+                                <code class="code">(:)</code>
+                            </a>
+</th>
+                        <td>
+Deconstruct a list into a head and tail.
+</td>
+                    </tr></table><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node0"></a>B.3.1.1.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">let</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-variable">A</span>) :: <span class="hl-variable">A</span></code>
-</h4></div></div></div><p>When applied to a single argument, return that argument (behaving as the identity function).</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10E3A"></a>B.3.1.2.&nbsp;
+</h4></div></div></div><p>When applied to a single argument, return that argument (behaving as the identity function).</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node1"></a>B.3.1.2.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">let</span>&lt;<span class="hl-variable">A</span>, ...&gt;(<span class="hl-variable">A</span>, ...) :: (<span class="hl-variable">A</span>, ...)</code>
-</h4></div></div></div><p>When applied to zero, two, or more arguments, return the arguments in a tuple.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10E42"></a>B.3.1.3.&nbsp;
+</h4></div></div></div><p>When applied to zero, two, or more arguments, return the arguments in a tuple.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node2"></a>B.3.1.3.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-keyword">if</span>(<span class="hl-variable">Boolean</span>) :: <span class="hl-variable">Signal</span></code>
 </h4></div></div></div><p>Fail silently if the argument is false.</p><p>
                         <pre class="orc">
   <span class="hl-keyword">if</span>(<span class="hl-literal">false</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">"Never publishes"</span>
 <span class="hl-combinator">|</span> <span class="hl-keyword">if</span>(<span class="hl-literal">true</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">"Always publishes"</span></pre>
-                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10E50"></a>B.3.1.4.&nbsp;
+                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node3"></a>B.3.1.4.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">error</span>(<span class="hl-variable">String</span>) :: <span class="hl-variable">Bot</span></code>
 </h4></div></div></div><p>Fail with the given error message.</p><p>
                         <pre class="orc">
 <span class="hl-keyword">def</span> <span class="hl-variable">assert</span>(<span class="hl-variable">b</span>) =
   <span class="hl-keyword">if</span> <span class="hl-variable">b</span> <span class="hl-keyword">then</span> <span class="hl-keyword">signal</span> <span class="hl-keyword">else</span> <span class="hl-variable">error</span>(<span class="hl-literal">"assertion failed"</span>)
 <span class="hl-variable">assert</span>(<span class="hl-literal">false</span>)</pre>
-                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10E5E"></a>B.3.1.5.&nbsp;
+                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node4"></a>B.3.1.5.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> (+)(<span class="hl-variable">Number</span>, <span class="hl-variable">Number</span>) :: <span class="hl-variable">Number</span></code>
-</h4></div></div></div><p>Add two numbers.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10E66"></a>B.3.1.6.&nbsp;
+</h4></div></div></div><p>Add two numbers.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node5"></a>B.3.1.6.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> (-)(<span class="hl-variable">Number</span>, <span class="hl-variable">Number</span>) :: <span class="hl-variable">Number</span></code>
-</h4></div></div></div><p>Subtract the right argument from the left.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10E6E"></a>B.3.1.7.&nbsp;
+</h4></div></div></div><p>Subtract the right argument from the left.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node6"></a>B.3.1.7.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> (<span class="hl-literal">0</span>-)(<span class="hl-variable">Number</span>) :: <span class="hl-variable">Number</span></code>
 </h4></div></div></div><p>Return the additive inverse of the argument.
 This site is written without the 0 when it appears
 as an operator, i.e. <code class="code">-<span class="hl-variable">a</span></code>
-                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10E79"></a>B.3.1.8.&nbsp;
+                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node7"></a>B.3.1.8.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> (*)(<span class="hl-variable">Number</span>, <span class="hl-variable">Number</span>) :: <span class="hl-variable">Number</span></code>
-</h4></div></div></div><p>Multiply two numbers.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10E81"></a>B.3.1.9.&nbsp;
+</h4></div></div></div><p>Multiply two numbers.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node8"></a>B.3.1.9.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> (**)(<span class="hl-variable">Number</span>, <span class="hl-variable">Number</span>) :: <span class="hl-variable">Number</span></code>
 </h4></div></div></div><p>
-                        <code class="code"><span class="hl-variable">a</span> ** <span class="hl-variable">b</span></code> computes <code class="code"><span class="hl-variable">a</span></code> to the <code class="code"><span class="hl-variable">b</span></code>th power.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10E92"></a>B.3.1.10.&nbsp;
+                        <code class="code"><span class="hl-variable">a</span> ** <span class="hl-variable">b</span></code> computes <code class="code"><span class="hl-variable">a</span></code> to the <code class="code"><span class="hl-variable">b</span></code>th power.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node9"></a>B.3.1.10.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> (/)(<span class="hl-variable">Number</span>, <span class="hl-variable">Number</span>) :: <span class="hl-variable">Number</span></code>
-</h4></div></div></div><p>If both arguments are integral, perform integral division. Otherwise,
-perform floating-point division.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10E9A"></a>B.3.1.11.&nbsp;
+</h4></div></div></div><p>If both arguments have integral types, perform integral division, rounding
+towards zero. Otherwise, perform floating-point division. For example:</p><p>
+                        <pre class="orc">
+  <span class="hl-literal">7</span> / <span class="hl-literal">3</span> <span class="hl-comment">-- publishes 2</span>
+<span class="hl-combinator">|</span> <span class="hl-literal">7</span> / <span class="hl-literal">3.0</span> <span class="hl-comment">-- publishes 2.333...</span></pre>
+                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node10"></a>B.3.1.11.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> (%)(<span class="hl-variable">Number</span>, <span class="hl-variable">Number</span>) :: <span class="hl-variable">Number</span></code>
 </h4></div></div></div><p>
 
                         <code class="code"><span class="hl-variable">a</span> % <span class="hl-variable">b</span></code> computes the remainder of <code class="code"><span class="hl-variable">a</span> / <span class="hl-variable">b</span></code>, satisfying the equation <code class="code"><span class="hl-variable">a</span> = (<span class="hl-variable">a</span>/<span class="hl-variable">b</span>)*<span class="hl-variable">b</span>+(<span class="hl-variable">a</span>%<span class="hl-variable">b</span>)</code>.
 For a full description, see the
-<a class="link" href="http://java.sun.com/docs/books/jls/third_edition/html/expressions.html#15.17.3" target="_top">Java Language Specification, 3rd edition</a>.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10EB0"></a>B.3.1.12.&nbsp;
+<a class="link" href="http://java.sun.com/docs/books/jls/third_edition/html/expressions.html#15.17.3" target="_top">Java Language Specification, 3rd edition</a>.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node11"></a>B.3.1.12.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> (&lt;)(<span class="hl-variable">Comparable</span>, <span class="hl-variable">Comparable</span>) :: <span class="hl-variable">Boolean</span></code>
-</h4></div></div></div><p>Is the left argument less than the right?</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10EB8"></a>B.3.1.13.&nbsp;
+</h4></div></div></div><p>Is the left argument less than the right?</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node12"></a>B.3.1.13.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> (<span class="hl-site">&lt;=</span>)(<span class="hl-variable">Comparable</span>, <span class="hl-variable">Comparable</span>) :: <span class="hl-variable">Boolean</span></code>
-</h4></div></div></div><p>Is the left argument less than or equal to the right?</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10EC0"></a>B.3.1.14.&nbsp;
+</h4></div></div></div><p>Is the left argument less than or equal to the right?</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node13"></a>B.3.1.14.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> (&gt;)(<span class="hl-variable">Comparable</span>, <span class="hl-variable">Comparable</span>) :: <span class="hl-variable">Boolean</span></code>
-</h4></div></div></div><p>Is the left argument greater than the right?</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10EC8"></a>B.3.1.15.&nbsp;
+</h4></div></div></div><p>Is the left argument greater than the right?</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node14"></a>B.3.1.15.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> (<span class="hl-site">&gt;=</span>)(<span class="hl-variable">Comparable</span>, <span class="hl-variable">Comparable</span>) :: <span class="hl-variable">Boolean</span></code>
-</h4></div></div></div><p>Is the left argument greater than or equal to the right?</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10ED0"></a>B.3.1.16.&nbsp;
+</h4></div></div></div><p>Is the left argument greater than or equal to the right?</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node15"></a>B.3.1.16.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> (=)(<span class="hl-variable">Top</span>, <span class="hl-variable">Top</span>) :: <span class="hl-variable">Boolean</span></code>
 </h4></div></div></div><p>Is the left argument equivalent to the right?  Values are considered equivalent
 if one can be substituted locally for another without affecting the behavior of the
@@ -1408,26 +1612,351 @@ program.  Therefore two different immutable objects are equivalent if they
 share equivalent content, while two different mutable objects are never
 equivalent.</p><p>When <code class="code"><span class="hl-variable">a</span></code> and <code class="code"><span class="hl-variable">b</span></code> are arbitrary Java objects, <code class="code"><span class="hl-variable">a</span> =
 <span class="hl-variable">b</span></code> is interpreted as <code class="code"><span class="hl-variable">a</span>.<span class="hl-variable">equals</span>(<span class="hl-variable">b</span>)</code>, which may not follow the
-rules given above.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10EE6"></a>B.3.1.17.&nbsp;
+rules given above.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node16"></a>B.3.1.17.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> (/=)(<span class="hl-variable">Top</span>, <span class="hl-variable">Top</span>) :: <span class="hl-variable">Boolean</span></code>
 </h4></div></div></div><p>Is it not the case that the left argument is equivalent to the right,
-as described for <code class="code">(=)</code>?</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10EF1"></a>B.3.1.18.&nbsp;
+as described for <code class="code">(=)</code>?</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node17"></a>B.3.1.18.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> (~)(<span class="hl-variable">Boolean</span>) :: <span class="hl-variable">Boolean</span></code>
-</h4></div></div></div><p>Compute the logical negation of the argument.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10EF9"></a>B.3.1.19.&nbsp;
+</h4></div></div></div><p>Compute the logical negation of the argument.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node18"></a>B.3.1.19.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> (&amp;&amp;)(<span class="hl-variable">Boolean</span>, <span class="hl-variable">Boolean</span>) :: <span class="hl-variable">Boolean</span></code>
 </h4></div></div></div><p>Compute the logical conjunction of the arguments. This is not a short-circuiting
 operator; both arguments must be evaluated and available before the result is
-computed.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10F01"></a>B.3.1.20.&nbsp;
+computed.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node19"></a>B.3.1.20.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> (<span class="hl-site">||</span>)(<span class="hl-variable">Boolean</span>, <span class="hl-variable">Boolean</span>) :: <span class="hl-variable">Boolean</span></code>
 </h4></div></div></div><p>Compute the logical disjunction of the arguments. This is not a short-circuiting
 operator; both arguments must be evaluated and available before the result is
-computed.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10F09"></a>B.3.1.21.&nbsp;
+computed.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node20"></a>B.3.1.21.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> (:)&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-variable">A</span>, [<span class="hl-variable">A</span>]) :: [<span class="hl-variable">A</span>]</code>
-</h4></div></div></div><p>Append an element to a list.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10F11"></a>B.3.1.22.&nbsp;
+</h4></div></div></div><p>Prepend an element to a list.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node21"></a>B.3.1.22.&nbsp;
 <code class="code"><span class="hl-keyword">pattern</span> (:)&lt;<span class="hl-variable">A</span>&gt;([<span class="hl-variable">A</span>]) :: (<span class="hl-variable">A</span>, [<span class="hl-variable">A</span>])</code>
-</h4></div></div></div><p>Deconstruct a list into a head and tail.</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10F19"></a>B.3.2.&nbsp;
+</h4></div></div></div><p>Deconstruct a list into a head and tail.</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N110C2"></a>B.3.2.&nbsp;
 data.inc
-</h3></div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10F1C"></a>B.3.2.1.&nbsp;
+</h3></div></div></div><table cellspacing="5"><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node22" title="B.3.2.1.&nbsp; site Semaphore(Integer) :: Semaphore">
+                                <code class="code"><span class="hl-variable">Semaphore</span></code>
+                            </a>
+</th>
+                        <td>
+Construct a semaphore with the given number of available items.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node23" title="B.3.2.2.&nbsp; site Semaphore.acquire() :: Signal">
+                                <code class="code"><span class="hl-variable">Semaphore</span>.<span class="hl-variable">acquire</span></code>
+                            </a>
+</th>
+                        <td>
+Acquire an item.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node24" title="B.3.2.3.&nbsp; site Semaphore.release() :: Signal">
+                                <code class="code"><span class="hl-variable">Semaphore</span>.<span class="hl-variable">release</span></code>
+                            </a>
+</th>
+                        <td>
+Release an item.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node25" title="B.3.2.4.&nbsp; site Buffer<A>() :: Buffer<A>">
+                                <code class="code"><span class="hl-variable">Buffer</span></code>
+                            </a>
+</th>
+                        <td>
+Create a new buffer (FIFO channel) of unlimited size.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node26" title="B.3.2.5.&nbsp; site Buffer<A>.get() :: A">
+                                <code class="code"><span class="hl-variable">Buffer</span>.<span class="hl-variable">get</span></code>
+                            </a>
+</th>
+                        <td>
+Get an item from the buffer.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node27" title="B.3.2.6.&nbsp; site Buffer<A>.getnb() :: A">
+                                <code class="code"><span class="hl-variable">Buffer</span>.<span class="hl-variable">getnb</span></code>
+                            </a>
+</th>
+                        <td>
+Get an item from the buffer.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node28" title="B.3.2.7.&nbsp; site Buffer<A>.put(A) :: Signal">
+                                <code class="code"><span class="hl-variable">Buffer</span>.<span class="hl-variable">put</span></code>
+                            </a>
+</th>
+                        <td>
+Put an item in the buffer.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node29" title="B.3.2.8.&nbsp; site Buffer<A>.close() :: Signal">
+                                <code class="code"><span class="hl-variable">Buffer</span>.<span class="hl-variable">close</span></code>
+                            </a>
+</th>
+                        <td>
+Close the buffer.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node30" title="B.3.2.9.&nbsp; site SyncChannel<A>() :: SyncChannel<A>">
+                                <code class="code"><span class="hl-variable">SyncChannel</span></code>
+                            </a>
+</th>
+                        <td>
+Create a synchronous channel.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node31" title="B.3.2.10.&nbsp; site SyncChannel<A>.get() :: A">
+                                <code class="code"><span class="hl-variable">SyncChannel</span>.<span class="hl-variable">get</span></code>
+                            </a>
+</th>
+                        <td>
+Receive an item over the channel.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node32" title="B.3.2.11.&nbsp; site SyncChannel<A>.put(A) :: Signal">
+                                <code class="code"><span class="hl-variable">SyncChannel</span>.<span class="hl-variable">put</span></code>
+                            </a>
+</th>
+                        <td>
+Send an item over the channel.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node33" title="B.3.2.12.&nbsp; site Cell<A>() :: Cell<A>">
+                                <code class="code"><span class="hl-variable">Cell</span></code>
+                            </a>
+</th>
+                        <td>
+Create a write-once cell.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node34" title="B.3.2.13.&nbsp; site Cell<A>.read() :: A">
+                                <code class="code"><span class="hl-variable">Cell</span>.<span class="hl-variable">read</span></code>
+                            </a>
+</th>
+                        <td>
+Read a value from the cell.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node35" title="B.3.2.14.&nbsp; site Cell<A>.write() :: Signal">
+                                <code class="code"><span class="hl-variable">Cell</span>.<span class="hl-variable">write</span></code>
+                            </a>
+</th>
+                        <td>
+Write a value to the cell.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node36" title="B.3.2.15.&nbsp; site Ref<A>() :: Ref<A>">
+                                <code class="code"><span class="hl-variable">Ref</span></code>
+                            </a>
+</th>
+                        <td>
+Create an empty rewritable reference.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node37" title="B.3.2.16.&nbsp; site Ref<A>(A) :: Ref<A>">
+                                <code class="code"><span class="hl-variable">Ref</span></code>
+                            </a>
+</th>
+                        <td>
+Create a rewritable reference containing the provided value.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node38" title="B.3.2.17.&nbsp; site Ref<A>.read() :: A">
+                                <code class="code"><span class="hl-variable">Ref</span>.<span class="hl-variable">read</span></code>
+                            </a>
+</th>
+                        <td>
+Read the value of the reference.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node39" title="B.3.2.18.&nbsp; site Ref<A>.write() :: Signal">
+                                <code class="code"><span class="hl-variable">Ref</span>.<span class="hl-variable">write</span></code>
+                            </a>
+</th>
+                        <td>
+Write a value to the reference.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node40" title="B.3.2.19.&nbsp; site Null() :: Bot">
+                                <code class="code"><span class="hl-variable">Null</span></code>
+                            </a>
+</th>
+                        <td>
+Return a Java null value.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node41" title="B.3.2.20.&nbsp; site Array<A>(Integer) :: Array<A>">
+                                <code class="code"><span class="hl-variable">Array</span></code>
+                            </a>
+</th>
+                        <td>
+Create a new array of the given size.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node42" title="B.3.2.21.&nbsp; site Array<A>(Integer, String) :: Array<A>">
+                                <code class="code"><span class="hl-variable">Array</span></code>
+                            </a>
+</th>
+                        <td>
+Create a new primitive array of the given size with the given primitive type.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node43" title="B.3.2.22.&nbsp; site Array<A>.get(Integer) :: A">
+                                <code class="code"><span class="hl-variable">Array</span>.<span class="hl-variable">get</span></code>
+                            </a>
+</th>
+                        <td>
+Get the element of the array given by the index, counting from 0.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node44" title="B.3.2.23.&nbsp; site Array<A>.set(Integer, A) :: Signal">
+                                <code class="code"><span class="hl-variable">Array</span>.<span class="hl-variable">set</span></code>
+                            </a>
+</th>
+                        <td>
+Set the element of the array given by the index, counting from 0.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node45" title="B.3.2.24.&nbsp; site Array<A>.slice(Integer, Integer) :: Array<A>">
+                                <code class="code"><span class="hl-variable">Array</span>.<span class="hl-variable">slice</span></code>
+                            </a>
+</th>
+                        <td>
+Return a copy of the portion of the array with indices covered by the given
+half-open range.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node46" title="B.3.2.25.&nbsp; site Array<A>.length() :: Integer">
+                                <code class="code"><span class="hl-variable">Array</span>.<span class="hl-variable">length</span></code>
+                            </a>
+</th>
+                        <td>
+Return the size of the array.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node47" title="B.3.2.26.&nbsp; site Some<A>(A) :: Option<A>">
+                                <code class="code"><span class="hl-variable">Some</span></code>
+                            </a>
+</th>
+                        <td>
+Construct an available optional value.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node48" title="B.3.2.27.&nbsp; pattern Some<A>(Option<A>) :: (A)">
+                                <code class="code"><span class="hl-variable">Some</span></code>
+                            </a>
+</th>
+                        <td>
+Deconstruct an available optional value.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node49" title="B.3.2.28.&nbsp; site None<A>(A) :: Option<A>">
+                                <code class="code"><span class="hl-variable">None</span></code>
+                            </a>
+</th>
+                        <td>
+Construct an unavailable optional value.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node50" title="B.3.2.29.&nbsp; pattern None<A>(Option<A>) :: ()">
+                                <code class="code"><span class="hl-variable">None</span></code>
+                            </a>
+</th>
+                        <td>
+Deconstruct an unavailable optional value.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node51" title="B.3.2.30.&nbsp; site Left<A>(A) :: Either<A>">
+                                <code class="code"><span class="hl-variable">Left</span></code>
+                            </a>
+</th>
+                        <td>
+Construct a "left" member of a union.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node52" title="B.3.2.31.&nbsp; pattern Left<A>(Either<A>) :: A">
+                                <code class="code"><span class="hl-variable">Left</span></code>
+                            </a>
+</th>
+                        <td>
+Deconstruct a "left" member of a union.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node53" title="B.3.2.32.&nbsp; site Right<A>(A) :: Either<A>">
+                                <code class="code"><span class="hl-variable">Right</span></code>
+                            </a>
+</th>
+                        <td>
+Construct a "right" member of a union.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node54" title="B.3.2.33.&nbsp; pattern Right<A>(Either<A>) :: A">
+                                <code class="code"><span class="hl-variable">Right</span></code>
+                            </a>
+</th>
+                        <td>
+Deconstruct a "right" member of a union.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node55" title="B.3.2.34.&nbsp; def fst<A,B>(A,B) :: A">
+                                <code class="code"><span class="hl-variable">fst</span></code>
+                            </a>
+</th>
+                        <td>
+Return the first element of a pair.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node56" title="B.3.2.35.&nbsp; def snd<A,B>(A,B) :: B">
+                                <code class="code"><span class="hl-variable">snd</span></code>
+                            </a>
+</th>
+                        <td>
+Return the second element of a pair.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node57" title="B.3.2.36.&nbsp; def swap<A,B>((A,B)) :: (B,A)">
+                                <code class="code"><span class="hl-variable">swap</span></code>
+                            </a>
+</th>
+                        <td>
+Swap the elements of a pair.
+</td>
+                    </tr></table><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node22"></a>B.3.2.1.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Semaphore</span>(<span class="hl-variable">Integer</span>) :: <span class="hl-variable">Semaphore</span></code>
 </h4></div></div></div><p>Construct a semaphore with the given number of available items.</p><p>
                         <pre class="orc">
@@ -1436,39 +1965,39 @@ data.inc
 <span class="hl-variable">println</span>(<span class="hl-literal">"Entering critical section"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
 <span class="hl-variable">println</span>(<span class="hl-literal">"Leaving critical section"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
 <span class="hl-variable">lock</span>.<span class="hl-variable">release</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span></pre>
-                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10F2A"></a>B.3.2.2.&nbsp;
+                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node23"></a>B.3.2.2.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Semaphore</span>.<span class="hl-variable">acquire</span>() :: <span class="hl-variable">Signal</span></code>
-</h4></div></div></div><p>Acquire an item. If none are available, block until one becomes available.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10F32"></a>B.3.2.3.&nbsp;
+</h4></div></div></div><p>Acquire an item. If none are available, block until one becomes available.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node24"></a>B.3.2.3.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Semaphore</span>.<span class="hl-variable">release</span>() :: <span class="hl-variable">Signal</span></code>
 </h4></div></div></div><p>Release an item.  This may be called to add items beyond
-the initial number of available items with which the semaphore was constructed.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10F3A"></a>B.3.2.4.&nbsp;
+the initial number of available items with which the semaphore was constructed.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node25"></a>B.3.2.4.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Buffer</span>&lt;<span class="hl-variable">A</span>&gt;() :: <span class="hl-variable">Buffer</span>&lt;<span class="hl-variable">A</span>&gt;</code>
 </h4></div></div></div><p>Create a new buffer (FIFO channel) of unlimited size.</p><p>
                         <pre class="orc">
 <span class="hl-keyword">val</span> <span class="hl-variable">b</span> = <span class="hl-variable">Buffer</span>()
 <span class="hl-variable">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">b</span>.<span class="hl-variable">put</span>(<span class="hl-literal">10</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
 <span class="hl-combinator">|</span> <span class="hl-variable">b</span>.<span class="hl-variable">get</span>()</pre>
-                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10F48"></a>B.3.2.5.&nbsp;
+                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node26"></a>B.3.2.5.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Buffer</span>&lt;<span class="hl-variable">A</span>&gt;.<span class="hl-variable">get</span>() :: <span class="hl-variable">A</span></code>
-</h4></div></div></div><p>Get an item from the buffer. If no items are available, block until one becomes available.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10F50"></a>B.3.2.6.&nbsp;
+</h4></div></div></div><p>Get an item from the buffer. If no items are available, block until one becomes available.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node27"></a>B.3.2.6.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Buffer</span>&lt;<span class="hl-variable">A</span>&gt;.<span class="hl-variable">getnb</span>() :: <span class="hl-variable">A</span></code>
-</h4></div></div></div><p>Get an item from the buffer. If no items are available, fail silently.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10F58"></a>B.3.2.7.&nbsp;
+</h4></div></div></div><p>Get an item from the buffer. If no items are available, fail silently.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node28"></a>B.3.2.7.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Buffer</span>&lt;<span class="hl-variable">A</span>&gt;.<span class="hl-variable">put</span>(<span class="hl-variable">A</span>) :: <span class="hl-variable">Signal</span></code>
-</h4></div></div></div><p>Put an item in the buffer.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10F60"></a>B.3.2.8.&nbsp;
+</h4></div></div></div><p>Put an item in the buffer.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node29"></a>B.3.2.8.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Buffer</span>&lt;<span class="hl-variable">A</span>&gt;.<span class="hl-variable">close</span>() :: <span class="hl-variable">Signal</span></code>
 </h4></div></div></div><p>Close the buffer. This has the effect of immediately causing any blocked calls
 to <code class="code"><span class="hl-variable">get</span></code> to fail silently. In addition, any subsequent calls to
-<code class="code"><span class="hl-variable">get</span></code> or <code class="code"><span class="hl-variable">put</span></code> will fail silently.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10F71"></a>B.3.2.9.&nbsp;
+<code class="code"><span class="hl-variable">get</span></code> or <code class="code"><span class="hl-variable">put</span></code> will fail silently.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node30"></a>B.3.2.9.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">SyncChannel</span>&lt;<span class="hl-variable">A</span>&gt;() :: <span class="hl-variable">SyncChannel</span>&lt;<span class="hl-variable">A</span>&gt;</code>
 </h4></div></div></div><p>Create a synchronous channel.</p><p>
                         <pre class="orc">
 <span class="hl-keyword">val</span> <span class="hl-variable">c</span> = <span class="hl-variable">SyncChannel</span>()
 <span class="hl-variable">c</span>.<span class="hl-variable">put</span>(<span class="hl-literal">10</span>) <span class="hl-combinator">|</span> <span class="hl-variable">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>.<span class="hl-variable">get</span>()</pre>
-                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10F7F"></a>B.3.2.10.&nbsp;
+                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node31"></a>B.3.2.10.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">SyncChannel</span>&lt;<span class="hl-variable">A</span>&gt;.<span class="hl-variable">get</span>() :: <span class="hl-variable">A</span></code>
-</h4></div></div></div><p>Receive an item over the channel. If no sender is available, block until one becomes available.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10F87"></a>B.3.2.11.&nbsp;
+</h4></div></div></div><p>Receive an item over the channel. If no sender is available, block until one becomes available.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node32"></a>B.3.2.11.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">SyncChannel</span>&lt;<span class="hl-variable">A</span>&gt;.<span class="hl-variable">put</span>(<span class="hl-variable">A</span>) :: <span class="hl-variable">Signal</span></code>
-</h4></div></div></div><p>Send an item over the channel. If no receiver is available, block until one becomes available.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10F8F"></a>B.3.2.12.&nbsp;
+</h4></div></div></div><p>Send an item over the channel. If no receiver is available, block until one becomes available.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node33"></a>B.3.2.12.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Cell</span>&lt;<span class="hl-variable">A</span>&gt;() :: <span class="hl-variable">Cell</span>&lt;<span class="hl-variable">A</span>&gt;</code>
 </h4></div></div></div><p>Create a write-once cell.</p><p>
                         <pre class="orc">
@@ -1476,11 +2005,11 @@ to <code class="code"><span class="hl-variable">get</span></code> to fail silent
 <span class="hl-variable">c</span>.<span class="hl-variable">write</span>(<span class="hl-literal">5</span>)
 <span class="hl-combinator">|</span> <span class="hl-variable">c</span>.<span class="hl-variable">write</span>(<span class="hl-literal">10</span>)
 <span class="hl-combinator">|</span> <span class="hl-variable">c</span>.<span class="hl-variable">read</span>()</pre>
-                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10F9D"></a>B.3.2.13.&nbsp;
+                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node34"></a>B.3.2.13.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Cell</span>&lt;<span class="hl-variable">A</span>&gt;.<span class="hl-variable">read</span>() :: <span class="hl-variable">A</span></code>
-</h4></div></div></div><p>Read a value from the cell. If the cell does not yet have a value, block until it receives one.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10FA5"></a>B.3.2.14.&nbsp;
+</h4></div></div></div><p>Read a value from the cell. If the cell does not yet have a value, block until it receives one.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node35"></a>B.3.2.14.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Cell</span>&lt;<span class="hl-variable">A</span>&gt;.<span class="hl-variable">write</span>() :: <span class="hl-variable">Signal</span></code>
-</h4></div></div></div><p>Write a value to the cell. If the cell already has a value, fail silently.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10FAD"></a>B.3.2.15.&nbsp;
+</h4></div></div></div><p>Write a value to the cell. If the cell already has a value, fail silently.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node36"></a>B.3.2.15.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Ref</span>&lt;<span class="hl-variable">A</span>&gt;() :: <span class="hl-variable">Ref</span>&lt;<span class="hl-variable">A</span>&gt;</code>
 </h4></div></div></div><p>Create an empty rewritable reference.</p><p>
                         <pre class="orc">
@@ -1490,17 +2019,17 @@ to <code class="code"><span class="hl-variable">get</span></code> to fail silent
   <span class="hl-variable">r</span>.<span class="hl-variable">write</span>(<span class="hl-literal">10</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
   <span class="hl-variable">println</span>(<span class="hl-variable">r</span>.<span class="hl-variable">read</span>()) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
   <span class="hl-keyword">stop</span></pre>
-                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10FBB"></a>B.3.2.16.&nbsp;
+                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node37"></a>B.3.2.16.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Ref</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-variable">A</span>) :: <span class="hl-variable">Ref</span>&lt;<span class="hl-variable">A</span>&gt;</code>
-</h4></div></div></div><p>Create a rewritable reference containing the provided value.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10FC3"></a>B.3.2.17.&nbsp;
+</h4></div></div></div><p>Create a rewritable reference containing the provided value.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node38"></a>B.3.2.17.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Ref</span>&lt;<span class="hl-variable">A</span>&gt;.<span class="hl-variable">read</span>() :: <span class="hl-variable">A</span></code>
-</h4></div></div></div><p>Read the value of the reference. If the reference is empty, block until it is no longer empty.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10FCB"></a>B.3.2.18.&nbsp;
+</h4></div></div></div><p>Read the value of the reference. If the reference is empty, block until it is no longer empty.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node39"></a>B.3.2.18.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Ref</span>&lt;<span class="hl-variable">A</span>&gt;.<span class="hl-variable">write</span>() :: <span class="hl-variable">Signal</span></code>
-</h4></div></div></div><p>Write a value to the reference.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10FD3"></a>B.3.2.19.&nbsp;
+</h4></div></div></div><p>Write a value to the reference.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node40"></a>B.3.2.19.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Null</span>() :: <span class="hl-variable">Bot</span></code>
 </h4></div></div></div><p>Return a Java null value. This is only necessary to interface with certain
 Java libraries, Orc programs should use the <code class="code"><span class="hl-variable">None</span>()</code> constructor
-instead of null values.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10FDE"></a>B.3.2.20.&nbsp;
+instead of null values.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node41"></a>B.3.2.20.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Array</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-variable">Integer</span>) :: <span class="hl-variable">Array</span>&lt;<span class="hl-variable">A</span>&gt;</code>
 </h4></div></div></div><p>Create a new array of the given size.</p><p>
                         <pre class="orc">
@@ -1511,39 +2040,39 @@ instead of null values.</p></div><div class="sect3" lang="en"><div class="titlep
   <span class="hl-combinator">;</span> <span class="hl-variable">a</span>
 <span class="hl-keyword">val</span> <span class="hl-variable">a</span> = <span class="hl-variable">fillArray</span>(<span class="hl-variable">Array</span>(<span class="hl-literal">3</span>), <span class="hl-variable">let</span>)
 <span class="hl-variable">a</span>.<span class="hl-variable">get</span>(<span class="hl-literal">0</span>) <span class="hl-combinator">|</span> <span class="hl-variable">a</span>.<span class="hl-variable">get</span>(<span class="hl-literal">1</span>) <span class="hl-combinator">|</span> <span class="hl-variable">a</span>.<span class="hl-variable">get</span>(<span class="hl-literal">2</span>)</pre>
-                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10FEC"></a>B.3.2.21.&nbsp;
+                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node42"></a>B.3.2.21.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Array</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-variable">Integer</span>, <span class="hl-variable">String</span>) :: <span class="hl-variable">Array</span>&lt;<span class="hl-variable">A</span>&gt;</code>
 </h4></div></div></div><p>Create a new primitive array of the given size with the given primitive type.
 The primitive type should match the element type of the array, although a
 typechecker may not be able to verify this. This constructor is only necessary
 when interfacing with certain Java libraries; most programs will just use the 
-<code class="code"><span class="hl-variable">Array</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-variable">Integer</span>)</code> constructor.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10FF7"></a>B.3.2.22.&nbsp;
+<code class="code"><span class="hl-variable">Array</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-variable">Integer</span>)</code> constructor.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node43"></a>B.3.2.22.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Array</span>&lt;<span class="hl-variable">A</span>&gt;.<span class="hl-variable">get</span>(<span class="hl-variable">Integer</span>) :: <span class="hl-variable">A</span></code>
-</h4></div></div></div><p>Get the element of the array given by the index, counting from 0.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10FFF"></a>B.3.2.23.&nbsp;
+</h4></div></div></div><p>Get the element of the array given by the index, counting from 0.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node44"></a>B.3.2.23.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Array</span>&lt;<span class="hl-variable">A</span>&gt;.<span class="hl-variable">set</span>(<span class="hl-variable">Integer</span>, <span class="hl-variable">A</span>) :: <span class="hl-variable">Signal</span></code>
-</h4></div></div></div><p>Set the element of the array given by the index, counting from 0.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11007"></a>B.3.2.24.&nbsp;
+</h4></div></div></div><p>Set the element of the array given by the index, counting from 0.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node45"></a>B.3.2.24.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Array</span>&lt;<span class="hl-variable">A</span>&gt;.<span class="hl-variable">slice</span>(<span class="hl-variable">Integer</span>, <span class="hl-variable">Integer</span>) :: <span class="hl-variable">Array</span>&lt;<span class="hl-variable">A</span>&gt;</code>
 </h4></div></div></div><p>Return a copy of the portion of the array with indices covered by the given
-half-open range. The result array is still indexed counting from 0.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1100F"></a>B.3.2.25.&nbsp;
+half-open range. The result array is still indexed counting from 0.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node46"></a>B.3.2.25.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Array</span>&lt;<span class="hl-variable">A</span>&gt;.<span class="hl-variable">length</span>() :: <span class="hl-variable">Integer</span></code>
-</h4></div></div></div><p>Return the size of the array.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11017"></a>B.3.2.26.&nbsp;
+</h4></div></div></div><p>Return the size of the array.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node47"></a>B.3.2.26.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Some</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-variable">A</span>) :: <span class="hl-variable">Option</span>&lt;<span class="hl-variable">A</span>&gt;</code>
-</h4></div></div></div><p>Construct an available optional value.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1101F"></a>B.3.2.27.&nbsp;
+</h4></div></div></div><p>Construct an available optional value.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node48"></a>B.3.2.27.&nbsp;
 <code class="code"><span class="hl-keyword">pattern</span> <span class="hl-variable">Some</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-variable">Option</span>&lt;<span class="hl-variable">A</span>&gt;) :: (<span class="hl-variable">A</span>)</code>
 </h4></div></div></div><p>Deconstruct an available optional value.</p><p>
                         <pre class="orc">
 <span class="hl-variable">Some</span>(<span class="hl-literal">3</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">Some</span>(<span class="hl-variable">x</span>)<span class="hl-combinator">&gt;</span> <span class="hl-variable">x</span></pre>
-                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1102D"></a>B.3.2.28.&nbsp;
+                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node49"></a>B.3.2.28.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">None</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-variable">A</span>) :: <span class="hl-variable">Option</span>&lt;<span class="hl-variable">A</span>&gt;</code>
-</h4></div></div></div><p>Construct an unavailable optional value.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11035"></a>B.3.2.29.&nbsp;
+</h4></div></div></div><p>Construct an unavailable optional value.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node50"></a>B.3.2.29.&nbsp;
 <code class="code"><span class="hl-keyword">pattern</span> <span class="hl-variable">None</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-variable">Option</span>&lt;<span class="hl-variable">A</span>&gt;) :: ()</code>
 </h4></div></div></div><p>Deconstruct an unavailable optional value.</p><p>
                         <pre class="orc">
   <span class="hl-variable">None</span>() <span class="hl-combinator">&gt;</span><span class="hl-variable">None</span>()<span class="hl-combinator">&gt;</span> <span class="hl-literal">true</span>
 <span class="hl-combinator">|</span> <span class="hl-variable">Some</span>(<span class="hl-literal">3</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">None</span>()<span class="hl-combinator">&gt;</span> <span class="hl-literal">false</span></pre>
-                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11043"></a>B.3.2.30.&nbsp;
+                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node51"></a>B.3.2.30.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Left</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-variable">A</span>) :: <span class="hl-variable">Either</span>&lt;<span class="hl-variable">A</span>&gt;</code>
-</h4></div></div></div><p>Construct a "left" member of a union.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1104B"></a>B.3.2.31.&nbsp;
+</h4></div></div></div><p>Construct a "left" member of a union.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node52"></a>B.3.2.31.&nbsp;
 <code class="code"><span class="hl-keyword">pattern</span> <span class="hl-variable">Left</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-variable">Either</span>&lt;<span class="hl-variable">A</span>&gt;) :: <span class="hl-variable">A</span></code>
 </h4></div></div></div><p>Deconstruct a "left" member of a union.</p><p>
                         <pre class="orc">
@@ -1551,9 +2080,9 @@ half-open range. The result array is still indexed counting from 0.</p></div><di
    <span class="hl-variable">x</span> <span class="hl-combinator">&gt;</span><span class="hl-variable">Right</span>(<span class="hl-variable">_</span>)<span class="hl-combinator">&gt;</span> <span class="hl-literal">"right"</span>
  <span class="hl-combinator">|</span> <span class="hl-variable">x</span> <span class="hl-combinator">&gt;</span><span class="hl-variable">Left</span>(<span class="hl-variable">_</span>)<span class="hl-combinator">&gt;</span> <span class="hl-literal">"left"</span>
 )</pre>
-                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11059"></a>B.3.2.32.&nbsp;
+                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node53"></a>B.3.2.32.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Right</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-variable">A</span>) :: <span class="hl-variable">Either</span>&lt;<span class="hl-variable">A</span>&gt;</code>
-</h4></div></div></div><p>Construct a "right" member of a union.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11061"></a>B.3.2.33.&nbsp;
+</h4></div></div></div><p>Construct a "right" member of a union.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node54"></a>B.3.2.33.&nbsp;
 <code class="code"><span class="hl-keyword">pattern</span> <span class="hl-variable">Right</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-variable">Either</span>&lt;<span class="hl-variable">A</span>&gt;) :: <span class="hl-variable">A</span></code>
 </h4></div></div></div><p>Deconstruct a "right" member of a union.</p><p>
                         <pre class="orc">
@@ -1561,33 +2090,212 @@ half-open range. The result array is still indexed counting from 0.</p></div><di
    <span class="hl-variable">x</span> <span class="hl-combinator">&gt;</span><span class="hl-variable">Right</span>(<span class="hl-variable">_</span>)<span class="hl-combinator">&gt;</span> <span class="hl-literal">"right"</span>
  <span class="hl-combinator">|</span> <span class="hl-variable">x</span> <span class="hl-combinator">&gt;</span><span class="hl-variable">Left</span>(<span class="hl-variable">_</span>)<span class="hl-combinator">&gt;</span> <span class="hl-literal">"left"</span>
 )</pre>
-                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1106F"></a>B.3.2.34.&nbsp;
+                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node55"></a>B.3.2.34.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">fst</span>&lt;<span class="hl-variable">A</span>,<span class="hl-variable">B</span>&gt;(<span class="hl-variable">A</span>,<span class="hl-variable">B</span>) :: <span class="hl-variable">A</span></code>
-</h4></div></div></div><p>Return the first element of a pair.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11077"></a>B.3.2.35.&nbsp;
+</h4></div></div></div><p>Return the first element of a pair.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node56"></a>B.3.2.35.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">snd</span>&lt;<span class="hl-variable">A</span>,<span class="hl-variable">B</span>&gt;(<span class="hl-variable">A</span>,<span class="hl-variable">B</span>) :: <span class="hl-variable">B</span></code>
-</h4></div></div></div><p>Return the second element of a pair.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1107F"></a>B.3.2.36.&nbsp;
+</h4></div></div></div><p>Return the second element of a pair.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node57"></a>B.3.2.36.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">swap</span>&lt;<span class="hl-variable">A</span>,<span class="hl-variable">B</span>&gt;((<span class="hl-variable">A</span>,<span class="hl-variable">B</span>)) :: (<span class="hl-variable">B</span>,<span class="hl-variable">A</span>)</code>
-</h4></div></div></div><p>Swap the elements of a pair.</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11087"></a>B.3.3.&nbsp;
+</h4></div></div></div><p>Swap the elements of a pair.</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N114BA"></a>B.3.3.&nbsp;
 functional.inc
-</h3></div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1108A"></a>B.3.3.1.&nbsp;
+</h3></div></div></div><table cellspacing="5"><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node58" title="B.3.3.1.&nbsp; site apply<A,B>(lambda (A, ...) :: B, [A]) :: B">
+                                <code class="code"><span class="hl-variable">apply</span></code>
+                            </a>
+</th>
+                        <td>
+Apply a function to a list of arguments.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node59" title="B.3.3.2.&nbsp; def curry<A,B,C>(lambda (A,B) :: C)(A)(B) :: C">
+                                <code class="code"><span class="hl-variable">curry</span></code>
+                            </a>
+</th>
+                        <td>
+Curry a function of two arguments.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node60" title="B.3.3.3.&nbsp; def curry3<A,B,C,D>(lambda (A,B,C) :: D)(A)(B)(C) :: D">
+                                <code class="code"><span class="hl-variable">curry3</span></code>
+                            </a>
+</th>
+                        <td>
+Curry a function of three arguments.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node61" title="B.3.3.4.&nbsp; def uncurry<A,B,C>(lambda (A)(B) :: C)(A, B) :: C">
+                                <code class="code"><span class="hl-variable">uncurry</span></code>
+                            </a>
+</th>
+                        <td>
+Uncurry a function of two arguments.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node62" title="B.3.3.5.&nbsp; def uncurry3<A,B,C,D>(lambda (A)(B)(C) :: D)(A,B,C) :: D">
+                                <code class="code"><span class="hl-variable">uncurry3</span></code>
+                            </a>
+</th>
+                        <td>
+Uncurry a function of three arguments.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node63" title="B.3.3.6.&nbsp; def flip<A,B,C>(lambda (A, B) :: C)(B, A) :: C">
+                                <code class="code"><span class="hl-variable">flip</span></code>
+                            </a>
+</th>
+                        <td>
+Flip the order of parameters of a two-argument function.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node64" title="B.3.3.7.&nbsp; def const<A>(A)() :: A">
+                                <code class="code"><span class="hl-variable">const</span></code>
+                            </a>
+</th>
+                        <td>
+Create a function which returns a constant value.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node65" title="B.3.3.8.&nbsp; def delay<A,B>(lambda (A) :: B, A)() :: B">
+                                <code class="code"><span class="hl-variable">delay</span></code>
+                            </a>
+</th>
+                        <td>
+Return a thunk which applies a function to a single argument.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node66" title="B.3.3.9.&nbsp; def ignore<A,B>(lambda () :: B)(A) :: B">
+                                <code class="code"><span class="hl-variable">ignore</span></code>
+                            </a>
+</th>
+                        <td>
+From a function of no arguments, create a function
+of one argument, which is ignored.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node67" title="B.3.3.10.&nbsp; def compose<A,B,C>(lambda (B) :: C, lambda (A) :: B)(A) :: C">
+                                <code class="code"><span class="hl-variable">compose</span></code>
+                            </a>
+</th>
+                        <td>
+Compose two single-argument functions.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node68" title="B.3.3.11.&nbsp; def until<A>(lambda (A) :: Boolean, lambda (A) :: A)(A)">
+                                <code class="code"><span class="hl-variable">until</span></code>
+                            </a>
+</th>
+                        <td>
+Iterate a function until a predicate returns false.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node69" title="B.3.3.12.&nbsp; def while<A>(lambda (A) :: Boolean, lambda (A) :: A)(A)">
+                                <code class="code"><span class="hl-variable">while</span></code>
+                            </a>
+</th>
+                        <td>
+Iterate a function while a predicate returns true.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node70" title="B.3.3.13.&nbsp; def repeat<A>(lambda () :: A) :: A">
+                                <code class="code"><span class="hl-variable">repeat</span></code>
+                            </a>
+</th>
+                        <td>
+Call a function sequentially, publishing
+each value returned by the function until it no longer returns.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node71" title="B.3.3.14.&nbsp; def fork<A>([lambda () :: A]) :: A">
+                                <code class="code"><span class="hl-variable">fork</span></code>
+                            </a>
+</th>
+                        <td>
+Call a list of functions in parallel, publishing
+all values published by the functions.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node72" title="B.3.3.15.&nbsp; def sequence<A>([lambda () :: A]) :: Signal">
+                                <code class="code"><span class="hl-variable">sequence</span></code>
+                            </a>
+</th>
+                        <td>
+Call a list of functions in sequence, publishing
+a signal whenever the last function publishes.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node73" title="B.3.3.16.&nbsp; def join<A>([lambda () :: A]) :: Signal">
+                                <code class="code"><span class="hl-variable">join</span></code>
+                            </a>
+</th>
+                        <td>
+Call a list of functions in parallel and publish
+a signal once all functions have completed.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node74" title="B.3.3.17.&nbsp; def por(lambda () :: Boolean, lambda () :: Boolean) :: Boolean">
+                                <code class="code"><span class="hl-variable">por</span></code>
+                            </a>
+</th>
+                        <td>
+Parallel or.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node75" title="B.3.3.18.&nbsp; def pand(lambda () :: Boolean, lambda () :: Boolean) :: Boolean">
+                                <code class="code"><span class="hl-variable">pand</span></code>
+                            </a>
+</th>
+                        <td>
+Parallel and.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node76" title="B.3.3.19.&nbsp; def collect<A>(lambda () :: A) :: [A]">
+                                <code class="code"><span class="hl-variable">collect</span></code>
+                            </a>
+</th>
+                        <td>
+Run a function, collecting all publications in a list.
+</td>
+                    </tr></table><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node58"></a>B.3.3.1.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">apply</span>&lt;<span class="hl-variable">A</span>,<span class="hl-variable">B</span>&gt;(<span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>, ...) :: <span class="hl-variable">B</span>, [<span class="hl-variable">A</span>]) :: <span class="hl-variable">B</span></code>
-</h4></div></div></div><p>Apply a function to a list of arguments.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11092"></a>B.3.3.2.&nbsp;
+</h4></div></div></div><p>Apply a function to a list of arguments.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node59"></a>B.3.3.2.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">curry</span>&lt;<span class="hl-variable">A</span>,<span class="hl-variable">B</span>,<span class="hl-variable">C</span>&gt;(<span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>,<span class="hl-variable">B</span>) :: <span class="hl-variable">C</span>)(<span class="hl-variable">A</span>)(<span class="hl-variable">B</span>) :: <span class="hl-variable">C</span></code>
-</h4></div></div></div><p>Curry a function of two arguments.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1109A"></a>B.3.3.3.&nbsp;
+</h4></div></div></div><p>Curry a function of two arguments.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node60"></a>B.3.3.3.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">curry3</span>&lt;<span class="hl-variable">A</span>,<span class="hl-variable">B</span>,<span class="hl-variable">C</span>,<span class="hl-variable">D</span>&gt;(<span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>,<span class="hl-variable">B</span>,<span class="hl-variable">C</span>) :: <span class="hl-variable">D</span>)(<span class="hl-variable">A</span>)(<span class="hl-variable">B</span>)(<span class="hl-variable">C</span>) :: <span class="hl-variable">D</span></code>
-</h4></div></div></div><p>Curry a function of three arguments.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N110A2"></a>B.3.3.4.&nbsp;
+</h4></div></div></div><p>Curry a function of three arguments.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node61"></a>B.3.3.4.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">uncurry</span>&lt;<span class="hl-variable">A</span>,<span class="hl-variable">B</span>,<span class="hl-variable">C</span>&gt;(<span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>)(<span class="hl-variable">B</span>) :: <span class="hl-variable">C</span>)(<span class="hl-variable">A</span>, <span class="hl-variable">B</span>) :: <span class="hl-variable">C</span></code>
-</h4></div></div></div><p>Uncurry a function of two arguments.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N110AA"></a>B.3.3.5.&nbsp;
+</h4></div></div></div><p>Uncurry a function of two arguments.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node62"></a>B.3.3.5.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">uncurry3</span>&lt;<span class="hl-variable">A</span>,<span class="hl-variable">B</span>,<span class="hl-variable">C</span>,<span class="hl-variable">D</span>&gt;(<span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>)(<span class="hl-variable">B</span>)(<span class="hl-variable">C</span>) :: <span class="hl-variable">D</span>)(<span class="hl-variable">A</span>,<span class="hl-variable">B</span>,<span class="hl-variable">C</span>) :: <span class="hl-variable">D</span></code>
-</h4></div></div></div><p>Uncurry a function of three arguments.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N110B2"></a>B.3.3.6.&nbsp;
+</h4></div></div></div><p>Uncurry a function of three arguments.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node63"></a>B.3.3.6.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">flip</span>&lt;<span class="hl-variable">A</span>,<span class="hl-variable">B</span>,<span class="hl-variable">C</span>&gt;(<span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>, <span class="hl-variable">B</span>) :: <span class="hl-variable">C</span>)(<span class="hl-variable">B</span>, <span class="hl-variable">A</span>) :: <span class="hl-variable">C</span></code>
-</h4></div></div></div><p>Flip the order of parameters of a two-argument function.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N110BA"></a>B.3.3.7.&nbsp;
+</h4></div></div></div><p>Flip the order of parameters of a two-argument function.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node64"></a>B.3.3.7.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">const</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-variable">A</span>)() :: <span class="hl-variable">A</span></code>
-</h4></div></div></div><p>Create a function which returns a constant value.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N110C2"></a>B.3.3.8.&nbsp;
+</h4></div></div></div><p>Create a function which returns a constant value.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node65"></a>B.3.3.8.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">delay</span>&lt;<span class="hl-variable">A</span>,<span class="hl-variable">B</span>&gt;(<span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>) :: <span class="hl-variable">B</span>, <span class="hl-variable">A</span>)() :: <span class="hl-variable">B</span></code>
-</h4></div></div></div><p>Return a thunk which applies a function to a single argument.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N110CA"></a>B.3.3.9.&nbsp;
+</h4></div></div></div><p>Return a thunk which applies a function to a single argument.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node66"></a>B.3.3.9.&nbsp;
+<code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">ignore</span>&lt;<span class="hl-variable">A</span>,<span class="hl-variable">B</span>&gt;(<span class="hl-keyword">lambda</span> () :: <span class="hl-variable">B</span>)(<span class="hl-variable">A</span>) :: <span class="hl-variable">B</span></code>
+</h4></div></div></div><p>From a function of no arguments, create a function
+of one argument, which is ignored.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node67"></a>B.3.3.10.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">compose</span>&lt;<span class="hl-variable">A</span>,<span class="hl-variable">B</span>,<span class="hl-variable">C</span>&gt;(<span class="hl-keyword">lambda</span> (<span class="hl-variable">B</span>) :: <span class="hl-variable">C</span>, <span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>) :: <span class="hl-variable">B</span>)(<span class="hl-variable">A</span>) :: <span class="hl-variable">C</span></code>
-</h4></div></div></div><p>Compose two single-argument functions.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N110D2"></a>B.3.3.10.&nbsp;
+</h4></div></div></div><p>Compose two single-argument functions.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node68"></a>B.3.3.11.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">until</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>) :: <span class="hl-variable">Boolean</span>, <span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>) :: <span class="hl-variable">A</span>)(<span class="hl-variable">A</span>)</code>
 </h4></div></div></div><p>Iterate a function until a predicate returns false.
 Publishes every value returned by the function.</p><p>
@@ -1595,7 +2303,7 @@ Publishes every value returned by the function.</p><p>
 <span class="hl-variable">until</span>(
   <span class="hl-keyword">lambda</span> (<span class="hl-variable">n</span>) = (<span class="hl-variable">n</span> = <span class="hl-literal">5</span>),
   <span class="hl-keyword">lambda</span> (<span class="hl-variable">n</span>) = <span class="hl-variable">n</span>+<span class="hl-literal">1</span> )(<span class="hl-literal">0</span>)</pre>
-                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N110E0"></a>B.3.3.11.&nbsp;
+                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node69"></a>B.3.3.12.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">while</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>) :: <span class="hl-variable">Boolean</span>, <span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>) :: <span class="hl-variable">A</span>)(<span class="hl-variable">A</span>)</code>
 </h4></div></div></div><p>Iterate a function while a predicate returns true.
 Publishes every value passed to the function.</p><p>
@@ -1603,57 +2311,342 @@ Publishes every value passed to the function.</p><p>
 <span class="hl-variable">while</span>(
   <span class="hl-keyword">lambda</span> (<span class="hl-variable">n</span>) = (<span class="hl-variable">n</span> <span class="hl-site">&lt;=</span> <span class="hl-literal">5</span>),
   <span class="hl-keyword">lambda</span> (<span class="hl-variable">n</span>) = <span class="hl-variable">n</span>+<span class="hl-literal">1</span> )(<span class="hl-literal">0</span>)</pre>
-                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N110EE"></a>B.3.3.12.&nbsp;
+                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node70"></a>B.3.3.13.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">repeat</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-keyword">lambda</span> () :: <span class="hl-variable">A</span>) :: <span class="hl-variable">A</span></code>
 </h4></div></div></div><p>Call a function sequentially, publishing
-each value returned by the function until it no longer returns.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N110F6"></a>B.3.3.13.&nbsp;
+each value returned by the function until it no longer returns.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node71"></a>B.3.3.14.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">fork</span>&lt;<span class="hl-variable">A</span>&gt;([<span class="hl-keyword">lambda</span> () :: <span class="hl-variable">A</span>]) :: <span class="hl-variable">A</span></code>
 </h4></div></div></div><p>Call a list of functions in parallel, publishing
-all values published by the functions.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N110FE"></a>B.3.3.14.&nbsp;
+all values published by the functions.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node72"></a>B.3.3.15.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">sequence</span>&lt;<span class="hl-variable">A</span>&gt;([<span class="hl-keyword">lambda</span> () :: <span class="hl-variable">A</span>]) :: <span class="hl-variable">Signal</span></code>
 </h4></div></div></div><p>Call a list of functions in sequence, publishing
-a signal whenever the last function publishes.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11106"></a>B.3.3.15.&nbsp;
+a signal whenever the last function publishes.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node73"></a>B.3.3.16.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">join</span>&lt;<span class="hl-variable">A</span>&gt;([<span class="hl-keyword">lambda</span> () :: <span class="hl-variable">A</span>]) :: <span class="hl-variable">Signal</span></code>
 </h4></div></div></div><p>Call a list of functions in parallel and publish
-a signal once all functions have completed.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1110E"></a>B.3.3.16.&nbsp;
+a signal once all functions have completed.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node74"></a>B.3.3.17.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">por</span>(<span class="hl-keyword">lambda</span> () :: <span class="hl-variable">Boolean</span>, <span class="hl-keyword">lambda</span> () :: <span class="hl-variable">Boolean</span>) :: <span class="hl-variable">Boolean</span></code>
 </h4></div></div></div><p>Parallel or. Evaluate two boolean functions in parallel, publishing
 a value as soon as possible, and terminating any unnecessary ongoing
-computation.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11116"></a>B.3.3.17.&nbsp;
+computation.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node75"></a>B.3.3.18.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">pand</span>(<span class="hl-keyword">lambda</span> () :: <span class="hl-variable">Boolean</span>, <span class="hl-keyword">lambda</span> () :: <span class="hl-variable">Boolean</span>) :: <span class="hl-variable">Boolean</span></code>
 </h4></div></div></div><p>Parallel and. Evaluate two boolean functions in parallel, publishing
 a value as soon as possible, and terminating any unnecessary ongoing
-computation.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1111E"></a>B.3.3.18.&nbsp;
+computation.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node76"></a>B.3.3.19.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">collect</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-keyword">lambda</span> () :: <span class="hl-variable">A</span>) :: [<span class="hl-variable">A</span>]</code>
 </h4></div></div></div><p>Run a function, collecting all publications in a list.</p><p>
                         <pre class="orc">
 <span class="hl-variable">collect</span>(<span class="hl-variable">delay</span>(<span class="hl-variable">signals</span>, <span class="hl-literal">5</span>))</pre>
-                    </p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1112C"></a>B.3.4.&nbsp;
+                    </p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N116BF"></a>B.3.4.&nbsp;
 list.inc
-</h3></div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1112F"></a>B.3.4.1.&nbsp;
+</h3></div></div></div><table cellspacing="5"><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node77" title="B.3.4.1.&nbsp; def each<A>([A]) :: A">
+                                <code class="code"><span class="hl-variable">each</span></code>
+                            </a>
+</th>
+                        <td>
+Publish every value in a sequence, simultaneously.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node78" title="B.3.4.2.&nbsp; def map<A,B>(lambda (A) :: B, [A]) :: [B]">
+                                <code class="code"><span class="hl-variable">map</span></code>
+                            </a>
+</th>
+                        <td>
+Apply a function to every element of a sequence (in parallel),
+producing a list of the results.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node79" title="B.3.4.3.&nbsp; def reverse<A>([A]) :: [A]">
+                                <code class="code"><span class="hl-variable">reverse</span></code>
+                            </a>
+</th>
+                        <td>
+Reverse a list.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node80" title="B.3.4.4.&nbsp; def filter<A>(lambda (A) :: Boolean, [A]) :: [A]">
+                                <code class="code"><span class="hl-variable">filter</span></code>
+                            </a>
+</th>
+                        <td>
+Return a list containing only those elements which satisfy the predicate.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node81" title="B.3.4.5.&nbsp; def head<A>([A]) :: A">
+                                <code class="code"><span class="hl-variable">head</span></code>
+                            </a>
+</th>
+                        <td>
+Return the first element of a sequence.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node82" title="B.3.4.6.&nbsp; def tail<A>([A]) :: [A]">
+                                <code class="code"><span class="hl-variable">tail</span></code>
+                            </a>
+</th>
+                        <td>
+Return all but the first element of a sequence.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node83" title="B.3.4.7.&nbsp; def init<A>([A]) :: [A]">
+                                <code class="code"><span class="hl-variable">init</span></code>
+                            </a>
+</th>
+                        <td>
+Return all but the last element of a sequence.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node84" title="B.3.4.8.&nbsp; def last<A>([A]) :: A">
+                                <code class="code"><span class="hl-variable">last</span></code>
+                            </a>
+</th>
+                        <td>
+Return the last element of a sequence.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node85" title="B.3.4.9.&nbsp; def empty<A>([A]) :: Boolean">
+                                <code class="code"><span class="hl-variable">empty</span></code>
+                            </a>
+</th>
+                        <td>
+Is the sequence empty?
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node86" title="B.3.4.10.&nbsp; def index<A>(Integer, [A]) :: A">
+                                <code class="code"><span class="hl-variable">index</span></code>
+                            </a>
+</th>
+                        <td>
+Return the nth element of a list, counting from 0.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node87" title="B.3.4.11.&nbsp; def append<A>([A], [A]) :: [A]">
+                                <code class="code"><span class="hl-variable">append</span></code>
+                            </a>
+</th>
+                        <td>
+Concatenate two lists.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node88" title="B.3.4.12.&nbsp; def foldl<A,B>(lambda (B, A) :: B, B, [A]) :: B">
+                                <code class="code"><span class="hl-variable">foldl</span></code>
+                            </a>
+</th>
+                        <td>
+Reduce a list using the given left-associative binary operation and initial value.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node89" title="B.3.4.13.&nbsp; def foldl1<A>(lambda (A, A) :: A, [A]) :: A">
+                                <code class="code"><span class="hl-variable">foldl1</span></code>
+                            </a>
+</th>
+                        <td>
+A special case of <code class="code"><span class="hl-variable">foldl</span></code> which uses the last element of the list as the
+initial value.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node90" title="B.3.4.14.&nbsp; def foldr<A,B>(lambda (A, B) :: B, B, [A]) :: B">
+                                <code class="code"><span class="hl-variable">foldr</span></code>
+                            </a>
+</th>
+                        <td>
+Reduce a list using the given right-associative binary operation and initial value.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node91" title="B.3.4.15.&nbsp; def foldr1<A>(lambda (A, A) :: A, [A]) :: A">
+                                <code class="code"><span class="hl-variable">foldr1</span></code>
+                            </a>
+</th>
+                        <td>
+A special case of <code class="code"><span class="hl-variable">foldr</span></code> which uses the last element of the list as the
+initial value.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node92" title="B.3.4.16.&nbsp; def zip<A,B>([A], [B]) :: (A, B)">
+                                <code class="code"><span class="hl-variable">zip</span></code>
+                            </a>
+</th>
+                        <td>
+Combine two lists into a list of pairs.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node93" title="B.3.4.17.&nbsp; def unzip<A,B>([(A,B)]) :: ([A], [B])">
+                                <code class="code"><span class="hl-variable">unzip</span></code>
+                            </a>
+</th>
+                        <td>
+Split a list of pairs into a pair of lists.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node94" title="B.3.4.18.&nbsp; def length<A>([A]) :: Integer">
+                                <code class="code"><span class="hl-variable">length</span></code>
+                            </a>
+</th>
+                        <td>
+Return the number of elements in a list.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node95" title="B.3.4.19.&nbsp; def take<A>(Integer, [A]) :: [A]">
+                                <code class="code"><span class="hl-variable">take</span></code>
+                            </a>
+</th>
+                        <td>
+Return the first <code class="code"><span class="hl-variable">n</span></code> elements of a list.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node96" title="B.3.4.20.&nbsp; def drop<A>(Integer, [A]) :: [A]">
+                                <code class="code"><span class="hl-variable">drop</span></code>
+                            </a>
+</th>
+                        <td>
+Return the elements of a list after the first <code class="code"><span class="hl-variable">n</span></code>.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node97" title="B.3.4.21.&nbsp; def member<A>(A, [A]) :: Boolean">
+                                <code class="code"><span class="hl-variable">member</span></code>
+                            </a>
+</th>
+                        <td>
+Is the given item a member of the list?
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node98" title="B.3.4.22.&nbsp; def merge<A extends Comparable>([A], [A]) :: [A]">
+                                <code class="code"><span class="hl-variable">merge</span></code>
+                            </a>
+</th>
+                        <td>
+Merge two sorted lists.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node99" title="B.3.4.23.&nbsp; def mergeBy<A>(lambda (A,A) :: Boolean, [A], [A]) :: [A]">
+                                <code class="code"><span class="hl-variable">mergeBy</span></code>
+                            </a>
+</th>
+                        <td>
+Merge two lists using the given less-than relation.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node100" title="B.3.4.24.&nbsp; def sort<A extends Comparable>([A]) :: [A]">
+                                <code class="code"><span class="hl-variable">sort</span></code>
+                            </a>
+</th>
+                        <td>
+Sort a list.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node101" title="B.3.4.25.&nbsp; def sortBy<A>(lambda (A,A) :: Boolean, [A]) :: [A]">
+                                <code class="code"><span class="hl-variable">sortBy</span></code>
+                            </a>
+</th>
+                        <td>
+Sort a list using the given less-than relation.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node102" title="B.3.4.26.&nbsp; def group<A,B>([(A,B)]) :: [(A,[B])]">
+                                <code class="code"><span class="hl-variable">group</span></code>
+                            </a>
+</th>
+                        <td>
+Given a list of pairs, group together the second
+elements of consecutive pairs with equal first elements.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node103" title="B.3.4.27.&nbsp; def groupBy<A,B>(lambda (A,A) :: Boolean, [(A,B)]) :: [(A,[B])]">
+                                <code class="code"><span class="hl-variable">groupBy</span></code>
+                            </a>
+</th>
+                        <td>
+Given a list of pairs, group together the second
+elements of consecutive pairs with equal first elements,
+using the given equality relation.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node104" title="B.3.4.28.&nbsp; def range(Integer, Integer) :: [Integer]">
+                                <code class="code"><span class="hl-variable">range</span></code>
+                            </a>
+</th>
+                        <td>
+Generate a list of integers in the given half-open range.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node105" title="B.3.4.29.&nbsp; def any<A>(lambda (A) :: Boolean, [A]) :: Boolean">
+                                <code class="code"><span class="hl-variable">any</span></code>
+                            </a>
+</th>
+                        <td>
+Do any the elements of the list match the predicate?
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node106" title="B.3.4.30.&nbsp; def all<A>(lambda (A) :: Boolean, [A]) :: Boolean">
+                                <code class="code"><span class="hl-variable">all</span></code>
+                            </a>
+</th>
+                        <td>
+Do all the elements of the list match the predicate?
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node107" title="B.3.4.31.&nbsp; def sum([Number]) :: Number">
+                                <code class="code"><span class="hl-variable">sum</span></code>
+                            </a>
+</th>
+                        <td>
+Compute the sum of all numbers in a list.
+</td>
+                    </tr></table><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node77"></a>B.3.4.1.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">each</span>&lt;<span class="hl-variable">A</span>&gt;([<span class="hl-variable">A</span>]) :: <span class="hl-variable">A</span></code>
-</h4></div></div></div><p>Publish every value in a sequence, simultaneously.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11137"></a>B.3.4.2.&nbsp;
+</h4></div></div></div><p>Publish every value in a sequence, simultaneously.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node78"></a>B.3.4.2.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">map</span>&lt;<span class="hl-variable">A</span>,<span class="hl-variable">B</span>&gt;(<span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>) :: <span class="hl-variable">B</span>, [<span class="hl-variable">A</span>]) :: [<span class="hl-variable">B</span>]</code>
 </h4></div></div></div><p>Apply a function to every element of a sequence (in parallel),
-producing a list of the results.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1113F"></a>B.3.4.3.&nbsp;
+producing a list of the results.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node79"></a>B.3.4.3.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">reverse</span>&lt;<span class="hl-variable">A</span>&gt;([<span class="hl-variable">A</span>]) :: [<span class="hl-variable">A</span>]</code>
-</h4></div></div></div><p>Reverse a list.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11147"></a>B.3.4.4.&nbsp;
+</h4></div></div></div><p>Reverse a list.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node80"></a>B.3.4.4.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">filter</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>) :: <span class="hl-variable">Boolean</span>, [<span class="hl-variable">A</span>]) :: [<span class="hl-variable">A</span>]</code>
-</h4></div></div></div><p>Return a list containing only those elements which satisfy the predicate.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1114F"></a>B.3.4.5.&nbsp;
+</h4></div></div></div><p>Return a list containing only those elements which satisfy the predicate.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node81"></a>B.3.4.5.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">head</span>&lt;<span class="hl-variable">A</span>&gt;([<span class="hl-variable">A</span>]) :: <span class="hl-variable">A</span></code>
-</h4></div></div></div><p>Return the first element of a sequence.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11157"></a>B.3.4.6.&nbsp;
+</h4></div></div></div><p>Return the first element of a sequence.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node82"></a>B.3.4.6.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">tail</span>&lt;<span class="hl-variable">A</span>&gt;([<span class="hl-variable">A</span>]) :: [<span class="hl-variable">A</span>]</code>
-</h4></div></div></div><p>Return all but the first element of a sequence.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1115F"></a>B.3.4.7.&nbsp;
+</h4></div></div></div><p>Return all but the first element of a sequence.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node83"></a>B.3.4.7.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">init</span>&lt;<span class="hl-variable">A</span>&gt;([<span class="hl-variable">A</span>]) :: [<span class="hl-variable">A</span>]</code>
-</h4></div></div></div><p>Return all but the last element of a sequence.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11167"></a>B.3.4.8.&nbsp;
+</h4></div></div></div><p>Return all but the last element of a sequence.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node84"></a>B.3.4.8.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">last</span>&lt;<span class="hl-variable">A</span>&gt;([<span class="hl-variable">A</span>]) :: <span class="hl-variable">A</span></code>
-</h4></div></div></div><p>Return the last element of a sequence.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1116F"></a>B.3.4.9.&nbsp;
+</h4></div></div></div><p>Return the last element of a sequence.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node85"></a>B.3.4.9.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">empty</span>&lt;<span class="hl-variable">A</span>&gt;([<span class="hl-variable">A</span>]) :: <span class="hl-variable">Boolean</span></code>
-</h4></div></div></div><p>Is the sequence empty?</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11177"></a>B.3.4.10.&nbsp;
+</h4></div></div></div><p>Is the sequence empty?</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node86"></a>B.3.4.10.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">index</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-variable">Integer</span>, [<span class="hl-variable">A</span>]) :: <span class="hl-variable">A</span></code>
-</h4></div></div></div><p>Return the nth element of a list, counting from 0.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1117F"></a>B.3.4.11.&nbsp;
+</h4></div></div></div><p>Return the nth element of a list, counting from 0.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node87"></a>B.3.4.11.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">append</span>&lt;<span class="hl-variable">A</span>&gt;([<span class="hl-variable">A</span>], [<span class="hl-variable">A</span>]) :: [<span class="hl-variable">A</span>]</code>
-</h4></div></div></div><p>Concatenate two lists.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11187"></a>B.3.4.12.&nbsp;
+</h4></div></div></div><p>Concatenate two lists.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node88"></a>B.3.4.12.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">foldl</span>&lt;<span class="hl-variable">A</span>,<span class="hl-variable">B</span>&gt;(<span class="hl-keyword">lambda</span> (<span class="hl-variable">B</span>, <span class="hl-variable">A</span>) :: <span class="hl-variable">B</span>, <span class="hl-variable">B</span>, [<span class="hl-variable">A</span>]) :: <span class="hl-variable">B</span></code>
 </h4></div></div></div><p>Reduce a list using the given left-associative binary operation and initial value.
 Given the list <code class="code">[<span class="hl-variable">x1</span>, <span class="hl-variable">x2</span>, <span class="hl-variable">x3</span>, ...]</code> and initial value <code class="code"><span class="hl-variable">x0</span></code>,
@@ -1661,10 +2654,10 @@ returns <code class="code"><span class="hl-variable">f</span>(... <span class="h
                     </p><p>
                         <pre class="orc">
 <span class="hl-variable">foldl</span>(<span class="hl-variable">flip</span>((:)), [], [<span class="hl-literal">1</span>,<span class="hl-literal">2</span>,<span class="hl-literal">3</span>])</pre>
-                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1119E"></a>B.3.4.13.&nbsp;
+                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node89"></a>B.3.4.13.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">foldl1</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>, <span class="hl-variable">A</span>) :: <span class="hl-variable">A</span>, [<span class="hl-variable">A</span>]) :: <span class="hl-variable">A</span></code>
 </h4></div></div></div><p>A special case of <code class="code"><span class="hl-variable">foldl</span></code> which uses the last element of the list as the
-initial value.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N111A9"></a>B.3.4.14.&nbsp;
+initial value.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node90"></a>B.3.4.14.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">foldr</span>&lt;<span class="hl-variable">A</span>,<span class="hl-variable">B</span>&gt;(<span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>, <span class="hl-variable">B</span>) :: <span class="hl-variable">B</span>, <span class="hl-variable">B</span>, [<span class="hl-variable">A</span>]) :: <span class="hl-variable">B</span></code>
 </h4></div></div></div><p>Reduce a list using the given right-associative binary operation and initial value.
 Given the list <code class="code">[..., <span class="hl-variable">x3</span>, <span class="hl-variable">x2</span>, <span class="hl-variable">x1</span>]</code> and initial value <code class="code"><span class="hl-variable">x0</span></code>,
@@ -1672,96 +2665,227 @@ returns <code class="code"><span class="hl-variable">f</span>(... <span class="h
                     </p><p>
                         <pre class="orc">
 <span class="hl-variable">foldr</span>((+), <span class="hl-literal">0</span>, [<span class="hl-literal">1</span>,<span class="hl-literal">2</span>,<span class="hl-literal">3</span>])</pre>
-                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N111C0"></a>B.3.4.15.&nbsp;
+                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node91"></a>B.3.4.15.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">foldr1</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>, <span class="hl-variable">A</span>) :: <span class="hl-variable">A</span>, [<span class="hl-variable">A</span>]) :: <span class="hl-variable">A</span></code>
 </h4></div></div></div><p>A special case of <code class="code"><span class="hl-variable">foldr</span></code> which uses the last element of the list as the
-initial value.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N111CB"></a>B.3.4.16.&nbsp;
+initial value.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node92"></a>B.3.4.16.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">zip</span>&lt;<span class="hl-variable">A</span>,<span class="hl-variable">B</span>&gt;([<span class="hl-variable">A</span>], [<span class="hl-variable">B</span>]) :: (<span class="hl-variable">A</span>, <span class="hl-variable">B</span>)</code>
 </h4></div></div></div><p>Combine two lists into a list of pairs.
-The length of the shortest list determines the length of the result.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N111D3"></a>B.3.4.17.&nbsp;
+The length of the shortest list determines the length of the result.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node93"></a>B.3.4.17.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">unzip</span>&lt;<span class="hl-variable">A</span>,<span class="hl-variable">B</span>&gt;([(<span class="hl-variable">A</span>,<span class="hl-variable">B</span>)]) :: ([<span class="hl-variable">A</span>], [<span class="hl-variable">B</span>])</code>
-</h4></div></div></div><p>Split a list of pairs into a pair of lists.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N111DB"></a>B.3.4.18.&nbsp;
+</h4></div></div></div><p>Split a list of pairs into a pair of lists.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node94"></a>B.3.4.18.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">length</span>&lt;<span class="hl-variable">A</span>&gt;([<span class="hl-variable">A</span>]) :: <span class="hl-variable">Integer</span></code>
-</h4></div></div></div><p>Return the number of elements in a list.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N111E3"></a>B.3.4.19.&nbsp;
+</h4></div></div></div><p>Return the number of elements in a list.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node95"></a>B.3.4.19.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">take</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-variable">Integer</span>, [<span class="hl-variable">A</span>]) :: [<span class="hl-variable">A</span>]</code>
-</h4></div></div></div><p>Return the first <code class="code"><span class="hl-variable">n</span></code> elements of a list.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N111EE"></a>B.3.4.20.&nbsp;
+</h4></div></div></div><p>Return the first <code class="code"><span class="hl-variable">n</span></code> elements of a list.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node96"></a>B.3.4.20.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">drop</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-variable">Integer</span>, [<span class="hl-variable">A</span>]) :: [<span class="hl-variable">A</span>]</code>
-</h4></div></div></div><p>Return the elements of a list after the first <code class="code"><span class="hl-variable">n</span></code>.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N111F9"></a>B.3.4.21.&nbsp;
+</h4></div></div></div><p>Return the elements of a list after the first <code class="code"><span class="hl-variable">n</span></code>.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node97"></a>B.3.4.21.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">member</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-variable">A</span>, [<span class="hl-variable">A</span>]) :: <span class="hl-variable">Boolean</span></code>
-</h4></div></div></div><p>Is the given item a member of the list?</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11201"></a>B.3.4.22.&nbsp;
+</h4></div></div></div><p>Is the given item a member of the list?</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node98"></a>B.3.4.22.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">merge</span>&lt;<span class="hl-variable">A</span> <span class="hl-variable">extends</span> <span class="hl-variable">Comparable</span>&gt;([<span class="hl-variable">A</span>], [<span class="hl-variable">A</span>]) :: [<span class="hl-variable">A</span>]</code>
 </h4></div></div></div><p>Merge two sorted lists.</p><p>
                         <pre class="orc">
 <span class="hl-variable">merge</span>([<span class="hl-literal">1</span>,<span class="hl-literal">2</span>,<span class="hl-literal">3</span>], [<span class="hl-literal">2</span>,<span class="hl-literal">4</span>,<span class="hl-literal">5</span>])</pre>
-                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1120F"></a>B.3.4.23.&nbsp;
+                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node99"></a>B.3.4.23.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">mergeBy</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>,<span class="hl-variable">A</span>) :: <span class="hl-variable">Boolean</span>, [<span class="hl-variable">A</span>], [<span class="hl-variable">A</span>]) :: [<span class="hl-variable">A</span>]</code>
-</h4></div></div></div><p>Merge two lists using the given less-than relation.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11217"></a>B.3.4.24.&nbsp;
+</h4></div></div></div><p>Merge two lists using the given less-than relation.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node100"></a>B.3.4.24.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">sort</span>&lt;<span class="hl-variable">A</span> <span class="hl-variable">extends</span> <span class="hl-variable">Comparable</span>&gt;([<span class="hl-variable">A</span>]) :: [<span class="hl-variable">A</span>]</code>
 </h4></div></div></div><p>Sort a list.</p><p>
                         <pre class="orc">
 <span class="hl-variable">sort</span>([<span class="hl-literal">1</span>,<span class="hl-literal">3</span>,<span class="hl-literal">2</span>])</pre>
-                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11225"></a>B.3.4.25.&nbsp;
+                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node101"></a>B.3.4.25.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">sortBy</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>,<span class="hl-variable">A</span>) :: <span class="hl-variable">Boolean</span>, [<span class="hl-variable">A</span>]) :: [<span class="hl-variable">A</span>]</code>
-</h4></div></div></div><p>Sort a list using the given less-than relation.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1122D"></a>B.3.4.26.&nbsp;
+</h4></div></div></div><p>Sort a list using the given less-than relation.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node102"></a>B.3.4.26.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">group</span>&lt;<span class="hl-variable">A</span>,<span class="hl-variable">B</span>&gt;([(<span class="hl-variable">A</span>,<span class="hl-variable">B</span>)]) :: [(<span class="hl-variable">A</span>,[<span class="hl-variable">B</span>])]</code>
 </h4></div></div></div><p>Given a list of pairs, group together the second
 elements of consecutive pairs with equal first elements.</p><p>
                         <pre class="orc">
 <span class="hl-variable">group</span>([(<span class="hl-literal">1</span>,<span class="hl-literal">1</span>), (<span class="hl-literal">1</span>,<span class="hl-literal">2</span>), (<span class="hl-literal">2</span>,<span class="hl-literal">3</span>), (<span class="hl-literal">3</span>,<span class="hl-literal">4</span>), (<span class="hl-literal">1</span>,<span class="hl-literal">3</span>)])</pre>
-                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1123B"></a>B.3.4.27.&nbsp;
+                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node103"></a>B.3.4.27.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">groupBy</span>&lt;<span class="hl-variable">A</span>,<span class="hl-variable">B</span>&gt;(<span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>,<span class="hl-variable">A</span>) :: <span class="hl-variable">Boolean</span>, [(<span class="hl-variable">A</span>,<span class="hl-variable">B</span>)]) :: [(<span class="hl-variable">A</span>,[<span class="hl-variable">B</span>])]</code>
 </h4></div></div></div><p>Given a list of pairs, group together the second
 elements of consecutive pairs with equal first elements,
-using the given equality relation.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11243"></a>B.3.4.28.&nbsp;
+using the given equality relation.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node104"></a>B.3.4.28.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">range</span>(<span class="hl-variable">Integer</span>, <span class="hl-variable">Integer</span>) :: [<span class="hl-variable">Integer</span>]</code>
-</h4></div></div></div><p>Generate a list of integers in the given half-open range.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1124B"></a>B.3.4.29.&nbsp;
+</h4></div></div></div><p>Generate a list of integers in the given half-open range.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node105"></a>B.3.4.29.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">any</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>) :: <span class="hl-variable">Boolean</span>, [<span class="hl-variable">A</span>]) :: <span class="hl-variable">Boolean</span></code>
 </h4></div></div></div><p>Do any the elements of the list match the predicate?
 Uses parallel-or to return a result as soon as possible and terminate
-unnecessary computation.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11253"></a>B.3.4.30.&nbsp;
+unnecessary computation.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node106"></a>B.3.4.30.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">all</span>&lt;<span class="hl-variable">A</span>&gt;(<span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>) :: <span class="hl-variable">Boolean</span>, [<span class="hl-variable">A</span>]) :: <span class="hl-variable">Boolean</span></code>
 </h4></div></div></div><p>Do all the elements of the list match the predicate?
 Uses parallel-and to return a result as soon as possible and terminate
-unnecessary computation.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1125B"></a>B.3.4.31.&nbsp;
+unnecessary computation.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node107"></a>B.3.4.31.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">sum</span>([<span class="hl-variable">Number</span>]) :: <span class="hl-variable">Number</span></code>
-</h4></div></div></div><p>Compute the sum of all numbers in a list.</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11263"></a>B.3.5.&nbsp;
+</h4></div></div></div><p>Compute the sum of all numbers in a list.</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11A32"></a>B.3.5.&nbsp;
 text.inc
-</h3></div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11266"></a>B.3.5.1.&nbsp;
+</h3></div></div></div><table cellspacing="5"><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node108" title="B.3.5.1.&nbsp; site cat(Top, ...) :: String">
+                                <code class="code"><span class="hl-variable">cat</span></code>
+                            </a>
+</th>
+                        <td>
+Concatenate one or more values as strings.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node109" title="B.3.5.2.&nbsp; site print(Top, ...) :: Signal">
+                                <code class="code"><span class="hl-variable">print</span></code>
+                            </a>
+</th>
+                        <td>
+Print one or more values as strings, concatenated,
+to standard output.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node110" title="B.3.5.3.&nbsp; site println(Top, ...) :: Signal">
+                                <code class="code"><span class="hl-variable">println</span></code>
+                            </a>
+</th>
+                        <td>
+Print one or more values as strings, concatenated,
+to standard output, with each value followed by a newline.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node111" title="B.3.5.4.&nbsp; site parseInt(String) :: BigInteger">
+                                <code class="code"><span class="hl-variable">parseInt</span></code>
+                            </a>
+</th>
+                        <td>
+Parse a string as a BigInteger.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node112" title="B.3.5.5.&nbsp; site parseBool(String) :: Boolean">
+                                <code class="code"><span class="hl-variable">parseBool</span></code>
+                            </a>
+</th>
+                        <td>
+Parse a string as a Boolean (true/false).
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node113" title="B.3.5.6.&nbsp; def lines(String) :: [String]">
+                                <code class="code"><span class="hl-variable">lines</span></code>
+                            </a>
+</th>
+                        <td>
+Split a string into lines, which are substrings
+terminated by an endline or the end of the string.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node114" title="B.3.5.7.&nbsp; def unlines([String]) :: String">
+                                <code class="code"><span class="hl-variable">unlines</span></code>
+                            </a>
+</th>
+                        <td>
+Append a linefeed, "\n", to each string in the sequence
+and concatenate the results.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node115" title="B.3.5.8.&nbsp; def words(String) :: [String]">
+                                <code class="code"><span class="hl-variable">words</span></code>
+                            </a>
+</th>
+                        <td>
+Split a string into words, which are sequences of non-whitespace characters separated by whitespace.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node116" title="B.3.5.9.&nbsp; def unwords([String]) :: String">
+                                <code class="code"><span class="hl-variable">unwords</span></code>
+                            </a>
+</th>
+                        <td>
+Concatenate a sequence of strings with a single space between
+each string.
+</td>
+                    </tr></table><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node108"></a>B.3.5.1.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">cat</span>(<span class="hl-variable">Top</span>, ...) :: <span class="hl-variable">String</span></code>
 </h4></div></div></div><p>Concatenate one or more values as strings.
 For Java objects, this will call <code class="code"><span class="hl-variable">toString</span>()</code> to convert
-the object to a String.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11271"></a>B.3.5.2.&nbsp;
+the object to a String.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node109"></a>B.3.5.2.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">print</span>(<span class="hl-variable">Top</span>, ...) :: <span class="hl-variable">Signal</span></code>
 </h4></div></div></div><p>Print one or more values as strings, concatenated,
 to standard output.
 For Java objects, this will call <code class="code"><span class="hl-variable">toString</span>()</code> to convert
-the object to a String.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1127C"></a>B.3.5.3.&nbsp;
+the object to a String.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node110"></a>B.3.5.3.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">println</span>(<span class="hl-variable">Top</span>, ...) :: <span class="hl-variable">Signal</span></code>
 </h4></div></div></div><p>Print one or more values as strings, concatenated,
 to standard output, with each value followed by a newline.
 For Java objects, this will call <code class="code"><span class="hl-variable">toString</span>()</code> to convert
-the object to a String.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11287"></a>B.3.5.4.&nbsp;
+the object to a String.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node111"></a>B.3.5.4.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">parseInt</span>(<span class="hl-variable">String</span>) :: <span class="hl-variable">BigInteger</span></code>
-</h4></div></div></div><p>Parse a string as a BigInteger.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1128F"></a>B.3.5.5.&nbsp;
+</h4></div></div></div><p>Parse a string as a BigInteger.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node112"></a>B.3.5.5.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">parseBool</span>(<span class="hl-variable">String</span>) :: <span class="hl-variable">Boolean</span></code>
-</h4></div></div></div><p>Parse a string as a Boolean (true/false).</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11297"></a>B.3.5.6.&nbsp;
+</h4></div></div></div><p>Parse a string as a Boolean (true/false).</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node113"></a>B.3.5.6.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">lines</span>(<span class="hl-variable">String</span>) :: [<span class="hl-variable">String</span>]</code>
 </h4></div></div></div><p>Split a string into lines, which are substrings
 terminated by an endline or the end of the string.
 DOS, Mac, and Unix endline conventions are all accepted.
-Endline characters are not included in the result.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1129F"></a>B.3.5.7.&nbsp;
+Endline characters are not included in the result.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node114"></a>B.3.5.7.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">unlines</span>([<span class="hl-variable">String</span>]) :: <span class="hl-variable">String</span></code>
 </h4></div></div></div><p>Append a linefeed, "\n", to each string in the sequence
-and concatenate the results.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N112A7"></a>B.3.5.8.&nbsp;
+and concatenate the results.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node115"></a>B.3.5.8.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">words</span>(<span class="hl-variable">String</span>) :: [<span class="hl-variable">String</span>]</code>
-</h4></div></div></div><p>Split a string into words, which are sequences of non-whitespace characters separated by whitespace.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N112AF"></a>B.3.5.9.&nbsp;
+</h4></div></div></div><p>Split a string into words, which are sequences of non-whitespace characters separated by whitespace.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node116"></a>B.3.5.9.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">unwords</span>([<span class="hl-variable">String</span>]) :: <span class="hl-variable">String</span></code>
 </h4></div></div></div><p>Concatenate a sequence of strings with a single space between
-each string.</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N112B7"></a>B.3.6.&nbsp;
+each string.</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11B2A"></a>B.3.6.&nbsp;
 time.inc
-</h3></div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N112BA"></a>B.3.6.1.&nbsp;
+</h3></div></div></div><table cellspacing="5"><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node117" title="B.3.6.1.&nbsp; site Rtimer(Integer) :: Signal">
+                                <code class="code"><span class="hl-variable">Rtimer</span></code>
+                            </a>
+</th>
+                        <td>
+Publish a signal after the given number of milliseconds.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node118" title="B.3.6.2.&nbsp; site Clock()() :: Integer">
+                                <code class="code"><span class="hl-variable">Clock</span></code>
+                            </a>
+</th>
+                        <td>
+A call to <code class="code"><span class="hl-variable">Clock</span></code> creates a new relative clock.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node119" title="B.3.6.3.&nbsp; site Ltimer(Integer) :: Signal">
+                                <code class="code"><span class="hl-variable">Ltimer</span></code>
+                            </a>
+</th>
+                        <td>
+Publish a signal after the given number of logical timesteps.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node120" title="B.3.6.4.&nbsp; def Metronome() :: Signal">
+                                <code class="code"><span class="hl-variable">Metronome</span></code>
+                            </a>
+</th>
+                        <td>
+Publish a signal every second, indefinitely.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node121" title="B.3.6.5.&nbsp; def MetronomeT(Integer) :: Signal">
+                                <code class="code"><span class="hl-variable">MetronomeT</span></code>
+                            </a>
+</th>
+                        <td>
+Publish a signal at regular intervals, indefinitely.
+</td>
+                    </tr></table><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node117"></a>B.3.6.1.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Rtimer</span>(<span class="hl-variable">Integer</span>) :: <span class="hl-variable">Signal</span></code>
-</h4></div></div></div><p>Publish a signal after the given number of milliseconds.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N112C2"></a>B.3.6.2.&nbsp;
+</h4></div></div></div><p>Publish a signal after the given number of milliseconds.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node118"></a>B.3.6.2.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Clock</span>()() :: <span class="hl-variable">Integer</span></code>
 </h4></div></div></div><p>A call to <code class="code"><span class="hl-variable">Clock</span></code> creates a new relative clock.
 Calling a relative clock returns the number
@@ -1770,46 +2894,103 @@ clock was created.</p><p>
                         <pre class="orc">
 <span class="hl-keyword">val</span> <span class="hl-variable">c</span> = <span class="hl-variable">Clock</span>()
 <span class="hl-variable">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>()</pre>
-                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N112D3"></a>B.3.6.3.&nbsp;
+                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node119"></a>B.3.6.3.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Ltimer</span>(<span class="hl-variable">Integer</span>) :: <span class="hl-variable">Signal</span></code>
 </h4></div></div></div><p>Publish a signal after the given number of logical timesteps.
 A logical timestep is complete as soon as all outstanding site
-calls (other than calls to <code class="code"><span class="hl-variable">Ltimer</span></code>) have published.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N112DE"></a>B.3.6.4.&nbsp;
+calls (other than calls to <code class="code"><span class="hl-variable">Ltimer</span></code>) have published.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node120"></a>B.3.6.4.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">Metronome</span>() :: <span class="hl-variable">Signal</span></code>
-</h4></div></div></div><p>Publish a signal every second, indefinitely.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N112E6"></a>B.3.6.5.&nbsp;
+</h4></div></div></div><p>Publish a signal every second, indefinitely.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node121"></a>B.3.6.5.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">MetronomeT</span>(<span class="hl-variable">Integer</span>) :: <span class="hl-variable">Signal</span></code>
 </h4></div></div></div><p>Publish a signal at regular intervals, indefinitely. The period is given by the
-argument, in milliseconds.</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N112EE"></a>B.3.7.&nbsp;
+argument, in milliseconds.</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11BC0"></a>B.3.7.&nbsp;
 util.inc
-</h3></div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N112F1"></a>B.3.7.1.&nbsp;
+</h3></div></div></div><table cellspacing="5"><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node122" title="B.3.7.1.&nbsp; site random() :: Integer">
+                                <code class="code"><span class="hl-variable">random</span></code>
+                            </a>
+</th>
+                        <td>
+Return a random Integer value
+chosen from the range of all possible 32-bit Integer values.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node123" title="B.3.7.2.&nbsp; site urandom() :: Double">
+                                <code class="code"><span class="hl-variable">urandom</span></code>
+                            </a>
+</th>
+                        <td>
+Returns a pseudorandom, uniformly distributed Double value
+between 0 and 1, inclusive.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node124" title="B.3.7.3.&nbsp; site UUID() :: String">
+                                <code class="code"><span class="hl-variable">UUID</span></code>
+                            </a>
+</th>
+                        <td>
+Return a random (type 4) UUID represented as a string.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node125" title="B.3.7.4.&nbsp; site Thread(Site) :: Site">
+                                <code class="code"><span class="hl-variable">Thread</span></code>
+                            </a>
+</th>
+                        <td>
+Given a site, return a new site which calls the original site
+in a separate thread.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node126" title="B.3.7.5.&nbsp; def signals(Integer) :: Signal">
+                                <code class="code"><span class="hl-variable">signals</span></code>
+                            </a>
+</th>
+                        <td>
+Publish the given number of signals, simultaneously.
+</td>
+                    </tr><tr>
+                        <th align="left" valign="top">
+<a class="link" href="#orc.doc.node127" title="B.3.7.6.&nbsp; def for(Integer, Integer) :: Integer">
+                                <code class="code"><span class="hl-variable">for</span></code>
+                            </a>
+</th>
+                        <td>
+Publish all values in the given half-open range, simultaneously.
+</td>
+                    </tr></table><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node122"></a>B.3.7.1.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">random</span>() :: <span class="hl-variable">Integer</span></code>
 </h4></div></div></div><p>Return a random Integer value
 chosen from the range of all possible 32-bit Integer values.</p><p>site random(Integer) :: Integer
 Return a pseudorandom, uniformly distributed Integer value
 between 0 (inclusive) and the specified value (exclusive).
-If the argument is 0, fail silently.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N112FB"></a>B.3.7.2.&nbsp;
+If the argument is 0, fail silently.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node123"></a>B.3.7.2.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">urandom</span>() :: <span class="hl-variable">Double</span></code>
 </h4></div></div></div><p>Returns a pseudorandom, uniformly distributed Double value
-between 0 and 1, inclusive.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11303"></a>B.3.7.3.&nbsp;
+between 0 and 1, inclusive.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node124"></a>B.3.7.3.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">UUID</span>() :: <span class="hl-variable">String</span></code>
-</h4></div></div></div><p>Return a random (type 4) UUID represented as a string.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1130B"></a>B.3.7.4.&nbsp;
+</h4></div></div></div><p>Return a random (type 4) UUID represented as a string.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node125"></a>B.3.7.4.&nbsp;
 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Thread</span>(<span class="hl-variable">Site</span>) :: <span class="hl-variable">Site</span></code>
 </h4></div></div></div><p>Given a site, return a new site which calls the original site
 in a separate thread.  This is necessary when calling
 a Java site which does not cooperate with Orc's scheduler
 and may block for an unpredictable amount of time.</p><p>A limited number of threads are reserved in a pool for use
 by this site, so there is a limit to the number of blocking,
-uncooperative sites that can be called simultaneously.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11315"></a>B.3.7.5.&nbsp;
+uncooperative sites that can be called simultaneously.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node126"></a>B.3.7.5.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">signals</span>(<span class="hl-variable">Integer</span>) :: <span class="hl-variable">Signal</span></code>
 </h4></div></div></div><p>Publish the given number of signals, simultaneously.</p><p>
                         <pre class="orc">
 <span class="hl-variable">signals</span>(<span class="hl-literal">5</span>)</pre>
-                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11323"></a>B.3.7.6.&nbsp;
+                    </p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc.doc.node127"></a>B.3.7.6.&nbsp;
 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">for</span>(<span class="hl-variable">Integer</span>, <span class="hl-variable">Integer</span>) :: <span class="hl-variable">Integer</span></code>
 </h4></div></div></div><p>Publish all values in the given half-open range, simultaneously.</p><p>
                         <pre class="orc">
 <span class="hl-variable">for</span>(<span class="hl-literal">1</span>,<span class="hl-literal">6</span>)</pre>
-                    </p></div></div></div></div><div class="appendix" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="N11331"></a>Appendix&nbsp;C.&nbsp;FAQ</h2></div></div></div>
+                    </p></div></div></div></div><div class="appendix" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="N11C71"></a>Appendix&nbsp;C.&nbsp;FAQ</h2></div></div></div>
 
 Under construction.
 </div></div><script type="text/javascript" src="/orchard/orc.js"></script></body></html>
