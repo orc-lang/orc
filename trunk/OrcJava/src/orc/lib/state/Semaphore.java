@@ -41,6 +41,16 @@ public class Semaphore extends EvalSite {
 					}
 				}
 			});	
+			addMethod("acquirenb", new Site() {
+				public void callSite(Args args, Token waiter) {
+					if (0 == n) {
+						waiter.die();
+					} else {
+						--n;
+						waiter.resume();
+					}
+				}
+			});	
 			addMethod("release", new Site() {
 				@Override
 				public void callSite(Args args, Token sender) throws TokenException {
