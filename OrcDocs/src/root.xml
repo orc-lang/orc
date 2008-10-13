@@ -1321,7 +1321,7 @@ binds it to a variable. The service might be an object in the host language
 (e.g. a class instance in Java), or an external service on the web which is accessed 
 through some protocol like SOAP or REST, or even a primitive operation like addition. 
 
-<link linkend="chapter.services"></link>
+
 <!-- (add this section back in when the services chapter is ready to go)
 We will discuss the particulars of these declarations, and the guidelines for accessing 
 web-based services or creating one's own services, in <link linkend="chapter.services">Chapter 3</link>.
@@ -2331,8 +2331,10 @@ We determine when an expression completes using the following rules.
 
 <itemizedlist>
 <listitem>A Cor expression completes when it is fully evaluated; if it is silent, it completes immediately.</listitem>
-<listitem>A site call completes when it has published a value. A site call also completes
-silently if the site <firstterm>refuses</firstterm> the call, as explained below.</listitem>
+<listitem>A site call completes when it has published a value.</listitem>
+<listitem>A site call completes silently if it is blocked on a variable, and the expression
+which would bind that variable has already completed.</listitem>
+<listitem>A site call completes silently if the site <firstterm>refuses</firstterm> the call, as explained below.</listitem>
 <listitem>F <code>|</code> G completes when its subexpressions F and G have both completed.</listitem>
 <listitem>F<code><![CDATA[ >x> ]]></code>G completes when F has completed and all copies of G have completed.</listitem>
 <listitem>F<code><![CDATA[ <x< ]]></code>G completes when F has completed, and G has either completed or
@@ -2390,17 +2392,13 @@ Now, we turn our attention to how the language is used in practice, with guideli
 and a number of common concurrency patterns.
 </para>
 
-<section><title>Syntax and Style</title>
-
-<section><title>Naming and Indentation Conventions</title>
+<section><title>Syntactic and Stylistic Conventions</title>
 
 <para>
-In this section we suggest some conventions for the use of names and whitespace in Orc programs.
-None of these conventions are required by the parser. Syntactically, Orc does not distinguish 
-identifiers by captialization or any other property, and it ignores whitespace (with one notable
-exception regarding newlines, which we'll discuss in the next section). However, following
-programming conventions helps to improve the readability of programs, so that programmer intent
-is more readily apparent.
+In this section we suggest some syntactic conventions for writing Orc programs. None of these 
+conventions are required by the parser; newlines are used only to disambiguate certain corner
+cases in parsing, and other whitespace is ignored. However, following programming conventions 
+helps to improve the readability of programs, so that programmer intent is more readily apparent.
 </para>
 
 <!--
@@ -2421,7 +2419,7 @@ are typically lowercase but may be made uppercase if it seems stylistically appr
 When the combined expressions are small, write them all on one line.
 
 <programlisting>
-<emphasis role="bold"><emphasis>F</emphasis></emphasis> | <emphasis role="bold"><emphasis>G</emphasis></emphasis> | <emphasis role="bold"><emphasis>H</emphasis></emphasis>
+<emphasis role="bold">F</emphasis> | <emphasis role="bold">G</emphasis> | <emphasis role="bold">H</emphasis>
 </programlisting>
 
 Note that we do not need parentheses here, since <code>|</code> is fully associative and commutative.
@@ -2433,9 +2431,9 @@ per line, with the subsequent expressions preceded by <code>|</code>. Indent the
 expression to improve readability.
 
 <programlisting>
-  <emphasis role="bold"><emphasis>long expression</emphasis></emphasis> 
-| <emphasis role="bold"><emphasis>long expression</emphasis></emphasis>
-| <emphasis role="bold"><emphasis>long expression</emphasis></emphasis>
+  <emphasis role="bold">long expression</emphasis> 
+| <emphasis role="bold">long expression</emphasis>
+| <emphasis role="bold">long expression</emphasis>
 </programlisting>
  
 </para>
@@ -2447,10 +2445,10 @@ combined parallel expressions together.
 
 
 <programlisting>
-( <emphasis role="bold"><emphasis>expression</emphasis></emphasis> 
-| <emphasis role="bold"><emphasis>expression</emphasis></emphasis>
+( <emphasis role="bold">expression</emphasis> 
+| <emphasis role="bold">expression</emphasis>
 ) <![CDATA[>x>]]>
-<emphasis role="bold"><emphasis>another expression</emphasis></emphasis>
+<emphasis role="bold">another expression</emphasis>
 </programlisting>
 </para>
 
@@ -2462,18 +2460,18 @@ When the combined expressions are small, write a cascade of sequential combinato
 all on the same line.
 
 <programlisting>
-<emphasis role="bold"><emphasis>F</emphasis></emphasis> <![CDATA[>x>]]> <emphasis role="bold"><emphasis>G</emphasis></emphasis> <![CDATA[>y>]]> <emphasis role="bold"><emphasis>H</emphasis></emphasis>
+<emphasis role="bold">F</emphasis> <![CDATA[>x>]]> <emphasis role="bold">G</emphasis> <![CDATA[>y>]]> <emphasis role="bold">H</emphasis>
 </programlisting>
 
 <para>
 When the combined expressions are large enough to take up a full line, write one expression
-per line; each line ends with the combinator <![CDATA[>x>]]> which binds the publications
+per line; each line ends with the combinator which binds the publications
 produced by that line.
 
 <programlisting>
-<emphasis role="bold"><emphasis>long expression</emphasis></emphasis> <![CDATA[>x>]]> 
-<emphasis role="bold"><emphasis>long expression</emphasis></emphasis> <![CDATA[>y>]]>
-<emphasis role="bold"><emphasis>long expression</emphasis></emphasis>
+<emphasis role="bold">long expression</emphasis> <![CDATA[>x>]]> 
+<emphasis role="bold">long expression</emphasis> <![CDATA[>y>]]>
+<emphasis role="bold">long expression</emphasis>
 </programlisting>
  
 </para>
@@ -2483,11 +2481,11 @@ For very long-running expressions, or expressions that span multiple lines, writ
 the combinators on separate lines, indented, between each expression. 
 
 <programlisting>
-<emphasis role="bold"><emphasis>very long expression</emphasis></emphasis> 
+<emphasis role="bold">very long expression</emphasis> 
   <![CDATA[>x>]]> 
-<emphasis role="bold"><emphasis>very expression</emphasis></emphasis> 
+<emphasis role="bold">very long expression</emphasis> 
   <![CDATA[>y>]]>
-<emphasis role="bold"><emphasis>long expression</emphasis></emphasis>
+<emphasis role="bold">very long expression</emphasis>
 </programlisting>
  
 </para>
@@ -2497,35 +2495,34 @@ the combinators on separate lines, indented, between each expression.
 <section><title>Asymmetric combinator</title>
 
 <para>
-When the left and right sides of an asymmetric combinator are short,
-write them on the same line:
+When the combined expressions are small, write them on the same line:
 
 <programlisting>
-<emphasis role="bold"><emphasis>F</emphasis></emphasis> <![CDATA[<x<]]> <emphasis role="bold"><emphasis>G</emphasis></emphasis>
+<emphasis role="bold">F</emphasis> <![CDATA[<x<]]> <emphasis role="bold">G</emphasis>
 </programlisting>
 
-When multiple asymmetric combinators are used to bind multiple variables,
-start the line with the combinator, aligned and indented, and continue
-with the expression.
+When multiple asymmetric combinators are used to bind multiple variables
+(especially when the scoped expression is long), start each line with a 
+combinator, aligned and indented, and continue with the expression.
 
 <programlisting>
-<emphasis role="bold"><emphasis>F</emphasis></emphasis> 
-  <![CDATA[<x<]]> <emphasis role="bold"><emphasis>G</emphasis></emphasis>
-  <![CDATA[<y<]]> <emphasis role="bold"><emphasis>H</emphasis></emphasis>
+<emphasis role="bold">long expression</emphasis> 
+  <![CDATA[<x<]]> <emphasis role="bold">G</emphasis>
+  <![CDATA[<y<]]> <emphasis role="bold">H</emphasis>
 </programlisting>
 
 </para>
 
 <para>
-That said, the asymmetric combinator is not often written in its explicit form
+The asymmetric combinator is not often written in its explicit form
 in Orc programs. Instead, the <code>val</code> declaration is often more
 convenient, since it is semantically equivalent and mentions the variable
 <code>x</code> before its use in scope, rather than after.
 
 <programlisting>
-val x = <emphasis role="bold"><emphasis>G</emphasis></emphasis>
-val y = <emphasis role="bold"><emphasis>H</emphasis></emphasis>
-<emphasis role="bold"><emphasis>F</emphasis></emphasis> 
+val x = <emphasis role="bold">G</emphasis>
+val y = <emphasis role="bold">H</emphasis>
+<emphasis role="bold">F</emphasis> 
 </programlisting>
 
 </para>
@@ -2536,15 +2533,15 @@ expression is small, it is often easier to use a nested expression.
 For example,
 
 <programlisting>
-val x = <emphasis role="bold"><emphasis>G</emphasis></emphasis>
-val y = <emphasis role="bold"><emphasis>H</emphasis></emphasis>
+val x = <emphasis role="bold">G</emphasis>
+val y = <emphasis role="bold">H</emphasis>
 M(x,y)
 </programlisting>
 
 is equivalent to
 
 <programlisting>
-M(<emphasis role="bold"><emphasis>G</emphasis></emphasis>,<emphasis role="bold"><emphasis>H</emphasis></emphasis>)
+M(<emphasis role="bold">G</emphasis>,<emphasis role="bold">H</emphasis>)
 </programlisting>
 
 </para>
@@ -2560,13 +2557,13 @@ to put the expression in the context of a function call.
 For example,
 
 <programlisting>
-x <![CDATA[<x<]]> <emphasis role="bold"><emphasis>F</emphasis></emphasis> | <emphasis role="bold"><emphasis>G</emphasis></emphasis> | <emphasis role="bold"><emphasis>H</emphasis></emphasis>
+x <![CDATA[<x<]]> <emphasis role="bold">F</emphasis> | <emphasis role="bold">G</emphasis> | <emphasis role="bold">H</emphasis>
 </programlisting>
 
 is equivalent to
 
 <programlisting>
-let(<emphasis role="bold"><emphasis>F</emphasis></emphasis> | <emphasis role="bold"><emphasis>G</emphasis></emphasis> | <emphasis role="bold"><emphasis>H</emphasis></emphasis>)
+let(<emphasis role="bold">F</emphasis> | <emphasis role="bold">G</emphasis> | <emphasis role="bold">H</emphasis>)
 </programlisting>
 </para>
 
@@ -2578,27 +2575,41 @@ in parentheses as part of the call).
 
 </section>
 
+<section><title>Declarations</title>
 
-<section>Avoiding Syntactic Ambiguities</section>
+<para>
+Declarations should always end with a newline. 
 
+<programlisting>
+def add(x,y) = x + y
+val z = 7
+add(z,z)
+</programlisting>
 
+While the parser does not require a newline to end a declaration, it uses the 
+newline to disambiguate certain corner cases in parsing, such as function application.
+</para>
 
+<para>
+When the body of a declaration spans multiple lines, start the body on a new line
+after the <code>=</code> symbol, and indent the entire body.
 
+<programlisting>
+def f(x,y) =
+    <emphasis role="bold">declaration</emphasis>
+    <emphasis role="bold">declaration</emphasis>
+    <emphasis role="bold">body expression</emphasis>
+</programlisting>
 
-(We outline Orc approaches to a number of common concurrency patterns.)
-(We note a number of common Orc programming techniques)
-
-programming techniques:
-
-thunks (delayed/lazy evaluation, val e is lenient/parallel, def e() is delayed)
-in-place pattern matching 
+</para>
 
 </section>
 
 </section>
 
 
-<section><title>Concurreny Patterns</title>
+
+<section><title>Programming Idioms</title>
 
 In this section we look at some common idioms used in the design of Orc programs. Many of these idioms will
 be familiar to programmers using concurrency, and they are very simple to express in Orc.
@@ -2613,8 +2624,8 @@ two <code>val</code> declarations, and then form a tuple of their results, this 
 
 <para>
 <programlisting>
-val x = <emphasis role="bold"><emphasis>F</emphasis></emphasis>
-val y = <emphasis role="bold"><emphasis>G</emphasis></emphasis>
+val x = <emphasis role="bold">F</emphasis>
+val y = <emphasis role="bold">G</emphasis>
 (x,y)
 </programlisting>
 </para>
@@ -2625,7 +2636,7 @@ translations. In fact, the fork-join we wrote above could be expressed even more
 
 <para>
 <programlisting>
-(<emphasis role="bold"><emphasis>F</emphasis></emphasis>,<emphasis role="bold"><emphasis>G</emphasis></emphasis>)
+(<emphasis role="bold">F</emphasis>,<emphasis role="bold">G</emphasis>)
 </programlisting>
 </para>
 
@@ -2672,51 +2683,36 @@ def auction([]) = 0
 def auction(b:bs) = Max(b.ask(), auction(bs))
 ]]></programlisting>
 
-
 </section>
 
-</section>
-
-<section><title>Barrier</title>
-
-
-<programlisting>
-M() <![CDATA[>x>]]> <emphasis role="bold"><emphasis>F</emphasis></emphasis> | N() <![CDATA[>y>]]> <emphasis role="bold"><emphasis>G</emphasis></emphasis>
-</programlisting>
+<section><title>Barrier synchronization</title>
 
 <para>
-Wait on both M() and N() to come back before starting f and g:
-</para>
+Suppose we have an expression of the following form, where F and G are expressions and M and N are sites:
 
 <programlisting>
-( M() , N() ) <![CDATA[>(x,y)>]]> <emphasis role="bold"><emphasis>F</emphasis></emphasis> | <emphasis role="bold"><emphasis>G</emphasis></emphasis>
+M() <![CDATA[>x>]]> <emphasis role="bold">F</emphasis> | N() <![CDATA[>y>]]> <emphasis role="bold">G</emphasis>
 </programlisting>
 
+</para>
+
+<para>
+However, we would also like to <emphasis>synchronize</emphasis> the completion of M and N, so that
+neither F nor G starts executing until both M and N have published. This is a particular example
+of a fork-join:
+
+<programlisting>
+( M() , N() ) <![CDATA[>(x,y)>]]> ( <emphasis role="bold">F</emphasis> | <emphasis role="bold">G</emphasis> )
+</programlisting>
+
+We assume, naturally, that x does not occur free in G, nor y in F.
+
+</para>
+
 </section>
 
-<!-- 
-<section><title>Explicit Wait</title>
-
-val x = F
-x >> G
-
-Note that this is very different from F >> G: we only want one G,
-and we only want the first value from F (after which it terminates).
 </section>
- -->
 
-<!-- 
-<section><title>Synchronization</title>
-
-Just a combination of fork-join and wait:
-
-(F,G) >> H
-
-If this seems confusing (perhaps it seems that a copy of H should
-start each time F and G both publish?), recall the translation of
-fork-join, and of nested expressions in general.
-</section>
- -->
 
 <section><title>Parallel Or</title>
 
@@ -2731,8 +2727,8 @@ the disjunction must be <code>true</code>; it is not necessary to wait for the o
 Here is the code:
 
 <programlisting>
-val a = <emphasis role="bold"><emphasis>F</emphasis></emphasis>
-val b = <emphasis role="bold"><emphasis>G</emphasis></emphasis>
+val a = <emphasis role="bold">F</emphasis>
+val b = <emphasis role="bold">G</emphasis>
 val r = if(a) <![CDATA[>>]]> true 
       | if(b) <![CDATA[>>]]> true 
       | (a || b)
@@ -2758,8 +2754,8 @@ produces a boolean value, and then uses that value to choose whether to subseque
 </para>
 
 <programlisting>
-val b = <emphasis role="bold"><emphasis>P</emphasis></emphasis>
-if b then <emphasis role="bold"><emphasis>F</emphasis></emphasis> else <emphasis role="bold"><emphasis>G</emphasis></emphasis> 
+val b = <emphasis role="bold">P</emphasis>
+if b then <emphasis role="bold">F</emphasis> else <emphasis role="bold">G</emphasis> 
 </programlisting>
 
 </section>
@@ -2774,8 +2770,7 @@ F for at most one second to get a value from it. If it does not publish within o
 </para>
 
 <programlisting>
-val r = <emphasis role="bold"><emphasis>F</emphasis></emphasis> | Rtimer(1000) <![CDATA[>>]]> 0
-r
+let( <emphasis role="bold">F</emphasis> | Rtimer(1000) <![CDATA[>>]]> 0 )
 </programlisting>
 
 <section><title>Auction with timeout</title>
@@ -2798,27 +2793,50 @@ Now, the auction is guaranteed to complete in at most 8 seconds.
 
 </section>
 
+<section><title>Detecting timeout</title>
 
-</section>
+<para>
+Sometimes, rather than just yielding a default value, we would like to determine
+whether an expression has timed out, and if so, perform some other computation.
+To detect the timeout, we pair the expression with <code>true</code> and the timer
+with <code>false</code>, so if the expression does time out, then we can detect
+it using the truth value. We then test the truth value, performing the usual
+computation if no timeout occurred, or some error-correcting computation if 
+the expression did time out.
+</para>
 
-<section><title>Detecting Timeout</title>
+<para>
+Here, we run the expression F with a time limit t. If it publishes within the time
+limit, we execute G (the result of F is bound to r). Otherwise, we execute H.
 
 <programlisting>
-val (r,b) = (<emphasis role="bold"><emphasis>F</emphasis></emphasis>,true) | (Rtimer(t),false)
-if b then <emphasis role="bold"><emphasis>G</emphasis></emphasis> else <emphasis role="bold"><emphasis>H</emphasis></emphasis>
+val (r,b) = (<emphasis role="bold">F</emphasis>,true) | (Rtimer(t),false)
+if b then <emphasis role="bold">G</emphasis> else <emphasis role="bold">H</emphasis>
 </programlisting>
 
-Combines fork-join and arbitration with a timer. 
+</para>
+ 
+</section>
+
 </section>
 
 <section><title>Priority</title>
 
+<para>
+We can also use a timer to give a window of priority to one computation over another.
+In this example, we run expressions F and G concurrently. F has priority for the first
+second: if F publishes, its value is used immediately, but if G publishes, that publication 
+is suspended for the first second and may be superseded by a publication from F
+during that time. If neither F nor G publishes within a second, then whichever publishes
+first after that point is the winner. 
+
 <programlisting>
-val x = <emphasis role="bold"><emphasis>F</emphasis></emphasis>
-val y = <emphasis role="bold"><emphasis>G</emphasis></emphasis>
-val r = y | Rtimer(1000) >> x
-r
+val x = <emphasis role="bold">F</emphasis>
+val y = <emphasis role="bold">G</emphasis>
+let( y | Rtimer(1000) >> x )
 </programlisting>
+
+</para>
 
 </section>
 
@@ -2879,6 +2897,61 @@ def PriorityPoll(b:bs) = b.getnb() ; PriorityPoll(bs)
 </section>
 
 
+<section><title>Buffer Transfer</title>
+
+<para>
+Suppose we have two buffers, and would like to empty one buffer and put its contents 
+into the other buffer. We use the following function to do so.
+
+<programlisting>
+def Append(x,y) = y.put(x.getnb()) >> Append(x,y) ; signal
+</programlisting>
+
+<code>Append</code> takes the elements from <code>x</code> one at a time
+(using <code>getnb</code>) and recurses. When <code>x</code> is empty, <code>getnb</code> 
+completes and is silent, so the left side of the <code>;</code> completes and
+the function publishes a signal, indicating that the transfer is finished.
+</para>
+
+
+</section>
+
+
+<section><title>Parallel Matching</title>
+
+<para>
+Matching a value against multiple patterns, as we have seen it so far, is a linear
+process, and requires a <code>def</code> whose clauses have patterns in their
+argument lists. Such a match is linear; each pattern is tried in order until
+one succeeds.
+</para>
+
+<para>
+What if we want to match a value against multiple patterns in parallel, executing
+every clause that succeeds? Fortunately, this is very easy to do in Orc. Suppose
+we have an expression F which publishes pairs of integers, and we want to publish
+a signal for each 3 that occurs. We write:
+
+<programlisting>
+<emphasis role="bold">F</emphasis> <![CDATA[>x>
+  ( x >(3,_)> signal
+  | x >(_,3)> signal ) 
+]]>
+</programlisting>
+
+The interesting case is the pair <code>(3,3)</code>, which is counted twice
+because both patterns match it in parallel.
+</para>
+
+<para>
+This is a useful idiom even if the patterns are mutually exclusive, to avoid
+creating a helper function just to handle the pattern match.
+</para>
+
+</section>
+
+
+
 
 </section>
 
@@ -2893,10 +2966,8 @@ def PriorityPoll(b:bs) = b.getnb() ; PriorityPoll(bs)
 def shuffle(a,b) = if (random(2) = 1) then (a,b) else (b,a)
 
 def take(a,b) =  
-  a.acquire() >> 
-  (if b.obtain()
-    then signal 
-    else a.release() >> take(shuffle(a,b)))
+  a.acquire() >> b.obtain() ;
+  a.release() >> take(shuffle(a,b)))
     
 def drop(a,b) = (a.release(), b.release()) >> signal
 
