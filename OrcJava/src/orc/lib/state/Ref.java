@@ -71,6 +71,13 @@ public class Ref extends EvalSite {
 		protected void addMethods() {
 			addMethod("read", new readMethod());	
 			addMethod("write", new writeMethod());
+			addMethod("readnb", new Site() {
+				@Override
+				public void callSite(Args args, Token caller) throws TokenException {
+					if (readQueue != null) caller.die();
+					else caller.resume(contents);
+				}
+			});
 		}
 		
 		private class readMethod extends Site {
