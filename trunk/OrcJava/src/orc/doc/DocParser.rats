@@ -40,15 +40,16 @@ List<DocNode> DocumentationBlock =
 	;
 
 DocNode DocNode =
-	StartDocType type:RestOfLine void:EndLine desc:DocDescription {
-		yyValue = new DocNode(type, desc);
+	lead:StartDocType type:RestOfLine void:EndLine desc:DocDescription {
+		int depth = lead.trim().length();
+		yyValue = new DocNode(depth, type, desc);
 	}
 	;
 
 String DocDecl = (![ \t\f] _)+ ;
 String DocName = _ (![<(] _)+ ;
 String DocDescription = ( !(StartDocType / EndDoc) RestOfLine EndLine )*;
-String StartDocType = "*" Space ;
+String StartDocType = "*"+ Space ;
 transient String StartDoc = "{--" Space? ;
 transient String EndDoc = Space? [\-]+ [}] ;
 	

@@ -60,34 +60,6 @@ Compose two single-argument functions.
 def compose(f,g)(x) = f(g(x))
 
 {--
-* def until<A>(lambda (A) :: Boolean, lambda (A) :: A)(A)
-Iterate a function until a predicate returns false.
-Publishes every value returned by the function.
-
-<programlisting language="orc-demo"><![CDATA[
-until(
-  lambda (n) = (n = 5),
-  lambda (n) = n+1 )(0)]]></programlisting>
---}
-def until(p,f) = 
-  def loop(x) = x | if(~p(x)) >> loop(f(x))
-  loop
-  
-{--
-* def while<A>(lambda (A) :: Boolean, lambda (A) :: A)(A)
-Iterate a function while a predicate returns true.
-Publishes every value passed to the function.
-
-<programlisting language="orc-demo"><![CDATA[
-while(
-  lambda (n) = (n <= 5),
-  lambda (n) = n+1 )(0)]]></programlisting>
---}
-def while(p,f) = 
-  def loop(x) = if(p(x)) >> ( x | loop(f(x)) )
-  loop
-  
-{--
 * def repeat<A>(lambda () :: A) :: A
 Call a function sequentially, publishing
 each value returned by the function until it no longer returns.

@@ -29,36 +29,46 @@ public class MakeDoc {
 			files.add(new DocNodes(file, parseFile(file)));
 		}
 		System.out.println("<?xml version=\"1.0\"?>");
-		System.out.println("<sect1><title>Reference</title>");
+		System.out.println("<section><title>Reference</title>");
 		int anchor;
 		anchor = 0;
 		for (DocNodes file : files) {
-			System.out.println("<sect2><title>");
+			System.out.println("<section><title>");
 			System.out.println(escapeXML(file.file));
 			System.out.println("</title>");
-			System.out.println("<informaltable cellspacing=\"5\">");
-			int anchor_ = anchor;
+			int depth = 0;
 			for (DocNode doc : file.nodes) {
-				System.out.println("<tr><th align=\"left\" valign=\"top\">");
-				System.out.println("<link linkend=\"orc.doc.node"+(anchor++)+"\"><code>"
-						+ escapeXML(extractName(doc.type)) + "</code></link>");
-				System.out.println("</th><td>");
-				System.out.println(firstSentence(doc.description));
-				System.out.println("</td></tr>");
-			}
-			System.out.println("</informaltable>");
-			for (DocNode doc : file.nodes) {
-				System.out.println("<sect3 id=\"orc.doc.node"+(anchor_++)+"\"><title>");
-				System.out.println("<code>" + escapeXML(doc.type) + "</code>");
-				System.out.println("</title>");
+				if (doc.depth > depth) {
+					System.out.println("<variablelist>");
+				} else {
+					while (doc.depth < depth) {
+						System.out.println("</listitem></varlistentry></variablelist>");
+						--depth;
+					}
+					if (doc.depth == depth) {
+						System.out.println("</listitem></varlistentry>");
+					}
+				}
+				System.out.println("<varlistentry><term>");
+				System.out.println("<code>" + escapeXML(extractName(doc.type)) + "</code>");
+				System.out.println("</term><listitem>");
 				System.out.print("<para>");
+				System.out.println("<code>" + escapeXML(doc.type) + "</code>");
+				System.out.print("</para>");
+				System.out.print("<para>");
+				// insert paragraph break wherever there is an empty line
 				System.out.print(doc.description.trim()
-						.replaceAll("([ \t\f]*[\n\r]+){2,}", "</para>\n<para>"));
-				System.out.println("</para></sect3>");
+						.replaceAll("([ \t\f]*(\n|\r|\r\n)){2,}", "</para>\n<para>"));
+				System.out.println("</para>");
+				depth = doc.depth;
 			}
-			System.out.println("</sect2>");
+			while (0 < depth) {
+				System.out.println("</listitem></varlistentry></variablelist>");
+				--depth;
+			}
+			System.out.println("</section>");
 		}
-		System.out.println("</sect1>");
+		System.out.println("</section>");
 	}
 	
 	public static String extractName(String type) {
