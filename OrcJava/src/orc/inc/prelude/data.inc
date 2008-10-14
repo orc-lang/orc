@@ -23,13 +23,6 @@ Acquire an item. If none are available, fail silently.
 site Semaphore = orc.lib.state.Semaphore
 
 {--
-* def Mutex() :: Semaphore
-Construct a binary semaphore.
---}
-def Mutex() = Semaphore(1)
-
-
-{--
 * site Buffer<A>() :: Buffer<A>
 Create a new buffer (FIFO channel) of unlimited size.
 
@@ -153,28 +146,6 @@ half-open range. The result array is still indexed counting from 0.
 Return the size of the array.
 --}
 site Array = orc.lib.util.JavaArray
-
-
-{--
-* def buildArray<A>(Integer, lambda() :: A) :: Array<A>
-Create a Java array, accessed via an Orc function from
-the array index to the array element.
-
-The first argument is the array size.
-The second argument is a function called to initialize
-each element of the array.
-
-Returns a function which takes an index into the
-array and returns the corresponding element, in
-constant time.
---}
-def buildArray(n, f) =
-  val a = Array(n)
-  def build(i) = 
-    if (i > 0) 
-      then a.set(i-1, f()) >> build(i-1) 
-      else signal
-  build(n) >> (lambda (i) = a.get(i))
 
 
 {--
