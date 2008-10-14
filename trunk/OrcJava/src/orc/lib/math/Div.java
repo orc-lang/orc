@@ -2,6 +2,7 @@ package orc.lib.math;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
@@ -17,7 +18,7 @@ public class Div extends EvalSite {
 			return a.divide(b);
 		}
 		public Number apply(BigDecimal a, BigDecimal b) {
-			return a.divide(b);
+			return a.divide(b, MathContext.DECIMAL128);
 		}
 		public Number apply(int a, int b) {
 			return a/b;
