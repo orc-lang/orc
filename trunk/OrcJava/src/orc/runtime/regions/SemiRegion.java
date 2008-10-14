@@ -15,13 +15,19 @@ public class SemiRegion extends Region {
 	}
 	
 	protected void reallyClose(Token closer) {
-		t.getTracer().after(closer.getTracer().before());
-		t.setPending();
-		t.activate();
+		if (t != null) {
+			t.getTracer().after(closer.getTracer().before());
+			t.setPending();
+			t.activate();
+		}
 		parent.remove(this, closer);
 	}
 
 	public Region getParent() {
 		return parent;
+	}
+
+	public void cancel() {
+		t = null;
 	}
 }
