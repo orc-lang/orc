@@ -37,6 +37,14 @@ uncooperative sites that can be called simultaneously.
 site Thread = orc.lib.util.ThreadSite
 
 {--
+* site Prompt(String) :: String
+Prompt the user for some input. The user may cancel the prompt,
+in which case the site fails silently. Otherwise their response
+is returned as soon as it is received.
+--}
+site Prompt = orc.lib.util.Prompt
+
+{--
 * def signals(Integer) :: Signal
 Publish the given number of signals, simultaneously.
 
@@ -56,3 +64,8 @@ def for(low, high) =
   if low >= high then stop
   else ( low | for(low+1, high) )
 
+{--
+* def upto(Integer) :: Integer
+Publish all values greater than or equal to 0 and less than the argument, simultaneously.
+--}
+def upto(high) = for(0, high)

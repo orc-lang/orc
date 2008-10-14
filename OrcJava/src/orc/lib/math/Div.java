@@ -2,7 +2,6 @@ package orc.lib.math;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.MathContext;
 
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
@@ -18,7 +17,15 @@ public class Div extends EvalSite {
 			return a.divide(b);
 		}
 		public Number apply(BigDecimal a, BigDecimal b) {
-			return a.divide(b, MathContext.DECIMAL128);
+			try {
+				return a.divide(b);
+			} catch (ArithmeticException _) {
+				// an exception is thrown if the dividend is
+				// not representable as a finite decimal, so
+				// in that case we convert to double.
+				// warning: this can lose precision
+				return a.doubleValue() / b.doubleValue();
+			}
 		}
 		public Number apply(int a, int b) {
 			return a/b;
