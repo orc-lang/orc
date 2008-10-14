@@ -2360,6 +2360,12 @@ the otherwise combinator; it is not used elsewhere in the language.
 </para>
 
 <para>
+The otherwise combinator is fully associative, so F <code>;</code> G <code>;</code> H,
+(F <code>;</code> G) <code>;</code> H, and F <code>;</code> (G <code>;</code> H) are
+all equivalent. It has lower precedence than the other three combinators. 
+</para>
+
+<para>
 The otherwise combinator was not present in the original formulation of the Orc concurrency 
 calculus; it has been added to support computation and iteration over strictly finite data. 
 Sequential programs conflate the concept of producing a value with the concept of completion. 
@@ -2522,7 +2528,7 @@ convenient, since it is semantically equivalent and mentions the variable
 <programlisting>
 val x = <emphasis role="bold">G</emphasis>
 val y = <emphasis role="bold">H</emphasis>
-<emphasis role="bold">F</emphasis> 
+<emphasis role="bold">long expression</emphasis> 
 </programlisting>
 
 </para>
