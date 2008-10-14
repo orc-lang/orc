@@ -30,6 +30,11 @@ public class Leave extends Node {
 		// This cast cannot fail; a Leave node always matches a Semi node earlier in the dag.
 		SemiRegion region = (SemiRegion)t.getRegion();
 		
+		// If a publication successfully leaves a SemiRegion, the right hand side of the semicolon shouldn't execute.
+		// This step cancels the RHS.
+		// It is an idempotent operation.
+		region.cancel();
+		
 		t.setRegion(region.getParent()).move(next).activate();
 	}
 	

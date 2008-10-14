@@ -7,7 +7,9 @@ import orc.runtime.Token;
 import orc.runtime.regions.SemiRegion;
 
 /**
- * A compile node that runs its left side to completion, then initiates the right side.
+ * A compile node that runs its left side to completion, 
+ * then initiates the right side if the left side did not
+ * publish anything.
  * Implemented using regions.
  * @author dkitchin
  */
