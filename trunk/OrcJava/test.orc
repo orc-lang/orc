@@ -43,21 +43,23 @@ def take((a,b)) =
 def drop(a,b) = (a.release(), b.release()) >> signal
 
 def phil(a,b,name) =
-  def thinking() = Rtimer(random(1000))
+  def thinking() = 
+    if (urandom() < 0.9)
+      then Rtimer(random(1000))
+      else println(name + " is thinking forever.") >> stop
   def hungry() = take((a,b))
   def eating() = 
     println(name + " is eating.") >> 
     Rtimer(random(1000)) >> 
     println(name + " has finished eating.") >>
     drop(a,b)
-  def loop() = thinking() >> hungry() >> eating() >> loop()
-  loop()
+  thinking() >> hungry() >> eating() >> phil(a,b,name)
 
 def dining(n) =
-  val forks = buildArray(n, Mutex)
+  val forks = IArray(n, lambda(_) = Semaphore(1))
   def phils(0) = stop
   def phils(i) = phil(forks(i%n), forks(i-1), "Philosopher " + i) | phils(i-1)
-  phils(n)
+  phils(n) 
   
-dining(5)
+dining(5) ; println("Done")
 

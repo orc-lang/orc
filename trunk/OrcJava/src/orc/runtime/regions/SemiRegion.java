@@ -28,6 +28,9 @@ public class SemiRegion extends Region {
 	}
 
 	public void cancel() {
-		t = null;
+		if (t != null) {
+			t.die();
+			t = null;
+		}
 	}
 }
