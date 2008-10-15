@@ -12,5 +12,6 @@ def queens(N) =
   extend([],N)
 
 val clock = Clock()
-queens(6)
-; clock()
+collect(bind(queens, 6)) >x> (
+  each(x) | clock()
+)
