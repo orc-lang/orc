@@ -355,7 +355,7 @@ Strings: <code>"orc"</code>, <code>"ceci n'est pas une |"</code>
 
 </section>
 
-<section id="language.base.oeprators"><title>Operators</title>
+<section id="language.base.operators"><title>Operators</title>
 <para>
 Cor has a standard set of arithmetic, logical, and comparison operators.
 As in most other programming languages, they are written in the usual 
@@ -618,7 +618,7 @@ The behavior of conditionals is summarized by the following table
 </section>
 
 
-<section><title>Variables</title>
+<section id="cor.variables"><title>Variables</title>
 
 <para>
 A <firstterm>variable</firstterm> names the value of some expression so that we can use it later.
@@ -782,7 +782,7 @@ variables.
 
 </section>
 
-<section><title>Functions</title>
+<section id="cor.functions"><title>Functions</title>
 
 <para>
 Like most other programming languages, Cor has the capability to define <firstterm>functions</firstterm>,
@@ -1313,7 +1313,7 @@ println("Hello, World!")
 </section>
 
 
-<section><title>Declaring a site</title>
+<section id="orc-declaring-a-site"><title>Declaring a site</title>
 
 <para>
 A <code>site</code> declaration makes some service available as a site and
@@ -3496,7 +3496,7 @@ Under construction.
 
 
 <appendix id="appendix.library"><title>Standard Library</title>
-<sect1><title>Overview</title>
+<section><title>Overview</title>
 <para>
 The standard library is a set of declarations implicitly available to all Orc
 programs.  In this section we give an informal description of the standard library,
@@ -3511,35 +3511,56 @@ Orc, the entire Java standard library is available to Orc programs via
 to provide convenience for the most common Orc idioms, not the complete set of
 features needed for general-purpose programming.
 </para>
+</section>
+
+<section><title>Notation</title>
 
 <para>
-The standard library is divided into groups of related declarations:
+Each declaration in the standard library includes a type signature as part of
+its documentation.  Although Orc does not yet have an official type system or
+syntax for types, it is our intention that the notation summarized here
+will form the basis for any future type system.
 </para>
+
+<para>
+A type signature consists of: a declaration keyword, a declaration name, formal
+parameter types, the return type, and finally any subtyping constraints. For
+example: <code>site min(A, A) :: A, A &lt;: Comparable</code>.
+</para>
+
+<para>
+Types are written as follows:
 <itemizedlist>
-<listitem>core.inc: Essential primitive sites and operators.</listitem>
-<listitem>data.inc: General concurrent and sequential data structures.</listitem>
-<listitem>functional.inc: Higher-order functional programming idioms.</listitem>
-<listitem>list.inc: Operations on lists.</listitem>
-<listitem>text.inc: Operations on strings.</listitem>
-<listitem>time.inc: Real and logical time.</listitem>
-<listitem>util.inc: Miscellaneous utility functions.</listitem>
+<listitem>Primitive types are given descriptive names based on the names of the
+	corresponding Java classes. For example, <code>Number</code> is any
+	number, and <code>Comparable</code> is any value which supports a total
+	order.</listitem> 
+<listitem>Type variables in polymorphic declarations are written using the
+	letters <code>A</code> ... <code>Z</code>. For example, the signature
+	<code>site let(A) :: A</code> means that <code>let</code> takes one
+	argument of any type, and returns a value of the same type.</listitem>
+<listitem>The Top type (of which all types are subtypes) is written
+	<code>Top</code>. The Bottom type (which is a subtype of all types) is
+	written <code>Bot</code>.</listitem>
+<listitem>A list with element type <code>A</code> is written <code>[A]</code>.</listitem>
+<listitem>A tuple with element types <code>A, B, ...</code> is written <code>(A, B, ...)</code>.</listitem>
+<listitem>Any other parameterized type is written as a type name followed by
+	type parameters in angle brackets. For example,
+	<code>Array&lt;Integer&gt;</code> is the type of arrays of integers.</listitem>
+<listitem>A function type (when given as an argument or return type) is written with the keyword
+	<code>lambda</code> followed by the argument types and return type as
+	in a declaration type signature. For example, <code>lambda (Integer) ::
+	Integer</code> is the type of functions mapping integers to
+	integers.</listitem>
 </itemizedlist>
- 
-</sect1>
-
-<sect1><title>Notation</title>
-
-<para>
-Type signatures are written using a combination of Java- and Haskell-like
-syntax. Example: <code>site let&lt;A&gt;(A) :: A</code>. The signature
-consists of a declaration keyword followed by a name, type parameters, formal
-parameter types, and finally the return type.
 </para>
 
 <para>
-Declaration keywords include <code>site</code>, <code>def</code>,
-<code>val</code>, and <code>pattern</code>. The first three keywords
-should be familiar. The last, <code>pattern</code>, indicates a binding
+Declaration keywords include
+<link linkend="orc-declaring-a-site"><code>site</code></link>,
+<link linkend="cor.functions"><code>def</code></link>,
+<link linkend="cor.variables"><code>val</code></link>, and <code>pattern</code>. The first three keywords
+are described in previous chapters. The last, <code>pattern</code>, indicates a binding
 for a site which can be used in a pattern match: the site must take
 one argument (the value to be matched against), and return a tuple (the
 values to bind to pattern variables). For example,
@@ -3548,29 +3569,20 @@ would be used like <code>3 &gt;M(x,y)&gt; x+y</code>.
 </para>
 
 <para>
-Object members (methods and fields) are each declared separately. The name of a
-member is written in the form Type.member, e.g.  <code>Foo.get</code> refers to
-the <code>get</code> member of an object of type <code>Foo</code>.  The object
-type can include type parameters which may be referenced by the member type.
+Object members (methods and fields) are each declared separately.  The binding
+name of a member is written in the form Type.member, e.g.  <code>Foo.get</code>
+refers to the <code>get</code> member of an object of type <code>Foo</code>.
+The object type can include type variables which are referenced by the member
+type.
 </para>
 
 <para>
-A list with element type <code>A</code> is written <code>[A]</code>. A tuple
-with element types <code>A, B, ...</code> is written <code>(A, B, ...)</code>.
-The Top and Bottom types are written <code>Top</code> and <code>Bot</code>
-respectively. The type of <code>signal</code> is <code>Signal</code>. The meanings of other
-named types should be clear from context.
-</para>
-
-<para>
-A function type (when given as an argument or return type) is written with the keyword
-<code>lambda</code> followed by the argument types and return type, e.g.
-<code>lambda (Integer) :: Integer</code>.  Multiple formal parameter types are
-syntactic sugar for currying, e.g.  <code>site Foo()() :: Signal</code> is
-equivalent to <code>site Foo() :: lambda () :: Signal</code>.
+Multiple sets of formal parameter types are syntactic sugar for currying. For
+example, <code>site Foo()() :: Signal</code> is equivalent to <code>site Foo()
+	:: lambda () :: Signal</code>.
 </para>
  
-</sect1>
+</section>
 
 <xi:include href="stdlib.xml"/>
 
