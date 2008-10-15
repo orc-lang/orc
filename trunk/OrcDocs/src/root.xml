@@ -838,7 +838,7 @@ needed.
 
 
 <para>
-A definition or a call may have zero arguments, in which case we write <code>()</code> for the arguments.
+A function definition or call may have zero arguments, in which case we write <code>()</code> for the arguments.
 
 <programlisting><![CDATA[
 def Zero() = 0
@@ -849,7 +849,7 @@ def Zero() = 0
 <section><title>Recursion</title>
 
 <para>
-Definitions can be recursive; that is, the name of a definition may be used in its own body.
+Functions can be recursive; that is, the name of a function may be used in its own body.
 
 <programlisting><![CDATA[
 def Sumto(n) = if n < 1 then 0 else n + Sumto(n-1)
@@ -1292,7 +1292,7 @@ Search("first class value")
 </para>
 
 <para>
-A site is sometimes called purely for its effect on the external world; its return
+A site is sometimes called only for its effect on the external world; its return
 value is irrelevant. Many sites which do not need to return a meaningful value will
 instead return a <firstterm>signal</firstterm>: a special value which carries no 
 information (analogous to the unit value <code>()</code> in ML). The signal value
@@ -1543,7 +1543,7 @@ The asymmetric combinator, written F<code><![CDATA[ <x< ]]></code>G, allows us t
 a computation waiting for a result, or terminate a computation. The execution of 
 F<code><![CDATA[ <x< ]]></code>G starts by executing F and G in parallel. Whenever
 F publishes a value, that value is published by the entire execution. When G publishes
-its first value, that value is bound to x in F, and then the execuion of G is immediately 
+its first value, that value is bound to x in F, and then the execution of G is immediately 
 <firstterm>terminated</firstterm>. A terminated expression cannot call any sites or 
 publish any values.
 </para>
@@ -1639,7 +1639,7 @@ of concurrency and of sites.
 
 <para>
 The declaration <code>val x = </code>G, followed by expression F, is 
-actually just a prefix form of the asymmetric combinator F<code><![CDATA[ <x< ]]></code>G.
+actually just a different way of writing the expression F<code><![CDATA[ <x< ]]></code>G.
 Thus, <code>val</code> shares all of the behavior of the asymmetric combinator,
 which we have already described. (This is also true when a pattern is used instead
 of variable name <code>x</code>).
@@ -2100,7 +2100,7 @@ function which adds <code>3</code> to its argument, binds that to <code>f</code>
 <para>
 When defining a curried function, we have abstracted it in two steps, and when
 applying it we have written two separate calls. However, this is verbose and
-not very clear. Orc has a special syntax for curried definitions and curried 
+not very clear. Orc has a special syntax for curried function definitions and curried 
 applications that will simplify both of these steps. Here is the previous
 program, written in this simplified syntax:
 
@@ -2109,7 +2109,7 @@ def Add(a)(b) = a+b
 Add(3)(4)
 ]]></programlisting>
 
-Definitions may have multiple argument sequences; they are enclosed in parentheses
+Function definitions may have multiple argument sequences; they are enclosed in parentheses
 and concatenated. Curried function calls chain together multiple applications in
 a similar way.
 </para>
@@ -2334,7 +2334,7 @@ We determine when an expression completes using the following rules.
 <listitem>A site call completes when it has published a value.</listitem>
 <listitem>A site call completes silently if it is blocked on a variable, and the expression
 which would bind that variable has already completed.</listitem>
-<listitem>A site call completes silently if the call <firstterm>fails</firstterm>, as explained below.</listitem>
+<listitem>A site call completes silently if it halts.</listitem>
 <listitem>F <code>|</code> G completes when its subexpressions F and G have both completed.</listitem>
 <listitem>F<code><![CDATA[ >x> ]]></code>G completes when F has completed and all copies of G have completed.</listitem>
 <listitem>F<code><![CDATA[ <x< ]]></code>G completes when F has completed, and G has either completed or
@@ -2347,19 +2347,19 @@ or when F and G have both completed.</listitem>
 </para>
 
 <para>
-A site call <emphasis>fails</emphasis> when it is certain that the call will never return
-a result. This may happen for a variety of reasons. A site may be specifically designed to never 
-respond under certain circumstances; for example, <code>if(false)</code> will never respond,
-so that call fails. A site may depend on some connection that has failed in a detectable
-way; for example, <code>Google("five tons of flax")</code> fails if we are executing on a computer
+A site call <emphasis>halts</emphasis> when it is certain that the call will never return
+a result. A site call which has halted remains silent forever; it never publishes a response.
+This may happen for a variety of reasons. A site may be specifically designed to never 
+respond under certain circumstances; for example, <code>if(false)</code> always halts. 
+A site may depend on some connection that has failed in a detectable way; for example, 
+the call <code>Google("five tons of flax")</code> halts if it is executed on a computer
 which has no internet connection. A site may require some resource which is unavailable;
-for example, a site call that accesses a website may fail if the website itself is down or has 
-moved. Or the evaluation of the call may reach some failed or exceptional state; for example,
-when calling a Java method from Orc, if an exception is thrown, the call is treated as a failure. 
-Generally speaking, any underlying exception or error which prevents the site call from ever 
-continuing will trigger a failure. The failure of a site in this way can only be detected by
-the otherwise combinator; other operations in the language cannot distinguish a failed call
-from a call that is simply blocking.
+for example, a site call that accesses a website may halt if the website is inaccessible. 
+Or the execution of the call may reach some failed or exceptional state; for example,
+when calling a Java method from Orc, if an exception is thrown, the call halts. 
+Generally speaking, any underlying exception or error which can be detected and which
+prevents the site call from ever yielding a result will cause it to halt. A halted site
+call can only be distinguished from a blocked site call by the otherwise combinator.
 </para>
 
 <para>
@@ -2756,16 +2756,30 @@ parallel-or can evaluate to <code>true</code> based on only one of the results, 
 </section>
 
 
-<!-- 
-<section><title>Spork-join</title>
+<section><title>Finite Sequential</title>
 
+<para>
+The sequential combinator is very useful for infinite iterations: for each value published by <emphasis role="bold">F</emphasis>,
+do <emphasis role="bold">G</emphasis>, forever. However, suppose that we know that <emphasis role="bold">F</emphasis> will publish
+only a finite number of values, and then stop; for example, <emphasis role="bold">F</emphasis> publishes the contents of a text file,
+one line at a time. We would like to print out each line, and after all of the lines have been printed, start executing a new
+expression <emphasis role="bold">H</emphasis>.
+</para>
+
+<para>
+Sequential alone is not sufficient, because we have no way to detect when all of the lines have been published. Fork-join is
+also not suitable, since the values to be printed are not stored in some traversable data structure like a list; instead, they
+are streaming as publications out of an expression. Instead, we use the <code>;</code> combinator, which waits for all of the
+lines to be printed, then the left side completes and the right side can run. Note that we must suppress the publications on
+the left side using <code>stop</code>; if the left side published, the right side would not run.
+</para>
 
 <programlisting>
-<emphasis role="bold">F</emphasis> <![CDATA[>x>]]> println(x) >> stop ; <emphasis role="bold">G</emphasis>
+<emphasis role="bold">F</emphasis> <![CDATA[>x>]]> println(x) <![CDATA[>>]]> stop ; <emphasis role="bold">H</emphasis>
 </programlisting>
 
 </section>
- -->
+
 
 <section><title>Arbitration</title>
 
