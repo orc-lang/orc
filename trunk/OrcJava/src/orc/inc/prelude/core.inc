@@ -1,15 +1,15 @@
 {--
 Fundamental sites and operators.
-For a complete definition of the built-in operators,
-see the <link linkend="language.base.operators">Operators</link>
-section of the User Guide.
+For a more complete description of the built-in operators and their syntax, see
+the <link linkend="language.base.operators">Operators</link> section of the
+User Guide.
 --}
 
 {--
 * site let<A>(A) :: A
 When applied to a single argument, return that argument (behaving as the identity function).
 
-** site let<A, ...>(A, ...) :: (A, ...)
+* site let<A, ...>(A, ...) :: (A, ...)
 When applied to zero, two, or more arguments, return the arguments in a tuple.
 --}
 site let = orc.runtime.sites.core.Let
@@ -18,6 +18,7 @@ site let = orc.runtime.sites.core.Let
 * site if(Boolean) :: Signal
 Fail silently if the argument is false. Otherwise return a signal.
 
+Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: "Always publishes"
   if(false) >> "Never publishes"
@@ -29,10 +30,11 @@ site if = orc.runtime.sites.core.If
 * site error(String) :: Bot
 Fail with the given error message.
 
-Example using <code>error</code> to implement assertions:
+Example, using <code>error</code> to implement assertions:
 <programlisting language="orc-demo"><![CDATA[
 def assert(b) =
   if b then signal else error("assertion failed")
+
 -- Fail with the error message: "assertion failed"
 assert(false)]]></programlisting>
 --}
@@ -121,16 +123,12 @@ site (>=) = orc.lib.comp.Greq
 {--
 * site (=)(Top, Top) :: Boolean
 <code>a = b</code> returns true if <code>a</code> is equal to <code>b</code>, and false otherwise.
-We use a conservative definition of equality: if two values are considered equal,
-then one may be substituted locally for the other without affecting the behavior
-of the program.  Therefore, two values are guaranteed to be considered equal only
-if they are identical (in the sense of having the same object identity). In
-most cases, immutable objects are also considered equal if their
-contents are equal.
-
-When <code>a</code> and <code>b</code> are arbitrary Java objects, the value
-of <code>a=b</code> is given by the expression <code>a.equals(b)</code>, which may
-not always obey our definition of equality.
+The precise definition of ``equal'' depends on the values being compared, but
+obeys the rule that if two values are considered equal, then one may be
+substituted locally for the other without affecting the behavior of the
+program.  Generally, two values are guaranteed to be considered equal only if
+they are identical (in the sense of having the same object identity). In most
+cases, immutable objects are also considered equal if their contents are equal.
 --}
 site (=) = orc.runtime.sites.core.Equal
 
@@ -168,7 +166,8 @@ site (||) = orc.lib.bool.Or
 to the list <code>b</code>.
 
 * pattern (:)<A>([A]) :: (A, [A])
-The inverse of the list constructor <code>(:)</code>.
+The inverse of the list constructor <code>(:)</code>. Returns the head and tail
+of the list.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -191,3 +190,17 @@ def signum(x) =
   if x < 0 then -1
   else if x > 0 then 1
   else 0
+
+{--
+* def min<A extends Comparable>(A,A) :: A
+Return the lesser of the arguments. If the arguments
+are equal, returns the first argument.
+--}
+def min(x,y) = if y < x then y else x
+
+{--
+* def max<A extends Comparable>(A,A) :: A
+Return the greater of the arguments. If the arguments
+are equal, returns the second argument.
+--}
+def max(x,y) = if x > y then x else y

@@ -1,21 +1,27 @@
 {--
+Operations on lists.
+Many of these functions are similar to those in the Haskell prelude, but
+operate on the elements of a list in parallel.
+--}
+
+{--
 * def each<A>([A]) :: A
-Publish every value in a sequence, simultaneously.
+Publish every value in a list, simultaneously.
 --}
 def each([]) = stop
 def each(h:t) = h | each(t)
 
 {--
 * def map<A,B>(lambda (A) :: B, [A]) :: [B]
-Apply a function to every element of a sequence (in parallel),
-producing a list of the results.
+Apply a function to every element of a list (in parallel),
+returning a list of the results.
 --}
 def map(f,[]) = []
 def map(f,h:t) = f(h):map(f,t)
 
 {--
 * def reverse<A>([A]) :: [A]
-Reverse a list.
+Return the reverse of the given list.
 --}
 def reverse(l) = 
   def tailrev([],x) = x
@@ -25,6 +31,7 @@ def reverse(l) =
 {--
 * def filter<A>(lambda (A) :: Boolean, [A]) :: [A]
 Return a list containing only those elements which satisfy the predicate.
+The filter is applied to all list elements in parallel.
 --}
 def filter(p,[]) = []
 def filter(p,x:xs) =
@@ -33,21 +40,21 @@ def filter(p,x:xs) =
 
 {--
 * def head<A>([A]) :: A
-Return the first element of a sequence.
+Return the first element of a list.
 --}
 def head(x:xs) = x
 def head([]) = error("head: empty list")
 
 {--
 * def tail<A>([A]) :: [A]
-Return all but the first element of a sequence.
+Return all but the first element of a list.
 --}
 def tail(x:xs) = xs
 def tail([]) = error("tail: empty list")
 
 {--
 * def init<A>([A]) :: [A]
-Return all but the last element of a sequence.
+Return all but the last element of a list.
 --}
 def init([]) = error("init: empty list")
 def init([x]) = []
@@ -55,7 +62,7 @@ def init(x:xs) = x:init(xs)
 
 {--
 * def last<A>([A]) :: A
-Return the last element of a sequence.
+Return the last element of a list.
 --}
 def last([]) = error("last: empty list")
 def last([x]) = x
@@ -63,7 +70,7 @@ def last(x:xs) = last(xs)
 
 {--
 * def empty<A>([A]) :: Boolean
-Is the sequence empty?
+Is the list empty?
 --}
 def empty([]) = true
 def empty(_) = false
@@ -77,7 +84,7 @@ def index(h:t, n) = index(t, n-1)
 
 {--
 * def append<A>([A], [A]) :: [A]
-Concatenate two lists.
+Return the first list concatenated with the second.
 --}
 def append([],l) = l
 def append(h:t,l) = h:append(t,l)
@@ -88,7 +95,9 @@ Reduce a list using the given left-associative binary operation and initial valu
 Given the list <code>[x1, x2, x3, ...]</code> and initial value <code>x0</code>,
 returns <code>f(... f(f(f(x0, x1), x2), x3) ...)</code>
 
+Example using <code>foldl</code> to reverse a list:
 <programlisting language="orc-demo"><![CDATA[
+-- Publishes: [3, 2, 1]
 foldl(flip((:)), [], [1,2,3])]]></programlisting>
 --}
 def foldl(f,z,[]) = z
@@ -108,7 +117,9 @@ Reduce a list using the given right-associative binary operation and initial val
 Given the list <code>[..., x3, x2, x1]</code> and initial value <code>x0</code>,
 returns <code>f(... f(x3, f(x2, f(x1, x0))) ...)</code>
 
+Example summing the numbers in a list:
 <programlisting language="orc-demo"><![CDATA[
+-- Publishes: 6
 foldr((+), 0, [1,2,3])]]></programlisting>
 --}
 def foldr(f,z,xs) = foldl(flip(f),z,reverse(xs))
@@ -145,7 +156,8 @@ def length(h:t) = 1 + length(t)
 
 {--
 * def take<A>(Integer, [A]) :: [A]
-Return the first <code>n</code> elements of a list.
+Given a number <code>n</code> and a list <code>l</code>,
+return the first <code>n</code> elements of <code>l</code>.
 --}
 def take(0, _) = []
 def take(_, []) = []
@@ -153,7 +165,8 @@ def take(n, x:xs) = x:take(n-1, xs)
 
 {--
 * def drop<A>(Integer, [A]) :: [A]
-Return the elements of a list after the first <code>n</code>.
+Given a number <code>n</code> and a list <code>l</code>,
+return the elements of <code>l</code> after the first <code>n</code>.
 --}
 def drop(0, xs) = xs
 def drop(_, []) = []
@@ -161,7 +174,8 @@ def drop(n, x:xs) = drop(n-1, xs)
 
 {--
 * def member<A>(A, [A]) :: Boolean
-Is the given item a member of the list?
+Return true if the given item is a member of the given list, and false
+otherwise.
 --}
 def member(item, []) = false
 def member(item, h:t) =
@@ -172,7 +186,9 @@ def member(item, h:t) =
 * def merge<A extends Comparable>([A], [A]) :: [A]
 Merge two sorted lists.
 
+Example:
 <programlisting language="orc-demo"><![CDATA[
+-- Publishes: [1, 2, 2, 3, 4, 5]
 merge([1,2,3], [2,4,5])]]></programlisting>
 --}
 def merge(xs,ys) = mergeBy((<), xs, ys)
@@ -191,7 +207,9 @@ def mergeBy(lt, x:xs, y:ys) =
 * def sort<A extends Comparable>([A]) :: [A]
 Sort a list.
 
+Example:
 <programlisting language="orc-demo"><![CDATA[
+-- Publishes: [1, 2, 3]
 sort([1,3,2])]]></programlisting>
 --}
 def sort(xs) = sortBy((<), xs)
@@ -212,7 +230,9 @@ def sortBy(lt, xs) =
 Given a list of pairs, group together the second
 elements of consecutive pairs with equal first elements.
 
+Example:
 <programlisting language="orc-demo"><![CDATA[
+-- Publishes: [(1, [1, 2]), (2, [3]), (3, [4]), (1, [3])]
 group([(1,1), (1,2), (2,3), (3,4), (1,3)])]]></programlisting>
 --}
 def group(xs) = groupBy((=), xs)
@@ -242,9 +262,10 @@ def range(low, high) =
 
 {--
 * def any<A>(lambda (A) :: Boolean, [A]) :: Boolean
-Do any the elements of the list match the predicate?
-Uses parallel-or to return a result as soon as possible and terminate
-unnecessary computation.
+Return true if any of the elements of the list match the predicate, and false otherwise.
+The predicate is applied to all elements of the list in parellel; the result
+is returned as soon as it is known and any unnecessary evaluation of the predicate
+terminated.
 --}
 def any(p, []) = false
 def any(p, x:xs) =
@@ -254,9 +275,10 @@ def any(p, x:xs) =
   
 {--
 * def all<A>(lambda (A) :: Boolean, [A]) :: Boolean
-Do all the elements of the list match the predicate?
-Uses parallel-and to return a result as soon as possible and terminate
-unnecessary computation.
+Return true if all of the elements of the list match the predicate, and false otherwise.
+The predicate is applied to all elements of the list in parellel; the result
+is returned as soon as it is known and any unnecessary evaluation of the predicate
+terminated.
 --}
 def all(p, []) = true
 def all(p, x:xs) =
@@ -266,6 +288,44 @@ def all(p, x:xs) =
 
 {--
 * def sum([Number]) :: Number
-Compute the sum of all numbers in a list.
+Return the sum of all numbers in a list.
+The sum of an empty list is 0.
 --}
 def sum(xs) = foldl((+), 0, xs)
+
+{--
+* def product([Number]) :: Number
+Return the product of all numbers in a list.
+The product of an empty list is 1.
+--}
+def product(xs) = foldl((*), 1, xs)
+
+{--
+* def and([Boolean]) :: Boolean
+Return the boolean conjunction of all boolean values in the list.
+The conjunction of an empty list is <code>true</code>.
+--}
+def and([]) = true
+def and(false:xs) = false
+def and(true:xs) = and(xs)
+
+{--
+* def or([Boolean]) :: Boolean
+Return the boolean disjunction of all boolean values in the list.
+The disjunction of an empty list is <code>true</code>.
+--}
+def or([]) = true
+def or(true:xs) = true
+def or(false:xs) = or(xs)
+
+{--
+* def minimum<A extends Comparable>([A]) :: A
+Return the minimum element of a non-empty list.
+--}
+def minimum(xs) = foldl1(min, xs)
+
+{--
+* def maximum<A extends Comparable>([A]) :: A
+Return the maximum element of a non-empty list.
+--}
+def maximum(xs) = foldl1(min, xs)

@@ -1,4 +1,8 @@
 {--
+Real and logical time.
+--}
+
+{--
 * site Rtimer(Integer) :: Signal
 Publish a signal after the given number of milliseconds.
 --}
@@ -11,7 +15,9 @@ Calling a relative clock returns the number
 of milliseconds which have elapsed since the
 clock was created.
 
+Example:
 <programlisting language="orc-demo"><![CDATA[
+-- Publishes a value near 1000
 val c = Clock()
 Rtimer(1000) >> c()]]></programlisting>
 --}

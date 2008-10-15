@@ -1,4 +1,8 @@
 {--
+General-purpose supplemental data structures.
+--}
+
+{--
 * site Semaphore(Integer) :: Semaphore
 Return a semaphore with the given number of available items.
 
@@ -29,8 +33,7 @@ site Semaphore = orc.lib.state.Semaphore
 * site Buffer<A>() :: Buffer<A>
 Create a new buffer (FIFO channel) of unlimited size.
 
-An example illustrating how a <code>get</code> blocks until
-a value is <code>put</code> in the buffer:
+Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: 10
 val b = Buffer()
@@ -57,6 +60,7 @@ site Buffer = orc.lib.state.Buffer
 * site SyncChannel<A>() :: SyncChannel<A>
 Create a synchronous channel, or rendezvous.
 
+Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publish: 10
 val c = SyncChannel()
@@ -75,7 +79,7 @@ site SyncChannel = orc.lib.state.SyncChannel
 * site Cell<A>() :: Cell<A>
 Create a write-once storage location.
 
-An example illustrating the use of a write-once cell:
+Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: 5 5
 val c = Cell()
@@ -97,6 +101,7 @@ site Cell = orc.lib.state.Cell
 * site Ref<A>() :: Ref<A>
 Create an empty rewritable storage location.
 
+Example:
 <programlisting language="orc-demo"><![CDATA[
 val r = Ref()
 Rtimer(1000) >> r.write(5) >> stop
@@ -131,8 +136,7 @@ site Null = orc.lib.util.JavaNull
 * site Array<A>(Integer) :: Array<A>
 Create a new array of the given size.
 
-Example illustrating how an array can be constructed,
-initialized, and used:
+Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: 0 1 2
 val a = Array(3)
@@ -198,9 +202,10 @@ def IArray(n, f) =
 * site Some<A>(A) :: Option<A>
 Construct an available optional value.
 
-** pattern Some<A>(Option<A>) :: (A)
+* pattern Some<A>(Option<A>) :: (A)
 Deconstruct an available optional value.
 
+Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: 3
 Some(3) >Some(x)> x]]></programlisting>
@@ -211,9 +216,10 @@ site Some = orc.runtime.sites.core.Some
 * site None<A>(A) :: Option<A>
 Construct an unavailable optional value.
 
-** pattern None<A>(Option<A>) :: ()
+* pattern None<A>(Option<A>) :: ()
 Deconstruct an unavailable optional value.
 
+Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: true
   None() >None()> true
@@ -225,9 +231,10 @@ site None = orc.runtime.sites.core.None
 * site Left<A>(A) :: Either<A>
 Construct a "left" member of a union which may be tagged either "left" or "right".
 
-** pattern Left<A>(Either<A>) :: A
+* pattern Left<A>(Either<A>) :: A
 Deconstruct a "left" member of a union.
 
+Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: "left"
 Left(3) >x> (
@@ -241,9 +248,10 @@ site Left = orc.lib.data.Left
 * site Right<A>(A) :: Either<A>
 Construct a "right" member of a union which may be tagged either "left" or "right".
 
-** pattern Right<A>(Either<A>) :: A
+* pattern Right<A>(Either<A>) :: A
 Deconstruct a "right" member of a union.
 
+Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: "right"
 Right(3) >x> (
