@@ -10,7 +10,7 @@ chosen from the range of all possible 32-bit Integer values.
 * site random(Integer) :: Integer
 Return a pseudorandom, uniformly distributed Integer value
 between 0 (inclusive) and the specified value (exclusive).
-If the argument is 0, fail silently.
+If the argument is 0, halt.
 --}
 site random = orc.lib.util.Random
 

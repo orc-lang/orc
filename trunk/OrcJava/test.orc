@@ -61,5 +61,6 @@ def dining(n) =
   def phils(i) = phil(forks(i%n), forks(i-1), "Philosopher " + i) | phils(i-1)
   phils(n) 
   
-dining(5) ; println("Done")
+dining(5) ; println("Done.") >> stop
+
 
