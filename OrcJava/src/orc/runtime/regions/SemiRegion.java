@@ -29,6 +29,9 @@ public class SemiRegion extends Region {
 
 	public void cancel() {
 		if (t != null) {
+			// setPending so that the token can unsetPending when it
+			// dies
+			t.setPending();
 			t.die();
 			t = null;
 		}
