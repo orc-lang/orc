@@ -65,11 +65,10 @@ public class Def {
 	
 	/* Make sure this definition checks against its stated type */
 	public void typecheck(Env<Type> ctx) throws TypeException {
-		
-		Env<Type> bodyctx = ctx;
+		Env<Type> bodyctx = ctx.clone();
 		
 		for (Type t : type.argTypes) {
-			bodyctx = bodyctx.add(t);
+			bodyctx.add(t);
 		}
 
 		body.typecheck(type.resultType, bodyctx);

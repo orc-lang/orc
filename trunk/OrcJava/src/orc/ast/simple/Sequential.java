@@ -44,7 +44,8 @@ public class Sequential extends Expression {
 	@Override
 	public Expr convert(Env<Var> vars) throws CompilationException {
 		
-		Env<Var> newvars = vars.add(v);
+		Env<Var> newvars = vars.clone();
+		newvars.add(v);
 		
 		return new Push(left.convert(vars), right.convert(newvars));
 	}

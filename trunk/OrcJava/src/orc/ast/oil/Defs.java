@@ -66,7 +66,7 @@ public class Defs extends Expr {
 	@Override
 	public Type typesynth(Env<Type> ctx) throws TypeException {
 
-		Env<Type> dctx = ctx;
+		Env<Type> dctx = ctx.clone();
 		
 		/*
 		 * Add variable bindings for all definition names in this group.
@@ -76,7 +76,7 @@ public class Defs extends Expr {
 				// TODO: Make this a more specific exception
 				throw new TypeException("Missing definition type");
 			}
-			dctx = dctx.add(d.type());
+			dctx.add(d.type());
 		}
 		
 		/* 

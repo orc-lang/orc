@@ -68,7 +68,7 @@ public class Defs extends Node {
 		}
 
 		for (Closure c : cs) {
-			c.setEnvironment(t.getEnvironment());
+			c.setEnvironment(t.getEnvironment().clone());
 		}
 
 		t.move(next).activate();

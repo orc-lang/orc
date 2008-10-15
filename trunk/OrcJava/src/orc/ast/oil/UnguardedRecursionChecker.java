@@ -34,19 +34,20 @@ public class UnguardedRecursionChecker extends Walker {
 	@Override
 	public Void visit(Defs expr) {
 		// save the environment
-		Env<Boolean> outerEnv = env;
+		Env<Boolean> outerEnv = env.clone();
 		int ndefs = expr.defs.size();
 		int whichdef = 0;
 		// check each def in turn
 		for (Def def : expr.defs) {
+			// FIXME: this copies the environment more often than strictly necessary
 			env = envForDef(ndefs, whichdef, def.arity, outerEnv);
 			def.body.accept(this);
 			++whichdef;
 		}
 		// check the body
-		env = outerEnv;
+		env = outerEnv.clone();
 		for (int i = 0; i < ndefs; ++i) {
-			env = env.add(false);
+			 env.add(false);
 		}
 		expr.body.accept(this);
 		// restore the environment
@@ -58,9 +59,9 @@ public class UnguardedRecursionChecker extends Walker {
 	public Void visit(Pull expr) {
 		// The pull adds a binding to the LHS,
 		// but we don't care what it is.
-		env = env.add(false);
+		env.add(false);
 		expr.left.accept(this);
-		env = env.unwind(1);
+		env.unwind(1);
 		
 		expr.right.accept(this);
 		return null;
@@ -117,16 +118,16 @@ public class UnguardedRecursionChecker extends Walker {
 	 * the value for this def's binding is true, and for all sibling defs it's false.
 	 */
 	private static Env<Boolean> envForDef(int ndefs, int whichdef, int arity, Env<Boolean> env) {
-		Env<Boolean> out = env;
+		Env<Boolean> out = env.clone();
 		for (int i = 0; i < whichdef; ++i) {
-			out = out.add(false);
+			out.add(false);
 		}
-		out = out.add(true);
+		out.add(true);
 		for (int i = whichdef+1; i < ndefs; ++i) {
-			out = out.add(false);
+			out.add(false);
 		}
 		for (int i = 0; i < arity; ++i) {
-			out = out.add(false);
+			out.add(false);
 		}
 		return out;
 	}
@@ -138,9 +139,10 @@ public class UnguardedRecursionChecker extends Walker {
 	private static Env<Boolean> envForPush(Env<Boolean> env) {
 		Env<Boolean> out = new Env<Boolean>();
 		for (Boolean _ : env.items()) {
-			out = out.add(false);
+			out.add(false);
 		}
 		// plus one binding for the push itself
-		return out.add(false);
+		out.add(false);
+		return out;
 	}
 }

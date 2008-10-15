@@ -69,7 +69,8 @@ public class Definition {
 
 	public Def convert(Env<Var> vars) throws CompilationException {
 	
-		Env<Var> newvars = vars.addAll(formals);
+		Env<Var> newvars = vars.clone();
+		newvars.addAll(formals);
 		
 		return new orc.ast.oil.Def(formals.size(), body.convert(newvars), type);
 	}
