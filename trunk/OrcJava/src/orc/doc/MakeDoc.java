@@ -33,34 +33,44 @@ public class MakeDoc {
 		int anchor;
 		anchor = 0;
 		for (DocNodes file : files) {
-			System.out.println("<section><title>");
-			System.out.println(escapeXML(file.file));
+			System.out.print("<section><title>");
+			System.out.print(escapeXML(file.file));
+			if (!file.nodes.isEmpty()) {
+				DocNode first = file.nodes.get(0);
+				if (first instanceof DocParagraph) {
+					System.out.print(": ");
+					System.out.print(firstSentence(((DocParagraph)first).body.trim()));
+				}
+			}
 			System.out.println("</title>");
 			int depth = 0;
 			for (DocNode doc : file.nodes) {
-				if (doc.depth > depth) {
-					System.out.println("<variablelist>");
+				if (doc instanceof DocParagraph) {
+					System.out.print("<para>");
+					System.out.print(((DocParagraph)doc).body.trim());
+					System.out.println("</para>");
 				} else {
-					while (doc.depth < depth) {
-						System.out.println("</listitem></varlistentry></variablelist>");
-						--depth;
+					DocType type = (DocType)doc;
+					if (type.depth > depth) {
+						System.out.println("<variablelist>");
+						depth = type.depth;
+					} else {
+						while (type.depth < depth) {
+							System.out.println("</listitem></varlistentry></variablelist>");
+							--depth;
+						}
+						if (type.depth == depth) {
+							System.out.println("</listitem></varlistentry>");
+						}
+						depth = type.depth;
 					}
-					if (doc.depth == depth) {
-						System.out.println("</listitem></varlistentry>");
-					}
+					System.out.print("<varlistentry><term>");
+					System.out.print("<code>" + escapeXML(extractName(type.type)) + "</code>");
+					System.out.print("</term><listitem>");
+					System.out.print("<para>");
+					System.out.print("<code>" + escapeXML(type.type) + "</code>");
+					System.out.println("</para>");
 				}
-				System.out.println("<varlistentry><term>");
-				System.out.println("<code>" + escapeXML(extractName(doc.type)) + "</code>");
-				System.out.println("</term><listitem>");
-				System.out.print("<para>");
-				System.out.println("<code>" + escapeXML(doc.type) + "</code>");
-				System.out.print("</para>");
-				System.out.print("<para>");
-				// insert paragraph break wherever there is an empty line
-				System.out.print(doc.description.trim()
-						.replaceAll("([ \t\f]*(\n|\r|\r\n)){2,}", "</para>\n<para>"));
-				System.out.println("</para>");
-				depth = doc.depth;
 			}
 			while (0 < depth) {
 				System.out.println("</listitem></varlistentry></variablelist>");

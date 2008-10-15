@@ -11,8 +11,7 @@ import orc.runtime.sites.java.ObjectProxy;
 
 /**
  * 
- * A fully evaluated Orc value. This includes sites, tuples of fully evaluated
- * values, and native Java values.
+ * A fully evaluated Orc value. This includes sites, tuples, lists, and so on.
  * 
  * However, it does not include unbound or partially-bound values, which are
  * instead in the broader category of Futures.
@@ -86,7 +85,7 @@ public abstract class Value {
 	}
 
 	private static Value signal = new TupleValue();
-
+	
 	/**
 	 * Test whether this value inhabits one of the option or list types.
 	 */

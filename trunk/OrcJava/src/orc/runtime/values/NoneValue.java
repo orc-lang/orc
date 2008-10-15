@@ -9,5 +9,8 @@ public class NoneValue extends OptionValue {
 	public <E> E accept(Visitor<E> visitor) {
 		return visitor.visit(this);
 	}
+	public boolean equivalentTo(Object that) {
+		return (that instanceof NoneValue);
+	}
 }
 

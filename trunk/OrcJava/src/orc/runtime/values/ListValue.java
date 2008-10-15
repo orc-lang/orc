@@ -13,7 +13,7 @@ import orc.runtime.Token;
  * have a list structure. (If you want a degenerate cons, just use a
  * tuples.)
  */
-public abstract class ListValue extends Value implements Iterable, ListLike { 
+public abstract class ListValue extends Value implements Iterable, ListLike, Immutable { 
 	
 	public abstract List<Object> enlist();
 	

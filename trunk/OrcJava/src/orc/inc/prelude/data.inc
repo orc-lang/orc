@@ -30,7 +30,7 @@ the initial number of available items with which the semaphore was constructed.
 site Semaphore = orc.lib.state.Semaphore
 
 {--
-* site Buffer<A>() :: Buffer<A>
+* site Buffer() :: Buffer<A>
 Create a new buffer (FIFO channel) of unlimited size.
 
 Example:
@@ -57,7 +57,7 @@ to <code>get</code> to fail silently. In addition, any subsequent calls to
 site Buffer = orc.lib.state.Buffer
 
 {--
-* site SyncChannel<A>() :: SyncChannel<A>
+* site SyncChannel() :: SyncChannel<A>
 Create a synchronous channel, or rendezvous.
 
 Example:
@@ -76,7 +76,7 @@ Send an item over the channel. If no receiver is available, block until one beco
 site SyncChannel = orc.lib.state.SyncChannel
 
 {--
-* site Cell<A>() :: Cell<A>
+* site Cell() :: Cell<A>
 Create a write-once storage location.
 
 Example:
@@ -98,7 +98,7 @@ Write a value to the cell. If the cell already has a value, fail silently.
 site Cell = orc.lib.state.Cell
 
 {--
-* site Ref<A>() :: Ref<A>
+* site Ref() :: Ref<A>
 Create an empty rewritable storage location.
 
 Example:
@@ -133,7 +133,7 @@ instead of null values.
 site Null = orc.lib.util.JavaNull
 
 {--
-* site Array<A>(Integer) :: Array<A>
+* site Array(Integer) :: Array<A>
 Create a new array of the given size.
 
 Example:
@@ -168,7 +168,7 @@ Return the size of the array.
 site Array = orc.lib.util.JavaArray
 
 {--
-* def fillArray<A>(Array<A>, lambda (Integer) :: A) :: Array<A>
+* def fillArray(Array<A>, lambda (Integer) :: A) :: Array<A>
 Given an array and a function from indices to values, populate the array.
 
 Example:
@@ -185,7 +185,7 @@ def fillArray(a, f) =
   fill(0, f) ; a
   
 {--
-* def IArray<A>(Integer, lambda (Integer) :: A)(Integer) :: A
+* def IArray(Integer, lambda (Integer) :: A)(Integer) :: A
 Create an immutable mapping (array) from integers to values.
 The first argument gives the upper exclusive bound of the mapping
 (the lower inclusive bound is always 0). The second argument
@@ -199,10 +199,10 @@ def IArray(n, f) =
   a.get
 
 {--
-* site Some<A>(A) :: Option<A>
+* site Some(A) :: Option<A>
 Construct an available optional value.
 
-* pattern Some<A>(Option<A>) :: (A)
+* pattern Some(Option<A>) :: (A)
 Deconstruct an available optional value.
 
 Example:
@@ -213,10 +213,10 @@ Some(3) >Some(x)> x]]></programlisting>
 site Some = orc.runtime.sites.core.Some
 
 {--
-* site None<A>(A) :: Option<A>
+* site None(A) :: Option<A>
 Construct an unavailable optional value.
 
-* pattern None<A>(Option<A>) :: ()
+* pattern None(Option<A>) :: ()
 Deconstruct an unavailable optional value.
 
 Example:
@@ -228,10 +228,10 @@ Example:
 site None = orc.runtime.sites.core.None
 
 {--
-* site Left<A>(A) :: Either<A>
+* site Left(A) :: Either<A>
 Construct a "left" member of a union which may be tagged either "left" or "right".
 
-* pattern Left<A>(Either<A>) :: A
+* pattern Left(Either<A>) :: A
 Deconstruct a "left" member of a union.
 
 Example:
@@ -245,10 +245,10 @@ Left(3) >x> (
 site Left = orc.lib.data.Left
 
 {--
-* site Right<A>(A) :: Either<A>
+* site Right(A) :: Either<A>
 Construct a "right" member of a union which may be tagged either "left" or "right".
 
-* pattern Right<A>(Either<A>) :: A
+* pattern Right(Either<A>) :: A
 Deconstruct a "right" member of a union.
 
 Example:
@@ -262,19 +262,19 @@ Right(3) >x> (
 site Right = orc.lib.data.Right
 
 {--
-* def fst<A,B>((A,B)) :: A
+* def fst((A,B)) :: A
 Return the first element of a pair.
 --}
 def fst((x,_)) = x
 
 {--
-* def snd<A,B>((A,B)) :: B
+* def snd((A,B)) :: B
 Return the second element of a pair.
 --}
 def snd((_,y)) = y
 
 {--
-* def swap<A,B>((A,B)) :: (B,A)
+* def swap((A,B)) :: (B,A)
 Swap the elements of a pair.
 --}
 def swap((x,y)) = (y,x)

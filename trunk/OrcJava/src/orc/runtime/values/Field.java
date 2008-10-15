@@ -6,7 +6,7 @@ import java.io.Serializable;
  * Distinguished representation for field names.
  * @author quark
  */
-public class Field extends Value implements Serializable {
+public class Field extends Value implements Serializable, Immutable {
 	private static final long serialVersionUID = 1L;
 	private final String key;
 	public Field(String key) {
@@ -25,10 +25,15 @@ public class Field extends Value implements Serializable {
 	}
 	@Override
 	public boolean equals(Object that) {
-		return key.equals(that);
+		if (that == null) return false;
+		return equivalentTo(that);
 	}
 	@Override
 	public int hashCode() {
 		return key.hashCode();
+	}
+	public boolean equivalentTo(Object that) {
+		return (that instanceof Field)
+			&& key.equals(((Field)that).key);
 	}
 }

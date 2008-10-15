@@ -31,4 +31,8 @@ public class NilValue extends ListValue {
 	public <E> E accept(Visitor<E> visitor) {
 		return visitor.visit(this);
 	}	
+	
+	public boolean equivalentTo(Object that) {
+		return (that instanceof NilValue);
+	}
 }
