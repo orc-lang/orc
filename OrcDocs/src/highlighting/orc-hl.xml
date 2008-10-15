@@ -49,7 +49,7 @@
 <!-- operators -->
 <highlighter type='regex'>
   <style>site</style>
-  <pattern><![CDATA[\|\||<=|>=]]></pattern>
+  <pattern><![CDATA[\|\||<=|>=|<:|:>]]></pattern>
 </highlighter>
 
 <highlighter type='regex'>

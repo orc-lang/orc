@@ -1,1388 +1,740 @@
 <?xml version="1.0"?>
-<sect1><title>Reference</title>
-<sect2><title>
-core.inc
-</title>
-<informaltable cellspacing="5">
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node0"><code>let</code></link>
-</th><td>
-When applied to a single argument, return that argument (behaving as the identity function).
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node1"><code>let</code></link>
-</th><td>
-When applied to zero, two, or more arguments, return the arguments in a tuple.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node2"><code>if</code></link>
-</th><td>
-Fail silently if the argument is false.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node3"><code>error</code></link>
-</th><td>
-Fail with the given error message.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node4"><code>(+)</code></link>
-</th><td>
-Add two numbers.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node5"><code>(-)</code></link>
-</th><td>
-Subtract the right argument from the left.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node6"><code>(0-)</code></link>
-</th><td>
-Return the additive inverse of the argument.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node7"><code>(*)</code></link>
-</th><td>
-Multiply two numbers.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node8"><code>(**)</code></link>
-</th><td>
-<code>a ** b</code> computes <code>a</code> to the <code>b</code>th power.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node9"><code>(/)</code></link>
-</th><td>
-If both arguments have integral types, perform integral division, rounding
-towards zero.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node10"><code>(%)</code></link>
-</th><td>
-<code>a % b</code> computes the remainder of <code>a / b</code>, satisfying the equation <code>a = (a/b)*b+(a%b)</code>.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node11"><code>(&lt;)</code></link>
-</th><td>
-Is the left argument less than the right?
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node12"><code>(&lt;=)</code></link>
-</th><td>
-Is the left argument less than or equal to the right?
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node13"><code>(&gt;)</code></link>
-</th><td>
-Is the left argument greater than the right?
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node14"><code>(&gt;=)</code></link>
-</th><td>
-Is the left argument greater than or equal to the right?
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node15"><code>(=)</code></link>
-</th><td>
-Is the left argument equivalent to the right?
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node16"><code>(/=)</code></link>
-</th><td>
-Is it not the case that the left argument is equivalent to the right,
-as described for <code>(=)</code>?
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node17"><code>(~)</code></link>
-</th><td>
-Compute the logical negation of the argument.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node18"><code>(&amp;&amp;)</code></link>
-</th><td>
-Compute the logical conjunction of the arguments.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node19"><code>(||)</code></link>
-</th><td>
-Compute the logical disjunction of the arguments.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node20"><code>(:)</code></link>
-</th><td>
-Prepend an element to a list.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node21"><code>(:)</code></link>
-</th><td>
-Deconstruct a list into a head and tail.
-</td></tr>
-</informaltable>
-<sect3 id="orc.doc.node0"><title>
-<code>site let&lt;A&gt;(A) :: A</code>
-</title>
-<para>When applied to a single argument, return that argument (behaving as the identity function).</para></sect3>
-<sect3 id="orc.doc.node1"><title>
-<code>site let&lt;A, ...&gt;(A, ...) :: (A, ...)</code>
-</title>
-<para>When applied to zero, two, or more arguments, return the arguments in a tuple.</para></sect3>
-<sect3 id="orc.doc.node2"><title>
-<code>site if(Boolean) :: Signal</code>
-</title>
-<para>Fail silently if the argument is false.</para>
-<para><programlisting language="orc-demo"><![CDATA[
+<section><title>Reference</title>
+<section><title>core.inc: Fundamental sites and operators.</title>
+<para>Fundamental sites and operators.
+For a more complete description of the built-in operators and their syntax, see
+the <link linkend="language.base.operators">Operators</link> section of the
+User Guide.</para>
+<variablelist>
+<varlistentry><term><code>let</code></term><listitem><para><code>site let(A) :: A</code></para>
+<para>When applied to a single argument, return that argument (behaving as the identity function).</para>
+</listitem></varlistentry>
+<varlistentry><term><code>let</code></term><listitem><para><code>site let(A, ...) :: (A, ...)</code></para>
+<para>When applied to zero, two, or more arguments, return the arguments in a tuple.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>if</code></term><listitem><para><code>site if(Boolean) :: Signal</code></para>
+<para>Fail silently if the argument is false. Otherwise return a signal.</para>
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: "Always publishes"
   if(false) >> "Never publishes"
-| if(true) >> "Always publishes"]]></programlisting></para></sect3>
-<sect3 id="orc.doc.node3"><title>
-<code>site error(String) :: Bot</code>
-</title>
+| if(true) >> "Always publishes"]]></programlisting></para>
+</listitem></varlistentry>
+<varlistentry><term><code>error</code></term><listitem><para><code>site error(String) :: Bot</code></para>
 <para>Fail with the given error message.</para>
-<para><programlisting language="orc-demo"><![CDATA[
+<para>Example, using <code>error</code> to implement assertions:
+<programlisting language="orc-demo"><![CDATA[
 def assert(b) =
   if b then signal else error("assertion failed")
-assert(false)]]></programlisting></para></sect3>
-<sect3 id="orc.doc.node4"><title>
-<code>site (+)(Number, Number) :: Number</code>
-</title>
-<para>Add two numbers.</para></sect3>
-<sect3 id="orc.doc.node5"><title>
-<code>site (-)(Number, Number) :: Number</code>
-</title>
-<para>Subtract the right argument from the left.</para></sect3>
-<sect3 id="orc.doc.node6"><title>
-<code>site (0-)(Number) :: Number</code>
-</title>
+
+-- Fail with the error message: "assertion failed"
+assert(false)]]></programlisting></para>
+</listitem></varlistentry>
+<varlistentry><term><code>(+)</code></term><listitem><para><code>site (+)(Number, Number) :: Number</code></para>
+<para><code>a+b</code> returns the sum of <code>a</code> and <code>b</code>.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>(-)</code></term><listitem><para><code>site (-)(Number, Number) :: Number</code></para>
+<para><code>a-b</code> returns the value of <code>a</code> minus the value of <code>b</code>.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>(0-)</code></term><listitem><para><code>site (0-)(Number) :: Number</code></para>
 <para>Return the additive inverse of the argument.
-This site is written without the 0 when it appears
-as an operator, i.e. <code>-a</code></para></sect3>
-<sect3 id="orc.doc.node7"><title>
-<code>site (*)(Number, Number) :: Number</code>
-</title>
-<para>Multiply two numbers.</para></sect3>
-<sect3 id="orc.doc.node8"><title>
-<code>site (**)(Number, Number) :: Number</code>
-</title>
-<para><code>a ** b</code> computes <code>a</code> to the <code>b</code>th power.</para></sect3>
-<sect3 id="orc.doc.node9"><title>
-<code>site (/)(Number, Number) :: Number</code>
-</title>
-<para>If both arguments have integral types, perform integral division, rounding
-towards zero. Otherwise, perform floating-point division. For example:</para>
-<para><programlisting language="orc-demo"><![CDATA[
-  7 / 3 -- publishes 2
-| 7 / 3.0 -- publishes 2.333...]]></programlisting></para></sect3>
-<sect3 id="orc.doc.node10"><title>
-<code>site (%)(Number, Number) :: Number</code>
-</title>
-<para><code>a % b</code> computes the remainder of <code>a / b</code>, satisfying the equation <code>a = (a/b)*b+(a%b)</code>.
-For a full description, see the
-<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://java.sun.com/docs/books/jls/third_edition/html/expressions.html#15.17.3">Java Language Specification, 3rd edition</link>.</para></sect3>
-<sect3 id="orc.doc.node11"><title>
-<code>site (&lt;)(Comparable, Comparable) :: Boolean</code>
-</title>
-<para>Is the left argument less than the right?</para></sect3>
-<sect3 id="orc.doc.node12"><title>
-<code>site (&lt;=)(Comparable, Comparable) :: Boolean</code>
-</title>
-<para>Is the left argument less than or equal to the right?</para></sect3>
-<sect3 id="orc.doc.node13"><title>
-<code>site (&gt;)(Comparable, Comparable) :: Boolean</code>
-</title>
-<para>Is the left argument greater than the right?</para></sect3>
-<sect3 id="orc.doc.node14"><title>
-<code>site (&gt;=)(Comparable, Comparable) :: Boolean</code>
-</title>
-<para>Is the left argument greater than or equal to the right?</para></sect3>
-<sect3 id="orc.doc.node15"><title>
-<code>site (=)(Top, Top) :: Boolean</code>
-</title>
-<para>Is the left argument equivalent to the right?  Values are considered equivalent
-if one can be substituted locally for another without affecting the behavior of the
-program.  Therefore two different immutable objects are equivalent if they
-share equivalent content, while two different mutable objects are never
-equivalent.</para>
-<para>When <code>a</code> and <code>b</code> are arbitrary Java objects, <code>a =
-b</code> is interpreted as <code>a.equals(b)</code>, which may not follow the
-rules given above.</para></sect3>
-<sect3 id="orc.doc.node16"><title>
-<code>site (/=)(Top, Top) :: Boolean</code>
-</title>
-<para>Is it not the case that the left argument is equivalent to the right,
-as described for <code>(=)</code>?</para></sect3>
-<sect3 id="orc.doc.node17"><title>
-<code>site (~)(Boolean) :: Boolean</code>
-</title>
-<para>Compute the logical negation of the argument.</para></sect3>
-<sect3 id="orc.doc.node18"><title>
-<code>site (&amp;&amp;)(Boolean, Boolean) :: Boolean</code>
-</title>
-<para>Compute the logical conjunction of the arguments. This is not a short-circuiting
+When this site appears as an operator, it is written without the zero,
+i.e. <code>(-a)</code></para>
+</listitem></varlistentry>
+<varlistentry><term><code>(*)</code></term><listitem><para><code>site (*)(Number, Number) :: Number</code></para>
+<para><code>a*b</code> returns the product of <code>a</code> and <code>b</code>.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>(**)</code></term><listitem><para><code>site (**)(Number, Number) :: Number</code></para>
+<para><code>a ** b</code> returns
+<inlineequation><mathphrase>a<superscript>b</superscript></mathphrase></inlineequation>,
+i.e. <code>a</code> raised to the <code>b</code>th power.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>(/)</code></term><listitem><para><code>site (/)(Number, Number) :: Number</code></para>
+<para><code>a/b</code> returns <code>a</code> divided by <code>b</code>.
+If both arguments have integral types, <code>(/)</code> performs integral
+division, rounding towards zero. Otherwise, it performs floating-point
+division.</para>
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+  7 / 3   -- publishes 2
+| 7 / 3.0 -- publishes 2.333...]]></programlisting></para>
+</listitem></varlistentry>
+<varlistentry><term><code>(%)</code></term><listitem><para><code>site (%)(Number, Number) :: Number</code></para>
+<para><code>a%b</code> computes the remainder of <code>a/b</code>. If <code>a</code>
+and <code>b</code> have integral types, then the remainder is given by
+the expression <code>a - (a/b)*b</code>. For a full description, see the
+<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://java.sun.com/docs/books/jls/third_edition/html/expressions.html#15.17.3">Java Language Specification, 3rd edition</link>.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>(&lt;)</code></term><listitem><para><code>site (&lt;)(Comparable, Comparable) :: Boolean</code></para>
+<para><code>a &lt; b</code> returns true if <code>a</code> is less than <code>b</code>, and false otherwise.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>(&lt;=)</code></term><listitem><para><code>site (&lt;=)(Comparable, Comparable) :: Boolean</code></para>
+<para><code>a &lt;= b</code> returns true if <code>a</code> is less than or equal to <code>b</code>, and false otherwise.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>(&gt;)</code></term><listitem><para><code>site (&gt;)(Comparable, Comparable) :: Boolean</code></para>
+<para><code>a > b</code> returns true if <code>a</code> is greater than <code>b</code>, and false otherwise.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>(&gt;=)</code></term><listitem><para><code>site (&gt;=)(Comparable, Comparable) :: Boolean</code></para>
+<para><code>a >= b</code> returns true if <code>a</code> is greater than or equal to <code>b</code>, and false otherwise.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>(=)</code></term><listitem><para><code>site (=)(Top, Top) :: Boolean</code></para>
+<para><code>a = b</code> returns true if <code>a</code> is equal to <code>b</code>, and false otherwise.
+The precise definition of "equal" depends on the values being compared, but
+obeys the rule that if two values are considered equal, then one may be
+substituted locally for the other without affecting the behavior of the
+program.  Generally, two values are guaranteed to be considered equal only if
+they are identical (in the sense of having the same object identity). In most
+cases, immutable objects are also considered equal if their contents are equal.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>(/=)</code></term><listitem><para><code>site (/=)(Top, Top) :: Boolean</code></para>
+<para><code>a/=b</code> returns false if <code>a=b</code>, and true otherwise.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>(~)</code></term><listitem><para><code>site (~)(Boolean) :: Boolean</code></para>
+<para>Return the logical negation of the argument.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>(&amp;&amp;)</code></term><listitem><para><code>site (&amp;&amp;)(Boolean, Boolean) :: Boolean</code></para>
+<para>Return the logical conjunction of the arguments. This is not a short-circuiting
 operator; both arguments must be evaluated and available before the result is
-computed.</para></sect3>
-<sect3 id="orc.doc.node19"><title>
-<code>site (||)(Boolean, Boolean) :: Boolean</code>
-</title>
-<para>Compute the logical disjunction of the arguments. This is not a short-circuiting
+computed.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>(||)</code></term><listitem><para><code>site (||)(Boolean, Boolean) :: Boolean</code></para>
+<para>Return the logical disjunction of the arguments. This is not a short-circuiting
 operator; both arguments must be evaluated and available before the result is
-computed.</para></sect3>
-<sect3 id="orc.doc.node20"><title>
-<code>site (:)&lt;A&gt;(A, [A]) :: [A]</code>
-</title>
-<para>Prepend an element to a list.</para></sect3>
-<sect3 id="orc.doc.node21"><title>
-<code>pattern (:)&lt;A&gt;([A]) :: (A, [A])</code>
-</title>
-<para>Deconstruct a list into a head and tail.</para></sect3>
-</sect2>
-<sect2><title>
-data.inc
-</title>
-<informaltable cellspacing="5">
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node22"><code>Semaphore</code></link>
-</th><td>
-Construct a semaphore with the given number of available items.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node23"><code>Semaphore.acquire</code></link>
-</th><td>
-Acquire an item.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node24"><code>Semaphore.release</code></link>
-</th><td>
-Release an item.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node25"><code>Buffer</code></link>
-</th><td>
-Create a new buffer (FIFO channel) of unlimited size.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node26"><code>Buffer.get</code></link>
-</th><td>
-Get an item from the buffer.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node27"><code>Buffer.getnb</code></link>
-</th><td>
-Get an item from the buffer.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node28"><code>Buffer.put</code></link>
-</th><td>
-Put an item in the buffer.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node29"><code>Buffer.close</code></link>
-</th><td>
-Close the buffer.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node30"><code>SyncChannel</code></link>
-</th><td>
-Create a synchronous channel.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node31"><code>SyncChannel.get</code></link>
-</th><td>
-Receive an item over the channel.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node32"><code>SyncChannel.put</code></link>
-</th><td>
-Send an item over the channel.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node33"><code>Cell</code></link>
-</th><td>
-Create a write-once cell.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node34"><code>Cell.read</code></link>
-</th><td>
-Read a value from the cell.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node35"><code>Cell.write</code></link>
-</th><td>
-Write a value to the cell.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node36"><code>Ref</code></link>
-</th><td>
-Create an empty rewritable reference.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node37"><code>Ref</code></link>
-</th><td>
-Create a rewritable reference containing the provided value.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node38"><code>Ref.read</code></link>
-</th><td>
-Read the value of the reference.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node39"><code>Ref.write</code></link>
-</th><td>
-Write a value to the reference.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node40"><code>Null</code></link>
-</th><td>
-Return a Java null value.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node41"><code>Array</code></link>
-</th><td>
-Create a new array of the given size.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node42"><code>Array</code></link>
-</th><td>
-Create a new primitive array of the given size with the given primitive type.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node43"><code>Array.get</code></link>
-</th><td>
-Get the element of the array given by the index, counting from 0.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node44"><code>Array.set</code></link>
-</th><td>
-Set the element of the array given by the index, counting from 0.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node45"><code>Array.slice</code></link>
-</th><td>
-Return a copy of the portion of the array with indices covered by the given
-half-open range.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node46"><code>Array.length</code></link>
-</th><td>
-Return the size of the array.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node47"><code>Some</code></link>
-</th><td>
-Construct an available optional value.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node48"><code>Some</code></link>
-</th><td>
-Deconstruct an available optional value.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node49"><code>None</code></link>
-</th><td>
-Construct an unavailable optional value.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node50"><code>None</code></link>
-</th><td>
-Deconstruct an unavailable optional value.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node51"><code>Left</code></link>
-</th><td>
-Construct a "left" member of a union.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node52"><code>Left</code></link>
-</th><td>
-Deconstruct a "left" member of a union.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node53"><code>Right</code></link>
-</th><td>
-Construct a "right" member of a union.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node54"><code>Right</code></link>
-</th><td>
-Deconstruct a "right" member of a union.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node55"><code>fst</code></link>
-</th><td>
-Return the first element of a pair.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node56"><code>snd</code></link>
-</th><td>
-Return the second element of a pair.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node57"><code>swap</code></link>
-</th><td>
-Swap the elements of a pair.
-</td></tr>
-</informaltable>
-<sect3 id="orc.doc.node22"><title>
-<code>site Semaphore(Integer) :: Semaphore</code>
-</title>
-<para>Construct a semaphore with the given number of available items.</para>
-<para><programlisting language="orc-demo"><![CDATA[
+computed.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>(:)</code></term><listitem><para><code>site (:)(A, [A]) :: [A]</code></para>
+<para><code>a:b</code> returns the list formed by prepending the element <code>a</code>
+to the list <code>b</code>.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>(:)</code></term><listitem><para><code>pattern (:)([A]) :: (A, [A])</code></para>
+<para>The inverse of the list constructor <code>(:)</code>. Returns the head and tail
+of the list.</para>
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: (3, [4, 5])
+[3,4,5] >x:xs> (x,xs)]]></programlisting></para>
+</listitem></varlistentry>
+<varlistentry><term><code>abs</code></term><listitem><para><code>def abs(Number) :: Number</code></para>
+<para>Return the absolute value of the argument.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>signum</code></term><listitem><para><code>def signum(Number) :: Number</code></para>
+<para>If the argument is 0, return 0. Otherwise return the sign of the argument,
+as given by the equation <code>signum(a) = a/abs(a)</code>.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>min</code></term><listitem><para><code>def min(A,A) :: A, A &lt;: Comparable</code></para>
+<para>Return the lesser of the arguments. If the arguments
+are equal, return the first argument.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>max</code></term><listitem><para><code>def max(A,A) :: A, A &lt;: Comparable</code></para>
+<para>Return the greater of the arguments. If the arguments
+are equal, return the second argument.</para>
+</listitem></varlistentry></variablelist>
+</section>
+<section><title>data.inc: General-purpose supplemental data structures.</title>
+<para>General-purpose supplemental data structures.</para>
+<variablelist>
+<varlistentry><term><code>Semaphore</code></term><listitem><para><code>site Semaphore(Integer) :: Semaphore</code></para>
+<para>Return a semaphore with the given number of available items.</para>
+<para>An example using a semaphore as a lock for a critical section:
+<programlisting language="orc-demo"><![CDATA[
+-- Prints:
+-- Entering critical section
+-- Leaving critical section
 val lock = Semaphore(1)
 lock.acquire() >>
 println("Entering critical section") >>
 println("Leaving critical section") >>
-lock.release() >> stop]]></programlisting></para></sect3>
-<sect3 id="orc.doc.node23"><title>
-<code>site Semaphore.acquire() :: Signal</code>
-</title>
-<para>Acquire an item. If none are available, block until one becomes available.</para></sect3>
-<sect3 id="orc.doc.node24"><title>
-<code>site Semaphore.release() :: Signal</code>
-</title>
+lock.release()]]></programlisting></para>
+<variablelist>
+<varlistentry><term><code>Semaphore.acquire</code></term><listitem><para><code>site Semaphore.acquire() :: Signal</code></para>
+<para>Acquire an item. If none are available, block until one becomes available.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>Semaphore.acquirenb</code></term><listitem><para><code>site Semaphore.acquirenb() :: Signal</code></para>
+<para>Acquire an item. If no items are available, fail silently.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>Semaphore.release</code></term><listitem><para><code>site Semaphore.release() :: Signal</code></para>
 <para>Release an item.  This may be called to add items beyond
-the initial number of available items with which the semaphore was constructed.</para></sect3>
-<sect3 id="orc.doc.node25"><title>
-<code>site Buffer&lt;A&gt;() :: Buffer&lt;A&gt;</code>
-</title>
+the initial number of available items with which the semaphore was constructed.</para>
+</listitem></varlistentry></variablelist>
+</listitem></varlistentry>
+<varlistentry><term><code>Buffer</code></term><listitem><para><code>site Buffer() :: Buffer&lt;A&gt;</code></para>
 <para>Create a new buffer (FIFO channel) of unlimited size.</para>
-<para><programlisting language="orc-demo"><![CDATA[
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: 10
 val b = Buffer()
-Rtimer(1000) >> b.put(10) >> stop
-| b.get()]]></programlisting></para></sect3>
-<sect3 id="orc.doc.node26"><title>
-<code>site Buffer&lt;A&gt;.get() :: A</code>
-</title>
-<para>Get an item from the buffer. If no items are available, block until one becomes available.</para></sect3>
-<sect3 id="orc.doc.node27"><title>
-<code>site Buffer&lt;A&gt;.getnb() :: A</code>
-</title>
-<para>Get an item from the buffer. If no items are available, fail silently.</para></sect3>
-<sect3 id="orc.doc.node28"><title>
-<code>site Buffer&lt;A&gt;.put(A) :: Signal</code>
-</title>
-<para>Put an item in the buffer.</para></sect3>
-<sect3 id="orc.doc.node29"><title>
-<code>site Buffer&lt;A&gt;.close() :: Signal</code>
-</title>
+  Rtimer(1000) >> b.put(10) >> stop
+| b.get()]]></programlisting></para>
+<variablelist>
+<varlistentry><term><code>Buffer.get</code></term><listitem><para><code>site Buffer&lt;A&gt;.get() :: A</code></para>
+<para>Get an item from the buffer. If no items are available, block until one becomes available.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>Buffer.getnb</code></term><listitem><para><code>site Buffer&lt;A&gt;.getnb() :: A</code></para>
+<para>Get an item from the buffer. If no items are available, fail silently.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>Buffer.put</code></term><listitem><para><code>site Buffer&lt;A&gt;.put(A) :: Signal</code></para>
+<para>Put an item in the buffer.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>Buffer.close</code></term><listitem><para><code>site Buffer&lt;A&gt;.close() :: Signal</code></para>
 <para>Close the buffer. This has the effect of immediately causing any blocked calls
 to <code>get</code> to fail silently. In addition, any subsequent calls to
-<code>get</code> or <code>put</code> will fail silently.</para></sect3>
-<sect3 id="orc.doc.node30"><title>
-<code>site SyncChannel&lt;A&gt;() :: SyncChannel&lt;A&gt;</code>
-</title>
-<para>Create a synchronous channel.</para>
-<para><programlisting language="orc-demo"><![CDATA[
+<code>get</code> or <code>put</code> will fail silently.</para>
+</listitem></varlistentry></variablelist>
+</listitem></varlistentry>
+<varlistentry><term><code>SyncChannel</code></term><listitem><para><code>site SyncChannel() :: SyncChannel&lt;A&gt;</code></para>
+<para>Create a synchronous channel, or rendezvous.</para>
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publish: 10
 val c = SyncChannel()
-c.put(10) | Rtimer(1000) >> c.get()]]></programlisting></para></sect3>
-<sect3 id="orc.doc.node31"><title>
-<code>site SyncChannel&lt;A&gt;.get() :: A</code>
-</title>
-<para>Receive an item over the channel. If no sender is available, block until one becomes available.</para></sect3>
-<sect3 id="orc.doc.node32"><title>
-<code>site SyncChannel&lt;A&gt;.put(A) :: Signal</code>
-</title>
-<para>Send an item over the channel. If no receiver is available, block until one becomes available.</para></sect3>
-<sect3 id="orc.doc.node33"><title>
-<code>site Cell&lt;A&gt;() :: Cell&lt;A&gt;</code>
-</title>
-<para>Create a write-once cell.</para>
-<para><programlisting language="orc-demo"><![CDATA[
+  c.put(10)
+| Rtimer(1000) >> c.get()]]></programlisting></para>
+<variablelist>
+<varlistentry><term><code>SyncChannel.get</code></term><listitem><para><code>site SyncChannel&lt;A&gt;.get() :: A</code></para>
+<para>Receive an item over the channel. If no sender is available, block until one becomes available.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>SyncChannel.put</code></term><listitem><para><code>site SyncChannel&lt;A&gt;.put(A) :: Signal</code></para>
+<para>Send an item over the channel. If no receiver is available, block until one becomes available.</para>
+</listitem></varlistentry></variablelist>
+</listitem></varlistentry>
+<varlistentry><term><code>Cell</code></term><listitem><para><code>site Cell() :: Cell&lt;A&gt;</code></para>
+<para>Create a write-once storage location.</para>
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: 5 5
 val c = Cell()
-c.write(5)
-| c.write(10)
-| c.read()]]></programlisting></para></sect3>
-<sect3 id="orc.doc.node34"><title>
-<code>site Cell&lt;A&gt;.read() :: A</code>
-</title>
-<para>Read a value from the cell. If the cell does not yet have a value, block until it receives one.</para></sect3>
-<sect3 id="orc.doc.node35"><title>
-<code>site Cell&lt;A&gt;.write() :: Signal</code>
-</title>
-<para>Write a value to the cell. If the cell already has a value, fail silently.</para></sect3>
-<sect3 id="orc.doc.node36"><title>
-<code>site Ref&lt;A&gt;() :: Ref&lt;A&gt;</code>
-</title>
-<para>Create an empty rewritable reference.</para>
-<para><programlisting language="orc-demo"><![CDATA[
+  c.write(5) >> c.read()
+| Rtimer(1) >> ( c.write(10) ; c.read() )]]></programlisting></para>
+<variablelist>
+<varlistentry><term><code>Cell.read</code></term><listitem><para><code>site Cell&lt;A&gt;.read() :: A</code></para>
+<para>Read a value from the cell. If the cell does not yet have a value, block until it receives one.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>Cell.readnb</code></term><listitem><para><code>site Cell&lt;A&gt;.readnb() :: A</code></para>
+<para>Read a value from the cell. If the cell does not yet have a value, fail silently.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>Cell.write</code></term><listitem><para><code>site Cell&lt;A&gt;.write() :: Signal</code></para>
+<para>Write a value to the cell. If the cell already has a value, fail silently.</para>
+</listitem></varlistentry></variablelist>
+</listitem></varlistentry>
+<varlistentry><term><code>Ref</code></term><listitem><para><code>site Ref() :: Ref&lt;A&gt;</code></para>
+<para>Create an empty rewritable storage location.</para>
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
 val r = Ref()
 Rtimer(1000) >> r.write(5) >> stop
 | println(r.read()) >>
   r.write(10) >>
   println(r.read()) >>
-  stop]]></programlisting></para></sect3>
-<sect3 id="orc.doc.node37"><title>
-<code>site Ref&lt;A&gt;(A) :: Ref&lt;A&gt;</code>
-</title>
-<para>Create a rewritable reference containing the provided value.</para></sect3>
-<sect3 id="orc.doc.node38"><title>
-<code>site Ref&lt;A&gt;.read() :: A</code>
-</title>
-<para>Read the value of the reference. If the reference is empty, block until it is no longer empty.</para></sect3>
-<sect3 id="orc.doc.node39"><title>
-<code>site Ref&lt;A&gt;.write() :: Signal</code>
-</title>
-<para>Write a value to the reference.</para></sect3>
-<sect3 id="orc.doc.node40"><title>
-<code>site Null() :: Bot</code>
-</title>
+  stop]]></programlisting></para>
+<variablelist>
+<varlistentry><term><code>Ref</code></term><listitem><para><code>site Ref&lt;A&gt;(A) :: Ref&lt;A&gt;</code></para>
+<para>Create a rewritable storage location containing the provided value.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>Ref.read</code></term><listitem><para><code>site Ref&lt;A&gt;.read() :: A</code></para>
+<para>Read the value of the ref. If the ref is empty, block until it is no longer empty.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>Ref.readnb</code></term><listitem><para><code>site Ref&lt;A&gt;.readnb() :: A</code></para>
+<para>Read the value of the ref. If the ref is empty, fail silently.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>Ref.write</code></term><listitem><para><code>site Ref&lt;A&gt;.write(A) :: Signal</code></para>
+<para>Write a value to the ref.</para>
+</listitem></varlistentry></variablelist>
+</listitem></varlistentry>
+<varlistentry><term><code>Null</code></term><listitem><para><code>site Null() :: Bot</code></para>
 <para>Return a Java null value. This is only necessary to interface with certain
 Java libraries, Orc programs should use the <code>None()</code> constructor
-instead of null values.</para></sect3>
-<sect3 id="orc.doc.node41"><title>
-<code>site Array&lt;A&gt;(Integer) :: Array&lt;A&gt;</code>
-</title>
+instead of null values.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>Array</code></term><listitem><para><code>site Array(Integer) :: Array&lt;A&gt;</code></para>
 <para>Create a new array of the given size.</para>
-<para><programlisting language="orc-demo"><![CDATA[
-def fillArray(a, f) =
-  for(0, a.length()) >i>
-  a.set(i, f(i)) >>
-  stop
-  ; a
-val a = fillArray(Array(3), let)
-a.get(0) | a.get(1) | a.get(2)]]></programlisting></para></sect3>
-<sect3 id="orc.doc.node42"><title>
-<code>site Array&lt;A&gt;(Integer, String) :: Array&lt;A&gt;</code>
-</title>
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: 0 1 2
+val a = Array(3)
+for(0, a.length()) >i>
+a.set(i, f(i)) >>
+stop
+; a.get(0) | a.get(1) | a.get(2)]]></programlisting></para>
+<variablelist>
+<varlistentry><term><code>Array</code></term><listitem><para><code>site Array&lt;A&gt;(Integer, String) :: Array&lt;A&gt;</code></para>
 <para>Create a new primitive array of the given size with the given primitive type.
 The primitive type should match the element type of the array, although a
 typechecker may not be able to verify this. This constructor is only necessary
 when interfacing with certain Java libraries; most programs will just use the 
-<code>Array&lt;A&gt;(Integer)</code> constructor.</para></sect3>
-<sect3 id="orc.doc.node43"><title>
-<code>site Array&lt;A&gt;.get(Integer) :: A</code>
-</title>
-<para>Get the element of the array given by the index, counting from 0.</para></sect3>
-<sect3 id="orc.doc.node44"><title>
-<code>site Array&lt;A&gt;.set(Integer, A) :: Signal</code>
-</title>
-<para>Set the element of the array given by the index, counting from 0.</para></sect3>
-<sect3 id="orc.doc.node45"><title>
-<code>site Array&lt;A&gt;.slice(Integer, Integer) :: Array&lt;A&gt;</code>
-</title>
+<code>Array&lt;A&gt;(Integer)</code> constructor.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>Array.get</code></term><listitem><para><code>site Array&lt;A&gt;.get(Integer) :: A</code></para>
+<para>Get the element of the array given by the index, counting from 0.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>Array.set</code></term><listitem><para><code>site Array&lt;A&gt;.set(Integer, A) :: Signal</code></para>
+<para>Set the element of the array given by the index, counting from 0.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>Array.slice</code></term><listitem><para><code>site Array&lt;A&gt;.slice(Integer, Integer) :: Array&lt;A&gt;</code></para>
 <para>Return a copy of the portion of the array with indices covered by the given
-half-open range. The result array is still indexed counting from 0.</para></sect3>
-<sect3 id="orc.doc.node46"><title>
-<code>site Array&lt;A&gt;.length() :: Integer</code>
-</title>
-<para>Return the size of the array.</para></sect3>
-<sect3 id="orc.doc.node47"><title>
-<code>site Some&lt;A&gt;(A) :: Option&lt;A&gt;</code>
-</title>
-<para>Construct an available optional value.</para></sect3>
-<sect3 id="orc.doc.node48"><title>
-<code>pattern Some&lt;A&gt;(Option&lt;A&gt;) :: (A)</code>
-</title>
+half-open range. The result array is still indexed counting from 0.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>Array.length</code></term><listitem><para><code>site Array&lt;A&gt;.length() :: Integer</code></para>
+<para>Return the size of the array.</para>
+</listitem></varlistentry></variablelist>
+</listitem></varlistentry>
+<varlistentry><term><code>fillArray</code></term><listitem><para><code>def fillArray(Array&lt;A&gt;, lambda (Integer) :: A) :: Array&lt;A&gt;</code></para>
+<para>Given an array and a function from indices to values, populate the array.</para>
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: 1 2 3
+val a = fillArray(Array(3), let)
+a.get(0) | a.get(1) | a.get(2)]]></programlisting></para>
+</listitem></varlistentry>
+<varlistentry><term><code>IArray</code></term><listitem><para><code>def IArray(Integer, lambda (Integer) :: A)(Integer) :: A</code></para>
+<para>Create an immutable mapping (array) from integers to values.
+The first argument gives the upper exclusive bound of the mapping
+(the lower inclusive bound is always 0). The second argument
+is a function which gives the value of the mapping for each index in the array.</para>
+<para>You can think of the immutable mapping as a memoized version of the
+function over a finite range.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>Some</code></term><listitem><para><code>site Some(A) :: Option&lt;A&gt;</code></para>
+<para>Construct an available optional value.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>Some</code></term><listitem><para><code>pattern Some(Option&lt;A&gt;) :: (A)</code></para>
 <para>Deconstruct an available optional value.</para>
-<para><programlisting language="orc-demo"><![CDATA[
-Some(3) >Some(x)> x]]></programlisting></para></sect3>
-<sect3 id="orc.doc.node49"><title>
-<code>site None&lt;A&gt;(A) :: Option&lt;A&gt;</code>
-</title>
-<para>Construct an unavailable optional value.</para></sect3>
-<sect3 id="orc.doc.node50"><title>
-<code>pattern None&lt;A&gt;(Option&lt;A&gt;) :: ()</code>
-</title>
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: 3
+Some(3) >Some(x)> x]]></programlisting></para>
+</listitem></varlistentry>
+<varlistentry><term><code>None</code></term><listitem><para><code>site None(A) :: Option&lt;A&gt;</code></para>
+<para>Construct an unavailable optional value.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>None</code></term><listitem><para><code>pattern None(Option&lt;A&gt;) :: ()</code></para>
 <para>Deconstruct an unavailable optional value.</para>
-<para><programlisting language="orc-demo"><![CDATA[
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: true
   None() >None()> true
-| Some(3) >None()> false]]></programlisting></para></sect3>
-<sect3 id="orc.doc.node51"><title>
-<code>site Left&lt;A&gt;(A) :: Either&lt;A&gt;</code>
-</title>
-<para>Construct a "left" member of a union.</para></sect3>
-<sect3 id="orc.doc.node52"><title>
-<code>pattern Left&lt;A&gt;(Either&lt;A&gt;) :: A</code>
-</title>
+| Some(3) >None()> false]]></programlisting></para>
+</listitem></varlistentry>
+<varlistentry><term><code>Left</code></term><listitem><para><code>site Left(A) :: Either&lt;A&gt;</code></para>
+<para>Construct a "left" member of a union which may be tagged either "left" or "right".</para>
+</listitem></varlistentry>
+<varlistentry><term><code>Left</code></term><listitem><para><code>pattern Left(Either&lt;A&gt;) :: A</code></para>
 <para>Deconstruct a "left" member of a union.</para>
-<para><programlisting language="orc-demo"><![CDATA[
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: "left"
 Left(3) >x> (
    x >Right(_)> "right"
  | x >Left(_)> "left"
-)]]></programlisting></para></sect3>
-<sect3 id="orc.doc.node53"><title>
-<code>site Right&lt;A&gt;(A) :: Either&lt;A&gt;</code>
-</title>
-<para>Construct a "right" member of a union.</para></sect3>
-<sect3 id="orc.doc.node54"><title>
-<code>pattern Right&lt;A&gt;(Either&lt;A&gt;) :: A</code>
-</title>
+)]]></programlisting></para>
+</listitem></varlistentry>
+<varlistentry><term><code>Right</code></term><listitem><para><code>site Right(A) :: Either&lt;A&gt;</code></para>
+<para>Construct a "right" member of a union which may be tagged either "left" or "right".</para>
+</listitem></varlistentry>
+<varlistentry><term><code>Right</code></term><listitem><para><code>pattern Right(Either&lt;A&gt;) :: A</code></para>
 <para>Deconstruct a "right" member of a union.</para>
-<para><programlisting language="orc-demo"><![CDATA[
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: "right"
 Right(3) >x> (
    x >Right(_)> "right"
  | x >Left(_)> "left"
-)]]></programlisting></para></sect3>
-<sect3 id="orc.doc.node55"><title>
-<code>def fst&lt;A,B&gt;(A,B) :: A</code>
-</title>
-<para>Return the first element of a pair.</para></sect3>
-<sect3 id="orc.doc.node56"><title>
-<code>def snd&lt;A,B&gt;(A,B) :: B</code>
-</title>
-<para>Return the second element of a pair.</para></sect3>
-<sect3 id="orc.doc.node57"><title>
-<code>def swap&lt;A,B&gt;((A,B)) :: (B,A)</code>
-</title>
-<para>Swap the elements of a pair.</para></sect3>
-</sect2>
-<sect2><title>
-functional.inc
-</title>
-<informaltable cellspacing="5">
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node58"><code>apply</code></link>
-</th><td>
-Apply a function to a list of arguments.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node59"><code>curry</code></link>
-</th><td>
-Curry a function of two arguments.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node60"><code>curry3</code></link>
-</th><td>
-Curry a function of three arguments.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node61"><code>uncurry</code></link>
-</th><td>
-Uncurry a function of two arguments.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node62"><code>uncurry3</code></link>
-</th><td>
-Uncurry a function of three arguments.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node63"><code>flip</code></link>
-</th><td>
-Flip the order of parameters of a two-argument function.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node64"><code>const</code></link>
-</th><td>
-Create a function which returns a constant value.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node65"><code>delay</code></link>
-</th><td>
-Return a thunk which applies a function to a single argument.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node66"><code>ignore</code></link>
-</th><td>
-From a function of no arguments, create a function
-of one argument, which is ignored.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node67"><code>compose</code></link>
-</th><td>
-Compose two single-argument functions.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node68"><code>until</code></link>
-</th><td>
-Iterate a function until a predicate returns false.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node69"><code>while</code></link>
-</th><td>
-Iterate a function while a predicate returns true.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node70"><code>repeat</code></link>
-</th><td>
-Call a function sequentially, publishing
-each value returned by the function until it no longer returns.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node71"><code>fork</code></link>
-</th><td>
-Call a list of functions in parallel, publishing
-all values published by the functions.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node72"><code>sequence</code></link>
-</th><td>
-Call a list of functions in sequence, publishing
-a signal whenever the last function publishes.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node73"><code>join</code></link>
-</th><td>
-Call a list of functions in parallel and publish
-a signal once all functions have completed.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node74"><code>por</code></link>
-</th><td>
-Parallel or.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node75"><code>pand</code></link>
-</th><td>
-Parallel and.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node76"><code>collect</code></link>
-</th><td>
-Run a function, collecting all publications in a list.
-</td></tr>
-</informaltable>
-<sect3 id="orc.doc.node58"><title>
-<code>site apply&lt;A,B&gt;(lambda (A, ...) :: B, [A]) :: B</code>
-</title>
-<para>Apply a function to a list of arguments.</para></sect3>
-<sect3 id="orc.doc.node59"><title>
-<code>def curry&lt;A,B,C&gt;(lambda (A,B) :: C)(A)(B) :: C</code>
-</title>
-<para>Curry a function of two arguments.</para></sect3>
-<sect3 id="orc.doc.node60"><title>
-<code>def curry3&lt;A,B,C,D&gt;(lambda (A,B,C) :: D)(A)(B)(C) :: D</code>
-</title>
-<para>Curry a function of three arguments.</para></sect3>
-<sect3 id="orc.doc.node61"><title>
-<code>def uncurry&lt;A,B,C&gt;(lambda (A)(B) :: C)(A, B) :: C</code>
-</title>
-<para>Uncurry a function of two arguments.</para></sect3>
-<sect3 id="orc.doc.node62"><title>
-<code>def uncurry3&lt;A,B,C,D&gt;(lambda (A)(B)(C) :: D)(A,B,C) :: D</code>
-</title>
-<para>Uncurry a function of three arguments.</para></sect3>
-<sect3 id="orc.doc.node63"><title>
-<code>def flip&lt;A,B,C&gt;(lambda (A, B) :: C)(B, A) :: C</code>
-</title>
-<para>Flip the order of parameters of a two-argument function.</para></sect3>
-<sect3 id="orc.doc.node64"><title>
-<code>def const&lt;A&gt;(A)() :: A</code>
-</title>
-<para>Create a function which returns a constant value.</para></sect3>
-<sect3 id="orc.doc.node65"><title>
-<code>def delay&lt;A,B&gt;(lambda (A) :: B, A)() :: B</code>
-</title>
-<para>Return a thunk which applies a function to a single argument.</para></sect3>
-<sect3 id="orc.doc.node66"><title>
-<code>def ignore&lt;A,B&gt;(lambda () :: B)(A) :: B</code>
-</title>
+)]]></programlisting></para>
+</listitem></varlistentry>
+<varlistentry><term><code>fst</code></term><listitem><para><code>def fst((A,B)) :: A</code></para>
+<para>Return the first element of a pair.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>snd</code></term><listitem><para><code>def snd((A,B)) :: B</code></para>
+<para>Return the second element of a pair.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>swap</code></term><listitem><para><code>def swap((A,B)) :: (B,A)</code></para>
+<para>Swap the elements of a pair.</para>
+</listitem></varlistentry></variablelist>
+</section>
+<section><title>idioms.inc: Higher-order Orc programming idioms.</title>
+<para>Higher-order Orc programming idioms.
+Many of these are standard functional-programming
+combinators borrowed from Haskell or Scheme.</para>
+<variablelist>
+<varlistentry><term><code>apply</code></term><listitem><para><code>site apply(lambda (A, ...) :: B, [A]) :: B</code></para>
+<para>Apply a function to a list of arguments.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>curry</code></term><listitem><para><code>def curry(lambda (A,B) :: C)(A)(B) :: C</code></para>
+<para>Curry a function of two arguments.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>curry3</code></term><listitem><para><code>def curry3(lambda (A,B,C) :: D)(A)(B)(C) :: D</code></para>
+<para>Curry a function of three arguments.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>uncurry</code></term><listitem><para><code>def uncurry(lambda (A)(B) :: C)(A, B) :: C</code></para>
+<para>Uncurry a function of two arguments.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>uncurry3</code></term><listitem><para><code>def uncurry3(lambda (A)(B)(C) :: D)(A,B,C) :: D</code></para>
+<para>Uncurry a function of three arguments.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>flip</code></term><listitem><para><code>def flip(lambda (A, B) :: C)(B, A) :: C</code></para>
+<para>Flip the order of parameters of a two-argument function.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>constant</code></term><listitem><para><code>def constant(A)() :: A</code></para>
+<para>Create a function which returns a constant value.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>bind</code></term><listitem><para><code>def bind(lambda (A) :: B, A)() :: B</code></para>
+<para>Given a function and its argument, return a thunk which applies the function.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>bind2</code></term><listitem><para><code>def bind2(lambda (A,B) :: C, A, B)() :: C</code></para>
+<para>Given a function and its arguments, return a thunk which applies the function.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>ignore</code></term><listitem><para><code>def ignore(lambda () :: B)(A) :: B</code></para>
 <para>From a function of no arguments, create a function
-of one argument, which is ignored.</para></sect3>
-<sect3 id="orc.doc.node67"><title>
-<code>def compose&lt;A,B,C&gt;(lambda (B) :: C, lambda (A) :: B)(A) :: C</code>
-</title>
-<para>Compose two single-argument functions.</para></sect3>
-<sect3 id="orc.doc.node68"><title>
-<code>def until&lt;A&gt;(lambda (A) :: Boolean, lambda (A) :: A)(A)</code>
-</title>
-<para>Iterate a function until a predicate returns false.
-Publishes every value returned by the function.</para>
-<para><programlisting language="orc-demo"><![CDATA[
-until(
-  lambda (n) = (n = 5),
-  lambda (n) = n+1 )(0)]]></programlisting></para></sect3>
-<sect3 id="orc.doc.node69"><title>
-<code>def while&lt;A&gt;(lambda (A) :: Boolean, lambda (A) :: A)(A)</code>
-</title>
-<para>Iterate a function while a predicate returns true.
-Publishes every value passed to the function.</para>
-<para><programlisting language="orc-demo"><![CDATA[
+of one argument, which is ignored.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>ignore2</code></term><listitem><para><code>def ignore2(lambda () :: C)(A, B) :: C</code></para>
+<para>From a function of no arguments, create a function
+of two arguments, which are ignored.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>compose</code></term><listitem><para><code>def compose(lambda (B) :: C, lambda (A) :: B)(A) :: C</code></para>
+<para>Compose two single-argument functions.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>while</code></term><listitem><para><code>def while(lambda (A) :: Boolean, lambda (A) :: A)(A) :: A</code></para>
+<para>Iterate a function while a predicate is satisfied, publishing
+each value passed to the function. The exact behavior is specified
+by the following implementation:</para>
+<para><programlisting><![CDATA[
+def while(p,f) = 
+  def loop(x) = if(p(x)) >> ( x | loop(f(x)) )
+  loop]]></programlisting></para>
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: 0 1 2 3 4 5
 while(
   lambda (n) = (n <= 5),
-  lambda (n) = n+1 )(0)]]></programlisting></para></sect3>
-<sect3 id="orc.doc.node70"><title>
-<code>def repeat&lt;A&gt;(lambda () :: A) :: A</code>
-</title>
-<para>Call a function sequentially, publishing
-each value returned by the function until it no longer returns.</para></sect3>
-<sect3 id="orc.doc.node71"><title>
-<code>def fork&lt;A&gt;([lambda () :: A]) :: A</code>
-</title>
+  lambda (n) = n+1
+)(0)]]></programlisting></para>
+</listitem></varlistentry>
+<varlistentry><term><code>repeat</code></term><listitem><para><code>def repeat(lambda () :: A) :: A</code></para>
+<para>Call a function sequentially, publishing each value returned by the function.
+The expression <code>repeat(f)</code> is equivalent to
+the infinite expression <code>f() >!_> f() >!_> f() >!_> ...</code></para>
+</listitem></varlistentry>
+<varlistentry><term><code>fork</code></term><listitem><para><code>def fork([lambda () :: A]) :: A</code></para>
 <para>Call a list of functions in parallel, publishing
-all values published by the functions.</para></sect3>
-<sect3 id="orc.doc.node72"><title>
-<code>def sequence&lt;A&gt;([lambda () :: A]) :: Signal</code>
-</title>
+all values published by the functions.</para>
+<para>The expression <code>fork([f,g,h])</code> is equivalent to
+the expression <code>f() | g() | h()</code></para>
+</listitem></varlistentry>
+<varlistentry><term><code>sequence</code></term><listitem><para><code>def sequence([lambda () :: A]) :: Signal</code></para>
 <para>Call a list of functions in sequence, publishing
-a signal whenever the last function publishes.</para></sect3>
-<sect3 id="orc.doc.node73"><title>
-<code>def join&lt;A&gt;([lambda () :: A]) :: Signal</code>
-</title>
+a signal whenever the last function publishes. The
+actual publications of the given functions are not
+published.</para>
+<para>The expression <code>sequence([f,g,h])</code> is equivalent to
+the expression <code>f() >> g() >> h() >> signal</code></para>
+</listitem></varlistentry>
+<varlistentry><term><code>join</code></term><listitem><para><code>def join([lambda () :: A]) :: Signal</code></para>
 <para>Call a list of functions in parallel and publish
-a signal once all functions have completed.</para></sect3>
-<sect3 id="orc.doc.node74"><title>
-<code>def por(lambda () :: Boolean, lambda () :: Boolean) :: Boolean</code>
-</title>
+a signal once all functions have completed.</para>
+<para>The expression <code>join([f,g,h])</code> is equivalent to
+the expression <code>f() >> stop | g() >> stop | h() >> stop ; signal</code></para>
+</listitem></varlistentry>
+<varlistentry><term><code>por</code></term><listitem><para><code>def por(lambda () :: Boolean, lambda () :: Boolean) :: Boolean</code></para>
 <para>Parallel or. Evaluate two boolean functions in parallel, publishing
 a value as soon as possible, and terminating any unnecessary ongoing
-computation.</para></sect3>
-<sect3 id="orc.doc.node75"><title>
-<code>def pand(lambda () :: Boolean, lambda () :: Boolean) :: Boolean</code>
-</title>
+computation.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>pand</code></term><listitem><para><code>def pand(lambda () :: Boolean, lambda () :: Boolean) :: Boolean</code></para>
 <para>Parallel and. Evaluate two boolean functions in parallel, publishing
 a value as soon as possible, and terminating any unnecessary ongoing
-computation.</para></sect3>
-<sect3 id="orc.doc.node76"><title>
-<code>def collect&lt;A&gt;(lambda () :: A) :: [A]</code>
-</title>
-<para>Run a function, collecting all publications in a list.</para>
-<para><programlisting language="orc-demo"><![CDATA[
-collect(delay(signals, 5))]]></programlisting></para></sect3>
-</sect2>
-<sect2><title>
-list.inc
-</title>
-<informaltable cellspacing="5">
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node77"><code>each</code></link>
-</th><td>
-Publish every value in a sequence, simultaneously.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node78"><code>map</code></link>
-</th><td>
-Apply a function to every element of a sequence (in parallel),
-producing a list of the results.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node79"><code>reverse</code></link>
-</th><td>
-Reverse a list.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node80"><code>filter</code></link>
-</th><td>
-Return a list containing only those elements which satisfy the predicate.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node81"><code>head</code></link>
-</th><td>
-Return the first element of a sequence.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node82"><code>tail</code></link>
-</th><td>
-Return all but the first element of a sequence.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node83"><code>init</code></link>
-</th><td>
-Return all but the last element of a sequence.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node84"><code>last</code></link>
-</th><td>
-Return the last element of a sequence.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node85"><code>empty</code></link>
-</th><td>
-Is the sequence empty?
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node86"><code>index</code></link>
-</th><td>
-Return the nth element of a list, counting from 0.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node87"><code>append</code></link>
-</th><td>
-Concatenate two lists.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node88"><code>foldl</code></link>
-</th><td>
-Reduce a list using the given left-associative binary operation and initial value.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node89"><code>foldl1</code></link>
-</th><td>
-A special case of <code>foldl</code> which uses the last element of the list as the
-initial value.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node90"><code>foldr</code></link>
-</th><td>
-Reduce a list using the given right-associative binary operation and initial value.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node91"><code>foldr1</code></link>
-</th><td>
-A special case of <code>foldr</code> which uses the last element of the list as the
-initial value.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node92"><code>zip</code></link>
-</th><td>
-Combine two lists into a list of pairs.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node93"><code>unzip</code></link>
-</th><td>
-Split a list of pairs into a pair of lists.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node94"><code>length</code></link>
-</th><td>
-Return the number of elements in a list.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node95"><code>take</code></link>
-</th><td>
-Return the first <code>n</code> elements of a list.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node96"><code>drop</code></link>
-</th><td>
-Return the elements of a list after the first <code>n</code>.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node97"><code>member</code></link>
-</th><td>
-Is the given item a member of the list?
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node98"><code>merge</code></link>
-</th><td>
-Merge two sorted lists.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node99"><code>mergeBy</code></link>
-</th><td>
-Merge two lists using the given less-than relation.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node100"><code>sort</code></link>
-</th><td>
-Sort a list.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node101"><code>sortBy</code></link>
-</th><td>
-Sort a list using the given less-than relation.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node102"><code>group</code></link>
-</th><td>
-Given a list of pairs, group together the second
-elements of consecutive pairs with equal first elements.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node103"><code>groupBy</code></link>
-</th><td>
-Given a list of pairs, group together the second
-elements of consecutive pairs with equal first elements,
-using the given equality relation.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node104"><code>range</code></link>
-</th><td>
-Generate a list of integers in the given half-open range.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node105"><code>any</code></link>
-</th><td>
-Do any the elements of the list match the predicate?
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node106"><code>all</code></link>
-</th><td>
-Do all the elements of the list match the predicate?
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node107"><code>sum</code></link>
-</th><td>
-Compute the sum of all numbers in a list.
-</td></tr>
-</informaltable>
-<sect3 id="orc.doc.node77"><title>
-<code>def each&lt;A&gt;([A]) :: A</code>
-</title>
-<para>Publish every value in a sequence, simultaneously.</para></sect3>
-<sect3 id="orc.doc.node78"><title>
-<code>def map&lt;A,B&gt;(lambda (A) :: B, [A]) :: [B]</code>
-</title>
-<para>Apply a function to every element of a sequence (in parallel),
-producing a list of the results.</para></sect3>
-<sect3 id="orc.doc.node79"><title>
-<code>def reverse&lt;A&gt;([A]) :: [A]</code>
-</title>
-<para>Reverse a list.</para></sect3>
-<sect3 id="orc.doc.node80"><title>
-<code>def filter&lt;A&gt;(lambda (A) :: Boolean, [A]) :: [A]</code>
-</title>
-<para>Return a list containing only those elements which satisfy the predicate.</para></sect3>
-<sect3 id="orc.doc.node81"><title>
-<code>def head&lt;A&gt;([A]) :: A</code>
-</title>
-<para>Return the first element of a sequence.</para></sect3>
-<sect3 id="orc.doc.node82"><title>
-<code>def tail&lt;A&gt;([A]) :: [A]</code>
-</title>
-<para>Return all but the first element of a sequence.</para></sect3>
-<sect3 id="orc.doc.node83"><title>
-<code>def init&lt;A&gt;([A]) :: [A]</code>
-</title>
-<para>Return all but the last element of a sequence.</para></sect3>
-<sect3 id="orc.doc.node84"><title>
-<code>def last&lt;A&gt;([A]) :: A</code>
-</title>
-<para>Return the last element of a sequence.</para></sect3>
-<sect3 id="orc.doc.node85"><title>
-<code>def empty&lt;A&gt;([A]) :: Boolean</code>
-</title>
-<para>Is the sequence empty?</para></sect3>
-<sect3 id="orc.doc.node86"><title>
-<code>def index&lt;A&gt;(Integer, [A]) :: A</code>
-</title>
-<para>Return the nth element of a list, counting from 0.</para></sect3>
-<sect3 id="orc.doc.node87"><title>
-<code>def append&lt;A&gt;([A], [A]) :: [A]</code>
-</title>
-<para>Concatenate two lists.</para></sect3>
-<sect3 id="orc.doc.node88"><title>
-<code>def foldl&lt;A,B&gt;(lambda (B, A) :: B, B, [A]) :: B</code>
-</title>
+computation.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>collect</code></term><listitem><para><code>def collect(lambda () :: A) :: [A]</code></para>
+<para>Run a function, collecting all publications in a list.
+Return the list when the function terminates.</para>
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: [signal, signal, signal, signal, signal]
+collect(bind(signals, 5))]]></programlisting></para>
+</listitem></varlistentry></variablelist>
+</section>
+<section><title>list.inc: Operations on lists.</title>
+<para>Operations on lists.
+Many of these functions are similar to those in the Haskell prelude, but
+operate on the elements of a list in parallel.</para>
+<variablelist>
+<varlistentry><term><code>each</code></term><listitem><para><code>def each([A]) :: A</code></para>
+<para>Publish every value in a list, simultaneously.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>map</code></term><listitem><para><code>def map(lambda (A) :: B, [A]) :: [B]</code></para>
+<para>Apply a function to every element of a list (in parallel),
+returning a list of the results.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>reverse</code></term><listitem><para><code>def reverse([A]) :: [A]</code></para>
+<para>Return the reverse of the given list.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>filter</code></term><listitem><para><code>def filter(lambda (A) :: Boolean, [A]) :: [A]</code></para>
+<para>Return a list containing only those elements which satisfy the predicate.
+The filter is applied to all list elements in parallel.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>head</code></term><listitem><para><code>def head([A]) :: A</code></para>
+<para>Return the first element of a list.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>tail</code></term><listitem><para><code>def tail([A]) :: [A]</code></para>
+<para>Return all but the first element of a list.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>init</code></term><listitem><para><code>def init([A]) :: [A]</code></para>
+<para>Return all but the last element of a list.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>last</code></term><listitem><para><code>def last([A]) :: A</code></para>
+<para>Return the last element of a list.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>empty</code></term><listitem><para><code>def empty([A]) :: Boolean</code></para>
+<para>Is the list empty?</para>
+</listitem></varlistentry>
+<varlistentry><term><code>index</code></term><listitem><para><code>def index(Integer, [A]) :: A</code></para>
+<para>Return the nth element of a list, counting from 0.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>append</code></term><listitem><para><code>def append([A], [A]) :: [A]</code></para>
+<para>Return the first list concatenated with the second.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>foldl</code></term><listitem><para><code>def foldl(lambda (B, A) :: B, B, [A]) :: B</code></para>
 <para>Reduce a list using the given left-associative binary operation and initial value.
 Given the list <code>[x1, x2, x3, ...]</code> and initial value <code>x0</code>,
 returns <code>f(... f(f(f(x0, x1), x2), x3) ...)</code></para>
-<para><programlisting language="orc-demo"><![CDATA[
-foldl(flip((:)), [], [1,2,3])]]></programlisting></para></sect3>
-<sect3 id="orc.doc.node89"><title>
-<code>def foldl1&lt;A&gt;(lambda (A, A) :: A, [A]) :: A</code>
-</title>
+<para>Example using <code>foldl</code> to reverse a list:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: [3, 2, 1]
+foldl(flip((:)), [], [1,2,3])]]></programlisting></para>
+</listitem></varlistentry>
+<varlistentry><term><code>foldl1</code></term><listitem><para><code>def foldl1(lambda (A, A) :: A, [A]) :: A</code></para>
 <para>A special case of <code>foldl</code> which uses the last element of the list as the
-initial value.</para></sect3>
-<sect3 id="orc.doc.node90"><title>
-<code>def foldr&lt;A,B&gt;(lambda (A, B) :: B, B, [A]) :: B</code>
-</title>
+initial value.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>foldr</code></term><listitem><para><code>def foldr(lambda (A, B) :: B, B, [A]) :: B</code></para>
 <para>Reduce a list using the given right-associative binary operation and initial value.
 Given the list <code>[..., x3, x2, x1]</code> and initial value <code>x0</code>,
 returns <code>f(... f(x3, f(x2, f(x1, x0))) ...)</code></para>
-<para><programlisting language="orc-demo"><![CDATA[
-foldr((+), 0, [1,2,3])]]></programlisting></para></sect3>
-<sect3 id="orc.doc.node91"><title>
-<code>def foldr1&lt;A&gt;(lambda (A, A) :: A, [A]) :: A</code>
-</title>
+<para>Example summing the numbers in a list:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: 6
+foldr((+), 0, [1,2,3])]]></programlisting></para>
+</listitem></varlistentry>
+<varlistentry><term><code>foldr1</code></term><listitem><para><code>def foldr1(lambda (A, A) :: A, [A]) :: A</code></para>
 <para>A special case of <code>foldr</code> which uses the last element of the list as the
-initial value.</para></sect3>
-<sect3 id="orc.doc.node92"><title>
-<code>def zip&lt;A,B&gt;([A], [B]) :: (A, B)</code>
-</title>
+initial value.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>zip</code></term><listitem><para><code>def zip([A], [B]) :: (A, B)</code></para>
 <para>Combine two lists into a list of pairs.
-The length of the shortest list determines the length of the result.</para></sect3>
-<sect3 id="orc.doc.node93"><title>
-<code>def unzip&lt;A,B&gt;([(A,B)]) :: ([A], [B])</code>
-</title>
-<para>Split a list of pairs into a pair of lists.</para></sect3>
-<sect3 id="orc.doc.node94"><title>
-<code>def length&lt;A&gt;([A]) :: Integer</code>
-</title>
-<para>Return the number of elements in a list.</para></sect3>
-<sect3 id="orc.doc.node95"><title>
-<code>def take&lt;A&gt;(Integer, [A]) :: [A]</code>
-</title>
-<para>Return the first <code>n</code> elements of a list.</para></sect3>
-<sect3 id="orc.doc.node96"><title>
-<code>def drop&lt;A&gt;(Integer, [A]) :: [A]</code>
-</title>
-<para>Return the elements of a list after the first <code>n</code>.</para></sect3>
-<sect3 id="orc.doc.node97"><title>
-<code>def member&lt;A&gt;(A, [A]) :: Boolean</code>
-</title>
-<para>Is the given item a member of the list?</para></sect3>
-<sect3 id="orc.doc.node98"><title>
-<code>def merge&lt;A extends Comparable&gt;([A], [A]) :: [A]</code>
-</title>
+The length of the shortest list determines the length of the result.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>unzip</code></term><listitem><para><code>def unzip([(A,B)]) :: ([A], [B])</code></para>
+<para>Split a list of pairs into a pair of lists.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>length</code></term><listitem><para><code>def length([A]) :: Integer</code></para>
+<para>Return the number of elements in a list.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>take</code></term><listitem><para><code>def take(Integer, [A]) :: [A]</code></para>
+<para>Given a number <code>n</code> and a list <code>l</code>,
+return the first <code>n</code> elements of <code>l</code>.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>drop</code></term><listitem><para><code>def drop(Integer, [A]) :: [A]</code></para>
+<para>Given a number <code>n</code> and a list <code>l</code>,
+return the elements of <code>l</code> after the first <code>n</code>.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>member</code></term><listitem><para><code>def member(A, [A]) :: Boolean</code></para>
+<para>Return true if the given item is a member of the given list, and false
+otherwise.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>merge</code></term><listitem><para><code>def merge([A], [A]) :: [A], A &lt;: Comparable</code></para>
 <para>Merge two sorted lists.</para>
-<para><programlisting language="orc-demo"><![CDATA[
-merge([1,2,3], [2,4,5])]]></programlisting></para></sect3>
-<sect3 id="orc.doc.node99"><title>
-<code>def mergeBy&lt;A&gt;(lambda (A,A) :: Boolean, [A], [A]) :: [A]</code>
-</title>
-<para>Merge two lists using the given less-than relation.</para></sect3>
-<sect3 id="orc.doc.node100"><title>
-<code>def sort&lt;A extends Comparable&gt;([A]) :: [A]</code>
-</title>
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: [1, 2, 2, 3, 4, 5]
+merge([1,2,3], [2,4,5])]]></programlisting></para>
+</listitem></varlistentry>
+<varlistentry><term><code>mergeBy</code></term><listitem><para><code>def mergeBy(lambda (A,A) :: Boolean, [A], [A]) :: [A]</code></para>
+<para>Merge two lists using the given less-than relation.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>sort</code></term><listitem><para><code>def sort([A]) :: [A], A &lt;: Comparable</code></para>
 <para>Sort a list.</para>
-<para><programlisting language="orc-demo"><![CDATA[
-sort([1,3,2])]]></programlisting></para></sect3>
-<sect3 id="orc.doc.node101"><title>
-<code>def sortBy&lt;A&gt;(lambda (A,A) :: Boolean, [A]) :: [A]</code>
-</title>
-<para>Sort a list using the given less-than relation.</para></sect3>
-<sect3 id="orc.doc.node102"><title>
-<code>def group&lt;A,B&gt;([(A,B)]) :: [(A,[B])]</code>
-</title>
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: [1, 2, 3]
+sort([1,3,2])]]></programlisting></para>
+</listitem></varlistentry>
+<varlistentry><term><code>sortBy</code></term><listitem><para><code>def sortBy(lambda (A,A) :: Boolean, [A]) :: [A]</code></para>
+<para>Sort a list using the given less-than relation.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>group</code></term><listitem><para><code>def group([(A,B)]) :: [(A,[B])]</code></para>
 <para>Given a list of pairs, group together the second
 elements of consecutive pairs with equal first elements.</para>
-<para><programlisting language="orc-demo"><![CDATA[
-group([(1,1), (1,2), (2,3), (3,4), (1,3)])]]></programlisting></para></sect3>
-<sect3 id="orc.doc.node103"><title>
-<code>def groupBy&lt;A,B&gt;(lambda (A,A) :: Boolean, [(A,B)]) :: [(A,[B])]</code>
-</title>
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: [(1, [1, 2]), (2, [3]), (3, [4]), (1, [3])]
+group([(1,1), (1,2), (2,3), (3,4), (1,3)])]]></programlisting></para>
+</listitem></varlistentry>
+<varlistentry><term><code>groupBy</code></term><listitem><para><code>def groupBy(lambda (A,A) :: Boolean, [(A,B)]) :: [(A,[B])]</code></para>
 <para>Given a list of pairs, group together the second
 elements of consecutive pairs with equal first elements,
-using the given equality relation.</para></sect3>
-<sect3 id="orc.doc.node104"><title>
-<code>def range(Integer, Integer) :: [Integer]</code>
-</title>
-<para>Generate a list of integers in the given half-open range.</para></sect3>
-<sect3 id="orc.doc.node105"><title>
-<code>def any&lt;A&gt;(lambda (A) :: Boolean, [A]) :: Boolean</code>
-</title>
-<para>Do any the elements of the list match the predicate?
-Uses parallel-or to return a result as soon as possible and terminate
-unnecessary computation.</para></sect3>
-<sect3 id="orc.doc.node106"><title>
-<code>def all&lt;A&gt;(lambda (A) :: Boolean, [A]) :: Boolean</code>
-</title>
-<para>Do all the elements of the list match the predicate?
-Uses parallel-and to return a result as soon as possible and terminate
-unnecessary computation.</para></sect3>
-<sect3 id="orc.doc.node107"><title>
-<code>def sum([Number]) :: Number</code>
-</title>
-<para>Compute the sum of all numbers in a list.</para></sect3>
-</sect2>
-<sect2><title>
-text.inc
-</title>
-<informaltable cellspacing="5">
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node108"><code>cat</code></link>
-</th><td>
-Concatenate one or more values as strings.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node109"><code>print</code></link>
-</th><td>
-Print one or more values as strings, concatenated,
-to standard output.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node110"><code>println</code></link>
-</th><td>
-Print one or more values as strings, concatenated,
-to standard output, with each value followed by a newline.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node111"><code>parseInt</code></link>
-</th><td>
-Parse a string as a BigInteger.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node112"><code>parseBool</code></link>
-</th><td>
-Parse a string as a Boolean (true/false).
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node113"><code>lines</code></link>
-</th><td>
-Split a string into lines, which are substrings
-terminated by an endline or the end of the string.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node114"><code>unlines</code></link>
-</th><td>
-Append a linefeed, "\n", to each string in the sequence
-and concatenate the results.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node115"><code>words</code></link>
-</th><td>
-Split a string into words, which are sequences of non-whitespace characters separated by whitespace.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node116"><code>unwords</code></link>
-</th><td>
-Concatenate a sequence of strings with a single space between
-each string.
-</td></tr>
-</informaltable>
-<sect3 id="orc.doc.node108"><title>
-<code>site cat(Top, ...) :: String</code>
-</title>
-<para>Concatenate one or more values as strings.
+using the given equality relation.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>range</code></term><listitem><para><code>def range(Integer, Integer) :: [Integer]</code></para>
+<para>Generate a list of integers in the given half-open range.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>any</code></term><listitem><para><code>def any(lambda (A) :: Boolean, [A]) :: Boolean</code></para>
+<para>Return true if any of the elements of the list match the predicate, and false otherwise.
+The predicate is applied to all elements of the list in parellel; the result
+is returned as soon as it is known and any unnecessary evaluation of the predicate
+terminated.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>all</code></term><listitem><para><code>def all(lambda (A) :: Boolean, [A]) :: Boolean</code></para>
+<para>Return true if all of the elements of the list match the predicate, and false otherwise.
+The predicate is applied to all elements of the list in parellel; the result
+is returned as soon as it is known and any unnecessary evaluation of the predicate
+terminated.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>sum</code></term><listitem><para><code>def sum([Number]) :: Number</code></para>
+<para>Return the sum of all numbers in a list.
+The sum of an empty list is 0.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>product</code></term><listitem><para><code>def product([Number]) :: Number</code></para>
+<para>Return the product of all numbers in a list.
+The product of an empty list is 1.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>and</code></term><listitem><para><code>def and([Boolean]) :: Boolean</code></para>
+<para>Return the boolean conjunction of all boolean values in the list.
+The conjunction of an empty list is <code>true</code>.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>or</code></term><listitem><para><code>def or([Boolean]) :: Boolean</code></para>
+<para>Return the boolean disjunction of all boolean values in the list.
+The disjunction of an empty list is <code>true</code>.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>minimum</code></term><listitem><para><code>def minimum([A]) :: A, A &lt;: Comparable</code></para>
+<para>Return the minimum element of a non-empty list.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>maximum</code></term><listitem><para><code>def maximum([A]) :: A, A &lt;: Comparable</code></para>
+<para>Return the maximum element of a non-empty list.</para>
+</listitem></varlistentry></variablelist>
+</section>
+<section><title>text.inc: Operations on strings.</title>
+<para>Operations on strings.</para>
+<variablelist>
+<varlistentry><term><code>cat</code></term><listitem><para><code>site cat(Top, ...) :: String</code></para>
+<para>Return the string representation of one or more values, concatenated.
 For Java objects, this will call <code>toString()</code> to convert
-the object to a String.</para></sect3>
-<sect3 id="orc.doc.node109"><title>
-<code>site print(Top, ...) :: Signal</code>
-</title>
-<para>Print one or more values as strings, concatenated,
-to standard output.
+the object to a String.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>print</code></term><listitem><para><code>site print(Top, ...) :: Signal</code></para>
+<para>Print one or more values as strings, concatenated, to standard output.
 For Java objects, this will call <code>toString()</code> to convert
-the object to a String.</para></sect3>
-<sect3 id="orc.doc.node110"><title>
-<code>site println(Top, ...) :: Signal</code>
-</title>
+the object to a String.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>println</code></term><listitem><para><code>site println(Top, ...) :: Signal</code></para>
 <para>Print one or more values as strings, concatenated,
 to standard output, with each value followed by a newline.
 For Java objects, this will call <code>toString()</code> to convert
-the object to a String.</para></sect3>
-<sect3 id="orc.doc.node111"><title>
-<code>site parseInt(String) :: BigInteger</code>
-</title>
-<para>Parse a string as a BigInteger.</para></sect3>
-<sect3 id="orc.doc.node112"><title>
-<code>site parseBool(String) :: Boolean</code>
-</title>
-<para>Parse a string as a Boolean (true/false).</para></sect3>
-<sect3 id="orc.doc.node113"><title>
-<code>def lines(String) :: [String]</code>
-</title>
+the object to a String.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>parseInt</code></term><listitem><para><code>site parseInt(String) :: BigInteger</code></para>
+<para>Parse a string as a BigInteger.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>parseBool</code></term><listitem><para><code>site parseBool(String) :: Boolean</code></para>
+<para>Parse a string as a Boolean (true/false).</para>
+</listitem></varlistentry>
+<varlistentry><term><code>lines</code></term><listitem><para><code>def lines(String) :: [String]</code></para>
 <para>Split a string into lines, which are substrings
 terminated by an endline or the end of the string.
 DOS, Mac, and Unix endline conventions are all accepted.
-Endline characters are not included in the result.</para></sect3>
-<sect3 id="orc.doc.node114"><title>
-<code>def unlines([String]) :: String</code>
-</title>
+Endline characters are not included in the result.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>unlines</code></term><listitem><para><code>def unlines([String]) :: String</code></para>
 <para>Append a linefeed, "\n", to each string in the sequence
-and concatenate the results.</para></sect3>
-<sect3 id="orc.doc.node115"><title>
-<code>def words(String) :: [String]</code>
-</title>
-<para>Split a string into words, which are sequences of non-whitespace characters separated by whitespace.</para></sect3>
-<sect3 id="orc.doc.node116"><title>
-<code>def unwords([String]) :: String</code>
-</title>
+and concatenate the results.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>words</code></term><listitem><para><code>def words(String) :: [String]</code></para>
+<para>Split a string into words, which are sequences of non-whitespace characters separated by whitespace.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>unwords</code></term><listitem><para><code>def unwords([String]) :: String</code></para>
 <para>Concatenate a sequence of strings with a single space between
-each string.</para></sect3>
-</sect2>
-<sect2><title>
-time.inc
-</title>
-<informaltable cellspacing="5">
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node117"><code>Rtimer</code></link>
-</th><td>
-Publish a signal after the given number of milliseconds.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node118"><code>Clock</code></link>
-</th><td>
-A call to <code>Clock</code> creates a new relative clock.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node119"><code>Ltimer</code></link>
-</th><td>
-Publish a signal after the given number of logical timesteps.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node120"><code>Metronome</code></link>
-</th><td>
-Publish a signal every second, indefinitely.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node121"><code>MetronomeT</code></link>
-</th><td>
-Publish a signal at regular intervals, indefinitely.
-</td></tr>
-</informaltable>
-<sect3 id="orc.doc.node117"><title>
-<code>site Rtimer(Integer) :: Signal</code>
-</title>
-<para>Publish a signal after the given number of milliseconds.</para></sect3>
-<sect3 id="orc.doc.node118"><title>
-<code>site Clock()() :: Integer</code>
-</title>
+each string.</para>
+</listitem></varlistentry></variablelist>
+</section>
+<section><title>time.inc: Real and logical time.</title>
+<para>Real and logical time.</para>
+<variablelist>
+<varlistentry><term><code>Rtimer</code></term><listitem><para><code>site Rtimer(Integer) :: Signal</code></para>
+<para>Publish a signal after the given number of milliseconds.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>Clock</code></term><listitem><para><code>site Clock()() :: Integer</code></para>
 <para>A call to <code>Clock</code> creates a new relative clock.
 Calling a relative clock returns the number
 of milliseconds which have elapsed since the
 clock was created.</para>
-<para><programlisting language="orc-demo"><![CDATA[
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes a value near 1000
 val c = Clock()
-Rtimer(1000) >> c()]]></programlisting></para></sect3>
-<sect3 id="orc.doc.node119"><title>
-<code>site Ltimer(Integer) :: Signal</code>
-</title>
+Rtimer(1000) >> c()]]></programlisting></para>
+</listitem></varlistentry>
+<varlistentry><term><code>Ltimer</code></term><listitem><para><code>site Ltimer(Integer) :: Signal</code></para>
 <para>Publish a signal after the given number of logical timesteps.
 A logical timestep is complete as soon as all outstanding site
-calls (other than calls to <code>Ltimer</code>) have published.</para></sect3>
-<sect3 id="orc.doc.node120"><title>
-<code>def Metronome() :: Signal</code>
-</title>
-<para>Publish a signal every second, indefinitely.</para></sect3>
-<sect3 id="orc.doc.node121"><title>
-<code>def MetronomeT(Integer) :: Signal</code>
-</title>
+calls (other than calls to <code>Ltimer</code>) have published.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>Metronome</code></term><listitem><para><code>def Metronome() :: Signal</code></para>
+<para>Publish a signal every second, indefinitely.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>MetronomeT</code></term><listitem><para><code>def MetronomeT(Integer) :: Signal</code></para>
 <para>Publish a signal at regular intervals, indefinitely. The period is given by the
-argument, in milliseconds.</para></sect3>
-</sect2>
-<sect2><title>
-util.inc
-</title>
-<informaltable cellspacing="5">
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node122"><code>random</code></link>
-</th><td>
-Return a random Integer value
-chosen from the range of all possible 32-bit Integer values.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node123"><code>urandom</code></link>
-</th><td>
-Returns a pseudorandom, uniformly distributed Double value
-between 0 and 1, inclusive.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node124"><code>UUID</code></link>
-</th><td>
-Return a random (type 4) UUID represented as a string.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node125"><code>Thread</code></link>
-</th><td>
-Given a site, return a new site which calls the original site
-in a separate thread.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node126"><code>signals</code></link>
-</th><td>
-Publish the given number of signals, simultaneously.
-</td></tr>
-<tr><th align="left" valign="top">
-<link linkend="orc.doc.node127"><code>for</code></link>
-</th><td>
-Publish all values in the given half-open range, simultaneously.
-</td></tr>
-</informaltable>
-<sect3 id="orc.doc.node122"><title>
-<code>site random() :: Integer</code>
-</title>
+argument, in milliseconds.</para>
+</listitem></varlistentry></variablelist>
+</section>
+<section><title>util.inc: Miscellaneous utility functions.</title>
+<para>Miscellaneous utility functions.</para>
+<variablelist>
+<varlistentry><term><code>random</code></term><listitem><para><code>site random() :: Integer</code></para>
 <para>Return a random Integer value
 chosen from the range of all possible 32-bit Integer values.</para>
-<para>site random(Integer) :: Integer
-Return a pseudorandom, uniformly distributed Integer value
+</listitem></varlistentry>
+<varlistentry><term><code>random</code></term><listitem><para><code>site random(Integer) :: Integer</code></para>
+<para>Return a pseudorandom, uniformly distributed Integer value
 between 0 (inclusive) and the specified value (exclusive).
-If the argument is 0, fail silently.</para></sect3>
-<sect3 id="orc.doc.node123"><title>
-<code>site urandom() :: Double</code>
-</title>
+If the argument is 0, fail silently.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>urandom</code></term><listitem><para><code>site urandom() :: Double</code></para>
 <para>Returns a pseudorandom, uniformly distributed Double value
-between 0 and 1, inclusive.</para></sect3>
-<sect3 id="orc.doc.node124"><title>
-<code>site UUID() :: String</code>
-</title>
-<para>Return a random (type 4) UUID represented as a string.</para></sect3>
-<sect3 id="orc.doc.node125"><title>
-<code>site Thread(Site) :: Site</code>
-</title>
+between 0 and 1, inclusive.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>UUID</code></term><listitem><para><code>site UUID() :: String</code></para>
+<para>Return a random (type 4) UUID represented as a string.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>Thread</code></term><listitem><para><code>site Thread(Site) :: Site</code></para>
 <para>Given a site, return a new site which calls the original site
 in a separate thread.  This is necessary when calling
 a Java site which does not cooperate with Orc's scheduler
 and may block for an unpredictable amount of time.</para>
 <para>A limited number of threads are reserved in a pool for use
 by this site, so there is a limit to the number of blocking,
-uncooperative sites that can be called simultaneously.</para></sect3>
-<sect3 id="orc.doc.node126"><title>
-<code>def signals(Integer) :: Signal</code>
-</title>
+uncooperative sites that can be called simultaneously.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>Prompt</code></term><listitem><para><code>site Prompt(String) :: String</code></para>
+<para>Prompt the user for some input. The user may cancel the prompt,
+in which case the site fails silently. Otherwise their response
+is returned as soon as it is received.</para>
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes the user's name
+Prompt("What is your name?")]]></programlisting></para>
+</listitem></varlistentry>
+<varlistentry><term><code>signals</code></term><listitem><para><code>def signals(Integer) :: Signal</code></para>
 <para>Publish the given number of signals, simultaneously.</para>
-<para><programlisting language="orc-demo"><![CDATA[
-signals(5)]]></programlisting></para></sect3>
-<sect3 id="orc.doc.node127"><title>
-<code>def for(Integer, Integer) :: Integer</code>
-</title>
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes five signals
+signals(5)]]></programlisting></para>
+</listitem></varlistentry>
+<varlistentry><term><code>for</code></term><listitem><para><code>def for(Integer, Integer) :: Integer</code></para>
 <para>Publish all values in the given half-open range, simultaneously.</para>
-<para><programlisting language="orc-demo"><![CDATA[
-for(1,6)]]></programlisting></para></sect3>
-</sect2>
-</sect1>
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: 1 2 3 4 5
+for(1,6)]]></programlisting></para>
+</listitem></varlistentry></variablelist>
+</section>
+</section>

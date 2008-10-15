@@ -1,3 +1,28 @@
+.programlisting, .orc, .orc-wrapper {
+	background-color: #E0E0E7;
+	padding: 2ex;
+	width: 60%;
+	margin-left: 5%;	
+}
+
+.orc-wrapper .orc {
+	width: 100%;
+}
+
+.term {
+	font-weight: bold;
+}
+
+.variablelist dt {
+	float: left;
+	clear: left;
+	padding-right: 1em;
+}
+
+.variablelist dd {
+	margin-left: 6em;
+}
+
 /* Copied from Orchard/web/orc-syntax.css */
 
 span.hl-keyword {
@@ -24,13 +49,3 @@ span.hl-pattern {
 	text-decoration: underline;
 }
 
-.programlisting, .orc, .orc-wrapper {
-	background-color: #E0E0E7;
-	padding: 2ex;
-	width: 60%;
-	margin-left: 5%;	
-}
-
-.orc-wrapper .orc {
-	width: 100%;
-}
