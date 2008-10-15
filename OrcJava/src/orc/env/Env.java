@@ -15,9 +15,9 @@ import java.util.List;
  * Env is also content addressable, so it can be used for the
  * deBruijn index conversion in the compiler.
  *   
- * @author dkitchin
+ * @author dkitchin, quark
  */
-public class Env<T> implements Serializable {
+public class Env<T> implements Serializable, Cloneable {
 	
 	ENode<T> node;
 
@@ -30,8 +30,8 @@ public class Env<T> implements Serializable {
 		this.node = null;
 	}
 
-	public Env<T> add(T item) {
-		return new Env<T>(new ENode<T>(node, item));
+	public void add(T item) {
+		node = new ENode<T>(node, item);
 	}
 	
 	/** Return a list of items in the order they were added. */
@@ -43,15 +43,10 @@ public class Env<T> implements Serializable {
 		return out;
 	}
 	
-	public Env<T> addAll(List<T> items) {
-		
-		ENode<T> here = node;
-		
+	public void addAll(List<T> items) {
 		for(T item : items) {
-			here = new ENode<T>(here, item);
+			node = new ENode<T>(node, item);
 		}
-		
-		return new Env<T>(here);
 	}
 	
 	/**
@@ -120,16 +115,18 @@ public class Env<T> implements Serializable {
 		}
 	}
 
-	public Env<T> unwind(int width) {
-		
-		ENode<T> here = node;
+	public void unwind(int width) {
 		for(int i = 0; i < width; i++) {
-			here = here.parent;
+			assert(node != null);
+			node = node.parent;
 		}
-		return new Env<T>(here);
 	}
 	
 	public String toString() {
 		return items().toString();
+	}
+	
+	public Env<T> clone() {
+		return new Env<T>(node);
 	}
 }

@@ -168,11 +168,6 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 	public TokenTracer getTracer() {
 		return tracer;
 	}
-	
-	public Token setEnv(Env<Object> e) {
-		this.env = e;
-		return this;
-	}
 
 	/**
 	 * Move to a node node
@@ -194,11 +189,12 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 			// rather than going through us
 		} else if (next instanceof Silent) {
 			// handle silent tail call specially
-			continuation = new Continuation(next, this.env, null);
+			continuation = new Continuation(next, this.env.clone(), null);
 		} else {
-			continuation = new Continuation(next, this.env, continuation);
+			continuation = new Continuation(next, this.env.clone(), continuation);
 		}
-		return setEnv(env).move(node);
+		this.env = env.clone();
+		return move(node);
 	}
 	
 	/**
@@ -206,7 +202,7 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 	 * {@link #enterClosure(Node, Env, Node)}.
 	 */
 	public Token leaveClosure() {
-		setEnv(continuation.env);
+		this.env = continuation.env.clone();
 		move(continuation.node);
 		continuation = continuation.continuation;
 		return this;
@@ -218,7 +214,7 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 	 * @return		self
 	 */
 	public Token bind(Object f) {
-		env = env.add(f);
+		env.add(f);
 		return this;
 	}
 
@@ -229,7 +225,7 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 	 * @return self
 	 */
 	public Token unwind(int width) {
-		env = env.unwind(width);
+		env.unwind(width);
 		return this;
 	}
 	
@@ -313,7 +309,7 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 	 * are created with the common left-associative asymmetric combinators).
 	 */
 	public Token fork(GroupCell group, Region region) {
-		return new Token(this.node, this.env, this.continuation,
+		return new Token(this.node, this.env.clone(), this.continuation,
 				group, region,
 				this.result, this.engine,
 				tracer.fork());

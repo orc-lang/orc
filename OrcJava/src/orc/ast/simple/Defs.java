@@ -66,7 +66,8 @@ public class Defs extends Expression {
 			names.add(d.name);
 		}
 		
-		Env<Var> newvars = vars.addAll(names);
+		Env<Var> newvars = vars.clone();
+		newvars.addAll(names);
 		
 		List<Def> newdefs = new ArrayList<Def>();
 		

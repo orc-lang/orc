@@ -42,7 +42,8 @@ public class Where extends Expression {
 	@Override
 	public Expr convert(Env<Var> vars) throws CompilationException {
 		
-		Env<Var> newvars = vars.add(v);
+		Env<Var> newvars = vars.clone();
+		newvars.add(v);
 		
 		return new Pull(left.convert(newvars), right.convert(vars));
 	}

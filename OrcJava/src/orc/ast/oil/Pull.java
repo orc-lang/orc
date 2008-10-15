@@ -47,16 +47,15 @@ public class Pull extends Expr {
 	
 	@Override
 	public Type typesynth(Env<Type> ctx) throws TypeException {
-		
-		Type R = right.typesynth(ctx);
-		Type L = left.typesynth(ctx.add(R));
-		return L;
+		Env<Type> lctx = ctx.clone();
+		lctx.add(right.typesynth(ctx));
+		return left.typesynth(lctx);
 	}
 
 	@Override
 	public void typecheck(Type T, Env<Type> ctx) throws TypeException {
-		
-		Type R = right.typesynth(ctx);
-		left.typecheck(T, ctx.add(R));
+		Env<Type> lctx = ctx.clone();
+		lctx.add(right.typesynth(ctx));
+		left.typecheck(T, lctx);
 	}
 }
