@@ -1,9 +1,13 @@
 {--
+Miscellaneous utility functions.
+--}
+
+{--
 * site random() :: Integer
 Return a random Integer value
 chosen from the range of all possible 32-bit Integer values.
 
-site random(Integer) :: Integer
+* site random(Integer) :: Integer
 Return a pseudorandom, uniformly distributed Integer value
 between 0 (inclusive) and the specified value (exclusive).
 If the argument is 0, fail silently.
@@ -41,6 +45,11 @@ site Thread = orc.lib.util.ThreadSite
 Prompt the user for some input. The user may cancel the prompt,
 in which case the site fails silently. Otherwise their response
 is returned as soon as it is received.
+
+Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes the user's name
+Prompt("What is your name?")]]></programlisting>
 --}
 site Prompt = orc.lib.util.Prompt
 
@@ -48,7 +57,9 @@ site Prompt = orc.lib.util.Prompt
 * def signals(Integer) :: Signal
 Publish the given number of signals, simultaneously.
 
+Example:
 <programlisting language="orc-demo"><![CDATA[
+-- Publishes five signals
 signals(5)]]></programlisting>
 --}
 def signals(n) = if n > 0 then (signal | signals(n-1))
@@ -57,15 +68,11 @@ def signals(n) = if n > 0 then (signal | signals(n-1))
 * def for(Integer, Integer) :: Integer
 Publish all values in the given half-open range, simultaneously.
 
+Example:
 <programlisting language="orc-demo"><![CDATA[
+-- Publishes: 1 2 3 4 5
 for(1,6)]]></programlisting>
 --}
 def for(low, high) =
   if low >= high then stop
   else ( low | for(low+1, high) )
-
-{--
-* def upto(Integer) :: Integer
-Publish all values greater than or equal to 0 and less than the argument, simultaneously.
---}
-def upto(high) = for(0, high)

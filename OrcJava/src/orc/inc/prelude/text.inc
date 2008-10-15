@@ -1,6 +1,10 @@
 {--
+Operations on strings.
+--}
+
+{--
 * site cat(Top, ...) :: String
-Concatenate one or more values as strings.
+Return the string representation of one or more values, concatenated.
 For Java objects, this will call <code>toString()</code> to convert
 the object to a String.
 --}
@@ -8,8 +12,7 @@ site cat = orc.lib.str.Cat
 
 {--
 * site print(Top, ...) :: Signal
-Print one or more values as strings, concatenated,
-to standard output.
+Print one or more values as strings, concatenated, to standard output.
 For Java objects, this will call <code>toString()</code> to convert
 the object to a String.
 --}
