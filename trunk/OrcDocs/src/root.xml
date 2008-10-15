@@ -2334,7 +2334,7 @@ We determine when an expression completes using the following rules.
 <listitem>A site call completes when it has published a value.</listitem>
 <listitem>A site call completes silently if it is blocked on a variable, and the expression
 which would bind that variable has already completed.</listitem>
-<listitem>A site call completes silently if the site <firstterm>refuses</firstterm> the call, as explained below.</listitem>
+<listitem>A site call completes silently if the call <firstterm>fails</firstterm>, as explained below.</listitem>
 <listitem>F <code>|</code> G completes when its subexpressions F and G have both completed.</listitem>
 <listitem>F<code><![CDATA[ >x> ]]></code>G completes when F has completed and all copies of G have completed.</listitem>
 <listitem>F<code><![CDATA[ <x< ]]></code>G completes when F has completed, and G has either completed or
@@ -2347,16 +2347,19 @@ or when F and G have both completed.</listitem>
 </para>
 
 <para>
-A site refuses a call when it knows that it will never respond to that call. This may happen
-for a variety of reasons. A site may be specifically designed to never respond under
-certain circumstances; for example, <code>if(false)</code> will never respond, so <code>if</code> 
-refuses that call. A site may depend on some connection that has failed in a detectable
-way; for example, <code>Google("five tons of flax")</code> if it is running on a computer
+A site call <emphasis>fails</emphasis> when it is certain that the call will never return
+a result. This may happen for a variety of reasons. A site may be specifically designed to never 
+respond under certain circumstances; for example, <code>if(false)</code> will never respond,
+so that call fails. A site may depend on some connection that has failed in a detectable
+way; for example, <code>Google("five tons of flax")</code> fails if we are executing on a computer
 which has no internet connection. A site may require some resource which is unavailable;
-for example, a site call based on a website may fail if the website itself is down or has 
-moved (a 404 error). Generally speaking, any underlying exception or error which prevents 
-the site call from ever continuing will trigger a refusal. Refusal is used only to implement 
-the otherwise combinator; it is not used elsewhere in the language.
+for example, a site call that accesses a website may fail if the website itself is down or has 
+moved. Or the evaluation of the call may reach some failed or exceptional state; for example,
+when calling a Java method from Orc, if an exception is thrown, the call is treated as a failure. 
+Generally speaking, any underlying exception or error which prevents the site call from ever 
+continuing will trigger a failure. The failure of a site in this way can only be detected by
+the otherwise combinator; other operations in the language cannot distinguish a failed call
+from a call that is simply blocking.
 </para>
 
 <para>
@@ -2404,7 +2407,7 @@ and a number of common concurrency patterns.
 In this section we suggest some syntactic conventions for writing Orc programs. None of these 
 conventions are required by the parser; newlines are used only to disambiguate certain corner
 cases in parsing, and other whitespace is ignored. However, following programming conventions 
-helps to improve the readability of programs, so that programmer intent is more readily apparent.
+helps to improve the readability of programs, so that the programmer's intent is more readily apparent.
 </para>
 
 <!--
@@ -2674,7 +2677,7 @@ will never complete. We will see later how to better manage such failures, using
 
 </section>
 
-<section><title>Example: Simple parallel auction</title>
+<section><title id="example.auction">Example: Simple parallel auction</title>
 
 <para>
 We can also use a recursive fork-join to obtain a value, rather than just signaling completion. Suppose we
@@ -2733,23 +2736,36 @@ the disjunction must be <code>true</code>; it is not necessary to wait for the o
 Here is the code:
 
 <programlisting>
-val a = <emphasis role="bold">F</emphasis>
-val b = <emphasis role="bold">G</emphasis>
-val r = if(a) <![CDATA[>>]]> true 
-      | if(b) <![CDATA[>>]]> true 
-      | (a || b)
+val r = 
+    val a = <emphasis role="bold">F</emphasis>
+    val b = <emphasis role="bold">G</emphasis>
+      if(a) <![CDATA[>>]]> true 
+    | if(b) <![CDATA[>>]]> true 
+    | (a || b)
 r
 </programlisting>
 </para>
 
 <para>
 Recall that the <code>||</code> operator is strict; if one of <code>a</code> or <code>b</code> is not bound, it cannot
-compute a result. So, we introduce two extra branches of the form <code>if(a) <![CDATA[>>]]> true</code>, which wait
+compute a result. So, we introduce two extra branches of the form <code>if(as) <![CDATA[>>]]> true</code>, which wait
 in parallel for each variable to become <code>true</code> and then publish the result <code>true</code>. That way, the
-parallel-or can evaluate to <code>true</code> based on only one of the result, even if the other result is not forthcoming.
+parallel-or can evaluate to <code>true</code> based on only one of the results, even if the other result is not forthcoming.
 </para>
 
 </section>
+
+
+<!-- 
+<section><title>Spork-join</title>
+
+
+<programlisting>
+<emphasis role="bold">F</emphasis> <![CDATA[>x>]]> println(x) >> stop ; <emphasis role="bold">G</emphasis>
+</programlisting>
+
+</section>
+ -->
 
 <section><title>Arbitration</title>
 
@@ -2782,8 +2798,8 @@ let( <emphasis role="bold">F</emphasis> | Rtimer(1000) <![CDATA[>>]]> 0 )
 <section><title>Auction with timeout</title>
 
 <para>
-In our earlier auction example, the auction may never complete if one of the bidders does not respond.
-We can add a timeout so that a bidder has at most 8 seconds to provide a bid:
+In the <link linkend="example.auction">auction example</link> shown earlier, the auction may never complete if 
+one of the bidders does not respond. We can add a timeout so that a bidder has at most 8 seconds to provide a bid:
 </para>
 
 <programlisting><![CDATA[
@@ -2910,13 +2926,16 @@ Suppose we have two buffers, and would like to empty one buffer and put its cont
 into the other buffer. We use the following function to do so.
 
 <programlisting>
-def Append(x,y) = y.put(x.getnb()) >> Append(x,y) ; signal
+def Transfer(x,y) = 
+    def loop() = x.getnb() >v> y.put(v) >> loop()
+    loop() ; signal
 </programlisting>
 
-<code>Append</code> takes the elements from <code>x</code> one at a time
+<code>loop</code> takes the elements from <code>x</code> one at a time
 (using <code>getnb</code>) and recurses. When <code>x</code> is empty, <code>getnb</code> 
-completes and is silent, so the left side of the <code>;</code> completes and
-the function publishes a signal, indicating that the transfer is finished.
+completes and is silent, so the call to <code>loop</code> becomes silent,
+allowing the right side of the <code>;</code> to run, publishing a signal
+to indicate that the transfer is finished.
 </para>
 
 
@@ -2978,23 +2997,25 @@ def take((a,b)) =
 def drop(a,b) = (a.release(), b.release()) >> signal
 
 def phil(a,b,name) =
-  def thinking() = Rtimer(random(1000))
+  def thinking() = 
+    if (urandom() < 0.9)
+      then Rtimer(random(1000))
+      else println(name + " is thinking forever.") >> stop
   def hungry() = take((a,b))
   def eating() = 
     println(name + " is eating.") >> 
     Rtimer(random(1000)) >> 
     println(name + " has finished eating.") >>
     drop(a,b)
-  def loop() = thinking() >> hungry() >> eating() >> loop()
-  loop()
+  thinking() >> hungry() >> eating() >> phil(a,b,name)
 
 def dining(n) =
-  val forks = buildArray(n, Mutex)
+  val forks = IArray(n, lambda(_) = Semaphore(1))
   def phils(0) = stop
   def phils(i) = phil(forks(i%n), forks(i-1), "Philosopher " + i) | phils(i-1)
-  phils(n)
+  phils(n) 
   
-dining(5)
+dining(5) ; println("Done.") >> stop
 ]]></programlisting>
 
 </section>
