@@ -5,81 +5,81 @@ combinators borrowed from Haskell or Scheme.
 --}
 
 {--
-* site apply<A,B>(lambda (A, ...) :: B, [A]) :: B
+* site apply(lambda (A, ...) :: B, [A]) :: B
 Apply a function to a list of arguments.
 --}
 site apply = orc.lib.util.Apply
 
 {--
-* def curry<A,B,C>(lambda (A,B) :: C)(A)(B) :: C
+* def curry(lambda (A,B) :: C)(A)(B) :: C
 Curry a function of two arguments.
 --}
 def curry(f)(x)(y) = f(x,y)
 
 {--
-* def curry3<A,B,C,D>(lambda (A,B,C) :: D)(A)(B)(C) :: D
+* def curry3(lambda (A,B,C) :: D)(A)(B)(C) :: D
 Curry a function of three arguments.
 --}
 def curry3(f)(x)(y)(z) = f(x,y,z)
 
 {--
-* def uncurry<A,B,C>(lambda (A)(B) :: C)(A, B) :: C
+* def uncurry(lambda (A)(B) :: C)(A, B) :: C
 Uncurry a function of two arguments.
 --}
 def uncurry(f)(x,y) = f(x)(y)
 
 {--
-* def uncurry3<A,B,C,D>(lambda (A)(B)(C) :: D)(A,B,C) :: D
+* def uncurry3(lambda (A)(B)(C) :: D)(A,B,C) :: D
 Uncurry a function of three arguments.
 --}
 def uncurry3(f)(x,y,z) = f(x)(y)(z)
 
 {--
-* def flip<A,B,C>(lambda (A, B) :: C)(B, A) :: C
+* def flip(lambda (A, B) :: C)(B, A) :: C
 Flip the order of parameters of a two-argument function.
 --}
 def flip(f)(x,y) = f(y,x)
 
 {--
-* def constant<A>(A)() :: A
+* def constant(A)() :: A
 Create a function which returns a constant value.
 --}
 def constant(x)() = x
 
 {--
-* def bind<A,B>(lambda (A) :: B, A)() :: B
-Return a thunk which applies a function to a single argument.
+* def bind(lambda (A) :: B, A)() :: B
+Given a function and its argument, return a thunk which applies the function.
 --}
 def bind(f, x)() = f(x)
 
 {--
-* def bind2<A,B,C>(lambda (A,B) :: C, A, B)() :: C
-Return a thunk which applies a function to a single argument.
+* def bind2(lambda (A,B) :: C, A, B)() :: C
+Given a function and its arguments, return a thunk which applies the function.
 --}
 def bind2(f, x, y)() = f(x, y)
 
 {--
-* def ignore<A,B>(lambda () :: B)(A) :: B
+* def ignore(lambda () :: B)(A) :: B
 From a function of no arguments, create a function
 of one argument, which is ignored.
 --}
 def ignore(f)(_) = f()
 
 {--
-* def ignore2<A,B,C>(lambda () :: C)(A, B) :: C
+* def ignore2(lambda () :: C)(A, B) :: C
 From a function of no arguments, create a function
-of one argument, which is ignored.
+of two arguments, which are ignored.
 --}
 def ignore2(f)(_, _) = f()
 
 {--
-* def compose<A,B,C>(lambda (B) :: C, lambda (A) :: B)(A) :: C
+* def compose(lambda (B) :: C, lambda (A) :: B)(A) :: C
 Compose two single-argument functions.
 --}
 def compose(f,g)(x) = f(g(x))
 
 {--
-* def while<A>(lambda (A) :: Boolean, lambda (A) :: A)(A) :: A
+* def while(lambda (A) :: Boolean, lambda (A) :: A)(A) :: A
 
 Iterate a function while a predicate is satisfied, publishing
 each value passed to the function. The exact behavior is specified
@@ -103,7 +103,7 @@ def while(p,f) =
   loop
 
 {--
-* def repeat<A>(lambda () :: A) :: A
+* def repeat(lambda () :: A) :: A
 Call a function sequentially, publishing each value returned by the function.
 The expression <code>repeat(f)</code> is equivalent to
 the infinite expression <code>f() >!_> f() >!_> f() >!_> ...</code>
@@ -111,7 +111,7 @@ the infinite expression <code>f() >!_> f() >!_> f() >!_> ...</code>
 def repeat(f) = f() >!x> repeat(f)
 
 {--
-* def fork<A>([lambda () :: A]) :: A
+* def fork([lambda () :: A]) :: A
 Call a list of functions in parallel, publishing
 all values published by the functions.
 
@@ -122,7 +122,7 @@ def fork([]) = stop
 def fork(p:ps) = p() | fork(ps)
 
 {--
-* def sequence<A>([lambda () :: A]) :: Signal
+* def sequence([lambda () :: A]) :: Signal
 Call a list of functions in sequence, publishing
 a signal whenever the last function publishes. The
 actual publications of the given functions are not
@@ -135,7 +135,7 @@ def sequence([]) = signal
 def sequence(p:ps) = p() >> sequence(ps)
  
 {--
-* def join<A>([lambda () :: A]) :: Signal
+* def join([lambda () :: A]) :: Signal
 Call a list of functions in parallel and publish
 a signal once all functions have completed.
 
@@ -172,7 +172,7 @@ def pand(p1, p2) =
   )
  
 {--
-* def collect<A>(lambda () :: A) :: [A]
+* def collect(lambda () :: A) :: [A]
 Run a function, collecting all publications in a list.
 Return the list when the function terminates.
 

@@ -6,10 +6,10 @@ User Guide.
 --}
 
 {--
-* site let<A>(A) :: A
+* site let(A) :: A
 When applied to a single argument, return that argument (behaving as the identity function).
 
-* site let<A, ...>(A, ...) :: (A, ...)
+* site let(A, ...) :: (A, ...)
 When applied to zero, two, or more arguments, return the arguments in a tuple.
 --}
 site let = orc.runtime.sites.core.Let
@@ -77,8 +77,9 @@ site (**) = orc.lib.math.Exponent
 {--
 * site (/)(Number, Number) :: Number
 <code>a/b</code> returns <code>a</code> divided by <code>b</code>.
-If both arguments have integral types, <code>/<code> performs integral division, rounding
-towards zero. Otherwise, it performs floating-point division.
+If both arguments have integral types, <code>(/)</code> performs integral
+division, rounding towards zero. Otherwise, it performs floating-point
+division.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -123,7 +124,7 @@ site (>=) = orc.lib.comp.Greq
 {--
 * site (=)(Top, Top) :: Boolean
 <code>a = b</code> returns true if <code>a</code> is equal to <code>b</code>, and false otherwise.
-The precise definition of ``equal'' depends on the values being compared, but
+The precise definition of "equal" depends on the values being compared, but
 obeys the rule that if two values are considered equal, then one may be
 substituted locally for the other without affecting the behavior of the
 program.  Generally, two values are guaranteed to be considered equal only if
@@ -161,11 +162,11 @@ computed.
 site (||) = orc.lib.bool.Or
 
 {--
-* site (:)<A>(A, [A]) :: [A]
+* site (:)(A, [A]) :: [A]
 <code>a:b</code> returns the list formed by prepending the element <code>a</code>
 to the list <code>b</code>.
 
-* pattern (:)<A>([A]) :: (A, [A])
+* pattern (:)([A]) :: (A, [A])
 The inverse of the list constructor <code>(:)</code>. Returns the head and tail
 of the list.
 
@@ -184,7 +185,8 @@ def abs(x) = if x < 0 then -x else x
 
 {--
 * def signum(Number) :: Number
-Return the sign of the argument, satisfying the equation <code>signum(a)*abs(a) = a</code>.
+If the argument is 0, return 0. Otherwise return the sign of the argument,
+as given by the equation <code>signum(a) = a/abs(a)</code>.
 --}
 def signum(x) =
   if x < 0 then -1
@@ -192,15 +194,15 @@ def signum(x) =
   else 0
 
 {--
-* def min<A extends Comparable>(A,A) :: A
+* def min(A,A) :: A, A <: Comparable
 Return the lesser of the arguments. If the arguments
-are equal, returns the first argument.
+are equal, return the first argument.
 --}
 def min(x,y) = if y < x then y else x
 
 {--
-* def max<A extends Comparable>(A,A) :: A
+* def max(A,A) :: A, A <: Comparable
 Return the greater of the arguments. If the arguments
-are equal, returns the second argument.
+are equal, return the second argument.
 --}
 def max(x,y) = if x > y then x else y

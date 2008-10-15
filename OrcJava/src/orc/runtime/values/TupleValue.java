@@ -11,12 +11,13 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.PartialSite;
+import orc.runtime.sites.core.Equal;
 
 /**
  * A tuple value container
  * @author wcook, quark
  */
-public class TupleValue extends EvalSite implements Iterable<Object> {
+public class TupleValue extends EvalSite implements Iterable<Object>, Immutable {
 	public Object[] values;
 	public TupleValue() {
 		this.values = new Object[0];
@@ -95,12 +96,14 @@ public class TupleValue extends EvalSite implements Iterable<Object> {
 	}
 	
 	public boolean equals(Object that_) {
-		if (that_ == null) return false;
+		return equivalentTo(that_);
+	}
+	public boolean equivalentTo(Object that_) {
 		if (!(that_ instanceof TupleValue)) return false;
 		TupleValue that = (TupleValue)that_;
 		if (that.values.length != this.values.length) return false;
 		for (int i = 0; i < this.values.length; ++i) {
-			if (!this.values[i].equals(that.values[i])) return false;
+			if (!Equal.equivalent(this.values[i], that.values[i])) return false;
 		}
 		return true;
 	}
