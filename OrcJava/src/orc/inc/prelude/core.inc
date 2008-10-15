@@ -28,7 +28,7 @@ site if = orc.runtime.sites.core.If
 
 {--
 * site error(String) :: Bot
-Fail with the given error message.
+Halt with the given error message.
 
 Example, using <code>error</code> to implement assertions:
 <programlisting language="orc-demo"><![CDATA[

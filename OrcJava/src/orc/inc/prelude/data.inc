@@ -26,6 +26,11 @@ Acquire an item. If no items are available, fail silently.
 ** site Semaphore.release() :: Signal
 Release an item.  This may be called to add items beyond
 the initial number of available items with which the semaphore was constructed.
+<<<<<<< data.inc
+
+* site Semaphore.acquirenb() :: Signal
+Acquire an item. If none are available, halt. 
+
 --}
 site Semaphore = orc.lib.state.Semaphore
 
@@ -44,15 +49,15 @@ val b = Buffer()
 Get an item from the buffer. If no items are available, block until one becomes available.
 
 ** site Buffer<A>.getnb() :: A
-Get an item from the buffer. If no items are available, fail silently.
+Get an item from the buffer. If no items are available, halt.
 
 ** site Buffer<A>.put(A) :: Signal
 Put an item in the buffer.
 
 ** site Buffer<A>.close() :: Signal
 Close the buffer. This has the effect of immediately causing any blocked calls
-to <code>get</code> to fail silently. In addition, any subsequent calls to
-<code>get</code> or <code>put</code> will fail silently.
+to <code>get</code> to halt. In addition, any subsequent calls to
+<code>get</code> or <code>put</code> will halt.
 --}
 site Buffer = orc.lib.state.Buffer
 
@@ -90,10 +95,10 @@ val c = Cell()
 Read a value from the cell. If the cell does not yet have a value, block until it receives one.
 
 ** site Cell<A>.readnb() :: A
-Read a value from the cell. If the cell does not yet have a value, fail silently.
+Read a value from the cell. If the cell does not yet have a value, halt.
 
 ** site Cell<A>.write() :: Signal
-Write a value to the cell. If the cell already has a value, fail silently.
+Write a value to the cell. If the cell already has a value, halt.
 --}
 site Cell = orc.lib.state.Cell
 
@@ -178,8 +183,9 @@ val a = fillArray(Array(3), let)
 a.get(0) | a.get(1) | a.get(2)]]></programlisting>
 --}
 def fillArray(a, f) =
+  val n = a.length()
   def fill(i, f) =
-    if i = a then stop
+    if i = n then stop
     else ( a.set(i, f(i)) >> stop
          | fill(i+1, f) )
   fill(0, f) ; a

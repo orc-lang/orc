@@ -270,7 +270,7 @@ terminated.
 def any(p, []) = false
 def any(p, x:xs) =
   por(
-    delay(p,x),
+    (lambda () = p(x)),
     lambda () = any(p,xs) )
   
 {--
@@ -283,7 +283,7 @@ terminated.
 def all(p, []) = true
 def all(p, x:xs) =
   pand(
-    delay(p,x),
+    (lambda () = p(x)),
     lambda () = any(p,xs) )
 
 {--
