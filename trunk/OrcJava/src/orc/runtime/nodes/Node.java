@@ -27,4 +27,7 @@ public abstract class Node implements Serializable {
 	public String toString() {
 		return getClass().getSimpleName();
 	}
+	
+	/** Does this node kill the incoming token? */
+	public boolean isTerminal() { return false; }
 }

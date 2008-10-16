@@ -15,4 +15,6 @@ public class Pub extends Node {
 	public <E> E accept(Visitor<E> visitor) {
 		return visitor.visit(this);
 	}
+	
+	public boolean isTerminal() { return true; }
 }
