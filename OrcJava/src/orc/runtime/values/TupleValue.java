@@ -17,7 +17,7 @@ import orc.runtime.sites.core.Equal;
  * A tuple value container
  * @author wcook, quark
  */
-public class TupleValue extends EvalSite implements Iterable<Object>, Immutable {
+public class TupleValue extends EvalSite implements Iterable<Object>, Eq {
 	public Object[] values;
 	public TupleValue() {
 		this.values = new Object[0];
@@ -96,14 +96,14 @@ public class TupleValue extends EvalSite implements Iterable<Object>, Immutable 
 	}
 	
 	public boolean equals(Object that_) {
-		return equivalentTo(that_);
+		return eqTo(that_);
 	}
-	public boolean equivalentTo(Object that_) {
+	public boolean eqTo(Object that_) {
 		if (!(that_ instanceof TupleValue)) return false;
 		TupleValue that = (TupleValue)that_;
 		if (that.values.length != this.values.length) return false;
 		for (int i = 0; i < this.values.length; ++i) {
-			if (!Equal.equivalent(this.values[i], that.values[i])) return false;
+			if (!Equal.eq(this.values[i], that.values[i])) return false;
 		}
 		return true;
 	}

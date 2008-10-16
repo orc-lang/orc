@@ -10,7 +10,7 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Args.NumericBinaryOperator;
 import orc.runtime.sites.EvalSite;
-import orc.runtime.values.Immutable;
+import orc.runtime.values.Eq;
 import orc.type.ArrowType;
 import orc.type.Type;
 
@@ -51,32 +51,34 @@ public class Equal extends EvalSite {
 	 */
 	@Override
 	public Object evaluate(Args args) throws TokenException {
-		return equivalent(args.getArg(0), args.getArg(1));
+		return eq(args.getArg(0), args.getArg(1));
 	}
 	
 	/**
 	 * Are two values equivalent, in the sense that one
 	 * may be substituted for another without changing
 	 * the meaning of the program?
-	 * @see Immutable
+	 * @see Eq
 	 */
-	public static boolean equivalent(Object a, Object b) {
+	public static boolean eq(Object a, Object b) {
 		if (a == null || b == null) {
 			return a == b;
 		} else if (a instanceof Number && b instanceof Number) {
 			try {
-				// FIXME: should be a more efficient way to do this
+				// FIXME: should be a slightly more efficient way to do this
 				return Args.applyNumericOperator((Number)a, (Number)b, op);
 			} catch (TokenException e) {
 				// should never happen
 				throw new AssertionError(e);
 			}
-		} else if (a instanceof String) {
+		} else if (a instanceof Character || b instanceof Character) {
 			return a.equals(b);
-		} else if (b instanceof String) {
-			return b.equals(a);
-		} else if (a instanceof Immutable) {
-			return ((Immutable)a).equivalentTo(b);
+		} else if (a instanceof Boolean || b instanceof Boolean) {
+			return a.equals(b);
+		} else if (a instanceof String || b instanceof String) {
+			return a.equals(b);
+		} else if (a instanceof Eq) {
+			return ((Eq)a).eqTo(b);
 		} else {
 			return a == b;
 		}

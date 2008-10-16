@@ -42,10 +42,10 @@ public class ConsValue extends ListValue {
 		return visitor.visit(this);
 	}
 	
-	public boolean equivalentTo(Object that_) {
+	public boolean eqTo(Object that_) {
 		if (!(that_ instanceof ConsValue)) return false;
 		ConsValue that = (ConsValue)that_;
-		return Equal.equivalent(h, that.h)
-			&& t.equivalentTo(that.t);
+		return Equal.eq(h, that.h)
+			&& t.eqTo(that.t);
 	}
 }
