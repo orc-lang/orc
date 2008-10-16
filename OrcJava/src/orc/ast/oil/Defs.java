@@ -27,16 +27,13 @@ public class Defs extends Expr {
 	
 	@Override
 	public Node compile(Node output) {
-		
 		List<orc.runtime.nodes.Def> newdefs = new LinkedList<orc.runtime.nodes.Def>();
-		
-		for(Def d : defs)
-		{
+	
+		for (Def d : defs) {
 			newdefs.add(d.compile());	
 		}
-		
+
 		Node newbody = body.compile(new Unwind(output, newdefs.size()));
-				
 		return new orc.runtime.nodes.Defs(newdefs, newbody, this.freeVars());
 	}
 
@@ -49,7 +46,6 @@ public class Defs extends Expr {
 	}
 	
 	public String toString() {
-		
 		String repn = "(defs  ";
 		for (Def d : defs) {
 			repn += "\n  " + d.toString();

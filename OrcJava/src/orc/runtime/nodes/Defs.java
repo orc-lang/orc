@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import orc.ast.oil.arg.Var;
+import orc.env.Env;
 import orc.error.runtime.SiteResolutionException;
 import orc.runtime.Token;
 import orc.runtime.values.Closure;

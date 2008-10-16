@@ -9,68 +9,73 @@ import orc.runtime.values.Future;
 import java.io.*;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 
 /**
  * Generic indexed environment, used primarily at runtime. 
  * Env is also content addressable, so it can be used for the
  * deBruijn index conversion in the compiler.
- *   
+ * 
+ * <p>The implementation uses a linked list of stacks, where
+ * only the head is mutated. This means the tail can be shared,
+ * saving memory and copying time relative to a stack implementation,
+ * but within each stack lookup is O(1), saving lookup time relative
+ * to a linked list implementation.
+ * 
  * @author dkitchin, quark
  */
-public class Env<T> implements Serializable, Cloneable {
-	
-	ENode<T> node;
+public final class Env<T> implements Serializable, Cloneable {
+	private Env<T> parent;
+	private Stack<T> stack;
 
-	// Environment given a specific node
-	protected Env(ENode<T> node) {
-		this.node = node;
+	/** Copy constructor */
+	protected Env(Env<T> parent, Stack<T> stack) {
+		this.parent = parent;
+		this.stack = stack;
 	}
 	
 	public Env() {
-		this.node = null;
+		this.parent = null;
+		this.stack = new Stack<T>();
 	}
 
 	public void add(T item) {
-		node = new ENode<T>(node, item);
+		stack.push(item);
+	}
+	
+	private void collect(LinkedList<T> items) {
+		if (parent != null) parent.collect(items);
+		for (T item : stack) items.add(item);
 	}
 	
 	/** Return a list of items in the order they were added. */
 	public List<T> items() {
 		LinkedList<T> out = new LinkedList<T>();
-		for(ENode<T> here = node; here != null; here = here.parent) {
-			out.addFirst(here.item);
-		}
+		collect(out);
 		return out;
 	}
 	
 	public void addAll(List<T> items) {
-		for(T item : items) {
-			node = new ENode<T>(node, item);
-		}
+		stack.addAll(items);
 	}
 	
 	/**
 	 * Lookup a variable in the environment
-	 * Currently uses a linear search.
 	 * @param   index  Stack depth (a deBruijn index)
 	 * @return  The bound item
 	 */
 	public T lookup(int index) {
-		
-		if (index < 0) {
-			// this should be impossible
-			throw new OrcError("Invalid argument to lookup, index " + index + " is negative.");
+		index -= stack.size();
+		if (index >= 0) {
+			// will be found in the parent
+			assert(parent != null);
+			return parent.lookup(index);
+		} else {
+			// found here
+			return stack.get(-index - 1);
 		}
-		
-		for(ENode<T> here = node; here != null; here = here.parent, index--) {
-			if (index == 0) {
-				return here.item;
-			}
-		}
-		
-		throw new OrcError("Unbound variable.");
 	}
-		
+	
 	/**
 	 * Content addressable mode. Used in compilation
 	 * to determine the deBruijn indices from an
@@ -84,42 +89,34 @@ public class Env<T> implements Serializable, Cloneable {
 	 * @return        The index of the target item
 	 */
 	public int search(T target) {
-		
-		int depth = 0;
-		
-		for(ENode<T> here = node; here != null; here = here.parent, depth++) {
-			if (target.equals(here.item)) {
-				return depth;
-			}
-		}
-
-		// this should be impossible, because any variable which
-		// is not in scope should have been created as a NamedVar,
-		// not a Var
-		throw new OrcError("Target " + target + " not found in environment; can't return index.");
-
-	}
-
-	
-	/**
-	 * Individual entries in the environment.
-	 */ 
-	protected static class ENode<T> {
-		
-		T item;
-		ENode<T> parent;
-		
-		ENode(ENode<T> parent, T item) {
-			this.parent = parent;
-			this.item = item;
+		int depth = stack.search(target);
+		if (depth > 0) {
+			// found in the stack;
+			// search returns a 1-based index but we
+			// assume 0-based.
+			return depth - 1;
+		} else {
+			assert(parent != null);
+			return parent.search(target) + stack.size();
 		}
 	}
 
-	public void unwind(int width) {
-		for(int i = 0; i < width; i++) {
-			assert(node != null);
-			node = node.parent;
+	public void unwind(int depth) {
+		boolean oldstack = (depth > stack.size());
+		// pop parents until we get
+		// to the one we're actually interested in
+		while (depth > stack.size()) {
+			assert(parent != null);
+			depth -= stack.size();
+			stack = parent.stack;
+			parent = parent.parent;
 		}
+		// clone the stack before modifying it
+		if (oldstack) {
+			stack = (Stack<T>)stack.clone();
+		}
+		// pop values off the stack
+		for (int i = 0; i < depth; i++) stack.pop();
 	}
 	
 	public String toString() {
@@ -127,6 +124,12 @@ public class Env<T> implements Serializable, Cloneable {
 	}
 	
 	public Env<T> clone() {
-		return new Env<T>(node);
+		Env<T> nparent;
+		if (stack.empty()) {
+			nparent = parent;
+		} else {
+			nparent = new Env(parent, (Stack<T>)stack.clone());
+		}	
+		return new Env(nparent, new Stack<T>());
 	}
 }

@@ -187,8 +187,8 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 		if (next instanceof Return) {
 			// tail call should return directly to our current continuation
 			// rather than going through us
-		} else if (next instanceof Silent) {
-			// handle silent tail call specially
+		} else if (next.isTerminal()) {
+			// handle terminal (non-returning) continuation specially
 			continuation = new Continuation(next, this.env.clone(), null);
 		} else {
 			continuation = new Continuation(next, this.env.clone(), continuation);
