@@ -12,12 +12,12 @@ import orc.runtime.sites.core.Equal;
  * 
  * @author quark
  */
-public interface Immutable {
+public interface Eq {
 	/** 
 	 * Return true if this is equivalent to that.
 	 * that is assumed to be non-null.
 	 * This is often implemented in terms of
-	 * {@link Equal#equivalent(Object, Object)}.
+	 * {@link Equal#eq(Object, Object)}.
 	 */
-	public boolean equivalentTo(Object that);
+	public boolean eqTo(Object that);
 }

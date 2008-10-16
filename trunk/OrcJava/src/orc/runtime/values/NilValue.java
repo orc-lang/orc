@@ -32,7 +32,7 @@ public class NilValue extends ListValue {
 		return visitor.visit(this);
 	}	
 	
-	public boolean equivalentTo(Object that) {
+	public boolean eqTo(Object that) {
 		return (that instanceof NilValue);
 	}
 }

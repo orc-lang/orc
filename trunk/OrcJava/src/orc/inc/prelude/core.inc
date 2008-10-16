@@ -123,13 +123,18 @@ site (>=) = orc.lib.comp.Greq
 
 {--
 * site (=)(Top, Top) :: Boolean
-<code>a = b</code> returns true if <code>a</code> is equal to <code>b</code>, and false otherwise.
-The precise definition of "equal" depends on the values being compared, but
-obeys the rule that if two values are considered equal, then one may be
-substituted locally for the other without affecting the behavior of the
-program.  Generally, two values are guaranteed to be considered equal only if
-they are identical (in the sense of having the same object identity). In most
-cases, immutable objects are also considered equal if their contents are equal.
+<code>a = b</code> returns true if <code>a</code> is equal to <code>b</code>,
+and false otherwise.  The precise definition of "equal" depends on the values
+being compared, but always obeys the rule that if two values are considered
+equal, then one may be substituted locally for the other without affecting the
+behavior of the program.
+
+Two values with the same object identity are always considered equal.
+In addition, Orc <link linked="cor.constants">constant values</link> and
+<link linkend="cor.data">functional data structures</link>
+are considered equal if their contents are equal. Other types
+are free to implement their own equality relationship provided it
+conforms to the rules given here.
 --}
 site (=) = orc.runtime.sites.core.Equal
 
