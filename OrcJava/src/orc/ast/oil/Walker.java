@@ -12,6 +12,8 @@ import orc.ast.oil.arg.Arg;
  * @author quark
  */
 public abstract class Walker implements Visitor<Void> {
+	public void enterScope(int n) {}
+	public void leaveScope(int n) {}
 	
 	public Void visit(Bar expr) {
 		this.enter(expr);
@@ -35,12 +37,16 @@ public abstract class Walker implements Visitor<Void> {
 
 	public Void visit(Defs expr) {
 		this.enter(expr);
+		this.enterScope(expr.defs.size());
 		for (Def def : expr.defs) {
 			this.enter(def);
+			this.enterScope(def.arity);
 			def.body.accept(this);
+			this.leaveScope(def.arity);
 			this.leave(def);
 		}
 		expr.body.accept(this);
+		this.leaveScope(expr.defs.size());
 		this.leave(expr);
 		return null;
 	}
@@ -59,7 +65,9 @@ public abstract class Walker implements Visitor<Void> {
 
 	public Void visit(Pull expr) {
 		this.enter(expr);
+		this.enterScope(1);
 		expr.left.accept(this);
+		this.leaveScope(1);
 		expr.right.accept(this);
 		this.leave(expr);
 		return null;
@@ -70,7 +78,9 @@ public abstract class Walker implements Visitor<Void> {
 	public Void visit(Push expr) {
 		this.enter(expr);
 		expr.left.accept(this);
+		this.enterScope(1);
 		expr.right.accept(this);
+		this.leaveScope(1);
 		this.leave(expr);
 		return null;
 	}

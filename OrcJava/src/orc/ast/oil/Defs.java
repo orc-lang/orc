@@ -1,13 +1,11 @@
 package orc.ast.oil;
 
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
-import orc.ast.simple.arg.Argument;
-import orc.ast.simple.arg.NamedVar;
-import orc.ast.simple.arg.Var;
+import orc.ast.oil.arg.Var;
 import orc.env.Env;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Node;
@@ -27,22 +25,29 @@ public class Defs extends Expr {
 	
 	@Override
 	public Node compile(Node output) {
-		List<orc.runtime.nodes.Def> newdefs = new LinkedList<orc.runtime.nodes.Def>();
+		// find variables free ONLY in the defs themselves
+		// (unlike addIndices which includes the body)
+		Set<Var> free = new TreeSet<Var>();
+		Set<Integer> indices = new TreeSet<Integer>();
+		int depth = defs.size();
+		for (Def d : defs) d.addIndices(indices, depth);
+		for (Integer i : indices) free.add(new Var(i));
 	
+		// compile the defs
+		List<orc.runtime.nodes.Def> newdefs = new LinkedList<orc.runtime.nodes.Def>();
 		for (Def d : defs) {
 			newdefs.add(d.compile());	
 		}
 
 		Node newbody = body.compile(new Unwind(output, newdefs.size()));
-		return new orc.runtime.nodes.Defs(newdefs, newbody, this.freeVars());
+		return new orc.runtime.nodes.Defs(newdefs, newbody, free);
 	}
 
 	@Override
 	public void addIndices(Set<Integer> indices, int depth) {
-		
-		for (Def d : defs) {
-			d.addIndices(indices, depth + defs.size());
-		}
+		depth += defs.size();
+		for (Def d : defs) d.addIndices(indices, depth);
+		body.addIndices(indices, depth);
 	}
 	
 	public String toString() {

@@ -17,7 +17,7 @@ import orc.type.Type;
  *
  */
 
-public class Var extends Arg {
+public class Var extends Arg implements Comparable<Var> {
 	private static final long serialVersionUID = 1L;
 	
 	public int index;
@@ -50,5 +50,21 @@ public class Var extends Arg {
 	@Override
 	public Type typesynth(Env<Type> ctx) throws TypeException {
 		return ctx.lookup(index);
+	}
+	
+	@Override
+	public int hashCode() {
+		return index + getClass().hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object v) {
+		if (v == null) return false;
+		return (v instanceof Var)
+			&& ((Var)v).index == index;
+	}
+
+	public int compareTo(Var o) {
+		return Integer.signum(index - o.index);
 	}
 }
