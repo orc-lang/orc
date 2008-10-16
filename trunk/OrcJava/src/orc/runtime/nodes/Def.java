@@ -1,7 +1,9 @@
 package orc.runtime.nodes;
 
 import java.util.List;
-import orc.ast.simple.arg.Var;
+import java.util.Set;
+
+import orc.ast.oil.arg.Var;
 
 /**
  * 
@@ -18,9 +20,11 @@ public class Def {
 
 	public int arity;
 	public Node body;
+	public Set<Var> free;
 
-	public Def(int arity, Node body) {
+	public Def(int arity, Node body, Set<Var> free) {
 		this.arity = arity;
 		this.body = body;
+		this.free = free;
 	}
 }

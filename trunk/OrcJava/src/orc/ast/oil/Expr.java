@@ -59,10 +59,10 @@ public abstract class Expr {
 	 * @return 	The set of free variables.
 	 */
 	public final Set<Var> freeVars() {
-		Set<Integer> indices = new HashSet<Integer>();
+		Set<Integer> indices = new TreeSet<Integer>();
 		this.addIndices(indices, 0);
 		
-		Set<Var> vars = new HashSet<Var>();
+		Set<Var> vars = new TreeSet<Var>();
 		for (Integer i : indices) {
 			vars.add(new Var(i));
 		}

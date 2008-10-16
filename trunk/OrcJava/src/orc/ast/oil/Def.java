@@ -1,12 +1,10 @@
 package orc.ast.oil;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Set;
+import java.util.TreeSet;
 
-import orc.ast.simple.arg.Argument;
-import orc.ast.simple.arg.NamedVar;
-import orc.ast.simple.arg.Var;
+import orc.ast.oil.arg.Var;
 import orc.env.Env;
 import orc.error.compiletime.typing.TypeException;
 import orc.type.ArrowType;
@@ -39,10 +37,34 @@ public class Def {
 	}	
 	
 	public orc.runtime.nodes.Def compile() {
+		// rename free variables in the body
+		// so that when we construct closure environments
+		// we can omit the non-free variables
+		Set<Var> free = freeVars();
+		final HashMap<Integer,Integer> map = new HashMap<Integer, Integer>();
+		int i = free.size()-1;
+		for (Var v : free) map.put(v.index + arity, (i--) + arity);
+		RenameVariables.rename(body, new RenameVariables.Renamer() {
+			public int rename(int var) {
+				if (var < arity) return var;
+				return map.get(var);
+			}
+		});
 		
 		orc.runtime.nodes.Node newbody = body.compile(new orc.runtime.nodes.Return());
+		return new orc.runtime.nodes.Def(arity, newbody, free);
+	}
+	
+	public final Set<Var> freeVars() {
+		Set<Integer> indices = new TreeSet<Integer>();
+		this.addIndices(indices, 0);
 		
-		return new orc.runtime.nodes.Def(arity, newbody);
+		Set<Var> vars = new TreeSet<Var>();
+		for (Integer i : indices) {
+			vars.add(new Var(i));
+		}
+		
+		return vars;
 	}
 	
 	public void addIndices(Set<Integer> indices, int depth) {

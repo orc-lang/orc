@@ -183,4 +183,9 @@ public class GroupCell implements Serializable, Future {
 	public void setRegion(GroupRegion region) {
 		this.region = region;
 	}
+	
+	public String toString() {
+		if (!bound) return "_";
+		else return value.toString();
+	}
 }

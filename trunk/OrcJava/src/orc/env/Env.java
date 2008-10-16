@@ -34,9 +34,13 @@ public final class Env<T> implements Serializable, Cloneable {
 		this.stack = stack;
 	}
 	
-	public Env() {
-		this.parent = null;
+	public Env(Env<T> parent) {
+		this.parent = parent;
 		this.stack = new Stack<T>();
+	}
+	
+	public Env() {
+		this(null);
 	}
 
 	public void add(T item) {
@@ -102,20 +106,9 @@ public final class Env<T> implements Serializable, Cloneable {
 	}
 
 	public void unwind(int depth) {
-		boolean oldstack = (depth > stack.size());
-		// pop parents until we get
-		// to the one we're actually interested in
-		while (depth > stack.size()) {
-			assert(parent != null);
-			depth -= stack.size();
-			stack = parent.stack;
-			parent = parent.parent;
-		}
-		// clone the stack before modifying it
-		if (oldstack) {
-			stack = (Stack<T>)stack.clone();
-		}
-		// pop values off the stack
+		assert(depth <= stack.size());
+		// pop values off the stack; unwinding past
+		// the parent is not allowed
 		for (int i = 0; i < depth; i++) stack.pop();
 	}
 	
@@ -124,12 +117,11 @@ public final class Env<T> implements Serializable, Cloneable {
 	}
 	
 	public Env<T> clone() {
-		Env<T> nparent;
-		if (stack.empty()) {
-			nparent = parent;
-		} else {
-			nparent = new Env(parent, (Stack<T>)stack.clone());
-		}	
-		return new Env(nparent, new Stack<T>());
+		// Various strategies are possible here, which trade
+		// off copying time for lookup speed. For example, when
+		// an environment is copied, we could move it to a shared
+		// parent node so it doesn't have to be copied again. But
+		// it turns out empirically this extra work isn't worth it.
+		return new Env(parent, (Stack<T>)stack.clone());
 	}
 }
