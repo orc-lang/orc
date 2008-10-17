@@ -20,15 +20,16 @@ import java.util.Stack;
  * <p>Currently this is implemented as a simple linked-list
  * of bindings, which provides O(n) lookups and O(1) copies.
  * This sounds inefficient, but in practice turns out to be
- * competitive with more complicated schemes which provide
- * O(1) (or near-O(1)) lookup.
+ * just as good or better than more complicated schemes
+ * for O(1) lookup.
  * 
  * @author dkitchin, quark
  */
 public final class Env<T> implements Serializable, Cloneable {
 	private Binding<T> head;
 	
-	private static class Binding<T> {
+	/** Binding in the stack. */
+	private static final class Binding<T> {
 		private Binding<T> parent;
 		private T value;
 		public Binding(Binding<T> parent, T value) {
@@ -60,7 +61,7 @@ public final class Env<T> implements Serializable, Cloneable {
 	public List<T> items() {
 		LinkedList<T> out = new LinkedList<T>();
 		for (Binding<T> node = head; node != null; node = node.parent) {
-			out.addLast(node.value);
+			out.addFirst(node.value);
 		}
 		return out;
 	}
