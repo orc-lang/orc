@@ -3553,7 +3553,7 @@ Declaration keywords include
 are described in previous chapters. The last, <code>pattern</code>, indicates a binding
 for a site which can be used in a pattern match: the site must take
 one argument (the value to be matched against), and return a tuple (the
-values to bind to pattern variables). For example,
+values to match against pattern arguments). For example,
 <code>pattern M(Integer) :: (Integer, Integer)</code>
 would be used like <code>3 &gt;M(x,y)&gt; x+y</code>.
 </para>

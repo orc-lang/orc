@@ -113,6 +113,7 @@
 	    	<param name="section.autolabel" expression="1"/>
 	    	<param name="section.label.includes.component.label" expression="1"/>
 	    	<param name="section.autolabel.max.depth" expression="8"/>
+	    	<param name="variablelist.max.termlength" expression="12"/>
 	        <include name="all.xml" />
 	        	
 		<param name="highlight.source" expression="1"/>
