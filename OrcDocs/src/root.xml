@@ -326,7 +326,7 @@ in a subsequent section.
 
 
 
-<section><title>Constants</title>
+<section id="cor.constants"><title>Constants</title>
 <para>
 The simplest expression one can write is a constant. It evaluates trivially
 to that constant value. 
@@ -672,7 +672,7 @@ Cor.
 </section>
 
 
-<section><title>Data Structures</title>
+<section id="cor.data"><title>Data Structures</title>
 
 <para>
 Cor supports two basic data structures, <firstterm>tuples</firstterm> and <firstterm>lists</firstterm>.
@@ -3531,19 +3531,43 @@ features needed for general-purpose programming.
 
 <para>
 Each declaration in the standard library includes a type signature as part of
-its documentation.  Although Orc does not yet have an official type system or
-syntax for types, it is our intention that the notation summarized here
-will form the basis for any future type system.
+its documentation. The notation for type signatures, summarized here, is based
+on a formal type system for Orc currently under preparation.
 </para>
 
 <para>
-A type signature consists of: a declaration keyword, a declaration name, formal
-parameter types, the return type, and finally any subtyping constraints. For
-example: <code>site min(A, A) :: A, A &lt;: Comparable</code>.
+A type signature consists of: a declaration keyword, a declaration name, argument
+types, the return type, and finally any subtyping constraints. For
+example <code>def min(A, A) :: A, A &lt;: Comparable</code> gives the type
+of the <code>def</code> declaration for <code>min</code>. According to this
+signature, <code>min</code> is a function which takes two arguments of type
+<code>A</code> and returns a value of the same type, where <code>A</code> is
+any subtype of <code>Comparable</code>.
 </para>
 
 <para>
-Types are written as follows:
+Declaration keywords include
+<link linkend="orc-declaring-a-site"><code>site</code></link>,
+<link linkend="cor.functions"><code>def</code></link>,
+<link linkend="cor.variables"><code>val</code></link>, and <code>pattern</code>. The first three keywords
+are described in previous chapters. The last, <code>pattern</code>, indicates a binding
+for a site which can be used in a pattern match: the site must take
+one argument (the value to be matched against), and return a tuple (the
+values to bind to pattern variables). For example,
+<code>pattern M(Integer) :: (Integer, Integer)</code>
+would be used like <code>3 &gt;M(x,y)&gt; x+y</code>.
+</para>
+
+<para>
+Object members (methods and fields) are each declared separately.  The binding
+name of a member is written in the form Type.member, e.g.  <code>Foo.get</code>
+refers to the <code>get</code> member of an object of type <code>Foo</code>.
+The object type can include type variables which are referenced by the member
+type.
+</para>
+
+<para>
+Argument and return types are written as follows:
 <itemizedlist>
 <listitem>Primitive types are given descriptive names based on the names of the
 	corresponding Java classes. For example, <code>Number</code> is any
@@ -3570,30 +3594,15 @@ Types are written as follows:
 </para>
 
 <para>
-Declaration keywords include
-<link linkend="orc-declaring-a-site"><code>site</code></link>,
-<link linkend="cor.functions"><code>def</code></link>,
-<link linkend="cor.variables"><code>val</code></link>, and <code>pattern</code>. The first three keywords
-are described in previous chapters. The last, <code>pattern</code>, indicates a binding
-for a site which can be used in a pattern match: the site must take
-one argument (the value to be matched against), and return a tuple (the
-values to bind to pattern variables). For example,
-<code>pattern M(Integer) :: (Integer, Integer)</code>
-would be used like <code>3 &gt;M(x,y)&gt; x+y</code>.
+Multiple sets of argument types are syntactic sugar for currying. For
+example, <code>site Foo()() :: Signal</code> is equivalent to
+<code>site Foo() :: lambda () :: Signal</code>.
 </para>
 
 <para>
-Object members (methods and fields) are each declared separately.  The binding
-name of a member is written in the form Type.member, e.g.  <code>Foo.get</code>
-refers to the <code>get</code> member of an object of type <code>Foo</code>.
-The object type can include type variables which are referenced by the member
-type.
-</para>
-
-<para>
-Multiple sets of formal parameter types are syntactic sugar for currying. For
-example, <code>site Foo()() :: Signal</code> is equivalent to <code>site Foo()
-	:: lambda () :: Signal</code>.
+Subtyping constraints are used to constrain the types of polymorphic type
+variables, and are written <code>A &lt;: X</code>, meaning <code>A</code> must
+be a subtype of <code>X</code>.
 </para>
  
 </section>

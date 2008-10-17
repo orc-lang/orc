@@ -21,7 +21,7 @@ User Guide.</para>
 | if(true) >> "Always publishes"]]></programlisting></para>
 </listitem></varlistentry>
 <varlistentry><term><code>error</code></term><listitem><para><code>site error(String) :: Bot</code></para>
-<para>Fail with the given error message.</para>
+<para>Halt with the given error message.</para>
 <para>Example, using <code>error</code> to implement assertions:
 <programlisting language="orc-demo"><![CDATA[
 def assert(b) =
@@ -78,13 +78,17 @@ the expression <code>a - (a/b)*b</code>. For a full description, see the
 <para><code>a >= b</code> returns true if <code>a</code> is greater than or equal to <code>b</code>, and false otherwise.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>(=)</code></term><listitem><para><code>site (=)(Top, Top) :: Boolean</code></para>
-<para><code>a = b</code> returns true if <code>a</code> is equal to <code>b</code>, and false otherwise.
-The precise definition of "equal" depends on the values being compared, but
-obeys the rule that if two values are considered equal, then one may be
-substituted locally for the other without affecting the behavior of the
-program.  Generally, two values are guaranteed to be considered equal only if
-they are identical (in the sense of having the same object identity). In most
-cases, immutable objects are also considered equal if their contents are equal.</para>
+<para><code>a = b</code> returns true if <code>a</code> is equal to <code>b</code>,
+and false otherwise.  The precise definition of "equal" depends on the values
+being compared, but always obeys the rule that if two values are considered
+equal, then one may be substituted locally for the other without affecting the
+behavior of the program.</para>
+<para>Two values with the same object identity are always considered equal.
+In addition, Orc <link linkend="cor.constants">constant values</link> and
+<link linkend="cor.data">functional data structures</link>
+are considered equal if their contents are equal. Other types
+are free to implement their own equality relationship provided it
+conforms to the rules given here.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>(/=)</code></term><listitem><para><code>site (/=)(Top, Top) :: Boolean</code></para>
 <para><code>a/=b</code> returns false if <code>a=b</code>, and true otherwise.</para>
@@ -146,16 +150,19 @@ println("Entering critical section") >>
 println("Leaving critical section") >>
 lock.release()]]></programlisting></para>
 <variablelist>
-<varlistentry><term><code>Semaphore.acquire</code></term><listitem><para><code>site Semaphore.acquire() :: Signal</code></para>
+<varlistentry><term><code>acquire</code></term><listitem><para><code>site Semaphore.acquire() :: Signal</code></para>
 <para>Acquire an item. If none are available, block until one becomes available.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>Semaphore.acquirenb</code></term><listitem><para><code>site Semaphore.acquirenb() :: Signal</code></para>
-<para>Acquire an item. If no items are available, fail silently.</para>
+<varlistentry><term><code>acquirenb</code></term><listitem><para><code>site Semaphore.acquirenb() :: Signal</code></para>
+<para>Acquire an item. If no items are available, halt.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>Semaphore.release</code></term><listitem><para><code>site Semaphore.release() :: Signal</code></para>
+<varlistentry><term><code>release</code></term><listitem><para><code>site Semaphore.release() :: Signal</code></para>
 <para>Release an item.  This may be called to add items beyond
 the initial number of available items with which the semaphore was constructed.</para>
 </listitem></varlistentry></variablelist>
+</listitem></varlistentry>
+<varlistentry><term><code>acquirenb</code></term><listitem><para><code>site Semaphore.acquirenb() :: Signal</code></para>
+<para>Acquire an item. If none are available, halt.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>Buffer</code></term><listitem><para><code>site Buffer() :: Buffer&lt;A&gt;</code></para>
 <para>Create a new buffer (FIFO channel) of unlimited size.</para>
@@ -166,23 +173,74 @@ val b = Buffer()
   Rtimer(1000) >> b.put(10) >> stop
 | b.get()]]></programlisting></para>
 <variablelist>
-<varlistentry><term><code>Buffer.get</code></term><listitem><para><code>site Buffer&lt;A&gt;.get() :: A</code></para>
+<varlistentry><term><code>get</code></term><listitem><para><code>site Buffer&lt;A&gt;.get() :: A</code></para>
 <para>Get an item from the buffer. If no items are available, block until one becomes available.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>Buffer.getnb</code></term><listitem><para><code>site Buffer&lt;A&gt;.getnb() :: A</code></para>
-<para>Get an item from the buffer. If no items are available, fail silently.</para>
+<varlistentry><term><code>getnb</code></term><listitem><para><code>site Buffer&lt;A&gt;.getnb() :: A</code></para>
+<para>Get an item from the buffer. If no items are available, halt.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>Buffer.put</code></term><listitem><para><code>site Buffer&lt;A&gt;.put(A) :: Signal</code></para>
+<varlistentry><term><code>put</code></term><listitem><para><code>site Buffer&lt;A&gt;.put(A) :: Signal</code></para>
 <para>Put an item in the buffer.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>Buffer.close</code></term><listitem><para><code>site Buffer&lt;A&gt;.close() :: Signal</code></para>
+<varlistentry><term><code>close</code></term><listitem><para><code>site Buffer&lt;A&gt;.close() :: Signal</code></para>
 <para>Close the buffer. This has the effect of immediately causing any blocked calls
-to <code>get</code> to fail silently. In addition, any subsequent calls to
-<code>get</code> or <code>put</code> will fail silently.</para>
+to <code>get</code> to halt. In addition, any subsequent calls to
+<code>get</code> or <code>put</code> will halt.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>isClosed</code></term><listitem><para><code>site Buffer&lt;A&gt;.isClosed() :: Boolean</code></para>
+<para>If the buffer is currently closed, return true, otherwise return false.</para>
+</listitem></varlistentry></variablelist>
+</listitem></varlistentry>
+<varlistentry><term><code>BoundedBuffer</code></term><listitem><para><code>site BoundedBuffer(Integer) :: BoundedBuffer&lt;A&gt;</code></para>
+<para>Create a new buffer (FIFO channel) with the given number of slots.
+Putting an item into the buffer fills a slot, and removing an item opens a slot.
+A buffer with zero slots is equivalent to a
+<link linkend="orc.lib.state.SyncChannel">synchronous channel</link>.</para>
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: "Put 1" "Got 1" "Put 2" "Got 2"
+val c = BoundedBuffer(1)
+  c.put(1) >> "Put " + 1
+| c.put(2) >> "Put " + 2
+| Rtimer(1000) >> (
+    c.get() >n> "Got " + n
+  | c.get() >n> "Got " + n
+  )]]></programlisting></para>
+<variablelist>
+<varlistentry><term><code>get</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.get() :: A</code></para>
+<para>Get an item from the buffer. If no items are available, block until one becomes available.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>getnb</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.getnb() :: A</code></para>
+<para>Get an item from the buffer. If no items are available, halt.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>put</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.put(A) :: Signal</code></para>
+<para>Put an item in the buffer. If no slots are open, block until one becomes open.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>putnb</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.putnb(A) :: Signal</code></para>
+<para>Put an item in the buffer. If no slots are open, halt.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>close</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.close() :: Signal</code></para>
+<para>Close the buffer. This has the effect of immediately causing any blocked calls
+to <code>get</code> and <code>put</code> to halt. In addition, any subsequent
+calls to <code>get</code> or <code>put</code> will halt.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>isClosed</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.isClosed() :: Boolean</code></para>
+<para>If the buffer is currently closed, return true, otherwise return false.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>getOpen</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.getOpen() :: Integer</code></para>
+<para>Return the number of open slots in the buffer. Because of concurrency
+this value may become out-of-date so it should only be used for debugging
+or statistical measurements.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>getBound</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.getBound() :: Integer</code></para>
+<para>Return the total number of slots (open or filled) in the buffer.</para>
 </listitem></varlistentry></variablelist>
 </listitem></varlistentry>
 <varlistentry><term><code>SyncChannel</code></term><listitem><para><code>site SyncChannel() :: SyncChannel&lt;A&gt;</code></para>
-<para>Create a synchronous channel, or rendezvous.</para>
+<para><!-- XSL/FO doesn't like me using an anchor tag here -->
+<para id="orc.lib.state.SyncChannel">
+Create a synchronous channel, or rendezvous.
+</para></para>
 <para>Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publish: 10
@@ -190,10 +248,10 @@ val c = SyncChannel()
   c.put(10)
 | Rtimer(1000) >> c.get()]]></programlisting></para>
 <variablelist>
-<varlistentry><term><code>SyncChannel.get</code></term><listitem><para><code>site SyncChannel&lt;A&gt;.get() :: A</code></para>
+<varlistentry><term><code>get</code></term><listitem><para><code>site SyncChannel&lt;A&gt;.get() :: A</code></para>
 <para>Receive an item over the channel. If no sender is available, block until one becomes available.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>SyncChannel.put</code></term><listitem><para><code>site SyncChannel&lt;A&gt;.put(A) :: Signal</code></para>
+<varlistentry><term><code>put</code></term><listitem><para><code>site SyncChannel&lt;A&gt;.put(A) :: Signal</code></para>
 <para>Send an item over the channel. If no receiver is available, block until one becomes available.</para>
 </listitem></varlistentry></variablelist>
 </listitem></varlistentry>
@@ -206,14 +264,14 @@ val c = Cell()
   c.write(5) >> c.read()
 | Rtimer(1) >> ( c.write(10) ; c.read() )]]></programlisting></para>
 <variablelist>
-<varlistentry><term><code>Cell.read</code></term><listitem><para><code>site Cell&lt;A&gt;.read() :: A</code></para>
+<varlistentry><term><code>read</code></term><listitem><para><code>site Cell&lt;A&gt;.read() :: A</code></para>
 <para>Read a value from the cell. If the cell does not yet have a value, block until it receives one.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>Cell.readnb</code></term><listitem><para><code>site Cell&lt;A&gt;.readnb() :: A</code></para>
-<para>Read a value from the cell. If the cell does not yet have a value, fail silently.</para>
+<varlistentry><term><code>readnb</code></term><listitem><para><code>site Cell&lt;A&gt;.readnb() :: A</code></para>
+<para>Read a value from the cell. If the cell does not yet have a value, halt.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>Cell.write</code></term><listitem><para><code>site Cell&lt;A&gt;.write() :: Signal</code></para>
-<para>Write a value to the cell. If the cell already has a value, fail silently.</para>
+<varlistentry><term><code>write</code></term><listitem><para><code>site Cell&lt;A&gt;.write() :: Signal</code></para>
+<para>Write a value to the cell. If the cell already has a value, halt.</para>
 </listitem></varlistentry></variablelist>
 </listitem></varlistentry>
 <varlistentry><term><code>Ref</code></term><listitem><para><code>site Ref() :: Ref&lt;A&gt;</code></para>
@@ -227,16 +285,16 @@ Rtimer(1000) >> r.write(5) >> stop
   println(r.read()) >>
   stop]]></programlisting></para>
 <variablelist>
-<varlistentry><term><code>Ref</code></term><listitem><para><code>site Ref&lt;A&gt;(A) :: Ref&lt;A&gt;</code></para>
+<varlistentry><term><code>Ref</code></term><listitem><para><code>site Ref(A) :: Ref&lt;A&gt;</code></para>
 <para>Create a rewritable storage location containing the provided value.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>Ref.read</code></term><listitem><para><code>site Ref&lt;A&gt;.read() :: A</code></para>
+<varlistentry><term><code>read</code></term><listitem><para><code>site Ref&lt;A&gt;.read() :: A</code></para>
 <para>Read the value of the ref. If the ref is empty, block until it is no longer empty.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>Ref.readnb</code></term><listitem><para><code>site Ref&lt;A&gt;.readnb() :: A</code></para>
-<para>Read the value of the ref. If the ref is empty, fail silently.</para>
+<varlistentry><term><code>readnb</code></term><listitem><para><code>site Ref&lt;A&gt;.readnb() :: A</code></para>
+<para>Read the value of the ref. If the ref is empty, halt.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>Ref.write</code></term><listitem><para><code>site Ref&lt;A&gt;.write(A) :: Signal</code></para>
+<varlistentry><term><code>write</code></term><listitem><para><code>site Ref&lt;A&gt;.write(A) :: Signal</code></para>
 <para>Write a value to the ref.</para>
 </listitem></varlistentry></variablelist>
 </listitem></varlistentry>
@@ -256,24 +314,24 @@ a.set(i, f(i)) >>
 stop
 ; a.get(0) | a.get(1) | a.get(2)]]></programlisting></para>
 <variablelist>
-<varlistentry><term><code>Array</code></term><listitem><para><code>site Array&lt;A&gt;(Integer, String) :: Array&lt;A&gt;</code></para>
+<varlistentry><term><code>Array</code></term><listitem><para><code>site Array(Integer, String) :: Array&lt;A&gt;</code></para>
 <para>Create a new primitive array of the given size with the given primitive type.
 The primitive type should match the element type of the array, although a
 typechecker may not be able to verify this. This constructor is only necessary
 when interfacing with certain Java libraries; most programs will just use the 
-<code>Array&lt;A&gt;(Integer)</code> constructor.</para>
+<code>Array(Integer)</code> constructor.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>Array.get</code></term><listitem><para><code>site Array&lt;A&gt;.get(Integer) :: A</code></para>
+<varlistentry><term><code>get</code></term><listitem><para><code>site Array&lt;A&gt;.get(Integer) :: A</code></para>
 <para>Get the element of the array given by the index, counting from 0.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>Array.set</code></term><listitem><para><code>site Array&lt;A&gt;.set(Integer, A) :: Signal</code></para>
+<varlistentry><term><code>set</code></term><listitem><para><code>site Array&lt;A&gt;.set(Integer, A) :: Signal</code></para>
 <para>Set the element of the array given by the index, counting from 0.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>Array.slice</code></term><listitem><para><code>site Array&lt;A&gt;.slice(Integer, Integer) :: Array&lt;A&gt;</code></para>
+<varlistentry><term><code>slice</code></term><listitem><para><code>site Array&lt;A&gt;.slice(Integer, Integer) :: Array&lt;A&gt;</code></para>
 <para>Return a copy of the portion of the array with indices covered by the given
 half-open range. The result array is still indexed counting from 0.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>Array.length</code></term><listitem><para><code>site Array&lt;A&gt;.length() :: Integer</code></para>
+<varlistentry><term><code>length</code></term><listitem><para><code>site Array&lt;A&gt;.length() :: Integer</code></para>
 <para>Return the size of the array.</para>
 </listitem></varlistentry></variablelist>
 </listitem></varlistentry>
@@ -376,10 +434,10 @@ combinators borrowed from Haskell or Scheme.</para>
 <varlistentry><term><code>constant</code></term><listitem><para><code>def constant(A)() :: A</code></para>
 <para>Create a function which returns a constant value.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>bind</code></term><listitem><para><code>def bind(lambda (A) :: B, A)() :: B</code></para>
+<varlistentry><term><code>defer</code></term><listitem><para><code>def defer(lambda (A) :: B, A)() :: B</code></para>
 <para>Given a function and its argument, return a thunk which applies the function.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>bind2</code></term><listitem><para><code>def bind2(lambda (A,B) :: C, A, B)() :: C</code></para>
+<varlistentry><term><code>defer2</code></term><listitem><para><code>def defer2(lambda (A,B) :: C, A, B)() :: C</code></para>
 <para>Given a function and its arguments, return a thunk which applies the function.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>ignore</code></term><listitem><para><code>def ignore(lambda () :: B)(A) :: B</code></para>
@@ -450,7 +508,7 @@ Return the list when the function terminates.</para>
 <para>Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: [signal, signal, signal, signal, signal]
-collect(bind(signals, 5))]]></programlisting></para>
+collect(defer(signals, 5))]]></programlisting></para>
 </listitem></varlistentry></variablelist>
 </section>
 <section><title>list.inc: Operations on lists.</title>
@@ -695,7 +753,7 @@ chosen from the range of all possible 32-bit Integer values.</para>
 <varlistentry><term><code>random</code></term><listitem><para><code>site random(Integer) :: Integer</code></para>
 <para>Return a pseudorandom, uniformly distributed Integer value
 between 0 (inclusive) and the specified value (exclusive).
-If the argument is 0, fail silently.</para>
+If the argument is 0, halt.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>urandom</code></term><listitem><para><code>site urandom() :: Double</code></para>
 <para>Returns a pseudorandom, uniformly distributed Double value
