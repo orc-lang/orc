@@ -3,7 +3,7 @@
     xmlns:xslthl="http://xslthl.sf.net"
     exclude-result-prefixes="xslthl"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
-<xsl:import href="../../docbook-xsl/html/docbook.xsl"/>
+<xsl:import href="../../docbook-xsl/html/chunk.xsl"/>
 <xsl:import href="common.xsl"/>
 
 <xsl:param name="orc.demo" select="0"/>
