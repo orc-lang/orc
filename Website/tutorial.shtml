@@ -25,7 +25,7 @@
 <p>In this tutorial you will learn the basic concepts of Orc through a series
 of interactive examples.  When you see a code example with a <b>run</b> button,
 click it to run the program. The results of the program will be printed below
-it.</p>
+it. The demos run on our server so you may experience some network delay.</p>
 
 <a name="Sites"></a><h2>Sites <small>(<a href="#top">top</a>)</small></h2>
 <p>The fundamental unit of computation in an Orc program is called a
