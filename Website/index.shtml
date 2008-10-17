@@ -1,31 +1,85 @@
 <!--#include virtual="template/header.shtml" --> 
 
+<style type="text/css">
+.orc-demo {
+	visibility: hidden;
+	position: absolute;
+}
+.content ul li {
+	margin-top: 1em;
+}
+.highlight {
+	font-weight: bold;
+	font-style: italic;
+}
+</style>
+
 <link rel="stylesheet" type="text/css" href="/orchard/orc.css" media="screen"/>
 
-<p><b>Orc</b> is novel language for distributed and concurrent programming. Orc provides
+<h2>Orc is ...</h2>
+
+<p>... a novel language for distributed and concurrent programming which provides
 uniform access to computational services, including distributed communication
-and data manipulation, through <b><i>sites</i></b>. Using three simple
-concurrency primitives, the programmer <b><i>orchestrates</i></b> the
+and data manipulation, through <span class="highlight">sites</span>. Using three simple
+concurrency primitives, the programmer <span class="highlight">orchestrates</span> the
 invocation of sites to achieve a goal, while managing timeouts, priorities, and
 failures.</p>
 
-<p>You can use Orc as:</p>
+<h2>What can I use Orc for?</h2>
 
-<p>
-A <b>general purpose programming language</b> for concise encoding of
-concurrent and distributed applications. See (demo) a probabilistic solution to the 
-dining philosophers problem, or try out <a href="">some simple programs</a> that 
-combine concurrency and synchronization with fault-tolerance and time-out.
-</p>
+<ul>
+<li>
+A <span class="highlight">general purpose programming language</span> for concise encoding of
+concurrent and distributed applications. See a 
+<a href="#" onclick="showDemo('#orc-demo-dining')">probabilistic solution</a>
+to the dining philosophers problem, or try out <a href="tryorc.shtml">some simple programs</a>
+that combine concurrency and synchronization with fault-tolerance and time-out.
 
-<p>
-A <b>web scripting language</b> to create a web-service mashup in a few
+<div id="orc-demo-dining" class="orc-demo">
+<small><a href="#" onclick="hideDemo('#orc-demo-dining')">hide this demo</a></small>
+<pre class="orc" style="height: 200px">
+def shuffle(a,b) = if (random(2) = 1) then (a,b) else (b,a)
+
+def take((a,b)) =  
+  a.acquire() >> b.acquirenb() ;
+  a.release() >> take(shuffle(a,b))
+    
+def drop(a,b) = (a.release(), b.release()) >> signal
+
+def phil(a,b,name) =
+  def thinking() = Rtimer(random(1000))
+  def hungry() = take((a,b))
+  def eating() = 
+    println(name + " is eating.") >> 
+    Rtimer(random(1000)) >> 
+    println(name + " has finished eating.") >>
+    drop(a,b)
+  thinking() >> hungry() >> eating() >> phil(a,b,name)
+
+def dining(n) =
+  val forks = IArray(n, lambda(_) = Semaphore(1))
+  def phils(0) = stop
+  def phils(i) =
+      phil(forks(i%n), forks(i-1), "Philosopher " + i)
+    | phils(i-1)
+  phils(n) 
+  
+let(
+    dining(5)
+  | Rtimer(10000)
+) >> "HALTED"</pre>
+</div>
+</li>
+
+<li>
+A <span class="highlight">web scripting language</span> to create a web-service mashup in a few
 minutes. Orc's emphasis on concurrency makes mashups much simpler to write than in
-other scripting languages. See a <a href="">simple search mashup</a> that starts a Yahoo search 
+other scripting languages. See a <a href="#" onclick="showDemo('#orc-demo-search')">simple search mashup</a> that starts a Yahoo search 
 and a Google search simultaneously and prints the first set of responses. You can 
-create your own mashup <a href="tryorc.shtml">here</a>.
-</p>
+<a href="tryorc.shtml">create your own mashup here</a>.
 
+<div id="orc-demo-search" class="orc-demo">
+<small><a href="#" onclick="hideDemo('#orc-demo-search')">hide this demo</a></small>
 <pre class="orc">
 include "search.inc"
 
@@ -33,43 +87,32 @@ each(results)
   &lt;results&lt;
     Prompt("Search for:") >term>
     ( Yahoo(term) | Google(term) )</pre>
+</div>
+</li>
 
-<p>
-An <b>executable specification language</b> for workflow applications
-and process coordination problems. Read about how Orc can <a href="">represent
-many common workflow patterns</a>, or see a <a href="">representation of a process 
-network</a> in Orc. 
-</p>
+<li>
+An <span class="highlight">executable specification language</span> for workflow applications
+and process coordination problems. Read about how Orc can <a href="/papers/OrcWorkflow.pdf">represent
+many common workflow patterns</a><!-- , or see a <a href="">representation of a process 
+network</a> in Orc-->.</li>
+</ul>
 
 <p>Read more about the <a href="introduction.shtml">ideas behind Orc</a> or
 dive in to <a href="tutorial.shtml">Orc in 15 minutes</a>.</p>
 
-
-<!-- 
-<h2>What is it for?</h2>
-
-<ul>
-<li>Concurrent and distributed programming</li>
-<li>Workflows (business process automation)</li>
-<li>Discrete event simulation</li>
-<li>Web service mashups</li>
-</ul>
-
-<h2>A Sample Program</h2>
-
-<p>The following example searches both Yahoo and Google for some search term
-obtained from the user and displays the first few results from whichever site
-responds first.</p>
-
-<pre class="orc">
-include "search.inc"
-
-each(results)
-  &lt;results&lt;
-    Prompt("Search for:") >term>
-    ( Yahoo(term) | Google(term) )</pre>
-
 <script src="/orchard/orc.js" type="text/javascript"></script>
--->
- 
+
+<script type="text/javascript">
+function showDemo(selector) {
+	$thing = jQuery(selector);
+	$thing.css('position', 'relative');
+	$thing.css('display', 'none');
+	$thing.css('visibility', 'visible');
+	$thing.slideDown();
+}
+function hideDemo(selector) {
+	jQuery(selector).slideUp();
+}
+</script>
+
 <!--#include virtual="template/footer.shtml" --> 
