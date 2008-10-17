@@ -147,8 +147,8 @@ or constant), then it is treated as syntactic sugar for an asymmetric
 composition.  For example, these two expressions are equivalent:</p>
 
 <pre class="orc">
-  1 + x &lt;x&lt; (2 + 3)
-| 1 + (2 + 3)</pre>
+  ( 1 + x &lt;x&lt; (2 + 3) )
+| ( 1 + (2 + 3) )</pre>
 
 <p></p>
 
