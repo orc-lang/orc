@@ -8,21 +8,9 @@
 	xmlns:xlink="http://www.w3.org/1999/xlink"
 	xmlns:xi="http://www.w3.org/2001/XInclude">
 <title>Orc User Guide</title>
-
-<!-- <author/> -->
-
-<!-- 
+  
 <preface><title>Introduction</title>
 	
-Some introduction.
-
-</preface>
- -->
- 
-<chapter id="chapter.language"><title>The Orc Programming Language</title>
-
-<section><title>Introduction</title>
-
 <para>
 Orc is a programming language designed to make distributed and
 concurrent programs simple and intuitive to write. Orc expresses
@@ -37,6 +25,15 @@ learn more about Orc and run your own Orc programs, visit the website:
 <ulink url="http://orc.csres.utexas.edu/"><code>http://orc.csres.utexas.edu/</code></ulink>.
 </para>
 
+
+</preface>
+
+ 
+<chapter id="chapter.language"><title>The Orc Programming Language</title>
+
+<section><title>Introduction</title>
+
+
 <para>
 This chapter describes the Orc programming language in three steps. In Section 1.2, we
 discuss a small subset of Orc called Cor. Cor is a pure functional language,
@@ -47,7 +44,7 @@ conditionals, and functions.
 </para>
 
 <para>
-Next, in Section 1.3, we consider Orc itself, which in addition to Cor, comprises 
+In Section 1.3, we consider Orc itself, which in addition to Cor, comprises 
 external services and combinators for concurrent orchestration of those services. 
 We show how Orc interacts with these external services, how the combinators can be
 used to build up complex orchestrations from simple base expressions, and how the 
@@ -56,7 +53,7 @@ context of Orc.
 </para>
 
 <para>
-Finally, in Section 1.4, we discuss some additional features of Orc that extend 
+In Section 1.4, we discuss some additional features of Orc that extend 
 the basic syntax. These are useful for creating large-scale Orc programs, but 
 they are not essential to the understanding of the language.
 </para>
@@ -76,7 +73,7 @@ familiar with many of the key concepts of Cor.
 </para>
 
 <para>
-A Cor program is called an <firstterm>expression</firstterm>. Cor expressions are built
+A Cor program is an <firstterm>expression</firstterm>. Cor expressions are built
 up recursively from smaller expressions. Cor <firstterm>evaluates</firstterm> an expression
 to reduce it to some simple <firstterm>value</firstterm> which cannot be evaluated further, 
 for example a list of numbers or a Boolean truth value. This value is called the <firstterm>
@@ -93,7 +90,7 @@ using patterns. Lastly, we introduce functions.
 </para> 
 
 <para>
-The following figure describes the syntax of Cor. Each part of the syntax is explained 
+Table 1.1 describes the syntax of Cor. Each part of the syntax is explained 
 in a subsequent section.
 </para>
 
@@ -210,7 +207,7 @@ in a subsequent section.
 <entry>C</entry>
 <entry>::=</entry>
 
-<entry><code>true</code> | <code>false</code> | <emphasis>integer</emphasis> | <emphasis>string</emphasis></entry>
+<entry><emphasis>Boolean</emphasis> | <emphasis>Number</emphasis> | <emphasis>String</emphasis></entry>
 
 <entry><emphasis>Constant</emphasis></entry>
 <entry></entry>
@@ -220,9 +217,9 @@ in a subsequent section.
 <entry>X</entry>
 <entry>::=</entry>
 
-<entry><emphasis>identifier</emphasis></entry>
+<entry><emphasis>Identifier</emphasis></entry>
 
-<entry><emphasis>Variable</emphasis></entry>
+<entry><emphasis>Identifier</emphasis></entry>
 <entry></entry>
 </row>
 
@@ -339,15 +336,15 @@ Cor has three types of constants, and thus for the moment three types of values:
 <itemizedlist>
 
 <listitem>
-Numbers: <code> 5, -1, 2.71828, ... </code>
-</listitem> 
-
-<listitem>
-Booleans: <code>true</code> and <code>false</code>
+Boolean: <code>true</code> and <code>false</code>
 </listitem>
 
 <listitem>
-Strings: <code>"orc"</code>, <code>"ceci n'est pas une |"</code>
+Number: <code> 5, -1, 2.71828, ... </code>
+</listitem> 
+
+<listitem>
+String: <code>"orc"</code>, <code>"ceci n'est pas une |"</code>
 </listitem>
 
 </itemizedlist>
@@ -485,37 +482,29 @@ Here is the full set of operators that Cor supports:
 
 </para>
 
-
 <para>
-The <code>=</code> operator can compare values of any type.
+There is also a unary negation operator, written <code>-</code>, for example <code>-(2 ** 5)</code>.
 </para>
 
 <para>
-<itemizedlist><title>Examples</title>
-<listitem><code>10 = true</code> evaluates to <code>false</code>.</listitem>
-</itemizedlist>
+The <code>=</code> operator can compare values of any type. Values of different type are always inequal; for example,
+<code>10 = true</code> evaluates to <code>false</code>.
+</para>
+
+<section><title>Silent Expression</title>
+<para>
+There are situations where an expression evaluation is stuck, because it is attempting to perform 
+some impossible operation and cannot compute a value. In that case, the expression is <firstterm>silent</firstterm>. 
+An expression is also silent if it depends on the result of a silent subexpression. For example, the following
+expressions are silent: <code>10/0</code>, <code>6 + false</code>, <code>3 + 1/0</code>, <code>4 + true = 5</code>.
 </para>
 
 <para>
-Sometimes, there are situations where an expression is stuck, because it is attempting to perform 
-some impossible operation and cannot reach a value. If this is the case, we say that the expression
-is <firstterm>silent</firstterm>. An expression is also silent if it depends on the result of a silent 
-subexpression.
+Cor is a dynamically typed language. A Cor implementation does not statically check the type correctness
+of an expression; instead, an expression with a type error is simply silent when it is evaluated.
 </para>
 
-<para>
-<itemizedlist><title>Examples</title>
-<listitem><code>10 / 0</code> is silent.</listitem>
-<listitem><code>6 + false</code> is silent.</listitem>
-<listitem><code>3 + 1/0</code> is silent.</listitem>
-<listitem><code>4 + true = 5</code> is silent.</listitem>
-</itemizedlist>
-</para>
-
-<para>
-Note that Cor is a dynamically typed language. It does not statically check the type correctness
-of an expression; instead, an expression with a type error is simply silent when evaluated.
-</para>
+</section>
 
 </section>
 
@@ -621,31 +610,25 @@ The behavior of conditionals is summarized by the following table
 <section id="cor.variables"><title>Variables</title>
 
 <para>
-A <firstterm>variable</firstterm> names the value of some expression so that we can use it later.
-Expression <code>x</code>, where x is some variable name, evaluates to the result <firstterm>bound</firstterm>
-to the variable x.
-</para>
-
-<para>
-Variables are bound using a <firstterm>declaration</firstterm>. A declaration is a statement that has no value 
-of its own but instead binds one or more variables. The simplest form of declaration is <code>val</code>, which 
+A <firstterm>variable</firstterm> can be bound to a value. A <firstterm>declaration</firstterm> binds one or
+more variables to values. The simplest form of declaration is <code>val</code>, which 
 evaluates an expression and binds its result to a variable. Declarations follow the rules of 
 <ulink url="http://en.wikipedia.org/wiki/Lexical_scope">lexical scoping</ulink>.
 </para>
 
 <para>
 <programlisting><![CDATA[
-val x = 1 + 2 + 3 + 4 + 5
+val x = 1 + 2
 val y = x + x
 ]]></programlisting>
 
-These declarations bind variable <code>x</code> to 15 and variable <code>y</code> to 30.
+These declarations bind variable <code>x</code> to 3 and variable <code>y</code> to 6.
 </para>
 
 
 <para>
 If the expression on the right side of a <code>val</code> is silent, then the variable is not bound, but 
-evaluation of other declarations and expressions can continue. If an evaluated expression depends on that
+evaluation of other declarations and expressions continues. If an evaluated expression depends on that
 variable, that expression is silent.
 
 <programlisting language="orc-demo"><![CDATA[
@@ -704,7 +687,7 @@ If any of the expressions is silent, then the whole list expression is silent.
 <itemizedlist><title>Examples</title>
 <listitem><code>[1,2+3] </code> evaluates to <code>[1,5]</code>.</listitem>
 <listitem><code><![CDATA[ [true && true] ]]> </code> evaluates to <code>[true]</code>.</listitem>
-<listitem><code>[]</code> evaluates trivially to <code>[]</code>, the empty list.</listitem>
+<listitem><code>[]</code> evaluates vacuously to <code>[]</code>, the empty list.</listitem>
 <listitem><code>[5, 5 + true, 5]</code> is silent.</listitem>
 </itemizedlist>
 </para>
@@ -712,7 +695,8 @@ If any of the expressions is silent, then the whole list expression is silent.
 <para>
 There is also a concatenation (<firstterm>cons</firstterm>) operation on lists,
 written F<code>:</code>G, where F and G are expressions. Its result is a new list whose first element is the 
-value of F and whose remaining elements are the list value of G.
+value of F and whose remaining elements are the list value of G. The <code>:</code> operator is right associative,
+so F<code>:</code>G<code>:</code>H is F<code>(</code>G<code>:</code>H<code>)</code>.
 </para>
 
 <para>
@@ -822,8 +806,8 @@ x+y
 </para>
 
 <para>
-Notice that the evaluation strategy of functions allows to call to proceed even if some of the actual
-parameters to be silent, so long as the values of those actual parameters are not used in the evaluation
+Notice that the evaluation strategy of functions allows a call to proceed even if some of the actual
+parameters are silent, so long as the values of those actual parameters are not used in the evaluation
 of the body.
 
 <programlisting language="orc-demo"><![CDATA[
@@ -901,7 +885,7 @@ def Onetwosum(f) = f(1) + f(2)
 def Triple(x) = x * 3
 ]]></programlisting>
 
-Then, <code>Onetwosum(Triple)</code> is <code>Triple(1) + Triple(2)</code>, which is <code>1 * 3 + 2 * 3</code>, which evaluates to <code>9</code>.
+Then, <code>Onetwosum(Triple)</code> is <code>Triple(1) + Triple(2)</code>, which is <code>1 * 3 + 2 * 3</code> which evaluates to <code>9</code>.
 
 </para>
 
@@ -1001,18 +985,23 @@ def H(n) = H(n-1) >(x,y)> (y,x+y)
 
 def Fib(n) = if (n < 0) then 0 else H(n) >(x,_)> x
 ]]></programlisting>
+</para>
+
+<para>
+As a more complex example of matching, consider the following function which finds
+the first <code>n</code> elements of a list (the list is assumed to be at least
+<code>n</code> elements long).
 
 <programlisting><![CDATA[
-{- Take up to the first n elements from a list -}
 def Take(0,_) = []
-def Take(_,[]) = []
 def Take(n,h:t) = h:(Take(n-1,t))
 ]]></programlisting>
 </para>
 
+
 <para>
 Mutual recursion and clausal definitions are allowed to occur together.
-For example, this function takes a list and evaluates to a new list with every other element repeated:
+For example, this function takes a list and computes a new list in which every other element is repeated:
 
 <programlisting><![CDATA[
 def Stutter([]) = []
@@ -1085,9 +1074,10 @@ Multiline comments may be nested. They may appear anywhere, even in the middle o
 <para>
 Cor is a pure declarative language. It has no state, since variables are bound at most once 
 and cannot be reassigned. Evaluation of an expression results in at most one value.
-It cannot communicate with the outside world except by producing a value. Clearly, the full 
-Orc language must transcend these limitations, because the orchestration of external services 
-is critical to Orc's purpose.
+It cannot communicate with the outside world except by producing a value. The full 
+Orc language transcends these limitations by incorporating the orchestration of external services.
+We introduce the term <firstterm>site</firstterm> to denote an external service which can be
+called from an Orc program.
 </para>
 
 <para>
@@ -1099,12 +1089,6 @@ values (possibly zero). Different executions of the same expression may have com
 behaviors; they may call different services, may receive different responses from the same site,
 and may publish different values. Expressions in the functional subset, though, will display
 the same behavior in all executions.
-</para>
-<para>
-If an execution of an expression publishes no value, it is called <firstterm>silent</firstterm>.
-If no execution of an expression can possibly publish a value, then that expression is slient.
-However, unlike silent expressions in Cor, a silent expression in Orc might perform some meaningful 
-computation or communication; silence does not necessarily indicate an error.
 </para>
 
 <para>
@@ -1221,6 +1205,17 @@ The original Cor grammar rules are abbreviated by ellipses (...).
 <entry></entry>
 <entry>|</entry>
 
+<entry>E <code>;</code> E</entry>
+
+<entry></entry>
+<entry><emphasis>otherwise combinator</emphasis></entry>
+</row>
+
+
+<row>
+<entry></entry>
+<entry>|</entry>
+
 <entry><code>stop</code></entry>
 
 <entry></entry>
@@ -1240,10 +1235,9 @@ The original Cor grammar rules are abbreviated by ellipses (...).
 <section><title>Communicating with external services</title>
 
 <para>
-We introduce the term <firstterm>site</firstterm> to denote an external service which
-Orc may call. Sites are called using the same syntax as a function call, but with a 
-slightly different meaning. Sites are introduced and bound to variables by a special 
-declaration.  
+An Orc expression may be a site call. Sites are called using the same syntax as a 
+function call, but with a slightly different meaning. Sites are introduced and bound 
+to variables by a special declaration.  
 </para>
 
 <section><title>Calling a site</title>
@@ -1262,8 +1256,45 @@ Google("computation orchestration")
 Once the Google search service determines the top result, it sends a response. The site 
 call then publishes that response. Note that the service might never respond: Google's 
 servers might be down, the network might be down, or the search might yield no result URL. 
-If the service fails to respond, the site call remains silent.
+If the service fails to respond, the site call remains pending. 
 </para>
+
+<!-- FIXME we need to fix this terminology. -->
+
+
+<para>
+A call to a site has exactly one of the following effects: 
+
+<orderedlist>
+<listitem>The site returns a value, called its <firstterm>response</firstterm></listitem>
+<listitem>The site communicates that it will never respond to the call; we say that the call has <firstterm>halted</firstterm></listitem>
+<listitem>The site neither returns a value nor indicates that the call has halted; we say that the call is <firstterm>pending</firstterm>.</listitem>
+</orderedlist>
+
+In the last two cases, the site call is said to be silent. However, unlike silent expressions in Cor, 
+a silent expression in Orc might perform some meaningful computation or communication; silence does 
+not necessarily indicate an error.
+</para>
+
+
+<!-- 
+<para>
+A site call <emphasis>halts</emphasis> when it is certain that the call will never return
+a result. A site call which has halted remains silent forever; it never publishes a response.
+This may happen for a variety of reasons. A site may be specifically designed to never 
+respond under certain circumstances; for example, <code>if(false)</code> always halts. 
+A site may depend on some connection that has failed in a detectable way; for example, 
+the call <code>Google("five tons of flax")</code> halts if it is executed on a computer
+which has no internet connection. A site may require some resource which is unavailable;
+for example, a site call that accesses a website may halt if the website is inaccessible. 
+Or the execution of the call may reach some failed or exceptional state; for example,
+when calling a Java method from Orc, if an exception is thrown, the call halts. 
+Generally speaking, any underlying exception or error which can be detected and which
+prevents the site call from ever yielding a result will cause it to halt. A halted site
+call can only be distinguished from a blocked site call by the otherwise combinator.
+</para>
+
+ -->
 
 
 <para>
@@ -1355,9 +1386,9 @@ site Buffer = orc.lib.state.Buffer
 <section><title>The concurrency combinators of Orc</title>
 
 <para>
-Orc has three <firstterm>combinators</firstterm>: parallel, sequential, and asymmetric.  A combinator 
-forms an expression from two component expressions. Each combinator captures a different aspect of 
-concurrency.
+Orc has four <firstterm>combinators</firstterm>: parallel, sequential, asymmetric, and otherwise. 
+A combinator forms an expression from two component expressions. Each combinator captures a 
+different aspect of concurrency.
 </para>
 
 <section><title>The parallel combinator</title>
@@ -1366,7 +1397,7 @@ concurrency.
 Orc's simplest combinator is <code>|</code>, the parallel combinator. Orc executes
 the expression F <code>|</code> G, where F and G are Orc expressions, by executing 
 F and G concurrently. Whenever F or G communicates with a service or publishes a value, 
-the whole execution does so as well.
+F <code>|</code> G does so as well. 
 </para>   
 
 
@@ -1404,7 +1435,7 @@ It is also commutative: F <code>|</code> G is equivalent to G <code>|</code> F.
 <para>
 <programlisting language="orc-demo"><![CDATA[
 -- Publish 1, 2, and 3 in parallel  
-1+1 | 1 | 1+2
+1+0 | 1+1 | 1+2
 ]]></programlisting>
 </para>  
 
@@ -1454,10 +1485,10 @@ by the whole expression; they are consumed by the variable binding.
 
 <para>
 <programlisting><![CDATA[
--- Prepend the string "Result: " to each published search result
+-- Prepend the site name to each published search result
 -- The cat site concatenates any number of arguments into one string  
-  Google("cupcake") >s> cat("Result: ", s)
-| Yahoo("cupcake") >s> cat("Result: ", s)
+  Google("cupcake") >s> cat("Google: ", s)
+| Yahoo("cupcake") >s> cat("Yahoo: ", s)
 ]]></programlisting>
 </para>  
 
@@ -1482,8 +1513,8 @@ Otherwise, the published value is simply ignored, and no new copy of G is execut
 <para>
 <programlisting language="orc-demo"><![CDATA[
 -- Filter out values of the form (_,false)
--- Publishes 4 and 6  
 ( (4,true) | (5,false) | (6,true) )  >(x,true)> x
+-- Publishes 4 and 6 
 ]]></programlisting>
 </para>
  
@@ -1623,6 +1654,52 @@ F<code><![CDATA[ <x< (]]></code>G <code>|</code> H<code>)</code>.
 </section>
 
 
+<section><title>The otherwise combinator</title>
+
+<para>
+Orc has a fourth concurrency combinator: the <firstterm>otherwise</firstterm> combinator,
+written F<code> ; </code>G. The execution of F<code> ; </code> G proceeds as follows.
+First, F is executed. If F <firstterm>completes</firstterm>, and has not published any values, 
+then G executes. If F did publish one or more values, then G is ignored. The publications of 
+F <code>;</code> G are those of F if F publishes, or those of G otherwise.
+</para>
+
+<para>
+We determine when an expression completes using the following rules.
+
+<itemizedlist>
+<listitem>A Cor expression completes when it is fully evaluated; if it is silent, it completes immediately.</listitem>
+<listitem>A site call completes when it has published a value or halted.</listitem>
+<listitem>F <code>|</code> G completes when its subexpressions F and G have both completed.</listitem>
+<listitem>F<code><![CDATA[ >x> ]]></code>G completes when F has completed and all instantiated copies of G have completed.</listitem>
+<listitem>F<code><![CDATA[ <x< ]]></code>G completes when F has completed, and G has either completed or
+published a value. Also, if G completes without publishing a value, then all expressions in F which
+use <code>x</code> also complete, since they will never be able to proceed.</listitem>
+<listitem>F <code>;</code> G completes either when F has published a value and subsequently completed,
+or when F and G have both completed.</listitem>
+<listitem><code>stop</code> completes immediately.</listitem>
+</itemizedlist>
+
+</para>
+
+<para>
+The otherwise combinator is fully associative, so F <code>;</code> G <code>;</code> H and
+(F <code>;</code> G) <code>;</code> H and F <code>;</code> (G <code>;</code> H) are
+all equivalent. It has lower precedence than the other three combinators. 
+</para>
+
+<para>
+The otherwise combinator was not present in the original formulation of the Orc concurrency 
+calculus; it has been added to support computation and iteration over strictly finite data. 
+Sequential programs conflate the concept of producing a value with the concept of completion. 
+Orc separates these two concepts; variable binding combinators like <code><![CDATA[ >x> ]]></code> 
+and <code><![CDATA[ <x< ]]></code> handle values, whereas <code>;</code> detects the completion 
+of an execution.
+</para>
+
+</section>
+
+
 
 </section>
 
@@ -1635,19 +1712,16 @@ Some Cor expressions have new behaviors in the context of Orc, due to the introd
 of concurrency and of sites.
 </para>
 
-<section><title><code>val</code></title>
+<section><title>Arithmetic and Conditional</title>
 
 <para>
-The declaration <code>val x = </code>G, followed by expression F, is 
-actually just a different way of writing the expression F<code><![CDATA[ <x< ]]></code>G.
-Thus, <code>val</code> shares all of the behavior of the asymmetric combinator,
-which we have already described. (This is also true when a pattern is used instead
-of variable name <code>x</code>).
+The arithmetic, logical, and comparison operators are actually calls to sites, simply
+written in infix style with the expected operator symbols. For example, <code>2+3</code>
+is actually <code>(+)(2,3)</code>, where <code>(+)</code> is a primitive site provided
+by the language itself. All of the operators can be used directly as sites in this way;
+the name of the site is the operator enclosed by parentheses, e.g. <code>(**)</code>,
+<code>(>=)</code>, etc. Negation (unary minus) is named <code>(0-)</code>.
 </para>
-
-</section>
-
-<section><title><code>if</code></title>
 
 <para>
 The conditional expression <code>if</code> E <code>then</code> F <code>else</code> G
@@ -1662,25 +1736,35 @@ to <code>(<![CDATA[ if(b) >> ]]></code>F<code><![CDATA[ | if(~b) >> ]]></code>G<
 </para>
 
 <para>
- When the <code>else</code> branch of a conditional is unneeded, we can use the <code>if</code> 
- site and the sequential combinator to write the simpler expression <code>if(</code>E<code>) >> </code>F.
+ When the <code>else</code> branch of a conditional is unneeded, we can write <code>if</code> F <code>then</code> G,
+ with no <code>else</code> branch. This is equivalent to <code>if(</code>E<code>) >> </code>F.
+</para>
+
+</section>
+
+<section><title><code>val</code></title>
+
+<para>
+The declaration <code>val x = </code>G, followed by expression F, is 
+actually just a different way of writing the expression F<code><![CDATA[ <x< ]]></code>G.
+Thus, <code>val</code> shares all of the behavior of the asymmetric combinator,
+which we have already described. (This is also true when a pattern is used instead
+of variable name <code>x</code>).
 </para>
 
 </section>
 
 
-<section><title>Treating Orc expressions functionally</title>
+<section><title>Nesting Orc expressions</title>
 
 <para>
-We let Orc expressions with concurrency combinators occur as subexpressions of Cor expressions,
-for example as operands to arithmetic operations, or as arguments to function calls. The
-execution of an Orc expression may publish many values and perform many site calls. What does
-such an expression mean in a purely functional context, where only one value is expected? For 
-example, what does <code>2 + (3 | 4)</code> publish? 
+The execution of an Orc expression may publish many values. What does such an expression 
+mean in a context where only one value is expected? For example, what does <code>2 + (3 | 4)</code> 
+publish? 
 </para>
 
 <para>
-The specific syntactic contexts we are interested in are as follows (E is any Orc expression):
+The specific contexts in which we are interested are as follows (where E is any Orc expression):
 
 <informaltable id="value-context-table" frame="none" rowsep="0" colsep="0"> 
 <?dbhtml table-width="40%" ?>
@@ -1722,9 +1806,8 @@ The specific syntactic contexts we are interested in are as follows (E is any Or
 </para>
 
 <para>
-These are the contexts where only one value is expected from E. Whenever an Orc expression
-appears in such a context, it executes until it publishes its first value, and then it is 
-terminated. The published value is used in the context as if it were the result of evaluating
+Whenever an Orc expression appears in such a context, it executes until it publishes its first value, 
+and then it is terminated. The published value is used in the context as if it were the result of evaluating
 the expression.
 </para>
 
@@ -1743,9 +1826,9 @@ the expression.
 </para>
 
 <para>
-To be precise, whenever an Orc expression appears in a Cor context, it is treated as if it was 
+To be precise, whenever an Orc expression appears in such a context, it is treated as if it was 
 on the right side of an asymmetric combinator, using a fresh variable name to fill in the hole. 
-Thus, C[E] (where E is an Orc expression and C is a Cor context) is equivalent to the expression 
+Thus, C[E] (where E is the Orc expression and C is the context) is equivalent to the expression 
 C[<code>x</code>] <code><![CDATA[ <x< ]]></code> E. 
 </para>
 
@@ -1783,9 +1866,8 @@ In the context of Orc, function calls are not strict. When a function call execu
 it begins to execute the function body immediately, and also executes the argument
 expressions in parallel. When an argument expression publishes a value, it is terminated,
 and the corresponding formal parameter is bound to that value in the execution of
-the function body. Whenever an execution in the function body uses a formal parameter
-that has not been bound yet, that execution suspends until that parameter is bound
-to a value.
+the function body. Any part of the function body which uses a formal parameter
+that has not yet been bound suspends until that parameter is bound to a value.
 </para>
 
 </section>
@@ -1807,9 +1889,8 @@ wait for some amount of time, using the special site <code>Rtimer</code>.
 
 <para>
 The site <code>Rtimer</code> is a relative timer. It takes as an argument
-an amount of time to wait. It waits for exactly that amount of time,
-and then responds with a signal. By default, this argument is in
-milliseconds.
+a number of milliseconds to wait. It waits for exactly that amount of time,
+and then responds with a signal.
 </para>
 
 <para>
@@ -1821,12 +1902,12 @@ println("red") >> Rtimer(3000) >> println("green") >> stop
 
 <para>
 The following example defines a metronome, which publishes a signal once 
-per second, indefinitely.
+every <code>t</code> milliseconds, indefinitely.
 </para>
 
 <para>
 <programlisting><![CDATA[
-def metronome() = signal | Rtimer(1000) >> metronome()
+def metronome(t) = signal | Rtimer(t) >> metronome(t)
 ]]></programlisting>
 </para>
 
@@ -1864,7 +1945,7 @@ We present many more examples of programming techniques using real time in <link
 In this section we introduce some advanced features of Orc. These include curried
 function definitions and curried calls, writing an arbitrary expression as the
 target of a call, a special syntax for writing calls in an object-oriented style, 
-extensions to pattern matching, new forms of declarations, and a new concurrency combinator.
+extensions to pattern matching, and new forms of declarations.
 </para>
 
 <para>
@@ -1905,17 +1986,6 @@ The item G+ means "one or more instances of G concatenated together".
 
 <entry></entry>
 <entry><emphasis>generalized call</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry>E <code>;</code> E</entry>
-
-<entry></entry>
-<entry><emphasis>otherwise combinator</emphasis></entry>
 </row>
 
 <row>
@@ -2042,14 +2112,14 @@ object using the dot operator; for example, <code>obj.m()</code> calls the metho
 
 <para>
 There is a special kind of site call in Orc which serves a similar purpose. One may write
-<code>x.msg</code>, for any identifiers <code>x</code> and <code>msg</code>. This attempts
-to treat the value bound to <code>x</code> as a site, and call it with a special 
-<firstterm>message</firstterm> value. 
+<code>x.msg</code>, for any identifiers <code>x</code> and <code>msg</code>. This treats
+ the value bound to <code>x</code> as a site, and calls it with a special 
+<firstterm>message</firstterm> value <code>msg</code>. 
 If the site understands the message <code>msg</code> (for example, if <code>x</code> is 
 bound to a Java object with a field called <code>msg</code>), the site interprets the message 
 and responds with some appropriate value. If the site does not 
 understand the message sent to it, it does not respond, and no publication occurs. 
-If the value cannot be interpreted as a site, no call is made. 
+If <code>x</code> cannot be interpreted as a site, no call is made. 
 </para>
 
 <para>
@@ -2085,12 +2155,12 @@ define a curried addition function on two arguments, and later apply that functi
 arguments 3 and 4. We could write such a program in the following way:
 
 <programlisting language="orc-demo"><![CDATA[
-def Add(a) = ( lambda(b) = a+b )  
-val f = Add(3)
+def Sum(a) = ( lambda(b) = a+b )  
+val f = Sum(3)
 f(4)
 ]]></programlisting>
 
-This defines a function <code>add</code> which, given an argument <code>a</code>, creates a function
+This defines a function <code>Sum</code> which, given an argument <code>a</code>, creates a function
 which will take an argument <code>b</code> and add <code>a</code> to <code>b</code>. It then creates the
 function which adds <code>3</code> to its argument, binds that to <code>f</code>, and then invokes
 <code>f</code> on <code>4</code> to yield <code>3+4</code>.
@@ -2101,23 +2171,36 @@ function which adds <code>3</code> to its argument, binds that to <code>f</code>
 When defining a curried function, we have abstracted it in two steps, and when
 applying it we have written two separate calls. However, this is verbose and
 not very clear. Orc has a special syntax for curried function definitions and curried 
-applications that will simplify both of these steps. Here is the previous
-program, written in this simplified syntax:
+applications that will simplify both of these steps. Function definitions may have multiple 
+argument sequences; they are enclosed in parentheses and concatenated. Curried function calls 
+chain together multiple applications in a similar way. Here is the previous program, written 
+in this simplified syntax:
 
 <programlisting language="orc-demo"><![CDATA[
-def Add(a)(b) = a+b
-Add(3)(4)
+def Sum(a)(b) = a+b
+Sum(3)(4)
 ]]></programlisting>
 
-Function definitions may have multiple argument sequences; they are enclosed in parentheses
-and concatenated. Curried function calls chain together multiple applications in
-a similar way.
+Naturally, this syntax is backwards compatible; e.g. both of the following programs are also
+equivalent:  
+
+<programlisting language="orc-demo"><![CDATA[
+def Sum(a) = ( lambda(b) = a+b )  
+Sum(3)(4)
+]]></programlisting>
+
+<programlisting language="orc-demo"><![CDATA[
+def Sum(a)(b) = a+b  
+val f = Sum(3)
+f(4)
+]]></programlisting>
+
 </para>
 
 </section>
 
 <!-- 
-FIXME: Can't find a compelling example for the use of this feature, so this section is commented for now.
+Can't find a compelling example for the use of this feature, so this section is commented for now.
 However, it is still evident from the grammar that this capability exists.
  -->
 <!-- 
@@ -2173,6 +2256,8 @@ This publishes only <code>2</code>. Even though the pattern <code>x</code> match
 the overall pattern <code>(1,!x,y)</code> does not match the value <code>(4,5,6)</code>, so <code>5</code> 
 is not published.
 </para>
+
+<!-- explain the translation of publish patterns? -->
 
 </section>
 
@@ -2268,7 +2353,7 @@ the given arguments to the constructor.
 
 <para>
 This instance of String is a Java object; its methods are called and its fields
-are accessed using the <code>.</code> notation, just as one would expect in Java.
+are accessed using the dot (<code>.</code>) notation, just as one would expect in Java.
 </para>
 </section>
 
@@ -2316,69 +2401,6 @@ declarations occur twice.
 
 </section>
 
-<section><title>The otherwise combinator</title>
-
-<para>
-Orc has a fourth concurrency combinator: the <firstterm>otherwise</firstterm> combinator,
-written F<code> ; </code>G. The execution of F<code> ; </code> G executes F, calling
-sites and publishing values as usual. If F <firstterm>completes</firstterm>, and has not
-published any values by the time it completes, then G executes. If F did publish one or more 
-values, then G is ignored.
-</para>
-
-<para>
-We determine when an expression completes using the following rules.
-
-<itemizedlist>
-<listitem>A Cor expression completes when it is fully evaluated; if it is silent, it completes immediately.</listitem>
-<listitem>A site call completes when it has published a value.</listitem>
-<listitem>A site call completes silently if it is blocked on a variable, and the expression
-which would bind that variable has already completed.</listitem>
-<listitem>A site call completes silently if it halts.</listitem>
-<listitem>F <code>|</code> G completes when its subexpressions F and G have both completed.</listitem>
-<listitem>F<code><![CDATA[ >x> ]]></code>G completes when F has completed and all copies of G have completed.</listitem>
-<listitem>F<code><![CDATA[ <x< ]]></code>G completes when F has completed, and G has either completed or
-has been terminated after publishing a value.</listitem>
-<listitem>F <code>;</code> G completes either when F has published a value and subsequently completed,
-or when F and G have both completed.</listitem>
-<listitem><code>stop</code> completes immediately.</listitem>
-</itemizedlist>
-
-</para>
-
-<para>
-A site call <emphasis>halts</emphasis> when it is certain that the call will never return
-a result. A site call which has halted remains silent forever; it never publishes a response.
-This may happen for a variety of reasons. A site may be specifically designed to never 
-respond under certain circumstances; for example, <code>if(false)</code> always halts. 
-A site may depend on some connection that has failed in a detectable way; for example, 
-the call <code>Google("five tons of flax")</code> halts if it is executed on a computer
-which has no internet connection. A site may require some resource which is unavailable;
-for example, a site call that accesses a website may halt if the website is inaccessible. 
-Or the execution of the call may reach some failed or exceptional state; for example,
-when calling a Java method from Orc, if an exception is thrown, the call halts. 
-Generally speaking, any underlying exception or error which can be detected and which
-prevents the site call from ever yielding a result will cause it to halt. A halted site
-call can only be distinguished from a blocked site call by the otherwise combinator.
-</para>
-
-<para>
-The otherwise combinator is fully associative, so F <code>;</code> G <code>;</code> H,
-(F <code>;</code> G) <code>;</code> H, and F <code>;</code> (G <code>;</code> H) are
-all equivalent. It has lower precedence than the other three combinators. 
-</para>
-
-<para>
-The otherwise combinator was not present in the original formulation of the Orc concurrency 
-calculus; it has been added to support computation and iteration over strictly finite data. 
-Sequential programs conflate the concept of producing a value with the concept of completion. 
-Orc separates these two concepts; variable binding combinators like <code><![CDATA[ >x> ]]></code> 
-and <code><![CDATA[ <x< ]]></code> handle values, whereas <code>;</code> detects the completion 
-of an execution.
-</para>
-
-</section>
-
 
 </section>
 
@@ -2397,8 +2419,8 @@ Discuss Cor as syntactic sugar for a simpler Orc calculus.
 
 <para>
 In <link linkend="chapter.language">Chapter 1</link>, we described the syntax and semantics of the Orc language. 
-Now, we turn our attention to how the language is used in practice, with guidelines on style, programming tricks,
-and a number of common concurrency patterns.
+Now, we turn our attention to how the language is used in practice, with guidelines on style and programming 
+methodology, including a number of common concurrency patterns.
 </para>
 
 <section><title>Syntactic and Stylistic Conventions</title>
@@ -2406,7 +2428,7 @@ and a number of common concurrency patterns.
 <para>
 In this section we suggest some syntactic conventions for writing Orc programs. None of these 
 conventions are required by the parser; newlines are used only to disambiguate certain corner
-cases in parsing, and other whitespace is ignored. However, following programming conventions 
+cases in parsing, and other whitespace is ignored. However, following programming convention 
 helps to improve the readability of programs, so that the programmer's intent is more readily apparent.
 </para>
 
@@ -2436,8 +2458,8 @@ Note that we do not need parentheses here, since <code>|</code> is fully associa
 
 <para>
 When the combined expressions are large enough to take up a full line, write one expression
-per line, with the subsequent expressions preceded by <code>|</code>. Indent the first
-expression to improve readability.
+per line, with each subsequent expression aligned with the first and preceded by <code>|</code>. 
+Indent the first expression to improve readability.
 
 <programlisting>
   <emphasis role="bold">long expression</emphasis> 
@@ -2465,12 +2487,19 @@ combined parallel expressions together.
 
 <section><title>Sequential combinator</title>
 
+<para>
 When the combined expressions are small, write a cascade of sequential combinators
 all on the same line.
+</para> 
 
 <programlisting>
 <emphasis role="bold">F</emphasis> <![CDATA[>x>]]> <emphasis role="bold">G</emphasis> <![CDATA[>y>]]> <emphasis role="bold">H</emphasis>
 </programlisting>
+
+<para>
+Remember that sequential is right associative; in this example, <code>x</code> is bound in both G and H, and <code>y</code> is
+bound in H.
+</para>
 
 <para>
 When the combined expressions are large enough to take up a full line, write one expression
@@ -2612,6 +2641,23 @@ def f(x,y) =
 
 </para>
 
+<para>
+Apply this style recursively; if a def appears within a def, indent its contents even further.
+
+<programlisting>
+def f(x,y) =
+    <emphasis role="bold">declaration</emphasis>
+    def helper(z) =
+    	<emphasis role="bold">declaration in helper</emphasis>
+    	<emphasis role="bold">declaration in helper</emphasis>
+    	<emphasis role="bold">body of helper</emphasis>
+    <emphasis role="bold">declaration</emphasis>
+    <emphasis role="bold">body expression</emphasis>
+</programlisting>
+
+
+</para>
+
 </section>
 
 </section>
@@ -2654,9 +2700,9 @@ translations. In fact, the fork-join we wrote above could be expressed even more
 
 <para>
 In Orc programs, we often use fork-join and recursion together to dispatch many tasks in parallel and wait
-for all of them to complete. Suppose we want to initialize a list of machines; for each machine <code>m</code>,
-calling <code>m.init()</code> initializes <code>m</code> and then publishes a signal when initialization
-is complete. The function <code>initAll</code> does exactly that:
+for all of them to complete. Suppose that given a machine <code>m</code>, calling <code>m.init()</code> 
+initializes <code>m</code> and then publishes a signal when initialization is complete. The function 
+<code>initAll</code> initializes a list of machines.
 </para>
 
 <programlisting><![CDATA[
@@ -2672,7 +2718,7 @@ the function returns a signal only when every machine in the list has completed 
 
 <para>
 Note that if some machine fails to initialize, and does not return a signal, then the initialization procedure
-will never complete. We will see later how to better manage such failures, using a timeout or a quorum.
+will never complete. 
 </para> 
 
 </section>
@@ -2683,18 +2729,18 @@ will never complete. We will see later how to better manage such failures, using
 We can also use a recursive fork-join to obtain a value, rather than just signaling completion. Suppose we
 have a list of bidders in a sealed-bid, single-round auction. Calling <code>b.ask()</code> requests a bid
 from the bidder <code>b</code>. We want to ask for one bid from each bidder, and then return the highest
-bid. The function <code>auction</code> performs such an auction (<code>Max</code> finds the maxiumum of
-its arguments):
+bid. The function <code>auction</code> performs such an auction for a list of bidders (<code>max</code> 
+finds the maxiumum of its arguments):
 </para>
 
 <programlisting><![CDATA[
 def auction([]) = 0
-def auction(b:bs) = Max(b.ask(), auction(bs))
+def auction(b:bs) = max(b.ask(), auction(bs))
 ]]></programlisting>
 
 </section>
 
-<section><title>Barrier synchronization</title>
+<section><title>Example: Barrier synchronization</title>
 
 <para>
 Suppose we have an expression of the following form, where F and G are expressions and M and N are sites:
@@ -2714,7 +2760,7 @@ of a fork-join:
 ( M() , N() ) <![CDATA[>(x,y)>]]> ( <emphasis role="bold">F</emphasis> | <emphasis role="bold">G</emphasis> )
 </programlisting>
 
-We assume, naturally, that x does not occur free in G, nor y in F.
+We assume that x does not occur free in G, nor y in F.
 
 </para>
 
@@ -2728,8 +2774,8 @@ We assume, naturally, that x does not occur free in G, nor y in F.
 <para>
 Next we consider a classic example of parallel programming which builds up from fork-join: a parallel-or program. Given two
 expressions F and G which may publish boolean values (or might stay silent forever), we want to find the disjunction of their
-results as soon as possible. In particular, we know that if one of the expressions publishes <code>true</code>, then
-the disjunction must be <code>true</code>; it is not necessary to wait for the other expression to publish a value.
+results as soon as possible. If one of the expressions publishes <code>true</code>, then the disjunction is <code>true</code>; 
+hence, it is not necessary to wait for the other expression to publish a value.
 </para>
 
 <para>
@@ -2748,26 +2794,32 @@ r
 
 <para>
 Recall that the <code>||</code> operator is strict; if one of <code>a</code> or <code>b</code> is not bound, it cannot
-compute a result. So, we introduce two extra branches of the form <code>if(as) <![CDATA[>>]]> true</code>, which wait
-in parallel for each variable to become <code>true</code> and then publish the result <code>true</code>. That way, the
-parallel-or can evaluate to <code>true</code> based on only one of the results, even if the other result is not forthcoming.
+compute a result. So, we have added <code>if(a) <![CDATA[>>]]> true</code> and <code>if(b) <![CDATA[>>]]> true</code>, 
+which wait in parallel for either variable to become <code>true</code> and then publish the result <code>true</code>. 
+That way, the parallel-or can evaluate to <code>true</code> based on only one of the results, even if the other result 
+is not forthcoming.
+</para>
+
+<para>
+Also note that the entire computation is within <code>val r =</code>, to prevent <code>true</code> from being published
+multiple times.
 </para>
 
 </section>
 
 
-<section><title>Finite Sequential</title>
+<section><title>Finite Sequential Composition</title>
 
 <para>
-The sequential combinator is very useful for infinite iterations: for each value published by <emphasis role="bold">F</emphasis>,
-do <emphasis role="bold">G</emphasis>, forever. However, suppose that we know that <emphasis role="bold">F</emphasis> will publish
-only a finite number of values, and then stop; for example, <emphasis role="bold">F</emphasis> publishes the contents of a text file,
-one line at a time. We would like to print out each line, and after all of the lines have been printed, start executing a new
+F <code><![CDATA[>x>]]></code> G instantiates a copy of G for each published value of F. Suppose we know 
+that <emphasis role="bold">F</emphasis> will publish only a finite number of values, and then complete; for 
+example, <emphasis role="bold">F</emphasis> publishes the contents of a text file, one line at a time, and
+G prints each line to the console. After all of the lines have been printed, we want to start executing a new
 expression <emphasis role="bold">H</emphasis>.
 </para>
 
 <para>
-Sequential alone is not sufficient, because we have no way to detect when all of the lines have been published. Fork-join is
+Sequential composition alone is not sufficient, because we have no way to detect when all of the lines have been published. Fork-join is
 also not suitable, since the values to be printed are not stored in some traversable data structure like a list; instead, they
 are streaming as publications out of an expression. Instead, we use the <code>;</code> combinator, which waits for all of the
 lines to be printed, then the left side completes and the right side can run. Note that we must suppress the publications on
@@ -2781,27 +2833,11 @@ the left side using <code>stop</code>; if the left side published, the right sid
 </section>
 
 
-<section><title>Arbitration</title>
-
-<para>
-Another important concurrent idiom is <emphasis>arbitration</emphasis>: choosing between two tasks based on the output
-of another task. This is simple to accomplish in Orc using conditionals. This program executes an expression P, which
-produces a boolean value, and then uses that value to choose whether to subsequently run F or G.
-</para>
-
-<programlisting>
-val b = <emphasis role="bold">P</emphasis>
-if b then <emphasis role="bold">F</emphasis> else <emphasis role="bold">G</emphasis> 
-</programlisting>
-
-</section>
-
-
 <section><title>Timeout</title>
 
 <para>
 One of the most powerful idioms available in Orc is a <firstterm>timeout</firstterm>: execute an expression for at
-most a specified amount of time. We accomplish this using <code>val</code> and a timer. The following programs runs
+most a specified amount of time. We accomplish this using <code>val</code> and a timer. The following program runs
 F for at most one second to get a value from it. If it does not publish within one second, the value defaults to 0.
 </para>
 
@@ -2809,10 +2845,11 @@ F for at most one second to get a value from it. If it does not publish within o
 let( <emphasis role="bold">F</emphasis> | Rtimer(1000) <![CDATA[>>]]> 0 )
 </programlisting>
 
+
 <section><title>Auction with timeout</title>
 
 <para>
-In the <link linkend="example.auction">auction example</link> shown earlier, the auction may never complete if 
+In the <link linkend="example.auction">auction example</link> in Section 2.2.1.2, the auction may never complete if 
 one of the bidders does not respond. We can add a timeout so that a bidder has at most 8 seconds to provide a bid:
 </para>
 
@@ -2829,12 +2866,13 @@ Now, the auction is guaranteed to complete in at most 8 seconds.
 
 </section>
 
+
 <section><title>Detecting timeout</title>
 
 <para>
 Sometimes, rather than just yielding a default value, we would like to determine
 whether an expression has timed out, and if so, perform some other computation.
-To detect the timeout, we pair the expression with <code>true</code> and the timer
+To detect the timeout, we pair the original expression with <code>true</code> and the timer
 with <code>false</code>, so if the expression does time out, then we can detect
 it using the truth value. We then test the truth value, performing the usual
 computation if no timeout occurred, or some error-correcting computation if 
@@ -2932,6 +2970,9 @@ def PriorityPoll(b:bs) = b.getnb() ; PriorityPoll(bs)
 
 </section>
 
+<!-- 
+
+( more idiomatic to use x.getAll() )
 
 <section><title>Buffer Transfer</title>
 
@@ -2952,8 +2993,8 @@ allowing the right side of the <code>;</code> to run, publishing a signal
 to indicate that the transfer is finished.
 </para>
 
-
 </section>
+ -->
 
 
 <section><title>Parallel Matching</title>
@@ -3000,6 +3041,8 @@ creating a helper function just to handle the pattern match.
 
 
 <section><title>Dining Philosophers</title>
+
+<!--  FIXME (needs documentation) -->
 
 <programlisting language="orc-demo"><![CDATA[
 def shuffle(a,b) = if (random(2) = 1) then (a,b) else (b,a)
