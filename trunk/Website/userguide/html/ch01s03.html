@@ -94,7 +94,7 @@ as an argument, or published by an execution, just like any other value.
 <span class="hl-variable">Search</span>(<span class="hl-literal">"first class value"</span>)
 </pre>
 </p><p>
-A site is sometimes called purely for its effect on the external world; its return
+A site is sometimes called only for its effect on the external world; its return
 value is irrelevant. Many sites which do not need to return a meaningful value will
 instead return a <em class="firstterm">signal</em>: a special value which carries no 
 information (analogous to the unit value <code class="code">()</code> in ML). The signal value
@@ -255,7 +255,7 @@ The asymmetric combinator, written F<code class="code"> <span class="hl-combinat
 a computation waiting for a result, or terminate a computation. The execution of 
 F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G starts by executing F and G in parallel. Whenever
 F publishes a value, that value is published by the entire execution. When G publishes
-its first value, that value is bound to x in F, and then the execuion of G is immediately 
+its first value, that value is bound to x in F, and then the execution of G is immediately 
 <em class="firstterm">terminated</em>. A terminated expression cannot call any sites or 
 publish any values.
 </p><p>
@@ -318,7 +318,7 @@ of concurrency and of sites.
                         <code class="code"><span class="hl-keyword">val</span></code>
                     </h4></div></div></div><p>
 The declaration <code class="code"><span class="hl-keyword">val</span> <span class="hl-variable">x</span> = </code>G, followed by expression F, is 
-actually just a prefix form of the asymmetric combinator F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G.
+actually just a different way of writing the expression F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G.
 Thus, <code class="code"><span class="hl-keyword">val</span></code> shares all of the behavior of the asymmetric combinator,
 which we have already described. (This is also true when a pattern is used instead
 of variable name <code class="code"><span class="hl-variable">x</span></code>).
