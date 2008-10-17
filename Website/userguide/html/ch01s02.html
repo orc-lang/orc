@@ -311,13 +311,13 @@ This evaluates to <code class="code"><span class="hl-literal">3</span></code> ev
 needed.
 
 </p><p>
-A definition or a call may have zero arguments, in which case we write <code class="code">()</code> for the arguments.
+A function definition or call may have zero arguments, in which case we write <code class="code">()</code> for the arguments.
 
 <pre class="programlisting">
 <span class="hl-keyword">def</span> <span class="hl-variable">Zero</span>() = <span class="hl-literal">0</span>
 </pre>
 </p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10535"></a>1.2.7.1.&nbsp;Recursion</h4></div></div></div><p>
-Definitions can be recursive; that is, the name of a definition may be used in its own body.
+Functions can be recursive; that is, the name of a function may be used in its own body.
 
 <pre class="programlisting">
 <span class="hl-keyword">def</span> <span class="hl-variable">Sumto</span>(<span class="hl-variable">n</span>) = <span class="hl-keyword">if</span> <span class="hl-variable">n</span> &lt; <span class="hl-literal">1</span> <span class="hl-keyword">then</span> <span class="hl-literal">0</span> <span class="hl-keyword">else</span> <span class="hl-variable">n</span> + <span class="hl-variable">Sumto</span>(<span class="hl-variable">n</span>-<span class="hl-literal">1</span>)

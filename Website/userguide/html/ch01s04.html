@@ -89,7 +89,7 @@ function which adds <code class="code"><span class="hl-literal">3</span></code> 
 </p><p>
 When defining a curried function, we have abstracted it in two steps, and when
 applying it we have written two separate calls. However, this is verbose and
-not very clear. Orc has a special syntax for curried definitions and curried 
+not very clear. Orc has a special syntax for curried function definitions and curried 
 applications that will simplify both of these steps. Here is the previous
 program, written in this simplified syntax:
 
@@ -98,7 +98,7 @@ program, written in this simplified syntax:
 <span class="hl-variable">Add</span>(<span class="hl-literal">3</span>)(<span class="hl-literal">4</span>)
 </pre>
 
-Definitions may have multiple argument sequences; they are enclosed in parentheses
+Function definitions may have multiple argument sequences; they are enclosed in parentheses
 and concatenated. Curried function calls chain together multiple applications in
 a similar way.
 </p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10A96"></a>1.4.2.&nbsp;Extensions to pattern matching</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10A99"></a>1.4.2.1.&nbsp;Publish pattern</h4></div></div></div><p>
@@ -193,24 +193,24 @@ values, then G is ignored.
 We determine when an expression completes using the following rules.
 
 <div class="itemizedlist"><ul type="disc"><li>A Cor expression completes when it is fully evaluated; if it is silent, it completes immediately.</li><li>A site call completes when it has published a value.</li><li>A site call completes silently if it is blocked on a variable, and the expression
-which would bind that variable has already completed.</li><li>A site call completes silently if the call <em class="firstterm">fails</em>, as explained below.</li><li>F <code class="code"><span class="hl-combinator">|</span></code> G completes when its subexpressions F and G have both completed.</li><li>F<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> </code>G completes when F has completed and all copies of G have completed.</li><li>F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G completes when F has completed, and G has either completed or
+which would bind that variable has already completed.</li><li>A site call completes silently if it halts.</li><li>F <code class="code"><span class="hl-combinator">|</span></code> G completes when its subexpressions F and G have both completed.</li><li>F<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> </code>G completes when F has completed and all copies of G have completed.</li><li>F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G completes when F has completed, and G has either completed or
 has been terminated after publishing a value.</li><li>F <code class="code"><span class="hl-combinator">;</span></code> G completes either when F has published a value and subsequently completed,
 or when F and G have both completed.</li><li><code class="code"><span class="hl-keyword">stop</span></code> completes immediately.</li></ul></div>
 
 </p><p>
-A site call <span class="emphasis"><em>fails</em></span> when it is certain that the call will never return
-a result. This may happen for a variety of reasons. A site may be specifically designed to never 
-respond under certain circumstances; for example, <code class="code"><span class="hl-keyword">if</span>(<span class="hl-literal">false</span>)</code> will never respond,
-so that call fails. A site may depend on some connection that has failed in a detectable
-way; for example, <code class="code"><span class="hl-variable">Google</span>(<span class="hl-literal">"five tons of flax"</span>)</code> fails if we are executing on a computer
+A site call <span class="emphasis"><em>halts</em></span> when it is certain that the call will never return
+a result. A site call which has halted remains silent forever; it never publishes a response.
+This may happen for a variety of reasons. A site may be specifically designed to never 
+respond under certain circumstances; for example, <code class="code"><span class="hl-keyword">if</span>(<span class="hl-literal">false</span>)</code> always halts. 
+A site may depend on some connection that has failed in a detectable way; for example, 
+the call <code class="code"><span class="hl-variable">Google</span>(<span class="hl-literal">"five tons of flax"</span>)</code> halts if it is executed on a computer
 which has no internet connection. A site may require some resource which is unavailable;
-for example, a site call that accesses a website may fail if the website itself is down or has 
-moved. Or the evaluation of the call may reach some failed or exceptional state; for example,
-when calling a Java method from Orc, if an exception is thrown, the call is treated as a failure. 
-Generally speaking, any underlying exception or error which prevents the site call from ever 
-continuing will trigger a failure. The failure of a site in this way can only be detected by
-the otherwise combinator; other operations in the language cannot distinguish a failed call
-from a call that is simply blocking.
+for example, a site call that accesses a website may halt if the website is inaccessible. 
+Or the execution of the call may reach some failed or exceptional state; for example,
+when calling a Java method from Orc, if an exception is thrown, the call halts. 
+Generally speaking, any underlying exception or error which can be detected and which
+prevents the site call from ever yielding a result will cause it to halt. A halted site
+call can only be distinguished from a blocked site call by the otherwise combinator.
 </p><p>
 The otherwise combinator is fully associative, so F <code class="code"><span class="hl-combinator">;</span></code> G <code class="code"><span class="hl-combinator">;</span></code> H,
 (F <code class="code"><span class="hl-combinator">;</span></code> G) <code class="code"><span class="hl-combinator">;</span></code> H, and F <code class="code"><span class="hl-combinator">;</span></code> (G <code class="code"><span class="hl-combinator">;</span></code> H) are

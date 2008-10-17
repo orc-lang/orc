@@ -1,9 +1,9 @@
-<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>2.2.&nbsp;Programming Idioms</title><link href="style.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide"><link rel="up" href="ch02.html" title="Chapter&nbsp;2.&nbsp;Programming Methodology"><link rel="prev" href="ch02.html" title="Chapter&nbsp;2.&nbsp;Programming Methodology"><link rel="next" href="ch02s03.html" title="2.3.&nbsp;Larger Examples"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">2.2.&nbsp;Programming Idioms</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch02.html">Prev</a>&nbsp;</td><th align="center" width="60%">Chapter&nbsp;2.&nbsp;Programming Methodology</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ch02s03.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N10C85"></a>2.2.&nbsp;Programming Idioms</h2></div></div></div>
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>2.2.&nbsp;Programming Idioms</title><link href="style.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide"><link rel="up" href="ch02.html" title="Chapter&nbsp;2.&nbsp;Programming Methodology"><link rel="prev" href="ch02.html" title="Chapter&nbsp;2.&nbsp;Programming Methodology"><link rel="next" href="ch02s03.html" title="2.3.&nbsp;Larger Examples"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">2.2.&nbsp;Programming Idioms</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch02.html">Prev</a>&nbsp;</td><th align="center" width="60%">Chapter&nbsp;2.&nbsp;Programming Methodology</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ch02s03.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N10C82"></a>2.2.&nbsp;Programming Idioms</h2></div></div></div>
 
 In this section we look at some common idioms used in the design of Orc programs. Many of these idioms will
 be familiar to programmers using concurrency, and they are very simple to express in Orc.
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10C89"></a>2.2.1.&nbsp;Fork-join</h3></div></div></div>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10C86"></a>2.2.1.&nbsp;Fork-join</h3></div></div></div>
 
 One of the most common concurrent idioms is a <em class="firstterm">fork-join</em>: run two processes concurrently,
 and wait for a result from each one. This is very easy to express in Orc. Whenever we write a <code class="code"><span class="hl-keyword">val</span></code>
@@ -27,7 +27,7 @@ translations. In fact, the fork-join we wrote above could be expressed even more
 <pre class="programlisting">
 (<span class="bold"><strong>F</strong></span>,<span class="bold"><strong>G</strong></span>)
 </pre>
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10CB1"></a>2.2.1.1.&nbsp;Example: Machine initialization</h4></div></div></div><p>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10CAE"></a>2.2.1.1.&nbsp;Example: Machine initialization</h4></div></div></div><p>
 In Orc programs, we often use fork-join and recursion together to dispatch many tasks in parallel and wait
 for all of them to complete. Suppose we want to initialize a list of machines; for each machine <code class="code"><span class="hl-variable">m</span></code>,
 calling <code class="code"><span class="hl-variable">m</span>.<span class="hl-variable">init</span>()</code> initializes <code class="code"><span class="hl-variable">m</span></code> and then publishes a signal when initialization
@@ -42,7 +42,7 @@ the function returns a signal only when every machine in the list has completed 
 </p><p>
 Note that if some machine fails to initialize, and does not return a signal, then the initialization procedure
 will never complete. We will see later how to better manage such failures, using a timeout or a quorum.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10CCE"></a>2.2.1.2.&nbsp;Example: Simple parallel auction</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10CCB"></a>2.2.1.2.&nbsp;Example: Simple parallel auction</h4></div></div></div><p>
 We can also use a recursive fork-join to obtain a value, rather than just signaling completion. Suppose we
 have a list of bidders in a sealed-bid, single-round auction. Calling <code class="code"><span class="hl-variable">b</span>.<span class="hl-variable">ask</span>()</code> requests a bid
 from the bidder <code class="code"><span class="hl-variable">b</span></code>. We want to ask for one bid from each bidder, and then return the highest
@@ -51,7 +51,7 @@ its arguments):
 </p><pre class="programlisting">
 <span class="hl-keyword">def</span> <span class="hl-variable">auction</span>([]) = <span class="hl-literal">0</span>
 <span class="hl-keyword">def</span> <span class="hl-variable">auction</span>(<span class="hl-variable">b</span>:<span class="hl-variable">bs</span>) = <span class="hl-variable">Max</span>(<span class="hl-variable">b</span>.<span class="hl-variable">ask</span>(), <span class="hl-variable">auction</span>(<span class="hl-variable">bs</span>))
-</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10CE2"></a>2.2.1.3.&nbsp;Barrier synchronization</h4></div></div></div><p>
+</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10CDF"></a>2.2.1.3.&nbsp;Barrier synchronization</h4></div></div></div><p>
 Suppose we have an expression of the following form, where F and G are expressions and M and N are sites:
 
 <pre class="programlisting">
@@ -69,7 +69,7 @@ of a fork-join:
 
 We assume, naturally, that x does not occur free in G, nor y in F.
 
-</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10D02"></a>2.2.2.&nbsp;Parallel Or</h3></div></div></div><p>
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10CFF"></a>2.2.2.&nbsp;Parallel Or</h3></div></div></div><p>
 Next we consider a classic example of parallel programming which builds up from fork-join: a parallel-or program. Given two
 expressions F and G which may publish boolean values (or might stay silent forever), we want to find the disjunction of their
 results as soon as possible. In particular, we know that if one of the expressions publishes <code class="code"><span class="hl-literal">true</span></code>, then
@@ -91,20 +91,34 @@ Recall that the <code class="code"><span class="hl-site">||</span></code> operat
 compute a result. So, we introduce two extra branches of the form <code class="code"><span class="hl-keyword">if</span>(<span class="hl-keyword">as</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">true</span></code>, which wait
 in parallel for each variable to become <code class="code"><span class="hl-literal">true</span></code> and then publish the result <code class="code"><span class="hl-literal">true</span></code>. That way, the
 parallel-or can evaluate to <code class="code"><span class="hl-literal">true</span></code> based on only one of the results, even if the other result is not forthcoming.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10D31"></a>2.2.3.&nbsp;Arbitration</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10D2E"></a>2.2.3.&nbsp;Finite Sequential</h3></div></div></div><p>
+The sequential combinator is very useful for infinite iterations: for each value published by <span class="bold"><strong>F</strong></span>,
+do <span class="bold"><strong>G</strong></span>, forever. However, suppose that we know that <span class="bold"><strong>F</strong></span> will publish
+only a finite number of values, and then stop; for example, <span class="bold"><strong>F</strong></span> publishes the contents of a text file,
+one line at a time. We would like to print out each line, and after all of the lines have been printed, start executing a new
+expression <span class="bold"><strong>H</strong></span>.
+</p><p>
+Sequential alone is not sufficient, because we have no way to detect when all of the lines have been published. Fork-join is
+also not suitable, since the values to be printed are not stored in some traversable data structure like a list; instead, they
+are streaming as publications out of an expression. Instead, we use the <code class="code"><span class="hl-combinator">;</span></code> combinator, which waits for all of the
+lines to be printed, then the left side completes and the right side can run. Note that we must suppress the publications on
+the left side using <code class="code"><span class="hl-keyword">stop</span></code>; if the left side published, the right side would not run.
+</p><pre class="programlisting">
+<span class="bold"><strong>F</strong></span> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">println</span>(<span class="hl-variable">x</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span> <span class="hl-combinator">;</span> <span class="bold"><strong>H</strong></span>
+</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10D59"></a>2.2.4.&nbsp;Arbitration</h3></div></div></div><p>
 Another important concurrent idiom is <span class="emphasis"><em>arbitration</em></span>: choosing between two tasks based on the output
 of another task. This is simple to accomplish in Orc using conditionals. This program executes an expression P, which
 produces a boolean value, and then uses that value to choose whether to subsequently run F or G.
 </p><pre class="programlisting">
 <span class="hl-keyword">val</span> <span class="hl-variable">b</span> = <span class="bold"><strong>P</strong></span>
 <span class="hl-keyword">if</span> <span class="hl-variable">b</span> <span class="hl-keyword">then</span> <span class="bold"><strong>F</strong></span> <span class="hl-keyword">else</span> <span class="bold"><strong>G</strong></span> 
-</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10D47"></a>2.2.4.&nbsp;Timeout</h3></div></div></div><p>
+</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10D6F"></a>2.2.5.&nbsp;Timeout</h3></div></div></div><p>
 One of the most powerful idioms available in Orc is a <em class="firstterm">timeout</em>: execute an expression for at
 most a specified amount of time. We accomplish this using <code class="code"><span class="hl-keyword">val</span></code> and a timer. The following programs runs
 F for at most one second to get a value from it. If it does not publish within one second, the value defaults to 0.
 </p><pre class="programlisting">
 <span class="hl-variable">let</span>( <span class="bold"><strong>F</strong></span> <span class="hl-combinator">|</span> <span class="hl-variable">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">0</span> )
-</pre><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10D58"></a>2.2.4.1.&nbsp;Auction with timeout</h4></div></div></div><p>
+</pre><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10D80"></a>2.2.5.1.&nbsp;Auction with timeout</h4></div></div></div><p>
 In the <a class="link" href="ch02s02.html#example.auction">auction example</a> shown earlier, the auction may never complete if 
 one of the bidders does not respond. We can add a timeout so that a bidder has at most 8 seconds to provide a bid:
 </p><pre class="programlisting">
@@ -114,7 +128,7 @@ one of the bidders does not respond. We can add a timeout so that a bidder has a
   <span class="hl-variable">Max</span>(<span class="hl-variable">bid</span>, <span class="hl-variable">auction</span>(<span class="hl-variable">bs</span>))
 </pre><p>
 Now, the auction is guaranteed to complete in at most 8 seconds.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10D65"></a>2.2.4.2.&nbsp;Detecting timeout</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10D8D"></a>2.2.5.2.&nbsp;Detecting timeout</h4></div></div></div><p>
 Sometimes, rather than just yielding a default value, we would like to determine
 whether an expression has timed out, and if so, perform some other computation.
 To detect the timeout, we pair the expression with <code class="code"><span class="hl-literal">true</span></code> and the timer
@@ -131,7 +145,7 @@ limit, we execute G (the result of F is bound to r). Otherwise, we execute H.
 <span class="hl-keyword">if</span> <span class="hl-variable">b</span> <span class="hl-keyword">then</span> <span class="bold"><strong>G</strong></span> <span class="hl-keyword">else</span> <span class="bold"><strong>H</strong></span>
 </pre>
 
-</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10D81"></a>2.2.5.&nbsp;Priority</h3></div></div></div><p>
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10DA9"></a>2.2.6.&nbsp;Priority</h3></div></div></div><p>
 We can also use a timer to give a window of priority to one computation over another.
 In this example, we run expressions F and G concurrently. F has priority for the first
 second: if F publishes, its value is used immediately, but if G publishes, that publication 
@@ -145,7 +159,7 @@ first after that point is the winner.
 <span class="hl-variable">let</span>( <span class="hl-variable">y</span> <span class="hl-combinator">|</span> <span class="hl-variable">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">x</span> )
 </pre>
 
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10D91"></a>2.2.6.&nbsp;Repeat</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10DB9"></a>2.2.7.&nbsp;Repeat</h3></div></div></div><p>
 Recall the definition of <code class="code"><span class="hl-variable">metronome</span></code> from the previous chapter:
 
 <pre class="programlisting">
@@ -165,7 +179,7 @@ regular intervals.
   <span class="hl-variable">metronome</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">"tick"</span>
 <span class="hl-combinator">|</span> <span class="hl-variable">Rtimer</span>(<span class="hl-literal">500</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">metronome</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">"tock"</span>
 </pre>
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10DA6"></a>2.2.7.&nbsp;Priority Poll</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10DCE"></a>2.2.8.&nbsp;Priority Poll</h3></div></div></div><p>
 Suppose we have a list of buffers. We would like to poll these buffers periodically to see if they have
 any available data. Furthermore, this list of buffers is ordered by priority; the first buffer in the
 list has the highest priority, so it should be polled first, and if it has no data, then the next buffer
@@ -179,7 +193,7 @@ available item if there is one, or else remains silent and completes immediately
 </p><pre class="programlisting">
 <span class="hl-keyword">def</span> <span class="hl-variable">PriorityPoll</span>([]) = <span class="hl-keyword">stop</span>
 <span class="hl-keyword">def</span> <span class="hl-variable">PriorityPoll</span>(<span class="hl-variable">b</span>:<span class="hl-variable">bs</span>) = <span class="hl-variable">b</span>.<span class="hl-variable">getnb</span>() <span class="hl-combinator">;</span> <span class="hl-variable">PriorityPoll</span>(<span class="hl-variable">bs</span>)
-</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10DB2"></a>2.2.8.&nbsp;Buffer Transfer</h3></div></div></div><p>
+</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10DDA"></a>2.2.9.&nbsp;Buffer Transfer</h3></div></div></div><p>
 Suppose we have two buffers, and would like to empty one buffer and put its contents 
 into the other buffer. We use the following function to do so.
 
@@ -194,7 +208,7 @@ into the other buffer. We use the following function to do so.
 completes and is silent, so the call to <code class="code"><span class="hl-variable">loop</span></code> becomes silent,
 allowing the right side of the <code class="code"><span class="hl-combinator">;</span></code> to run, publishing a signal
 to indicate that the transfer is finished.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10DCF"></a>2.2.9.&nbsp;Parallel Matching</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10DF7"></a>2.2.10.&nbsp;Parallel Matching</h3></div></div></div><p>
 Matching a value against multiple patterns, as we have seen it so far, is a linear
 process, and requires a <code class="code"><span class="hl-keyword">def</span></code> whose clauses have patterns in their
 argument lists. Such a match is linear; each pattern is tried in order until
