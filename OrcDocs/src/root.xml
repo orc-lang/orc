@@ -3030,24 +3030,26 @@ creating a helper function just to handle the pattern match.
 
 </section>
 
-
-
+<!-- To add: Channel and routing techniques (internal/external interrupt, old semicolon semantics, condenser) -->
 
 </section>
 
 
-
 <section><title>Larger Examples</title>
-
 
 <section><title>Dining Philosophers</title>
 
-<!--  FIXME (needs documentation) -->
+<para>
+The dining philosophers problem is a well known and intensely studied problem in
+concurrent programming. For an extended discussion of the problem, see 
+<ulink link="http://en.wikipedia.org/wiki/Dining_philosophers">the wikipedia entry</ulink>
+on the problem. Here, we present an Orc solution to the dining philosophers problem,
+based on a probabilistic solution by Rabin.  
 
 <programlisting language="orc-demo"><![CDATA[
 def shuffle(a,b) = if (random(2) = 1) then (a,b) else (b,a)
 
-def take((a,b)) =  
+def take((a,b)) =    
   a.acquire() >> b.acquirenb() ;
   a.release() >> take(shuffle(a,b))
     
