@@ -47,16 +47,16 @@ Create a function which returns a constant value.
 def constant(x)() = x
 
 {--
-* def bind(lambda (A) :: B, A)() :: B
+* def defer(lambda (A) :: B, A)() :: B
 Given a function and its argument, return a thunk which applies the function.
 --}
-def bind(f, x)() = f(x)
+def defer(f, x)() = f(x)
 
 {--
-* def bind2(lambda (A,B) :: C, A, B)() :: C
+* def defer2(lambda (A,B) :: C, A, B)() :: C
 Given a function and its arguments, return a thunk which applies the function.
 --}
-def bind2(f, x, y)() = f(x, y)
+def defer2(f, x, y)() = f(x, y)
 
 {--
 * def ignore(lambda () :: B)(A) :: B
@@ -179,7 +179,7 @@ Return the list when the function terminates.
 Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: [signal, signal, signal, signal, signal]
-collect(bind(signals, 5))]]></programlisting>
+collect(defer(signals, 5))]]></programlisting>
 --}
 def collect(p) =
   val b = Buffer()
