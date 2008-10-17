@@ -29,12 +29,12 @@ public final class Env<T> implements Serializable, Cloneable {
 	private Stack<T> stack;
 
 	/** Copy constructor */
-	protected Env(Env<T> parent, Stack<T> stack) {
+	private Env(Env<T> parent, Stack<T> stack) {
 		this.parent = parent;
 		this.stack = stack;
 	}
 	
-	public Env(Env<T> parent) {
+	private Env(Env<T> parent) {
 		this.parent = parent;
 		this.stack = new Stack<T>();
 	}
@@ -114,6 +114,17 @@ public final class Env<T> implements Serializable, Cloneable {
 	
 	public String toString() {
 		return items().toString();
+	}
+	
+	/**
+	 * Return a new environment "derived" from this one. The contract of this
+	 * method is that the original environment must never be changed, and the
+	 * derived environment will never unwind items which were not added to it.
+	 * 
+	 * @return
+	 */
+	public Env<T> newDerived() {
+		return new Env(this);
 	}
 	
 	public Env<T> clone() {
