@@ -7,6 +7,7 @@ import orc.ast.simple.arg.Var;
 import orc.error.OrcError;
 import orc.runtime.values.Future;
 import java.io.*;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
@@ -16,72 +17,67 @@ import java.util.Stack;
  * Env is also content addressable, so it can be used for the
  * deBruijn index conversion in the compiler.
  * 
- * <p>The implementation uses a linked list of stacks, where
- * only the head is mutated. This means the tail can be shared,
- * saving memory and copying time relative to a stack implementation,
- * but within each stack lookup is O(1), saving lookup time relative
- * to a linked list implementation.
+ * <p>Currently this is implemented as a simple linked-list
+ * of bindings, which provides O(n) lookups and O(1) copies.
+ * This sounds inefficient, but in practice turns out to be
+ * competitive with more complicated schemes which provide
+ * O(1) (or near-O(1)) lookup.
  * 
  * @author dkitchin, quark
  */
 public final class Env<T> implements Serializable, Cloneable {
-	private Env<T> parent;
-	private Stack<T> stack;
+	private Binding<T> head;
+	
+	private static class Binding<T> {
+		private Binding<T> parent;
+		private T value;
+		public Binding(Binding<T> parent, T value) {
+			this.parent = parent;
+			this.value = value;
+		}
+	}
 
 	/** Copy constructor */
-	private Env(Env<T> parent, Stack<T> stack) {
-		this.parent = parent;
-		this.stack = stack;
-	}
-	
-	private Env(Env<T> parent) {
-		this.parent = parent;
-		this.stack = new Stack<T>();
+	private Env(Binding<T> head) {
+		this.head = head;
 	}
 	
 	public Env() {
 		this(null);
 	}
 
+	/** Push one item. */
 	public void add(T item) {
-		stack.push(item);
+		head = new Binding(head, item);
 	}
 	
-	private void collect(LinkedList<T> items) {
-		if (parent != null) parent.collect(items);
-		for (T item : stack) items.add(item);
+	/** Push multiple items, in the order they appear in the list. */
+	public void addAll(List<T> items) {
+		for (T item : items) add(item);
 	}
 	
-	/** Return a list of items in the order they were added. */
+	/** Return a list of items in the order they were pushed. */
 	public List<T> items() {
 		LinkedList<T> out = new LinkedList<T>();
-		collect(out);
+		for (Binding<T> node = head; node != null; node = node.parent) {
+			out.addLast(node.value);
+		}
 		return out;
 	}
 	
-	public void addAll(List<T> items) {
-		stack.addAll(items);
-	}
-	
 	/**
-	 * Lookup a variable in the environment
+	 * Look up a variable's value in the environment.
 	 * @param   index  Stack depth (a deBruijn index)
 	 * @return  The bound item
 	 */
 	public T lookup(int index) {
-		index -= stack.size();
-		if (index >= 0) {
-			// will be found in the parent
-			assert(parent != null);
-			return parent.lookup(index);
-		} else {
-			// found here
-			return stack.get(-index - 1);
-		}
+		Binding<T> node = head;
+		for (; index > 0; --index, node = node.parent) assert(node != null);
+		return node.value;
 	}
 	
 	/**
-	 * Content addressable mode. Used in compilation
+	 * Content-addressable mode. Used in compilation
 	 * to determine the deBruijn indices from an
 	 * environment populated by Var objects.
 	 * 
@@ -93,46 +89,22 @@ public final class Env<T> implements Serializable, Cloneable {
 	 * @return        The index of the target item
 	 */
 	public int search(T target) {
-		int depth = stack.search(target);
-		if (depth > 0) {
-			// found in the stack;
-			// search returns a 1-based index but we
-			// assume 0-based.
-			return depth - 1;
-		} else {
-			assert(parent != null);
-			return parent.search(target) + stack.size();
+		Binding<T> node = head;
+		for (int index = 0; node != null; ++index, node = node.parent) {
+			if (target.equals(node.value)) return index;
 		}
+		throw new OrcError("Target not found");
 	}
 
-	public void unwind(int depth) {
-		assert(depth <= stack.size());
-		// pop values off the stack; unwinding past
-		// the parent is not allowed
-		for (int i = 0; i < depth; i++) stack.pop();
-	}
-	
-	public String toString() {
-		return items().toString();
+	/** Pop n items. */
+	public void unwind(int n) {
+		for (; n > 0; --n) head = head.parent;
 	}
 	
 	/**
-	 * Return a new environment "derived" from this one. The contract of this
-	 * method is that the original environment must never be changed, and the
-	 * derived environment will never unwind items which were not added to it.
-	 * 
-	 * @return
+	 * Create an independent copy of the environment.
 	 */
-	public Env<T> newDerived() {
-		return new Env(this);
-	}
-	
 	public Env<T> clone() {
-		// Various strategies are possible here, which trade
-		// off copying time for lookup speed. For example, when
-		// an environment is copied, we could move it to a shared
-		// parent node so it doesn't have to be copied again. But
-		// it turns out empirically this extra work isn't worth it.
-		return new Env(parent, (Stack<T>)stack.clone());
+		return new Env(head);
 	}
 }
