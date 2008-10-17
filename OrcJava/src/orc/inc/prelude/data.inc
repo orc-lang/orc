@@ -21,12 +21,11 @@ lock.release()]]></programlisting>
 Acquire an item. If none are available, block until one becomes available.
 
 ** site Semaphore.acquirenb() :: Signal
-Acquire an item. If no items are available, fail silently.
+Acquire an item. If no items are available, halt.
 
 ** site Semaphore.release() :: Signal
 Release an item.  This may be called to add items beyond
 the initial number of available items with which the semaphore was constructed.
-<<<<<<< data.inc
 
 * site Semaphore.acquirenb() :: Signal
 Acquire an item. If none are available, halt. 
@@ -58,12 +57,66 @@ Put an item in the buffer.
 Close the buffer. This has the effect of immediately causing any blocked calls
 to <code>get</code> to halt. In addition, any subsequent calls to
 <code>get</code> or <code>put</code> will halt.
+
+** site Buffer<A>.isClosed() :: Boolean
+If the buffer is currently closed, return true, otherwise return false.
 --}
 site Buffer = orc.lib.state.Buffer
 
 {--
+* site BoundedBuffer(Integer) :: BoundedBuffer<A>
+Create a new buffer (FIFO channel) with the given number of slots.
+Putting an item into the buffer fills a slot, and removing an item opens a slot.
+A buffer with zero slots is equivalent to a
+<link linkend="orc.lib.state.SyncChannel">synchronous channel</link>.
+
+Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: "Put 1" "Got 1" "Put 2" "Got 2"
+val c = BoundedBuffer(1)
+  c.put(1) >> "Put " + 1
+| c.put(2) >> "Put " + 2
+| Rtimer(1000) >> (
+    c.get() >n> "Got " + n
+  | c.get() >n> "Got " + n
+  )]]></programlisting>
+
+** site BoundedBuffer<A>.get() :: A
+Get an item from the buffer. If no items are available, block until one becomes available.
+
+** site BoundedBuffer<A>.getnb() :: A
+Get an item from the buffer. If no items are available, halt.
+
+** site BoundedBuffer<A>.put(A) :: Signal
+Put an item in the buffer. If no slots are open, block until one becomes open.
+
+** site BoundedBuffer<A>.putnb(A) :: Signal
+Put an item in the buffer. If no slots are open, halt.
+
+** site BoundedBuffer<A>.close() :: Signal
+Close the buffer. This has the effect of immediately causing any blocked calls
+to <code>get</code> and <code>put</code> to halt. In addition, any subsequent
+calls to <code>get</code> or <code>put</code> will halt.
+
+** site BoundedBuffer<A>.isClosed() :: Boolean
+If the buffer is currently closed, return true, otherwise return false.
+
+** site BoundedBuffer<A>.getOpen() :: Integer
+Return the number of open slots in the buffer. Because of concurrency
+this value may become out-of-date so it should only be used for debugging
+or statistical measurements.
+
+** site BoundedBuffer<A>.getBound() :: Integer
+Return the total number of slots (open or filled) in the buffer.
+--}
+site BoundedBuffer = orc.lib.state.BoundedBuffer
+
+{--
 * site SyncChannel() :: SyncChannel<A>
+<!-- XSL/FO doesn't like me using an anchor tag here -->
+<para id="orc.lib.state.SyncChannel">
 Create a synchronous channel, or rendezvous.
+</para>
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -115,14 +168,14 @@ Rtimer(1000) >> r.write(5) >> stop
   println(r.read()) >>
   stop]]></programlisting>
 
-** site Ref<A>(A) :: Ref<A>
+** site Ref(A) :: Ref<A>
 Create a rewritable storage location containing the provided value.
 
 ** site Ref<A>.read() :: A
 Read the value of the ref. If the ref is empty, block until it is no longer empty.
 
 ** site Ref<A>.readnb() :: A
-Read the value of the ref. If the ref is empty, fail silently.
+Read the value of the ref. If the ref is empty, halt.
 
 ** site Ref<A>.write(A) :: Signal
 Write a value to the ref.
@@ -150,12 +203,12 @@ a.set(i, f(i)) >>
 stop
 ; a.get(0) | a.get(1) | a.get(2)]]></programlisting>
 
-** site Array<A>(Integer, String) :: Array<A>
+** site Array(Integer, String) :: Array<A>
 Create a new primitive array of the given size with the given primitive type.
 The primitive type should match the element type of the array, although a
 typechecker may not be able to verify this. This constructor is only necessary
 when interfacing with certain Java libraries; most programs will just use the 
-<code>Array&lt;A&gt;(Integer)</code> constructor.
+<code>Array(Integer)</code> constructor.
 
 ** site Array<A>.get(Integer) :: A
 Get the element of the array given by the index, counting from 0.

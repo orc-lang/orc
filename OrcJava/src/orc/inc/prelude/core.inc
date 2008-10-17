@@ -130,7 +130,7 @@ equal, then one may be substituted locally for the other without affecting the
 behavior of the program.
 
 Two values with the same object identity are always considered equal.
-In addition, Orc <link linked="cor.constants">constant values</link> and
+In addition, Orc <link linkend="cor.constants">constant values</link> and
 <link linkend="cor.data">functional data structures</link>
 are considered equal if their contents are equal. Other types
 are free to implement their own equality relationship provided it
