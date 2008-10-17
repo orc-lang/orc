@@ -85,6 +85,7 @@
 			<param name="section.autolabel" expression="1"/>
 			<param name="section.label.includes.component.label" expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
+			<param name="chunk.quietly" expression="1"/>
 			<param name="html.stylesheet" expression="style.css" />
 			
 			<param name="highlight.source" expression="1"/>
