@@ -70,7 +70,7 @@ public class Defs extends Node {
 			Closure c = closures[i++];
 			Env<Object> env = new Env<Object>();
 			for (Var v : d.free) env.add(v.resolve(t.getEnvironment()));
-			c.setEnvironment(new Env<Object>(env));
+			c.setEnvironment(env.newDerived());
 		}
 
 		t.move(next).activate();
