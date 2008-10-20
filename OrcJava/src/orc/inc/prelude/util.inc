@@ -76,3 +76,34 @@ for(1,6)]]></programlisting>
 def for(low, high) =
   if low >= high then stop
   else ( low | for(low+1, high) )
+
+{--
+* def upto(Integer) :: Integer
+<code>upto(n)</code> publishes all values in the range <code>(0..n-1)</code>
+simultaneously.
+
+Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: 0 1 2 3 4
+upto(5)]]></programlisting>
+--}
+def upto(high) = for(0, high)
+
+{--
+* def fillArray(Array<A>, lambda (Integer) :: A) :: Array<A>
+Given an array and a function from indices to values, populate the array
+by calling the function for each index in the array.
+
+For example, to set all elements of an array to zero:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: 0 0 0
+val a = fillArray(Array(3), lambda (_) = 0)
+a.get(0) | a.get(1) | a.get(2)]]></programlisting>
+--}
+def fillArray(a, f) =
+  val n = a.length()
+  def fill(i, f) =
+    if i = n then stop
+    else ( a.set(i, f(i)) >> stop
+         | fill(i+1, f) )
+  fill(0, f) ; a

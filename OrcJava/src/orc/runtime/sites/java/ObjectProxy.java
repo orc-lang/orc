@@ -1,6 +1,3 @@
-/**
- * 
- */
 package orc.runtime.sites.java;
 
 
@@ -9,7 +6,6 @@ import java.lang.reflect.Array;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.MessageNotUnderstoodException;
 import orc.error.runtime.TokenException;
-import orc.lib.util.ThreadSite;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.DotSite;
@@ -76,6 +72,23 @@ public class ObjectProxy extends Site {
 					Object out = Array.newInstance(componentType, length);
 					System.arraycopy(proxy.instance, srcPos, out, 0, length);
 					return out;
+				}
+			});
+			addMethod("fill", new EvalSite() {
+				@Override
+				public Object evaluate(Args args) throws TokenException {
+					Object value = args.getArg(0);
+					try {
+						// NB: we cannot use Arrays.fill because
+						// we don't know the type of the array
+						int length = Array.getLength(proxy.instance);
+						for (int i = 0; i < length; ++i) {
+							Array.set(proxy.instance, i, value);
+						}
+					} catch (IllegalArgumentException e) {
+						throw new JavaException(e);
+					}
+					return signal();
 				}
 			});
 			addMethod("length", new EvalSite() {

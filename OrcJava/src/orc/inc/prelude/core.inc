@@ -1,5 +1,11 @@
 {--
 Fundamental sites and operators.
+
+These declarations include both prefix and infix sites (operators).  For
+consistency, all declarations are written in prefix form, with the site name
+followed by the operands.  When the site name is surrounded in parentheses, as
+in <code>(+)</code>, it denotes an infix operator.
+
 For a more complete description of the built-in operators and their syntax, see
 the <link linkend="language.base.operators">Operators</link> section of the
 User Guide.
@@ -55,8 +61,8 @@ site (-) = orc.lib.math.Sub
 {--
 * site (0-)(Number) :: Number
 Return the additive inverse of the argument.
-When this site appears as an operator, it is written without the zero,
-i.e. <code>(-a)</code>
+When this site appears as an operator, it is written in prefix form without the
+zero, i.e. <code>(-a)</code>
 --}
 site (0-) = orc.lib.math.UMinus
 
@@ -79,12 +85,12 @@ site (**) = orc.lib.math.Exponent
 <code>a/b</code> returns <code>a</code> divided by <code>b</code>.
 If both arguments have integral types, <code>(/)</code> performs integral
 division, rounding towards zero. Otherwise, it performs floating-point
-division.
+division. If <code>b=0</code>, <code>a/b</code> halts with an error.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
-  7 / 3   -- publishes 2
-| 7 / 3.0 -- publishes 2.333...]]></programlisting>
+  7/3   -- publishes 2
+| 7/3.0 -- publishes 2.333...]]></programlisting>
 --}
 site (/) = orc.lib.math.Div
 
@@ -130,11 +136,14 @@ equal, then one may be substituted locally for the other without affecting the
 behavior of the program.
 
 Two values with the same object identity are always considered equal.
-In addition, Orc <link linkend="cor.constants">constant values</link> and
-<link linkend="cor.data">functional data structures</link>
-are considered equal if their contents are equal. Other types
-are free to implement their own equality relationship provided it
-conforms to the rules given here.
+In addition, Cor <link linkend="cor.constants">constant values</link> and <link
+linkend="cor.data">data structures</link> are considered equal if their
+contents are equal. Other types are free to implement their own equality
+relationship provided it conforms to the rules given here.
+
+Note that although values of different types may be compared with
+<code>=</code>, the substitutability principle requires that such values are
+always considered inequal, i.e. the comparison will return <code>false</code>.
 --}
 site (=) = orc.runtime.sites.core.Equal
 
@@ -171,7 +180,7 @@ site (||) = orc.lib.bool.Or
 <code>a:b</code> returns the list formed by prepending the element <code>a</code>
 to the list <code>b</code>.
 
-* pattern (:)([A]) :: (A, [A])
+** pattern (:)([A]) :: (A, [A])
 The inverse of the list constructor <code>(:)</code>. Returns the head and tail
 of the list.
 
@@ -190,8 +199,8 @@ def abs(x) = if x < 0 then -x else x
 
 {--
 * def signum(Number) :: Number
-If the argument is 0, return 0. Otherwise return the sign of the argument,
-as given by the equation <code>signum(a) = a/abs(a)</code>.
+<code>signum(a)</code> returns <code>-1</code> if <code>a&lt;0</code>,
+<code>1</code> if <code>a&gt;0</code>, and <code>0</code> if <code>a=0</code>.
 --}
 def signum(x) =
   if x < 0 then -1
@@ -202,6 +211,11 @@ def signum(x) =
 * def min(A,A) :: A, A <: Comparable
 Return the lesser of the arguments. If the arguments
 are equal, return the first argument.
+
+Recall that the type constraint <code>A &lt;: Comparable</code>
+means that <code>min</code> can only be applied to arguments
+which are subtypes of <code>Comparable</code>; in other words,
+they must have a total order.
 --}
 def min(x,y) = if y < x then y else x
 

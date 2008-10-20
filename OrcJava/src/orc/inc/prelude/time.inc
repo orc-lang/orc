@@ -33,14 +33,8 @@ site MakeTimer = orc.lib.time.MakeTimer
 val Ltimer = MakeTimer()
 
 {--
-* def Metronome() :: Signal
-Publish a signal every second, indefinitely.
---}
-def Metronome() = signal | Rtimer(1000) >> Metronome()
-
-{--
-* def MetronomeT(Integer) :: Signal
+* def metronome(Integer) :: Signal
 Publish a signal at regular intervals, indefinitely. The period is given by the
 argument, in milliseconds.
 --}
-def MetronomeT(t) = signal | Rtimer(t) >> MetronomeT(t)
+def metronome(t) = signal | Rtimer(t) >> metronome(t)
