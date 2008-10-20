@@ -217,7 +217,7 @@ Symbol   Assoc       Prec   Name
  *       left        8      multiplication
  /       left        8      division
  %       left        8      modulus
- **		 left        9      exponent
+ **      left        9      exponent
  -       unary       10     unary minus
  ()      none[4]     11     application
 
@@ -794,8 +794,8 @@ transient void HSpace = (' ' / '\t' / '\f' / SingleLineComment)*;
 transient void Space = (' ' / '\t' / '\f' / '\r' / '\n' / EndLineComment / MultiLineComment)*;
 
 transient void EndLineComment = "--" ( ![\n\r] _ )* (EndOfLine / EndOfFile);
-transient void MultiLineComment = "{-" ( [\-] ![}] / EndOfLine / ![\-\n\r] _ )* "-}";
-transient void SingleLineComment = "{-" ( [\-] ![}] / ![\-\n\r] _ )* "-}";
+transient void MultiLineComment = "{-" ( MultiLineComment / [\-] ![}] / EndOfLine / ![\-\n\r] _ )* "-}";
+transient void SingleLineComment = "{-" ( SingleLineComment / [\-] ![}] / ![\-\n\r] _ )* "-}";
 	
 transient void EndOfFile = !_;
 transient void EndOfLine = "\r\n" / '\r' / '\n';
