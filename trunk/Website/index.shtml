@@ -29,7 +29,7 @@ failures.</p>
 
 <ul>
 <li>
-A <span class="highlight">general purpose programming language</span> for concise encoding of
+As a <span class="highlight">general purpose programming language</span> for concise encoding of
 concurrent and distributed applications. See a 
 <a href="#" onclick="showDemo('#orc-demo-dining')">probabilistic solution</a>
 to the dining philosophers problem, or try out <a href="tryorc.shtml">some simple programs</a>
@@ -72,7 +72,7 @@ let(
 </li>
 
 <li>
-A <span class="highlight">web scripting language</span> to create a web-service mashup in a few
+As a <span class="highlight">web scripting language</span> to create a web-service mashup in a few
 minutes. Orc's emphasis on concurrency makes mashups much simpler to write than in
 other scripting languages. See a <a href="#" onclick="showDemo('#orc-demo-search')">simple search mashup</a> that starts a Yahoo search 
 and a Google search simultaneously and prints the first set of responses. You can 
@@ -91,7 +91,7 @@ each(results)
 </li>
 
 <li>
-An <span class="highlight">executable specification language</span> for workflow applications
+As an <span class="highlight">executable specification language</span> for workflow applications
 and process coordination problems. Read about how Orc can <a href="/papers/OrcWorkflow.pdf">represent
 many common workflow patterns</a><!-- , or see a <a href="">representation of a process 
 network</a> in Orc-->.</li>
