@@ -4,7 +4,8 @@ General-purpose supplemental data structures.
 
 {--
 * site Semaphore(Integer) :: Semaphore
-Return a semaphore with the given number of available items.
+Return a semaphore with the given value. The semaphore maintains the invariant
+that its value is always non-negative.
 
 An example using a semaphore as a lock for a critical section:
 <programlisting language="orc-demo"><![CDATA[
@@ -18,17 +19,17 @@ println("Leaving critical section") >>
 lock.release()]]></programlisting>
 
 ** site Semaphore.acquire() :: Signal
-Acquire an item. If none are available, block until one becomes available.
+If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a signal.
+If the semaphore's value is <code>0</code>, block until it becomes greater than <code>0</code>.
 
 ** site Semaphore.acquirenb() :: Signal
-Acquire an item. If no items are available, halt.
+If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a signal.
+If the semaphore's value is <code>0</code>, halt.
 
 ** site Semaphore.release() :: Signal
-Release an item.  This may be called to add items beyond
-the initial number of available items with which the semaphore was constructed.
-
-* site Semaphore.acquirenb() :: Signal
-Acquire an item. If none are available, halt. 
+If any calls to <code>acquire</code> are blocked, allow the oldest such call
+to return.  Otherwise, increment the value of the semaphore.  This may
+increment the value beyond that with which the semaphore was constructed.  
 
 --}
 site Semaphore = orc.lib.state.Semaphore
@@ -46,6 +47,10 @@ val b = Buffer()
 
 ** site Buffer<A>.get() :: A
 Get an item from the buffer. If no items are available, block until one becomes available.
+
+Recall that the type signature <code>site Buffer&lt;A&gt;.get() :: A</code> means that
+when the <code>get</code> method is called on a buffer holding an arbitrary
+element type <code>A</code>, it will return a value of the same type.
 
 ** site Buffer<A>.getnb() :: A
 Get an item from the buffer. If no items are available, halt.
@@ -157,7 +162,7 @@ site Cell = orc.lib.state.Cell
 
 {--
 * site Ref() :: Ref<A>
-Create an empty rewritable storage location.
+Create a rewritable storage location without an initial value.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -169,13 +174,13 @@ Rtimer(1000) >> r.write(5) >> stop
   stop]]></programlisting>
 
 ** site Ref(A) :: Ref<A>
-Create a rewritable storage location containing the provided value.
+Create a rewritable storage location initialized to the provided value.
 
 ** site Ref<A>.read() :: A
-Read the value of the ref. If the ref is empty, block until it is no longer empty.
+Read the value of the ref. If the ref does not yet have a value, block until it receives one.
 
 ** site Ref<A>.readnb() :: A
-Read the value of the ref. If the ref is empty, halt.
+Read the value of the ref. If the ref does not yet have a value, halt.
 
 ** site Ref<A>.write(A) :: Signal
 Write a value to the ref.
@@ -192,7 +197,7 @@ site Null = orc.lib.util.JavaNull
 
 {--
 * site Array(Integer) :: Array<A>
-Create a new array of the given size.
+Create a new native array of the given size.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -222,46 +227,55 @@ half-open range. The result array is still indexed counting from 0.
 
 ** site Array<A>.length() :: Integer
 Return the size of the array.
+
+** site Array<A>.fill(A) :: Signal
+Set every element of the array to the given value. The given value is not
+copied, but is shared by every element of the array, so for example
+<code>a.fill(Semaphore(1))</code> would allow you to access the same semaphore
+from every element <code>a</code>.
+
+This method is primarily useful to initialize or reset an array to a constant
+value,
+for example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: 0 0 0
+val a = Array(3)
+a.fill(0) >> each(a)]]></programlisting>
 --}
 site Array = orc.lib.util.JavaArray
 
 {--
-* def fillArray(Array<A>, lambda (Integer) :: A) :: Array<A>
-Given an array and a function from indices to values, populate the array.
+* def IArray(Integer, lambda (Integer) :: A)(Integer) :: A
+The call <code>IArray(n,f)</code>, where <code>n</code> is a
+natural number and <code>f</code> a total function over natural numbers,
+creates and returns a partial, pre-computed version of <code>f</code>
+restricted to the range (0, <code>n</code>-1). If <code>f</code> halts
+on any number in this range, the call to <code>IArray</code> will halt.
+
+The user may also think of the call as returning an array whose
+<code>i</code>th element is <code>f(i)</code>.
+
+This function provides a simple form of memoisation; we avoid recomputing
+the value of <code>f(i)</code> by storing the result in an array.
 
 Example:
-<programlisting language="orc-demo"><![CDATA[
--- Publishes: 1 2 3
-val a = fillArray(Array(3), let)
-a.get(0) | a.get(1) | a.get(2)]]></programlisting>
---}
-def fillArray(a, f) =
-  val n = a.length()
-  def fill(i, f) =
-    if i = n then stop
-    else ( a.set(i, f(i)) >> stop
-         | fill(i+1, f) )
-  fill(0, f) ; a
-  
-{--
-* def IArray(Integer, lambda (Integer) :: A)(Integer) :: A
-Create an immutable mapping (array) from integers to values.
-The first argument gives the upper exclusive bound of the mapping
-(the lower inclusive bound is always 0). The second argument
-is a function which gives the value of the mapping for each index in the array.
-
-You can think of the immutable mapping as a memoized version of the
-function over a finite range.
+<programlisting><![CDATA[
+val a = IArray(5, fib)
+-- Publishes the 4th number of the fibonnaci sequence: 5
+a(3)]]></programlisting>
 --}
 def IArray(n, f) =
-  fillArray(Array(n), f) >a>
-  a.get
+  val a = Array(n)
+  def fill(i, f) =
+    if i < 0 then []
+    else a.set(i, f(i)):fill(i-1, f)
+  fill(n-1, f) >> a.get
 
 {--
 * site Some(A) :: Option<A>
 Construct an available optional value.
 
-* pattern Some(Option<A>) :: (A)
+** pattern Some(Option<A>) :: (A)
 Deconstruct an available optional value.
 
 Example:
@@ -275,7 +289,7 @@ site Some = orc.runtime.sites.core.Some
 * site None(A) :: Option<A>
 Construct an unavailable optional value.
 
-* pattern None(Option<A>) :: ()
+** pattern None(Option<A>) :: ()
 Deconstruct an unavailable optional value.
 
 Example:
@@ -290,7 +304,7 @@ site None = orc.runtime.sites.core.None
 * site Left(A) :: Either<A>
 Construct a "left" member of a union which may be tagged either "left" or "right".
 
-* pattern Left(Either<A>) :: A
+** pattern Left(Either<A>) :: A
 Deconstruct a "left" member of a union.
 
 Example:
@@ -307,7 +321,7 @@ site Left = orc.lib.data.Left
 * site Right(A) :: Either<A>
 Construct a "right" member of a union which may be tagged either "left" or "right".
 
-* pattern Right(Either<A>) :: A
+** pattern Right(Either<A>) :: A
 Deconstruct a "right" member of a union.
 
 Example:
