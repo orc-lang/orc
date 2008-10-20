@@ -13,3 +13,9 @@ OUTPUT:
 1
 0
 -}
+
+{- Nested comment {- one -} ... -}
+{-
+Nested comment
+{- two -}
+-}
