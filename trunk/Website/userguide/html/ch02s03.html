@@ -1,7 +1,13 @@
-<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>2.3.&nbsp;Larger Examples</title><link href="style.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide"><link rel="up" href="ch02.html" title="Chapter&nbsp;2.&nbsp;Programming Methodology"><link rel="prev" href="ch02s02.html" title="2.2.&nbsp;Programming Idioms"><link rel="next" href="apa.html" title="Appendix&nbsp;A.&nbsp;Complete Syntax of Orc"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">2.3.&nbsp;Larger Examples</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch02s02.html">Prev</a>&nbsp;</td><th align="center" width="60%">Chapter&nbsp;2.&nbsp;Programming Methodology</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="apa.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N10E0D"></a>2.3.&nbsp;Larger Examples</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10E10"></a>2.3.1.&nbsp;Dining Philosophers</h3></div></div></div><pre class="orc">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>2.3.&nbsp;Larger Examples</title><link href="style.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide"><link rel="up" href="ch02.html" title="Chapter&nbsp;2.&nbsp;Programming Methodology"><link rel="prev" href="ch02s02.html" title="2.2.&nbsp;Programming Idioms"><link rel="next" href="apa.html" title="Appendix&nbsp;A.&nbsp;Complete Syntax of Orc"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">2.3.&nbsp;Larger Examples</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch02s02.html">Prev</a>&nbsp;</td><th align="center" width="60%">Chapter&nbsp;2.&nbsp;Programming Methodology</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="apa.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N10E75"></a>2.3.&nbsp;Larger Examples</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10E78"></a>2.3.1.&nbsp;Dining Philosophers</h3></div></div></div><p>
+The dining philosophers problem is a well known and intensely studied problem in
+concurrent programming. For a detailed description, see 
+<a class="ulink" href="" target="_top">the wikipedia entry</a>
+on the problem. Here, we present an Orc solution to the dining philosophers problem,
+based on a probabilistic solution by Rabin.  
+</p><pre class="orc">
 <span class="hl-keyword">def</span> <span class="hl-variable">shuffle</span>(<span class="hl-variable">a</span>,<span class="hl-variable">b</span>) = <span class="hl-keyword">if</span> (<span class="hl-variable">random</span>(<span class="hl-literal">2</span>) = <span class="hl-literal">1</span>) <span class="hl-keyword">then</span> (<span class="hl-variable">a</span>,<span class="hl-variable">b</span>) <span class="hl-keyword">else</span> (<span class="hl-variable">b</span>,<span class="hl-variable">a</span>)
 
-<span class="hl-keyword">def</span> <span class="hl-variable">take</span>((<span class="hl-variable">a</span>,<span class="hl-variable">b</span>)) =  
+<span class="hl-keyword">def</span> <span class="hl-variable">take</span>((<span class="hl-variable">a</span>,<span class="hl-variable">b</span>)) =    
   <span class="hl-variable">a</span>.<span class="hl-variable">acquire</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">b</span>.<span class="hl-variable">acquirenb</span>() <span class="hl-combinator">;</span>
   <span class="hl-variable">a</span>.<span class="hl-variable">release</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">take</span>(<span class="hl-variable">shuffle</span>(<span class="hl-variable">a</span>,<span class="hl-variable">b</span>))
     
@@ -21,10 +27,42 @@
   <span class="hl-variable">thinking</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">hungry</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">eating</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">phil</span>(<span class="hl-variable">a</span>,<span class="hl-variable">b</span>,<span class="hl-variable">name</span>)
 
 <span class="hl-keyword">def</span> <span class="hl-variable">dining</span>(<span class="hl-variable">n</span>) =
-  <span class="hl-keyword">val</span> <span class="hl-variable">forks</span> = <span class="hl-variable">IArray</span>(<span class="hl-variable">n</span>, <span class="hl-keyword">lambda</span>(<span class="hl-variable">_</span>) = <span class="hl-variable">Semaphore</span>(<span class="hl-literal">1</span>))
-  <span class="hl-keyword">def</span> <span class="hl-variable">phils</span>(<span class="hl-literal">0</span>) = <span class="hl-keyword">stop</span>
-  <span class="hl-keyword">def</span> <span class="hl-variable">phils</span>(<span class="hl-variable">i</span>) = <span class="hl-variable">phil</span>(<span class="hl-variable">forks</span>(<span class="hl-variable">i</span>%<span class="hl-variable">n</span>), <span class="hl-variable">forks</span>(<span class="hl-variable">i</span>-<span class="hl-literal">1</span>), <span class="hl-literal">"Philosopher "</span> + <span class="hl-variable">i</span>) <span class="hl-combinator">|</span> <span class="hl-variable">phils</span>(<span class="hl-variable">i</span>-<span class="hl-literal">1</span>)
-  <span class="hl-variable">phils</span>(<span class="hl-variable">n</span>) 
-  
+  <span class="hl-keyword">if</span> (<span class="hl-variable">n</span> &lt; <span class="hl-literal">2</span>) 
+    <span class="hl-keyword">then</span> <span class="hl-variable">println</span>(<span class="hl-literal">"Can't simulate fewer than two philosophers."</span>)
+    <span class="hl-keyword">else</span> 
+    ( 
+      <span class="hl-keyword">val</span> <span class="hl-variable">forks</span> = <span class="hl-variable">IArray</span>(<span class="hl-variable">n</span>, <span class="hl-keyword">lambda</span>(<span class="hl-variable">_</span>) = <span class="hl-variable">Semaphore</span>(<span class="hl-literal">1</span>))
+      <span class="hl-keyword">def</span> <span class="hl-variable">phils</span>(<span class="hl-literal">0</span>) = <span class="hl-keyword">stop</span>
+      <span class="hl-keyword">def</span> <span class="hl-variable">phils</span>(<span class="hl-variable">i</span>) = <span class="hl-variable">phil</span>(<span class="hl-variable">forks</span>(<span class="hl-variable">i</span>%<span class="hl-variable">n</span>), <span class="hl-variable">forks</span>(<span class="hl-variable">i</span>-<span class="hl-literal">1</span>), <span class="hl-literal">"Philosopher "</span> + <span class="hl-variable">i</span>) 
+                   <span class="hl-combinator">|</span> <span class="hl-variable">phils</span>(<span class="hl-variable">i</span>-<span class="hl-literal">1</span>)
+      <span class="hl-variable">phils</span>(<span class="hl-variable">n</span>) 
+    )
 <span class="hl-variable">dining</span>(<span class="hl-literal">5</span>) <span class="hl-combinator">;</span> <span class="hl-variable">println</span>(<span class="hl-literal">"Done."</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
-</pre></div></div><script type="text/javascript" src="/orchard/orc.js"></script><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="ch02s02.html">Prev</a>&nbsp;</td><td align="center" width="20%"><a accesskey="u" href="ch02.html">Up</a></td><td align="right" width="40%">&nbsp;<a accesskey="n" href="apa.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">2.2.&nbsp;Programming Idioms&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;Appendix&nbsp;A.&nbsp;Complete Syntax of Orc</td></tr></table></div></body></html>
+</pre><p>
+The program calls <code class="code"><span class="hl-variable">dining</span>(<span class="hl-literal">5</span>)</code> to simulate the dining philosophers
+problem with size 5. It waits for the simulation to complete, then prints a message
+and stops.
+</p><p>
+The <code class="code"><span class="hl-variable">dining</span></code> function takes the number <code class="code"><span class="hl-variable">n</span></code> of philosophers 
+to simulate. It creates an array of <code class="code"><span class="hl-variable">n</span></code> binary semaphores to
+represent the forks. Then, it starts <code class="code"><span class="hl-variable">n</span></code> philosopher processes in
+parallel using the function <code class="code"><span class="hl-variable">phil</span></code>, giving each philosopher an
+identifier, and references to its left and right forks. 
+</p><p>
+The <code class="code"><span class="hl-variable">phil</span></code> function describes the behavior of an individual philosopher.
+It calls the <code class="code"><span class="hl-variable">thinking</span></code>, <code class="code"><span class="hl-variable">hungry</span></code>, and <code class="code"><span class="hl-variable">eating</span></code>
+functions in a continuous loop. A <code class="code"><span class="hl-variable">thinking</span></code> philosopher waits for a random
+amount of time, and also has a 10% chance of thinking forever. A <code class="code"><span class="hl-variable">hungry</span></code>
+philosopher uses the <code class="code"><span class="hl-variable">take</span></code> function to acquire two forks. An <code class="code"><span class="hl-variable">eating</span></code>
+philosopher waits for a random time interval and then uses the <code class="code"><span class="hl-variable">drop</span></code> function
+to yield ownership of its forks. 
+</p><p>
+The <code class="code"><span class="hl-variable">take</span></code> and <code class="code"><span class="hl-variable">drop</span></code> functions are the key to the algorithm.
+Calling <code class="code"><span class="hl-variable">take</span></code> attempts to acquire a pair of forks in two steps:
+wait for one fork to become available, then immediately attempt to acquire the second
+fork. If the second fork is acquired, signal success; otherwise, release the first
+fork, and then try again, randomly changing the order in which the forks are
+acquired using the <code class="code"><span class="hl-variable">shuffle</span></code> helper function. This reordering ensures
+that the algorithm will probabilistically avoid livelock. The <code class="code"><span class="hl-variable">drop</span></code> function
+simply releases both of the forks. 
+</p></div></div><script type="text/javascript" src="/orchard/orc.js"></script><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="ch02s02.html">Prev</a>&nbsp;</td><td align="center" width="20%"><a accesskey="u" href="ch02.html">Up</a></td><td align="right" width="40%">&nbsp;<a accesskey="n" href="apa.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">2.2.&nbsp;Programming Idioms&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;Appendix&nbsp;A.&nbsp;Complete Syntax of Orc</td></tr></table></div></body></html>
