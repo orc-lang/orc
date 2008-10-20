@@ -1,9 +1,7 @@
-val c = BoundedBuffer(1)
-  c.put(1) >> "Put " + 1
-| c.put(2) >> "Put " + 2
+val c = BoundedBuffer(2)
+  for(1, 6) >i> c.put(i) >> "Put " + i
 | Rtimer(100) >> (
-    c.get() >n> "Got " + n
-  | c.get() >n> "Got " + n
+    for(1, 6) >> c.get() >i> "Got " + i
   )
 
 {-
