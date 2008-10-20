@@ -10,6 +10,6 @@ def try(f) =
   (kill, run)
 
 val (kill, run) =
-  try( lambda () = Metronome() >> println("tick") )
+  try( lambda () = metronome(1000) >> println("tick") )
 
 run() | Prompt("Interrupt?") >> kill()

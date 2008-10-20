@@ -189,32 +189,32 @@ differences:</p>
 
 <p>Here is a simple recursive function which publishes a number every second:</p>
 <pre class="orc">
-def Metronome(i) =
+def metronomeN(i) =
     i
-  | Rtimer(1000) >> Metronome(i+1)
+  | Rtimer(1000) >> metronomeN(i+1)
 
-Metronome(0)</pre>
+metronomeN(0)</pre>
 
 <p>Function publications can be interleaved with the parallel combinator.
 For example, we can interleave publications from two metronomes running at
 different rates and starting at different initial values:</p>
 <pre class="orc">
-def TimedMetronome(t, i) =
+def metronomeTN(t, i) =
     i
-  | Rtimer(t) >> TimedMetronome(t, i+1)
+  | Rtimer(t) >> metronomeTN(t, i+1)
 
-TimedMetronome(1100, 0) | TimedMetronome(700, 100)</pre>
+metronomeTN(1100, 0) | metronomeTN(700, 100)</pre>
 
 <p>A common idiom in Orc is to treat an expression as a stream of values which
 may be filtered. The next example publishes every two seconds (by suppressing
 publications where the current number of seconds is not even):</p>
 
 <pre class="orc">
-def Metronome(i) =
+def metronomeN(i) =
     i
-  | Rtimer(1000) >> Metronome(i+1)
+  | Rtimer(1000) >> metronomeN(i+1)
 
-Metronome(0) >n> if(n%2 = 0) >> n</pre>
+metronomeN(0) >n> if(n%2 = 0) >> n</pre>
 
 <a name="Advanced"></a><h2>Advanced Techniques <small>(<a href="#top">top</a>)</small></h2>
 
