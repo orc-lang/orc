@@ -99,7 +99,7 @@ function jsonToHtml(v) {
  * These have a bit more structure than arbitrary JSON.
  */
 function publicationToHtml(v) {
-	if (v == null) return null;
+	if (v == null) return jsonToHtml(null);
 	switch (v["@xsi.type"]) {
 		// XSD types
 		case 'xs:string': return jsonToHtml(v.$);
@@ -595,18 +595,20 @@ function orcify(code, defaultConfig) {
 
 /** Widget which is currently running. */
 var currentWidget;
-var devKey = Orc.query.k ? Orc.query.k : "";
-var baseUrl = Orc.baseUrl;
-var executorUrl = Orc.query.mock
+var devKey = Orc.devKey;
+var executorUrl = Orc.mock
 	? "mock-executor.js"
 	: "/orchard/json/executor?js";
 
 var config = {
-	stylesheet: baseUrl + "orc-syntax.css",
-	path: baseUrl,
-	parserfile: [(Orc.query.mock?"orc-parser.js":"orc-parser-min.js")],
-//	basefiles: ["codemirror/util.js", "codemirror/stringstream.js", "codemirror/select.js", "codemirror/undo.js", "codemirror/editor.js", "codemirror/tokenize.js"],
-	basefiles: ["codemirror-extra-min.js"],
+	stylesheet: Orc.baseUrl + "orc-syntax.css",
+	path: Orc.baseUrl,
+	parserfile: Orc.mock
+		? ["orc-parser.js"]
+		: ["orc-parser-min.js"],
+	basefiles: Orc.mock
+		? ["codemirror/util.js", "codemirror/stringstream.js", "codemirror/select.js", "codemirror/undo.js", "codemirror/editor.js", "codemirror/tokenize.js"]
+		: ["codemirror-extra-min.js"],
 	textWrapping: false
 };
 

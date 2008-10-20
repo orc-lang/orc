@@ -25,14 +25,16 @@ function parseQuery() {
 }
 
 var query = parseQuery();
+var mock = query.mock;
 //query.mock = true;
 var baseUrl = query.mock ? "" : "/orchard/";
+var devKey = query.k ? query.k : "";
 
 // load our dependencies
 document.write("<script src='", baseUrl, "jquery-1.2.6-min.js'><\/script>");
-document.write("<script src='", baseUrl, "codemirror-min.js'><\/script>");
+document.write("<script src='", baseUrl, (mock?"codemirror/codemirror.js":"codemirror-min.js"), "'><\/script>");
 // load the rest of our code after jQuery and other services are ready
-document.write("<script src='", baseUrl, (query.mock?"orc-ready.js":"orc-ready-min.js"), "'><\/script>");
+document.write("<script src='", baseUrl, (mock?"orc-ready.js":"orc-ready-min.js"), "'><\/script>");
 
 function whenReady(node, f) {
 	if (node.orcReady) f(node);
@@ -40,6 +42,11 @@ function whenReady(node, f) {
 }
 
 // public exports
-return {query: query, baseUrl: baseUrl, whenReady: whenReady}
+return {
+	query: query,
+	baseUrl: baseUrl,
+	whenReady: whenReady,
+	mock: mock,
+	devKey: devKey }
 
 })(); // end module

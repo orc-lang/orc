@@ -55,7 +55,7 @@ var ops1 = {
 '"': readString };
 
 // useful matchers
-var isWord = matcher(/[\w_0-9]/);
+var isWord = matcher(/[\w_0-9']/);
 var isDigit = matcher(/[0-9]/);
 
 /**
