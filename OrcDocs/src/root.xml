@@ -518,8 +518,9 @@ Its meaning is similar to that in other languages: the value
 of the expression is the value of F if and only if E evaluates to true, 
 or the value of G if and only if E evaluates to false. Note that G is not
 evaluated at all if E evaluates to true, and similarly F is not evaluated
-at all of E evaluates to false. Thus, for example, evaluation of 
-<code>if 3 = 3 then 5 else 1/0</code> does not cause any error. 
+at all if E evaluates to false. Thus, for example, evaluation of 
+<code>if true then 2+3 else 1/0</code> does not evaluate <code>1/0</code>;
+it only evaluates <code>2+3</code>.
 </para>
 
 <para>
@@ -769,7 +770,7 @@ variables.
 <section id="cor.functions"><title>Functions</title>
 
 <para>
-Like most other programming languages, Cor has the capability to define <firstterm>functions</firstterm>,
+Like most other programming languages, Cor provides the capability to define <firstterm>functions</firstterm>,
 which are expressions that have a defined name, and have some number of parameters. Functions are declared 
 using the keyword <code>def</code>, in the following way.
 
@@ -905,8 +906,8 @@ stored variable bindings.
 <para>
 Sometimes one would like to create a closure directly, without bothering to give it a name. 
 There is a special keyword <code>lambda</code> for this purpose. By writing a function
-definition with the keyword <code>lambda</code> instead of a function name, that definition
-becomes an expression which evaluates to a closure. 
+definition without the keyword <code>def</code> and replacing the function name with
+the keyword <code>lambda</code>, that definition becomes an expression which evaluates to a closure. 
 
 <programlisting language="orc-demo"><![CDATA[
 def Onetwosum(f) = f(1) + f(2)
@@ -1254,34 +1255,40 @@ Google("computation orchestration")
 ]]></programlisting>
 
 Once the Google search service determines the top result, it sends a response. The site 
-call then publishes that response. Note that the service might never respond: Google's 
-servers might be down, the network might be down, or the search might yield no result URL. 
-If the service fails to respond, the site call remains pending. 
+call then publishes that response. Note that the service might not respond: Google's 
+servers might be down, the network might be down, or the search might yield no result URL.  
 </para>
 
-<!-- FIXME we need to fix this terminology. -->
-
+<para>
+A site call sends only a single request to an external service and receives at most one
+response. These restrictions have two important consequences. First, all of the information needed 
+for the call must be present before contacting the service. Thus, site calls are strict; all 
+arguments must be bound before the call can proceed. If any argument is silent, the call never occurs.
+Second, a site call publishes at most one value, since at most one response is received.
+</para>
 
 <para>
 A call to a site has exactly one of the following effects: 
 
 <orderedlist>
-<listitem>The site returns a value, called its <firstterm>response</firstterm></listitem>
+<listitem>The site returns a value, called its <firstterm>response</firstterm>.</listitem>
 <listitem>The site communicates that it will never respond to the call; we say that the call has <firstterm>halted</firstterm></listitem>
 <listitem>The site neither returns a value nor indicates that the call has halted; we say that the call is <firstterm>pending</firstterm>.</listitem>
 </orderedlist>
-
-In the last two cases, the site call is said to be silent. However, unlike silent expressions in Cor, 
-a silent expression in Orc might perform some meaningful computation or communication; silence does 
-not necessarily indicate an error.
 </para>
 
-
-<!-- 
+<para>
+In the last two cases, the site call is said to be silent. However, unlike a silent expression in Cor, 
+a silent site call in Orc might perform some meaningful computation or communication; silence does 
+not necessarily indicate an error. Since halted site calls and pending site calls are both silent,
+they cannot usually be distinguished from each other; only the <link linkend="combinator.otherwise">
+otherwise combinator</link> can tell the difference. 
+</para>
+ 
+<!--
 <para>
 A site call <emphasis>halts</emphasis> when it is certain that the call will never return
-a result. A site call which has halted remains silent forever; it never publishes a response.
-This may happen for a variety of reasons. A site may be specifically designed to never 
+a result. This may happen for a variety of reasons. A site may be specifically designed to never 
 respond under certain circumstances; for example, <code>if(false)</code> always halts. 
 A site may depend on some connection that has failed in a detectable way; for example, 
 the call <code>Google("five tons of flax")</code> halts if it is executed on a computer
@@ -1293,17 +1300,9 @@ Generally speaking, any underlying exception or error which can be detected and 
 prevents the site call from ever yielding a result will cause it to halt. A halted site
 call can only be distinguished from a blocked site call by the otherwise combinator.
 </para>
-
  -->
 
 
-<para>
-A site call sends only a single request to an external service and receives at most one
-response. These restrictions have two important consequences. First, all of the information needed 
-for the call must be present before contacting the service. Thus, site calls are strict; all 
-arguments must be bound before the call can proceed. If any argument is silent, the call never occurs.
-Second, a site call publishes at most one value, since at most one response is received.
-</para>
 
 <para>
 A site is a value, just like an integer or a list. It may be bound to a variable, passed 
@@ -1654,7 +1653,7 @@ F<code><![CDATA[ <x< (]]></code>G <code>|</code> H<code>)</code>.
 </section>
 
 
-<section><title>The otherwise combinator</title>
+<section id="combinator.otherwise"><title>The otherwise combinator</title>
 
 <para>
 Orc has a fourth concurrency combinator: the <firstterm>otherwise</firstterm> combinator,
@@ -2723,7 +2722,7 @@ will never complete.
 
 </section>
 
-<section><title id="example.auction">Example: Simple parallel auction</title>
+<section id="example.auction"><title>Example: Simple parallel auction</title>
 
 <para>
 We can also use a recursive fork-join to obtain a value, rather than just signaling completion. Suppose we
@@ -3030,6 +3029,48 @@ creating a helper function just to handle the pattern match.
 
 </section>
 
+
+<section><title>Arrays</title>
+
+<para>
+While lists are a very useful data structure, they are not indexed; it is not possible to get the nth element of
+a list in constant time. However, this capability is often needed in practice, so the Orc standard library
+provides a function <code>IArray</code> to create immutable arrays. Once initialized, an immutable array cannot
+be rewritten; it can only be read. 
+</para>
+
+<para>
+<code>IArray</code> takes two arguments: an array size, and a function to initialize the array. The function
+takes the index being initialized as an argument (indices start at 0), and publishes the value to be stored
+at that array position. Here are a few examples:
+
+<programlisting language="orc-demo">
+{- Create an array of 10 elements; element i is the ith power of 2 -}
+IArray(10, lambda(i) = 2 ** i)
+</programlisting>
+
+<programlisting language="orc-demo">
+{- Create an array of 5 elements; each element is a newly created buffer -}
+IArray(5, lambda(_) = Buffer())
+</programlisting>
+</para>
+
+<para>
+The array is used like a function; the call <code>A(i)</code> returns the <code>i</code>th element of the
+array <code>A</code>. A call with an out-of-bounds index halts. 
+
+<programlisting language="orc-demo">
+{- Create an array of 3 buffers -}
+val A = IArray(10, lambda(_) = Buffer())
+
+{- Send true on the 0th channel, and listen for a value on the 0th channel. -}
+A(0).put(true) | A(0).get()
+</programlisting>
+</para>
+
+</section>
+
+
 <!-- To add: Channel and routing techniques (internal/external interrupt, old semicolon semantics, condenser) -->
 
 </section>
@@ -3041,7 +3082,7 @@ creating a helper function just to handle the pattern match.
 
 <para>
 The dining philosophers problem is a well known and intensely studied problem in
-concurrent programming. For an extended discussion of the problem, see 
+concurrent programming. For a detailed description, see 
 <ulink link="http://en.wikipedia.org/wiki/Dining_philosophers">the wikipedia entry</ulink>
 on the problem. Here, we present an Orc solution to the dining philosophers problem,
 based on a probabilistic solution by Rabin.  
@@ -3070,13 +3111,53 @@ def phil(a,b,name) =
   thinking() >> hungry() >> eating() >> phil(a,b,name)
 
 def dining(n) =
-  val forks = IArray(n, lambda(_) = Semaphore(1))
-  def phils(0) = stop
-  def phils(i) = phil(forks(i%n), forks(i-1), "Philosopher " + i) | phils(i-1)
-  phils(n) 
-  
+  if (n < 2) 
+    then println("Can't simulate fewer than two philosophers.")
+    else 
+    ( 
+      val forks = IArray(n, lambda(_) = Semaphore(1))
+      def phils(0) = stop
+      def phils(i) = phil(forks(i%n), forks(i-1), "Philosopher " + i) 
+                   | phils(i-1)
+      phils(n) 
+    )
 dining(5) ; println("Done.") >> stop
 ]]></programlisting>
+
+<para>
+The program calls <code>dining(5)</code> to simulate the dining philosophers
+problem with size 5. It waits for the simulation to complete, then prints a message
+and stops.
+</para>
+
+<para>
+The <code>dining</code> function takes the number <code>n</code> of philosophers 
+to simulate. It creates an array of <code>n</code> binary semaphores to
+represent the forks. Then, it starts <code>n</code> philosopher processes in
+parallel using the function <code>phil</code>, giving each philosopher an
+identifier, and references to its left and right forks. 
+</para>
+
+<para>
+The <code>phil</code> function describes the behavior of an individual philosopher.
+It calls the <code>thinking</code>, <code>hungry</code>, and <code>eating</code>
+functions in a continuous loop. A <code>thinking</code> philosopher waits for a random
+amount of time, and also has a 10% chance of thinking forever. A <code>hungry</code>
+philosopher uses the <code>take</code> function to acquire two forks. An <code>eating</code>
+philosopher waits for a random time interval and then uses the <code>drop</code> function
+to yield ownership of its forks. 
+</para>
+
+<para>
+The <code>take</code> and <code>drop</code> functions are the key to the algorithm.
+Calling <code>take</code> attempts to acquire a pair of forks in two steps:
+wait for one fork to become available, then immediately attempt to acquire the second
+fork. If the second fork is acquired, signal success; otherwise, release the first
+fork, and then try again, randomly changing the order in which the forks are
+acquired using the <code>shuffle</code> helper function. This reordering ensures
+that the algorithm will probabilistically avoid livelock. The <code>drop</code> function
+simply releases both of the forks. 
+</para> 
 
 </section>
 
