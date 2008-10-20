@@ -1,8 +1,12 @@
 <?xml version="1.0"?>
 <section><title>Reference</title>
 <section><title>core.inc: Fundamental sites and operators.</title>
-<para>Fundamental sites and operators.
-For a more complete description of the built-in operators and their syntax, see
+<para>Fundamental sites and operators.</para>
+<para>These declarations include both prefix and infix sites (operators).  For
+consistency, all declarations are written in prefix form, with the site name
+followed by the operands.  When the site name is surrounded in parentheses, as
+in <code>(+)</code>, it denotes an infix operator.</para>
+<para>For a more complete description of the built-in operators and their syntax, see
 the <link linkend="language.base.operators">Operators</link> section of the
 User Guide.</para>
 <variablelist>
@@ -38,8 +42,8 @@ assert(false)]]></programlisting></para>
 </listitem></varlistentry>
 <varlistentry><term><code>(0-)</code></term><listitem><para><code>site (0-)(Number) :: Number</code></para>
 <para>Return the additive inverse of the argument.
-When this site appears as an operator, it is written without the zero,
-i.e. <code>(-a)</code></para>
+When this site appears as an operator, it is written in prefix form without the
+zero, i.e. <code>(-a)</code></para>
 </listitem></varlistentry>
 <varlistentry><term><code>(*)</code></term><listitem><para><code>site (*)(Number, Number) :: Number</code></para>
 <para><code>a*b</code> returns the product of <code>a</code> and <code>b</code>.</para>
@@ -53,11 +57,11 @@ i.e. <code>a</code> raised to the <code>b</code>th power.</para>
 <para><code>a/b</code> returns <code>a</code> divided by <code>b</code>.
 If both arguments have integral types, <code>(/)</code> performs integral
 division, rounding towards zero. Otherwise, it performs floating-point
-division.</para>
+division. If <code>b=0</code>, <code>a/b</code> halts with an error.</para>
 <para>Example:
 <programlisting language="orc-demo"><![CDATA[
-  7 / 3   -- publishes 2
-| 7 / 3.0 -- publishes 2.333...]]></programlisting></para>
+  7/3   -- publishes 2
+| 7/3.0 -- publishes 2.333...]]></programlisting></para>
 </listitem></varlistentry>
 <varlistentry><term><code>(%)</code></term><listitem><para><code>site (%)(Number, Number) :: Number</code></para>
 <para><code>a%b</code> computes the remainder of <code>a/b</code>. If <code>a</code>
@@ -84,11 +88,13 @@ being compared, but always obeys the rule that if two values are considered
 equal, then one may be substituted locally for the other without affecting the
 behavior of the program.</para>
 <para>Two values with the same object identity are always considered equal.
-In addition, Orc <link linkend="cor.constants">constant values</link> and
-<link linkend="cor.data">functional data structures</link>
-are considered equal if their contents are equal. Other types
-are free to implement their own equality relationship provided it
-conforms to the rules given here.</para>
+In addition, Cor <link linkend="cor.constants">constant values</link> and <link
+linkend="cor.data">data structures</link> are considered equal if their
+contents are equal. Other types are free to implement their own equality
+relationship provided it conforms to the rules given here.</para>
+<para>Note that although values of different types may be compared with
+<code>=</code>, the substitutability principle requires that such values are
+always considered inequal, i.e. the comparison will return <code>false</code>.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>(/=)</code></term><listitem><para><code>site (/=)(Top, Top) :: Boolean</code></para>
 <para><code>a/=b</code> returns false if <code>a=b</code>, and true otherwise.</para>
@@ -109,7 +115,7 @@ computed.</para>
 <varlistentry><term><code>(:)</code></term><listitem><para><code>site (:)(A, [A]) :: [A]</code></para>
 <para><code>a:b</code> returns the list formed by prepending the element <code>a</code>
 to the list <code>b</code>.</para>
-</listitem></varlistentry>
+<variablelist>
 <varlistentry><term><code>(:)</code></term><listitem><para><code>pattern (:)([A]) :: (A, [A])</code></para>
 <para>The inverse of the list constructor <code>(:)</code>. Returns the head and tail
 of the list.</para>
@@ -117,17 +123,22 @@ of the list.</para>
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: (3, [4, 5])
 [3,4,5] >x:xs> (x,xs)]]></programlisting></para>
+</listitem></varlistentry></variablelist>
 </listitem></varlistentry>
 <varlistentry><term><code>abs</code></term><listitem><para><code>def abs(Number) :: Number</code></para>
 <para>Return the absolute value of the argument.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>signum</code></term><listitem><para><code>def signum(Number) :: Number</code></para>
-<para>If the argument is 0, return 0. Otherwise return the sign of the argument,
-as given by the equation <code>signum(a) = a/abs(a)</code>.</para>
+<para><code>signum(a)</code> returns <code>-1</code> if <code>a&lt;0</code>,
+<code>1</code> if <code>a&gt;0</code>, and <code>0</code> if <code>a=0</code>.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>min</code></term><listitem><para><code>def min(A,A) :: A, A &lt;: Comparable</code></para>
 <para>Return the lesser of the arguments. If the arguments
 are equal, return the first argument.</para>
+<para>Recall that the type constraint <code>A &lt;: Comparable</code>
+means that <code>min</code> can only be applied to arguments
+which are subtypes of <code>Comparable</code>; in other words,
+they must have a total order.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>max</code></term><listitem><para><code>def max(A,A) :: A, A &lt;: Comparable</code></para>
 <para>Return the greater of the arguments. If the arguments
@@ -138,7 +149,8 @@ are equal, return the second argument.</para>
 <para>General-purpose supplemental data structures.</para>
 <variablelist>
 <varlistentry><term><code>Semaphore</code></term><listitem><para><code>site Semaphore(Integer) :: Semaphore</code></para>
-<para>Return a semaphore with the given number of available items.</para>
+<para>Return a semaphore with the given value. The semaphore maintains the invariant
+that its value is always non-negative.</para>
 <para>An example using a semaphore as a lock for a critical section:
 <programlisting language="orc-demo"><![CDATA[
 -- Prints:
@@ -151,18 +163,18 @@ println("Leaving critical section") >>
 lock.release()]]></programlisting></para>
 <variablelist>
 <varlistentry><term><code>acquire</code></term><listitem><para><code>site Semaphore.acquire() :: Signal</code></para>
-<para>Acquire an item. If none are available, block until one becomes available.</para>
+<para>If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a signal.
+If the semaphore's value is <code>0</code>, block until it becomes greater than <code>0</code>.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>acquirenb</code></term><listitem><para><code>site Semaphore.acquirenb() :: Signal</code></para>
-<para>Acquire an item. If no items are available, halt.</para>
+<para>If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a signal.
+If the semaphore's value is <code>0</code>, halt.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>release</code></term><listitem><para><code>site Semaphore.release() :: Signal</code></para>
-<para>Release an item.  This may be called to add items beyond
-the initial number of available items with which the semaphore was constructed.</para>
+<para>If any calls to <code>acquire</code> are blocked, allow the oldest such call
+to return.  Otherwise, increment the value of the semaphore.  This may
+increment the value beyond that with which the semaphore was constructed.</para>
 </listitem></varlistentry></variablelist>
-</listitem></varlistentry>
-<varlistentry><term><code>acquirenb</code></term><listitem><para><code>site Semaphore.acquirenb() :: Signal</code></para>
-<para>Acquire an item. If none are available, halt.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>Buffer</code></term><listitem><para><code>site Buffer() :: Buffer&lt;A&gt;</code></para>
 <para>Create a new buffer (FIFO channel) of unlimited size.</para>
@@ -175,6 +187,9 @@ val b = Buffer()
 <variablelist>
 <varlistentry><term><code>get</code></term><listitem><para><code>site Buffer&lt;A&gt;.get() :: A</code></para>
 <para>Get an item from the buffer. If no items are available, block until one becomes available.</para>
+<para>Recall that the type signature <code>site Buffer&lt;A&gt;.get() :: A</code> means that
+when the <code>get</code> method is called on a buffer holding an arbitrary
+element type <code>A</code>, it will return a value of the same type.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>getnb</code></term><listitem><para><code>site Buffer&lt;A&gt;.getnb() :: A</code></para>
 <para>Get an item from the buffer. If no items are available, halt.</para>
@@ -275,7 +290,7 @@ val c = Cell()
 </listitem></varlistentry></variablelist>
 </listitem></varlistentry>
 <varlistentry><term><code>Ref</code></term><listitem><para><code>site Ref() :: Ref&lt;A&gt;</code></para>
-<para>Create an empty rewritable storage location.</para>
+<para>Create a rewritable storage location without an initial value.</para>
 <para>Example:
 <programlisting language="orc-demo"><![CDATA[
 val r = Ref()
@@ -286,13 +301,13 @@ Rtimer(1000) >> r.write(5) >> stop
   stop]]></programlisting></para>
 <variablelist>
 <varlistentry><term><code>Ref</code></term><listitem><para><code>site Ref(A) :: Ref&lt;A&gt;</code></para>
-<para>Create a rewritable storage location containing the provided value.</para>
+<para>Create a rewritable storage location initialized to the provided value.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>read</code></term><listitem><para><code>site Ref&lt;A&gt;.read() :: A</code></para>
-<para>Read the value of the ref. If the ref is empty, block until it is no longer empty.</para>
+<para>Read the value of the ref. If the ref does not yet have a value, block until it receives one.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>readnb</code></term><listitem><para><code>site Ref&lt;A&gt;.readnb() :: A</code></para>
-<para>Read the value of the ref. If the ref is empty, halt.</para>
+<para>Read the value of the ref. If the ref does not yet have a value, halt.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>write</code></term><listitem><para><code>site Ref&lt;A&gt;.write(A) :: Signal</code></para>
 <para>Write a value to the ref.</para>
@@ -304,7 +319,7 @@ Java libraries, Orc programs should use the <code>None()</code> constructor
 instead of null values.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>Array</code></term><listitem><para><code>site Array(Integer) :: Array&lt;A&gt;</code></para>
-<para>Create a new array of the given size.</para>
+<para>Create a new native array of the given size.</para>
 <para>Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: 0 1 2
@@ -333,37 +348,51 @@ half-open range. The result array is still indexed counting from 0.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>length</code></term><listitem><para><code>site Array&lt;A&gt;.length() :: Integer</code></para>
 <para>Return the size of the array.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>fill</code></term><listitem><para><code>site Array&lt;A&gt;.fill(A) :: Signal</code></para>
+<para>Set every element of the array to the given value. The given value is not
+copied, but is shared by every element of the array, so for example
+<code>a.fill(Semaphore(1))</code> would allow you to access the same semaphore
+from every element <code>a</code>.</para>
+<para>This method is primarily useful to initialize or reset an array to a constant
+value,
+for example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: 0 0 0
+val a = Array(3)
+a.fill(0) >> each(a)]]></programlisting></para>
 </listitem></varlistentry></variablelist>
 </listitem></varlistentry>
-<varlistentry><term><code>fillArray</code></term><listitem><para><code>def fillArray(Array&lt;A&gt;, lambda (Integer) :: A) :: Array&lt;A&gt;</code></para>
-<para>Given an array and a function from indices to values, populate the array.</para>
-<para>Example:
-<programlisting language="orc-demo"><![CDATA[
--- Publishes: 1 2 3
-val a = fillArray(Array(3), let)
-a.get(0) | a.get(1) | a.get(2)]]></programlisting></para>
-</listitem></varlistentry>
 <varlistentry><term><code>IArray</code></term><listitem><para><code>def IArray(Integer, lambda (Integer) :: A)(Integer) :: A</code></para>
-<para>Create an immutable mapping (array) from integers to values.
-The first argument gives the upper exclusive bound of the mapping
-(the lower inclusive bound is always 0). The second argument
-is a function which gives the value of the mapping for each index in the array.</para>
-<para>You can think of the immutable mapping as a memoized version of the
-function over a finite range.</para>
+<para>The call <code>IArray(n,f)</code>, where <code>n</code> is a
+natural number and <code>f</code> a total function over natural numbers,
+creates and returns a partial, pre-computed version of <code>f</code>
+restricted to the range (0, <code>n</code>-1). If <code>f</code> halts
+on any number in this range, the call to <code>IArray</code> will halt.</para>
+<para>The user may also think of the call as returning an array whose
+<code>i</code>th element is <code>f(i)</code>.</para>
+<para>This function provides a simple form of memoisation; we avoid recomputing
+the value of <code>f(i)</code> by storing the result in an array.</para>
+<para>Example:
+<programlisting><![CDATA[
+val a = IArray(5, fib)
+-- Publishes the 4th number of the fibonnaci sequence: 5
+a(3)]]></programlisting></para>
 </listitem></varlistentry>
 <varlistentry><term><code>Some</code></term><listitem><para><code>site Some(A) :: Option&lt;A&gt;</code></para>
 <para>Construct an available optional value.</para>
-</listitem></varlistentry>
+<variablelist>
 <varlistentry><term><code>Some</code></term><listitem><para><code>pattern Some(Option&lt;A&gt;) :: (A)</code></para>
 <para>Deconstruct an available optional value.</para>
 <para>Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: 3
 Some(3) >Some(x)> x]]></programlisting></para>
+</listitem></varlistentry></variablelist>
 </listitem></varlistentry>
 <varlistentry><term><code>None</code></term><listitem><para><code>site None(A) :: Option&lt;A&gt;</code></para>
 <para>Construct an unavailable optional value.</para>
-</listitem></varlistentry>
+<variablelist>
 <varlistentry><term><code>None</code></term><listitem><para><code>pattern None(Option&lt;A&gt;) :: ()</code></para>
 <para>Deconstruct an unavailable optional value.</para>
 <para>Example:
@@ -371,10 +400,11 @@ Some(3) >Some(x)> x]]></programlisting></para>
 -- Publishes: true
   None() >None()> true
 | Some(3) >None()> false]]></programlisting></para>
+</listitem></varlistentry></variablelist>
 </listitem></varlistentry>
 <varlistentry><term><code>Left</code></term><listitem><para><code>site Left(A) :: Either&lt;A&gt;</code></para>
 <para>Construct a "left" member of a union which may be tagged either "left" or "right".</para>
-</listitem></varlistentry>
+<variablelist>
 <varlistentry><term><code>Left</code></term><listitem><para><code>pattern Left(Either&lt;A&gt;) :: A</code></para>
 <para>Deconstruct a "left" member of a union.</para>
 <para>Example:
@@ -384,10 +414,11 @@ Left(3) >x> (
    x >Right(_)> "right"
  | x >Left(_)> "left"
 )]]></programlisting></para>
+</listitem></varlistentry></variablelist>
 </listitem></varlistentry>
 <varlistentry><term><code>Right</code></term><listitem><para><code>site Right(A) :: Either&lt;A&gt;</code></para>
 <para>Construct a "right" member of a union which may be tagged either "left" or "right".</para>
-</listitem></varlistentry>
+<variablelist>
 <varlistentry><term><code>Right</code></term><listitem><para><code>pattern Right(Either&lt;A&gt;) :: A</code></para>
 <para>Deconstruct a "right" member of a union.</para>
 <para>Example:
@@ -397,6 +428,7 @@ Right(3) >x> (
    x >Right(_)> "right"
  | x >Left(_)> "left"
 )]]></programlisting></para>
+</listitem></varlistentry></variablelist>
 </listitem></varlistentry>
 <varlistentry><term><code>fst</code></term><listitem><para><code>def fst((A,B)) :: A</code></para>
 <para>Return the first element of a pair.</para>
@@ -735,10 +767,7 @@ Rtimer(1000) >> c()]]></programlisting></para>
 A logical timestep is complete as soon as all outstanding site
 calls (other than calls to <code>Ltimer</code>) have published.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>Metronome</code></term><listitem><para><code>def Metronome() :: Signal</code></para>
-<para>Publish a signal every second, indefinitely.</para>
-</listitem></varlistentry>
-<varlistentry><term><code>MetronomeT</code></term><listitem><para><code>def MetronomeT(Integer) :: Signal</code></para>
+<varlistentry><term><code>metronome</code></term><listitem><para><code>def metronome(Integer) :: Signal</code></para>
 <para>Publish a signal at regular intervals, indefinitely. The period is given by the
 argument, in milliseconds.</para>
 </listitem></varlistentry></variablelist>
@@ -793,6 +822,23 @@ signals(5)]]></programlisting></para>
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: 1 2 3 4 5
 for(1,6)]]></programlisting></para>
+</listitem></varlistentry>
+<varlistentry><term><code>upto</code></term><listitem><para><code>def upto(Integer) :: Integer</code></para>
+<para><code>upto(n)</code> publishes all values in the range <code>(0..n-1)</code>
+simultaneously.</para>
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: 0 1 2 3 4
+upto(5)]]></programlisting></para>
+</listitem></varlistentry>
+<varlistentry><term><code>fillArray</code></term><listitem><para><code>def fillArray(Array&lt;A&gt;, lambda (Integer) :: A) :: Array&lt;A&gt;</code></para>
+<para>Given an array and a function from indices to values, populate the array
+by calling the function for each index in the array.</para>
+<para>For example, to set all elements of an array to zero:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: 0 0 0
+val a = fillArray(Array(3), lambda (_) = 0)
+a.get(0) | a.get(1) | a.get(2)]]></programlisting></para>
 </listitem></varlistentry></variablelist>
 </section>
 </section>

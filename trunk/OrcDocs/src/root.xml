@@ -3045,6 +3045,7 @@ concurrent programming. For an extended discussion of the problem, see
 <ulink link="http://en.wikipedia.org/wiki/Dining_philosophers">the wikipedia entry</ulink>
 on the problem. Here, we present an Orc solution to the dining philosophers problem,
 based on a probabilistic solution by Rabin.  
+</para>
 
 <programlisting language="orc-demo"><![CDATA[
 def shuffle(a,b) = if (random(2) = 1) then (a,b) else (b,a)
@@ -3595,20 +3596,27 @@ Declaration keywords include
 <link linkend="orc-declaring-a-site"><code>site</code></link>,
 <link linkend="cor.functions"><code>def</code></link>,
 <link linkend="cor.variables"><code>val</code></link>, and <code>pattern</code>. The first three keywords
-are described in previous chapters. The last, <code>pattern</code>, indicates a binding
-for a site which can be used in a pattern match: the site must take
-one argument (the value to be matched against), and return a tuple (the
-values to match against pattern arguments). For example,
-<code>pattern M(Integer) :: (Integer, Integer)</code>
-would be used like <code>3 &gt;M(x,y)&gt; x+y</code>.
-</para>
+are described in previous chapters. The last, <code>pattern</code>, declares
+the inverse of a site which can be used in a pattern. Given <code>pattern M(A) :: (B,C)</code>,
+evaluation of <code>x &gt;M(y,z)&gt; (y,z)</code> publishes a tuple <code>(y,z)</code>
+such that <code>M(y,z)=x</code>. Suppose <code>Interleave</code> is a <code>site</code>
+such that <code>Interleave(y,z)</code>, given two lists of equal length
+<code>y</code> and <code>z</code>, returns the lists interleaved starting with
+<code>y</code>. Then, given <code>pattern Interleave</code>,
+
+<programlisting><![CDATA[
+[0,1,2,3] >Interleave(y,z)> (y,z)]]></programlisting>
+
+publishes <code>([0,2], [1,3])</code>.</para>
 
 <para>
 Object members (methods and fields) are each declared separately.  The binding
 name of a member is written in the form Type.member, e.g.  <code>Foo.get</code>
 refers to the <code>get</code> member of an object of type <code>Foo</code>.
 The object type can include type variables which are referenced by the member
-type.
+type, so for example <code>site Buffer&lt;A&gt;.get() :: A</code> means that
+when the <code>get</code> method is called on a <code>Buffer</code> holding an
+arbitrary element type <code>A</code>, it will return a value of the same type.
 </para>
 
 <para>
