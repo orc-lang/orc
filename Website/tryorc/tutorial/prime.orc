@@ -5,9 +5,9 @@ def isPrime(n) =
         <b< i * i <= n
   primeat(3)
 {- EXAMPLE -}
-def Metronome(i) =
+def metronomeN(i) =
     i
-  | Rtimer(1000) >> Metronome(i+2)
+  | Rtimer(1000) >> metronomeN(i+2)
 
 -- Publish only prime numbers
-2 | Metronome(3) >n> if(isPrime(n)) >> n
+2 | metronomeN(3) >n> if(isPrime(n)) >> n

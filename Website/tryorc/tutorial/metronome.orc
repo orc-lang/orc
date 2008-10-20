@@ -1,7 +1,7 @@
--- Metronome counts the number of seconds that have passed,
+-- metronomeN counts the number of seconds that have passed,
 -- publishing a number each second
-def Metronome(i) =
+def metronomeN(i) =
     i
-  | Rtimer(1000) >> Metronome(i+1)
+  | Rtimer(1000) >> metronomeN(i+1)
 
-Metronome(0)
+metronomeN(0)
