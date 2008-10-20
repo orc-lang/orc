@@ -1,88 +1,30 @@
-{-
-Dining Philosophers.
-Originally by Joseph Cooper,
-minor modifications by Adrian Quark.
+def shuffle(a,b) = if (random(2) = 1) then (a,b) else (b,a)
 
-Runs a simulation of 5 philosophers for 10 time steps, printing out
-every action of the philosophers (grabbing and releasing forks,
-thinking, eating, etc). See the variables below to customize.
--}
+def take((a,b)) =  
+  a.acquire() >> b.acquirenb() ;
+  a.release() >> take(shuffle(a,b))
+    
+def drop(a,b) = (a.release(), b.release()) >> signal
 
--- How many philosophers are there?
-val numberOfPhilosophers = 5
--- Ratio of real time to simulated time:
--- 1 means 1 second = 1 logical step
-val slowdown = 1
--- Number of simulated time steps to allow
-val time = 10
-
-def makeFork(n) =
-  Buffer() >f>
-  f.put(true) >>
-  f
-
--- attempt to get both forks; if both cannot be gotten, wait
--- some random amount of time and try again
-def getForks(n,fl,fr) =
-  let(
-    getFork(n,"left",fl) >> let(
-      getFork(n,"right",fr)
-      ; releaseFork(n, "left", fl) >> stop
-    )
-    ; Ltimer(1+random(5)) >>
-      getForks(n, fl, fr)
-  )
-
-def releaseFork(n,side,f) =
-  println("Philosopher " + n + " releasing " + side + " fork") >>
-  f.put(true)
- 
-def getFork(n,side,f) =
-  f.getnb() >>
-  println("Philosopher " + n + " grabbing " + side + " fork")
-
-def eat(n) =
-  println("Philosopher " + n + " eating") >>
-  Ltimer(1+random(4)) >>
-  println("Philosopher " + n + " full")
-
-def think(n) =
-  println("Philosopher " + n + " thinking") >>
-  Ltimer(1+random(4)) >>
-  println("Philosopher " + n + " hungry")
-
-def releaseForks(n,fl,fr) =
-  let(releaseFork(n, "left", fl), releaseFork(n, "right", fr))
-
-def philosopher(n,fl,fr) =
-  think(n) >>
-  getForks(n,fl,fr) >>
-  eat(n) >>
-  releaseForks(n,fl,fr) >>
-  philosopher(n,fl,fr)
-
--- synchronize simulation time with real time
--- for demo purposes
-def clock(n) =
-  Rtimer(slowdown*1000) >>
-  Ltimer(1) >>
-  println("CLOCK TIME: " + n) >>
-  clock(n+1)
-
-def philosophers(n,lf,rf) =
-  if n = 1 then
-    philosopher(n-1,lf,rf)
-  else (
-    val nf = makeFork(true)
-    philosopher(n-1,nf,rf) | philosophers(n-1,lf,nf)
-  )
+def phil(a,b,name) =
+  def thinking() = Rtimer(random(1000))
+  def hungry() = take((a,b))
+  def eating() = 
+    println(name + " is eating.") >> 
+    Rtimer(random(1000)) >> 
+    println(name + " has finished eating.") >>
+    drop(a,b)
+  thinking() >> hungry() >> eating() >> phil(a,b,name)
 
 def dining(n) =
-  let(
-    val lf = makeFork(true)
-    philosophers(n,lf,lf)
-    | clock(1)
-    | Ltimer(time)
-  )
-
-dining(numberOfPhilosophers) >> "DONE"
+  val forks = IArray(n, lambda(_) = Semaphore(1))
+  def phils(0) = stop
+  def phils(i) =
+      phil(forks(i%n), forks(i-1), "Philosopher " + i)
+    | phils(i-1)
+  phils(n) 
+  
+let(
+    dining(5)
+  | Rtimer(10000)
+) >> "HALTED"
