@@ -609,7 +609,14 @@ var config = {
 	basefiles: Orc.mock
 		? ["codemirror/util.js", "codemirror/stringstream.js", "codemirror/select.js", "codemirror/undo.js", "codemirror/editor.js", "codemirror/tokenize.js"]
 		: ["codemirror-extra-min.js"],
-	textWrapping: false
+	autoMatchParens: true,
+	/**
+	 * FIXME: although I don't like text wrapping, without this option
+	 * we encounter some weird copy/paste bugs with newlines:
+	 * http://groups.google.com/group/codemirror/browse_thread/thread/283d4da359dc2b9b
+	 */
+	textWrapping: true
+
 };
 
 $(".orc").each(function (_, code) {
