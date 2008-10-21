@@ -4,6 +4,8 @@
 .orc-demo {
 	visibility: hidden;
 	position: absolute;
+	top: 0;
+	left: 0;
 }
 .content ul li {
 	margin-top: 1em;
@@ -105,9 +107,9 @@ dive in to <a href="tutorial.shtml">Orc in 15 minutes</a>.</p>
 <script type="text/javascript">
 function showDemo(selector) {
 	$thing = jQuery(selector);
-	$thing.css('position', 'relative');
 	$thing.css('display', 'none');
 	$thing.css('visibility', 'visible');
+	$thing.css('position', 'static');
 	$thing.slideDown();
 }
 function hideDemo(selector) {
