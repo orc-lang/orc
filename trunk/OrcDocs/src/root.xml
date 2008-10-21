@@ -1199,7 +1199,7 @@ The original Cor grammar rules are abbreviated by ellipses (...).
 <entry>E<code><![CDATA[ <]]></code>P<code><![CDATA[< ]]></code>E</entry>
 
 <entry></entry>
-<entry><emphasis>asymmetric combinator</emphasis></entry>
+<entry><emphasis>pruning combinator</emphasis></entry>
 </row>
 
 <row>
@@ -1385,7 +1385,7 @@ site Buffer = orc.lib.state.Buffer
 <section><title>The concurrency combinators of Orc</title>
 
 <para>
-Orc has four <firstterm>combinators</firstterm>: parallel, sequential, asymmetric, and otherwise. 
+Orc has four <firstterm>combinators</firstterm>: parallel, sequential, pruning, and otherwise. 
 A combinator forms an expression from two component expressions. Each combinator captures a 
 different aspect of concurrency.
 </para>
@@ -1566,10 +1566,10 @@ them together.
 </section>
 
 
-<section><title>The asymmetric combinator</title>
+<section><title>The pruning combinator</title>
 
 <para>
-The asymmetric combinator, written F<code><![CDATA[ <x< ]]></code>G, allows us to block 
+The pruning combinator, written F<code><![CDATA[ <x< ]]></code>G, allows us to block 
 a computation waiting for a result, or terminate a computation. The execution of 
 F<code><![CDATA[ <x< ]]></code>G starts by executing F and G in parallel. Whenever
 F publishes a value, that value is published by the entire execution. When G publishes
@@ -1622,7 +1622,7 @@ console.
 
 
 <para>
-The asymmetric combinator may include a full pattern P instead of just a variable name. Any
+The pruning combinator may include a full pattern P instead of just a variable name. Any
 value published by G is matched against the pattern P. If this match is successful, then G
 terminates and all of the bindings of the pattern P are made in F. Otherwise, the published 
 value is simply ignored and G continues to execute.
@@ -1643,7 +1643,7 @@ it is ignored. The right side continues to execute and will publish one of <code
 
 
 <para>
-The asymmetric combinator is left associative: F<code><![CDATA[ <x< ]]></code>G<code><![CDATA[ <y< ]]></code>H
+The pruning combinator is left associative: F<code><![CDATA[ <x< ]]></code>G<code><![CDATA[ <y< ]]></code>H
 is equivalent to <code>(</code>F<code><![CDATA[ <x< ]]></code>G<code><![CDATA[) <y< ]]></code>H. It has lower
 precedence than the parallel combinator: F<code><![CDATA[ <x< ]]></code>G <code>|</code> H is equivalent to
 F<code><![CDATA[ <x< (]]></code>G <code>|</code> H<code>)</code>.
@@ -1746,7 +1746,7 @@ to <code>(<![CDATA[ if(b) >> ]]></code>F<code><![CDATA[ | if(~b) >> ]]></code>G<
 <para>
 The declaration <code>val x = </code>G, followed by expression F, is 
 actually just a different way of writing the expression F<code><![CDATA[ <x< ]]></code>G.
-Thus, <code>val</code> shares all of the behavior of the asymmetric combinator,
+Thus, <code>val</code> shares all of the behavior of the pruning combinator,
 which we have already described. (This is also true when a pattern is used instead
 of variable name <code>x</code>).
 </para>
@@ -1826,7 +1826,7 @@ the expression.
 
 <para>
 To be precise, whenever an Orc expression appears in such a context, it is treated as if it was 
-on the right side of an asymmetric combinator, using a fresh variable name to fill in the hole. 
+on the right side of a pruning combinator, using a fresh variable name to fill in the hole. 
 Thus, C[E] (where E is the Orc expression and C is the context) is equivalent to the expression 
 C[<code>x</code>] <code><![CDATA[ <x< ]]></code> E. 
 </para>
@@ -1911,7 +1911,7 @@ def metronome(t) = signal | Rtimer(t) >> metronome(t)
 </para>
 
 <para>
-We can also use <code>Rtimer</code> together with the asymmetric combinator 
+We can also use <code>Rtimer</code> together with the pruning combinator 
 to enforce a timeout.
 </para>
 
@@ -2529,7 +2529,7 @@ the combinators on separate lines, indented, between each expression.
 
 </section>
 
-<section><title>Asymmetric combinator</title>
+<section><title>Pruning combinator</title>
 
 <para>
 When the combined expressions are small, write them on the same line:
@@ -2538,7 +2538,7 @@ When the combined expressions are small, write them on the same line:
 <emphasis role="bold">F</emphasis> <![CDATA[<x<]]> <emphasis role="bold">G</emphasis>
 </programlisting>
 
-When multiple asymmetric combinators are used to bind multiple variables
+When multiple pruning combinators are used to bind multiple variables
 (especially when the scoped expression is long), start each line with a 
 combinator, aligned and indented, and continue with the expression.
 
@@ -2551,7 +2551,7 @@ combinator, aligned and indented, and continue with the expression.
 </para>
 
 <para>
-The asymmetric combinator is not often written in its explicit form
+The pruning combinator is not often written in its explicit form
 in Orc programs. Instead, the <code>val</code> declaration is often more
 convenient, since it is semantically equivalent and mentions the variable
 <code>x</code> before its use in scope, rather than after.
@@ -2584,7 +2584,7 @@ M(<emphasis role="bold">G</emphasis>,<emphasis role="bold">H</emphasis>)
 </para>
 
 <para>
-Sometimes, we use the asymmetric combinator simply for its capability to terminate
+Sometimes, we use the pruning combinator simply for its capability to terminate
 expressions and get a single publication; binding a variable is irrelevant. This
 is a special case of nested expressions. We use the identity site <code>let</code>
 to put the expression in the context of a function call.
@@ -2605,7 +2605,7 @@ let(<emphasis role="bold">F</emphasis> | <emphasis role="bold">G</emphasis> | <e
 </para>
 
 <para>
-The translation uses an asymmetric combinator, but we don't need to write the combinator, 
+The translation uses a pruning combinator, but we don't need to write the combinator, 
 name an irrelevant variable, or worry about precedence (since the expression is enclosed
 in parentheses as part of the call).
 </para>
@@ -3391,7 +3391,7 @@ Under construction.
 <entry>E<code><![CDATA[ <]]></code>P<code><![CDATA[< ]]></code>E</entry>
 
 <entry></entry>
-<entry><emphasis>asymmetric combinator</emphasis></entry>
+<entry><emphasis>pruning combinator</emphasis></entry>
 </row>
 
 
