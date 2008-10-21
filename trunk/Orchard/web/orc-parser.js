@@ -1,3 +1,4 @@
+console.log();
 /**
  * Syntax-highlighting parser for Orc.
  * - This depends on the CodeMirror library: http://marijn.haverbeke.nl/codemirror
@@ -91,7 +92,7 @@ function tokenizer(source, state) {
 		}
 	}
 
-	return { next: next, state: state };
+	return { next: next, state: function() { return state; } };
 }
 
 /**
@@ -197,8 +198,9 @@ function readCommentSL(source, setState, _) {
  * start of each line.
  */
 function newParser(source) {
-	var tokens = tokenizer(source, readToken);
-	// buffer for look-ahead tokens
+	var tokensState = readToken;
+	var tokens = tokenizer(source, tokensState);
+	// buffer for look-ahead tokens; holds {token, state} records
 	var lookahead = [];
 	// while looking, where are we in the lookahead buffer?
 	var lookaheadIndex = 0;
@@ -215,8 +217,15 @@ function newParser(source) {
 	/** Get the next token for real and move the "current" token pointer. */
 	function nextToken() {
 		startLooking();
-		if (lookahead.length) return lookahead.shift();
-		else return tokens.next();
+		if (lookahead.length) {
+			var r = lookahead.shift();
+			tokensState = r.state;
+			return r.token;
+		} else {
+			var out = tokens.next();
+			tokensState = tokens.state();
+			return out;
+		}
 	}
 	/**
 	 * Get the next token speculatively. Repeated calls
@@ -226,9 +235,9 @@ function newParser(source) {
 	function look() {
 		try {
 			if (lookahead.length > lookaheadIndex) {
-				return lookahead[lookaheadIndex++];
+				return lookahead[lookaheadIndex++].token;
 			} else {
-				lookahead.push(tokens.next());
+				lookahead.push({token: tokens.next(), state: tokens.state()});
 				return look();
 			}
 		} catch (e) {}
@@ -291,10 +300,11 @@ function newParser(source) {
 		return out;
 	}
 	function copy() {
-		var _state = tokens.state;
+		var _tokensState = tokensState;
 		var _inPattern = inPattern;
 		return function (source) {
-			tokens = tokenizer(source, _state);
+			tokens = tokenizer(source, _tokensState);
+			tokensState = _tokensState;
 			inPattern = _inPattern;
 			// the copy starts at the beginning
 			// of the line, so most of the within-line
