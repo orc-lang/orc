@@ -110,5 +110,9 @@ public class Buffer extends EvalSite {
 				}
 			});	
 		}
+	
+		public String toString() {
+			return localBuffer.toString();
+		}
 	}
 }
