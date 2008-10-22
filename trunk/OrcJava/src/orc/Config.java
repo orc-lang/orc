@@ -178,6 +178,11 @@ public class Config {
 		return filename;
 	}
 	
+	/**
+	 * Current capabilities include:
+	 * send mail
+	 * import java
+	 */
 	public Boolean hasCapability(String name) {
 		return caps.get(name);
 	}

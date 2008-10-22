@@ -30,18 +30,19 @@ public class ThreadedObjectProxy extends Site {
 			member = args.fieldName();
 		} catch (TokenException e) {
 			// If this looks like a site call, call the special method "apply".
-			ThreadSite.makeThreaded(new MethodProxy(instance, classProxy.getMethod("apply")))
+			ThreadSite.makeThreaded(new MethodProxy(instance,
+					classProxy.getMethod(caller, "apply")))
 				.callSite(args, caller);
 			return;
 		}
 		try {
 			// try and return a method handle
 			caller.resume(ThreadSite.makeThreaded(
-					new MethodProxy(instance, classProxy.getMethod(member))));
+					new MethodProxy(instance, classProxy.getMethod(caller, member))));
 		} catch (MessageNotUnderstoodException e) {
 			try {
 				// if a method was not found, return a field value
-				caller.resume(classProxy.getField(member).get(instance));
+				caller.resume(classProxy.getField(caller, member).get(instance));
 			} catch (IllegalAccessException _) {
 				throw e;
 			} catch (NoSuchFieldException _) {
