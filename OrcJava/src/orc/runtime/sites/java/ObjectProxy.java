@@ -134,11 +134,11 @@ public class ObjectProxy extends Site {
 			member = args.fieldName();
 		} catch (TokenException e) {
 			// If this looks like a site call, call the special method "apply".
-			new MethodProxy(instance, classProxy.getMethod("apply"))
+			new MethodProxy(instance, classProxy.getMethod(caller, "apply"))
 				.callSite(args, caller);
 			return;
 		}
-		caller.resume(classProxy.getMember(instance, member));
+		caller.resume(classProxy.getMember(caller, instance, member));
 	}
 	
 	public Object getProxiedObject() {

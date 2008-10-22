@@ -11,18 +11,22 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.WeakHashMap;
 
+import orc.error.runtime.CapabilityException;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.MessageNotUnderstoodException;
 import orc.error.runtime.MethodTypeMismatchException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
+import orc.runtime.OrcEngine;
+import orc.runtime.Token;
 import orc.runtime.sites.EvalSite;
+import orc.runtime.sites.Site;
 
 
 /**
  * @author dkitchin, quark
  */
-public class ClassProxy extends EvalSite {
+public class ClassProxy extends Site {
 	private static final long serialVersionUID = 1L;
 	/** Index methods by name. */
 	private HashMap<String, MethodHandle> methods = new HashMap<String, MethodHandle>();
@@ -64,7 +68,7 @@ public class ClassProxy extends EvalSite {
 	}
 
 	@Override
-	public Object evaluate(Args args) throws TokenException {
+	public void callSite(Args args, Token caller) throws TokenException {
 		// If this looks like a field reference, assume it is a reference to a static
 		// method and treat it accordingly. That means you can't call a
 		// constructor with a field as the first argument, which is OK since it
@@ -76,14 +80,16 @@ public class ClassProxy extends EvalSite {
 			// do nothing
 		}
 		if (member != null) {
-			return getMember(null, member);
+			caller.resume(getMember(caller, null, member));
+			return;
 		}
 		
 		// Otherwise it's a constructor call
 		Object[] argsArray = args.asArray();
 		Constructor c = constructor.resolve(argsArray);
 		try {
-			return c.newInstance(argsArray);
+			caller.resume(c.newInstance(argsArray));
+			return;
 		} catch (InvocationTargetException e) {
 			throw new JavaException(e.getCause());
 		} catch (Exception e) {
@@ -95,14 +101,16 @@ public class ClassProxy extends EvalSite {
 	 * Get the value of an object member (method or field). If a method
 	 * and field have the same name, the method is prefered. Since in Java
 	 * method values aren't first class we wrap these in a MethodProxy.
+	 * @throws SecurityException 
+	 * @throws CapabilityException 
 	 */
-	public Object getMember(Object self, String name) throws MessageNotUnderstoodException {
+	public Object getMember(Token token, Object self, String name) throws MessageNotUnderstoodException, CapabilityException, SecurityException {
 		try {
-			MethodHandle handle = getMethod(name);
+			MethodHandle handle = getMethod(token, name);
 			return new MethodProxy(self, handle);
 		} catch (MessageNotUnderstoodException e) {
 			try {
-				Field field = getField(name);
+				Field field = getField(token, name);
 				return field.get(self);
 				// Errors accessing the field are ignored,
 				// as if we never looked for the filed at all.
@@ -118,8 +126,12 @@ public class ClassProxy extends EvalSite {
 	/**
 	 * Look up a field by name.
 	 * FIXME: should distinguish between static and non-static fields?
+	 * @throws CapabilityException 
 	 */
-	public Field getField(String name) throws SecurityException, NoSuchFieldException {
+	public Field getField(Token token, String name) throws SecurityException, NoSuchFieldException, CapabilityException {
+		if (name.equals("getClass")) {
+			token.requireCapability("import java", true);
+		}
 		return type.getField(name);
 	}
 	
@@ -127,8 +139,12 @@ public class ClassProxy extends EvalSite {
 	 * Look up a method by name. Method handles are cached so that
 	 * future lookups can go faster.
 	 * FIXME: should distinguish between static and non-static methods?
+	 * @throws CapabilityException 
 	 */
-	public MethodHandle getMethod(String methodName) throws MessageNotUnderstoodException {
+	public MethodHandle getMethod(Token token, String methodName) throws MessageNotUnderstoodException, CapabilityException {
+		if (methodName.equals("getClass")) {
+			token.requireCapability("import java", true);
+		}
 		if (methods.containsKey(methodName)) {
 			return methods.get(methodName);
 		}

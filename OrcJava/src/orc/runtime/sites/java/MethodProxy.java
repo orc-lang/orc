@@ -35,18 +35,18 @@ import orc.runtime.values.Value;
  * @author quark, dkitchin
  */
 public class MethodProxy extends Site {
-	MethodHandle delegate;
+	MethodHandle handle;
 	Object instance;
     
     public MethodProxy(Object instance, MethodHandle delegate) {
-    	this.delegate = delegate;
+    	this.handle = delegate;
     	this.instance = instance;
     }
 
 	@Override
 	public void callSite(Args args, Token caller) throws TokenException {
     	Object[] oargs = args.asArray();
-    	Method m = delegate.resolve(oargs);
+    	Method m = handle.resolve(oargs);
         if (isPausable(m)) {
         	// pausable methods are invoked within a Kilim task
         	invokePausable(caller, m, instance, oargs);
@@ -161,5 +161,19 @@ public class MethodProxy extends Site {
         public Method m;
         public Object that;
         public Object[] args;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+    	if (o == null) return false;
+    	if (!(o instanceof MethodProxy)) return false;
+    	MethodProxy that = (MethodProxy)o;
+    	return that.instance == this.instance
+    		&& that.handle == this.handle; 
+    }
+    
+    @Override
+    public int hashCode() {
+    	return instance.hashCode() + handle.hashCode()*31;
     }
 }
