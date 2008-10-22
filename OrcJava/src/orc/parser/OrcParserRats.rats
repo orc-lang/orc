@@ -680,7 +680,7 @@ Number Number = Float / Integer;
 BigDecimal Float =
 	rep:FloatToken HSpace {
 		try {
-			yyValue = BigDecimal.valueOf(Double.parseDouble(rep));
+			yyValue = new BigDecimal(rep);
 		} catch (NumberFormatException e) {
 			// impossible by construction
 			throw new AssertionError(e);
