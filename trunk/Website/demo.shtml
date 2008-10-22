@@ -26,10 +26,10 @@ load it as index.html?mock
 	<li><span class="file"><a class="demo-link" href="tryorc/demo/sites.orc">Sites</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/demo/parallel.orc">Parallel</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/demo/sequential.orc">Sequential</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/demo/pull1.orc">Asymmetric (1)</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/demo/pull2.orc">Asymmetric (2)</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/demo/pull3.orc">Asymmetric (3)</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/demo/pull4.orc">Asymmetric (4)</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/demo/pull1.orc">Pruning (1)</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/demo/pull2.orc">Pruning (2)</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/demo/pull3.orc">Pruning (3)</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/demo/pull4.orc">Pruning (4)</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/demo/def1.orc">Def</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/demo/def2.orc">Fibonacci</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/demo/tally.orc">Tally</a></span></li>
