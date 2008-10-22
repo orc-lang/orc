@@ -12,7 +12,7 @@
 	<ul>
 	<li><a href="#Parallel_Combinator">Parallel Combinator</a></li>
 	<li><a href="#Sequential_Combinator">Sequential Combinator</a></li>
-	<li><a href="#Asymmetric_Combinator">Asymmetric Combinator</a></li>
+	<li><a href="#Pruning_Combinator">Pruning Combinator</a></li>
 	</ul>
 <li><a href="#Functions">Functions</a>
 <li><a href="#Advanced">Advanced Techniques</a>
@@ -50,7 +50,7 @@ operators, these are still considered sites like any other.</p>
 <ul>
 <li>Parallel, or bar, written <tt>|</tt></li>
 <li>Sequential, or push, written <tt>>></tt></li>
-<li>Asymmetric, or pull, written <tt>&lt;&lt;</tt></li>
+<li>Pruning, or pull, written <tt>&lt;&lt;</tt></li>
 </ul>
 <p>We will examine each in turn.</p>
 
@@ -103,7 +103,7 @@ independently for <i>each</i> value:</p>
  
 "I heard that " + movie + " is a good movie."</pre>
 
-<a name="Asymmetric_Combinator"></a><h3>Asymmetric Combinator <small>(<a href="#top">top</a>)</small></h3>
+<a name="Pruning_Combinator"></a><h3>Pruning Combinator <small>(<a href="#top">top</a>)</small></h3>
 
 <p>The final combinator, <tt>&lt;&lt;</tt>, combines the concepts of selection,
 blocking, and termination. It is used to select the first value published by an
@@ -119,7 +119,7 @@ fruit
         Prompt("Apples or oranges?")
       | Prompt("Grapes or mangos?")</pre>
 
-<p>Both sides of the asymmetric combinator begin evaluating immediately, but
+<p>Both sides of the pruning combinator begin evaluating immediately, but
 when the left side needs the value produced by the right side, it blocks until
 that value is available. The next example will print "red" and "blue"
 immediately but must wait to print your chosen color until you enter it:</p>
@@ -143,7 +143,7 @@ val color = Prompt("Choose a color.")
 expression following the declaration.</p>
 
 <p>If an argument to a site call is a compound expression (not just a variable
-or constant), then it is treated as syntactic sugar for an asymmetric
+or constant), then it is treated as syntactic sugar for an pruning
 composition.  For example, these two expressions are equivalent:</p>
 
 <pre class="orc">

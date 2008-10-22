@@ -21,8 +21,8 @@ load it as tryorc.shtml?mock
 	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/par.orc">Parallel</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/seq.orc">Sequential</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/parseq.orc">Parallel/Sequential</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/pull.orc">Asymmetric</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/parpull.orc">Parallel/Asymmetric</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/pull.orc">Pruning</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/parpull.orc">Parallel/Pruning</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/if.orc">If Site</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/null.orc">Stop</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/rtimer.orc">Rtimer Site</a></span></li>
@@ -42,7 +42,7 @@ load it as tryorc.shtml?mock
 	</ul></li>
 <li class="closed"><span class="folder">Randomized Demos</a></span>
 	<ul>
-	<li><span class="file"><a class="demo-link" href="tryorc/demo/pull4.orc">Asymmetric</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/demo/pull4.orc">Pruning</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/demo/tally.orc">Tally</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/demo/dice.orc">Dice</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/demo/walk.orc">Random Walk</a></span></li>
