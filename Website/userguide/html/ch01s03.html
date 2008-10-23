@@ -44,7 +44,7 @@ The original Cor grammar rules are abbreviated by ellipses (...).
                                 </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E<code class="code"> <span class="hl-combinator">&gt;</span></code>P<code class="code"><span class="hl-combinator">&gt;</span> </code>E</td><td align="left">&nbsp;</td><td align="left">
                                     <span class="emphasis"><em>sequential combinator</em></span>
                                 </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E<code class="code"> <span class="hl-combinator">&lt;</span></code>P<code class="code"><span class="hl-combinator">&lt;</span> </code>E</td><td align="left">&nbsp;</td><td align="left">
-                                    <span class="emphasis"><em>asymmetric combinator</em></span>
+                                    <span class="emphasis"><em>pruning combinator</em></span>
                                 </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E <code class="code"><span class="hl-combinator">;</span></code> E</td><td align="left">&nbsp;</td><td align="left">
                                     <span class="emphasis"><em>otherwise combinator</em></span>
                                 </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
@@ -139,7 +139,7 @@ class to provide the service.
 </p><p>
 
 </p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10714"></a>1.3.2.&nbsp;The concurrency combinators of Orc</h3></div></div></div><p>
-Orc has four <em class="firstterm">combinators</em>: parallel, sequential, asymmetric, and otherwise. 
+Orc has four <em class="firstterm">combinators</em>: parallel, sequential, pruning, and otherwise. 
 A combinator forms an expression from two component expressions. Each combinator captures a 
 different aspect of concurrency.
 </p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1071C"></a>1.3.2.1.&nbsp;The parallel combinator</h4></div></div></div><p>
@@ -256,8 +256,8 @@ them together.
 -}</span>
 (<span class="hl-literal">1</span> <span class="hl-combinator">|</span> <span class="hl-literal">2</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> (<span class="hl-literal">3</span> <span class="hl-combinator">|</span> <span class="hl-literal">4</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">y</span><span class="hl-combinator">&gt;</span> (<span class="hl-variable">x</span>,<span class="hl-variable">y</span>)
 </pre>
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N107D3"></a>1.3.2.3.&nbsp;The asymmetric combinator</h4></div></div></div><p>
-The asymmetric combinator, written F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G, allows us to block 
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N107D3"></a>1.3.2.3.&nbsp;The pruning combinator</h4></div></div></div><p>
+The pruning combinator, written F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G, allows us to block 
 a computation waiting for a result, or terminate a computation. The execution of 
 F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G starts by executing F and G in parallel. Whenever
 F publishes a value, that value is published by the entire execution. When G publishes
@@ -299,7 +299,7 @@ is terminated, no new calls occur, but the other <code class="code"><span class=
 still proceeds and still has the effect of printing its message to the
 console.
 </p><p>
-The asymmetric combinator may include a full pattern P instead of just a variable name. Any
+The pruning combinator may include a full pattern P instead of just a variable name. Any
 value published by G is matched against the pattern P. If this match is successful, then G
 terminates and all of the bindings of the pattern P are made in F. Otherwise, the published 
 value is simply ignored and G continues to execute.
@@ -313,7 +313,7 @@ Note that even if <code class="code">(<span class="hl-literal">4</span>,<span cl
 it is ignored. The right side continues to execute and will publish one of <code class="code">(<span class="hl-literal">3</span>,<span class="hl-literal">true</span>)</code> or 
 <code class="code">(<span class="hl-literal">5</span>,<span class="hl-literal">true</span>)</code>.
 </p><p>
-The asymmetric combinator is left associative: F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">y</span><span class="hl-combinator">&lt;</span> </code>H
+The pruning combinator is left associative: F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">y</span><span class="hl-combinator">&lt;</span> </code>H
 is equivalent to <code class="code">(</code>F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G<code class="code">) <span class="hl-combinator">&lt;</span><span class="hl-variable">y</span><span class="hl-combinator">&lt;</span> </code>H. It has lower
 precedence than the parallel combinator: F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G <code class="code"><span class="hl-combinator">|</span></code> H is equivalent to
 F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> (</code>G <code class="code"><span class="hl-combinator">|</span></code> H<code class="code">)</code>.
@@ -368,7 +368,7 @@ to <code class="code">( <span class="hl-keyword">if</span>(<span class="hl-varia
                     </h4></div></div></div><p>
 The declaration <code class="code"><span class="hl-keyword">val</span> <span class="hl-variable">x</span> = </code>G, followed by expression F, is 
 actually just a different way of writing the expression F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G.
-Thus, <code class="code"><span class="hl-keyword">val</span></code> shares all of the behavior of the asymmetric combinator,
+Thus, <code class="code"><span class="hl-keyword">val</span></code> shares all of the behavior of the pruning combinator,
 which we have already described. (This is also true when a pattern is used instead
 of variable name <code class="code"><span class="hl-variable">x</span></code>).
 </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N108FF"></a>1.3.3.3.&nbsp;Nesting Orc expressions</h4></div></div></div><p>
@@ -412,7 +412,7 @@ the expression.
 </pre>
 </p><p>
 To be precise, whenever an Orc expression appears in such a context, it is treated as if it was 
-on the right side of an asymmetric combinator, using a fresh variable name to fill in the hole. 
+on the right side of a pruning combinator, using a fresh variable name to fill in the hole. 
 Thus, C[E] (where E is the Orc expression and C is the context) is equivalent to the expression 
 C[<code class="code"><span class="hl-variable">x</span></code>] <code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code> E. 
 </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10988"></a>1.3.3.4.&nbsp;Functions</h4></div></div></div><p>
@@ -463,7 +463,7 @@ every <code class="code"><span class="hl-variable">t</span></code> milliseconds,
 <span class="hl-keyword">def</span> <span class="hl-variable">metronome</span>(<span class="hl-variable">t</span>) = <span class="hl-keyword">signal</span> <span class="hl-combinator">|</span> <span class="hl-variable">Rtimer</span>(<span class="hl-variable">t</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">metronome</span>(<span class="hl-variable">t</span>)
 </pre>
 </p><p>
-We can also use <code class="code"><span class="hl-variable">Rtimer</span></code> together with the asymmetric combinator 
+We can also use <code class="code"><span class="hl-variable">Rtimer</span></code> together with the pruning combinator 
 to enforce a timeout.
 </p><p>
 <pre class="programlisting">
