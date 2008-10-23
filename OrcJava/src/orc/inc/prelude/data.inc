@@ -61,7 +61,8 @@ Put an item in the buffer.
 ** site Buffer<A>.close() :: Signal
 Close the buffer. This has the effect of immediately causing any blocked calls
 to <code>get</code> to halt. In addition, any subsequent calls to
-<code>get</code> or <code>put</code> will halt.
+<code>put</code> will halt, and once the buffer becomes empty, any subsequent
+calls to <code>get</code> will halt.
 
 ** site Buffer<A>.isClosed() :: Boolean
 If the buffer is currently closed, return true, otherwise return false.
@@ -100,8 +101,9 @@ Put an item in the buffer. If no slots are open, halt.
 
 ** site BoundedBuffer<A>.close() :: Signal
 Close the buffer. This has the effect of immediately causing any blocked calls
-to <code>get</code> and <code>put</code> to halt. In addition, any subsequent
-calls to <code>get</code> or <code>put</code> will halt.
+to <code>get</code> to halt. In addition, any subsequent calls to
+<code>put</code> will halt, and once the buffer becomes empty, any subsequent
+calls to <code>get</code> will halt.
 
 ** site BoundedBuffer<A>.isClosed() :: Boolean
 If the buffer is currently closed, return true, otherwise return false.
