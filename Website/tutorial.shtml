@@ -155,9 +155,9 @@ composition.  For example, these two expressions are equivalent:</p>
 <a name="Fundamental_Sites"></a><h2>Fundamental Sites <small>(<a href="#top">top</a>)</small></h2>
 
 <p>In addition to the <tt>Prompt</tt> and <tt>+</tt> sites we have already
-seen, Orc provides many more fundamental sites which are necessary for writing
-useful expressions. The following examples illustrate the most important
-ones.</p>
+seen, Orc provides several other fundamental sites which are necessary for
+writing useful expressions. The following examples illustrate the most
+important ones.</p>
 
 <p><tt>if(condition)</tt> publishes a signal (a special value of unit type,
 conveying no information) if and only if <tt>condition</tt> is true:</p>
