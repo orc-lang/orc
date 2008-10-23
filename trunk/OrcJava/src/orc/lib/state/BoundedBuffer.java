@@ -46,13 +46,15 @@ public class BoundedBuffer extends EvalSite {
 		protected void addMethods() {
 			addMethod("get", new Site() {
 				public void callSite(Args args, Token reader) {
-					if (closed) {
-						reader.die();
-					} else if (!writers.isEmpty()) {
+					if (!writers.isEmpty()) {
 						reader.resume(buffer.removeFirst());
 						writers.removeFirst().resume();
 					} else if (buffer.isEmpty()) {
-						readers.addLast(reader);
+						if (closed) {
+							reader.die();
+						} else {
+							readers.addLast(reader);
+						}
 					} else {
 						reader.resume(buffer.removeFirst());
 						++open;
@@ -62,9 +64,7 @@ public class BoundedBuffer extends EvalSite {
 			addMethod("getnb", new Site() {
 				@Override
 				public void callSite(Args args, Token reader) {
-					if (closed) {
-						reader.die();
-					} else if (!writers.isEmpty()) {
+					if (!writers.isEmpty()) {
 						reader.resume(buffer.removeFirst());
 						writers.removeFirst().resume();
 					} else if (buffer.isEmpty()) {
@@ -149,7 +149,6 @@ public class BoundedBuffer extends EvalSite {
 				public Object evaluate(Args args) throws TokenException {
 					closed = true;
 					for (Token reader : readers) reader.die();
-					for (Token writer : writers) writer.die();
 					return signal();
 				}
 			});	
