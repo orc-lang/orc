@@ -74,13 +74,16 @@ def notify(time, invitees, responders) =
 
 -- Main orchestration
 
-inviteQuorum(invitees, quorum) >responses>
-unzip(responses) >(responders,ranges)>
-mergeRanges(ranges) >times>
-let(
-  pickMeetingTime(times) >time>
-  format.print(time) >time>
-  println("Chosen time: " + time) >>
-  notify(time, invitees, responders)
-  ; SendMail(requestor, "Meeting Request Failed", "The invitees could not agree on a meeting time.")) >>
-"DONE"
+if span.isEmpty()
+then error("Date range is empty")
+else
+  inviteQuorum(invitees, quorum) >responses>
+  unzip(responses) >(responders,ranges)>
+  mergeRanges(ranges) >times>
+  let(
+    pickMeetingTime(times) >time>
+    format.print(time) >time>
+    println("Chosen time: " + time) >>
+    notify(time, invitees, responders)
+    ; SendMail(requestor, "Meeting Request Failed", "The invitees could not agree on a meeting time.")) >>
+  "DONE"
