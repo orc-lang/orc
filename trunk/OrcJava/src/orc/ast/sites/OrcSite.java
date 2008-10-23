@@ -7,6 +7,7 @@ import java.net.URISyntaxException;
 
 import orc.error.compiletime.typing.MissingTypeException;
 import orc.error.compiletime.typing.TypeException;
+import orc.error.runtime.SiteResolutionException;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.type.Type;
@@ -27,7 +28,7 @@ public class OrcSite extends Site {
 		return ORC;
 	}
 
-	public Class classify() {
+	public Class classify() throws SiteResolutionException {
 		String classname = location.getSchemeSpecificPart();
 		Class<?> cls;
 		
@@ -35,39 +36,38 @@ public class OrcSite extends Site {
 			cls = Class.forName(classname);
 		}
 		catch (ClassNotFoundException e) {
-			throw new Error("Failed to load class " + classname + " as a site. Class not found.");
+			throw new SiteResolutionException("Failed to load class " + classname + " as a site. Class not found.");
 		}
 		
 		if (orc.runtime.sites.Site.class.isAssignableFrom(cls)) {
 			return cls;
 		}
 		else { 
-			throw new Error("Class " + cls + " cannot be used as a site because it is not a subtype of orc.runtime.sites.Site."); 
+			throw new SiteResolutionException("Class " + cls + " cannot be used as a site because it is not a subtype of orc.runtime.sites.Site."); 
 		}
 	}
 	
-	public orc.runtime.sites.Site instantiate() {
+	public orc.runtime.sites.Site instantiate() throws SiteResolutionException {
 		
 		Class cls = classify();
 		try
 		{
 			return (orc.runtime.sites.Site)(cls.newInstance());
 		} catch (InstantiationException e) {
-			throw new Error("Failed to load class " + cls + " as a site. Instantiation error.", e);
+			throw new SiteResolutionException("Failed to load class " + cls + " as a site. Instantiation error.", e);
 		} catch (IllegalAccessException e) {
-			throw new Error("Failed to load class " + cls + " as a site. Constructor is not accessible.");
+			throw new SiteResolutionException("Failed to load class " + cls + " as a site. Constructor is not accessible.");
 		}
 		
 	}
 
 	public Type type() throws TypeException {
-		
-		Class cls = classify();
 		try {
+			Class cls = classify();
 			return (Type)cls.getMethod("type", new Class[]{}).invoke(null, new Object[]{});
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			throw new MissingTypeException("Couldn't access type of site " + cls + " due to error: " + e);
+			throw new MissingTypeException("Couldn't access type of site due to error: " + e);
 		}
 	}
 	
