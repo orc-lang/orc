@@ -312,9 +312,9 @@ def and(true:xs) = and(xs)
 {--
 * def or([Boolean]) :: Boolean
 Return the boolean disjunction of all boolean values in the list.
-The disjunction of an empty list is <code>true</code>.
+The disjunction of an empty list is <code>false</code>.
 --}
-def or([]) = true
+def or([]) = false
 def or(true:xs) = true
 def or(false:xs) = or(xs)
 
