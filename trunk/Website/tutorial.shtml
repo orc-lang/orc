@@ -103,6 +103,9 @@ independently for <i>each</i> value:</p>
  
 "I heard that " + movie + " is a good movie."</pre>
 
+<p>The <tt>&gt;&gt;</tt> combinator has higher precedence than <tt>|</tt>, so
+the parentheses in the previous example are necessary.</p>
+
 <a name="Pruning_Combinator"></a><h3>Pruning Combinator <small>(<a href="#top">top</a>)</small></h3>
 
 <p>The final combinator, <tt>&lt;&lt;</tt>, combines the concepts of selection,
@@ -288,7 +291,7 @@ def minQuote((n1,q1), (n2,q2)) =
 def bestQuote([]) = ("None of the above", 200)
 def bestQuote(airline:rest) =
     val best = bestQuote(rest)
-    val current = airline() | Rtimer(15000) >> best
+    val current = airline() | (Rtimer(15000) >> best)
     minQuote(current, best)
 
 bestQuote([Airline("Delta"), Airline("United")])</pre>
