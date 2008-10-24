@@ -6,6 +6,12 @@ to enter information about the meeting and invitees.
 include "forms.inc"
 include "mail.inc"
 
+-- For testing purposes
+def SendMail(to, subject, body) =
+  println("To: " + to) >>
+  println("Subject: " + subject) >>
+  println("Body: " + body)
+
 val dateFormat = DateTimeFormat.forStyle("SS")
 val timeFormat = DateTimeFormat.forStyle("-S")
 
@@ -24,16 +30,34 @@ def parseInvitees(text) =
   val filtered = filter(nonemptyLine, lines(text))
   map(parseInvitee, filtered)
 
-val (requestor, span, invitees) =
+val (from, span, invitees, quorum, timeLimit, requestTemplate, notificationTemplate) =
   WebPrompt("Meeting Parameters", [
     Mandatory(Textbox("from", "Your Email Address")),
     Mandatory(DateField("start", "First Possible Meeting Date")),
     Mandatory(DateField("end", "Last Possible Meeting Date")),
+    FormInstructions("limiti",
+      "The meeting will be scheduled once a quorum of invitees have
+      responded or the time limit is reached, whichever comes first."),
+    Mandatory(IntegerField("quorum", "Quorum")),
+    Mandatory(IntegerField("timeLimit", "Time Limit (hours)")),
     FormInstructions("inviteesi",
       "Invitees should be one per line: name and email address, separated by space.
        You may either upload the invitees or enter them in the text box below."),
     UploadField("inviteesUpload", "Upload Invitees"),
-    Textarea("inviteesText", "Enter Invitees", false),
+    Textarea("inviteesText", "Enter Invitees", "", false),
+    Mandatory(Textarea("requestTemplate", "Request Message", 
+      "Greetings {{NAME}},\n"
+      + "Click on the below URL to choose time slots when you"
+      + " are available for a 1-hour meeting.\n"
+      + "After enough invitees have responded, everyone will receive"
+      + " an email with the chosen meeting time.\n\n{{URL}}\n\n"
+      + "Thank you, and if you have any questions, contact {{FROM}}"
+      + " for more information.\n")),
+    Mandatory(Textarea("notificationTemplate", "Notification Message",
+      "Greetings {{NAME}},\n"
+      + "The chosen time slot was:\n{{TIME}}\n"
+      + "Thank you, and if you have any questions, contact {{FROM}}"
+      + " for more information.\n")),
     Button("submit", "Submit") ])
   >data> (
     val inviteesText =
@@ -49,26 +73,43 @@ val (requestor, span, invitees) =
       if span.isEmpty()
       then error("Empty date range. Please try again.")
       else span
-    val from = data.get("from")
-    (from, span, invitees)
+    (data.get("from"), span, invitees,
+     data.get("quorum"), data.get("timeLimit"),
+     data.get("requestTemplate"),
+     data.get("notificationTemplate"))
   )
 
 def requestBody(name, url) =
-  "Greetings " + name + ",\n" +
-  "Click on the below URL to choose time slots when you"
-  +" are available for a 1-hour meeting.\n"
-  +"After all invitees have responded, everyone will receive"
-  +" an email with the chosen meeting time.\n"
-  +"\n" + url + "\n\n"
-  +"Thank you, and if you have any questions, contact "
-  + requestor + " for more information.\n"
+  requestTemplate
+  .replace("{{NAME}}", name)
+  .replace("{{FROM}}", from)
+  .replace("{{URL}}", url)
 
 def notificationBody(name, time) =
-  "Greetings " + name + ",\n" +
-  "All invitees have responded and the chosen time slot was:\n" +
-  time + "\n" +
-  "Thank you, and if you have any questions, contact "
-  + requestor + " for more information.\n"
+  notificationTemplate
+  .replace("{{NAME}}", name)
+  .replace("{{FROM}}", from)
+  .replace("{{TIME}}", time)
+
+-- get the first n items from the channel
+-- until it is closed
+def getN(channel, 0) = []
+def getN(channel, n) =
+  channel.get() >x>
+  x:getN(channel, n-1)
+  ; []
+
+def inviteQuorum(invitees) =
+  let(
+    val c = Buffer()
+    getN(c, quorum)
+    -- invite invitees
+    | each(invitees) >(name,_) as invitee>
+      invite(invitee) >response>
+      c.put((name, response)) >> stop
+    -- close the buffer once the time limit is up
+    | Rtimer(timeLimit*3600000) >> c.closenb() >> stop
+  )
 
 def mergeRanges(ranges) =
   def f(accum, next) = accum.intersect(next) >> accum
@@ -94,13 +135,13 @@ def invite((name, email)) =
   SendMail(email, "Meeting Request", requestBody(name, receiver.getURL())) >>
   receiver.get() >>
   println("Received response from " + name + " at " + email) >>
-  (name, form.getValue().get("data").get("times"))
+  form.getValue().get("data").get("times")
 
 def notify(time, invitees, responders) =
   each(invitees) >(name, email)>
   SendMail(email, "Meeting Notification", notificationBody(name, time))
 
-def failureMessage(responses) =
+def formatResponses(responses) =
   def formatResponse((responder, times)) =
     def toString(x) =
       dateFormat.print(x.getStart())
@@ -109,21 +150,26 @@ def failureMessage(responses) =
   unlines(map(formatResponse, responses))
 
 def fail(message) =
-  SendMail(requestor, "Meeting Request Failed",
+  SendMail(from, "Meeting Request Failed",
     "The invitees were unable to agree on a meeting time. "
     + "Their responses follow:\n\n" + message)
 
 -- Main orchestration
 
-val responses = map(invite, invitees)
-failureMessage(responses) >msg>
-unzip(responses) >(responders,ranges)>
-mergeRanges(ranges) >times>
-let(
-  pickMeetingTime(times) >time>
-  dateFormat.print(time) >time>
-  println("Chosen time: " + time) >>
-  notify(time, invitees, responders)
-  ; println("Request failed") >>
-    fail(msg) )
->> "DONE"
+def handleResponses((_:_) as responses) =
+  formatResponses(responses) >msg>
+  unzip(responses) >(responders,ranges)>
+  mergeRanges(ranges) >times>
+  let(
+    pickMeetingTime(times) >time>
+    dateFormat.print(time) >time>
+    println("Chosen time: " + time) >>
+    notify(time, invitees, responders)
+    ; println("Request failed") >>
+      fail(msg) )
+  >> "DONE"
+def handleResponses([]) =
+  SendMail(from, "Meeting Request Failed",
+    "Nobody responded to the meeting request.")
+
+handleResponses(inviteQuorum(invitees))
