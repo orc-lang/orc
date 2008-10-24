@@ -5,7 +5,8 @@
   <li><a href="tutorial.shtml">Orc in 15 Minutes</a>: tutorial and introduction to the language.</li>
   <li>User Guide
     <ul>
-      <li><a href="userguide/html/index.html" target="_blank">HTML</a> <img src="images/new-window.gif" alt="opens in new window" border="0" /> (single page)</li>
+      <li><a href="userguide/html/index.html" target="_blank">HTML</a> <img src="images/new-window.gif" alt="opens in new window" border="0" /> (one page per section)</li>
+      <li><a href="userguide/html/all.html" target="_blank">HTML</a> <img src="images/new-window.gif" alt="opens in new window" border="0" /> (single page)</li>
       <li><a href="userguide/pdf/all.pdf">PDF</a> <img src="images/new-window.gif" border="0" /> (for printing)</li>
     </ul>
   <li><a href="wiki">Wiki</a>: community-supported documentation.</li>
