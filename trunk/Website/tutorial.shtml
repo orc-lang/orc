@@ -143,8 +143,8 @@ val color = Prompt("Choose a color.")
 expression following the declaration.</p>
 
 <p>If an argument to a site call is a compound expression (not just a variable
-or constant), then it is treated as syntactic sugar for an pruning
-composition.  For example, these two expressions are equivalent:</p>
+or constant), then it is treated as syntactic sugar for a pruning composition.
+For example, these two expressions are equivalent:</p>
 
 <pre class="orc">
   ( 1 + x &lt;x&lt; (2 + 3) )
