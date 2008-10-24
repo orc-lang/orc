@@ -2,6 +2,7 @@ package orc.lib.orchard.forms;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -9,9 +10,6 @@ import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import kilim.Mailbox;
 import kilim.Pausable;
@@ -21,6 +19,9 @@ import orc.runtime.Args;
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.sites.Site;
+
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 public class FormSenderSite extends Site {
 	public static class FormReceiver {
@@ -118,7 +119,7 @@ public class FormSenderSite extends Site {
 		}
 		f.form.setHidden("k", f.key);
 		f.form.setHidden("x", "1");
-		f.form.render(out);
+		f.form.render(out, new HashSet<String>());
 		renderFooter(out);
 		out.close();
 	}

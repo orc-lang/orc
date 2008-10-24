@@ -2,6 +2,7 @@ package orc.lib.orchard.forms;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Set;
 
 public abstract class Field<V> implements Part<V> {
 
@@ -27,7 +28,8 @@ public abstract class Field<V> implements Part<V> {
 		return value;
 	}
 
-	public void render(PrintWriter out) throws IOException {
+	public void render(PrintWriter out, Set<String> flags) throws IOException {
+		renderHeader(out, flags);
 		out.write("<label for='" + key + "'>" + label);
 		renderControl(out);
 		out.write("</label>");
@@ -35,6 +37,10 @@ public abstract class Field<V> implements Part<V> {
 	
 	public boolean needsMultipartEncoding() {
 		return false;
+	}
+	
+	public void renderHeader(PrintWriter out, Set<String> flags) throws IOException {
+		// do nothing
 	}
 
 	public abstract void renderControl(PrintWriter out) throws IOException;
