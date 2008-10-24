@@ -59,6 +59,7 @@ public abstract class Account implements AccountMBean {
 	public synchronized void addJob(final String id, Expr expr) throws QuotaException, InvalidOilException {
 		Config config = new Config();
 		config.setCapability("send mail", canSendMail);
+		config.setCapability("import java", canImportJava);
 		
 		if (!canImportJava) {
 			OilSecurityValidator validator = new OilSecurityValidator();
