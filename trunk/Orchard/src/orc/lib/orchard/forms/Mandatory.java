@@ -3,6 +3,7 @@ package orc.lib.orchard.forms;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Set;
 
 public class Mandatory<V> implements Part<V> {
 	private Field<V> part;
@@ -29,7 +30,8 @@ public class Mandatory<V> implements Part<V> {
 		}
 	}
 
-	public void render(PrintWriter out) throws IOException {
+	public void render(PrintWriter out, Set<String> flags) throws IOException {
+		part.renderHeader(out, flags);
 		out.write("<label for='" + part.getKey() + "'>" + part.getLabel());
 		part.renderControl(out);
 		out.write(" <i>(required)</i>");

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import orc.lib.net.XMLUtils;
 
@@ -17,7 +18,7 @@ public class Form extends Aggregate {
 		hiddens.put(key, value);
 	}
 
-	public void render(PrintWriter out) throws IOException {
+	public void render(PrintWriter out, Set<String> flags) throws IOException {
 		out.write("<form method='post'");
 		if (needsMultipartEncoding()) out.write(" enctype='multipart/form-data'");
 		out.write(">");
@@ -27,7 +28,7 @@ public class Form extends Aggregate {
 					" value='" + XMLUtils.escapeXML(hidden.getValue()) + "'" +
 					">");
 		}
-		super.render(out);
+		super.render(out, flags);
 		out.write("</form>");
 	}
 }

@@ -26,7 +26,7 @@ public class DateRangesField extends Field<DateRanges> {
 	@Override
 	public void renderControl(PrintWriter out) throws IOException {
 		out.write("<table cellspacing='0' class='DateRangesField'>");
-		renderHeader(out);
+		renderTableHeader(out);
 		for (int hour = minHour; hour < maxHour; ++hour) {
 			renderHour(out, hour);
 		}
@@ -81,7 +81,7 @@ public class DateRangesField extends Field<DateRanges> {
 		out.write("</tr>");
 	}
 	
-	private void renderHeader(PrintWriter out) throws IOException {
+	private void renderTableHeader(PrintWriter out) throws IOException {
 		out.write("<tr><th>&nbsp;</th>");
 		LocalDateTime current = span.start;
 		LocalDateTime end = span.end.withHourOfDay(0);

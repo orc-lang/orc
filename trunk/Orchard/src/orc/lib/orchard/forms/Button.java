@@ -3,6 +3,7 @@ package orc.lib.orchard.forms;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Set;
 
 
 public class Button implements Part<Boolean> {
@@ -15,7 +16,7 @@ public class Button implements Part<Boolean> {
 		this.label = label;
 	}
 
-	public void render(PrintWriter out) throws IOException {
+	public void render(PrintWriter out, Set<String> flags) throws IOException {
 		out.write("<input type='submit'" +
 				" name='" + key + "'" +
 				" value='" + label + "'" +

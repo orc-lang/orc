@@ -3,6 +3,7 @@ package orc.lib.orchard.forms;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Set;
 
 public class FormInstructions implements Part<String> {
 	private String key;
@@ -28,7 +29,7 @@ public class FormInstructions implements Part<String> {
 		// do nothing
 	}
 
-	public void render(PrintWriter out) throws IOException {
+	public void render(PrintWriter out, Set<String> flags) throws IOException {
 		out.write(value);
 	}
 }

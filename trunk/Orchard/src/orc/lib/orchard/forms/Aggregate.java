@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 public abstract class Aggregate implements Part<Map<String, Object>> {
@@ -34,9 +35,9 @@ public abstract class Aggregate implements Part<Map<String, Object>> {
 		}
 	}
 
-	public void render(PrintWriter out) throws IOException {
+	public void render(PrintWriter out, Set<String> flags) throws IOException {
 		for (Part<?> part : parts) {
-			part.render(out);
+			part.render(out, flags);
 		}
 	}
 
