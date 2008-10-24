@@ -29,7 +29,9 @@ public class ValueMarshaller extends Visitor<Object> {
 
 	@Override
 	public Object visit(Object value) {
-		if (value instanceof String) {
+		if (value == null) {
+			return value;
+		} else if (value instanceof String) {
 		} else if (value instanceof Boolean) {
 		} else if (value instanceof Number) {
 		} else if (value instanceof Character) {
