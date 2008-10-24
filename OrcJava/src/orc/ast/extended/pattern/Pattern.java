@@ -74,6 +74,30 @@ public abstract class Pattern implements Locatable {
 	}
 	
 	
+	/**
+	 * 
+	 * Condense a sequence of patterns into a single pattern using the following strategy:
+	 * 
+	 * An empty sequence of patterns becomes a wildcard pattern _.
+	 * A singleton sequence p becomes just that pattern p.
+	 * A sequence of two or more patterns p1..pn becomes a tuple pattern (p1,...,pn)
+	 * 
+	 * 
+	 * @param ps
+	 * @return
+	 */
+	public static Pattern condense(List<Pattern> ps) {
+		
+		if (ps.size() == 0) {
+			return new WildcardPattern();
+		}
+		else if (ps.size() == 1) {
+			return ps.get(0);
+		}
+		else {
+			return new TuplePattern(ps);
+		}
+	}
 	
 	
 	

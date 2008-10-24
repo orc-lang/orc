@@ -53,9 +53,9 @@ public class SyncChannel extends EvalSite {
 		}
 		
 		@Override
-		protected void addMethods() {
-			addMethod("get", new getMethod());	
-			addMethod("put", new putMethod());
+		protected void addMembers() {
+			addMember("get", new getMethod());	
+			addMember("put", new putMethod());
 		}
 		
 		private class getMethod extends Site {

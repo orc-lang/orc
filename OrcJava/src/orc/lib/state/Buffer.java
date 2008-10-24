@@ -46,8 +46,8 @@ public class Buffer extends EvalSite {
 		}
 		
 		@Override
-		protected void addMethods() {
-			addMethod("get", new Site() {
+		protected void addMembers() {
+			addMember("get", new Site() {
 				public void callSite(Args args, Token receiver) {
 					if (localBuffer.isEmpty()) {
 						if (closed) receiver.die();
@@ -58,7 +58,7 @@ public class Buffer extends EvalSite {
 					}
 				}
 			});	
-			addMethod("put", new Site() {
+			addMember("put", new Site() {
 				@Override
 				public void callSite(Args args, Token sender) throws TokenException {
 					Object item = args.getArg(0);
@@ -78,14 +78,14 @@ public class Buffer extends EvalSite {
 					sender.resume();
 				}
 			});
-			addMethod("getnb", new Site() {
+			addMember("getnb", new Site() {
 				@Override
 				public void callSite(Args args, Token receiver) {
 					if (localBuffer.isEmpty()) receiver.die();
 					else receiver.resume(localBuffer.removeFirst());
 				}
 			});
-			addMethod("getAll", new EvalSite() {
+			addMember("getAll", new EvalSite() {
 				@Override
 				public Object evaluate(Args args) throws TokenException {
 					Object out = ListValue.make(localBuffer);
@@ -93,13 +93,13 @@ public class Buffer extends EvalSite {
 					return out;
 				}
 			});	
-			addMethod("isClosed", new EvalSite() {
+			addMember("isClosed", new EvalSite() {
 				@Override
 				public Object evaluate(Args args) throws TokenException {
 					return closed;
 				}
 			});	
-			addMethod("close", new EvalSite() {
+			addMember("close", new EvalSite() {
 				@Override
 				public Object evaluate(Args args) throws TokenException {
 					closed = true;

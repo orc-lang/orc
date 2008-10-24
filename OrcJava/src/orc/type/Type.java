@@ -23,6 +23,9 @@ public abstract class Type {
 	public static final Type BOOLEAN = new BooleanType();
 	public static final Type INTEGER = new IntegerType();
 	public static final Type LET = new LetType();
+	
+	/* Placeholder for an unspecified type */
+	public static final Type BLANK = null;
 
 	
 	/* We use the Java inheritance hierarchy as a default */

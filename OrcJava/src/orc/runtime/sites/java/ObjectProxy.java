@@ -36,8 +36,8 @@ public class ObjectProxy extends Site {
 		}
 
 		@Override
-		protected void addMethods() {
-			addMethod("get", new EvalSite() {
+		protected void addMembers() {
+			addMember("get", new EvalSite() {
 				@Override
 				public Object evaluate(Args args) throws TokenException {
 					try {
@@ -47,7 +47,7 @@ public class ObjectProxy extends Site {
 					}
 				}
 			});
-			addMethod("set", new EvalSite() {
+			addMember("set", new EvalSite() {
 				@Override
 				public Object evaluate(Args args) throws TokenException {
 					try {
@@ -63,7 +63,7 @@ public class ObjectProxy extends Site {
 					return signal();
 				}
 			});
-			addMethod("slice", new EvalSite() {
+			addMember("slice", new EvalSite() {
 				@Override
 				public Object evaluate(Args args) throws TokenException {
 					Class componentType = proxy.instance.getClass().getComponentType();
@@ -74,7 +74,7 @@ public class ObjectProxy extends Site {
 					return out;
 				}
 			});
-			addMethod("fill", new EvalSite() {
+			addMember("fill", new EvalSite() {
 				@Override
 				public Object evaluate(Args args) throws TokenException {
 					Object value = args.getArg(0);
@@ -91,7 +91,7 @@ public class ObjectProxy extends Site {
 					return signal();
 				}
 			});
-			addMethod("length", new EvalSite() {
+			addMember("length", new EvalSite() {
 				@Override
 				public Object evaluate(Args args) throws TokenException {
 					return Array.getLength(proxy.instance);

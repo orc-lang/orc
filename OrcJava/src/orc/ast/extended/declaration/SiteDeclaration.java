@@ -7,7 +7,7 @@ import orc.ast.simple.arg.Var;
 import orc.runtime.sites.Site;
 
 /**
- * Declaration of a site. The site is specificed as a fully qualified Java class name.
+ * Declaration of a site. The site is specified as a fully qualified Java class name.
  * The class must be a subclass of Site.
  * 
  * The declaration binds an instance of the class to the given name.

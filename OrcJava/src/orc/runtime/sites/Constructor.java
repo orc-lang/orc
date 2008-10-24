@@ -28,6 +28,6 @@ public abstract class Constructor extends EvalSite {
 		};
 	}
 	/** Return null if the object does not match. */
-	public abstract TupleValue deconstruct(Object arg) throws TokenException;
+	public abstract Object deconstruct(Object arg) throws TokenException;
 	public abstract Object construct(Args args) throws TokenException;
 }

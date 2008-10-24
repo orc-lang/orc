@@ -18,10 +18,11 @@ header {
 	import orc.ast.extended.*;
 	import orc.ast.extended.declaration.*;
 	import orc.ast.extended.declaration.defn.*;
+	import orc.ast.extended.declaration.type.*;
 	import orc.ast.extended.pattern.*;
 	import orc.error.*;
 	import orc.runtime.values.Value;
-	import orc.type.Type;
+	import orc.type.*;
 }
 
 body {
@@ -144,7 +145,27 @@ Declaration Declaration =
 		yyValue = new ValDeclaration(p, e);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
+	/ TYPE name:Identifier Space EQ cs:ConstructorList {
+		yyValue = new DatatypeDeclaration(name, cs);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
 	;
+
+
+Constructor Constructor =
+	name:Identifier Space LPAREN ts:TypeList RPAREN Space {
+		yyValue = new Constructor(name,ts);
+	}
+	;
+
+List<Constructor> ConstructorList = 
+	c:Constructor cs:(void:BAR cs:Constructor)* {
+		List<Constructor> out = cs.list();
+		out.add(0, c);
+		yyValue = out;
+	}
+	;
+
 
 Defn Definition =
 	DEF name:Identifier Space LPAREN formals:PatternList RPAREN Space
@@ -161,17 +182,6 @@ Defn Definition =
 	/ DEF name:Identifier Space LPAREN argTypes:TypeList RPAREN Space
 	DOUBLE_COLON resultType:Type {
 		yyValue = new DefnType(name, argTypes, resultType);
-	}
-	;
-
-List<Type> TypeList = 
-	t:Type ts:(void:COMMA ts:Type)* {
-		List<Type> out = ts.list();
-		out.add(0, t);
-		yyValue = out;
-	}
-	/ /* empty */ {
-		yyValue = new LinkedList<Type>();
 	}
 	;
 
@@ -634,7 +644,7 @@ Pattern BasicPattern =
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ name:Identifier Space LPAREN formals:PatternList RPAREN Space {
-		yyValue = new CallPattern(name, new TuplePattern(formals));
+		yyValue = new CallPattern(name, formals);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ name:Identifier Space {
@@ -667,9 +677,25 @@ Type Type =
 	NUMBER_TYPE { yyValue = Type.NUMBER; }
 	/ STRING_TYPE { yyValue = Type.STRING; }
 	/ BOOLEAN_TYPE { yyValue = Type.BOOLEAN; }
+	/ INTEGER_TYPE { yyValue = Type.INTEGER; }
 	/ TOP_TYPE { yyValue = Type.TOP; }
 	/ BOT_TYPE { yyValue = Type.BOT; }
-	/ INTEGER_TYPE { yyValue = Type.INTEGER; }
+	/ LPAREN ts:TypeList RPAREN { yyValue = new TupleType(ts); }
+	/ UNDERSCORE { yyValue = Type.BLANK; }
+	/ LAMBDA LPAREN argTypes:TypeList RPAREN DOUBLE_COLON resultType:Type 
+		{ yyValue = new ArrowType(argTypes, resultType); }
+	/ name:Identifier { yyValue = new NamedType(name); }
+	;
+	
+List<Type> TypeList = 
+	t:Type ts:(void:COMMA ts:Type)* {
+		List<Type> out = ts.list();
+		out.add(0, t);
+		yyValue = out;
+	}
+	/ /* empty */ {
+		yyValue = new LinkedList<Type>();
+	}
 	;
 
 /////////////////////////////////////////////
@@ -736,6 +762,7 @@ transient String VAL = "val":Word Space;
 transient String CLASS = "class":Word Space;
 transient String SITE = "site":Word Space;
 transient String INCLUDE = "include":Word Space;
+transient String TYPE = "type":Word Space;
 transient String LAMBDA = "lambda":Word Space;
 transient String AS = "as":Word Space;
 transient String IF = "if":Word Space;

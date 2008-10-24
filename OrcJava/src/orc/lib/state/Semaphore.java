@@ -30,8 +30,8 @@ public class Semaphore extends EvalSite {
 		}
 		
 		@Override
-		protected void addMethods() {
-			addMethod("acquire", new Site() {
+		protected void addMembers() {
+			addMember("acquire", new Site() {
 				public void callSite(Args args, Token waiter) {
 					if (0 == n) {
 						waiters.addLast(waiter);
@@ -41,7 +41,7 @@ public class Semaphore extends EvalSite {
 					}
 				}
 			});	
-			addMethod("acquirenb", new Site() {
+			addMember("acquirenb", new Site() {
 				public void callSite(Args args, Token waiter) {
 					if (0 == n) {
 						waiter.die();
@@ -51,7 +51,7 @@ public class Semaphore extends EvalSite {
 					}
 				}
 			});	
-			addMethod("release", new Site() {
+			addMember("release", new Site() {
 				@Override
 				public void callSite(Args args, Token sender) throws TokenException {
 					if (waiters.isEmpty()) {

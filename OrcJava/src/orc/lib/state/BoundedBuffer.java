@@ -43,8 +43,8 @@ public class BoundedBuffer extends EvalSite {
 		}
 		
 		@Override
-		protected void addMethods() {
-			addMethod("get", new Site() {
+		protected void addMembers() {
+			addMember("get", new Site() {
 				public void callSite(Args args, Token reader) {
 					if (!writers.isEmpty()) {
 						reader.resume(buffer.removeFirst());
@@ -61,7 +61,7 @@ public class BoundedBuffer extends EvalSite {
 					}
 				}
 			});	
-			addMethod("getnb", new Site() {
+			addMember("getnb", new Site() {
 				@Override
 				public void callSite(Args args, Token reader) {
 					if (!writers.isEmpty()) {
@@ -75,7 +75,7 @@ public class BoundedBuffer extends EvalSite {
 					}
 				}
 			});
-			addMethod("put", new Site() {
+			addMember("put", new Site() {
 				@Override
 				public void callSite(Args args, Token writer) throws TokenException {
 					Object item = args.getArg(0);
@@ -94,7 +94,7 @@ public class BoundedBuffer extends EvalSite {
 					}
 				}
 			});
-			addMethod("putnb", new Site() {
+			addMember("putnb", new Site() {
 				@Override
 				public void callSite(Args args, Token writer) throws TokenException {
 					Object item = args.getArg(0);
@@ -112,7 +112,7 @@ public class BoundedBuffer extends EvalSite {
 					}
 				}
 			});
-			addMethod("getAll", new EvalSite() {
+			addMember("getAll", new EvalSite() {
 				@Override
 				public Object evaluate(Args args) throws TokenException {
 					// restore open slots
@@ -126,25 +126,25 @@ public class BoundedBuffer extends EvalSite {
 					return out;
 				}
 			});	
-			addMethod("getOpen", new EvalSite() {
+			addMember("getOpen", new EvalSite() {
 				@Override
 				public Object evaluate(Args args) throws TokenException {
 					return open;
 				}
 			});	
-			addMethod("getBound", new EvalSite() {
+			addMember("getBound", new EvalSite() {
 				@Override
 				public Object evaluate(Args args) throws TokenException {
 					return open + buffer.size() - writers.size();
 				}
 			});	
-			addMethod("isClosed", new EvalSite() {
+			addMember("isClosed", new EvalSite() {
 				@Override
 				public Object evaluate(Args args) throws TokenException {
 					return closed;
 				}
 			});	
-			addMethod("close", new EvalSite() {
+			addMember("close", new EvalSite() {
 				@Override
 				public Object evaluate(Args args) throws TokenException {
 					closed = true;
