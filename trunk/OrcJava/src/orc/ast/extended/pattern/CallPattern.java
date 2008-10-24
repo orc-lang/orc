@@ -22,15 +22,9 @@ public class CallPattern extends Pattern {
 	// Create a call based on a string name
 	public CallPattern(String site, List<Pattern> args) {
 		this.site = new NamedVar(site);
-		this.p = new TuplePattern(args);
+		this.p = Pattern.condense(args);
 	}
 	
-	// Create a call based on a direct pattern
-	public CallPattern(String site, Pattern argpat) {
-		this.site = new NamedVar(site);
-		this.p = argpat;
-	}
-
 	@Override
 	public void process(Var fragment, PatternSimplifier visitor)
 			throws PatternException {

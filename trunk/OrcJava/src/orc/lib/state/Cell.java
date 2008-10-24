@@ -51,10 +51,10 @@ public class Cell extends EvalSite {
 		}
 		
 		@Override
-		protected void addMethods() {
-			addMethod("read", new readMethod());	
-			addMethod("write", new writeMethod());
-			addMethod("readnb", new Site() {
+		protected void addMembers() {
+			addMember("read", new readMethod());	
+			addMember("write", new writeMethod());
+			addMember("readnb", new Site() {
 				@Override
 				public void callSite(Args args, Token caller) throws TokenException {
 					if (readQueue != null) caller.die();

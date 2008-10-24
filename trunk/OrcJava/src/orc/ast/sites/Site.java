@@ -21,6 +21,7 @@ public abstract class Site {
 	/* Protocols */
 	public static final String ORC = "orc";
 	public static final String JAVA = "java";
+	public static final String DATA = "data";
 	
 	
 	/* Primitive sites */
@@ -43,7 +44,7 @@ public abstract class Site {
 	
 	public static Site EQUAL = buildCoreSite("Equal");
 	
-	
+	public static Site TAG = buildCoreSite("Tag");
 	
 	public static Site build(String protocol, String location) {
 		try {
