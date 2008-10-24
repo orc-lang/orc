@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 
 import orc.Config;
 import orc.Orc;
+import orc.ast.oil.UnguardedRecursionChecker;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
@@ -50,6 +51,7 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
 		orc.ast.oil.Expr ex1;
 		try {
 			ex1 = ex0.convert(new Env<Var>());
+			UnguardedRecursionChecker.check(ex1);
 		} catch (CompilationException e) {
 			throw new InvalidProgramException(e.getMessage());
 		};
