@@ -24,10 +24,10 @@ public class None extends Constructor {
 	}
 
 	@Override
-	public TupleValue deconstruct(Object arg) throws TokenException {
+	public Object deconstruct(Object arg) throws TokenException {
 		if (!(arg instanceof OptionValue))
 			throw new RuntimeTypeException(arg.getClass() + " is not an instanceof OptionValue");
 		if (!(arg instanceof NoneValue)) return null;
-		return new TupleValue();
+		return signal();
 	}
 }
