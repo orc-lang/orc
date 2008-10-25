@@ -20,7 +20,7 @@ import orc.trace.values.Value;
  * @author dkitchin
  * 
  * Dot-accessible sites should extend this class and declare their Orc-available
- * methods using addMethods. The code is forward-compatible with many possible
+ * methods using {@link #addMembers()}. The code is forward-compatible with many possible
  * optimizations on the field lookup strategy.
  * 
  * A dot site may also have a default behavior which allows it to behave like
@@ -69,7 +69,6 @@ public abstract class DotSite extends Site implements TraceableValue {
 		return methodMap.get(f);
 	}
 
-	// Subclasses implement this method with a sequence of addMethod calls.
 	protected abstract void addMembers();	
 	
 	protected void addMember(String f, Object s) {

@@ -2,6 +2,7 @@ package orc.trace;
 
 import orc.error.SourceLocation;
 import orc.error.runtime.TokenException;
+import orc.runtime.values.Closure;
 
 /**
  * Do-nothing tracer, used when tracing is not enabled.
@@ -21,6 +22,8 @@ public class NullTracer implements Tracer {
 		public TokenTracer fork() {
 			return this;
 		}
+		public void enter(Closure closure) {}
+		public void leave(int depth) {}
 		public void print(String value, boolean newline) {}
 		public void publish(Object value) {}
 		public void error(TokenException error) {}

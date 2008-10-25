@@ -13,6 +13,7 @@ import java.util.TimerTask;
 import orc.Config;
 import orc.env.Env;
 import orc.error.runtime.TokenException;
+import orc.error.runtime.TokenLimitReachedException;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Visualizer;
 import orc.runtime.regions.Execution;
@@ -66,6 +67,9 @@ public class OrcEngine implements Runnable {
 	 * @see #scheduleTimer(TimerTask, long)
 	 */
 	private Timer timer;
+	
+	/** Token pool */
+	public TokenPool pool;
 
 	private Config config;
 	private PrintStream stdout;
@@ -77,7 +81,6 @@ public class OrcEngine implements Runnable {
 	private Tracer tracer;
 	
 	/** For debugging visualization */
-	private Visualizer viz;
 
 	public final static Globals<OrcEngine, Object> globals = new Globals<OrcEngine, Object>();
 
@@ -87,6 +90,7 @@ public class OrcEngine implements Runnable {
 		this.stdout = config.getStdout();
 		this.stderr = config.getStderr();
 		this.debugMode = config.debugMode();
+		this.pool = new TokenPool(config.getTokenPoolSize());
 	}
 
 	public synchronized boolean isDead() {
@@ -136,23 +140,18 @@ public class OrcEngine implements Runnable {
 		run();
 	}
 
-	public void run(Node root, Env env) {
-		start(root, env);
-		run();
-	}
-
 	public void start(Node root) {
-		start(root, new Env<Object>());
-	}
-
-	public void start(Node root, Env env) {
 		assert (root != null);
-		assert (env != null);
 		region = new Execution(this);
 		tracer = config.getTracer();
-		viz = config.getUseVisualizer() ? new Visualizer(root) : null;
-		activate(new Token(root, env, GroupCell.ROOT, region, this, tracer
-				.start()));
+		Token token;
+		try {
+			token = pool.newToken();
+		} catch (TokenLimitReachedException e) {
+			throw new AssertionError(e);
+		}
+		token.initializeRoot(root, region, this, tracer.start());
+		activate(token);
 	}
 
 	/**
@@ -191,7 +190,6 @@ public class OrcEngine implements Runnable {
 				return true;
 			}
 		}
-		if (viz != null) viz.pick(todo.node);
 		// notice that we do not synchronize while
 		// processing a token; we don't want to risk
 		// locking the engine if the processing blocks
@@ -244,7 +242,7 @@ public class OrcEngine implements Runnable {
 	 * dies, remaining silent and leaving the execution, and then calls this
 	 * method so that the engine can report or otherwise handle the failure.
 	 */
-	public void tokenError(Token t, TokenException problem) {
+	public void tokenError(TokenException problem) {
 		stderr.println("Error: " + problem.getMessage());
 		stderr.println("Source location: " + problem.getSourceLocation());
 		if (debugMode) {

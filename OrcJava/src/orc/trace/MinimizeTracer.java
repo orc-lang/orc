@@ -2,6 +2,7 @@ package orc.trace;
 
 import orc.error.SourceLocation;
 import orc.error.runtime.TokenException;
+import orc.runtime.values.Closure;
 import orc.trace.TokenTracer.BeforeTrace;
 import orc.trace.TokenTracer.PullTrace;
 import orc.trace.TokenTracer.StoreTrace;
@@ -42,6 +43,12 @@ public class MinimizeTracer extends DerivedTracer {
 		public BeforeTrace before() {
 			return null;
 		}
+		
+		@Override
+		public void enter(Closure closure) {}
+		
+		@Override
+		public void leave(int depth) {}
 	
 		@Override
 		public void block(PullTrace pull) {}

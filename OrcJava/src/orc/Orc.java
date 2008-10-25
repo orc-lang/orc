@@ -202,8 +202,7 @@ public class Orc {
         engine.debugMode = cfg.debugMode();
         
         // Create an OrcInstance object, to be run in its own thread
-        Env env = new Env();
-        OrcInstance inst = new OrcInstance(engine, n, env, q);
+        OrcInstance inst = new OrcInstance(engine, n, q);
         
         // Run the Orc instance in its own thread
         Thread t = new Thread(inst);

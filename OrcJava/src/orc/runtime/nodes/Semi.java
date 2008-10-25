@@ -3,6 +3,7 @@
  */
 package orc.runtime.nodes;
 
+import orc.error.runtime.TokenLimitReachedException;
 import orc.runtime.Token;
 import orc.runtime.regions.SemiRegion;
 
@@ -27,7 +28,13 @@ public class Semi extends Node {
 	 * that starts the right branch when it completes.
 	 */
 	public void process(Token t) {
-		Token forked = t.fork();
+		Token forked;
+		try {
+			forked = t.fork();
+		} catch (TokenLimitReachedException e) {
+			t.error(e);
+			return;
+		}
 		forked.unsetPending();
 		SemiRegion region = new SemiRegion(t.getRegion(), forked.move(right));
 		t.move(left).setRegion(region).activate();

@@ -4,6 +4,7 @@
 package orc.runtime.nodes;
 
 import orc.ast.simple.arg.Var;
+import orc.error.runtime.TokenLimitReachedException;
 import orc.runtime.Token;
 import orc.runtime.regions.GroupRegion;
 import orc.runtime.values.GroupCell;
@@ -31,7 +32,13 @@ public class Subgoal extends Node {
 		GroupCell cell = t.getGroup().createCell(t.getTracer().pull());
 		GroupRegion region = new GroupRegion(t.getRegion(), cell);
 		
-		Token forked = t.fork(cell, region);
+		Token forked;
+		try {
+			forked = t.fork(cell, region);
+		} catch (TokenLimitReachedException e) {
+			t.error(e);
+			return;
+		}
 		t.bind(cell).move(left).activate();
 		forked.move(right).activate();
 	}

@@ -60,7 +60,7 @@ public class Defs extends Node {
 		Closure[] closures = new Closure[defs.size()];
 		int i = 0;
 		for (Def d : defs) {
-			t.bind(closures[i++] = new Closure(d.arity, d.body, freeValues));
+			t.bind(closures[i++] = new Closure(d, freeValues));
 		}
 		// Now the environment is correct relative to the body
 
@@ -70,7 +70,7 @@ public class Defs extends Node {
 			Closure c = closures[i++];
 			Env<Object> env = new Env<Object>();
 			for (Var v : d.free) env.add(v.resolve(t.getEnvironment()));
-			c.setEnvironment(env);
+			c.env = env;
 		}
 
 		t.move(next).activate();

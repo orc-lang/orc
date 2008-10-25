@@ -2,6 +2,7 @@ package orc.trace;
 
 import orc.error.SourceLocation;
 import orc.error.runtime.TokenException;
+import orc.runtime.values.Closure;
 import orc.trace.TokenTracer.StoreTrace;
 
 /**
@@ -28,7 +29,7 @@ public abstract class DerivedTracer implements Tracer {
 	protected abstract TokenTracer newTokenTracer(TokenTracer tracer);
 	
 	protected abstract class DerivedTokenTracer implements TokenTracer {
-		private TokenTracer tracer;
+		protected TokenTracer tracer;
 		public DerivedTokenTracer(TokenTracer tracer) {
 			this.tracer = tracer;
 		}
@@ -51,6 +52,14 @@ public abstract class DerivedTracer implements Tracer {
 		
 		public void die() {
 			tracer.die();
+		}
+		
+		public void enter(Closure closure) {
+			tracer.enter(closure);
+		}
+		
+		public void leave(int depth) {
+			tracer.leave(depth);
 		}
 		
 		public void error(TokenException error) {

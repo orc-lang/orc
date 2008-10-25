@@ -10,20 +10,18 @@ public class OrcInstance implements Runnable {
 	
 	OrcEngine engine;
 	Node root;
-	Env env;
 	BlockingQueue<Object> q;
 	boolean running = false;
 	
-	public OrcInstance(OrcEngine engine, Node root, Env env, BlockingQueue<Object> q) {
+	public OrcInstance(OrcEngine engine, Node root, BlockingQueue<Object> q) {
 		this.engine = engine;
 		this.root = root;
-		this.env = env;
 		this.q = q;
 	}
 
 	public void run() {
 		running = true;
-		engine.run(root, env);
+		engine.run(root);
 		running = false;
 	}
 	
