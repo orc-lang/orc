@@ -16,9 +16,9 @@ public class Right extends Either {
 		return new RightTag(args.getArg(0));
 	}
 	@Override
-	public TupleValue deconstruct(Object arg) throws TokenException {
+	public Object deconstruct(Object arg) throws TokenException {
 		if (!(arg instanceof Tag)) throw new ArgumentTypeMismatchException(arg.getClass() + " is not an instance of Either.Tag");
 		if (!(arg instanceof RightTag)) return null;
-		return new TupleValue(((RightTag)arg).value);
+		return ((RightTag)arg).value;
 	}
 }
