@@ -147,11 +147,6 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 		engine.pool.freeToken(this);
 	}
 	
-	// An unreachable token is always dead.
-	public void finalize() {
-		die();
-	} 
-	
 	/**
 	 * If a token is alive, calls the node to perform the next action.
 	 */
