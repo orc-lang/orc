@@ -224,6 +224,50 @@ def sortBy(lt, xs) =
   length(xs)/2 >half>
   (take(half,xs), drop(half,xs)) >(front, back)>
   mergeBy(lt, sortBy(lt, front), sortBy(lt, back))
+ 
+{--
+* def mergeUnique([A], [A]) :: [A], A <: Comparable
+Merge two sorted lists, discarding duplicates.
+
+Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: [1, 2, 3, 4, 5]
+mergeUnique([1,2,3], [2,4,5])]]></programlisting>
+--}
+def mergeUnique(xs,ys) = mergeUniqueBy((=), (<), xs, ys)
+
+{--
+* def mergeUniqueBy(lambda (A,A) :: Boolean, lambda (A,A) :: Boolean, [A], [A]) :: [A]
+Merge two lists, discarding duplicates, using the given equality and less-than relations.
+--}
+def mergeUniqueBy(eq, lt, xs, []) = xs
+def mergeUniqueBy(eq, lt, [], ys) = ys
+def mergeUniqueBy(eq, lt, x:xs, y:ys) =
+  if eq(y,x) then mergeUniqueBy(eq, lt, xs, y:ys)
+  else if lt(y,x) then y:mergeUniqueBy(eq,lt,x:xs,ys)
+  else x:mergeUniqueBy(eq,lt,xs,y:ys)
+
+{--
+* def sortUnique([A]) :: [A], A <: Comparable
+Sort a list, discarding duplicates.
+
+Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: [1, 2, 3]
+sortUnique([1,3,2,3])]]></programlisting>
+--}
+def sortUnique(xs) = sortUniqueBy((=), (<), xs)
+
+{--
+* def sortUniqueBy(lambda (A,A) :: Boolean, lambda (A,A) :: Boolean, [A]) :: [A]
+Sort a list, discarding duplicates, using the given equality and less-than relations.
+--}
+def sortUniqueBy(eq, lt, []) = []
+def sortUniqueBy(eq, lt, [x]) = [x]
+def sortUniqueBy(eq, lt, xs) =
+  length(xs)/2 >half>
+  (take(half,xs), drop(half,xs)) >(front, back)>
+  mergeUniqueBy(eq, lt, sortUniqueBy(eq, lt, front), sortUniqueBy(eq, lt, back))
   
 {--
 * def group([(A,B)]) :: [(A,[B])]
