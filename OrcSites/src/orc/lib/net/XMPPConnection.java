@@ -50,7 +50,7 @@ import org.jivesoftware.smack.packet.Message;
  */
 public class XMPPConnection extends EvalSite {
 	/**
-	 * XMPP connection/session. Methods include connect, disconnect, login, and
+	 * XMPP connection/session. Members include connect, disconnect, login, and
 	 * chat. The underlying methods are all synchronous and therefore most of
 	 * the site methods are threaded.
 	 * 
@@ -63,8 +63,8 @@ public class XMPPConnection extends EvalSite {
 			connection = new org.jivesoftware.smack.XMPPConnection(config);
 		}
 		@Override
-		protected void addMethods() {
-			addMethod("connect", new ThreadedSite() {
+		protected void addMembers() {
+			addMember("connect", new ThreadedSite() {
 				@Override
 				public Object evaluate(Args args) throws TokenException {
 					try {
@@ -75,14 +75,14 @@ public class XMPPConnection extends EvalSite {
 					return Value.signal();
 				}
 			});
-			addMethod("disconnect", new ThreadedSite() {
+			addMember("disconnect", new ThreadedSite() {
 				@Override
 				public Object evaluate(Args args) throws TokenException {
 					connection.disconnect();
 					return Value.signal();
 				}
 			});
-			addMethod("login", new ThreadedSite() {
+			addMember("login", new ThreadedSite() {
 				@Override
 				public Object evaluate(Args args) throws TokenException {
 					try {
@@ -103,7 +103,7 @@ public class XMPPConnection extends EvalSite {
 					return Value.signal();
 				}
 			});
-			addMethod("chat", new ThreadedSite() {
+			addMember("chat", new ThreadedSite() {
 				@Override
 				public Object evaluate(Args args) throws TokenException {
 					return new ChatSite(connection, args.stringArg(0));
@@ -115,7 +115,7 @@ public class XMPPConnection extends EvalSite {
 		}
 	}
 	/**
-	 * Ongoing chat with a user. Methods include send and receive, which
+	 * Ongoing chat with a user. Members include send and receive, which
 	 * currently support only simple string messages.
 	 * 
 	 * @author quark
@@ -145,11 +145,11 @@ public class XMPPConnection extends EvalSite {
 			}
 		}
 		@Override
-		protected void addMethods() {
+		protected void addMembers() {
 			/**
 			 * Send a message.
 			 */
-			addMethod("send", new ThreadedSite() {
+			addMember("send", new ThreadedSite() {
 				@Override
 				public Object evaluate(Args args) throws TokenException {
 					try {
@@ -163,7 +163,7 @@ public class XMPPConnection extends EvalSite {
 			/**
 			 * Receive a message (blocks until one is received).
 			 */
-			addMethod("receive", new Site() {
+			addMember("receive", new Site() {
 				@Override
 				public void callSite(Args args, Token receiver) {
 					synchronized (received) {

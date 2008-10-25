@@ -31,11 +31,11 @@ import org.htmlparser.util.ParserException;
 public class MySpace extends DotSite {
     
     @Override
-    protected void addMethods() {
-        addMethod("scrapeMusicShows", new scrapeMusicMethod());  
+    protected void addMembers() {
+        addMember("scrapeMusicShows", new scrapeMusicMember());  
     }
 
-    private class scrapeMusicMethod extends PartialSite {
+    private class scrapeMusicMember extends PartialSite {
         
         private Map<String, Boolean> seenURLs = new HashMap<String, Boolean>();
         
