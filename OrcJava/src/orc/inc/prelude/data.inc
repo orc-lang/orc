@@ -59,10 +59,18 @@ Get an item from the buffer. If no items are available, halt.
 Put an item in the buffer.
 
 ** site Buffer<A>.close() :: Signal
-Close the buffer. This has the effect of immediately causing any blocked calls
-to <code>get</code> to halt. In addition, any subsequent calls to
-<code>put</code> will halt, and once the buffer becomes empty, any subsequent
-calls to <code>get</code> will halt.
+Close the buffer and block until it is empty.
+This has the effect of immediately causing any blocked calls to
+<code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
+will halt, and once the buffer becomes empty, any subsequent calls to
+<code>get</code> will halt.
+
+** site Buffer<A>.closenb() :: Signal
+Close the buffer and return a signal immediately.
+This has the effect of immediately causing any blocked calls to
+<code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
+will halt, and once the buffer becomes empty, any subsequent calls to
+<code>get</code> will halt.
 
 ** site Buffer<A>.isClosed() :: Boolean
 If the buffer is currently closed, return true, otherwise return false.
@@ -100,10 +108,18 @@ Put an item in the buffer. If no slots are open, block until one becomes open.
 Put an item in the buffer. If no slots are open, halt.
 
 ** site BoundedBuffer<A>.close() :: Signal
-Close the buffer. This has the effect of immediately causing any blocked calls
-to <code>get</code> to halt. In addition, any subsequent calls to
-<code>put</code> will halt, and once the buffer becomes empty, any subsequent
-calls to <code>get</code> will halt.
+Close the buffer and block until it is empty.
+This has the effect of immediately causing any blocked calls to
+<code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
+will halt, and once the buffer becomes empty, any subsequent calls to
+<code>get</code> will halt.
+
+** site BoundedBuffer<A>.closenb() :: Signal
+Close the buffer and return a signal immediately.
+This has the effect of immediately causing any blocked calls to
+<code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
+will halt, and once the buffer becomes empty, any subsequent calls to
+<code>get</code> will halt.
 
 ** site BoundedBuffer<A>.isClosed() :: Boolean
 If the buffer is currently closed, return true, otherwise return false.

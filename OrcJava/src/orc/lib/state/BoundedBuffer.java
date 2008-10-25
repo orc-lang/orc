@@ -31,6 +31,7 @@ public class BoundedBuffer extends EvalSite {
 		private LinkedList<Object> buffer;
 		private LinkedList<Token> readers;
 		private LinkedList<Token> writers;
+		private Token closer;
 		/** The number of open slots in the buffer. */
 		private int open;
 		private boolean closed = false;
@@ -46,10 +47,7 @@ public class BoundedBuffer extends EvalSite {
 		protected void addMembers() {
 			addMember("get", new Site() {
 				public void callSite(Args args, Token reader) {
-					if (!writers.isEmpty()) {
-						reader.resume(buffer.removeFirst());
-						writers.removeFirst().resume();
-					} else if (buffer.isEmpty()) {
+					if (buffer.isEmpty()) {
 						if (closed) {
 							reader.die();
 						} else {
@@ -57,21 +55,34 @@ public class BoundedBuffer extends EvalSite {
 						}
 					} else {
 						reader.resume(buffer.removeFirst());
-						++open;
+						if (writers.isEmpty()) {
+							++open;
+						} else {
+							writers.removeFirst().resume();
+						}
+						if (closer != null && buffer.isEmpty()) {
+							closer.resume();
+							closer = null;
+						}
 					}
 				}
 			});	
 			addMember("getnb", new Site() {
 				@Override
 				public void callSite(Args args, Token reader) {
-					if (!writers.isEmpty()) {
-						reader.resume(buffer.removeFirst());
-						writers.removeFirst().resume();
-					} else if (buffer.isEmpty()) {
+					if (buffer.isEmpty()) {
 						reader.die();
 					} else {
 						reader.resume(buffer.removeFirst());
-						++open;
+						if (writers.isEmpty()) {
+							++open;
+						} else {
+							writers.removeFirst().resume();
+						}
+						if (closer != null && buffer.isEmpty()) {
+							closer.resume();
+							closer = null;
+						}
 					}
 				}
 			});
@@ -123,6 +134,11 @@ public class BoundedBuffer extends EvalSite {
 					// resume all writers
 					for (Token writer : writers) writer.resume();
 					writers.clear();
+					// notify closer if necessary
+					if (closer != null) {
+						closer.resume();
+						closer = null;
+					}
 					return out;
 				}
 			});	
@@ -144,12 +160,24 @@ public class BoundedBuffer extends EvalSite {
 					return closed;
 				}
 			});	
-			addMember("close", new EvalSite() {
+			addMember("close", new Site() {
 				@Override
-				public Object evaluate(Args args) throws TokenException {
+				public void callSite(Args args, Token token) {
 					closed = true;
 					for (Token reader : readers) reader.die();
-					return signal();
+					if (buffer.isEmpty()) {
+						token.resume();
+					} else {
+						closer = token;
+					}
+				}
+			});	
+			addMember("closenb", new Site() {
+				@Override
+				public void callSite(Args args, Token token) {
+					closed = true;
+					for (Token reader : readers) reader.die();
+					token.resume();
 				}
 			});	
 		}
