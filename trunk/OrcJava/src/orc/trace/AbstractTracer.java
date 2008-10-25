@@ -2,6 +2,7 @@ package orc.trace;
 
 import orc.error.SourceLocation;
 import orc.error.runtime.TokenException;
+import orc.runtime.values.Closure;
 import orc.trace.events.AfterEvent;
 import orc.trace.events.BeforeEvent;
 import orc.trace.events.BlockEvent;
@@ -67,6 +68,12 @@ public abstract class AbstractTracer implements Tracer {
 		}
 		public void choke(StoreTrace store) {
 			annotateAndRecord(new OnlyHandle<Event>(new ChokeEvent((StoreEvent)store)));
+		}
+		public void enter(Closure closure) {
+			// Do nothing; we need to create an event
+		}
+		public void leave(int depth) {
+			// Do nothing; we need to create an event
 		}
 		public void receive(Object value) {
 			if (lastCallTime == 0) {

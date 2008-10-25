@@ -11,8 +11,11 @@ import orc.error.Locatable;
 import orc.error.SourceLocation;
 import orc.error.runtime.CapabilityException;
 import orc.error.runtime.SiteResolutionException;
+import orc.error.runtime.StackLimitReachedException;
 import orc.error.runtime.TokenException;
+import orc.error.runtime.TokenLimitReachedException;
 import orc.error.runtime.UncallableValueException;
+import orc.runtime.nodes.Def;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Return;
 import orc.runtime.nodes.Silent;
@@ -20,6 +23,7 @@ import orc.runtime.regions.Execution;
 import orc.runtime.regions.Region;
 import orc.runtime.sites.java.ObjectProxy;
 import orc.runtime.values.Callable;
+import orc.runtime.values.Closure;
 import orc.runtime.values.Future;
 import orc.runtime.values.GroupCell;
 import orc.runtime.values.Value;
@@ -40,10 +44,12 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 	 * but that was really an abuse of tokens.
 	 * @author quark
 	 */
-	protected static class Continuation {
+	private static class Continuation {
 		public Node node;
 		public Env<Object> env;
 		public Continuation continuation;
+		/** Track the depth of a tail-recursive continuation. */
+		public int depth = 1;
 		public Continuation(Node node, Env<Object> env, Continuation continuation) {
 			this.node = node;
 			this.env = env;
@@ -51,11 +57,11 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 		}
 	}
 	
-	protected Node node;	
-	protected Env<Object> env;
-	protected GroupCell group;
-	protected Region region;
-	protected OrcEngine engine;
+	public Node node;	
+	private Env<Object> env;
+	private GroupCell group;
+	private Region region;
+	private OrcEngine engine;
 	/**
 	 * The location of the token in the source code.
 	 * This is set whenever the token begins processing a new node.
@@ -64,14 +70,57 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 	 * node, not the current one, so the source location would be
 	 * incorrect.
 	 */
-	protected SourceLocation location;
-	protected TokenTracer tracer;
-	protected Continuation continuation;
-	protected Object result;
-	protected boolean alive;
+	private SourceLocation location;
+	private TokenTracer tracer;
+	private Continuation continuation;
+	private Object result;
+	private boolean alive;
+	/** Number of stack frames remaining before hitting the stack size limit. */
+	private int stackAvailable;
 	
-	/** Copy constructor */
-	protected Token(Node node, Env<Object> env, Continuation continuation, GroupCell group, Region region, Object result, OrcEngine engine, TokenTracer tracer) {
+	/**
+	 * Create a new uninitialized token.
+	 * You should get tokens from {@link TokenPool}, not
+	 * call this directly.
+	 */
+	Token() {}
+	
+	/**
+	 * Initialize a root token.
+	 */
+	void initializeRoot(Node node, Region region, OrcEngine engine, TokenTracer tracer) {
+		initialize(node, new Env<Object>(),
+				null, GroupCell.ROOT, region,
+				null, engine, tracer,
+				engine.getConfig().getStackSize());
+	}
+	
+	/**
+	 * Initialize a forked token.
+	 */
+	void initializeFork(Token that, GroupCell group, Region region) {
+		initialize(that.node, that.env.clone(),
+				that.continuation, group, region,
+				that.result, that.engine, that.tracer.fork(),
+				that.stackAvailable);
+	}
+	
+	/**
+	 * Free any resources held by this token.
+	 */
+	void free() {
+		node = null;	
+		env = null;
+		group = null;
+		region = null;
+		engine = null;
+		location = null;
+		tracer = null;
+		continuation = null;
+		result = null;
+	}
+	
+	private void initialize(Node node, Env<Object> env, Continuation continuation, GroupCell group, Region region, Object result, OrcEngine engine, TokenTracer tracer, int stackAvailable) {
 		this.node = node;
 		this.env = env;
 		this.continuation = continuation;
@@ -81,24 +130,21 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 		this.region = region;
 		this.alive = true;
 		this.tracer = tracer;
+		this.stackAvailable = stackAvailable;
 		region.add(this);
 		setPending();
-	}
-	
-	public Token(Node node, Env<Object> env, GroupCell group, Region region, OrcEngine engine, TokenTracer tracer) {
-		this(node, env, null, group, region, null, engine, tracer);
 	}
 
 	// Signal that this token is dead
 	// Synchronized so that multiple threads don't simultaneously signal
 	// a token to die and perform duplicate region removals.
 	public synchronized void die() {
-		if (alive) {
-			alive = false;
-			region.remove(this);
-			unsetPending();
-			tracer.die();
-		}
+		assert(alive);
+		alive = false;
+		region.remove(this);
+		unsetPending();
+		tracer.die();
+		engine.pool.freeToken(this);
 	}
 	
 	// An unreachable token is always dead.
@@ -182,19 +228,26 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 	/**
 	 * Enter a closure by moving to a new node and environment,
 	 * and setting the continuation for {@link #leaveClosure()}.
+	 * @throws StackLimitReachedException 
 	 */
-	public Token enterClosure(Node node, Env<Object> env, Node next) {
+	public Token enterClosure(Closure closure, Node next) throws StackLimitReachedException {
+		if (stackAvailable == 0) {
+			throw new StackLimitReachedException();
+		}
+		--stackAvailable;
 		if (next instanceof Return) {
 			// tail call should return directly to our current continuation
 			// rather than going through us
+			++continuation.depth;
 		} else if (next.isTerminal()) {
 			// handle terminal (non-returning) continuation specially
 			continuation = new Continuation(next, this.env.clone(), null);
 		} else {
 			continuation = new Continuation(next, this.env.clone(), continuation);
 		}
-		this.env = env.clone();
-		return move(node);
+		tracer.enter(closure);
+		this.env = closure.env.clone();
+		return move(closure.def.body);
 	}
 	
 	/**
@@ -202,9 +255,12 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 	 * {@link #enterClosure(Node, Env, Node)}.
 	 */
 	public Token leaveClosure() {
+		int depth = continuation.depth;
 		this.env = continuation.env.clone();
 		move(continuation.node);
 		continuation = continuation.continuation;
+		tracer.leave(depth);
+		stackAvailable += depth;
 		return this;
 	}
 
@@ -272,7 +328,7 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 	public void error(TokenException problem) {
 		problem.setSourceLocation(getSourceLocation());
 		tracer.error(problem);
-		engine.tokenError(this, problem);
+		engine.tokenError(problem);
 		// die after reporting the error, so the engine
 		// isn't halted before it gets a chance to report it
 		die();
@@ -296,9 +352,10 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 
 	/**
 	 * Fork a token.
+	 * @throws TokenLimitReachedException 
 	 * @see #fork(GroupCell, Region)
 	 */
-	public Token fork() {
+	public Token fork() throws TokenLimitReachedException {
 		return fork(group, region);
 	}
 	
@@ -307,12 +364,12 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 	 * original token continues on the left while the new token evaluates the
 	 * right (this order is arbitrary, but right-branching ensures fewer tokens
 	 * are created with the common left-associative asymmetric combinators).
+	 * @throws TokenLimitReachedException 
 	 */
-	public Token fork(GroupCell group, Region region) {
-		return new Token(this.node, this.env.clone(), this.continuation,
-				group, region,
-				this.result, this.engine,
-				tracer.fork());
+	public Token fork(GroupCell group, Region region) throws TokenLimitReachedException {
+		Token out = engine.pool.newToken();
+		out.initializeFork(this, group, region);
+		return out;
 	}
 
 	public void setSourceLocation(SourceLocation location) {

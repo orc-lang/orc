@@ -52,6 +52,8 @@ public class Config {
 	private HashMap<String, Boolean> caps = new HashMap<String, Boolean>();
 	private PrintStream stdout = System.out;
 	private PrintStream stderr = System.err;
+	private int tokenPoolSize = -1;
+	private int stackSize = -1;
 	
 	/**
 	 * Set properties based on command-line arguments.
@@ -207,13 +209,19 @@ public class Config {
 		this.stderr = stderr;
 	}
 
-	/**
-	 * Change this to return true to use JUNG to visualize
-	 * the DAG and token movement. This is still extremely
-	 * experimental, so it's not even a command-line argument.
-	 * @return
-	 */
-	public boolean getUseVisualizer() {
-		return false;
+	public int getTokenPoolSize() {
+		return tokenPoolSize;
+	}
+	
+	public void setTokenPoolSize(int tokenPoolSize) {
+		this.tokenPoolSize = tokenPoolSize;
+	}
+
+	public int getStackSize() {
+		return stackSize;
+	}
+	
+	public void setStackSize(int stackSize) {
+		this.stackSize = stackSize;
 	}
 }

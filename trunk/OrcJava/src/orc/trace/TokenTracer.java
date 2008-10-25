@@ -2,6 +2,7 @@ package orc.trace;
 
 import orc.error.Locatable;
 import orc.error.runtime.TokenException;
+import orc.runtime.values.Closure;
 
 /**
  * Interface for writing traces from a single Orc thread. Methods correspond to
@@ -110,6 +111,16 @@ public interface TokenTracer extends Locatable {
 	 * @return a tag which you can pass to {@link #after(BeforeTrace)}.
 	 */
 	public BeforeTrace before();
+	/**
+	 * Enter a closure.
+	 * EXPERIMENTAL
+	 */
+	public void enter(Closure closure);
+	/**
+	 * Leave "depth" closures
+	 * EXPERIMENTAL
+	 */
+	public void leave(int depth);
 	/**
 	 * Indicate that the right side of a semicolon combinator is continuing.
 	 * @param before the BeforeEvent which triggered this event

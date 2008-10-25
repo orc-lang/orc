@@ -3,6 +3,7 @@
  */
 package orc.runtime.nodes;
 
+import orc.error.runtime.TokenLimitReachedException;
 import orc.runtime.Token;
 
 /**
@@ -23,7 +24,13 @@ public class Fork extends Node {
 		if (engine.debugMode)
 			engine.debug("Fork", t);
 		*/
-		Token forked = t.fork();
+		Token forked;
+		try {
+			forked = t.fork();
+		} catch (TokenLimitReachedException e) {
+			t.error(e);
+			return;
+		}
 		t.move(left).activate();
 		forked.move(right).activate();
 	}
