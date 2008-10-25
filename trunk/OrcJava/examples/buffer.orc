@@ -1,12 +1,15 @@
 val c = Buffer()
 c.get()
-| c.get()
-| Rtimer(1000) >>
+| Rtimer(200) >> c.get()
+| Rtimer(200) >> c.get()
+| Rtimer(100) >>
   c.put(3) >>
-  c.close() >>
-  stop
+  c.put(3) >>
+  c.close()
 
 {-
 OUTPUT:
 3
+3
+signal
 -}
