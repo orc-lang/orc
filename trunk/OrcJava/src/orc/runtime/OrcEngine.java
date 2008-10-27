@@ -13,7 +13,7 @@ import java.util.TimerTask;
 import orc.Config;
 import orc.env.Env;
 import orc.error.runtime.TokenException;
-import orc.error.runtime.TokenLimitReachedException;
+import orc.error.runtime.TokenLimitReachedError;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Visualizer;
 import orc.runtime.regions.Execution;
@@ -147,7 +147,7 @@ public class OrcEngine implements Runnable {
 		Token token;
 		try {
 			token = pool.newToken();
-		} catch (TokenLimitReachedException e) {
+		} catch (TokenLimitReachedError e) {
 			throw new AssertionError(e);
 		}
 		token.initializeRoot(root, region, this, tracer.start());

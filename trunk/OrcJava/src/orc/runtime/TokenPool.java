@@ -1,6 +1,6 @@
 package orc.runtime;
 
-import orc.error.runtime.TokenLimitReachedException;
+import orc.error.runtime.TokenLimitReachedError;
 import orc.runtime.nodes.Node;
 import orc.runtime.regions.Region;
 import orc.trace.TokenTracer;
@@ -12,9 +12,9 @@ public class TokenPool {
 		this.available = bound;
 	}
 	
-	public synchronized Token newToken() throws TokenLimitReachedException {
+	public synchronized Token newToken() throws TokenLimitReachedError {
 		if (available == 0) {
-			throw new TokenLimitReachedException();
+			throw new TokenLimitReachedError();
 		} else {
 			--available;
 			return new Token();
