@@ -11,9 +11,10 @@ import orc.error.Locatable;
 import orc.error.SourceLocation;
 import orc.error.runtime.CapabilityException;
 import orc.error.runtime.SiteResolutionException;
-import orc.error.runtime.StackLimitReachedException;
+import orc.error.runtime.StackLimitReachedError;
+import orc.error.runtime.TokenError;
 import orc.error.runtime.TokenException;
-import orc.error.runtime.TokenLimitReachedException;
+import orc.error.runtime.TokenLimitReachedError;
 import orc.error.runtime.UncallableValueException;
 import orc.runtime.nodes.Def;
 import orc.runtime.nodes.Node;
@@ -223,11 +224,11 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 	/**
 	 * Enter a closure by moving to a new node and environment,
 	 * and setting the continuation for {@link #leaveClosure()}.
-	 * @throws StackLimitReachedException 
+	 * @throws StackLimitReachedError 
 	 */
-	public Token enterClosure(Closure closure, Node next) throws StackLimitReachedException {
+	public Token enterClosure(Closure closure, Node next) throws StackLimitReachedError {
 		if (stackAvailable == 0) {
-			throw new StackLimitReachedException();
+			throw new StackLimitReachedError();
 		}
 		--stackAvailable;
 		if (next instanceof Return) {
@@ -327,6 +328,8 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 		// die after reporting the error, so the engine
 		// isn't halted before it gets a chance to report it
 		die();
+		// if this is an unrecoverable error, terminate the whole engine
+		if (problem instanceof TokenError) engine.terminate();
 	}
 
 	/**
@@ -347,10 +350,10 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 
 	/**
 	 * Fork a token.
-	 * @throws TokenLimitReachedException 
+	 * @throws TokenLimitReachedError 
 	 * @see #fork(GroupCell, Region)
 	 */
-	public Token fork() throws TokenLimitReachedException {
+	public Token fork() throws TokenLimitReachedError {
 		return fork(group, region);
 	}
 	
@@ -359,9 +362,9 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 	 * original token continues on the left while the new token evaluates the
 	 * right (this order is arbitrary, but right-branching ensures fewer tokens
 	 * are created with the common left-associative asymmetric combinators).
-	 * @throws TokenLimitReachedException 
+	 * @throws TokenLimitReachedError 
 	 */
-	public Token fork(GroupCell group, Region region) throws TokenLimitReachedException {
+	public Token fork(GroupCell group, Region region) throws TokenLimitReachedError {
 		Token out = engine.pool.newToken();
 		out.initializeFork(this, group, region);
 		return out;

@@ -4,7 +4,7 @@
 package orc.runtime.nodes;
 
 import orc.ast.simple.arg.Var;
-import orc.error.runtime.TokenLimitReachedException;
+import orc.error.runtime.TokenLimitReachedError;
 import orc.runtime.Token;
 import orc.runtime.regions.GroupRegion;
 import orc.runtime.values.GroupCell;
@@ -35,7 +35,7 @@ public class Subgoal extends Node {
 		Token forked;
 		try {
 			forked = t.fork(cell, region);
-		} catch (TokenLimitReachedException e) {
+		} catch (TokenLimitReachedError e) {
 			t.error(e);
 			return;
 		}
