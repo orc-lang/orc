@@ -26,8 +26,9 @@
 <a name="Introduction" id="Introduction"></a><h2>Introduction to Orc <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
-	<li class="new"><a target="_blank" class="paper" href="papers/398.pdf">Introduction to Orc Presentation Slides</a><br />
-	Presented in CS 398T, September 26, 2008</li>
+	<li class="new"><a target="_blank" class="paper" href="papers/presentation.pdf">Introduction to Orc (Presentation Slides)</a><br />
+	William Cook, David Kitchin, Jayadev Misra, Adrian Quark<br />
+	Unpublished. October 28, 2008.</li>
 	<li class="new"><a target="_blank" class="paper" href="papers/structured_interacting_computations_2008.pdf">Structured Interacting Computations (A position paper)</a><br />
 	William Cook and Jayadev Misra<br />
 	Proceedings of "Software-Intensive Systems", Springer Verlag, LNCS 5380, pp139 --145, 2008.</li>

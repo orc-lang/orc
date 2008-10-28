@@ -5,9 +5,9 @@
   <li><a href="tutorial.shtml">Orc in 15 Minutes</a>: tutorial and introduction to the language.</li>
   <li>User Guide
     <ul>
-      <li><a href="userguide/html/index.html" target="_blank">HTML</a> <img src="images/new-window.gif" alt="opens in new window" border="0" /> (one page per section)</li>
-      <li><a href="userguide/html/all.html" target="_blank">HTML</a> <img src="images/new-window.gif" alt="opens in new window" border="0" /> (single page)</li>
-      <li><a href="userguide/pdf/all.pdf">PDF</a> <img src="images/new-window.gif" border="0" /> (for printing)</li>
+      <li><a href="userguide/html/index.html" target="_blank">Browse by section</a> <img src="images/new-window.gif" alt="opens in new window" border="0" /> (HTML)</li>
+      <li><a href="userguide/html/all.html" target="_blank">Everything in one page</a> <img src="images/new-window.gif" alt="opens in new window" border="0" /> (HTML)</li>
+      <li><a href="userguide/pdf/all.pdf">Printable book</a> <img src="images/new-window.gif" border="0" /> (PDF)</li>
     </ul>
   <li><a href="wiki">Wiki</a>: community-supported documentation.</li>
   <li>Javadoc: for developers interested in implementing Orc sites in Java, or extending the Orc implementation.
