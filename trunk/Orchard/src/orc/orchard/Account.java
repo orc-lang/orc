@@ -29,6 +29,11 @@ public abstract class Account implements AccountMBean {
 	private Integer lifespan = null;
 	private boolean canSendMail = false;
 	private boolean canImportJava = false;
+	// NB: right now these limits are hard-coded for all accounts,
+	// because it's too easy to write recursive programs
+	// which take down the server otherwise.
+	private int tokenPoolSize = 1024;
+	private int stackSize = 1024;
 
 	public Account() {}
 
@@ -60,6 +65,8 @@ public abstract class Account implements AccountMBean {
 		Config config = new Config();
 		config.setCapability("send mail", canSendMail);
 		config.setCapability("import java", canImportJava);
+		config.setTokenPoolSize(tokenPoolSize);
+		config.setStackSize(stackSize);
 		
 		if (!canImportJava) {
 			OilSecurityValidator validator = new OilSecurityValidator();
@@ -165,5 +172,21 @@ public abstract class Account implements AccountMBean {
 
 	public Integer getQuota() {
 		return quota;
+	}
+
+	public int getStackSize() {
+		return stackSize;
+	}
+
+	public void setStackSize(int stackSize) {
+		this.stackSize = stackSize;
+	}
+
+	public int getTokenPoolSize() {
+		return tokenPoolSize;
+	}
+
+	public void setTokenPoolSize(int tokenPoolSize) {
+		this.tokenPoolSize = tokenPoolSize;
 	}
 }
