@@ -23,6 +23,7 @@ public class Semaphore extends EvalSite {
 	protected class SemaphoreInstance extends DotSite {
 
 		private LinkedList<Token> waiters = new LinkedList<Token>();
+		private LinkedList<Token> snoopers = new LinkedList<Token>();
 		private int n;
 
 		SemaphoreInstance(int n) {
@@ -35,6 +36,12 @@ public class Semaphore extends EvalSite {
 				public void callSite(Args args, Token waiter) {
 					if (0 == n) {
 						waiters.addLast(waiter);
+						if (!snoopers.isEmpty()) {
+							for (Token snooper : snoopers) {
+								snooper.resume();
+							}
+							snoopers.clear();
+						}
 					} else {
 						--n;
 						waiter.resume();
@@ -61,6 +68,26 @@ public class Semaphore extends EvalSite {
 						waiter.resume();
 					}
 					sender.resume();
+				}
+			});
+			addMember("snoop", new Site() {
+				@Override
+				public void callSite(Args args, Token token) throws TokenException {
+					if (waiters.isEmpty()) {
+						snoopers.addLast(token);
+					} else {
+						token.resume();
+					}
+				}
+			});
+			addMember("snoopnb", new Site() {
+				@Override
+				public void callSite(Args args, Token token) throws TokenException {
+					if (waiters.isEmpty()) {
+						token.die();
+					} else {
+						token.resume();
+					}
 				}
 			});
 		}
