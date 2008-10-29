@@ -205,10 +205,10 @@ precedence.
 Symbol   Assoc       Prec   Name
 -----------------------------------------------------------
  lambda  unary       0[3]   lambda
+ if      none        0      if/then/else
  ;       left        1      semicolon
  <<      left        2      where
  |       right[2]    3      parallel
- if      none        4      if/then/else
  >>      right       4      sequence
  ||      right[2]    5      boolean or
  &&      right[2]    5      boolean and
@@ -259,10 +259,10 @@ people intuitively use these operators.
 
 Expression GoalExpression =
 	Lambda
-	/ SemiExpression
+	/ MaybeSemiExpression
 	;
 	
-Expression SemiExpression =
+Expression MaybeSemiExpression =
 	seed:MaybeWhereExpression actions:SemiExpressionTail* {
 		yyValue = apply(actions, seed);
 	}
@@ -341,24 +341,14 @@ Expression SeqExpression =
 	}
 	;
 Expression MaybeSeqExpression = SeqExpression / IfThenElse / MaybeDisjunction;
-Expression NoCmpMaybeSeqExpression = SeqExpression / NoCmpIfThenElse / NoCmpMaybeDisjunction;
+Expression NoCmpMaybeSeqExpression = SeqExpression / IfThenElse / NoCmpMaybeDisjunction;
 	
 Expression IfThenElse =
-	IF condition:MaybeDisjunction THEN consequent:MaybeSeqExpression ELSE alternative:MaybeSeqExpression {
+	IF condition:MaybeDisjunction THEN consequent:MaybeSemiExpression ELSE alternative:MaybeSemiExpression {
 		yyValue = new IfThenElse(condition, consequent, alternative);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ IF condition:MaybeDisjunction THEN consequent:MaybeSeqExpression {
-		yyValue = new IfThenElse(condition, consequent);
-		yyValue = at(yyStart, yyCount, yyValue);
-	}
-	;
-Expression NoCmpIfThenElse =
-	IF condition:MaybeDisjunction THEN consequent:MaybeSeqExpression ELSE alternative:NoCmpMaybeSeqExpression {
-		yyValue = new IfThenElse(condition, consequent, alternative);
-		yyValue = at(yyStart, yyCount, yyValue);
-	}
-	/ IF condition:MaybeDisjunction THEN consequent:NoCmpMaybeSeqExpression {
+	/ IF condition:MaybeDisjunction THEN consequent:MaybeSemiExpression {
 		yyValue = new IfThenElse(condition, consequent);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
