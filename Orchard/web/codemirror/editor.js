@@ -370,6 +370,16 @@ var Editor = (function(){
     }
   }
 
+  function isNearParsedNode(node) {
+    var distance = 0;
+    while (node && (!node.parserFromHere || node.dirty)) {
+      distance += (node.textContent || node.innerText || "-").length;
+      if (distance > 800) return false;
+      node = node.previousSibling;
+    }
+    return true;
+  }
+
   function isSafeKey(code) {
     return (code >= 16 && code <= 18) || // shift, control, alt
            (code >= 33 && code <= 40); // arrows, home, end
@@ -634,16 +644,6 @@ var Editor = (function(){
     scheduleParenBlink: function() {
       if (this.parenEvent) this.parent.clearTimeout(this.parenEvent);
       this.parenEvent = this.parent.setTimeout(method(this, "blinkParens"), 300);
-    },
-
-    isNearParsedNode: function(node) {
-      var distance = 0;
-      while (node && (!node.parserFromHere || node.dirty)) {
-        distance += (node.textContent || node.innerText || "-").length;
-        if (distance > 800) return false;
-        node = node.previousSibling;
-      }
-      return true;
     },
 
     // Take the token before the cursor. If it contains a character in

@@ -26,8 +26,8 @@ function parseQuery() {
 
 var query = parseQuery();
 var mock = query.mock;
-//query.mock = true;
-var baseUrl = query.mock ? "" : "/orchard/";
+//mock = true;
+var baseUrl = mock ? "" : "/orchard/";
 var devKey = query.k ? query.k : "";
 
 // load our dependencies

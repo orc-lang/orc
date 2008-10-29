@@ -1,4 +1,3 @@
-console.log();
 /**
  * Syntax-highlighting parser for Orc.
  * - This depends on the CodeMirror library: http://marijn.haverbeke.nl/codemirror

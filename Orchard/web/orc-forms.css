@@ -4,8 +4,9 @@ label {
 	font-weight: bold;
 }
 
-label input {
+label * {
 	margin-left: 1ex;
+	vertical-align: top;
 }
 
 table.DateRangesField {
