@@ -79,6 +79,9 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 	/** Number of stack frames remaining before hitting the stack size limit. */
 	private int stackAvailable;
 	
+	/** Used to link the token into the {@link TokenPool} free list. */
+	Token nextFree;
+	
 	/**
 	 * Create a new uninitialized token.
 	 * You should get tokens from {@link TokenPool}, not

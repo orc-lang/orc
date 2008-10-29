@@ -68,8 +68,8 @@ public class OrcEngine implements Runnable {
 	 */
 	private Timer timer;
 	
-	/** Token pool */
-	public TokenPool pool;
+	/** Factory for tokens. */
+	TokenPool pool;
 
 	private Config config;
 	private PrintStream stdout;
@@ -148,6 +148,7 @@ public class OrcEngine implements Runnable {
 		try {
 			token = pool.newToken();
 		} catch (TokenLimitReachedError e) {
+			// This should be impossible
 			throw new AssertionError(e);
 		}
 		token.initializeRoot(root, region, this, tracer.start());
