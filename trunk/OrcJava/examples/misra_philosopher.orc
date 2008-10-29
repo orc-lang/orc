@@ -20,11 +20,12 @@ def makeSet(items) =
 Start a philosopher process; never publishes.
 
 name: identify this process in status messages
-send: sending end of our mailbox
-receive: receiving end of our mailbox
+mbox: our mailbox
 missing: set of neighboring philosophers holding our fork
 -}
-def philosopher(name, send, receive, missing) =
+def philosopher(name, mbox, missing) =
+  val send = mbox.put
+  val receive = mbox.get
   -- deferred requests for forks
   val deferred = Buffer()
   -- forks we hold which are clean
@@ -48,24 +49,24 @@ def philosopher(name, send, receive, missing) =
       stop
 
   def thinking() =
-    def match(("rumble", _)) =
+    def on(("rumble", _)) =
       println(name + " hungry") >>
       map(requestFork, missing) >>
       hungry()
-    def match(("request", p)) =
+    def on(("request", p)) =
       sendFork(p) >>
       thinking()
-    match(receive())
+    on(receive())
 
   def hungry() =
-    def match(("fork", p)) =
+    def on(("fork", p)) =
       missing.remove(p) >>
       if missing.isEmpty()
       then
         println(name + " eating") >>
         eating()
       else hungry()
-    def match(("request", p)) =
+    def on(("request", p)) =
       if clean.contains(p)
       then
         deferred.put(p) >>
@@ -74,7 +75,7 @@ def philosopher(name, send, receive, missing) =
         sendFork(p) >>
         requestFork(p) >>
         hungry()
-    match(receive())
+    on(receive())
 
   def eating() =
     clean.clear() >>
@@ -85,13 +86,24 @@ def philosopher(name, send, receive, missing) =
   digesting()
 
 {-
-Create the graph of philosophers:
-Vertices = a, b, c
-Edges = a->b, a->c, b->c
+Create an NxN 4-connected grid of philosophers.  Each philosopher holds the
+fork for the connections below and to the right (so the top left philosopher
+holds both its forks).
 -}
-val a = Buffer()
-val b = Buffer()
-val c = Buffer()
-  philosopher("A", a.put, a.get, makeSet([b.put, c.put]))
-| philosopher("B", b.put, b.get, makeSet([c.put]))
-| philosopher("C", c.put, c.get, makeSet([]))
+def philosophers(n) =
+  {- channels -}
+  val cs = uncurry(IArray(n, lambda (_) = IArray(n, ignore(Buffer))))
+
+  {- first row -}
+  philosopher((0,0), cs(0,0), makeSet([]))
+  | for(1, n) >j>
+    philosopher((0,j), cs(0,j), makeSet([cs(0,j-1).put]))
+
+  {- remaining rows -}
+  | for(1, n) >i> (
+      philosopher((i,0), cs(i,0), makeSet([cs(i-1,0).put]))
+      | for(1, n) >j>
+        philosopher((i,j), cs(i,j), makeSet([cs(i-1,j).put, cs(i,j-1).put]))
+    )
+
+philosophers(2)
