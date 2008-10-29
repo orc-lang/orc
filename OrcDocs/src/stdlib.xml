@@ -174,6 +174,14 @@ If the semaphore's value is <code>0</code>, halt.</para>
 <para>If any calls to <code>acquire</code> are blocked, allow the oldest such call
 to return.  Otherwise, increment the value of the semaphore.  This may
 increment the value beyond that with which the semaphore was constructed.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>snoop</code></term><listitem><para><code>site Semaphore.snoop() :: Signal</code></para>
+<para>If any calls to <code>acquire</code> are blocked, return a signal.
+Otherwise, block until some call to <code>acquire</code> blocks.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>snoopnb</code></term><listitem><para><code>site Semaphore.snoopnb() :: Signal</code></para>
+<para>If any calls to <code>acquire</code> are blocked, return a signal.
+Otherwise, halt.</para>
 </listitem></varlistentry></variablelist>
 </listitem></varlistentry>
 <varlistentry><term><code>Buffer</code></term><listitem><para><code>site Buffer() :: Buffer&lt;A&gt;</code></para>
@@ -198,12 +206,26 @@ element type <code>A</code>, it will return a value of the same type.</para>
 <para>Put an item in the buffer.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>close</code></term><listitem><para><code>site Buffer&lt;A&gt;.close() :: Signal</code></para>
-<para>Close the buffer. This has the effect of immediately causing any blocked calls
-to <code>get</code> to halt. In addition, any subsequent calls to
-<code>get</code> or <code>put</code> will halt.</para>
+<para>Close the buffer and block until it is empty.
+This has the effect of immediately causing any blocked calls to
+<code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
+will halt, and once the buffer becomes empty, any subsequent calls to
+<code>get</code> will halt.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>closenb</code></term><listitem><para><code>site Buffer&lt;A&gt;.closenb() :: Signal</code></para>
+<para>Close the buffer and return a signal immediately.
+This has the effect of immediately causing any blocked calls to
+<code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
+will halt, and once the buffer becomes empty, any subsequent calls to
+<code>get</code> will halt.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>isClosed</code></term><listitem><para><code>site Buffer&lt;A&gt;.isClosed() :: Boolean</code></para>
 <para>If the buffer is currently closed, return true, otherwise return false.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>getAll</code></term><listitem><para><code>site Buffer&lt;A&gt;.getAll() :: [A]</code></para>
+<para>Get all of the items currently in the buffer, emptying the buffer and returning
+a list of the items in the order they were added. If there are no items in the
+buffer, return an empty list.</para>
 </listitem></varlistentry></variablelist>
 </listitem></varlistentry>
 <varlistentry><term><code>BoundedBuffer</code></term><listitem><para><code>site BoundedBuffer(Integer) :: BoundedBuffer&lt;A&gt;</code></para>
@@ -235,9 +257,20 @@ val c = BoundedBuffer(1)
 <para>Put an item in the buffer. If no slots are open, halt.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>close</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.close() :: Signal</code></para>
-<para>Close the buffer. This has the effect of immediately causing any blocked calls
-to <code>get</code> and <code>put</code> to halt. In addition, any subsequent
-calls to <code>get</code> or <code>put</code> will halt.</para>
+<para>Close the buffer and block until it is empty.
+This has the effect of immediately causing any blocked calls to
+<code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
+will halt, and once the buffer becomes empty, any subsequent calls to
+<code>get</code> will halt. Note that any blocked calls to <code>put</code>
+initiated prior to closing the buffer may still be allowed to return as usual.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>closenb</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.closenb() :: Signal</code></para>
+<para>Close the buffer and return a signal immediately.
+This has the effect of immediately causing any blocked calls to
+<code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
+will halt, and once the buffer becomes empty, any subsequent calls to
+<code>get</code> will halt. Note that any blocked calls to <code>put</code>
+initiated prior to closing the buffer may still be allowed to return as usual.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>isClosed</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.isClosed() :: Boolean</code></para>
 <para>If the buffer is currently closed, return true, otherwise return false.</para>
@@ -249,6 +282,11 @@ or statistical measurements.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>getBound</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.getBound() :: Integer</code></para>
 <para>Return the total number of slots (open or filled) in the buffer.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>getAll</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.getAll() :: [A]</code></para>
+<para>Get all of the items currently in the buffer or waiting to be added, emptying
+the buffer and returning a list of the items in the order they were added. If
+there are no items in the buffer or waiting to be added, return an empty list.</para>
 </listitem></varlistentry></variablelist>
 </listitem></varlistentry>
 <varlistentry><term><code>SyncChannel</code></term><listitem><para><code>site SyncChannel() :: SyncChannel&lt;A&gt;</code></para>
@@ -594,7 +632,7 @@ foldl(flip((:)), [], [1,2,3])]]></programlisting></para>
 </listitem></varlistentry>
 <varlistentry><term><code>foldl1</code></term><listitem><para><code>def foldl1(lambda (A, A) :: A, [A]) :: A</code></para>
 <para>A special case of <code>foldl</code> which uses the last element of the list as the
-initial value.</para>
+initial value. It is an error to call this on an empty list.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>foldr</code></term><listitem><para><code>def foldr(lambda (A, B) :: B, B, [A]) :: B</code></para>
 <para>Reduce a list using the given right-associative binary operation and initial value.
@@ -607,7 +645,13 @@ foldr((+), 0, [1,2,3])]]></programlisting></para>
 </listitem></varlistentry>
 <varlistentry><term><code>foldr1</code></term><listitem><para><code>def foldr1(lambda (A, A) :: A, [A]) :: A</code></para>
 <para>A special case of <code>foldr</code> which uses the last element of the list as the
-initial value.</para>
+initial value. It is an error to call this on an empty list.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>afold</code></term><listitem><para><code>def afold(lambda (A, A) :: A, [A]) :: A</code></para>
+<para>Reduce a non-empty list using the given associative and commutative binary operation.
+This function reduces independent subexpressions in parallel, so the number of
+sequential reductions performed is O(log n).  For expensive reductions, this
+is much more efficient than <code>foldl</code> or <code>foldr</code>.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>zip</code></term><listitem><para><code>def zip([A], [B]) :: (A, B)</code></para>
 <para>Combine two lists into a list of pairs.
@@ -651,6 +695,26 @@ sort([1,3,2])]]></programlisting></para>
 <varlistentry><term><code>sortBy</code></term><listitem><para><code>def sortBy(lambda (A,A) :: Boolean, [A]) :: [A]</code></para>
 <para>Sort a list using the given less-than relation.</para>
 </listitem></varlistentry>
+<varlistentry><term><code>mergeUnique</code></term><listitem><para><code>def mergeUnique([A], [A]) :: [A], A &lt;: Comparable</code></para>
+<para>Merge two sorted lists, discarding duplicates.</para>
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: [1, 2, 3, 4, 5]
+mergeUnique([1,2,3], [2,4,5])]]></programlisting></para>
+</listitem></varlistentry>
+<varlistentry><term><code>mergeUniqueBy</code></term><listitem><para><code>def mergeUniqueBy(lambda (A,A) :: Boolean, lambda (A,A) :: Boolean, [A], [A]) :: [A]</code></para>
+<para>Merge two lists, discarding duplicates, using the given equality and less-than relations.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>sortUnique</code></term><listitem><para><code>def sortUnique([A]) :: [A], A &lt;: Comparable</code></para>
+<para>Sort a list, discarding duplicates.</para>
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: [1, 2, 3]
+sortUnique([1,3,2,3])]]></programlisting></para>
+</listitem></varlistentry>
+<varlistentry><term><code>sortUniqueBy</code></term><listitem><para><code>def sortUniqueBy(lambda (A,A) :: Boolean, lambda (A,A) :: Boolean, [A]) :: [A]</code></para>
+<para>Sort a list, discarding duplicates, using the given equality and less-than relations.</para>
+</listitem></varlistentry>
 <varlistentry><term><code>group</code></term><listitem><para><code>def group([(A,B)]) :: [(A,[B])]</code></para>
 <para>Given a list of pairs, group together the second
 elements of consecutive pairs with equal first elements.</para>
@@ -693,7 +757,7 @@ The conjunction of an empty list is <code>true</code>.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>or</code></term><listitem><para><code>def or([Boolean]) :: Boolean</code></para>
 <para>Return the boolean disjunction of all boolean values in the list.
-The disjunction of an empty list is <code>true</code>.</para>
+The disjunction of an empty list is <code>false</code>.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>minimum</code></term><listitem><para><code>def minimum([A]) :: A, A &lt;: Comparable</code></para>
 <para>Return the minimum element of a non-empty list.</para>
