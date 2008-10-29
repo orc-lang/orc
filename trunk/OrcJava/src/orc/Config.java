@@ -52,13 +52,8 @@ public class Config {
 	private HashMap<String, Boolean> caps = new HashMap<String, Boolean>();
 	private PrintStream stdout = System.out;
 	private PrintStream stderr = System.err;
-	/** Usually there's no reason to limit the token pool size. */
 	private int tokenPoolSize = -1;
-	/**
-	 * This constant is chosen to allow quick detection of infinite loops while
-	 * still allowing most reasonable programs to run.
-	 */
-	private int stackSize = 1024;
+	private int stackSize = -1;
 	
 	/**
 	 * Set properties based on command-line arguments.
@@ -125,12 +120,6 @@ public class Config {
 	@Option(name="-pub",usage="Stop after publishing this many values")
 	public void setMaxPubs(int maxPubs) {
 		this.maxPubs = maxPubs;
-	}
-		
-	@Option(name="-nolimits",usage="Do not limit stack depth and parallelism. This may be necessary for large programs which exceed built-in resource limits intended to catch logic errors.")
-	public void setNoLimits(boolean noLimit) {
-		stackSize = -1;
-		tokenPoolSize = -1;
 	}
 	
 	@Argument(metaVar="file", usage="Input file. Omit to use STDIN.")
