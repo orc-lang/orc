@@ -212,7 +212,17 @@ If the semaphore's value is <code class="code"><span class="hl-literal">0</span>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Semaphore</span>.<span class="hl-variable">release</span>() :: <span class="hl-variable">Signal</span></code>
                                     </p><p>If any calls to <code class="code"><span class="hl-variable">acquire</span></code> are blocked, allow the oldest such call
 to return.  Otherwise, increment the value of the semaphore.  This may
-increment the value beyond that with which the semaphore was constructed.</p></dd></dl></div></dd><dt><span class="term">
+increment the value beyond that with which the semaphore was constructed.</p></dd><dt><span class="term">
+                                    <code class="code"><span class="hl-variable">snoop</span></code>
+                                    </span></dt><dd><p>
+                                    <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Semaphore</span>.<span class="hl-variable">snoop</span>() :: <span class="hl-variable">Signal</span></code>
+                                    </p><p>If any calls to <code class="code"><span class="hl-variable">acquire</span></code> are blocked, return a signal.
+Otherwise, block until some call to <code class="code"><span class="hl-variable">acquire</span></code> blocks.</p></dd><dt><span class="term">
+                                    <code class="code"><span class="hl-variable">snoopnb</span></code>
+                                    </span></dt><dd><p>
+                                    <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Semaphore</span>.<span class="hl-variable">snoopnb</span>() :: <span class="hl-variable">Signal</span></code>
+                                    </p><p>If any calls to <code class="code"><span class="hl-variable">acquire</span></code> are blocked, return a signal.
+Otherwise, halt.</p></dd></dl></div></dd><dt><span class="term">
                             <code class="code"><span class="hl-variable">Buffer</span></code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Buffer</span>() :: <span class="hl-variable">Buffer</span>&lt;<span class="hl-variable">A</span>&gt;</code>
@@ -257,7 +267,13 @@ will halt, and once the buffer becomes empty, any subsequent calls to
                                     <code class="code"><span class="hl-variable">isClosed</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Buffer</span>&lt;<span class="hl-variable">A</span>&gt;.<span class="hl-variable">isClosed</span>() :: <span class="hl-variable">Boolean</span></code>
-                                    </p><p>If the buffer is currently closed, return true, otherwise return false.</p></dd></dl></div></dd><dt><span class="term">
+                                    </p><p>If the buffer is currently closed, return true, otherwise return false.</p></dd><dt><span class="term">
+                                    <code class="code"><span class="hl-variable">getAll</span></code>
+                                    </span></dt><dd><p>
+                                    <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Buffer</span>&lt;<span class="hl-variable">A</span>&gt;.<span class="hl-variable">getAll</span>() :: [<span class="hl-variable">A</span>]</code>
+                                    </p><p>Get all of the items currently in the buffer, emptying the buffer and returning
+a list of the items in the order they were added. If there are no items in the
+buffer, return an empty list.</p></dd></dl></div></dd><dt><span class="term">
                             <code class="code"><span class="hl-variable">BoundedBuffer</span></code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">BoundedBuffer</span>(<span class="hl-variable">Integer</span>) :: <span class="hl-variable">BoundedBuffer</span>&lt;<span class="hl-variable">A</span>&gt;</code>
@@ -299,7 +315,8 @@ A buffer with zero slots is equivalent to a
 This has the effect of immediately causing any blocked calls to
 <code class="code"><span class="hl-variable">get</span></code> to halt. In addition, any subsequent calls to <code class="code"><span class="hl-variable">put</span></code>
 will halt, and once the buffer becomes empty, any subsequent calls to
-<code class="code"><span class="hl-variable">get</span></code> will halt.</p></dd><dt><span class="term">
+<code class="code"><span class="hl-variable">get</span></code> will halt. Note that any blocked calls to <code class="code"><span class="hl-variable">put</span></code>
+initiated prior to closing the buffer may still be allowed to return as usual.</p></dd><dt><span class="term">
                                     <code class="code"><span class="hl-variable">closenb</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">BoundedBuffer</span>&lt;<span class="hl-variable">A</span>&gt;.<span class="hl-variable">closenb</span>() :: <span class="hl-variable">Signal</span></code>
@@ -307,7 +324,8 @@ will halt, and once the buffer becomes empty, any subsequent calls to
 This has the effect of immediately causing any blocked calls to
 <code class="code"><span class="hl-variable">get</span></code> to halt. In addition, any subsequent calls to <code class="code"><span class="hl-variable">put</span></code>
 will halt, and once the buffer becomes empty, any subsequent calls to
-<code class="code"><span class="hl-variable">get</span></code> will halt.</p></dd><dt><span class="term">
+<code class="code"><span class="hl-variable">get</span></code> will halt. Note that any blocked calls to <code class="code"><span class="hl-variable">put</span></code>
+initiated prior to closing the buffer may still be allowed to return as usual.</p></dd><dt><span class="term">
                                     <code class="code"><span class="hl-variable">isClosed</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">BoundedBuffer</span>&lt;<span class="hl-variable">A</span>&gt;.<span class="hl-variable">isClosed</span>() :: <span class="hl-variable">Boolean</span></code>
@@ -321,7 +339,13 @@ or statistical measurements.</p></dd><dt><span class="term">
                                     <code class="code"><span class="hl-variable">getBound</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">BoundedBuffer</span>&lt;<span class="hl-variable">A</span>&gt;.<span class="hl-variable">getBound</span>() :: <span class="hl-variable">Integer</span></code>
-                                    </p><p>Return the total number of slots (open or filled) in the buffer.</p></dd></dl></div></dd><dt><span class="term">
+                                    </p><p>Return the total number of slots (open or filled) in the buffer.</p></dd><dt><span class="term">
+                                    <code class="code"><span class="hl-variable">getAll</span></code>
+                                    </span></dt><dd><p>
+                                    <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">BoundedBuffer</span>&lt;<span class="hl-variable">A</span>&gt;.<span class="hl-variable">getAll</span>() :: [<span class="hl-variable">A</span>]</code>
+                                    </p><p>Get all of the items currently in the buffer or waiting to be added, emptying
+the buffer and returning a list of the items in the order they were added. If
+there are no items in the buffer or waiting to be added, return an empty list.</p></dd></dl></div></dd><dt><span class="term">
                             <code class="code"><span class="hl-variable">SyncChannel</span></code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">SyncChannel</span>() :: <span class="hl-variable">SyncChannel</span>&lt;<span class="hl-variable">A</span>&gt;</code>
@@ -540,7 +564,7 @@ the value of <code class="code"><span class="hl-variable">f</span>(<span class="
                             <code class="code"><span class="hl-variable">swap</span></code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">swap</span>((<span class="hl-variable">A</span>,<span class="hl-variable">B</span>)) :: (<span class="hl-variable">B</span>,<span class="hl-variable">A</span>)</code>
-                            </p><p>Swap the elements of a pair.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11821"></a>B.3.3.&nbsp;idioms.inc: Higher-order Orc programming idioms.</h3></div></div></div><p>Higher-order Orc programming idioms.
+                            </p><p>Swap the elements of a pair.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11868"></a>B.3.3.&nbsp;idioms.inc: Higher-order Orc programming idioms.</h3></div></div></div><p>Higher-order Orc programming idioms.
 Many of these are standard functional-programming
 combinators borrowed from Haskell or Scheme.</p><div class="variablelist"><dl><dt><span class="term">
                             <code class="code"><span class="hl-variable">apply</span></code>
@@ -662,7 +686,7 @@ Return the list when the function terminates.</p><p>Example:
 <pre class="orc">
 <span class="hl-comment">-- Publishes: [signal, signal, signal, signal, signal]</span>
 <span class="hl-variable">collect</span>(<span class="hl-variable">defer</span>(<span class="hl-variable">signals</span>, <span class="hl-literal">5</span>))</pre>
-                            </p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1196E"></a>B.3.4.&nbsp;list.inc: Operations on lists.</h3></div></div></div><p>Operations on lists.
+                            </p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N119B5"></a>B.3.4.&nbsp;list.inc: Operations on lists.</h3></div></div></div><p>Operations on lists.
 Many of these functions are similar to those in the Haskell prelude, but
 operate on the elements of a list in parallel.</p><div class="variablelist"><dl><dt><span class="term">
                             <code class="code"><span class="hl-variable">each</span></code>
@@ -727,7 +751,7 @@ returns <code class="code"><span class="hl-variable">f</span>(... <span class="h
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">foldl1</span>(<span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>, <span class="hl-variable">A</span>) :: <span class="hl-variable">A</span>, [<span class="hl-variable">A</span>]) :: <span class="hl-variable">A</span></code>
                             </p><p>A special case of <code class="code"><span class="hl-variable">foldl</span></code> which uses the last element of the list as the
-initial value.</p></dd><dt><span class="term">
+initial value. It is an error to call this on an empty list.</p></dd><dt><span class="term">
                             <code class="code"><span class="hl-variable">foldr</span></code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">foldr</span>(<span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>, <span class="hl-variable">B</span>) :: <span class="hl-variable">B</span>, <span class="hl-variable">B</span>, [<span class="hl-variable">A</span>]) :: <span class="hl-variable">B</span></code>
@@ -744,7 +768,14 @@ returns <code class="code"><span class="hl-variable">f</span>(... <span class="h
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">foldr1</span>(<span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>, <span class="hl-variable">A</span>) :: <span class="hl-variable">A</span>, [<span class="hl-variable">A</span>]) :: <span class="hl-variable">A</span></code>
                             </p><p>A special case of <code class="code"><span class="hl-variable">foldr</span></code> which uses the last element of the list as the
-initial value.</p></dd><dt><span class="term">
+initial value. It is an error to call this on an empty list.</p></dd><dt><span class="term">
+                            <code class="code"><span class="hl-variable">afold</span></code>
+                        </span></dt><dd><p>
+                                <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">afold</span>(<span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>, <span class="hl-variable">A</span>) :: <span class="hl-variable">A</span>, [<span class="hl-variable">A</span>]) :: <span class="hl-variable">A</span></code>
+                            </p><p>Reduce a non-empty list using the given associative and commutative binary operation.
+This function reduces independent subexpressions in parallel, so the number of
+sequential reductions performed is O(log n).  For expensive reductions, this
+is much more efficient than <code class="code"><span class="hl-variable">foldl</span></code> or <code class="code"><span class="hl-variable">foldr</span></code>.</p></dd><dt><span class="term">
                             <code class="code"><span class="hl-variable">zip</span></code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">zip</span>([<span class="hl-variable">A</span>], [<span class="hl-variable">B</span>]) :: (<span class="hl-variable">A</span>, <span class="hl-variable">B</span>)</code>
@@ -878,7 +909,7 @@ The conjunction of an empty list is <code class="code"><span class="hl-literal">
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">or</span>([<span class="hl-variable">Boolean</span>]) :: <span class="hl-variable">Boolean</span></code>
                             </p><p>Return the boolean disjunction of all boolean values in the list.
-The disjunction of an empty list is <code class="code"><span class="hl-literal">true</span></code>.</p></dd><dt><span class="term">
+The disjunction of an empty list is <code class="code"><span class="hl-literal">false</span></code>.</p></dd><dt><span class="term">
                             <code class="code"><span class="hl-variable">minimum</span></code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">minimum</span>([<span class="hl-variable">A</span>]) :: <span class="hl-variable">A</span>, <span class="hl-variable">A</span> <span class="hl-site">&lt;:</span> <span class="hl-variable">Comparable</span></code>
@@ -886,7 +917,7 @@ The disjunction of an empty list is <code class="code"><span class="hl-literal">
                             <code class="code"><span class="hl-variable">maximum</span></code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">maximum</span>([<span class="hl-variable">A</span>]) :: <span class="hl-variable">A</span>, <span class="hl-variable">A</span> <span class="hl-site">&lt;:</span> <span class="hl-variable">Comparable</span></code>
-                            </p><p>Return the maximum element of a non-empty list.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11C07"></a>B.3.5.&nbsp;text.inc: Operations on strings.</h3></div></div></div><p>Operations on strings.</p><div class="variablelist"><dl><dt><span class="term">
+                            </p><p>Return the maximum element of a non-empty list.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11C62"></a>B.3.5.&nbsp;text.inc: Operations on strings.</h3></div></div></div><p>Operations on strings.</p><div class="variablelist"><dl><dt><span class="term">
                             <code class="code"><span class="hl-variable">cat</span></code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">cat</span>(<span class="hl-variable">Top</span>, ...) :: <span class="hl-variable">String</span></code>
@@ -934,7 +965,7 @@ and concatenate the results.</p></dd><dt><span class="term">
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">unwords</span>([<span class="hl-variable">String</span>]) :: <span class="hl-variable">String</span></code>
                             </p><p>Concatenate a sequence of strings with a single space between
-each string.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11C94"></a>B.3.6.&nbsp;time.inc: Real and logical time.</h3></div></div></div><p>Real and logical time.</p><div class="variablelist"><dl><dt><span class="term">
+each string.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11CEF"></a>B.3.6.&nbsp;time.inc: Real and logical time.</h3></div></div></div><p>Real and logical time.</p><div class="variablelist"><dl><dt><span class="term">
                             <code class="code"><span class="hl-variable">Rtimer</span></code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Rtimer</span>(<span class="hl-variable">Integer</span>) :: <span class="hl-variable">Signal</span></code>
@@ -962,7 +993,7 @@ calls (other than calls to <code class="code"><span class="hl-variable">Ltimer</
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">metronome</span>(<span class="hl-variable">Integer</span>) :: <span class="hl-variable">Signal</span></code>
                             </p><p>Publish a signal at regular intervals, indefinitely. The period is given by the
-argument, in milliseconds.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11CDE"></a>B.3.7.&nbsp;util.inc: Miscellaneous utility functions.</h3></div></div></div><p>Miscellaneous utility functions.</p><div class="variablelist"><dl><dt><span class="term">
+argument, in milliseconds.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11D39"></a>B.3.7.&nbsp;util.inc: Miscellaneous utility functions.</h3></div></div></div><p>Miscellaneous utility functions.</p><div class="variablelist"><dl><dt><span class="term">
                             <code class="code"><span class="hl-variable">random</span></code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">random</span>() :: <span class="hl-variable">Integer</span></code>
