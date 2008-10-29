@@ -31,6 +31,13 @@ If any calls to <code>acquire</code> are blocked, allow the oldest such call
 to return.  Otherwise, increment the value of the semaphore.  This may
 increment the value beyond that with which the semaphore was constructed.  
 
+** site Semaphore.snoop() :: Signal
+If any calls to <code>acquire</code> are blocked, return a signal.
+Otherwise, block until some call to <code>acquire</code> blocks.
+
+** site Semaphore.snoopnb() :: Signal
+If any calls to <code>acquire</code> are blocked, return a signal.
+Otherwise, halt.
 --}
 site Semaphore = orc.lib.state.Semaphore
 
@@ -74,6 +81,11 @@ will halt, and once the buffer becomes empty, any subsequent calls to
 
 ** site Buffer<A>.isClosed() :: Boolean
 If the buffer is currently closed, return true, otherwise return false.
+
+** site Buffer<A>.getAll() :: [A]
+Get all of the items currently in the buffer, emptying the buffer and returning
+a list of the items in the order they were added. If there are no items in the
+buffer, return an empty list.
 --}
 site Buffer = orc.lib.state.Buffer
 
@@ -112,14 +124,16 @@ Close the buffer and block until it is empty.
 This has the effect of immediately causing any blocked calls to
 <code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
 will halt, and once the buffer becomes empty, any subsequent calls to
-<code>get</code> will halt.
+<code>get</code> will halt. Note that any blocked calls to <code>put</code>
+initiated prior to closing the buffer may still be allowed to return as usual.
 
 ** site BoundedBuffer<A>.closenb() :: Signal
 Close the buffer and return a signal immediately.
 This has the effect of immediately causing any blocked calls to
 <code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
 will halt, and once the buffer becomes empty, any subsequent calls to
-<code>get</code> will halt.
+<code>get</code> will halt. Note that any blocked calls to <code>put</code>
+initiated prior to closing the buffer may still be allowed to return as usual.
 
 ** site BoundedBuffer<A>.isClosed() :: Boolean
 If the buffer is currently closed, return true, otherwise return false.
@@ -131,6 +145,11 @@ or statistical measurements.
 
 ** site BoundedBuffer<A>.getBound() :: Integer
 Return the total number of slots (open or filled) in the buffer.
+
+** site BoundedBuffer<A>.getAll() :: [A]
+Get all of the items currently in the buffer or waiting to be added, emptying
+the buffer and returning a list of the items in the order they were added. If
+there are no items in the buffer or waiting to be added, return an empty list.
 --}
 site BoundedBuffer = orc.lib.state.BoundedBuffer
 
