@@ -25,7 +25,6 @@ import orc.orchard.events.RedirectEvent;
 import orc.orchard.events.TokenErrorEvent;
 import orc.orchard.values.ValueMarshaller;
 import orc.runtime.OrcEngine;
-import orc.runtime.Token;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Pub;
 
@@ -168,9 +167,8 @@ public final class Job implements JobMBean {
 		}
 		/** Send token errors to the event stream. */
 		@Override
-		public void tokenError(Token t, TokenException problem) {
+		public void tokenError(TokenException problem) {
 			System.err.println();
-			System.err.println("Token " + t + " encountered an error. ");
 			System.err.println("Problem: " + problem);
 			System.err.println("Source location: " + problem.getSourceLocation());
 			problem.printStackTrace();
