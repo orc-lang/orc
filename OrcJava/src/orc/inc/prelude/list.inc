@@ -106,7 +106,7 @@ def foldl(f,z,x:xs) = foldl(f,f(z,x),xs)
 {--
 * def foldl1(lambda (A, A) :: A, [A]) :: A
 A special case of <code>foldl</code> which uses the last element of the list as the
-initial value.
+initial value. It is an error to call this on an empty list.
 --}
 def foldl1(f,x:xs) = foldl(f,x,xs)
 def foldl1(_,[]) = error("foldl1: empty list")
@@ -127,9 +127,27 @@ def foldr(f,z,xs) = foldl(flip(f),z,reverse(xs))
 {--
 * def foldr1(lambda (A, A) :: A, [A]) :: A
 A special case of <code>foldr</code> which uses the last element of the list as the
-initial value.
+initial value. It is an error to call this on an empty list.
 --}
 def foldr1(f,z,xs) = foldl1(flip(f),reverse(xs))
+
+{--
+* def afold(lambda (A, A) :: A, [A]) :: A
+Reduce a non-empty list using the given associative and commutative binary operation.
+This function reduces independent subexpressions in parallel, so the number of
+sequential reductions performed is O(log n).  For expensive reductions, this
+is much more efficient than <code>foldl</code> or <code>foldr</code>.
+--}
+def afold(f, []) = error("cfold: empty list")
+{- These are optimizations for common cases -}
+def afold(f, [x]) = x
+def afold(f, [x,y]) = f(x,y)
+{- Here's the interesting part -}
+def afold(f, xs) =
+  def afold'([]) = []
+  def afold'([x]) = [x]
+  def afold'(x:y:xs) = f(x,y):afold'(xs)
+  afold(f, afold'(xs))
 
 {--
 * def zip([A], [B]) :: (A, B)
