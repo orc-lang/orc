@@ -133,15 +133,13 @@ def foldr1(f,z,xs) = foldl1(flip(f),reverse(xs))
 
 {--
 * def afold(lambda (A, A) :: A, [A]) :: A
-Reduce a non-empty list using the given associative and commutative binary operation.
+Reduce a non-empty list using the given associative binary operation.
 This function reduces independent subexpressions in parallel, so the number of
 sequential reductions performed is O(log n).  For expensive reductions, this
 is much more efficient than <code>foldl</code> or <code>foldr</code>.
 --}
-def afold(f, []) = error("cfold: empty list")
-{- These are optimizations for common cases -}
+def afold(f, []) = error("afold: empty list")
 def afold(f, [x]) = x
-def afold(f, [x,y]) = f(x,y)
 {- Here's the interesting part -}
 def afold(f, xs) =
   def afold'([]) = []
