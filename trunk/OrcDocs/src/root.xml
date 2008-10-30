@@ -3161,6 +3161,300 @@ simply releases both of the forks.
 
 </section>
 
+<section id="methodology.examples.hygenic"><title>Hygenic Dining Philosophers</title>
+
+<para>
+Here we implement a different solution to the Dining Philosophers problem,
+described in "The Drinking Philosophers Problem", by K. M. Chandy and J. Misra.
+Briefly, this algorithm efficiently and fairly solves the dining philosophers
+problem for philosophers connected in an arbitrary graph (as opposed to a
+simple ring).  The algorithm works by augmenting each fork with a clean/dirty
+state.  Initially, all forks are dirty.  A philosopher is only obliged to
+relinquish a fork to its neighbor if the fork is dirty. On receiving a fork,
+the philosopher cleans it. On eating, the philosopher dirties all forks.  For
+full details of the algorithm, consult the original paper.
+</para>
+
+<programlisting language="orc-demo"><![CDATA[
+{-
+Start a philosopher actor; never publishes.
+Messages sent between philosophers include:
+- ("fork", p): philosopher p relinquishes the fork
+- ("request", p): philosopher p requests the fork
+- ("rumble", p): sent by a philosopher to itself when it should
+  become hungry
+
+name: identify this process in status messages
+mbox: our mailbox; the "address" of this philosopher is mbox.put
+missing: set of neighboring philosophers holding our forks
+-}
+def philosopher(name, mbox, missing) =
+  {- deferred requests for forks -}
+  val deferred = Buffer()
+  {- forks we hold which are clean -}
+  val clean = Set()
+
+  def sendFork(p) =
+    {- remember that we no longer hold the fork -}
+    missing.add(p) >>
+    p(("fork", mbox.put))
+ 
+  def requestFork(p) =
+    p(("request", mbox.put))
+  
+  {- Start a timer which will tell us when we're hungry. -}
+  def digesting() =
+      println(name + " thinking") >>
+      thinking()
+    | Rtimer(random(1000)) >>
+      mbox.put(("rumble", mbox.put)) >>
+      stop
+
+  {- Wait to become hungry -}
+  def thinking() =
+    def on(("rumble", _)) =
+      println(name + " hungry") >>
+      map(requestFork, missing) >>
+      hungry()
+    def on(("request", p)) =
+      sendFork(p) >> thinking()
+    on(mbox.get())
+
+  {- Eat once we receive all forks -}
+  def hungry() =
+    def on(("fork", p)) =
+      missing.remove(p) >>
+      clean.add(p) >>
+      if missing.isEmpty()
+      then println(name + " eating") >> eating()
+      else hungry()
+    def on(("request", p)) =
+      if clean.contains(p)
+      then deferred.put(p) >> hungry()
+      else sendFork(p) >> requestFork(p) >> hungry()
+    on(mbox.get())
+
+  {- Dirty forks, process deferred requests, then digest -}
+  def eating() =
+    clean.clear() >>
+    Rtimer(random(1000)) >>
+    map(sendFork, deferred.getAll()) >>
+    digesting()
+
+  {- All philosophers start out digesting -}
+  digesting()
+
+{-
+Create an NxN 4-connected grid of philosophers.  Each philosopher
+holds the fork for the connections below and to the right (so the
+top left philosopher holds both its forks).
+-}
+def philosophers(n) =
+  {- A set with 1 item -}
+  def Set1(item) = Set() >s> s.add(item) >> s
+  {- A set with 2 items -}
+  def Set2(i1, i2) = Set() >s> s.add(i1) >> s.add(i2) >> s
+
+  {- create an NxN matrix of mailboxes -}
+  val cs = uncurry(IArray(n, lambda (_) = IArray(n, ignore(Buffer))))
+
+  {- create the first row of philosophers -}
+  philosopher((0,0), cs(0,0), Set())
+  | for(1, n) >j>
+    philosopher((0,j), cs(0,j), Set1(cs(0,j-1).put))
+
+  {- create remaining rows -}
+  | for(1, n) >i> (
+      philosopher((i,0), cs(i,0), Set1(cs(i-1,0).put))
+      | for(1, n) >j>
+        philosopher((i,j), cs(i,j), Set2(cs(i-1,j).put, cs(i,j-1).put))
+    )
+
+{- Simulate a 3x3 grid of philosophers for 10 seconds -}
+let(
+  philosophers(3)
+  | Rtimer(10000)
+) >> "HALTED"]]></programlisting>
+
+<para>
+Our implementation is based on the <ulink
+link="http://en.wikipedia.org/wiki/Actor_model">actor model</ulink> of
+concurrency.  An actor is a state machine which reacts to messages.  On
+receiving a message, an actor can send asynchronous messages to other actors,
+change its state, or create new actors.  Each actor is single-threaded and
+processes messages sequentially, which makes some concurrent programs easier to
+reason about and avoids explicit locking. <ulink
+link="http://www.erlang.org/">Erlang</ulink> is one popular language based
+on the actor model.
+</para>
+
+<para>
+Orc emulates the actor model very naturally.  In Orc, an actor is an Orc thread
+of execution, together with a <code>Buffer</code> which serves as a mailbox.  To send a
+message to an actor, you place it in the actor's mailbox, and to receive a
+message, the actor gets the next item from the mailbox.  The internal states of
+the actor are represented by functions: while an actor's thread of execution is
+evaluating a function, it is considered to be in the corresponding state.
+Because Orc implements <ulink
+link="http://en.wikipedia.org/wiki/Tail_call">tail-call optimization</ulink>,
+state transitions can be encoded as function calls without running out of stack
+space.
+</para>
+
+<para>
+In this program, a philosopher is implemented by an actor with three primary
+states: <code>eating</code>, <code>thinking</code>, and <code>hungry</code>.
+An additional transient state, <code>digesting</code>, is used to start a timer
+which will trigger the state change from <code>thinking</code> to
+<code>hungry</code>.  Each state is implemented by a function which reads a
+message from the mailbox, selects the appropriate action using pattern
+matching, performs the action, and finally transitions to the next state
+(possibly the same as the current state) by calling the corresponding function.
+</para>
+
+<para>
+Forks are never represented explicitly.  Instead each philosopher identifies a
+fork with the "address" (sending end of a mailbox) of the neighbor who shares
+the fork.  Every message sent includes the sender's address.  Therefore when a
+philosopher receives a request for a fork, it knows who requested it and
+therefore which fork to relinquish.  Likewise when a philosopher receives a
+fork, it knows who sent it and therefore which fork was received.
+</para>
+</section>
+
+<section><title>Readers/Writers</title>
+
+<para>
+Here we present an Orc solution to the <ulink
+link="http://en.wikipedia.org/wiki/Readers-writers_problem">readers-writers
+problem</ulink>.  Briefly, the readers-writers problem involves concurrent
+access to a mutable resource.  Multiple readers can access the resource
+concurrently, but writers must have exclusive access.  When readers and writers
+conflict, different solutions may resolve the conflict in favor of one or the
+other, or fairly.  In the following solution, when a writer tries to acquire
+the lock, current readers are allowed to finish but new readers are postponed
+until after the writer finishes.  Lock requests are granted in the order
+received, guaranteeing fairness.  Normally, such a service would be provided to
+Orc programs by a site, but a direct Orc implementation serves to illustrate
+techniques which are helpful for solving concurrent problems in general.
+</para>
+
+<programlisting language="orc-demo"><![CDATA[
+def ReadWriteLock() =
+  {-
+  Message Queue. Message types:
+  Left(Left(Semaphore))  -- acquire read
+  Left(Right(Signal))    -- release read
+  Right(Left(Semaphore)) -- acquire write
+  Right(Right(Signal))   -- release write
+  -}
+  val m = Buffer()
+
+  {- Reading, with one or more pending reads -}
+  def reading(n, Left(Left(s)):pend) =
+    s.release() >> reading(n+1, pend)
+
+  {- Reading, with no pending reads or writes -}
+  def reading(n, []) =
+    def on(Left(Left(s)))  = s.release() >> reading(n+1, [])
+    def on(Right(Left(s))) = reading(n, [Right(Left(s))])
+    def on(Left(Right(_))) = reading(n-1, [])
+    on(m.get())
+
+  {- Reading, with a pending write and no active readers -}
+  def reading(0, Right(Left(s)):pend) =
+    s.release() >> writing(pend)
+
+  {- Reading, with a pending write and active readers -}
+  def reading(n, pend) =
+    def on(Right(Left(s)) as r) = reading(n, append(pend, [r]))
+    def on(Left(Left(s)) as r)  = reading(n, append(pend, [r]))
+    def on(Left(Right(_)))      = reading(n-1, pend)
+    on(m.get())
+
+  {- Writing -}
+  def writing(pend) =
+    def on(Right(Right(_)))     = reading(0, pend)
+    def on(Right(Left(s)) as r) = writing(append(pend, [r]))
+    def on(Left(Left(s)) as r)  = writing(append(pend, [r]))
+    on(m.get())
+
+  {- Begin reading -}
+  def acquireR() =
+    Semaphore(0) >s>
+    m.put(Left(Left(s))) >>
+    s.acquire() >>
+    println("START READING")
+
+  {- Finish reading -}
+  def releaseR() =
+    println("END READING") >>
+    m.put(Left(Right(signal)))
+
+  {- Begin writing -}
+  def acquireW() =
+    Semaphore(0) >s>
+    m.put(Right(Left(s))) >>
+    s.acquire() >>
+    println("START WRITING")
+
+  {- Finish writing -}
+  def releaseW() =
+    println("END WRITING") >>
+    m.put(Right(Right(signal)))
+
+  {- Start the actor and return lock functions -}
+  reading(0, [])
+  | (acquireR, releaseR, acquireW, releaseW)
+
+{- Test the lock -}
+let(
+  ReadWriteLock() >(acquireR, releaseR, acquireW, releaseW)> (
+    ( Rtimer(10) >> acquireR() >> Rtimer(1000) >> releaseR() >> stop
+    | Rtimer(20) >> acquireR() >> Rtimer(1000) >> releaseR() >> stop
+    | Rtimer(30) >> acquireR() >> Rtimer(1000) >> releaseR() >> stop
+    | Rtimer(40) >> acquireW() >> Rtimer(3000) >> releaseW() >> stop
+    | Rtimer(50) >> acquireR() >> Rtimer(1000) >> releaseR() >> stop
+    | Rtimer(60) >> acquireR() >> Rtimer(1000) >> releaseR() >> stop
+    ) ; signal
+  )
+)]]></programlisting>
+
+<para>
+This implementation is based on the actor model.
+Refer to the <link
+linkend="methodology.examples.hygenic">Hygenic Dining
+Philosophers</link> example for a high-level description of how the actor model
+is emulated in Orc.
+</para>
+
+<para>
+The lock is implement as an actor with two states: <code>reading</code> and
+<code>writing</code>.  Both states include a queue of pending requests which
+must be granted before any new requests.  The reading state also includes the
+number of readers currently holding the lock.
+</para>
+
+<para>
+While reading, the actor grants every read request until a write request is
+received.  Then it places the write request and every subsequent request in the
+pending queue until all of the readers currently holding the lock have
+finished.  Then the actor gives the lock to the writer and transitions to the
+writing state.  While writing, the actor waits for the writer to release the
+lock, then transitions back to the reading state.  The reading state must
+process pending requests until there are no more, then it can return to
+processing new requests.
+</para>
+
+<para>
+Calls to acquire or release the lock are translated into messages tagged with
+the built-in constructors <code>Left</code> and <code>Right</code> and put in
+the actor's mailbox.  A request to acquire the lock includes a
+<code>Semaphore</code> which the requestor blocks on.  The actor grants access
+by releasing the lock, unblocking the requestor.
+</para>
+</section>
+
 <!--
 Procedural implementation of graphs is terrible for readability. 
 Also, introducing this example would require an extended discussion of logical time.
