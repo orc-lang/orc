@@ -21,8 +21,10 @@ header {
 	import orc.ast.extended.declaration.type.*;
 	import orc.ast.extended.pattern.*;
 	import orc.error.*;
-	import orc.runtime.values.Value;
 	import orc.type.*;
+	import orc.runtime.values.Value;
+	import orc.runtime.values.ListValue;
+	import orc.runtime.values.TupleValue;
 }
 
 body {
@@ -691,6 +693,36 @@ List<Type> TypeList =
 /////////////////////////////////////////////
 // Literals
 /////////////////////////////////////////////
+
+// This isn't used by the parser directly, but
+// is used by the Read site to read Orc literal
+// syntax
+public Object LiteralValue =
+	Number Space
+	/ StringLiteral Space
+	/ TRUE Space { yyValue = true; }
+	/ FALSE Space { yyValue = false; }
+	/ LPAREN args:LiteralValueList RPAREN Space {
+		if (args.size() == 1) {
+			yyValue = args.get(0);
+		} else {
+			yyValue = new TupleValue(args);
+		}
+	}
+	/ LBRACKET args:LiteralValueList RBRACKET Space {
+		yyValue = ListValue.make(args);
+	}
+	;
+List<Object> LiteralValueList = 
+	f:LiteralValue fs:(COMMA yyValue:LiteralValue)* {
+		List<Object> out = fs.list();
+		out.add(0, f);
+		yyValue = out;
+	}
+	/ /* empty */ {
+		yyValue = new LinkedList<Object>();
+	}
+	;
 	
 Number Number = Float / Integer;
 BigDecimal Float =

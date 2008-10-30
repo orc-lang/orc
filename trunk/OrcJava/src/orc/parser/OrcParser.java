@@ -9,6 +9,7 @@ import java.util.List;
 import orc.ast.extended.Expression;
 import orc.ast.extended.declaration.Declaration;
 import orc.error.compiletime.ParsingException;
+import orc.lib.str.Read;
 import xtc.parser.ParseException;
 import xtc.parser.Result;
 
@@ -29,6 +30,19 @@ public class OrcParser {
 	 */
 	public OrcParser(Reader reader, String filename) {
 		parser = new OrcParserRats(reader, filename);
+	}
+	
+	/**
+	 * Parse the input as a literal value. This
+	 * is used by {@link Read}.
+	 */
+	public Object parseLiteralValue() throws ParsingException, IOException {
+		Result result = parser.pLiteralValue(0);
+		try {
+			return parser.value(result);
+		} catch (ParseException e) {
+			throw new ParsingException(e.getMessage(), e);
+		}
 	}
 	
 	/**
