@@ -10,10 +10,8 @@ z <z< (
 
   ift(x) | ift(y) | (x || y)
 
-    <x< Prompt("true or false?") >x>
-        parseBool(x)
-    <y< Prompt("true or false?") >y>
-        parseBool(y)
+    <x< Prompt("true or false?") >x> read(x)
+    <y< Prompt("true or false?") >y> read(y)
 )
 
 -- Source:

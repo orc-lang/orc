@@ -8,7 +8,7 @@
 def Airline(name) =
     def MakeQuote() =
         Prompt(name + " quote ($)") >n>
-        (name, parseInt(n))
+        (name, read(n))
     MakeQuote
 
 -- Return the lesser of two quotes
