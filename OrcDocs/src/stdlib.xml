@@ -123,6 +123,15 @@ of the list.</para>
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: (3, [4, 5])
 [3,4,5] >x:xs> (x,xs)]]></programlisting></para>
+<para>This deconstructor can also be applied to other list-like values such as
+<code>Array</code>s and Java <code>Iterable</code>s, in which case it returns
+the first element of the list-like value, and a new list-like value (not
+necessarily of the same type as the original list-like value) representing the
+tail.  Modifying the structure of the original value (e.g. adding an
+element to an <code>Iterable</code>) may render old "tail"s unusable,
+so you should refrain from modifying a value while you are
+deconstructing it.  This feature is highly experimental and will
+probably change in future versions of the implementation.</para>
 </listitem></varlistentry></variablelist>
 </listitem></varlistentry>
 <varlistentry><term><code>abs</code></term><listitem><para><code>def abs(Number) :: Number</code></para>
@@ -468,6 +477,69 @@ Right(3) >x> (
 )]]></programlisting></para>
 </listitem></varlistentry></variablelist>
 </listitem></varlistentry>
+<varlistentry><term><code>Set</code></term><listitem><para><code>site Set() :: Set&lt;A&gt;</code></para>
+<para>Construct an empty mutable set. The set considers two
+values <code>a</code> and <code>b</code> to be the same if
+and only if <code>a=b</code>. This site conforms to the Java interface
+<code>java.util.Set</code>, except that it obeys Orc rules for equality of
+elements rather than Java rules.</para>
+<variablelist>
+<varlistentry><term><code>add</code></term><listitem><para><code>site Set&lt;A&gt;.add(A) :: Boolean</code></para>
+<para>Add a value to the set, returning true if the set did not already contain the value,
+and false otherwise.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>remove</code></term><listitem><para><code>site Set&lt;A&gt;.remove(Top) :: Boolean</code></para>
+<para>Remove a value from the set, returning true if the set contained the value,
+and false otherwise.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>contains</code></term><listitem><para><code>site Set&lt;A&gt;.contains(Top) :: Boolean</code></para>
+<para>Return true if the set contains the given value, and false otherwise.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>isEmpty</code></term><listitem><para><code>site Set&lt;A&gt;.isEmpty() :: Boolean</code></para>
+<para>Return true if the set contains no values.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>clear</code></term><listitem><para><code>site Set&lt;A&gt;.clear() :: Signal</code></para>
+<para>Remove all values from the set.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>size</code></term><listitem><para><code>site Set&lt;A&gt;.size() :: Integer</code></para>
+<para>Return the number of unique values currently contained in the set.</para>
+</listitem></varlistentry></variablelist>
+</listitem></varlistentry>
+<varlistentry><term><code>Map</code></term><listitem><para><code>site Map() :: Map&lt;K,V&gt;</code></para>
+<para>Construct an empty mutable map from keys to values.  Each key contained in the
+map is associated with exactly one value.  The mapping considers two keys
+<code>a</code> and <code>b</code> to be the same if and only if
+<code>a=b</code>. This site conforms to the Java interface
+<code>java.util.Map</code>, except that it obeys Orc rules for equality of keys
+rather than Java rules.</para>
+<variablelist>
+<varlistentry><term><code>put</code></term><listitem><para><code>site Map&lt;K,V&gt;.put(K, V) :: V</code></para>
+<para><code>map.put(k,v)</code> associates the value <code>v</code> with the key
+<code>k</code> in <code>map</code>, such that <code>map.get(k)</code> returns
+<code>v</code>. Return the value previously associated with the key,
+if any, otherwise return <code>Null()</code>.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>get</code></term><listitem><para><code>site Map&lt;K,V&gt;.get(K) :: V</code></para>
+<para>Return the value currently associated with the given key, if any, otherwise
+return <code>Null()</code>.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>remove</code></term><listitem><para><code>site Map&lt;K,V&gt;.remove(Top) :: V</code></para>
+<para>Remove the given key from the map. Return the value previously associated with the key,
+if any, otherwise return <code>Null()</code>.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>containsKey</code></term><listitem><para><code>site Map&lt;K,V&gt;.containsKey(Top) :: Boolean</code></para>
+<para>Return true if the map contains the given key, and false otherwise.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>isEmpty</code></term><listitem><para><code>site Map&lt;K,V&gt;.isEmpty() :: Boolean</code></para>
+<para>Return true if the map contains no keys.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>clear</code></term><listitem><para><code>site Map&lt;K,V&gt;.clear() :: Signal</code></para>
+<para>Remove all keys from the map.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>size</code></term><listitem><para><code>site Map&lt;K,V&gt;.size() :: Integer</code></para>
+<para>Return the number of unique keys currently contained in the map.</para>
+</listitem></varlistentry></variablelist>
+</listitem></varlistentry>
 <varlistentry><term><code>fst</code></term><listitem><para><code>def fst((A,B)) :: A</code></para>
 <para>Return the first element of a pair.</para>
 </listitem></varlistentry>
@@ -787,13 +859,15 @@ the object to a String.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>read</code></term><listitem><para><code>site read(String) :: A</code></para>
 <para>Given a string representing an Orc value (using standard
-Orc literal syntax), return the corresponding value.</para>
+Orc literal syntax), return the corresponding value. If
+the argument does not conform to Orc literal syntax,
+halt with an error.</para>
 <para>Example:
 <programlisting language="orc-demo"><![CDATA[
-  read("true") -- publishes (boolean) true
-| read("1") -- publishes (integer) 1
-| read("3.0e2") -- publishes (floating point) 300.0
-| read("\"hi\"") -- publishes (string) "hi"]]></programlisting></para>
+  read("true") -- publishes the boolean true
+| read("1") -- publishes the integer 1
+| read("(3.0, [])") -- publishes the tuple (3.0, [])
+| read("\"hi\"") -- publishes the string "hi"]]></programlisting></para>
 </listitem></varlistentry>
 <varlistentry><term><code>lines</code></term><listitem><para><code>def lines(String) :: [String]</code></para>
 <para>Split a string into lines, which are substrings
