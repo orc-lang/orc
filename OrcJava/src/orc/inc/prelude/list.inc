@@ -134,8 +134,9 @@ def foldr1(f,z,xs) = foldl1(flip(f),reverse(xs))
 {--
 * def afold(lambda (A, A) :: A, [A]) :: A
 Reduce a non-empty list using the given associative binary operation.
-This function reduces independent subexpressions in parallel, so the number of
-sequential reductions performed is O(log n).  For expensive reductions, this
+This function reduces independent subexpressions in parallel; the
+calls exhibit a balanced tree structure, so the number of sequential 
+reductions performed is O(log n).  For expensive reductions, this
 is much more efficient than <code>foldl</code> or <code>foldr</code>.
 --}
 def afold(f, []) = error("afold: empty list")
@@ -146,6 +147,32 @@ def afold(f, xs) =
   def afold'([x]) = [x]
   def afold'(x:y:xs) = f(x,y):afold'(xs)
   afold(f, afold'(xs))
+
+
+{--
+* def cfold(lambda (A, A) :: A, [A]) :: A
+Reduce a non-empty list using the given associative and commutative binary operation.
+This function opportunistically reduces independent subexpressions in parallel, so the number of
+sequential reductions performed is as small as possible.  For expensive reductions, this
+is much more efficient than <code>foldl</code> or <code>foldr</code>. In cases
+where the reduction does not always take the same amount of time to complete, it 
+is also more efficient than <code>afold</code>.
+--}
+def cfold(f, []) = stop
+def cfold(f, [x]) = x
+def cfold(f, [x,y]) = f(x,y)
+def cfold(f, L) =
+  val c = Buffer()
+  def work(i, x:y:rest) = c.put(f(x,y)) >> stop | work(i+1, rest)
+  def work(i, [x]) = c.put(x) >> stop | work(i+1, [])
+  def work(i, []) =
+    if (i < 2) then 
+      c.get() 
+    else 
+      c.get() >x> c.get() >y> ( c.put(f(x,y)) >> stop | work(i-1,[]) ) 
+  work(0, L)
+
+
 
 {--
 * def zip([A], [B]) :: (A, B)
@@ -388,4 +415,4 @@ def minimum(xs) = foldl1(min, xs)
 * def maximum([A]) :: A, A <: Comparable
 Return the maximum element of a non-empty list.
 --}
-def maximum(xs) = foldl1(min, xs)
+def maximum(xs) = foldl1(max, xs)
