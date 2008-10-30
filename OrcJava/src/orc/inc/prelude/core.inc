@@ -188,6 +188,16 @@ Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: (3, [4, 5])
 [3,4,5] >x:xs> (x,xs)]]></programlisting>
+
+This deconstructor can also be applied to other list-like values such as
+<code>Array</code>s and Java <code>Iterable</code>s, in which case it returns
+the first element of the list-like value, and a new list-like value (not
+necessarily of the same type as the original list-like value) representing the
+tail.  Modifying the structure of the original value (e.g. adding an
+element to an <code>Iterable</code>) may render old "tail"s unusable,
+so you should refrain from modifying a value while you are
+deconstructing it.  This feature is highly experimental and will
+probably change in future versions of the implementation.
 --}
 site (:) = orc.runtime.sites.core.Cons
 
