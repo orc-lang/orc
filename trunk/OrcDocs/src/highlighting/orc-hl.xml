@@ -60,7 +60,7 @@
 <!-- site calls -->
 <highlighter type='regex'>
   <style>site</style>
-  <pattern>\b\w+\b(?=\s*\()></pattern>
+  <pattern>\b\w+\b(?=\s*\()</pattern>
 </highlighter>
 
 <highlighter type='regex'>
