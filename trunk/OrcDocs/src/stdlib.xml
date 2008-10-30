@@ -648,7 +648,7 @@ foldr((+), 0, [1,2,3])]]></programlisting></para>
 initial value. It is an error to call this on an empty list.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>afold</code></term><listitem><para><code>def afold(lambda (A, A) :: A, [A]) :: A</code></para>
-<para>Reduce a non-empty list using the given associative and commutative binary operation.
+<para>Reduce a non-empty list using the given associative binary operation.
 This function reduces independent subexpressions in parallel, so the number of
 sequential reductions performed is O(log n).  For expensive reductions, this
 is much more efficient than <code>foldl</code> or <code>foldr</code>.</para>
@@ -785,11 +785,15 @@ to standard output, with each value followed by a newline.
 For Java objects, this will call <code>toString()</code> to convert
 the object to a String.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>parseInt</code></term><listitem><para><code>site parseInt(String) :: BigInteger</code></para>
-<para>Parse a string as a BigInteger.</para>
-</listitem></varlistentry>
-<varlistentry><term><code>parseBool</code></term><listitem><para><code>site parseBool(String) :: Boolean</code></para>
-<para>Parse a string as a Boolean (true/false).</para>
+<varlistentry><term><code>read</code></term><listitem><para><code>site read(String) :: A</code></para>
+<para>Given a string representing an Orc value (using standard
+Orc literal syntax), return the corresponding value.</para>
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+  read("true") -- publishes (boolean) true
+| read("1") -- publishes (integer) 1
+| read("3.0e2") -- publishes (floating point) 300.0
+| read("\"hi\"") -- publishes (string) "hi"]]></programlisting></para>
 </listitem></varlistentry>
 <varlistentry><term><code>lines</code></term><listitem><para><code>def lines(String) :: [String]</code></para>
 <para>Split a string into lines, which are substrings
