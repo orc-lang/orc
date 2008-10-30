@@ -17,8 +17,6 @@
 	<property name="docbook.xsl.dir" value="docbook-xsl" />
 	<property name="build.dir" value="build" />
 	<property name="src.dir" value="src" />
-	<property name="html.stylesheet" value="${src.dir}/xsl/html.xsl" />
-	<property name="fo.stylesheet" value="${src.dir}/xsl/fo.xsl" />
 	<property name="xslthl.config" value="file://${user.dir}/${src.dir}/highlighting/xslthl-config.xml" />
 	<property name="xalan.lib.dir" value="lib" />
 
@@ -70,14 +68,32 @@
 		<xinclude in="${src.dir}/root.xml" out="${src.dir}/all.xml" />
 	</target>
 
-	<!--
-      - target:  build-html
-      - description:  Iterates through a directory and transforms
-      -     .xml files into .html files using the DocBook XSL.
-      -->
-	<target name="build-html" depends="xinclude" 
-        description="Generates HTML files from DocBook XML">
-		<xslt style="${html.stylesheet}" extension=".html" 
+	<target name="build-html-single" depends="xinclude" description="Generates HTML files from DocBook XML">
+		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html" 
+				basedir="${src.dir}" destdir="${build.dir}/html">
+			<include name="all.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="orc.demo" expression="0"/>
+			<param name="section.autolabel" expression="1"/>
+			<param name="section.label.includes.component.label" expression="1"/>
+			<param name="section.autolabel.max.depth" expression="8"/>
+			<param name="chunk.quietly" expression="1"/>
+			<param name="html.stylesheet" expression="style.css" />
+			
+			<param name="highlight.source" expression="1"/>
+			<param name="highlight.default.language" expression="orc"/>
+			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
+		</xslt>
+		<!-- Copy the stylesheet to the same directory as the HTML files -->
+		<copy todir="${build.dir}/html">
+			<fileset dir="css">
+				<include name="style.css" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="build-html-chunk" depends="xinclude" description="Generates HTML files from DocBook XML">
+		<xslt style="${src.dir}/xsl/html-chunk.xsl" extension=".html" 
 				basedir="${src.dir}" destdir="${build.dir}/html">
 			<include name="all.xml" />
 			<classpath refid="xalan.classpath" />
@@ -108,7 +124,7 @@
 	    -->
 	<target name="build-pdf" depends="xinclude" 
 		    description="Generates PDF files from DocBook XML">
-	    <xslt style="${fo.stylesheet}" extension=".fo" 
+	    <xslt style="${src.dir}/xsl/fo.xsl" extension=".fo" 
 			basedir="${src.dir}" destdir="${build.dir}/fo">
 	        <classpath refid="xalan.classpath" />
 	    	<param name="section.autolabel" expression="1"/>
