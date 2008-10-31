@@ -30,14 +30,16 @@ site println = orc.lib.str.Println
 {--
 * site read(String) :: A
 Given a string representing an Orc value (using standard
-Orc literal syntax), return the corresponding value.
+Orc literal syntax), return the corresponding value. If
+the argument does not conform to Orc literal syntax,
+halt with an error.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
-  read("true") -- publishes (boolean) true
-| read("1") -- publishes (integer) 1
-| read("3.0e2") -- publishes (floating point) 300.0
-| read("\"hi\"") -- publishes (string) "hi"]]></programlisting>
+  read("true") -- publishes the boolean true
+| read("1") -- publishes the integer 1
+| read("(3.0, [])") -- publishes the tuple (3.0, [])
+| read("\"hi\"") -- publishes the string "hi"]]></programlisting>
 --}
 site read = orc.lib.str.Read
 
