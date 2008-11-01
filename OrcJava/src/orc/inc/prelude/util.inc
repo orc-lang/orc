@@ -109,19 +109,6 @@ def fillArray(a, f) =
   fill(0, f) ; a
 
 {--
-* site Counter(Integer)() :: Signal
-<code>Counter(n)</code> returns a site which
-publishes a signal the first <code>n</code> times it
-is called, and is silent thereafter.
-
-Example:
-<programlisting language="orc-demo"><![CDATA[
--- Publishes five signals
-repeat(Counter(5))]]></programlisting>
---}
-site Counter = orc.lib.util.Counter
-
-{--
 * def takePubs(Integer, lambda () :: A) :: A
 <code>takePubs(n, f)</code> calls <code>f()</code>,
 publishes the first <code>n</code> values published
@@ -130,9 +117,9 @@ halts.
 --}
 def takePubs(n, f) =
   val out = Buffer()
-  val c = Counter(n)
+  val c = Counter(n-1)
   let(
     f() >x>
-    if(c() >> out.put(x) >> false
+    if(c.dec() >> out.put(x) >> false
        ; out.closenb() >> true)
   ) | repeat(out.get)
