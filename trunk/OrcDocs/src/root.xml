@@ -3335,123 +3335,76 @@ other, or fairly.  In the following solution, when a writer tries to acquire
 the lock, current readers are allowed to finish but new readers are postponed
 until after the writer finishes.  Lock requests are granted in the order
 received, guaranteeing fairness.  Normally, such a service would be provided to
-Orc programs by a site, but a direct Orc implementation serves to illustrate
-techniques which are helpful for solving concurrent problems in general.
+Orc programs by a site, but it is educational to see how it can be implemented
+directly in Orc.
 </para>
 
 <programlisting language="orc-demo"><![CDATA[
+{-
+Create a reader/writer lock and return the sites used
+to acquire and release the lock.
+-}
 def ReadWriteLock() =
-  {-
-  Message Queue. Message types:
-  Left(Left(Semaphore))  -- acquire read
-  Left(Right(Signal))    -- release read
-  Right(Left(Semaphore)) -- acquire write
-  Right(Right(Signal))   -- release write
+  {- Message Queue. Message types:
+  Left(Semaphore)  -- acquire read
+  Right(Semaphore) -- acquire write
   -}
   val m = Buffer()
+  {- Count of active readers/writers -}
+  val c = Counter()
 
-  {- Reading, with one or more pending reads -}
-  def reading(n, Left(Left(s)):pend) =
-    s.release() >> reading(n+1, pend)
+  {- Grant read request -}
+  def grant(Left(s)) = c.inc() >> s.release()
+  {- Grant write request -}
+  def grant(Right(s)) =
+    c.onZero() >> c.inc() >> s.release() >> c.onZero()
 
-  {- Reading, with no pending reads or writes -}
-  def reading(n, []) =
-    def on(Left(Left(s)))  = s.release() >> reading(n+1, [])
-    def on(Right(Left(s))) = reading(n, [Right(Left(s))])
-    def on(Left(Right(_))) = reading(n-1, [])
-    on(m.get())
+  {- Make a request -}
+  def request(tag) = 
+    Semaphore(0) >s> m.put(tag(s)) >> s.acquire()
 
-  {- Reading, with a pending write and no active readers -}
-  def reading(0, Right(Left(s)):pend) =
-    s.release() >> writing(pend)
-
-  {- Reading, with a pending write and active readers -}
-  def reading(n, pend) =
-    def on(Right(Left(s)) as r) = reading(n, append(pend, [r]))
-    def on(Left(Left(s)) as r)  = reading(n, append(pend, [r]))
-    def on(Left(Right(_)))      = reading(n-1, pend)
-    on(m.get())
-
-  {- Writing -}
-  def writing(pend) =
-    def on(Right(Right(_)))     = reading(0, pend)
-    def on(Right(Left(s)) as r) = writing(append(pend, [r]))
-    def on(Left(Left(s)) as r)  = writing(append(pend, [r]))
-    on(m.get())
-
-  {- Begin reading -}
-  def acquireR() =
-    Semaphore(0) >s>
-    m.put(Left(Left(s))) >>
-    s.acquire() >>
-    println("START READING")
-
-  {- Finish reading -}
-  def releaseR() =
-    println("END READING") >>
-    m.put(Left(Right(signal)))
-
-  {- Begin writing -}
-  def acquireW() =
-    Semaphore(0) >s>
-    m.put(Right(Left(s))) >>
-    s.acquire() >>
-    println("START WRITING")
-
-  {- Finish writing -}
-  def releaseW() =
-    println("END WRITING") >>
-    m.put(Right(Right(signal)))
+  def acquireR() = request(Left)
+  def releaseR() = c.dec()
+  def acquireW() = request(Right)
+  def releaseW() = c.dec()
 
   {- Start the actor and return lock functions -}
-  reading(0, [])
+  repeat(lambda () = m.get() >r> grant(r)) >> stop
   | (acquireR, releaseR, acquireW, releaseW)
 
 {- Test the lock -}
 let(
   ReadWriteLock() >(acquireR, releaseR, acquireW, releaseW)> (
-    ( Rtimer(10) >> acquireR() >> Rtimer(1000) >> releaseR() >> stop
-    | Rtimer(20) >> acquireR() >> Rtimer(1000) >> releaseR() >> stop
-    | Rtimer(30) >> acquireR() >> Rtimer(1000) >> releaseR() >> stop
-    | Rtimer(40) >> acquireW() >> Rtimer(3000) >> releaseW() >> stop
-    | Rtimer(50) >> acquireR() >> Rtimer(1000) >> releaseR() >> stop
-    | Rtimer(60) >> acquireR() >> Rtimer(1000) >> releaseR() >> stop
-    ) ; signal
+    def testR() =
+      acquireR() >> println("START READ") >>
+      Rtimer(1000) >> println("END READ") >>
+      releaseR()
+    def testW() =
+      acquireW() >> println("START WRITE") >>
+      Rtimer(1000) >> println("END WRITE") >>
+      releaseW()
+    ( Rtimer(10) >> testR() | Rtimer(20) >> testR()
+    | Rtimer(30) >> testW()
+    | Rtimer(40) >> testR() | Rtimer(50) >> testR()
+    ) >> stop
+    ; signal
   )
-)]]></programlisting>
+) >> stop]]></programlisting>
 
 <para>
-This implementation is based on the actor model.
-Refer to the <link
-linkend="methodology.examples.hygenic">Hygenic Dining
-Philosophers</link> example for a high-level description of how the actor model
-is emulated in Orc.
+The lock receives requests over the channel <code>m</code> and processes them
+sequentially with the function <code>grant</code>. Each request includes a
+<code>Semaphore</code> which the requestor blocks on.  The lock grants access
+by releasing the semaphore, unblocking the requestor.
 </para>
 
 <para>
-The lock is implement as an actor with two states: <code>reading</code> and
-<code>writing</code>.  Both states include a queue of pending requests which
-must be granted before any new requests.  The reading state also includes the
-number of readers currently holding the lock.
-</para>
-
-<para>
-While reading, the actor grants every read request until a write request is
-received.  Then it places the write request and every subsequent request in the
-pending queue until all of the readers currently holding the lock have
-finished.  Then the actor gives the lock to the writer and transitions to the
-writing state.  While writing, the actor waits for the writer to release the
-lock, then transitions back to the reading state.  The reading state must
-process pending requests until there are no more, then it can return to
-processing new requests.
-</para>
-
-<para>
-Calls to acquire or release the lock are translated into messages tagged with
-the built-in constructors <code>Left</code> and <code>Right</code> and put in
-the actor's mailbox.  A request to acquire the lock includes a
-<code>Semaphore</code> which the requestor blocks on.  The actor grants access
-by releasing the lock, unblocking the requestor.
+The counter <code>c</code> tracks the number of readers or writers currently
+holding the lock.  Whenever the lock is granted, <code>grant</code> increments
+<code>c</code>, and when the lock is released, <code>c</code> is decremented.
+To ensure that a writer has exclusive access, <code>grant</code> waits for the
+<code>c</code> to become zero before granting the lock to the writer, and then
+waits for <code>c</code> to become zero again before granting any more requests.
 </para>
 </section>
 
@@ -3520,13 +3473,319 @@ path(source, sink, cell, succ)
 
 
 
-<!-- 
 <chapter id="chapter.services"><title>Accessing and Creating External Services</title>
 
-Under construction.
+<section id="section.services.java"><title>Java Integration</title>
+
+<para>
+The Orc implementation integrates closely with Java.  Java methods and
+constructors can be called from Orc as sites, and values can be passed back and
+forth seamlessly between Orc and Java.  The following sections will describe
+the details of this interaction, and how to implement sites in Java so that
+they can be used in Orc.
+</para>
+
+<section><title>Values</title>
+
+<para>
+Java objects may be used as values anywhere in an Orc program.
+Primitive Java values cannot be used directly in an Orc program, they must be
+boxed. This boxing (and unboxing, when necessary) is automatic.  Therefore the
+main effect of this rule is that it is impossible to distinguish, at runtime,
+between a primitive value and an instance of the corresponding wrapper class
+with the same value.
+</para>
+
+<para>
+Orc literals have the following Java types:
+<variablelist>
+<varlistentry><term>string</term><listitem><code language="java">java.lang.String</code></listitem></varlistentry>
+<varlistentry><term>boolean</term><listitem><code language="java">java.lang.Boolean</code></listitem></varlistentry>
+<varlistentry><term>integer</term><listitem><code language="java">java.math.BigInteger</code></listitem></varlistentry>
+<varlistentry><term>float</term><listitem><code language="java">java.math.BigDecimal</code></listitem></varlistentry>
+<varlistentry><term>tuple</term><listitem><code language="java">orc.runtime.values.TupleValue</code></listitem></varlistentry>
+<varlistentry><term>function</term><listitem><code language="java">orc.runtime.values.Closure</code></listitem></varlistentry>
+<varlistentry><term>list</term><listitem><code language="java">orc.runtime.values.ListValue</code></listitem></varlistentry>
+</variablelist>
+</para>
+
+<para>
+When both arguments of an arithmetic or comparison operator are numeric, the
+arguments are implicitly coerced to the widest of the two argument types.
+"Widest" is defined by the following relation, where ">" means "is wider than":
+BigDecimal > double > float > BigInteger > long > int > short > byte
+</para>
+
+</section>
+
+<section id="section.services.java.dot"><title>Dot Operator</title>
+
+<para>
+Java classes (as defined by a <code>class</code> declaration) and Java objects (which
+are not instances of <code language="java">orc.runtime.values.Callable</code>) behave specially when
+treated as sites (i.e. appearing as the target of a call or dot operator).
+</para>
+
+<para>
+<code>x.member</code>, where <code>x</code> is a Java object or class, is evaluated as follows:
+<itemizedlist>
+<listitem>If <code>x</code> has one or more methods named <code>member</code>,
+a "method handle" is returned which may be called like an Orc site or function.
+When such a method handle is called, the appropriate Java method is selected
+and called depending on the number and type of arguments, as described in <link
+linkend="section.services.java.method">Method Resolution</link>
+below.</listitem>
+<listitem>Otherwise, if <code>x</code> has a field named <code>member</code>,
+the value of the field is returned.</listitem>
+</itemizedlist>
+</para>
+
+<para>
+Note that no distinction is made between static and non-static members; it is
+an error to evaluate a non-static member through a class, but this does not
+change how members are resolved.  Note also that if a field shares a name with
+one or more methods, there is no way to access the field directly.
+</para>
+
+</section>
+
+<section><title>Direct Calls</title>
+
+<para>
+When <code>x</code> is a Java object (but not a Java class), the syntax
+<code>x(...)</code> is treated as equivalent to <code>x.apply(...)</code>,
+whose behavior is described in <link linkend="section.services.java.dot">Dot Operator</link>.
+</para>
+
+</section>
+
+<section><title>Constructors</title>
+
+When <code>x</code> is a Java class, the syntax <code>x(...)</code> is treated as equivalent to
+<code>x.&lt;init&gt;(...)</code> (ignoring the fact that the latter is syntactically invalid).
+In other words, the constructor for the object is called. In case of overloaded
+constructors, the appropriate constructor is chosen based on the number and
+types of arguments as described in <link
+linkend="section.services.java.method">Method Resolution</link>.
+
+</section>
+
+<section id="section.services.java.method"><title>Method Resolution</title>
+
+<para>
+When an overloaded method is called, the actual method called is based on the runtime types of the arguments, as follows:
+<orderedlist>
+<listitem>If only one method has the appropriate number of arguments, that method is called.</listitem>
+<listitem>Otherwise, each method taking the appropriate number of arguments is tested for type compatibility as follows, and the first matching method is called.
+	<orderedlist>
+	<listitem>For each argument in turn:
+		<orderedlist>
+		<listitem>If the argument is null, then the argument matches</listitem>
+		<listitem>If the formal parameter is a primitive type, then the argument must be an instance of a wrapper class. The argument is unboxed (unwrapped) and may be coerced to the type of the formal parameter according to Java's standard rules for implicit widening coercions.</listitem>
+		<listitem>Otherwise, the argument must be a subtype of the formal parameter type.</listitem>
+		</orderedlist>
+	</listitem>
+	</orderedlist>
+</listitem>
+</orderedlist>
+</para>
+
+<para>
+Currently we do not implement specificity rules for choosing the best matching
+method; the first matching method (according to some unspecified order) is
+chosen.  Note also that we do not support varargs methods explicitly, but
+instead varargs may be passed as an array of the appropriate type.
+</para>
+
+</section>
+
+<section><title>Cooperative Scheduling</title>
+
+<section><title>Overview</title>
+<para>
+In order to support massive concurrency efficiently in Java, Orc uses
+cooperative threading.  Orc programs are broken into discrete steps which
+are executed by a fixed-size thread pool.  This approcah works for Orc
+expressions, but the internals of an Orc site written in Java cannot be easily
+broken down.  So Orc has two choices when it needs to call a local Java site:
+</para>
+
+<itemizedlist>
+<listitem>Run the site call in a new thread.  This means site calls never
+unnecessarily block the Orc engine, but it also limits the number of concurrent
+site calls an Orc program can make.</listitem>
+<listitem>Run the site call in the same thread as the Orc engine, which
+conserves thread resources but may block the engine from making further
+progress until the site call finishes.</listitem>
+</itemizedlist>
+
+<para>
+Fortunately, in practice most Orc site calls take a short, deterministic amount
+of time to complete. Of those that don't, it's usually only because they are
+blocked waiting for some external event, like another site call.  In this case,
+instead of blocking the site can return control to the Orc engine, asking to
+be run again when the external event occurs.  In typical Java applications this
+kind of non-blocking behavior is implemented using callbacks (or in its most
+general form, continuation passing).  Unfortunately this creates convoluted and
+verbose code: what if you need to block in the middle of a <code
+	language="java">for</code> loop, for example?
+</para>
+
+<para>
+<ulink url="http://kilim.malhar.net/">Kilim</ulink> resolves this issue by
+allowing programmers to write code in a natural blocking style and then
+manipulating the bytecode to perform a form of CPS conversion, so that instead
+of blocking the code actually returns control to a scheduler. Orc incorporates
+Kilim to allow site authors to write sites with internal concurrency and
+blocking behavior which don't use Java threads and cooperate with the Orc
+engine.
+</para>
+</section>
+
+<section><title>Kilim Tutorial</title>
+
+<para>
+For a full introduction to Kilim, see <ulink
+url="http://www.malhar.net/sriram/kilim/thread_of_ones_own.pdf">A Thread of
+One's Own</ulink>, by Sriram Srinivasan. In the following, we will cover just
+enough to get you started writing Orc sites using Kilim.
+</para>
+
+<para>
+Kilim introduces three key primitives:
+<variablelist>
+<varlistentry>
+<term>
+<code language="java">Pausable</code>
+</term>
+<listitem>
+This checked exception marks methods which may block
+<footnote>Originally Kilim used annotations to mark pausable methods. It turned
+out that javac would sometimes manipulate code in ways which violate the
+invariants regarding use of the annotation. Annotations also have the
+disadvantage that the invariants on their use are not checked automatically by
+tools like Eclipse.</footnote>. You should never catch
+this exception, and you should always declare it even if you have already
+declared <code language="java">throws Exception</code> or <code
+language="java">throws Throwable</code>.  In all other respectsit follows the
+normal rules for checked exceptions: an override can only throw it if the
+superclass method throws it, and you must throw it if you call any method which
+throws it.
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+<code language="java">Mailbox</code>
+</term>
+<listitem>
+A multiple-producer, single-consumer blocking queue used to communicate with tasks.
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+<code language="java">Task</code>
+</term>
+<listitem>
+Cooperative analogue of a Thread. Creating and running a task looks like this:
+
+<programlisting language="java">
+new Task() {
+    public void execute() throws Pausable {
+        // do some stuff
+    }
+}.start();
+</programlisting>
+</listitem>
+</varlistentry>
+</variablelist>
+</para>
+
+<para>
+When writing Orc sites you rarely need to use tasks explicitly because every Orc
+site call is implicitly run inside a Kilim task. So all you need to do is mark
+<code language="java">Pausable</code> methods. Here's a short example of a
+buffer site written using Kilim <code language="java">Mailbox</code>es:
+
+<programlisting language="java"><![CDATA[
+public class KilimBuffer<V> {
+	private LinkedList<Mailbox<V>> waiters =
+		new LinkedList<Mailbox<V>>();
+	private LinkedList<V> buffer = new LinkedList<V>();
+	public synchronized void put(V o) throws Pausable {
+		Mailbox<V> waiter = waiters.poll();
+		if (waiter != null) waiter.put(o);
+		else buffer.add(o);
+	}
+	public synchronized V get() throws Pausable {
+		V out = buffer.poll();
+		if (out != null) return out;
+		else {
+			Mailbox<V> waiter = new Mailbox<V>();
+			waiters.add(waiter);
+			return waiter.get();
+		}
+	}
+}]]></programlisting>
+</para>
+</section>
+
+<section><title>Using Kilim in Orc</title>
+
+<para>Classes using Kilim can be imported like other Java classes using the Orc
+<code>class</code> declaration.  For example, we can use the
+<code>KilimBuffer</code> class defined above:
+<programlisting><![CDATA[
+class Buffer = orc.lib.state.KilimBuffer
+val b = Buffer()
+  Rtimer(1000) >> b.put("1 second later") >> null
+| b.get()]]></programlisting>
+</para>
+
+<para>
+Any Orc site can also run <code language="java">Task</code>s directly or use
+the utility method <code language="java">orc.runtime.Kilim#runPausable(Token,
+Pausable)</code> to run a task which produces a value for a token.
+</para>
+</section>
+
+<section><title>When you must block</title>
+
+<para>
+Sometimes blocking is unavoidable, for example if a site must perform blocking
+IO.  For such cases, Orc provides a utility method <code
+language="java">orc.runtime.Kilim#runThreaded(Callable)</code> which farms work
+out to a thread pool.  The advantage of doing this over spawning your own
+thread is that there is no chance of using too many threads; if no thread is
+available, the method pauses until one becomes available.  The disadvantage is
+that if you have too many Java methods which must communicate with each other
+concurrently and can't use Mailboxes, there won't be enough threads for them
+all and execution will deadlock.  This situation is sufficiently rare that
+<code language="java">runThreaded</code> is usually the correct approach.
+</para>
+
+</section>
+
+<section><title>Compiling Kilim Sites</title>
+
+<para>
+Code which uses Kilim annotations must be processed after compiling and before
+running, with the Kilim "weaver".  If your <filename>.class</filename> files
+are in <filename>./build</filename>, you would run the weaver like this:
+</para>
+<programlisting language="sh"><![CDATA[
+java -cp orc-0.9.3.jar:lib/kilimex.jar:./build kilim.tools.Weaver -d ./build ./build]]></programlisting>
+
+<para>
+The Orc source distribution includes an ant <command>kilim</command> task in
+<filename>build.xml</filename> to do exactly this.
+</para>
+</section>
+
+</section>
+
+</section>
 
 </chapter>
- -->
 
 
 <!-- 
