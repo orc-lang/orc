@@ -64,7 +64,7 @@ result for the given search term.
 
 <pre class="programlisting">
 <span class="hl-comment">{- Get the top search result for "computation orchestration" -}</span>
-<span class="hl-variable">Google</span>(<span class="hl-literal">"computation orchestration"</span>)
+<span class="hl-site">Google</span>(<span class="hl-literal">"computation orchestration"</span>)
 </pre>
 
 Once the Google search service determines the top result, it sends a response. The site 
@@ -96,8 +96,8 @@ as an argument, or published by an execution, just like any other value.
   bind the variable Search to that site,
   then use that site to search for a term.
 -}</span>
-<span class="hl-keyword">val</span> <span class="hl-variable">Search</span> = <span class="hl-variable">SearchEngine</span>(<span class="hl-literal">"http://www.google.com/"</span>)
-<span class="hl-variable">Search</span>(<span class="hl-literal">"first class value"</span>)
+<span class="hl-keyword">val</span> <span class="hl-variable">Search</span> = <span class="hl-site">SearchEngine</span>(<span class="hl-literal">"http://www.google.com/"</span>)
+<span class="hl-site">Search</span>(<span class="hl-literal">"first class value"</span>)
 </pre>
 </p><p>
 A site is sometimes called only for its effect on the external world; its return
@@ -113,7 +113,7 @@ can be written as <code class="code"><span class="hl-keyword">signal</span></cod
   a newline, to an output console.
   The return value of this site call is a signal.
 -}</span>
-<span class="hl-variable">println</span>(<span class="hl-literal">"Hello, World!"</span>)
+<span class="hl-site">println</span>(<span class="hl-literal">"Hello, World!"</span>)
 </pre>
 </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc-declaring-a-site"></a>1.3.1.2.&nbsp;Declaring a site</h4></div></div></div><p>
 A <code class="code"><span class="hl-keyword">site</span></code> declaration makes some service available as a site and
@@ -162,7 +162,7 @@ F <code class="code"><span class="hl-combinator">|</span></code> G does so as we
   Since each call may publish a value, the expression
   may publish up to two values.
 -}</span>  
-<span class="hl-variable">Google</span>(<span class="hl-literal">"cupcake"</span>) <span class="hl-combinator">|</span> <span class="hl-variable">Yahoo</span>(<span class="hl-literal">"cupcake"</span>)
+<span class="hl-site">Google</span>(<span class="hl-literal">"cupcake"</span>) <span class="hl-combinator">|</span> <span class="hl-site">Yahoo</span>(<span class="hl-literal">"cupcake"</span>)
 </pre>
 </p><p>
 The parallel combinator is fully associative: (F <code class="code"><span class="hl-combinator">|</span></code> G) <code class="code"><span class="hl-combinator">|</span></code> H and
@@ -206,8 +206,8 @@ by the whole expression; they are consumed by the variable binding.
 <pre class="programlisting">
 <span class="hl-comment">-- Prepend the site name to each published search result</span>
 <span class="hl-comment">-- The cat site concatenates any number of arguments into one string  </span>
-  <span class="hl-variable">Google</span>(<span class="hl-literal">"cupcake"</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">s</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">cat</span>(<span class="hl-literal">"Google: "</span>, <span class="hl-variable">s</span>)
-<span class="hl-combinator">|</span> <span class="hl-variable">Yahoo</span>(<span class="hl-literal">"cupcake"</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">s</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">cat</span>(<span class="hl-literal">"Yahoo: "</span>, <span class="hl-variable">s</span>)
+  <span class="hl-site">Google</span>(<span class="hl-literal">"cupcake"</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">s</span><span class="hl-combinator">&gt;</span> <span class="hl-site">cat</span>(<span class="hl-literal">"Google: "</span>, <span class="hl-variable">s</span>)
+<span class="hl-combinator">|</span> <span class="hl-site">Yahoo</span>(<span class="hl-literal">"cupcake"</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">s</span><span class="hl-combinator">&gt;</span> <span class="hl-site">cat</span>(<span class="hl-literal">"Yahoo: "</span>, <span class="hl-variable">s</span>)
 </pre>
 </p><p>
 The sequential combinator may be written as F<code class="code"> <span class="hl-combinator">&gt;</span></code>P<code class="code"><span class="hl-combinator">&gt;</span> </code>G, 
@@ -238,7 +238,7 @@ We can do this using <code class="code"> <span class="hl-combinator">&gt;</span>
   Print two strings to the console,
   but don't publish the return values of the calls.
 -}</span>
-( <span class="hl-variable">println</span>(<span class="hl-literal">"goodbye"</span>) <span class="hl-combinator">|</span> <span class="hl-variable">println</span>(<span class="hl-literal">"world"</span>) ) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
+( <span class="hl-site">println</span>(<span class="hl-literal">"goodbye"</span>) <span class="hl-combinator">|</span> <span class="hl-site">println</span>(<span class="hl-literal">"world"</span>) ) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
 </pre>
 </p><p>
 The sequential combinator is right associative: F<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> </code>G<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">y</span><span class="hl-combinator">&gt;</span> </code>H
@@ -277,7 +277,7 @@ never publishes a value, that part of the execution is suspended forever.
 <pre class="programlisting">
 <span class="hl-comment">-- Query Google and Yahoo for a search result</span>
 <span class="hl-comment">-- Print out the result that arrives first; ignore the other result</span>
-<span class="hl-variable">println</span>(<span class="hl-variable">result</span>) <span class="hl-combinator">&lt;</span><span class="hl-variable">result</span><span class="hl-combinator">&lt;</span> ( <span class="hl-variable">Google</span>(<span class="hl-literal">"cupcake"</span>) <span class="hl-combinator">|</span> <span class="hl-variable">Yahoo</span>(<span class="hl-literal">"cupcake"</span>) )
+<span class="hl-site">println</span>(<span class="hl-variable">result</span>) <span class="hl-combinator">&lt;</span><span class="hl-variable">result</span><span class="hl-combinator">&lt;</span> ( <span class="hl-site">Google</span>(<span class="hl-literal">"cupcake"</span>) <span class="hl-combinator">|</span> <span class="hl-site">Yahoo</span>(<span class="hl-literal">"cupcake"</span>) )
 </pre>
 </p><p>
 Though a terminated execution may not make any new calls, the calls
@@ -290,7 +290,7 @@ as in the following example.
   This example actually prints both "true" and "false" to the
   console, regardless of which call responds first.
 -}</span>
-<span class="hl-keyword">stop</span> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> <span class="hl-variable">println</span>(<span class="hl-literal">"true"</span>) <span class="hl-combinator">|</span> <span class="hl-variable">println</span>(<span class="hl-literal">"false"</span>)
+<span class="hl-keyword">stop</span> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"true"</span>) <span class="hl-combinator">|</span> <span class="hl-site">println</span>(<span class="hl-literal">"false"</span>)
 </pre>
 
 Both of the <code class="code"><span class="hl-variable">println</span></code> calls are initiated before either one of
@@ -428,10 +428,10 @@ call may publish many values.
 </p><p>
 <pre class="orc">
 <span class="hl-comment">-- Publish all integers in the interval 1..n, in arbitrary order. </span>
-<span class="hl-keyword">def</span> <span class="hl-variable">range</span>(<span class="hl-variable">n</span>) = <span class="hl-keyword">if</span> (<span class="hl-variable">n</span> &gt; <span class="hl-literal">0</span>) <span class="hl-keyword">then</span> (<span class="hl-variable">n</span> <span class="hl-combinator">|</span> <span class="hl-variable">range</span>(<span class="hl-variable">n</span>-<span class="hl-literal">1</span>)) <span class="hl-keyword">else</span> <span class="hl-keyword">stop</span> 
+<span class="hl-keyword">def</span> <span class="hl-site">range</span>(<span class="hl-variable">n</span>) = <span class="hl-keyword">if</span> (<span class="hl-variable">n</span> &gt; <span class="hl-literal">0</span>) <span class="hl-keyword">then</span> (<span class="hl-variable">n</span> <span class="hl-combinator">|</span> <span class="hl-site">range</span>(<span class="hl-variable">n</span>-<span class="hl-literal">1</span>)) <span class="hl-keyword">else</span> <span class="hl-keyword">stop</span> 
 
 <span class="hl-comment">-- Publish 1, 2, and 3 in arbitrary order.</span>
-<span class="hl-variable">range</span>(<span class="hl-literal">3</span>)
+<span class="hl-site">range</span>(<span class="hl-literal">3</span>)
 </pre>
 </p><p>
 In the context of Orc, function calls are not strict. When a function call executes,
@@ -453,14 +453,14 @@ and then responds with a signal.
 </p><p>
 <pre class="orc">
 <span class="hl-comment">-- Print "red", wait for 3 seconds (3000 ms), and then print "green" </span>
-<span class="hl-variable">println</span>(<span class="hl-literal">"red"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">Rtimer</span>(<span class="hl-literal">3000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">println</span>(<span class="hl-literal">"green"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
+<span class="hl-site">println</span>(<span class="hl-literal">"red"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">3000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"green"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
 </pre>
 </p><p>
 The following example defines a metronome, which publishes a signal once 
 every <code class="code"><span class="hl-variable">t</span></code> milliseconds, indefinitely.
 </p><p>
 <pre class="programlisting">
-<span class="hl-keyword">def</span> <span class="hl-variable">metronome</span>(<span class="hl-variable">t</span>) = <span class="hl-keyword">signal</span> <span class="hl-combinator">|</span> <span class="hl-variable">Rtimer</span>(<span class="hl-variable">t</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">metronome</span>(<span class="hl-variable">t</span>)
+<span class="hl-keyword">def</span> <span class="hl-site">metronome</span>(<span class="hl-variable">t</span>) = <span class="hl-keyword">signal</span> <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-variable">t</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">metronome</span>(<span class="hl-variable">t</span>)
 </pre>
 </p><p>
 We can also use <code class="code"><span class="hl-variable">Rtimer</span></code> together with the pruning combinator 
@@ -472,8 +472,8 @@ to enforce a timeout.
   If it takes more than 5 seconds, time out.
 -}</span>
 <span class="hl-variable">result</span> 
-  <span class="hl-combinator">&lt;</span><span class="hl-variable">result</span><span class="hl-combinator">&lt;</span> ( <span class="hl-variable">Google</span>(<span class="hl-literal">"impatience"</span>) 
-           <span class="hl-combinator">|</span> <span class="hl-variable">Rtimer</span>(<span class="hl-literal">5000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">"Search timed out."</span>)
+  <span class="hl-combinator">&lt;</span><span class="hl-variable">result</span><span class="hl-combinator">&lt;</span> ( <span class="hl-site">Google</span>(<span class="hl-literal">"impatience"</span>) 
+           <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">5000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">"Search timed out."</span>)
 </pre>
 </p>
 

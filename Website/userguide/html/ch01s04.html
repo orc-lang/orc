@@ -39,7 +39,7 @@ The item G+ means "one or more instances of G concatenated together".
                                 </td></tr></tbody></table></div></div><br class="table-break">
 </p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10AA6"></a>1.4.1.&nbsp;Special call forms</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10AA9"></a>1.4.1.1.&nbsp;The <code class="code">.</code> notation</h4></div></div></div><p>
 In many object-oriented programming languages, one calls a method or accesses a field of an
-object using the dot operator; for example, <code class="code"><span class="hl-variable">obj</span>.<span class="hl-variable">m</span>()</code> calls the method
+object using the dot operator; for example, <code class="code"><span class="hl-variable">obj</span>.<span class="hl-site">m</span>()</code> calls the method
 <code class="code"><span class="hl-variable">m</span></code> of the object <code class="code"><span class="hl-variable">obj</span></code>. 
 </p><p>
 There is a special kind of site call in Orc which serves a similar purpose. One may write
@@ -55,9 +55,9 @@ If <code class="code"><span class="hl-variable">x</span></code> cannot be interp
 Typically this capability is used so that sites may be syntactically treated like objects, 
 with multiple methods and fields. For example, a channel <code class="code"><span class="hl-variable">c</span></code> might understand the messages
 <code class="code"><span class="hl-variable">get</span></code> and <code class="code"><span class="hl-variable">put</span></code>, to get values from and put values on that channel,
-respectively. Such calls would be written <code class="code"><span class="hl-variable">c</span>.<span class="hl-variable">get</span>()</code>, or <code class="code"><span class="hl-variable">c</span>.<span class="hl-variable">put</span>(<span class="hl-literal">6</span>)</code>.
+respectively. Such calls would be written <code class="code"><span class="hl-variable">c</span>.<span class="hl-site">get</span>()</code>, or <code class="code"><span class="hl-variable">c</span>.<span class="hl-site">put</span>(<span class="hl-literal">6</span>)</code>.
 </p><p>
-A call such as <code class="code"><span class="hl-variable">c</span>.<span class="hl-variable">put</span>(<span class="hl-literal">6</span>)</code> actually occurs in two steps. First <code class="code"><span class="hl-variable">c</span>.<span class="hl-variable">put</span></code> sends the message
+A call such as <code class="code"><span class="hl-variable">c</span>.<span class="hl-site">put</span>(<span class="hl-literal">6</span>)</code> actually occurs in two steps. First <code class="code"><span class="hl-variable">c</span>.<span class="hl-variable">put</span></code> sends the message
 <code class="code"><span class="hl-variable">put</span></code> to the site <code class="code"><span class="hl-variable">c</span></code>; this publishes a site whose only purpose
 is to put values on the channel. Next, that site is called on the argument
 <code class="code"><span class="hl-literal">6</span></code>, sending 6 on the channel. Readers familiar with functional programming
@@ -74,9 +74,9 @@ define a curried addition function on two arguments, and later apply that functi
 arguments 3 and 4. We could write such a program in the following way:
 
 <pre class="orc">
-<span class="hl-keyword">def</span> <span class="hl-variable">Sum</span>(<span class="hl-variable">a</span>) = ( <span class="hl-keyword">lambda</span>(<span class="hl-variable">b</span>) = <span class="hl-variable">a</span>+<span class="hl-variable">b</span> )  
-<span class="hl-keyword">val</span> <span class="hl-variable">f</span> = <span class="hl-variable">Sum</span>(<span class="hl-literal">3</span>)
-<span class="hl-variable">f</span>(<span class="hl-literal">4</span>)
+<span class="hl-keyword">def</span> <span class="hl-site">Sum</span>(<span class="hl-variable">a</span>) = ( <span class="hl-keyword">lambda</span>(<span class="hl-variable">b</span>) = <span class="hl-variable">a</span>+<span class="hl-variable">b</span> )  
+<span class="hl-keyword">val</span> <span class="hl-variable">f</span> = <span class="hl-site">Sum</span>(<span class="hl-literal">3</span>)
+<span class="hl-site">f</span>(<span class="hl-literal">4</span>)
 </pre>
 
 This defines a function <code class="code"><span class="hl-variable">Sum</span></code> which, given an argument <code class="code"><span class="hl-variable">a</span></code>, creates a function
@@ -94,22 +94,22 @@ chain together multiple applications in a similar way. Here is the previous prog
 in this simplified syntax:
 
 <pre class="orc">
-<span class="hl-keyword">def</span> <span class="hl-variable">Sum</span>(<span class="hl-variable">a</span>)(<span class="hl-variable">b</span>) = <span class="hl-variable">a</span>+<span class="hl-variable">b</span>
-<span class="hl-variable">Sum</span>(<span class="hl-literal">3</span>)(<span class="hl-literal">4</span>)
+<span class="hl-keyword">def</span> <span class="hl-site">Sum</span>(<span class="hl-variable">a</span>)(<span class="hl-variable">b</span>) = <span class="hl-variable">a</span>+<span class="hl-variable">b</span>
+<span class="hl-site">Sum</span>(<span class="hl-literal">3</span>)(<span class="hl-literal">4</span>)
 </pre>
 
 Naturally, this syntax is backwards compatible; e.g. both of the following programs are also
 equivalent:  
 
 <pre class="orc">
-<span class="hl-keyword">def</span> <span class="hl-variable">Sum</span>(<span class="hl-variable">a</span>) = ( <span class="hl-keyword">lambda</span>(<span class="hl-variable">b</span>) = <span class="hl-variable">a</span>+<span class="hl-variable">b</span> )  
-<span class="hl-variable">Sum</span>(<span class="hl-literal">3</span>)(<span class="hl-literal">4</span>)
+<span class="hl-keyword">def</span> <span class="hl-site">Sum</span>(<span class="hl-variable">a</span>) = ( <span class="hl-keyword">lambda</span>(<span class="hl-variable">b</span>) = <span class="hl-variable">a</span>+<span class="hl-variable">b</span> )  
+<span class="hl-site">Sum</span>(<span class="hl-literal">3</span>)(<span class="hl-literal">4</span>)
 </pre>
 
 <pre class="orc">
-<span class="hl-keyword">def</span> <span class="hl-variable">Sum</span>(<span class="hl-variable">a</span>)(<span class="hl-variable">b</span>) = <span class="hl-variable">a</span>+<span class="hl-variable">b</span>  
-<span class="hl-keyword">val</span> <span class="hl-variable">f</span> = <span class="hl-variable">Sum</span>(<span class="hl-literal">3</span>)
-<span class="hl-variable">f</span>(<span class="hl-literal">4</span>)
+<span class="hl-keyword">def</span> <span class="hl-site">Sum</span>(<span class="hl-variable">a</span>)(<span class="hl-variable">b</span>) = <span class="hl-variable">a</span>+<span class="hl-variable">b</span>  
+<span class="hl-keyword">val</span> <span class="hl-variable">f</span> = <span class="hl-site">Sum</span>(<span class="hl-literal">3</span>)
+<span class="hl-site">f</span>(<span class="hl-literal">4</span>)
 </pre>
 
 </p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10B40"></a>1.4.2.&nbsp;Extensions to pattern matching</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10B43"></a>1.4.2.1.&nbsp;Publish pattern</h4></div></div></div><p>
@@ -141,12 +141,13 @@ In taking apart a value with a pattern, it is often useful to capture intermedia
 </pre>
 
 We can use the <code class="code"><span class="hl-keyword">as</span></code> keyword to simplify this program fragment, giving a name to an entire
-subpattern. Here is an equivalent version of the above code.
+sub-pattern. Here is an equivalent version of the above code.
 
 <pre class="programlisting">
 <span class="hl-keyword">val</span> ((<span class="hl-variable">ax</span>,<span class="hl-variable">ay</span>) <span class="hl-keyword">as</span> <span class="hl-variable">a</span>, (<span class="hl-variable">bx</span>,<span class="hl-variable">by</span>) <span class="hl-keyword">as</span> <span class="hl-variable">b</span>) = ((<span class="hl-literal">1</span>,<span class="hl-literal">2</span>),(<span class="hl-literal">3</span>,<span class="hl-literal">4</span>))
 </pre>
-</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10B86"></a>1.4.3.&nbsp;New forms of declarations</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10B89"></a>1.4.3.1.&nbsp;
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10B86"></a>1.4.3.&nbsp;New forms of declarations</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="section.orc.class"></a>1.4.3.1.&nbsp;
+
                         <code class="code"><span class="hl-keyword">class</span></code> declaration</h4></div></div></div><p>
 When Orc is run on top of an object-oriented programming language, classes
 from that language may be used as sites in Orc itself, via the <code class="code"><span class="hl-keyword">class</span></code>
@@ -155,17 +156,19 @@ declaration.
 <pre class="programlisting">
 <span class="hl-comment">{- Use the String class from Java's standard library as a site -}</span>
 <span class="hl-keyword">class</span> <span class="hl-variable">String</span> = <span class="hl-variable">java</span>.<span class="hl-variable">lang</span>.<span class="hl-variable">String</span>
-<span class="hl-keyword">val</span> <span class="hl-variable">s</span> = <span class="hl-variable">String</span>(<span class="hl-literal">"foo"</span>)
-<span class="hl-variable">s</span>.<span class="hl-variable">concat</span>(<span class="hl-literal">"bar"</span>)
+<span class="hl-keyword">val</span> <span class="hl-variable">s</span> = <span class="hl-site">String</span>(<span class="hl-literal">"foo"</span>)
+<span class="hl-variable">s</span>.<span class="hl-site">concat</span>(<span class="hl-literal">"bar"</span>)
 </pre>
 </p><p>
-This program binds the variable <code class="code"><span class="hl-variable">String</span></code> to the constructor of Java's
-String class. When it is called, it constructs a new instance of String, passing
+This program binds the variable <code class="code"><span class="hl-variable">String</span></code> to Java's String class.
+When it is called as a site, it constructs a new instance of String, passing
 the given arguments to the constructor.
 </p><p>
 This instance of String is a Java object; its methods are called and its fields
-are accessed using the dot (<code class="code">.</code>) notation, just as one would expect in Java.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10BA3"></a>1.4.3.2.&nbsp;
+are accessed using the dot (<code class="code">.</code>) notation, just as one would expect
+in Java.  For complete details of how Orc interacts with Java, see
+<a class="link" href="ch03.html#section.services.java" title="3.1.&nbsp;Java Integration">Java Integration</a>.
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10BA8"></a>1.4.3.2.&nbsp;
 
                         <code class="code"><span class="hl-keyword">include</span></code> declaration</h4></div></div></div><p>
 It is often convenient to group related declarations into units that can be
@@ -177,19 +180,19 @@ replaced the include declaration. An included file may itself contain
 </p><p>
 <pre class="programlisting">
 <span class="hl-comment">{- Contents of fold.inc -}</span>
-<span class="hl-keyword">def</span> <span class="hl-variable">foldl</span>(<span class="hl-variable">f</span>,[],<span class="hl-variable">s</span>) = <span class="hl-variable">s</span>
-<span class="hl-keyword">def</span> <span class="hl-variable">foldl</span>(<span class="hl-variable">f</span>,<span class="hl-variable">h</span>:<span class="hl-variable">t</span>,<span class="hl-variable">s</span>) = <span class="hl-variable">foldl</span>(<span class="hl-variable">f</span>,<span class="hl-variable">t</span>,<span class="hl-variable">f</span>(<span class="hl-variable">h</span>,<span class="hl-variable">s</span>))
+<span class="hl-keyword">def</span> <span class="hl-site">foldl</span>(<span class="hl-variable">f</span>,[],<span class="hl-variable">s</span>) = <span class="hl-variable">s</span>
+<span class="hl-keyword">def</span> <span class="hl-site">foldl</span>(<span class="hl-variable">f</span>,<span class="hl-variable">h</span>:<span class="hl-variable">t</span>,<span class="hl-variable">s</span>) = <span class="hl-site">foldl</span>(<span class="hl-variable">f</span>,<span class="hl-variable">t</span>,<span class="hl-site">f</span>(<span class="hl-variable">h</span>,<span class="hl-variable">s</span>))
 
-<span class="hl-keyword">def</span> <span class="hl-variable">foldr</span>(<span class="hl-variable">f</span>,<span class="hl-variable">l</span>,<span class="hl-variable">s</span>) = <span class="hl-variable">foldl</span>(<span class="hl-variable">f</span>,<span class="hl-variable">rev</span>(<span class="hl-variable">l</span>),<span class="hl-variable">s</span>)
+<span class="hl-keyword">def</span> <span class="hl-site">foldr</span>(<span class="hl-variable">f</span>,<span class="hl-variable">l</span>,<span class="hl-variable">s</span>) = <span class="hl-site">foldl</span>(<span class="hl-variable">f</span>,<span class="hl-site">rev</span>(<span class="hl-variable">l</span>),<span class="hl-variable">s</span>)
 </pre>
 </p><p>
 <pre class="programlisting">
 <span class="hl-comment">{- This is the same as inserting the contents of fold.inc here -}</span>
 <span class="hl-keyword">include</span> <span class="hl-literal">"fold.inc"</span>
 
-<span class="hl-keyword">def</span> <span class="hl-variable">sum</span>(<span class="hl-variable">L</span>) = <span class="hl-variable">foldl</span>(<span class="hl-keyword">lambda</span>(<span class="hl-variable">a</span>,<span class="hl-variable">b</span>) = <span class="hl-variable">a</span>+<span class="hl-variable">b</span>, <span class="hl-variable">L</span>, <span class="hl-literal">0</span>)
+<span class="hl-keyword">def</span> <span class="hl-site">sum</span>(<span class="hl-variable">L</span>) = <span class="hl-site">foldl</span>(<span class="hl-keyword">lambda</span>(<span class="hl-variable">a</span>,<span class="hl-variable">b</span>) = <span class="hl-variable">a</span>+<span class="hl-variable">b</span>, <span class="hl-variable">L</span>, <span class="hl-literal">0</span>)
 
-<span class="hl-variable">sum</span>([<span class="hl-literal">1</span>,<span class="hl-literal">2</span>,<span class="hl-literal">3</span>])
+<span class="hl-site">sum</span>([<span class="hl-literal">1</span>,<span class="hl-literal">2</span>,<span class="hl-literal">3</span>])
 </pre>
 </p><p>
 Note that these declarations still obey the rules of lexical scope. Also, Orc 
