@@ -438,6 +438,33 @@ Return the number of unique keys currently contained in the map.
 --}
 class Map = orc.lib.data.Map
 
+
+{--
+* site Counter(Integer) :: Counter
+Create a new counter initialized to the given value.
+
+** site Counter() :: Counter
+Create a new counter initialized to zero.
+
+** site Counter.inc() :: Signal
+Increment the counter.
+
+** site Counter.dec() :: Signal
+If the counter is already at zero, halt. Otherwise, decrement
+the counter and return a signal.
+
+** site Counter.onZero() :: Signal
+If the counter is at zero, return a signal. Otherwise
+block until the counter reaches zero.
+
+Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes five signals
+val c = Counter(4)
+repeat(c.dec)]]></programlisting>
+--}
+site Counter = orc.lib.state.Counter
+
 {--
 * def fst((A,B)) :: A
 Return the first element of a pair.
