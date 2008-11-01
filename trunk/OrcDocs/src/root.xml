@@ -2327,7 +2327,7 @@ extractor objects and the <code>unapply</code> method in Scala.
 
 <section><title>New forms of declarations</title>
 
-<section><title><code>class</code> declaration</title>
+<section id="section.orc.class"><title><code>class</code> declaration</title>
 
 <para>
 When Orc is run on top of an object-oriented programming language, classes
@@ -2345,14 +2345,16 @@ s.concat("bar")
 </para>
 
 <para>
-This program binds the variable <code>String</code> to the constructor of Java's
-String class. When it is called, it constructs a new instance of String, passing
+This program binds the variable <code>String</code> to Java's String class.
+When it is called as a site, it constructs a new instance of String, passing
 the given arguments to the constructor.
 </para>
 
 <para>
 This instance of String is a Java object; its methods are called and its fields
-are accessed using the dot (<code>.</code>) notation, just as one would expect in Java.
+are accessed using the dot (<code>.</code>) notation, just as one would expect
+in Java.  For complete details of how Orc interacts with Java, see
+<link linkend="section.services.java">Java Integration</link>.
 </para>
 </section>
 
@@ -3478,26 +3480,126 @@ path(source, sink, cell, succ)
 <section id="section.services.java"><title>Java Integration</title>
 
 <para>
-The Orc implementation integrates closely with Java.  Java methods and
-constructors can be called from Orc as sites, and values can be passed back and
-forth seamlessly between Orc and Java.  The following sections will describe
-the details of this interaction, and how to implement sites in Java so that
-they can be used in Orc.
+Java classes can be imported into Orc as sites using the <link linkend="section.orc.class"><code>class</code>
+declaration</link>.  Imported classes must be in the classpath of the JVM running
+the Orc interpreter.  The following sections describe in detail how such
+imported classes behave in Orc programs.
 </para>
 
-<section><title>Values</title>
+<section id="section.services.java.dot"><title>Dot Operator</title>
 
 <para>
-Java objects may be used as values anywhere in an Orc program.
-Primitive Java values cannot be used directly in an Orc program, they must be
-boxed. This boxing (and unboxing, when necessary) is automatic.  Therefore the
-main effect of this rule is that it is impossible to distinguish, at runtime,
-between a primitive value and an instance of the corresponding wrapper class
-with the same value.
+<code>x.member</code>, where <code>x</code> evaluates to a Java class or object, is evaluated as follows:
+<itemizedlist>
+<listitem>If <code>x</code> has one or more methods named <code>member</code>,
+a "method handle" site is returned which may be called like any other Orc site.
+When a method handle is actually called with arguments, the appropriate Java
+method is selected and called depending on the number and type of arguments, as
+described in <link linkend="section.services.java.method">Method Resolution</link>
+below.</listitem>
+<listitem>Otherwise, if <code>x</code> has a field named <code>member</code>,
+the value of the field is returned.</listitem>
+</itemizedlist>
 </para>
 
 <para>
-Orc literals have the following Java types:
+Note that no distinction is made between static and non-static members; it is
+an error to reference a non-static member through a class, but this does not
+change how members are resolved.  Note also that if a field shares a name with
+one or more methods, there is no way to access the field directly.
+</para>
+
+<para>
+The following example illustrates how the dot operator can be used to access
+both static and non-static methods and fields:
+<programlisting>
+{- bind Integer to a Java class -}
+class Integer = java.lang.Integer
+
+{- call a static method -}
+val i = Integer.decode("5")
+{- read a static field -}
+val m = Integer.MIN_VALUE
+{- call a non-static method -}
+i.toString()
+</programlisting>
+</para>
+
+</section>
+
+<section><title>Direct Calls</title>
+
+<para>
+When <code>x</code> evaluates to a Java object (but not a Java class), the syntax
+<code>x(...)</code> is equivalent to <code>x.apply(...)</code>.
+</para>
+
+<para>
+When <code>x</code> evaluates to a Java class, the syntax <code>x(...)</code>
+calls the class's constructor.  In case of overloaded constructors, the
+appropriate constructor is chosen based on the number and types of arguments as
+described in <link linkend="section.services.java.method">Method Resolution</link>.
+</para>
+
+</section>
+
+<section id="section.services.java.method"><title>Method Resolution</title>
+
+<para>
+When a method handle is called, the actual Java method called is chosen based
+on the runtime types of the arguments, as follows:
+<orderedlist>
+<listitem>If only one method has the appropriate number of arguments, that method is called.</listitem>
+<listitem>Otherwise, each method taking the appropriate number of arguments is
+	tested for type compatibility as follows, and the first matching method
+	is called.
+	<orderedlist>
+	<listitem>Every argument is compared to the corresponding formal
+		parameter type as follows. All arguments must match for the
+		method to match.
+		<orderedlist>
+		<listitem>If the argument is null, then the argument matches</listitem>
+		<listitem>If the formal parameter type is primitive (int, char,
+			float, ...) and the argument is an instance of a
+			wrapper class, then the argument is unboxed (unwrapped)
+			and coerced to the type of the formal parameter
+			according to Java's standard rules for implicit
+			widening coercions.</listitem>
+		<listitem>If the formal parameter type is a primitive numeric type
+			and the argument is an instance of <code>BigDecimal</code>,
+			the argument is implicitly narrowed to the formal parameter type.</listitem>
+		<listitem>If the formal parameter type is a primitive integral type
+			and the argument is an instance of <code>BigInteger</code>,
+			the argument is implicitly narrowed to the formal parameter type.</listitem>
+		<listitem>Otherwise, the argument must be a subtype of the formal parameter type.</listitem>
+		</orderedlist>
+	</listitem>
+	</orderedlist>
+</listitem>
+</orderedlist>
+</para>
+
+<para>
+The reason for the unusual implicit narrowing of <code>BigDecimal</code> and
+<code>BigInteger</code> is that Orc numeric literals have these types, and it
+would be awkward to have to perform an explicit conversion every time such a
+value is passed to a Java method expecting a primitive.
+</para>
+
+<para>
+Currently we do not implement specificity rules for choosing the best matching
+method; the first matching method (according to some unspecified order) is
+chosen.  Note also that we do not support varargs methods explicitly, but
+instead varargs may be passed as an array of the appropriate type.
+</para>
+
+</section>
+
+<section><title>Orc Values in Java</title>
+
+<para>
+Any value in an Orc program may be treated as a Java object and passed to Java
+methods.  Orc literals have the following Java types:
 <variablelist>
 <varlistentry><term>string</term><listitem><code language="java">java.lang.String</code></listitem></varlistentry>
 <varlistentry><term>boolean</term><listitem><code language="java">java.lang.Boolean</code></listitem></varlistentry>
@@ -3509,92 +3611,22 @@ Orc literals have the following Java types:
 </variablelist>
 </para>
 
-<para>
-When both arguments of an arithmetic or comparison operator are numeric, the
-arguments are implicitly coerced to the widest of the two argument types.
-"Widest" is defined by the following relation, where ">" means "is wider than":
-BigDecimal > double > float > BigInteger > long > int > short > byte
-</para>
-
 </section>
 
-<section id="section.services.java.dot"><title>Dot Operator</title>
+<section><title>Java Values in Orc</title>
 
 <para>
-Java classes (as defined by a <code>class</code> declaration) and Java objects (which
-are not instances of <code language="java">orc.runtime.values.Callable</code>) behave specially when
-treated as sites (i.e. appearing as the target of a call or dot operator).
+Java objects may be used directly as values anywhere in an Orc program.
+Primitive Java values cannot be used directly in an Orc program, but are
+automatically boxed (and unboxed) as necessary.
 </para>
 
 <para>
-<code>x.member</code>, where <code>x</code> is a Java object or class, is evaluated as follows:
-<itemizedlist>
-<listitem>If <code>x</code> has one or more methods named <code>member</code>,
-a "method handle" is returned which may be called like an Orc site or function.
-When such a method handle is called, the appropriate Java method is selected
-and called depending on the number and type of arguments, as described in <link
-linkend="section.services.java.method">Method Resolution</link>
-below.</listitem>
-<listitem>Otherwise, if <code>x</code> has a field named <code>member</code>,
-the value of the field is returned.</listitem>
-</itemizedlist>
-</para>
-
-<para>
-Note that no distinction is made between static and non-static members; it is
-an error to evaluate a non-static member through a class, but this does not
-change how members are resolved.  Note also that if a field shares a name with
-one or more methods, there is no way to access the field directly.
-</para>
-
-</section>
-
-<section><title>Direct Calls</title>
-
-<para>
-When <code>x</code> is a Java object (but not a Java class), the syntax
-<code>x(...)</code> is treated as equivalent to <code>x.apply(...)</code>,
-whose behavior is described in <link linkend="section.services.java.dot">Dot Operator</link>.
-</para>
-
-</section>
-
-<section><title>Constructors</title>
-
-When <code>x</code> is a Java class, the syntax <code>x(...)</code> is treated as equivalent to
-<code>x.&lt;init&gt;(...)</code> (ignoring the fact that the latter is syntactically invalid).
-In other words, the constructor for the object is called. In case of overloaded
-constructors, the appropriate constructor is chosen based on the number and
-types of arguments as described in <link
-linkend="section.services.java.method">Method Resolution</link>.
-
-</section>
-
-<section id="section.services.java.method"><title>Method Resolution</title>
-
-<para>
-When an overloaded method is called, the actual method called is based on the runtime types of the arguments, as follows:
-<orderedlist>
-<listitem>If only one method has the appropriate number of arguments, that method is called.</listitem>
-<listitem>Otherwise, each method taking the appropriate number of arguments is tested for type compatibility as follows, and the first matching method is called.
-	<orderedlist>
-	<listitem>For each argument in turn:
-		<orderedlist>
-		<listitem>If the argument is null, then the argument matches</listitem>
-		<listitem>If the formal parameter is a primitive type, then the argument must be an instance of a wrapper class. The argument is unboxed (unwrapped) and may be coerced to the type of the formal parameter according to Java's standard rules for implicit widening coercions.</listitem>
-		<listitem>Otherwise, the argument must be a subtype of the formal parameter type.</listitem>
-		</orderedlist>
-	</listitem>
-	</orderedlist>
-</listitem>
-</orderedlist>
-</para>
-
-<para>
-Currently we do not implement specificity rules for choosing the best matching
-method; the first matching method (according to some unspecified order) is
-chosen.  Note also that we do not support varargs methods explicitly, but
-instead varargs may be passed as an array of the appropriate type.
+When both arguments of an arithmetic or comparison operator are Java numeric
+types, the arguments are implicitly coerced to the widest of the two argument
+types.  "Widest" is defined by the following relation, where ">" means "is
+wider than": BigDecimal > Double > Float > BigInteger > Long > Integer > Short
+> Byte
 </para>
 
 </section>
@@ -3660,11 +3692,11 @@ Kilim introduces three key primitives:
 </term>
 <listitem>
 This checked exception marks methods which may block
-<footnote>Originally Kilim used annotations to mark pausable methods. It turned
-out that javac would sometimes manipulate code in ways which violate the
+<footnote><para>Originally Kilim used annotations to mark pausable methods. It turned
+out that <command>javac</command> would sometimes manipulate code in ways which violate the
 invariants regarding use of the annotation. Annotations also have the
 disadvantage that the invariants on their use are not checked automatically by
-tools like Eclipse.</footnote>. You should never catch
+tools like Eclipse.</para></footnote>. You should never catch
 this exception, and you should always declare it even if you have already
 declared <code language="java">throws Exception</code> or <code
 language="java">throws Throwable</code>.  In all other respects it follows the
@@ -3727,9 +3759,6 @@ public class KilimBuffer<V> {
 	}
 }]]></programlisting>
 </para>
-</section>
-
-<section><title>Using Kilim in Orc</title>
 
 <para>Classes using Kilim can be imported like other Java classes using the Orc
 <code>class</code> declaration.  For example, we can use the
@@ -3741,11 +3770,6 @@ val b = Buffer()
 | b.get()]]></programlisting>
 </para>
 
-<para>
-Any Orc site can also run <code language="java">Task</code>s directly or use
-the utility method <code language="java">orc.runtime.Kilim#runPausable(Token,
-Pausable)</code> to run a task which produces a value for a token.
-</para>
 </section>
 
 <section><title>When you must block</title>
@@ -3769,11 +3793,12 @@ all and execution will deadlock.  This situation is sufficiently rare that
 
 <para>
 Code which uses Kilim annotations must be processed after compiling and before
-running, with the Kilim "weaver".  If your <filename>.class</filename> files
+running, with the Kilim "weaver".  For example, if your <filename>.class</filename> files
 are in <filename>./build</filename>, you would run the weaver like this:
 </para>
 <programlisting language="sh"><![CDATA[
-java -cp orc-0.9.3.jar:lib/kilimex.jar:./build kilim.tools.Weaver -d ./build ./build]]></programlisting>
+java -cp orc-0.9.3.jar:lib/kilimex.jar:./build \
+  kilim.tools.Weaver -d ./build ./build]]></programlisting>
 
 <para>
 The Orc source distribution includes an ant <command>kilim</command> task in
