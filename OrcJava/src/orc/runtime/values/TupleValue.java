@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
@@ -48,7 +49,11 @@ public class TupleValue extends EvalSite implements Iterable<Object>, Eq {
 		} catch (TokenException e) {
 			// do nothing
 		}
-		return values[args.intArg(0)];
+		try {
+			return values[args.intArg(0)];
+		} catch (ArrayIndexOutOfBoundsException e) {
+			throw new JavaException(e);
+		}
 	}
 
 	static class FitSite extends PartialSite {
