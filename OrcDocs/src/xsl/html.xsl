@@ -58,4 +58,8 @@ Customize syntax highlighting.
   <span class="hl-site"><xsl:apply-templates mode="xslthl"/></span>
 </xsl:template>
 
+<xsl:template match='xslthl:doccomment' mode="xslthl">
+  <span class="hl-comment"><xsl:apply-templates mode="xslthl"/></span>
+</xsl:template>
+
 </xsl:stylesheet>

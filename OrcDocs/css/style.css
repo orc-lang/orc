@@ -41,11 +41,6 @@ span.hl-comment {
 	color: #A70;
 }
 
-span.hl-literal {
+span.hl-literal, span.hl-number, span.hl-string {
 	color: #090;
 }
-
-span.hl-pattern {
-	text-decoration: underline;
-}
-
