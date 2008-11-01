@@ -95,8 +95,8 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 	void initializeRoot(Node node, Region region, OrcEngine engine, TokenTracer tracer) {
 		initialize(node, new Env<Object>(),
 				null, GroupCell.ROOT, region,
-				null, engine, tracer,
-				engine.getConfig().getStackSize());
+				null, engine, null,
+				tracer, engine.getConfig().getStackSize());
 	}
 	
 	/**
@@ -105,8 +105,8 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 	void initializeFork(Token that, GroupCell group, Region region) {
 		initialize(that.node, that.env.clone(),
 				that.continuation, group, region,
-				that.result, that.engine, that.tracer.fork(),
-				that.stackAvailable);
+				that.result, that.engine, that.location,
+				that.tracer.fork(), that.stackAvailable);
 	}
 	
 	/**
@@ -124,7 +124,7 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 		result = null;
 	}
 	
-	private void initialize(Node node, Env<Object> env, Continuation continuation, GroupCell group, Region region, Object result, OrcEngine engine, TokenTracer tracer, int stackAvailable) {
+	private void initialize(Node node, Env<Object> env, Continuation continuation, GroupCell group, Region region, Object result, OrcEngine engine, SourceLocation location, TokenTracer tracer, int stackAvailable) {
 		this.node = node;
 		this.env = env;
 		this.continuation = continuation;
@@ -133,6 +133,7 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 		this.engine = engine;
 		this.region = region;
 		this.alive = true;
+		this.location = location;
 		this.tracer = tracer;
 		this.stackAvailable = stackAvailable;
 		region.add(this);
