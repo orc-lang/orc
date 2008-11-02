@@ -222,57 +222,60 @@ Orc programs by a site, but it is educational to see how it can be implemented
 directly in Orc.
 </p><pre class="orc">
 <span class="hl-comment">{-
-Create a reader/writer lock and return the sites used
-to acquire and release the lock.
+Create a reader/writer lock and return the functions
+used to acquire and release the lock.
 -}</span>
 <span class="hl-keyword">def</span> <span class="hl-site">ReadWriteLock</span>() =
-  <span class="hl-comment">{- Message Queue. Message types:
-  Left(Semaphore)  -- acquire read
-  Right(Semaphore) -- acquire write
-  -}</span>
+  <span class="hl-comment">{- Queue of lock requests -}</span>
   <span class="hl-keyword">val</span> <span class="hl-variable">m</span> = <span class="hl-site">Buffer</span>()
   <span class="hl-comment">{- Count of active readers/writers -}</span>
   <span class="hl-keyword">val</span> <span class="hl-variable">c</span> = <span class="hl-site">Counter</span>()
 
   <span class="hl-comment">{- Grant read request -}</span>
-  <span class="hl-keyword">def</span> <span class="hl-site">grant</span>(<span class="hl-site">Left</span>(<span class="hl-variable">s</span>)) = <span class="hl-variable">c</span>.<span class="hl-site">inc</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>.<span class="hl-site">release</span>()
+  <span class="hl-keyword">def</span> <span class="hl-site">grant</span>((<span class="hl-literal">false</span>,<span class="hl-variable">s</span>)) = <span class="hl-variable">c</span>.<span class="hl-site">inc</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>.<span class="hl-site">release</span>()
   <span class="hl-comment">{- Grant write request -}</span>
-  <span class="hl-keyword">def</span> <span class="hl-site">grant</span>(<span class="hl-site">Right</span>(<span class="hl-variable">s</span>)) =
-    <span class="hl-variable">c</span>.<span class="hl-site">onZero</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>.<span class="hl-site">inc</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>.<span class="hl-site">release</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>.<span class="hl-site">onZero</span>()
+  <span class="hl-keyword">def</span> <span class="hl-site">grant</span>((<span class="hl-literal">true</span>,<span class="hl-variable">s</span>)) =
+    <span class="hl-variable">c</span>.<span class="hl-site">onZero</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">grant</span>((<span class="hl-literal">false</span>,<span class="hl-variable">s</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>.<span class="hl-site">onZero</span>()
 
-  <span class="hl-comment">{- Make a request -}</span>
-  <span class="hl-keyword">def</span> <span class="hl-site">request</span>(<span class="hl-variable">tag</span>) = 
-    <span class="hl-site">Semaphore</span>(<span class="hl-literal">0</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">s</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">m</span>.<span class="hl-site">put</span>(<span class="hl-site">tag</span>(<span class="hl-variable">s</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>.<span class="hl-site">acquire</span>()
+  <span class="hl-comment">{- Boolean argument is true if writing -}</span>
+  <span class="hl-keyword">def</span> <span class="hl-site">acquire</span>(<span class="hl-variable">write</span>) =
+    <span class="hl-keyword">val</span> <span class="hl-variable">s</span> = <span class="hl-site">Semaphore</span>(<span class="hl-literal">0</span>)
+    <span class="hl-variable">m</span>.<span class="hl-site">put</span>((<span class="hl-variable">write</span>, <span class="hl-variable">s</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>.<span class="hl-site">acquire</span>()
 
-  <span class="hl-keyword">def</span> <span class="hl-site">acquireR</span>() = <span class="hl-site">request</span>(<span class="hl-variable">Left</span>)
-  <span class="hl-keyword">def</span> <span class="hl-site">releaseR</span>() = <span class="hl-variable">c</span>.<span class="hl-site">dec</span>()
-  <span class="hl-keyword">def</span> <span class="hl-site">acquireW</span>() = <span class="hl-site">request</span>(<span class="hl-variable">Right</span>)
-  <span class="hl-keyword">def</span> <span class="hl-site">releaseW</span>() = <span class="hl-variable">c</span>.<span class="hl-site">dec</span>()
+  <span class="hl-keyword">def</span> <span class="hl-site">release</span>() = <span class="hl-variable">c</span>.<span class="hl-site">dec</span>()
 
-  <span class="hl-comment">{- Start the actor and return lock functions -}</span>
+  <span class="hl-comment">{- Process requests in sequence -}</span>
   <span class="hl-site">repeat</span>(<span class="hl-keyword">lambda</span> () = <span class="hl-variable">m</span>.<span class="hl-site">get</span>() <span class="hl-combinator">&gt;</span><span class="hl-variable">r</span><span class="hl-combinator">&gt;</span> <span class="hl-site">grant</span>(<span class="hl-variable">r</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
-  <span class="hl-combinator">|</span> (<span class="hl-variable">acquireR</span>, <span class="hl-variable">releaseR</span>, <span class="hl-variable">acquireW</span>, <span class="hl-variable">releaseW</span>)
+  <span class="hl-comment">{- Return the lock functions -}</span>
+  <span class="hl-combinator">|</span> (<span class="hl-variable">acquire</span>, <span class="hl-variable">release</span>)
 
 <span class="hl-comment">{- Test the lock -}</span>
 <span class="hl-site">let</span>(
-  <span class="hl-site">ReadWriteLock</span>() <span class="hl-combinator">&gt;</span>(<span class="hl-variable">acquireR</span>, <span class="hl-variable">releaseR</span>, <span class="hl-variable">acquireW</span>, <span class="hl-variable">releaseW</span>)<span class="hl-combinator">&gt;</span> (
-    <span class="hl-keyword">def</span> <span class="hl-site">testR</span>() =
-      <span class="hl-site">acquireR</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"START READ"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
-      <span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"END READ"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
-      <span class="hl-site">releaseR</span>()
-    <span class="hl-keyword">def</span> <span class="hl-site">testW</span>() =
-      <span class="hl-site">acquireW</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"START WRITE"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
-      <span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"END WRITE"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
-      <span class="hl-site">releaseW</span>()
-    ( <span class="hl-site">Rtimer</span>(<span class="hl-literal">10</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">testR</span>() <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">20</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">testR</span>()
-    <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">30</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">testW</span>()
-    <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">40</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">testR</span>() <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">50</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">testR</span>()
+  <span class="hl-site">ReadWriteLock</span>() <span class="hl-combinator">&gt;</span>(<span class="hl-variable">acquire</span>, <span class="hl-variable">release</span>)<span class="hl-combinator">&gt;</span> (
+    <span class="hl-keyword">def</span> <span class="hl-site">test</span>(<span class="hl-variable">write</span>) =
+      <span class="hl-keyword">val</span> <span class="hl-variable">label</span> = <span class="hl-keyword">if</span> <span class="hl-variable">write</span> <span class="hl-keyword">then</span> <span class="hl-literal">"WRITE"</span> <span class="hl-keyword">else</span> <span class="hl-literal">"READ"</span>
+      <span class="hl-site">acquire</span>(<span class="hl-variable">write</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"START "</span>+<span class="hl-variable">label</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+      <span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"END "</span>+<span class="hl-variable">label</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+      <span class="hl-site">release</span>()
+
+    (                           <span class="hl-comment">{- Output:     -}</span>
+      <span class="hl-site">Rtimer</span>(<span class="hl-literal">10</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">test</span>(<span class="hl-literal">false</span>) <span class="hl-comment">{- START READ  -}</span>
+    <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">20</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">test</span>(<span class="hl-literal">false</span>) <span class="hl-comment">{- START READ  -}</span>
+                                <span class="hl-comment">{- END READ    -}</span>
+                                <span class="hl-comment">{- END READ    -}</span>
+    <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">30</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">test</span>(<span class="hl-literal">true</span>)  <span class="hl-comment">{- START WRITE -}</span>
+                                <span class="hl-comment">{- END WRITE   -}</span>
+    <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">40</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">test</span>(<span class="hl-literal">false</span>) <span class="hl-comment">{- START READ  -}</span>
+    <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">50</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">test</span>(<span class="hl-literal">false</span>) <span class="hl-comment">{- START READ  -}</span>
+                                <span class="hl-comment">{- END READ    -}</span>
+                                <span class="hl-comment">{- END READ    -}</span>
     ) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
     <span class="hl-combinator">;</span> <span class="hl-keyword">signal</span>
   )
 ) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span></pre><p>
 The lock receives requests over the channel <code class="code"><span class="hl-variable">m</span></code> and processes them
 sequentially with the function <code class="code"><span class="hl-variable">grant</span></code>. Each request includes a
+boolean flag which is true for write requests and false for read requests, and a
 <code class="code"><span class="hl-variable">Semaphore</span></code> which the requester blocks on.  The lock grants access
 by releasing the semaphore, unblocking the requester.
 </p><p>
