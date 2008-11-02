@@ -3343,51 +3343,53 @@ directly in Orc.
 
 <programlisting language="orc-demo"><![CDATA[
 {-
-Create a reader/writer lock and return the sites used
-to acquire and release the lock.
+Create a reader/writer lock and return the functions
+used to acquire and release the lock.
 -}
 def ReadWriteLock() =
-  {- Message Queue. Message types:
-  Left(Semaphore)  -- acquire read
-  Right(Semaphore) -- acquire write
-  -}
+  {- Queue of lock requests -}
   val m = Buffer()
   {- Count of active readers/writers -}
   val c = Counter()
 
   {- Grant read request -}
-  def grant(Left(s)) = c.inc() >> s.release()
+  def grant((false,s)) = c.inc() >> s.release()
   {- Grant write request -}
-  def grant(Right(s)) =
-    c.onZero() >> c.inc() >> s.release() >> c.onZero()
+  def grant((true,s)) =
+    c.onZero() >> grant((false,s)) >> c.onZero()
 
-  {- Make a request -}
-  def request(tag) = 
-    Semaphore(0) >s> m.put(tag(s)) >> s.acquire()
+  {- Boolean argument is true if writing -}
+  def acquire(write) =
+    val s = Semaphore(0)
+    m.put((write, s)) >> s.acquire()
 
-  def acquireR() = request(Left)
-  def releaseR() = c.dec()
-  def acquireW() = request(Right)
-  def releaseW() = c.dec()
+  def release() = c.dec()
 
-  {- Start the actor and return lock functions -}
+  {- Process requests in sequence -}
   repeat(lambda () = m.get() >r> grant(r)) >> stop
-  | (acquireR, releaseR, acquireW, releaseW)
+  {- Return the lock functions -}
+  | (acquire, release)
 
 {- Test the lock -}
 let(
-  ReadWriteLock() >(acquireR, releaseR, acquireW, releaseW)> (
-    def testR() =
-      acquireR() >> println("START READ") >>
-      Rtimer(1000) >> println("END READ") >>
-      releaseR()
-    def testW() =
-      acquireW() >> println("START WRITE") >>
-      Rtimer(1000) >> println("END WRITE") >>
-      releaseW()
-    ( Rtimer(10) >> testR() | Rtimer(20) >> testR()
-    | Rtimer(30) >> testW()
-    | Rtimer(40) >> testR() | Rtimer(50) >> testR()
+  ReadWriteLock() >(acquire, release)> (
+    def test(write) =
+      val label = if write then "WRITE" else "READ"
+      acquire(write) >> println("START "+label) >>
+      Rtimer(1000) >> println("END "+label) >>
+      release()
+
+    (                           {- Output:     -}
+      Rtimer(10) >> test(false) {- START READ  -}
+    | Rtimer(20) >> test(false) {- START READ  -}
+                                {- END READ    -}
+                                {- END READ    -}
+    | Rtimer(30) >> test(true)  {- START WRITE -}
+                                {- END WRITE   -}
+    | Rtimer(40) >> test(false) {- START READ  -}
+    | Rtimer(50) >> test(false) {- START READ  -}
+                                {- END READ    -}
+                                {- END READ    -}
     ) >> stop
     ; signal
   )
@@ -3396,6 +3398,7 @@ let(
 <para>
 The lock receives requests over the channel <code>m</code> and processes them
 sequentially with the function <code>grant</code>. Each request includes a
+boolean flag which is true for write requests and false for read requests, and a
 <code>Semaphore</code> which the requester blocks on.  The lock grants access
 by releasing the semaphore, unblocking the requester.
 </para>
