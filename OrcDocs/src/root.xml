@@ -128,18 +128,6 @@ in a subsequent section.
 <entry><emphasis>constant value</emphasis></entry>
 </row>
 
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry>E <emphasis>op</emphasis> E</entry>
-
-<entry></entry>
-<entry><emphasis>operator</emphasis></entry>
-</row>
-
-
 <row>
 <entry></entry>
 <entry>|</entry>
@@ -150,26 +138,6 @@ in a subsequent section.
 <entry><emphasis>variable</emphasis></entry>
 </row>
 
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry><code>if</code> E <code>then</code> E <code>else</code> E </entry>
-
-<entry></entry>
-<entry><emphasis>conditional</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry>X<code>(</code> E <code>,</code> ... <code>,</code> E <code>)</code></entry>
-
-<entry></entry>
-<entry><emphasis>function call</emphasis></entry>
-</row>
 
 <row>
 <entry></entry>
@@ -189,6 +157,50 @@ in a subsequent section.
 
 <entry></entry>
 <entry><emphasis>list</emphasis></entry>
+</row>
+
+
+<row>
+<entry></entry>
+<entry>|</entry>
+
+<entry>X<code>(</code> E <code>,</code> ... <code>,</code> E <code>)</code></entry>
+
+<entry></entry>
+<entry><emphasis>function call</emphasis></entry>
+</row>
+
+
+<row>
+<entry></entry>
+<entry>|</entry>
+
+<entry>E <emphasis>op</emphasis> E</entry>
+
+<entry></entry>
+<entry><emphasis>operator</emphasis></entry>
+</row>
+
+
+<row>
+<entry></entry>
+<entry>|</entry>
+
+<entry><code>if</code> E <code>then</code> E <code>else</code> E </entry>
+
+<entry></entry>
+<entry><emphasis>conditional</emphasis></entry>
+</row>
+
+
+<row>
+<entry></entry>
+<entry>|</entry>
+
+<entry><code>lambda (</code> P <code>,</code> ... <code>,</code> P <code>)</code> <code>=</code> E</entry>
+
+<entry></entry>
+<entry><emphasis>closure</emphasis></entry>
 </row>
 
 
@@ -321,6 +333,10 @@ in a subsequent section.
 </table>
 </para>
 
+<para>
+Where relevant, syntactic constructs are ordered by precedence, from highest to lowest. For example, among expressions, calls have higher precedence than
+operators, which in turn have higher precedence than conditionals.
+</para>
 
 
 <section id="cor.constants"><title>Constants</title>
@@ -528,6 +544,12 @@ Unlike other languages, expressions in Cor may be silent. If E is
 silent, then the entire expression is silent. And if E evaluates to true 
 but F is silent (or if E evaluates to false and G is silent) then the 
 expression is silent.
+</para>
+
+<para>
+Note that conditionals have lower precedence than any of the operators.
+For example, <code>if false then 1 else 2 + 3</code> is equivalent to
+<code>if false then 1 else (2 + 3)</code>, not <code>(if false then 1 else 2) + 3</code>.
 </para>
 
 <para>
@@ -1175,12 +1197,11 @@ The original Cor grammar rules are abbreviated by ellipses (...).
 <entry></entry>
 <entry>|</entry>
 
-<entry>E <code>FATBAR</code> E</entry>
+<entry><code>stop</code></entry>
 
 <entry></entry>
-<entry><emphasis>parallel combinator</emphasis></entry>
+<entry><emphasis>silent expression</emphasis></entry>
 </row>
-
 
 <row>
 <entry></entry>
@@ -1191,6 +1212,18 @@ The original Cor grammar rules are abbreviated by ellipses (...).
 <entry></entry>
 <entry><emphasis>sequential combinator</emphasis></entry>
 </row>
+
+
+<row>
+<entry></entry>
+<entry>|</entry>
+
+<entry>E <code>FATBAR</code> E</entry>
+
+<entry></entry>
+<entry><emphasis>parallel combinator</emphasis></entry>
+</row>
+
 
 <row>
 <entry></entry>
@@ -1211,21 +1244,6 @@ The original Cor grammar rules are abbreviated by ellipses (...).
 <entry></entry>
 <entry><emphasis>otherwise combinator</emphasis></entry>
 </row>
-
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry><code>stop</code></entry>
-
-<entry></entry>
-<entry><emphasis>silent expression</emphasis></entry>
-</row>
-
-
-
-
 
 
 </tbody>
@@ -1387,7 +1405,8 @@ site Buffer = orc.lib.state.Buffer
 <para>
 Orc has four <firstterm>combinators</firstterm>: parallel, sequential, pruning, and otherwise. 
 A combinator forms an expression from two component expressions. Each combinator captures a 
-different aspect of concurrency.
+different aspect of concurrency. Syntactically, the combinators are written infix, and have
+lower precedence than operators, but higher precedence than conditionals or declarations.
 </para>
 
 <section><title>The parallel combinator</title>
@@ -2531,7 +2550,7 @@ the combinators on separate lines, indented, between each expression.
 
 </section>
 
-<section><title>Pruning combinator</title>
+<section id="style.pruning"><title>Pruning combinator</title>
 
 <para>
 When the combined expressions are small, write them on the same line:
@@ -2667,16 +2686,19 @@ def f(x,y) =
 
 <section><title>Programming Idioms</title>
 
+<para>
 In this section we look at some common idioms used in the design of Orc programs. Many of these idioms will
 be familiar to programmers using concurrency, and they are very simple to express in Orc.
+</para>
 
 <section><title>Fork-join</title>
 
+<para>
 One of the most common concurrent idioms is a <firstterm>fork-join</firstterm>: run two processes concurrently,
 and wait for a result from each one. This is very easy to express in Orc. Whenever we write a <code>val</code>
 declaration, the process computing that value runs in parallel with the rest of the program. So if we write
 two <code>val</code> declarations, and then form a tuple of their results, this performs a fork-join.
-
+</para>
 
 <para>
 <programlisting>
@@ -2686,9 +2708,10 @@ val y = <emphasis role="bold">G</emphasis>
 </programlisting>
 </para>
 
-
+<para>
 Fork-joins are a fundamental part of all Orc programs, since they are created by all nested expression
 translations. In fact, the fork-join we wrote above could be expressed even more simply as just:
+</para>
 
 <para>
 <programlisting>
@@ -2890,6 +2913,7 @@ if b then <emphasis role="bold">G</emphasis> else <emphasis role="bold">H</empha
 </programlisting>
 
 </para>
+
  
 </section>
 
@@ -2916,19 +2940,19 @@ let( y | Rtimer(1000) >> x )
 </section>
 
 
-<section><title>Repeat</title>
+<section><title>Metronome</title>
 
 <para>
 Recall the definition of <code>metronome</code> from the previous chapter:
 
 <programlisting><![CDATA[
-def metronome() = signal | Rtimer(1000) >> metronome()
+def metronome(t) = signal | Rtimer(t) >> metronome()
 ]]></programlisting>
 </para>
 
 <para>
-We can use <code>metronome</code> and the sequential combinator to repeat 
-an expression, so that copies of that expression will execute at
+We can use <code>metronome</code> and the sequential combinator to repeatedly 
+start an expression, so that copies of that expression will execute at
 regular intervals.
 </para>
 
@@ -2939,8 +2963,8 @@ regular intervals.
    Publish "tock" once every second, with an initial 500ms delay.
    The publications alternate: tick tock tick tock ...
 -}   
-  metronome() >> "tick"
-| Rtimer(500) >> metronome() >> "tock"
+  metronome(1000) >> "tick"
+| Rtimer(500) >> metronome(1000) >> "tock"
 ]]></programlisting>
 </para>
 
@@ -2950,8 +2974,8 @@ regular intervals.
 <section><title>Priority Poll</title>
 
 <para>
-Suppose we have a list of buffers. We would like to poll these buffers periodically to see if they have
-any available data. Furthermore, this list of buffers is ordered by priority; the first buffer in the
+Suppose we have a list of buffers. We would like to poll these buffers to see if they have
+any available data. The list of buffers is ordered by priority; the first buffer in the
 list has the highest priority, so it should be polled first, and if it has no data, then the next buffer
 should be polled, and so on.
 </para>
@@ -3011,7 +3035,20 @@ one succeeds.
 What if we want to match a value against multiple patterns in parallel, executing
 every clause that succeeds? Fortunately, this is very easy to do in Orc. Suppose
 we have an expression F which publishes pairs of integers, and we want to publish
-a signal for each 3 that occurs. We write:
+a signal for each 3 that occurs. 
+</para>
+
+<para>
+We could write:
+
+<programlisting>
+<emphasis role="bold">F</emphasis> <![CDATA[>(x,y)>
+  ( if(x=3) >> signal
+  | if(y=3) >> signal ) 
+]]>
+</programlisting>
+
+But there is a more general alternative:
 
 <programlisting>
 <emphasis role="bold">F</emphasis> <![CDATA[>x>
@@ -3025,8 +3062,51 @@ because both patterns match it in parallel.
 </para>
 
 <para>
-This is a useful idiom even if the patterns are mutually exclusive, to avoid
-creating a helper function just to handle the pattern match.
+This is sometimes used as an alternative to pattern matching using function
+clauses, but only when the patterns are mutually exclusive.
+</para>
+
+<para>
+
+For example,
+
+<programlisting  language="orc-demo">
+def helper([]) = 0
+def helper([_]) = 1
+def helper(_:_:_) = 2
+helper([4,6])
+</programlisting>
+
+is equivalent to
+
+<programlisting  language="orc-demo"><![CDATA[
+[4,6] >x>
+  x >[]> 0
+| x >[_]> 1
+| x >_:_:_> 2
+]]></programlisting>
+
+whereas
+
+<programlisting  language="orc-demo">
+def helper([]) = 0
+def helper([_]) = 1
+def helper(_) = 2
+helper([5])
+</programlisting>
+
+is <emphasis>not</emphasis> equivalent to
+
+<programlisting language="orc-demo"><![CDATA[
+[5] >x>
+  x >[]> 0
+| x >[_]> 1
+| x >_> 2
+]]></programlisting>
+
+because the clauses are not mutually exclusive. Function clauses must attempt to match in linear order, whereas
+this expression matches all of the patterns in parallel. Here, it will match <code>[5]</code> two different ways,
+publishing both <code>1</code> and <code>2</code>.
 </para>
 
 </section>
@@ -3073,7 +3153,168 @@ A(0).put(true) | A(0).get()
 </section>
 
 
-<!-- To add: Channel and routing techniques (internal/external interrupt, old semicolon semantics, condenser) -->
+<section><title>Routing</title>
+
+<para>
+While Orc's combinators are powerful, sometimes they are too restrictive to
+solve certain problems. In these situations, we use channels or other
+concurrent objects to redirect or store publications and write clean solutions.
+We call this technique <emphasis>routing</emphasis>.
+</para>
+
+<section><title>Interruption</title>
+
+<para>
+The pruning combinator terminates an expression after it publishes its first
+value. We have <link linkend="style.pruning">already seen</link> how to use 
+pruning just for its termination capability, without binding a variable, using 
+the <code>let</code> site. Now, we use routing to terminate an expression
+under different conditions, not just when it publishes a value; it may
+publish many values, or none, before being terminated.
+</para>
+
+<para>
+Our implementation strategy is to route the publications of the expression
+through a channel, so that we can put the expression inside a pruning combinator
+and still see its publications without those publications terminating the
+expression. 
+</para>
+
+<section><title>Enhanced Timeout</title>
+
+<para>
+As a simple demonstration of this concept, we construct a more powerful form 
+of timeout: allow an expression to execute, publishing arbitrarily many values 
+(not just one), until a time limit is reached.
+</para>
+
+<programlisting>
+val c = Buffer()
+repeat(c.get) <![CDATA[<<]]>
+    <emphasis role="bold">F</emphasis> <![CDATA[>x> c.put(x) >> stop 
+  | Rtimer(1000)
+]]>
+</programlisting>
+
+<para>
+This program allows F to execute for one second, and then terminates it. Each
+value published by F is silently routed through the channel <code>c</code> so
+that it does not terminate F. After one second, the signal published by the
+timeout terminates F.
+</para>
+
+</section>
+
+
+<section><title>Test Pruning</title>
+
+<para>
+We can also decide to terminate based on the values published. This expression
+executes F until it publishes a negative number, and then terminates it:
+</para>
+
+<programlisting>
+val c = Buffer()
+repeat(c.get) <![CDATA[<<]]> 
+  <emphasis role="bold">F</emphasis> <![CDATA[>x> 
+    (if x >= 0 
+        then c.put(x) >> stop
+        else c.close() >> signal)]]>
+</programlisting>
+
+<para>
+Each value published by F is tested. If it is non-negative, it is placed on
+channel <code>c</code> (silently) and read by <code>repeat(c.get)</code>. 
+If it is negative, the channel is closed and a signal is published, causing
+the termination of F.
+</para>
+
+</section>
+
+<section><title>Exceptions</title>
+
+<para>
+Orc does not have a native exception handling mechanism. However, we
+can use routing to directly interrupt an expression by writing to
+a write-once cell. We set up the expression like a timeout, but instead of 
+waiting for a timer, we wait for the cell <code>err</code> to be
+assigned. Anywhere in F, an <code>err.write</code> call will
+terminate the expression (because it will cause <code>err.read()</code>
+to publish), but otherwise F executes as normal and may publish any 
+number of values.
+</para>
+
+<programlisting>
+val c = Buffer()
+val err = Cell()
+repeat(c.get) <![CDATA[<<]]>
+    <emphasis role="bold">F</emphasis> <![CDATA[>x> c.put(x) >> stop 
+  | err.read()
+]]>
+</programlisting>
+
+</section>
+
+<section><title>Publication Limit</title>
+
+<para>
+We can limit an expression to <emphasis>n</emphasis> publications,
+rather than just one. Here is an expression which executes F until
+it publishes 5 values, and then terminates it.
+</para>
+
+<programlisting><![CDATA[
+val c = Buffer()
+val done = Cell()
+def allow(0) = c.close() >> done.write(signal) >> stop
+def allow(n) = c.get() | allow(n-1)
+allow(5) <<]]>
+    <emphasis role="bold">F</emphasis> <![CDATA[>x> c.put(x) >> stop 
+  | done.read()
+]]>
+</programlisting>
+
+</section>
+
+
+</section>
+
+
+<section><title>Modified Otherwise</title>
+
+<para>
+We can use routing to create a modified version of the otherwise combinator. We'll
+run F until it completes, and then run G, regardless of whether F published any values
+or not. We write this modified F <code>;</code> G as follows:
+</para>
+
+<programlisting><![CDATA[
+val c = Buffer()
+repeat(c.get) | (]]><emphasis role="bold">F</emphasis><![CDATA[ >x> c.put(x) >> stop ; c.close() >> ]]><emphasis role="bold">G</emphasis>)  
+</programlisting>
+
+</section>
+
+<section><title>Modified Pruning</title>
+
+<para>
+Similarly, we can use routing to modify the pruning combinator. Instead of terminating
+the right side after the first value is published, we would like to continue running it,
+ignoring its remaining publications. We write this modified F <code><![CDATA[<x<]]></code> G 
+as follows:
+</para>
+
+<programlisting><![CDATA[
+val c = Cell()
+(]]><emphasis role="bold">F</emphasis><![CDATA[ <x< c.read()) | (]]><emphasis role="bold">G</emphasis><![CDATA[ >x> c.write(x))
+]]>
+</programlisting>
+
+</section>
+
+</section>
+
+
 
 </section>
 
@@ -3874,17 +4115,6 @@ The Orc source distribution includes an ant <command>kilim</command> task in
 <entry></entry>
 <entry>|</entry>
 
-<entry>E <emphasis>op</emphasis> E</entry>
-
-<entry></entry>
-<entry><emphasis>operator</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
 <entry>X</entry>
 
 <entry></entry>
@@ -3896,20 +4126,10 @@ The Orc source distribution includes an ant <command>kilim</command> task in
 <entry></entry>
 <entry>|</entry>
 
-<entry><code>if</code> E <code>then</code> E <code>else</code> E </entry>
+<entry><code>stop</code></entry>
 
 <entry></entry>
-<entry><emphasis>conditional</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry>E G+</entry>
-
-<entry></entry>
-<entry><emphasis>call</emphasis></entry>
+<entry><emphasis>silent expression</emphasis></entry>
 </row>
 
 
@@ -3938,10 +4158,30 @@ The Orc source distribution includes an ant <command>kilim</command> task in
 <entry></entry>
 <entry>|</entry>
 
-<entry>D E</entry>
+<entry>E G+</entry>
 
 <entry></entry>
-<entry><emphasis>scoped declaration</emphasis></entry>
+<entry><emphasis>call</emphasis></entry>
+</row>
+
+<row>
+<entry></entry>
+<entry>|</entry>
+
+<entry>E <emphasis>op</emphasis> E</entry>
+
+<entry></entry>
+<entry><emphasis>operator</emphasis></entry>
+</row>
+
+<row>
+<entry></entry>
+<entry>|</entry>
+
+<entry>E<code><![CDATA[ >]]></code>P<code><![CDATA[> ]]></code>E</entry>
+
+<entry></entry>
+<entry><emphasis>sequential combinator</emphasis></entry>
 </row>
 
 <row>
@@ -3952,17 +4192,6 @@ The Orc source distribution includes an ant <command>kilim</command> task in
 
 <entry></entry>
 <entry><emphasis>parallel combinator</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry>E<code><![CDATA[ >]]></code>P<code><![CDATA[> ]]></code>E</entry>
-
-<entry></entry>
-<entry><emphasis>sequential combinator</emphasis></entry>
 </row>
 
 <row>
@@ -3986,17 +4215,35 @@ The Orc source distribution includes an ant <command>kilim</command> task in
 <entry><emphasis>otherwise combinator</emphasis></entry>
 </row>
 
+<row>
+<entry></entry>
+<entry>|</entry>
+
+<entry><code>lambda (</code> P <code>,</code> ... <code>,</code> P <code>)</code> <code>=</code> E</entry>
+
+<entry></entry>
+<entry><emphasis>closure</emphasis></entry>
+</row>
 
 <row>
 <entry></entry>
 <entry>|</entry>
 
-<entry><code>stop</code></entry>
+<entry><code>if</code> E <code>then</code> E <code>else</code> E </entry>
 
 <entry></entry>
-<entry><emphasis>silent expression</emphasis></entry>
+<entry><emphasis>conditional</emphasis></entry>
 </row>
 
+<row>
+<entry></entry>
+<entry>|</entry>
+
+<entry>D E</entry>
+
+<entry></entry>
+<entry><emphasis>scoped declaration</emphasis></entry>
+</row>
 
 <row>
 <entry>G</entry>
@@ -4030,11 +4277,12 @@ The Orc source distribution includes an ant <command>kilim</command> task in
 </row>
 
 
-
 <row>
 <entry>C</entry>
 <entry>::=</entry>
-<entry><code>true</code> | <code>false</code> | <emphasis>integer</emphasis> | <emphasis>string</emphasis> | <code>signal</code></entry>
+
+<entry><emphasis>Boolean</emphasis> | <emphasis>Number</emphasis> | <emphasis>String</emphasis> | <code>signal</code></entry>
+
 <entry><emphasis>Constant</emphasis></entry>
 <entry></entry>
 </row>
@@ -4213,6 +4461,10 @@ The Orc source distribution includes an ant <command>kilim</command> task in
 </table>
 </para>
 
+<para>
+Where relevant, syntactic constructs are ordered by precedence, from highest to lowest. For example, among expressions, calls have higher precedence than
+any of the combinators, which in turn have higher precedence than conditionals.
+</para>
 
 </appendix>
 
