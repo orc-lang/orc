@@ -2995,31 +2995,161 @@ def PriorityPoll(b:bs) = b.getnb() ; PriorityPoll(bs)
 
 </section>
 
+
 <!-- 
+<section><title>Loops</title>
 
-( more idiomatic to use x.getAll() )
+while
+while(f,p,s) = if p(s) then f(s) >t> while(f,p,t) else s
 
-<section><title>Buffer Transfer</title>
+Note that all of these emails will be dispatched in parallel 
 
-<para>
-Suppose we have two buffers, and would like to empty one buffer and put its contents 
-into the other buffer. We use the following function to do so.
-
-<programlisting>
-def Transfer(x,y) = 
-    def loop() = x.getnb() >v> y.put(v) >> loop()
-    loop() ; signal
-</programlisting>
-
-<code>loop</code> takes the elements from <code>x</code> one at a time
-(using <code>getnb</code>) and recurses. When <code>x</code> is empty, <code>getnb</code> 
-completes and is silent, so the call to <code>loop</code> becomes silent,
-allowing the right side of the <code>;</code> to run, publishing a signal
-to indicate that the transfer is finished.
-</para>
 
 </section>
  -->
+
+
+
+<section><title>Lists</title>
+
+<para>
+In the section on Cor, we were introduced to lists: how to construct them,
+and how to match them against patterns. While it is certainly feasible to
+write a specific function with an appropriate pattern match every time we
+want to access a list, it is helpful to have a handful of common operations
+on lists and reuse them.
+</para>
+
+<para>
+One of the most common uses for a list is to send each of its elements through
+a sequential combinator. Since the list itself is a single value, we want
+to walk through the list and publish each one of its elements in parallel
+as a value. The library function <code>each</code> does exactly that.
+</para>
+
+<para>
+Suppose we want to send the message <code>invite</code> to each email
+address in the list <code>inviteList</code>:
+
+<programlisting><![CDATA[
+each(inviteList) >address> Email(address, invite)
+]]></programlisting>
+
+</para>
+
+
+<para>
+Orc also adopts many of the list idioms of functional programming. The Orc library contains definitions
+for most of the standard list functions, such as <code>map</code> and <code>fold</code>. Many of the
+list functions internally take advantage of concurrency to make use of any available parallelism; for
+example, the <code>map</code> function dispatches all of the mapped calls concurrently, and assembles
+the result list once they all return using a fork-join.
+</para>
+
+
+
+</section>
+
+<section><title>Streams</title>
+
+<para>
+Sometimes a source of data is not explicitly represented by a list or other data structure. Instead,
+it is made available through a site, which returns the values one at a time, each time it is called.
+We call such a site a <firstterm>stream</firstterm>. It is analogous to an iterator in a language 
+like Java. Functions can also be used as streams, though typically they will not be pure functions,
+and should only return one value. A call to a stream may halt, to indicate that the end of the data
+has been reached, and no more values will become available. It is often useful to detect the
+end of a stream using the otherwise combinator. 
+</para>
+
+<para>
+Streams are common enough in Orc programming that there is a library function to take all of the
+available publications from a stream; it is called <code>repeat</code>, and it is analogous to
+<code>each</code> for lists.
+</para>
+
+<programlisting><![CDATA[
+def repeat(f) = f() >x> (x | repeat(f))
+]]></programlisting>
+
+<para>
+The <code>repeat</code> function calls the site or function <code>f</code> with no arguments,
+publishes its return value, and recurses to query for more values. <code>repeat</code> should
+be used with sites or functions that block until a value is available. Notice that if any
+call to <code>f</code> halts, then <code>repeat(f)</code> consequently halts. 
+</para>
+
+<para>
+For example, it is very easy to treat a channel <code>c</code> as a stream, reading any 
+values put on the channel as they become available:
+
+<programlisting><![CDATA[
+repeat(c.get)
+]]></programlisting>
+
+</para>
+
+<!-- An example of a site that creates streams would be great; file I/O maybe? -->
+
+</section>
+
+
+<section><title>Arrays</title>
+
+<para>
+While lists are a very useful data structure, they are not indexed; it is not possible to get the nth element of
+a list in constant time. However, this capability is often needed in practice, so the Orc standard library
+provides a function <code>IArray</code> to create immutable arrays. Once initialized, an immutable array cannot
+be rewritten; it can only be read. 
+</para>
+
+<para>
+<code>IArray</code> takes two arguments: an array size, and a function to initialize the array. The function
+takes the index being initialized as an argument (indices start at 0), and publishes the value to be stored
+at that array position. Here are a few examples:
+
+<programlisting language="orc-demo">
+{- Create an array of 10 elements; element i is the ith power of 2 -}
+IArray(10, lambda(i) = 2 ** i)
+</programlisting>
+
+<programlisting language="orc-demo">
+{- Create an array of 5 elements; each element is a newly created buffer -}
+IArray(5, lambda(_) = Buffer())
+</programlisting>
+</para>
+
+<para>
+The array is used like a function; the call <code>A(i)</code> returns the <code>i</code>th element of the
+array <code>A</code>. A call with an out-of-bounds index halts. 
+
+<programlisting language="orc-demo">
+{- Create an array of 3 buffers -}
+val A = IArray(10, lambda(_) = Buffer())
+
+{- Send true on the 0th channel, and listen for a value on the 0th channel. -}
+A(0).put(true) | A(0).get()
+</programlisting>
+</para>
+
+
+<para>
+Since arrays are accessed by index, there is a library function specifically
+designed to make programming with indices easier. The function <code>upto(n)</code> 
+publishes all of the numbers from <code>0</code> to
+<code>n-1</code> simultaneously; thus, it is very easy to access all of the elements of
+an array simultaneously. Suppose we have an array <code>A</code> of <code>n</code> email 
+addresses and would like to send the message <code>m</code> to each one.
+
+<programlisting><![CDATA[
+upto(n) >i> A(i) >address> Email(address, m)
+]]></programlisting>
+
+</para>
+
+</section>
+
+
 
 
 <section><title>Parallel Matching</title>
@@ -3112,45 +3242,7 @@ publishing both <code>1</code> and <code>2</code>.
 </section>
 
 
-<section><title>Arrays</title>
 
-<para>
-While lists are a very useful data structure, they are not indexed; it is not possible to get the nth element of
-a list in constant time. However, this capability is often needed in practice, so the Orc standard library
-provides a function <code>IArray</code> to create immutable arrays. Once initialized, an immutable array cannot
-be rewritten; it can only be read. 
-</para>
-
-<para>
-<code>IArray</code> takes two arguments: an array size, and a function to initialize the array. The function
-takes the index being initialized as an argument (indices start at 0), and publishes the value to be stored
-at that array position. Here are a few examples:
-
-<programlisting language="orc-demo">
-{- Create an array of 10 elements; element i is the ith power of 2 -}
-IArray(10, lambda(i) = 2 ** i)
-</programlisting>
-
-<programlisting language="orc-demo">
-{- Create an array of 5 elements; each element is a newly created buffer -}
-IArray(5, lambda(_) = Buffer())
-</programlisting>
-</para>
-
-<para>
-The array is used like a function; the call <code>A(i)</code> returns the <code>i</code>th element of the
-array <code>A</code>. A call with an out-of-bounds index halts. 
-
-<programlisting language="orc-demo">
-{- Create an array of 3 buffers -}
-val A = IArray(10, lambda(_) = Buffer())
-
-{- Send true on the 0th channel, and listen for a value on the 0th channel. -}
-A(0).put(true) | A(0).get()
-</programlisting>
-</para>
-
-</section>
 
 
 <section><title>Routing</title>
@@ -3268,7 +3360,7 @@ val c = Buffer()
 val done = Cell()
 def allow(0) = c.close() >> done.write(signal) >> stop
 def allow(n) = c.get() | allow(n-1)
-allow(5) <<]]>
+allow(5) << ]]>
     <emphasis role="bold">F</emphasis> <![CDATA[>x> c.put(x) >> stop 
   | done.read()
 ]]>
