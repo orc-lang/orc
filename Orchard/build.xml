@@ -11,6 +11,31 @@
 		<fileset dir="${orc.location.OrcJava.lib}" includes="*.jar" />
 	</path>
 	
+	<taskdef name="one-jar"
+		classname="com.simontuffs.onejar.ant.OneJarTask"
+		classpath="${orc.location.lib}/one-jar-ant-task-0.96.jar"
+		onerror="report" />
+	<target name="demo" depends="kilim,minify" description="generate the demo jar">
+		<zip zipfile="web.war" update="true" basedir="web" />
+		<!-- Construct the One-JAR file -->
+		<one-jar destfile="${ant.project.name}-demo.jar" manifest="orchard-demo.mf">
+			<main>
+				<fileset dir="${orc.location.build}" />
+				<fileset dir=".">
+					<include name="web.war" />
+					<include name="root-demo.war" />
+				</fileset>
+			</main>
+			<lib>
+				<fileset dir="${orc.location.lib}">
+					<include name="*.jar"/>
+					<exclude name="yuicompressor-*.jar"/>
+					<exclude name="one-jar-ant-task-*.jar"/>
+				</fileset>
+			</lib>
+		</one-jar> 
+	</target>
+	
 	<target name="war" depends="kilim,minify" description="generate the war">
 		<jar jarfile="${ant.project.name}.war" update="true">
 			<fileset dir="web">

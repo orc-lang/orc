@@ -15,6 +15,7 @@ import kilim.Mailbox;
 import kilim.Pausable;
 import orc.error.runtime.ArgumentTypeMismatchException;
 import orc.error.runtime.TokenException;
+import orc.orchard.OrchardProperties;
 import orc.runtime.Args;
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
@@ -33,8 +34,8 @@ public class FormSenderSite extends Site {
 			this.key = globals.addGlobal(this);
 		}
 		public String getURL() {
-			// FIXME: remove this hard-coded URL
-			return "https://orc.csres.utexas.edu/orchard/FormsServlet?k=" + key;
+			return OrchardProperties.getProperty("orc.lib.orchard.forms.url")
+				+ "?k=" + key;
 		}
 		public Map<String, Object> get() throws Pausable {
 			return outbox.get();

@@ -17,7 +17,11 @@ public class LoginServlet extends HttpServlet {
 	@Override
 	public void init() {
 		try {
-			db = DriverManager.getConnection("jdbc:postgresql://localhost/orchard?user=orchard&password=ckyogack");
+			String accountsUrl = OrchardProperties.getProperty(
+					"orc.orchard.Accounts.url");
+			if (accountsUrl.startsWith("jdbc:")) {
+				db = DriverManager.getConnection(accountsUrl);
+			}
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
 			e.printStackTrace();
@@ -25,6 +29,7 @@ public class LoginServlet extends HttpServlet {
 	}
 	/** Return null if dev key not found. */
 	public String getDevKey(String username, String password) throws SQLException {
+		if (db == null) return null;
 		PreparedStatement query = db.prepareStatement(
 				"SELECT developer_key FROM account" +
 				" WHERE username = ? AND password_md5 = md5(salt || ?)");

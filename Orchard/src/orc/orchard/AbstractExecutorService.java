@@ -29,7 +29,7 @@ import orc.orchard.oil.Oil;
 public abstract class AbstractExecutorService implements ExecutorServiceInterface {
 	protected Logger logger;
 	private Accounts accounts = Accounts.getAccounts(
-			"jdbc:postgresql://localhost/orchard?user=orchard&password=ckyogack");
+			OrchardProperties.getProperty("orc.orchard.Accounts.url"));
 
 	protected AbstractExecutorService(Logger logger) {
 		this.logger = logger;
