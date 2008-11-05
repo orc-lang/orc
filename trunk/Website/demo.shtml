@@ -1,8 +1,4 @@
 <html>
-<!--
-To play with this in your browser without running an Orchard server,
-load it as index.html?mock
--->
 <head>
 <title>Orc Demo</title>
 <link rel="stylesheet" type="text/css" href="/orchard/orc.css"/>
@@ -12,34 +8,81 @@ load it as index.html?mock
 <body>
 <div id="homelink" style="padding: 2px"><small>&lt; <a href="/">Back to Orc Home</a></small></div>
 <table border="0" padding="0" spacing="0" width="100%">
-<tr><td width="170" valign="top" style="padding: 0 5px 0 5px" id="menu-td">
-<h1>Orc Demos</h1>
+<tr><td width="200" valign="top" style="padding: 0 10px 0 10px" id="menu-td">
+<h1>Examples</h1>
+<p>Click an example to load it.</p>
 <ul id="menu" class="filetree">
-<li class="closed"><span class="folder">Big Demos</a></span>
+<li><span class="folder">Tutorial Examples</span>
 	<ul>
-	<li><span class="file"><a class="demo-link" href="tryorc/misc/spell_io.orc">Spell-Check Gutenberg</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/par.orc">Parallel</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/seq.orc">Sequential</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/parseq.orc">Parallel/Sequential</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/pull.orc">Pruning</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/parpull.orc">Parallel/Pruning</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/if.orc">If Site</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/null.orc">Stop</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/rtimer.orc">Rtimer Site</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/metronome.orc">Metronome</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/prime.orc">Prime Numbers</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/airline1.orc">Airline</a></span></li>
+	</ul></li>
+<li class="closed"><span class="folder">Concurrency Idioms</a></span>
+	<ul>
+	<li><span class="file"><a class="demo-link" href="tryorc/concurrency/timeout.orc">Timeout</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/concurrency/delay.orc">Delay</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/concurrency/priority.orc">Priority</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/concurrency/forkjoin.orc">Fork/Join</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/concurrency/parallelor.orc">Parallel Or</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/concurrency/interrupt.orc">Interrupt</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/concurrency/mapreduce.orc">Map/Reduce</a></span></li>
+	</ul></li>
+<li class="closed"><span class="folder">Randomized Demos</a></span>
+	<ul>
+	<li><span class="file"><a class="demo-link" href="tryorc/demo/pull4.orc">Pruning</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/demo/tally.orc">Tally</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/demo/dice.orc">Dice</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/demo/walk.orc">Random Walk</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/demo/paror.orc">Parallel Or</a></span></li>
+	</ul></li>
+<li class="closed"><span class="folder">Libraries</a></span>
+	<ul>
+	<li><span class="file"><a class="demo-link" href="tryorc/misc/ping.orc">Ping</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/misc/forms.orc">Web Forms</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/misc/spell.orc">Spell-Check File</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/misc/google.orc">Google</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/misc/search.orc">Web Search</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/misc/chat.orc">Google Talk</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/misc/eliza.orc">Eliza</a></span></li>
+	</ul></li>
+<li class="closed"><span class="folder">Applications</a></span>
+	<ul>
+	<li><span class="file"><a class="demo-link" href="tryorc/misc/path.orc">Shortest Path</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/misc/music_calendar.orc">Music Calendar</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/misc/meeting.orc">Meeting Request</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/misc/philosopher.orc">Dining Philosophers</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/concurrency/mapreduce.orc">Map/Reduce</a></span></li>
 	</ul></li>
-<li class="closed"><span class="folder">Small Demos</a></span>
+<li class="closed"><span class="folder">Restricted</a></span>
 	<ul>
-	<li><span class="file"><a class="demo-link" href="tryorc/demo/sites.orc">Sites</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/demo/parallel.orc">Parallel</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/demo/sequential.orc">Sequential</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/demo/pull1.orc">Pruning (1)</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/demo/pull2.orc">Pruning (2)</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/demo/pull3.orc">Pruning (3)</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/demo/pull4.orc">Pruning (4)</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/demo/def1.orc">Def</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/demo/def2.orc">Fibonacci</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/demo/tally.orc">Tally</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/demo/paror.orc">Parallel Or</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/misc/spell_io.orc">Spell-Check Gutenberg</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/misc/email_meeting.orc">Meeting Request Email</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/misc/email.orc">Send Email</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/misc/emailq.orc">Receive Email</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/misc/spam.orc">Spam</a></span></li>
 	</ul></li>
 </ul>
 </td><td valign="top" style="padding: 0 10px 0 10px" id="main">
-<div id="header"></div>
+<div id="header">
+<h1>Try Orc!</h1>
+
+Enter an Orc program in the text box below and then click the <b>run</b>
+button. You may also load an example from the left panel, and then modify or
+run it.
+</div>
 <div>
-<small>Font size:
+<small>
+<b style="float: right"><a href="#" onclick="document.getElementById('orc').displayOrcHelp()">HELP!</a></b>
+Font size:
 <a href="#" style="cursor: pointer" onclick="document.getElementById('orc').orcFontSizeUp()">bigger</a> /
 <a href="#" style="cursor: pointer" onclick="document.getElementById('orc').orcFontSizeDown()">smaller</a>
 &nbsp;&nbsp;&nbsp;&nbsp;Full screen: <a href="#" style="cursor: pointer" onclick="toggleExamples()">toggle</a>
