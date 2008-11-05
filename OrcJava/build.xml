@@ -20,7 +20,7 @@
 				<!-- Only needed for compilation -->
 				<exclude name="rats.jar"/>
 				<!-- Only needed for compilation -->
-				<exclude name="kilimex.jar"/>
+				<exclude name="kilim.jar"/>
 				<!-- Only needed for testing -->
 				<exclude name="junit-*.jar"/>
 				<!-- Only required for optional visualization features -->
