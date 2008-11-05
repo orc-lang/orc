@@ -201,39 +201,52 @@ List<Pattern> PatternList =
 /*---------------------------------------------------------
 Expressions
 
-For reference, here are Orc's operators listed according to
-precedence.
+For reference, here are Orc's operators sorted
+and grouped in order of increasing precedence.
 
-Symbol   Assoc       Prec   Name
------------------------------------------------------------
- lambda  unary       0[3]   lambda
- if      none        0      if/then/else
- ;       left        1      semicolon
- <<      left        2      where
- |       right[2]    3      parallel
- >>      right       4      sequence
- :=      none        4.5    ref assignment
- ||      right[2]    5      boolean or
- &&      right[2]    5      boolean and
- =       none        6      equal
- /=      none        6      not equal
- :>      none        6      greater
- >       none        6[1]   greater
- >=      none        6      greater or equal
- <:      none        6      less
- <       none        6[1]   less
- <=      none        6      less or equal
- ~       unary       7      boolean not
- :       right       7      cons
- +       left        7      addition
- -       left[4]     7      subtraction
- *       left        8      multiplication
- /       left        8      division
- %       left        8      modulus
- **      left        9      exponent
- -       prefix      10     unary minus
- ?       postfix     10.5   dereference
- ()      none[4]     11     application
+Symbol   Assoc       Name
+----------------------------------------------------
+ lambda  prefix[3]   anonymous function
+ if      prefix[3]   if/then/else
+----------------------------------------------------
+ ;       left        semicolon
+----------------------------------------------------
+ <<      left        where
+----------------------------------------------------
+ |       right[2]    parallel
+----------------------------------------------------
+ >>      right       sequence
+----------------------------------------------------
+ :=      none        ref assignment
+----------------------------------------------------
+ ||      right[2]    boolean or
+ &&      right[2]    boolean and
+----------------------------------------------------
+ =       none        equal
+ /=      none        not equal
+ :>      none        greater
+ >       none[1]     greater
+ >=      none        greater or equal
+ <:      none        less
+ <       none[1]     less
+ <=      none        less or equal
+----------------------------------------------------
+ ~       prefix      boolean not
+ :       right       cons
+ +       left        addition
+ -       left[4]     subtraction
+----------------------------------------------------
+ *       left        multiplication
+ /       left        division
+ %       left        modulus
+----------------------------------------------------
+ **      left        exponent
+----------------------------------------------------
+ -       prefix      unary minus
+----------------------------------------------------
+ ?       postfix     dereference
+ .       postfix     projection
+ ()      postfix[4]  application
 
 [1] An expression like (a > b > c > d) could be read as
 either ((a >b> c) > d) or (a > (b >c> d)). We could resolve
@@ -243,14 +256,13 @@ disallow these operators unparenthesized inside << or >>.
 This results in some unfortunate duplication of the lower-
 precedence operators: see the NoCmp_ productions.
 
-[2] These operators are semantically associative, but they
-are implemented as right-associative because it's slightly
-more efficient in Rats!.
+[2] These operators are semantically fully associative, but
+they are implemented as right-associative because it's
+slightly more efficient in Rats!.
 
-[3] I'm not sure whether I'd call lambda an operator, but
-the point is it binds very loosely, so everything to the
-right of a lambda is considered part of its body. Likewise
-for the else clause of if.
+[3] I'm not sure whether I'd call lambda and if operators,
+but the point is they bind very loosely, so everything to
+their right right is considered part of their body.
 
 [4] These operators may not be preceeded by a newline, to
 avoid ambiguity about where an expression ends.  So if you
