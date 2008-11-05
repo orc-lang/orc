@@ -6,8 +6,23 @@ package orc.orchard;
  */
 public class GuestAccount extends Account {
 	public GuestAccount() {
-		// jobs can run no more than 30 minutes
-		setLifespan(30*60);
+		// set properties
+		setQuota(OrchardProperties.getInteger(
+				"orc.orchard.GuestAccount.quota"));
+		setLifespan(OrchardProperties.getInteger(
+				"orc.orchard.GuestAccount.lifespan"));
+		setCanSendMail(OrchardProperties.getBoolean(
+				"orc.orchard.GuestAccount.canSendMail",
+				getCanSendMail()));
+		setCanImportJava(OrchardProperties.getBoolean(
+				"orc.orchard.GuestAccount.canImportJava",
+				getCanImportJava()));
+		setTokenPoolSize(OrchardProperties.getInteger(
+				"orc.orchard.GuestAccount.tokenPoolSize",
+				-1));
+		setStackSize(OrchardProperties.getInteger(
+				"orc.orchard.GuestAccount.stackSize",
+				-1));
 	}
 	@Override
 	public boolean getIsGuest() {

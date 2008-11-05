@@ -18,6 +18,9 @@ import javax.management.ObjectName;
 public abstract class Accounts implements AccountsMBean {
 	/** Cache of Accounts objects by URL */
 	private static Map<String, Accounts> urlAccounts = new HashMap<String, Accounts>();
+	static {
+		urlAccounts.put("", new GuestOnlyAccounts(""));
+	}
 	/**
 	 * Get a reference to a shared Accounts object based on
 	 * account information at the given URL. Currently only
