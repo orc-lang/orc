@@ -212,6 +212,7 @@ Symbol   Assoc       Prec   Name
  <<      left        2      where
  |       right[2]    3      parallel
  >>      right       4      sequence
+ :=      none        4.5    ref assignment
  ||      right[2]    5      boolean or
  &&      right[2]    5      boolean and
  =       none        6      equal
@@ -230,7 +231,8 @@ Symbol   Assoc       Prec   Name
  /       left        8      division
  %       left        8      modulus
  **      left        9      exponent
- -       unary       10     unary minus
+ -       prefix      10     unary minus
+ ?       postfix     10.5   dereference
  ()      none[4]     11     application
 
 [1] An expression like (a > b > c > d) could be read as
@@ -336,14 +338,14 @@ Expression NoCmpMaybeBarExpression =
 	;
 	
 Expression SeqExpression =
-	left:NoCmpMaybeDisjunction RANGLE p:Pattern? RANGLE right:NoCmpMaybeSeqExpression {
+	left:NoCmpMaybeAssignment RANGLE p:Pattern? RANGLE right:NoCmpMaybeSeqExpression {
 		if (p == null) yyValue = new Sequential(left, right);
 		else yyValue = new Sequential(left, right, p);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
-Expression MaybeSeqExpression = SeqExpression / IfThenElse / MaybeDisjunction;
-Expression NoCmpMaybeSeqExpression = SeqExpression / IfThenElse / NoCmpMaybeDisjunction;
+Expression MaybeSeqExpression = SeqExpression / IfThenElse / MaybeAssignment;
+Expression NoCmpMaybeSeqExpression = SeqExpression / IfThenElse / NoCmpMaybeAssignment;
 	
 Expression IfThenElse =
 	IF condition:MaybeDisjunction THEN consequent:MaybeSemiExpression ELSE alternative:MaybeSemiExpression {
@@ -355,6 +357,21 @@ Expression IfThenElse =
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
+
+Expression MaybeAssignment =
+    left:DotExpression void:COLON_EQUALS right:MaybeDisjunction {
+		yyValue = new Assignment(left, right);
+		yyValue = at(yyStart, yyCount, yyValue);
+    }
+    / MaybeDisjunction
+    ;
+Expression NoCmpMaybeAssignment =
+    left:DotExpression void:COLON_EQUALS right:NoCmpMaybeDisjunction {
+		yyValue = new Assignment(left, right);
+		yyValue = at(yyStart, yyCount, yyValue);
+    }
+    / NoCmpMaybeDisjunction
+    ;
 
 Expression MaybeDisjunction =
 	left:MaybeConjunction void:OROR right:MaybeDisjunction {
@@ -531,6 +548,15 @@ Pair<Action<Expression>> CallTail =
 		yyValue = new Pair<Action<Expression>>(new Action<Expression>() {
 				public Expression run(Expression left) {
 					Expression yyValue = new Dot(left, right);
+					yyValue = at(left, yyCount, yyValue);
+					return yyValue;
+				}
+			}, rest == null ? Pair.EMPTY : rest);
+	}
+	/ Space QMARK rest:CallTail? {
+		yyValue = new Pair<Action<Expression>>(new Action<Expression>() {
+				public Expression run(Expression left) {
+					Expression yyValue = new Dereference(left);
 					yyValue = at(left, yyCount, yyValue);
 					return yyValue;
 				}
@@ -832,6 +858,8 @@ transient String LEQ = "<=" Space;
 transient String GT = ":>" Space;
 transient String GEQ = ">=" Space;
 transient String NEQ = "/=" Space;
+transient String COLON_EQUALS = ":=" Space;
+transient String QMARK = "?" HSpace;
 	
 /////////////////////////////////////////////
 // Whitespace, Comments, etc.

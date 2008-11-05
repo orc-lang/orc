@@ -111,12 +111,10 @@ public class ClassProxy extends Site {
 		} catch (MessageNotUnderstoodException e) {
 			try {
 				Field field = getField(token, name);
-				return field.get(self);
+				return new FieldProxy(self, field);
 				// Errors accessing the field are ignored,
-				// as if we never looked for the filed at all.
+				// as if we never looked for the field at all.
 				// I'm not sure if this is the right approach.
-			} catch (IllegalAccessException _) {
-				throw e;
 			} catch (NoSuchFieldException _) {
 				throw e;
 			}
