@@ -1730,7 +1730,7 @@ Some Cor expressions have new behaviors in the context of Orc, due to the introd
 of concurrency and of sites.
 </para>
 
-<section><title>Arithmetic and Conditional</title>
+<section><title>Operators</title>
 
 <para>
 The arithmetic, logical, and comparison operators are actually calls to sites, simply
@@ -1740,6 +1740,11 @@ by the language itself. All of the operators can be used directly as sites in th
 the name of the site is the operator enclosed by parentheses, e.g. <code>(**)</code>,
 <code>(>=)</code>, etc. Negation (unary minus) is named <code>(0-)</code>.
 </para>
+
+</section>
+
+
+<section><title>Conditionals</title>
 
 <para>
 The conditional expression <code>if</code> E <code>then</code> F <code>else</code> G
@@ -1759,6 +1764,7 @@ to <code>(<![CDATA[ if(b) >> ]]></code>F<code><![CDATA[ | if(~b) >> ]]></code>G<
 </para>
 
 </section>
+
 
 <section><title><code>val</code></title>
 
@@ -1963,7 +1969,8 @@ We present many more examples of programming techniques using real time in <link
 In this section we introduce some advanced features of Orc. These include curried
 function definitions and curried calls, writing an arbitrary expression as the
 target of a call, a special syntax for writing calls in an object-oriented style, 
-extensions to pattern matching, and new forms of declarations.
+extensions to pattern matching, and new forms of declarations, and ML-style
+datatypes.
 </para>
 
 <para>
@@ -2069,7 +2076,7 @@ The item G+ means "one or more instances of G concatenated together".
 <entry><emphasis>as pattern</emphasis></entry>
 </row>
 
-<!-- 
+
 <row>
 <entry></entry>
 <entry>|</entry>
@@ -2077,9 +2084,9 @@ The item G+ means "one or more instances of G concatenated together".
 <entry>X<code>(</code> P <code>,</code> ... <code>,</code> P <code>)</code></entry>
 
 <entry></entry>
-<entry><emphasis>site pattern</emphasis></entry>
+<entry><emphasis>datatype pattern</emphasis></entry>
 </row>
- -->
+
 
 <row>
 <entry>D</entry>
@@ -2091,6 +2098,7 @@ The item G+ means "one or more instances of G concatenated together".
 <entry></entry>
 </row>
 
+
 <row>
 <entry></entry>
 <entry>|</entry>
@@ -2099,6 +2107,17 @@ The item G+ means "one or more instances of G concatenated together".
 
 <entry></entry>
 <entry><emphasis>class declaration</emphasis></entry>
+</row>
+
+
+<row>
+<entry></entry>
+<entry>|</entry>
+
+<entry><code>type</code> X <code>=</code> DT <code>|</code> ... <code>|</code> DT</entry>
+
+<entry></entry>
+<entry><emphasis>datatype declaration</emphasis></entry>
 </row>
 
 <row>
@@ -2111,6 +2130,15 @@ The item G+ means "one or more instances of G concatenated together".
 <entry><emphasis>inclusion</emphasis></entry>
 </row>
 
+<row>
+<entry>DT</entry>
+<entry>::=</entry>
+
+<entry> X<code>(_,</code> ... <code>,_)</code> </entry>
+
+<entry><emphasis>Datatype</emphasis></entry>
+<entry></entry>
+</row>
 
 </tbody>
 </tgroup>
@@ -2344,6 +2372,64 @@ extractor objects and the <code>unapply</code> method in Scala.
 
 </section>
 
+
+
+<section><title>Datatypes</title>
+
+<para>
+We have seen Orc's predefined data structures: tuples and lists. Orc also provides the capability
+for programmers to define their own data structures, using a feature adopted from the ML/Haskell
+language family called <firstterm>datatypes</firstterm> (also called variants or tagged sums).
+</para>
+
+<para>
+Datatypes are defined using the <code>type</code> declaration:
+
+<programlisting><![CDATA[
+type tree = Node(_,_,_) | Empty()
+]]></programlisting>
+
+</para>
+
+<para>
+This declaration defines two new sites named <code>Node</code> and <code>Empty</code>.
+<code>Node</code> takes three arguments, and publishes a <emphasis>tagged value</emphasis>
+wrapping those arguments. <code>Empty</code> takes no arguments and does the same.
+</para>
+
+<para>
+Once we have created these tagged values, we use a new pattern called a datatype pattern
+to match them and unwrap the arguments:
+
+<programlisting><![CDATA[
+type tree = Node(_,_,_)
+{- Build up a small binary tree -}
+val l = Node(Empty(), 0, Empty())
+val r = Node(Empty(), 2, Empty())
+val t = Node(l,1,r)
+
+{- And then match it to extract its contents -}
+t >Node(l,j,r)>
+l >Node(_,i,_)>
+r >Node(_,k,_)>
+( i | j | k )
+]]></programlisting>
+</para>
+
+<para>
+One pair of datatypes is so commonly used that it is already predefined in the standard library:
+<code>some(_)</code> and <code>none</code>. These are used as return values for calls that
+need to distinguish between successfully returning a value (<code>some(v)</code>), and successfully
+completing but having no meaningful value to return (<code>none()</code>). For example, a lookup
+function might return <code>some(result)</code> if it found a result, or return <code>none()</code>
+if it successfully performed the lookup but found no suitable result.
+</para>
+
+</section>
+
+
+
+
 <section><title>New forms of declarations</title>
 
 <section id="section.orc.class"><title><code>class</code> declaration</title>
@@ -2424,13 +2510,6 @@ declarations occur twice.
 
 </section>
 
-<!-- 
-<section><title>Simplified Orc</title>
-
-Discuss Cor as syntactic sugar for a simpler Orc calculus.
-
-</section>
- -->
 
 </chapter>
 
@@ -2912,6 +2991,14 @@ val (r,b) = (<emphasis role="bold">F</emphasis>,true) | (Rtimer(t),false)
 if b then <emphasis role="bold">G</emphasis> else <emphasis role="bold">H</emphasis>
 </programlisting>
 
+Or, instead of using a boolean, we could use pattern matching:
+
+<programlisting><![CDATA[
+val s = some(]]><emphasis role="bold">F</emphasis><![CDATA[) | Rtimer(t) >> none()
+  s >some(r)> ]]><emphasis role="bold">G</emphasis><![CDATA[
+| s >none()>  ]]><emphasis role="bold">H</emphasis>
+</programlisting>
+
 </para>
 
  
@@ -2994,20 +3081,6 @@ def PriorityPoll(b:bs) = b.getnb() ; PriorityPoll(bs)
 </programlisting>
 
 </section>
-
-
-<!-- 
-<section><title>Loops</title>
-
-while
-while(f,p,s) = if p(s) then f(s) >t> while(f,p,t) else s
-
-Note that all of these emails will be dispatched in parallel 
-
-
-</section>
- -->
-
 
 
 <section><title>Lists</title>
@@ -3150,6 +3223,102 @@ upto(n) >i> A(i) >address> Email(address, m)
 </section>
 
 
+<section><title>Loops</title>
+
+<para>
+Orc does not have any explicit looping constructs. Most of the time, where a loop
+might be used in other languages, Orc programs use one of two strategies: 
+</para>
+
+<orderedlist>
+
+<listitem>When the iterations of the loops can occur in parallel, write an expression
+that expands the data into a sequence of publications, and
+use a sequential operator to do something for each publication. This is the strategy
+that uses functions like <code>each</code>, <code>repeat</code>, and <code>upto</code>.
+</listitem>
+<listitem>When the iterations of the loops must occur in sequence, write a tail
+recursive function that iterates over the data. Any loop can be rewritten as a 
+tail recursion. Typically the data of interest is in a list, so one of the standard
+list functions, such as <code>foldl</code>, applies. The library also defines a
+function <code>while</code>, which handles many of the common use cases of
+while loops.
+</listitem>
+</orderedlist>
+
+</section>
+
+
+<section><title>Mutable Storage</title>
+
+<para>
+Variables in Orc are immutable. There is no assignment operator, and there is no way to
+change the value of a bound variable. However, it is often useful to have mutable state
+when writing certain algorithms. The Orc library contains two sites that offer simple 
+mutable storage: <code>Ref</code> and <code>Cell</code>.
+</para>
+
+<para>
+The <code>Ref</code> site creates rewritable reference cells.
+
+<programlisting language="orc-demo"><![CDATA[
+val r = Ref(0)
+println(r.read()) >>
+r.write(2) >> 
+println(r.read()) >>
+stop
+]]></programlisting>
+
+</para>
+
+<para>
+These are very similar to ML's <code>ref</code> cells. <code>r.write(v)</code> stores
+the value <code>v</code> in the reference <code>r</code>, overwriting any previous
+value, and publishes a signal. <code>r.read()</code> publishes the current value stored
+in <code>r</code>.
+</para>
+
+<para>
+However, unlike in ML, a reference cell can be left initially empty by calling <code>Ref</code>
+with no arguments. A read operation on an empty cell blocks until the cell is written.
+
+<programlisting language="orc-demo"><![CDATA[
+{- Create a cell, and wait 1 second before initializing it. -}
+{- The read operation blocks until the write occurs. -}
+val r = Ref()
+r.read() | Rtimer(1000) >> r.write(1) >> stop
+]]></programlisting>
+
+</para>
+
+<para>
+The Orc library also offers write-once reference cells, using the <code>Cell</code> site.
+A write-once cell has no initial value. Read operations block until the cell has been
+written. A write operation succeeds only if the cell is empty; subsequent write operations
+simply halt.
+
+<programlisting language="orc-demo"><![CDATA[
+{- Create a cell, try to write to it twice, and read it -}
+{- The read will block until a write occurs, and only one write will succeed. -}
+val c = Cell()
+  Rtimer(1000) >> r.write(2) >> println("Wrote 2") >> stop
+| Rtimer(1000) >> r.write(3) >> println("Wrote 3") >> stop
+| r.read()
+]]></programlisting>
+
+Write-once cells are very useful for concurrent programming, and they are often safer
+than rewritable reference cells, since the value cannot be changed once it has been
+written. The use of write-once cells for concurrent programming is not a new idea;
+they have been studied extensively in the context of the 
+<ulink url="http://en.wikipedia.org/wiki/Oz_programming_language">Oz programming language</ulink>.
+</para>
+
+<para>
+A word of caution: References, cells, and other mutable objects may be accessed concurrently
+by many different parts of an Orc program, so race conditions may arise. 
+</para> 
+
+</section>
 
 
 <section><title>Parallel Matching</title>
@@ -3254,7 +3423,7 @@ concurrent objects to redirect or store publications and write clean solutions.
 We call this technique <emphasis>routing</emphasis>.
 </para>
 
-<section><title>Interruption</title>
+<section><title>Generalizing Termination</title>
 
 <para>
 The pruning combinator terminates an expression after it publishes its first
@@ -3403,6 +3572,64 @@ val c = Cell()
 </programlisting>
 
 </section>
+
+</section>
+
+
+<section><title>Interruptible</title>
+
+<para>
+Let's write a function <code>interruptible</code> that executes functions in an interruptible way. 
+<code>interruptible(g)</code> runs <code>g</code>, which is assumed to take no arguments, and
+silences its publications. It immediately publishes another function, which we can call at any time to
+terminate the execution of <code>g</code>.
+</para>
+
+<para>
+Here is a naive implementation that doesn't quite work:
+</para>
+
+<programlisting><![CDATA[
+def interrputible(f) =
+  val c = new Cell()
+  (lambda () = c.write(signal))
+    << (f() >> stop | c.read())
+
+{- wrong! -}
+val stopper = interruptible(g)
+...stopper()...
+]]>
+</programlisting>
+
+<para>
+The function <code>interruptible</code> is correct, but the way it is used causes a strange error.
+The function <code>g</code> executes, but is always immediately terminated! This happens because the
+<code>val</code> declaration which binds <code>stopper</code> also kills all of the remaining
+computation in <code>interruptiuble(g)</code>, including the execution of <code>g</code> itself.
+</para>
+
+<para>
+The solution is to bind the variable differently:
+</para>
+
+<programlisting><![CDATA[
+def interrputible(f) =
+  val c = new Cell()
+  (lambda () = c.write(signal))
+    << (f() >> stop | c.read())
+
+interruptible(g) >stopper>
+...
+]]>
+</programlisting>
+
+<para>
+This idiom, where a function publishes some value that can be used to monitor or control its 
+execution, arises occasionally in Orc programming. When using this idiom, always remember to
+avoid terminating that execution accidentally. Since Orc is a structured concurrent language,
+every process is contained with some other process; kill the containing process, and the
+contained processes die too.
+</para>
 
 </section>
 
