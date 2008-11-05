@@ -75,7 +75,7 @@ public abstract class DotSite extends Site implements TraceableValue {
 		methodMap.put(f, s);
 	}
 	
-	protected void defaultTo(Args args, Token token) throws UncallableValueException {
+	protected void defaultTo(Args args, Token token) throws TokenException {
 		throw new UncallableValueException("This dot site has no default behavior; it only responds to messages.");
 	}
 	

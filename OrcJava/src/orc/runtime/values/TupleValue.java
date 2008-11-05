@@ -10,6 +10,8 @@ import java.util.List;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
+import orc.runtime.Token;
+import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.PartialSite;
 import orc.runtime.sites.core.Equal;
@@ -18,7 +20,7 @@ import orc.runtime.sites.core.Equal;
  * A tuple value container
  * @author wcook, quark
  */
-public class TupleValue extends EvalSite implements Iterable<Object>, Eq {
+public class TupleValue extends DotSite implements Iterable<Object>, Eq {
 	public Object[] values;
 	public TupleValue() {
 		this.values = new Object[0];
@@ -39,30 +41,23 @@ public class TupleValue extends EvalSite implements Iterable<Object>, Eq {
 	public TupleValue(Object[] values) {
 		this.values = values;
 	}
-	public Object evaluate(Args args) throws TokenException	{
-		// TODO: Generalize this treatment of dot sites.
-		try { 
-			String s = args.fieldName();
-			if (s.equals("fits")) {
-				return new FitSite(values.length);
+	
+	@Override
+	protected void addMembers() {
+		addMember("fits", new PartialSite() {
+			@Override
+			public Object evaluate(Args args) throws TokenException {
+				return (args.intArg(0) == values.length ? Value.signal() : null);
 			}
-		} catch (TokenException e) {
-			// do nothing
-		}
+		});
+	}
+	
+	@Override
+	protected void defaultTo(Args args, Token token) throws TokenException {
 		try {
-			return values[args.intArg(0)];
+			token.resume(values[args.intArg(0)]);
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new JavaException(e);
-		}
-	}
-
-	static class FitSite extends PartialSite {
-		int size;
-		public FitSite(int size) {
-			this.size = size;
-		}
-		public Object evaluate(Args args) throws TokenException {
-			return (args.intArg(0) == this.size ? Value.signal() : null);
 		}
 	}
 	
