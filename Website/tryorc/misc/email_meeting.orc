@@ -61,7 +61,7 @@ val (from, span, invitees, quorum, timeLimit, requestTemplate, notificationTempl
     Button("submit", "Submit") ])
   >data> (
     val inviteesText =
-      if data.get("inviteesText") = Null()
+      if data.get("inviteesText") = null
       then data.get("inviteesUpload").getString()
       else data.get("inviteesUpload").getString()
            + "\n" + data.get("inviteesText")

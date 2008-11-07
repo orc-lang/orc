@@ -20,6 +20,7 @@
 				<include name="jquery.treeview.min.js"/>
 				<include name="WEB-INF/**/*"/>
 				<include name="tryorc/**/*"/>
+				<include name="images/**/*"/>
 				<exclude name="**/CVS/*"/>
 			</fileset>
 		</jar>

@@ -1,5 +1,5 @@
-<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Chapter&nbsp;3.&nbsp;Accessing and Creating External Services</title><link href="style.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide"><link rel="up" href="index.html" title="Orc User Guide"><link rel="prev" href="ch02s03.html" title="2.3.&nbsp;Larger Examples"><link rel="next" href="apa.html" title="Appendix&nbsp;A.&nbsp;Complete Syntax of Orc"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">Chapter&nbsp;3.&nbsp;Accessing and Creating External Services</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch02s03.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="apa.html">Next</a></td></tr></table><hr></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="chapter.services"></a>Chapter&nbsp;3.&nbsp;Accessing and Creating External Services</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="ch03.html#section.services.java">3.1. Java Integration</a></span></dt><dd><dl><dt><span class="section"><a href="ch03.html#section.services.java.dot">3.1.1. Dot Operator</a></span></dt><dt><span class="section"><a href="ch03.html#N10F67">3.1.2. Direct Calls</a></span></dt><dt><span class="section"><a href="ch03.html#section.services.java.method">3.1.3. Method Resolution</a></span></dt><dt><span class="section"><a href="ch03.html#N10FAB">3.1.4. Orc Values in Java</a></span></dt><dt><span class="section"><a href="ch03.html#N10FE3">3.1.5. Java Values in Orc</a></span></dt><dt><span class="section"><a href="ch03.html#N10FEA">3.1.6. Cooperative Scheduling</a></span></dt></dl></dd></dl></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="section.services.java"></a>3.1.&nbsp;Java Integration</h2></div></div></div><p>
-Java classes can be imported into Orc as sites using the <a class="link" href="ch01s04.html#section.orc.class" title="1.4.3.1.&nbsp; class declaration">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Chapter&nbsp;3.&nbsp;Accessing and Creating External Services</title><link href="style.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide"><link rel="up" href="index.html" title="Orc User Guide"><link rel="prev" href="ch02s03.html" title="2.3.&nbsp;Larger Examples"><link rel="next" href="apa.html" title="Appendix&nbsp;A.&nbsp;Complete Syntax of Orc"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">Chapter&nbsp;3.&nbsp;Accessing and Creating External Services</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch02s03.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="apa.html">Next</a></td></tr></table><hr></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="chapter.services"></a>Chapter&nbsp;3.&nbsp;Accessing and Creating External Services</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="ch03.html#section.services.java">3.1. Java Integration</a></span></dt><dd><dl><dt><span class="section"><a href="ch03.html#section.services.java.dot">3.1.1. Dot Operator</a></span></dt><dt><span class="section"><a href="ch03.html#N111C2">3.1.2. Direct Calls</a></span></dt><dt><span class="section"><a href="ch03.html#section.services.java.method">3.1.3. Method Resolution</a></span></dt><dt><span class="section"><a href="ch03.html#N11206">3.1.4. Orc Values in Java</a></span></dt><dt><span class="section"><a href="ch03.html#N1123E">3.1.5. Java Values in Orc</a></span></dt><dt><span class="section"><a href="ch03.html#N11245">3.1.6. Cooperative Scheduling</a></span></dt></dl></dd></dl></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="section.services.java"></a>3.1.&nbsp;Java Integration</h2></div></div></div><p>
+Java classes can be imported into Orc as sites using the <a class="link" href="ch01s04.html#section.orc.class" title="1.4.4.1.&nbsp; class declaration">
 
                     <code class="code"><span class="hl-keyword">class</span></code>
 declaration</a>.  Imported classes must be in the classpath of the JVM running
@@ -13,27 +13,32 @@ When a method handle is actually called with arguments, the appropriate Java
 method is selected and called depending on the number and type of arguments, as
 described in <a class="link" href="ch03.html#section.services.java.method" title="3.1.3.&nbsp;Method Resolution">Method Resolution</a>
 below.</li><li>Otherwise, if <code class="code"><span class="hl-variable">x</span></code> has a field named <code class="code"><span class="hl-variable">member</span></code>,
-the value of the field is returned.</li></ul></div>
+the object's field is returned, encapsulated in a <a class="link" href="apbs03.html#orc.lib.state.Ref">
+                                <code class="code"><span class="hl-variable">Ref</span></code> object</a>. The
+<code class="code"><span class="hl-variable">Ref</span></code> object has <code class="code"><span class="hl-variable">read</span></code> and <code class="code"><span class="hl-variable">write</span></code> methods
+which are used to get and set the value of the field.</li></ul></div>
 </p><p>
 Note that no distinction is made between static and non-static members; it is
 an error to reference a non-static member through a class, but this does not
 change how members are resolved.  Note also that if a field shares a name with
 one or more methods, there is no way to access the field directly.
 </p><p>
-The following example illustrates how the dot operator can be used to access
-both static and non-static methods and fields:
+The following (rather useless) example illustrates how the dot operator can be
+used to access both static and non-static methods and fields:
 <pre class="programlisting">
 <span class="hl-comment">{- bind Integer to a Java class -}</span>
 <span class="hl-keyword">class</span> <span class="hl-variable">Integer</span> = <span class="hl-variable">java</span>.<span class="hl-variable">lang</span>.<span class="hl-variable">Integer</span>
 
 <span class="hl-comment">{- call a static method -}</span>
 <span class="hl-keyword">val</span> <span class="hl-variable">i</span> = <span class="hl-variable">Integer</span>.<span class="hl-site">decode</span>(<span class="hl-literal">"5"</span>)
-<span class="hl-comment">{- read a static field -}</span>
-<span class="hl-keyword">val</span> <span class="hl-variable">m</span> = <span class="hl-variable">Integer</span>.<span class="hl-variable">MIN_VALUE</span>
+<span class="hl-comment">{- read a field -}</span>
+<span class="hl-keyword">val</span> <span class="hl-variable">m</span> = <span class="hl-variable">Integer</span>.<span class="hl-variable">MIN_VALUE</span>.<span class="hl-site">read</span>()
+<span class="hl-comment">{- write a field -}</span>
+<span class="hl-variable">Integer</span>.<span class="hl-variable">MIN_VALUE</span>.<span class="hl-site">write</span>(<span class="hl-literal">5</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
 <span class="hl-comment">{- call a non-static method -}</span>
 <span class="hl-variable">i</span>.<span class="hl-site">toString</span>()
 </pre>
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10F67"></a>3.1.2.&nbsp;Direct Calls</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N111C2"></a>3.1.2.&nbsp;Direct Calls</h3></div></div></div><p>
 When <code class="code"><span class="hl-variable">x</span></code> evaluates to a Java object (but not a Java class), the syntax
 <code class="code"><span class="hl-site">x</span>(...)</code> is equivalent to <code class="code"><span class="hl-variable">x</span>.<span class="hl-site">apply</span>(...)</code>.
 </p><p>
@@ -70,11 +75,11 @@ Currently we do not implement specificity rules for choosing the best matching
 method; the first matching method (according to some unspecified order) is
 chosen.  Note also that we do not support varargs methods explicitly, but
 instead varargs may be passed as an array of the appropriate type.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10FAB"></a>3.1.4.&nbsp;Orc Values in Java</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11206"></a>3.1.4.&nbsp;Orc Values in Java</h3></div></div></div><p>
 Any value in an Orc program may be treated as a Java object and passed to Java
 methods.  Orc literals have the following Java types:
 <div class="variablelist"><dl><dt><span class="term">string</span></dt><dd><code class="code">java.lang.String</code></dd><dt><span class="term">boolean</span></dt><dd><code class="code">java.lang.Boolean</code></dd><dt><span class="term">integer</span></dt><dd><code class="code">java.math.BigInteger</code></dd><dt><span class="term">float</span></dt><dd><code class="code">java.math.BigDecimal</code></dd><dt><span class="term">tuple</span></dt><dd><code class="code">orc.runtime.values.TupleValue</code></dd><dt><span class="term">function</span></dt><dd><code class="code">orc.runtime.values.Closure</code></dd><dt><span class="term">list</span></dt><dd><code class="code">orc.runtime.values.ListValue</code></dd></dl></div>
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10FE3"></a>3.1.5.&nbsp;Java Values in Orc</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1123E"></a>3.1.5.&nbsp;Java Values in Orc</h3></div></div></div><p>
 Java objects may be used directly as values anywhere in an Orc program.
 Primitive Java values cannot be used directly in an Orc program, but are
 automatically boxed (and unboxed) as necessary.
@@ -84,7 +89,7 @@ types, the arguments are implicitly coerced to the widest of the two argument
 types.  "Widest" is defined by the following relation, where "&gt;" means "is
 wider than": BigDecimal &gt; Double &gt; Float &gt; BigInteger &gt; Long &gt; Integer &gt; Short
 &gt; Byte
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10FEA"></a>3.1.6.&nbsp;Cooperative Scheduling</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10FED"></a>3.1.6.1.&nbsp;Overview</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11245"></a>3.1.6.&nbsp;Cooperative Scheduling</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11248"></a>3.1.6.1.&nbsp;Overview</h4></div></div></div><p>
 In order to support massive concurrency efficiently in Java, Orc uses
 cooperative threading.  Orc programs are broken into discrete steps which
 are executed by a fixed-size thread pool.  This approach works for Orc
@@ -111,7 +116,7 @@ of blocking the code actually returns control to a scheduler. Orc incorporates
 Kilim to allow site authors to write sites with internal concurrency and
 blocking behavior which don't use Java threads and cooperate with the Orc
 engine.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11003"></a>3.1.6.2.&nbsp;Kilim Tutorial</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1125E"></a>3.1.6.2.&nbsp;Kilim Tutorial</h4></div></div></div><p>
 For a full introduction to Kilim, see <a class="ulink" href="http://www.malhar.net/sriram/kilim/thread_of_ones_own.pdf" target="_top">A Thread of
 One's Own</a>, by Sriram Srinivasan. In the following, we will cover just
 enough to get you started writing Orc sites using Kilim.
@@ -121,7 +126,7 @@ Kilim introduces three key primitives:
 <code class="code">Pausable</code>
 </span></dt><dd>
 This checked exception marks methods which may block
-<sup>[<a href="#ftn.N11018" name="N11018" class="footnote">1</a>]</sup>. You should never catch
+<sup>[<a href="#ftn.N11273" name="N11273" class="footnote">1</a>]</sup>. You should never catch
 this exception, and you should always declare it even if you have already
 declared <code class="code"><span class="hl-keyword">throws</span> Exception</code> or <code class="code"><span class="hl-keyword">throws</span> Throwable</code>.  In all other respects it follows the
 normal rules for checked exceptions: an override can only throw it if the
@@ -177,7 +182,7 @@ buffer site written using Kilim <code class="code">Mailbox</code>es:
 <span class="hl-keyword">val</span> <span class="hl-variable">b</span> = <span class="hl-site">Buffer</span>()
   <span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">b</span>.<span class="hl-site">put</span>(<span class="hl-literal">"1 second later"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">null</span>
 <span class="hl-combinator">|</span> <span class="hl-variable">b</span>.<span class="hl-site">get</span>()</pre>
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11056"></a>3.1.6.3.&nbsp;When you must block</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N112B1"></a>3.1.6.3.&nbsp;When you must block</h4></div></div></div><p>
 Sometimes blocking is unavoidable, for example if a site must perform blocking
 IO.  For such cases, Orc provides a utility method <code class="code">orc.runtime.Kilim#runThreaded(Callable)</code> which farms work
 out to a thread pool.  The advantage of doing this over spawning your own
@@ -187,7 +192,7 @@ that if you have too many Java methods which must communicate with each other
 concurrently and can't use Mailboxes, there won't be enough threads for them
 all and execution will deadlock.  This situation is sufficiently rare that
 <code class="code">runThreaded</code> is usually the correct approach.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11063"></a>3.1.6.4.&nbsp;Compiling Kilim Sites</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N112BE"></a>3.1.6.4.&nbsp;Compiling Kilim Sites</h4></div></div></div><p>
 Code which uses Kilim annotations must be processed after compiling and before
 running, with the Kilim "weaver".  For example, if your <code class="filename">.class</code> files
 are in <code class="filename">./build</code>, you would run the weaver like this:
@@ -196,7 +201,7 @@ java -cp orc-0.9.3.jar:lib/kilimex.jar:./build \
   kilim.tools.Weaver -d ./build ./build</pre><p>
 The Orc source distribution includes an ant <span class="command"><strong>kilim</strong></span> task in
 <code class="filename">build.xml</code> to do exactly this.
-</p></div></div></div><div class="footnotes"><br><hr align="left" width="100"><div class="footnote"><p><sup>[<a href="#N11018" name="ftn.N11018" class="para">1</a>] </sup>Originally Kilim used annotations to mark pausable methods. It turned
+</p></div></div></div><div class="footnotes"><br><hr align="left" width="100"><div class="footnote"><p><sup>[<a href="#N11273" name="ftn.N11273" class="para">1</a>] </sup>Originally Kilim used annotations to mark pausable methods. It turned
 out that <span class="command"><strong>javac</strong></span> would sometimes manipulate code in ways which violate the
 invariants regarding use of the annotation. Annotations also have the
 disadvantage that the invariants on their use are not checked automatically by
