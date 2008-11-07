@@ -170,7 +170,7 @@ List<Constructor> ConstructorList =
 
 
 Defn Definition =
-	DEF name:Identifier Space LPAREN formals:PatternList RPAREN Space
+	DEF name:(Identifier / BareOperator) Space LPAREN formals:PatternList RPAREN Space
 	curried0:(LPAREN yyValue:PatternList RPAREN Space)*
 	EQ body0:Body {
 		List<List<Pattern>> curried = curried0.list();
@@ -181,7 +181,7 @@ Defn Definition =
 		}
 		yyValue = new DefnClause(name, formals, body);
 	}
-	/ DEF name:Identifier Space LPAREN argTypes:TypeList RPAREN Space
+	/ DEF name:(Identifier / BareOperator) Space LPAREN argTypes:TypeList RPAREN Space
 	DOUBLE_COLON resultType:Type {
 		yyValue = new DefnType(name, argTypes, resultType);
 	}
@@ -372,14 +372,14 @@ Expression IfThenElse =
 
 Expression MaybeAssignment =
     left:DotExpression void:COLON_EQUALS right:MaybeDisjunction {
-		yyValue = new Assignment(left, right);
+		yyValue = new Call(":=", left, right);
 		yyValue = at(yyStart, yyCount, yyValue);
     }
     / MaybeDisjunction
     ;
 Expression NoCmpMaybeAssignment =
     left:DotExpression void:COLON_EQUALS right:NoCmpMaybeDisjunction {
-		yyValue = new Assignment(left, right);
+		yyValue = new Call(":=", left, right);
 		yyValue = at(yyStart, yyCount, yyValue);
     }
     / NoCmpMaybeDisjunction
@@ -562,7 +562,7 @@ Pair<Action<Expression>> CallTail =
 	/ Space QMARK rest:CallTail? {
 		yyValue = new Pair<Action<Expression>>(new Action<Expression>() {
 				public Expression run(Expression left) {
-					Expression yyValue = new Dereference(left);
+					Expression yyValue = new Call("?", left);
 					yyValue = at(left, yyCount, yyValue);
 					return yyValue;
 				}
@@ -595,8 +595,8 @@ Expression BasicExpression =
 /* Ends without newline */
 String BareOperator =
 	LPAREN yyValue:(
-		ANDAND / OROR / NOT / COLON
-		/ NoCmpComparator / Comparator
+		NoCmpComparator / Comparator / COLON_EQUALS / QMARK
+		/ ANDAND / OROR / NOT / COLON
 		/ ExponentOperator / ProductOperator / SumOperator
 		/ "0" MINUS { yyValue = "0-"; }
 	) RPAREN
