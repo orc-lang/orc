@@ -125,6 +125,12 @@ function publicationToHtml(v) {
 				tmp[i] = publicationToHtml(e);
 			});
 			return '(' + tmp.join(', ') + ')';
+		case 'ns2:tagged':
+			var tmp = [];
+			$.each(toArray(v.element), function (i, e) {
+				tmp[i] = publicationToHtml(e);
+			});
+			return v["@tagName"] + '(' + tmp.join(', ') + ')';
 		default: return '<i>' + jsonToHtml(v) + '</i>';
 	}
 }
