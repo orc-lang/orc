@@ -43,6 +43,6 @@ public class LiteralPattern extends Pattern {
 	}
 	
 	public String toString() {
-		return lit.toString();
+		return String.valueOf(lit);
 	}
 }

@@ -21,8 +21,10 @@ public class Literal extends Expression {
 	}
 	
 	public String toString() {
-		if (val instanceof String) {
+		if (val == null) {
+			return String.valueOf(val);
+		} else if (val instanceof String) {
 			return '"' + Utilities.escape((String)val, Utilities.JAVA_ESCAPES) + '"';
-		} else return val.toString();
+		} else return String.valueOf(val);
 	}
 }
