@@ -427,6 +427,27 @@ repeat(c.dec)]]></programlisting>
 site Counter = orc.lib.state.Counter
 
 {--
+* site Dictionary() :: Dictionary
+Create a new dictionary, initially empty.
+The first time each field of the dictionary is
+accessed (using dot notation), the dictionary
+creates and returns a new empty <link linkend="orc.lib.state.Ref">Ref</code>
+which will also be returned on subsequent accesses of that field.
+
+Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: 1 2
+val d = Dictionary()
+  println(d.one?) >>
+  println(d.two?) >>
+  stop
+| d.one := 1 >>
+  d.two := 2 >>
+  stop]]></programlisting>
+--}
+site Dictionary = orc.lib.data.Dictionary
+
+{--
 * def fst((A,B)) :: A
 Return the first element of a pair.
 --}
