@@ -1,17 +1,17 @@
 class Integer = java.lang.Integer
-class SomeValue = orc.runtime.values.SomeValue
+class TaggedValue = orc.runtime.values.TaggedValue
 
 println(Integer.MIN_VALUE?) >> -- static field
 println(Integer.decode("5")) >> -- static method
-SomeValue(5) >v>
-println(v.content?) >> -- field read
-v.content := 6 >> -- field write
-println(v.untag()) >> -- method
+TaggedValue((5,6), null) >v>
+v.payload := (1,2) >> -- field write
+println(v.payload?) >> -- field read
+println(v.signal()) >> -- method
 stop
 {-
 OUTPUT:
 -2147483648
 5
-5
-6
+(1, 2)
+signal
 -}

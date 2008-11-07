@@ -22,7 +22,7 @@ public class CallPattern extends Pattern {
 	// Create a call based on a string name
 	public CallPattern(String site, List<Pattern> args) {
 		this.site = new NamedVar(site);
-		this.p = Pattern.condense(args);
+		this.p = new TuplePattern(args);
 	}
 	
 	@Override

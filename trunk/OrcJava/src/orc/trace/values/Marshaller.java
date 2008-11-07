@@ -29,10 +29,6 @@ public class Marshaller {
 			return new TupleValue(values2);
 		}
 		@Override
-		public Value visit(orc.runtime.values.SomeValue v) {
-			return new SomeValue(marshal(v.content));
-		}
-		@Override
 		public Value visit(orc.runtime.values.Field v) {
 			return new FieldValue(v.getKey());
 		}
@@ -70,8 +66,6 @@ public class Marshaller {
 			return NullValue.singleton;
 		} else if (value instanceof orc.runtime.values.NilValue) {
 			return NilValue.singleton;
-		} else if (value instanceof orc.runtime.values.NoneValue) {
-			return NoneValue.singleton;
 		} else {
 			// The value is not a singleton type, so
 			// check for it in the cache and add it

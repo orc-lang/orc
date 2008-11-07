@@ -25,10 +25,6 @@ public class TupleValue extends DotSite implements Iterable<Object>, Eq {
 	public TupleValue() {
 		this.values = new Object[0];
 	}
-	public TupleValue(Object v) {
-		this.values = new Object[1];
-		this.values[0] = v;
-	}
 	public TupleValue(Object v, Object w) {
 		this.values = new Object[2];
 		this.values[0] = v;

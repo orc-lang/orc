@@ -80,6 +80,8 @@ public class OrcEngine implements Runnable {
 	/** We'll notify this when the computation is finished. */
 	private Tracer tracer;
 	
+	//private Visualizer viz;
+	
 	/** For debugging visualization */
 
 	public final static Globals<OrcEngine, Object> globals = new Globals<OrcEngine, Object>();
@@ -152,6 +154,7 @@ public class OrcEngine implements Runnable {
 			throw new AssertionError(e);
 		}
 		token.initializeRoot(root, region, this, tracer.start());
+		//viz = new Visualizer(root);
 		activate(token);
 	}
 
@@ -191,6 +194,7 @@ public class OrcEngine implements Runnable {
 				return true;
 			}
 		}
+		//viz.pick(todo.node);
 		// notice that we do not synchronize while
 		// processing a token; we don't want to risk
 		// locking the engine if the processing blocks

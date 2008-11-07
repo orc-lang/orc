@@ -7,6 +7,7 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.Site;
+import orc.runtime.values.TupleValue;
 import orc.runtime.values.Value;
 
 /**
@@ -15,11 +16,11 @@ import orc.runtime.values.Value;
 public class IsSome extends Site {
 	@Override
 	public void callSite(Args args, Token caller) throws TokenException {
-		Object v = args.getArg(0);
-		if (v instanceof Value && ((Value)v).isSome()) {
-			caller.resume(((Value)v).untag());
-		} else {
+		TupleValue result = Some.data.deconstruct(args.getArg(0));
+		if (result == null) {
 			caller.die();
+		} else {
+			caller.resume(result.at(0));
 		}
 	}
 }

@@ -15,11 +15,10 @@ import orc.runtime.values.Value;
 public class IsNone extends Site {
 	@Override
 	public void callSite(Args args, Token caller) throws TokenException {
-		Object v = args.getArg(0);
-		if (v instanceof Value && ((Value)v).isNone()) {
-			caller.resume(Value.signal());
-		} else {
+		if (None.data.deconstruct(args.getArg(0)) == null) {
 			caller.die();
+		} else {
+			caller.resume(Value.signal());
 		}
 	}
 }

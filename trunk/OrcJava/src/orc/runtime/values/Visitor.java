@@ -23,14 +23,8 @@ public abstract class Visitor<V> {
 	public V visit(TupleValue v) {
 		return this.visit((Value)v);
 	}
-	public V visit(OptionValue v) {
+	public V visit(TaggedValue v) {
 		return this.visit((Value)v);
-	}
-	public V visit(NoneValue v) {
-		return this.visit((OptionValue)v);
-	}
-	public V visit(SomeValue v) {
-		return this.visit((OptionValue)v);
 	}
 	public V visit(Site v) {
 		return this.visit((Value)v);
