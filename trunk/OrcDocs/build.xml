@@ -5,11 +5,11 @@
   - at http://www.ibm.com/developerworks/xml/library/os-eclipse-docbook/index.html
   -
   -->
-<project name="docbook-src" default="usage">
+<project name="docbook-src" default="all">
 
 	<description>
-            This Ant build.xml file is used to transform DocBook XML to various other formats
-    </description>
+		This Ant build.xml file is used to transform DocBook XML to various other formats
+	</description>
 
 	<!--
       - Configure basic properties that will be used in the file.
@@ -32,6 +32,8 @@
 			<include name="xslthl-2.0.0.jar" />
 		</fileset>
 	</path>
+
+	<target name="all" depends="build-pdf,build-html-chunk,build-html-single" description="Build all documentation" />
 
 	<!--
       - target:  usage
@@ -68,30 +70,6 @@
 		<xinclude in="${src.dir}/root.xml" out="${src.dir}/all.xml" />
 	</target>
 
-	<target name="build-html-single" depends="xinclude" description="Generates HTML files from DocBook XML">
-		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html" 
-				basedir="${src.dir}" destdir="${build.dir}/html">
-			<include name="all.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="orc.demo" expression="0"/>
-			<param name="section.autolabel" expression="1"/>
-			<param name="section.label.includes.component.label" expression="1"/>
-			<param name="section.autolabel.max.depth" expression="8"/>
-			<param name="chunk.quietly" expression="1"/>
-			<param name="html.stylesheet" expression="style.css" />
-			
-			<param name="highlight.source" expression="1"/>
-			<param name="highlight.default.language" expression="orc"/>
-			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
-		</xslt>
-		<!-- Copy the stylesheet to the same directory as the HTML files -->
-		<copy todir="${build.dir}/html">
-			<fileset dir="css">
-				<include name="style.css" />
-			</fileset>
-		</copy>
-	</target>
-
 	<target name="build-html-chunk" depends="xinclude" description="Generates HTML files from DocBook XML">
 		<xslt style="${src.dir}/xsl/html-chunk.xsl" extension=".html" 
 				basedir="${src.dir}" destdir="${build.dir}/html">
@@ -101,7 +79,32 @@
 			<param name="section.autolabel" expression="1"/>
 			<param name="section.label.includes.component.label" expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
-			<param name="chunk.quietly" expression="1"/>
+			<param name="html.stylesheet" expression="style.css" />
+			<param name="chunk.quietly" expression="0"/>
+			
+			<param name="highlight.source" expression="1"/>
+			<param name="highlight.default.language" expression="orc"/>
+			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
+		</xslt>
+		<!-- Delete this because it confuses build-html-single otherwise -->
+		<delete file="${build.dir}/html/all.html" />
+		<!-- Copy the stylesheet to the same directory as the HTML files -->
+		<copy todir="${build.dir}/html">
+			<fileset dir="css">
+				<include name="style.css" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="build-html-single" depends="xinclude" description="Generates HTML files from DocBook XML">
+		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html" 
+				basedir="${src.dir}" destdir="${build.dir}/html">
+			<include name="all.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="orc.demo" expression="0"/>
+			<param name="section.autolabel" expression="1"/>
+			<param name="section.label.includes.component.label" expression="1"/>
+			<param name="section.autolabel.max.depth" expression="8"/>
 			<param name="html.stylesheet" expression="style.css" />
 			
 			<param name="highlight.source" expression="1"/>
