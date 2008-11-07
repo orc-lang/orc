@@ -25,7 +25,7 @@ def unzip(stream) =
 
 def skipto(reader, phrase) =
   reader.readLine() >line>
-  if line = Null() then ""
+  if line = null then ""
   else if line.contains(phrase) then line
   else skipto(reader, phrase)
   
