@@ -21,7 +21,7 @@ public class Constant extends Argument {
 	}
 	
 	public String toString() {
-		return super.toString() + "(" + v.toString() + ")";
+		return super.toString() + "(" + String.valueOf(v) + ")";
 	}
 
 	@Override

@@ -199,7 +199,9 @@ site Cell = orc.lib.state.Cell
 
 {--
 * site Ref() :: Ref<A>
+<para id="orc.lib.state.Ref">
 Create a rewritable storage location without an initial value.
+</para>
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -223,14 +225,6 @@ Read the value of the ref. If the ref does not yet have a value, halt.
 Write a value to the ref.
 --}
 site Ref = orc.lib.state.Ref
-
-{--
-* site Null() :: Bot
-Return a Java null value. This is only necessary to interface with certain
-Java libraries, Orc programs should use the <code>None()</code> constructor
-instead of null values.
---}
-site Null = orc.lib.util.JavaNull
 
 {--
 * site Array(Integer) :: Array<A>
@@ -309,40 +303,24 @@ def IArray(n, f) =
   fill(n-1, f) >> a.get
 
 {--
-* site Some(A) :: Option<A>
-Construct an available optional value.
+* type Option<A> = Some(A) | None()
 
-** pattern Some(Option<A>) :: (A)
-Deconstruct an available optional value.
+An optional value which is either provided or not.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
--- Publishes: 3
-Some(3) >Some(x)> x]]></programlisting>
+-- Publishes: (3,4)
+Some((3,4)) >s> (
+    s >Some((x,y))> (x,y)
+  | s >None()> signal
+)]]></programlisting>
 --}
-site Some = orc.runtime.sites.core.Some
+type Option = Some(_) | None()
 
 {--
-* site None(A) :: Option<A>
-Construct an unavailable optional value.
+* type Either<A,B> = Left(A) | Right(B)
 
-** pattern None(Option<A>) :: ()
-Deconstruct an unavailable optional value.
-
-Example:
-<programlisting language="orc-demo"><![CDATA[
--- Publishes: true
-  None() >None()> true
-| Some(3) >None()> false]]></programlisting>
---}
-site None = orc.runtime.sites.core.None
-
-{--
-* site Left(A) :: Either<A>
-Construct a "left" member of a union which may be tagged either "left" or "right".
-
-** pattern Left(Either<A>) :: A
-Deconstruct a "left" member of a union.
+A union which may be tagged as either "left" or "right".
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -352,24 +330,7 @@ Left(3) >x> (
  | x >Left(_)> "left"
 )]]></programlisting>
 --}
-site Left = orc.lib.data.Left
-
-{--
-* site Right(A) :: Either<A>
-Construct a "right" member of a union which may be tagged either "left" or "right".
-
-** pattern Right(Either<A>) :: A
-Deconstruct a "right" member of a union.
-
-Example:
-<programlisting language="orc-demo"><![CDATA[
--- Publishes: "right"
-Right(3) >x> (
-   x >Right(_)> "right"
- | x >Left(_)> "left"
-)]]></programlisting>
---}
-site Right = orc.lib.data.Right
+type Either = Left(_) | Right(_)
 
 {--
 * site Set() :: Set<A>

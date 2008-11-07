@@ -1,5 +1,5 @@
-  println(cat(Null())) >> stop
-| Null()
+  println(cat(null)) >> stop
+| null >null> null
 {-
 OUTPUT:
 null

@@ -22,7 +22,7 @@ public class Constant extends Arg {
 	}
 	
 	public String toString() {
-		return "[" + v.toString() + "]";
+		return "[" + String.valueOf(v) + "]";
 	}
 	
 	@Override
@@ -32,20 +32,17 @@ public class Constant extends Arg {
 
 	@Override
 	public Type typesynth(Env<Type> ctx) throws TypeException {
-	
-		if (v instanceof Integer) {
+		if (v == null) {
+			return Type.BOT;
+		} else if (v instanceof Integer) {
 			return new ConstIntType((Integer)v);
-		}
-		if (v instanceof Number) {
+		} else if (v instanceof Number) {
 			return Type.NUMBER;
-		}
-		else if (v instanceof String) {
+		} else if (v instanceof String) {
 			return Type.STRING;
-		}
-		else if (v instanceof Boolean) {
+		} else if (v instanceof Boolean) {
 			return Type.BOOLEAN;
-		}
-		else {
+		} else {
 			// TODO: Expand to cover arbitrary Java classes
 			return Type.TOP;
 		}

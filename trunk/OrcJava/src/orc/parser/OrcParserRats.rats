@@ -533,12 +533,6 @@ Expression DotExpression =
 		yyValue = new Silent();
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ NULL {
-		// We're changing "null" to "stop" but
-		// for now we're still allowing both
-		yyValue = new Silent();
-		yyValue = at(yyStart, yyCount, yyValue);
-	}
 	/ seed:BasicExpression tail:CallTail {
 		yyValue = apply(tail, seed);
 	}
@@ -615,6 +609,7 @@ Literal Literal =
 		/ StringLiteral
 		/ TRUE { yyValue = true; }
 		/ FALSE { yyValue = false; }
+		/ NULL { yyValue = null; }
 	) {
 		yyValue = new Literal(literal);
 		yyValue = at(yyStart, yyCount, yyValue);
