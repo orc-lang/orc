@@ -11,5 +11,5 @@ import orc.orchard.oil.Site;
  * 
  * @author quark
  */
-@XmlSeeAlso(value={Constant.class, Field.class, Site.class, UnrepresentableValue.class, List.class, Tuple.class})
+@XmlSeeAlso(value={Constant.class, Field.class, Site.class, UnrepresentableValue.class, List.class, Tuple.class, Tagged.class})
 public abstract class Value {}

@@ -22,6 +22,15 @@ public class ValueMarshaller extends Visitor<Object> {
 		}
 		return new Tuple(mvalues);
 	}
+	
+	public Object visit(orc.runtime.values.TaggedValue v) {
+		Object mvalues[] = new Object[v.values.length];
+		int i = 0;
+		for (Object v2 : v.values) {
+			mvalues[i++] = visit(this, v2);
+		}
+		return new Tagged(v.tag.tagName, mvalues);
+	}
 
 	public Object visit(orc.runtime.values.Value v) {
 		return new UnrepresentableValue(v.toString());

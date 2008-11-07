@@ -17,6 +17,7 @@ Editor.Parser = (function() {
 var ops2 = {
 "{-": readCommentML,
 "<:": readOperator,
+":=": readOperator,
 ":>": readOperator,
 "<=": readOperator,
 ">=": readOperator,
@@ -52,6 +53,7 @@ var ops1 = {
 '*': readOperator,
 '%': readOperator,
 '@': readOperator,
+'?': readOperator,
 '"': readString };
 
 // useful matchers
@@ -149,7 +151,7 @@ function readWord(source, _, ch1) {
 	case "true": case "false":
 		return { type:"boolean", content:word, style:"literal" };
 	// keywords
-	case "val": case "def": case "as": case "include":
+	case "val": case "def": case "as": case "include": case "type":
 	case "site": case "class": case "null": case "stop":
 	case "if": case "then": case "else":
 	case "signal": case "lambda":

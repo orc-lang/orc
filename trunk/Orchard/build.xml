@@ -15,7 +15,7 @@
 		classname="com.simontuffs.onejar.ant.OneJarTask"
 		classpath="${orc.location.lib}/one-jar-ant-task-0.96.jar"
 		onerror="report" />
-	<target name="demo" depends="kilim,minify" description="generate the demo jar">
+	<target name="demo-jar" depends="kilim,minify" description="generate the demo jar">
 		<zip zipfile="web.war" update="true" basedir="web" />
 		<!-- Construct the One-JAR file -->
 		<one-jar destfile="${ant.project.name}-demo.jar" manifest="orchard-demo.mf">
