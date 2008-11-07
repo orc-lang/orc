@@ -22,12 +22,15 @@ import edu.uci.ics.jung.graph.decorators.VertexStringer;
 import edu.uci.ics.jung.graph.impl.DirectedSparseEdge;
 import edu.uci.ics.jung.graph.impl.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.impl.DirectedSparseVertex;
+import edu.uci.ics.jung.visualization.FRLayout;
+import edu.uci.ics.jung.visualization.ISOMLayout;
 import edu.uci.ics.jung.visualization.Layout;
 import edu.uci.ics.jung.visualization.PluggableRenderer;
 import edu.uci.ics.jung.visualization.SpringLayout;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.ZoomPanGraphMouse;
 import edu.uci.ics.jung.visualization.contrib.CircleLayout;
+import edu.uci.ics.jung.visualization.contrib.KKLayout;
 
 import orc.runtime.nodes.*;
 
@@ -56,8 +59,9 @@ public class Visualizer {
 			}
 		});
 		pr.setEdgeShapeFunction(new EdgeShape.Line());
-		Layout layout = new CircleLayout(graph);
+		Layout layout = new SpringLayout(graph);
 		viewer = new VisualizationViewer(layout, pr);
+		layout.advancePositions();
 		layout(layout);
 		viewer.setGraphMouse(new ZoomPanGraphMouse());
 		frame.getContentPane().add(viewer, BorderLayout.CENTER);
@@ -69,7 +73,7 @@ public class Visualizer {
 		viewer.getPickedState().pick(vertices.get(node), true);
 	}
 	
-	private static float spacing = 150;
+	private static float spacing = 50;
 	private void layout(Layout layout) {
 		// initialize levels
 		LinkedList<Vertex>[] levels = new LinkedList[findMaxDepth(root)+1];

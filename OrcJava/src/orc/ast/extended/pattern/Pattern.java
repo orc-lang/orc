@@ -21,7 +21,6 @@ import orc.error.compiletime.NonlinearPatternException;
 import orc.error.compiletime.PatternException;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
-import orc.runtime.sites.Constructor;
 
 
 /**

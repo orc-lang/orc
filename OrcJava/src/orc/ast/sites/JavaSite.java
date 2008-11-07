@@ -42,4 +42,7 @@ public class JavaSite extends Site {
 		return ClassProxy.forClass(classify());
 	}
 	
+	public String toString() {
+		return "java:" + location;
+	}
 }

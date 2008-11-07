@@ -84,7 +84,7 @@ public class MakeDoc {
 	public static String extractName(String type) {
 		// extract the declaration name, which follows the
 		// declaration keyword and preceeds the argument list
-		String out = type.replaceAll("[a-z]+\\s+(.[^(]+)\\(.*", "$1");
+		String out = type.replaceAll("[a-z]+\\s+([^(=]+)(=|\\().*", "$1");
 		// drop the type part of a method prefix, if necessary
 		return out.replaceFirst("^[^.]+\\.", "");
 	}

@@ -6,28 +6,22 @@ package orc.runtime.sites.core;
 import orc.error.runtime.RuntimeTypeException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
-import orc.runtime.sites.Constructor;
+import orc.runtime.Token;
 import orc.runtime.sites.EvalSite;
-import orc.runtime.values.OptionValue;
-import orc.runtime.values.SomeValue;
+import orc.runtime.sites.Site;
 import orc.runtime.values.TupleValue;
 
 /**
  * Implements the "some" option constructor site.
  * 
- * @author dkitchin
+ * @author quark
  */
-public class Some extends Constructor {
+public class Some extends Site {
+	// since tags are compared by object equality,
+	// we need to share a tag amongst all instances of this site
+	static final Datasite data = new Datasite(1, "Some");
 	@Override
-	public Object construct(Args args) throws TokenException {
-		return new SomeValue(args.getArg(0));
-	}
-
-	@Override
-	public Object deconstruct(Object arg) throws TokenException {
-		if (!(arg instanceof OptionValue))
-			throw new RuntimeTypeException(arg.getClass() + " is not an instanceof OptionValue");
-		if (!(arg instanceof SomeValue)) return null;
-		return ((SomeValue)arg).content;
+	public void callSite(Args args, Token caller) throws TokenException {
+		data.callSite(args, caller);
 	}
 }

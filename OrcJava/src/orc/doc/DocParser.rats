@@ -59,7 +59,6 @@ String XML =
 	/ "<" (![>] _)+ ">" (XML / ![<] _ )* "</" (![>] _)+ ">"
 	;
 
-String DocName = _ (![<(] _)+ ;
 String StartDocType = "*"+ Space ;
 transient String StartDoc = "{--" Space? ;
 transient String EndDoc = Space? [\-]+ [}] ;

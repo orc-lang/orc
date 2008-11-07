@@ -85,25 +85,6 @@ public abstract class Value {
 	}
 
 	private static Value signal = new TupleValue();
-	
-	/**
-	 * Test whether this value inhabits one of the option or list types.
-	 */
-	public boolean isSome() {
-		return false;
-	}
-
-	public boolean isNone() {
-		return false;
-	}
-
-	/**
-	 * Return the contained value v of an option some(v). This method must throw
-	 * an exception iff isSome() returns false.
-	 */
-	public Object untag() {
-		throw new Error();
-	}
 
 	public <E> E accept(Visitor<E> visitor) {
 		return visitor.visit(this);
