@@ -92,6 +92,7 @@ public class TupleValue extends DotSite implements Iterable<Object>, Eq {
 	}
 	
 	public boolean equals(Object that_) {
+		if (that_ == null) return false;
 		return eqTo(that_);
 	}
 	public boolean eqTo(Object that_) {
