@@ -43,18 +43,18 @@
   <keyword>then</keyword>
   <keyword>else</keyword>
   <keyword>as</keyword>
-  <keyword>pattern</keyword>
+  <keyword>type</keyword>
 </highlighter>
 
 <!-- operators -->
 <highlighter type='regex'>
   <style>site</style>
-  <pattern><![CDATA[\|\||<=|>=|<:|:>]]></pattern>
+  <pattern><![CDATA[\|\||<=|>=|<:|:>|:=|\?]]></pattern>
 </highlighter>
 
 <highlighter type='regex'>
   <style>combinator</style>
-  <pattern><![CDATA[(?<=\s)(<|>)((?=\S)|$)|((?<=\S)|^)(<|>)(?=\s)|\||;|\bFATBAR\b]]></pattern>
+  <pattern><![CDATA[(?<=\s)(<|>)((?=\S)|$)|((?<=\S)|^)(<|>)(?=\s[^=])|\||;|\bFATBAR\b]]></pattern>
 </highlighter>
 
 <!-- site calls -->
