@@ -4061,7 +4061,10 @@ method is selected and called depending on the number and type of arguments, as
 described in <link linkend="section.services.java.method">Method Resolution</link>
 below.</listitem>
 <listitem>Otherwise, if <code>x</code> has a field named <code>member</code>,
-the value of the field is returned.</listitem>
+the object's field is returned, encapsulated in a <link
+	linkend="orc.lib.state.Ref"><code>Ref</code> object</link>. The
+<code>Ref</code> object has <code>read</code> and <code>write</code> methods
+which are used to get and set the value of the field.</listitem>
 </itemizedlist>
 </para>
 
@@ -4073,16 +4076,18 @@ one or more methods, there is no way to access the field directly.
 </para>
 
 <para>
-The following example illustrates how the dot operator can be used to access
-both static and non-static methods and fields:
+The following (rather useless) example illustrates how the dot operator can be
+used to access both static and non-static methods and fields:
 <programlisting>
 {- bind Integer to a Java class -}
 class Integer = java.lang.Integer
 
 {- call a static method -}
 val i = Integer.decode("5")
-{- read a static field -}
-val m = Integer.MIN_VALUE
+{- read a field -}
+val m = Integer.MIN_VALUE.read()
+{- write a field -}
+Integer.MIN_VALUE.write(5) >>
 {- call a non-static method -}
 i.toString()
 </programlisting>
@@ -4828,19 +4833,16 @@ any subtype of <code>Comparable</code>.
 Declaration keywords include
 <link linkend="orc-declaring-a-site"><code>site</code></link>,
 <link linkend="cor.functions"><code>def</code></link>,
-<link linkend="cor.variables"><code>val</code></link>, and <code>pattern</code>. The first three keywords
-are described in previous chapters. The last, <code>pattern</code>, declares
-the inverse of a site which can be used in a pattern. Given <code>pattern M(A) :: (B,C)</code>,
-evaluation of <code>x &gt;M(y,z)&gt; (y,z)</code> publishes a tuple <code>(y,z)</code>
-such that <code>M(y,z)=x</code>. Suppose <code>Interleave</code> is a <code>site</code>
-such that <code>Interleave(y,z)</code>, given two lists of equal length
-<code>y</code> and <code>z</code>, returns the lists interleaved starting with
-<code>y</code>. Then, given <code>pattern Interleave</code>,
-
-<programlisting><![CDATA[
-[0,1,2,3] >Interleave(y,z)> (y,z)]]></programlisting>
-
-publishes <code>([0,2], [1,3])</code>.</para>
+<link linkend="cor.variables"><code>val</code></link>, and <code>type</code>. The first three keywords
+are described in previous chapters. The last, <code>type</code>, declares an algebraic data
+type with one or more constructors.  The constructors may be used both as sites and as 
+destructuring pattern forms.  For example, the declaration
+<code>type Either&lt;A&gt; = Some(A) | None()</code> implicitly declares two
+sites: <code>site Some(A) :: Either&lt;A&gt;</code> and <code>site None() ::
+Either&lt;A&gt;</code>. It also implicitly declares two pattern
+forms <code>Some(_)</code> and <code>None()</code>: <code>Some(y) >Some(x)>
+x</code> publishes the value of <code>y</code>, and <code>Some(y)
+>None()> signal</code> halts (failing to match).</para>
 
 <para>
 Object members (methods and fields) are each declared separately.  The binding
