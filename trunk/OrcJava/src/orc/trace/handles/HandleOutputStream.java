@@ -7,17 +7,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import orc.runtime.values.Visitor;
-import orc.trace.values.ConsValue;
-import orc.trace.values.ConstantValue;
-import orc.trace.values.NilValue;
-import orc.trace.values.NoneValue;
-import orc.trace.values.NullValue;
-import orc.trace.values.ObjectValue;
-import orc.trace.values.SomeValue;
-import orc.trace.values.TupleValue;
-import orc.trace.values.Value;
-
 /**
  * Used in conjunction with {@link Handle} to explicitly manage the lifetime of
  * serialized references. Use it like this:

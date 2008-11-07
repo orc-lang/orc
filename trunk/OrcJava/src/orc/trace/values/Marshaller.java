@@ -18,7 +18,7 @@ public class Marshaller {
 	private Visitor<Value> visitor = new Visitor<Value>() {
 		@Override
 		public Value visit(orc.runtime.values.ConsValue v) {
-			return new ConsValue(marshal(v.h), (ListValue)marshal(v.t));
+			return new ConsValue(marshal(v.head), (ListValue)marshal(v.tail));
 		}
 		@Override
 		public Value visit(orc.runtime.values.TupleValue v) {
@@ -27,6 +27,14 @@ public class Marshaller {
 				values2[i] = marshal(v.values[i]);
 			}
 			return new TupleValue(values2);
+		}
+		@Override
+		public Value visit(orc.runtime.values.TaggedValue v) {
+			Value[] values2 = new Value[v.values.length];
+			for (int i = 0; i < v.values.length; ++i) {
+				values2[i] = marshal(v.values[i]);
+			}
+			return new TaggedValue(v.tag.tagName, values2);
 		}
 		@Override
 		public Value visit(orc.runtime.values.Field v) {

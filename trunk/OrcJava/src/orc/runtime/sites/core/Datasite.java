@@ -12,11 +12,11 @@ import orc.runtime.values.TupleValue;
 public final class Datasite extends DotSite {
 
 	int arity;
-	public String tagname;
+	public String tagName;
 	
 	public Datasite(int arity, String tagname) {
 		this.arity = arity;
-		this.tagname = tagname;
+		this.tagName = tagname;
 	}
 	
 	@Override
@@ -34,20 +34,20 @@ public final class Datasite extends DotSite {
 		if (args.size() != arity) 
 			{ throw new ArityMismatchException(arity, args.size()); }
 		
-		token.resume(new TaggedValue(new TupleValue(args.asArray()), this));
+		token.resume(new TaggedValue(this, args.asArray()));
 	}
 
 	public TupleValue deconstruct(Object arg) throws TokenException {
 		if (arg instanceof TaggedValue) {
 			TaggedValue v = (TaggedValue)arg;
 			if (v.tag == this) {
-				return v.payload;
+				return new TupleValue(v.values);
 			}
 		}
 		return null;
 	}
 	
 	public String toString() {
-		return tagname + "/" + arity;
+		return tagName + "/" + arity;
 	}
 }

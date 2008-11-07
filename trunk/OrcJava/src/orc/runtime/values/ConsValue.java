@@ -7,18 +7,18 @@ import orc.runtime.sites.core.Equal;
 
 public class ConsValue extends ListValue {
 
-	public Object h;
-	public ListValue t;
+	public Object head;
+	public ListValue tail;
 	
 	
 	public ConsValue(Object h, ListValue t) {
-		this.h = h;
-		this.t = t;
+		this.head = h;
+		this.tail = t;
 	}
 
 	@Override
 	public void uncons(Token caller) {
-		caller.resume(new TupleValue(this.h, this.t));
+		caller.resume(new TupleValue(this.head, this.tail));
 	}
 	
 	@Override
@@ -32,8 +32,8 @@ public class ConsValue extends ListValue {
 
 	@Override
 	public List<Object> enlist() {
-		List<Object> tl = t.enlist();
-		tl.add(0,h);
+		List<Object> tl = tail.enlist();
+		tl.add(0,head);
 		return tl;
 	}
 	
@@ -45,7 +45,7 @@ public class ConsValue extends ListValue {
 	public boolean eqTo(Object that_) {
 		if (!(that_ instanceof ConsValue)) return false;
 		ConsValue that = (ConsValue)that_;
-		return Equal.eq(h, that.h)
-			&& t.eqTo(that.t);
+		return Equal.eq(head, that.head)
+			&& tail.eqTo(that.tail);
 	}
 }
