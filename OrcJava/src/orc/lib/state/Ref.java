@@ -41,12 +41,12 @@ public class Ref extends EvalSite {
 	}
 	
 	
-	protected class RefInstance extends DotSite {
+	public static class RefInstance extends DotSite {
 
 		private Queue<Token> readQueue;
 		Object contents;
 
-		RefInstance() {
+		public RefInstance() {
 			this.contents = null;
 			
 			/* Note that the readQueue also signals whether the reference has been assigned.
@@ -62,7 +62,7 @@ public class Ref extends EvalSite {
 		/* Create the reference with an initial value already assigned.
 		 * In this case, we don't need a reader queue.
 		 */
-		RefInstance(Object initial) {
+		public RefInstance(Object initial) {
 			this.contents = initial;
 			this.readQueue = null;
 		}
@@ -126,6 +126,9 @@ public class Ref extends EvalSite {
 			}
 		}
 
+		public String toString() {
+			return "Ref(" + contents + ")";
+		}
 	}
 	
 }
