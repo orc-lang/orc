@@ -176,7 +176,8 @@ computed.
 site (||) = orc.lib.bool.Or
 
 {--
-* type [A] = (:)(A, [A]) | []
+* site (:)(A,[A]) :: [A]
+
 The list <code>a:b</code> is formed by prepending the element <code>a</code> to
 the list <code>b</code>.
 

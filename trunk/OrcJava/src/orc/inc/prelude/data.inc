@@ -223,8 +223,23 @@ Read the value of the ref. If the ref does not yet have a value, halt.
 
 ** site Ref<A>.write(A) :: Signal
 Write a value to the ref.
+
 --}
 site Ref = orc.lib.state.Ref
+
+{--
+** def (?)(Ref<A>) :: A
+Get the value held by a reference.
+<code>x?</code> is equivalent to <code>x.read()</code>.
+--}
+def (?)(r) = r.read()
+
+{--
+** def (:=)(Ref<A>, A) :: Signal
+Set the value held by a reference.
+<code>x := y</code> is equivalent to <code>x.write(y)</code>.
+--}
+def (:=)(r,v) = r.write(v)
 
 {--
 * site Array(Integer) :: Array<A>
@@ -303,9 +318,9 @@ def IArray(n, f) =
   fill(n-1, f) >> a.get
 
 {--
-* type Option<A> = Some(A) | None()
-
-An optional value which is either provided or not.
+* site Some(A) :: Option<A>
+An optional value which is available.
+This site may also be used in a pattern.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -314,23 +329,13 @@ Some((3,4)) >s> (
     s >Some((x,y))> (x,y)
   | s >None()> signal
 )]]></programlisting>
+
+* site None() :: Option<A>
+An optional value which is not available.
+This site may also be used in a pattern.
+
 --}
 type Option = Some(_) | None()
-
-{--
-* type Either<A,B> = Left(A) | Right(B)
-
-A union which may be tagged as either "left" or "right".
-
-Example:
-<programlisting language="orc-demo"><![CDATA[
--- Publishes: "left"
-Left(3) >x> (
-   x >Right(_)> "right"
- | x >Left(_)> "left"
-)]]></programlisting>
---}
-type Either = Left(_) | Right(_)
 
 {--
 * site Set() :: Set<A>
@@ -428,11 +433,12 @@ site Counter = orc.lib.state.Counter
 
 {--
 * site Dictionary() :: Dictionary
-Create a new dictionary, initially empty.
+Create a new dictionary (mutable record), initially empty.
 The first time each field of the dictionary is
-accessed (using dot notation), the dictionary
-creates and returns a new empty <link linkend="orc.lib.state.Ref">Ref</code>
-which will also be returned on subsequent accesses of that field.
+accessed (using dot notation), the record
+creates and returns a new empty <link linkend="orc.lib.state.Ref">Ref</link>
+which will also be returned on subsequent accesses of the same field.
+Dictionaries allow you to easily create simple data structures.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
