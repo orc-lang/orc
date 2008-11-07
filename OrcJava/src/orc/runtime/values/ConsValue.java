@@ -42,6 +42,12 @@ public class ConsValue extends ListValue {
 		return visitor.visit(this);
 	}
 	
+	@Override
+	public boolean equals(Object that) {
+		if (that == null) return false;
+		return eqTo(that);
+	}
+	
 	public boolean eqTo(Object that_) {
 		if (!(that_ instanceof ConsValue)) return false;
 		ConsValue that = (ConsValue)that_;
