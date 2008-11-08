@@ -2374,7 +2374,7 @@ extractor objects and the <code>unapply</code> method in Scala.
 
 
 
-<section><title>Datatypes</title>
+<section id="section.orc.datatypes"><title>Datatypes</title>
 
 <para>
 We have seen Orc's predefined data structures: tuples and lists. Orc also provides the capability
@@ -2418,10 +2418,10 @@ r >Node(_,k,_)>
 
 <para>
 One pair of datatypes is so commonly used that it is already predefined in the standard library:
-<code>some(_)</code> and <code>none</code>. These are used as return values for calls that
-need to distinguish between successfully returning a value (<code>some(v)</code>), and successfully
-completing but having no meaningful value to return (<code>none()</code>). For example, a lookup
-function might return <code>some(result)</code> if it found a result, or return <code>none()</code>
+<code>Some(_)</code> and <code>None()</code>. These are used as return values for calls that
+need to distinguish between successfully returning a value (<code>Some(v)</code>), and successfully
+completing but having no meaningful value to return (<code>None()</code>). For example, a lookup
+function might return <code>Some(result)</code> if it found a result, or return <code>None()</code>
 if it successfully performed the lookup but found no suitable result.
 </para>
 
@@ -2577,7 +2577,7 @@ combined parallel expressions together.
 <programlisting>
 ( <emphasis role="bold">expression</emphasis> 
 | <emphasis role="bold">expression</emphasis>
-) <![CDATA[>x>]]>
+)<![CDATA[ >x> ]]>
 <emphasis role="bold">another expression</emphasis>
 </programlisting>
 </para>
@@ -2592,7 +2592,7 @@ all on the same line.
 </para> 
 
 <programlisting>
-<emphasis role="bold">F</emphasis> <![CDATA[>x>]]> <emphasis role="bold">G</emphasis> <![CDATA[>y>]]> <emphasis role="bold">H</emphasis>
+<emphasis role="bold">F</emphasis><![CDATA[ >x> ]]><emphasis role="bold">G</emphasis><![CDATA[ >y> ]]><emphasis role="bold">H</emphasis>
 </programlisting>
 
 <para>
@@ -2606,8 +2606,8 @@ per line; each line ends with the combinator which binds the publications
 produced by that line.
 
 <programlisting>
-<emphasis role="bold">long expression</emphasis> <![CDATA[>x>]]> 
-<emphasis role="bold">long expression</emphasis> <![CDATA[>y>]]>
+<emphasis role="bold">long expression</emphasis> <![CDATA[ >x> ]]> 
+<emphasis role="bold">long expression</emphasis> <![CDATA[ >y> ]]>
 <emphasis role="bold">long expression</emphasis>
 </programlisting>
  
@@ -2619,9 +2619,9 @@ the combinators on separate lines, indented, between each expression.
 
 <programlisting>
 <emphasis role="bold">very long expression</emphasis> 
-  <![CDATA[>x>]]> 
+ <![CDATA[ >x> ]]> 
 <emphasis role="bold">very long expression</emphasis> 
-  <![CDATA[>y>]]>
+ <![CDATA[ >y> ]]>
 <emphasis role="bold">very long expression</emphasis>
 </programlisting>
  
@@ -2635,7 +2635,7 @@ the combinators on separate lines, indented, between each expression.
 When the combined expressions are small, write them on the same line:
 
 <programlisting>
-<emphasis role="bold">F</emphasis> <![CDATA[<x<]]> <emphasis role="bold">G</emphasis>
+<emphasis role="bold">F</emphasis><![CDATA[ <x< ]]><emphasis role="bold">G</emphasis>
 </programlisting>
 
 When multiple pruning combinators are used to bind multiple variables
@@ -2644,8 +2644,8 @@ combinator, aligned and indented, and continue with the expression.
 
 <programlisting>
 <emphasis role="bold">long expression</emphasis> 
-  <![CDATA[<x<]]> <emphasis role="bold">G</emphasis>
-  <![CDATA[<y<]]> <emphasis role="bold">H</emphasis>
+ <![CDATA[ <x< ]]><emphasis role="bold">G</emphasis>
+ <![CDATA[ <y< ]]><emphasis role="bold">H</emphasis>
 </programlisting>
 
 </para>
@@ -2694,7 +2694,7 @@ to put the expression in the context of a function call.
 For example,
 
 <programlisting>
-x <![CDATA[<x<]]> <emphasis role="bold">F</emphasis> | <emphasis role="bold">G</emphasis> | <emphasis role="bold">H</emphasis>
+x<![CDATA[ <x< ]]><emphasis role="bold">F</emphasis> | <emphasis role="bold">G</emphasis> | <emphasis role="bold">H</emphasis>
 </programlisting>
 
 is equivalent to
@@ -2849,7 +2849,7 @@ def auction(b:bs) = max(b.ask(), auction(bs))
 Suppose we have an expression of the following form, where F and G are expressions and M and N are sites:
 
 <programlisting>
-M() <![CDATA[>x>]]> <emphasis role="bold">F</emphasis> | N() <![CDATA[>y>]]> <emphasis role="bold">G</emphasis>
+M() <![CDATA[ >x> ]]> <emphasis role="bold">F</emphasis> | N() <![CDATA[ >y> ]]> <emphasis role="bold">G</emphasis>
 </programlisting>
 
 </para>
@@ -2860,7 +2860,7 @@ neither F nor G starts executing until both M and N have published. This is a pa
 of a fork-join:
 
 <programlisting>
-( M() , N() ) <![CDATA[>(x,y)>]]> ( <emphasis role="bold">F</emphasis> | <emphasis role="bold">G</emphasis> )
+( M() , N() ) <![CDATA[ >(x,y)> ]]> ( <emphasis role="bold">F</emphasis> | <emphasis role="bold">G</emphasis> )
 </programlisting>
 
 We assume that x does not occur free in G, nor y in F.
@@ -2888,8 +2888,8 @@ Here is the code:
 val r = 
     val a = <emphasis role="bold">F</emphasis>
     val b = <emphasis role="bold">G</emphasis>
-      if(a) <![CDATA[>>]]> true 
-    | if(b) <![CDATA[>>]]> true 
+      if(a)<![CDATA[ >> ]]>true 
+    | if(b)<![CDATA[ >> ]]>true 
     | (a || b)
 r
 </programlisting>
@@ -2897,7 +2897,7 @@ r
 
 <para>
 Recall that the <code>||</code> operator is strict; if one of <code>a</code> or <code>b</code> is not bound, it cannot
-compute a result. So, we have added <code>if(a) <![CDATA[>>]]> true</code> and <code>if(b) <![CDATA[>>]]> true</code>, 
+compute a result. So, we have added <code>if(a)<![CDATA[ >> ]]>true</code> and <code>if(b)<![CDATA[ >> ]]>true</code>, 
 which wait in parallel for either variable to become <code>true</code> and then publish the result <code>true</code>. 
 That way, the parallel-or can evaluate to <code>true</code> based on only one of the results, even if the other result 
 is not forthcoming.
@@ -2914,7 +2914,7 @@ multiple times.
 <section><title>Finite Sequential Composition</title>
 
 <para>
-F <code><![CDATA[>x>]]></code> G instantiates a copy of G for each published value of F. Suppose we know 
+F <code><![CDATA[ >x> ]]></code> G instantiates a copy of G for each published value of F. Suppose we know 
 that <emphasis role="bold">F</emphasis> will publish only a finite number of values, and then complete; for 
 example, <emphasis role="bold">F</emphasis> publishes the contents of a text file, one line at a time, and
 G prints each line to the console. After all of the lines have been printed, we want to start executing a new
@@ -2930,7 +2930,7 @@ the left side using <code>stop</code>; if the left side published, the right sid
 </para>
 
 <programlisting>
-<emphasis role="bold">F</emphasis> <![CDATA[>x>]]> println(x) <![CDATA[>>]]> stop ; <emphasis role="bold">H</emphasis>
+<emphasis role="bold">F</emphasis><![CDATA[ >x> ]]>println(x)<![CDATA[ >> ]]>stop ; <emphasis role="bold">H</emphasis>
 </programlisting>
 
 </section>
@@ -2945,7 +2945,7 @@ F for at most one second to get a value from it. If it does not publish within o
 </para>
 
 <programlisting>
-let( <emphasis role="bold">F</emphasis> | Rtimer(1000) <![CDATA[>>]]> 0 )
+let( <emphasis role="bold">F</emphasis> | Rtimer(1000)<![CDATA[ >> ]]>0 )
 </programlisting>
 
 
@@ -3318,8 +3318,34 @@ A word of caution: References, cells, and other mutable objects may be accessed 
 by many different parts of an Orc program, so race conditions may arise. 
 </para> 
 
-</section>
+<section><title>Reference Syntax</title>
 
+<para>Orc provides syntactic sugar for reading and writing mutable storage:</para>
+
+<itemizedlist>
+<listitem><code>x?</code> is equivalent to <code>x.read()</code>. This operator
+is of equal precedence with the dot operator and function application, so
+you can write things like <code>x.y?.v?</code>. This operator is very similar
+to the C languages's <code>*</code> operator, but is postfix instead of prefix.
+	</listitem>
+<listitem><code>x := y</code> is equivalent to <code>x.write(y)</code>.
+This operator has higher precedence than the concurrency combinators and if/then/else,
+but lower precedence than any of the other operators.</listitem>
+</itemizedlist>
+
+<para>Here is a previous example rewritten using this syntactic sugar:</para>
+
+<programlisting language="orc-demo"><![CDATA[
+{- Create a cell, try to write to it twice, and read it -}
+{- The read will block until a write occurs, and only one write will succeed. -}
+val c = Cell()
+  Rtimer(1000) >> r := 2 >> println("Wrote 2") >> stop
+| Rtimer(1000) >> r := 3 >> println("Wrote 3") >> stop
+| r?
+]]></programlisting>
+
+</section>
+</section>
 
 <section><title>Parallel Matching</title>
 
@@ -3341,7 +3367,7 @@ a signal for each 3 that occurs.
 We could write:
 
 <programlisting>
-<emphasis role="bold">F</emphasis> <![CDATA[>(x,y)>
+<emphasis role="bold">F</emphasis><![CDATA[ >(x,y)>
   ( if(x=3) >> signal
   | if(y=3) >> signal ) 
 ]]>
@@ -3350,7 +3376,7 @@ We could write:
 But there is a more general alternative:
 
 <programlisting>
-<emphasis role="bold">F</emphasis> <![CDATA[>x>
+<emphasis role="bold">F</emphasis><![CDATA[ >x>
   ( x >(3,_)> signal
   | x >(_,3)> signal ) 
 ]]>
@@ -3451,8 +3477,8 @@ of timeout: allow an expression to execute, publishing arbitrarily many values
 
 <programlisting>
 val c = Buffer()
-repeat(c.get) <![CDATA[<<]]>
-    <emphasis role="bold">F</emphasis> <![CDATA[>x> c.put(x) >> stop 
+repeat(c.get)<![CDATA[ << ]]>
+    <emphasis role="bold">F</emphasis><![CDATA[ >x> c.put(x) >> stop 
   | Rtimer(1000)
 ]]>
 </programlisting>
@@ -3476,8 +3502,8 @@ executes F until it publishes a negative number, and then terminates it:
 
 <programlisting>
 val c = Buffer()
-repeat(c.get) <![CDATA[<<]]> 
-  <emphasis role="bold">F</emphasis> <![CDATA[>x> 
+repeat(c.get)<![CDATA[ << ]]>
+  <emphasis role="bold">F</emphasis><![CDATA[ >x> 
     (if x >= 0 
         then c.put(x) >> stop
         else c.close() >> signal)]]>
@@ -3508,8 +3534,8 @@ number of values.
 <programlisting>
 val c = Buffer()
 val err = Cell()
-repeat(c.get) <![CDATA[<<]]>
-    <emphasis role="bold">F</emphasis> <![CDATA[>x> c.put(x) >> stop 
+repeat(c.get)<![CDATA[ << ]]>
+    <emphasis role="bold">F</emphasis><![CDATA[ >x> c.put(x) >> stop 
   | err.read()
 ]]>
 </programlisting>
@@ -3530,7 +3556,7 @@ val done = Cell()
 def allow(0) = c.close() >> done.write(signal) >> stop
 def allow(n) = c.get() | allow(n-1)
 allow(5) << ]]>
-    <emphasis role="bold">F</emphasis> <![CDATA[>x> c.put(x) >> stop 
+    <emphasis role="bold">F</emphasis><![CDATA[ >x> c.put(x) >> stop 
   | done.read()
 ]]>
 </programlisting>
@@ -3561,7 +3587,7 @@ repeat(c.get) | (]]><emphasis role="bold">F</emphasis><![CDATA[ >x> c.put(x) >> 
 <para>
 Similarly, we can use routing to modify the pruning combinator. Instead of terminating
 the right side after the first value is published, we would like to continue running it,
-ignoring its remaining publications. We write this modified F <code><![CDATA[<x<]]></code> G 
+ignoring its remaining publications. We write this modified F <code><![CDATA[ <x< ]]></code> G 
 as follows:
 </para>
 
@@ -4602,6 +4628,17 @@ The Orc source distribution includes an ant <command>kilim</command> task in
 
 
 <row>
+<entry></entry>
+<entry>|</entry>
+
+<entry> <code>?</code> </entry>
+
+<entry></entry>
+<entry><emphasis>dereference</emphasis></entry>
+</row>
+
+
+<row>
 <entry>C</entry>
 <entry>::=</entry>
 
@@ -4831,18 +4868,9 @@ any subtype of <code>Comparable</code>.
 
 <para>
 Declaration keywords include
-<link linkend="orc-declaring-a-site"><code>site</code></link>,
-<link linkend="cor.functions"><code>def</code></link>,
-<link linkend="cor.variables"><code>val</code></link>, and <code>type</code>. The first three keywords
-are described in previous chapters. The last, <code>type</code>, declares an algebraic data
-type with one or more constructors.  The constructors may be used both as sites and as 
-destructuring pattern forms.  For example, the declaration
-<code>type Either&lt;A&gt; = Some(A) | None()</code> implicitly declares two
-sites: <code>site Some(A) :: Either&lt;A&gt;</code> and <code>site None() ::
-Either&lt;A&gt;</code>. It also implicitly declares two pattern
-forms <code>Some(_)</code> and <code>None()</code>: <code>Some(y) >Some(x)>
-x</code> publishes the value of <code>y</code>, and <code>Some(y)
->None()> signal</code> halts (failing to match).</para>
+<link linkend="orc-declaring-a-site"><code>site</code></link> and
+<link linkend="cor.functions"><code>def</code></link>.  These
+declaration keywords are described in previous chapters.</para>
 
 <para>
 Object members (methods and fields) are each declared separately.  The binding
