@@ -433,12 +433,12 @@ site Counter = orc.lib.state.Counter
 
 {--
 * site Dictionary() :: Dictionary
-Create a new dictionary (mutable record), initially empty.
-The first time each field of the dictionary is
-accessed (using dot notation), the record
-creates and returns a new empty <link linkend="orc.lib.state.Ref">Ref</link>
-which will also be returned on subsequent accesses of the same field.
-Dictionaries allow you to easily create simple data structures.
+Create a new dictionary (a mutable map from field names to values), initially
+empty.  The first time each field of the dictionary is accessed (using dot
+notation), the record creates and returns a new empty <link
+linkend="orc.lib.state.Ref">Ref</link> which will also be returned on
+subsequent accesses of the same field.  Dictionaries allow you to easily create
+simple data structures.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
