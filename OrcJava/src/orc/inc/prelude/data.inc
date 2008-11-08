@@ -43,7 +43,13 @@ site Semaphore = orc.lib.state.Semaphore
 
 {--
 * site Buffer() :: Buffer<A>
-Create a new buffer (FIFO channel) of unlimited size.
+Create a new buffer (FIFO channel) of unlimited size. A buffer supports
+get, put and close operations.
+
+A buffer may be either empty or non-empty, and either open or closed.  When
+empty and open, calls to <code>get</code> block.  When empty and closed, calls
+to <code>get</code> halt.  When closed, calls to <code>put</code> halt.  In all
+other cases, calls return normally.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -53,7 +59,9 @@ val b = Buffer()
 | b.get()]]></programlisting>
 
 ** site Buffer<A>.get() :: A
-Get an item from the buffer. If no items are available, block until one becomes available.
+Get an item from the buffer. If the buffer is open and no items are available,
+block until one becomes available. If the buffer is <link
+linkend="orc.lib.Buffer.close">closed</link> and no items are available, halt.
 
 Recall that the type signature <code>site Buffer&lt;A&gt;.get() :: A</code> means that
 when the <code>get</code> method is called on a buffer holding an arbitrary
@@ -63,7 +71,8 @@ element type <code>A</code>, it will return a value of the same type.
 Get an item from the buffer. If no items are available, halt.
 
 ** site Buffer<A>.put(A) :: Signal
-Put an item in the buffer.
+Put an item in the buffer. If the buffer is <link
+linkend="orc.lib.Buffer.close">closed</link>, halt.
 
 ** site Buffer<A>.close() :: Signal
 Close the buffer and block until it is empty.
@@ -92,9 +101,15 @@ site Buffer = orc.lib.state.Buffer
 {--
 * site BoundedBuffer(Integer) :: BoundedBuffer<A>
 Create a new buffer (FIFO channel) with the given number of slots.
-Putting an item into the buffer fills a slot, and removing an item opens a slot.
+Putting an item into the buffer fills a slot, and getting an item opens a slot.
 A buffer with zero slots is equivalent to a
 <link linkend="orc.lib.state.SyncChannel">synchronous channel</link>.
+
+A bounded buffer may be empty, partly filled, or full, and either open or
+closed.  When empty and open, calls to <code>get</code> block.  When empty and
+closed, calls to <code>get</code> halt. When full and open, calls to
+<code>put</code> block. When closed, calls to <code>put</code> halt.  In all
+other cases, calls return normally.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -108,16 +123,20 @@ val c = BoundedBuffer(1)
   )]]></programlisting>
 
 ** site BoundedBuffer<A>.get() :: A
-Get an item from the buffer. If no items are available, block until one becomes available.
+Get an item from the buffer. If the buffer is open and no items are available,
+block until one becomes available. If the buffer is <link
+linkend="orc.lib.Buffer.close">closed</link> and no items are available, halt.
 
 ** site BoundedBuffer<A>.getnb() :: A
 Get an item from the buffer. If no items are available, halt.
 
 ** site BoundedBuffer<A>.put(A) :: Signal
 Put an item in the buffer. If no slots are open, block until one becomes open.
+If the buffer is <link linkend="orc.lib.Buffer.close">closed</link>, halt.
 
 ** site BoundedBuffer<A>.putnb(A) :: Signal
 Put an item in the buffer. If no slots are open, halt.
+If the buffer is <link linkend="orc.lib.Buffer.close">closed</link>, halt.
 
 ** site BoundedBuffer<A>.close() :: Signal
 Close the buffer and block until it is empty.
@@ -426,7 +445,7 @@ block until the counter reaches zero.
 Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes five signals
-val c = Counter(4)
+val c = Counter(5)
 repeat(c.dec)]]></programlisting>
 --}
 site Counter = orc.lib.state.Counter
@@ -435,14 +454,14 @@ site Counter = orc.lib.state.Counter
 * site Dictionary() :: Dictionary
 Create a new dictionary (a mutable map from field names to values), initially
 empty.  The first time each field of the dictionary is accessed (using dot
-notation), the record creates and returns a new empty <link
+notation), the dictionary creates and returns a new empty <link
 linkend="orc.lib.state.Ref">Ref</link> which will also be returned on
 subsequent accesses of the same field.  Dictionaries allow you to easily create
-simple data structures.
+object-like data structures.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
--- Publishes: 1 2
+-- Prints: 1 2
 val d = Dictionary()
   println(d.one?) >>
   println(d.two?) >>
@@ -450,6 +469,23 @@ val d = Dictionary()
 | d.one := 1 >>
   d.two := 2 >>
   stop]]></programlisting>
+
+To create a multi-level dictionary, you must explicitly create sub-dictionaries
+for each field. For example:
+<programlisting language="orc-demo"><![CDATA[
+-- Prints: 2
+val d = Dictionary()
+d.one := Dictionary() >>
+d.one?.two := 2 >>
+println(d.one?.two?) >>
+stop]]></programlisting>
+
+Note that you cannot write <code>d.one.two</code>: because <code>d.one</code>
+is a reference to a dictionary, and not simply a dictionary, you must
+dereference before accessing its fields, as in <code>d.one? >x> x.two</code>.
+For readers familiar with the C language, this is the same reason you must
+write <code language="c">s->field</code> instead of <code>s.field</code> when
+<code>s</code> is a pointer to a struct.
 --}
 site Dictionary = orc.lib.data.Dictionary
 
