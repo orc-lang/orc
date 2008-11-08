@@ -54,7 +54,7 @@
 
 <highlighter type='regex'>
   <style>combinator</style>
-  <pattern><![CDATA[(?<=\s)(<|>)((?=\S)|$)|((?<=\S)|^)(<|>)(?=\s[^=])|\||;|\bFATBAR\b]]></pattern>
+  <pattern><![CDATA[(?<=\s)(<|>)((?=\S)|$)|((?<=\S)|^)(<|>)(?=\s([^=]|$))|\||;|\bFATBAR\b]]></pattern>
 </highlighter>
 
 <!-- site calls -->
