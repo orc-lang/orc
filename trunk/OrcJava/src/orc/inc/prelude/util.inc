@@ -117,7 +117,7 @@ halts.
 --}
 def takePubs(n, f) =
   val out = Buffer()
-  val c = Counter(n-1)
+  val c = Counter(n)
   let(
     f() >x>
     if(c.dec() >> out.put(x) >> false
