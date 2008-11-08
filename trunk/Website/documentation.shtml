@@ -13,7 +13,7 @@
   <li>Javadoc: for developers interested in implementing Orc sites in Java, or extending the Orc implementation.
     <ul>
       <li><a href="/javadoc/STABLE/index.html" target="_blank">Latest stable release</a>  <img src="images/new-window.gif" alt="opens in new window" border="0" /></li>
-      <li><a href="/javadoc/HEAD/index.html" target="_blank">Development version</a> <img src="images/new-window.gif" alt="opens in new window" border="0" /> (use <a href="quickstart.shtml">CVS</a> to get the very latest source code and javadoc)</li>
+      <li>Use <a href="quickstart.shtml">CVS</a> to get the very latest source code and javadoc</li>
     </ul>
   </li>
 
