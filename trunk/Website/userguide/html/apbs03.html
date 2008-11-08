@@ -1,4 +1,4 @@
-<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>B.3.&nbsp;Reference</title><link href="style.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide"><link rel="up" href="apb.html" title="Appendix&nbsp;B.&nbsp;Standard Library"><link rel="prev" href="apbs02.html" title="B.2.&nbsp;Notation"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">B.3.&nbsp;Reference</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="apbs02.html">Prev</a>&nbsp;</td><th align="center" width="60%">Appendix&nbsp;B.&nbsp;Standard Library</th><td align="right" width="20%">&nbsp;</td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N1161B"></a>B.3.&nbsp;Reference</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1161F"></a>B.3.1.&nbsp;core.inc: Fundamental sites and operators.</h3></div></div></div><p>Fundamental sites and operators.</p><p>These declarations include both prefix and infix sites (operators).  For
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>B.3.&nbsp;Reference</title><link href="style.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide"><link rel="up" href="apb.html" title="Appendix&nbsp;B.&nbsp;Standard Library"><link rel="prev" href="apbs02.html" title="B.2.&nbsp;Notation"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">B.3.&nbsp;Reference</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="apbs02.html">Prev</a>&nbsp;</td><th align="center" width="60%">Appendix&nbsp;B.&nbsp;Standard Library</th><td align="right" width="20%">&nbsp;</td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N11625"></a>B.3.&nbsp;Reference</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11629"></a>B.3.1.&nbsp;core.inc: Fundamental sites and operators.</h3></div></div></div><p>Fundamental sites and operators.</p><p>These declarations include both prefix and infix sites (operators).  For
 consistency, all declarations are written in prefix form, with the site name
 followed by the operands.  When the site name is surrounded in parentheses, as
 in <code class="code">(+)</code>, it denotes an infix operator.</p><p>For a more complete description of the built-in operators and their syntax, see
@@ -34,29 +34,29 @@ User Guide.</p><div class="variablelist"><dl><dt><span class="term">
 <span class="hl-comment">-- Fail with the error message: "assertion failed"</span>
 <span class="hl-site">assert</span>(<span class="hl-literal">false</span>)</pre>
                             </p></dd><dt><span class="term">
-                            <code class="code"><span class="hl-keyword">site</span> (+)(<span class="hl-variable">Number</span>, <span class="hl-variable">Number</span>) :: <span class="hl-variable">Number</span></code>
+                            <code class="code">(+)</code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> (+)(<span class="hl-variable">Number</span>, <span class="hl-variable">Number</span>) :: <span class="hl-variable">Number</span></code>
                             </p><p>
                                 <code class="code"><span class="hl-variable">a</span>+<span class="hl-variable">b</span></code> returns the sum of <code class="code"><span class="hl-variable">a</span></code> and <code class="code"><span class="hl-variable">b</span></code>.</p></dd><dt><span class="term">
-                            <code class="code"><span class="hl-keyword">site</span> (-)(<span class="hl-variable">Number</span>, <span class="hl-variable">Number</span>) :: <span class="hl-variable">Number</span></code>
+                            <code class="code">(-)</code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> (-)(<span class="hl-variable">Number</span>, <span class="hl-variable">Number</span>) :: <span class="hl-variable">Number</span></code>
                             </p><p>
                                 <code class="code"><span class="hl-variable">a</span>-<span class="hl-variable">b</span></code> returns the value of <code class="code"><span class="hl-variable">a</span></code> minus the value of <code class="code"><span class="hl-variable">b</span></code>.</p></dd><dt><span class="term">
-                            <code class="code"><span class="hl-keyword">site</span> (<span class="hl-literal">0</span>-)(<span class="hl-variable">Number</span>) :: <span class="hl-variable">Number</span></code>
+                            <code class="code">(<span class="hl-literal">0</span>-)</code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> (<span class="hl-literal">0</span>-)(<span class="hl-variable">Number</span>) :: <span class="hl-variable">Number</span></code>
                             </p><p>Return the additive inverse of the argument.
 When this site appears as an operator, it is written in prefix form without the
 zero, i.e. <code class="code">(-<span class="hl-variable">a</span>)</code>
                             </p></dd><dt><span class="term">
-                            <code class="code"><span class="hl-keyword">site</span> (*)(<span class="hl-variable">Number</span>, <span class="hl-variable">Number</span>) :: <span class="hl-variable">Number</span></code>
+                            <code class="code">(*)</code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> (*)(<span class="hl-variable">Number</span>, <span class="hl-variable">Number</span>) :: <span class="hl-variable">Number</span></code>
                             </p><p>
                                 <code class="code"><span class="hl-variable">a</span>*<span class="hl-variable">b</span></code> returns the product of <code class="code"><span class="hl-variable">a</span></code> and <code class="code"><span class="hl-variable">b</span></code>.</p></dd><dt><span class="term">
-                            <code class="code"><span class="hl-keyword">site</span> (**)(<span class="hl-variable">Number</span>, <span class="hl-variable">Number</span>) :: <span class="hl-variable">Number</span></code>
+                            <code class="code">(**)</code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> (**)(<span class="hl-variable">Number</span>, <span class="hl-variable">Number</span>) :: <span class="hl-variable">Number</span></code>
                             </p><p>
@@ -64,7 +64,7 @@ zero, i.e. <code class="code">(-<span class="hl-variable">a</span>)</code>
 <span class="mathphrase">a<sup>b</sup>
                                     </span>,
 i.e. <code class="code"><span class="hl-variable">a</span></code> raised to the <code class="code"><span class="hl-variable">b</span></code>th power.</p></dd><dt><span class="term">
-                            <code class="code"><span class="hl-keyword">site</span> (/)(<span class="hl-variable">Number</span>, <span class="hl-variable">Number</span>) :: <span class="hl-variable">Number</span></code>
+                            <code class="code">(/)</code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> (/)(<span class="hl-variable">Number</span>, <span class="hl-variable">Number</span>) :: <span class="hl-variable">Number</span></code>
                             </p><p>
@@ -77,7 +77,7 @@ division. If <code class="code"><span class="hl-variable">b</span>=<span class="
   <span class="hl-literal">7</span>/<span class="hl-literal">3</span>   <span class="hl-comment">-- publishes 2</span>
 <span class="hl-combinator">|</span> <span class="hl-literal">7</span>/<span class="hl-literal">3.0</span> <span class="hl-comment">-- publishes 2.333...</span></pre>
                             </p></dd><dt><span class="term">
-                            <code class="code"><span class="hl-keyword">site</span> (%)(<span class="hl-variable">Number</span>, <span class="hl-variable">Number</span>) :: <span class="hl-variable">Number</span></code>
+                            <code class="code">(%)</code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> (%)(<span class="hl-variable">Number</span>, <span class="hl-variable">Number</span>) :: <span class="hl-variable">Number</span></code>
                             </p><p>
@@ -86,27 +86,27 @@ division. If <code class="code"><span class="hl-variable">b</span>=<span class="
 and <code class="code"><span class="hl-variable">b</span></code> have integral types, then the remainder is given by
 the expression <code class="code"><span class="hl-variable">a</span> - (<span class="hl-variable">a</span>/<span class="hl-variable">b</span>)*<span class="hl-variable">b</span></code>. For a full description, see the
 <a class="link" href="http://java.sun.com/docs/books/jls/third_edition/html/expressions.html#15.17.3" target="_top">Java Language Specification, 3rd edition</a>.</p></dd><dt><span class="term">
-                            <code class="code"><span class="hl-keyword">site</span> (&lt;)(<span class="hl-variable">Comparable</span>, <span class="hl-variable">Comparable</span>) :: <span class="hl-variable">Boolean</span></code>
+                            <code class="code">(&lt;)</code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> (&lt;)(<span class="hl-variable">Comparable</span>, <span class="hl-variable">Comparable</span>) :: <span class="hl-variable">Boolean</span></code>
                             </p><p>
                                 <code class="code"><span class="hl-variable">a</span> &lt; <span class="hl-variable">b</span></code> returns true if <code class="code"><span class="hl-variable">a</span></code> is less than <code class="code"><span class="hl-variable">b</span></code>, and false otherwise.</p></dd><dt><span class="term">
-                            <code class="code"><span class="hl-keyword">site</span> (<span class="hl-site">&lt;=</span>)(<span class="hl-variable">Comparable</span>, <span class="hl-variable">Comparable</span>) :: <span class="hl-variable">Boolean</span></code>
+                            <code class="code">(<span class="hl-site">&lt;=</span>)</code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> (<span class="hl-site">&lt;=</span>)(<span class="hl-variable">Comparable</span>, <span class="hl-variable">Comparable</span>) :: <span class="hl-variable">Boolean</span></code>
                             </p><p>
                                 <code class="code"><span class="hl-variable">a</span> <span class="hl-site">&lt;=</span> <span class="hl-variable">b</span></code> returns true if <code class="code"><span class="hl-variable">a</span></code> is less than or equal to <code class="code"><span class="hl-variable">b</span></code>, and false otherwise.</p></dd><dt><span class="term">
-                            <code class="code"><span class="hl-keyword">site</span> (&gt;)(<span class="hl-variable">Comparable</span>, <span class="hl-variable">Comparable</span>) :: <span class="hl-variable">Boolean</span></code>
+                            <code class="code">(&gt;)</code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> (&gt;)(<span class="hl-variable">Comparable</span>, <span class="hl-variable">Comparable</span>) :: <span class="hl-variable">Boolean</span></code>
                             </p><p>
                                 <code class="code"><span class="hl-variable">a</span> &gt; <span class="hl-variable">b</span></code> returns true if <code class="code"><span class="hl-variable">a</span></code> is greater than <code class="code"><span class="hl-variable">b</span></code>, and false otherwise.</p></dd><dt><span class="term">
-                            <code class="code"><span class="hl-keyword">site</span> (<span class="hl-site">&gt;=</span>)(<span class="hl-variable">Comparable</span>, <span class="hl-variable">Comparable</span>) :: <span class="hl-variable">Boolean</span></code>
+                            <code class="code">(<span class="hl-site">&gt;=</span>)</code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> (<span class="hl-site">&gt;=</span>)(<span class="hl-variable">Comparable</span>, <span class="hl-variable">Comparable</span>) :: <span class="hl-variable">Boolean</span></code>
                             </p><p>
                                 <code class="code"><span class="hl-variable">a</span> <span class="hl-site">&gt;=</span> <span class="hl-variable">b</span></code> returns true if <code class="code"><span class="hl-variable">a</span></code> is greater than or equal to <code class="code"><span class="hl-variable">b</span></code>, and false otherwise.</p></dd><dt><span class="term">
-                            <code class="code"><span class="hl-keyword">site</span> (=)(<span class="hl-variable">Top</span>, <span class="hl-variable">Top</span>) :: <span class="hl-variable">Boolean</span></code>
+                            <code class="code">(=)</code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> (=)(<span class="hl-variable">Top</span>, <span class="hl-variable">Top</span>) :: <span class="hl-variable">Boolean</span></code>
                             </p><p>
@@ -121,30 +121,30 @@ contents are equal. Other types are free to implement their own equality
 relationship provided it conforms to the rules given here.</p><p>Note that although values of different types may be compared with
 <code class="code">=</code>, the substitutability principle requires that such values are
 always considered inequal, i.e. the comparison will return <code class="code"><span class="hl-literal">false</span></code>.</p></dd><dt><span class="term">
-                            <code class="code"><span class="hl-keyword">site</span> (/=)(<span class="hl-variable">Top</span>, <span class="hl-variable">Top</span>) :: <span class="hl-variable">Boolean</span></code>
+                            <code class="code">(/=)</code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> (/=)(<span class="hl-variable">Top</span>, <span class="hl-variable">Top</span>) :: <span class="hl-variable">Boolean</span></code>
                             </p><p>
                                 <code class="code"><span class="hl-variable">a</span>/=<span class="hl-variable">b</span></code> returns false if <code class="code"><span class="hl-variable">a</span>=<span class="hl-variable">b</span></code>, and true otherwise.</p></dd><dt><span class="term">
-                            <code class="code"><span class="hl-keyword">site</span> (~)(<span class="hl-variable">Boolean</span>) :: <span class="hl-variable">Boolean</span></code>
+                            <code class="code">(~)</code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> (~)(<span class="hl-variable">Boolean</span>) :: <span class="hl-variable">Boolean</span></code>
                             </p><p>Return the logical negation of the argument.</p></dd><dt><span class="term">
-                            <code class="code"><span class="hl-keyword">site</span> (&amp;&amp;)(<span class="hl-variable">Boolean</span>, <span class="hl-variable">Boolean</span>) :: <span class="hl-variable">Boolean</span></code>
+                            <code class="code">(&amp;&amp;)</code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> (&amp;&amp;)(<span class="hl-variable">Boolean</span>, <span class="hl-variable">Boolean</span>) :: <span class="hl-variable">Boolean</span></code>
                             </p><p>Return the logical conjunction of the arguments. This is not a short-circuiting
 operator; both arguments must be evaluated and available before the result is
 computed.</p></dd><dt><span class="term">
-                            <code class="code"><span class="hl-keyword">site</span> (<span class="hl-site">||</span>)(<span class="hl-variable">Boolean</span>, <span class="hl-variable">Boolean</span>) :: <span class="hl-variable">Boolean</span></code>
+                            <code class="code">(<span class="hl-site">||</span>)</code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> (<span class="hl-site">||</span>)(<span class="hl-variable">Boolean</span>, <span class="hl-variable">Boolean</span>) :: <span class="hl-variable">Boolean</span></code>
                             </p><p>Return the logical disjunction of the arguments. This is not a short-circuiting
 operator; both arguments must be evaluated and available before the result is
 computed.</p></dd><dt><span class="term">
-                            <code class="code">[<span class="hl-variable">A</span>] </code>
+                            <code class="code">(:)</code>
                         </span></dt><dd><p>
-                                <code class="code"><span class="hl-keyword">type</span> [<span class="hl-variable">A</span>] = (:)(<span class="hl-variable">A</span>, [<span class="hl-variable">A</span>]) <span class="hl-combinator">|</span> []</code>
+                                <code class="code"><span class="hl-keyword">site</span> (:)(<span class="hl-variable">A</span>,[<span class="hl-variable">A</span>]) :: [<span class="hl-variable">A</span>]</code>
 
                             </p><p>The list <code class="code"><span class="hl-variable">a</span>:<span class="hl-variable">b</span></code> is formed by prepending the element <code class="code"><span class="hl-variable">a</span></code> to
 the list <code class="code"><span class="hl-variable">b</span></code>.</p><p>Example:
@@ -182,7 +182,7 @@ they must have a total order.</p></dd><dt><span class="term">
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">def</span> <span class="hl-site">max</span>(<span class="hl-variable">A</span>,<span class="hl-variable">A</span>) :: <span class="hl-variable">A</span>, <span class="hl-variable">A</span> <span class="hl-site">&lt;:</span> <span class="hl-variable">Comparable</span></code>
                             </p><p>Return the greater of the arguments. If the arguments
-are equal, return the second argument.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11879"></a>B.3.2.&nbsp;data.inc: General-purpose supplemental data structures.</h3></div></div></div><p>General-purpose supplemental data structures.</p><div class="variablelist"><dl><dt><span class="term">
+are equal, return the second argument.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11883"></a>B.3.2.&nbsp;data.inc: General-purpose supplemental data structures.</h3></div></div></div><p>General-purpose supplemental data structures.</p><div class="variablelist"><dl><dt><span class="term">
                             <code class="code"><span class="hl-variable">Semaphore</span></code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Semaphore</span>(<span class="hl-variable">Integer</span>) :: <span class="hl-variable">Semaphore</span></code>
@@ -416,8 +416,7 @@ Create a rewritable storage location without an initial value.
                                     <code class="code"><span class="hl-variable">read</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Ref</span>&lt;<span class="hl-variable">A</span>&gt;.<span class="hl-site">read</span>() :: <span class="hl-variable">A</span></code>
-                                    </p><p>Read the value of the ref. If the ref does not yet have a value, block until it receives one.
-The syntactic sugar <code class="code"><span class="hl-variable">x</span><span class="hl-site">?</span></code> is equivalent to <code class="code"><span class="hl-variable">x</span>.<span class="hl-site">read</span>()</code>.</p></dd><dt><span class="term">
+                                    </p><p>Read the value of the ref. If the ref does not yet have a value, block until it receives one.</p></dd><dt><span class="term">
                                     <code class="code"><span class="hl-variable">readnb</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Ref</span>&lt;<span class="hl-variable">A</span>&gt;.<span class="hl-site">readnb</span>() :: <span class="hl-variable">A</span></code>
@@ -425,8 +424,17 @@ The syntactic sugar <code class="code"><span class="hl-variable">x</span><span c
                                     <code class="code"><span class="hl-variable">write</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Ref</span>&lt;<span class="hl-variable">A</span>&gt;.<span class="hl-site">write</span>(<span class="hl-variable">A</span>) :: <span class="hl-variable">Signal</span></code>
-                                    </p><p>Write a value to the ref.
-The syntactic sugar <code class="code"><span class="hl-variable">x</span> <span class="hl-site">:=</span> <span class="hl-variable">y</span></code> is equivalent to <code class="code"><span class="hl-variable">x</span>.<span class="hl-site">write</span>(<span class="hl-variable">y</span>)</code>.</p></dd></dl></div></dd><dt><span class="term">
+                                    </p><p>Write a value to the ref.</p></dd><dt><span class="term">
+                                    <code class="code">(<span class="hl-site">?</span>)</code>
+                                    </span></dt><dd><p>
+                                    <code class="code"><span class="hl-keyword">def</span> (<span class="hl-site">?</span>)(<span class="hl-variable">Ref</span>&lt;<span class="hl-variable">A</span>&gt;) :: <span class="hl-variable">A</span></code>
+                                    </p><p>Get the value held by a reference.
+<code class="code"><span class="hl-variable">x</span><span class="hl-site">?</span></code> is equivalent to <code class="code"><span class="hl-variable">x</span>.<span class="hl-site">read</span>()</code>.</p></dd><dt><span class="term">
+                                    <code class="code">(<span class="hl-site">:=</span>)</code>
+                                    </span></dt><dd><p>
+                                    <code class="code"><span class="hl-keyword">def</span> (<span class="hl-site">:=</span>)(<span class="hl-variable">Ref</span>&lt;<span class="hl-variable">A</span>&gt;, <span class="hl-variable">A</span>) :: <span class="hl-variable">Signal</span></code>
+                                    </p><p>Set the value held by a reference.
+<code class="code"><span class="hl-variable">x</span> <span class="hl-site">:=</span> <span class="hl-variable">y</span></code> is equivalent to <code class="code"><span class="hl-variable">x</span>.<span class="hl-site">write</span>(<span class="hl-variable">y</span>)</code>.</p></dd></dl></div></dd><dt><span class="term">
                             <code class="code"><span class="hl-variable">Array</span></code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Array</span>(<span class="hl-variable">Integer</span>) :: <span class="hl-variable">Array</span>&lt;<span class="hl-variable">A</span>&gt;</code>
@@ -495,11 +503,12 @@ the value of <code class="code"><span class="hl-site">f</span>(<span class="hl-v
 <span class="hl-comment">-- Publishes the 4th number of the fibonnaci sequence: 5</span>
 <span class="hl-site">a</span>(<span class="hl-literal">3</span>)</pre>
                             </p></dd><dt><span class="term">
-                            <code class="code"><span class="hl-variable">Option</span>&lt;<span class="hl-variable">A</span>&gt; </code>
+                            <code class="code"><span class="hl-variable">Some</span></code>
                         </span></dt><dd><p>
-                                <code class="code"><span class="hl-keyword">type</span> <span class="hl-variable">Option</span>&lt;<span class="hl-variable">A</span>&gt; = <span class="hl-site">Some</span>(<span class="hl-variable">A</span>) <span class="hl-combinator">|</span> <span class="hl-site">None</span>()</code>
+                                <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Some</span>(<span class="hl-variable">A</span>) :: <span class="hl-variable">Option</span>&lt;<span class="hl-variable">A</span>&gt;</code>
 
-                            </p><p>An optional value which is either provided or not.</p><p>Example:
+                            </p><p>An optional value which is available.
+This site may also be used in a pattern.</p><p>Example:
 <pre class="orc">
 <span class="hl-comment">-- Publishes: (3,4)</span>
 <span class="hl-site">Some</span>((<span class="hl-literal">3</span>,<span class="hl-literal">4</span>)) <span class="hl-combinator">&gt;</span><span class="hl-variable">s</span><span class="hl-combinator">&gt;</span> (
@@ -507,18 +516,11 @@ the value of <code class="code"><span class="hl-site">f</span>(<span class="hl-v
   <span class="hl-combinator">|</span> <span class="hl-variable">s</span> <span class="hl-combinator">&gt;</span><span class="hl-site">None</span>()<span class="hl-combinator">&gt;</span> <span class="hl-keyword">signal</span>
 )</pre>
                             </p></dd><dt><span class="term">
-                            <code class="code"><span class="hl-variable">Either</span>&lt;<span class="hl-variable">A</span>,<span class="hl-variable">B</span>&gt; </code>
+                            <code class="code"><span class="hl-variable">None</span></code>
                         </span></dt><dd><p>
-                                <code class="code"><span class="hl-keyword">type</span> <span class="hl-variable">Either</span>&lt;<span class="hl-variable">A</span>,<span class="hl-variable">B</span>&gt; = <span class="hl-site">Left</span>(<span class="hl-variable">A</span>) <span class="hl-combinator">|</span> <span class="hl-site">Right</span>(<span class="hl-variable">B</span>)</code>
-
-                            </p><p>A union which may be tagged as either "left" or "right".</p><p>Example:
-<pre class="orc">
-<span class="hl-comment">-- Publishes: "left"</span>
-<span class="hl-site">Left</span>(<span class="hl-literal">3</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> (
-   <span class="hl-variable">x</span> <span class="hl-combinator">&gt;</span><span class="hl-site">Right</span>(<span class="hl-variable">_</span>)<span class="hl-combinator">&gt;</span> <span class="hl-literal">"right"</span>
- <span class="hl-combinator">|</span> <span class="hl-variable">x</span> <span class="hl-combinator">&gt;</span><span class="hl-site">Left</span>(<span class="hl-variable">_</span>)<span class="hl-combinator">&gt;</span> <span class="hl-literal">"left"</span>
-)</pre>
-                            </p></dd><dt><span class="term">
+                                <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">None</span>() :: <span class="hl-variable">Option</span>&lt;<span class="hl-variable">A</span>&gt;</code>
+                            </p><p>An optional value which is not available.
+This site may also be used in a pattern.</p></dd><dt><span class="term">
                             <code class="code"><span class="hl-variable">Set</span></code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Set</span>() :: <span class="hl-variable">Set</span>&lt;<span class="hl-variable">A</span>&gt;</code>
@@ -628,12 +630,11 @@ block until the counter reaches zero.</p><p>Example:
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Dictionary</span>() :: <span class="hl-variable">Dictionary</span></code>
 
-                            </p><p>Create a new dictionary (mutable record), initially empty.
-The first time each field of the dictionary is
-accessed (using dot notation), the record
-creates and returns a new empty <a class="link" href="apbs03.html#orc.lib.state.Ref">Ref</a>
-which will also be returned on subsequent accesses of the same field.
-Dictionaries allow you to easily create simple data structures.</p><p>Example:
+                            </p><p>Create a new dictionary (a mutable map from field names to values), initially
+empty.  The first time each field of the dictionary is accessed (using dot
+notation), the record creates and returns a new empty <a class="link" href="apbs03.html#orc.lib.state.Ref">Ref</a> which will also be returned on
+subsequent accesses of the same field.  Dictionaries allow you to easily create
+simple data structures.</p><p>Example:
 <pre class="orc">
 <span class="hl-comment">-- Publishes: 1 2</span>
 <span class="hl-keyword">val</span> <span class="hl-variable">d</span> = <span class="hl-site">Dictionary</span>()
@@ -655,7 +656,7 @@ Dictionaries allow you to easily create simple data structures.</p><p>Example:
                             <code class="code"><span class="hl-variable">swap</span></code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">def</span> <span class="hl-site">swap</span>((<span class="hl-variable">A</span>,<span class="hl-variable">B</span>)) :: (<span class="hl-variable">B</span>,<span class="hl-variable">A</span>)</code>
-                            </p><p>Swap the elements of a pair.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11D82"></a>B.3.3.&nbsp;idioms.inc: Higher-order Orc programming idioms.</h3></div></div></div><p>Higher-order Orc programming idioms.
+                            </p><p>Swap the elements of a pair.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11DA2"></a>B.3.3.&nbsp;idioms.inc: Higher-order Orc programming idioms.</h3></div></div></div><p>Higher-order Orc programming idioms.
 Many of these are standard functional-programming
 combinators borrowed from Haskell or Scheme.</p><div class="variablelist"><dl><dt><span class="term">
                             <code class="code"><span class="hl-variable">apply</span></code>
@@ -777,7 +778,7 @@ Return the list when the function terminates.</p><p>Example:
 <pre class="orc">
 <span class="hl-comment">-- Publishes: [signal, signal, signal, signal, signal]</span>
 <span class="hl-site">collect</span>(<span class="hl-site">defer</span>(<span class="hl-variable">signals</span>, <span class="hl-literal">5</span>))</pre>
-                            </p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11ECF"></a>B.3.4.&nbsp;list.inc: Operations on lists.</h3></div></div></div><p>Operations on lists.
+                            </p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11EEF"></a>B.3.4.&nbsp;list.inc: Operations on lists.</h3></div></div></div><p>Operations on lists.
 Many of these functions are similar to those in the Haskell prelude, but
 operate on the elements of a list in parallel.</p><div class="variablelist"><dl><dt><span class="term">
                             <code class="code"><span class="hl-variable">each</span></code>
@@ -1018,7 +1019,7 @@ The disjunction of an empty list is <code class="code"><span class="hl-literal">
                             <code class="code"><span class="hl-variable">maximum</span></code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">def</span> <span class="hl-site">maximum</span>([<span class="hl-variable">A</span>]) :: <span class="hl-variable">A</span>, <span class="hl-variable">A</span> <span class="hl-site">&lt;:</span> <span class="hl-variable">Comparable</span></code>
-                            </p><p>Return the maximum element of a non-empty list.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N12193"></a>B.3.5.&nbsp;text.inc: Operations on strings.</h3></div></div></div><p>Operations on strings.</p><div class="variablelist"><dl><dt><span class="term">
+                            </p><p>Return the maximum element of a non-empty list.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N121B3"></a>B.3.5.&nbsp;text.inc: Operations on strings.</h3></div></div></div><p>Operations on strings.</p><div class="variablelist"><dl><dt><span class="term">
                             <code class="code"><span class="hl-variable">cat</span></code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">cat</span>(<span class="hl-variable">Top</span>, ...) :: <span class="hl-variable">String</span></code>
@@ -1072,7 +1073,7 @@ and concatenate the results.</p></dd><dt><span class="term">
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">def</span> <span class="hl-site">unwords</span>([<span class="hl-variable">String</span>]) :: <span class="hl-variable">String</span></code>
                             </p><p>Concatenate a sequence of strings with a single space between
-each string.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N12218"></a>B.3.6.&nbsp;time.inc: Real and logical time.</h3></div></div></div><p>Real and logical time.</p><div class="variablelist"><dl><dt><span class="term">
+each string.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N12238"></a>B.3.6.&nbsp;time.inc: Real and logical time.</h3></div></div></div><p>Real and logical time.</p><div class="variablelist"><dl><dt><span class="term">
                             <code class="code"><span class="hl-variable">Rtimer</span></code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Rtimer</span>(<span class="hl-variable">Integer</span>) :: <span class="hl-variable">Signal</span></code>
@@ -1100,7 +1101,7 @@ calls (other than calls to <code class="code"><span class="hl-variable">Ltimer</
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">def</span> <span class="hl-site">metronome</span>(<span class="hl-variable">Integer</span>) :: <span class="hl-variable">Signal</span></code>
                             </p><p>Publish a signal at regular intervals, indefinitely. The period is given by the
-argument, in milliseconds.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N12262"></a>B.3.7.&nbsp;util.inc: Miscellaneous utility functions.</h3></div></div></div><p>Miscellaneous utility functions.</p><div class="variablelist"><dl><dt><span class="term">
+argument, in milliseconds.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N12282"></a>B.3.7.&nbsp;util.inc: Miscellaneous utility functions.</h3></div></div></div><p>Miscellaneous utility functions.</p><div class="variablelist"><dl><dt><span class="term">
                             <code class="code"><span class="hl-variable">random</span></code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">random</span>() :: <span class="hl-variable">Integer</span></code>
