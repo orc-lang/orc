@@ -43,11 +43,11 @@ The original Cor grammar rules are abbreviated by ellipses (...).
                                     <code class="code"><span class="hl-keyword">stop</span></code>
                                 </td><td align="left">&nbsp;</td><td align="left">
                                     <span class="emphasis"><em>silent expression</em></span>
-                                </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E<code class="code"> <span class="hl-combinator">&gt;</span></code>P<code class="code">&gt; </code>E</td><td align="left">&nbsp;</td><td align="left">
+                                </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E<code class="code"> <span class="hl-combinator">&gt;</span></code>P<code class="code"><span class="hl-combinator">&gt;</span> </code>E</td><td align="left">&nbsp;</td><td align="left">
                                     <span class="emphasis"><em>sequential combinator</em></span>
                                 </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E <code class="code"><span class="hl-combinator">|</span></code> E</td><td align="left">&nbsp;</td><td align="left">
                                     <span class="emphasis"><em>parallel combinator</em></span>
-                                </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E<code class="code"> <span class="hl-combinator">&lt;</span></code>P<code class="code">&lt; </code>E</td><td align="left">&nbsp;</td><td align="left">
+                                </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E<code class="code"> <span class="hl-combinator">&lt;</span></code>P<code class="code"><span class="hl-combinator">&lt;</span> </code>E</td><td align="left">&nbsp;</td><td align="left">
                                     <span class="emphasis"><em>pruning combinator</em></span>
                                 </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E <code class="code"><span class="hl-combinator">;</span></code> E</td><td align="left">&nbsp;</td><td align="left">
                                     <span class="emphasis"><em>otherwise combinator</em></span>
@@ -178,12 +178,12 @@ It is also commutative: F <code class="code"><span class="hl-combinator">|</span
 </pre>
 </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1077F"></a>1.3.2.2.&nbsp;The sequential combinator</h4></div></div></div><p>
 Now that we have expressions which publish multiple values, what can we do with those
-publications? The sequential combinator, written F<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span>&gt; </code>G, 
+publications? The sequential combinator, written F<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> </code>G, 
 combines the expression F, which may publish some values, with another expression G, 
 which will use the values as they are published; <code class="code"><span class="hl-variable">x</span></code> transmits the values
 from F to G.
 </p><p>
-The execution of F<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span>&gt; </code>G starts by executing F. Whenever F publishes a value, 
+The execution of F<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> </code>G starts by executing F. Whenever F publishes a value, 
 a new copy of G is executed in parallel with F (and with any previous copies of G); in that
 copy of G, variable <code class="code"><span class="hl-variable">x</span></code> is bound to the value published by F. Values published by copies
 of G are published by the whole expression, but the values published by F are not published
@@ -211,7 +211,7 @@ by the whole expression; they are consumed by the variable binding.
 <span class="hl-combinator">|</span> <span class="hl-site">Yahoo</span>(<span class="hl-literal">"cupcake"</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">s</span><span class="hl-combinator">&gt;</span> <span class="hl-site">cat</span>(<span class="hl-literal">"Yahoo: "</span>, <span class="hl-variable">s</span>)
 </pre>
 </p><p>
-The sequential combinator may be written as F<code class="code"> <span class="hl-combinator">&gt;</span></code>P<code class="code">&gt; </code>G, 
+The sequential combinator may be written as F<code class="code"> <span class="hl-combinator">&gt;</span></code>P<code class="code"><span class="hl-combinator">&gt;</span> </code>G, 
 where P is a pattern instead of just a variable name. Any value published by F is matched against the 
 pattern P. If this match is successful, a new copy of G is started with all of the bindings from the match. 
 Otherwise, the published value is simply ignored, and no new copy of G is executed.
@@ -227,11 +227,11 @@ Otherwise, the published value is simply ignored, and no new copy of G is execut
 <span class="hl-comment">-- Publishes 4 and 6 </span>
 </pre>
 </p><p>
-We may also omit the variable entirely, writing <code class="code"> <span class="hl-combinator">&gt;</span>&gt; </code>. This
-is equivalent to using a wildcard pattern: <code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">_</span>&gt; </code>
+We may also omit the variable entirely, writing <code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> </code>. This
+is equivalent to using a wildcard pattern: <code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">_</span><span class="hl-combinator">&gt;</span> </code>
 </p><p>
 We may want to execute an expression just for its effects, and hide all of its publications.
-We can do this using <code class="code"> <span class="hl-combinator">&gt;</span>&gt; </code> together with the special expression 
+We can do this using <code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> </code> together with the special expression 
 <code class="code"><span class="hl-keyword">stop</span></code>, which is always silent.  
 </p><p>
 <pre class="orc">
@@ -242,10 +242,10 @@ We can do this using <code class="code"> <span class="hl-combinator">&gt;</span>
 ( <span class="hl-site">println</span>(<span class="hl-literal">"goodbye"</span>) <span class="hl-combinator">|</span> <span class="hl-site">println</span>(<span class="hl-literal">"world"</span>) ) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
 </pre>
 </p><p>
-The sequential combinator is right associative: F<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span>&gt; </code>G<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">y</span>&gt; </code>H
-is equivalent to F<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> (</code>G<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">y</span>&gt; </code>H<code class="code">)</code>. It has higher
-precedence than the parallel combinator: F<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span>&gt; </code>G <code class="code"><span class="hl-combinator">|</span></code> H is equivalent to
-<code class="code">(</code>F<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span>&gt; </code>G <code class="code">) <span class="hl-combinator">|</span></code> H.
+The sequential combinator is right associative: F<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> </code>G<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">y</span><span class="hl-combinator">&gt;</span> </code>H
+is equivalent to F<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> (</code>G<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">y</span><span class="hl-combinator">&gt;</span> </code>H<code class="code">)</code>. It has higher
+precedence than the parallel combinator: F<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> </code>G <code class="code"><span class="hl-combinator">|</span></code> H is equivalent to
+<code class="code">(</code>F<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> </code>G <code class="code">) <span class="hl-combinator">|</span></code> H.
 </p><p>
 The right associativity of the sequential combinator makes it easy to bind variables in sequence and use
 them together.
@@ -258,9 +258,9 @@ them together.
 (<span class="hl-literal">1</span> <span class="hl-combinator">|</span> <span class="hl-literal">2</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> (<span class="hl-literal">3</span> <span class="hl-combinator">|</span> <span class="hl-literal">4</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">y</span><span class="hl-combinator">&gt;</span> (<span class="hl-variable">x</span>,<span class="hl-variable">y</span>)
 </pre>
 </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N107FB"></a>1.3.2.3.&nbsp;The pruning combinator</h4></div></div></div><p>
-The pruning combinator, written F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span>&lt; </code>G, allows us to block 
+The pruning combinator, written F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G, allows us to block 
 a computation waiting for a result, or terminate a computation. The execution of 
-F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span>&lt; </code>G starts by executing F and G in parallel. Whenever
+F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G starts by executing F and G in parallel. Whenever
 F publishes a value, that value is published by the entire execution. When G publishes
 its first value, that value is bound to x in F, and then the execution of G is immediately 
 <em class="firstterm">terminated</em>. A terminated expression cannot call any sites or 
@@ -314,9 +314,9 @@ Note that even if <code class="code">(<span class="hl-literal">4</span>,<span cl
 it is ignored. The right side continues to execute and will publish one of <code class="code">(<span class="hl-literal">3</span>,<span class="hl-literal">true</span>)</code> or 
 <code class="code">(<span class="hl-literal">5</span>,<span class="hl-literal">true</span>)</code>.
 </p><p>
-The pruning combinator is left associative: F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span>&lt; </code>G<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">y</span>&lt; </code>H
-is equivalent to <code class="code">(</code>F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span>&lt; </code>G<code class="code">) <span class="hl-combinator">&lt;</span><span class="hl-variable">y</span>&lt; </code>H. It has lower
-precedence than the parallel combinator: F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span>&lt; </code>G <code class="code"><span class="hl-combinator">|</span></code> H is equivalent to
+The pruning combinator is left associative: F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">y</span><span class="hl-combinator">&lt;</span> </code>H
+is equivalent to <code class="code">(</code>F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G<code class="code">) <span class="hl-combinator">&lt;</span><span class="hl-variable">y</span><span class="hl-combinator">&lt;</span> </code>H. It has lower
+precedence than the parallel combinator: F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G <code class="code"><span class="hl-combinator">|</span></code> H is equivalent to
 F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> (</code>G <code class="code"><span class="hl-combinator">|</span></code> H<code class="code">)</code>.
 </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="combinator.otherwise"></a>1.3.2.4.&nbsp;The otherwise combinator</h4></div></div></div><p>
 Orc has a fourth concurrency combinator: the <em class="firstterm">otherwise</em> combinator,
@@ -327,7 +327,7 @@ F <code class="code"><span class="hl-combinator">;</span></code> G are those of 
 </p><p>
 We determine when an expression completes using the following rules.
 
-<div class="itemizedlist"><ul type="disc"><li>A Cor expression completes when it is fully evaluated; if it is silent, it completes immediately.</li><li>A site call completes when it has published a value or halted.</li><li>F <code class="code"><span class="hl-combinator">|</span></code> G completes when its subexpressions F and G have both completed.</li><li>F<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span>&gt; </code>G completes when F has completed and all instantiated copies of G have completed.</li><li>F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span>&lt; </code>G completes when F has completed, and G has either completed or
+<div class="itemizedlist"><ul type="disc"><li>A Cor expression completes when it is fully evaluated; if it is silent, it completes immediately.</li><li>A site call completes when it has published a value or halted.</li><li>F <code class="code"><span class="hl-combinator">|</span></code> G completes when its subexpressions F and G have both completed.</li><li>F<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> </code>G completes when F has completed and all instantiated copies of G have completed.</li><li>F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G completes when F has completed, and G has either completed or
 published a value. Also, if G completes without publishing a value, then all expressions in F which
 use <code class="code"><span class="hl-variable">x</span></code> also complete, since they will never be able to proceed.</li><li>F <code class="code"><span class="hl-combinator">;</span></code> G completes either when F has published a value and subsequently completed,
 or when F and G have both completed.</li><li><code class="code"><span class="hl-keyword">stop</span></code> completes immediately.</li></ul></div>
@@ -340,8 +340,8 @@ all equivalent. It has lower precedence than the other three combinators.
 The otherwise combinator was not present in the original formulation of the Orc concurrency 
 calculus; it has been added to support computation and iteration over strictly finite data. 
 Sequential programs conflate the concept of producing a value with the concept of completion. 
-Orc separates these two concepts; variable binding combinators like <code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span>&gt; </code> 
-and <code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span>&lt; </code> handle values, whereas <code class="code"><span class="hl-combinator">;</span></code> detects the completion 
+Orc separates these two concepts; variable binding combinators like <code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> </code> 
+and <code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code> handle values, whereas <code class="code"><span class="hl-combinator">;</span></code> detects the completion 
 of an execution.
 </p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N108B8"></a>1.3.3.&nbsp;Revisiting Cor expressions</h3></div></div></div><p>
 Some Cor expressions have new behaviors in the context of Orc, due to the introduction
@@ -360,15 +360,15 @@ site takes a boolean argument; it returns a signal if that argument is <code cla
 or remains silent if the argument is <code class="code"><span class="hl-literal">false</span></code>.
 </p><p>
 <code class="code"><span class="hl-keyword">if</span></code> E <code class="code"><span class="hl-keyword">then</span></code> F <code class="code"><span class="hl-keyword">else</span></code> G is equivalent 
-to <code class="code">( <span class="hl-keyword">if</span>(<span class="hl-variable">b</span>) <span class="hl-combinator">&gt;</span>&gt; </code>F<code class="code"> <span class="hl-combinator">|</span> <span class="hl-keyword">if</span>(~<span class="hl-variable">b</span>) <span class="hl-combinator">&gt;</span>&gt; </code>G<code class="code">) <span class="hl-combinator">&lt;</span><span class="hl-variable">b</span>&lt; </code>E.
+to <code class="code">( <span class="hl-keyword">if</span>(<span class="hl-variable">b</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> </code>F<code class="code"> <span class="hl-combinator">|</span> <span class="hl-keyword">if</span>(~<span class="hl-variable">b</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> </code>G<code class="code">) <span class="hl-combinator">&lt;</span><span class="hl-variable">b</span><span class="hl-combinator">&lt;</span> </code>E.
 </p><p>
  When the <code class="code"><span class="hl-keyword">else</span></code> branch of a conditional is unneeded, we can write <code class="code"><span class="hl-keyword">if</span></code> F <code class="code"><span class="hl-keyword">then</span></code> G,
- with no <code class="code"><span class="hl-keyword">else</span></code> branch. This is equivalent to <code class="code"><span class="hl-keyword">if</span>(</code>E<code class="code">) <span class="hl-combinator">&gt;</span>&gt; </code>F.
+ with no <code class="code"><span class="hl-keyword">else</span></code> branch. This is equivalent to <code class="code"><span class="hl-keyword">if</span>(</code>E<code class="code">) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> </code>F.
 </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10916"></a>1.3.3.3.&nbsp;
                         <code class="code"><span class="hl-keyword">val</span></code>
                     </h4></div></div></div><p>
 The declaration <code class="code"><span class="hl-keyword">val</span> <span class="hl-variable">x</span> = </code>G, followed by expression F, is 
-actually just a different way of writing the expression F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span>&lt; </code>G.
+actually just a different way of writing the expression F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G.
 Thus, <code class="code"><span class="hl-keyword">val</span></code> shares all of the behavior of the pruning combinator,
 which we have already described. (This is also true when a pattern is used instead
 of variable name <code class="code"><span class="hl-variable">x</span></code>).
@@ -415,7 +415,7 @@ the expression.
 To be precise, whenever an Orc expression appears in such a context, it is treated as if it was 
 on the right side of a pruning combinator, using a fresh variable name to fill in the hole. 
 Thus, C[E] (where E is the Orc expression and C is the context) is equivalent to the expression 
-C[<code class="code"><span class="hl-variable">x</span></code>] <code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span>&lt; </code> E. 
+C[<code class="code"><span class="hl-variable">x</span></code>] <code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code> E. 
 </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N109B3"></a>1.3.3.5.&nbsp;Functions</h4></div></div></div><p>
 The body of a function in Orc may be any Orc expression; thus, function
 bodies in Orc are executed rather than evaluated, and may engage in communication

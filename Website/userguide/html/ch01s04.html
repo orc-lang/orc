@@ -155,7 +155,7 @@ sub-pattern. Here is an equivalent version of the above code.
 <pre class="programlisting">
 <span class="hl-keyword">val</span> ((<span class="hl-variable">ax</span>,<span class="hl-variable">ay</span>) <span class="hl-keyword">as</span> <span class="hl-variable">a</span>, (<span class="hl-variable">bx</span>,<span class="hl-variable">by</span>) <span class="hl-keyword">as</span> <span class="hl-variable">b</span>) = ((<span class="hl-literal">1</span>,<span class="hl-literal">2</span>),(<span class="hl-literal">3</span>,<span class="hl-literal">4</span>))
 </pre>
-</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10BF4"></a>1.4.3.&nbsp;Datatypes</h3></div></div></div><p>
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="section.orc.datatypes"></a>1.4.3.&nbsp;Datatypes</h3></div></div></div><p>
 We have seen Orc's predefined data structures: tuples and lists. Orc also provides the capability
 for programmers to define their own data structures, using a feature adopted from the ML/Haskell
 language family called <em class="firstterm">datatypes</em> (also called variants or tagged sums).
@@ -189,12 +189,12 @@ to match them and unwrap the arguments:
 </pre>
 </p><p>
 One pair of datatypes is so commonly used that it is already predefined in the standard library:
-<code class="code"><span class="hl-site">some</span>(<span class="hl-variable">_</span>)</code> and <code class="code"><span class="hl-variable">none</span></code>. These are used as return values for calls that
-need to distinguish between successfully returning a value (<code class="code"><span class="hl-site">some</span>(<span class="hl-variable">v</span>)</code>), and successfully
-completing but having no meaningful value to return (<code class="code"><span class="hl-site">none</span>()</code>). For example, a lookup
-function might return <code class="code"><span class="hl-site">some</span>(<span class="hl-variable">result</span>)</code> if it found a result, or return <code class="code"><span class="hl-site">none</span>()</code>
+<code class="code"><span class="hl-site">Some</span>(<span class="hl-variable">_</span>)</code> and <code class="code"><span class="hl-site">None</span>()</code>. These are used as return values for calls that
+need to distinguish between successfully returning a value (<code class="code"><span class="hl-site">Some</span>(<span class="hl-variable">v</span>)</code>), and successfully
+completing but having no meaningful value to return (<code class="code"><span class="hl-site">None</span>()</code>). For example, a lookup
+function might return <code class="code"><span class="hl-site">Some</span>(<span class="hl-variable">result</span>)</code> if it found a result, or return <code class="code"><span class="hl-site">None</span>()</code>
 if it successfully performed the lookup but found no suitable result.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10C2E"></a>1.4.4.&nbsp;New forms of declarations</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="section.orc.class"></a>1.4.4.1.&nbsp;
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10C2F"></a>1.4.4.&nbsp;New forms of declarations</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="section.orc.class"></a>1.4.4.1.&nbsp;
 
                         <code class="code"><span class="hl-keyword">class</span></code> declaration</h4></div></div></div><p>
 When Orc is run on top of an object-oriented programming language, classes
@@ -216,7 +216,7 @@ This instance of String is a Java object; its methods are called and its fields
 are accessed using the dot (<code class="code">.</code>) notation, just as one would expect
 in Java.  For complete details of how Orc interacts with Java, see
 <a class="link" href="ch03.html#section.services.java" title="3.1.&nbsp;Java Integration">Java Integration</a>.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10C50"></a>1.4.4.2.&nbsp;
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10C51"></a>1.4.4.2.&nbsp;
 
                         <code class="code"><span class="hl-keyword">include</span></code> declaration</h4></div></div></div><p>
 It is often convenient to group related declarations into units that can be
