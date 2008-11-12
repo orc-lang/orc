@@ -26,9 +26,11 @@ def write(datum) = datum
 
 -- Implement a retry policy; if the site f
 -- doesn't respond in 1 second, call it again
-def retry(f)(a,b) =
-  val (ok, value) = (true, f(a,b)) | (false, Rtimer(1000))
-  if ok then value else retry(f)
+def retry(f) =
+  def try(a,b) =
+    val (ok, value) = (true, f(a,b)) | (false, Rtimer(1000))
+    if ok then value else try(a,b)
+  try
 
 -- Compare two tuples by their first element
 def lt((k1,_), (k2,_)) = (k1 < k2)
