@@ -3617,7 +3617,7 @@ Here is a naive implementation that doesn't quite work:
 
 <programlisting><![CDATA[
 def interrputible(f) =
-  val c = new Cell()
+  val c = Cell()
   (lambda () = c.write(signal))
     << (f() >> stop | c.read())
 
@@ -3640,7 +3640,7 @@ The solution is to bind the variable differently:
 
 <programlisting><![CDATA[
 def interrputible(f) =
-  val c = new Cell()
+  val c = Cell()
   (lambda () = c.write(signal))
     << (f() >> stop | c.read())
 
