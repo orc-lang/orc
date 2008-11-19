@@ -3300,7 +3300,7 @@ simply halt.
 <programlisting language="orc-demo"><![CDATA[
 {- Create a cell, try to write to it twice, and read it -}
 {- The read will block until a write occurs, and only one write will succeed. -}
-val c = Cell()
+val r = Cell()
   Rtimer(1000) >> r.write(2) >> println("Wrote 2") >> stop
 | Rtimer(1000) >> r.write(3) >> println("Wrote 3") >> stop
 | r.read()
@@ -3338,7 +3338,7 @@ but lower precedence than any of the other operators.</listitem>
 <programlisting language="orc-demo"><![CDATA[
 {- Create a cell, try to write to it twice, and read it -}
 {- The read will block until a write occurs, and only one write will succeed. -}
-val c = Cell()
+val r = Cell()
   Rtimer(1000) >> r := 2 >> println("Wrote 2") >> stop
 | Rtimer(1000) >> r := 3 >> println("Wrote 3") >> stop
 | r?
@@ -3479,7 +3479,7 @@ of timeout: allow an expression to execute, publishing arbitrarily many values
 val c = Buffer()
 repeat(c.get)<![CDATA[ << ]]>
     <emphasis role="bold">F</emphasis><![CDATA[ >x> c.put(x) >> stop 
-  | Rtimer(1000)
+  | Rtimer(1000) >> c.closenb()
 ]]>
 </programlisting>
 
@@ -3487,8 +3487,13 @@ repeat(c.get)<![CDATA[ << ]]>
 This program allows F to execute for one second, and then terminates it. Each
 value published by F is silently routed through the channel <code>c</code> so
 that it does not terminate F. After one second, the signal published by the
-timeout terminates F.
-</para>
+timeout closes the channel and terminates F.</para>
+
+<para>If the channel <code>c</code> is being written to elsewhere in the
+program (for example, to collect results from multiple computations),
+then <code> &gt;&gt; c.closenb()</code> should be omitted, so that F will
+be terminated but <code>repeat(c.get)</code> will continue to wait for
+values to be put in the channel.</para>
 
 </section>
 
@@ -3506,13 +3511,13 @@ repeat(c.get)<![CDATA[ << ]]>
   <emphasis role="bold">F</emphasis><![CDATA[ >x> 
     (if x >= 0 
         then c.put(x) >> stop
-        else c.close() >> signal)]]>
+        else c.closenb())]]>
 </programlisting>
 
 <para>
 Each value published by F is tested. If it is non-negative, it is placed on
 channel <code>c</code> (silently) and read by <code>repeat(c.get)</code>. 
-If it is negative, the channel is closed and a signal is published, causing
+If it is negative, the channel is closed, publishing a signal and causing
 the termination of F.
 </para>
 
@@ -3536,7 +3541,7 @@ val c = Buffer()
 val err = Cell()
 repeat(c.get)<![CDATA[ << ]]>
     <emphasis role="bold">F</emphasis><![CDATA[ >x> c.put(x) >> stop 
-  | err.read()
+  | err.read() >> c.closenb()
 ]]>
 </programlisting>
 
@@ -3616,7 +3621,7 @@ Here is a naive implementation that doesn't quite work:
 </para>
 
 <programlisting><![CDATA[
-def interrputible(f) =
+def interruptible(f) =
   val c = Cell()
   (lambda () = c.write(signal))
     << (f() >> stop | c.read())
@@ -3639,7 +3644,7 @@ The solution is to bind the variable differently:
 </para>
 
 <programlisting><![CDATA[
-def interrputible(f) =
+def interruptible(f) =
   val c = Cell()
   (lambda () = c.write(signal))
     << (f() >> stop | c.read())
