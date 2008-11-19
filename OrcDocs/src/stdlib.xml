@@ -189,7 +189,12 @@ Otherwise, halt.</para>
 </listitem></varlistentry></variablelist>
 </listitem></varlistentry>
 <varlistentry><term><code>Buffer</code></term><listitem><para><code>site Buffer() :: Buffer&lt;A&gt;</code></para>
-<para>Create a new buffer (FIFO channel) of unlimited size.</para>
+<para>Create a new buffer (FIFO channel) of unlimited size. A buffer supports
+get, put and close operations.</para>
+<para>A buffer may be either empty or non-empty, and either open or closed.  When
+empty and open, calls to <code>get</code> block.  When empty and closed, calls
+to <code>get</code> halt.  When closed, calls to <code>put</code> halt.  In all
+other cases, calls return normally.</para>
 <para>Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: 10
@@ -198,7 +203,9 @@ val b = Buffer()
 | b.get()]]></programlisting></para>
 <variablelist>
 <varlistentry><term><code>get</code></term><listitem><para><code>site Buffer&lt;A&gt;.get() :: A</code></para>
-<para>Get an item from the buffer. If no items are available, block until one becomes available.</para>
+<para>Get an item from the buffer. If the buffer is open and no items are available,
+block until one becomes available. If the buffer is <link
+linkend="orc.lib.Buffer.close">closed</link> and no items are available, halt.</para>
 <para>Recall that the type signature <code>site Buffer&lt;A&gt;.get() :: A</code> means that
 when the <code>get</code> method is called on a buffer holding an arbitrary
 element type <code>A</code>, it will return a value of the same type.</para>
@@ -207,7 +214,8 @@ element type <code>A</code>, it will return a value of the same type.</para>
 <para>Get an item from the buffer. If no items are available, halt.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>put</code></term><listitem><para><code>site Buffer&lt;A&gt;.put(A) :: Signal</code></para>
-<para>Put an item in the buffer.</para>
+<para>Put an item in the buffer. If the buffer is <link
+linkend="orc.lib.Buffer.close">closed</link>, halt.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>close</code></term><listitem><para><code>site Buffer&lt;A&gt;.close() :: Signal</code></para>
 <para>Close the buffer and block until it is empty.
@@ -234,9 +242,14 @@ buffer, return an empty list.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>BoundedBuffer</code></term><listitem><para><code>site BoundedBuffer(Integer) :: BoundedBuffer&lt;A&gt;</code></para>
 <para>Create a new buffer (FIFO channel) with the given number of slots.
-Putting an item into the buffer fills a slot, and removing an item opens a slot.
+Putting an item into the buffer fills a slot, and getting an item opens a slot.
 A buffer with zero slots is equivalent to a
 <link linkend="orc.lib.state.SyncChannel">synchronous channel</link>.</para>
+<para>A bounded buffer may be empty, partly filled, or full, and either open or
+closed.  When empty and open, calls to <code>get</code> block.  When empty and
+closed, calls to <code>get</code> halt. When full and open, calls to
+<code>put</code> block. When closed, calls to <code>put</code> halt.  In all
+other cases, calls return normally.</para>
 <para>Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: "Put 1" "Got 1" "Put 2" "Got 2"
@@ -249,16 +262,20 @@ val c = BoundedBuffer(1)
   )]]></programlisting></para>
 <variablelist>
 <varlistentry><term><code>get</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.get() :: A</code></para>
-<para>Get an item from the buffer. If no items are available, block until one becomes available.</para>
+<para>Get an item from the buffer. If the buffer is open and no items are available,
+block until one becomes available. If the buffer is <link
+linkend="orc.lib.Buffer.close">closed</link> and no items are available, halt.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>getnb</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.getnb() :: A</code></para>
 <para>Get an item from the buffer. If no items are available, halt.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>put</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.put(A) :: Signal</code></para>
-<para>Put an item in the buffer. If no slots are open, block until one becomes open.</para>
+<para>Put an item in the buffer. If no slots are open, block until one becomes open.
+If the buffer is <link linkend="orc.lib.Buffer.close">closed</link>, halt.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>putnb</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.putnb(A) :: Signal</code></para>
-<para>Put an item in the buffer. If no slots are open, halt.</para>
+<para>Put an item in the buffer. If no slots are open, halt.
+If the buffer is <link linkend="orc.lib.Buffer.close">closed</link>, halt.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>close</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.close() :: Signal</code></para>
 <para>Close the buffer and block until it is empty.
@@ -530,13 +547,13 @@ repeat(c.dec)]]></programlisting></para>
 <varlistentry><term><code>Dictionary</code></term><listitem><para><code>site Dictionary() :: Dictionary</code></para>
 <para>Create a new dictionary (a mutable map from field names to values), initially
 empty.  The first time each field of the dictionary is accessed (using dot
-notation), the record creates and returns a new empty <link
+notation), the dictionary creates and returns a new empty <link
 linkend="orc.lib.state.Ref">Ref</link> which will also be returned on
 subsequent accesses of the same field.  Dictionaries allow you to easily create
-simple data structures.</para>
+object-like data structures.</para>
 <para>Example:
 <programlisting language="orc-demo"><![CDATA[
--- Publishes: 1 2
+-- Prints: 1 2
 val d = Dictionary()
   println(d.one?) >>
   println(d.two?) >>
@@ -544,6 +561,21 @@ val d = Dictionary()
 | d.one := 1 >>
   d.two := 2 >>
   stop]]></programlisting></para>
+<para>To create a multi-level dictionary, you must explicitly create sub-dictionaries
+for each field. For example:
+<programlisting language="orc-demo"><![CDATA[
+-- Prints: 2
+val d = Dictionary()
+d.one := Dictionary() >>
+d.one?.two := 2 >>
+println(d.one?.two?) >>
+stop]]></programlisting></para>
+<para>Note that you cannot write <code>d.one.two</code>: because <code>d.one</code>
+is a reference to a dictionary, and not simply a dictionary, you must
+dereference before accessing its fields, as in <code>d.one? >x> x.two</code>.
+For readers familiar with the C language, this is the same reason you must
+write <code language="c">s->field</code> instead of <code>s.field</code> when
+<code>s</code> is a pointer to a struct.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>fst</code></term><listitem><para><code>def fst((A,B)) :: A</code></para>
 <para>Return the first element of a pair.</para>
