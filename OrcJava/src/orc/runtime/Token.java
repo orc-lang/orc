@@ -79,9 +79,6 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 	/** Number of stack frames remaining before hitting the stack size limit. */
 	private int stackAvailable;
 	
-	/** Used to link the token into the {@link TokenPool} free list. */
-	Token nextFree;
-	
 	/**
 	 * Create a new uninitialized token.
 	 * You should get tokens from {@link TokenPool}, not
@@ -233,8 +230,9 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 	public Token enterClosure(Closure closure, Node next) throws StackLimitReachedError {
 		if (stackAvailable == 0) {
 			throw new StackLimitReachedError();
+		} else if (stackAvailable > 0) {
+			--stackAvailable;
 		}
-		--stackAvailable;
 		if (next instanceof Return) {
 			// tail call should return directly to our current continuation
 			// rather than going through us
@@ -260,7 +258,9 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 		move(continuation.node);
 		continuation = continuation.continuation;
 		tracer.leave(depth);
-		stackAvailable += depth;
+		if (stackAvailable >= 0) {
+			stackAvailable += depth;
+		}
 		return this;
 	}
 
