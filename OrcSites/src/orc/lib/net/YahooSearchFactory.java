@@ -48,7 +48,7 @@ public class YahooSearchFactory extends EvalSite {
 						"&results=" + numResults +
 						"&appid=" + appid +
 						"&output=json";
-				JSONObject root = JSONUtils.getURL(new URL(url));
+				JSONObject root = new JSONObject(HTTPUtils.getURL(new URL(url)));
 				JSONObject response = root.getJSONObject("ResultSet");
 				return JSONSite.wrapJSON(response.getJSONArray("Result"));
 			} catch (UnsupportedEncodingException e) {

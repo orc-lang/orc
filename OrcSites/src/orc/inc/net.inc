@@ -6,3 +6,4 @@ site GoogleSpellUnofficial = orc.lib.net.GoogleSpellUnofficial
 site YahooSearchFactory = orc.lib.net.YahooSearchFactory
 site YahooSpellFactory = orc.lib.net.YahooSpellFactory
 site XMPPConnection = orc.lib.net.XMPPConnection
+site TrueRandom = orc.lib.net.TrueRandom

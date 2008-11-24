@@ -45,7 +45,7 @@ public class YahooSpellFactory extends EvalSite {
 						"?query=" + URLEncoder.encode(search, "UTF-8") +
 						"&appid=" + appid +
 						"&output=json";
-				JSONObject root = JSONUtils.getURL(new URL(url));
+				JSONObject root = new JSONObject(HTTPUtils.getURL(new URL(url)));
 				Object response = root.get("ResultSet");
 				if (response instanceof String) {
 					// indicates no result was returned
