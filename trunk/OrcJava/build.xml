@@ -65,6 +65,25 @@
 			<arg value="${orc.location.build}" />
 		</java>
 	</target>
+	
+	<target name="stdlib-doc" description="Build standard library docs">
+		<java classname="orc.doc.MakeDoc" fork="yes"
+				dir="${orc.location.src}/orc/inc/prelude"
+				output="stdlib.xml">
+			<classpath refid="orc.classpath"/>
+				<assertions>
+					<enable/>
+				</assertions>
+			<!-- FIXME: how can we replace this with a fileset? -->
+			<arg value="core.inc"/>
+			<arg value="data.inc"/>
+			<arg value="idioms.inc"/>
+			<arg value="list.inc"/>
+			<arg value="text.inc"/>
+			<arg value="time.inc"/>
+			<arg value="util.inc"/>
+		</java>
+	</target>
 
 	<target name="rats" description="Build rats parser">
 		<java classname="xtc.parser.Rats" fork="yes">
