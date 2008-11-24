@@ -245,7 +245,7 @@ Symbol   Assoc       Name
  -       prefix      unary minus
 ----------------------------------------------------
  ?       postfix     dereference
- .       postfix     projection
+ .       postfix     field projection
  ()      postfix[4]  application
 
 [1] An expression like (a > b > c > d) could be read as
