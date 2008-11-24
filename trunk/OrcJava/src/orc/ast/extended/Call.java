@@ -69,7 +69,10 @@ public class Call extends Expression {
 			e = a.bind(e);
 		}
 		
-		return new WithLocation(e, getSourceLocation());
+		SourceLocation location = getSourceLocation();
+		return location != null
+			? new WithLocation(e, getSourceLocation())
+			: e;
 	}
 
 	public String toString() {

@@ -225,10 +225,10 @@ Create a rewritable storage location without an initial value.
 Example:
 <programlisting language="orc-demo"><![CDATA[
 val r = Ref()
-Rtimer(1000) >> r.write(5) >> stop
-| println(r.read()) >>
-  r.write(10) >>
-  println(r.read()) >>
+Rtimer(1000) >> r := 5 >> stop
+| println(r?) >>
+  r := 10 >>
+  println(r?) >>
   stop]]></programlisting>
 
 ** site Ref(A) :: Ref<A>
@@ -262,29 +262,50 @@ def (:=)(r,v) = r.write(v)
 
 {--
 * site Array(Integer) :: Array<A>
-Create a new native array of the given size.
+Create a new native array of the given size. The array is initialized
+to contain <code>null</code>s.
 
-Example:
+The resulting array can be called directly with an index, as if
+its type were <code>lambda (Integer) :: Ref&lt;A&gt;</code>.
+In this case, it returns a <link linkend="orc.lib.state.Ref">Ref</link>
+pointing to the element of the array specified by an index,
+counting from 0. Changes to the array are reflected immediately
+in the ref and visa versa.
+
+Simple example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: 3
+val a = Array(1)
+a(0) := 3 >>
+a(0)?]]></programlisting>
+
+More complex example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: 0 1 2
 val a = Array(3)
 for(0, a.length()) >i>
-a.set(i, f(i)) >>
+a(i) := f(i) >>
 stop
-; a.get(0) | a.get(1) | a.get(2)]]></programlisting>
+; a(0)? | a(1)? | a(2)?]]></programlisting>
 
 ** site Array(Integer, String) :: Array<A>
 Create a new primitive array of the given size with the given primitive type.
-The primitive type should match the element type of the array, although a
-typechecker may not be able to verify this. This constructor is only necessary
-when interfacing with certain Java libraries; most programs will just use the 
-<code>Array(Integer)</code> constructor.
+The initial values in the array depend on the primitive type: for numeric types,
+it is <code>0</code>; for booleans, <code>false</code>; for chars, the character
+with codepoint <code>0</code>.
+
+The element type of the array should be the appropriate wrapper type for the given
+primitive type, although a typechecker may not be able to verify this. This
+constructor is only necessary when interfacing with certain Java libraries; most
+programs will just use the  <code>Array(Integer)</code> constructor.
 
 ** site Array<A>.get(Integer) :: A
 Get the element of the array given by the index, counting from 0.
+<code>a.get(i)</code> is equivalent to <code>a(i)?</code>.
 
 ** site Array<A>.set(Integer, A) :: Signal
 Set the element of the array given by the index, counting from 0.
+<code>a.set(i,v)</code> is equivalent to <code>a(i) := v</code>.
 
 ** site Array<A>.slice(Integer, Integer) :: Array<A>
 Return a copy of the portion of the array with indices covered by the given
@@ -460,6 +481,18 @@ subsequent accesses of the same field.  Dictionaries allow you to easily create
 object-like data structures.
 
 Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Prints: 1 2
+val d = Dictionary()
+  println(d.one.read()) >>
+  println(d.two.read()) >>
+  stop
+| d.one.write(1) >>
+  d.two.write(2) >>
+  stop]]></programlisting>
+
+Here is the same example rewritten using Orc's reference syntax to improve
+clarity:
 <programlisting language="orc-demo"><![CDATA[
 -- Prints: 1 2
 val d = Dictionary()

@@ -1,15 +1,8 @@
 package orc.runtime.sites.java;
 
-
-import java.lang.reflect.Array;
-
-import orc.error.runtime.JavaException;
-import orc.error.runtime.MessageNotUnderstoodException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
-import orc.runtime.sites.DotSite;
-import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.Site;
 import orc.runtime.values.Callable;
 
@@ -24,91 +17,6 @@ import orc.runtime.values.Callable;
  * @author dkitchin
  */
 public class ObjectProxy extends Site {
-	/**
-	 * A Java array being used as an Orc Site.
-	 * @author quark
-	 */
-	private static class ArrayProxy extends DotSite {
-		private ObjectProxy proxy;
-
-		public ArrayProxy(ObjectProxy proxy) {
-			this.proxy = proxy;
-		}
-
-		@Override
-		protected void addMembers() {
-			addMember("get", new EvalSite() {
-				@Override
-				public Object evaluate(Args args) throws TokenException {
-					try {
-						return Array.get(proxy.instance, args.intArg(0));
-					} catch (ArrayIndexOutOfBoundsException e) {
-						throw new JavaException(e);
-					}
-				}
-			});
-			addMember("set", new EvalSite() {
-				@Override
-				public Object evaluate(Args args) throws TokenException {
-					try {
-						Array.set(proxy.instance, args.intArg(0),
-								InvokableHandle.coerce(
-										proxy.instance.getClass().getComponentType(),
-										args.getArg(1)));
-					} catch (IllegalArgumentException e) {
-						throw new JavaException(e);
-					} catch (ArrayIndexOutOfBoundsException e) {
-						throw new JavaException(e);
-					}
-					return signal();
-				}
-			});
-			addMember("slice", new EvalSite() {
-				@Override
-				public Object evaluate(Args args) throws TokenException {
-					Class componentType = proxy.instance.getClass().getComponentType();
-					int srcPos = args.intArg(0);
-					int length = args.intArg(1) - args.intArg(0);
-					Object out = Array.newInstance(componentType, length);
-					System.arraycopy(proxy.instance, srcPos, out, 0, length);
-					return out;
-				}
-			});
-			addMember("fill", new EvalSite() {
-				@Override
-				public Object evaluate(Args args) throws TokenException {
-					Object value = args.getArg(0);
-					try {
-						// NB: we cannot use Arrays.fill because
-						// we don't know the type of the array
-						int length = Array.getLength(proxy.instance);
-						for (int i = 0; i < length; ++i) {
-							Array.set(proxy.instance, i, value);
-						}
-					} catch (IllegalArgumentException e) {
-						throw new JavaException(e);
-					}
-					return signal();
-				}
-			});
-			addMember("length", new EvalSite() {
-				@Override
-				public Object evaluate(Args args) throws TokenException {
-					return Array.getLength(proxy.instance);
-				}
-			});
-		}
-
-		@Override
-		public void callSite(Args args, Token caller) throws TokenException {
-			try {
-				super.callSite(args, caller);
-			} catch (MessageNotUnderstoodException _) {
-				proxy.callSite(args, caller);
-			}
-		}
-	}
-	
 	private ClassProxy classProxy;
 	private Object instance;
 	
@@ -116,7 +24,7 @@ public class ObjectProxy extends Site {
 		// we could use a hash map here to reuse proxies but
 		// first we should find out if that's actually worthwhile
 		if (instance.getClass().isArray()) {
-			return new ArrayProxy(new ObjectProxy(instance));
+			return new ObjectProxy(new ArrayProxy(instance));
 		} else {
 			return new ObjectProxy(instance);
 		}
