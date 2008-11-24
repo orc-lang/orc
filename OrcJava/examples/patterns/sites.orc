@@ -1,6 +1,6 @@
-Left(3) >x> (
-  x >Left(y)> y
-  | x >Right(y)> y
+Some(3) >x> (
+  x >Some(y)> y
+  | x >None()> signal
 )
 {-
 OUTPUT:
