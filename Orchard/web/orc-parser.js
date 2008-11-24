@@ -148,8 +148,8 @@ function readWord(source, _, ch1) {
 	var word = source.get();
 	switch (word) {
 	// literals
-	case "true": case "false":
-		return { type:"boolean", content:word, style:"literal" };
+	case "true": case "false": case "null":
+		return { type:word, content:word, style:"literal" };
 	// keywords
 	case "val": case "def": case "as": case "include": case "type":
 	case "site": case "class": case "null": case "stop":
