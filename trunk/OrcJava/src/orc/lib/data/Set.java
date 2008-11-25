@@ -4,7 +4,10 @@ import java.util.AbstractSet;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import edu.uci.ics.jung.graph.predicates.ContainsUserDataKeyVertexPredicate;
+
 import orc.runtime.sites.core.Equal;
+import orc.runtime.values.Reference;
 
 /**
  * Set which uses Orc's rules for equality.
@@ -25,6 +28,25 @@ public final class Set<E> extends AbstractSet<E> {
 		public boolean equals(Object that) {
 			return Equal.eq(value, ((Wrapper<E>)that).value);
 		}
+	}
+	
+	public class SetReference implements Reference<Boolean> {
+		private E key;
+		public SetReference(E key) {
+			this.key = key;
+		}
+		public Boolean read() {
+			return contains(key);
+		}
+		public void write(Boolean value) {
+			if (value) add(key);
+			else remove(key);
+		}
+	}
+	
+	@SuppressWarnings("unused")
+	public Reference<Boolean> apply(final E key) {
+		return new SetReference(key);
 	}
 	
 	@Override
