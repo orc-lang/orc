@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import orc.runtime.sites.core.Equal;
+import orc.runtime.values.Reference;
 
 /**
  * Map which uses Orc's rules for equality for keys. They are not used for
@@ -50,6 +51,24 @@ public final class Map<K,V> extends AbstractMap<K,V> {
 		public V setValue(V value) {
 			return entry.setValue(value);
 		}
+	}
+	
+	public class MapReference implements Reference<V> {
+		private K key;
+		public MapReference(K key) {
+			this.key = key;
+		}
+		public V read() {
+			return get(key);
+		}
+		public void write(V value) {
+			put(key, value);
+		}
+	}
+	
+	@SuppressWarnings("unused")
+	public Reference<V> apply(K key) {
+		return new MapReference(key);
 	}
 
 	@Override
