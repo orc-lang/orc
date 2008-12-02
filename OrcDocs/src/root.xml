@@ -3071,8 +3071,7 @@ should be polled, and so on.
 Here is a function which polls a prioritized list of buffers in this way. It publishes the first item 
 that it finds, removing it from the originating buffer. If all buffers are empty, it remains silent.
 We use the <code>getnb</code> ("get non-blocking") method of the buffer, which retrieves the first
-available item if there is one, or else remains silent and completes immediately if the buffer is empty
-(it does not wait for an item to become available).
+available item if there is one, or halts if the buffer is empty.
 </para>
 
 <programlisting>
