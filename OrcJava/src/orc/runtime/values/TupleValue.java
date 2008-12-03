@@ -104,4 +104,9 @@ public class TupleValue extends DotSite implements Iterable<Object>, Eq {
 		}
 		return true;
 	}
+	
+	@Override
+	public int hashCode() {
+		return Arrays.hashCode(values);
+	}
 }

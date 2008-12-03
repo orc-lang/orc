@@ -35,4 +35,9 @@ public class NilValue extends ListValue {
 	public boolean eqTo(Object that) {
 		return (that instanceof NilValue);
 	}
+	
+	@Override
+	public int hashCode() {
+		return NilValue.class.hashCode();
+	}
 }

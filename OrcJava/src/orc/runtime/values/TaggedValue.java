@@ -39,4 +39,9 @@ public class TaggedValue extends Value implements Eq {
 		}
 		return true;
 	}
+	
+	@Override
+	public int hashCode() {
+		return tag.hashCode() + 31 * Arrays.hashCode(values);
+	}
 }
