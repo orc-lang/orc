@@ -27,6 +27,7 @@
 <highlighter type='keywords'>
   <style>literal</style>
   <keyword>true</keyword>
+  <keyword>null</keyword>
   <keyword>false</keyword>
 </highlighter>
 

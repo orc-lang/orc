@@ -355,10 +355,10 @@ Create a rewritable storage location without an initial value.
 <para>Example:
 <programlisting language="orc-demo"><![CDATA[
 val r = Ref()
-Rtimer(1000) >> r.write(5) >> stop
-| println(r.read()) >>
-  r.write(10) >>
-  println(r.read()) >>
+Rtimer(1000) >> r := 5 >> stop
+| println(r?) >>
+  r := 10 >>
+  println(r?) >>
   stop]]></programlisting></para>
 <variablelist>
 <varlistentry><term><code>Ref</code></term><listitem><para><code>site Ref(A) :: Ref&lt;A&gt;</code></para>
@@ -383,28 +383,46 @@ Rtimer(1000) >> r.write(5) >> stop
 </listitem></varlistentry></variablelist>
 </listitem></varlistentry>
 <varlistentry><term><code>Array</code></term><listitem><para><code>site Array(Integer) :: Array&lt;A&gt;</code></para>
-<para>Create a new native array of the given size.</para>
-<para>Example:
+<para>Create a new native array of the given size. The array is initialized
+to contain <code>null</code>s.</para>
+<para>The resulting array can be called directly with an index, as if
+its type were <code>lambda (Integer) :: Ref&lt;A&gt;</code>.
+In this case, it returns a <link linkend="orc.lib.state.Ref">Ref</link>
+pointing to the element of the array specified by an index,
+counting from 0. Changes to the array are reflected immediately
+in the ref and visa versa.</para>
+<para>Simple example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: 3
+val a = Array(1)
+a(0) := 3 >>
+a(0)?]]></programlisting></para>
+<para>More complex example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: 0 1 2
 val a = Array(3)
 for(0, a.length()) >i>
-a.set(i, f(i)) >>
+a(i) := f(i) >>
 stop
-; a.get(0) | a.get(1) | a.get(2)]]></programlisting></para>
+; a(0)? | a(1)? | a(2)?]]></programlisting></para>
 <variablelist>
 <varlistentry><term><code>Array</code></term><listitem><para><code>site Array(Integer, String) :: Array&lt;A&gt;</code></para>
 <para>Create a new primitive array of the given size with the given primitive type.
-The primitive type should match the element type of the array, although a
-typechecker may not be able to verify this. This constructor is only necessary
-when interfacing with certain Java libraries; most programs will just use the 
-<code>Array(Integer)</code> constructor.</para>
+The initial values in the array depend on the primitive type: for numeric types,
+it is <code>0</code>; for booleans, <code>false</code>; for chars, the character
+with codepoint <code>0</code>.</para>
+<para>The element type of the array should be the appropriate wrapper type for the given
+primitive type, although a typechecker may not be able to verify this. This
+constructor is only necessary when interfacing with certain Java libraries; most
+programs will just use the  <code>Array(Integer)</code> constructor.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>get</code></term><listitem><para><code>site Array&lt;A&gt;.get(Integer) :: A</code></para>
-<para>Get the element of the array given by the index, counting from 0.</para>
+<para>Get the element of the array given by the index, counting from 0.
+<code>a.get(i)</code> is equivalent to <code>a(i)?</code>.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>set</code></term><listitem><para><code>site Array&lt;A&gt;.set(Integer, A) :: Signal</code></para>
-<para>Set the element of the array given by the index, counting from 0.</para>
+<para>Set the element of the array given by the index, counting from 0.
+<code>a.set(i,v)</code> is equivalent to <code>a(i) := v</code>.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>slice</code></term><listitem><para><code>site Array&lt;A&gt;.slice(Integer, Integer) :: Array&lt;A&gt;</code></para>
 <para>Return a copy of the portion of the array with indices covered by the given
@@ -537,10 +555,13 @@ the counter and return a signal.</para>
 <varlistentry><term><code>onZero</code></term><listitem><para><code>site Counter.onZero() :: Signal</code></para>
 <para>If the counter is at zero, return a signal. Otherwise
 block until the counter reaches zero.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>value</code></term><listitem><para><code>site Counter.value() :: Integer</code></para>
+<para>Return the current value of the counter.</para>
 <para>Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes five signals
-val c = Counter(4)
+val c = Counter(5)
 repeat(c.dec)]]></programlisting></para>
 </listitem></varlistentry></variablelist>
 </listitem></varlistentry>
@@ -552,6 +573,17 @@ linkend="orc.lib.state.Ref">Ref</link> which will also be returned on
 subsequent accesses of the same field.  Dictionaries allow you to easily create
 object-like data structures.</para>
 <para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Prints: 1 2
+val d = Dictionary()
+  println(d.one.read()) >>
+  println(d.two.read()) >>
+  stop
+| d.one.write(1) >>
+  d.two.write(2) >>
+  stop]]></programlisting></para>
+<para>Here is the same example rewritten using Orc's reference syntax to improve
+clarity:
 <programlisting language="orc-demo"><![CDATA[
 -- Prints: 1 2
 val d = Dictionary()
@@ -954,6 +986,9 @@ Rtimer(1000) >> c()]]></programlisting></para>
 <para>Publish a signal after the given number of logical timesteps.
 A logical timestep is complete as soon as all outstanding site
 calls (other than calls to <code>Ltimer</code>) have published.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>withLtimer</code></term><listitem><para><code>def withLtimer(lambda () :: A) :: A</code></para>
+<para>Run a thunk in the context of a new logical clock.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>metronome</code></term><listitem><para><code>def metronome(Integer) :: Signal</code></para>
 <para>Publish a signal at regular intervals, indefinitely. The period is given by the
