@@ -7,6 +7,10 @@ import orc.runtime.sites.core.Equal;
  * guarantees that equivalent values can be substituted for each other without
  * changing the meaning of a program.
  * 
+ * <p>When you implement this, don't forget to override equals and hashCode as well.
+ * You should guarantee that if an object is "eqTo" another object it also
+ * "equals" that object and has the same hashCode.
+ * 
  * @author quark
  */
 public interface Eq {

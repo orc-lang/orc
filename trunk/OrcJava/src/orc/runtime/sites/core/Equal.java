@@ -24,7 +24,7 @@ public class Equal extends EvalSite {
 			return a.equals(b);
 		}
 		public Boolean apply(BigDecimal a, BigDecimal b) {
-			return a.equals(b);
+			return a.compareTo(b) == 0;
 		}
 		public Boolean apply(int a, int b) {
 			return a == b;
@@ -61,6 +61,9 @@ public class Equal extends EvalSite {
 	 * @see Eq
 	 */
 	public static boolean eq(Object a, Object b) {
+		// we have to handle Java immutable types specially;
+		// for our own immutable types, we implement Eq;
+		// for all other types, we use pointer equality
 		if (a == null || b == null) {
 			return a == b;
 		} else if (a instanceof Number && b instanceof Number) {

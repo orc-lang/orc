@@ -54,4 +54,9 @@ public class ConsValue extends ListValue {
 		return Equal.eq(head, that.head)
 			&& tail.eqTo(that.tail);
 	}
+	
+	@Override
+	public int hashCode() {
+		return head.hashCode() + 31 * tail.hashCode();
+	}
 }
