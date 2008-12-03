@@ -420,10 +420,10 @@ Create a rewritable storage location without an initial value.
                             </p><p>Example:
 <pre class="orc">
 <span class="hl-keyword">val</span> <span class="hl-variable">r</span> = <span class="hl-site">Ref</span>()
-<span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">r</span>.<span class="hl-site">write</span>(<span class="hl-literal">5</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
-<span class="hl-combinator">|</span> <span class="hl-site">println</span>(<span class="hl-variable">r</span>.<span class="hl-site">read</span>()) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
-  <span class="hl-variable">r</span>.<span class="hl-site">write</span>(<span class="hl-literal">10</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
-  <span class="hl-site">println</span>(<span class="hl-variable">r</span>.<span class="hl-site">read</span>()) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+<span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">r</span> <span class="hl-site">:=</span> <span class="hl-literal">5</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
+<span class="hl-combinator">|</span> <span class="hl-site">println</span>(<span class="hl-variable">r</span><span class="hl-site">?</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-variable">r</span> <span class="hl-site">:=</span> <span class="hl-literal">10</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-site">println</span>(<span class="hl-variable">r</span><span class="hl-site">?</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
   <span class="hl-keyword">stop</span></pre>
                             </p><div class="variablelist"><dl><dt><span class="term">
                                     <code class="code"><span class="hl-variable">Ref</span></code>
@@ -456,31 +456,48 @@ Create a rewritable storage location without an initial value.
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Array</span>(<span class="hl-variable">Integer</span>) :: <span class="hl-variable">Array</span>&lt;<span class="hl-variable">A</span>&gt;</code>
 
-                            </p><p>Create a new native array of the given size.</p><p>Example:
+                            </p><p>Create a new native array of the given size. The array is initialized
+to contain <code class="code"><span class="hl-literal">null</span></code>s.</p><p>The resulting array can be called directly with an index, as if
+its type were <code class="code"><span class="hl-keyword">lambda</span> (<span class="hl-variable">Integer</span>) :: <span class="hl-variable">Ref</span>&lt;<span class="hl-variable">A</span>&gt;</code>.
+In this case, it returns a <a class="link" href="apbs03.html#orc.lib.state.Ref">Ref</a>
+pointing to the element of the array specified by an index,
+counting from 0. Changes to the array are reflected immediately
+in the ref and visa versa.</p><p>Simple example:
+<pre class="orc">
+<span class="hl-comment">-- Publishes: 3</span>
+<span class="hl-keyword">val</span> <span class="hl-variable">a</span> = <span class="hl-site">Array</span>(<span class="hl-literal">1</span>)
+<span class="hl-site">a</span>(<span class="hl-literal">0</span>) <span class="hl-site">:=</span> <span class="hl-literal">3</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+<span class="hl-site">a</span>(<span class="hl-literal">0</span>)<span class="hl-site">?</span></pre>
+
+                            </p><p>More complex example:
 <pre class="orc">
 <span class="hl-comment">-- Publishes: 0 1 2</span>
 <span class="hl-keyword">val</span> <span class="hl-variable">a</span> = <span class="hl-site">Array</span>(<span class="hl-literal">3</span>)
 <span class="hl-site">for</span>(<span class="hl-literal">0</span>, <span class="hl-variable">a</span>.<span class="hl-site">length</span>()) <span class="hl-combinator">&gt;</span><span class="hl-variable">i</span><span class="hl-combinator">&gt;</span>
-<span class="hl-variable">a</span>.<span class="hl-site">set</span>(<span class="hl-variable">i</span>, <span class="hl-site">f</span>(<span class="hl-variable">i</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+<span class="hl-site">a</span>(<span class="hl-variable">i</span>) <span class="hl-site">:=</span> <span class="hl-site">f</span>(<span class="hl-variable">i</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
 <span class="hl-keyword">stop</span>
-<span class="hl-combinator">;</span> <span class="hl-variable">a</span>.<span class="hl-site">get</span>(<span class="hl-literal">0</span>) <span class="hl-combinator">|</span> <span class="hl-variable">a</span>.<span class="hl-site">get</span>(<span class="hl-literal">1</span>) <span class="hl-combinator">|</span> <span class="hl-variable">a</span>.<span class="hl-site">get</span>(<span class="hl-literal">2</span>)</pre>
+<span class="hl-combinator">;</span> <span class="hl-site">a</span>(<span class="hl-literal">0</span>)<span class="hl-site">?</span> <span class="hl-combinator">|</span> <span class="hl-site">a</span>(<span class="hl-literal">1</span>)<span class="hl-site">?</span> <span class="hl-combinator">|</span> <span class="hl-site">a</span>(<span class="hl-literal">2</span>)<span class="hl-site">?</span></pre>
                             </p><div class="variablelist"><dl><dt><span class="term">
                                     <code class="code"><span class="hl-variable">Array</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Array</span>(<span class="hl-variable">Integer</span>, <span class="hl-variable">String</span>) :: <span class="hl-variable">Array</span>&lt;<span class="hl-variable">A</span>&gt;</code>
                                     </p><p>Create a new primitive array of the given size with the given primitive type.
-The primitive type should match the element type of the array, although a
-typechecker may not be able to verify this. This constructor is only necessary
-when interfacing with certain Java libraries; most programs will just use the 
-<code class="code"><span class="hl-site">Array</span>(<span class="hl-variable">Integer</span>)</code> constructor.</p></dd><dt><span class="term">
+The initial values in the array depend on the primitive type: for numeric types,
+it is <code class="code"><span class="hl-literal">0</span></code>; for booleans, <code class="code"><span class="hl-literal">false</span></code>; for chars, the character
+with codepoint <code class="code"><span class="hl-literal">0</span></code>.</p><p>The element type of the array should be the appropriate wrapper type for the given
+primitive type, although a typechecker may not be able to verify this. This
+constructor is only necessary when interfacing with certain Java libraries; most
+programs will just use the  <code class="code"><span class="hl-site">Array</span>(<span class="hl-variable">Integer</span>)</code> constructor.</p></dd><dt><span class="term">
                                     <code class="code"><span class="hl-variable">get</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Array</span>&lt;<span class="hl-variable">A</span>&gt;.<span class="hl-site">get</span>(<span class="hl-variable">Integer</span>) :: <span class="hl-variable">A</span></code>
-                                    </p><p>Get the element of the array given by the index, counting from 0.</p></dd><dt><span class="term">
+                                    </p><p>Get the element of the array given by the index, counting from 0.
+<code class="code"><span class="hl-variable">a</span>.<span class="hl-site">get</span>(<span class="hl-variable">i</span>)</code> is equivalent to <code class="code"><span class="hl-site">a</span>(<span class="hl-variable">i</span>)<span class="hl-site">?</span></code>.</p></dd><dt><span class="term">
                                     <code class="code"><span class="hl-variable">set</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Array</span>&lt;<span class="hl-variable">A</span>&gt;.<span class="hl-site">set</span>(<span class="hl-variable">Integer</span>, <span class="hl-variable">A</span>) :: <span class="hl-variable">Signal</span></code>
-                                    </p><p>Set the element of the array given by the index, counting from 0.</p></dd><dt><span class="term">
+                                    </p><p>Set the element of the array given by the index, counting from 0.
+<code class="code"><span class="hl-variable">a</span>.<span class="hl-site">set</span>(<span class="hl-variable">i</span>,<span class="hl-variable">v</span>)</code> is equivalent to <code class="code"><span class="hl-site">a</span>(<span class="hl-variable">i</span>) <span class="hl-site">:=</span> <span class="hl-variable">v</span></code>.</p></dd><dt><span class="term">
                                     <code class="code"><span class="hl-variable">slice</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Array</span>&lt;<span class="hl-variable">A</span>&gt;.<span class="hl-site">slice</span>(<span class="hl-variable">Integer</span>, <span class="hl-variable">Integer</span>) :: <span class="hl-variable">Array</span>&lt;<span class="hl-variable">A</span>&gt;</code>
@@ -635,12 +652,16 @@ the counter and return a signal.</p></dd><dt><span class="term">
                                     <code class="code"><span class="hl-variable">onZero</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Counter</span>.<span class="hl-site">onZero</span>() :: <span class="hl-variable">Signal</span></code>
-
                                     </p><p>If the counter is at zero, return a signal. Otherwise
-block until the counter reaches zero.</p><p>Example:
+block until the counter reaches zero.</p></dd><dt><span class="term">
+                                    <code class="code"><span class="hl-variable">value</span></code>
+                                    </span></dt><dd><p>
+                                    <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">Counter</span>.<span class="hl-site">value</span>() :: <span class="hl-variable">Integer</span></code>
+
+                                    </p><p>Return the current value of the counter.</p><p>Example:
 <pre class="orc">
 <span class="hl-comment">-- Publishes five signals</span>
-<span class="hl-keyword">val</span> <span class="hl-variable">c</span> = <span class="hl-site">Counter</span>(<span class="hl-literal">4</span>)
+<span class="hl-keyword">val</span> <span class="hl-variable">c</span> = <span class="hl-site">Counter</span>(<span class="hl-literal">5</span>)
 <span class="hl-site">repeat</span>(<span class="hl-variable">c</span>.<span class="hl-variable">dec</span>)</pre>
                                     </p></dd></dl></div></dd><dt><span class="term">
                             <code class="code"><span class="hl-variable">Dictionary</span></code>
@@ -652,6 +673,18 @@ empty.  The first time each field of the dictionary is accessed (using dot
 notation), the dictionary creates and returns a new empty <a class="link" href="apbs03.html#orc.lib.state.Ref">Ref</a> which will also be returned on
 subsequent accesses of the same field.  Dictionaries allow you to easily create
 object-like data structures.</p><p>Example:
+<pre class="orc">
+<span class="hl-comment">-- Prints: 1 2</span>
+<span class="hl-keyword">val</span> <span class="hl-variable">d</span> = <span class="hl-site">Dictionary</span>()
+  <span class="hl-site">println</span>(<span class="hl-variable">d</span>.<span class="hl-variable">one</span>.<span class="hl-site">read</span>()) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-site">println</span>(<span class="hl-variable">d</span>.<span class="hl-variable">two</span>.<span class="hl-site">read</span>()) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-keyword">stop</span>
+<span class="hl-combinator">|</span> <span class="hl-variable">d</span>.<span class="hl-variable">one</span>.<span class="hl-site">write</span>(<span class="hl-literal">1</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-variable">d</span>.<span class="hl-variable">two</span>.<span class="hl-site">write</span>(<span class="hl-literal">2</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-keyword">stop</span></pre>
+
+                            </p><p>Here is the same example rewritten using Orc's reference syntax to improve
+clarity:
 <pre class="orc">
 <span class="hl-comment">-- Prints: 1 2</span>
 <span class="hl-keyword">val</span> <span class="hl-variable">d</span> = <span class="hl-site">Dictionary</span>()
@@ -689,7 +722,7 @@ write <code class="code">s-&gt;field</code> instead of <code class="code"><span 
                             <code class="code"><span class="hl-variable">swap</span></code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">def</span> <span class="hl-site">swap</span>((<span class="hl-variable">A</span>,<span class="hl-variable">B</span>)) :: (<span class="hl-variable">B</span>,<span class="hl-variable">A</span>)</code>
-                            </p><p>Swap the elements of a pair.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11DF5"></a>B.3.3.&nbsp;idioms.inc: Higher-order Orc programming idioms.</h3></div></div></div><p>Higher-order Orc programming idioms.
+                            </p><p>Swap the elements of a pair.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11E32"></a>B.3.3.&nbsp;idioms.inc: Higher-order Orc programming idioms.</h3></div></div></div><p>Higher-order Orc programming idioms.
 Many of these are standard functional-programming
 combinators borrowed from Haskell or Scheme.</p><div class="variablelist"><dl><dt><span class="term">
                             <code class="code"><span class="hl-variable">apply</span></code>
@@ -811,7 +844,7 @@ Return the list when the function terminates.</p><p>Example:
 <pre class="orc">
 <span class="hl-comment">-- Publishes: [signal, signal, signal, signal, signal]</span>
 <span class="hl-site">collect</span>(<span class="hl-site">defer</span>(<span class="hl-variable">signals</span>, <span class="hl-literal">5</span>))</pre>
-                            </p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11F42"></a>B.3.4.&nbsp;list.inc: Operations on lists.</h3></div></div></div><p>Operations on lists.
+                            </p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11F7F"></a>B.3.4.&nbsp;list.inc: Operations on lists.</h3></div></div></div><p>Operations on lists.
 Many of these functions are similar to those in the Haskell prelude, but
 operate on the elements of a list in parallel.</p><div class="variablelist"><dl><dt><span class="term">
                             <code class="code"><span class="hl-variable">each</span></code>
@@ -1052,7 +1085,7 @@ The disjunction of an empty list is <code class="code"><span class="hl-literal">
                             <code class="code"><span class="hl-variable">maximum</span></code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">def</span> <span class="hl-site">maximum</span>([<span class="hl-variable">A</span>]) :: <span class="hl-variable">A</span>, <span class="hl-variable">A</span> <span class="hl-site">&lt;:</span> <span class="hl-variable">Comparable</span></code>
-                            </p><p>Return the maximum element of a non-empty list.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N12206"></a>B.3.5.&nbsp;text.inc: Operations on strings.</h3></div></div></div><p>Operations on strings.</p><div class="variablelist"><dl><dt><span class="term">
+                            </p><p>Return the maximum element of a non-empty list.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N12243"></a>B.3.5.&nbsp;text.inc: Operations on strings.</h3></div></div></div><p>Operations on strings.</p><div class="variablelist"><dl><dt><span class="term">
                             <code class="code"><span class="hl-variable">cat</span></code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">cat</span>(<span class="hl-variable">Top</span>, ...) :: <span class="hl-variable">String</span></code>
@@ -1106,7 +1139,7 @@ and concatenate the results.</p></dd><dt><span class="term">
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">def</span> <span class="hl-site">unwords</span>([<span class="hl-variable">String</span>]) :: <span class="hl-variable">String</span></code>
                             </p><p>Concatenate a sequence of strings with a single space between
-each string.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1228B"></a>B.3.6.&nbsp;time.inc: Real and logical time.</h3></div></div></div><p>Real and logical time.</p><div class="variablelist"><dl><dt><span class="term">
+each string.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N122C8"></a>B.3.6.&nbsp;time.inc: Real and logical time.</h3></div></div></div><p>Real and logical time.</p><div class="variablelist"><dl><dt><span class="term">
                             <code class="code"><span class="hl-variable">Rtimer</span></code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Rtimer</span>(<span class="hl-variable">Integer</span>) :: <span class="hl-variable">Signal</span></code>
@@ -1130,11 +1163,15 @@ clock was created.</p><p>Example:
                             </p><p>Publish a signal after the given number of logical timesteps.
 A logical timestep is complete as soon as all outstanding site
 calls (other than calls to <code class="code"><span class="hl-variable">Ltimer</span></code>) have published.</p></dd><dt><span class="term">
+                            <code class="code"><span class="hl-variable">withLtimer</span></code>
+                        </span></dt><dd><p>
+                                <code class="code"><span class="hl-keyword">def</span> <span class="hl-site">withLtimer</span>(<span class="hl-keyword">lambda</span> () :: <span class="hl-variable">A</span>) :: <span class="hl-variable">A</span></code>
+                            </p><p>Run a thunk in the context of a new logical clock.</p></dd><dt><span class="term">
                             <code class="code"><span class="hl-variable">metronome</span></code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">def</span> <span class="hl-site">metronome</span>(<span class="hl-variable">Integer</span>) :: <span class="hl-variable">Signal</span></code>
                             </p><p>Publish a signal at regular intervals, indefinitely. The period is given by the
-argument, in milliseconds.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N122D5"></a>B.3.7.&nbsp;util.inc: Miscellaneous utility functions.</h3></div></div></div><p>Miscellaneous utility functions.</p><div class="variablelist"><dl><dt><span class="term">
+argument, in milliseconds.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N12320"></a>B.3.7.&nbsp;util.inc: Miscellaneous utility functions.</h3></div></div></div><p>Miscellaneous utility functions.</p><div class="variablelist"><dl><dt><span class="term">
                             <code class="code"><span class="hl-variable">random</span></code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">random</span>() :: <span class="hl-variable">Integer</span></code>

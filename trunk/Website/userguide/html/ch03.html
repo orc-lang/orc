@@ -180,7 +180,7 @@ buffer site written using Kilim <code class="code">Mailbox</code>es:
 <pre class="programlisting">
 <span class="hl-keyword">class</span> <span class="hl-variable">Buffer</span> = <span class="hl-variable">orc</span>.<span class="hl-variable">lib</span>.<span class="hl-variable">state</span>.<span class="hl-variable">KilimBuffer</span>
 <span class="hl-keyword">val</span> <span class="hl-variable">b</span> = <span class="hl-site">Buffer</span>()
-  <span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">b</span>.<span class="hl-site">put</span>(<span class="hl-literal">"1 second later"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">null</span>
+  <span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">b</span>.<span class="hl-site">put</span>(<span class="hl-literal">"1 second later"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">null</span>
 <span class="hl-combinator">|</span> <span class="hl-variable">b</span>.<span class="hl-site">get</span>()</pre>
 </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N112DC"></a>3.1.6.3.&nbsp;When you must block</h4></div></div></div><p>
 Sometimes blocking is unavoidable, for example if a site must perform blocking
