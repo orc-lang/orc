@@ -36,7 +36,10 @@ public class Counter extends EvalSite {
 						if (count > 0) {
 							--count;
 							if (count == 0) {
-								for (Token waiter : waiters) waiter.resume();
+								for (Token waiter : waiters) {
+									waiter.unsetQuiescent();
+									waiter.resume();
+								}
 								waiters.clear();
 							}
 							return signal();
@@ -47,7 +50,16 @@ public class Counter extends EvalSite {
 					@Override
 					public void callSite(Args args, Token caller) throws TokenException {
 						if (count == 0) caller.resume();
-						else waiters.add(caller);
+						else {
+							caller.setQuiescent();
+							waiters.add(caller);
+						}
+					}
+				});
+				addMember("value", new EvalSite() {
+					@Override
+					public Object evaluate(Args args) throws TokenException {
+						return count;
 					}
 				});
 			}

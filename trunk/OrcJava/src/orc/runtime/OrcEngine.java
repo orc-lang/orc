@@ -12,6 +12,7 @@ import java.util.TimerTask;
 
 import orc.Config;
 import orc.env.Env;
+import orc.error.SourceLocation;
 import orc.error.runtime.TokenException;
 import orc.error.runtime.TokenLimitReachedError;
 import orc.runtime.nodes.Node;
@@ -39,9 +40,6 @@ public class OrcEngine implements Runnable {
 	private LinkedList<Token> queuedReturns = new LinkedList<Token>();
 
 	private int round = 1;
-
-	/** Active logical clocks. */
-	private LinkedList<WeakReference<LogicalClock>> clocks = new LinkedList<WeakReference<LogicalClock>>();
 
 	/** Number of tokens <i>not</i> waiting at logical clocks. */
 	private int pendingTokens = 0;
@@ -183,7 +181,6 @@ public class OrcEngine implements Runnable {
 				reportRound();
 				return true;
 			} else {
-				if (advanceLogicalClocks()) return true;
 				try {
 					// we will be notified when a site returns
 					// or the engine terminates
@@ -249,7 +246,12 @@ public class OrcEngine implements Runnable {
 	 */
 	public void tokenError(TokenException problem) {
 		stderr.println("Error: " + problem.getMessage());
-		stderr.println("Source location: " + problem.getSourceLocation());
+		stderr.println("Backtrace:");
+		SourceLocation[] backtrace = problem.getBacktrace();
+		for (SourceLocation location : backtrace) {
+			stderr.println(location);
+		}
+		stderr.println("");
 		if (debugMode) {
 			problem.printStackTrace(stderr);
 		}
@@ -271,18 +273,8 @@ public class OrcEngine implements Runnable {
 					+ "Active:  " + readyTokens.size() + "\n"
 					+ "Queued:  " + queuedReturns.size() + "\n"
 					+ "Pending: " + pendingTokens + "\n");
-			for (WeakReference<LogicalClock> clockr : clocks) {
-				LogicalClock clock = clockr.get();
-				if (clock != null) {
-					debug("L-Clock: " + clock.getTime() + "\n");
-				}
-			}
 			debug("---\n\n");
 		}
-	}
-
-	public synchronized boolean addLogicalClock(LogicalClock clock) {
-		return clocks.add(new WeakReference<LogicalClock>(clock));
 	}
 
 	/**
@@ -311,37 +303,6 @@ public class OrcEngine implements Runnable {
 		return globals.add(this, value);
 	}
 
-	synchronized void addPendingToken(Token token) {
-		++pendingTokens;
-	}
-
-	synchronized void removePendingToken(Token token) {
-		assert(pendingTokens > 0);
-		--pendingTokens;
-		// we shouldn't advance the clocks immediately
-		// even if the pending tokens are all freed,
-		// because we may be about to add a new token
-		// before the end of the round
-	}
-
-	/** Return true if some clock advanced. */
-	private boolean advanceLogicalClocks() {
-		// can't advance clocks if there are pending site calls
-		if (pendingTokens > 0) return false;
-
-		boolean out = false;
-		Iterator<WeakReference<LogicalClock>> it = clocks.iterator();
-		while (it.hasNext()) {
-			WeakReference<LogicalClock> clockr = it.next();
-			LogicalClock clock = clockr.get();
-			if (clock == null)
-				it.remove();
-			else
-				out = clock.advance() || out;
-		}
-		return out;
-	}
-	
 	public Config getConfig() {
 		return config;
 	}

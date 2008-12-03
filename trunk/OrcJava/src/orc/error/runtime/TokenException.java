@@ -1,5 +1,7 @@
 package orc.error.runtime;
 
+import java.util.Stack;
+
 import orc.error.Locatable;
 import orc.error.SourceLocation;
 
@@ -16,8 +18,8 @@ import orc.error.SourceLocation;
  *
  */
 public abstract class TokenException extends ExecutionException implements Locatable {
-
-	SourceLocation loc = SourceLocation.UNKNOWN;
+	private SourceLocation loc = SourceLocation.UNKNOWN;
+	private SourceLocation[] backtrace = new SourceLocation[0];
 	
 	public TokenException(String message) {
 		super(message);
@@ -25,6 +27,14 @@ public abstract class TokenException extends ExecutionException implements Locat
 	
 	public TokenException(String message, Throwable cause) {
 		super(message, cause);
+	}
+	
+	public void setBacktrace(SourceLocation[] backtrace) {
+		this.backtrace = backtrace;
+	}
+	
+	public SourceLocation[] getBacktrace() {
+		return backtrace;
 	}
 
 	public SourceLocation getSourceLocation() {

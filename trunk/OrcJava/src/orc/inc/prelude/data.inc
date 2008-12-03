@@ -463,6 +463,9 @@ the counter and return a signal.
 If the counter is at zero, return a signal. Otherwise
 block until the counter reaches zero.
 
+** site Counter.value() :: Integer
+Return the current value of the counter.
+
 Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes five signals

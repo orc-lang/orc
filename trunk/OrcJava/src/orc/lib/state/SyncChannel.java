@@ -64,6 +64,7 @@ public class SyncChannel extends EvalSite {
 
 				// If there are no waiting senders, put this caller on the queue
 				if (senderQueue.isEmpty()) {
+					receiver.setQuiescent();
 					receiverQueue.addLast(receiver);
 				}
 				// If there is a waiting sender, both sender and receiver return
@@ -73,6 +74,7 @@ public class SyncChannel extends EvalSite {
 					Object item = si.sent;
 					
 					receiver.resume(item);
+					sender.unsetQuiescent();
 					sender.resume();
 				}
 
@@ -87,6 +89,7 @@ public class SyncChannel extends EvalSite {
 				
 				// If there are no waiting receivers, put this sender on the queue
 				if (receiverQueue.isEmpty()) {
+					sender.setQuiescent();
 					senderQueue.addLast(new SenderItem(sender, item));
 				}
 				
@@ -94,6 +97,7 @@ public class SyncChannel extends EvalSite {
 				else {
 					Token receiver = receiverQueue.removeFirst();
 					
+					receiver.unsetQuiescent();
 					receiver.resume(item);
 					sender.resume();
 				}

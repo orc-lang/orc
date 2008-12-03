@@ -17,7 +17,7 @@ public class SemiRegion extends Region {
 	protected void reallyClose(Token closer) {
 		if (t != null) {
 			t.getTracer().after(closer.getTracer().before());
-			t.setPending();
+			t.unsetQuiescent();
 			t.activate();
 		}
 		parent.remove(this, closer);
@@ -31,7 +31,7 @@ public class SemiRegion extends Region {
 		if (t != null) {
 			// setPending so that the token can unsetPending when it
 			// dies
-			t.setPending();
+			t.unsetQuiescent();
 			t.die();
 			t = null;
 		}

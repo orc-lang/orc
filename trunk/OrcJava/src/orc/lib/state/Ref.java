@@ -89,6 +89,7 @@ public class Ref extends EvalSite {
 				 */ 
 				if (readQueue != null) {
 					readQueue.add(reader);
+					reader.setQuiescent();
 				}
 				/* Otherwise, return the contents of the ref */
 				else {
@@ -111,6 +112,7 @@ public class Ref extends EvalSite {
 					
 					/* Wake up all queued readers and report the written value to them. */
 					for (Token reader : readQueue) {
+						reader.unsetQuiescent();
 						reader.resume(val);
 					}
 					

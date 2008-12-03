@@ -52,11 +52,15 @@ public class Buffer extends EvalSite {
 				public void callSite(Args args, Token reader) {
 					if (buffer.isEmpty()) {
 						if (closed) reader.die();
-						else readers.addLast(reader);
+						else {
+							reader.setQuiescent();
+							readers.addLast(reader);
+						}
 					} else {
 						// If there is an item available, pop it and return it.
 						reader.resume(buffer.removeFirst());
 						if (closer != null && buffer.isEmpty()) {
+							closer.unsetQuiescent();
 							closer.resume();
 							closer = null;
 						}
@@ -77,6 +81,7 @@ public class Buffer extends EvalSite {
 					} else {
 						// If there are callers waiting, give this item to the top caller.
 						Token receiver = readers.removeFirst();
+						receiver.unsetQuiescent();
 						receiver.resume(item);
 					}
 					// Since this is an asynchronous buffer, a put call always returns.
@@ -91,6 +96,7 @@ public class Buffer extends EvalSite {
 					} else {
 						reader.resume(buffer.removeFirst());
 						if (closer != null && buffer.isEmpty()) {
+							closer.unsetQuiescent();
 							closer.resume();
 							closer = null;
 						}
@@ -103,6 +109,7 @@ public class Buffer extends EvalSite {
 					Object out = ListValue.make(buffer);
 					buffer.clear();
 					if (closer != null) {
+						closer.unsetQuiescent();
 						closer.resume();
 						closer = null;
 					}
@@ -119,11 +126,15 @@ public class Buffer extends EvalSite {
 				@Override
 				public void callSite(Args args, Token token) {
 					closed = true;
-					for (Token reader : readers) reader.die();
+					for (Token reader : readers) {
+						reader.unsetQuiescent();
+						reader.die();
+					}
 					if (buffer.isEmpty()) {
 						token.resume();
 					} else {
 						closer = token;
+						closer.setQuiescent();
 					}
 				}
 			});	
@@ -131,7 +142,10 @@ public class Buffer extends EvalSite {
 				@Override
 				public void callSite(Args args, Token token) {
 					closed = true;
-					for (Token reader : readers) reader.die();
+					for (Token reader : readers) {
+						reader.unsetQuiescent();
+						reader.die();
+					}
 					token.resume();
 				}
 			});	

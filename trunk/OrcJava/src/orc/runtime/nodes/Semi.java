@@ -35,7 +35,7 @@ public class Semi extends Node {
 			t.error(e);
 			return;
 		}
-		forked.unsetPending();
+		forked.setQuiescent();
 		SemiRegion region = new SemiRegion(t.getRegion(), forked.move(right));
 		t.move(left).setRegion(region).activate();
 	}

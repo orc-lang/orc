@@ -74,6 +74,7 @@ public final class Env<T> implements Serializable, Cloneable {
 	public T lookup(int index) {
 		Binding<T> node = head;
 		for (; index > 0; --index, node = node.parent) assert(node != null);
+		assert(node != null);
 		return node.value;
 	}
 	

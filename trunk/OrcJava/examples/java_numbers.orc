@@ -31,5 +31,7 @@ class java.lang.Integer
 3.0
 class java.lang.Integer
 Error: java.lang.IllegalArgumentException: argument type mismatch
-Source location: examples/java_numbers.orc:22:9-25
+Backtrace:
+examples/java_numbers.orc:22:9-25
+
 -}
