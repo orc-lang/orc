@@ -7,54 +7,53 @@ import java.util.PriorityQueue;
  * 
  * <p>
  * According to the semantics of logical time, logical timers can only advance
- * when there are no pending site calls except those to logical timers. However
- * it's not so clear how logical timers should interact with pull and semicolon.
- * For the moment they are allowed to advance even if there are tokens blocked
- * on a group cell or semicolon.
+ * when there are no pending site calls except those to so-called "immediate" sites.
+ * However it's not so clear how logical timers should interact with "<<".
+ * For the moment clocks are allowed to advance even if there are tokens
+ * blocked on a group cell.
  * 
- * <p>
- * Since logical clocks are advanced only by the Orc engine, and calls to such
- * timers are cooperatively executed by the same engine, the logical clock
- * objects do not need to run in a separate thread, (unlike Rtimer), and they do
- * not require synchronization.
- * 
- * @author dkitchin
- * 
+ * @author dkitchin, quark
  */
-
-public class LogicalClock {
-
+public final class LogicalClock {
 	private PriorityQueue<LtimerQueueEntry> eventQueue;
-	private int currentTime = 0;
+	/** Number of tokens and sub-clocks still active. */
+	private int active = 0;
+	LogicalClock parent;
+	int currentTime = 0;
 	
-	public LogicalClock() {
+	LogicalClock(LogicalClock parent) {
+		this.parent = parent;
+		if (parent != null) parent.addActive();
 		eventQueue = new PriorityQueue<LtimerQueueEntry>();
 		currentTime = 0;
 	}
 	
-	public int getTime() { return currentTime; }
-	
-	public void addEvent(int time, Token token) {
-		eventQueue.add(new LtimerQueueEntry(time + currentTime, token));
-		token.unsetPending();
+	void addEvent(int delay, Token token) {
+		eventQueue.add(new LtimerQueueEntry(delay + currentTime, token));
+		token.setQuiescent();
 	}
 	
-	/* Return true if advancing the clock queued one or more events, false otherwise */
-	public boolean advance() {
-		// no tokens are ready for the next round
-		if (eventQueue.isEmpty()) return false;
-		
-		// Advance the clock to the next logical time and
-		// resume all tokens waiting for that time
-		LtimerQueueEntry top = eventQueue.peek();
-		currentTime = top.time;
-		while (top != null && top.time <= currentTime) {
-			Token token = eventQueue.remove().token;
-			token.setPending();
-			token.resume(currentTime);
-			top = eventQueue.peek();
-		}		
-		return true;
+	private void advance() {
+		if (active > 0) {
+			// active tokens remain
+			return;
+		} else if (eventQueue.isEmpty()) {
+			// no tokens are ready for the next round:
+			// the simulation may be over, or may be blocked
+			// waiting for an external event
+			return;
+		} else {
+			// Advance the clock to the next logical time and
+			// resume all tokens waiting for that time
+			LtimerQueueEntry top = eventQueue.peek();
+			currentTime = top.time;
+			while (top != null && top.time <= currentTime) {
+				Token token = eventQueue.remove().token;
+				token.unsetQuiescent();
+				token.resume(currentTime);
+				top = eventQueue.peek();
+			}
+		}
 	}
 	
 	/**
@@ -73,5 +72,41 @@ public class LogicalClock {
 			// sort the queue items earliest first
 			return Integer.signum(time - n.time);
 		}
+	}
+	
+	/**
+	 * Add an active token. When moving a token between clocks,
+	 * it is important to ensure that the token is removed after it is added.
+	 */
+	void addActive() {
+		++active;
+	}
+
+	/**
+	 * Remove an active token. When moving a token between clocks,
+	 * it is important to ensure that the token is removed after it is added,
+	 * so that the number of active tokens only hits zero once, at the end
+	 * of a processing step.
+	 */
+	void removeActive() {
+		assert(active > 0);
+		--active;
+		if (active == 0) advance();
+	}
+	
+	boolean isAncestorOf(LogicalClock that) {
+		while (that != null) {
+			if (that == this) return true;
+			that = that.parent;
+		}
+		return false;
+	}
+	
+	/**
+	 * When the region associated with this clock dies, the simulation is stopped.
+	 * The parent clock no longer has to wait on this clock.
+	 */
+	public void stop() {
+		if (parent != null) parent.removeActive();
 	}
 }

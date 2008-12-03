@@ -35,9 +35,11 @@ public class Semaphore extends EvalSite {
 			addMember("acquire", new Site() {
 				public void callSite(Args args, Token waiter) {
 					if (0 == n) {
+						waiter.setQuiescent();
 						waiters.addLast(waiter);
 						if (!snoopers.isEmpty()) {
 							for (Token snooper : snoopers) {
+								snooper.unsetQuiescent();
 								snooper.resume();
 							}
 							snoopers.clear();
@@ -65,6 +67,7 @@ public class Semaphore extends EvalSite {
 						++n;
 					} else {
 						Token waiter = waiters.removeFirst();
+						waiter.unsetQuiescent();
 						waiter.resume();
 					}
 					sender.resume();
@@ -72,11 +75,12 @@ public class Semaphore extends EvalSite {
 			});
 			addMember("snoop", new Site() {
 				@Override
-				public void callSite(Args args, Token token) throws TokenException {
+				public void callSite(Args args, Token snooper) throws TokenException {
 					if (waiters.isEmpty()) {
-						snoopers.addLast(token);
+						snooper.setQuiescent();
+						snoopers.addLast(snooper);
 					} else {
-						token.resume();
+						snooper.resume();
 					}
 				}
 			});

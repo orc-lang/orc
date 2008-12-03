@@ -51,6 +51,7 @@ public class BoundedBuffer extends EvalSite {
 						if (closed) {
 							reader.die();
 						} else {
+							reader.setQuiescent();
 							readers.addLast(reader);
 						}
 					} else {
@@ -58,9 +59,12 @@ public class BoundedBuffer extends EvalSite {
 						if (writers.isEmpty()) {
 							++open;
 						} else {
-							writers.removeFirst().resume();
+							Token writer = writers.removeFirst();
+							writer.unsetQuiescent();
+							writer.resume();
 						}
 						if (closer != null && buffer.isEmpty()) {
+							closer.unsetQuiescent();
 							closer.resume();
 							closer = null;
 						}
@@ -77,9 +81,12 @@ public class BoundedBuffer extends EvalSite {
 						if (writers.isEmpty()) {
 							++open;
 						} else {
-							writers.removeFirst().resume();
+							Token writer = writers.removeFirst();
+							writer.unsetQuiescent();
+							writer.resume();
 						}
 						if (closer != null && buffer.isEmpty()) {
+							closer.unsetQuiescent();
 							closer.resume();
 							closer = null;
 						}
@@ -93,10 +100,13 @@ public class BoundedBuffer extends EvalSite {
 					if (closed) {
 						writer.die();
 					} else if (!readers.isEmpty()) {
-						readers.removeFirst().resume(item);
+						Token reader = readers.removeFirst();
+						reader.unsetQuiescent();
+						reader.resume(item);
 						writer.resume();
 					} else if (open == 0) {
 						buffer.addLast(item);
+						writer.setQuiescent();
 						writers.addLast(writer);
 					} else {
 						buffer.addLast(item);
@@ -112,7 +122,9 @@ public class BoundedBuffer extends EvalSite {
 					if (closed) {
 						writer.die();
 					} else if (!readers.isEmpty()) {
-						readers.removeFirst().resume(item);
+						Token reader = readers.removeFirst();
+						reader.unsetQuiescent();
+						reader.resume(item);
 						writer.resume();
 					} else if (open == 0) {
 						writer.die();
@@ -132,10 +144,14 @@ public class BoundedBuffer extends EvalSite {
 					Object out = ListValue.make(buffer);
 					buffer.clear();
 					// resume all writers
-					for (Token writer : writers) writer.resume();
+					for (Token writer : writers) {
+						writer.unsetQuiescent();
+						writer.resume();
+					}
 					writers.clear();
 					// notify closer if necessary
 					if (closer != null) {
+						closer.unsetQuiescent();
 						closer.resume();
 						closer = null;
 					}
@@ -164,11 +180,15 @@ public class BoundedBuffer extends EvalSite {
 				@Override
 				public void callSite(Args args, Token token) {
 					closed = true;
-					for (Token reader : readers) reader.die();
+					for (Token reader : readers) {
+						reader.unsetQuiescent();
+						reader.die();
+					}
 					if (buffer.isEmpty()) {
 						token.resume();
 					} else {
 						closer = token;
+						closer.setQuiescent();
 					}
 				}
 			});	
@@ -176,7 +196,10 @@ public class BoundedBuffer extends EvalSite {
 				@Override
 				public void callSite(Args args, Token token) {
 					closed = true;
-					for (Token reader : readers) reader.die();
+					for (Token reader : readers) {
+						reader.unsetQuiescent();
+						reader.die();
+					}
 					token.resume();
 				}
 			});	

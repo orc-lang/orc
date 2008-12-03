@@ -4,12 +4,14 @@
 package orc.runtime;
 
 import java.io.Serializable;
+import java.util.LinkedList;
 
 import orc.ast.oil.arg.Arg;
 import orc.env.Env;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
 import orc.error.runtime.CapabilityException;
+import orc.error.runtime.SiteException;
 import orc.error.runtime.SiteResolutionException;
 import orc.error.runtime.StackLimitReachedError;
 import orc.error.runtime.TokenError;
@@ -21,6 +23,7 @@ import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Return;
 import orc.runtime.nodes.Silent;
 import orc.runtime.regions.Execution;
+import orc.runtime.regions.LogicalRegion;
 import orc.runtime.regions.Region;
 import orc.runtime.sites.java.ObjectProxy;
 import orc.runtime.values.Callable;
@@ -49,12 +52,14 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 		public Node node;
 		public Env<Object> env;
 		public Continuation continuation;
+		public SourceLocation location;
 		/** Track the depth of a tail-recursive continuation. */
 		public int depth = 1;
-		public Continuation(Node node, Env<Object> env, Continuation continuation) {
+		public Continuation(Node node, Env<Object> env, Continuation continuation, SourceLocation location) {
 			this.node = node;
 			this.env = env;
 			this.continuation = continuation;
+			this.location = location;
 		}
 	}
 	
@@ -78,6 +83,7 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 	private boolean alive;
 	/** Number of stack frames remaining before hitting the stack size limit. */
 	private int stackAvailable;
+	private LogicalClock clock;
 	
 	/**
 	 * Create a new uninitialized token.
@@ -90,10 +96,13 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 	 * Initialize a root token.
 	 */
 	void initializeRoot(Node node, Region region, OrcEngine engine, TokenTracer tracer) {
+		// create the root logical clock
+		LogicalClock clock = new LogicalClock(null);
 		initialize(node, new Env<Object>(),
 				null, GroupCell.ROOT, region,
 				null, engine, null,
-				tracer, engine.getConfig().getStackSize());
+				tracer, engine.getConfig().getStackSize(),
+				clock);
 	}
 	
 	/**
@@ -103,25 +112,11 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 		initialize(that.node, that.env.clone(),
 				that.continuation, group, region,
 				that.result, that.engine, that.location,
-				that.tracer.fork(), that.stackAvailable);
+				that.tracer.fork(), that.stackAvailable,
+				that.clock);
 	}
 	
-	/**
-	 * Free any resources held by this token.
-	 */
-	void free() {
-		node = null;	
-		env = null;
-		group = null;
-		region = null;
-		engine = null;
-		location = null;
-		tracer = null;
-		continuation = null;
-		result = null;
-	}
-	
-	private void initialize(Node node, Env<Object> env, Continuation continuation, GroupCell group, Region region, Object result, OrcEngine engine, SourceLocation location, TokenTracer tracer, int stackAvailable) {
+	private void initialize(Node node, Env<Object> env, Continuation continuation, GroupCell group, Region region, Object result, OrcEngine engine, SourceLocation location, TokenTracer tracer, int stackAvailable, LogicalClock clock) {
 		this.node = node;
 		this.env = env;
 		this.continuation = continuation;
@@ -133,18 +128,21 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 		this.location = location;
 		this.tracer = tracer;
 		this.stackAvailable = stackAvailable;
+		this.clock = clock;
 		region.add(this);
-		setPending();
+		unsetQuiescent();
 	}
 
-	// Signal that this token is dead
-	// Synchronized so that multiple threads don't simultaneously signal
-	// a token to die and perform duplicate region removals.
+	/**
+	 * Kill this token.
+	 * Should only be called on non-quiescent tokens.
+	 * Synchronized because tokens may be killed from site threads.
+	 */
 	public synchronized void die() {
 		assert(alive);
 		alive = false;
 		region.remove(this);
-		unsetPending();
+		setQuiescent();
 		tracer.die();
 		engine.pool.freeToken(this);
 	}
@@ -239,9 +237,9 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 			++continuation.depth;
 		} else if (next.isTerminal()) {
 			// handle terminal (non-returning) continuation specially
-			continuation = new Continuation(next, this.env.clone(), null);
+			continuation = new Continuation(next, this.env.clone(), null, location);
 		} else {
-			continuation = new Continuation(next, this.env.clone(), continuation);
+			continuation = new Continuation(next, this.env.clone(), continuation, location);
 		}
 		tracer.enter(closure);
 		this.env = closure.env.clone();
@@ -323,10 +321,19 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 		resume(Value.signal());
 	}
 	
+	private SourceLocation[] getBacktrace() {
+		LinkedList<SourceLocation> out = new LinkedList<SourceLocation>();
+		out.add(location);
+		for (Continuation c = continuation; c != null; c = c.continuation) {
+			out.add(c.location);
+		}
+		return out.toArray(new SourceLocation[0]);
+	}
 	
 	/* This token has encountered an error, and dies. */
 	public void error(TokenException problem) {
 		problem.setSourceLocation(getSourceLocation());
+		problem.setBacktrace(getBacktrace());
 		tracer.error(problem);
 		engine.tokenError(problem);
 		// die after reporting the error, so the engine
@@ -383,12 +390,12 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 		return location;
 	}
 	
-	public void setPending() {
-		engine.addPendingToken(this);
+	public void unsetQuiescent() {
+		clock.addActive();
 	}
 	
-	public void unsetPending() {
-		engine.removePendingToken(this);
+	public void setQuiescent() {
+		clock.removeActive();
 	}
 	
 	public void requireCapability(String name, boolean ifNull) throws CapabilityException {
@@ -398,5 +405,32 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 		} else if (!ok) {
 			throw new CapabilityException(name);
 		}
+	}
+
+	public void delay(int delay) {
+		clock.addEvent(delay, this);
+	}
+	
+	public boolean isLtimerAncestorOf(Token that) {
+		return clock.isAncestorOf(that.clock);
+	}
+	
+	public void pushLtimer() {
+		LogicalClock old = this.clock;
+		clock = new LogicalClock(old);
+		clock.addActive();
+		old.removeActive();
+		setRegion(new LogicalRegion(getRegion(), clock));
+	}
+	
+	public void popLtimer() throws SiteException {
+		LogicalClock old = this.clock;
+		if (old.parent == null) {
+			throw new SiteException("Cannot pop last logical clock.");
+		}
+		clock = old.parent;
+		clock.addActive();
+		old.removeActive();
+		setRegion(((LogicalRegion)region).getParent());
 	}
 }

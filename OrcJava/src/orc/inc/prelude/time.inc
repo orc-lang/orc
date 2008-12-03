@@ -29,8 +29,20 @@ Publish a signal after the given number of logical timesteps.
 A logical timestep is complete as soon as all outstanding site
 calls (other than calls to <code>Ltimer</code>) have published.
 --}
-site MakeTimer = orc.lib.time.MakeTimer
-val Ltimer = MakeTimer()
+site Ltimer = orc.lib.time.Ltimer
+
+{--
+* def withLtimer(lambda () :: A) :: A
+Run a thunk in the context of a new logical clock.
+--}
+def withLtimer(thunk) =
+  site pushLtimer = orc.lib.time.PushLtimer
+  site popLtimer = orc.lib.time.PopLtimer
+  thunk >> -- wait for free variables to become bound
+  pushLtimer() >>
+  thunk() >x>
+  popLtimer() >>
+  x
 
 {--
 * def metronome(Integer) :: Signal

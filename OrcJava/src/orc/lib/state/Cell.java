@@ -71,6 +71,7 @@ public class Cell extends EvalSite {
 				 * Add this caller to the read queue.
 				 */ 
 				if (readQueue != null) {
+					reader.setQuiescent();
 					readQueue.add(reader);
 				}
 				/* Otherwise, return the contents of the cell */
@@ -93,6 +94,7 @@ public class Cell extends EvalSite {
 					
 					/* Wake up all queued readers and report the written value to them. */
 					for (Token reader : readQueue) {
+						reader.unsetQuiescent();
 						reader.resume(val);
 					}
 					
