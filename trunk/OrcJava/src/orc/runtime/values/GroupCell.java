@@ -11,6 +11,8 @@ import java.util.List;
 import orc.error.runtime.UncallableValueException;
 import orc.runtime.Token;
 import orc.runtime.regions.GroupRegion;
+import orc.runtime.regions.Region;
+import orc.runtime.transaction.Transaction;
 import orc.trace.TokenTracer;
 import orc.trace.TokenTracer.PullTrace;
 import orc.trace.TokenTracer.StoreTrace;
@@ -32,13 +34,14 @@ public class GroupCell implements Serializable, Future {
 	private boolean alive = true;
 	private List<Token> waitList;
 	private List<GroupCell> children;
-	private GroupRegion region;
+	private Region region;
+	private Transaction trans;
 	private PullTrace pullTrace;
 	private StoreTrace storeTrace;
 	
 	public static final GroupCell ROOT = new GroupCell(null);
 
-	private GroupCell(PullTrace pullTrace) {
+	protected GroupCell(PullTrace pullTrace) {
 		this.pullTrace = pullTrace;
 	}
 
@@ -103,13 +106,20 @@ public class GroupCell implements Serializable, Future {
 	 * After the children are killed, set children to null so that the memory used by the 
 	 * killed objects can be recycled.
 	 */
-	
-	private void kill() {
-		alive = false;
-		if (children != null)
-			for (GroupCell sub : children)
-				sub.kill();
-		children = null;
+	public void kill() {
+		
+		// Ensure that kill is idempotent
+		if (alive) {
+			alive = false;
+			
+			if (children != null)
+				for (GroupCell sub : children)
+					sub.kill();
+			children = null;
+		
+			/* If this cell is supporting a transaction, abort that transaction. */
+			if (trans != null) { trans.abort(); }
+		}
 	}
 
 	/**
@@ -178,12 +188,35 @@ public class GroupCell implements Serializable, Future {
 	 * If a cell is bound, it closes the associated region,
 	 * even if that region still has live tokens.
 	 */
-	public void setRegion(GroupRegion region) {
+	public void setRegion(Region region) {
 		this.region = region;
+	}
+	
+	/* A group cell may be hosting a transaction */
+	public Transaction getTransaction() {
+		return trans;
+	}
+	
+	public void setTransaction(Transaction trans) {
+		this.trans = trans; 
+	}
+	
+	/* 
+	 * Peek at the bound value of this cell.
+	 * If the cell is still unbound, this returns null.
+	 */
+	public Object peekValue() {
+		return value;
+	}
+	
+	/* Check whether this cell is bound. */
+	public boolean isBound() {
+		return bound;
 	}
 	
 	public String toString() {
 		if (!bound) return "_";
 		else return value.toString();
 	}
+
 }

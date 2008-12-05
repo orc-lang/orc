@@ -26,6 +26,7 @@ import orc.runtime.regions.Execution;
 import orc.runtime.regions.LogicalRegion;
 import orc.runtime.regions.Region;
 import orc.runtime.sites.java.ObjectProxy;
+import orc.runtime.transaction.Transaction;
 import orc.runtime.values.Callable;
 import orc.runtime.values.Closure;
 import orc.runtime.values.Future;
@@ -67,6 +68,7 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 	private Env<Object> env;
 	private GroupCell group;
 	private Region region;
+	private Transaction trans;
 	private OrcEngine engine;
 	/**
 	 * The location of the token in the source code.
@@ -99,7 +101,7 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 		// create the root logical clock
 		LogicalClock clock = new LogicalClock(null);
 		initialize(node, new Env<Object>(),
-				null, GroupCell.ROOT, region,
+				null, GroupCell.ROOT, region, null,
 				null, engine, null,
 				tracer, engine.getConfig().getStackSize(),
 				clock);
@@ -110,13 +112,30 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 	 */
 	void initializeFork(Token that, GroupCell group, Region region) {
 		initialize(that.node, that.env.clone(),
-				that.continuation, group, region,
+				that.continuation, group, region, that.trans,
 				that.result, that.engine, that.location,
 				that.tracer.fork(), that.stackAvailable,
 				that.clock);
 	}
 	
-	private void initialize(Node node, Env<Object> env, Continuation continuation, GroupCell group, Region region, Object result, OrcEngine engine, SourceLocation location, TokenTracer tracer, int stackAvailable, LogicalClock clock) {
+	/**
+	 * Free any resources held by this token.
+	 */
+	void free() {
+		node = null;	
+		env = null;
+		group = null;
+		region = null;
+		trans = null;
+		engine = null;
+		location = null;
+		tracer = null;
+		continuation = null;
+		result = null;
+	}
+	
+
+	private void initialize(Node node, Env<Object> env, Continuation continuation, GroupCell group, Region region, Transaction trans, Object result, OrcEngine engine, SourceLocation location, TokenTracer tracer, int stackAvailable, LogicalClock clock) {
 		this.node = node;
 		this.env = env;
 		this.continuation = continuation;
@@ -124,6 +143,7 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 		this.result = result;
 		this.engine = engine;
 		this.region = region;
+		this.trans = trans;
 		this.alive = true;
 		this.location = location;
 		this.tracer = tracer;
@@ -184,6 +204,10 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 		return region;
 	}
 	
+	public Transaction getTransaction() {
+		return trans;
+	}
+	
 	public Token setResult(Object result) {
 		this.result = result;
 		return this;
@@ -194,6 +218,11 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 		return this;
 	}
 
+	public Token setTransaction(Transaction trans) {
+		this.trans = trans;
+		return this;
+	}
+	
 	/**
 	 * Migrate the token from one region to another.
 	 */
@@ -205,6 +234,7 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 		this.region = region;
 		return this;
 	}
+	
 	
 	public TokenTracer getTracer() {
 		return tracer;

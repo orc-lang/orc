@@ -24,4 +24,5 @@ public interface Visitor<E> {
 	public E visit(Field arg);
 	public E visit(Site arg);
 	public E visit(Var arg);
+	public E visit(Atomic atomic);
 }

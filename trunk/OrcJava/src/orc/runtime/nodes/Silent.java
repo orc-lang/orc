@@ -15,6 +15,8 @@ public class Silent extends Node {
 
 	private static final long serialVersionUID = 1L;
 
+	public static final Silent ONLY = new Silent();
+	
 	@Override
 	public void process(Token t) {
 		t.die();
