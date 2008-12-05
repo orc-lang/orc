@@ -74,7 +74,7 @@ public Expression Program = Space yyValue:Body EndOfFile;
 	
 /*
  * Include files are treated differently than programs;
- * the may not have a goal experssion.
+ * the may not have a goal expression.
  */
 public List<Declaration> Module =
 	Space yyValue:Declarations EndOfFile
@@ -264,7 +264,7 @@ slightly more efficient in Rats!.
 but the point is they bind very loosely, so everything to
 their right right is considered part of their body.
 
-[4] These operators may not be preceeded by a newline, to
+[4] These operators may not be preceded by a newline, to
 avoid ambiguity about where an expression ends.  So if you
 have a newline in front of a minus, the parser assumes
 it's a unary minus, and if you have a newline in front of
@@ -350,14 +350,14 @@ Expression NoCmpMaybeBarExpression =
 	;
 	
 Expression SeqExpression =
-	left:NoCmpMaybeAssignment RANGLE p:Pattern? RANGLE right:NoCmpMaybeSeqExpression {
+	left:NoCmpMaybeAtomic RANGLE p:Pattern? RANGLE right:NoCmpMaybeSeqExpression {
 		if (p == null) yyValue = new Sequential(left, right);
 		else yyValue = new Sequential(left, right, p);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
-Expression MaybeSeqExpression = SeqExpression / IfThenElse / MaybeAssignment;
-Expression NoCmpMaybeSeqExpression = SeqExpression / IfThenElse / NoCmpMaybeAssignment;
+Expression MaybeSeqExpression = SeqExpression / IfThenElse / MaybeAtomic;
+Expression NoCmpMaybeSeqExpression = SeqExpression / IfThenElse / NoCmpMaybeAtomic;
 	
 Expression IfThenElse =
 	IF condition:MaybeDisjunction THEN consequent:MaybeSemiExpression ELSE alternative:MaybeSemiExpression {
@@ -368,6 +368,22 @@ Expression IfThenElse =
 		yyValue = new IfThenElse(condition, consequent);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
+	;
+
+Expression MaybeAtomic =
+	void:ATOMIC body:MaybeAssignment {
+		yyValue = new Atomic(body);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ MaybeAssignment
+	;
+
+Expression NoCmpMaybeAtomic =
+	void:ATOMIC body:NoCmpMaybeAssignment {
+		yyValue = new Atomic(body);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ NoCmpMaybeAssignment
 	;
 
 Expression MaybeAssignment =

@@ -8,10 +8,12 @@ import java.util.List;
 
 import orc.error.compiletime.typing.MissingTypeException;
 import orc.error.compiletime.typing.TypeException;
+import orc.error.runtime.NontransactionalSiteException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.nodes.Node;
+import orc.runtime.transaction.Transaction;
 import orc.runtime.values.Callable;
 import orc.runtime.values.Value;
 import orc.runtime.values.Visitor;
@@ -19,7 +21,7 @@ import orc.type.Type;
 
 /**
  * Base class for all sites
- * @author wcook
+ * @author wcook, dkitchin
  */
 public abstract class Site extends Value implements Callable {
 
@@ -48,9 +50,22 @@ public abstract class Site extends Value implements Callable {
 		}
 	
 		callToken.getTracer().send(this, values);
+		enterTransaction(callToken.getTransaction());
 		callSite(new Args(values), callToken.move(nextNode));
 	}
 	
+	/* 
+	 * Attempt to add this site as a cohort to the transaction.
+	 * The default behavior is to refuse to participate in any
+	 * transaction by raising an exception, and to accept any
+	 * call that is not within a transaction.
+	 */
+	protected void enterTransaction(Transaction transaction) throws NontransactionalSiteException {
+		if (transaction != null) {
+			throw new NontransactionalSiteException(this, transaction);
+		}
+	}
+
 	/**
 	 * Must be implemented by subclasses to implement the site behavior
 	 * @param args			list of argument values
