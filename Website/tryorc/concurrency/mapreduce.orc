@@ -26,32 +26,28 @@ def write(datum) = datum
 
 -- Implement a retry policy; if the site f
 -- doesn't respond in 1 second, call it again
-def retry(f) =
-  def try(a,b) =
-    val (ok, value) = (true, f(a,b)) | (false, Rtimer(1000))
-    if ok then value else try(a,b)
-  try
-
--- Compare two tuples by their first element
-def lt((k1,_), (k2,_)) = (k1 < k2)
-def eq(x,y) = (x = y)
+def retry(f)(a,b) =
+  val (ok, value) = (true, f(a,b)) | (false, Rtimer(1000))
+  if ok then value else retry(f)(a,b)
 
 -- The map phase reads data, maps it,
 -- partitions it, and stores it
 def MAP(mapper, data) =
-  val rmapper = retry(mapper)
   read(data) >(k1,v1)>
-  rmapper(k1,v1) >kvs>
+  retry(mapper)(k1,v1) >kvs>
   each(kvs) >(k2,v2)>
   partition(k2) >store>
-  store(k2,v2)
+  store(k2,v2) >>
+  stop
 
 -- The reduce phase sorts data,
 -- groups it, reduces it, and writes it
 def REDUCE(reducer, table) =
+  -- Sort tuples by their first element
+  def lt((k1,_), (k2,_)) = (k1 < k2)
   sortBy(lt, table.getAll()) >data>
-  each(groupBy(eq, data)) >(k,vs)>
-  reducer(k, vs) >v>
+  each(groupBy((=), data)) >(k,vs)>
+  retry(reducer)(k, vs) >v>
   write((k,v))
 
 {-
@@ -72,5 +68,4 @@ val data = [
   ("primes", [2, 3, 5, 7, 11]),
   ("odd", [1, 3, 5, 7, 9, 11]) ]
 
-MAP(mapper, data) >> stop
-; REDUCE(reducer, table)
+MAP(mapper, data) ; REDUCE(reducer, table)
