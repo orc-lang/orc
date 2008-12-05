@@ -18,6 +18,7 @@ load it as tryorc.shtml?mock
 <ul id="menu" class="filetree">
 <li><span class="folder">Tutorial Examples</span>
 	<ul>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/sites.orc">Site Calls</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/par.orc">Parallel</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/seq.orc">Sequential</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/parseq.orc">Parallel/Sequential</a></span></li>
@@ -39,6 +40,8 @@ load it as tryorc.shtml?mock
 	<li><span class="file"><a class="demo-link" href="tryorc/concurrency/parallelor.orc">Parallel Or</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/concurrency/interrupt.orc">Interrupt</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/concurrency/mapreduce.orc">Map/Reduce</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/demo/twowayswitch.orc">2-way Switch</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/demo/treeswitch.orc">N-way Switch</a></span></li>
 	</ul></li>
 <li class="closed"><span class="folder">Randomized Demos</a></span>
 	<ul>
@@ -68,8 +71,6 @@ load it as tryorc.shtml?mock
 	</ul></li>
 <li class="closed"><span class="folder">Miscellaneous</a></span>
 	<ul>
-	<li><span class="file"><a class="demo-link" href="tryorc/demo/twowayswitch.orc">2-way Switch</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/demo/treeswitch.orc">Tree Switch</a></span></li>
 	</ul></li>
 <li class="closed" id="restricted_demos" style="display: none"><span class="folder">Restricted</a></span>
 	<ul>
