@@ -3386,7 +3386,7 @@ because both patterns match it in parallel.
 </para>
 
 <para>
-This is sometimes used as an alternative to pattern matching using function
+This parallel matching technique is sometimes used as an alternative to pattern matching using function
 clauses, but only when the patterns are mutually exclusive.
 </para>
 
