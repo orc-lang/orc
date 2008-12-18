@@ -5,7 +5,7 @@ def Counter(n) =
 		nr.get() >!n>
 		nr.put(n+1) >> stop)
 
-Counter(0) >c> each(range(1,10)) >> c()
+Counter(0) >c> each(range(0,10)) >> c()
 {-
 OUTPUT:
 0
