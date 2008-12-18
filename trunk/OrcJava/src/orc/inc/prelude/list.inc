@@ -129,7 +129,7 @@ def foldr(f,z,xs) = foldl(flip(f),z,reverse(xs))
 A special case of <code>foldr</code> which uses the last element of the list as the
 initial value. It is an error to call this on an empty list.
 --}
-def foldr1(f,z,xs) = foldl1(flip(f),reverse(xs))
+def foldr1(f,xs) = foldl1(flip(f),reverse(xs))
 
 {--
 * def afold(lambda (A, A) :: A, [A]) :: A
@@ -343,7 +343,7 @@ def groupBy(eq, (k,v):kvs) =
 Generate a list of integers in the given half-open range.
 --}
 def range(low, high) =
-  if low <= high then
+  if low < high then
     low:range(low+1, high)
   else []
 
