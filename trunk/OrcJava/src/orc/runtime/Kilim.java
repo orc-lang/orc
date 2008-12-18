@@ -106,7 +106,7 @@ public class Kilim {
 	/**
 	 * Initialize Kilim state for a new job.
 	 */
-	static void startEngine(int kilimThreads, int siteThreads) {
+	public static void startEngine(int kilimThreads, int siteThreads) {
 		Box<Scheduler> _scheduler = new Box<Scheduler>();
 		Box<BoundedThreadPool> _pool = new Box<BoundedThreadPool>();
 		scheduler.set(_scheduler);

@@ -217,6 +217,8 @@ Symbol   Assoc       Name
 ----------------------------------------------------
  >>      right       sequence
 ----------------------------------------------------
+ atomic  none        atomic transaction
+----------------------------------------------------
  :=      none        ref assignment
 ----------------------------------------------------
  ||      right[2]    boolean or
@@ -835,6 +837,7 @@ transient String SITE = "site":Word Space;
 transient String INCLUDE = "include":Word Space;
 transient String TYPE = "type":Word Space;
 transient String LAMBDA = "lambda":Word Space;
+transient String ATOMIC = "atomic":Word Space;
 transient String AS = "as":Word Space;
 transient String IF = "if":Word Space;
 transient String THEN = "then":Word Space;
