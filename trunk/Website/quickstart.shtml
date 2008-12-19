@@ -2,13 +2,10 @@
 
 <h2>Install Prerequisites</h2>
 <ol>
-<li>Install <a href="http://java.sun.com/javase/6/webnotes/install/">Java</a>
-(&gt;= 1.5)
-</li>
-<li>Download 
-<a href="http://www.eclipse.org/downloads/">Eclipse</a>. These instructions
-assume version 3.2.2, but other versions should behave similarly.
-</li>
+<li><a href="http://java.sun.com/javase/6/webnotes/install/">Java</a> 1.5 or later.</li>
+<li><a href="http://ant.apache.org/">Ant</a> 1.6 or later. (Older versions may also work)</li>
+<li><a href="http://www.eclipse.org/downloads/">Eclipse</a> 3.2 or later. These
+instructions assume version 3.2.2, but other versions should behave similarly.</li>
 </ol>
 
 <h2>Install Orc</h2>
