@@ -23,6 +23,8 @@ instructions assume version 3.2.2, but other versions should behave similarly.</
 	<dt>Connection type</dt><dd><tt>pserver</tt></dd>
 	</dl></li>
 <li>Choose <i>Use a specified module name</i>, enter <tt>OrcJava</tt>, and click <i>Finish</i></li>
+<li>Once the project is created, make sure that it is named <tt>OrcJava</tt> (this is the default).
+Do not change the project name or project will not build correctly.</li>
 </ol>
 
 <h2>Running Orc Programs</h2>
