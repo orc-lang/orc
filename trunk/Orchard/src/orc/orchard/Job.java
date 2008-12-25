@@ -144,9 +144,6 @@ public final class Job implements JobMBean {
 			return blocked;
 		}
 	}
-	
-	/** Has start() been called yet? */
-	private boolean isNew = true;
 	private Date startDate;
 	
 	private class JobEngine extends OrcEngine
@@ -241,8 +238,7 @@ public final class Job implements JobMBean {
 	}
 
 	public synchronized void start() throws InvalidJobStateException {
-		if (!isNew) throw new InvalidJobStateException(getState());
-		isNew = false;
+		if (worker != null) throw new InvalidJobStateException(getState());
 		worker = new Thread(engine);
 		worker.start();
 	}
@@ -268,6 +264,7 @@ public final class Job implements JobMBean {
 	}
 
 	public synchronized void halt() {
+		if (worker == null) return;
 		engine.terminate();
 		// if the engine is blocked, interrupt it
 		// so it can halt
@@ -289,7 +286,7 @@ public final class Job implements JobMBean {
 	}
 
 	public synchronized String getState() {
-		if (isNew) return "NEW";
+		if (worker == null) return "NEW";
 		else if (engine.isDead()) return "DONE";
 		else if (events.isBlocked()) return "BLOCKED";
 		else return "RUNNING";
