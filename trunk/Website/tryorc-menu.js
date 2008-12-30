@@ -6,8 +6,8 @@ $("#menu").treeview({
 
 $("#menu .demo-link").each(function () {
 	var $this = $(this);
-	var file = this.href;
-	this.href = "#";
+	var file = this.getAttribute('href');
+	this.href = "#" + file;
 	$this.click(function () {
 		loadOrcCode(file);
 		$("#menu .demo-link").removeClass("selected");
@@ -31,8 +31,11 @@ function escapeHtml(v) {
 	// FIXME: escape other special characters
 	return v;
 }
+
+});
+
 function loadOrcCode(url) {
-	$.ajax({
+	jQuery.ajax({
 		url: url,
 		success: function (data) {
 			document.getElementById("orc").setOrcCode(data);
@@ -43,11 +46,8 @@ function loadOrcCode(url) {
 	});
 }
 
-/* FIXME: why doesn't this work?
-Orc.whenReady(document.getElementById("orc"), function () {
+document.getElementById("orc").onOrcReady = function () {
 	var file = document.location.hash ? document.location.hash.substring(1) : null;
 	if (file) loadOrcCode(file);
-});
-*/
+};
 
-});
