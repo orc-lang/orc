@@ -82,11 +82,11 @@ public abstract class Account implements AccountMBean {
 			}
 		}
 		
-		Job job = new Job(expr, config);
 		finishOldJobs();
 		if (quota != null && jobs.size() >= quota) {
 			throw new QuotaException();
 		}
+		Job job = new Job(expr, config);
 		job.setStartDate(new Date());
 		jobs.put(id, job);
 		final ObjectName jmxid = JMXUtilities.newObjectName(job, id);
@@ -124,14 +124,21 @@ public abstract class Account implements AccountMBean {
 	
 	public synchronized void finishOldJobs() {
 		if (lifespan == null) return;
+		// find old jobs
 		final int lifespanmillis = lifespan * 1000;
 		Date now = new Date();
+		LinkedList<Job> old = new LinkedList<Job>();
 		for (Job job : jobs.values()) {
 			Date death = new Date(job.getStartDate().getTime() + lifespanmillis);
 			if (death.before(now)) {
-				job.finish();
+				// we can't finish the job now or it will cause
+				// a ConcurrentModificationException when it
+				// removes itself from the active jobs.
+				old.add(job);
 			}
 		}
+		// finish the old jobs we found
+		for (Job job : old) job.finish();
 	}
 
 	public synchronized int getNumNewJobs() {
