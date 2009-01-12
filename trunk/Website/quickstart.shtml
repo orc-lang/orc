@@ -43,13 +43,12 @@ Do not change the project name or project will not build correctly.</li>
 	<dt>Program arguments</dt><dd><tt>${resource_loc}</tt></dd>
 	</dl></li>
 <li>Click <i>Apply</i></li>
-<li>Click <i>Run</i></li>
 </ol>
 
 <p>You only have to perform the above steps once. Then whenever you want to run an Orc program:</p>
 <ol>
-<li>Select the program (you can open it or simply select it in the Package Explorer or Navigator).</li>
-<li>Go to <i>Run -&gt; Run History -&gt; Orc</i> (or use the dropdown menu of the run icon in the toolbar).</li>
+<li>Select the program source file in Eclipse (you can open it or simply select it in the Package Explorer or Navigator).</li>
+<li>Go to <i>Run -&gt; Run ...</i>, select <i>Orc</i>, and click <i>Run</i> (after doing this once, you can use the dropdown menu of the "run" icon in the toolbar as a shortcut).</li>
 </ol>
 
 <!--#include virtual="template/footer.shtml" --> 

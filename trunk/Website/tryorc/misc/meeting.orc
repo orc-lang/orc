@@ -63,14 +63,14 @@ def inviteQuorum(invitees, quorum) =
   )
 
 def notify(time, invitees, responders) =
-  each(invitees) >invitee>
-  if member(invitee, responders) then
-    println(invitee + ": meeting is at " + time) >>
-    stop
-  else
-    println(invitee + ": if possible, come to meeting at " + time) >>
-    stop
-  ; "DONE"
+  each(invitees) >invitee> (
+    if member(invitee, responders) then
+      println(invitee + ": meeting is at " + time) >>
+      stop
+    else
+      println(invitee + ": if possible, come to meeting at " + time) >>
+      stop
+  ) ; "DONE"
 
 -- Main orchestration
 
