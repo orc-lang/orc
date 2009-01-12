@@ -123,3 +123,18 @@ def takePubs(n, f) =
     if(c.dec() >> out.put(x) >> false
        ; out.closenb() >> true)
   ) | repeat(out.get)
+
+{--
+* def withLock(Semaphore, lambda () :: A) :: A
+Acquire the semaphore and run the thunk, publishing all values published by the
+thunk. Once the thunk halts, release the semaphore.
+--}
+def withLock(s, f) =
+  val out = Buffer()
+  (
+    s.acquire() >>
+    f() >x>
+    out.put(x) >>
+    stop
+    ; s.release() >> out.closenb() 
+  ) | repeat(out.get)
