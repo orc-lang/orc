@@ -15,11 +15,10 @@ identifier and publishes the identifiers
 of all of its immediate neighbors.
 -} 
 def path(source, sink, cell, succ) =
-  val timer = MakeTimer()
   def run(n,p) =
     cell(n).write(p) >>
     succ(n) >(m,d)>
-    timer(d) >>
+    Ltimer(d) >>
     run(m,m:p)
   run(source, [source])
   ; reverse(cell(sink).read())
