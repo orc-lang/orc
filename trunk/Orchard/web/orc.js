@@ -36,16 +36,10 @@ document.write("<script src='", baseUrl, (mock?"codemirror/codemirror.js":"codem
 // load the rest of our code after jQuery and other services are ready
 document.write("<script src='", baseUrl, (mock?"orc-ready.js":"orc-ready-min.js"), "'><\/script>");
 
-function whenReady(node, f) {
-	if (node.orcReady) f(node);
-	else node.onOrcReady = f;
-}
-
 // public exports
 return {
 	query: query,
 	baseUrl: baseUrl,
-	whenReady: whenReady,
 	mock: mock,
 	devKey: devKey }
 

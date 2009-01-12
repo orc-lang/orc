@@ -161,9 +161,34 @@ function dragResize(e0, top) {
 	return onmove;
 }
 
+function getCodeFrom(elem) {
+	if (!elem) return "";
+	if (elem.value) return elem.value;
+	else return $(elem).text();
+}
+
 /**
- * Class which encapsulates the behavior of one widget. The basic lifecycle of
- * the widget is this:
+ * Turn an element into a non-runnable Orc widget.
+ * Since all this does is call CodeMirror, it's much simpler
+ * than the full-blown orcify.
+ */
+function orcifySnippet(code, defaultConfig) {
+	var $code = $(code);
+	// put a wrapper around the code area, to add a border
+	$code.wrap('<div class="orc-snippet" />');
+	$code = $code.parent();
+	// replace the code with a codemirror editor
+	var config = $.extend({}, defaultConfig, {
+		content: getCodeFrom(code),
+		readOnly: true,
+		height: $code.height() + "px"
+	});
+	var codemirror = new CodeMirror(CodeMirror.replace(code), config);
+}
+
+/**
+ * Turn an element into a runnable Orc widget. The basic lifecycle of the
+ * widget is this:
  *
  * 1. widget is created
  * 2. user clicks "Run"
@@ -181,12 +206,6 @@ function dragResize(e0, top) {
  * finishes.
  */
 function orcify(code, defaultConfig) {
-	function getCodeFrom(elem) {
-		if (!elem) return "";
-		if (elem.value) return elem.value;
-		else return $(elem).text();
-	}
-
 	var prelude;
 	var postlude;
 	function extractLude(program) {
@@ -514,6 +533,7 @@ function orcify(code, defaultConfig) {
 	// for some reason wrap() makes a copy of $widget.
 	$widget = $code.parent();
 	var program = extractLude(getCodeFrom(code));
+	var onReady = code.onOrcReady;
 	// redraw the program in case the height changes due to hidden code
 	if (!editable) $(code).text(program);
 	var config = $.extend({}, defaultConfig, {
@@ -549,18 +569,17 @@ function orcify(code, defaultConfig) {
 				}
 				_keyDown.apply(this, arguments);
 			}
-			if (code.onOrcReady) {
-				code.onOrcReady($widget[0]);
-				code.onOrcReady = null;
+			if (onReady) {
+				onReady($widget[0]);
+				onReady = null;
 			}
-			$widget[0].orcReady = true;
 		}
 	});
 	program = null;
 	// replace the code with a codemirror editor
 	var codemirror = new CodeMirror(CodeMirror.replace(code), config);
 	// if the code had an id, move it to the surrounding div
-	// (since we're about to replace the code element with codemirror)
+	// (since we replaced the code element with codemirror)
 	if (id) $widget.attr("id", id);
 
 	// resizable fonts
@@ -624,6 +643,10 @@ var config = {
 	textWrapping: true
 
 };
+
+$("pre.orc-snippet").each(function (_, code) {
+	orcifySnippet(code, config);
+});
 
 $(".orc").each(function (_, code) {
 	orcify(code, config);

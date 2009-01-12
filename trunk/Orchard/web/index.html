@@ -8,24 +8,34 @@ load it as index.html?mock
 <link rel="stylesheet" type="text/css" href="orc.css"/>
 </head>
 <body>
-<h1>Try Orc!</h1>
-
-Enter an Orc program in the text box below and then click the <b>run</b> button.
-<br />Font size:
+<div>
+<small>
+<b style="float: right"><a href="#" onclick="document.getElementById('orc').displayOrcHelp()">HELP!</a></b>
+Font size:
 <a href="#" style="cursor: pointer" onclick="document.getElementById('orc').orcFontSizeUp()">bigger</a> /
 <a href="#" style="cursor: pointer" onclick="document.getElementById('orc').orcFontSizeDown()">smaller</a>
-<br />
+&nbsp;&nbsp;&nbsp;&nbsp;Clear program: <a href="#" style="cursor: pointer" onclick="document.getElementById('orc').setOrcCode('')">clear</a>
+</small>
+</div>
 <textarea id="orc" spellcheck="false" class="orc" style="width: 700px; height: 300px">
-include "fun.inc"
-
-def ElizaPrompt(init) =
-    val eliza = Eliza()
-    def loop(message) =
-        eliza(Prompt(message)) >response>
-        loop(response)
-    loop(init)
-
-ElizaPrompt("How do you do.  Please tell me your problem.")
 </textarea>
 <script src="orc.js" type="text/javascript"></script>
+<script type="text/javascript">
+document.getElementById("orc").onOrcReady = function () {
+	var file = document.location.hash ? document.location.hash.substring(1) : null;
+	if (file) loadOrcCode(file);
+};
+
+function loadOrcCode(url) {
+	jQuery.ajax({
+		url: url,
+		success: function (data) {
+			document.getElementById("orc").setOrcCode(data);
+		},
+		error: function () {
+			alert("There was an error loading the example program.");
+		}
+	});
+}
+</script>
 </body>
