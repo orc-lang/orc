@@ -1,7 +1,9 @@
 package orc.orchard;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import orc.ast.oil.Walker;
 import orc.ast.oil.arg.Site;
@@ -17,6 +19,53 @@ public class OilSecurityValidator extends Walker {
 	private List<SecurityProblem> problems = new LinkedList<SecurityProblem>();
 	public boolean hasProblems() {	return hasProblems; }
 	public List<SecurityProblem> getProblems() { return problems; }
+	
+	private static Set<String> allowedClasses;
+	static {
+		allowedClasses = new HashSet<String>(); // a Trie might be more efficient if it were standard
+		
+		// java.lang
+		allowedClasses.add("java.lang.StrictMath");
+		allowedClasses.add("java.lang.Math");
+		allowedClasses.add("java.lang.Boolean");
+		allowedClasses.add("java.lang.Byte");
+		allowedClasses.add("java.lang.Character");
+		allowedClasses.add("java.lang.Short");
+		allowedClasses.add("java.lang.Integer");
+		allowedClasses.add("java.lang.Long");
+		allowedClasses.add("java.lang.Double");
+		allowedClasses.add("java.lang.Float");
+		allowedClasses.add("java.lang.String");
+		allowedClasses.add("java.lang.StringBuffer");
+		allowedClasses.add("java.lang.StringBuilder");
+		
+		// java.util
+		allowedClasses.add("java.util.ArrayList");
+		allowedClasses.add("java.util.Arrays");
+		allowedClasses.add("java.util.BitSet");
+		allowedClasses.add("java.util.Collections");
+		allowedClasses.add("java.util.Currency");
+		allowedClasses.add("java.util.HashMap");
+		allowedClasses.add("java.util.HashSet");
+		allowedClasses.add("java.util.Hashtable");
+		allowedClasses.add("java.util.IdentityHashMap");
+		allowedClasses.add("java.util.LinkedHashMap");
+		allowedClasses.add("java.util.LinkedHashSet");
+		allowedClasses.add("java.util.LinkedList");
+		allowedClasses.add("java.util.PriorityQueue");
+		allowedClasses.add("java.util.Random");
+		allowedClasses.add("java.util.Stack");
+		allowedClasses.add("java.util.TreeMap");
+		allowedClasses.add("java.util.TreeSet");
+		allowedClasses.add("java.util.Vector");
+		
+		// orc.lib
+		allowedClasses.add("orc.lib.data.Set");
+		allowedClasses.add("orc.lib.data.Map");
+		allowedClasses.add("orc.lib.net.Upcoming");
+		allowedClasses.add("orc.lib.net.Geocoder");
+		allowedClasses.add("orc.lib.net.GoogleCalendar");
+	}
 	
 	public static class SecurityProblem implements Located {
 		private String message;
@@ -43,7 +92,8 @@ public class OilSecurityValidator extends Walker {
 		String protocol = site.site.getProtocol();
 		String location = site.site.getLocation().toString();
 		if (protocol.equals(orc.ast.sites.Site.JAVA)) {
-			if (!location.startsWith("orc.lib.")) {
+			// only whitelisted Java classes are allowed
+			if (!allowedClasses.contains(location)) {
 				hasProblems = true;
 				// FIXME: once we have source location information, use it
 				problems.add(new SecurityProblem(
@@ -51,7 +101,9 @@ public class OilSecurityValidator extends Walker {
 						" allowed.",
 						null));
 			}
-		} else if (!protocol.equals(orc.ast.sites.Site.ORC)) {
+		} else if (protocol.equals(orc.ast.sites.Site.ORC)) {
+			// all Orc sites are allowed
+		} else {
 			hasProblems = true;
 			// FIXME: once we have source location information, use it
 			problems.add(new SecurityProblem(
