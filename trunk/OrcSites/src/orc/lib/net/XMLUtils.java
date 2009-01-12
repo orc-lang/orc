@@ -101,7 +101,7 @@ public class XMLUtils {
 		}
 		return runThreaded(new Callable<Document>() {
 			public Document call() throws IOException, SAXException {
-				HttpURLConnection conn = HTTPUtils.connect(url, false);
+				HttpURLConnection conn = HTTPUtils.connect(url, true);
 				OutputStreamWriter out = new OutputStreamWriter(conn.getOutputStream());
 				out.write(request);
 				out.close();
