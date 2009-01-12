@@ -65,6 +65,22 @@ public class OilSecurityValidator extends Walker {
 		allowedClasses.add("orc.lib.net.Upcoming");
 		allowedClasses.add("orc.lib.net.Geocoder");
 		allowedClasses.add("orc.lib.net.GoogleCalendar");
+		allowedClasses.add("orc.lib.date.DateRange");
+		
+		// orc.lib.orchard
+		allowedClasses.add("orc.lib.orchard.forms.Form");
+		allowedClasses.add("orc.lib.orchard.forms.Textbox");
+		allowedClasses.add("orc.lib.orchard.forms.Textarea");
+		allowedClasses.add("orc.lib.orchard.forms.Checkbox");
+		allowedClasses.add("orc.lib.orchard.forms.Button");
+		allowedClasses.add("orc.lib.orchard.forms.IntegerField");
+		allowedClasses.add("orc.lib.orchard.forms.UploadField");
+		allowedClasses.add("orc.lib.orchard.forms.FormInstructions");
+		allowedClasses.add("orc.lib.orchard.forms.PasswordField");
+		allowedClasses.add("orc.lib.orchard.forms.Mandatory");
+		allowedClasses.add("orc.lib.orchard.forms.FieldGroup");
+		allowedClasses.add("orc.lib.orchard.forms.DateRangesField");
+		allowedClasses.add("orc.lib.orchard.forms.DateField");
 	}
 	
 	public static class SecurityProblem implements Located {
