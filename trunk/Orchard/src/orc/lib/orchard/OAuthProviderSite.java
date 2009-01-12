@@ -30,7 +30,7 @@ public class OAuthProviderSite extends Site {
 	 * This provider uses Java UI stuff to launch a browser
 	 * and prompt the user to confirm authorization.
 	 */
-	private static class WebOAuthProvider extends OAuthProvider {
+	public static class WebOAuthProvider extends OAuthProvider {
 		private OrcEngine globals;
 		private Redirectable redirectable;
 		public WebOAuthProvider(OrcEngine globals,
