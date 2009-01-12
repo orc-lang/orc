@@ -154,7 +154,7 @@ function readWord(source, _, ch1) {
 	case "val": case "def": case "as": case "include": case "type":
 	case "site": case "class": case "null": case "stop":
 	case "if": case "then": case "else":
-	case "signal": case "lambda":
+	case "signal": case "lambda": case "atomic":
 		return { type:word, content:word, style:"keyword" };
 	default:
 		return { type:"variable", content:word, style:"variable" };
