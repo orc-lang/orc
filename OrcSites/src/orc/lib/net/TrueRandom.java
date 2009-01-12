@@ -4,15 +4,16 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import kilim.Pausable;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
-import orc.runtime.sites.ThreadedSite;
+import orc.runtime.sites.KilimSite;
 
-public class TrueRandom extends ThreadedSite {
+public class TrueRandom extends KilimSite {
 	private static String baseURL = "http://www.random.org/integers/?num=1&col=1&base=10&format=plain&rnd=new";
 	@Override
-	public Object evaluate(Args args) throws TokenException {
+	public Object evaluate(Args args) throws TokenException, Pausable {
 		try {
 			String number = HTTPUtils.getURL(
 					new URL(baseURL

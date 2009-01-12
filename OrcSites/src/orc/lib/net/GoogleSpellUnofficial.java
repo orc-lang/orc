@@ -5,17 +5,16 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import javax.xml.parsers.ParserConfigurationException;
+import kilim.Pausable;
 
 import orc.error.OrcError;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
-import orc.runtime.sites.ThreadedSite;
+import orc.runtime.sites.KilimSite;
 import orc.runtime.values.ListValue;
 import orc.runtime.values.NilValue;
 
-import org.codehaus.jettison.json.JSONException;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -26,10 +25,10 @@ import org.xml.sax.SAXException;
  * http://developer.yahoo.com/search/web/V1/spellingSuggestion.html
  * @author quark
  */
-public class GoogleSpellUnofficial extends ThreadedSite {
+public class GoogleSpellUnofficial extends KilimSite {
 	private final static String apiURL = "https://www.google.com/tbproxy/spell?lang=en&hl=en";
 	@Override
-	public Object evaluate(Args args) throws TokenException {
+	public Object evaluate(Args args) throws TokenException, Pausable {
 		// get the first page of results and the cursor
 		try {
 			String search = args.stringArg(0);
@@ -51,10 +50,6 @@ public class GoogleSpellUnofficial extends ThreadedSite {
 			// should be impossible
 			throw new OrcError(e);
 		} catch (IOException e) {
-			throw new JavaException(e);
-		} catch (JSONException e) {
-			throw new JavaException(e);
-		} catch (ParserConfigurationException e) {
 			throw new JavaException(e);
 		} catch (SAXException e) {
 			throw new JavaException(e);

@@ -1,15 +1,20 @@
 package orc.lib.net;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.concurrent.Callable;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.codehaus.jettison.json.JSONException;
+import kilim.Pausable;
+
+import orc.runtime.Kilim;
+
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -19,6 +24,29 @@ public class XMLUtils {
 		builderFactory = DocumentBuilderFactory.newInstance();
 		builderFactory.setCoalescing(true);
 	}
+	
+	/**
+	 * Utility method to run a blocking operation.
+	 * FIXME: duplicates code from HTTPUtils
+	 */
+	private static <E> E runThreaded(Callable<E> thunk) throws IOException, SAXException, Pausable {
+		try {
+			return Kilim.runThreaded(thunk);
+		} catch (Exception e) {
+			// HACK: for some reason when I put these
+			// as separate catch clauses it doesn't work like I expect
+			if (e instanceof IOException) {
+				throw (IOException)e;
+			} else if (e instanceof SAXException) {
+				throw (IOException)e;
+			} else if (e instanceof RuntimeException) {
+				throw (RuntimeException)e;
+			} else {
+				throw new AssertionError(e);
+			}
+		}
+	}
+	
 	public static String escapeXML(String text) {
 		StringBuilder sb = new StringBuilder();
 		int len = text.length();
@@ -42,19 +70,47 @@ public class XMLUtils {
 		}
 		return sb.toString();
 	}
+	
+	public static Document getURL(final URL url) throws IOException, SAXException, Pausable {
+		final DocumentBuilder builder;
+		try {
+			builder = builderFactory.newDocumentBuilder();
+		} catch (ParserConfigurationException e) {
+			// should never happen
+			throw new AssertionError(e);
+		}
+		return runThreaded(new Callable<Document>() {
+			public Document call() throws IOException, SAXException {
+				HttpURLConnection conn = HTTPUtils.connect(url, false);
+				InputStream in = conn.getInputStream();
+				Document doc = builder.parse(conn.getInputStream());
+				in.close();
+				conn.disconnect();
+				return doc;
+			}
+		});
+	}
 
-	public static Document postURL(URL url, String request) throws IOException, JSONException, ParserConfigurationException, SAXException {
-		HttpURLConnection conn = (HttpURLConnection)url.openConnection();
-		conn.setConnectTimeout(10000); // 10 seconds is reasonable
-		conn.setReadTimeout(5000); // 5 seconds is reasonable
-		conn.setDoOutput(true);
-		conn.connect();
-		OutputStreamWriter out = new OutputStreamWriter(conn.getOutputStream());
-		out.write(request);
-		out.close();
-		DocumentBuilder builder = builderFactory.newDocumentBuilder();
-		Document doc = builder.parse(conn.getInputStream());
-		conn.disconnect();
-		return doc;
+	public static Document postURL(final URL url, final String request) throws IOException, SAXException, Pausable {
+		final DocumentBuilder builder;
+		try {
+			builder = builderFactory.newDocumentBuilder();
+		} catch (ParserConfigurationException e) {
+			// should never happen
+			throw new AssertionError(e);
+		}
+		return runThreaded(new Callable<Document>() {
+			public Document call() throws IOException, SAXException {
+				HttpURLConnection conn = HTTPUtils.connect(url, false);
+				OutputStreamWriter out = new OutputStreamWriter(conn.getOutputStream());
+				out.write(request);
+				out.close();
+				InputStream in = conn.getInputStream();
+				Document doc = builder.parse(conn.getInputStream());
+				in.close();
+				conn.disconnect();
+				return doc;
+			}
+		});
 	}
 }
