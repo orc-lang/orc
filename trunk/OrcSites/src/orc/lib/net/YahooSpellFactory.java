@@ -9,12 +9,14 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Properties;
 
+import kilim.Pausable;
+
 import orc.error.OrcError;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
-import orc.runtime.sites.ThreadedSite;
+import orc.runtime.sites.KilimSite;
 import orc.runtime.values.ConsValue;
 import orc.runtime.values.NilValue;
 
@@ -26,7 +28,7 @@ import org.codehaus.jettison.json.JSONObject;
  * @author quark
  */
 public class YahooSpellFactory extends EvalSite {
-	private static class YahooSpell extends ThreadedSite {
+	private static class YahooSpell extends KilimSite {
 		private final static String apiURL = "http://search.yahooapis.com/WebSearchService/V1/spellingSuggestion";
 		private final String appid;
 		public YahooSpell(String file) throws IOException {
@@ -37,7 +39,7 @@ public class YahooSpellFactory extends EvalSite {
 			appid = p.getProperty("orc.lib.net.yahoo.appid");
 		}
 		@Override
-		public Object evaluate(Args args) throws TokenException {
+		public Object evaluate(Args args) throws TokenException, Pausable {
 			// get the first page of results and the cursor
 			try {
 				String search = args.stringArg(0);
