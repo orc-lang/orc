@@ -174,14 +174,17 @@ function getCodeFrom(elem) {
  */
 function orcifySnippet(code, defaultConfig) {
 	var $code = $(code);
+	var height = $code.height();
 	// put a wrapper around the code area, to add a border
-	$code.wrap('<div class="orc-snippet" />');
+	$code.wrap('<div class="orc-code" />');
+	$code = $code.parent();
+	$code.wrap('<div class="orc-wrapper" />');
 	$code = $code.parent();
 	// replace the code with a codemirror editor
 	var config = $.extend({}, defaultConfig, {
 		content: getCodeFrom(code),
 		readOnly: true,
-		height: $code.height() + "px"
+		height: height + "px"
 	});
 	var codemirror = new CodeMirror(CodeMirror.replace(code), config);
 }
@@ -503,6 +506,7 @@ function orcify(code, defaultConfig) {
 
 	// private members
 	var $code = $(code);
+	var height = $code.height();
 	var $loading = $('<div class="orc-loading" style="display: none"/>');
 	var $widget = $('<div class="orc-wrapper" />');
 		//.width($code.width()+2);
@@ -527,7 +531,7 @@ function orcify(code, defaultConfig) {
 	var editable = (code.tagName == "TEXTAREA");
 	var id = $code.attr("id");
 	// put a wrapper around the code area, to add a border
-	$code.wrap('<div class="orc" />');
+	$code.wrap('<div class="orc-code" />');
 	$code = $code.parent();
 	$code.wrap($widget).after($events).after($prompts).after($controls);
 	// for some reason wrap() makes a copy of $widget.
@@ -539,7 +543,7 @@ function orcify(code, defaultConfig) {
 	var config = $.extend({}, defaultConfig, {
 		content: program,
 		readOnly: !editable,
-		height: $code.height() + "px",
+		height: height + "px",
 		initCallback: function (cm) {
 			// monkey-patch keyDown to handle our own hotkeys
 			var _keyDown = cm.editor.keyDown;
