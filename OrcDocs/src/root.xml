@@ -516,8 +516,16 @@ expressions are silent: <code>10/0</code>, <code>6 + false</code>, <code>3 + 1/0
 </para>
 
 <para>
-Cor is a dynamically typed language. A Cor implementation does not statically check the type correctness
-of an expression; instead, an expression with a type error is simply silent when it is evaluated.
+Cor is a dynamically typed language. A Cor implementation does not statically
+check the type correctness of an expression; instead, an expression with a type
+error is simply silent when it is evaluated.
+</para>
+
+<para>
+Silent expressions can produce side effects.  For example, on encountering a
+type error, Orc will print an error message to the console.  However the
+expression containing the type error will not publish a value, and in this
+respect it is silent.
 </para>
 
 </section>
