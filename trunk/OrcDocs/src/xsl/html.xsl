@@ -9,7 +9,7 @@
 <xsl:param name="orc.demo" select="0"/>
 
 <!--
-Orc examples should use the "orc" CSS class.
+Orc examples must use the "orc" CSS class.
 -->
 <xsl:template match="programlisting[@language='orc-demo']" mode="class.value">orc</xsl:template>
 
@@ -20,11 +20,12 @@ Orc examples should use the "orc" CSS class.
 </xsl:if>
 </xsl:template>
 
-<!-- Include orc.css if desired -->
+<!-- Include stylsheets, including orc.css if desired -->
 <xsl:template name="user.head.content">
 <xsl:if test="$orc.demo">
 <link rel="stylesheet" type="text/css" href="/orchard/orc.css"/>
 </xsl:if>
+<link rel="stylesheet" type="text/css" href="style.css"/>
 </xsl:template>
 
 <!--

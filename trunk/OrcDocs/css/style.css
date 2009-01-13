@@ -1,26 +1,14 @@
-.programlisting, .orc, .orc-wrapper {
-	background-color: #E0E0E7;
-	padding: 2ex;
-	width: 60%;
-	margin-left: 5%;	
-}
+/* Copied from Orchard/web/orc.css */
 
-.orc-wrapper .orc {
-	width: 100%;
-}
-
-.term {
-	font-weight: bold;
-}
-
-.variablelist dt {
-	float: left;
-	clear: left;
-	padding-right: 1em;
-}
-
-.variablelist dd {
-	margin-left: 6em;
+.programlisting {
+	border: 1px solid #666;
+	margin: 0;
+	padding: 0;
+	overflow: auto;
+	font-family: monospace;
+	background-color: white;
+	/* this has no effect after codemirror has loaded */
+	font-size: 14px;
 }
 
 /* Copied from Orchard/web/orc-syntax.css */
@@ -43,4 +31,31 @@ span.hl-comment {
 
 span.hl-literal, span.hl-number, span.hl-string {
 	color: #090;
+}
+
+/* Original stuff */
+
+.orc-wrapper, .orc, .programlisting {
+	width: 60%;
+	margin-left: 5%;
+	margin-bottom: 1em;
+	margin-top: 1em;
+}
+
+.orc-code, .orc, .programlisting {
+	padding: 1em;
+}
+
+.term {
+	font-weight: bold;
+}
+
+.variablelist dt {
+	float: left;
+	clear: left;
+	padding-right: 1em;
+}
+
+.variablelist dd {
+	margin-left: 6em;
 }
