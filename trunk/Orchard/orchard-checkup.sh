@@ -9,11 +9,15 @@
 
 URL="http://orc.csres.utexas.edu/orchard/json/executor"
 EMAIL="oncall@orc.csres.utexas.edu"
+LOCK="/var/run/orchard-checkup.lock"
 
 # report an error and halt
 error() {
-        echo "$1" | mail -s "orc.csres.utexas.edu problem" "$EMAIL"
-        exit 1
+	if ! [ -f $LOCK ]; then
+		touch $LOCK
+		echo "$1" | mail -s "orc.csres.utexas.edu problem" "$EMAIL"
+	fi
+	exit 1
 }
 
 # post a request
