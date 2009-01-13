@@ -61,6 +61,8 @@ Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes five signals
 signals(5)]]></programlisting>
+
+@implementation
 --}
 def signals(n) = if n > 0 then (signal | signals(n-1))
 
@@ -72,6 +74,8 @@ Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: 1 2 3 4 5
 for(1,6)]]></programlisting>
+
+@implementation
 --}
 def for(low, high) =
   if low >= high then stop
@@ -86,6 +90,8 @@ Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: 0 1 2 3 4
 upto(5)]]></programlisting>
+
+@implementation
 --}
 def upto(high) = for(0, high)
 
@@ -99,6 +105,8 @@ For example, to set all elements of an array to zero:
 -- Publishes: 0 0 0
 val a = fillArray(Array(3), lambda (_) = 0)
 a.get(0) | a.get(1) | a.get(2)]]></programlisting>
+
+@implementation
 --}
 def fillArray(a, f) =
   val n = a.length()
@@ -114,6 +122,8 @@ def fillArray(a, f) =
 publishes the first <code>n</code> values published
 by <code>f()</code> (as they are published), and then
 halts.
+
+@implementation
 --}
 def takePubs(n, f) =
   val out = Buffer()
@@ -128,6 +138,8 @@ def takePubs(n, f) =
 * def withLock(Semaphore, lambda () :: A) :: A
 Acquire the semaphore and run the thunk, publishing all values published by the
 thunk. Once the thunk halts, release the semaphore.
+
+@implementation
 --}
 def withLock(s, f) =
   val out = Buffer()

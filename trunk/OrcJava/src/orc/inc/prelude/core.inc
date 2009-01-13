@@ -201,6 +201,8 @@ site (:) = orc.runtime.sites.core.Cons
 {--
 * def abs(Number) :: Number
 Return the absolute value of the argument.
+
+@implementation
 --}
 def abs(x) = if x < 0 then -x else x
 
@@ -208,6 +210,8 @@ def abs(x) = if x < 0 then -x else x
 * def signum(Number) :: Number
 <code>signum(a)</code> returns <code>-1</code> if <code>a&lt;0</code>,
 <code>1</code> if <code>a&gt;0</code>, and <code>0</code> if <code>a=0</code>.
+
+@implementation
 --}
 def signum(x) =
   if x < 0 then -1
@@ -223,6 +227,8 @@ Recall that the type constraint <code>A &lt;: Comparable</code>
 means that <code>min</code> can only be applied to arguments
 which are subtypes of <code>Comparable</code>; in other words,
 they must have a total order.
+
+@implementation
 --}
 def min(x,y) = if y < x then y else x
 
@@ -230,5 +236,7 @@ def min(x,y) = if y < x then y else x
 * def max(A,A) :: A, A <: Comparable
 Return the greater of the arguments. If the arguments
 are equal, return the second argument.
+
+@implementation
 --}
 def max(x,y) = if x > y then x else y
