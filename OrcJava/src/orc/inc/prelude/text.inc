@@ -49,6 +49,8 @@ Split a string into lines, which are substrings
 terminated by an endline or the end of the string.
 DOS, Mac, and Unix endline conventions are all accepted.
 Endline characters are not included in the result.
+
+@implementation
 --}
 def lines(text) =
   val out = text.split("\n|\r\n|\r")
@@ -60,6 +62,8 @@ def lines(text) =
 * def unlines([String]) :: String
 Append a linefeed, "\n", to each string in the sequence
 and concatenate the results.
+
+@implementation
 --}
 def unlines(line:lines) = cat(line, "\n", unlines(lines))
 def unlines([]) = ""
@@ -67,6 +71,8 @@ def unlines([]) = ""
 {--
 * def words(String) :: [String]
 Split a string into words, which are sequences of non-whitespace characters separated by whitespace.
+
+@implementation
 --}
 def words(text) = text.trim().split("\\s+")
 
@@ -74,6 +80,8 @@ def words(text) = text.trim().split("\\s+")
 * def unwords([String]) :: String
 Concatenate a sequence of strings with a single space between
 each string.
+
+@implementation
 --}
 def unwords([]) = ""
 def unwords([word]) = word

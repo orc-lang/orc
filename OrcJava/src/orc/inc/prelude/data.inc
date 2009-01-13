@@ -250,6 +250,8 @@ site Ref = orc.lib.state.Ref
 ** def (?)(Ref<A>) :: A
 Get the value held by a reference.
 <code>x?</code> is equivalent to <code>x.read()</code>.
+
+@implementation
 --}
 def (?)(r) = r.read()
 
@@ -257,6 +259,8 @@ def (?)(r) = r.read()
 ** def (:=)(Ref<A>, A) :: Signal
 Set the value held by a reference.
 <code>x := y</code> is equivalent to <code>x.write(y)</code>.
+
+@implementation
 --}
 def (:=)(r,v) = r.write(v)
 
@@ -349,6 +353,8 @@ Example:
 val a = IArray(5, fib)
 -- Publishes the 4th number of the fibonnaci sequence: 5
 a(3)]]></programlisting>
+
+@implementation
 --}
 def IArray(n, f) =
   val a = Array(n)
@@ -528,17 +534,23 @@ site Dictionary = orc.lib.data.Dictionary
 {--
 * def fst((A,B)) :: A
 Return the first element of a pair.
+
+@implementation
 --}
 def fst((x,_)) = x
 
 {--
 * def snd((A,B)) :: B
 Return the second element of a pair.
+
+@implementation
 --}
 def snd((_,y)) = y
 
 {--
 * def swap((A,B)) :: (B,A)
 Swap the elements of a pair.
+
+@implementation
 --}
 def swap((x,y)) = (y,x)

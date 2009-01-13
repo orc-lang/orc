@@ -15,18 +15,12 @@ header {
 option constant;
 
 public List<DocNode> Content =
-	docs:(DocumentationBlock / Filler)* {
+	blocks:DocumentationBlock* {
 		List<DocNode> out = new LinkedList<DocNode>();
-		for (List<DocNode> nodes : docs) {
+		for (List<DocNode> nodes : blocks) {
 			out.addAll(nodes);
 		}
 		yyValue = out;
-	}
-	;
-
-List<DocNode> Filler =
-	(EndLineComment / MultiLineComment / StringLiteral / _) {
-		yyValue = new LinkedList<DocNode>();
 	}
 	;
 	
@@ -37,6 +31,10 @@ List<DocNode> DocumentationBlock =
 	void:StartDoc void:EndLine? nodes:DocNode* void:EndDoc {
 		yyValue = nodes.list();
 	}
+	/ text:DocCode {
+		yyValue = new LinkedList<DocNode>();
+		yyValue.add(new DocCode(text));
+	}
 	;
 
 DocNode DocNode =
@@ -44,12 +42,17 @@ DocNode DocNode =
 		int depth = lead.trim().length();
 		yyValue = new DocType(depth, type);
 	}
+	/ "@" name:Identifier {
+		yyValue = new DocTag(name);
+	}
 	/ desc:DocParagraph EndLine? BlankLine* {
 		yyValue = new DocParagraph(desc);
 	}
 	;
 
 String DocParagraph = (XML / !(EndDoc / EndLine (StartDocType / BlankLine)) _)+ ;
+
+String DocCode = (!StartDoc (EndLineComment /  MultiLineComment / StringLiteral / _))+;
 
 String XML =
     "<!--" (!"-->" _)+ "-->"
@@ -59,20 +62,17 @@ String XML =
 	/ "<" (![>] _)+ ">" (XML / ![<] _ )* "</" (![>] _)+ ">"
 	;
 
+
 String StartDocType = "*"+ Space ;
 transient String StartDoc = "{--" Space? ;
 transient String EndDoc = Space? [\-]+ [}] ;
 transient String BlankLine = Space? EndLine ;
+transient String Identifier = [a-zA-Z_]+ ;
 	
 //////////////////////////////////////////////////////
 // String literals
 
-String StringLiteral =
-	string:StringLiteralToken {
-		yyValue = Utilities.unescape(string.substring(1, string.length()-1));
-	}
-	;
-String StringLiteralToken = ["] ( EscapeSequence / !["\\] _ )* ["] ;
+String StringLiteral = ["] ( EscapeSequence / !["\\] _ )* ["] ;
 transient String EscapeSequence =
    '\\' [btnfr"'\-\[\\\]] / UnicodeEscape / OctalEscape
    ;
@@ -92,8 +92,8 @@ transient String OctalDigit = [0-7] ;
 transient String Space = [ \t\f]+ ;
 transient String RestOfLine = ( ![\n\r] _ )* ;
 
-transient void EndLineComment = "--" ( ![\n\r] _ )* ( EndLine / EndFile ) ;
-transient void MultiLineComment = "{-" ( [\-] ![}] / EndLine / ![\-\n\r] _ )* "-}" ;
+transient String EndLineComment = "--" ( ![\n\r] _ )* ( EndLine / EndFile ) ;
+transient String MultiLineComment = "{-" ( [\-] ![}] / EndLine / ![\-\n\r] _ )* "-}" ;
 	
 transient String EndFile = !_ ;
 transient String EndLine = "\r\n" / '\r' / '\n' ;

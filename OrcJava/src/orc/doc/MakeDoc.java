@@ -4,8 +4,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
+
+import orc.runtime.ReverseListIterator;
 
 import xtc.parser.ParseException;
 import xtc.parser.Result;
@@ -46,10 +50,15 @@ public class MakeDoc {
 			int depth = 0;
 			for (DocNode doc : file.nodes) {
 				if (doc instanceof DocParagraph) {
-					System.out.print("<para>");
-					System.out.print(((DocParagraph)doc).body.trim());
-					System.out.println("</para>");
-				} else {
+					String body = ((DocParagraph)doc).body.trim();
+					if (!body.equals("")) {
+						System.out.print("<para>");
+						System.out.print(body);
+						System.out.println("</para>");
+					}
+				} else if (doc instanceof DocTag) {
+					System.out.print(((DocTag)doc).value);
+				} else if (doc instanceof DocType) {
 					DocType type = (DocType)doc;
 					if (type.depth > depth) {
 						System.out.println("<variablelist>");
@@ -99,7 +108,25 @@ public class MakeDoc {
 				new InputStreamReader(new FileInputStream(file)),
 				file);
 		Result result = parser.pContent(0);
-		return (List<DocNode>)parser.value(result);
+		List<DocNode> nodes = (List<DocNode>)parser.value(result);
+		
+		// fill in values of @implementation tags
+		DocCode lastCode = new DocCode("");
+		ListIterator<DocNode> it = nodes.listIterator(nodes.size());
+		while (it.hasPrevious()) {
+			DocNode node = it.previous();
+			if (node instanceof DocCode) {
+				lastCode = (DocCode)node;
+			} else if (node instanceof DocTag) {
+				DocTag tag = (DocTag)node;
+				if (tag.name.equals("implementation")) {
+					tag.value = "<formalpara><title>Implementation</title>" +
+						"<programlisting>" + escapeXML(lastCode.text.trim()) + "</programlisting>" +
+						"</formalpara>";
+				}
+			}
+		}
+		return nodes;
 	}
 
 	public static String escapeXML(String text) {
