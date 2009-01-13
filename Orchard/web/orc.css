@@ -1,4 +1,28 @@
-.orc, .orc-snippet {
+/*
+The structure of the processed Orc widget looks like this:
+<div class="orc-wrapper">
+  <div class="orc-code">...</div>
+  ...
+</div>
+
+The structure of the unprocessed Orc widget looks like this:
+  <pre class="orc">...</pre>
+or this:
+  <pre class="orc-snippet">...</pre>
+
+In order to accomodate browsers without CSS, you should always use <pre> or
+<textarea> for an Orc widget.
+
+In order to accomodate browsers without Javascript, you should always provide
+styles for .orc and .orc-snippet (unprocessed), and also for .orc-wrapper and
+.orc-code (processed). It makes sense to divide the style between inner and
+outer styles. Both inner and outer styles are applied to .orc and .orc-snippet;
+only the inner are applied to .orc-code, and only the outer are applied to
+.orc-wrapper.
+*/
+
+/* Inner style: applies inside and around code area */
+.orc-code, .orc, .orc-snippet {
 	border: 1px solid #666;
 	margin: 0;
 	padding: 0;
@@ -8,14 +32,18 @@
 	/* this has no effect after codemirror has loaded */
 	font-size: 14px;
 }
-.orc-prelude {
-	display: none;
-}
-.orc-wrapper {
+
+/* Outer style: applies outside code area */
+.orc-wrapper, .orc, .orc-snippet {
 	margin-bottom: 1em;
 	background-color: white;
 	font-size: 14px;
 }
+
+.orc-prelude {
+	display: none;
+}
+
 .orc-events {
 	border: 1px solid #666;
 	margin-top: -1px;
