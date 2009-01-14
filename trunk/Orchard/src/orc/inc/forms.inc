@@ -12,7 +12,7 @@ class FormInstructions = orc.lib.orchard.forms.FormInstructions
 class PasswordField = orc.lib.orchard.forms.PasswordField
 class Mandatory = orc.lib.orchard.forms.Mandatory
 class FieldGroup = orc.lib.orchard.forms.FieldGroup
-class DateRangesField = orc.lib.orchard.forms.DateRangesField
+class DateTimeRangesField = orc.lib.orchard.forms.DateTimeRangesField
 class DateField = orc.lib.orchard.forms.DateField
   
 -- returns the form data

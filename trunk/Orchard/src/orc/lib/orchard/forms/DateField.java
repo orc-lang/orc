@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Set;
 
-import org.joda.time.LocalDateTime;
+import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 
-public class DateField extends SingleField<LocalDateTime> {
+public class DateField extends SingleField<LocalDate> {
 
 	public DateField(String key, String label) {
 		super(key, label, "");
@@ -48,10 +48,10 @@ public class DateField extends SingleField<LocalDateTime> {
 	}
 
 	@Override
-	public LocalDateTime requestToValue(String posted) throws ValidationException {
+	public LocalDate requestToValue(String posted) throws ValidationException {
 		try {
 			if (posted.equals("")) return null;
-			return DateTimeFormat.forPattern("MM/dd/yyyy").parseDateTime(posted).toLocalDateTime();
+			return DateTimeFormat.forPattern("MM/dd/yyyy").parseDateTime(posted).toLocalDate();
 		} catch (IllegalArgumentException e) {
 			throw new ValidationException(label + " must match the format MM/DD/YYYY.");
 		}
