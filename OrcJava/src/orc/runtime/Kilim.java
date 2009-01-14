@@ -23,7 +23,7 @@ import orc.error.runtime.TokenException;
  * 
  * @author quark
  */
-public class Kilim {
+public final class Kilim {
 	/**
 	 * The scheduler for the current Orc engine.
 	 * The box is necessary because values are "inherited" by
@@ -122,7 +122,7 @@ public class Kilim {
 	/**
 	 * Shutdown Kilim threads created for the current job.
 	 */
-	static void stopEngine() {
+	public static void stopEngine() {
 		scheduler.get().value.shutdown();
 		pool.get().value.shutdownNow();
 		scheduler.set(null);
@@ -278,5 +278,9 @@ public class Kilim {
         		}
 			}
 		}.start();
+	}
+	
+	public static void exit() throws Pausable {
+		Task.exit(signal);
 	}
 }
