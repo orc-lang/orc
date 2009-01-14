@@ -80,6 +80,19 @@ public class UnguardedRecursionChecker extends Walker {
 		env = outerEnv;
 		return null;
 	}
+	
+	@Override
+	public Void visit(Semi expr) {
+		expr.left.accept(this);
+		
+		// The semi changes all previous bindings to
+		// false within the RHS
+		Env<Boolean> outerEnv = env;
+		env = envForPush(outerEnv);
+		expr.right.accept(this);
+		env = outerEnv;
+		return null;
+	}
 
 	@Override
 	public Void visit(Call expr) {
@@ -133,14 +146,23 @@ public class UnguardedRecursionChecker extends Walker {
 	}
 	
 	/**
-	 * Generate an environment for checking the RHS of a push.
-	 * Specifically, all bindings are false (since they are guarded by the push).
+	 * Generate an environment for checking the RHS of a semi.
+	 * Specifically, all bindings are false (since they are guarded by the semi).
 	 */
-	private static Env<Boolean> envForPush(Env<Boolean> env) {
+	private static Env<Boolean> envForSemi(Env<Boolean> env) {
 		Env<Boolean> out = new Env<Boolean>();
 		for (Boolean _ : env.items()) {
 			out.add(false);
 		}
+		return out;
+	}
+	
+	/**
+	 * Generate an environment for checking the RHS of a push.
+	 * Specifically, all bindings are false (since they are guarded by the push).
+	 */
+	private static Env<Boolean> envForPush(Env<Boolean> env) {
+		Env<Boolean> out = envForSemi(env);
 		// plus one binding for the push itself
 		out.add(false);
 		return out;
