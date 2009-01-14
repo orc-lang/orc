@@ -5,6 +5,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 
 import kilim.Pausable;
+import orc.runtime.Kilim;
 import orc.runtime.values.TupleValue;
 
 /**
@@ -16,12 +17,16 @@ import orc.runtime.values.TupleValue;
 public class Geocoder {
 	private static String baseURL = "http://geocoder.us/service/csv/geocode?";
 
-	private static TupleValue parseCSV(String csv) {
+	private static TupleValue parseCSV(String csv) throws Pausable {
 		String[] parts = csv.split(",");
-		if (parts.length < 3) return null;
+		if (parts.length < 3) {
+			Kilim.exit();
+			return null;
+		}
 		try {
 			return new TupleValue(Double.parseDouble(parts[0].trim()), Double.parseDouble(parts[1].trim()));
 		} catch (NumberFormatException e) {
+			Kilim.exit();
 			return null;
 		}
 	}
