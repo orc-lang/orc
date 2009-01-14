@@ -5,6 +5,7 @@ package orc.runtime.sites.core;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.HashSet;
 
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
@@ -15,9 +16,40 @@ import orc.type.ArrowType;
 import orc.type.Type;
 
 /**
+ * Implement standard equality.
+ * 
  * @author dkitchin, quark
  */
 public class Equal extends EvalSite {
+	private static HashSet<Class> valueClasses = new HashSet<Class>();
+	static {
+		synchronized (Equal.class) {
+			valueClasses.add(Character.class);
+			valueClasses.add(Boolean.class);
+			valueClasses.add(String.class);
+		}
+	}
+	
+	/**
+	 * Register a class as a "value class" which can be safely compared with
+	 * {@link #equals(Object)}. Instances of value classes should be immutable.
+	 * 
+	 * <p>
+	 * If possible, it's better if you make your class implement the interface
+	 * {@link Eq} instead. This is here as a workaround for third-party
+	 * libraries which can't be modified.
+	 * 
+	 * <p>
+	 * You should call this from a static constructor, so you can be reasonably
+	 * sure everything is registered before {@link Equal#eq(Object, Object)} is
+	 * called.
+	 * 
+	 * @param c
+	 */
+	public static synchronized void registerValueClass(Class c) {
+		valueClasses.add(c);
+	}
+	
 	private static final NumericBinaryOperator<Boolean> op
 	= new NumericBinaryOperator<Boolean>() {
 		public Boolean apply(BigInteger a, BigInteger b) {
@@ -66,6 +98,8 @@ public class Equal extends EvalSite {
 		// for all other types, we use pointer equality
 		if (a == null || b == null) {
 			return a == b;
+		} else if (a instanceof Eq) {
+			return ((Eq)a).eqTo(b);
 		} else if (a instanceof Number && b instanceof Number) {
 			try {
 				// FIXME: should be a slightly more efficient way to do this
@@ -74,14 +108,9 @@ public class Equal extends EvalSite {
 				// should never happen
 				throw new AssertionError(e);
 			}
-		} else if (a instanceof Character || b instanceof Character) {
+		} else if (valueClasses.contains(a.getClass())) {
 			return a.equals(b);
-		} else if (a instanceof Boolean || b instanceof Boolean) {
-			return a.equals(b);
-		} else if (a instanceof String || b instanceof String) {
-			return a.equals(b);
-		} else if (a instanceof Eq) {
-			return ((Eq)a).eqTo(b);
+			// no need to check b, since both should be valueClasses to be equal
 		} else {
 			return a == b;
 		}
