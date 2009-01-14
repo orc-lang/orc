@@ -163,34 +163,34 @@ def forkMap(f, []) = stop
 def forkMap(f, x:xs) = f(x) | forkMap(f, xs)
 
 {--
-* def sequence([lambda () :: A]) :: Signal
+* def seq([lambda () :: A]) :: Signal
 Call a list of functions in sequence, publishing
 a signal whenever the last function publishes. The
 actual publications of the given functions are not
 published.
 
-The expression <code>sequence([f,g,h])</code> is equivalent to
+The expression <code>seq([f,g,h])</code> is equivalent to
 the expression <code>f() >> g() >> h() >> signal</code>
 
 @implementation
 --}
-def sequence([]) = signal
-def sequence(p:ps) = p() >> sequence(ps)
+def seq([]) = signal
+def seq(p:ps) = p() >> seq(ps)
 
 {--
-* def sequenceMap(lambda (A) :: B, [A]) :: Signal
+* def seqMap(lambda (A) :: B, [A]) :: Signal
 Apply a function to a list in in sequence, publishing
 a signal whenever the last application publishes. The
 actual publications of the given functions are not
 published.
 
-The expression <code>sequence(f, [a,b,c])</code> is equivalent to
+The expression <code>seqMap(f, [a,b,c])</code> is equivalent to
 the expression <code>f(a) >> f(b) >> f(c) >> signal</code>
 
 @implementation
 --}
-def sequenceMap(f, []) = signal
-def sequenceMap(f, x:xs) = f(x) >> sequenceMap(f, xs)
+def seqMap(f, []) = signal
+def seqMap(f, x:xs) = f(x) >> seqMap(f, xs)
  
 {--
 * def join([lambda () :: A]) :: Signal
@@ -198,12 +198,12 @@ Call a list of functions in parallel and publish
 a signal once all functions have completed.
 
 The expression <code>join([f,g,h])</code> is equivalent to
-the expression <code>f() >> stop | g() >> stop | h() >> stop ; signal</code>
+the expression <code>(f(), g(), h()) >> signal</code>
 
 @implementation
 --}
-def join(ps) =
-  fork(ps) >> stop ; signal
+def join([]) = signal
+def join(p:ps) = (p(), join(ps)) >> signal
  
 {--
 * def joinMap(lambda (A) :: B, [A]) :: Signal
@@ -217,6 +217,30 @@ the expression <code>(f(a), f(b), f(c)) >> signal</code>
 --}
 def joinMap(f, []) = signal
 def joinMap(f, x:xs) = (f(x), joinMap(f, xs)) >> signal
+
+{--
+* def alt([lambda () :: A]) :: A
+Call each function in the list until one publishes.
+
+The expression <code>alt([f,g,h])</code> is equivalent to
+the expression <code>f() ; g() ; h()</code>
+
+@implementation
+--}
+def alt([]) = signal
+def alt(p:ps) = p() ; alt(ps)
+
+{--
+* def altMap(lambda (A) :: B, [A]) :: B
+Apply the function to each element in the list until one publishes.
+
+The expression <code>altMap(f, [a,b,c])</code> is equivalent to
+the expression <code>f(a) ; f(b) ; f(c)</code>
+
+@implementation
+--}
+def altMap(f, []) = signal
+def altMap(f, x:xs) = f(x) ; altMap(f, xs)
 
 {--
 * def por(lambda () :: Boolean, lambda () :: Boolean) :: Boolean
