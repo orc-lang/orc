@@ -14,7 +14,7 @@ include "forms.inc"
 -- Configuration
 
 -- The range of possible dates (Year, Month, Day), with an exclusive upper bound
-val span = DateRange(LocalDateTime(2008, 9, 29), LocalDateTime(2008, 10, 4))
+val span = DateTimeRange(LocalDate(2008, 9, 29), LocalDate(2008, 10, 4))
 val format = DateTimeFormat.forStyle("SS")
 -- Number of responses required to schedule the meeting
 val quorum = 2
@@ -29,7 +29,7 @@ val invitees = [
 def invite(span, name) =
   def send(span, name) =
     WebPrompt(name + ": Meeting Request", [
-    DateRangesField("times", "When Are You Available?", span, 9, 17),
+    DateTimeRangesField("times", "When Are You Available?", span, 9, 17),
     Button("submit", "Submit") ]) >data>
     data.get("times")
   send(span, name)
@@ -44,10 +44,9 @@ def member(item, h:t) =
   if item = h then true
   else member(item, t)
 
-def mergeRanges(accum:rest) =
-  def f(next, accum) = accum.intersect(next)
-  foldl(f, accum, rest) >>
-  accum
+def mergeRanges(ranges) =
+  def f(out, next) = out.intersect(next) >> out
+  foldl1(f, ranges)
 
 def pickMeetingTime(times) =
   times.getRanges() >ranges>
@@ -82,3 +81,4 @@ let(
   format.print(time) >time>
   notify(time, invitees, responders)
   ; "No acceptable meeting found")
+
