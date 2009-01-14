@@ -4,20 +4,20 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
-import orc.lib.date.DateRange;
-import orc.lib.date.DateRanges;
+import orc.lib.date.DateTimeRange;
+import orc.lib.date.DateTimeRanges;
 
-import org.joda.time.LocalDateTime;
+import org.joda.time.DateTime;
 
 @SuppressWarnings("deprecation")
-public class DateRangesField extends Field<DateRanges> {
-	private DateRange span;
+public class DateTimeRangesField extends Field<DateTimeRanges> {
+	private DateTimeRange span;
 	private int minHour;
 	private int maxHour;
 	private static String[] daysOfWeek = {"", "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"};
 	
-	public DateRangesField(String key, String label, DateRange span, int minHour, int maxHour) {
-		super(key, label, new DateRanges());
+	public DateTimeRangesField(String key, String label, DateTimeRange span, int minHour, int maxHour) {
+		super(key, label, new DateTimeRanges());
 		this.span = span;
 		this.minHour = minHour;
 		this.maxHour = maxHour;
@@ -25,7 +25,7 @@ public class DateRangesField extends Field<DateRanges> {
 
 	@Override
 	public void renderControl(PrintWriter out) throws IOException {
-		out.write("<table cellspacing='0' class='DateRangesField'>");
+		out.write("<table cellspacing='0' class='DateTimeRangesField'>");
 		renderTableHeader(out);
 		for (int hour = minHour; hour < maxHour; ++hour) {
 			renderHour(out, hour);
@@ -33,7 +33,7 @@ public class DateRangesField extends Field<DateRanges> {
 		out.write("</table>");
 	}
 	
-	private void renderTime(PrintWriter out, LocalDateTime date) throws IOException {
+	private void renderTime(PrintWriter out, DateTime date) throws IOException {
 		out.write("<input type='checkbox'" +
 				" name='" + key + "'" +
 				" value='" + toTimeID(date) + "'" +
@@ -41,27 +41,27 @@ public class DateRangesField extends Field<DateRanges> {
 				">");
 	}
 	
-	private static String toTimeID(LocalDateTime date) {
+	private static String toTimeID(DateTime date) {
 		return date.getYear() +
 			"_" + date.getMonthOfYear() +
 			"_" + date.getDayOfMonth() +
 			"_" + date.getHourOfDay();
 	}
 	
-	private static DateRange fromTimeID(String timeID) {
+	private static DateTimeRange fromTimeID(String timeID) {
 		String[] parts = timeID.split("_");
-		if (parts.length != 4) return DateRange.NULL;
+		if (parts.length != 4) return DateTimeRange.NULL;
 		try {
-			LocalDateTime start = new LocalDateTime(
+			DateTime start = new DateTime(
 					Integer.parseInt(parts[0]),
 					Integer.parseInt(parts[1]),
 					Integer.parseInt(parts[2]),
 					Integer.parseInt(parts[3]),
 					0, 0, 0);
-			LocalDateTime end = start.plusHours(1);
-			return new DateRange(start, end);
+			DateTime end = start.plusHours(1);
+			return new DateTimeRange(start, end);
 		} catch (NumberFormatException _) {
-			return DateRange.NULL;
+			return DateTimeRange.NULL;
 		}
 	}
 	
@@ -70,8 +70,8 @@ public class DateRangesField extends Field<DateRanges> {
 		out.write("<th>");
 		out.write(formatHour(hour));
 		out.write("</th>");
-		LocalDateTime current = span.start.withHourOfDay(hour);
-		LocalDateTime end = span.end.withHourOfDay(hour);
+		DateTime current = span.start.withHourOfDay(hour);
+		DateTime end = span.end.withHourOfDay(hour);
 		while (current.compareTo(end) < 0) {
 			out.write("<td>");
 			renderTime(out, current);
@@ -83,8 +83,8 @@ public class DateRangesField extends Field<DateRanges> {
 	
 	private void renderTableHeader(PrintWriter out) throws IOException {
 		out.write("<tr><th>&nbsp;</th>");
-		LocalDateTime current = span.start;
-		LocalDateTime end = span.end.withHourOfDay(0);
+		DateTime current = span.start;
+		DateTime end = span.end.withHourOfDay(0);
 		while (current.compareTo(end) < 0) {
 			out.write("<th>");
 			out.write(formatDateHeader(current));
@@ -104,18 +104,18 @@ public class DateRangesField extends Field<DateRanges> {
 		}
 	}
 	
-	private String formatDateHeader(LocalDateTime date) {
+	private String formatDateHeader(DateTime date) {
 		return daysOfWeek[date.getDayOfWeek()] +
 			" " + date.getMonthOfYear() +
 			"/" + date.getDayOfMonth();
 	}
 	
 	private void readTimeIDs(String[] timeIDs) {
-		value = new DateRanges();
+		value = new DateTimeRanges();
 		if (timeIDs == null) return;
 		for (String timeID : timeIDs) {
-			DateRange range = fromTimeID(timeID);
-			value.union(new DateRanges(range));
+			DateTimeRange range = fromTimeID(timeID);
+			value.union(new DateTimeRanges(range));
 		}
 	}
 
