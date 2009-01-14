@@ -7,7 +7,7 @@ will need popup blockers disabled.
 This program will:
 1. Ask you for temporary permission to read your Google
    Calendar.
-2. Poll your calendar for "trip to LOCATION" events
+2. Poll your calendar for any "trip to CITY, STATE"
    happening tomorrow.
 3. Print weather conditions and local museum events at the
    destination of your trip.
@@ -22,89 +22,104 @@ time through your "My Account" page on Google.
 
 ------------ Helper functions follow ---------
 
+type Trip = Trip(_, _)
+
 {--
 Given a calendar event description, return a probable
 trip destination.  If none is found, halt.
 --}
 def extractLocation(description) =
   val parts = description.split(" to ")
-  val len = parts.length()
-  if len > 0 then parts(len-1)? else stop
+  if(parts.length() > 0) >>
+  parts(parts.length()-1)?
   
 {--
-Given a probable location name, return a record representing
-the weather forecast tomorrow at that location.  If the
+Given a trip, return a record representing
+the weather forecast for that trip.  If the
 location is not recognized, halt.
 --}
-def weatherTomorrow(location) =
-  site GoogleWeather = orc.lib.net.GoogleWeather
-  GoogleWeather(location) >a>
-  if a.length() > 0 then a(1)? else stop
-  
+def weather(Trip(time, location)) =
+  class Geocoder = orc.lib.net.Geocoder
+  class NOAAWeather = orc.lib.net.NOAAWeather
+  class LocalDate = org.joda.time.LocalDate
+  location.split(",") >citystate>
+  if(citystate.length() = 2) >>
+  (citystate(0)?.trim(), citystate(1)?.trim()) >(city, state)>
+  Geocoder.locateCity(city, state) >(lat, lon)>
+  NOAAWeather.getDailyForecast(lat, lon, time.toLocalDate(), 1)
+ 
 {--
-Given a probable location name and search term, return an
-array of event records occurring tomorrow at the location,
-matching the given search term.  If no events are found or
-the location is not recognized, return an empty array.
+Given a trip, return an array of event records during
+that trip. If no events are found or the location is
+not recognized, return an empty array.
 --}
-def eventsTomorrow(location, term) =
-  site LocalDateTime = orc.lib.date.LocalDateTimeFactory
+def events(Trip(time, location), term) =
   class Upcoming = orc.lib.net.Upcoming
-  val tomorrow = LocalDateTime().plusDays(1).toLocalDate()
   val search = Upcoming("orc/orchard/upcoming.properties").eventSearch()
   search.search_text := term >>
-  search.min_date := tomorrow >>
-  search.max_date := tomorrow >>
+  search.min_date := time.toLocalDate() >>
+  search.max_date := time.toLocalDate().plusDays(1) >>
   search.location := location >>
   search.run()
 
 {--
-Remove items from the given buffer, publishing each item
-removed only the first time it is seen.  The effect is that
-each value published by getUnique(b) is unique.
+Poll the calendar at the given interval for probable trips.
+Call "put" with each trip the first time it is seen.
+Never publishes.
 --}
-def getUnique(b) =
-  val seen = Set()
-  def loop() =
-    b.get() >x>
-    if seen(x)?
-    then loop()
-    else seen(x) := true >> ( x | loop() )
-  loop()
-
-{--
-Poll the user's calendar every 10 seconds and publish
-each trip destination the first time it is noticed.
---}
-def poll() =
+def poll(interval, put) =
+  class DateTime = org.joda.time.DateTime
+  -- Buffer of trips to be processed
+  val trips = Buffer()
+  -- Send unique trips
+  def sendUniqueTrips() =
+    val seen = Set()
+    def loop() =
+      val trip = trips.get()
+      val key = trip.toString()
+      if seen.contains(key)
+      then loop()
+      else seen.add(key) >> put(trip) >> loop()
+    loop()
+  ------------- goal expression for poll() ----------------
   class GoogleCalendar = orc.lib.net.GoogleCalendar
   val oauth = OAuthProvider("orc/orchard/oauth.properties")
-  val calendar = GoogleCalendar.authenticate(oauth, "google")
-  -- Buffer of locations to be processed
-  val locations = Buffer()
-  getUnique(locations)
-  | metronome(10000) >>
-    calendar.getTomorrowEvents() >feed>
+  sendUniqueTrips()
+  | println("Authenticating...") >>
+    GoogleCalendar.authenticate(oauth, "google") >calendar>
+    calendar.getDefaultTimeZone() >tz>
+    metronome(interval) >>
+    println("Polling...") >>
+    -- find the next day in the user's calendar timezone
+    DateTime().withZone(tz).withTime(0,0,0,0).plusDays(1) >start>
+    -- get events for that day
+    calendar.getEvents(start, start.plusDays(1)) >feed>
+    -- add each trip to the buffer
     each(feed.getEntries()) >entry>
     extractLocation(entry.getTitle().getPlainText()) >location>
-    locations.put(location) >>
+    DateTime(entry.getTimes().get(0).getStartTime().getValue()) >time>
+    trips.put(Trip(time, location)) >>
     stop
 
 {--
-Notify the user of unique trip destinations as they appear
-in the locations buffer.  Never publishes.
+Print trip information obtained by calling "get".
+Repeats indefinitely, and never publishes.
 --}
-def notify(location) =
-  val weather = weatherTomorrow(location)
-  val events = eventsTomorrow(location, "museum")
-  println(location) >>
-  println("Weather: sky:" + weather.sky?
-    + " high:" + weather.high? + "F"
-    + " low:" + weather.low? + "F") >>
-  each(events) >event>
-  println(event.start_time? + " " + event.name? + ": " + event.venue_name?) >>
-  stop
+def notify(get) =
+  get() >trip> (
+    val forecast = weather(trip)
+    val events = events(trip, "museum")
+    -- at least one of forecast or events must be present
+    let(forecast | events) >>
+    println(trip) >>
+    (println(forecast) ; signal) >>
+    each(events) >event>
+    println(event.start_time? + " " + event.name? + ": " + event.venue_name?) >>
+    stop
+   ; notify(get)
+  )
 
 ------------ Goal expression of program ---------
 
-poll() >location> notify(location)
+val buffer = Buffer()
+poll(10000, buffer.put) | notify(buffer.get)
