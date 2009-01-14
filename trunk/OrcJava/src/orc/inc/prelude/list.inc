@@ -197,13 +197,13 @@ def cfold(f, [x]) = x
 def cfold(f, [x,y]) = f(x,y)
 def cfold(f, L) =
   val c = Buffer()
-  def work(i, x:y:rest) = c.put(f(x,y)) >> stop | work(i+1, rest)
+  def work(i, x:y:rest) =
+    c.put(f(x,y)) >> stop | work(i+1, rest)
   def work(i, [x]) = c.put(x) >> stop | work(i+1, [])
   def work(i, []) =
-    if (i < 2) then 
-      c.get() 
-    else 
-      c.get() >x> c.get() >y> ( c.put(f(x,y)) >> stop | work(i-1,[]) ) 
+    if (i < 2) then c.get() 
+    else c.get() >x> c.get() >y>
+         ( c.put(f(x,y)) >> stop | work(i-1,[]) ) 
   work(0, L)
 
 
@@ -372,7 +372,9 @@ def sortUniqueBy(eq, lt, [x]) = [x]
 def sortUniqueBy(eq, lt, xs) =
   length(xs)/2 >half>
   (take(half,xs), drop(half,xs)) >(front, back)>
-  mergeUniqueBy(eq, lt, sortUniqueBy(eq, lt, front), sortUniqueBy(eq, lt, back))
+  mergeUniqueBy(eq, lt,
+    sortUniqueBy(eq, lt, front),
+    sortUniqueBy(eq, lt, back))
   
 {--
 * def group([(A,B)]) :: [(A,[B])]
