@@ -521,12 +521,12 @@ check the type correctness of an expression; instead, an expression with a type
 error is simply silent when it is evaluated.
 </para>
 
-<para>
+<warning>
 Silent expressions can produce side effects.  For example, on encountering a
 type error, Orc will print an error message to the console.  However the
 expression containing the type error will not publish a value, and in this
 respect it is silent.
-</para>
+</warning>
 
 </section>
 
@@ -3002,9 +3002,9 @@ if b then <emphasis role="bold">G</emphasis> else <emphasis role="bold">H</empha
 Or, instead of using a boolean, we could use pattern matching:
 
 <programlisting><![CDATA[
-val s = some(]]><emphasis role="bold">F</emphasis><![CDATA[) | Rtimer(t) >> none()
-  s >some(r)> ]]><emphasis role="bold">G</emphasis><![CDATA[
-| s >none()>  ]]><emphasis role="bold">H</emphasis>
+val s = Some(]]><emphasis role="bold">F</emphasis><![CDATA[) | Rtimer(t) >> None()
+  s >Some(r)> ]]><emphasis role="bold">G</emphasis><![CDATA[
+| s >None()>  ]]><emphasis role="bold">H</emphasis>
 </programlisting>
 
 </para>
@@ -3207,7 +3207,8 @@ array <code>A</code>. A call with an out-of-bounds index halts.
 {- Create an array of 3 buffers -}
 val A = IArray(10, lambda(_) = Buffer())
 
-{- Send true on the 0th channel, and listen for a value on the 0th channel. -}
+{- Send true on the 0th channel
+   and listen for a value on the 0th channel. -}
 A(0).put(true) | A(0).get()
 </programlisting>
 </para>
@@ -3306,7 +3307,8 @@ simply halt.
 
 <programlisting language="orc-demo"><![CDATA[
 {- Create a cell, try to write to it twice, and read it -}
-{- The read will block until a write occurs, and only one write will succeed. -}
+{- The read will block until a write occurs
+   and only one write will succeed. -}
 val r = Cell()
   Rtimer(1000) >> r.write(2) >> println("Wrote 2") >> stop
 | Rtimer(1000) >> r.write(3) >> println("Wrote 3") >> stop
@@ -3344,7 +3346,8 @@ but lower precedence than any of the other operators.</listitem>
 
 <programlisting language="orc-demo"><![CDATA[
 {- Create a cell, try to write to it twice, and read it -}
-{- The read will block until a write occurs, and only one write will succeed. -}
+{- The read will block until a write occurs
+   and only one write will succeed. -}
 val r = Cell()
   Rtimer(1000) >> r := 2 >> println("Wrote 2") >> stop
 | Rtimer(1000) >> r := 3 >> println("Wrote 3") >> stop
@@ -3617,10 +3620,26 @@ val c = Cell()
 <section><title>Interruptible</title>
 
 <para>
-Let's write a function <code>interruptible</code> that executes functions in an interruptible way. 
-<code>interruptible(g)</code> runs <code>g</code>, which is assumed to take no arguments, and
-silences its publications. It immediately publishes another function, which we can call at any time to
-terminate the execution of <code>g</code>.
+It is sometimes useful to be able to <firstterm>interrupt</firstterm> the
+evaluation of an expression, that is run it until some external event signals
+that it should stop.  The following program runs the expression F until it is
+<firstterm>interrupted</firstterm> by a signal from the user.
+</para>
+
+<programlisting><![CDATA[
+val interrupt = Semaphore(0)
+
+  let( ]]><emphasis role="bold">F</emphasis><![CDATA[ >> stop | interrupt.acquire() )
+| ( Prompt("Interrupt?") >> interrupt.release() )
+]]>
+</programlisting>
+
+<para>
+We can write a function <code>interruptible</code> that implements this idiom
+to execute any function in an interruptible way.  <code>interruptible(g)</code>
+calls the function <code>g</code>, which is assumed to take no arguments, and
+silences its publications. It immediately publishes another function, which we
+can call at any time to terminate the execution of <code>g</code>.
 </para>
 
 <para>
@@ -3629,9 +3648,8 @@ Here is a naive implementation that doesn't quite work:
 
 <programlisting><![CDATA[
 def interruptible(f) =
-  val c = Cell()
-  (lambda () = c.write(signal))
-    << (f() >> stop | c.read())
+  val i = Semaphore(0)
+  i.release | let( f() >> stop | i.acquire() )
 
 {- wrong! -}
 val stopper = interruptible(g)
@@ -3652,9 +3670,8 @@ The solution is to bind the variable differently:
 
 <programlisting><![CDATA[
 def interruptible(f) =
-  val c = Cell()
-  (lambda () = c.write(signal))
-    << (f() >> stop | c.read())
+  val i = Semaphore(0)
+  i.release | let(f() >> stop | i.acquire())
 
 interruptible(g) >stopper>
 ...
@@ -3940,58 +3957,56 @@ directly in Orc.
 </para>
 
 <programlisting language="orc-demo"><![CDATA[
-{-
-Create a reader/writer lock and return the functions
-used to acquire and release the lock.
--}
-def ReadWriteLock() =
-  {- Queue of lock requests -}
-  val m = Buffer()
-  {- Count of active readers/writers -}
-  val c = Counter()
+-- Queue of lock requests
+val m = Buffer()
+-- Count of active readers/writers
+val c = Counter()
 
-  {- Grant read request -}
+{-- Process requests in sequence --}
+def process() =
+  -- Grant read request
   def grant((false,s)) = c.inc() >> s.release()
-  {- Grant write request -}
+  -- Grant write request
   def grant((true,s)) =
-    c.onZero() >> grant((false,s)) >> c.onZero()
+    c.onZero() >> c.inc() >> s.release() >> c.onZero()
+  -- Goal expression of process()
+  m.get() >r> grant(r) >> process()
 
-  {- Boolean argument is true if writing -}
-  def acquire(write) =
-    val s = Semaphore(0)
-    m.put((write, s)) >> s.acquire()
+{-- Acquire the lock: argument is "true" if writing --}
+def acquire(write) =
+  val s = Semaphore(0)
+  m.put((write, s)) >> s.acquire()
 
-  def release() = c.dec()
+{-- Release the lock --}
+def release() = c.dec()
 
-  {- Process requests in sequence -}
-  repeat(lambda () = m.get() >r> grant(r)) >> stop
-  {- Return the lock functions -}
-  | (acquire, release)
+-------------------------------------------------
 
-{- Test the lock -}
+{-- These definitions are for testing only --}
+def reader(start) = Rtimer(start) >>
+  acquire(false) >> println("START READ") >>
+  Rtimer(1000) >> println("END READ") >>
+  release() >> stop
+def writer(start) = Rtimer(start) >>
+  acquire(true) >> println("START WRITE") >>
+  Rtimer(1000) >> println("END WRITE") >>
+  release() >> stop
+
 let(
-  ReadWriteLock() >(acquire, release)> (
-    def test(write) =
-      val label = if write then "WRITE" else "READ"
-      acquire(write) >> println("START "+label) >>
-      Rtimer(1000) >> println("END "+label) >>
-      release()
-
-    (                           {- Output:     -}
-      Rtimer(10) >> test(false) {- START READ  -}
-    | Rtimer(20) >> test(false) {- START READ  -}
-                                {- END READ    -}
-                                {- END READ    -}
-    | Rtimer(30) >> test(true)  {- START WRITE -}
-                                {- END WRITE   -}
-    | Rtimer(40) >> test(false) {- START READ  -}
-    | Rtimer(50) >> test(false) {- START READ  -}
-                                {- END READ    -}
-                                {- END READ    -}
-    ) >> stop
-    ; signal
-  )
-) >> stop]]></programlisting>
+    process()  {- Output:     -}
+  | reader(10) {- START READ  -}
+  | reader(20) {- START READ  -}
+               {- END READ    -}
+               {- END READ    -}
+  | writer(30) {- START WRITE -}
+               {- END WRITE   -}
+  | reader(40) {- START READ  -}
+  | reader(50) {- START READ  -}
+               {- END READ    -}
+               {- END READ    -}
+  -- halt after the last reader finishes
+  | Rtimer(60) >> acquire(true)
+)]]></programlisting>
 
 <para>
 The lock receives requests over the channel <code>m</code> and processes them
@@ -4283,7 +4298,7 @@ engine.
 <section><title>Kilim Tutorial</title>
 
 <para>
-For a full introduction to Kilim, see <ulink
+For a full introduction to <ulink url="http://kilim.malhar.net/">Kilim</ulink>, see <ulink
 url="http://www.malhar.net/sriram/kilim/thread_of_ones_own.pdf">A Thread of
 One's Own</ulink>, by Sriram Srinivasan. In the following, we will cover just
 enough to get you started writing Orc sites using Kilim.
@@ -4316,7 +4331,11 @@ throws it.
 <code language="java">Mailbox</code>
 </term>
 <listitem>
-A multiple-producer, single-consumer blocking queue used to communicate with tasks.
+A multiple-producer, single-consumer queue used to communicate
+between tasks. The most important methods are <code language="java">put(Object)</code>, which places an item in the
+mailbox, and <code language="java">get()</code>, which blocks until the mailbox
+is non-empty and then returns the first item.
+
 </listitem>
 </varlistentry>
 <varlistentry>
@@ -4324,7 +4343,8 @@ A multiple-producer, single-consumer blocking queue used to communicate with tas
 <code language="java">Task</code>
 </term>
 <listitem>
-Cooperative analogue of a Thread. Creating and running a task looks like this:
+Cooperative analogue of a Thread. Every pausable method must be run within a
+task. To create and run a task:
 
 <programlisting language="java">
 new Task() {
@@ -4340,7 +4360,7 @@ new Task() {
 
 <para>
 When writing Orc sites you rarely need to use tasks explicitly because every Orc
-site call is implicitly run inside a Kilim task. So all you need to do is mark
+site call is implicitly run inside a Kilim task if necessary. Therefore all you need to do is mark
 <code language="java">Pausable</code> methods. Here's a short example of a
 buffer site written using Kilim <code language="java">Mailbox</code>es:
 
@@ -4375,6 +4395,19 @@ val b = Buffer()
   Rtimer(1000) >> b.put("1 second later") >> null
 | b.get()]]></programlisting>
 </para>
+
+<warning>
+The version of Kilim bundled with Orc does not support calls to pausable
+methods in constructor arguments. For example, this does not work:
+<programlisting language="java">
+new Foo(bar.pausable());
+</programlisting>
+The workaround is to use a temporary variable:
+<programlisting language="java">
+Object tmp = bar.pausable();
+new Foo(tmp);
+</programlisting>
+</warning>
 
 </section>
 
