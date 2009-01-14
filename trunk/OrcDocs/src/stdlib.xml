@@ -707,31 +707,31 @@ by the applications.</para>
 the expression <code>f(a) | f(b) | f(c)</code></para>
 <formalpara><title>Implementation</title><programlisting>def forkMap(f, []) = stop
 def forkMap(f, x:xs) = f(x) | forkMap(f, xs)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>sequence</code></term><listitem><para><code>def sequence([lambda () :: A]) :: Signal</code></para>
+<varlistentry><term><code>seq</code></term><listitem><para><code>def seq([lambda () :: A]) :: Signal</code></para>
 <para>Call a list of functions in sequence, publishing
 a signal whenever the last function publishes. The
 actual publications of the given functions are not
 published.</para>
-<para>The expression <code>sequence([f,g,h])</code> is equivalent to
+<para>The expression <code>seq([f,g,h])</code> is equivalent to
 the expression <code>f() >> g() >> h() >> signal</code></para>
-<formalpara><title>Implementation</title><programlisting>def sequence([]) = signal
-def sequence(p:ps) = p() &gt;&gt; sequence(ps)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>sequenceMap</code></term><listitem><para><code>def sequenceMap(lambda (A) :: B, [A]) :: Signal</code></para>
+<formalpara><title>Implementation</title><programlisting>def seq([]) = signal
+def seq(p:ps) = p() &gt;&gt; seq(ps)</programlisting></formalpara></listitem></varlistentry>
+<varlistentry><term><code>seqMap</code></term><listitem><para><code>def seqMap(lambda (A) :: B, [A]) :: Signal</code></para>
 <para>Apply a function to a list in in sequence, publishing
 a signal whenever the last application publishes. The
 actual publications of the given functions are not
 published.</para>
-<para>The expression <code>sequence(f, [a,b,c])</code> is equivalent to
+<para>The expression <code>seqMap(f, [a,b,c])</code> is equivalent to
 the expression <code>f(a) >> f(b) >> f(c) >> signal</code></para>
-<formalpara><title>Implementation</title><programlisting>def sequenceMap(f, []) = signal
-def sequenceMap(f, x:xs) = f(x) &gt;&gt; sequenceMap(f, xs)</programlisting></formalpara></listitem></varlistentry>
+<formalpara><title>Implementation</title><programlisting>def seqMap(f, []) = signal
+def seqMap(f, x:xs) = f(x) &gt;&gt; seqMap(f, xs)</programlisting></formalpara></listitem></varlistentry>
 <varlistentry><term><code>join</code></term><listitem><para><code>def join([lambda () :: A]) :: Signal</code></para>
 <para>Call a list of functions in parallel and publish
 a signal once all functions have completed.</para>
 <para>The expression <code>join([f,g,h])</code> is equivalent to
-the expression <code>f() >> stop | g() >> stop | h() >> stop ; signal</code></para>
-<formalpara><title>Implementation</title><programlisting>def join(ps) =
-  fork(ps) &gt;&gt; stop ; signal</programlisting></formalpara></listitem></varlistentry>
+the expression <code>(f(), g(), h()) >> signal</code></para>
+<formalpara><title>Implementation</title><programlisting>def join([]) = signal
+def join(p:ps) = (p(), join(ps)) &gt;&gt; signal</programlisting></formalpara></listitem></varlistentry>
 <varlistentry><term><code>joinMap</code></term><listitem><para><code>def joinMap(lambda (A) :: B, [A]) :: Signal</code></para>
 <para>Apply a function to a list in parallel and publish
 a signal once all applications have completed.</para>
@@ -739,6 +739,18 @@ a signal once all applications have completed.</para>
 the expression <code>(f(a), f(b), f(c)) >> signal</code></para>
 <formalpara><title>Implementation</title><programlisting>def joinMap(f, []) = signal
 def joinMap(f, x:xs) = (f(x), joinMap(f, xs)) &gt;&gt; signal</programlisting></formalpara></listitem></varlistentry>
+<varlistentry><term><code>alt</code></term><listitem><para><code>def alt([lambda () :: A]) :: A</code></para>
+<para>Call each function in the list until one publishes.</para>
+<para>The expression <code>alt([f,g,h])</code> is equivalent to
+the expression <code>f() ; g() ; h()</code></para>
+<formalpara><title>Implementation</title><programlisting>def alt([]) = signal
+def alt(p:ps) = p() ; alt(ps)</programlisting></formalpara></listitem></varlistentry>
+<varlistentry><term><code>altMap</code></term><listitem><para><code>def altMap(lambda (A) :: B, [A]) :: B</code></para>
+<para>Apply the function to each element in the list until one publishes.</para>
+<para>The expression <code>altMap(f, [a,b,c])</code> is equivalent to
+the expression <code>f(a) ; f(b) ; f(c)</code></para>
+<formalpara><title>Implementation</title><programlisting>def altMap(f, []) = signal
+def altMap(f, x:xs) = f(x) ; altMap(f, xs)</programlisting></formalpara></listitem></varlistentry>
 <varlistentry><term><code>por</code></term><listitem><para><code>def por(lambda () :: Boolean, lambda () :: Boolean) :: Boolean</code></para>
 <para>Parallel or. Evaluate two boolean functions in parallel, publishing
 a value as soon as possible, and terminating any unnecessary ongoing
@@ -882,13 +894,13 @@ def cfold(f, [x]) = x
 def cfold(f, [x,y]) = f(x,y)
 def cfold(f, L) =
   val c = Buffer()
-  def work(i, x:y:rest) = c.put(f(x,y)) &gt;&gt; stop | work(i+1, rest)
+  def work(i, x:y:rest) =
+    c.put(f(x,y)) &gt;&gt; stop | work(i+1, rest)
   def work(i, [x]) = c.put(x) &gt;&gt; stop | work(i+1, [])
   def work(i, []) =
-    if (i &lt; 2) then 
-      c.get() 
-    else 
-      c.get() &gt;x&gt; c.get() &gt;y&gt; ( c.put(f(x,y)) &gt;&gt; stop | work(i-1,[]) ) 
+    if (i &lt; 2) then c.get() 
+    else c.get() &gt;x&gt; c.get() &gt;y&gt;
+         ( c.put(f(x,y)) &gt;&gt; stop | work(i-1,[]) ) 
   work(0, L)</programlisting></formalpara></listitem></varlistentry>
 <varlistentry><term><code>zip</code></term><listitem><para><code>def zip([A], [B]) :: (A, B)</code></para>
 <para>Combine two lists into a list of pairs.
@@ -981,7 +993,9 @@ def sortUniqueBy(eq, lt, [x]) = [x]
 def sortUniqueBy(eq, lt, xs) =
   length(xs)/2 &gt;half&gt;
   (take(half,xs), drop(half,xs)) &gt;(front, back)&gt;
-  mergeUniqueBy(eq, lt, sortUniqueBy(eq, lt, front), sortUniqueBy(eq, lt, back))</programlisting></formalpara></listitem></varlistentry>
+  mergeUniqueBy(eq, lt,
+    sortUniqueBy(eq, lt, front),
+    sortUniqueBy(eq, lt, back))</programlisting></formalpara></listitem></varlistentry>
 <varlistentry><term><code>group</code></term><listitem><para><code>def group([(A,B)]) :: [(A,[B])]</code></para>
 <para>Given a list of pairs, group together the second
 elements of consecutive pairs with equal first elements.</para>
@@ -1001,12 +1015,17 @@ def groupBy(eq, (k,v):kvs) =
     if eq(k2,k) then helper(k, v:vs, kvs)
     else (k,vs):helper(k2, [v], kvs)
   helper(k,[v], kvs)</programlisting></formalpara></listitem></varlistentry>
+<varlistentry><term><code>rangeBy</code></term><listitem><para><code>def rangeBy(Number, Number, Number) :: [Number]</code></para>
+<para><code>rangeBy(low, high, skip)</code> returns a sorted list of
+numbers <code>n</code> which satisfy <code>n = low + skip*i</code> (for some
+integer <code>i</code>), <code>n &gt;= low</code>, and <code>n &lt; high</code>.</para>
+<formalpara><title>Implementation</title><programlisting>def rangeBy(low, high, skip) =
+  if low &lt; high
+  then low:rangeBy(low+skip, high)
+  else []</programlisting></formalpara></listitem></varlistentry>
 <varlistentry><term><code>range</code></term><listitem><para><code>def range(Integer, Integer) :: [Integer]</code></para>
 <para>Generate a list of integers in the given half-open range.</para>
-<formalpara><title>Implementation</title><programlisting>def range(low, high) =
-  if low &lt; high then
-    low:range(low+1, high)
-  else []</programlisting></formalpara></listitem></varlistentry>
+<formalpara><title>Implementation</title><programlisting>def range(low, high) = rangeBy(low, high, 1)</programlisting></formalpara></listitem></varlistentry>
 <varlistentry><term><code>any</code></term><listitem><para><code>def any(lambda (A) :: Boolean, [A]) :: Boolean</code></para>
 <para>Return true if any of the elements of the list match the predicate, and false otherwise.
 The predicate is applied to all elements of the list in parellel; the result
