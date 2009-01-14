@@ -69,7 +69,7 @@ val (from, span, invitees, quorum, timeLimit, requestTemplate, notificationTempl
       parseInvitees(inviteesText) >(_:_) as x> x
       ; error("No invitees found. Please try again.")
     val span =
-      DateRange(data.get("start"), data.get("end").plusDays(1)) >span>
+      DateTimeRange(data.get("start"), data.get("end").plusDays(1)) >span>
       if span.isEmpty()
       then error("Empty date range. Please try again.")
       else span
@@ -112,7 +112,7 @@ def inviteQuorum(invitees) =
   )
 
 def mergeRanges(ranges) =
-  def f(accum, next) = accum.intersect(next) >> accum
+  def f(out, next) = out.intersect(next) >> out
   foldl1(f, ranges)
 
 def pickMeetingTime(times) =
@@ -122,7 +122,7 @@ def pickMeetingTime(times) =
 def buildForm() =
   Form() >form>
   FieldGroup("data", "Meeting Request") >group>
-  group.addPart(DateRangesField("times",
+  group.addPart(DateTimeRangesField("times",
     "When are you available for a meeting?", span, 9, 17)) >>
   group.addPart(Button("submit", "Submit")) >>
   form.addPart(group) >>
