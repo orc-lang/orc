@@ -143,10 +143,11 @@ thunk. Once the thunk halts, release the semaphore.
 --}
 def withLock(s, f) =
   val out = Buffer()
-  (
-    s.acquire() >>
+  ( s.acquire() >>
     f() >x>
     out.put(x) >>
     stop
-    ; s.release() >> out.closenb() 
+  ; s.release() >>
+    out.closenb() >>
+    stop
   ) | repeat(out.get)
