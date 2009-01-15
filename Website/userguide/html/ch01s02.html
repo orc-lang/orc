@@ -159,12 +159,12 @@ expressions are silent: <code class="code"><span class="hl-literal">10</span>/<s
 Cor is a dynamically typed language. A Cor implementation does not statically
 check the type correctness of an expression; instead, an expression with a type
 error is simply silent when it is evaluated.
-</p><p>
+</p><div class="warning" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Warning</h3>
 Silent expressions can produce side effects.  For example, on encountering a
 type error, Orc will print an error message to the console.  However the
 expression containing the type error will not publish a value, and in this
 respect it is silent.
-</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10332"></a>1.2.3.&nbsp;Conditionals</h3></div></div></div><p>
+</div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10332"></a>1.2.3.&nbsp;Conditionals</h3></div></div></div><p>
 A conditional expression in Cor is of the form 
 <code class="code"><span class="hl-keyword">if</span></code> E <code class="code"><span class="hl-keyword">then</span></code> F <code class="code"><span class="hl-keyword">else</span></code> G. 
 Its meaning is similar to that in other languages: the value
