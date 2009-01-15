@@ -137,9 +137,9 @@ limit, we execute G (the result of F is bound to r). Otherwise, we execute H.
 Or, instead of using a boolean, we could use pattern matching:
 
 <pre class="programlisting">
-<span class="hl-keyword">val</span> <span class="hl-variable">s</span> = <span class="hl-site">some</span>(<span class="bold"><strong>F</strong></span>) <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-variable">t</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">none</span>()
-  <span class="hl-variable">s</span> <span class="hl-combinator">&gt;</span><span class="hl-site">some</span>(<span class="hl-variable">r</span>)<span class="hl-combinator">&gt;</span> <span class="bold"><strong>G</strong></span>
-<span class="hl-combinator">|</span> <span class="hl-variable">s</span> <span class="hl-combinator">&gt;</span><span class="hl-site">none</span>()<span class="hl-combinator">&gt;</span>  <span class="bold"><strong>H</strong></span>
+<span class="hl-keyword">val</span> <span class="hl-variable">s</span> = <span class="hl-site">Some</span>(<span class="bold"><strong>F</strong></span>) <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-variable">t</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">None</span>()
+  <span class="hl-variable">s</span> <span class="hl-combinator">&gt;</span><span class="hl-site">Some</span>(<span class="hl-variable">r</span>)<span class="hl-combinator">&gt;</span> <span class="bold"><strong>G</strong></span>
+<span class="hl-combinator">|</span> <span class="hl-variable">s</span> <span class="hl-combinator">&gt;</span><span class="hl-site">None</span>()<span class="hl-combinator">&gt;</span>  <span class="bold"><strong>H</strong></span>
 </pre>
 
 </p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10ECD"></a>2.2.5.&nbsp;Priority</h3></div></div></div><p>
@@ -268,7 +268,8 @@ array <code class="code"><span class="hl-variable">A</span></code>. A call with 
 <span class="hl-comment">{- Create an array of 3 buffers -}</span>
 <span class="hl-keyword">val</span> <span class="hl-variable">A</span> = <span class="hl-site">IArray</span>(<span class="hl-literal">10</span>, <span class="hl-keyword">lambda</span>(<span class="hl-variable">_</span>) = <span class="hl-site">Buffer</span>())
 
-<span class="hl-comment">{- Send true on the 0th channel, and listen for a value on the 0th channel. -}</span>
+<span class="hl-comment">{- Send true on the 0th channel
+   and listen for a value on the 0th channel. -}</span>
 <span class="hl-site">A</span>(<span class="hl-literal">0</span>).<span class="hl-site">put</span>(<span class="hl-literal">true</span>) <span class="hl-combinator">|</span> <span class="hl-site">A</span>(<span class="hl-literal">0</span>).<span class="hl-site">get</span>()
 </pre>
 </p><p>
@@ -336,7 +337,8 @@ simply halt.
 
 <pre class="orc">
 <span class="hl-comment">{- Create a cell, try to write to it twice, and read it -}</span>
-<span class="hl-comment">{- The read will block until a write occurs, and only one write will succeed. -}</span>
+<span class="hl-comment">{- The read will block until a write occurs
+   and only one write will succeed. -}</span>
 <span class="hl-keyword">val</span> <span class="hl-variable">r</span> = <span class="hl-site">Cell</span>()
   <span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">r</span>.<span class="hl-site">write</span>(<span class="hl-literal">2</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"Wrote 2"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
 <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">r</span>.<span class="hl-site">write</span>(<span class="hl-literal">3</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"Wrote 3"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
@@ -359,7 +361,8 @@ to the C languages's <code class="code">*</code> operator, but is postfix instea
 This operator has higher precedence than the concurrency combinators and if/then/else,
 but lower precedence than any of the other operators.</li></ul></div><p>Here is a previous example rewritten using this syntactic sugar:</p><pre class="orc">
 <span class="hl-comment">{- Create a cell, try to write to it twice, and read it -}</span>
-<span class="hl-comment">{- The read will block until a write occurs, and only one write will succeed. -}</span>
+<span class="hl-comment">{- The read will block until a write occurs
+   and only one write will succeed. -}</span>
 <span class="hl-keyword">val</span> <span class="hl-variable">r</span> = <span class="hl-site">Cell</span>()
   <span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">r</span> <span class="hl-site">:=</span> <span class="hl-literal">2</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"Wrote 2"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
 <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">r</span> <span class="hl-site">:=</span> <span class="hl-literal">3</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"Wrote 3"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
@@ -535,17 +538,28 @@ as follows:
 (<span class="bold"><strong>F</strong></span> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> <span class="hl-variable">c</span>.<span class="hl-site">read</span>()) <span class="hl-combinator">|</span> (<span class="bold"><strong>G</strong></span> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>.<span class="hl-site">write</span>(<span class="hl-variable">x</span>))
 
 </pre></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N110C3"></a>2.2.15.&nbsp;Interruptible</h3></div></div></div><p>
-Let's write a function <code class="code"><span class="hl-variable">interruptible</span></code> that executes functions in an interruptible way. 
-<code class="code"><span class="hl-site">interruptible</span>(<span class="hl-variable">g</span>)</code> runs <code class="code"><span class="hl-variable">g</span></code>, which is assumed to take no arguments, and
-silences its publications. It immediately publishes another function, which we can call at any time to
-terminate the execution of <code class="code"><span class="hl-variable">g</span></code>.
+It is sometimes useful to be able to <em class="firstterm">interrupt</em> the
+evaluation of an expression, that is run it until some external event signals
+that it should stop.  The following program runs the expression F until it is
+<em class="firstterm">interrupted</em> by a signal from the user.
+</p><pre class="programlisting">
+<span class="hl-keyword">val</span> <span class="hl-variable">interrupt</span> = <span class="hl-site">Semaphore</span>(<span class="hl-literal">0</span>)
+
+  <span class="hl-site">let</span>( <span class="bold"><strong>F</strong></span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span> <span class="hl-combinator">|</span> <span class="hl-variable">interrupt</span>.<span class="hl-site">acquire</span>() )
+<span class="hl-combinator">|</span> ( <span class="hl-site">Prompt</span>(<span class="hl-literal">"Interrupt?"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">interrupt</span>.<span class="hl-site">release</span>() )
+
+</pre><p>
+We can write a function <code class="code"><span class="hl-variable">interruptible</span></code> that implements this idiom
+to execute any function in an interruptible way.  <code class="code"><span class="hl-site">interruptible</span>(<span class="hl-variable">g</span>)</code>
+calls the function <code class="code"><span class="hl-variable">g</span></code>, which is assumed to take no arguments, and
+silences its publications. It immediately publishes another function, which we
+can call at any time to terminate the execution of <code class="code"><span class="hl-variable">g</span></code>.
 </p><p>
 Here is a naive implementation that doesn't quite work:
 </p><pre class="programlisting">
 <span class="hl-keyword">def</span> <span class="hl-site">interruptible</span>(<span class="hl-variable">f</span>) =
-  <span class="hl-keyword">val</span> <span class="hl-variable">c</span> = <span class="hl-site">Cell</span>()
-  (<span class="hl-keyword">lambda</span> () = <span class="hl-variable">c</span>.<span class="hl-site">write</span>(<span class="hl-keyword">signal</span>))
-    <span class="hl-combinator">&lt;</span><span class="hl-combinator">&lt;</span> (<span class="hl-site">f</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span> <span class="hl-combinator">|</span> <span class="hl-variable">c</span>.<span class="hl-site">read</span>())
+  <span class="hl-keyword">val</span> <span class="hl-variable">i</span> = <span class="hl-site">Semaphore</span>(<span class="hl-literal">0</span>)
+  <span class="hl-variable">i</span>.<span class="hl-variable">release</span> <span class="hl-combinator">|</span> <span class="hl-site">let</span>( <span class="hl-site">f</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span> <span class="hl-combinator">|</span> <span class="hl-variable">i</span>.<span class="hl-site">acquire</span>() )
 
 <span class="hl-comment">{- wrong! -}</span>
 <span class="hl-keyword">val</span> <span class="hl-variable">stopper</span> = <span class="hl-site">interruptible</span>(<span class="hl-variable">g</span>)
@@ -560,9 +574,8 @@ computation in <code class="code"><span class="hl-site">interruptiuble</span>(<s
 The solution is to bind the variable differently:
 </p><pre class="programlisting">
 <span class="hl-keyword">def</span> <span class="hl-site">interruptible</span>(<span class="hl-variable">f</span>) =
-  <span class="hl-keyword">val</span> <span class="hl-variable">c</span> = <span class="hl-site">Cell</span>()
-  (<span class="hl-keyword">lambda</span> () = <span class="hl-variable">c</span>.<span class="hl-site">write</span>(<span class="hl-keyword">signal</span>))
-    <span class="hl-combinator">&lt;</span><span class="hl-combinator">&lt;</span> (<span class="hl-site">f</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span> <span class="hl-combinator">|</span> <span class="hl-variable">c</span>.<span class="hl-site">read</span>())
+  <span class="hl-keyword">val</span> <span class="hl-variable">i</span> = <span class="hl-site">Semaphore</span>(<span class="hl-literal">0</span>)
+  <span class="hl-variable">i</span>.<span class="hl-variable">release</span> <span class="hl-combinator">|</span> <span class="hl-site">let</span>(<span class="hl-site">f</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span> <span class="hl-combinator">|</span> <span class="hl-variable">i</span>.<span class="hl-site">acquire</span>())
 
 <span class="hl-site">interruptible</span>(<span class="hl-variable">g</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">stopper</span><span class="hl-combinator">&gt;</span>
 ...

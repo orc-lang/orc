@@ -1,4 +1,4 @@
-<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>2.3.&nbsp;Larger Examples</title><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide"><link rel="up" href="ch02.html" title="Chapter&nbsp;2.&nbsp;Programming Methodology"><link rel="prev" href="ch02s02.html" title="2.2.&nbsp;Programming Idioms"><link rel="next" href="ch03.html" title="Chapter&nbsp;3.&nbsp;Accessing and Creating External Services"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"><link href="style.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">2.3.&nbsp;Larger Examples</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch02s02.html">Prev</a>&nbsp;</td><th align="center" width="60%">Chapter&nbsp;2.&nbsp;Programming Methodology</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ch03.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N110F2"></a>2.3.&nbsp;Larger Examples</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N110F5"></a>2.3.1.&nbsp;Dining Philosophers</h3></div></div></div><p>
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>2.3.&nbsp;Larger Examples</title><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide"><link rel="up" href="ch02.html" title="Chapter&nbsp;2.&nbsp;Programming Methodology"><link rel="prev" href="ch02s02.html" title="2.2.&nbsp;Programming Idioms"><link rel="next" href="ch03.html" title="Chapter&nbsp;3.&nbsp;Accessing and Creating External Services"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"><link href="style.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">2.3.&nbsp;Larger Examples</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch02s02.html">Prev</a>&nbsp;</td><th align="center" width="60%">Chapter&nbsp;2.&nbsp;Programming Methodology</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ch03.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N11100"></a>2.3.&nbsp;Larger Examples</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11103"></a>2.3.1.&nbsp;Dining Philosophers</h3></div></div></div><p>
 The dining philosophers problem is a well known and intensely studied problem in
 concurrent programming. For a detailed description, see 
 <a class="ulink" href="" target="_top">the Wikipedia entry</a>
@@ -208,7 +208,7 @@ the fork.  Every message sent includes the sender's address.  Therefore when a
 philosopher receives a request for a fork, it knows who requested it and
 therefore which fork to relinquish.  Likewise when a philosopher receives a
 fork, it knows who sent it and therefore which fork was received.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11177"></a>2.3.3.&nbsp;Readers/Writers</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11185"></a>2.3.3.&nbsp;Readers/Writers</h3></div></div></div><p>
 Here we present an Orc solution to the <a class="ulink" href="" target="_top">readers-writers
 problem</a>.  Briefly, the readers-writers problem involves concurrent
 access to a mutable resource.  Multiple readers can access the resource
@@ -221,58 +221,56 @@ received, guaranteeing fairness.  Normally, such a service would be provided to
 Orc programs by a site, but it is educational to see how it can be implemented
 directly in Orc.
 </p><pre class="orc">
-<span class="hl-comment">{-
-Create a reader/writer lock and return the functions
-used to acquire and release the lock.
--}</span>
-<span class="hl-keyword">def</span> <span class="hl-site">ReadWriteLock</span>() =
-  <span class="hl-comment">{- Queue of lock requests -}</span>
-  <span class="hl-keyword">val</span> <span class="hl-variable">m</span> = <span class="hl-site">Buffer</span>()
-  <span class="hl-comment">{- Count of active readers/writers -}</span>
-  <span class="hl-keyword">val</span> <span class="hl-variable">c</span> = <span class="hl-site">Counter</span>()
+<span class="hl-comment">-- Queue of lock requests</span>
+<span class="hl-keyword">val</span> <span class="hl-variable">m</span> = <span class="hl-site">Buffer</span>()
+<span class="hl-comment">-- Count of active readers/writers</span>
+<span class="hl-keyword">val</span> <span class="hl-variable">c</span> = <span class="hl-site">Counter</span>()
 
-  <span class="hl-comment">{- Grant read request -}</span>
+<span class="hl-comment">{-- Process requests in sequence --}</span>
+<span class="hl-keyword">def</span> <span class="hl-site">process</span>() =
+  <span class="hl-comment">-- Grant read request</span>
   <span class="hl-keyword">def</span> <span class="hl-site">grant</span>((<span class="hl-literal">false</span>,<span class="hl-variable">s</span>)) = <span class="hl-variable">c</span>.<span class="hl-site">inc</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>.<span class="hl-site">release</span>()
-  <span class="hl-comment">{- Grant write request -}</span>
+  <span class="hl-comment">-- Grant write request</span>
   <span class="hl-keyword">def</span> <span class="hl-site">grant</span>((<span class="hl-literal">true</span>,<span class="hl-variable">s</span>)) =
-    <span class="hl-variable">c</span>.<span class="hl-site">onZero</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">grant</span>((<span class="hl-literal">false</span>,<span class="hl-variable">s</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>.<span class="hl-site">onZero</span>()
+    <span class="hl-variable">c</span>.<span class="hl-site">onZero</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>.<span class="hl-site">inc</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>.<span class="hl-site">release</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>.<span class="hl-site">onZero</span>()
+  <span class="hl-comment">-- Goal expression of process()</span>
+  <span class="hl-variable">m</span>.<span class="hl-site">get</span>() <span class="hl-combinator">&gt;</span><span class="hl-variable">r</span><span class="hl-combinator">&gt;</span> <span class="hl-site">grant</span>(<span class="hl-variable">r</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">process</span>()
 
-  <span class="hl-comment">{- Boolean argument is true if writing -}</span>
-  <span class="hl-keyword">def</span> <span class="hl-site">acquire</span>(<span class="hl-variable">write</span>) =
-    <span class="hl-keyword">val</span> <span class="hl-variable">s</span> = <span class="hl-site">Semaphore</span>(<span class="hl-literal">0</span>)
-    <span class="hl-variable">m</span>.<span class="hl-site">put</span>((<span class="hl-variable">write</span>, <span class="hl-variable">s</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>.<span class="hl-site">acquire</span>()
+<span class="hl-comment">{-- Acquire the lock: argument is "true" if writing --}</span>
+<span class="hl-keyword">def</span> <span class="hl-site">acquire</span>(<span class="hl-variable">write</span>) =
+  <span class="hl-keyword">val</span> <span class="hl-variable">s</span> = <span class="hl-site">Semaphore</span>(<span class="hl-literal">0</span>)
+  <span class="hl-variable">m</span>.<span class="hl-site">put</span>((<span class="hl-variable">write</span>, <span class="hl-variable">s</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>.<span class="hl-site">acquire</span>()
 
-  <span class="hl-keyword">def</span> <span class="hl-site">release</span>() = <span class="hl-variable">c</span>.<span class="hl-site">dec</span>()
+<span class="hl-comment">{-- Release the lock --}</span>
+<span class="hl-keyword">def</span> <span class="hl-site">release</span>() = <span class="hl-variable">c</span>.<span class="hl-site">dec</span>()
 
-  <span class="hl-comment">{- Process requests in sequence -}</span>
-  <span class="hl-site">repeat</span>(<span class="hl-keyword">lambda</span> () = <span class="hl-variable">m</span>.<span class="hl-site">get</span>() <span class="hl-combinator">&gt;</span><span class="hl-variable">r</span><span class="hl-combinator">&gt;</span> <span class="hl-site">grant</span>(<span class="hl-variable">r</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
-  <span class="hl-comment">{- Return the lock functions -}</span>
-  <span class="hl-combinator">|</span> (<span class="hl-variable">acquire</span>, <span class="hl-variable">release</span>)
+<span class="hl-comment">-------------------------------------------------</span>
 
-<span class="hl-comment">{- Test the lock -}</span>
+<span class="hl-comment">{-- These definitions are for testing only --}</span>
+<span class="hl-keyword">def</span> <span class="hl-site">reader</span>(<span class="hl-variable">start</span>) = <span class="hl-site">Rtimer</span>(<span class="hl-variable">start</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-site">acquire</span>(<span class="hl-literal">false</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"START READ"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"END READ"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-site">release</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
+<span class="hl-keyword">def</span> <span class="hl-site">writer</span>(<span class="hl-variable">start</span>) = <span class="hl-site">Rtimer</span>(<span class="hl-variable">start</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-site">acquire</span>(<span class="hl-literal">true</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"START WRITE"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"END WRITE"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-site">release</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
+
 <span class="hl-site">let</span>(
-  <span class="hl-site">ReadWriteLock</span>() <span class="hl-combinator">&gt;</span>(<span class="hl-variable">acquire</span>, <span class="hl-variable">release</span>)<span class="hl-combinator">&gt;</span> (
-    <span class="hl-keyword">def</span> <span class="hl-site">test</span>(<span class="hl-variable">write</span>) =
-      <span class="hl-keyword">val</span> <span class="hl-variable">label</span> = <span class="hl-keyword">if</span> <span class="hl-variable">write</span> <span class="hl-keyword">then</span> <span class="hl-literal">"WRITE"</span> <span class="hl-keyword">else</span> <span class="hl-literal">"READ"</span>
-      <span class="hl-site">acquire</span>(<span class="hl-variable">write</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"START "</span>+<span class="hl-variable">label</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
-      <span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"END "</span>+<span class="hl-variable">label</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
-      <span class="hl-site">release</span>()
-
-    (                           <span class="hl-comment">{- Output:     -}</span>
-      <span class="hl-site">Rtimer</span>(<span class="hl-literal">10</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">test</span>(<span class="hl-literal">false</span>) <span class="hl-comment">{- START READ  -}</span>
-    <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">20</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">test</span>(<span class="hl-literal">false</span>) <span class="hl-comment">{- START READ  -}</span>
-                                <span class="hl-comment">{- END READ    -}</span>
-                                <span class="hl-comment">{- END READ    -}</span>
-    <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">30</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">test</span>(<span class="hl-literal">true</span>)  <span class="hl-comment">{- START WRITE -}</span>
-                                <span class="hl-comment">{- END WRITE   -}</span>
-    <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">40</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">test</span>(<span class="hl-literal">false</span>) <span class="hl-comment">{- START READ  -}</span>
-    <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">50</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">test</span>(<span class="hl-literal">false</span>) <span class="hl-comment">{- START READ  -}</span>
-                                <span class="hl-comment">{- END READ    -}</span>
-                                <span class="hl-comment">{- END READ    -}</span>
-    ) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
-    <span class="hl-combinator">;</span> <span class="hl-keyword">signal</span>
-  )
-) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span></pre><p>
+    <span class="hl-site">process</span>()  <span class="hl-comment">{- Output:     -}</span>
+  <span class="hl-combinator">|</span> <span class="hl-site">reader</span>(<span class="hl-literal">10</span>) <span class="hl-comment">{- START READ  -}</span>
+  <span class="hl-combinator">|</span> <span class="hl-site">reader</span>(<span class="hl-literal">20</span>) <span class="hl-comment">{- START READ  -}</span>
+               <span class="hl-comment">{- END READ    -}</span>
+               <span class="hl-comment">{- END READ    -}</span>
+  <span class="hl-combinator">|</span> <span class="hl-site">writer</span>(<span class="hl-literal">30</span>) <span class="hl-comment">{- START WRITE -}</span>
+               <span class="hl-comment">{- END WRITE   -}</span>
+  <span class="hl-combinator">|</span> <span class="hl-site">reader</span>(<span class="hl-literal">40</span>) <span class="hl-comment">{- START READ  -}</span>
+  <span class="hl-combinator">|</span> <span class="hl-site">reader</span>(<span class="hl-literal">50</span>) <span class="hl-comment">{- START READ  -}</span>
+               <span class="hl-comment">{- END READ    -}</span>
+               <span class="hl-comment">{- END READ    -}</span>
+  <span class="hl-comment">-- halt after the last reader finishes</span>
+  <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">60</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">acquire</span>(<span class="hl-literal">true</span>)
+)</pre><p>
 The lock receives requests over the channel <code class="code"><span class="hl-variable">m</span></code> and processes them
 sequentially with the function <code class="code"><span class="hl-variable">grant</span></code>. Each request includes a
 boolean flag which is true for write requests and false for read requests, and a
