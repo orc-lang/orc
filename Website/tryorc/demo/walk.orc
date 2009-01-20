@@ -1,21 +1,25 @@
-{-
-Random walk:
-Starting at a wall, move 1 step towards or away from the wall
-each time unit. Count the number of time units required to get
-10 steps away from the wall. Repeat the experiment 10 times.
--}
--- coin() is coin toss that yields -1 or 1
-def coin() = random(2) >x> (if (x =0) >> (-1) | if(x=1) >>1)
+{- Random Walk: Starting at a wall, randomly move one step
+toward or away from the wall every time unit.  Count the
+number of time units required to get 10 steps away from the
+wall. -}
 
-{- rw(cp,ns,rt) yields the number of steps to reach rt from the
-current position cp given that ns steps have already been taken.
-Position 0 has hard wall to its left; so a toss of -1 is interpreted
-as stay at position.
--}
+{--
+dir() is a coin toss that yields -1 or 1 with equal probability.
+--}
+def dir() = random(2) >x> (if(x=0) >> -1 | if (x=1) >> 1)
 
-def rw(cp,ns,rt) = if(cp=rt) >> ns
-                 |if(0<cp && cp<rt) >> Rtimer(10) >> rw(cp+coin(),ns+1,rt)
-                 |if(cp=0) >> Rtimer(10) >> rw(1,ns+1,rt)
-                
-signals(10) >> rw(0,0,10)
+{--
+randomWalk(current,final) yields the number of steps in a
+run to reach the final position, final, starting from the
+current position, current. Position 0 has a hard wall to its
+left; so, the next move from 0 is always to position 1.
+Assume that final > 0.
+--}
+def randomWalk(current,final) =
+   if(current = final) >> 0
+ | if(0 < current && current < final) >> Rtimer(10) >>
+      1 + randomWalk(current + dir(), final)
+ | if(current = 0) >> Rtimer(10) >> 1 + randomWalk(1,final)
 
+-- Test
+randomWalk(0,10)
