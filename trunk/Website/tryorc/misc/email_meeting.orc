@@ -6,12 +6,6 @@ to enter information about the meeting and invitees.
 include "forms.inc"
 include "mail.inc"
 
--- For testing purposes
-def SendMail(to, subject, body) =
-  println("To: " + to) >>
-  println("Subject: " + subject) >>
-  println("Body: " + body)
-
 val dateFormat = DateTimeFormat.forStyle("SS")
 val timeFormat = DateTimeFormat.forStyle("-S")
 
