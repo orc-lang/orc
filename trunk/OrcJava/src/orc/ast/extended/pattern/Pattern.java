@@ -106,6 +106,7 @@ public abstract class Pattern implements Locatable {
 	protected static Argument EQUAL = new Site(orc.ast.sites.Site.EQUAL);
 	protected static Argument SOME = new Site(orc.ast.sites.Site.SOME);
 	protected static Argument NONE = new Site(orc.ast.sites.Site.NONE);
+	public static Argument ERROR = new Site(orc.ast.sites.Site.ERROR);
 	public static Argument TRYSOME = new Site(orc.ast.sites.Site.ISSOME);
 	public static Argument TRYNONE = new Site(orc.ast.sites.Site.ISNONE);
 	
@@ -265,6 +266,15 @@ public abstract class Pattern implements Locatable {
 		// trySome... | tryNone...
 		return new Parallel(someb, noneb);
 	}	
+	
+	/**
+	 * Return a default expression to use in case a pattern match fails.
+	 * Instead of remaining silent, we halt with an error, to aid in debugging
+	 * bad/non-total patterns.
+	 */
+	public static Expression fail() {
+		return new Call(ERROR, new Constant("Pattern match failed."));
+	}
 	
 	public void setSourceLocation(SourceLocation location) {
 		this.location = location;

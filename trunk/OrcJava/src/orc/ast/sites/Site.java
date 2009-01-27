@@ -3,6 +3,7 @@ package orc.ast.sites;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import orc.error.OrcError;
 import orc.error.compiletime.typing.MissingTypeException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.SiteResolutionException;
@@ -26,6 +27,7 @@ public abstract class Site {
 	
 	/* Primitive sites */
 	public static Site LET = buildCoreSite("Let");
+	public static Site ERROR = buildCoreSite("Error");
 
 	public static Site IF = buildCoreSite("If");
 	public static Site NOT = buildCoreSite("Not");
@@ -50,7 +52,7 @@ public abstract class Site {
 		try {
 			return build(protocol, new URI(location));
 		} catch (URISyntaxException e) {
-			throw new Error(location + " is not a valid URI");
+			throw new OrcError(location + " is not a valid URI");
 		}
 	}
 	
@@ -63,7 +65,7 @@ public abstract class Site {
 			return new JavaSite(location);
 		}
 		else {
-			throw new Error("'" + protocol + "' is not a supported protocol.");
+			throw new OrcError("'" + protocol + "' is not a supported protocol.");
 		}
 	}
 

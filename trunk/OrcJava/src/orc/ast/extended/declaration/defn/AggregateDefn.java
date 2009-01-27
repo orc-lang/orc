@@ -3,6 +3,7 @@ package orc.ast.extended.declaration.defn;
 import java.util.LinkedList;
 import java.util.List;
 
+import orc.ast.extended.pattern.Pattern;
 import orc.ast.simple.Definition;
 import orc.ast.simple.arg.Var;
 import orc.error.compiletime.CompilationException;
@@ -60,7 +61,7 @@ public class AggregateDefn {
 	
 		
 		// Default 'otherwise' clause is the silent expression
-		orc.ast.simple.Expression body = new orc.ast.simple.Silent();
+		orc.ast.simple.Expression body = Pattern.fail();
 		
 		// Consider clauses in reverse order 
 		for (int i = clauses.size() - 1; i >= 0; i--) {
