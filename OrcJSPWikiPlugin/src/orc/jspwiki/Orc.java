@@ -21,6 +21,7 @@ import com.ecyrd.jspwiki.plugin.WikiPlugin;
  * <li>runnable: if "false", program is not runnable.
  * <li>editable: if "true", program is editable.
  * <li>height: a CSS height (e.g. "100px"). If this is not given, the box will be just big enough to contain the existing program text.
+ * <li>spoiler: if present, this text will appear instead of the program. The user can click it to reveal the program. E.g. spoiler="(click for solution)".
  * <li>baseURL: URL path to Orchard installation (defaults to "/orchard/")
  * </ul>
  * 
@@ -35,6 +36,8 @@ public class Orc implements WikiPlugin {
 		String baseURL = (String)props.get("baseURL");
 		if (baseURL == null) baseURL = "/orchard/";
 		StringBuilder out = new StringBuilder();
+		// hack to ensure the browser closes any previous paragraph tags
+		out.append("<div>");
 		if (ctx.getVariable(HAS_ORC) == null) {
 			// add required css and js files
 			ctx.setVariable(HAS_ORC, true);
@@ -43,6 +46,17 @@ public class Orc implements WikiPlugin {
 					"type=\"text/javascript\"></script>\n");
 			out.append("<link rel=\"stylesheet\" type=\"text/css\" href=\"" +
 					baseURL + "orc.css\" media=\"screen\"/>");
+			out.append("<script type=\"text/javascript\">" +
+					"function orcSpoiler(a) {" +
+					"var $a = jQuery(a);" +
+					"var $orc = $a.next();" +
+					"$orc.css('display', 'none');" +
+					"$orc.css('visibility', 'visible');" +
+					"$orc.css('position', 'static');" +
+					"$orc.slideDown();" +
+					"$a.hide();" +
+					"}" +
+					"</script>");
 		}
 		String tag = "pre";
 		String editable = (String)props.get("editable");
@@ -51,8 +65,13 @@ public class Orc implements WikiPlugin {
 		}
 		String height = (String)props.get("height");
 		String runnable = (String)props.get("runnable");
+		String spoiler = (String)props.get("spoiler");
 		String body = (String)props.get("_body");
 		if (body != null) {
+			if (spoiler != null) {
+				out.append("<a href=\"#\" onclick=\"orcSpoiler(this)\">" + spoiler + "</a>");
+				out.append("<div style=\"visibility: hidden; position: absolute; top: 0; left: 0;\">");
+			}
 			body = TextUtil.replaceEntities(body);
 			out.append("<"+tag+" class=\"orc");
 			if (runnable != null && runnable.equals("false")) {
@@ -65,7 +84,11 @@ public class Orc implements WikiPlugin {
 			out.append(">");
 			out.append(body.trim());
 			out.append("</"+tag+">");
+			if (spoiler != null) {
+				out.append("</div>");
+			}
 		}
+		out.append("</div>");
 		return out.toString();
 	}
 }
