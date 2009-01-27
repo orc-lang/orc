@@ -227,7 +227,7 @@ the expression <code>f() ; g() ; h()</code>
 
 @implementation
 --}
-def alt([]) = signal
+def alt([]) = stop
 def alt(p:ps) = p() ; alt(ps)
 
 {--
@@ -239,7 +239,7 @@ the expression <code>f(a) ; f(b) ; f(c)</code>
 
 @implementation
 --}
-def altMap(f, []) = signal
+def altMap(f, []) = stop
 def altMap(f, x:xs) = f(x) ; altMap(f, xs)
 
 {--
