@@ -32,7 +32,7 @@ public class Lambda extends Expression {
 		
 		Clause c = new Clause(formals, body);
 		
-		orc.ast.simple.Expression lambody = c.simplify(params, new orc.ast.simple.Silent());
+		orc.ast.simple.Expression lambody = c.simplify(params, Pattern.fail());
 		
 		List<orc.ast.simple.Definition> defs = new LinkedList<orc.ast.simple.Definition>();
 		

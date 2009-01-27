@@ -73,8 +73,7 @@ public class Clause {
 				PatternSimplifier pv = stricts.get(0);
 				filters.add(new Attachment(new Var(), pv.filter()));
 				newbody = pv.target(binds, newbody);				
-			}
-			else /* size >= 2 */ { 
+			} else /* size >= 2 */ { 
 				for(int i = 0; i < stricts.size(); i++) {
 					// Add this pattern's output as a component of the result tuple
 					PatternSimplifier pv = stricts.get(i);
