@@ -416,7 +416,7 @@ integer <code>i</code>), <code>n &gt;= low</code>, and <code>n &lt; high</code>.
 --}
 def rangeBy(low, high, skip) =
   if low < high
-  then low:rangeBy(low+skip, high)
+  then low:rangeBy(low+skip, high, skip)
   else []
  
 {--
