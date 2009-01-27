@@ -407,15 +407,25 @@ def groupBy(eq, (k,v):kvs) =
   helper(k,[v], kvs)
  
 {--
+* def rangeBy(Number, Number, Number) :: [Number]
+<code>rangeBy(low, high, skip)</code> returns a sorted list of
+numbers <code>n</code> which satisfy <code>n = low + skip*i</code> (for some
+integer <code>i</code>), <code>n &gt;= low</code>, and <code>n &lt; high</code>.
+
+@implementation
+--}
+def rangeBy(low, high, skip) =
+  if low < high
+  then low:rangeBy(low+skip, high)
+  else []
+ 
+{--
 * def range(Integer, Integer) :: [Integer]
 Generate a list of integers in the given half-open range.
 
 @implementation
 --}
-def range(low, high) =
-  if low < high then
-    low:range(low+1, high)
-  else []
+def range(low, high) = rangeBy(low, high, 1)
 
 {--
 * def any(lambda (A) :: Boolean, [A]) :: Boolean
