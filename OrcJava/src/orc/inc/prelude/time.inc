@@ -32,7 +32,7 @@ calls (other than calls to <code>Ltimer</code>) have published.
 site Ltimer = orc.lib.time.Ltimer
 
 {--
-* def withLtimer(lambda () :: A) :: A
+* def withLtimer[A](lambda () :: A) :: A
 Run a thunk in the context of a new logical clock.
 --}
 def withLtimer(thunk) =

@@ -96,7 +96,7 @@ upto(5)]]></programlisting>
 def upto(high) = for(0, high)
 
 {--
-* def fillArray(Array<A>, lambda (Integer) :: A) :: Array<A>
+* def fillArray[A](Array[A], lambda (Integer) :: A) :: Array[A]
 Given an array and a function from indices to values, populate the array
 by calling the function for each index in the array.
 
@@ -117,7 +117,7 @@ def fillArray(a, f) =
   fill(0, f) ; a
 
 {--
-* def takePubs(Integer, lambda () :: A) :: A
+* def takePubs[A](Integer, lambda () :: A) :: A
 <code>takePubs(n, f)</code> calls <code>f()</code>,
 publishes the first <code>n</code> values published
 by <code>f()</code> (as they are published), and then
@@ -135,7 +135,7 @@ def takePubs(n, f) =
   ) | repeat(out.get)
 
 {--
-* def withLock(Semaphore, lambda () :: A) :: A
+* def withLock[A](Semaphore, lambda () :: A) :: A
 Acquire the semaphore and run the thunk, publishing all values published by the
 thunk. Once the thunk halts, release the semaphore.
 
