@@ -10,10 +10,10 @@ in <code>(+)</code>, it denotes an infix operator.</para>
 the <link linkend="language.base.operators">Operators</link> section of the
 User Guide.</para>
 <variablelist>
-<varlistentry><term><code>let</code></term><listitem><para><code>site let(A) :: A</code></para>
+<varlistentry><term><code>let</code></term><listitem><para><code>site let[A](A) :: A</code></para>
 <para>When applied to a single argument, return that argument (behaving as the identity function).</para>
 </listitem></varlistentry>
-<varlistentry><term><code>let</code></term><listitem><para><code>site let(A, ...) :: (A, ...)</code></para>
+<varlistentry><term><code>let</code></term><listitem><para><code>site let[A, ...](A, ...) :: (A, ...)</code></para>
 <para>When applied to zero, two, or more arguments, return the arguments in a tuple.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>if</code></term><listitem><para><code>site if(Boolean) :: Signal</code></para>
@@ -112,7 +112,7 @@ computed.</para>
 operator; both arguments must be evaluated and available before the result is
 computed.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>(:)</code></term><listitem><para><code>site (:)(A,[A]) :: [A]</code></para>
+<varlistentry><term><code>(:)</code></term><listitem><para><code>site (:)[A](A, List[A]) :: List[A]</code></para>
 <para>The list <code>a:b</code> is formed by prepending the element <code>a</code> to
 the list <code>b</code>.</para>
 <para>Example:
@@ -139,7 +139,7 @@ and will probably change in future versions of the implementation.</para>
   if x &lt; 0 then -1
   else if x &gt; 0 then 1
   else 0</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>min</code></term><listitem><para><code>def min(A,A) :: A, A &lt;: Comparable</code></para>
+<varlistentry><term><code>min</code></term><listitem><para><code>def min[A &lt;: Comparable](A,A) :: A</code></para>
 <para>Return the lesser of the arguments. If the arguments
 are equal, return the first argument.</para>
 <para>Recall that the type constraint <code>A &lt;: Comparable</code>
@@ -147,7 +147,7 @@ means that <code>min</code> can only be applied to arguments
 which are subtypes of <code>Comparable</code>; in other words,
 they must have a total order.</para>
 <formalpara><title>Implementation</title><programlisting>def min(x,y) = if y &lt; x then y else x</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>max</code></term><listitem><para><code>def max(A,A) :: A, A &lt;: Comparable</code></para>
+<varlistentry><term><code>max</code></term><listitem><para><code>def max[A &lt;: Comparable](A,A) :: A</code></para>
 <para>Return the greater of the arguments. If the arguments
 are equal, return the second argument.</para>
 <formalpara><title>Implementation</title><programlisting>def max(x,y) = if x &gt; y then x else y</programlisting></formalpara></listitem></varlistentry></variablelist>
@@ -191,9 +191,12 @@ Otherwise, block until some call to <code>acquire</code> blocks.</para>
 Otherwise, halt.</para>
 </listitem></varlistentry></variablelist>
 </listitem></varlistentry>
-<varlistentry><term><code>Buffer</code></term><listitem><para><code>site Buffer() :: Buffer&lt;A&gt;</code></para>
-<para>Create a new buffer (FIFO channel) of unlimited size. A buffer supports
-get, put and close operations.</para>
+<varlistentry><term><code>Buffer</code></term><listitem><para><code>site Buffer[A]() :: Buffer[A]</code></para>
+<para><!-- XSL/FO doesn't like me using an anchor tag here -->
+<para id="orc.lib.Buffer.close">
+Create a new buffer (FIFO channel) of unlimited size. A buffer supports
+get, put and close operations.
+</para></para>
 <para>A buffer may be either empty or non-empty, and either open or closed.  When
 empty and open, calls to <code>get</code> block.  When empty and closed, calls
 to <code>get</code> halt.  When closed, calls to <code>put</code> halt.  In all
@@ -205,45 +208,42 @@ val b = Buffer()
   Rtimer(1000) >> b.put(10) >> stop
 | b.get()]]></programlisting></para>
 <variablelist>
-<varlistentry><term><code>get</code></term><listitem><para><code>site Buffer&lt;A&gt;.get() :: A</code></para>
+<varlistentry><term><code>Buffer</code></term><listitem><para><code>site Buffer[A].get() :: A</code></para>
 <para>Get an item from the buffer. If the buffer is open and no items are available,
 block until one becomes available. If the buffer is <link
 linkend="orc.lib.Buffer.close">closed</link> and no items are available, halt.</para>
-<para>Recall that the type signature <code>site Buffer&lt;A&gt;.get() :: A</code> means that
-when the <code>get</code> method is called on a buffer holding an arbitrary
-element type <code>A</code>, it will return a value of the same type.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>getnb</code></term><listitem><para><code>site Buffer&lt;A&gt;.getnb() :: A</code></para>
+<varlistentry><term><code>Buffer</code></term><listitem><para><code>site Buffer[A].getnb() :: A</code></para>
 <para>Get an item from the buffer. If no items are available, halt.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>put</code></term><listitem><para><code>site Buffer&lt;A&gt;.put(A) :: Signal</code></para>
+<varlistentry><term><code>Buffer</code></term><listitem><para><code>site Buffer[A].put(A) :: Signal</code></para>
 <para>Put an item in the buffer. If the buffer is <link
 linkend="orc.lib.Buffer.close">closed</link>, halt.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>close</code></term><listitem><para><code>site Buffer&lt;A&gt;.close() :: Signal</code></para>
+<varlistentry><term><code>Buffer</code></term><listitem><para><code>site Buffer[A].close() :: Signal</code></para>
 <para>Close the buffer and block until it is empty.
 This has the effect of immediately causing any blocked calls to
 <code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
 will halt, and once the buffer becomes empty, any subsequent calls to
 <code>get</code> will halt.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>closenb</code></term><listitem><para><code>site Buffer&lt;A&gt;.closenb() :: Signal</code></para>
+<varlistentry><term><code>Buffer</code></term><listitem><para><code>site Buffer[A].closenb() :: Signal</code></para>
 <para>Close the buffer and return a signal immediately.
 This has the effect of immediately causing any blocked calls to
 <code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
 will halt, and once the buffer becomes empty, any subsequent calls to
 <code>get</code> will halt.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>isClosed</code></term><listitem><para><code>site Buffer&lt;A&gt;.isClosed() :: Boolean</code></para>
+<varlistentry><term><code>Buffer</code></term><listitem><para><code>site Buffer[A].isClosed() :: Boolean</code></para>
 <para>If the buffer is currently closed, return true, otherwise return false.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>getAll</code></term><listitem><para><code>site Buffer&lt;A&gt;.getAll() :: [A]</code></para>
+<varlistentry><term><code>Buffer</code></term><listitem><para><code>site Buffer[A].getAll() :: [A]</code></para>
 <para>Get all of the items currently in the buffer, emptying the buffer and returning
 a list of the items in the order they were added. If there are no items in the
 buffer, return an empty list.</para>
 </listitem></varlistentry></variablelist>
 </listitem></varlistentry>
-<varlistentry><term><code>BoundedBuffer</code></term><listitem><para><code>site BoundedBuffer(Integer) :: BoundedBuffer&lt;A&gt;</code></para>
+<varlistentry><term><code>BoundedBuffer</code></term><listitem><para><code>site BoundedBuffer[A](Integer) :: BoundedBuffer[A]</code></para>
 <para>Create a new buffer (FIFO channel) with the given number of slots.
 Putting an item into the buffer fills a slot, and getting an item opens a slot.
 A buffer with zero slots is equivalent to a
@@ -264,31 +264,34 @@ val c = BoundedBuffer(1)
   | c.get() >n> "Got " + n
   )]]></programlisting></para>
 <variablelist>
-<varlistentry><term><code>get</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.get() :: A</code></para>
+<varlistentry><term><code>BoundedBuffer</code></term><listitem><para><code>site BoundedBuffer[A].get() :: A</code></para>
 <para>Get an item from the buffer. If the buffer is open and no items are available,
 block until one becomes available. If the buffer is <link
-linkend="orc.lib.Buffer.close">closed</link> and no items are available, halt.</para>
+linkend="orc.lib.BoundedBuffer.close">closed</link> and no items are available, halt.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>getnb</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.getnb() :: A</code></para>
+<varlistentry><term><code>BoundedBuffer</code></term><listitem><para><code>site BoundedBuffer[A].getnb() :: A</code></para>
 <para>Get an item from the buffer. If no items are available, halt.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>put</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.put(A) :: Signal</code></para>
+<varlistentry><term><code>BoundedBuffer</code></term><listitem><para><code>site BoundedBuffer[A].put(A) :: Signal</code></para>
 <para>Put an item in the buffer. If no slots are open, block until one becomes open.
-If the buffer is <link linkend="orc.lib.Buffer.close">closed</link>, halt.</para>
+If the buffer is <link linkend="orc.lib.BoundedBuffer.close">closed</link>, halt.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>putnb</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.putnb(A) :: Signal</code></para>
+<varlistentry><term><code>BoundedBuffer</code></term><listitem><para><code>site BoundedBuffer[A].putnb(A) :: Signal</code></para>
 <para>Put an item in the buffer. If no slots are open, halt.
-If the buffer is <link linkend="orc.lib.Buffer.close">closed</link>, halt.</para>
+If the buffer is <link linkend="orc.lib.BoundedBuffer.close">closed</link>, halt.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>close</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.close() :: Signal</code></para>
-<para>Close the buffer and block until it is empty.
+<varlistentry><term><code>BoundedBuffer</code></term><listitem><para><code>site BoundedBuffer[A].close() :: Signal</code></para>
+<para><!-- XSL/FO doesn't like me using an anchor tag here -->
+<para id="orc.lib.BoundedBuffer.close">
+Close the buffer and block until it is empty.
 This has the effect of immediately causing any blocked calls to
 <code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
 will halt, and once the buffer becomes empty, any subsequent calls to
 <code>get</code> will halt. Note that any blocked calls to <code>put</code>
-initiated prior to closing the buffer may still be allowed to return as usual.</para>
+initiated prior to closing the buffer may still be allowed to return as usual.
+</para></para>
 </listitem></varlistentry>
-<varlistentry><term><code>closenb</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.closenb() :: Signal</code></para>
+<varlistentry><term><code>BoundedBuffer</code></term><listitem><para><code>site BoundedBuffer[A].closenb() :: Signal</code></para>
 <para>Close the buffer and return a signal immediately.
 This has the effect of immediately causing any blocked calls to
 <code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
@@ -296,24 +299,24 @@ will halt, and once the buffer becomes empty, any subsequent calls to
 <code>get</code> will halt. Note that any blocked calls to <code>put</code>
 initiated prior to closing the buffer may still be allowed to return as usual.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>isClosed</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.isClosed() :: Boolean</code></para>
+<varlistentry><term><code>BoundedBuffer</code></term><listitem><para><code>site BoundedBuffer[A].isClosed() :: Boolean</code></para>
 <para>If the buffer is currently closed, return true, otherwise return false.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>getOpen</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.getOpen() :: Integer</code></para>
+<varlistentry><term><code>BoundedBuffer</code></term><listitem><para><code>site BoundedBuffer[A].getOpen() :: Integer</code></para>
 <para>Return the number of open slots in the buffer. Because of concurrency
 this value may become out-of-date so it should only be used for debugging
 or statistical measurements.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>getBound</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.getBound() :: Integer</code></para>
+<varlistentry><term><code>BoundedBuffer</code></term><listitem><para><code>site BoundedBuffer[A].getBound() :: Integer</code></para>
 <para>Return the total number of slots (open or filled) in the buffer.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>getAll</code></term><listitem><para><code>site BoundedBuffer&lt;A&gt;.getAll() :: [A]</code></para>
+<varlistentry><term><code>BoundedBuffer</code></term><listitem><para><code>site BoundedBuffer[A].getAll() :: [A]</code></para>
 <para>Get all of the items currently in the buffer or waiting to be added, emptying
 the buffer and returning a list of the items in the order they were added. If
 there are no items in the buffer or waiting to be added, return an empty list.</para>
 </listitem></varlistentry></variablelist>
 </listitem></varlistentry>
-<varlistentry><term><code>SyncChannel</code></term><listitem><para><code>site SyncChannel() :: SyncChannel&lt;A&gt;</code></para>
+<varlistentry><term><code>SyncChannel</code></term><listitem><para><code>site SyncChannel[A]() :: SyncChannel[A]</code></para>
 <para><!-- XSL/FO doesn't like me using an anchor tag here -->
 <para id="orc.lib.state.SyncChannel">
 Create a synchronous channel, or rendezvous.
@@ -325,14 +328,14 @@ val c = SyncChannel()
   c.put(10)
 | Rtimer(1000) >> c.get()]]></programlisting></para>
 <variablelist>
-<varlistentry><term><code>get</code></term><listitem><para><code>site SyncChannel&lt;A&gt;.get() :: A</code></para>
+<varlistentry><term><code>SyncChannel</code></term><listitem><para><code>site SyncChannel[A].get() :: A</code></para>
 <para>Receive an item over the channel. If no sender is available, block until one becomes available.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>put</code></term><listitem><para><code>site SyncChannel&lt;A&gt;.put(A) :: Signal</code></para>
+<varlistentry><term><code>SyncChannel</code></term><listitem><para><code>site SyncChannel[A].put(A) :: Signal</code></para>
 <para>Send an item over the channel. If no receiver is available, block until one becomes available.</para>
 </listitem></varlistentry></variablelist>
 </listitem></varlistentry>
-<varlistentry><term><code>Cell</code></term><listitem><para><code>site Cell() :: Cell&lt;A&gt;</code></para>
+<varlistentry><term><code>Cell</code></term><listitem><para><code>site Cell[A]() :: Cell[A]</code></para>
 <para>Create a write-once storage location.</para>
 <para>Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -341,17 +344,17 @@ val c = Cell()
   c.write(5) >> c.read()
 | Rtimer(1) >> ( c.write(10) ; c.read() )]]></programlisting></para>
 <variablelist>
-<varlistentry><term><code>read</code></term><listitem><para><code>site Cell&lt;A&gt;.read() :: A</code></para>
+<varlistentry><term><code>Cell</code></term><listitem><para><code>site Cell[A].read() :: A</code></para>
 <para>Read a value from the cell. If the cell does not yet have a value, block until it receives one.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>readnb</code></term><listitem><para><code>site Cell&lt;A&gt;.readnb() :: A</code></para>
+<varlistentry><term><code>Cell</code></term><listitem><para><code>site Cell[A].readnb() :: A</code></para>
 <para>Read a value from the cell. If the cell does not yet have a value, halt.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>write</code></term><listitem><para><code>site Cell&lt;A&gt;.write() :: Signal</code></para>
+<varlistentry><term><code>Cell</code></term><listitem><para><code>site Cell[A].write() :: Signal</code></para>
 <para>Write a value to the cell. If the cell already has a value, halt.</para>
 </listitem></varlistentry></variablelist>
 </listitem></varlistentry>
-<varlistentry><term><code>Ref</code></term><listitem><para><code>site Ref() :: Ref&lt;A&gt;</code></para>
+<varlistentry><term><code>Ref</code></term><listitem><para><code>site Ref[A]() :: Ref[A]</code></para>
 <para><para id="orc.lib.state.Ref">
 Create a rewritable storage location without an initial value.
 </para></para>
@@ -364,32 +367,32 @@ Rtimer(1000) >> r := 5 >> stop
   println(r?) >>
   stop]]></programlisting></para>
 <variablelist>
-<varlistentry><term><code>Ref</code></term><listitem><para><code>site Ref(A) :: Ref&lt;A&gt;</code></para>
+<varlistentry><term><code>Ref</code></term><listitem><para><code>site Ref[A](A) :: Ref[A]</code></para>
 <para>Create a rewritable storage location initialized to the provided value.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>read</code></term><listitem><para><code>site Ref&lt;A&gt;.read() :: A</code></para>
+<varlistentry><term><code>Ref</code></term><listitem><para><code>site Ref[A].read() :: A</code></para>
 <para>Read the value of the ref. If the ref does not yet have a value, block until it receives one.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>readnb</code></term><listitem><para><code>site Ref&lt;A&gt;.readnb() :: A</code></para>
+<varlistentry><term><code>Ref</code></term><listitem><para><code>site Ref[A].readnb() :: A</code></para>
 <para>Read the value of the ref. If the ref does not yet have a value, halt.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>write</code></term><listitem><para><code>site Ref&lt;A&gt;.write(A) :: Signal</code></para>
+<varlistentry><term><code>Ref</code></term><listitem><para><code>site Ref[A].write(A) :: Signal</code></para>
 <para>Write a value to the ref.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>(?)</code></term><listitem><para><code>def (?)(Ref&lt;A&gt;) :: A</code></para>
+<varlistentry><term><code>(?)</code></term><listitem><para><code>def (?)[A](Ref[A]) :: A</code></para>
 <para>Get the value held by a reference.
 <code>x?</code> is equivalent to <code>x.read()</code>.</para>
 <formalpara><title>Implementation</title><programlisting>def (?)(r) = r.read()</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>(:=)</code></term><listitem><para><code>def (:=)(Ref&lt;A&gt;, A) :: Signal</code></para>
+<varlistentry><term><code>(:=)</code></term><listitem><para><code>def (:=)[A](Ref[A], A) :: Signal</code></para>
 <para>Set the value held by a reference.
 <code>x := y</code> is equivalent to <code>x.write(y)</code>.</para>
 <formalpara><title>Implementation</title><programlisting>def (:=)(r,v) = r.write(v)</programlisting></formalpara></listitem></varlistentry></variablelist>
 </listitem></varlistentry>
-<varlistentry><term><code>Array</code></term><listitem><para><code>site Array(Integer) :: Array&lt;A&gt;</code></para>
+<varlistentry><term><code>Array</code></term><listitem><para><code>site Array[A](Integer) :: Array[A]</code></para>
 <para>Create a new native array of the given size. The array is initialized
 to contain <code>null</code>s.</para>
 <para>The resulting array can be called directly with an index, as if
-its type were <code>lambda (Integer) :: Ref&lt;A&gt;</code>.
+its type were <code>lambda (Integer) :: Ref[A]</code>.
 In this case, it returns a <link linkend="orc.lib.state.Ref">Ref</link>
 pointing to the element of the array specified by an index,
 counting from 0. Changes to the array are reflected immediately
@@ -409,7 +412,7 @@ a(i) := f(i) >>
 stop
 ; a(0)? | a(1)? | a(2)?]]></programlisting></para>
 <variablelist>
-<varlistentry><term><code>Array</code></term><listitem><para><code>site Array(Integer, String) :: Array&lt;A&gt;</code></para>
+<varlistentry><term><code>Array</code></term><listitem><para><code>site Array[A](Integer, String) :: Array[A]</code></para>
 <para>Create a new primitive array of the given size with the given primitive type.
 The initial values in the array depend on the primitive type: for numeric types,
 it is <code>0</code>; for booleans, <code>false</code>; for chars, the character
@@ -419,22 +422,22 @@ primitive type, although a typechecker may not be able to verify this. This
 constructor is only necessary when interfacing with certain Java libraries; most
 programs will just use the  <code>Array(Integer)</code> constructor.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>get</code></term><listitem><para><code>site Array&lt;A&gt;.get(Integer) :: A</code></para>
+<varlistentry><term><code>Array</code></term><listitem><para><code>site Array[A].get(Integer) :: A</code></para>
 <para>Get the element of the array given by the index, counting from 0.
 <code>a.get(i)</code> is equivalent to <code>a(i)?</code>.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>set</code></term><listitem><para><code>site Array&lt;A&gt;.set(Integer, A) :: Signal</code></para>
+<varlistentry><term><code>Array</code></term><listitem><para><code>site Array[A].set(Integer, A) :: Signal</code></para>
 <para>Set the element of the array given by the index, counting from 0.
 <code>a.set(i,v)</code> is equivalent to <code>a(i) := v</code>.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>slice</code></term><listitem><para><code>site Array&lt;A&gt;.slice(Integer, Integer) :: Array&lt;A&gt;</code></para>
+<varlistentry><term><code>Array</code></term><listitem><para><code>site Array[A].slice(Integer, Integer) :: Array[A]</code></para>
 <para>Return a copy of the portion of the array with indices covered by the given
 half-open range. The result array is still indexed counting from 0.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>length</code></term><listitem><para><code>site Array&lt;A&gt;.length() :: Integer</code></para>
+<varlistentry><term><code>Array</code></term><listitem><para><code>site Array[A].length() :: Integer</code></para>
 <para>Return the size of the array.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>fill</code></term><listitem><para><code>site Array&lt;A&gt;.fill(A) :: Signal</code></para>
+<varlistentry><term><code>Array</code></term><listitem><para><code>site Array[A].fill(A) :: Signal</code></para>
 <para>Set every element of the array to the given value. The given value is not
 copied, but is shared by every element of the array, so for example
 <code>a.fill(Semaphore(1))</code> would allow you to access the same semaphore
@@ -448,7 +451,7 @@ val a = Array(3)
 a.fill(0) >> each(a)]]></programlisting></para>
 </listitem></varlistentry></variablelist>
 </listitem></varlistentry>
-<varlistentry><term><code>IArray</code></term><listitem><para><code>def IArray(Integer, lambda (Integer) :: A)(Integer) :: A</code></para>
+<varlistentry><term><code>IArray</code></term><listitem><para><code>def IArray[A](Integer, lambda (Integer) :: A)(Integer) :: A</code></para>
 <para>The call <code>IArray(n,f)</code>, where <code>n</code> is a
 natural number and <code>f</code> a total function over natural numbers,
 creates and returns a partial, pre-computed version of <code>f</code>
@@ -469,7 +472,7 @@ a(3)]]></programlisting></para>
     if i &lt; 0 then []
     else a.set(i, f(i)):fill(i-1, f)
   fill(n-1, f) &gt;&gt; a.get</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>Some</code></term><listitem><para><code>site Some(A) :: Option&lt;A&gt;</code></para>
+<varlistentry><term><code>Some</code></term><listitem><para><code>site Some[A](A) :: Option[A]</code></para>
 <para>An optional value which is available.
 This site may also be used in a pattern.</para>
 <para>Example:
@@ -480,39 +483,39 @@ Some((3,4)) >s> (
   | s >None()> signal
 )]]></programlisting></para>
 </listitem></varlistentry>
-<varlistentry><term><code>None</code></term><listitem><para><code>site None() :: Option&lt;A&gt;</code></para>
+<varlistentry><term><code>None</code></term><listitem><para><code>site None[A]() :: Option[A]</code></para>
 <para>An optional value which is not available.
 This site may also be used in a pattern.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>Set</code></term><listitem><para><code>site Set() :: Set&lt;A&gt;</code></para>
+<varlistentry><term><code>Set</code></term><listitem><para><code>site Set[A]() :: Set[A]</code></para>
 <para>Construct an empty mutable set. The set considers two
 values <code>a</code> and <code>b</code> to be the same if
 and only if <code>a=b</code>. This site conforms to the Java interface
 <code>java.util.Set</code>, except that it obeys Orc rules for equality of
 elements rather than Java rules.</para>
 <variablelist>
-<varlistentry><term><code>add</code></term><listitem><para><code>site Set&lt;A&gt;.add(A) :: Boolean</code></para>
+<varlistentry><term><code>Set</code></term><listitem><para><code>site Set[A].add(A) :: Boolean</code></para>
 <para>Add a value to the set, returning true if the set did not already contain the value,
 and false otherwise.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>remove</code></term><listitem><para><code>site Set&lt;A&gt;.remove(Top) :: Boolean</code></para>
+<varlistentry><term><code>Set</code></term><listitem><para><code>site Set[A].remove(Top) :: Boolean</code></para>
 <para>Remove a value from the set, returning true if the set contained the value,
 and false otherwise.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>contains</code></term><listitem><para><code>site Set&lt;A&gt;.contains(Top) :: Boolean</code></para>
+<varlistentry><term><code>Set</code></term><listitem><para><code>site Set[A].contains(Top) :: Boolean</code></para>
 <para>Return true if the set contains the given value, and false otherwise.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>isEmpty</code></term><listitem><para><code>site Set&lt;A&gt;.isEmpty() :: Boolean</code></para>
+<varlistentry><term><code>Set</code></term><listitem><para><code>site Set[A].isEmpty() :: Boolean</code></para>
 <para>Return true if the set contains no values.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>clear</code></term><listitem><para><code>site Set&lt;A&gt;.clear() :: Signal</code></para>
+<varlistentry><term><code>Set</code></term><listitem><para><code>site Set[A].clear() :: Signal</code></para>
 <para>Remove all values from the set.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>size</code></term><listitem><para><code>site Set&lt;A&gt;.size() :: Integer</code></para>
+<varlistentry><term><code>Set</code></term><listitem><para><code>site Set[A].size() :: Integer</code></para>
 <para>Return the number of unique values currently contained in the set.</para>
 </listitem></varlistentry></variablelist>
 </listitem></varlistentry>
-<varlistentry><term><code>Map</code></term><listitem><para><code>site Map() :: Map&lt;K,V&gt;</code></para>
+<varlistentry><term><code>Map</code></term><listitem><para><code>site Map[K,V]() :: Map[K,V]</code></para>
 <para>Construct an empty mutable map from keys to values.  Each key contained in the
 map is associated with exactly one value.  The mapping considers two keys
 <code>a</code> and <code>b</code> to be the same if and only if
@@ -520,30 +523,30 @@ map is associated with exactly one value.  The mapping considers two keys
 <code>java.util.Map</code>, except that it obeys Orc rules for equality of keys
 rather than Java rules.</para>
 <variablelist>
-<varlistentry><term><code>put</code></term><listitem><para><code>site Map&lt;K,V&gt;.put(K, V) :: V</code></para>
+<varlistentry><term><code>Map</code></term><listitem><para><code>site Map[K,V].put(K, V) :: V</code></para>
 <para><code>map.put(k,v)</code> associates the value <code>v</code> with the key
 <code>k</code> in <code>map</code>, such that <code>map.get(k)</code> returns
 <code>v</code>. Return the value previously associated with the key,
 if any, otherwise return <code>Null()</code>.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>get</code></term><listitem><para><code>site Map&lt;K,V&gt;.get(K) :: V</code></para>
+<varlistentry><term><code>Map</code></term><listitem><para><code>site Map[K,V].get(K) :: V</code></para>
 <para>Return the value currently associated with the given key, if any, otherwise
 return <code>Null()</code>.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>remove</code></term><listitem><para><code>site Map&lt;K,V&gt;.remove(Top) :: V</code></para>
+<varlistentry><term><code>Map</code></term><listitem><para><code>site Map[K,V].remove(Top) :: V</code></para>
 <para>Remove the given key from the map. Return the value previously associated with the key,
 if any, otherwise return <code>Null()</code>.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>containsKey</code></term><listitem><para><code>site Map&lt;K,V&gt;.containsKey(Top) :: Boolean</code></para>
+<varlistentry><term><code>Map</code></term><listitem><para><code>site Map[K,V].containsKey(Top) :: Boolean</code></para>
 <para>Return true if the map contains the given key, and false otherwise.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>isEmpty</code></term><listitem><para><code>site Map&lt;K,V&gt;.isEmpty() :: Boolean</code></para>
+<varlistentry><term><code>Map</code></term><listitem><para><code>site Map[K,V].isEmpty() :: Boolean</code></para>
 <para>Return true if the map contains no keys.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>clear</code></term><listitem><para><code>site Map&lt;K,V&gt;.clear() :: Signal</code></para>
+<varlistentry><term><code>Map</code></term><listitem><para><code>site Map[K,V].clear() :: Signal</code></para>
 <para>Remove all keys from the map.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>size</code></term><listitem><para><code>site Map&lt;K,V&gt;.size() :: Integer</code></para>
+<varlistentry><term><code>Map</code></term><listitem><para><code>site Map[K,V].size() :: Integer</code></para>
 <para>Return the number of unique keys currently contained in the map.</para>
 </listitem></varlistentry></variablelist>
 </listitem></varlistentry>
@@ -617,13 +620,13 @@ For readers familiar with the C language, this is the same reason you must
 write <code language="c">s->field</code> instead of <code>s.field</code> when
 <code>s</code> is a pointer to a struct.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>fst</code></term><listitem><para><code>def fst((A,B)) :: A</code></para>
+<varlistentry><term><code>fst</code></term><listitem><para><code>def fst[A,B]((A,B)) :: A</code></para>
 <para>Return the first element of a pair.</para>
 <formalpara><title>Implementation</title><programlisting>def fst((x,_)) = x</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>snd</code></term><listitem><para><code>def snd((A,B)) :: B</code></para>
+<varlistentry><term><code>snd</code></term><listitem><para><code>def snd[A,B]((A,B)) :: B</code></para>
 <para>Return the second element of a pair.</para>
 <formalpara><title>Implementation</title><programlisting>def snd((_,y)) = y</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>swap</code></term><listitem><para><code>def swap((A,B)) :: (B,A)</code></para>
+<varlistentry><term><code>swap</code></term><listitem><para><code>def swap[A,B]((A,B)) :: (B,A)</code></para>
 <para>Swap the elements of a pair.</para>
 <formalpara><title>Implementation</title><programlisting>def swap((x,y)) = (y,x)</programlisting></formalpara></listitem></varlistentry></variablelist>
 </section>
@@ -632,45 +635,45 @@ write <code language="c">s->field</code> instead of <code>s.field</code> when
 Many of these are standard functional-programming
 combinators borrowed from Haskell or Scheme.</para>
 <variablelist>
-<varlistentry><term><code>apply</code></term><listitem><para><code>site apply(lambda (A, ...) :: B, [A]) :: B</code></para>
+<varlistentry><term><code>apply</code></term><listitem><para><code>site apply[B, A, ...](lambda (A, ...) :: B, List[A]) :: B</code></para>
 <para>Apply a function to a list of arguments.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>curry</code></term><listitem><para><code>def curry(lambda (A,B) :: C)(A)(B) :: C</code></para>
+<varlistentry><term><code>curry</code></term><listitem><para><code>def curry[A,B,C](lambda (A,B) :: C)(A)(B) :: C</code></para>
 <para>Curry a function of two arguments.</para>
 <formalpara><title>Implementation</title><programlisting>def curry(f)(x)(y) = f(x,y)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>curry3</code></term><listitem><para><code>def curry3(lambda (A,B,C) :: D)(A)(B)(C) :: D</code></para>
+<varlistentry><term><code>curry3</code></term><listitem><para><code>def curry3[A,B,C,D](lambda (A,B,C) :: D)(A)(B)(C) :: D</code></para>
 <para>Curry a function of three arguments.</para>
 <formalpara><title>Implementation</title><programlisting>def curry3(f)(x)(y)(z) = f(x,y,z)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>uncurry</code></term><listitem><para><code>def uncurry(lambda (A)(B) :: C)(A, B) :: C</code></para>
+<varlistentry><term><code>uncurry</code></term><listitem><para><code>def uncurry[A,B,C](lambda (A)(B) :: C)(A, B) :: C</code></para>
 <para>Uncurry a function of two arguments.</para>
 <formalpara><title>Implementation</title><programlisting>def uncurry(f)(x,y) = f(x)(y)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>uncurry3</code></term><listitem><para><code>def uncurry3(lambda (A)(B)(C) :: D)(A,B,C) :: D</code></para>
+<varlistentry><term><code>uncurry3</code></term><listitem><para><code>def uncurry3[A,B,C,D](lambda (A)(B)(C) :: D)(A,B,C) :: D</code></para>
 <para>Uncurry a function of three arguments.</para>
 <formalpara><title>Implementation</title><programlisting>def uncurry3(f)(x,y,z) = f(x)(y)(z)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>flip</code></term><listitem><para><code>def flip(lambda (A, B) :: C)(B, A) :: C</code></para>
+<varlistentry><term><code>flip</code></term><listitem><para><code>def flip[A,B,C](lambda (A, B) :: C)(B, A) :: C</code></para>
 <para>Flip the order of parameters of a two-argument function.</para>
 <formalpara><title>Implementation</title><programlisting>def flip(f)(x,y) = f(y,x)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>constant</code></term><listitem><para><code>def constant(A)() :: A</code></para>
+<varlistentry><term><code>constant</code></term><listitem><para><code>def constant[A](A)() :: A</code></para>
 <para>Create a function which returns a constant value.</para>
 <formalpara><title>Implementation</title><programlisting>def constant(x)() = x</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>defer</code></term><listitem><para><code>def defer(lambda (A) :: B, A)() :: B</code></para>
+<varlistentry><term><code>defer</code></term><listitem><para><code>def defer[A,B](lambda (A) :: B, A)() :: B</code></para>
 <para>Given a function and its argument, return a thunk which applies the function.</para>
 <formalpara><title>Implementation</title><programlisting>def defer(f, x)() = f(x)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>defer2</code></term><listitem><para><code>def defer2(lambda (A,B) :: C, A, B)() :: C</code></para>
+<varlistentry><term><code>defer2</code></term><listitem><para><code>def defer2[A,B,C](lambda (A,B) :: C, A, B)() :: C</code></para>
 <para>Given a function and its arguments, return a thunk which applies the function.</para>
 <formalpara><title>Implementation</title><programlisting>def defer2(f, x, y)() = f(x, y)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>ignore</code></term><listitem><para><code>def ignore(lambda () :: B)(A) :: B</code></para>
+<varlistentry><term><code>ignore</code></term><listitem><para><code>def ignore[A,B](lambda () :: B)(A) :: B</code></para>
 <para>From a function of no arguments, create a function
 of one argument, which is ignored.</para>
 <formalpara><title>Implementation</title><programlisting>def ignore(f)(_) = f()</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>ignore2</code></term><listitem><para><code>def ignore2(lambda () :: C)(A, B) :: C</code></para>
+<varlistentry><term><code>ignore2</code></term><listitem><para><code>def ignore2[A,B,C](lambda () :: C)(A, B) :: C</code></para>
 <para>From a function of no arguments, create a function
 of two arguments, which are ignored.</para>
 <formalpara><title>Implementation</title><programlisting>def ignore2(f)(_, _) = f()</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>compose</code></term><listitem><para><code>def compose(lambda (B) :: C, lambda (A) :: B)(A) :: C</code></para>
+<varlistentry><term><code>compose</code></term><listitem><para><code>def compose[A,B,C](lambda (B) :: C, lambda (A) :: B)(A) :: C</code></para>
 <para>Compose two single-argument functions.</para>
 <formalpara><title>Implementation</title><programlisting>def compose(f,g)(x) = f(g(x))</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>while</code></term><listitem><para><code>def while(lambda (A) :: Boolean, lambda (A) :: A)(A) :: A</code></para>
+<varlistentry><term><code>while</code></term><listitem><para><code>def while[A](lambda (A) :: Boolean, lambda (A) :: A)(A) :: A</code></para>
 <para>Iterate a function while a predicate is satisfied, publishing
 each value passed to the function. The exact behavior is specified
 by the following implementation:</para>
@@ -688,26 +691,26 @@ while(
 <formalpara><title>Implementation</title><programlisting>def while(p,f) = 
   def loop(x) = if(p(x)) &gt;&gt; ( x | loop(f(x)) )
   loop</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>repeat</code></term><listitem><para><code>def repeat(lambda () :: A) :: A</code></para>
+<varlistentry><term><code>repeat</code></term><listitem><para><code>def repeat[A](lambda () :: A) :: A</code></para>
 <para>Call a function sequentially, publishing each value returned by the function.
 The expression <code>repeat(f)</code> is equivalent to
 the infinite expression <code>f() >!_> f() >!_> f() >!_> ...</code></para>
 <formalpara><title>Implementation</title><programlisting>def repeat(f) = f() &gt;!x&gt; repeat(f)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>fork</code></term><listitem><para><code>def fork([lambda () :: A]) :: A</code></para>
+<varlistentry><term><code>fork</code></term><listitem><para><code>def fork[A](List[lambda () :: A]) :: A</code></para>
 <para>Call a list of functions in parallel, publishing
 all values published by the functions.</para>
 <para>The expression <code>fork([f,g,h])</code> is equivalent to
 the expression <code>f() | g() | h()</code></para>
 <formalpara><title>Implementation</title><programlisting>def fork([]) = stop
 def fork(p:ps) = p() | fork(ps)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>forkMap</code></term><listitem><para><code>def forkMap(lambda (A) :: B, [A]) :: B</code></para>
+<varlistentry><term><code>forkMap</code></term><listitem><para><code>def forkMap[A,B](lambda (A) :: B, List[A]) :: B</code></para>
 <para>Apply a function to a list in parallel, publishing all values published
 by the applications.</para>
 <para>The expression <code>forkMap(f, [a,b,c])</code> is equivalent to
 the expression <code>f(a) | f(b) | f(c)</code></para>
 <formalpara><title>Implementation</title><programlisting>def forkMap(f, []) = stop
 def forkMap(f, x:xs) = f(x) | forkMap(f, xs)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>seq</code></term><listitem><para><code>def seq([lambda () :: A]) :: Signal</code></para>
+<varlistentry><term><code>seq</code></term><listitem><para><code>def seq[A](List[lambda () :: A]) :: Signal</code></para>
 <para>Call a list of functions in sequence, publishing
 a signal whenever the last function publishes. The
 actual publications of the given functions are not
@@ -716,7 +719,7 @@ published.</para>
 the expression <code>f() >> g() >> h() >> signal</code></para>
 <formalpara><title>Implementation</title><programlisting>def seq([]) = signal
 def seq(p:ps) = p() &gt;&gt; seq(ps)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>seqMap</code></term><listitem><para><code>def seqMap(lambda (A) :: B, [A]) :: Signal</code></para>
+<varlistentry><term><code>seqMap</code></term><listitem><para><code>def seqMap[A,B](lambda (A) :: B, List[A]) :: Signal</code></para>
 <para>Apply a function to a list in in sequence, publishing
 a signal whenever the last application publishes. The
 actual publications of the given functions are not
@@ -725,53 +728,55 @@ published.</para>
 the expression <code>f(a) >> f(b) >> f(c) >> signal</code></para>
 <formalpara><title>Implementation</title><programlisting>def seqMap(f, []) = signal
 def seqMap(f, x:xs) = f(x) &gt;&gt; seqMap(f, xs)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>join</code></term><listitem><para><code>def join([lambda () :: A]) :: Signal</code></para>
+<varlistentry><term><code>join</code></term><listitem><para><code>def join[A](List[lambda () :: A]) :: Signal</code></para>
 <para>Call a list of functions in parallel and publish
 a signal once all functions have completed.</para>
 <para>The expression <code>join([f,g,h])</code> is equivalent to
 the expression <code>(f(), g(), h()) >> signal</code></para>
 <formalpara><title>Implementation</title><programlisting>def join([]) = signal
 def join(p:ps) = (p(), join(ps)) &gt;&gt; signal</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>joinMap</code></term><listitem><para><code>def joinMap(lambda (A) :: B, [A]) :: Signal</code></para>
+<varlistentry><term><code>joinMap</code></term><listitem><para><code>def joinMap[A,B](lambda (A) :: B, List[A]) :: Signal</code></para>
 <para>Apply a function to a list in parallel and publish
 a signal once all applications have completed.</para>
 <para>The expression <code>joinMap(f, [a,b,c])</code> is equivalent to
 the expression <code>(f(a), f(b), f(c)) >> signal</code></para>
 <formalpara><title>Implementation</title><programlisting>def joinMap(f, []) = signal
 def joinMap(f, x:xs) = (f(x), joinMap(f, xs)) &gt;&gt; signal</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>alt</code></term><listitem><para><code>def alt([lambda () :: A]) :: A</code></para>
+<varlistentry><term><code>alt</code></term><listitem><para><code>def alt[A](List[lambda () :: A]) :: A</code></para>
 <para>Call each function in the list until one publishes.</para>
 <para>The expression <code>alt([f,g,h])</code> is equivalent to
 the expression <code>f() ; g() ; h()</code></para>
-<formalpara><title>Implementation</title><programlisting>def alt([]) = signal
+<formalpara><title>Implementation</title><programlisting>def alt([]) = stop
 def alt(p:ps) = p() ; alt(ps)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>altMap</code></term><listitem><para><code>def altMap(lambda (A) :: B, [A]) :: B</code></para>
+<varlistentry><term><code>altMap</code></term><listitem><para><code>def altMap[A,B](lambda (A) :: B, List[A]) :: B</code></para>
 <para>Apply the function to each element in the list until one publishes.</para>
 <para>The expression <code>altMap(f, [a,b,c])</code> is equivalent to
 the expression <code>f(a) ; f(b) ; f(c)</code></para>
-<formalpara><title>Implementation</title><programlisting>def altMap(f, []) = signal
+<formalpara><title>Implementation</title><programlisting>def altMap(f, []) = stop
 def altMap(f, x:xs) = f(x) ; altMap(f, xs)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>por</code></term><listitem><para><code>def por(lambda () :: Boolean, lambda () :: Boolean) :: Boolean</code></para>
-<para>Parallel or. Evaluate two boolean functions in parallel, publishing
+<varlistentry><term><code>por</code></term><listitem><para><code>def por(List[lambda () :: Boolean]) :: Boolean</code></para>
+<para>Parallel or. Evaluate a list of boolean functions in parallel, publishing
 a value as soon as possible, and terminating any unnecessary ongoing
 computation.</para>
-<formalpara><title>Implementation</title><programlisting>def por(p1, p2) =
+<formalpara><title>Implementation</title><programlisting>def por([]) = false
+def por(p:ps) =
   let(
-    val b1 = p1()
-    val b2 = p2()
+    val b1 = p()
+    val b2 = por(ps)
     if(b1) &gt;&gt; true | if(b2) &gt;&gt; true | (b1 || b2)
   )</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>pand</code></term><listitem><para><code>def pand(lambda () :: Boolean, lambda () :: Boolean) :: Boolean</code></para>
-<para>Parallel and. Evaluate two boolean functions in parallel, publishing
+<varlistentry><term><code>pand</code></term><listitem><para><code>def pand(List[lambda () :: Boolean]) :: Boolean</code></para>
+<para>Parallel and. Evaluate a list of boolean functions in parallel, publishing
 a value as soon as possible, and terminating any unnecessary ongoing
 computation.</para>
-<formalpara><title>Implementation</title><programlisting>def pand(p1, p2) =
+<formalpara><title>Implementation</title><programlisting>def pand([]) = true
+def pand(p:ps) =
   let(
-    val b1 = p1()
-    val b2 = p2()
+    val b1 = p()
+    val b2 = pand(ps)
     if(~b1) &gt;&gt; false | if(~b2) &gt;&gt; false | (b1 &amp;&amp; b2)
   )</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>collect</code></term><listitem><para><code>def collect(lambda () :: A) :: [A]</code></para>
+<varlistentry><term><code>collect</code></term><listitem><para><code>def collect[A](lambda () :: A) :: List[A]</code></para>
 <para>Run a function, collecting all publications in a list.
 Return the list when the function terminates.</para>
 <para>Example:
@@ -788,59 +793,59 @@ collect(defer(signals, 5))]]></programlisting></para>
 Many of these functions are similar to those in the Haskell prelude, but
 operate on the elements of a list in parallel.</para>
 <variablelist>
-<varlistentry><term><code>each</code></term><listitem><para><code>def each([A]) :: A</code></para>
+<varlistentry><term><code>each</code></term><listitem><para><code>def each[A](List[A]) :: A</code></para>
 <para>Publish every value in a list, simultaneously.</para>
 <formalpara><title>Implementation</title><programlisting>def each([]) = stop
 def each(h:t) = h | each(t)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>map</code></term><listitem><para><code>def map(lambda (A) :: B, [A]) :: [B]</code></para>
+<varlistentry><term><code>map</code></term><listitem><para><code>def map[A,B](lambda (A) :: B, List[A]) :: List[B]</code></para>
 <para>Apply a function to every element of a list (in parallel),
 returning a list of the results.</para>
 <formalpara><title>Implementation</title><programlisting>def map(f,[]) = []
 def map(f,h:t) = f(h):map(f,t)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>reverse</code></term><listitem><para><code>def reverse([A]) :: [A]</code></para>
+<varlistentry><term><code>reverse</code></term><listitem><para><code>def reverse[A](List[A]) :: List[A]</code></para>
 <para>Return the reverse of the given list.</para>
 <formalpara><title>Implementation</title><programlisting>def reverse(l) = 
   def tailrev([],x) = x
   def tailrev(h:t,x) = tailrev(t,h:x)
   tailrev(l,[])</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>filter</code></term><listitem><para><code>def filter(lambda (A) :: Boolean, [A]) :: [A]</code></para>
+<varlistentry><term><code>filter</code></term><listitem><para><code>def filter[A](lambda (A) :: Boolean, List[A]) :: List[A]</code></para>
 <para>Return a list containing only those elements which satisfy the predicate.
 The filter is applied to all list elements in parallel.</para>
 <formalpara><title>Implementation</title><programlisting>def filter(p,[]) = []
 def filter(p,x:xs) =
   val fxs = filter(p, xs)
   if p(x) then x:fxs else fxs</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>head</code></term><listitem><para><code>def head([A]) :: A</code></para>
+<varlistentry><term><code>head</code></term><listitem><para><code>def head[A](List[A]) :: A</code></para>
 <para>Return the first element of a list.</para>
 <formalpara><title>Implementation</title><programlisting>def head(x:xs) = x
 def head([]) = error(&quot;head: empty list&quot;)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>tail</code></term><listitem><para><code>def tail([A]) :: [A]</code></para>
+<varlistentry><term><code>tail</code></term><listitem><para><code>def tail[A](List[A]) :: List[A]</code></para>
 <para>Return all but the first element of a list.</para>
 <formalpara><title>Implementation</title><programlisting>def tail(x:xs) = xs
 def tail([]) = error(&quot;tail: empty list&quot;)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>init</code></term><listitem><para><code>def init([A]) :: [A]</code></para>
+<varlistentry><term><code>init</code></term><listitem><para><code>def init[A](List[A]) :: List[A]</code></para>
 <para>Return all but the last element of a list.</para>
 <formalpara><title>Implementation</title><programlisting>def init([]) = error(&quot;init: empty list&quot;)
 def init([x]) = []
 def init(x:xs) = x:init(xs)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>last</code></term><listitem><para><code>def last([A]) :: A</code></para>
+<varlistentry><term><code>last</code></term><listitem><para><code>def last[A](List[A]) :: A</code></para>
 <para>Return the last element of a list.</para>
 <formalpara><title>Implementation</title><programlisting>def last([]) = error(&quot;last: empty list&quot;)
 def last([x]) = x
 def last(x:xs) = last(xs)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>empty</code></term><listitem><para><code>def empty([A]) :: Boolean</code></para>
+<varlistentry><term><code>empty</code></term><listitem><para><code>def empty[A](List[A]) :: Boolean</code></para>
 <para>Is the list empty?</para>
 <formalpara><title>Implementation</title><programlisting>def empty([]) = true
 def empty(_) = false</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>index</code></term><listitem><para><code>def index(Integer, [A]) :: A</code></para>
+<varlistentry><term><code>index</code></term><listitem><para><code>def index[A](Integer, List[A]) :: A</code></para>
 <para>Return the nth element of a list, counting from 0.</para>
 <formalpara><title>Implementation</title><programlisting>def index(h:t, 0) = h
 def index(h:t, n) = index(t, n-1)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>append</code></term><listitem><para><code>def append([A], [A]) :: [A]</code></para>
+<varlistentry><term><code>append</code></term><listitem><para><code>def append[A](List[A], List[A]) :: List[A]</code></para>
 <para>Return the first list concatenated with the second.</para>
 <formalpara><title>Implementation</title><programlisting>def append([],l) = l
 def append(h:t,l) = h:append(t,l)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>foldl</code></term><listitem><para><code>def foldl(lambda (B, A) :: B, B, [A]) :: B</code></para>
+<varlistentry><term><code>foldl</code></term><listitem><para><code>def foldl[A,B](lambda (B, A) :: B, B, List[A]) :: B</code></para>
 <para>Reduce a list using the given left-associative binary operation and initial value.
 Given the list <code>[x1, x2, x3, ...]</code> and initial value <code>x0</code>,
 returns <code>f(... f(f(f(x0, x1), x2), x3) ...)</code></para>
@@ -850,12 +855,12 @@ returns <code>f(... f(f(f(x0, x1), x2), x3) ...)</code></para>
 foldl(flip((:)), [], [1,2,3])]]></programlisting></para>
 <formalpara><title>Implementation</title><programlisting>def foldl(f,z,[]) = z
 def foldl(f,z,x:xs) = foldl(f,f(z,x),xs)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>foldl1</code></term><listitem><para><code>def foldl1(lambda (A, A) :: A, [A]) :: A</code></para>
+<varlistentry><term><code>foldl1</code></term><listitem><para><code>def foldl1[A](lambda (A, A) :: A, List[A]) :: A</code></para>
 <para>A special case of <code>foldl</code> which uses the last element of the list as the
 initial value. It is an error to call this on an empty list.</para>
 <formalpara><title>Implementation</title><programlisting>def foldl1(f,x:xs) = foldl(f,x,xs)
 def foldl1(_,[]) = error(&quot;foldl1: empty list&quot;)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>foldr</code></term><listitem><para><code>def foldr(lambda (A, B) :: B, B, [A]) :: B</code></para>
+<varlistentry><term><code>foldr</code></term><listitem><para><code>def foldr[A,B](lambda (A, B) :: B, B, List[A]) :: B</code></para>
 <para>Reduce a list using the given right-associative binary operation and initial value.
 Given the list <code>[..., x3, x2, x1]</code> and initial value <code>x0</code>,
 returns <code>f(... f(x3, f(x2, f(x1, x0))) ...)</code></para>
@@ -864,11 +869,11 @@ returns <code>f(... f(x3, f(x2, f(x1, x0))) ...)</code></para>
 -- Publishes: 6
 foldr((+), 0, [1,2,3])]]></programlisting></para>
 <formalpara><title>Implementation</title><programlisting>def foldr(f,z,xs) = foldl(flip(f),z,reverse(xs))</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>foldr1</code></term><listitem><para><code>def foldr1(lambda (A, A) :: A, [A]) :: A</code></para>
+<varlistentry><term><code>foldr1</code></term><listitem><para><code>def foldr1[A](lambda (A, A) :: A, List[A]) :: A</code></para>
 <para>A special case of <code>foldr</code> which uses the last element of the list as the
 initial value. It is an error to call this on an empty list.</para>
 <formalpara><title>Implementation</title><programlisting>def foldr1(f,xs) = foldl1(flip(f),reverse(xs))</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>afold</code></term><listitem><para><code>def afold(lambda (A, A) :: A, [A]) :: A</code></para>
+<varlistentry><term><code>afold</code></term><listitem><para><code>def afold[A](lambda (A, A) :: A, List[A]) :: A</code></para>
 <para>Reduce a non-empty list using the given associative binary operation.
 This function reduces independent subexpressions in parallel; the
 calls exhibit a balanced tree structure, so the number of sequential 
@@ -882,7 +887,7 @@ def afold(f, xs) =
   def afold&apos;([x]) = [x]
   def afold&apos;(x:y:xs) = f(x,y):afold&apos;(xs)
   afold(f, afold&apos;(xs))</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>cfold</code></term><listitem><para><code>def cfold(lambda (A, A) :: A, [A]) :: A</code></para>
+<varlistentry><term><code>cfold</code></term><listitem><para><code>def cfold[A](lambda (A, A) :: A, List[A]) :: A</code></para>
 <para>Reduce a non-empty list using the given associative and commutative binary operation.
 This function opportunistically reduces independent subexpressions in parallel, so the number of
 sequential reductions performed is as small as possible.  For expensive reductions, this
@@ -902,61 +907,61 @@ def cfold(f, L) =
     else c.get() &gt;x&gt; c.get() &gt;y&gt;
          ( c.put(f(x,y)) &gt;&gt; stop | work(i-1,[]) ) 
   work(0, L)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>zip</code></term><listitem><para><code>def zip([A], [B]) :: (A, B)</code></para>
+<varlistentry><term><code>zip</code></term><listitem><para><code>def zip[A,B](List[A], List[B]) :: (A, B)</code></para>
 <para>Combine two lists into a list of pairs.
 The length of the shortest list determines the length of the result.</para>
 <formalpara><title>Implementation</title><programlisting>def zip([],_) = []
 def zip(_,[]) = []
 def zip(x:xs,y:ys) = (x,y):zip(xs,ys)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>unzip</code></term><listitem><para><code>def unzip([(A,B)]) :: ([A], [B])</code></para>
+<varlistentry><term><code>unzip</code></term><listitem><para><code>def unzip[A,B](List[(A,B)]) :: (List[A], List[B])</code></para>
 <para>Split a list of pairs into a pair of lists.</para>
 <formalpara><title>Implementation</title><programlisting>def unzip([]) = ([],[])
 def unzip((x,y):z) = (x:xs,y:ys) &lt;(xs,ys)&lt; unzip(z)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>length</code></term><listitem><para><code>def length([A]) :: Integer</code></para>
+<varlistentry><term><code>length</code></term><listitem><para><code>def length[A](List[A]) :: Integer</code></para>
 <para>Return the number of elements in a list.</para>
 <formalpara><title>Implementation</title><programlisting>def length([]) = 0
 def length(h:t) = 1 + length(t)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>take</code></term><listitem><para><code>def take(Integer, [A]) :: [A]</code></para>
+<varlistentry><term><code>take</code></term><listitem><para><code>def take[A](Integer, List[A]) :: List[A]</code></para>
 <para>Given a number <code>n</code> and a list <code>l</code>,
 return the first <code>n</code> elements of <code>l</code>.</para>
 <formalpara><title>Implementation</title><programlisting>def take(0, _) = []
 def take(_, []) = []
 def take(n, x:xs) = x:take(n-1, xs)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>drop</code></term><listitem><para><code>def drop(Integer, [A]) :: [A]</code></para>
+<varlistentry><term><code>drop</code></term><listitem><para><code>def drop[A](Integer, List[A]) :: List[A]</code></para>
 <para>Given a number <code>n</code> and a list <code>l</code>,
 return the elements of <code>l</code> after the first <code>n</code>.</para>
 <formalpara><title>Implementation</title><programlisting>def drop(0, xs) = xs
 def drop(_, []) = []
 def drop(n, x:xs) = drop(n-1, xs)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>member</code></term><listitem><para><code>def member(A, [A]) :: Boolean</code></para>
+<varlistentry><term><code>member</code></term><listitem><para><code>def member[A](A, List[A]) :: Boolean</code></para>
 <para>Return true if the given item is a member of the given list, and false
 otherwise.</para>
 <formalpara><title>Implementation</title><programlisting>def member(item, []) = false
 def member(item, h:t) =
   if item = h then true
   else member(item, t)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>merge</code></term><listitem><para><code>def merge([A], [A]) :: [A], A &lt;: Comparable</code></para>
+<varlistentry><term><code>merge</code></term><listitem><para><code>def merge[A &lt;: Comparable](List[A], List[A]) :: List[A]</code></para>
 <para>Merge two sorted lists.</para>
 <para>Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: [1, 2, 2, 3, 4, 5]
 merge([1,2,3], [2,4,5])]]></programlisting></para>
 <formalpara><title>Implementation</title><programlisting>def merge(xs,ys) = mergeBy((&lt;), xs, ys)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>mergeBy</code></term><listitem><para><code>def mergeBy(lambda (A,A) :: Boolean, [A], [A]) :: [A]</code></para>
+<varlistentry><term><code>mergeBy</code></term><listitem><para><code>def mergeBy[A](lambda (A,A) :: Boolean, List[A], List[A]) :: List[A]</code></para>
 <para>Merge two lists using the given less-than relation.</para>
 <formalpara><title>Implementation</title><programlisting>def mergeBy(lt, xs, []) = xs
 def mergeBy(lt, [], ys) = ys
 def mergeBy(lt, x:xs, y:ys) =
   if lt(y,x) then y:mergeBy(lt,x:xs,ys)
   else x:mergeBy(lt,xs,y:ys)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>sort</code></term><listitem><para><code>def sort([A]) :: [A], A &lt;: Comparable</code></para>
+<varlistentry><term><code>sort</code></term><listitem><para><code>def sort[A &lt;: Comparable](List[A]) :: List[A]</code></para>
 <para>Sort a list.</para>
 <para>Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: [1, 2, 3]
 sort([1,3,2])]]></programlisting></para>
 <formalpara><title>Implementation</title><programlisting>def sort(xs) = sortBy((&lt;), xs)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>sortBy</code></term><listitem><para><code>def sortBy(lambda (A,A) :: Boolean, [A]) :: [A]</code></para>
+<varlistentry><term><code>sortBy</code></term><listitem><para><code>def sortBy[A](lambda (A,A) :: Boolean, List[A]) :: List[A]</code></para>
 <para>Sort a list using the given less-than relation.</para>
 <formalpara><title>Implementation</title><programlisting>def sortBy(lt, []) = []
 def sortBy(lt, [x]) = [x]
@@ -964,14 +969,14 @@ def sortBy(lt, xs) =
   length(xs)/2 &gt;half&gt;
   (take(half,xs), drop(half,xs)) &gt;(front, back)&gt;
   mergeBy(lt, sortBy(lt, front), sortBy(lt, back))</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>mergeUnique</code></term><listitem><para><code>def mergeUnique([A], [A]) :: [A], A &lt;: Comparable</code></para>
+<varlistentry><term><code>mergeUnique</code></term><listitem><para><code>def mergeUnique[A &lt;: Comparable](List[A], List[A]) :: List[A]</code></para>
 <para>Merge two sorted lists, discarding duplicates.</para>
 <para>Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: [1, 2, 3, 4, 5]
 mergeUnique([1,2,3], [2,4,5])]]></programlisting></para>
 <formalpara><title>Implementation</title><programlisting>def mergeUnique(xs,ys) = mergeUniqueBy((=), (&lt;), xs, ys)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>mergeUniqueBy</code></term><listitem><para><code>def mergeUniqueBy(lambda (A,A) :: Boolean, lambda (A,A) :: Boolean, [A], [A]) :: [A]</code></para>
+<varlistentry><term><code>mergeUniqueBy</code></term><listitem><para><code>def mergeUniqueBy[A](lambda (A,A) :: Boolean, lambda (A,A) :: Boolean, List[A], List[A]) :: List[A]</code></para>
 <para>Merge two lists, discarding duplicates, using the given equality and less-than relations.</para>
 <formalpara><title>Implementation</title><programlisting>def mergeUniqueBy(eq, lt, xs, []) = xs
 def mergeUniqueBy(eq, lt, [], ys) = ys
@@ -979,14 +984,14 @@ def mergeUniqueBy(eq, lt, x:xs, y:ys) =
   if eq(y,x) then mergeUniqueBy(eq, lt, xs, y:ys)
   else if lt(y,x) then y:mergeUniqueBy(eq,lt,x:xs,ys)
   else x:mergeUniqueBy(eq,lt,xs,y:ys)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>sortUnique</code></term><listitem><para><code>def sortUnique([A]) :: [A], A &lt;: Comparable</code></para>
+<varlistentry><term><code>sortUnique</code></term><listitem><para><code>def sortUnique[A &lt;: Comparable](List[A]) :: List[A]</code></para>
 <para>Sort a list, discarding duplicates.</para>
 <para>Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: [1, 2, 3]
 sortUnique([1,3,2,3])]]></programlisting></para>
 <formalpara><title>Implementation</title><programlisting>def sortUnique(xs) = sortUniqueBy((=), (&lt;), xs)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>sortUniqueBy</code></term><listitem><para><code>def sortUniqueBy(lambda (A,A) :: Boolean, lambda (A,A) :: Boolean, [A]) :: [A]</code></para>
+<varlistentry><term><code>sortUniqueBy</code></term><listitem><para><code>def sortUniqueBy[A](lambda (A,A) :: Boolean, lambda (A,A) :: Boolean, List[A]) :: List[A]</code></para>
 <para>Sort a list, discarding duplicates, using the given equality and less-than relations.</para>
 <formalpara><title>Implementation</title><programlisting>def sortUniqueBy(eq, lt, []) = []
 def sortUniqueBy(eq, lt, [x]) = [x]
@@ -996,7 +1001,7 @@ def sortUniqueBy(eq, lt, xs) =
   mergeUniqueBy(eq, lt,
     sortUniqueBy(eq, lt, front),
     sortUniqueBy(eq, lt, back))</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>group</code></term><listitem><para><code>def group([(A,B)]) :: [(A,[B])]</code></para>
+<varlistentry><term><code>group</code></term><listitem><para><code>def group[A,B](List[(A,B)]) :: List[(A,List[B])]</code></para>
 <para>Given a list of pairs, group together the second
 elements of consecutive pairs with equal first elements.</para>
 <para>Example:
@@ -1004,7 +1009,7 @@ elements of consecutive pairs with equal first elements.</para>
 -- Publishes: [(1, [1, 2]), (2, [3]), (3, [4]), (1, [3])]
 group([(1,1), (1,2), (2,3), (3,4), (1,3)])]]></programlisting></para>
 <formalpara><title>Implementation</title><programlisting>def group(xs) = groupBy((=), xs)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>groupBy</code></term><listitem><para><code>def groupBy(lambda (A,A) :: Boolean, [(A,B)]) :: [(A,[B])]</code></para>
+<varlistentry><term><code>groupBy</code></term><listitem><para><code>def groupBy[A,B](lambda (A,A) :: Boolean, List[(A,B)]) :: List[(A,List[B])]</code></para>
 <para>Given a list of pairs, group together the second
 elements of consecutive pairs with equal first elements,
 using the given equality relation.</para>
@@ -1015,61 +1020,65 @@ def groupBy(eq, (k,v):kvs) =
     if eq(k2,k) then helper(k, v:vs, kvs)
     else (k,vs):helper(k2, [v], kvs)
   helper(k,[v], kvs)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>rangeBy</code></term><listitem><para><code>def rangeBy(Number, Number, Number) :: [Number]</code></para>
+<varlistentry><term><code>rangeBy</code></term><listitem><para><code>def rangeBy(Number, Number, Number) :: List[Number]</code></para>
 <para><code>rangeBy(low, high, skip)</code> returns a sorted list of
 numbers <code>n</code> which satisfy <code>n = low + skip*i</code> (for some
 integer <code>i</code>), <code>n &gt;= low</code>, and <code>n &lt; high</code>.</para>
 <formalpara><title>Implementation</title><programlisting>def rangeBy(low, high, skip) =
   if low &lt; high
-  then low:rangeBy(low+skip, high)
+  then low:rangeBy(low+skip, high, skip)
   else []</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>range</code></term><listitem><para><code>def range(Integer, Integer) :: [Integer]</code></para>
+<varlistentry><term><code>range</code></term><listitem><para><code>def range(Integer, Integer) :: List[Integer]</code></para>
 <para>Generate a list of integers in the given half-open range.</para>
 <formalpara><title>Implementation</title><programlisting>def range(low, high) = rangeBy(low, high, 1)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>any</code></term><listitem><para><code>def any(lambda (A) :: Boolean, [A]) :: Boolean</code></para>
+<varlistentry><term><code>any</code></term><listitem><para><code>def any[A](lambda (A) :: Boolean, List[A]) :: Boolean</code></para>
 <para>Return true if any of the elements of the list match the predicate, and false otherwise.
 The predicate is applied to all elements of the list in parellel; the result
 is returned as soon as it is known and any unnecessary evaluation of the predicate
 terminated.</para>
 <formalpara><title>Implementation</title><programlisting>def any(p, []) = false
 def any(p, x:xs) =
-  por(
-    lambda () = p(x),
-    lambda () = any(p,xs) )</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>all</code></term><listitem><para><code>def all(lambda (A) :: Boolean, [A]) :: Boolean</code></para>
+  let(
+    val b1 = p(x)
+    val b2 = any(p, xs)
+    if(b1) &gt;&gt; true | if(b2) &gt;&gt; true | (b1 || b2)
+  )</programlisting></formalpara></listitem></varlistentry>
+<varlistentry><term><code>all</code></term><listitem><para><code>def all[A](lambda (A) :: Boolean, List[A]) :: Boolean</code></para>
 <para>Return true if all of the elements of the list match the predicate, and false otherwise.
 The predicate is applied to all elements of the list in parellel; the result
 is returned as soon as it is known and any unnecessary evaluation of the predicate
 terminated.</para>
 <formalpara><title>Implementation</title><programlisting>def all(p, []) = true
 def all(p, x:xs) =
-  pand(
-    lambda () = p(x),
-    lambda () = all(p,xs) )</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>sum</code></term><listitem><para><code>def sum([Number]) :: Number</code></para>
+  let(
+    val b1 = p(x)
+    val b2 = all(p, xs)
+    if(~b1) &gt;&gt; false | if(~b2) &gt;&gt; false | (b1 &amp;&amp; b2)
+  )</programlisting></formalpara></listitem></varlistentry>
+<varlistentry><term><code>sum</code></term><listitem><para><code>def sum(List[Number]) :: Number</code></para>
 <para>Return the sum of all numbers in a list.
 The sum of an empty list is 0.</para>
 <formalpara><title>Implementation</title><programlisting>def sum(xs) = foldl((+), 0, xs)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>product</code></term><listitem><para><code>def product([Number]) :: Number</code></para>
+<varlistentry><term><code>product</code></term><listitem><para><code>def product(List[Number]) :: Number</code></para>
 <para>Return the product of all numbers in a list.
 The product of an empty list is 1.</para>
 <formalpara><title>Implementation</title><programlisting>def product(xs) = foldl((*), 1, xs)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>and</code></term><listitem><para><code>def and([Boolean]) :: Boolean</code></para>
+<varlistentry><term><code>and</code></term><listitem><para><code>def and(List[Boolean]) :: Boolean</code></para>
 <para>Return the boolean conjunction of all boolean values in the list.
 The conjunction of an empty list is <code>true</code>.</para>
 <formalpara><title>Implementation</title><programlisting>def and([]) = true
 def and(false:xs) = false
 def and(true:xs) = and(xs)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>or</code></term><listitem><para><code>def or([Boolean]) :: Boolean</code></para>
+<varlistentry><term><code>or</code></term><listitem><para><code>def or(List[Boolean]) :: Boolean</code></para>
 <para>Return the boolean disjunction of all boolean values in the list.
 The disjunction of an empty list is <code>false</code>.</para>
 <formalpara><title>Implementation</title><programlisting>def or([]) = false
 def or(true:xs) = true
 def or(false:xs) = or(xs)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>minimum</code></term><listitem><para><code>def minimum([A]) :: A, A &lt;: Comparable</code></para>
+<varlistentry><term><code>minimum</code></term><listitem><para><code>def minimum[A &lt;: Comparable](List[A]) :: A</code></para>
 <para>Return the minimum element of a non-empty list.</para>
 <formalpara><title>Implementation</title><programlisting>def minimum(xs) = foldl1(min, xs)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>maximum</code></term><listitem><para><code>def maximum([A]) :: A, A &lt;: Comparable</code></para>
+<varlistentry><term><code>maximum</code></term><listitem><para><code>def maximum[A &lt;: Comparable](List[A]) :: A</code></para>
 <para>Return the maximum element of a non-empty list.</para>
 <formalpara><title>Implementation</title><programlisting>def maximum(xs) = foldl1(max, xs)</programlisting></formalpara></listitem></varlistentry></variablelist>
 </section>
@@ -1092,7 +1101,7 @@ to standard output, with each value followed by a newline.
 For Java objects, this will call <code>toString()</code> to convert
 the object to a String.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>read</code></term><listitem><para><code>site read(String) :: A</code></para>
+<varlistentry><term><code>read</code></term><listitem><para><code>site read[A](String) :: A</code></para>
 <para>Given a string representing an Orc value (using standard
 Orc literal syntax), return the corresponding value. If
 the argument does not conform to Orc literal syntax,
@@ -1104,7 +1113,7 @@ halt with an error.</para>
 | read("(3.0, [])") -- publishes the tuple (3.0, [])
 | read("\"hi\"") -- publishes the string "hi"]]></programlisting></para>
 </listitem></varlistentry>
-<varlistentry><term><code>lines</code></term><listitem><para><code>def lines(String) :: [String]</code></para>
+<varlistentry><term><code>lines</code></term><listitem><para><code>def lines(String) :: List[String]</code></para>
 <para>Split a string into lines, which are substrings
 terminated by an endline or the end of the string.
 DOS, Mac, and Unix endline conventions are all accepted.
@@ -1114,15 +1123,15 @@ Endline characters are not included in the result.</para>
   if out.get(out.length()-1) = &quot;&quot; then
     out.split(0, out.length()-1)
   else out</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>unlines</code></term><listitem><para><code>def unlines([String]) :: String</code></para>
+<varlistentry><term><code>unlines</code></term><listitem><para><code>def unlines(List[String]) :: String</code></para>
 <para>Append a linefeed, "\n", to each string in the sequence
 and concatenate the results.</para>
 <formalpara><title>Implementation</title><programlisting>def unlines(line:lines) = cat(line, &quot;\n&quot;, unlines(lines))
 def unlines([]) = &quot;&quot;</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>words</code></term><listitem><para><code>def words(String) :: [String]</code></para>
+<varlistentry><term><code>words</code></term><listitem><para><code>def words(String) :: List[String]</code></para>
 <para>Split a string into words, which are sequences of non-whitespace characters separated by whitespace.</para>
 <formalpara><title>Implementation</title><programlisting>def words(text) = text.trim().split(&quot;\\s+&quot;)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>unwords</code></term><listitem><para><code>def unwords([String]) :: String</code></para>
+<varlistentry><term><code>unwords</code></term><listitem><para><code>def unwords(List[String]) :: String</code></para>
 <para>Concatenate a sequence of strings with a single space between
 each string.</para>
 <formalpara><title>Implementation</title><programlisting>def unwords([]) = &quot;&quot;
@@ -1151,7 +1160,7 @@ Rtimer(1000) >> c()]]></programlisting></para>
 A logical timestep is complete as soon as all outstanding site
 calls (other than calls to <code>Ltimer</code>) have published.</para>
 </listitem></varlistentry>
-<varlistentry><term><code>withLtimer</code></term><listitem><para><code>def withLtimer(lambda () :: A) :: A</code></para>
+<varlistentry><term><code>withLtimer</code></term><listitem><para><code>def withLtimer[A](lambda () :: A) :: A</code></para>
 <para>Run a thunk in the context of a new logical clock.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>metronome</code></term><listitem><para><code>def metronome(Integer) :: Signal</code></para>
@@ -1220,7 +1229,7 @@ simultaneously.</para>
 -- Publishes: 0 1 2 3 4
 upto(5)]]></programlisting></para>
 <formalpara><title>Implementation</title><programlisting>def upto(high) = for(0, high)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>fillArray</code></term><listitem><para><code>def fillArray(Array&lt;A&gt;, lambda (Integer) :: A) :: Array&lt;A&gt;</code></para>
+<varlistentry><term><code>fillArray</code></term><listitem><para><code>def fillArray[A](Array[A], lambda (Integer) :: A) :: Array[A]</code></para>
 <para>Given an array and a function from indices to values, populate the array
 by calling the function for each index in the array.</para>
 <para>For example, to set all elements of an array to zero:
@@ -1235,7 +1244,7 @@ a.get(0) | a.get(1) | a.get(2)]]></programlisting></para>
     else ( a.set(i, f(i)) &gt;&gt; stop
          | fill(i+1, f) )
   fill(0, f) ; a</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>takePubs</code></term><listitem><para><code>def takePubs(Integer, lambda () :: A) :: A</code></para>
+<varlistentry><term><code>takePubs</code></term><listitem><para><code>def takePubs[A](Integer, lambda () :: A) :: A</code></para>
 <para><code>takePubs(n, f)</code> calls <code>f()</code>,
 publishes the first <code>n</code> values published
 by <code>f()</code> (as they are published), and then
@@ -1248,17 +1257,18 @@ halts.</para>
     if(c.dec() &gt;&gt; out.put(x) &gt;&gt; false
        ; out.closenb() &gt;&gt; true)
   ) | repeat(out.get)</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>withLock</code></term><listitem><para><code>def withLock(Semaphore, lambda () :: A) :: A</code></para>
+<varlistentry><term><code>withLock</code></term><listitem><para><code>def withLock[A](Semaphore, lambda () :: A) :: A</code></para>
 <para>Acquire the semaphore and run the thunk, publishing all values published by the
 thunk. Once the thunk halts, release the semaphore.</para>
 <formalpara><title>Implementation</title><programlisting>def withLock(s, f) =
   val out = Buffer()
-  (
-    s.acquire() &gt;&gt;
+  ( s.acquire() &gt;&gt;
     f() &gt;x&gt;
     out.put(x) &gt;&gt;
     stop
-    ; s.release() &gt;&gt; out.closenb() 
+  ; s.release() &gt;&gt;
+    out.closenb() &gt;&gt;
+    stop
   ) | repeat(out.get)</programlisting></formalpara></listitem></varlistentry></variablelist>
 </section>
 </section>

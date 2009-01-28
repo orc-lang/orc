@@ -4902,13 +4902,14 @@ on a formal type system for Orc currently under preparation.
 </para>
 
 <para>
-A type signature consists of: a declaration keyword, a declaration name, argument
-types, the return type, and finally any subtyping constraints. For
-example <code>def min(A, A) :: A, A &lt;: Comparable</code> gives the type
-of the <code>def</code> declaration for <code>min</code>. According to this
-signature, <code>min</code> is a function which takes two arguments of type
-<code>A</code> and returns a value of the same type, where <code>A</code> is
-any subtype of <code>Comparable</code>.
+A type signature consists of: a declaration keyword, a declaration name,
+type parameters (with subtyping constraints), formal argument types,
+and finally the return type. For example <code>def min[A &lt;: Comparable](A,
+	A) :: A</code> gives the type of the <code>def</code> declaration for
+<code>min</code>. According to this signature, <code>min</code> is a function
+parameterized over any type <code>A</code> which is a subtype of
+<code>Comparable</code>. It takes two arguments of type <code>A</code> and
+returns a value of the same type.
 </para>
 
 <para>
@@ -4918,13 +4919,23 @@ Declaration keywords include
 declaration keywords are described in previous chapters.</para>
 
 <para>
-Object members (methods and fields) are each declared separately.  The binding
-name of a member is written in the form Type.member, e.g.  <code>Foo.get</code>
+The declaration name is the name of a function, site, or object member.
+Member names are written in the form Type.member, e.g.  <code>Foo.get</code>
 refers to the <code>get</code> member of an object of type <code>Foo</code>.
 The object type can include type variables which are referenced by the member
-type, so for example <code>site Buffer&lt;A&gt;.get() :: A</code> means that
+type, so for example <code>site Buffer[A].get() :: A</code> means that
 when the <code>get</code> method is called on a <code>Buffer</code> holding an
 arbitrary element type <code>A</code>, it will return a value of the same type.
+</para>
+
+<para>
+Polymorphic sites and functions are declared with explicit type parameters.
+By convention, the type parameters are written using the letters <code>A</code>
+... <code>Z</code>. For example, the signature <code>site let[A](A) :: A</code>
+means that <code>let</code> takes one argument of any type, and returns a value
+of the same type.  Subtyping constraints can be used to constrain the type
+parameters. A constrained type parameter has the form <code>A &lt;: X</code>,
+meaning the type supplied for <code>A</code> must be a subtype of <code>X</code>.
 </para>
 
 <para>
@@ -4934,18 +4945,14 @@ Argument and return types are written as follows:
 	corresponding Java classes. For example, <code>Number</code> is any
 	number, and <code>Comparable</code> is any value which supports a total
 	order.</listitem> 
-<listitem>Type variables in polymorphic declarations are written using the
-	letters <code>A</code> ... <code>Z</code>. For example, the signature
-	<code>site let(A) :: A</code> means that <code>let</code> takes one
-	argument of any type, and returns a value of the same type.</listitem>
 <listitem>The Top type (of which all types are subtypes) is written
 	<code>Top</code>. The Bottom type (which is a subtype of all types) is
 	written <code>Bot</code>.</listitem>
-<listitem>A list with element type <code>A</code> is written <code>[A]</code>.</listitem>
 <listitem>A tuple with element types <code>A, B, ...</code> is written <code>(A, B, ...)</code>.</listitem>
 <listitem>Any other parameterized type is written as a type name followed by
-	type parameters in angle brackets. For example,
-	<code>Array&lt;Integer&gt;</code> is the type of arrays of integers.</listitem>
+	type parameters in square brackets. For example, <code>List[String]</code>
+	is the type of a list of strings, and <code>Array[Integer]</code> is the type
+	of arrays of integers.</listitem>
 <listitem>A function type (when given as an argument or return type) is written with the keyword
 	<code>lambda</code> followed by the argument types and return type as
 	in a declaration type signature. For example, <code>lambda (Integer) ::
@@ -4958,12 +4965,6 @@ Argument and return types are written as follows:
 Multiple sets of argument types are syntactic sugar for currying. For
 example, <code>site Foo()() :: Signal</code> is equivalent to
 <code>site Foo() :: lambda () :: Signal</code>.
-</para>
-
-<para>
-Subtyping constraints are used to constrain the types of polymorphic type
-variables, and are written <code>A &lt;: X</code>, meaning <code>A</code> must
-be a subtype of <code>X</code>.
 </para>
  
 </section>
