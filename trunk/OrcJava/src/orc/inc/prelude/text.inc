@@ -28,7 +28,7 @@ the object to a String.
 site println = orc.lib.str.Println
 
 {--
-* site read(String) :: A
+* site read[A](String) :: A
 Given a string representing an Orc value (using standard
 Orc literal syntax), return the corresponding value. If
 the argument does not conform to Orc literal syntax,
@@ -44,7 +44,7 @@ Example:
 site read = orc.lib.str.Read
 
 {--
-* def lines(String) :: [String]
+* def lines(String) :: List[String]
 Split a string into lines, which are substrings
 terminated by an endline or the end of the string.
 DOS, Mac, and Unix endline conventions are all accepted.
@@ -59,7 +59,7 @@ def lines(text) =
   else out
   
 {--
-* def unlines([String]) :: String
+* def unlines(List[String]) :: String
 Append a linefeed, "\n", to each string in the sequence
 and concatenate the results.
 
@@ -69,7 +69,7 @@ def unlines(line:lines) = cat(line, "\n", unlines(lines))
 def unlines([]) = ""
   
 {--
-* def words(String) :: [String]
+* def words(String) :: List[String]
 Split a string into words, which are sequences of non-whitespace characters separated by whitespace.
 
 @implementation
@@ -77,7 +77,7 @@ Split a string into words, which are sequences of non-whitespace characters sepa
 def words(text) = text.trim().split("\\s+")
 
 {--
-* def unwords([String]) :: String
+* def unwords(List[String]) :: String
 Concatenate a sequence of strings with a single space between
 each string.
 

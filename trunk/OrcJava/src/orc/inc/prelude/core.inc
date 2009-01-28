@@ -12,10 +12,10 @@ User Guide.
 --}
 
 {--
-* site let(A) :: A
+* site let[A](A) :: A
 When applied to a single argument, return that argument (behaving as the identity function).
 
-* site let(A, ...) :: (A, ...)
+* site let[A, ...](A, ...) :: (A, ...)
 When applied to zero, two, or more arguments, return the arguments in a tuple.
 --}
 site let = orc.runtime.sites.core.Let
@@ -176,7 +176,7 @@ computed.
 site (||) = orc.lib.bool.Or
 
 {--
-* site (:)(A,[A]) :: [A]
+* site (:)[A](A, List[A]) :: List[A]
 
 The list <code>a:b</code> is formed by prepending the element <code>a</code> to
 the list <code>b</code>.
@@ -219,7 +219,7 @@ def signum(x) =
   else 0
 
 {--
-* def min(A,A) :: A, A <: Comparable
+* def min[A <: Comparable](A,A) :: A
 Return the lesser of the arguments. If the arguments
 are equal, return the first argument.
 
@@ -233,7 +233,7 @@ they must have a total order.
 def min(x,y) = if y < x then y else x
 
 {--
-* def max(A,A) :: A, A <: Comparable
+* def max[A <: Comparable](A,A) :: A
 Return the greater of the arguments. If the arguments
 are equal, return the second argument.
 
