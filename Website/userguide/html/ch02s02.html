@@ -514,12 +514,12 @@ rather than just one. Here is an expression which executes F until
 it publishes 5 values, and then terminates it.
 </p><pre class="programlisting">
 <span class="hl-keyword">val</span> <span class="hl-variable">c</span> = <span class="hl-site">Buffer</span>()
-<span class="hl-keyword">val</span> <span class="hl-variable">done</span> = <span class="hl-site">Cell</span>()
-<span class="hl-keyword">def</span> <span class="hl-site">allow</span>(<span class="hl-literal">0</span>) = <span class="hl-variable">c</span>.<span class="hl-site">close</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">done</span>.<span class="hl-site">write</span>(<span class="hl-keyword">signal</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
-<span class="hl-keyword">def</span> <span class="hl-site">allow</span>(<span class="hl-variable">n</span>) = <span class="hl-variable">c</span>.<span class="hl-site">get</span>() <span class="hl-combinator">|</span> <span class="hl-site">allow</span>(<span class="hl-variable">n</span>-<span class="hl-literal">1</span>)
+<span class="hl-keyword">val</span> <span class="hl-variable">done</span> = <span class="hl-site">Semaphore</span>(<span class="hl-literal">0</span>)
+<span class="hl-keyword">def</span> <span class="hl-site">allow</span>(<span class="hl-literal">0</span>) = <span class="hl-variable">c</span>.<span class="hl-site">closenb</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">done</span>.<span class="hl-site">release</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
+<span class="hl-keyword">def</span> <span class="hl-site">allow</span>(<span class="hl-variable">n</span>) = <span class="hl-variable">c</span>.<span class="hl-site">get</span>() <span class="hl-combinator">&gt;</span>!<span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> <span class="hl-site">allow</span>(<span class="hl-variable">n</span>-<span class="hl-literal">1</span>)
 <span class="hl-site">allow</span>(<span class="hl-literal">5</span>) <span class="hl-combinator">&lt;</span><span class="hl-combinator">&lt;</span> 
     <span class="bold"><strong>F</strong></span> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>.<span class="hl-site">put</span>(<span class="hl-variable">x</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span> 
-  <span class="hl-combinator">|</span> <span class="hl-variable">done</span>.<span class="hl-site">read</span>()
+  <span class="hl-combinator">|</span> <span class="hl-variable">done</span>.<span class="hl-site">acquire</span>()
 
 </pre></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1109F"></a>2.2.14.2.&nbsp;Modified Otherwise</h4></div></div></div><p>
 We can use routing to create a modified version of the otherwise combinator. We'll
