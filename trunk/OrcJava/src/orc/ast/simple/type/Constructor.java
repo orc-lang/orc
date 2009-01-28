@@ -1,9 +1,8 @@
-package orc.ast.extended.declaration.type;
+package orc.ast.simple.type;
 
 import java.util.List;
 
 import orc.ast.extended.Expression;
-import orc.type.Type;
 
 
 /**
@@ -22,7 +21,7 @@ public class Constructor {
 		this.name = name;
 		this.args = args;
 	}
-	
+
 	public String toString() {
 		return name + "(" + Expression.join(args, ",") + ")";
 	}

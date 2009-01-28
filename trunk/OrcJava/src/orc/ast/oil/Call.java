@@ -10,14 +10,24 @@ import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
+import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Node;
+import orc.type.ArrowType;
 import orc.type.Type;
 
 public class Call extends Expr {
 
 	public Arg callee;
 	public List<Arg> args;
+	public List<Type> typeArgs; /* may be null to request inference */
+	
+	public Call(Arg callee, List<Arg> args, List<Type> typeArgs)
+	{
+		this.callee = callee;
+		this.args = args;
+		this.typeArgs = typeArgs;
+	}
 	
 	public Call(Arg callee, List<Arg> args)
 	{
@@ -80,17 +90,69 @@ public class Call extends Expr {
 	}
 
 
-	@Override
-	public Type typesynth(Env<Type> ctx) throws TypeException {
+	/* Type synthesis when inference of type parameters is not required. */
+	public Type noInferenceTypeSynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
 		
-		Type S = callee.typesynth(ctx);
-		List<Type> T = new LinkedList<Type>();
+		Type calleeType = callee.typesynth(ctx, typectx);
 		
-		for (Arg a : args) {
-			T.add(a.typesynth(ctx));
+		List<Type> typeActuals = new LinkedList<Type>();
+		for (Type t : typeArgs) {
+			typeActuals.add(t.subst(typectx));
 		}
 		
-		return S.call(T);
+		/* Delegate the checking of the args and the call itself to the callee type.
+		 * Some types do it differently than ArrowType does.
+		 */
+		return calleeType.call(ctx, typectx, args, typeActuals);
+		
+	}
+	
+	@Override
+	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
+		
+		if (typeArgs != null) {
+			Type S = noInferenceTypeSynth(ctx, typectx);
+			return S;
+		}
+		/* Infer type arguments */
+		else {
+			Type calleeType = callee.typesynth(ctx, typectx);
+		
+			if (calleeType instanceof ArrowType && ((ArrowType)calleeType).typeArity > 0) {
+				// TODO: Type argument inference unimplemented
+				throw new TypeException("Type argument inference unimplemented.");
+			}
+			else {
+				/* Otherwise set type arguments to an empty list and try it again from the top */
+				typeArgs = new LinkedList<Type>();
+				return typesynth(ctx, typectx);
+			}
+		}
+		
+	}
+	
+	public void typecheck(Type T, Env<Type> ctx, Env<Type> typectx) throws TypeException {
+		
+		if (typeArgs != null) {
+			Type S = noInferenceTypeSynth(ctx, typectx);
+			if (!S.subtype(T)) {
+				throw new SubtypeFailureException(S,T);
+			}
+		}
+		/* Infer type arguments */
+		else {
+			Type calleeType = callee.typesynth(ctx, typectx);
+			
+			if (calleeType instanceof ArrowType && ((ArrowType)calleeType).typeArity > 0) {
+				// TODO: Type argument inference unimplemented
+				throw new TypeException("Type argument inference unimplemented.");
+			}
+			else {
+				/* Otherwise set type arguments to an empty list and try it again from the top */
+				typeArgs = new LinkedList<Type>();
+				typecheck(T, ctx, typectx);
+			}
+		}
 	}
 	
 }

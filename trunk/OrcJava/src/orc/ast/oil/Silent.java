@@ -27,12 +27,12 @@ public class Silent extends Expr {
 	}
 
 	@Override
-	public Type typesynth(Env<Type> ctx) {
+	public Type typesynth(Env<Type> ctx, Env<Type> typectx) {
 		return Type.BOT;
 	}
 	
 	@Override
-	public void typecheck(Type t, Env<Type> ctx) {
+	public void typecheck(Type t, Env<Type> ctx, Env<Type> typectx) {
 		// Do nothing. Silent checks against all types.
 	}
 

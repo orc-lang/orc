@@ -14,8 +14,12 @@ import java.util.Stack;
 
 /**
  * Generic indexed environment, used primarily at runtime. 
- * Env is also content addressable, so it can be used for the
- * deBruijn index conversion in the compiler.
+ * 
+ * Env is also content addressable, so it can be used for
+ * deBruijn index conversions in the compiler.
+ * 
+ * Env allows null values, a capability used in the typechecker
+ * to distinguish bound types from free ones.
  * 
  * <p>Currently this is implemented as a simple linked-list
  * of bindings, which provides O(n) lookups and O(1) copies.
@@ -81,7 +85,8 @@ public final class Env<T> implements Serializable, Cloneable {
 	/**
 	 * Content-addressable mode. Used in compilation
 	 * to determine the deBruijn indices from an
-	 * environment populated by Var objects.
+	 * environment populated by variables in a different
+	 * representation.
 	 * 
 	 * Assuming no error is raised, search and lookup are inverses: 
 	 *   search(lookup(i)) = i
@@ -108,5 +113,12 @@ public final class Env<T> implements Serializable, Cloneable {
 	 */
 	public Env<T> clone() {
 		return new Env(head);
+	}
+	
+	/**
+	 * Create an independent copy of the environment, extended with a new item.
+	 */
+	public Env<T> extend(T item) {
+		return new Env(new Binding(head, item));
 	}
 }

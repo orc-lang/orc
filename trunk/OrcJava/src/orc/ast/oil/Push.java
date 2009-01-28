@@ -44,17 +44,17 @@ public class Push extends Expr {
 	}
 	
 	@Override
-	public Type typesynth(Env<Type> ctx) throws TypeException {
+	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
 		Env<Type> rctx = ctx.clone();
-		rctx.add(left.typesynth(ctx));
-		return right.typesynth(rctx);
+		rctx.add(left.typesynth(ctx, typectx));
+		return right.typesynth(rctx, typectx);
 	}
 
 	@Override
-	public void typecheck(Type T, Env<Type> ctx) throws TypeException {
+	public void typecheck(Type T, Env<Type> ctx, Env<Type> typectx) throws TypeException {
 		Env<Type> rctx = ctx.clone();
-		rctx.add(left.typesynth(ctx));
-		right.typecheck(T, rctx);
+		rctx.add(left.typesynth(ctx, typectx));
+		right.typecheck(T, rctx, typectx);
 	}
 	
 }

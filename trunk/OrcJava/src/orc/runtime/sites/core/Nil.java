@@ -3,20 +3,29 @@
  */
 package orc.runtime.sites.core;
 
+import orc.error.compiletime.typing.TypeException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.NilValue;
+import orc.type.ArrowType;
+import orc.type.ListType;
+import orc.type.Type;
 
 /**
- * Implements the "cons" constructor site.
+ * Implements the empty list constructor.
  * 
  * @author dkitchin
  */
 public class Nil extends EvalSite {
 
+	
 	@Override
 	public Object evaluate(Args args) {
 		return NilValue.singleton;
 	}
 
+	public static Type type() throws TypeException {
+		return new ArrowType((new ListType()).instance(Type.BOT)); 
+	}
+	
 }

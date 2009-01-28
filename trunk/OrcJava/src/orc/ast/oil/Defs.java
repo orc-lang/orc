@@ -7,9 +7,12 @@ import java.util.TreeSet;
 
 import orc.ast.oil.arg.Var;
 import orc.env.Env;
+import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
+import orc.error.compiletime.typing.UnspecifiedReturnTypeException;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Unwind;
+import orc.type.ArrowType;
 import orc.type.Type;
 
 public class Defs extends Expr {
@@ -65,33 +68,69 @@ public class Defs extends Expr {
 	}
 
 	@Override
-	public Type typesynth(Env<Type> ctx) throws TypeException {
+	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
 
-		Env<Type> dctx = ctx.clone();
-		
-		/*
-		 * Add variable bindings for all definition names in this group.
-		 */ 
+		/* This is the typing context we will use to check the scoped expression */
+		Env<Type> dctx = ctx;
+			
+		/* Add the types for each definition in the group to the context */
 		for (Def d : defs) {
-			if (d.type() == null) {
-				// TODO: Make this a more specific exception
-				throw new TypeException("Missing definition type");
+			try {
+				dctx = dctx.extend(d.type());
 			}
-			dctx.add(d.type());
+			/* If the return type is unspecified, this function can't be called recursively,
+			 * so its name cannot have a type associated with it.
+			 */
+			catch (UnspecifiedReturnTypeException e) {
+				dctx = dctx.extend(null);
+			}
+			catch (TypeException e) {
+				e.setSourceLocation(d.getSourceLocation());
+				throw e;
+			}
 		}
 		
 		/* 
 		 * Use this context, with all definition names bound,
-		 * to verify each definition individually. 
+		 * to verify each definition individually.
 		 */ 
 		for (Def d : defs) {
-			d.typecheck(dctx);
+			d.checkDef(dctx, typectx);
+		}
+		
+		/* Now, repeat the process, but require each definition to provide a type.
+		 * Any missing return type ascriptions should now be filled in.
+		 */
+		Env<Type> bodyctx = ctx;
+		for (Def d : defs) {
+			bodyctx = bodyctx.extend(d.type());
 		}
 		
 		/*
 		 * The synthesized type of the body in this context is
 		 * the synthesized type for the whole expression.
 		 */ 
-		return body.typesynth(dctx); 
+		return body.typesynth(bodyctx, typectx); 
 	}
+	
+	
+	/* There is a special case when checking translated lambdas, so we override this method */
+	public void typecheck(Type T, Env<Type> ctx, Env<Type> typectx) throws TypeException {
+		
+		/* Check whether this definition group is a translated lambda,
+		 * and make sure that the type being checked is an arrow type.
+		 */
+		if (defs.size() == 1
+				&& body.getClass().equals(Var.class) 
+				&& ((Var)body).index == 0
+				&& T instanceof ArrowType) {
+			defs.get(0).checkLambda((ArrowType)T, ctx, typectx);
+		}
+		else {
+			/* Otherwise, perform checking as usual */
+			super.typecheck(T, ctx, typectx);
+		}
+	}
+	
+	
 }

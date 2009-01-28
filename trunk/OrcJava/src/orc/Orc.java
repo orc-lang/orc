@@ -134,19 +134,20 @@ public class Orc {
 	public static Node compile(Reader source, Node target, Config cfg) throws CompilationException, IOException {
 		orc.ast.simple.Expression es = compile(source, cfg);
 		
-		//System.out.println("Compiling to an execution graph...");
-		// Compile the AST, directing the output towards the configured target
-		Expr ex = es.convert(new Env<Var>());
+		
+		Expr ex = es.convert(new Env<Var>(), new Env<String>());
 		//System.out.println(ex);
 		
 		// Optionally perform typechecking
 		if (cfg.typeCheckingMode()) {
-			Type rt = ex.typesynth(new Env<Type>());
+			Type rt = ex.typesynth(new Env<Type>(), new Env<Type>());
 			System.out.println("Program typechecked successfully with result type " + rt);
 		}
 		
 		UnguardedRecursionChecker.check(ex);
 		
+		//System.out.println("Compiling to an execution graph...");
+		// Compile the AST, directing the output towards the configured target
 		Node en = ex.compile(target);
 		return en;
 	}

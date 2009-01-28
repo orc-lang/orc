@@ -35,7 +35,7 @@ public abstract class Expr {
 	/* Typechecking */
 	
 	/* Given a context, infer this expression's type */
-	public abstract Type typesynth(Env<Type> ctx) throws TypeException;
+	public abstract Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException;
 	
 	
 	/* Check that this expression has type t in the given context. 
@@ -44,8 +44,8 @@ public abstract class Expr {
 	 * the default checking behavior is to infer the type and make
 	 * sure that the inferred type is a subtype of the checked type.
 	 */
-	public void typecheck(Type T, Env<Type> ctx) throws TypeException {
-		Type S = typesynth(ctx);
+	public void typecheck(Type T, Env<Type> ctx, Env<Type> typectx) throws TypeException {
+		Type S = typesynth(ctx, typectx);
 		if (!S.subtype(T)) {
 			throw new SubtypeFailureException(S,T);
 		}

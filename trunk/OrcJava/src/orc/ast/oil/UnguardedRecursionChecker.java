@@ -167,4 +167,5 @@ public class UnguardedRecursionChecker extends Walker {
 		out.add(false);
 		return out;
 	}
+
 }

@@ -26,8 +26,8 @@ public class WithLocation extends Expression implements Located {
 	}
 
 	@Override
-	public Expr convert(Env<Var> vars) throws CompilationException {
-		return new orc.ast.oil.WithLocation(expr.convert(vars), location);
+	public Expr convert(Env<Var> vars, Env<String> typevars) throws CompilationException {
+		return new orc.ast.oil.WithLocation(expr.convert(vars, typevars), location);
 	}
 
 	@Override

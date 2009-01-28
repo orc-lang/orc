@@ -3,12 +3,24 @@
  */
 package orc.runtime.sites.core;
 
+import java.util.LinkedList;
+import java.util.List;
+
+import orc.ast.oil.arg.Arg;
+import orc.env.Env;
+import orc.error.compiletime.typing.ArgumentArityException;
+import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.ArgumentTypeMismatchException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.ConsValue;
 import orc.runtime.values.ListValue;
+import orc.type.ArrowType;
+import orc.type.ListType;
+import orc.type.Type;
+import orc.type.TypeApplication;
+import orc.type.TypeVariable;
 
 /**
  * Implements the "cons" constructor site.
@@ -17,6 +29,8 @@ import orc.runtime.values.ListValue;
  */
 public class Cons extends EvalSite {
 
+	
+	
 	@Override
 	public Object evaluate(Args args) throws TokenException {
 		Object t = args.getArg(1);
@@ -26,5 +40,15 @@ public class Cons extends EvalSite {
 		}
 		return new ConsValue(args.getArg(0), (ListValue)t);
 	}
-
+	
+	public static Type type() throws TypeException { 
+		
+		List<Type> argTypes = new LinkedList<Type>();
+		Type X = new TypeVariable(0);
+		Type ListOfX = (new ListType()).instance(X);
+		argTypes.add(X);
+		argTypes.add(ListOfX);
+		return new ArrowType(argTypes, ListOfX, 1); 
+	}
+	
 }

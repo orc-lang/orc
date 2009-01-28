@@ -14,14 +14,14 @@ import orc.error.compiletime.typing.UncallableTypeException;
  *
  */
 
-public class Bot extends Type {
+public final class Bot extends Type {
 
 	public boolean subtype(Type that) {
 		return true;
 	}
 	
 	public boolean equal(Type that) {
-		return that instanceof Bot;
+		return that.isBot();
 	}
 	
 	public Type join(Type that) {
@@ -34,6 +34,10 @@ public class Bot extends Type {
 	
 	public Type call(List<Type> args) {
 		return this;
+	}
+	
+	public boolean isBot() {
+		return true;
 	}
 	
 	public String toString() { return "Bot"; }

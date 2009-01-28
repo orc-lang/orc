@@ -3,8 +3,13 @@ package orc.type;
 import java.util.LinkedList;
 import java.util.List;
 
+import orc.ast.oil.arg.Arg;
+import orc.ast.simple.type.VariantTypeFormal;
+
+import orc.env.Env;
 import orc.error.compiletime.typing.ArgumentArityException;
 import orc.error.compiletime.typing.SubtypeFailureException;
+import orc.error.compiletime.typing.TypeArityException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
 
@@ -12,9 +17,8 @@ public class ArrowType extends Type {
 
 	public List<Type> argTypes;
 	public Type resultType;
-	
-	
-	// A zero-argument function
+	public int typeArity = 0;
+
 	public ArrowType(Type resultType) {
 		this.argTypes = new LinkedList<Type>();
 		this.resultType = resultType;
@@ -37,12 +41,40 @@ public class ArrowType extends Type {
 		this.argTypes = argTypes;
 		this.resultType = resultType;
 	}
+	
+	public ArrowType(Type resultType, int typeArity) {
+		this.argTypes = new LinkedList<Type>();
+		this.resultType = resultType;
+		this.typeArity = typeArity;
+	}
+	
+	public ArrowType(Type argType, Type resultType, int typeArity) {
+		this.argTypes = new LinkedList<Type>();
+		argTypes.add(argType);
+		this.resultType = resultType;
+		this.typeArity = typeArity;
+	}
+	
+	public ArrowType(Type firstArgType, Type secondArgType, Type resultType, int typeArity) {
+		this.argTypes = new LinkedList<Type>();
+		argTypes.add(firstArgType);
+		argTypes.add(secondArgType);
+		this.resultType = resultType;
+		this.typeArity = typeArity;
+	}
+	
+	public ArrowType(List<Type> argTypes, Type resultType, int typeArity) {
+		this.argTypes = argTypes;
+		this.resultType = resultType;
+		this.typeArity = typeArity;
+	}
 
 	
 	
 	/*
 	 * Checks that the given type is in fact an
-	 * ArrowType of the same arity as this arrow type.
+	 * ArrowType of the same type and argument 
+	 * arity as this arrow type.
 	 * If so, returns that type, cast to ArrowType.
 	 * Otherwise, returns null. 
 	 * 
@@ -51,7 +83,7 @@ public class ArrowType extends Type {
 		
 		if (that instanceof ArrowType) {
 			ArrowType thatArrow = (ArrowType)that;
-			if (arity() == thatArrow.arity()) {
+			if (argTypes.size() == thatArrow.argTypes.size() && typeArity == thatArrow.typeArity) {
 				return thatArrow;
 			}
 		}
@@ -74,7 +106,7 @@ public class ArrowType extends Type {
 		 * that each other arg type is a subtype
 		 * of this arg type.
 		 */
-		for(int i = 0; i < arity(); i++) {
+		for(int i = 0; i < argTypes.size(); i++) {
 			Type thisArg = argTypes.get(i);
 			Type otherArg = otherArgTypes.get(i);
 			if (!(otherArg.subtype(thisArg))) { return false; }
@@ -100,7 +132,7 @@ public class ArrowType extends Type {
 		List<Type> joinArgTypes = new LinkedList<Type>();
 		Type joinResultType;
 		
-		for(int i = 0; i < arity(); i++) {
+		for(int i = 0; i < argTypes.size(); i++) {
 			Type thisArg = argTypes.get(i);
 			Type otherArg = otherArgTypes.get(i);
 			joinArgTypes.add(thisArg.meet(otherArg));
@@ -125,7 +157,7 @@ public class ArrowType extends Type {
 		List<Type> meetArgTypes = new LinkedList<Type>();
 		Type meetResultType;
 		
-		for(int i = 0; i < arity(); i++) {
+		for(int i = 0; i < argTypes.size(); i++) {
 			Type thisArg = argTypes.get(i);
 			Type otherArg = otherArgTypes.get(i);
 			meetArgTypes.add(thisArg.join(otherArg));
@@ -138,19 +170,42 @@ public class ArrowType extends Type {
 	}
 	
 	
-	public Type call(List<Type> args) throws TypeException {
+	public Type call(Env<Type> ctx, Env<Type> typectx, List<Arg> args, List<Type> typeActuals) throws TypeException {
 		
-		if (arity() != args.size()) {
-			throw new ArgumentArityException(arity(), args.size());
+		/* Arity check */
+		if (argTypes.size() != args.size()) {
+			throw new ArgumentArityException(argTypes.size(), args.size());
 		}
 		
-		for(int i = 0; i < arity(); i++) {
-			Type thisArg = argTypes.get(i);
-			Type otherArg = args.get(i);
-			if (!(otherArg.subtype(thisArg))) { throw new SubtypeFailureException(otherArg, thisArg); }
+		/* Type arity check */
+		if (typeArity != typeActuals.size()) {
+			throw new TypeArityException(typeArity, typeActuals.size());
 		}
 		
-		return resultType;
+		/* Add each type argument to the type context */
+		for(Type targ : typeActuals) {
+			typectx = typectx.extend(targ);
+		}
+		
+		/* Check each argument against its respective argument type */
+		for(int i = 0; i < argTypes.size(); i++) {
+			Type thisType = argTypes.get(i).subst(typectx);
+			Arg thisArg = args.get(i);
+			thisArg.typecheck(thisType, ctx, typectx);
+		}
+		
+		return resultType.subst(typectx);
+	}
+	
+	
+	public Type subst(Env<Type> ctx) {
+		
+		Env<Type> newctx = ctx;
+		
+		/* Add empty entries in the context for each bound type parameter */
+		for(int i = 0; i < typeArity; i++) { newctx = newctx.extend(null); }
+		
+		return new ArrowType(Type.substAll(argTypes, newctx), resultType.subst(newctx), typeArity);
 	}
 	
 	
@@ -159,21 +214,21 @@ public class ArrowType extends Type {
 		StringBuilder s = new StringBuilder();
 		
 		s.append('(');
-		for (Type T : argTypes) {
-			s.append(T);
-			s.append(' ');
+
+		s.append("lambda ");
+		s.append('[' + typeArity + ']');
+		s.append('(');
+		for (int i = 0; i < argTypes.size(); i++) {
+			if (i > 0) { s.append(", "); }
+			s.append(argTypes.get(i));
 		}
-		s.append("-> ");
+		s.append(')');
+		s.append(" :: ");
 		s.append(resultType);
+		
 		s.append(')');
 		
 		return s.toString();
 	}
-
-	public int arity() {
-		return argTypes.size();
-	}
-	
-	
 	
 }

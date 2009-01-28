@@ -41,7 +41,7 @@ public class EllipsisArrowType extends Type {
 		}
 		else if (that instanceof ArrowType) {
 			ArrowType thatArrow = (ArrowType)that;
-			ArrowType thisArrow = makeArrow(thatArrow.arity());
+			ArrowType thisArrow = makeArrow(thatArrow.argTypes.size());
 			
 			return thisArrow.subtype(thatArrow);
 		}
@@ -62,7 +62,7 @@ public class EllipsisArrowType extends Type {
 		}
 		else if (that instanceof ArrowType) {
 			ArrowType thatArrow = (ArrowType)that;
-			ArrowType thisArrow = makeArrow(thatArrow.arity());
+			ArrowType thisArrow = makeArrow(thatArrow.argTypes.size());
 
 			return thisArrow.join(thatArrow);
 		}
@@ -82,7 +82,7 @@ public class EllipsisArrowType extends Type {
 		}
 		else if (that instanceof ArrowType) {
 			ArrowType thatArrow = (ArrowType)that;
-			ArrowType thisArrow = makeArrow(thatArrow.arity());
+			ArrowType thisArrow = makeArrow(thatArrow.argTypes.size());
 
 			return thisArrow.meet(thatArrow);
 		}

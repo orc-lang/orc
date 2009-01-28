@@ -45,19 +45,19 @@ public class Semi extends Expr {
 	
 	
 	@Override
-	public Type typesynth(Env<Type> ctx) throws TypeException {
+	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
 		
-		Type L = left.typesynth(ctx);
-		Type R = right.typesynth(ctx);
+		Type L = left.typesynth(ctx, typectx);
+		Type R = right.typesynth(ctx, typectx);
 		return L.join(R);
 	}
 
 	
 	@Override
-	public void typecheck(Type T, Env<Type> ctx) throws TypeException {
+	public void typecheck(Type T, Env<Type> ctx, Env<Type> typectx) throws TypeException {
 		
-		left.typecheck(T, ctx);
-		right.typecheck(T, ctx);
+		left.typecheck(T, ctx, typectx);
+		right.typecheck(T, ctx, typectx);
 	}
 	
 }

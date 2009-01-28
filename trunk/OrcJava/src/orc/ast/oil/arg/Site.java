@@ -44,7 +44,7 @@ public class Site extends Arg {
 	}
 
 	@Override
-	public Type typesynth(Env<Type> ctx) throws TypeException {
+	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
 		return site.type();
 	}
 	

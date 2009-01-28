@@ -21,10 +21,11 @@ header {
 	import orc.ast.extended.declaration.type.*;
 	import orc.ast.extended.pattern.*;
 	import orc.error.*;
-	import orc.type.*;
+	import orc.ast.simple.type.*;
 	import orc.runtime.values.Value;
 	import orc.runtime.values.ListValue;
 	import orc.runtime.values.TupleValue;
+	import orc.type.Variance;
 }
 
 body {
@@ -147,15 +148,23 @@ Declaration Declaration =
 		yyValue = new ValDeclaration(p, e);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ TYPE name:Identifier Space EQ cs:ConstructorList {
-		yyValue = new DatatypeDeclaration(name, cs);
+	/ TYPE name:Identifier vtf:VariantTypeFormals Space EQ cs:ConstructorList {
+		yyValue = new DatatypeDeclaration(name, cs, vtf);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ TYPE name:Identifier vtf:VariantTypeFormals Space EQ className:ClassName {
+		yyValue = new TypeDeclaration(name, className, vtf);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ TYPE name:Identifier vtf:VariantTypeFormals Space EQ t:Type {
+		yyValue = new TypeAliasDeclaration(name, t, vtf);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
 
 
 Constructor Constructor =
-	name:Identifier Space LPAREN ts:TypeList RPAREN Space {
+	name:Identifier LPAREN ts:TypeList RPAREN Space {
 		yyValue = new Constructor(name,ts);
 	}
 	;
@@ -172,18 +181,23 @@ List<Constructor> ConstructorList =
 Defn Definition =
 	DEF name:(Identifier / BareOperator) Space LPAREN formals:PatternList RPAREN Space
 	curried0:(LPAREN yyValue:PatternList RPAREN Space)*
+	resultType:MaybeResultType
 	EQ body0:Body {
+		Type linearResultType = resultType;
 		List<List<Pattern>> curried = curried0.list();
 		ListIterator<List<Pattern>> it = curried.listIterator(curried.size());
 		Expression body = body0;
 		while (it.hasPrevious()) {
-			body = new Lambda(it.previous(), body);
+			body = new Lambda(it.previous(), body, linearResultType);
+			linearResultType = null;
 		}
-		yyValue = new DefnClause(name, formals, body);
+		yyValue = new DefnClause(name, formals, body, linearResultType);
+		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ DEF name:(Identifier / BareOperator) Space LPAREN argTypes:TypeList RPAREN Space
-	DOUBLE_COLON resultType:Type {
-		yyValue = new DefnType(name, argTypes, resultType);
+	/ DEF name:(Identifier / BareOperator) Space typeFormals:TypeFormals LPAREN argTypes:TypeList RPAREN Space
+	resultType:MaybeResultType {
+		yyValue = new DefnType(name, argTypes, resultType, typeFormals);
+		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
 
@@ -217,8 +231,15 @@ Symbol   Assoc       Name
 ----------------------------------------------------
  >>      right       sequence
 ----------------------------------------------------
+<<<<<<< OrcParserRats.rats
+ ::		 none		 type annotation
+----------------------------------------------------
+ atomic	 prefix		 atomic execution
+----------------------------------------------------
+=======
  atomic  none        atomic transaction
 ----------------------------------------------------
+>>>>>>> 1.39
  :=      none        ref assignment
 ----------------------------------------------------
  ||      right[2]    boolean or
@@ -264,7 +285,7 @@ slightly more efficient in Rats!.
 
 [3] I'm not sure whether I'd call lambda and if operators,
 but the point is they bind very loosely, so everything to
-their right right is considered part of their body.
+their right is considered part of their body.
 
 [4] These operators may not be preceded by a newline, to
 avoid ambiguity about where an expression ends.  So if you
@@ -300,14 +321,17 @@ Action<Expression> SemiExpressionTail =
 Expression Lambda = 
 	LAMBDA LPAREN formals:PatternList RPAREN Space
 	curried0:(LPAREN yyValue:PatternList RPAREN Space)*
+	resultType:MaybeResultType
 	EQ body0:Body {
 		List<List<Pattern>> curried = curried0.list();
 		ListIterator<List<Pattern>> it = curried.listIterator(curried.size());
+		Type linearResultType = resultType;
 		Expression body = body0;
 		while (it.hasPrevious()) {
-			body = new Lambda(it.previous(), body);
+			body = new Lambda(it.previous(), body, linearResultType);
+			linearResultType = null;
 		}
-		yyValue = new Lambda(formals, body);
+		yyValue = new Lambda(formals, body, linearResultType);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
@@ -358,8 +382,8 @@ Expression SeqExpression =
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
-Expression MaybeSeqExpression = SeqExpression / IfThenElse / MaybeAtomic;
-Expression NoCmpMaybeSeqExpression = SeqExpression / IfThenElse / NoCmpMaybeAtomic;
+Expression MaybeSeqExpression = SeqExpression / IfThenElse / MaybeHasType;
+Expression NoCmpMaybeSeqExpression = SeqExpression / IfThenElse / NoCmpMaybeHasType;
 	
 Expression IfThenElse =
 	IF condition:MaybeDisjunction THEN consequent:MaybeSemiExpression ELSE alternative:MaybeSemiExpression {
@@ -371,6 +395,43 @@ Expression IfThenElse =
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
+
+
+/*
+Expression MaybeAssertType =
+	body:MaybeHasType void:BANG_COLON type:Type {
+		yyValue = new AssertType(body, type);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ MaybeHasType
+	;
+
+Expression NoCmpMaybeAssertType =
+	body:NoCmpMaybeHasType void:BANG_COLON type:Type {
+		yyValue = new AssertType(body,type);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ NoCmpMaybeHasType
+	;
+*/
+
+
+Expression MaybeHasType =
+	body:MaybeAtomic void:DOUBLE_COLON type:Type {
+		yyValue = new HasType(body, type);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ MaybeAtomic
+	;
+
+Expression NoCmpMaybeHasType =
+	body:NoCmpMaybeAtomic void:DOUBLE_COLON type:Type {
+		yyValue = new HasType(body,type);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ NoCmpMaybeAtomic
+	;
+	
 
 Expression MaybeAtomic =
 	void:ATOMIC body:MaybeAssignment {
@@ -559,10 +620,10 @@ Expression DotExpression =
 	
 /* Ends without newline */
 Pair<Action<Expression>> CallTail =
-	LPAREN args:ExpressionList RPAREN rest:CallTail? {
+	types:MaybeTypeActuals LPAREN args:ExpressionList RPAREN rest:CallTail? {
 		yyValue = new Pair<Action<Expression>>(new Action<Expression>() {
 				public Expression run(Expression left) {
-					Expression yyValue = new Call(left, args);
+					Expression yyValue = new Call(left, args, types);
 					yyValue = at(left, yyCount, yyValue);
 					return yyValue;
 				}
@@ -658,6 +719,14 @@ List<Expression> ExpressionList =
 /////////////////////////////////////////////
 
 Pattern Pattern =
+	p:AsPattern index:DOUBLE_COLON t:Type Space {
+		yyValue = new TypedPattern(p, t);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ AsPattern
+	;
+
+Pattern AsPattern =
 	p:ConsPattern index:AS v:Identifier Space {
 		yyValue = new AsPattern(p, v);
 		yyValue = at(yyStart, yyCount, yyValue);
@@ -723,13 +792,24 @@ Type Type =
 	/ INTEGER_TYPE { yyValue = Type.INTEGER; }
 	/ TOP_TYPE { yyValue = Type.TOP; }
 	/ BOT_TYPE { yyValue = Type.BOT; }
-	/ LPAREN ts:TypeList RPAREN { yyValue = new TupleType(ts); }
+	/ LPAREN ts:TypeList RPAREN Space { yyValue = new TupleType(ts); }
 	/ UNDERSCORE { yyValue = Type.BLANK; }
-	/ LAMBDA LPAREN argTypes:TypeList RPAREN DOUBLE_COLON resultType:Type 
-		{ yyValue = new ArrowType(argTypes, resultType); }
-	/ name:Identifier { yyValue = new NamedType(name); }
+	/ LAMBDA typeFormals:TypeFormals LPAREN argTypes:TypeList RPAREN DOUBLE_COLON resultType:Type 
+		{ yyValue = new ArrowType(argTypes, resultType, typeFormals); }
+	/ name:Identifier actualTypes:TypeActuals Space { yyValue = new TypeInstance(name, actualTypes); }
+	/ name:Identifier Space { yyValue = new NamedType(name); }
 	;
 	
+
+
+
+VariantTypeFormal VariantTypeFormal =
+	  name:Identifier PLUS  { yyValue = new VariantTypeFormal(name, Variance.COVARIANT); }
+	/ name:Identifier MINUS { yyValue = new VariantTypeFormal(name, Variance.CONTRAVARIANT); }
+	/ name:Identifier TIMES { yyValue = new VariantTypeFormal(name, Variance.INVARIANT); }
+	/ name:Identifier { yyValue = new VariantTypeFormal(name, Variance.CONSTANT); }
+	;	
+
 List<Type> TypeList = 
 	t:Type ts:(void:COMMA ts:Type)* {
 		List<Type> out = ts.list();
@@ -739,6 +819,54 @@ List<Type> TypeList =
 	/ /* empty */ {
 		yyValue = new LinkedList<Type>();
 	}
+	;
+	
+
+List<String> TypeFormals = 
+	LBRACKET tf:Identifier tfs:(void:COMMA tfs:Identifier)* RBRACKET {
+		List<String> out = tfs.list();
+		out.add(0, tf);
+		yyValue = out;
+	}
+	/ /* empty */ {
+		yyValue = new LinkedList<String>();
+	}
+	;
+
+List<VariantTypeFormal> VariantTypeFormals =
+	LBRACKET vtf:VariantTypeFormal vtfs:(void:COMMA vtfs:VariantTypeFormal)* RBRACKET {
+		List<VariantTypeFormal> out = vtfs.list();
+		out.add(0, vtf);
+		yyValue = out;
+	}
+	/ /* empty */ {
+		yyValue = new LinkedList<VariantTypeFormal>();
+	}
+	;
+
+
+List<Type> MaybeTypeActuals =
+	ta:TypeActuals {
+		yyValue = ta;
+	}
+	/ /* empty */ {
+		yyValue = null;
+	}
+	;
+
+List<Type> TypeActuals = 
+	LBRACKET t:Type ts:(void:COMMA ts:Type)* RBRACKET {
+		List<Type> out = ts.list();
+		out.add(0, t);
+		yyValue = out;
+	}
+	;
+	
+Type MaybeResultType =
+	DOUBLE_COLON resultType:Type
+		{ yyValue = resultType; }
+	/
+		{ yyValue = null; }	
 	;
 
 /////////////////////////////////////////////
@@ -854,6 +982,7 @@ transient String STRING_TYPE = "String":Word Space;
 transient String TOP_TYPE = "Top":Word Space;
 transient String BOT_TYPE = "Bot":Word Space;
 transient String DOUBLE_COLON = "::" Space;
+// transient String BANG_COLON = ":!:" Space;
 transient String EQ = "=" Space;
 transient String LBRACE = "{" ![\-] Space; // make sure it's not a comment
 transient String RBRACE = "}" Space;

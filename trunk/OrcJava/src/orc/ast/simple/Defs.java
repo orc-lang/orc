@@ -58,7 +58,7 @@ public class Defs extends Expression {
 	}
 
 	@Override
-	public Expr convert(Env<Var> vars) throws CompilationException {
+	public Expr convert(Env<Var> vars, Env<String> typevars) throws CompilationException {
 		
 		List<Var> names = new ArrayList<Var>();
 		
@@ -72,11 +72,11 @@ public class Defs extends Expression {
 		List<Def> newdefs = new ArrayList<Def>();
 		
 		for (Definition d : defs) {
-			Def newd = d.convert(newvars);
+			Def newd = d.convert(newvars, typevars);
 			newdefs.add(newd);
 		}
 		
-		return new orc.ast.oil.Defs(newdefs, body.convert(newvars));
+		return new orc.ast.oil.Defs(newdefs, body.convert(newvars, typevars));
 	}
 
 	

@@ -13,10 +13,15 @@ package orc.type;
  * @author dkitchin
  *
  */
-public class Top extends Type {
+public final class Top extends Type {
 	
 	public boolean subtype(Type that) {
-		return (that instanceof Top);
+		return that.isTop();
 	}
+	
+	public boolean isTop() {
+		return true;
+	}
+	
 	public String toString() { return "Top"; }
 }

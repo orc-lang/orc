@@ -57,7 +57,7 @@ public class Let extends Expression {
 	}
 
 	@Override
-	public Expr convert(Env<Var> vars) throws UnboundVariableException {
+	public Expr convert(Env<Var> vars, Env<String> typevars) throws UnboundVariableException {
 		if (args.size() == 0) {
 			// If there is no arg, use the signal value
 			return new orc.ast.oil.arg.Constant(Value.signal());
@@ -66,14 +66,14 @@ public class Let extends Expression {
 			return args.get(0).convert(vars);
 		}
 		
+		// Otherwise, use the tuple creation site
+		
 		List<Arg> newargs = new ArrayList<Arg>();
 		for(Argument a : args) {
 			Arg newa = a.convert(vars);
 			newargs.add(newa);
 		}
 		
-		// Otherwise, use the tuple creation site
-		// TODO: Add an explicit zero-args case for unit 
 		return new orc.ast.oil.Call(new orc.ast.oil.arg.Site(orc.ast.sites.Site.LET), newargs);
 	}
 }

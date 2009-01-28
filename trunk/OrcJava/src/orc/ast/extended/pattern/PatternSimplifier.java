@@ -18,6 +18,7 @@ import orc.ast.simple.Where;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
+import orc.ast.simple.type.Type;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.NonlinearPatternException;
 
@@ -33,6 +34,7 @@ public class PatternSimplifier {
 	List<Argument> requiredVars;
 	List<Argument> boundVars;
 	Map<NamedVar, Integer> bindingEntries;
+	Map<Var, Type> ascriptions;
 	Set<Integer> publishEntries;
 	List<Attachment> attachments;
 	
@@ -43,10 +45,15 @@ public class PatternSimplifier {
 		this.bindingEntries = new TreeMap<NamedVar,Integer>();
 		this.publishEntries = new TreeSet<Integer>();
 		this.attachments = new LinkedList<Attachment>();
+		this.ascriptions = new TreeMap<Var, Type>();
 	}
 
 	public void assign(Var s, Expression e) {
 		attachments.add(0, new Attachment(s,e));
+	}
+	
+	public void ascribe(Var s, Type t) {
+		ascriptions.put(s, t);
 	}
 	
 	public void subst(Var s, NamedVar x) throws NonlinearPatternException {
@@ -98,7 +105,7 @@ public class PatternSimplifier {
 		}
 		
 		for (Attachment a : attachments) {
-			root = a.attach(root);
+			root = a.attach(root, ascriptions.get(a.v));
 		}
 		
 		return root;

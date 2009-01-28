@@ -1,3 +1,4 @@
+
 package orc.ast.simple;
 
 import java.util.Map;
@@ -26,11 +27,19 @@ public abstract class Expression {
 	/**
 	 * Converts abstract syntax tree into a serializable form, used to generate
 	 * portable .oil (Orc Intermediate Language) files.
+	 * 
+	 * Note that the typevars environment is a content-addressable environment
+	 * of strings. Type vars are represented as strings for simplicity, because
+	 * unlike regular vars, there are not yet any compiler steps which generate 
+	 * temporary type variables.
+	 * 
 	 * @param vars	The vars environment, used in content addressable mode to 
 	 * 				find the appropriate deBruijn index of a var.
+	 * @param typevars The type vars environment, used in content addressable
+	 * 				   mode to find the appropriate deBruijn index of a type var.
 	 * @return A new node.
 	 */
-	public abstract orc.ast.oil.Expr convert(Env<Var> vars) throws CompilationException;
+	public abstract orc.ast.oil.Expr convert(Env<Var> vars, Env<String> typevars) throws CompilationException;
 	
 	
 	/**
@@ -73,6 +82,6 @@ public abstract class Expression {
 	 * environments are colocated.
 	 */
 	public Node compile(Node output) throws CompilationException {
-		return this.convert(new Env<Var>()).compile(output);
+		return this.convert(new Env<Var>(), new Env<String>()).compile(output);
 	}
 }
