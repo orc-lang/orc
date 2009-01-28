@@ -46,7 +46,7 @@ public class Field extends Arg implements Comparable<Field>{
 	}
 
 	@Override
-	public Type typesynth(Env<Type> ctx) throws TypeException {
+	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
 		return new Message(this);
 	}
 	

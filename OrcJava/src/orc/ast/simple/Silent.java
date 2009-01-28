@@ -24,7 +24,7 @@ public class Silent extends Expression {
 	}
 
 	@Override
-	public Expr convert(Env<Var> vars) {
+	public Expr convert(Env<Var> vars, Env<String> typevars) {
 		
 		return new orc.ast.oil.Silent();
 	}

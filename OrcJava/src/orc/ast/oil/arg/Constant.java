@@ -31,7 +31,7 @@ public class Constant extends Arg {
 	}
 
 	@Override
-	public Type typesynth(Env<Type> ctx) throws TypeException {
+	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
 		if (v == null) {
 			return Type.BOT;
 		} else if (v instanceof Integer) {

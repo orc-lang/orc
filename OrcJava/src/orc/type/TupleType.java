@@ -3,6 +3,7 @@ package orc.type;
 import java.util.LinkedList;
 import java.util.List;
 
+import orc.env.Env;
 import orc.error.compiletime.typing.ArgumentArityException;
 import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
@@ -14,6 +15,13 @@ public class TupleType extends Type {
 		
 	public TupleType(List<Type> items) {
 		this.items = items;
+	}
+	
+	/* Convenience function for constructing pairs */
+	public TupleType(Type a, Type b) {
+		this.items = new LinkedList<Type>();
+		this.items.add(a);
+		this.items.add(b);
 	}
 	
 	public boolean subtype(Type that) {
@@ -36,9 +44,11 @@ public class TupleType extends Type {
 				
 				if (!(thisItem.subtype(otherItem))) { return false; }
 			}
+			
+			return true;
 		}
 		
-		return true;
+		return false;
 	}
 	
 	public Type join(Type that) {	
@@ -68,10 +78,6 @@ public class TupleType extends Type {
 			
 	}
 	
-	/* 
-	 * A meet of two arrow types is a join of their arg types
-	 * and a meet of their result type.
-	 */
 	public Type meet(Type that) {
 		
 		if (that instanceof TupleType) {
@@ -140,6 +146,10 @@ public class TupleType extends Type {
 			throw new ArgumentArityException(1, args.size());
 		}
 		
+	}
+	
+	public Type subst(Env<Type> ctx) {		
+		return new TupleType(Type.substAll(items, ctx));
 	}
 	
 	

@@ -4,18 +4,20 @@ import java.util.List;
 
 import orc.ast.extended.Expression;
 import orc.ast.extended.pattern.Pattern;
-import orc.type.ArrowType;
-import orc.type.Type;
+import orc.ast.simple.type.ArrowType;
+import orc.ast.simple.type.Type;
 
 public class DefnType extends Defn {
 
 		public List<Type> argTypes;
 		public Type resultType;
+		public List<String> typeParams;
 	
-		public DefnType(String name, List<Type> argTypes, Type resultType) {
+		public DefnType(String name, List<Type> argTypes, Type resultType, List<String> typeParams) {
 			this.name = name;
 			this.argTypes = argTypes;
 			this.resultType = resultType;
+			this.typeParams = typeParams;
 		}
 
 		public String toString() {
@@ -24,7 +26,11 @@ public class DefnType extends Defn {
 
 		@Override
 		public void extend(AggregateDefn adef) {
-			adef.setType(new ArrowType(argTypes, resultType));
+			adef.setTypeParams(typeParams);
+			adef.setArgTypes(argTypes);
+			if (resultType != null) { adef.setResultType(resultType); }
+			
+			adef.addLocation(getSourceLocation());
 		}	
 	
 }

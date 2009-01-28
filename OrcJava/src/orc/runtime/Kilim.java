@@ -80,7 +80,6 @@ public final class Kilim {
 			executor = new ThreadPoolExecutor(0, size*2, 30, TimeUnit.SECONDS, new SynchronousQueue<Runnable>()) {
 				@Override
 				protected void afterExecute(Runnable r, Throwable t) {
-					// TODO Auto-generated method stub
 					super.afterExecute(r, t);
 					semaphore.release();
 				}

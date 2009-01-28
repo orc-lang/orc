@@ -38,8 +38,8 @@ public class Semi extends Expression {
 
 
 	@Override
-	public Expr convert(Env<Var> vars) throws CompilationException {
-		return new orc.ast.oil.Semi(left.convert(vars), right.convert(vars));
+	public Expr convert(Env<Var> vars, Env<String> typevars) throws CompilationException {
+		return new orc.ast.oil.Semi(left.convert(vars, typevars), right.convert(vars, typevars));
 	}
 
 }

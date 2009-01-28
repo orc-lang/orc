@@ -31,8 +31,8 @@ public class Atomic extends Expression {
 	}
 
 	@Override
-	public Expr convert(Env<Var> vars) throws CompilationException {
-		return new orc.ast.oil.Atomic(body.convert(vars));
+	public Expr convert(Env<Var> vars, Env<String> typevars) throws CompilationException {
+		return new orc.ast.oil.Atomic(body.convert(vars, typevars));
 	}
 
 }

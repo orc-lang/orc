@@ -34,8 +34,31 @@ public class WithLocation extends Expr implements Located {
 	}
 
 	@Override
-	public Type typesynth(Env<Type> ctx) throws TypeException {
-		return expr.typesynth(ctx);
+	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
+		try {
+			return expr.typesynth(ctx, typectx);
+		}
+		catch (TypeException e) {
+			/* If this error has no location, give it this (least enclosing) location */
+			if (e.getSourceLocation() == null || e.getSourceLocation().isUnknown()) {
+				e.setSourceLocation(location);
+			}
+			throw e;
+		}
+	}
+	
+	@Override
+	public void typecheck(Type T, Env<Type> ctx, Env<Type> typectx) throws TypeException {
+		try {
+			expr.typecheck(T, ctx, typectx);
+		}
+		catch (TypeException e) {
+			/* If this error has no location, give it this (least enclosing) location */
+			if (e.getSourceLocation() == null || e.getSourceLocation().isUnknown()) {
+				e.setSourceLocation(location);
+			}
+			throw e;
+		}
 	}
 	
 	public String toString() {

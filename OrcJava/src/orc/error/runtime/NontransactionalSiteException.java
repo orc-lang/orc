@@ -7,7 +7,6 @@ public class NontransactionalSiteException extends TokenException {
 
 	public NontransactionalSiteException(Site s, Transaction t) {
 		super("Site " + s + " cannot participate in transaction " + t);
-		// TODO Auto-generated constructor stub
 	}
 
 }

@@ -15,23 +15,13 @@ public class Message extends Type {
 	
 	/* Message types are subtypes only of Top and of equal message types */
 	public boolean subtype(Type that) {
-		return Type.TOP.equals(that) || this.equals(that);
+		return that.isTop() || that.equal(this);
 	}
 	
-	/* Message types are equal only if they carry the same message */
 	public boolean equal(Type that) {
-		
 		return that.getClass().equals(Message.class) && this.f.equals(((Message)that).f);
 	}
-	
-	public Type join(Type that) {
-		return (this.equals(that) ? this : Type.TOP);
-	}
-	
-	public Type meet(Type that) {
-		return (this.equals(that) ? this : Type.BOT);
-	}
-		
+			
 	public String toString() {
 		return "." + f.key;
 	}

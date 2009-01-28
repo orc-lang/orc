@@ -48,8 +48,16 @@ public class Var extends Arg implements Comparable<Var> {
 	}
 
 	@Override
-	public Type typesynth(Env<Type> ctx) throws TypeException {
-		return ctx.lookup(index);
+	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
+		Type t = ctx.lookup(index);
+		
+		if (t != null) {
+			return t;
+		}
+		else {
+			throw new TypeException("Could not infer sufficient type information about this variable. " +
+									"It may be a recursive function lacking a return type ascription.");
+		}
 	}
 	
 	@Override

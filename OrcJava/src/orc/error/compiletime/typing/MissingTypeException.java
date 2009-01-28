@@ -16,7 +16,6 @@ public class MissingTypeException extends TypeException {
 	
 	public MissingTypeException(String message) {
 		super(message);
-		// TODO Auto-generated constructor stub
 	}
 
 }

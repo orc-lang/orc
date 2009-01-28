@@ -40,12 +40,12 @@ public class Where extends Expression {
 	}
 
 	@Override
-	public Expr convert(Env<Var> vars) throws CompilationException {
+	public Expr convert(Env<Var> vars, Env<String> typevars) throws CompilationException {
 		
 		Env<Var> newvars = vars.clone();
 		newvars.add(v);
 		
-		return new Pull(left.convert(newvars), right.convert(vars));
+		return new Pull(left.convert(newvars, typevars), right.convert(vars, typevars));
 	}
 	
 }

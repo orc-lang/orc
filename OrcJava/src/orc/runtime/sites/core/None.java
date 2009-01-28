@@ -17,7 +17,7 @@ import orc.runtime.sites.Site;
 public class None extends Site {
 	// since tags are compared by object equality,
 	// we need to share a tag amongst all instances of this site
-	static final Datasite data = new Datasite(0, "None");
+	static final Datasite data = new Datasite("None");
 	@Override
 	public void callSite(Args args, Token caller) throws TokenException {
 		data.callSite(args, caller);

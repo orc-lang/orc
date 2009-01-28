@@ -42,7 +42,7 @@ import orc.trace.TokenTracer;
  * to the next token.
  * @author wcook, dkitchin, quark
  */
-public final class Token implements Serializable, Comparable<Token>, Locatable {
+public final class Token implements Serializable, Locatable {
 	/**
 	 * Return pointer for a function call.
 	 * At one point we used a token for the return pointer,
@@ -323,12 +323,6 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 		return var.resolve(env);
 	}
 	
-	/* TODO: replace this stub with a meaningful order on tokens */
-	public int compareTo(Token t) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-	
 	public void debug(String s) {
 		engine.debug(s);
 	}
@@ -337,10 +331,6 @@ public final class Token implements Serializable, Comparable<Token>, Locatable {
 		engine.activate(this);
 	}
 	
-	/*
-	 * TODO: Introduce priority on tokens, or an 'isImmediate' predicate on sites,
-	 * so that let and 'immediate' sites have priority over other site returns.
-	 */
 	public void resume(Object object) {
 		this.result = object;
 		engine.resume(this);

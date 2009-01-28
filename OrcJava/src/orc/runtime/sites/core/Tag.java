@@ -10,11 +10,13 @@ import orc.runtime.values.TaggedValue;
 import orc.runtime.values.TupleValue;
 import orc.runtime.values.Value;
 
+// Site for generating individual constructor sites for datatypes. Deprecated.
+
 public class Tag extends EvalSite {
 
 	@Override
 	public Object evaluate(Args args) throws TokenException {
-		return new Datasite(args.intArg(0), args.stringArg(1));
+		return new Datasite(args.stringArg(1));
 	}
 
 }

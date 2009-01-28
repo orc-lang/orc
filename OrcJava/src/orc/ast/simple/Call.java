@@ -11,6 +11,7 @@ import orc.ast.oil.arg.Arg;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
+import orc.ast.simple.type.Type;
 import orc.env.Env;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
@@ -21,6 +22,14 @@ public class Call extends Expression {
 
 	public Argument callee;
 	public List<Argument> args;
+	public List<Type> typeArgs;
+	
+	public Call(Argument callee, List<Argument> args, List<Type> typeArgs)
+	{
+		this.callee = callee;
+		this.args = args;
+		this.typeArgs = typeArgs;
+	}
 	
 	public Call(Argument callee, List<Argument> args)
 	{
@@ -58,7 +67,7 @@ public class Call extends Expression {
 		for (Argument b : args)	{
 			newargs.add(b.subst(a, x));
 		}
-		return new Call(callee.subst(a, x), newargs);
+		return new Call(callee.subst(a, x), newargs, typeArgs);
 	}
 
 	public Set<Var> vars() {
@@ -71,7 +80,7 @@ public class Call extends Expression {
 	}
 
 	@Override
-	public Expr convert(Env<Var> vars) throws CompilationException {
+	public Expr convert(Env<Var> vars, Env<String> typevars) throws CompilationException {
 		
 		Arg newcallee = callee.convert(vars);
 		
@@ -80,6 +89,14 @@ public class Call extends Expression {
 			newargs.add(arg.convert(vars));
 		}
 		
-		return new orc.ast.oil.Call(newcallee, newargs);
+		List<orc.type.Type> newTypeArgs = null; 
+		if (typeArgs != null) {
+			newTypeArgs = new LinkedList<orc.type.Type>();
+			for (Type t : typeArgs) {
+				newTypeArgs.add(t.convert(typevars));
+			}
+		}
+		
+		return new orc.ast.oil.Call(newcallee, newargs, newTypeArgs);
 	}
 }

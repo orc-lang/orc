@@ -38,13 +38,13 @@ public class Atomic extends Expr {
 	}
 
 	@Override
-	public Type typesynth(Env<Type> ctx) throws TypeException {
-		return body.typesynth(ctx);
+	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
+		return body.typesynth(ctx, typectx);
 	}
 
 	@Override
-	public void typecheck(Type T, Env<Type> ctx) throws TypeException {
-		body.typecheck(T, ctx);
+	public void typecheck(Type T, Env<Type> ctx, Env<Type> typectx) throws TypeException {
+		body.typecheck(T, ctx, typectx);
 	}
 
 }

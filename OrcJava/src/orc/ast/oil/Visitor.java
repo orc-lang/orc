@@ -25,4 +25,6 @@ public interface Visitor<E> {
 	public E visit(Site arg);
 	public E visit(Var arg);
 	public E visit(Atomic atomic);
+	public E visit(HasType hasType);
+	public E visit(TypeDecl typeDecl);
 }

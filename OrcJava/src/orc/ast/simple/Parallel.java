@@ -36,8 +36,8 @@ public class Parallel extends Expression {
 	}
 
 	@Override
-	public Expr convert(Env<Var> vars) throws CompilationException {
-		return new Bar(left.convert(vars), right.convert(vars));
+	public Expr convert(Env<Var> vars, Env<String> typevars) throws CompilationException {
+		return new Bar(left.convert(vars, typevars), right.convert(vars, typevars));
 	}
 
 }
