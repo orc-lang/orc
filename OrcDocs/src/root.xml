@@ -3567,12 +3567,12 @@ it publishes 5 values, and then terminates it.
 
 <programlisting><![CDATA[
 val c = Buffer()
-val done = Cell()
-def allow(0) = c.close() >> done.write(signal) >> stop
-def allow(n) = c.get() | allow(n-1)
+val done = Semaphore(0)
+def allow(0) = c.closenb() >> done.release() >> stop
+def allow(n) = c.get() >!x> allow(n-1)
 allow(5) << ]]>
     <emphasis role="bold">F</emphasis><![CDATA[ >x> c.put(x) >> stop 
-  | done.read()
+  | done.acquire()
 ]]>
 </programlisting>
 
