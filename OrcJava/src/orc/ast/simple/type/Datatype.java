@@ -1,8 +1,10 @@
 package orc.ast.simple.type;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import orc.env.Env;
+import orc.type.Variance;
 
 /**
  * 
@@ -25,8 +27,35 @@ public class Datatype extends Type {
 
 	@Override
 	public orc.type.Type convert(Env<String> env) {
-		// TODO: Instrument datatypes correctly in the typechecker 
-		return null;
+		
+		List<Variance> vs = new LinkedList<Variance>();
+		for (VariantTypeFormal formal : formals) {
+			vs.add(formal.variance);
+		}
+		
+		// First, add the datatype name itself to the context
+		env = env.extend(typename);
+		
+		// Then, add the type parameters
+		for (VariantTypeFormal formal : formals) {
+			env = env.extend(formal.name);
+		}
+		
+		/* Reduce each constructor to a list of its argument types.
+		 * The constructor names are used separately in the dynamic
+		 * semantics to give a string representation for the constructed
+		 * values.
+		 */
+		List<List<orc.type.Type>> cs = new LinkedList<List<orc.type.Type>>();
+		for (Constructor con : members) {
+			List<orc.type.Type> ts = new LinkedList<orc.type.Type>();
+			for (Type t : con.args) {
+				ts.add(t.convert(env));
+			}
+			cs.add(ts);
+		}
+		
+		return new orc.type.Datatype(typename, vs, cs);
 	}
 
 }

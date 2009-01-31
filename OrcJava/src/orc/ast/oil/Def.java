@@ -92,7 +92,11 @@ public class Def implements Locatable {
 	/* Construct an arrow type from the type information contained in this definition 
 	 * This construction fails if the result type or arg types are null.
 	 */
-	public ArrowType type() throws InsufficientTypeInformationException {
+	public ArrowType type(Env<Type> typectx) throws InsufficientTypeInformationException {
+		
+		for(int i = 0; i < typeArity; i++) {
+			typectx = typectx.extend(null);
+		}
 		
 		if (argTypes == null) {
 			throw new UnspecifiedArgTypesException();
@@ -101,7 +105,7 @@ public class Def implements Locatable {
 			throw new UnspecifiedReturnTypeException();
 		}
 		else {
-			return new ArrowType(argTypes, resultType, typeArity);
+			return new ArrowType(Type.substAll(argTypes,typectx), resultType.subst(typectx), typeArity);
 		}
 	}
 	

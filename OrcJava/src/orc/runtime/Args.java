@@ -13,6 +13,7 @@ import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.InsufficientArgsException;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
+import orc.runtime.sites.core.Let;
 import orc.runtime.values.Field;
 import orc.runtime.values.ListLike;
 import orc.runtime.values.NilValue;
@@ -43,23 +44,8 @@ public class Args implements Serializable, Iterable<Object> {
 		return values.length;
 	}
 	
-	/**
-	 * Classic 'let' functionality. 
-	 * Reduce a list of argument values into a single value as follows:
-	 * 
-	 * Zero arguments: return a signal
-	 * One argument: return that value
-	 * Two or more arguments: return a tuple of values
-	 * 
-	 */
 	public Object condense() {
-		if (values.length == 0) {
-			return Value.signal();
-		} else if (values.length == 1) {
-			return values[0];
-		} else {
-			return new TupleValue(values);
-		}
+		return Let.condense(values);
 	}
 	
 	/**

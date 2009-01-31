@@ -5,8 +5,8 @@ import java.util.Set;
 import orc.ast.oil.Visitor;
 import orc.env.Env;
 import orc.error.compiletime.typing.TypeException;
-import orc.type.ConstIntType;
 import orc.type.Type;
+import orc.type.ground.ConstIntType;
 
 public class Constant extends Arg { 
 	

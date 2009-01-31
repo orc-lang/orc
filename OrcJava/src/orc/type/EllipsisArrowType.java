@@ -6,6 +6,7 @@ import java.util.List;
 import orc.error.compiletime.typing.ArgumentArityException;
 import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
+import orc.type.ground.Top;
 
 public class EllipsisArrowType extends Type {
 

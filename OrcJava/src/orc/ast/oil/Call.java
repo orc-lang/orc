@@ -10,11 +10,14 @@ import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
+import orc.error.compiletime.typing.ArgumentArityException;
 import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Node;
 import orc.type.ArrowType;
+import orc.type.Constraint;
 import orc.type.Type;
+import orc.type.Variance;
 
 public class Call extends Expr {
 
@@ -119,11 +122,63 @@ public class Call extends Expr {
 			Type calleeType = callee.typesynth(ctx, typectx);
 		
 			if (calleeType instanceof ArrowType && ((ArrowType)calleeType).typeArity > 0) {
-				// TODO: Type argument inference unimplemented
-				throw new TypeException("Type argument inference unimplemented.");
+				
+				ArrowType arrow = (ArrowType)calleeType;
+				
+				/* Arity check */
+				if (args.size() != arrow.argTypes.size()) {
+					throw new ArgumentArityException(arrow.argTypes.size(), args.size());
+				}
+				
+				Constraint[] C = new Constraint[arrow.typeArity];
+				Env<Boolean> VX = new Env<Boolean>();
+				
+				for (int i = 0; i < arrow.typeArity; i++) {
+					VX = VX.extend(false);
+					C[i] = new Constraint();
+				}
+				
+				
+				/* Add constraints for the argument types */
+				for (int i = 0; i < args.size(); i++) {
+					Type A = args.get(i).typesynth(ctx, typectx);
+					Type B = arrow.argTypes.get(i);
+					
+					/*
+					for (Constraint c : C) {
+						System.out.println(c);
+					}
+					
+					System.out.println("A: " + A + " and B: " + B);
+					*/
+					
+					A.addConstraints(VX, B, C);
+				}
+				
+				/*
+				for (Constraint c : C) {
+					System.out.println(c);
+				}
+				*/
+				
+				/* Find type arguments that minimize the result type */
+				List<Type> inferredTypeArgs = new LinkedList<Type>();
+				Env<Type> subs = new Env<Type>();
+				Type R = arrow.resultType;
+				for (int i = arrow.typeArity - 1; i >= 0; i--) {
+					Type sigmaCR = C[i].minimal(R.findVariance(i));
+					inferredTypeArgs.add(sigmaCR);
+					subs = subs.extend(sigmaCR);
+				}
+				
+				/* We have successfully inferred the type arguments */
+				typeArgs = inferredTypeArgs;
+				
+				return R.subst(subs);
 			}
 			else {
-				/* Otherwise set type arguments to an empty list and try it again from the top */
+				/* Type arity is 0; no arguments to infer */
+				/* Set type arguments to an empty list and try again from the top */
 				typeArgs = new LinkedList<Type>();
 				return typesynth(ctx, typectx);
 			}
@@ -144,15 +199,49 @@ public class Call extends Expr {
 			Type calleeType = callee.typesynth(ctx, typectx);
 			
 			if (calleeType instanceof ArrowType && ((ArrowType)calleeType).typeArity > 0) {
-				// TODO: Type argument inference unimplemented
-				throw new TypeException("Type argument inference unimplemented.");
+				
+				ArrowType arrow = (ArrowType)calleeType;
+				
+				/* Arity check */
+				if (args.size() != arrow.argTypes.size()) {
+					throw new ArgumentArityException(arrow.argTypes.size(), args.size());
+				}
+				
+				Constraint[] C = new Constraint[arrow.typeArity];
+				Env<Boolean> VX = new Env<Boolean>();
+				
+				for (int i = 0; i < arrow.typeArity; i++) {
+					VX = VX.extend(false);
+					C[i] = new Constraint();
+				}
+				
+				/* Add constraints for the argument types */
+				for (int i = 0; i < args.size(); i++) {
+					Type A = args.get(i).typesynth(ctx, typectx);
+					Type B = arrow.argTypes.get(i);
+					A.addConstraints(VX, B, C);
+				}
+				
+				/* Add constraints for the result type */
+				arrow.resultType.addConstraints(VX, T, C);
+				
+				List<Type> inferredTypeArgs = new LinkedList<Type>();
+				/* Find (any) type arguments permitted by the constraints C */
+				for (Constraint c : C) {
+					inferredTypeArgs.add(0, c.minimal(Variance.COVARIANT));
+				}
+				
+				/* We have successfully inferred the type arguments */
+				typeArgs = inferredTypeArgs;
 			}
 			else {
-				/* Otherwise set type arguments to an empty list and try it again from the top */
+				/* Type arity is 0; no arguments to infer */
+				/* Set type arguments to an empty list and try again from the top */
 				typeArgs = new LinkedList<Type>();
 				typecheck(T, ctx, typectx);
 			}
 		}
 	}
+	
 	
 }

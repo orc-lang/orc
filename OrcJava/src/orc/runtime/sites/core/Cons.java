@@ -42,13 +42,9 @@ public class Cons extends EvalSite {
 	}
 	
 	public static Type type() throws TypeException { 
-		
-		List<Type> argTypes = new LinkedList<Type>();
 		Type X = new TypeVariable(0);
 		Type ListOfX = (new ListType()).instance(X);
-		argTypes.add(X);
-		argTypes.add(ListOfX);
-		return new ArrowType(argTypes, ListOfX, 1); 
+		return new ArrowType(X, ListOfX, ListOfX, 1); 
 	}
 	
 }

@@ -8,6 +8,10 @@ import orc.error.compiletime.typing.ArgumentArityException;
 import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
+import orc.type.ground.ConstIntType;
+import orc.type.ground.IntegerType;
+import orc.type.ground.Message;
+import orc.type.ground.Top;
 
 public class TupleType extends Type {
 
@@ -73,7 +77,7 @@ public class TupleType extends Type {
 			return new TupleType(joinItems);
 		}
 		else {
-			return Type.TOP;
+			return super.join(that);
 		}
 			
 	}
@@ -100,7 +104,7 @@ public class TupleType extends Type {
 			return new TupleType(meetItems);
 		}
 		else {
-			return Type.BOT;
+			return super.meet(that);
 		}
 	}
 	
@@ -151,6 +155,63 @@ public class TupleType extends Type {
 	public Type subst(Env<Type> ctx) {		
 		return new TupleType(Type.substAll(items, ctx));
 	}
+	
+	
+	
+	public Variance findVariance(Integer var) {
+		
+		Variance result = Variance.CONSTANT;
+		
+		for (Type T : items) {
+			result = result.and(T.findVariance(var));
+		}
+
+		return result;
+	}
+	
+	public Type promote(Env<Boolean> V) throws TypeException { 
+		
+		List<Type> newItems = new LinkedList<Type>();
+		for (Type T : items) {
+			newItems.add(T.promote(V));
+		}
+		
+		return new TupleType(newItems);
+	}
+	
+	public Type demote(Env<Boolean> V) throws TypeException { 
+
+		List<Type> newItems = new LinkedList<Type>();
+		for (Type T : items) {
+			newItems.add(T.demote(V));
+		}
+		
+		return new TupleType(newItems);
+	}
+	
+	
+	public void addConstraints(Env<Boolean> VX, Type T, Constraint[] C) throws TypeException {
+		
+		if (T instanceof TupleType) {
+			TupleType other = (TupleType)T;
+			
+			if (other.items.size() != items.size()) {
+				throw new SubtypeFailureException(this, T);
+			}
+			
+			for(int i = 0; i < items.size(); i++) {
+				Type A = items.get(i);
+				Type B = other.items.get(i);
+		
+				A.addConstraints(VX, B, C);
+			}
+			
+		}
+		else {
+			super.addConstraints(VX, T, C);
+		}
+	}
+	
 	
 	
 	public String toString() {

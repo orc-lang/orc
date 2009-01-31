@@ -3,6 +3,7 @@ package orc.type;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import orc.ast.oil.arg.Arg;
 import orc.env.Env;
@@ -11,10 +12,25 @@ import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeArityException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
+import orc.type.ground.BooleanType;
+import orc.type.ground.Bot;
+import orc.type.ground.IntegerType;
+import orc.type.ground.LetType;
+import orc.type.ground.NumberType;
+import orc.type.ground.StringType;
+import orc.type.ground.Top;
 
 /**
  * 
  * Abstract superclass of all types for the Orc typechecker.
+ * 
+ * This typechecker is based on the local type inference algorithms
+ * described by Benjamin Pierce and David Turner in their paper
+ * entitled "Local Type Inference".
+ * 
+ * It extends that inference strategy with tuples, library-defined 
+ * type constructors, user-defined datatypes, variance annotations, 
+ * and other small changes.
  * 
  * @author dkitchin
  *
@@ -167,10 +183,12 @@ public abstract class Type {
 	
 	/* Type operators */
 	
-	/* Note that this checker does not formally check kinding; type operators
+	/* Note that this checker does not separately check kinding; type operators
 	 * are in the space of types, distinguished only by overriding
 	 * the variances method to return a nonempty type parameter list.
 	 */
+	
+	// TODO: Migrate variances method to Tycon, fix TypeApplication accordingly
 
 	/* Get the variances of each type parameters for this type (by default, an empty list) */
 	public List<Variance> variances() {
@@ -192,19 +210,10 @@ public abstract class Type {
 		return true;
 	}
 	
-	/* Call this type at a particular instantiation */
-	/* By default, this will assume type arity 0, make
-	 * sure the params list is empty, and delegate to
-	 * the ordinary call method.
-	 */
-	public Type callInstance(List<Type> args, List<Type> params) throws TypeException {
-		
-		if (params.size() > 0) {
-			throw new TypeArityException(0, params.size());
-		}
-		else {
-			return call(args);
-		}
+	/* Make a callable instance of this type */
+	/* By default, types do not have callable instances */
+	public Type makeCallableInstance(List<Type> params) throws TypeException {
+		throw new TypeException("Cannot create a callable instance of type " + this);
 	}
 	
 	/* Make sure that this type is an application of the given type
@@ -218,37 +227,95 @@ public abstract class Type {
 	
 	// INFERENCE AND CONSTRAINT SATISFACTION
 	
+	
+	/* Find the set of free type variable indices in this type */
+	public Set<Integer> freeVars() {
+		return new TreeSet<Integer>();
+	}
+	
+	/* Determine whether this is a closed type (i.e. it has no free type variables) */
+	public boolean closed() {
+		return freeVars().isEmpty();
+	}
+	
+	
 	/* Find the variance of the given variable in this type.
 	 * 
 	 * The default implementation assumes that the variable does not occur
 	 * and thus reports constant variance.
 	 */
-	public Variance findVariance(int var) {
+	public Variance findVariance(Integer var) {
 		return Variance.CONSTANT;
 	}
-	
-	
+
 	/*
 	 * Promote this type until all occurrences of the given variables
 	 * have been eliminated.
 	 * 
+	 * A set of type variables is implemented here by an Env, where
+	 * true indicates membership and false indicates non-membership.
+	 * 
 	 * The default implementation assumes none of the variables occur
 	 * and returns the type unchanged.
 	 */
-	public Type promote(Set<Integer> V) { return this; }
+	public Type promote(Env<Boolean> V) throws TypeException { return this; }
 
 	/*
 	 * Demote this type until all occurrences of the given variables
 	 * have been eliminated.
 	 * 
+	 * A set of type variables is implemented here by an Env, where
+	 * true indicates membership and false indicates non-membership.
+	 * 
 	 * The default implementation assumes none of the variables occur
 	 * and returns the type unchanged.
 	 */
-	public Type demote(Set<Integer> V) { return this; }
+	public Type demote(Env<Boolean> V) throws TypeException { return this; }
+	
 	
 	/*
-	public static void addConstraints(Set<Integer> V, Set<Integer> X, Type S, Type T, Constraints C) {
+	 * Add all constraints imposed by the relation this <: T to the
+	 * set of constraints C.
+	 * 
+	 * The environment VX subsumes the sets V and X in Pierce and
+	 * Turner's original algorithm. Variables in V map to true,
+	 * whereas variables in X map to false. This allows VX to be
+	 * used as V in the promote/demote methods without modification.
+	 * 
+	 * This could also be implemented functionally, but the imperative
+	 * solution is simpler in this setting.
+	 * 
+	 */
+	public void addConstraints(Env<Boolean> VX, Type T, Constraint[] C) throws TypeException {
+		
+		if (T instanceof TypeVariable) {
+			int Y = ((TypeVariable)T).index;
+		
+			/* If Y is not in V (and therefore is in X) */
+			if (!VX.lookup(Y)) {
+				
+				// Find Z, the index of Y in the outer context
+				int Z = Y - VX.search(false);
+				
+				/* Promote this type to remove the variables in V,
+				 * and then add it as a lower bound of Z.
+				 */
+				C[Z].atLeast(this.promote(VX));
+				return;
+			}
+			
+			/* If Y is a type variable in V, not X, then
+			 * the subtype assertion below will take care of it.
+			 */
+		}
+		
+		/* This is just a direct subtype assertion,
+		 * and generates no constraints. 
+		 */
+		if (!this.subtype(T)) {
+			throw new SubtypeFailureException(this, T);
+		}
 		
 	}
-	*/
+	
 }

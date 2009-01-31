@@ -4,14 +4,22 @@
 package orc.lib.state;
 
 import java.util.LinkedList;
+import java.util.List;
 
+import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.TokenException;
+import orc.lib.state.types.BufferType;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.Site;
 import orc.runtime.values.ListValue;
+import orc.type.ArrowType;
+import orc.type.DotType;
+import orc.type.MutableContainerType;
+import orc.type.Type;
+import orc.type.TypeVariable;
 
 /**
  * @author cawellington, dkitchin
@@ -29,6 +37,11 @@ public class Buffer extends EvalSite {
 		return new BufferInstance();
 	}
 	
+	public static Type type() throws TypeException {
+		Type X = new TypeVariable(0);
+		Type BufferOfX = (new BufferType()).instance(X);
+		return new ArrowType(BufferOfX, 1);
+	}
 	
 	protected class BufferInstance extends DotSite {
 
@@ -154,5 +167,11 @@ public class Buffer extends EvalSite {
 		public String toString() {
 			return super.toString() + buffer.toString();
 		}
+				
 	}
 }
+
+	
+
+
+
