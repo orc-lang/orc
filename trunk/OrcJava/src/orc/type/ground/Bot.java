@@ -1,8 +1,9 @@
-package orc.type;
+package orc.type.ground;
 
 import java.util.List;
 
 import orc.error.compiletime.typing.UncallableTypeException;
+import orc.type.Type;
 
 /**
  * 

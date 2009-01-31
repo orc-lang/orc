@@ -3,6 +3,10 @@
  */
 package orc.runtime.sites.core;
 
+import java.util.LinkedList;
+import java.util.List;
+
+import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.RuntimeTypeException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
@@ -10,6 +14,11 @@ import orc.runtime.Token;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.Site;
 import orc.runtime.values.TupleValue;
+import orc.type.ArrowType;
+import orc.type.ListType;
+import orc.type.OptionType;
+import orc.type.Type;
+import orc.type.TypeVariable;
 
 /**
  * Implements the "some" option constructor site.
@@ -24,4 +33,11 @@ public class Some extends Site {
 	public void callSite(Args args, Token caller) throws TokenException {
 		data.callSite(args, caller);
 	}
+	
+	public static Type type() throws TypeException { 
+		Type X = new TypeVariable(0);
+		Type OptionX = (new OptionType()).instance(X);
+		return new ArrowType(X, OptionX, 1); 
+	}
+
 }

@@ -1,4 +1,5 @@
 package orc;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -136,10 +137,11 @@ public class Orc {
 		
 		
 		Expr ex = es.convert(new Env<Var>(), new Env<String>());
-		//System.out.println(ex);
+		// System.out.println(ex);
 		
 		// Optionally perform typechecking
 		if (cfg.typeCheckingMode()) {
+			
 			Type rt = ex.typesynth(new Env<Type>(), new Env<Type>());
 			System.out.println("Program typechecked successfully with result type " + rt);
 		}

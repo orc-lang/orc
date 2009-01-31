@@ -76,7 +76,7 @@ public class Defs extends Expr {
 		/* Add the types for each definition in the group to the context */
 		for (Def d : defs) {
 			try {
-				dctx = dctx.extend(d.type());
+				dctx = dctx.extend(d.type(typectx));
 			}
 			/* If the return type is unspecified, this function can't be called recursively,
 			 * so its name cannot have a type associated with it.
@@ -103,7 +103,7 @@ public class Defs extends Expr {
 		 */
 		Env<Type> bodyctx = ctx;
 		for (Def d : defs) {
-			bodyctx = bodyctx.extend(d.type());
+			bodyctx = bodyctx.extend(d.type(typectx));
 		}
 		
 		/*

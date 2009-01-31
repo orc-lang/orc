@@ -1,4 +1,4 @@
-package orc.type;
+package orc.type.ground;
 
 public class IntegerType extends NumberType {
 

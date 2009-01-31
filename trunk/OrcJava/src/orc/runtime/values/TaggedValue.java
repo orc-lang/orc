@@ -16,7 +16,7 @@ public class TaggedValue extends Value implements Eq {
 	}
 	
 	public String toString() {
-		return tag.tagName + Arrays.toString(values);
+		return tag.tagName + TupleValue.format('(', values, ",", ')');
 	}
 	
 	@Override

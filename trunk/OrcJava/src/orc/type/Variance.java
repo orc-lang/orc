@@ -2,6 +2,8 @@ package orc.type;
 
 import java.util.List;
 
+import orc.error.compiletime.typing.TypeException;
+
 
 /**
  * 
@@ -12,10 +14,18 @@ import java.util.List;
  */
 public abstract class Variance {
 	
+	
 	/* Find the conjunction of these two variances */
 	public abstract Variance and(Variance that);
 	
-	/* Find the inverse of this variance */
+	/* Apply this variance to another variance,
+	 * i.e. if a variable with that variance occurs in
+	 * a context with this variance, what is the variable's
+	 * variance in the larger context?
+	 */
+	public abstract Variance apply(Variance that);
+	
+	/* Invert this variance */
 	public abstract Variance invert();
 	
 	/* Test whether S is a subtype of T under this variance */
@@ -27,6 +37,9 @@ public abstract class Variance {
 	/* Find the meet of S and T under this variance */
 	public abstract Type meet(Type S, Type T);
 	
+	/* Find the minimal substitution for X under this variance given S <: X <: T */
+	public abstract Type minimum(Type S, Type T) throws TypeException;
+	
 	public static final Variance CONSTANT = new Constant();
 	public static final Variance COVARIANT = new Covariant();
 	public static final Variance CONTRAVARIANT = new Contravariant();
@@ -35,6 +48,7 @@ public abstract class Variance {
 	public boolean equals(Object that) {
 		return this.getClass().equals(that.getClass());
 	}
+
 }
 
 final class Constant extends Variance {
@@ -44,6 +58,10 @@ final class Constant extends Variance {
 	}
 	
 	public Variance invert() {
+		return CONSTANT;
+	}
+	
+	public Variance apply(Variance that) {
 		return CONSTANT;
 	}
 	
@@ -59,6 +77,10 @@ final class Constant extends Variance {
 	public Type meet(Type S, Type T) {
 		/* We could choose any type here, but for convenience we'll choose the actual meet */
 		return S.meet(T);
+	}
+
+	public Type minimum(Type S, Type T) {
+		return S;
 	}
 }
 
@@ -77,6 +99,10 @@ final class Covariant extends Variance {
 		return CONTRAVARIANT;
 	}
 	
+	public Variance apply(Variance that) {
+		return that;
+	}
+	
 	public boolean subtype(Type S, Type T) {
 		return S.subtype(T);
 	}
@@ -87,6 +113,10 @@ final class Covariant extends Variance {
 
 	public Type meet(Type S, Type T) {
 		return S.meet(T);
+	}
+	
+	public Type minimum(Type S, Type T) {
+		return S;
 	}
 }
 
@@ -105,6 +135,10 @@ final class Contravariant extends Variance {
 		return COVARIANT;
 	}
 	
+	public Variance apply(Variance that) {
+		return that.invert();
+	}
+	
 	public boolean subtype(Type S, Type T) {
 		return T.subtype(S);
 	}
@@ -117,6 +151,10 @@ final class Contravariant extends Variance {
 		return S.join(T);
 	}
 	
+	public Type minimum(Type S, Type T) {
+		return T;
+	}
+	
 }
 final class Invariant extends Variance {
 	public Variance and(Variance that) {
@@ -124,6 +162,10 @@ final class Invariant extends Variance {
 	}
 	
 	public Variance invert() {
+		return INVARIANT;
+	}
+	
+	public Variance apply(Variance that) {
 		return INVARIANT;
 	}
 	
@@ -146,6 +188,15 @@ final class Invariant extends Variance {
 		}
 		else {
 			return Type.BOT;
+		}
+	}
+	
+	public Type minimum(Type S, Type T) throws TypeException {
+		if (S.equal(T)) {
+			return S;
+		}
+		else {
+			throw new TypeException("Couldn't infer type parameters; types " + S + " and " + T + " are not equal.");
 		}
 	}
 }

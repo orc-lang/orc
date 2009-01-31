@@ -10,6 +10,9 @@ import orc.error.compiletime.PatternException;
  * 
  * A pattern with a type ascription.
  * 
+ * FIXME: The pattern simplifier will occasionally ignore type ascriptions because they
+ * are not ascribed to attachments.
+ * 
  * @author dkitchin
  *
  */

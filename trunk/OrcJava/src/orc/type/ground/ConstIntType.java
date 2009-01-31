@@ -1,8 +1,10 @@
-package orc.type;
+package orc.type.ground;
+
+import orc.type.Type;
 
 public class ConstIntType extends NumberType {
 
-	Integer i;
+	public Integer i;
 	
 	public ConstIntType(Integer i) {
 		this.i = i;
