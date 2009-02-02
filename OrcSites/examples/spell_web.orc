@@ -16,15 +16,16 @@ def unzip(stream) =
 
 def skipto(reader, phrase) =
   reader.readLine() >line>
-  if line = Null() then ""
+  if line = null then ""
   else if line.contains(phrase) then line
   else skipto(reader, phrase)
-  
+
+def spellCheck([], i) = stop
 def spellCheck(word:words, i) =
   GoogleSpellUnofficial(word) >(_:_) as suggs>
     (i, word, suggs)
-  | spellCheck(words, i+1)  
-  
+  | spellCheck(words, i+1)
+
 val url = "http://www.gutenberg.org/files/12/12.zip"
 
 BufferedReader(InputStreamReader(unzip(openURL(url)))) >reader>
