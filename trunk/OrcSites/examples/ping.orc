@@ -8,4 +8,4 @@ def PingTest(server, t) = pong
 
 -- Every 5 seconds, check if the localhost
 -- responds within 2 seconds
-MetronomeT(5000) >> PingTest("localhost", 2000)
+metronome(5000) >> PingTest("localhost", 2000)

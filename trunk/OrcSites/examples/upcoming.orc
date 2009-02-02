@@ -5,10 +5,10 @@ In order to run this demo, you must have:
    orc.lib.net.upcoming.key set to your API key
 -}
 
-site LocalDateTime = orc.lib.date.LocalDateTimeFactory
+include "date.inc"
 class Upcoming = orc.lib.net.Upcoming
 
-val upcoming = Upcoming("/upcoming.properties")
+val upcoming = Upcoming("upcoming.properties")
 val search = upcoming.eventSearch()
 val tomorrow = LocalDateTime().plusDays(1).toLocalDate()
 search.search_text := "band" >>

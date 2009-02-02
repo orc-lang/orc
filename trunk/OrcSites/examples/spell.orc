@@ -3,6 +3,7 @@ include "ui.inc"
 
 val YahooSpell = YahooSpellFactory("yahoo.properties")
 
+def spellCheck([], i) = stop
 def spellCheck(word:words, i) =
     GoogleSpellUnofficial(word) >(_:_) as suggs>
       ("G", i, word, suggs)
