@@ -1,7 +1,4 @@
-val Google = Webservice("http://api.google.com/GoogleSearch.wsdl")
-val GoogleDevKey = "YOURDEVKEY"
-def GoogleSearch(keywords) = Google.doGoogleSearch(
-	GoogleDevKey, keywords, 0, 10, true, "", true, "", "", "")
-
-each(GoogleSearch("test").getResultElements()) >r>
-	r.getURL()
+include "net.inc"
+val amortization = Webservice("http://www.kylehayes.info/webservices/AmortizationCalculator.cfc?wsdl")
+{- Parameters: principal, interest rate, number of payments -}
+amortization.calculate(100, 0.2, 10)
