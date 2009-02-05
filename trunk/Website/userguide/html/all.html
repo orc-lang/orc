@@ -2722,7 +2722,7 @@ User Guide.</p><div class="variablelist"><dl><dt><span class="term">
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">let</span>[<span class="hl-variable">A</span>](<span class="hl-variable">A</span>) :: <span class="hl-variable">A</span></code>
                             </p><p>When applied to a single argument, return that argument (behaving as the identity function).</p></dd><dt><span class="term">
-                            <code class="code"><span class="hl-variable">let</span></code>
+                            <code class="code">..]</code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">let</span>[<span class="hl-variable">A</span>, ...](<span class="hl-variable">A</span>, ...) :: (<span class="hl-variable">A</span>, ...)</code>
                             </p><p>When applied to zero, two, or more arguments, return the arguments in a tuple.</p></dd><dt><span class="term">
@@ -2961,22 +2961,22 @@ other cases, calls return normally.</p><p>Example:
   <span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">b</span>.<span class="hl-site">put</span>(<span class="hl-literal">10</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
 <span class="hl-combinator">|</span> <span class="hl-variable">b</span>.<span class="hl-site">get</span>()</pre>
                             </p><div class="variablelist"><dl><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Buffer</span></code>
+                                    <code class="code"><span class="hl-variable">get</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Buffer</span>[<span class="hl-variable">A</span>].<span class="hl-site">get</span>() :: <span class="hl-variable">A</span></code>
 
                                     </p><p>Get an item from the buffer. If the buffer is open and no items are available,
 block until one becomes available. If the buffer is <a class="link" href="#orc.lib.Buffer.close">closed</a> and no items are available, halt.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Buffer</span></code>
+                                    <code class="code"><span class="hl-variable">getnb</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Buffer</span>[<span class="hl-variable">A</span>].<span class="hl-site">getnb</span>() :: <span class="hl-variable">A</span></code>
                                     </p><p>Get an item from the buffer. If no items are available, halt.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Buffer</span></code>
+                                    <code class="code"><span class="hl-variable">put</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Buffer</span>[<span class="hl-variable">A</span>].<span class="hl-site">put</span>(<span class="hl-variable">A</span>) :: <span class="hl-variable">Signal</span></code>
 
                                     </p><p>Put an item in the buffer. If the buffer is <a class="link" href="#orc.lib.Buffer.close">closed</a>, halt.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Buffer</span></code>
+                                    <code class="code"><span class="hl-variable">close</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Buffer</span>[<span class="hl-variable">A</span>].<span class="hl-site">close</span>() :: <span class="hl-variable">Signal</span></code>
                                     </p><p>Close the buffer and block until it is empty.
@@ -2984,7 +2984,7 @@ This has the effect of immediately causing any blocked calls to
 <code class="code"><span class="hl-variable">get</span></code> to halt. In addition, any subsequent calls to <code class="code"><span class="hl-variable">put</span></code>
 will halt, and once the buffer becomes empty, any subsequent calls to
 <code class="code"><span class="hl-variable">get</span></code> will halt.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Buffer</span></code>
+                                    <code class="code"><span class="hl-variable">closenb</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Buffer</span>[<span class="hl-variable">A</span>].<span class="hl-site">closenb</span>() :: <span class="hl-variable">Signal</span></code>
                                     </p><p>Close the buffer and return a signal immediately.
@@ -2992,11 +2992,11 @@ This has the effect of immediately causing any blocked calls to
 <code class="code"><span class="hl-variable">get</span></code> to halt. In addition, any subsequent calls to <code class="code"><span class="hl-variable">put</span></code>
 will halt, and once the buffer becomes empty, any subsequent calls to
 <code class="code"><span class="hl-variable">get</span></code> will halt.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Buffer</span></code>
+                                    <code class="code"><span class="hl-variable">isClosed</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Buffer</span>[<span class="hl-variable">A</span>].<span class="hl-site">isClosed</span>() :: <span class="hl-variable">Boolean</span></code>
                                     </p><p>If the buffer is currently closed, return true, otherwise return false.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Buffer</span></code>
+                                    <code class="code"><span class="hl-variable">getAll</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Buffer</span>[<span class="hl-variable">A</span>].<span class="hl-site">getAll</span>() :: [<span class="hl-variable">A</span>]</code>
                                     </p><p>Get all of the items currently in the buffer, emptying the buffer and returning
@@ -3024,29 +3024,29 @@ other cases, calls return normally.</p><p>Example:
   <span class="hl-combinator">|</span> <span class="hl-variable">c</span>.<span class="hl-site">get</span>() <span class="hl-combinator">&gt;</span><span class="hl-variable">n</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">"Got "</span> + <span class="hl-variable">n</span>
   )</pre>
                             </p><div class="variablelist"><dl><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">BoundedBuffer</span></code>
+                                    <code class="code"><span class="hl-variable">get</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">BoundedBuffer</span>[<span class="hl-variable">A</span>].<span class="hl-site">get</span>() :: <span class="hl-variable">A</span></code>
 
                                     </p><p>Get an item from the buffer. If the buffer is open and no items are available,
 block until one becomes available. If the buffer is <a class="link" href="#orc.lib.BoundedBuffer.close">closed</a> and no items are available, halt.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">BoundedBuffer</span></code>
+                                    <code class="code"><span class="hl-variable">getnb</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">BoundedBuffer</span>[<span class="hl-variable">A</span>].<span class="hl-site">getnb</span>() :: <span class="hl-variable">A</span></code>
                                     </p><p>Get an item from the buffer. If no items are available, halt.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">BoundedBuffer</span></code>
+                                    <code class="code"><span class="hl-variable">put</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">BoundedBuffer</span>[<span class="hl-variable">A</span>].<span class="hl-site">put</span>(<span class="hl-variable">A</span>) :: <span class="hl-variable">Signal</span></code>
 
                                     </p><p>Put an item in the buffer. If no slots are open, block until one becomes open.
 If the buffer is <a class="link" href="#orc.lib.BoundedBuffer.close">closed</a>, halt.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">BoundedBuffer</span></code>
+                                    <code class="code"><span class="hl-variable">putnb</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">BoundedBuffer</span>[<span class="hl-variable">A</span>].<span class="hl-site">putnb</span>(<span class="hl-variable">A</span>) :: <span class="hl-variable">Signal</span></code>
 
                                     </p><p>Put an item in the buffer. If no slots are open, halt.
 If the buffer is <a class="link" href="#orc.lib.BoundedBuffer.close">closed</a>, halt.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">BoundedBuffer</span></code>
+                                    <code class="code"><span class="hl-variable">close</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">BoundedBuffer</span>[<span class="hl-variable">A</span>].<span class="hl-site">close</span>() :: <span class="hl-variable">Signal</span></code>
                                     </p><p>
@@ -3059,7 +3059,7 @@ will halt, and once the buffer becomes empty, any subsequent calls to
 initiated prior to closing the buffer may still be allowed to return as usual.
 </p>
                                     </p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">BoundedBuffer</span></code>
+                                    <code class="code"><span class="hl-variable">closenb</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">BoundedBuffer</span>[<span class="hl-variable">A</span>].<span class="hl-site">closenb</span>() :: <span class="hl-variable">Signal</span></code>
                                     </p><p>Close the buffer and return a signal immediately.
@@ -3068,21 +3068,21 @@ This has the effect of immediately causing any blocked calls to
 will halt, and once the buffer becomes empty, any subsequent calls to
 <code class="code"><span class="hl-variable">get</span></code> will halt. Note that any blocked calls to <code class="code"><span class="hl-variable">put</span></code>
 initiated prior to closing the buffer may still be allowed to return as usual.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">BoundedBuffer</span></code>
+                                    <code class="code"><span class="hl-variable">isClosed</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">BoundedBuffer</span>[<span class="hl-variable">A</span>].<span class="hl-site">isClosed</span>() :: <span class="hl-variable">Boolean</span></code>
                                     </p><p>If the buffer is currently closed, return true, otherwise return false.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">BoundedBuffer</span></code>
+                                    <code class="code"><span class="hl-variable">getOpen</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">BoundedBuffer</span>[<span class="hl-variable">A</span>].<span class="hl-site">getOpen</span>() :: <span class="hl-variable">Integer</span></code>
                                     </p><p>Return the number of open slots in the buffer. Because of concurrency
 this value may become out-of-date so it should only be used for debugging
 or statistical measurements.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">BoundedBuffer</span></code>
+                                    <code class="code"><span class="hl-variable">getBound</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">BoundedBuffer</span>[<span class="hl-variable">A</span>].<span class="hl-site">getBound</span>() :: <span class="hl-variable">Integer</span></code>
                                     </p><p>Return the total number of slots (open or filled) in the buffer.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">BoundedBuffer</span></code>
+                                    <code class="code"><span class="hl-variable">getAll</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">BoundedBuffer</span>[<span class="hl-variable">A</span>].<span class="hl-site">getAll</span>() :: [<span class="hl-variable">A</span>]</code>
                                     </p><p>Get all of the items currently in the buffer or waiting to be added, emptying
@@ -3102,11 +3102,11 @@ Create a synchronous channel, or rendezvous.
   <span class="hl-variable">c</span>.<span class="hl-site">put</span>(<span class="hl-literal">10</span>)
 <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>.<span class="hl-site">get</span>()</pre>
                             </p><div class="variablelist"><dl><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">SyncChannel</span></code>
+                                    <code class="code"><span class="hl-variable">get</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">SyncChannel</span>[<span class="hl-variable">A</span>].<span class="hl-site">get</span>() :: <span class="hl-variable">A</span></code>
                                     </p><p>Receive an item over the channel. If no sender is available, block until one becomes available.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">SyncChannel</span></code>
+                                    <code class="code"><span class="hl-variable">put</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">SyncChannel</span>[<span class="hl-variable">A</span>].<span class="hl-site">put</span>(<span class="hl-variable">A</span>) :: <span class="hl-variable">Signal</span></code>
                                     </p><p>Send an item over the channel. If no receiver is available, block until one becomes available.</p></dd></dl></div></dd><dt><span class="term">
@@ -3121,15 +3121,15 @@ Create a synchronous channel, or rendezvous.
   <span class="hl-variable">c</span>.<span class="hl-site">write</span>(<span class="hl-literal">5</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>.<span class="hl-site">read</span>()
 <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">1</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> ( <span class="hl-variable">c</span>.<span class="hl-site">write</span>(<span class="hl-literal">10</span>) <span class="hl-combinator">;</span> <span class="hl-variable">c</span>.<span class="hl-site">read</span>() )</pre>
                             </p><div class="variablelist"><dl><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Cell</span></code>
+                                    <code class="code"><span class="hl-variable">read</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Cell</span>[<span class="hl-variable">A</span>].<span class="hl-site">read</span>() :: <span class="hl-variable">A</span></code>
                                     </p><p>Read a value from the cell. If the cell does not yet have a value, block until it receives one.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Cell</span></code>
+                                    <code class="code"><span class="hl-variable">readnb</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Cell</span>[<span class="hl-variable">A</span>].<span class="hl-site">readnb</span>() :: <span class="hl-variable">A</span></code>
                                     </p><p>Read a value from the cell. If the cell does not yet have a value, halt.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Cell</span></code>
+                                    <code class="code"><span class="hl-variable">write</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Cell</span>[<span class="hl-variable">A</span>].<span class="hl-site">write</span>() :: <span class="hl-variable">Signal</span></code>
                                     </p><p>Write a value to the cell. If the cell already has a value, halt.</p></dd></dl></div></dd><dt><span class="term">
@@ -3153,15 +3153,15 @@ Create a rewritable storage location without an initial value.
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Ref</span>[<span class="hl-variable">A</span>](<span class="hl-variable">A</span>) :: <span class="hl-site">Ref</span>[<span class="hl-variable">A</span>]</code>
                                     </p><p>Create a rewritable storage location initialized to the provided value.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Ref</span></code>
+                                    <code class="code"><span class="hl-variable">read</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Ref</span>[<span class="hl-variable">A</span>].<span class="hl-site">read</span>() :: <span class="hl-variable">A</span></code>
                                     </p><p>Read the value of the ref. If the ref does not yet have a value, block until it receives one.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Ref</span></code>
+                                    <code class="code"><span class="hl-variable">readnb</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Ref</span>[<span class="hl-variable">A</span>].<span class="hl-site">readnb</span>() :: <span class="hl-variable">A</span></code>
                                     </p><p>Read the value of the ref. If the ref does not yet have a value, halt.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Ref</span></code>
+                                    <code class="code"><span class="hl-variable">write</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Ref</span>[<span class="hl-variable">A</span>].<span class="hl-site">write</span>(<span class="hl-variable">A</span>) :: <span class="hl-variable">Signal</span></code>
                                     </p><p>Write a value to the ref.</p></dd><dt><span class="term">
@@ -3211,26 +3211,26 @@ with codepoint <code class="code"><span class="hl-literal">0</span></code>.</p><
 primitive type, although a typechecker may not be able to verify this. This
 constructor is only necessary when interfacing with certain Java libraries; most
 programs will just use the  <code class="code"><span class="hl-site">Array</span>(<span class="hl-variable">Integer</span>)</code> constructor.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Array</span></code>
+                                    <code class="code"><span class="hl-variable">get</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Array</span>[<span class="hl-variable">A</span>].<span class="hl-site">get</span>(<span class="hl-variable">Integer</span>) :: <span class="hl-variable">A</span></code>
                                     </p><p>Get the element of the array given by the index, counting from 0.
 <code class="code"><span class="hl-variable">a</span>.<span class="hl-site">get</span>(<span class="hl-variable">i</span>)</code> is equivalent to <code class="code"><span class="hl-site">a</span>(<span class="hl-variable">i</span>)<span class="hl-site">?</span></code>.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Array</span></code>
+                                    <code class="code"><span class="hl-variable">set</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Array</span>[<span class="hl-variable">A</span>].<span class="hl-site">set</span>(<span class="hl-variable">Integer</span>, <span class="hl-variable">A</span>) :: <span class="hl-variable">Signal</span></code>
                                     </p><p>Set the element of the array given by the index, counting from 0.
 <code class="code"><span class="hl-variable">a</span>.<span class="hl-site">set</span>(<span class="hl-variable">i</span>,<span class="hl-variable">v</span>)</code> is equivalent to <code class="code"><span class="hl-site">a</span>(<span class="hl-variable">i</span>) <span class="hl-site">:=</span> <span class="hl-variable">v</span></code>.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Array</span></code>
+                                    <code class="code"><span class="hl-variable">slice</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Array</span>[<span class="hl-variable">A</span>].<span class="hl-site">slice</span>(<span class="hl-variable">Integer</span>, <span class="hl-variable">Integer</span>) :: <span class="hl-site">Array</span>[<span class="hl-variable">A</span>]</code>
                                     </p><p>Return a copy of the portion of the array with indices covered by the given
 half-open range. The result array is still indexed counting from 0.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Array</span></code>
+                                    <code class="code"><span class="hl-variable">length</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Array</span>[<span class="hl-variable">A</span>].<span class="hl-site">length</span>() :: <span class="hl-variable">Integer</span></code>
                                     </p><p>Return the size of the array.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Array</span></code>
+                                    <code class="code"><span class="hl-variable">fill</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Array</span>[<span class="hl-variable">A</span>].<span class="hl-site">fill</span>(<span class="hl-variable">A</span>) :: <span class="hl-variable">Signal</span></code>
 
@@ -3291,29 +3291,29 @@ values <code class="code"><span class="hl-variable">a</span></code> and <code cl
 and only if <code class="code"><span class="hl-variable">a</span>=<span class="hl-variable">b</span></code>. This site conforms to the Java interface
 <code class="code"><span class="hl-variable">java</span>.<span class="hl-variable">util</span>.<span class="hl-variable">Set</span></code>, except that it obeys Orc rules for equality of
 elements rather than Java rules.</p><div class="variablelist"><dl><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Set</span></code>
+                                    <code class="code"><span class="hl-variable">add</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Set</span>[<span class="hl-variable">A</span>].<span class="hl-site">add</span>(<span class="hl-variable">A</span>) :: <span class="hl-variable">Boolean</span></code>
                                     </p><p>Add a value to the set, returning true if the set did not already contain the value,
 and false otherwise.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Set</span></code>
+                                    <code class="code"><span class="hl-variable">remove</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Set</span>[<span class="hl-variable">A</span>].<span class="hl-site">remove</span>(<span class="hl-variable">Top</span>) :: <span class="hl-variable">Boolean</span></code>
                                     </p><p>Remove a value from the set, returning true if the set contained the value,
 and false otherwise.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Set</span></code>
+                                    <code class="code"><span class="hl-variable">contains</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Set</span>[<span class="hl-variable">A</span>].<span class="hl-site">contains</span>(<span class="hl-variable">Top</span>) :: <span class="hl-variable">Boolean</span></code>
                                     </p><p>Return true if the set contains the given value, and false otherwise.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Set</span></code>
+                                    <code class="code"><span class="hl-variable">isEmpty</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Set</span>[<span class="hl-variable">A</span>].<span class="hl-site">isEmpty</span>() :: <span class="hl-variable">Boolean</span></code>
                                     </p><p>Return true if the set contains no values.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Set</span></code>
+                                    <code class="code"><span class="hl-variable">clear</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Set</span>[<span class="hl-variable">A</span>].<span class="hl-site">clear</span>() :: <span class="hl-variable">Signal</span></code>
                                     </p><p>Remove all values from the set.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Set</span></code>
+                                    <code class="code"><span class="hl-variable">size</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Set</span>[<span class="hl-variable">A</span>].<span class="hl-site">size</span>() :: <span class="hl-variable">Integer</span></code>
                                     </p><p>Return the number of unique values currently contained in the set.</p></dd></dl></div></dd><dt><span class="term">
@@ -3326,7 +3326,7 @@ map is associated with exactly one value.  The mapping considers two keys
 <code class="code"><span class="hl-variable">a</span>=<span class="hl-variable">b</span></code>. This site conforms to the Java interface
 <code class="code"><span class="hl-variable">java</span>.<span class="hl-variable">util</span>.<span class="hl-variable">Map</span></code>, except that it obeys Orc rules for equality of keys
 rather than Java rules.</p><div class="variablelist"><dl><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Map</span></code>
+                                    <code class="code"><span class="hl-variable">put</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Map</span>[<span class="hl-variable">K</span>,<span class="hl-variable">V</span>].<span class="hl-site">put</span>(<span class="hl-variable">K</span>, <span class="hl-variable">V</span>) :: <span class="hl-variable">V</span></code>
                                     </p><p>
@@ -3334,29 +3334,29 @@ rather than Java rules.</p><div class="variablelist"><dl><dt><span class="term">
 <code class="code"><span class="hl-variable">k</span></code> in <code class="code"><span class="hl-variable">map</span></code>, such that <code class="code"><span class="hl-variable">map</span>.<span class="hl-site">get</span>(<span class="hl-variable">k</span>)</code> returns
 <code class="code"><span class="hl-variable">v</span></code>. Return the value previously associated with the key,
 if any, otherwise return <code class="code"><span class="hl-site">Null</span>()</code>.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Map</span></code>
+                                    <code class="code"><span class="hl-variable">get</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Map</span>[<span class="hl-variable">K</span>,<span class="hl-variable">V</span>].<span class="hl-site">get</span>(<span class="hl-variable">K</span>) :: <span class="hl-variable">V</span></code>
                                     </p><p>Return the value currently associated with the given key, if any, otherwise
 return <code class="code"><span class="hl-site">Null</span>()</code>.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Map</span></code>
+                                    <code class="code"><span class="hl-variable">remove</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Map</span>[<span class="hl-variable">K</span>,<span class="hl-variable">V</span>].<span class="hl-site">remove</span>(<span class="hl-variable">Top</span>) :: <span class="hl-variable">V</span></code>
                                     </p><p>Remove the given key from the map. Return the value previously associated with the key,
 if any, otherwise return <code class="code"><span class="hl-site">Null</span>()</code>.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Map</span></code>
+                                    <code class="code"><span class="hl-variable">containsKey</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Map</span>[<span class="hl-variable">K</span>,<span class="hl-variable">V</span>].<span class="hl-site">containsKey</span>(<span class="hl-variable">Top</span>) :: <span class="hl-variable">Boolean</span></code>
                                     </p><p>Return true if the map contains the given key, and false otherwise.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Map</span></code>
+                                    <code class="code"><span class="hl-variable">isEmpty</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Map</span>[<span class="hl-variable">K</span>,<span class="hl-variable">V</span>].<span class="hl-site">isEmpty</span>() :: <span class="hl-variable">Boolean</span></code>
                                     </p><p>Return true if the map contains no keys.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Map</span></code>
+                                    <code class="code"><span class="hl-variable">clear</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Map</span>[<span class="hl-variable">K</span>,<span class="hl-variable">V</span>].<span class="hl-site">clear</span>() :: <span class="hl-variable">Signal</span></code>
                                     </p><p>Remove all keys from the map.</p></dd><dt><span class="term">
-                                    <code class="code"><span class="hl-variable">Map</span></code>
+                                    <code class="code"><span class="hl-variable">size</span></code>
                                     </span></dt><dd><p>
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Map</span>[<span class="hl-variable">K</span>,<span class="hl-variable">V</span>].<span class="hl-site">size</span>() :: <span class="hl-variable">Integer</span></code>
                                     </p><p>Return the number of unique keys currently contained in the map.</p></dd></dl></div></dd><dt><span class="term">
@@ -3453,7 +3453,7 @@ write <code class="code">s-&gt;field</code> instead of <code class="code"><span 
                             </p><p>Swap the elements of a pair.</p><p><b>Implementation.&nbsp;</b><pre class="programlisting"><span class="hl-keyword">def</span> <span class="hl-site">swap</span>((<span class="hl-variable">x</span>,<span class="hl-variable">y</span>)) = (<span class="hl-variable">y</span>,<span class="hl-variable">x</span>)</pre></p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11E7F"></a>B.3.3.&nbsp;idioms.inc: Higher-order Orc programming idioms.</h3></div></div></div><p>Higher-order Orc programming idioms.
 Many of these are standard functional-programming
 combinators borrowed from Haskell or Scheme.</p><div class="variablelist"><dl><dt><span class="term">
-                            <code class="code"><span class="hl-variable">apply</span></code>
+                            <code class="code">..]</code>
                         </span></dt><dd><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">apply</span>[<span class="hl-variable">B</span>, <span class="hl-variable">A</span>, ...](<span class="hl-keyword">lambda</span> (<span class="hl-variable">A</span>, ...) :: <span class="hl-variable">B</span>, <span class="hl-site">List</span>[<span class="hl-variable">A</span>]) :: <span class="hl-variable">B</span></code>
                             </p><p>Apply a function to a list of arguments.</p></dd><dt><span class="term">
