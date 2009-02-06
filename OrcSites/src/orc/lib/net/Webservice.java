@@ -108,7 +108,7 @@ public class Webservice extends ThreadedSite {
 			// Compile stub source files
 			javac(tmpdir, info.getFileNames());
 
-			URLClassLoader cl = new URLClassLoader(new URL[]{tmpdir.toURL()},
+			URLClassLoader cl = new URLClassLoader(new URL[]{tmpdir.toURI().toURL()},
 					Webservice.class.getClassLoader());
 			// ensure all of the service's classes are loaded into the VM
 			// FIXME: is this necessary?
