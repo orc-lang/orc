@@ -50,7 +50,7 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
 		}
 		orc.ast.oil.Expr ex1;
 		try {
-			ex1 = ex0.convert(new Env<Var>());
+			ex1 = ex0.convert(new Env<Var>(), new Env<String>());
 			UnguardedRecursionChecker.check(ex1);
 		} catch (CompilationException e) {
 			throw new InvalidProgramException(e.getMessage());

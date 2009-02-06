@@ -32,6 +32,7 @@ public class Def implements Locatable {
 	public int arity;
 	public Expr body;
 	public int typeArity;
+	// FIXME: we need an OIL format for types
 	public List<Type> argTypes; /* May be null only if this def was derived from a lambda form, and only if it will be in a checking context. */
 	public Type resultType; /* May be null to request inference, which will succeed only for non-recursive functions */
 	public SourceLocation location;
