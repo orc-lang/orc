@@ -45,7 +45,7 @@ public class PatternSimplifier {
 		this.bindingEntries = new TreeMap<NamedVar,Integer>();
 		this.publishEntries = new TreeSet<Integer>();
 		this.attachments = new LinkedList<Attachment>();
-		this.ascriptions = new TreeMap<Var, Type>();
+		this.ascriptions = new HashMap<Var, Type>();
 	}
 
 	public void assign(Var s, Expression e) {
