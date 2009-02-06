@@ -263,7 +263,7 @@ function newParser(source) {
 				do {
 					var tmp = look();
 					if (!tmp) break;
-					if (tmp.type == "(") {
+					if (tmp.type == "(" || tmp.type == "[") {
 						out.style = "site";
 						break;
 					}
