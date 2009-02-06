@@ -506,7 +506,6 @@ function orcify(code, defaultConfig) {
 
 	// private members
 	var $code = $(code);
-	var height = $code.height();
 	var $loading = $('<div class="orc-loading" style="display: none"/>');
 	var $widget = $('<div class="orc-wrapper" />');
 		//.width($code.width()+2);
@@ -530,16 +529,19 @@ function orcify(code, defaultConfig) {
 		.append($loading).append($close).append($stop).append($run);
 	var editable = (code.tagName == "TEXTAREA");
 	var id = $code.attr("id");
+
+	var program = extractLude(getCodeFrom(code));
+	// redraw the program in case the height changes due to hidden code
+	if (!editable) $code.text(program);
+	var height = $code.height();
+
 	// put a wrapper around the code area, to add a border
 	$code.wrap('<div class="orc-code" />');
 	$code = $code.parent();
 	$code.wrap($widget).after($events).after($prompts).after($controls);
 	// for some reason wrap() makes a copy of $widget.
 	$widget = $code.parent();
-	var program = extractLude(getCodeFrom(code));
 	var onReady = code.onOrcReady;
-	// redraw the program in case the height changes due to hidden code
-	if (!editable) $(code).text(program);
 	var config = $.extend({}, defaultConfig, {
 		content: program,
 		readOnly: !editable,
