@@ -1,5 +1,7 @@
 package orc.orchard;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -10,6 +12,8 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.management.ObjectName;
+
+import orc.orchard.jmx.JMXUtilities;
 
 /**
  * Provide access to accounts stored in a database.
@@ -119,9 +123,15 @@ public abstract class Accounts implements AccountsMBean {
  */
 class DbAccounts extends Accounts {
 	private final Connection db;
+	private final SecureRandom random;
 	public DbAccounts(String url, Connection db) {
 		super(url);
 		this.db = db;
+		try {
+			this.random = SecureRandom.getInstance("SHA1PRNG");
+		} catch (NoSuchAlgorithmException e) {
+			throw new AssertionError(e);
+		}
 	}
 
 	@Override
@@ -167,6 +177,98 @@ class DbAccounts extends Accounts {
 			sql.close();
 		}
 	}
+
+	public boolean changeDeveloperKey(String username) {
+		try {
+			PreparedStatement sql = db.prepareStatement(
+					"UPDATE account" +
+					" SET developer_key = ?::uuid" +
+					" WHERE username = ?");
+			try {
+				sql.setString(1, java.util.UUID.randomUUID().toString());
+				sql.setString(2, username);
+				sql.execute();
+				return sql.getUpdateCount() > 0;
+			} finally {	
+				sql.close();
+			}
+		} catch (SQLException e) {
+			throw new AssertionError(e);
+		}
+	}
+
+	public boolean changePassword(String username, String password) {
+		try {
+			PreparedStatement sql = db.prepareStatement(
+					"UPDATE account" +
+					" SET salt = ?, password_md5 = md5(?)" +
+					" WHERE username = ?");
+			try {
+				String salt = generateSalt();
+				sql.setString(1, salt);
+				sql.setString(2, salt + password);
+				sql.setString(3, username);
+				sql.execute();
+				return sql.getUpdateCount() > 0;
+			} finally {	
+				sql.close();
+			}
+		} catch (SQLException e) {
+			throw new AssertionError(e);
+		}
+	}
+	
+	private String generateSalt() {
+		byte[] bytes = new byte[16];
+		random.nextBytes(bytes);
+		return new String(bytes);
+	}
+
+	public boolean createAccount(int accountTypeID, String username, String password, String email) {
+		PreparedStatement sql;
+		try {
+			sql = db.prepareStatement(
+					"INSERT INTO account (account_type_id, username, salt, password_md5, developer_key, email)" +
+					" VALUES (?, ?, ?, md5(?), ?::uuid, ?)");
+		} catch (SQLException e) {
+			throw new AssertionError(e);
+		}
+		try {
+			String salt = generateSalt();
+			sql.setInt(1, accountTypeID);
+			sql.setString(2, username);
+			sql.setString(3, salt);
+			sql.setString(4, salt + password);
+			sql.setString(5, java.util.UUID.randomUUID().toString());
+			sql.setString(6, email);
+			sql.execute();
+			return sql.getUpdateCount() > 0;
+		} catch (SQLException e) {
+			return false;
+		} finally {	
+			try {
+				sql.close();
+			} catch (SQLException e) {
+				throw new AssertionError(e);
+			}
+		}
+	}
+
+	public boolean dropAccount(String username) {
+		try {
+			PreparedStatement sql = db.prepareStatement(
+					"DELETE FROM account WHERE username = ?");
+			try {
+				sql.setString(1, username);
+				sql.execute();
+				return sql.getUpdateCount() > 0;
+			} finally {	
+				sql.close();
+			}
+		} catch (SQLException e) {
+			throw new AssertionError(e);
+		}
+	}
 }
 	
 /**
@@ -181,5 +283,21 @@ class GuestOnlyAccounts extends Accounts {
 	@Override
 	public Account getAccount(String devKey) {
 		return guest;
+	}
+
+	public boolean changeDeveloperKey(String username) {
+		return false;
+	}
+
+	public boolean changePassword(String username, String password) {
+		return false;
+	}
+
+	public boolean createAccount(int accountTypeID, String username, String password, String email) {
+		return false;
+	}
+
+	public boolean dropAccount(String username) {
+		return false;
 	}
 }

@@ -1,4 +1,4 @@
-package orc.orchard;
+package orc.orchard.jmx;
 
 import java.lang.management.ManagementFactory;
 
@@ -35,9 +35,9 @@ public final class JMXUtilities {
 			throw new OrcError(e);
 		}
 	}
-	public static ObjectName registerMBean(Object object, ObjectName oname) {
+	public static <T> ObjectName registerMBean(T object, ObjectName oname) {
 		try {
-			server.registerMBean(object, oname);
+			server.registerMBean(new AnnotatedStandardMBean(object, null), oname);
 			return oname;
 		} catch (InstanceAlreadyExistsException e) {
 			throw new OrcError(e);
