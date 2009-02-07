@@ -15,6 +15,7 @@ import orc.ast.oil.Expr;
 import orc.orchard.errors.InvalidJobException;
 import orc.orchard.errors.InvalidOilException;
 import orc.orchard.errors.QuotaException;
+import orc.orchard.jmx.JMXUtilities;
 
 /**
  * Manage a group of jobs associated with a user account. Note that jobs are
