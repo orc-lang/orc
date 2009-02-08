@@ -4,9 +4,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 import orc.env.Env;
+import orc.env.SearchFailureException;
 import orc.error.compiletime.typing.ArgumentArityException;
 import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
+import orc.error.compiletime.typing.UnboundTypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
 import orc.type.TypeApplication;
 import orc.type.TypeVariable;
@@ -28,13 +30,18 @@ public class TypeInstance extends Type {
 	}
 	
 	@Override
-	public orc.type.Type convert(Env<String> env) {
+	public orc.type.Type convert(Env<String> env) throws TypeException {
 		 
 		List<orc.type.Type> ts = new LinkedList<orc.type.Type>();
 		for (Type t : params) {
 			ts.add(t.convert(env));
 		}
-		return new TypeApplication(new TypeVariable(env.search(name)), ts);
+				
+		try {
+			return new TypeApplication(new TypeVariable(env.search(name)), ts);
+		} catch (SearchFailureException e) {
+			throw new UnboundTypeException(name);
+		}
 	}
 	
 	

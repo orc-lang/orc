@@ -4,6 +4,7 @@ import java.util.Set;
 
 import orc.ast.oil.arg.Arg;
 import orc.env.Env;
+import orc.env.SearchFailureException;
 import orc.error.OrcError;
 import orc.runtime.values.Value;
 
@@ -27,6 +28,10 @@ public class Var extends Argument {
 	
 	@Override
 	public Arg convert(Env<Var> vars) {
-		return new orc.ast.oil.arg.Var(vars.search(this));
+		try {
+			return new orc.ast.oil.arg.Var(vars.search(this));
+		} catch (SearchFailureException e) {
+			throw new OrcError(e);
+		}
 	}
 }

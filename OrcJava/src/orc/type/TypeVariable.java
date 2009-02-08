@@ -4,6 +4,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import orc.env.Env;
+import orc.env.EnvException;
+import orc.env.LookupFailureException;
+import orc.env.SearchFailureException;
+import orc.error.OrcError;
 import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
 import orc.type.ground.Top;
@@ -37,9 +41,15 @@ public class TypeVariable extends Type {
 
 	public Type subst(Env<Type> ctx) {
 		
-		/* If t is null, then this is a bound variable and should not be replaced */
-		Type t = ctx.lookup(index);
+		Type t;
 		
+		try {
+			t = ctx.lookup(index);
+		} catch (LookupFailureException e) {
+			throw new OrcError(e);
+		}
+		
+		/* If t is null, then this is a bound variable and should not be replaced */
 		return (t != null ? t : this);
 	}
 	
@@ -48,36 +58,58 @@ public class TypeVariable extends Type {
 	}
 	
 	public Type promote(Env<Boolean> V) { 
-		return (V.lookup(index) ? Type.TOP : this);
+		try {
+			return (V.lookup(index) ? Type.TOP : this);
+		} catch (LookupFailureException e) {
+			return this;
+		}
 	}
 	
 	public Type demote(Env<Boolean> V) { 
-		return (V.lookup(index) ? Type.BOT : this);
+		try {
+			return (V.lookup(index) ? Type.BOT : this);
+		} catch (LookupFailureException e) {
+			return this;
+		}
 	}
 	
 	public void addConstraints(Env<Boolean> VX, Type T, Constraint[] C) throws TypeException {
 		
-		/* If this variable is in X */
+		
+		try {
 		if (!VX.lookup(index)) {
+			/* this is in X */
 			
 			// Find Z, the index of this variable in the outer context
-			int Z = index - VX.search(false);
+			int Z;
+			try {
+			 	Z = index - VX.search(false);
+			}
+			catch (SearchFailureException e) {
+				throw new OrcError(e);
+			}
 			
-			/* Demote this type to remove the variables in V,
+			/* Demote the type to remove the variables in V,
 			 * and then add it as an upper bound of Z.
 			 */
-			C[Z].atMost(this.demote(VX));
+			C[Z].atMost(T.demote(VX));
 			return;
 		}
-		/* If this variable is not in X,
-		 * then T must be identical to this variable.
-		 */
 		else {
-			if (!equal(T)) {
-				throw new SubtypeFailureException(this, T);
-			}
+			/* this is in V */
+			super.addConstraints(VX, T, C);
 		}
-		
+		}
+		/* It is also possible that this variable is not in V or X;
+		 * it is a bound type variable from an enclosing scope.
+		 * In this case, just treat it as an opaque type.
+		 */
+		catch (LookupFailureException e) {
+			/* this is bound outside of V or X */
+			/* This occurs when checking under a type binder */
+			// TODO: Add bounded polymorphism support.
+			super.addConstraints(VX, T, C);
+		}
 	}
 	
 	

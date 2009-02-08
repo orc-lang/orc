@@ -15,8 +15,10 @@ import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.Site;
 import orc.runtime.values.TupleValue;
 import orc.type.ArrowType;
+import orc.type.DotType;
 import orc.type.ListType;
 import orc.type.OptionType;
+import orc.type.TupleType;
 import orc.type.Type;
 import orc.type.TypeVariable;
 
@@ -34,10 +36,20 @@ public class Some extends Site {
 		data.callSite(args, caller);
 	}
 	
-	public static Type type() throws TypeException { 
+	public static Type type() throws TypeException {
 		Type X = new TypeVariable(0);
 		Type OptionX = (new OptionType()).instance(X);
-		return new ArrowType(X, OptionX, 1); 
+		
+		Type construct = new ArrowType(X, OptionX, 1);
+		
+		List<Type> onlyX = new LinkedList<Type>();
+		onlyX.add(X);
+		Type destruct = new ArrowType(OptionX, new TupleType(onlyX), 1);
+		
+		DotType both = new DotType(construct);
+		both.addField("?", destruct);
+		
+		return both;
 	}
 
 }

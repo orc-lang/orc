@@ -1,5 +1,6 @@
 package orc.ast.oil.arg;
 
+import java.math.BigInteger;
 import java.util.Set;
 
 import orc.ast.oil.Visitor;
@@ -36,6 +37,8 @@ public class Constant extends Arg {
 			return Type.BOT;
 		} else if (v instanceof Integer) {
 			return new ConstIntType((Integer)v);
+		} else if (v instanceof BigInteger) {
+			return Type.INTEGER;
 		} else if (v instanceof Number) {
 			return Type.NUMBER;
 		} else if (v instanceof String) {

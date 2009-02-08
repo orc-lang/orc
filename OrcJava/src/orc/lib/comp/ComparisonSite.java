@@ -17,7 +17,7 @@ import orc.type.Type;
 /**
  * @author quark
  */
-public abstract class NumericComparisonSite extends EvalSite {
+public abstract class ComparisonSite extends EvalSite {
 	private static class MyOperator implements NumericBinaryOperator<Integer> {
 		public Integer apply(BigInteger a, BigInteger b) {
 			return a.compareTo(b);
@@ -70,6 +70,6 @@ public abstract class NumericComparisonSite extends EvalSite {
 	abstract public boolean compare(int a);
 	
 	public static Type type() {
-		return new ArrowType(Type.NUMBER, Type.NUMBER, Type.BOOLEAN);
+		return new ArrowType(Type.TOP, Type.TOP, Type.BOOLEAN);
 	}
 }

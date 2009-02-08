@@ -27,7 +27,7 @@ public class ArrowType extends Type {
 		this.resultType = resultType;
 	}
 
-	public orc.type.Type convert(Env<String> env) {
+	public orc.type.Type convert(Env<String> env) throws TypeException {
 		
 		int arity = typeParams.size();
 		

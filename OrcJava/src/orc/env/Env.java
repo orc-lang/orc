@@ -74,11 +74,15 @@ public final class Env<T> implements Serializable, Cloneable {
 	 * Look up a variable's value in the environment.
 	 * @param   index  Stack depth (a deBruijn index)
 	 * @return  The bound item
+	 * @throws LookupFailureException 
 	 */
-	public T lookup(int index) {
+	public T lookup(int index) throws LookupFailureException {
 		Binding<T> node = head;
-		for (; index > 0; --index, node = node.parent) assert(node != null);
-		assert(node != null);
+		for (; index > 0 && node != null; --index, node = node.parent) {
+		}
+		if (node == null) {
+			throw new LookupFailureException();
+		}
 		return node.value;
 	}
 	
@@ -94,13 +98,14 @@ public final class Env<T> implements Serializable, Cloneable {
 	 * 
 	 * @param target  The item 
 	 * @return        The index of the target item
+	 * @throws SearchFailureException 
 	 */
-	public int search(T target) {
+	public int search(T target) throws SearchFailureException {
 		Binding<T> node = head;
 		for (int index = 0; node != null; ++index, node = node.parent) {
 			if (target.equals(node.value)) return index;
 		}
-		throw new OrcError("Target not found");
+		throw new SearchFailureException("Target item " + target + " not found in environment");
 	}
 
 	/** Pop n items. */

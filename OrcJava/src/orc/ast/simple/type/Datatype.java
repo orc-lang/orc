@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import orc.env.Env;
+import orc.error.compiletime.typing.TypeException;
 import orc.type.Variance;
 
 /**
@@ -26,7 +27,7 @@ public class Datatype extends Type {
 	}
 
 	@Override
-	public orc.type.Type convert(Env<String> env) {
+	public orc.type.Type convert(Env<String> env) throws TypeException {
 		
 		List<Variance> vs = new LinkedList<Variance>();
 		for (VariantTypeFormal formal : formals) {

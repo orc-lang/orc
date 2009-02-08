@@ -24,7 +24,7 @@ public class TupleType extends Type {
 	}
 	
 	@Override
-	public orc.type.Type convert(Env<String> env) {
+	public orc.type.Type convert(Env<String> env) throws TypeException {
 		List<orc.type.Type> newitems = new LinkedList<orc.type.Type>();
 		
 		for (Type T : items) {

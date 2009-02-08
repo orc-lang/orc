@@ -127,7 +127,7 @@ public class Def implements Locatable {
 		
 		/* Add the type arguments to the type context */
 		for(int i = 0; i < typeArity; i++) {
-			newtypectx = typectx.extend(null);
+			newtypectx = newtypectx.extend(null);
 		}
 		
 		/* Make sure the function arity corresponds to the number of argument types */

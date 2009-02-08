@@ -4,6 +4,8 @@ import java.util.Set;
 
 import orc.ast.oil.Visitor;
 import orc.env.Env;
+import orc.env.LookupFailureException;
+import orc.error.OrcError;
 import orc.error.compiletime.typing.TypeException;
 import orc.type.Type;
 
@@ -28,7 +30,11 @@ public class Var extends Arg implements Comparable<Var> {
 
 	@Override
 	public <T> T resolve(Env<T> env) {
-		return env.lookup(this.index);
+		try {
+			return env.lookup(this.index);
+		} catch (LookupFailureException e) {
+			throw new OrcError(e);
+		}
 	}
 
 	@Override
@@ -49,7 +55,12 @@ public class Var extends Arg implements Comparable<Var> {
 
 	@Override
 	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
-		Type t = ctx.lookup(index);
+		Type t;
+		try {
+			t = ctx.lookup(index);
+		} catch (LookupFailureException e) {
+			throw new OrcError(e);
+		}
 		
 		if (t != null) {
 			return t;
