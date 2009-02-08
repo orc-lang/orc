@@ -188,9 +188,21 @@ public class ArrowType extends Type {
 			throw new ArgumentArityException(argTypes.size(), args.size());
 		}
 		
+		/* Inference request check */
+		if (typeActuals == null) {
+			if (typeArity > 0) {
+				throw new InferenceRequest(this);
+			}
+			else {
+				/* Just use an empty list */
+				typeActuals = new LinkedList<Type>();
+			}
+		}
 		/* Type arity check */
-		if (typeArity != typeActuals.size()) {
-			throw new TypeArityException(typeArity, typeActuals.size());
+		else {
+			if (typeArity != typeActuals.size()) {
+				throw new TypeArityException(typeArity, typeActuals.size());
+			}
 		}
 		
 		/* Add each type argument to the type context */
@@ -218,7 +230,6 @@ public class ArrowType extends Type {
 		
 		return new ArrowType(Type.substAll(argTypes, newctx), resultType.subst(newctx), typeArity);
 	}
-	
 	
 	
 	public Variance findVariance(Integer var) {
@@ -285,7 +296,7 @@ public class ArrowType extends Type {
 				Type A = argTypes.get(i);
 				Type B = other.argTypes.get(i);
 		
-				B.addConstraints(VX, A, C);
+				B.addConstraints(VX, A, C);		
 			}
 			resultType.addConstraints(VX, other.resultType, C);
 			

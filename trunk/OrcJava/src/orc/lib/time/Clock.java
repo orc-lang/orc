@@ -33,4 +33,8 @@ public class Clock extends EvalSite {
 			}
 		};
 	}
+	
+	public static Type type() {
+		return new ArrowType(new ArrowType(Type.INTEGER));
+	}
 }

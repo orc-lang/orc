@@ -2,13 +2,19 @@ package orc.lib.state;
 
 import java.util.LinkedList;
 
+import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.TokenException;
+import orc.lib.state.types.BoundedBufferType;
+import orc.lib.state.types.BufferType;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.Site;
 import orc.runtime.values.ListValue;
+import orc.type.ArrowType;
+import orc.type.Type;
+import orc.type.TypeVariable;
 
 /**
  * A bounded buffer.
@@ -24,6 +30,12 @@ public class BoundedBuffer extends EvalSite {
 	@Override
 	public Object evaluate(Args args) throws TokenException {
 		return new BufferInstance(args.intArg(0));
+	}
+	
+	public static Type type() throws TypeException {
+		Type X = new TypeVariable(0);
+		Type BufferOfX = (new BoundedBufferType()).instance(X);
+		return new ArrowType(Type.INTEGER, BufferOfX, 1);
 	}
 	
 	protected class BufferInstance extends DotSite {

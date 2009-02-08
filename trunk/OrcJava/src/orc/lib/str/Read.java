@@ -9,6 +9,9 @@ import orc.error.runtime.TokenException;
 import orc.parser.OrcParser;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
+import orc.type.ArrowType;
+import orc.type.Type;
+import orc.type.TypeVariable;
 
 /**
  * Read an Orc literal from a string.
@@ -26,5 +29,10 @@ public class Read extends EvalSite {
 			// should be impossible
 			throw new AssertionError(e);
 		}
+	}
+	
+	public static Type type() {
+		TypeVariable X = new TypeVariable(0);
+		return new ArrowType(Type.STRING, X, 1);
 	}
 }

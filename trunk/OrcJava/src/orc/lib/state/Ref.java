@@ -6,12 +6,19 @@ package orc.lib.state;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.TokenException;
+import orc.lib.state.types.BufferType;
+import orc.lib.state.types.RefType;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.Site;
+import orc.type.ArrowType;
+import orc.type.MultiType;
+import orc.type.Type;
+import orc.type.TypeVariable;
 
 /**
  * @author dkitchin
@@ -38,6 +45,13 @@ public class Ref extends EvalSite {
 		else {
 			return new RefInstance();
 		}
+	}
+	
+	public static Type type() throws TypeException {
+		Type X = new TypeVariable(0);
+		Type RefOfX = (new RefType()).instance(X);
+		return new MultiType(new ArrowType(RefOfX, 1),
+							 new ArrowType(X, RefOfX, 1));
 	}
 	
 	

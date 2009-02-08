@@ -14,5 +14,9 @@ public class ListType extends ImmutableContainerType {
 	public String toString() {
 		return "List";
 	}
+	
+	public static Type listOf(Type T) throws TypeException {
+		return (new ListType()).instance(T);
+	}
 
 }

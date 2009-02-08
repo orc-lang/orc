@@ -3,10 +3,17 @@ package orc.lib.util;
 import java.lang.reflect.Array;
 import java.util.HashMap;
 
+import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.SiteException;
 import orc.error.runtime.TokenException;
+import orc.lib.state.types.ArrayType;
+import orc.lib.state.types.RefType;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
+import orc.type.ArrowType;
+import orc.type.MultiType;
+import orc.type.Type;
+import orc.type.TypeVariable;
 
 public class JavaArray extends EvalSite {
 	private static HashMap<String, Class> types = new HashMap<String, Class>();
@@ -31,5 +38,12 @@ public class JavaArray extends EvalSite {
 					args.stringArg(0));
 			return Array.newInstance(type, args.intArg(0));
 		}
+	}
+	
+	public static Type type() throws TypeException {
+		Type X = new TypeVariable(0);
+		Type ArrayOfX = (new ArrayType()).instance(X);
+		return new MultiType(new ArrowType(Type.INTEGER, ArrayOfX, 1),
+							 new ArrowType(Type.INTEGER, Type.STRING, ArrayOfX, 1));
 	}
 }

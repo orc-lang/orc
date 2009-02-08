@@ -195,8 +195,15 @@ Defn Definition =
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ DEF name:(Identifier / BareOperator) Space typeFormals:TypeFormals LPAREN argTypes:TypeList RPAREN Space
+	curried0:(LPAREN yyValue:TypeList RPAREN Space)*
 	resultType:MaybeResultType {
-		yyValue = new DefnType(name, argTypes, resultType, typeFormals);
+		Type curriedType = resultType;
+		List<List<Type>> curried = curried0.list();
+		ListIterator<List<Type>> it = curried.listIterator(curried.size());
+		while (it.hasPrevious()) {
+			curriedType = new ArrowType(it.previous(), curriedType, new LinkedList<String>() /* curried type params not allowed */);
+		}
+		yyValue = new DefnType(name, argTypes, curriedType, typeFormals);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
@@ -431,7 +438,6 @@ Expression NoCmpMaybeHasType =
 	}
 	/ NoCmpMaybeAtomic
 	;
-	
 
 Expression MaybeAtomic =
 	void:ATOMIC body:MaybeAssignment {
@@ -684,7 +690,8 @@ String BareOperator =
 /* Ends without newline */
 Literal Literal =
 	literal:(
-		Number
+		Integer
+		/ Float
 		/ StringLiteral
 		/ TRUE { yyValue = true; }
 		/ FALSE { yyValue = false; }
@@ -792,10 +799,28 @@ Type Type =
 	/ INTEGER_TYPE { yyValue = Type.INTEGER; }
 	/ TOP_TYPE { yyValue = Type.TOP; }
 	/ BOT_TYPE { yyValue = Type.BOT; }
-	/ LPAREN ts:TypeList RPAREN Space { yyValue = new TupleType(ts); }
+	/ LPAREN ts:TypeList RPAREN Space { 
+		if (ts.size() > 1) {
+			yyValue = new TupleType(ts);
+		}
+		else {
+			yyValue = ts.get(0);
+		} 
+	}
 	/ UNDERSCORE { yyValue = Type.BLANK; }
-	/ LAMBDA typeFormals:TypeFormals LPAREN argTypes:TypeList RPAREN DOUBLE_COLON resultType:Type 
-		{ yyValue = new ArrowType(argTypes, resultType, typeFormals); }
+	/ LAMBDA typeFormals:TypeFormals LPAREN argTypes:TypeList RPAREN Space
+	curried0:(LPAREN yyValue:TypeList RPAREN Space)*
+	 DOUBLE_COLON resultType:Type {
+		Type curriedType = resultType;
+		List<List<Type>> curried = curried0.list();
+		ListIterator<List<Type>> it = curried.listIterator(curried.size());
+		while (it.hasPrevious()) {
+			curriedType = new ArrowType(it.previous(), curriedType, new LinkedList<String>() /* curried type params not allowed */);
+		}
+		yyValue = new ArrowType(argTypes, curriedType, typeFormals);
+	}
+		
+		
 	/ name:Identifier actualTypes:TypeActuals Space { yyValue = new TypeInstance(name, actualTypes); }
 	/ name:Identifier Space { yyValue = new NamedType(name); }
 	;
@@ -903,7 +928,6 @@ List<Object> LiteralValueList =
 	}
 	;
 	
-Number Number = Float / Integer;
 BigDecimal Float =
 	rep:FloatToken HSpace {
 		try {

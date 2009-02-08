@@ -14,6 +14,7 @@ import orc.runtime.sites.EvalSite;
 import orc.runtime.values.TupleValue;
 import orc.runtime.values.Value;
 import orc.type.ArrowType;
+import orc.type.DotType;
 import orc.type.TupleType;
 import orc.type.Type;
 import orc.type.TypeApplication;
@@ -79,10 +80,12 @@ class DatatypeSiteType extends Type {
 				
 		List<Type> cTypes = new LinkedList<Type>();
 		for (List<Type> cArgs : dt.getConstructors()) {
-			/* Create an arrow type for each constructor,
-			 * and add it to the result tuple.
-			 */
-			cTypes.add(new ArrowType(cArgs, cResult, cArity));
+			Type construct = new ArrowType(cArgs, cResult, cArity);
+			Type destruct = new ArrowType(cResult, new TupleType(cArgs), cArity);
+			
+			DotType both = new DotType(construct);
+			both.addField("?", destruct);
+			cTypes.add(both);
 		}
 		
 		return LetType.condense(cTypes);

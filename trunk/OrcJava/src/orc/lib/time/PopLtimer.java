@@ -6,6 +6,8 @@ import orc.runtime.Token;
 import orc.runtime.nodes.Node;
 import orc.runtime.sites.Site;
 import orc.runtime.values.Closure;
+import orc.type.ArrowType;
+import orc.type.Type;
 
 public class PopLtimer extends Site {
 	@Override
@@ -13,4 +15,9 @@ public class PopLtimer extends Site {
 		caller.popLtimer();
 		caller.resume();
 	}
+	
+	public static Type type() {
+		return new ArrowType(Type.TOP);
+	}
+
 }

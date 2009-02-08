@@ -2,7 +2,7 @@ package orc.type.ground;
 
 import orc.type.Type;
 
-public class ConstIntType extends NumberType {
+public class ConstIntType extends IntegerType {
 
 	public Integer i;
 	
@@ -20,7 +20,7 @@ public class ConstIntType extends NumberType {
 			return (i == other.i);
 		}
 		else {
-			return Type.INTEGER.subtype(that);
+			return super.subtype(that);
 		}
 	}
 

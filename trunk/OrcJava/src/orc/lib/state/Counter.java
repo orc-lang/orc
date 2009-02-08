@@ -3,12 +3,16 @@ package orc.lib.state;
 import java.util.LinkedList;
 
 import orc.error.runtime.TokenException;
+import orc.lib.state.types.CounterType;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.PartialSite;
 import orc.runtime.sites.Site;
+import orc.type.ArrowType;
+import orc.type.MultiType;
+import orc.type.Type;
 
 /**
  * Factory for counters. 
@@ -64,5 +68,12 @@ public class Counter extends EvalSite {
 				});
 			}
 		};
+	}
+	
+	
+	public static Type type() {
+		return new MultiType(
+				new ArrowType(new CounterType()),
+				new ArrowType(Type.INTEGER, new CounterType()));
 	}
 }

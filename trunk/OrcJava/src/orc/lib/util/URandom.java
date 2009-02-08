@@ -3,6 +3,9 @@ package orc.lib.util;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.PartialSite;
+import orc.type.ArrowType;
+import orc.type.MultiType;
+import orc.type.Type;
 
 public class URandom extends PartialSite {
 
@@ -20,6 +23,10 @@ public class URandom extends PartialSite {
 		else {
 			return null;
 		}
+	}
+	
+	public static Type type() {
+		return new ArrowType(Type.NUMBER);
 	}
 
 }

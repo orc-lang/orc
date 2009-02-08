@@ -1,6 +1,7 @@
 package orc.ast.simple.type;
 
 import orc.env.Env;
+import orc.error.compiletime.typing.TypeException;
 
 /**
  * 
@@ -39,7 +40,8 @@ public abstract class Type {
 	 * @param vars	The type environment, used in content addressable mode to 
 	 * 				find the appropriate deBruijn index of a type variable.
 	 * @return A new node.
+	 * @throws TypeException 
 	 */
-	public abstract orc.type.Type convert(Env<String> env);
+	public abstract orc.type.Type convert(Env<String> env) throws TypeException;
 	
 }

@@ -124,6 +124,11 @@ public class Defs extends Expr {
 				&& body.getClass().equals(Var.class) 
 				&& ((Var)body).index == 0
 				&& T instanceof ArrowType) {
+			/* Add an empty mapping for the type of the function itself;
+			 * since it is anonymous, recursion can never occur.
+			 */
+			ctx = ctx.extend(null);
+			
 			defs.get(0).checkLambda((ArrowType)T, ctx, typectx);
 		}
 		else {

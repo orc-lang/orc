@@ -2,12 +2,16 @@ package orc.lib.state;
 
 import java.util.LinkedList;
 
+import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.TokenException;
+import orc.lib.state.types.SemaphoreType;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.Site;
+import orc.type.ArrowType;
+import orc.type.Type;
 
 /**
  * @author quark
@@ -19,6 +23,10 @@ public class Semaphore extends EvalSite {
 		return new SemaphoreInstance(args.intArg(0));
 	}
 	
+	public static final Type semaphoreType = new ArrowType(Type.INTEGER, new SemaphoreType());
+	public static Type type() throws TypeException {
+		return semaphoreType;
+	}
 	
 	protected class SemaphoreInstance extends DotSite {
 
