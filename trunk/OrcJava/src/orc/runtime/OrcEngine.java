@@ -3,12 +3,15 @@
  */
 package orc.runtime;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.UUID;
 
 import orc.Config;
 import orc.env.Env;
@@ -77,7 +80,7 @@ public class OrcEngine implements Runnable {
 
 	/** We'll notify this when the computation is finished. */
 	private Tracer tracer;
-	
+
 	//private Visualizer viz;
 	
 	/** For debugging visualization */
@@ -117,6 +120,8 @@ public class OrcEngine implements Runnable {
 		tracer.finish();
 		tracer = null;
 		globals.removeAll(this);
+		for (File tmpdir : tmpdirs) deleteDirectory(tmpdir);
+		tmpdirs = new LinkedList<File>();
 	}
 
 	/**
@@ -302,8 +307,46 @@ public class OrcEngine implements Runnable {
 	public String addGlobal(Object value) {
 		return globals.add(this, value);
 	}
-
+	
 	public Config getConfig() {
 		return config;
+	}
+	
+	private static String tmpdir = System.getProperty("java.io.tmpdir");
+	private LinkedList<File> tmpdirs = new LinkedList<File>();
+	/**
+	 * Create a new temporary directory and return the path to that directory.
+	 * The directory will be deleted automatically when the engine halts,
+	 * or you can delete it earlier with deleteTmpdir
+	 */
+	public File createTmpdir() throws IOException {
+		File out;
+		do {
+			out = new File(OrcEngine.tmpdir, "orc-" + UUID.randomUUID().toString());
+		} while (out.exists());
+		if (!out.mkdir()) {
+			throw new IOException("Unable to create temporary directory " + out.getPath());
+		}
+		tmpdirs.add(out);
+		return out;
+	}
+	
+	/** Delete a temporary directory */
+	public boolean deleteTmpdir(File directory) {
+		tmpdirs.remove(directory);
+		return deleteDirectory(directory);
+	}
+	
+	/** Delete a directory recursively */
+	private boolean deleteDirectory(File directory) {
+		tmpdirs.remove(directory);
+		boolean out = true;
+		File[] fileArray = directory.listFiles();
+		if (fileArray != null) {
+			for (File f : fileArray) {
+				out = deleteDirectory(f) && out;
+			}
+		}
+		return directory.delete() && out;
 	}
 }

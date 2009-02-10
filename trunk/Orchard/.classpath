@@ -2,7 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/commons-discovery-0.2.jar"/>
 	<classpathentry kind="lib" path="lib/FastInfoset.jar"/>
 	<classpathentry kind="lib" path="lib/http.jar"/>
 	<classpathentry kind="lib" path="lib/jaxws-api.jar"/>
@@ -14,7 +13,6 @@
 	<classpathentry kind="lib" path="lib/jsr250-api.jar"/>
 	<classpathentry kind="lib" path="lib/postgresql-8.3-603.jdbc3.jar"/>
 	<classpathentry kind="lib" path="lib/resolver.jar"/>
-	<classpathentry kind="lib" path="lib/saaj-api.jar"/>
 	<classpathentry kind="lib" path="lib/saaj-impl.jar"/>
 	<classpathentry kind="lib" path="lib/sjsxp.jar"/>
 	<classpathentry kind="lib" path="lib/stax-ex.jar"/>
