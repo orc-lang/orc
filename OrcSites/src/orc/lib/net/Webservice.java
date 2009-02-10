@@ -7,11 +7,15 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
-import orc.Orc;
+
+import kilim.Pausable;
+import kilim.Task;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
-import orc.runtime.sites.ThreadedSite;
+import orc.runtime.Kilim;
+import orc.runtime.Token;
+import orc.runtime.sites.Site;
 import orc.runtime.sites.java.ThreadedObjectProxy;
 import orc.runtime.values.Value;
 
@@ -37,7 +41,7 @@ import org.apache.axis.wsdl.toJava.GeneratedFileInfo.Entry;
  * <p>TODO: allow webservices to provide constructors for complex objects.
  * @author quark, unknown
  */
-public class Webservice extends ThreadedSite {
+public class Webservice extends Site {
 	/**
 	 * Compile class files.
 	 */
@@ -87,14 +91,33 @@ public class Webservice extends ThreadedSite {
 		return out.toString();
 	}
 	
-	public Value evaluate(Args args) throws TokenException {
-		// Create a temporary directory to host compilation of stubs
-		final File tmpdir;
-		try {
-			tmpdir = Orc.createTmpdir(new Integer(hashCode()).toString());
-		} catch (IOException e) {
-			throw new JavaException(e);
-		}
+	public void callSite(final Args args, final Token caller) {
+		new Task() {
+			public void execute() throws Pausable {
+				Kilim.runThreaded(new Runnable() {
+					public void run() {
+						try {
+							// Create a temporary directory to host compilation of stubs
+							File tmpdir;
+							try {
+								tmpdir = caller.getEngine().createTmpdir();
+							} catch (IOException e) {
+								throw new JavaException(e);
+							}
+							Object out = evaluate(args, tmpdir);
+							caller.getEngine().deleteTmpdir(tmpdir);
+							if (out == null) caller.die();
+							else caller.resume(out);
+						} catch (TokenException e) {
+							caller.error(e);
+						}
+					}
+				});
+			}
+		}.start();
+	}
+	
+	public Value evaluate(Args args, File tmpdir) throws TokenException {
 		try {
 			// Generate stub source files.
 			// Emitter is the class that does all of the file creation for the
@@ -166,13 +189,7 @@ public class Webservice extends ThreadedSite {
 			Object locatorObject = locator.newInstance();
 			Object stubObject = getStub.invoke(locatorObject, arglist);
 
-			return new ThreadedObjectProxy(stubObject) {
-				// delete the temporary directory when the
-				// service is no longer accessible
-				public void finalize() {
-					Orc.deleteDirectory(tmpdir);
-				}
-			};
+			return new ThreadedObjectProxy(stubObject);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			throw new JavaException(e);

@@ -33,5 +33,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/jaxb-xjc.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jaxb-impl.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/joda-time-1.5.2.jar"/>
+	<classpathentry kind="lib" path="lib/commons-discovery-0.2.jar"/>
+	<classpathentry kind="lib" path="lib/saaj-api.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

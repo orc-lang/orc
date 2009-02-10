@@ -212,43 +212,16 @@ public class Orc {
         
 		// Configure the runtime engine.
 		OrcEngine engine = new OrcEngine(cfg);
-        engine.debugMode = cfg.debugMode();
-        
-        // Create an OrcInstance object, to be run in its own thread
-        OrcInstance inst = new OrcInstance(engine, n, q);
-        
-        // Run the Orc instance in its own thread
-        Thread t = new Thread(inst);
-        t.start();
-        
-        // Return the instance object.
-        return inst;
-	}
-	
-	private static String tmpdir = System.getProperty("java.io.tmpdir");
-	/**
-	 * Create a new temporary directory and return the path to that directory.
-	 * The directory will NOT be deleted automatically; you can use
-	 * deleteDirectory to do that when you are done with it.
-	 */
-	public static File createTmpdir(String prefix) throws IOException {
-        File out = new File(tmpdir, "orc-" + prefix + "-"
-        		+ new Integer(Thread.currentThread().hashCode()).toString());
-        if (!out.mkdir()) {
-            throw new IOException("Unable to create temporary directory " + out.getPath());
-        }
-        return out;
-	}
-	
-	/** Delete a directory recursively */
-	public static boolean deleteDirectory(File directory) {
-		boolean out = true;
-		File[] fileArray = directory.listFiles();
-		if (fileArray != null) {
-			for (File f : fileArray) {
-				out = deleteDirectory(f) && out;
-			}
-	    }
-		return directory.delete() && out;
+		engine.debugMode = cfg.debugMode();
+
+		// Create an OrcInstance object, to be run in its own thread
+		OrcInstance inst = new OrcInstance(engine, n, q);
+
+		// Run the Orc instance in its own thread
+		Thread t = new Thread(inst);
+		t.start();
+
+		// Return the instance object.
+		return inst;
 	}
 }
