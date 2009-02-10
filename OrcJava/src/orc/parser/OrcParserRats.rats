@@ -928,6 +928,7 @@ List<Object> LiteralValueList =
 	}
 	;
 	
+Number Number = Float / Integer;
 BigDecimal Float =
 	rep:FloatToken HSpace {
 		try {
