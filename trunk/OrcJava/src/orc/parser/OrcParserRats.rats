@@ -238,15 +238,8 @@ Symbol   Assoc       Name
 ----------------------------------------------------
  >>      right       sequence
 ----------------------------------------------------
-<<<<<<< OrcParserRats.rats
- ::		 none		 type annotation
-----------------------------------------------------
- atomic	 prefix		 atomic execution
-----------------------------------------------------
-=======
- atomic  none        atomic transaction
-----------------------------------------------------
->>>>>>> 1.39
+ ::	     none        type annotation
+ atomic  prefix      atomic transaction
  :=      none        ref assignment
 ----------------------------------------------------
  ||      right[2]    boolean or
@@ -389,8 +382,8 @@ Expression SeqExpression =
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
-Expression MaybeSeqExpression = SeqExpression / IfThenElse / MaybeHasType;
-Expression NoCmpMaybeSeqExpression = SeqExpression / IfThenElse / NoCmpMaybeHasType;
+Expression MaybeSeqExpression = SeqExpression / IfThenElse / MaybeTyped;
+Expression NoCmpMaybeSeqExpression = SeqExpression / IfThenElse / NoCmpMaybeTyped;
 	
 Expression IfThenElse =
 	IF condition:MaybeDisjunction THEN consequent:MaybeSemiExpression ELSE alternative:MaybeSemiExpression {
@@ -403,36 +396,24 @@ Expression IfThenElse =
 	}
 	;
 
-
-/*
-Expression MaybeAssertType =
-	body:MaybeHasType void:BANG_COLON type:Type {
+Expression MaybeTyped =
+	body:MaybeAtomic void:DOUBLE_COLON_BANG type:Type {
 		yyValue = new AssertType(body, type);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ MaybeHasType
-	;
-
-Expression NoCmpMaybeAssertType =
-	body:NoCmpMaybeHasType void:BANG_COLON type:Type {
-		yyValue = new AssertType(body,type);
-		yyValue = at(yyStart, yyCount, yyValue);
-	}
-	/ NoCmpMaybeHasType
-	;
-*/
-
-
-Expression MaybeHasType =
-	body:MaybeAtomic void:DOUBLE_COLON type:Type {
+	/ body:MaybeAtomic void:DOUBLE_COLON type:Type {
 		yyValue = new HasType(body, type);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ MaybeAtomic
 	;
 
-Expression NoCmpMaybeHasType =
-	body:NoCmpMaybeAtomic void:DOUBLE_COLON type:Type {
+Expression NoCmpMaybeTyped =
+	body:NoCmpMaybeAtomic void:DOUBLE_COLON_BANG type:Type {
+		yyValue = new AssertType(body,type);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ body:NoCmpMaybeAtomic void:DOUBLE_COLON type:Type {
 		yyValue = new HasType(body,type);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
@@ -1007,7 +988,7 @@ transient String STRING_TYPE = "String":Word Space;
 transient String TOP_TYPE = "Top":Word Space;
 transient String BOT_TYPE = "Bot":Word Space;
 transient String DOUBLE_COLON = "::" Space;
-// transient String BANG_COLON = ":!:" Space;
+transient String DOUBLE_COLON_BANG = ":!:" Space;
 transient String EQ = "=" Space;
 transient String LBRACE = "{" ![\-] Space; // make sure it's not a comment
 transient String RBRACE = "}" Space;
