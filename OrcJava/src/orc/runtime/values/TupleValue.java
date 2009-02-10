@@ -22,19 +22,11 @@ import orc.runtime.sites.core.Equal;
  */
 public class TupleValue extends DotSite implements Iterable<Object>, Eq {
 	public Object[] values;
-	public TupleValue() {
-		this.values = new Object[0];
-	}
-	public TupleValue(Object v, Object w) {
-		this.values = new Object[2];
-		this.values[0] = v;
-		this.values[1] = w;
-	}
 	public TupleValue(List<Object> values) {
 		this.values = new Object[values.size()];
 		this.values = values.toArray(this.values);
 	}
-	public TupleValue(Object[] values) {
+	public TupleValue(Object ... values) {
 		this.values = values;
 	}
 	
