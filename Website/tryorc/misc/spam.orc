@@ -54,11 +54,13 @@ WebPrompt("Upload Data", [
    parseRecipients(data.get("recipients").getString()))
 
 def sendOne(from, subject, body, (name,email)) =
-  (name, email) >!_>
-  SendMailFrom(from, email, subject, body.replace("{{NAME}}", name)) >>
-  stop
+  (name, email)
+  | SendMailFrom(from, email, subject, body.replace("{{NAME}}", name)) >>
+    stop
 
 val (from, subject, body, recipients) = getData()
-each(recipients) >!recipient>
-sendOne(from, subject, body, recipient) >>
-stop
+each(recipients) >recipient>
+( recipient
+| sendOne(from, subject, body, recipient) >>
+  stop
+)
