@@ -18,7 +18,7 @@ public class Floor extends EvalSite {
 		return n.intValue();
 	}
 	
-	public static Type type() {
+	public Type type() {
 		return new ArrowType(Type.NUMBER, Type.INTEGER);
 	}
 }

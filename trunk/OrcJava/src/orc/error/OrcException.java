@@ -20,4 +20,7 @@ public class OrcException extends Exception {
 		super(message, cause);
 	}
 	
+	public OrcException(Throwable cause) {
+		super(cause);
+	}
 }

@@ -25,7 +25,7 @@ public class URandom extends PartialSite {
 		}
 	}
 	
-	public static Type type() {
+	public Type type() {
 		return new ArrowType(Type.NUMBER);
 	}
 

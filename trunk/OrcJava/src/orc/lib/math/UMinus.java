@@ -50,7 +50,7 @@ public class UMinus extends EvalSite {
 		return Args.applyNumericOperator(args.numberArg(0), op);
 	}
 	
-	public static Type type() {
+	public Type type() {
 		return new ArrowType(Type.NUMBER, Type.NUMBER);
 	}
 }

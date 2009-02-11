@@ -27,7 +27,7 @@ public class IsNone extends Site {
 		}
 	}
 	
-	public static Type type() throws TypeException { 	
+	public Type type() throws TypeException { 	
 		Type X = new TypeVariable(0);
 		Type OptionX = (new OptionType()).instance(X);
 		return new ArrowType(OptionX, Type.TOP, 1); 

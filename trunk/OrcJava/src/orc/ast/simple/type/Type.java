@@ -27,12 +27,6 @@ import orc.error.compiletime.typing.TypeException;
 public abstract class Type {
 
 	/* Create singleton representatives for some common types */
-	public static final Type TOP = new Top();
-	public static final Type BOT = new Bot();
-	public static final Type STRING = new StringType();
-	public static final Type BOOLEAN = new BooleanType();
-	public static final Type INTEGER = new IntegerType();
-	public static final Type NUMBER = new NumberType();
 	public static final Type BLANK = new Blank();
 	
 	

@@ -18,7 +18,7 @@ public class Not extends EvalSite {
 		return !args.boolArg(0);
 	}
 	
-	public static Type type() {
+	public Type type() {
 		return new ArrowType(Type.BOOLEAN, Type.BOOLEAN);
 	}
 }

@@ -33,7 +33,7 @@ public class None extends Site {
 		data.callSite(args, caller);
 	}
 	
-	public static Type type() throws TypeException {
+	public Type type() throws TypeException {
 		Type OptionBot = (new OptionType()).instance(Type.BOT);
 		Type OptionTop = (new OptionType()).instance(Type.TOP);
 

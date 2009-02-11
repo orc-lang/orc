@@ -31,7 +31,7 @@ public class Read extends EvalSite {
 		}
 	}
 	
-	public static Type type() {
+	public Type type() {
 		TypeVariable X = new TypeVariable(0);
 		return new ArrowType(Type.STRING, X, 1);
 	}

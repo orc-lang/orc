@@ -40,7 +40,7 @@ public class JavaArray extends EvalSite {
 		}
 	}
 	
-	public static Type type() throws TypeException {
+	public Type type() throws TypeException {
 		Type X = new TypeVariable(0);
 		Type ArrayOfX = (new ArrayType()).instance(X);
 		return new MultiType(new ArrowType(Type.INTEGER, ArrayOfX, 1),

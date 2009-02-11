@@ -91,7 +91,10 @@ public abstract class Site {
 	}
 
 	public Type type() throws TypeException {
-		throw new MissingTypeException();
+		try {
+			return instantiate().type();
+		} catch (SiteResolutionException e) {
+			throw new MissingTypeException(e);
+		}
 	}
-	
 }

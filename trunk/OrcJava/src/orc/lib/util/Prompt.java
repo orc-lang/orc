@@ -18,7 +18,7 @@ public class Prompt extends ThreadedPartialSite {
 		return JOptionPane.showInputDialog(message);
 	}
 	
-	public static Type type() {
+	public Type type() {
 		return new ArrowType(Type.STRING, Type.STRING);
 	}
 }

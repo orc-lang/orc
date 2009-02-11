@@ -46,7 +46,7 @@ public class Apply extends Site {
 		// DO NOTHING
 	}
 	
-	public static Type type() {
+	public Type type() {
 		
 		return new Type() {
 

@@ -37,7 +37,7 @@ public class Buffer extends EvalSite {
 		return new BufferInstance();
 	}
 	
-	public static Type type() throws TypeException {
+	public Type type() throws TypeException {
 		Type X = new TypeVariable(0);
 		Type BufferOfX = (new BufferType()).instance(X);
 		return new ArrowType(BufferOfX, 1);

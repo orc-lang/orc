@@ -36,7 +36,7 @@ public class Some extends Site {
 		data.callSite(args, caller);
 	}
 	
-	public static Type type() throws TypeException {
+	public Type type() throws TypeException {
 		Type X = new TypeVariable(0);
 		Type OptionX = (new OptionType()).instance(X);
 		

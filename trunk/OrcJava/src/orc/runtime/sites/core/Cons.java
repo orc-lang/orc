@@ -41,7 +41,7 @@ public class Cons extends EvalSite {
 		return new ConsValue(args.getArg(0), (ListValue)t);
 	}
 	
-	public static Type type() throws TypeException { 
+	public Type type() throws TypeException { 
 		Type X = new TypeVariable(0);
 		Type ListOfX = (new ListType()).instance(X);
 		return new ArrowType(X, ListOfX, ListOfX, 1); 

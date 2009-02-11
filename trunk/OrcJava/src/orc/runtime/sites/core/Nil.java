@@ -24,7 +24,7 @@ public class Nil extends EvalSite {
 		return NilValue.singleton;
 	}
 
-	public static Type type() throws TypeException {
+	public Type type() throws TypeException {
 		return new ArrowType((new ListType()).instance(Type.BOT)); 
 	}
 	

@@ -238,7 +238,7 @@ Symbol   Assoc       Name
 ----------------------------------------------------
  >>      right       sequence
 ----------------------------------------------------
- ::	     none        type annotation
+ ::	     right       type annotation
  atomic  prefix      atomic transaction
  :=      none        ref assignment
 ----------------------------------------------------
@@ -774,13 +774,7 @@ Pattern BasicPattern =
 /////////////////////////////////////////////
 
 Type Type =
-	NUMBER_TYPE { yyValue = Type.NUMBER; }
-	/ STRING_TYPE { yyValue = Type.STRING; }
-	/ BOOLEAN_TYPE { yyValue = Type.BOOLEAN; }
-	/ INTEGER_TYPE { yyValue = Type.INTEGER; }
-	/ TOP_TYPE { yyValue = Type.TOP; }
-	/ BOT_TYPE { yyValue = Type.BOT; }
-	/ LPAREN ts:TypeList RPAREN Space { 
+	LPAREN ts:TypeList RPAREN Space { 
 		if (ts.size() > 1) {
 			yyValue = new TupleType(ts);
 		}
@@ -800,8 +794,6 @@ Type Type =
 		}
 		yyValue = new ArrowType(argTypes, curriedType, typeFormals);
 	}
-		
-		
 	/ name:Identifier actualTypes:TypeActuals Space { yyValue = new TypeInstance(name, actualTypes); }
 	/ name:Identifier Space { yyValue = new NamedType(name); }
 	;
@@ -981,12 +973,6 @@ transient String STOP = "stop":Word HSpace;
 transient String SIGNAL = "signal":Word HSpace;
 transient String TRUE = "true":Word HSpace;
 transient String FALSE = "false":Word HSpace;
-transient String NUMBER_TYPE = "Number":Word Space;
-transient String INTEGER_TYPE = "Integer":Word Space;
-transient String BOOLEAN_TYPE = "Boolean":Word Space;
-transient String STRING_TYPE = "String":Word Space;
-transient String TOP_TYPE = "Top":Word Space;
-transient String BOT_TYPE = "Bot":Word Space;
 transient String DOUBLE_COLON = "::" Space;
 transient String DOUBLE_COLON_BANG = ":!:" Space;
 transient String EQ = "=" Space;

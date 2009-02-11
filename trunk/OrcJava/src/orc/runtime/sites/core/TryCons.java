@@ -32,7 +32,7 @@ public class TryCons extends Site {
 		args.listLikeArg(0).uncons(caller);
 	}
 	
-	public static Type type() throws TypeException { 	
+	public Type type() throws TypeException { 	
 		Type X = new TypeVariable(0);
 		Type ListOfX = (new ListType()).instance(X);
 		return new ArrowType(ListOfX, new TupleType(X, ListOfX), 1); 

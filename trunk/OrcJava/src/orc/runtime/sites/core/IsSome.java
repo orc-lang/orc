@@ -31,7 +31,7 @@ public class IsSome extends Site {
 		}
 	}
 	
-	public static Type type() throws TypeException { 	
+	public Type type() throws TypeException { 	
 		Type X = new TypeVariable(0);
 		Type OptionX = (new OptionType()).instance(X);
 		return new ArrowType(OptionX, X, 1); 

@@ -8,7 +8,7 @@ import orc.ast.simple.WithLocation;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
-import orc.ast.simple.type.JavaClassType;
+import orc.ast.simple.type.SiteType;
 import orc.ast.simple.type.VariantTypeFormal;
 import orc.runtime.sites.Site;
 
@@ -36,7 +36,7 @@ public class TypeDeclaration extends Declaration {
 
 	public orc.ast.simple.Expression bindto(orc.ast.simple.Expression target) {
 		
-		return new TypeDecl(new JavaClassType(classname), varname, target);
+		return new TypeDecl(new SiteType(classname), varname, target);
 	}
 
 	public String toString() {

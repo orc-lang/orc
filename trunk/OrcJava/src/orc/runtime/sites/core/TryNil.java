@@ -25,7 +25,7 @@ public class TryNil extends Site {
 		args.listLikeArg(0).unnil(caller);
 	}
 	
-	public static Type type() throws TypeException { 	
+	public Type type() throws TypeException { 	
 		Type ListOfTop = (new ListType()).instance(Type.TOP);
 		return new ArrowType(ListOfTop, Type.TOP, 1); 
 	}

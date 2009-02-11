@@ -9,6 +9,10 @@ package orc.error.compiletime.typing;
  */
 
 public class MissingTypeException extends TypeException {
+	
+	public MissingTypeException(Throwable cause) {
+		super(cause);
+	}
 
 	public MissingTypeException() {
 		super("Type checker failed: couldn't obtain sufficient type information from a service or value.");

@@ -29,7 +29,7 @@ public class Println extends Site {
 		caller.resume(Value.signal());
 	}
 	
-	public static Type type() {
+	public Type type() {
 		return new EllipsisArrowType(Type.STRING, Type.TOP);
 	}
 

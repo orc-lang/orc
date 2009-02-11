@@ -9,6 +9,10 @@ public class TypeException extends CompilationException {
 		super(message);
 	}
 	
+	public TypeException(Throwable cause) {
+		super(cause);
+	}
+	
 	public TypeException(String message, SourceLocation location) {
 		super(message);
 		setSourceLocation(location);

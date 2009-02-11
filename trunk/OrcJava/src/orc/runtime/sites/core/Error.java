@@ -14,7 +14,7 @@ public class Error extends Site {
 		caller.error(new SiteException(args.stringArg(0)));
 	}
 	
-	public static Type type() {
+	public Type type() {
 		return new ArrowType(Type.STRING, Type.BOT);
 	}
 }

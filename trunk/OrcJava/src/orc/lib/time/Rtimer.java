@@ -29,7 +29,7 @@ public class Rtimer extends Site {
 		}, args.longArg(0));	
 	}
 	
-	public static Type type() {
+	public Type type() {
 		return new ArrowType(Type.NUMBER, Type.TOP);
 	}
 }
