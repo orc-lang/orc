@@ -32,7 +32,7 @@ public class Let extends Site {
 		caller.activate();
 	}
 	
-	public static Type type() throws TypeException {
+	public Type type() throws TypeException {
 		return Type.LET;
 	}
 	

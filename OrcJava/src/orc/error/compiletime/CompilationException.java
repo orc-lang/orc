@@ -23,6 +23,10 @@ public class CompilationException extends OrcException implements Locatable {
 	public CompilationException(String message, Throwable cause) {
 		super(message, cause);
 	}
+	
+	public CompilationException(Throwable cause) {
+		super(cause);
+	}
 
 	public void setSourceLocation(SourceLocation location) {
 		this.location = location;

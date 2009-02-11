@@ -4,6 +4,8 @@ import orc.ast.simple.WithLocation;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
+import orc.ast.simple.type.ClassType;
+import orc.ast.simple.type.SiteType;
 import orc.runtime.sites.java.ClassProxy;
 
 /**
@@ -36,8 +38,10 @@ public class ClassDeclaration extends Declaration {
 		Argument a = new orc.ast.simple.arg.Site(s);
 		
 		return new WithLocation(
-				new orc.ast.simple.Where(target.subst(v,x), new orc.ast.simple.Let(a), v),
-				getSourceLocation());
+			new orc.ast.simple.TypeDecl(new ClassType(classname),
+				varname,
+				new orc.ast.simple.Where(target.subst(v,x), new orc.ast.simple.Let(a), v)),
+			getSourceLocation());
 		
 		/*
 		orc.ast.simple.arg.Argument a = new orc.ast.simple.arg.Site(orc.ast.sites.Site.build(orc.ast.sites.Site.JAVA, classname));

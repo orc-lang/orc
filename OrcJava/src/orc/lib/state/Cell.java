@@ -37,7 +37,7 @@ public class Cell extends EvalSite {
 		return new CellInstance();
 	}
 	
-	public static Type type() throws TypeException {
+	public Type type() throws TypeException {
 		Type X = new TypeVariable(0);
 		Type CellOfX = (new CellType()).instance(X);
 		return new ArrowType(CellOfX, 1);

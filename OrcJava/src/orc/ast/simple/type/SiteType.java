@@ -20,11 +20,11 @@ import orc.type.TypeVariable;
  * @author dkitchin
  *
  */
-public class JavaClassType extends Type {
+public class SiteType extends Type {
 
 	public String classname;
 	
-	public JavaClassType(String classname) {
+	public SiteType(String classname) {
 		this.classname = classname;
 	}
 	

@@ -26,7 +26,7 @@ public abstract class BoolBinopSite extends EvalSite {
 
 	abstract public boolean compute(boolean a, boolean b);
 	
-	public static Type type() {
+	public Type type() {
 		return new ArrowType(Type.BOOLEAN, Type.BOOLEAN, Type.BOOLEAN);
 	}
 

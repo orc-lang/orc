@@ -116,7 +116,7 @@ public class Equal extends EvalSite {
 		}
 	}
 
-	public static Type type() {
+	public Type type() {
 		return new ArrowType(Type.TOP, Type.TOP, Type.BOOLEAN);
 	}
 }

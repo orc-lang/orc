@@ -47,7 +47,7 @@ public class Ref extends EvalSite {
 		}
 	}
 	
-	public static Type type() throws TypeException {
+	public Type type() throws TypeException {
 		Type X = new TypeVariable(0);
 		Type RefOfX = (new RefType()).instance(X);
 		return new MultiType(new ArrowType(RefOfX, 1),

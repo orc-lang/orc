@@ -35,7 +35,7 @@ public class SyncChannel extends EvalSite {
 	}
 	
 	
-	public static Type type() throws TypeException {
+	public Type type() throws TypeException {
 		Type X = new TypeVariable(0);
 		Type ChannelOfX = (new SyncChannelType()).instance(X);
 		return new ArrowType(ChannelOfX, 1);

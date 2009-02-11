@@ -19,7 +19,7 @@ public class Ceil extends EvalSite {
 		return (n.equals(i) ? i : i+1);
 	}
 	
-	public static Type type() {
+	public Type type() {
 		return new ArrowType(Type.NUMBER, Type.INTEGER);
 	}
 }

@@ -105,15 +105,7 @@ public class Orc {
 		
 		if (!cfg.getNoPrelude()) {
 			// Load declarations from the default include file.
-			String preludename;
-			// TODO: Merge typed and untyped prelude
-			if (cfg.typeCheckingMode()) {
-				preludename = "typedprelude.inc"; 
-			}
-			else {
-				preludename = "prelude.inc";
-			}
-			
+			String preludename = "prelude.inc";
 			OrcParser fparser = new OrcParser(openInclude(preludename), preludename);
 			decls.addAll(fparser.parseModule());
 		}

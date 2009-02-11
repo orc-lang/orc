@@ -23,9 +23,8 @@ public class Semaphore extends EvalSite {
 		return new SemaphoreInstance(args.intArg(0));
 	}
 	
-	public static final Type semaphoreType = new ArrowType(Type.INTEGER, new SemaphoreType());
-	public static Type type() throws TypeException {
-		return semaphoreType;
+	public Type type() throws TypeException {
+		return new ArrowType(Type.INTEGER, new SemaphoreType());
 	}
 	
 	protected class SemaphoreInstance extends DotSite {

@@ -46,7 +46,7 @@ public class Sub extends EvalSite {
 				op);
 	}
 	
-	public static Type type() {
+	public Type type() {
 		return new MultiType(
 				new ArrowType(Type.INTEGER, Type.INTEGER, Type.INTEGER),
 				new ArrowType(Type.NUMBER, Type.NUMBER, Type.NUMBER)

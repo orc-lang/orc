@@ -32,7 +32,7 @@ public class BoundedBuffer extends EvalSite {
 		return new BufferInstance(args.intArg(0));
 	}
 	
-	public static Type type() throws TypeException {
+	public Type type() throws TypeException {
 		Type X = new TypeVariable(0);
 		Type BufferOfX = (new BoundedBufferType()).instance(X);
 		return new ArrowType(Type.INTEGER, BufferOfX, 1);

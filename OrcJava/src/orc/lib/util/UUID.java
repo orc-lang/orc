@@ -16,7 +16,7 @@ public class UUID extends EvalSite {
 		return java.util.UUID.randomUUID().toString();
 	}
 	
-	public static Type type() {
+	public Type type() {
 		return new ArrowType(Type.STRING);
 	}
 }

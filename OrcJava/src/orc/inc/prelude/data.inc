@@ -2,6 +2,9 @@
 General-purpose supplemental data structures.
 --}
 
+-- Make the List type constructor available
+type List = orc.type.ListType
+
 {--
 * site Semaphore(Integer) :: Semaphore
 Return a semaphore with the given value. The semaphore maintains the invariant
@@ -18,28 +21,29 @@ println("Entering critical section") >>
 println("Leaving critical section") >>
 lock.release()]]></programlisting>
 
-** site Semaphore.acquire() :: Signal
+** site Semaphore.acquire() :: Top
 If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a signal.
 If the semaphore's value is <code>0</code>, block until it becomes greater than <code>0</code>.
 
-** site Semaphore.acquirenb() :: Signal
+** site Semaphore.acquirenb() :: Top
 If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a signal.
 If the semaphore's value is <code>0</code>, halt.
 
-** site Semaphore.release() :: Signal
+** site Semaphore.release() :: Top
 If any calls to <code>acquire</code> are blocked, allow the oldest such call
 to return.  Otherwise, increment the value of the semaphore.  This may
 increment the value beyond that with which the semaphore was constructed.  
 
-** site Semaphore.snoop() :: Signal
+** site Semaphore.snoop() :: Top
 If any calls to <code>acquire</code> are blocked, return a signal.
 Otherwise, block until some call to <code>acquire</code> blocks.
 
-** site Semaphore.snoopnb() :: Signal
+** site Semaphore.snoopnb() :: Top
 If any calls to <code>acquire</code> are blocked, return a signal.
 Otherwise, halt.
 --}
 site Semaphore = orc.lib.state.Semaphore
+type Semaphore = orc.lib.state.types.SemaphoreType
 
 {--
 * site Buffer[A]() :: Buffer[A]
@@ -69,18 +73,18 @@ linkend="orc.lib.Buffer.close">closed</link> and no items are available, halt.
 ** site Buffer[A].getnb() :: A
 Get an item from the buffer. If no items are available, halt.
 
-** site Buffer[A].put(A) :: Signal
+** site Buffer[A].put(A) :: Top
 Put an item in the buffer. If the buffer is <link
 linkend="orc.lib.Buffer.close">closed</link>, halt.
 
-** site Buffer[A].close() :: Signal
+** site Buffer[A].close() :: Top
 Close the buffer and block until it is empty.
 This has the effect of immediately causing any blocked calls to
 <code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
 will halt, and once the buffer becomes empty, any subsequent calls to
 <code>get</code> will halt.
 
-** site Buffer[A].closenb() :: Signal
+** site Buffer[A].closenb() :: Top
 Close the buffer and return a signal immediately.
 This has the effect of immediately causing any blocked calls to
 <code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
@@ -90,12 +94,13 @@ will halt, and once the buffer becomes empty, any subsequent calls to
 ** site Buffer[A].isClosed() :: Boolean
 If the buffer is currently closed, return true, otherwise return false.
 
-** site Buffer[A].getAll() :: [A]
+** site Buffer[A].getAll() :: List[A]
 Get all of the items currently in the buffer, emptying the buffer and returning
 a list of the items in the order they were added. If there are no items in the
 buffer, return an empty list.
 --}
 site Buffer = orc.lib.state.Buffer
+type Buffer = orc.lib.state.types.BufferType
 
 {--
 * site BoundedBuffer[A](Integer) :: BoundedBuffer[A]
@@ -129,15 +134,15 @@ linkend="orc.lib.BoundedBuffer.close">closed</link> and no items are available, 
 ** site BoundedBuffer[A].getnb() :: A
 Get an item from the buffer. If no items are available, halt.
 
-** site BoundedBuffer[A].put(A) :: Signal
+** site BoundedBuffer[A].put(A) :: Top
 Put an item in the buffer. If no slots are open, block until one becomes open.
 If the buffer is <link linkend="orc.lib.BoundedBuffer.close">closed</link>, halt.
 
-** site BoundedBuffer[A].putnb(A) :: Signal
+** site BoundedBuffer[A].putnb(A) :: Top
 Put an item in the buffer. If no slots are open, halt.
 If the buffer is <link linkend="orc.lib.BoundedBuffer.close">closed</link>, halt.
 
-** site BoundedBuffer[A].close() :: Signal
+** site BoundedBuffer[A].close() :: Top
 <!-- XSL/FO doesn't like me using an anchor tag here -->
 <para id="orc.lib.BoundedBuffer.close">
 Close the buffer and block until it is empty.
@@ -148,7 +153,7 @@ will halt, and once the buffer becomes empty, any subsequent calls to
 initiated prior to closing the buffer may still be allowed to return as usual.
 </para>
 
-** site BoundedBuffer[A].closenb() :: Signal
+** site BoundedBuffer[A].closenb() :: Top
 Close the buffer and return a signal immediately.
 This has the effect of immediately causing any blocked calls to
 <code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
@@ -173,6 +178,7 @@ the buffer and returning a list of the items in the order they were added. If
 there are no items in the buffer or waiting to be added, return an empty list.
 --}
 site BoundedBuffer = orc.lib.state.BoundedBuffer
+type BoundedBuffer = orc.lib.state.types.BoundedBufferType
 
 {--
 * site SyncChannel[A]() :: SyncChannel[A]
@@ -191,10 +197,11 @@ val c = SyncChannel()
 ** site SyncChannel[A].get() :: A
 Receive an item over the channel. If no sender is available, block until one becomes available.
 
-** site SyncChannel[A].put(A) :: Signal
+** site SyncChannel[A].put(A) :: Top
 Send an item over the channel. If no receiver is available, block until one becomes available.
 --}
 site SyncChannel = orc.lib.state.SyncChannel
+type SyncChannel = orc.lib.state.types.SyncChannelType
 
 {--
 * site Cell[A]() :: Cell[A]
@@ -213,10 +220,11 @@ Read a value from the cell. If the cell does not yet have a value, block until i
 ** site Cell[A].readnb() :: A
 Read a value from the cell. If the cell does not yet have a value, halt.
 
-** site Cell[A].write() :: Signal
+** site Cell[A].write() :: Top
 Write a value to the cell. If the cell already has a value, halt.
 --}
 site Cell = orc.lib.state.Cell
+type Cell = orc.lib.state.types.CellType
 
 {--
 * site Ref[A]() :: Ref[A]
@@ -242,11 +250,12 @@ Read the value of the ref. If the ref does not yet have a value, block until it 
 ** site Ref[A].readnb() :: A
 Read the value of the ref. If the ref does not yet have a value, halt.
 
-** site Ref[A].write(A) :: Signal
+** site Ref[A].write(A) :: Top
 Write a value to the ref.
 
 --}
 site Ref = orc.lib.state.Ref
+type Ref = orc.lib.state.types.RefType
 
 {--
 ** def (?)[A](Ref[A]) :: A
@@ -255,15 +264,17 @@ Get the value held by a reference.
 
 @implementation
 --}
+def (?)[A](Ref[A]) :: A
 def (?)(r) = r.read()
 
 {--
-** def (:=)[A](Ref[A], A) :: Signal
+** def (:=)[A](Ref[A], A) :: Top
 Set the value held by a reference.
 <code>x := y</code> is equivalent to <code>x.write(y)</code>.
 
 @implementation
 --}
+def (:=)[A](Ref[A], A) :: Top
 def (:=)(r,v) = r.write(v)
 
 {--
@@ -309,7 +320,7 @@ programs will just use the  <code>Array(Integer)</code> constructor.
 Get the element of the array given by the index, counting from 0.
 <code>a.get(i)</code> is equivalent to <code>a(i)?</code>.
 
-** site Array[A].set(Integer, A) :: Signal
+** site Array[A].set(Integer, A) :: Top
 Set the element of the array given by the index, counting from 0.
 <code>a.set(i,v)</code> is equivalent to <code>a(i) := v</code>.
 
@@ -320,7 +331,7 @@ half-open range. The result array is still indexed counting from 0.
 ** site Array[A].length() :: Integer
 Return the size of the array.
 
-** site Array[A].fill(A) :: Signal
+** site Array[A].fill(A) :: Top
 Set every element of the array to the given value. The given value is not
 copied, but is shared by every element of the array, so for example
 <code>a.fill(Semaphore(1))</code> would allow you to access the same semaphore
@@ -335,6 +346,7 @@ val a = Array(3)
 a.fill(0) >> each(a)]]></programlisting>
 --}
 site Array = orc.lib.util.JavaArray
+type Array = orc.lib.state.types.ArrayType
 
 {--
 * def IArray[A](Integer, lambda (Integer) :: A)(Integer) :: A
@@ -358,11 +370,12 @@ a(3)]]></programlisting>
 
 @implementation
 --}
+def IArray[A](Integer, lambda (Integer) :: A)(Integer) :: A
 def IArray(n, f) =
-  val a = Array(n)
-  def fill(i, f) =
-    if i < 0 then []
-    else a.set(i, f(i)):fill(i-1, f)
+  val a = Array[A](n)
+  def fill(i :: Integer, f :: lambda (Integer) :: A) :: Top =
+    if i < 0 then signal
+    else (a.set(i, f(i)), fill(i-1, f)) >> signal
   fill(n-1, f) >> a.get
 
 {--
@@ -383,7 +396,9 @@ An optional value which is not available.
 This site may also be used in a pattern.
 
 --}
-type Option = Some(_) | None()
+type Option = orc.type.OptionType
+site Some = orc.runtime.sites.core.Some
+site None = orc.runtime.sites.core.None
 
 {--
 * site Set[A]() :: Set[A]
@@ -407,7 +422,7 @@ Return true if the set contains the given value, and false otherwise.
 ** site Set[A].isEmpty() :: Boolean
 Return true if the set contains no values.
 
-** site Set[A].clear() :: Signal
+** site Set[A].clear() :: Top
 Remove all values from the set.
 
 ** site Set[A].size() :: Integer
@@ -444,14 +459,13 @@ Return true if the map contains the given key, and false otherwise.
 ** site Map[K,V].isEmpty() :: Boolean
 Return true if the map contains no keys.
 
-** site Map[K,V].clear() :: Signal
+** site Map[K,V].clear() :: Top
 Remove all keys from the map.
 
 ** site Map[K,V].size() :: Integer
 Return the number of unique keys currently contained in the map.
 --}
 class Map = orc.lib.data.Map
-
 
 {--
 * site Counter(Integer) :: Counter
@@ -460,14 +474,14 @@ Create a new counter initialized to the given value.
 ** site Counter() :: Counter
 Create a new counter initialized to zero.
 
-** site Counter.inc() :: Signal
+** site Counter.inc() :: Top
 Increment the counter.
 
-** site Counter.dec() :: Signal
+** site Counter.dec() :: Top
 If the counter is already at zero, halt. Otherwise, decrement
 the counter and return a signal.
 
-** site Counter.onZero() :: Signal
+** site Counter.onZero() :: Top
 If the counter is at zero, return a signal. Otherwise
 block until the counter reaches zero.
 
@@ -481,6 +495,7 @@ val c = Counter(5)
 repeat(c.dec)]]></programlisting>
 --}
 site Counter = orc.lib.state.Counter
+type Counter = orc.lib.state.types.CounterType
 
 {--
 * site Dictionary() :: Dictionary
@@ -539,6 +554,7 @@ Return the first element of a pair.
 
 @implementation
 --}
+def fst[A,B]((A,B)) :: A
 def fst((x,_)) = x
 
 {--
@@ -547,6 +563,7 @@ Return the second element of a pair.
 
 @implementation
 --}
+def snd[A,B]((A,B)) :: B
 def snd((_,y)) = y
 
 {--
@@ -555,4 +572,5 @@ Swap the elements of a pair.
 
 @implementation
 --}
+def swap[A,B]((A,B)) :: (B,A)
 def swap((x,y)) = (y,x)

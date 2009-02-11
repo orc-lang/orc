@@ -30,7 +30,7 @@ public class Random extends PartialSite {
 		}
 	}
 
-	public static Type type() {
+	public Type type() {
 		return new MultiType(
 				new ArrowType(Type.INTEGER),
 				new ArrowType(Type.INTEGER, Type.INTEGER));

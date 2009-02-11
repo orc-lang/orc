@@ -44,7 +44,7 @@ public class Datatype extends EvalSite {
 		return Let.condense(datasites);
 	}
 
-	public static Type type() {
+	public Type type() {
 		return new DatatypeSiteType();
 	}
 	

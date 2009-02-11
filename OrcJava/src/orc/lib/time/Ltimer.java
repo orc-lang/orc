@@ -16,7 +16,7 @@ public class Ltimer extends Site {
 		caller.delay(args.intArg(0));
 	}
 
-	public static Type type() {
+	public Type type() {
 		return new ArrowType(Type.NUMBER, Type.TOP);
 	}
 	

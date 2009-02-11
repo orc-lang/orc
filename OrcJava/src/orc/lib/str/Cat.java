@@ -29,7 +29,7 @@ public class Cat extends EvalSite {
 		return buf.toString();
 	}
 	
-	public static Type type() {
+	public Type type() {
 		return new EllipsisArrowType(Type.STRING, Type.STRING);
 	}
 

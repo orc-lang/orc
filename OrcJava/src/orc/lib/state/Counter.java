@@ -71,7 +71,7 @@ public class Counter extends EvalSite {
 	}
 	
 	
-	public static Type type() {
+	public Type type() {
 		return new MultiType(
 				new ArrowType(new CounterType()),
 				new ArrowType(Type.INTEGER, new CounterType()));

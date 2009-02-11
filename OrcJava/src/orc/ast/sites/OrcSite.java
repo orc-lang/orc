@@ -61,15 +61,6 @@ public class OrcSite extends Site {
 		
 	}
 
-	public Type type() throws TypeException {
-		try {
-			Class cls = classify();
-			return (Type)cls.getMethod("type", new Class[]{}).invoke(null, new Object[]{});
-		} catch (Exception e) {
-			throw new MissingTypeException("Couldn't access type of site due to error: " + e);
-		}
-	}
-	
 	public String toString() {
 		return "orc:"+location;
 	}

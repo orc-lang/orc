@@ -53,7 +53,7 @@ public class Div extends EvalSite {
 				op);
 	}
 	
-	public static Type type() {
+	public Type type() {
 		return new ArrowType(Type.NUMBER, Type.NUMBER, Type.NUMBER);
 	}
 }

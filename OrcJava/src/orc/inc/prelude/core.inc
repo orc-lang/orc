@@ -11,7 +11,20 @@ the <link linkend="language.base.operators">Operators</link> section of the
 User Guide.
 --}
 
+{-
+Basic types
+-}
+type String = orc.type.ground.StringType
+type Number = orc.type.ground.NumberType
+type Boolean = orc.type.ground.BooleanType
+type Integer = orc.type.ground.IntegerType
+type Top = orc.type.ground.Top
+type Bot = orc.type.ground.Bot
+
 {--
+* site let() :: Top
+When applied to no arguments, return a signal.
+
 * site let[A](A) :: A
 When applied to a single argument, return that argument (behaving as the identity function).
 
@@ -21,7 +34,7 @@ When applied to zero, two, or more arguments, return the arguments in a tuple.
 site let = orc.runtime.sites.core.Let
 
 {--
-* site if(Boolean) :: Signal
+* site if(Boolean) :: Top
 Fail silently if the argument is false. Otherwise return a signal.
 
 Example:
@@ -104,25 +117,25 @@ the expression <code>a - (a/b)*b</code>. For a full description, see the
 site (%) = orc.lib.math.Mod
 
 {--
-* site (<)(Comparable, Comparable) :: Boolean
+* site (<)(Top, Top) :: Boolean
 <code>a &lt; b</code> returns true if <code>a</code> is less than <code>b</code>, and false otherwise.
 --}
 site (<) = orc.lib.comp.Less
 
 {--
-* site (<=)(Comparable, Comparable) :: Boolean
+* site (<=)(Top, Top) :: Boolean
 <code>a &lt;= b</code> returns true if <code>a</code> is less than or equal to <code>b</code>, and false otherwise.
 --}
 site (<=) = orc.lib.comp.Leq
 
 {--
-* site (>)(Comparable, Comparable) :: Boolean
+* site (>)(Top, Top) :: Boolean
 <code>a > b</code> returns true if <code>a</code> is greater than <code>b</code>, and false otherwise.
 --}
 site (>) = orc.lib.comp.Greater
 
 {--
-* site (>=)(Comparable, Comparable) :: Boolean
+* site (>=)(Top, Top) :: Boolean
 <code>a >= b</code> returns true if <code>a</code> is greater than or equal to <code>b</code>, and false otherwise.
 --}
 site (>=) = orc.lib.comp.Greq
@@ -204,6 +217,7 @@ Return the absolute value of the argument.
 
 @implementation
 --}
+def abs(Number) :: Number
 def abs(x) = if x < 0 then -x else x
 
 {--
@@ -213,30 +227,43 @@ def abs(x) = if x < 0 then -x else x
 
 @implementation
 --}
+def signum(Number) :: Number
 def signum(x) =
   if x < 0 then -1
   else if x > 0 then 1
   else 0
 
 {--
-* def min[A <: Comparable](A,A) :: A
+* def min[A](A,A) :: A
 Return the lesser of the arguments. If the arguments
 are equal, return the first argument.
 
-Recall that the type constraint <code>A &lt;: Comparable</code>
-means that <code>min</code> can only be applied to arguments
-which are subtypes of <code>Comparable</code>; in other words,
-they must have a total order.
-
 @implementation
 --}
+def min[A](A,A) :: A
 def min(x,y) = if y < x then y else x
 
 {--
-* def max[A <: Comparable](A,A) :: A
+* def max[A](A,A) :: A
 Return the greater of the arguments. If the arguments
 are equal, return the second argument.
 
 @implementation
 --}
+def max[A](A,A) :: A
 def max(x,y) = if x > y then x else y
+
+
+{--
+* site floor(Number) :: Integer
+Return the greatest integer less than
+or equal to this number.
+--}
+site floor = orc.lib.math.Floor
+
+{--
+* site ceil(Number) :: Integer
+Return the least integer greater than
+or equal to this number.
+--}
+site ceil = orc.lib.math.Ceil

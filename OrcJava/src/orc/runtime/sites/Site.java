@@ -78,7 +78,12 @@ public abstract class Site extends Value implements Callable {
 		return visitor.visit(this);
 	}
 	
-	public static Type type() throws TypeException {
-		throw new MissingTypeException();
+	public Type type() throws TypeException {
+		// HACK: if someone doesn't want to provide a type,
+		// then we treat the site as dynamic / untyped.
+		// It might be better to make this method abstract
+		// to force subclasses to implement something appropriate.
+		return Type.BOT;
+		//throw new MissingTypeException();
 	}
 }

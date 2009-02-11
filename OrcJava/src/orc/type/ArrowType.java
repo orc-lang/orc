@@ -95,29 +95,28 @@ public class ArrowType extends Type {
 
 	
 	public boolean subtype(Type that) {
-		
-		if (that instanceof Top) { return true; }
-		
 		ArrowType thatArrow = forceArrow(that);
-		if (thatArrow == null) { return false; }
-		
-		List<Type> otherArgTypes = thatArrow.argTypes;
-		
-		/*
-		 * Arguments are contravariant: make sure
-		 * that each other arg type is a subtype
-		 * of this arg type.
-		 */
-		for(int i = 0; i < argTypes.size(); i++) {
-			Type thisArg = argTypes.get(i);
-			Type otherArg = otherArgTypes.get(i);
-			if (!(otherArg.subtype(thisArg))) { return false; }
+		if (thatArrow != null) {
+			List<Type> otherArgTypes = thatArrow.argTypes;
+			
+			/*
+			 * Arguments are contravariant: make sure
+			 * that each other arg type is a subtype
+			 * of this arg type.
+			 */
+			for(int i = 0; i < argTypes.size(); i++) {
+				Type thisArg = argTypes.get(i);
+				Type otherArg = otherArgTypes.get(i);
+				if (!(otherArg.subtype(thisArg))) { return false; }
+			}
+			
+			/*
+			 * Result type is covariant.
+			 */
+			return this.resultType.subtype(thatArrow.resultType);
+		} else {
+			return super.subtype(that);
 		}
-		
-		/*
-		 * Result type is covariant.
-		 */
-		return this.resultType.subtype(thatArrow.resultType);
 	}
 	
 	/* 
@@ -128,24 +127,21 @@ public class ArrowType extends Type {
 		
 		ArrowType thatArrow = forceArrow(that);
 		if (thatArrow != null) { 
-		
-		List<Type> otherArgTypes = thatArrow.argTypes;
-		
-		List<Type> joinArgTypes = new LinkedList<Type>();
-		Type joinResultType;
-		
-		for(int i = 0; i < argTypes.size(); i++) {
-			Type thisArg = argTypes.get(i);
-			Type otherArg = otherArgTypes.get(i);
-			joinArgTypes.add(thisArg.meet(otherArg));
-		}
-		
-		joinResultType = this.resultType.join(thatArrow.resultType);
-		
-		return new ArrowType(joinArgTypes, joinResultType);
-		
-		}
-		else {
+			List<Type> otherArgTypes = thatArrow.argTypes;
+			
+			List<Type> joinArgTypes = new LinkedList<Type>();
+			Type joinResultType;
+			
+			for(int i = 0; i < argTypes.size(); i++) {
+				Type thisArg = argTypes.get(i);
+				Type otherArg = otherArgTypes.get(i);
+				joinArgTypes.add(thisArg.meet(otherArg));
+			}
+			
+			joinResultType = this.resultType.join(thatArrow.resultType);
+			
+			return new ArrowType(joinArgTypes, joinResultType);
+		} else {
 			return super.join(that);
 		}
 	}
@@ -159,22 +155,21 @@ public class ArrowType extends Type {
 		ArrowType thatArrow = forceArrow(that);
 		if (thatArrow != null) { 
 		
-		List<Type> otherArgTypes = thatArrow.argTypes;
-		
-		List<Type> meetArgTypes = new LinkedList<Type>();
-		Type meetResultType;
-		
-		for(int i = 0; i < argTypes.size(); i++) {
-			Type thisArg = argTypes.get(i);
-			Type otherArg = otherArgTypes.get(i);
-			meetArgTypes.add(thisArg.join(otherArg));
-		}
-		
-		meetResultType = this.resultType.meet(thatArrow.resultType);
-		
-		return new ArrowType(meetArgTypes, meetResultType);
-		}
-		else {
+			List<Type> otherArgTypes = thatArrow.argTypes;
+			
+			List<Type> meetArgTypes = new LinkedList<Type>();
+			Type meetResultType;
+			
+			for(int i = 0; i < argTypes.size(); i++) {
+				Type thisArg = argTypes.get(i);
+				Type otherArg = otherArgTypes.get(i);
+				meetArgTypes.add(thisArg.join(otherArg));
+			}
+			
+			meetResultType = this.resultType.meet(thatArrow.resultType);
+			
+			return new ArrowType(meetArgTypes, meetResultType);
+		} else {
 			return super.meet(that);
 		}
 

@@ -11,7 +11,7 @@ the object to a String.
 site cat = orc.lib.str.Cat
 
 {--
-* site print(Top, ...) :: Signal
+* site print(Top, ...) :: Top
 Print one or more values as strings, concatenated, to standard output.
 For Java objects, this will call <code>toString()</code> to convert
 the object to a String.
@@ -19,7 +19,7 @@ the object to a String.
 site print = orc.lib.str.Print
 
 {--
-* site println(Top, ...) :: Signal
+* site println(Top, ...) :: Top
 Print one or more values as strings, concatenated,
 to standard output, with each value followed by a newline.
 For Java objects, this will call <code>toString()</code> to convert
@@ -52,6 +52,7 @@ Endline characters are not included in the result.
 
 @implementation
 --}
+def lines(String) :: List[String]
 def lines(text) =
   val out = text.split("\n|\r\n|\r")
   if out.get(out.length()-1) = "" then
@@ -65,6 +66,7 @@ and concatenate the results.
 
 @implementation
 --}
+def unlines(List[String]) :: String
 def unlines(line:lines) = cat(line, "\n", unlines(lines))
 def unlines([]) = ""
   
@@ -74,6 +76,7 @@ Split a string into words, which are sequences of non-whitespace characters sepa
 
 @implementation
 --}
+def words(String) :: List[String]
 def words(text) = text.trim().split("\\s+")
 
 {--
@@ -83,6 +86,7 @@ each string.
 
 @implementation
 --}
+def unwords(List[String]) :: String
 def unwords([]) = ""
 def unwords([word]) = word
 def unwords(word:words) = cat(word, " ", unwords(words))

@@ -16,7 +16,7 @@ public class PopLtimer extends Site {
 		caller.resume();
 	}
 	
-	public static Type type() {
+	public Type type() {
 		return new ArrowType(Type.TOP);
 	}
 

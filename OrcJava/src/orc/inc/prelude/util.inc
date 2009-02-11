@@ -15,7 +15,7 @@ If the argument is 0, halt.
 site random = orc.lib.util.Random
 
 {--
-* site urandom() :: Double
+* site urandom() :: Number
 Returns a pseudorandom, uniformly distributed Double value
 between 0 and 1, inclusive.
 --}
@@ -28,7 +28,7 @@ Return a random (type 4) UUID represented as a string.
 site UUID = orc.lib.util.UUID
 
 {--
-* site Thread(Site) :: Site
+* site Thread(Top) :: Bot
 Given a site, return a new site which calls the original site
 in a separate thread.  This is necessary when calling
 a Java site which does not cooperate with Orc's scheduler
@@ -54,7 +54,7 @@ Prompt("What is your name?")]]></programlisting>
 site Prompt = orc.lib.util.Prompt
 
 {--
-* def signals(Integer) :: Signal
+* def signals(Integer) :: Top
 Publish the given number of signals, simultaneously.
 
 Example:
@@ -64,6 +64,7 @@ signals(5)]]></programlisting>
 
 @implementation
 --}
+def signals(Integer) :: Top
 def signals(n) = if n > 0 then (signal | signals(n-1))
 
 {--
@@ -77,6 +78,7 @@ for(1,6)]]></programlisting>
 
 @implementation
 --}
+def for(Integer, Integer) :: Integer
 def for(low, high) =
   if low >= high then stop
   else ( low | for(low+1, high) )
@@ -93,6 +95,7 @@ upto(5)]]></programlisting>
 
 @implementation
 --}
+def upto(Integer) :: Integer
 def upto(high) = for(0, high)
 
 {--
@@ -108,8 +111,10 @@ a.get(0) | a.get(1) | a.get(2)]]></programlisting>
 
 @implementation
 --}
+def fillArray[A](Array[A], lambda (Integer) :: A) :: Array[A]
 def fillArray(a, f) =
   val n = a.length()
+  def fill(Integer, lambda(Integer) :: A) :: Bot
   def fill(i, f) =
     if i = n then stop
     else ( a.set(i, f(i)) >> stop
@@ -125,14 +130,15 @@ halts.
 
 @implementation
 --}
+def takePubs[A](Integer, lambda () :: A) :: A
 def takePubs(n, f) =
-  val out = Buffer()
+  val out = Buffer[A]()
   val c = Counter(n)
   let(
     f() >x>
     if(c.dec() >> out.put(x) >> false
        ; out.closenb() >> true)
-  ) | repeat(out.get)
+  ) >> stop | repeat(out.get)
 
 {--
 * def withLock[A](Semaphore, lambda () :: A) :: A
@@ -141,8 +147,9 @@ thunk. Once the thunk halts, release the semaphore.
 
 @implementation
 --}
+def withLock[A](Semaphore, lambda () :: A) :: A
 def withLock(s, f) =
-  val out = Buffer()
+  val out = Buffer[A]()
   ( s.acquire() >>
     f() >x>
     out.put(x) >>

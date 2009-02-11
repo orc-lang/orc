@@ -69,7 +69,7 @@ public abstract class ComparisonSite extends EvalSite {
 
 	abstract public boolean compare(int a);
 	
-	public static Type type() {
+	public Type type() {
 		return new ArrowType(Type.TOP, Type.TOP, Type.BOOLEAN);
 	}
 }
