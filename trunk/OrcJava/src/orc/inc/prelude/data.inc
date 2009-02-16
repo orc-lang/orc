@@ -6,6 +6,28 @@ General-purpose supplemental data structures.
 type List = orc.type.ListType
 
 {--
+@site Some[A](A) :: Option[A]
+An optional value which is available.
+This site may also be used in a pattern.
+
+Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: (3,4)
+Some((3,4)) >s> (
+    s >Some((x,y))> (x,y)
+  | s >None()> signal
+)]]></programlisting>
+
+@site None[A]() :: Option[A]
+An optional value which is not available.
+This site may also be used in a pattern.
+
+--}
+type Option = orc.type.OptionType
+site Some = orc.runtime.sites.core.Some
+site None = orc.runtime.sites.core.None
+
+{--
 @site Semaphore(Integer) :: Semaphore
 Return a semaphore with the given value. The semaphore maintains the invariant
 that its value is always non-negative.
@@ -378,27 +400,6 @@ def IArray(n, f) =
     else (a.set(i, f(i)), fill(i-1, f)) >> signal
   fill(n-1, f) >> a.get
 
-{--
-@site Some[A](A) :: Option[A]
-An optional value which is available.
-This site may also be used in a pattern.
-
-Example:
-<programlisting language="orc-demo"><![CDATA[
--- Publishes: (3,4)
-Some((3,4)) >s> (
-    s >Some((x,y))> (x,y)
-  | s >None()> signal
-)]]></programlisting>
-
-@site None[A]() :: Option[A]
-An optional value which is not available.
-This site may also be used in a pattern.
-
---}
-type Option = orc.type.OptionType
-site Some = orc.runtime.sites.core.Some
-site None = orc.runtime.sites.core.None
 
 {--
 @site Set[A]() :: Set[A]

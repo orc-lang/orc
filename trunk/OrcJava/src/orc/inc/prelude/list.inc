@@ -264,25 +264,27 @@ def length(h:t) = 1 + length(t)
 @def take[A](Integer, List[A]) :: List[A]
 Given a number <code>n</code> and a list <code>l</code>,
 return the first <code>n</code> elements of <code>l</code>.
+If <code>n</code> exceeds the length of <code>l</code>,
+or <code>n < 0<code>, take remains silent.
 
 @implementation
 --}
 def take[A](Integer, List[A]) :: List[A]
 def take(0, _) = []
-def take(_, []) = []
-def take(n, x:xs) = x:take(n-1, xs)
+def take(n, x:xs) = if(n > 0) then x:take(n-1, xs)
 
 {--
 @def drop[A](Integer, List[A]) :: List[A]
 Given a number <code>n</code> and a list <code>l</code>,
 return the elements of <code>l</code> after the first <code>n</code>.
+If <code>n</code> exceeds the length of <code>l</code>,
+or <code>n < 0<code>, drop remains silent.
 
 @implementation
 --}
 def drop[A](Integer, List[A]) :: List[A]
 def drop(0, xs) = xs
-def drop(_, []) = []
-def drop(n, x:xs) = drop(n-1, xs)
+def drop(n, x:xs) = if(n > 0) then drop(n-1, xs)
 
 {--
 @def member[A](A, List[A]) :: Boolean
