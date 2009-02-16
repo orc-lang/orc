@@ -3,11 +3,11 @@ Miscellaneous utility functions.
 --}
 
 {--
-* site random() :: Integer
+@site random() :: Integer
 Return a random Integer value
 chosen from the range of all possible 32-bit Integer values.
 
-* site random(Integer) :: Integer
+@site random(Integer) :: Integer
 Return a pseudorandom, uniformly distributed Integer value
 between 0 (inclusive) and the specified value (exclusive).
 If the argument is 0, halt.
@@ -15,20 +15,20 @@ If the argument is 0, halt.
 site random = orc.lib.util.Random
 
 {--
-* site urandom() :: Number
+@site urandom() :: Number
 Returns a pseudorandom, uniformly distributed Double value
 between 0 and 1, inclusive.
 --}
 site urandom = orc.lib.util.URandom
 
 {--
-* site UUID() :: String
+@site UUID() :: String
 Return a random (type 4) UUID represented as a string.
 --}
 site UUID = orc.lib.util.UUID
 
 {--
-* site Thread(Top) :: Bot
+@site Thread(Top) :: Bot
 Given a site, return a new site which calls the original site
 in a separate thread.  This is necessary when calling
 a Java site which does not cooperate with Orc's scheduler
@@ -41,7 +41,7 @@ uncooperative sites that can be called simultaneously.
 site Thread = orc.lib.util.ThreadSite
 
 {--
-* site Prompt(String) :: String
+@site Prompt(String) :: String
 Prompt the user for some input. The user may cancel the prompt,
 in which case the site fails silently. Otherwise their response
 is returned as soon as it is received.
@@ -54,7 +54,7 @@ Prompt("What is your name?")]]></programlisting>
 site Prompt = orc.lib.util.Prompt
 
 {--
-* def signals(Integer) :: Top
+@def signals(Integer) :: Top
 Publish the given number of signals, simultaneously.
 
 Example:
@@ -68,7 +68,7 @@ def signals(Integer) :: Top
 def signals(n) = if n > 0 then (signal | signals(n-1))
 
 {--
-* def for(Integer, Integer) :: Integer
+@def for(Integer, Integer) :: Integer
 Publish all values in the given half-open range, simultaneously.
 
 Example:
@@ -84,7 +84,7 @@ def for(low, high) =
   else ( low | for(low+1, high) )
 
 {--
-* def upto(Integer) :: Integer
+@def upto(Integer) :: Integer
 <code>upto(n)</code> publishes all values in the range <code>(0..n-1)</code>
 simultaneously.
 
@@ -99,7 +99,7 @@ def upto(Integer) :: Integer
 def upto(high) = for(0, high)
 
 {--
-* def fillArray[A](Array[A], lambda (Integer) :: A) :: Array[A]
+@def fillArray[A](Array[A], lambda (Integer) :: A) :: Array[A]
 Given an array and a function from indices to values, populate the array
 by calling the function for each index in the array.
 
@@ -122,7 +122,7 @@ def fillArray(a, f) =
   fill(0, f) ; a
 
 {--
-* def takePubs[A](Integer, lambda () :: A) :: A
+@def takePubs[A](Integer, lambda () :: A) :: A
 <code>takePubs(n, f)</code> calls <code>f()</code>,
 publishes the first <code>n</code> values published
 by <code>f()</code> (as they are published), and then
@@ -141,7 +141,7 @@ def takePubs(n, f) =
   ) >> stop | repeat(out.get)
 
 {--
-* def withLock[A](Semaphore, lambda () :: A) :: A
+@def withLock[A](Semaphore, lambda () :: A) :: A
 Acquire the semaphore and run the thunk, publishing all values published by the
 thunk. Once the thunk halts, release the semaphore.
 

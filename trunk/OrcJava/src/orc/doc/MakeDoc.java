@@ -94,10 +94,10 @@ public class MakeDoc {
 		// extract everything between the declaration keyword
 		// and the argument list
 		return type.replaceAll("[a-z]+\\s+(.[^(]+).*", "$1")
-			// drop the method receiver type
-			.replaceFirst("^[^.]+\\.", "")
 			// drop type parameters
-			.replaceFirst("\\[[^\\]]+\\]", "");
+			.replaceFirst("\\[[^\\]]+\\]", "")
+			// drop the method receiver type
+			.replaceFirst("^[^.]+\\.", "");
 	}
 	
 	public static String firstSentence(String para) {
