@@ -1,6 +1,6 @@
 def Countdown(i) = if(i > 0) >> 
 				   ( i 
-				   | Rtimer(100) >> Countdown(i-1) 
+				   | Rtimer(10) >> Countdown(i-1) 
 				   )
 
 Countdown(5)
