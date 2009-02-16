@@ -3,13 +3,13 @@ Real and logical time.
 --}
 
 {--
-* site Rtimer(Integer) :: Top
+@site Rtimer(Integer) :: Top
 Publish a signal after the given number of milliseconds.
 --}
 site Rtimer = orc.lib.time.Rtimer
 
 {--
-* site Clock()() :: Integer
+@site Clock()() :: Integer
 A call to <code>Clock</code> creates a new relative clock.
 Calling a relative clock returns the number
 of milliseconds which have elapsed since the
@@ -24,7 +24,7 @@ Rtimer(1000) >> c()]]></programlisting>
 site Clock = orc.lib.time.Clock 
 
 {--
-* site Ltimer(Integer) :: Top
+@site Ltimer(Integer) :: Top
 Publish a signal after the given number of logical timesteps.
 A logical timestep is complete as soon as all outstanding site
 calls (other than calls to <code>Ltimer</code>) have published.
@@ -32,7 +32,7 @@ calls (other than calls to <code>Ltimer</code>) have published.
 site Ltimer = orc.lib.time.Ltimer
 
 {--
-* def withLtimer[A](lambda () :: A) :: A
+@def withLtimer[A](lambda () :: A) :: A
 Run a thunk in the context of a new logical clock.
 --}
 def withLtimer[A](lambda () :: A) :: A
@@ -46,7 +46,7 @@ def withLtimer(thunk) =
   x
 
 {--
-* def metronome(Integer) :: Top
+@def metronome(Integer) :: Top
 Publish a signal at regular intervals, indefinitely. The period is given by the
 argument, in milliseconds.
 --}

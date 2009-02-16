@@ -22,19 +22,19 @@ type Top = orc.type.ground.Top
 type Bot = orc.type.ground.Bot
 
 {--
-* site let() :: Top
+@site let() :: Top
 When applied to no arguments, return a signal.
 
-* site let[A](A) :: A
+@site let[A](A) :: A
 When applied to a single argument, return that argument (behaving as the identity function).
 
-* site let[A, ...](A, ...) :: (A, ...)
+@site let[A, ...](A, ...) :: (A, ...)
 When applied to zero, two, or more arguments, return the arguments in a tuple.
 --}
 site let = orc.runtime.sites.core.Let
 
 {--
-* site if(Boolean) :: Top
+@site if(Boolean) :: Top
 Fail silently if the argument is false. Otherwise return a signal.
 
 Example:
@@ -46,7 +46,7 @@ Example:
 site if = orc.runtime.sites.core.If
 
 {--
-* site error(String) :: Bot
+@site error(String) :: Bot
 Halt with the given error message.
 
 Example, using <code>error</code> to implement assertions:
@@ -60,19 +60,19 @@ assert(false)]]></programlisting>
 site error = orc.runtime.sites.core.Error
 
 {--
-* site (+)(Number, Number) :: Number
+@site (+)(Number, Number) :: Number
 <code>a+b</code> returns the sum of <code>a</code> and <code>b</code>.
 --}
 site (+) = orc.lib.math.Add
 
 {--
-* site (-)(Number, Number) :: Number
+@site (-)(Number, Number) :: Number
 <code>a-b</code> returns the value of <code>a</code> minus the value of <code>b</code>.
 --}
 site (-) = orc.lib.math.Sub
 
 {--
-* site (0-)(Number) :: Number
+@site (0-)(Number) :: Number
 Return the additive inverse of the argument.
 When this site appears as an operator, it is written in prefix form without the
 zero, i.e. <code>(-a)</code>
@@ -80,13 +80,13 @@ zero, i.e. <code>(-a)</code>
 site (0-) = orc.lib.math.UMinus
 
 {--
-* site (*)(Number, Number) :: Number
+@site (*)(Number, Number) :: Number
 <code>a*b</code> returns the product of <code>a</code> and <code>b</code>.
 --}
 site (*) = orc.lib.math.Mult
 
 {--
-* site (**)(Number, Number) :: Number
+@site (**)(Number, Number) :: Number
 <code>a ** b</code> returns
 <inlineequation><mathphrase>a<superscript>b</superscript></mathphrase></inlineequation>,
 i.e. <code>a</code> raised to the <code>b</code>th power.
@@ -94,7 +94,7 @@ i.e. <code>a</code> raised to the <code>b</code>th power.
 site (**) = orc.lib.math.Exponent
 
 {--
-* site (/)(Number, Number) :: Number
+@site (/)(Number, Number) :: Number
 <code>a/b</code> returns <code>a</code> divided by <code>b</code>.
 If both arguments have integral types, <code>(/)</code> performs integral
 division, rounding towards zero. Otherwise, it performs floating-point
@@ -108,7 +108,7 @@ Example:
 site (/) = orc.lib.math.Div
 
 {--
-* site (%)(Number, Number) :: Number
+@site (%)(Number, Number) :: Number
 <code>a%b</code> computes the remainder of <code>a/b</code>. If <code>a</code>
 and <code>b</code> have integral types, then the remainder is given by
 the expression <code>a - (a/b)*b</code>. For a full description, see the
@@ -117,31 +117,31 @@ the expression <code>a - (a/b)*b</code>. For a full description, see the
 site (%) = orc.lib.math.Mod
 
 {--
-* site (<)(Top, Top) :: Boolean
+@site (<)(Top, Top) :: Boolean
 <code>a &lt; b</code> returns true if <code>a</code> is less than <code>b</code>, and false otherwise.
 --}
 site (<) = orc.lib.comp.Less
 
 {--
-* site (<=)(Top, Top) :: Boolean
+@site (<=)(Top, Top) :: Boolean
 <code>a &lt;= b</code> returns true if <code>a</code> is less than or equal to <code>b</code>, and false otherwise.
 --}
 site (<=) = orc.lib.comp.Leq
 
 {--
-* site (>)(Top, Top) :: Boolean
+@site (>)(Top, Top) :: Boolean
 <code>a > b</code> returns true if <code>a</code> is greater than <code>b</code>, and false otherwise.
 --}
 site (>) = orc.lib.comp.Greater
 
 {--
-* site (>=)(Top, Top) :: Boolean
+@site (>=)(Top, Top) :: Boolean
 <code>a >= b</code> returns true if <code>a</code> is greater than or equal to <code>b</code>, and false otherwise.
 --}
 site (>=) = orc.lib.comp.Greq
 
 {--
-* site (=)(Top, Top) :: Boolean
+@site (=)(Top, Top) :: Boolean
 <code>a = b</code> returns true if <code>a</code> is equal to <code>b</code>,
 and false otherwise.  The precise definition of "equal" depends on the values
 being compared, but always obeys the rule that if two values are considered
@@ -161,19 +161,19 @@ always considered inequal, i.e. the comparison will return <code>false</code>.
 site (=) = orc.runtime.sites.core.Equal
 
 {--
-* site (/=)(Top, Top) :: Boolean
+@site (/=)(Top, Top) :: Boolean
 <code>a/=b</code> returns false if <code>a=b</code>, and true otherwise.
 --}
 site (/=) = orc.runtime.sites.core.Inequal
 
 {--
-* site (~)(Boolean) :: Boolean
+@site (~)(Boolean) :: Boolean
 Return the logical negation of the argument.
 --}
 site (~) = orc.runtime.sites.core.Not
 
 {--
-* site (&&)(Boolean, Boolean) :: Boolean
+@site (&&)(Boolean, Boolean) :: Boolean
 Return the logical conjunction of the arguments. This is not a short-circuiting
 operator; both arguments must be evaluated and available before the result is
 computed.
@@ -181,7 +181,7 @@ computed.
 site (&&) = orc.lib.bool.And
 
 {--
-* site (||)(Boolean, Boolean) :: Boolean
+@site (||)(Boolean, Boolean) :: Boolean
 Return the logical disjunction of the arguments. This is not a short-circuiting
 operator; both arguments must be evaluated and available before the result is
 computed.
@@ -189,7 +189,7 @@ computed.
 site (||) = orc.lib.bool.Or
 
 {--
-* site (:)[A](A, List[A]) :: List[A]
+@site (:)[A](A, List[A]) :: List[A]
 
 The list <code>a:b</code> is formed by prepending the element <code>a</code> to
 the list <code>b</code>.
@@ -212,7 +212,7 @@ and will probably change in future versions of the implementation.
 site (:) = orc.runtime.sites.core.Cons
 
 {--
-* def abs(Number) :: Number
+@def abs(Number) :: Number
 Return the absolute value of the argument.
 
 @implementation
@@ -221,7 +221,7 @@ def abs(Number) :: Number
 def abs(x) = if x < 0 then -x else x
 
 {--
-* def signum(Number) :: Number
+@def signum(Number) :: Number
 <code>signum(a)</code> returns <code>-1</code> if <code>a&lt;0</code>,
 <code>1</code> if <code>a&gt;0</code>, and <code>0</code> if <code>a=0</code>.
 
@@ -234,7 +234,7 @@ def signum(x) =
   else 0
 
 {--
-* def min[A](A,A) :: A
+@def min[A](A,A) :: A
 Return the lesser of the arguments. If the arguments
 are equal, return the first argument.
 
@@ -244,7 +244,7 @@ def min[A](A,A) :: A
 def min(x,y) = if y < x then y else x
 
 {--
-* def max[A](A,A) :: A
+@def max[A](A,A) :: A
 Return the greater of the arguments. If the arguments
 are equal, return the second argument.
 
@@ -255,14 +255,14 @@ def max(x,y) = if x > y then x else y
 
 
 {--
-* site floor(Number) :: Integer
+@site floor(Number) :: Integer
 Return the greatest integer less than
 or equal to this number.
 --}
 site floor = orc.lib.math.Floor
 
 {--
-* site ceil(Number) :: Integer
+@site ceil(Number) :: Integer
 Return the least integer greater than
 or equal to this number.
 --}

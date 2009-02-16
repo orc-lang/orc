@@ -38,9 +38,14 @@ List<DocNode> DocumentationBlock =
 	;
 
 DocNode DocNode =
-	lead:StartDocType type:RestOfLine EndLine? BlankLine* {
-		int depth = lead.trim().length();
-		yyValue = new DocType(depth, type);
+	"@site" Space type:RestOfLine EndLine? BlankLine* {
+		yyValue = new DocType(1, "site " + type);
+	}
+	/ "@def" Space type:RestOfLine EndLine? BlankLine* {
+		yyValue = new DocType(1, "def " + type);
+	}
+	/ "@method" Space type:RestOfLine EndLine? BlankLine* {
+		yyValue = new DocType(2, "site " + type);
 	}
 	/ "@" name:Identifier {
 		yyValue = new DocTag(name);
@@ -50,7 +55,7 @@ DocNode DocNode =
 	}
 	;
 
-String DocParagraph = (XML / !(EndDoc / EndLine (StartDocType / BlankLine)) _)+ ;
+String DocParagraph = (XML / !(EndDoc / EndLine BlankLine) _)+ ;
 
 String DocCode = (!StartDoc (EndLineComment /  MultiLineComment / StringLiteral / _))+;
 
@@ -63,7 +68,6 @@ String XML =
 	;
 
 
-String StartDocType = "*"+ Space ;
 transient String StartDoc = "{--" Space? ;
 transient String EndDoc = Space? [\-]+ [}] ;
 transient String BlankLine = Space? EndLine ;

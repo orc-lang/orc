@@ -5,7 +5,7 @@ operate on the elements of a list in parallel.
 --}
 
 {--
-* def each[A](List[A]) :: A
+@def each[A](List[A]) :: A
 Publish every value in a list, simultaneously.
 
 @implementation
@@ -15,7 +15,7 @@ def each([]) = stop
 def each(h:t) = h | each(t)
 
 {--
-* def map[A,B](lambda (A) :: B, List[A]) :: List[B]
+@def map[A,B](lambda (A) :: B, List[A]) :: List[B]
 Apply a function to every element of a list (in parallel),
 returning a list of the results.
 
@@ -26,7 +26,7 @@ def map(f,[]) = []
 def map(f,h:t) = f(h):map(f,t)
 
 {--
-* def reverse[A](List[A]) :: List[A]
+@def reverse[A](List[A]) :: List[A]
 Return the reverse of the given list.
 
 @implementation
@@ -39,7 +39,7 @@ def reverse(l) =
   tailrev(l,[]) 
 
 {--
-* def filter[A](lambda (A) :: Boolean, List[A]) :: List[A]
+@def filter[A](lambda (A) :: Boolean, List[A]) :: List[A]
 Return a list containing only those elements which satisfy the predicate.
 The filter is applied to all list elements in parallel.
 
@@ -52,7 +52,7 @@ def filter(p,x:xs) =
   if p(x) then x:fxs else fxs
 
 {--
-* def head[A](List[A]) :: A
+@def head[A](List[A]) :: A
 Return the first element of a list.
 
 @implementation
@@ -62,7 +62,7 @@ def head(x:xs) = x
 def head([]) = error("head: empty list")
 
 {--
-* def tail[A](List[A]) :: List[A]
+@def tail[A](List[A]) :: List[A]
 Return all but the first element of a list.
 
 @implementation
@@ -72,7 +72,7 @@ def tail(x:xs) = xs
 def tail([]) = error("tail: empty list")
 
 {--
-* def init[A](List[A]) :: List[A]
+@def init[A](List[A]) :: List[A]
 Return all but the last element of a list.
 
 @implementation
@@ -83,7 +83,7 @@ def init([x]) = []
 def init(x:xs) = x:init(xs)
 
 {--
-* def last[A](List[A]) :: A
+@def last[A](List[A]) :: A
 Return the last element of a list.
 
 @implementation
@@ -94,7 +94,7 @@ def last([x]) = x
 def last(x:xs) = last(xs)
 
 {--
-* def empty[A](List[A]) :: Boolean
+@def empty[A](List[A]) :: Boolean
 Is the list empty?
 
 @implementation
@@ -104,7 +104,7 @@ def empty([]) = true
 def empty(_) = false
 
 {--
-* def index[A](List[A], Integer) :: A
+@def index[A](List[A], Integer) :: A
 Return the nth element of a list, counting from 0.
 
 @implementation
@@ -114,7 +114,7 @@ def index(h:t, 0) = h
 def index(h:t, n) = index(t, n-1)
 
 {--
-* def append[A](List[A], List[A]) :: List[A]
+@def append[A](List[A], List[A]) :: List[A]
 Return the first list concatenated with the second.
 
 @implementation
@@ -124,7 +124,7 @@ def append([],l) = l
 def append(h:t,l) = h:append(t,l)
 
 {--
-* def foldl[A,B](lambda (B, A) :: B, B, List[A]) :: B
+@def foldl[A,B](lambda (B, A) :: B, B, List[A]) :: B
 Reduce a list using the given left-associative binary operation and initial value.
 Given the list <code>[x1, x2, x3, ...]</code> and initial value <code>x0</code>,
 returns <code>f(... f(f(f(x0, x1), x2), x3) ...)</code>
@@ -141,7 +141,7 @@ def foldl(f,z,[]) = z
 def foldl(f,z,x:xs) = foldl(f,f(z,x),xs)
 
 {--
-* def foldl1[A](lambda (A, A) :: A, List[A]) :: A
+@def foldl1[A](lambda (A, A) :: A, List[A]) :: A
 A special case of <code>foldl</code> which uses the last element of the list as the
 initial value. It is an error to call this on an empty list.
 
@@ -152,7 +152,7 @@ def foldl1(f,x:xs) = foldl(f,x,xs)
 def foldl1(_,[]) = error("foldl1: empty list")
 
 {--
-* def foldr[A,B](lambda (A, B) :: B, B, List[A]) :: B
+@def foldr[A,B](lambda (A, B) :: B, B, List[A]) :: B
 Reduce a list using the given right-associative binary operation and initial value.
 Given the list <code>[..., x3, x2, x1]</code> and initial value <code>x0</code>,
 returns <code>f(... f(x3, f(x2, f(x1, x0))) ...)</code>
@@ -168,7 +168,7 @@ def foldr[A,B](lambda (A, B) :: B, B, List[A]) :: B
 def foldr(f,z,xs) = foldl(flip(f),z,reverse(xs))
   
 {--
-* def foldr1[A](lambda (A, A) :: A, List[A]) :: A
+@def foldr1[A](lambda (A, A) :: A, List[A]) :: A
 A special case of <code>foldr</code> which uses the last element of the list as the
 initial value. It is an error to call this on an empty list.
 
@@ -178,7 +178,7 @@ def foldr1[A](lambda (A, A) :: A, List[A]) :: A
 def foldr1(f,xs) = foldl1(flip(f),reverse(xs))
 
 {--
-* def afold[A](lambda (A, A) :: A, List[A]) :: A
+@def afold[A](lambda (A, A) :: A, List[A]) :: A
 Reduce a non-empty list using the given associative binary operation.
 This function reduces independent subexpressions in parallel; the
 calls exhibit a balanced tree structure, so the number of sequential 
@@ -200,7 +200,7 @@ def afold(f, xs) =
 
 
 {--
-* def cfold[A](lambda (A, A) :: A, List[A]) :: A
+@def cfold[A](lambda (A, A) :: A, List[A]) :: A
 Reduce a non-empty list using the given associative and commutative binary operation.
 This function opportunistically reduces independent subexpressions in parallel, so the number of
 sequential reductions performed is as small as possible.  For expensive reductions, this
@@ -229,7 +229,7 @@ def cfold(f, L) =
 
 
 {--
-* def zip[A,B](List[A], List[B]) :: List[(A,B)]
+@def zip[A,B](List[A], List[B]) :: List[(A,B)]
 Combine two lists into a list of pairs.
 The length of the shortest list determines the length of the result.
 
@@ -241,7 +241,7 @@ def zip(_,[]) = []
 def zip(x:xs,y:ys) = (x,y):zip(xs,ys)
 
 {--
-* def unzip[A,B](List[(A,B)]) :: (List[A], List[B])
+@def unzip[A,B](List[(A,B)]) :: (List[A], List[B])
 Split a list of pairs into a pair of lists.
 
 @implementation
@@ -251,7 +251,7 @@ def unzip([]) = ([],[])
 def unzip((x,y):z) = (x:xs,y:ys) <(xs,ys)< unzip(z)
 
 {--
-* def length[A](List[A]) :: Integer
+@def length[A](List[A]) :: Integer
 Return the number of elements in a list.
 
 @implementation
@@ -261,7 +261,7 @@ def length([]) = 0
 def length(h:t) = 1 + length(t)
 
 {--
-* def take[A](Integer, List[A]) :: List[A]
+@def take[A](Integer, List[A]) :: List[A]
 Given a number <code>n</code> and a list <code>l</code>,
 return the first <code>n</code> elements of <code>l</code>.
 
@@ -273,7 +273,7 @@ def take(_, []) = []
 def take(n, x:xs) = x:take(n-1, xs)
 
 {--
-* def drop[A](Integer, List[A]) :: List[A]
+@def drop[A](Integer, List[A]) :: List[A]
 Given a number <code>n</code> and a list <code>l</code>,
 return the elements of <code>l</code> after the first <code>n</code>.
 
@@ -285,7 +285,7 @@ def drop(_, []) = []
 def drop(n, x:xs) = drop(n-1, xs)
 
 {--
-* def member[A](A, List[A]) :: Boolean
+@def member[A](A, List[A]) :: Boolean
 Return true if the given item is a member of the given list, and false
 otherwise.
 
@@ -298,7 +298,7 @@ def member(item, h:t) =
   else member(item, t)
   
 {--
-* def merge[A](List[A], List[A]) :: List[A]
+@def merge[A](List[A], List[A]) :: List[A]
 Merge two sorted lists.
 
 Example:
@@ -312,7 +312,7 @@ def merge[A](List[A], List[A]) :: List[A]
 def merge(xs,ys) = mergeBy((<), xs, ys)
 
 {--
-* def mergeBy[A](lambda (A,A) :: Boolean, List[A], List[A]) :: List[A]
+@def mergeBy[A](lambda (A,A) :: Boolean, List[A], List[A]) :: List[A]
 Merge two lists using the given less-than relation.
 
 @implementation
@@ -325,7 +325,7 @@ def mergeBy(lt, x:xs, y:ys) =
   else x:mergeBy(lt,xs,y:ys)
 
 {--
-* def sort[A](List[A]) :: List[A]
+@def sort[A](List[A]) :: List[A]
 Sort a list.
 
 Example:
@@ -339,7 +339,7 @@ def sort[A](List[A]) :: List[A]
 def sort(xs) = sortBy((<), xs)
 
 {--
-* def sortBy[A](lambda (A,A) :: Boolean, List[A]) :: List[A]
+@def sortBy[A](lambda (A,A) :: Boolean, List[A]) :: List[A]
 Sort a list using the given less-than relation.
 
 @implementation
@@ -353,7 +353,7 @@ def sortBy(lt, xs) =
   mergeBy(lt, sortBy(lt, front), sortBy(lt, back))
  
 {--
-* def mergeUnique[A](List[A], List[A]) :: List[A]
+@def mergeUnique[A](List[A], List[A]) :: List[A]
 Merge two sorted lists, discarding duplicates.
 
 Example:
@@ -367,7 +367,7 @@ def mergeUnique[A](List[A], List[A]) :: List[A]
 def mergeUnique(xs,ys) = mergeUniqueBy((=), (<), xs, ys)
 
 {--
-* def mergeUniqueBy[A](lambda (A,A) :: Boolean, lambda (A,A) :: Boolean, List[A], List[A]) :: List[A]
+@def mergeUniqueBy[A](lambda (A,A) :: Boolean, lambda (A,A) :: Boolean, List[A], List[A]) :: List[A]
 Merge two lists, discarding duplicates, using the given equality and less-than relations.
 
 @implementation
@@ -381,7 +381,7 @@ def mergeUniqueBy(eq, lt, x:xs, y:ys) =
   else x:mergeUniqueBy(eq,lt,xs,y:ys)
 
 {--
-* def sortUnique[A](List[A]) :: List[A]
+@def sortUnique[A](List[A]) :: List[A]
 Sort a list, discarding duplicates.
 
 Example:
@@ -395,7 +395,7 @@ def sortUnique[A](List[A]) :: List[A]
 def sortUnique(xs) = sortUniqueBy((=), (<), xs)
 
 {--
-* def sortUniqueBy[A](lambda (A,A) :: Boolean, lambda (A,A) :: Boolean, List[A]) :: List[A]
+@def sortUniqueBy[A](lambda (A,A) :: Boolean, lambda (A,A) :: Boolean, List[A]) :: List[A]
 Sort a list, discarding duplicates, using the given equality and less-than relations.
 
 @implementation
@@ -411,7 +411,7 @@ def sortUniqueBy(eq, lt, xs) =
     sortUniqueBy(eq, lt, back))
   
 {--
-* def group[A,B](List[(A,B)]) :: List[(A,List[B])]
+@def group[A,B](List[(A,B)]) :: List[(A,List[B])]
 Given a list of pairs, group together the second
 elements of consecutive pairs with equal first elements.
 
@@ -426,7 +426,7 @@ def group[A,B](List[(A,B)]) :: List[(A,List[B])]
 def group(xs) = groupBy((=), xs)
 
 {--
-* def groupBy[A,B](lambda (A,A) :: Boolean, List[(A,B)]) :: List[(A,List[B])]
+@def groupBy[A,B](lambda (A,A) :: Boolean, List[(A,B)]) :: List[(A,List[B])]
 Given a list of pairs, group together the second
 elements of consecutive pairs with equal first elements,
 using the given equality relation.
@@ -444,7 +444,7 @@ def groupBy(eq, (k,v):kvs) =
   helper(k,[v], kvs)
  
 {--
-* def rangeBy(Number, Number, Number) :: List[Number]
+@def rangeBy(Number, Number, Number) :: List[Number]
 <code>rangeBy(low, high, skip)</code> returns a sorted list of
 numbers <code>n</code> which satisfy <code>n = low + skip*i</code> (for some
 integer <code>i</code>), <code>n &gt;= low</code>, and <code>n &lt; high</code>.
@@ -458,7 +458,7 @@ def rangeBy(low, high, skip) =
   else []
  
 {--
-* def range(Number, Number) :: List[Number]
+@def range(Number, Number) :: List[Number]
 Generate a list of numbers in the given half-open range.
 
 @implementation
@@ -467,7 +467,7 @@ def range(Number, Number) :: List[Number]
 def range(low, high) = rangeBy(low, high, 1)
 
 {--
-* def any[A](lambda (A) :: Boolean, List[A]) :: Boolean
+@def any[A](lambda (A) :: Boolean, List[A]) :: Boolean
 Return true if any of the elements of the list match the predicate, and false otherwise.
 The predicate is applied to all elements of the list in parellel; the result
 is returned as soon as it is known and any unnecessary evaluation of the predicate
@@ -485,7 +485,7 @@ def any(p, x:xs) =
   )
   
 {--
-* def all[A](lambda (A) :: Boolean, List[A]) :: Boolean
+@def all[A](lambda (A) :: Boolean, List[A]) :: Boolean
 Return true if all of the elements of the list match the predicate, and false otherwise.
 The predicate is applied to all elements of the list in parellel; the result
 is returned as soon as it is known and any unnecessary evaluation of the predicate
@@ -503,7 +503,7 @@ def all(p, x:xs) =
   )
 
 {--
-* def sum(List[Number]) :: Number
+@def sum(List[Number]) :: Number
 Return the sum of all numbers in a list.
 The sum of an empty list is 0.
 
@@ -513,7 +513,7 @@ def sum(List[Number]) :: Number
 def sum(xs) = foldl((+) :: lambda (Number, Number) :: Number, 0, xs)
 
 {--
-* def product(List[Number]) :: Number
+@def product(List[Number]) :: Number
 Return the product of all numbers in a list.
 The product of an empty list is 1.
 
@@ -523,7 +523,7 @@ def product(List[Number]) :: Number
 def product(xs) = foldl((*) :: lambda (Number, Number) :: Number, 1, xs)
 
 {--
-* def and(List[Boolean]) :: Boolean
+@def and(List[Boolean]) :: Boolean
 Return the boolean conjunction of all boolean values in the list.
 The conjunction of an empty list is <code>true</code>.
 
@@ -535,7 +535,7 @@ def and(false:xs) = false
 def and(true:xs) = and(xs)
 
 {--
-* def or(List[Boolean]) :: Boolean
+@def or(List[Boolean]) :: Boolean
 Return the boolean disjunction of all boolean values in the list.
 The disjunction of an empty list is <code>false</code>.
 
@@ -547,7 +547,7 @@ def or(true:xs) = true
 def or(false:xs) = or(xs)
 
 {--
-* def minimum[A](List[A]) :: A
+@def minimum[A](List[A]) :: A
 Return the minimum element of a non-empty list.
 
 @implementation
@@ -556,7 +556,7 @@ def minimum[A](List[A]) :: A
 def minimum(xs) = foldl1(lambda (x::A, y::A) = min(x,y), xs)
 
 {--
-* def maximum[A](List[A]) :: A
+@def maximum[A](List[A]) :: A
 Return the maximum element of a non-empty list.
 
 @implementation
