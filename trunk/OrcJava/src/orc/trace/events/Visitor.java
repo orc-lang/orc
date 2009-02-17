@@ -7,8 +7,6 @@ package orc.trace.events;
  * @param <V> return type of visitor
  */
 public interface Visitor<V> {
-	public V visit(AfterEvent event);
-	public V visit(BeforeEvent event);
 	public V visit(BlockEvent event);
 	public V visit(ChokeEvent event);
 	public V visit(DieEvent event);

@@ -16,7 +16,6 @@ public class SemiRegion extends Region {
 	
 	protected void reallyClose(Token closer) {
 		if (t != null) {
-			t.getTracer().after(closer.getTracer().before());
 			t.unsetQuiescent();
 			t.activate();
 		}

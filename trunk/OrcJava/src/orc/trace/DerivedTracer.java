@@ -34,14 +34,6 @@ public abstract class DerivedTracer extends Tracer {
 			this.tracer = tracer;
 		}
 
-		public void after(BeforeTrace before) {
-			tracer.after(before);
-		}
-
-		public BeforeTrace before() {
-			return tracer.before();
-		}
-		
 		public void block(PullTrace pull) {
 			tracer.block(pull);
 		}
