@@ -31,8 +31,8 @@ import orc.trace.values.Value;
  * 
  * @author quark
  */
-public abstract class AbstractTracer implements Tracer {
-	private class TokenTracerImpl implements TokenTracer {
+public abstract class AbstractTracer extends Tracer {
+	private class TokenTracerImpl extends TokenTracer {
 		/** The current thread */
 		private final ForkEvent thread;
 		/** The timestamp of the last call made (for {@link ReceiveEvent}). */

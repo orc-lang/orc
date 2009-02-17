@@ -7,13 +7,13 @@ package orc.trace;
  * 
  * @author quark
  */
-public interface Tracer {
+public abstract class Tracer {
 	/**
 	 * Begin an execution; return the tracer for the first token.
 	 */
-	public TokenTracer start();
+	public abstract TokenTracer start();
 	/**
 	 * End an execution.
 	 */
-	public void finish();
+	public abstract void finish();
 }

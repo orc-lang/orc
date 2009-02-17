@@ -30,7 +30,7 @@ import orc.runtime.values.Closure;
  * 
  * @author quark
  */
-public interface TokenTracer extends Locatable {
+public abstract class TokenTracer implements Locatable {
 	/** Abstract handle for a store event */
 	public interface StoreTrace {}
 	/** Abstract handle for a pull event */
@@ -41,15 +41,15 @@ public interface TokenTracer extends Locatable {
 	 * Create a new thread. By convention the new thread should
 	 * evaluate the right side of the combinator.
 	 */
-	public TokenTracer fork();
+	public abstract TokenTracer fork();
 	/**
 	 * Terminate a thread.
 	 */
-	public void die();
+	public abstract void die();
 	/**
 	 * Call a site.
 	 */
-	public void send(Object site, Object[] arguments);
+	public abstract void send(Object site, Object[] arguments);
 	/**
 	 * Store a value for a future. The return value should be used when tracing
 	 * the results of this store. If this returns null, clients are free to
@@ -64,44 +64,44 @@ public interface TokenTracer extends Locatable {
 	 * @see #choke(orc.trace.TokenTracer.StoreTrace)
 	 * @see #unblock(orc.trace.TokenTracer.StoreTrace)
 	 */
-	public StoreTrace store(PullTrace event, Object value);
+	public abstract StoreTrace store(PullTrace event, Object value);
 	/**
 	 * Killed through the setting of a future.
 	 * Should be followed by {@link #die()}.
 	 */
-	public void choke(StoreTrace store);
+	public abstract void choke(StoreTrace store);
 	/**
 	 * Return from a site call. Should be called after
 	 * {@link #send(Object, Object[])}.
 	 */
-	public void receive(Object value);
+	public abstract void receive(Object value);
 	/**
 	 * Block a thread waiting for a future.
 	 */
-	public void block(PullTrace pull);
+	public abstract void block(PullTrace pull);
 	/**
 	 * Receive a future we were waiting for.
 	 */
-	public void unblock(StoreTrace store);
+	public abstract void unblock(StoreTrace store);
 	/**
 	 * Print to stdout.
 	 */
-	public void print(String value, boolean newline);
+	public abstract void print(String value, boolean newline);
 	/**
 	 * Publish a value from the program.
 	 * Should be followed by {@link #die()}.
 	 */
-	public void publish(Object value);
+	public abstract void publish(Object value);
 	/**
 	 * Report an error.
 	 * Should be followed by {@link #die()}.
 	 */
-	public void error(TokenException error);
+	public abstract void error(TokenException error);
 	/**
 	 * Create a new future for a pull.
 	 * Should be followed by {@link #fork()}.
 	 */
-	public PullTrace pull();
+	public abstract PullTrace pull();
 	/**
 	 * Leaving the left side of a semicolon combinator. If the thread is
 	 * "leaving" because it is dying, this will be followed by a {@link #die()};
@@ -110,26 +110,26 @@ public interface TokenTracer extends Locatable {
 	 * 
 	 * @return a tag which you can pass to {@link #after(BeforeTrace)}.
 	 */
-	public BeforeTrace before();
+	public abstract BeforeTrace before();
 	/**
 	 * Enter a closure.
 	 * EXPERIMENTAL
 	 */
-	public void enter(Closure closure);
+	public abstract void enter(Closure closure);
 	/**
 	 * Leave "depth" closures
 	 * EXPERIMENTAL
 	 */
-	public void leave(int depth);
+	public abstract void leave(int depth);
 	/**
 	 * Indicate that the right side of a semicolon combinator is continuing.
 	 * @param before the BeforeEvent which triggered this event
 	 */
-	public void after(BeforeTrace before);
+	public abstract void after(BeforeTrace before);
 	/**
 	 * Called when a token reads a value from a group cell which has
 	 * already been stored.
 	 * @param storeTrace the trace produced when {@link #store(orc.trace.TokenTracer.PullTrace, Object)} was called
 	 */
-	public void useStored(StoreTrace storeTrace);
+	public abstract void useStored(StoreTrace storeTrace);
 }
