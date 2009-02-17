@@ -38,11 +38,6 @@ public class NullTracer extends Tracer {
 		public StoreTrace store(PullTrace event, Object value) {
 			return null;
 		}
-		public void after(BeforeTrace before) {
-		}
-		public BeforeTrace before() {
-			return null;
-		}
 		public void useStored(StoreTrace storeTrace) {}
 	};
 }

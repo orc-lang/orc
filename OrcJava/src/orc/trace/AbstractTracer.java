@@ -3,8 +3,6 @@ package orc.trace;
 import orc.error.SourceLocation;
 import orc.error.runtime.TokenException;
 import orc.runtime.values.Closure;
-import orc.trace.events.AfterEvent;
-import orc.trace.events.BeforeEvent;
 import orc.trace.events.BlockEvent;
 import orc.trace.events.ChokeEvent;
 import orc.trace.events.DieEvent;
@@ -117,14 +115,6 @@ public abstract class AbstractTracer extends Tracer {
 		}
 		public void publish(Object value) {
 			annotateAndRecord(new OnlyHandle<Event>(new PublishEvent(marshaller.marshal(value))));
-		}
-		public BeforeTrace before() {
-			BeforeEvent out = new BeforeEvent();
-			annotateAndRecord(new FirstHandle<Event>(out));
-			return out;
-		}
-		public void after(BeforeTrace before) {
-			annotateAndRecord(new OnlyHandle<Event>(new AfterEvent((BeforeEvent)before)));
 		}
 
 		protected void annotateAndRecord(final Handle<? extends Event> eventh) {

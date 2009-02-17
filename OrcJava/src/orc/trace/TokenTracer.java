@@ -103,15 +103,6 @@ public abstract class TokenTracer implements Locatable {
 	 */
 	public abstract PullTrace pull();
 	/**
-	 * Leaving the left side of a semicolon combinator. If the thread is
-	 * "leaving" because it is dying, this will be followed by a {@link #die()};
-	 * otherwise it may be followed by any number of events which happen outside
-	 * the scope of the semicolon.
-	 * 
-	 * @return a tag which you can pass to {@link #after(BeforeTrace)}.
-	 */
-	public abstract BeforeTrace before();
-	/**
 	 * Enter a closure.
 	 * EXPERIMENTAL
 	 */
@@ -121,11 +112,6 @@ public abstract class TokenTracer implements Locatable {
 	 * EXPERIMENTAL
 	 */
 	public abstract void leave(int depth);
-	/**
-	 * Indicate that the right side of a semicolon combinator is continuing.
-	 * @param before the BeforeEvent which triggered this event
-	 */
-	public abstract void after(BeforeTrace before);
 	/**
 	 * Called when a token reads a value from a group cell which has
 	 * already been stored.

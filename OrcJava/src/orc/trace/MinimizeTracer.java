@@ -37,14 +37,6 @@ public class MinimizeTracer extends DerivedTracer {
 
 		private boolean inSend = false;
 		@Override
-		public void after(BeforeTrace before) {}
-	
-		@Override
-		public BeforeTrace before() {
-			return null;
-		}
-		
-		@Override
 		public void enter(Closure closure) {}
 		
 		@Override
