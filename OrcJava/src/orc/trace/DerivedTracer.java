@@ -12,7 +12,7 @@ import orc.trace.TokenTracer.StoreTrace;
  * 
  * @author quark
  */
-public abstract class DerivedTracer implements Tracer {
+public abstract class DerivedTracer extends Tracer {
 	private Tracer tracer;
 	public DerivedTracer(Tracer tracer) {
 		this.tracer = tracer;
@@ -28,7 +28,7 @@ public abstract class DerivedTracer implements Tracer {
 	
 	protected abstract TokenTracer newTokenTracer(TokenTracer tracer);
 	
-	protected abstract class DerivedTokenTracer implements TokenTracer {
+	protected abstract class DerivedTokenTracer extends TokenTracer {
 		protected TokenTracer tracer;
 		public DerivedTokenTracer(TokenTracer tracer) {
 			this.tracer = tracer;

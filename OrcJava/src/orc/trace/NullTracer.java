@@ -8,7 +8,7 @@ import orc.runtime.values.Closure;
  * Do-nothing tracer, used when tracing is not enabled.
  * @author quark
  */
-public class NullTracer implements Tracer {
+public class NullTracer extends Tracer {
 	public TokenTracer start() {
 		return TOKEN_TRACER;
 	}
