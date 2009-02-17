@@ -692,6 +692,7 @@ Cor.
 Cor supports two basic data structures, <firstterm>tuples</firstterm> and <firstterm>lists</firstterm>.
 </para>
 
+<section><title>Tuples</title>
 <para>
 A <firstterm>tuple expression</firstterm> is a comma-separated sequence of at least two 
 expressions, enclosed by parentheses. Each expression is evaluated; the value of the whole 
@@ -706,6 +707,10 @@ If any of the expressions is silent, then the whole tuple expression is silent.
 <listitem><code>(2/2, 2/1, 2/0)</code> is silent.</listitem>
 </itemizedlist>
 </para>
+
+</section>
+
+<section><title>Lists</title>
 
 <para>
 A <firstterm>list expression</firstterm> is a comma-separated sequence of expressions enclosed by
@@ -739,6 +744,7 @@ so F<code>:</code>G<code>:</code>H is F<code>:(</code>G<code>:</code>H<code>)</c
 </itemizedlist>
 </para>
 
+</section>
 
 </section>
 
@@ -953,6 +959,11 @@ Then, <code>Onetwosum( lambda(x) = x * 3 )</code> evaluates to 9.
 
 </para>
 
+<para>
+Since a function defined using <code>lambda</code> has no name, it is not possible to define 
+a recursive function in this way. Only <code>def</code> can create a recursive function.
+</para>
+
 </section>
 
 
@@ -1019,13 +1030,13 @@ def Fib(n) = if (n < 0) then 0 else H(n) >(x,_)> x
 </para>
 
 <para>
-As a more complex example of matching, consider the following function which finds
-the first <code>n</code> elements of a list (the list is assumed to be at least
-<code>n</code> elements long).
+As a more complex example of matching, consider the following function which takes
+a list argument and returns a new list containing only the first <code>n</code> 
+elements of the argument list. 
 
 <programlisting><![CDATA[
 def Take(0,_) = []
-def Take(n,h:t) = h:(Take(n-1,t))
+def Take(n,h:t) = if (n > 0) then h:(Take(n-1,t)) else []
 ]]></programlisting>
 </para>
 
@@ -2067,17 +2078,6 @@ The item G+ means "one or more instances of G concatenated together".
 <entry></entry>
 <entry>|</entry>
 
-<entry><code>!</code>P</entry>
-
-<entry></entry>
-<entry><emphasis>publish pattern</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
 <entry>P <code>as</code> X</entry>
 
 <entry></entry>
@@ -2278,43 +2278,6 @@ expression. If the call target expression never publishes, no call occurs.
 
 <section><title>Extensions to pattern matching</title>
 
-<section><title>Publish pattern</title>
-
-<para>
-A publish pattern, written <code>!p</code>, will publish the value that matches the pattern 
-<code>p</code> if the match is successful.
-</para>
-
-<para>
-<programlisting language="orc-demo"><![CDATA[
-(1,2,3)  >(x,!y,!z)> stop
-]]></programlisting>
-</para>
-
-<para>
-This publishes <code>2</code> and <code>3</code>. 
-</para>
-
-<para>
-Note that a publish pattern will not publish if the overall match fails, even if its particular match succeeds:
-</para>
-
-<para>
-<programlisting language="orc-demo"><![CDATA[
-( (1,2,3) | (4,5,6) )  >(1,!x,y)>  stop
-]]></programlisting>
-</para>
-
-<para>
-This publishes only <code>2</code>. Even though the pattern <code>x</code> matches the value <code>5</code>, 
-the overall pattern <code>(1,!x,y)</code> does not match the value <code>(4,5,6)</code>, so <code>5</code> 
-is not published.
-</para>
-
-<!-- explain the translation of publish patterns? -->
-
-</section>
-
 <section><title>As pattern</title>
 
 <para>
@@ -2342,7 +2305,7 @@ val ((ax,ay) as a, (bx,by) as b) = ((1,2),(3,4))
 <para>
 A site pattern, written <code>M(p,...,p)</code>, matches any value which was published by a call to the
 site <code>M</code> with arguments that match the tuple <code>(p,...,p)</code>. Site patterns only work
-for sites which have unique inverses; they are usually used on sites which tag or structure data.
+for sites which have unique inverses; datatype patterns are a special case of site patterns.
 </para>
 
 <para>
@@ -3616,8 +3579,7 @@ val c = Cell()
 
 </section>
 
-
-<section><title>Interruptible</title>
+<section><title>Interruption</title>
 
 <para>
 It is sometimes useful to be able to <firstterm>interrupt</firstterm> the
@@ -3627,19 +3589,27 @@ that it should stop.  The following program runs the expression F until it is
 </para>
 
 <programlisting><![CDATA[
-val interrupt = Semaphore(0)
-
-  let( ]]><emphasis role="bold">F</emphasis><![CDATA[ >> stop | interrupt.acquire() )
-| ( Prompt("Interrupt?") >> interrupt.release() )
+val c = Buffer()
+val err = Cell()
+  Prompt("Interrupt?") >> err.write() 
+| repeat(c.get)
+    << ]]><emphasis role="bold">F</emphasis><![CDATA[ >x> c.put(x) >> stop 
+     | err.read() >> c.closenb()
 ]]>
 </programlisting>
+
+<para>
+Notice that this is just a special case of the exception handling mechanism
+introduced earlier. 
+</para>
 
 <para>
 We can write a function <code>interruptible</code> that implements this idiom
 to execute any function in an interruptible way.  <code>interruptible(g)</code>
 calls the function <code>g</code>, which is assumed to take no arguments, and
 silences its publications. It immediately publishes another function, which we
-can call at any time to terminate the execution of <code>g</code>.
+can call at any time to terminate the execution of <code>g</code>. For simplicity,
+we assume that <code>g</code> itself publishes no values.
 </para>
 
 <para>
@@ -3648,12 +3618,14 @@ Here is a naive implementation that doesn't quite work:
 
 <programlisting><![CDATA[
 def interruptible(f) =
-  val i = Semaphore(0)
-  i.release | let( f() >> stop | i.acquire() )
+  val err = Cell()
+  err.write
+    << f() >> stop 
+     | err.read() >> c.closenb()
 
 {- wrong! -}
 val stopper = interruptible(g)
-...stopper()...
+...
 ]]>
 </programlisting>
 
@@ -3661,7 +3633,7 @@ val stopper = interruptible(g)
 The function <code>interruptible</code> is correct, but the way it is used causes a strange error.
 The function <code>g</code> executes, but is always immediately terminated! This happens because the
 <code>val</code> declaration which binds <code>stopper</code> also kills all of the remaining
-computation in <code>interruptiuble(g)</code>, including the execution of <code>g</code> itself.
+computation in <code>interruptible(g)</code>, including the execution of <code>g</code> itself.
 </para>
 
 <para>
@@ -3670,8 +3642,10 @@ The solution is to bind the variable differently:
 
 <programlisting><![CDATA[
 def interruptible(f) =
-  val i = Semaphore(0)
-  i.release | let(f() >> stop | i.acquire())
+  val err = Cell()
+  err.write
+    << f() >> stop 
+     | err.read() >> c.closenb()
 
 interruptible(g) >stopper>
 ...
@@ -3679,7 +3653,7 @@ interruptible(g) >stopper>
 </programlisting>
 
 <para>
-This idiom, where a function publishes some value that can be used to monitor or control its 
+This idiom, wherein a function publishes some value that can be used to monitor or control its 
 execution, arises occasionally in Orc programming. When using this idiom, always remember to
 avoid terminating that execution accidentally. Since Orc is a structured concurrent language,
 every process is contained with some other process; kill the containing process, and the
@@ -3688,7 +3662,41 @@ contained processes die too.
 
 </section>
 
+<section><title>Lifting</title>
 
+It is often useful to explicitly lift an execution, so that it is in some sense protected from
+being terminated. We can do this by running a "lifter" process, to which we can send functions
+that will be executed by the lifter and thus will not be terminated unless the lifter itself
+is terminated.
+
+Such a lifter is written by creating a channel, and running a loop which listens for functions to
+be sent on the channel and executes those functions as they arrive. The lifter publishes only
+the put method for the channel; the loop itself publishes no values, since the values published by the 
+lifted functions are silenced.
+
+Here, we write such a lifter, and then use it to protect a function call from a timeout.
+
+<programlisting language="orc-demo"><![CDATA[
+def lifter() =
+  val c = Buffer()
+  def loop() = c.get() >f> ( f() >> stop | loop() )
+  c.put | loop()
+
+def delayedPrint() = Rtimer(1500) >> println("Delayed 1.5 seconds")
+
+lifter() >lift>
+(
+println("Running...") 
+  << Rtimer(1000) | delayedPrint() | lift(delayedPrint)
+)
+]]>
+</programlisting>
+
+The timeout stops the execution of <code>delayedPrint()</code>, so it does not print a result.
+However, the lifted execution of <code>delayedPrint</code> does succeed, since it is executing
+within the loop of <code>lifter()</code>, unaffected by the timeout.
+
+</section>
 
 </section>
 
