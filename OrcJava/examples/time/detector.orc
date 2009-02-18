@@ -1,6 +1,9 @@
 {- Heisenbug detector. Make sure your processor fan is working. -}
 
+def track(Number, String) :: Bot
 def track(t, s) =
+  def report(Number) :: Top
+  def tick(Number) :: Bot
   def report(n) = Rtimer(t) >> println(s + ": " + n)
   def tick(n) = report(n) >> tick((n % 99) + 1)
   tick(1)

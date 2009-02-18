@@ -1,4 +1,6 @@
+def isPrime(Number) :: Boolean
 def isPrime(n) = 
+  def primeat(Integer) :: Boolean
   def primeat(i) = 
     val b = i * i <= n
       if(b) >> (n % i /= 0) && primeat(i+1)

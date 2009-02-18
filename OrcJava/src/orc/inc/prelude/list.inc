@@ -244,6 +244,18 @@ def unzip[A,B](List[(A,B)]) :: (List[A], List[B])
 def unzip([]) = ([],[])
 def unzip((x,y):z) = (x:xs,y:ys) <(xs,ys)< unzip(z)
 
+
+{--
+@def concat[A](List[List[A]]) :: List[A]
+Concatenate a list of lists into a single list.
+
+@implementation
+--}
+def concat[A](List[List[A]]) :: List[A]
+def concat([]) = []
+def concat(h:t) = append(h,concat(t))
+
+
 {--
 @def length[A](List[A]) :: Integer
 Return the number of elements in a list.

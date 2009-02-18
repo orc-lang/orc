@@ -1,4 +1,4 @@
-def simulate(n) =
+def simulate(n :: String) =
   val x = Rtimer(100)
     stop
   | Rtimer(0) >> Ltimer(3) >> n+": "+4

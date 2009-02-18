@@ -1,4 +1,4 @@
-val c = Buffer()
+val c = Buffer[Integer]()
 c.get()
 | Rtimer(200) >> c.get()
 | Rtimer(200) >> c.get()

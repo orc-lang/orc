@@ -19,6 +19,10 @@ Example ls function which lists
 files in directories: results are
 hard-coded.
 --}
+
+type Path = String
+
+def ls(Path) :: List[Path]
 def ls("/") = ["usr/", "bin/", "lib/"]
 def ls("/usr/") = ["local/", "bin/", "lib/"]
 def ls("/usr/bin/") = ["ls", "sh", "find"]
@@ -28,15 +32,14 @@ def ls(_) = []
 
 {-
 This implementation makes use of map
-and foldr to achieve a much more concise
+and concat to achieve a much more concise
 and readable solution.
 -}
 
-def flatten(lists) = foldr(append, [], lists)
 
-def find(root) =
-  def resolve(file) = root + file
-  root:flatten(map(find, map(resolve, ls(root))))
+def find(root :: Path) :: List[Path] =
+  def resolve(file :: Path) = root + file
+  root:concat(map(find, map(resolve, ls(root))))
 
 find("/")
 

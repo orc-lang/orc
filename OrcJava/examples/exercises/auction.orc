@@ -13,6 +13,9 @@ function should return the value of the winning
 bid.
 --}
 
+type Bid = Number
+
+def auction(List[lambda(Bid) :: Bid], Bid) :: Bid
 def auction(bidders, max) =
   val (done, bid) =
     Rtimer(100) >> (true, max)
@@ -23,8 +26,11 @@ def auction(bidders, max) =
   println("Current bid: " +  max) >>
   if done then max else auction(bidders, bid)
   
+
+def bidder(Bid)(Bid) :: Bid
 def bidder(max)(n) = if(n < max) >> n + 1
-auction(map(lambda (x) = bidder(x), range(0,10)), 1)
+
+auction(map(lambda (x :: Bid) = bidder(x), range(0,10)), 1)
 
 {-
 OUTPUT:

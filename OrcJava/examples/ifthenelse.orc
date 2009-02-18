@@ -1,3 +1,4 @@
+def downfrom(Integer) :: Integer
 def downfrom(n) =
   if n = 0
   then 0
