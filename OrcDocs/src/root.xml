@@ -6,9 +6,8 @@
 
 <book
 	xmlns:xlink="http://www.w3.org/1999/xlink"
-	xmlns:xi="http://www.w3.org/2001/XInclude"
-	xmlns:orc="http://orc.csres.utexas.edu/OrcDocs">
-<title>Orc User Guide v<orc:version/></title>
+	xmlns:xi="http://www.w3.org/2001/XInclude">
+<title>Orc User Guide v<xi:include href="../VERSION" parse="text"/></title>
   
 <preface><title>Introduction</title>
 	
@@ -27,7 +26,9 @@ learn more about Orc and run your own Orc programs, visit the website:
 </para>
 
 <para>
-Unless otherwise noted, all material in this document pertains to the Orc language implementation version  <orc:version/>.
+Unless otherwise noted, all material in this document pertains to the
+Orc language implementation version
+<xi:include href="../VERSION" parse="text"/>.
 </para>
 
 
