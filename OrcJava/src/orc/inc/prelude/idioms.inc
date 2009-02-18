@@ -151,7 +151,7 @@ the infinite expression <code>f() >x> ( x | f() >x> ( x | f() >x> ... ) )</code>
 @implementation
 --}
 def repeat[A](lambda () :: A) :: A
-def repeat(f) = f() >!x> repeat(f)
+def repeat(f) = f() >x> (x | repeat(f))
 
 {--
 @def fork[A](List[lambda () :: A]) :: A

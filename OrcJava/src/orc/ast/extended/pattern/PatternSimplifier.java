@@ -35,7 +35,6 @@ public class PatternSimplifier {
 	List<Argument> boundVars;
 	Map<NamedVar, Integer> bindingEntries;
 	Map<Var, Type> ascriptions;
-	Set<Integer> publishEntries;
 	List<Attachment> attachments;
 	
 	public PatternSimplifier() 
@@ -43,7 +42,6 @@ public class PatternSimplifier {
 		this.requiredVars = new LinkedList<Argument>();
 		this.boundVars = new LinkedList<Argument>();
 		this.bindingEntries = new TreeMap<NamedVar,Integer>();
-		this.publishEntries = new TreeSet<Integer>();
 		this.attachments = new LinkedList<Attachment>();
 		this.ascriptions = new HashMap<Var, Type>();
 	}
@@ -69,11 +67,6 @@ public class PatternSimplifier {
 	public void require(Var s) {
 		requiredVars.add(s);
 	}
-	
-	public void publish(Var s) {
-		publishEntries.add(bind(s));
-	}
-
 	
 	private int bind(Var s) {
 		int i = boundVars.indexOf(s);
@@ -122,12 +115,6 @@ public class PatternSimplifier {
 				// we don't use the index since it must be 0.
 				g = g.subst(u, x);
 			}
-
-			for (Integer i : publishEntries) {
-				// we don't use the index since it must be 0.
-				Expression getter = new Let(u);
-				g = new Parallel(g, getter);
-			}
 		}
 		/* Otherwise, each entry is retrieved with a lookup */
 		else {		
@@ -142,10 +129,6 @@ public class PatternSimplifier {
 				g = new Where(g, getter, v);
 			}
 
-			for (Integer i : publishEntries) {
-				Expression getter = Pattern.nth(u,i);
-				g = new Parallel(g, getter);
-			}
 		}
 		
 		return g;

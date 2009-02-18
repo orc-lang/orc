@@ -1,3 +1,11 @@
+include "prelude/core.inc"
+include "prelude/data.inc"
+include "prelude/time.inc"
+include "prelude/idioms.inc"
+include "prelude/list.inc"
+include "prelude/text.inc"
+include "prelude/util.inc"
+
 -- Three different ways to prefill arrays:
 -- An immutable array with the value equal to the index
 val a = IArray(3, let)
