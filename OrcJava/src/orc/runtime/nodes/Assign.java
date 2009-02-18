@@ -28,8 +28,4 @@ public class Assign extends Node {
 		t.bind(val);
 		t.move(next).activate();
 	}
-
-	public <E> E accept(Visitor<E> visitor) {
-		return visitor.visit(this);
-	}
 }

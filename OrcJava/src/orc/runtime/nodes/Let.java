@@ -30,10 +30,6 @@ public class Let extends Node {
 		}
 	}
 	
-	public <E> E accept(Visitor<E> visitor) {
-		return visitor.visit(this);
-	}
-	
 	public String toString() {
 		return "Let(" + arg + ")";
 	}

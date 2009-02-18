@@ -28,7 +28,4 @@ public class WithLocation extends Node implements Located {
 	public SourceLocation getSourceLocation() {
 		return location;
 	}
-	public <E> E accept(Visitor<E> visitor) {
-		return visitor.visit(this);
-	}
 }

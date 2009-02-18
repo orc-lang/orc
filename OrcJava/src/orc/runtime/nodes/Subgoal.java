@@ -42,8 +42,4 @@ public class Subgoal extends Node {
 		t.bind(cell).move(left).activate();
 		forked.move(right).activate();
 	}
-	
-	public <E> E accept(Visitor<E> visitor) {
-		return visitor.visit(this);
-	}
 }

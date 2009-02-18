@@ -64,10 +64,6 @@ public class Call extends Node {
 		}
 	}
 	
-	public <E> E accept(Visitor<E> visitor) {
-		return visitor.visit(this);
-	}
-	
 	public String toString() {
 		return "Call(" + callee + ", " + args + ")";
 	}

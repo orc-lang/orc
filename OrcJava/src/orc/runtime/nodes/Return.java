@@ -15,8 +15,4 @@ public class Return extends Node {
 	public void process(Token t) {
 		t.leaveClosure().activate();
 	}
-	
-	public <E> E accept(Visitor<E> visitor) {
-		return visitor.visit(this);
-	}
 }
