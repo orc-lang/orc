@@ -111,7 +111,8 @@ a.get(0) | a.get(1) | a.get(2)]]></programlisting>
 
 @implementation
 --}
-def fillArray[A](Array[A], lambda (Integer) :: A) :: Array[A]
+def fillArray[A](Array[A], lambda (Integer) :: A)
+  :: Array[A]
 def fillArray(a, f) =
   val n = a.length()
   def fill(Integer, lambda(Integer) :: A) :: Bot

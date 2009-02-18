@@ -59,7 +59,6 @@ Return the first element of a list.
 --}
 def head[A](List[A]) :: A
 def head(x:xs) = x
-def head([]) = error("head: empty list")
 
 {--
 @def tail[A](List[A]) :: List[A]
@@ -69,7 +68,6 @@ Return all but the first element of a list.
 --}
 def tail[A](List[A]) :: List[A]
 def tail(x:xs) = xs
-def tail([]) = error("tail: empty list")
 
 {--
 @def init[A](List[A]) :: List[A]
@@ -78,7 +76,6 @@ Return all but the last element of a list.
 @implementation
 --}
 def init[A](List[A]) :: List[A]
-def init([]) = error("init: empty list")
 def init([x]) = []
 def init(x:xs) = x:init(xs)
 
@@ -89,7 +86,6 @@ Return the last element of a list.
 @implementation
 --}
 def last[A](List[A]) :: A
-def last([]) = error("last: empty list")
 def last([x]) = x
 def last(x:xs) = last(xs)
 
@@ -149,7 +145,6 @@ initial value. It is an error to call this on an empty list.
 --}
 def foldl1[A](lambda (A, A) :: A, List[A]) :: A
 def foldl1(f,x:xs) = foldl(f,x,xs)
-def foldl1(_,[]) = error("foldl1: empty list")
 
 {--
 @def foldr[A,B](lambda (A, B) :: B, B, List[A]) :: B
@@ -188,7 +183,6 @@ is much more efficient than <code>foldl</code> or <code>foldr</code>.
 @implementation
 --}
 def afold[A](lambda (A, A) :: A, List[A]) :: A
-def afold(f, []) = error("afold: empty list")
 def afold(f, [x]) = x
 {- Here's the interesting part -}
 def afold(f, xs) =
@@ -265,26 +259,30 @@ def length(h:t) = 1 + length(t)
 Given a number <code>n</code> and a list <code>l</code>,
 return the first <code>n</code> elements of <code>l</code>.
 If <code>n</code> exceeds the length of <code>l</code>,
-or <code>n < 0<code>, take remains silent.
+or <code>n &lt; 0</code>, take halts with an error.
 
 @implementation
 --}
 def take[A](Integer, List[A]) :: List[A]
 def take(0, _) = []
-def take(n, x:xs) = if(n > 0) then x:take(n-1, xs)
+def take(n, x:xs) =
+  if n > 0 then x:take(n-1, xs)
+  else error("Cannot take(" + n + ", _)")
 
 {--
 @def drop[A](Integer, List[A]) :: List[A]
 Given a number <code>n</code> and a list <code>l</code>,
 return the elements of <code>l</code> after the first <code>n</code>.
 If <code>n</code> exceeds the length of <code>l</code>,
-or <code>n < 0<code>, drop remains silent.
+or <code>n &lt; 0</code>, drop halts with an error.
 
 @implementation
 --}
 def drop[A](Integer, List[A]) :: List[A]
 def drop(0, xs) = xs
-def drop(n, x:xs) = if(n > 0) then drop(n-1, xs)
+def drop(n, x:xs) =
+  if n > 0 then drop(n-1, xs)
+  else error("Cannot drop(" + n + ", _)")
 
 {--
 @def member[A](A, List[A]) :: Boolean
@@ -319,7 +317,8 @@ Merge two lists using the given less-than relation.
 
 @implementation
 --}
-def mergeBy[A](lambda (A,A) :: Boolean, List[A], List[A]) :: List[A]
+def mergeBy[A](lambda (A,A) :: Boolean,
+               List[A], List[A]) :: List[A]
 def mergeBy(lt, xs, []) = xs
 def mergeBy(lt, [], ys) = ys
 def mergeBy(lt, x:xs, y:ys) =
@@ -350,8 +349,9 @@ def sortBy[A](lambda (A,A) :: Boolean, List[A]) :: List[A]
 def sortBy(lt, []) = []
 def sortBy(lt, [x]) = [x]
 def sortBy(lt, xs) =
-  length(xs)/2 >half>
-  (take(floor(half),xs), drop(ceil(half),xs)) >(front, back)>
+  val half = length(xs)/2
+  val front = take(floor(half),xs)
+  val back = drop(ceil(half),xs)
   mergeBy(lt, sortBy(lt, front), sortBy(lt, back))
  
 {--
@@ -374,7 +374,10 @@ Merge two lists, discarding duplicates, using the given equality and less-than r
 
 @implementation
 --}
-def mergeUniqueBy[A](lambda (A,A) :: Boolean, lambda (A,A) :: Boolean, List[A], List[A]) :: List[A]
+def mergeUniqueBy[A](lambda (A,A) :: Boolean,
+                     lambda (A,A) :: Boolean,
+                      List[A], List[A])
+  :: List[A]
 def mergeUniqueBy(eq, lt, xs, []) = xs
 def mergeUniqueBy(eq, lt, [], ys) = ys
 def mergeUniqueBy(eq, lt, x:xs, y:ys) =
@@ -402,7 +405,10 @@ Sort a list, discarding duplicates, using the given equality and less-than relat
 
 @implementation
 --}
-def sortUniqueBy[A](lambda (A,A) :: Boolean, lambda (A,A) :: Boolean, List[A]) :: List[A]
+def sortUniqueBy[A](lambda (A,A) :: Boolean,
+                    lambda (A,A) :: Boolean,
+                    List[A])
+  :: List[A]
 def sortUniqueBy(eq, lt, []) = []
 def sortUniqueBy(eq, lt, [x]) = [x]
 def sortUniqueBy(eq, lt, xs) =
@@ -435,7 +441,9 @@ using the given equality relation.
 
 @implementation
 --}
-def groupBy[A,B](lambda (A,A) :: Boolean, List[(A,B)]) :: List[(A,List[B])]
+def groupBy[A,B](lambda (A,A) :: Boolean,
+                 List[(A,B)])
+  :: List[(A,List[B])]
 def groupBy(eq, []) = []
 def groupBy(eq, (k,v):kvs) =
   def helper(A, List[B], List[(A,B)]) :: List[(A,List[B])]
@@ -512,7 +520,9 @@ The sum of an empty list is 0.
 @implementation
 --}
 def sum(List[Number]) :: Number
-def sum(xs) = foldl((+) :: lambda (Number, Number) :: Number, 0, xs)
+def sum(xs) = foldl(
+  (+) :: lambda (Number, Number) :: Number,
+  0, xs)
 
 {--
 @def product(List[Number]) :: Number
@@ -522,7 +532,9 @@ The product of an empty list is 1.
 @implementation
 --}
 def product(List[Number]) :: Number
-def product(xs) = foldl((*) :: lambda (Number, Number) :: Number, 1, xs)
+def product(xs) = foldl(
+  (*) :: lambda (Number, Number) :: Number,
+  1, xs)
 
 {--
 @def and(List[Boolean]) :: Boolean
@@ -555,7 +567,10 @@ Return the minimum element of a non-empty list.
 @implementation
 --}
 def minimum[A](List[A]) :: A
-def minimum(xs) = foldl1(lambda (x::A, y::A) = min(x,y), xs)
+def minimum(xs) =
+  -- this def appeases the typechecker
+  def minA(x::A,y::A) = min(x,y)
+  foldl1(minA, xs)
 
 {--
 @def maximum[A](List[A]) :: A
@@ -564,4 +579,7 @@ Return the maximum element of a non-empty list.
 @implementation
 --}
 def maximum[A](List[A]) :: A
-def maximum(xs) = foldl1(lambda (x::A, y::A) = max(x,y), xs)
+def maximum(xs) =
+  -- this def appeases the typechecker
+  def maxA(x::A,y::A) = max(x,y)
+  foldl1(maxA, xs)
