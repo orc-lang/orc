@@ -24,7 +24,7 @@ def auction(bidders, max) =
   if done then max else auction(bidders, bid)
   
 def bidder(max)(n) = if(n < max) >> n + 1
-auction(map(lambda (_) = bidder(random(10)), range(0,10)), 1)
+auction(map(lambda (x) = bidder(x), range(0,10)), 1)
 
 {-
 OUTPUT:
