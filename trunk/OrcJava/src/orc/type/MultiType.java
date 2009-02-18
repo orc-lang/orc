@@ -56,4 +56,17 @@ public class MultiType extends Type {
 		throw new TypeException("Typing failed for call; no alternatives matched.");
 	}
 	
+	public String toString() {
+		
+		StringBuilder s = new StringBuilder();
+		
+		s.append('(');
+		for (int i = 0; i < alts.size(); i++) {
+			if (i > 0) { s.append(" & "); }
+			s.append(alts.get(i));
+		}
+		s.append(')');
+		
+		return s.toString();
+	}	
 }

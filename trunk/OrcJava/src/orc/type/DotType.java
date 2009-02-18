@@ -57,6 +57,23 @@ public class DotType extends Type {
 	public Type call(List<Type> args) throws TypeException {
 		return defaultType.call(args);
 	}
+	
+	
+	public String toString() {
+		
+		StringBuilder s = new StringBuilder();
+		
+		s.append('(');
+		s.append(defaultType);
+		for (String f : fieldMap.keySet()) {
+			s.append(" & ");
+			s.append("." + f + " :: ");
+			s.append(fieldMap.get(f));
+		}
+		s.append(')');
+		
+		return s.toString();
+	}
 }
 	
 class NoDefaultType extends Type {
@@ -69,4 +86,7 @@ class NoDefaultType extends Type {
 		throw new TypeException("This site has no default behavior; it can only be called via messages");
 	}
 	
+	public String toString() {
+		return "no_default_type";
+	}
 }

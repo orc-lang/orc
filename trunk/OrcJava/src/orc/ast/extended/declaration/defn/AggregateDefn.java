@@ -3,10 +3,13 @@ package orc.ast.extended.declaration.defn;
 import java.util.LinkedList;
 import java.util.List;
 
+import orc.ast.extended.AssertType;
 import orc.ast.extended.pattern.Pattern;
 import orc.ast.simple.Definition;
+import orc.ast.simple.HasType;
 import orc.ast.simple.arg.Var;
 import orc.ast.simple.type.ArrowType;
+import orc.ast.simple.type.AssertedType;
 import orc.ast.simple.type.Type;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;
@@ -61,6 +64,12 @@ public class AggregateDefn {
 			Clause c = clauses.get(i);
 			// Simplify and prepend this clause to the expression body
 			body = c.simplify(formals,body);
+		}
+		
+		if (resultType != null && resultType instanceof AssertedType) {
+			AssertedType atype = (AssertedType)resultType;
+			resultType = atype.type;
+			body = new HasType(body, atype.type, false);
 		}
 		
 		return new orc.ast.simple.Definition(var, formals, body, typeParams, argTypes, resultType, location);
