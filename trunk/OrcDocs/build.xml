@@ -11,8 +11,6 @@
 		This Ant build.xml file is used to transform DocBook XML to various other formats
 	</description>
 
-	<property file="build.properties" />
-
 	<!--
       - Configure basic properties that will be used in the file.
       -->
@@ -77,7 +75,6 @@
 				basedir="${src.dir}" destdir="${build.dir}/html">
 			<include name="all.xml" />
 			<classpath refid="xalan.classpath" />
-			<param name="orc.version" expression="${orc.version}"/>
 			<param name="orc.demo" expression="1"/>
 			<param name="section.autolabel" expression="1"/>
 			<param name="section.label.includes.component.label" expression="1"/>
@@ -103,7 +100,6 @@
 				basedir="${src.dir}" destdir="${build.dir}/html">
 			<include name="all.xml" />
 			<classpath refid="xalan.classpath" />
-			<param name="orc.version" expression="${orc.version}"/>
 			<param name="orc.demo" expression="0"/>
 			<param name="section.autolabel" expression="1"/>
 			<param name="section.label.includes.component.label" expression="1"/>
@@ -132,7 +128,6 @@
 	    <xslt style="${src.dir}/xsl/fo.xsl" extension=".fo" 
 			basedir="${src.dir}" destdir="${build.dir}/fo">
 	        <classpath refid="xalan.classpath" />
-		<param name="orc.version" expression="${orc.version}"/>
 	    	<param name="section.autolabel" expression="1"/>
 	    	<param name="section.label.includes.component.label" expression="1"/>
 	    	<param name="section.autolabel.max.depth" expression="8"/>
