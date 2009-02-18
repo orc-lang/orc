@@ -42,7 +42,7 @@ import orc.trace.TokenTracer;
  * to the next token.
  * @author wcook, dkitchin, quark
  */
-public final class Token implements Serializable, Locatable {
+public class Token implements Serializable, Locatable {
 	/**
 	 * Return pointer for a function call.
 	 * At one point we used a token for the return pointer,
@@ -97,7 +97,7 @@ public final class Token implements Serializable, Locatable {
 	/**
 	 * Initialize a root token.
 	 */
-	void initializeRoot(Node node, Region region, OrcEngine engine, TokenTracer tracer) {
+	final void initializeRoot(Node node, Region region, OrcEngine engine, TokenTracer tracer) {
 		// create the root logical clock
 		LogicalClock clock = new LogicalClock(null);
 		initialize(node, new Env<Object>(),
@@ -110,7 +110,7 @@ public final class Token implements Serializable, Locatable {
 	/**
 	 * Initialize a forked token.
 	 */
-	void initializeFork(Token that, GroupCell group, Region region) {
+	final void initializeFork(Token that, GroupCell group, Region region) {
 		initialize(that.node, that.env.clone(),
 				that.continuation, group, region, that.trans,
 				that.result, that.engine, that.location,
@@ -121,7 +121,7 @@ public final class Token implements Serializable, Locatable {
 	/**
 	 * Free any resources held by this token.
 	 */
-	void free() {
+	final void free() {
 		node = null;	
 		env = null;
 		group = null;
@@ -158,7 +158,7 @@ public final class Token implements Serializable, Locatable {
 	 * Should only be called on non-quiescent tokens.
 	 * Synchronized because tokens may be killed from site threads.
 	 */
-	public synchronized void die() {
+	public final synchronized void die() {
 		assert(alive);
 		alive = false;
 		region.remove(this);
@@ -170,7 +170,7 @@ public final class Token implements Serializable, Locatable {
 	/**
 	 * If a token is alive, calls the node to perform the next action.
 	 */
-	public void process() {
+	public final void process() {
 		if (!alive) {
 			return;
 		} else if (group.isAlive()) {
@@ -180,45 +180,45 @@ public final class Token implements Serializable, Locatable {
 		}
 	}
 
-	public Node getNode() {
+	public final Node getNode() {
 		return node;
 	}
 
-	public GroupCell getGroup() {
+	public final GroupCell getGroup() {
 		return group;
 	}
 	
-	public Env<Object> getEnvironment() {
+	public final Env<Object> getEnvironment() {
 		return env;
 	}
 
-	public Object getResult() {
+	public final Object getResult() {
 		return result;
 	}
 
-	public OrcEngine getEngine() {
+	public final OrcEngine getEngine() {
 		return engine;
 	}
 	
-	public Region getRegion() {
+	public final Region getRegion() {
 		return region;
 	}
 	
-	public Transaction getTransaction() {
+	public final Transaction getTransaction() {
 		return trans;
 	}
 	
-	public Token setResult(Object result) {
+	public final Token setResult(Object result) {
 		this.result = result;
 		return this;
 	}
 	
-	public Token setGroup(GroupCell group) {
+	public final Token setGroup(GroupCell group) {
 		this.group = group;
 		return this;
 	}
 
-	public Token setTransaction(Transaction trans) {
+	public final Token setTransaction(Transaction trans) {
 		this.trans = trans;
 		return this;
 	}
@@ -226,7 +226,7 @@ public final class Token implements Serializable, Locatable {
 	/**
 	 * Migrate the token from one region to another.
 	 */
-	public Token setRegion(Region region) {
+	public final Token setRegion(Region region) {
 		// the order of operations ensures
 		// that we don't close a region prematurely
 		region.add(this);
@@ -236,7 +236,7 @@ public final class Token implements Serializable, Locatable {
 	}
 	
 	
-	public TokenTracer getTracer() {
+	public final TokenTracer getTracer() {
 		return tracer;
 	}
 
@@ -245,7 +245,7 @@ public final class Token implements Serializable, Locatable {
 	 * @param node the node to move to
 	 * @return returns self
 	 */
-	public Token move(Node node) {
+	public final Token move(Node node) {
 		this.node = node;
 		return this;
 	}
@@ -255,7 +255,7 @@ public final class Token implements Serializable, Locatable {
 	 * and setting the continuation for {@link #leaveClosure()}.
 	 * @throws StackLimitReachedError 
 	 */
-	public Token enterClosure(Closure closure, Node next) throws StackLimitReachedError {
+	public final Token enterClosure(Closure closure, Node next) throws StackLimitReachedError {
 		if (stackAvailable == 0) {
 			throw new StackLimitReachedError();
 		} else if (stackAvailable > 0) {
@@ -280,7 +280,7 @@ public final class Token implements Serializable, Locatable {
 	 * Leave a closure by returning to the continuation set by
 	 * {@link #enterClosure(Node, Env, Node)}.
 	 */
-	public Token leaveClosure() {
+	public final Token leaveClosure() {
 		int depth = continuation.depth;
 		this.env = continuation.env.clone();
 		move(continuation.node);
@@ -297,7 +297,7 @@ public final class Token implements Serializable, Locatable {
 	 * @param f		future to push
 	 * @return		self
 	 */
-	public Token bind(Object f) {
+	public final Token bind(Object f) {
 		env.add(f);
 		return this;
 	}
@@ -308,7 +308,7 @@ public final class Token implements Serializable, Locatable {
 	 * @param width number of bindings to leave
 	 * @return self
 	 */
-	public Token unwind(int width) {
+	public final Token unwind(int width) {
 		env.unwind(width);
 		return this;
 	}
@@ -319,29 +319,29 @@ public final class Token implements Serializable, Locatable {
 	 * @return value, or an error if the variable is undefined
 	 * @throws SiteResolutionException 
 	 */
-	public Object lookup(Arg var) throws SiteResolutionException {
+	public final Object lookup(Arg var) throws SiteResolutionException {
 		return var.resolve(env);
 	}
 	
-	public void debug(String s) {
+	public final void debug(String s) {
 		engine.debug(s);
 	}
 	
-	public void activate() {
+	public final void activate() {
 		engine.activate(this);
 	}
 	
-	public void resume(Object object) {
+	public final void resume(Object object) {
 		this.result = object;
 		engine.resume(this);
 	}
 	
 	/* A return with no arguments simply returns a signal */
-	public void resume() {
+	public final void resume() {
 		resume(Value.signal());
 	}
 	
-	private SourceLocation[] getBacktrace() {
+	private final SourceLocation[] getBacktrace() {
 		LinkedList<SourceLocation> out = new LinkedList<SourceLocation>();
 		out.add(location);
 		for (Continuation c = continuation; c != null; c = c.continuation) {
@@ -351,7 +351,7 @@ public final class Token implements Serializable, Locatable {
 	}
 	
 	/* This token has encountered an error, and dies. */
-	public void error(TokenException problem) {
+	public final void error(TokenException problem) {
 		problem.setSourceLocation(getSourceLocation());
 		problem.setBacktrace(getBacktrace());
 		tracer.error(problem);
@@ -366,7 +366,7 @@ public final class Token implements Serializable, Locatable {
 	/**
 	 * Print something (for use by the print and println sites).
 	 */
-	public void print(String string, boolean newline) {
+	public final void print(String string, boolean newline) {
 		tracer.print(string, newline);
 		engine.print(string, newline);
 	}
@@ -374,7 +374,7 @@ public final class Token implements Serializable, Locatable {
 	/**
 	 * Publish a value to the top level.
 	 */
-	public void publish() {
+	public final void publish() {
 		tracer.publish(result);
 		engine.publish(result);
 	}
@@ -384,7 +384,7 @@ public final class Token implements Serializable, Locatable {
 	 * @throws TokenLimitReachedError 
 	 * @see #fork(GroupCell, Region)
 	 */
-	public Token fork() throws TokenLimitReachedError {
+	public final Token fork() throws TokenLimitReachedError {
 		return fork(group, region);
 	}
 	
@@ -395,30 +395,30 @@ public final class Token implements Serializable, Locatable {
 	 * are created with the common left-associative asymmetric combinators).
 	 * @throws TokenLimitReachedError 
 	 */
-	public Token fork(GroupCell group, Region region) throws TokenLimitReachedError {
+	public final Token fork(GroupCell group, Region region) throws TokenLimitReachedError {
 		Token out = engine.pool.newToken();
 		out.initializeFork(this, group, region);
 		return out;
 	}
 
-	public void setSourceLocation(SourceLocation location) {
+	public final void setSourceLocation(SourceLocation location) {
 		this.location = location;
 		tracer.setSourceLocation(location);
 	}
 
-	public SourceLocation getSourceLocation() {
+	public final SourceLocation getSourceLocation() {
 		return location;
 	}
 	
-	public void unsetQuiescent() {
+	public final void unsetQuiescent() {
 		clock.addActive();
 	}
 	
-	public void setQuiescent() {
+	public final void setQuiescent() {
 		clock.removeActive();
 	}
 	
-	public void requireCapability(String name, boolean ifNull) throws CapabilityException {
+	public final void requireCapability(String name, boolean ifNull) throws CapabilityException {
 		Boolean ok = getEngine().getConfig().hasCapability(name);
 		if (ok == null) {
 			if (!ifNull) throw new CapabilityException(name);
@@ -427,15 +427,11 @@ public final class Token implements Serializable, Locatable {
 		}
 	}
 
-	public void delay(int delay) {
+	public final void delay(int delay) {
 		clock.addEvent(delay, this);
 	}
 	
-	public boolean isLtimerAncestorOf(Token that) {
-		return clock.isAncestorOf(that.clock);
-	}
-	
-	public void pushLtimer() {
+	public final void pushLtimer() {
 		LogicalClock old = this.clock;
 		clock = new LogicalClock(old);
 		clock.addActive();
@@ -443,7 +439,7 @@ public final class Token implements Serializable, Locatable {
 		setRegion(new LogicalRegion(getRegion(), clock));
 	}
 	
-	public void popLtimer() throws SiteException {
+	public final void popLtimer() throws SiteException {
 		LogicalClock old = this.clock;
 		if (old.parent == null) {
 			throw new SiteException("Cannot pop last logical clock.");

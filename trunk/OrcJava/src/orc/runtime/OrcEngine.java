@@ -90,7 +90,7 @@ public class OrcEngine implements Runnable {
 		this.stdout = config.getStdout();
 		this.stderr = config.getStderr();
 		this.debugMode = config.debugMode();
-		this.pool = new TokenPool(config.getTokenPoolSize());
+		this.pool = config.getTokenPool();
 	}
 
 	public synchronized boolean isDead() {
