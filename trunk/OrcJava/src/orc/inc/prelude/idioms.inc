@@ -108,7 +108,8 @@ Compose two single-argument functions.
 
 @implementation
 --}
-def compose[A,B,C](lambda (B) :: C, lambda (A) :: B)(A) :: C
+def compose[A,B,C](lambda (B) :: C,
+                   lambda (A) :: B)(A) :: C
 def compose(f,g)(x) = f(g(x))
 
 {--
@@ -133,7 +134,9 @@ while(
 
 @implementation
 --}
-def while[A](lambda (A) :: Boolean, lambda (A) :: A)(A) :: A
+def while[A](lambda (A) :: Boolean,
+             lambda (A) :: A)(A)
+  :: A
 def while(p,f) = 
   def loop(A) :: A
   def loop(x) = if(p(x)) >> ( x | loop(f(x)) )
