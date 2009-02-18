@@ -19,7 +19,6 @@ import orc.error.SourceLocation;
 import orc.error.runtime.TokenException;
 import orc.error.runtime.TokenLimitReachedError;
 import orc.runtime.nodes.Node;
-import orc.runtime.nodes.Visualizer;
 import orc.runtime.regions.Execution;
 import orc.runtime.values.GroupCell;
 import orc.trace.Tracer;
@@ -81,8 +80,6 @@ public class OrcEngine implements Runnable {
 	/** We'll notify this when the computation is finished. */
 	private Tracer tracer;
 
-	//private Visualizer viz;
-	
 	/** For debugging visualization */
 
 	public final static Globals<OrcEngine, Object> globals = new Globals<OrcEngine, Object>();
@@ -157,7 +154,6 @@ public class OrcEngine implements Runnable {
 			throw new AssertionError(e);
 		}
 		token.initializeRoot(root, region, this, tracer.start());
-		//viz = new Visualizer(root);
 		activate(token);
 	}
 

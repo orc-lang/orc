@@ -39,8 +39,4 @@ public class Semi extends Node {
 		SemiRegion region = new SemiRegion(t.getRegion(), forked.move(right));
 		t.move(left).setRegion(region).activate();
 	}
-	
-	public <E> E accept(Visitor<E> visitor) {
-		return visitor.visit(this);
-	}
 }

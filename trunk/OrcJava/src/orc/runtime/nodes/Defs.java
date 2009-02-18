@@ -75,8 +75,4 @@ public class Defs extends Node {
 
 		t.move(next).activate();
 	}
-	
-	public <E> E accept(Visitor<E> visitor) {
-		return visitor.visit(this);
-	}
 }

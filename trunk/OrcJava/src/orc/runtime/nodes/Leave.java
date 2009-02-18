@@ -37,8 +37,4 @@ public class Leave extends Node {
 		
 		t.setRegion(region.getParent()).move(next).activate();
 	}
-	
-	public <E> E accept(Visitor<E> visitor) {
-		return visitor.visit(this);
-	}
 }
