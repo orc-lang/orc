@@ -8,25 +8,27 @@ value, followed by the root's children, followed by
 its grandchildren, and so on.
 --}
 
-type Tree = Tree(_, _, _) | Leaf()
+type Tree[A] = Node(Tree[A], A, Tree[A]) | Leaf()
 
+def levels[A](Tree[A]) :: List[A]
 def levels(tree) =
+  def helper(List[Tree[A]]) :: List[A]
   def helper([]) = []
   def helper(Leaf():rest) = helper(rest)
-  def helper(Tree(l,v,r):rest) =
+  def helper(Node(l,v,r):rest) =
     v:helper(append(rest, [l, r]))
   helper([tree])
 
-levels(Tree(
-  Tree(
-    Tree(Leaf(), 3, Leaf()),
+levels(Node(
+  Node(
+    Node(Leaf(), 3, Leaf()),
     2,
-    Tree(Leaf(), 3, Leaf())),
+    Node(Leaf(), 3, Leaf())),
   1,
-  Tree(
-    Tree(Leaf(), 3, Leaf()),
+  Node(
+    Node(Leaf(), 3, Leaf()),
     2,
-    Tree(Leaf(), 3, Leaf()))))
+    Node(Leaf(), 3, Leaf()))))
 
 {-
 OUTPUT:

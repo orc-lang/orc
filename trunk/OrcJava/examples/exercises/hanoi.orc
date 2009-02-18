@@ -16,9 +16,14 @@ given in Wikipedia.
 Algorithm as described in
 http://en.wikipedia.org/wiki/Tower_of_Hanoi
 --}
+
+type Move = (Integer,Integer)
+
+def hanoi(Integer) :: List[Move]
 def hanoi(n) =
   {- arguments: h(eight), f(rom peg),
      r(emaining peg), t(o peg), m(ove)s -}
+  def move(Integer, Integer, Integer, Integer, List[Move]) :: List[Move]
   def move(1, f, r, t, ms) = (f,t):ms
   def move(h, f, r, t, ms) =
     move(h-1, f, t, r, ms) >ms>

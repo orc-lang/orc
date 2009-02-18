@@ -6,6 +6,7 @@ immediately return that value. Otherwise, return the
 minimum value returned by any site.
 --}
 
+def f(List[lambda() :: Number]) :: Number
 def f([]) = error("Non-empty list")
 def f(g:[]) = g()
 def f(g:rest) =

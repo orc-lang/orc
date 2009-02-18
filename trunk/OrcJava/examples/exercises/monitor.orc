@@ -10,9 +10,14 @@ Hint: create a single process running in the background which
 manages the shared state.
 --}
 
-val m = Buffer()
-type Message = Dec() | Wait(_)
+type Callback = (lambda() :: Top)
+type Message = Dec() | Wait(Callback)
+
+val m = Buffer[Message]()
+
+def actor(Integer, List[Callback]) :: Top 
 def actor(n, waiters) =
+  def on(Message) :: Top
   def on(Dec()) =
     if n = 1 then join(waiters)
     else actor(n-1, waiters)
@@ -32,7 +37,7 @@ def wait() =
 | dec() >> stop
 | dec() >> stop
 | Rtimer(100) >> dec() >> stop
-| wait() >> "Zero!"
+| wait() >> println("Zero!") >> stop
 
 {-
 OUTPUT:

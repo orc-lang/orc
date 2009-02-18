@@ -2,6 +2,8 @@ package orc.lib.math;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.LinkedList;
+import java.util.List;
 
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
@@ -66,9 +68,13 @@ public class Add extends EvalSite {
 	}
 	
 	public Type type() {
-		return new MultiType(
-				new ArrowType(Type.INTEGER, Type.INTEGER, Type.INTEGER),
-				new ArrowType(Type.NUMBER, Type.NUMBER, Type.NUMBER)
-				);
+		List<Type> alts = new LinkedList<Type>();
+		
+		alts.add(new ArrowType(Type.INTEGER, Type.INTEGER, Type.INTEGER));
+		alts.add(new ArrowType(Type.NUMBER, Type.NUMBER, Type.NUMBER));
+		alts.add(new ArrowType(Type.STRING, Type.TOP, Type.STRING));
+		alts.add(new ArrowType(Type.TOP, Type.STRING, Type.STRING));
+		
+		return new MultiType(alts);
 	}
 }

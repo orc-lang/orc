@@ -25,6 +25,6 @@ public class Inequal extends EvalSite {
 	}
 	
 	public Type type() {
-		return new ArrowType(Type.BOT, Type.BOT, Type.BOOLEAN);
+		return new ArrowType(Type.TOP, Type.TOP, Type.BOOLEAN);
 	}
 }

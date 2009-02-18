@@ -9,7 +9,7 @@ then terminate the call to f.
 def f() = upto(10) >n> Rtimer(n*20) >> n
 
 {- Main program -}
-val c = Buffer()
+val c = Buffer[Integer]()
 repeat(c.get) <<
     f() >x> c.put(x) >> stop
   | Rtimer(100) >> c.closenb()

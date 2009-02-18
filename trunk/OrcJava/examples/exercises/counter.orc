@@ -11,7 +11,7 @@ counter state unchanged after it completes.
 Hint: use a semaphore to control access to the shared state.
 --}
 
-val n = Ref(0)
+val n = Ref[Integer](0)
 val lock = Semaphore(1)
 
 def inc() =

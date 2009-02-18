@@ -6,6 +6,7 @@ terminate the call to f.
 --}
 
 {- Publish first n values received on c, then release s -}
+def allow[A](Integer, Buffer[A], Semaphore) :: A
 def allow(0, c, s) = c.closenb() >> s.release() >> stop
 def allow(n, c, s) = c.get() >x> ( x | allow(n-1, c, s) )
 
@@ -13,7 +14,7 @@ def allow(n, c, s) = c.get() >x> ( x | allow(n-1, c, s) )
 def f() = upto(10) >x> Rtimer(x) >> x
 
 {- Main program -}
-val c = Buffer()
+val c = Buffer[Integer]()
 val s = Semaphore(0)
 allow(5, c, s) <<
   s.acquire() | f() >x> c.put(x) >> stop

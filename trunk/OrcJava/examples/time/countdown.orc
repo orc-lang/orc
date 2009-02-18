@@ -1,3 +1,4 @@
+def Countdown(Integer) :: Integer
 def Countdown(i) = if(i > 0) >> 
 				   ( i 
 				   | Rtimer(10) >> Countdown(i-1) 

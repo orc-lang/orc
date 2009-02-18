@@ -1,12 +1,12 @@
-val r = Ref()
+val r = Ref[Integer]()
 
 r := 5 >>
-println(r?) >>
+println("r=" + r?) >>
 r := 6 >>
-println(r?) >>
+println("r=" + r?) >>
 stop
 {-
 OUTPUT:
-5
-6
+r=5
+r=6
 -}
