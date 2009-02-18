@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+import orc.runtime.TokenPool;
 import orc.trace.MinimizeTracer;
 import orc.trace.NullTracer;
 import orc.trace.OutputStreamTracer;
@@ -208,11 +209,11 @@ public class Config {
 	public void setStderr(PrintStream stderr) {
 		this.stderr = stderr;
 	}
-
-	public int getTokenPoolSize() {
-		return tokenPoolSize;
-	}
 	
+	public TokenPool getTokenPool() {
+		return new TokenPool(tokenPoolSize);
+	}
+
 	public void setTokenPoolSize(int tokenPoolSize) {
 		this.tokenPoolSize = tokenPoolSize;
 	}

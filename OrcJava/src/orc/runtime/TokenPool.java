@@ -34,5 +34,6 @@ public final class TokenPool {
 		if (available >= 0) {
 			++available;
 		}
+		token.free();
 	}
 }

@@ -94,14 +94,6 @@ public final class LogicalClock {
 		if (active == 0) advance();
 	}
 	
-	boolean isAncestorOf(LogicalClock that) {
-		while (that != null) {
-			if (that == this) return true;
-			that = that.parent;
-		}
-		return false;
-	}
-	
 	/**
 	 * When the region associated with this clock dies, the simulation is stopped.
 	 * The parent clock no longer has to wait on this clock.
