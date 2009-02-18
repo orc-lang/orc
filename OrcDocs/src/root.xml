@@ -6,8 +6,9 @@
 
 <book
 	xmlns:xlink="http://www.w3.org/1999/xlink"
-	xmlns:xi="http://www.w3.org/2001/XInclude">
-<title>Orc User Guide</title>
+	xmlns:xi="http://www.w3.org/2001/XInclude"
+	xmlns:orc="http://orc.csres.utexas.edu/OrcDocs">
+<title>Orc User Guide v<orc:version/></title>
   
 <preface><title>Introduction</title>
 	
@@ -23,6 +24,10 @@ orchestrate the concurrent invocation of services while managing
 time-outs, priorities, and failures of services or communication.  To
 learn more about Orc and run your own Orc programs, visit the website:
 <ulink url="http://orc.csres.utexas.edu/"><code>http://orc.csres.utexas.edu/</code></ulink>.
+</para>
+
+<para>
+Unless otherwise noted, all material in this document pertains to the Orc language implementation version  <orc:version/>.
 </para>
 
 
@@ -4953,8 +4958,8 @@ Argument and return types are written as follows:
 	corresponding Java classes. For example, <code>Number</code> is any
 	number, and <code>Comparable</code> is any value which supports a total
 	order.</listitem> 
-<listitem>The Top type (of which all types are subtypes) is written
-	<code>Top</code>. The Bottom type (which is a subtype of all types) is
+<listitem>The Top type (the type of <code>signal</code>, of which all types are subtypes) is written
+	<code>Top</code>. The Bottom type (the type of <code>halt</code>, and a subtype of all types) is
 	written <code>Bot</code>.</listitem>
 <listitem>A tuple with element types <code>A, B, ...</code> is written <code>(A, B, ...)</code>.</listitem>
 <listitem>Any other parameterized type is written as a type name followed by
@@ -4971,8 +4976,8 @@ Argument and return types are written as follows:
 
 <para>
 Multiple sets of argument types are syntactic sugar for currying. For
-example, <code>site Foo()() :: Signal</code> is equivalent to
-<code>site Foo() :: lambda () :: Signal</code>.
+example, <code>site Foo()() :: Top</code> is equivalent to
+<code>site Foo() :: lambda () :: Top</code>.
 </para>
  
 </section>

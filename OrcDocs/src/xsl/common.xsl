@@ -1,5 +1,14 @@
 <?xml version='1.0'?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+<xsl:stylesheet
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:orc="http://orc.csres.utexas.edu/OrcDocs"
+  version="1.0">
+
+<xsl:param name="orc.version"/>
+
+<xsl:template match="orc:version">
+  <xsl:copy-of select="$orc.version" />
+</xsl:template>
 
 <!--
 Copied from http://xslthl.wiki.sourceforge.net/DocBook+XSL+Updates
