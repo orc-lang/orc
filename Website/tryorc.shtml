@@ -38,9 +38,10 @@ load it as tryorc.shtml?mock
 	<li><span class="file"><a class="demo-link" href="tryorc/misc/path.orc">Shortest Path</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/misc/search.orc">Web Search</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/misc/chat.orc">Google Talk</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/misc/forms.orc">Web Forms</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/airline1.orc">Airline Agent</a></span></li>
 	</ul></li>
 <li class="closed"><span class="folder">Big Demos</a></span><ul>
-	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/airline1.orc">Airline Agent</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/misc/spell.orc">Spell-Check File</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/misc/music_calendar.orc">Music Calendar</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/misc/meeting.orc">Meeting Request</a></span></li>
@@ -79,7 +80,7 @@ Font size:
 &nbsp;&nbsp;&nbsp;&nbsp;Clear program: <a href="#" style="cursor: pointer" onclick="clearProgram()">clear</a>
 </small>
 </div>
-<textarea id="orc" spellcheck="false" class="orc" style="width: 700px; height: 300px">
+<textarea id="orc" spellcheck="false" class="orc" style="height: 300px">
 </textarea>
 </td></tr></table>
 <script src="/orchard/orc.js" type="text/javascript"></script>
