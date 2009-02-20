@@ -10,9 +10,9 @@ import kilim.Pausable;
 public class KilimBuffer<V> {
 	private LinkedList<Mailbox<V>> waiters = new LinkedList<Mailbox<V>>();
 	private LinkedList<V> buffer = new LinkedList<V>();
-	public synchronized void put(V o) throws Pausable {
+	public synchronized void put(V o) {
 		Mailbox<V> waiter = waiters.poll();
-		if (waiter != null) waiter.put(o);
+		if (waiter != null) waiter.putnb(o);
 		else buffer.add(o);
 	}
 	public synchronized V get() throws Pausable {
