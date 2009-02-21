@@ -10,6 +10,8 @@ in <code>(+)</code>, it denotes an infix operator.</para>
 the <link linkend="language.base.operators">Operators</link> section of the
 User Guide.</para>
 <variablelist>
+<?dbfo list-presentation="list"?>
+<?dbhtml list-presentation="table"?>
 <varlistentry><term><code>let</code></term><listitem><para><code>site let() :: Top</code></para>
 <para>When applied to no arguments, return a signal.</para>
 </listitem></varlistentry>
@@ -166,6 +168,8 @@ or equal to this number.</para>
 <section><title>data.inc: General-purpose supplemental data structures.</title>
 <para>General-purpose supplemental data structures.</para>
 <variablelist>
+<?dbfo list-presentation="list"?>
+<?dbhtml list-presentation="table"?>
 <varlistentry><term><code>Some</code></term><listitem><para><code>site Some[A](A) :: Option[A]</code></para>
 <para>An optional value which is available.
 This site may also be used in a pattern.</para>
@@ -195,6 +199,8 @@ println("Entering critical section") >>
 println("Leaving critical section") >>
 lock.release()]]></programlisting></para>
 <variablelist>
+<?dbfo list-presentation="list"?>
+<?dbhtml list-presentation="table"?>
 <varlistentry><term><code>acquire</code></term><listitem><para><code>site Semaphore.acquire() :: Top</code></para>
 <para>If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a signal.
 If the semaphore's value is <code>0</code>, block until it becomes greater than <code>0</code>.</para>
@@ -234,6 +240,8 @@ val b = Buffer()
   Rtimer(1000) >> b.put(10) >> stop
 | b.get()]]></programlisting></para>
 <variablelist>
+<?dbfo list-presentation="list"?>
+<?dbhtml list-presentation="table"?>
 <varlistentry><term><code>get</code></term><listitem><para><code>site Buffer[A].get() :: A</code></para>
 <para>Get an item from the buffer. If the buffer is open and no items are available,
 block until one becomes available. If the buffer is <link
@@ -290,6 +298,8 @@ val c = BoundedBuffer(1)
   | c.get() >n> "Got " + n
   )]]></programlisting></para>
 <variablelist>
+<?dbfo list-presentation="list"?>
+<?dbhtml list-presentation="table"?>
 <varlistentry><term><code>get</code></term><listitem><para><code>site BoundedBuffer[A].get() :: A</code></para>
 <para>Get an item from the buffer. If the buffer is open and no items are available,
 block until one becomes available. If the buffer is <link
@@ -354,6 +364,8 @@ val c = SyncChannel()
   c.put(10)
 | Rtimer(1000) >> c.get()]]></programlisting></para>
 <variablelist>
+<?dbfo list-presentation="list"?>
+<?dbhtml list-presentation="table"?>
 <varlistentry><term><code>get</code></term><listitem><para><code>site SyncChannel[A].get() :: A</code></para>
 <para>Receive an item over the channel. If no sender is available, block until one becomes available.</para>
 </listitem></varlistentry>
@@ -370,6 +382,8 @@ val c = Cell()
   c.write(5) >> c.read()
 | Rtimer(1) >> ( c.write(10) ; c.read() )]]></programlisting></para>
 <variablelist>
+<?dbfo list-presentation="list"?>
+<?dbhtml list-presentation="table"?>
 <varlistentry><term><code>read</code></term><listitem><para><code>site Cell[A].read() :: A</code></para>
 <para>Read a value from the cell. If the cell does not yet have a value, block until it receives one.</para>
 </listitem></varlistentry>
@@ -393,6 +407,8 @@ Rtimer(1000) >> r := 5 >> stop
   println(r?) >>
   stop]]></programlisting></para>
 <variablelist>
+<?dbfo list-presentation="list"?>
+<?dbhtml list-presentation="table"?>
 <varlistentry><term><code>Ref</code></term><listitem><para><code>site Ref[A](A) :: Ref[A]</code></para>
 <para>Create a rewritable storage location initialized to the provided value.</para>
 </listitem></varlistentry>
@@ -440,6 +456,8 @@ a(i) := f(i) >>
 stop
 ; a(0)? | a(1)? | a(2)?]]></programlisting></para>
 <variablelist>
+<?dbfo list-presentation="list"?>
+<?dbhtml list-presentation="table"?>
 <varlistentry><term><code>Array</code></term><listitem><para><code>site Array[A](Integer, String) :: Array[A]</code></para>
 <para>Create a new primitive array of the given size with the given primitive type.
 The initial values in the array depend on the primitive type: for numeric types,
@@ -508,6 +526,8 @@ and only if <code>a=b</code>. This site conforms to the Java interface
 <code>java.util.Set</code>, except that it obeys Orc rules for equality of
 elements rather than Java rules.</para>
 <variablelist>
+<?dbfo list-presentation="list"?>
+<?dbhtml list-presentation="table"?>
 <varlistentry><term><code>add</code></term><listitem><para><code>site Set[A].add(A) :: Boolean</code></para>
 <para>Add a value to the set, returning true if the set did not already contain the value,
 and false otherwise.</para>
@@ -537,6 +557,8 @@ map is associated with exactly one value.  The mapping considers two keys
 <code>java.util.Map</code>, except that it obeys Orc rules for equality of keys
 rather than Java rules.</para>
 <variablelist>
+<?dbfo list-presentation="list"?>
+<?dbhtml list-presentation="table"?>
 <varlistentry><term><code>put</code></term><listitem><para><code>site Map[K,V].put(K, V) :: V</code></para>
 <para><code>map.put(k,v)</code> associates the value <code>v</code> with the key
 <code>k</code> in <code>map</code>, such that <code>map.get(k)</code> returns
@@ -567,6 +589,8 @@ if any, otherwise return <code>Null()</code>.</para>
 <varlistentry><term><code>Counter</code></term><listitem><para><code>site Counter(Integer) :: Counter</code></para>
 <para>Create a new counter initialized to the given value.</para>
 <variablelist>
+<?dbfo list-presentation="list"?>
+<?dbhtml list-presentation="table"?>
 <varlistentry><term><code>Counter</code></term><listitem><para><code>site Counter() :: Counter</code></para>
 <para>Create a new counter initialized to zero.</para>
 </listitem></varlistentry>
@@ -652,6 +676,8 @@ def swap((x,y)) = (y,x)</programlisting></formalpara></listitem></varlistentry><
 Many of these are standard functional-programming
 combinators borrowed from Haskell or Scheme.</para>
 <variablelist>
+<?dbfo list-presentation="list"?>
+<?dbhtml list-presentation="table"?>
 <varlistentry><term><code>apply</code></term><listitem><para><code>site apply[A, ..., B](lambda (A, ...) :: B, List[A]) :: B</code></para>
 <para>Apply a function to a list of arguments.</para>
 </listitem></varlistentry>
@@ -838,6 +864,8 @@ def collect(p) =
 Many of these functions are similar to those in the Haskell prelude, but
 operate on the elements of a list in parallel.</para>
 <variablelist>
+<?dbfo list-presentation="list"?>
+<?dbhtml list-presentation="table"?>
 <varlistentry><term><code>each</code></term><listitem><para><code>def each[A](List[A]) :: A</code></para>
 <para>Publish every value in a list, simultaneously.</para>
 <formalpara><title>Implementation</title><programlisting>def each[A](List[A]) :: A
@@ -1197,6 +1225,8 @@ def maximum(xs) =
 <section><title>text.inc: Operations on strings.</title>
 <para>Operations on strings.</para>
 <variablelist>
+<?dbfo list-presentation="list"?>
+<?dbhtml list-presentation="table"?>
 <varlistentry><term><code>cat</code></term><listitem><para><code>site cat(Top, ...) :: String</code></para>
 <para>Return the string representation of one or more values, concatenated.
 For Java objects, this will call <code>toString()</code> to convert
@@ -1257,6 +1287,8 @@ def unwords(word:words) = cat(word, &quot; &quot;, unwords(words))</programlisti
 <section><title>time.inc: Real and logical time.</title>
 <para>Real and logical time.</para>
 <variablelist>
+<?dbfo list-presentation="list"?>
+<?dbhtml list-presentation="table"?>
 <varlistentry><term><code>Rtimer</code></term><listitem><para><code>site Rtimer(Integer) :: Top</code></para>
 <para>Publish a signal after the given number of milliseconds.</para>
 </listitem></varlistentry>
@@ -1287,6 +1319,8 @@ argument, in milliseconds.</para>
 <section><title>util.inc: Miscellaneous utility functions.</title>
 <para>Miscellaneous utility functions.</para>
 <variablelist>
+<?dbfo list-presentation="list"?>
+<?dbhtml list-presentation="table"?>
 <varlistentry><term><code>random</code></term><listitem><para><code>site random() :: Integer</code></para>
 <para>Return a random Integer value
 chosen from the range of all possible 32-bit Integer values.</para>
