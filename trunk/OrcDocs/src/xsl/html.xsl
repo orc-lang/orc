@@ -51,6 +51,10 @@ Customize syntax highlighting.
   <span class="hl-combinator">|</span>
 </xsl:template>
 
+<xsl:template match='xslthl:string' mode="xslthl">
+  <span class="hl-string"><xsl:apply-templates mode="xslthl"/></span>
+</xsl:template>
+
 <xsl:template match='xslthl:variable' mode="xslthl">
   <span class="hl-variable"><xsl:apply-templates mode="xslthl"/></span>
 </xsl:template>
