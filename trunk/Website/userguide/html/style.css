@@ -1,6 +1,6 @@
 /* Copied from Orchard/web/orc.css */
 
-.programlisting {
+.programlisting, .orc {
 	border: 1px solid #666;
 	margin: 0;
 	padding: 0;
@@ -46,16 +46,16 @@ span.hl-literal, span.hl-number, span.hl-string {
 	padding: 1em;
 }
 
-.term {
+.variablelist .term {
 	font-weight: bold;
 }
 
-.variablelist dt {
-	float: left;
-	clear: left;
-	padding-right: 1em;
+/* Fix for Mozilla ignoring the <col valign="top"> */
+div.variablelist > table > tbody > tr > td:first-child {
+	vertical-align: top;
 }
 
-.variablelist dd {
-	margin-left: 6em;
+/* add margin between list entries */
+div.variablelist > table > tbody > tr > td {
+	padding-top: 1em;
 }

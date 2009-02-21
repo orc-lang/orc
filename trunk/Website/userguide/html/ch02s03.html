@@ -1,7 +1,7 @@
 <html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>2.3.&nbsp;Larger Examples</title><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide v0.9.6"><link rel="up" href="ch02.html" title="Chapter&nbsp;2.&nbsp;Programming Methodology"><link rel="prev" href="ch02s02.html" title="2.2.&nbsp;Programming Idioms"><link rel="next" href="ch03.html" title="Chapter&nbsp;3.&nbsp;Accessing and Creating External Services"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"><link href="style.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">2.3.&nbsp;Larger Examples</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch02s02.html">Prev</a>&nbsp;</td><th align="center" width="60%">Chapter&nbsp;2.&nbsp;Programming Methodology</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ch03.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N110DF"></a>2.3.&nbsp;Larger Examples</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N110E2"></a>2.3.1.&nbsp;Dining Philosophers</h3></div></div></div><p>
 The dining philosophers problem is a well known and intensely studied problem in
 concurrent programming. For a detailed description, see 
-<a class="ulink" href="" target="_top">the Wikipedia entry</a>
+<a class="link" href="http://en.wikipedia.org/wiki/Dining_philosophers" target="_top">the Wikipedia entry</a>
 on the problem. Here, we present an Orc solution to the dining philosophers problem,
 based on a probabilistic solution by Rabin.  
 </p><pre class="orc">
@@ -175,13 +175,13 @@ top left philosopher holds both its forks).
   <span class="hl-site">philosophers</span>(<span class="hl-literal">3</span>)
   <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">10000</span>)
 ) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">"HALTED"</span></pre><p>
-Our implementation is based on the <a class="ulink" href="" target="_top">actor model</a> of
+Our implementation is based on the <a class="link" href="http://en.wikipedia.org/wiki/Actor_model" target="_top">actor model</a> of
 concurrency.  An actor is a state machine which reacts to messages.  On
 receiving a message, an actor can send asynchronous messages to other actors,
 change its state, or create new actors.  Each actor is single-threaded and
 processes messages sequentially, which makes some concurrent programs easier to
-reason about and avoids explicit locking. <a class="ulink" href="" target="_top">Erlang</a> is one popular language based
-on the actor model.
+reason about and avoids explicit locking. <a class="link" href="http://www.erlang.org/" target="_top">Erlang</a> is one popular
+language based on the actor model.
 </p><p>
 Orc emulates the actor model very naturally.  In Orc, an actor is an Orc thread
 of execution, together with a <code class="code"><span class="hl-variable">Buffer</span></code> which serves as a mailbox.  To send a
@@ -189,7 +189,7 @@ message to an actor, you place it in the actor's mailbox, and to receive a
 message, the actor gets the next item from the mailbox.  The internal states of
 the actor are represented by functions: while an actor's thread of execution is
 evaluating a function, it is considered to be in the corresponding state.
-Because Orc implements <a class="ulink" href="" target="_top">tail-call optimization</a>,
+Because Orc implements <a class="link" href="http://en.wikipedia.org/wiki/Tail_call" target="_top">tail-call optimization</a>,
 state transitions can be encoded as function calls without running out of stack
 space.
 </p><p>
@@ -209,7 +209,7 @@ philosopher receives a request for a fork, it knows who requested it and
 therefore which fork to relinquish.  Likewise when a philosopher receives a
 fork, it knows who sent it and therefore which fork was received.
 </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11164"></a>2.3.3.&nbsp;Readers/Writers</h3></div></div></div><p>
-Here we present an Orc solution to the <a class="ulink" href="" target="_top">readers-writers
+Here we present an Orc solution to the <a class="link" href="http://en.wikipedia.org/wiki/Readers-writers_problem" target="_top">readers-writers
 problem</a>.  Briefly, the readers-writers problem involves concurrent
 access to a mutable resource.  Multiple readers can access the resource
 concurrently, but writers must have exclusive access.  When readers and writers
