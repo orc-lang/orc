@@ -10,6 +10,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.WeakHashMap;
+import java.util.concurrent.Callable;
+
+import kilim.Pausable;
 
 import orc.error.runtime.CapabilityException;
 import orc.error.runtime.JavaException;
@@ -17,6 +20,7 @@ import orc.error.runtime.MessageNotUnderstoodException;
 import orc.error.runtime.MethodTypeMismatchException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
+import orc.runtime.Kilim;
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.sites.EvalSite;
@@ -32,20 +36,6 @@ public class ClassProxy extends Site {
 	private HashMap<String, MethodHandle> methods = new HashMap<String, MethodHandle>();
 	private ConstructorHandle constructor;
 	private Class type;
-	
-	private static class ConstructorHandle extends InvokableHandle<Constructor> {
-		public ConstructorHandle(Constructor[] constructors) {
-			super("<init>", constructors);
-		}
-		
-		protected Class[] getParameterTypes(Constructor c) {
-			return c.getParameterTypes();
-		}
-		
-		protected int getModifiers(Constructor c) {
-			return c.getModifiers();
-		}
-	}
 	
 	private static HashMap<Class, ClassProxy> cache = new HashMap<Class, ClassProxy>(); 
 	
@@ -85,16 +75,19 @@ public class ClassProxy extends Site {
 		}
 		
 		// Otherwise it's a constructor call
-		Object[] argsArray = args.asArray();
-		Constructor c = constructor.resolve(argsArray);
-		try {
-			caller.resume(c.newInstance(argsArray));
-			return;
-		} catch (InvocationTargetException e) {
-			throw new JavaException(e.getCause());
-		} catch (Exception e) {
-			throw new JavaException(e);
-		}
+		final Object[] argsArray = args.asArray();
+		final Constructor c = constructor.resolve(argsArray);
+		
+		// FIXME: too much indirection is necessary to run this in a site thread
+		Kilim.runThreaded(caller, new Callable<Object>() {
+			public Object call() throws Exception {
+				try {
+					return c.newInstance(argsArray);
+				} catch (InvocationTargetException e) {
+					throw new JavaException(e.getCause());
+				}
+			}
+		});
 	}
 	
 	/**

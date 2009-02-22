@@ -21,7 +21,9 @@ public abstract class ThreadedPartialSite extends Site {
 				Kilim.runThreaded(new Runnable() {
 					public void run() {
 						try {
-							caller.resume(evaluate(args));
+							Object out = evaluate(args);
+							if (out == null) caller.die();
+							else caller.resume(out);
 						} catch (TokenException e) {
 							caller.error(e);
 						}
