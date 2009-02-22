@@ -5,6 +5,7 @@ package orc.runtime.sites.java;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.concurrent.Callable;
 
 import kilim.Fiber;
 import kilim.Pausable;
@@ -63,14 +64,17 @@ public class MethodProxy extends Site {
     	return false;
 	}
 	
-    private static void invoke(Token caller, Method m, Object that, Object[] args) {
-		try {
-    		caller.resume(wrapResult(m, m.invoke(that, args)));
-		} catch (InvocationTargetException e) {
-			caller.error(new JavaException(e.getCause()));
-		} catch (Exception e) {
-			caller.error(new JavaException(e));
-		}
+    private static void invoke(Token caller, final Method m, final Object that, final Object[] args) {
+		// FIXME: too much indirection is necessary to run this in a site thread
+		Kilim.runThreaded(caller, new Callable<Object>() {
+			public Object call() throws Exception {
+				try {
+					return wrapResult(m, m.invoke(that, args));
+				} catch (InvocationTargetException e) {
+					throw new JavaException(e.getCause());
+				}
+			}
+		});
     }
     
     private static Object wrapResult(Method m, Object o) {

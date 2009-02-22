@@ -192,13 +192,12 @@ public final class Kilim {
 	 * <p>FIXME: I ran into about 5 different weird Kilim bugs trying
 	 * to write this function; the current structure is not ideal but
 	 * it was the only one which worked.
-	 * 
-	 * <p>FIXME: Kilim mailboxes cannot handle null messages so we
-	 * always have to return some object.
 	 */
 	public static <V> V runThreaded(final Callable<V> thunk)
 	throws Pausable, Exception {
 		final Box<V> box = new Box<V>();
+		// FIXME: Kilim mailboxes cannot handle null messages so we
+		// always have to return some object.
 		final Mailbox<Object> mbox = new Mailbox<Object>();
 		runThreaded(new Runnable() {
 			public void run() {
@@ -213,6 +212,28 @@ public final class Kilim {
 		Object out = mbox.get();
 		if (out == box) return box.value;
 		else throw (Exception)out;
+	}
+	
+	/**
+	 * Spawn a thread to compute a value for a token.
+	 * @see #runThreaded(Callable)
+	 */
+	public static <V> void runThreaded(final Token caller, final Callable<V> thunk) {
+		new Task() {
+			public void execute() throws Pausable {
+				runThreaded(new Runnable() {
+					public void run() {
+						try {
+							caller.resume(thunk.call());
+						} catch (TokenException e) {
+							caller.error(e);
+						} catch (Throwable e) {
+							caller.error(new JavaException(e));
+						}
+					}
+				});
+			}
+		}.start();
 	}
 	
 	/**
