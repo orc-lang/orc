@@ -23,10 +23,6 @@
 				<exclude name="kilim.jar"/>
 				<!-- Only needed for testing -->
 				<exclude name="junit-*.jar"/>
-				<!-- Only required for optional visualization features -->
-				<exclude name="commons-collections-3.2.jar"/>
-				<exclude name="jung-1.7.6.jar"/>
-				<exclude name="colt-1.2.0.jar"/>
 			</zipgroupfileset>
 			<manifest>
 				<attribute name="Main-Class" value="orc.Orc"/>

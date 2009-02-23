@@ -1,4 +1,4 @@
-package orc.test.parser;
+package orc.test;
 
 import java.io.File;
 import java.io.FileReader;
@@ -10,7 +10,6 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import orc.error.compiletime.ParsingException;
 import orc.parser.OrcParser;
-import orc.test.TestUtils;
 
 /**
  * This validates the parser simply by trying to parse

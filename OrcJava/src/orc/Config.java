@@ -41,6 +41,7 @@ import org.kohsuke.args4j.Option;
 public class Config {
 
 	private Boolean debug = false;
+	private Boolean dumpOil = false;
 	private Boolean typecheck = false;
 	private Tracer tracer = new NullTracer();
 	private List<String> includes = new LinkedList<String>();
@@ -97,7 +98,7 @@ public class Config {
 		tracer = new MinimizeTracer(tracer);
 	}
 	
-	@Option(name="-trace",usage="Specify a filename for full tracing. The special filename \"-\" will write a human-readable trace to stdout.")
+	@Option(name="-trace",usage="Specify a filename for full tracing. The special filename \"-\" will write a human-readable trace to stderr.")
 	public void setFullTraceFile(File file) throws CmdLineException {
 		if (file.getPath().equals("-")) {
 			tracer = new PrintStreamTracer(System.err);
@@ -110,6 +111,11 @@ public class Config {
 				throw new CmdLineException("Error opening trace file '"+file+"'");
 			}
 		}
+	}
+		
+	@Option(name="-oil",usage="Intsead of running the program, just compile it and write the OIL XML to stdout.")
+	public void setDumpOil(boolean dumpOil) {
+		this.dumpOil = dumpOil;
 	}
 	
 	@Option(name="-i",usage="Include this file from the package orc.inc;" +
@@ -142,6 +148,10 @@ public class Config {
 	
 	public Boolean debugMode() {
 		return debug;
+	}
+	
+	public Boolean getDumpOil() {
+		return dumpOil;
 	}
 	
 	public Boolean getNoPrelude() {

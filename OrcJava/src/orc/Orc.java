@@ -16,6 +16,8 @@ import orc.ast.extended.Declare;
 import orc.ast.extended.declaration.Declaration;
 import orc.ast.oil.Expr;
 import orc.ast.oil.UnguardedRecursionChecker;
+import orc.ast.oil.xml.Marshaller;
+import orc.ast.oil.xml.Oil;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
@@ -47,7 +49,14 @@ public class Orc {
 		
 		Node n;
 		try {
-			n = compile(cfg.getInstream(), new Pub(), cfg);
+			Expr ex = compile(cfg.getInstream(), cfg);
+			if (cfg.getDumpOil()) {
+				System.out.println(new Oil(ex).toXML());
+				// don't run or compile to DAG
+				return;
+			} else {
+				n = ex.compile(new Pub());
+			}
 		} catch (CompilationException e) {
 			System.err.println(e);
 			return;
@@ -90,7 +99,7 @@ public class Orc {
 		return new InputStreamReader(stream);
 	}
 	
-	public static orc.ast.simple.Expression compile(Reader source, Config cfg) throws IOException, CompilationException {
+	public static Expr compile(Reader source, Config cfg) throws IOException, CompilationException {
 
 		//System.out.println("Parsing...");
 		// Parse the goal expression
@@ -125,18 +134,7 @@ public class Orc {
 		
 		//System.out.println("Simplifying the abstract syntax tree...");
 		// Simplify the AST
-		return e.simplify();
-	}
-	
-	public static Node compile(Config cfg) throws CompilationException, IOException {
-		return compile(cfg.getInstream(), new Pub(), cfg);
-	}
-	
-	public static Node compile(Reader source, Node target, Config cfg) throws CompilationException, IOException {
-		orc.ast.simple.Expression es = compile(source, cfg);
-		
-		
-		Expr ex = es.convert(new Env<Var>(), new Env<String>());
+		Expr ex = e.simplify().convert(new Env<Var>(), new Env<String>());
 		// System.out.println(ex);
 		
 		// Optionally perform typechecking
@@ -148,10 +146,11 @@ public class Orc {
 		
 		UnguardedRecursionChecker.check(ex);
 		
-		//System.out.println("Compiling to an execution graph...");
-		// Compile the AST, directing the output towards the configured target
-		Node en = ex.compile(target);
-		return en;
+		return ex;
+	}
+	
+	public static Node compile(Config cfg) throws CompilationException, IOException {
+		return compile(cfg.getInstream(), cfg).compile(new Pub());
 	}
 
 	/** @throws IOException 
@@ -199,7 +198,7 @@ public class Orc {
 				t.die();
 			}
 		};
-		Node n = compile(source, result, cfg);
+		Node n = compile(source, cfg).compile(result);
         
 		// Configure the runtime engine.
 		OrcEngine engine = new OrcEngine(cfg);
