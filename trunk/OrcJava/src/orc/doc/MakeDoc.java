@@ -62,6 +62,8 @@ public class MakeDoc {
 					DocType type = (DocType)doc;
 					if (type.depth > depth) {
 						System.out.println("<variablelist>");
+						System.out.println("<?dbfo list-presentation=\"list\"?>");
+						System.out.println("<?dbhtml list-presentation=\"table\"?>");
 						depth = type.depth;
 					} else {
 						while (type.depth < depth) {
