@@ -4,8 +4,6 @@ import java.util.AbstractSet;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import edu.uci.ics.jung.graph.predicates.ContainsUserDataKeyVertexPredicate;
-
 import orc.runtime.sites.core.Equal;
 import orc.runtime.values.Reference;
 
