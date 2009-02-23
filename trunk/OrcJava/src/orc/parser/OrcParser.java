@@ -37,9 +37,11 @@ public class OrcParser {
 	 * is used by {@link Read}.
 	 */
 	public Object parseLiteralValue() throws ParsingException, IOException {
-		Result result = parser.pLiteralValue(0);
 		try {
+			Result result = parser.pLiteralValue(0);
 			return parser.value(result);
+		} catch (AbortParse e) {
+			throw new ParsingException(e.getMessage(), e);
 		} catch (ParseException e) {
 			throw new ParsingException(e.getMessage(), e);
 		}
@@ -50,9 +52,11 @@ public class OrcParser {
 	 * expression).
 	 */
 	public Expression parseProgram() throws ParsingException, IOException {
-		Result result = parser.pProgram(0);
 		try {
+			Result result = parser.pProgram(0);
 			return (Expression)parser.value(result);
+		} catch (AbortParse e) {
+			throw new ParsingException(e.getMessage(), e);
 		} catch (ParseException e) {
 			throw new ParsingException(e.getMessage(), e);
 		}
@@ -62,9 +66,11 @@ public class OrcParser {
 	 * Parse the input as a module (declarations only).
 	 */
 	public List<Declaration> parseModule() throws ParsingException, IOException {
-		Result result = parser.pModule(0);
 		try {
+			Result result = parser.pModule(0);
 			return (List<Declaration>)parser.value(result);
+		} catch (AbortParse e) {
+			throw new ParsingException(e.getMessage(), e);
 		} catch (ParseException e) {
 			throw new ParsingException(e.getMessage());
 		}
