@@ -2,9 +2,9 @@ package orc.orchard.values;
 
 import javax.xml.bind.annotation.XmlSeeAlso;
 
-import orc.orchard.oil.Constant;
-import orc.orchard.oil.Field;
-import orc.orchard.oil.Site;
+import orc.ast.oil.xml.Constant;
+import orc.ast.oil.xml.Field;
+import orc.ast.oil.xml.Site;
 
 /**
  * Orc publishable values.

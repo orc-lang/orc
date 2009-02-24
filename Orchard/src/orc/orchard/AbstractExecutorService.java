@@ -7,6 +7,7 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 import orc.ast.oil.Expr;
+import orc.ast.oil.xml.Oil;
 import orc.orchard.api.ExecutorServiceInterface;
 import orc.orchard.errors.InvalidJobException;
 import orc.orchard.errors.InvalidJobStateException;
@@ -16,7 +17,6 @@ import orc.orchard.errors.InvalidPromptException;
 import orc.orchard.errors.QuotaException;
 import orc.orchard.events.JobEvent;
 import orc.orchard.java.CompilerService;
-import orc.orchard.oil.Oil;
 
 /**
  * Standard implementation of an ExecutorService. Extenders should implement

@@ -7,9 +7,9 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 import javax.xml.ws.Endpoint;
 
+import orc.ast.oil.xml.Oil;
 import orc.orchard.AbstractCompilerService;
 import orc.orchard.errors.InvalidProgramException;
-import orc.orchard.oil.Oil;
 
 /**
  * HACK: We must explicitly declare every published web method in this class, we

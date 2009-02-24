@@ -17,6 +17,7 @@ import javax.xml.ws.Endpoint;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.handler.MessageContext;
 
+import orc.ast.oil.xml.Oil;
 import orc.orchard.AbstractExecutorService;
 import orc.orchard.Waiter;
 import orc.orchard.errors.InvalidJobException;
@@ -26,7 +27,6 @@ import orc.orchard.errors.InvalidProgramException;
 import orc.orchard.errors.InvalidPromptException;
 import orc.orchard.errors.QuotaException;
 import orc.orchard.events.JobEvent;
-import orc.orchard.oil.Oil;
 
 import org.jvnet.jax_ws_commons.json.JSONBindingID;
 import org.mortbay.util.ajax.Continuation;
