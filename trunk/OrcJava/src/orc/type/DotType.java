@@ -53,6 +53,10 @@ public class DotType extends Type {
 	}
 		
 	
+	public boolean subtype(Type that) {
+		return defaultType.subtype(that);
+	}
+	
 	/* A call without explicit args passed is assumed to be a call to the default type */
 	public Type call(List<Type> args) throws TypeException {
 		return defaultType.call(args);
@@ -88,5 +92,9 @@ class NoDefaultType extends Type {
 	
 	public String toString() {
 		return "no_default_type";
+	}
+	
+	public boolean subtype(Type that) {
+		return false;
 	}
 }

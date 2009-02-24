@@ -141,7 +141,10 @@ public class Orc {
 		if (cfg.typeCheckingMode()) {
 			
 			Type rt = ex.typesynth(new Env<Type>(), new Env<Type>());
-			System.out.println("Program typechecked successfully with result type " + rt);
+			System.out.println("... :: " + rt);
+			System.out.println("Program typechecked successfully.");
+			System.out.println();
+	
 		}
 		
 		UnguardedRecursionChecker.check(ex);

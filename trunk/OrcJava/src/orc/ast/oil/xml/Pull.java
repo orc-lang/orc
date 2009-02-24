@@ -17,6 +17,6 @@ public class Pull extends Expression {
 	}
 	@Override
 	public orc.ast.oil.Expr unmarshal() {
-		return new orc.ast.oil.Pull(left.unmarshal(), right.unmarshal());
+		return new orc.ast.oil.Pull(left.unmarshal(), right.unmarshal(), null);
 	}
 }

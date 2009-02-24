@@ -45,7 +45,7 @@ public class Where extends Expression {
 		Env<Var> newvars = vars.clone();
 		newvars.add(v);
 		
-		return new Pull(left.convert(newvars, typevars), right.convert(vars, typevars));
+		return new Pull(left.convert(newvars, typevars), right.convert(vars, typevars), v.name);
 	}
 	
 }

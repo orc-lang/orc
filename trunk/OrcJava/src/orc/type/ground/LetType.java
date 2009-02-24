@@ -6,6 +6,7 @@ import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
 import orc.runtime.values.TupleValue;
 import orc.runtime.values.Value;
+import orc.type.ArrowType;
 import orc.type.TupleType;
 import orc.type.Type;
 
@@ -46,6 +47,17 @@ public class LetType extends Type {
 		} else {
 			return new TupleType(types);
 		}
+	}
+	
+	public boolean subtype(Type that) {
+		if (that instanceof ArrowType) {
+			ArrowType arrow = (ArrowType)that;
+			if (condense(arrow.argTypes).subtype(arrow.resultType)) {
+				return true;
+			}
+		}
+		
+		return super.subtype(that);			
 	}
 	
 }

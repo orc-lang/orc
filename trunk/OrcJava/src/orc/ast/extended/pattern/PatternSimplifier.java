@@ -113,7 +113,7 @@ public class PatternSimplifier {
 			for (Entry<NamedVar, Integer> e : bindingEntries.entrySet()) {
 				NamedVar x = e.getKey();
 				// we don't use the index since it must be 0.
-				g = g.subst(u, x);
+				g = g.subvar(u, x);
 			}
 		}
 		/* Otherwise, each entry is retrieved with a lookup */
@@ -125,7 +125,7 @@ public class PatternSimplifier {
 				Expression getter = Pattern.nth(u,i);
 				
 				Var v = new Var();
-				g = g.subst(v, x);
+				g = g.subvar(v, x);
 				g = new Where(g, getter, v);
 			}
 

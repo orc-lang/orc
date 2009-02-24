@@ -36,7 +36,7 @@ public class SiteDeclaration extends Declaration {
 		Argument a = new orc.ast.simple.arg.Site(s);
 		
 		return new WithLocation(
-			new orc.ast.simple.Where(target.subst(v,x), new orc.ast.simple.Let(a), v),
+			new orc.ast.simple.Where(target.subvar(v,x), new orc.ast.simple.Let(a), v),
 			getSourceLocation());
 		
 		/*

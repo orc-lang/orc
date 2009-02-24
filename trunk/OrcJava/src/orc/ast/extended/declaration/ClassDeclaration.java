@@ -40,7 +40,7 @@ public class ClassDeclaration extends Declaration {
 		return new WithLocation(
 			new orc.ast.simple.TypeDecl(new ClassType(classname),
 				varname,
-				new orc.ast.simple.Where(target.subst(v,x), new orc.ast.simple.Let(a), v)),
+				new orc.ast.simple.Where(target.subvar(v,x), new orc.ast.simple.Let(a), v)),
 			getSourceLocation());
 		
 		/*

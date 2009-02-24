@@ -47,7 +47,7 @@ public class Sequential extends Expression {
 		Env<Var> newvars = vars.clone();
 		newvars.add(v);
 		
-		return new Push(left.convert(vars, typevars), right.convert(newvars, typevars));
+		return new Push(left.convert(vars, typevars), right.convert(newvars, typevars), v.name);
 	}
 
 }
