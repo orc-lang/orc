@@ -48,13 +48,36 @@ public abstract class Expression {
 	 * 
 	 * @param a The replacing variable or value
 	 * @param x The free variable whose occurrences will be replaced
+	 * 
+	 * @return A new copy of the expression with the substitution performed
 	 */
 	public abstract Expression subst(Argument a, NamedVar x);
 	
 	
 	/**
+	 * 
+	 * Performs the substitution [v/x], replacing occurrences of the free variable x
+	 * with the nameless variable v. Additionally, attach the name of x as documentation
+	 * on the variable v so that it can be used later for debugging or other purposes.
+	 * 
+	 * This method delegates to the subst method after attaching the name. 
+	 * 
+	 * @param v The replacing variable
+	 * @param x The free variable whose occurrences will be replaced
+	 * 
+	 * @return A new copy of the expression with the substitution performed
+	 */
+	public Expression subvar(Var v, NamedVar x) {
+		v.giveName(x.key);
+		return subst(v,x);
+	}
+	
+	/**
 	 * Perform a set of substitutions defined by a map.
 	 * For each x |-> a in the map, the substitution [a/x] occurs.
+	 * 
+	 * If a is a nameless variable v, the name of the corresponding
+	 * x will be attached to it.
 	 * 
 	 * @param m
 	 */
@@ -64,7 +87,11 @@ public abstract class Expression {
 		
 		for (NamedVar x : m.keySet())
 		{
-			result = result.subst(m.get(x),x);
+			Argument a = m.get(x);
+			if (a instanceof Var) {
+				((Var)a).giveName(x.key);
+			}
+			result = result.subst(a,x);
 		}
 		
 		return result;

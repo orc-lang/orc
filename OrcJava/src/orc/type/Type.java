@@ -294,6 +294,9 @@ public abstract class Type {
 	public void addConstraints(Env<Boolean> VX, Type T, Constraint[] C) throws TypeException {
 		
 		try {
+		/* If T is a type variable Y, we may be defining
+		 * a lower bound for that variable.
+		 */
 		if (T instanceof TypeVariable) {
 			int Y = ((TypeVariable)T).index;
 		

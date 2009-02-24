@@ -17,10 +17,17 @@ public class Push extends Expr {
 	public Expr left;
 	public Expr right;
 	
-	public Push(Expr left, Expr right)
+	/* An optional variable name, used for documentation purposes.
+	 * It has no operational purpose, since the expression is already
+	 * in deBruijn index form. 
+	 */
+	public String name;
+	
+	public Push(Expr left, Expr right, String name)
 	{
 		this.left = left;
 		this.right = right;
+		this.name = name;
 	}
 	
 	@Override

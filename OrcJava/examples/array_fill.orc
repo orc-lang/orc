@@ -8,21 +8,21 @@ include "prelude/util.inc"
 
 -- Three different ways to prefill arrays:
 -- An immutable array with the value equal to the index
-val a = IArray(3, let)
+val a = IArray[Integer](3, let)
 -- A mutable array with the value equal to the index
 val b =
-  Array(5) >a>
-  fillArray(a, let) >>
+  Array[Integer](5) >a>
+  fillArray[Integer](a, let) >>
   a
 -- A mutable array initialized to constant value 0
 val c =
-  Array(3) >a>
+  Array[Integer](3) >a>
   a.fill(0) >>
   a
 
 -- Publish the values of each array in
 -- a predictable sequence
-val pubs = Buffer()
+val pubs = Buffer[Integer]()
 (
   (a(0) | a(1) | a(2)) >x> pubs.put(x) >> stop
   ; each(b) >x> pubs.put(x) >> stop

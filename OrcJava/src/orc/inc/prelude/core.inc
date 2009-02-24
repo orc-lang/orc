@@ -29,7 +29,7 @@ When applied to no arguments, return a signal.
 When applied to a single argument, return that argument (behaving as the identity function).
 
 @site let[A, ...](A, ...) :: (A, ...)
-When applied to zero, two, or more arguments, return the arguments in a tuple.
+When applied to two or more arguments, return the arguments in a tuple.
 --}
 site let = orc.runtime.sites.core.Let
 

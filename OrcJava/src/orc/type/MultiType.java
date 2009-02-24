@@ -40,7 +40,7 @@ public class MultiType extends Type {
 			if (alt.subtype(that)) return true;
 		}
 		
-		return super.subtype(that);
+		return false;
 	}
 	
 	public Type call(Env<Type> ctx, Env<Type> typectx, List<Arg> args, List<Type> typeActuals) throws TypeException {

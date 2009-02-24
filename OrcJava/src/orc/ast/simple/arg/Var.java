@@ -21,6 +21,10 @@ import orc.runtime.values.Value;
 
 public class Var extends Argument {
 	private static final long serialVersionUID = 1L;
+	
+	/* An optional string name to use for this variable in debugging contexts. */
+	public String name = null;
+	
 	@Override
 	public void addFree(Set<Var> freeset) {
 		freeset.add(this);
@@ -33,5 +37,13 @@ public class Var extends Argument {
 		} catch (SearchFailureException e) {
 			throw new OrcError(e);
 		}
+	}
+	
+	public void giveName(String name) {
+		this.name = name;
+	}
+	
+	public String toString() {
+		return (name != null ? name : super.toString());
 	}
 }

@@ -21,7 +21,7 @@ import orc.runtime.nodes.Node;
  * 
  * A unit of syntax that encapsulates an expression definition. 
  * 
- * Groups of mutually recursive definitions are scoped in the simplified abstract syntax tree by a Def.
+ * Groups of mutually recursive definitions are scoped in the simplified abstract syntax tree by Defs.
  * 
  * @author dkitchin
  *
