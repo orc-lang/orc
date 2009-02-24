@@ -3,8 +3,8 @@ package orc.orchard.api;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
+import orc.ast.oil.xml.Oil;
 import orc.orchard.errors.InvalidProgramException;
-import orc.orchard.oil.Oil;
 
 /**
  * Compile program text into OIL format.

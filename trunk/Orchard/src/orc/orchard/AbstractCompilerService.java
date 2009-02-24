@@ -6,13 +6,10 @@ import java.util.logging.Logger;
 
 import orc.Config;
 import orc.Orc;
-import orc.ast.oil.UnguardedRecursionChecker;
-import orc.ast.simple.arg.Var;
-import orc.env.Env;
+import orc.ast.oil.xml.Marshaller;
+import orc.ast.oil.xml.Oil;
 import orc.error.compiletime.CompilationException;
 import orc.orchard.errors.InvalidProgramException;
-import orc.orchard.oil.Marshaller;
-import orc.orchard.oil.Oil;
 
 
 /**
@@ -33,29 +30,22 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
 	public Oil compile(String devKey, String program) throws InvalidProgramException {
 		logger.info("compile(" + devKey + ", " + program + ")");
 		if (program == null) throw new InvalidProgramException("Null program!");
-		orc.ast.simple.Expression ex0;
+		orc.ast.oil.Expr ex1;
 		try {
 			Config config = new Config();
 			// Include sites specifically for orchard services
 			config.addInclude("orchard.inc");
-			ex0 = Orc.compile(new StringReader(program), config);
+			ex1 = Orc.compile(new StringReader(program), config);
 		} catch (CompilationException e) {
 			throw new InvalidProgramException(e.getMessage());
 		} catch (IOException e) {
 			throw new InvalidProgramException("IO error: " + e.getMessage());
 		}
-		if (ex0 == null) {
+		if (ex1 == null) {
 			// FIXME: obviously need more detail here
 			throw new InvalidProgramException("Syntax error in: " + program);
 		}
-		orc.ast.oil.Expr ex1;
-		try {
-			ex1 = ex0.convert(new Env<Var>(), new Env<String>());
-			UnguardedRecursionChecker.check(ex1);
-		} catch (CompilationException e) {
-			throw new InvalidProgramException(e.getMessage());
-		};
-		orc.orchard.oil.Expression ex2 = ex1.accept(new Marshaller());
+		orc.ast.oil.xml.Expression ex2 = ex1.accept(new Marshaller());
 		return new Oil("1.0", ex2);
 	}
 	

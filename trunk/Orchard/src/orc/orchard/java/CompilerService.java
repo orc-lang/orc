@@ -2,9 +2,9 @@ package orc.orchard.java;
 
 import java.util.logging.Logger;
 
+import orc.ast.oil.xml.Oil;
 import orc.orchard.AbstractCompilerService;
 import orc.orchard.errors.InvalidProgramException;
-import orc.orchard.oil.Oil;
 
 public class CompilerService extends AbstractCompilerService {
 	public CompilerService() {
