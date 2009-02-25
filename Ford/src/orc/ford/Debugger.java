@@ -22,8 +22,6 @@ import orc.trace.BackwardEventCursor;
 import orc.trace.EventCursor;
 import orc.trace.InputStreamEventCursor;
 import orc.trace.EventCursor.EndOfStream;
-import orc.trace.events.AfterEvent;
-import orc.trace.events.BeforeEvent;
 import orc.trace.events.BlockEvent;
 import orc.trace.events.ChokeEvent;
 import orc.trace.events.DieEvent;
@@ -339,8 +337,6 @@ public class Debugger {
 	 * Returns true if an event should be skipped.
 	 */
 	private static final Visitor<Boolean> SKIP = new Visitor<Boolean>() {
-		public Boolean visit(AfterEvent event) { return false; }
-		public Boolean visit(BeforeEvent event) { return true; }
 		public Boolean visit(BlockEvent event) { return false; }
 		public Boolean visit(ChokeEvent event) { return false; }
 		public Boolean visit(DieEvent event) { return false; }
@@ -361,8 +357,6 @@ public class Debugger {
 	 * Most events have no effect.
 	 */
 	private abstract class Simulator implements Visitor<Void> {
-		public Void visit(AfterEvent event) { return null; }
-		public Void visit(BeforeEvent event) { return null; }
 		public Void visit(BlockEvent event) { return null; }
 		public Void visit(ChokeEvent event) { return null; }
 		public Void visit(DieEvent event) { return null; }
