@@ -53,7 +53,7 @@
 	<taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
 		<classpath>
 			<pathelement location="${orc.location.lib}/jaxws-tools.jar" />
-			<fileset dir="${orc.location.lib}" includes="orc-sites-*.jar" />
+			<fileset dir="${orc.location.lib}" includes="orc-*.jar" />
 		</classpath>
 	</taskdef>
 	<path id="wsgen.classpath">
