@@ -24,7 +24,9 @@ val c =
 -- a predictable sequence
 val pubs = Buffer[Integer]()
 (
-  (a(0) | a(1) | a(2)) >x> pubs.put(x) >> stop
+  pubs.put(a(0)) >> stop
+  ; pubs.put(a(1)) >> stop
+  ; pubs.put(a(2)) >> stop
   ; each(b) >x> pubs.put(x) >> stop
   ; each(c) >x> pubs.put(x) >> stop
   ; pubs.close() >> stop
