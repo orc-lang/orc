@@ -57,6 +57,10 @@ import orc.runtime.OrcEngine;
  */
 public class ExamplesTest {
 	public static Test suite() {
+		return buildSuite(new Config());
+	}
+	
+	public static TestSuite buildSuite(final Config config) {
 		TestSuite suite = new TestSuite("orc.test.ExamplesTest");
 		LinkedList<File> files = new LinkedList<File>();
 		TestUtils.findOrcFiles(new File("examples"), files);
@@ -72,20 +76,19 @@ public class ExamplesTest {
 			suite.addTest(new TestCase(file.toString()) {
 				@Override
 				public void runTest() throws IOException, CmdLineException, CompilationException, InterruptedException, ExecutionException, TimeoutException {
-					runOrcProgram(file, expecteds);
+					runOrcProgram(config, file, expecteds);
 				}
 			});
 		}
 		return suite;
 	}
 	
-	public static void runOrcProgram(File file, LinkedList<String> expecteds)
+	public static void runOrcProgram(Config config, File file, LinkedList<String> expecteds)
 	throws InterruptedException, ExecutionException, CmdLineException,
 			CompilationException, IOException, TimeoutException
 	{
 		// configure engine to write to a ByteArray
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		Config config = new Config();
 		config.setInputFile(file);
 		config.setStdout(new PrintStream(out));
 		config.setStderr(config.getStdout());
