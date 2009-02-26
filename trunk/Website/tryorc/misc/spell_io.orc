@@ -29,6 +29,7 @@ def skipto(reader, phrase) =
   else if line.contains(phrase) then line
   else skipto(reader, phrase)
   
+def spellCheck([], _) = stop
 def spellCheck(word:words, i) =
   GoogleSpellUnofficial(word) >(_:_) as suggs>
   (i, word, suggs)
