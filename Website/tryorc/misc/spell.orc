@@ -8,6 +8,7 @@ include "forms.inc"
 
 val YahooSpell = YahooSpellFactory("orc/orchard/yahoo.properties")
 
+def spellCheck([], _) = stop
 def spellCheck(word:words, i) =
     GoogleSpellUnofficial(word) >(_:_) as suggs>
       ("G", i, word, suggs)
