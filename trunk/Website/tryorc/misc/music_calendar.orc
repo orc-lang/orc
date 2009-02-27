@@ -42,7 +42,7 @@ site GoogleCalendarFactory = orc.lib.music_calendar.GoogleCalendar
 val oauth = OAuthProvider("orc/orchard/oauth.properties")
 val Google = GoogleSearchFactory("orc/orchard/google.properties")
 val GoogleCalendar = GoogleCalendarFactory(oauth, "google")
-val phrases =
+def phrases() =
     "site:www.myspace.com 'Austin, TX' 'Band Members'"
   | "site:www.myspace.com 'Austin, Texas' 'Band Members'"
 
@@ -51,7 +51,7 @@ val phrases =
     GoogleCalendar.authenticate() 
   | println("Authenticating...") >> stop
 ) >>
-phrases >phrase>
+phrases() >phrase>
 Google(phrase) >pages>
 each(pages) >page>
 each(page()) >result>
