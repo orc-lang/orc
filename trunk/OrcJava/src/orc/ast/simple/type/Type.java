@@ -28,6 +28,7 @@ public abstract class Type {
 
 	/* Create singleton representatives for some common types */
 	public static final Type BLANK = new Blank();
+	public static final Type TOP = new Top();
 	
 	
 	/** Convert this syntactic type into an actual type, given an appropriate type context
