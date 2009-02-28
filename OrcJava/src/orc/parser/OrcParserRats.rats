@@ -131,7 +131,7 @@ List<Declaration> Include =
 		if (result.hasValue()) {
 			yyResult = new SemanticValue(result.semanticValue(), yyBase);
 		} else {
-			abort(result.parseError());
+			parser.abort(result.parseError());
 		}
 	}
 	;
@@ -171,7 +171,7 @@ Declaration Declaration =
 
 
 Constructor Constructor =
-	name:Identifier LPAREN ts:TypeList RPAREN Space {
+	name:Identifier &{ !name.equals("lambda") } LPAREN ts:TypeList RPAREN Space {
 		yyValue = new Constructor(name,ts);
 	}
 	;
@@ -780,15 +780,16 @@ Type Type =
 	LPAREN ts:TypeList RPAREN Space { 
 		if (ts.size() > 1) {
 			yyValue = new TupleType(ts);
-		}
-		else {
+		} else if (ts.size() == 1) {
 			yyValue = ts.get(0);
-		} 
+		} else {
+			yyValue = Type.TOP;
+		}
 	}
 	/ UNDERSCORE { yyValue = Type.BLANK; }
 	/ LAMBDA typeFormals:TypeFormals LPAREN argTypes:TypeList RPAREN Space
-	curried0:(LPAREN yyValue:TypeList RPAREN Space)*
-	 DOUBLE_COLON resultType:Type {
+	  curried0:(LPAREN yyValue:TypeList RPAREN Space)*
+	  DOUBLE_COLON resultType:Type {
 		Type curriedType = resultType;
 		List<List<Type>> curried = curried0.list();
 		ListIterator<List<Type>> it = curried.listIterator(curried.size());

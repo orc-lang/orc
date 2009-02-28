@@ -50,7 +50,10 @@ public abstract class Type {
 	public static final Type INTEGER = new IntegerType();
 	public static final Type LET = new LetType();
 	
-	/* Placeholder for an unspecified type */
+	/**
+	 * Placeholder for an unspecified type.
+	 * FIXME: should use a null type.
+	 */
 	public static final Type BLANK = null;
 
 	
