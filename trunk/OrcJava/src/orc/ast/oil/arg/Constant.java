@@ -8,6 +8,7 @@ import orc.env.Env;
 import orc.error.compiletime.typing.TypeException;
 import orc.type.Type;
 import orc.type.ground.ConstIntType;
+import xtc.util.Utilities;
 
 public class Constant extends Arg { 
 	
@@ -23,7 +24,13 @@ public class Constant extends Arg {
 	}
 	
 	public String toString() {
-		return "[" + String.valueOf(v) + "]";
+		if (v == null) {
+			return "null";
+		} else if (v instanceof String) {
+			return '"' + Utilities.escape((String)v, Utilities.JAVA_ESCAPES) + '"';
+		} else {
+			return v.toString();
+		}
 	}
 	
 	@Override

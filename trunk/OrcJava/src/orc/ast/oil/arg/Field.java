@@ -29,7 +29,7 @@ public class Field extends Arg implements Comparable<Field>{
 	}
 	
 	public String toString() {
-		return "[." + key + "]";
+		return "." + key;
 	}
 	
 	public int compareTo(Field that) {

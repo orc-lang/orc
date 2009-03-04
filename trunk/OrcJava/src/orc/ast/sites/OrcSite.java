@@ -60,9 +60,4 @@ public class OrcSite extends Site {
 		}
 		
 	}
-
-	public String toString() {
-		return "orc:"+location;
-	}
-
 }

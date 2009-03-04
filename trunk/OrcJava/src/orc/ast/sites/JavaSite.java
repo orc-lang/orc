@@ -41,8 +41,4 @@ public class JavaSite extends Site {
 	public orc.runtime.sites.Site instantiate() throws SiteResolutionException {
 		return ClassProxy.forClass(classify());
 	}
-	
-	public String toString() {
-		return "java:" + location;
-	}
 }

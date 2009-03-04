@@ -97,4 +97,8 @@ public abstract class Site {
 			throw new MissingTypeException(e);
 		}
 	}
+	
+	public String toString() {
+		return getProtocol() + ":" + getLocation();
+	}
 }
