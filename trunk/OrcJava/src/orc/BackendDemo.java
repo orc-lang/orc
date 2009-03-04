@@ -1,33 +1,14 @@
 package orc;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.util.Iterator;
 
-import orc.ast.oil.Atomic;
-import orc.ast.oil.Bar;
-import orc.ast.oil.Call;
-import orc.ast.oil.Def;
-import orc.ast.oil.Defs;
-import orc.ast.oil.Expr;
-import orc.ast.oil.HasType;
-import orc.ast.oil.Pull;
-import orc.ast.oil.Push;
-import orc.ast.oil.Semi;
-import orc.ast.oil.Silent;
-import orc.ast.oil.TypeDecl;
-import orc.ast.oil.Visitor;
-import orc.ast.oil.Walker;
-import orc.ast.oil.WithLocation;
-import orc.ast.oil.arg.Arg;
-import orc.ast.oil.arg.Constant;
-import orc.ast.oil.arg.Field;
-import orc.ast.oil.arg.Site;
-import orc.ast.oil.arg.Var;
 import orc.env.Env;
 import orc.env.LookupFailureException;
 import orc.error.OrcError;
 import orc.error.compiletime.CompilationException;
+import orc.ast.oil.*;
+import orc.ast.oil.arg.*;
 
 /**
  * An example of a custom compiler backend.
