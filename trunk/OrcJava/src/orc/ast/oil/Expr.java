@@ -23,15 +23,6 @@ import orc.type.Type;
  */
 
 public abstract class Expr {
-	/**
-	 * Compiles an oil syntax tree into an execution graph.
-	 * Every node is compiled relative to an "output" node that represents
-	 * the "rest of the program". Thus the tree of compiled nodes is created bottom up.
-	 * @param output This is the node to which output (publications) will be directed.
-	 * @return A new node.
-	 */
-	public abstract orc.runtime.nodes.Node compile(orc.runtime.nodes.Node output);
-	
 	/* Typechecking */
 	
 	/* Given a context, infer this expression's type */

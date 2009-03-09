@@ -99,6 +99,6 @@ public abstract class Site {
 	}
 	
 	public String toString() {
-		return getProtocol() + ":" + getLocation();
+		return "#site(" + getProtocol() + ", " + getLocation() + ")";
 	}
 }

@@ -23,10 +23,6 @@ public class WithLocation extends Expr implements Located {
 	public SourceLocation getSourceLocation() {
 		return location;
 	}
-	@Override
-	public Node compile(Node output) {
-		return new orc.runtime.nodes.WithLocation(expr.compile(output), location);
-	}
 
 	@Override
 	public <E> E accept(Visitor<E> visitor) {

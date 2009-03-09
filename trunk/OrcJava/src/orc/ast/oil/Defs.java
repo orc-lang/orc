@@ -25,26 +25,6 @@ public class Defs extends Expr {
 		this.defs = defs;
 		this.body = body;
 	}
-	
-	@Override
-	public Node compile(Node output) {
-		// find variables free ONLY in the defs themselves
-		// (unlike addIndices which includes the body)
-		Set<Var> free = new TreeSet<Var>();
-		Set<Integer> indices = new TreeSet<Integer>();
-		int depth = defs.size();
-		for (Def d : defs) d.addIndices(indices, depth);
-		for (Integer i : indices) free.add(new Var(i));
-	
-		// compile the defs
-		List<orc.runtime.nodes.Def> newdefs = new LinkedList<orc.runtime.nodes.Def>();
-		for (Def d : defs) {
-			newdefs.add(d.compile());	
-		}
-
-		Node newbody = body.compile(new Unwind(output, newdefs.size()));
-		return new orc.runtime.nodes.Defs(newdefs, newbody, free);
-	}
 
 	@Override
 	public void addIndices(Set<Integer> indices, int depth) {

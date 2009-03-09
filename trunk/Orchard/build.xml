@@ -8,7 +8,7 @@
 	<path id="orc.classpath">
 		<fileset dir="${orc.location.lib}" includes="*.jar" />
 		<pathelement path="${orc.location.build}" />
-		<fileset dir="${orc.location.OrcJava.lib}" includes="*.jar" />
+		<pathelement path="${orc.location.OrcJava.lib}/kilim.jar" />
 	</path>
 	
 	<taskdef name="one-jar"
@@ -132,7 +132,6 @@
 
 	<target name="clean" description="clean up">
 		<delete dir="${orc.location.build}" />
-		<delete dir="${orc.location.war}" />
 		<delete file="${ant.project.name}.war"/>
 	</target>
 </project>

@@ -62,12 +62,6 @@ public class Call extends Expr {
 		this.callee = callee;
 		this.args = new LinkedList<Arg>();
 	}
-	
-
-	@Override
-	public Node compile(Node output) {
-		return new orc.runtime.nodes.Call(callee, args, output);
-	}
 
 	@Override
 	public void addIndices(Set<Integer> indices, int depth) {

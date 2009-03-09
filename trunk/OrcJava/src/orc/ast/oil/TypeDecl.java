@@ -35,12 +35,6 @@ public class TypeDecl extends Expr {
 	}
 
 	@Override
-	public Node compile(Node output) {
-		/* Discard the type information; it is not used at runtime. */
-		return body.compile(output);
-	}
-
-	@Override
 	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
 		Type actualType = type.subst(typectx);
 		return body.typesynth(ctx, typectx.extend(actualType));

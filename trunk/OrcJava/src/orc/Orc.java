@@ -14,6 +14,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import orc.ast.extended.Declare;
 import orc.ast.extended.declaration.Declaration;
+import orc.ast.oil.Compiler;
 import orc.ast.oil.Expr;
 import orc.ast.oil.UnguardedRecursionChecker;
 import orc.ast.oil.xml.Marshaller;
@@ -55,7 +56,7 @@ public class Orc {
 				// don't run or compile to DAG
 				return;
 			} else {
-				n = ex.compile(new Pub());
+				n = Compiler.compile(ex, new Pub());
 			}
 		} catch (CompilationException e) {
 			System.err.println(e);
@@ -153,7 +154,7 @@ public class Orc {
 	}
 	
 	public static Node compile(Config cfg) throws CompilationException, IOException {
-		return compile(cfg.getInstream(), cfg).compile(new Pub());
+		return Compiler.compile(compile(cfg.getInstream(), cfg), new Pub());
 	}
 
 	/** @throws IOException 
@@ -201,7 +202,7 @@ public class Orc {
 				t.die();
 			}
 		};
-		Node n = compile(source, cfg).compile(result);
+		Node n = Compiler.compile(compile(source, cfg), result);
         
 		// Configure the runtime engine.
 		OrcEngine engine = new OrcEngine(cfg);

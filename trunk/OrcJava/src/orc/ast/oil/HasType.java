@@ -38,12 +38,6 @@ public class HasType extends Expr {
 	}
 
 	@Override
-	public Node compile(Node output) {
-		/* Discard the type information; it is not used at runtime. */
-		return body.compile(output);
-	}
-
-	@Override
 	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
 		
 		Type actualType = type.subst(typectx);

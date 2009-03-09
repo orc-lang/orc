@@ -31,11 +31,6 @@ public class Push extends Expr {
 	}
 	
 	@Override
-	public Node compile(Node output) {
-		return left.compile(new Assign(right.compile(new Unwind(output))));
-	}
-	
-	@Override
 	public void addIndices(Set<Integer> indices, int depth) {
 		left.addIndices(indices,depth); 
 		right.addIndices(indices,depth+1); // Push binds a variable on the right
