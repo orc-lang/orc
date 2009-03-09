@@ -17,11 +17,6 @@ public class Atomic extends Expr {
 	{
 		this.body = body;
 	}
-	
-	@Override
-	public Node compile(Node output) {
-		return new orc.runtime.transaction.Atomic(body.compile(new Store()), output);
-	}
 
 	@Override
 	public void addIndices(Set<Integer> indices, int depth) {

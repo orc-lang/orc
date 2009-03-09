@@ -21,11 +21,6 @@ public class Semi extends Expr {
 		this.left = left;
 		this.right = right;
 	}
-	
-	@Override
-	public Node compile(Node output) {
-		return new orc.runtime.nodes.Semi(left.compile(new Leave(output)), right.compile(output));
-	}
 
 	@Override
 	public void addIndices(Set<Integer> indices, int depth) {

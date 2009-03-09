@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import orc.Config;
+import orc.ast.oil.Compiler;
 import orc.ast.oil.Expr;
 import orc.error.runtime.TokenException;
 import orc.lib.orchard.Prompt.PromptCallback;
@@ -232,7 +233,7 @@ public final class Job implements JobMBean {
 	protected Job(Expr expression, Config config) {
 		this.events = new EventBuffer(10);
 		engine = new JobEngine(config);
-		Node node = expression.compile(new Pub());
+		Node node = Compiler.compile(expression, new Pub());
 		//engine.debugMode = true;
 		engine.start(node);
 	}

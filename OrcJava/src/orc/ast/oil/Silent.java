@@ -12,11 +12,6 @@ import orc.type.Type;
 
 public class Silent extends Expr {
 
-	@Override
-	public Node compile(Node output) {
-		return new orc.runtime.nodes.Silent();
-	}
-	
 	public String toString() {
 		return "stop";
 	}

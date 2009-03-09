@@ -30,13 +30,6 @@ public class Pull extends Expr {
 		this.name = name;
 	}
 	
-	
-	@Override
-	public Node compile(Node output) {	
-		return new orc.runtime.nodes.Subgoal(left.compile(new Unwind(output)), right.compile(new Store()));
-	}
-
-	
 	@Override
 	public void addIndices(Set<Integer> indices, int depth) {
 		left.addIndices(indices,depth+1); // Pull binds a variable on the left

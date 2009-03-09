@@ -101,14 +101,4 @@ public abstract class Expression {
 	 * Find the set of all unbound Vars (note: not FreeVars) in this expression.
 	 */
 	public abstract Set<Var> vars();
-
-	
-	/**
-	 * Intermediate step to allow a one-step compile from the simple AST.
-	 * Obviously this is only useful if the compilation and execution
-	 * environments are colocated.
-	 */
-	public Node compile(Node output) throws CompilationException {
-		return this.convert(new Env<Var>(), new Env<String>()).compile(output);
-	}
 }
