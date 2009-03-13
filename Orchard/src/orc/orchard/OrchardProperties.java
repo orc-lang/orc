@@ -1,6 +1,8 @@
 package orc.orchard;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 /**
@@ -13,7 +15,9 @@ public final class OrchardProperties {
 	private static Properties props = new Properties();
 	static {
 		try {
-			props.load(OrchardProperties.class.getResourceAsStream("orchard.properties"));
+			InputStream data = OrchardProperties.class.getResourceAsStream("orchard.properties");
+			if (data == null) throw new FileNotFoundException("orchard.properties");
+			props.load(data);
 		} catch (IOException e) {
 			throw new AssertionError(e);
 		}
