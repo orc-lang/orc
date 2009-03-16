@@ -20,4 +20,5 @@ public interface Visitor<V> {
 	public V visit(SendEvent event);
 	public V visit(StoreEvent event);
 	public V visit(UnblockEvent event);
+	public V visit(HaltEvent event);
 }
