@@ -1,6 +1,7 @@
 package orc.runtime.nodes;
 
 import orc.runtime.Token;
+import orc.trace.TokenTracer.HaltTrace;
 
 /**
  * 
@@ -19,6 +20,9 @@ public class Silent extends Node {
 	
 	@Override
 	public void process(Token t) {
+		// Same steps as method halt(List<HaltTrace>) in Site.java.
+		HaltTrace h = t.getTracer().halt(null/* null list of halt causes */);
+		t.getRegion().addHaltEvent(h);
 		t.die();
 	}
 
