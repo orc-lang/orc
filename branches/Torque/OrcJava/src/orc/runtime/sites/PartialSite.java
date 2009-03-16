@@ -32,7 +32,7 @@ public abstract class PartialSite extends Site {
 			caller.resume(v);
 		}
 		else {
-			caller.die();
+			halt(caller);
 		}	
 		
 	}
