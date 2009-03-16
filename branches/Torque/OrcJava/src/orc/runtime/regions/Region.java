@@ -1,9 +1,12 @@
 package orc.runtime.regions;
 
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import orc.runtime.Token;
+import orc.trace.TokenTracer.HaltTrace;
 import orc.trace.TokenTracer.StoreTrace;
 
 /**
@@ -19,6 +22,12 @@ public abstract class Region {
 	protected boolean closed = false;
 	private Set<Token> containedTokens = new HashSet<Token>();
 	private Set<Region> containedRegions = new HashSet<Region>();
+	
+	/**
+	 * List of halted events in the region.
+	 * EXPERIMENTAL.
+	 */
+	protected List<HaltTrace> haltEvents=new LinkedList<HaltTrace>();
 	
 	public Region() {}
 	
@@ -87,6 +96,19 @@ public abstract class Region {
 			// die on their own as they are processed
 		}
 		containedTokens.clear();
+	}
+	
+	/**
+	 * EXPERIMENTAL
+	 * @param h
+	 */
+	public void addHaltEvent(HaltTrace h) {
+		if(h!=null)
+			haltEvents.add(h);
+	}
+	// EXPERIMENTAL.
+	public void addHaltEvents(List<HaltTrace> hList) {
+		haltEvents.addAll(hList);
 	}
 	
 	// for checkpointing
