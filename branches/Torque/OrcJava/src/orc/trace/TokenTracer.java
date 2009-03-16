@@ -1,8 +1,11 @@
 package orc.trace;
 
+import java.util.List;
+
 import orc.error.Locatable;
 import orc.error.runtime.TokenException;
 import orc.runtime.values.Closure;
+import orc.trace.events.HaltEvent;
 
 /**
  * Interface for writing traces from a single Orc thread. Methods correspond to
@@ -37,6 +40,8 @@ public abstract class TokenTracer implements Locatable {
 	public interface PullTrace {}
 	/** Abstract handle for a before event */
 	public interface BeforeTrace {}
+	/** Abstract handle for a halt event. EXPERIMENTAL */
+	public interface HaltTrace {}
 	/**
 	 * Create a new thread. By convention the new thread should
 	 * evaluate the right side of the combinator.
@@ -56,7 +61,7 @@ public abstract class TokenTracer implements Locatable {
 	 * <i>not</i> call {@link #choke(StoreTrace)}.
 	 * 
 	 * <p>
-	 * The engine guarantees that all
+	 * The engine guarantees that all 
 	 * {@link #choke(orc.trace.TokenTracer.StoreTrace)} and
 	 * {@link #unblock(orc.trace.TokenTracer.StoreTrace)} events will occur
 	 * <i>before</i> the {@link #die()} event for this tracer.
@@ -118,4 +123,28 @@ public abstract class TokenTracer implements Locatable {
 	 * @param storeTrace the trace produced when {@link #store(orc.trace.TokenTracer.PullTrace, Object)} was called
 	 */
 	public abstract void useStored(StoreTrace storeTrace);
+	
+	/**
+	 * Called when a site halts.
+	 * 
+	 * This method should actually be abstract. It is implemented here to
+	 * avoid changing the already existing tracers for now.
+	 * 
+	 * EXPERIMENTAL. 
+	 *  
+	 * @param causes The set of (previous) halt events that caused this halt.
+	 * For e.g. halts in the right side of a pull might cause site calls waiting
+	 * on the variable of the pull to halt.  
+	 */
+	public HaltTrace halt(List<HaltTrace> haltCauses) {return new HaltEvent();}
+	/** 
+	 * Called when the left branch of the otherwise expression
+	 * halts. The events of the right branch follow this call.
+	 * 
+	 * This method should actually be abstract. It is implemented here to
+	 * avoid changing the already existing tracers for now.
+	 * 
+	 * EXPERIMENTAL 
+	 */
+	public void enterOther(List<HaltTrace> haltCauses) {}; 
 }
