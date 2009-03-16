@@ -18,6 +18,12 @@ public class GroupRegion extends Region {
 	}
 	
 	protected void reallyClose(Token closer) {
+		if(cell.isBound()) {
+			parent.addHaltEvents(haltEvents);
+		} else {
+			cell.setHalts(haltEvents);
+		}
+		haltEvents=null;
 		cell.close();
 		parent.remove(this, closer);
 	}
