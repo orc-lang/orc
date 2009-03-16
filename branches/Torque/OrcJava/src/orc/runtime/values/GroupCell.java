@@ -10,13 +10,12 @@ import java.util.List;
 
 import orc.error.runtime.UncallableValueException;
 import orc.runtime.Token;
-import orc.runtime.regions.GroupRegion;
 import orc.runtime.regions.Region;
 import orc.runtime.transaction.Transaction;
 import orc.trace.TokenTracer;
+import orc.trace.TokenTracer.HaltTrace;
 import orc.trace.TokenTracer.PullTrace;
 import orc.trace.TokenTracer.StoreTrace;
-import orc.trace.events.PullEvent;
 
 /**
  * A value container that is also a group. Groups are
@@ -38,6 +37,10 @@ public class GroupCell implements Serializable, Future {
 	private Transaction trans;
 	private PullTrace pullTrace;
 	private StoreTrace storeTrace;
+	/* EXPERIMENTAL: Maybe the halts variable can be merged
+	 * with storeTrace since they are mutually exclusive.
+	 */
+	private List<HaltTrace> halts; 
 	
 	public static final GroupCell ROOT = new GroupCell(null);
 
@@ -142,6 +145,7 @@ public class GroupCell implements Serializable, Future {
 			waitList.add(t);
 			t.setQuiescent();
 		} else {
+			t.getTracer().halt(halts);
 			// A token waiting on a dead group cell will remain silent forever.
 			t.die();
 		}
@@ -176,6 +180,7 @@ public class GroupCell implements Serializable, Future {
 			kill();
 			if (waitList != null) {
 				for (Token t : waitList) {
+					t.getTracer().halt(halts);
 					t.unsetQuiescent();
 					t.die();
 				}
@@ -217,6 +222,10 @@ public class GroupCell implements Serializable, Future {
 	public String toString() {
 		if (!bound) return "_";
 		else return value.toString();
+	}
+
+	public void setHalts(List<HaltTrace> halts) {
+		this.halts = halts;
 	}
 
 }
