@@ -678,8 +678,7 @@ String BareOperator =
 /* Ends without newline */
 Literal Literal =
 	literal:(
-		Integer
-		/ Float
+		Number
 		/ StringLiteral
 		/ TRUE { yyValue = true; }
 		/ FALSE { yyValue = false; }
