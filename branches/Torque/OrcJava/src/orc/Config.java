@@ -56,6 +56,7 @@ public class Config {
 	private PrintStream stderr = System.err;
 	private int tokenPoolSize = -1;
 	private int stackSize = -1;
+	private Boolean qosAnalysis = false;
 	
 	/**
 	 * Set properties based on command-line arguments.
@@ -127,6 +128,11 @@ public class Config {
 	@Option(name="-pub",usage="Stop after publishing this many values")
 	public void setMaxPubs(int maxPubs) {
 		this.maxPubs = maxPubs;
+	}
+	
+	@Option(name="-qos",usage="Enable QoS Analysis.")
+	public void setQoSAnalysis(boolean qos) throws CmdLineException {
+		qosAnalysis=qos;
 	}
 	
 	@Argument(metaVar="file", usage="Input file. Omit to use STDIN.")
@@ -234,5 +240,9 @@ public class Config {
 	
 	public void setStackSize(int stackSize) {
 		this.stackSize = stackSize;
+	}
+	
+	public boolean getQoSAnalysis() {
+		return qosAnalysis;
 	}
 }
