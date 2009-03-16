@@ -3,10 +3,8 @@
  */
 package orc.runtime.sites;
 
-import java.util.LinkedList;
 import java.util.List;
 
-import orc.error.compiletime.typing.MissingTypeException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.NontransactionalSiteException;
 import orc.error.runtime.TokenException;
@@ -17,6 +15,7 @@ import orc.runtime.transaction.Transaction;
 import orc.runtime.values.Callable;
 import orc.runtime.values.Value;
 import orc.runtime.values.Visitor;
+import orc.trace.TokenTracer.HaltTrace;
 import orc.type.Type;
 
 /**
@@ -85,5 +84,17 @@ public abstract class Site extends Value implements Callable {
 		// to force subclasses to implement something appropriate.
 		return Type.BOT;
 		//throw new MissingTypeException();
+	}
+	
+	/*
+	 * To explicit halting of sites. This method is
+	 * to be called whenever a site halts.  
+	 * 
+	 * EXPERIMENTAL
+	 */
+	protected void halt(Token t) {
+		HaltTrace h = t.getTracer().halt(null/* null list of halt causes */);
+		t.getRegion().addHaltEvent(h);
+		t.die();
 	}
 }
