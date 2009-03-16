@@ -9,7 +9,9 @@ import orc.runtime.regions.SemiRegion;
 import orc.runtime.values.Value;
 
 /**
- * Compiled node for leaving the scope of a variable binding. 
+ * Compiled node for that is reached when the left expression
+ * of the otherwise expression publishes.
+ *  
  * @author dkitchin
  */
 public class Leave extends Node {

@@ -92,7 +92,7 @@ public class Token implements Serializable, Locatable {
 	 * You should get tokens from {@link TokenPool}, not
 	 * call this directly.
 	 */
-	Token() {}
+	protected Token() {}
 	
 	/**
 	 * Initialize a root token.
