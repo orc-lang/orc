@@ -23,6 +23,7 @@ import orc.ast.simple.arg.Var;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.parser.OrcParser;
+import orc.qos.QOrc;
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.nodes.Node;
@@ -66,6 +67,11 @@ public class Orc {
 			return;
 		}
         
+		if(cfg.getQoSAnalysis()) {
+			QOrc.process(cfg,n);
+			return;
+		}
+		
 		// Configure the runtime engine
 		OrcEngine engine = new OrcEngine(cfg);
 		
