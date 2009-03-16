@@ -18,7 +18,23 @@ public class SemiRegion extends Region {
 		if (t != null) {
 			t.unsetQuiescent();
 			t.activate();
+			/* Add all the halt events to the causes of
+			 * the right branch.
+			 * EXPERIMENTAL.
+			 */
+			t.getTracer().enterOther(haltEvents);
+		} else {
+			/* On closing a semi region, the halt events are added to 
+			 * the parent region only when the left branch has already 
+			 * published a value. If the left side blocks, all the halt 
+			 * events are anyway included in the right side's causes.
+			 * EXPERIMENTAL
+			 */
+			parent.addHaltEvents(haltEvents);
 		}
+		
+		haltEvents=null;
+		
 		parent.remove(this, closer);
 	}
 
