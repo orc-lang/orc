@@ -34,13 +34,13 @@ public abstract class Region {
 		containedRegions.add(r);
 	}
 	
-	public synchronized void remove(Token closer) { 
+	public final synchronized void remove(Token closer) { 
 		if (closed) return;
 		dec(); 
 		containedTokens.remove(closer);
 	}
 	
-	public synchronized void remove(Region r) { 
+	public final synchronized void remove(Region r) { 
 		if (closed) return;
 		dec(); 
 		containedRegions.remove(r);
@@ -70,9 +70,5 @@ public abstract class Region {
 		for (Region r : containedRegions) {
 			r.putContainedTokens(acc);
 		}
-	}
-	
-	public final boolean isAlive() {
-		return !closed;
 	}
 }

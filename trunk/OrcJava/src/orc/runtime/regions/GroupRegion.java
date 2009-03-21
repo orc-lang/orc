@@ -14,11 +14,10 @@ public class GroupRegion extends Region {
 		this.parent = parent;
 		this.cell = cell;
 		this.parent.add(this);
-		cell.region = this;
 	}
 	
 	protected void onClose() {
-		cell.kill();
+		cell.close();
 		parent.remove(this);
 	}
 }
