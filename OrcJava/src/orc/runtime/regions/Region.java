@@ -23,7 +23,7 @@ public abstract class Region {
 	public Region() {}
 	
 	public final synchronized void add(Token t) { 
-		assert(!closed);
+		if (closed) return;
 		inc(); 
 		containedTokens.add(t);
 	}
@@ -36,13 +36,13 @@ public abstract class Region {
 	
 	public synchronized void remove(Token closer) { 
 		if (closed) return;
-		dec(closer); 
+		dec(); 
 		containedTokens.remove(closer);
 	}
 	
-	public synchronized void remove(Region r, Token closer) { 
+	public synchronized void remove(Region r) { 
 		if (closed) return;
-		dec(closer); 
+		dec(); 
 		containedRegions.remove(r);
 	}
 
@@ -50,51 +50,29 @@ public abstract class Region {
 		inhabitants++;
 	}
 	
-	private void dec(Token closer) {
+	private void dec() {
 		inhabitants--;
-		if (inhabitants <= 0) { close(closer); }
+		if (inhabitants <= 0) { close(); }
 	}
 	
-	public final synchronized void close(Token closer) {
+	public final synchronized void close() {
 		if (closed) return;
 		closed = true;
-		reallyClose(closer);
+		onClose();
 	}
 	
-	protected abstract void reallyClose(Token closer);
-	
-	/**
-	 * Used when tracing, to both close the region and trace the "choking" of
-	 * all tokens within the region. If you're not tracing, it's more efficient
-	 * to call {@link #close(Token)}.
-	 * 
-	 * @param store The {@link StoreTrace} which triggered the closing.
-	 */
-	public final synchronized void close(StoreTrace store, Token closer) {
-		if (closed) return;
-		closed = true;
-		reallyClose(closer);
-		// if the region was already closed,
-		// it won't contain anything and so
-		// none of this will run
-		for (Region r : containedRegions) {
-			r.close(store, closer);
-		}
-		containedRegions.clear();
-		for (Token t : containedTokens) {
-			t.getTracer().choke(store);
-			// don't kill the tokens; they will
-			// die on their own as they are processed
-		}
-		containedTokens.clear();
-	}
+	protected abstract void onClose();
 	
 	// for checkpointing
-	public void putContainedTokens(Set<Token> acc) {
+	public final synchronized void putContainedTokens(Set<Token> acc) {
 
 		acc.addAll(containedTokens);
 		for (Region r : containedRegions) {
 			r.putContainedTokens(acc);
 		}
+	}
+	
+	public final boolean isAlive() {
+		return !closed;
 	}
 }

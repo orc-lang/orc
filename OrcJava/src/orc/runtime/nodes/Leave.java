@@ -9,7 +9,7 @@ import orc.runtime.regions.SemiRegion;
 import orc.runtime.values.Value;
 
 /**
- * Compiled node for leaving the scope of a variable binding. 
+ * Compiled node for leaving the scope of the LHS of an otherwise combinator. 
  * @author dkitchin
  */
 public class Leave extends Node {

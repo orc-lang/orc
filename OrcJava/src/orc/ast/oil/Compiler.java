@@ -142,6 +142,12 @@ public final class Compiler implements Visitor<Node> {
 				compile(atomic.body, new Store()),
 				output);
 	}
+	
+	public Node visit(Isolated expr) {
+		return new orc.runtime.nodes.Isolate(
+				compile(expr.body,
+						new orc.runtime.nodes.Unisolate(output)));
+	}
 
 	public Node visit(HasType hasType) {
 		return hasType.body.accept(this);

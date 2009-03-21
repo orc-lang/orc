@@ -14,11 +14,11 @@ public class GroupRegion extends Region {
 		this.parent = parent;
 		this.cell = cell;
 		this.parent.add(this);
-		this.cell.setRegion(this);
+		cell.region = this;
 	}
 	
-	protected void reallyClose(Token closer) {
-		cell.close();
-		parent.remove(this, closer);
+	protected void onClose() {
+		cell.kill();
+		parent.remove(this);
 	}
 }

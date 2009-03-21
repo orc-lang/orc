@@ -186,7 +186,7 @@ List<Constructor> ConstructorList =
 
 
 Defn Definition =
-	DEF name:SiteName Space LPAREN formals:PatternList RPAREN Space
+	DEF name:RequiredSiteName Space LPAREN formals:PatternList RPAREN Space
 	curried0:(LPAREN yyValue:PatternList RPAREN Space)*
 	resultType:MaybeResultType
 	EQ body0:Body {
@@ -212,6 +212,17 @@ Defn Definition =
 		}
 		yyValue = new DefnType(name, argTypes, curriedType, typeFormals);
 		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	;
+
+List<String> IdentifierList =
+	f:Identifier fs:(void:COMMA fs:Identifier)* {
+		List<String> out = fs.list();
+		out.add(0, f);
+		yyValue = out;
+	}
+	/ /* empty */ {
+		yyValue = new LinkedList<String>();
 	}
 	;
 
@@ -432,12 +443,20 @@ Expression MaybeAtomic =
 		yyValue = new Atomic(body);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
+	/ void:ISOLATED body:MaybeAssignment {
+		yyValue = new Isolated(body);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
 	/ MaybeAssignment
 	;
 
 Expression NoCmpMaybeAtomic =
 	void:ATOMIC body:NoCmpMaybeAssignment {
 		yyValue = new Atomic(body);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ void:ISOLATED body:NoCmpMaybeAssignment {
+		yyValue = new Isolated(body);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ NoCmpMaybeAssignment
@@ -974,6 +993,7 @@ transient String INCLUDE = "include":Word Space;
 transient String TYPE = "type":Word Space;
 transient String LAMBDA = "lambda":Word Space;
 transient String ATOMIC = "atomic":Word Space;
+transient String ISOLATED = "isolated":Word Space;
 transient String AS = "as":Word Space;
 transient String IF = "if":Word Space;
 transient String THEN = "then":Word Space;

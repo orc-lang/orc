@@ -190,15 +190,24 @@ final class BackendVisitorDemo implements Visitor<Void> {
 		out.println(")");
 		return null;
 	}
+	
+	public Void visit(Atomic atomic) {
+		out.print("(atomic ");
+		atomic.body.accept(this);
+		out.print(")");
+		return null;
+	}
+	
+	public Void visit(Isolated expr) {
+		out.print("(isolated ");
+		expr.body.accept(this);
+		out.print(")");
+		return null;
+	}
 
 	/** Ignore source location tags */
 	public Void visit(WithLocation expr) {
 		return expr.expr.accept(this);
-	}
-
-	/** Ignore atomic */
-	public Void visit(Atomic atomic) {
-		return atomic.body.accept(this);
 	}
 
 	/** Ignore type assertions */

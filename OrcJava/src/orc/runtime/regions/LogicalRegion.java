@@ -16,9 +16,9 @@ public class LogicalRegion extends Region {
 		this.parent.add(this);
 	}
 	
-	protected void reallyClose(Token closer) {
+	protected void onClose() {
 		clock.stop();
-		parent.remove(this, closer);
+		parent.remove(this);
 	}
 
 	public Region getParent() {
