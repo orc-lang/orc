@@ -429,7 +429,7 @@ Remove all values from the set.
 @method Set[A].size() :: Integer
 Return the number of unique values currently contained in the set.
 --}
-class Set = orc.lib.data.Set
+class Set = orc.lib.state.Set
 
 {--
 @site Map[K,V]() :: Map[K,V]
@@ -466,7 +466,7 @@ Remove all keys from the map.
 @method Map[K,V].size() :: Integer
 Return the number of unique keys currently contained in the map.
 --}
-class Map = orc.lib.data.Map
+class Map = orc.lib.state.Map
 
 {--
 @site Counter(Integer) :: Counter
@@ -547,7 +547,25 @@ For readers familiar with the C language, this is the same reason you must
 write <code language="c">s->field</code> instead of <code>s.field</code> when
 <code>s</code> is a pointer to a struct.
 --}
-site Dictionary = orc.lib.data.Dictionary
+site Dictionary = orc.lib.state.Dictionary
+
+{--
+@site Record(String, A, String, B, ...) :: Record[A, B, ...]
+
+Create a new record (an immutable map from field names to values).
+Arguments are consumed in pairs; the first argument of each pair
+is the key, and the second is the value for that key.
+
+To access the value in record <code>r</code> for key <code>"x"</code>,
+use the syntax <code>r.x</code>. For example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: 1
+val r = Record(
+  "one", 1,
+  "two", 2)
+r.one]]></programlisting>
+--}
+site Record = orc.lib.state.Record
 
 {--
 @def fst[A,B]((A,B)) :: A
