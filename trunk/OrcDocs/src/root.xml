@@ -2363,7 +2363,7 @@ language family called <firstterm>datatypes</firstterm> (also called variants or
 Datatypes are defined using the <code>type</code> declaration:
 
 <programlisting><![CDATA[
-type tree = Node(_,_,_) | Empty()
+type Tree = Node(_,_,_) | Empty()
 ]]></programlisting>
 
 </para>
@@ -2379,7 +2379,7 @@ Once we have created these tagged values, we use a new pattern called a datatype
 to match them and unwrap the arguments:
 
 <programlisting><![CDATA[
-type tree = Node(_,_,_)
+type Tree = Node(_,_,_) | Empty()
 {- Build up a small binary tree -}
 val l = Node(Empty(), 0, Empty())
 val r = Node(Empty(), 2, Empty())
@@ -4127,6 +4127,15 @@ There are two primary ways to create sites which can be used in Orc:
 	However such sites are difficult to use from Java code.
 </listitem>
 </orderedlist>
+
+<para>
+External services (including web services) are handled using the <link
+	xlink:href="http://en.wikipedia.org/wiki/Proxy_pattern">Proxy
+	pattern</link>.  A site implemented in Java (using one of the two
+techniques above) must act as the local proxy for the service, translating Orc
+site calls into the appropriate requests and translating responses into site
+return values, halts, or errors.
+</para>
 </section>
 
 <section id="section.services.java"><title><code>class</code> Sites</title>
@@ -4862,9 +4871,9 @@ Within the OrcSites source code you will find:
 
 <para>
 Web services use a variety of protocols, so there are a variety of ways to
-contact them. Most boil down to creating some kind of Java wrapper for the
+contact them. All of them boil down to creating a Java proxy site for the
 service and calling that.  Previous sections explain how to implement such Java
-wrappers which can be called in Orc. Because web services tend to use blocking
+sites which can be called in Orc. Because web services tend to use blocking
 I/O, Java wrappers make frequent use of <link linkend="section.services.sites.ThreadedSite">ThreadedSite</link> and
 <link linkend="section.services.kilim">Kilim</link> to ensure that web service calls don't block the Orc engine.
 </para>
