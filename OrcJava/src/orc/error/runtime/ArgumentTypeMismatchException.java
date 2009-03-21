@@ -32,4 +32,7 @@ public class ArgumentTypeMismatchException extends RuntimeTypeException {
 		super(e.toString());
 	}
 
+	public ArgumentTypeMismatchException(int position, ClassCastException e) {
+		super("For argument " + position + ": " + e.toString());
+	}
 }

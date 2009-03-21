@@ -1,5 +1,5 @@
 include "prelude/core.inc"
-include "prelude/data.inc"
+include "prelude/state.inc"
 include "prelude/time.inc"
 include "prelude/idioms.inc"
 include "prelude/list.inc"
