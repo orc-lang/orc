@@ -45,12 +45,11 @@
 
 	<target name="clean" description="clean up">
 		<delete dir="${orc.location.build}" />
-		<delete>
-			<fileset dir="." includes="${ant.project.name}-*.jar"/>
-		</delete>
+		<delete file="${ant.project.name}-${orc.version}.jar"/>
+		<delete file="${ant.project.name}-${orc.version}.zip"/>
 	</target>
 
-	<target name="kilim" description="Kilim weaving">
+	<target name="kilim" depends="compile" description="Kilim weaving">
 		<java classname="kilim.tools.Weaver" fork="yes">
 			<classpath refid="orc.classpath"/>
 				<assertions>
@@ -60,6 +59,16 @@
 			<arg value="${orc.location.build}" />
 			<arg value="${orc.location.build}" />
 		</java>
+	</target>
+
+	<target name="compile" depends="rats" description="javac compile">
+		<mkdir dir="${orc.location.build}" />
+		<javac srcdir="${orc.location.src}"
+			destdir="${orc.location.build}"
+			classpathref="orc.classpath" />
+		<copy todir="${orc.location.build}">
+			<fileset dir="${orc.location.src}" excludes="**/*.java **/CVS/*"/>
+		</copy>
 	</target>
 	
 	<target name="stdlib-doc" description="Build standard library docs">
@@ -81,7 +90,9 @@
 		</java>
 	</target>
 
-	<target name="rats" description="Build rats parser">
+	<target name="rats" depends="rats1,rats2" description="Build rats parser" />
+
+	<target name="rats1" depends="rats1.required" unless="rats1.notRequired">
 		<java classname="xtc.parser.Rats" fork="yes">
 			<classpath>
 				<pathelement path="${orc.location.lib}/rats.jar" />
@@ -91,6 +102,14 @@
 			<arg value="${orc.location.src}/orc/parser" />
 			<arg value="${orc.location.src}/orc/parser/OrcParserRats.rats" />
 		</java>
+	</target>
+	<target name="rats1.required">
+		<uptodate property="rats1.notRequired"
+			srcfile="${orc.location.src}/orc/parser/OrcParserRats.rats"
+			targetfile="${orc.location.src}/orc/parser/OrcParserRats.java"/>
+	</target>
+
+	<target name="rats2" depends="rats2.required" unless="rats2.notRequired">
 		<java classname="xtc.parser.Rats" fork="yes">
 			<classpath>
 				<pathelement path="${orc.location.lib}/rats.jar" />
@@ -101,6 +120,12 @@
 			<arg value="${orc.location.src}/orc/doc/DocParser.rats" />
 		</java>
 	</target>
+	<target name="rats2.required">
+		<uptodate property="rats2.notRequired"
+			srcfile="${orc.location.src}/orc/doc/DocParser.rats"
+			targetfile="${orc.location.src}/orc/doc/DocParser.java"/>
+	</target>
+
 	<target name="ChangeLog" description="ChangeLog">
 		<exec executable="cvs2cl">
 			<arg value="--hide-filenames" />
