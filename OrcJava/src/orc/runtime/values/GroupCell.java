@@ -38,7 +38,6 @@ public final class GroupCell extends Group implements Serializable, Future {
 	private PullTrace pullTrace;
 	private StoreTrace storeTrace;
 	private Group parent;
-	public GroupRegion region;
 
 	/**
 	 * @param pullTrace used to identify the group cell in traces (see {@link TokenTracer#pull()}).
@@ -64,6 +63,7 @@ public final class GroupCell extends Group implements Serializable, Future {
 		StoreTrace store = token.getTracer().store(pullTrace, this.value);
 		pullTrace = null;
 		bound = true;
+		kill();
 		if (waitList != null) {
 			for (Token t : waitList) {
 				if (store != null) {
@@ -84,7 +84,29 @@ public final class GroupCell extends Group implements Serializable, Future {
 			}
 			storeTrace = store;
 		}
+		// close the region; this is necessary to ensure that
+		// anything waiting on that region to proceed can do
+		// so immediately even if tokens are pending
+		token.getRegion().close();
+	}
+	
+	/**
+	 * If a GroupRegion is closed, it closes the associated
+	 * cell, even if that cell has not yet been bound. This
+	 * is necessary to ensure any tokens waiting on the cell
+	 * are killed.
+	 * 
+	 * <p>This is also called when a transaction is aborted.
+	 */
+	public void close() {
 		kill();
+		if (waitList != null) {
+			for (Token t : waitList) {
+				t.unsetQuiescent();
+				t.die();
+			}
+			waitList = null;
+		}
 	}
 	
 	public void kill() {
@@ -93,21 +115,6 @@ public final class GroupCell extends Group implements Serializable, Future {
 			// If this cell is supporting a transaction, abort that transaction.
 			trans.abort();
 			trans = null;
-		}
-		if (region != null) {
-			// if this cell has a region, close that region;
-			// this is necessary to ensure that anything waiting
-			// on that region to proceed can do so immediately even
-			// if tokens are pending
-			region.close();
-			region = null;
-		}
-		if (waitList != null) {
-			for (Token t : waitList) {
-				t.unsetQuiescent();
-				t.die();
-			}
-			waitList = null;
 		}
 		super.kill();
 	}

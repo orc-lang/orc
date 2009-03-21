@@ -47,7 +47,7 @@ public class Transaction {
 		if (!aborted) {
 			aborted = true;	
 			rollback();
-			cell.kill();
+			cell.close();
 		}
 	}
 
