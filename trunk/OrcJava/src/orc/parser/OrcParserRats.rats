@@ -697,8 +697,7 @@ String BareOperator =
 /* Ends without newline */
 Literal Literal =
 	literal:(
-		Integer
-		/ Float
+		Number
 		/ StringLiteral
 		/ TRUE { yyValue = true; }
 		/ FALSE { yyValue = false; }
@@ -904,6 +903,7 @@ public Object LiteralValue =
 	/ StringLiteral Space
 	/ TRUE Space { yyValue = true; }
 	/ FALSE Space { yyValue = false; }
+	/ NULL Space { yyValue = null; }
 	/ LPAREN args:LiteralValueList RPAREN Space {
 		if (args.size() == 1) {
 			yyValue = args.get(0);
