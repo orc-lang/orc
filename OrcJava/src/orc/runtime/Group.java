@@ -10,7 +10,7 @@ import java.util.HashSet;
  * @author quark
  */
 public class Group {
-	private boolean alive = true;
+	protected boolean alive = true;
 	private HashSet<Group> children = new HashSet<Group>();
 	
 	/** Add a subgroup. */

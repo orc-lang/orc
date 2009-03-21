@@ -99,7 +99,8 @@ public final class GroupCell extends Group implements Serializable, Future {
 	 * <p>This is also called when a transaction is aborted.
 	 */
 	public void close() {
-		kill();
+		alive = false;
+		parent.remove(this);
 		if (waitList != null) {
 			for (Token t : waitList) {
 				t.unsetQuiescent();
