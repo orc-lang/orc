@@ -24,11 +24,9 @@ public class Atomic extends Node {
 
 	@Override
 	public void process(Token t) {
-		
-		GroupCell cell = t.getGroup().createCell(t.getTracer().pull());
+		GroupCell cell = new GroupCell(t.getGroup(), t.getTracer().pull());
 		Transaction trans = new Transaction(t, output, cell);
 		TransRegion region = new TransRegion(t.getRegion(), trans);
-		
 		cell.setTransaction(trans);
 		try {
 			t.fork(cell, region).setTransaction(trans).move(body).activate();

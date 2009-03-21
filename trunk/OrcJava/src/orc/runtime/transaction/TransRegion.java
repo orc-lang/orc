@@ -27,8 +27,8 @@ public class TransRegion extends Region {
 		this.trans = trans;
 	}
 	
-	protected void reallyClose(Token closer) {
-		parent.remove(this, closer);
+	protected void onClose() {
+		parent.remove(this);
 		trans.prepareCommit();
 	}
 }

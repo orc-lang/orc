@@ -14,12 +14,12 @@ public class SemiRegion extends Region {
 		this.parent.add(this);
 	}
 	
-	protected void reallyClose(Token closer) {
+	protected void onClose() {
 		if (t != null) {
 			t.unsetQuiescent();
 			t.activate();
 		}
-		parent.remove(this, closer);
+		parent.remove(this);
 	}
 
 	public Region getParent() {
@@ -28,8 +28,6 @@ public class SemiRegion extends Region {
 
 	public void cancel() {
 		if (t != null) {
-			// setPending so that the token can unsetPending when it
-			// dies
 			t.unsetQuiescent();
 			t.die();
 			t = null;

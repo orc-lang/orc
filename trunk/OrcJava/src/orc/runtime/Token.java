@@ -17,20 +17,12 @@ import orc.error.runtime.StackLimitReachedError;
 import orc.error.runtime.TokenError;
 import orc.error.runtime.TokenException;
 import orc.error.runtime.TokenLimitReachedError;
-import orc.error.runtime.UncallableValueException;
-import orc.runtime.nodes.Def;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Return;
-import orc.runtime.nodes.Silent;
-import orc.runtime.regions.Execution;
 import orc.runtime.regions.LogicalRegion;
 import orc.runtime.regions.Region;
-import orc.runtime.sites.java.ObjectProxy;
 import orc.runtime.transaction.Transaction;
-import orc.runtime.values.Callable;
 import orc.runtime.values.Closure;
-import orc.runtime.values.Future;
-import orc.runtime.values.GroupCell;
 import orc.runtime.values.Value;
 import orc.trace.TokenTracer;
 
@@ -66,7 +58,7 @@ public class Token implements Serializable, Locatable {
 	
 	public Node node;	
 	private Env<Object> env;
-	private GroupCell group;
+	private Group group;
 	private Region region;
 	private Transaction trans;
 	private OrcEngine engine;
@@ -101,7 +93,7 @@ public class Token implements Serializable, Locatable {
 		// create the root logical clock
 		LogicalClock clock = new LogicalClock(null);
 		initialize(node, new Env<Object>(),
-				null, GroupCell.ROOT, region, null,
+				null, new Group(), region, null,
 				null, engine, null,
 				tracer, engine.getConfig().getStackSize(),
 				clock);
@@ -110,7 +102,7 @@ public class Token implements Serializable, Locatable {
 	/**
 	 * Initialize a forked token.
 	 */
-	final void initializeFork(Token that, GroupCell group, Region region) {
+	final void initializeFork(Token that, Group group, Region region) {
 		initialize(that.node, that.env.clone(),
 				that.continuation, group, region, that.trans,
 				that.result, that.engine, that.location,
@@ -135,7 +127,7 @@ public class Token implements Serializable, Locatable {
 	}
 	
 
-	private void initialize(Node node, Env<Object> env, Continuation continuation, GroupCell group, Region region, Transaction trans, Object result, OrcEngine engine, SourceLocation location, TokenTracer tracer, int stackAvailable, LogicalClock clock) {
+	private void initialize(Node node, Env<Object> env, Continuation continuation, Group group, Region region, Transaction trans, Object result, OrcEngine engine, SourceLocation location, TokenTracer tracer, int stackAvailable, LogicalClock clock) {
 		this.node = node;
 		this.env = env;
 		this.continuation = continuation;
@@ -184,7 +176,7 @@ public class Token implements Serializable, Locatable {
 		return node;
 	}
 
-	public final GroupCell getGroup() {
+	public final Group getGroup() {
 		return group;
 	}
 	
@@ -213,7 +205,7 @@ public class Token implements Serializable, Locatable {
 		return this;
 	}
 	
-	public final Token setGroup(GroupCell group) {
+	public final Token setGroup(Group group) {
 		this.group = group;
 		return this;
 	}
@@ -382,7 +374,7 @@ public class Token implements Serializable, Locatable {
 	/**
 	 * Fork a token.
 	 * @throws TokenLimitReachedError 
-	 * @see #fork(GroupCell, Region)
+	 * @see #fork(Group, Region)
 	 */
 	public final Token fork() throws TokenLimitReachedError {
 		return fork(group, region);
@@ -395,7 +387,7 @@ public class Token implements Serializable, Locatable {
 	 * are created with the common left-associative asymmetric combinators).
 	 * @throws TokenLimitReachedError 
 	 */
-	public final Token fork(GroupCell group, Region region) throws TokenLimitReachedError {
+	public final Token fork(Group group, Region region) throws TokenLimitReachedError {
 		Token out = engine.pool.newToken();
 		out.initializeFork(this, group, region);
 		return out;

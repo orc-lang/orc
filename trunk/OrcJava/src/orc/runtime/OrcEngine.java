@@ -308,6 +308,10 @@ public class OrcEngine implements Runnable {
 		return config;
 	}
 	
+	public Execution getExecution() {
+		return region;
+	}
+	
 	private static String tmpdir = System.getProperty("java.io.tmpdir");
 	private LinkedList<File> tmpdirs = new LinkedList<File>();
 	/**

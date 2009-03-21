@@ -21,6 +21,15 @@ public abstract class Walker implements Visitor<Void> {
 		this.leave(expr);
 		return null;
 	}
+	public void enter(Isolated expr) {};	
+	public void leave(Isolated expr) {};
+	
+	public Void visit(Isolated expr) {
+		this.enter(expr);
+		expr.body.accept(this);
+		this.leave(expr);
+		return null;
+	}
 	public void enter(Atomic expr) {};	
 	public void leave(Atomic expr) {};
 	

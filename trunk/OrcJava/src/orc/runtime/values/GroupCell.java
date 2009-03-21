@@ -4,11 +4,13 @@
 package orc.runtime.values;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 import orc.error.runtime.UncallableValueException;
+import orc.runtime.Group;
 import orc.runtime.Token;
 import orc.runtime.regions.GroupRegion;
 import orc.runtime.regions.Region;
@@ -26,42 +28,25 @@ import orc.trace.events.PullEvent;
  * produced for the group, all these tokens are terminated.
  * @author wcook, dkitchin
  */
-public class GroupCell implements Serializable, Future {
+public final class GroupCell extends Group implements Serializable, Future {
 
 	private static final long serialVersionUID = 1L;
 	private Object value;
 	private boolean bound = false;
-	private boolean alive = true;
 	private List<Token> waitList;
-	private List<GroupCell> children;
-	private Region region;
 	private Transaction trans;
 	private PullTrace pullTrace;
 	private StoreTrace storeTrace;
-	
-	public static final GroupCell ROOT = new GroupCell(null);
-
-	protected GroupCell(PullTrace pullTrace) {
-		this.pullTrace = pullTrace;
-	}
+	private Group parent;
+	public GroupRegion region;
 
 	/**
-	 * Groups are organized into a tree. In this case a new
-	 * subgroup is created and returned.
-	 * When we add a new child cell, we can also remove any dead children
-	 * so that their memory can be recycled.
 	 * @param pullTrace used to identify the group cell in traces (see {@link TokenTracer#pull()}).
-	 * @return the new group
 	 */
-	public GroupCell createCell(PullTrace pull) {
-		GroupCell n = new GroupCell(pull);
-		if (children == null)
-			children = new LinkedList<GroupCell>();
-		for (Iterator<GroupCell> it = children.iterator(); it.hasNext(); )
-		        if (!(it.next().alive))
-		            it.remove();
-		children.add(n);
-		return n;
+	public GroupCell(Group parent, PullTrace pullTrace) {
+		parent.add(this);
+		this.parent = parent;
+		this.pullTrace = pullTrace;
 	}
 
 	/**
@@ -79,7 +64,6 @@ public class GroupCell implements Serializable, Future {
 		StoreTrace store = token.getTracer().store(pullTrace, this.value);
 		pullTrace = null;
 		bound = true;
-		kill();
 		if (waitList != null) {
 			for (Token t : waitList) {
 				if (store != null) {
@@ -90,44 +74,42 @@ public class GroupCell implements Serializable, Future {
 			}
 			waitList = null;
 		}
-		if (store == null) {
+		if (store != null) {
 			// HACK: for efficiency, if we're not
-			// really tracing, we can run a cheaper
-			// close() operation
-			region.close(token);
-		} else {
-			region.close(store, token);
+			// really tracing, we can skip this step
+			HashSet<Token> deadTokens = new HashSet<Token>();
+			token.getRegion().putContainedTokens(deadTokens);
+			for (Token deadToken : deadTokens) {
+				deadToken.getTracer().choke(store);
+			}
 			storeTrace = store;
 		}
+		kill();
 	}
-
-	/**
-	 * Recursively kills all subgroups.
-	 * After the children are killed, set children to null so that the memory used by the 
-	 * killed objects can be recycled.
-	 */
+	
 	public void kill() {
-		
-		// Ensure that kill is idempotent
-		if (alive) {
-			alive = false;
-			
-			if (children != null)
-				for (GroupCell sub : children)
-					sub.kill();
-			children = null;
-		
-			/* If this cell is supporting a transaction, abort that transaction. */
-			if (trans != null) { trans.abort(); }
+		parent.remove(this);
+		if (trans != null) {
+			// If this cell is supporting a transaction, abort that transaction.
+			trans.abort();
+			trans = null;
 		}
-	}
-
-	/**
-	 * Check if a group has been killed
-	 * @return true if the group has not been killed
-	 */
-	public boolean isAlive() {
-		return alive;
+		if (region != null) {
+			// if this cell has a region, close that region;
+			// this is necessary to ensure that anything waiting
+			// on that region to proceed can do so immediately even
+			// if tokens are pending
+			region.close();
+			region = null;
+		}
+		if (waitList != null) {
+			for (Token t : waitList) {
+				t.unsetQuiescent();
+				t.die();
+			}
+			waitList = null;
+		}
+		super.kill();
 	}
 
 	/**
@@ -135,7 +117,7 @@ public class GroupCell implements Serializable, Future {
 	 * @param t
 	 */
 	public void waitForValue(Token t) {
-		if (alive) {
+		if (isAlive()) {
 			if (waitList == null)
 				waitList = new LinkedList<Token>();
 			t.getTracer().block(pullTrace);
@@ -167,31 +149,6 @@ public class GroupCell implements Serializable, Future {
 		}
 	}
 	
-	/* GroupCell and GroupRegion refer to each other.
-	 * If a region is closed, it kills the associated cell,
-	 * even if that cell has not yet been bound.
-	 */
-	public void close() {
-		if (alive) {
-			kill();
-			if (waitList != null) {
-				for (Token t : waitList) {
-					t.unsetQuiescent();
-					t.die();
-				}
-				waitList = null;
-			}
-		}
-	}
-	
-	/* GroupCell and GroupRegion refer to each other.
-	 * If a cell is bound, it closes the associated region,
-	 * even if that region still has live tokens.
-	 */
-	public void setRegion(Region region) {
-		this.region = region;
-	}
-	
 	/* A group cell may be hosting a transaction */
 	public Transaction getTransaction() {
 		return trans;
@@ -218,5 +175,4 @@ public class GroupCell implements Serializable, Future {
 		if (!bound) return "_";
 		else return value.toString();
 	}
-
 }
