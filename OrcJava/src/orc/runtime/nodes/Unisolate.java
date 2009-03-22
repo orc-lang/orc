@@ -8,6 +8,8 @@ import orc.runtime.Token;
 import orc.runtime.regions.IsolatedRegion;
 
 /**
+ * Leave an isolated region (protected from external termination).
+ * See also {@link Isolate}.
  * @author quark
  */
 public class Unisolate extends Node {

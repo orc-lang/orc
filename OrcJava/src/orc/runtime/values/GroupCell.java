@@ -110,14 +110,14 @@ public final class GroupCell extends Group implements Serializable, Future {
 		}
 	}
 	
-	public void kill() {
+	@Override
+	public void onKill() {
 		parent.remove(this);
 		if (trans != null) {
 			// If this cell is supporting a transaction, abort that transaction.
 			trans.abort();
 			trans = null;
 		}
-		super.kill();
 	}
 
 	/**

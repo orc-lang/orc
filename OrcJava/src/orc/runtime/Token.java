@@ -56,11 +56,17 @@ public class Token implements Serializable, Locatable {
 		}
 	}
 	
+	/** The location of the token in the DAG; determines what the token will do next. */
 	public Node node;	
+	/** The current environment, which determines the values of variables. */
 	private Env<Object> env;
+	/** Before doing anything, the token checks if its group is alive. If not, it kills itself. This is how forced termination is implemented. */
 	private Group group;
+	/** A region corresponds to a dynamic scope in a running program. Tokens can enter and leave regions. When all the tokens have left a region, it is closed. This is how termination is detected. */
 	private Region region;
+	/** Transaction the token is currently involved in. */
 	private Transaction trans;
+	/** The engine executing the program. */
 	private OrcEngine engine;
 	/**
 	 * The location of the token in the source code.
@@ -71,12 +77,16 @@ public class Token implements Serializable, Locatable {
 	 * incorrect.
 	 */
 	private SourceLocation location;
+	/** Used for tracing the activity of the token. */
 	private TokenTracer tracer;
+	/** The continuation determines where to return when a token reaches the end of a function call. */ 
 	private Continuation continuation;
+	/** The value being published by this token. */
 	private Object result;
 	private boolean alive;
 	/** Number of stack frames remaining before hitting the stack size limit. */
 	private int stackAvailable;
+	/** Each token has an associated logical clock. The token notifies the clock when it becomes quiescent. When all the clock's tokens are quiescent, it can advance logical time. */
 	private LogicalClock clock;
 	
 	/**

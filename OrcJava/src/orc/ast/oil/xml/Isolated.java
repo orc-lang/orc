@@ -2,6 +2,11 @@ package orc.ast.oil.xml;
 
 import javax.xml.bind.annotation.XmlElement;
 
+/**
+ * The "isolated" keyword.
+ * @see orc.runtime.nodes.Isolate
+ * @author quark
+ */
 public class Isolated extends Expression {
 	@XmlElement(required=true)
 	public Expression body;
