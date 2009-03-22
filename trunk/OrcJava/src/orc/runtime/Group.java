@@ -4,12 +4,16 @@ import java.util.HashSet;
 
 /**
  * Every token belongs to a group which decides whether
- * that token is active or not. Groups, unlike regions, can
- * be forcibly killed.
+ * that token is active or not. Groups form a tree structure.
+ * Groups can be forcibly killed.
+ * When a group is killed, all of its children are also killed
+ * immediately. The tokens, however, are killed lazily as they
+ * become active.
  * 
  * @author quark
  */
 public class Group {
+	/** Is this group currently alive? */
 	protected boolean alive = true;
 	private HashSet<Group> children = new HashSet<Group>();
 	
@@ -29,15 +33,20 @@ public class Group {
 	 * Forcibly terminate this group and all of its
 	 * children.
 	 */
-	public void kill() {
+	public final void kill() {
 		if (!alive) return;
 		alive = false;
+		onKill();
 		for (Group child : children) {
 			child.kill();
 		}
 		children.clear();
 	}
 	
+	/** Override this. */
+	public void onKill() {}
+	
+	/** Is this group currently alive? */
 	public final boolean isAlive() {
 		return alive;
 	}

@@ -9,6 +9,11 @@ import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Store;
 import orc.type.Type;
 
+/**
+ * The "isolated" keyword.
+ * @see orc.runtime.nodes.Isolate
+ * @author quark
+ */
 public class Isolated extends Expr {
 
 	public Expr body;

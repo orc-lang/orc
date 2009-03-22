@@ -10,6 +10,11 @@ import orc.ast.simple.arg.Var;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 
+/**
+ * The "isolated" keyword.
+ * @see orc.ast.oil.Isolated
+ * @author quark
+ */
 public class Isolated extends Expression {
 
 	Expression body;

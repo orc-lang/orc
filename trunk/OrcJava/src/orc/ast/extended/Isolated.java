@@ -3,6 +3,11 @@ package orc.ast.extended;
 import orc.ast.simple.WithLocation;
 import orc.error.compiletime.CompilationException;
 
+/**
+ * The "isolated" keyword.
+ * @see orc.ast.simple.Isolated
+ * @author quark
+ */
 public class Isolated extends Expression {
 
 	public Expression body;
