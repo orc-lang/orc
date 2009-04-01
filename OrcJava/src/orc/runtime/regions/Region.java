@@ -63,7 +63,7 @@ public abstract class Region {
 	
 	protected abstract void onClose();
 	
-	// for checkpointing
+	// for checkpointing and tracing
 	public final synchronized void putContainedTokens(Set<Token> acc) {
 
 		acc.addAll(containedTokens);
