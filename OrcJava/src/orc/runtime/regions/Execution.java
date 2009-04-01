@@ -3,17 +3,16 @@ package orc.runtime.regions;
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 
+/**
+ * This class does nothing except serve
+ * as a root for the execution.
+ * @author quark
+ */
 public class Execution extends Region {
-	private OrcEngine engine;
-	
-	public Execution(OrcEngine engine) {
-		this.engine = engine;
-	}
-	
-	public OrcEngine getEngine() { return engine; }
+	public Execution() {}
 	
 	@Override
 	protected void onClose() {
-		engine.terminate();
+		// do nothing
 	}
 }

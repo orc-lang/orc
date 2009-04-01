@@ -2,6 +2,8 @@ package orc.runtime;
 
 import java.util.PriorityQueue;
 
+import orc.error.runtime.SiteException;
+
 /**
  * An event queue for site calls to a logical timer (created by MakeTimer).
  * 
@@ -14,24 +16,19 @@ import java.util.PriorityQueue;
  * 
  * @author dkitchin, quark
  */
-public final class LogicalClock {
+public abstract class LogicalClock {
 	/** Tokens blocked pending future events. */
 	private PriorityQueue<LtimerQueueEntry> eventQueue;
 	/** Number of tokens and sub-clocks still active. */
 	private int active = 0;
 	/** Is this clock quiescent (no active or pending tokens) */
-	private boolean quiescent;
+	private boolean quiescent = true;
 	/** The current logical time. */
-	int currentTime = 0;
-	/** Logical timers form a tree structure. As long as children
-	 * are not quiescent, the parent timer cannot advance. */
-	LogicalClock parent;
+	private int currentTime = 0;
 	
-	LogicalClock(LogicalClock parent) {
-		this.parent = parent;
+	protected LogicalClock() {
 		eventQueue = new PriorityQueue<LtimerQueueEntry>();
 		currentTime = 0;
-		unsetQuiescent();
 	}
 	
 	/** Schedule a token to resume at a future time. */
@@ -41,15 +38,13 @@ public final class LogicalClock {
 	}
 	
 	/** Called when this clock is quiescent. */
-	private void setQuiescent() {
+	protected void setQuiescent() {
 		quiescent = true;
-		if (parent != null) parent.removeActive();
 	}
 	
 	/** Called when this clock becomes not quiescent. */
-	private void unsetQuiescent() {
+	protected void unsetQuiescent() {
 		quiescent = false;
-		if (parent != null) parent.addActive();
 	}
 	
 	/** Advance the logical time. Called when all child tokens and clocks are quiescent. */
@@ -113,4 +108,6 @@ public final class LogicalClock {
 		--active;
 		if (active == 0) advance();
 	}
+	
+	abstract LogicalClock pop() throws SiteException;
 }
