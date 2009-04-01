@@ -15,32 +15,51 @@ import java.util.PriorityQueue;
  * @author dkitchin, quark
  */
 public final class LogicalClock {
+	/** Tokens blocked pending future events. */
 	private PriorityQueue<LtimerQueueEntry> eventQueue;
 	/** Number of tokens and sub-clocks still active. */
 	private int active = 0;
-	LogicalClock parent;
+	/** Is this clock quiescent (no active or pending tokens) */
+	private boolean quiescent;
+	/** The current logical time. */
 	int currentTime = 0;
+	/** Logical timers form a tree structure. As long as children
+	 * are not quiescent, the parent timer cannot advance. */
+	LogicalClock parent;
 	
 	LogicalClock(LogicalClock parent) {
 		this.parent = parent;
-		if (parent != null) parent.addActive();
 		eventQueue = new PriorityQueue<LtimerQueueEntry>();
 		currentTime = 0;
+		unsetQuiescent();
 	}
 	
+	/** Schedule a token to resume at a future time. */
 	void addEvent(int delay, Token token) {
 		eventQueue.add(new LtimerQueueEntry(delay + currentTime, token));
 		token.setQuiescent();
 	}
 	
+	/** Called when this clock is quiescent. */
+	private void setQuiescent() {
+		quiescent = true;
+		if (parent != null) parent.removeActive();
+	}
+	
+	/** Called when this clock becomes not quiescent. */
+	private void unsetQuiescent() {
+		quiescent = false;
+		if (parent != null) parent.addActive();
+	}
+	
+	/** Advance the logical time. Called when all child tokens and clocks are quiescent. */
 	private void advance() {
-		if (active > 0) {
-			// active tokens remain
-			return;
-		} else if (eventQueue.isEmpty()) {
+		if (eventQueue.isEmpty()) {
 			// no tokens are ready for the next round:
 			// the simulation may be over, or may be blocked
-			// waiting for an external event
+			// waiting for an external event; signal the
+			// parent clock that it can advance
+			setQuiescent();
 			return;
 		} else {
 			// Advance the clock to the next logical time and
@@ -79,6 +98,7 @@ public final class LogicalClock {
 	 * it is important to ensure that the token is removed after it is added.
 	 */
 	void addActive() {
+		if (quiescent) unsetQuiescent();
 		++active;
 	}
 
@@ -92,13 +112,5 @@ public final class LogicalClock {
 		assert(active > 0);
 		--active;
 		if (active == 0) advance();
-	}
-	
-	/**
-	 * When the region associated with this clock dies, the simulation is stopped.
-	 * The parent clock no longer has to wait on this clock.
-	 */
-	public void stop() {
-		if (parent != null) parent.removeActive();
 	}
 }

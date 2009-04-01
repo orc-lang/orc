@@ -19,7 +19,6 @@ import orc.error.runtime.TokenException;
 import orc.error.runtime.TokenLimitReachedError;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Return;
-import orc.runtime.regions.LogicalRegion;
 import orc.runtime.regions.Region;
 import orc.runtime.transaction.Transaction;
 import orc.runtime.values.Closure;
@@ -438,7 +437,6 @@ public class Token implements Serializable, Locatable {
 		clock = new LogicalClock(old);
 		clock.addActive();
 		old.removeActive();
-		setRegion(new LogicalRegion(getRegion(), clock));
 	}
 	
 	public final void popLtimer() throws SiteException {
@@ -449,6 +447,5 @@ public class Token implements Serializable, Locatable {
 		clock = old.parent;
 		clock.addActive();
 		old.removeActive();
-		setRegion(((LogicalRegion)region).getParent());
 	}
 }
