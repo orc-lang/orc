@@ -144,7 +144,7 @@ public class OrcEngine implements Runnable {
 
 	public void start(Node root) {
 		assert (root != null);
-		region = new Execution(this);
+		region = new Execution();
 		tracer = config.getTracer();
 		Token token;
 		try {

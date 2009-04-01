@@ -100,7 +100,7 @@ public class Token implements Serializable, Locatable {
 	 */
 	final void initializeRoot(Node node, Region region, OrcEngine engine, TokenTracer tracer) {
 		// create the root logical clock
-		LogicalClock clock = new LogicalClock(null);
+		LogicalClock clock = new RootLogicalClock(engine);
 		initialize(node, new Env<Object>(),
 				null, new Group(), region, null,
 				null, engine, null,
@@ -434,17 +434,14 @@ public class Token implements Serializable, Locatable {
 	
 	public final void pushLtimer() {
 		LogicalClock old = this.clock;
-		clock = new LogicalClock(old);
+		clock = new NestedLogicalClock(old);
 		clock.addActive();
 		old.removeActive();
 	}
 	
 	public final void popLtimer() throws SiteException {
 		LogicalClock old = this.clock;
-		if (old.parent == null) {
-			throw new SiteException("Cannot pop last logical clock.");
-		}
-		clock = old.parent;
+		clock = old.pop();
 		clock.addActive();
 		old.removeActive();
 	}
