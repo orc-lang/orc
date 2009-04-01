@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.List;
 
+import orc.Config;
 import orc.ast.extended.Expression;
 import orc.ast.extended.declaration.Declaration;
 import orc.error.compiletime.ParsingException;
@@ -21,30 +22,15 @@ import xtc.parser.Result;
  */
 public class OrcParser {
 	private OrcParserRats parser;
-	public OrcParser(Reader reader) {
-		this(reader, "<stdin>");
+	public OrcParser(Config config, Reader reader) {
+		this(config, reader, "<stdin>");
 	}
 	/**
 	 * If you know the filename, it can be used to improve
 	 * parse error messages.
 	 */
-	public OrcParser(Reader reader, String filename) {
-		parser = new OrcParserRats(reader, filename);
-	}
-	
-	/**
-	 * Parse the input as a literal value. This
-	 * is used by {@link Read}.
-	 */
-	public Object parseLiteralValue() throws ParsingException, IOException {
-		try {
-			Result result = parser.pLiteralValue(0);
-			return parser.value(result);
-		} catch (AbortParse e) {
-			throw new ParsingException(e.getMessage(), e);
-		} catch (ParseException e) {
-			throw new ParsingException(e.getMessage(), e);
-		}
+	public OrcParser(Config config, Reader reader, String filename) {
+		parser = new OrcParserRats(config, reader, filename);
 	}
 	
 	/**
@@ -81,13 +67,9 @@ public class OrcParser {
 	 * argument, and prints the parsed program.
 	 */
 	public static void main(String[] args) throws IOException, ParsingException {
-		Reader r;
-		if (args.length > 0) {
-			r = new FileReader(args[0]);
-		} else {
-			r = new InputStreamReader(System.in); 
-		}
-		OrcParser p = new OrcParser(r);
+		Config cfg = new Config();
+		cfg.processArgs(args);	
+		OrcParser p = new OrcParser(cfg, cfg.getInstream(), cfg.getFilename());
 		System.out.println(p.parseProgram().toString());
 	}
 }

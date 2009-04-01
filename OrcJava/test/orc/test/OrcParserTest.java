@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import orc.Config;
 import orc.error.compiletime.ParsingException;
 import orc.parser.OrcParser;
 
@@ -26,7 +27,7 @@ public class OrcParserTest {
 			suite.addTest(new TestCase(file.toString()) {
 				@Override
 				public void runTest() throws ParsingException, IOException {
-					OrcParser parser = new OrcParser(new FileReader(file));
+					OrcParser parser = new OrcParser(new Config(), new FileReader(file));
 					parser.parseProgram();
 				}
 			});

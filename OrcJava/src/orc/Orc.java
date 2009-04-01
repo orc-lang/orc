@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -17,7 +15,6 @@ import orc.ast.extended.declaration.Declaration;
 import orc.ast.oil.Compiler;
 import orc.ast.oil.Expr;
 import orc.ast.oil.UnguardedRecursionChecker;
-import orc.ast.oil.xml.Marshaller;
 import orc.ast.oil.xml.Oil;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
@@ -73,38 +70,11 @@ public class Orc {
 		engine.run(n);
 	}
 	
-	/**
-	 * Open an include file. Include files are actually stored as class
-	 * resources, so that they will continue to work when Orc is deployed as a
-	 * servlet or JAR, so you can't use any old filename. Specifically, the
-	 * filename is always interpreted relatively to the orc.inc package, and you
-	 * can't use "." or ".." in paths.
-	 * 
-	 * <p>
-	 * TODO: support relative names correctly.
-	 * 
-	 * @param name
-	 *            of the include file relative to orc/inc (e.g. "prelude.inc")
-	 * @return Reader to read the file.
-	 * @throws FileNotFoundException
-	 *             if the resource is not found.
-	 */
-	public static Reader openInclude(String name) throws FileNotFoundException {
-		InputStream stream = Orc.class.getResourceAsStream("/orc/inc/"+name);
-		if (stream == null) {
-			throw new FileNotFoundException(
-					"Include file '"
-							+ name
-							+ "' not found; did you remember to put it in the orc.inc package?");
-		}
-		return new InputStreamReader(stream);
-	}
-	
 	public static Expr compile(Reader source, Config cfg) throws IOException, CompilationException {
 
 		//System.out.println("Parsing...");
 		// Parse the goal expression
-		OrcParser parser = new OrcParser(source, cfg.getFilename());
+		OrcParser parser = new OrcParser(cfg, source, cfg.getFilename());
 		orc.ast.extended.Expression e = parser.parseProgram();
 		
 		//System.out.println(e);
@@ -115,14 +85,13 @@ public class Orc {
 		if (!cfg.getNoPrelude()) {
 			// Load declarations from the default include file.
 			String preludename = "prelude.inc";
-			OrcParser fparser = new OrcParser(openInclude(preludename), preludename);
+			OrcParser fparser = new OrcParser(cfg, cfg.openInclude(preludename), preludename);
 			decls.addAll(fparser.parseModule());
 		}
 		
 		// Load declarations from files specified by the configuration options
-		for (String f : cfg.getIncludes())
-		{
-			OrcParser fparser = new OrcParser(openInclude(f), f);
+		for (String f : cfg.getIncludes()) {
+			OrcParser fparser = new OrcParser(cfg, cfg.openInclude(f), f);
 			decls.addAll(fparser.parseModule());
 		}
 		

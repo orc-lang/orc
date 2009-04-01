@@ -94,7 +94,7 @@
 		</java>
 	</target>
 
-	<target name="rats" depends="rats1,rats2" description="Build rats parser" />
+	<target name="rats" depends="rats1,rats2,rats3" description="Build rats parser" />
 
 	<target name="rats1" depends="rats1.required" unless="rats1.notRequired">
 		<java classname="xtc.parser.Rats" fork="yes">
@@ -102,6 +102,8 @@
 				<pathelement path="${orc.location.lib}/rats.jar" />
 			</classpath>
 			<arg value="-lgpl" />
+			<arg value="-in" />
+			<arg value="${orc.location.src}" />
 			<arg value="-out" />
 			<arg value="${orc.location.src}/orc/parser" />
 			<arg value="${orc.location.src}/orc/parser/OrcParserRats.rats" />
@@ -119,6 +121,8 @@
 				<pathelement path="${orc.location.lib}/rats.jar" />
 			</classpath>
 			<arg value="-lgpl" />
+			<arg value="-in" />
+			<arg value="${orc.location.src}" />
 			<arg value="-out" />
 			<arg value="${orc.location.src}/orc/doc" />
 			<arg value="${orc.location.src}/orc/doc/DocParser.rats" />
@@ -128,6 +132,25 @@
 		<uptodate property="rats2.notRequired"
 			srcfile="${orc.location.src}/orc/doc/DocParser.rats"
 			targetfile="${orc.location.src}/orc/doc/DocParser.java"/>
+	</target>
+	
+	<target name="rats3" depends="rats3.required" unless="rats3.notRequired">
+		<java classname="xtc.parser.Rats" fork="yes">
+			<classpath>
+				<pathelement path="${orc.location.lib}/rats.jar" />
+			</classpath>
+			<arg value="-lgpl" />
+			<arg value="-in" />
+			<arg value="${orc.location.src}" />
+			<arg value="-out" />
+			<arg value="${orc.location.src}/orc/parser" />
+			<arg value="${orc.location.src}/orc/parser/OrcLiteralParser.rats" />
+		</java>
+	</target>
+	<target name="rats3.required">
+		<uptodate property="rats3.notRequired"
+			srcfile="${orc.location.src}/orc/parser/OrcLiteralParser.rats"
+			targetfile="${orc.location.src}/orc/parser/OrcLiteralParser.java"/>
 	</target>
 
 	<target name="ChangeLog" description="ChangeLog">
