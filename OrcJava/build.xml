@@ -49,7 +49,7 @@
 		<delete file="${ant.project.name}-${orc.version}.zip"/>
 	</target>
 
-	<target name="kilim" depends="compile" description="Kilim weaving">
+	<target name="kilim" description="Kilim weaving">
 		<java classname="kilim.tools.Weaver" fork="yes">
 			<classpath refid="orc.classpath"/>
 				<assertions>
@@ -61,15 +61,19 @@
 		</java>
 	</target>
 
+	<!-- javac does some weird compilation that Kilim doesn't like, so for now
+	     you have to use the eclipse compiler
 	<target name="compile" depends="rats" description="javac compile">
 		<mkdir dir="${orc.location.build}" />
-		<javac srcdir="${orc.location.src}"
+		<javac source="1.5" target="1.5" debug="yes"
+			srcdir="${orc.location.src}"
 			destdir="${orc.location.build}"
 			classpathref="orc.classpath" />
 		<copy todir="${orc.location.build}">
 			<fileset dir="${orc.location.src}" excludes="**/*.java **/CVS/*"/>
 		</copy>
 	</target>
+	-->
 	
 	<target name="stdlib-doc" description="Build standard library docs">
 		<java classname="orc.doc.MakeDoc" fork="yes"
