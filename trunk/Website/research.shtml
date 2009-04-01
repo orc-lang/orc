@@ -26,10 +26,13 @@
 <a name="Introduction" id="Introduction"></a><h2>Introduction to Orc <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
-	<li class="new"><a target="_blank" class="paper" href="papers/presentation.pdf">Introduction to Orc (Presentation Slides)</a><br />
+	<li class="new"><a target="_blank" class="paper" href="papers/forte09.pdf">The Orc Programming Language</a><br />
+	David Kitchin, Adrian Quark, William Cook and Jayadev Misra<br />
+	To appear in <span class="venue">Proceedings of FMOODS/FORTE</span>, 2009.</li>
+	<li><a target="_blank" class="paper" href="papers/presentation.pdf">Introduction to Orc (Presentation Slides)</a><br />
 	William Cook, David Kitchin, Jayadev Misra, Adrian Quark<br />
 	Unpublished. October 28, 2008.</li>
-	<li class="new"><a target="_blank" class="paper" href="papers/structured_interacting_computations_2008.pdf">Structured Interacting Computations (A position paper)</a><br />
+	<li><a target="_blank" class="paper" href="papers/structured_interacting_computations_2008.pdf">Structured Interacting Computations (A position paper)</a><br />
 	William Cook and Jayadev Misra<br />
 	Proceedings of "Software-Intensive Systems", Springer Verlag, LNCS 5380, pp139 --145, 2008.</li>
 	<li><a target="_blank" class="paper" href="papers/OrcJSSM.pdf">Computation Orchestration: A Basis for Wide-Area Computing</a> (<a target="_blank" href="http://springerlink.metapress.com/openurl.asp?genre=article&amp;id=doi:10.1007/s10270-006-0012-1">DOI</a>)<br />
