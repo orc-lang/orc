@@ -3,7 +3,7 @@
     <input type="hidden" name="cx" value="010683555010431535994:juovmupvukq" />
     <input type="hidden" name="cof" value="FORID:9" />
     <input type="hidden" name="ie" value="UTF-8" />
-    <input type="text" name="q" size="20" class="styled" />
+    <input type="text" name="q" size="15" class="styled" />
     <input type="submit" name="sa" value="Search" />
   </div>
 </form>
