@@ -256,7 +256,7 @@ Symbol   Assoc       Name
 ----------------------------------------------------
  >>      right       sequence
 ----------------------------------------------------
- ::	     right       type annotation
+ ::      right       type annotation
  atomic  prefix      atomic transaction
  :=      none        ref assignment
 ----------------------------------------------------
