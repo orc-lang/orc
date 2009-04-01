@@ -1,11 +1,14 @@
 module orc.parser.OrcParserRats;
 
+import orc.parser.OrcLiteralParser;
+
 header {
 	import java.util.List;
 	import java.util.LinkedList;
 	import java.util.ListIterator;
 	import java.io.FileNotFoundException;
 	import java.io.File;
+	import java.io.Reader;
 	import java.math.BigInteger;
 	import java.math.BigDecimal;
 	
@@ -14,7 +17,7 @@ header {
 	import xtc.util.Pair;
 	import xtc.tree.Location;
 	
-	import orc.Orc;
+	import orc.Config;
 	import orc.ast.extended.*;
 	import orc.ast.extended.declaration.*;
 	import orc.ast.extended.declaration.defn.*;
@@ -29,6 +32,13 @@ header {
 }
 
 body {
+	private Config config;
+	
+	public OrcParserRats(Config config, Reader reader, String filename) {
+		this(reader, filename);
+		this.config = config;
+	}
+
 	/**
 	 * Attach a source location to an expression. Used like this:
 	 * <code>yyValue = at(yyStart, yyCount, yyValue)</code>
@@ -126,7 +136,7 @@ List<Declaration> Declarations =
  */
 List<Declaration> Include =
 	INCLUDE filename:StringLiteral Space ^{
-		OrcParserRats parser = new OrcParserRats(Orc.openInclude(filename), filename);
+		OrcParserRats parser = new OrcParserRats(config, config.openInclude(filename), filename);
 		Result result = parser.pModule(0);
 		if (result.hasValue()) {
 			yyResult = new SemanticValue(result.semanticValue(), yyBase);
@@ -890,87 +900,10 @@ Type MaybeResultType =
 	/ /* empty */ 
 	    { yyValue = null; }	
 	;
-
-/////////////////////////////////////////////
-// Literals
-/////////////////////////////////////////////
-
-// This isn't used by the parser directly, but
-// is used by the Read site to read Orc literal
-// syntax
-public Object LiteralValue =
-	Number Space
-	/ StringLiteral Space
-	/ TRUE Space { yyValue = true; }
-	/ FALSE Space { yyValue = false; }
-	/ NULL Space { yyValue = null; }
-	/ LPAREN args:LiteralValueList RPAREN Space {
-		if (args.size() == 1) {
-			yyValue = args.get(0);
-		} else {
-			yyValue = new TupleValue(args);
-		}
-	}
-	/ LBRACKET args:LiteralValueList RBRACKET Space {
-		yyValue = ListValue.make(args);
-	}
-	;
-List<Object> LiteralValueList = 
-	f:LiteralValue fs:(COMMA yyValue:LiteralValue)* {
-		List<Object> out = fs.list();
-		out.add(0, f);
-		yyValue = out;
-	}
-	/ /* empty */ {
-		yyValue = new LinkedList<Object>();
-	}
-	;
 	
-Number Number = Float / Integer;
-BigDecimal Float =
-	rep:FloatToken HSpace {
-		try {
-			yyValue = new BigDecimal(rep);
-		} catch (NumberFormatException e) {
-			// impossible by construction
-			throw new AssertionError(e);
-		}
-	}
-	;
-// Note that even if a number has no decimal, having an exponent
-// is enough to make it floating point
-String FloatToken = SignedIntegerToken ('.' [0-9]+ Exponent? / Exponent);
-String Exponent = [eE] [+\-]? IntegerToken;
-BigInteger Integer =
-	rep:SignedIntegerToken HSpace {
-		try {
-			yyValue = BigInteger.valueOf(Long.parseLong(rep));
-		} catch (NumberFormatException e) {
-			// impossible by construction
-			throw new AssertionError(e);
-		}
-	}
-	;
-String SignedIntegerToken = '-'? IntegerToken;
-String IntegerToken = '0' / [1-9] [0-9]*;
-	
-String StringLiteral =
-	string:StringLiteralToken HSpace {
-		yyValue = Utilities.unescape(string.substring(1, string.length()-1));
-	}
-	;
-String StringLiteralToken = ["] ( EscapeSequence / !["\\] _ )* ["] ;
-transient String EscapeSequence =
-   '\\' [btnfr"'\-\[\\\]] / UnicodeEscape / OctalEscape
-   ;
-transient String UnicodeEscape = '\\' 'u' HexDigit HexDigit HexDigit HexDigit ;
-transient String HexDigit = [0-9a-fA-F] ;
-transient String OctalEscape =
-	'\\' [0-3] OctalDigit OctalDigit
-	/ '\\' OctalDigit OctalDigit
-	/ '\\' OctalDigit
-	;
-transient String OctalDigit = [0-7];
+/////////////////////////////////////////////
+// Identifiers
+/////////////////////////////////////////////
 	
 String SiteName = Identifier / BareOperator;
 String RequiredSiteName = SiteName / ^{ abort(yyError); };
@@ -979,7 +912,6 @@ String RequiredClassName = ClassName / ^{ abort(yyError); };
 String ClassNameToken = Word ('.' Word)+;
 String Identifier = Word HSpace;
 String RequiredIdentifier = Identifier / ^{ abort(yyError); };
-String Word = [a-zA-Z_] [a-zA-Z0-9_']*;
 
 /////////////////////////////////////////////
 // Keywords
@@ -998,11 +930,8 @@ transient String AS = "as":Word Space;
 transient String IF = "if":Word Space;
 transient String THEN = "then":Word Space;
 transient String ELSE = "else":Word Space;
-transient String NULL = "null":Word HSpace;
 transient String STOP = "stop":Word HSpace;
 transient String SIGNAL = "signal":Word HSpace;
-transient String TRUE = "true":Word HSpace;
-transient String FALSE = "false":Word HSpace;
 transient String DOUBLE_COLON = "::" Space;
 transient String DOUBLE_COLON_BANG = ":!:" Space;
 transient String EQ = "=" Space;
@@ -1011,15 +940,10 @@ transient String LBRACE = "{" ![\-] Space; // make sure it's not a comment
 transient String RBRACE = "}" Space;
 transient String LANGLE = "<" Space;
 transient String RANGLE = ">" Space;
-transient String LPAREN = "(" Space;
-transient String RPAREN = ")" HSpace;
-transient String LBRACKET = "[" Space;
-transient String RBRACKET = "]" HSpace;
 transient String DOT = "." Space;
 transient String BANG = "!" Space;
 transient String BAR = "|" Space;
 transient String UNDERSCORE = "_" Space;
-transient String COMMA = "," Space;
 transient String SEMICOLON = ";" Space;
 transient String ANDAND = "&&" Space;
 transient String OROR = "||" Space;
@@ -1038,19 +962,3 @@ transient String GEQ = ">=" Space;
 transient String NEQ = "/=" Space;
 transient String COLON_EQUALS = ":=" Space;
 transient String QMARK = "?" HSpace;
-	
-/////////////////////////////////////////////
-// Whitespace, Comments, etc.
-/////////////////////////////////////////////
-
-/* HSpace is horizontal space only */
-transient void HSpace = (' ' / '\t' / '\f' / SingleLineComment)*;
-/* Space is both horizontal and vertical space */
-transient void Space = (' ' / '\t' / '\f' / '\r' / '\n' / EndLineComment / MultiLineComment)*;
-
-transient void EndLineComment = "--" ( ![\n\r] _ )* (EndOfLine / EndOfFile);
-transient void MultiLineComment = "{-" ( MultiLineComment / [\-] ![}] / EndOfLine / ![\-\n\r] _ )* "-}";
-transient void SingleLineComment = "{-" ( SingleLineComment / [\-] ![}] / ![\-\n\r] _ )* "-}";
-	
-transient void EndOfFile = !_;
-transient void EndOfLine = "\r\n" / '\r' / '\n';

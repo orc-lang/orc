@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.Reader;
@@ -45,6 +46,7 @@ public class Config {
 	private Boolean typecheck = false;
 	private Tracer tracer = new NullTracer();
 	private List<String> includes = new LinkedList<String>();
+	private String[] includePath = new String[]{"."};
 	private Integer maxPubs = null;
 	private Reader instream = new InputStreamReader(System.in);
 	private Integer numKilimThreads = 1;
@@ -122,6 +124,11 @@ public class Config {
 			" may appear multiple times.")
 	public void addInclude(String include) {
 		this.includes.add(include);
+	}
+	
+	@Option(name="-I",usage="Set the include path for Orc includes.")
+	public void setIncludePath(String includePath) {
+		this.includePath = includePath.split(":");
 	}
 	
 	@Option(name="-pub",usage="Stop after publishing this many values")
@@ -234,5 +241,33 @@ public class Config {
 	
 	public void setStackSize(int stackSize) {
 		this.stackSize = stackSize;
+	}
+	
+	/**
+	 * Open an include file. Include files are actually stored as class
+	 * resources, so that they will continue to work when Orc is deployed as a
+	 * servlet or JAR, so you can't use any old filename. Specifically, the
+	 * filename is always interpreted relatively to the orc.inc package, and you
+	 * can't use "." or ".." in paths.
+	 * 
+	 * <p>
+	 * TODO: support relative names correctly.
+	 * 
+	 * @param name
+	 *            of the include file relative to orc/inc (e.g. "prelude.inc")
+	 * @return Reader to read the file.
+	 * @throws FileNotFoundException
+	 *             if the resource is not found.
+	 */
+	public final Reader openInclude(String name) throws FileNotFoundException {
+		InputStream stream = Config.class.getResourceAsStream("/orc/inc/"+name);
+		if (includePath.length > 0) {}
+		if (stream == null) {
+			throw new FileNotFoundException(
+					"Include file '"
+							+ name
+							+ "' not found; did you remember to put it in the orc.inc package?");
+		}
+		return new InputStreamReader(stream);
 	}
 }
