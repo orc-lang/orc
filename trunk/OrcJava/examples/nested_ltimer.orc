@@ -10,7 +10,7 @@ def simulate(n :: String) =
         | Ltimer(2) >> n+": "+1)
 
   withLtimer(defer(simulate, "A"))
-| Rtimer(500) >> withLtimer(defer(simulate, "B"))
+| Ltimer(1) >> withLtimer(defer(simulate, "B"))
 
 {-
 OUTPUT:
