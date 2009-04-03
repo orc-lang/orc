@@ -1,0 +1,8 @@
+To build this package from source, you will need
+the OrcJava and OrcSites projects in Eclipse.
+
+Do a "Clean" build and then use the External Tool "Build WAR"
+to create a WAR file. This should be deployed to the "/orchard"
+context on your servlet container.
+
+Go to e.g. http://localhost:8080/orchard to test.

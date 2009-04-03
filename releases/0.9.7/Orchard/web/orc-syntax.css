@@ -1,0 +1,27 @@
+span.keyword {
+	color: blue;
+}
+
+span.variable {
+	font-style: italic;
+}
+
+span.combinator {
+	color: red;
+}
+
+span.comment {
+	color: #A70;
+}
+
+span.literal {
+	color: #090;
+}
+
+.editbox {
+	font-family: monospace;
+	font-size: 14px;
+	margin: 0;
+	padding: 0;
+	background-color: white;
+}
