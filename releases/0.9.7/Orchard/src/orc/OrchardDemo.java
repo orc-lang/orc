@@ -8,6 +8,8 @@ import org.mortbay.jetty.handler.ContextHandlerCollection;
 import org.mortbay.jetty.nio.SelectChannelConnector;
 import org.mortbay.jetty.webapp.WebAppContext;
 
+import com.centerkey.utils.BareBonesBrowserLaunch;
+
 /**
  * Run this from the command line to start a standalone Orchard server.
  * @author quark
@@ -37,5 +39,6 @@ public class OrchardDemo {
         
         server.setStopAtShutdown(true);
         server.start();
+        BareBonesBrowserLaunch.openURL("http://localhost:" + PORT + "/demo.shtml");
     }
 }
