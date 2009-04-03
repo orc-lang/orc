@@ -60,8 +60,8 @@ public class OilSecurityValidator extends Walker {
 		allowedClasses.add("java.util.Vector");
 		
 		// orc.lib
-		allowedClasses.add("orc.lib.data.Set");
-		allowedClasses.add("orc.lib.data.Map");
+		allowedClasses.add("orc.lib.state.Set");
+		allowedClasses.add("orc.lib.state.Map");
 		allowedClasses.add("orc.lib.net.Upcoming");
 		allowedClasses.add("orc.lib.net.Geocoder");
 		allowedClasses.add("orc.lib.net.GoogleCalendar");
