@@ -4,6 +4,7 @@
 package orc;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -126,9 +127,13 @@ public class Config {
 		this.includes.add(include);
 	}
 	
-	@Option(name="-I",usage="Set the include path for Orc includes.")
+	@Option(name="-I",usage="Set the include path for Orc includes. Separate path entries by ':'. The default value is '.', the current directory.")
 	public void setIncludePath(String includePath) {
-		this.includePath = includePath.split(":");
+		if (null == includePath) {
+			this.includePath = new String[]{};
+		} else {
+			this.includePath = includePath.split(":");
+		}
 	}
 	
 	@Option(name="-pub",usage="Stop after publishing this many values")
@@ -244,29 +249,34 @@ public class Config {
 	}
 	
 	/**
-	 * Open an include file. Include files are actually stored as class
-	 * resources, so that they will continue to work when Orc is deployed as a
-	 * servlet or JAR, so you can't use any old filename. Specifically, the
-	 * filename is always interpreted relatively to the orc.inc package, and you
-	 * can't use "." or ".." in paths.
+	 * Open an include file. Searches first the include path
+	 * defined by {@link #setIncludePath(String)} and then the
+	 * package orc.inc. This means you can store include files
+	 * as either files or class resources (which will continue to
+	 * work when Orc is deployed as a servlet or JAR).
 	 * 
 	 * <p>
-	 * TODO: support relative names correctly.
+	 * TODO: should we support include paths relative to the current file?
 	 * 
 	 * @param name
-	 *            of the include file relative to orc/inc (e.g. "prelude.inc")
+	 *            of the include file relative to some directory of include path
+	 *            or package orc.inc
 	 * @return Reader to read the file.
 	 * @throws FileNotFoundException
 	 *             if the resource is not found.
 	 */
 	public final Reader openInclude(String name) throws FileNotFoundException {
+		for (String parent : includePath) {
+			File file = new File(parent, name);
+			if (!file.exists()) continue;
+			return new FileReader(file);
+		}
 		InputStream stream = Config.class.getResourceAsStream("/orc/inc/"+name);
-		if (includePath.length > 0) {}
 		if (stream == null) {
 			throw new FileNotFoundException(
 					"Include file '"
 							+ name
-							+ "' not found; did you remember to put it in the orc.inc package?");
+							+ "' not found; check the include path.");
 		}
 		return new InputStreamReader(stream);
 	}
