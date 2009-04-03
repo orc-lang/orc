@@ -107,14 +107,6 @@ public List<Declaration> Module =
  * declarations and must include a goal expression.
  */
 Expression Body =
-	ds:Declarations g:GoalExpression {
-		Expression out = g;
-		ListIterator<Declaration> it = ds.listIterator(ds.size());
-		while (it.hasPrevious()) {
-			out = new Declare(it.previous(), out);
-		}
-		yyValue = out;
-	}
 	;
 
 List<Declaration> Declarations =
@@ -255,6 +247,11 @@ and grouped in order of increasing precedence.
 
 Symbol   Assoc       Name
 ----------------------------------------------------
+ class   prefix[3]   class declaration
+ site    prefix[3]   site declaration
+ include prefix[3]   include files
+ def     prefix[3]   function declaration
+ val     prefix[3]   variable declaration
  lambda  prefix[3]   anonymous function
  if      prefix[3]   if/then/else
 ----------------------------------------------------
@@ -311,7 +308,7 @@ precedence operators: see the NoCmp_ productions.
 they are implemented as right-associative because it's
 slightly more efficient in Rats!.
 
-[3] I'm not sure whether I'd call lambda and if operators,
+[3] I'm not sure whether I'd call these operators,
 but the point is they bind very loosely, so everything to
 their right is considered part of their body.
 
@@ -324,10 +321,7 @@ function application).  Hopefully these rules match how
 people intuitively use these operators.
 -----------------------------------------------------------*/
 
-Expression GoalExpression =
-	Lambda
-	/ MaybeSemiExpression
-	;
+Expression Body = MaybeSemiExpression ;
 	
 Expression MaybeSemiExpression =
 	seed:MaybeWhereExpression actions:SemiExpressionTail* {
@@ -346,24 +340,6 @@ Action<Expression> SemiExpressionTail =
 	}
 	;
 
-Expression Lambda = 
-	LAMBDA LPAREN formals:PatternList RPAREN Space
-	curried0:(LPAREN yyValue:PatternList RPAREN Space)*
-	resultType:MaybeResultType
-	RequiredEQ body0:Body {
-		List<List<Pattern>> curried = curried0.list();
-		ListIterator<List<Pattern>> it = curried.listIterator(curried.size());
-		Type linearResultType = resultType;
-		Expression body = body0;
-		while (it.hasPrevious()) {
-			body = new Lambda(it.previous(), body, linearResultType);
-			linearResultType = null;
-		}
-		yyValue = new Lambda(formals, body, linearResultType);
-		yyValue = at(yyStart, yyCount, yyValue);
-	}
-	;
-	
 Expression MaybeWhereExpression =
 	// A "NoCmp" expression is one which does not contain
 	// the unparenthesized comparison operators < and >,
@@ -409,9 +385,10 @@ Expression SeqExpression =
 		else yyValue = new Sequential(left, right, p);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
+	/ IfThenElse / Lambda / WithDeclarations
 	;
-Expression MaybeSeqExpression = SeqExpression / IfThenElse / MaybeTyped;
-Expression NoCmpMaybeSeqExpression = SeqExpression / IfThenElse / NoCmpMaybeTyped;
+Expression MaybeSeqExpression = SeqExpression / MaybeTyped;
+Expression NoCmpMaybeSeqExpression = SeqExpression / NoCmpMaybeTyped;
 	
 Expression IfThenElse =
 	IF condition:MaybeDisjunction THEN consequent:MaybeSemiExpression ELSE alternative:MaybeSemiExpression {
@@ -423,6 +400,34 @@ Expression IfThenElse =
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
+	
+Expression Lambda = 
+	LAMBDA LPAREN formals:PatternList RPAREN Space
+	curried0:(LPAREN yyValue:PatternList RPAREN Space)*
+	resultType:MaybeResultType
+	RequiredEQ body0:Body {
+		List<List<Pattern>> curried = curried0.list();
+		ListIterator<List<Pattern>> it = curried.listIterator(curried.size());
+		Type linearResultType = resultType;
+		Expression body = body0;
+		while (it.hasPrevious()) {
+			body = new Lambda(it.previous(), body, linearResultType);
+			linearResultType = null;
+		}
+		yyValue = new Lambda(formals, body, linearResultType);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	;
+	
+Expression WithDeclarations =
+	ds:Declarations g:Body {
+		Expression out = g;
+		ListIterator<Declaration> it = ds.listIterator(ds.size());
+		while (it.hasPrevious()) {
+			out = new Declare(it.previous(), out);
+		}
+		yyValue = out;
+	}
 
 Expression MaybeTyped =
 	body:MaybeAtomic void:DOUBLE_COLON_BANG type:Type {
