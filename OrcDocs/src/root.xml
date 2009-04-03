@@ -5079,10 +5079,20 @@ requests and parsing responses.</para>
 <entry></entry>
 <entry>|</entry>
 
+<entry><emphasis>op</emphasis> E</entry>
+
+<entry></entry>
+<entry><emphasis>prefix operator</emphasis></entry>
+</row>
+
+<row>
+<entry></entry>
+<entry>|</entry>
+
 <entry>E <emphasis>op</emphasis> E</entry>
 
 <entry></entry>
-<entry><emphasis>operator</emphasis></entry>
+<entry><emphasis>infix operator</emphasis></entry>
 </row>
 
 <row>
@@ -5134,6 +5144,7 @@ requests and parsing responses.</para>
 
 <entry></entry>
 <entry><emphasis>closure</emphasis></entry>
+
 </row>
 
 <row>
@@ -5203,7 +5214,7 @@ requests and parsing responses.</para>
 <entry>C</entry>
 <entry>::=</entry>
 
-<entry><emphasis>Boolean</emphasis> | <emphasis>Number</emphasis> | <emphasis>String</emphasis> | <code>signal</code></entry>
+<entry><emphasis>Boolean</emphasis> | <emphasis>Number</emphasis> | <emphasis>String</emphasis> | <code>signal</code> | <code>null</code></entry>
 
 <entry><emphasis>Constant</emphasis></entry>
 <entry></entry>
@@ -5328,10 +5339,20 @@ requests and parsing responses.</para>
 <entry></entry>
 <entry>|</entry>
 
+<entry>X <code>(</code> P <code>,</code> ... <code>,</code> P <code>)</code></entry>
+
+<entry></entry>
+<entry><emphasis>call pattern</emphasis></entry>
+</row>
+
+<row>
+<entry></entry>
+<entry>|</entry>
+
 <entry><code>(</code> P <code>,</code> ... <code>,</code> P <code>)</code></entry>
 
 <entry></entry>
-<entry><emphasis>tuple</emphasis></entry>
+<entry><emphasis>tuple pattern</emphasis></entry>
 </row>
 
 <row>
@@ -5341,19 +5362,18 @@ requests and parsing responses.</para>
 <entry><code>[</code> P <code>,</code> ... <code>,</code> P <code>]</code></entry>
 
 <entry></entry>
-<entry><emphasis>list</emphasis></entry>
+<entry><emphasis>list pattern</emphasis></entry>
 </row>
 
 <row>
 <entry></entry>
 <entry>|</entry>
 
-<entry><code>!</code>P</entry>
+<entry>P <code>:</code> P</entry>
 
 <entry></entry>
-<entry><emphasis>publish pattern</emphasis></entry>
+<entry><emphasis>cons pattern</emphasis></entry>
 </row>
-
 
 <row>
 <entry></entry>
