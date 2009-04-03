@@ -47,6 +47,7 @@
 		<delete dir="${orc.location.build}" />
 		<delete file="${ant.project.name}-${orc.version}.jar"/>
 		<delete file="${ant.project.name}-${orc.version}.zip"/>
+		<delete file="${ant.project.name}-${orc.version}-doc.zip"/>
 	</target>
 
 	<target name="kilim" description="Kilim weaving">
