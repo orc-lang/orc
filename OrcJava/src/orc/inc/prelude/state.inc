@@ -395,7 +395,8 @@ a(3)]]></programlisting>
 def IArray[A](Integer, lambda (Integer) :: A)(Integer) :: A
 def IArray(n, f) =
   val a = Array[A](n)
-  def fill(i :: Integer, f :: lambda (Integer) :: A) :: Top =
+  def fill(Integer, lambda (Integer) :: A) :: Top
+  def fill(i, f) =
     if i < 0 then signal
     else (a.set(i, f(i)), fill(i-1, f)) >> signal
   fill(n-1, f) >> a.get
