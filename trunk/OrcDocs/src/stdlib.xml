@@ -19,7 +19,7 @@ User Guide.</para>
 <para>When applied to a single argument, return that argument (behaving as the identity function).</para>
 </listitem></varlistentry>
 <varlistentry><term><code>let</code></term><listitem><para><code>site let[A, ...](A, ...) :: (A, ...)</code></para>
-<para>When applied to zero, two, or more arguments, return the arguments in a tuple.</para>
+<para>When applied to two or more arguments, return the arguments in a tuple.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>if</code></term><listitem><para><code>site if(Boolean) :: Top</code></para>
 <para>Fail silently if the argument is false. Otherwise return a signal.</para>
@@ -165,7 +165,7 @@ or equal to this number.</para>
 or equal to this number.</para>
 </listitem></varlistentry></variablelist>
 </section>
-<section><title>data.inc: General-purpose supplemental data structures.</title>
+<section><title>state.inc: General-purpose supplemental data structures.</title>
 <para>General-purpose supplemental data structures.</para>
 <variablelist>
 <?dbfo list-presentation="list"?>
@@ -515,7 +515,8 @@ a(3)]]></programlisting></para>
 <formalpara><title>Implementation</title><programlisting>def IArray[A](Integer, lambda (Integer) :: A)(Integer) :: A
 def IArray(n, f) =
   val a = Array[A](n)
-  def fill(i :: Integer, f :: lambda (Integer) :: A) :: Top =
+  def fill(Integer, lambda (Integer) :: A) :: Top
+  def fill(i, f) =
     if i &lt; 0 then signal
     else (a.set(i, f(i)), fill(i-1, f)) &gt;&gt; signal
   fill(n-1, f) &gt;&gt; a.get</programlisting></formalpara></listitem></varlistentry>
@@ -658,6 +659,19 @@ For readers familiar with the C language, this is the same reason you must
 write <code language="c">s->field</code> instead of <code>s.field</code> when
 <code>s</code> is a pointer to a struct.</para>
 </listitem></varlistentry>
+<varlistentry><term><code>Record</code></term><listitem><para><code>site Record(String, A, String, B, ...) :: Record[A, B, ...]</code></para>
+<para>Create a new record (an immutable map from field names to values).
+Arguments are consumed in pairs; the first argument of each pair
+is the key, and the second is the value for that key.</para>
+<para>To access the value in record <code>r</code> for key <code>"x"</code>,
+use the syntax <code>r.x</code>. For example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: 1
+val r = Record(
+  "one", 1,
+  "two", 2)
+r.one]]></programlisting></para>
+</listitem></varlistentry>
 <varlistentry><term><code>fst</code></term><listitem><para><code>def fst[A,B]((A,B)) :: A</code></para>
 <para>Return the first element of a pair.</para>
 <formalpara><title>Implementation</title><programlisting>def fst[A,B]((A,B)) :: A
@@ -755,7 +769,7 @@ def while(p,f) =
 The expression <code>repeat(f)</code> is equivalent to
 the infinite expression <code>f() >x> ( x | f() >x> ( x | f() >x> ... ) )</code></para>
 <formalpara><title>Implementation</title><programlisting>def repeat[A](lambda () :: A) :: A
-def repeat(f) = f() &gt;!x&gt; repeat(f)</programlisting></formalpara></listitem></varlistentry>
+def repeat(f) = f() &gt;x&gt; (x | repeat(f))</programlisting></formalpara></listitem></varlistentry>
 <varlistentry><term><code>fork</code></term><listitem><para><code>def fork[A](List[lambda () :: A]) :: A</code></para>
 <para>Call a list of functions in parallel, publishing
 all values published by the functions.</para>
@@ -1006,6 +1020,11 @@ def zip(x:xs,y:ys) = (x,y):zip(xs,ys)</programlisting></formalpara></listitem></
 <formalpara><title>Implementation</title><programlisting>def unzip[A,B](List[(A,B)]) :: (List[A], List[B])
 def unzip([]) = ([],[])
 def unzip((x,y):z) = (x:xs,y:ys) &lt;(xs,ys)&lt; unzip(z)</programlisting></formalpara></listitem></varlistentry>
+<varlistentry><term><code>concat</code></term><listitem><para><code>def concat[A](List[List[A]]) :: List[A]</code></para>
+<para>Concatenate a list of lists into a single list.</para>
+<formalpara><title>Implementation</title><programlisting>def concat[A](List[List[A]]) :: List[A]
+def concat([]) = []
+def concat(h:t) = append(h,concat(t))</programlisting></formalpara></listitem></varlistentry>
 <varlistentry><term><code>length</code></term><listitem><para><code>def length[A](List[A]) :: Integer</code></para>
 <para>Return the number of elements in a list.</para>
 <formalpara><title>Implementation</title><programlisting>def length[A](List[A]) :: Integer
