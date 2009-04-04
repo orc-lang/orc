@@ -86,7 +86,7 @@
 				</assertions>
 			<!-- FIXME: how can we replace this with a fileset? -->
 			<arg value="core.inc"/>
-			<arg value="data.inc"/>
+			<arg value="state.inc"/>
 			<arg value="idioms.inc"/>
 			<arg value="list.inc"/>
 			<arg value="text.inc"/>
