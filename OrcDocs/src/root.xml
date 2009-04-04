@@ -2743,321 +2743,44 @@ def f(x,y) =
 <section><title>Programming Idioms</title>
 
 <para>
-In this section we look at some common idioms used in the design of Orc programs. Many of these idioms will
-be familiar to programmers using concurrency, and they are very simple to express in Orc.
+In this section we give Orc implementations of some standard idioms from
+concurrent and functional programming. Despite the austerity of Orc's four
+combinators, we are able to encode a variety of idioms straightforwardly.
 </para>
 
-<section><title>Fork-join</title>
+<section><title>Channels</title>
 
 <para>
-One of the most common concurrent idioms is a <firstterm>fork-join</firstterm>: run two processes concurrently,
-and wait for a result from each one. This is very easy to express in Orc. Whenever we write a <code>val</code>
-declaration, the process computing that value runs in parallel with the rest of the program. So if we write
-two <code>val</code> declarations, and then form a tuple of their results, this performs a fork-join.
-</para>
-
-<para>
-<programlisting>
-val x = <emphasis role="bold">F</emphasis>
-val y = <emphasis role="bold">G</emphasis>
-(x,y)
-</programlisting>
+Orc has no communication primitives like &#960;-calculus
+channels<footnote><para>R. Milner. <emphasis>Communicating and Mobile Systems:
+the &#960;-Calculus</emphasis>. Cambridge University Press, May
+1999.</para></footnote> or Erlang mailboxes<footnote><para>J. Armstrong, R.
+Virding, C. Wikstr¨om, and M. Williams. <emphasis>Concurrent programming in
+ERLANG (2nd ed.)</emphasis>. Prentice Hall International (UK) Ltd.,
+Hertfordshire, UK, UK, 1996.</para></footnote>. Instead, it makes use of sites
+to create channels of communication. 
 </para>
 
 <para>
-Fork-joins are a fundamental part of all Orc programs, since they are created by all nested expression
-translations. In fact, the fork-join we wrote above could be expressed even more simply as just:
+The most frequently used of these sites is <code>Buffer</code>. When called, it
+publishes a new asynchronous FIFO channel. That channel is a site with two
+methods: <code>get</code> and <code>put</code>.  The call <code>c.get()</code>
+takes the first value from channel <code>c</code> and publishes it, or blocks
+waiting for a value if none is available. The call <code>c.put(v)</code> puts
+<code>v</code> as the last item of <code>c</code> and publishes a signal.
 </para>
 
 <para>
-<programlisting>
-(<emphasis role="bold">F</emphasis>,<emphasis role="bold">G</emphasis>)
-</programlisting>
-</para>
-
-
-<section><title>Example: Machine initialization</title>
-
-<para>
-In Orc programs, we often use fork-join and recursion together to dispatch many tasks in parallel and wait
-for all of them to complete. Suppose that given a machine <code>m</code>, calling <code>m.init()</code> 
-initializes <code>m</code> and then publishes a signal when initialization is complete. The function 
-<code>initAll</code> initializes a list of machines.
-</para>
-
-<programlisting><![CDATA[
-def initAll([]) = signal
-def initAll(m:ms) = ( m.init() , initAll(ms) ) >> signal
-]]></programlisting>
-
-<para>
-For each machine, we fork-join the initialization of that machine (<code>m.init()</code>) with the initialization
-of the remaining machines (<code>initAll(ms)</code>). Thus, all of the initializations proceed in parallel, and
-the function returns a signal only when every machine in the list has completed its initialization. 
-</para>
-
-<para>
-Note that if some machine fails to initialize, and does not return a signal, then the initialization procedure
-will never complete. 
-</para> 
-
-</section>
-
-<section id="example.auction"><title>Example: Simple parallel auction</title>
-
-<para>
-We can also use a recursive fork-join to obtain a value, rather than just signaling completion. Suppose we
-have a list of bidders in a sealed-bid, single-round auction. Calling <code>b.ask()</code> requests a bid
-from the bidder <code>b</code>. We want to ask for one bid from each bidder, and then return the highest
-bid. The function <code>auction</code> performs such an auction for a list of bidders (<code>max</code> 
-finds the maximum of its arguments):
-</para>
-
-<programlisting><![CDATA[
-def auction([]) = 0
-def auction(b:bs) = max(b.ask(), auction(bs))
-]]></programlisting>
-
-</section>
-
-<section><title>Example: Barrier synchronization</title>
-
-<para>
-Suppose we have an expression of the following form, where F and G are expressions and M and N are sites:
-
-<programlisting>
-M() <![CDATA[ >x> ]]> <emphasis role="bold">F</emphasis> | N() <![CDATA[ >y> ]]> <emphasis role="bold">G</emphasis>
-</programlisting>
-
-</para>
-
-<para>
-However, we would also like to <emphasis>synchronize</emphasis> the completion of M and N, so that
-neither F nor G starts executing until both M and N have published. This is a particular example
-of a fork-join:
-
-<programlisting>
-( M() , N() ) <![CDATA[ >(x,y)> ]]> ( <emphasis role="bold">F</emphasis> | <emphasis role="bold">G</emphasis> )
-</programlisting>
-
-We assume that x does not occur free in G, nor y in F.
-
+A channel may be closed to indicate that it will not be sent any more values.
+If the channel <code>c</code> is closed, <code>c.put(v)</code> always halts
+(without modifying the state of the channel), and <code>c.get()</code> halts
+once <code>c</code> becomes empty. The channel <code>c</code> may be closed by
+calling either <code>c.close()</code>, which returns a signal once
+<code>c</code> becomes empty, or <code>c.closenb()</code>, which returns a
+signal immediately.
 </para>
 
 </section>
-
-</section>
-
-
-<section><title>Parallel Or</title>
-
-<para>
-Next we consider a classic example of parallel programming which builds up from fork-join: a parallel-or program. Given two
-expressions F and G which may publish boolean values (or might stay silent forever), we want to find the disjunction of their
-results as soon as possible. If one of the expressions publishes <code>true</code>, then the disjunction is <code>true</code>; 
-hence, it is not necessary to wait for the other expression to publish a value.
-</para>
-
-<para>
-Here is the code:
-
-<programlisting>
-val r = 
-    val a = <emphasis role="bold">F</emphasis>
-    val b = <emphasis role="bold">G</emphasis>
-      if(a)<![CDATA[ >> ]]>true 
-    | if(b)<![CDATA[ >> ]]>true 
-    | (a || b)
-r
-</programlisting>
-</para>
-
-<para>
-Recall that the <code>||</code> operator is strict; if one of <code>a</code> or <code>b</code> is not bound, it cannot
-compute a result. So, we have added <code>if(a)<![CDATA[ >> ]]>true</code> and <code>if(b)<![CDATA[ >> ]]>true</code>, 
-which wait in parallel for either variable to become <code>true</code> and then publish the result <code>true</code>. 
-That way, the parallel-or can evaluate to <code>true</code> based on only one of the results, even if the other result 
-is not forthcoming.
-</para>
-
-<para>
-Also note that the entire computation is within <code>val r =</code>, to prevent <code>true</code> from being published
-multiple times.
-</para>
-
-</section>
-
-
-<section><title>Finite Sequential Composition</title>
-
-<para>
-F <code><![CDATA[ >x> ]]></code> G instantiates a copy of G for each published value of F. Suppose we know 
-that <emphasis role="bold">F</emphasis> will publish only a finite number of values, and then complete; for 
-example, <emphasis role="bold">F</emphasis> publishes the contents of a text file, one line at a time, and
-G prints each line to the console. After all of the lines have been printed, we want to start executing a new
-expression <emphasis role="bold">H</emphasis>.
-</para>
-
-<para>
-Sequential composition alone is not sufficient, because we have no way to detect when all of the lines have been published. Fork-join is
-also not suitable, since the values to be printed are not stored in some traversable data structure like a list; instead, they
-are streaming as publications out of an expression. Instead, we use the <code>;</code> combinator, which waits for all of the
-lines to be printed, then the left side completes and the right side can run. Note that we must suppress the publications on
-the left side using <code>stop</code>; if the left side published, the right side would not run.
-</para>
-
-<programlisting>
-<emphasis role="bold">F</emphasis><![CDATA[ >x> ]]>println(x)<![CDATA[ >> ]]>stop ; <emphasis role="bold">H</emphasis>
-</programlisting>
-
-</section>
-
-
-<section><title>Timeout</title>
-
-<para>
-One of the most powerful idioms available in Orc is a <firstterm>timeout</firstterm>: execute an expression for at
-most a specified amount of time. We accomplish this using <code>val</code> and a timer. The following program runs
-F for at most one second to get a value from it. If it does not publish within one second, the value defaults to 0.
-</para>
-
-<programlisting>
-let( <emphasis role="bold">F</emphasis> | Rtimer(1000)<![CDATA[ >> ]]>0 )
-</programlisting>
-
-
-<section><title>Auction with timeout</title>
-
-<para>
-In the <link linkend="example.auction">auction example</link> in Section 2.2.1.2, the auction may never complete if 
-one of the bidders does not respond. We can add a timeout so that a bidder has at most 8 seconds to provide a bid:
-</para>
-
-<programlisting><![CDATA[
-def auction([]) = 0
-def auction(b:bs) = 
-  val bid = b.ask() | Rtimer(8000) >> 0
-  Max(bid, auction(bs))
-]]></programlisting>
-
-<para>
-Now, the auction is guaranteed to complete in at most 8 seconds.
-</para>
-
-</section>
-
-
-<section><title>Detecting timeout</title>
-
-<para>
-Sometimes, rather than just yielding a default value, we would like to determine
-whether an expression has timed out, and if so, perform some other computation.
-To detect the timeout, we pair the original expression with <code>true</code> and the timer
-with <code>false</code>, so if the expression does time out, then we can detect
-it using the truth value. We then test the truth value, performing the usual
-computation if no timeout occurred, or some error-correcting computation if 
-the expression did time out.
-</para>
-
-<para>
-Here, we run the expression F with a time limit t. If it publishes within the time
-limit, we execute G (the result of F is bound to r). Otherwise, we execute H.
-
-<programlisting>
-val (r,b) = (<emphasis role="bold">F</emphasis>,true) | (Rtimer(t),false)
-if b then <emphasis role="bold">G</emphasis> else <emphasis role="bold">H</emphasis>
-</programlisting>
-
-Or, instead of using a boolean, we could use pattern matching:
-
-<programlisting><![CDATA[
-val s = Some(]]><emphasis role="bold">F</emphasis><![CDATA[) | Rtimer(t) >> None()
-  s >Some(r)> ]]><emphasis role="bold">G</emphasis><![CDATA[
-| s >None()>  ]]><emphasis role="bold">H</emphasis>
-</programlisting>
-
-</para>
-
- 
-</section>
-
-</section>
-
-<section><title>Priority</title>
-
-<para>
-We can also use a timer to give a window of priority to one computation over another.
-In this example, we run expressions F and G concurrently. F has priority for the first
-second: if F publishes, its value is used immediately, but if G publishes, that publication 
-is suspended for the first second and may be superseded by a publication from F
-during that time. If neither F nor G publishes within a second, then whichever publishes
-first after that point is the winner. 
-
-<programlisting>
-val x = <emphasis role="bold">F</emphasis>
-val y = <emphasis role="bold">G</emphasis>
-let( y | Rtimer(1000) >> x )
-</programlisting>
-
-</para>
-
-</section>
-
-
-<section><title>Metronome</title>
-
-<para>
-Recall the definition of <code>metronome</code> from the previous chapter:
-
-<programlisting><![CDATA[
-def metronome(t) = signal | Rtimer(t) >> metronome()
-]]></programlisting>
-</para>
-
-<para>
-We can use <code>metronome</code> and the sequential combinator to repeatedly 
-start an expression, so that copies of that expression will execute at
-regular intervals.
-</para>
-
-<para>
-<programlisting><![CDATA[
-{-
-   Publish "tick" once every second.
-   Publish "tock" once every second, with an initial 500ms delay.
-   The publications alternate: tick tock tick tock ...
--}   
-  metronome(1000) >> "tick"
-| Rtimer(500) >> metronome(1000) >> "tock"
-]]></programlisting>
-</para>
-
-</section>
-
-
-<section><title>Priority Poll</title>
-
-<para>
-Suppose we have a list of buffers. We would like to poll these buffers to see if they have
-any available data. The list of buffers is ordered by priority; the first buffer in the
-list has the highest priority, so it should be polled first, and if it has no data, then the next buffer
-should be polled, and so on.
-</para>
-
-<para>
-Here is a function which polls a prioritized list of buffers in this way. It publishes the first item 
-that it finds, removing it from the originating buffer. If all buffers are empty, it remains silent.
-We use the <code>getnb</code> ("get non-blocking") method of the buffer, which retrieves the first
-available item if there is one, or halts if the buffer is empty.
-</para>
-
-<programlisting>
-def PriorityPoll([]) = stop
-def PriorityPoll(b:bs) = b.getnb() ; PriorityPoll(bs)
-</programlisting>
-
-</section>
-
 
 <section><title>Lists</title>
 
@@ -3094,8 +2817,6 @@ list functions internally take advantage of concurrency to make use of any avail
 example, the <code>map</code> function dispatches all of the mapped calls concurrently, and assembles
 the result list once they all return using a fork-join.
 </para>
-
-
 
 </section>
 
@@ -3141,7 +2862,6 @@ repeat(c.get)
 <!-- An example of a site that creates streams would be great; file I/O maybe? -->
 
 </section>
-
 
 <section><title>Arrays</title>
 
@@ -3415,6 +3135,337 @@ publishing both <code>1</code> and <code>2</code>.
 
 </section>
 
+<section><title>Fork-join</title>
+
+<para>
+One of the most common concurrent idioms is a <firstterm>fork-join</firstterm>: run two processes concurrently,
+and wait for a result from each one. This is very easy to express in Orc. Whenever we write a <code>val</code>
+declaration, the process computing that value runs in parallel with the rest of the program. So if we write
+two <code>val</code> declarations, and then form a tuple of their results, this performs a fork-join.
+</para>
+
+<para>
+<programlisting>
+val x = <emphasis role="bold">F</emphasis>
+val y = <emphasis role="bold">G</emphasis>
+(x,y)
+</programlisting>
+</para>
+
+<para>
+Fork-joins are a fundamental part of all Orc programs, since they are created by all nested expression
+translations. In fact, the fork-join we wrote above could be expressed even more simply as just:
+</para>
+
+<para>
+<programlisting>
+(<emphasis role="bold">F</emphasis>,<emphasis role="bold">G</emphasis>)
+</programlisting>
+</para>
+
+
+<section><title>Example: Machine initialization</title>
+
+<para>
+In Orc programs, we often use fork-join and recursion together to dispatch many tasks in parallel and wait
+for all of them to complete. Suppose that given a machine <code>m</code>, calling <code>m.init()</code> 
+initializes <code>m</code> and then publishes a signal when initialization is complete. The function 
+<code>initAll</code> initializes a list of machines.
+</para>
+
+<programlisting><![CDATA[
+def initAll([]) = signal
+def initAll(m:ms) = ( m.init() , initAll(ms) ) >> signal
+]]></programlisting>
+
+<para>
+For each machine, we fork-join the initialization of that machine (<code>m.init()</code>) with the initialization
+of the remaining machines (<code>initAll(ms)</code>). Thus, all of the initializations proceed in parallel, and
+the function returns a signal only when every machine in the list has completed its initialization. 
+</para>
+
+<para>
+Note that if some machine fails to initialize, and does not return a signal, then the initialization procedure
+will never complete. 
+</para> 
+
+</section>
+
+<section id="example.auction"><title>Example: Simple parallel auction</title>
+
+<para>
+We can also use a recursive fork-join to obtain a value, rather than just signaling completion. Suppose we
+have a list of bidders in a sealed-bid, single-round auction. Calling <code>b.ask()</code> requests a bid
+from the bidder <code>b</code>. We want to ask for one bid from each bidder, and then return the highest
+bid. The function <code>auction</code> performs such an auction for a list of bidders (<code>max</code> 
+finds the maximum of its arguments):
+</para>
+
+<programlisting><![CDATA[
+def auction([]) = 0
+def auction(b:bs) = max(b.ask(), auction(bs))
+]]></programlisting>
+
+</section>
+
+<para>
+Note that all bidders are called simultaneously. Also note that if some bidder fails 
+to return a bid, then the auction will never complete.  Later we will see
+a <link linkend="example.auction-with-timeout">different solution</link> that addresses the issue of non-termination.
+</para>
+
+<section><title>Example: Barrier synchronization</title>
+
+<para>
+Consider an expression of the following form, where F and G are expressions and M and N are sites:
+
+<programlisting>
+M() <![CDATA[ >x> ]]> <emphasis role="bold">F</emphasis> | N() <![CDATA[ >y> ]]> <emphasis role="bold">G</emphasis>
+</programlisting>
+
+</para>
+
+<para>
+Suppose we would like to <emphasis>synchronize</emphasis> F and G, so that both start
+executing at the same time, after both <code>M()</code> and <code>N()</code> respond.  This is easily done
+using the fork-join idiom. In the following, we assume that <code>x</code> does not occur
+free in G, nor <code>y</code> in F.
+
+<programlisting>
+( M() , N() ) <![CDATA[ >(x,y)> ]]> ( <emphasis role="bold">F</emphasis> | <emphasis role="bold">G</emphasis> )
+</programlisting>
+
+</para>
+
+</section>
+
+</section>
+
+<section><title>Sequential Fork-Join</title>
+
+<para>
+Previous sections illustrate how Orc can use the fork-join idiom to process a
+fixed set of expressions or a list of values.  Suppose that instead we wish to
+process all the publications of an expression F, and once this processing is
+complete, execute some expression G.  For example, F publishes the contents
+of a text file, one line at a time, and we wish to print each line to the
+console using the site <code>println</code>, then publish a signal after all lines
+have been printed.
+</para>
+
+<para>
+Sequential composition alone is not sufficient, because we have no way to
+detect when all of the lines have been processed.  A recursive fork-join
+solution would require that the lines be stored in a traversable data structure
+like a list, rather than streamed as publications from F.  A better solution
+uses the <code>;</code> combinator to detect when processing is complete:
+</para>
+
+<programlisting>
+<emphasis role="bold">F</emphasis> >x> println(x) >> stop ; signal
+</programlisting>
+
+<para>
+Since <code>;</code> only evaluates its right side if the left side does not publish,
+we suppress the publications on the left side using <code>stop</code>. Here, we
+assume that we can detect when F halts. If, for example,
+F is publishing the lines of the file as it receives them over a socket,
+and the sending party never closes the socket, then F never halts and no
+signal is published.
+</para>
+</section>
+
+<section><title>Priority Poll</title>
+
+<para>
+The otherwise combinator is also useful for trying alternatives in sequence. Consider an expression of
+the form <code>F<subscript>0</subscript> ; F<subscript>1</subscript> ; F<subscript>2</subscript> ; ...</code>. If F<subscript>i</subscript> does not publish 
+and halts, then F<subscript>i+1</subscript> is executed. We can think of the F<subscript>i</subscript>'s as a series of 
+alternatives that are explored until a publication occurs.
+</para>
+
+<para>
+Suppose that we would like to poll a list of buffers for available data.  The
+list of buffers is ordered by priority. The first buffer in the list has the
+highest priority, so it is polled first.  If it has no data, then the
+next buffer is polled, and so on.
+</para>
+
+<para>
+Here is a function which polls a prioritized list of buffers in this way. It
+publishes the first item that it finds, removing it from the originating
+buffer. If all buffers are empty, the function halts.  We use the <code>getnb</code> ("get non-blocking") method of the buffer, which retrieves the first
+available item if there is one, and halts otherwise.
+</para>
+
+<programlisting>
+def priorityPoll([]) = stop
+def priorityPoll(b:bs) = b.getnb() ; priorityPoll(bs)
+</programlisting>
+</section>
+
+<section><title>Parallel Or</title>
+
+<para>
+``Parallel or'' is a classic idiom of parallel programming.  The ``parallel or'' operation executes two
+expressions F and G in parallel, each of which may publish a single boolean,
+and returns the disjunction of their publications as soon as possible. 
+If one of the expressions publishes <code>true</code>, then the disjunction is <code>true</code>, 
+so it is not necessary to wait for the other expression to publish a value. 
+This holds even if one of the expressions is silent.
+</para>
+
+<para>
+The ``parallel or'' of expressions F and G may be expressed in Orc as
+follows:
+</para>
+
+<programlisting>
+let(
+    val a = <emphasis role="bold">F</emphasis>
+    val b = <emphasis role="bold">G</emphasis>
+
+      (a || b)
+    | if(a)<![CDATA[ >> ]]>true 
+    | if(b)<![CDATA[ >> ]]>true 
+)
+</programlisting>
+
+<para>
+The expression <code>(a || b)</code> waits for both <code>a</code> and <code>b</code> to become
+available and then publishes their disjunction.  However if either <code>a</code> or
+<code>b</code> is true we can publish <code>true</code> immediately regardless of whether the
+other variable is available.  Therefore we run <code>if(a) >> true</code> and <code>if(b) >> true</code>
+in parallel to wait for either variable to become <code>true</code> and immediately
+publish the result <code>true</code>.  Since more than one of these expressions may
+publish <code>true</code>, the surrounding <code>let(...)</code> is necessary to select and
+publish only the first result.
+</para>
+
+</section>
+
+
+<section><title>Timeout</title>
+
+<para>
+<firstterm>Timeout</firstterm>, the ability to execute an expression for at most a specified
+amount of time, is an essential ingredient of fault-tolerant and distributed
+programming.  Orc accomplishes timeout using pruning and the <code>Rtimer</code> site.
+The following program runs F for at most one second, publishing its result if
+available and the value <code>0</code> otherwise.
+</para>
+
+<programlisting>
+let( <emphasis role="bold">F</emphasis> | Rtimer(1000)<![CDATA[ >> ]]>0 )
+</programlisting>
+
+
+<section id="example.auction-with-timeout"><title>Auction with timeout</title>
+
+<para>
+In the <link linkend="example.auction">auction example</link> given previously, the auction may never complete if 
+one of the bidders does not respond. We can add a timeout so that a bidder has at most 8 seconds to provide a bid:
+</para>
+
+<programlisting><![CDATA[
+def auction([]) = 0
+def auction(b:bs) = 
+  val bid = b.ask() | Rtimer(8000) >> 0
+  max(bid, auction(bs))
+]]></programlisting>
+
+<para>
+This version of the auction is guaranteed to complete within 8 seconds.
+</para>
+
+</section>
+
+
+<section><title>Detecting timeout</title>
+
+<para>
+Sometimes, rather than just yielding a default value, we would like to
+determine whether an expression has timed out, and if so, perform some other
+computation.  To detect the timeout, we pair the result of the original
+expression with <code>true</code> and the result of the timer with <code>false</code>.
+Thus, if the expression does time out, then we can distinguish that case
+using the boolean value.
+</para>
+
+<para>
+Here, we run expression F with a time limit <code>t</code>. If it publishes
+within the time limit, we bind its result to <code>r</code> and execute G.
+Otherwise, we execute H.
+
+<programlisting>
+val (r, b) = (<emphasis role="bold">F</emphasis>, true) | (Rtimer(t), false)
+if b then <emphasis role="bold">G</emphasis> else <emphasis role="bold">H</emphasis>
+</programlisting>
+
+Instead of using a boolean and conditional, we could use pattern matching:
+
+<programlisting><![CDATA[
+val s = Some(]]><emphasis role="bold">F</emphasis><![CDATA[) | Rtimer(t) >> None()
+  s >Some(r)> ]]><emphasis role="bold">G</emphasis><![CDATA[
+| s >None()>  ]]><emphasis role="bold">H</emphasis>
+</programlisting>
+
+</para>
+
+ 
+</section>
+
+</section>
+
+<section><title>Priority</title>
+
+<para>
+We can use a timer to give a window of priority to one computation over
+another.  In this example, we run expressions F and G concurrently.  For
+one second, F has priority; F's result is published immediately,
+but G's result is held until the time interval has elapsed.  If neither F nor
+G publishes a result within one second, then the first result from either
+is published.
+
+<programlisting>
+val x = <emphasis role="bold">F</emphasis>
+val y = <emphasis role="bold">G</emphasis>
+let( y | Rtimer(1000) >> x )
+</programlisting>
+
+</para>
+
+</section>
+
+
+<section><title>Metronome</title>
+
+<para>
+A timer can be used to execute an expression repeatedly at regular
+intervals, for example to poll a service.
+Recall the definition of <code>metronome</code> from the previous chapter:
+
+<programlisting><![CDATA[
+def metronome(t) = signal | Rtimer(t) >> metronome()
+]]></programlisting>
+</para>
+
+<para>
+The following example publishes "tick" once per second and "tock" once per
+second after an initial half-second delay.  The publications alternate: "tick
+tock tick tock ...". Note that this program is not defined recursively;
+the recursion is entirely contained within <code>metronome</code>.
+</para>
+
+<para>
+<programlisting language="orc-demo"><![CDATA[
+  metronome(1000) >> "tick"
+| Rtimer(500) >> metronome(1000) >> "tock"
+]]></programlisting>
+</para>
+
+</section>
+
 
 
 
@@ -3422,10 +3473,13 @@ publishing both <code>1</code> and <code>2</code>.
 <section><title>Routing</title>
 
 <para>
-While Orc's combinators are powerful, sometimes they are too restrictive to
-solve certain problems. In these situations, we use channels or other
-concurrent objects to redirect or store publications and write clean solutions.
-We call this technique <emphasis>routing</emphasis>.
+The Orc combinators restrict the passing of values among their component
+expressions. However, some programs will require greater
+flexibility.  For example, <code>F &lt;x&lt; G</code> provides F with the first 
+publication of G, but what if F needs the first n publications of G?  
+In cases like this we use channels or other stateful sites to redirect or 
+store publications.  We call this technique <firstterm>routing</firstterm>
+because it involves routing values from one execution to another.
 </para>
 
 <section><title>Generalizing Termination</title>
@@ -3458,21 +3512,17 @@ of timeout: allow an expression to execute, publishing arbitrarily many values
 val c = Buffer()
 repeat(c.get)<![CDATA[ << ]]>
     <emphasis role="bold">F</emphasis><![CDATA[ >x> c.put(x) >> stop 
-  | Rtimer(1000) >> c.closenb()
-]]>
-</programlisting>
+  | Rtimer(1000) >> c.closenb()]]></programlisting>
 
 <para>
-This program allows F to execute for one second, and then terminates it. Each
-value published by F is silently routed through the channel <code>c</code> so
-that it does not terminate F. After one second, the signal published by the
-timeout closes the channel and terminates F.</para>
-
-<para>If the channel <code>c</code> is being written to elsewhere in the
-program (for example, to collect results from multiple computations),
-then <code> &gt;&gt; c.closenb()</code> should be omitted, so that F will
-be terminated but <code>repeat(c.get)</code> will continue to wait for
-values to be put in the channel.</para>
+This program allows F to execute for one second and then terminates it. Each
+value published by F is routed through channel <code>c</code> so that it does
+not terminate F. After one second, <code>Rtimer(1000)</code> responds,
+triggering the call <code>c.closenb()</code>.  The call
+<code>c.closenb()</code> closes <code>c</code> and publishes a signal,
+terminating F.  The library function <code>repeat</code> is used to repeatedly
+take and publish values from <code>c</code> until it is closed.
+</para>
 
 </section>
 
@@ -3502,27 +3552,23 @@ the termination of F.
 
 </section>
 
-<section><title>Exceptions</title>
+<section><title>Interrupt</title>
 
 <para>
-Orc does not have a native exception handling mechanism. However, we
-can use routing to directly interrupt an expression by writing to
-a write-once cell. We set up the expression like a timeout, but instead of 
-waiting for a timer, we wait for the cell <code>err</code> to be
-assigned. Anywhere in F, an <code>err.write</code> call will
-terminate the expression (because it will cause <code>err.read()</code>
-to publish), but otherwise F executes as normal and may publish any 
-number of values.
+We can use routing to interrupt an expression based on a signal from
+elsewhere in the program.  We set up the expression like a timeout, but instead
+of waiting for a timer, we wait for the semaphore <code>done</code> to be released. Any
+call to <code>done.release</code> will terminate the expression (because it will
+cause <code>done.acquire()</code> to publish), but otherwise F executes as normal and
+may publish any number of values.
 </para>
 
-<programlisting>
+<programlisting><![CDATA[
 val c = Buffer()
-val err = Cell()
-repeat(c.get)<![CDATA[ << ]]>
-    <emphasis role="bold">F</emphasis><![CDATA[ >x> c.put(x) >> stop 
-  | err.read() >> c.closenb()
-]]>
-</programlisting>
+val done = Semaphore(0)
+repeat(c.get) <<
+    ]]><emphasis role="bold">F</emphasis><![CDATA[ >x> c.put(x) >> stop
+  | done.acquire() >> c.closenb()]]></programlisting>
 
 </section>
 
@@ -3537,26 +3583,50 @@ it publishes 5 values, and then terminates it.
 <programlisting><![CDATA[
 val c = Buffer()
 val done = Semaphore(0)
-def allow(0) = c.closenb() >> done.release() >> stop
+def allow(0) = done.release() >> stop
 def allow(n) = c.get() >!x> allow(n-1)
 allow(5) << ]]>
     <emphasis role="bold">F</emphasis><![CDATA[ >x> c.put(x) >> stop 
-  | done.acquire()
+  | done.acquire() >> c.closenb()
+]]>
+</programlisting>
+
+<para>
+We use the auxiliary function <code>allow</code> to get only the first 5
+publications from the channel <code>c</code>.  When no more publications are allowed,
+<code>allow</code> uses the interrupt idiom to halt F and close <code>c</code>.
+</para>
+
+</section>
+
+
+</section>
+
+
+<section><title>Non-Terminating Pruning</title>
+
+<para>
+We can use routing to create a modified version of the pruning combinator.
+As in <code>F &lt;x&lt; G</code>, we'll run F and G in parallel and make the first
+value published by G available to F.  However instead of terminating G after
+it publishes a value, we will continue running it, ignoring its remaining
+publications.
+</para>
+
+<programlisting><![CDATA[
+val r = Ref()
+(]]><emphasis role="bold">F</emphasis><![CDATA[ <x< r.read()) | (]]><emphasis role="bold">G</emphasis><![CDATA[ >x> r.write(x))
 ]]>
 </programlisting>
 
 </section>
 
-
-</section>
-
-
-<section><title>Modified Otherwise</title>
+<section><title>Publication-Agnostic Otherwise</title>
 
 <para>
-We can use routing to create a modified version of the otherwise combinator. We'll
-run F until it completes, and then run G, regardless of whether F published any values
-or not. We write this modified F <code>;</code> G as follows:
+We can also use routing to create a modified version of the otherwise combinator. We'll
+run F until it halts, and then run G, regardless of whether F published any values
+or not.
 </para>
 
 <programlisting><![CDATA[
@@ -3564,22 +3634,10 @@ val c = Buffer()
 repeat(c.get) | (]]><emphasis role="bold">F</emphasis><![CDATA[ >x> c.put(x) >> stop ; c.close() >> ]]><emphasis role="bold">G</emphasis>)  
 </programlisting>
 
-</section>
-
-<section><title>Modified Pruning</title>
-
-<para>
-Similarly, we can use routing to modify the pruning combinator. Instead of terminating
-the right side after the first value is published, we would like to continue running it,
-ignoring its remaining publications. We write this modified F <code><![CDATA[ <x< ]]></code> G 
-as follows:
-</para>
-
-<programlisting><![CDATA[
-val c = Cell()
-(]]><emphasis role="bold">F</emphasis><![CDATA[ <x< c.read()) | (]]><emphasis role="bold">G</emphasis><![CDATA[ >x> c.write(x))
-]]>
-</programlisting>
+We use <code>c.close()</code> instead of the more common <code>c.closenb()</code>
+to ensure that G does not execute until all the publications of F have been
+routed. Recall that <code>c.close()</code> does not return until <code>c</code> is
+empty.
 
 </section>
 
@@ -3588,29 +3646,7 @@ val c = Cell()
 <section><title>Interruption</title>
 
 <para>
-It is sometimes useful to be able to <firstterm>interrupt</firstterm> the
-evaluation of an expression, that is run it until some external event signals
-that it should stop.  The following program runs the expression F until it is
-<firstterm>interrupted</firstterm> by a signal from the user.
-</para>
-
-<programlisting><![CDATA[
-val c = Buffer()
-val err = Cell()
-  Prompt("Interrupt?") >> err.write() 
-| repeat(c.get)
-    << ]]><emphasis role="bold">F</emphasis><![CDATA[ >x> c.put(x) >> stop 
-     | err.read() >> c.closenb()
-]]>
-</programlisting>
-
-<para>
-Notice that this is just a special case of the exception handling mechanism
-introduced earlier. 
-</para>
-
-<para>
-We can write a function <code>interruptible</code> that implements this idiom
+We can write a function <code>interruptible</code> that implements the interrupt idiom
 to execute any function in an interruptible way.  <code>interruptible(g)</code>
 calls the function <code>g</code>, which is assumed to take no arguments, and
 silences its publications. It immediately publishes another function, which we
@@ -3624,10 +3660,10 @@ Here is a naive implementation that doesn't quite work:
 
 <programlisting><![CDATA[
 def interruptible(f) =
-  val err = Cell()
-  err.write
+  val done = Semaphore(0)
+  done.release
     << f() >> stop 
-     | err.read() >> c.closenb()
+     | done.acquire() >> c.closenb()
 
 {- wrong! -}
 val stopper = interruptible(g)
@@ -3648,10 +3684,10 @@ The solution is to bind the variable differently:
 
 <programlisting><![CDATA[
 def interruptible(f) =
-  val err = Cell()
-  err.write
+  val done = Semaphore(0)
+  done.release
     << f() >> stop 
-     | err.read() >> c.closenb()
+     | done.acquire() >> c.closenb()
 
 interruptible(g) >stopper>
 ...
@@ -3704,6 +3740,78 @@ within the loop of <code>lifter()</code>, unaffected by the timeout.
 
 </section>
 
+<section><title>Fold</title>
+
+<para>
+We consider various concurrent implementations of the classic "list fold"
+function from functional programming:
+</para>
+
+<programlisting><![CDATA[
+def fold(_, [x])  = x
+def fold(f, x:xs) = f(x, fold(xs))]]></programlisting>
+
+<para>
+This is a seedless fold (sometimes called <code>fold1</code>) which requires that the
+list be nonempty and uses its first element as a seed.  This implementation is
+short-circuiting --- it may finish early if the reduction operator <code>f</code> does
+not use its second argument --- but it is not concurrent; no two calls to <code>f</code>
+can proceed in parallel.
+</para>
+
+<section><title>Associative Fold</title>
+
+<para>
+We first consider the case when the reduction operator is associative.  We
+define <code>afold(b,xs)</code> where <code>b</code> is a binary associative function and
+<code>xs</code> is a non-empty list.  The implementation iteratively reduces <code>xs</code>
+to a single value.  Each step of the iteration applies the auxiliary function
+<code>step</code>, which halves the size of <code>xs</code> by reducing disjoint pairs of
+adjacent items. Notice that <code>b(x,y):step(xs)</code> is an implicit
+fork-join. Thus, the call <code>b(x,y)</code>
+executes in parallel with the recursive call <code>step(xs)</code>, and as a result,
+all of the calls to <code>b</code> in each iteration occur in parallel. 
+</para>
+
+<programlisting><![CDATA[
+def afold(b, [x]) = x
+def afold(b, xs) =
+  def step([]) = []
+  def step([x]) = [x]
+  def step(x:y:xs) = b(x,y):step(xs)
+  afold(b, step(xs))]]></programlisting>
+</section>
+
+<section><title>Associative, Commutative Fold</title>
+
+<para>
+We can devise a better strategy when the fold operator is both associative and
+commutative. We define <code>cfold(b,xs)</code>, where <code>b</code> is a binary associative and
+commutative function over two arguments and <code>xs</code> is a non-empty list. 
+The implementation initially copies all list items into a buffer in arbitrary
+order using the auxiliary function <code>xfer</code>.  The auxiliary function
+<code>combine</code> repeatedly pulls pairs of items from the buffer, reduces
+them, and places the result back in the buffer. Each pair of items is reduced
+in parallel as they become available.  The last item in the buffer is the
+result of the overall fold.
+</para>
+
+<programlisting><![CDATA[
+def cfold(b, xs) =
+  val c = Buffer()
+  
+  def xfer([])    = stop
+  def xfer(x:xs)  = c.put(x) >> stop | xfer(xs)
+
+  def combine(1) =  c.get()
+  def combine(m) =  c.get() >x> c.get() >y> 
+                    ( c.put(b(x,y)) >> stop | combine(m-1))
+
+  xfer(xs) | combine(length(xs))]]></programlisting>
+
+</section>
+</section>
+
 </section>
 
 
@@ -3712,11 +3820,22 @@ within the loop of <code>lifter()</code>, unaffected by the timeout.
 <section><title>Dining Philosophers</title>
 
 <para>
-The dining philosophers problem is a well known and intensely studied problem in
-concurrent programming. For a detailed description, see 
-<link xlink:href="http://en.wikipedia.org/wiki/Dining_philosophers">the Wikipedia entry</link>
-on the problem. Here, we present an Orc solution to the dining philosophers problem,
-based on a probabilistic solution by Rabin.  
+The dining philosophers problem is a well known and intensely studied problem
+in concurrent programming. Five philosophers sit around a circular table. Each
+philosopher has two forks that she shares with her neighbors (giving five forks
+in total).  Philosophers think until they become hungry.  A hungry philosopher
+picks up both forks, one at a time, eats, puts down both forks, and then
+resumes thinking.  Without further refinement, this scenario allows deadlock;
+if all philosophers become hungry and pick up their left-hand forks
+simultaneously, no philosopher will be able to pick up her right-hand fork to
+eat.  Lehmann and Rabin's solution<footnote><para>D. J. Lehmann and M. O. Rabin. On the advantages of free choice: A symmetric
+and fully distributed solution to the dining philosophers problem. In <emphasis>POPL</emphasis>, pages
+133–138, 1981.</para></footnote>, which we implement,
+requires that each philosopher pick up her forks in a random order.  If the
+second fork is not immediately available, the philosopher must set down both
+forks and try again.  While livelock is still possible if all philosophers
+take forks in the same order, randomization makes this possibility vanishingly
+unlikely.
 </para>
 
 <programlisting language="orc-demo"><![CDATA[
@@ -3728,67 +3847,65 @@ def take((a,b)) =
     
 def drop(a,b) = (a.release(), b.release()) >> signal
 
-def phil(a,b,name) =
+def phil(n,a,b) =
   def thinking() = 
-    if (urandom() < 0.9)
+    println(n + " thinking") >> 
+    if (random(10) < 9)
       then Rtimer(random(1000))
-      else println(name + " is thinking forever.") >> stop
+      else stop
   def hungry() = take((a,b))
   def eating() = 
-    println(name + " is eating.") >> 
+    println(n + " eating") >> 
     Rtimer(random(1000)) >> 
-    println(name + " has finished eating.") >>
+    println(n + " done eating") >> 
     drop(a,b)
-  thinking() >> hungry() >> eating() >> phil(a,b,name)
+  thinking() >> hungry() >> eating() >> phil(n,a,b)
 
-def dining(n) =
-  if (n < 2) 
-    then println("Can't simulate fewer than two philosophers.")
-    else 
-    ( 
-      val forks = IArray(n, lambda(_) = Semaphore(1))
-      def phils(0) = stop
-      def phils(i) = phil(forks(i%n), forks(i-1), "Philosopher " + i) 
-                   | phils(i-1)
-      phils(n) 
-    )
-dining(5) ; println("Done.") >> stop
-]]></programlisting>
+def philosophers(1,a,b) = phil(1,a,b)
+def philosophers(n,a,b) =
+  val c = Semaphore(1)
+  philosophers(n-1,a,c) | phil(n,c,b)
+
+val fork = Semaphore(1)
+philosophers(5,fork,fork)]]></programlisting>
 
 <para>
-The program calls <code>dining(5)</code> to simulate the dining philosophers
-problem with size 5. It waits for the simulation to complete, then prints a message
-and stops.
+The <code>phil</code> function simulates a single philosopher.  It takes as arguments
+two binary semaphores representing the philosopher's forks, and calls
+the <code>thinking</code>, <code>hungry</code>, and <code>eating</code> functions in a continuous
+loop. A <code>thinking</code> philosopher waits for a random amount of time, with a
+10% chance of thinking forever. A <code>hungry</code> philosopher uses the <code>take</code>
+function to acquire two forks. An <code>eating</code> philosopher waits for a random
+time interval and then uses the <code>drop</code> function to relinquish ownership of
+her forks.
 </para>
 
 <para>
-The <code>dining</code> function takes the number <code>n</code> of philosophers 
-to simulate. It creates an array of <code>n</code> binary semaphores to
-represent the forks. Then, it starts <code>n</code> philosopher processes in
-parallel using the function <code>phil</code>, giving each philosopher an
-identifier, and references to its left and right forks. 
+Calling <code>take</code> attempts to acquire a pair of forks <code>(a,b)</code> in two steps:
+wait for fork <code>a</code> to become available, then immediately attempt to acquire fork <code>b</code>.
+The call <code>b.acquirenb()</code> either acquires <code>b</code> and responds immediately, or halts if <code>b</code> is not available.
+If <code>b</code> is acquired, signal success; otherwise, release <code>a</code>, and
+then try again, randomly changing the order in which the forks are acquired
+using the auxiliary function <code>shuffle</code>.
 </para>
 
 <para>
-The <code>phil</code> function describes the behavior of an individual philosopher.
-It calls the <code>thinking</code>, <code>hungry</code>, and <code>eating</code>
-functions in a continuous loop. A <code>thinking</code> philosopher waits for a random
-amount of time, and also has a 10% chance of thinking forever. A <code>hungry</code>
-philosopher uses the <code>take</code> function to acquire two forks. An <code>eating</code>
-philosopher waits for a random time interval and then uses the <code>drop</code> function
-to yield ownership of its forks. 
+The function <code>philosophers</code> recursively creates a chain of <code>n</code>
+philosophers, bounded by fork <code>a</code> on the left and <code>b</code> on the right. The
+goal expression of the program calls <code>philosophers</code> to create a chain of
+five philosophers bounded on the left and right by the same fork; hence, a
+ring.
 </para>
 
 <para>
-The <code>take</code> and <code>drop</code> functions are the key to the algorithm.
-Calling <code>take</code> attempts to acquire a pair of forks in two steps:
-wait for one fork to become available, then immediately attempt to acquire the second
-fork. If the second fork is acquired, signal success; otherwise, release the first
-fork, and then try again, randomly changing the order in which the forks are
-acquired using the <code>shuffle</code> helper function. This reordering ensures
-that the algorithm will probabilistically avoid livelock. The <code>drop</code> function
-simply releases both of the forks. 
-</para> 
+This Orc solution has several nice properties.  The overall structure of the
+program is functional, with each behavior encapsulated in its own function,
+making the program easy to understand and modify.  Mutable state is isolated to
+the "fork" semaphores and associated <code>take</code> and <code>get</code> functions,
+simplifying the implementation of the philosophers.  The program never
+manipulates threads explicitly, but instead expresses relationships between
+activities using Orc's combinators.
+</para>
 
 </section>
 
@@ -3953,7 +4070,7 @@ fork, it knows who sent it and therefore which fork was received.
 </para>
 </section>
 
-<section><title>Readers/Writers</title>
+<section><title>Readers-Writers</title>
 
 <para>
 Here we present an Orc solution to the <link
@@ -4037,6 +4154,162 @@ holding the lock.  Whenever the lock is granted, <code>grant</code> increments
 To ensure that a writer has exclusive access, <code>grant</code> waits for the
 <code>c</code> to become zero before granting the lock to the writer, and then
 waits for <code>c</code> to become zero again before granting any more requests.
+</para>
+</section>
+
+<section><title>Quicksort</title>
+
+<para>
+The original quicksort algorithm
+<footnote><para>C. A. R. Hoare. Partition: Algorithm 63, Quicksort: Algorithm 64, and
+Find: Algorithm 65. <emphasis>Communications of the ACM</emphasis>,
+4(7):321–322, 1961.</para></footnote>
+was designed for efficient execution on a uniprocessor.
+Encoding it as a functional program typically ignores its efficient
+rearrangement of the elements of an array.
+Further, no known implementation highlights its concurrent aspects.
+The following program attempts to overcome these two limitations.
+The program is mostly functional in its structure, though it manipulates the
+array elements in place.
+We encode parts of the algorithm as concurrent activities where sequentiality
+is unneeded.
+</para>
+
+<para>
+The following listing gives the implementation of the <code>quicksort</code>
+function which sorts the array <code>a</code> in place.
+The auxiliary function <code>sort</code> sorts the subarray given by indices
+<code>s</code> through <code>t</code> by calling <code>part</code> to partition
+the subarray and then recursively sorting the partitions.
+</para>
+
+<programlisting><![CDATA[
+def quicksort(a) =
+
+  def swap(x, y) = a(x)? >z> a(x) := a(y)? >> a(y) := z
+
+  def part(p, s, t) =
+    def lr(i) = if i < t && a(i)? <= p then lr(i+1) else i
+    def rl(i) = if a(i)? > p then rl(i-1) else i
+
+    (lr(s), rl(t)) >(s', t')>
+    ( if (s' + 1 < t') >> swap(s', t') >> part(p, s'+1, t'-1)
+    | if (s' + 1 = t') >> swap(s', t') >> s'
+    | if (s' + 1 > t') >> t'
+    )
+
+  def sort(s, t) =
+     if s >= t then signal
+     else part(a(s)?, s+1, t) >m>
+          swap(m, s) >>
+          (sort(s, m-1), sort(m+1, t)) >>
+          signal
+
+  sort(0, a.length()-1)]]></programlisting>
+
+<para>
+The function <code>part</code> partitions the subarray given by indices
+<code>s</code> through <code>t</code> into two partitions, one containing values
+&#8804; <code>p</code> and the other containing values &gt; <code>p</code>.  The last index of the lower partition is returned.
+The value at <code>a(s-1)</code> is assumed to be &#8804; <code>p</code> --- this is satisfied
+by choosing <code>p = a(s-1)?</code> initially.  To create the partitions, <code>part</code>
+calls two auxiliary functions <code>lr</code> and <code>rl</code> concurrently.  These
+functions scan from the left and right of the subarray respectively, looking
+for out-of-place elements.  Once two such elements have been found, they are
+swapped using the auxiliary function <code>swap</code>, and then the unscanned portion
+of the subarray is partitioned further.  Partitioning is complete when the
+entire subarray has been scanned.
+</para>
+
+<para>
+This program uses the syntactic sugar <code>x?</code> for <code>x.read()</code>
+and <code>x := y</code> for <code>x.write(y)</code>.  Also note that the expression
+<code>a(i)</code> returns a reference to the element of array <code>a</code> at index
+<code>i</code>, counting from 0.
+</para>
+</section>
+
+<section><title>Meeting Scheduler</title>
+
+<para>
+Orc makes very few assumptions about the behaviors of services it uses. Therefore
+it is straightforward to write programs which interact with human agents and
+network services.  This makes Orc especially suitable for encoding
+<firstterm>workflows</firstterm>, the coordination of multiple activities
+involving multiple participants.  The following program illustrates a simple
+workflow for scheduling a business meeting.  Given a list of people and a date
+range, the program asks each person when they are available for a meeting.  It
+then combines all the responses, selects a meeting time which is acceptable to
+everyone, and notifies everyone of the selected time.
+</para>
+
+<programlisting><![CDATA[
+include "net.inc"
+val during = DateTimeRange(LocalDate(2009, 9, 10),
+                           LocalDate(2009, 10, 17))
+val invitees = ["john@example.com", "jane@example.com"]
+
+def invite(invitee) =
+  Form() >f>
+  f.addPart(DateTimeRangesField("times",
+    "When are you available for a meeting?", during, 9, 17)) >>
+  f.addPart(Button("submit", "Submit")) >>
+  SendForm(f) >receiver>
+  SendMail(invitee, "Meeting Request", receiver.getURL()) >>
+  receiver.get() >response>
+  response.get("times")
+
+def notify([]) =
+  each(invitees) >invitee>
+  SendMail(invitee, "Meeting Request Failed",
+                    "No meeting time found.")
+def notify(first:_) =
+  each(invitees) >invitee>
+  SendMail(invitee, "Meeting Request Succeeded",
+                    first.getStart())
+
+map(invite, invitees) >responses>
+afold(lambda (a,b) = a.intersect(b), responses) >times>
+notify(times)]]></programlisting>
+
+<para>
+This program begins with declarations of <code>during</code> (the date range for the
+proposed meeting) and <code>invitees</code> (the list of people to invite represented
+by email addresses).
+</para>
+
+<para>
+The <code>invite</code> function obtains possible meeting times from a given invitee, as
+follows.  First it uses library sites (<code>Form</code>, <code>DateTimeRangesField</code>,
+<code>Button</code>, and <code>SendForm</code>) to construct a web form which may be used to
+submit possible meeting times.  Then it emails the URL of this form to the
+invitee and blocks waiting for a response.  When the invitee receives the
+email, he or she will use a web browser to visit the URL, complete the form,
+and submit it.  The corresponding execution of <code>invite</code> receives the
+response in the variable <code>response</code> and extracts the chosen meeting times.
+</para>
+
+<para>
+The <code>notify</code> function takes a list of possible meeting times, selects the
+first meeting time in the list, and emails everyone with this time.  If the
+list of possible meeting times is empty, it emails everyone indicating that no
+meeting time was found.
+</para>
+
+<para>
+The goal expression of the program uses the library function <code>map</code> to
+apply <code>notify</code> to each invitee and collect the responses in a list. It
+then uses the library function <code>afold</code> to intersect all of the responses.
+The result is a set of meeting times which are acceptable to everyone. Finally,
+<code>notify</code> is called to select one of these times and notify everyone of the result.
+</para>
+
+<para>
+This program may be extended to add more sophisticated features, such as a
+quorum (to select a meeting as soon as some subset of invitees responds) or
+timeouts (to remind invitees if they don't respond in a timely manner).  These
+modifications are local and do not affect the overall structure of the program.
+For complete details, see <link xlink:href="http://orc.csres.utexas.edu/tryorc.shtml">examples on our website</link>.
 </para>
 </section>
 
