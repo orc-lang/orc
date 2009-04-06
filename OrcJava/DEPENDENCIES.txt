@@ -16,9 +16,9 @@ LICENSE: the license on the bundled code
 
   FILES: activation.jar
 PROJECT: JavaBeans Activation Framework
-VERSION: 1.1.1
+VERSION: 1.1.1?
     URL: http://java.sun.com/javase/technologies/desktop/javabeans/jaf/index.jsp
-LICENSE: Sun CDDL
+LICENSE: CDDL 1.0
    TYPE: link
   NOTES: Dependency of jaxb-impl.jar.
 
@@ -36,9 +36,9 @@ LICENSE: MIT
 
   FILES: jaxb-api.jar, jaxb-impl.jar
 PROJECT: JAXB Reference Implementation
-VERSION: 2.1.10
+VERSION: 2.1.10?
     URL: https://jaxb.dev.java.net/
-LICENSE: Sun CDDL / GPL v2 + classpath exception
+LICENSE: CDDL 1.0 / GPL v2 + classpath exception
    TYPE: link
   NOTES: Needed for OIL XML serialization feature.
 
