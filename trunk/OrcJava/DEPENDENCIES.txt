@@ -76,7 +76,7 @@ LICENSE: MIT
 
   FILES: rats.jar
 PROJECT: xtc
-VERSION: 1.14.3
+VERSION: 1.14.0
     URL: http://cs.nyu.edu/rgrimm/xtc/rats.html
 LICENSE: GPL v2
    TYPE: build
