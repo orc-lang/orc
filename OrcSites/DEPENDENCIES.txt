@@ -14,7 +14,7 @@ LICENSE: the license on the bundled code
 
 ----
 
-  FILES: axis.jar, jaxrpc.jar, saaj-api.jar
+  FILES: axis.jar, jaxrpc.jar
 PROJECT: Apache Axis
 VERSION: 1.4
     URL: http://ws.apache.org/axis/
@@ -66,10 +66,10 @@ LICENSE: Apache 2.0
 ----
 
   FILES: jaxb-xjc.jar
-PROJECT: JAXB Reference Implementation
-VERSION: 2.1.10?
-    URL: https://jaxb.dev.java.net/
-LICENSE: CDDL 1.0 / GPL v2 + classpath exception
+PROJECT: JAXWS Reference Implementation
+VERSION: 2.1.3
+    URL: https://jax-ws.dev.java.net
+LICENSE: CDDL 1.0 / GPL 2
    TYPE: link
   NOTES: Used for implementation of Webservice.
 
@@ -115,13 +115,23 @@ LICENSE: CDDL 1.0
 
 ----
 
+  FILES: oauth-1.2.jar
+PROJECT: OAuth Java Client
+VERSION: 1.2
+    URL: http://code.google.com/p/oauth/
+LICENSE: Apache 2.0
+   TYPE: link
+  NOTES: Used for Google calendar authentication.
+
+----
+
   FILES: commons-discovery-0.2.jar
 PROJECT: Apache Commons Discovery
 VERSION: 0.2
     URL: http://commons.apache.org/discovery/
 LICENSE: Apache 2.0
    TYPE: link
-  NOTES: Used for OAuth.
+  NOTES: Dependency of axis.jar.
 
 ----
 
@@ -131,7 +141,17 @@ VERSION: 3.1
     URL: http://hc.apache.org/httpclient-3.x/
 LICENSE: Apache 2.0
    TYPE: link
-  NOTES: Used for OAuth.
+  NOTES: Dependency of oauth-1.2.jar
+
+----
+
+  FILES: commons-codec-1.3.jar
+PROJECT: Apache Commons Codec
+VERSION: 1.3
+    URL: http://commons.apache.org/codec/
+LICENSE: Apache 2.0
+   TYPE: link
+  NOTES: Dependency of oauth-1.2.jar
 
 ----
 
@@ -141,17 +161,7 @@ VERSION: 1.1.1
     URL: http://commons.apache.org/logging/
 LICENSE: Apache 2.0
    TYPE: link
-  NOTES: Used for OAuth.
-
-----
-
-  FILES: oauth-1.2.jar
-PROJECT: OAuth Java Client
-VERSION: 1.2
-    URL: http://code.google.com/p/oauth/
-LICENSE: Apache 2.0
-   TYPE: link
-  NOTES: Used for Google calendar authentication.
+  NOTES: Dependency of axis.jar and oauth-1.2.jar
 
 ----
 
