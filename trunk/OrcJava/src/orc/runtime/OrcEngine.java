@@ -117,8 +117,10 @@ public class OrcEngine implements Runnable {
 		tracer.finish();
 		tracer = null;
 		globals.removeAll(this);
-		for (File tmpdir : tmpdirs) deleteDirectory(tmpdir);
-		tmpdirs = new LinkedList<File>();
+		synchronized (this) {
+			for (File tmpdir : tmpdirs) deleteDirectory(tmpdir);
+			tmpdirs.clear();
+		}
 	}
 
 	/**
@@ -319,7 +321,7 @@ public class OrcEngine implements Runnable {
 	 * The directory will be deleted automatically when the engine halts,
 	 * or you can delete it earlier with deleteTmpdir
 	 */
-	public File createTmpdir() throws IOException {
+	public synchronized File createTmpdir() throws IOException {
 		File out;
 		do {
 			out = new File(OrcEngine.tmpdir, "orc-" + UUID.randomUUID().toString());
@@ -332,14 +334,13 @@ public class OrcEngine implements Runnable {
 	}
 	
 	/** Delete a temporary directory */
-	public boolean deleteTmpdir(File directory) {
+	public synchronized boolean deleteTmpdir(File directory) {
 		tmpdirs.remove(directory);
 		return deleteDirectory(directory);
 	}
 	
 	/** Delete a directory recursively */
 	private boolean deleteDirectory(File directory) {
-		tmpdirs.remove(directory);
 		boolean out = true;
 		File[] fileArray = directory.listFiles();
 		if (fileArray != null) {
