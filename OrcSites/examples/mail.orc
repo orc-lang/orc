@@ -1,7 +1,7 @@
 include "mail.inc"
 
 val mailer = MailerFactory("mail.properties")
-val TO = "test@example.com"
+val TO = Prompt("To:")
 
 val message = mailer.newMessage("Hello", "Hello", TO)
 val transport = mailer.getTransport()
