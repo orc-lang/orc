@@ -9,7 +9,7 @@ LICENSE: the license on the bundled code
    TYPE: build = used for compilation only, not at runtime.
          link = linked against but not extended.
          extend = classes are extended.
-	 modify = we bundle modified versions of the code.
+         modify = we bundle modified versions of the code.
   NOTES: any notes about why the dependency is needed
 
 ----
