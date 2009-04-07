@@ -49,14 +49,16 @@ public class Webservice extends Site {
 	private static void javac(File tmpdir, List sourcesList) {
         // build argument list
 		String[] sources = ((List<String>)sourcesList).toArray(new String[]{});
-		String[] args = new String[sources.length + 2];
+		String[] args = new String[sources.length + 4];
 		args[0] = "-cp";
 		args[1] = classpath;
-		int i = 2;
+		args[2] = "-nowarn";
+		args[3] = "-noExit";
+		int i = 4;
 		for (String source : sources) {
 			args[i++] = source;
 		}
-		com.sun.tools.javac.Main.compile(args);
+		org.eclipse.jdt.internal.compiler.batch.Main.main(args);
 	}
 
 	/** Cache the classpath on load. */
@@ -155,7 +157,7 @@ public class Webservice extends Site {
 			}
 
 			if (stub == null) {
-				throw new Error("Unable to find stub among port interfaces");
+				throw new Exception("Unable to find stub among port interfaces");
 			}
 
 			List<Entry> services = (ArrayList<Entry>) info.findType("service");
@@ -167,7 +169,7 @@ public class Webservice extends Site {
 			}
 
 			if (locator == null) {
-				throw new Error("Unable to find Locator among services");
+				throw new Exception("Unable to find Locator among services");
 			}
 
 			Method[] locatorMethods = locator.getMethods();
@@ -182,7 +184,7 @@ public class Webservice extends Site {
 			}
 
 			if (getStub == null) {
-				throw new Error("Unable to find getStub method within Locator");
+				throw new Exception("Unable to find getStub method within Locator");
 			}
 
 			Object arglist[] = new Object[0];
@@ -191,7 +193,6 @@ public class Webservice extends Site {
 
 			return new ThreadedObjectProxy(stubObject);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			throw new JavaException(e);
 		}
 	}
