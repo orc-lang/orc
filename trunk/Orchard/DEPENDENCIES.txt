@@ -1,0 +1,168 @@
+This file lists all of the bundled third-party dependencies.  Each dependency
+includes the following information:
+
+  FILES: the name of the JAR file(s)
+PROJECT: the project from which the JAR file was derived
+VERSION: the version of the bundled code
+    URL: the URL for the project
+LICENSE: the license on the bundled code
+   TYPE: build = used for compilation only, not at runtime.
+         link = linked against but not extended.
+         extend = classes are extended.
+         modify = we bundle modified versions of the code.
+  NOTES: any notes about why the dependency is needed
+
+----
+
+  FILES: jaxws-api.jar, jaxws-rt.jar, jaxws-tools.jar, jsr181-api.jar,
+	 jsr250-api.jar, http.jar, FastInfoset.jar, saaj-impl.jar, sjsxp.jar,
+         stax-ex.jar, streambuffer.jar
+PROJECT: JAXWS Reference Implementation
+VERSION: 2.1.3
+    URL: https://jax-ws.dev.java.net
+LICENSE: CDDL 1.0 / GPL 2
+   TYPE: link
+  NOTES: Used by SOAP web service.
+
+----
+
+  FILES: resolver.jar
+PROJECT: JAXWS Reference Implementation
+VERSION: 2.1.3
+    URL: https://jax-ws.dev.java.net
+LICENSE: Apache 2.0
+   TYPE: link
+  NOTES: Dependency of jaxws-rt.jar.
+
+----
+
+  FILES: jetty-6.1.11.jar, jetty-util-6.1.11.jar
+PROJECT: Jetty
+VERSION: 6.1.11
+    URL: http://www.mortbay.org/jetty/
+LICENSE: Apache 2.0
+   TYPE: link
+  NOTES: Used for OrchardDemo local server.
+
+----
+
+  FILES: velocity-1.5.jar, jakarta-oro-2.0.8.jar, commons-lang-2.4.jar,
+         commons-collections-3.2.1.jar
+PROJECT: Apache Velocity
+VERSION: 1.5
+    URL: http://commons.apache.org/collections/
+LICENSE: Apache 2.0
+   TYPE: link
+  NOTES: Used for JSON web service.
+
+----
+
+  FILES: commons-fileupload-1.2.1.jar
+PROJECT: Apache Commons FileUpload
+VERSION: 1.2.1
+    URL: http://commons.apache.org/fileupload/
+LICENSE: Apache 2.0
+   TYPE: link
+  NOTES: Used for File Upload web forms widget.
+
+----
+
+  FILES: commons-io-1.4.jar
+PROJECT: Apache Commons IO
+VERSION: 1.4
+    URL: http://commons.apache.org/io/
+LICENSE: Apache 2.0
+   TYPE: link
+  NOTES: Dependency of commons-fileupload-1.2.1.jar
+
+----
+
+  FILES: servlet-api.jar
+PROJECT: Java Servlet API
+VERSION: 2.3?
+    URL: http://java.sun.com/products/servlet/
+LICENSE: Sun Binary Code License Agreement
+   TYPE: extend
+  NOTES: Used for various servlets.
+
+----
+
+  FILES: one-jar-ant-task-0.96.jar
+PROJECT: One-Jar
+VERSION: 0.96
+    URL: http://one-jar.sourceforge.net/
+LICENSE: BSD
+   TYPE: link
+  NOTES: Used for OrchardDemo local server JAR.
+
+----
+
+  FILES: postgresql-8.3-603.jdbc3.jar
+PROJECT: PostgreSQL JDBC Interface
+VERSION: 8.3-603
+    URL: http://jdbc.postgresql.org/
+LICENSE: BSD
+   TYPE: link
+  NOTES: Used for accounts database.
+
+----
+
+  FILES: yuicompressor-2.3.6.jar
+PROJECT: YUI Compressor
+VERSION: 2.3.6
+    URL: http://developer.yahoo.com/yui/compressor/
+LICENSE: BSD
+   TYPE: build
+  NOTES: Used to minify Javascript files.
+
+----
+
+  FILES: org.jvnet.jax_ws_commons.json.*
+PROJECT: JAX-WS Commons JSON Binding
+VERSION: 1.2
+    URL: https://jax-ws-commons.dev.java.net/json/
+LICENSE: CDDL 1.0 / GPL 2
+   TYPE: modify
+  NOTES: Used for JSON web service.
+
+----
+
+  FILES: org.jvnet.jax_ws_commons.json.template.*
+PROJECT: JAX-WS Commons JSON Binding
+VERSION: 1.2
+    URL: https://jax-ws-commons.dev.java.net/json/
+LICENSE: Creative Commons Attribution 2.5
+   TYPE: link
+  NOTES: Used for JSON web service.
+
+----
+
+  FILES: web/cal/*
+PROJECT: DHTML Calendar
+VERSION: 0.9.4
+    URL: http://dynarch.com/mishoo/calendar.epl
+LICENSE: GPL
+   TYPE: link
+  NOTES: Used for web forms date widget.
+
+----
+
+  FILES: web/jquery-1.2.6-min.js
+PROJECT: jQuery
+VERSION: 1.2.6
+    URL: http://jquery.com
+LICENSE: MIT / GPL
+   TYPE: link
+  NOTES: Used for web/orc.js
+
+----
+
+  FILES: web/codemirror/*
+PROJECT: Codemirror
+VERSION: 0.58
+    URL: http://marijn.haverbeke.nl/codemirror/
+LICENSE: BSD-like
+   TYPE: extend
+  NOTES: Used for web/orc.js
+
+----
