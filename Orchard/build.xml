@@ -133,5 +133,7 @@
 	<target name="clean" description="clean up">
 		<delete dir="${orc.location.build}" />
 		<delete file="${ant.project.name}.war"/>
+		<delete file="web.war"/>
+		<delete file="${ant.project.name}-demo.jar"/>
 	</target>
 </project>
