@@ -4,7 +4,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/OrcJava"/>
 	<classpathentry kind="lib" path="lib/axis.jar"/>
-	<classpathentry kind="lib" path="lib/cxf-2.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/gdata-base-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/gdata-calendar-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/gdata-calendar-meta-1.0.jar"/>
