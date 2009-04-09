@@ -32,7 +32,7 @@
 		</jar>
 	</target>
 	
-	<target name="zip" depends="jar,licenses" description="generate the ZIP">
+	<target name="zip" depends="jar" description="generate the ZIP">
 		<zip zipfile="${ant.project.name}-${orc.version}.zip">
 			<zipfileset prefix="${ant.project.name}-${orc.version}" dir=".">
 				<exclude name="**/CVS/*"/>
@@ -40,8 +40,9 @@
 				<include name="README"/>
 				<include name="LICENSE"/>
 				<include name="INSTALL"/>
-				<include name="THIRD_PARTY_LICENSES.txt"/>
 				<include name="examples/**"/>
+				<include name="licenses.yml"/>
+				<include name="licenses/**"/>
 				<include name="doc/**"/>
 			</zipfileset>
 		</zip>
@@ -99,12 +100,6 @@
 		</java>
 	</target>
 	
-	<target name="licenses" description="Build THIRD_PARTY_LICENSES.txt">
-		<java classname="orc.build.ThirdPartyLicenses">
-			<classpath refid="orc.classpath"/>
-		</java>
-	</target>
-
 	<target name="rats" depends="rats1,rats2,rats3" description="Build rats parser" />
 
 	<target name="rats1" depends="rats1.required" unless="rats1.notRequired">

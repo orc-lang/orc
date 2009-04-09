@@ -22,14 +22,15 @@
 		</jar>
 	</target>
 	
-	<target name="zip" depends="jar,licenses" description="generate the ZIP">
+	<target name="zip" depends="jar" description="generate the ZIP">
 		<zip zipfile="${ant.project.name}-${orc.version}.zip">
 			<zipfileset prefix="${ant.project.name}-${orc.version}" dir=".">
 				<exclude name="**/CVS/*"/>
 				<include name="${ant.project.name}-${orc.version}.jar"/>
 				<include name="README"/>
 				<include name="LICENSE"/>
-				<include name="THIRD_PARTY_LICENSES.txt"/>
+				<include name="licenses.yml"/>
+				<include name="licenses/**"/>
 				<include name="examples/**"/>
 			</zipfileset>
 		</zip>
@@ -40,12 +41,6 @@
 		<delete>
 			<fileset dir="." includes="${ant.project.name}-*.jar"/>
 		</delete>
-	</target>
-	
-	<target name="licenses" description="Build THIRD_PARTY_LICENSES.txt">
-		<java classname="orc.build.ThirdPartyLicenses">
-			<classpath refid="orc.classpath"/>
-		</java>
 	</target>
 	
 	<target name="kilim" description="Kilim weaving">
