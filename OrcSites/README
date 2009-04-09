@@ -1,6 +1,8 @@
 This package includes assorted useful sites for Orc.
 See the Javadoc for more information.
 
+See licenses.yml for information on bundled third-party libraries and code.
+
 Example programs using these sites are in examples/
 
 Using the JAR
