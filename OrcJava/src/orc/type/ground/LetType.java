@@ -49,7 +49,7 @@ public class LetType extends Type {
 		}
 	}
 	
-	public boolean subtype(Type that) {
+	public boolean subtype(Type that) throws TypeException {
 		if (that instanceof ArrowType) {
 			ArrowType arrow = (ArrowType)that;
 			if (condense(arrow.argTypes).subtype(arrow.resultType)) {

@@ -1,5 +1,6 @@
 package orc.type.ground;
 
+import orc.error.compiletime.typing.TypeException;
 import orc.type.Type;
 
 /**
@@ -17,7 +18,7 @@ import orc.type.Type;
  */
 public final class Top extends Type {
 	
-	public boolean subtype(Type that) {
+	public boolean subtype(Type that) throws TypeException {
 		return that.isTop();
 	}
 	

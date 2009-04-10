@@ -1,18 +1,22 @@
-package orc.type;
+package orc.type.tycon;
 
 import java.util.LinkedList;
 import java.util.List;
 
 import orc.error.compiletime.typing.TypeArityException;
 import orc.error.compiletime.typing.TypeException;
+import orc.type.OptionType;
+import orc.type.Type;
+import orc.type.TypeApplication;
+import orc.type.TypeInstance;
 
 /**
  * 
  * Root class for all type constructors.
  * 
- * Currently, the instance method for a tycon simply creates a TypeApplication 
- * type of that tycon to the instance parameters. The TypeApplication class handles
- * subtype, meet, and join for tycons.
+ * By default, the instance method for a tycon simply creates a TypeInstance
+ * type of that tycon on the instance parameters. The TypeInstance class handles
+ * subtype, meet, and join for such instances.
  * 
  * It is assumed that all children of Tycon will implement variances() such that
  * its size() > 0, but there is no way to enforce this condition in Java.
@@ -26,11 +30,8 @@ public abstract class Tycon extends Type {
 	 * 
 	 * Currently, this is done by checking the type arity to make sure
 	 * the number of parameters is correct, and then creating a type
-	 * application of that type to the parameters.
+	 * instance of that type with the parameters.
 	 * 
-	 * By default, types are assumed to have no parameters. Instantiation
-	 * succeeds only on an empty list of parameters, and the result is
-	 * just the type itself.
 	 */
 	public Type instance(List<Type> params) throws TypeException {
 		
@@ -38,7 +39,7 @@ public abstract class Tycon extends Type {
 			throw new TypeArityException(variances().size(), params.size());
 		}
 		
-		return new TypeApplication(this, params);
+		return new TypeInstance(this, params);
 	}
 	
 	
@@ -49,4 +50,14 @@ public abstract class Tycon extends Type {
 		return instance(ts);
 	}
 	
+	/* Make a callable instance of this tycon */
+	/* By default, tycons do not have callable instances */
+	public Type makeCallableInstance(List<Type> params) throws TypeException {
+		throw new TypeException("Cannot create a callable instance of type " + this);
+	}
+	
+	/* By default, tycon equality is class equality */
+	public boolean equals(Object that) {
+		return that.getClass().equals(that.getClass());
+	}
 }

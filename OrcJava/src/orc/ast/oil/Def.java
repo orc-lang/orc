@@ -37,14 +37,21 @@ public class Def implements Locatable {
 	public Type resultType; /* May be null to request inference, which will succeed only for non-recursive functions */
 	public SourceLocation location;
 	
+	/* An optional variable name, used for documentation purposes.
+	 * It has no operational purpose, since the expression is already
+	 * in deBruijn index form. 
+	 */
+	public String name;
+	
 	public Def(int arity, Expr body, int typeArity, List<Type> argTypes,
-			Type resultType, SourceLocation location) {
+			Type resultType, SourceLocation location, String name) {
 		this.arity = arity;
 		this.body = body;
 		this.typeArity = typeArity;
 		this.argTypes = argTypes;
 		this.resultType = resultType;
 		this.location = location;
+		this.name = name;
 	}
 
 	public final Set<Var> freeVars() {
@@ -74,7 +81,7 @@ public class Def implements Locatable {
 	/* Construct an arrow type from the type information contained in this definition 
 	 * This construction fails if the result type or arg types are null.
 	 */
-	public ArrowType type(Env<Type> typectx) throws InsufficientTypeInformationException {
+	public ArrowType type(Env<Type> typectx) throws TypeException {
 		
 		for(int i = 0; i < typeArity; i++) {
 			typectx = typectx.extend(null);

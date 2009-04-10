@@ -15,10 +15,10 @@ import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Node;
 import orc.type.ArrowType;
-import orc.type.Constraint;
-import orc.type.InferenceRequest;
 import orc.type.Type;
-import orc.type.Variance;
+import orc.type.inference.Constraint;
+import orc.type.inference.InferenceRequest;
+import orc.type.tycon.Variance;
 
 public class Call extends Expr {
 

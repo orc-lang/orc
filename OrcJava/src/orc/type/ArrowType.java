@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Set;
 
 import orc.ast.oil.arg.Arg;
-import orc.ast.simple.type.VariantTypeFormal;
 
 import orc.env.Env;
 import orc.error.compiletime.typing.ArgumentArityException;
@@ -14,6 +13,9 @@ import orc.error.compiletime.typing.TypeArityException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
 import orc.type.ground.Top;
+import orc.type.inference.Constraint;
+import orc.type.inference.InferenceRequest;
+import orc.type.tycon.Variance;
 
 public class ArrowType extends Type {
 
@@ -94,7 +96,7 @@ public class ArrowType extends Type {
 	}
 
 	
-	public boolean subtype(Type that) {
+	public boolean subtype(Type that) throws TypeException {
 		ArrowType thatArrow = forceArrow(that);
 		if (thatArrow != null) {
 			List<Type> otherArgTypes = thatArrow.argTypes;
@@ -123,7 +125,7 @@ public class ArrowType extends Type {
 	 * A join of two arrow types is a meet of their arg types
 	 * and a join of their result type.
 	 */
-	public Type join(Type that) {	
+	public Type join(Type that) throws TypeException {	
 		
 		ArrowType thatArrow = forceArrow(that);
 		if (thatArrow != null) { 
@@ -150,7 +152,7 @@ public class ArrowType extends Type {
 	 * A meet of two arrow types is a join of their arg types
 	 * and a meet of their result type.
 	 */
-	public Type meet(Type that) {
+	public Type meet(Type that) throws TypeException {
 		
 		ArrowType thatArrow = forceArrow(that);
 		if (thatArrow != null) { 
@@ -216,7 +218,7 @@ public class ArrowType extends Type {
 	}
 	
 	
-	public Type subst(Env<Type> ctx) {
+	public Type subst(Env<Type> ctx) throws TypeException {
 		
 		Env<Type> newctx = ctx;
 		
@@ -227,7 +229,7 @@ public class ArrowType extends Type {
 	}
 	
 	
-	public Variance findVariance(Integer var) {
+	public Variance findVariance(Integer var) throws TypeException {
 		
 		Variance result = resultType.findVariance(var);
 		

@@ -1,6 +1,7 @@
-package orc.type;
+package orc.type.inference;
 
 import orc.error.compiletime.typing.TypeException;
+import orc.type.ArrowType;
 
 /**
  * 

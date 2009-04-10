@@ -9,7 +9,6 @@ import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.ast.simple.type.SiteType;
-import orc.ast.simple.type.VariantTypeFormal;
 import orc.runtime.sites.Site;
 
 /**
@@ -25,13 +24,10 @@ public class TypeDeclaration extends Declaration {
 
 	public String varname;
 	public String classname;
-	public List<VariantTypeFormal> formals;
 	
-	public TypeDeclaration(String varname, String classname,
-			List<VariantTypeFormal> formals) {
+	public TypeDeclaration(String varname, String classname) {
 		this.varname = varname;
 		this.classname = classname;
-		this.formals = formals;
 	}
 
 	public orc.ast.simple.Expression bindto(orc.ast.simple.Expression target) {

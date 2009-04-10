@@ -22,6 +22,9 @@ import orc.type.ground.LetType;
 import orc.type.ground.NumberType;
 import orc.type.ground.StringType;
 import orc.type.ground.Top;
+import orc.type.inference.Constraint;
+import orc.type.tycon.Tycon;
+import orc.type.tycon.Variance;
 
 /**
  * 
@@ -70,34 +73,34 @@ public abstract class Type {
 	
 	/* We use the Java inheritance hierarchy as a default */
 	/* We also require the two types to have the same kind */
-	public boolean subtype(Type that) {
+	public boolean subtype(Type that) throws TypeException {
 		
 		return that.isTop() || 
 			(that.getClass().isAssignableFrom(this.getClass())
 				&& this.sameVariances(that));
 	}
 
-	public void assertSubtype(Type that) throws SubtypeFailureException {
+	public void assertSubtype(Type that) throws TypeException {
 		if (!this.subtype(that)) {
 			throw new SubtypeFailureException(this, that);
 		}
 	}
 	
-	public boolean supertype(Type that) {
+	public boolean supertype(Type that) throws TypeException {
 		return that.subtype(this);
 	}
 	
 	/* By default, equality is based on mutual subtyping.
 	 * TODO: This may not be correct in the presence of bounded quantification.
 	 */
-	public boolean equal(Type that) {
+	public boolean equal(Type that) throws TypeException {
 		return this.subtype(that) && that.subtype(this);
 	}
 	
 	/* Find the join (least upper bound) in the subtype lattice
 	 * of this type and another type.
 	 */
-	public Type join(Type that) {		
+	public Type join(Type that) throws TypeException {		
 		if (this.subtype(that)) {
 			return that;
 		}
@@ -112,7 +115,7 @@ public abstract class Type {
 	/* Find the meet (greatest lower bound) in the subtype lattice
 	 * of this type and another type.
 	 */
-	public Type meet(Type that) {
+	public Type meet(Type that) throws TypeException {
 		if (this.subtype(that)) {
 			return this;
 		}
@@ -171,12 +174,12 @@ public abstract class Type {
 	 * By default, perform no substitutions.
 	 * Types which contain variables or other types will override this.
 	 */
-	public Type subst(Env<Type> ctx) {
+	public Type subst(Env<Type> ctx) throws TypeException {
 		return this;
 	}
 	
 	/* Perform substitution on a list of types */
-	public static List<Type> substAll(List<Type> ts, Env<Type> ctx) {
+	public static List<Type> substAll(List<Type> ts, Env<Type> ctx) throws TypeException {
 		
 		List<Type> newts = new LinkedList<Type>();
 		
@@ -199,12 +202,12 @@ public abstract class Type {
 	// TODO: Migrate variances method to Tycon, fix TypeApplication accordingly
 
 	/* Get the variances of each type parameters for this type (by default, an empty list) */
-	public List<Variance> variances() {
+	public List<Variance> variances() throws TypeException {
 		return new LinkedList<Variance>();
 	}
 	
 	/* Check that this type has the same variances as another type */
-	private boolean sameVariances(Type that) {
+	private boolean sameVariances(Type that) throws TypeException {
 		
 		List<Variance> thisVariances = this.variances();
 		List<Variance> thatVariances = that.variances();
@@ -218,11 +221,7 @@ public abstract class Type {
 		return true;
 	}
 	
-	/* Make a callable instance of this type */
-	/* By default, types do not have callable instances */
-	public Type makeCallableInstance(List<Type> params) throws TypeException {
-		throw new TypeException("Cannot create a callable instance of type " + this);
-	}
+	
 	
 	/* Make sure that this type is an application of the given type
 	 * (or some subtype) to exactly one type parameter. If so, return the parameter, and
@@ -230,6 +229,18 @@ public abstract class Type {
 	 */
 	public Type unwrapAs(Type T) throws TypeException {
 		throw new SubtypeFailureException(T, this);
+	}
+	
+	/* Attempt to use this type as a tycon. We examine the Java type to
+	 * determine the kind, since this checker does not keep an explicit
+	 * kinding context.
+	 */
+	public Tycon asTycon() throws TypeException {
+		try {
+			return (Tycon)this;
+		} catch (ClassCastException e) {
+			throw new TypeException("Kinding error: Type operator expected, found type " + this + "instead. ");
+		}
 	}
 	
 	
@@ -252,7 +263,7 @@ public abstract class Type {
 	 * The default implementation assumes that the variable does not occur
 	 * and thus reports constant variance.
 	 */
-	public Variance findVariance(Integer var) {
+	public Variance findVariance(Integer var) throws TypeException {
 		return Variance.CONSTANT;
 	}
 

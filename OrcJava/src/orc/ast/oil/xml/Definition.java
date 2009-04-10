@@ -16,16 +16,18 @@ public class Definition implements Serializable {
 	@XmlElement(required=true)
 	public Expression body;
 	public SourceLocation location;
+	public String name;
 	public Definition() {}
-	public Definition(int arity, Expression body, SourceLocation location) {
+	public Definition(int arity, Expression body, SourceLocation location, String name) {
 		this.arity = arity;
 		this.body = body;
 		this.location = location;
+		this.name = name;
 	}
 	public String toString() {
 		return super.toString() + "(" + arity + ", " + body + ")";
 	}
 	public orc.ast.oil.Def unmarshal() {
-		return new orc.ast.oil.Def(arity, body.unmarshal(), 0, null, null, location);
+		return new orc.ast.oil.Def(arity, body.unmarshal(), 0, null, null, location, name);
 	}
 }

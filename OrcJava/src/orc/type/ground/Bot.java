@@ -2,6 +2,7 @@ package orc.type.ground;
 
 import java.util.List;
 
+import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
 import orc.type.Type;
 
@@ -17,7 +18,7 @@ import orc.type.Type;
 
 public final class Bot extends Type {
 
-	public boolean subtype(Type that) {
+	public boolean subtype(Type that) throws TypeException {
 		return true;
 	}
 	
@@ -25,7 +26,7 @@ public final class Bot extends Type {
 		return that.isBot();
 	}
 	
-	public Type join(Type that) {
+	public Type join(Type that) throws TypeException {
 		return that;
 	}
 	

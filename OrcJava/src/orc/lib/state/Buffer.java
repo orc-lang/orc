@@ -17,9 +17,9 @@ import orc.runtime.sites.Site;
 import orc.runtime.values.ListValue;
 import orc.type.ArrowType;
 import orc.type.DotType;
-import orc.type.MutableContainerType;
 import orc.type.Type;
 import orc.type.TypeVariable;
+import orc.type.tycon.MutableContainerType;
 
 /**
  * @author cawellington, dkitchin

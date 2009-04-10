@@ -34,7 +34,7 @@ public class MultiType extends Type {
 		alts.add(B);
 	}
 	
-	public boolean subtype(Type that) {
+	public boolean subtype(Type that) throws TypeException {
 		
 		for(Type alt : alts) {
 			if (alt.subtype(that)) return true;

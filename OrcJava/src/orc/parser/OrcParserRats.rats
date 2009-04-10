@@ -28,7 +28,6 @@ header {
 	import orc.runtime.values.Value;
 	import orc.runtime.values.ListValue;
 	import orc.runtime.values.TupleValue;
-	import orc.type.Variance;
 }
 
 body {
@@ -165,16 +164,16 @@ Declaration Declaration =
 		yyValue = new ValDeclaration(p, e);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ TYPE name:Identifier vtf:VariantTypeFormals Space EQ cs:ConstructorList {
-		yyValue = new DatatypeDeclaration(name, cs, vtf);
+	/ TYPE name:Identifier tf:TypeFormals Space EQ cs:ConstructorList {
+		yyValue = new DatatypeDeclaration(name, cs, tf);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ TYPE name:Identifier vtf:VariantTypeFormals Space EQ className:ClassName {
-		yyValue = new TypeDeclaration(name, className, vtf);
+	/ TYPE name:Identifier Space EQ className:ClassName {
+		yyValue = new TypeDeclaration(name, className);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ TYPE name:RequiredIdentifier vtf:VariantTypeFormals Space RequiredEQ t:Type {
-		yyValue = new TypeAliasDeclaration(name, t, vtf);
+	/ TYPE name:RequiredIdentifier tf:TypeFormals Space RequiredEQ t:Type {
+		yyValue = new TypeAliasDeclaration(name, t, tf);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
@@ -826,19 +825,20 @@ Type Type =
 		}
 		yyValue = new ArrowType(argTypes, curriedType, typeFormals);
 	}
-	/ name:Identifier actualTypes:TypeActuals Space { yyValue = new TypeInstance(name, actualTypes); }
+	/ name:Identifier actualTypes:TypeActuals Space { yyValue = new TypeApplication(name, actualTypes); }
 	/ name:Identifier Space { yyValue = new NamedType(name); }
 	;
 	
 
 
-
+/*
 VariantTypeFormal VariantTypeFormal =
 	  name:Identifier PLUS  { yyValue = new VariantTypeFormal(name, Variance.COVARIANT); }
 	/ name:Identifier MINUS { yyValue = new VariantTypeFormal(name, Variance.CONTRAVARIANT); }
 	/ name:Identifier TIMES { yyValue = new VariantTypeFormal(name, Variance.INVARIANT); }
 	/ name:Identifier { yyValue = new VariantTypeFormal(name, Variance.COVARIANT); }
 	;	
+*/
 
 List<Type> TypeList = 
 	t:Type ts:(void:COMMA ts:Type)* {
@@ -863,17 +863,18 @@ List<String> TypeFormals =
 	}
 	;
 
+/*
 List<VariantTypeFormal> VariantTypeFormals =
 	LBRACKET vtf:VariantTypeFormal vtfs:(void:COMMA vtfs:VariantTypeFormal)* RBRACKET {
 		List<VariantTypeFormal> out = vtfs.list();
 		out.add(0, vtf);
 		yyValue = out;
 	}
-	/ /* empty */ {
+	/ {
 		yyValue = new LinkedList<VariantTypeFormal>();
 	}
 	;
-
+*/
 
 List<Type> MaybeTypeActuals =
 	ta:TypeActuals {

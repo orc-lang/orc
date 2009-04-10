@@ -3,6 +3,7 @@ package orc.type.ground;
 import java.util.List;
 
 import orc.ast.oil.arg.Field;
+import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
 import orc.type.Type;
 
@@ -15,7 +16,7 @@ public class Message extends Type {
 	}
 	
 	/* Message types are subtypes only of Top and of equal message types */
-	public boolean subtype(Type that) {
+	public boolean subtype(Type that) throws TypeException {
 		return that.isTop() || that.equal(this);
 	}
 	

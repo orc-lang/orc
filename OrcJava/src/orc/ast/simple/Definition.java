@@ -97,7 +97,8 @@ public class Definition {
 								   typeParams.size(),
 								   newArgTypes,
 								   newResultType,
-								   location);
+								   location,
+								   name.name);
 									
 	}
 	

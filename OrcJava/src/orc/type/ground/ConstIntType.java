@@ -1,5 +1,6 @@
 package orc.type.ground;
 
+import orc.error.compiletime.typing.TypeException;
 import orc.type.Type;
 
 public class ConstIntType extends IntegerType {
@@ -11,7 +12,7 @@ public class ConstIntType extends IntegerType {
 	}
 
 	/* We use the Java inheritance hierarchy as a default */
-	public boolean subtype(Type that) {
+	public boolean subtype(Type that) throws TypeException {
 		
 		if (that instanceof ConstIntType) {
 			
@@ -24,7 +25,7 @@ public class ConstIntType extends IntegerType {
 		}
 	}
 
-	public Type join(Type that) {
+	public Type join(Type that) throws TypeException {
 		if (that instanceof ConstIntType) {	
 			ConstIntType other = (ConstIntType)that;
 			if (i == other.i) {

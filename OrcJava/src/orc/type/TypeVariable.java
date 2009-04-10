@@ -11,6 +11,8 @@ import orc.error.OrcError;
 import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
 import orc.type.ground.Top;
+import orc.type.inference.Constraint;
+import orc.type.tycon.Variance;
 
 /**
  * A bound type variable.
@@ -29,7 +31,7 @@ public class TypeVariable extends Type {
 		this.index = index;
 	}
 
-	public boolean subtype(Type that) {	
+	public boolean subtype(Type that) throws TypeException {	
 		
 		if (that instanceof TypeVariable) {
 			return this.index == ((TypeVariable)that).index;

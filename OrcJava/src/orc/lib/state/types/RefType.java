@@ -6,8 +6,8 @@ import orc.error.compiletime.typing.TypeException;
 import orc.type.ArrowType;
 import orc.type.DotType;
 import orc.type.ListType;
-import orc.type.MutableContainerType;
 import orc.type.Type;
+import orc.type.tycon.MutableContainerType;
 
 public class RefType extends MutableContainerType {
 
