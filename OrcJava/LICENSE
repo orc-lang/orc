@@ -1,38 +1,24 @@
-Copyright 2008, The University of Texas at Austin ("U. T. Austin"). 
-All rights reserved.
-
-By using this software the USER indicates that he or she has read, understood 
-and will comply with the following:
-
-U. T. Austin hereby grants USER permission to use, copy, modify, and distribute 
-this software and its documentation for any purpose and without fee, provided 
-that a full copy of this notice is included with the software and its documentation. 
-
-Neither the software nor its documentation, nor portions thereof, may be sold 
-for profit. Any commercial sale or license of this software, copies of the 
-software, its associated documentation and/or modifications of either is strictly 
-prohibited without the prior consent of U. T. Austin. 
-
-Title to copyright to this software and its associated documentation shall at 
-all times remain with U. T. Austin. No right is granted to use in advertising, 
-publicity or otherwise any trademark, service mark, or the name of U. T. Austin.
-
-This software and any associated documentation are provided "as is," and 
-U. T. AUSTIN MAKES NO REPRESENTATIONS OR WARRANTIES, EXPRESSED OR IMPLIED, 
-INCLUDING THOSE OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, 
-OR THAT USE OF THE SOFTWARE, MODIFICATIONS, OR ASSOCIATED DOCUMENTATION 
-WILL NOT INFRINGE ANY PATENTS, COPYRIGHTS, TRADEMARKS OR OTHER INTELLECTUAL 
-PROPERTY RIGHTS OF A THIRD PARTY. U. T. Austin, The University of Texas System, 
-its Regents, officers, and employees shall not be liable under any circumstances 
-for any direct, indirect, special, incidental, or consequential damages with 
-respect to any claim by USER or any third party on account of or arising from 
-the use, or inability to use, this software or its associated documentation, 
-even if U. T. Austin has been advised of the possibility of those damages.
-
-Submit software operation questions to: 
-William R. Cook, Department of Computer Sciences, U. T. Austin, Austin, Texas 78712.
-
-Submit commercialization requests to: 
-Office of the Executive Vice President and Provost, 
-U. T. Austin, 201 Main Bldg., Austin, Texas, 78712
-ATTN: Technology Licensing Specialist.
+* Copyright (c) 2009, The University of Texas at Austin ("U. T. Austin")
+* All rights reserved.
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+*     * Redistributions of source code must retain the above copyright
+*       notice, this list of conditions and the following disclaimer.
+*     * Redistributions in binary form must reproduce the above copyright
+*       notice, this list of conditions and the following disclaimer in the
+*       documentation and/or other materials provided with the distribution.
+*     * Neither the name of the University of Texas at Austin nor the
+*       names of its contributors may be used to endorse or promote products
+*       derived from this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE UNIVERSITY OF TEXAS AT AUSTIN ''AS IS'' AND ANY
+* EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+* DISCLAIMED. IN NO EVENT SHALL THE UNIVERSITY OF TEXAS AT AUSTIN BE LIABLE FOR ANY
+* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
