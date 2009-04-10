@@ -30,7 +30,7 @@ trip destination.  If none is found, halt.
 --}
 def extractLocation(description) =
   val parts = description.split(" to ")
-  if(parts.length() > 0) >>
+  if(parts.length() > 1) >>
   parts(parts.length()-1)?
   
 {--
