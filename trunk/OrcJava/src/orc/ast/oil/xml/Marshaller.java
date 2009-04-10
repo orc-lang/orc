@@ -35,7 +35,7 @@ public class Marshaller implements Visitor<Expression> {
 		LinkedList<Definition> definitions
 			= new LinkedList<Definition>();
 		for (orc.ast.oil.Def d : expr.defs) {
-			definitions.add(new Definition(d.arity, d.body.accept(this), d.location));
+			definitions.add(new Definition(d.arity, d.body.accept(this), d.location, d.name));
 		}
 		return new Definitions(definitions.toArray(new Definition[]{}),
 				expr.body.accept(this));
@@ -46,11 +46,11 @@ public class Marshaller implements Visitor<Expression> {
 	}
 	
 	public Expression visit(orc.ast.oil.Pull expr) {
-		return new Pull(expr.left.accept(this), expr.right.accept(this));
+		return new Pull(expr.left.accept(this), expr.right.accept(this), expr.name);
 	}
 	
 	public Expression visit(orc.ast.oil.Push expr) {
-		return new Push(expr.left.accept(this), expr.right.accept(this));
+		return new Push(expr.left.accept(this), expr.right.accept(this), expr.name);
 	}
 	
 	public Expression visit(orc.ast.oil.Semi expr) {

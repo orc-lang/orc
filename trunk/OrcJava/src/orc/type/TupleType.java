@@ -12,6 +12,8 @@ import orc.type.ground.ConstIntType;
 import orc.type.ground.IntegerType;
 import orc.type.ground.Message;
 import orc.type.ground.Top;
+import orc.type.inference.Constraint;
+import orc.type.tycon.Variance;
 
 public class TupleType extends Type {
 
@@ -28,7 +30,7 @@ public class TupleType extends Type {
 		this.items.add(b);
 	}
 	
-	public boolean subtype(Type that) {
+	public boolean subtype(Type that) throws TypeException {
 		
 		if (that instanceof Top) { return true; }
 		
@@ -55,7 +57,7 @@ public class TupleType extends Type {
 		return false;
 	}
 	
-	public Type join(Type that) {	
+	public Type join(Type that) throws TypeException {	
 		
 		if (that instanceof TupleType) {
 			
@@ -82,7 +84,7 @@ public class TupleType extends Type {
 			
 	}
 	
-	public Type meet(Type that) {
+	public Type meet(Type that) throws TypeException {
 		
 		if (that instanceof TupleType) {
 			
@@ -152,13 +154,13 @@ public class TupleType extends Type {
 		
 	}
 	
-	public Type subst(Env<Type> ctx) {		
+	public Type subst(Env<Type> ctx) throws TypeException {		
 		return new TupleType(Type.substAll(items, ctx));
 	}
 	
 	
 	
-	public Variance findVariance(Integer var) {
+	public Variance findVariance(Integer var) throws TypeException {
 		
 		Variance result = Variance.CONSTANT;
 		

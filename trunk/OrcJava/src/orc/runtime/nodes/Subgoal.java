@@ -11,7 +11,7 @@ import orc.runtime.values.GroupCell;
 
 /**
  * A compiled pull node
- * @author dkitchin, wcook
+ * @author dkitchin, wcook, quark
  */
 public class Subgoal extends Node {
 	private static final long serialVersionUID = 1L;

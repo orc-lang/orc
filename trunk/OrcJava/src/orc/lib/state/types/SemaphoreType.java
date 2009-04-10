@@ -4,8 +4,8 @@ import java.util.List;
 
 import orc.type.ArrowType;
 import orc.type.DotType;
-import orc.type.MutableContainerType;
 import orc.type.Type;
+import orc.type.tycon.MutableContainerType;
 
 public class SemaphoreType extends DotType {
 

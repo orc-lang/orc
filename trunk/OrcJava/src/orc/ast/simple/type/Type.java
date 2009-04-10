@@ -32,7 +32,7 @@ public abstract class Type {
 	
 	
 	/** Convert this syntactic type into an actual type, given an appropriate type context
-	 * @param vars	The type environment, used in content addressable mode to 
+	 * @param env	The type environment, used in content addressable mode to 
 	 * 				find the appropriate deBruijn index of a type variable.
 	 * @return A new node.
 	 * @throws TypeException 

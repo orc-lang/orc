@@ -10,7 +10,6 @@ import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UnboundTypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
-import orc.type.TypeApplication;
 import orc.type.TypeVariable;
 
 /**
@@ -19,12 +18,12 @@ import orc.type.TypeVariable;
  * @author dkitchin
  *
  */
-public class TypeInstance extends Type {
+public class TypeApplication extends Type {
 
 	public String name;
 	public List<Type> params;
 	
-	public TypeInstance(String name, List<Type> params) {
+	public TypeApplication(String name, List<Type> params) {
 		this.name = name;
 		this.params = params;
 	}
@@ -38,7 +37,7 @@ public class TypeInstance extends Type {
 		}
 				
 		try {
-			return new TypeApplication(new TypeVariable(env.search(name)), ts);
+			return new orc.type.TypeApplication(new TypeVariable(env.search(name)), ts);
 		} catch (SearchFailureException e) {
 			throw new UnboundTypeException(name);
 		}

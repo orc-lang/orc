@@ -1,8 +1,9 @@
-package orc.type;
+package orc.type.tycon;
 
 import java.util.List;
 
 import orc.error.compiletime.typing.TypeException;
+import orc.type.Type;
 
 
 /**
@@ -29,13 +30,13 @@ public abstract class Variance {
 	public abstract Variance invert();
 	
 	/* Test whether S is a subtype of T under this variance */
-	public abstract boolean subtype(Type S, Type T);
+	public abstract boolean subtype(Type S, Type T) throws TypeException;
 	
 	/* Find the join of S and T under this variance. */
-	public abstract Type join(Type S, Type T);
+	public abstract Type join(Type S, Type T) throws TypeException;
 		
 	/* Find the meet of S and T under this variance */
-	public abstract Type meet(Type S, Type T);
+	public abstract Type meet(Type S, Type T) throws TypeException;
 	
 	/* Find the minimal substitution for X under this variance given S <: X <: T */
 	public abstract Type minimum(Type S, Type T) throws TypeException;
@@ -65,18 +66,18 @@ final class Constant extends Variance {
 		return CONSTANT;
 	}
 	
-	public boolean subtype(Type S, Type T) {
+	public boolean subtype(Type S, Type T) throws TypeException {
 		return true;
 	}
 
-	public Type join(Type S, Type T) {
-		/* We could choose any type here, but for convenience we'll choose the actual join */
-		return S.join(T);
+	public Type join(Type S, Type T) throws TypeException  {
+		/* We could choose any type here, but for convenience we'll just choose S */
+		return S;
 	}
 
-	public Type meet(Type S, Type T) {
-		/* We could choose any type here, but for convenience we'll choose the actual meet */
-		return S.meet(T);
+	public Type meet(Type S, Type T) throws TypeException {
+		/* We could choose any type here, but for convenience we'll just choose S */
+		return S;
 	}
 
 	public Type minimum(Type S, Type T) {
@@ -103,15 +104,15 @@ final class Covariant extends Variance {
 		return that;
 	}
 	
-	public boolean subtype(Type S, Type T) {
+	public boolean subtype(Type S, Type T) throws TypeException {
 		return S.subtype(T);
 	}
 	
-	public Type join(Type S, Type T) {
+	public Type join(Type S, Type T) throws TypeException {
 		return S.join(T);
 	}
 
-	public Type meet(Type S, Type T) {
+	public Type meet(Type S, Type T) throws TypeException {
 		return S.meet(T);
 	}
 	
@@ -139,15 +140,15 @@ final class Contravariant extends Variance {
 		return that.invert();
 	}
 	
-	public boolean subtype(Type S, Type T) {
+	public boolean subtype(Type S, Type T) throws TypeException {
 		return T.subtype(S);
 	}
 	
-	public Type join(Type S, Type T) {
+	public Type join(Type S, Type T) throws TypeException {
 		return S.meet(T);
 	}
 
-	public Type meet(Type S, Type T) {
+	public Type meet(Type S, Type T) throws TypeException {
 		return S.join(T);
 	}
 	
@@ -169,11 +170,11 @@ final class Invariant extends Variance {
 		return INVARIANT;
 	}
 	
-	public boolean subtype(Type S, Type T) {
+	public boolean subtype(Type S, Type T) throws TypeException {
 		return S.subtype(T) && T.subtype(S);
 	}
 	
-	public Type join(Type S, Type T) {
+	public Type join(Type S, Type T) throws TypeException {
 		if (S.equal(T)) {
 			return S;
 		}
@@ -182,7 +183,7 @@ final class Invariant extends Variance {
 		}
 	}
 
-	public Type meet(Type S, Type T) {
+	public Type meet(Type S, Type T) throws TypeException {
 		if (S.equal(T)) {
 			return S;
 		}

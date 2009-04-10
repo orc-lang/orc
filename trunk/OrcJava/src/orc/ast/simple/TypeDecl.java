@@ -36,7 +36,7 @@ public class TypeDecl extends Expression {
 			throws CompilationException {
 		
 		orc.type.Type newtype = type.convert(typevars);
-		Expr newbody = body.convert(vars, typevars.extend(name));		
+		Expr newbody = body.convert(vars, typevars.extend(name));
 		
 		return new orc.ast.oil.TypeDecl(newtype, newbody);
 	}

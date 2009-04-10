@@ -55,7 +55,7 @@ class DatatypeSiteType extends Type {
 	public Type call(Env<Type> ctx, Env<Type> typectx, List<Arg> args, List<Type> typeActuals) throws TypeException {
 		
 		assert(typeActuals.size() == 1);
-		orc.type.Datatype dt = (orc.type.Datatype)typeActuals.get(0); 
+		orc.type.tycon.DatatypeTycon dt = (orc.type.tycon.DatatypeTycon)typeActuals.get(0); 
 				
 		/* Make sure each argument is a string */
 		for (Arg a : args) {
@@ -75,7 +75,7 @@ class DatatypeSiteType extends Type {
 			for(int i = cArity - 1; i >= 0; i--) {
 				params.add(new TypeVariable(i));
 			}
-			cResult = new TypeApplication(dt, params);
+			cResult = dt.instance(params);
 		}
 				
 		List<Type> cTypes = new LinkedList<Type>();

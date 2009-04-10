@@ -30,7 +30,7 @@ public class EllipsisArrowType extends Type {
 	}
 
 		
-	public boolean subtype(Type that) {
+	public boolean subtype(Type that) throws TypeException {
 		
 		if (that instanceof Top) { return true; }
 		
@@ -52,7 +52,7 @@ public class EllipsisArrowType extends Type {
 	}
 		
 
-	public Type join(Type that) {	
+	public Type join(Type that) throws TypeException {	
 			
 		if (that instanceof EllipsisArrowType) {
 			EllipsisArrowType thatEA = (EllipsisArrowType)that;
@@ -72,7 +72,7 @@ public class EllipsisArrowType extends Type {
 		}
 	}
 		
-	public Type meet(Type that) {	
+	public Type meet(Type that) throws TypeException {	
 		
 		if (that instanceof EllipsisArrowType) {
 			EllipsisArrowType thatEA = (EllipsisArrowType)that;

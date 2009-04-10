@@ -17,7 +17,6 @@ import orc.ast.simple.arg.Var;
 import orc.ast.simple.type.Constructor;
 import orc.ast.simple.type.Datatype;
 import orc.ast.simple.type.Type;
-import orc.ast.simple.type.VariantTypeFormal;
 import orc.error.OrcError;
 import orc.error.compiletime.PatternException;
 import orc.runtime.sites.Site;
@@ -34,10 +33,9 @@ public class DatatypeDeclaration extends Declaration {
 
 	public String typename;
 	public List<Constructor> members;
-	public List<VariantTypeFormal> formals;
+	public List<String> formals;
 
-	
-	public DatatypeDeclaration(String typename, List<Constructor> members, List<VariantTypeFormal> formals)
+	public DatatypeDeclaration(String typename, List<Constructor> members, List<String> formals)
 	{
 		this.typename = typename;
 		this.members = members;

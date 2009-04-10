@@ -53,7 +53,7 @@ public class DotType extends Type {
 	}
 		
 	
-	public boolean subtype(Type that) {
+	public boolean subtype(Type that) throws TypeException {
 		return defaultType.subtype(that);
 	}
 	
@@ -94,7 +94,7 @@ class NoDefaultType extends Type {
 		return "no_default_type";
 	}
 	
-	public boolean subtype(Type that) {
+	public boolean subtype(Type that) throws TypeException {
 		return false;
 	}
 }

@@ -1,9 +1,11 @@
-package orc.type;
+package orc.type.tycon;
 
 import java.util.LinkedList;
 import java.util.List;
 
 import orc.env.Env;
+import orc.error.compiletime.typing.TypeException;
+import orc.type.Type;
 
 /**
  * Type constructor encompassing all type-level information associated with
@@ -20,22 +22,28 @@ import orc.env.Env;
  * @author dkitchin
  *
  */
-public class Datatype extends Tycon {
+public class DatatypeTycon extends Tycon {
 
 	String name;
 	List<Variance> vs;
 	List<List<Type>> cs;
+	Object id; // A unique identifier used for equality
 	
-	public Datatype(String name, List<Variance> vs, List<List<Type>> cs) {
+	
+	public DatatypeTycon(String name, List<Variance> vs, List<List<Type>> cs, Object id) {
 		this.name = name;
 		this.vs = vs;
 		this.cs = cs;
+		this.id = id;
 	}
 	
-	public List<Variance> variances() { return vs; }
+	
+	public List<Variance> variances() throws TypeException { 
+		return vs;
+	}
 	
 	
-	public List<List<Type>> getConstructors() {
+	public List<List<Type>> getConstructors() throws TypeException {
 		
 		/* Unfold this datatype once and return its list
 		 * of constructors.
@@ -60,25 +68,24 @@ public class Datatype extends Tycon {
 	}
 	
 	
-	public Type subst(Env<Type> ctx) {
-		
-		// A datatype has a recursive type binder,
-		// and a binder for each type parameter.
-		for(int i = 0; i < vs.size() + 1; i++) {
-			ctx = ctx.extend(null);
-		}
-		
-		/* Perform substitution on all constructors */
-		List<List<Type>> newcs = new LinkedList<List<Type>>();
-		for (List<Type> c : cs) {
-			newcs.add(Type.substAll(c, ctx));
-		}
-		
-		return new Datatype(name, vs, newcs);
+	/*
+	 * As an invariant, datatype tycons have no free variables,
+	 * so substitution does nothing.
+	 * 
+	 * This preserves object equality for tycons, since otherwise
+	 * we would need to create a new datatype tycon.
+	 */
+	public Type subst(Env<Type> ctx) throws TypeException {
+		return new DatatypeTycon(name, vs, cs, id);
 	}
 	
 	public String toString() {
 		return name;
 	}
 	
+	public boolean equals(Object that) {
+		return that.getClass().equals(DatatypeTycon.class) 
+			&& ((DatatypeTycon)that).id == id;
+	}
+
 }
