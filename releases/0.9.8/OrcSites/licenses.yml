@@ -1,0 +1,202 @@
+# This file is in YAML format.  It lists all bundled third-party dependencies.
+# Each dependency includes the following information:
+# 
+# files: list of incorporated files
+# project: the project from which the files were derived
+# version: the version of the project
+# url: the url for the project
+# license: license covering incorporated files; see licenses/ directory
+# phase: build = used for compilation only, not at runtime.
+#        link = linked against but not extended.
+#        extend = classes are extended.
+#        modify = we bundle modified versions of the code.
+# notes: any notes about why the dependency is needed
+---
+
+files: [axis.jar, jaxrpc.jar]
+project: Apache Axis
+version: 1.4
+url: http://ws.apache.org/axis/
+license: ASF2.0.txt
+phase: link
+notes: Used for Webservice site.
+
+---
+
+files: [wsdl4j-1.6.1]
+project: WSDL4J
+version: 1.6.1
+url: https://sourceforge.net/projects/wsdl4j
+license: CPL1.txt
+phase: link
+notes: Dependency of axis.jar.
+
+---
+
+files: [gdata-base-1.0.jar, gdata-calendar-1.0.jar, gdata-calendar-meta-1.0.jar, gdata-client-1.0.jar, gdata-core-1.0.jar]
+project: Google Data Java Client API
+version: 1.0
+url: http://code.google.com/p/gdata-java-client/
+license: ASF2.0.txt
+phase: link
+notes: Used for music calendar demo.
+
+---
+
+files: [htmlparser.jar]
+project: HTML Parser
+version: 1.6?
+url: http://htmlparser.sourceforge.net/
+license: CPL1.txt
+phase: link
+notes: Used for music calendar demo.
+
+---
+
+files: [cxf-2.1.1.jar]
+project: Apache CXF
+version: 2.1.1
+url: http://cxf.apache.org/
+license: ASF2.0.txt
+phase: link
+notes: Used for alternative implementation of Webservice (CxfWebservice).
+
+---
+
+files: [jaxb-xjc.jar]
+project: JAXB Reference Implementation
+version: 2.1.3
+url: https://jaxb.dev.java.net/
+license: GPLv2+classpath.txt
+phase: link
+notes: Used for implementation of Webservice.
+
+---
+
+files: [jettison-1.0.1.jar]
+project: Jettison
+version: 1.0.1
+url: http://docs.codehaus.org/display/JETTISON/Home
+license: ASF2.0.txt
+phase: link
+notes: Used for implementation of Webservice.
+
+---
+
+files: [joda-time-1.5.2.jar]
+project: Joda Time
+version: 1.5.2
+url: http://joda-time.sourceforge.net/
+license: ASF2.0.txt
+phase: link
+notes: Used by Orc programs for date/time datatypes.
+
+---
+
+files: [mail.jar]
+project: JavaMail API
+version: 1.4.1
+url: http://java.sun.com/products/javamail/
+license: SunSLA-JavaMail.txt
+phase: link
+notes: Used for SendMail site.
+
+---
+
+files: [mimepull.jar]
+project: MIME pull
+version: 1.3?
+url: https://mimepull.dev.java.net
+license: GPLv2+classpath.txt
+phase: link
+notes: Used for SendMail site.
+
+---
+
+files: [oauth-1.2.jar]
+project: OAuth Java Client
+version: 1.2
+url: http://code.google.com/p/oauth/
+license: ASF2.0.txt
+phase: link
+notes: Used for Google calendar authentication.
+
+---
+
+files: [commons-discovery-0.2.jar]
+project: Apache Commons Discovery
+version: 0.2
+url: http://commons.apache.org/discovery/
+license: ASF2.0.txt
+phase: link
+notes: Dependency of axis.jar.
+
+---
+
+files: [commons-httpclient-3.1.jar]
+project: Jakarta Commons HTTP Client
+version: 3.1
+url: http://hc.apache.org/httpclient-3.x/
+license: ASF2.0.txt
+phase: link
+notes: Dependency of oauth-1.2.jar
+
+---
+
+files: [commons-codec-1.3.jar]
+project: Apache Commons Codec
+version: 1.3
+url: http://commons.apache.org/codec/
+license: ASF2.0.txt
+phase: link
+notes: Dependency of oauth-1.2.jar
+
+---
+
+files: [commons-logging-1.1.1.jar]
+project: Apache Commons Logging
+version: 1.1.1
+url: http://commons.apache.org/logging/
+license: ASF2.0.txt
+phase: link
+notes: Dependency of axis.jar and oauth-1.2.jar
+
+---
+
+files: [smack.jar, smackx.jar]
+project: Ignite Realtime Smack API
+version: 3.0?
+url: http://www.igniterealtime.org/projects/smack/
+license: ASF2.0.txt
+phase: link
+notes: Used for XMPP chat demos.
+
+---
+
+files: [com.centerkey.utils.BareBonesBrowserLaunch]
+project: Bare Bones Browser Launch for Java
+version: 1.5
+url: http://www.centerkey.com/java/browser
+license: PublicDomain-BBBL.txt
+phase: link
+notes: Used for Redirect site.
+
+---
+
+files: [net.chayden.eliza.*]
+project: Eliza by Charles Hayden
+version: 0.1
+url: http://chayden.net/eliza/Eliza.html
+license: PublicDomain-eliza.txt
+phase: modify
+notes: Used for Eliza demo.
+
+---
+
+files: [eclipse-ecj.jar]
+project: Eclipse JDT Batch Compiler
+version: 3.3.0
+url: http://www.eclipse.org/jdt/core/index.php
+license: EPL1.txt
+phase: link
+notes: Used to compile webservice proxies.

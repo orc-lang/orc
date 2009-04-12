@@ -1,0 +1,27 @@
+Music Calendar
+	gdata-base-1.0.jar
+	gdata-calendar-1.0.jar
+	gdata-calendar-meta-1.0.jar
+	gdata-client-1.0.jar
+	gdata-core-1.0.jar
+	gdata-spreadsheet-1.0.jar
+	gdata-spreadsheet-meta-1.0.jar
+	htmlparser.jar
+
+JAX-RPC Webservice
+	axis.jar
+	jaxrpc.jar
+	wsdl4j-1.6.1.jar
+	tools.jar
+
+CXF Webservice
+	cxf-2.1.1.jar
+	tools.jar
+
+Mail
+	mail.jar
+	mimepull.jar
+
+XMPP
+	smack.jar
+	smackx.jar
