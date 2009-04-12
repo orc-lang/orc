@@ -4,20 +4,22 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
-import orc.lib.date.DateTimeRange;
-import orc.lib.date.DateTimeRanges;
+import orc.lib.state.Interval;
+import orc.lib.state.Intervals;
 
 import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
+import org.joda.time.LocalTime;
 
 @SuppressWarnings("deprecation")
-public class DateTimeRangesField extends Field<DateTimeRanges> {
-	private DateTimeRange span;
+public class DateTimeRangesField extends Field<Intervals<DateTime>> {
+	private Interval<LocalDate> span;
 	private int minHour;
 	private int maxHour;
 	private static String[] daysOfWeek = {"", "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"};
 	
-	public DateTimeRangesField(String key, String label, DateTimeRange span, int minHour, int maxHour) {
-		super(key, label, new DateTimeRanges());
+	public DateTimeRangesField(String key, String label, Interval<LocalDate> span, int minHour, int maxHour) {
+		super(key, label, new Intervals<DateTime>());
 		this.span = span;
 		this.minHour = minHour;
 		this.maxHour = maxHour;
@@ -48,9 +50,9 @@ public class DateTimeRangesField extends Field<DateTimeRanges> {
 			"_" + date.getHourOfDay();
 	}
 	
-	private static DateTimeRange fromTimeID(String timeID) {
+	private static Interval<DateTime> fromTimeID(String timeID) {
 		String[] parts = timeID.split("_");
-		if (parts.length != 4) return DateTimeRange.NULL;
+		if (parts.length != 4) return new Interval(new DateTime());
 		try {
 			DateTime start = new DateTime(
 					Integer.parseInt(parts[0]),
@@ -59,9 +61,9 @@ public class DateTimeRangesField extends Field<DateTimeRanges> {
 					Integer.parseInt(parts[3]),
 					0, 0, 0);
 			DateTime end = start.plusHours(1);
-			return new DateTimeRange(start, end);
+			return new Interval<DateTime>(start, end);
 		} catch (NumberFormatException _) {
-			return DateTimeRange.NULL;
+			return new Interval(new DateTime());
 		}
 	}
 	
@@ -70,11 +72,12 @@ public class DateTimeRangesField extends Field<DateTimeRanges> {
 		out.write("<th>");
 		out.write(formatHour(hour));
 		out.write("</th>");
-		DateTime current = span.start.withHourOfDay(hour);
-		DateTime end = span.end.withHourOfDay(hour);
+		LocalDate current = span.getStart();
+		LocalDate end = span.getEnd();
+		LocalTime time = new LocalTime(hour, 0);
 		while (current.compareTo(end) < 0) {
 			out.write("<td>");
-			renderTime(out, current);
+			renderTime(out, current.toDateTime(time));
 			out.write("</td>");
 			current = current.plusDays(1);
 		}
@@ -83,8 +86,8 @@ public class DateTimeRangesField extends Field<DateTimeRanges> {
 	
 	private void renderTableHeader(PrintWriter out) throws IOException {
 		out.write("<tr><th>&nbsp;</th>");
-		DateTime current = span.start;
-		DateTime end = span.end.withHourOfDay(0);
+		LocalDate current = span.getStart();
+		LocalDate end = span.getEnd();
 		while (current.compareTo(end) < 0) {
 			out.write("<th>");
 			out.write(formatDateHeader(current));
@@ -97,6 +100,8 @@ public class DateTimeRangesField extends Field<DateTimeRanges> {
 	private String formatHour(int hour) {
 		if (hour == 0) {
 			return "12am";
+		} else if (hour == 12) {
+			return "12pm";
 		} else if (hour > 12) {
 			return (hour % 12) + "pm";
 		} else {
@@ -104,18 +109,19 @@ public class DateTimeRangesField extends Field<DateTimeRanges> {
 		}
 	}
 	
-	private String formatDateHeader(DateTime date) {
+	private String formatDateHeader(LocalDate date) {
 		return daysOfWeek[date.getDayOfWeek()] +
 			" " + date.getMonthOfYear() +
 			"/" + date.getDayOfMonth();
 	}
 	
 	private void readTimeIDs(String[] timeIDs) {
-		value = new DateTimeRanges();
+		value = new Intervals();
 		if (timeIDs == null) return;
-		for (String timeID : timeIDs) {
-			DateTimeRange range = fromTimeID(timeID);
-			value.union(new DateTimeRanges(range));
+		// union ranges starting at the end for efficiency
+		for (int i = timeIDs.length-1; i >= 0; --i) {
+			Interval<DateTime> range = fromTimeID(timeIDs[i]);
+			value = value.union(range);
 		}
 	}
 

@@ -62,11 +62,12 @@ public class OilSecurityValidator extends Walker {
 		// orc.lib
 		allowedClasses.add("orc.lib.state.Set");
 		allowedClasses.add("orc.lib.state.Map");
+		allowedClasses.add("orc.lib.state.Interval");
+		allowedClasses.add("orc.lib.state.Intervals");
 		allowedClasses.add("orc.lib.net.Upcoming");
 		allowedClasses.add("orc.lib.net.Geocoder");
 		allowedClasses.add("orc.lib.net.GoogleCalendar");
 		allowedClasses.add("orc.lib.net.NOAAWeather");
-		allowedClasses.add("orc.lib.date.DateTimeRange");
 		
 		// orc.lib.orchard
 		allowedClasses.add("orc.lib.orchard.forms.Form");

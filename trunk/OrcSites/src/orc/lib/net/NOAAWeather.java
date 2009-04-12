@@ -12,7 +12,7 @@ import kilim.Mailbox;
 import kilim.Pausable;
 import kilim.Task;
 
-import orc.lib.date.DateTimeRange;
+import orc.lib.state.Interval;
 import orc.runtime.Kilim;
 
 import org.joda.time.DateTime;
@@ -160,7 +160,7 @@ public class NOAAWeather {
 		}
 		
 		/** Return a new forecast restricted to the given period, which should be a subset of the current forecast's period. */
-		public Forecast during(DateTimeRange time) {
+		public Forecast during(Interval<DateTime> time) {
 			return new Forecast(location,
 					NOAAWeather.during(time, maxTemps),
 					NOAAWeather.during(time, minTemps),
@@ -201,11 +201,11 @@ public class NOAAWeather {
 	
 	/** Base class for all forecast parameters. */
 	private static abstract class Parameter {
-		private final DateTimeRange time;
-		protected Parameter(DateTimeRange time) {
+		private final Interval<DateTime> time;
+		protected Parameter(Interval<DateTime> time) {
 			this.time = time;
 		}
-		public DateTimeRange getTime() {
+		public Interval<DateTime> getTime() {
 			return time;
 		}
 	}
@@ -213,7 +213,7 @@ public class NOAAWeather {
 	/** temperature element */
 	public static final class Temperature extends Parameter implements Comparable<Temperature> {
 		private final int degreesF;
-		private Temperature(DateTimeRange time, int degreesF) {
+		private Temperature(Interval<DateTime> time, int degreesF) {
 			super(time);
 			this.degreesF = degreesF;
 		}
@@ -231,7 +231,7 @@ public class NOAAWeather {
 	/** probability-of-precipitation element */
 	public static final class RainChance extends Parameter implements Comparable<RainChance> {
 		private final int percent;
-		private RainChance(DateTimeRange time, int percent) {
+		private RainChance(Interval<DateTime> time, int percent) {
 			super(time);
 			this.percent = percent;
 		}
@@ -249,7 +249,7 @@ public class NOAAWeather {
 	/** weather-conditions element */
 	public static final class Sky extends Parameter {
 		private final String summary;
-		private Sky(DateTimeRange time, String summary) {
+		private Sky(Interval<DateTime> time, String summary) {
 			super(time);
 			this.summary = summary;
 		}
@@ -268,14 +268,15 @@ public class NOAAWeather {
 	 */
 	private static final class TimeLayout {
 		private final String key;
-		private final DateTimeRange[] times; 
+		private final Interval<DateTime>[] times; 
+		@SuppressWarnings("unchecked")
 		private TimeLayout(Element e) {
 			key = e.getElementsByTagName("layout-key").item(0).getTextContent();
 			NodeList starts = e.getElementsByTagName("start-valid-time");
 			NodeList ends = e.getElementsByTagName("end-valid-time");
-			times = new DateTimeRange[starts.getLength()];
+			times = new Interval[starts.getLength()];
 			for (int i = 0; i < starts.getLength(); ++i) {
-				times[i] = new DateTimeRange(
+				times[i] = new Interval<DateTime>(
 					new DateTime(starts.item(i).getTextContent()),
 					new DateTime(ends.item(i).getTextContent()));
 			}
@@ -285,7 +286,7 @@ public class NOAAWeather {
 			return key;
 		}
 		
-		public DateTimeRange getTime(int index) {
+		public Interval<DateTime> getTime(int index) {
 			return times[index];
 		}
 		
@@ -296,7 +297,7 @@ public class NOAAWeather {
 	
 	/** Restrict an array of parameters to those overlapping the given range. */
 	@SuppressWarnings("unchecked")
-	private static <E extends Parameter> E[] during(DateTimeRange time, E[] parameters) {
+	private static <E extends Parameter> E[] during(Interval<DateTime> time, E[] parameters) {
 		ArrayList<E> out = new ArrayList<E>();
 		for (int i = 0; i < parameters.length; ++i) {
 			if (time.intersects(parameters[i].time)) out.add(parameters[i]);
