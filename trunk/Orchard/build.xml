@@ -6,28 +6,28 @@
 	<property file="build.properties" />
 	
 	<path id="orc.classpath">
-		<fileset dir="${orc.location.lib}" includes="*.jar" />
-		<pathelement path="${orc.location.build}" />
-		<pathelement path="${orc.location.OrcJava.lib}/kilim.jar" />
+		<fileset dir="lib" includes="*.jar" />
+		<pathelement path="build" />
+		<pathelement path="${orc.location.OrcJava}/lib/kilim.jar" />
 	</path>
 	
 	<taskdef name="one-jar"
 		classname="com.simontuffs.onejar.ant.OneJarTask"
-		classpath="${orc.location.lib}/one-jar-ant-task-0.96.jar"
+		classpath="lib/one-jar-ant-task-0.96.jar"
 		onerror="report" />
 	<target name="demo-jar" depends="kilim,minify" description="generate the demo jar">
 		<zip zipfile="web.war" update="true" basedir="web" />
 		<!-- Construct the One-JAR file -->
 		<one-jar destfile="${ant.project.name}-demo.jar" manifest="orchard-demo.mf">
 			<main>
-				<fileset dir="${orc.location.build}" />
+				<fileset dir="build" />
 				<fileset dir=".">
 					<include name="web.war" />
 					<include name="root-demo.war" />
 				</fileset>
 			</main>
 			<lib>
-				<fileset dir="${orc.location.lib}">
+				<fileset dir="lib">
 					<include name="*.jar"/>
 					<exclude name="yuicompressor-*.jar"/>
 					<exclude name="one-jar-ant-task-*.jar"/>
@@ -43,8 +43,8 @@
 				<exclude name="**/CVS/*"/>
 				<exclude name="**/.svn/*"/>
 			</fileset>
-			<zipfileset prefix="WEB-INF/classes" dir="${orc.location.build}"/>
-			<zipfileset prefix="WEB-INF/lib" dir="${orc.location.lib}">
+			<zipfileset prefix="WEB-INF/classes" dir="build"/>
+			<zipfileset prefix="WEB-INF/lib" dir="lib">
 				<include name="*.jar"/>
 				<exclude name="jetty-*.jar"/>
 				<exclude name="yuicompressor-*.jar"/>
@@ -54,20 +54,20 @@
 	</target>
 	<taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
 		<classpath>
-			<pathelement location="${orc.location.lib}/jaxws-tools.jar" />
-			<fileset dir="${orc.location.lib}" includes="orc-*.jar" />
+			<pathelement location="lib/jaxws-tools.jar" />
+			<fileset dir="lib" includes="orc-*.jar" />
 		</classpath>
 	</taskdef>
 	<path id="wsgen.classpath">
-		<pathelement location="${orc.location.build}"/>
-		<pathelement location="${orc.location.lib}/jsr181-api.jar"/>
-		<pathelement location="${orc.location.lib}/jsr250-api.jar"/>
+		<pathelement location="build"/>
+		<pathelement location="lib/jsr181-api.jar"/>
+		<pathelement location="lib/jsr250-api.jar"/>
 	</path>
 	<target name="wsgen" description="Generate web service artifacts">
-		<wsgen sei="orc.orchard.soap.CompilerService" destdir="${orc.location.build}" xendorsed="true">
+		<wsgen sei="orc.orchard.soap.CompilerService" destdir="build" xendorsed="true">
 			<classpath><path refid="wsgen.classpath"/></classpath>
 		</wsgen>
-		<wsgen sei="orc.orchard.soap.ExecutorService" destdir="${orc.location.build}" xendorsed="true">
+		<wsgen sei="orc.orchard.soap.ExecutorService" destdir="build" xendorsed="true">
 			<classpath><path refid="wsgen.classpath"/></classpath>
 		</wsgen>
 	</target>
@@ -79,20 +79,20 @@
 					<enable/>
 				</assertions>
 			<arg value="-d" />
-			<arg value="${orc.location.build}" />
-			<arg value="${orc.location.build}" />
+			<arg value="build" />
+			<arg value="build" />
 		</java>
 	</target>
 
 	<target name="minify" description="minify javascript files">
-		<java jar="${orc.location.lib}/yuicompressor-2.3.6.jar" fork="yes">
+		<java jar="lib/yuicompressor-2.3.6.jar" fork="yes">
 			<arg value="--type" />
 			<arg value="js" />
 			<arg value="web/orc-ready.js" />
 			<arg value="-o" />
 			<arg value="web/orc-ready-min.js" />
 		</java>
-		<java jar="${orc.location.lib}/yuicompressor-2.3.6.jar" fork="yes">
+		<java jar="lib/yuicompressor-2.3.6.jar" fork="yes">
 			<arg value="--type" />
 			<arg value="js" />
 			<arg value="web/orc-parser.js" />
@@ -101,7 +101,7 @@
 		</java>
 
 		<!-- codemirror and codemirror-extra -->
-		<java jar="${orc.location.lib}/yuicompressor-2.3.6.jar" fork="yes">
+		<java jar="lib/yuicompressor-2.3.6.jar" fork="yes">
 			<arg value="--type" />
 			<arg value="js" />
 			<arg value="web/codemirror/codemirror.js" />
@@ -118,7 +118,7 @@
 				<exclude name="codemirror.js"/>
 			</fileset>
 		</concat>
-		<java jar="${orc.location.lib}/yuicompressor-2.3.6.jar" fork="yes">
+		<java jar="lib/yuicompressor-2.3.6.jar" fork="yes">
 			<arg value="--type" />
 			<arg value="js" />
 			<arg value="codemirror-extra.tmp" />
@@ -133,7 +133,7 @@
 	</target>
 
 	<target name="clean" description="clean up">
-		<delete dir="${orc.location.build}" />
+		<delete dir="build" />
 		<delete file="${ant.project.name}.war"/>
 		<delete file="web.war"/>
 		<delete file="${ant.project.name}-demo.jar"/>
