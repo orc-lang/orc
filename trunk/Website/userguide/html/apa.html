@@ -1,4 +1,4 @@
-<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Appendix&nbsp;A.&nbsp;Complete Syntax of Orc</title><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide v0.9.6"><link rel="up" href="index.html" title="Orc User Guide v0.9.6"><link rel="prev" href="ch03s04.html" title="3.4.&nbsp;Web Services"><link rel="next" href="apb.html" title="Appendix&nbsp;B.&nbsp;Standard Library"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"><link href="style.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">Appendix&nbsp;A.&nbsp;Complete Syntax of Orc</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch03s04.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="apb.html">Next</a></td></tr></table><hr></div><div class="appendix" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="N11511"></a>Appendix&nbsp;A.&nbsp;Complete Syntax of Orc</h2></div></div></div><p>
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Appendix&nbsp;A.&nbsp;Complete Syntax of Orc</title><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide v0.9.8"><link rel="up" href="index.html" title="Orc User Guide v0.9.8"><link rel="prev" href="ch03s04.html" title="3.4.&nbsp;Web Services"><link rel="next" href="apb.html" title="Appendix&nbsp;B.&nbsp;Standard Library"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"><link href="style.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">Appendix&nbsp;A.&nbsp;Complete Syntax of Orc</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch03s04.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="apb.html">Next</a></td></tr></table><hr></div><div class="appendix" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="N1169C"></a>Appendix&nbsp;A.&nbsp;Complete Syntax of Orc</h2></div></div></div><p>
 
 <div class="table"><a name="full-ebnf-grammar"></a><p class="title"><b>Table&nbsp;A.1.&nbsp;Complete Syntax of Orc</b></p><div class="table-contents"><table summary="Complete Syntax of Orc" border="0" width="80%"><colgroup><col align="right"><col align="center"><col align="left"><col align="left"><col align="left"></colgroup><tbody><tr><td align="right">E</td><td align="center">::=</td><td align="left">&nbsp;</td><td align="left">
                                 <span class="emphasis"><em>Expression</em></span>
@@ -20,8 +20,11 @@
                                 <span class="emphasis"><em>list</em></span>
                             </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E G+</td><td align="left">&nbsp;</td><td align="left">
                                 <span class="emphasis"><em>call</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                <span class="emphasis"><em>op</em></span> E</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>prefix operator</em></span>
                             </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E <span class="emphasis"><em>op</em></span> E</td><td align="left">&nbsp;</td><td align="left">
-                                <span class="emphasis"><em>operator</em></span>
+                                <span class="emphasis"><em>infix operator</em></span>
                             </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E<code class="code"> <span class="hl-combinator">&gt;</span></code>P<code class="code"><span class="hl-combinator">&gt;</span> </code>E</td><td align="left">&nbsp;</td><td align="left">
                                 <span class="emphasis"><em>sequential combinator</em></span>
                             </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E <code class="code"><span class="hl-combinator">|</span></code> E</td><td align="left">&nbsp;</td><td align="left">
@@ -48,7 +51,7 @@
                             </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left"> <code class="code"><span class="hl-site">?</span></code> </td><td align="left">&nbsp;</td><td align="left">
                                 <span class="emphasis"><em>dereference</em></span>
                             </td></tr><tr><td align="right">C</td><td align="center">::=</td><td align="left">
-                                <span class="emphasis"><em>Boolean</em></span> | <span class="emphasis"><em>Number</em></span> | <span class="emphasis"><em>String</em></span> | <code class="code"><span class="hl-keyword">signal</span></code>
+                                <span class="emphasis"><em>Boolean</em></span> | <span class="emphasis"><em>Number</em></span> | <span class="emphasis"><em>String</em></span> | <code class="code"><span class="hl-keyword">signal</span></code> | <code class="code"><span class="hl-literal">null</span></code>
                             </td><td align="left">
                                 <span class="emphasis"><em>Constant</em></span>
                             </td><td align="left">&nbsp;</td></tr><tr><td align="right">X</td><td align="center">::=</td><td align="left">
@@ -85,17 +88,19 @@
                                 <code class="code"><span class="hl-variable">_</span></code>
                             </td><td align="left">&nbsp;</td><td align="left">
                                 <span class="emphasis"><em>wildcard</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">X <code class="code">(</code> P <code class="code">,</code> ... <code class="code">,</code> P <code class="code">)</code>
+                            </td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>call pattern</em></span>
                             </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
                                 <code class="code">(</code> P <code class="code">,</code> ... <code class="code">,</code> P <code class="code">)</code>
                             </td><td align="left">&nbsp;</td><td align="left">
-                                <span class="emphasis"><em>tuple</em></span>
+                                <span class="emphasis"><em>tuple pattern</em></span>
                             </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
                                 <code class="code">[</code> P <code class="code">,</code> ... <code class="code">,</code> P <code class="code">]</code>
                             </td><td align="left">&nbsp;</td><td align="left">
-                                <span class="emphasis"><em>list</em></span>
-                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
-                                <code class="code">!</code>P</td><td align="left">&nbsp;</td><td align="left">
-                                <span class="emphasis"><em>publish pattern</em></span>
+                                <span class="emphasis"><em>list pattern</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">P <code class="code">:</code> P</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>cons pattern</em></span>
                             </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">P <code class="code"><span class="hl-keyword">as</span></code> X</td><td align="left">&nbsp;</td><td align="left">
                                 <span class="emphasis"><em>as pattern</em></span>
 
