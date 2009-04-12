@@ -14,7 +14,7 @@ include "forms.inc"
 -- Configuration
 
 -- The range of possible dates (Year, Month, Day), with an exclusive upper bound
-val span = DateTimeRange(LocalDate(2008, 9, 29), LocalDate(2008, 10, 4))
+val span = Interval(LocalDate(2008, 9, 29), LocalDate(2008, 10, 4))
 val format = DateTimeFormat.forStyle("SS")
 -- Number of responses required to schedule the meeting
 val quorum = 2
@@ -44,13 +44,8 @@ def member(item, h:t) =
   if item = h then true
   else member(item, t)
 
-def mergeRanges(ranges) =
-  def f(out, next) = out.intersect(next) >> out
-  foldl1(f, ranges)
-
-def pickMeetingTime(times) =
-  times.getRanges() >ranges>
-  if ranges.size() > 0 then ranges.first().getStart()
+def pickMeetingTime(first:_) = first.getStart()
+def pickMeetingTime(_) = stop
 
 def inviteQuorum(invitees, quorum) =
   let(
@@ -75,7 +70,7 @@ def notify(time, invitees, responders) =
 
 inviteQuorum(invitees, quorum) >responses>
 unzip(responses) >(responders,ranges)>
-mergeRanges(ranges) >times>
+afold(lambda (a,b) = a.intersect(b), ranges) >times>
 let(
   pickMeetingTime(times) >time>
   format.print(time) >time>
