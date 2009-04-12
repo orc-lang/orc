@@ -15,8 +15,30 @@ import com.centerkey.utils.BareBonesBrowserLaunch;
  * @author quark
  */
 public class OrchardDemo {
-	public static final int PORT = 8081;
+	private static void printUsage() {
+		System.err.println("Usage: ... [<port number>]");
+		System.exit(1);
+	}
 	public static void main(String args[]) throws Exception {
+		int PORT;
+		if (args.length == 0) {
+			PORT = 8080;
+		} else if (args.length == 1) {
+			if (args[0].equals("--help") || args[0].equals("-help")) {
+				printUsage();
+				return;
+			} else {
+				try {
+					PORT = Integer.valueOf(args[0]);
+				} catch (NumberFormatException _) {
+					printUsage();
+					return;
+				}
+			}
+		} else {
+			printUsage();
+			return;
+		}
 		// set reasonable defaults for a demo
 		OrchardProperties.setProperty("orc.lib.orchard.forms.url",
 				"http://localhost:"+PORT+"/orchard/FormsServlet");
