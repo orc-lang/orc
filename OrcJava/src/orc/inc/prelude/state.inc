@@ -587,11 +587,51 @@ def snd[A,B]((A,B)) :: B
 def snd((_,y)) = y
 
 {--
-@def swap[A,B]((A,B)) :: (B,A)
-Swap the elements of a pair.
+@site Interval[A](A, A) :: Interval[A]
+<code>Interval(a,b)</code> returns an object representing the half-open
+interval [<code>a</code>,<code>b</code>).
 
-@implementation
+@method Interval[A].isEmpty() :: Boolean
+Return true if this interval is empty.
+
+@method Interval[A].spans(A) :: Boolean
+Return true if the interval spans the given point, false otherwise.
+
+@method Interval[A].intersects(Interval[A]) :: Boolean
+Return true if the given interval has a non-empty intersection with this one,
+and false otherwise.
+
+@method Interval[A].intersect(Interval[A]) :: Interval[A]
+Return the intersection of this interval with another. If
+the two intervals do not intersect, returns an empty interval.
+
+@method Interval[A].contiguous(Interval[A]) :: Boolean
+Return true if the given interval is contiguous with this one
+(overlaps or abuts), and false otherwise.
+
+@method Interval[A].union(Interval[A]) :: Interval[A]
+Return the union of this interval with another. Halts with an error if
+the two intervals are not contiguous.
 --}
-def swap[A,B]((A,B)) :: (B,A)
-def swap((x,y)) = (y,x)
+class Interval = orc.lib.state.Interval
 
+{--
+@site Intervals[A]() :: Intervals[A]
+Return an empty set of intervals. An Intervals object is iterable;
+iterating over the set returns disjoint intervals in increasing order.
+
+@method Intervals[A].isEmpty() :: Boolean
+Return true if this set of intervals is empty.
+
+@method Intervals[A].spans(A) :: Boolean
+Return true if this set of intervals spans the given point, and false otherwise.
+
+@method Intervals[A].intersect(Intervals[A]) :: Intervals[A]
+Return the intersection of this set of intervals with another.
+
+@method Intervals[A].union(Interval[A]) :: Intervals[A]
+Return the union of this set of intervals with the given interval.
+This method is most efficient when the given interval is before
+most of the intervals in the set.
+--}
+class Intervals = orc.lib.state.Intervals
