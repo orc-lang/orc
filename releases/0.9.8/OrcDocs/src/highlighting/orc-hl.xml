@@ -1,0 +1,73 @@
+<?xml version='1.0'?>
+<highlighters>
+
+<highlighter type='multiline-comment'>
+  <start>{-</start>
+  <end>-}</end>
+</highlighter>
+
+<highlighter type='oneline-comment'>
+-- 
+</highlighter>
+
+<highlighter type='string'>
+  <style>literal</style>
+  <string>"</string>
+  <escape>\</escape>
+  <spanNewLines/>
+</highlighter>
+
+<highlighter type="number">
+  <style>literal</style>
+  <point>.</point>
+  <exponent>e</exponent>
+  <ignoreCase />
+</highlighter>
+
+<highlighter type='keywords'>
+  <style>literal</style>
+  <keyword>true</keyword>
+  <keyword>null</keyword>
+  <keyword>false</keyword>
+</highlighter>
+
+<highlighter type='keywords'>
+  <keyword>def</keyword>
+  <keyword>val</keyword>
+  <keyword>stop</keyword>
+  <keyword>signal</keyword>
+  <keyword>class</keyword>
+  <keyword>site</keyword>
+  <keyword>include</keyword>
+  <keyword>lambda</keyword>
+  <keyword>if</keyword>
+  <keyword>then</keyword>
+  <keyword>else</keyword>
+  <keyword>as</keyword>
+  <keyword>type</keyword>
+  <keyword>atomic</keyword>
+</highlighter>
+
+<!-- operators -->
+<highlighter type='regex'>
+  <style>site</style>
+  <pattern><![CDATA[\|\||<=|>=|<:|:>|:=|\?]]></pattern>
+</highlighter>
+
+<highlighter type='regex'>
+  <style>combinator</style>
+  <pattern><![CDATA[(?<=\s)(<|>)((?=\S)|$)|((?<=\S)|^)(<|>)(?=\s([^=]|$))|\||;|\bFATBAR\b]]></pattern>
+</highlighter>
+
+<!-- site calls -->
+<highlighter type='regex'>
+  <style>site</style>
+  <pattern>\b\w+\b(?=\s*[(\[])</pattern>
+</highlighter>
+
+<highlighter type='regex'>
+  <style>variable</style>
+  <pattern>\b\w+\b</pattern>
+</highlighter>
+
+</highlighters>
