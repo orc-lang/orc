@@ -63,7 +63,7 @@ val (from, span, invitees, quorum, timeLimit, requestTemplate, notificationTempl
       parseInvitees(inviteesText) >(_:_) as x> x
       ; error("No invitees found. Please try again.")
     val span =
-      DateTimeRange(data.get("start"), data.get("end").plusDays(1)) >span>
+      Interval(data.get("start"), data.get("end").plusDays(1)) >span>
       if span.isEmpty()
       then error("Empty date range. Please try again.")
       else span
@@ -105,13 +105,8 @@ def inviteQuorum(invitees) =
     | Rtimer(timeLimit*3600000) >> c.closenb() >> stop
   )
 
-def mergeRanges(ranges) =
-  def f(out, next) = out.intersect(next) >> out
-  foldl1(f, ranges)
-
-def pickMeetingTime(times) =
-  times.getRanges() >ranges>
-  if ranges.size() > 0 then ranges.first().getStart()
+def pickMeetingTime(first:_) = first.getStart()
+def pickMeetingTime(_) = stop
 
 def buildForm() =
   Form() >form>
@@ -153,7 +148,7 @@ def fail(message) =
 def handleResponses((_:_) as responses) =
   formatResponses(responses) >msg>
   unzip(responses) >(responders,ranges)>
-  mergeRanges(ranges) >times>
+  afold(lambda (a,b) = a.intersect(b), ranges) >times>
   let(
     pickMeetingTime(times) >time>
     dateFormat.print(time) >time>
