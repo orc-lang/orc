@@ -55,7 +55,7 @@ not recognized, return an empty array.
 --}
 def events(Trip(time, location), term) =
   class Upcoming = orc.lib.net.Upcoming
-  val search = Upcoming("orc/orchard/upcoming.properties").eventSearch()
+  val search = Upcoming("orc/orchard/orchard.properties").eventSearch()
   search.search_text := term >>
   search.min_date := time.toLocalDate() >>
   search.max_date := time.toLocalDate().plusDays(1) >>
@@ -83,7 +83,7 @@ def poll(interval, put) =
     loop()
   ------------- goal expression for poll() ----------------
   class GoogleCalendar = orc.lib.net.GoogleCalendar
-  val oauth = OAuthProvider("orc/orchard/oauth.properties")
+  val oauth = OAuthProvider("orc/orchard/orchard.properties")
   sendUniqueTrips()
   | println("Authenticating...") >>
     GoogleCalendar.authenticate(oauth, "google") >calendar>

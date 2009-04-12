@@ -39,8 +39,8 @@ site MySpace = orc.lib.music_calendar.MySpace
 site GoogleCalendarFactory = orc.lib.music_calendar.GoogleCalendar
 
 -- declarations
-val oauth = OAuthProvider("orc/orchard/oauth.properties")
-val Google = GoogleSearchFactory("orc/orchard/google.properties")
+val oauth = OAuthProvider("orc/orchard/orchard.properties")
+val Google = GoogleSearchFactory("orc/orchard/orchard.properties")
 val GoogleCalendar = GoogleCalendarFactory(oauth, "google")
 def phrases() =
     "site:www.myspace.com 'Austin, TX' 'Band Members'"

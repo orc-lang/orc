@@ -6,7 +6,7 @@ both Google and Yahoo spell-checkers.
 include "net.inc"
 include "forms.inc"
 
-val YahooSpell = YahooSpellFactory("orc/orchard/yahoo.properties")
+val YahooSpell = YahooSpellFactory("orc/orchard/orchard.properties")
 
 def spellCheck([], _) = stop
 def spellCheck(word:words, i) =

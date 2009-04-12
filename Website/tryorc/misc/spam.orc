@@ -13,7 +13,7 @@ include "forms.inc"
 Simplified mail sending interface.
 -}
 def SendMailFrom(from, to, subject, body) =
-  val mailer = MailerFactory("orc/orchard/mail.properties")
+  val mailer = MailerFactory("orc/orchard/orchard.properties")
   val message =
     mailer.newMessage(subject, body, to) >m>
     m.setFrom(mailer.toAddress(from)) >>
