@@ -2751,7 +2751,7 @@ combinators, we are able to encode a variety of idioms straightforwardly.
 <section><title>Channels</title>
 
 <para>
-Orc has no communication primitives like &#960;-calculus
+Orc has no communication primitives like pi-calculus
 channels<footnote><para>R. Milner. <emphasis>Communicating and Mobile Systems:
 the &#960;-Calculus</emphasis>. Cambridge University Press, May
 1999.</para></footnote> or Erlang mailboxes<footnote><para>J. Armstrong, R.
@@ -2920,31 +2920,6 @@ upto(n) >i> A(i) >address> Email(address, m)
 </section>
 
 
-<section><title>Loops</title>
-
-<para>
-Orc does not have any explicit looping constructs. Most of the time, where a loop
-might be used in other languages, Orc programs use one of two strategies: 
-</para>
-
-<orderedlist>
-
-<listitem>When the iterations of the loops can occur in parallel, write an expression
-that expands the data into a sequence of publications, and
-use a sequential operator to do something for each publication. This is the strategy
-that uses functions like <code>each</code>, <code>repeat</code>, and <code>upto</code>.
-</listitem>
-<listitem>When the iterations of the loops must occur in sequence, write a tail
-recursive function that iterates over the data. Any loop can be rewritten as a 
-tail recursion. Typically the data of interest is in a list, so one of the standard
-list functions, such as <code>foldl</code>, applies. The library also defines a
-function <code>while</code>, which handles many of the common use cases of
-while loops.
-</listitem>
-</orderedlist>
-
-</section>
-
 
 <section><title>Mutable Storage</title>
 
@@ -3044,6 +3019,31 @@ val r = Cell()
 ]]></programlisting>
 
 </section>
+</section>
+
+<section><title>Loops</title>
+
+<para>
+Orc does not have any explicit looping constructs. Most of the time, where a loop
+might be used in other languages, Orc programs use one of two strategies: 
+</para>
+
+<orderedlist>
+
+<listitem>When the iterations of the loops can occur in parallel, write an expression
+that expands the data into a sequence of publications, and
+use a sequential operator to do something for each publication. This is the strategy
+that uses functions like <code>each</code>, <code>repeat</code>, and <code>upto</code>.
+</listitem>
+<listitem>When the iterations of the loops must occur in sequence, write a tail
+recursive function that iterates over the data. Any loop can be rewritten as a 
+tail recursion. Typically the data of interest is in a list, so one of the standard
+list functions, such as <code>foldl</code>, applies. The library also defines a
+function <code>while</code>, which handles many of the common use cases of
+while loops.
+</listitem>
+</orderedlist>
+
 </section>
 
 <section><title>Parallel Matching</title>
@@ -4210,8 +4210,8 @@ def quicksort(a) =
 <para>
 The function <code>part</code> partitions the subarray given by indices
 <code>s</code> through <code>t</code> into two partitions, one containing values
-&#8804; <code>p</code> and the other containing values &gt; <code>p</code>.  The last index of the lower partition is returned.
-The value at <code>a(s-1)</code> is assumed to be &#8804; <code>p</code> --- this is satisfied
+less than or equal to <code>p</code> and the other containing values &gt; <code>p</code>.  The last index of the lower partition is returned.
+The value at <code>a(s-1)</code> is assumed to be less than or equal to <code>p</code> --- this is satisfied
 by choosing <code>p = a(s-1)?</code> initially.  To create the partitions, <code>part</code>
 calls two auxiliary functions <code>lr</code> and <code>rl</code> concurrently.  These
 functions scan from the left and right of the subarray respectively, looking
@@ -4245,8 +4245,8 @@ everyone, and notifies everyone of the selected time.
 
 <programlisting><![CDATA[
 include "net.inc"
-val during = DateTimeRange(LocalDate(2009, 9, 10),
-                           LocalDate(2009, 10, 17))
+val during = Interval(LocalDate(2009, 9, 10),
+                      LocalDate(2009, 10, 17))
 val invitees = ["john@example.com", "jane@example.com"]
 
 def invite(invitee) =
