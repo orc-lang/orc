@@ -25,13 +25,14 @@
 	<target name="zip" depends="jar" description="generate the ZIP">
 		<zip zipfile="${ant.project.name}-${orc.version}.zip">
 			<zipfileset prefix="${ant.project.name}-${orc.version}" dir=".">
-				<exclude name="**/CVS/*"/>
 				<include name="${ant.project.name}-${orc.version}.jar"/>
 				<include name="README"/>
 				<include name="LICENSE"/>
 				<include name="licenses.yml"/>
 				<include name="licenses/**"/>
 				<include name="examples/**"/>
+				<exclude name="**/CVS/*"/>
+				<exclude name="**/.svn/*"/>
 			</zipfileset>
 		</zip>
 	</target>

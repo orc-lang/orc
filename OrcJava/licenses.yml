@@ -90,3 +90,13 @@ url: http://stax.codehaus.org/Home
 license: ASF2.0.txt
 phase: link
 notes: Dependency of jaxb-impl.jar.
+
+---
+
+files: [ant-googlecode-0.0.1.jar]
+project: ant-googlecode
+version: 0.0.1
+url: http://code.google.com/p/ant-googlecode/
+license: BSD-ant-googlecode.txt
+phase: build
+notes: Used for google code upload task.
