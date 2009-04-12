@@ -2,6 +2,7 @@
 
 <h2>Community Resources</h2>
 <ul>
+	<li><a href="http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=News">News</a></li>
 	<li><a href="http://groups.google.com/group/orc-lang/">Mailing List</a>
 	<br /><form action="http://groups.google.com/group/orc-lang/boxsubscribe">
 		Email: <input type=text name=email>
