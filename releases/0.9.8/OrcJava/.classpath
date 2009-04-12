@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="test"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="lib" path="lib/args4j-2.0.9.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/rats-runtime.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/junit-4.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/kilim-runtime.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jaxb-api.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jaxb-impl.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/activation.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jsr173_api.jar"/>
+	<classpathentry kind="output" path="build"/>
+</classpath>

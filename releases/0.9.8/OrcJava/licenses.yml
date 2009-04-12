@@ -1,0 +1,102 @@
+# This file is in YAML format.  It lists all bundled third-party dependencies.
+# Each dependency includes the following information:
+# 
+# files: list of incorporated files
+# project: the project from which the files were derived
+# version: the version of the project
+# url: the url for the project
+# license: license covering incorporated files; see license/ directory
+# phase: build = used for compilation only, not at runtime.
+#        link = linked against but not extended.
+#        extend = classes are extended.
+#        modify = we bundle modified versions of the code.
+# notes: any notes about why the dependency is needed
+---
+
+files: [args4j-2.0.9.jar]
+project: args4j
+version: 2.0.9
+url: https://args4j.dev.java.net/
+license: MIT-args4j.txt
+phase: link
+notes: Used to parse command line arguments.
+
+---
+
+files: [rats.jar]
+project: xtc
+version: 1.14.0
+url: http://cs.nyu.edu/rgrimm/xtc/rats.html
+license: GPLv2.txt
+phase: build
+notes: Used to compile parsers.
+
+---
+
+files: [rats-runtime.jar]
+project: xtc
+version: 1.14.0
+url: http://cs.nyu.edu/rgrimm/xtc/rats.html
+license: LGPLv2.1.txt
+phase: extend
+notes: Generated parsers rely on this library.
+
+---
+
+files: [kilim.jar, kilim-runtime.jar]
+project: Kilim
+version: 6.0
+url: http://www.malhar.net/sriram/kilim/
+license: MIT-kilim.txt
+phase: extend
+notes: Used for Java bytecode weaving and scheduling of Java-based sites.
+
+---
+
+files: [junit-4.5.jar]
+project: JUnit
+version: 4.5
+url: http://www.junit.org/
+license: BSD-junit.txt
+phase: build
+notes: Used for unit testing.
+
+---
+
+files: [jaxb-api.jar, jaxb-impl.jar]
+project: JAXB Reference Implementation
+version: 2.1.3
+url: https://jaxb.dev.java.net/
+license: GPLv2+classpath.txt
+phase: link
+notes: Needed for OIL XML serialization feature.
+
+---
+
+files: [activation.jar]
+project: JavaBeans Activation Framework
+version: 1.0.2
+url: http://java.sun.com/javase/technologies/desktop/javabeans/jaf/
+license: SunBCL-activation.txt
+phase: link
+notes: Dependency of jaxb-impl.jar.
+
+---
+
+files: [jsr173_api.jar]
+project: StAX Reference Implementation
+version: 1.2?
+url: http://stax.codehaus.org/Home
+license: ASF2.0.txt
+phase: link
+notes: Dependency of jaxb-impl.jar.
+
+---
+
+files: [ant-googlecode-0.0.1.jar]
+project: ant-googlecode
+version: 0.0.1
+url: http://code.google.com/p/ant-googlecode/
+license: BSD-ant-googlecode.txt
+phase: build
+notes: Used for google code upload task.

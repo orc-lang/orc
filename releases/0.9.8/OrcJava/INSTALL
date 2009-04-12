@@ -1,0 +1,21 @@
+User Installation Instructions
+------------------------------
+
+Most users will just want to use the orc JAR to run programs from the command
+line.  Assuming you downloaded (for example) orc-0.9.1.jar, run at the command
+line:
+
+  java -jar orc-0.9.1.jar -help
+  
+to see command-line options.
+
+There are a variety of sample programs in examples/.
+
+Refer to the User's Guide in doc/userguide.pdf for more details of the Orc
+language.
+
+Developer Installation Instructions
+-----------------------------------
+
+If you plan to develop Orc within Eclipse, place the Orc JAR file on your
+project's classpath.
