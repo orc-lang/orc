@@ -5,7 +5,7 @@
 # project: the project from which the files were derived
 # version: the version of the project
 # url: the url for the project
-# licenses: licenses covering incorporated files; see licenses/ directory
+# license: license covering incorporated files; see license/ directory
 # phase: build = used for compilation only, not at runtime.
 #        link = linked against but not extended.
 #        extend = classes are extended.
@@ -17,7 +17,7 @@ files: [args4j-2.0.9.jar]
 project: args4j
 version: 2.0.9
 url: https://args4j.dev.java.net/
-licenses: [args4j_LICENSE.txt]
+license: MIT-args4j.txt
 phase: link
 notes: Used to parse command line arguments.
 
@@ -27,7 +27,7 @@ files: [rats.jar]
 project: xtc
 version: 1.14.0
 url: http://cs.nyu.edu/rgrimm/xtc/rats.html
-licenses: [GPLv2.txt]
+license: GPLv2.txt
 phase: build
 notes: Used to compile parsers.
 
@@ -37,7 +37,7 @@ files: [rats-runtime.jar]
 project: xtc
 version: 1.14.0
 url: http://cs.nyu.edu/rgrimm/xtc/rats.html
-licenses: [LGPLv2.1.txt]
+license: LGPLv2.1.txt
 phase: extend
 notes: Generated parsers rely on this library.
 
@@ -47,7 +47,7 @@ files: [kilim.jar, kilim-runtime.jar]
 project: Kilim
 version: 6.0
 url: http://www.malhar.net/sriram/kilim/
-licenses: [kilim_LICENSE.txt]
+license: MIT-kilim.txt
 phase: extend
 notes: Used for Java bytecode weaving and scheduling of Java-based sites.
 
@@ -57,7 +57,7 @@ files: [junit-4.5.jar]
 project: JUnit
 version: 4.5
 url: http://www.junit.org/
-licenses: [junit_LICENSE.txt]
+license: BSD-junit.txt
 phase: build
 notes: Used for unit testing.
 
@@ -67,7 +67,7 @@ files: [jaxb-api.jar, jaxb-impl.jar]
 project: JAXB Reference Implementation
 version: 2.1.3
 url: https://jaxb.dev.java.net/
-licenses: [CDDL1.txt, GPLv2+classpath.txt]
+license: GPLv2+classpath.txt
 phase: link
 notes: Needed for OIL XML serialization feature.
 
@@ -77,7 +77,7 @@ files: [activation.jar]
 project: JavaBeans Activation Framework
 version: 1.0.2
 url: http://java.sun.com/javase/technologies/desktop/javabeans/jaf/
-licenses: [activation_LICENSE.txt]
+license: SunBCL-activation.txt
 phase: link
 notes: Dependency of jaxb-impl.jar.
 
@@ -87,16 +87,6 @@ files: [jsr173_api.jar]
 project: StAX Reference Implementation
 version: 1.2?
 url: http://stax.codehaus.org/Home
-licenses: [ASF2.0.txt]
+license: ASF2.0.txt
 phase: link
 notes: Dependency of jaxb-impl.jar.
-
----
-
-files: [jyaml-1.3.jar]
-project: JYaml
-version: 1.3
-url: http://jyaml.sourceforge.net
-licenses: [jyaml_LICENSE.txt]
-phase: build
-notes: Used to build THIRD_PARTY_LICENSES.txt
