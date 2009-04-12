@@ -40,6 +40,8 @@
 		<jar jarfile="${ant.project.name}.war" update="true">
 			<fileset dir="web">
 				<include name="**/*"/>
+				<exclude name="**/CVS/*"/>
+				<exclude name="**/.svn/*"/>
 			</fileset>
 			<zipfileset prefix="WEB-INF/classes" dir="${orc.location.build}"/>
 			<zipfileset prefix="WEB-INF/lib" dir="${orc.location.lib}">
