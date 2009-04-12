@@ -9,7 +9,8 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
 	OrcParserTest.class,
 	ExamplesTest.class,
-	OilTest.class
+	OilTest.class,
+	IntervalsTest.class
 })
 public class AllTests {
 	public static void main(String[] args) {
