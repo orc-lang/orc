@@ -6,7 +6,6 @@
 	<property file="build.properties" />
 
 	<property file="googlecode.properties" />
-
 	<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask"
 		classpath="lib/ant-googlecode-0.0.1.jar" name="gcupload"/>
 	<target name="upload" depends="zip,javadoc" description="upload to google code">
@@ -29,18 +28,18 @@
 	</target>
 	
 	<path id="orc.classpath">
-		<fileset dir="${orc.location.lib}" includes="*.jar" />
-		<pathelement path="${orc.location.build}" />
+		<fileset dir="lib" includes="*.jar" />
+		<pathelement path="build" />
 	</path>
 
 	<property name="target.name" value="${ant.project.name}-${orc.version}" />
 	
 	<target name="jar" depends="kilim" description="generate the distribution">
-		<!-- Put everything in ${orc.location.build} into orc-sites.jar -->
-		<jar jarfile="${target.name}.jar" basedir="${orc.location.build}">
+		<!-- Put everything in build into orc-sites.jar -->
+		<jar jarfile="${target.name}.jar" basedir="build">
 			<exclude name="orc/test/**"/>
 			<!-- Include library dependencies -->
-			<zipgroupfileset dir="${orc.location.lib}">
+			<zipgroupfileset dir="lib">
 				<include name="*.jar"/>
 				<!-- Only needed for compilation -->
 				<exclude name="rats.jar"/>
@@ -77,20 +76,20 @@
 	<!-- 
 	<target name="macos" depends="jar" description="generate a Mac OS bundle">
 		<taskdef name="jarbundler"
-		             classpath="${orc.location.jarbundler}/jarbundler.jar" 
+		             classpath="jarbundler/jarbundler.jar" 
 		             classname="net.sourceforge.jarbundler.JarBundler"/>
 
-		<jarbundler dir="${orc.location.build}" verbose="true" showPlist="true"
+		<jarbundler dir="build" verbose="true" showPlist="true"
 	       	      	name="Orchard"
 		            mainclass="orc.Orc"
 		            jar="${target.name}.jar"
-		            icon="${orchard.icon}"
+			    icon="jarbundler/orchard.icns"
 		            version="${orc.version}"/>
 	</target>
 	-->
 	
 	<target name="clean" description="clean up">
-		<delete dir="${orc.location.build}" />
+		<delete dir="build" />
 		<delete file="${ant.project.name}-${orc.version}.jar"/>
 		<delete file="${ant.project.name}-${orc.version}.zip"/>
 		<delete file="${ant.project.name}-${orc.version}-doc.zip"/>
@@ -103,29 +102,29 @@
 					<enable/>
 				</assertions>
 			<arg value="-d" />
-			<arg value="${orc.location.build}" />
-			<arg value="${orc.location.build}" />
+			<arg value="build" />
+			<arg value="build" />
 		</java>
 	</target>
 
 	<!-- javac does some weird compilation that Kilim doesn't like, so for now
 	     you have to use the eclipse compiler
 	<target name="compile" depends="rats" description="javac compile">
-		<mkdir dir="${orc.location.build}" />
+		<mkdir dir="build" />
 		<javac source="1.5" target="1.5" debug="yes"
-			srcdir="${orc.location.src}"
-			destdir="${orc.location.build}"
+			srcdir="src"
+			destdir="build"
 			classpathref="orc.classpath" />
-		<copy todir="${orc.location.build}">
-			<fileset dir="${orc.location.src}" excludes="**/*.java **/CVS/*"/>
+		<copy todir="build">
+			<fileset dir="src" excludes="**/*.java **/CVS/*"/>
 		</copy>
 	</target>
 	-->
 	
 	<target name="stdlib-doc" description="Build standard library docs">
 		<java classname="orc.doc.MakeDoc" fork="yes"
-				dir="${orc.location.src}/orc/inc/prelude"
-				output="../OrcDocs/src/stdlib.xml">
+				dir="src/orc/inc/prelude"
+				output="${orc.location.OrcDocs}/src/stdlib.xml">
 			<classpath refid="orc.classpath"/>
 				<assertions>
 					<enable/>
@@ -146,67 +145,67 @@
 	<target name="rats1" depends="rats1.required" unless="rats1.notRequired">
 		<java classname="xtc.parser.Rats" fork="yes">
 			<classpath>
-				<pathelement path="${orc.location.lib}/rats.jar" />
+				<pathelement path="lib/rats.jar" />
 			</classpath>
 			<arg value="-lgpl" />
 			<arg value="-in" />
-			<arg value="${orc.location.src}" />
+			<arg value="src" />
 			<arg value="-out" />
-			<arg value="${orc.location.src}/orc/parser" />
-			<arg value="${orc.location.src}/orc/parser/OrcParserRats.rats" />
+			<arg value="src/orc/parser" />
+			<arg value="src/orc/parser/OrcParserRats.rats" />
 		</java>
 	</target>
 	<target name="rats1.required">
 		<uptodate property="rats1.notRequired"
-			srcfile="${orc.location.src}/orc/parser/OrcParserRats.rats"
-			targetfile="${orc.location.src}/orc/parser/OrcParserRats.java"/>
+			srcfile="src/orc/parser/OrcParserRats.rats"
+			targetfile="src/orc/parser/OrcParserRats.java"/>
 	</target>
 
 	<target name="rats2" depends="rats2.required" unless="rats2.notRequired">
 		<java classname="xtc.parser.Rats" fork="yes">
 			<classpath>
-				<pathelement path="${orc.location.lib}/rats.jar" />
+				<pathelement path="lib/rats.jar" />
 			</classpath>
 			<arg value="-lgpl" />
 			<arg value="-in" />
-			<arg value="${orc.location.src}" />
+			<arg value="src" />
 			<arg value="-out" />
-			<arg value="${orc.location.src}/orc/doc" />
-			<arg value="${orc.location.src}/orc/doc/DocParser.rats" />
+			<arg value="src/orc/doc" />
+			<arg value="src/orc/doc/DocParser.rats" />
 		</java>
 	</target>
 	<target name="rats2.required">
 		<uptodate property="rats2.notRequired"
-			srcfile="${orc.location.src}/orc/doc/DocParser.rats"
-			targetfile="${orc.location.src}/orc/doc/DocParser.java"/>
+			srcfile="src/orc/doc/DocParser.rats"
+			targetfile="src/orc/doc/DocParser.java"/>
 	</target>
 	
 	<target name="rats3" depends="rats3.required" unless="rats3.notRequired">
 		<java classname="xtc.parser.Rats" fork="yes">
 			<classpath>
-				<pathelement path="${orc.location.lib}/rats.jar" />
+				<pathelement path="lib/rats.jar" />
 			</classpath>
 			<arg value="-lgpl" />
 			<arg value="-in" />
-			<arg value="${orc.location.src}" />
+			<arg value="src" />
 			<arg value="-out" />
-			<arg value="${orc.location.src}/orc/parser" />
-			<arg value="${orc.location.src}/orc/parser/OrcLiteralParser.rats" />
+			<arg value="src/orc/parser" />
+			<arg value="src/orc/parser/OrcLiteralParser.rats" />
 		</java>
 	</target>
 	<target name="rats3.required">
 		<uptodate property="rats3.notRequired"
-			srcfile="${orc.location.src}/orc/parser/OrcLiteralParser.rats"
-			targetfile="${orc.location.src}/orc/parser/OrcLiteralParser.java"/>
+			srcfile="src/orc/parser/OrcLiteralParser.rats"
+			targetfile="src/orc/parser/OrcLiteralParser.java"/>
 	</target>
 
 	<target name="javadoc" description="Build Javadoc">
-		<delete dir="${orc.location.javadoc}" />
-		<javadoc destdir="${orc.location.javadoc}"
+		<delete dir="javadoc" />
+		<javadoc destdir="javadoc"
 				author="true"
 				access="protected"
 				source="1.5"
-				sourcepath="${orc.location.src}"
+				sourcepath="src"
 				splitindex="true"
 				windowtitle="Orc ${orc.version}"
 				doctitle="Orc ${orc.version}"
@@ -214,6 +213,6 @@
 				version="true">
 			<classpath refid="orc.classpath"/>
 		</javadoc>
-		<zip zipfile="${ant.project.name}-${orc.version}-doc.zip" basedir="${orc.location.javadoc}" />
+		<zip zipfile="${ant.project.name}-${orc.version}-doc.zip" basedir="javadoc" />
 	</target>
 </project>

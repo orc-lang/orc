@@ -4769,10 +4769,10 @@ all and execution will deadlock.  This situation is sufficiently rare that
 
 <para>
 Code which uses Kilim must be processed with the Kilim "weaver" after compiling
-and before running.  The weaver is bundled in <filename>kilim.jar</filename>,
-which is available for download from <link
-	xlink:href="http://sourceforge.net/project/platformdownload.php?group_id=33781">SourceForge</link>
-and is also bundled with the Orc source code.
+and before running.  The weaver is bundled with the Orc source code, or may be
+downloaded separately from the <link
+	xlink:href="http://www.malhar.net/sriram/kilim/">Kilim project
+	site</link>.
 </para>
 
 <para>
@@ -5117,8 +5117,8 @@ should provide you with enough information to get started.
 
 <para>All Orc sites related to web services are bundled in a separate
 "OrcSites" library.  As with the core Orc distribution, you can either
-download this library as a prepackaged JAR from Sourceforge, or check out the
-source code from the CVS "OrcSites" module.  We generally recommend the latter
+download this library as a prepackaged JAR or check out the
+source code from the "OrcSites" module in version control.  We generally recommend the latter
 approach, since the source code provides several examples which can be used as
 a basis for creating your own web service sites.
 </para>
