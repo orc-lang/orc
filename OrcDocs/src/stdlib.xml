@@ -680,10 +680,56 @@ def fst((x,_)) = x</programlisting></formalpara></listitem></varlistentry>
 <para>Return the second element of a pair.</para>
 <formalpara><title>Implementation</title><programlisting>def snd[A,B]((A,B)) :: B
 def snd((_,y)) = y</programlisting></formalpara></listitem></varlistentry>
-<varlistentry><term><code>swap</code></term><listitem><para><code>def swap[A,B]((A,B)) :: (B,A)</code></para>
-<para>Swap the elements of a pair.</para>
-<formalpara><title>Implementation</title><programlisting>def swap[A,B]((A,B)) :: (B,A)
-def swap((x,y)) = (y,x)</programlisting></formalpara></listitem></varlistentry></variablelist>
+<varlistentry><term><code>Interval</code></term><listitem><para><code>site Interval[A](A, A) :: Interval[A]</code></para>
+<para><code>Interval(a,b)</code> returns an object representing the half-open
+interval [<code>a</code>,<code>b</code>).</para>
+<variablelist>
+<?dbfo list-presentation="list"?>
+<?dbhtml list-presentation="table"?>
+<varlistentry><term><code>isEmpty</code></term><listitem><para><code>site Interval[A].isEmpty() :: Boolean</code></para>
+<para>Return true if this interval is empty.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>spans</code></term><listitem><para><code>site Interval[A].spans(A) :: Boolean</code></para>
+<para>Return true if the interval spans the given point, false otherwise.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>intersects</code></term><listitem><para><code>site Interval[A].intersects(Interval[A]) :: Boolean</code></para>
+<para>Return true if the given interval has a non-empty intersection with this one,
+and false otherwise.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>intersect</code></term><listitem><para><code>site Interval[A].intersect(Interval[A]) :: Interval[A]</code></para>
+<para>Return the intersection of this interval with another. If
+the two intervals do not intersect, returns an empty interval.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>contiguous</code></term><listitem><para><code>site Interval[A].contiguous(Interval[A]) :: Boolean</code></para>
+<para>Return true if the given interval is contiguous with this one
+(overlaps or abuts), and false otherwise.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>union</code></term><listitem><para><code>site Interval[A].union(Interval[A]) :: Interval[A]</code></para>
+<para>Return the union of this interval with another. Halts with an error if
+the two intervals are not contiguous.</para>
+</listitem></varlistentry></variablelist>
+</listitem></varlistentry>
+<varlistentry><term><code>Intervals</code></term><listitem><para><code>site Intervals[A]() :: Intervals[A]</code></para>
+<para>Return an empty set of intervals. An Intervals object is iterable;
+iterating over the set returns disjoint intervals in increasing order.</para>
+<variablelist>
+<?dbfo list-presentation="list"?>
+<?dbhtml list-presentation="table"?>
+<varlistentry><term><code>isEmpty</code></term><listitem><para><code>site Intervals[A].isEmpty() :: Boolean</code></para>
+<para>Return true if this set of intervals is empty.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>spans</code></term><listitem><para><code>site Intervals[A].spans(A) :: Boolean</code></para>
+<para>Return true if this set of intervals spans the given point, and false otherwise.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>intersect</code></term><listitem><para><code>site Intervals[A].intersect(Intervals[A]) :: Intervals[A]</code></para>
+<para>Return the intersection of this set of intervals with another.</para>
+</listitem></varlistentry>
+<varlistentry><term><code>union</code></term><listitem><para><code>site Intervals[A].union(Interval[A]) :: Intervals[A]</code></para>
+<para>Return the union of this set of intervals with the given interval.
+This method is most efficient when the given interval is before
+most of the intervals in the set.</para>
+</listitem></varlistentry></variablelist>
+</listitem></varlistentry></variablelist>
 </section>
 <section><title>idioms.inc: Higher-order Orc programming idioms.</title>
 <para>Higher-order Orc programming idioms.
