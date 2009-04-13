@@ -138,4 +138,34 @@
 		<delete file="web.war"/>
 		<delete file="${ant.project.name}-demo.jar"/>
 	</target>
+	
+	<target name="demo-app" depends="demo-jar" description="generate a Mac OS bundle">
+		<taskdef name="jarbundler"
+				classpath="lib/jarbundler-2.1.0.jar" 
+				classname="net.sourceforge.jarbundler.JarBundler"/>
+		<!-- create a dummy JavaApplicationStub (will replace with symlink) -->
+		<touch file="JavaApplicationStub"/>
+		<jarbundler dir="."
+				name="${ant.project.name}"
+				mainclass="orc.Orc"
+				jar="${ant.project.name}-demo.jar"
+				version="${orc.version}"
+				stubfile="JavaApplicationStub"
+				jvmversion="1.5+">
+			<resourcefileset dir=".">
+				<include name="README"/>
+				<include name="LICENSE"/>
+				<include name="licenses.yml"/>
+				<include name="licenses/**"/>
+			</resourcefileset>
+		</jarbundler>
+		<delete file="JavaApplicationStub"/>
+		<!-- replace JavaApplicationStub with symlink -->
+		<delete file="${ant.project.name}.app/Contents/MacOS/JavaApplicationStub"/>
+		<exec executable="ln">
+			<arg line="-s /System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub"/>
+			<arg value="${ant.project.name}.app/Contents/MacOS/JavaApplicationStub"/>
+		</exec>
+
+	</target>
 </project>

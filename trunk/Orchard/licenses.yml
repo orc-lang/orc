@@ -160,3 +160,13 @@ url: http://marijn.haverbeke.nl/codemirror/
 license: BSD-codemirror.txt
 phase: extend
 notes: Used for web/orc.js
+
+---
+
+files: [jarbundler-2.1.0.jar]
+project: jarbundler
+version: 2.1.0
+url: http://www.informagen.com/JarBundler/
+license: ASF2.0.txt
+phase: build
+notes: Used for "ant demo-app" task
