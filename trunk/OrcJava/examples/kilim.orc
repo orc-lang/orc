@@ -25,5 +25,5 @@ examples/kilim.orc:9:3-12
 2 hi
 1 hi
 1 hi
-3 buffered
+"3 buffered"
 -}

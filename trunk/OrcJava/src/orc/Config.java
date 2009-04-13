@@ -40,13 +40,13 @@ import org.kohsuke.args4j.Option;
  * @author dkitchin, quark
  * 
  */
-public class Config {
+public class Config implements Cloneable {
 
 	private Boolean debug = false;
 	private Boolean dumpOil = false;
 	private Boolean typecheck = false;
 	private Tracer tracer = new NullTracer();
-	private List<String> includes = new LinkedList<String>();
+	private LinkedList<String> includes = new LinkedList<String>();
 	private String[] includePath = new String[]{"."};
 	private Integer maxPubs = null;
 	private Reader instream = new InputStreamReader(System.in);
@@ -279,5 +279,19 @@ public class Config {
 							+ "' not found; check the include path.");
 		}
 		return new InputStreamReader(stream);
+	}
+	
+	@Override
+	public Config clone() {
+		Config out;
+		try {
+			out = (Config)super.clone();
+		} catch (CloneNotSupportedException e) {
+			throw new AssertionError(e);
+		}
+		out.includes = (LinkedList<String>) includes.clone();
+		out.includePath = includePath.clone();
+		out.caps = (HashMap<String, Boolean>) caps.clone();
+		return out;
 	}
 }

@@ -100,3 +100,13 @@ url: http://code.google.com/p/ant-googlecode/
 license: BSD-ant-googlecode.txt
 phase: build
 notes: Used for google code upload task.
+
+---
+
+files: [AppleJavaExtensions.jar]
+project: Apple Java Extensions
+version: 1.3
+url: http://developer.apple.com/samplecode/AppleJavaExtensions/index.html
+license: MIT-AppleJavaExtensions.txt
+phase: extend
+notes: Used to compile OrcApp, the OS X App version of the Orc tool.

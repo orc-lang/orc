@@ -41,12 +41,12 @@
 			<!-- Include library dependencies -->
 			<zipgroupfileset dir="lib">
 				<include name="*.jar"/>
-				<!-- Only needed for compilation -->
-				<exclude name="rats.jar"/>
-				<!-- Only needed for compilation -->
-				<exclude name="kilim.jar"/>
 				<!-- Only needed for testing -->
 				<exclude name="junit-*.jar"/>
+				<!-- Only needed for compilation -->
+				<exclude name="rats.jar"/>
+				<exclude name="kilim.jar"/>
+				<exclude name="AppleJavaExtensions.jar"/>
 			</zipgroupfileset>
 			<manifest>
 				<attribute name="Main-Class" value="orc.Orc"/>

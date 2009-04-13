@@ -44,6 +44,23 @@ Example:
 site read = orc.lib.str.Read
 
 {--
+@site write(Top) :: String
+Given an Orc value, return its string representation
+using standard Orc literal syntax.  If the value is
+of a type with no literal syntax,
+(for example, it is a site), return an arbitrary string
+representation which is intended to be human-readable.
+
+Example:
+<programlisting language="orc-demo"><![CDATA[
+  write(true) -- publishes "true"
+| write(1) -- publishes "1"
+| write((3.0, [])) -- publishes "(3.0, [])"
+| write("hi") -- publishes "\"hi\""]]></programlisting>
+--}
+site write = orc.lib.str.Write
+
+{--
 @def lines(String) :: List[String]
 Split a string into lines, which are substrings
 terminated by an endline or the end of the string.

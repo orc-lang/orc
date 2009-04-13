@@ -15,7 +15,8 @@ def GetContent(in) =
   out.toString()
 
 InputStreamReader(FileInputStream("examples/java_io_sample.txt")) >reader>
-GetContent(reader)
+println(GetContent(reader)) >>
+stop
 {-
 OUTPUT:
 'Twas brillig, and the slithy toves
