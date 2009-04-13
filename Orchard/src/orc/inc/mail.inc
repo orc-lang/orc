@@ -5,7 +5,7 @@ site MailListener = orc.lib.orchard.MailListenerFactory
 Simplified mail sending interface.
 -}
 def SendMail(to, subject, body) =
-  val mailer = MailerFactory("orc/orchard/mail.properties")
+  val mailer = MailerFactory("orc/orchard/orchard.properties")
   val message = mailer.newMessage(subject, body, to)
   val outbox = mailer.getTransport()
   outbox.connect() >>
@@ -16,7 +16,7 @@ def SendMail(to, subject, body) =
 Simplified mail sending interface.
 -}
 def SendMailFrom(from, to, subject, body) =
-  val mailer = MailerFactory("orc/orchard/mail.properties")
+  val mailer = MailerFactory("orc/orchard/orchard.properties")
   val message =
     mailer.newMessage(subject, body, to) >m>
     m.setFrom(mailer.toAddress(from)) >>
@@ -33,7 +33,7 @@ Each time the returned site is called, it will return the
 body of the next response.
 -}
 def MailPrompt(to, subject, body) =
-  val mailer = MailerFactory("orc/orchard/mail.properties")
+  val mailer = MailerFactory("orc/orchard/orchard.properties")
   val listener = MailListener(mailer)
   SendMailFrom(listener.getAddress(), to, subject, body) >>
   listener.get() >m>
