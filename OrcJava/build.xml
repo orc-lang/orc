@@ -72,22 +72,6 @@
 		</zip>
 	</target>
 	
-
-	<!-- 
-	<target name="macos" depends="jar" description="generate a Mac OS bundle">
-		<taskdef name="jarbundler"
-		             classpath="jarbundler/jarbundler.jar" 
-		             classname="net.sourceforge.jarbundler.JarBundler"/>
-
-		<jarbundler dir="build" verbose="true" showPlist="true"
-	       	      	name="Orchard"
-		            mainclass="orc.Orc"
-		            jar="${target.name}.jar"
-			    icon="jarbundler/orchard.icns"
-		            version="${orc.version}"/>
-	</target>
-	-->
-	
 	<target name="clean" description="clean up">
 		<delete dir="build" />
 		<delete file="${ant.project.name}-${orc.version}.jar"/>
