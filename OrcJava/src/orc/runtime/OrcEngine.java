@@ -21,6 +21,7 @@ import orc.error.runtime.TokenLimitReachedError;
 import orc.runtime.nodes.Node;
 import orc.runtime.regions.Execution;
 import orc.runtime.values.GroupCell;
+import orc.runtime.values.Value;
 import orc.trace.Tracer;
 
 /**
@@ -236,7 +237,7 @@ public class OrcEngine implements Runnable {
 	 * @param v
 	 */
 	public void publish(Object v) {
-		stdout.println(String.valueOf(v));
+		stdout.println(Value.write(v));
 		stdout.flush();
 		// check if we have reached the maximum allowed number of publications
 		if (maxpubs > 0 && maxpubs == ++pubs) terminate();

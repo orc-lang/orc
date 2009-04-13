@@ -5,9 +5,11 @@ import java.util.List;
 import orc.error.OrcError;
 import orc.error.runtime.TokenException;
 import orc.error.runtime.UncallableValueException;
+import orc.lib.str.Read;
 import orc.runtime.Token;
 import orc.runtime.nodes.Node;
 import orc.runtime.sites.java.ObjectProxy;
+import xtc.util.Utilities;
 
 /**
  * 
@@ -88,5 +90,16 @@ public abstract class Value {
 
 	public <E> E accept(Visitor<E> visitor) {
 		return visitor.visit(this);
+	}
+	
+	/** Convert any object to its string representation; the inverse of {@link Read}. */
+	public static String write(Object v) {
+		if (v == null) {
+			return "null";
+		} else if (v instanceof String) {
+			return '"' + Utilities.escape((String)v, Utilities.JAVA_ESCAPES) + '"';
+		} else {
+			return v.toString();
+		}
 	}
 }
