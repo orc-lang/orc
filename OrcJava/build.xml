@@ -172,13 +172,16 @@
 		<zip zipfile="build/${target.name}-doc.zip" basedir="build/javadoc" />
 	</target>
 
+	<!-- WARNING: requires Unix environment with ls and tar. -->
 	<target name="app" depends="jar" description="generate a Mac OS bundle">
 		<taskdef name="jarbundler"
 				classpath="lib/jarbundler-2.1.0.jar" 
 				classname="net.sourceforge.jarbundler.JarBundler"/>
 		<!-- create a dummy JavaApplicationStub (will replace with symlink) -->
 		<touch file="build/JavaApplicationStub"/>
-		<jarbundler dir="build/"
+		<delete dir="build/${target.name}"/>
+		<mkdir dir="build/${target.name}"/>
+		<jarbundler dir="build/${target.name}"
 				name="${target.name}"
 				mainclass="orc.OrcApp"
 				jar="build/${target.name}.jar"
@@ -186,23 +189,25 @@
 				stubfile="build/JavaApplicationStub"
 				jvmversion="1.5+"
 				icon="icons/orc-app.icns" >
+			<javaproperty name="apple.laf.useScreenMenuBar" value="true"/>
 			<documenttype name="Orc Script"
 					extensions="orc" 
 					iconfile="icons/orc-file.icns"
-					role="Shell" />
+					role="Viewer" />
 		</jarbundler>
 		<delete file="build/JavaApplicationStub"/>
 		<!-- replace JavaApplicationStub with symlink -->
-		<delete file="build/${target.name}.app/Contents/MacOS/JavaApplicationStub"/>
+		<delete file="build/${target.name}/${target.name}.app/Contents/MacOS/JavaApplicationStub"/>
 		<exec executable="ln">
 			<arg line="-s /System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub"/>
-			<arg value="build/${target.name}.app/Contents/MacOS/JavaApplicationStub"/>
+			<arg value="build/${target.name}/${target.name}.app/Contents/MacOS/JavaApplicationStub"/>
 		</exec>
-		<tar destfile="build/${target.name}-app.tgz" compression="gzip">
-			<tarfileset prefix="${target.name}" dir="build">
-				<include name="${target.name}.app/**"/>
-			</tarfileset>
-			<tarfileset prefix="${target.name}" dir=".">
+		<!--
+		Ant's Tar task cannot handle symlinks. So we have to build a
+		directory and tar it using the command-line tar.
+		-->
+		<copy todir="build/${target.name}">
+			<fileset dir=".">
 				<include name="README"/>
 				<include name="LICENSE"/>
 				<include name="INSTALL"/>
@@ -212,8 +217,12 @@
 				<include name="doc/**"/>
 				<exclude name="**/CVS/*"/>
 				<exclude name="**/.svn/*"/>
-			</tarfileset>
-		</tar>
+			</fileset>
+		</copy>
+		<exec executable="tar" dir="build">
+			<arg line="-zcf ${target.name}-app.tgz ${target.name}"/>
+		</exec>
+		<delete dir="build/${target.name}"/>
 	</target>
 
 	<target name="upload" depends="zip,javadoc" description="upload to google code">

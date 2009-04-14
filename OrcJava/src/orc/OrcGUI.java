@@ -1,6 +1,7 @@
 package orc;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 
@@ -44,7 +45,7 @@ public class OrcGUI {
 		// Read configuration options from the environment and the command line
 		final Config cfg = new Config();
 		cfg.processArgs(args);	
-		run(cfg);
+		run(cfg, JFrame.EXIT_ON_CLOSE);
 	}
 	
 	static void error(String title, String message) {
@@ -75,7 +76,7 @@ public class OrcGUI {
 		}
 	}
 	
-	static void run(Config cfg) {
+	static void run(Config cfg, int onclose) {
 		// initialize document
 		JTextPane pane = new JTextPane();
 		pane.setEditable(false);
@@ -100,7 +101,8 @@ public class OrcGUI {
 		
 		// initialize frame
 		JFrame frame = new JFrame("Orc Output");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setPreferredSize(new Dimension(640, 480));
+		frame.setDefaultCloseOperation(onclose);
         JScrollPane scrollPane = new JScrollPane(pane);
 		frame.add(scrollPane);
 		frame.pack();
