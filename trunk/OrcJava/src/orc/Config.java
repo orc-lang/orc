@@ -59,6 +59,7 @@ public class Config implements Cloneable {
 	private PrintStream stderr = System.err;
 	private int tokenPoolSize = -1;
 	private int stackSize = -1;
+	private boolean hasInputFile = false;
 	
 	/**
 	 * Set properties based on command-line arguments.
@@ -146,9 +147,14 @@ public class Config implements Cloneable {
 		try {
 			instream = new FileReader(file);
 			filename = file.getPath();
+			hasInputFile = true;
 		} catch (FileNotFoundException e) {
 			throw new CmdLineException("Could not find input file '"+file+"'");
 		}
+	}
+	
+	public boolean hasInputFile() {
+		return hasInputFile;
 	}
 	
 	/**
