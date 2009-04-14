@@ -55,16 +55,13 @@ public class OrcGUI {
 	private static class OutputHandler {
 		private StyledDocument doc;
 		private JScrollBar scrollBar;
-		private JFrame frame;
-		public OutputHandler(JFrame frame, StyledDocument doc, JScrollBar scrollBar) {
-			this.frame = frame;
+		public OutputHandler(StyledDocument doc, JScrollBar scrollBar) {
 			this.doc = doc;
 			this.scrollBar = scrollBar;
 		}
 		public void output(final String style, final String message) {
 			invokeLater(new Runnable() {
 				public void run() {
-					if (!frame.isVisible()) frame.setVisible(true);
 					try {
 						doc.insertString(doc.getLength(), message, doc.getStyle(style));
 					} catch (BadLocationException e) {
@@ -100,14 +97,19 @@ public class OrcGUI {
 		StyleConstants.setBold(s, true);
 		
 		// initialize frame
-		JFrame frame = new JFrame("Orc Output");
+		final JFrame frame = new JFrame(cfg.getFilename());
 		frame.setPreferredSize(new Dimension(640, 480));
 		frame.setDefaultCloseOperation(onclose);
         JScrollPane scrollPane = new JScrollPane(pane);
 		frame.add(scrollPane);
-		frame.pack();
-		
-		final OutputHandler output = new OutputHandler(frame, doc, scrollPane.getVerticalScrollBar());
+		invokeLater(new Runnable() {
+			public void run() {
+				frame.pack();
+				frame.setVisible(true);
+			}
+		});
+	
+		final OutputHandler output = new OutputHandler(doc, scrollPane.getVerticalScrollBar());
 		
 		// Configure the runtime engine
 		OrcEngine engine = new OrcEngine(cfg) {
