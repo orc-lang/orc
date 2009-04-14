@@ -100,7 +100,7 @@
 		</wsgen>
 	</target>
 	
-	<target name="kilim" depends="wsgen" description="Kilim weaving">
+	<target name="kilim" depends="wsgen,properties" description="Kilim weaving">
 		<java classname="kilim.tools.Weaver" fork="yes">
 			<classpath refid="orc.classpath"/>
 				<assertions>
@@ -162,6 +162,11 @@
 
 	<target name="clean" description="clean up">
 		<delete dir="build" />
+	</target>
+
+	<target name="properties" description="Copy properties files into place">
+		<copy file="orchard.properties" todir="build/classes/orc/orchard" />
+		<copy file="oauth.jks" todir="build/classes/orc/orchard" />
 	</target>
 	
 	<target name="demo-app" depends="demo-jar" description="generate a Mac OS bundle">
