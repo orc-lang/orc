@@ -19,22 +19,19 @@ import static javax.swing.SwingUtilities.invokeLater;
  * @author quark
  */
 public class OrcApp {
-	public static void main(String[] args) {
-		// Read configuration options from the environment and the command line
-		final Config cfg = new Config();
-		cfg.processArgs(args);	
-		
+	public static void main(String[] args) throws InterruptedException {
 		Application app = Application.getApplication();
 		app.addApplicationListener(new ApplicationAdapter() {
 			/** Open files are handled by starting a new engine running the file. */
 			@Override
 			public void handleOpenFile(final ApplicationEvent event) {
 				try {
-					final Config cfg2 = cfg.clone();
-					cfg2.setInputFile(new File(event.getFilename()));
+					// Read configuration options from the environment and the command line
+					final Config cfg = new Config();
+					cfg.setInputFile(new File(event.getFilename()));
 					new Thread() {
 						public void run() {
-							OrcGUI.run(cfg2, JFrame.HIDE_ON_CLOSE);
+							OrcGUI.run(cfg, JFrame.HIDE_ON_CLOSE);
 						}
 					}.start();
 				} catch (CmdLineException e) {
@@ -49,9 +46,7 @@ public class OrcApp {
 				event.setHandled(true);
 			}
 		});
-		
-		if (cfg.hasInputFile()) {
-			OrcGUI.run(cfg, JFrame.DO_NOTHING_ON_CLOSE);
-		}
+		// prevent app from exiting while waiting for events
+		new Object().wait();
 	}
 }
