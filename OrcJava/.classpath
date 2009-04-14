@@ -12,5 +12,5 @@
 	<classpathentry exported="true" kind="lib" path="lib/activation.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jsr173_api.jar"/>
 	<classpathentry kind="lib" path="lib/AppleJavaExtensions.jar"/>
-	<classpathentry kind="output" path="build"/>
+	<classpathentry kind="output" path="build/classes"/>
 </classpath>
