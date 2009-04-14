@@ -7,7 +7,7 @@
 	
 	<path id="orc.classpath">
 		<fileset dir="lib" includes="*.jar" />
-		<pathelement path="build" />
+		<pathelement path="build/classes" />
 		<pathelement path="${orc.location.OrcJava}/lib/kilim.jar" />
 	</path>
 	
@@ -16,12 +16,35 @@
 		classpath="lib/one-jar-ant-task-0.96.jar"
 		onerror="report" />
 	<target name="demo-jar" depends="kilim,minify" description="generate the demo jar">
-		<zip zipfile="web.war" update="true" basedir="web" />
+		<jar jarfile="build/root-demo.war" update="true">
+			<fileset dir="${orc.location.Website}">
+				<include name="demo.shtml"/>
+				<include name="jquery.treeview.css"/>
+				<include name="tryorc-menu.css"/>
+				<include name="tryorc-menu.js"/>
+				<include name="jquery.treeview.min.js"/>
+				<include name="WEB-INF/**/*"/>
+				<include name="tryorc/**/*"/>
+				<include name="images/**/*"/>
+				<exclude name="**/CVS/*"/>
+				<exclude name="**/.svn/*"/>
+			</fileset>
+		</jar>
+		<zip zipfile="build/web.war" update="true">
+			<fileset dir="web">
+				<include name="**/*"/>
+				<exclude name="codemirror"/>
+				<exclude name="orc-ready.js"/>
+				<exclude name="orc-parser.js"/>
+				<exclude name="**/CVS"/>
+				<exclude name="**/.svn"/>
+			</fileset>
+		</zip>
 		<!-- Construct the One-JAR file -->
-		<one-jar destfile="${ant.project.name}-demo.jar" manifest="orchard-demo.mf">
+		<one-jar destfile="build/${ant.project.name}-demo.jar" manifest="orchard-demo.mf">
 			<main>
-				<fileset dir="build" />
-				<fileset dir=".">
+				<fileset dir="build/classes" />
+				<fileset dir="build">
 					<include name="web.war" />
 					<include name="root-demo.war" />
 				</fileset>
@@ -37,16 +60,21 @@
 	</target>
 	
 	<target name="war" depends="kilim,minify" description="generate the war">
-		<jar jarfile="${ant.project.name}.war" update="true">
+		<jar jarfile="build/${ant.project.name}.war" update="true">
 			<fileset dir="web">
 				<include name="**/*"/>
-				<exclude name="**/CVS/*"/>
-				<exclude name="**/.svn/*"/>
+				<exclude name="codemirror"/>
+				<exclude name="orc-ready.js"/>
+				<exclude name="orc-parser.js"/>
+				<exclude name="**/CVS"/>
+				<exclude name="**/.svn"/>
 			</fileset>
-			<zipfileset prefix="WEB-INF/classes" dir="build"/>
+			<zipfileset prefix="WEB-INF/classes" dir="build/classes"/>
 			<zipfileset prefix="WEB-INF/lib" dir="lib">
 				<include name="*.jar"/>
+				<!-- only used in demo jar -->
 				<exclude name="jetty-*.jar"/>
+				<!-- for build only -->
 				<exclude name="yuicompressor-*.jar"/>
 				<exclude name="servlet-api.jar"/>
 			</zipfileset>
@@ -59,15 +87,15 @@
 		</classpath>
 	</taskdef>
 	<path id="wsgen.classpath">
-		<pathelement location="build"/>
+		<pathelement location="build/classes"/>
 		<pathelement location="lib/jsr181-api.jar"/>
 		<pathelement location="lib/jsr250-api.jar"/>
 	</path>
 	<target name="wsgen" description="Generate web service artifacts">
-		<wsgen sei="orc.orchard.soap.CompilerService" destdir="build" xendorsed="true">
+		<wsgen sei="orc.orchard.soap.CompilerService" destdir="build/classes" xendorsed="true">
 			<classpath><path refid="wsgen.classpath"/></classpath>
 		</wsgen>
-		<wsgen sei="orc.orchard.soap.ExecutorService" destdir="build" xendorsed="true">
+		<wsgen sei="orc.orchard.soap.ExecutorService" destdir="build/classes" xendorsed="true">
 			<classpath><path refid="wsgen.classpath"/></classpath>
 		</wsgen>
 	</target>
@@ -79,8 +107,8 @@
 					<enable/>
 				</assertions>
 			<arg value="-d" />
-			<arg value="build" />
-			<arg value="build" />
+			<arg value="build/classes" />
+			<arg value="build/classes" />
 		</java>
 	</target>
 
@@ -106,13 +134,13 @@
 			<arg value="js" />
 			<arg value="web/codemirror/codemirror.js" />
 			<arg value="-o" />
-			<arg value="codemirror-min.tmp" />
+			<arg value="build/codemirror-min.tmp" />
 		</java>
 		<concat destfile="web/codemirror-min.js">
-			<filelist files="web/codemirror/README codemirror-min.tmp"/>
+			<filelist files="web/codemirror/README build/codemirror-min.tmp"/>
 		</concat>
-		<delete file="codemirror-min.tmp"/>
-		<concat destfile="codemirror-extra.tmp">
+		<delete file="build/codemirror-min.tmp"/>
+		<concat destfile="build/codemirror-extra.tmp">
 			<fileset dir="web/codemirror">
 				<include name="*.js"/>
 				<exclude name="codemirror.js"/>
@@ -121,51 +149,45 @@
 		<java jar="lib/yuicompressor-2.3.6.jar" fork="yes">
 			<arg value="--type" />
 			<arg value="js" />
-			<arg value="codemirror-extra.tmp" />
+			<arg value="build/codemirror-extra.tmp" />
 			<arg value="-o" />
-			<arg value="codemirror-extra-min.tmp" />
+			<arg value="build/codemirror-extra-min.tmp" />
 		</java>
-		<delete file="codemirror-extra.tmp"/>
+		<delete file="build/codemirror-extra.tmp"/>
 		<concat destfile="web/codemirror-extra-min.js">
-			<filelist files="web/codemirror/README codemirror-extra-min.tmp"/>
+			<filelist files="web/codemirror/README build/codemirror-extra-min.tmp"/>
 		</concat>
-		<delete file="codemirror-extra-min.tmp"/>
+		<delete file="build/codemirror-extra-min.tmp"/>
 	</target>
 
 	<target name="clean" description="clean up">
 		<delete dir="build" />
-		<delete file="${ant.project.name}.war"/>
-		<delete file="web.war"/>
-		<delete file="${ant.project.name}-demo.jar"/>
 	</target>
 	
 	<target name="demo-app" depends="demo-jar" description="generate a Mac OS bundle">
 		<taskdef name="jarbundler"
-				classpath="lib/jarbundler-2.1.0.jar" 
+				classpath="${orc.location.OrcJava}/lib/jarbundler-2.1.0.jar" 
 				classname="net.sourceforge.jarbundler.JarBundler"/>
 		<!-- create a dummy JavaApplicationStub (will replace with symlink) -->
-		<touch file="JavaApplicationStub"/>
-		<jarbundler dir="."
+		<touch file="build/JavaApplicationStub"/>
+		<jarbundler dir="build"
 				name="${ant.project.name}"
-				mainclass="orc.Orc"
-				jar="${ant.project.name}-demo.jar"
+				mainclass="com.simontuffs.onejar.Boot"
+				jar="build/${ant.project.name}-demo.jar"
 				version="${orc.version}"
-				stubfile="JavaApplicationStub"
-				jvmversion="1.5+">
-			<resourcefileset dir=".">
-				<include name="README"/>
-				<include name="LICENSE"/>
-				<include name="licenses.yml"/>
-				<include name="licenses/**"/>
-			</resourcefileset>
-		</jarbundler>
-		<delete file="JavaApplicationStub"/>
+				stubfile="build/JavaApplicationStub"
+				jvmversion="1.5+" />
+		<delete file="build/JavaApplicationStub"/>
 		<!-- replace JavaApplicationStub with symlink -->
-		<delete file="${ant.project.name}.app/Contents/MacOS/JavaApplicationStub"/>
+		<delete file="build/${ant.project.name}.app/Contents/MacOS/JavaApplicationStub"/>
 		<exec executable="ln">
 			<arg line="-s /System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub"/>
-			<arg value="${ant.project.name}.app/Contents/MacOS/JavaApplicationStub"/>
+			<arg value="build/${ant.project.name}.app/Contents/MacOS/JavaApplicationStub"/>
 		</exec>
-
+		<tar destfile="build/${ant.project.name}-app.tgz" compression="gzip">
+			<tarfileset prefix="." dir="build">
+				<include name="${ant.project.name}.app/**"/>
+			</tarfileset>
+		</tar>
 	</target>
 </project>

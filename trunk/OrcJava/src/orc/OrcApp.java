@@ -25,9 +25,8 @@ public class OrcApp {
 			@Override
 			public void handleOpenFile(ApplicationEvent event) {
 				try {
-					Config newCfg = cfg.clone();
-					newCfg.setInputFile(new File(event.getFilename()));
-					OrcGUI.run(newCfg);
+					cfg.setInputFile(new File(event.getFilename()));
+					OrcGUI.run(cfg);
 				} catch (CmdLineException e) {
 					// should never happen
 					throw new AssertionError(e);

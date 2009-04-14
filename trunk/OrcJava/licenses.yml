@@ -110,3 +110,13 @@ url: http://developer.apple.com/samplecode/AppleJavaExtensions/index.html
 license: MIT-AppleJavaExtensions.txt
 phase: extend
 notes: Used to compile OrcApp, the OS X App version of the Orc tool.
+
+---
+
+files: [jarbundler-2.1.0.jar]
+project: jarbundler
+version: 2.1.0
+url: http://www.informagen.com/JarBundler/
+license: ASF2.0.txt
+phase: build
+notes: Used to build the OS X App version of the Orc tool.
