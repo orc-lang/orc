@@ -85,13 +85,18 @@ public class OrcGUI {
 		Style plain = doc.addStyle("plain",
 			StyleContext.getDefaultStyleContext()
 				.getStyle(StyleContext.DEFAULT_STYLE));
-		StyleConstants.setFontFamily(plain, "SansSerif");
 		Style s;
 		s = doc.addStyle("print", plain);
+		StyleConstants.setFontFamily(s, "SansSerif");
+		
 		s = doc.addStyle("publish", plain);
+		StyleConstants.setFontFamily(plain, "Monospaced");
 		StyleConstants.setBold(s, true);
+		
 		s = doc.addStyle("error", plain);
+		StyleConstants.setFontFamily(plain, "Monospaced");
 		StyleConstants.setForeground(s, Color.RED);
+		StyleConstants.setBold(s, true);
 		
 		// initialize frame
 		JFrame frame = new JFrame("Orc Output");
