@@ -73,7 +73,7 @@ cite {
 	position: absolute;
 	top: 0;
 	left: 0;
-	padding: 10px 0 0 40px;
+	padding: 0 0 0 40px;
 }
 .title h1 {
 	color: #FFF;
@@ -190,7 +190,7 @@ small, .small {font: normal 10px Verdana,sans-serif;}
 	float: left;
 	width: 24%;
 	padding-top: 150px;
-	background: url(img/logo.png) no-repeat top left;
+	background: url(img/logo.gif) no-repeat top left;
 }
 
 .container {
