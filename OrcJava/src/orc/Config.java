@@ -28,6 +28,7 @@ import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
+import org.kohsuke.args4j.spi.StopOptionHandler;
 
 /**
  * Class for processing configuration options. Such options could be provided
@@ -49,10 +50,10 @@ public class Config implements Cloneable {
 	private LinkedList<String> includes = new LinkedList<String>();
 	private String[] includePath = new String[]{"."};
 	private Integer maxPubs = null;
-	private String filename = "<stdin>";
-	private Reader instream = new InputStreamReader(System.in);
-	private Integer numKilimThreads = 1;
-	private Integer numSiteThreads = 2;
+	private String filename;
+	private Reader instream;
+	private int numKilimThreads = 1;
+	private int numSiteThreads = 2;
 	private Boolean noPrelude = false;
 	private HashMap<String, Boolean> caps = new HashMap<String, Boolean>();
 	private PrintStream stdout = System.out;
@@ -68,6 +69,9 @@ public class Config implements Cloneable {
 		CmdLineParser parser = new CmdLineParser(this); 
 		try {
 			parser.parseArgument(args);
+			if (filename == null) {
+				throw new CmdLineException("You must supply a filename to execute.");
+			}
 		} catch (CmdLineException e1) {
 			System.err.println(e1.getMessage());
 			System.err.println("Usage: java -jar orc.jar [options] [file]");
@@ -81,24 +85,26 @@ public class Config implements Cloneable {
 		throw new CmdLineException("");
 	}
 	
-	@Option(name="-debug",usage="Enable debugging output")
+	@Option(name="-debug",usage="Enable debugging output, which is disabled by default.")
 	public void setDebug(boolean debug) {
 		this.debug = debug;
 	}
 	
-	@Option(name="-typecheck",usage="Enable typechecking")
+	@Option(name="-typecheck",usage="Enable typechecking, which is disabled by default.")
 	public void setTypeChecking(boolean typecheck) {
 		this.typecheck = typecheck;
 	}
 		
-	@Option(name="-noprelude",usage="Do not implicitly include standard library (prelude).")
+	@Option(name="-noprelude",usage="Do not implicitly include standard library (prelude), which is included by default.")
 	public void setNoPrelude(boolean noPrelude) {
 		this.noPrelude = noPrelude;
 	}
 	
-	@Option(name="-trace",usage="Specify a filename for tracing. The special filename \"-\" will write a human-readable trace to stderr.")
+	@Option(name="-trace",usage="Specify a filename for tracing. The special filename \"-\" will write a human-readable trace to stderr. Default is not to trace.")
 	public void setFullTraceFile(File file) throws CmdLineException {
-		if (file.getPath().equals("-")) {
+		if (file == null || file.getPath().equals("")) {
+			tracer = new NullTracer();
+		} else if (file.getPath().equals("-")) {
 			tracer = new PrintStreamTracer(System.err);
 		} else {
 			try {
@@ -111,12 +117,12 @@ public class Config implements Cloneable {
 		}
 	}
 		
-	@Option(name="-oil",usage="Intsead of running the program, just compile it and write the OIL XML to stdout.")
+	@Option(name="-oil",usage="Intsead of running the program, compile it and write the OIL XML to stdout.")
 	public void setDumpOil(boolean dumpOil) {
 		this.dumpOil = dumpOil;
 	}
 	
-	@Option(name="-I",usage="Set the include path for Orc includes. Separate path entries by ':'. The default value is '.', the current directory.")
+	@Option(name="-I",usage="Set the include path for Orc includes (same syntax as CLASSPATH). Default is \".\", the current directory. Prelude files are always available for include regardless of this setting.")
 	public void setIncludePath(String includePath) {
 		if (null == includePath) {
 			this.includePath = new String[]{};
@@ -125,22 +131,27 @@ public class Config implements Cloneable {
 		}
 	}
 	
-	@Option(name="-pub",usage="Stop after publishing this many values")
+	@Option(name="-pub",usage="Terminate the program after this many values are published. Default=infinity.")
 	public void setMaxPubs(int maxPubs) {
 		this.maxPubs = maxPubs;
 	}
 	
-	@Argument(metaVar="file", usage="Input file. Omit or use the special filename \"-\"  to read from stdin.")
-	public void setInputFile(File file) throws CmdLineException {
-		if (file == null
-				|| file.getPath().equals("")
-				|| file.getPath().equals("-"))
-		{
-			instream = new InputStreamReader(System.in);
+	@Option(name="-numSiteThreads", usage="Use up to this many threads for blocking site calls. Default=2.")
+	public void setNumSiteThreads(Integer v) {
+		numSiteThreads = v;
+	}
+	
+	@Option(name="-", usage="Use the special filename \"-\" to read from stdin.")
+	public void setInputFile(boolean stdin) throws CmdLineException {
+		if (stdin == true) {
 			filename = "<stdin>";
-			hasInputFile = false;
-			return;
+			instream = new InputStreamReader(System.in);
 		}
+	}
+	
+	@Option(name="--", handler=StopOptionHandler.class, usage="Use \"--\" to signal the end of options, e.g. so you can specify a filename starting with \"-\".")
+	@Argument(metaVar="file", usage="Path to script to execute.")
+	public void setInputFile(File file) throws CmdLineException {
 		try {
 			instream = new FileReader(file);
 			filename = file.getPath();
@@ -194,11 +205,11 @@ public class Config implements Cloneable {
 		return includes;
 	}
 	
-	public Integer getNumKilimThreads() {
+	public int getNumKilimThreads() {
 		return numKilimThreads;
 	}
 	
-	public Integer getNumSiteThreads() {
+	public int getNumSiteThreads() {
 		return numSiteThreads;
 	}
 	

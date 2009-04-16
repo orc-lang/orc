@@ -1,6 +1,7 @@
-package orc;
+package orc.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -22,8 +23,13 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.SpringLayout;
 import javax.swing.event.ChangeListener;
+
+import orc.Config;
 
 import org.kohsuke.args4j.CmdLineException;
 
@@ -33,8 +39,8 @@ import com.apple.eawt.ApplicationEvent;
 import static javax.swing.SwingUtilities.invokeLater;
 
 /**
- * First attempt at a Mac OS X App interface for Orc.
- * This has not been tested and probably doesn't work.
+ * A basic Mac OS X App interface for Orc.
+ * Supports drag-and-drop, Preferences, and About.
  * @author quark
  */
 public class OrcApp extends OrcGui {
@@ -45,6 +51,8 @@ public class OrcApp extends OrcGui {
 	@Override
 	protected JFrame createFrame() {
 		JFrame frame = super.createFrame();
+		// we don't want to exit since the same app may run
+		// multiple Orc programs
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		return frame;
 	}
@@ -52,15 +60,26 @@ public class OrcApp extends OrcGui {
 	@Override
 	protected JScrollPane createScrollPane() {
 		JScrollPane scrollPane = super.createScrollPane();
+		// Mac OS X interface policy says to always show scrollbars
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         return scrollPane;
 	}
 	
+	/**
+	 * Main method; starts Apple event listeners and not much else.
+	 * This doesn't expect to receive any command-line arguments.
+	 * @param args
+	 */
 	public static void main(String[] args) {
+		if (args.length > 0) throw new AssertionError(
+				"I didn't expect command-line arguments; run me by opening my bundle.");
 		Application app = Application.getApplication();
 		app.setEnabledPreferencesMenu(true);
+		// this is where we store the default configuration settings
+		// to be used when a script is opened.
 		final Config defaultConfig = new Config();
+		// register our Apple event handlers
 		app.addApplicationListener(new ApplicationAdapter() {
 			/** Open files are handled by starting a new engine running the file. */
 			@Override
@@ -69,6 +88,8 @@ public class OrcApp extends OrcGui {
 					final Config cfg = defaultConfig.clone();
 					// Read configuration options from the environment and the command line
 					cfg.setInputFile(new File(event.getFilename()));
+					// start the engine in a new thread so we don't
+					// block the event thread
 					new Thread(new OrcApp(cfg)).start();
 				} catch (CmdLineException e) {
 					// should never happen
@@ -82,6 +103,7 @@ public class OrcApp extends OrcGui {
 				event.setHandled(true);
 			}
 
+			/** About events are handled by starting our about dialog. */
 			@Override
 			public void handleAbout(ApplicationEvent event) {
 				final AboutDialog dialog = new AboutDialog();
@@ -95,6 +117,7 @@ public class OrcApp extends OrcGui {
 				event.setHandled(true);
 			}
 
+			/** Preferences events are handled by starting our preferences dialog. */
 			@Override
 			public void handlePreferences(ApplicationEvent event) {
 				final PreferencesDialog dialog = new PreferencesDialog(defaultConfig);
@@ -106,14 +129,15 @@ public class OrcApp extends OrcGui {
 				});
 			}
 		});
-		try {
-			// prevent app from exiting while waiting for events
-			new Object().wait();
-		} catch (InterruptedException e) {
-			// do nothing
-		}
+		// prevent app from exiting while waiting for events
+		try { new Object().wait(); } catch (InterruptedException e) { }
 	}
 	
+	/**
+	 * The "About" dialog.
+	 * Shows our logo and copyright information.
+	 * @author quark
+	 */
 	private static class AboutDialog extends JDialog {
 		public AboutDialog() {
 			// The following is based losely on JUnit's about dialog.
@@ -189,24 +213,59 @@ public class OrcApp extends OrcGui {
 		}
 	}
 	
+	/**
+	 * Preferences dialog, used to set config properties that
+	 * would normally be set via the command line.
+	 * @author quark
+	 */
 	private static class PreferencesDialog extends JDialog {
 		public PreferencesDialog(final Config config) {
 			super((JFrame)null, "Preferences");
-			final JCheckBox typeChecking = new JCheckBox("Type checking enabled");
-			typeChecking.setSelected(config.getTypeChecking());
+			// Here's the layout:
+			//
+			//  |-------------------------|
+			//  ||-----------------------|| \
+			//  || field1                ||  |
+			//  ||-----------------------||  |
+			//  ||    label2 | field2    ||  |- fields
+			//  ||-----------------------||  |
+			//  ||          ...          ||  |
+			//  ||-----------------------|| /
+			//  |-------------------------|
+			//  ||-----------------------|| \
+			//  ||            save cancel||  |- buttons
+			//  ||-----------------------|| /
+			//  |-------------------------|
+			//
 			
-			final JCheckBox noPrelude = new JCheckBox("Prelude disabled");
-			noPrelude.setSelected(config.getNoPrelude());
-			
+			// create the main fields of the form;
 			final JTextField includePath = new JTextField();
 			includePath.setText(config.getIncludePath());
+			final JCheckBox typeChecking = new JCheckBox("Type checking enabled");
+			typeChecking.setSelected(config.getTypeChecking());
+			final JCheckBox noPrelude = new JCheckBox("Prelude disabled");
+			noPrelude.setSelected(config.getNoPrelude());
+			final SpinnerNumberModel numSiteThreads = new SpinnerNumberModel(config.getNumSiteThreads(), 1, 100, 1);
+			JLabel note = new JLabel("Note: changes will not apply to currently-running scripts.");
+			note.setFont(note.getFont().deriveFont(Font.ITALIC));
+			JPanel fields = createForm(new Component[][]{
+					new Component[]{ new JLabel(
+							"Include path - separate entries with "+
+							System.getProperty("path.separator")) },
+					new Component[]{ includePath },
+					new Component[]{ typeChecking },
+					new Component[]{ new JLabel("Site Threads:"), new JSpinner(numSiteThreads) },
+					new Component[]{ note },
+			});
 			
+			// create the form buttons
 			JButton saveButton = new JButton("Save");
 			saveButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					config.setTypeChecking(typeChecking.isSelected());
 					config.setNoPrelude(noPrelude.isSelected());
 					config.setIncludePath(includePath.getText());
+					config.setNumSiteThreads(numSiteThreads.getNumber().intValue());
 					//config.setFullTraceFile(null);
 					dispose();
 				}
@@ -218,20 +277,14 @@ public class OrcApp extends OrcGui {
 				}
 			});
 			JPanel buttons = new JPanel();
+			buttons.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
 			buttons.setLayout(new BoxLayout(buttons, BoxLayout.LINE_AXIS));
 			buttons.add(Box.createHorizontalGlue());
 			buttons.add(saveButton);
 			buttons.add(Box.createHorizontalStrut(5));
 			buttons.add(cancelButton);
 			
-			JPanel fields = new JPanel();
-			fields.setLayout(new BoxLayout(fields, BoxLayout.PAGE_AXIS));
-			fields.add(new JLabel("Include path - separate entries with "+
-					System.getProperty("path.separator")));
-			fields.add(includePath);
-			fields.add(typeChecking);
-			fields.add(noPrelude);
-			
+			// create the content panel
 			JPanel contentPane = new JPanel(new BorderLayout());
 			contentPane.add(fields, BorderLayout.PAGE_START);
 			contentPane.add(buttons, BorderLayout.PAGE_END);
@@ -240,5 +293,44 @@ public class OrcApp extends OrcGui {
 			setResizable(false);
 			setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		}
+	}
+	
+	/**
+	 * Utility method to create a two-column form layout.
+	 * Takes a list of components in row-major order.
+	 * Rows with one component span both columns.
+	 * Rows with two components are split into two columns,
+	 * justified towards the center.
+	 */
+	private static JPanel createForm(Component[][] components) {
+		JPanel out = new JPanel(new GridBagLayout());
+		GridBagConstraints c = new GridBagConstraints();
+		Insets insetRight = new Insets(0, 0, 0, 5);
+		Insets insetNone = new Insets(0, 0, 0, 0);
+		c.gridheight = 1;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		// iterate through rows
+		for (int i = 0; i < components.length; ++i) {
+			c.gridy = i;
+			if (components[i].length == 1) {
+				c.gridx = 0;
+				c.gridwidth = 2; 
+				c.anchor = GridBagConstraints.LINE_START;
+				out.add(components[i][0], c);
+			} else if (components[i].length == 2) {
+				c.gridwidth = 1; 
+				c.gridx = 0;
+				c.anchor = GridBagConstraints.LINE_END;
+				c.insets = insetRight;
+				out.add(components[i][0], c);
+				c.insets = insetNone;
+				c.gridx = 1;
+				c.anchor = GridBagConstraints.LINE_START;
+				out.add(components[i][1], c);
+			} else {
+				throw new AssertionError("Unexpected number of components in row.");
+			}
+		}
+		return out;
 	}
 }
