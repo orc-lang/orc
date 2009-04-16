@@ -2,7 +2,9 @@
 
 <h2>License</h2>
 
-<p>Please read the <a href="license.shtml">license agreement</a> before downloading.</p>
+<p>The Orc source code and binaries are released under the <a href="license.shtml">BSD License</a>.</p>
+
+<h2>Audience</h2>
 
 <p>Orc is available in different formats depending on what you will be doing with it:</p>
 <ul>
@@ -12,7 +14,7 @@
 </ul>
 
 <a name="casual"></a>
-<h2>Casual Users</h2>
+<h3>Casual Users</h3>
 
 <p>Use our <a href="tryorc.shtml">Try Orc!</a> feature to experiment with Orc in
 your browser. We are currently working on extending the online job server to
@@ -21,7 +23,7 @@ href="mailto:webmaster at orc.cs.utexas.edu" class="obfuscated-email">contact
 us</a> if you are interested in obtaining an account.</p>
 
 <a name="power"></a>
-<h2>Power Users</h2>
+<h3>Power Users</h3>
 
 <p>Orc is available as a standalone JAR which you can use to run programs on
 the command line and develop your own sites.</p>
@@ -30,7 +32,7 @@ the command line and develop your own sites.</p>
 For further assistance, please see the <a href="documentation.shtml">documentation</a>.</p>
 
 <a name="devs"></a>
-<h2>Developers</h2>
+<h3>Developers</h3>
 
 <p>Orc is developed in Eclipse. The <a href="quickstart.shtml">developer's
 quick start</a> describes how to check out and build the Orc Eclipse project

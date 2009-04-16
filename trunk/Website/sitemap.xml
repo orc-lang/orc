@@ -61,7 +61,13 @@
   <changefreq>weekly</changefreq>
 </url>
 <url>
-  <loc>http://orc.csres.utexas.edu/userguide.pdf</loc>
+  <loc>http://orc.csres.utexas.edu/userguide/html/index.html</loc>
+  <priority>0.80</priority>
+  <lastmod>2008-07-14T17:32:24+00:00</lastmod>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://orc.csres.utexas.edu/userguide/pdf/all.pdf</loc>
   <priority>0.80</priority>
   <lastmod>2008-07-14T17:32:24+00:00</lastmod>
   <changefreq>weekly</changefreq>
