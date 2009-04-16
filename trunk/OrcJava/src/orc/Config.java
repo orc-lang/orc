@@ -50,7 +50,7 @@ public class Config implements Cloneable {
 	private LinkedList<String> includes = new LinkedList<String>();
 	private String[] includePath = new String[]{"."};
 	private Integer maxPubs = null;
-	private String filename;
+	private String filename = "<undefined>";
 	private Reader instream;
 	private int numKilimThreads = 1;
 	private int numSiteThreads = 2;
@@ -69,7 +69,7 @@ public class Config implements Cloneable {
 		CmdLineParser parser = new CmdLineParser(this); 
 		try {
 			parser.parseArgument(args);
-			if (filename == null) {
+			if (instream == null) {
 				throw new CmdLineException("You must supply a filename to execute.");
 			}
 		} catch (CmdLineException e1) {
