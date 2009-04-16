@@ -183,7 +183,7 @@
 		<mkdir dir="build/${target.name}"/>
 		<jarbundler dir="build/${target.name}"
 				name="${target.name}"
-				mainclass="orc.OrcApp"
+				mainclass="orc.gui.OrcApp"
 				jar="build/${target.name}.jar"
 				version="${orc.version}"
 				stubfile="build/JavaApplicationStub"

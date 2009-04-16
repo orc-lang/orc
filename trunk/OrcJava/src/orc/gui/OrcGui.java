@@ -1,4 +1,4 @@
-package orc;
+package orc.gui;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -29,6 +29,8 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 
+import orc.Config;
+import orc.Orc;
 import orc.ast.oil.Compiler;
 import orc.ast.oil.Expr;
 import orc.error.SourceLocation;
@@ -47,8 +49,10 @@ import com.apple.eawt.ApplicationEvent;
 import static javax.swing.SwingUtilities.invokeLater;
 
 /**
- * First attempt at a GUI interface for Orc.
+ * A basic GUI interface for Orc.
  * This outputs to its own window instead of the console.
+ * It also provides pause/resume/stop buttons in the menubar.
+ * You still need to start the GUI from the command line.
  * @author quark
  */
 public class OrcGui implements Runnable {
