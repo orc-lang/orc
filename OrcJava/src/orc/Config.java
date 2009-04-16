@@ -49,11 +49,11 @@ public class Config implements Cloneable {
 	private LinkedList<String> includes = new LinkedList<String>();
 	private String[] includePath = new String[]{"."};
 	private Integer maxPubs = null;
+	private String filename = "<stdin>";
 	private Reader instream = new InputStreamReader(System.in);
 	private Integer numKilimThreads = 1;
 	private Integer numSiteThreads = 2;
 	private Boolean noPrelude = false;
-	private String filename = "<stdin>";
 	private HashMap<String, Boolean> caps = new HashMap<String, Boolean>();
 	private PrintStream stdout = System.out;
 	private PrintStream stderr = System.err;
@@ -96,13 +96,7 @@ public class Config implements Cloneable {
 		this.noPrelude = noPrelude;
 	}
 	
-	@Option(name="-mintrace",usage="Specify a filename for minimal tracing. The special filename \"-\" will write a human-readable trace to stdout.")
-	public void setMinimalTraceFile(File file) throws CmdLineException {
-		setFullTraceFile(file);
-		tracer = new MinimizeTracer(tracer);
-	}
-	
-	@Option(name="-trace",usage="Specify a filename for full tracing. The special filename \"-\" will write a human-readable trace to stderr.")
+	@Option(name="-trace",usage="Specify a filename for tracing. The special filename \"-\" will write a human-readable trace to stderr.")
 	public void setFullTraceFile(File file) throws CmdLineException {
 		if (file.getPath().equals("-")) {
 			tracer = new PrintStreamTracer(System.err);
@@ -122,18 +116,12 @@ public class Config implements Cloneable {
 		this.dumpOil = dumpOil;
 	}
 	
-	@Option(name="-i",usage="Include this file from the package orc.inc;" +
-			" may appear multiple times.")
-	public void addInclude(String include) {
-		this.includes.add(include);
-	}
-	
 	@Option(name="-I",usage="Set the include path for Orc includes. Separate path entries by ':'. The default value is '.', the current directory.")
 	public void setIncludePath(String includePath) {
 		if (null == includePath) {
 			this.includePath = new String[]{};
 		} else {
-			this.includePath = includePath.split(":");
+			this.includePath = includePath.split(System.getProperty("path.separator"));
 		}
 	}
 	
@@ -142,8 +130,17 @@ public class Config implements Cloneable {
 		this.maxPubs = maxPubs;
 	}
 	
-	@Argument(metaVar="file", usage="Input file. Omit to use STDIN.")
+	@Argument(metaVar="file", usage="Input file. Omit or use the special filename \"-\"  to read from stdin.")
 	public void setInputFile(File file) throws CmdLineException {
+		if (file == null
+				|| file.getPath().equals("")
+				|| file.getPath().equals("-"))
+		{
+			instream = new InputStreamReader(System.in);
+			filename = "<stdin>";
+			hasInputFile = false;
+			return;
+		}
 		try {
 			instream = new FileReader(file);
 			filename = file.getPath();
@@ -151,6 +148,10 @@ public class Config implements Cloneable {
 		} catch (FileNotFoundException e) {
 			throw new CmdLineException("Could not find input file '"+file+"'");
 		}
+	}
+	
+	public void addInclude(String include) {
+		this.includes.add(include);
 	}
 	
 	public boolean hasInputFile() {
@@ -201,7 +202,7 @@ public class Config implements Cloneable {
 		return numSiteThreads;
 	}
 	
-	public boolean typeCheckingMode() {
+	public boolean getTypeChecking() {
 		return typecheck;
 	}
 	
@@ -254,6 +255,19 @@ public class Config implements Cloneable {
 		this.stackSize = stackSize;
 	}
 	
+	public String getIncludePath() {
+		if (includePath.length > 0) {
+			StringBuilder out = new StringBuilder();
+			String sep = System.getProperty("path.separator");
+			out.append(includePath[0]);
+			for (int i = 1; i < includePath.length; ++i) {
+				out.append(sep);
+				out.append(includePath[i]);
+			}
+			return out.toString();
+		} else return "";
+	}
+	
 	/**
 	 * Open an include file. Searches first the include path
 	 * defined by {@link #setIncludePath(String)} and then the
@@ -279,10 +293,7 @@ public class Config implements Cloneable {
 		}
 		InputStream stream = Config.class.getResourceAsStream("/orc/inc/"+name);
 		if (stream == null) {
-			throw new FileNotFoundException(
-					"Include file '"
-							+ name
-							+ "' not found; check the include path.");
+			throw new FileNotFoundException("Include file '" + name + "' not found; check the include path.");
 		}
 		return new InputStreamReader(stream);
 	}

@@ -108,7 +108,7 @@ public class Orc {
 		// System.out.println(ex);
 		
 		// Optionally perform typechecking
-		if (cfg.typeCheckingMode()) {
+		if (cfg.getTypeChecking()) {
 			
 			Type rt = ex.typesynth(new Env<Type>(), new Env<Type>());
 			System.out.println("... :: " + rt);
@@ -175,7 +175,6 @@ public class Orc {
         
 		// Configure the runtime engine.
 		OrcEngine engine = new OrcEngine(cfg);
-		engine.debugMode = cfg.debugMode();
 
 		// Create an OrcInstance object, to be run in its own thread
 		OrcInstance inst = new OrcInstance(engine, n, q);

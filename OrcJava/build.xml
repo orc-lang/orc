@@ -190,6 +190,10 @@
 				jvmversion="1.5+"
 				icon="icons/orc-app.icns" >
 			<javaproperty name="apple.laf.useScreenMenuBar" value="true"/>
+			<javaproperty name="com.apple.macos.useScreenMenuBar" value="true"/>
+			<javaproperty name="com.apple.mrj.application.growbox.intrudes" value="false"/>
+			<javaproperty name="com.apple.mrj.application.apple.menu.about.name" value="Orc"/>
+			<javaproperty name="orc.version" value="${orc.version}"/>
 			<documenttype name="Orc Script"
 					extensions="orc" 
 					iconfile="icons/orc-file.icns"

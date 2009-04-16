@@ -156,8 +156,7 @@ public final class Job implements JobMBean {
 		private StringBuffer printBuffer = new StringBuffer();
 		/** Close the event stream when done running. */
 		@Override
-		public void run() {
-			super.run();
+		public void onTerminate() {
 			// flush the buffer if anything is left
 			String printed = printBuffer.toString();
 			if (printed.length() > 0) events.add(new PrintlnEvent(printed));
@@ -165,7 +164,7 @@ public final class Job implements JobMBean {
 		}
 		/** Send token errors to the event stream. */
 		@Override
-		public void tokenError(TokenException problem) {
+		public void onError(TokenException problem) {
 			System.err.println();
 			System.err.println("Problem: " + problem);
 			System.err.println("Source location: " + problem.getSourceLocation());
@@ -201,7 +200,7 @@ public final class Job implements JobMBean {
 			}
 		}
 		@Override
-		public void publish(Object v) {
+		public void onPublish(Object v) {
 			events.add(new PublicationEvent(ValueMarshaller.visit(new ValueMarshaller(), v)));
 		}
 		
