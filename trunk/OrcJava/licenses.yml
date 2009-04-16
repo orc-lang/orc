@@ -13,9 +13,9 @@
 # notes: any notes about why the dependency is needed
 ---
 
-files: [args4j-2.0.9.jar]
+files: [args4j-2.0.12.jar]
 project: args4j
-version: 2.0.9
+version: 2.0.12
 url: https://args4j.dev.java.net/
 license: MIT-args4j.txt
 phase: link
