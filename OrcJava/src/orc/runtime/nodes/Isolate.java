@@ -19,6 +19,7 @@ public class Isolate extends Node {
 	public void process(Token t) {
 		t.setRegion(new IsolatedRegion(t.getEngine().getExecution(), t.getRegion()));
 		t.setGroup(new IsolatedGroup(t.getGroup()));
+		t.pushLtimer();
 		t.move(body).activate();
 	}
 }
