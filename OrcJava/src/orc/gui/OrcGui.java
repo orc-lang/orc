@@ -1,6 +1,7 @@
 package orc.gui;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Menu;
 import java.awt.MenuBar;
@@ -8,8 +9,12 @@ import java.awt.MenuItem;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -23,6 +28,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
+import javax.swing.ProgressMonitor;
+import javax.swing.text.AbstractWriter;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -31,6 +38,7 @@ import javax.swing.text.StyledDocument;
 
 import orc.Config;
 import orc.Orc;
+import orc.Orc.ProgressCanceled;
 import orc.ast.oil.Compiler;
 import orc.ast.oil.Expr;
 import orc.error.SourceLocation;
@@ -59,7 +67,7 @@ public class OrcGui implements Runnable {
 	protected Config config;
 	protected OrcEngine engine;
 	
-	private Action pause = new AbstractAction("Pause") {
+	protected Action pause = new AbstractAction("Pause") {
 		{
 			putValue(MNEMONIC_KEY, KeyEvent.VK_P);
 		}
@@ -69,7 +77,7 @@ public class OrcGui implements Runnable {
 			resume.setEnabled(true);
 		}
     };
-	private Action resume = new AbstractAction("Resume") {
+	protected Action resume = new AbstractAction("Resume") {
     	{
 			putValue(MNEMONIC_KEY, KeyEvent.VK_R);
     		setEnabled(false);
@@ -80,7 +88,7 @@ public class OrcGui implements Runnable {
 			pause.setEnabled(true);
 		}
     };
-	private Action stop = new AbstractAction("Stop") {
+	protected Action stop = new AbstractAction("Stop") {
     	{
 			putValue(MNEMONIC_KEY, KeyEvent.VK_S);
     	}
@@ -125,27 +133,56 @@ public class OrcGui implements Runnable {
         bar.add(new JButton(pause));
         bar.add(new JButton(resume));
         bar.add(new JButton(stop));
-        /*
-        JMenu menu = new JMenu("Run");
-        menu.setMnemonic(KeyEvent.VK_R);
-        menu.add(new JMenuItem(pause));
-        menu.add(new JMenuItem(resume));
-        menu.add(new JMenuItem(stop));
-        bar.add(menu);
-        */
         return bar;
+	}
+	
+	/**
+	 * A progress monitor which can be safely updated from outside the event thread.
+	 * @author quark
+	 */
+	protected static class SafeProgressMonitor {
+		private ProgressMonitor progress;
+		private AtomicBoolean isCanceled = new AtomicBoolean(false);
+		public SafeProgressMonitor(Component parent, Object message, String note, int min, int max) {
+			progress = new ProgressMonitor(parent, message, note, min, max);
+		}
+		
+		public boolean isCanceled() {
+			return isCanceled.get();
+		}
+		
+		public void setProgress(final int nv) {
+			invokeLater(new Runnable() {
+				public void run() {
+					if (progress.isCanceled()) isCanceled.set(true);
+					progress.setProgress(nv);
+				}
+			});
+		}
 	}
 	
 	public void run() {
 		Node n;
+		final SafeProgressMonitor progress = new SafeProgressMonitor(null,
+				"Compiling " + config.getFilename(), "", 0, 10);
 		try {
-			Expr ex = Orc.compile(config.getInstream(), config);
+			Expr ex = Orc.compile(config.getInstream(), config, new Orc.ProgressListener() {
+				public void setProgress(double v) throws ProgressCanceled {
+					try { Thread.sleep(1000); } catch (InterruptedException _) {}
+					progress.setProgress((int)(7*v));
+					if (progress.isCanceled()) throw new Orc.ProgressCanceled();
+				}
+			});
 			n = Compiler.compile(ex, new Pub());
+			progress.setProgress(9);
+			if (progress.isCanceled()) return;
 		} catch (CompilationException e) {
 			error("Compilation Error", e.getMessage());
 			return;
 		} catch (IOException e) {
 			error("Error Reading File", e.getMessage());
+			return;
+		} catch (ProgressCanceled e) {
 			return;
 		}
 		
@@ -227,6 +264,9 @@ public class OrcGui implements Runnable {
 				output("error", "\n");
 			}
 		};
+		
+		progress.setProgress(10);
+		if (progress.isCanceled()) return;
 		
 		// display the frame
 		invokeLater(new Runnable() {

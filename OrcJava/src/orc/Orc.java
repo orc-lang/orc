@@ -70,12 +70,34 @@ public class Orc {
 		engine.run(n);
 	}
 	
+	public static class ProgressCanceled extends Exception {}
+	public interface ProgressListener {
+		/** Set the completion for the current task as a percentage. */
+		public void setProgress(double progress) throws ProgressCanceled;
+	}
+	
+	public static final ProgressListener NULL_COMPILE_PROGRESS_LISTENER = new ProgressListener() {
+		public void setProgress(double progress) {
+			// do nothing
+		}
+	};
+	
 	public static Expr compile(Reader source, Config cfg) throws IOException, CompilationException {
+		try {
+			return compile(source, cfg, NULL_COMPILE_PROGRESS_LISTENER);
+		} catch (ProgressCanceled e) {
+			// can't happen
+			throw new AssertionError(e);
+		}
+	}
+	
+	public static Expr compile(Reader source, Config cfg, ProgressListener progress) throws IOException, CompilationException, ProgressCanceled {
 
 		//System.out.println("Parsing...");
 		// Parse the goal expression
 		OrcParser parser = new OrcParser(cfg, source, cfg.getFilename());
 		orc.ast.extended.Expression e = parser.parseProgram();
+		progress.setProgress(0.3);
 		
 		//System.out.println(e);
 		
@@ -95,6 +117,8 @@ public class Orc {
 			decls.addAll(fparser.parseModule());
 		}
 		
+		progress.setProgress(0.5);
+		
 		// Add the declarations to the parse tree
 		Collections.reverse(decls);
 		for (Declaration d : decls)
@@ -106,6 +130,8 @@ public class Orc {
 		// Simplify the AST
 		Expr ex = e.simplify().convert(new Env<Var>(), new Env<String>());
 		// System.out.println(ex);
+		
+		progress.setProgress(0.7);
 		
 		// Optionally perform typechecking
 		if (cfg.getTypeChecking()) {
@@ -119,6 +145,7 @@ public class Orc {
 		
 		UnguardedRecursionChecker.check(ex);
 		
+		progress.setProgress(1.0);
 		return ex;
 	}
 	

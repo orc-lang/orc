@@ -8,6 +8,9 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.concurrent.Executor;
 
@@ -20,6 +23,9 @@ import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -54,6 +60,13 @@ public class OrcApp extends OrcGui {
 		// we don't want to exit since the same app may run
 		// multiple Orc programs
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		// terminate the engine when the window is closed
+		frame.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				engine.terminate();
+			}
+		});
 		return frame;
 	}
 	
@@ -64,6 +77,20 @@ public class OrcApp extends OrcGui {
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         return scrollPane;
+	}
+	
+	@Override
+	protected JMenuBar createMenuBar() {
+		// OS X can't handle buttons in the menu bar
+		// so we have to use a menu instead
+        JMenuBar bar = new JMenuBar();
+        JMenu menu = new JMenu("Run");
+        menu.setMnemonic(KeyEvent.VK_R);
+        menu.add(new JMenuItem(pause));
+        menu.add(new JMenuItem(resume));
+        menu.add(new JMenuItem(stop));
+        bar.add(menu);
+        return bar;
 	}
 	
 	/**
@@ -79,6 +106,19 @@ public class OrcApp extends OrcGui {
 		// this is where we store the default configuration settings
 		// to be used when a script is opened.
 		final Config defaultConfig = new Config();
+		
+		// create the about dialog ahead of time
+		// so it shows quickly; this also keeps
+		// the app from exiting at the end of main
+		final AboutDialog about = new AboutDialog();
+		about.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+		// pack but don't show
+		invokeLater(new Runnable() {
+			public void run() {
+				about.pack();
+			}
+		});
+				
 		// register our Apple event handlers
 		app.addApplicationListener(new ApplicationAdapter() {
 			/** Open files are handled by starting a new engine running the file. */
@@ -106,11 +146,9 @@ public class OrcApp extends OrcGui {
 			/** About events are handled by starting our about dialog. */
 			@Override
 			public void handleAbout(ApplicationEvent event) {
-				final AboutDialog dialog = new AboutDialog();
 				invokeLater(new Runnable() {
 					public void run() {
-						dialog.pack();
-						dialog.setVisible(true);
+						about.setVisible(true);
 					}
 				});
 				// setHandled to keep default dialog from being shown
@@ -129,8 +167,6 @@ public class OrcApp extends OrcGui {
 				});
 			}
 		});
-		// prevent app from exiting while waiting for events
-		try { new Object().wait(); } catch (InterruptedException e) { }
 	}
 	
 	/**
@@ -209,7 +245,6 @@ public class OrcApp extends OrcGui {
 			contentPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 			setContentPane(contentPane);
 			setResizable(false);
-			setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		}
 	}
 	
@@ -223,19 +258,15 @@ public class OrcApp extends OrcGui {
 			super((JFrame)null, "Preferences");
 			// Here's the layout:
 			//
-			//  |-------------------------|
-			//  ||-----------------------|| \
-			//  || field1                ||  |
-			//  ||-----------------------||  |
-			//  ||    label2 | field2    ||  |- fields
-			//  ||-----------------------||  |
-			//  ||          ...          ||  |
-			//  ||-----------------------|| /
-			//  |-------------------------|
-			//  ||-----------------------|| \
-			//  ||            save cancel||  |- buttons
-			//  ||-----------------------|| /
-			//  |-------------------------|
+			//  |-----------------------|
+			//  | field1                |
+			//  |-----------------------|
+			//  |    label2 | field2    |
+			//  |-----------------------|
+			//  |          ...          |
+			//  |-----------------------|
+			//  |            save cancel|
+			//  |-----------------------|
 			//
 			
 			// create the main fields of the form;
@@ -247,16 +278,8 @@ public class OrcApp extends OrcGui {
 			noPrelude.setSelected(config.getNoPrelude());
 			final SpinnerNumberModel numSiteThreads = new SpinnerNumberModel(config.getNumSiteThreads(), 1, 100, 1);
 			JLabel note = new JLabel("Note: changes will not apply to currently-running scripts.");
-			note.setFont(note.getFont().deriveFont(Font.ITALIC));
-			JPanel fields = createForm(new Component[][]{
-					new Component[]{ new JLabel(
-							"Include path - separate entries with "+
-							System.getProperty("path.separator")) },
-					new Component[]{ includePath },
-					new Component[]{ typeChecking },
-					new Component[]{ new JLabel("Site Threads:"), new JSpinner(numSiteThreads) },
-					new Component[]{ note },
-			});
+			note.setFont(note.getFont().deriveFont(Font.ITALIC, 14));
+			note.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
 			
 			// create the form buttons
 			JButton saveButton = new JButton("Save");
@@ -285,9 +308,16 @@ public class OrcApp extends OrcGui {
 			buttons.add(cancelButton);
 			
 			// create the content panel
-			JPanel contentPane = new JPanel(new BorderLayout());
-			contentPane.add(fields, BorderLayout.PAGE_START);
-			contentPane.add(buttons, BorderLayout.PAGE_END);
+			JPanel contentPane = createForm(new Component[][]{
+					new Component[]{ new JLabel(
+							"Include path - separate entries with "+
+							System.getProperty("path.separator")) },
+					new Component[]{ includePath },
+					new Component[]{ typeChecking },
+					new Component[]{ new JLabel("Maximum site threads:"), new JSpinner(numSiteThreads) },
+					new Component[]{ note },
+					new Component[]{ buttons },
+			});
 			contentPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 			setContentPane(contentPane);
 			setResizable(false);
