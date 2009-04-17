@@ -20,6 +20,7 @@ import orc.error.runtime.TokenException;
 import orc.error.runtime.TokenLimitReachedError;
 import orc.runtime.nodes.Node;
 import orc.runtime.regions.Execution;
+import orc.runtime.regions.LogicalClock;
 import orc.runtime.values.GroupCell;
 import orc.runtime.values.Value;
 import orc.trace.Tracer;
@@ -47,7 +48,7 @@ public class OrcEngine implements Runnable {
 	public final boolean debugMode;
 
 	/**
-	 * This flag is set by the {@link RootLogicalClock} when execution completes to
+	 * This flag is set by the root {@link LogicalClock} when execution completes to
 	 * terminate the engine.
 	 */
 	private boolean halt = false;
@@ -171,7 +172,7 @@ public class OrcEngine implements Runnable {
 
 	public final void start(Node root) {
 		assert (root != null);
-		region = new Execution();
+		region = new Execution(this);
 		tracer = config.getTracer();
 		Token token;
 		try {

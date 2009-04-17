@@ -8,11 +8,19 @@ import orc.runtime.Token;
  * as a root for the execution.
  * @author quark
  */
-public class Execution extends Region {
-	public Execution() {}
+public final class Execution extends Region {
+	private OrcEngine engine;
+	public Execution(OrcEngine engine) {
+		this.engine = engine;
+	}
 	
 	@Override
 	protected void onClose() {
 		// do nothing
+	}
+	
+	protected void deactivate() {
+		super.deactivate();
+		engine.terminate();
 	}
 }

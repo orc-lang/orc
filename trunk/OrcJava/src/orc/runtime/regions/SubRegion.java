@@ -15,7 +15,7 @@ import orc.trace.TokenTracer.StoreTrace;
  * queue deal with dead tokens so this isn't necessary.
  */
 public abstract class SubRegion extends Region {
-	private Region parent;
+	protected Region parent;
 	
 	public SubRegion(Region parent) {
 		this.parent = parent;
@@ -24,6 +24,16 @@ public abstract class SubRegion extends Region {
 	
 	protected void onClose() {
 		this.parent.remove(this);
+	}
+	
+	protected void deactivate() {
+		super.deactivate();
+		parent.removeActive();
+	}
+	
+	protected void activate() {
+		super.activate();
+		parent.addActive();
 	}
 	
 	public final Region getParent() {
