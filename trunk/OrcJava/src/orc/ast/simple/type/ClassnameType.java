@@ -13,13 +13,13 @@ import orc.type.TypeVariable;
 
 /**
  * A syntactic type which refers to a Java class (which we will treat as a type).
- * @author quark
+ * @author quark, dkitchin
  */
-public class ClassType extends Type {
+public class ClassnameType extends Type {
 
 	public String classname;
 	
-	public ClassType(String classname) {
+	public ClassnameType(String classname) {
 		this.classname = classname;
 	}
 	
