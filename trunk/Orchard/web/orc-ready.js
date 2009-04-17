@@ -71,8 +71,8 @@ function jsonToHtml(v) {
 			return v+'';
 		case 'string':
 			return '"' + escapeHtml(v)
-					.replace('"', '\\"')
 					.replace('\\', '\\\\')
+					.replace('"', '\\"')
 				+ '"';
 		case 'object':
 			if (v == null) return 'null';
