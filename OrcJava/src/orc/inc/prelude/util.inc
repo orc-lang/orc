@@ -140,22 +140,30 @@ def takePubs(n, f) =
     if(c.dec() >> out.put(x) >> false
        ; out.closenb() >> true)
   ) >> stop | repeat(out.get)
-
+  
 {--
 @def withLock[A](Semaphore, lambda () :: A) :: A
-Acquire the semaphore and run the thunk, publishing all values published by the
-thunk. Once the thunk halts, release the semaphore.
+Acquire the semaphore and run a thunk which is expected to publish
+no more than one value. Publishes the value published by the
+thunk and releases the semaphore.
 
 @implementation
 --}
 def withLock[A](Semaphore, lambda () :: A) :: A
 def withLock(s, f) =
-  val out = Buffer[A]()
-  ( s.acquire() >>
-    f() >x>
-    out.put(x) >>
-    stop
-  ; s.release() >>
-    out.closenb() >>
-    stop
-  ) | repeat(out.get)
+  s.acquire() >> (
+    let(f()) >x>
+    s.release() >>
+    x
+    ; s.release() >> stop
+  )
+ 
+{--
+@def synchronized[A](Semaphore, lambda () :: A)() :: A
+Given a lock and thunk, return a new thunk which is serialized
+on the lock. Similar to Java's synchronized keyword.
+
+@implementation
+--}
+def synchronized[A](Semaphore, lambda () :: A)() :: A
+def synchronized(s,f)() = withLock(s, f)
