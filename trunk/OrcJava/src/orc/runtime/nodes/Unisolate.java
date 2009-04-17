@@ -3,6 +3,7 @@
  */
 package orc.runtime.nodes;
 
+import orc.error.runtime.SiteException;
 import orc.runtime.IsolatedGroup;
 import orc.runtime.Token;
 import orc.runtime.regions.IsolatedRegion;
@@ -20,6 +21,12 @@ public class Unisolate extends Node {
 	}
 
 	public void process(Token t) {
+		try {
+			t.popLtimer();
+		} catch (SiteException e) {
+			t.error(e);
+			return;
+		}
 		IsolatedRegion r = (IsolatedRegion)t.getRegion();
 		t.setRegion(r.getParent());
 		IsolatedGroup g = (IsolatedGroup)t.getGroup();
