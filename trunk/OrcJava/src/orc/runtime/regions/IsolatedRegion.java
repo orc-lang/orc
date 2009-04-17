@@ -13,7 +13,7 @@ import orc.trace.TokenTracer.StoreTrace;
  * See {@link Isolate}.
  * @author quark
  */
-public class IsolatedRegion extends Region {
+public final class IsolatedRegion extends Region {
 	private Region parent;
 	private Region dummy;
 	
