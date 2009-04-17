@@ -438,8 +438,11 @@ public class Token implements Serializable, Locatable {
 	}
 	
 	public final void popLtimer() throws SiteException {
+		if (clock != region) {
+			throw new SiteException("Cannot pop the clock before the end of the region.");
+		}
 		LogicalClock old = clock;
 		clock = old.getParentClock();
-		setRegion(clock.getParent());
+		setRegion(old.getParent());
 	}
 }
