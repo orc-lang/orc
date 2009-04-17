@@ -19,6 +19,7 @@ import orc.error.runtime.TokenException;
 import orc.error.runtime.TokenLimitReachedError;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Return;
+import orc.runtime.regions.LogicalClock;
 import orc.runtime.regions.Region;
 import orc.runtime.transaction.Transaction;
 import orc.runtime.values.Closure;
@@ -100,9 +101,9 @@ public class Token implements Serializable, Locatable {
 	 */
 	final void initializeRoot(Node node, Region region, OrcEngine engine, TokenTracer tracer) {
 		// create the root logical clock
-		LogicalClock clock = new RootLogicalClock(engine);
+		LogicalClock clock = new LogicalClock(region, null);
 		initialize(node, new Env<Object>(),
-				null, new Group(), region, null,
+				null, new Group(), clock, null,
 				null, engine, null,
 				tracer, engine.getConfig().getStackSize(),
 				clock);
@@ -151,7 +152,6 @@ public class Token implements Serializable, Locatable {
 		this.stackAvailable = stackAvailable;
 		this.clock = clock;
 		region.add(this);
-		unsetQuiescent();
 	}
 
 	/**
@@ -163,7 +163,6 @@ public class Token implements Serializable, Locatable {
 		assert(alive);
 		alive = false;
 		region.remove(this);
-		setQuiescent();
 		tracer.die();
 		engine.pool.freeToken(this);
 	}
@@ -412,11 +411,11 @@ public class Token implements Serializable, Locatable {
 	}
 	
 	public final void unsetQuiescent() {
-		clock.addActive();
+		region.addActive();
 	}
 	
 	public final void setQuiescent() {
-		clock.removeActive();
+		region.removeActive();
 	}
 	
 	public final void requireCapability(String name, boolean ifNull) throws CapabilityException {
@@ -433,16 +432,14 @@ public class Token implements Serializable, Locatable {
 	}
 	
 	public final void pushLtimer() {
-		LogicalClock old = this.clock;
-		clock = new NestedLogicalClock(old);
-		clock.addActive();
-		old.removeActive();
+		LogicalClock old = clock;
+		clock = new LogicalClock(region, old);
+		setRegion(clock);
 	}
 	
 	public final void popLtimer() throws SiteException {
-		LogicalClock old = this.clock;
-		clock = old.pop();
-		clock.addActive();
-		old.removeActive();
+		LogicalClock old = clock;
+		clock = old.getParentClock();
+		setRegion(clock.getParent());
 	}
 }

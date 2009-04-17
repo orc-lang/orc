@@ -1,8 +1,9 @@
-package orc.runtime;
+package orc.runtime.regions;
 
 import java.util.PriorityQueue;
 
 import orc.error.runtime.SiteException;
+import orc.runtime.Token;
 
 /**
  * An event queue for site calls to a logical timer (created by MakeTimer).
@@ -16,45 +17,35 @@ import orc.error.runtime.SiteException;
  * 
  * @author dkitchin, quark
  */
-public abstract class LogicalClock {
+public final class LogicalClock extends SubRegion {
 	/** Tokens blocked pending future events. */
 	private PriorityQueue<LtimerQueueEntry> eventQueue;
-	/** Number of tokens and sub-clocks still active. */
-	private int active = 0;
-	/** Is this clock quiescent (no active or pending tokens) */
-	private boolean quiescent = true;
 	/** The current logical time. */
 	private int currentTime = 0;
+	private LogicalClock parentClock;
 	
-	protected LogicalClock() {
+	public LogicalClock(Region parent, LogicalClock parentClock) {
+		super(parent);
+		this.parentClock = parentClock;
 		eventQueue = new PriorityQueue<LtimerQueueEntry>();
 		currentTime = 0;
 	}
 	
 	/** Schedule a token to resume at a future time. */
-	void addEvent(int delay, Token token) {
+	public final void addEvent(int delay, Token token) {
 		eventQueue.add(new LtimerQueueEntry(delay + currentTime, token));
 		token.setQuiescent();
 	}
 	
-	/** Called when this clock is quiescent. */
-	protected void setQuiescent() {
-		quiescent = true;
-	}
-	
-	/** Called when this clock becomes not quiescent. */
-	protected void unsetQuiescent() {
-		quiescent = false;
-	}
-	
 	/** Advance the logical time. Called when all child tokens and clocks are quiescent. */
-	private void advance() {
+	@Override
+	protected void maybeDeactivate() {
 		if (eventQueue.isEmpty()) {
 			// no tokens are ready for the next round:
 			// the simulation may be over, or may be blocked
 			// waiting for an external event; signal the
 			// parent clock that it can advance
-			setQuiescent();
+			deactivate();
 			return;
 		} else {
 			// Advance the clock to the next logical time and
@@ -87,27 +78,13 @@ public abstract class LogicalClock {
 			return Integer.signum(time - n.time);
 		}
 	}
-	
-	/**
-	 * Add an active token. When moving a token between clocks,
-	 * it is important to ensure that the token is removed after it is added.
-	 */
-	void addActive() {
-		if (quiescent) unsetQuiescent();
-		++active;
-	}
 
-	/**
-	 * Remove an active token. When moving a token between clocks,
-	 * it is important to ensure that the token is removed after it is added,
-	 * so that the number of active tokens only hits zero once, at the end
-	 * of a processing step.
-	 */
-	void removeActive() {
-		assert(active > 0);
-		--active;
-		if (active == 0) advance();
+	public LogicalClock getParentClock() throws SiteException {
+		if (parentClock == null) throw new SiteException("Cannot pop the root logical clock.");
+		return parentClock;
 	}
 	
-	abstract LogicalClock pop() throws SiteException;
+	public void removeActive() {
+		super.removeActive();
+	}
 }

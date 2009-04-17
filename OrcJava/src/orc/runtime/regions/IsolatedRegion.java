@@ -5,10 +5,12 @@ import orc.runtime.nodes.Isolate;
 import orc.trace.TokenTracer.StoreTrace;
 
 /**
- * An isolated region. This prevents the parent region
- * from having a link to the tokens in the region, so
- * they will not be killed when the region is killed,
- * and they may be garbage collected.
+ * An isolated region. This does two things:
+ * first, it prevents any parent region from linking to
+ * tokens in this region, so they may be garbage collected.
+ * Second, it records liveness and quiescence in the root region
+ * as well as the parent, so the root can't terminate until
+ * we do.
  * 
  * See {@link Isolate}.
  * @author quark
@@ -16,19 +18,37 @@ import orc.trace.TokenTracer.StoreTrace;
 public final class IsolatedRegion extends Region {
 	private Region parent;
 	private Region dummy;
+	private Region root;
 	
 	public IsolatedRegion(Region root, Region parent) {
 		this.parent = parent;
-		this.dummy = new Execution();
+		this.root = root;
+		this.dummy = new Region();
 		this.parent.add(dummy);
+		root.add(dummy);
 	}
 	
 	@Override
 	protected void onClose() {
 		parent.remove(dummy);
+		root.remove(dummy);
 	}
 
 	public Region getParent() {
 		return parent;
+	}
+	
+	@Override
+	protected void deactivate() {
+		super.deactivate();
+		parent.removeActive();
+		root.removeActive();
+	}
+	
+	@Override
+	protected void activate() {
+		super.activate();
+		parent.addActive();
+		root.addActive();
 	}
 }
