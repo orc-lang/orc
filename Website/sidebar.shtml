@@ -13,7 +13,7 @@
 
 <ul class="block">
 	<li><a href="tutorial.shtml">Orc in 15 Minutes</a></li>
-	<li><a href="papers/presentation.pdf">See a Presentation</a></li>
+	<li><a href="papers/presentation.pdf" target="_blank">See a Presentation <img src="images/new-window.gif" alt="opens in new window" border="0" /></a></li>
 	<li><a href="tryorc.shtml">Try Orc! (in your browser)</a></li>
 	<li><a href="download.shtml">Download Orc</a></li>
 	<li><a href="userguide/html/index.html" target="_blank">User Guide <img src="images/new-window.gif" alt="opens in new window" border="0" /></a></li>
@@ -23,8 +23,8 @@
 
 <ul class="block">
 	<li><a href="http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=News">News</a></li>
-	<li><a href="http://groups.google.com/group/orc-lang/">Mailing List</a></li>
 	<li><a href="wiki">Wiki</a></li>
+	<li><a href="http://groups.google.com/group/orc-lang/">Mailing List</a></li>
 	<li><a href="http://orc.googlecode.com">Google Code Project</a></li>
 </ul>
 
