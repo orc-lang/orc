@@ -9,6 +9,7 @@
 		<input type=submit name="sub" value="Subscribe">
 	</form></li>
 	<li><a href="wiki">Wiki</a></li>
+	<li><a href="http://code.google.com/p/orc/issues/list">Issue Tracker</a> (for bug reports)</li>
 	<li><a href="http://orc.googlecode.com">Google Code Project</a></li>
 </ul>
 
