@@ -36,8 +36,9 @@ public class DotType extends Type {
 		fieldMap = new TreeMap<String,Type>();
 	}
 	
-	public void addField(String key, Type T) {
+	public DotType addField(String key, Type T) {
 		fieldMap.put(key, T);
+		return this;
 	}
 	
 	

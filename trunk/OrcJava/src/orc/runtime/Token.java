@@ -17,6 +17,7 @@ import orc.error.runtime.StackLimitReachedError;
 import orc.error.runtime.TokenError;
 import orc.error.runtime.TokenException;
 import orc.error.runtime.TokenLimitReachedError;
+import orc.lib.time.Ltimer;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Return;
 import orc.runtime.regions.LogicalClock;
@@ -444,5 +445,10 @@ public class Token implements Serializable, Locatable {
 		LogicalClock old = clock;
 		clock = old.getParentClock();
 		setRegion(old.getParent());
+	}
+	
+	/** Used for {@link Ltimer}.time(). */
+	public final LogicalClock getLtimer() {
+		return clock;
 	}
 }
