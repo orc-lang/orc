@@ -2,16 +2,13 @@ package orc.runtime.regions;
 
 import orc.runtime.Token;
 
-public class SemiRegion extends Region {
-
-	Region parent;
+public final class SemiRegion extends SubRegion {
 	Token t;
 	
 	/* Create a new group region with the given parent and coupled group cell */
 	public SemiRegion(Region parent, Token t) {
-		this.parent = parent;
+		super(parent);
 		this.t = t;
-		this.parent.add(this);
 	}
 	
 	protected void onClose() {
@@ -19,11 +16,7 @@ public class SemiRegion extends Region {
 			t.unsetQuiescent();
 			t.activate();
 		}
-		parent.remove(this);
-	}
-
-	public Region getParent() {
-		return parent;
+		super.onClose();
 	}
 
 	public void cancel() {
