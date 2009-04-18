@@ -1,21 +1,26 @@
+You should have a JAR file named something like orc-X.Y.Z.jar.
+
 User Installation Instructions
 ------------------------------
 
-Most users will just want to use the orc JAR to run programs from the command
-line.  Assuming you downloaded (for example) orc-0.9.1.jar, run at the command
-line:
+If you are interested in running Orc programs, you can use the
+JAR as a GUI program or at the command line.
 
-  java -jar orc-0.9.1.jar -help
-  
-to see command-line options.
+To see command-line options, run:
+  java -jar orc-X.Y.Z.jar -help
+
+To start the GUI, double-click on the JAR file's icon, or run:
+  java -jar orc-X.Y.Z.jar
 
 There are a variety of sample programs in examples/.
-
-Refer to the User's Guide in doc/userguide.pdf for more details of the Orc
-language.
+Documentation on the Orc language and libraries is included in doc/.
 
 Developer Installation Instructions
 -----------------------------------
 
-If you plan to develop Orc within Eclipse, place the Orc JAR file on your
-project's classpath.
+If you are interested in developing Orc sites or extending the Orc
+engine, you can use the JAR as a Java library.  Place orc-X.Y.Z.jar
+on your project's classpath.
+
+Refer to the Javadoc at http://orc.csres.utexas.edu/javadoc/STABLE for
+more information on Orc's Java API.
