@@ -47,6 +47,8 @@ import static javax.swing.SwingUtilities.invokeLater;
 /**
  * A basic Mac OS X App interface for Orc.
  * Supports drag-and-drop, Preferences, and About.
+ * 
+ * <p>Refer to http://developer.apple.com/documentation/Java/Conceptual/Java14Development/00-Intro/JavaDevelopment.html
  * @author quark
  */
 public class OrcApp extends OrcGui {
@@ -112,9 +114,9 @@ public class OrcApp extends OrcGui {
 		// the app from exiting at the end of main
 		final AboutDialog about = new AboutDialog();
 		about.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-		// pack but don't show
 		invokeLater(new Runnable() {
 			public void run() {
+				// pack but don't show
 				about.pack();
 			}
 		});
@@ -158,13 +160,7 @@ public class OrcApp extends OrcGui {
 			/** Preferences events are handled by starting our preferences dialog. */
 			@Override
 			public void handlePreferences(ApplicationEvent event) {
-				final PreferencesDialog dialog = new PreferencesDialog(defaultConfig);
-				invokeLater(new Runnable() {
-					public void run() {
-						dialog.pack();
-						dialog.setVisible(true);
-					}
-				});
+				invokeLater(new PreferencesDialog(new Config()));
 			}
 		});
 	}
@@ -253,114 +249,46 @@ public class OrcApp extends OrcGui {
 	 * would normally be set via the command line.
 	 * @author quark
 	 */
-	private static class PreferencesDialog extends JDialog {
+	protected static final class PreferencesDialog extends JDialog implements Runnable {
 		public PreferencesDialog(final Config config) {
-			super((JFrame)null, "Preferences");
-			// Here's the layout:
-			//
-			//  |-----------------------|
-			//  | field1                |
-			//  |-----------------------|
-			//  |    label2 | field2    |
-			//  |-----------------------|
-			//  |          ...          |
-			//  |-----------------------|
-			//  |            save cancel|
-			//  |-----------------------|
-			//
+			JPanel content = new OneColumnPanel();
+			content.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+			setContentPane(content);
+			setResizable(false);
 			
-			// create the main fields of the form;
-			final JTextField includePath = new JTextField();
-			includePath.setText(config.getIncludePath());
-			final JCheckBox typeChecking = new JCheckBox("Type checking enabled");
-			typeChecking.setSelected(config.getTypeChecking());
-			final JCheckBox noPrelude = new JCheckBox("Prelude disabled");
-			noPrelude.setSelected(config.getNoPrelude());
-			final SpinnerNumberModel numSiteThreads = new SpinnerNumberModel(config.getNumSiteThreads(), 1, 100, 1);
+			final ConfigPanel configPanel = new ConfigPanel();
+			configPanel.load(config);
+			content.add(configPanel);
+			
+			configPanel.add(Box.createVerticalStrut(10));
+			
 			JLabel note = new JLabel("Note: changes will not apply to currently-running scripts.");
 			note.setFont(note.getFont().deriveFont(Font.ITALIC, 14));
 			note.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
+			configPanel.add(note);
 			
-			// create the form buttons
+			ButtonPanel buttons = new ButtonPanel();
 			JButton saveButton = new JButton("Save");
 			saveButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					config.setTypeChecking(typeChecking.isSelected());
-					config.setNoPrelude(noPrelude.isSelected());
-					config.setIncludePath(includePath.getText());
-					config.setNumSiteThreads(numSiteThreads.getNumber().intValue());
-					//config.setFullTraceFile(null);
+					configPanel.save(config);
 					dispose();
 				}
 			});
+			buttons.add(saveButton);
 			JButton cancelButton = new JButton("Cancel");
 			cancelButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					dispose();
 				}
 			});
-			JPanel buttons = new JPanel();
-			buttons.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
-			buttons.setLayout(new BoxLayout(buttons, BoxLayout.LINE_AXIS));
-			buttons.add(Box.createHorizontalGlue());
-			buttons.add(saveButton);
-			buttons.add(Box.createHorizontalStrut(5));
 			buttons.add(cancelButton);
-			
-			// create the content panel
-			JPanel contentPane = createForm(new Component[][]{
-					new Component[]{ new JLabel(
-							"Include path - separate entries with "+
-							System.getProperty("path.separator")) },
-					new Component[]{ includePath },
-					new Component[]{ typeChecking },
-					new Component[]{ new JLabel("Maximum site threads:"), new JSpinner(numSiteThreads) },
-					new Component[]{ note },
-					new Component[]{ buttons },
-			});
-			contentPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-			setContentPane(contentPane);
-			setResizable(false);
-			setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+			content.add(buttons);
 		}
-	}
-	
-	/**
-	 * Utility method to create a two-column form layout.
-	 * Takes a list of components in row-major order.
-	 * Rows with one component span both columns.
-	 * Rows with two components are split into two columns,
-	 * justified towards the center.
-	 */
-	private static JPanel createForm(Component[][] components) {
-		JPanel out = new JPanel(new GridBagLayout());
-		GridBagConstraints c = new GridBagConstraints();
-		Insets insetRight = new Insets(0, 0, 0, 5);
-		Insets insetNone = new Insets(0, 0, 0, 0);
-		c.gridheight = 1;
-		c.fill = GridBagConstraints.HORIZONTAL;
-		// iterate through rows
-		for (int i = 0; i < components.length; ++i) {
-			c.gridy = i;
-			if (components[i].length == 1) {
-				c.gridx = 0;
-				c.gridwidth = 2; 
-				c.anchor = GridBagConstraints.LINE_START;
-				out.add(components[i][0], c);
-			} else if (components[i].length == 2) {
-				c.gridwidth = 1; 
-				c.gridx = 0;
-				c.anchor = GridBagConstraints.LINE_END;
-				c.insets = insetRight;
-				out.add(components[i][0], c);
-				c.insets = insetNone;
-				c.gridx = 1;
-				c.anchor = GridBagConstraints.LINE_START;
-				out.add(components[i][1], c);
-			} else {
-				throw new AssertionError("Unexpected number of components in row.");
-			}
+		
+		public void run() {
+			pack();
+			setVisible(true);
 		}
-		return out;
 	}
 }
