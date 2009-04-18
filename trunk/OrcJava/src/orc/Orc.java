@@ -20,6 +20,8 @@ import orc.ast.simple.arg.Var;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.parser.OrcParser;
+import orc.progress.NullProgressListener;
+import orc.progress.ProgressListener;
 import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.nodes.Node;
@@ -70,71 +72,62 @@ public class Orc {
 		engine.run(n);
 	}
 	
-	public static class ProgressCanceled extends Exception {}
-	public interface ProgressListener {
-		/** Set the completion for the current task as a percentage. */
-		public void setProgress(double progress) throws ProgressCanceled;
-	}
-	
-	public static final ProgressListener NULL_COMPILE_PROGRESS_LISTENER = new ProgressListener() {
-		public void setProgress(double progress) {
-			// do nothing
-		}
-	};
-	
 	public static Expr compile(Reader source, Config cfg) throws IOException, CompilationException {
-		try {
-			return compile(source, cfg, NULL_COMPILE_PROGRESS_LISTENER);
-		} catch (ProgressCanceled e) {
-			// can't happen
-			throw new AssertionError(e);
-		}
+		return compile(source, cfg, NullProgressListener.singleton);
 	}
 	
-	public static Expr compile(Reader source, Config cfg, ProgressListener progress) throws IOException, CompilationException, ProgressCanceled {
+	public static Expr compile(Reader source, Config cfg, ProgressListener progress) throws IOException, CompilationException {
 
 		//System.out.println("Parsing...");
 		// Parse the goal expression
+		progress.setNote("Parsing");
 		OrcParser parser = new OrcParser(cfg, source, cfg.getFilename());
 		orc.ast.extended.Expression e = parser.parseProgram();
+		if (progress.isCanceled()) return null;
 		progress.setProgress(0.3);
+		
 		
 		//System.out.println(e);
 		
 		//System.out.println("Importing declarations...");
 		LinkedList<Declaration> decls = new LinkedList<Declaration>();
 		
+		progress.setNote("Parsing include files");
 		if (!cfg.getNoPrelude()) {
 			// Load declarations from the default include file.
 			String preludename = "prelude.inc";
 			OrcParser fparser = new OrcParser(cfg, cfg.openInclude(preludename), preludename);
 			decls.addAll(fparser.parseModule());
 		}
-		
+		if (progress.isCanceled()) return null;
 		// Load declarations from files specified by the configuration options
 		for (String f : cfg.getIncludes()) {
 			OrcParser fparser = new OrcParser(cfg, cfg.openInclude(f), f);
 			decls.addAll(fparser.parseModule());
+			if (progress.isCanceled()) return null;
 		}
+		if (progress.isCanceled()) return null;
+		progress.setProgress(0.6);
 		
-		progress.setProgress(0.5);
-		
+		progress.setNote("Simplifying the AST");
 		// Add the declarations to the parse tree
 		Collections.reverse(decls);
 		for (Declaration d : decls)
 		{
 			e = new Declare(d, e);
 		}
+		if (progress.isCanceled()) return null;
 		
 		//System.out.println("Simplifying the abstract syntax tree...");
 		// Simplify the AST
 		Expr ex = e.simplify().convert(new Env<Var>(), new Env<String>());
 		// System.out.println(ex);
-		
+		if (progress.isCanceled()) return null;
 		progress.setProgress(0.7);
 		
 		// Optionally perform typechecking
 		if (cfg.getTypeChecking()) {
+			progress.setNote("Typechecking");
 			
 			Type rt = ex.typesynth(new Env<Type>(), new Env<Type>());
 			System.out.println("... :: " + rt);
@@ -143,6 +136,7 @@ public class Orc {
 	
 		}
 		
+		progress.setNote("Checking for unguarded recursion");
 		UnguardedRecursionChecker.check(ex);
 		
 		progress.setProgress(1.0);
