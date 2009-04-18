@@ -3,6 +3,7 @@ package orc.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FileDialog;
 import java.awt.Font;
@@ -53,12 +54,13 @@ import javax.swing.text.StyledDocument;
 
 import orc.Config;
 import orc.Orc;
-import orc.Orc.ProgressCanceled;
 import orc.ast.oil.Compiler;
 import orc.ast.oil.Expr;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;
 import orc.error.runtime.TokenException;
+import orc.progress.ProgressMonitorListener;
+import orc.progress.SubProgressListener;
 import orc.runtime.OrcEngine;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Pub;
@@ -121,10 +123,12 @@ public class OrcGui implements Runnable {
 	}
 	
 	public static void main(String[] args) {
+		Config config = new Config();
 		if (args.length > 0) {
-			Orc.main(args);
+			config.processArgs(args);
+			new Thread(new OrcGui(config)).start();
 		} else {
-			invokeLater(new OpenDialog(new Config()));
+			invokeLater(new OpenDialog(config));
 		}
 	}
 	
@@ -151,53 +155,23 @@ public class OrcGui implements Runnable {
         return bar;
 	}
 	
-	/**
-	 * A progress monitor which can be safely updated from outside the event thread.
-	 * @author quark
-	 */
-	protected static class SafeProgressMonitor {
-		private ProgressMonitor progress;
-		private AtomicBoolean isCanceled = new AtomicBoolean(false);
-		public SafeProgressMonitor(Component parent, Object message, String note, int min, int max) {
-			progress = new ProgressMonitor(parent, message, note, min, max);
-		}
-		
-		public boolean isCanceled() {
-			return isCanceled.get();
-		}
-		
-		public void setProgress(final int nv) {
-			invokeLater(new Runnable() {
-				public void run() {
-					if (progress.isCanceled()) isCanceled.set(true);
-					progress.setProgress(nv);
-				}
-			});
-		}
-	}
-	
 	public void run() {
 		Node n;
-		final SafeProgressMonitor progress = new SafeProgressMonitor(null,
-				"Compiling " + config.getFilename(), "", 0, 10);
+		ProgressMonitorListener progress = new ProgressMonitorListener(
+				null, "Compiling " + config.getFilename(), "");
 		try {
-			Expr ex = Orc.compile(config.getInstream(), config, new Orc.ProgressListener() {
-				public void setProgress(double v) throws ProgressCanceled {
-					try { Thread.sleep(1000); } catch (InterruptedException _) {}
-					progress.setProgress((int)(7*v));
-					if (progress.isCanceled()) throw new Orc.ProgressCanceled();
-				}
-			});
+			Expr ex = Orc.compile(config.getInstream(), config,
+					new SubProgressListener(progress, 0, 0.8));
+			if (progress.isCanceled()) return;
+			progress.setNote("Creating DAG");
 			n = Compiler.compile(ex, new Pub());
-			progress.setProgress(9);
+			progress.setProgress(0.95);
 			if (progress.isCanceled()) return;
 		} catch (CompilationException e) {
 			error("Compilation Error", e.getMessage());
 			return;
 		} catch (IOException e) {
 			error("Error Reading File", e.getMessage());
-			return;
-		} catch (ProgressCanceled e) {
 			return;
 		}
 		
@@ -280,7 +254,7 @@ public class OrcGui implements Runnable {
 			}
 		};
 		
-		progress.setProgress(10);
+		progress.setProgress(1);
 		if (progress.isCanceled()) return;
 		
 		// display the frame
