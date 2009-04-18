@@ -26,16 +26,19 @@
 				<exclude name="AppleJavaExtensions.jar"/>
 			</zipgroupfileset>
 			<manifest>
-				<attribute name="Main-Class" value="orc.Orc"/>
+				<attribute name="Main-Class" value="orc.gui.OrcGui"/>
 			</manifest>	
 		</jar>
 	</target>
 	
 	
-	<target name="zip" depends="jar" description="generate the ZIP">
+	<target name="zip" depends="jar,win-setup" description="generate the ZIP">
 		<zip zipfile="build/${target.name}.zip">
+			<zipfileset prefix="${target.name}" dir="build">
+				<include name="${target.name}.jar"/>
+				<include name="SETUP.BAT"/>
+			</zipfileset>
 			<zipfileset prefix="${target.name}" dir=".">
-				<include name="build/${target.name}.jar"/>
 				<include name="README"/>
 				<include name="LICENSE"/>
 				<include name="INSTALL"/>
@@ -172,22 +175,18 @@
 		<zip zipfile="build/${target.name}-doc.zip" basedir="build/javadoc" />
 	</target>
 
-	<!-- WARNING: requires Unix environment with ls and tar. -->
 	<target name="app" depends="jar" description="generate a Mac OS bundle">
 		<taskdef name="jarbundler"
 				classpath="lib/jarbundler-2.1.0.jar" 
 				classname="net.sourceforge.jarbundler.JarBundler"/>
-		<!-- create a dummy JavaApplicationStub (will replace with symlink) -->
-		<touch file="build/JavaApplicationStub"/>
-		<delete dir="build/${target.name}"/>
-		<mkdir dir="build/${target.name}"/>
-		<jarbundler dir="build/${target.name}"
+		<jarbundler dir="build"
 				name="${target.name}"
 				mainclass="orc.gui.OrcApp"
 				jar="build/${target.name}.jar"
 				version="${orc.version}"
-				stubfile="build/JavaApplicationStub"
+				stubfile="JavaApplicationStub"
 				jvmversion="1.5+"
+				bundleid="edu.utexas.cs.orc"
 				icon="icons/orc-app.icns" >
 			<javaproperty name="apple.laf.useScreenMenuBar" value="true"/>
 			<javaproperty name="com.apple.macos.useScreenMenuBar" value="true"/>
@@ -199,19 +198,11 @@
 					iconfile="icons/orc-file.icns"
 					role="Viewer" />
 		</jarbundler>
-		<delete file="build/JavaApplicationStub"/>
-		<!-- replace JavaApplicationStub with symlink -->
-		<delete file="build/${target.name}/${target.name}.app/Contents/MacOS/JavaApplicationStub"/>
-		<exec executable="ln">
-			<arg line="-s /System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub"/>
-			<arg value="build/${target.name}/${target.name}.app/Contents/MacOS/JavaApplicationStub"/>
-		</exec>
-		<!--
-		Ant's Tar task cannot handle symlinks. So we have to build a
-		directory and tar it using the command-line tar.
-		-->
-		<copy todir="build/${target.name}">
-			<fileset dir=".">
+		<zip zipfile="build/${target.name}-app.zip">
+			<zipfileset prefix="${target.name}" dir="build">
+				<include name="${target.name}.app/**"/>
+			</zipfileset>
+			<zipfileset prefix="${target.name}" dir=".">
 				<include name="README"/>
 				<include name="LICENSE"/>
 				<include name="INSTALL"/>
@@ -221,12 +212,14 @@
 				<include name="doc/**"/>
 				<exclude name="**/CVS/*"/>
 				<exclude name="**/.svn/*"/>
-			</fileset>
+			</zipfileset>
+		</zip>
+	</target>
+
+	<target name="win-setup" description="create SETUP.BAT">
+		<copy file="SETUP.BAT" todir="build">
+			<filterset><filter token="ORCJAR" value="${target.name}.jar"/></filterset>
 		</copy>
-		<exec executable="tar" dir="build">
-			<arg line="-zcf ${target.name}-app.tgz ${target.name}"/>
-		</exec>
-		<delete dir="build/${target.name}"/>
 	</target>
 
 	<target name="upload" depends="zip,javadoc" description="upload to google code">
