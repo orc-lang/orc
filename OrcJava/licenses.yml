@@ -113,10 +113,10 @@ notes: Used to compile OrcApp, the OS X App version of the Orc tool.
 
 ---
 
-files: [jarbundler-2.1.0.jar]
-project: jarbundler
-version: 2.1.0
-url: http://www.informagen.com/JarBundler/
-license: ASF2.0.txt
+files: [JavaApplicationStub]
+project: Apple OS X
+version: 10.5.6
+url: http://www.apple.com/macosx/
+license: JavaApplicationStub.txt
 phase: build
-notes: Used to build the OS X App version of the Orc tool.
+notes: Included in the OS X App version of the Orc tool.

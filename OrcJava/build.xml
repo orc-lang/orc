@@ -175,32 +175,42 @@
 		<zip zipfile="build/${target.name}-doc.zip" basedir="build/javadoc" />
 	</target>
 
+	<!-- WARNING: this does not work on non-Unix systems (without ln and tar) -->
 	<target name="app" depends="jar" description="generate a Mac OS bundle">
-		<taskdef name="jarbundler"
-				classpath="lib/jarbundler-2.1.0.jar" 
-				classname="net.sourceforge.jarbundler.JarBundler"/>
-		<jarbundler dir="build"
-				name="${target.name}"
-				mainclass="orc.gui.OrcApp"
-				jar="build/${target.name}.jar"
-				version="${orc.version}"
-				stubfile="JavaApplicationStub"
-				jvmversion="1.5+"
-				bundleid="edu.utexas.cs.orc"
-				icon="icons/orc-app.icns" >
-			<javaproperty name="apple.laf.useScreenMenuBar" value="true"/>
-			<javaproperty name="com.apple.macos.useScreenMenuBar" value="true"/>
-			<javaproperty name="com.apple.mrj.application.growbox.intrudes" value="false"/>
-			<javaproperty name="com.apple.mrj.application.apple.menu.about.name" value="Orc"/>
-			<javaproperty name="orc.version" value="${orc.version}"/>
-			<documenttype name="Orc Script"
-					extensions="orc" 
-					iconfile="icons/orc-file.icns"
-					role="Viewer" />
-		</jarbundler>
+		<delete dir="build/${target.name}"/> <!-- clean up any old files -->
+		<property name="appdir" value="build/${target.name}/Orc.app" />
+		<mkdir dir="${appdir}"/>
+		<!-- first copy plist files with token filtering -->
+		<copy todir="${appdir}">
+			<fileset dir="app-skeleton">
+				<include name="**/*.plist"/>
+			</fileset>
+			<filterset>
+				<filter token="orc.version" value="${orc.version}"/>
+				<filter token="orc.jar" value="${target.name}.jar"/>
+			</filterset>
+		</copy>
+		<!-- then copy remaining files without filtering -->
+		<copy todir="${appdir}">
+			<fileset dir="app-skeleton">
+				<include name="**/*"/>
+				<exclude name="**/*.plist"/>
+				<exclude name="**/CVS/*"/>
+				<exclude name="**/.svn/*"/>
+			</fileset>
+		</copy>
+		<!-- copy jar -->
+		<copy file="build/${target.name}.jar" todir="${appdir}/Contents/Resources/Java" />
+		<!-- create symlink -->
+		<exec executable="ln">
+			<arg value="-s" />
+			<arg value="/Developer/Applications/Xcode.app/Contents/Library/Spotlight/SourceCode.mdimporter/Contents/MacOS" />
+			<arg value="${appdir}/Contents/Library/Spotlight/Orc.mdimporter/Contents/MacOS" />
+		</exec>
+		<!-- zip doesn't include symlinks
 		<zip zipfile="build/${target.name}-app.zip">
 			<zipfileset prefix="${target.name}" dir="build">
-				<include name="${target.name}.app/**"/>
+				<include name="${app.dir}/**"/>
 			</zipfileset>
 			<zipfileset prefix="${target.name}" dir=".">
 				<include name="README"/>
@@ -214,11 +224,30 @@
 				<exclude name="**/.svn/*"/>
 			</zipfileset>
 		</zip>
+		-->
+		<!-- create directory with supplemental files -->
+		<copy todir="build/${target.name}">
+			<fileset dir=".">
+				<include name="README"/>
+				<include name="LICENSE"/>
+				<include name="INSTALL"/>
+				<include name="examples/**"/>
+				<include name="licenses.yml"/>
+				<include name="licenses/**"/>
+				<include name="doc/**"/>
+				<exclude name="**/CVS/*"/>
+				<exclude name="**/.svn/*"/>
+			</fileset>
+		</copy>
+		<!-- create tgz package -->
+		<exec executable="tar" dir="build">
+			<arg line="-zcf ${target.name}-app.tgz ${target.name}" />
+		</exec>
 	</target>
 
 	<target name="win-setup" description="create SETUP.BAT">
 		<copy file="SETUP.BAT" todir="build">
-			<filterset><filter token="ORCJAR" value="${target.name}.jar"/></filterset>
+			<filterset><filter token="orc.jar" value="${target.name}.jar"/></filterset>
 		</copy>
 	</target>
 
