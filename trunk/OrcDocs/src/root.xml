@@ -1029,9 +1029,17 @@ calls to <code>Fib</code>. We can define a linear-time version, again with the h
 
 {- A helper function: find the pair (Fibonacci(n-1), Fibonacci(n)) -}
 def H(0) = (1,1)
-def H(n) = H(n-1) >(x,y)> (y,x+y)
+def H(n) = 
+  val (x,y) = H(n-1)
+  (y,x+y)
 
-def Fib(n) = if (n < 0) then 0 else H(n) >(x,_)> x
+def Fib(n) = 
+  if (n < 0) then 
+    0 
+  else 
+    val (x,_) = H(n) 
+    x
+    
 ]]></programlisting>
 </para>
 
@@ -1327,24 +1335,6 @@ not necessarily indicate an error. Since halted site calls and pending site call
 they cannot usually be distinguished from each other; only the <link linkend="combinator.otherwise">
 otherwise combinator</link> can tell the difference. 
 </para>
- 
-<!--
-<para>
-A site call <emphasis>halts</emphasis> when it is certain that the call will never return
-a result. This may happen for a variety of reasons. A site may be specifically designed to never 
-respond under certain circumstances; for example, <code>if(false)</code> always halts. 
-A site may depend on some connection that has failed in a detectable way; for example, 
-the call <code>Google("five tons of flax")</code> halts if it is executed on a computer
-which has no internet connection. A site may require some resource which is unavailable;
-for example, a site call that accesses a website may halt if the website is inaccessible. 
-Or the execution of the call may reach some failed or exceptional state; for example,
-when calling a Java method from Orc, if an exception is thrown, the call halts. 
-Generally speaking, any underlying exception or error which can be detected and which
-prevents the site call from ever yielding a result will cause it to halt. A halted site
-call can only be distinguished from a blocked site call by the otherwise combinator.
-</para>
- -->
-
 
 
 <para>
@@ -3816,6 +3806,11 @@ def cfold(b, xs) =
 
 
 <section><title>Larger Examples</title>
+
+In this section we show a few larger Orc programs to demonstrate programming techniques. 
+There are many more such examples available at the Orc website, on the
+<link xlink:href="http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=WikiLab">community wiki</link>.
+
 
 <section><title>Dining Philosophers</title>
 
