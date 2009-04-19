@@ -180,7 +180,17 @@
 		<delete dir="build/${target.name}"/> <!-- clean up any old files -->
 		<property name="appdir" value="build/${target.name}/Orc.app" />
 		<mkdir dir="${appdir}"/>
-		<!-- first copy plist files with token filtering -->
+		<!-- copy most files without filtering -->
+		<copy todir="${appdir}">
+			<fileset dir="app-skeleton">
+				<include name="**/*"/>
+				<exclude name="**/*.plist"/>
+				<exclude name="**/CVS/*"/>
+				<exclude name="**/.svn/*"/>
+				<exclude name="**/JavaApplicationStub"/>
+			</fileset>
+		</copy>
+		<!-- copy plist files with token filtering -->
 		<copy todir="${appdir}">
 			<fileset dir="app-skeleton">
 				<include name="**/*.plist"/>
@@ -190,15 +200,11 @@
 				<filter token="orc.jar" value="${target.name}.jar"/>
 			</filterset>
 		</copy>
-		<!-- then copy remaining files without filtering -->
-		<copy todir="${appdir}">
-			<fileset dir="app-skeleton">
-				<include name="**/*"/>
-				<exclude name="**/*.plist"/>
-				<exclude name="**/CVS/*"/>
-				<exclude name="**/.svn/*"/>
-			</fileset>
-		</copy>
+		<!-- copy JavaApplicationStub with the unix cp command to preserve permissions -->
+		<exec executable="cp">
+			<arg line="-p app-skeleton/Contents/MacOS/JavaApplicationStub" />
+			<arg value="${appdir}/Contents/MacOS/JavaApplicationStub" />
+		</exec>
 		<!-- copy jar -->
 		<copy file="build/${target.name}.jar" todir="${appdir}/Contents/Resources/Java" />
 		<!-- create symlink -->
