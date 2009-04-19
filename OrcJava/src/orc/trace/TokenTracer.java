@@ -35,8 +35,6 @@ public abstract class TokenTracer implements Locatable {
 	public interface StoreTrace {}
 	/** Abstract handle for a pull event */
 	public interface PullTrace {}
-	/** Abstract handle for a before event */
-	public interface BeforeTrace {}
 	/**
 	 * Create a new thread. By convention the new thread should
 	 * evaluate the right side of the combinator.
@@ -112,10 +110,4 @@ public abstract class TokenTracer implements Locatable {
 	 * EXPERIMENTAL
 	 */
 	public abstract void leave(int depth);
-	/**
-	 * Called when a token reads a value from a group cell which has
-	 * already been stored.
-	 * @param storeTrace the trace produced when {@link #store(orc.trace.TokenTracer.PullTrace, Object)} was called
-	 */
-	public abstract void useStored(StoreTrace storeTrace);
 }

@@ -97,9 +97,5 @@ public abstract class DerivedTracer extends Tracer {
 		public void unblock(StoreTrace store) {
 			tracer.unblock(store);
 		}
-		
-		public void useStored(StoreTrace storeTrace) {
-			tracer.useStored(storeTrace);
-		}
 	}
 }

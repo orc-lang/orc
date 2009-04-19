@@ -128,7 +128,6 @@ public final class GroupCell extends Group implements Serializable, Future {
 		if (isAlive()) {
 			if (waitList == null)
 				waitList = new LinkedList<Token>();
-			t.getTracer().block(pullTrace);
 			waitList.add(t);
 			t.setQuiescent();
 		} else {
@@ -138,8 +137,9 @@ public final class GroupCell extends Group implements Serializable, Future {
 	}
 
 	public Object forceArg(Token t) {
+		t.getTracer().block(pullTrace);
 		if (bound) {
-			t.getTracer().useStored(storeTrace);
+			t.getTracer().unblock(storeTrace);
 			return Value.forceArg(value, t);
 		} else {
 			waitForValue(t);
@@ -148,8 +148,9 @@ public final class GroupCell extends Group implements Serializable, Future {
 	}
 	
 	public Callable forceCall(Token t) throws UncallableValueException {
+		t.getTracer().block(pullTrace);
 		if (bound) {
-			t.getTracer().useStored(storeTrace);
+			t.getTracer().unblock(storeTrace);
 			return Value.forceCall(value, t);
 		} else {
 			waitForValue(t);
