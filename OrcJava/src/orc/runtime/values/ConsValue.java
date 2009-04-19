@@ -5,13 +5,13 @@ import java.util.List;
 import orc.runtime.Token;
 import orc.runtime.sites.core.Equal;
 
-public class ConsValue extends ListValue {
+public class ConsValue<E> extends ListValue<E> {
 
-	public Object head;
-	public ListValue tail;
+	public E head;
+	public ListValue<E> tail;
 	
 	
-	public ConsValue(Object h, ListValue t) {
+	public ConsValue(E h, ListValue t) {
 		this.head = h;
 		this.tail = t;
 	}
@@ -31,14 +31,14 @@ public class ConsValue extends ListValue {
 	}
 
 	@Override
-	public List<Object> enlist() {
-		List<Object> tl = tail.enlist();
+	public List<E> enlist() {
+		List<E> tl = tail.enlist();
 		tl.add(0,head);
 		return tl;
 	}
 	
 	@Override
-	public <E> E accept(Visitor<E> visitor) {
+	public <T> T accept(Visitor<T> visitor) {
 		return visitor.visit(this);
 	}
 	
@@ -58,5 +58,21 @@ public class ConsValue extends ListValue {
 	@Override
 	public int hashCode() {
 		return head.hashCode() + 31 * tail.hashCode();
+	}
+
+	public boolean contains(Object o) {
+		if (o == null) {
+			return head == null || tail.contains(o);
+		} else {
+			return o.equals(head) || tail.contains(o);
+		}
+	}
+
+	public boolean isEmpty() {
+		return false;
+	}
+
+	public int size() {
+		return 1 + tail.size();
 	}
 }
