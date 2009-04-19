@@ -5,7 +5,7 @@ import java.util.List;
 
 import orc.runtime.Token;
 
-public class NilValue extends ListValue {
+public class NilValue<E> extends ListValue<E> {
 	public static final NilValue singleton = new NilValue();
 	private NilValue() {}
 
@@ -22,13 +22,13 @@ public class NilValue extends ListValue {
 	}
 
 	@Override
-	public List<Object> enlist() {
+	public List<E> enlist() {
 		
-		return new LinkedList<Object>();
+		return new LinkedList<E>();
 	}
 	
 	@Override
-	public <E> E accept(Visitor<E> visitor) {
+	public <T> T accept(Visitor<T> visitor) {
 		return visitor.visit(this);
 	}	
 	
@@ -39,5 +39,17 @@ public class NilValue extends ListValue {
 	@Override
 	public int hashCode() {
 		return NilValue.class.hashCode();
+	}
+
+	public boolean contains(Object o) {
+		return false;
+	}
+
+	public boolean isEmpty() {
+		return true;
+	}
+
+	public int size() {
+		return 0;
 	}
 }
