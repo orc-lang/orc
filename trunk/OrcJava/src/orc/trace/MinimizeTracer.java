@@ -3,7 +3,6 @@ package orc.trace;
 import orc.error.SourceLocation;
 import orc.error.runtime.TokenException;
 import orc.runtime.values.Closure;
-import orc.trace.TokenTracer.BeforeTrace;
 import orc.trace.TokenTracer.PullTrace;
 import orc.trace.TokenTracer.StoreTrace;
 import orc.trace.events.Event;
