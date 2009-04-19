@@ -160,7 +160,7 @@ public class OrcApp extends OrcGui {
 			/** Preferences events are handled by starting our preferences dialog. */
 			@Override
 			public void handlePreferences(ApplicationEvent event) {
-				invokeLater(new PreferencesDialog(new Config()));
+				invokeLater(new PreferencesDialog(defaultConfig));
 			}
 		});
 	}
@@ -251,27 +251,24 @@ public class OrcApp extends OrcGui {
 	 */
 	protected static final class PreferencesDialog extends JDialog implements Runnable {
 		public PreferencesDialog(final Config config) {
-			JPanel content = new OneColumnPanel();
+			final ConfigPanel content = new ConfigPanel();
 			content.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 			setContentPane(content);
 			setResizable(false);
+			content.load(config);
 			
-			final ConfigPanel configPanel = new ConfigPanel();
-			configPanel.load(config);
-			content.add(configPanel);
-			
-			configPanel.add(Box.createVerticalStrut(10));
+			content.add(Box.createVerticalStrut(10));
 			
 			JLabel note = new JLabel("Note: changes will not apply to currently-running scripts.");
 			note.setFont(note.getFont().deriveFont(Font.ITALIC, 14));
 			note.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
-			configPanel.add(note);
+			content.add(note);
 			
 			ButtonPanel buttons = new ButtonPanel();
 			JButton saveButton = new JButton("Save");
 			saveButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					configPanel.save(config);
+					content.save(config);
 					dispose();
 				}
 			});
