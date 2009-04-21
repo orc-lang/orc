@@ -323,7 +323,7 @@ More complex example:
 -- Publishes: 0 1 2
 val a = Array(3)
 for(0, a.length()) >i>
-a(i) := f(i) >>
+a(i) := i >>
 stop
 ; a(0)? | a(1)? | a(2)?]]></programlisting>
 
