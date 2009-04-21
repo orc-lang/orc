@@ -50,7 +50,7 @@ public class Config implements Cloneable {
 	private LinkedList<String> includes = new LinkedList<String>();
 	private String[] includePath = new String[]{"."};
 	private Integer maxPubs = null;
-	private String filename = "<undefined>";
+	private String filename = "script";
 	private Reader instream;
 	private int numKilimThreads = 1;
 	private int numSiteThreads = 2;
@@ -144,7 +144,7 @@ public class Config implements Cloneable {
 	@Option(name="-", usage="Use the special filename \"-\" to read from stdin.")
 	public void setInputFile(boolean stdin) throws CmdLineException {
 		if (stdin == true) {
-			filename = "<stdin>";
+			filename = "script";
 			instream = new InputStreamReader(System.in);
 		}
 	}

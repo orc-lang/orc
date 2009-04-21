@@ -16,6 +16,7 @@ import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
+import orc.runtime.sites.Site;
 import orc.runtime.sites.ThreadedSite;
 import orc.runtime.values.ConsValue;
 import orc.runtime.values.ListValue;
@@ -93,7 +94,7 @@ public class GoogleSearchFactory extends EvalSite {
 				final String page;
 				try {
 					page = pages.getJSONObject(i).getString("start");
-					out = new ConsValue(new ThreadedSite() {
+					out = new ConsValue<Site>(new ThreadedSite() {
 						@Override
 						public Object evaluate(Args args) throws TokenException {
 							JSONObject root;
@@ -117,7 +118,7 @@ public class GoogleSearchFactory extends EvalSite {
 				}
 			}
 			// the first page, we already got the results, so it is much simpler
-			out = new ConsValue(new EvalSite() {
+			out = new ConsValue<Site>(new EvalSite() {
 				@Override
 				public Object evaluate(Args args) throws TokenException {
 					return JSONSite.wrapJSON(results);

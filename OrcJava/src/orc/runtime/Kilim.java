@@ -227,7 +227,7 @@ public final class Kilim {
 							caller.resume(thunk.call());
 						} catch (TokenException e) {
 							caller.error(e);
-						} catch (Throwable e) {
+						} catch (Exception e) {
 							caller.error(new JavaException(e));
 						}
 					}
@@ -288,9 +288,9 @@ public final class Kilim {
 				} else if (out instanceof TokenException) {
     				// a token exception
     				caller.error((TokenException)out);
-				} else if (out instanceof Throwable) {
+				} else if (out instanceof Exception) {
     				// some other exception
-    				caller.error(new JavaException((Throwable)out));
+    				caller.error(new JavaException((Exception)out));
         		} else {
         			// any other value is irrelevant, it
         			// signifies a dead token
