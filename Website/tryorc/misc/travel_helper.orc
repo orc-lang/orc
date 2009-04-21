@@ -96,7 +96,7 @@ def poll(interval, put) =
     -- add each trip to the buffer
     each(feed.getEntries()) >entry>
     extractLocation(entry.getTitle().getPlainText()) >location>
-    DateTime(entry.getTimes().get(0).getStartTime().getValue()) >time>
+    DateTime(entry.getTimes().get(0).getStartTime().toString()) >time>
     trips.put(Trip(time, location)) >>
     stop
 
