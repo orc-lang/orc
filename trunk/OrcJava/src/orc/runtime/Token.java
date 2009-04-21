@@ -11,6 +11,7 @@ import orc.env.Env;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
 import orc.error.runtime.CapabilityException;
+import orc.error.runtime.JavaError;
 import orc.error.runtime.SiteException;
 import orc.error.runtime.SiteResolutionException;
 import orc.error.runtime.StackLimitReachedError;
@@ -175,7 +176,18 @@ public class Token implements Serializable, Locatable {
 		if (!alive) {
 			return;
 		} else if (group.isAlive()) {
-			node.process(this);
+			try {
+				node.process(this);
+			} catch (RuntimeException e) {
+				// HACK: I'm ambivalent about this;
+				// on the one hand it tries to gracefully
+				// handle bugs in the implementation by
+				// at least shutting down the engine properly.
+				// On the other hand, it could mask the error
+				// if there was a real runtime error that is
+				// non-recoverable (e.g. out of memory).
+				error(new JavaError(e));
+			}
 		} else {
 			die();
 		}

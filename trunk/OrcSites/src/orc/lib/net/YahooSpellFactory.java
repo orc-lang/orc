@@ -54,7 +54,7 @@ public class YahooSpellFactory extends EvalSite {
 					// indicates no result was returned
 					return NilValue.singleton;
 				} else {
-					return new ConsValue(((JSONObject)response).getString("Result"), NilValue.singleton);
+					return new ConsValue<String>(((JSONObject)response).getString("Result"), NilValue.singleton);
 				}
 			} catch (ClassCastException e) {
 				// should be impossible

@@ -38,8 +38,8 @@ public class NOAAWeather {
 	 */
 	public static final class Forecast {
 		private final Location location;
-		private Temperature[] maxTemps;
-		private Temperature[] minTemps;
+		private Temperature[] maxTemps = new Temperature[0];
+		private Temperature[] minTemps = new Temperature[0];
 		private final RainChance[] rains;
 		private final Sky[] skies;
 		
