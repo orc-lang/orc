@@ -29,10 +29,9 @@ Given a calendar event description, return a probable
 trip destination.  If none is found, halt.
 --}
 def extractLocation(description) =
-  val parts = description.split(" to ")
-  if(parts.length() > 1) >>
-  parts(parts.length()-1)?
-  
+  if(description.startsWith("trip to ")) >>
+  description.substring(8)
+
 {--
 Given a trip, return a record representing
 the weather forecast for that trip.  If the
@@ -106,17 +105,22 @@ Print trip information obtained by calling "get".
 Repeats indefinitely, and never publishes.
 --}
 def notify(get) =
-  get() >trip> (
+  get() >Trip(time, location) as trip> (
     val forecast = weather(trip)
     val events = events(trip, "museum")
     -- at least one of forecast or events must be present
     let(forecast | events) >>
-    println(trip) >>
-    (println(forecast) ; signal) >>
-    each(events) >event>
-    println(event.start_time? + " " + event.name? + ": " + event.venue_name?) >>
+    println("TRIP TO " + location + " on " + time) >>
+    -- print the forecast if present
+    (let(forecast) >> println("FORECAST:") >> println(forecast) ; signal) >>
+    -- then print the events if present
+    println("EVENTS:") >>
+    ( each(events) >event>
+      println(event.start_time? + " " + event.name? + ": " + event.venue_name?)
+      ; println("None found.")
+    ) >>
     stop
-   ; notify(get)
+    ; notify(get)
   )
 
 ------------ Goal expression of program ---------
