@@ -4,6 +4,7 @@
 		Ant build file for Orc binary distribution.
 	</description>
 	<property file="build.properties" />
+	<property name="target.name" value="${ant.project.name}-${orc.version}" />
 	
 	<path id="orc.classpath">
 		<fileset dir="lib" includes="*.jar" />
@@ -41,7 +42,7 @@
 			</fileset>
 		</zip>
 		<!-- Construct the One-JAR file -->
-		<one-jar destfile="build/${ant.project.name}-demo.jar" manifest="orchard-demo.mf">
+		<one-jar destfile="build/${target.name}-demo.jar" manifest="orchard-demo.mf">
 			<main>
 				<fileset dir="build/classes" />
 				<fileset dir="build">
@@ -168,31 +169,42 @@
 		<copy file="orchard.properties" todir="build/classes/orc/orchard" />
 		<copy file="oauth.jks" todir="build/classes/orc/orchard" />
 	</target>
-	
+
+	<!-- WARNING: this does not work on non-Unix systems (without ln and tar) -->
 	<target name="demo-app" depends="demo-jar" description="generate a Mac OS bundle">
-		<taskdef name="jarbundler"
-				classpath="${orc.location.OrcJava}/lib/jarbundler-2.1.0.jar" 
-				classname="net.sourceforge.jarbundler.JarBundler"/>
-		<!-- create a dummy JavaApplicationStub (will replace with symlink) -->
-		<touch file="build/JavaApplicationStub"/>
-		<jarbundler dir="build"
-				name="${ant.project.name}"
-				mainclass="com.simontuffs.onejar.Boot"
-				jar="build/${ant.project.name}-demo.jar"
-				version="${orc.version}"
-				stubfile="build/JavaApplicationStub"
-				jvmversion="1.5+" />
-		<delete file="build/JavaApplicationStub"/>
-		<!-- replace JavaApplicationStub with symlink -->
-		<delete file="build/${ant.project.name}.app/Contents/MacOS/JavaApplicationStub"/>
-		<exec executable="ln">
-			<arg line="-s /System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub"/>
-			<arg value="build/${ant.project.name}.app/Contents/MacOS/JavaApplicationStub"/>
+		<property name="appdir" value="build/Orchard.app" />
+		<delete dir="${appdir}"/> <!-- clean up any old files -->
+		<mkdir dir="${appdir}"/>
+		<!-- copy most files without filtering -->
+		<copy todir="${appdir}">
+			<fileset dir="app-skeleton">
+				<include name="**/*"/>
+				<exclude name="**/*.plist"/>
+				<exclude name="**/CVS/*"/>
+				<exclude name="**/.svn/*"/>
+				<exclude name="**/JavaApplicationStub"/>
+			</fileset>
+		</copy>
+		<!-- copy plist files with token filtering -->
+		<copy todir="${appdir}">
+			<fileset dir="app-skeleton">
+				<include name="**/*.plist"/>
+			</fileset>
+			<filterset>
+				<filter token="orc.version" value="${orc.version}"/>
+				<filter token="orc.jar" value="${target.name}-demo.jar"/>
+			</filterset>
+		</copy>
+		<!-- copy JavaApplicationStub with the unix cp command to preserve permissions -->
+		<exec executable="cp">
+			<arg line="-p app-skeleton/Contents/MacOS/JavaApplicationStub" />
+			<arg value="${appdir}/Contents/MacOS/JavaApplicationStub" />
 		</exec>
-		<tar destfile="build/${ant.project.name}-app.tgz" compression="gzip">
-			<tarfileset prefix="." dir="build">
-				<include name="${ant.project.name}.app/**"/>
-			</tarfileset>
-		</tar>
+		<!-- copy jar -->
+		<copy file="build/${target.name}-demo.jar" todir="${appdir}/Contents/Resources/Java" />
+		<!-- create tgz package -->
+		<exec executable="tar" dir="build">
+			<arg line="-zcf ${target.name}-app.tgz Orchard.app" />
+		</exec>
 	</target>
 </project>
