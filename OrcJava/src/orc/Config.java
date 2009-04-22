@@ -43,8 +43,9 @@ import org.kohsuke.args4j.spi.StopOptionHandler;
  */
 public class Config implements Cloneable {
 
-	private Boolean debug = false;
-	private Boolean dumpOil = false;
+	private int debugLevel = 0;
+	private boolean oilOut = false;
+	private boolean oilIn = false;
 	private Boolean typecheck = false;
 	private Tracer tracer = new NullTracer();
 	private LinkedList<String> includes = new LinkedList<String>();
@@ -85,9 +86,10 @@ public class Config implements Cloneable {
 		throw new CmdLineException("");
 	}
 	
-	@Option(name="-debug",usage="Enable debugging output, which is disabled by default.")
+	@Option(name="-debug",usage="Enable debugging output, which is disabled by default. Repeat this argument to increase verbosity.")
 	public void setDebug(boolean debug) {
-		this.debug = debug;
+		if (debug) ++debugLevel;
+		else --debugLevel;
 	}
 	
 	@Option(name="-typecheck",usage="Enable typechecking, which is disabled by default.")
@@ -117,9 +119,14 @@ public class Config implements Cloneable {
 		}
 	}
 		
-	@Option(name="-oil",usage="Intsead of running the program, compile it and write the OIL XML to stdout.")
-	public void setDumpOil(boolean dumpOil) {
-		this.dumpOil = dumpOil;
+	@Option(name="-oilIn",usage="Read the program in OIL XML format. This will bypass typechecking and other pre-OIL compilation phases.")
+	public void setOilIn(boolean oilIn) {
+		this.oilIn = oilIn;
+	}
+		
+	@Option(name="-oilOut",usage="Intsead of running the program, compile it and write the OIL XML to stdout.")
+	public void setOilOut(boolean oilOut) {
+		this.oilOut = oilOut;
 	}
 	
 	@Option(name="-I",usage="Set the include path for Orc includes (same syntax as CLASSPATH). Default is \".\", the current directory. Prelude files are always available for include regardless of this setting.")
@@ -176,12 +183,16 @@ public class Config implements Cloneable {
 		this.tracer = tracer;
 	}
 	
-	public Boolean debugMode() {
-		return debug;
+	public int getDebugLevel() {
+		return debugLevel;
 	}
 	
-	public Boolean getDumpOil() {
-		return dumpOil;
+	public boolean getOilOut() {
+		return oilOut;
+	}
+	
+	public boolean getOilIn() {
+		return oilIn;
 	}
 	
 	public Boolean getNoPrelude() {

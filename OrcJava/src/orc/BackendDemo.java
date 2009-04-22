@@ -61,12 +61,13 @@ final class BackendVisitorDemo implements Visitor<Void> {
 		}
 	}
 	
-	/** Enter the scope of n variable bindings. */
-	private void enterScope(int n) {
-		for (int i = 0; i < n; ++i) {
-			variableNames.add("v"+nextVariableId);
-			++nextVariableId;
-		}
+	/** Enter the scope of a variable bindingx. */
+	private void enterScope(String name) {
+		// suffix names with a unique identifier since
+		// they are not guaranteed to be unique in scope
+		// after optimizations
+		variableNames.add(name+"_"+nextVariableId);
+		++nextVariableId;
 	}
 	
 	/** Leave the scope of n variable bindings. */
@@ -116,10 +117,10 @@ final class BackendVisitorDemo implements Visitor<Void> {
 	
 	public Void visit(Pull expr) {
 		out.print("(");
-		this.enterScope(1);
+		enterScope(expr.name == null ? "v" : expr.name);
 		expr.left.accept(this);
 		out.print(" <" + lookup(0) + "< ");
-		this.leaveScope(1);
+		leaveScope(1);
 		expr.right.accept(this);
 		out.print(")");
 		return null;
@@ -128,10 +129,10 @@ final class BackendVisitorDemo implements Visitor<Void> {
 	public Void visit(Push expr) {
 		out.print("(");
 		expr.left.accept(this);
-		this.enterScope(1);
+		enterScope(expr.name == null ? "v" : expr.name);
 		out.print(" >" + lookup(0) + "> ");
 		expr.right.accept(this);
-		this.leaveScope(1);
+		leaveScope(1);
 		out.print(")");
 		return null;
 	}
@@ -163,14 +164,18 @@ final class BackendVisitorDemo implements Visitor<Void> {
 	public Void visit(Defs expr) {
 		out.println("(");
 		// create a new binding for each definition in the group
-		this.enterScope(expr.defs.size());
+		for (Def def : expr.defs) {
+			enterScope(def.name == null ? "d" : def.name);
+		}
 		// defi will track the index of the current definition in the group,
 		// so we can find its name in the environment
 		int defi = expr.defs.size() - 1;
 		for (Def def : expr.defs) {
 			out.print("def " + lookup(defi) + "(");
 			// create new bindings for arguments
-			this.enterScope(def.arity);
+			for (int i = 0; i < def.arity; ++i) {
+				enterScope("a");
+			}
 			if (def.arity > 0) {
 				// look up argument names in the environment
 				out.print(lookup(def.arity-1));
@@ -181,12 +186,12 @@ final class BackendVisitorDemo implements Visitor<Void> {
 			}
 			out.print(") = ");
 			def.body.accept(this);
-			this.leaveScope(def.arity);
+			leaveScope(def.arity);
 			out.println();
 			--defi;
 		}
 		expr.body.accept(this);
-		this.leaveScope(expr.defs.size());
+		leaveScope(expr.defs.size());
 		out.println(")");
 		return null;
 	}

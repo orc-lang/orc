@@ -3,8 +3,10 @@ package orc.ast.oil.xml;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
+import java.io.Writer;
 
 import javax.xml.bind.JAXB;
 import javax.xml.bind.JAXBContext;
@@ -45,8 +47,14 @@ public class Oil implements Serializable {
 		JAXB.marshal(this, out);
 		return out.toString();
 	}
+	public void toXML(Writer out) {
+		JAXB.marshal(this, out);
+	}
 	public static Oil fromXML(String xml) {
 		StringReader in = new StringReader(xml);
+		return JAXB.unmarshal(in, Oil.class);
+	}
+	public static Oil fromXML(Reader in) {
 		return JAXB.unmarshal(in, Oil.class);
 	}
 	

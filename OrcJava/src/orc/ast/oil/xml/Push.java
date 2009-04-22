@@ -1,5 +1,6 @@
 package orc.ast.oil.xml;
 
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 
 public class Push extends Expression {
@@ -7,6 +8,7 @@ public class Push extends Expression {
 	public Expression left;
 	@XmlElement(required=true)
 	public Expression right;
+	@XmlAttribute(required=false)
 	public String name;
 	public Push() {}
 	public Push(Expression left, Expression right, String name) {

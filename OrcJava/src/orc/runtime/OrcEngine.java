@@ -45,7 +45,7 @@ public class OrcEngine implements Runnable {
 
 	private int round = 1;
 
-	public final boolean debugMode;
+	private final int debugLevel;
 
 	/**
 	 * This flag is set by the root {@link LogicalClock} when execution completes to
@@ -89,7 +89,7 @@ public class OrcEngine implements Runnable {
 	public OrcEngine(Config config) {
 		this.config = config;
 		this.maxpubs = config.getMaxPubs();
-		this.debugMode = config.debugMode();
+		this.debugLevel = config.getDebugLevel();
 		this.pool = config.getTokenPool();
 		this.stdout = config.getStdout();
 		this.stderr = config.getStderr();
@@ -105,7 +105,7 @@ public class OrcEngine implements Runnable {
 	 * to queue an active token to process first.
 	 */
 	public final void run() {
-		if (debugMode) System.out.println("Running...");
+		debug(1, "Started engine.");
 		timer = new Timer();
 		Kilim.startEngine(config.getNumKilimThreads(), config
 				.getNumSiteThreads());
@@ -136,7 +136,7 @@ public class OrcEngine implements Runnable {
 	 */
 	public final synchronized void terminate() {
 		halt = true;
-		debug("Engine terminated.");
+		debug(1, "Engine terminated.");
 		notifyAll();
 	}
 	
@@ -145,7 +145,7 @@ public class OrcEngine implements Runnable {
 	 */
 	public final synchronized void pause() {
 		pause = true;
-		debug("Engine paused.");
+		debug(1, "Engine paused.");
 	}
 	
 	/**
@@ -153,7 +153,7 @@ public class OrcEngine implements Runnable {
 	 */
 	public final synchronized void unpause() {
 		pause = false;
-		debug("Engine unpaused.");
+		debug(1, "Engine unpaused.");
 		// FIXME: do we need notifyAll or just notify?
 		notifyAll();
 	}
@@ -230,6 +230,11 @@ public class OrcEngine implements Runnable {
 		// notice that we do not synchronize while
 		// processing a token; we don't want to risk
 		// locking the engine if the processing blocks
+		if (shouldDebug(3)) {
+			debug(3, "Processing " + todo + ":\n" +
+					"  " + todo.getSourceLocation() + "\n" +
+					"  Node: " + todo.getNode());
+		}
 		todo.process();
 		return true;
 	}
@@ -298,31 +303,53 @@ public class OrcEngine implements Runnable {
 			stderr.println(location);
 		}
 		stderr.println("");
-		if (debugMode) {
+		// HACK: technically, we should report this information
+		// using debug(...), but then we couldn't use printStackTrace.
+		if (shouldDebug(1)) {
 			problem.printStackTrace(stderr);
 		}
 		Throwable cause = problem.getCause();
-		if (debugMode && cause != null) {
+		if (shouldDebug(1) && cause != null) {
 			stderr.println("Caused by:");
 			cause.printStackTrace(stderr);
 		}
 	}
+	
+	/**
+	 * Return true if a debug report at the given level
+	 * will be used.  Useful if you want to avoid some expensive
+	 * computation just to generate debug output which will be
+	 * ignored.
+	 */
+	public final boolean shouldDebug(int level) {
+		return debugLevel >= level;
+	}
 
-	public final void debug(String s) {
-		if (debugMode) onDebug(s);
+	/**
+	 * Output some debugging information at the given level.
+	 * Level 1 is the least verbose (most important information) debugging level,
+	 * and higher numbers are used for more verbose (less important information).
+	 * @param level
+	 * @param s
+	 */
+	public final void debug(int level, String s) {
+		assert(level > 0);
+		if (debugLevel >= level) onDebug(s);
 	}
 	
+	/**
+	 * Override this to change how debugging output is handled.
+	 * @param s
+	 */
 	public void onDebug(String s) {
 		 System.out.println(s);
 	}
 
 	public final void reportRound() {
-		if (debugMode) {
-			debug("---\n"
-					+ "Round:   " + round + "\n"
+		if (shouldDebug(2)) {
+			debug(2,  "Round:   " + round + "\n"
 					+ "Active:  " + readyTokens.size() + "\n"
 					+ "Queued:  " + queuedReturns.size() + "\n");
-			debug("---\n\n");
 		}
 	}
 

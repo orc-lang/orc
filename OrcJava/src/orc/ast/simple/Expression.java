@@ -68,7 +68,7 @@ public abstract class Expression {
 	 * @return A new copy of the expression with the substitution performed
 	 */
 	public Expression subvar(Var v, NamedVar x) {
-		v.giveName(x.key);
+		v.name = x.name;
 		return subst(v,x);
 	}
 	
@@ -89,7 +89,7 @@ public abstract class Expression {
 		{
 			Argument a = m.get(x);
 			if (a instanceof Var) {
-				((Var)a).giveName(x.key);
+				((Var)a).name = x.name;
 			}
 			result = result.subst(a,x);
 		}

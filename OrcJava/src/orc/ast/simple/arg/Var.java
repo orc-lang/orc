@@ -39,10 +39,6 @@ public class Var extends Argument {
 		}
 	}
 	
-	public void giveName(String name) {
-		this.name = name;
-	}
-	
 	public String toString() {
 		return (name != null ? name : super.toString());
 	}

@@ -16,6 +16,7 @@ public class Definition implements Serializable {
 	@XmlElement(required=true)
 	public Expression body;
 	public SourceLocation location;
+	@XmlAttribute(required=false)
 	public String name;
 	public Definition() {}
 	public Definition(int arity, Expression body, SourceLocation location, String name) {
