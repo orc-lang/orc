@@ -8,7 +8,7 @@ import xtc.util.Utilities;
 
 /**
  * Constant (not just immutable, but atomic) value,
- * such as a String, Number, Boolean, or Character.
+ * such as a String, Number, Boolean, Character, or null.
  * @author quark
  */
 public class ConstantValue extends AbstractValue {
@@ -18,12 +18,13 @@ public class ConstantValue extends AbstractValue {
 		this.constant = constant;
 	}
 	public void prettyPrint(Writer out, int indent) throws IOException {
-		if (constant instanceof String) {
-			out.write('"' + Utilities.escape((String)constant, Utilities.JAVA_ESCAPES) + '"');
-		} else out.write(constant.toString());
+		out.write(orc.runtime.values.Value.write(constant));
 	}
-	public boolean equals(Object that) {
-		return that instanceof ConstantValue
-				&& ((ConstantValue)that).constant.equals(constant);
+	public boolean equals(final Object that) {
+		if (that == null) return false;
+		if (!(that instanceof ConstantValue)) return false;
+		final ConstantValue cv = (ConstantValue)that;
+		if (cv.constant == null) return constant == null;
+		return cv.constant.equals(constant);
 	}
 }
