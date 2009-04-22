@@ -49,8 +49,13 @@ public class Orc {
 		
 		Node n;
 		try {
-			Expr ex = compile(cfg.getInstream(), cfg);
-			if (cfg.getDumpOil()) {
+			final Expr ex;
+			if (cfg.getOilIn()) {
+				ex = Oil.fromXML(cfg.getInstream()).unmarshal();
+			} else {
+				ex = compile(cfg.getInstream(), cfg);
+			}
+			if (cfg.getOilOut()) {
 				System.out.println(new Oil(ex).toXML());
 				// don't run or compile to DAG
 				return;

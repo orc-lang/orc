@@ -40,6 +40,6 @@ public class AsPattern extends Pattern {
 	}
 	
 	public String toString() {
-		return "(" + p + " as " + x.key +")";
+		return "(" + p + " as " + x.name +")";
 	}
 }

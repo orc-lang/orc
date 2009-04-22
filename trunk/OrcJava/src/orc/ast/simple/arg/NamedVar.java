@@ -22,16 +22,16 @@ import orc.runtime.values.Value;
 
 public class NamedVar extends Argument implements Comparable<NamedVar> {
 	private static final long serialVersionUID = 1L;
-	public String key;
+	public String name;
 	
 	public NamedVar(String key)
 	{
-		this.key = key;
+		this.name = key;
 	}
 	
 	public int compareTo(NamedVar f) {
-		String s = this.key;
-		String t = f.key;
+		String s = this.name;
+		String t = f.name;
 		return s.compareTo(t);
 	}
 	
@@ -47,11 +47,11 @@ public class NamedVar extends Argument implements Comparable<NamedVar> {
 		}
 	}
 	public String toString() {
-		return super.toString() + "(" + key + ")";
+		return super.toString() + "(" + name + ")";
 	}
 
 	@Override
 	public Arg convert(Env<Var> vars) throws UnboundVariableException {
-		throw new UnboundVariableException(key, getSourceLocation());
+		throw new UnboundVariableException(name, getSourceLocation());
 	}
 }

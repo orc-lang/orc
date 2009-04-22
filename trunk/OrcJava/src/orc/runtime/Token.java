@@ -126,6 +126,9 @@ public class Token implements Serializable, Locatable {
 	 * Free any resources held by this token.
 	 */
 	final void free() {
+		// it's not necessary to free these resources,
+		// since this token will be garbage soon anyways
+		/*
 		node = null;	
 		env = null;
 		group = null;
@@ -136,6 +139,7 @@ public class Token implements Serializable, Locatable {
 		tracer = null;
 		continuation = null;
 		result = null;
+		*/
 	}
 	
 
@@ -336,10 +340,6 @@ public class Token implements Serializable, Locatable {
 		return var.resolve(env);
 	}
 	
-	public final void debug(String s) {
-		engine.debug(s);
-	}
-	
 	public final void activate() {
 		engine.activate(this);
 	}
@@ -369,11 +369,14 @@ public class Token implements Serializable, Locatable {
 		problem.setBacktrace(getBacktrace());
 		tracer.error(problem);
 		engine.tokenError(problem);
-		// die after reporting the error, so the engine
-		// isn't halted before it gets a chance to report it
-		die();
-		// if this is an unrecoverable error, terminate the whole engine
-		if (problem instanceof TokenError) engine.terminate();
+		if (problem instanceof TokenError) {
+			// if this is an unrecoverable error, terminate the whole engine
+			engine.terminate();
+		} else {
+			// die after reporting the error, so the engine
+			// isn't halted before it gets a chance to report it
+			die();
+		}
 	}
 
 	/**

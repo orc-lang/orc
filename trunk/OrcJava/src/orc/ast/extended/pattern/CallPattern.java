@@ -38,7 +38,7 @@ public class CallPattern extends Pattern {
 	}
 	
 	public String toString() {
-		return site.key + p.toString();
+		return site.name + p.toString();
 	}
 
 }

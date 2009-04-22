@@ -23,7 +23,7 @@ public class WithLocation extends Node implements Located {
 	@Override
 	public void process(Token t) {
 		t.setSourceLocation(location);
-		next.process(t);
+		t.move(next).activate();
 	}
 	public SourceLocation getSourceLocation() {
 		return location;
