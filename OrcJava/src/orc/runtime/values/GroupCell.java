@@ -61,7 +61,6 @@ public final class GroupCell extends Group implements Serializable, Future {
 		// if this returns null, we avoid
 		// calling related trace methods
 		StoreTrace store = token.getTracer().store(pullTrace, this.value);
-		pullTrace = null;
 		bound = true;
 		kill();
 		if (waitList != null) {
