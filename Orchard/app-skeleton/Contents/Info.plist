@@ -32,6 +32,8 @@
 		<string>1.5+</string>
 		<key>MainClass</key>
 		<string>com.simontuffs.onejar.Boot</string>
+		<key>VMOptions</key>
+		<string>-Xmx1G</string>
 		<key>Properties</key>
 		<dict>
 			<key>orc.version</key>
