@@ -119,6 +119,8 @@
 		<string>1.5+</string>
 		<key>MainClass</key>
 		<string>orc.gui.OrcApp</string>
+		<key>VMOptions</key>
+		<string>-Xmx1G</string>
 		<key>Properties</key>
 		<dict>
 			<key>orc.version</key>
