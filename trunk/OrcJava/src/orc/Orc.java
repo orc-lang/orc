@@ -14,6 +14,7 @@ import orc.ast.extended.Declare;
 import orc.ast.extended.declaration.Declaration;
 import orc.ast.oil.Compiler;
 import orc.ast.oil.Expr;
+import orc.ast.oil.SiteResolver;
 import orc.ast.oil.UnguardedRecursionChecker;
 import orc.ast.oil.xml.Oil;
 import orc.ast.simple.arg.Var;
@@ -51,7 +52,7 @@ public class Orc {
 		try {
 			final Expr ex;
 			if (cfg.getOilIn()) {
-				ex = Oil.fromXML(cfg.getInstream()).unmarshal();
+				ex = SiteResolver.resolve(Oil.fromXML(cfg.getInstream()).unmarshal(), cfg);
 			} else {
 				ex = compile(cfg.getInstream(), cfg);
 			}
@@ -121,14 +122,17 @@ public class Orc {
 		{
 			e = new Declare(d, e);
 		}
-		if (progress.isCanceled()) return null;
-		
 		//System.out.println("Simplifying the abstract syntax tree...");
 		// Simplify the AST
 		Expr ex = e.simplify().convert(new Env<Var>(), new Env<String>());
 		// System.out.println(ex);
 		if (progress.isCanceled()) return null;
 		progress.setProgress(0.7);
+		
+		progress.setNote("Resolving sites");
+		ex = SiteResolver.resolve(ex, cfg);
+		if (progress.isCanceled()) return null;
+		progress.setProgress(0.8);
 		
 		// Optionally perform typechecking
 		if (cfg.getTypeChecking()) {

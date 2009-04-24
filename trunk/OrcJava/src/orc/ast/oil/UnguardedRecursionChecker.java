@@ -106,7 +106,7 @@ public class UnguardedRecursionChecker extends Walker {
 	public Void visit(Var arg) {
 		// check whether the var refers to an unguarded outer
 		// definition in the environment
-		if (arg.resolve(env)) {
+		if (arg.resolveGeneric(env)) {
 			CompilationException e = new CompilationException(
 					"Unguarded recursion found.");
 			e.setSourceLocation(location);

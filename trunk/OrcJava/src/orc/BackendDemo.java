@@ -78,7 +78,7 @@ final class BackendVisitorDemo implements Visitor<Void> {
 	
 	/** Variables are translated into names using the environment. */
 	public Void visit(Var arg) {
-		out.print(arg.resolve(variableNames));
+		out.print(arg.resolveGeneric(variableNames));
 		return null;
 	}
 
@@ -212,7 +212,7 @@ final class BackendVisitorDemo implements Visitor<Void> {
 
 	/** Ignore source location tags */
 	public Void visit(WithLocation expr) {
-		return expr.expr.accept(this);
+		return expr.body.accept(this);
 	}
 
 	/** Ignore type assertions */

@@ -12,28 +12,25 @@ import orc.type.Type;
 
 
 /**
- * Program constants, which occur in argument position. 
- * 
- * @author dkitchin
- *
+ * A site which has been resolved and instantiated.
+ * @author quark
  */
-
-public class Site extends Arg {
-
-	public orc.ast.sites.Site site;
-	
-	public Site(orc.ast.sites.Site site)
-	{
-		this.site = site;
+public class ResolvedSite extends Site {
+	private orc.runtime.sites.Site instance;
+	public ResolvedSite(Config config, orc.ast.sites.Site site) throws SiteResolutionException {
+		super(site);
+		instance = site.instantiate(config);
 	}
 	
+	@Override
 	public Site resolveSites(Config config) throws SiteResolutionException {
-		return new ResolvedSite(config, site);
+		// already resolved
+		return this;
 	}
 	
 	@Override
 	public Object resolve(Env<Object> env) {
-		throw new OrcError("Unexpected orc.ast.oil.arg.Site");
+		return instance;
 	}
 	
 	public String toString() {
@@ -42,16 +39,16 @@ public class Site extends Arg {
 	
 	@Override
 	public <E> E accept(Visitor<E> visitor) {
-		return visitor.visit(this);
+		return visitor.visit((Site)this);
 	}
 
 	@Override
 	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
-		throw new OrcError("Unexpected orc.ast.oil.arg.Site");
+		return instance.type();
 	}
 	
 	@Override
 	public void addIndices(Set<Integer> indices, int depth) {
-		throw new OrcError("Unexpected orc.ast.oil.arg.Site");
+		// do nothing
 	}
 }

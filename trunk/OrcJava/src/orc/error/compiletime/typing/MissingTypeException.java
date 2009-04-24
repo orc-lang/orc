@@ -22,4 +22,7 @@ public class MissingTypeException extends TypeException {
 		super(message);
 	}
 
+	public MissingTypeException(String message, Throwable cause) {
+		super(message, cause);
+	}
 }

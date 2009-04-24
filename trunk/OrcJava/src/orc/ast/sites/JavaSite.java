@@ -3,7 +3,8 @@ package orc.ast.sites;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import orc.error.runtime.SiteResolutionException;
+import orc.Config;
+import orc.error.compiletime.SiteResolutionException;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.java.ClassProxy;
@@ -24,11 +25,11 @@ public class JavaSite extends Site {
 		return JAVA;
 	}
 
-	public Class classify() throws SiteResolutionException {
+	private Class classify(Config config) throws SiteResolutionException {
 		String classname = location.getSchemeSpecificPart();
 		try
 		{
-			Class<?> cls = Class.forName(classname);
+			Class<?> cls = config.loadClass(classname);
 			if (orc.runtime.sites.Site.class.isAssignableFrom(cls)) {
 				throw new SiteResolutionException("Tried to load a subclass of orc.runtime.sites.Site as a Java class -- that's not allowed!");
 			}
@@ -38,7 +39,7 @@ public class JavaSite extends Site {
 		}
 	}
 	
-	public orc.runtime.sites.Site instantiate() throws SiteResolutionException {
-		return ClassProxy.forClass(classify());
+	public orc.runtime.sites.Site instantiate(Config config) throws SiteResolutionException {
+		return ClassProxy.forClass(classify(config));
 	}
 }

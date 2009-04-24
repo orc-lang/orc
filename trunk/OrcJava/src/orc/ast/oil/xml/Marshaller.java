@@ -58,7 +58,7 @@ public class Marshaller implements Visitor<Expression> {
 	}
 	
 	public Expression visit(orc.ast.oil.WithLocation expr) {
-		return new WithLocation(expr.expr.accept(this), expr.location);
+		return new WithLocation(expr.body.accept(this), expr.location);
 	}
 	
 	public Expression visit(orc.ast.oil.Atomic atomic) {

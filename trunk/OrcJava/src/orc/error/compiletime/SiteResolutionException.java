@@ -1,4 +1,5 @@
-package orc.error.runtime;
+package orc.error.compiletime;
+
 
 /**
  * Indicate a problem with site resolution. Ideally
@@ -6,7 +7,7 @@ package orc.error.runtime;
  * resolution is done at runtime.
  * @author quark
  */
-public class SiteResolutionException extends TokenException {
+public class SiteResolutionException extends CompilationException {
 	public SiteResolutionException(String message, Throwable cause) {
 		super(message, cause);
 	}

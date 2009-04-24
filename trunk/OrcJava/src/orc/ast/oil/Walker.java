@@ -117,7 +117,7 @@ public abstract class Walker implements Visitor<Void> {
 	
 	public Void visit(WithLocation expr) {
 		this.enter(expr);
-		expr.expr.accept(this);
+		expr.body.accept(this);
 		this.leave(expr);
 		return null;
 	}

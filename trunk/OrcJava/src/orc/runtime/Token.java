@@ -10,10 +10,10 @@ import orc.ast.oil.arg.Arg;
 import orc.env.Env;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
+import orc.error.compiletime.SiteResolutionException;
 import orc.error.runtime.CapabilityException;
 import orc.error.runtime.JavaError;
 import orc.error.runtime.SiteException;
-import orc.error.runtime.SiteResolutionException;
 import orc.error.runtime.StackLimitReachedError;
 import orc.error.runtime.TokenError;
 import orc.error.runtime.TokenException;
@@ -336,7 +336,7 @@ public class Token implements Serializable, Locatable {
 	 * @return value, or an error if the variable is undefined
 	 * @throws SiteResolutionException 
 	 */
-	public final Object lookup(Arg var) throws SiteResolutionException {
+	public final Object lookup(Arg var) {
 		return var.resolve(env);
 	}
 	
