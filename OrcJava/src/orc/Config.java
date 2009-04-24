@@ -320,6 +320,10 @@ public class Config implements Cloneable {
 		return new InputStreamReader(stream);
 	}
 	
+	public final Class loadClass(String name) throws ClassNotFoundException {
+		return Class.forName(name);
+	}
+	
 	@Override
 	public Config clone() {
 		Config out;

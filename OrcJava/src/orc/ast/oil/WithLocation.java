@@ -14,10 +14,10 @@ import orc.type.Type;
  * @author quark
  */
 public class WithLocation extends Expr implements Located {
-	public final Expr expr;
+	public final Expr body;
 	public final SourceLocation location;
 	public WithLocation(Expr expr, SourceLocation location) {
-		this.expr = expr;
+		this.body = expr;
 		this.location = location;
 	}
 	public SourceLocation getSourceLocation() {
@@ -32,7 +32,7 @@ public class WithLocation extends Expr implements Located {
 	@Override
 	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
 		try {
-			return expr.typesynth(ctx, typectx);
+			return body.typesynth(ctx, typectx);
 		}
 		catch (TypeException e) {
 			/* If this error has no location, give it this (least enclosing) location */
@@ -46,7 +46,7 @@ public class WithLocation extends Expr implements Located {
 	@Override
 	public void typecheck(Type T, Env<Type> ctx, Env<Type> typectx) throws TypeException {
 		try {
-			expr.typecheck(T, ctx, typectx);
+			body.typecheck(T, ctx, typectx);
 		}
 		catch (TypeException e) {
 			/* If this error has no location, give it this (least enclosing) location */
@@ -58,11 +58,11 @@ public class WithLocation extends Expr implements Located {
 	}
 	
 	public String toString() {
-		return "{-" + location + "-}(" + expr +")";
+		return "{-" + location + "-}(" + body +")";
 	}
 	
 	@Override
 	public void addIndices(Set<Integer> indices, int depth) {
-		expr.addIndices(indices, depth);
+		body.addIndices(indices, depth);
 	}
 }

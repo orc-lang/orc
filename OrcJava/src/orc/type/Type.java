@@ -5,12 +5,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import orc.Config;
 import orc.ast.oil.arg.Arg;
 import orc.env.Env;
 import orc.env.EnvException;
 import orc.env.LookupFailureException;
 import orc.error.OrcError;
 import orc.error.compiletime.typing.ArgumentArityException;
+import orc.error.compiletime.typing.MissingTypeException;
 import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeArityException;
 import orc.error.compiletime.typing.TypeException;
@@ -349,4 +351,7 @@ public abstract class Type {
 		}
 	}
 	
+	public Type resolveSites(Config config) throws MissingTypeException {
+		return this;
+	}
 }

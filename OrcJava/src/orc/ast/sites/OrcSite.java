@@ -5,9 +5,10 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import orc.Config;
+import orc.error.compiletime.SiteResolutionException;
 import orc.error.compiletime.typing.MissingTypeException;
 import orc.error.compiletime.typing.TypeException;
-import orc.error.runtime.SiteResolutionException;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.type.Type;
@@ -28,12 +29,12 @@ public class OrcSite extends Site {
 		return ORC;
 	}
 
-	public Class classify() throws SiteResolutionException {
+	private Class classify(Config config) throws SiteResolutionException {
 		String classname = location.getSchemeSpecificPart();
 		Class<?> cls;
 		
 		try {
-			cls = Class.forName(classname);
+			cls = config.loadClass(classname);
 		}
 		catch (ClassNotFoundException e) {
 			throw new SiteResolutionException("Failed to load class " + classname + " as a site. Class not found.");
@@ -47,9 +48,9 @@ public class OrcSite extends Site {
 		}
 	}
 	
-	public orc.runtime.sites.Site instantiate() throws SiteResolutionException {
+	public orc.runtime.sites.Site instantiate(Config config) throws SiteResolutionException {
 		
-		Class cls = classify();
+		Class cls = classify(config);
 		try
 		{
 			return (orc.runtime.sites.Site)(cls.newInstance());

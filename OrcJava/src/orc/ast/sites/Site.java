@@ -3,10 +3,11 @@ package orc.ast.sites;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import orc.Config;
 import orc.error.OrcError;
+import orc.error.compiletime.SiteResolutionException;
 import orc.error.compiletime.typing.MissingTypeException;
 import orc.error.compiletime.typing.TypeException;
-import orc.error.runtime.SiteResolutionException;
 import orc.type.Type;
 
 /**
@@ -75,7 +76,7 @@ public abstract class Site {
 	
 	public abstract URI getLocation();
 	public abstract String getProtocol();	
-	public abstract orc.runtime.sites.Site instantiate() throws SiteResolutionException;
+	public abstract orc.runtime.sites.Site instantiate(Config config) throws SiteResolutionException;
 
 	/**
 	 * Equality on sites.
@@ -90,14 +91,6 @@ public abstract class Site {
 			   && this.getProtocol().equals(that.getProtocol()) );
 	}
 
-	public Type type() throws TypeException {
-		try {
-			return instantiate().type();
-		} catch (SiteResolutionException e) {
-			throw new MissingTypeException(e);
-		}
-	}
-	
 	public String toString() {
 		return "#site(" + getProtocol() + ", " + getLocation() + ")";
 	}

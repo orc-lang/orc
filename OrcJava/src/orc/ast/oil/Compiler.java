@@ -117,7 +117,7 @@ public final class Compiler implements Visitor<Node> {
 
 	public Node visit(WithLocation expr) {
 		return new orc.runtime.nodes.WithLocation(
-				expr.expr.accept(this),
+				expr.body.accept(this),
 				expr.location);
 	}
 

@@ -27,9 +27,13 @@ public class Var extends Arg implements Comparable<Var> {
 	public Var(int index) {
 		this.index = index;
 	}
-
+	
 	@Override
-	public <T> T resolve(Env<T> env) {
+	public Object resolve(Env<Object> env) {
+		return resolveGeneric(env);
+	}
+
+	public <T> T resolveGeneric(Env<T> env) {
 		try {
 			return env.lookup(this.index);
 		} catch (LookupFailureException e) {
