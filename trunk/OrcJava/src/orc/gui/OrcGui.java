@@ -1,51 +1,30 @@
 package orc.gui;
 
-import java.awt.BorderLayout;
+import static javax.swing.SwingUtilities.invokeLater;
+
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.FileDialog;
-import java.awt.Font;
-import java.awt.GridLayout;
-import java.awt.Menu;
-import java.awt.MenuBar;
-import java.awt.MenuItem;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.io.Writer;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 import javax.swing.JTextPane;
-import javax.swing.ProgressMonitor;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.plaf.FileChooserUI;
-import javax.swing.text.AbstractWriter;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -56,6 +35,8 @@ import orc.Config;
 import orc.Orc;
 import orc.ast.oil.Compiler;
 import orc.ast.oil.Expr;
+import orc.ast.oil.SiteResolver;
+import orc.ast.oil.xml.Oil;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;
 import orc.error.runtime.TokenException;
@@ -67,11 +48,6 @@ import orc.runtime.nodes.Pub;
 import orc.runtime.values.Value;
 
 import org.kohsuke.args4j.CmdLineException;
-
-import com.apple.eawt.Application;
-import com.apple.eawt.ApplicationAdapter;
-import com.apple.eawt.ApplicationEvent;
-import static javax.swing.SwingUtilities.invokeLater;
 
 /**
  * A basic GUI interface for Orc.
@@ -160,18 +136,41 @@ public class OrcGui implements Runnable {
 		ProgressMonitorListener progress = new ProgressMonitorListener(
 				null, "Compiling " + config.getFilename(), "");
 		try {
-			Expr ex = Orc.compile(config.getInstream(), config,
-					new SubProgressListener(progress, 0, 0.8));
+			Expr ex;
+			if (config.hasOilInputFile()) {
+				progress.setNote("Loading XML");
+				Oil oil = Oil.fromXML(config.getOilReader());
+				progress.setProgress(0.2);
+				if (progress.isCanceled()) return;
+				progress.setNote("Converting to AST");
+				ex = oil.unmarshal();
+				progress.setProgress(0.5);
+				if (progress.isCanceled()) return;
+				progress.setNote("Loading sites");
+				ex = SiteResolver.resolve(ex, config);
+			} else {
+				ex = Orc.compile(config.getReader(), config,
+					new SubProgressListener(progress, 0, 0.7));
+			}
+			if (config.hasOilOutputFile()) {
+				Writer out = config.getOilWriter();
+				progress.setNote("Writing OIL");
+				new Oil(ex).toXML(out);
+				out.close();
+			}
+			progress.setProgress(0.8);
 			if (progress.isCanceled()) return;
 			progress.setNote("Creating DAG");
 			n = Compiler.compile(ex, new Pub());
 			progress.setProgress(0.95);
 			if (progress.isCanceled()) return;
 		} catch (CompilationException e) {
+			progress.setProgress(1.0);
 			error("Compilation Error", e.getMessage());
 			return;
 		} catch (IOException e) {
-			error("Error Reading File", e.getMessage());
+			progress.setProgress(1.0);
+			error("IO Error", e.getMessage());
 			return;
 		}
 		
@@ -276,11 +275,28 @@ public class OrcGui implements Runnable {
 	 * @author quark
 	 */
 	protected static final class OpenDialog extends JDialog implements Runnable {
-		private JTextField fileName = new JTextField();
+		private FileField inputFile = new FileField("Open Orc Script", true, new FileFilter() {
+			@Override
+			public boolean accept(File f) {
+				return f.isDirectory()
+				|| f.getName().endsWith(".orc")
+				|| f.getName().endsWith(".oil");
+			}
+
+			@Override
+			public String getDescription() {
+				return "Orc Scripts";
+			}
+			
+		});
 		private JButton runButton = new JButton("Run");
 		{
-			fileName.setEditable(false);
 			runButton.setEnabled(false);
+			inputFile.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					runButton.setEnabled(e.getActionCommand().length() > 0);
+				}
+			});
 		}
 		public OpenDialog(final Config config) {
 			JPanel content = new OneColumnPanel();
@@ -288,25 +304,9 @@ public class OrcGui implements Runnable {
 			setContentPane(content);
 			setResizable(false);
 			
-			JPanel file = new JPanel(new BorderLayout(5, 0));
-			file.add(fileName, BorderLayout.CENTER);
-			fileName.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseClicked(MouseEvent e) {
-					chooseFile();
-				}
-			});
-			JButton choose = new JButton("...");
-			choose.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					chooseFile();
-				}
-			});
-			file.add(choose, BorderLayout.EAST);
-			JLabel fileLabel = new JLabel("Orc script");
-			content.add(fileLabel);
-			content.add(file);
-			content.add(Box.createVerticalStrut(10));
+			JLabel inputFileLabel = new JLabel("Read Orc script from...");
+			content.add(inputFileLabel);
+			content.add(inputFile);
 			
 			final ConfigPanel configPanel = new ConfigPanel();
 			configPanel.load(config);
@@ -316,10 +316,10 @@ public class OrcGui implements Runnable {
 			runButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					try {
-						config.setInputFile(new File(fileName.getText()));
+						config.setInputFile(inputFile.getFile());
 					} catch (CmdLineException e) {
 						JOptionPane.showMessageDialog(OpenDialog.this,
-								"The file " + fileName.getText() + " could not be opened.",
+								"The file " + inputFile.getFile() + " could not be opened.",
 								"Error", JOptionPane.ERROR_MESSAGE);
 						return;
 					}
@@ -339,35 +339,6 @@ public class OrcGui implements Runnable {
 			});
 			buttons.add(cancelButton);
 			content.add(buttons);
-		}
-		
-		private void chooseFile() {
-			File wd;
-			if (fileName.getText().equals("")) {
-				wd = new File(System.getProperty("user.dir"));
-			} else {
-				wd = new File(fileName.getText()).getParentFile();
-			}
-			JFileChooser chooser = new JFileChooser(wd);
-			chooser.setDialogTitle("Choose an Orc Script");
-			chooser.setFileFilter(new FileFilter() {
-				@Override
-				public boolean accept(File f) {
-					return f.isDirectory()
-					|| f.getName().endsWith(".orc");
-				}
-
-				@Override
-				public String getDescription() {
-					return "Orc Scripts";
-				}
-				
-			});
-			int status = chooser.showOpenDialog(OpenDialog.this);
-			if (status == JFileChooser.APPROVE_OPTION) {
-				fileName.setText(chooser.getSelectedFile().getPath());
-			}
-			runButton.setEnabled(fileName.getText().length() > 0);
 		}
 		
 		public void run() {

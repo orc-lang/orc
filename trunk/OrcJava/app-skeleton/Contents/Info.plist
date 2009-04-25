@@ -26,7 +26,29 @@
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>CFBundleTypeIconFile</key>
-			<string>orc-file.icns</string>
+			<string>orc-file-source.icns</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Orc OIL</string>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>oil</string>
+			</array>
+			<key>CFBundleTypeMIMETypes</key>
+			<array>
+				<string>application/vnd.orc.oil+xml</string>
+			</array>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>edu.utexas.cs.orc.oil</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>orc-file-oil.icns</string>
 		</dict>
 	</array>
 	<key>UTExportedTypeDeclarations</key>
@@ -50,7 +72,7 @@
 			<key>UTTypeReferenceURL</key>
 			<string>http://orc.csres.utexas.edu/</string>
 			<key>UTTypeIconFile</key>
-			<string>orc-file.icns</string>
+			<string>orc-file-source.icns</string>
 		</dict>
 		<dict>
 			<key>UTTypeConformsTo</key>
@@ -70,6 +92,8 @@
 			</dict>
 			<key>UTTypeReferenceURL</key>
 			<string>http://orc.csres.utexas.edu/</string>
+			<key>UTTypeIconFile</key>
+			<string>orc-file-oil.icns</string>
 		</dict>
 		<dict>
 			<key>UTTypeConformsTo</key>

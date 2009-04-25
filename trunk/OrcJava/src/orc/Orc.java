@@ -2,13 +2,19 @@ package orc;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.Writer;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import orc.ast.extended.Declare;
 import orc.ast.extended.declaration.Declaration;
@@ -51,18 +57,18 @@ public class Orc {
 		Node n;
 		try {
 			final Expr ex;
-			if (cfg.getOilIn()) {
-				ex = SiteResolver.resolve(Oil.fromXML(cfg.getInstream()).unmarshal(), cfg);
+			if (cfg.hasOilInputFile()) {
+				Oil oil = Oil.fromXML(cfg.getOilReader());
+				ex = SiteResolver.resolve(oil.unmarshal(), cfg);
 			} else {
-				ex = compile(cfg.getInstream(), cfg);
+				ex = compile(cfg.getReader(), cfg);
 			}
-			if (cfg.getOilOut()) {
-				System.out.println(new Oil(ex).toXML());
-				// don't run or compile to DAG
-				return;
-			} else {
-				n = Compiler.compile(ex, new Pub());
+			if (cfg.hasOilOutputFile()) {
+				Writer out = cfg.getOilWriter();
+				new Oil(ex).toXML(out);
+				out.close();
 			}
+			n = Compiler.compile(ex, new Pub());
 		} catch (CompilationException e) {
 			System.err.println(e);
 			return;
@@ -153,7 +159,7 @@ public class Orc {
 	}
 	
 	public static Node compile(Config cfg) throws CompilationException, IOException {
-		return Compiler.compile(compile(cfg.getInstream(), cfg), new Pub());
+		return Compiler.compile(compile(cfg.getReader(), cfg), new Pub());
 	}
 
 	/** @throws IOException 

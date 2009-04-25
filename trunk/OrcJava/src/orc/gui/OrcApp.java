@@ -128,7 +128,6 @@ public class OrcApp extends OrcGui {
 			public void handleOpenFile(final ApplicationEvent event) {
 				try {
 					final Config cfg = defaultConfig.clone();
-					// Read configuration options from the environment and the command line
 					cfg.setInputFile(new File(event.getFilename()));
 					// start the engine in a new thread so we don't
 					// block the event thread
