@@ -2,7 +2,9 @@ package orc.ast.oil;
 
 import java.util.Set;
 
+import orc.ast.oil.xml.Expression;
 import orc.env.Env;
+import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Node;
 import orc.type.Type;
@@ -43,5 +45,10 @@ public class TypeDecl extends Expr {
 	public void typecheck(Type T, Env<Type> ctx, Env<Type> typectx) throws TypeException {
 		Type actualType = type.subst(typectx);
 		body.typecheck(T, ctx, typectx.extend(actualType));
+	}
+
+	@Override
+	public Expression marshal() throws CompilationException {
+		return new orc.ast.oil.xml.TypeDeclaration(type.marshal(), body.marshal());
 	}
 }

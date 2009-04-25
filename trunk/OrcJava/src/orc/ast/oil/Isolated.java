@@ -2,7 +2,9 @@ package orc.ast.oil;
 
 import java.util.Set;
 
+import orc.ast.oil.xml.Expression;
 import orc.env.Env;
+import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Fork;
 import orc.runtime.nodes.Node;
@@ -44,5 +46,10 @@ public class Isolated extends Expr {
 	@Override
 	public void typecheck(Type T, Env<Type> ctx, Env<Type> typectx) throws TypeException {
 		body.typecheck(T, ctx, typectx);
+	}
+
+	@Override
+	public Expression marshal() throws CompilationException {
+		return new orc.ast.oil.xml.Isolated(body.marshal());
 	}
 }

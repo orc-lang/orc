@@ -17,6 +17,7 @@ import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeArityException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
+import orc.error.compiletime.typing.UnrepresentableTypeException;
 import orc.type.ground.BooleanType;
 import orc.type.ground.Bot;
 import orc.type.ground.IntegerType;
@@ -57,9 +58,13 @@ public abstract class Type {
 	
 	/**
 	 * Placeholder for an unspecified type.
-	 * FIXME: should use a null type.
+	 * FIXME: do we need to override new methods
 	 */
-	public static final Type BLANK = null;
+	public static final Type BLANK = new Type() {
+		public orc.ast.oil.xml.type.Type marshal() throws UnrepresentableTypeException {
+			return new orc.ast.oil.xml.type.Blank();
+		}
+	};
 
 	
 	/* Check if a type is Top */
@@ -353,5 +358,14 @@ public abstract class Type {
 	
 	public Type resolveSites(Config config) throws MissingTypeException {
 		return this;
+	}
+
+	/**
+	 * Convert to a syntactic type. May return null
+	 * if the type is not representable.
+	 * @return
+	 */
+	public orc.ast.oil.xml.type.Type marshal() throws UnrepresentableTypeException {
+		throw new UnrepresentableTypeException(this);
 	}
 }

@@ -4,8 +4,10 @@ import java.util.Set;
 
 import orc.Config;
 import orc.ast.oil.Visitor;
+import orc.ast.oil.xml.Argument;
 import orc.env.Env;
 import orc.error.OrcError;
+import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.SiteResolutionException;
 import orc.error.compiletime.typing.TypeException;
 import orc.type.Type;
@@ -53,5 +55,10 @@ public class Site extends Arg {
 	@Override
 	public void addIndices(Set<Integer> indices, int depth) {
 		throw new OrcError("Unexpected orc.ast.oil.arg.Site");
+	}
+
+	@Override
+	public Argument marshal() throws CompilationException {
+		return new orc.ast.oil.xml.Site(site.getProtocol(), site.getLocation());
 	}
 }

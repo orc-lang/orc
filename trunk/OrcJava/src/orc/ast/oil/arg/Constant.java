@@ -4,7 +4,9 @@ import java.math.BigInteger;
 import java.util.Set;
 
 import orc.ast.oil.Visitor;
+import orc.ast.oil.xml.Argument;
 import orc.env.Env;
+import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.type.Type;
 import orc.type.ground.ConstIntType;
@@ -60,5 +62,10 @@ public class Constant extends Arg {
 	@Override
 	public void addIndices(Set<Integer> indices, int depth) {
 		return;
+	}
+
+	@Override
+	public Argument marshal() throws CompilationException {
+		return new orc.ast.oil.xml.Constant(v);
 	}
 }

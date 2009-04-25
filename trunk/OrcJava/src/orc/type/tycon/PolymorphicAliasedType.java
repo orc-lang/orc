@@ -4,6 +4,7 @@ import java.util.List;
 
 import orc.env.Env;
 import orc.error.compiletime.typing.TypeException;
+import orc.error.compiletime.typing.UnrepresentableTypeException;
 import orc.type.Type;
 
 /**
@@ -41,5 +42,9 @@ public class PolymorphicAliasedType extends Tycon {
 		
 		return type.subst(subctx);
 	}
-	
+
+	@Override
+	public orc.ast.oil.xml.type.Type marshal() throws UnrepresentableTypeException {
+		return new orc.ast.oil.xml.type.PolymorphicTypeAlias(type.marshal(), inferredVariances.size());
+	}
 }

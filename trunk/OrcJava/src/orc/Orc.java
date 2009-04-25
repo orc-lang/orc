@@ -59,7 +59,7 @@ public class Orc {
 			final Expr ex;
 			if (cfg.hasOilInputFile()) {
 				Oil oil = Oil.fromXML(cfg.getOilReader());
-				ex = SiteResolver.resolve(oil.unmarshal(), cfg);
+				ex = SiteResolver.resolve(oil.unmarshal(cfg), cfg);
 			} else {
 				ex = compile(cfg.getReader(), cfg);
 			}

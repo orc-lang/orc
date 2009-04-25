@@ -2,6 +2,9 @@ package orc.ast.oil.xml;
 
 import javax.xml.bind.annotation.XmlElement;
 
+import orc.Config;
+import orc.error.compiletime.CompilationException;
+
 /**
  * The "isolated" keyword.
  * @see orc.runtime.nodes.Isolate
@@ -18,7 +21,7 @@ public class Isolated extends Expression {
 		return "(isolated " + body.toString() + ")";
 	}
 	@Override
-	public orc.ast.oil.Expr unmarshal() {
-		return new orc.ast.oil.Isolated(body.unmarshal());
+	public orc.ast.oil.Expr unmarshal(Config config) throws CompilationException {
+		return new orc.ast.oil.Isolated(body.unmarshal(config));
 	}
 }

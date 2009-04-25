@@ -9,9 +9,11 @@ import orc.ast.oil.arg.Var;
 import orc.env.Env;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
+import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.DefinitionArityException;
 import orc.error.compiletime.typing.InsufficientTypeInformationException;
 import orc.error.compiletime.typing.TypeException;
+import orc.error.compiletime.typing.UnrepresentableTypeException;
 import orc.error.compiletime.typing.UnspecifiedArgTypesException;
 import orc.error.compiletime.typing.UnspecifiedReturnTypeException;
 import orc.type.ArrowType;
@@ -230,4 +232,30 @@ public class Def implements Locatable {
 		return location;
 	}
 	
+	public orc.ast.oil.xml.Definition marshal() throws CompilationException {
+		orc.ast.oil.xml.type.Type newResultType = null;
+		try {
+			if (resultType != null) newResultType = resultType.marshal();
+		} catch (UnrepresentableTypeException e) {
+			// assume the unrepresentable types can be inferred
+			newResultType = null;
+		}
+		orc.ast.oil.xml.type.Type[] newArgTypes = null;
+		if (argTypes != null) {
+			try {
+				newArgTypes = new orc.ast.oil.xml.type.Type[argTypes.size()];
+				int i = 0;
+				for (orc.type.Type t : argTypes) {
+					newArgTypes[i] = t.marshal();
+					++i;
+				}
+			} catch (UnrepresentableTypeException e) {
+				// assume the unrepresentable types can be inferred
+				newArgTypes = null;
+			}
+		}
+		return new orc.ast.oil.xml.Definition(arity, body.marshal(),
+				typeArity, newArgTypes, newResultType, location, name);
+		
+	}
 }

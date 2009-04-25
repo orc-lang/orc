@@ -2,10 +2,12 @@ package orc.ast.oil;
 
 import java.util.Set;
 
+import orc.ast.oil.xml.Expression;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
+import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Store;
@@ -57,5 +59,10 @@ public class Pull extends Expr {
 		Env<Type> lctx = ctx.clone();
 		lctx.add(right.typesynth(ctx, typectx));
 		left.typecheck(T, lctx, typectx);
+	}
+
+	@Override
+	public Expression marshal() throws CompilationException {
+		return new orc.ast.oil.xml.Pull(left.marshal(), right.marshal(), name);
 	}
 }

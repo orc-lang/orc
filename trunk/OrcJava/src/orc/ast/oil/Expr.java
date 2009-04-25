@@ -10,6 +10,7 @@ import orc.ast.sites.OrcSite;
 import orc.env.Env;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
+import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Pub;
@@ -77,4 +78,6 @@ public abstract class Expr {
 	public abstract void addIndices(Set<Integer> indices, int depth);
 	
 	public abstract <E> E accept(Visitor<E> visitor);
+	
+	public abstract orc.ast.oil.xml.Expression marshal() throws CompilationException;
 }

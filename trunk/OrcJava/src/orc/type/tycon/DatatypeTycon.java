@@ -5,6 +5,7 @@ import java.util.List;
 
 import orc.env.Env;
 import orc.error.compiletime.typing.TypeException;
+import orc.error.compiletime.typing.UnrepresentableTypeException;
 import orc.type.Type;
 
 /**
@@ -88,4 +89,19 @@ public class DatatypeTycon extends Tycon {
 			&& ((DatatypeTycon)that).id == id;
 	}
 
+	@Override
+	public orc.ast.oil.xml.type.Type marshal() throws UnrepresentableTypeException {
+		orc.ast.oil.xml.type.Type[][] newCs = new orc.ast.oil.xml.type.Type[cs.size()][];
+		int i = 0;
+		for (List<Type> c : cs) {
+			newCs[i] = new orc.ast.oil.xml.type.Type[c.size()];
+			int j = 0;
+			for (Type t : c) {
+				newCs[i][j] = t.marshal();
+				++j;
+			}
+			++i;
+		}
+		return new orc.ast.oil.xml.type.Datatype(name, newCs, vs.size());
+	}
 }

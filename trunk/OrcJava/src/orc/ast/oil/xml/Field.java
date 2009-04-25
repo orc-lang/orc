@@ -2,6 +2,9 @@ package orc.ast.oil.xml;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
+import orc.Config;
+import orc.error.compiletime.CompilationException;
+
 public class Field extends Argument {
 	@XmlAttribute(required=true)
 	public String name;
@@ -13,7 +16,7 @@ public class Field extends Argument {
 		return super.toString() + "(" + name + ")";
 	}
 	@Override
-	public orc.ast.oil.arg.Arg unmarshal() {
+	public orc.ast.oil.arg.Arg unmarshal(Config config) throws CompilationException {
 		return new orc.ast.oil.arg.Field(name);
 	}
 }

@@ -143,7 +143,7 @@ public class OrcGui implements Runnable {
 				progress.setProgress(0.2);
 				if (progress.isCanceled()) return;
 				progress.setNote("Converting to AST");
-				ex = oil.unmarshal();
+				ex = oil.unmarshal(config);
 				progress.setProgress(0.5);
 				if (progress.isCanceled()) return;
 				progress.setNote("Loading sites");

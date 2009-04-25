@@ -6,7 +6,9 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import orc.ast.oil.arg.Var;
+import orc.ast.oil.xml.Expression;
 import orc.env.Env;
+import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UnspecifiedReturnTypeException;
@@ -116,6 +118,16 @@ public class Defs extends Expr {
 			super.typecheck(T, ctx, typectx);
 		}
 	}
-	
-	
+
+	@Override
+	public Expression marshal() throws CompilationException {
+		LinkedList<orc.ast.oil.xml.Definition> definitions
+			= new LinkedList<orc.ast.oil.xml.Definition>();
+		for (Def d : defs) {
+			definitions.add(d.marshal());
+		}
+		return new orc.ast.oil.xml.Definitions(
+				definitions.toArray(new orc.ast.oil.xml.Definition[]{}),
+				body.marshal());
+	}
 }

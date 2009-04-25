@@ -10,6 +10,7 @@ import orc.env.SearchFailureException;
 import orc.error.OrcError;
 import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
+import orc.error.compiletime.typing.UnrepresentableTypeException;
 import orc.type.ground.Top;
 import orc.type.inference.Constraint;
 import orc.type.tycon.Variance;
@@ -118,5 +119,9 @@ public class TypeVariable extends Type {
 	public String toString() {
 		return "#" + index;
 	}
-	
+
+	@Override
+	public orc.ast.oil.xml.type.Type marshal() throws UnrepresentableTypeException {
+		return new orc.ast.oil.xml.type.TypeVariable(index);
+	}
 }

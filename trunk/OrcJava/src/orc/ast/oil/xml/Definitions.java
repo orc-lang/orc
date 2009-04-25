@@ -4,9 +4,13 @@ import java.util.Arrays;
 import java.util.LinkedList;
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+
+import orc.Config;
+import orc.error.compiletime.CompilationException;
 
 public class Definitions extends Expression {
-	@XmlElement(name="definition")
+	@XmlElement(name="definition", required=true)
 	public Definition[] definitions;
 	@XmlElement(required=true)
 	public Expression body;
@@ -19,12 +23,12 @@ public class Definitions extends Expression {
 		return super.toString() + "(" + Arrays.toString(definitions) + ", " + body + ")";
 	}
 	@Override
-	public orc.ast.oil.Expr unmarshal() {
+	public orc.ast.oil.Expr unmarshal(Config config) throws CompilationException {
 		LinkedList<orc.ast.oil.Def> defs
 			= new LinkedList<orc.ast.oil.Def>();
 		for (Definition d : definitions) {
-			defs.add(d.unmarshal());
+			defs.add(d.unmarshal(config));
 		}
-		return new orc.ast.oil.Defs(defs, body.unmarshal());
+		return new orc.ast.oil.Defs(defs, body.unmarshal(config));
 	}
 }

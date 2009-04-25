@@ -2,6 +2,9 @@ package orc.ast.oil.xml;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
+import orc.Config;
+import orc.error.compiletime.CompilationException;
+
 public class Variable extends Argument {
 	@XmlAttribute(required=true)
 	public int index;
@@ -13,7 +16,7 @@ public class Variable extends Argument {
 		return super.toString() + "(" + index + ")";
 	}
 	@Override
-	public orc.ast.oil.arg.Arg unmarshal() {
+	public orc.ast.oil.arg.Arg unmarshal(Config config) throws CompilationException {
 		return new orc.ast.oil.arg.Var(index);
 	}
 }

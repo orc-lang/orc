@@ -2,10 +2,12 @@ package orc.ast.oil.xml;
 
 import javax.xml.bind.annotation.XmlElement;
 
+import orc.Config;
 import orc.ast.oil.xml.Argument;
+import orc.error.compiletime.CompilationException;
 
 public class Constant extends Argument {
-	@XmlElement(required=true)
+	@XmlElement(required=true, nillable=true)
 	public Object value;
 	public Constant() {}
 	public Constant(Object value) {
@@ -15,7 +17,7 @@ public class Constant extends Argument {
 		return super.toString() + "(" + value.getClass().toString() + "(" + value + "))";
 	}
 	@Override
-	public orc.ast.oil.arg.Arg unmarshal() {
+	public orc.ast.oil.arg.Arg unmarshal(Config config) throws CompilationException {
 		return new orc.ast.oil.arg.Constant(value);
 	}
 }

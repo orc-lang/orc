@@ -25,8 +25,7 @@ public class ClassnameType extends Type {
 	
 	@Override
 	public orc.type.Type convert(Env<String> env) {
-		// FIXME: generate a more useful type
-		return orc.type.Type.BOT;
+		return new orc.type.ClassnameType(classname);
 	}
 		
 	public String toString() {		
