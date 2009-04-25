@@ -37,8 +37,6 @@ public abstract class AbstractTracer extends Tracer {
 		private long lastCallTime = 0;
 		/** The current source location (used for all events). */
 		private SourceLocation location;
-		/** Used to free any StoreEvent after the storing token dies. */
-		private StoreEvent store = null;
 		
 		private TokenTracerImpl(ForkEvent fork, SourceLocation location) {
 			this.thread = fork;
@@ -86,21 +84,13 @@ public abstract class AbstractTracer extends Tracer {
 			}
 		}
 		public void die() {
-			if (store != null) {
-				// free any store event; the interface contract
-				// guarantees that all references to this event
-				// are recorded before the token which produced
-				// it dies
-				annotateAndRecord(new OnlyHandle<Event>(new FreeEvent(store)));
-			}
 			annotateAndRecord(new OnlyHandle<Event>(new DieEvent()));
 		}
 		public void block(PullTrace pull) {
 			annotateAndRecord(new OnlyHandle<Event>(new BlockEvent((PullEvent)pull)));
 		}
 		public StoreTrace store(PullTrace event, Object value) {
-			// we'll record a FreeEvent for the store when the token dies
-			store = new StoreEvent((PullEvent)event, marshaller.marshal(value));
+			StoreEvent store = new StoreEvent((PullEvent)event, marshaller.marshal(value));
 			annotateAndRecord(new FirstHandle<Event>(store));
 			return store;
 		}
@@ -130,16 +120,6 @@ public abstract class AbstractTracer extends Tracer {
 
 		public SourceLocation getSourceLocation() {
 			return location;
-		}
-
-		public void useStored(StoreTrace storeTrace) {
-			// Do nothing: this event is not relevant
-			// to debugging traces. It would also be
-			// problematic to record because we can't
-			// tell when the last useStored occurs for
-			// a particular StoreEvent, so we can't mark
-			// the last appearance of that StoreEvent in
-			// the stream.
 		}
 	}
 	

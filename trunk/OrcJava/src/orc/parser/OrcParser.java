@@ -69,7 +69,7 @@ public class OrcParser {
 	public static void main(String[] args) throws IOException, ParsingException {
 		Config cfg = new Config();
 		cfg.processArgs(args);	
-		OrcParser p = new OrcParser(cfg, cfg.getReader(), cfg.getFilename());
+		OrcParser p = new OrcParser(cfg, cfg.getReader(), cfg.getInputFilename());
 		System.out.println(p.parseProgram().toString());
 	}
 }

@@ -21,7 +21,7 @@ public class StoreEvent extends Event implements StoreTrace {
 	public Value value;
 	public Handle<PullEvent> pull;
 	public StoreEvent(PullEvent pull, Value value) {
-		this.pull = new LastHandle<PullEvent>(pull);
+		this.pull = new RepeatHandle<PullEvent>(pull);
 		this.value = value;
 	}
 	@Override

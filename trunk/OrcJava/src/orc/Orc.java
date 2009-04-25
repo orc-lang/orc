@@ -93,7 +93,7 @@ public class Orc {
 		//System.out.println("Parsing...");
 		// Parse the goal expression
 		progress.setNote("Parsing");
-		OrcParser parser = new OrcParser(cfg, source, cfg.getFilename());
+		OrcParser parser = new OrcParser(cfg, source, cfg.getInputFilename());
 		orc.ast.extended.Expression e = parser.parseProgram();
 		if (progress.isCanceled()) return null;
 		progress.setProgress(0.3);
