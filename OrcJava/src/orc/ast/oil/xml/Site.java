@@ -4,6 +4,9 @@ import java.net.URI;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
+import orc.Config;
+import orc.error.compiletime.CompilationException;
+
 public class Site extends Argument {
 	@XmlAttribute(required=true)
 	public String protocol;
@@ -18,7 +21,7 @@ public class Site extends Argument {
 		return super.toString() + "(" + protocol + ", " + location + ")";
 	}
 	@Override
-	public orc.ast.oil.arg.Arg unmarshal() {
+	public orc.ast.oil.arg.Arg unmarshal(Config config) throws CompilationException {
 		return new orc.ast.oil.arg.Site(orc.ast.sites.Site.build(protocol, location));
 	}
 }

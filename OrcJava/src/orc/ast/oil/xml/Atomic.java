@@ -2,6 +2,9 @@ package orc.ast.oil.xml;
 
 import javax.xml.bind.annotation.XmlElement;
 
+import orc.Config;
+import orc.error.compiletime.CompilationException;
+
 public class Atomic extends Expression {
 	@XmlElement(required=true)
 	public Expression body;
@@ -13,7 +16,7 @@ public class Atomic extends Expression {
 		return "(atomic " + body.toString() + ")";
 	}
 	@Override
-	public orc.ast.oil.Expr unmarshal() {
-		return new orc.ast.oil.Atomic(body.unmarshal());
+	public orc.ast.oil.Expr unmarshal(Config config) throws CompilationException {
+		return new orc.ast.oil.Atomic(body.unmarshal(config));
 	}
 }

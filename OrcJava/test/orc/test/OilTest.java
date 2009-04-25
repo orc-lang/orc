@@ -13,16 +13,15 @@ import orc.error.compiletime.CompilationException;
 import org.junit.Test;
 
 public class OilTest {
-	private String marshal() throws CompilationException, IOException {
+	@Test public void unmarshal() throws CompilationException, IOException {
 		Config config = new Config();
-		Oil oil = new Oil(Orc.compile(new StringReader("1"), config));
-		return oil.toXML();
+		Oil oil1 = new Oil(Orc.compile(new StringReader("1"), config));
+		String xml = oil1.toXML();
+		System.out.println(xml);
 		// TODO: verify the syntax of the XML;
 		// for now we just check for exceptions
-	}
-	@Test public void unmarshal() throws CompilationException, IOException {
-		Oil oil = Oil.fromXML(marshal());
-		oil.unmarshal();
+		Oil oil2 = Oil.fromXML(xml);
+		oil2.unmarshal(config);
 		// TODO: verify the structure of the file
 		// for now we just check for exceptions
 	}

@@ -3,9 +3,11 @@ package orc.ast.oil.arg;
 import java.util.Set;
 
 import orc.ast.oil.Visitor;
+import orc.ast.oil.xml.Argument;
 import orc.env.Env;
 import orc.env.LookupFailureException;
 import orc.error.OrcError;
+import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.type.Type;
 
@@ -89,5 +91,10 @@ public class Var extends Arg implements Comparable<Var> {
 
 	public int compareTo(Var o) {
 		return Integer.signum(index - o.index);
+	}
+
+	@Override
+	public Argument marshal() throws CompilationException {
+		return new orc.ast.oil.xml.Variable(index);
 	}
 }

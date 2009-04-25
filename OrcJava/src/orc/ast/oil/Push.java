@@ -2,10 +2,12 @@ package orc.ast.oil;
 
 import java.util.Set;
 
+import orc.ast.oil.xml.Expression;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
+import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Assign;
 import orc.runtime.nodes.Node;
@@ -58,5 +60,9 @@ public class Push extends Expr {
 		rctx.add(left.typesynth(ctx, typectx));
 		right.typecheck(T, rctx, typectx);
 	}
-	
+
+	@Override
+	public Expression marshal() throws CompilationException {
+		return new orc.ast.oil.xml.Push(left.marshal(), right.marshal(), name);
+	}
 }

@@ -2,9 +2,11 @@ package orc.ast.oil;
 
 import java.util.Set;
 
+import orc.ast.oil.xml.Expression;
 import orc.env.Env;
 import orc.error.Located;
 import orc.error.SourceLocation;
+import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Node;
 import orc.type.Type;
@@ -64,5 +66,10 @@ public class WithLocation extends Expr implements Located {
 	@Override
 	public void addIndices(Set<Integer> indices, int depth) {
 		body.addIndices(indices, depth);
+	}
+	
+	@Override
+	public Expression marshal() throws CompilationException {
+		return new orc.ast.oil.xml.WithLocation(body.marshal(), location);
 	}
 }

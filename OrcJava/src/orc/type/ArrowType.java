@@ -12,6 +12,7 @@ import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeArityException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
+import orc.error.compiletime.typing.UnrepresentableTypeException;
 import orc.type.ground.Top;
 import orc.type.inference.Constraint;
 import orc.type.inference.InferenceRequest;
@@ -332,5 +333,17 @@ public class ArrowType extends Type {
 		
 		return s.toString();
 	}
-	
+
+	@Override
+	public orc.ast.oil.xml.type.Type marshal() throws UnrepresentableTypeException {
+		orc.ast.oil.xml.type.Type[] newArgTypes = new orc.ast.oil.xml.type.Type[argTypes.size()];
+		int i = 0;
+		for (Type t : argTypes) {
+			newArgTypes[i] = t.marshal();
+			++i;
+		}
+		orc.ast.oil.xml.type.Type newResultType = null;
+		if (resultType != null) newResultType = resultType.marshal();
+		return new orc.ast.oil.xml.type.ArrowType(newArgTypes, newResultType, typeArity);
+	}
 }

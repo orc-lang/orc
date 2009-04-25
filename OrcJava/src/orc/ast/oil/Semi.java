@@ -2,10 +2,12 @@ package orc.ast.oil;
 
 import java.util.Set;
 
+import orc.ast.oil.xml.Expression;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
+import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Leave;
 import orc.runtime.nodes.Node;
@@ -50,9 +52,12 @@ public class Semi extends Expr {
 	
 	@Override
 	public void typecheck(Type T, Env<Type> ctx, Env<Type> typectx) throws TypeException {
-		
 		left.typecheck(T, ctx, typectx);
 		right.typecheck(T, ctx, typectx);
 	}
-	
+
+	@Override
+	public Expression marshal() throws CompilationException {
+		return new orc.ast.oil.xml.Semicolon(left.marshal(), right.marshal());
+	}
 }

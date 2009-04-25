@@ -2,7 +2,9 @@ package orc.ast.oil;
 
 import java.util.Set;
 
+import orc.ast.oil.xml.Expression;
 import orc.env.Env;
+import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Node;
 import orc.type.Type;
@@ -51,4 +53,9 @@ public class HasType extends Expr {
 		return actualType;
 	}
 
+	@Override
+	public Expression marshal() throws CompilationException {
+		return new orc.ast.oil.xml.TypeAscription(body.marshal(),
+				type.marshal(), checkable);
+	}
 }

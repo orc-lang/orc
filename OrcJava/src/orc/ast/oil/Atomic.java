@@ -3,6 +3,7 @@ package orc.ast.oil;
 import java.util.Set;
 
 import orc.env.Env;
+import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Fork;
 import orc.runtime.nodes.Node;
@@ -42,4 +43,8 @@ public class Atomic extends Expr {
 		body.typecheck(T, ctx, typectx);
 	}
 
+	@Override
+	public orc.ast.oil.xml.Expression marshal() throws CompilationException {
+		return new orc.ast.oil.xml.Atomic(body.marshal());
+	}
 }

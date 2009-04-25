@@ -6,10 +6,12 @@ import java.util.List;
 import java.util.Set;
 
 import orc.ast.oil.arg.Arg;
+import orc.ast.oil.xml.Expression;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
 import orc.env.Env;
+import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.ArgumentArityException;
 import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
@@ -231,6 +233,15 @@ public class Call extends Expr {
 				typeArgs = inferredTypeArgs;
 			}
 	}
-	
-	
+
+	@Override
+	public Expression marshal() throws CompilationException {
+		LinkedList<orc.ast.oil.xml.Argument> arguments
+			= new LinkedList<orc.ast.oil.xml.Argument>();
+		for (orc.ast.oil.arg.Arg a : args) {
+			arguments.add(a.marshal());
+		}
+		return new orc.ast.oil.xml.Call(callee.marshal(),
+				arguments.toArray(new orc.ast.oil.xml.Argument[]{}));
+	}
 }

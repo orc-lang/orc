@@ -8,6 +8,7 @@ import orc.error.compiletime.typing.ArgumentArityException;
 import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
+import orc.error.compiletime.typing.UnrepresentableTypeException;
 import orc.type.ground.ConstIntType;
 import orc.type.ground.IntegerType;
 import orc.type.ground.Message;
@@ -18,7 +19,7 @@ import orc.type.tycon.Variance;
 public class TupleType extends Type {
 
 	public List<Type> items;
-		
+
 	public TupleType(List<Type> items) {
 		this.items = items;
 	}
@@ -234,6 +235,14 @@ public class TupleType extends Type {
 		return items.size();
 	}
 	
-	
-	
+	@Override
+	public orc.ast.oil.xml.type.Type marshal() throws UnrepresentableTypeException {
+		orc.ast.oil.xml.type.Type[] newItems = new orc.ast.oil.xml.type.Type[items.size()];
+		int i = 0;
+		for (Type t : items) {
+			newItems[i] = t.marshal();
+			++i;
+		}
+		return new orc.ast.oil.xml.type.TupleType(newItems);
+	}
 }

@@ -1,10 +1,16 @@
 package orc.ast.oil.xml;
 
 import java.io.Serializable;
+import java.util.LinkedList;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 
+import orc.Config;
+import orc.ast.oil.xml.type.Type;
 import orc.error.SourceLocation;
+import orc.error.compiletime.CompilationException;
 
 /**
  * FIXME: should include type info
@@ -18,17 +24,36 @@ public class Definition implements Serializable {
 	public SourceLocation location;
 	@XmlAttribute(required=false)
 	public String name;
+	@XmlAttribute(required=true)
+	public int typeArity;
+	@XmlElementWrapper(required=false)
+	@XmlElement(name="argType")
+	public Type[] argTypes;
+	@XmlElement(required=false)
+	public Type resultType;
 	public Definition() {}
-	public Definition(int arity, Expression body, SourceLocation location, String name) {
+	public Definition(int arity, Expression body, int typeArity, Type[] argTypes, Type resultType, SourceLocation location, String name) {
 		this.arity = arity;
 		this.body = body;
+		this.typeArity = typeArity;
+		this.argTypes = argTypes;
+		this.resultType = resultType;
 		this.location = location;
 		this.name = name;
 	}
 	public String toString() {
-		return super.toString() + "(" + arity + ", " + body + ")";
+		return "(" + super.toString() + "(" + arity + ") = " + body + ")";
 	}
-	public orc.ast.oil.Def unmarshal() {
-		return new orc.ast.oil.Def(arity, body.unmarshal(), 0, null, null, location, name);
+	public orc.ast.oil.Def unmarshal(Config config) throws CompilationException {
+		LinkedList<orc.type.Type> newArgTypes = null;
+		if (argTypes != null) {
+			newArgTypes = new LinkedList<orc.type.Type>();
+			for (Type t : argTypes) newArgTypes.add(t.unmarshal(config));
+		}
+		orc.type.Type newResultType = null;
+		if (resultType != null) newResultType = resultType.unmarshal(config);
+		
+		return new orc.ast.oil.Def(arity, body.unmarshal(config), typeArity,
+				newArgTypes, newResultType, location, name);
 	}
 }

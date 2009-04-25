@@ -2,6 +2,9 @@ package orc.ast.oil.xml;
 
 import javax.xml.bind.annotation.XmlElement;
 
+import orc.Config;
+import orc.error.compiletime.CompilationException;
+
 public class Bar extends Expression {
 	@XmlElement(required=true)
 	public Expression left;
@@ -16,7 +19,7 @@ public class Bar extends Expression {
 		return super.toString() + "(" + left + ", " + right + ")";
 	}
 	@Override
-	public orc.ast.oil.Expr unmarshal() {
-		return new orc.ast.oil.Bar(left.unmarshal(), right.unmarshal());
+	public orc.ast.oil.Expr unmarshal(Config config) throws CompilationException {
+		return new orc.ast.oil.Bar(left.unmarshal(config), right.unmarshal(config));
 	}
 }
