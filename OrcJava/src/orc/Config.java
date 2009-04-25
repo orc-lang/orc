@@ -11,12 +11,23 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.Reader;
+import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
+import orc.error.OrcError;
 import orc.runtime.TokenPool;
 import orc.trace.MinimizeTracer;
 import orc.trace.NullTracer;
@@ -42,17 +53,16 @@ import org.kohsuke.args4j.spi.StopOptionHandler;
  * 
  */
 public class Config implements Cloneable {
-
 	private int debugLevel = 0;
-	private boolean oilOut = false;
-	private boolean oilIn = false;
+	private File oilOutputFile = new File("");
+	private boolean hasOilInputFile = false;
 	private Boolean typecheck = false;
 	private Tracer tracer = new NullTracer();
 	private LinkedList<String> includes = new LinkedList<String>();
 	private String[] includePath = new String[]{"."};
 	private Integer maxPubs = null;
 	private String filename = "script";
-	private Reader instream;
+	private InputStream instream;
 	private int numKilimThreads = 1;
 	private int numSiteThreads = 2;
 	private Boolean noPrelude = false;
@@ -62,6 +72,8 @@ public class Config implements Cloneable {
 	private int tokenPoolSize = -1;
 	private int stackSize = -1;
 	private boolean hasInputFile = false;
+	private String classPath = "";
+	private ClassLoader classLoader = Config.class.getClassLoader();
 	
 	/**
 	 * Set properties based on command-line arguments.
@@ -104,7 +116,7 @@ public class Config implements Cloneable {
 	
 	@Option(name="-trace",usage="Specify a filename for tracing. The special filename \"-\" will write a human-readable trace to stderr. Default is not to trace.")
 	public void setFullTraceFile(File file) throws CmdLineException {
-		if (file == null || file.getPath().equals("")) {
+		if (file.getPath().equals("")) {
 			tracer = new NullTracer();
 		} else if (file.getPath().equals("-")) {
 			tracer = new PrintStreamTracer(System.err);
@@ -119,23 +131,44 @@ public class Config implements Cloneable {
 		}
 	}
 		
-	@Option(name="-oilIn",usage="Read the program in OIL XML format. This will bypass typechecking and other pre-OIL compilation phases.")
-	public void setOilIn(boolean oilIn) {
-		this.oilIn = oilIn;
-	}
-		
-	@Option(name="-oilOut",usage="Intsead of running the program, compile it and write the OIL XML to stdout.")
-	public void setOilOut(boolean oilOut) {
-		this.oilOut = oilOut;
+	@Option(name="-oilOut",usage="Write the compiled OIL to the given filename.")
+	public void setOilOutputFile(File oilOut) {
+		this.oilOutputFile = oilOut;
 	}
 	
 	@Option(name="-I",usage="Set the include path for Orc includes (same syntax as CLASSPATH). Default is \".\", the current directory. Prelude files are always available for include regardless of this setting.")
 	public void setIncludePath(String includePath) {
-		if (null == includePath) {
+		includePath = includePath.trim();
+		if (includePath.length() == 0) {
 			this.includePath = new String[]{};
 		} else {
 			this.includePath = includePath.split(System.getProperty("path.separator"));
 		}
+	}
+	
+	@Option(name="-cp",usage="Set the class path for Orc sites (same syntax as CLASSPATH). This is only used for classes not found in the Java VM classpath.")
+	public void setClassPath(String classPath) {
+		classPath = classPath.trim();
+		if (classPath.length() == 0) {
+			this.classPath = "";
+			classLoader = Config.class.getClassLoader();
+			return;
+		}
+		String[] classPathFiles = classPath.split(System.getProperty("path.separator"));
+		URL[] urls = new URL[classPathFiles.length];
+		for (int i = 0; i < classPathFiles.length; ++i) {
+			try {
+				urls[i] = new URI("file", new File(classPathFiles[i]).getAbsolutePath(), null).toURL();
+			} catch (URISyntaxException e) {
+				// impossible
+				throw new AssertionError(e);
+			} catch (MalformedURLException e) {
+				// impossible
+				throw new AssertionError(e);
+			}
+		}
+		this.classPath = classPath;
+		classLoader = new URLClassLoader(urls, Config.class.getClassLoader());
 	}
 	
 	@Option(name="-pub",usage="Terminate the program after this many values are published. Default=infinity.")
@@ -148,20 +181,13 @@ public class Config implements Cloneable {
 		numSiteThreads = v;
 	}
 	
-	@Option(name="-", usage="Use the special filename \"-\" to read from stdin.")
-	public void setInputFile(boolean stdin) throws CmdLineException {
-		if (stdin == true) {
-			filename = "script";
-			instream = new InputStreamReader(System.in);
-		}
-	}
-	
 	@Option(name="--", handler=StopOptionHandler.class, usage="Use \"--\" to signal the end of options, e.g. so you can specify a filename starting with \"-\".")
 	@Argument(metaVar="file", usage="Path to script to execute.")
 	public void setInputFile(File file) throws CmdLineException {
 		try {
-			instream = new FileReader(file);
+			instream = new FileInputStream(file);
 			filename = file.getPath();
+			if (filename.endsWith(".oil")) hasOilInputFile = true;
 			hasInputFile = true;
 		} catch (FileNotFoundException e) {
 			throw new CmdLineException("Could not find input file '"+file+"'");
@@ -187,14 +213,28 @@ public class Config implements Cloneable {
 		return debugLevel;
 	}
 	
-	public boolean getOilOut() {
-		return oilOut;
+	public File getOilOutputFile() {
+		return oilOutputFile;
 	}
 	
-	public boolean getOilIn() {
-		return oilIn;
+	public boolean hasOilOutputFile() {
+		return !oilOutputFile.getPath().equals("");
 	}
 	
+	public boolean hasOilInputFile() {
+		return hasOilInputFile;
+	}
+	
+	public Reader getOilReader() throws IOException {
+		assert(hasOilInputFile());
+		return new InputStreamReader(new GZIPInputStream(instream));
+	}
+	
+	public Writer getOilWriter() throws IOException {
+		assert(hasOilOutputFile());
+		return new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(oilOutputFile)));
+	}
+
 	public Boolean getNoPrelude() {
 		return noPrelude;
 	}
@@ -203,7 +243,11 @@ public class Config implements Cloneable {
 		return maxPubs == null ? 0 : maxPubs;
 	}
 	
-	public Reader getInstream() {
+	public Reader getReader() {
+		return new InputStreamReader(instream);
+	}
+	
+	public InputStream getInputStream() {
 		return instream;
 	}
 	
@@ -290,6 +334,10 @@ public class Config implements Cloneable {
 		} else return "";
 	}
 	
+	public String getClassPath() {
+		return classPath;
+	}
+	
 	/**
 	 * Open an include file. Searches first the include path
 	 * defined by {@link #setIncludePath(String)} and then the
@@ -321,7 +369,7 @@ public class Config implements Cloneable {
 	}
 	
 	public final Class loadClass(String name) throws ClassNotFoundException {
-		return Class.forName(name);
+		return classLoader.loadClass(name);
 	}
 	
 	@Override

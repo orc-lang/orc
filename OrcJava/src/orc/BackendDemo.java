@@ -24,7 +24,7 @@ public final class BackendDemo {
 		Config cfg = new Config();
 		cfg.processArgs(args);
 		// compile the specified input stream to OIL
-		Expr e = Orc.compile(cfg.getInstream(), cfg);
+		Expr e = Orc.compile(cfg.getReader(), cfg);
 		// use the visitor on the OIL to output the
 		// new representation
 		PrintWriter out = new PrintWriter(System.out);
