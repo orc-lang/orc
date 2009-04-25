@@ -9,6 +9,8 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.filechooser.FileFilter;
 
+import org.kohsuke.args4j.CmdLineException;
+
 import orc.Config;
 
 /**
@@ -16,6 +18,18 @@ import orc.Config;
  * @author quark
  */
 public final class ConfigPanel extends TwoColumnPanel {
+	private FileField traceOutFile = new FileField("Save Trace", false, new FileFilter() {
+		@Override
+		public boolean accept(File f) {
+			return f.isDirectory()
+			|| f.getName().endsWith(".trace");
+		}
+
+		@Override
+		public String getDescription() {
+			return "Orc Trace";
+		}
+	});
 	private FileField oilOutFile = new FileField("Save OIL", false, new FileFilter() {
 		@Override
 		public boolean accept(File f) {
@@ -49,6 +63,8 @@ public final class ConfigPanel extends TwoColumnPanel {
 			
 		add(new JLabel("Save OIL to..."));
 		add(oilOutFile);
+		add(new JLabel("Save trace to..."));
+		add(traceOutFile);
 		add(new JLabel(
 				"Include path - separate entries with "+
 				System.getProperty("path.separator")));
@@ -72,14 +88,16 @@ public final class ConfigPanel extends TwoColumnPanel {
 		oilOutFile.setFile(config.getOilOutputFile());
 	}
 	
-	/** Call to save the fields to the model. */
-	public void save(Config config) {
+	/** Call to save the fields to the model. 
+	 * @throws CmdLineException */
+	public void save(Config config) throws CmdLineException {
 		config.setTypeChecking(typeChecking.isSelected());
 		config.setNoPrelude(noPrelude.isSelected());
 		config.setIncludePath(includePath.getText());
 		config.setClassPath(classPath.getText());
 		config.setNumSiteThreads(numSiteThreads.getNumber().intValue());
 		config.setOilOutputFile(oilOutFile.getFile());
+		config.setTraceOutputFile(traceOutFile.getFile());
 		//config.setFullTraceFile(null);
 	}
 }

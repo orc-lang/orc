@@ -55,6 +55,7 @@ import org.kohsuke.args4j.spi.StopOptionHandler;
 public class Config implements Cloneable {
 	private int debugLevel = 0;
 	private File oilOutputFile = new File("");
+	private File traceOutputFile = new File("");
 	private boolean hasOilInputFile = false;
 	private Boolean typecheck = false;
 	private Tracer tracer = new NullTracer();
@@ -114,15 +115,15 @@ public class Config implements Cloneable {
 		this.noPrelude = noPrelude;
 	}
 	
-	@Option(name="-trace",usage="Specify a filename for tracing. The special filename \"-\" will write a human-readable trace to stderr. Default is not to trace.")
-	public void setFullTraceFile(File file) throws CmdLineException {
+	@Option(name="-trace",usage="Specify a filename for tracing. Default is not to trace.")
+	public void setTraceOutputFile(File file) throws CmdLineException {
 		if (file.getPath().equals("")) {
 			tracer = new NullTracer();
-		} else if (file.getPath().equals("-")) {
-			tracer = new PrintStreamTracer(System.err);
+			traceOutputFile = file;
 		} else {
 			try {
 				tracer = new OutputStreamTracer(new FileOutputStream(file));
+				traceOutputFile = file;
 			} catch (FileNotFoundException e) {
 				throw new CmdLineException("Could not find trace file '"+file+"'");
 			} catch (IOException e) {
@@ -213,6 +214,10 @@ public class Config implements Cloneable {
 		return debugLevel;
 	}
 	
+	public File getTraceOutputFile() {
+		return traceOutputFile;
+	}
+	
 	public File getOilOutputFile() {
 		return oilOutputFile;
 	}
@@ -272,7 +277,7 @@ public class Config implements Cloneable {
 		return typecheck;
 	}
 	
-	public String getFilename() {
+	public String getInputFilename() {
 		return filename;
 	}
 	

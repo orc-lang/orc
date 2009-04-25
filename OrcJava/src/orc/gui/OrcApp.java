@@ -267,7 +267,14 @@ public class OrcApp extends OrcGui {
 			JButton saveButton = new JButton("Save");
 			saveButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					content.save(config);
+					try {
+						content.save(config);
+					} catch (CmdLineException e) {
+						JOptionPane.showMessageDialog(PreferencesDialog.this,
+								e.getLocalizedMessage(),
+								"Error", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
 					dispose();
 				}
 			});

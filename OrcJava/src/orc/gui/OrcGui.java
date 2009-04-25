@@ -113,7 +113,7 @@ public class OrcGui implements Runnable {
 	}
 	
 	protected JFrame createFrame() {
-		JFrame frame = new JFrame(config.getFilename());
+		JFrame frame = new JFrame(config.getInputFilename());
 		frame.setPreferredSize(new Dimension(640, 480));
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		return frame;
@@ -134,7 +134,7 @@ public class OrcGui implements Runnable {
 	public void run() {
 		Node n;
 		ProgressMonitorListener progress = new ProgressMonitorListener(
-				null, "Compiling " + config.getFilename(), "");
+				null, "Compiling " + config.getInputFilename(), "");
 		try {
 			Expr ex;
 			if (config.hasOilInputFile()) {
@@ -317,13 +317,13 @@ public class OrcGui implements Runnable {
 				public void actionPerformed(ActionEvent arg0) {
 					try {
 						config.setInputFile(inputFile.getFile());
+						configPanel.save(config);
 					} catch (CmdLineException e) {
 						JOptionPane.showMessageDialog(OpenDialog.this,
-								"The file " + inputFile.getFile() + " could not be opened.",
+								e.getLocalizedMessage(),
 								"Error", JOptionPane.ERROR_MESSAGE);
 						return;
 					}
-					configPanel.save(config);
 					// Run the Orc program
 					OrcGui gui = new OrcGui(config);
 					new Thread(gui).start();
