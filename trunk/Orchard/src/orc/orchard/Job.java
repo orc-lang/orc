@@ -12,6 +12,8 @@ import java.util.Map;
 import orc.Config;
 import orc.ast.oil.Compiler;
 import orc.ast.oil.Expr;
+import orc.ast.oil.SiteResolver;
+import orc.error.compiletime.CompilationException;
 import orc.error.runtime.TokenException;
 import orc.lib.orchard.Prompt.PromptCallback;
 import orc.lib.orchard.Prompt.Promptable;
@@ -229,10 +231,10 @@ public final class Job implements JobMBean {
 	/** Thread in which the main engine is run. */
 	private Thread worker;
 
-	protected Job(Expr expression, Config config) {
+	protected Job(Expr expression, Config config) throws CompilationException {
 		this.events = new EventBuffer(10);
 		engine = new JobEngine(config);
-		Node node = Compiler.compile(expression, new Pub());
+		Node node = Compiler.compile(SiteResolver.resolve(expression, config), new Pub());
 		//engine.debugMode = true;
 		engine.start(node);
 	}

@@ -12,6 +12,7 @@ import javax.management.ObjectName;
 
 import orc.Config;
 import orc.ast.oil.Expr;
+import orc.error.compiletime.CompilationException;
 import orc.orchard.errors.InvalidJobException;
 import orc.orchard.errors.InvalidOilException;
 import orc.orchard.errors.QuotaException;
@@ -87,7 +88,12 @@ public abstract class Account implements AccountMBean {
 		if (quota != null && jobs.size() >= quota) {
 			throw new QuotaException();
 		}
-		Job job = new Job(expr, config);
+		Job job;
+		try {
+			job = new Job(expr, config);
+		} catch (CompilationException e) {
+			throw new InvalidOilException(e);
+		}
 		job.setStartDate(new Date());
 		jobs.put(id, job);
 		final ObjectName jmxid = JMXUtilities.newObjectName(job, id);
