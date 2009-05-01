@@ -71,11 +71,13 @@ Endline characters are not included in the result.
 --}
 def lines(String) :: List[String]
 def lines(text) =
+  (
   val out = text.split("\n|\r\n|\r")
   if out.get(out.length()-1) = "" then
     out.split(0, out.length()-1)
   else out
-  
+  ) :!: List[String]
+
 {--
 @def unlines(List[String]) :: String
 Append a linefeed, "\n", to each string in the sequence
@@ -93,8 +95,10 @@ Split a string into words, which are sequences of non-whitespace characters sepa
 
 @implementation
 --}
+
 def words(String) :: List[String]
-def words(text) = text.trim().split("\\s+")
+def words(text) = (text.trim().split("\\s+")) :!: List[String]
+
 
 {--
 @def unwords(List[String]) :: String

@@ -42,6 +42,10 @@ public abstract class Tycon extends Type {
 		return new TypeInstance(this, params);
 	}
 	
+	public Type instance() throws TypeException {
+		return instance(new LinkedList<Type>());
+	}
+	
 	
 	/* Convenience function for the common case: a single type parameter. */
 	public Type instance(Type param) throws TypeException {
@@ -59,5 +63,9 @@ public abstract class Tycon extends Type {
 	/* By default, tycon equality is class equality */
 	public boolean equals(Object that) {
 		return that.getClass().equals(that.getClass());
+	}
+	
+	public Tycon asTycon() {
+		return this;
 	}
 }

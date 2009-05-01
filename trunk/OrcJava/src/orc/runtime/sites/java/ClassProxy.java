@@ -25,6 +25,8 @@ import orc.runtime.OrcEngine;
 import orc.runtime.Token;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.Site;
+import orc.type.Type;
+import orc.type.java.ConstructorType;
 
 
 /**
@@ -160,5 +162,9 @@ public class ClassProxy extends Site {
 				methodName, matchingMethods.toArray(new Method[]{}));
 		methods.put(methodName, out);
 		return out;
+	}
+	
+	public Type type() {
+		return new ConstructorType(type);
 	}
 }

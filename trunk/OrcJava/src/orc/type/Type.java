@@ -1,7 +1,11 @@
 package orc.type;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -26,8 +30,10 @@ import orc.type.ground.NumberType;
 import orc.type.ground.StringType;
 import orc.type.ground.Top;
 import orc.type.inference.Constraint;
+import orc.type.java.ClassTycon;
 import orc.type.tycon.Tycon;
 import orc.type.tycon.Variance;
+import orc.type.TypeVariable;
 
 /**
  * 
@@ -163,9 +169,12 @@ public abstract class Type {
 	 * Types which use normal argument synthesis, and have no type parameters,
 	 * will usually override this simpler method instead.
 	 * 
-	 * By default, a type is not callable. 
+	 * Normally, if the full call method is overridden,
+	 * this simpler method will never be called.
 	 */
 	public Type call(List<Type> args) throws TypeException {
+		// By default, a type is not callable.
+		// Override this call method or the full call method to change this behavior.
 		throw new UncallableTypeException(this);
 	}
 	
@@ -243,11 +252,7 @@ public abstract class Type {
 	 * kinding context.
 	 */
 	public Tycon asTycon() throws TypeException {
-		try {
-			return (Tycon)this;
-		} catch (ClassCastException e) {
-			throw new TypeException("Kinding error: Type operator expected, found type " + this + "instead. ");
-		}
+		throw new TypeException("Kinding error: Type operator expected, found type " + this + "instead. ");
 	}
 	
 	
@@ -354,6 +359,153 @@ public abstract class Type {
 		catch (EnvException e) {
 			throw new OrcError(e);
 		}
+	}
+
+	/** 
+	 * From a list of Java Methods, which are assumed to be
+	 * the declarations of an overloaded method, create an
+	 * Orc type, either an ArrowType for a singleton method
+	 * or a MultiType for multiple methods, to typecheck
+	 * the possible invocations of that method.
+	 * 
+	 * @param matchingMethods
+	 * @param javaCtx
+	 * @return
+	 * @throws TypeException 
+	 */
+	public static Type fromJavaMethods(List<Method> matchingMethods,
+			Map<java.lang.reflect.TypeVariable, Type> javaCtx) throws TypeException {
+		
+		if (matchingMethods.size() > 1) {
+			List<Type> methodTypes = new LinkedList<Type>();
+			for (Method mth : matchingMethods) {
+				methodTypes.add(fromJavaMethod(mth, javaCtx));
+			}
+			return new MultiType(methodTypes);
+		}
+		else if (matchingMethods.size() == 1) {
+			return fromJavaMethod(matchingMethods.get(0), javaCtx);
+		}
+		else {
+			// This should never occur
+			throw new OrcError("Attempted to create an Orc type from an empty method list");
+		}
+	}
+	
+	public static Type fromJavaMethod(Method mth, Map<java.lang.reflect.TypeVariable, Type> javaCtx) throws TypeException {
+		
+		List<Type> argTypes = new LinkedList<Type>();
+		for (java.lang.reflect.Type T : mth.getGenericParameterTypes()) {
+			argTypes.add(fromJavaType(T, javaCtx));
+		}
+		
+		Type returnType = fromJavaType(mth.getGenericReturnType(), javaCtx);
+		
+		return new ArrowType(argTypes, returnType);
+	}
+
+	/**
+	 * 
+	 * From a Java type, possibly a generic type, create an Orc
+	 * type. This conversion requires a context for all Java
+	 * type variables that may occur in the type to the appropriate
+	 * Orc types bound to those variables.
+	 * 
+	 * @param genericType
+	 * @param javaCtx
+	 * @return
+	 * @throws TypeException 
+	 */
+	public static Type fromJavaType(java.lang.reflect.Type genericType,
+			Map<java.lang.reflect.TypeVariable, Type> javaCtx) throws TypeException {
+		// X
+		if (genericType instanceof java.lang.reflect.TypeVariable) {
+			System.out.println("Watch out for " + genericType);
+			return javaCtx.get((java.lang.reflect.TypeVariable)genericType);
+		}
+		// C<D>
+		else if (genericType instanceof ParameterizedType) {
+			ParameterizedType pt = (ParameterizedType)genericType;			
+			
+			List<Type> typeActuals = new LinkedList<Type>();
+			for (java.lang.reflect.Type T : pt.getActualTypeArguments()) {
+				typeActuals.add(0, fromJavaType(T, javaCtx));
+			}
+			Class cls = (Class)pt.getRawType();
+			
+			return (new ClassTycon(cls)).instance(typeActuals);
+		}
+		// C
+		else if (genericType instanceof Class) {
+			
+			Class cls = (Class)genericType;
+			
+			// Check if this class is one of the Orc ground types
+			if (cls.isAssignableFrom(Integer.class) 
+					|| cls.equals(Integer.TYPE)
+					|| cls.equals(Byte.TYPE)
+					|| cls.equals(Short.TYPE)
+					|| cls.equals(Long.TYPE)
+			) {
+				return Type.INTEGER;
+			}		
+			else if (cls.isAssignableFrom(Boolean.class) || cls.equals(Boolean.TYPE)) {
+				return Type.BOOLEAN;
+			}	
+			else if (cls.isAssignableFrom(String.class)) {
+				return Type.STRING;
+			}	
+			else if (cls.isAssignableFrom(Number.class)) {
+				return Type.NUMBER;
+			}
+			else if (cls.equals(Void.TYPE)) {
+				return Type.TOP;
+			}
+			// Otherwise just make it a class type
+			else {
+				return (new ClassTycon(cls)).instance();
+			}
+		}
+		else {
+			throw new TypeException("Can't convert Java type " + genericType + " to an Orc type.");
+		}
+	}
+	
+	public static Type fromJavaType(java.lang.reflect.Type genericType) throws TypeException {
+		return fromJavaType(genericType, makeJavaCtx());
+	}
+
+	/**
+	 * 
+	 * From a class with Java type formals and a list
+	 * of actual Orc type parameters, create a mapping
+	 * from those Java variables to their appropriate
+	 * Orc type bindings. 
+	 * 
+	 * @param cls
+	 * @param typeActuals
+	 * @return
+	 */
+	public static Map<java.lang.reflect.TypeVariable, Type> 
+	  makeJavaCtx(Class cls, List<Type> typeActuals) {
+		 
+		Map<java.lang.reflect.TypeVariable, Type> ctx = makeJavaCtx();
+		
+		java.lang.reflect.TypeVariable[] Xs = cls.getTypeParameters();
+		
+		for(int i = 0; i < Xs.length; i++) {
+			ctx.put(Xs[i], typeActuals.get(i));
+			System.out.println(Xs[i] + " -> " + typeActuals.get(i));
+			System.out.println(".");
+		}
+		
+		return ctx;
+	}
+	
+	/* Make an empty context */
+	public static Map<java.lang.reflect.TypeVariable, Type> 
+	  makeJavaCtx() {
+		return new HashMap<java.lang.reflect.TypeVariable, orc.type.Type>();
 	}
 	
 	public Type resolveSites(Config config) throws MissingTypeException {

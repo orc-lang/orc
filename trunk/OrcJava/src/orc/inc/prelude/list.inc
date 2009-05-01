@@ -361,7 +361,7 @@ def sortBy[A](lambda (A,A) :: Boolean, List[A]) :: List[A]
 def sortBy(lt, []) = []
 def sortBy(lt, [x]) = [x]
 def sortBy(lt, xs) =
-  val half = length(xs)/2
+  val half = floor(length(xs)/2)
   val front = take(half, xs)
   val back = drop(half, xs)
   mergeBy(lt, sortBy(lt, front), sortBy(lt, back))
@@ -424,7 +424,7 @@ def sortUniqueBy[A](lambda (A,A) :: Boolean,
 def sortUniqueBy(eq, lt, []) = []
 def sortUniqueBy(eq, lt, [x]) = [x]
 def sortUniqueBy(eq, lt, xs) =
-  val half = length(xs)/2
+  val half = floor(length(xs)/2)
   val front = take(half, xs)
   val back = drop(half, xs)
   mergeUniqueBy(eq, lt,

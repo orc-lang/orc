@@ -1,5 +1,6 @@
 package orc.ast.simple.type;
 
+import java.lang.reflect.TypeVariable;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -9,10 +10,10 @@ import orc.error.compiletime.typing.ArgumentArityException;
 import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
-import orc.type.TypeVariable;
+import orc.type.java.ClassTycon;
 
 /**
- * A syntactic type which refers to a Java class (which we will treat as a type).
+ * A syntactic type which refers to a Java class (which we will treat as an Orc type).
  * @author quark, dkitchin
  */
 public class ClassnameType extends Type {
@@ -24,8 +25,24 @@ public class ClassnameType extends Type {
 	}
 	
 	@Override
-	public orc.type.Type convert(Env<String> env) {
-		return new orc.type.ClassnameType(classname);
+	public orc.type.Type convert(Env<String> env) throws TypeException {
+		
+		Class cls;
+		
+		try
+		{
+			cls = Class.forName(classname);
+		} catch (ClassNotFoundException e) {
+			throw new TypeException("Failed to load class " + classname + " as a type.");
+		}
+		
+		if (cls.getTypeParameters().length > 0) {
+			return new ClassTycon(cls);
+		}
+		else {
+			return (new ClassTycon(cls)).instance();
+		}
+
 	}
 		
 	public String toString() {		
