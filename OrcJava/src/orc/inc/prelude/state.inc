@@ -300,6 +300,16 @@ def (:=)[A](Ref[A], A) :: Top
 def (:=)(r,v) = r.write(v)
 
 {--
+@def swap[A](Ref[A], Ref[A]) :: Top
+Swap the values in two references.
+
+@implementation
+--}
+def swap[A](Ref[A], Ref[A]) :: Top
+def swap(r,s) = (r?,s?) >(rval,sval)> (r := sval, s := rval) >> signal
+
+
+{--
 @site Array[A](Integer) :: Array[A]
 Create a new native array of the given size. The array is initialized
 to contain <code>null</code>s.

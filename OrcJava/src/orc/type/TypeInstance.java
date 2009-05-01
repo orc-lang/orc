@@ -19,6 +19,12 @@ import orc.type.tycon.Variance;
  * A type constructor instantiated at particular types, 
  * e.g. a List of Integers.
  * 
+ * The type params may be empty in the special case that a type instance
+ * is constructed and substituted by the compiler itself, for example
+ * when binding a declared Java class with no generic parameters 
+ * in Orc type space. At present, users should not be able to write types
+ * using type applications to an empty parameter list.
+ * 
  * @author dkitchin
  *
  */
@@ -29,7 +35,6 @@ public class TypeInstance extends Type {
 		
 	public TypeInstance(Tycon tycon, List<Type> params) {
 		this.tycon = tycon;
-		assert(params.size() > 0);
 		this.params = params;
 	}
 	
@@ -40,7 +45,14 @@ public class TypeInstance extends Type {
 		if (that instanceof TypeInstance) {
 			TypeInstance thatInstance = (TypeInstance)that;
 			
-			/* The tycon of that instance must be equal to this tycon */
+			/* If this type instance actually has no parameters, then it suffices for
+			 * the tycons to be in a subtype relationship.
+			 */
+			if (tycon.variances().size() == 0) {
+				return tycon.subtype(thatInstance.tycon);
+			}
+			
+			/* Otherwise, the tycon of that instance must be equal to this tycon */
 			if (tycon.equals(thatInstance.tycon)) {
 				
 				List<Type> otherParams = thatInstance.params;
@@ -268,13 +280,16 @@ public class TypeInstance extends Type {
 		
 		StringBuilder s = new StringBuilder();
 		
-		s.append(tycon);
-		s.append('[');
-		for (int i = 0; i < params.size(); i++) {
-			if (i > 0) { s.append(", "); }
-			s.append(params.get(i));
+		s.append(tycon.toString());
+		if (params.size() > 0) 
+		{
+			s.append('[');
+			for (int i = 0; i < params.size(); i++) {
+				if (i > 0) { s.append(", "); }
+				s.append(params.get(i));
+			}
+			s.append(']');
 		}
-		s.append(']');
 		
 		return s.toString();
 	}
