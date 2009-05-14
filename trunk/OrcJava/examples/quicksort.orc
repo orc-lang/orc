@@ -14,9 +14,11 @@ unneeded.
 -}
 
 {- swap two refs' values -}
+def swapRefs[X](Ref[X], Ref[X]) :: Top
 def swapRefs(x, y) = x? >z> x := y? >> y := z
 
 {- parallel quicksort -}
+def quicksort[X](Array[X]) :: Top
 def quicksort(a) =
 
 --------------  Partition Procedure --------------
@@ -28,11 +30,14 @@ def quicksort(a) =
       for every i, r' < i <= r, a(i)? >  p.
     Note: Either of the partitioned segments may be empty. -}
 
+def partition(Integer, Integer, Integer) :: Integer
 def partition(p, l, r) =
    ------ Helper functions ------
    {-   lr(i) returns the smallest j, i >= j <= r, such that a(i)? > p,
       rl(i) returns the largest  j, j < i, such that a(i)? <= p. -}
 
+   def lr(Integer) :: Integer
+   def rl(Integer) :: Integer
    def lr(i) = if i < r && a(i)? <= p then lr(i+1) else i
    def rl(i) = if a(i)? > p then rl(i-1) else i
    ------ End of Helper functions ------
@@ -49,6 +54,7 @@ def partition(p, l, r) =
 
 --------------  Sort an array segment -------------
 {- sort(l, r) sorts the segment a(l).. a(r) -}
+def sort(Integer, Integer) :: Top
 def sort(l, r) =
    if l >= r then signal
    else
@@ -68,15 +74,16 @@ sort(0, a.length()-1)
    We check if the result of quicksort is sorted.
    We do not check if the final array is a permutation of the initial
    array, because the array elements are merely swapped in this program. -}
+def sorted[X](List[X]) :: Boolean
 def sorted([x])    = true
 def sorted(x:y:xs) = (x <= y) && sorted(y:xs)
 --------------  End of Test Routines -------------
 
 {- Test with a random array -}
 signals(10) >>
-fillArray(Array(20), lambda (_) = random(20)-10) >a>
+fillArray(Array[Integer](20), lambda (_ :: Integer) = random(20)-10) >a>
 quicksort(a) >>
-map(let, a) >l> -- convert array a to list l
+map(lambda (x :: Integer) = x {- let -}, a) >l> -- convert array a to list l
 sorted(l)
 
 {-

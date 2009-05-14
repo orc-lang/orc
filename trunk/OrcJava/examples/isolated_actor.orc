@@ -5,9 +5,15 @@ Create a new actor with two methods:
   mutual exclusion.
 - stop() halts the actor.
 -}
+
+type thunk = lambda () :: Top
+type actor = lambda(thunk) :: Top
+
+def Actor() :: actor
 def Actor() =
-  val m = Buffer() -- the mailbox
+  val m = Buffer[thunk]() -- the mailbox
   -- the message loop
+  def loop() :: Bot
   def loop() =
     m.get() >f> ( f() >> stop ; loop() )
   -- start the message loop and return

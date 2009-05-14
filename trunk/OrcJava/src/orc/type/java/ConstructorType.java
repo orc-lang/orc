@@ -9,8 +9,10 @@ import java.util.Map;
 
 import orc.ast.oil.arg.Arg;
 import orc.env.Env;
+import orc.error.compiletime.typing.TypeArityException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.MessageNotUnderstoodException;
+import orc.lib.state.types.RefType;
 import orc.type.Type;
 
 
@@ -36,6 +38,10 @@ public class ConstructorType extends Type {
 	public Type call(Env<Type> ctx, Env<Type> typectx, List<Arg> args,
 			List<Type> typeActuals) throws TypeException {
 		
+		/* Type inference for type parameters to Java constructors is 
+		 * not yet implemented, and may be impossible to reasonably
+		 * implement under the current inference strategy.
+		 */
 		if (typeActuals == null) {
 			typeActuals = new LinkedList<Type>();
 		}
@@ -65,7 +71,7 @@ public class ConstructorType extends Type {
 					if (Modifier.isStatic(fld.getModifiers())
 					&& Modifier.isPublic(fld.getModifiers())
 					&& fld.getName().equals(f)) {
-						return Type.fromJavaType(fld.getGenericType(), javaCtx);
+						return (new RefType()).instance(Type.fromJavaType(fld.getGenericType(), javaCtx));
 					}
 				}
 				

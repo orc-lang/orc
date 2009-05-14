@@ -2,7 +2,7 @@ class KilimExample = orc.lib.util.KilimExample
 class KilimBuffer = orc.lib.state.KilimBuffer
 
 val t = KilimExample("hi")
-val b = KilimBuffer()
+val b = KilimBuffer[String]()
 
 println(t.signal()) >> stop
 ; t.exit() >> println("exit") >> stop

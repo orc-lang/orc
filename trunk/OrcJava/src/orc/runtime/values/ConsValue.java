@@ -11,7 +11,7 @@ public class ConsValue<E> extends ListValue<E> {
 	public ListValue<E> tail;
 	
 	
-	public ConsValue(E h, ListValue t) {
+	public ConsValue(E h, ListValue<E> t) {
 		this.head = h;
 		this.tail = t;
 	}

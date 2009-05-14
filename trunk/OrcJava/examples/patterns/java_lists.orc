@@ -14,7 +14,7 @@ OUTPUT:
 3
 -}
 class LinkedList = java.util.LinkedList
-val l = LinkedList()
+val l = LinkedList[Integer]()
 
 l.add(1) >>
 l.add(2) >>

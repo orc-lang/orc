@@ -10,7 +10,9 @@ import java.util.Map;
 
 import orc.ast.oil.arg.Arg;
 import orc.env.Env;
+import orc.error.compiletime.typing.TypeArityException;
 import orc.error.compiletime.typing.TypeException;
+import orc.lib.state.types.RefType;
 import orc.type.Type;
 import orc.type.tycon.Tycon;
 import orc.type.tycon.Variance;
@@ -41,7 +43,8 @@ public class ClassTycon extends Tycon {
 			return ct.cls.equals(cls);
 		}
 		
-		return false;
+		// This class may also correspond to some Orc primitive type
+		return Type.fromJavaType(cls).subtype(that);
 	}
 
 	@Override
@@ -56,7 +59,7 @@ public class ClassTycon extends Tycon {
 		return vs;
 	}
 
-	public Type makeCallableInstance(List<Type> params) {		
+	public Type makeCallableInstance(List<Type> params) throws TypeArityException {		
 		return new CallableJavaInstance(cls, Type.makeJavaCtx(cls, params));
 	}
 	
@@ -102,7 +105,7 @@ class CallableJavaInstance extends Type {
 				// No method matches. Try fields.
 				for (java.lang.reflect.Field fld : cls.getFields()) {
 					if (fld.getName().equals(f)) {
-						return Type.fromJavaType(fld.getGenericType(), javaCtx);
+						return (new RefType()).instance(Type.fromJavaType(fld.getGenericType(), javaCtx));
 					}
 				}
 				
@@ -111,7 +114,23 @@ class CallableJavaInstance extends Type {
 			}
 		} 
 		else {
-			throw new TypeException("Java objects have no default site behavior. Use a method call.");
+			// Look for the 'apply' method
+			
+			List<Method> matchingMethods = new LinkedList<Method>();
+			for (Method m : cls.getMethods()) {
+				if (m.getName().equals("apply")) 
+				{
+					matchingMethods.add(m);	
+				}
+			}
+
+			if (!matchingMethods.isEmpty()) {
+				Type target = Type.fromJavaMethods(matchingMethods, javaCtx);
+				return target.call(ctx, typectx, args, typeActuals);
+			}
+			else {
+				throw new TypeException("This Java class does not implement the 'apply' method, so it has no default site behavior. Use a method call.");
+			}
 		}
 		
 		
