@@ -1,7 +1,9 @@
 package orc.type;
 
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.WildcardType;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,6 +24,7 @@ import orc.error.compiletime.typing.TypeArityException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
 import orc.error.compiletime.typing.UnrepresentableTypeException;
+import orc.lib.state.types.ArrayType;
 import orc.type.ground.BooleanType;
 import orc.type.ground.Bot;
 import orc.type.ground.IntegerType;
@@ -420,8 +423,26 @@ public abstract class Type {
 			Map<java.lang.reflect.TypeVariable, Type> javaCtx) throws TypeException {
 		// X
 		if (genericType instanceof java.lang.reflect.TypeVariable) {
-			System.out.println("Watch out for " + genericType);
 			return javaCtx.get((java.lang.reflect.TypeVariable)genericType);
+		}
+		// ?
+		else if (genericType instanceof WildcardType) {
+			WildcardType wt = (WildcardType)genericType;
+			
+			// Is this an unbounded wildcard?
+			if (wt.getUpperBounds().length == 1) {
+				try {
+					Class cls = (Class)wt.getUpperBounds()[0];
+					if (cls.isAssignableFrom(Object.class)) {
+						return Type.TOP; // FIXME: This may not be the correct choice.
+					}
+				}
+				catch (ClassCastException e) {}
+			}
+
+			// If not, we can't handle it; Orc's typechecker does not yet implement bounded polymorphism.
+			throw new TypeException("Can't handle nontrivial type bounds (... extends T) on Java types; bounded polymorphism is not supported in Orc.");
+
 		}
 		// C<D>
 		else if (genericType instanceof ParameterizedType) {
@@ -434,6 +455,13 @@ public abstract class Type {
 			Class cls = (Class)pt.getRawType();
 			
 			return (new ClassTycon(cls)).instance(typeActuals);
+		}
+		// C[]
+		else if (genericType instanceof GenericArrayType) {
+			GenericArrayType gat = (GenericArrayType)genericType;
+			Type T = fromJavaType(gat.getGenericComponentType(), javaCtx);
+			
+			return (new ArrayType()).instance(T);
 		}
 		// C
 		else if (genericType instanceof Class) {
@@ -485,19 +513,24 @@ public abstract class Type {
 	 * @param cls
 	 * @param typeActuals
 	 * @return
+	 * @throws TypeArityException 
 	 */
 	public static Map<java.lang.reflect.TypeVariable, Type> 
-	  makeJavaCtx(Class cls, List<Type> typeActuals) {
+	  makeJavaCtx(Class cls, List<Type> typeActuals) throws TypeArityException {
 		 
 		Map<java.lang.reflect.TypeVariable, Type> ctx = makeJavaCtx();
 		
 		java.lang.reflect.TypeVariable[] Xs = cls.getTypeParameters();
 		
+		if (Xs.length != typeActuals.size()) {
+			throw new TypeArityException(Xs.length, typeActuals.size());
+		}
+		
 		for(int i = 0; i < Xs.length; i++) {
 			ctx.put(Xs[i], typeActuals.get(i));
-			System.out.println(Xs[i] + " -> " + typeActuals.get(i));
-			System.out.println(".");
+			//System.out.println(Xs[i] + " -> " + typeActuals.get(i));
 		}
+		//System.out.println(".");
 		
 		return ctx;
 	}

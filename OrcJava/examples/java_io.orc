@@ -2,6 +2,7 @@ class FileInputStream = java.io.FileInputStream
 class InputStreamReader = java.io.InputStreamReader
 class StringBuilder = java.lang.StringBuilder
 
+def GetContent(InputStreamReader) :: String
 def GetContent(in) =
   val buf = Array(1024, "char")
   val out = StringBuilder()

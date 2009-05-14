@@ -6,8 +6,10 @@ Hint: use a Set to record the values seen in the
 channel.
 --}
 
+def unique[X](Buffer[X]) :: X
 def unique(c) =
-  val seen = Set()
+  val seen = Set[X]()
+  def loop() :: Bot
   def loop() =
     c.get() >x>
     if seen.contains(x)
@@ -15,7 +17,7 @@ def unique(c) =
     else x | seen.add(x) >> loop()
   loop()
 
-val c = Buffer()
+val c = Buffer[Integer]()
   unique(c)
 | (upto(50) >n> c.put(n % 10) >> stop; c.close()) >> stop
 

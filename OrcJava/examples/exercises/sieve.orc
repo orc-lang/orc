@@ -24,10 +24,12 @@ class Math = java.lang.Math
 Math.floor(Math.sqrt(5))
 --}
 
+def sqrt(Number) :: Number
 def sqrt(n) =
   class Math = java.lang.Math
   Math.floor(Math.sqrt(n))
 
+def primes(Integer) :: List[Integer]
 def primes(n) =
   def candidates(n) = rangeBy(3, n+1, 2)
   def sieve(1, _) = []

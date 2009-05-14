@@ -49,8 +49,9 @@ feasible. Further, this interface allows us to insert and delete nodes
 more easily.
 
 -} 
-   
 
+(
+   
 val bsent = Ref()
 val tsent = Ref() >r> r.write((0,bsent,0)) >> r
 
@@ -147,6 +148,8 @@ insert(33)  >>
 insert(38) >>
 delete(35)>>
   sort()
+  
+) :!: Top  {- As currently written, this program cannot pass the typechecker -} 
   
 {-
 OUTPUT:
