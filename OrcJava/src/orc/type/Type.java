@@ -4,6 +4,7 @@ import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.WildcardType;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -267,6 +268,35 @@ public abstract class Type {
 		return new TreeSet<Integer>();
 	}
 	
+	
+	/* Find the union of the free var sets of a list of types */
+	public static Set<Integer> allFreeVars(Collection<Type> collection) {
+		
+		Set<Integer> vars = new TreeSet<Integer>();		
+		for (Type t : collection) {
+			vars.addAll(t.freeVars());
+		}
+		
+		return vars;
+	}
+	
+	/* Bind some variables in a set of free vars, removing
+	 * all variables below a given depth and shifting down
+	 * all remaining variables by that depth.
+	 */
+	public static Set<Integer> shiftFreeVars(Set<Integer> vars, Integer distance) {
+		
+		Set<Integer> newvars = new TreeSet<Integer>();
+		for (Integer i : vars) {
+			if (i >= distance) {
+				newvars.add(i - distance);
+			}
+		}
+		
+		return newvars;
+	}
+	
+	
 	/* Determine whether this is a closed type (i.e. it has no free type variables) */
 	public boolean closed() {
 		return freeVars().isEmpty();
@@ -474,6 +504,7 @@ public abstract class Type {
 					|| cls.equals(Byte.TYPE)
 					|| cls.equals(Short.TYPE)
 					|| cls.equals(Long.TYPE)
+					|| cls.equals(Character.TYPE)
 			) {
 				return Type.INTEGER;
 			}		
@@ -488,6 +519,11 @@ public abstract class Type {
 			}
 			else if (cls.equals(Void.TYPE)) {
 				return Type.TOP;
+			}
+			// Check if this is actually an array class
+			else if (cls.isArray()) {
+				Type T = fromJavaType(cls.getComponentType(), javaCtx);
+				return (new ArrayType()).instance(T);
 			}
 			// Otherwise just make it a class type
 			else {

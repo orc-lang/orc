@@ -2,6 +2,7 @@ package orc.type;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import orc.env.Env;
 import orc.error.compiletime.typing.ArgumentArityException;
@@ -215,7 +216,9 @@ public class TupleType extends Type {
 		}
 	}
 	
-	
+	public Set<Integer> freeVars() {
+		return Type.allFreeVars(items);
+	}
 	
 	public String toString() {
 		

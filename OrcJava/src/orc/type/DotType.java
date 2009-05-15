@@ -2,6 +2,7 @@ package orc.type;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import orc.ast.oil.arg.Arg;
@@ -55,7 +56,7 @@ public class DotType extends Type {
 		
 	
 	public boolean subtype(Type that) throws TypeException {
-		return defaultType.subtype(that);
+		return defaultType.subtype(that) || super.subtype(that);
 	}
 	
 	/* A call without explicit args passed is assumed to be a call to the default type */
@@ -63,6 +64,14 @@ public class DotType extends Type {
 		return defaultType.call(args);
 	}
 	
+	
+	public Set<Integer> freeVars() {
+		
+		Set<Integer> vars = Type.allFreeVars(fieldMap.values());
+		vars.addAll(defaultType.freeVars());
+		
+		return vars;
+	}
 	
 	public String toString() {
 		
@@ -79,6 +88,7 @@ public class DotType extends Type {
 		
 		return s.toString();
 	}
+	
 }
 	
 class NoDefaultType extends Type {

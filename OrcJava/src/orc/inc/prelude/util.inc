@@ -166,4 +166,4 @@ on the lock. Similar to Java's synchronized keyword.
 @implementation
 --}
 def synchronized[A](Semaphore, lambda () :: A)() :: A
-def synchronized(s,f)() = (withLock(s, f) :!: A)
+def synchronized(s,f)() = withLock(s, f)

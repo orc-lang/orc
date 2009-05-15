@@ -2,6 +2,7 @@ package orc.type;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import orc.ast.oil.arg.Arg;
 import orc.env.Env;
@@ -53,7 +54,7 @@ public class MultiType extends Type {
 		}
 		
 		// TODO: Make this more informative
-		throw new TypeException("Typing failed for call; no alternatives matched.");
+		throw new TypeException("Typing failed for call; no alternatives matched in " + this + ".");
 	}
 	
 	public String toString() {
@@ -68,5 +69,9 @@ public class MultiType extends Type {
 		s.append(')');
 		
 		return s.toString();
-	}	
+	}
+	
+	public Set<Integer> freeVars() {
+		return Type.allFreeVars(alts);
+	}
 }

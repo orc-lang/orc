@@ -14,6 +14,7 @@ def Counter() =
   def read() = n?
 
   -- Return a record of synchronized methods
+  -- Note: This style of record construction is inherently not type safe.
   Record(
     "inc", synchronized(lock, inc),
     "dec", synchronized(lock, dec),

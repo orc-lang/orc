@@ -14,6 +14,7 @@ public class CounterType extends DotType {
 	}
 	
 	public CounterType() {
+		super();
 		Type t = new ArrowType(Type.TOP); /* A method which takes no arguments and returns a signal */
 		addField("inc", t);
 		addField("dec", t);
