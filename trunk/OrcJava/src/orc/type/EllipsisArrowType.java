@@ -2,6 +2,7 @@ package orc.type;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import orc.error.compiletime.typing.ArgumentArityException;
 import orc.error.compiletime.typing.SubtypeFailureException;
@@ -102,6 +103,14 @@ public class EllipsisArrowType extends Type {
 		}
 				
 		return resultType;
+	}
+	
+	public Set<Integer> freeVars() {
+		
+		Set<Integer> vars = repeatedArgType.freeVars();
+		vars.addAll(resultType.freeVars());
+		
+		return vars;
 	}
 		
 		

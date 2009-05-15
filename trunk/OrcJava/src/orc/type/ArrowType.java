@@ -3,6 +3,7 @@ package orc.type;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import orc.ast.oil.arg.Arg;
 
@@ -345,5 +346,13 @@ public class ArrowType extends Type {
 		orc.ast.oil.xml.type.Type newResultType = null;
 		if (resultType != null) newResultType = resultType.marshal();
 		return new orc.ast.oil.xml.type.ArrowType(newArgTypes, newResultType, typeArity);
+	}
+	
+	public Set<Integer> freeVars() {
+				
+		Set<Integer> vars = Type.allFreeVars(argTypes);
+		vars.addAll(resultType.freeVars());
+		
+		return Type.shiftFreeVars(vars, typeArity);
 	}
 }

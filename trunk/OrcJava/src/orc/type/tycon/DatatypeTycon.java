@@ -2,6 +2,8 @@ package orc.type.tycon;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import orc.env.Env;
 import orc.error.compiletime.typing.TypeException;
@@ -68,16 +70,32 @@ public class DatatypeTycon extends Tycon {
 		return newcs;
 	}
 	
-	
-	/*
-	 * As an invariant, datatype tycons have no free variables,
-	 * so substitution does nothing.
-	 * 
-	 * This preserves object equality for tycons, since otherwise
-	 * we would need to create a new datatype tycon.
-	 */
 	public Type subst(Env<Type> ctx) throws TypeException {
-		return new DatatypeTycon(name, vs, cs, id);
+		
+		/* Add context entries for the recursively bound
+		 * datatype name itself, and for each of its
+		 * type parameters.
+		 */
+		for (int i = 0; i < vs.size() + 1; i++) {
+			ctx = ctx.extend(null);
+		}
+		
+		List<List<Type>> newcs = new LinkedList<List<Type>>();
+		for (List<Type> ts : cs) {
+			newcs.add(Type.substAll(ts, ctx));
+		}
+		return new DatatypeTycon(name, vs, newcs, id);
+	}
+	
+	
+	public Set<Integer> freeVars() {
+		
+		Set<Integer> vars = new TreeSet<Integer>();
+		for (List<Type> ts : cs) {
+			vars.addAll(Type.allFreeVars(ts));
+		}
+		
+		return Type.shiftFreeVars(vars, vs.size() + 1);
 	}
 	
 	public String toString() {

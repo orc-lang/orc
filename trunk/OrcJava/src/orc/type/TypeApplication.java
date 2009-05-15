@@ -2,6 +2,7 @@ package orc.type;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import orc.ast.oil.arg.Arg;
 import orc.env.Env;
@@ -48,6 +49,14 @@ public class TypeApplication extends Type {
 			return new TypeApplication(newty, newparams);
 		}
 
+	}
+	
+	public Set<Integer> freeVars() {
+		
+		Set<Integer> vars = Type.allFreeVars(params);
+		vars.addAll(ty.freeVars());
+		
+		return vars;
 	}
 
 	public String toString() {

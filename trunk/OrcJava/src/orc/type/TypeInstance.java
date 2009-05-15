@@ -2,6 +2,7 @@ package orc.type;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import orc.ast.oil.arg.Arg;
 import orc.env.Env;
@@ -12,6 +13,7 @@ import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
 import orc.type.ground.Top;
 import orc.type.inference.Constraint;
+import orc.type.java.ClassTycon;
 import orc.type.tycon.Tycon;
 import orc.type.tycon.Variance;
 
@@ -57,6 +59,7 @@ public class TypeInstance extends Type {
 				
 				List<Type> otherParams = thatInstance.params;
 				List<Variance> vs = tycon.variances();
+				
 				for (int i = 0; i < vs.size(); i++) {
 					Variance v = vs.get(i);
 					/* Make sure none of the type parameters fail to obey their variance restrictions */
@@ -275,6 +278,13 @@ public class TypeInstance extends Type {
 		
 	}
 	
+	public Set<Integer> freeVars() {
+		
+		Set<Integer> vars = Type.allFreeVars(params);
+		vars.addAll(tycon.freeVars());
+		
+		return vars;
+	}
 		
 	public String toString() {
 		

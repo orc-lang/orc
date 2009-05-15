@@ -2,6 +2,8 @@ package orc.type;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import orc.env.Env;
 import orc.env.EnvException;
@@ -123,5 +125,11 @@ public class TypeVariable extends Type {
 	@Override
 	public orc.ast.oil.xml.type.Type marshal() throws UnrepresentableTypeException {
 		return new orc.ast.oil.xml.type.TypeVariable(index);
+	}
+	
+	public Set<Integer> freeVars() {
+		Set<Integer> singleton = new TreeSet<Integer>();
+		singleton.add(index);
+		return singleton;
 	}
 }

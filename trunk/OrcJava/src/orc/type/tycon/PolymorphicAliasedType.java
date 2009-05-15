@@ -1,6 +1,8 @@
 package orc.type.tycon;
 
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import orc.env.Env;
 import orc.error.compiletime.typing.TypeException;
@@ -47,4 +49,9 @@ public class PolymorphicAliasedType extends Tycon {
 	public orc.ast.oil.xml.type.Type marshal() throws UnrepresentableTypeException {
 		return new orc.ast.oil.xml.type.PolymorphicTypeAlias(type.marshal(), inferredVariances.size());
 	}
+	
+	public Set<Integer> freeVars() {
+		return Type.shiftFreeVars(type.freeVars(), inferredVariances.size());
+	}
+
 }

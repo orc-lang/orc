@@ -9,7 +9,7 @@ channel.
 def unique[X](Buffer[X]) :: X
 def unique(c) =
   val seen = Set[X]()
-  def loop() :: Bot
+  def loop() :: X
   def loop() =
     c.get() >x>
     if seen.contains(x)
@@ -17,9 +17,10 @@ def unique(c) =
     else x | seen.add(x) >> loop()
   loop()
 
-val c = Buffer[Integer]()
+val c = Buffer[Number]()
   unique(c)
 | (upto(50) >n> c.put(n % 10) >> stop; c.close()) >> stop
+
 
 {-
 OUTPUT:

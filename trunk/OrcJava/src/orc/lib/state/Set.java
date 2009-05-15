@@ -58,8 +58,8 @@ public final class Set<E> extends AbstractSet<E> {
 	}
 
 	@Override
-	public boolean contains(Object arg0) {
-		return set.contains(new Wrapper(arg0));
+	public boolean contains(Object arg) {
+		return set.contains(new Wrapper(arg));
 	}
 
 	@Override

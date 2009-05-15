@@ -4,8 +4,9 @@ class StringBuilder = java.lang.StringBuilder
 
 def GetContent(InputStreamReader) :: String
 def GetContent(in) =
-  val buf = Array(1024, "char")
+  val buf = Array[Integer](1024, "char")
   val out = StringBuilder()
+  def loop(Integer) :: String
   def loop(len) =
     if len < 0 then
       out.toString()
@@ -18,6 +19,7 @@ def GetContent(in) =
 InputStreamReader(FileInputStream("examples/java_io_sample.txt")) >reader>
 println(GetContent(reader)) >>
 stop
+
 {-
 OUTPUT:
 'Twas brillig, and the slithy toves
