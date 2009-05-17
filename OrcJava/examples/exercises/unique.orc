@@ -6,13 +6,24 @@ Hint: use a Set to record the values seen in the
 channel.
 --}
 
+class Object = java.lang.Object
+
 def unique[X](Buffer[X]) :: X
 def unique(c) =
   val seen = Set[X]()
   def loop() :: X
   def loop() =
     c.get() >x>
-    if seen.contains(x)
+    {- 
+      Orc Set proxy is not really generic;
+      the contains method takes an Object argument.
+      So we can't check the call seen.contains
+      without the bound X <: Object, but the
+      typechecker does not currently implement
+      bounded polymorphism, so we tell it not
+      to check the method call.
+    -}
+    if (seen.contains(x) :!: Boolean)  
     then loop()
     else x | seen.add(x) >> loop()
   loop()

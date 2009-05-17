@@ -60,10 +60,10 @@ public abstract class Type {
 	/* Create singleton representatives for some common types */
 	public static final Type TOP = new Top();
 	public static final Type BOT = new Bot();
-	public static final Type NUMBER = new NumberType();
-	public static final Type STRING = new StringType();
-	public static final Type BOOLEAN = new BooleanType();
-	public static final Type INTEGER = new IntegerType();
+	public static final Type NUMBER = GroundTypes.numberType();
+	public static final Type STRING = GroundTypes.stringType();
+	public static final Type BOOLEAN = GroundTypes.booleanType();
+	public static final Type INTEGER = GroundTypes.integerType();
 	public static final Type LET = new LetType();
 	
 	/**
@@ -92,9 +92,23 @@ public abstract class Type {
 	/* We also require the two types to have the same kind */
 	public boolean subtype(Type that) throws TypeException {
 		
-		return that.isTop() || 
-			(that.getClass().isAssignableFrom(this.getClass())
-				&& this.sameVariances(that));
+		if (that.isTop()) {
+			return true; 
+		}
+		
+		Class thisCls = this.javaCounterpart();
+		Class thatCls = that.javaCounterpart();
+		if (thisCls != null && thatCls != null) {
+			return thatCls.isAssignableFrom(thisCls);
+		}
+		
+		// As a last resort, check the Java hierarchy for the types' classes themselves
+		if (that.getClass().isAssignableFrom(this.getClass())
+				&& this.sameVariances(that)) {
+			return true;
+		}
+		
+		return false;
 	}
 
 	public void assertSubtype(Type that) throws TypeException {
@@ -484,7 +498,7 @@ public abstract class Type {
 			}
 			Class cls = (Class)pt.getRawType();
 			
-			return (new ClassTycon(cls)).instance(typeActuals);
+			return fromJavaClass(cls).asTycon().instance(typeActuals);
 		}
 		// C[]
 		else if (genericType instanceof GenericArrayType) {
@@ -497,38 +511,7 @@ public abstract class Type {
 		else if (genericType instanceof Class) {
 			
 			Class cls = (Class)genericType;
-			
-			// Check if this class is one of the Orc ground types
-			if (cls.isAssignableFrom(Integer.class) 
-					|| cls.equals(Integer.TYPE)
-					|| cls.equals(Byte.TYPE)
-					|| cls.equals(Short.TYPE)
-					|| cls.equals(Long.TYPE)
-					|| cls.equals(Character.TYPE)
-			) {
-				return Type.INTEGER;
-			}		
-			else if (cls.isAssignableFrom(Boolean.class) || cls.equals(Boolean.TYPE)) {
-				return Type.BOOLEAN;
-			}	
-			else if (cls.isAssignableFrom(String.class)) {
-				return Type.STRING;
-			}	
-			else if (cls.isAssignableFrom(Number.class)) {
-				return Type.NUMBER;
-			}
-			else if (cls.equals(Void.TYPE)) {
-				return Type.TOP;
-			}
-			// Check if this is actually an array class
-			else if (cls.isArray()) {
-				Type T = fromJavaType(cls.getComponentType(), javaCtx);
-				return (new ArrayType()).instance(T);
-			}
-			// Otherwise just make it a class type
-			else {
-				return (new ClassTycon(cls)).instance();
-			}
+			return fromJavaClass(cls);
 		}
 		else {
 			throw new TypeException("Can't convert Java type " + genericType + " to an Orc type.");
@@ -538,7 +521,63 @@ public abstract class Type {
 	public static Type fromJavaType(java.lang.reflect.Type genericType) throws TypeException {
 		return fromJavaType(genericType, makeJavaCtx());
 	}
-
+	
+	
+	/**
+	 * Convert a Java class to an Orc type. Generic classes are
+	 * converted to tycons. 
+	 * 
+	 * @param cls Java class to be converted.
+	 * @return Resulting Orc type.
+	 * @throws TypeException
+	 */
+	public static Type fromJavaClass(Class cls) throws TypeException {
+		
+		if (Integer.class.isAssignableFrom(cls) 
+				|| cls.equals(Integer.TYPE)
+				|| cls.equals(Byte.TYPE)
+				|| cls.equals(Short.TYPE)
+				|| cls.equals(Long.TYPE)
+				|| cls.equals(Character.TYPE)
+		) {
+			return Type.INTEGER;
+		}		
+		else if (Boolean.class.isAssignableFrom(cls) || cls.equals(Boolean.TYPE)) {
+			return Type.BOOLEAN;
+		}	
+		else if (String.class.isAssignableFrom(cls)) {
+			return Type.STRING;
+		}	
+		else if (Number.class.isAssignableFrom(cls)) {
+			return Type.NUMBER;
+		}
+		else if (cls.equals(Void.TYPE)) {
+			return Type.TOP;
+		}
+		else if (Double.class.isAssignableFrom(cls) 
+				|| cls.equals(Double.TYPE)) { 
+			return (new ClassTycon(Double.class)).instance();
+		}
+		else if (Float.class.isAssignableFrom(cls)
+				|| cls.equals(Float.TYPE)) {
+			return (new ClassTycon(Float.class)).instance();
+		}
+		// Check if this is actually a primitive array class
+		else if (cls.isArray()) {
+			Type T = fromJavaClass(cls.getComponentType());
+			return (new ArrayType()).instance(T);
+		}
+		else {
+			if (cls.getTypeParameters().length > 0) {
+				return new ClassTycon(cls);
+			}
+			else {
+				return (new ClassTycon(cls)).instance();
+			}
+		}
+				
+	}
+	
 	/**
 	 * 
 	 * From a class with Java type formals and a list
@@ -577,6 +616,22 @@ public abstract class Type {
 		return new HashMap<java.lang.reflect.TypeVariable, orc.type.Type>();
 	}
 	
+	
+	/**
+	 * 
+	 * Determine whether this type has a counterpart
+	 * as a non-generic class in the Java class hierarchy. 
+	 * If not, return null. 
+	 * 
+	 * This is not a true inverse of fromJavaClass,
+	 * though it behaves like on in most cases.
+	 * 
+	 */
+	public Class javaCounterpart() {
+		return null;
+	}
+	
+	
 	public Type resolveSites(Config config) throws MissingTypeException {
 		return this;
 	}
@@ -589,4 +644,45 @@ public abstract class Type {
 	public orc.ast.oil.xml.type.Type marshal() throws UnrepresentableTypeException {
 		throw new UnrepresentableTypeException(this);
 	}
+	
+}
+
+abstract class GroundTypes {
+	
+	public static Type numberType() {
+		return new NumberType();
+//		try {
+//			return (new ClassTycon(Number.class)).instance();
+//		} catch (TypeException e) {
+//			throw new OrcError("Could not instantiate the Number ground type.");
+//		}
+	}
+	
+	public static Type integerType() {
+		return new IntegerType();
+//		try {
+//			return (new ClassTycon(Integer.class)).instance();
+//		} catch (TypeException e) {
+//			throw new OrcError("Could not instantiate the Integer ground type.");
+//		}
+	}
+	
+	public static Type booleanType() {
+		return new BooleanType();
+//		try {
+//			return (new ClassTycon(Boolean.class)).instance();
+//		} catch (TypeException e) {
+//			throw new OrcError("Could not instantiate the Boolean ground type.");
+//		}
+	}
+	
+	public static Type stringType() {
+		return new StringType();
+//		try {
+//			return (new ClassTycon(String.class)).instance();
+//		} catch (TypeException e) {
+//			throw new OrcError("Could not instantiate the String ground type.");
+//		}
+	}
+	
 }

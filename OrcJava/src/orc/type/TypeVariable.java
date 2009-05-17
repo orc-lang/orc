@@ -29,9 +29,15 @@ import orc.type.tycon.Variance;
 public class TypeVariable extends Type {
 	
 	public int index;
+	public String name = null; // Optional program text name, used only for display purposes
 	
 	public TypeVariable(int index) {
 		this.index = index;
+	}
+
+	public TypeVariable(int index, String name) {
+		this.index = index;
+		this.name = name;
 	}
 
 	public boolean subtype(Type that) throws TypeException {	
@@ -119,7 +125,7 @@ public class TypeVariable extends Type {
 	
 	
 	public String toString() {
-		return "#" + index;
+		return (name == null ? "#" + index : name);
 	}
 
 	@Override
