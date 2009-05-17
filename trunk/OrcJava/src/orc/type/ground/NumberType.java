@@ -15,4 +15,8 @@ public class NumberType extends Type {
 	public Type call(Env<Type> ctx, Env<Type> typectx, List<Arg> args, List<Type> typeActuals) throws TypeException {
 		return (new ClassTycon(java.lang.Number.class)).instance().call(ctx, typectx, args, typeActuals);
 	}
+		
+	public Class javaCounterpart() {
+		return java.lang.Number.class;
+	}
 }

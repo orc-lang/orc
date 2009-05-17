@@ -96,17 +96,15 @@ public class ConstructorType extends Type {
 				catch (TypeException e) { continue; }
 					
 				// We found a matching constructor.
+
+				Type result = fromJavaClass(cls);
 				
-				/* If this is a parameterized class, instantiate it directly */
-				if (typeActuals.size() > 0) {
-					return (new ClassTycon(cls)).instance(typeActuals);
+				/* If there are parameters, perform an instantiation. */
+				if (cls.getTypeParameters().length > 0) {
+					result = result.asTycon().instance(typeActuals);
 				}
-				/* Otherwise convert the class from Java to Orc,
-				 * in case it is a ground type.
-				 */
-				else {
-					return Type.fromJavaType(cls);
-				}
+				
+				return result;
 			}
 			
 			throw new TypeException("No appropriate constructor found for these arguments.");

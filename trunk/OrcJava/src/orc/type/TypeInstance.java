@@ -278,6 +278,18 @@ public class TypeInstance extends Type {
 		
 	}
 	
+	public Class javaCounterpart() {
+		
+		if (tycon instanceof ClassTycon) {
+			ClassTycon ct = (ClassTycon)tycon;
+			if (ct.cls.getTypeParameters().length == 0) {
+				return ct.cls;
+			}
+		}
+		
+		return null;
+	}
+	
 	public Set<Integer> freeVars() {
 		
 		Set<Integer> vars = Type.allFreeVars(params);

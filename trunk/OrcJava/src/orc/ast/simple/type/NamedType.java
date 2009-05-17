@@ -31,7 +31,7 @@ public class NamedType extends Type {
 	public orc.type.Type convert(Env<String> env) throws TypeException {
 		
 		try {
-			return new TypeVariable(env.search(name));
+			return new TypeVariable(env.search(name), name);
 		} catch (SearchFailureException e) {
 			throw new UnboundTypeException(name);
 		}

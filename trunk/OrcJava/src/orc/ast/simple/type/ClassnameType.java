@@ -36,12 +36,7 @@ public class ClassnameType extends Type {
 			throw new TypeException("Failed to load class " + classname + " as a type.");
 		}
 		
-		if (cls.getTypeParameters().length > 0) {
-			return new ClassTycon(cls);
-		}
-		else {
-			return (new ClassTycon(cls)).instance();
-		}
+		return orc.type.Type.fromJavaClass(cls);
 
 	}
 		

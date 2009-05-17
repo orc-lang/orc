@@ -24,21 +24,23 @@ class Math = java.lang.Math
 Math.floor(Math.sqrt(5))
 --}
 
-def sqrt(Number) :: Number
+def sqrt(Number) :: Integer
 def sqrt(n) =
   class Math = java.lang.Math
-  Math.floor(Math.sqrt(n))
+  (Math.floor(Math.sqrt(n.doubleValue()))).intValue()
 
-def primes(Integer) :: List[Integer]
+def primes(Number) :: List[Number]
 def primes(n) =
-  def candidates(n) = rangeBy(3, n+1, 2)
+  def candidates(n :: Number) = rangeBy(3, n+1, 2)
+  def sieve(Number, Set[Number]) :: List[Number]
   def sieve(1, _) = []
   def sieve(n, set) =
+  	def remove(Number) :: Top
     def remove(p) = joinMap(set.remove, rangeBy(p*p, n, p))
     sieve(sqrt(n), set) >ps>
     joinMap(remove, ps) >>
     2:filter(set.contains, candidates(n))
-  val set = Set()
+  val set = Set[Number]()
   joinMap(set.add, candidates(n)) >>
   sieve(n, set)
 

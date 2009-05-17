@@ -6,6 +6,7 @@ class Short = java.lang.Short
 
 val x = Integer.valueOf(3)
 
+(
 -- test coercion
 println(x.getClass()) >>
 println(Integer.toString(x)) >>
@@ -21,6 +22,13 @@ stop
 println(x.getClass()) >>
 println(Short.toString(x)) >>
 stop
+
+) 
+:!: Bot  
+{- 
+  The Orc typechecker doesn't have enough info to check widening/narrowing conversions correctly.   
+-}
+
 
 {-
 OUTPUT:

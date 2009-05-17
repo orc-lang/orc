@@ -12,6 +12,7 @@ import orc.ast.oil.arg.Arg;
 import orc.env.Env;
 import orc.error.compiletime.typing.TypeArityException;
 import orc.error.compiletime.typing.TypeException;
+import orc.lib.state.types.ArrayType;
 import orc.lib.state.types.RefType;
 import orc.type.Type;
 import orc.type.tycon.Tycon;
@@ -21,6 +22,9 @@ public class ClassTycon extends Tycon {
 
 	public Class cls;
 	
+	/* This constructor is rarely used directly.
+	 * Try Type.fromJavaClass instead.
+	 */
 	public ClassTycon(Class cls) {
 		this.cls = cls;
 	}
@@ -43,8 +47,7 @@ public class ClassTycon extends Tycon {
 			return ct.cls.equals(cls);
 		}
 		
-		// This class may also correspond to some Orc primitive type
-		return Type.fromJavaType(cls).subtype(that);
+		return false;
 	}
 
 	@Override
@@ -132,7 +135,6 @@ class CallableJavaInstance extends Type {
 				throw new TypeException("This Java class does not implement the 'apply' method, so it has no default site behavior. Use a method call.");
 			}
 		}
-		
 		
 	}
 	
