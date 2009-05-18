@@ -70,7 +70,7 @@
 <a name="Applications" id="Applications"></a><h2>Applications <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
-	<li class="new"><span class="paper">Simulation using Orchestration</span> (<a target="_blank" href="papers/OrcSimulation.pdf">DRAFT</a>)<br />
+	<li class="new"><a target="_blank" href="papers/OrcSimulation.pdf" class="paper">Simulation using Orchestration (DRAFT)</a><br />
 	David Kitchin, Evan Powell, and Jayadev Misra<br />
 	In <span class="venue">Proceedings of AMAST</span>, 2008</li>
 
