@@ -87,6 +87,10 @@
 <a name="Student_Reports" id="Student_Reports"></a><h2>Student Reports <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
+	<li class="new"><a target="_blank" class="paper" href="papers/quark_sif_09.pdf">Secure Information Flow in Orc (DRAFT)</a><br />
+	Adrian Quark<br />
+	The University of Texas at Austin, Department of Computer Sciences, Spring 2009</li>
+
 	<li><a target="_blank" class="paper" href="papers/coonske_sp08.pdf">Transactional Orc</a><br />
 	Katherine E. Coons<br />
 	CS 395T Computation Orchestration, Spring 2008</li>
