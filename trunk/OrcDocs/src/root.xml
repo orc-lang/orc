@@ -2080,6 +2080,16 @@ The item G+ means "one or more instances of G concatenated together".
 <entry><emphasis>as pattern</emphasis></entry>
 </row>
 
+<row>
+<entry></entry>
+<entry>|</entry>
+
+<entry><code>=</code>X</entry>
+
+<entry></entry>
+<entry><emphasis>equality pattern</emphasis></entry>
+</row>
+
 
 <row>
 <entry></entry>
@@ -2291,6 +2301,40 @@ sub-pattern. Here is an equivalent version of the above code.
 <programlisting><![CDATA[
 val ((ax,ay) as a, (bx,by) as b) = ((1,2),(3,4))
 ]]></programlisting>
+</para>
+
+</section>
+
+<section><title>Equality pattern</title>
+
+<para>
+When a variable occurs in a pattern, it is bound to the value being matched against that pattern. What
+if instead we would like to use the value of a bound variable as a test pattern, in a way similar to
+a literal value like <code>0</code>? 
+</para>
+
+<para>
+We can use an equality pattern to do this. An equality pattern is a variable name preceded by <code>=</code>.
+Consider the following definition, which compares its argument to the value bound to variable <code>x</code>,
+returning <code>true</code> if they are equal and <code>false</code> otherwise.
+
+<programlisting><![CDATA[
+def isx(=x) = true
+def isx(_) = false
+]]></programlisting>
+
+</para>
+
+<para>
+The equality pattern becomes much more useful when it is embedded within other patterns. For example, consider
+this definition <code>withz</code>. If one of the arguments passed to it is equal to <code>z</code>, then the function
+returns its other argument. Otherwise it remains silent.
+
+<programlisting><![CDATA[
+def withz(=z,y) = y
+def withz(x,=z) = x
+]]></programlisting>
+
 </para>
 
 </section>
@@ -5559,7 +5603,26 @@ requests and parsing responses.</para>
 <entry><emphasis>inclusion</emphasis></entry>
 </row>
 
+<row>
+<entry></entry>
+<entry>|</entry>
 
+<entry><code>type</code> X <code>=</code> DT <code>|</code> ... <code>|</code> DT</entry>
+
+<entry></entry>
+<entry><emphasis>datatype declaration</emphasis></entry>
+</row>
+
+
+<row>
+<entry>DT</entry>
+<entry>::=</entry>
+
+<entry> X<code>(_,</code> ... <code>,_)</code> </entry>
+
+<entry><emphasis>Datatype</emphasis></entry>
+<entry></entry>
+</row>
 
 
 <row>
@@ -5653,8 +5716,16 @@ requests and parsing responses.</para>
 <entry><emphasis>as pattern</emphasis></entry>
 </row>
 
+<row>
+<entry></entry>
+<entry>|</entry>
 
-<!-- 
+<entry><code>=</code>X</entry>
+
+<entry></entry>
+<entry><emphasis>equality pattern</emphasis></entry>
+</row>
+
 <row>
 <entry></entry>
 <entry>|</entry>
@@ -5662,9 +5733,8 @@ requests and parsing responses.</para>
 <entry>X<code>(</code> P <code>,</code> ... <code>,</code> P <code>)</code></entry>
 
 <entry></entry>
-<entry><emphasis>site pattern</emphasis></entry>
+<entry><emphasis>datatype pattern</emphasis></entry>
 </row>
- -->
 
 </tbody>
 </tgroup>
