@@ -4411,11 +4411,10 @@ path(source, sink, cell, succ)
 
 
 </section>
- 
- 
+  
 </chapter>
-
-
+ 
+ 
   
 <chapter id="chapter.services"><title>Accessing and Creating External Services</title>
 
@@ -5280,6 +5279,978 @@ requests and parsing responses.</para>
 </chapter>
 
 
+<chapter id="chapter.typechecker"><title>Type Checking</title> 
+
+<para>
+The Orc language, as it is described in <link linkend="chapter.language">Chapter 1</link>, is
+dynamically typed. If an operation occurs at runtime which is not type-correct, the call
+which attempted that operation becomes silent, and produces a type error that is reported
+on the console. 
+</para>
+
+<para>
+Orc also has a static typechecker, which will guarantee that a program is
+free of type errors before the program is run. For every expression in the program,
+the typechecker tries to find the types of values that it could publish, 
+and checks that all such types are consistent. It performs a limited form of
+<emphasis>type inference</emphasis>, so it can discover many types automatically;
+however, the programmer must provide additional type information for defined functions,
+and in a few other specific cases.
+</para>
+
+<para>
+The typechecker uses the local type inference algorithm described by Pierce and Turner in their paper, 
+<link xlink:href="http://www.cis.upenn.edu/~bcpierce/papers/lti-toplas.pdf">Local Type Inference</link>.
+It extends this algorithm with polymorphic type constructors (e.g. <code>List</code> and
+<code>Buffer</code>), user-defined datatypes (which may also be polymorphic),
+and a typing strategy for external services. The typechecker supports both 
+<emphasis>parametric polymorphism</emphasis> (generics) and 
+<emphasis>inclusion polymorphism</emphasis> (subtyping), 
+though it does not currently implement the extended version 
+of the algorithm which allows both of them simultaneously (bounded polymorphism).
+</para>
+
+<para>
+The typechecker is enabled with the <code>-typecheck</code> command line switch. If the typechecker 
+can verify that a program is correctly typed, it will display the message
+</para>
+
+<para>
+<code>... :: </code>T
+</para>
+
+<para>
+on the console. The symbol <code>::</code> means "has type", and T is the type of any value that
+the program might publish.
+</para>
+
+
+
+
+<section><title>Simple Typing</title>
+
+In this section we will see how Orc programs are typechecked, starting with
+simple expressions like constants and arithmetic operations, and working up to more interesting
+cases such as defined functions, the concurrency combinators, and calls to external services.
+
+<section><title>Values and Operators</title>
+
+<para>
+Each of the Orc constants has the expected type:
+
+<itemizedlist>
+<listitem><code>true , false</code> <code> :: </code> <code>Boolean</code></listitem>
+<listitem> ... <code> -1, 0, 1 </code> ... <code> :: </code> <code>Integer</code></listitem>
+<listitem> ... <code> "orc" , "ceci n'est pas une |"</code> ... <code> :: </code> <code>String</code></listitem>
+<listitem> ... <code> 0.001, -1.5, 2.71828 </code> ... <code> :: </code> <code>Number</code></listitem>
+</itemizedlist>
+
+Orc allows <emphasis>subtyping</emphasis>: some types are included in other types. For example,
+Integer is a subtype of Number, because all Integers are also Numbers. 
+</para>
+
+<para>
+Each of the primitive operators typechecks in the obvious way; for example <code><![CDATA[&&]]></code> requires
+two Boolean operands and returns a Boolean result. Some of the arithmetic operators also support
+<emphasis>ad-hoc polymorphism</emphasis>; for example, a <code>+</code> expression with two Integer 
+operands has type Integer, but with one or more Number operands it instead has type Number. 
+
+<!-- 
+This kind of polymorphism is not unique to the primitive operators; operators are simply sites,
+and any site call can exhibit such polymorphism. However, functions defined in Orc cannot have
+ad-hoc polymorphism; only external services can.
+ -->
+</para>
+
+</section>
+
+<section><title><code>signal</code> and <code>stop</code></title>
+
+<para>
+There are two other important types:
+
+<itemizedlist>
+<listitem> <code>signal :: Top</code></listitem>
+<listitem> <code>stop :: Bot</code></listitem>
+</itemizedlist>
+
+</para>
+
+<para>
+<code>Top</code> is the universal type; it is the type of any value, and all other types are subtypes 
+of it. In particular, signals only have type <code>Top</code>, since they carry no information.
+</para>
+
+<para>
+<code>Bot</code> is the empty type; no value has type <code>Bot</code>. It is a subtype of all other
+types. Expressions with type <code>Bot</code> are expressions that the typechecker can verify will
+never publish any values. In particular, <code>stop</code> will never publish, so it has type <code>Bot</code>.
+</para>
+
+<para>
+<code>Bot</code> has an interesting status in Orc. In other typed languages, if an expression
+has type <code>Bot</code>, this usually indicates a guaranteed error, infinite loop, or other failure
+to return a value. Since sequential programming rarely involves subexpressions that are guaranteed
+never to return, <code>Bot</code> is usually just a curiosity or a formal artifact of the type system,
+and indeed many static type systems do not have a <code>Bot</code> type at all. 
+In Orc, however, <code>Bot</code> is very useful, since it is frequently the case that Orc expressions 
+are written to carry out ongoing concurrent activities but never publish any values, and the type system 
+can use the type <code>Bot</code> to indicate that no publications will ever be seen from such
+expressions.
+</para>
+
+</section>
+
+<section><title>Tuples</title>
+
+<para>
+The type of a tuple is a tuple of the types of each of its elements.
+
+<itemizedlist>
+<listitem><code>(3+3, true) :: (Integer, Boolean)</code></listitem>
+<listitem><code>("orc", (2, "orc")) :: (String, (Integer, String))</code></listitem>
+</itemizedlist>
+
+</para>
+
+</section>
+
+
+<section><title>Combinators</title>
+
+<section><title>Parallel</title>
+<para>
+The type of F <code>|</code> G is the <emphasis>join</emphasis> of the types of F and G.
+</para>
+
+<para>
+A <emphasis>common supertype</emphasis> of two types S and T is any type U such that 
+S and T are both subtypes of U. The join J is the <emphasis>least</emphasis> common 
+supertype of S and T, that is, J is a common supertype, and J is also a subtype of every other 
+common supertype.
+</para>
+
+<para>
+The most common case is the join of a type T with itself. Then the join is just T.
+This happens when both parallel branches publish the same type of values.
+
+<itemizedlist>
+<listitem><code>3+4 | 5  ::  Integer</code></listitem>
+</itemizedlist>
+</para>
+
+<para>
+If S is a subtype of T, the join of S and T is T. This happens when one branch
+is publishing a less specific type of value. To be safe, the whole expression
+then has that less specific type.
+
+<itemizedlist>
+<listitem><code>3 | 3.1  ::  Number</code></listitem>
+</itemizedlist>
+
+</para>
+
+<para>
+As a special case, the join of any type T with <code>Bot</code> is T. This occurs
+when one branch publishes values and the other one never publishes. Thus, it is
+safe to use the type of values from the first branch, since the second branch
+contributes no values at all.
+
+<itemizedlist>
+<listitem><code>"all quiet on the western front" | EasternFront() >> stop  ::  String</code></listitem>
+</itemizedlist>
+ 
+</para>
+
+<para>
+In any other case, the typechecker will try to infer the join. However, it
+may not always find the least supertype, and in some cases there may not
+even be a useful common supertype. In these cases it will default to
+the <code>Top</code> type, which is a supertype of all other types, and is
+therefore always a safe join, if not a very useful one.
+
+<itemizedlist>
+<listitem><code>3 | "three"  ::  Top</code></listitem>
+</itemizedlist>
+
+</para>
+
+</section>
+
+<section><title>Sequential</title>
+<para>
+The type of F <code><![CDATA[>x>]]></code> G is the type of G using the assumption x :: T, where T is the type of F.
+</para>
+
+<para>
+If a pattern is used instead of a variable, the structure of the pattern must match the structure
+of the type of F, and the types for each variable bound in G are taken from the corresponding
+pieces of the type of F. For example, in the expression F <code><![CDATA[>(x,b)>]]></code> G,
+where F <code>:: (Integer, Boolean)</code>, G is typechecked with the assumptions <code>x :: Integer</code>
+and <code>b :: Boolean</code>.
+</para>
+
+</section>
+
+<section><title>Pruning</title>
+<para>
+The type of F <code><![CDATA[<x<]]></code> G is the type of F using the assumption x :: T, where T is the type of G.
+</para>
+
+<para>
+When a declaration <code>val x = </code> F occurs, the expression in scope for the declaration
+is typechecked using the assumption x :: T, where T is the type of F.
+</para>
+
+<para>
+Patterns in the pruning combinator and in <code>val</code> declarations are typechecked in the same way as in the sequential combinator.
+</para>
+
+
+</section>
+
+<section><title>Otherwise</title>
+<para>
+The type of F <code>;</code> G is the <emphasis>join</emphasis> of the types of F and G, as described for the parallel combinator.
+</para>
+</section>
+
+
+</section>
+
+<section><title>Conditionals</title>
+
+<para>
+In the conditional expression <code>if</code> E <code>then</code> F <code>else</code> G, the expression E must have type
+<code>Boolean</code>, and the type of the whole expression is the join of the types of F and G, as described for the
+parallel combinator.
+</para>
+
+</section>
+
+
+<section><title>Defined Functions</title>
+
+<para>
+Though the typechecker can infer the types of many expressions without additional information from the programmer, there are some
+cases where the algorithm does need assistance. In particular, whenever a function is defined (using the <code>def</code> keyword),
+the programmer must also include a <emphasis>signature</emphasis> for that function, supplying its argument types and return type.
+</para>
+
+<para>
+A signature immediately precedes a function definition, and is written as follows:
+
+<programlisting language="orc"><![CDATA[
+def magsq(Number, Number) :: Number
+def magsq(x,y) = x*x + y*y
+]]></programlisting>
+
+Argument types replace the arguments, <code>::</code> replaces <code>=</code>, and the return type (the type of the body expression)
+replaces the body expression. If the function is not recursive, then the return type is optional, because the typechecker can infer it from
+the body expression without additional information. So, in this case, we could have just written:
+
+<programlisting language="orc"><![CDATA[
+def magsq(Number, Number)
+def magsq(x,y) = x*x + y*y
+]]></programlisting>
+</para>
+
+<para>
+It is also possible to include the argument types and return type directly in a definition, rather than as a separate signature. 
+The signature and definition above could be written together as:
+
+<programlisting language="orc"><![CDATA[
+def magsq(x :: Number, y :: Number) :: Number = x*x + y*y
+]]></programlisting>
+
+An argument <code>x</code> with type <code>T</code> is replaced by <code>x :: T</code> in the argument list. The return type is inserted
+between the argument list and the <code>=</code> sign. This form is not typically used for functions with multiple clauses or pattern
+matches, though it is allowed in those cases so long as only one clause has the type information.
+</para>
+
+<para>
+<code>lambda</code> expressions are a special case: the type information must be included directly in this way,
+since there is no way to declare the signature separately. Specifying the return type of a lambda is always optional,
+since it is not possible for an anonymous function to make a recursive call. Written as a typed lambda function, the <code>magsq</code>
+definition looks like:
+
+<programlisting language="orc"><![CDATA[
+lambda (x :: Number, y :: Number) = x*x + y*y
+]]></programlisting>
+
+When the typechecker has enough information to check the type of a lambda against a given function type, rather than needing to infer it, 
+the argument types of the lambda are also optional. This occurs, for example, when a lambda is given as an argument to a defined higher-order function.
+</para>
+
+<para>
+Once defined, functions are values, and thus have a special type of their own. The type of a function is written
+very much like a signature, but using the <code>lambda</code> keyword instead of <code>def</code> and the function
+name.
+
+<itemizedlist>
+<listitem><code>magsq</code>, defined earlier, has type <code>lambda (Number, Number) :: Number</code></listitem>.
+<listitem><code>lambda (x :: Integer) = x+1</code>  has type  <code>lambda (Integer) :: Integer</code></listitem>
+<listitem><code>lambda () = signal</code> has type <code>lambda () :: Top</code></listitem>
+<listitem><code>lambda (a :: Boolean, b :: Boolean) = (b,a)</code> has type <code>lambda (Boolean,Boolean) :: (Boolean,Boolean)</code></listitem>
+</itemizedlist>
+</para>
+
+</section>
+
+<section><title>Ascriptions</title>
+
+<para>
+In addition to annotation defined functions with a signature, the typechecker can also accept programmer-supplied type
+information for any expression. An <emphasis>ascription</emphasis>, written E <code>::</code> T, asks the typechecker 
+to verify that expression E has type T.
+</para>
+
+<para>
+Normally, the typechecker would simply find the type of E by inference, but in certain situations it is easier to check
+a given type. For example, the typechecker may not be able to infer the correct join type for a parallel combinator,
+but it is always able to check that both branches are subtypes of an already provided type. Furthermore, adding extra
+type information makes it easier to pinpoint the source of a typechecking failure.
+</para>
+
+<para>
+Ascriptions are also allowed in patterns; P <code>::</code> T is a valid pattern, instructing the typechecker to verify
+that the value fragment bound by the pattern P will always be of type T.
+</para>
+
+</section>
+
+<section><title>Aliasing</title>
+
+When adding function signatures and ascriptions, it is often helpful to have simpler names for
+complex types that frequently occur. In the same way that variable binding can be used to give
+a name to a complex value, there is a type declaration that binds a complex type to a type variable.
+This is called <emphasis>aliasing</emphasis>, and it is accomplished using the <code>type</code>
+definition. 
+
+<programlisting language="orc"><![CDATA[
+-- A rectangle is defined by its lower left and upper right coordinates.
+type Rect = ((Number, Number), (Number, Number))
+
+-- Transpose such a rectangle, rotating it around an x=y axis
+def flip(Rect) :: Rect
+def flip( ((a, b), (c, d)) ) = ((a, b), (d, c))
+]]></programlisting>
+
+While it does not change the behavior of the typing algorithm, aliasing can substantially improve
+readability and make the intention of one's code much clearer.
+
+</section>
+
+
+<section><title>Datatypes</title>
+
+We have already seen user-defined datatypes in the untyped Orc language. In the typed language, they are
+declared in the same way, except that the slots in the datatype, which previously were always <code>_</code>,
+now contain the actual types that go in those slots. As an example, here is a datatype for geometric
+shapes.
+
+<programlisting language="orc"><![CDATA[
+{- 
+  Rect(w,h): A rectangle with width w and height h. 
+  Circle(r): A circle with radius r.
+  RegularPolygon(n,l): A regular polygon with n sides, each of length l.
+-}
+type Shape = Rect(Number, Number) | Circle(Number) | RegularPolygon(Integer, Number)
+]]></programlisting>
+
+We will see how to declare generic datatypes, like <code>Tree</code> or <code>Option</code>, in the next section.
+
+</section>
+
+
+<section><title>Interacting with External Services</title>
+
+In addition to verifying the correctness of code written within Orc itself, the typechecker must also ensure that
+external services are used correctly in the context of the Orc program. 
+
+<para>
+When an external site is made available to Orc with the <code>site</code> declaration, its type is also
+made available to the Orc typechecker. The type of a site is itself treated like a service; it is passed
+the types of its arguments, and responds with a return type for those arguments. Thus, a site call can typecheck
+in ways not possible for function calls or other expressions. For example, sites can support ad-hoc polymorphism.
+Also, sites can respond to messages sent using the dot operator. In fact, Orc has no native record type, because
+the dot operator only applies to sites, so the type of the site can interpret the message internally
+and determine the correct type to return, if any. 
+</para>
+
+<para>
+Additionally, a site can introduce new types into Orc. For example, the <code>Semaphore</code> site responds with
+new instances of semaphores. And just as sites can be declared using <code>site</code>, these types can be
+declared using <code>type</code>. Typically they are represented as Java classes, just as sites are. As an example,
+here is a program which declares the <code>Semaphore</code> type, and then defines a function which "toggles" a pair 
+of semaphores by acquiring the first and releasing the second.
+
+<programlisting language="orc"><![CDATA[
+type Semaphore = orc.lib.state.types.SemaphoreType
+
+def toggle(Semaphore, Semaphore) :: Top
+def toggle(s, t) = s.acquire() >> t.release()
+]]></programlisting>
+
+Notice that it is not possible to typecheck <code>toggle</code> without first giving a name to the Semaphore type,
+because it is used in the signature of <code>toggle</code>.
+</para>
+
+<para>
+<code>type</code> definitions occur alongside <code>site</code> definitions in the standard library, so the
+types returned by many of the library functions are already available.
+</para>
+
+</section>
+
+
+<section><title>Assertions</title>
+<para>
+While the typechecker can be helpful, it will not accept programs that are not safe according to
+its algorithm, which can be burdensome when the programmer knows that an expression will have a
+certain type but the typechecker cannot verify it.
+</para>
+
+<para>
+Since the typechecker is optional, it can always be turned off in these cases. But this is often
+too drastic a solution: typechecking difficulties often arise from small segments of a much larger
+program, and the rest of the program still benefits from typechecking. 
+</para>
+
+<para>
+Fortunately, the typechecker can be selectively disabled for parts of a program. For this purpose,
+the typechecker supports a special operation called an <emphasis>assertion</emphasis>, written 
+E <code> :!: </code> T, where E is an expression and T is its asserted type. An assertion 
+is used like an ascription, but rather than verifying that E has type T, the typechecker instead
+assumes that E has type T, without inspecting E at all. Thus, the programmer can supply the correct
+type T without being restricted by the typechecking algorithm.
+</para>
+
+<para>
+This feature should be used sparingly, with the knowledge that it does compromise the integrity
+of the typechecking algorithm. If the supplied type is wrong, runtime type errors could propagate to any
+part of the program that depends on that type. Assertions are useful for rapid prototyping, but
+they are not recommended for production code.
+</para>
+
+</section>
+
+</section>
+
+
+<section><title>Polymorphism</title>
+
+In this section we examine a powerful feature of Orc's typechecker: <emphasis>parametric polymorphism</emphasis>.
+This allows us to define types that take other types as parameters; the same theory underlies Java's generics.
+
+<!-- 
+We will start by considering simple parametric types, like Orc's lists, and demonstrate how to write
+and invoke typed functions that operate on these parametric types, no matter what the parameter is. Then
+we'll talk about how to define parametric types, such as a generic datatype or an external generic type.
+ -->
+ 
+<section><title>Parametric types</title>
+
+<para>
+What is the type of <code>[1,2,3]</code>? It is a list, containing Integers. What about <code>[true, true]</code>?
+Again a list, but it contains Booleans instead. It would be very cumbersome to have separate types such
+as <code>IntegerList</code> and <code>BooleanList</code> for each of these possibilities, and in fact
+infinitely many such types are possible. What we would like instead is one <code>List</code> type, with
+a parameter which gives us the types contained in the list.
+</para>
+
+<para>
+Such a type is called a parametric, or generic, type. It contains two parts: a type operator, such as
+<code>List</code>, followed by a sequence of paramemters enclosed in brackets <code>[...]</code>. 
+For example, <code>[1,2,3] :: List[Integer]</code>, and <code>[true,true] :: List[Boolean]</code>.
+</para>
+
+<para>
+Lists are not the only parametric type. The standard library includes other parametric types, such as
+<code>Option</code>, <code>Buffer</code>, and <code>Cell</code>. Type operators, such as <code>List</code>,
+are declared using the same <code>type</code> declarations as any other type. For example, the
+declaration
+
+<programlisting language="orc"><![CDATA[
+type Buffer = orc.lib.state.types.BufferType
+]]></programlisting>
+
+is part of the standard library; it declares the <code>Buffer</code> type operator. 
+ 
+</para>
+
+</section>
+
+
+<section><title>Parametric functions</title>
+
+<para>
+How do we write functions that use parametric types? Consider the following definition
+of the <code>append</code> function, which appends two lists:
+
+<programlisting language="orc"><![CDATA[
+def append[T](List[T], List[T]) :: List[T]
+def append([], l) = l
+def append(h::t, l) = h::append(t,l)
+]]></programlisting>
+
+The function <code>append</code> has a <emphasis>type argument</emphasis>, T, in its
+signature. The type T is the type of elements in the lists that we are appending. Notice that both argument
+lists must contain the same type of elements. The resulting list contains elements of that same type.
+</para>
+
+<!-- 
+<para>
+Functions defined using <code>lambda</code> can also have type parameters, such as the following
+anonymous function, which returns the first element of a list, or is silent if the list is empty:
+
+<programlisting language="orc"><![CDATA[
+lambda[T](h:_ :: List[T]) = h
+]]></programlisting>
+</para>
+ -->
+ 
+</section>
+
+
+<section><title>Generic calls</title>
+
+<para>
+When calling the <code>append</code> function, in addition to providing its normal arguments, we must
+also provide its type argument:
+
+<programlisting language="orc"><![CDATA[
+append[Integer]([1,2,3], [4,5])
+]]></programlisting>
+
+However, it would be very burdensome and verbose to provide type arguments to all such calls. Fortunately,
+in most cases, the type checker can infer the correct type arguments, in the same way that it infers
+the correct type for many expressions without any additional information. So in this case, we can
+simply write:
+
+<programlisting language="orc"><![CDATA[
+append([1,2,3], [4,5])
+]]></programlisting>
+
+and the typechecker infers that the parameter T is <code>Integer</code>, since both argument lists are
+of type <code>List[Integer]</code>. For a more thorough explanation of how this inference occurs, please
+refer to Pierce and Turner's paper.
+</para>
+
+<para>
+Inference of type arguments will always fail on certain kinds of calls, because the typechecker does
+not have enough information to infer the correct type. The most common case is a site call which
+constructs a parametric type without taking any arguments. For example:
+
+<programlisting language="orc"><![CDATA[
+val b = Buffer()
+]]></programlisting>
+
+will never typecheck, since there is no way for the typechecker to know what type of elements the
+buffer should contain. In other languages such as ML, the typechecker might be able to infer this information
+from the rest of the program, but Orc's typechecker is based on <emphasis>local</emphasis> type inference,
+which must find the information locally, such as from the types of the arguments. So, to construct
+a buffer that will contain Numbers, a type parameter must be given:
+
+<programlisting language="orc"><![CDATA[
+val b = Buffer[Number]()
+]]></programlisting>
+
+</para>
+
+</section>
+
+<section><title>Polymorphic aliases</title>
+
+<para>
+A type alias may have type parameters. For example, here is a type alias for triples:
+
+<programlisting language="orc"><![CDATA[
+type Triple[T] = (T,T,T)
+]]></programlisting>
+
+<code>Triple</code> is now a type operator that takes one parameter. Any occurrence of
+<code>Triple[T]</code> is equivalent to <code>(T,T,T)</code>.
+
+</para>
+
+</section>
+
+<section><title>Polymorphic datatypes</title>
+
+<para>
+Datatypes can also have type parameters. This allows a programmer to
+define very useful generic data structures. For example, this is necessary
+to define a reasonable datatype for trees:
+
+<programlisting language="orc"><![CDATA[
+type Tree[T] = Node(Tree[T], Tree[T], T) | Leaf()
+]]></programlisting>
+
+Notice that the datatype is recursive, and the type parameter <code>T</code> is
+passed recursively to <code>Tree</code> to define the type of the subtrees. 
+
+</para>
+
+</section>
+
+<!-- 
+<section><title>Variance: Subtyping for parametric types</title>
+
+type constructors
+(immutable type constructors, like List, are _covariant_, so C[A] <: C[B] only if A <: B
+(mutable type constructors, like Buffer, are _invariant_, so C[A] <: C[B] only if A = B
+
+</section>
+ -->
+
+
+</section>
+
+
+<section><title>Interacting with Java</title>
+
+<para>
+When a Java class is made accessible to Orc using the <code>class</code> declaration,
+the Orc typechecker interacts with the Java type system to make Java types available
+in Orc. This feature is experimental and does not allow access to all of Java's typing
+features (for example, interfaces are not fully supported), but it does allow
+the typechecker to handle many of the common cases.
+</para>
+
+<para>
+The type returned by the constructor of a class has the same name in Orc as the class.
+It is the Orc type of Java objects of that class.
+
+<programlisting language="orc"><![CDATA[
+class File = java.io.File
+File("test.orc") :: File
+]]></programlisting>
+</para>
+
+<para>
+If a <code>class</code> declaration binds a generic Java class, that type shows up
+in Orc as a parametric type, and its constructor takes type arguments. For example:
+
+<programlisting language="orc"><![CDATA[
+class TreeSet = java.util.TreeSet
+TreeSet[String]() :: TreeSet[String]
+]]></programlisting>
+</para>
+
+<para>
+There is a correspondence between Orc's primitive types and the equivalent classes
+in Java; they are interchangeable. For example, a call expecting a <code>java.lang.Integer</code>
+can be given an Orc <code>Integer</code>.
+</para>
+
+<para>
+Subtyping between Java object types is determined by Java's subtyping relation: if
+one class is a subclass of the other, then one type will be a subtype of the other.
+The typechecker does not implement support a full join operation for Java types; it will
+not find the least common ancestor of two classes as the join.
+</para>
+
+</section>
+
+<section><title>Syntax of Typed Orc</title>
+
+<para>
+The following figure summarizes the syntax of typed Orc as an extension of untyped Orc. 
+The original Orc grammar rules are abbreviated by ellipses (...). 
+</para>
+
+<para>
+<table id="types-ebnf-table" frame="none" rowsep="0" colsep="0">
+<title>Typed Orc</title>  
+<?dbhtml table-width="80%" ?>
+<?dbfo table-width="80%" ?>
+<?dbfo keep-together="always" ?>
+<tgroup cols="5" >
+<colspec colnum="1" colname="bexp" colwidth="1*" align="right"/>
+<colspec colnum="2" colname="texp" colwidth="1*" align="center"/>
+<colspec colnum="3" colname="fexp" colwidth="10*" align="left"/>
+<colspec colnum="4" colname="whole exp" colwidth="4*" align="left"/>
+<colspec colnum="5" colname="whole exp" colwidth="7*" align="left"/>
+<tbody>
+
+<row>
+<entry>T</entry>
+<entry>::=</entry>
+
+<entry> ... </entry>
+
+<entry><emphasis>Type</emphasis></entry>
+<entry></entry>
+</row>
+
+<row>
+<entry></entry>
+<entry>|</entry>
+
+<entry>X</entry>
+
+<entry></entry>
+<entry><emphasis>Type variable</emphasis></entry>
+</row>
+
+<row>
+<entry></entry>
+<entry>|</entry>
+
+<entry><code>Integer</code> | <code>Boolean</code> | <code>String</code> | <code>Number</code> | <code>Top</code> | <code>Bot</code></entry>
+
+<entry></entry>
+<entry><emphasis>Ground type</emphasis></entry>
+</row>
+
+<row>
+<entry></entry>
+<entry>|</entry>
+
+<entry><code>(</code> T <code>,</code> ... <code>,</code> T <code>)</code></entry>
+
+<entry></entry>
+<entry><emphasis>Tuple type</emphasis></entry>
+</row>
+
+<row>
+<entry></entry>
+<entry>|</entry>
+
+<entry><code>lambda</code> <code>[</code> X <code>,</code> ... <code>,</code> X <code>]</code><code>(</code> T <code>,</code> ... <code>,</code> T <code>)</code> <code>::</code> T</entry>
+
+<entry></entry>
+<entry><emphasis>Function type</emphasis></entry>
+</row>
+
+<row>
+<entry></entry>
+<entry>|</entry>
+
+<entry>X<code>[</code> T <code>,</code> ... <code>,</code> T <code>]</code></entry>
+
+<entry></entry>
+<entry><emphasis>Type application</emphasis></entry>
+</row>
+
+<row>
+<entry>D</entry>
+<entry>::=</entry>
+
+<entry> ... </entry>
+
+<entry><emphasis>Declaration</emphasis></entry>
+<entry></entry>
+</row>
+
+<row>
+<entry></entry>
+<entry>|</entry>
+
+<entry><code>type</code> X <code>=</code> <emphasis>classname</emphasis></entry>
+
+<entry></entry>
+<entry><emphasis>type import</emphasis></entry>
+</row>
+
+
+<row>
+<entry></entry>
+<entry>|</entry>
+
+<entry><code>type</code> X<code>[</code> X <code>,</code> ... <code>,</code> X <code>]</code> <code>=</code> T</entry>
+
+<entry></entry>
+<entry><emphasis>type alias</emphasis></entry>
+</row>
+
+<row>
+<entry></entry>
+<entry>|</entry>
+
+<entry><code>type</code> X<code>[</code> X <code>,</code> ... <code>,</code> X <code>]</code> <code>=</code> DT | ... | DT </entry>
+
+<entry></entry>
+<entry><emphasis>datatype definition</emphasis></entry>
+</row>
+
+<row>
+<entry></entry>
+<entry>|</entry>
+
+<entry><code>def</code> X<code>[</code> X <code>,</code> ... <code>,</code> X <code>]</code><code>(</code> T <code>,</code> ... <code>,</code> T <code>)</code> <code>::</code> T</entry>
+
+<entry></entry>
+<entry><emphasis>function signature</emphasis></entry>
+</row>
+
+
+<row>
+<entry>DT</entry>
+<entry>::=</entry>
+
+<entry> X<code>(</code> T <code>,</code> ... <code>,</code> T <code>)</code>  </entry>
+
+<entry><emphasis>Datatype</emphasis></entry>
+<entry></entry>
+</row>
+
+
+<row>
+<entry>E</entry>
+<entry>::=</entry>
+
+<entry>...</entry>
+
+<entry><emphasis>Expression</emphasis></entry>
+<entry></entry>
+</row>
+
+<row>
+<entry></entry>
+<entry>|</entry>
+
+<entry>E <code>::</code> T</entry>
+
+<entry></entry>
+<entry><emphasis>type ascription</emphasis></entry>
+</row>
+
+<row>
+<entry></entry>
+<entry>|</entry>
+
+<entry>E <code>:!:</code> T</entry>
+
+<entry></entry>
+<entry><emphasis>type assertion</emphasis></entry>
+</row>
+
+<row>
+<entry></entry>
+<entry>|</entry>
+
+<entry><code>lambda</code><code>[</code> T <code>,</code> ... <code>,</code> T <code>]</code><code>(</code> P <code>,</code> ... <code>,</code> P <code>)</code><code>::</code> T <code>=</code> E </entry>
+
+<entry></entry>
+<entry><emphasis>typed lambda</emphasis></entry>
+</row>
+
+<row>
+<entry>G</entry>
+<entry>::=</entry>
+
+<entry>...</entry>
+
+<entry><emphasis>Argument group</emphasis></entry>
+<entry></entry>
+</row>
+
+<row>
+<entry></entry>
+<entry></entry>
+
+<entry> <code>[</code> T <code>,</code> ... <code>,</code> T <code>]</code> <code>(</code> E <code>,</code> ... <code>,</code> E <code>)</code> </entry>
+
+<entry></entry>
+<entry><emphasis>type parameters plus arguments</emphasis></entry>
+</row>
+
+<row>
+<entry>P</entry>
+<entry>::=</entry>
+
+<entry>...</entry>
+
+<entry><emphasis>Pattern</emphasis></entry>
+<entry></entry>
+</row>
+
+<row>
+<entry></entry>
+<entry>|</entry>
+
+<entry>P <code>::</code> T</entry>
+
+<entry></entry>
+<entry><emphasis>type ascription</emphasis></entry>
+</row>
+
+</tbody>
+</tgroup>
+</table>
+</para>
+
+</section>
+
+<!-- 
+
+raw extra material:
+
+<para>
+A type signature consists of: a declaration keyword, a declaration name,
+type parameters (with subtyping constraints), formal argument types,
+and finally the return type. For example <code>def min[A &lt;: Comparable](A,
+	A) :: A</code> gives the type of the <code>def</code> declaration for
+<code>min</code>. According to this signature, <code>min</code> is a function
+parameterized over any type <code>A</code> which is a subtype of
+<code>Comparable</code>. It takes two arguments of type <code>A</code> and
+returns a value of the same type.
+</para>
+<para>
+Polymorphic sites and functions are declared with explicit type parameters.
+By convention, the type parameters are written using the letters <code>A</code>
+... <code>Z</code>. For example, the signature <code>site let[A](A) :: A</code>
+means that <code>let</code> takes one argument of any type, and returns a value
+of the same type.  Subtyping constraints can be used to constrain the type
+parameters. A constrained type parameter has the form <code>A &lt;: X</code>,
+meaning the type supplied for <code>A</code> must be a subtype of <code>X</code>.
+</para>
+
+<para>
+Argument and return types are written as follows:
+<itemizedlist>
+<listitem>Primitive types are given descriptive names based on the names of the
+	corresponding Java classes. For example, <code>Number</code> is any
+	number, and <code>Comparable</code> is any value which supports a total
+	order.</listitem> 
+<listitem>The Top type (the type of <code>signal</code>, of which all types are subtypes) is written
+	<code>Top</code>. The Bottom type (the type of <code>halt</code>, and a subtype of all types) is
+	written <code>Bot</code>.</listitem>
+<listitem>A tuple with element types <code>A, B, ...</code> is written <code>(A, B, ...)</code>.</listitem>
+<listitem>Any other parameterized type is written as a type name followed by
+	type parameters in square brackets. For example, <code>List[String]</code>
+	is the type of a list of strings, and <code>Array[Integer]</code> is the type
+	of arrays of integers.</listitem>
+<listitem>A function type (when given as an argument or return type) is written with the keyword
+	<code>lambda</code> followed by the argument types and return type as
+	in a declaration type signature. For example, <code>lambda (Integer) ::
+	Integer</code> is the type of functions mapping integers to
+	integers.</listitem>
+</itemizedlist>
+</para>
+
+<para>
+Multiple sets of argument types are syntactic sugar for currying. For
+example, <code>site Foo()() :: Top</code> is equivalent to
+<code>site Foo() :: lambda () :: Top</code>.
+</para>
+
+
+
+<section>
+
+
+
+
+
+
+-->
+
+</chapter>
+
+
 <!-- 
 <chapter><title>Execution Environment</title>
 </chapter>
@@ -5673,7 +6644,7 @@ requests and parsing responses.</para>
 <entry>X <code>(</code> P <code>,</code> ... <code>,</code> P <code>)</code></entry>
 
 <entry></entry>
-<entry><emphasis>call pattern</emphasis></entry>
+<entry><emphasis>datatype pattern</emphasis></entry>
 </row>
 
 <row>
@@ -5726,16 +6697,6 @@ requests and parsing responses.</para>
 <entry><emphasis>equality pattern</emphasis></entry>
 </row>
 
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry>X<code>(</code> P <code>,</code> ... <code>,</code> P <code>)</code></entry>
-
-<entry></entry>
-<entry><emphasis>datatype pattern</emphasis></entry>
-</row>
-
 </tbody>
 </tgroup>
 </table>
@@ -5766,78 +6727,23 @@ features needed for general-purpose programming.
 </para>
 </section>
 
-<section><title>Notation</title>
+<section><title>Types and Notation</title>
 
 <para>
-Each declaration in the standard library includes a type signature as part of
-its documentation. The notation for type signatures, summarized here, is based
-on a formal type system for Orc currently under preparation.
+The standard library is fully compatible with the static type checker; all
+library declarations have associated type declarations, which also serve as
+helpful documentation. 
 </para>
 
 <para>
-A type signature consists of: a declaration keyword, a declaration name,
-type parameters (with subtyping constraints), formal argument types,
-and finally the return type. For example <code>def min[A &lt;: Comparable](A,
-	A) :: A</code> gives the type of the <code>def</code> declaration for
-<code>min</code>. According to this signature, <code>min</code> is a function
-parameterized over any type <code>A</code> which is a subtype of
-<code>Comparable</code>. It takes two arguments of type <code>A</code> and
-returns a value of the same type.
-</para>
-
-<para>
-Declaration keywords include
-<link linkend="orc-declaring-a-site"><code>site</code></link> and
-<link linkend="cor.functions"><code>def</code></link>.  These
-declaration keywords are described in previous chapters.</para>
-
-<para>
-The declaration name is the name of a function, site, or object member.
+The documentation of library functions uses special notation for parametric 
+types that have dot-accessible members.
 Member names are written in the form Type.member, e.g.  <code>Foo.get</code>
 refers to the <code>get</code> member of an object of type <code>Foo</code>.
 The object type can include type variables which are referenced by the member
 type, so for example <code>site Buffer[A].get() :: A</code> means that
 when the <code>get</code> method is called on a <code>Buffer</code> holding an
 arbitrary element type <code>A</code>, it will return a value of the same type.
-</para>
-
-<para>
-Polymorphic sites and functions are declared with explicit type parameters.
-By convention, the type parameters are written using the letters <code>A</code>
-... <code>Z</code>. For example, the signature <code>site let[A](A) :: A</code>
-means that <code>let</code> takes one argument of any type, and returns a value
-of the same type.  Subtyping constraints can be used to constrain the type
-parameters. A constrained type parameter has the form <code>A &lt;: X</code>,
-meaning the type supplied for <code>A</code> must be a subtype of <code>X</code>.
-</para>
-
-<para>
-Argument and return types are written as follows:
-<itemizedlist>
-<listitem>Primitive types are given descriptive names based on the names of the
-	corresponding Java classes. For example, <code>Number</code> is any
-	number, and <code>Comparable</code> is any value which supports a total
-	order.</listitem> 
-<listitem>The Top type (the type of <code>signal</code>, of which all types are subtypes) is written
-	<code>Top</code>. The Bottom type (the type of <code>halt</code>, and a subtype of all types) is
-	written <code>Bot</code>.</listitem>
-<listitem>A tuple with element types <code>A, B, ...</code> is written <code>(A, B, ...)</code>.</listitem>
-<listitem>Any other parameterized type is written as a type name followed by
-	type parameters in square brackets. For example, <code>List[String]</code>
-	is the type of a list of strings, and <code>Array[Integer]</code> is the type
-	of arrays of integers.</listitem>
-<listitem>A function type (when given as an argument or return type) is written with the keyword
-	<code>lambda</code> followed by the argument types and return type as
-	in a declaration type signature. For example, <code>lambda (Integer) ::
-	Integer</code> is the type of functions mapping integers to
-	integers.</listitem>
-</itemizedlist>
-</para>
-
-<para>
-Multiple sets of argument types are syntactic sugar for currying. For
-example, <code>site Foo()() :: Top</code> is equivalent to
-<code>site Foo() :: lambda () :: Top</code>.
 </para>
  
 </section>
