@@ -32,7 +32,7 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
 		try {
 			Config config = new Config();
 			// Disable file resources for includes
-			config.setIncludePath(null);
+			config.setIncludePath("");
 			// Include sites specifically for orchard services
 			config.addInclude("orchard.inc");
 			orc.ast.oil.Expr ex1 = Orc.compile(new StringReader(program), config);
