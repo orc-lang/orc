@@ -40,6 +40,6 @@ class java.lang.Integer
 class java.lang.Integer
 Error: java.lang.IllegalArgumentException: argument type mismatch
 Backtrace:
-examples/java_numbers.orc:22:9-25
+examples/java_numbers.orc:23:9-25
 
 -}
