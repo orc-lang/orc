@@ -32,19 +32,17 @@ def extractLocation(description) =
   if(description.startsWith("trip to ")) >>
   description.substring(8)
 
+site Geocoder = orc.lib.net.GoogleGeocoder
+val geo = Geocoder("orc/orchard/orchard.properties")
 {--
 Given a trip, return a record representing
 the weather forecast for that trip.  If the
 location is not recognized, halt.
 --}
 def weather(Trip(time, location)) =
-  class Geocoder = orc.lib.net.Geocoder
   class NOAAWeather = orc.lib.net.NOAAWeather
   class LocalDate = org.joda.time.LocalDate
-  location.split(",") >citystate>
-  if(citystate.length() = 2) >>
-  (citystate(0)?.trim(), citystate(1)?.trim()) >(city, state)>
-  Geocoder.locateCity(city, state) >(lat, lon)>
+  geo(location) >(lat, lon)>
   NOAAWeather.getDailyForecast(lat, lon, time.toLocalDate(), 1)
  
 {--
