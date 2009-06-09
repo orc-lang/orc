@@ -26,6 +26,10 @@ public class ClassnameType extends Type {
 	
 	@Override
 	public orc.type.Type convert(Env<String> env) throws TypeException {
+		return new orc.type.ClassnameType(classname);
+		// FIXME: the following breaks conversion between orc.ast.oil and orc.ast.oil.xml.
+		// See comments in issue 26.
+		/*
 		
 		Class cls;
 		
@@ -37,6 +41,7 @@ public class ClassnameType extends Type {
 		}
 		
 		return orc.type.Type.fromJavaClass(cls);
+		*/
 
 	}
 		
