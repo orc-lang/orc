@@ -55,7 +55,7 @@ public final class LogicalClock extends SubRegion {
 			while (top != null && top.time <= currentTime) {
 				Token token = eventQueue.remove().token;
 				token.unsetQuiescent();
-				token.resume(currentTime);
+				token.resume();
 				top = eventQueue.peek();
 			}
 		}
