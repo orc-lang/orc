@@ -27,6 +27,27 @@ public class Clause {
 		this.body = body;
 	}
 
+	
+	/**
+	 * Simplify a clause.
+	 * 
+	 * This creates a new expression which will try to match the given
+	 * formals against this clause's patterns. If the match succeeds,
+	 * the clause body is executed with the bindings created by the
+	 * pattern matches. If the match fails, the otherwise expression
+	 * is executed.
+	 * 
+	 * This function can be applied multiple times in sequence to
+	 * make an expression which tries multiple clauses in linear order;
+	 * see the translation of clausal definitions for an example.
+	 * 
+	 * @param formals  The formal arguments against which to match. These are
+	 * 				   created elsewhere, by some other translation step.
+	 * @param otherwise The alternative expression to execute if the clause does not fire.
+	 * @return A new expression which will try the clause, and then run the alternative if
+	 * 		   the clause fails to match.
+	 * @throws CompilationException
+	 */
 	public orc.ast.simple.Expression simplify(List<Var> formals, orc.ast.simple.Expression otherwise) throws CompilationException {
 		
 		Expression newbody = body.simplify();
