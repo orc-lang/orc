@@ -1,58 +1,14 @@
-<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>B.2.&nbsp;Notation</title><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide v0.9.8"><link rel="up" href="apb.html" title="Appendix&nbsp;B.&nbsp;Standard Library"><link rel="prev" href="apb.html" title="Appendix&nbsp;B.&nbsp;Standard Library"><link rel="next" href="apbs03.html" title="B.3.&nbsp;Reference"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"><link href="style.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">B.2.&nbsp;Notation</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="apb.html">Prev</a>&nbsp;</td><th align="center" width="60%">Appendix&nbsp;B.&nbsp;Standard Library</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="apbs03.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N11962"></a>B.2.&nbsp;Notation</h2></div></div></div><p>
-Each declaration in the standard library includes a type signature as part of
-its documentation. The notation for type signatures, summarized here, is based
-on a formal type system for Orc currently under preparation.
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>B.2.&nbsp;Types and Notation</title><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide v0.9.9"><link rel="up" href="apb.html" title="Appendix&nbsp;B.&nbsp;Standard Library"><link rel="prev" href="apb.html" title="Appendix&nbsp;B.&nbsp;Standard Library"><link rel="next" href="apbs03.html" title="B.3.&nbsp;Reference"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"><link href="style.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">B.2.&nbsp;Types and Notation</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="apb.html">Prev</a>&nbsp;</td><th align="center" width="60%">Appendix&nbsp;B.&nbsp;Standard Library</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="apbs03.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N11E8B"></a>B.2.&nbsp;Types and Notation</h2></div></div></div><p>
+The standard library is fully compatible with the static type checker; all
+library declarations have associated type declarations, which also serve as
+helpful documentation. 
 </p><p>
-A type signature consists of: a declaration keyword, a declaration name,
-type parameters (with subtyping constraints), formal argument types,
-and finally the return type. For example <code class="code"><span class="hl-keyword">def</span> <span class="hl-site">min</span>[<span class="hl-variable">A</span> <span class="hl-site">&lt;:</span> <span class="hl-variable">Comparable</span>](<span class="hl-variable">A</span>,
-	<span class="hl-variable">A</span>) :: <span class="hl-variable">A</span></code> gives the type of the <code class="code"><span class="hl-keyword">def</span></code> declaration for
-<code class="code"><span class="hl-variable">min</span></code>. According to this signature, <code class="code"><span class="hl-variable">min</span></code> is a function
-parameterized over any type <code class="code"><span class="hl-variable">A</span></code> which is a subtype of
-<code class="code"><span class="hl-variable">Comparable</span></code>. It takes two arguments of type <code class="code"><span class="hl-variable">A</span></code> and
-returns a value of the same type.
-</p><p>
-Declaration keywords include
-<a class="link" href="ch01s03.html#orc-declaring-a-site" title="1.3.1.2.&nbsp;Declaring a site">
-                    <code class="code"><span class="hl-keyword">site</span></code>
-                </a> and
-<a class="link" href="ch01s02.html#cor.functions" title="1.2.7.&nbsp;Functions">
-                    <code class="code"><span class="hl-keyword">def</span></code>
-
-                </a>.  These
-declaration keywords are described in previous chapters.</p><p>
-The declaration name is the name of a function, site, or object member.
+The documentation of library functions uses special notation for parametric 
+types that have dot-accessible members.
 Member names are written in the form Type.member, e.g.  <code class="code"><span class="hl-variable">Foo</span>.<span class="hl-variable">get</span></code>
 refers to the <code class="code"><span class="hl-variable">get</span></code> member of an object of type <code class="code"><span class="hl-variable">Foo</span></code>.
 The object type can include type variables which are referenced by the member
 type, so for example <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Buffer</span>[<span class="hl-variable">A</span>].<span class="hl-site">get</span>() :: <span class="hl-variable">A</span></code> means that
 when the <code class="code"><span class="hl-variable">get</span></code> method is called on a <code class="code"><span class="hl-variable">Buffer</span></code> holding an
 arbitrary element type <code class="code"><span class="hl-variable">A</span></code>, it will return a value of the same type.
-</p><p>
-Polymorphic sites and functions are declared with explicit type parameters.
-By convention, the type parameters are written using the letters <code class="code"><span class="hl-variable">A</span></code>
-... <code class="code"><span class="hl-variable">Z</span></code>. For example, the signature <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">let</span>[<span class="hl-variable">A</span>](<span class="hl-variable">A</span>) :: <span class="hl-variable">A</span></code>
-means that <code class="code"><span class="hl-variable">let</span></code> takes one argument of any type, and returns a value
-of the same type.  Subtyping constraints can be used to constrain the type
-parameters. A constrained type parameter has the form <code class="code"><span class="hl-variable">A</span> <span class="hl-site">&lt;:</span> <span class="hl-variable">X</span></code>,
-meaning the type supplied for <code class="code"><span class="hl-variable">A</span></code> must be a subtype of <code class="code"><span class="hl-variable">X</span></code>.
-</p><p>
-Argument and return types are written as follows:
-<div class="itemizedlist"><ul type="disc"><li>Primitive types are given descriptive names based on the names of the
-	corresponding Java classes. For example, <code class="code"><span class="hl-variable">Number</span></code> is any
-	number, and <code class="code"><span class="hl-variable">Comparable</span></code> is any value which supports a total
-	order.</li><li>The Top type (the type of <code class="code"><span class="hl-keyword">signal</span></code>, of which all types are subtypes) is written
-	<code class="code"><span class="hl-variable">Top</span></code>. The Bottom type (the type of <code class="code"><span class="hl-variable">halt</span></code>, and a subtype of all types) is
-	written <code class="code"><span class="hl-variable">Bot</span></code>.</li><li>A tuple with element types <code class="code"><span class="hl-variable">A</span>, <span class="hl-variable">B</span>, ...</code> is written <code class="code">(<span class="hl-variable">A</span>, <span class="hl-variable">B</span>, ...)</code>.</li><li>Any other parameterized type is written as a type name followed by
-	type parameters in square brackets. For example, <code class="code"><span class="hl-site">List</span>[<span class="hl-variable">String</span>]</code>
-	is the type of a list of strings, and <code class="code"><span class="hl-site">Array</span>[<span class="hl-variable">Integer</span>]</code> is the type
-	of arrays of integers.</li><li>A function type (when given as an argument or return type) is written with the keyword
-	<code class="code"><span class="hl-keyword">lambda</span></code> followed by the argument types and return type as
-	in a declaration type signature. For example, <code class="code"><span class="hl-keyword">lambda</span> (<span class="hl-variable">Integer</span>) ::
-	<span class="hl-variable">Integer</span></code> is the type of functions mapping integers to
-	integers.</li></ul></div>
-</p><p>
-Multiple sets of argument types are syntactic sugar for currying. For
-example, <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Foo</span>()() :: <span class="hl-variable">Top</span></code> is equivalent to
-<code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Foo</span>() :: <span class="hl-keyword">lambda</span> () :: <span class="hl-variable">Top</span></code>.
 </p></div><script type="text/javascript" src="/orchard/orc.js"></script><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="apb.html">Prev</a>&nbsp;</td><td align="center" width="20%"><a accesskey="u" href="apb.html">Up</a></td><td align="right" width="40%">&nbsp;<a accesskey="n" href="apbs03.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">Appendix&nbsp;B.&nbsp;Standard Library&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;B.3.&nbsp;Reference</td></tr></table></div></body></html>
