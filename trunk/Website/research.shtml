@@ -38,10 +38,11 @@
 
 <ul>
 	<li class="new"><a target="_blank" class="paper" href="papers/forte09.pdf">The Orc Programming Language</a>
+	<a target="_blank" class="doi" href="http://dx.doi.org/10.1007/978-3-642-02138-1_1">DOI</a>
 	<a class="bibtex" href="papers/forte09.bib">BibTeX</a>
 	<br />
 	David Kitchin, Adrian Quark, William Cook and Jayadev Misra<br />
-	To appear in <span class="venue">Proceedings of FMOODS/FORTE</span>, 2009.</li>
+	<span class="venue">Proceedings of FMOODS/FORTE</span>, Springer Verlag, LNCS 5522, pp 1--25, 2009.</li>
 	<li><a target="_blank" class="paper" href="papers/presentation.pdf">Introduction to Orc (Presentation Slides)</a><br />
 	William Cook, David Kitchin, Jayadev Misra, Adrian Quark<br />
 	Unpublished. October 28, 2008.</li>
@@ -50,7 +51,7 @@
 	<a class="bibtex" href="papers/structured_interacting_computations_2008.bib">BibTeX</a>
 	<br />
 	William Cook and Jayadev Misra<br />
-	Proceedings of "Software-Intensive Systems", Springer Verlag, LNCS 5380, pp139 --145, 2008.</li>
+	<span class="venue">Proceedings of Software-Intensive Systems</span>, Springer Verlag, LNCS 5380, pp139 --145, 2008.</li>
 	<li><a target="_blank" class="paper" href="papers/OrcJSSM.pdf">Computation Orchestration: A Basis for Wide-Area Computing</a>
 	<a target="_blank" class="doi" href="http://dx.doi.org/10.1007/s10270-006-0012-1">DOI</a>
 	<a class="bibtex" href="papers/OrcJSSM.bib">BibTeX</a>
