@@ -28,4 +28,6 @@ public interface Visitor<E> {
 	public E visit(Isolated expr);
 	public E visit(HasType hasType);
 	public E visit(TypeDecl typeDecl);
+	public E visit(Throw expr);
+	public E visit(Catch catchExpr);
 }

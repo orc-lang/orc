@@ -19,6 +19,8 @@ import orc.runtime.nodes.Leave;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Store;
 import orc.runtime.nodes.Unwind;
+import orc.runtime.nodes.PushHandler;
+import orc.runtime.nodes.PopHandler;
 
 /**
  * Compiles an oil syntax tree into an execution graph.
@@ -155,5 +157,17 @@ public final class Compiler implements Visitor<Node> {
 
 	public Node visit(TypeDecl typeDecl) {
 		return typeDecl.body.accept(this);
+	}
+
+	public Node visit(Throw throwExpr) {
+		Node throwNode = new orc.runtime.nodes.Throw();
+		return compile(throwExpr.exception, throwNode);
+	}
+
+	public Node visit(Catch catchExpr){
+		Node popNode = new PopHandler(output);
+		Node tryBlock = compile(catchExpr.tryBlock, popNode);
+		orc.runtime.nodes.Def handler = compileDef(catchExpr.handler);
+		return new PushHandler(handler, tryBlock, output);
 	}
 }

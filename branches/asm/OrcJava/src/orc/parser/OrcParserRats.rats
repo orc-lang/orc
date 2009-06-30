@@ -325,6 +325,7 @@ people intuitively use these operators.
 
 Expression GoalExpression =
 	Lambda
+	/ TryCatch
 	/ MaybeSemiExpression
 	;
 	
@@ -372,7 +373,7 @@ Expression MaybeWhereExpression =
 	}
 	/ MaybeBarExpression
 	;
-Action<Expression> WhereExpressionTail =
+Action<Expression> WhereExpressionTail = 
 	LANGLE p:Pattern? LANGLE right:NoCmpMaybeBarExpression {
 		yyValue = new Action<Expression>() {
 			public Expression run(Expression left) {
@@ -423,6 +424,26 @@ Expression IfThenElse =
 	}
 	;
 
+CatchHandler CatchHandler = CATCH LPAREN formals:PatternList RPAREN handler:MaybeSemiExpression {
+    yyValue = new CatchHandler(formals, handler);
+}
+;
+
+Expression TryCatch =
+    TRY tryblock:MaybeDisjunction catches:CatchHandler+ {
+    yyValue = new Catch(tryblock, catches.list());
+    yyValue = at(yyStart, yyCount, yyValue);
+}
+;
+/*
+Expression TryCatch =
+    TRY tryblock:MaybeDisjunction CATCH LPAREN formals:PatternList RPAREN handler:MaybeSemiExpression {
+         yyValue = new Catch(formals, tryblock, handler);
+         yyValue = at(yyStart, yyCount, yyValue);
+    }
+    ;
+*/
+    
 Expression MaybeTyped =
 	body:MaybeAtomic void:DOUBLE_COLON_BANG type:Type {
 		yyValue = new HasType(body, new AssertedType(type));
@@ -456,6 +477,10 @@ Expression MaybeAtomic =
 		yyValue = new Isolated(body);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
+	/ void:THROW exception:MaybeAssignment {
+		yyValue = new Throw(exception);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
 	/ MaybeAssignment
 	;
 
@@ -468,8 +493,12 @@ Expression NoCmpMaybeAtomic =
 		yyValue = new Isolated(body);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
+	/ void:THROW exception:NoCmpMaybeAssignment {
+		yyValue = new Throw(exception);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
 	/ NoCmpMaybeAssignment
-	;
+	; 
 
 Expression MaybeAssignment =
     left:DotExpression void:COLON_EQUALS right:MaybeDisjunction {
@@ -515,6 +544,7 @@ Expression NoCmpMaybeConjunction =
 	}
 	/ NoCmpMaybeComparison
 	;
+
 
 Expression MaybeComparison = 
 	left:Comparable op:Comparator right:Comparable {
@@ -693,6 +723,12 @@ Expression BasicExpression =
 	}
 	;
 
+Expression Throw =
+	THROW exception:BasicExpression {
+		yyValue = new Throw(exception);
+		yyValue = at(yyStart, yyCount, yyValue);
+	};
+
 /* Ends without newline */
 String BareOperator =
 	LPAREN yyValue:(
@@ -741,7 +777,7 @@ List<Expression> ExpressionList =
 /////////////////////////////////////////////
 
 Pattern Pattern =
-	p:AsPattern index:DOUBLE_COLON t:Type Space {
+		p:AsPattern index:DOUBLE_COLON t:Type Space {
 		yyValue = new TypedPattern(p, t);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
@@ -795,10 +831,6 @@ Pattern BasicPattern =
 	}
 	/ LBRACKET formals:PatternList RBRACKET Space {
 		yyValue = new ListPattern(formals);
-		yyValue = at(yyStart, yyCount, yyValue);
-	}
-	/ EQ name:Identifier Space {
-		yyValue = new EqPattern(name);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
@@ -931,6 +963,9 @@ transient String TYPE = "type":Word Space;
 transient String LAMBDA = "lambda":Word Space;
 transient String ATOMIC = "atomic":Word Space;
 transient String ISOLATED = "isolated":Word Space;
+transient String TRY = "try":Word Space;
+transient String THROW = "throw":Word Space;
+transient String CATCH = "catch":Word Space;
 transient String AS = "as":Word Space;
 transient String IF = "if":Word Space;
 transient String THEN = "then":Word Space;

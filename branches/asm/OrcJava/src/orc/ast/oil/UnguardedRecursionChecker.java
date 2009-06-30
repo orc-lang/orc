@@ -126,6 +126,17 @@ public class UnguardedRecursionChecker extends Walker {
 		return null;
 	}
 	
+	public Void visit(Throw throwExpr) {
+		throwExpr.exception.accept(this);
+		return null;
+	}
+	
+	public Void visit(Catch catchExpr) {
+		catchExpr.tryBlock.accept(this);
+		catchExpr.handler.body.accept(this);
+		return null;
+	}
+	
 	/**
 	 * Generate a new environment for checking the body of a def. Specifically,
 	 * the value for this def's binding is true, and for all sibling defs it's false.
