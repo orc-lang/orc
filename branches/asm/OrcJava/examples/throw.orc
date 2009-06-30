@@ -1,0 +1,1 @@
+try (throw 3) catch (_) 4
