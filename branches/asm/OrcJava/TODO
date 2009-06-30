@@ -1,0 +1,6 @@
+See also TODO and FIXME tags in the source code.
+
+- syntax for curried defs (def x(a)(b)(c) = ... <=> val x = lambda (a) = lambda (b) = lambda (c) = ...)
+- standard cond, if, and case syntax
+- exception handling
+- finalizers for terminated tokens (may be incorporated into exception handling)
