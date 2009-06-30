@@ -72,7 +72,12 @@ public class ClassProxy extends Site {
 			// do nothing
 		}
 		if (member != null) {
-			caller.resume(getMember(caller, null, member));
+			if (member.equals("?")) {
+				caller.resume(new MatchProxy(type));
+			}
+			else {
+				caller.resume(getMember(caller, null, member));
+			}
 			return;
 		}
 		

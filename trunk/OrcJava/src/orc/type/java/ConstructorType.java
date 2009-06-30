@@ -49,34 +49,46 @@ public class ConstructorType extends Type {
 		String f = Arg.asField(args);
 		Map<java.lang.reflect.TypeVariable, orc.type.Type> javaCtx = Type.makeJavaCtx(cls, typeActuals);
 		
-		// This is a call to a static method or member.
-		// Return the appropriate method type, or try to resolve a static field.
 		if (f != null) {
-			List<Method> matchingMethods = new LinkedList<Method>();
-			for (Method m : cls.getDeclaredMethods()) {
-				if (Modifier.isStatic(m.getModifiers())
-					&& Modifier.isPublic(m.getModifiers())
-					&& m.getName().equals(f)) 
-				{
-					matchingMethods.add(m);	
-				}
+			
+			/* This is a class filter pattern. It filters out all values which
+			 * are not subclasses of this class. 
+			 * Thus, regardless of the argument type, the pattern always binds
+			 * a value of this class type.
+			 */
+			if (f.equals("?")) {
+				return fromJavaClass(cls);
 			}
-
-			if (!matchingMethods.isEmpty()) {
-				return Type.fromJavaMethods(matchingMethods, javaCtx);
-			}
+			
+			// This is a call to a static method or member.
+			// Return the appropriate method type, or try to resolve a static field.
 			else {
-				// No static method matches. Try static fields.
-				for (java.lang.reflect.Field fld : cls.getDeclaredFields()) {
-					if (Modifier.isStatic(fld.getModifiers())
-					&& Modifier.isPublic(fld.getModifiers())
-					&& fld.getName().equals(f)) {
-						return (new RefType()).instance(Type.fromJavaType(fld.getGenericType(), javaCtx));
+				List<Method> matchingMethods = new LinkedList<Method>();
+				for (Method m : cls.getDeclaredMethods()) {
+					if (Modifier.isStatic(m.getModifiers())
+							&& Modifier.isPublic(m.getModifiers())
+							&& m.getName().equals(f)) 
+					{
+						matchingMethods.add(m);	
 					}
 				}
-				
-				// Neither a method nor a field
-				throw new TypeException(f + " is not a public static member of class " + cls);
+
+				if (!matchingMethods.isEmpty()) {
+					return Type.fromJavaMethods(matchingMethods, javaCtx);
+				}
+				else {
+					// No static method matches. Try static fields.
+					for (java.lang.reflect.Field fld : cls.getDeclaredFields()) {
+						if (Modifier.isStatic(fld.getModifiers())
+								&& Modifier.isPublic(fld.getModifiers())
+								&& fld.getName().equals(f)) {
+							return (new RefType()).instance(Type.fromJavaType(fld.getGenericType(), javaCtx));
+						}
+					}
+
+					// Neither a method nor a field
+					throw new TypeException(f + " is not a public static member of class " + cls);
+				}
 			}
 		}
 		// This is a constructor call. Check the args, then return an instance of the class. 

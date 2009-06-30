@@ -23,11 +23,11 @@ import orc.type.TypeVariable;
 public class IsSome extends Site {
 	@Override
 	public void callSite(Args args, Token caller) throws TokenException {
-		TupleValue result = Some.data.deconstruct(args.getArg(0));
+		Object result = Some.data.deconstruct(args.getArg(0));
 		if (result == null) {
 			caller.die();
 		} else {
-			caller.resume(result.at(0));
+			caller.resume(result);
 		}
 	}
 	

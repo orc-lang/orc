@@ -21,7 +21,7 @@ public final class Datasite extends DotSite {
 	protected void addMembers() {
 		addMember("?", new PartialSite() {
 			@Override
-			public TupleValue evaluate(Args args) throws TokenException {
+			public Object evaluate(Args args) throws TokenException {
 				return deconstruct(args.getArg(0));
 			}
 		});
@@ -32,11 +32,11 @@ public final class Datasite extends DotSite {
 		token.resume(new TaggedValue(this, args.asArray()));
 	}
 
-	public TupleValue deconstruct(Object arg) throws TokenException {
+	public Object deconstruct(Object arg) throws TokenException {
 		if (arg instanceof TaggedValue) {
 			TaggedValue v = (TaggedValue)arg;
 			if (v.tag == this) {
-				return new TupleValue(v.values);
+				return Let.condense(v.values);
 			}
 		}
 		return null;

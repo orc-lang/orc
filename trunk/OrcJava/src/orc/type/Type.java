@@ -624,7 +624,7 @@ public abstract class Type {
 	 * If not, return null. 
 	 * 
 	 * This is not a true inverse of fromJavaClass,
-	 * though it behaves like on in most cases.
+	 * though it behaves like one in most cases.
 	 * 
 	 */
 	public Class javaCounterpart() {
