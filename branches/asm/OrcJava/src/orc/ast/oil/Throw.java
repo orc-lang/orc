@@ -44,7 +44,7 @@ public class Throw extends Expr {
 	}	
 	
 	public Expression marshal() throws CompilationException {
-		return null; //new orc.ast.oil.xml.Throw(exception.marshall());
+		return new orc.ast.oil.xml.Throw(exception.marshal());
 	}
 
 }
