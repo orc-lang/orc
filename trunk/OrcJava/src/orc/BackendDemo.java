@@ -224,4 +224,14 @@ final class BackendVisitorDemo implements Visitor<Void> {
 	public Void visit(TypeDecl typeDecl) {
 		return typeDecl.body.accept(this);
 	}
+	
+	//TODO:
+	public Void visit(Catch catchExpr){
+		return null;
+	}
+	
+	//TODO:
+	public Void visit(Throw throwExpr){
+		return null;
+	}
 }

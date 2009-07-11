@@ -226,7 +226,7 @@ public final class Kilim {
 						try {
 							caller.resume(thunk.call());
 						} catch (TokenException e) {
-							caller.error(e);
+							caller.throwJavaException(e);
 						} catch (Exception e) {
 							caller.error(new JavaException(e));
 						}

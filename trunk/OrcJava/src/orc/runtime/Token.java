@@ -5,19 +5,22 @@ package orc.runtime;
 
 import java.io.Serializable;
 import java.util.LinkedList;
+import java.util.Stack;
+import java.util.List;
 
 import orc.ast.oil.arg.Arg;
 import orc.env.Env;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
-import orc.error.compiletime.SiteResolutionException;
 import orc.error.runtime.CapabilityException;
-import orc.error.runtime.JavaError;
+import orc.error.runtime.JavaException;
 import orc.error.runtime.SiteException;
 import orc.error.runtime.StackLimitReachedError;
 import orc.error.runtime.TokenError;
 import orc.error.runtime.TokenException;
 import orc.error.runtime.TokenLimitReachedError;
+import orc.error.runtime.UncaughtException;
+import orc.error.runtime.JavaError;
 import orc.lib.time.Ltimer;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Return;
@@ -27,6 +30,8 @@ import orc.runtime.transaction.Transaction;
 import orc.runtime.values.Closure;
 import orc.runtime.values.Value;
 import orc.trace.TokenTracer;
+import orc.runtime.nodes.Def;
+import orc.runtime.values.Closure;
 
 /**
  * Representation of an active thread of execution. Tokens
@@ -36,6 +41,7 @@ import orc.trace.TokenTracer;
  * to the next token.
  * @author wcook, dkitchin, quark
  */
+
 public class Token implements Serializable, Locatable {
 	/**
 	 * Return pointer for a function call.
@@ -58,8 +64,31 @@ public class Token implements Serializable, Locatable {
 		}
 	}
 	
-	/** The location of the token in the DAG; determines what the token will do next. */
-	public Node node;	
+	/*
+	 * Exception frame.  This also must record enough data to create a new Token in the
+	 * context of the handler (its sort of like a Continuation but we need more data
+	 * like the region and the group etc.) 
+	 */
+	private static class ExceptionFrame {
+		public Closure handler;
+		public Node next;
+		
+		/* Non-running Token used to create tokens in the handler's context */
+		public Token token;
+	
+		public ExceptionFrame(Token token, Closure handler, Node next){
+			this.token = token;
+			this.handler = handler;
+			this.next = next;
+		}
+	}
+
+	/**
+	 * The location of the token in the DAG; determines what the token will do
+	 * next.
+	 */
+	public Node node;
+
 	/** The current environment, which determines the values of variables. */
 	private Env<Object> env;
 	/** Before doing anything, the token checks if its group is alive. If not, it kills itself. This is how forced termination is implemented. */
@@ -92,34 +121,37 @@ public class Token implements Serializable, Locatable {
 	private LogicalClock clock;
 	
 	/**
-	 * Create a new uninitialized token.
-	 * You should get tokens from {@link TokenPool}, not
-	 * call this directly.
+	 * Exception handler stack and catch return point stack:
 	 */
-	Token() {}
-	
+	private Stack<ExceptionFrame> exceptionStack;
+
+	/**
+	 * Create a new uninitialized token. You should get tokens from
+	 * {@link TokenPool}, not call this directly.
+	 */
+	Token() {
+	}
+
 	/**
 	 * Initialize a root token.
 	 */
 	final void initializeRoot(Node node, Region region, OrcEngine engine, TokenTracer tracer) {
 		// create the root logical clock
 		LogicalClock clock = new LogicalClock(region, null);
-		initialize(node, new Env<Object>(),
-				null, new Group(), clock, null,
-				null, engine, null,
-				tracer, engine.getConfig().getStackSize(),
-				clock);
+		initialize(node, new Env<Object>(), null, new Group(), clock, null,
+				null, engine, null, tracer, engine.getConfig().getStackSize(),
+				clock, new Stack<ExceptionFrame>());
 	}
 	
 	/**
 	 * Initialize a forked token.
 	 */
 	final void initializeFork(Token that, Group group, Region region) {
-		initialize(that.node, that.env.clone(),
-				that.continuation, group, region, that.trans,
-				that.result, that.engine, that.location,
-				that.tracer.fork(), that.stackAvailable,
-				that.clock);
+		
+		initialize(that.node, that.env.clone(), that.continuation, group,
+				region, that.trans, that.result, that.engine, that.location,
+				that.tracer.fork(), that.stackAvailable, that.clock, 
+				(Stack<ExceptionFrame>) that.exceptionStack.clone());
 	}
 	
 	/**
@@ -143,7 +175,11 @@ public class Token implements Serializable, Locatable {
 	}
 	
 
-	private void initialize(Node node, Env<Object> env, Continuation continuation, Group group, Region region, Transaction trans, Object result, OrcEngine engine, SourceLocation location, TokenTracer tracer, int stackAvailable, LogicalClock clock) {
+	private void initialize(Node node, Env<Object> env,
+			Continuation continuation, Group group, Region region,
+			Transaction trans, Object result, OrcEngine engine,
+			SourceLocation location, TokenTracer tracer, int stackAvailable,
+			LogicalClock clock, Stack<ExceptionFrame> exceptionStack) {
 		this.node = node;
 		this.env = env;
 		this.continuation = continuation;
@@ -157,6 +193,7 @@ public class Token implements Serializable, Locatable {
 		this.tracer = tracer;
 		this.stackAvailable = stackAvailable;
 		this.clock = clock;
+		this.exceptionStack = exceptionStack;
 		region.add(this);
 	}
 
@@ -310,6 +347,67 @@ public class Token implements Serializable, Locatable {
 	}
 
 	/**
+	 * pop an exception frame off the stack:
+	 */
+	public void popHandler() throws UncaughtException {
+		
+		if (!exceptionStack.empty()){
+			exceptionStack.pop();
+		}
+		else {
+			throw new UncaughtException("unhandled orc exception");
+		}
+	}
+	
+	/*
+	 * Called when an exception is thrown.  Kill the current token, and create
+	 * a new token in the correct group/region to call the handler
+	 */
+	public void throwException(Object exceptionValue) 
+	    throws UncaughtException, TokenLimitReachedError, TokenException {
+		
+		ExceptionFrame frame;
+		if (!exceptionStack.empty()){
+			frame = exceptionStack.pop();
+		}
+		else {
+			/* If the exception Value is a TokenException, then it should have backtrace information,
+			 * otherwise, the exception value does not contain backtrace info.
+			 */
+			throw new UncaughtException("unhandled orc exception");
+		}
+
+		/* Create a new token running in the context of the handler */
+		Token handlerToken = engine.pool.newToken();
+		handlerToken.initializeFork(frame.token, frame.token.group, frame.token.region);
+		
+		/* need to update the clock of the new token: */
+		handlerToken.clock = this.clock;
+		
+		List<Object> actuals = new LinkedList<Object>();
+		actuals.add(exceptionValue);
+		frame.handler.createCall(handlerToken, actuals, frame.next);
+		
+		/* kill the current token in the local group/region */
+		die();
+	}
+	
+	/*
+	 * Push an exception handler onto the stack:
+	 */
+	public void pushHandler(Closure closure, Node next){
+		
+		/* Create the continuation Token, but don't run it by removing it from the region */
+		Token token = new Token();
+		token.initializeFork(this, group, region);
+		token.region.remove(token);
+		
+		/* Push the exception frame on the stack */
+		ExceptionFrame frame = new ExceptionFrame(token, closure, next);
+		exceptionStack.push(frame);
+	}
+	
+	/**
 	 * Push a new future onto the environment stack
 	 * @param f		future to push
 	 * @return		self
@@ -369,13 +467,30 @@ public class Token implements Serializable, Locatable {
 		problem.setBacktrace(getBacktrace());
 		tracer.error(problem);
 		engine.tokenError(problem);
-		if (problem instanceof TokenError) {
-			// if this is an unrecoverable error, terminate the whole engine
+		// die after reporting the error, so the engine
+		// isn't halted before it gets a chance to report it
+		die();
+		// if this is an unrecoverable error, terminate the whole engine
+		if (problem instanceof TokenError)
 			engine.terminate();
-		} else {
-			// die after reporting the error, so the engine
-			// isn't halted before it gets a chance to report it
-			die();
+	}
+	
+	public void throwJavaException(TokenException problem){
+		
+		TokenException originalException = problem;
+		problem.setSourceLocation(getSourceLocation());
+		problem.setBacktrace(getBacktrace());
+		try{
+			this.throwException(problem.getCause());
+		}
+		catch (UncaughtException e) {
+			/* if there is no handler, call error with the exception (as Orc would have
+			 * done originally)
+			 */
+			this.error(originalException);
+		}
+		catch (TokenException e) {
+			this.error(e);
 		}
 	}
 
