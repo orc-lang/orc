@@ -112,4 +112,12 @@ public abstract class Transformer implements Visitor<Expr> {
 	public Expr visit(WithLocation expr) {
 		return new WithLocation(expr.body.accept(this), expr.location);
 	}
+	
+	public Expr visit(Throw throwExpr){
+		return new Throw(throwExpr.exception.accept(this));
+	}
+	
+	public Expr visit(Catch catchExpr){
+		return new Catch(this.visit(catchExpr.handler), catchExpr.tryBlock.accept(this));
+	}
 }

@@ -174,5 +174,14 @@ public abstract class Walker implements Visitor<Void> {
 	}
 	public void enter(TypeDecl expr) {};	
 	public void leave(TypeDecl expr) {};
+	
+	//TODO:
+	public Void visit(Catch catchExpr){
+		return null;
+	}
+	
+	public Void visit(Throw throwExpr){
+		return null;
+	}
 
 }
