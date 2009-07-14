@@ -299,8 +299,16 @@ public class OrcEngine implements Runnable {
 		stderr.println("Error: " + problem.getMessage());
 		stderr.println("Backtrace:");
 		SourceLocation[] backtrace = problem.getBacktrace();
-		for (SourceLocation location : backtrace) {
-			stderr.println(location);
+		
+		int len = backtrace.length;
+		if (len > 0) {
+			stderr.println(backtrace[0]);
+			String carrot = backtrace[0].getCarrot();
+			if(carrot != null)
+				stderr.println(carrot);
+		}
+		for (int i = 1; i < len; i++) {
+			stderr.println(backtrace[i]);
 		}
 		stderr.println("");
 		// HACK: technically, we should report this information

@@ -2,6 +2,10 @@ package orc.error;
 
 import java.io.File;
 import java.io.Serializable;
+import java.io.FileReader;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * 
@@ -16,6 +20,7 @@ public class SourceLocation implements Serializable {
 	public Integer endLine;
 	public Integer endColumn;
 	public File file;
+	private Boolean fileFound = false;
 	
 	public static final SourceLocation UNKNOWN = new SourceLocation(null, 0, 0, 0, 0) {
 		public String toString() {
@@ -91,7 +96,45 @@ public class SourceLocation implements Serializable {
 	}
 	
 	public String toString() {
-		return file + ":" + line + ":" + column + "-" +
-			(endLine != line ? endLine + ":" : "") + endColumn;
+		FileReader reader;
+		String locStr = file + ":" + line + ":" + column + "-" +
+		(endLine != line ? endLine + ":" : "") + endColumn;
+		try{
+			reader = new FileReader(file);
+		} catch (FileNotFoundException e){
+			return locStr;
+		}
+		BufferedReader input = new BufferedReader(reader);
+		String str = "";
+		try{
+			for(int i = 0; i < line; i++)
+				str = input.readLine();
+		} catch (IOException e){
+			return locStr;
+		}
+		
+		fileFound = true;
+		return locStr + ": "+ str;
+	}
+	
+	/*
+	 * returns a string which is the carrot to denote the start of the error on the console.
+	 * might return null to denote the file wasn't found.
+	 */
+	public String getCarrot(){
+		
+		if(!fileFound)
+			return null;
+		
+		String locStr = file + ":" + line + ":" + column + "-" +
+		(endLine != line ? endLine + ":" : "") + endColumn;
+		int len = locStr.length();
+		len += column;
+		String carrotString = "";
+		for(int i = 0; i < len; i++){
+			carrotString += " ";
+		}
+		carrotString += " ^";
+		return carrotString;
 	}
 }
