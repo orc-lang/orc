@@ -82,6 +82,13 @@ public class Token implements Serializable, Locatable {
 			this.next = next;
 		}
 	}
+	
+	private enum ExceptionCause {
+		EXPLICITTHROW,
+		JAVAEXCEPTION,
+		ORCRUNTIME,
+		UNKNOWN
+	}
 
 	/**
 	 * The location of the token in the DAG; determines what the token will do
@@ -124,6 +131,18 @@ public class Token implements Serializable, Locatable {
 	 * Exception handler stack and catch return point stack:
 	 */
 	private Stack<ExceptionFrame> exceptionStack;
+	
+	/** Used to trace the origin of uncaught orc exceptions */
+	private SourceLocation exceptionOriginLocation;
+	
+	/** Used when throwing a Java exception.  Note this also stores source location for java exceptions*/
+	private TokenException originalException;
+	
+	/** backtrace of the throw, used with both Java and Orc exceptions */
+	private SourceLocation[] throwBacktrace;
+	
+	/** What kind of exception are we handling?  Used for handling errors correctly */
+	private ExceptionCause exceptionCause;
 
 	/**
 	 * Create a new uninitialized token. You should get tokens from
@@ -140,7 +159,7 @@ public class Token implements Serializable, Locatable {
 		LogicalClock clock = new LogicalClock(region, null);
 		initialize(node, new Env<Object>(), null, new Group(), clock, null,
 				null, engine, null, tracer, engine.getConfig().getStackSize(),
-				clock, new Stack<ExceptionFrame>());
+				clock, new Stack<ExceptionFrame>(), null, null, null, ExceptionCause.UNKNOWN);
 	}
 	
 	/**
@@ -151,7 +170,9 @@ public class Token implements Serializable, Locatable {
 		initialize(that.node, that.env.clone(), that.continuation, group,
 				region, that.trans, that.result, that.engine, that.location,
 				that.tracer.fork(), that.stackAvailable, that.clock, 
-				(Stack<ExceptionFrame>) that.exceptionStack.clone());
+				(Stack<ExceptionFrame>) that.exceptionStack.clone(),
+				that.exceptionOriginLocation, that.originalException,
+				that.throwBacktrace, that.exceptionCause);
 	}
 	
 	/**
@@ -179,7 +200,9 @@ public class Token implements Serializable, Locatable {
 			Continuation continuation, Group group, Region region,
 			Transaction trans, Object result, OrcEngine engine,
 			SourceLocation location, TokenTracer tracer, int stackAvailable,
-			LogicalClock clock, Stack<ExceptionFrame> exceptionStack) {
+			LogicalClock clock, Stack<ExceptionFrame> exceptionStack,
+			SourceLocation exceptionOriginLocation, TokenException originalException,
+			SourceLocation[] throwBacktrace, ExceptionCause cause) {
 		this.node = node;
 		this.env = env;
 		this.continuation = continuation;
@@ -194,6 +217,13 @@ public class Token implements Serializable, Locatable {
 		this.stackAvailable = stackAvailable;
 		this.clock = clock;
 		this.exceptionStack = exceptionStack;
+		this.exceptionOriginLocation = exceptionOriginLocation;
+		this.originalException = originalException;
+		if (throwBacktrace != null)
+			this.throwBacktrace = throwBacktrace.clone();
+		else
+			this.throwBacktrace = null;
+		this.exceptionCause = cause;
 		region.add(this);
 	}
 
@@ -349,14 +379,8 @@ public class Token implements Serializable, Locatable {
 	/**
 	 * pop an exception frame off the stack:
 	 */
-	public void popHandler() throws UncaughtException {
-		
-		if (!exceptionStack.empty()){
-			exceptionStack.pop();
-		}
-		else {
-			throw new UncaughtException("unhandled orc exception");
-		}
+	public void popHandler(){
+		exceptionStack.pop();
 	}
 	
 	/*
@@ -364,22 +388,67 @@ public class Token implements Serializable, Locatable {
 	 * a new token in the correct group/region to call the handler
 	 */
 	public void throwException(Object exceptionValue) 
-	    throws UncaughtException, TokenLimitReachedError, TokenException {
+	    throws TokenLimitReachedError, TokenException {
 		
 		ExceptionFrame frame;
-		if (!exceptionStack.empty()){
-			frame = exceptionStack.pop();
+		
+		/*
+		 * If this is the first time we've seen this exception (ie, we haven't done a re-throw),
+		 * record error reporting information.
+		 */
+		if (exceptionCause == ExceptionCause.UNKNOWN){
+			exceptionCause = ExceptionCause.EXPLICITTHROW;
+			exceptionOriginLocation = this.getSourceLocation();
+			throwBacktrace = this.getBacktrace();			
+		}
+			
+		if (exceptionStack.empty()){
+			/*
+			 * We have an uncaught exception, and the backtrace should point to the source
+			 * of the exception.  
+			 */
+			TokenException e;
+			
+			/*
+			 * Set the correct backtrace information:
+			 */
+			if (exceptionCause == ExceptionCause.ORCRUNTIME) {
+				e = (TokenException) exceptionValue;
+				e.setSourceLocation(exceptionOriginLocation);
+			}
+			else if (exceptionCause == ExceptionCause.JAVAEXCEPTION) {
+				e = this.originalException;
+				e.setSourceLocation(originalException.getSourceLocation());
+			}
+			//exceptionCause == ExceptionCause.EXPLICITTHROW
+			else { 
+				e = new UncaughtException("uncaught exception:");
+				e.setSourceLocation(exceptionOriginLocation);
+			}
+			
+			/* the backtrace is the same for both cases: */
+			e.setBacktrace(throwBacktrace);
+			tracer.error(e);
+			engine.tokenError(e);
+			die();
+			return;
 		}
 		else {
-			/* If the exception Value is a TokenException, then it should have backtrace information,
-			 * otherwise, the exception value does not contain backtrace info.
-			 */
-			throw new UncaughtException("unhandled orc exception");
+			frame = exceptionStack.pop();
+			frame.token.exceptionCause = this.exceptionCause;
 		}
 
 		/* Create a new token running in the context of the handler */
 		Token handlerToken = engine.pool.newToken();
 		handlerToken.initializeFork(frame.token, frame.token.group, frame.token.region);
+		/* Propagate the throw source location for the Orc exception */
+		if (this.exceptionOriginLocation != null)
+			handlerToken.exceptionOriginLocation = this.exceptionOriginLocation;
+		/* Propagate the throw source location for the Java exception */
+		if (this.originalException != null)
+			handlerToken.originalException = this.originalException;
+		/* The backtrace is the same in both cases: */
+		handlerToken.throwBacktrace = this.throwBacktrace;
 		
 		/* need to update the clock of the new token: */
 		handlerToken.clock = this.clock;
@@ -391,6 +460,10 @@ public class Token implements Serializable, Locatable {
 		/* kill the current token in the local group/region */
 		die();
 	}
+	
+	/*
+	 * Set the location of the throw (for better error reporting)
+	 */
 	
 	/*
 	 * Push an exception handler onto the stack:
@@ -475,19 +548,28 @@ public class Token implements Serializable, Locatable {
 			engine.terminate();
 	}
 	
-	public void throwJavaException(TokenException problem){
-		
-		TokenException originalException = problem;
+	public void throwRuntimeException(TokenException problem) {
+		this.exceptionCause = ExceptionCause.ORCRUNTIME;
+		originalException = problem;
+		throwBacktrace = getBacktrace();
+		problem.setSourceLocation(getSourceLocation());
+		problem.setBacktrace(getBacktrace());
+		try{
+			this.throwException(problem);
+		}
+		catch (TokenException e) {
+			this.error(e);
+		}
+	}
+	
+	public void throwJavaException(TokenException problem) {
+		this.exceptionCause = ExceptionCause.JAVAEXCEPTION;
+		originalException = problem;
+		throwBacktrace = getBacktrace();
 		problem.setSourceLocation(getSourceLocation());
 		problem.setBacktrace(getBacktrace());
 		try{
 			this.throwException(problem.getCause());
-		}
-		catch (UncaughtException e) {
-			/* if there is no handler, call error with the exception (as Orc would have
-			 * done originally)
-			 */
-			this.error(originalException);
 		}
 		catch (TokenException e) {
 			this.error(e);
