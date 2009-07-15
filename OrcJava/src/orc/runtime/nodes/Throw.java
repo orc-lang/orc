@@ -35,9 +35,6 @@ public class Throw extends Node {
 		try {
 			t.throwException(o);
 		}
-		catch (UncaughtException e) {
-			t.error(e);
-		}
 		catch (TokenException e) {
 			t.error(e);
 		}

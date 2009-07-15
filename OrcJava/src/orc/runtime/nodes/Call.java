@@ -60,7 +60,8 @@ public class Call extends Node {
 			target.createCall(t, actuals, next);
 			
 		} catch (TokenException e) {
-			t.error(e);
+			// if uncaught,  t.error(e) will be called.
+			t.throwRuntimeException(e);
 		}
 	}
 	

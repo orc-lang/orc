@@ -12,13 +12,7 @@ public class PopHandler extends Node {
 	}
 	
 	public void process(Token t){
-		try {
-			t.popHandler();
-		}
-		catch (UncaughtException e) {
-			t.error(e);
-			return;
-		}
+		t.popHandler();
 		t.move(next).activate();
 	}
 }
