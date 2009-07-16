@@ -2518,6 +2518,178 @@ declarations occur twice.
 
 </section>
 
+<section><title>Exceptions in Orc</title>
+
+<para>
+An experimental feature recently added to Orc is exceptions.
+Exceptions add two new expressions to the Orc syntax: try/catch blocks, and 
+throw expressions.  Throw expressions are simple - using the keyword <code>throw</code>,
+they take an Orc expression, evaluate it, and raise the expression's published value to
+be caught by an enclosing exception handler.  Note that if the enclosed expression 
+publishes multiple values, mulitple exceptions will be raised.  Examples of throw expressions:
+</para>
+
+<para>
+<itemizedlist>
+
+<listitem>
+<code>throw 3</code>
+</listitem>
+
+<listitem>
+<code>throw "error"</code>
+</listitem> 
+
+<listitem>
+<code>throw (3 | 4)</code>
+</listitem>
+
+</itemizedlist>
+</para>
+
+<para>
+Exceptions are caught via Try/Catch blocks.  Try blocks enclose the
+Orc exception to execute, which may or may not throw any exceptions.
+Catch handlers then specify patterns against which exception values should be
+matched against, along with a corresponding handler to call if the 
+exception value matches the pattern.  Multiple catch statements 
+can be specified, and the first match that occurs is the one executed.
+In the following example, two exceptions are thrown by the try block, and one
+value published.
+</para>
+
+<para>
+<programlisting><![CDATA[
+{- simple exception expressions -}
+try(0 | throw 1 | throw 2) 
+catch (1) "one"
+catch (X) X
+]]></programlisting>
+</para>
+
+<para>
+Also like Java, exception handlers can be nested - if the immediately enclosing
+Try/Catch block has no handler than matches the thrown exception, the
+Orc interpreter attempts to match against the next enclosing handler.  If
+no handler matches the exception (or no enclosing handler exists) the exception
+is dropped (ie, treated as a stop) and an error is reported to the interpreter.
+</para>
+
+<para>
+<programlisting><![CDATA[
+{- a contrived nested handler example -}
+try(
+  try(throw 3)
+  catch (1) "one"
+)
+catch (X) X
+]]></programlisting>
+</para>
+
+<para>
+When combining exceptions with the combinators, ie the pruning or
+otherwise combinators, emantically, exceptions are silent.  For example,
+in the following expression, both <code>0</code> and
+<code>1</code> are published - <code>throw 0</code> is silent, not publishing
+any value, causing the otherwise combinator to execute its alternate expression:
+</para>
+
+<para>
+<programlisting><![CDATA[
+{- the throw expression is treated as a silent by the combinators -}
+try (throw 0; 1) catch(X) X
+]]></programlisting>
+</para>
+
+<para>
+Similarly, exceptions thrown with a pruning combinator does not terminate 
+the expression (since the throw is treated as a silent), and throwing a silent expression
+(ie, <code>throw stop</code>) results in no exception being thrown - the entire
+expression functions as a stop.
+</para>
+
+<para>
+Finally, Orc also allows Java exceptions to be matched against by Orc exception
+handlers.  This is especially useful when calling Java functions directly,
+which might throw exceptions in cases of failure, seen here in this extended
+example.  The key is to pattern match against the <code>FileNotFoundException</code>,
+since the Orc engine will now propogate any exceptions thrown by a site to 
+enclosing catch handler:
+</para>
+
+<para>
+<programlisting><![CDATA[
+{- catching exceptions thrown by Java sites via pattern matching -}
+class FileInputStream = java.io.FileInputStream
+class InputStreamReader = java.io.InputStreamReader
+class StringBuilder = java.lang.StringBuilder
+class FileNotFoundException = java.io.FileNotFoundException
+
+def GetContent(InputStreamReader) :: String
+def GetContent(in) =
+  val buf = Array[Integer](1024, "char")
+  val out = StringBuilder()
+  def loop(Integer) :: String
+  def loop(len) =
+    if len < 0 then
+      out.toString()
+    else
+      out.append(buf, 0, len) >>
+      loop(in.read(buf))
+  loop(in.read(buf)) >>
+  out.toString()
+
+
+def printFile(File) = 
+InputStreamReader(FileInputStream(File)) >reader>
+println(GetContent(reader)) >>
+stop
+
+try(printFile("non/existant/file")) 
+catch (FileNotFoundException(E)) "could not read file: " + e.message()
+
+]]></programlisting>
+</para>
+
+<para>
+This functionality also allows certain Orc runtime errors to be caught.
+Here are a few examples of runtime errors which might occur, and a full
+list can be found in the 
+<link
+xlink:href="http://orc.csres.utexas.edu/javadoc/STABLE/orc/error/runtime/TokenException.html">Javadoc</link>.
+</para>
+
+<para>
+<itemizedlist>
+
+<listitem>
+<code>ArgumentTypeMismatchException</code>
+</listitem>
+
+<listitem>
+<code>StackLimitReachedError</code>
+</listitem> 
+
+<listitem>
+<code>MessageNotUnderstoodException</code>
+</listitem>
+
+</itemizedlist>
+</para>
+
+<para>
+<programlisting><![CDATA[
+{- Detecting runtime errors using exceptions -}
+class ArgumentTypeMismatchException = orc.error.runtime.ArgumentTypeMismatchException
+
+try(
+  if 3 then "foo"
+) catch (ArgumentTypeMismatchException(e)) "error"
+]]></programlisting>
+</para>
+
+</section>
+
 
 </section>
 
