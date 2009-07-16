@@ -13,6 +13,7 @@ import orc.error.compiletime.typing.TypeArityException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.MessageNotUnderstoodException;
 import orc.lib.state.types.RefType;
+import orc.type.ArrowType;
 import orc.type.Type;
 
 
@@ -57,7 +58,7 @@ public class ConstructorType extends Type {
 			 * a value of this class type.
 			 */
 			if (f.equals("?")) {
-				return fromJavaClass(cls);
+				return new ArrowType(TOP, fromJavaClass(cls));
 			}
 			
 			// This is a call to a static method or member.
