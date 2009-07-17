@@ -1,10 +1,10 @@
 <html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Orc User Guide v0.9.9</title><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"><link href="style.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="book" lang="en"><div class="titlepage"><div><div><h1 class="title"><a name="N10001"></a>Orc User Guide v0.9.9
-</h1></div></div><hr></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="preface"><a href="#N10007">Introduction</a></span></dt><dt><span class="chapter"><a href="#chapter.language">1. The Orc Programming Language</a></span></dt><dd><dl><dt><span class="section"><a href="#N10019">1.1. Introduction</a></span></dt><dt><span class="section"><a href="#N10022">1.2. Cor: A Functional Subset</a></span></dt><dd><dl><dt><span class="section"><a href="#cor.constants">1.2.1. Constants</a></span></dt><dt><span class="section"><a href="#language.base.operators">1.2.2. Operators</a></span></dt><dt><span class="section"><a href="#N10334">1.2.3. Conditionals</a></span></dt><dt><span class="section"><a href="#cor.variables">1.2.4. Variables</a></span></dt><dt><span class="section"><a href="#cor.data">1.2.5. Data Structures</a></span></dt><dt><span class="section"><a href="#N104B5">1.2.6. Patterns</a></span></dt><dt><span class="section"><a href="#cor.functions">1.2.7. Functions</a></span></dt><dt><span class="section"><a href="#N105FD">1.2.8. Comments</a></span></dt></dl></dd><dt><span class="section"><a href="#N10612">1.3. Orc: Orchestrating services</a></span></dt><dd><dl><dt><span class="section"><a href="#N106F1">1.3.1. Communicating with external services</a></span></dt><dt><span class="section"><a href="#N1074B">1.3.2. The concurrency combinators of Orc</a></span></dt><dt><span class="section"><a href="#N108C7">1.3.3. Revisiting Cor expressions</a></span></dt><dt><span class="section"><a href="#N109D1">1.3.4. Time</a></span></dt></dl></dd><dt><span class="section"><a href="#N109FD">1.4. Advanced Features of Orc</a></span></dt><dd><dl><dt><span class="section"><a href="#N10B23">1.4.1. Special call forms</a></span></dt><dt><span class="section"><a href="#N10BBD">1.4.2. Extensions to pattern matching</a></span></dt><dt><span class="section"><a href="#section.orc.datatypes">1.4.3. Datatypes</a></span></dt><dt><span class="section"><a href="#N10C2D">1.4.4. New forms of declarations</a></span></dt></dl></dd></dl></dd><dt><span class="chapter"><a href="#chapter.methodology">2. Programming Methodology</a></span></dt><dd><dl><dt><span class="section"><a href="#N10C73">2.1. Syntactic and Stylistic Conventions</a></span></dt><dd><dl><dt><span class="section"><a href="#N10C78">2.1.1. Parallel combinator</a></span></dt><dt><span class="section"><a href="#N10CB4">2.1.2. Sequential combinator</a></span></dt><dt><span class="section"><a href="#style.pruning">2.1.3. Pruning combinator</a></span></dt><dt><span class="section"><a href="#N10D67">2.1.4. Declarations</a></span></dt></dl></dd><dt><span class="section"><a href="#N10DA0">2.2. Programming Idioms</a></span></dt><dd><dl><dt><span class="section"><a href="#N10DA5">2.2.1. Channels</a></span></dt><dt><span class="section"><a href="#N10DEC">2.2.2. Lists</a></span></dt><dt><span class="section"><a href="#N10E0C">2.2.3. Streams</a></span></dt><dt><span class="section"><a href="#N10E37">2.2.4. Arrays</a></span></dt><dt><span class="section"><a href="#N10E72">2.2.5. Mutable Storage</a></span></dt><dt><span class="section"><a href="#N10ED1">2.2.6. Loops</a></span></dt><dt><span class="section"><a href="#N10EEA">2.2.7. Parallel Matching</a></span></dt><dt><span class="section"><a href="#N10F27">2.2.8. Fork-join</a></span></dt><dt><span class="section"><a href="#N10FB4">2.2.9. Sequential Fork-Join</a></span></dt><dt><span class="section"><a href="#N10FCF">2.2.10. Priority Poll</a></span></dt><dt><span class="section"><a href="#N10FF2">2.2.11. Parallel Or</a></span></dt><dt><span class="section"><a href="#N1102F">2.2.12. Timeout</a></span></dt><dt><span class="section"><a href="#N11082">2.2.13. Priority</a></span></dt><dt><span class="section"><a href="#N11092">2.2.14. Metronome</a></span></dt><dt><span class="section"><a href="#N110A8">2.2.15. Routing</a></span></dt><dt><span class="section"><a href="#N11154">2.2.16. Interruption</a></span></dt><dt><span class="section"><a href="#N11186">2.2.17. Lifting</a></span></dt><dt><span class="section"><a href="#N11197">2.2.18. Fold</a></span></dt></dl></dd><dt><span class="section"><a href="#N111E4">2.3. Larger Examples</a></span></dt><dd><dl><dt><span class="section"><a href="#N111EC">2.3.1. Dining Philosophers</a></span></dt><dt><span class="section"><a href="#methodology.examples.hygenic">2.3.2. Hygienic Dining Philosophers</a></span></dt><dt><span class="section"><a href="#N11283">2.3.3. Readers-Writers</a></span></dt><dt><span class="section"><a href="#N112B1">2.3.4. Quicksort</a></span></dt><dt><span class="section"><a href="#N11310">2.3.5. Meeting Scheduler</a></span></dt></dl></dd></dl></dd><dt><span class="chapter"><a href="#chapter.services">3. Accessing and Creating External Services</a></span></dt><dd><dl><dt><span class="section"><a href="#section.services.intro">3.1. Introduction</a></span></dt><dt><span class="section"><a href="#section.services.java">3.2. 
+</h1></div></div><hr></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="preface"><a href="#N10007">Introduction</a></span></dt><dt><span class="chapter"><a href="#chapter.language">1. The Orc Programming Language</a></span></dt><dd><dl><dt><span class="section"><a href="#N10019">1.1. Introduction</a></span></dt><dt><span class="section"><a href="#N10022">1.2. Cor: A Functional Subset</a></span></dt><dd><dl><dt><span class="section"><a href="#cor.constants">1.2.1. Constants</a></span></dt><dt><span class="section"><a href="#language.base.operators">1.2.2. Operators</a></span></dt><dt><span class="section"><a href="#N10334">1.2.3. Conditionals</a></span></dt><dt><span class="section"><a href="#cor.variables">1.2.4. Variables</a></span></dt><dt><span class="section"><a href="#cor.data">1.2.5. Data Structures</a></span></dt><dt><span class="section"><a href="#N104B5">1.2.6. Patterns</a></span></dt><dt><span class="section"><a href="#cor.functions">1.2.7. Functions</a></span></dt><dt><span class="section"><a href="#N105FD">1.2.8. Comments</a></span></dt></dl></dd><dt><span class="section"><a href="#N10612">1.3. Orc: Orchestrating services</a></span></dt><dd><dl><dt><span class="section"><a href="#N106F1">1.3.1. Communicating with external services</a></span></dt><dt><span class="section"><a href="#N1074B">1.3.2. The concurrency combinators of Orc</a></span></dt><dt><span class="section"><a href="#N108C7">1.3.3. Revisiting Cor expressions</a></span></dt><dt><span class="section"><a href="#N109D1">1.3.4. Time</a></span></dt></dl></dd><dt><span class="section"><a href="#N109FD">1.4. Advanced Features of Orc</a></span></dt><dd><dl><dt><span class="section"><a href="#N10B6F">1.4.1. Special call forms</a></span></dt><dt><span class="section"><a href="#N10C09">1.4.2. Extensions to pattern matching</a></span></dt><dt><span class="section"><a href="#section.orc.datatypes">1.4.3. Datatypes</a></span></dt><dt><span class="section"><a href="#N10C79">1.4.4. New forms of declarations</a></span></dt><dt><span class="section"><a href="#N10CB5">1.4.5. Exceptions in Orc</a></span></dt></dl></dd></dl></dd><dt><span class="chapter"><a href="#chapter.methodology">2. Programming Methodology</a></span></dt><dd><dl><dt><span class="section"><a href="#N10D19">2.1. Syntactic and Stylistic Conventions</a></span></dt><dd><dl><dt><span class="section"><a href="#N10D1E">2.1.1. Parallel combinator</a></span></dt><dt><span class="section"><a href="#N10D5A">2.1.2. Sequential combinator</a></span></dt><dt><span class="section"><a href="#style.pruning">2.1.3. Pruning combinator</a></span></dt><dt><span class="section"><a href="#N10E0D">2.1.4. Declarations</a></span></dt></dl></dd><dt><span class="section"><a href="#N10E46">2.2. Programming Idioms</a></span></dt><dd><dl><dt><span class="section"><a href="#N10E4B">2.2.1. Channels</a></span></dt><dt><span class="section"><a href="#N10E92">2.2.2. Lists</a></span></dt><dt><span class="section"><a href="#N10EB2">2.2.3. Streams</a></span></dt><dt><span class="section"><a href="#N10EDD">2.2.4. Arrays</a></span></dt><dt><span class="section"><a href="#N10F18">2.2.5. Mutable Storage</a></span></dt><dt><span class="section"><a href="#N10F77">2.2.6. Loops</a></span></dt><dt><span class="section"><a href="#N10F90">2.2.7. Parallel Matching</a></span></dt><dt><span class="section"><a href="#N10FCD">2.2.8. Fork-join</a></span></dt><dt><span class="section"><a href="#N1105A">2.2.9. Sequential Fork-Join</a></span></dt><dt><span class="section"><a href="#N11075">2.2.10. Priority Poll</a></span></dt><dt><span class="section"><a href="#N11098">2.2.11. Parallel Or</a></span></dt><dt><span class="section"><a href="#N110D5">2.2.12. Timeout</a></span></dt><dt><span class="section"><a href="#N11128">2.2.13. Priority</a></span></dt><dt><span class="section"><a href="#N11138">2.2.14. Metronome</a></span></dt><dt><span class="section"><a href="#N1114E">2.2.15. Routing</a></span></dt><dt><span class="section"><a href="#N111FA">2.2.16. Interruption</a></span></dt><dt><span class="section"><a href="#N1122C">2.2.17. Lifting</a></span></dt><dt><span class="section"><a href="#N1123D">2.2.18. Fold</a></span></dt></dl></dd><dt><span class="section"><a href="#N1128A">2.3. Larger Examples</a></span></dt><dd><dl><dt><span class="section"><a href="#N11292">2.3.1. Dining Philosophers</a></span></dt><dt><span class="section"><a href="#methodology.examples.hygenic">2.3.2. Hygienic Dining Philosophers</a></span></dt><dt><span class="section"><a href="#N11329">2.3.3. Readers-Writers</a></span></dt><dt><span class="section"><a href="#N11357">2.3.4. Quicksort</a></span></dt><dt><span class="section"><a href="#N113B6">2.3.5. Meeting Scheduler</a></span></dt></dl></dd></dl></dd><dt><span class="chapter"><a href="#chapter.services">3. Accessing and Creating External Services</a></span></dt><dd><dl><dt><span class="section"><a href="#section.services.intro">3.1. Introduction</a></span></dt><dt><span class="section"><a href="#section.services.java">3.2. 
 
-                class Sites</a></span></dt><dd><dl><dt><span class="section"><a href="#section.services.java.dot">3.2.1. Dot Operator</a></span></dt><dt><span class="section"><a href="#N113B6">3.2.2. Direct Calls</a></span></dt><dt><span class="section"><a href="#section.services.java.method">3.2.3. Method Resolution</a></span></dt><dt><span class="section"><a href="#N113FE">3.2.4. Orc values in Java</a></span></dt><dt><span class="section"><a href="#N1143A">3.2.5. Java Values in Orc</a></span></dt><dt><span class="section"><a href="#section.services.kilim">3.2.6. Cooperative Scheduling and Concurrency</a></span></dt></dl></dd><dt><span class="section"><a href="#N114FE">3.3. 
-                site Sites</a></span></dt><dd><dl><dt><span class="section"><a href="#N11504">3.3.1. Fundamentals</a></span></dt><dt><span class="section"><a href="#N115A5">3.3.2. More Site Classes</a></span></dt><dt><span class="section"><a href="#N1160B">3.3.3. Tutorial Example</a></span></dt></dl></dd><dt><span class="section"><a href="#N1165C">3.4. Web Services</a></span></dt><dd><dl><dt><span class="section"><a href="#N1165F">3.4.1. Introduction</a></span></dt><dt><span class="section"><a href="#N11664">3.4.2. Downloading and Running Examples</a></span></dt><dt><span class="section"><a href="#N1167F">3.4.3. Protocols Supported</a></span></dt><dt><span class="section"><a href="#N116C1">3.4.4. REST</a></span></dt></dl></dd></dl></dd><dt><span class="chapter"><a href="#chapter.typechecker">4. Type Checking</a></span></dt><dd><dl><dt><span class="section"><a href="#N11704">4.1. Simple Typing</a></span></dt><dd><dl><dt><span class="section"><a href="#N11708">4.1.1. Values and Operators</a></span></dt><dt><span class="section"><a href="#N1173F">4.1.2. 
+                class Sites</a></span></dt><dd><dl><dt><span class="section"><a href="#section.services.java.dot">3.2.1. Dot Operator</a></span></dt><dt><span class="section"><a href="#N1145C">3.2.2. Direct Calls</a></span></dt><dt><span class="section"><a href="#section.services.java.method">3.2.3. Method Resolution</a></span></dt><dt><span class="section"><a href="#N114A4">3.2.4. Orc values in Java</a></span></dt><dt><span class="section"><a href="#N114E0">3.2.5. Java Values in Orc</a></span></dt><dt><span class="section"><a href="#section.services.kilim">3.2.6. Cooperative Scheduling and Concurrency</a></span></dt></dl></dd><dt><span class="section"><a href="#N115A4">3.3. 
+                site Sites</a></span></dt><dd><dl><dt><span class="section"><a href="#N115AA">3.3.1. Fundamentals</a></span></dt><dt><span class="section"><a href="#N1164B">3.3.2. More Site Classes</a></span></dt><dt><span class="section"><a href="#N116B1">3.3.3. Tutorial Example</a></span></dt></dl></dd><dt><span class="section"><a href="#N11702">3.4. Web Services</a></span></dt><dd><dl><dt><span class="section"><a href="#N11705">3.4.1. Introduction</a></span></dt><dt><span class="section"><a href="#N1170A">3.4.2. Downloading and Running Examples</a></span></dt><dt><span class="section"><a href="#N11725">3.4.3. Protocols Supported</a></span></dt><dt><span class="section"><a href="#N11767">3.4.4. REST</a></span></dt></dl></dd></dl></dd><dt><span class="chapter"><a href="#chapter.typechecker">4. Type Checking</a></span></dt><dd><dl><dt><span class="section"><a href="#N117AA">4.1. Simple Typing</a></span></dt><dd><dl><dt><span class="section"><a href="#N117AE">4.1.1. Values and Operators</a></span></dt><dt><span class="section"><a href="#N117E5">4.1.2. 
                     signal and stop
-                </a></span></dt><dt><span class="section"><a href="#N1177F">4.1.3. Tuples</a></span></dt><dt><span class="section"><a href="#N1178C">4.1.4. Combinators</a></span></dt><dt><span class="section"><a href="#N117F7">4.1.5. Conditionals</a></span></dt><dt><span class="section"><a href="#N11808">4.1.6. Defined Functions</a></span></dt><dt><span class="section"><a href="#N11864">4.1.7. Ascriptions</a></span></dt><dt><span class="section"><a href="#N11876">4.1.8. Aliasing</a></span></dt><dt><span class="section"><a href="#N11884">4.1.9. Datatypes</a></span></dt><dt><span class="section"><a href="#N11895">4.1.10. Interacting with External Services</a></span></dt><dt><span class="section"><a href="#N118BE">4.1.11. Assertions</a></span></dt></dl></dd><dt><span class="section"><a href="#N118CF">4.2. Polymorphism</a></span></dt><dd><dl><dt><span class="section"><a href="#N118D6">4.2.1. Parametric types</a></span></dt><dt><span class="section"><a href="#N11910">4.2.2. Parametric functions</a></span></dt><dt><span class="section"><a href="#N11922">4.2.3. Generic calls</a></span></dt><dt><span class="section"><a href="#N11945">4.2.4. Polymorphic aliases</a></span></dt><dt><span class="section"><a href="#N11957">4.2.5. Polymorphic datatypes</a></span></dt></dl></dd><dt><span class="section"><a href="#N11966">4.3. Interacting with Java</a></span></dt><dt><span class="section"><a href="#N11987">4.4. Syntax of Typed Orc</a></span></dt></dl></dd><dt><span class="appendix"><a href="#N11B8B">A. Complete Syntax of Orc</a></span></dt><dt><span class="appendix"><a href="#appendix.library">B. Standard Library</a></span></dt><dd><dl><dt><span class="section"><a href="#N11E81">B.1. Overview</a></span></dt><dt><span class="section"><a href="#N11E8B">B.2. Types and Notation</a></span></dt><dt><span class="section"><a href="#N11EA7">B.3. Reference</a></span></dt><dd><dl><dt><span class="section"><a href="#N11EAB">B.3.1. core.inc: Fundamental sites and operators.</a></span></dt><dt><span class="section"><a href="#N1213A">B.3.2. state.inc: General-purpose supplemental data structures.</a></span></dt><dt><span class="section"><a href="#N127D0">B.3.3. idioms.inc: Higher-order Orc programming idioms.</a></span></dt><dt><span class="section"><a href="#N12A05">B.3.4. list.inc: Operations on lists.</a></span></dt><dt><span class="section"><a href="#N12DE7">B.3.5. text.inc: Operations on strings.</a></span></dt><dt><span class="section"><a href="#N12E82">B.3.6. time.inc: Real and logical time.</a></span></dt><dt><span class="section"><a href="#N12EDC">B.3.7. util.inc: Miscellaneous utility functions.</a></span></dt></dl></dd></dl></dd></dl></div><div class="list-of-tables"><p><b>List of Tables</b></p><dl><dt>1.1. <a href="#cor-ebnf-table">Syntax of the Functional Subset of Orc (Cor)</a></dt><dt>1.2. <a href="#ops-table">Operators of Cor</a></dt><dt>1.3. <a href="#orc-ebnf-table">Basic Syntax of Orc</a></dt><dt>1.4. <a href="#advanced-ebnf-table">Advanced Syntax of Orc</a></dt><dt>4.1. <a href="#types-ebnf-table">Typed Orc</a></dt><dt>A.1. <a href="#full-ebnf-grammar">Complete Syntax of Orc</a></dt></dl></div><div class="preface" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="N10007"></a>Introduction</h2></div></div></div><p>
+                </a></span></dt><dt><span class="section"><a href="#N11825">4.1.3. Tuples</a></span></dt><dt><span class="section"><a href="#N11832">4.1.4. Combinators</a></span></dt><dt><span class="section"><a href="#N1189D">4.1.5. Conditionals</a></span></dt><dt><span class="section"><a href="#N118AE">4.1.6. Defined Functions</a></span></dt><dt><span class="section"><a href="#N1190A">4.1.7. Ascriptions</a></span></dt><dt><span class="section"><a href="#N1191C">4.1.8. Aliasing</a></span></dt><dt><span class="section"><a href="#N1192A">4.1.9. Datatypes</a></span></dt><dt><span class="section"><a href="#N1193B">4.1.10. Interacting with External Services</a></span></dt><dt><span class="section"><a href="#N11964">4.1.11. Assertions</a></span></dt></dl></dd><dt><span class="section"><a href="#N11975">4.2. Polymorphism</a></span></dt><dd><dl><dt><span class="section"><a href="#N1197C">4.2.1. Parametric types</a></span></dt><dt><span class="section"><a href="#N119B6">4.2.2. Parametric functions</a></span></dt><dt><span class="section"><a href="#N119C8">4.2.3. Generic calls</a></span></dt><dt><span class="section"><a href="#N119EB">4.2.4. Polymorphic aliases</a></span></dt><dt><span class="section"><a href="#N119FD">4.2.5. Polymorphic datatypes</a></span></dt></dl></dd><dt><span class="section"><a href="#N11A0C">4.3. Interacting with Java</a></span></dt><dt><span class="section"><a href="#N11A2D">4.4. Syntax of Typed Orc</a></span></dt></dl></dd><dt><span class="appendix"><a href="#N11C31">A. Complete Syntax of Orc</a></span></dt><dt><span class="appendix"><a href="#appendix.library">B. Standard Library</a></span></dt><dd><dl><dt><span class="section"><a href="#N11F27">B.1. Overview</a></span></dt><dt><span class="section"><a href="#N11F31">B.2. Types and Notation</a></span></dt><dt><span class="section"><a href="#N11F4D">B.3. Reference</a></span></dt><dd><dl><dt><span class="section"><a href="#N11F51">B.3.1. core.inc: Fundamental sites and operators.</a></span></dt><dt><span class="section"><a href="#N121E0">B.3.2. state.inc: General-purpose supplemental data structures.</a></span></dt><dt><span class="section"><a href="#N12876">B.3.3. idioms.inc: Higher-order Orc programming idioms.</a></span></dt><dt><span class="section"><a href="#N12AAB">B.3.4. list.inc: Operations on lists.</a></span></dt><dt><span class="section"><a href="#N12E8D">B.3.5. text.inc: Operations on strings.</a></span></dt><dt><span class="section"><a href="#N12F28">B.3.6. time.inc: Real and logical time.</a></span></dt><dt><span class="section"><a href="#N12F82">B.3.7. util.inc: Miscellaneous utility functions.</a></span></dt></dl></dd></dl></dd></dl></div><div class="list-of-tables"><p><b>List of Tables</b></p><dl><dt>1.1. <a href="#cor-ebnf-table">Syntax of the Functional Subset of Orc (Cor)</a></dt><dt>1.2. <a href="#ops-table">Operators of Cor</a></dt><dt>1.3. <a href="#orc-ebnf-table">Basic Syntax of Orc</a></dt><dt>1.4. <a href="#advanced-ebnf-table">Advanced Syntax of Orc</a></dt><dt>4.1. <a href="#types-ebnf-table">Typed Orc</a></dt><dt>A.1. <a href="#full-ebnf-grammar">Complete Syntax of Orc</a></dt></dl></div><div class="preface" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="N10007"></a>Introduction</h2></div></div></div><p>
 Orc is a programming language designed to make distributed and
 concurrent programs simple and intuitive to write. Orc expresses
 orchestration, a type of structured concurrency. It emphasizes the
@@ -24,7 +24,7 @@ Unless otherwise noted, all material in this document pertains to the
 Orc language implementation version
 0.9.9
 .
-</p></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="chapter.language"></a>Chapter&nbsp;1.&nbsp;The Orc Programming Language</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#N10019">1.1. Introduction</a></span></dt><dt><span class="section"><a href="#N10022">1.2. Cor: A Functional Subset</a></span></dt><dd><dl><dt><span class="section"><a href="#cor.constants">1.2.1. Constants</a></span></dt><dt><span class="section"><a href="#language.base.operators">1.2.2. Operators</a></span></dt><dt><span class="section"><a href="#N10334">1.2.3. Conditionals</a></span></dt><dt><span class="section"><a href="#cor.variables">1.2.4. Variables</a></span></dt><dt><span class="section"><a href="#cor.data">1.2.5. Data Structures</a></span></dt><dt><span class="section"><a href="#N104B5">1.2.6. Patterns</a></span></dt><dt><span class="section"><a href="#cor.functions">1.2.7. Functions</a></span></dt><dt><span class="section"><a href="#N105FD">1.2.8. Comments</a></span></dt></dl></dd><dt><span class="section"><a href="#N10612">1.3. Orc: Orchestrating services</a></span></dt><dd><dl><dt><span class="section"><a href="#N106F1">1.3.1. Communicating with external services</a></span></dt><dt><span class="section"><a href="#N1074B">1.3.2. The concurrency combinators of Orc</a></span></dt><dt><span class="section"><a href="#N108C7">1.3.3. Revisiting Cor expressions</a></span></dt><dt><span class="section"><a href="#N109D1">1.3.4. Time</a></span></dt></dl></dd><dt><span class="section"><a href="#N109FD">1.4. Advanced Features of Orc</a></span></dt><dd><dl><dt><span class="section"><a href="#N10B23">1.4.1. Special call forms</a></span></dt><dt><span class="section"><a href="#N10BBD">1.4.2. Extensions to pattern matching</a></span></dt><dt><span class="section"><a href="#section.orc.datatypes">1.4.3. Datatypes</a></span></dt><dt><span class="section"><a href="#N10C2D">1.4.4. New forms of declarations</a></span></dt></dl></dd></dl></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N10019"></a>1.1.&nbsp;Introduction</h2></div></div></div><p>
+</p></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="chapter.language"></a>Chapter&nbsp;1.&nbsp;The Orc Programming Language</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#N10019">1.1. Introduction</a></span></dt><dt><span class="section"><a href="#N10022">1.2. Cor: A Functional Subset</a></span></dt><dd><dl><dt><span class="section"><a href="#cor.constants">1.2.1. Constants</a></span></dt><dt><span class="section"><a href="#language.base.operators">1.2.2. Operators</a></span></dt><dt><span class="section"><a href="#N10334">1.2.3. Conditionals</a></span></dt><dt><span class="section"><a href="#cor.variables">1.2.4. Variables</a></span></dt><dt><span class="section"><a href="#cor.data">1.2.5. Data Structures</a></span></dt><dt><span class="section"><a href="#N104B5">1.2.6. Patterns</a></span></dt><dt><span class="section"><a href="#cor.functions">1.2.7. Functions</a></span></dt><dt><span class="section"><a href="#N105FD">1.2.8. Comments</a></span></dt></dl></dd><dt><span class="section"><a href="#N10612">1.3. Orc: Orchestrating services</a></span></dt><dd><dl><dt><span class="section"><a href="#N106F1">1.3.1. Communicating with external services</a></span></dt><dt><span class="section"><a href="#N1074B">1.3.2. The concurrency combinators of Orc</a></span></dt><dt><span class="section"><a href="#N108C7">1.3.3. Revisiting Cor expressions</a></span></dt><dt><span class="section"><a href="#N109D1">1.3.4. Time</a></span></dt></dl></dd><dt><span class="section"><a href="#N109FD">1.4. Advanced Features of Orc</a></span></dt><dd><dl><dt><span class="section"><a href="#N10B6F">1.4.1. Special call forms</a></span></dt><dt><span class="section"><a href="#N10C09">1.4.2. Extensions to pattern matching</a></span></dt><dt><span class="section"><a href="#section.orc.datatypes">1.4.3. Datatypes</a></span></dt><dt><span class="section"><a href="#N10C79">1.4.4. New forms of declarations</a></span></dt><dt><span class="section"><a href="#N10CB5">1.4.5. Exceptions in Orc</a></span></dt></dl></dd></dl></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N10019"></a>1.1.&nbsp;Introduction</h2></div></div></div><p>
 This chapter describes the Orc programming language in three steps. In Section 1.2, we
 discuss a small subset of Orc called Cor. Cor is a pure functional language,
 which has no features for concurrency, has no state, and does not communicate 
@@ -1051,14 +1051,14 @@ target of a call, a special syntax for writing calls in an object-oriented style
 extensions to pattern matching, and new forms of declarations, and ML-style
 datatypes.
 </p><p>
-The following figure summarizes further extensions to the syntax of Orc. 
-The Orc and Cor grammar rules presented earlier are abbreviated by ellipses (...).
-The item G+ means "one or more instances of G concatenated together". 
-</p><p>
 <div class="table"><a name="advanced-ebnf-table"></a><p class="title"><b>Table&nbsp;1.4.&nbsp;Advanced Syntax of Orc</b></p><div class="table-contents"><table summary="Advanced Syntax of Orc" border="0" width="80%"><colgroup><col align="right"><col align="center"><col align="left"><col align="left"><col align="left"></colgroup><tbody><tr><td align="right">E</td><td align="center">::=</td><td align="left">...</td><td align="left">
                                     <span class="emphasis"><em>Expression</em></span>
                                 </td><td align="left">&nbsp;</td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E G+</td><td align="left">&nbsp;</td><td align="left">
                                     <span class="emphasis"><em>generalized call</em></span>
+                                </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">T</td><td align="left">&nbsp;</td><td align="left">
+                                    <span class="emphasis"><em>throw expression</em></span>
+                                </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">TC</td><td align="left">&nbsp;</td><td align="left">
+                                    <span class="emphasis"><em>try/catch block</em></span>
                                 </td></tr><tr><td align="right">G</td><td align="center">::=</td><td align="left">&nbsp;</td><td align="left">
                                     <span class="emphasis"><em>Argument group</em></span>
                                 </td><td align="left">&nbsp;</td></tr><tr><td align="right">&nbsp;</td><td align="center">&nbsp;</td><td align="left"> <code class="code">(</code> E <code class="code">,</code> ... <code class="code">,</code> E <code class="code">)</code> </td><td align="left">&nbsp;</td><td align="left">
@@ -1091,8 +1091,14 @@ The item G+ means "one or more instances of G concatenated together".
                                     <span class="emphasis"><em>inclusion</em></span>
                                 </td></tr><tr><td align="right">DT</td><td align="center">::=</td><td align="left"> X<code class="code">(<span class="hl-variable">_</span>,</code> ... <code class="code">,<span class="hl-variable">_</span>)</code> </td><td align="left">
                                     <span class="emphasis"><em>Datatype</em></span>
+                                </td><td align="left">&nbsp;</td></tr><tr><td align="right">T</td><td align="center">::=</td><td align="left"> <code class="code"><span class="hl-keyword">throw</span> </code> E</td><td align="left">
+                                    <span class="emphasis"><em>Throw</em></span>
+                                </td><td align="left">&nbsp;</td></tr><tr><td align="right">TC</td><td align="center">::=</td><td align="left"> <code class="code"><span class="hl-keyword">try</span> ( </code> E <code class="code"> ) </code> C+</td><td align="left">
+                                    <span class="emphasis"><em>Try/Catch</em></span>
+                                </td><td align="left">&nbsp;</td></tr><tr><td align="right">C</td><td align="center">::=</td><td align="left"> <code class="code"><span class="hl-keyword">catch</span> ( </code> P <code class="code"> ) </code> E</td><td align="left">
+                                    <span class="emphasis"><em>Exception Handler</em></span>
                                 </td><td align="left">&nbsp;</td></tr></tbody></table></div></div><br class="table-break">
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10B23"></a>1.4.1.&nbsp;Special call forms</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10B26"></a>1.4.1.1.&nbsp;The <code class="code">.</code> notation</h4></div></div></div><p>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10B6F"></a>1.4.1.&nbsp;Special call forms</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10B72"></a>1.4.1.1.&nbsp;The <code class="code">.</code> notation</h4></div></div></div><p>
 In many object-oriented programming languages, one calls a method or accesses a field of an
 object using the dot operator; for example, <code class="code"><span class="hl-variable">obj</span>.<span class="hl-site">m</span>()</code> calls the method
 <code class="code"><span class="hl-variable">m</span></code> of the object <code class="code"><span class="hl-variable">obj</span></code>. 
@@ -1117,7 +1123,7 @@ A call such as <code class="code"><span class="hl-variable">c</span>.<span class
 is to put values on the channel. Next, that site is called on the argument
 <code class="code"><span class="hl-literal">6</span></code>, sending 6 on the channel. Readers familiar with functional programming
 will recognize this technique as <span class="emphasis"><em>currying</em></span>.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10B7C"></a>1.4.1.2.&nbsp;Currying</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10BC8"></a>1.4.1.2.&nbsp;Currying</h4></div></div></div><p>
 It is sometimes useful to <span class="emphasis"><em>stage</em></span> the arguments to a function; that is,
 rather than writing a function on two arguments, one instead writes a function on one
 argument which returns a function taking the second argument and performing the remainder
@@ -1167,7 +1173,7 @@ equivalent:
 <span class="hl-site">f</span>(<span class="hl-literal">4</span>)
 </pre>
 
-</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10BBD"></a>1.4.2.&nbsp;Extensions to pattern matching</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10BC0"></a>1.4.2.1.&nbsp;As pattern</h4></div></div></div><p>
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10C09"></a>1.4.2.&nbsp;Extensions to pattern matching</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10C0C"></a>1.4.2.1.&nbsp;As pattern</h4></div></div></div><p>
 In taking apart a value with a pattern, it is often useful to capture intermediate results.
 
 <pre class="programlisting">
@@ -1182,7 +1188,7 @@ sub-pattern. Here is an equivalent version of the above code.
 <pre class="programlisting">
 <span class="hl-keyword">val</span> ((<span class="hl-variable">ax</span>,<span class="hl-variable">ay</span>) <span class="hl-keyword">as</span> <span class="hl-variable">a</span>, (<span class="hl-variable">bx</span>,<span class="hl-variable">by</span>) <span class="hl-keyword">as</span> <span class="hl-variable">b</span>) = ((<span class="hl-literal">1</span>,<span class="hl-literal">2</span>),(<span class="hl-literal">3</span>,<span class="hl-literal">4</span>))
 </pre>
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10BCE"></a>1.4.2.2.&nbsp;Equality pattern</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10C1A"></a>1.4.2.2.&nbsp;Equality pattern</h4></div></div></div><p>
 When a variable occurs in a pattern, it is bound to the value being matched against that pattern. What
 if instead we would like to use the value of a bound variable as a test pattern, in a way similar to
 a literal value like <code class="code"><span class="hl-literal">0</span></code>? 
@@ -1245,7 +1251,7 @@ need to distinguish between successfully returning a value (<code class="code"><
 completing but having no meaningful value to return (<code class="code"><span class="hl-site">None</span>()</code>). For example, a lookup
 function might return <code class="code"><span class="hl-site">Some</span>(<span class="hl-variable">result</span>)</code> if it found a result, or return <code class="code"><span class="hl-site">None</span>()</code>
 if it successfully performed the lookup but found no suitable result.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10C2D"></a>1.4.4.&nbsp;New forms of declarations</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="section.orc.class"></a>1.4.4.1.&nbsp;
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10C79"></a>1.4.4.&nbsp;New forms of declarations</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="section.orc.class"></a>1.4.4.1.&nbsp;
 
                         <code class="code"><span class="hl-keyword">class</span></code> declaration</h4></div></div></div><p>
 When Orc is run on top of an object-oriented programming language, classes
@@ -1267,8 +1273,7 @@ This instance of String is a Java object; its methods are called and its fields
 are accessed using the dot (<code class="code">.</code>) notation, just as one would expect
 in Java.  For complete details of how Orc interacts with Java, see
 <a class="link" href="#section.services.java" title="3.2.&nbsp; class Sites">Java Integration</a>.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10C4F"></a>1.4.4.2.&nbsp;
-
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10C9B"></a>1.4.4.2.&nbsp;
                         <code class="code"><span class="hl-keyword">include</span></code> declaration</h4></div></div></div><p>
 It is often convenient to group related declarations into units that can be
 shared between programs. The <code class="code"><span class="hl-keyword">include</span></code> declaration offers a simple
@@ -1297,16 +1302,127 @@ replaced the include declaration. An included file may itself contain
 Note that these declarations still obey the rules of lexical scope. Also, Orc 
 does not detect shared declarations; if the same file is included twice, its 
 declarations occur twice.
-</p></div></div></div></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="chapter.methodology"></a>Chapter&nbsp;2.&nbsp;Programming Methodology</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#N10C73">2.1. Syntactic and Stylistic Conventions</a></span></dt><dd><dl><dt><span class="section"><a href="#N10C78">2.1.1. Parallel combinator</a></span></dt><dt><span class="section"><a href="#N10CB4">2.1.2. Sequential combinator</a></span></dt><dt><span class="section"><a href="#style.pruning">2.1.3. Pruning combinator</a></span></dt><dt><span class="section"><a href="#N10D67">2.1.4. Declarations</a></span></dt></dl></dd><dt><span class="section"><a href="#N10DA0">2.2. Programming Idioms</a></span></dt><dd><dl><dt><span class="section"><a href="#N10DA5">2.2.1. Channels</a></span></dt><dt><span class="section"><a href="#N10DEC">2.2.2. Lists</a></span></dt><dt><span class="section"><a href="#N10E0C">2.2.3. Streams</a></span></dt><dt><span class="section"><a href="#N10E37">2.2.4. Arrays</a></span></dt><dt><span class="section"><a href="#N10E72">2.2.5. Mutable Storage</a></span></dt><dt><span class="section"><a href="#N10ED1">2.2.6. Loops</a></span></dt><dt><span class="section"><a href="#N10EEA">2.2.7. Parallel Matching</a></span></dt><dt><span class="section"><a href="#N10F27">2.2.8. Fork-join</a></span></dt><dt><span class="section"><a href="#N10FB4">2.2.9. Sequential Fork-Join</a></span></dt><dt><span class="section"><a href="#N10FCF">2.2.10. Priority Poll</a></span></dt><dt><span class="section"><a href="#N10FF2">2.2.11. Parallel Or</a></span></dt><dt><span class="section"><a href="#N1102F">2.2.12. Timeout</a></span></dt><dt><span class="section"><a href="#N11082">2.2.13. Priority</a></span></dt><dt><span class="section"><a href="#N11092">2.2.14. Metronome</a></span></dt><dt><span class="section"><a href="#N110A8">2.2.15. Routing</a></span></dt><dt><span class="section"><a href="#N11154">2.2.16. Interruption</a></span></dt><dt><span class="section"><a href="#N11186">2.2.17. Lifting</a></span></dt><dt><span class="section"><a href="#N11197">2.2.18. Fold</a></span></dt></dl></dd><dt><span class="section"><a href="#N111E4">2.3. Larger Examples</a></span></dt><dd><dl><dt><span class="section"><a href="#N111EC">2.3.1. Dining Philosophers</a></span></dt><dt><span class="section"><a href="#methodology.examples.hygenic">2.3.2. Hygienic Dining Philosophers</a></span></dt><dt><span class="section"><a href="#N11283">2.3.3. Readers-Writers</a></span></dt><dt><span class="section"><a href="#N112B1">2.3.4. Quicksort</a></span></dt><dt><span class="section"><a href="#N11310">2.3.5. Meeting Scheduler</a></span></dt></dl></dd></dl></div><p>
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10CB5"></a>1.4.5.&nbsp;Exceptions in Orc</h3></div></div></div><p>
+An experimental feature recently added to Orc is exceptions (as of revsion 1183).
+Exceptions add two new expressions to the Orc syntax: try/catch blocks, and 
+throw expressions.  Throw expressions are simple - using the keyword <code class="code"><span class="hl-keyword">throw</span></code>,
+they take an Orc expression, evaluate it, and raise the expression's published value to
+be caught by an enclosing exception handler.  Note that if the enclosed expression 
+publishes multiple values, mulitple exceptions will be raised.  Examples of throw expressions:
+</p><p>
+<div class="itemizedlist"><ul type="disc"><li><code class="code"><span class="hl-keyword">throw</span> <span class="hl-literal">3</span></code></li><li><code class="code"><span class="hl-keyword">throw</span> <span class="hl-literal">"error"</span></code></li><li><code class="code"><span class="hl-keyword">throw</span> (<span class="hl-literal">3</span> <span class="hl-combinator">|</span> <span class="hl-literal">4</span>)</code></li></ul></div>
+</p><p>
+Exceptions are caught via Try/Catch blocks.  Try blocks enclose the
+Orc exception to execute, which may or may not throw any exceptions.
+Catch handlers then specify patterns against which exception values should be
+matched against, along with a corresponding handler to call if the 
+exception value matches the pattern.  Multiple catch statements 
+can be specified, and the first match that occurs is the one executed.
+In the following example, two exceptions are thrown by the try block, and one
+value published.
+</p><p>
+<pre class="programlisting">
+<span class="hl-comment">{- simple exception expressions -}</span>
+<span class="hl-keyword">try</span>(<span class="hl-literal">0</span> <span class="hl-combinator">|</span> <span class="hl-keyword">throw</span> <span class="hl-literal">1</span> <span class="hl-combinator">|</span> <span class="hl-keyword">throw</span> <span class="hl-literal">2</span>) 
+<span class="hl-keyword">catch</span> (<span class="hl-literal">1</span>) <span class="hl-literal">"one"</span>
+<span class="hl-keyword">catch</span> (<span class="hl-variable">X</span>) <span class="hl-variable">X</span>
+</pre>
+</p><p>
+Also like Java, exception handlers can be nested - if the immediately enclosing
+Try/Catch block has no handler than matches the thrown exception, the
+Orc interpreter attempts to match against the next enclosing handler.  If
+no handler matches the exception (or no enclosing handler exists) the exception
+is dropped (ie, treated as a stop) and an error is reported to the interpreter.
+</p><p>
+<pre class="programlisting">
+<span class="hl-comment">{- a contrived nested handler example -}</span>
+<span class="hl-keyword">try</span>(
+  <span class="hl-keyword">try</span>(<span class="hl-keyword">throw</span> <span class="hl-literal">3</span>)
+  <span class="hl-keyword">catch</span> (<span class="hl-literal">1</span>) <span class="hl-literal">"one"</span>
+)
+<span class="hl-keyword">catch</span> (<span class="hl-variable">X</span>) <span class="hl-variable">X</span>
+</pre>
+</p><p>
+When combining exceptions with the combinators, ie the pruning or
+otherwise combinators, emantically, exceptions are silent.  For example,
+in the following expression, both <code class="code"><span class="hl-literal">0</span></code> and
+<code class="code"><span class="hl-literal">1</span></code> are published - <code class="code"><span class="hl-keyword">throw</span> <span class="hl-literal">0</span></code> is silent, not publishing
+any value, causing the otherwise combinator to execute its alternate expression:
+</p><p>
+<pre class="programlisting">
+<span class="hl-comment">{- the throw expression is treated as a silent by the combinators -}</span>
+<span class="hl-keyword">try</span> (<span class="hl-keyword">throw</span> <span class="hl-literal">0</span><span class="hl-combinator">;</span> <span class="hl-literal">1</span>) <span class="hl-keyword">catch</span>(<span class="hl-variable">X</span>) <span class="hl-variable">X</span>
+</pre>
+</p><p>
+Similarly, exceptions thrown with a pruning combinator does not terminate 
+the expression (since the throw is treated as a silent), and throwing a silent expression
+(ie, <code class="code"><span class="hl-keyword">throw</span> <span class="hl-keyword">stop</span></code>) results in no exception being thrown - the entire
+expression functions as a stop.
+</p><p>
+Finally, Orc also allows Java exceptions to be matched against by Orc exception
+handlers.  This is especially useful when calling Java functions directly,
+which might throw exceptions in cases of failure, seen here in this extended
+example.  The key is to pattern match against the <code class="code"><span class="hl-variable">FileNotFoundException</span></code>,
+since the Orc engine will now propogate any exceptions thrown by a site to 
+enclosing catch handler:
+</p><p>
+<pre class="programlisting">
+<span class="hl-comment">{- catching exceptions thrown by Java sites via pattern matching -}</span>
+<span class="hl-keyword">class</span> <span class="hl-variable">FileInputStream</span> = <span class="hl-variable">java</span>.<span class="hl-variable">io</span>.<span class="hl-variable">FileInputStream</span>
+<span class="hl-keyword">class</span> <span class="hl-variable">InputStreamReader</span> = <span class="hl-variable">java</span>.<span class="hl-variable">io</span>.<span class="hl-variable">InputStreamReader</span>
+<span class="hl-keyword">class</span> <span class="hl-variable">StringBuilder</span> = <span class="hl-variable">java</span>.<span class="hl-variable">lang</span>.<span class="hl-variable">StringBuilder</span>
+<span class="hl-keyword">class</span> <span class="hl-variable">FileNotFoundException</span> = <span class="hl-variable">java</span>.<span class="hl-variable">io</span>.<span class="hl-variable">FileNotFoundException</span>
+
+<span class="hl-keyword">def</span> <span class="hl-site">GetContent</span>(<span class="hl-variable">InputStreamReader</span>) :: <span class="hl-variable">String</span>
+<span class="hl-keyword">def</span> <span class="hl-site">GetContent</span>(<span class="hl-variable">in</span>) =
+  <span class="hl-keyword">val</span> <span class="hl-variable">buf</span> = <span class="hl-site">Array</span>[<span class="hl-variable">Integer</span>](<span class="hl-literal">1024</span>, <span class="hl-literal">"char"</span>)
+  <span class="hl-keyword">val</span> <span class="hl-variable">out</span> = <span class="hl-site">StringBuilder</span>()
+  <span class="hl-keyword">def</span> <span class="hl-site">loop</span>(<span class="hl-variable">Integer</span>) :: <span class="hl-variable">String</span>
+  <span class="hl-keyword">def</span> <span class="hl-site">loop</span>(<span class="hl-variable">len</span>) =
+    <span class="hl-keyword">if</span> <span class="hl-variable">len</span> &lt; <span class="hl-literal">0</span> <span class="hl-keyword">then</span>
+      <span class="hl-variable">out</span>.<span class="hl-site">toString</span>()
+    <span class="hl-keyword">else</span>
+      <span class="hl-variable">out</span>.<span class="hl-site">append</span>(<span class="hl-variable">buf</span>, <span class="hl-literal">0</span>, <span class="hl-variable">len</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+      <span class="hl-site">loop</span>(<span class="hl-variable">in</span>.<span class="hl-site">read</span>(<span class="hl-variable">buf</span>))
+  <span class="hl-site">loop</span>(<span class="hl-variable">in</span>.<span class="hl-site">read</span>(<span class="hl-variable">buf</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-variable">out</span>.<span class="hl-site">toString</span>()
+
+
+<span class="hl-keyword">def</span> <span class="hl-site">printFile</span>(<span class="hl-variable">File</span>) = 
+<span class="hl-site">InputStreamReader</span>(<span class="hl-site">FileInputStream</span>(<span class="hl-variable">File</span>)) <span class="hl-combinator">&gt;</span><span class="hl-variable">reader</span><span class="hl-combinator">&gt;</span>
+<span class="hl-site">println</span>(<span class="hl-site">GetContent</span>(<span class="hl-variable">reader</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+<span class="hl-keyword">stop</span>
+
+<span class="hl-keyword">try</span>(<span class="hl-site">printFile</span>(<span class="hl-literal">"non/existant/file"</span>)) 
+<span class="hl-keyword">catch</span> (<span class="hl-site">FileNotFoundException</span>(<span class="hl-variable">E</span>)) <span class="hl-literal">"could not read file: "</span> + <span class="hl-variable">e</span>.<span class="hl-site">message</span>()
+
+</pre>
+</p><p>
+This functionality also allows certain Orc runtime errors to be caught.
+Here are a few examples of runtime errors which might occur, and a full
+list can be found in the 
+<a class="link" href="http://orc.csres.utexas.edu/javadoc/STABLE/orc/error/runtime/TokenException.html" target="_top">Javadoc</a>.
+</p><p>
+<div class="itemizedlist"><ul type="disc"><li><code class="code"><span class="hl-variable">ArgumentTypeMismatchException</span></code></li><li><code class="code"><span class="hl-variable">StackLimitReachedError</span></code></li><li><code class="code"><span class="hl-variable">MessageNotUnderstoodException</span></code></li></ul></div>
+</p><p>
+<pre class="programlisting">
+<span class="hl-comment">{- Detecting runtime errors using exceptions -}</span>
+<span class="hl-keyword">class</span> <span class="hl-variable">ArgumentTypeMismatchException</span> = <span class="hl-variable">orc</span>.<span class="hl-variable">error</span>.<span class="hl-variable">runtime</span>.<span class="hl-variable">ArgumentTypeMismatchException</span>
+
+<span class="hl-keyword">try</span>(
+  <span class="hl-keyword">if</span> <span class="hl-literal">3</span> <span class="hl-keyword">then</span> <span class="hl-literal">"foo"</span>
+) <span class="hl-keyword">catch</span> (<span class="hl-site">ArgumentTypeMismatchException</span>(<span class="hl-variable">e</span>)) <span class="hl-literal">"error"</span>
+</pre>
+</p></div></div></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="chapter.methodology"></a>Chapter&nbsp;2.&nbsp;Programming Methodology</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#N10D19">2.1. Syntactic and Stylistic Conventions</a></span></dt><dd><dl><dt><span class="section"><a href="#N10D1E">2.1.1. Parallel combinator</a></span></dt><dt><span class="section"><a href="#N10D5A">2.1.2. Sequential combinator</a></span></dt><dt><span class="section"><a href="#style.pruning">2.1.3. Pruning combinator</a></span></dt><dt><span class="section"><a href="#N10E0D">2.1.4. Declarations</a></span></dt></dl></dd><dt><span class="section"><a href="#N10E46">2.2. Programming Idioms</a></span></dt><dd><dl><dt><span class="section"><a href="#N10E4B">2.2.1. Channels</a></span></dt><dt><span class="section"><a href="#N10E92">2.2.2. Lists</a></span></dt><dt><span class="section"><a href="#N10EB2">2.2.3. Streams</a></span></dt><dt><span class="section"><a href="#N10EDD">2.2.4. Arrays</a></span></dt><dt><span class="section"><a href="#N10F18">2.2.5. Mutable Storage</a></span></dt><dt><span class="section"><a href="#N10F77">2.2.6. Loops</a></span></dt><dt><span class="section"><a href="#N10F90">2.2.7. Parallel Matching</a></span></dt><dt><span class="section"><a href="#N10FCD">2.2.8. Fork-join</a></span></dt><dt><span class="section"><a href="#N1105A">2.2.9. Sequential Fork-Join</a></span></dt><dt><span class="section"><a href="#N11075">2.2.10. Priority Poll</a></span></dt><dt><span class="section"><a href="#N11098">2.2.11. Parallel Or</a></span></dt><dt><span class="section"><a href="#N110D5">2.2.12. Timeout</a></span></dt><dt><span class="section"><a href="#N11128">2.2.13. Priority</a></span></dt><dt><span class="section"><a href="#N11138">2.2.14. Metronome</a></span></dt><dt><span class="section"><a href="#N1114E">2.2.15. Routing</a></span></dt><dt><span class="section"><a href="#N111FA">2.2.16. Interruption</a></span></dt><dt><span class="section"><a href="#N1122C">2.2.17. Lifting</a></span></dt><dt><span class="section"><a href="#N1123D">2.2.18. Fold</a></span></dt></dl></dd><dt><span class="section"><a href="#N1128A">2.3. Larger Examples</a></span></dt><dd><dl><dt><span class="section"><a href="#N11292">2.3.1. Dining Philosophers</a></span></dt><dt><span class="section"><a href="#methodology.examples.hygenic">2.3.2. Hygienic Dining Philosophers</a></span></dt><dt><span class="section"><a href="#N11329">2.3.3. Readers-Writers</a></span></dt><dt><span class="section"><a href="#N11357">2.3.4. Quicksort</a></span></dt><dt><span class="section"><a href="#N113B6">2.3.5. Meeting Scheduler</a></span></dt></dl></dd></dl></div><p>
 In <a class="link" href="#chapter.language" title="Chapter&nbsp;1.&nbsp;The Orc Programming Language">Chapter 1</a>, we described the syntax and semantics of the Orc language. 
 Now, we turn our attention to how the language is used in practice, with guidelines on style and programming 
 methodology, including a number of common concurrency patterns.
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N10C73"></a>2.1.&nbsp;Syntactic and Stylistic Conventions</h2></div></div></div><p>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N10D19"></a>2.1.&nbsp;Syntactic and Stylistic Conventions</h2></div></div></div><p>
 In this section we suggest some syntactic conventions for writing Orc programs. None of these 
 conventions are required by the parser; newlines are used only to disambiguate certain corner
 cases in parsing, and other whitespace is ignored. However, following programming convention 
 helps to improve the readability of programs, so that the programmer's intent is more readily apparent.
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10C78"></a>2.1.1.&nbsp;Parallel combinator</h3></div></div></div><p>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10D1E"></a>2.1.1.&nbsp;Parallel combinator</h3></div></div></div><p>
 When the combined expressions are small, write them all on one line.
 
 <pre class="programlisting">
@@ -1337,7 +1453,7 @@ combined parallel expressions together.
 ) <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> 
 <span class="bold"><strong>another expression</strong></span>
 </pre>
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10CB4"></a>2.1.2.&nbsp;Sequential combinator</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10D5A"></a>2.1.2.&nbsp;Sequential combinator</h3></div></div></div><p>
 When the combined expressions are small, write a cascade of sequential combinators
 all on the same line.
 </p><pre class="programlisting">
@@ -1435,7 +1551,7 @@ is equivalent to
 The translation uses a pruning combinator, but we don't need to write the combinator, 
 name an irrelevant variable, or worry about precedence (since the expression is enclosed
 in parentheses as part of the call).
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10D67"></a>2.1.4.&nbsp;Declarations</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10E0D"></a>2.1.4.&nbsp;Declarations</h3></div></div></div><p>
 Declarations should always end with a newline. 
 
 <pre class="programlisting">
@@ -1472,13 +1588,13 @@ Apply this style recursively; if a def appears within a def, indent its contents
 </pre>
 
 
-</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N10DA0"></a>2.2.&nbsp;Programming Idioms</h2></div></div></div><p>
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N10E46"></a>2.2.&nbsp;Programming Idioms</h2></div></div></div><p>
 In this section we give Orc implementations of some standard idioms from
 concurrent and functional programming. Despite the austerity of Orc's four
 combinators, we are able to encode a variety of idioms straightforwardly.
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10DA5"></a>2.2.1.&nbsp;Channels</h3></div></div></div><p>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10E4B"></a>2.2.1.&nbsp;Channels</h3></div></div></div><p>
 Orc has no communication primitives like pi-calculus
-channels<sup>[<a href="#ftn.N10DAA" name="N10DAA" class="footnote">1</a>]</sup> or Erlang mailboxes<sup>[<a href="#ftn.N10DB1" name="N10DB1" class="footnote">2</a>]</sup>. Instead, it makes use of sites
+channels<sup>[<a href="#ftn.N10E50" name="N10E50" class="footnote">1</a>]</sup> or Erlang mailboxes<sup>[<a href="#ftn.N10E57" name="N10E57" class="footnote">2</a>]</sup>. Instead, it makes use of sites
 to create channels of communication. 
 </p><p>
 The most frequently used of these sites is <code class="code"><span class="hl-variable">Buffer</span></code>. When called, it
@@ -1495,7 +1611,7 @@ once <code class="code"><span class="hl-variable">c</span></code> becomes empty.
 calling either <code class="code"><span class="hl-variable">c</span>.<span class="hl-site">close</span>()</code>, which returns a signal once
 <code class="code"><span class="hl-variable">c</span></code> becomes empty, or <code class="code"><span class="hl-variable">c</span>.<span class="hl-site">closenb</span>()</code>, which returns a
 signal immediately.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10DEC"></a>2.2.2.&nbsp;Lists</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10E92"></a>2.2.2.&nbsp;Lists</h3></div></div></div><p>
 In the section on Cor, we were introduced to lists: how to construct them,
 and how to match them against patterns. While it is certainly feasible to
 write a specific function with an appropriate pattern match every time we
@@ -1520,7 +1636,7 @@ for most of the standard list functions, such as <code class="code"><span class=
 list functions internally take advantage of concurrency to make use of any available parallelism; for
 example, the <code class="code"><span class="hl-variable">map</span></code> function dispatches all of the mapped calls concurrently, and assembles
 the result list once they all return using a fork-join.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10E0C"></a>2.2.3.&nbsp;Streams</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10EB2"></a>2.2.3.&nbsp;Streams</h3></div></div></div><p>
 Sometimes a source of data is not explicitly represented by a list or other data structure. Instead,
 it is made available through a site, which returns the values one at a time, each time it is called.
 We call such a site a <em class="firstterm">stream</em>. It is analogous to an iterator in a language 
@@ -1547,7 +1663,7 @@ values put on the channel as they become available:
 <span class="hl-site">repeat</span>(<span class="hl-variable">c</span>.<span class="hl-variable">get</span>)
 </pre>
 
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10E37"></a>2.2.4.&nbsp;Arrays</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10EDD"></a>2.2.4.&nbsp;Arrays</h3></div></div></div><p>
 While lists are a very useful data structure, they are not indexed; it is not possible to get the nth element of
 a list in constant time. However, this capability is often needed in practice, so the Orc standard library
 provides a function <code class="code"><span class="hl-variable">IArray</span></code> to create immutable arrays. Once initialized, an immutable array cannot
@@ -1590,7 +1706,7 @@ addresses and would like to send the message <code class="code"><span class="hl-
 <span class="hl-site">upto</span>(<span class="hl-variable">n</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">i</span><span class="hl-combinator">&gt;</span> <span class="hl-site">A</span>(<span class="hl-variable">i</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">address</span><span class="hl-combinator">&gt;</span> <span class="hl-site">Email</span>(<span class="hl-variable">address</span>, <span class="hl-variable">m</span>)
 </pre>
 
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10E72"></a>2.2.5.&nbsp;Mutable Storage</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10F18"></a>2.2.5.&nbsp;Mutable Storage</h3></div></div></div><p>
 Variables in Orc are immutable. There is no assignment operator, and there is no way to
 change the value of a bound variable. However, it is often useful to have mutable state
 when writing certain algorithms. The Orc library contains two sites that offer simple 
@@ -1646,7 +1762,7 @@ they have been studied extensively in the context of the
 </p><p>
 A word of caution: References, cells, and other mutable objects may be accessed concurrently
 by many different parts of an Orc program, so race conditions may arise. 
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10EB2"></a>2.2.5.1.&nbsp;Reference Syntax</h4></div></div></div><p>Orc provides syntactic sugar for reading and writing mutable storage:</p><div class="itemizedlist"><ul type="disc"><li><code class="code"><span class="hl-variable">x</span><span class="hl-site">?</span></code> is equivalent to <code class="code"><span class="hl-variable">x</span>.<span class="hl-site">read</span>()</code>. This operator
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10F58"></a>2.2.5.1.&nbsp;Reference Syntax</h4></div></div></div><p>Orc provides syntactic sugar for reading and writing mutable storage:</p><div class="itemizedlist"><ul type="disc"><li><code class="code"><span class="hl-variable">x</span><span class="hl-site">?</span></code> is equivalent to <code class="code"><span class="hl-variable">x</span>.<span class="hl-site">read</span>()</code>. This operator
 is of equal precedence with the dot operator and function application, so
 you can write things like <code class="code"><span class="hl-variable">x</span>.<span class="hl-variable">y</span><span class="hl-site">?</span>.<span class="hl-variable">v</span><span class="hl-site">?</span></code>. This operator is very similar
 to the C languages's <code class="code">*</code> operator, but is postfix instead of prefix.
@@ -1660,7 +1776,7 @@ but lower precedence than any of the other operators.</li></ul></div><p>Here is 
   <span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">r</span> <span class="hl-site">:=</span> <span class="hl-literal">2</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"Wrote 2"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
 <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">r</span> <span class="hl-site">:=</span> <span class="hl-literal">3</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"Wrote 3"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
 <span class="hl-combinator">|</span> <span class="hl-variable">r</span><span class="hl-site">?</span>
-</pre></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10ED1"></a>2.2.6.&nbsp;Loops</h3></div></div></div><p>
+</pre></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10F77"></a>2.2.6.&nbsp;Loops</h3></div></div></div><p>
 Orc does not have any explicit looping constructs. Most of the time, where a loop
 might be used in other languages, Orc programs use one of two strategies: 
 </p><div class="orderedlist"><ol type="1"><li>When the iterations of the loops can occur in parallel, write an expression
@@ -1673,7 +1789,7 @@ tail recursion. Typically the data of interest is in a list, so one of the stand
 list functions, such as <code class="code"><span class="hl-variable">foldl</span></code>, applies. The library also defines a
 function <code class="code"><span class="hl-variable">while</span></code>, which handles many of the common use cases of
 while loops.
-</li></ol></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10EEA"></a>2.2.7.&nbsp;Parallel Matching</h3></div></div></div><p>
+</li></ol></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10F90"></a>2.2.7.&nbsp;Parallel Matching</h3></div></div></div><p>
 Matching a value against multiple patterns, as we have seen it so far, is a linear
 process, and requires a <code class="code"><span class="hl-keyword">def</span></code> whose clauses have patterns in their
 argument lists. Such a match is linear; each pattern is tried in order until
@@ -1748,7 +1864,7 @@ is <span class="emphasis"><em>not</em></span> equivalent to
 because the clauses are not mutually exclusive. Function clauses must attempt to match in linear order, whereas
 this expression matches all of the patterns in parallel. Here, it will match <code class="code">[<span class="hl-literal">5</span>]</code> two different ways,
 publishing both <code class="code"><span class="hl-literal">1</span></code> and <code class="code"><span class="hl-literal">2</span></code>.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10F27"></a>2.2.8.&nbsp;Fork-join</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10FCD"></a>2.2.8.&nbsp;Fork-join</h3></div></div></div><p>
 One of the most common concurrent idioms is a <em class="firstterm">fork-join</em>: run two processes concurrently,
 and wait for a result from each one. This is very easy to express in Orc. Whenever we write a <code class="code"><span class="hl-keyword">val</span></code>
 declaration, the process computing that value runs in parallel with the rest of the program. So if we write
@@ -1766,7 +1882,7 @@ translations. In fact, the fork-join we wrote above could be expressed even more
 <pre class="programlisting">
 (<span class="bold"><strong>F</strong></span>,<span class="bold"><strong>G</strong></span>)
 </pre>
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10F51"></a>2.2.8.1.&nbsp;Example: Machine initialization</h4></div></div></div><p>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10FF7"></a>2.2.8.1.&nbsp;Example: Machine initialization</h4></div></div></div><p>
 In Orc programs, we often use fork-join and recursion together to dispatch many tasks in parallel and wait
 for all of them to complete. Suppose that given a machine <code class="code"><span class="hl-variable">m</span></code>, calling <code class="code"><span class="hl-variable">m</span>.<span class="hl-site">init</span>()</code> 
 initializes <code class="code"><span class="hl-variable">m</span></code> and then publishes a signal when initialization is complete. The function 
@@ -1794,7 +1910,7 @@ finds the maximum of its arguments):
 Note that all bidders are called simultaneously. Also note that if some bidder fails 
 to return a bid, then the auction will never complete.  Later we will see
 a <a class="link" href="#example.auction-with-timeout" title="2.2.12.1.&nbsp;Auction with timeout">different solution</a> that addresses the issue of non-termination.
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10F88"></a>2.2.8.3.&nbsp;Example: Barrier synchronization</h4></div></div></div><p>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1102E"></a>2.2.8.3.&nbsp;Example: Barrier synchronization</h4></div></div></div><p>
 Consider an expression of the following form, where F and G are expressions and M and N are sites:
 
 <pre class="programlisting">
@@ -1811,7 +1927,7 @@ free in G, nor <code class="code"><span class="hl-variable">y</span></code> in F
 ( <span class="hl-site">M</span>() , <span class="hl-site">N</span>() )  <span class="hl-combinator">&gt;</span>(<span class="hl-variable">x</span>,<span class="hl-variable">y</span>)<span class="hl-combinator">&gt;</span>  ( <span class="bold"><strong>F</strong></span> <span class="hl-combinator">|</span> <span class="bold"><strong>G</strong></span> )
 </pre>
 
-</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10FB4"></a>2.2.9.&nbsp;Sequential Fork-Join</h3></div></div></div><p>
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1105A"></a>2.2.9.&nbsp;Sequential Fork-Join</h3></div></div></div><p>
 Previous sections illustrate how Orc can use the fork-join idiom to process a
 fixed set of expressions or a list of values.  Suppose that instead we wish to
 process all the publications of an expression F, and once this processing is
@@ -1834,7 +1950,7 @@ assume that we can detect when F halts. If, for example,
 F is publishing the lines of the file as it receives them over a socket,
 and the sending party never closes the socket, then F never halts and no
 signal is published.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10FCF"></a>2.2.10.&nbsp;Priority Poll</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11075"></a>2.2.10.&nbsp;Priority Poll</h3></div></div></div><p>
 The otherwise combinator is also useful for trying alternatives in sequence. Consider an expression of
 the form <code class="code"><span class="hl-variable">F</span><sub>0</sub> <span class="hl-combinator">;</span> <span class="hl-variable">F</span><sub>1</sub> <span class="hl-combinator">;</span> <span class="hl-variable">F</span><sub>2</sub> <span class="hl-combinator">;</span> ...</code>. If F<sub>i</sub> does not publish 
 and halts, then F<sub>i+1</sub> is executed. We can think of the F<sub>i</sub>'s as a series of 
@@ -1852,7 +1968,7 @@ available item if there is one, and halts otherwise.
 </p><pre class="programlisting">
 <span class="hl-keyword">def</span> <span class="hl-site">priorityPoll</span>([]) = <span class="hl-keyword">stop</span>
 <span class="hl-keyword">def</span> <span class="hl-site">priorityPoll</span>(<span class="hl-variable">b</span>:<span class="hl-variable">bs</span>) = <span class="hl-variable">b</span>.<span class="hl-site">getnb</span>() <span class="hl-combinator">;</span> <span class="hl-site">priorityPoll</span>(<span class="hl-variable">bs</span>)
-</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10FF2"></a>2.2.11.&nbsp;Parallel Or</h3></div></div></div><p>
+</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11098"></a>2.2.11.&nbsp;Parallel Or</h3></div></div></div><p>
 ``Parallel or'' is a classic idiom of parallel programming.  The ``parallel or'' operation executes two
 expressions F and G in parallel, each of which may publish a single boolean,
 and returns the disjunction of their publications as soon as possible. 
@@ -1880,7 +1996,7 @@ in parallel to wait for either variable to become <code class="code"><span class
 publish the result <code class="code"><span class="hl-literal">true</span></code>.  Since more than one of these expressions may
 publish <code class="code"><span class="hl-literal">true</span></code>, the surrounding <code class="code"><span class="hl-site">let</span>(...)</code> is necessary to select and
 publish only the first result.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1102F"></a>2.2.12.&nbsp;Timeout</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N110D5"></a>2.2.12.&nbsp;Timeout</h3></div></div></div><p>
 <em class="firstterm">Timeout</em>, the ability to execute an expression for at most a specified
 amount of time, is an essential ingredient of fault-tolerant and distributed
 programming.  Orc accomplishes timeout using pruning and the <code class="code"><span class="hl-variable">Rtimer</span></code> site.
@@ -1898,7 +2014,7 @@ one of the bidders does not respond. We can add a timeout so that a bidder has a
   <span class="hl-site">max</span>(<span class="hl-variable">bid</span>, <span class="hl-site">auction</span>(<span class="hl-variable">bs</span>))
 </pre><p>
 This version of the auction is guaranteed to complete within 8 seconds.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11051"></a>2.2.12.2.&nbsp;Detecting timeout</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N110F7"></a>2.2.12.2.&nbsp;Detecting timeout</h4></div></div></div><p>
 Sometimes, rather than just yielding a default value, we would like to
 determine whether an expression has timed out, and if so, perform some other
 computation.  To detect the timeout, we pair the result of the original
@@ -1923,7 +2039,7 @@ Instead of using a boolean and conditional, we could use pattern matching:
 <span class="hl-combinator">|</span> <span class="hl-variable">s</span> <span class="hl-combinator">&gt;</span><span class="hl-site">None</span>()<span class="hl-combinator">&gt;</span>  <span class="bold"><strong>H</strong></span>
 </pre>
 
-</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11082"></a>2.2.13.&nbsp;Priority</h3></div></div></div><p>
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11128"></a>2.2.13.&nbsp;Priority</h3></div></div></div><p>
 We can use a timer to give a window of priority to one computation over
 another.  In this example, we run expressions F and G concurrently.  For
 one second, F has priority; F's result is published immediately,
@@ -1937,7 +2053,7 @@ is published.
 <span class="hl-site">let</span>( <span class="hl-variable">y</span> <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">x</span> )
 </pre>
 
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11092"></a>2.2.14.&nbsp;Metronome</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11138"></a>2.2.14.&nbsp;Metronome</h3></div></div></div><p>
 A timer can be used to execute an expression repeatedly at regular
 intervals, for example to poll a service.
 Recall the definition of <code class="code"><span class="hl-variable">metronome</span></code> from the previous chapter:
@@ -1955,7 +2071,7 @@ the recursion is entirely contained within <code class="code"><span class="hl-va
   <span class="hl-site">metronome</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">"tick"</span>
 <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">500</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">metronome</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">"tock"</span>
 </pre>
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N110A8"></a>2.2.15.&nbsp;Routing</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1114E"></a>2.2.15.&nbsp;Routing</h3></div></div></div><p>
 The Orc combinators restrict the passing of values among their component
 expressions. However, some programs will require greater
 flexibility.  For example, <code class="code"><span class="hl-variable">F</span> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> <span class="hl-variable">G</span></code> provides F with the first 
@@ -1963,7 +2079,7 @@ publication of G, but what if F needs the first n publications of G?
 In cases like this we use channels or other stateful sites to redirect or 
 store publications.  We call this technique <em class="firstterm">routing</em>
 because it involves routing values from one execution to another.
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N110B3"></a>2.2.15.1.&nbsp;Generalizing Termination</h4></div></div></div><p>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11159"></a>2.2.15.1.&nbsp;Generalizing Termination</h4></div></div></div><p>
 The pruning combinator terminates an expression after it publishes its first
 value. We have <a class="link" href="#style.pruning" title="2.1.3.&nbsp;Pruning combinator">already seen</a> how to use 
 pruning just for its termination capability, without binding a variable, using 
@@ -1975,7 +2091,7 @@ Our implementation strategy is to route the publications of the expression
 through a channel, so that we can put the expression inside a pruning combinator
 and still see its publications without those publications terminating the
 expression. 
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N110C1"></a>2.2.15.1.1.&nbsp;Enhanced Timeout</h5></div></div></div><p>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N11167"></a>2.2.15.1.1.&nbsp;Enhanced Timeout</h5></div></div></div><p>
 As a simple demonstration of this concept, we construct a more powerful form 
 of timeout: allow an expression to execute, publishing arbitrarily many values 
 (not just one), until a time limit is reached.
@@ -1991,7 +2107,7 @@ triggering the call <code class="code"><span class="hl-variable">c</span>.<span 
 <code class="code"><span class="hl-variable">c</span>.<span class="hl-site">closenb</span>()</code> closes <code class="code"><span class="hl-variable">c</span></code> and publishes a signal,
 terminating F.  The library function <code class="code"><span class="hl-variable">repeat</span></code> is used to repeatedly
 take and publish values from <code class="code"><span class="hl-variable">c</span></code> until it is closed.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N110E3"></a>2.2.15.1.2.&nbsp;Test Pruning</h5></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N11189"></a>2.2.15.1.2.&nbsp;Test Pruning</h5></div></div></div><p>
 We can also decide to terminate based on the values published. This expression
 executes F until it publishes a negative number, and then terminates it:
 </p><pre class="programlisting">
@@ -2006,7 +2122,7 @@ Each value published by F is tested. If it is non-negative, it is placed on
 channel <code class="code"><span class="hl-variable">c</span></code> (silently) and read by <code class="code"><span class="hl-site">repeat</span>(<span class="hl-variable">c</span>.<span class="hl-variable">get</span>)</code>. 
 If it is negative, the channel is closed, publishing a signal and causing
 the termination of F.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N110F6"></a>2.2.15.1.3.&nbsp;Interrupt</h5></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N1119C"></a>2.2.15.1.3.&nbsp;Interrupt</h5></div></div></div><p>
 We can use routing to interrupt an expression based on a signal from
 elsewhere in the program.  We set up the expression like a timeout, but instead
 of waiting for a timer, we wait for the semaphore <code class="code"><span class="hl-variable">done</span></code> to be released. Any
@@ -2018,7 +2134,7 @@ may publish any number of values.
 <span class="hl-keyword">val</span> <span class="hl-variable">done</span> = <span class="hl-site">Semaphore</span>(<span class="hl-literal">0</span>)
 <span class="hl-site">repeat</span>(<span class="hl-variable">c</span>.<span class="hl-variable">get</span>) <span class="hl-combinator">&lt;</span><span class="hl-combinator">&lt;</span>
     <span class="bold"><strong>F</strong></span> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>.<span class="hl-site">put</span>(<span class="hl-variable">x</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
-  <span class="hl-combinator">|</span> <span class="hl-variable">done</span>.<span class="hl-site">acquire</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>.<span class="hl-site">closenb</span>()</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N1110A"></a>2.2.15.1.4.&nbsp;Publication Limit</h5></div></div></div><p>
+  <span class="hl-combinator">|</span> <span class="hl-variable">done</span>.<span class="hl-site">acquire</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>.<span class="hl-site">closenb</span>()</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N111B0"></a>2.2.15.1.4.&nbsp;Publication Limit</h5></div></div></div><p>
 We can limit an expression to <span class="emphasis"><em>n</em></span> publications,
 rather than just one. Here is an expression which executes F until
 it publishes 5 values, and then terminates it.
@@ -2035,7 +2151,7 @@ it publishes 5 values, and then terminates it.
 We use the auxiliary function <code class="code"><span class="hl-variable">allow</span></code> to get only the first 5
 publications from the channel <code class="code"><span class="hl-variable">c</span></code>.  When no more publications are allowed,
 <code class="code"><span class="hl-variable">allow</span></code> uses the interrupt idiom to halt F and close <code class="code"><span class="hl-variable">c</span></code>.
-</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11126"></a>2.2.15.2.&nbsp;Non-Terminating Pruning</h4></div></div></div><p>
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N111CC"></a>2.2.15.2.&nbsp;Non-Terminating Pruning</h4></div></div></div><p>
 We can use routing to create a modified version of the pruning combinator.
 As in <code class="code"><span class="hl-variable">F</span> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> <span class="hl-variable">G</span></code>, we'll run F and G in parallel and make the first
 value published by G available to F.  However instead of terminating G after
@@ -2045,7 +2161,7 @@ publications.
 <span class="hl-keyword">val</span> <span class="hl-variable">r</span> = <span class="hl-site">Ref</span>()
 (<span class="bold"><strong>F</strong></span> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> <span class="hl-variable">r</span>.<span class="hl-site">read</span>()) <span class="hl-combinator">|</span> (<span class="bold"><strong>G</strong></span> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">r</span>.<span class="hl-site">write</span>(<span class="hl-variable">x</span>))
 
-</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11138"></a>2.2.15.3.&nbsp;Publication-Agnostic Otherwise</h4></div></div></div><p>
+</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N111DE"></a>2.2.15.3.&nbsp;Publication-Agnostic Otherwise</h4></div></div></div><p>
 We can also use routing to create a modified version of the otherwise combinator. We'll
 run F until it halts, and then run G, regardless of whether F published any values
 or not.
@@ -2059,7 +2175,7 @@ to ensure that G does not execute until all the publications of F have been
 routed. Recall that <code class="code"><span class="hl-variable">c</span>.<span class="hl-site">close</span>()</code> does not return until <code class="code"><span class="hl-variable">c</span></code> is
 empty.
 
-</div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11154"></a>2.2.16.&nbsp;Interruption</h3></div></div></div><p>
+</div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N111FA"></a>2.2.16.&nbsp;Interruption</h3></div></div></div><p>
 We can write a function <code class="code"><span class="hl-variable">interruptible</span></code> that implements the interrupt idiom
 to execute any function in an interruptible way.  <code class="code"><span class="hl-site">interruptible</span>(<span class="hl-variable">g</span>)</code>
 calls the function <code class="code"><span class="hl-variable">g</span></code>, which is assumed to take no arguments, and
@@ -2102,7 +2218,7 @@ execution, arises occasionally in Orc programming. When using this idiom, always
 avoid terminating that execution accidentally. Since Orc is a structured concurrent language,
 every process is contained with some other process; kill the containing process, and the
 contained processes die too.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11186"></a>2.2.17.&nbsp;Lifting</h3></div></div></div>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1122C"></a>2.2.17.&nbsp;Lifting</h3></div></div></div>
 
 It is often useful to explicitly lift an execution, so that it is in some sense protected from
 being terminated. We can do this by running a "lifter" process, to which we can send functions
@@ -2136,7 +2252,7 @@ The timeout stops the execution of <code class="code"><span class="hl-site">dela
 However, the lifted execution of <code class="code"><span class="hl-variable">delayedPrint</span></code> does succeed, since it is executing
 within the loop of <code class="code"><span class="hl-site">lifter</span>()</code>, unaffected by the timeout.
 
-</div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11197"></a>2.2.18.&nbsp;Fold</h3></div></div></div><p>
+</div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1123D"></a>2.2.18.&nbsp;Fold</h3></div></div></div><p>
 We consider various concurrent implementations of the classic "list fold"
 function from functional programming:
 </p><pre class="programlisting">
@@ -2147,7 +2263,7 @@ list be nonempty and uses its first element as a seed.  This implementation is
 short-circuiting --- it may finish early if the reduction operator <code class="code"><span class="hl-variable">f</span></code> does
 not use its second argument --- but it is not concurrent; no two calls to <code class="code"><span class="hl-variable">f</span></code>
 can proceed in parallel.
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N111A9"></a>2.2.18.1.&nbsp;Associative Fold</h4></div></div></div><p>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1124F"></a>2.2.18.1.&nbsp;Associative Fold</h4></div></div></div><p>
 We first consider the case when the reduction operator is associative.  We
 define <code class="code"><span class="hl-site">afold</span>(<span class="hl-variable">b</span>,<span class="hl-variable">xs</span>)</code> where <code class="code"><span class="hl-variable">b</span></code> is a binary associative function and
 <code class="code"><span class="hl-variable">xs</span></code> is a non-empty list.  The implementation iteratively reduces <code class="code"><span class="hl-variable">xs</span></code>
@@ -2163,7 +2279,7 @@ all of the calls to <code class="code"><span class="hl-variable">b</span></code>
   <span class="hl-keyword">def</span> <span class="hl-site">step</span>([]) = []
   <span class="hl-keyword">def</span> <span class="hl-site">step</span>([<span class="hl-variable">x</span>]) = [<span class="hl-variable">x</span>]
   <span class="hl-keyword">def</span> <span class="hl-site">step</span>(<span class="hl-variable">x</span>:<span class="hl-variable">y</span>:<span class="hl-variable">xs</span>) = <span class="hl-site">b</span>(<span class="hl-variable">x</span>,<span class="hl-variable">y</span>):<span class="hl-site">step</span>(<span class="hl-variable">xs</span>)
-  <span class="hl-site">afold</span>(<span class="hl-variable">b</span>, <span class="hl-site">step</span>(<span class="hl-variable">xs</span>))</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N111CE"></a>2.2.18.2.&nbsp;Associative, Commutative Fold</h4></div></div></div><p>
+  <span class="hl-site">afold</span>(<span class="hl-variable">b</span>, <span class="hl-site">step</span>(<span class="hl-variable">xs</span>))</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11274"></a>2.2.18.2.&nbsp;Associative, Commutative Fold</h4></div></div></div><p>
 We can devise a better strategy when the fold operator is both associative and
 commutative. We define <code class="code"><span class="hl-site">cfold</span>(<span class="hl-variable">b</span>,<span class="hl-variable">xs</span>)</code>, where <code class="code"><span class="hl-variable">b</span></code> is a binary associative and
 commutative function over two arguments and <code class="code"><span class="hl-variable">xs</span></code> is a non-empty list. 
@@ -2184,14 +2300,14 @@ result of the overall fold.
   <span class="hl-keyword">def</span> <span class="hl-site">combine</span>(<span class="hl-variable">m</span>) =  <span class="hl-variable">c</span>.<span class="hl-site">get</span>() <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>.<span class="hl-site">get</span>() <span class="hl-combinator">&gt;</span><span class="hl-variable">y</span><span class="hl-combinator">&gt;</span> 
                     ( <span class="hl-variable">c</span>.<span class="hl-site">put</span>(<span class="hl-site">b</span>(<span class="hl-variable">x</span>,<span class="hl-variable">y</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span> <span class="hl-combinator">|</span> <span class="hl-site">combine</span>(<span class="hl-variable">m</span>-<span class="hl-literal">1</span>))
 
-  <span class="hl-site">xfer</span>(<span class="hl-variable">xs</span>) <span class="hl-combinator">|</span> <span class="hl-site">combine</span>(<span class="hl-site">length</span>(<span class="hl-variable">xs</span>))</pre></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N111E4"></a>2.3.&nbsp;Larger Examples</h2></div></div></div>
+  <span class="hl-site">xfer</span>(<span class="hl-variable">xs</span>) <span class="hl-combinator">|</span> <span class="hl-site">combine</span>(<span class="hl-site">length</span>(<span class="hl-variable">xs</span>))</pre></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N1128A"></a>2.3.&nbsp;Larger Examples</h2></div></div></div>
 
 In this section we show a few larger Orc programs to demonstrate programming techniques. 
 There are many more such examples available at the Orc website, on the
 <a class="link" href="http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=WikiLab" target="_top">community wiki</a>.
 
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N111EC"></a>2.3.1.&nbsp;Dining Philosophers</h3></div></div></div><p>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11292"></a>2.3.1.&nbsp;Dining Philosophers</h3></div></div></div><p>
 The dining philosophers problem is a well known and intensely studied problem
 in concurrent programming. Five philosophers sit around a circular table. Each
 philosopher has two forks that she shares with her neighbors (giving five forks
@@ -2200,7 +2316,7 @@ picks up both forks, one at a time, eats, puts down both forks, and then
 resumes thinking.  Without further refinement, this scenario allows deadlock;
 if all philosophers become hungry and pick up their left-hand forks
 simultaneously, no philosopher will be able to pick up her right-hand fork to
-eat.  Lehmann and Rabin's solution<sup>[<a href="#ftn.N111F1" name="N111F1" class="footnote">3</a>]</sup>, which we implement,
+eat.  Lehmann and Rabin's solution<sup>[<a href="#ftn.N11297" name="N11297" class="footnote">3</a>]</sup>, which we implement,
 requires that each philosopher pick up her forks in a random order.  If the
 second fork is not immediately available, the philosopher must set down both
 forks and try again.  While livelock is still possible if all philosophers
@@ -2408,7 +2524,7 @@ the fork.  Every message sent includes the sender's address.  Therefore when a
 philosopher receives a request for a fork, it knows who requested it and
 therefore which fork to relinquish.  Likewise when a philosopher receives a
 fork, it knows who sent it and therefore which fork was received.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11283"></a>2.3.3.&nbsp;Readers-Writers</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11329"></a>2.3.3.&nbsp;Readers-Writers</h3></div></div></div><p>
 Here we present an Orc solution to the <a class="link" href="http://en.wikipedia.org/wiki/Readers-writers_problem" target="_top">readers-writers
 problem</a>.  Briefly, the readers-writers problem involves concurrent
 access to a mutable resource.  Multiple readers can access the resource
@@ -2483,9 +2599,9 @@ holding the lock.  Whenever the lock is granted, <code class="code"><span class=
 To ensure that a writer has exclusive access, <code class="code"><span class="hl-variable">grant</span></code> waits for the
 <code class="code"><span class="hl-variable">c</span></code> to become zero before granting the lock to the writer, and then
 waits for <code class="code"><span class="hl-variable">c</span></code> to become zero again before granting any more requests.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N112B1"></a>2.3.4.&nbsp;Quicksort</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11357"></a>2.3.4.&nbsp;Quicksort</h3></div></div></div><p>
 The original quicksort algorithm
-<sup>[<a href="#ftn.N112B6" name="N112B6" class="footnote">4</a>]</sup>
+<sup>[<a href="#ftn.N1135C" name="N1135C" class="footnote">4</a>]</sup>
 was designed for efficient execution on a uniprocessor.
 Encoding it as a functional program typically ignores its efficient
 rearrangement of the elements of an array.
@@ -2540,7 +2656,7 @@ This program uses the syntactic sugar <code class="code"><span class="hl-variabl
 and <code class="code"><span class="hl-variable">x</span> <span class="hl-site">:=</span> <span class="hl-variable">y</span></code> for <code class="code"><span class="hl-variable">x</span>.<span class="hl-site">write</span>(<span class="hl-variable">y</span>)</code>.  Also note that the expression
 <code class="code"><span class="hl-site">a</span>(<span class="hl-variable">i</span>)</code> returns a reference to the element of array <code class="code"><span class="hl-variable">a</span></code> at index
 <code class="code"><span class="hl-variable">i</span></code>, counting from 0.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11310"></a>2.3.5.&nbsp;Meeting Scheduler</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N113B6"></a>2.3.5.&nbsp;Meeting Scheduler</h3></div></div></div><p>
 Orc makes very few assumptions about the behaviors of services it uses. Therefore
 it is straightforward to write programs which interact with human agents and
 network services.  This makes Orc especially suitable for encoding
@@ -2607,19 +2723,19 @@ quorum (to select a meeting as soon as some subset of invitees responds) or
 timeouts (to remind invitees if they don't respond in a timely manner).  These
 modifications are local and do not affect the overall structure of the program.
 For complete details, see <a class="link" href="http://orc.csres.utexas.edu/tryorc.shtml" target="_top">examples on our website</a>.
-</p></div></div><div class="footnotes"><br><hr align="left" width="100"><div class="footnote"><p><sup>[<a href="#N10DAA" name="ftn.N10DAA" class="para">1</a>] </sup>R. Milner. <span class="emphasis"><em>Communicating and Mobile Systems:
+</p></div></div><div class="footnotes"><br><hr align="left" width="100"><div class="footnote"><p><sup>[<a href="#N10E50" name="ftn.N10E50" class="para">1</a>] </sup>R. Milner. <span class="emphasis"><em>Communicating and Mobile Systems:
 the &#960;-Calculus</em></span>. Cambridge University Press, May
-1999.</p></div><div class="footnote"><p><sup>[<a href="#N10DB1" name="ftn.N10DB1" class="para">2</a>] </sup>J. Armstrong, R.
+1999.</p></div><div class="footnote"><p><sup>[<a href="#N10E57" name="ftn.N10E57" class="para">2</a>] </sup>J. Armstrong, R.
 Virding, C. Wikstr&uml;om, and M. Williams. <span class="emphasis"><em>Concurrent programming in
 ERLANG (2nd ed.)</em></span>. Prentice Hall International (UK) Ltd.,
-Hertfordshire, UK, UK, 1996.</p></div><div class="footnote"><p><sup>[<a href="#N111F1" name="ftn.N111F1" class="para">3</a>] </sup>D. J. Lehmann and M. O. Rabin. On the advantages of free choice: A symmetric
+Hertfordshire, UK, UK, 1996.</p></div><div class="footnote"><p><sup>[<a href="#N11297" name="ftn.N11297" class="para">3</a>] </sup>D. J. Lehmann and M. O. Rabin. On the advantages of free choice: A symmetric
 and fully distributed solution to the dining philosophers problem. In <span class="emphasis"><em>POPL</em></span>, pages
-133&ndash;138, 1981.</p></div><div class="footnote"><p><sup>[<a href="#N112B6" name="ftn.N112B6" class="para">4</a>] </sup>C. A. R. Hoare. Partition: Algorithm 63, Quicksort: Algorithm 64, and
+133&ndash;138, 1981.</p></div><div class="footnote"><p><sup>[<a href="#N1135C" name="ftn.N1135C" class="para">4</a>] </sup>C. A. R. Hoare. Partition: Algorithm 63, Quicksort: Algorithm 64, and
 Find: Algorithm 65. <span class="emphasis"><em>Communications of the ACM</em></span>,
 4(7):321&ndash;322, 1961.</p></div></div></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="chapter.services"></a>Chapter&nbsp;3.&nbsp;Accessing and Creating External Services</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#section.services.intro">3.1. Introduction</a></span></dt><dt><span class="section"><a href="#section.services.java">3.2. 
 
-                class Sites</a></span></dt><dd><dl><dt><span class="section"><a href="#section.services.java.dot">3.2.1. Dot Operator</a></span></dt><dt><span class="section"><a href="#N113B6">3.2.2. Direct Calls</a></span></dt><dt><span class="section"><a href="#section.services.java.method">3.2.3. Method Resolution</a></span></dt><dt><span class="section"><a href="#N113FE">3.2.4. Orc values in Java</a></span></dt><dt><span class="section"><a href="#N1143A">3.2.5. Java Values in Orc</a></span></dt><dt><span class="section"><a href="#section.services.kilim">3.2.6. Cooperative Scheduling and Concurrency</a></span></dt></dl></dd><dt><span class="section"><a href="#N114FE">3.3. 
-                site Sites</a></span></dt><dd><dl><dt><span class="section"><a href="#N11504">3.3.1. Fundamentals</a></span></dt><dt><span class="section"><a href="#N115A5">3.3.2. More Site Classes</a></span></dt><dt><span class="section"><a href="#N1160B">3.3.3. Tutorial Example</a></span></dt></dl></dd><dt><span class="section"><a href="#N1165C">3.4. Web Services</a></span></dt><dd><dl><dt><span class="section"><a href="#N1165F">3.4.1. Introduction</a></span></dt><dt><span class="section"><a href="#N11664">3.4.2. Downloading and Running Examples</a></span></dt><dt><span class="section"><a href="#N1167F">3.4.3. Protocols Supported</a></span></dt><dt><span class="section"><a href="#N116C1">3.4.4. REST</a></span></dt></dl></dd></dl></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="section.services.intro"></a>3.1.&nbsp;Introduction</h2></div></div></div><p>
+                class Sites</a></span></dt><dd><dl><dt><span class="section"><a href="#section.services.java.dot">3.2.1. Dot Operator</a></span></dt><dt><span class="section"><a href="#N1145C">3.2.2. Direct Calls</a></span></dt><dt><span class="section"><a href="#section.services.java.method">3.2.3. Method Resolution</a></span></dt><dt><span class="section"><a href="#N114A4">3.2.4. Orc values in Java</a></span></dt><dt><span class="section"><a href="#N114E0">3.2.5. Java Values in Orc</a></span></dt><dt><span class="section"><a href="#section.services.kilim">3.2.6. Cooperative Scheduling and Concurrency</a></span></dt></dl></dd><dt><span class="section"><a href="#N115A4">3.3. 
+                site Sites</a></span></dt><dd><dl><dt><span class="section"><a href="#N115AA">3.3.1. Fundamentals</a></span></dt><dt><span class="section"><a href="#N1164B">3.3.2. More Site Classes</a></span></dt><dt><span class="section"><a href="#N116B1">3.3.3. Tutorial Example</a></span></dt></dl></dd><dt><span class="section"><a href="#N11702">3.4. Web Services</a></span></dt><dd><dl><dt><span class="section"><a href="#N11705">3.4.1. Introduction</a></span></dt><dt><span class="section"><a href="#N1170A">3.4.2. Downloading and Running Examples</a></span></dt><dt><span class="section"><a href="#N11725">3.4.3. Protocols Supported</a></span></dt><dt><span class="section"><a href="#N11767">3.4.4. REST</a></span></dt></dl></dd></dl></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="section.services.intro"></a>3.1.&nbsp;Introduction</h2></div></div></div><p>
 There are two primary ways to create sites which can be used in Orc:
 </p><div class="orderedlist"><ol type="1"><li>Implement sites as regular Java classes.
 	Orc programs can import and use these classes directly with the
@@ -2679,7 +2795,7 @@ used to access both static and non-static methods and fields:
 <span class="hl-comment">{- call a non-static method -}</span>
 <span class="hl-variable">i</span>.<span class="hl-site">toString</span>()
 </pre>
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N113B6"></a>3.2.2.&nbsp;Direct Calls</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1145C"></a>3.2.2.&nbsp;Direct Calls</h3></div></div></div><p>
 When <code class="code"><span class="hl-variable">x</span></code> evaluates to a Java object (but not a Java class), the syntax
 <code class="code"><span class="hl-site">x</span>(...)</code> is equivalent to <code class="code"><span class="hl-variable">x</span>.<span class="hl-site">apply</span>(...)</code>.
 </p><p>
@@ -2716,13 +2832,13 @@ Currently we do not implement specificity rules for choosing the best matching
 method; the first matching method (according to some unspecified order) is
 chosen.  Note also that we do not support varargs methods explicitly, but
 instead varargs may be passed as an array of the appropriate type.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N113FE"></a>3.2.4.&nbsp;Orc values in Java</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N114A4"></a>3.2.4.&nbsp;Orc values in Java</h3></div></div></div><p>
 Orc values are implemented by Java objects, so in general any Orc value may be
 passed to a site implemented in Java.  Standard Orc values have the following
 Java types:
 </p><div class="variablelist"><dl><dt><span class="term">string</span></dt><dd><code class="code">java.lang.String</code></dd><dt><span class="term">boolean</span></dt><dd><code class="code">java.lang.Boolean</code></dd><dt><span class="term">number</span></dt><dd><code class="code">java.lang.Number</code></dd><dt><span class="term">tuple</span></dt><dd><code class="code">orc.runtime.values.TupleValue</code></dd><dt><span class="term">list</span></dt><dd><code class="code">orc.runtime.values.ListValue</code></dd><dt><span class="term">function</span></dt><dd><code class="code">orc.runtime.values.Closure</code><p>Currently it is not possible to call Orc functions from Java code.</p></dd><dt><span class="term">site</span></dt><dd><code class="code">orc.runtime.values.Site</code><p>Currently it is not possible to directly call Orc sites from Java
 code.  However if you are implementing a site yourself, you may provide methods
-which can be called from Java code to invoke the behavior of the site.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1143A"></a>3.2.5.&nbsp;Java Values in Orc</h3></div></div></div><p>
+which can be called from Java code to invoke the behavior of the site.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N114E0"></a>3.2.5.&nbsp;Java Values in Orc</h3></div></div></div><p>
 Java objects may be used directly as values anywhere in an Orc program.
 Primitive Java values cannot be used directly in an Orc program, but are
 automatically boxed (and unboxed) as necessary.
@@ -2732,7 +2848,7 @@ types, the arguments are implicitly coerced to the widest of the two argument
 types.  "Widest" is defined by the following relation, where "&gt;" means "is
 wider than": BigDecimal &gt; Double &gt; Float &gt; BigInteger &gt; Long &gt; Integer &gt; Short
 &gt; Byte
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="section.services.kilim"></a>3.2.6.&nbsp;Cooperative Scheduling and Concurrency</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11445"></a>3.2.6.1.&nbsp;Overview</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="section.services.kilim"></a>3.2.6.&nbsp;Cooperative Scheduling and Concurrency</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N114EB"></a>3.2.6.1.&nbsp;Overview</h4></div></div></div><p>
 In order to support massive concurrency efficiently in Java, Orc uses
 cooperative threading.  Orc programs are broken into discrete steps which
 are executed by a fixed-size thread pool.  This approach works for Orc
@@ -2760,7 +2876,7 @@ of blocking the code actually returns control to a scheduler. Orc supports
 Kilim, allowing site authors to write sites with internal concurrency and
 blocking behavior which don't use Java threads and cooperate with the Orc
 engine.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1145B"></a>3.2.6.2.&nbsp;Kilim Fundamentals</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11501"></a>3.2.6.2.&nbsp;Kilim Fundamentals</h4></div></div></div><p>
 For a full introduction to <a class="link" href="http://kilim.malhar.net/" target="_top">Kilim</a>, see <a class="link" href="http://www.malhar.net/sriram/kilim/thread_of_ones_own.pdf" target="_top">A Thread of
 One's Own</a>, by Sriram Srinivasan. In the following, we will cover just
 enough to get you started writing Orc sites using Kilim.
@@ -2848,7 +2964,7 @@ The workaround is to use a temporary variable:
 <pre class="programlisting">
 Object tmp = bar.pausable();
 <span class="hl-keyword">new</span> Foo(tmp);
-</pre></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N114CE"></a>3.2.6.3.&nbsp;When you must block</h4></div></div></div><p>
+</pre></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11574"></a>3.2.6.3.&nbsp;When you must block</h4></div></div></div><p>
 Sometimes blocking is unavoidable, for example if a site must perform blocking
 IO.  For such cases, Orc provides a utility method <code class="code">orc.runtime.Kilim#runThreaded(Callable)</code> which farms work
 out to a thread pool.  The advantage of doing this over spawning your own
@@ -2858,7 +2974,7 @@ that if you have too many Java methods which must communicate with each other
 concurrently and can't use Mailboxes, there won't be enough threads for them
 all and execution will deadlock.  This situation is sufficiently rare that
 <code class="code">runThreaded</code> is usually the correct approach.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N114DB"></a>3.2.6.4.&nbsp;Compiling Kilim Sites</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11581"></a>3.2.6.4.&nbsp;Compiling Kilim Sites</h4></div></div></div><p>
 Code which uses Kilim must be processed with the Kilim "weaver" after compiling
 and before running.  The weaver is bundled with the Orc source code, or may be
 downloaded separately from the <a class="link" href="http://www.malhar.net/sriram/kilim/" target="_top">Kilim project
@@ -2874,8 +2990,8 @@ task (in <code class="filename">build.xml</code>) which weaves compiled classes 
 <code class="filename">build</code> directory.  If you are compiling Orc in Eclipse, an
 Eclipse "Builder" is included which does this automatically whenever any source
 files change.
-</p></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N114FE"></a>3.3.&nbsp;
-                <code class="code"><span class="hl-keyword">site</span></code> Sites</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11504"></a>3.3.1.&nbsp;Fundamentals</h3></div></div></div><p>
+</p></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N115A4"></a>3.3.&nbsp;
+                <code class="code"><span class="hl-keyword">site</span></code> Sites</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N115AA"></a>3.3.1.&nbsp;Fundamentals</h3></div></div></div><p>
 Orc sites imported with the <code class="code"><span class="hl-keyword">site</span></code> declaration are implemented as
 Java classes which extend <code class="code">orc.runtime.sites.Site</code>.
 Here we will summarize the most important features of this and related classes;
@@ -2926,7 +3042,7 @@ blocks or waits for some condition, <code class="code">callSite</code> must
 save the <code class="code">token</code> and return without calling any of
 the above methods.  Then when it is time for the site call to return, call the
 appropriate method on the <code class="code">token</code>.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N115A5"></a>3.3.2.&nbsp;More Site Classes</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N115A8"></a>3.3.2.1.&nbsp;EvalSite</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1164B"></a>3.3.2.&nbsp;More Site Classes</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1164E"></a>3.3.2.1.&nbsp;EvalSite</h4></div></div></div><p>
 Many sites are deterministic, always returning a value immediately when called.
 Such sites can be implemented easily by extending <code class="code">orc.runtime.sites.EvalSite</code> and implementing the method
 <code class="code">evaluate(Args args)</code>.  This method should read the
@@ -2948,7 +3064,7 @@ with the Orc engine.
 Beware that the Orc engine may be configured to only allow a fixed number of
 site threads. If too many sites need to use threads simultaneously, some will
 block until threads become available.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N115DD"></a>3.3.2.3.&nbsp;DotSite</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11683"></a>3.3.2.3.&nbsp;DotSite</h4></div></div></div><p>
 Recall that the notation <code class="code"><span class="hl-variable">x</span>.<span class="hl-variable">msg</span></code> corresponds to calling the site
 <code class="code"><span class="hl-variable">x</span></code> with the special message value <code class="code"><span class="hl-variable">msg</span></code>.  To implement a
 site which responds to such messages, extend <code class="code">orc.runtime.sites.DotSite</code>.
@@ -2960,7 +3076,7 @@ message you wish the site to respond to. The call <code class="code">addMember(m
 Any object can be used as a member value, even another site.  Anonymous inner
 classes extending <code class="code">Site</code> are often used as member
 values which behave like  methods of the enclosing <code class="code">DotSite</code>.
-</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1160B"></a>3.3.3.&nbsp;Tutorial Example</h3></div></div></div><p>
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N116B1"></a>3.3.3.&nbsp;Tutorial Example</h3></div></div></div><p>
 We will implement a simplified version of Orc's <code class="code"><span class="hl-variable">Buffer</span></code> site,
 called <code class="code">ExampleBuffer</code>. The goal will be to be able
 to run this Orc program:
@@ -3086,13 +3202,13 @@ Putting it all together, here is the entire implementation:
     addMember(<span class="hl-string">"get"</span>, <span class="hl-keyword">new</span> GetMethod());
     addMember(<span class="hl-string">"put"</span>, <span class="hl-keyword">new</span> PutMethod());
   }
-}</pre></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N1165C"></a>3.4.&nbsp;Web Services</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1165F"></a>3.4.1.&nbsp;Introduction</h3></div></div></div><p>
+}</pre></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N11702"></a>3.4.&nbsp;Web Services</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11705"></a>3.4.1.&nbsp;Introduction</h3></div></div></div><p>
 While we believe Orc is an excellent language for web service scripting,
 currently the library support for such tasks is at a proof-of-concept level.
 The web service libraries are not bundled with the core Orc distribution, do
 not have stable APIs, and are not officially documented.  However this section
 should provide you with enough information to get started.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11664"></a>3.4.2.&nbsp;Downloading and Running Examples</h3></div></div></div><p>All Orc sites related to web services are bundled in a separate
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1170A"></a>3.4.2.&nbsp;Downloading and Running Examples</h3></div></div></div><p>All Orc sites related to web services are bundled in a separate
 "OrcSites" library.  As with the core Orc distribution, you can either
 download this library as a prepackaged JAR or check out the
 source code from the "OrcSites" module in version control.  We generally recommend the latter
@@ -3105,19 +3221,19 @@ Within the OrcSites source code you will find:
 	classpath. The simplest way to do this is to make sure the
 	<code class="filename">examples/</code> directory is in your classpath, and
 	place the necessary <code class="filename">.properties</code> files there.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1167F"></a>3.4.3.&nbsp;Protocols Supported</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11725"></a>3.4.3.&nbsp;Protocols Supported</h3></div></div></div><p>
 Web services use a variety of protocols, so there are a variety of ways to
 contact them. All of them boil down to creating a Java proxy site for the
 service and calling that.  Previous sections explain how to implement such Java
 sites which can be called in Orc. Because web services tend to use blocking
 I/O, Java wrappers make frequent use of <a class="link" href="#section.services.sites.ThreadedSite" title="3.3.2.2.&nbsp;ThreadedSite">ThreadedSite</a> and
 <a class="link" href="#section.services.kilim" title="3.2.6.&nbsp;Cooperative Scheduling and Concurrency">Kilim</a> to ensure that web service calls don't block the Orc engine.
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1168C"></a>3.4.3.1.&nbsp;Java APIs</h4></div></div></div><p>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11732"></a>3.4.3.1.&nbsp;Java APIs</h4></div></div></div><p>
 Some web services provide Java APIs specifically for the service. For example,
 Google Calendar. In these cases we just use the Java API from Orc, either
 directly or via a small Java wrapper which simplifies the interface.
 </p><p>OrcSites includes <code class="code"><span class="hl-keyword">class</span> <span class="hl-variable">orc</span>.<span class="hl-variable">lib</span>.<span class="hl-variable">net</span>.<span class="hl-variable">GoogleCalendar</span></code> as an
-	example of this type of web service.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11696"></a>3.4.3.2.&nbsp;SOAP RPC</h4></div></div></div></div><p>
+	example of this type of web service.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1173C"></a>3.4.3.2.&nbsp;SOAP RPC</h4></div></div></div></div><p>
 OrcSites includes a generic <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">orc</span>.<span class="hl-variable">lib</span>.<span class="hl-variable">net</span>.<span class="hl-variable">Webservice</span></code> which allows you to connect to any SOAP RPC (specifically
 rpc/encoded) service, without writing Java wrappers.  Instead <a class="link" href="http://ws.apache.org/axis/" target="_top">Apache Axis</a> is used to
 generate Java wrappers on-demand.
@@ -3143,7 +3259,7 @@ key=uuid:BF3EFCDD-FCD4-8867-3AAC-068985E7CB89
   <span class="hl-literal">"http://www.ebob42.com/cgi-bin/"</span>
   + <span class="hl-literal">"Romulan.exe/wsdl/IRoman"</span>)
 <span class="hl-variable">service</span>.<span class="hl-site">intToRoman</span>(<span class="hl-literal">451</span>)
-</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N116C1"></a>3.4.4.&nbsp;REST</h3></div></div></div><p>
+</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11767"></a>3.4.4.&nbsp;REST</h3></div></div></div><p>
 Many services use ad-hoc REST/XML protocols. Unfortunately, there is no REST
 equivalent to WSDL, so there's no way to automatically generate an API for REST
 services. We're not trying to solve this problem with Orc, but when the web
@@ -3154,9 +3270,9 @@ marshalling and unmarshalling the data. There's no reason such marshalling code
 couldn't be written in Orc, calling low-level HTTP and XML libraries directly,
 but there would be no advantage to doing so, so we let each language play to
 its strengths. OrcSites includes utility classes to assist with submitting
-requests and parsing responses.</p><p>OrcSites includes the following examples of this type of service:</p><div class="itemizedlist"><ul type="disc"><li><code class="code"><span class="hl-keyword">class</span> <span class="hl-variable">orc</span>.<span class="hl-variable">lib</span>.<span class="hl-variable">net</span>.<span class="hl-variable">Upcoming</span></code></li><li><code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">orc</span>.<span class="hl-variable">lib</span>.<span class="hl-variable">net</span>.<span class="hl-variable">TrueRandom</span></code></li><li><code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">orc</span>.<span class="hl-variable">lib</span>.<span class="hl-variable">net</span>.<span class="hl-variable">YahooSpellFactory</span></code></li></ul></div></div></div></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="chapter.typechecker"></a>Chapter&nbsp;4.&nbsp;Type Checking</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#N11704">4.1. Simple Typing</a></span></dt><dd><dl><dt><span class="section"><a href="#N11708">4.1.1. Values and Operators</a></span></dt><dt><span class="section"><a href="#N1173F">4.1.2. 
+requests and parsing responses.</p><p>OrcSites includes the following examples of this type of service:</p><div class="itemizedlist"><ul type="disc"><li><code class="code"><span class="hl-keyword">class</span> <span class="hl-variable">orc</span>.<span class="hl-variable">lib</span>.<span class="hl-variable">net</span>.<span class="hl-variable">Upcoming</span></code></li><li><code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">orc</span>.<span class="hl-variable">lib</span>.<span class="hl-variable">net</span>.<span class="hl-variable">TrueRandom</span></code></li><li><code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">orc</span>.<span class="hl-variable">lib</span>.<span class="hl-variable">net</span>.<span class="hl-variable">YahooSpellFactory</span></code></li></ul></div></div></div></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="chapter.typechecker"></a>Chapter&nbsp;4.&nbsp;Type Checking</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#N117AA">4.1. Simple Typing</a></span></dt><dd><dl><dt><span class="section"><a href="#N117AE">4.1.1. Values and Operators</a></span></dt><dt><span class="section"><a href="#N117E5">4.1.2. 
                     signal and stop
-                </a></span></dt><dt><span class="section"><a href="#N1177F">4.1.3. Tuples</a></span></dt><dt><span class="section"><a href="#N1178C">4.1.4. Combinators</a></span></dt><dt><span class="section"><a href="#N117F7">4.1.5. Conditionals</a></span></dt><dt><span class="section"><a href="#N11808">4.1.6. Defined Functions</a></span></dt><dt><span class="section"><a href="#N11864">4.1.7. Ascriptions</a></span></dt><dt><span class="section"><a href="#N11876">4.1.8. Aliasing</a></span></dt><dt><span class="section"><a href="#N11884">4.1.9. Datatypes</a></span></dt><dt><span class="section"><a href="#N11895">4.1.10. Interacting with External Services</a></span></dt><dt><span class="section"><a href="#N118BE">4.1.11. Assertions</a></span></dt></dl></dd><dt><span class="section"><a href="#N118CF">4.2. Polymorphism</a></span></dt><dd><dl><dt><span class="section"><a href="#N118D6">4.2.1. Parametric types</a></span></dt><dt><span class="section"><a href="#N11910">4.2.2. Parametric functions</a></span></dt><dt><span class="section"><a href="#N11922">4.2.3. Generic calls</a></span></dt><dt><span class="section"><a href="#N11945">4.2.4. Polymorphic aliases</a></span></dt><dt><span class="section"><a href="#N11957">4.2.5. Polymorphic datatypes</a></span></dt></dl></dd><dt><span class="section"><a href="#N11966">4.3. Interacting with Java</a></span></dt><dt><span class="section"><a href="#N11987">4.4. Syntax of Typed Orc</a></span></dt></dl></div><p>
+                </a></span></dt><dt><span class="section"><a href="#N11825">4.1.3. Tuples</a></span></dt><dt><span class="section"><a href="#N11832">4.1.4. Combinators</a></span></dt><dt><span class="section"><a href="#N1189D">4.1.5. Conditionals</a></span></dt><dt><span class="section"><a href="#N118AE">4.1.6. Defined Functions</a></span></dt><dt><span class="section"><a href="#N1190A">4.1.7. Ascriptions</a></span></dt><dt><span class="section"><a href="#N1191C">4.1.8. Aliasing</a></span></dt><dt><span class="section"><a href="#N1192A">4.1.9. Datatypes</a></span></dt><dt><span class="section"><a href="#N1193B">4.1.10. Interacting with External Services</a></span></dt><dt><span class="section"><a href="#N11964">4.1.11. Assertions</a></span></dt></dl></dd><dt><span class="section"><a href="#N11975">4.2. Polymorphism</a></span></dt><dd><dl><dt><span class="section"><a href="#N1197C">4.2.1. Parametric types</a></span></dt><dt><span class="section"><a href="#N119B6">4.2.2. Parametric functions</a></span></dt><dt><span class="section"><a href="#N119C8">4.2.3. Generic calls</a></span></dt><dt><span class="section"><a href="#N119EB">4.2.4. Polymorphic aliases</a></span></dt><dt><span class="section"><a href="#N119FD">4.2.5. Polymorphic datatypes</a></span></dt></dl></dd><dt><span class="section"><a href="#N11A0C">4.3. Interacting with Java</a></span></dt><dt><span class="section"><a href="#N11A2D">4.4. Syntax of Typed Orc</a></span></dt></dl></div><p>
 The Orc language, as it is described in <a class="link" href="#chapter.language" title="Chapter&nbsp;1.&nbsp;The Orc Programming Language">Chapter 1</a>, is
 dynamically typed. If an operation occurs at runtime which is not type-correct, the call
 which attempted that operation becomes silent, and produces a type error that is reported
@@ -3187,13 +3303,13 @@ can verify that a program is correctly typed, it will display the message
 </p><p>
 on the console. The symbol <code class="code">::</code> means "has type", and T is the type of any value that
 the program might publish.
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N11704"></a>4.1.&nbsp;Simple Typing</h2></div></div></div>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N117AA"></a>4.1.&nbsp;Simple Typing</h2></div></div></div>
 
 In this section we will see how Orc programs are typechecked, starting with
 simple expressions like constants and arithmetic operations, and working up to more interesting
 cases such as defined functions, the concurrency combinators, and calls to external services.
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11708"></a>4.1.1.&nbsp;Values and Operators</h3></div></div></div><p>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N117AE"></a>4.1.1.&nbsp;Values and Operators</h3></div></div></div><p>
 Each of the Orc constants has the expected type:
 
 <div class="itemizedlist"><ul type="disc"><li><code class="code"><span class="hl-literal">true</span> , <span class="hl-literal">false</span></code><code class="code"> :: </code><code class="code"><span class="hl-variable">Boolean</span></code></li><li> ... <code class="code"> -<span class="hl-literal">1</span>, <span class="hl-literal">0</span>, <span class="hl-literal">1</span> </code> ... <code class="code"> :: </code><code class="code"><span class="hl-variable">Integer</span></code></li><li> ... <code class="code"> <span class="hl-literal">"orc"</span> , <span class="hl-literal">"ceci n'est pas une |"</span></code> ... <code class="code"> :: </code><code class="code"><span class="hl-variable">String</span></code></li><li> ... <code class="code"> <span class="hl-literal">0.001</span>, -<span class="hl-literal">1.5</span>, <span class="hl-literal">2.71828</span> </code> ... <code class="code"> :: </code><code class="code"><span class="hl-variable">Number</span></code></li></ul></div>
@@ -3207,7 +3323,7 @@ two Boolean operands and returns a Boolean result. Some of the arithmetic operat
 operands has type Integer, but with one or more Number operands it instead has type Number. 
 
 
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1173F"></a>4.1.2.&nbsp;
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N117E5"></a>4.1.2.&nbsp;
                     <code class="code"><span class="hl-keyword">signal</span></code> and <code class="code"><span class="hl-keyword">stop</span></code>
                 </h3></div></div></div><p>
 There are two other important types:
@@ -3231,12 +3347,12 @@ In Orc, however, <code class="code"><span class="hl-variable">Bot</span></code> 
 are written to carry out ongoing concurrent activities but never publish any values, and the type system 
 can use the type <code class="code"><span class="hl-variable">Bot</span></code> to indicate that no publications will ever be seen from such
 expressions.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1177F"></a>4.1.3.&nbsp;Tuples</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11825"></a>4.1.3.&nbsp;Tuples</h3></div></div></div><p>
 The type of a tuple is a tuple of the types of each of its elements.
 
 <div class="itemizedlist"><ul type="disc"><li><code class="code">(<span class="hl-literal">3</span>+<span class="hl-literal">3</span>, <span class="hl-literal">true</span>) :: (<span class="hl-variable">Integer</span>, <span class="hl-variable">Boolean</span>)</code></li><li><code class="code">(<span class="hl-literal">"orc"</span>, (<span class="hl-literal">2</span>, <span class="hl-literal">"orc"</span>)) :: (<span class="hl-variable">String</span>, (<span class="hl-variable">Integer</span>, <span class="hl-variable">String</span>))</code></li></ul></div>
 
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1178C"></a>4.1.4.&nbsp;Combinators</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1178F"></a>4.1.4.1.&nbsp;Parallel</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11832"></a>4.1.4.&nbsp;Combinators</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11835"></a>4.1.4.1.&nbsp;Parallel</h4></div></div></div><p>
 The type of F <code class="code"><span class="hl-combinator">|</span></code> G is the <span class="emphasis"><em>join</em></span> of the types of F and G.
 </p><p>
 A <span class="emphasis"><em>common supertype</em></span> of two types S and T is any type U such that 
@@ -3272,7 +3388,7 @@ therefore always a safe join, if not a very useful one.
 
 <div class="itemizedlist"><ul type="disc"><li><code class="code"><span class="hl-literal">3</span> <span class="hl-combinator">|</span> <span class="hl-literal">"three"</span>  ::  <span class="hl-variable">Top</span></code></li></ul></div>
 
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N117C4"></a>4.1.4.2.&nbsp;Sequential</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1186A"></a>4.1.4.2.&nbsp;Sequential</h4></div></div></div><p>
 The type of F <code class="code">&gt;<span class="hl-variable">x</span>&gt;</code> G is the type of G using the assumption x :: T, where T is the type of F.
 </p><p>
 If a pattern is used instead of a variable, the structure of the pattern must match the structure
@@ -3280,20 +3396,20 @@ of the type of F, and the types for each variable bound in G are taken from the 
 pieces of the type of F. For example, in the expression F <code class="code">&gt;(<span class="hl-variable">x</span>,<span class="hl-variable">b</span>)&gt;</code> G,
 where F <code class="code">:: (<span class="hl-variable">Integer</span>, <span class="hl-variable">Boolean</span>)</code>, G is typechecked with the assumptions <code class="code"><span class="hl-variable">x</span> :: <span class="hl-variable">Integer</span></code>
 and <code class="code"><span class="hl-variable">b</span> :: <span class="hl-variable">Boolean</span></code>.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N117DA"></a>4.1.4.3.&nbsp;Pruning</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11880"></a>4.1.4.3.&nbsp;Pruning</h4></div></div></div><p>
 The type of F <code class="code">&lt;<span class="hl-variable">x</span>&lt;</code> G is the type of F using the assumption x :: T, where T is the type of G.
 </p><p>
 When a declaration <code class="code"><span class="hl-keyword">val</span> <span class="hl-variable">x</span> = </code> F occurs, the expression in scope for the declaration
 is typechecked using the assumption x :: T, where T is the type of F.
 </p><p>
 Patterns in the pruning combinator and in <code class="code"><span class="hl-keyword">val</span></code> declarations are typechecked in the same way as in the sequential combinator.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N117EC"></a>4.1.4.4.&nbsp;Otherwise</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11892"></a>4.1.4.4.&nbsp;Otherwise</h4></div></div></div><p>
 The type of F <code class="code"><span class="hl-combinator">;</span></code> G is the <span class="emphasis"><em>join</em></span> of the types of F and G, as described for the parallel combinator.
-</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N117F7"></a>4.1.5.&nbsp;Conditionals</h3></div></div></div><p>
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1189D"></a>4.1.5.&nbsp;Conditionals</h3></div></div></div><p>
 In the conditional expression <code class="code"><span class="hl-keyword">if</span></code> E <code class="code"><span class="hl-keyword">then</span></code> F <code class="code"><span class="hl-keyword">else</span></code> G, the expression E must have type
 <code class="code"><span class="hl-variable">Boolean</span></code>, and the type of the whole expression is the join of the types of F and G, as described for the
 parallel combinator.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11808"></a>4.1.6.&nbsp;Defined Functions</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N118AE"></a>4.1.6.&nbsp;Defined Functions</h3></div></div></div><p>
 Though the typechecker can infer the types of many expressions without additional information from the programmer, there are some
 cases where the algorithm does need assistance. In particular, whenever a function is defined (using the <code class="code"><span class="hl-keyword">def</span></code> keyword),
 the programmer must also include a <span class="emphasis"><em>signature</em></span> for that function, supplying its argument types and return type.
@@ -3342,7 +3458,7 @@ very much like a signature, but using the <code class="code"><span class="hl-key
 name.
 
 <div class="itemizedlist"><ul type="disc"><li><code class="code"><span class="hl-variable">magsq</span></code>, defined earlier, has type <code class="code"><span class="hl-keyword">lambda</span> (<span class="hl-variable">Number</span>, <span class="hl-variable">Number</span>) :: <span class="hl-variable">Number</span></code></li><li><code class="code"><span class="hl-keyword">lambda</span> (<span class="hl-variable">x</span> :: <span class="hl-variable">Integer</span>) = <span class="hl-variable">x</span>+<span class="hl-literal">1</span></code>  has type  <code class="code"><span class="hl-keyword">lambda</span> (<span class="hl-variable">Integer</span>) :: <span class="hl-variable">Integer</span></code></li><li><code class="code"><span class="hl-keyword">lambda</span> () = <span class="hl-keyword">signal</span></code> has type <code class="code"><span class="hl-keyword">lambda</span> () :: <span class="hl-variable">Top</span></code></li><li><code class="code"><span class="hl-keyword">lambda</span> (<span class="hl-variable">a</span> :: <span class="hl-variable">Boolean</span>, <span class="hl-variable">b</span> :: <span class="hl-variable">Boolean</span>) = (<span class="hl-variable">b</span>,<span class="hl-variable">a</span>)</code> has type <code class="code"><span class="hl-keyword">lambda</span> (<span class="hl-variable">Boolean</span>,<span class="hl-variable">Boolean</span>) :: (<span class="hl-variable">Boolean</span>,<span class="hl-variable">Boolean</span>)</code></li></ul></div>
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11864"></a>4.1.7.&nbsp;Ascriptions</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1190A"></a>4.1.7.&nbsp;Ascriptions</h3></div></div></div><p>
 In addition to annotation defined functions with a signature, the typechecker can also accept programmer-supplied type
 information for any expression. An <span class="emphasis"><em>ascription</em></span>, written E <code class="code">::</code> T, asks the typechecker 
 to verify that expression E has type T.
@@ -3354,7 +3470,7 @@ type information makes it easier to pinpoint the source of a typechecking failur
 </p><p>
 Ascriptions are also allowed in patterns; P <code class="code">::</code> T is a valid pattern, instructing the typechecker to verify
 that the value fragment bound by the pattern P will always be of type T.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11876"></a>4.1.8.&nbsp;Aliasing</h3></div></div></div>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1191C"></a>4.1.8.&nbsp;Aliasing</h3></div></div></div>
 
 When adding function signatures and ascriptions, it is often helpful to have simpler names for
 complex types that frequently occur. In the same way that variable binding can be used to give
@@ -3374,7 +3490,7 @@ definition.
 While it does not change the behavior of the typing algorithm, aliasing can substantially improve
 readability and make the intention of one's code much clearer.
 
-</div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11884"></a>4.1.9.&nbsp;Datatypes</h3></div></div></div>
+</div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1192A"></a>4.1.9.&nbsp;Datatypes</h3></div></div></div>
 
 We have already seen user-defined datatypes in the untyped Orc language. In the typed language, they are
 declared in the same way, except that the slots in the datatype, which previously were always <code class="code"><span class="hl-variable">_</span></code>,
@@ -3392,7 +3508,7 @@ shapes.
 
 We will see how to declare generic datatypes, like <code class="code"><span class="hl-variable">Tree</span></code> or <code class="code"><span class="hl-variable">Option</span></code>, in the next section.
 
-</div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11895"></a>4.1.10.&nbsp;Interacting with External Services</h3></div></div></div>
+</div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1193B"></a>4.1.10.&nbsp;Interacting with External Services</h3></div></div></div>
 
 In addition to verifying the correctness of code written within Orc itself, the typechecker must also ensure that
 external services are used correctly in the context of the Orc program. 
@@ -3424,7 +3540,7 @@ because it is used in the signature of <code class="code"><span class="hl-variab
 </p><p>
 <code class="code"><span class="hl-keyword">type</span></code> definitions occur alongside <code class="code"><span class="hl-keyword">site</span></code> definitions in the standard library, so the
 types returned by many of the library functions are already available.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N118BE"></a>4.1.11.&nbsp;Assertions</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11964"></a>4.1.11.&nbsp;Assertions</h3></div></div></div><p>
 While the typechecker can be helpful, it will not accept programs that are not safe according to
 its algorithm, which can be burdensome when the programmer knows that an expression will have a
 certain type but the typechecker cannot verify it.
@@ -3444,14 +3560,14 @@ This feature should be used sparingly, with the knowledge that it does compromis
 of the typechecking algorithm. If the supplied type is wrong, runtime type errors could propagate to any
 part of the program that depends on that type. Assertions are useful for rapid prototyping, but
 they are not recommended for production code.
-</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N118CF"></a>4.2.&nbsp;Polymorphism</h2></div></div></div>
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N11975"></a>4.2.&nbsp;Polymorphism</h2></div></div></div>
 
 In this section we examine a powerful feature of Orc's typechecker: <span class="emphasis"><em>parametric polymorphism</em></span>.
 This allows us to define types that take other types as parameters; the same theory underlies Java's generics.
 
 
  
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N118D6"></a>4.2.1.&nbsp;Parametric types</h3></div></div></div><p>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1197C"></a>4.2.1.&nbsp;Parametric types</h3></div></div></div><p>
 What is the type of <code class="code">[<span class="hl-literal">1</span>,<span class="hl-literal">2</span>,<span class="hl-literal">3</span>]</code>? It is a list, containing Integers. What about <code class="code">[<span class="hl-literal">true</span>, <span class="hl-literal">true</span>]</code>?
 Again a list, but it contains Booleans instead. It would be very cumbersome to have separate types such
 as <code class="code"><span class="hl-variable">IntegerList</span></code> and <code class="code"><span class="hl-variable">BooleanList</span></code> for each of these possibilities, and in fact
@@ -3473,7 +3589,7 @@ declaration
 
 is part of the standard library; it declares the <code class="code"><span class="hl-variable">Buffer</span></code> type operator. 
  
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11910"></a>4.2.2.&nbsp;Parametric functions</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N119B6"></a>4.2.2.&nbsp;Parametric functions</h3></div></div></div><p>
 How do we write functions that use parametric types? Consider the following definition
 of the <code class="code"><span class="hl-variable">append</span></code> function, which appends two lists:
 
@@ -3486,7 +3602,7 @@ of the <code class="code"><span class="hl-variable">append</span></code> functio
 The function <code class="code"><span class="hl-variable">append</span></code> has a <span class="emphasis"><em>type argument</em></span>, T, in its
 signature. The type T is the type of elements in the lists that we are appending. Notice that both argument
 lists must contain the same type of elements. The resulting list contains elements of that same type.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11922"></a>4.2.3.&nbsp;Generic calls</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N119C8"></a>4.2.3.&nbsp;Generic calls</h3></div></div></div><p>
 When calling the <code class="code"><span class="hl-variable">append</span></code> function, in addition to providing its normal arguments, we must
 also provide its type argument:
 
@@ -3525,7 +3641,7 @@ a buffer that will contain Numbers, a type parameter must be given:
 <span class="hl-keyword">val</span> <span class="hl-variable">b</span> = <span class="hl-site">Buffer</span>[<span class="hl-variable">Number</span>]()
 </pre>
 
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11945"></a>4.2.4.&nbsp;Polymorphic aliases</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N119EB"></a>4.2.4.&nbsp;Polymorphic aliases</h3></div></div></div><p>
 A type alias may have type parameters. For example, here is a type alias for triples:
 
 <pre class="programlisting">
@@ -3535,7 +3651,7 @@ A type alias may have type parameters. For example, here is a type alias for tri
 <code class="code"><span class="hl-variable">Triple</span></code> is now a type operator that takes one parameter. Any occurrence of
 <code class="code"><span class="hl-site">Triple</span>[<span class="hl-variable">T</span>]</code> is equivalent to <code class="code">(<span class="hl-variable">T</span>,<span class="hl-variable">T</span>,<span class="hl-variable">T</span>)</code>.
 
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11957"></a>4.2.5.&nbsp;Polymorphic datatypes</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N119FD"></a>4.2.5.&nbsp;Polymorphic datatypes</h3></div></div></div><p>
 Datatypes can also have type parameters. This allows a programmer to
 define very useful generic data structures. For example, this is necessary
 to define a reasonable datatype for trees:
@@ -3547,7 +3663,7 @@ to define a reasonable datatype for trees:
 Notice that the datatype is recursive, and the type parameter <code class="code"><span class="hl-variable">T</span></code> is
 passed recursively to <code class="code"><span class="hl-variable">Tree</span></code> to define the type of the subtrees. 
 
-</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N11966"></a>4.3.&nbsp;Interacting with Java</h2></div></div></div><p>
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N11A0C"></a>4.3.&nbsp;Interacting with Java</h2></div></div></div><p>
 When a Java class is made accessible to Orc using the <code class="code"><span class="hl-keyword">class</span></code> declaration,
 the Orc typechecker interacts with the Java type system to make Java types available
 in Orc. This feature is experimental and does not allow access to all of Java's typing
@@ -3578,7 +3694,7 @@ Subtyping between Java object types is determined by Java's subtyping relation: 
 one class is a subclass of the other, then one type will be a subtype of the other.
 The typechecker does not implement support a full join operation for Java types; it will
 not find the least common ancestor of two classes as the join.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N11987"></a>4.4.&nbsp;Syntax of Typed Orc</h2></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N11A2D"></a>4.4.&nbsp;Syntax of Typed Orc</h2></div></div></div><p>
 The following figure summarizes the syntax of typed Orc as an extension of untyped Orc. 
 The original Orc grammar rules are abbreviated by ellipses (...). 
 </p><p>
@@ -3640,7 +3756,7 @@ The original Orc grammar rules are abbreviated by ellipses (...).
                                 </td><td align="left">&nbsp;</td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">P <code class="code">::</code> T</td><td align="left">&nbsp;</td><td align="left">
                                     <span class="emphasis"><em>type ascription</em></span>
                                 </td></tr></tbody></table></div></div><br class="table-break">
-</p></div></div><div class="appendix" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="N11B8B"></a>Appendix&nbsp;A.&nbsp;Complete Syntax of Orc</h2></div></div></div><p>
+</p></div></div><div class="appendix" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="N11C31"></a>Appendix&nbsp;A.&nbsp;Complete Syntax of Orc</h2></div></div></div><p>
 
 <div class="table"><a name="full-ebnf-grammar"></a><p class="title"><b>Table&nbsp;A.1.&nbsp;Complete Syntax of Orc</b></p><div class="table-contents"><table summary="Complete Syntax of Orc" border="0" width="80%"><colgroup><col align="right"><col align="center"><col align="left"><col align="left"><col align="left"></colgroup><tbody><tr><td align="right">E</td><td align="center">::=</td><td align="left">&nbsp;</td><td align="left">
                                 <span class="emphasis"><em>Expression</em></span>
@@ -3758,7 +3874,7 @@ The original Orc grammar rules are abbreviated by ellipses (...).
 </p><p>
 Where relevant, syntactic constructs are ordered by precedence, from highest to lowest. For example, among expressions, calls have higher precedence than
 any of the combinators, which in turn have higher precedence than conditionals.
-</p></div><div class="appendix" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="appendix.library"></a>Appendix&nbsp;B.&nbsp;Standard Library</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#N11E81">B.1. Overview</a></span></dt><dt><span class="section"><a href="#N11E8B">B.2. Types and Notation</a></span></dt><dt><span class="section"><a href="#N11EA7">B.3. Reference</a></span></dt><dd><dl><dt><span class="section"><a href="#N11EAB">B.3.1. core.inc: Fundamental sites and operators.</a></span></dt><dt><span class="section"><a href="#N1213A">B.3.2. state.inc: General-purpose supplemental data structures.</a></span></dt><dt><span class="section"><a href="#N127D0">B.3.3. idioms.inc: Higher-order Orc programming idioms.</a></span></dt><dt><span class="section"><a href="#N12A05">B.3.4. list.inc: Operations on lists.</a></span></dt><dt><span class="section"><a href="#N12DE7">B.3.5. text.inc: Operations on strings.</a></span></dt><dt><span class="section"><a href="#N12E82">B.3.6. time.inc: Real and logical time.</a></span></dt><dt><span class="section"><a href="#N12EDC">B.3.7. util.inc: Miscellaneous utility functions.</a></span></dt></dl></dd></dl></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N11E81"></a>B.1.&nbsp;Overview</h2></div></div></div><p>
+</p></div><div class="appendix" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="appendix.library"></a>Appendix&nbsp;B.&nbsp;Standard Library</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#N11F27">B.1. Overview</a></span></dt><dt><span class="section"><a href="#N11F31">B.2. Types and Notation</a></span></dt><dt><span class="section"><a href="#N11F4D">B.3. Reference</a></span></dt><dd><dl><dt><span class="section"><a href="#N11F51">B.3.1. core.inc: Fundamental sites and operators.</a></span></dt><dt><span class="section"><a href="#N121E0">B.3.2. state.inc: General-purpose supplemental data structures.</a></span></dt><dt><span class="section"><a href="#N12876">B.3.3. idioms.inc: Higher-order Orc programming idioms.</a></span></dt><dt><span class="section"><a href="#N12AAB">B.3.4. list.inc: Operations on lists.</a></span></dt><dt><span class="section"><a href="#N12E8D">B.3.5. text.inc: Operations on strings.</a></span></dt><dt><span class="section"><a href="#N12F28">B.3.6. time.inc: Real and logical time.</a></span></dt><dt><span class="section"><a href="#N12F82">B.3.7. util.inc: Miscellaneous utility functions.</a></span></dt></dl></dd></dl></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N11F27"></a>B.1.&nbsp;Overview</h2></div></div></div><p>
 The standard library is a set of declarations implicitly available to all Orc
 programs.  In this section we give an informal description of the standard library,
 including the type of each declaration and a short explanation of its use.
@@ -3769,7 +3885,7 @@ Orc, the entire Java standard library is available to Orc programs via
 <code class="code"><span class="hl-keyword">class</span></code> declarations. Therefore the Orc standard library aims only
 to provide convenience for the most common Orc idioms, not the complete set of
 features needed for general-purpose programming.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N11E8B"></a>B.2.&nbsp;Types and Notation</h2></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N11F31"></a>B.2.&nbsp;Types and Notation</h2></div></div></div><p>
 The standard library is fully compatible with the static type checker; all
 library declarations have associated type declarations, which also serve as
 helpful documentation. 
@@ -3782,7 +3898,7 @@ The object type can include type variables which are referenced by the member
 type, so for example <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Buffer</span>[<span class="hl-variable">A</span>].<span class="hl-site">get</span>() :: <span class="hl-variable">A</span></code> means that
 when the <code class="code"><span class="hl-variable">get</span></code> method is called on a <code class="code"><span class="hl-variable">Buffer</span></code> holding an
 arbitrary element type <code class="code"><span class="hl-variable">A</span></code>, it will return a value of the same type.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N11EA7"></a>B.3.&nbsp;Reference</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11EAB"></a>B.3.1.&nbsp;core.inc: Fundamental sites and operators.</h3></div></div></div><p>Fundamental sites and operators.</p><p>These declarations include both prefix and infix sites (operators).  For
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N11F4D"></a>B.3.&nbsp;Reference</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11F51"></a>B.3.1.&nbsp;core.inc: Fundamental sites and operators.</h3></div></div></div><p>Fundamental sites and operators.</p><p>These declarations include both prefix and infix sites (operators).  For
 consistency, all declarations are written in prefix form, with the site name
 followed by the operands.  When the site name is surrounded in parentheses, as
 in <code class="code">(+)</code>, it denotes an infix operator.</p><p>For a more complete description of the built-in operators and their syntax, see
@@ -3984,7 +4100,7 @@ or equal to this number.</p></td></tr><tr><td><p><span class="term">
                         </span></p></td><td><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">ceil</span>(<span class="hl-variable">Number</span>) :: <span class="hl-variable">Integer</span></code>
                             </p><p>Return the least integer greater than
-or equal to this number.</p></td></tr></tbody></table></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1213A"></a>B.3.2.&nbsp;state.inc: General-purpose supplemental data structures.</h3></div></div></div><p>General-purpose supplemental data structures.</p><div class="variablelist"><table border="0"><col valign="top" align="left"><tbody><tr><td><p><span class="term">
+or equal to this number.</p></td></tr></tbody></table></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N121E0"></a>B.3.2.&nbsp;state.inc: General-purpose supplemental data structures.</h3></div></div></div><p>General-purpose supplemental data structures.</p><div class="variablelist"><table border="0"><col valign="top" align="left"><tbody><tr><td><p><span class="term">
                             <code class="code"><span class="hl-variable">Some</span></code>
                         </span></p></td><td><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Some</span>[<span class="hl-variable">A</span>](<span class="hl-variable">A</span>) :: <span class="hl-site">Option</span>[<span class="hl-variable">A</span>]</code>
@@ -4609,7 +4725,7 @@ iterating over the set returns disjoint intervals in increasing order.</p><div c
                                     <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Intervals</span>[<span class="hl-variable">A</span>].<span class="hl-site">union</span>(<span class="hl-site">Interval</span>[<span class="hl-variable">A</span>]) :: <span class="hl-site">Intervals</span>[<span class="hl-variable">A</span>]</code>
                                     </p><p>Return the union of this set of intervals with the given interval.
 This method is most efficient when the given interval is before
-most of the intervals in the set.</p></td></tr></tbody></table></div></td></tr></tbody></table></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N127D0"></a>B.3.3.&nbsp;idioms.inc: Higher-order Orc programming idioms.</h3></div></div></div><p>Higher-order Orc programming idioms.
+most of the intervals in the set.</p></td></tr></tbody></table></div></td></tr></tbody></table></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N12876"></a>B.3.3.&nbsp;idioms.inc: Higher-order Orc programming idioms.</h3></div></div></div><p>Higher-order Orc programming idioms.
 Many of these are standard functional-programming
 combinators borrowed from Haskell or Scheme.</p><div class="variablelist"><table border="0"><col valign="top" align="left"><tbody><tr><td><p><span class="term">
                             <code class="code"><span class="hl-variable">apply</span></code>
@@ -4819,7 +4935,7 @@ Return the list when the function terminates.</p><p>Example:
 <span class="hl-keyword">def</span> <span class="hl-site">collect</span>(<span class="hl-variable">p</span>) =
   <span class="hl-keyword">val</span> <span class="hl-variable">b</span> = <span class="hl-site">Buffer</span>[<span class="hl-variable">A</span>]()
   <span class="hl-site">p</span>() <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">b</span>.<span class="hl-site">put</span>(<span class="hl-variable">x</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
-  <span class="hl-combinator">;</span> <span class="hl-variable">b</span>.<span class="hl-site">getAll</span>()</pre></p></td></tr></tbody></table></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N12A05"></a>B.3.4.&nbsp;list.inc: Operations on lists.</h3></div></div></div><p>Operations on lists.
+  <span class="hl-combinator">;</span> <span class="hl-variable">b</span>.<span class="hl-site">getAll</span>()</pre></p></td></tr></tbody></table></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N12AAB"></a>B.3.4.&nbsp;list.inc: Operations on lists.</h3></div></div></div><p>Operations on lists.
 Many of these functions are similar to those in the Haskell prelude, but
 operate on the elements of a list in parallel.</p><div class="variablelist"><table border="0"><col valign="top" align="left"><tbody><tr><td><p><span class="term">
                             <code class="code"><span class="hl-variable">each</span></code>
@@ -5235,7 +5351,7 @@ The disjunction of an empty list is <code class="code"><span class="hl-literal">
 <span class="hl-keyword">def</span> <span class="hl-site">maximum</span>(<span class="hl-variable">xs</span>) =
   <span class="hl-comment">-- this def appeases the typechecker</span>
   <span class="hl-keyword">def</span> <span class="hl-site">maxA</span>(<span class="hl-variable">x</span>::<span class="hl-variable">A</span>,<span class="hl-variable">y</span>::<span class="hl-variable">A</span>) = <span class="hl-site">max</span>(<span class="hl-variable">x</span>,<span class="hl-variable">y</span>)
-  <span class="hl-site">foldl1</span>(<span class="hl-variable">maxA</span>, <span class="hl-variable">xs</span>)</pre></p></td></tr></tbody></table></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N12DE7"></a>B.3.5.&nbsp;text.inc: Operations on strings.</h3></div></div></div><p>Operations on strings.</p><div class="variablelist"><table border="0"><col valign="top" align="left"><tbody><tr><td><p><span class="term">
+  <span class="hl-site">foldl1</span>(<span class="hl-variable">maxA</span>, <span class="hl-variable">xs</span>)</pre></p></td></tr></tbody></table></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N12E8D"></a>B.3.5.&nbsp;text.inc: Operations on strings.</h3></div></div></div><p>Operations on strings.</p><div class="variablelist"><table border="0"><col valign="top" align="left"><tbody><tr><td><p><span class="term">
                             <code class="code"><span class="hl-variable">cat</span></code>
                         </span></p></td><td><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">cat</span>(<span class="hl-variable">Top</span>, ...) :: <span class="hl-variable">String</span></code>
@@ -5300,7 +5416,7 @@ and concatenate the results.</p><p><b>Implementation.&nbsp;</b><pre class="progr
 each string.</p><p><b>Implementation.&nbsp;</b><pre class="programlisting"><span class="hl-keyword">def</span> <span class="hl-site">unwords</span>(<span class="hl-site">List</span>[<span class="hl-variable">String</span>]) :: <span class="hl-variable">String</span>
 <span class="hl-keyword">def</span> <span class="hl-site">unwords</span>([]) = <span class="hl-literal">""</span>
 <span class="hl-keyword">def</span> <span class="hl-site">unwords</span>([<span class="hl-variable">word</span>]) = <span class="hl-variable">word</span>
-<span class="hl-keyword">def</span> <span class="hl-site">unwords</span>(<span class="hl-variable">word</span>:<span class="hl-variable">words</span>) = <span class="hl-site">cat</span>(<span class="hl-variable">word</span>, <span class="hl-literal">" "</span>, <span class="hl-site">unwords</span>(<span class="hl-variable">words</span>))</pre></p></td></tr></tbody></table></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N12E82"></a>B.3.6.&nbsp;time.inc: Real and logical time.</h3></div></div></div><p>Real and logical time.</p><div class="variablelist"><table border="0"><col valign="top" align="left"><tbody><tr><td><p><span class="term">
+<span class="hl-keyword">def</span> <span class="hl-site">unwords</span>(<span class="hl-variable">word</span>:<span class="hl-variable">words</span>) = <span class="hl-site">cat</span>(<span class="hl-variable">word</span>, <span class="hl-literal">" "</span>, <span class="hl-site">unwords</span>(<span class="hl-variable">words</span>))</pre></p></td></tr></tbody></table></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N12F28"></a>B.3.6.&nbsp;time.inc: Real and logical time.</h3></div></div></div><p>Real and logical time.</p><div class="variablelist"><table border="0"><col valign="top" align="left"><tbody><tr><td><p><span class="term">
                             <code class="code"><span class="hl-variable">Rtimer</span></code>
                         </span></p></td><td><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Rtimer</span>(<span class="hl-variable">Integer</span>) :: <span class="hl-variable">Top</span></code>
@@ -5332,7 +5448,7 @@ calls (other than calls to <code class="code"><span class="hl-variable">Ltimer</
                         </span></p></td><td><p>
                                 <code class="code"><span class="hl-keyword">def</span> <span class="hl-site">metronome</span>(<span class="hl-variable">Integer</span>) :: <span class="hl-variable">Top</span></code>
                             </p><p>Publish a signal at regular intervals, indefinitely. The period is given by the
-argument, in milliseconds.</p></td></tr></tbody></table></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N12EDC"></a>B.3.7.&nbsp;util.inc: Miscellaneous utility functions.</h3></div></div></div><p>Miscellaneous utility functions.</p><div class="variablelist"><table border="0"><col valign="top" align="left"><tbody><tr><td><p><span class="term">
+argument, in milliseconds.</p></td></tr></tbody></table></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N12F82"></a>B.3.7.&nbsp;util.inc: Miscellaneous utility functions.</h3></div></div></div><p>Miscellaneous utility functions.</p><div class="variablelist"><table border="0"><col valign="top" align="left"><tbody><tr><td><p><span class="term">
                             <code class="code"><span class="hl-variable">random</span></code>
                         </span></p></td><td><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">random</span>() :: <span class="hl-variable">Integer</span></code>
