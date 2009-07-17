@@ -46,6 +46,10 @@
   <keyword>as</keyword>
   <keyword>type</keyword>
   <keyword>atomic</keyword>
+  <keyword>throw</keyword>
+  <keyword>try</keyword>
+  <keyword>catch</keyword>
+
 </highlighter>
 
 <!-- operators -->
