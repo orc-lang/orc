@@ -5,14 +5,14 @@ target of a call, a special syntax for writing calls in an object-oriented style
 extensions to pattern matching, and new forms of declarations, and ML-style
 datatypes.
 </p><p>
-The following figure summarizes further extensions to the syntax of Orc. 
-The Orc and Cor grammar rules presented earlier are abbreviated by ellipses (...).
-The item G+ means "one or more instances of G concatenated together". 
-</p><p>
 <div class="table"><a name="advanced-ebnf-table"></a><p class="title"><b>Table&nbsp;1.4.&nbsp;Advanced Syntax of Orc</b></p><div class="table-contents"><table summary="Advanced Syntax of Orc" border="0" width="80%"><colgroup><col align="right"><col align="center"><col align="left"><col align="left"><col align="left"></colgroup><tbody><tr><td align="right">E</td><td align="center">::=</td><td align="left">...</td><td align="left">
                                     <span class="emphasis"><em>Expression</em></span>
                                 </td><td align="left">&nbsp;</td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E G+</td><td align="left">&nbsp;</td><td align="left">
                                     <span class="emphasis"><em>generalized call</em></span>
+                                </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">T</td><td align="left">&nbsp;</td><td align="left">
+                                    <span class="emphasis"><em>throw expression</em></span>
+                                </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">TC</td><td align="left">&nbsp;</td><td align="left">
+                                    <span class="emphasis"><em>try/catch block</em></span>
                                 </td></tr><tr><td align="right">G</td><td align="center">::=</td><td align="left">&nbsp;</td><td align="left">
                                     <span class="emphasis"><em>Argument group</em></span>
                                 </td><td align="left">&nbsp;</td></tr><tr><td align="right">&nbsp;</td><td align="center">&nbsp;</td><td align="left"> <code class="code">(</code> E <code class="code">,</code> ... <code class="code">,</code> E <code class="code">)</code> </td><td align="left">&nbsp;</td><td align="left">
@@ -45,8 +45,14 @@ The item G+ means "one or more instances of G concatenated together".
                                     <span class="emphasis"><em>inclusion</em></span>
                                 </td></tr><tr><td align="right">DT</td><td align="center">::=</td><td align="left"> X<code class="code">(<span class="hl-variable">_</span>,</code> ... <code class="code">,<span class="hl-variable">_</span>)</code> </td><td align="left">
                                     <span class="emphasis"><em>Datatype</em></span>
+                                </td><td align="left">&nbsp;</td></tr><tr><td align="right">T</td><td align="center">::=</td><td align="left"> <code class="code"><span class="hl-keyword">throw</span> </code> E</td><td align="left">
+                                    <span class="emphasis"><em>Throw</em></span>
+                                </td><td align="left">&nbsp;</td></tr><tr><td align="right">TC</td><td align="center">::=</td><td align="left"> <code class="code"><span class="hl-keyword">try</span> ( </code> E <code class="code"> ) </code> C+</td><td align="left">
+                                    <span class="emphasis"><em>Try/Catch</em></span>
+                                </td><td align="left">&nbsp;</td></tr><tr><td align="right">C</td><td align="center">::=</td><td align="left"> <code class="code"><span class="hl-keyword">catch</span> ( </code> P <code class="code"> ) </code> E</td><td align="left">
+                                    <span class="emphasis"><em>Exception Handler</em></span>
                                 </td><td align="left">&nbsp;</td></tr></tbody></table></div></div><br class="table-break">
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10B23"></a>1.4.1.&nbsp;Special call forms</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10B26"></a>1.4.1.1.&nbsp;The <code class="code">.</code> notation</h4></div></div></div><p>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10B6F"></a>1.4.1.&nbsp;Special call forms</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10B72"></a>1.4.1.1.&nbsp;The <code class="code">.</code> notation</h4></div></div></div><p>
 In many object-oriented programming languages, one calls a method or accesses a field of an
 object using the dot operator; for example, <code class="code"><span class="hl-variable">obj</span>.<span class="hl-site">m</span>()</code> calls the method
 <code class="code"><span class="hl-variable">m</span></code> of the object <code class="code"><span class="hl-variable">obj</span></code>. 
@@ -71,7 +77,7 @@ A call such as <code class="code"><span class="hl-variable">c</span>.<span class
 is to put values on the channel. Next, that site is called on the argument
 <code class="code"><span class="hl-literal">6</span></code>, sending 6 on the channel. Readers familiar with functional programming
 will recognize this technique as <span class="emphasis"><em>currying</em></span>.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10B7C"></a>1.4.1.2.&nbsp;Currying</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10BC8"></a>1.4.1.2.&nbsp;Currying</h4></div></div></div><p>
 It is sometimes useful to <span class="emphasis"><em>stage</em></span> the arguments to a function; that is,
 rather than writing a function on two arguments, one instead writes a function on one
 argument which returns a function taking the second argument and performing the remainder
@@ -121,7 +127,7 @@ equivalent:
 <span class="hl-site">f</span>(<span class="hl-literal">4</span>)
 </pre>
 
-</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10BBD"></a>1.4.2.&nbsp;Extensions to pattern matching</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10BC0"></a>1.4.2.1.&nbsp;As pattern</h4></div></div></div><p>
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10C09"></a>1.4.2.&nbsp;Extensions to pattern matching</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10C0C"></a>1.4.2.1.&nbsp;As pattern</h4></div></div></div><p>
 In taking apart a value with a pattern, it is often useful to capture intermediate results.
 
 <pre class="programlisting">
@@ -136,7 +142,7 @@ sub-pattern. Here is an equivalent version of the above code.
 <pre class="programlisting">
 <span class="hl-keyword">val</span> ((<span class="hl-variable">ax</span>,<span class="hl-variable">ay</span>) <span class="hl-keyword">as</span> <span class="hl-variable">a</span>, (<span class="hl-variable">bx</span>,<span class="hl-variable">by</span>) <span class="hl-keyword">as</span> <span class="hl-variable">b</span>) = ((<span class="hl-literal">1</span>,<span class="hl-literal">2</span>),(<span class="hl-literal">3</span>,<span class="hl-literal">4</span>))
 </pre>
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10BCE"></a>1.4.2.2.&nbsp;Equality pattern</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10C1A"></a>1.4.2.2.&nbsp;Equality pattern</h4></div></div></div><p>
 When a variable occurs in a pattern, it is bound to the value being matched against that pattern. What
 if instead we would like to use the value of a bound variable as a test pattern, in a way similar to
 a literal value like <code class="code"><span class="hl-literal">0</span></code>? 
@@ -199,7 +205,7 @@ need to distinguish between successfully returning a value (<code class="code"><
 completing but having no meaningful value to return (<code class="code"><span class="hl-site">None</span>()</code>). For example, a lookup
 function might return <code class="code"><span class="hl-site">Some</span>(<span class="hl-variable">result</span>)</code> if it found a result, or return <code class="code"><span class="hl-site">None</span>()</code>
 if it successfully performed the lookup but found no suitable result.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10C2D"></a>1.4.4.&nbsp;New forms of declarations</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="section.orc.class"></a>1.4.4.1.&nbsp;
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10C79"></a>1.4.4.&nbsp;New forms of declarations</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="section.orc.class"></a>1.4.4.1.&nbsp;
 
                         <code class="code"><span class="hl-keyword">class</span></code> declaration</h4></div></div></div><p>
 When Orc is run on top of an object-oriented programming language, classes
@@ -221,8 +227,7 @@ This instance of String is a Java object; its methods are called and its fields
 are accessed using the dot (<code class="code">.</code>) notation, just as one would expect
 in Java.  For complete details of how Orc interacts with Java, see
 <a class="link" href="ch03s02.html" title="3.2.&nbsp; class Sites">Java Integration</a>.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10C4F"></a>1.4.4.2.&nbsp;
-
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10C9B"></a>1.4.4.2.&nbsp;
                         <code class="code"><span class="hl-keyword">include</span></code> declaration</h4></div></div></div><p>
 It is often convenient to group related declarations into units that can be
 shared between programs. The <code class="code"><span class="hl-keyword">include</span></code> declaration offers a simple
@@ -251,4 +256,115 @@ replaced the include declaration. An included file may itself contain
 Note that these declarations still obey the rules of lexical scope. Also, Orc 
 does not detect shared declarations; if the same file is included twice, its 
 declarations occur twice.
-</p></div></div></div><script type="text/javascript" src="/orchard/orc.js"></script><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="ch01s03.html">Prev</a>&nbsp;</td><td align="center" width="20%"><a accesskey="u" href="ch01.html">Up</a></td><td align="right" width="40%">&nbsp;<a accesskey="n" href="ch02.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">1.3.&nbsp;Orc: Orchestrating services&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;Chapter&nbsp;2.&nbsp;Programming Methodology</td></tr></table></div></body></html>
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10CB5"></a>1.4.5.&nbsp;Exceptions in Orc</h3></div></div></div><p>
+An experimental feature recently added to Orc is exceptions (as of revsion 1183).
+Exceptions add two new expressions to the Orc syntax: try/catch blocks, and 
+throw expressions.  Throw expressions are simple - using the keyword <code class="code"><span class="hl-keyword">throw</span></code>,
+they take an Orc expression, evaluate it, and raise the expression's published value to
+be caught by an enclosing exception handler.  Note that if the enclosed expression 
+publishes multiple values, mulitple exceptions will be raised.  Examples of throw expressions:
+</p><p>
+<div class="itemizedlist"><ul type="disc"><li><code class="code"><span class="hl-keyword">throw</span> <span class="hl-literal">3</span></code></li><li><code class="code"><span class="hl-keyword">throw</span> <span class="hl-literal">"error"</span></code></li><li><code class="code"><span class="hl-keyword">throw</span> (<span class="hl-literal">3</span> <span class="hl-combinator">|</span> <span class="hl-literal">4</span>)</code></li></ul></div>
+</p><p>
+Exceptions are caught via Try/Catch blocks.  Try blocks enclose the
+Orc exception to execute, which may or may not throw any exceptions.
+Catch handlers then specify patterns against which exception values should be
+matched against, along with a corresponding handler to call if the 
+exception value matches the pattern.  Multiple catch statements 
+can be specified, and the first match that occurs is the one executed.
+In the following example, two exceptions are thrown by the try block, and one
+value published.
+</p><p>
+<pre class="programlisting">
+<span class="hl-comment">{- simple exception expressions -}</span>
+<span class="hl-keyword">try</span>(<span class="hl-literal">0</span> <span class="hl-combinator">|</span> <span class="hl-keyword">throw</span> <span class="hl-literal">1</span> <span class="hl-combinator">|</span> <span class="hl-keyword">throw</span> <span class="hl-literal">2</span>) 
+<span class="hl-keyword">catch</span> (<span class="hl-literal">1</span>) <span class="hl-literal">"one"</span>
+<span class="hl-keyword">catch</span> (<span class="hl-variable">X</span>) <span class="hl-variable">X</span>
+</pre>
+</p><p>
+Also like Java, exception handlers can be nested - if the immediately enclosing
+Try/Catch block has no handler than matches the thrown exception, the
+Orc interpreter attempts to match against the next enclosing handler.  If
+no handler matches the exception (or no enclosing handler exists) the exception
+is dropped (ie, treated as a stop) and an error is reported to the interpreter.
+</p><p>
+<pre class="programlisting">
+<span class="hl-comment">{- a contrived nested handler example -}</span>
+<span class="hl-keyword">try</span>(
+  <span class="hl-keyword">try</span>(<span class="hl-keyword">throw</span> <span class="hl-literal">3</span>)
+  <span class="hl-keyword">catch</span> (<span class="hl-literal">1</span>) <span class="hl-literal">"one"</span>
+)
+<span class="hl-keyword">catch</span> (<span class="hl-variable">X</span>) <span class="hl-variable">X</span>
+</pre>
+</p><p>
+When combining exceptions with the combinators, ie the pruning or
+otherwise combinators, emantically, exceptions are silent.  For example,
+in the following expression, both <code class="code"><span class="hl-literal">0</span></code> and
+<code class="code"><span class="hl-literal">1</span></code> are published - <code class="code"><span class="hl-keyword">throw</span> <span class="hl-literal">0</span></code> is silent, not publishing
+any value, causing the otherwise combinator to execute its alternate expression:
+</p><p>
+<pre class="programlisting">
+<span class="hl-comment">{- the throw expression is treated as a silent by the combinators -}</span>
+<span class="hl-keyword">try</span> (<span class="hl-keyword">throw</span> <span class="hl-literal">0</span><span class="hl-combinator">;</span> <span class="hl-literal">1</span>) <span class="hl-keyword">catch</span>(<span class="hl-variable">X</span>) <span class="hl-variable">X</span>
+</pre>
+</p><p>
+Similarly, exceptions thrown with a pruning combinator does not terminate 
+the expression (since the throw is treated as a silent), and throwing a silent expression
+(ie, <code class="code"><span class="hl-keyword">throw</span> <span class="hl-keyword">stop</span></code>) results in no exception being thrown - the entire
+expression functions as a stop.
+</p><p>
+Finally, Orc also allows Java exceptions to be matched against by Orc exception
+handlers.  This is especially useful when calling Java functions directly,
+which might throw exceptions in cases of failure, seen here in this extended
+example.  The key is to pattern match against the <code class="code"><span class="hl-variable">FileNotFoundException</span></code>,
+since the Orc engine will now propogate any exceptions thrown by a site to 
+enclosing catch handler:
+</p><p>
+<pre class="programlisting">
+<span class="hl-comment">{- catching exceptions thrown by Java sites via pattern matching -}</span>
+<span class="hl-keyword">class</span> <span class="hl-variable">FileInputStream</span> = <span class="hl-variable">java</span>.<span class="hl-variable">io</span>.<span class="hl-variable">FileInputStream</span>
+<span class="hl-keyword">class</span> <span class="hl-variable">InputStreamReader</span> = <span class="hl-variable">java</span>.<span class="hl-variable">io</span>.<span class="hl-variable">InputStreamReader</span>
+<span class="hl-keyword">class</span> <span class="hl-variable">StringBuilder</span> = <span class="hl-variable">java</span>.<span class="hl-variable">lang</span>.<span class="hl-variable">StringBuilder</span>
+<span class="hl-keyword">class</span> <span class="hl-variable">FileNotFoundException</span> = <span class="hl-variable">java</span>.<span class="hl-variable">io</span>.<span class="hl-variable">FileNotFoundException</span>
+
+<span class="hl-keyword">def</span> <span class="hl-site">GetContent</span>(<span class="hl-variable">InputStreamReader</span>) :: <span class="hl-variable">String</span>
+<span class="hl-keyword">def</span> <span class="hl-site">GetContent</span>(<span class="hl-variable">in</span>) =
+  <span class="hl-keyword">val</span> <span class="hl-variable">buf</span> = <span class="hl-site">Array</span>[<span class="hl-variable">Integer</span>](<span class="hl-literal">1024</span>, <span class="hl-literal">"char"</span>)
+  <span class="hl-keyword">val</span> <span class="hl-variable">out</span> = <span class="hl-site">StringBuilder</span>()
+  <span class="hl-keyword">def</span> <span class="hl-site">loop</span>(<span class="hl-variable">Integer</span>) :: <span class="hl-variable">String</span>
+  <span class="hl-keyword">def</span> <span class="hl-site">loop</span>(<span class="hl-variable">len</span>) =
+    <span class="hl-keyword">if</span> <span class="hl-variable">len</span> &lt; <span class="hl-literal">0</span> <span class="hl-keyword">then</span>
+      <span class="hl-variable">out</span>.<span class="hl-site">toString</span>()
+    <span class="hl-keyword">else</span>
+      <span class="hl-variable">out</span>.<span class="hl-site">append</span>(<span class="hl-variable">buf</span>, <span class="hl-literal">0</span>, <span class="hl-variable">len</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+      <span class="hl-site">loop</span>(<span class="hl-variable">in</span>.<span class="hl-site">read</span>(<span class="hl-variable">buf</span>))
+  <span class="hl-site">loop</span>(<span class="hl-variable">in</span>.<span class="hl-site">read</span>(<span class="hl-variable">buf</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-variable">out</span>.<span class="hl-site">toString</span>()
+
+
+<span class="hl-keyword">def</span> <span class="hl-site">printFile</span>(<span class="hl-variable">File</span>) = 
+<span class="hl-site">InputStreamReader</span>(<span class="hl-site">FileInputStream</span>(<span class="hl-variable">File</span>)) <span class="hl-combinator">&gt;</span><span class="hl-variable">reader</span><span class="hl-combinator">&gt;</span>
+<span class="hl-site">println</span>(<span class="hl-site">GetContent</span>(<span class="hl-variable">reader</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+<span class="hl-keyword">stop</span>
+
+<span class="hl-keyword">try</span>(<span class="hl-site">printFile</span>(<span class="hl-literal">"non/existant/file"</span>)) 
+<span class="hl-keyword">catch</span> (<span class="hl-site">FileNotFoundException</span>(<span class="hl-variable">E</span>)) <span class="hl-literal">"could not read file: "</span> + <span class="hl-variable">e</span>.<span class="hl-site">message</span>()
+
+</pre>
+</p><p>
+This functionality also allows certain Orc runtime errors to be caught.
+Here are a few examples of runtime errors which might occur, and a full
+list can be found in the 
+<a class="link" href="http://orc.csres.utexas.edu/javadoc/STABLE/orc/error/runtime/TokenException.html" target="_top">Javadoc</a>.
+</p><p>
+<div class="itemizedlist"><ul type="disc"><li><code class="code"><span class="hl-variable">ArgumentTypeMismatchException</span></code></li><li><code class="code"><span class="hl-variable">StackLimitReachedError</span></code></li><li><code class="code"><span class="hl-variable">MessageNotUnderstoodException</span></code></li></ul></div>
+</p><p>
+<pre class="programlisting">
+<span class="hl-comment">{- Detecting runtime errors using exceptions -}</span>
+<span class="hl-keyword">class</span> <span class="hl-variable">ArgumentTypeMismatchException</span> = <span class="hl-variable">orc</span>.<span class="hl-variable">error</span>.<span class="hl-variable">runtime</span>.<span class="hl-variable">ArgumentTypeMismatchException</span>
+
+<span class="hl-keyword">try</span>(
+  <span class="hl-keyword">if</span> <span class="hl-literal">3</span> <span class="hl-keyword">then</span> <span class="hl-literal">"foo"</span>
+) <span class="hl-keyword">catch</span> (<span class="hl-site">ArgumentTypeMismatchException</span>(<span class="hl-variable">e</span>)) <span class="hl-literal">"error"</span>
+</pre>
+</p></div></div><script type="text/javascript" src="/orchard/orc.js"></script><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="ch01s03.html">Prev</a>&nbsp;</td><td align="center" width="20%"><a accesskey="u" href="ch01.html">Up</a></td><td align="right" width="40%">&nbsp;<a accesskey="n" href="ch02.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">1.3.&nbsp;Orc: Orchestrating services&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;Chapter&nbsp;2.&nbsp;Programming Methodology</td></tr></table></div></body></html>
