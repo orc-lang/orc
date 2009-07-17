@@ -2566,7 +2566,7 @@ declarations occur twice.
 <section><title>Exceptions in Orc</title>
 
 <para>
-An experimental feature recently added to Orc is exceptions.
+An experimental feature recently added to Orc is exceptions (as of revsion 1183).
 Exceptions add two new expressions to the Orc syntax: try/catch blocks, and 
 throw expressions.  Throw expressions are simple - using the keyword <code>throw</code>,
 they take an Orc expression, evaluate it, and raise the expression's published value to
