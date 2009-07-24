@@ -4137,7 +4137,7 @@ her forks.
 </para>
 
 <para>
-Calling <code>take</code> attempts to acquire a pair of forks <code>(a,b)</code> in two steps:
+Calling <code>take(a,b)</code> attempts to acquire a pair of forks <code>(a,b)</code> in two steps:
 wait for fork <code>a</code> to become available, then immediately attempt to acquire fork <code>b</code>.
 The call <code>b.acquirenb()</code> either acquires <code>b</code> and responds immediately, or halts if <code>b</code> is not available.
 If <code>b</code> is acquired, signal success; otherwise, release <code>a</code>, and
@@ -4146,7 +4146,7 @@ using the auxiliary function <code>shuffle</code>.
 </para>
 
 <para>
-The function <code>philosophers</code> recursively creates a chain of <code>n</code>
+The function call <code>philosophers(n,a,b)</code> recursively creates a chain of <code>n</code>
 philosophers, bounded by fork <code>a</code> on the left and <code>b</code> on the right. The
 goal expression of the program calls <code>philosophers</code> to create a chain of
 five philosophers bounded on the left and right by the same fork; hence, a
