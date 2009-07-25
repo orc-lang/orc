@@ -1,5 +1,7 @@
 package orc.ast.oil;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import orc.ast.oil.xml.Expression;
@@ -15,11 +17,36 @@ public class Catch extends Expr {
 	
 	public Catch(Def handler, Expr tryBlock){
 		this.handler = handler;
+		
+		/* Currently, the argument handler type is assumed to be Bot, as a hack
+		 * in the typechecker to allow partial checking of try-catch constructs,
+		 * in advance of a more complete solution that accounts for both explicitly
+		 * thrown values and Java-level exceptions thrown by sites.
+		 */
+		handler.argTypes = new LinkedList<Type>(); 
+		handler.argTypes.add(Type.BOT);
+		
 		this.tryBlock = tryBlock;
 	}
 	
 	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
-		return tryBlock.typesynth(ctx, typectx);
+		
+		// Find the type of the try block
+		Type blockType = tryBlock.typesynth(ctx, typectx);
+	
+		/* We ensure that the handler returns the try block type or some subtype.
+		 * This is too conservative; the overall try-catch type could instead
+		 * be the join of the try block and the handler return. However, in the absence of
+		 * reliable type information about the argument to the handler (see comment
+		 * in constructor), it is saner to check against a stated type rather than trying to 
+		 * synthesize one.
+		 */
+		handler.resultType = blockType;
+		handler.checkDef(ctx, typectx);
+		handler.resultType = null;
+		
+		// The type of a try-catch, as described above, is just the type of the try block.
+		return blockType;
 	}
 	
 	public void addIndices(Set<Integer> indices, int depth) {

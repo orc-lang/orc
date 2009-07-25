@@ -3,7 +3,7 @@ package orc.ast.simple.type;
 import orc.env.Env;
 
 /**
- * The syntactic type '_', a placeholder for an unknown type.
+ * The syntactic type 'Top', supertype of all other types.
  * 
  * @author dkitchin
  *
