@@ -2563,7 +2563,7 @@ declarations occur twice.
 
 </section>
 
-<section><title>Exceptions in Orc</title>
+<section id="exceptions"><title>Exceptions in Orc</title>
 
 <para>
 An experimental feature recently added to Orc is exceptions (as of revsion 1183).
@@ -4738,6 +4738,22 @@ described in <link linkend="section.services.java.method">Method Resolution</lin
 
 </section>
 
+<section><title>Pattern Matching</title>
+
+<para>
+If <code>C</code> is bound to a Java class, it can be used as a pattern.
+A pattern <code>C(x)</code> matches any Java object of that class or
+any of its subclasses. The variable <code>x</code> is simply bound
+to the object again; thus the matcher is just a partial identity function.
+</para>
+
+<para>
+This is most often used to match <link linkend="exceptions">exceptions</link>
+against specific Java exception types in a <code>catch</code>.
+</para>
+
+</section>
+
 <section id="section.services.java.method"><title>Method Resolution</title>
 
 <para>
@@ -6169,6 +6185,55 @@ not find the least common ancestor of two classes as the join.
 </para>
 
 </section>
+
+
+<section><title>Exception Handling</title>
+
+<para>
+The Orc typechecker currently provides only partial support for the typechecking of the
+<code>try</code>/<code>catch</code> <link linkend="exceptions">exception handling mechanism</link>.
+</para>
+
+<para>
+The expression <code>throw</code> E always has type <code>Bot</code>. E is typechecked
+to ensure that it does indeed have some type, but that type is ignored, since a throw expression
+will raise exceptions rather than publish values.
+</para>
+
+<para>
+In the expression <code>try</code> E <code>catch(</code>P<code>)</code> F, the type of the
+whole expression is the type of E. The type of the handler body F must be the same as, or
+some subtype of, the type of E.
+</para>
+
+<para>
+The expression F is checked without information about the
+type of the exception value bound by <code>P</code>; the typechecker uses the type <code>Bot</code>.
+This is a hole in the typechecker; it is possible to write an exception handler which uses
+its argument inappropriately and generates a runtime type error. For the moment, it is the
+programmer's responsibility to ensure that a handler uses its argument appropriately; we are
+currently investigating possible solutions to this problem. 
+</para>
+
+<para>
+In practice this weakness is rarely a problem, because the common use case for <code>catch</code>
+handler arguments is to match against a Java exception class:
+
+<programlisting language="orc"><![CDATA[
+class FileNotFoundException = java.io.FileNotFoundException
+try
+  ...
+catch (FileNotFoundException(e))
+  ...
+]]></programlisting>
+
+Since this effectively performs a cast, the variable <code>e</code> is given the appropriate type
+<code>FileNotFoundException</code>, and the typechecker behaves correctly in this case.
+
+</para>
+
+</section>
+
 
 <section><title>Syntax of Typed Orc</title>
 
