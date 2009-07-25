@@ -29,7 +29,7 @@ public abstract class Type {
 	/* Create singleton representatives for some common types */
 	public static final Type BLANK = new Blank();
 	public static final Type TOP = new Top();
-	
+	public static final Type BOT = new Bot();
 	
 	/** Convert this syntactic type into an actual type, given an appropriate type context
 	 * @param env	The type environment, used in content addressable mode to 

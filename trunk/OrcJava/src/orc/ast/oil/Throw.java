@@ -33,15 +33,13 @@ public class Throw extends Expr {
 	@Override
 	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
 		Env<Type> rctx = ctx.clone();
-		return exception.typesynth(ctx, typectx);
+		
+		/* TODO: thrown type = join of thrown type and this synthesized type */ 
+		exception.typesynth(ctx, typectx);
+		
+		// throw e : Bot, so long as e is typable.
+		return Type.BOT;
 	}
-
-	@Override
-	public void typecheck(Type T, Env<Type> ctx, Env<Type> typectx) throws TypeException {
-		Env<Type> rctx = ctx.clone();
-		rctx.add(exception.typesynth(ctx, typectx));
-		exception.typecheck(T, rctx, typectx);
-	}	
 	
 	public Expression marshal() throws CompilationException {
 		return new orc.ast.oil.xml.Throw(exception.marshal());
