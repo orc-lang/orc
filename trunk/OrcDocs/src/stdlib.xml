@@ -1393,7 +1393,7 @@ chosen from the range of all possible 32-bit Integer values.</para>
 <varlistentry><term><code>random</code></term><listitem><para><code>site random(Integer) :: Integer</code></para>
 <para>Return a pseudorandom, uniformly distributed Integer value
 between 0 (inclusive) and the specified value (exclusive).
-If the argument is 0, halt.</para>
+If the argument is less than or equal to 0, halt.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>urandom</code></term><listitem><para><code>site urandom() :: Number</code></para>
 <para>Returns a pseudorandom, uniformly distributed Double value
