@@ -1,6 +1,6 @@
 <html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>3.3.&nbsp; site Sites</title><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide v0.9.9"><link rel="up" href="ch03.html" title="Chapter&nbsp;3.&nbsp;Accessing and Creating External Services"><link rel="prev" href="ch03s02.html" title="3.2.&nbsp; class Sites"><link rel="next" href="ch03s04.html" title="3.4.&nbsp;Web Services"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"><link href="style.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">3.3.&nbsp;
-                site Sites</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch03s02.html">Prev</a>&nbsp;</td><th align="center" width="60%">Chapter&nbsp;3.&nbsp;Accessing and Creating External Services</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ch03s04.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N115A4"></a>3.3.&nbsp;
-                <code class="code"><span class="hl-keyword">site</span></code> Sites</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N115AA"></a>3.3.1.&nbsp;Fundamentals</h3></div></div></div><p>
+                site Sites</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch03s02.html">Prev</a>&nbsp;</td><th align="center" width="60%">Chapter&nbsp;3.&nbsp;Accessing and Creating External Services</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ch03s04.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N1160C"></a>3.3.&nbsp;
+                <code class="code"><span class="hl-keyword">site</span></code> Sites</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11612"></a>3.3.1.&nbsp;Fundamentals</h3></div></div></div><p>
 Orc sites imported with the <code class="code"><span class="hl-keyword">site</span></code> declaration are implemented as
 Java classes which extend <code class="code">orc.runtime.sites.Site</code>.
 Here we will summarize the most important features of this and related classes;
@@ -51,7 +51,7 @@ blocks or waits for some condition, <code class="code">callSite</code> must
 save the <code class="code">token</code> and return without calling any of
 the above methods.  Then when it is time for the site call to return, call the
 appropriate method on the <code class="code">token</code>.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1164B"></a>3.3.2.&nbsp;More Site Classes</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1164E"></a>3.3.2.1.&nbsp;EvalSite</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N116B3"></a>3.3.2.&nbsp;More Site Classes</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N116B6"></a>3.3.2.1.&nbsp;EvalSite</h4></div></div></div><p>
 Many sites are deterministic, always returning a value immediately when called.
 Such sites can be implemented easily by extending <code class="code">orc.runtime.sites.EvalSite</code> and implementing the method
 <code class="code">evaluate(Args args)</code>.  This method should read the
@@ -73,7 +73,7 @@ with the Orc engine.
 Beware that the Orc engine may be configured to only allow a fixed number of
 site threads. If too many sites need to use threads simultaneously, some will
 block until threads become available.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11683"></a>3.3.2.3.&nbsp;DotSite</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N116EB"></a>3.3.2.3.&nbsp;DotSite</h4></div></div></div><p>
 Recall that the notation <code class="code"><span class="hl-variable">x</span>.<span class="hl-variable">msg</span></code> corresponds to calling the site
 <code class="code"><span class="hl-variable">x</span></code> with the special message value <code class="code"><span class="hl-variable">msg</span></code>.  To implement a
 site which responds to such messages, extend <code class="code">orc.runtime.sites.DotSite</code>.
@@ -85,7 +85,7 @@ message you wish the site to respond to. The call <code class="code">addMember(m
 Any object can be used as a member value, even another site.  Anonymous inner
 classes extending <code class="code">Site</code> are often used as member
 values which behave like  methods of the enclosing <code class="code">DotSite</code>.
-</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N116B1"></a>3.3.3.&nbsp;Tutorial Example</h3></div></div></div><p>
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11719"></a>3.3.3.&nbsp;Tutorial Example</h3></div></div></div><p>
 We will implement a simplified version of Orc's <code class="code"><span class="hl-variable">Buffer</span></code> site,
 called <code class="code">ExampleBuffer</code>. The goal will be to be able
 to run this Orc program:
