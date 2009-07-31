@@ -257,36 +257,65 @@ Note that these declarations still obey the rules of lexical scope. Also, Orc
 does not detect shared declarations; if the same file is included twice, its 
 declarations occur twice.
 </p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10CB5"></a>1.4.5.&nbsp;Exceptions in Orc</h3></div></div></div><p>
-An experimental feature recently added to Orc is exceptions (as of revsion 1183).
-Exceptions add two new expressions to the Orc syntax: try/catch blocks, and 
-throw expressions.  Throw expressions are simple - using the keyword <code class="code"><span class="hl-keyword">throw</span></code>,
-they take an Orc expression, evaluate it, and raise the expression's published value to
-be caught by an enclosing exception handler.  Note that if the enclosed expression 
-publishes multiple values, mulitple exceptions will be raised.  Examples of throw expressions:
-</p><p>
-<div class="itemizedlist"><ul type="disc"><li><code class="code"><span class="hl-keyword">throw</span> <span class="hl-literal">3</span></code></li><li><code class="code"><span class="hl-keyword">throw</span> <span class="hl-literal">"error"</span></code></li><li><code class="code"><span class="hl-keyword">throw</span> (<span class="hl-literal">3</span> <span class="hl-combinator">|</span> <span class="hl-literal">4</span>)</code></li></ul></div>
-</p><p>
-Exceptions are caught via Try/Catch blocks.  Try blocks enclose the
-Orc exception to execute, which may or may not throw any exceptions.
-Catch handlers then specify patterns against which exception values should be
-matched against, along with a corresponding handler to call if the 
-exception value matches the pattern.  Multiple catch statements 
-can be specified, and the first match that occurs is the one executed.
-In the following example, two exceptions are thrown by the try block, and one
-value published.
-</p><p>
+We have added an experimental implementation of <span class="emphasis"><em>exceptions</em></span> to the Orc language,
+which allows exceptions to be raised, caught, and handled (to be added in release 0.9.9).
+We introduce three new keywords to the Orc syntax: 
+<code class="code"><span class="hl-keyword">throw</span></code>, <code class="code"><span class="hl-keyword">try</span></code>, and <code class="code"><span class="hl-keyword">catch</span></code>, which are defined as follows:
+
+<p>
+<code class="code"><span class="hl-keyword">throw</span></code> E: for each publication x by expression E, raise an exception with value x.
+</p>
+
+<p>
+<code class="code"><span class="hl-keyword">try</span> </code> E: Defines E to be a block, possibly containing throw expressions.
+</p>
+
+<p>
+<code class="code"><span class="hl-keyword">catch</span> (</code> P <code class="code">) </code>E: Given pattern P and expression E, any exception
+with value x that matches pattern P causes execution of E under the binding of P to x.
+For each corresponding try expression, one or more catch statements are defined.  Catch
+statements are executed in order, and the first to match is the statement executed.
+</p>
+
+<p>
+Examples of throw expressions:
+
+<p>
+<pre class="programlisting">
+<span class="hl-keyword">throw</span> <span class="hl-literal">3</span>
+<span class="hl-keyword">throw</span> <span class="hl-literal">"error"</span>
+<span class="hl-keyword">throw</span> (<span class="hl-literal">3</span> <span class="hl-combinator">|</span> <span class="hl-literal">4</span>)    <span class="hl-comment">{- throws two exceptions -}</span>
+<span class="hl-keyword">throw</span> <span class="hl-keyword">stop</span>       <span class="hl-comment">{- throws no exceptions -}</span>
+</pre>
+</p>
+
+</p>
+
+Below we combine both exception raising and handling:
+
+<p>
 <pre class="programlisting">
 <span class="hl-comment">{- simple exception expressions -}</span>
 <span class="hl-keyword">try</span>(<span class="hl-literal">0</span> <span class="hl-combinator">|</span> <span class="hl-keyword">throw</span> <span class="hl-literal">1</span> <span class="hl-combinator">|</span> <span class="hl-keyword">throw</span> <span class="hl-literal">2</span>) 
 <span class="hl-keyword">catch</span> (<span class="hl-literal">1</span>) <span class="hl-literal">"one"</span>
-<span class="hl-keyword">catch</span> (<span class="hl-variable">X</span>) <span class="hl-variable">X</span>
+<span class="hl-keyword">catch</span> (<span class="hl-variable">x</span>) <span class="hl-variable">x</span>               
+<span class="hl-keyword">catch</span> (<span class="hl-literal">2</span>) <span class="hl-literal">"two"</span>           
+
+<span class="hl-comment">{- Output: 0, "one", 2 -}</span>
 </pre>
+</p>
+
+The value <code class="code"><span class="hl-literal">0</span></code> is published by the expression directly, while <code class="code"><span class="hl-literal">"one"</span></code> is
+published by <code class="code"><span class="hl-keyword">catch</span> (<span class="hl-literal">1</span>) <span class="hl-literal">"one"</span></code>, and <code class="code"><span class="hl-literal">2</span></code> is published by <code class="code"><span class="hl-keyword">catch</span>(<span class="hl-variable">x</span>) <span class="hl-variable">x</span></code>.
+The handler <code class="code"><span class="hl-keyword">catch</span> (<span class="hl-literal">2</span>) <span class="hl-literal">"two"</span></code> is not executed.
+
 </p><p>
-Also like Java, exception handlers can be nested - if the immediately enclosing
-Try/Catch block has no handler than matches the thrown exception, the
+Exception handlers can also be nested; if the immediately enclosing
+try/catch block has no handler that matches the thrown exception, the
 Orc interpreter attempts to match against the next enclosing handler.  If
 no handler matches the exception (or no enclosing handler exists) the exception
-is dropped (ie, treated as a stop) and an error is reported to the interpreter.
+is dropped (for example, it is treated as a <code class="code"><span class="hl-keyword">stop</span></code>) 
+and an error is reported to the interpreter.
 </p><p>
 <pre class="programlisting">
 <span class="hl-comment">{- a contrived nested handler example -}</span>
@@ -294,70 +323,74 @@ is dropped (ie, treated as a stop) and an error is reported to the interpreter.
   <span class="hl-keyword">try</span>(<span class="hl-keyword">throw</span> <span class="hl-literal">3</span>)
   <span class="hl-keyword">catch</span> (<span class="hl-literal">1</span>) <span class="hl-literal">"one"</span>
 )
-<span class="hl-keyword">catch</span> (<span class="hl-variable">X</span>) <span class="hl-variable">X</span>
+<span class="hl-keyword">catch</span> (<span class="hl-variable">x</span>) <span class="hl-variable">x</span>
 </pre>
 </p><p>
-When combining exceptions with the combinators, ie the pruning or
-otherwise combinators, emantically, exceptions are silent.  For example,
-in the following expression, both <code class="code"><span class="hl-literal">0</span></code> and
-<code class="code"><span class="hl-literal">1</span></code> are published - <code class="code"><span class="hl-keyword">throw</span> <span class="hl-literal">0</span></code> is silent, not publishing
-any value, causing the otherwise combinator to execute its alternate expression:
+When combining exceptions with the combinators, i.e., the pruning or
+otherwise combinators, exceptions are silent, that is, they do not publish any value.
+For example, in the following expression, both <code class="code"><span class="hl-literal">0</span></code> and
+<code class="code"><span class="hl-literal">1</span></code> are published; <code class="code"><span class="hl-keyword">throw</span> <span class="hl-literal">0</span></code> is silent, not publishing
+any value, causing the otherwise combinator to also execute its alternate expression:
 </p><p>
 <pre class="programlisting">
 <span class="hl-comment">{- the throw expression is treated as a silent by the combinators -}</span>
-<span class="hl-keyword">try</span> (<span class="hl-keyword">throw</span> <span class="hl-literal">0</span><span class="hl-combinator">;</span> <span class="hl-literal">1</span>) <span class="hl-keyword">catch</span>(<span class="hl-variable">X</span>) <span class="hl-variable">X</span>
+<span class="hl-keyword">try</span> (<span class="hl-keyword">throw</span> <span class="hl-literal">0</span><span class="hl-combinator">;</span> <span class="hl-literal">1</span>) <span class="hl-keyword">catch</span>(<span class="hl-variable">x</span>) <span class="hl-variable">x</span>
+
+<span class="hl-comment">{- output: 
+0
+1
+-}</span>
 </pre>
 </p><p>
-Similarly, exceptions thrown with a pruning combinator does not terminate 
+Similarly, exceptions thrown within a pruning combinator do not terminate 
 the expression (since the throw is treated as a silent), and throwing a silent expression
-(ie, <code class="code"><span class="hl-keyword">throw</span> <span class="hl-keyword">stop</span></code>) results in no exception being thrown - the entire
-expression functions as a stop.
+(i.e., <code class="code"><span class="hl-keyword">throw</span> <span class="hl-keyword">stop</span></code>) results in no exception being thrown; the entire
+expression functions as a stop.  Unlike other languages, an uncaught exception
+only kills the process that threw it, and the other processes in the system
+will continue running.  In the example below, the entire expression publishes no value
+(because the expression inside the pruning combinator does not publish).  Instead,
+the exception thrown is uncaught and results in a runtime error:
 </p><p>
-Finally, Orc also allows Java exceptions to be matched against by Orc exception
-handlers.  This is especially useful when calling Java functions directly,
-which might throw exceptions in cases of failure, seen here in this extended
-example.  The key is to pattern match against the <code class="code"><span class="hl-variable">FileNotFoundException</span></code>,
-since the Orc engine will now propogate any exceptions thrown by a site to 
-enclosing catch handler:
+<pre class="programlisting">
+<span class="hl-variable">x</span> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> <span class="hl-keyword">throw</span> <span class="hl-literal">2</span>
+
+<span class="hl-comment">{- output:
+Error: uncaught exception:
+Backtrace:
+OrcJava/examples/uncaught.orc:1:8-15:  x &lt;x&lt; throw 2
+-}</span>
+</pre>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10D20"></a>1.4.5.1.&nbsp;Catching Java exceptions</h4></div></div></div><p>
+Orc also allows Java exceptions thrown by sites 
+to be matched against by Orc exception
+handlers.  This is especially useful when calling Java code directly,
+which might throw exceptions in cases of failure, seen here in this 
+short example.  Attemping to create a <code class="code"><span class="hl-variable">FileInputSteam</span></code> with
+a nonexistent file path returns an error by throwing a <code class="code"><span class="hl-variable">FileNotFoundException</span></code>.
+By pattern matching for a <code class="code"><span class="hl-variable">FileNotFoundException</span></code>, the
+error can be detected and handled by the Orc program.
+
 </p><p>
 <pre class="programlisting">
 <span class="hl-comment">{- catching exceptions thrown by Java sites via pattern matching -}</span>
 <span class="hl-keyword">class</span> <span class="hl-variable">FileInputStream</span> = <span class="hl-variable">java</span>.<span class="hl-variable">io</span>.<span class="hl-variable">FileInputStream</span>
-<span class="hl-keyword">class</span> <span class="hl-variable">InputStreamReader</span> = <span class="hl-variable">java</span>.<span class="hl-variable">io</span>.<span class="hl-variable">InputStreamReader</span>
-<span class="hl-keyword">class</span> <span class="hl-variable">StringBuilder</span> = <span class="hl-variable">java</span>.<span class="hl-variable">lang</span>.<span class="hl-variable">StringBuilder</span>
 <span class="hl-keyword">class</span> <span class="hl-variable">FileNotFoundException</span> = <span class="hl-variable">java</span>.<span class="hl-variable">io</span>.<span class="hl-variable">FileNotFoundException</span>
 
-<span class="hl-keyword">def</span> <span class="hl-site">GetContent</span>(<span class="hl-variable">InputStreamReader</span>) :: <span class="hl-variable">String</span>
-<span class="hl-keyword">def</span> <span class="hl-site">GetContent</span>(<span class="hl-variable">in</span>) =
-  <span class="hl-keyword">val</span> <span class="hl-variable">buf</span> = <span class="hl-site">Array</span>[<span class="hl-variable">Integer</span>](<span class="hl-literal">1024</span>, <span class="hl-literal">"char"</span>)
-  <span class="hl-keyword">val</span> <span class="hl-variable">out</span> = <span class="hl-site">StringBuilder</span>()
-  <span class="hl-keyword">def</span> <span class="hl-site">loop</span>(<span class="hl-variable">Integer</span>) :: <span class="hl-variable">String</span>
-  <span class="hl-keyword">def</span> <span class="hl-site">loop</span>(<span class="hl-variable">len</span>) =
-    <span class="hl-keyword">if</span> <span class="hl-variable">len</span> &lt; <span class="hl-literal">0</span> <span class="hl-keyword">then</span>
-      <span class="hl-variable">out</span>.<span class="hl-site">toString</span>()
-    <span class="hl-keyword">else</span>
-      <span class="hl-variable">out</span>.<span class="hl-site">append</span>(<span class="hl-variable">buf</span>, <span class="hl-literal">0</span>, <span class="hl-variable">len</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
-      <span class="hl-site">loop</span>(<span class="hl-variable">in</span>.<span class="hl-site">read</span>(<span class="hl-variable">buf</span>))
-  <span class="hl-site">loop</span>(<span class="hl-variable">in</span>.<span class="hl-site">read</span>(<span class="hl-variable">buf</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
-  <span class="hl-variable">out</span>.<span class="hl-site">toString</span>()
+...
 
+<span class="hl-keyword">try</span>(
+<span class="hl-site">FileInputStream</span>(<span class="hl-literal">"non/existent/file/path"</span>)
+) <span class="hl-keyword">catch</span> (<span class="hl-site">FileNotFoundException</span>(<span class="hl-variable">e</span>)) <span class="hl-variable">e</span>
 
-<span class="hl-keyword">def</span> <span class="hl-site">printFile</span>(<span class="hl-variable">File</span>) = 
-<span class="hl-site">InputStreamReader</span>(<span class="hl-site">FileInputStream</span>(<span class="hl-variable">File</span>)) <span class="hl-combinator">&gt;</span><span class="hl-variable">reader</span><span class="hl-combinator">&gt;</span>
-<span class="hl-site">println</span>(<span class="hl-site">GetContent</span>(<span class="hl-variable">reader</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
-<span class="hl-keyword">stop</span>
-
-<span class="hl-keyword">try</span>(<span class="hl-site">printFile</span>(<span class="hl-literal">"non/existant/file"</span>)) 
-<span class="hl-keyword">catch</span> (<span class="hl-site">FileNotFoundException</span>(<span class="hl-variable">E</span>)) <span class="hl-literal">"could not read file: "</span> + <span class="hl-variable">e</span>.<span class="hl-site">message</span>()
-
+...
 </pre>
-</p><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10D33"></a>1.4.5.2.&nbsp;Catching Orc Engine Errors</h4></div></div></div><p>
 This functionality also allows certain Orc runtime errors to be caught.
 Here are a few examples of runtime errors which might occur, and a full
 list can be found in the 
 <a class="link" href="http://orc.csres.utexas.edu/javadoc/STABLE/orc/error/runtime/TokenException.html" target="_top">Javadoc</a>.
 </p><p>
-<div class="itemizedlist"><ul type="disc"><li><code class="code"><span class="hl-variable">ArgumentTypeMismatchException</span></code></li><li><code class="code"><span class="hl-variable">StackLimitReachedError</span></code></li><li><code class="code"><span class="hl-variable">MessageNotUnderstoodException</span></code></li></ul></div>
+<div class="itemizedlist"><ul type="disc"><li><code class="code"><span class="hl-variable">ArgumentTypeMismatchException</span></code></li><li><code class="code"><span class="hl-variable">ArityMismatchException</span></code></li><li><code class="code"><span class="hl-variable">MessageNotUnderstoodException</span></code></li></ul></div>
 </p><p>
 <pre class="programlisting">
 <span class="hl-comment">{- Detecting runtime errors using exceptions -}</span>
@@ -367,4 +400,37 @@ list can be found in the
   <span class="hl-keyword">if</span> <span class="hl-literal">3</span> <span class="hl-keyword">then</span> <span class="hl-literal">"foo"</span>
 ) <span class="hl-keyword">catch</span> (<span class="hl-site">ArgumentTypeMismatchException</span>(<span class="hl-variable">e</span>)) <span class="hl-literal">"error"</span>
 </pre>
-</p></div></div><script type="text/javascript" src="/orchard/orc.js"></script><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="ch01s03.html">Prev</a>&nbsp;</td><td align="center" width="20%"><a accesskey="u" href="ch01.html">Up</a></td><td align="right" width="40%">&nbsp;<a accesskey="n" href="ch02.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">1.3.&nbsp;Orc: Orchestrating services&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;Chapter&nbsp;2.&nbsp;Programming Methodology</td></tr></table></div></body></html>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10D4E"></a>1.4.5.3.&nbsp;Exceptions in Practice</h4></div></div></div>
+Exceptions add two important capabilities to the Orc language.  First, they allow 
+Java exceptions thrown by Java based sites, as well the Orc engine itself, to be
+caught, allowing previously undetectable errors to be handled by the programmer.  Additionally,
+they simplify error handling significantly, by removing error handling code from the body of
+the program.  This is especially helpful when propagating error information across 
+function calls or various parts of the program.  In the examples below, let <code class="code"><span class="hl-variable">request</span></code> be
+a function that will return a single value eventually:
+
+<p>
+<pre class="programlisting">
+<span class="hl-comment">{- error handling without exceptions: -}</span>
+<span class="hl-keyword">def</span> <span class="hl-site">makeRequest</span>() = 
+  <span class="hl-site">let</span>(<span class="hl-site">request</span>() <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> (<span class="hl-literal">true</span>, <span class="hl-variable">x</span>) <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> (<span class="hl-literal">false</span>, <span class="hl-literal">"timeout"</span>))
+
+<span class="hl-keyword">def</span> <span class="hl-site">call</span>() =
+  <span class="hl-site">makeRequest</span>() <span class="hl-combinator">&gt;</span>(<span class="hl-variable">success</span>, <span class="hl-variable">result</span>)<span class="hl-combinator">&gt;</span> <span class="hl-keyword">if</span> <span class="hl-variable">success</span> <span class="hl-keyword">then</span> <span class="hl-variable">result</span> <span class="hl-keyword">else</span> <span class="hl-literal">"failed"</span>
+</pre>
+</p>
+
+Compare this to using exceptions, where error handling is made explicit and
+the program as a whole is simplified.  (Note the improvement would be more marked if
+a deeper layer of function nesting was used.)
+
+<p>
+<pre class="programlisting">
+<span class="hl-comment">{- error handling with exceptions -}</span>
+<span class="hl-keyword">def</span> <span class="hl-site">makeRequest</span>() = 
+  <span class="hl-site">request</span>() <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">throw</span>(<span class="hl-literal">"timeout"</span>)
+
+<span class="hl-keyword">def</span> <span class="hl-site">call</span>() =
+  <span class="hl-keyword">try</span>( <span class="hl-site">makeRequest</span>() ) <span class="hl-keyword">catch</span> (<span class="hl-variable">_</span>) <span class="hl-literal">"failed"</span>
+</pre>
+</p></div></div></div><script type="text/javascript" src="/orchard/orc.js"></script><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="ch01s03.html">Prev</a>&nbsp;</td><td align="center" width="20%"><a accesskey="u" href="ch01.html">Up</a></td><td align="right" width="40%">&nbsp;<a accesskey="n" href="ch02.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">1.3.&nbsp;Orc: Orchestrating services&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;Chapter&nbsp;2.&nbsp;Programming Methodology</td></tr></table></div></body></html>
