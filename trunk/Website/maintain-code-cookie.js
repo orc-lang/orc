@@ -10,7 +10,7 @@ window.onload =
 		document.getElementById('orc').value = cookieLoad('orc'); 
 	}
 
-window.onunload = 
+window.onbeforeunload = 
 	function() { 
 		cookieSave('orc', document.getElementById('orc').value);  
 	}
