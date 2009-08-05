@@ -73,7 +73,8 @@ Font size:
 <textarea id="orc" spellcheck="false" class="orc" style="height: 300px">
 </textarea>
 </td></tr></table>
-<script src="/orchard/orc.js" type="text/javascript"></script>
+<script type="text/javascript" src="maintain-code-cookie.js"></script>
+<script type="text/javascript" src="/orchard/orc.js"></script>
 <script type="text/javascript" src="jquery.treeview.min.js"></script>
 <script type="text/javascript" src="tryorc-menu.js"></script>
 </body>
