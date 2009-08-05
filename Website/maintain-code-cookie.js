@@ -12,7 +12,7 @@ window.onload =
 
 window.onbeforeunload = 
 	function() { 
-		cookieSave('orc', document.getElementById('orc').value);  
+		cookieSave('orc', document.getElementById('orc').value + "{- saved -}");  
 	}
 
 function cookieSave(name, k)
