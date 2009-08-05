@@ -83,13 +83,13 @@ Font size:
  */
 window.onload = 
 	function() { 
-		var txt = document.getElementById('orc')
+		var txt = document.getElementById('orc');
 		txt.value = cookieLoad('orc'); 
 	}
 
 window.onbeforeunload = 
 	function() {
-		var txt = document.getElementById('orc') 
+		var txt = document.getElementById('orc');
 		cookieSave('orc', txt.value + "?");  
 	}
 
