@@ -80,13 +80,13 @@ Font size:
  */
 window.onload = 
 	function() { 
-		var txt = document.getElementById('orc');
+		var txt = document.orctext;
 		txt.value = cookieLoad('orc'); 
 	}
 
 window.onbeforeunload = 
 	function() {
-		var txt = document.getElementById('orc');
+		var txt = document.orctext;
 		cookieSave('orc', txt.value);  
 	}
 
@@ -113,7 +113,7 @@ function cookieLoad(name)
 	return '';
 }
 </script>
-<textarea id="orc" spellcheck="false" class="orc" style="height: 300px">
+<textarea name="orctext" id="orc" spellcheck="false" class="orc" style="height: 300px">
 </textarea>
 </td></tr></table>
 <script type="text/javascript" src="/orchard/orc.js"></script>
