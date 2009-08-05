@@ -70,9 +70,6 @@ Font size:
 &nbsp;&nbsp;&nbsp;&nbsp;Clear program: <a href="#" style="cursor: pointer" onclick="clearProgram()">clear</a>
 </small>
 </div>
-<textarea id="orc" spellcheck="false" class="orc" style="height: 300px">
-</textarea>
-</td></tr></table>
 <script type="text/javascript">
 /*
  * Basic cookie manipulation and load/unload handlers to ensure that
@@ -116,6 +113,9 @@ function cookieLoad(name)
 	return '';
 }
 </script>
+<textarea id="orc" spellcheck="false" class="orc" style="height: 300px">
+</textarea>
+</td></tr></table>
 <script type="text/javascript" src="/orchard/orc.js"></script>
 <script type="text/javascript" src="jquery.treeview.min.js"></script>
 <script type="text/javascript" src="tryorc-menu.js"></script>
