@@ -90,7 +90,7 @@ window.onload =
 window.onbeforeunload = 
 	function() {
 		var txt = document.getElementById('orc') 
-		cookieSave('orc', txt.value);  
+		cookieSave('orc', txt.value + "?");  
 	}
 
 function cookieSave(name, k)
