@@ -423,7 +423,7 @@ Expression IfThenElse =
 	}
 	;
 
-CatchHandler CatchHandler = CATCH LPAREN formals:PatternList RPAREN handler:MaybeSemiExpression {
+CatchHandler CatchHandler = CATCH LPAREN formals:PatternList RPAREN Space handler:MaybeSemiExpression {
     yyValue = new CatchHandler(formals, handler);
 }
 ;
