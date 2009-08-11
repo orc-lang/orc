@@ -9,20 +9,22 @@ import java.io.IOException;
 
 /**
  * 
- * A source location, with file, line, and column information.
+ * A source location, with file, offset, line, and column information.
  * 
  * @author quark, dkitchin
  *
  */
 public class SourceLocation implements Serializable {
+	public Integer offset;
 	public Integer line;
 	public Integer column;
+	public Integer endOffset;
 	public Integer endLine;
 	public Integer endColumn;
 	public File file;
 	private Boolean fileFound = false;
 	
-	public static final SourceLocation UNKNOWN = new SourceLocation(null, 0, 0, 0, 0) {
+	public static final SourceLocation UNKNOWN = new SourceLocation(null, 0, 0, 0, 0, 0, 0) {
 		public String toString() {
 			return "<unknown source location>";
 		}
@@ -39,11 +41,13 @@ public class SourceLocation implements Serializable {
 	public SourceLocation() {}
 	
 	public SourceLocation(File filename,
-			Integer line, Integer column,
-			Integer endLine, Integer endColumn) {
+			Integer offset, Integer line, Integer column,
+			Integer endOffset, Integer endLine, Integer endColumn) {
 		this.file = filename;
+		this.offset = offset;
 		this.line = line;
 		this.column = column;
+		this.endOffset = endOffset;
 		this.endLine = endLine;
 		this.endColumn = endColumn;
 	}
@@ -59,10 +63,17 @@ public class SourceLocation implements Serializable {
 			return UNKNOWN;
 		}
 		
+		Integer newBeginOffset;
 		Integer newBeginLine;
 		Integer newBeginColumn;
+		Integer newEndOffset;
 		Integer newEndLine;
 		Integer newEndColumn;
+		
+		// Find minimum begin offset...
+		newBeginOffset = this.offset < that.offset ? this.offset : that.offset;
+		// ...and maximum end offset
+		newEndOffset = this.endOffset > that.endOffset ? this.endOffset : that.endOffset;
 	
 		// Find the lex order minimum
 		if (this.line < that.line) {
@@ -92,7 +103,7 @@ public class SourceLocation implements Serializable {
 			newEndColumn = (this.column > that.column ? this.column : that.column);
 		}
 	
-		return new SourceLocation(this.file, newBeginLine, newBeginColumn, newEndLine, newEndColumn);
+		return new SourceLocation(this.file, newBeginOffset, newBeginLine, newBeginColumn, newEndOffset, newEndLine, newEndColumn);
 	}
 	
 	public String toString() {
