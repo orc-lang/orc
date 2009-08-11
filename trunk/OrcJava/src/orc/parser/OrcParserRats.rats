@@ -46,8 +46,8 @@ body {
 		Location startl = location(start);
 		Location endl = location(end-2);
 		e.setSourceLocation(new SourceLocation(
-			new File(startl.file), startl.line, startl.column,
-			endl.line, endl.column));
+			new File(startl.file), start, startl.line, startl.column,
+			end-2, endl.line, endl.column));
 		return e;
 	}
 	/**
@@ -57,8 +57,8 @@ body {
 		SourceLocation startl = start.getSourceLocation();
 		SourceLocation endl = end.getSourceLocation();
 		e.setSourceLocation(new SourceLocation(
-			startl.file, startl.line, startl.column,
-			endl.endLine, endl.endColumn));
+			startl.file, startl.offset, startl.line, startl.column,
+			endl.endOffset, endl.endLine, endl.endColumn));
 		return e;
 	}
 	/**
@@ -68,8 +68,8 @@ body {
 		SourceLocation startl = start.getSourceLocation();
 		Location endl = location(end-2);
 		e.setSourceLocation(new SourceLocation(
-			startl.file, startl.line, startl.column,
-			endl.line, endl.column));
+			startl.file, startl.offset, startl.line, startl.column,
+			end-2, endl.line, endl.column));
 		return e;
 	}
 	
