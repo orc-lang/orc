@@ -50,6 +50,15 @@ Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes the user's name
 Prompt("What is your name?")]]></programlisting>
+
+The user response is always taken to be a string. Thus, integer 
+3 as a response will be treated as "3". To convert the response 
+to its appropriate data type, use the library function
+<code>read</code>:
+
+<programlisting language="orc-demo"><![CDATA[
+-- Prompts the user to enter an integer, then parses the response.
+Prompt("Enter an integer:") >r> read(r)]]></programlisting>
 --}
 site Prompt = orc.lib.util.Prompt
 

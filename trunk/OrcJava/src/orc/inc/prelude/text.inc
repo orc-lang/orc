@@ -3,6 +3,42 @@ Operations on strings.
 --}
 
 {--
+@site String
+
+Strings themselves have a set of methods associated with them. These methods can
+be invoked on any string literal or any variable bound to a string.
+
+The methods documented here are only a subset of those available in the Java
+implementation. In practice, strings in the Java implementation support all 
+methods provided by Java's <code>String</code> class.
+
+@method String.length() :: Integer
+Return the length of the string.
+
+Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: 4
+"four".length()]]></programlisting>
+
+@method String.substring(Integer, Integer) :: String
+Return the substring of this string covered by the given half-open range.
+
+Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: "orc"
+val s = "apple orchard"
+s.substring(6,9)]]></programlisting>
+
+@method String.indexOf(String) :: Integer
+Return the starting index of the first occurrence of the given string.
+
+Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: 6
+"apple orchard".indexOf("orc")]]></programlisting>
+--}
+
+{--
 @site cat(Top, ...) :: String
 Return the string representation of one or more values, concatenated.
 For Java objects, this will call <code>toString()</code> to convert
