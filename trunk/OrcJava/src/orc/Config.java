@@ -75,6 +75,7 @@ public class Config implements Cloneable {
 	private boolean hasInputFile = false;
 	private String classPath = "";
 	private ClassLoader classLoader = Config.class.getClassLoader();
+	private boolean shortErrors = false;
 	
 	/**
 	 * Set properties based on command-line arguments.
@@ -202,6 +203,19 @@ public class Config implements Cloneable {
 	public boolean hasInputFile() {
 		return hasInputFile;
 	}
+	
+	/**
+	 * The default is long errors.
+	 * Short errors are currently used only for regression testing. 
+	 */
+	public void setShortErrors(boolean b) {
+		shortErrors = b;
+	}	
+	
+	public boolean getShortErrors() {
+		return shortErrors;
+	}
+	
 	
 	/**
 	 * Set a custom tracer.
@@ -390,4 +404,5 @@ public class Config implements Cloneable {
 		out.caps = (HashMap<String, Boolean>) caps.clone();
 		return out;
 	}
+
 }
