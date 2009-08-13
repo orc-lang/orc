@@ -39,7 +39,4 @@ class java.lang.Integer
 3.0
 class java.lang.Integer
 Error: java.lang.IllegalArgumentException: argument type mismatch
-Backtrace:
-examples/java_numbers.orc:23:9-25
-
 -}

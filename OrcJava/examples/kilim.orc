@@ -18,9 +18,6 @@ println(t.signal()) >> stop
 OUTPUT:
 signal
 Error: java.lang.Exception: ERROR
-Backtrace:
-examples/kilim.orc:9:3-12
-
 5 hi
 2 hi
 1 hi

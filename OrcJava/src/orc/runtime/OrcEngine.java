@@ -297,6 +297,9 @@ public class OrcEngine implements Runnable {
 	/** Handle an error token. */
 	public void onError(TokenException problem) {
 		stderr.println("Error: " + problem.getMessage());
+		
+		if (config.getShortErrors()) { return; }
+		
 		stderr.println("Backtrace:");
 		SourceLocation[] backtrace = problem.getBacktrace();
 		

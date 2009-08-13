@@ -92,6 +92,14 @@ public class ExamplesTest {
 		config.setInputFile(file);
 		config.setStdout(new PrintStream(out));
 		config.setStderr(config.getStdout());
+		
+		/* 
+		 * Shorten errors. 
+		 * Backtraces may contain filesystem-specifc paths and other details,
+		 * which will interfere with output matching. 
+		 */
+		config.setShortErrors(true);
+		
 		OrcEngine engine = new OrcEngine(config);
 		engine.start(Orc.compile(config));
 		
