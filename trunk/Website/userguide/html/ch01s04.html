@@ -1,4 +1,4 @@
-<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>1.4.&nbsp;Advanced Features of Orc</title><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide v0.9.9"><link rel="up" href="ch01.html" title="Chapter&nbsp;1.&nbsp;The Orc Programming Language"><link rel="prev" href="ch01s03.html" title="1.3.&nbsp;Orc: Orchestrating services"><link rel="next" href="ch02.html" title="Chapter&nbsp;2.&nbsp;Programming Methodology"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"><link href="style.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">1.4.&nbsp;Advanced Features of Orc</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch01s03.html">Prev</a>&nbsp;</td><th align="center" width="60%">Chapter&nbsp;1.&nbsp;The Orc Programming Language</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ch02.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N109FD"></a>1.4.&nbsp;Advanced Features of Orc</h2></div></div></div><p>
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>1.4.&nbsp;Advanced Features of Orc</title><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide v0.9.9"><link rel="up" href="ch01.html" title="Chapter&nbsp;1.&nbsp;The Orc Programming Language"><link rel="prev" href="ch01s03.html" title="1.3.&nbsp;Orc: Orchestrating services"><link rel="next" href="ch02.html" title="Chapter&nbsp;2.&nbsp;Programming Methodology"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"><link href="style.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">1.4.&nbsp;Advanced Features of Orc</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch01s03.html">Prev</a>&nbsp;</td><th align="center" width="60%">Chapter&nbsp;1.&nbsp;The Orc Programming Language</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ch02.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N10A14"></a>1.4.&nbsp;Advanced Features of Orc</h2></div></div></div><p>
 In this section we introduce some advanced features of Orc. These include curried
 function definitions and curried calls, writing an arbitrary expression as the
 target of a call, a special syntax for writing calls in an object-oriented style, 
@@ -52,7 +52,7 @@ datatypes.
                                 </td><td align="left">&nbsp;</td></tr><tr><td align="right">C</td><td align="center">::=</td><td align="left"> <code class="code"><span class="hl-keyword">catch</span> ( </code> P <code class="code"> ) </code> E</td><td align="left">
                                     <span class="emphasis"><em>Exception Handler</em></span>
                                 </td><td align="left">&nbsp;</td></tr></tbody></table></div></div><br class="table-break">
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10B6F"></a>1.4.1.&nbsp;Special call forms</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10B72"></a>1.4.1.1.&nbsp;The <code class="code">.</code> notation</h4></div></div></div><p>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10B86"></a>1.4.1.&nbsp;Special call forms</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10B89"></a>1.4.1.1.&nbsp;The <code class="code">.</code> notation</h4></div></div></div><p>
 In many object-oriented programming languages, one calls a method or accesses a field of an
 object using the dot operator; for example, <code class="code"><span class="hl-variable">obj</span>.<span class="hl-site">m</span>()</code> calls the method
 <code class="code"><span class="hl-variable">m</span></code> of the object <code class="code"><span class="hl-variable">obj</span></code>. 
@@ -77,7 +77,7 @@ A call such as <code class="code"><span class="hl-variable">c</span>.<span class
 is to put values on the channel. Next, that site is called on the argument
 <code class="code"><span class="hl-literal">6</span></code>, sending 6 on the channel. Readers familiar with functional programming
 will recognize this technique as <span class="emphasis"><em>currying</em></span>.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10BC8"></a>1.4.1.2.&nbsp;Currying</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10BDF"></a>1.4.1.2.&nbsp;Currying</h4></div></div></div><p>
 It is sometimes useful to <span class="emphasis"><em>stage</em></span> the arguments to a function; that is,
 rather than writing a function on two arguments, one instead writes a function on one
 argument which returns a function taking the second argument and performing the remainder
@@ -127,7 +127,34 @@ equivalent:
 <span class="hl-site">f</span>(<span class="hl-literal">4</span>)
 </pre>
 
-</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10C09"></a>1.4.2.&nbsp;Extensions to pattern matching</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10C0C"></a>1.4.2.1.&nbsp;As pattern</h4></div></div></div><p>
+</p><div class="warning" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Warning</h3><p>
+Clauses of a function may be defined with both curried arguments and patterns in arguments.
+However, the combination of these two features can produce unintuitive behavior. Consider
+the following clausal, curried function definition:
+
+<pre class="orc">
+<span class="hl-keyword">def</span> <span class="hl-site">sum</span>(<span class="hl-variable">x</span>)(<span class="hl-literal">0</span>) = <span class="hl-variable">x</span>
+<span class="hl-keyword">def</span> <span class="hl-site">sum</span>(<span class="hl-variable">x</span>)(<span class="hl-variable">y</span>) = <span class="hl-variable">x</span> + <span class="hl-variable">y</span>
+<span class="hl-site">sum</span>(<span class="hl-literal">2</span>)(<span class="hl-literal">3</span>)
+</pre>
+
+One might expect <code class="code"><span class="hl-site">sum</span>(<span class="hl-literal">2</span>)(<span class="hl-literal">3</span>)</code> to evaluate to <code class="code"><span class="hl-literal">5</span></code>. However, this is not
+the case; instead <code class="code"><span class="hl-site">sum</span>(<span class="hl-literal">2</span>)(<span class="hl-literal">3</span>)</code> remains silent due to a pattern matching failure.
+This is because the compiler always expands curried definitions before considering patterns,
+so the above program is in fact equivalent to:
+
+<pre class="orc">
+<span class="hl-keyword">def</span> <span class="hl-site">sum</span>(<span class="hl-variable">x</span>) = ( <span class="hl-keyword">lambda</span>(<span class="hl-literal">0</span>) = <span class="hl-variable">x</span> )
+<span class="hl-keyword">def</span> <span class="hl-site">sum</span>(<span class="hl-variable">x</span>) = ( <span class="hl-keyword">lambda</span>(<span class="hl-variable">y</span>) = <span class="hl-variable">x</span> + <span class="hl-variable">y</span> )
+<span class="hl-site">sum</span>(<span class="hl-literal">2</span>)(<span class="hl-literal">3</span>)
+</pre>
+
+Now the problem becomes apparent. The first clause will always match when the function is
+applied to its first argument, and then only one clause is available when the second
+argument is available: the clause with succeeds only on <code class="code"><span class="hl-literal">0</span></code>.
+</p><p>
+Therefore, use caution when writing function definitions that use both currying and clauses.
+</p></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10C39"></a>1.4.2.&nbsp;Extensions to pattern matching</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10C3C"></a>1.4.2.1.&nbsp;As pattern</h4></div></div></div><p>
 In taking apart a value with a pattern, it is often useful to capture intermediate results.
 
 <pre class="programlisting">
@@ -142,7 +169,7 @@ sub-pattern. Here is an equivalent version of the above code.
 <pre class="programlisting">
 <span class="hl-keyword">val</span> ((<span class="hl-variable">ax</span>,<span class="hl-variable">ay</span>) <span class="hl-keyword">as</span> <span class="hl-variable">a</span>, (<span class="hl-variable">bx</span>,<span class="hl-variable">by</span>) <span class="hl-keyword">as</span> <span class="hl-variable">b</span>) = ((<span class="hl-literal">1</span>,<span class="hl-literal">2</span>),(<span class="hl-literal">3</span>,<span class="hl-literal">4</span>))
 </pre>
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10C1A"></a>1.4.2.2.&nbsp;Equality pattern</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10C4A"></a>1.4.2.2.&nbsp;Equality pattern</h4></div></div></div><p>
 When a variable occurs in a pattern, it is bound to the value being matched against that pattern. What
 if instead we would like to use the value of a bound variable as a test pattern, in a way similar to
 a literal value like <code class="code"><span class="hl-literal">0</span></code>? 
@@ -205,7 +232,7 @@ need to distinguish between successfully returning a value (<code class="code"><
 completing but having no meaningful value to return (<code class="code"><span class="hl-site">None</span>()</code>). For example, a lookup
 function might return <code class="code"><span class="hl-site">Some</span>(<span class="hl-variable">result</span>)</code> if it found a result, or return <code class="code"><span class="hl-site">None</span>()</code>
 if it successfully performed the lookup but found no suitable result.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10C79"></a>1.4.4.&nbsp;New forms of declarations</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="section.orc.class"></a>1.4.4.1.&nbsp;
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10CA9"></a>1.4.4.&nbsp;New forms of declarations</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="section.orc.class"></a>1.4.4.1.&nbsp;
 
                         <code class="code"><span class="hl-keyword">class</span></code> declaration</h4></div></div></div><p>
 When Orc is run on top of an object-oriented programming language, classes
@@ -227,7 +254,7 @@ This instance of String is a Java object; its methods are called and its fields
 are accessed using the dot (<code class="code">.</code>) notation, just as one would expect
 in Java.  For complete details of how Orc interacts with Java, see
 <a class="link" href="ch03s02.html" title="3.2.&nbsp; class Sites">Java Integration</a>.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10C9B"></a>1.4.4.2.&nbsp;
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10CCB"></a>1.4.4.2.&nbsp;
                         <code class="code"><span class="hl-keyword">include</span></code> declaration</h4></div></div></div><p>
 It is often convenient to group related declarations into units that can be
 shared between programs. The <code class="code"><span class="hl-keyword">include</span></code> declaration offers a simple
@@ -256,7 +283,7 @@ replaced the include declaration. An included file may itself contain
 Note that these declarations still obey the rules of lexical scope. Also, Orc 
 does not detect shared declarations; if the same file is included twice, its 
 declarations occur twice.
-</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10CB5"></a>1.4.5.&nbsp;Exceptions in Orc</h3></div></div></div><p>
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10CE5"></a>1.4.5.&nbsp;Exceptions in Orc</h3></div></div></div><p>
 We have added an experimental implementation of <span class="emphasis"><em>exceptions</em></span> to the Orc language,
 which allows exceptions to be raised, caught, and handled (to be added in release 0.9.9).
 We introduce three new keywords to the Orc syntax: 
@@ -360,7 +387,7 @@ Backtrace:
 OrcJava/examples/uncaught.orc:1:8-15:  x &lt;x&lt; throw 2
 -}</span>
 </pre>
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10D20"></a>1.4.5.1.&nbsp;Catching Java exceptions</h4></div></div></div><p>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10D50"></a>1.4.5.1.&nbsp;Catching Java exceptions</h4></div></div></div><p>
 Orc also allows Java exceptions thrown by sites 
 to be matched against by Orc exception
 handlers.  This is especially useful when calling Java code directly,
@@ -384,7 +411,7 @@ error can be detected and handled by the Orc program.
 
 ...
 </pre>
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10D33"></a>1.4.5.2.&nbsp;Catching Orc Engine Errors</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10D63"></a>1.4.5.2.&nbsp;Catching Orc Engine Errors</h4></div></div></div><p>
 This functionality also allows certain Orc runtime errors to be caught.
 Here are a few examples of runtime errors which might occur, and a full
 list can be found in the 
@@ -400,7 +427,7 @@ list can be found in the
   <span class="hl-keyword">if</span> <span class="hl-literal">3</span> <span class="hl-keyword">then</span> <span class="hl-literal">"foo"</span>
 ) <span class="hl-keyword">catch</span> (<span class="hl-site">ArgumentTypeMismatchException</span>(<span class="hl-variable">e</span>)) <span class="hl-literal">"error"</span>
 </pre>
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10D4E"></a>1.4.5.3.&nbsp;Exceptions in Practice</h4></div></div></div>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10D7E"></a>1.4.5.3.&nbsp;Exceptions in Practice</h4></div></div></div>
 Exceptions add two important capabilities to the Orc language.  First, they allow 
 Java exceptions thrown by Java based sites, as well the Orc engine itself, to be
 caught, allowing previously undetectable errors to be handled by the programmer.  Additionally,
