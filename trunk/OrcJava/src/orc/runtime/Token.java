@@ -55,11 +55,15 @@ public class Token implements Serializable, Locatable {
 		public Continuation continuation;
 		public SourceLocation location;
 		/** Track the depth of a tail-recursive continuation. */
-		public int depth = 1;
+		public int tracedepth = 1;
+		public int stacksize = 1;
 		public Continuation(Node node, Env<Object> env, Continuation continuation, SourceLocation location) {
 			this.node = node;
 			this.env = env;
 			this.continuation = continuation;
+			if (continuation != null) {
+				stacksize = continuation.stacksize + 1;
+			}
 			this.location = location;
 		}
 	}
@@ -340,21 +344,25 @@ public class Token implements Serializable, Locatable {
 	 * @throws StackLimitReachedError 
 	 */
 	public final Token enterClosure(Closure closure, Node next) throws StackLimitReachedError {
-		if (stackAvailable == 0) {
-			throw new StackLimitReachedError();
-		} else if (stackAvailable > 0) {
-			--stackAvailable;
-		}
+				
 		if (next instanceof Return) {
 			// tail call should return directly to our current continuation
 			// rather than going through us
-			++continuation.depth;
+			continuation.tracedepth++;
 		} else if (next.isTerminal()) {
 			// handle terminal (non-returning) continuation specially
 			continuation = new Continuation(next, this.env.clone(), null, location);
 		} else {
 			continuation = new Continuation(next, this.env.clone(), continuation, location);
 		}
+		
+		/* If the stack limit is on (stackAvailable >= 0),
+		 * make sure we haven't exceeded it.
+		 */
+		if (stackAvailable >= 0 && stackAvailable < continuation.stacksize) {
+			throw new StackLimitReachedError();
+		}
+		
 		tracer.enter(closure);
 		this.env = closure.env.clone();
 		return move(closure.def.body);
@@ -365,14 +373,11 @@ public class Token implements Serializable, Locatable {
 	 * {@link #enterClosure(Node, Env, Node)}.
 	 */
 	public final Token leaveClosure() {
-		int depth = continuation.depth;
+		int depth = continuation.tracedepth;
 		this.env = continuation.env.clone();
 		move(continuation.node);
 		continuation = continuation.continuation;
-		tracer.leave(depth);
-		if (stackAvailable >= 0) {
-			stackAvailable += depth;
-		}
+		tracer.leave(depth);		
 		return this;
 	}
 
