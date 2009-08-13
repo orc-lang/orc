@@ -432,6 +432,10 @@ def (?)(r) = r.read()</programlisting></formalpara></listitem></varlistentry>
 <code>x := y</code> is equivalent to <code>x.write(y)</code>.</para>
 <formalpara><title>Implementation</title><programlisting>def (:=)[A](Ref[A], A) :: Top
 def (:=)(r,v) = r.write(v)</programlisting></formalpara></listitem></varlistentry>
+<varlistentry><term><code>swap</code></term><listitem><para><code>def swap[A](Ref[A], Ref[A]) :: Top</code></para>
+<para>Swap the values in two references.</para>
+<formalpara><title>Implementation</title><programlisting>def swap[A](Ref[A], Ref[A]) :: Top
+def swap(r,s) = (r?,s?) &gt;(rval,sval)&gt; (r := sval, s := rval) &gt;&gt; signal</programlisting></formalpara></listitem></varlistentry>
 <varlistentry><term><code>Array</code></term><listitem><para><code>site Array[A](Integer) :: Array[A]</code></para>
 <para>Create a new native array of the given size. The array is initialized
 to contain <code>null</code>s.</para>
@@ -452,7 +456,7 @@ a(0)?]]></programlisting></para>
 -- Publishes: 0 1 2
 val a = Array(3)
 for(0, a.length()) >i>
-a(i) := f(i) >>
+a(i) := i >>
 stop
 ; a(0)? | a(1)? | a(2)?]]></programlisting></para>
 <variablelist>
@@ -1135,9 +1139,9 @@ def sort(xs) = sortBy((&lt;), xs)</programlisting></formalpara></listitem></varl
 def sortBy(lt, []) = []
 def sortBy(lt, [x]) = [x]
 def sortBy(lt, xs) =
-  val half = length(xs)/2
-  val front = take(floor(half),xs)
-  val back = drop(ceil(half),xs)
+  val half = floor(length(xs)/2)
+  val front = take(half, xs)
+  val back = drop(half, xs)
   mergeBy(lt, sortBy(lt, front), sortBy(lt, back))</programlisting></formalpara></listitem></varlistentry>
 <varlistentry><term><code>mergeUnique</code></term><listitem><para><code>def mergeUnique[A](List[A], List[A]) :: List[A]</code></para>
 <para>Merge two sorted lists, discarding duplicates.</para>
@@ -1176,8 +1180,9 @@ def sortUnique(xs) = sortUniqueBy((=), (&lt;), xs)</programlisting></formalpara>
 def sortUniqueBy(eq, lt, []) = []
 def sortUniqueBy(eq, lt, [x]) = [x]
 def sortUniqueBy(eq, lt, xs) =
-  length(xs)/2 &gt;half&gt;
-  (take(floor(half),xs), drop(ceil(half),xs)) &gt;(front, back)&gt;
+  val half = floor(length(xs)/2)
+  val front = take(half, xs)
+  val back = drop(half, xs)
   mergeUniqueBy(eq, lt,
     sortUniqueBy(eq, lt, front),
     sortUniqueBy(eq, lt, back))</programlisting></formalpara></listitem></varlistentry>
@@ -1292,6 +1297,38 @@ def maximum(xs) =
 <variablelist>
 <?dbfo list-presentation="list"?>
 <?dbhtml list-presentation="table"?>
+<varlistentry><term><code>String</code></term><listitem><para><code>site String</code></para>
+<para>Strings themselves have a set of methods associated with them. These methods can
+be invoked on any string literal or any variable bound to a string.</para>
+<para>The methods documented here are only a subset of those available in the Java
+implementation. In practice, strings in the Java implementation support all 
+methods provided by Java's <code>String</code> class.</para>
+<variablelist>
+<?dbfo list-presentation="list"?>
+<?dbhtml list-presentation="table"?>
+<varlistentry><term><code>length</code></term><listitem><para><code>site String.length() :: Integer</code></para>
+<para>Return the length of the string.</para>
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: 4
+"four".length()]]></programlisting></para>
+</listitem></varlistentry>
+<varlistentry><term><code>substring</code></term><listitem><para><code>site String.substring(Integer, Integer) :: String</code></para>
+<para>Return the substring of this string covered by the given half-open range.</para>
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: "orc"
+val s = "apple orchard"
+s.substring(6,9)]]></programlisting></para>
+</listitem></varlistentry>
+<varlistentry><term><code>indexOf</code></term><listitem><para><code>site String.indexOf(String) :: Integer</code></para>
+<para>Return the starting index of the first occurrence of the given string.</para>
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: 6
+"apple orchard".indexOf("orc")]]></programlisting></para>
+</listitem></varlistentry></variablelist>
+</listitem></varlistentry>
 <varlistentry><term><code>cat</code></term><listitem><para><code>site cat(Top, ...) :: String</code></para>
 <para>Return the string representation of one or more values, concatenated.
 For Java objects, this will call <code>toString()</code> to convert
@@ -1320,6 +1357,19 @@ halt with an error.</para>
 | read("(3.0, [])") -- publishes the tuple (3.0, [])
 | read("\"hi\"") -- publishes the string "hi"]]></programlisting></para>
 </listitem></varlistentry>
+<varlistentry><term><code>write</code></term><listitem><para><code>site write(Top) :: String</code></para>
+<para>Given an Orc value, return its string representation
+using standard Orc literal syntax.  If the value is
+of a type with no literal syntax,
+(for example, it is a site), return an arbitrary string
+representation which is intended to be human-readable.</para>
+<para>Example:
+<programlisting language="orc-demo"><![CDATA[
+  write(true) -- publishes "true"
+| write(1) -- publishes "1"
+| write((3.0, [])) -- publishes "(3.0, [])"
+| write("hi") -- publishes "\"hi\""]]></programlisting></para>
+</listitem></varlistentry>
 <varlistentry><term><code>lines</code></term><listitem><para><code>def lines(String) :: List[String]</code></para>
 <para>Split a string into lines, which are substrings
 terminated by an endline or the end of the string.
@@ -1327,10 +1377,12 @@ DOS, Mac, and Unix endline conventions are all accepted.
 Endline characters are not included in the result.</para>
 <formalpara><title>Implementation</title><programlisting>def lines(String) :: List[String]
 def lines(text) =
+  (
   val out = text.split(&quot;\n|\r\n|\r&quot;)
   if out.get(out.length()-1) = &quot;&quot; then
     out.split(0, out.length()-1)
-  else out</programlisting></formalpara></listitem></varlistentry>
+  else out
+  ) :!: List[String]</programlisting></formalpara></listitem></varlistentry>
 <varlistentry><term><code>unlines</code></term><listitem><para><code>def unlines(List[String]) :: String</code></para>
 <para>Append a linefeed, "\n", to each string in the sequence
 and concatenate the results.</para>
@@ -1340,7 +1392,7 @@ def unlines([]) = &quot;&quot;</programlisting></formalpara></listitem></varlist
 <varlistentry><term><code>words</code></term><listitem><para><code>def words(String) :: List[String]</code></para>
 <para>Split a string into words, which are sequences of non-whitespace characters separated by whitespace.</para>
 <formalpara><title>Implementation</title><programlisting>def words(String) :: List[String]
-def words(text) = text.trim().split(&quot;\\s+&quot;)</programlisting></formalpara></listitem></varlistentry>
+def words(text) = (text.trim().split(&quot;\\s+&quot;)) :!: List[String]</programlisting></formalpara></listitem></varlistentry>
 <varlistentry><term><code>unwords</code></term><listitem><para><code>def unwords(List[String]) :: String</code></para>
 <para>Concatenate a sequence of strings with a single space between
 each string.</para>
@@ -1356,9 +1408,17 @@ def unwords(word:words) = cat(word, &quot; &quot;, unwords(words))</programlisti
 <?dbhtml list-presentation="table"?>
 <varlistentry><term><code>Rtimer</code></term><listitem><para><code>site Rtimer(Integer) :: Top</code></para>
 <para>Publish a signal after the given number of milliseconds.</para>
+<variablelist>
+<?dbfo list-presentation="list"?>
+<?dbhtml list-presentation="table"?>
+<varlistentry><term><code>time</code></term><listitem><para><code>site Rtimer.time() :: Integer</code></para>
+<para>Return the current real time in milliseconds, as
+measured from midnight January 1, 1970 UTC.
+Ranges from 0 to <code>Long.MAX_VALUE</code>.</para>
+</listitem></varlistentry></variablelist>
 </listitem></varlistentry>
-<varlistentry><term><code>Clock</code></term><listitem><para><code>site Clock()() :: Integer</code></para>
-<para>A call to <code>Clock</code> creates a new relative clock.
+<varlistentry><term><code>Clock</code></term><listitem><para><code>def Clock()() :: Integer</code></para>
+<para>A call to <code>Clock</code> creates a new relative real-time clock.
 Calling a relative clock returns the number
 of milliseconds which have elapsed since the
 clock was created.</para>
@@ -1369,12 +1429,25 @@ val c = Clock()
 Rtimer(1000) >> c()]]></programlisting></para>
 </listitem></varlistentry>
 <varlistentry><term><code>Ltimer</code></term><listitem><para><code>site Ltimer(Integer) :: Top</code></para>
-<para>Publish a signal after the given number of logical timesteps.
-A logical timestep is complete as soon as all outstanding site
-calls (other than calls to <code>Ltimer</code>) have published.</para>
+<para>Publish a signal after the given number of logical timesteps,
+as measured by the current logical clock.
+The logical time advances whenever the computation controlled
+by the logical clock is quiescent (i.e. cannot advance on its own).</para>
+<variablelist>
+<?dbfo list-presentation="list"?>
+<?dbhtml list-presentation="table"?>
+<varlistentry><term><code>time</code></term><listitem><para><code>site Ltimer.time() :: Integer</code></para>
+<para>Return the current logical time, as measured by logical
+clock which was current when <code>Ltimer.time</code> was evaluated.
+Ranges from 0 to <code>Integer.MAX_VALUE</code>.</para>
+</listitem></varlistentry></variablelist>
 </listitem></varlistentry>
 <varlistentry><term><code>withLtimer</code></term><listitem><para><code>def withLtimer[A](lambda () :: A) :: A</code></para>
-<para>Run a thunk in the context of a new logical clock.</para>
+<para>Run the given thunk in the context of a new inner logical clock.
+Within the computation represented by the thunk, calls to
+<code>Ltimer</code> refer to the new clock. The
+outer clock can only advance when the inner clock becomes
+quiescent.</para>
 </listitem></varlistentry>
 <varlistentry><term><code>metronome</code></term><listitem><para><code>def metronome(Integer) :: Top</code></para>
 <para>Publish a signal at regular intervals, indefinitely. The period is given by the
@@ -1419,6 +1492,13 @@ is returned as soon as it is received.</para>
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes the user's name
 Prompt("What is your name?")]]></programlisting></para>
+<para>The user response is always taken to be a string. Thus, integer 
+3 as a response will be treated as "3". To convert the response 
+to its appropriate data type, use the library function
+<code>read</code>:</para>
+<para><programlisting language="orc-demo"><![CDATA[
+-- Prompts the user to enter an integer, then parses the response.
+Prompt("Enter an integer:") >r> read(r)]]></programlisting></para>
 </listitem></varlistentry>
 <varlistentry><term><code>signals</code></term><listitem><para><code>def signals(Integer) :: Top</code></para>
 <para>Publish the given number of signals, simultaneously.</para>
@@ -1480,18 +1560,21 @@ def takePubs(n, f) =
        ; out.closenb() &gt;&gt; true)
   ) &gt;&gt; stop | repeat(out.get)</programlisting></formalpara></listitem></varlistentry>
 <varlistentry><term><code>withLock</code></term><listitem><para><code>def withLock[A](Semaphore, lambda () :: A) :: A</code></para>
-<para>Acquire the semaphore and run the thunk, publishing all values published by the
-thunk. Once the thunk halts, release the semaphore.</para>
+<para>Acquire the semaphore and run a thunk which is expected to publish
+no more than one value. Publishes the value published by the
+thunk and releases the semaphore.</para>
 <formalpara><title>Implementation</title><programlisting>def withLock[A](Semaphore, lambda () :: A) :: A
 def withLock(s, f) =
-  val out = Buffer[A]()
-  ( s.acquire() &gt;&gt;
-    f() &gt;x&gt;
-    out.put(x) &gt;&gt;
-    stop
-  ; s.release() &gt;&gt;
-    out.closenb() &gt;&gt;
-    stop
-  ) | repeat(out.get)</programlisting></formalpara></listitem></varlistentry></variablelist>
+  s.acquire() &gt;&gt; (
+    let(f()) &gt;x&gt;
+    s.release() &gt;&gt;
+    x
+    ; s.release() &gt;&gt; stop
+  )</programlisting></formalpara></listitem></varlistentry>
+<varlistentry><term><code>synchronized</code></term><listitem><para><code>def synchronized[A](Semaphore, lambda () :: A)() :: A</code></para>
+<para>Given a lock and thunk, return a new thunk which is serialized
+on the lock. Similar to Java's synchronized keyword.</para>
+<formalpara><title>Implementation</title><programlisting>def synchronized[A](Semaphore, lambda () :: A)() :: A
+def synchronized(s,f)() = withLock(s, f)</programlisting></formalpara></listitem></varlistentry></variablelist>
 </section>
 </section>

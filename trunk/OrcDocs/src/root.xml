@@ -513,6 +513,14 @@ The <code>=</code> operator can compare values of any type. Values of different 
 <code>10 = true</code> evaluates to <code>false</code>.
 </para>
 
+<para>
+Numbers with no decimal part, such as <code>3</code>, are treated as integers. Arithmetic operators with two integer arguments will perform
+an integer operation and return an integer result; for example, <code>5 / 2</code> performs integer division and evaluates to <code>2</code>.
+However, if either argument to an operator has a decimal part (even if it is trivial, as in <code>3.0</code>), the other argument will
+be promoted, and a decimal operation will be peformed. For example, <code>5 / 2.0</code> and <code>5.0 / 2</code> both perform decimal
+division and evaluate to <code>2.5</code>.
+</para>
+
 <section><title>Silent Expression</title>
 <para>
 There are situations where an expression evaluation is stuck, because it is attempting to perform 
@@ -2302,6 +2310,39 @@ f(4)
 
 </para>
 
+<warning>
+<para>
+Clauses of a function may be defined with both curried arguments and patterns in arguments.
+However, the combination of these two features can produce unintuitive behavior. Consider
+the following clausal, curried function definition:
+
+<programlisting language="orc-demo"><![CDATA[
+def sum(x)(0) = x
+def sum(x)(y) = x + y
+sum(2)(3)
+]]></programlisting>
+
+One might expect <code>sum(2)(3)</code> to evaluate to <code>5</code>. However, this is not
+the case; instead <code>sum(2)(3)</code> remains silent due to a pattern matching failure.
+This is because the compiler always expands curried definitions before considering patterns,
+so the above program is in fact equivalent to:
+
+<programlisting language="orc-demo"><![CDATA[
+def sum(x) = ( lambda(0) = x )
+def sum(x) = ( lambda(y) = x + y )
+sum(2)(3)
+]]></programlisting>
+
+Now the problem becomes apparent. The first clause will always match when the function is
+applied to its first argument, and then only one clause is available when the second
+argument is available: the clause with succeeds only on <code>0</code>.
+</para>
+
+<para>
+Therefore, use caution when writing function definitions that use both currying and clauses.
+</para>
+</warning>
+
 </section>
 
 <!-- 
@@ -3896,7 +3937,7 @@ it publishes 5 values, and then terminates it.
 val c = Buffer()
 val done = Semaphore(0)
 def allow(0) = done.release() >> stop
-def allow(n) = c.get() >!x> allow(n-1)
+def allow(n) = c.get() >x> (x | allow(n-1))
 allow(5) << ]]>
     <emphasis role="bold">F</emphasis><![CDATA[ >x> c.put(x) >> stop 
   | done.acquire() >> c.closenb()
@@ -4068,58 +4109,69 @@ This is a seedless fold (sometimes called <code>fold1</code>) which requires tha
 list be nonempty and uses its first element as a seed.  This implementation is
 short-circuiting --- it may finish early if the reduction operator <code>f</code> does
 not use its second argument --- but it is not concurrent; no two calls to <code>f</code>
-can proceed in parallel.
+can proceed in parallel.  However, if <code>f</code> is associative, we can overcome this restriction 
+and implement fold concurrently. If <code>f</code> is also commutative, we can further increase concurrency.
 </para>
 
 <section><title>Associative Fold</title>
 
 <para>
 We first consider the case when the reduction operator is associative.  We
-define <code>afold(b,xs)</code> where <code>b</code> is a binary associative function and
+define <code>afold(f,xs)</code> where <code>f</code> is a binary associative function and
 <code>xs</code> is a non-empty list.  The implementation iteratively reduces <code>xs</code>
 to a single value.  Each step of the iteration applies the auxiliary function
 <code>step</code>, which halves the size of <code>xs</code> by reducing disjoint pairs of
-adjacent items. Notice that <code>b(x,y):step(xs)</code> is an implicit
-fork-join. Thus, the call <code>b(x,y)</code>
-executes in parallel with the recursive call <code>step(xs)</code>, and as a result,
-all of the calls to <code>b</code> in each iteration occur in parallel. 
+adjacent items. 
 </para>
 
 <programlisting><![CDATA[
-def afold(b, [x]) = x
-def afold(b, xs) =
+def afold(_, [x]) = x
+def afold(f, xs) =
   def step([]) = []
   def step([x]) = [x]
-  def step(x:y:xs) = b(x,y):step(xs)
-  afold(b, step(xs))]]></programlisting>
+  def step(x:y:xs) = f(x,y):step(xs)
+  afold(f, step(xs))]]>
+</programlisting>
+
+<para>
+Notice that <code>f(x,y):step(xs)</code> is an implicit
+fork-join. Thus, the call <code>f(x,y)</code>
+executes in parallel with the recursive call <code>step(xs)</code>. 
+As a result, all calls to <code>f</code> execute concurrently within
+each iteration of <code>afold</code>.   
+</para>
+  
 </section>
 
 <section><title>Associative, Commutative Fold</title>
 
 <para>
-We can devise a better strategy when the fold operator is both associative and
-commutative. We define <code>cfold(b,xs)</code>, where <code>b</code> is a binary associative and
-commutative function over two arguments and <code>xs</code> is a non-empty list. 
+We can make the implementation even more concurrent when the fold operator 
+is both associative and commutative. We define <code>cfold(f,xs)</code>, where 
+<code>f</code> is a associative and commutative binary function and <code>xs</code> is a non-empty list. 
 The implementation initially copies all list items into a buffer in arbitrary
-order using the auxiliary function <code>xfer</code>.  The auxiliary function
-<code>combine</code> repeatedly pulls pairs of items from the buffer, reduces
+order using the auxiliary function <code>xfer</code>, counting the total
+number of items copied. The auxiliary function <code>combine</code> repeatedly 
+pulls pairs of items from the buffer, reduces
 them, and places the result back in the buffer. Each pair of items is reduced
-in parallel as they become available.  The last item in the buffer is the
+in parallel as they become available. The last item in the buffer is the
 result of the overall fold.
 </para>
 
 <programlisting><![CDATA[
-def cfold(b, xs) =
+def cfold(f, xs) =
   val c = Buffer()
   
-  def xfer([])    = stop
-  def xfer(x:xs)  = c.put(x) >> stop | xfer(xs)
+  def xfer([])    = 0
+  def xfer(x:xs)  = c.put(x) >> stop | xfer(xs)+1
 
+  def combine(0) = stop
   def combine(1) =  c.get()
   def combine(m) =  c.get() >x> c.get() >y> 
-                    ( c.put(b(x,y)) >> stop | combine(m-1))
+                    ( c.put(f(x,y)) >> stop | combine(m-1))
 
-  xfer(xs) | combine(length(xs))]]></programlisting>
+  xfer(xs) >n> combine(n)]]>
+</programlisting>
 
 </section>
 </section>
