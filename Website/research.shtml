@@ -150,6 +150,14 @@ and Mutable Data Structures</a>
 <a name="Other" id="Other"></a><h2>Other Resources <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
+	<li class="new"><a target="_blank" class="paper" href="papers/OrcExceptionSemantics.pdf">A Semantics for Exception Handling in Orc</a>
+	<a class="bibtex" href="papers/OrcExceptionSemantics.bib">BibTeX</a>
+	<br />
+	Andrew Matsuoka and David Kitchin<br />
+	Unpublished, 2009.</li>
+</ul>
+
+<ul>
 	<li><a target="_blank" class="paper" href="papers/OrcImpDraft.pdf">Implementation Outline of Orc</a>
 	<a class="bibtex" href="papers/OrcImpDraft.bib">BibTeX</a>
 	<br />
@@ -157,13 +165,7 @@ and Mutable Data Structures</a>
 	Unpublished, 2005.</li>
 </ul>
 
-<ul>
-	<li class="new"><a target="_blank" class="paper" href="papers/OrcExceptionSemantics.pdf">A Semantics for Exception Handling in Orc/a>
-	<a class="bibtex" href="papers/OrcExceptionSemantics.bib">BibTeX</a>
-	<br />
-	Andrew Matsuoka and David Kitchin<br />
-	Unpublished, 2009.</li>
-</ul>
+
 
 <!-- 
 <ul>
