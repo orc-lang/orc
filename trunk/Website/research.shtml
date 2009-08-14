@@ -157,4 +157,22 @@ and Mutable Data Structures</a>
 	Unpublished, 2005.</li>
 </ul>
 
+<ul>
+	<li class="new"><a target="_blank" class="paper" href="papers/OrcExceptionSemantics.pdf">A Semantics for Exception Handling in Orc/a>
+	<a class="bibtex" href="papers/OrcExceptionSemantics.bib">BibTeX</a>
+	<br />
+	Andrew Matsuoka and David Kitchin<br />
+	Unpublished, 2009.</li>
+</ul>
+
+<!-- 
+<ul>
+	<li class="new"><a target="_blank" class="paper" href="papers/OrcOtherwiseSemantics.pdf">Operational and Denotational Semantics of the Otherwise Combinator</a>
+	<a class="bibtex" href="papers/OrcOtherwiseSemantics.bib">BibTeX</a>
+	<br />
+	David Kitchin<br />
+	Unpublished, 2009.</li>
+</ul>
+ -->
+
 <!--#include virtual="template/footer.shtml" -->
