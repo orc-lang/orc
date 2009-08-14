@@ -158,6 +158,14 @@ and Mutable Data Structures</a>
 </ul>
 
 <ul>
+	<li class="new"><a target="_blank" class="paper" href="papers/OrcOtherwiseSemantics.pdf">Operational and Denotational Semantics of the Otherwise Combinator (DRAFT)</a>
+	<a class="bibtex" href="papers/OrcOtherwiseSemantics.bib">BibTeX</a>
+	<br />
+	David Kitchin<br />
+	Unpublished, 2009.</li>
+</ul>
+
+<ul>
 	<li><a target="_blank" class="paper" href="papers/OrcImpDraft.pdf">Implementation Outline of Orc</a>
 	<a class="bibtex" href="papers/OrcImpDraft.bib">BibTeX</a>
 	<br />
@@ -167,14 +175,8 @@ and Mutable Data Structures</a>
 
 
 
-<!-- 
-<ul>
-	<li class="new"><a target="_blank" class="paper" href="papers/OrcOtherwiseSemantics.pdf">Operational and Denotational Semantics of the Otherwise Combinator</a>
-	<a class="bibtex" href="papers/OrcOtherwiseSemantics.bib">BibTeX</a>
-	<br />
-	David Kitchin<br />
-	Unpublished, 2009.</li>
-</ul>
- -->
+
+
+
 
 <!--#include virtual="template/footer.shtml" -->
