@@ -135,7 +135,9 @@ List<Declaration> Declarations =
  */
 List<Declaration> Include =
 	INCLUDE filename:StringLiteral Space ^{
-		OrcParserRats parser = new OrcParserRats(config, config.openInclude(filename), filename);
+		File thisfile = new File(location(yyStart).file);
+		String thisdir = thisfile.getParent();
+		OrcParserRats parser = new OrcParserRats(config, config.openInclude(filename, thisdir), filename);
 		Result result = parser.pModule(0);
 		if (result.hasValue()) {
 			yyResult = new SemanticValue(result.semanticValue(), yyBase);

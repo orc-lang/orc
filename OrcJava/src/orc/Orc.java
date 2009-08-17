@@ -108,13 +108,13 @@ public class Orc {
 		if (!cfg.getNoPrelude()) {
 			// Load declarations from the default include file.
 			String preludename = "prelude.inc";
-			OrcParser fparser = new OrcParser(cfg, cfg.openInclude(preludename), preludename);
+			OrcParser fparser = new OrcParser(cfg, cfg.openInclude(preludename, null), preludename);
 			decls.addAll(fparser.parseModule());
 		}
 		if (progress.isCanceled()) return null;
 		// Load declarations from files specified by the configuration options
 		for (String f : cfg.getIncludes()) {
-			OrcParser fparser = new OrcParser(cfg, cfg.openInclude(f), f);
+			OrcParser fparser = new OrcParser(cfg, cfg.openInclude(f, null), f);
 			decls.addAll(fparser.parseModule());
 			if (progress.isCanceled()) return null;
 		}
