@@ -364,19 +364,42 @@ public class Config implements Cloneable {
 	 * as either files or class resources (which will continue to
 	 * work when Orc is deployed as a servlet or JAR).
 	 * 
-	 * <p>
-	 * TODO: should we support include paths relative to the current file?
-	 * 
 	 * @param name
 	 *            of the include file relative to some directory of include path
 	 *            or package orc.inc
+	 *        relativeTo
+	 *            The path that should be considered the "current directory" if
+	 *            any include path is relative; typically this is the directory
+	 *            containing the program file which declared the include.
+	 *            If null, ignore all relative include paths.
 	 * @return Reader to read the file.
 	 * @throws FileNotFoundException
 	 *             if the resource is not found.
 	 */
-	public final Reader openInclude(String name) throws FileNotFoundException {
-		for (String parent : includePath) {
-			File file = new File(parent, name);
+	public final Reader openInclude(String name, String relativeTo) throws FileNotFoundException { 
+		for (String ip : includePath) {
+			File incPath = new File(ip);
+			
+			/* Prefix relative paths as necessary */
+			if (!incPath.isAbsolute()) {
+				if (relativeTo == null) {
+					/* If relativeTo is null, ignore all relative include paths.
+					 * This overrides the default File behavior,
+					 * which is to resolve relative paths using the system-specific
+					 * user.dir property. To recover that behavior,
+					 * use that user.dir location as the relativeTo 
+					 * argument explicitly. 
+					 */
+					continue; 
+				}
+				else {
+					// Otherwise use relativeTo as the prefix for the relative include path
+					incPath = new File(relativeTo, ip);
+				}
+			}
+			
+			File file = new File(incPath, name);
+			
 			if (!file.exists()) continue;
 			return new FileReader(file);
 		}
