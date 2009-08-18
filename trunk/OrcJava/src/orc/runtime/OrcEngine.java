@@ -306,9 +306,9 @@ public class OrcEngine implements Runnable {
 		int len = backtrace.length;
 		if (len > 0) {
 			stderr.println(backtrace[0]);
-			String carrot = backtrace[0].getCarrot();
-			if(carrot != null)
-				stderr.println(carrot);
+			String caret = backtrace[0].getCaret();
+			if(caret != null)
+				stderr.println(caret);
 		}
 		for (int i = 1; i < len; i++) {
 			stderr.println(backtrace[i]);
