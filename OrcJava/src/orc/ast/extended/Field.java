@@ -21,4 +21,11 @@ public class Field extends Expression {
 	public String toString() {
 		return field;
 	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
+	 */
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
+	}
 }

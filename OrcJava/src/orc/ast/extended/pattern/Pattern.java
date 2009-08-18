@@ -3,6 +3,7 @@ package orc.ast.extended.pattern;
 import java.util.LinkedList;
 import java.util.List;
 
+import orc.ast.extended.ASTNode;
 import orc.ast.simple.Call;
 import orc.ast.simple.Expression;
 import orc.ast.simple.Let;
@@ -34,7 +35,7 @@ import orc.error.SourceLocation;
  * 
  */
 
-public abstract class Pattern implements Locatable {
+public abstract class Pattern implements ASTNode, Locatable {
 	private SourceLocation location = SourceLocation.UNKNOWN;
 
 	/* Patterns are assumed to be strict unless set otherwise */

@@ -1,5 +1,6 @@
 package orc.ast.extended.pattern;
 
+import orc.ast.extended.Visitor;
 import orc.ast.simple.Call;
 import orc.ast.simple.Expression;
 import orc.ast.simple.WithLocation;
@@ -31,5 +32,12 @@ public class NilPattern extends Pattern {
 	
 	public String toString() {
 		return "[]";
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
+	 */
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

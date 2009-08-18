@@ -87,4 +87,11 @@ public class Call extends Expression {
 	public String toString() {
 		return caller.toString() + "(" + join(args, ", ") + ")";
 	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
+	 */
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
+	}
 }

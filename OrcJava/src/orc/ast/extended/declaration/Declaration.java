@@ -1,5 +1,6 @@
 package orc.ast.extended.declaration;
 
+import orc.ast.extended.ASTNode;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;
@@ -14,7 +15,7 @@ import orc.error.compiletime.CompilationException;
  * @author dkitchin
  *
  */
-public abstract class Declaration implements Locatable { 
+public abstract class Declaration implements ASTNode, Locatable { 
 	protected SourceLocation location;
 	public abstract orc.ast.simple.Expression bindto(orc.ast.simple.Expression target) throws CompilationException;
 

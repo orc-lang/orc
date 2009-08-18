@@ -3,6 +3,7 @@ package orc.ast.extended.declaration.defn;
 import java.util.List;
 
 import orc.ast.extended.Expression;
+import orc.ast.extended.Visitor;
 import orc.ast.extended.pattern.Pattern;
 import orc.ast.simple.type.ArrowType;
 import orc.ast.simple.type.Type;
@@ -22,6 +23,13 @@ public class DefnType extends Defn {
 
 		public String toString() {
 			return "def " + name + " (" + Expression.join(argTypes, ", ") + ") :: " + resultType;
+		}
+
+		/* (non-Javadoc)
+		 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
+		 */
+		public <E> E accept(Visitor<E> visitor) {
+			return visitor.visit(this);
 		}
 
 		@Override

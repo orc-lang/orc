@@ -1,5 +1,6 @@
 package orc.ast.extended.pattern;
 
+import orc.ast.extended.Visitor;
 import orc.ast.simple.Expression;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
@@ -41,5 +42,12 @@ public class TypedPattern extends Pattern {
 	
 	public String toString() {
 		return "(" + p + " :: " + t +")";
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
+	 */
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

@@ -1,6 +1,7 @@
 package orc.ast.extended.declaration;
 
 import orc.ast.extended.Expression;
+import orc.ast.extended.Visitor;
 import orc.ast.extended.pattern.Pattern;
 import orc.ast.extended.pattern.PatternSimplifier;
 import orc.ast.simple.WithLocation;
@@ -9,8 +10,8 @@ import orc.error.compiletime.CompilationException;
 
 public class ValDeclaration extends Declaration {
 
-	Pattern p;
-	Expression f;
+	public Pattern p;
+	public Expression f;
 	
 	public ValDeclaration(Pattern p, Expression f) {
 		this.p = p;
@@ -37,5 +38,12 @@ public class ValDeclaration extends Declaration {
 
 	public String toString() {
 		return "val " + p + " = " + f;
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
+	 */
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

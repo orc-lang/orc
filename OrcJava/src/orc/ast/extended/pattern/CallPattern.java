@@ -2,6 +2,7 @@ package orc.ast.extended.pattern;
 
 import java.util.List;
 
+import orc.ast.extended.Visitor;
 import orc.ast.simple.Call;
 import orc.ast.simple.Expression;
 import orc.ast.simple.Parallel;
@@ -16,8 +17,8 @@ import orc.error.compiletime.PatternException;
 
 public class CallPattern extends Pattern {
 
-	NamedVar site;
-	Pattern p;
+	public NamedVar site;
+	public Pattern p;
 	
 	// Create a call based on a string name
 	public CallPattern(String site, List<Pattern> args) {
@@ -41,4 +42,10 @@ public class CallPattern extends Pattern {
 		return site.name + p.toString();
 	}
 
+	/* (non-Javadoc)
+	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
+	 */
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
+	}
 }

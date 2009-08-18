@@ -1,6 +1,7 @@
 package orc.ast.extended.pattern;
 
 import orc.ast.extended.Literal;
+import orc.ast.extended.Visitor;
 import orc.ast.simple.*;
 import orc.ast.simple.arg.*;
 import orc.error.compiletime.PatternException;
@@ -8,7 +9,7 @@ import xtc.util.Utilities;
 
 public class LiteralPattern extends Pattern {
 
-	Literal lit;
+	public Literal lit;
 	
 	public LiteralPattern(Literal l) {
 		this.lit = l;
@@ -44,5 +45,12 @@ public class LiteralPattern extends Pattern {
 	
 	public String toString() {
 		return String.valueOf(lit);
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
+	 */
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

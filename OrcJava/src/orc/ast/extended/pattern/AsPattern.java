@@ -1,5 +1,6 @@
 package orc.ast.extended.pattern;
 
+import orc.ast.extended.Visitor;
 import orc.ast.simple.Expression;
 import orc.ast.simple.arg.NamedVar;
 import orc.ast.simple.arg.Var;
@@ -7,8 +8,8 @@ import orc.error.compiletime.PatternException;
 
 public class AsPattern extends Pattern {
 
-	Pattern p;
-	NamedVar x;
+	public Pattern p;
+	public NamedVar x;
 	
 	public AsPattern(Pattern p, String s) {
 		this.p = p;
@@ -41,5 +42,12 @@ public class AsPattern extends Pattern {
 	
 	public String toString() {
 		return "(" + p + " as " + x.name +")";
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
+	 */
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

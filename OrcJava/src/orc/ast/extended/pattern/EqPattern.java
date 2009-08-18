@@ -1,6 +1,7 @@
 package orc.ast.extended.pattern;
 
 import orc.ast.extended.Literal;
+import orc.ast.extended.Visitor;
 import orc.ast.simple.*;
 import orc.ast.simple.arg.*;
 import orc.error.compiletime.NonlinearPatternException;
@@ -9,7 +10,7 @@ import xtc.util.Utilities;
 
 public class EqPattern extends Pattern {
 
-	NamedVar x;
+	public NamedVar x;
 	
 	public EqPattern(String s)
 	{
@@ -28,5 +29,12 @@ public class EqPattern extends Pattern {
 	
 	public String toString() {
 		return x.name.toString();
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
+	 */
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

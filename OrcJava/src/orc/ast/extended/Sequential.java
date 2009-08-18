@@ -47,4 +47,11 @@ public class Sequential extends Expression {
 	public String toString() {
 		return "(" + left + " >"+p+"> " + right + ")";
 	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
+	 */
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
+	}
 }

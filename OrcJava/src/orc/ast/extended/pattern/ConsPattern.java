@@ -3,6 +3,7 @@ package orc.ast.extended.pattern;
 import java.util.LinkedList;
 import java.util.List;
 
+import orc.ast.extended.Visitor;
 import orc.ast.simple.Call;
 import orc.ast.simple.Expression;
 import orc.ast.simple.Parallel;
@@ -16,8 +17,8 @@ import orc.error.compiletime.PatternException;
 
 public class ConsPattern extends Pattern {
 
-	Pattern h;
-	Pattern t;
+	public Pattern h;
+	public Pattern t;
 	
 	public ConsPattern(Pattern h, Pattern t) {
 		
@@ -75,5 +76,12 @@ public class ConsPattern extends Pattern {
 	
 	public String toString() {
 		return "(" + h + ":" + t +")";
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
+	 */
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

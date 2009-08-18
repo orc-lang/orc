@@ -28,4 +28,11 @@ public class Throw extends Expression {
 	public String toString() {
 		return "(throw " + exception + ")";
 	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
+	 */
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
+	}
 }

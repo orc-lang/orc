@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import orc.ast.extended.Expression;
+import orc.ast.extended.Visitor;
 import orc.ast.extended.pattern.Pattern;
 import orc.ast.extended.pattern.TypedPattern;
 import orc.ast.simple.type.Type;
@@ -36,6 +37,13 @@ public class DefnClause extends Defn {
 	public String toString() {
 		String prefix = name.equals("") ? "lambda" : "def " + name + " ";
 		return prefix + "(" + Expression.join(formals, ", ") + ") = " + body;
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
+	 */
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 	
 	public void extend(AggregateDefn adef) {

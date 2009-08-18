@@ -11,6 +11,7 @@ import java.util.TreeSet;
 import java.util.Map.Entry;
 
 import orc.ast.extended.Expression;
+import orc.ast.extended.Visitor;
 import orc.ast.extended.declaration.DFS.direction;
 import orc.ast.extended.declaration.defn.AggregateDefn;
 import orc.ast.extended.declaration.defn.Clause;
@@ -161,6 +162,13 @@ public class DefsDeclaration extends Declaration {
 	public String toString() {
 		return Expression.join(defs, "\n");
 	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
+	 */
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
+	}
 }
  
 
@@ -271,4 +279,3 @@ class NodeComparator<T> implements Comparator<Node<T>> {
 		return o2.fintime.compareTo(o1.fintime);
 	}
 }
-
