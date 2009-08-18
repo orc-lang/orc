@@ -24,7 +24,7 @@ public class SourceLocation implements Serializable {
 	public File file;
 	private Boolean fileFound = false;
 	
-	public static final SourceLocation UNKNOWN = new SourceLocation(null, 0, 0, 0, 0, 0, 0) {
+	public static final SourceLocation UNKNOWN = new SourceLocation(null, -1, 0, 0, -1, 0, 0) {
 		public String toString() {
 			return "<unknown source location>";
 		}
@@ -129,10 +129,10 @@ public class SourceLocation implements Serializable {
 	}
 	
 	/*
-	 * returns a string which is the carrot to denote the start of the error on the console.
+	 * returns a string which is the caret to denote the start of the error on the console.
 	 * might return null to denote the file wasn't found.
 	 */
-	public String getCarrot(){
+	public String getCaret(){
 		
 		if(!fileFound)
 			return null;
@@ -141,11 +141,11 @@ public class SourceLocation implements Serializable {
 		(endLine != line ? endLine + ":" : "") + endColumn;
 		int len = locStr.length();
 		len += column;
-		String carrotString = "";
+		String caretString = "";
 		for(int i = 0; i < len; i++){
-			carrotString += " ";
+			caretString += " ";
 		}
-		carrotString += " ^";
-		return carrotString;
+		caretString += " ^";
+		return caretString;
 	}
 }
