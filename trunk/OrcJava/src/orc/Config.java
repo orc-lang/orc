@@ -28,6 +28,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import orc.error.OrcError;
+import orc.error.compiletime.CompileMessageRecorder;
 import orc.runtime.TokenPool;
 import orc.trace.MinimizeTracer;
 import orc.trace.NullTracer;
@@ -54,6 +55,7 @@ import org.kohsuke.args4j.spi.StopOptionHandler;
  */
 public class Config implements Cloneable {
 	private int debugLevel = 0;
+	private CompileMessageRecorder messageRecorder = null; //TODO: default to write to stderr
 	private File oilOutputFile = new File("");
 	private File traceOutputFile = new File("");
 	private boolean hasOilInputFile = false;
@@ -228,6 +230,14 @@ public class Config implements Cloneable {
 		return debugLevel;
 	}
 	
+	public CompileMessageRecorder getMessageRecorder() {
+		return messageRecorder;
+	}
+
+	public void setMessageRecorder(CompileMessageRecorder messageRecorder) {
+		this.messageRecorder = messageRecorder;
+	}
+
 	public File getTraceOutputFile() {
 		return traceOutputFile;
 	}

@@ -43,4 +43,8 @@ public class CompilationException extends OrcException implements Locatable {
 			return super.getMessage();
 		}
 	}
+
+	public String getMessageOnly() {
+		return super.getMessage();
+	}
 }
