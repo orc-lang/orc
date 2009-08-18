@@ -81,7 +81,7 @@ body {
 	 * prevent necessary backtracking.
 	 */
 	protected final void abort(ParseError error) throws IOException {
-		throw new AbortParse(format(error));
+		throw new AbortParse(format(error), error);
 	}
 }
 
