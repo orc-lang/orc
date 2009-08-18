@@ -3,6 +3,7 @@ package orc.ast.extended.pattern;
 import java.util.Iterator;
 import java.util.List;
 
+import orc.ast.extended.Visitor;
 import orc.ast.simple.Expression;
 import orc.ast.simple.WithLocation;
 import orc.ast.simple.arg.Var;
@@ -10,7 +11,7 @@ import orc.error.compiletime.PatternException;
 
 public class ListPattern extends Pattern {
 
-	List<Pattern> ps;
+	public List<Pattern> ps;
 	
 	public ListPattern(List<Pattern> ps) {
 		this.ps = ps;
@@ -76,5 +77,12 @@ public class ListPattern extends Pattern {
 		}
 		sb.append("]");
 		return sb.toString();
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
+	 */
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

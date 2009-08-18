@@ -18,7 +18,7 @@ import orc.error.compiletime.CompilationException;
  * @author dkitchin, wcook
  */
 
-public abstract class Expression implements Locatable {
+public abstract class Expression implements ASTNode, Locatable {
 	private SourceLocation location;
 	
 	/**

@@ -1,5 +1,6 @@
 package orc.ast.extended.declaration;
 
+import orc.ast.extended.Visitor;
 import orc.ast.simple.WithLocation;
 import orc.ast.simple.arg.Argument;
 import orc.ast.simple.arg.NamedVar;
@@ -53,4 +54,11 @@ public class ClassDeclaration extends Declaration {
 	public String toString() {
 		return "class " + varname + " = " + classname;
 	}	
+
+	/* (non-Javadoc)
+	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
+	 */
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
+	}
 }

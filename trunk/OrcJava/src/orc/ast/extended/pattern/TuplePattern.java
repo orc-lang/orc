@@ -3,6 +3,7 @@ package orc.ast.extended.pattern;
 import java.util.LinkedList;
 import java.util.List;
 
+import orc.ast.extended.Visitor;
 import orc.ast.simple.Call;
 import orc.ast.simple.Expression;
 import orc.ast.simple.Where;
@@ -12,7 +13,7 @@ import orc.error.compiletime.PatternException;
 
 public class TuplePattern extends Pattern {
 
-	List<Pattern> args;
+	public List<Pattern> args;
 	
 	public TuplePattern(List<Pattern> args) {
 		this.args = args;
@@ -81,5 +82,12 @@ public class TuplePattern extends Pattern {
 	
 	public String toString() {
 		return "("+orc.ast.extended.Expression.join(args, ", ")+")";
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
+	 */
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

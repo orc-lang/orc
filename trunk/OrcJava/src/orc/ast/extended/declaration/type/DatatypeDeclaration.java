@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import orc.ast.extended.Expression;
+import orc.ast.extended.Visitor;
 import orc.ast.extended.declaration.Declaration;
 import orc.ast.extended.pattern.Pattern;
 import orc.ast.extended.pattern.PatternSimplifier;
@@ -92,5 +93,12 @@ public class DatatypeDeclaration extends Declaration {
 
 	public String toString() {
 		return "type " + typename + " = " + Expression.join(members, " | ");
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
+	 */
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

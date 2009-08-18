@@ -27,4 +27,11 @@ public class Literal extends Expression {
 			return '"' + Utilities.escape((String)val, Utilities.JAVA_ESCAPES) + '"';
 		} else return String.valueOf(val);
 	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
+	 */
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
+	}
 }

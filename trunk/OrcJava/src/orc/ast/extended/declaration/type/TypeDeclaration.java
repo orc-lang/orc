@@ -2,6 +2,7 @@ package orc.ast.extended.declaration.type;
 
 import java.util.List;
 
+import orc.ast.extended.Visitor;
 import orc.ast.extended.declaration.Declaration;
 import orc.ast.simple.TypeDecl;
 import orc.ast.simple.WithLocation;
@@ -37,5 +38,12 @@ public class TypeDeclaration extends Declaration {
 
 	public String toString() {
 		return "type " + varname + " = " + classname;
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
+	 */
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

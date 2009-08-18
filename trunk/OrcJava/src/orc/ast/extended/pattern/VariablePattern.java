@@ -1,5 +1,6 @@
 package orc.ast.extended.pattern;
 
+import orc.ast.extended.Visitor;
 import orc.ast.simple.Call;
 import orc.ast.simple.Expression;
 import orc.ast.simple.arg.NamedVar;
@@ -8,7 +9,7 @@ import orc.error.compiletime.NonlinearPatternException;
 
 public class VariablePattern extends Pattern {
 
-	NamedVar x;
+	public NamedVar x;
 	
 	public VariablePattern(String s)
 	{
@@ -26,5 +27,12 @@ public class VariablePattern extends Pattern {
 	
 	public String toString() {
 		return x.name.toString();
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
+	 */
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

@@ -32,4 +32,11 @@ public class ConsExpr extends Expression {
 	public String toString() {
 		return "(" + h + ":" + t + ")";
 	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
+	 */
+	public <E> E accept(Visitor<E> visitor) {
+		return visitor.visit(this);
+	}
 }
