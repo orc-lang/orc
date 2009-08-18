@@ -1,5 +1,6 @@
 package orc.parser;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,6 +10,7 @@ import java.util.List;
 import orc.Config;
 import orc.ast.extended.Expression;
 import orc.ast.extended.declaration.Declaration;
+import orc.error.SourceLocation;
 import orc.error.compiletime.ParsingException;
 import orc.lib.str.Read;
 import xtc.parser.ParseException;
@@ -38,13 +40,22 @@ public class OrcParser {
 	 * expression).
 	 */
 	public Expression parseProgram() throws ParsingException, IOException {
+		Result result = null;
 		try {
-			Result result = parser.pProgram(0);
+			result = parser.pProgram(0);
 			return (Expression)parser.value(result);
 		} catch (AbortParse e) {
-			throw new ParsingException(e.getMessage(), e);
+			ParsingException pe = new ParsingException(e.parseError.msg, e);
+			parser.at(e.parseError.index, e.parseError.index+2, pe);
+			throw pe;
 		} catch (ParseException e) {
-			throw new ParsingException(e.getMessage(), e);
+			if (result != null) {
+				ParsingException pe = new ParsingException(result.parseError().msg, e);
+				parser.at(result.parseError().index, result.parseError().index+2, pe);
+				throw pe;
+			}
+			// We shouldn't be here, but just in case...
+			throw new ParsingException(e.getMessage());
 		}
 	}
 	
@@ -52,12 +63,21 @@ public class OrcParser {
 	 * Parse the input as a module (declarations only).
 	 */
 	public List<Declaration> parseModule() throws ParsingException, IOException {
+		Result result = null;
 		try {
-			Result result = parser.pModule(0);
+			result = parser.pModule(0);
 			return (List<Declaration>)parser.value(result);
 		} catch (AbortParse e) {
-			throw new ParsingException(e.getMessage(), e);
+			ParsingException pe = new ParsingException(e.parseError.msg, e);
+			parser.at(e.parseError.index, e.parseError.index+2, pe);
+			throw pe;
 		} catch (ParseException e) {
+			if (result != null) {
+				ParsingException pe = new ParsingException(result.parseError().msg, e);
+				parser.at(result.parseError().index, result.parseError().index+2, pe);
+				throw pe;
+			}
+			// We shouldn't be here, but just in case...
 			throw new ParsingException(e.getMessage());
 		}
 	}

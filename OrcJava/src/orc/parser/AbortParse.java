@@ -1,6 +1,7 @@
 package orc.parser;
 
 import orc.error.compiletime.ParsingException;
+import xtc.parser.ParseError;
 import xtc.parser.ParseException;
 
 /**
@@ -12,7 +13,10 @@ import xtc.parser.ParseException;
  * @author quark
  */
 public final class AbortParse extends RuntimeException {
-	public AbortParse(String message) {
+	public ParseError parseError;
+	
+	public AbortParse(String message, ParseError parseError) {
 		super(message);
+		this.parseError = parseError;
 	}
 }
