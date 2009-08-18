@@ -2,7 +2,7 @@
 // OrcTokenColorer.java -- Java class OrcTokenColorer
 // Project OrcEclipse
 //
-// $Id: OrcTokenColorer.java 1230 2009-08-18 14:58:16Z jthywissen $
+// $Id$
 //
 // Created by jthywiss on Jul 28, 2009.
 //

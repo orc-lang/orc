@@ -2,7 +2,7 @@
 // EnableOrcNature.java -- Java class EnableOrcNature
 // Project OrcEclipse
 //
-// $Id: EnableOrcNature.java 1230 2009-08-18 14:58:16Z jthywissen $
+// $Id$
 //
 // Created by jthywiss on Jul 27, 2009.
 //

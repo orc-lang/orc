@@ -2,7 +2,7 @@
 // ImpToOrcProgressAdapter.java -- Java class ImpToOrcProgressAdapter
 // Project OrcEclipse
 //
-// $Id: ImpToOrcProgressAdapter.java 1230 2009-08-18 14:58:16Z jthywissen $
+// $Id$
 //
 // Created by jthywiss on Aug 15, 2009.
 //

@@ -2,7 +2,7 @@
 // OrcResources.java -- Java interface OrcResources
 // Project OrcEclipse
 //
-// $Id: OrcResources.java 1230 2009-08-18 14:58:16Z jthywissen $
+// $Id$
 //
 // Created by jthywiss on Aug 5, 2009.
 //

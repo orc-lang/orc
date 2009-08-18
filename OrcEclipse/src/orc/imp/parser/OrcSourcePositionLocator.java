@@ -2,7 +2,7 @@
 // OrcSourcePositionLocator.java -- Java class OrcSourcePositionLocator
 // Project OrcEclipse
 //
-// $Id: OrcSourcePositionLocator.java 1230 2009-08-18 14:58:16Z jthywissen $
+// $Id$
 //
 // Created by jthywiss on Aug 9, 2009.
 //
