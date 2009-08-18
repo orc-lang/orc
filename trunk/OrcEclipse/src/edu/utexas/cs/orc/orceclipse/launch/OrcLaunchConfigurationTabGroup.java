@@ -2,7 +2,7 @@
 // OrcLaunchConfigurationTabGroup.java -- Java class OrcLaunchConfigurationTabGroup
 // Project OrcEclipse
 //
-// $Id: OrcLaunchConfigurationTabGroup.java 1230 2009-08-18 14:58:16Z jthywissen $
+// $Id$
 //
 // Created by jthywiss on Aug 4, 2009.
 //

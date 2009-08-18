@@ -2,7 +2,7 @@
 // OrcLexer.java -- Java class OrcLexer
 // Project OrcEclipse
 //
-// $Id: OrcLexer.java 1230 2009-08-18 14:58:16Z jthywissen $
+// $Id$
 //
 // Created by jthywiss on Aug 13, 2009.
 //
