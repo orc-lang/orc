@@ -18,6 +18,8 @@ package edu.utexas.cs.orc.orceclipse.launch;
 import java.io.File;
 import java.util.Map;
 
+import orc.Orc;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -31,6 +33,9 @@ import org.eclipse.jdt.launching.AbstractJavaLaunchConfigurationDelegate;
 import org.eclipse.jdt.launching.ExecutionArguments;
 import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
+import org.eclipse.osgi.baseadaptor.BaseData;
+import org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader;
+import org.osgi.framework.BundleException;
 
 import com.ibm.icu.text.MessageFormat;
 
@@ -159,8 +164,8 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 
 			// Classpath
 			//final String[] classpath = getClasspath(configuration);
-			//FIXME: Compute path & jar dynamically, or at least use Eclipse variables!
-			final String[] classpath = { "/Users/jthywiss/Projects/Eclipse_workspace/OrcEclipse/lib/orc-0.9.9.jar" };
+
+			final String[] classpath = getAbsoluteClasspathForClass(Orc.class);
 
 			// Create VM config
 			final VMRunnerConfiguration runConfig = new VMRunnerConfiguration(mainTypeName, classpath);
@@ -191,6 +196,22 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 		} finally {
 			monitor.done();
 		}
+	}
+
+	private String[] getAbsoluteClasspathForClass(final Class classOfInterest) {
+		//FIXME: Is this possible without using the internal OSGi BaseData and DefaultClassLoader classes?
+		final BaseData basedata = ((DefaultClassLoader) classOfInterest.getClassLoader()).getClasspathManager().getBaseData();
+		String[] classpath = null;
+		try {
+			classpath = basedata.getClassPath();
+			for (int i = 0; i < classpath.length; i++) {
+				classpath[i] = basedata.getBundleFile().getFile(classpath[i], false).getAbsolutePath();
+			}
+		} catch (final BundleException e) {
+			// This is thrown on an invalid JAR manifest, but then we wouldn't be here, so this is an "impossible" case
+			Activator.log(e);
+		}
+		return classpath;
 	}
 
 }
