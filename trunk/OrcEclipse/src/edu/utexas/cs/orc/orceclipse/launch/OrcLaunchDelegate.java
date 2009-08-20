@@ -16,6 +16,7 @@
 package edu.utexas.cs.orc.orceclipse.launch;
 
 import java.io.File;
+import java.util.Date;
 import java.util.Map;
 
 import orc.Orc;
@@ -29,6 +30,7 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.jdt.launching.AbstractJavaLaunchConfigurationDelegate;
 import org.eclipse.jdt.launching.ExecutionArguments;
 import org.eclipse.jdt.launching.IVMRunner;
@@ -37,6 +39,7 @@ import org.eclipse.osgi.baseadaptor.BaseData;
 import org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader;
 import org.osgi.framework.BundleException;
 
+import com.ibm.icu.text.DateFormat;
 import com.ibm.icu.text.MessageFormat;
 
 import edu.utexas.cs.orc.orceclipse.Activator;
@@ -62,12 +65,8 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 	public static final boolean TYPE_CHECK_ATTR_DEFAULT = false;
 	public static final String NO_PRELUDE_ATTR_NAME = Activator.getInstance().getID() + ".NO_PRELUDE";
 	public static final boolean NO_PRELUDE_ATTR_DEFAULT = false;
-	// TODO: -I VAL : Set the include path for Orc includes (same syntax as
-	// CLASSPATH). Default is ".", the current directory. Prelude files are
-	// always available for include regardless of this setting.
-	// TODO: -cp VAL : Set the class path for Orc sites (same syntax as
-	// CLASSPATH). This is only used for classes not found in the Java VM
-	// classpath.
+	// TODO: -I VAL : Set the include path for Orc includes (same syntax as CLASSPATH). Default is ".", the current directory. Prelude files are always available for include regardless of this setting.
+	// TODO: -cp VAL : Set the class path for Orc sites (same syntax as CLASSPATH). This is only used for classes not found in the Java VM classpath.
 	public static final String OIL_OUT_ATTR_NAME = Activator.getInstance().getID() + ".OIL_OUT";
 	public static final String OIL_OUT_DEFAULT = "";
 	public static final String MAX_PUBS_ATTR_NAME = Activator.getInstance().getID() + ".MAX_PUBS";
@@ -132,13 +131,8 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 			if (configuration.getAttribute(NO_PRELUDE_ATTR_NAME, NO_PRELUDE_ATTR_DEFAULT)) {
 				pgmArgs += "-noprelude ";
 			}
-			// TODO: -I VAL : Set the include path for Orc includes (same syntax
-			// as CLASSPATH). Default is ".", the current directory. Prelude
-			// files are always available for include regardless of this
-			// setting.
-			// TODO: -cp VAL : Set the class path for Orc sites (same syntax as
-			// CLASSPATH). This is only used for classes not found in the Java
-			// VM classpath.
+			// TODO: -I VAL : Set the include path for Orc includes (same syntax as CLASSPATH). Default is ".", the current directory. Prelude files are always available for include regardless of this setting.
+			// TODO: -cp VAL : Set the class path for Orc sites (same syntax as CLASSPATH). This is only used for classes not found in the Java VM classpath.
 			if (configuration.getAttribute(OIL_OUT_ATTR_NAME, "").length() > 0) {
 				pgmArgs += "-oilOut \'" + configuration.getAttribute(OIL_OUT_ATTR_NAME, "") + "\' ";
 			}
@@ -188,6 +182,16 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 
 			// Launch the configuration - 1 unit of work
 			runner.run(runConfig, launch, monitor);
+			for (IProcess proc : launch.getProcesses()) {
+				String processLabel = 
+					VariablesPlugin.getDefault().getStringVariableManager().performStringSubstitution("${resource_path}")
+					+ " ["
+					+ configuration.getType().getName()
+					+ "] ("
+					+ DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM).format(new Date(System.currentTimeMillis()))
+					+ ")";
+				proc.setAttribute(IProcess.ATTR_PROCESS_LABEL, processLabel);
+			}
 
 			// check for cancellation
 			if (monitor.isCanceled()) {

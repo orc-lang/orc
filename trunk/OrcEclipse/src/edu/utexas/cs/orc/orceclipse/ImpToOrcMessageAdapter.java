@@ -19,7 +19,6 @@ import java.io.File;
 
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompileMessageRecorder;
-import orc.error.compiletime.CompileMessageRecorder.Severity;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.imp.builder.MarkerCreatorWithBatching;
@@ -80,7 +79,7 @@ public class ImpToOrcMessageAdapter implements CompileMessageRecorder {
 			try {
 				((MarkerCreatorWithBatching) impMessageHandler).addMarker(eclipseSeverity, message, location.line, location.offset, location.endOffset);
 			} catch (final LimitExceededException e) {
-				//TODO: Do we care?
+				// Shouldn't happen, since we don't use problem limits
 				Activator.log(e);
 			}
 		} else {
@@ -91,21 +90,21 @@ public class ImpToOrcMessageAdapter implements CompileMessageRecorder {
 	/* (non-Javadoc)
 	 * @see orc.error.compiletime.CompileMessageRecorder#recordMessage(orc.error.compiletime.CompileMessageRecorder.Severity, int, java.lang.String, orc.error.SourceLocation, java.lang.Throwable)
 	 */
-	public void recordMessage(Severity severity, int code, String message, SourceLocation location, Throwable exception) {
+	public void recordMessage(final Severity severity, final int code, final String message, final SourceLocation location, final Throwable exception) {
 		recordMessage(severity, code, message, location, null, exception);
 	}
 
 	/* (non-Javadoc)
 	 * @see orc.error.compiletime.CompileMessageRecorder#recordMessage(orc.error.compiletime.CompileMessageRecorder.Severity, int, java.lang.String, orc.error.SourceLocation, java.lang.Object)
 	 */
-	public void recordMessage(Severity severity, int code, String message, SourceLocation location, Object astNode) {
+	public void recordMessage(final Severity severity, final int code, final String message, final SourceLocation location, final Object astNode) {
 		recordMessage(severity, code, message, location, astNode, null);
 	}
 
 	/* (non-Javadoc)
 	 * @see orc.error.compiletime.CompileMessageRecorder#recordMessage(orc.error.compiletime.CompileMessageRecorder.Severity, int, java.lang.String)
 	 */
-	public void recordMessage(Severity severity, int code, String message) {
+	public void recordMessage(final Severity severity, final int code, final String message) {
 		recordMessage(severity, code, message, null, null, null);
 	}
 

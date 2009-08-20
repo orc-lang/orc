@@ -17,19 +17,10 @@ package orc.imp.builders;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Writer;
 
 import orc.Config;
-import orc.Orc;
 import orc.OrcCompiler;
-import orc.ast.oil.Compiler;
-import orc.ast.oil.Expr;
-import orc.ast.oil.xml.Oil;
-import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.CompileMessageRecorder.Severity;
-import orc.progress.SubProgressListener;
-import orc.runtime.nodes.Pub;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -229,7 +220,7 @@ public class OrcBuilder extends BuilderBase {
 
 			// TODO: Set options per project settings
 
-			OrcCompiler compiler = new OrcCompiler(config); 
+			final OrcCompiler compiler = new OrcCompiler(config);
 			try {
 				compiler.call();
 				// Disregard returned OIL, we just want the errors
