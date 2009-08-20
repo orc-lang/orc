@@ -45,7 +45,7 @@ import javax.swing.text.StyledDocument;
 
 import orc.Config;
 import orc.OrcCompiler;
-import orc.ast.oil.Expr;
+import orc.ast.oil.expression.Expr;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompileMessageRecorder;
 import orc.error.compiletime.CompileMessageRecorder.Severity;

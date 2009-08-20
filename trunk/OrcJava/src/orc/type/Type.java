@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import orc.Config;
-import orc.ast.oil.arg.Arg;
+import orc.ast.oil.expression.argument.Arg;
 import orc.env.Env;
 import orc.env.EnvException;
 import orc.env.LookupFailureException;

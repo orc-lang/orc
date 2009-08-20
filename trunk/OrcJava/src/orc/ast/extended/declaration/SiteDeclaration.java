@@ -2,9 +2,9 @@ package orc.ast.extended.declaration;
 
 import orc.ast.extended.Visitor;
 import orc.ast.simple.WithLocation;
-import orc.ast.simple.arg.Argument;
-import orc.ast.simple.arg.NamedVar;
-import orc.ast.simple.arg.Var;
+import orc.ast.simple.argument.Argument;
+import orc.ast.simple.argument.NamedVar;
+import orc.ast.simple.argument.Var;
 import orc.runtime.sites.Site;
 
 /**
@@ -27,17 +27,17 @@ public class SiteDeclaration extends Declaration {
 		classname = c;
 	}
 	
-	public orc.ast.simple.Expression bindto(orc.ast.simple.Expression target) {
+	public orc.ast.simple.expression.Expression bindto(orc.ast.simple.expression.Expression target) {
 		
 		
 		NamedVar x = new NamedVar(varname);
 		Var v = new Var();
 		
 		orc.ast.sites.Site s = orc.ast.sites.Site.build(orc.ast.sites.Site.ORC, classname);
-		Argument a = new orc.ast.simple.arg.Site(s);
+		Argument a = new orc.ast.simple.argument.Site(s);
 		
 		return new WithLocation(
-			new orc.ast.simple.Where(target.subvar(v,x), new orc.ast.simple.Let(a), v),
+			new orc.ast.simple.expression.Pruning(target.subvar(v,x), new orc.ast.simple.expression.Let(a), v),
 			getSourceLocation());
 		
 		/*

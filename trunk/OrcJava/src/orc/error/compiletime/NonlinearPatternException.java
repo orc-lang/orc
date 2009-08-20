@@ -1,6 +1,6 @@
 package orc.error.compiletime;
 
-import orc.ast.simple.arg.NamedVar;
+import orc.ast.simple.argument.NamedVar;
 
 public class NonlinearPatternException extends PatternException {
 	public NonlinearPatternException(NamedVar x) {

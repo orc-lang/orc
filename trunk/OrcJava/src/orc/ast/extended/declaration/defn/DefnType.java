@@ -2,11 +2,11 @@ package orc.ast.extended.declaration.defn;
 
 import java.util.List;
 
-import orc.ast.extended.Expression;
 import orc.ast.extended.Visitor;
+import orc.ast.extended.expression.Expression;
 import orc.ast.extended.pattern.Pattern;
-import orc.ast.simple.type.ArrowType;
-import orc.ast.simple.type.Type;
+import orc.ast.extended.type.ArrowType;
+import orc.ast.extended.type.Type;
 
 public class DefnType extends Defn {
 

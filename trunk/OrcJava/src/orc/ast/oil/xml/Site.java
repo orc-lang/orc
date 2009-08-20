@@ -21,7 +21,7 @@ public class Site extends Argument {
 		return super.toString() + "(" + protocol + ", " + location + ")";
 	}
 	@Override
-	public orc.ast.oil.arg.Arg unmarshal(Config config) throws CompilationException {
-		return new orc.ast.oil.arg.Site(orc.ast.sites.Site.build(protocol, location));
+	public orc.ast.oil.expression.argument.Arg unmarshal(Config config) throws CompilationException {
+		return new orc.ast.oil.expression.argument.Site(orc.ast.sites.Site.build(protocol, location));
 	}
 }

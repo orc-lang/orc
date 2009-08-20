@@ -23,7 +23,7 @@ public class Pull extends Expression {
 		return super.toString() + "(" + left + ", " + right + ")";
 	}
 	@Override
-	public orc.ast.oil.Expr unmarshal(Config config) throws CompilationException {
-		return new orc.ast.oil.Pull(left.unmarshal(config), right.unmarshal(config), name);
+	public orc.ast.oil.expression.Expr unmarshal(Config config) throws CompilationException {
+		return new orc.ast.oil.expression.Pruning(left.unmarshal(config), right.unmarshal(config), name);
 	}
 }

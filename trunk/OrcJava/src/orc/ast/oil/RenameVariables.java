@@ -1,6 +1,7 @@
 package orc.ast.oil;
 
-import orc.ast.oil.arg.Var;
+import orc.ast.oil.expression.Expr;
+import orc.ast.oil.expression.argument.Var;
 
 /**
  * Renumber variables in an expression according

@@ -3,14 +3,14 @@ package orc.ast.extended.declaration.defn;
 import java.util.LinkedList;
 import java.util.List;
 
-import orc.ast.extended.AssertType;
+import orc.ast.extended.expression.AssertType;
 import orc.ast.extended.pattern.Pattern;
+import orc.ast.extended.type.ArrowType;
+import orc.ast.extended.type.AssertedType;
+import orc.ast.extended.type.Type;
 import orc.ast.simple.Definition;
-import orc.ast.simple.HasType;
-import orc.ast.simple.arg.Var;
-import orc.ast.simple.type.ArrowType;
-import orc.ast.simple.type.AssertedType;
-import orc.ast.simple.type.Type;
+import orc.ast.simple.argument.Var;
+import orc.ast.simple.expression.HasType;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;
 
@@ -57,7 +57,7 @@ public class AggregateDefn {
 	
 		
 		// Default 'otherwise' clause is the silent expression
-		orc.ast.simple.Expression body = Pattern.fail();
+		orc.ast.simple.expression.Expression body = Pattern.fail();
 		
 		// Consider clauses in reverse order 
 		for (int i = clauses.size() - 1; i >= 0; i--) {

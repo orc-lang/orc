@@ -21,7 +21,7 @@ public class Isolated extends Expression {
 		return "(isolated " + body.toString() + ")";
 	}
 	@Override
-	public orc.ast.oil.Expr unmarshal(Config config) throws CompilationException {
-		return new orc.ast.oil.Isolated(body.unmarshal(config));
+	public orc.ast.oil.expression.Expr unmarshal(Config config) throws CompilationException {
+		return new orc.ast.oil.expression.Isolated(body.unmarshal(config));
 	}
 }

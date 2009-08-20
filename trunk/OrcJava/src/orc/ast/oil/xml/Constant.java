@@ -17,7 +17,7 @@ public class Constant extends Argument {
 		return super.toString() + "(" + value.getClass().toString() + "(" + value + "))";
 	}
 	@Override
-	public orc.ast.oil.arg.Arg unmarshal(Config config) throws CompilationException {
-		return new orc.ast.oil.arg.Constant(value);
+	public orc.ast.oil.expression.argument.Arg unmarshal(Config config) throws CompilationException {
+		return new orc.ast.oil.expression.argument.Constant(value);
 	}
 }

@@ -2,10 +2,11 @@ package orc.ast.simple;
 
 import java.util.Set;
 
-import orc.ast.oil.Expr;
-import orc.ast.simple.arg.Argument;
-import orc.ast.simple.arg.NamedVar;
-import orc.ast.simple.arg.Var;
+import orc.ast.oil.expression.Expr;
+import orc.ast.simple.argument.Argument;
+import orc.ast.simple.argument.NamedVar;
+import orc.ast.simple.argument.Var;
+import orc.ast.simple.expression.Expression;
 import orc.env.Env;
 import orc.error.Located;
 import orc.error.SourceLocation;

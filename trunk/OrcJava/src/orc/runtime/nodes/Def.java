@@ -3,7 +3,7 @@ package orc.runtime.nodes;
 import java.util.List;
 import java.util.Set;
 
-import orc.ast.oil.arg.Var;
+import orc.ast.oil.expression.argument.Var;
 import orc.error.SourceLocation;
 
 /**

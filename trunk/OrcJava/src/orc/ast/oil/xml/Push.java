@@ -23,7 +23,7 @@ public class Push extends Expression {
 		return super.toString() + "(" + left + ", " + right + ")";
 	}
 	@Override
-	public orc.ast.oil.Expr unmarshal(Config config) throws CompilationException {
-		return new orc.ast.oil.Push(left.unmarshal(config), right.unmarshal(config), name);
+	public orc.ast.oil.expression.Expr unmarshal(Config config) throws CompilationException {
+		return new orc.ast.oil.expression.Sequential(left.unmarshal(config), right.unmarshal(config), name);
 	}
 }

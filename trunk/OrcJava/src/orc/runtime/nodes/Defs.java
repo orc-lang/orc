@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import orc.ast.oil.arg.Var;
+import orc.ast.oil.expression.argument.Var;
 import orc.env.Env;
 import orc.runtime.Token;
 import orc.runtime.values.Closure;

@@ -4,9 +4,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import orc.ast.extended.Visitor;
-import orc.ast.simple.Expression;
 import orc.ast.simple.WithLocation;
-import orc.ast.simple.arg.Var;
+import orc.ast.simple.argument.Var;
+import orc.ast.simple.expression.Expression;
 import orc.error.compiletime.PatternException;
 
 public class ListPattern extends Pattern {

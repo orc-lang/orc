@@ -4,13 +4,13 @@ import java.util.List;
 
 import orc.ast.extended.Visitor;
 import orc.ast.extended.declaration.Declaration;
-import orc.ast.simple.TypeDecl;
+import orc.ast.extended.type.PolymorphicTypeAlias;
+import orc.ast.extended.type.Type;
 import orc.ast.simple.WithLocation;
-import orc.ast.simple.arg.Argument;
-import orc.ast.simple.arg.NamedVar;
-import orc.ast.simple.arg.Var;
-import orc.ast.simple.type.PolymorphicTypeAlias;
-import orc.ast.simple.type.Type;
+import orc.ast.simple.argument.Argument;
+import orc.ast.simple.argument.NamedVar;
+import orc.ast.simple.argument.Var;
+import orc.ast.simple.expression.TypeDecl;
 import orc.runtime.sites.Site;
 
 /**
@@ -32,7 +32,7 @@ public class TypeAliasDeclaration extends Declaration {
 		this.formals = formals;
 	}
 
-	public orc.ast.simple.Expression bindto(orc.ast.simple.Expression target) {
+	public orc.ast.simple.expression.Expression bindto(orc.ast.simple.expression.Expression target) {
 		
 		if (formals != null && formals.size() > 0) {
 			return new TypeDecl(new PolymorphicTypeAlias(t, formals), typename, target);

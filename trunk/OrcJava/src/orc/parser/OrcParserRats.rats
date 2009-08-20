@@ -19,12 +19,14 @@ header {
 	
 	import orc.Config;
 	import orc.ast.extended.*;
+	import orc.ast.extended.expression.*;
+	import orc.ast.extended.pattern.*;
+	import orc.ast.extended.type.*;
 	import orc.ast.extended.declaration.*;
 	import orc.ast.extended.declaration.defn.*;
 	import orc.ast.extended.declaration.type.*;
-	import orc.ast.extended.pattern.*;
 	import orc.error.*;
-	import orc.ast.simple.type.*;
+
 	import orc.runtime.values.Value;
 	import orc.runtime.values.ListValue;
 	import orc.runtime.values.TupleValue;
@@ -327,19 +329,19 @@ people intuitively use these operators.
 
 Expression GoalExpression =
 	Lambda
-	/ MaybeSemiExpression
+	/ MaybeOtherwiseExpression
 	;
 	
-Expression MaybeSemiExpression =
-	seed:MaybeWhereExpression actions:SemiExpressionTail* {
+Expression MaybeOtherwiseExpression =
+	seed:MaybePruningExpression actions:OtherwiseExpressionTail* {
 		yyValue = apply(actions, seed);
 	}
 	;
-Action<Expression> SemiExpressionTail =
-	SEMICOLON right:MaybeWhereExpression {
+Action<Expression> OtherwiseExpressionTail =
+	SEMICOLON right:MaybePruningExpression {
 		yyValue = new Action<Expression>() {
 			public Expression run(Expression left) {
-				Expression yyValue = new Semi(left, right);
+				Expression yyValue = new Otherwise(left, right);
 				yyValue = at(left, right, yyValue);
 				return yyValue;
 			}
@@ -365,22 +367,22 @@ Expression Lambda =
 	}
 	;
 	
-Expression MaybeWhereExpression =
+Expression MaybePruningExpression =
 	// A "NoCmp" expression is one which does not contain
 	// the unparenthesized comparison operators < and >,
 	// which might confuse the parser
-	seed:NoCmpMaybeBarExpression actions:WhereExpressionTail+ {
+	seed:NoCmpMaybeBarExpression actions:PruningExpressionTail+ {
 		yyValue = apply(actions, seed);
 	}
 	/ MaybeBarExpression
 	;
-Action<Expression> WhereExpressionTail = 
+Action<Expression> PruningExpressionTail = 
 	LANGLE p:Pattern? LANGLE right:NoCmpMaybeBarExpression {
 		yyValue = new Action<Expression>() {
 			public Expression run(Expression left) {
 				Expression yyValue;
-				if (p == null) yyValue = new Where(left, right);
-				else yyValue = new Where(left, right, p);
+				if (p == null) yyValue = new Pruning(left, right);
+				else yyValue = new Pruning(left, right, p);
 				yyValue = at(left, right, yyValue);
 				return yyValue;
 					
@@ -415,17 +417,17 @@ Expression MaybeSeqExpression = SeqExpression / IfThenElse / TryCatch / MaybeTyp
 Expression NoCmpMaybeSeqExpression = SeqExpression / IfThenElse / TryCatch / NoCmpMaybeTyped;
 	
 Expression IfThenElse =
-	IF condition:MaybeDisjunction THEN consequent:MaybeSemiExpression ELSE alternative:MaybeSemiExpression {
+	IF condition:MaybeDisjunction THEN consequent:MaybeOtherwiseExpression ELSE alternative:MaybeOtherwiseExpression {
 		yyValue = new IfThenElse(condition, consequent, alternative);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ IF condition:MaybeDisjunction THEN consequent:MaybeSemiExpression {
+	/ IF condition:MaybeDisjunction THEN consequent:MaybeOtherwiseExpression {
 		yyValue = new IfThenElse(condition, consequent);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
 
-CatchHandler CatchHandler = CATCH LPAREN formals:PatternList RPAREN Space handler:MaybeSemiExpression {
+CatchHandler CatchHandler = CATCH LPAREN formals:PatternList RPAREN Space handler:MaybeOtherwiseExpression {
     yyValue = new CatchHandler(formals, handler);
 }
 ;
@@ -654,7 +656,7 @@ Expression DotExpression =
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ STOP {
-		yyValue = new Silent();
+		yyValue = new Stop();
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ seed:BasicExpression tail:CallTail {

@@ -2,6 +2,7 @@ package orc.ast.extended;
 
 import java.util.List;
 
+import orc.ast.extended.expression.Expression;
 import orc.ast.extended.pattern.Pattern;
 import orc.error.SourceLocation;
 

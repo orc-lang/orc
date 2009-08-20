@@ -1,9 +1,9 @@
 package orc.ast.extended.pattern;
 
 import orc.ast.extended.Visitor;
-import orc.ast.simple.Call;
-import orc.ast.simple.Expression;
-import orc.ast.simple.arg.Var;
+import orc.ast.simple.argument.Var;
+import orc.ast.simple.expression.Call;
+import orc.ast.simple.expression.Expression;
 
 public class WildcardPattern extends Pattern {
 	public boolean strict() {

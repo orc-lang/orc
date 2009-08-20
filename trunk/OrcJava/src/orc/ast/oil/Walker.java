@@ -1,10 +1,23 @@
 package orc.ast.oil;
 
-import orc.ast.oil.arg.Constant;
-import orc.ast.oil.arg.Field;
-import orc.ast.oil.arg.Site;
-import orc.ast.oil.arg.Var;
-import orc.ast.oil.arg.Arg;
+import orc.ast.oil.expression.Atomic;
+import orc.ast.oil.expression.Parallel;
+import orc.ast.oil.expression.Call;
+import orc.ast.oil.expression.Catch;
+import orc.ast.oil.expression.Defs;
+import orc.ast.oil.expression.HasType;
+import orc.ast.oil.expression.Isolated;
+import orc.ast.oil.expression.Pruning;
+import orc.ast.oil.expression.Sequential;
+import orc.ast.oil.expression.Otherwise;
+import orc.ast.oil.expression.Stop;
+import orc.ast.oil.expression.Throw;
+import orc.ast.oil.expression.TypeDecl;
+import orc.ast.oil.expression.argument.Arg;
+import orc.ast.oil.expression.argument.Constant;
+import orc.ast.oil.expression.argument.Field;
+import orc.ast.oil.expression.argument.Site;
+import orc.ast.oil.expression.argument.Var;
 
 /**
  * Abstract base class tree walker for Oil expressions.
@@ -33,15 +46,15 @@ public abstract class Walker implements Visitor<Void> {
 	public void enter(Atomic expr) {};	
 	public void leave(Atomic expr) {};
 	
-	public Void visit(Bar expr) {
+	public Void visit(Parallel expr) {
 		this.enter(expr);
 		expr.left.accept(this);
 		expr.right.accept(this);
 		this.leave(expr);
 		return null;
 	}
-	public void enter(Bar expr) {};	
-	public void leave(Bar expr) {};
+	public void enter(Parallel expr) {};	
+	public void leave(Parallel expr) {};
 
 	public Void visit(Call expr) {
 		this.enter(expr);
@@ -73,15 +86,15 @@ public abstract class Walker implements Visitor<Void> {
 	public void enter(Defs expr) {};	
 	public void leave(Defs expr) {};
 
-	public Void visit(Silent arg) {
+	public Void visit(Stop arg) {
 		this.enter(arg);
 		this.leave(arg);
 		return null;
 	}
-	public void enter(Silent arg) {};
-	public void leave(Silent arg) {};
+	public void enter(Stop arg) {};
+	public void leave(Stop arg) {};
 
-	public Void visit(Pull expr) {
+	public Void visit(Pruning expr) {
 		this.enter(expr);
 		this.enterScope(1);
 		expr.left.accept(this);
@@ -90,10 +103,10 @@ public abstract class Walker implements Visitor<Void> {
 		this.leave(expr);
 		return null;
 	}
-	public void enter(Pull expr) {};
-	public void leave(Pull expr) {};
+	public void enter(Pruning expr) {};
+	public void leave(Pruning expr) {};
 
-	public Void visit(Push expr) {
+	public Void visit(Sequential expr) {
 		this.enter(expr);
 		expr.left.accept(this);
 		this.enterScope(1);
@@ -102,18 +115,18 @@ public abstract class Walker implements Visitor<Void> {
 		this.leave(expr);
 		return null;
 	}
-	public void enter(Push expr) {};	
-	public void leave(Push expr) {};
+	public void enter(Sequential expr) {};	
+	public void leave(Sequential expr) {};
 
-	public Void visit(Semi expr) {
+	public Void visit(Otherwise expr) {
 		this.enter(expr);
 		expr.left.accept(this);
 		expr.right.accept(this);
 		this.leave(expr);
 		return null;
 	}
-	public void enter(Semi expr) {};
-	public void leave(Semi expr) {};
+	public void enter(Otherwise expr) {};
+	public void leave(Otherwise expr) {};
 	
 	public Void visit(WithLocation expr) {
 		this.enter(expr);

@@ -16,7 +16,7 @@ public class Variable extends Argument {
 		return super.toString() + "(" + index + ")";
 	}
 	@Override
-	public orc.ast.oil.arg.Arg unmarshal(Config config) throws CompilationException {
-		return new orc.ast.oil.arg.Var(index);
+	public orc.ast.oil.expression.argument.Arg unmarshal(Config config) throws CompilationException {
+		return new orc.ast.oil.expression.argument.Var(index);
 	}
 }

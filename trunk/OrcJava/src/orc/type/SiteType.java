@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Set;
 
 import orc.Config;
-import orc.ast.oil.TypeDecl;
-import orc.ast.oil.arg.Arg;
+import orc.ast.oil.expression.TypeDecl;
+import orc.ast.oil.expression.argument.Arg;
 import orc.env.Env;
 import orc.error.OrcError;
 import orc.error.compiletime.typing.MissingTypeException;

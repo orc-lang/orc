@@ -2,7 +2,7 @@ package orc.type.ground;
 
 import java.util.List;
 
-import orc.ast.oil.arg.Field;
+import orc.ast.oil.expression.argument.Field;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
 import orc.type.Type;

@@ -4,20 +4,20 @@ import java.util.LinkedList;
 import java.util.List;
 
 import orc.ast.extended.ASTNode;
-import orc.ast.simple.Call;
-import orc.ast.simple.Expression;
-import orc.ast.simple.Let;
-import orc.ast.simple.Parallel;
-import orc.ast.simple.Semi;
-import orc.ast.simple.Sequential;
-import orc.ast.simple.Silent;
-import orc.ast.simple.Where;
 import orc.ast.simple.WithLocation;
-import orc.ast.simple.arg.Argument;
-import orc.ast.simple.arg.Constant;
-import orc.ast.simple.arg.Field;
-import orc.ast.simple.arg.Site;
-import orc.ast.simple.arg.Var;
+import orc.ast.simple.argument.Argument;
+import orc.ast.simple.argument.Constant;
+import orc.ast.simple.argument.Field;
+import orc.ast.simple.argument.Site;
+import orc.ast.simple.argument.Var;
+import orc.ast.simple.expression.Call;
+import orc.ast.simple.expression.Expression;
+import orc.ast.simple.expression.Let;
+import orc.ast.simple.expression.Parallel;
+import orc.ast.simple.expression.Otherwise;
+import orc.ast.simple.expression.Sequential;
+import orc.ast.simple.expression.Stop;
+import orc.ast.simple.expression.Pruning;
 import orc.error.compiletime.NonlinearPatternException;
 import orc.error.compiletime.PatternException;
 import orc.error.Locatable;
@@ -238,7 +238,7 @@ public abstract class Pattern implements ASTNode, Locatable {
 	 * @param x
 	 */
 	public static Expression lift(Var x) {
-		return new Semi(new Call(SOME, x), new Call(NONE));
+		return new Otherwise(new Call(SOME, x), new Call(NONE));
 	}
 	
 	

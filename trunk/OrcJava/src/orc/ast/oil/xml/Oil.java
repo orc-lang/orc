@@ -29,7 +29,7 @@ public class Oil implements Serializable {
 	public Expression expression;
 	public Oil() {}
 	
-	public Oil(orc.ast.oil.Expr expression) throws CompilationException {
+	public Oil(orc.ast.oil.expression.Expr expression) throws CompilationException {
 		this("1.0", expression.marshal());
 	}
 	public Oil(String version, Expression expression) {
@@ -39,7 +39,7 @@ public class Oil implements Serializable {
 	public String toString() {
 		return super.toString() + "(" + version + ", " + expression + ")";
 	}
-	public orc.ast.oil.Expr unmarshal(Config config) throws CompilationException {
+	public orc.ast.oil.expression.Expr unmarshal(Config config) throws CompilationException {
 		return expression.unmarshal(config);
 	}
 	public String toXML() {

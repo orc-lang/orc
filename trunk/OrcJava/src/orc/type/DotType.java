@@ -5,8 +5,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import orc.ast.oil.arg.Arg;
-import orc.ast.oil.arg.Field;
+import orc.ast.oil.expression.argument.Arg;
+import orc.ast.oil.expression.argument.Field;
 import orc.env.Env;
 import orc.error.compiletime.typing.TypeException;
 

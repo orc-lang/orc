@@ -3,7 +3,7 @@
  */
 package orc.env;
 
-import orc.ast.simple.arg.Var;
+import orc.ast.simple.argument.Var;
 import orc.error.OrcError;
 import orc.runtime.values.Future;
 import java.io.*;

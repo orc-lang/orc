@@ -35,7 +35,7 @@ public class TypeDeclaration extends Expression {
 		return super.toString() + "(type " + type + " in " + body + ")";
 	}
 	@Override
-	public orc.ast.oil.Expr unmarshal(Config config) throws CompilationException {
-		return new orc.ast.oil.TypeDecl(type.unmarshal(config), body.unmarshal(config));
+	public orc.ast.oil.expression.Expr unmarshal(Config config) throws CompilationException {
+		return new orc.ast.oil.expression.TypeDecl(type.unmarshal(config), body.unmarshal(config));
 	}
 }
