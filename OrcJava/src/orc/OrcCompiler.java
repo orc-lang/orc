@@ -94,6 +94,7 @@ public class OrcCompiler implements Callable<Expr> {
 			oilAst = refineOilAfterLoadSaveBeforeDag(oilAst);
 
 			config.getMessageRecorder().endProcessing(new File(config.getInputFilename()));
+			config.getProgressListener().setProgress(1.0);
 			return oilAst;
 		} catch (final CompilationException e) {
 			config.getMessageRecorder().recordMessage(Severity.FATAL, 0, e.getMessageOnly(), e.getSourceLocation(), null, e);
@@ -114,12 +115,17 @@ public class OrcCompiler implements Callable<Expr> {
 
 		// Parse the goal expression
 		progress.setNote("Parsing");
-		final OrcParser parser = new OrcParser(config, sourceReader, config.getInputFilename());
-		orc.ast.extended.expression.Expression e = parser.parseProgram();
+		progress.setProgress(0.10); // 10% as a startup bonus
 		if (progress.isCanceled()) {
 			return null;
 		}
-		progress.setProgress(0.3);
+
+		final OrcParser parser = new OrcParser(config, sourceReader, config.getInputFilename());
+		orc.ast.extended.expression.Expression e = parser.parseProgram();
+		progress.setProgress(0.13);
+		if (progress.isCanceled()) {
+			return null;
+		}
 
 		//System.out.println(e);
 
@@ -136,24 +142,23 @@ public class OrcCompiler implements Callable<Expr> {
 		if (progress.isCanceled()) {
 			return null;
 		}
+		
 		// Load declarations from files specified by the configuration options
 		for (final String f : config.getIncludes()) {
 			final OrcParser fparser = new OrcParser(config, config.openInclude(f, null), f);
 			decls.addAll(fparser.parseModule());
-			if (progress.isCanceled()) {
-				return null;
-			}
 		}
-		if (progress.isCanceled()) {
-			return null;
-		}
-		progress.setProgress(0.6);
 
 		// Add the declarations to the parse tree
 		Collections.reverse(decls);
 		for (final Declaration d : decls) {
 			e = new Declare(d, e);
 		}
+		progress.setProgress(0.28);
+		if (progress.isCanceled()) {
+			return null;
+		}
+
 		return e;
 	}
 
@@ -168,21 +173,19 @@ public class OrcCompiler implements Callable<Expr> {
 		final ProgressListener progress = config.getProgressListener();
 
 		progress.setNote("Simplifying the AST");
-		//System.out.println("Simplifying the abstract syntax tree...");
-		// Simplify the AST
 		Expr ex = ((orc.ast.extended.expression.Expression) astRoot).simplify().convert(new Env<Var>(), new Env<String>());
 		// System.out.println(ex);
+		progress.setProgress(0.66);
 		if (progress.isCanceled()) {
 			return null;
 		}
-		progress.setProgress(0.7);
 
 		progress.setNote("Resolving sites");
 		ex = SiteResolver.resolve(ex, config);
+		progress.setProgress(0.68);
 		if (progress.isCanceled()) {
 			return null;
 		}
-		progress.setProgress(0.8);
 
 		// Optionally perform typechecking
 		if (config.getTypeChecking()) {
@@ -193,17 +196,18 @@ public class OrcCompiler implements Callable<Expr> {
 			config.getStdout().println("Program typechecked successfully.");
 			config.getStdout().println();
 		}
-
+		progress.setProgress(0.73);
 		if (progress.isCanceled()) {
 			return null;
 		}
+		
 		progress.setNote("Checking for unguarded recursion");
 		UnguardedRecursionChecker.check(ex);
-
+		progress.setProgress(0.75); // Still need to save oil and refine
 		if (progress.isCanceled()) {
 			return null;
 		}
-		progress.setProgress(1.0);
+		
 		return ex;
 	}
 
@@ -217,20 +221,33 @@ public class OrcCompiler implements Callable<Expr> {
 	 */
 	public Expr loadOil(final Reader oilReader) throws IOException, CompilationException {
 		final ProgressListener progress = config.getProgressListener();
-		progress.setNote("Loading OIL");
-		final Oil oil = Oil.fromXML(config.getOilReader());
-		progress.setProgress(0.2);
+		progress.setProgress(0.10); // 10% as a startup bonus
 		if (progress.isCanceled()) {
 			return null;
 		}
+		
+		progress.setNote("Loading OIL");
+		final Oil oil = Oil.fromXML(config.getOilReader());
+		progress.setProgress(0.45);
+		if (progress.isCanceled()) {
+			return null;
+		}
+		
 		progress.setNote("Converting to AST");
-		final Expr ex = oil.unmarshal(config);
+		Expr ex = oil.unmarshal(config);
 		progress.setProgress(0.5);
 		if (progress.isCanceled()) {
 			return null;
 		}
+		
 		progress.setNote("Loading sites");
-		return SiteResolver.resolve(ex, config);
+		ex =  SiteResolver.resolve(ex, config);
+		progress.setProgress(0.75); // Still need to save oil and refine
+		if (progress.isCanceled()) {
+			return null;
+		}
+
+		return ex;
 	}
 
 	/**
@@ -244,6 +261,7 @@ public class OrcCompiler implements Callable<Expr> {
 		final ProgressListener progress = config.getProgressListener();
 		progress.setNote("Writing OIL");
 		new Oil(oilAst).toXML(oilWriter);
+		progress.setProgress(0.9);
 	}
 
 	/**
