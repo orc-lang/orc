@@ -4,7 +4,7 @@ package orc.runtime.sites.core;
 import java.util.LinkedList;
 import java.util.List;
 
-import orc.ast.oil.arg.Arg;
+import orc.ast.oil.expression.argument.Arg;
 import orc.env.Env;
 import orc.error.compiletime.typing.TypeArityException;
 import orc.error.compiletime.typing.TypeException;

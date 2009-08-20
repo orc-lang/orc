@@ -2,7 +2,7 @@ package orc.ast.simple.type;
 
 import java.util.List;
 
-import orc.ast.extended.Expression;
+import orc.ast.extended.expression.Expression;
 
 
 /**

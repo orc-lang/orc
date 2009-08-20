@@ -16,7 +16,7 @@ public class Atomic extends Expression {
 		return "(atomic " + body.toString() + ")";
 	}
 	@Override
-	public orc.ast.oil.Expr unmarshal(Config config) throws CompilationException {
-		return new orc.ast.oil.Atomic(body.unmarshal(config));
+	public orc.ast.oil.expression.Expr unmarshal(Config config) throws CompilationException {
+		return new orc.ast.oil.expression.Atomic(body.unmarshal(config));
 	}
 }

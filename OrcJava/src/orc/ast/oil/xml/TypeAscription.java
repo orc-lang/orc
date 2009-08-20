@@ -40,7 +40,7 @@ public class TypeAscription extends Expression {
 		return super.toString() + "(" + body + " :: " + type + ")";
 	}
 	@Override
-	public orc.ast.oil.Expr unmarshal(Config config) throws CompilationException {
-		return new orc.ast.oil.HasType(body.unmarshal(config), type.unmarshal(config), checked);
+	public orc.ast.oil.expression.Expr unmarshal(Config config) throws CompilationException {
+		return new orc.ast.oil.expression.HasType(body.unmarshal(config), type.unmarshal(config), checked);
 	}
 }

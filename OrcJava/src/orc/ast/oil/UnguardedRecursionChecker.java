@@ -2,10 +2,18 @@ package orc.ast.oil;
 
 import java.util.LinkedList;
 
-import orc.ast.oil.arg.Constant;
-import orc.ast.oil.arg.Field;
-import orc.ast.oil.arg.Site;
-import orc.ast.oil.arg.Var;
+import orc.ast.oil.expression.Call;
+import orc.ast.oil.expression.Catch;
+import orc.ast.oil.expression.Defs;
+import orc.ast.oil.expression.Expr;
+import orc.ast.oil.expression.Pruning;
+import orc.ast.oil.expression.Sequential;
+import orc.ast.oil.expression.Otherwise;
+import orc.ast.oil.expression.Throw;
+import orc.ast.oil.expression.argument.Constant;
+import orc.ast.oil.expression.argument.Field;
+import orc.ast.oil.expression.argument.Site;
+import orc.ast.oil.expression.argument.Var;
 import orc.env.Env;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;
@@ -56,7 +64,7 @@ public class UnguardedRecursionChecker extends Walker {
 	}
 	
 	@Override
-	public Void visit(Pull expr) {
+	public Void visit(Pruning expr) {
 		// The pull adds a binding to the LHS,
 		// but we don't care what it is.
 		env.add(false);
@@ -68,7 +76,7 @@ public class UnguardedRecursionChecker extends Walker {
 	}
 	
 	@Override
-	public Void visit(Push expr) {
+	public Void visit(Sequential expr) {
 		expr.left.accept(this);
 		
 		// The push adds a binding to the RHS,
@@ -82,7 +90,7 @@ public class UnguardedRecursionChecker extends Walker {
 	}
 	
 	@Override
-	public Void visit(Semi expr) {
+	public Void visit(Otherwise expr) {
 		expr.left.accept(this);
 		
 		// The semi changes all previous bindings to

@@ -1,10 +1,10 @@
 package orc.ast.extended.pattern;
 
-import orc.ast.simple.Expression;
-import orc.ast.simple.HasType;
-import orc.ast.simple.Where;
-import orc.ast.simple.arg.Var;
-import orc.ast.simple.type.Type;
+import orc.ast.extended.type.Type;
+import orc.ast.simple.argument.Var;
+import orc.ast.simple.expression.Expression;
+import orc.ast.simple.expression.HasType;
+import orc.ast.simple.expression.Pruning;
 
 public class Attachment {
 
@@ -26,7 +26,7 @@ public class Attachment {
 			Expression g = e;
 			if (t != null) { g = new HasType(g, t, true); }
 			
-			return new Where(f, g, v);
+			return new Pruning(f, g, v);
 		}
 		
 }

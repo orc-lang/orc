@@ -19,10 +19,24 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import orc.ast.oil.arg.Constant;
-import orc.ast.oil.arg.Field;
-import orc.ast.oil.arg.Site;
-import orc.ast.oil.arg.Var;
+import orc.ast.oil.expression.Atomic;
+import orc.ast.oil.expression.Parallel;
+import orc.ast.oil.expression.Call;
+import orc.ast.oil.expression.Catch;
+import orc.ast.oil.expression.Defs;
+import orc.ast.oil.expression.Expr;
+import orc.ast.oil.expression.HasType;
+import orc.ast.oil.expression.Isolated;
+import orc.ast.oil.expression.Pruning;
+import orc.ast.oil.expression.Sequential;
+import orc.ast.oil.expression.Otherwise;
+import orc.ast.oil.expression.Stop;
+import orc.ast.oil.expression.Throw;
+import orc.ast.oil.expression.TypeDecl;
+import orc.ast.oil.expression.argument.Constant;
+import orc.ast.oil.expression.argument.Field;
+import orc.ast.oil.expression.argument.Site;
+import orc.ast.oil.expression.argument.Var;
 import orc.runtime.nodes.Assign;
 import orc.runtime.nodes.Fork;
 import orc.runtime.nodes.Leave;
@@ -68,7 +82,7 @@ public final class Compiler implements Visitor<Node> {
 		return expr.accept(compiler);
 	}
 
-	public Node visit(final Bar expr) {
+	public Node visit(Parallel expr) {
 		return new Fork(expr.left.accept(this), expr.right.accept(this));
 	}
 
@@ -122,20 +136,24 @@ public final class Compiler implements Visitor<Node> {
 		return new orc.runtime.nodes.Def(def.arity, newbody, free, def.location);
 	}
 
-	public Node visit(final Silent expr) {
+	public Node visit(final Stop expr) {
 		return new orc.runtime.nodes.Silent();
 	}
 
-	public Node visit(final Pull expr) {
-		return new orc.runtime.nodes.Subgoal(compile(expr.left, unwind(1)), compile(expr.right, new orc.runtime.nodes.Store()));
+	public Node visit(final Pruning expr) {
+		return new orc.runtime.nodes.Subgoal(
+				compile(expr.left, unwind(1)),
+				compile(expr.right, new orc.runtime.nodes.Store()));
 	}
 
-	public Node visit(final Push expr) {
+	public Node visit(final Sequential expr) {
 		return compile(expr.left, new Assign(compile(expr.right, unwind(1))));
 	}
 
-	public Node visit(final Semi expr) {
-		return new orc.runtime.nodes.Semi(compile(expr.left, new Leave(output)), expr.right.accept(this));
+	public Node visit(final Otherwise expr) {
+		return new orc.runtime.nodes.Semi(
+				compile(expr.left, new Leave(output)),
+				expr.right.accept(this));
 	}
 
 	public Node visit(final WithLocation expr) {

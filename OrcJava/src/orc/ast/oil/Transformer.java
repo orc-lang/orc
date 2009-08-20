@@ -2,11 +2,25 @@ package orc.ast.oil;
 
 import java.util.LinkedList;
 
-import orc.ast.oil.arg.Constant;
-import orc.ast.oil.arg.Field;
-import orc.ast.oil.arg.Site;
-import orc.ast.oil.arg.Var;
-import orc.ast.oil.arg.Arg;
+import orc.ast.oil.expression.Atomic;
+import orc.ast.oil.expression.Parallel;
+import orc.ast.oil.expression.Call;
+import orc.ast.oil.expression.Catch;
+import orc.ast.oil.expression.Defs;
+import orc.ast.oil.expression.Expr;
+import orc.ast.oil.expression.HasType;
+import orc.ast.oil.expression.Isolated;
+import orc.ast.oil.expression.Pruning;
+import orc.ast.oil.expression.Sequential;
+import orc.ast.oil.expression.Otherwise;
+import orc.ast.oil.expression.Stop;
+import orc.ast.oil.expression.Throw;
+import orc.ast.oil.expression.TypeDecl;
+import orc.ast.oil.expression.argument.Arg;
+import orc.ast.oil.expression.argument.Constant;
+import orc.ast.oil.expression.argument.Field;
+import orc.ast.oil.expression.argument.Site;
+import orc.ast.oil.expression.argument.Var;
 import orc.type.Type;
 
 /**
@@ -19,8 +33,8 @@ public abstract class Transformer implements Visitor<Expr> {
 		return new Atomic(expr.body.accept(this));
 	}
 
-	public Expr visit(Bar expr) {
-		return new Bar(expr.left.accept(this), expr.right.accept(this));
+	public Expr visit(Parallel expr) {
+		return new Parallel(expr.left.accept(this), expr.right.accept(this));
 	}
 
 	public Expr visit(Call expr) {
@@ -81,19 +95,19 @@ public abstract class Transformer implements Visitor<Expr> {
 		return new Isolated(expr.body.accept(this));
 	}
 
-	public Expr visit(Pull expr) {
-		return new Pull(expr.left.accept(this), expr.right.accept(this), expr.name);
+	public Expr visit(Pruning expr) {
+		return new Pruning(expr.left.accept(this), expr.right.accept(this), expr.name);
 	}
 
-	public Expr visit(Push expr) {
-		return new Push(expr.left.accept(this), expr.right.accept(this), expr.name);
+	public Expr visit(Sequential expr) {
+		return new Sequential(expr.left.accept(this), expr.right.accept(this), expr.name);
 	}
 
-	public Expr visit(Semi expr) {
-		return new Semi(expr.left.accept(this), expr.right.accept(this));
+	public Expr visit(Otherwise expr) {
+		return new Otherwise(expr.left.accept(this), expr.right.accept(this));
 	}
 
-	public Expr visit(Silent expr) {
+	public Expr visit(Stop expr) {
 		return expr;
 	}
 

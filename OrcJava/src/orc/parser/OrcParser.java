@@ -8,8 +8,8 @@ import java.io.Reader;
 import java.util.List;
 
 import orc.Config;
-import orc.ast.extended.Expression;
 import orc.ast.extended.declaration.Declaration;
+import orc.ast.extended.expression.Expression;
 import orc.error.SourceLocation;
 import orc.error.compiletime.ParsingException;
 import orc.lib.str.Read;

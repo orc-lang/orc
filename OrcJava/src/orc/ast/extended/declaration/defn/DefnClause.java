@@ -4,11 +4,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import orc.ast.extended.Expression;
 import orc.ast.extended.Visitor;
+import orc.ast.extended.expression.Expression;
 import orc.ast.extended.pattern.Pattern;
 import orc.ast.extended.pattern.TypedPattern;
-import orc.ast.simple.type.Type;
+import orc.ast.extended.type.Type;
 
 /**
  * 

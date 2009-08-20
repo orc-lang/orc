@@ -12,5 +12,5 @@ import orc.error.compiletime.CompilationException;
 @XmlSeeAlso(value={Constant.class, Field.class, Site.class, Variable.class})
 public abstract class Argument extends Expression {
 	@Override
-	public abstract orc.ast.oil.arg.Arg unmarshal(Config config) throws CompilationException;
+	public abstract orc.ast.oil.expression.argument.Arg unmarshal(Config config) throws CompilationException;
 }

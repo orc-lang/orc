@@ -5,7 +5,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import orc.ast.oil.arg.Var;
+import orc.ast.oil.expression.Expr;
+import orc.ast.oil.expression.argument.Var;
 import orc.env.Env;
 import orc.error.Locatable;
 import orc.error.SourceLocation;

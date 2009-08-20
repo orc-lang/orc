@@ -3,21 +3,21 @@ package orc.ast.extended.declaration.type;
 import java.util.LinkedList;
 import java.util.List;
 
-import orc.ast.extended.Expression;
 import orc.ast.extended.Visitor;
 import orc.ast.extended.declaration.Declaration;
+import orc.ast.extended.expression.Expression;
 import orc.ast.extended.pattern.Pattern;
 import orc.ast.extended.pattern.PatternSimplifier;
 import orc.ast.extended.pattern.TuplePattern;
 import orc.ast.extended.pattern.VariablePattern;
-import orc.ast.simple.TypeDecl;
+import orc.ast.extended.type.Constructor;
+import orc.ast.extended.type.Datatype;
+import orc.ast.extended.type.Type;
 import orc.ast.simple.WithLocation;
-import orc.ast.simple.arg.Argument;
-import orc.ast.simple.arg.NamedVar;
-import orc.ast.simple.arg.Var;
-import orc.ast.simple.type.Constructor;
-import orc.ast.simple.type.Datatype;
-import orc.ast.simple.type.Type;
+import orc.ast.simple.argument.Argument;
+import orc.ast.simple.argument.NamedVar;
+import orc.ast.simple.argument.Var;
+import orc.ast.simple.expression.TypeDecl;
 import orc.error.OrcError;
 import orc.error.compiletime.PatternException;
 import orc.runtime.sites.Site;
@@ -43,18 +43,18 @@ public class DatatypeDeclaration extends Declaration {
 		this.formals = formals;
 	}
 	
-	public orc.ast.simple.Expression bindto(orc.ast.simple.Expression target) {
+	public orc.ast.simple.expression.Expression bindto(orc.ast.simple.expression.Expression target) {
 				
 		// Create a type to encapsulate the type information for this datatype
 		Type dt = new Datatype(typename, members, formals);
 		
 		// Find the Datatype site, which constructs tuples of datasites
-		Argument datatypeSite = new orc.ast.simple.arg.Site(orc.ast.sites.Site.DATATYPE);
+		Argument datatypeSite = new orc.ast.simple.argument.Site(orc.ast.sites.Site.DATATYPE);
 
 		// Make a list of string arguments from the constructor names
 		List<Argument> labels = new LinkedList<Argument>();
 		for (Constructor c : members) {
-			labels.add(new orc.ast.simple.arg.Constant(c.name));
+			labels.add(new orc.ast.simple.argument.Constant(c.name));
 		}
 		
 		// Make the type a singleton type argument to the Datatype site call
@@ -62,7 +62,7 @@ public class DatatypeDeclaration extends Declaration {
 		typeArgs.add(dt);
 		
 		// Create a source expression which generates a tuple of datasites
-		orc.ast.simple.Expression source = new orc.ast.simple.Call(datatypeSite, labels, typeArgs);
+		orc.ast.simple.expression.Expression source = new orc.ast.simple.expression.Call(datatypeSite, labels, typeArgs);
 
 		
 		// Create a tuple pattern of constructor names as vars
@@ -82,7 +82,7 @@ public class DatatypeDeclaration extends Declaration {
 		}
 		
 		// Pipe the results of the datatype call through the tuple pattern to the target expression
-		orc.ast.simple.Expression body = new orc.ast.simple.Sequential(source, pv.target(s, target), s);
+		orc.ast.simple.expression.Expression body = new orc.ast.simple.expression.Sequential(source, pv.target(s, target), s);
 		
 		// Add a type declaration scoped to this body
 		body = new TypeDecl(dt, typename, body);

@@ -10,16 +10,16 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 
-import orc.ast.extended.Expression;
 import orc.ast.extended.Visitor;
 import orc.ast.extended.declaration.DFS.direction;
 import orc.ast.extended.declaration.defn.AggregateDefn;
 import orc.ast.extended.declaration.defn.Clause;
 import orc.ast.extended.declaration.defn.Defn;
 import orc.ast.extended.declaration.defn.DefnClause;
+import orc.ast.extended.expression.Expression;
 import orc.ast.simple.Definition;
 import orc.ast.simple.WithLocation;
-import orc.ast.simple.arg.*;
+import orc.ast.simple.argument.*;
 import orc.error.compiletime.CompilationException;
 
 /**
@@ -43,7 +43,7 @@ public class DefsDeclaration extends Declaration {
 		this.defs = defs;
 	}
 	
-	public orc.ast.simple.Expression bindto(orc.ast.simple.Expression target) throws CompilationException {
+	public orc.ast.simple.expression.Expression bindto(orc.ast.simple.expression.Expression target) throws CompilationException {
 		
 		
 		Map<String, AggregateDefn> dmap = new TreeMap<String, AggregateDefn>(); 
@@ -77,15 +77,15 @@ public class DefsDeclaration extends Declaration {
 		}
 		
 		// Bind all of these definition names in their scope
-		orc.ast.simple.Expression newtarget = target.suball(vmap);		
+		orc.ast.simple.expression.Expression newtarget = target.suball(vmap);		
 		
 		// Partition the list of definitions into mutually recursive groups,
 		// and bind them onto the target expression in the correct order
 		List<List<Definition>> defparts = defpartition(newdefs);
 		
-		orc.ast.simple.Expression result = newtarget;
+		orc.ast.simple.expression.Expression result = newtarget;
 		for (List<Definition> part : defparts) {
-			result = new orc.ast.simple.Defs(part, result);
+			result = new orc.ast.simple.expression.Defs(part, result);
 		}
 		
 		// Attach a source location to the whole expression and return it

@@ -20,7 +20,7 @@ public class WithLocation extends Expression {
 		return body.toString();
 	}
 	@Override
-	public orc.ast.oil.Expr unmarshal(Config config) throws CompilationException {
+	public orc.ast.oil.expression.Expr unmarshal(Config config) throws CompilationException {
 		return new orc.ast.oil.WithLocation(body.unmarshal(config), location);
 	}
 }

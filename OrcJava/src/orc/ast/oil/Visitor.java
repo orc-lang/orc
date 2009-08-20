@@ -1,9 +1,22 @@
 package orc.ast.oil;
 
-import orc.ast.oil.arg.Constant;
-import orc.ast.oil.arg.Field;
-import orc.ast.oil.arg.Site;
-import orc.ast.oil.arg.Var;
+import orc.ast.oil.expression.Atomic;
+import orc.ast.oil.expression.Parallel;
+import orc.ast.oil.expression.Call;
+import orc.ast.oil.expression.Catch;
+import orc.ast.oil.expression.Defs;
+import orc.ast.oil.expression.HasType;
+import orc.ast.oil.expression.Isolated;
+import orc.ast.oil.expression.Pruning;
+import orc.ast.oil.expression.Sequential;
+import orc.ast.oil.expression.Otherwise;
+import orc.ast.oil.expression.Stop;
+import orc.ast.oil.expression.Throw;
+import orc.ast.oil.expression.TypeDecl;
+import orc.ast.oil.expression.argument.Constant;
+import orc.ast.oil.expression.argument.Field;
+import orc.ast.oil.expression.argument.Site;
+import orc.ast.oil.expression.argument.Var;
 
 /**
  * Visitor for OIL expressions.
@@ -12,13 +25,13 @@ import orc.ast.oil.arg.Var;
  * @param <E> Return type of the visitor.
  */
 public interface Visitor<E> {
-	public E visit(Bar expr);
+	public E visit(Parallel expr);
 	public E visit(Call expr);
 	public E visit(Defs expr);
-	public E visit(Silent expr);
-	public E visit(Pull expr);
-	public E visit(Push expr);
-	public E visit(Semi expr);
+	public E visit(Stop expr);
+	public E visit(Pruning expr);
+	public E visit(Sequential expr);
+	public E visit(Otherwise expr);
 	public E visit(WithLocation expr);
 	public E visit(Constant arg);
 	public E visit(Field arg);

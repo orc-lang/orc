@@ -1,11 +1,11 @@
 package orc.ast.extended.declaration;
 
-import orc.ast.extended.Expression;
 import orc.ast.extended.Visitor;
+import orc.ast.extended.expression.Expression;
 import orc.ast.extended.pattern.Pattern;
 import orc.ast.extended.pattern.PatternSimplifier;
 import orc.ast.simple.WithLocation;
-import orc.ast.simple.arg.Var;
+import orc.ast.simple.argument.Var;
 import orc.error.compiletime.CompilationException;
 
 public class ValDeclaration extends Declaration {
@@ -19,20 +19,20 @@ public class ValDeclaration extends Declaration {
 	}
 
 	
-	public orc.ast.simple.Expression bindto(orc.ast.simple.Expression target) throws CompilationException {
+	public orc.ast.simple.expression.Expression bindto(orc.ast.simple.expression.Expression target) throws CompilationException {
 		
-		orc.ast.simple.Expression source = f.simplify();
+		orc.ast.simple.expression.Expression source = f.simplify();
 		
 		Var s = new Var();
 		Var t = new Var();
 		
 		PatternSimplifier pv = p.process(s);
 		
-		source = new orc.ast.simple.Sequential(source, pv.filter(), s);
+		source = new orc.ast.simple.expression.Sequential(source, pv.filter(), s);
 		target = pv.target(t, target);
 		
 		return new WithLocation(
-				new orc.ast.simple.Where(target, source, t),
+				new orc.ast.simple.expression.Pruning(target, source, t),
 				getSourceLocation());
 	}
 

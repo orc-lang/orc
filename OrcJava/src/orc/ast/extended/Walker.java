@@ -17,6 +17,30 @@ import orc.ast.extended.declaration.defn.DefnType;
 import orc.ast.extended.declaration.type.DatatypeDeclaration;
 import orc.ast.extended.declaration.type.TypeAliasDeclaration;
 import orc.ast.extended.declaration.type.TypeDeclaration;
+import orc.ast.extended.expression.AssertType;
+import orc.ast.extended.expression.Atomic;
+import orc.ast.extended.expression.Call;
+import orc.ast.extended.expression.Catch;
+import orc.ast.extended.expression.ConsExpr;
+import orc.ast.extended.expression.Declare;
+import orc.ast.extended.expression.Dot;
+import orc.ast.extended.expression.Expression;
+import orc.ast.extended.expression.Field;
+import orc.ast.extended.expression.HasType;
+import orc.ast.extended.expression.IfThenElse;
+import orc.ast.extended.expression.Isolated;
+import orc.ast.extended.expression.Lambda;
+import orc.ast.extended.expression.Let;
+import orc.ast.extended.expression.ListExpr;
+import orc.ast.extended.expression.Literal;
+import orc.ast.extended.expression.Name;
+import orc.ast.extended.expression.NilExpr;
+import orc.ast.extended.expression.Parallel;
+import orc.ast.extended.expression.Otherwise;
+import orc.ast.extended.expression.Sequential;
+import orc.ast.extended.expression.Stop;
+import orc.ast.extended.expression.Throw;
+import orc.ast.extended.expression.Pruning;
 import orc.ast.extended.pattern.AsPattern;
 import orc.ast.extended.pattern.CallPattern;
 import orc.ast.extended.pattern.ConsPattern;
@@ -29,10 +53,10 @@ import orc.ast.extended.pattern.TuplePattern;
 import orc.ast.extended.pattern.TypedPattern;
 import orc.ast.extended.pattern.VariablePattern;
 import orc.ast.extended.pattern.WildcardPattern;
-import orc.ast.oil.arg.Arg;
-import orc.ast.simple.arg.NamedVar;
-import orc.ast.simple.type.Constructor;
-import orc.ast.simple.type.Type;
+import orc.ast.extended.type.Constructor;
+import orc.ast.extended.type.Type;
+import orc.ast.oil.expression.argument.Arg;
+import orc.ast.simple.argument.NamedVar;
 
 /**
  * 
@@ -336,7 +360,7 @@ public class Walker implements Visitor<Void> {
 	}
 
 
-	public Void visit(Semi expr) {
+	public Void visit(Otherwise expr) {
 		if (!this.enter(expr)) return null;
 		expr.left.accept(this);
 		expr.right.accept(this);
@@ -344,11 +368,11 @@ public class Walker implements Visitor<Void> {
 		return null;
 	}
 	
-	public boolean enter(Semi expr) {
+	public boolean enter(Otherwise expr) {
 		return enter((ASTNode)expr);
 	}
 	
-	public void leave(Semi expr) {
+	public void leave(Otherwise expr) {
 	}
 
 
@@ -371,17 +395,17 @@ public class Walker implements Visitor<Void> {
 	}
 
 
-	public Void visit(Silent expr) {
+	public Void visit(Stop expr) {
 		if (!this.enter(expr)) return null;
 		this.leave(expr);
 		return null;
 	}
 	
-	public boolean enter(Silent expr) {
+	public boolean enter(Stop expr) {
 		return enter((ASTNode)expr);
 	}
 	
-	public void leave(Silent expr) {
+	public void leave(Stop expr) {
 	}
 
 
@@ -400,7 +424,7 @@ public class Walker implements Visitor<Void> {
 	}
 
 
-	public Void visit(Where expr) {
+	public Void visit(Pruning expr) {
 		if (!this.enter(expr)) return null;
 		//TODO: Desired order of traversal? (l-p-r or r-p-l?)
 		this.enterScope(expr);
@@ -412,11 +436,11 @@ public class Walker implements Visitor<Void> {
 		return null;
 	}
 	
-	public boolean enter(Where expr) {
+	public boolean enter(Pruning expr) {
 		return enter((ASTNode)expr);
 	}
 	
-	public void leave(Where expr) {
+	public void leave(Pruning expr) {
 	}
 
 

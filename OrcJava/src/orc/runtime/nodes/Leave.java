@@ -3,7 +3,7 @@
  */
 package orc.runtime.nodes;
 
-import orc.ast.simple.arg.Var;
+import orc.ast.simple.argument.Var;
 import orc.runtime.Token;
 import orc.runtime.regions.SemiRegion;
 import orc.runtime.values.Value;

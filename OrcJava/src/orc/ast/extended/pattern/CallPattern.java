@@ -3,16 +3,16 @@ package orc.ast.extended.pattern;
 import java.util.List;
 
 import orc.ast.extended.Visitor;
-import orc.ast.simple.Call;
-import orc.ast.simple.Expression;
-import orc.ast.simple.Parallel;
-import orc.ast.simple.Sequential;
-import orc.ast.simple.Where;
 import orc.ast.simple.WithLocation;
-import orc.ast.simple.arg.Argument;
-import orc.ast.simple.arg.Field;
-import orc.ast.simple.arg.NamedVar;
-import orc.ast.simple.arg.Var;
+import orc.ast.simple.argument.Argument;
+import orc.ast.simple.argument.Field;
+import orc.ast.simple.argument.NamedVar;
+import orc.ast.simple.argument.Var;
+import orc.ast.simple.expression.Call;
+import orc.ast.simple.expression.Expression;
+import orc.ast.simple.expression.Parallel;
+import orc.ast.simple.expression.Sequential;
+import orc.ast.simple.expression.Pruning;
 import orc.error.compiletime.PatternException;
 
 public class CallPattern extends Pattern {

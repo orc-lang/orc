@@ -2,6 +2,7 @@ package orc.ast.oil;
 
 import java.util.Set;
 
+import orc.ast.oil.expression.Expr;
 import orc.ast.oil.xml.Expression;
 import orc.env.Env;
 import orc.error.Located;

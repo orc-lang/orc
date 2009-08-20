@@ -1,9 +1,9 @@
 package orc.ast.extended.pattern;
 
-import orc.ast.extended.Literal;
 import orc.ast.extended.Visitor;
+import orc.ast.extended.expression.Literal;
 import orc.ast.simple.*;
-import orc.ast.simple.arg.*;
+import orc.ast.simple.argument.*;
 import orc.error.compiletime.PatternException;
 import xtc.util.Utilities;
 

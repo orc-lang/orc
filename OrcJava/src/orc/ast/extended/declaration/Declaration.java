@@ -17,7 +17,7 @@ import orc.error.compiletime.CompilationException;
  */
 public abstract class Declaration implements ASTNode, Locatable { 
 	protected SourceLocation location;
-	public abstract orc.ast.simple.Expression bindto(orc.ast.simple.Expression target) throws CompilationException;
+	public abstract orc.ast.simple.expression.Expression bindto(orc.ast.simple.expression.Expression target) throws CompilationException;
 
 	public void setSourceLocation(SourceLocation location) {
 		this.location = location;

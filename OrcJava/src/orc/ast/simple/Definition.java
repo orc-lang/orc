@@ -6,12 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import orc.ast.extended.type.ArrowType;
+import orc.ast.extended.type.Type;
 import orc.ast.oil.Def;
-import orc.ast.simple.arg.Argument;
-import orc.ast.simple.arg.NamedVar;
-import orc.ast.simple.arg.Var;
-import orc.ast.simple.type.ArrowType;
-import orc.ast.simple.type.Type;
+import orc.ast.simple.argument.Argument;
+import orc.ast.simple.argument.NamedVar;
+import orc.ast.simple.argument.Var;
+import orc.ast.simple.expression.Expression;
 import orc.env.Env;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;

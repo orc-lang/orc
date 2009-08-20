@@ -22,13 +22,13 @@ import java.util.LinkedList;
 import java.util.concurrent.Callable;
 
 import orc.ast.extended.ASTNode;
-import orc.ast.extended.Declare;
+import orc.ast.extended.expression.Declare;
 import orc.ast.extended.declaration.Declaration;
-import orc.ast.oil.Expr;
+import orc.ast.oil.expression.Expr;
 import orc.ast.oil.SiteResolver;
 import orc.ast.oil.UnguardedRecursionChecker;
 import orc.ast.oil.xml.Oil;
-import orc.ast.simple.arg.Var;
+import orc.ast.simple.argument.Var;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.ParsingException;
@@ -115,7 +115,7 @@ public class OrcCompiler implements Callable<Expr> {
 		// Parse the goal expression
 		progress.setNote("Parsing");
 		final OrcParser parser = new OrcParser(config, sourceReader, config.getInputFilename());
-		orc.ast.extended.Expression e = parser.parseProgram();
+		orc.ast.extended.expression.Expression e = parser.parseProgram();
 		if (progress.isCanceled()) {
 			return null;
 		}
@@ -170,7 +170,7 @@ public class OrcCompiler implements Callable<Expr> {
 		progress.setNote("Simplifying the AST");
 		//System.out.println("Simplifying the abstract syntax tree...");
 		// Simplify the AST
-		Expr ex = ((orc.ast.extended.Expression) astRoot).simplify().convert(new Env<Var>(), new Env<String>());
+		Expr ex = ((orc.ast.extended.expression.Expression) astRoot).simplify().convert(new Env<Var>(), new Env<String>());
 		// System.out.println(ex);
 		if (progress.isCanceled()) {
 			return null;

@@ -8,11 +8,11 @@ import java.util.TreeSet;
 import orc.ast.extended.pattern.Attachment;
 import orc.ast.extended.pattern.Pattern;
 import orc.ast.extended.pattern.PatternSimplifier;
-import orc.ast.simple.arg.Argument;
-import orc.ast.simple.arg.Constant;
-import orc.ast.simple.arg.NamedVar;
-import orc.ast.simple.arg.Var;
-import orc.ast.simple.Expression;
+import orc.ast.simple.argument.Argument;
+import orc.ast.simple.argument.Constant;
+import orc.ast.simple.argument.NamedVar;
+import orc.ast.simple.argument.Var;
+import orc.ast.simple.expression.Expression;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.NonlinearPatternException;
 import orc.error.compiletime.PatternException;
@@ -20,9 +20,9 @@ import orc.error.compiletime.PatternException;
 public class Clause {
 
 	public List<Pattern> ps;
-	public orc.ast.extended.Expression body;
+	public orc.ast.extended.expression.Expression body;
 	
-	public Clause(List<Pattern> ps, orc.ast.extended.Expression body) {
+	public Clause(List<Pattern> ps, orc.ast.extended.expression.Expression body) {
 		this.ps = ps;
 		this.body = body;
 	}
@@ -48,7 +48,7 @@ public class Clause {
 	 * 		   the clause fails to match.
 	 * @throws CompilationException
 	 */
-	public orc.ast.simple.Expression simplify(List<Var> formals, orc.ast.simple.Expression otherwise) throws CompilationException {
+	public orc.ast.simple.expression.Expression simplify(List<Var> formals, orc.ast.simple.expression.Expression otherwise) throws CompilationException {
 		
 		Expression newbody = body.simplify();
 		List<PatternSimplifier> stricts = new LinkedList<PatternSimplifier>();
@@ -104,7 +104,7 @@ public class Clause {
 					Expression lookup = Pattern.nth(binds, i);
 					Var x = new Var();
 					newbody = pv.target(x, newbody);				
-					newbody = new orc.ast.simple.Where(newbody, lookup, x);
+					newbody = new orc.ast.simple.expression.Pruning(newbody, lookup, x);
 				}
 			}
 						
@@ -139,14 +139,14 @@ public class Clause {
 				 * 
 				 */
 				Var yall = new Var();
-				lift = new orc.ast.simple.Where(Pattern.lift(yall), new orc.ast.simple.Let(ys), yall);
+				lift = new orc.ast.simple.expression.Pruning(Pattern.lift(yall), new orc.ast.simple.expression.Let(ys), yall);
 				for (Attachment a : filters) {
 					lift = a.attach(lift);
 				}
 			}
 			
 			// Now put it all together.
-			newbody = new orc.ast.simple.Where(caseof, lift, z);
+			newbody = new orc.ast.simple.expression.Pruning(caseof, lift, z);
 		}
 		else {
 			// If there are no strict patterns, it suffices to just use the

@@ -23,12 +23,12 @@ public class Definitions extends Expression {
 		return super.toString() + "(" + Arrays.toString(definitions) + ", " + body + ")";
 	}
 	@Override
-	public orc.ast.oil.Expr unmarshal(Config config) throws CompilationException {
+	public orc.ast.oil.expression.Expr unmarshal(Config config) throws CompilationException {
 		LinkedList<orc.ast.oil.Def> defs
 			= new LinkedList<orc.ast.oil.Def>();
 		for (Definition d : definitions) {
 			defs.add(d.unmarshal(config));
 		}
-		return new orc.ast.oil.Defs(defs, body.unmarshal(config));
+		return new orc.ast.oil.expression.Defs(defs, body.unmarshal(config));
 	}
 }

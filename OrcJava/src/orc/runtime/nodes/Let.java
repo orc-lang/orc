@@ -1,6 +1,6 @@
 package orc.runtime.nodes;
 
-import orc.ast.oil.arg.Arg;
+import orc.ast.oil.expression.argument.Arg;
 import orc.error.compiletime.SiteResolutionException;
 import orc.runtime.Token;
 import orc.runtime.values.Value;

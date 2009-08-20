@@ -10,15 +10,15 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 
-import orc.ast.simple.Expression;
-import orc.ast.simple.Let;
-import orc.ast.simple.Parallel;
-import orc.ast.simple.Sequential;
-import orc.ast.simple.Where;
-import orc.ast.simple.arg.Argument;
-import orc.ast.simple.arg.NamedVar;
-import orc.ast.simple.arg.Var;
-import orc.ast.simple.type.Type;
+import orc.ast.extended.type.Type;
+import orc.ast.simple.argument.Argument;
+import orc.ast.simple.argument.NamedVar;
+import orc.ast.simple.argument.Var;
+import orc.ast.simple.expression.Expression;
+import orc.ast.simple.expression.Let;
+import orc.ast.simple.expression.Parallel;
+import orc.ast.simple.expression.Sequential;
+import orc.ast.simple.expression.Pruning;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.NonlinearPatternException;
 
@@ -126,7 +126,7 @@ public class PatternSimplifier {
 				
 				Var v = new Var();
 				g = g.subvar(v, x);
-				g = new Where(g, getter, v);
+				g = new Pruning(g, getter, v);
 			}
 
 		}
