@@ -78,6 +78,8 @@ public class OrcCompiler implements Callable<Expr> {
 
 				oilAst = compileAstToOil(astRoot);
 
+				oilAst = refineOilAfterCompileBeforeSave(oilAst);
+
 			} else {
 				throw new IllegalStateException("Cannot compile without an input file specified");
 			}
@@ -85,9 +87,11 @@ public class OrcCompiler implements Callable<Expr> {
 			if (config.hasOilOutputFile()) {
 
 				saveOil(oilAst, config.getOilWriter());
-				
+
 				config.getOilWriter().close();
 			}
+
+			oilAst = refineOilAfterLoadSaveBeforeDag(oilAst);
 
 			config.getMessageRecorder().endProcessing(new File(config.getInputFilename()));
 			return oilAst;
@@ -214,15 +218,19 @@ public class OrcCompiler implements Callable<Expr> {
 	public Expr loadOil(final Reader oilReader) throws IOException, CompilationException {
 		final ProgressListener progress = config.getProgressListener();
 		progress.setNote("Loading OIL");
-		Oil oil = Oil.fromXML(config.getOilReader());
+		final Oil oil = Oil.fromXML(config.getOilReader());
 		progress.setProgress(0.2);
-		if (progress.isCanceled()) return null;
+		if (progress.isCanceled()) {
+			return null;
+		}
 		progress.setNote("Converting to AST");
-		Expr ex = oil.unmarshal(config);
+		final Expr ex = oil.unmarshal(config);
 		progress.setProgress(0.5);
-		if (progress.isCanceled()) return null;
+		if (progress.isCanceled()) {
+			return null;
+		}
 		progress.setNote("Loading sites");
-		return  SiteResolver.resolve(ex, config);
+		return SiteResolver.resolve(ex, config);
 	}
 
 	/**
@@ -238,4 +246,28 @@ public class OrcCompiler implements Callable<Expr> {
 		new Oil(oilAst).toXML(oilWriter);
 	}
 
+	/**
+	 * Subclass hook for modifying the OIL AST before it is saved to an OIL XML file
+	 * and before the OIL AST is run.  This hook is not called for loaded OIL XML files.
+	 * 
+	 * @param oilAst OIL AST generated from Orc source text
+	 * @return Refined OIL AST to be saved (and run)
+	 */
+	protected Expr refineOilAfterCompileBeforeSave(final Expr oilAst) {
+		// Override and extend
+		return oilAst;
+	}
+
+	/**
+	 * Subclass hook for modifying the OIL AST after it is loaded from an OIL XML file
+	 * (or generated from source code) and before the OIL AST is run.
+	 * This hook is called for loaded OIL XML files.
+	 * 
+	 * @param oilAst OIL AST read from file or compiled from text
+	 * @return Refined OIL AST to be run
+	 */
+	protected Expr refineOilAfterLoadSaveBeforeDag(final Expr oilAst) {
+		// Override and extend
+		return oilAst;
+	}
 }
