@@ -14,21 +14,37 @@
       </language>
    </extension>
    <extension
-         point="org.eclipse.ui.popupMenus">
-      <objectContribution
-            objectClass="org.eclipse.core.resources.IProject"
-            adaptable="false"
-            nameFilter="*"
-            id="Orc.imp.projectContextMenu">
-         <action
-               label="Enable Orc Builder"
-               icon="orc16.gif"
-               tooltip="Enable the Orc builder for this project"
-               class="orc.imp.actions.EnableOrcNature"
-               enablesFor="+"
-               id="Orc.imp.actions.enableNatureAction">
-         </action>
-      </objectContribution>
+         point="org.eclipse.core.contenttype.contentTypes">
+      <content-type
+            base-type="org.eclipse.core.runtime.text"
+            file-extensions="orc"
+            id="edu.utexas.cs.orc.source"
+            name="Orc source code"
+            priority="normal">
+      </content-type>
+   </extension>
+   <extension
+         point="org.eclipse.team.core.fileTypes">
+      <fileTypes
+            extension="orc"
+            type="text">
+      </fileTypes>
+      <fileTypes
+            extension="inc"
+            type="text">
+      </fileTypes>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="org.eclipse.imp.editor.UniversalEditor"
+            contributorClass="org.eclipse.imp.editor.internal.TextEditorActionContributor"
+            default="true"
+            extensions="orc, inc"
+            icon="icons/orc_file_obj.gif"
+            id="org.eclipse.imp.runtime.impEditor"
+            name="Orc Editor">
+      </editor>
    </extension>
    <extension
          id="OrcEclipse.parser"
@@ -38,6 +54,23 @@
             class="orc.imp.parser.OrcParseController"
             language="Orc">
       </parserWrapper>
+   </extension>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            adaptable="false"
+            id="Orc.imp.projectContextMenu"
+            nameFilter="*"
+            objectClass="org.eclipse.core.resources.IProject">
+         <action
+               class="orc.imp.actions.EnableOrcNature"
+               enablesFor="+"
+               icon="orc16.gif"
+               id="Orc.imp.actions.enableNatureAction"
+               label="Enable Orc Builder"
+               tooltip="Enable the Orc builder for this project">
+         </action>
+      </objectContribution>
    </extension>
    <extension
          id="orc.imp.builder"
