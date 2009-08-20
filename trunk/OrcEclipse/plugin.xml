@@ -355,5 +355,13 @@
          </description>
       </wizard>
    </extension>
+   <extension
+         point="org.eclipse.ui.ide.projectNatureImages">
+      <image
+            icon="icons/orc_ovr.gif"
+            id="edu.utexas.cs.orc.orceclipse.orcProjectNatureImage"
+            natureId="edu.utexas.cs.orc.orceclipse.imp.nature">
+      </image>
+   </extension>
 
 </plugin>
