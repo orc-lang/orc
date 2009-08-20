@@ -136,17 +136,6 @@ public class Activator extends PluginBase {
 	}
 
 	/**
-	 * @param file java.io.File to convert to an Eclipse IFile
-	 * @return org.eclipse.core.resources.IFile converted from Java File
-	 * @see java.io.File
-	 * @see org.eclipse.core.resources.IFile
-	 */
-	public static IFile iFileFromFile(final File file) {
-		// FIXME: This is broken for absolute paths!
-		return ResourcesPlugin.getWorkspace().getRoot().getFile(Path.fromOSString(file.getPath()));
-	}
-
-	/**
 	 * Reads the entire contents of a file into a String
 	 * 
 	 * @param file IFile to read contents from
