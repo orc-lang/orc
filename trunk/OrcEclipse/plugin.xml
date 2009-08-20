@@ -334,7 +334,7 @@
             name="New Orc Project"
             icon="orc16.gif"
             category="edu.utexas.cs.orc.orceclipse.wizards.OrcCategory"
-            class="org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard"
+            class="edu.utexas.cs.orc.orceclipse.wizards.OrcNewProjectWizard"
             preferredPerspectives="edu.utexas.cs.orc.orceclipse.perspective.main"
             project="true"
             finalPerspective="edu.utexas.cs.orc.orceclipse.perspective.main"
@@ -361,6 +361,9 @@
             icon="icons/orc_ovr.gif"
             id="edu.utexas.cs.orc.orceclipse.orcProjectNatureImage"
             natureId="edu.utexas.cs.orc.orceclipse.imp.nature">
+         <description>
+            Orc project nature
+         </description>
       </image>
    </extension>
 
