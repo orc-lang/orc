@@ -19,15 +19,15 @@ import java.io.File;
 
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompileMessageRecorder;
-import orc.error.compiletime.CompileMessageRecorder.Severity;
 
 /**
- * 
+ * A CompileMessageRecorder that writes messages to the stderr stream,
+ * as given in an Orc Config instance.
  *
  * @author jthywiss
  */
 public class StdErrCompileMsgRecorder implements CompileMessageRecorder {
-	private Config config;
+	private final Config config;
 
 	private Severity maxSeverity = Severity.UNKNOWN;
 
@@ -36,7 +36,7 @@ public class StdErrCompileMsgRecorder implements CompileMessageRecorder {
 	 *
 	 * @param config the Orc configuration in use.
 	 */
-	public StdErrCompileMsgRecorder(Config config) {
+	public StdErrCompileMsgRecorder(final Config config) {
 		if (config == null) {
 			throw new NullPointerException("Cannot construct StdErrCompileMsgRecorder with a null config");
 		}
@@ -69,11 +69,12 @@ public class StdErrCompileMsgRecorder implements CompileMessageRecorder {
 		}
 
 		maxSeverity = severity.ordinal() > maxSeverity.ordinal() ? severity : maxSeverity;
-		
+
 		config.getStderr().println(location.toString() + ": " + message);
-		String caret = location.getCaret();
-		if (caret != null)
+		final String caret = location.getCaret();
+		if (caret != null) {
 			config.getStderr().println(caret);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -82,58 +83,4 @@ public class StdErrCompileMsgRecorder implements CompileMessageRecorder {
 	public Severity getMaxSeverity() {
 		return maxSeverity;
 	}
-
-	/*
-	private void otherStuffWeMayWantToTrack() {
-		//TODO: do stuff here, like:
-
-		// -------- A message sequence number --------
-		// Use a private static synchronized getNextSeqNum() method
-
-		// -------- Timestamp --------
-		System.currentTimeMillis();
-
-		// -------- Thread ID --------
-		Thread.currentThread().toString();
-		Thread.currentThread().getName();
-		Thread.currentThread().getId();
-
-		// -------- Caller: class name, method name, source file name, source file line number --------
-		final StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-
-		// Skip down to this method invocation in the stack
-		int currElemIndex = 0;
-		for (; currElemIndex < stackTrace.length; currElemIndex++) {
-			if (stackTrace[currElemIndex].getClass().getName() == this.getClass().getName()) {
-				// Found ourselves
-				break;
-			}
-		}
-		// Now skip to an "interesting" caller 
-		for (; currElemIndex < stackTrace.length; currElemIndex++) {
-			if (stackTrace[currElemIndex].getClass().getName() == this.getClass().getName()) {
-				// Still in this class
-				continue;
-			}
-			// Skip everyone implementing the CompileMessageRecorder interface
-			if (!stackTrace[currElemIndex].getClass().isAssignableFrom(CompileMessageRecorder.class.getClass())) {
-				break;
-			}
-		}
-		StackTraceElement caller = null;
-		if (currElemIndex < stackTrace.length) {
-			caller = stackTrace[currElemIndex];
-		}
-
-		if (caller != null) {
-			caller.getClassName();
-			caller.getMethodName();
-			caller.getFileName(); // might be null
-			caller.getLineNumber(); // might be < 0
-		} else {
-			// Didn't find a StackTraceElement meeting our needs
-		}
-	}
-	*/
-
 }
