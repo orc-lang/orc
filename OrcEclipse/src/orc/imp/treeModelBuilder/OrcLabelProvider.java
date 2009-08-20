@@ -34,6 +34,8 @@ import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.services.ILabelProvider;
 import org.eclipse.imp.utils.MarkerUtils;
 import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.jface.viewers.DecorationOverlayIcon;
+import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.graphics.Image;
 
@@ -50,32 +52,31 @@ import edu.utexas.cs.orc.orceclipse.OrcResources;
 public class OrcLabelProvider implements ILabelProvider {
 	private final Set<ILabelProviderListener> fListeners = new HashSet<ILabelProviderListener>();
 
-	private static ImageRegistry sImageRegistry = Activator.getInstance().getImageRegistry();
+	private static ImageRegistry orcImageRegistry = Activator.getInstance().getImageRegistry();
 
-	private static Image ORC_FILE_OBJ_IMAGE = sImageRegistry.get(OrcResources.ORC_FILE_OBJ);
+	private static Image ORC_FILE_OBJ_IMAGE = orcImageRegistry.get(OrcResources.ORC_FILE_OBJ);
 
-	private static Image ORC_INCLUDE_OBJ_IMAGE = sImageRegistry.get(OrcResources.ORC_INCLUDE_OBJ);
+	private static Image ORC_FILE_W_ERROR = new DecorationOverlayIcon(ORC_FILE_OBJ_IMAGE, orcImageRegistry.getDescriptor(OrcResources.ERROR_OVR), IDecoration.BOTTOM_LEFT).createImage();
 
-	private static Image ORC_GENERIC_OBJ_IMAGE = sImageRegistry.get(OrcResources.ORC_GENERIC_OBJ);
+	private static Image ORC_FILE_W_WARNING = new DecorationOverlayIcon(ORC_FILE_OBJ_IMAGE, orcImageRegistry.getDescriptor(OrcResources.WARNING_OVR), IDecoration.BOTTOM_LEFT).createImage();
 
-	private static Image ORC_DEF_OBJ_IMAGE = sImageRegistry.get(OrcResources.ORC_DEF_OBJ);
+	private static Image ORC_INCLUDE_OBJ_IMAGE = orcImageRegistry.get(OrcResources.ORC_INCLUDE_OBJ);
 
-	private static Image ORC_SITE_OBJ_IMAGE = sImageRegistry.get(OrcResources.ORC_SITE_OBJ);
+	private static Image ORC_INCLUDE_W_ERROR = new DecorationOverlayIcon(ORC_INCLUDE_OBJ_IMAGE, orcImageRegistry.getDescriptor(OrcResources.ERROR_OVR), IDecoration.BOTTOM_LEFT).createImage();
 
-	private static Image ORC_CLASS_OBJ_IMAGE = sImageRegistry.get(OrcResources.ORC_CLASS_OBJ);
+	private static Image ORC_INCLUDE_W_WARNING = new DecorationOverlayIcon(ORC_INCLUDE_OBJ_IMAGE, orcImageRegistry.getDescriptor(OrcResources.WARNING_OVR), IDecoration.BOTTOM_LEFT).createImage();
 
-	private static Image ORC_VARIABLE_OBJ_IMAGE = sImageRegistry.get(OrcResources.ORC_VARIABLE_OBJ);
+	private static Image ORC_GENERIC_OBJ_IMAGE = orcImageRegistry.get(OrcResources.ORC_GENERIC_OBJ);
 
-	private static Image ORC_TYPE_OBJ_IMAGE = sImageRegistry.get(OrcResources.ORC_TYPE_OBJ);
+	private static Image ORC_DEF_OBJ_IMAGE = orcImageRegistry.get(OrcResources.ORC_DEF_OBJ);
 
-	// private static Image ORC_OVR_IMAGE =
-	// sImageRegistry.get(OrcResources.ORC_OVR);
-	//
-	// private static Image ERROR_OVR_IMAGE =
-	// sImageRegistry.get(OrcResources.ERROR_OVR);
-	//
-	// private static Image WARNING_OVR_IMAGE =
-	// sImageRegistry.get(OrcResources.WARNING_OVR);
+	private static Image ORC_SITE_OBJ_IMAGE = orcImageRegistry.get(OrcResources.ORC_SITE_OBJ);
+
+	private static Image ORC_CLASS_OBJ_IMAGE = orcImageRegistry.get(OrcResources.ORC_CLASS_OBJ);
+
+	private static Image ORC_VARIABLE_OBJ_IMAGE = orcImageRegistry.get(OrcResources.ORC_VARIABLE_OBJ);
+
+	private static Image ORC_TYPE_OBJ_IMAGE = orcImageRegistry.get(OrcResources.ORC_TYPE_OBJ);
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.viewers.ILabelProvider#getImage(java.lang.Object)
@@ -84,17 +85,20 @@ public class OrcLabelProvider implements ILabelProvider {
 		if (element instanceof IFile) {
 			final IFile file = (IFile) element;
 
-			final Image elemImage = ORC_FILE_OBJ_IMAGE;
-			// TODO: check file type, pick ORC_FILE_OBJ_IMAGE or
-			// ORC_INCLUDE_OBJ_IMAGE
+			Image elemImage = null;
+			// TODO: check file type, pick ORC_FILE_OBJ_IMAGE or ORC_INCLUDE_OBJ_IMAGE
 
 			final int sev = MarkerUtils.getMaxProblemMarkerSeverity(file, IResource.DEPTH_ONE);
 			switch (sev) {
 			case IMarker.SEVERITY_ERROR:
-				// TODO: overlay ERROR_OVR_IMAGE
+				elemImage = ORC_FILE_W_ERROR;
+				break;
 			case IMarker.SEVERITY_WARNING:
-				// TODO: overlay WARNING_OVR_IMAGE
+				elemImage = ORC_FILE_W_WARNING;
+				break;
 			default:
+				elemImage = ORC_FILE_OBJ_IMAGE;
+				break;
 			}
 
 			return elemImage;
