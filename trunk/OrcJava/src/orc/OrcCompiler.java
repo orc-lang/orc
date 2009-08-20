@@ -94,7 +94,6 @@ public class OrcCompiler implements Callable<Expr> {
 			oilAst = refineOilAfterLoadSaveBeforeDag(oilAst);
 
 			config.getMessageRecorder().endProcessing(new File(config.getInputFilename()));
-			config.getProgressListener().setProgress(1.0);
 			return oilAst;
 		} catch (final CompilationException e) {
 			config.getMessageRecorder().recordMessage(Severity.FATAL, 0, e.getMessageOnly(), e.getSourceLocation(), null, e);
