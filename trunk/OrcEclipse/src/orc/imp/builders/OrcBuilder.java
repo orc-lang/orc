@@ -22,6 +22,7 @@ import java.io.Writer;
 
 import orc.Config;
 import orc.Orc;
+import orc.OrcCompiler;
 import orc.ast.oil.Compiler;
 import orc.ast.oil.Expr;
 import orc.ast.oil.xml.Oil;
@@ -217,49 +218,24 @@ public class OrcBuilder extends BuilderBase {
 		getConsoleStream().println("Building Orc file: " + file.getName());
 
 		try {
-			final ImpToOrcProgressAdapter progress = new ImpToOrcProgressAdapter(monitor);
-
 			final MarkerCreator markerCreator = new MarkerCreatorWithBatching(file, null, this);
 
 			final Config config = new Config();
 			final File inputFile = new File(file.getLocation().toOSString());
 			config.setInputFile(inputFile);
+			config.setProgressListener(new ImpToOrcProgressAdapter(monitor));
 			config.setMessageRecorder(new ImpToOrcMessageAdapter(markerCreator));
-			config.getMessageRecorder().beginProcessing(inputFile);
 			file.deleteMarkers(OrcBuilder.PROBLEM_MARKER_ID, true, IResource.DEPTH_INFINITE);
 
 			// TODO: Set options per project settings
 
+			OrcCompiler compiler = new OrcCompiler(config); 
 			try {
-				//XXX: This is horribly hacked -- we're parsing twice, this code is cut-and-pasted, the config set-up is in 3 places, blah, blah.
-				//FIXME: Refactor the creating of Config, file reading, compiling phases, etc.
-				Expr ex;
-				ex = Orc.compile(new InputStreamReader(file.getContents()), config, new SubProgressListener(progress, 0, 0.7));
-				if (config.hasOilOutputFile()) {
-					final Writer out = config.getOilWriter();
-					progress.setNote("Writing OIL");
-					new Oil(ex).toXML(out);
-					out.close();
-				}
-				progress.setProgress(0.8);
-				if (progress.isCanceled()) {
-					return;
-				}
-				progress.setNote("Creating DAG");
-				Compiler.compile(ex, new Pub()); // Disregard DAG result, we just want the errors
-				progress.setProgress(0.95);
-				if (progress.isCanceled()) {
-					return;
-				}
-			} catch (final CompilationException e) {
-				getConsoleStream().println(e.getLocalizedMessage());
-				config.getMessageRecorder().recordMessage(Severity.FATAL, 0, e.getMessageOnly(), e.getSourceLocation(), null, e);
+				compiler.call();
+				// Disregard returned OIL, we just want the errors
 			} catch (final IOException e) {
-				getConsoleStream().println(e.getLocalizedMessage());
 				config.getMessageRecorder().recordMessage(Severity.FATAL, 0, e.getLocalizedMessage(), null, null, e);
 			}
-
-			config.getMessageRecorder().endProcessing(inputFile);
 
 			doRefresh(file.getParent()); // N.B.: Assumes all generated files go into parent folder
 		} catch (final Exception e) {

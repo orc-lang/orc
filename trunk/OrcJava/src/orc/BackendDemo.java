@@ -1,14 +1,48 @@
+//
+// BackendDemo.java -- Java class BackendDemo
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Iterator;
 
+import orc.ast.oil.Atomic;
+import orc.ast.oil.Bar;
+import orc.ast.oil.Call;
+import orc.ast.oil.Catch;
+import orc.ast.oil.Def;
+import orc.ast.oil.Defs;
+import orc.ast.oil.Expr;
+import orc.ast.oil.HasType;
+import orc.ast.oil.Isolated;
+import orc.ast.oil.Pull;
+import orc.ast.oil.Push;
+import orc.ast.oil.Semi;
+import orc.ast.oil.Silent;
+import orc.ast.oil.Throw;
+import orc.ast.oil.TypeDecl;
+import orc.ast.oil.Visitor;
+import orc.ast.oil.WithLocation;
+import orc.ast.oil.arg.Arg;
+import orc.ast.oil.arg.Constant;
+import orc.ast.oil.arg.Field;
+import orc.ast.oil.arg.Site;
+import orc.ast.oil.arg.Var;
 import orc.env.Env;
 import orc.env.LookupFailureException;
 import orc.error.OrcError;
 import orc.error.compiletime.CompilationException;
-import orc.ast.oil.*;
-import orc.ast.oil.arg.*;
 
 /**
  * An example of a custom compiler backend.
@@ -19,15 +53,18 @@ import orc.ast.oil.arg.*;
  * @author quark
  */
 public final class BackendDemo {
-	public static void main(String[] args) throws CompilationException, IOException {
+	public static void main(final String[] args) throws CompilationException, IOException {
 		// read command-line arguments
-		Config cfg = new Config();
+		final Config cfg = new Config();
 		cfg.processArgs(args);
 		// compile the specified input stream to OIL
-		Expr e = Orc.compile(cfg.getReader(), cfg);
+		final Expr e = Orc.compile(cfg.getReader(), cfg);
+		if (e == null) {
+			return;
+		}
 		// use the visitor on the OIL to output the
 		// new representation
-		PrintWriter out = new PrintWriter(System.out);
+		final PrintWriter out = new PrintWriter(System.out);
 		e.accept(new BackendVisitorDemo(out));
 		out.flush();
 		out.close();
@@ -43,70 +80,70 @@ public final class BackendDemo {
  */
 final class BackendVisitorDemo implements Visitor<Void> {
 	/** Environment of variable names */
-	private Env<String> variableNames = new Env<String>();
+	private final Env<String> variableNames = new Env<String>();
 	/** Next free variable identifier; used to generate unique names. */
 	private int nextVariableId = 1;
-	private PrintWriter out;
-	
-	public BackendVisitorDemo(PrintWriter out) {
+	private final PrintWriter out;
+
+	public BackendVisitorDemo(final PrintWriter out) {
 		this.out = out;
 	}
-	
+
 	/** Look up a variable name in the environment. */
-	private String lookup(int offset) {
+	private String lookup(final int offset) {
 		try {
 			return variableNames.lookup(offset);
-		} catch (LookupFailureException e) {
+		} catch (final LookupFailureException e) {
 			throw new OrcError(e);
 		}
 	}
-	
+
 	/** Enter the scope of a variable bindingx. */
-	private void enterScope(String name) {
+	private void enterScope(final String name) {
 		// suffix names with a unique identifier since
 		// they are not guaranteed to be unique in scope
 		// after optimizations
-		variableNames.add(name+"_"+nextVariableId);
+		variableNames.add(name + "_" + nextVariableId);
 		++nextVariableId;
 	}
-	
+
 	/** Leave the scope of n variable bindings. */
-	private void leaveScope(int n) {
+	private void leaveScope(final int n) {
 		variableNames.unwind(n);
 		nextVariableId -= n;
 	}
-	
+
 	/** Variables are translated into names using the environment. */
-	public Void visit(Var arg) {
+	public Void visit(final Var arg) {
 		out.print(arg.resolveGeneric(variableNames));
 		return null;
 	}
 
 	/** Constants are represented by their string representations. */
-	public Void visit(Constant arg) {
+	public Void visit(final Constant arg) {
 		out.print(arg);
 		return null;
 	}
 
 	/** Fields are represented by their string representations. */
-	public Void visit(Field arg) {
-		out.print(arg);
-		return null;
-	}
-	
-	/** Silent is represented by its string representation. */
-	public Void visit(Silent arg) {
-		out.print(arg);
-		return null;
-	}
-	
-	/** Sites are represented by their string representations. */
-	public Void visit(Site arg) {
+	public Void visit(final Field arg) {
 		out.print(arg);
 		return null;
 	}
 
-	public Void visit(Bar expr) {
+	/** Silent is represented by its string representation. */
+	public Void visit(final Silent arg) {
+		out.print(arg);
+		return null;
+	}
+
+	/** Sites are represented by their string representations. */
+	public Void visit(final Site arg) {
+		out.print(arg);
+		return null;
+	}
+
+	public Void visit(final Bar expr) {
 		out.print("(");
 		expr.left.accept(this);
 		out.print(" | ");
@@ -114,8 +151,8 @@ final class BackendVisitorDemo implements Visitor<Void> {
 		out.print(")");
 		return null;
 	}
-	
-	public Void visit(Pull expr) {
+
+	public Void visit(final Pull expr) {
 		out.print("(");
 		enterScope(expr.name == null ? "v" : expr.name);
 		expr.left.accept(this);
@@ -126,7 +163,7 @@ final class BackendVisitorDemo implements Visitor<Void> {
 		return null;
 	}
 
-	public Void visit(Push expr) {
+	public Void visit(final Push expr) {
 		out.print("(");
 		expr.left.accept(this);
 		enterScope(expr.name == null ? "v" : expr.name);
@@ -137,7 +174,7 @@ final class BackendVisitorDemo implements Visitor<Void> {
 		return null;
 	}
 
-	public Void visit(Semi expr) {
+	public Void visit(final Semi expr) {
 		out.print("(");
 		expr.left.accept(this);
 		out.print(" ; ");
@@ -146,10 +183,10 @@ final class BackendVisitorDemo implements Visitor<Void> {
 		return null;
 	}
 
-	public Void visit(Call expr) {
+	public Void visit(final Call expr) {
 		expr.callee.accept(this);
 		out.print("(");
-		Iterator<Arg> argsi = expr.args.iterator();
+		final Iterator<Arg> argsi = expr.args.iterator();
 		if (argsi.hasNext()) {
 			argsi.next().accept(this);
 			while (argsi.hasNext()) {
@@ -161,16 +198,16 @@ final class BackendVisitorDemo implements Visitor<Void> {
 		return null;
 	}
 
-	public Void visit(Defs expr) {
+	public Void visit(final Defs expr) {
 		out.println("(");
 		// create a new binding for each definition in the group
-		for (Def def : expr.defs) {
+		for (final Def def : expr.defs) {
 			enterScope(def.name == null ? "d" : def.name);
 		}
 		// defi will track the index of the current definition in the group,
 		// so we can find its name in the environment
 		int defi = expr.defs.size() - 1;
-		for (Def def : expr.defs) {
+		for (final Def def : expr.defs) {
 			out.print("def " + lookup(defi) + "(");
 			// create new bindings for arguments
 			for (int i = 0; i < def.arity; ++i) {
@@ -178,8 +215,8 @@ final class BackendVisitorDemo implements Visitor<Void> {
 			}
 			if (def.arity > 0) {
 				// look up argument names in the environment
-				out.print(lookup(def.arity-1));
-				for (int i = def.arity-2; i >= 0; --i) {
+				out.print(lookup(def.arity - 1));
+				for (int i = def.arity - 2; i >= 0; --i) {
 					out.print(", ");
 					out.print(lookup(i));
 				}
@@ -195,15 +232,15 @@ final class BackendVisitorDemo implements Visitor<Void> {
 		out.println(")");
 		return null;
 	}
-	
-	public Void visit(Atomic atomic) {
+
+	public Void visit(final Atomic atomic) {
 		out.print("(atomic ");
 		atomic.body.accept(this);
 		out.print(")");
 		return null;
 	}
-	
-	public Void visit(Isolated expr) {
+
+	public Void visit(final Isolated expr) {
 		out.print("(isolated ");
 		expr.body.accept(this);
 		out.print(")");
@@ -211,27 +248,27 @@ final class BackendVisitorDemo implements Visitor<Void> {
 	}
 
 	/** Ignore source location tags */
-	public Void visit(WithLocation expr) {
+	public Void visit(final WithLocation expr) {
 		return expr.body.accept(this);
 	}
 
 	/** Ignore type assertions */
-	public Void visit(HasType hasType) {
+	public Void visit(final HasType hasType) {
 		return hasType.body.accept(this);
 	}
 
 	/** Ignore type declarations */
-	public Void visit(TypeDecl typeDecl) {
+	public Void visit(final TypeDecl typeDecl) {
 		return typeDecl.body.accept(this);
 	}
-	
+
 	//TODO:
-	public Void visit(Catch catchExpr){
+	public Void visit(final Catch catchExpr) {
 		return null;
 	}
-	
+
 	//TODO:
-	public Void visit(Throw throwExpr){
+	public Void visit(final Throw throwExpr) {
 		return null;
 	}
 }

@@ -1,3 +1,16 @@
+//
+// Compiler.java -- Java class Compiler
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.ast.oil;
 
 import java.util.HashMap;
@@ -10,17 +23,15 @@ import orc.ast.oil.arg.Constant;
 import orc.ast.oil.arg.Field;
 import orc.ast.oil.arg.Site;
 import orc.ast.oil.arg.Var;
-import orc.env.Env;
-import orc.error.SourceLocation;
-import orc.error.compiletime.CompilationException;
 import orc.runtime.nodes.Assign;
 import orc.runtime.nodes.Fork;
 import orc.runtime.nodes.Leave;
 import orc.runtime.nodes.Node;
+import orc.runtime.nodes.PopHandler;
+import orc.runtime.nodes.Pub;
+import orc.runtime.nodes.PushHandler;
 import orc.runtime.nodes.Store;
 import orc.runtime.nodes.Unwind;
-import orc.runtime.nodes.PushHandler;
-import orc.runtime.nodes.PopHandler;
 
 /**
  * Compiles an oil syntax tree into an execution graph.
@@ -30,144 +41,148 @@ import orc.runtime.nodes.PopHandler;
  * @return A new node.
  */
 public final class Compiler implements Visitor<Node> {
-	private Node output;
-	private boolean isTail;
-	
-	private Compiler(Node output) {
+	private final Node output;
+	private final boolean isTail;
+
+	private Compiler(final Node output) {
 		this.output = output;
-		isTail = (output instanceof orc.runtime.nodes.Return
-				|| output.isTerminal());
+		isTail = output instanceof orc.runtime.nodes.Return || output.isTerminal();
 	}
-	
-	private Node unwind(int size) {
+
+	private Node unwind(final int size) {
 		// tail nodes will ignore the environment stack
 		// so there's no need to unwind
-		if (isTail) return output;
-		else return new Unwind(output, size);
+		if (isTail) {
+			return output;
+		} else {
+			return new Unwind(output, size);
+		}
 	}
-	
-	public static Node compile(Expr expr, Node output) {
-		Compiler compiler = new Compiler(output);
+
+	public static Node compile(final Expr expr) {
+		return compile(expr, new Pub());
+	}
+
+	public static Node compile(final Expr expr, final Node output) {
+		final Compiler compiler = new Compiler(output);
 		return expr.accept(compiler);
 	}
 
-	public Node visit(Bar expr) {
+	public Node visit(final Bar expr) {
 		return new Fork(expr.left.accept(this), expr.right.accept(this));
 	}
 
-	public Node visit(Call expr) {
+	public Node visit(final Call expr) {
 		return new orc.runtime.nodes.Call(expr.callee, expr.args, output);
 	}
 
-	public Node visit(Defs expr) {
+	public Node visit(final Defs expr) {
 		// find variables free ONLY in the defs themselves
 		// (unlike addIndices which includes the body)
-		Set<Var> free = new TreeSet<Var>();
-		Set<Integer> indices = new TreeSet<Integer>();
-		int depth = expr.defs.size();
-		for (Def d : expr.defs) d.addIndices(indices, depth);
-		for (Integer i : indices) free.add(new Var(i));
-	
-		// compile the defs
-		List<orc.runtime.nodes.Def> newdefs = new LinkedList<orc.runtime.nodes.Def>();
-		for (Def d : expr.defs) {
-			newdefs.add(compileDef(d));	
+		final Set<Var> free = new TreeSet<Var>();
+		final Set<Integer> indices = new TreeSet<Integer>();
+		final int depth = expr.defs.size();
+		for (final Def d : expr.defs) {
+			d.addIndices(indices, depth);
+		}
+		for (final Integer i : indices) {
+			free.add(new Var(i));
 		}
 
-		Node newbody = compile(expr.body, unwind(newdefs.size()));
+		// compile the defs
+		final List<orc.runtime.nodes.Def> newdefs = new LinkedList<orc.runtime.nodes.Def>();
+		for (final Def d : expr.defs) {
+			newdefs.add(compileDef(d));
+		}
+
+		final Node newbody = compile(expr.body, unwind(newdefs.size()));
 		return new orc.runtime.nodes.Defs(newdefs, newbody, free);
 	}
-	
+
 	private static orc.runtime.nodes.Def compileDef(final Def def) {
 		// rename free variables in the body
 		// so that when we construct closure environments
 		// we can omit the non-free variables
-		Set<Var> free = def.freeVars();
-		final HashMap<Integer,Integer> map = new HashMap<Integer, Integer>();
-		int i = free.size()-1;
-		for (Var v : free) map.put(v.index + def.arity, (i--) + def.arity);
+		final Set<Var> free = def.freeVars();
+		final HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
+		int i = free.size() - 1;
+		for (final Var v : free) {
+			map.put(v.index + def.arity, i-- + def.arity);
+		}
 		RenameVariables.rename(def.body, new RenameVariables.Renamer() {
-			public int rename(int var) {
-				if (var < def.arity) return var;
+			public int rename(final int var) {
+				if (var < def.arity) {
+					return var;
+				}
 				return map.get(var);
 			}
 		});
-		
-		orc.runtime.nodes.Node newbody = compile(def.body, new orc.runtime.nodes.Return());
+
+		final orc.runtime.nodes.Node newbody = compile(def.body, new orc.runtime.nodes.Return());
 		return new orc.runtime.nodes.Def(def.arity, newbody, free, def.location);
 	}
 
-	public Node visit(Silent expr) {
+	public Node visit(final Silent expr) {
 		return new orc.runtime.nodes.Silent();
 	}
 
-	public Node visit(Pull expr) {
-		return new orc.runtime.nodes.Subgoal(
-				compile(expr.left, unwind(1)),
-				compile(expr.right, new orc.runtime.nodes.Store()));
+	public Node visit(final Pull expr) {
+		return new orc.runtime.nodes.Subgoal(compile(expr.left, unwind(1)), compile(expr.right, new orc.runtime.nodes.Store()));
 	}
 
-	public Node visit(Push expr) {
+	public Node visit(final Push expr) {
 		return compile(expr.left, new Assign(compile(expr.right, unwind(1))));
 	}
 
-	public Node visit(Semi expr) {
-		return new orc.runtime.nodes.Semi(
-				compile(expr.left, new Leave(output)),
-				expr.right.accept(this));
+	public Node visit(final Semi expr) {
+		return new orc.runtime.nodes.Semi(compile(expr.left, new Leave(output)), expr.right.accept(this));
 	}
 
-	public Node visit(WithLocation expr) {
-		return new orc.runtime.nodes.WithLocation(
-				expr.body.accept(this),
-				expr.location);
+	public Node visit(final WithLocation expr) {
+		return new orc.runtime.nodes.WithLocation(expr.body.accept(this), expr.location);
 	}
 
-	public Node visit(Constant arg) {
+	public Node visit(final Constant arg) {
 		return new orc.runtime.nodes.Let(arg, output);
 	}
 
-	public Node visit(Field arg) {
+	public Node visit(final Field arg) {
 		return new orc.runtime.nodes.Let(arg, output);
 	}
 
-	public Node visit(Site arg) {
+	public Node visit(final Site arg) {
 		return new orc.runtime.nodes.Let(arg, output);
 	}
 
-	public Node visit(Var arg) {
+	public Node visit(final Var arg) {
 		return new orc.runtime.nodes.Let(arg, output);
 	}
 
-	public Node visit(Atomic atomic) {
-		return new orc.runtime.transaction.Atomic(
-				compile(atomic.body, new Store()),
-				output);
-	}
-	
-	public Node visit(Isolated expr) {
-		return new orc.runtime.nodes.Isolate(
-				compile(expr.body,
-						new orc.runtime.nodes.Unisolate(output)));
+	public Node visit(final Atomic atomic) {
+		return new orc.runtime.transaction.Atomic(compile(atomic.body, new Store()), output);
 	}
 
-	public Node visit(HasType hasType) {
+	public Node visit(final Isolated expr) {
+		return new orc.runtime.nodes.Isolate(compile(expr.body, new orc.runtime.nodes.Unisolate(output)));
+	}
+
+	public Node visit(final HasType hasType) {
 		return hasType.body.accept(this);
 	}
 
-	public Node visit(TypeDecl typeDecl) {
+	public Node visit(final TypeDecl typeDecl) {
 		return typeDecl.body.accept(this);
 	}
 
-	public Node visit(Throw throwExpr) {
-		Node throwNode = new orc.runtime.nodes.Throw();
+	public Node visit(final Throw throwExpr) {
+		final Node throwNode = new orc.runtime.nodes.Throw();
 		return compile(throwExpr.exception, throwNode);
 	}
 
-	public Node visit(Catch catchExpr){
-		Node popNode = new PopHandler(output);
-		Node tryBlock = compile(catchExpr.tryBlock, popNode);
-		orc.runtime.nodes.Def handler = compileDef(catchExpr.handler);
+	public Node visit(final Catch catchExpr) {
+		final Node popNode = new PopHandler(output);
+		final Node tryBlock = compile(catchExpr.tryBlock, popNode);
+		final orc.runtime.nodes.Def handler = compileDef(catchExpr.handler);
 		return new PushHandler(handler, tryBlock, output);
 	}
 }
