@@ -318,7 +318,7 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 
 		if (ttEntry != null && ttEntry.tokenType == TokenType.COMMENT_MULTILINE) {
 			int tokenLength = ttEntry.length();
-			//XXX: Hard-coded to use "-}" as close -- 'twould be nice to use the token table somehow.
+			//TODO: Hard-coded to use "-}" as close -- 'twould be nice to use the token table somehow.
 			while ((safeCharAt(text, offset + tokenLength) != '-' || safeCharAt(text, offset + tokenLength + 1) != '}') && safeCharAt(text, offset + tokenLength) != '\0') {
 				++tokenLength;
 			}
@@ -427,7 +427,7 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 
 	private OrcToken newToken(final TokenType tokenType, final String text, final int startOffset, final int length) {
 		return new OrcToken(tokenType, text.substring(startOffset, startOffset + length), new SourceLocation(parseController.getPath().toFile(),
-		//TODO: line number/column tracking
+		//TODO: line number/column tracking -- not needed yet
 				startOffset, 0, 0, startOffset + length - 1, 0, 0));
 	}
 }

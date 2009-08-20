@@ -32,7 +32,7 @@ public class OrcNewProjectWizard extends BasicNewProjectResourceWizard {
 	 */
 	@Override
 	public boolean performFinish() {
-		boolean finishAccepted = super.performFinish();
+		final boolean finishAccepted = super.performFinish();
 		if (getNewProject() != null) {
 			new OrcNature().addToProject(getNewProject());
 		}

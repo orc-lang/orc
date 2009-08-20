@@ -86,19 +86,33 @@ public class OrcLabelProvider implements ILabelProvider {
 			final IFile file = (IFile) element;
 
 			Image elemImage = null;
-			// TODO: check file type, pick ORC_FILE_OBJ_IMAGE or ORC_INCLUDE_OBJ_IMAGE
-
 			final int sev = MarkerUtils.getMaxProblemMarkerSeverity(file, IResource.DEPTH_ONE);
-			switch (sev) {
-			case IMarker.SEVERITY_ERROR:
-				elemImage = ORC_FILE_W_ERROR;
-				break;
-			case IMarker.SEVERITY_WARNING:
-				elemImage = ORC_FILE_W_WARNING;
-				break;
-			default:
-				elemImage = ORC_FILE_OBJ_IMAGE;
-				break;
+			if (!file.getName().toLowerCase().endsWith(".inc")) {
+				// Assume Orc file
+				switch (sev) {
+				case IMarker.SEVERITY_ERROR:
+					elemImage = ORC_INCLUDE_W_ERROR;
+					break;
+				case IMarker.SEVERITY_WARNING:
+					elemImage = ORC_FILE_W_WARNING;
+					break;
+				default:
+					elemImage = ORC_INCLUDE_W_WARNING;
+					break;
+				}
+			} else {
+				// Include file
+				switch (sev) {
+				case IMarker.SEVERITY_ERROR:
+					elemImage = ORC_FILE_W_ERROR;
+					break;
+				case IMarker.SEVERITY_WARNING:
+					elemImage = ORC_FILE_W_WARNING;
+					break;
+				default:
+					elemImage = ORC_FILE_OBJ_IMAGE;
+					break;
+				}
 			}
 
 			return elemImage;
