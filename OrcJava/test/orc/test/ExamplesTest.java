@@ -1,24 +1,29 @@
+//
+// ExamplesTest.java -- Java class ExamplesTest
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.test;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.io.PrintStream;
-import java.io.StringWriter;
 import java.util.LinkedList;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import org.kohsuke.args4j.CmdLineException;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -26,9 +31,9 @@ import junit.framework.TestSuite;
 import orc.Config;
 import orc.Orc;
 import orc.error.compiletime.CompilationException;
-import orc.error.compiletime.ParsingException;
-import orc.parser.OrcParser;
 import orc.runtime.OrcEngine;
+
+import org.kohsuke.args4j.CmdLineException;
 
 /**
  * Test Orc by running annotated sample programs from the "examples" directory.
@@ -59,20 +64,22 @@ public class ExamplesTest {
 	public static Test suite() {
 		return buildSuite(new Config());
 	}
-	
+
 	public static TestSuite buildSuite(final Config config) {
-		TestSuite suite = new TestSuite("orc.test.ExamplesTest");
-		LinkedList<File> files = new LinkedList<File>();
+		final TestSuite suite = new TestSuite("orc.test.ExamplesTest");
+		final LinkedList<File> files = new LinkedList<File>();
 		TestUtils.findOrcFiles(new File("examples"), files);
 		for (final File file : files) {
 			final LinkedList<String> expecteds;
 			try {
 				expecteds = extractExpectedOutput(file);
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				throw new AssertionError(e);
 			}
 			// skip tests with no expected output
-			if (expecteds.isEmpty()) continue;
+			if (expecteds.isEmpty()) {
+				continue;
+			}
 			suite.addTest(new TestCase(file.toString()) {
 				@Override
 				public void runTest() throws IOException, CmdLineException, CompilationException, InterruptedException, ExecutionException, TimeoutException {
@@ -82,48 +89,47 @@ public class ExamplesTest {
 		}
 		return suite;
 	}
-	
-	public static void runOrcProgram(Config config, File file, LinkedList<String> expecteds)
-	throws InterruptedException, ExecutionException, CmdLineException,
-			CompilationException, IOException, TimeoutException
-	{
+
+	public static void runOrcProgram(final Config config, final File file, final LinkedList<String> expecteds) throws InterruptedException, ExecutionException, CmdLineException, CompilationException, IOException, TimeoutException {
 		// configure engine to write to a ByteArray
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		config.setInputFile(file);
 		config.setStdout(new PrintStream(out));
 		config.setStderr(config.getStdout());
-		
+
 		/* 
 		 * Shorten errors. 
 		 * Backtraces may contain filesystem-specifc paths and other details,
 		 * which will interfere with output matching. 
 		 */
 		config.setShortErrors(true);
-		
-		OrcEngine engine = new OrcEngine(config);
-		engine.start(Orc.compile(config));
-		
+
+		final OrcEngine engine = new OrcEngine(config);
+		engine.start(orc.ast.oil.Compiler.compile(Orc.compile(config.getReader(), config)));
+
 		// run the engine with a fixed timeout
-		FutureTask<?> future = new FutureTask<Void>(engine, null);
+		final FutureTask<?> future = new FutureTask<Void>(engine, null);
 		new Thread(future).start();
 		try {
 			future.get(10L, TimeUnit.SECONDS);
-		} catch (TimeoutException e) {
+		} catch (final TimeoutException e) {
 			future.cancel(true);
 			throw e;
 		}
-		
+
 		// compare the output to the expected result
-		String actual = out.toString();
-		for (String expected : expecteds) {
-			if (expected.equals(actual)) return;
+		final String actual = out.toString();
+		for (final String expected : expecteds) {
+			if (expected.equals(actual)) {
+				return;
+			}
 		}
 		throw new AssertionError("Unexpected output:\n" + actual);
 	}
-	
-	public static LinkedList<String> extractExpectedOutput(File file) throws IOException {
-		BufferedReader r = new BufferedReader(new FileReader(file));
-		LinkedList<String> out = new LinkedList<String>();
+
+	public static LinkedList<String> extractExpectedOutput(final File file) throws IOException {
+		final BufferedReader r = new BufferedReader(new FileReader(file));
+		final LinkedList<String> out = new LinkedList<String>();
 		StringBuilder oneOutput = null;
 		for (String line = r.readLine(); line != null; line = r.readLine()) {
 			if (oneOutput != null) {

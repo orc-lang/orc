@@ -1,27 +1,33 @@
-/*
- * Copyright 2005, The University of Texas at Austin. All rights reserved.
- */
+//
+// OrcEngine.java -- Java class OrcEngine
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.runtime;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.lang.ref.WeakReference;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 
 import orc.Config;
-import orc.env.Env;
 import orc.error.SourceLocation;
 import orc.error.runtime.TokenException;
 import orc.error.runtime.TokenLimitReachedError;
 import orc.runtime.nodes.Node;
 import orc.runtime.regions.Execution;
 import orc.runtime.regions.LogicalClock;
-import orc.runtime.values.GroupCell;
 import orc.runtime.values.Value;
 import orc.trace.Tracer;
 
@@ -52,7 +58,7 @@ public class OrcEngine implements Runnable {
 	 * terminate the engine.
 	 */
 	private boolean halt = false;
-	
+
 	/**
 	 * This flag is set externally to pause execution.
 	 */
@@ -71,7 +77,7 @@ public class OrcEngine implements Runnable {
 	 * @see #scheduleTimer(TimerTask, long)
 	 */
 	private Timer timer;
-	
+
 	/** Factory for tokens. */
 	final TokenPool pool;
 
@@ -86,7 +92,7 @@ public class OrcEngine implements Runnable {
 
 	public final static Globals<OrcEngine, Object> globals = new Globals<OrcEngine, Object>();
 
-	public OrcEngine(Config config) {
+	public OrcEngine(final Config config) {
 		this.config = config;
 		this.maxpubs = config.getMaxPubs();
 		this.debugLevel = config.getDebugLevel();
@@ -107,11 +113,11 @@ public class OrcEngine implements Runnable {
 	public final void run() {
 		debug(1, "Started engine.");
 		timer = new Timer();
-		Kilim.startEngine(config.getNumKilimThreads(), config
-				.getNumSiteThreads());
+		Kilim.startEngine(config.getNumKilimThreads(), config.getNumSiteThreads());
 		while (true) {
-			if (!step())
+			if (!step()) {
 				break;
+			}
 		}
 		timer.cancel();
 		timer = null;
@@ -120,12 +126,14 @@ public class OrcEngine implements Runnable {
 		tracer = null;
 		globals.removeAll(this);
 		synchronized (this) {
-			for (File tmpdir : tmpdirs) deleteDirectory(tmpdir);
+			for (final File tmpdir : tmpdirs) {
+				deleteDirectory(tmpdir);
+			}
 			tmpdirs.clear();
 		}
 		onTerminate();
 	}
-	
+
 	/** Override this to customize termination. */
 	public void onTerminate() {
 		// do nothing
@@ -139,7 +147,7 @@ public class OrcEngine implements Runnable {
 		debug(1, "Engine terminated.");
 		notifyAll();
 	}
-	
+
 	/**
 	 * Pause execution.
 	 */
@@ -147,7 +155,7 @@ public class OrcEngine implements Runnable {
 		pause = true;
 		debug(1, "Engine paused.");
 	}
-	
+
 	/**
 	 * Unpause execution.
 	 */
@@ -165,19 +173,19 @@ public class OrcEngine implements Runnable {
 	 * @param root
 	 *            node to run
 	 */
-	public final void run(Node root) {
+	public final void run(final Node root) {
 		start(root);
 		run();
 	}
 
-	public final void start(Node root) {
-		assert (root != null);
+	public final void start(final Node root) {
+		assert root != null;
 		region = new Execution(this);
 		tracer = config.getTracer();
 		Token token;
 		try {
 			token = pool.newToken();
-		} catch (TokenLimitReachedError e) {
+		} catch (final TokenLimitReachedError e) {
 			// This should be impossible
 			throw new AssertionError(e);
 		}
@@ -202,7 +210,7 @@ public class OrcEngine implements Runnable {
 			} else if (pause) {
 				try {
 					wait();
-				} catch (InterruptedException e) {
+				} catch (final InterruptedException e) {
 					// return to the main loop and check for termination
 				}
 				return true;
@@ -221,7 +229,7 @@ public class OrcEngine implements Runnable {
 					// we will be notified when a site returns
 					// or the engine terminates
 					wait();
-				} catch (InterruptedException e) {
+				} catch (final InterruptedException e) {
 					// return to the main loop and check for termination
 				}
 				return true;
@@ -231,9 +239,7 @@ public class OrcEngine implements Runnable {
 		// processing a token; we don't want to risk
 		// locking the engine if the processing blocks
 		if (shouldDebug(3)) {
-			debug(3, "Processing " + todo + ":\n" +
-					"  " + todo.getSourceLocation() + "\n" +
-					"  Node: " + todo.getNode());
+			debug(3, "Processing " + todo + ":\n" + "  " + todo.getSourceLocation() + "\n" + "  Node: " + todo.getNode());
 		}
 		todo.process();
 		return true;
@@ -245,7 +251,7 @@ public class OrcEngine implements Runnable {
 	 * @param t
 	 *            the token to be added
 	 */
-	public final synchronized void activate(Token t) {
+	public final synchronized void activate(final Token t) {
 		readyTokens.addLast(t);
 		notifyAll();
 	}
@@ -256,7 +262,7 @@ public class OrcEngine implements Runnable {
 	 * @param t
 	 *            the token to be added
 	 */
-	public final synchronized void resume(Token t) {
+	public final synchronized void resume(final Token t) {
 		t.getTracer().receive(t.getResult());
 		queuedReturns.addLast(t);
 		notifyAll();
@@ -268,19 +274,21 @@ public class OrcEngine implements Runnable {
 	 * 
 	 * @param v
 	 */
-	public final void publish(Object v) {
+	public final void publish(final Object v) {
 		onPublish(v);
 		// check if we have reached the maximum allowed number of publications
-		if (maxpubs > 0 && maxpubs == ++pubs) terminate();
+		if (maxpubs > 0 && maxpubs == ++pubs) {
+			terminate();
+		}
 	}
-	
+
 	/**
 	 * Handle a published value.
 	 * The default implementation prints the value's string representation to
 	 * the console. Change this behavior by extending OrcEngine and overriding
 	 * this method.
 	 */
-	public void onPublish(Object v) {
+	public void onPublish(final Object v) {
 		stdout.println(Value.write(v));
 		stdout.flush();
 	}
@@ -290,25 +298,28 @@ public class OrcEngine implements Runnable {
 	 * dies, remaining silent and leaving the execution, and then calls this
 	 * method so that the engine can report or otherwise handle the failure.
 	 */
-	public final void tokenError(TokenException problem) {
+	public final void tokenError(final TokenException problem) {
 		onError(problem);
 	}
-	
+
 	/** Handle an error token. */
-	public void onError(TokenException problem) {
+	public void onError(final TokenException problem) {
 		stderr.println("Error: " + problem.getMessage());
-		
-		if (config.getShortErrors()) { return; }
-		
+
+		if (config.getShortErrors()) {
+			return;
+		}
+
 		stderr.println("Backtrace:");
-		SourceLocation[] backtrace = problem.getBacktrace();
-		
-		int len = backtrace.length;
+		final SourceLocation[] backtrace = problem.getBacktrace();
+
+		final int len = backtrace.length;
 		if (len > 0) {
 			stderr.println(backtrace[0]);
-			String caret = backtrace[0].getCaret();
-			if(caret != null)
+			final String caret = backtrace[0].getCaret();
+			if (caret != null) {
 				stderr.println(caret);
+			}
 		}
 		for (int i = 1; i < len; i++) {
 			stderr.println(backtrace[i]);
@@ -319,20 +330,20 @@ public class OrcEngine implements Runnable {
 		if (shouldDebug(1)) {
 			problem.printStackTrace(stderr);
 		}
-		Throwable cause = problem.getCause();
+		final Throwable cause = problem.getCause();
 		if (shouldDebug(1) && cause != null) {
 			stderr.println("Caused by:");
 			cause.printStackTrace(stderr);
 		}
 	}
-	
+
 	/**
 	 * Return true if a debug report at the given level
 	 * will be used.  Useful if you want to avoid some expensive
 	 * computation just to generate debug output which will be
 	 * ignored.
 	 */
-	public final boolean shouldDebug(int level) {
+	public final boolean shouldDebug(final int level) {
 		return debugLevel >= level;
 	}
 
@@ -343,24 +354,24 @@ public class OrcEngine implements Runnable {
 	 * @param level
 	 * @param s
 	 */
-	public final void debug(int level, String s) {
-		assert(level > 0);
-		if (debugLevel >= level) onDebug(s);
+	public final void debug(final int level, final String s) {
+		assert level > 0;
+		if (debugLevel >= level) {
+			onDebug(s);
+		}
 	}
-	
+
 	/**
 	 * Override this to change how debugging output is handled.
 	 * @param s
 	 */
-	public void onDebug(String s) {
-		 System.out.println(s);
+	public void onDebug(final String s) {
+		stderr.println(s);
 	}
 
 	public final void reportRound() {
 		if (shouldDebug(2)) {
-			debug(2,  "Round:   " + round + "\n"
-					+ "Active:  " + readyTokens.size() + "\n"
-					+ "Queued:  " + queuedReturns.size() + "\n");
+			debug(2, "Round:   " + round + "\n" + "Active:  " + readyTokens.size() + "\n" + "Queued:  " + queuedReturns.size() + "\n");
 		}
 	}
 
@@ -371,7 +382,7 @@ public class OrcEngine implements Runnable {
 	 * 
 	 * @see Token#print(String, boolean)
 	 */
-	public void print(String value, boolean newline) {
+	public void print(final String value, final boolean newline) {
 		if (newline) {
 			stdout.println(value);
 		} else {
@@ -382,24 +393,25 @@ public class OrcEngine implements Runnable {
 	/**
 	 * Schedule a timed task (used by Rtimer).
 	 */
-	public final void scheduleTimer(TimerTask task, long delay) {
+	public final void scheduleTimer(final TimerTask task, final long delay) {
 		timer.schedule(task, delay);
 	}
 
-	public final String addGlobal(Object value) {
+	public final String addGlobal(final Object value) {
 		return globals.add(this, value);
 	}
-	
+
 	public final Config getConfig() {
 		return config;
 	}
-	
+
 	public final Execution getExecution() {
 		return region;
 	}
-	
+
 	private final static String tmpdir = System.getProperty("java.io.tmpdir");
 	private final LinkedList<File> tmpdirs = new LinkedList<File>();
+
 	/**
 	 * Create a new temporary directory and return the path to that directory.
 	 * The directory will be deleted automatically when the engine halts,
@@ -416,19 +428,19 @@ public class OrcEngine implements Runnable {
 		tmpdirs.add(out);
 		return out;
 	}
-	
+
 	/** Delete a temporary directory */
-	public final synchronized boolean deleteTmpdir(File directory) {
+	public final synchronized boolean deleteTmpdir(final File directory) {
 		tmpdirs.remove(directory);
 		return deleteDirectory(directory);
 	}
-	
+
 	/** Delete a directory recursively */
-	private final boolean deleteDirectory(File directory) {
+	private final boolean deleteDirectory(final File directory) {
 		boolean out = true;
-		File[] fileArray = directory.listFiles();
+		final File[] fileArray = directory.listFiles();
 		if (fileArray != null) {
-			for (File f : fileArray) {
+			for (final File f : fileArray) {
 				out = deleteDirectory(f) && out;
 			}
 		}

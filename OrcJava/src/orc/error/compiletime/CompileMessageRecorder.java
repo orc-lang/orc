@@ -66,5 +66,7 @@ public interface CompileMessageRecorder {
 	//TODO: Declare convenience methods
 	//TODO: JavaDoc
 	
+	public Severity getMaxSeverity();
+	
 	public void endProcessing(File file);
 }

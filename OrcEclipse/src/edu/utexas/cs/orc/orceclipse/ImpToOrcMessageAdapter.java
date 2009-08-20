@@ -35,6 +35,8 @@ public class ImpToOrcMessageAdapter implements CompileMessageRecorder {
 
 	private final IMessageHandler impMessageHandler;
 
+	private Severity maxSeverity = Severity.UNKNOWN;
+
 	/**
 	 * Constructs an object of class ImpToOrcMessageAdapter.
 	 * 
@@ -53,6 +55,7 @@ public class ImpToOrcMessageAdapter implements CompileMessageRecorder {
 			return;
 		}
 		impMessageHandler.clearMessages();
+		maxSeverity = Severity.UNKNOWN;
 	}
 
 	/*
@@ -67,6 +70,8 @@ public class ImpToOrcMessageAdapter implements CompileMessageRecorder {
 		if (location == null) {
 			location = SourceLocation.UNKNOWN;
 		}
+
+		maxSeverity = severity.ordinal() > maxSeverity.ordinal() ? severity : maxSeverity;
 
 		final int eclipseSeverity = eclipseSeverityFromOrcSeverity(severity);
 
@@ -106,6 +111,13 @@ public class ImpToOrcMessageAdapter implements CompileMessageRecorder {
 			// Leave default value
 		}
 		return eclipseSeverity;
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.error.compiletime.CompileMessageRecorder#getMaxSeverity()
+	 */
+	public Severity getMaxSeverity() {
+		return maxSeverity;
 	}
 
 	/* (non-Javadoc)

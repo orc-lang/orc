@@ -234,7 +234,7 @@ public final class Job implements JobMBean {
 	protected Job(Expr expression, Config config) throws CompilationException {
 		this.events = new EventBuffer(10);
 		engine = new JobEngine(config);
-		Node node = Compiler.compile(SiteResolver.resolve(expression, config), new Pub());
+		Node node = orc.ast.oil.Compiler.compile(SiteResolver.resolve(expression, config));
 		//engine.debugMode = true;
 		engine.start(node);
 	}

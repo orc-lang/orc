@@ -1,6 +1,18 @@
-/**
- * Created on February 8 2007
- */
+//
+// Config.java -- Java class Config
+// Project OrcJava
+//
+// $Id$
+//
+// Created on February 8 2007
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc;
 
 import java.io.File;
@@ -20,20 +32,18 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import orc.error.OrcError;
 import orc.error.compiletime.CompileMessageRecorder;
+import orc.progress.NullProgressListener;
+import orc.progress.ProgressListener;
 import orc.runtime.TokenPool;
-import orc.trace.MinimizeTracer;
 import orc.trace.NullTracer;
 import orc.trace.OutputStreamTracer;
-import orc.trace.PrintStreamTracer;
 import orc.trace.Tracer;
 
 import org.kohsuke.args4j.Argument;
@@ -55,14 +65,15 @@ import org.kohsuke.args4j.spi.StopOptionHandler;
  */
 public class Config implements Cloneable {
 	private int debugLevel = 0;
-	private CompileMessageRecorder messageRecorder = null; //TODO: default to write to stderr
+	private CompileMessageRecorder messageRecorder = new StdErrCompileMsgRecorder(this);
+	private ProgressListener progressListener = NullProgressListener.singleton;
 	private File oilOutputFile = new File("");
 	private File traceOutputFile = new File("");
 	private boolean hasOilInputFile = false;
 	private Boolean typecheck = false;
 	private Tracer tracer = new NullTracer();
 	private LinkedList<String> includes = new LinkedList<String>();
-	private String[] includePath = new String[]{"."};
+	private String[] includePath = new String[] { "." };
 	private Integer maxPubs = null;
 	private String filename = "script";
 	private InputStream instream;
@@ -78,48 +89,51 @@ public class Config implements Cloneable {
 	private String classPath = "";
 	private ClassLoader classLoader = Config.class.getClassLoader();
 	private boolean shortErrors = false;
-	
+
 	/**
 	 * Set properties based on command-line arguments.
 	 */
-	public void processArgs(String[] args) {
-		CmdLineParser parser = new CmdLineParser(this); 
+	public void processArgs(final String[] args) {
+		final CmdLineParser parser = new CmdLineParser(this);
 		try {
 			parser.parseArgument(args);
 			if (instream == null) {
 				throw new CmdLineException("You must supply a filename to execute.");
 			}
-		} catch (CmdLineException e1) {
+		} catch (final CmdLineException e1) {
 			System.err.println(e1.getMessage());
 			System.err.println("Usage: java -jar orc.jar [options] [file]");
 			parser.printUsage(System.err);
 			System.exit(1);
 		}
 	}
-	
-	@Option(name="-help",usage="Show command-line argument usage")
-	public void printUsage(boolean _) throws CmdLineException{
+
+	@Option(name = "-help", usage = "Show command-line argument usage")
+	public void printUsage(final boolean _) throws CmdLineException {
 		throw new CmdLineException("");
 	}
-	
-	@Option(name="-debug",usage="Enable debugging output, which is disabled by default. Repeat this argument to increase verbosity.")
-	public void setDebug(boolean debug) {
-		if (debug) ++debugLevel;
-		else --debugLevel;
+
+	@Option(name = "-debug", usage = "Enable debugging output, which is disabled by default. Repeat this argument to increase verbosity.")
+	public void setDebug(final boolean debug) {
+		if (debug) {
+			++debugLevel;
+		} else {
+			--debugLevel;
+		}
 	}
-	
-	@Option(name="-typecheck",usage="Enable typechecking, which is disabled by default.")
-	public void setTypeChecking(boolean typecheck) {
+
+	@Option(name = "-typecheck", usage = "Enable typechecking, which is disabled by default.")
+	public void setTypeChecking(final boolean typecheck) {
 		this.typecheck = typecheck;
 	}
-		
-	@Option(name="-noprelude",usage="Do not implicitly include standard library (prelude), which is included by default.")
-	public void setNoPrelude(boolean noPrelude) {
+
+	@Option(name = "-noprelude", usage = "Do not implicitly include standard library (prelude), which is included by default.")
+	public void setNoPrelude(final boolean noPrelude) {
 		this.noPrelude = noPrelude;
 	}
-	
-	@Option(name="-trace",usage="Specify a filename for tracing. Default is not to trace.")
-	public void setTraceOutputFile(File file) throws CmdLineException {
+
+	@Option(name = "-trace", usage = "Specify a filename for tracing. Default is not to trace.")
+	public void setTraceOutputFile(final File file) throws CmdLineException {
 		if (file.getPath().equals("")) {
 			tracer = new NullTracer();
 			traceOutputFile = file;
@@ -127,30 +141,30 @@ public class Config implements Cloneable {
 			try {
 				tracer = new OutputStreamTracer(new FileOutputStream(file));
 				traceOutputFile = file;
-			} catch (FileNotFoundException e) {
-				throw new CmdLineException("Could not find trace file '"+file+"'");
-			} catch (IOException e) {
-				throw new CmdLineException("Error opening trace file '"+file+"'");
+			} catch (final FileNotFoundException e) {
+				throw new CmdLineException("Could not find trace file '" + file + "'");
+			} catch (final IOException e) {
+				throw new CmdLineException("Error opening trace file '" + file + "'");
 			}
 		}
 	}
-		
-	@Option(name="-oilOut",usage="Write the compiled OIL to the given filename.")
-	public void setOilOutputFile(File oilOut) {
+
+	@Option(name = "-oilOut", usage = "Write the compiled OIL to the given filename.")
+	public void setOilOutputFile(final File oilOut) {
 		this.oilOutputFile = oilOut;
 	}
-	
-	@Option(name="-I",usage="Set the include path for Orc includes (same syntax as CLASSPATH). Default is \".\", the current directory. Prelude files are always available for include regardless of this setting.")
+
+	@Option(name = "-I", usage = "Set the include path for Orc includes (same syntax as CLASSPATH). Default is \".\", the current directory. Prelude files are always available for include regardless of this setting.")
 	public void setIncludePath(String includePath) {
 		includePath = includePath.trim();
 		if (includePath.length() == 0) {
-			this.includePath = new String[]{};
+			this.includePath = new String[] {};
 		} else {
 			this.includePath = includePath.split(System.getProperty("path.separator"));
 		}
 	}
-	
-	@Option(name="-cp",usage="Set the class path for Orc sites (same syntax as CLASSPATH). This is only used for classes not found in the Java VM classpath.")
+
+	@Option(name = "-cp", usage = "Set the class path for Orc sites (same syntax as CLASSPATH). This is only used for classes not found in the Java VM classpath.")
 	public void setClassPath(String classPath) {
 		classPath = classPath.trim();
 		if (classPath.length() == 0) {
@@ -158,15 +172,15 @@ public class Config implements Cloneable {
 			classLoader = Config.class.getClassLoader();
 			return;
 		}
-		String[] classPathFiles = classPath.split(System.getProperty("path.separator"));
-		URL[] urls = new URL[classPathFiles.length];
+		final String[] classPathFiles = classPath.split(System.getProperty("path.separator"));
+		final URL[] urls = new URL[classPathFiles.length];
 		for (int i = 0; i < classPathFiles.length; ++i) {
 			try {
 				urls[i] = new URI("file", new File(classPathFiles[i]).getAbsolutePath(), null).toURL();
-			} catch (URISyntaxException e) {
+			} catch (final URISyntaxException e) {
 				// impossible
 				throw new AssertionError(e);
-			} catch (MalformedURLException e) {
+			} catch (final MalformedURLException e) {
 				// impossible
 				throw new AssertionError(e);
 			}
@@ -174,199 +188,207 @@ public class Config implements Cloneable {
 		this.classPath = classPath;
 		classLoader = new URLClassLoader(urls, Config.class.getClassLoader());
 	}
-	
-	@Option(name="-pub",usage="Terminate the program after this many values are published. Default=infinity.")
-	public void setMaxPubs(int maxPubs) {
+
+	@Option(name = "-pub", usage = "Terminate the program after this many values are published. Default=infinity.")
+	public void setMaxPubs(final int maxPubs) {
 		this.maxPubs = maxPubs;
 	}
-	
-	@Option(name="-numSiteThreads", usage="Use up to this many threads for blocking site calls. Default=2.")
-	public void setNumSiteThreads(Integer v) {
+
+	@Option(name = "-numSiteThreads", usage = "Use up to this many threads for blocking site calls. Default=2.")
+	public void setNumSiteThreads(final Integer v) {
 		numSiteThreads = v;
 	}
-	
-	@Option(name="--", handler=StopOptionHandler.class, usage="Use \"--\" to signal the end of options, e.g. so you can specify a filename starting with \"-\".")
-	@Argument(metaVar="file", usage="Path to script to execute.")
-	public void setInputFile(File file) throws CmdLineException {
+
+	@Option(name = "--", handler = StopOptionHandler.class, usage = "Use \"--\" to signal the end of options, e.g. so you can specify a filename starting with \"-\".")
+	@Argument(metaVar = "file", usage = "Path to script to execute.")
+	public void setInputFile(final File file) throws CmdLineException {
 		try {
 			instream = new FileInputStream(file);
 			filename = file.getPath();
-			if (filename.endsWith(".oil")) hasOilInputFile = true;
+			hasOilInputFile = filename.endsWith(".oil");
 			hasInputFile = true;
-		} catch (FileNotFoundException e) {
-			throw new CmdLineException("Could not find input file '"+file+"'");
+		} catch (final FileNotFoundException e) {
+			throw new CmdLineException("Could not find input file '" + file + "'");
 		}
 	}
-	
-	public void addInclude(String include) {
+
+	public void addInclude(final String include) {
 		this.includes.add(include);
 	}
-	
+
 	public boolean hasInputFile() {
 		return hasInputFile;
 	}
-	
+
 	/**
 	 * The default is long errors.
 	 * Short errors are currently used only for regression testing. 
 	 */
-	public void setShortErrors(boolean b) {
+	public void setShortErrors(final boolean b) {
 		shortErrors = b;
-	}	
-	
+	}
+
 	public boolean getShortErrors() {
 		return shortErrors;
 	}
-	
-	
+
 	/**
 	 * Set a custom tracer.
 	 */
-	public void setTracer(Tracer tracer) {
+	public void setTracer(final Tracer tracer) {
 		this.tracer = tracer;
 	}
-	
+
 	public int getDebugLevel() {
 		return debugLevel;
 	}
-	
+
 	public CompileMessageRecorder getMessageRecorder() {
 		return messageRecorder;
 	}
 
-	public void setMessageRecorder(CompileMessageRecorder messageRecorder) {
+	public void setMessageRecorder(final CompileMessageRecorder messageRecorder) {
 		this.messageRecorder = messageRecorder;
+	}
+
+	public ProgressListener getProgressListener() {
+		return progressListener;
+	}
+
+	public void setProgressListener(final ProgressListener progressListener) {
+		this.progressListener = progressListener;
 	}
 
 	public File getTraceOutputFile() {
 		return traceOutputFile;
 	}
-	
+
 	public File getOilOutputFile() {
 		return oilOutputFile;
 	}
-	
+
 	public boolean hasOilOutputFile() {
 		return !oilOutputFile.getPath().equals("");
 	}
-	
+
 	public boolean hasOilInputFile() {
 		return hasOilInputFile;
 	}
-	
+
 	public Reader getOilReader() throws IOException {
-		assert(hasOilInputFile());
+		assert hasOilInputFile();
 		return new InputStreamReader(new GZIPInputStream(instream));
 	}
-	
+
 	public Writer getOilWriter() throws IOException {
-		assert(hasOilOutputFile());
+		assert hasOilOutputFile();
 		return new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(oilOutputFile)));
 	}
 
 	public Boolean getNoPrelude() {
 		return noPrelude;
 	}
-	
+
 	public int getMaxPubs() {
 		return maxPubs == null ? 0 : maxPubs;
 	}
-	
+
 	public Reader getReader() {
 		return new InputStreamReader(instream);
 	}
-	
+
 	public InputStream getInputStream() {
 		return instream;
 	}
-	
+
 	public Tracer getTracer() {
 		return tracer;
 	}
-	
-	public List<String> getIncludes()
-	{
+
+	public List<String> getIncludes() {
 		return includes;
 	}
-	
+
 	public int getNumKilimThreads() {
 		return numKilimThreads;
 	}
-	
+
 	public int getNumSiteThreads() {
 		return numSiteThreads;
 	}
-	
+
 	public boolean getTypeChecking() {
 		return typecheck;
 	}
-	
+
 	public String getInputFilename() {
 		return filename;
 	}
-	
+
 	/**
 	 * Current capabilities include:
 	 * send mail
 	 * import java
 	 */
-	public Boolean hasCapability(String name) {
+	public Boolean hasCapability(final String name) {
 		return caps.get(name);
 	}
-	
-	public void setCapability(String name, Boolean value) {
+
+	public void setCapability(final String name, final Boolean value) {
 		caps.put(name, value);
 	}
-	
+
 	public synchronized PrintStream getStdout() {
 		return stdout;
 	}
-	
-	public void setStdout(PrintStream stdout) {
+
+	public void setStdout(final PrintStream stdout) {
 		this.stdout = stdout;
 	}
 
 	public synchronized PrintStream getStderr() {
 		return stderr;
 	}
-	
-	public void setStderr(PrintStream stderr) {
+
+	public void setStderr(final PrintStream stderr) {
 		this.stderr = stderr;
 	}
-	
+
 	public TokenPool getTokenPool() {
 		return new TokenPool(tokenPoolSize);
 	}
 
-	public void setTokenPoolSize(int tokenPoolSize) {
+	public void setTokenPoolSize(final int tokenPoolSize) {
 		this.tokenPoolSize = tokenPoolSize;
 	}
 
 	public int getStackSize() {
 		return stackSize;
 	}
-	
-	public void setStackSize(int stackSize) {
+
+	public void setStackSize(final int stackSize) {
 		this.stackSize = stackSize;
 	}
-	
+
 	public String getIncludePath() {
 		if (includePath.length > 0) {
-			StringBuilder out = new StringBuilder();
-			String sep = System.getProperty("path.separator");
+			final StringBuilder out = new StringBuilder();
+			final String sep = System.getProperty("path.separator");
 			out.append(includePath[0]);
 			for (int i = 1; i < includePath.length; ++i) {
 				out.append(sep);
 				out.append(includePath[i]);
 			}
 			return out.toString();
-		} else return "";
+		} else {
+			return "";
+		}
 	}
-	
+
 	public String getClassPath() {
 		return classPath;
 	}
-	
+
 	/**
 	 * Open an include file. Searches first the include path
 	 * defined by {@link #setIncludePath(String)} and then the
@@ -386,10 +408,10 @@ public class Config implements Cloneable {
 	 * @throws FileNotFoundException
 	 *             if the resource is not found.
 	 */
-	public final Reader openInclude(String name, String relativeTo) throws FileNotFoundException { 
-		for (String ip : includePath) {
+	public final Reader openInclude(final String name, final String relativeTo) throws FileNotFoundException {
+		for (final String ip : includePath) {
 			File incPath = new File(ip);
-			
+
 			/* Prefix relative paths as necessary */
 			if (!incPath.isAbsolute()) {
 				if (relativeTo == null) {
@@ -400,36 +422,37 @@ public class Config implements Cloneable {
 					 * use that user.dir location as the relativeTo 
 					 * argument explicitly. 
 					 */
-					continue; 
-				}
-				else {
+					continue;
+				} else {
 					// Otherwise use relativeTo as the prefix for the relative include path
 					incPath = new File(relativeTo, ip);
 				}
 			}
-			
-			File file = new File(incPath, name);
-			
-			if (!file.exists()) continue;
+
+			final File file = new File(incPath, name);
+
+			if (!file.exists()) {
+				continue;
+			}
 			return new FileReader(file);
 		}
-		InputStream stream = Config.class.getResourceAsStream("/orc/inc/"+name);
+		final InputStream stream = Config.class.getResourceAsStream("/orc/inc/" + name);
 		if (stream == null) {
 			throw new FileNotFoundException("Include file '" + name + "' not found; check the include path.");
 		}
 		return new InputStreamReader(stream);
 	}
-	
-	public final Class loadClass(String name) throws ClassNotFoundException {
+
+	public final Class loadClass(final String name) throws ClassNotFoundException {
 		return classLoader.loadClass(name);
 	}
-	
+
 	@Override
 	public Config clone() {
 		Config out;
 		try {
-			out = (Config)super.clone();
-		} catch (CloneNotSupportedException e) {
+			out = (Config) super.clone();
+		} catch (final CloneNotSupportedException e) {
 			throw new AssertionError(e);
 		}
 		out.includes = (LinkedList<String>) includes.clone();
