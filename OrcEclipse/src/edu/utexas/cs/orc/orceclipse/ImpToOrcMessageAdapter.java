@@ -19,6 +19,7 @@ import java.io.File;
 
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompileMessageRecorder;
+import orc.error.compiletime.CompileMessageRecorder.Severity;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.imp.builder.MarkerCreatorWithBatching;
@@ -87,10 +88,27 @@ public class ImpToOrcMessageAdapter implements CompileMessageRecorder {
 		}
 	}
 
-	/**
-	 * @param severity
-	 * @return
+	/* (non-Javadoc)
+	 * @see orc.error.compiletime.CompileMessageRecorder#recordMessage(orc.error.compiletime.CompileMessageRecorder.Severity, int, java.lang.String, orc.error.SourceLocation, java.lang.Throwable)
 	 */
+	public void recordMessage(Severity severity, int code, String message, SourceLocation location, Throwable exception) {
+		recordMessage(severity, code, message, location, null, exception);
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.error.compiletime.CompileMessageRecorder#recordMessage(orc.error.compiletime.CompileMessageRecorder.Severity, int, java.lang.String, orc.error.SourceLocation, java.lang.Object)
+	 */
+	public void recordMessage(Severity severity, int code, String message, SourceLocation location, Object astNode) {
+		recordMessage(severity, code, message, location, astNode, null);
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.error.compiletime.CompileMessageRecorder#recordMessage(orc.error.compiletime.CompileMessageRecorder.Severity, int, java.lang.String)
+	 */
+	public void recordMessage(Severity severity, int code, String message) {
+		recordMessage(severity, code, message, null, null, null);
+	}
+
 	static protected int eclipseSeverityFromOrcSeverity(final Severity severity) {
 		int eclipseSeverity = IMarker.SEVERITY_ERROR; // Default
 		switch (severity) {
