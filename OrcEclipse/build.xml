@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project name="OrcEclipse">
-	<target name="copylib">
-		<copy preservelastmodified="true" todir="lib" verbose="true">
-			<fileset dir="../OrcJava/build" includes="orc-*.jar"/>
-		</copy>
-	</target>
-</project>
