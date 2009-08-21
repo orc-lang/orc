@@ -81,9 +81,15 @@ public class OrcSourcePositionLocator implements ISourcePositionLocator {
 	 */
 	public Object findNode(final Object ast, final int startOffset, final int endOffset) {
 		final NodeVisitor fVisitor = new NodeVisitor(startOffset, endOffset);
-
+		
 //		System.out.println("Looking for node spanning offsets " + startOffset + " => " + endOffset);
-		((ASTNode) ast).accept(fVisitor);
+
+		if (startOffset < 0 || endOffset < 0) {
+			fVisitor.fNode = null;
+		} else {
+			((ASTNode) ast).accept(fVisitor);
+		}
+		
 //		if (fVisitor.fNode == null) {
 //			System.out.println("Selected node:  null");
 //		} else {
@@ -100,14 +106,14 @@ public class OrcSourcePositionLocator implements ISourcePositionLocator {
 		if (node instanceof Located) {
 			final Located n = (Located) node;
 			if (n.getSourceLocation() == null) {
-				return 0;
+				return -1;
 			}
 			return n.getSourceLocation().offset;
 		} else if (node instanceof ModelTreeNode) {
 			final ModelTreeNode treeNode = (ModelTreeNode) node;
 			return getStartOffset(treeNode.getASTNode());
 		}
-		return 0;
+		return -1;
 	}
 
 	/* (non-Javadoc)
