@@ -119,8 +119,8 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 	 */
 	public void initializeFrom(final ILaunchConfiguration configuration) {
 		try {
-			typeCheckCheckButton.setSelection(configuration.getAttribute(OrcLaunchDelegate.TYPE_CHECK_ATTR_NAME, OrcLaunchDelegate.TYPE_CHECK_ATTR_DEFAULT));
-			noPreludeCheckButton.setSelection(configuration.getAttribute(OrcLaunchDelegate.NO_PRELUDE_ATTR_NAME, OrcLaunchDelegate.NO_PRELUDE_ATTR_DEFAULT));
+			typeCheckCheckButton.setSelection(configuration.getAttribute(OrcLaunchDelegate.TYPE_CHECK_ATTR_NAME, OrcLaunchDelegate.TYPE_CHECK_DEFAULT));
+			noPreludeCheckButton.setSelection(configuration.getAttribute(OrcLaunchDelegate.NO_PRELUDE_ATTR_NAME, OrcLaunchDelegate.NO_PRELUDE_DEFAULT));
 			// TODO: Finish initializing controls for the remaining attributes
 		} catch (final CoreException e) {
 			Activator.log(e);
