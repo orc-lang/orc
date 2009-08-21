@@ -23,12 +23,16 @@ import orc.ast.extended.declaration.ValDeclaration;
 import orc.ast.extended.declaration.type.DatatypeDeclaration;
 import orc.ast.extended.declaration.type.TypeAliasDeclaration;
 import orc.ast.extended.declaration.type.TypeDeclaration;
+import orc.ast.extended.expression.Declare;
+import orc.ast.extended.expression.Lambda;
+import orc.ast.extended.expression.Pruning;
+import orc.ast.extended.expression.Sequential;
 
 import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.services.base.TreeModelBuilderBase;
 
 /**
- * 
+ * Builds an Outline view tree that is a subset of the Orc extended AST
  */
 public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 	/* (non-Javadoc)
@@ -46,14 +50,22 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 	}
 
 	protected class OrcModelVisitor extends Walker {
+		private boolean ignoreScope(final ASTNode node) {
+			return node instanceof Declare
+					|| node instanceof Lambda
+					|| node instanceof Sequential
+					|| node instanceof Pruning;
+		}
 
 		/* (non-Javadoc)
 		 * @see orc.ast.extended.Walker#enterScope(orc.ast.extended.ASTNode)
 		 */
 		@Override
 		public void enterScope(final ASTNode node) {
-			super.enterScope(node);
-			pushSubItem(node);
+			if (!ignoreScope(node)) {
+				super.enterScope(node);
+				pushSubItem(node);
+			}
 		}
 
 		/* (non-Javadoc)
@@ -61,8 +73,10 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 		 */
 		@Override
 		public void leaveScope(final ASTNode node) {
-			popSubItem();
-			super.leaveScope(node);
+			if (!ignoreScope(node)) {
+				popSubItem();
+				super.leaveScope(node);
+			}
 		}
 
 		/* (non-Javadoc)
