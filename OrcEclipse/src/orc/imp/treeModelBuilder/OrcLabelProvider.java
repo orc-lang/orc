@@ -23,9 +23,12 @@ import orc.ast.extended.declaration.ClassDeclaration;
 import orc.ast.extended.declaration.SiteDeclaration;
 import orc.ast.extended.declaration.ValDeclaration;
 import orc.ast.extended.declaration.def.DefMember;
+import orc.ast.extended.declaration.def.DefMemberClause;
+import orc.ast.extended.declaration.def.DefMemberType;
 import orc.ast.extended.declaration.type.DatatypeDeclaration;
 import orc.ast.extended.declaration.type.TypeAliasDeclaration;
 import orc.ast.extended.declaration.type.TypeDeclaration;
+import orc.ast.extended.expression.Expression;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -164,9 +167,13 @@ public class OrcLabelProvider implements ILabelProvider {
 	 * @return String representing a label of the given AST node 
 	 */
 	public static String getLabelFor(final ASTNode n) {
-		if (n instanceof DefMember) {
-			final String name = ((DefMember) n).name;
-			return name.equals("") ? "lambda" : "def " + name;
+		if (n instanceof DefMemberClause) {
+			DefMemberClause dmc = (DefMemberClause)n;
+			return dmc.name.equals("") ? "lambda" : "def " + dmc.name + "(" + Expression.join(dmc.formals, ", ")  +")";
+		}
+		if (n instanceof DefMemberType) {
+			DefMemberType dmt = (DefMemberType)n;
+			return "def " + dmt.name + " (" + Expression.join(dmt.argTypes, ", ") + ") :: " + dmt.resultType;
 		}
 		if (n instanceof SiteDeclaration) {
 			return "site " + ((SiteDeclaration) n).varname;
