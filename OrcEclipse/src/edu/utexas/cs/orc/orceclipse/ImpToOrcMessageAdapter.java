@@ -44,6 +44,9 @@ public class ImpToOrcMessageAdapter implements CompileMessageRecorder {
 	 */
 	public ImpToOrcMessageAdapter(final IMessageHandler impMessageHandler) {
 		super();
+		if (impMessageHandler == null) {
+			throw new NullPointerException("Cannot instantiate ImpToOrcMessageAdapter with a null impMessageHandler");
+		}
 		this.impMessageHandler = impMessageHandler;
 	}
 
@@ -51,9 +54,6 @@ public class ImpToOrcMessageAdapter implements CompileMessageRecorder {
 	 * @see orc.error.compiletime.CompileMessageRecorder#beginProcessing(java.io.File)
 	 */
 	public void beginProcessing(final File file) {
-		if (impMessageHandler == null) {
-			return;
-		}
 		impMessageHandler.clearMessages();
 		maxSeverity = Severity.UNKNOWN;
 	}
@@ -63,10 +63,6 @@ public class ImpToOrcMessageAdapter implements CompileMessageRecorder {
 	 * @see orc.error.CompileMessageRecorder#recordMessage(orc.error.CompileMessageRecorder.Severity, int, java.lang.String, orc.error.SourceLocation, java.lang.Object, java.lang.Throwable)
 	 */
 	public void recordMessage(final Severity severity, final int code, final String message, SourceLocation location, final Object astNode, final Throwable exception) {
-		if (impMessageHandler == null) {
-			return;
-		}
-
 		if (location == null) {
 			location = SourceLocation.UNKNOWN;
 		}
