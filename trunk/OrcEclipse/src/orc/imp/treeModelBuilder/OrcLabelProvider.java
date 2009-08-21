@@ -91,19 +91,6 @@ public class OrcLabelProvider implements ILabelProvider {
 				// Assume Orc file
 				switch (sev) {
 				case IMarker.SEVERITY_ERROR:
-					elemImage = ORC_INCLUDE_W_ERROR;
-					break;
-				case IMarker.SEVERITY_WARNING:
-					elemImage = ORC_FILE_W_WARNING;
-					break;
-				default:
-					elemImage = ORC_INCLUDE_W_WARNING;
-					break;
-				}
-			} else {
-				// Include file
-				switch (sev) {
-				case IMarker.SEVERITY_ERROR:
 					elemImage = ORC_FILE_W_ERROR;
 					break;
 				case IMarker.SEVERITY_WARNING:
@@ -111,6 +98,19 @@ public class OrcLabelProvider implements ILabelProvider {
 					break;
 				default:
 					elemImage = ORC_FILE_OBJ_IMAGE;
+					break;
+				}
+			} else {
+				// Include file
+				switch (sev) {
+				case IMarker.SEVERITY_ERROR:
+					elemImage = ORC_INCLUDE_W_ERROR;
+					break;
+				case IMarker.SEVERITY_WARNING:
+					elemImage = ORC_INCLUDE_W_WARNING;
+					break;
+				default:
+					elemImage = ORC_INCLUDE_OBJ_IMAGE;
 					break;
 				}
 			}
