@@ -65,8 +65,9 @@ public class OrcCompiler implements Callable<Expression> {
 	 * @see java.util.concurrent.Callable#call()
 	 */
 	public Expression call() throws IOException {
+		Expression oilAst = null;
+
 		try {
-			Expression oilAst = null;
 			config.getMessageRecorder().beginProcessing(new File(config.getInputFilename()));
 			if (config.hasOilInputFile()) {
 
@@ -93,12 +94,12 @@ public class OrcCompiler implements Callable<Expression> {
 
 			oilAst = refineOilAfterLoadSaveBeforeDag(oilAst);
 
-			config.getMessageRecorder().endProcessing(new File(config.getInputFilename()));
-			return oilAst;
 		} catch (final CompilationException e) {
 			config.getMessageRecorder().recordMessage(Severity.FATAL, 0, e.getMessageOnly(), e.getSourceLocation(), null, e);
+		} finally {
+			config.getMessageRecorder().endProcessing(new File(config.getInputFilename()));
 		}
-		return null;
+		return oilAst;
 	}
 
 	/**
