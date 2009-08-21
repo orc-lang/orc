@@ -27,4 +27,4 @@ Import-Package: com.ibm.icu.text,
  org.eclipse.ui.texteditor,
  org.eclipse.ui.wizards.newresource
 Bundle-ClassPath: .,
- lib/orc-0.9.9.jar
+ ../OrcJava/build/orc-0.9.9.jar
