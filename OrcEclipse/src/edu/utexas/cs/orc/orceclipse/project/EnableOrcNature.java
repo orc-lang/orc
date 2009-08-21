@@ -13,9 +13,8 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.imp.actions;
+package edu.utexas.cs.orc.orceclipse.project;
 
-import orc.imp.builders.OrcNature;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IJavaProject;
@@ -24,6 +23,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
+
+import edu.utexas.cs.orceclipse.build.OrcNature;
 
 /**
  * Adds an Orc "nature" to the selected project's attributes.

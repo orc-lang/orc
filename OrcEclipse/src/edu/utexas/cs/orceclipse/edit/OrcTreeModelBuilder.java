@@ -13,7 +13,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.imp.treeModelBuilder;
+package edu.utexas.cs.orceclipse.edit;
 
 import orc.ast.extended.ASTNode;
 import orc.ast.extended.Walker;
