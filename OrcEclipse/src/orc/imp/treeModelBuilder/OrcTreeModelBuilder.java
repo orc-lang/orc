@@ -54,7 +54,8 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 			return node instanceof Declare
 					|| node instanceof Lambda
 					|| node instanceof Sequential
-					|| node instanceof Pruning;
+					|| node instanceof Pruning
+					|| node.getSourceLocation() == null; // No location is confusing to the outline control
 		}
 
 		/* (non-Javadoc)
