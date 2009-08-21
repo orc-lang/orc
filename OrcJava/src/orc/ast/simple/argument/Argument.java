@@ -24,10 +24,10 @@ import orc.runtime.values.Value;
 public abstract class Argument implements Serializable, Locatable {
 	private SourceLocation location;
 	
-	public Argument subst(Argument newArg, NamedVar oldArg) {
+	public Argument subst(Argument newArg, NamedVariable oldArg) {
 		return equals(oldArg) ? newArg : this; 
 	}
-	public void addFree(Set<Var> freeset) {
+	public void addFree(Set<Variable> freeset) {
 		// Do nothing; overridden for arguments which may
 		// be considered free in an expression
 	}
@@ -35,7 +35,7 @@ public abstract class Argument implements Serializable, Locatable {
 	/**
 	 * Convert to DeBruijn index.
 	 */
-	public abstract orc.ast.oil.expression.argument.Arg convert(Env<Var> vars) throws UnboundVariableException;
+	public abstract orc.ast.oil.expression.argument.Argument convert(Env<Variable> vars) throws UnboundVariableException;
 	
 	public void setSourceLocation(SourceLocation location) {
 		this.location = location;

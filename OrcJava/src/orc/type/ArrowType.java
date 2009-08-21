@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import orc.ast.oil.expression.argument.Arg;
+import orc.ast.oil.expression.argument.Argument;
 
 import orc.env.Env;
 import orc.error.compiletime.typing.ArgumentArityException;
@@ -180,7 +180,7 @@ public class ArrowType extends Type {
 	}
 	
 	
-	public Type call(Env<Type> ctx, Env<Type> typectx, List<Arg> args, List<Type> typeActuals) throws TypeException {
+	public Type call(Env<Type> ctx, Env<Type> typectx, List<Argument> args, List<Type> typeActuals) throws TypeException {
 		
 		/* Arity check */
 		if (argTypes.size() != args.size()) {
@@ -212,7 +212,7 @@ public class ArrowType extends Type {
 		/* Check each argument against its respective argument type */
 		for(int i = 0; i < argTypes.size(); i++) {
 			Type thisType = argTypes.get(i).subst(typectx);
-			Arg thisArg = args.get(i);
+			Argument thisArg = args.get(i);
 			thisArg.typecheck(thisType, ctx, typectx);
 		}
 		
@@ -336,16 +336,16 @@ public class ArrowType extends Type {
 	}
 
 	@Override
-	public orc.ast.oil.xml.type.Type marshal() throws UnrepresentableTypeException {
-		orc.ast.oil.xml.type.Type[] newArgTypes = new orc.ast.oil.xml.type.Type[argTypes.size()];
+	public orc.ast.xml.type.Type marshal() throws UnrepresentableTypeException {
+		orc.ast.xml.type.Type[] newArgTypes = new orc.ast.xml.type.Type[argTypes.size()];
 		int i = 0;
 		for (Type t : argTypes) {
 			newArgTypes[i] = t.marshal();
 			++i;
 		}
-		orc.ast.oil.xml.type.Type newResultType = null;
+		orc.ast.xml.type.Type newResultType = null;
 		if (resultType != null) newResultType = resultType.marshal();
-		return new orc.ast.oil.xml.type.ArrowType(newArgTypes, newResultType, typeArity);
+		return new orc.ast.xml.type.ArrowType(newArgTypes, newResultType, typeArity);
 	}
 	
 	public Set<Integer> freeVars() {

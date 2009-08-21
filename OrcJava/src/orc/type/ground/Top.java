@@ -29,7 +29,7 @@ public final class Top extends Type {
 	public String toString() { return "Top"; }
 	
 	@Override
-	public orc.ast.oil.xml.type.Type marshal() {
-		return new orc.ast.oil.xml.type.Top();
+	public orc.ast.xml.type.Type marshal() {
+		return new orc.ast.xml.type.Top();
 	}
 }

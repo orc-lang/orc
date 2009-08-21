@@ -4,7 +4,7 @@ package orc.runtime.sites.core;
 import java.util.LinkedList;
 import java.util.List;
 
-import orc.ast.oil.expression.argument.Arg;
+import orc.ast.oil.expression.argument.Argument;
 import orc.env.Env;
 import orc.error.compiletime.typing.TypeArityException;
 import orc.error.compiletime.typing.TypeException;
@@ -52,13 +52,13 @@ public class Datatype extends EvalSite {
 
 class DatatypeSiteType extends Type {
 	
-	public Type call(Env<Type> ctx, Env<Type> typectx, List<Arg> args, List<Type> typeActuals) throws TypeException {
+	public Type call(Env<Type> ctx, Env<Type> typectx, List<Argument> args, List<Type> typeActuals) throws TypeException {
 		
 		assert(typeActuals.size() == 1);
 		orc.type.tycon.DatatypeTycon dt = (orc.type.tycon.DatatypeTycon)typeActuals.get(0); 
 				
 		/* Make sure each argument is a string */
-		for (Arg a : args) {
+		for (Argument a : args) {
 			a.typecheck(Type.STRING, ctx, typectx);
 		}
 		

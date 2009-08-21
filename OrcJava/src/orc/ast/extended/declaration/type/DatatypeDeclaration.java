@@ -13,11 +13,11 @@ import orc.ast.extended.pattern.VariablePattern;
 import orc.ast.extended.type.Constructor;
 import orc.ast.extended.type.Datatype;
 import orc.ast.extended.type.Type;
-import orc.ast.simple.WithLocation;
 import orc.ast.simple.argument.Argument;
-import orc.ast.simple.argument.NamedVar;
-import orc.ast.simple.argument.Var;
-import orc.ast.simple.expression.TypeDecl;
+import orc.ast.simple.argument.NamedVariable;
+import orc.ast.simple.argument.Variable;
+import orc.ast.simple.expression.DeclareType;
+import orc.ast.simple.expression.WithLocation;
 import orc.error.OrcError;
 import orc.error.compiletime.PatternException;
 import orc.runtime.sites.Site;
@@ -71,7 +71,7 @@ public class DatatypeDeclaration extends Declaration {
 			ps.add(new VariablePattern(c.name));
 		}
 		Pattern p = new TuplePattern(ps);
-		Var s = new Var();
+		Variable s = new Variable();
 		PatternSimplifier pv;
 		
 		try {
@@ -85,7 +85,7 @@ public class DatatypeDeclaration extends Declaration {
 		orc.ast.simple.expression.Expression body = new orc.ast.simple.expression.Sequential(source, pv.target(s, target), s);
 		
 		// Add a type declaration scoped to this body
-		body = new TypeDecl(dt, typename, body);
+		body = new DeclareType(dt, typename, body);
 		
 		return new WithLocation(body, getSourceLocation());
 		

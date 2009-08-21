@@ -17,19 +17,18 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Iterator;
 
-import orc.ast.oil.Def;
 import orc.ast.oil.Visitor;
-import orc.ast.oil.WithLocation;
 import orc.env.Env;
 import orc.env.LookupFailureException;
 import orc.error.OrcError;
 import orc.error.compiletime.CompilationException;
 import orc.ast.oil.expression.Atomic;
+import orc.ast.oil.expression.Def;
 import orc.ast.oil.expression.Parallel;
 import orc.ast.oil.expression.Call;
 import orc.ast.oil.expression.Catch;
-import orc.ast.oil.expression.Defs;
-import orc.ast.oil.expression.Expr;
+import orc.ast.oil.expression.DeclareDefs;
+import orc.ast.oil.expression.Expression;
 import orc.ast.oil.expression.HasType;
 import orc.ast.oil.expression.Isolated;
 import orc.ast.oil.expression.Pruning;
@@ -37,12 +36,13 @@ import orc.ast.oil.expression.Sequential;
 import orc.ast.oil.expression.Otherwise;
 import orc.ast.oil.expression.Stop;
 import orc.ast.oil.expression.Throw;
-import orc.ast.oil.expression.TypeDecl;
-import orc.ast.oil.expression.argument.Arg;
+import orc.ast.oil.expression.DeclareType;
+import orc.ast.oil.expression.WithLocation;
+import orc.ast.oil.expression.argument.Argument;
 import orc.ast.oil.expression.argument.Constant;
 import orc.ast.oil.expression.argument.Field;
 import orc.ast.oil.expression.argument.Site;
-import orc.ast.oil.expression.argument.Var;
+import orc.ast.oil.expression.argument.Variable;
 
 /**
  * An example of a custom compiler backend.
@@ -58,7 +58,7 @@ public final class BackendDemo {
 		final Config cfg = new Config();
 		cfg.processArgs(args);
 		// compile the specified input stream to OIL
-		final Expr e = Orc.compile(cfg.getReader(), cfg);
+		final Expression e = Orc.compile(cfg.getReader(), cfg);
 		if (e == null) {
 			return;
 		}
@@ -114,7 +114,7 @@ final class BackendVisitorDemo implements Visitor<Void> {
 	}
 
 	/** Variables are translated into names using the environment. */
-	public Void visit(final Var arg) {
+	public Void visit(final Variable arg) {
 		out.print(arg.resolveGeneric(variableNames));
 		return null;
 	}
@@ -187,7 +187,7 @@ final class BackendVisitorDemo implements Visitor<Void> {
 	public Void visit(final Call expr) {
 		expr.callee.accept(this);
 		out.print("(");
-		final Iterator<Arg> argsi = expr.args.iterator();
+		final Iterator<Argument> argsi = expr.args.iterator();
 		if (argsi.hasNext()) {
 			argsi.next().accept(this);
 			while (argsi.hasNext()) {
@@ -199,7 +199,7 @@ final class BackendVisitorDemo implements Visitor<Void> {
 		return null;
 	}
 
-	public Void visit(final Defs expr) {
+	public Void visit(final DeclareDefs expr) {
 		out.println("(");
 		// create a new binding for each definition in the group
 		for (final Def def : expr.defs) {
@@ -259,7 +259,7 @@ final class BackendVisitorDemo implements Visitor<Void> {
 	}
 
 	/** Ignore type declarations */
-	public Void visit(final TypeDecl typeDecl) {
+	public Void visit(final DeclareType typeDecl) {
 		return typeDecl.body.accept(this);
 	}
 

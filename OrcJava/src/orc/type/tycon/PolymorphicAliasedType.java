@@ -46,8 +46,8 @@ public class PolymorphicAliasedType extends Tycon {
 	}
 
 	@Override
-	public orc.ast.oil.xml.type.Type marshal() throws UnrepresentableTypeException {
-		return new orc.ast.oil.xml.type.PolymorphicTypeAlias(type.marshal(), inferredVariances.size());
+	public orc.ast.xml.type.Type marshal() throws UnrepresentableTypeException {
+		return new orc.ast.xml.type.PolymorphicTypeAlias(type.marshal(), inferredVariances.size());
 	}
 	
 	public Set<Integer> freeVars() {

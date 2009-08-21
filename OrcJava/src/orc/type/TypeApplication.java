@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import orc.ast.oil.expression.argument.Arg;
+import orc.ast.oil.expression.argument.Argument;
 import orc.env.Env;
 import orc.env.LookupFailureException;
 import orc.error.OrcError;
@@ -75,13 +75,13 @@ public class TypeApplication extends Type {
 	}
 
 	@Override
-	public orc.ast.oil.xml.type.Type marshal() throws UnrepresentableTypeException {
-		orc.ast.oil.xml.type.Type[] newParams = new orc.ast.oil.xml.type.Type[params.size()];
+	public orc.ast.xml.type.Type marshal() throws UnrepresentableTypeException {
+		orc.ast.xml.type.Type[] newParams = new orc.ast.xml.type.Type[params.size()];
 		int i = 0;
 		for (Type t : params) {
 			newParams[i] = t.marshal();
 			++i;
 		}
-		return new orc.ast.oil.xml.type.TypeApplication(ty.marshal(), newParams);
+		return new orc.ast.xml.type.TypeApplication(ty.marshal(), newParams);
 	}
 }

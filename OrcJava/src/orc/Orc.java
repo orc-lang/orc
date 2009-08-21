@@ -21,9 +21,9 @@ import orc.ast.extended.expression.Declare;
 import orc.ast.oil.Compiler;
 import orc.ast.oil.SiteResolver;
 import orc.ast.oil.UnguardedRecursionChecker;
-import orc.ast.oil.expression.Expr;
-import orc.ast.oil.xml.Oil;
-import orc.ast.simple.argument.Var;
+import orc.ast.oil.expression.Expression;
+import orc.ast.simple.argument.Variable;
+import orc.ast.xml.Oil;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.parser.OrcParser;
@@ -54,7 +54,7 @@ public class Orc {
 		cfg.processArgs(args);
 
 		final OrcCompiler compiler = new OrcCompiler(cfg);
-		Expr ex;
+		Expression ex;
 		try {
 			ex = compiler.call();
 		} catch (final IOException e) {
@@ -75,7 +75,7 @@ public class Orc {
 		engine.run(n);
 	}
 
-	public static Expr compile(final Reader source, final Config cfg) throws IOException {
+	public static Expression compile(final Reader source, final Config cfg) throws IOException {
 		final OrcCompiler compiler = new OrcCompiler(cfg);
 		return compiler.call();
 	}

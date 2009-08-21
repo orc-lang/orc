@@ -4,15 +4,15 @@ import java.util.LinkedList;
 import java.util.List;
 
 import orc.ast.extended.Visitor;
-import orc.ast.simple.WithLocation;
 import orc.ast.simple.argument.Constant;
 import orc.ast.simple.argument.Field;
-import orc.ast.simple.argument.Var;
+import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.Call;
 import orc.ast.simple.expression.Expression;
 import orc.ast.simple.expression.Parallel;
 import orc.ast.simple.expression.Sequential;
 import orc.ast.simple.expression.Pruning;
+import orc.ast.simple.expression.WithLocation;
 import orc.error.compiletime.PatternException;
 
 public class ConsPattern extends Pattern {
@@ -56,20 +56,20 @@ public class ConsPattern extends Pattern {
 //	}
 
 	@Override
-	public void process(Var fragment, PatternSimplifier visitor)
+	public void process(Variable fragment, PatternSimplifier visitor)
 			throws PatternException {
 		
-		Var pair = new Var();
+		Variable pair = new Variable();
 		visitor.assign(pair, new WithLocation(
 				Pattern.trycons(fragment),
 				getSourceLocation()));
 		visitor.require(pair);
 		
-		Var head = new Var();
+		Variable head = new Variable();
 		visitor.assign(head, Pattern.nth(pair, 0));
 		h.process(head, visitor);
 		
-		Var tail = new Var();
+		Variable tail = new Variable();
 		visitor.assign(tail, Pattern.nth(pair, 1));
 		t.process(tail, visitor);
 	}

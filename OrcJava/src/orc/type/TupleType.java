@@ -239,13 +239,13 @@ public class TupleType extends Type {
 	}
 	
 	@Override
-	public orc.ast.oil.xml.type.Type marshal() throws UnrepresentableTypeException {
-		orc.ast.oil.xml.type.Type[] newItems = new orc.ast.oil.xml.type.Type[items.size()];
+	public orc.ast.xml.type.Type marshal() throws UnrepresentableTypeException {
+		orc.ast.xml.type.Type[] newItems = new orc.ast.xml.type.Type[items.size()];
 		int i = 0;
 		for (Type t : items) {
 			newItems[i] = t.marshal();
 			++i;
 		}
-		return new orc.ast.oil.xml.type.TupleType(newItems);
+		return new orc.ast.xml.type.TupleType(newItems);
 	}
 }

@@ -1,7 +1,7 @@
 package orc.ast.oil;
 
 import orc.Config;
-import orc.ast.oil.expression.Expr;
+import orc.ast.oil.expression.Expression;
 import orc.ast.oil.expression.argument.Constant;
 import orc.ast.oil.expression.argument.ResolvedSite;
 import orc.ast.oil.expression.argument.Site;
@@ -35,7 +35,7 @@ public class SiteResolver extends Transformer {
 	}
 	
 	/** Call this to run the resolver on an expression. */
-	public static Expr resolve(Expr expr, Config config) throws CompilationException {
+	public static Expression resolve(Expression expr, Config config) throws CompilationException {
 		try {
 			return expr.accept(new SiteResolver(config));
 		} catch (SiteResolverException e) {
@@ -44,7 +44,7 @@ public class SiteResolver extends Transformer {
 	}
 
 	@Override
-	public Expr visit(Site arg) {
+	public Expression visit(Site arg) {
 		try {
 			return arg.resolveSites(config);
 		} catch (SiteResolutionException e) {

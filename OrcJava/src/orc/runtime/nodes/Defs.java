@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import orc.ast.oil.expression.argument.Var;
+import orc.ast.oil.expression.argument.Variable;
 import orc.env.Env;
 import orc.runtime.Token;
 import orc.runtime.values.Closure;
@@ -20,9 +20,9 @@ public class Defs extends Node {
 	 * otherwise this is overly pessimistic and may force some defs to wait
 	 * on variables which they won't use.
 	 */
-	public Set<Var> free;
+	public Set<Variable> free;
 
-	public Defs(List<Def> defs, Node next, Set<Var> free) {
+	public Defs(List<Def> defs, Node next, Set<Variable> free) {
 		this.defs = defs;
 		this.next = next;
 		this.free = free;
@@ -51,7 +51,7 @@ public class Defs extends Node {
 	public void process(Token t) {
 		// Step 0: find free values in the environment
 		List<Object> freeValues = new LinkedList<Object>();
-		for (Var v : free) {
+		for (Variable v : free) {
 			Object value = v.resolve(t.getEnvironment());
 			if (value instanceof Future) freeValues.add(value);
 		}
@@ -69,7 +69,7 @@ public class Defs extends Node {
 		for (Def d : defs) {
 			Closure c = closures[i++];
 			Env<Object> env = new Env<Object>();
-			for (Var v : d.free) env.add(v.resolve(t.getEnvironment()));
+			for (Variable v : d.free) env.add(v.resolve(t.getEnvironment()));
 			c.env = env;
 		}
 

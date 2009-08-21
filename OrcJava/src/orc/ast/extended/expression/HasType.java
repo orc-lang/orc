@@ -3,7 +3,7 @@ package orc.ast.extended.expression;
 import orc.ast.extended.Visitor;
 import orc.ast.extended.type.AssertedType;
 import orc.ast.extended.type.Type;
-import orc.ast.simple.WithLocation;
+import orc.ast.simple.expression.WithLocation;
 import orc.error.compiletime.CompilationException;
 
 public class HasType extends Expression {

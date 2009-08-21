@@ -4,8 +4,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import orc.ast.extended.Visitor;
-import orc.ast.simple.WithLocation;
 import orc.ast.simple.argument.Argument;
+import orc.ast.simple.expression.WithLocation;
 import orc.error.compiletime.CompilationException;
 
 public class Let extends Expression {

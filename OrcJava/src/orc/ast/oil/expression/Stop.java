@@ -4,16 +4,15 @@ import java.util.HashSet;
 import java.util.Set;
 
 import orc.ast.oil.Visitor;
-import orc.ast.oil.xml.Expression;
 import orc.ast.simple.argument.Argument;
-import orc.ast.simple.argument.NamedVar;
-import orc.ast.simple.argument.Var;
+import orc.ast.simple.argument.NamedVariable;
+import orc.ast.simple.argument.Variable;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.runtime.nodes.Node;
 import orc.type.Type;
 
-public class Stop extends Expr {
+public class Stop extends Expression {
 
 	public String toString() {
 		return "stop";
@@ -40,7 +39,7 @@ public class Stop extends Expr {
 	}
 
 	@Override
-	public Expression marshal() throws CompilationException {
-		return new orc.ast.oil.xml.Silent();
+	public orc.ast.xml.expression.Expression marshal() throws CompilationException {
+		return new orc.ast.xml.expression.Stop();
 	}
 }

@@ -4,23 +4,24 @@ import orc.ast.extended.Visitor;
 import orc.ast.extended.expression.Literal;
 import orc.ast.simple.*;
 import orc.ast.simple.argument.*;
+import orc.ast.simple.expression.WithLocation;
 import orc.error.compiletime.NonlinearPatternException;
 import orc.error.compiletime.PatternException;
 import xtc.util.Utilities;
 
 public class EqPattern extends Pattern {
 
-	public NamedVar x;
+	public NamedVariable x;
 	
 	public EqPattern(String s)
 	{
-		x = new NamedVar(s);
+		x = new NamedVariable(s);
 	}
 
 	@Override
-	public void process(Var fragment, PatternSimplifier visitor)
+	public void process(Variable fragment, PatternSimplifier visitor)
 			throws PatternException {
-		Var test = new Var();
+		Variable test = new Variable();
 		visitor.assign(test, new WithLocation(
 				Pattern.compare(fragment, x),
 				getSourceLocation()));

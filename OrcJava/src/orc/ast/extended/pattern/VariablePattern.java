@@ -1,19 +1,19 @@
 package orc.ast.extended.pattern;
 
 import orc.ast.extended.Visitor;
-import orc.ast.simple.argument.NamedVar;
-import orc.ast.simple.argument.Var;
+import orc.ast.simple.argument.NamedVariable;
+import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.Call;
 import orc.ast.simple.expression.Expression;
 import orc.error.compiletime.NonlinearPatternException;
 
 public class VariablePattern extends Pattern {
 
-	public NamedVar x;
+	public NamedVariable x;
 	
 	public VariablePattern(String s)
 	{
-		x = new NamedVar(s);
+		x = new NamedVariable(s);
 	}
 	
 	public boolean strict() {
@@ -21,7 +21,7 @@ public class VariablePattern extends Pattern {
 	}
 
 	@Override
-	public void process(Var fragment, PatternSimplifier visitor) throws NonlinearPatternException {
+	public void process(Variable fragment, PatternSimplifier visitor) throws NonlinearPatternException {
 		visitor.subst(fragment, x);
 	}
 	

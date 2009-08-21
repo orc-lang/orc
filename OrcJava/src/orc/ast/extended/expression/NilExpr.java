@@ -1,9 +1,9 @@
 package orc.ast.extended.expression;
 
 import orc.ast.extended.Visitor;
-import orc.ast.simple.WithLocation;
 import orc.ast.simple.argument.Argument;
 import orc.ast.simple.argument.Site;
+import orc.ast.simple.expression.WithLocation;
 
 public class NilExpr extends Expression {
 	

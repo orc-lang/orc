@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import orc.ast.oil.expression.argument.Arg;
+import orc.ast.oil.expression.argument.Argument;
 import orc.ast.oil.expression.argument.Field;
 import orc.env.Env;
 import orc.error.compiletime.typing.TypeException;
@@ -43,7 +43,7 @@ public class DotType extends Type {
 	}
 	
 	
-	public Type call(Env<Type> ctx, Env<Type> typectx, List<Arg> args, List<Type> typeActuals) throws TypeException {
+	public Type call(Env<Type> ctx, Env<Type> typectx, List<Argument> args, List<Type> typeActuals) throws TypeException {
 	
 		if (args.size() == 1 && args.get(0) instanceof Field) {
 			Field f = (Field)args.get(0);
@@ -93,7 +93,7 @@ public class DotType extends Type {
 	
 class NoDefaultType extends Type {
 
-	public Type call(Env<Type> ctx, Env<Type> typectx, List<Arg> args, List<Type> typeActuals) throws TypeException {
+	public Type call(Env<Type> ctx, Env<Type> typectx, List<Argument> args, List<Type> typeActuals) throws TypeException {
 		throw new TypeException("This site has no default behavior; it can only be called via messages");
 	}
 	

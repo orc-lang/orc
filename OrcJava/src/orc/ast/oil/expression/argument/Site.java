@@ -4,7 +4,6 @@ import java.util.Set;
 
 import orc.Config;
 import orc.ast.oil.Visitor;
-import orc.ast.oil.xml.Argument;
 import orc.env.Env;
 import orc.error.OrcError;
 import orc.error.compiletime.CompilationException;
@@ -20,7 +19,7 @@ import orc.type.Type;
  *
  */
 
-public class Site extends Arg {
+public class Site extends Argument {
 
 	public orc.ast.sites.Site site;
 	
@@ -58,7 +57,7 @@ public class Site extends Arg {
 	}
 
 	@Override
-	public Argument marshal() throws CompilationException {
-		return new orc.ast.oil.xml.Site(site.getProtocol(), site.getLocation());
+	public orc.ast.xml.expression.argument.Argument marshal() throws CompilationException {
+		return new orc.ast.xml.expression.argument.Site(site.getProtocol(), site.getLocation());
 	}
 }

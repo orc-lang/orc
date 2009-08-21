@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import orc.Config;
-import orc.ast.oil.expression.argument.Arg;
+import orc.ast.oil.expression.argument.Argument;
 import orc.env.Env;
 import orc.env.EnvException;
 import orc.env.LookupFailureException;
@@ -71,8 +71,8 @@ public abstract class Type {
 	 * FIXME: do we need to override new methods
 	 */
 	public static final Type BLANK = new Type() {
-		public orc.ast.oil.xml.type.Type marshal() throws UnrepresentableTypeException {
-			return new orc.ast.oil.xml.type.Blank();
+		public orc.ast.xml.type.Type marshal() throws UnrepresentableTypeException {
+			return new orc.ast.xml.type.Blank();
 		}
 	};
 
@@ -166,7 +166,7 @@ public abstract class Type {
 	 * This may be overridden by types which want to handle calls
 	 * in their own way (for example, arrow types).
 	 */
-	public Type call(Env<Type> ctx, Env<Type> typectx, List<Arg> args, List<Type> typeActuals) throws TypeException {
+	public Type call(Env<Type> ctx, Env<Type> typectx, List<Argument> args, List<Type> typeActuals) throws TypeException {
 		
 		/* Default type arity is 0 */
 		if (typeActuals != null && typeActuals.size() > 0) {
@@ -175,7 +175,7 @@ public abstract class Type {
 		
 		/* Synthesize the argument types */
 		List<Type> argTypes = new LinkedList<Type>();
-		for (Arg a : args) {
+		for (Argument a : args) {
 			argTypes.add(a.typesynth(ctx, typectx));
 		}
 		
@@ -641,7 +641,7 @@ public abstract class Type {
 	 * if the type is not representable.
 	 * @return
 	 */
-	public orc.ast.oil.xml.type.Type marshal() throws UnrepresentableTypeException {
+	public orc.ast.xml.type.Type marshal() throws UnrepresentableTypeException {
 		throw new UnrepresentableTypeException(this);
 	}
 	

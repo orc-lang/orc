@@ -3,12 +3,12 @@ package orc.ast.extended.expression;
 import java.util.List;
 
 import orc.ast.extended.Visitor;
-import orc.ast.simple.WithLocation;
 import orc.ast.simple.argument.Site;
-import orc.ast.simple.argument.Var;
+import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.Call;
 import orc.ast.simple.expression.Sequential;
 import orc.ast.simple.expression.Pruning;
+import orc.ast.simple.expression.WithLocation;
 import orc.error.compiletime.CompilationException;
 import orc.runtime.ReverseListIterator;
 
@@ -26,8 +26,8 @@ public class ListExpr extends Expression {
 		ReverseListIterator<Expression> it = new ReverseListIterator<Expression>(es);
 		while (it.hasNext()) {
 			orc.ast.simple.expression.Expression head = it.next().simplify();
-			Var h = new Var();
-			Var r = new Var();
+			Variable h = new Variable();
+			Variable r = new Variable();
 			// rest >r> (Cons(h,r) <h< head)
 			rest = new Sequential(
 				rest,

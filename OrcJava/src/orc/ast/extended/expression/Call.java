@@ -6,8 +6,8 @@ import java.util.List;
 
 import orc.ast.extended.Visitor;
 import orc.ast.extended.type.Type;
-import orc.ast.simple.WithLocation;
 import orc.ast.simple.argument.Argument;
+import orc.ast.simple.expression.WithLocation;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;

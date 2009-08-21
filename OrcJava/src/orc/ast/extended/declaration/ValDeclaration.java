@@ -4,8 +4,8 @@ import orc.ast.extended.Visitor;
 import orc.ast.extended.expression.Expression;
 import orc.ast.extended.pattern.Pattern;
 import orc.ast.extended.pattern.PatternSimplifier;
-import orc.ast.simple.WithLocation;
-import orc.ast.simple.argument.Var;
+import orc.ast.simple.argument.Variable;
+import orc.ast.simple.expression.WithLocation;
 import orc.error.compiletime.CompilationException;
 
 public class ValDeclaration extends Declaration {
@@ -23,8 +23,8 @@ public class ValDeclaration extends Declaration {
 		
 		orc.ast.simple.expression.Expression source = f.simplify();
 		
-		Var s = new Var();
-		Var t = new Var();
+		Variable s = new Variable();
+		Variable t = new Variable();
 		
 		PatternSimplifier pv = p.process(s);
 		

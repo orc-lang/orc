@@ -4,7 +4,6 @@ import java.math.BigInteger;
 import java.util.Set;
 
 import orc.ast.oil.Visitor;
-import orc.ast.oil.xml.Argument;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
@@ -12,7 +11,7 @@ import orc.type.Type;
 import orc.type.ground.ConstIntType;
 import xtc.util.Utilities;
 
-public class Constant extends Arg { 
+public class Constant extends Argument { 
 	
 	public Object v;
 
@@ -65,7 +64,7 @@ public class Constant extends Arg {
 	}
 
 	@Override
-	public Argument marshal() throws CompilationException {
-		return new orc.ast.oil.xml.Constant(v);
+	public orc.ast.xml.expression.argument.Argument marshal() throws CompilationException {
+		return new orc.ast.xml.expression.argument.Constant(v);
 	}
 }

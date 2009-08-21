@@ -3,14 +3,14 @@ package orc.ast.extended.expression;
 import java.util.Arrays;
 
 import orc.ast.extended.Visitor;
-import orc.ast.simple.WithLocation;
 import orc.ast.simple.argument.Argument;
 import orc.ast.simple.argument.Site;
-import orc.ast.simple.argument.Var;
+import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.Call;
 import orc.ast.simple.expression.Parallel;
 import orc.ast.simple.expression.Sequential;
 import orc.ast.simple.expression.Pruning;
+import orc.ast.simple.expression.WithLocation;
 import orc.error.compiletime.CompilationException;
 
 /**
@@ -37,7 +37,7 @@ public class IfThenElse extends Expression {
 	@Override
 	public orc.ast.simple.expression.Expression simplify() throws CompilationException {
 		// store the result of the condition
-		Var c = new Var();
+		Variable c = new Variable();
 		
 		// thenExpr = if(c) >> consequent
 		orc.ast.simple.expression.Expression thenExpr = new Sequential(
@@ -45,7 +45,7 @@ public class IfThenElse extends Expression {
 				new Site(orc.ast.sites.Site.IF),
 				Arrays.asList(new Argument[]{c})),
 			consequent.simplify(),
-			new Var());
+			new Variable());
 		
 		orc.ast.simple.expression.Expression body;
 		if (alternative instanceof Stop) {
@@ -53,7 +53,7 @@ public class IfThenElse extends Expression {
 			body = thenExpr;
 		} else {
 			// elseExpr = not(c) >x> (if(x) >> alternative)
-			Var x = new Var();
+			Variable x = new Variable();
 			orc.ast.simple.expression.Expression elseExpr = new Sequential(
 				new Call(
 					new Site(orc.ast.sites.Site.NOT),
@@ -63,7 +63,7 @@ public class IfThenElse extends Expression {
 						new Site(orc.ast.sites.Site.IF),
 						Arrays.asList(new Argument[]{x})),
 					alternative.simplify(),
-					new Var()),
+					new Variable()),
 				x);
 			body = new Parallel(thenExpr, elseExpr);
 		}

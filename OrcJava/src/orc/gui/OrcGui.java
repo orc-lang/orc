@@ -45,7 +45,7 @@ import javax.swing.text.StyledDocument;
 
 import orc.Config;
 import orc.OrcCompiler;
-import orc.ast.oil.expression.Expr;
+import orc.ast.oil.expression.Expression;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompileMessageRecorder;
 import orc.error.compiletime.CompileMessageRecorder.Severity;
@@ -178,7 +178,7 @@ public class OrcGui implements Runnable {
 		config.setMessageRecorder(messageRecorder);
 
 		final OrcCompiler compiler = new OrcCompiler(config);
-		Expr ex;
+		Expression ex;
 		try {
 			ex = compiler.call();
 		} catch (final IOException e) {

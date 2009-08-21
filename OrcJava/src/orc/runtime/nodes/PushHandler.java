@@ -5,7 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import orc.ast.oil.expression.argument.Var;
+import orc.ast.oil.expression.argument.Variable;
 import orc.env.Env;
 import orc.runtime.Token;
 import orc.runtime.values.Closure;
@@ -28,16 +28,16 @@ public class PushHandler extends Node {
 		/* 
 		 * Create a closure to do the call.
 		 */
-		Set<Var> free = handler.free;
+		Set<Variable> free = handler.free;
 		List<Object> freeValues = new LinkedList<Object>();
-		for (Var v : free) {
+		for (Variable v : free) {
 			Object value = v.resolve(t.getEnvironment());
 			if (value instanceof Future) freeValues.add(value);
 		}
 		
 		Closure closure = new Closure(handler, freeValues);
 		Env<Object> env = new Env<Object>();
-		for (Var v : handler.free) env.add(v.resolve(t.getEnvironment()));
+		for (Variable v : handler.free) env.add(v.resolve(t.getEnvironment()));
 		closure.env = env;
 		
 		//	pass next so the handler knows where to return.

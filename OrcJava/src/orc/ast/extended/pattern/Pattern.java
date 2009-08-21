@@ -4,12 +4,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 import orc.ast.extended.ASTNode;
-import orc.ast.simple.WithLocation;
 import orc.ast.simple.argument.Argument;
 import orc.ast.simple.argument.Constant;
 import orc.ast.simple.argument.Field;
 import orc.ast.simple.argument.Site;
-import orc.ast.simple.argument.Var;
+import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.Call;
 import orc.ast.simple.expression.Expression;
 import orc.ast.simple.expression.Let;
@@ -18,6 +17,7 @@ import orc.ast.simple.expression.Otherwise;
 import orc.ast.simple.expression.Sequential;
 import orc.ast.simple.expression.Stop;
 import orc.ast.simple.expression.Pruning;
+import orc.ast.simple.expression.WithLocation;
 import orc.error.compiletime.NonlinearPatternException;
 import orc.error.compiletime.PatternException;
 import orc.error.Locatable;
@@ -58,7 +58,7 @@ public abstract class Pattern implements ASTNode, Locatable {
 	 * @param visitor   A visitor object which accumulates an expression and a transformer
 	 * @throws PatternException  
 	 */
-	public abstract void process(Var fragment, PatternSimplifier visitor) throws PatternException;
+	public abstract void process(Variable fragment, PatternSimplifier visitor) throws PatternException;
 	
 
 	/**
@@ -67,7 +67,7 @@ public abstract class Pattern implements ASTNode, Locatable {
 	 * Creates a new visitor, visits the pattern, and then returns that visitor. 
 	 * @throws PatternException 
 	 */
-	public PatternSimplifier process(Var fragment) throws PatternException {
+	public PatternSimplifier process(Variable fragment) throws PatternException {
 		PatternSimplifier pv = new PatternSimplifier();
 		process(fragment, pv);
 		return pv;
@@ -129,7 +129,7 @@ public abstract class Pattern implements ASTNode, Locatable {
 	 */
 	public static Expression compare(Argument s, Argument t) {
 
-		Var b = new Var();
+		Variable b = new Variable();
 		
 		// s = t
 		Expression test = new Call(EQUAL, s, t);
@@ -196,7 +196,7 @@ public abstract class Pattern implements ASTNode, Locatable {
 		Expression fits = new Call(s, new Field("fits"));
 		
 		// m(n)
-		Var m = new Var();
+		Variable m = new Variable();
 		Expression invoke = new Call(m, new Constant(n));
 		
 		// s.fits >m> m(n)
@@ -222,7 +222,7 @@ public abstract class Pattern implements ASTNode, Locatable {
 	 * @param s  Argument to the inversion
 	 */
 	public static Expression unapply(Argument m, Argument s) {
-		Var i = new Var();
+		Variable i = new Variable();
 		// TODO: Make the field name "?" a special constant
 		return new Sequential(new Call(m, new Field("?")), new Call(i, s), i);
 	}
@@ -237,7 +237,7 @@ public abstract class Pattern implements ASTNode, Locatable {
 	 * 
 	 * @param x
 	 */
-	public static Expression lift(Var x) {
+	public static Expression lift(Variable x) {
 		return new Otherwise(new Call(SOME, x), new Call(NONE));
 	}
 	
@@ -256,13 +256,13 @@ public abstract class Pattern implements ASTNode, Locatable {
 	 * @param succ
 	 * @param fail
 	 */
-	public static Expression caseof(Var arg, Var s, Expression succ, Expression fail) {
+	public static Expression caseof(Variable arg, Variable s, Expression succ, Expression fail) {
 				
 		// trySome(arg) >s> succ
 		Expression someb = new Sequential(new Call(TRYSOME, arg), succ, s);
 		
 		// tryNone(arg) >> fail
-		Expression noneb = new Sequential(new Call(TRYNONE, arg), fail, new Var());
+		Expression noneb = new Sequential(new Call(TRYNONE, arg), fail, new Variable());
 		
 		// trySome... | tryNone...
 		return new Parallel(someb, noneb);

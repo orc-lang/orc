@@ -20,8 +20,8 @@ import orc.error.runtime.UncaughtException;
  * @author matsuoka 
  */
 
-import orc.ast.oil.expression.argument.Arg;
-import orc.ast.oil.expression.argument.Var;
+import orc.ast.oil.expression.argument.Argument;
+import orc.ast.oil.expression.argument.Variable;
 import orc.runtime.values.Callable;
 
 public class Throw extends Node {
