@@ -212,13 +212,13 @@ public class OrcBuilder extends BuilderBase {
 			final MarkerCreator markerCreator = new MarkerCreatorWithBatching(file, null, this);
 
 			final Config config = new Config();
+			// TODO: Set options per project settings
+
 			final File inputFile = new File(file.getLocation().toOSString());
 			config.setInputFile(inputFile);
 			config.setProgressListener(new ImpToOrcProgressAdapter(monitor));
 			config.setMessageRecorder(new ImpToOrcMessageAdapter(markerCreator));
 			file.deleteMarkers(OrcBuilder.PROBLEM_MARKER_ID, true, IResource.DEPTH_INFINITE);
-
-			// TODO: Set options per project settings
 
 			final OrcCompiler compiler = new OrcCompiler(config);
 			try {

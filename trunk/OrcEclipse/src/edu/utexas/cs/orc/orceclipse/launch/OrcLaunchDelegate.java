@@ -17,6 +17,7 @@ package edu.utexas.cs.orc.orceclipse.launch;
 
 import java.io.File;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import orc.Orc;
@@ -62,11 +63,13 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 	public static final String LAUNCH_CONFIG_ID = "edu.utexas.cs.orc.orceclipse.launch.orcApplication";
 
 	public static final String TYPE_CHECK_ATTR_NAME = Activator.getInstance().getID() + ".TYPE_CHECK";
-	public static final boolean TYPE_CHECK_ATTR_DEFAULT = false;
+	public static final boolean TYPE_CHECK_DEFAULT = false;
 	public static final String NO_PRELUDE_ATTR_NAME = Activator.getInstance().getID() + ".NO_PRELUDE";
-	public static final boolean NO_PRELUDE_ATTR_DEFAULT = false;
-	// TODO: -I VAL : Set the include path for Orc includes (same syntax as CLASSPATH). Default is ".", the current directory. Prelude files are always available for include regardless of this setting.
-	// TODO: -cp VAL : Set the class path for Orc sites (same syntax as CLASSPATH). This is only used for classes not found in the Java VM classpath.
+	public static final boolean NO_PRELUDE_DEFAULT = false;
+	public static final String INCLUDE_PATH_ATTR_NAME = Activator.getInstance().getID() + ".INCLUDE_PATH";
+	public static final List INCLUDE_PATH_DEFAULT = null;
+	public static final String SITE_CLASSPATH_ATTR_NAME = Activator.getInstance().getID() + ".SITE_CLASSPATH";
+	public static final List SITE_CLASSPATH_DEFAULT = null;
 	public static final String OIL_OUT_ATTR_NAME = Activator.getInstance().getID() + ".OIL_OUT";
 	public static final String OIL_OUT_DEFAULT = "";
 	public static final String MAX_PUBS_ATTR_NAME = Activator.getInstance().getID() + ".MAX_PUBS";
@@ -125,14 +128,18 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 
 			// Program & VM arguments
 			String pgmArgs = "";
-			if (configuration.getAttribute(TYPE_CHECK_ATTR_NAME, TYPE_CHECK_ATTR_DEFAULT)) {
+			if (configuration.getAttribute(TYPE_CHECK_ATTR_NAME, TYPE_CHECK_DEFAULT)) {
 				pgmArgs += "-typecheck ";
 			}
-			if (configuration.getAttribute(NO_PRELUDE_ATTR_NAME, NO_PRELUDE_ATTR_DEFAULT)) {
+			if (configuration.getAttribute(NO_PRELUDE_ATTR_NAME, NO_PRELUDE_DEFAULT)) {
 				pgmArgs += "-noprelude ";
 			}
-			// TODO: -I VAL : Set the include path for Orc includes (same syntax as CLASSPATH). Default is ".", the current directory. Prelude files are always available for include regardless of this setting.
-			// TODO: -cp VAL : Set the class path for Orc sites (same syntax as CLASSPATH). This is only used for classes not found in the Java VM classpath.
+			if (configuration.getAttribute(INCLUDE_PATH_ATTR_NAME, (List) null) != null) {
+				pgmArgs += "-I \'" + convertClassPath(configuration.getAttribute(INCLUDE_PATH_ATTR_NAME, INCLUDE_PATH_DEFAULT)) + "\' ";
+			}
+			if (configuration.getAttribute(SITE_CLASSPATH_ATTR_NAME, (List) null) != null) {
+				pgmArgs += "-cp \'" + convertClassPath(configuration.getAttribute(SITE_CLASSPATH_ATTR_NAME, SITE_CLASSPATH_DEFAULT)) + "\' ";
+			}
 			if (configuration.getAttribute(OIL_OUT_ATTR_NAME, "").length() > 0) {
 				pgmArgs += "-oilOut \'" + configuration.getAttribute(OIL_OUT_ATTR_NAME, "") + "\' ";
 			}
@@ -182,8 +189,8 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 
 			// Launch the configuration - 1 unit of work
 			runner.run(runConfig, launch, monitor);
-			for (IProcess proc : launch.getProcesses()) {
-				String processLabel = 
+			for (final IProcess proc : launch.getProcesses()) {
+				final String processLabel =
 					VariablesPlugin.getDefault().getStringVariableManager().performStringSubstitution("${resource_path}")
 					+ " ["
 					+ configuration.getType().getName()
@@ -218,4 +225,21 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 		return classpath;
 	}
 
+	/*
+	 * Derived from org.eclipse.jdt.internal.launching.StandardVMRunner.java,
+	 * Revision 1.56 (31 Mar 2009), trunk rev as of 20 Aug 2009 
+	 */
+	protected static String convertClassPath(final List cp) {
+		final StringBuffer buf = new StringBuffer();
+		if (cp.size() == 0) {
+			return ""; //$NON-NLS-1$
+		}
+		for (int i = 0; i < cp.size(); i++) {
+			if (i > 0) {
+				buf.append(File.pathSeparator);
+			}
+			buf.append(cp.get(i));
+		}
+		return buf.toString();
+	}
 }
