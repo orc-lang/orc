@@ -24,11 +24,11 @@ import java.util.concurrent.Callable;
 import orc.ast.extended.ASTNode;
 import orc.ast.extended.expression.Declare;
 import orc.ast.extended.declaration.Declaration;
-import orc.ast.oil.expression.Expr;
+import orc.ast.oil.expression.Expression;
 import orc.ast.oil.SiteResolver;
 import orc.ast.oil.UnguardedRecursionChecker;
-import orc.ast.oil.xml.Oil;
-import orc.ast.simple.argument.Var;
+import orc.ast.simple.argument.Variable;
+import orc.ast.xml.Oil;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.ParsingException;
@@ -42,7 +42,7 @@ import orc.type.Type;
  * <p>
  * To use, construct with an Orc config, then invoke {@link #call()}
  */
-public class OrcCompiler implements Callable<Expr> {
+public class OrcCompiler implements Callable<Expression> {
 
 	private final Config config;
 
@@ -64,9 +64,9 @@ public class OrcCompiler implements Callable<Expr> {
 	 * @return OIL AST for the compiled Orc program
 	 * @see java.util.concurrent.Callable#call()
 	 */
-	public Expr call() throws IOException {
+	public Expression call() throws IOException {
 		try {
-			Expr oilAst = null;
+			Expression oilAst = null;
 			config.getMessageRecorder().beginProcessing(new File(config.getInputFilename()));
 			if (config.hasOilInputFile()) {
 
@@ -168,11 +168,11 @@ public class OrcCompiler implements Callable<Expr> {
 	 * @return OIL AST corresponding to the supplied extended AST
 	 * @throws CompilationException If the AST contains compilation errors
 	 */
-	public Expr compileAstToOil(final ASTNode astRoot) throws CompilationException {
+	public Expression compileAstToOil(final ASTNode astRoot) throws CompilationException {
 		final ProgressListener progress = config.getProgressListener();
 
 		progress.setNote("Simplifying the AST");
-		Expr ex = ((orc.ast.extended.expression.Expression) astRoot).simplify().convert(new Env<Var>(), new Env<String>());
+		Expression ex = ((orc.ast.extended.expression.Expression) astRoot).simplify().convert(new Env<Variable>(), new Env<String>());
 		// System.out.println(ex);
 		progress.setProgress(0.66);
 		if (progress.isCanceled()) {
@@ -218,7 +218,7 @@ public class OrcCompiler implements Callable<Expr> {
 	 * @throws IOException If the file could not be read
 	 * @throws CompilationException If the sites on the OIL could not be resolved
 	 */
-	public Expr loadOil(final Reader oilReader) throws IOException, CompilationException {
+	public Expression loadOil(final Reader oilReader) throws IOException, CompilationException {
 		final ProgressListener progress = config.getProgressListener();
 		progress.setProgress(0.10); // 10% as a startup bonus
 		if (progress.isCanceled()) {
@@ -233,7 +233,7 @@ public class OrcCompiler implements Callable<Expr> {
 		}
 		
 		progress.setNote("Converting to AST");
-		Expr ex = oil.unmarshal(config);
+		Expression ex = oil.unmarshal(config);
 		progress.setProgress(0.5);
 		if (progress.isCanceled()) {
 			return null;
@@ -256,7 +256,7 @@ public class OrcCompiler implements Callable<Expr> {
 	 * @param oilWriter Destination for OIL file
 	 * @throws CompilationException If the OIL AST could not be marshaled for saving
 	 */
-	public void saveOil(final Expr oilAst, final Writer oilWriter) throws CompilationException {
+	public void saveOil(final Expression oilAst, final Writer oilWriter) throws CompilationException {
 		final ProgressListener progress = config.getProgressListener();
 		progress.setNote("Writing OIL");
 		new Oil(oilAst).toXML(oilWriter);
@@ -270,7 +270,7 @@ public class OrcCompiler implements Callable<Expr> {
 	 * @param oilAst OIL AST generated from Orc source text
 	 * @return Refined OIL AST to be saved (and run)
 	 */
-	protected Expr refineOilAfterCompileBeforeSave(final Expr oilAst) {
+	protected Expression refineOilAfterCompileBeforeSave(final Expression oilAst) {
 		// Override and extend
 		return oilAst;
 	}
@@ -283,7 +283,7 @@ public class OrcCompiler implements Callable<Expr> {
 	 * @param oilAst OIL AST read from file or compiled from text
 	 * @return Refined OIL AST to be run
 	 */
-	protected Expr refineOilAfterLoadSaveBeforeDag(final Expr oilAst) {
+	protected Expression refineOilAfterLoadSaveBeforeDag(final Expression oilAst) {
 		// Override and extend
 		return oilAst;
 	}

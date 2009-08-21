@@ -8,7 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import orc.ast.oil.expression.argument.Arg;
+import orc.ast.oil.expression.argument.Argument;
 import orc.env.Env;
 import orc.error.compiletime.typing.TypeArityException;
 import orc.error.compiletime.typing.TypeException;
@@ -87,10 +87,10 @@ class CallableJavaInstance extends Type {
 	}
 	
 	@Override
-	public Type call(Env<Type> ctx, Env<Type> typectx, List<Arg> args,
+	public Type call(Env<Type> ctx, Env<Type> typectx, List<Argument> args,
 			List<Type> typeActuals) throws TypeException {
 				
-		String f = Arg.asField(args);
+		String f = Argument.asField(args);
 		
 		if (f != null) {
 			List<Method> matchingMethods = new LinkedList<Method>();

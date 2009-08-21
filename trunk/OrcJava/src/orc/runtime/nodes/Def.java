@@ -3,7 +3,7 @@ package orc.runtime.nodes;
 import java.util.List;
 import java.util.Set;
 
-import orc.ast.oil.expression.argument.Var;
+import orc.ast.oil.expression.argument.Variable;
 import orc.error.SourceLocation;
 
 /**
@@ -21,10 +21,10 @@ public class Def {
 
 	public int arity;
 	public Node body;
-	public Set<Var> free;
+	public Set<Variable> free;
 	public SourceLocation location;
 
-	public Def(int arity, Node body, Set<Var> free, SourceLocation location) {
+	public Def(int arity, Node body, Set<Variable> free, SourceLocation location) {
 		this.arity = arity;
 		this.body = body;
 		this.free = free;

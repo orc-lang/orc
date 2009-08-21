@@ -6,7 +6,7 @@ package orc.runtime.nodes;
 import java.util.LinkedList;
 import java.util.List;
 
-import orc.ast.oil.expression.argument.Arg;
+import orc.ast.oil.expression.argument.Argument;
 import orc.error.runtime.TokenException;
 import orc.runtime.Token;
 import orc.runtime.values.Callable;
@@ -18,11 +18,11 @@ import orc.runtime.values.Value;
  */
 public class Call extends Node {
 	private static final long serialVersionUID = 1L;
-	public Arg callee;
-	public List<Arg> args;
+	public Argument callee;
+	public List<Argument> args;
 	public Node next;
 
-	public Call(Arg callee, List<Arg> args, Node next) {
+	public Call(Argument callee, List<Argument> args, Node next) {
 		this.callee = callee;
 		this.args = args;
 		this.next = next;	
@@ -53,7 +53,7 @@ public class Call extends Node {
 			 */
 			List<Object> actuals = new LinkedList<Object>();
 
-			for (Arg a : args) {
+			for (Argument a : args) {
 				actuals.add(t.lookup(a));
 			}
 

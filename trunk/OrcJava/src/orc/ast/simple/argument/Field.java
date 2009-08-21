@@ -1,7 +1,6 @@
 package orc.ast.simple.argument;
 
 
-import orc.ast.oil.expression.argument.Arg;
 import orc.env.Env;
 import orc.runtime.values.Value;
 
@@ -26,8 +25,7 @@ public class Field extends Argument {
 	}
 
 	@Override
-	public Arg convert(Env<Var> vars) {
-		
+	public orc.ast.oil.expression.argument.Argument convert(Env<Variable> vars) {
 		return new orc.ast.oil.expression.argument.Field(key);
 	}
 }

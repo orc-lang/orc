@@ -3,7 +3,6 @@ package orc.ast.oil.expression;
 import java.util.Set;
 
 import orc.ast.oil.Visitor;
-import orc.ast.oil.xml.Expression;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
@@ -17,11 +16,11 @@ import orc.type.Type;
  * @see orc.runtime.nodes.Isolate
  * @author quark
  */
-public class Isolated extends Expr {
+public class Isolated extends Expression {
 
-	public Expr body;
+	public Expression body;
 	
-	public Isolated(Expr body) {
+	public Isolated(Expression body) {
 		this.body = body;
 	}
 
@@ -50,7 +49,7 @@ public class Isolated extends Expr {
 	}
 
 	@Override
-	public Expression marshal() throws CompilationException {
-		return new orc.ast.oil.xml.Isolated(body.marshal());
+	public orc.ast.xml.expression.Expression marshal() throws CompilationException {
+		return new orc.ast.xml.expression.Isolated(body.marshal());
 	}
 }

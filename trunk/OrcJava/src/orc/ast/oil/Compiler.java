@@ -20,11 +20,12 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import orc.ast.oil.expression.Atomic;
+import orc.ast.oil.expression.Def;
 import orc.ast.oil.expression.Parallel;
 import orc.ast.oil.expression.Call;
 import orc.ast.oil.expression.Catch;
-import orc.ast.oil.expression.Defs;
-import orc.ast.oil.expression.Expr;
+import orc.ast.oil.expression.DeclareDefs;
+import orc.ast.oil.expression.Expression;
 import orc.ast.oil.expression.HasType;
 import orc.ast.oil.expression.Isolated;
 import orc.ast.oil.expression.Pruning;
@@ -32,11 +33,12 @@ import orc.ast.oil.expression.Sequential;
 import orc.ast.oil.expression.Otherwise;
 import orc.ast.oil.expression.Stop;
 import orc.ast.oil.expression.Throw;
-import orc.ast.oil.expression.TypeDecl;
+import orc.ast.oil.expression.DeclareType;
+import orc.ast.oil.expression.WithLocation;
 import orc.ast.oil.expression.argument.Constant;
 import orc.ast.oil.expression.argument.Field;
 import orc.ast.oil.expression.argument.Site;
-import orc.ast.oil.expression.argument.Var;
+import orc.ast.oil.expression.argument.Variable;
 import orc.runtime.nodes.Assign;
 import orc.runtime.nodes.Fork;
 import orc.runtime.nodes.Leave;
@@ -73,11 +75,11 @@ public final class Compiler implements Visitor<Node> {
 		}
 	}
 
-	public static Node compile(final Expr expr) {
+	public static Node compile(final Expression expr) {
 		return compile(expr, new Pub());
 	}
 
-	public static Node compile(final Expr expr, final Node output) {
+	public static Node compile(final Expression expr, final Node output) {
 		final Compiler compiler = new Compiler(output);
 		return expr.accept(compiler);
 	}
@@ -90,17 +92,17 @@ public final class Compiler implements Visitor<Node> {
 		return new orc.runtime.nodes.Call(expr.callee, expr.args, output);
 	}
 
-	public Node visit(final Defs expr) {
+	public Node visit(final DeclareDefs expr) {
 		// find variables free ONLY in the defs themselves
 		// (unlike addIndices which includes the body)
-		final Set<Var> free = new TreeSet<Var>();
+		final Set<Variable> free = new TreeSet<Variable>();
 		final Set<Integer> indices = new TreeSet<Integer>();
 		final int depth = expr.defs.size();
 		for (final Def d : expr.defs) {
 			d.addIndices(indices, depth);
 		}
 		for (final Integer i : indices) {
-			free.add(new Var(i));
+			free.add(new Variable(i));
 		}
 
 		// compile the defs
@@ -117,10 +119,10 @@ public final class Compiler implements Visitor<Node> {
 		// rename free variables in the body
 		// so that when we construct closure environments
 		// we can omit the non-free variables
-		final Set<Var> free = def.freeVars();
+		final Set<Variable> free = def.freeVars();
 		final HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
 		int i = free.size() - 1;
-		for (final Var v : free) {
+		for (final Variable v : free) {
 			map.put(v.index + def.arity, i-- + def.arity);
 		}
 		RenameVariables.rename(def.body, new RenameVariables.Renamer() {
@@ -172,7 +174,7 @@ public final class Compiler implements Visitor<Node> {
 		return new orc.runtime.nodes.Let(arg, output);
 	}
 
-	public Node visit(final Var arg) {
+	public Node visit(final Variable arg) {
 		return new orc.runtime.nodes.Let(arg, output);
 	}
 
@@ -188,7 +190,7 @@ public final class Compiler implements Visitor<Node> {
 		return hasType.body.accept(this);
 	}
 
-	public Node visit(final TypeDecl typeDecl) {
+	public Node visit(final DeclareType typeDecl) {
 		return typeDecl.body.accept(this);
 	}
 

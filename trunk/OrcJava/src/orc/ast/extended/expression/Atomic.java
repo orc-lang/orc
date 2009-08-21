@@ -1,7 +1,7 @@
 package orc.ast.extended.expression;
 
 import orc.ast.extended.Visitor;
-import orc.ast.simple.WithLocation;
+import orc.ast.simple.expression.WithLocation;
 import orc.error.compiletime.CompilationException;
 
 public class Atomic extends Expression {

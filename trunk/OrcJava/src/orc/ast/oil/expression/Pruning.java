@@ -3,10 +3,9 @@ package orc.ast.oil.expression;
 import java.util.Set;
 
 import orc.ast.oil.Visitor;
-import orc.ast.oil.xml.Expression;
 import orc.ast.simple.argument.Argument;
-import orc.ast.simple.argument.NamedVar;
-import orc.ast.simple.argument.Var;
+import orc.ast.simple.argument.NamedVariable;
+import orc.ast.simple.argument.Variable;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
@@ -15,10 +14,10 @@ import orc.runtime.nodes.Store;
 import orc.runtime.nodes.Unwind;
 import orc.type.Type;
 
-public class Pruning extends Expr {
+public class Pruning extends Expression {
 
-	public Expr left;
-	public Expr right;
+	public Expression left;
+	public Expression right;
 	
 	/* An optional variable name, used for documentation purposes.
 	 * It has no operational purpose, since the expression is already
@@ -26,7 +25,7 @@ public class Pruning extends Expr {
 	 */
 	public String name;
 	
-	public Pruning(Expr left, Expr right, String name)
+	public Pruning(Expression left, Expression right, String name)
 	{
 		this.left = left;
 		this.right = right;
@@ -63,7 +62,7 @@ public class Pruning extends Expr {
 	}
 
 	@Override
-	public Expression marshal() throws CompilationException {
-		return new orc.ast.oil.xml.Pull(left.marshal(), right.marshal(), name);
+	public orc.ast.xml.expression.Expression marshal() throws CompilationException {
+		return new orc.ast.xml.expression.Pruning(left.marshal(), right.marshal(), name);
 	}
 }

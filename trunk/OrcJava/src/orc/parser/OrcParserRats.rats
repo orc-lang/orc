@@ -23,7 +23,7 @@ header {
 	import orc.ast.extended.pattern.*;
 	import orc.ast.extended.type.*;
 	import orc.ast.extended.declaration.*;
-	import orc.ast.extended.declaration.defn.*;
+	import orc.ast.extended.declaration.def.*;
 	import orc.ast.extended.declaration.type.*;
 	import orc.error.*;
 
@@ -198,7 +198,7 @@ List<Constructor> ConstructorList =
 	;
 
 
-Defn Definition =
+DefMember Definition =
 	DEF name:RequiredSiteName Space LPAREN formals:PatternList RPAREN Space
 	curried0:(LPAREN yyValue:PatternList RPAREN Space)*
 	resultType:MaybeResultType
@@ -211,7 +211,7 @@ Defn Definition =
 			body = new Lambda(it.previous(), body, linearResultType);
 			linearResultType = null;
 		}
-		yyValue = new DefnClause(name, formals, body, linearResultType);
+		yyValue = new DefMemberClause(name, formals, body, linearResultType);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ DEF name:RequiredSiteName Space typeFormals:TypeFormals LPAREN argTypes:TypeList RPAREN Space
@@ -223,7 +223,7 @@ Defn Definition =
 		while (it.hasPrevious()) {
 			curriedType = new ArrowType(it.previous(), curriedType, new LinkedList<String>() /* curried type params not allowed */);
 		}
-		yyValue = new DefnType(name, argTypes, curriedType, typeFormals);
+		yyValue = new DefMemberType(name, argTypes, curriedType, typeFormals);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;

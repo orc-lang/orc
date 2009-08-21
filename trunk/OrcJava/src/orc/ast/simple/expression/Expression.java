@@ -6,8 +6,8 @@ import java.util.Set;
 
 import orc.ast.extended.expression.Call;
 import orc.ast.simple.argument.Argument;
-import orc.ast.simple.argument.NamedVar;
-import orc.ast.simple.argument.Var;
+import orc.ast.simple.argument.NamedVariable;
+import orc.ast.simple.argument.Variable;
 import orc.env.Env;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
@@ -37,9 +37,10 @@ public abstract class Expression {
 	 * 				find the appropriate deBruijn index of a var.
 	 * @param typevars The type vars environment, used in content addressable
 	 * 				   mode to find the appropriate deBruijn index of a type var.
+	 * @return TODO
 	 * @return A new node.
 	 */
-	public abstract orc.ast.oil.expression.Expr convert(Env<Var> vars, Env<String> typevars) throws CompilationException;
+	public abstract orc.ast.oil.expression.Expression convert(Env<Variable> vars, Env<String> typevars) throws CompilationException;
 	
 	
 	/**
@@ -51,7 +52,7 @@ public abstract class Expression {
 	 * 
 	 * @return A new copy of the expression with the substitution performed
 	 */
-	public abstract Expression subst(Argument a, NamedVar x);
+	public abstract Expression subst(Argument a, NamedVariable x);
 	
 	
 	/**
@@ -67,7 +68,7 @@ public abstract class Expression {
 	 * 
 	 * @return A new copy of the expression with the substitution performed
 	 */
-	public Expression subvar(Var v, NamedVar x) {
+	public Expression subvar(Variable v, NamedVariable x) {
 		v.name = x.name;
 		return subst(v,x);
 	}
@@ -81,15 +82,15 @@ public abstract class Expression {
 	 * 
 	 * @param m
 	 */
-	public Expression suball(Map<NamedVar, ? extends Argument> m)
+	public Expression suball(Map<NamedVariable, ? extends Argument> m)
 	{
 		Expression result = this;
 		
-		for (NamedVar x : m.keySet())
+		for (NamedVariable x : m.keySet())
 		{
 			Argument a = m.get(x);
-			if (a instanceof Var) {
-				((Var)a).name = x.name;
+			if (a instanceof Variable) {
+				((Variable)a).name = x.name;
 			}
 			result = result.subst(a,x);
 		}
@@ -100,5 +101,5 @@ public abstract class Expression {
 	/**
 	 * Find the set of all unbound Vars (note: not FreeVars) in this expression.
 	 */
-	public abstract Set<Var> vars();
+	public abstract Set<Variable> vars();
 }

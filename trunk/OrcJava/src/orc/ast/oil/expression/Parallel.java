@@ -3,7 +3,6 @@ package orc.ast.oil.expression;
 import java.util.Set;
 
 import orc.ast.oil.Visitor;
-import orc.ast.oil.xml.Expression;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
@@ -11,12 +10,12 @@ import orc.runtime.nodes.Fork;
 import orc.runtime.nodes.Node;
 import orc.type.Type;
 
-public class Parallel extends Expr {
+public class Parallel extends Expression {
 
-	public Expr left;
-	public Expr right;
+	public Expression left;
+	public Expression right;
 	
-	public Parallel(Expr left, Expr right)
+	public Parallel(Expression left, Expression right)
 	{
 		this.left = left;
 		this.right = right;
@@ -53,7 +52,7 @@ public class Parallel extends Expr {
 	}
 
 	@Override
-	public Expression marshal() throws CompilationException {
-		return new orc.ast.oil.xml.Bar(left.marshal(), right.marshal());
+	public orc.ast.xml.expression.Expression marshal() throws CompilationException {
+		return new orc.ast.xml.expression.Parallel(left.marshal(), right.marshal());
 	}
 }

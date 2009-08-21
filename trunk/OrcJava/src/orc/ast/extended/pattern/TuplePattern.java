@@ -4,11 +4,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 import orc.ast.extended.Visitor;
-import orc.ast.simple.WithLocation;
 import orc.ast.simple.argument.*;
 import orc.ast.simple.expression.Call;
 import orc.ast.simple.expression.Expression;
 import orc.ast.simple.expression.Pruning;
+import orc.ast.simple.expression.WithLocation;
 import orc.error.compiletime.PatternException;
 
 public class TuplePattern extends Pattern {
@@ -62,10 +62,10 @@ public class TuplePattern extends Pattern {
 	}
 
 	@Override
-	public void process(Var fragment, PatternSimplifier visitor)
+	public void process(Variable fragment, PatternSimplifier visitor)
 			throws PatternException {
 		
-		Var test = new Var();
+		Variable test = new Variable();
 		visitor.assign(test, new WithLocation(
 				Pattern.trysize(fragment, args.size()),
 				getSourceLocation()));
@@ -73,7 +73,7 @@ public class TuplePattern extends Pattern {
 		
 		for (int i = 0; i < args.size(); i++) {
 			Pattern p = args.get(i);
-			Var element = new Var();
+			Variable element = new Variable();
 			visitor.assign(element, Pattern.nth(fragment, i));
 			p.process(element, visitor);
 		}

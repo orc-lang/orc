@@ -6,12 +6,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import orc.ast.oil.expression.Expr;
-import orc.ast.oil.expression.argument.Arg;
 import orc.ast.oil.expression.argument.Site;
 import orc.ast.simple.argument.Argument;
-import orc.ast.simple.argument.NamedVar;
-import orc.ast.simple.argument.Var;
+import orc.ast.simple.argument.NamedVariable;
+import orc.ast.simple.argument.Variable;
 import orc.env.Env;
 import orc.error.compiletime.UnboundVariableException;
 import orc.runtime.nodes.Node;
@@ -40,7 +38,7 @@ public class Let extends Expression {
 	}
 	
 	@Override
-	public Expression subst(Argument a, NamedVar x) {
+	public Expression subst(Argument a, NamedVariable x) {
 		List<Argument> newargs = new LinkedList<Argument>();		
 		for (Argument b : args) {
 			newargs.add(b.subst(a, x));
@@ -48,8 +46,8 @@ public class Let extends Expression {
 		return new Let(newargs);
 	}
 	
-	public Set<Var> vars() {
-		Set<Var> freeset = new HashSet<Var>();
+	public Set<Variable> vars() {
+		Set<Variable> freeset = new HashSet<Variable>();
 		for(Argument a : args)	{
 			a.addFree(freeset);
 		}
@@ -57,7 +55,7 @@ public class Let extends Expression {
 	}
 
 	@Override
-	public Expr convert(Env<Var> vars, Env<String> typevars) throws UnboundVariableException {
+	public orc.ast.oil.expression.Expression convert(Env<Variable> vars, Env<String> typevars) throws UnboundVariableException {
 		if (args.size() == 1) {
 			// If there is only one arg, use it directly as an expression
 			return args.get(0).convert(vars);
@@ -65,10 +63,9 @@ public class Let extends Expression {
 		
 		// Otherwise, use the tuple creation site
 		
-		List<Arg> newargs = new ArrayList<Arg>();
-		for(Argument a : args) {
-			Arg newa = a.convert(vars);
-			newargs.add(newa);
+		List<orc.ast.oil.expression.argument.Argument> newargs = new ArrayList<orc.ast.oil.expression.argument.Argument>();
+		for(Argument arg : args) {
+			newargs.add(arg.convert(vars));
 		}
 		
 		return new orc.ast.oil.expression.Call(new orc.ast.oil.expression.argument.Site(orc.ast.sites.Site.LET), newargs);

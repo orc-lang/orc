@@ -42,7 +42,7 @@ public class ClassnameType extends Type {
 	}
 
 	@Override
-	public orc.ast.oil.xml.type.Type marshal() throws UnrepresentableTypeException {
-		return new orc.ast.oil.xml.type.ClassnameType(classname);
+	public orc.ast.xml.type.Type marshal() throws UnrepresentableTypeException {
+		return new orc.ast.xml.type.ClassnameType(classname);
 	}
 }

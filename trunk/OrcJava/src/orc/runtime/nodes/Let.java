@@ -1,16 +1,16 @@
 package orc.runtime.nodes;
 
-import orc.ast.oil.expression.argument.Arg;
+import orc.ast.oil.expression.argument.Argument;
 import orc.error.compiletime.SiteResolutionException;
 import orc.runtime.Token;
 import orc.runtime.values.Value;
 
 public class Let extends Node {
 
-	public Arg arg;
+	public Argument arg;
 	public Node next;
 	
-	public Let(Arg arg, Node next) {
+	public Let(Argument arg, Node next) {
 		this.arg = arg;
 		this.next = next;
 	}

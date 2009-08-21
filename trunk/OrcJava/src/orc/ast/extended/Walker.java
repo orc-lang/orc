@@ -11,9 +11,9 @@ import orc.ast.extended.declaration.ClassDeclaration;
 import orc.ast.extended.declaration.DefsDeclaration;
 import orc.ast.extended.declaration.SiteDeclaration;
 import orc.ast.extended.declaration.ValDeclaration;
-import orc.ast.extended.declaration.defn.Defn;
-import orc.ast.extended.declaration.defn.DefnClause;
-import orc.ast.extended.declaration.defn.DefnType;
+import orc.ast.extended.declaration.def.DefMember;
+import orc.ast.extended.declaration.def.DefMemberClause;
+import orc.ast.extended.declaration.def.DefMemberType;
 import orc.ast.extended.declaration.type.DatatypeDeclaration;
 import orc.ast.extended.declaration.type.TypeAliasDeclaration;
 import orc.ast.extended.declaration.type.TypeDeclaration;
@@ -21,6 +21,7 @@ import orc.ast.extended.expression.AssertType;
 import orc.ast.extended.expression.Atomic;
 import orc.ast.extended.expression.Call;
 import orc.ast.extended.expression.Catch;
+import orc.ast.extended.expression.CatchHandler;
 import orc.ast.extended.expression.ConsExpr;
 import orc.ast.extended.expression.Declare;
 import orc.ast.extended.expression.Dot;
@@ -55,8 +56,8 @@ import orc.ast.extended.pattern.VariablePattern;
 import orc.ast.extended.pattern.WildcardPattern;
 import orc.ast.extended.type.Constructor;
 import orc.ast.extended.type.Type;
-import orc.ast.oil.expression.argument.Arg;
-import orc.ast.simple.argument.NamedVar;
+import orc.ast.oil.expression.argument.Argument;
+import orc.ast.simple.argument.NamedVariable;
 
 /**
  * 
@@ -481,7 +482,7 @@ public class Walker implements Visitor<Void> {
 
 	public Void visit(DefsDeclaration decl) {
 		if (!this.enter(decl)) return null;
-		for (Defn def : decl.defs) def.accept(this);
+		for (DefMember def : decl.defs) def.accept(this);
 		this.leave(decl);
 		return null;
 	}
@@ -524,7 +525,7 @@ public class Walker implements Visitor<Void> {
 	}
 
 
-	public Void visit(DefnClause defn) {
+	public Void visit(DefMemberClause defn) {
 		if (!this.enter(defn)) return null;
 		this.enterScope(defn);
 		for (Pattern formal : defn.formals) formal.accept(this);
@@ -535,15 +536,15 @@ public class Walker implements Visitor<Void> {
 		return null;
 	}
 	
-	public boolean enter(DefnClause defn) {
+	public boolean enter(DefMemberClause defn) {
 		return enter((ASTNode)defn);
 	}
 	
-	public void leave(DefnClause defn) {
+	public void leave(DefMemberClause defn) {
 	}
 
 
-	public Void visit(DefnType defn) {
+	public Void visit(DefMemberType defn) {
 		if (!this.enter(defn)) return null;
 		this.enterScope(defn);
 //		for (Type arg : defn.argTypes) arg.accept(this);
@@ -553,11 +554,11 @@ public class Walker implements Visitor<Void> {
 		return null;
 	}
 	
-	public boolean enter(DefnType defn) {
+	public boolean enter(DefMemberType defn) {
 		return enter((ASTNode)defn);
 	}
 	
-	public void leave(DefnType defn) {
+	public void leave(DefMemberType defn) {
 	}
 
 

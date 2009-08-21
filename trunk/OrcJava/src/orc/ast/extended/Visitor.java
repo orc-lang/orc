@@ -12,8 +12,8 @@ import orc.ast.extended.declaration.Declaration;
 import orc.ast.extended.declaration.DefsDeclaration;
 import orc.ast.extended.declaration.SiteDeclaration;
 import orc.ast.extended.declaration.ValDeclaration;
-import orc.ast.extended.declaration.defn.DefnClause;
-import orc.ast.extended.declaration.defn.DefnType;
+import orc.ast.extended.declaration.def.DefMemberClause;
+import orc.ast.extended.declaration.def.DefMemberType;
 import orc.ast.extended.declaration.type.DatatypeDeclaration;
 import orc.ast.extended.declaration.type.TypeAliasDeclaration;
 import orc.ast.extended.declaration.type.TypeDeclaration;
@@ -21,6 +21,7 @@ import orc.ast.extended.expression.AssertType;
 import orc.ast.extended.expression.Atomic;
 import orc.ast.extended.expression.Call;
 import orc.ast.extended.expression.Catch;
+import orc.ast.extended.expression.CatchHandler;
 import orc.ast.extended.expression.ConsExpr;
 import orc.ast.extended.expression.Declare;
 import orc.ast.extended.expression.Dot;
@@ -53,7 +54,7 @@ import orc.ast.extended.pattern.TypedPattern;
 import orc.ast.extended.pattern.VariablePattern;
 import orc.ast.extended.pattern.WildcardPattern;
 import orc.ast.extended.type.Type;
-import orc.ast.simple.argument.NamedVar;
+import orc.ast.simple.argument.NamedVariable;
 
 /**
  * Visitor for extended ASTs.
@@ -91,8 +92,8 @@ public interface Visitor<E> {
 	public E visit(DefsDeclaration decl);
 	public E visit(SiteDeclaration decl);
 	public E visit(ValDeclaration decl);
-	public E visit(DefnClause defn);
-	public E visit(DefnType defn);
+	public E visit(DefMemberClause defn);
+	public E visit(DefMemberType defn);
 	public E visit(DatatypeDeclaration decl);
 	public E visit(TypeAliasDeclaration decl);
 	public E visit(TypeDeclaration decl);

@@ -5,15 +5,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ArrayList;
 
-import orc.ast.extended.CatchHandler;
 import orc.ast.extended.Visitor;
 import orc.ast.extended.pattern.*;
 import orc.ast.extended.type.AssertedType;
 import orc.ast.extended.type.Type;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;
-import orc.ast.extended.declaration.defn.Clause;
-import orc.ast.simple.argument.Var;
+import orc.ast.extended.declaration.def.Clause;
+import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.HasType;
 import orc.ast.simple.expression.Throw;
 
@@ -32,8 +31,8 @@ public class Catch extends Expression {
 	
 	public orc.ast.simple.expression.Expression simplify() throws CompilationException {
 		
-		Var e = new Var();
-		List<Var> formals = new ArrayList<Var>();
+		Variable e = new Variable();
+		List<Variable> formals = new ArrayList<Variable>();
 		formals.add(e);
 		
 		/*
@@ -61,10 +60,10 @@ public class Catch extends Expression {
 		}
 		
 		orc.ast.simple.expression.Expression simpleTryBlock = tryBlock.simplify();
-		Var v = new Var();
+		Variable v = new Variable();
 		List<String> l = new ArrayList<String>();
 		SourceLocation sl = getSourceLocation();
-		orc.ast.simple.Definition def = new orc.ast.simple.Definition(v, formals, body, l, null, null, sl);
+		orc.ast.simple.expression.Def def = new orc.ast.simple.expression.Def(v, formals, body, l, null, null, sl);
 		return new orc.ast.simple.expression.Catch(def, simpleTryBlock);
 	}
 	

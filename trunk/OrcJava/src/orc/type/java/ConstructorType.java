@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import orc.ast.oil.expression.argument.Arg;
+import orc.ast.oil.expression.argument.Argument;
 import orc.env.Env;
 import orc.error.compiletime.typing.TypeArityException;
 import orc.error.compiletime.typing.TypeException;
@@ -36,7 +36,7 @@ public class ConstructorType extends Type {
 	}
 
 	@Override
-	public Type call(Env<Type> ctx, Env<Type> typectx, List<Arg> args,
+	public Type call(Env<Type> ctx, Env<Type> typectx, List<Argument> args,
 			List<Type> typeActuals) throws TypeException {
 		
 		/* Type inference for type parameters to Java constructors is 
@@ -47,7 +47,7 @@ public class ConstructorType extends Type {
 			typeActuals = new LinkedList<Type>();
 		}
 		
-		String f = Arg.asField(args);
+		String f = Argument.asField(args);
 		Map<java.lang.reflect.TypeVariable, orc.type.Type> javaCtx = Type.makeJavaCtx(cls, typeActuals);
 		
 		if (f != null) {

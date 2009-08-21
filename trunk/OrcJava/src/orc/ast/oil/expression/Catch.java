@@ -4,20 +4,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import orc.ast.oil.Def;
 import orc.ast.oil.Visitor;
-import orc.ast.oil.xml.Expression;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.type.Type;
 
-public class Catch extends Expr {
+public class Catch extends Expression {
 	
 	public Def handler;
-	public Expr tryBlock;
+	public Expression tryBlock;
 	
-	public Catch(Def handler, Expr tryBlock){
+	public Catch(Def handler, Expression tryBlock){
 		this.handler = handler;
 		
 		/* Currently, the argument handler type is assumed to be Bot, as a hack
@@ -60,8 +58,8 @@ public class Catch extends Expr {
 		return visitor.visit(this);
 	}
 	
-	public Expression marshal() throws CompilationException {
-		return new orc.ast.oil.xml.Catch(handler.marshal(), tryBlock.marshal());
+	public orc.ast.xml.expression.Expression marshal() throws CompilationException {
+		return new orc.ast.xml.expression.Catch(handler.marshal(), tryBlock.marshal());
 	}
 
 }

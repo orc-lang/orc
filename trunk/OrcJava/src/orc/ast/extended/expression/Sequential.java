@@ -4,8 +4,8 @@ import orc.ast.extended.Visitor;
 import orc.ast.extended.pattern.Pattern;
 import orc.ast.extended.pattern.PatternSimplifier;
 import orc.ast.extended.pattern.WildcardPattern;
-import orc.ast.simple.WithLocation;
-import orc.ast.simple.argument.Var;
+import orc.ast.simple.argument.Variable;
+import orc.ast.simple.expression.WithLocation;
 import orc.error.compiletime.CompilationException;
 
 public class Sequential extends Expression {
@@ -32,8 +32,8 @@ public class Sequential extends Expression {
 		orc.ast.simple.expression.Expression source = left.simplify();
 		orc.ast.simple.expression.Expression target = right.simplify();
 		
-		Var s = new Var();
-		Var t = new Var();
+		Variable s = new Variable();
+		Variable t = new Variable();
 		
 		PatternSimplifier pv = p.process(s);
 		

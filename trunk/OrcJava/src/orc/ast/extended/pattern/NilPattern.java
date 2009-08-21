@@ -1,10 +1,10 @@
 package orc.ast.extended.pattern;
 
 import orc.ast.extended.Visitor;
-import orc.ast.simple.WithLocation;
-import orc.ast.simple.argument.Var;
+import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.Call;
 import orc.ast.simple.expression.Expression;
+import orc.ast.simple.expression.WithLocation;
 import orc.error.compiletime.PatternException;
 import xtc.util.Utilities;
 
@@ -20,10 +20,10 @@ public class NilPattern extends Pattern {
 //	}
 
 	@Override
-	public void process(Var fragment, PatternSimplifier visitor)
+	public void process(Variable fragment, PatternSimplifier visitor)
 			throws PatternException {
 		
-		Var nilp = new Var();
+		Variable nilp = new Variable();
 		visitor.assign(nilp, new WithLocation(
 				Pattern.trynil(fragment),
 				getSourceLocation()));

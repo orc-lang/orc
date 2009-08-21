@@ -8,7 +8,7 @@ import java.util.LinkedList;
 import java.util.Stack;
 import java.util.List;
 
-import orc.ast.oil.expression.argument.Arg;
+import orc.ast.oil.expression.argument.Argument;
 import orc.env.Env;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
@@ -512,7 +512,7 @@ public class Token implements Serializable, Locatable {
 	 * @return value, or an error if the variable is undefined
 	 * @throws SiteResolutionException 
 	 */
-	public final Object lookup(Arg var) {
+	public final Object lookup(Argument var) {
 		return var.resolve(env);
 	}
 	

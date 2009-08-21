@@ -4,16 +4,18 @@ import java.util.LinkedList;
 
 import orc.ast.oil.expression.Call;
 import orc.ast.oil.expression.Catch;
-import orc.ast.oil.expression.Defs;
-import orc.ast.oil.expression.Expr;
+import orc.ast.oil.expression.Def;
+import orc.ast.oil.expression.DeclareDefs;
+import orc.ast.oil.expression.Expression;
 import orc.ast.oil.expression.Pruning;
 import orc.ast.oil.expression.Sequential;
 import orc.ast.oil.expression.Otherwise;
 import orc.ast.oil.expression.Throw;
+import orc.ast.oil.expression.WithLocation;
 import orc.ast.oil.expression.argument.Constant;
 import orc.ast.oil.expression.argument.Field;
 import orc.ast.oil.expression.argument.Site;
-import orc.ast.oil.expression.argument.Var;
+import orc.ast.oil.expression.argument.Variable;
 import orc.env.Env;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;
@@ -24,7 +26,7 @@ import orc.error.compiletime.CompilationException;
  * @author quark
  */
 public class UnguardedRecursionChecker extends Walker {
-	public static void check(Expr expr) throws CompilationException {
+	public static void check(Expression expr) throws CompilationException {
 		UnguardedRecursionChecker checker = new UnguardedRecursionChecker();
 		expr.accept(checker);
 		if (checker.problems.size() > 0)
@@ -40,7 +42,7 @@ public class UnguardedRecursionChecker extends Walker {
 	private UnguardedRecursionChecker() {}
 	
 	@Override
-	public Void visit(Defs expr) {
+	public Void visit(DeclareDefs expr) {
 		// save the environment
 		Env<Boolean> outerEnv = env.clone();
 		int ndefs = expr.defs.size();
@@ -111,7 +113,7 @@ public class UnguardedRecursionChecker extends Walker {
 	}
 
 	@Override
-	public Void visit(Var arg) {
+	public Void visit(Variable arg) {
 		// check whether the var refers to an unguarded outer
 		// definition in the environment
 		if (arg.resolveGeneric(env)) {

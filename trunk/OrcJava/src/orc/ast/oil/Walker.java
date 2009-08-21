@@ -1,10 +1,11 @@
 package orc.ast.oil;
 
 import orc.ast.oil.expression.Atomic;
+import orc.ast.oil.expression.Def;
 import orc.ast.oil.expression.Parallel;
 import orc.ast.oil.expression.Call;
 import orc.ast.oil.expression.Catch;
-import orc.ast.oil.expression.Defs;
+import orc.ast.oil.expression.DeclareDefs;
 import orc.ast.oil.expression.HasType;
 import orc.ast.oil.expression.Isolated;
 import orc.ast.oil.expression.Pruning;
@@ -12,12 +13,13 @@ import orc.ast.oil.expression.Sequential;
 import orc.ast.oil.expression.Otherwise;
 import orc.ast.oil.expression.Stop;
 import orc.ast.oil.expression.Throw;
-import orc.ast.oil.expression.TypeDecl;
-import orc.ast.oil.expression.argument.Arg;
+import orc.ast.oil.expression.DeclareType;
+import orc.ast.oil.expression.WithLocation;
+import orc.ast.oil.expression.argument.Argument;
 import orc.ast.oil.expression.argument.Constant;
 import orc.ast.oil.expression.argument.Field;
 import orc.ast.oil.expression.argument.Site;
-import orc.ast.oil.expression.argument.Var;
+import orc.ast.oil.expression.argument.Variable;
 
 /**
  * Abstract base class tree walker for Oil expressions.
@@ -59,14 +61,14 @@ public abstract class Walker implements Visitor<Void> {
 	public Void visit(Call expr) {
 		this.enter(expr);
 		expr.callee.accept(this);
-		for (Arg a : expr.args) a.accept(this);
+		for (Argument a : expr.args) a.accept(this);
 		this.leave(expr);
 		return null;
 	}
 	public void enter(Call expr) {};	
 	public void leave(Call expr) {};
 
-	public Void visit(Defs expr) {
+	public Void visit(DeclareDefs expr) {
 		this.enter(expr);
 		this.enterScope(expr.defs.size());
 		for (Def def : expr.defs) {
@@ -83,8 +85,8 @@ public abstract class Walker implements Visitor<Void> {
 	}
 	public void enter(Def def) {};	
 	public void leave(Def def) {};
-	public void enter(Defs expr) {};	
-	public void leave(Defs expr) {};
+	public void enter(DeclareDefs expr) {};	
+	public void leave(DeclareDefs expr) {};
 
 	public Void visit(Stop arg) {
 		this.enter(arg);
@@ -161,13 +163,13 @@ public abstract class Walker implements Visitor<Void> {
 	public void enter(Site arg) {};
 	public void leave(Site arg) {};
 	
-	public Void visit(Var arg) {
+	public Void visit(Variable arg) {
 		this.enter(arg);
 		this.leave(arg);
 		return null;
 	}
-	public void enter(Var arg) {};
-	public void leave(Var arg) {};
+	public void enter(Variable arg) {};
+	public void leave(Variable arg) {};
 	
 	
 	public Void visit(HasType expr) {
@@ -179,14 +181,14 @@ public abstract class Walker implements Visitor<Void> {
 	public void enter(HasType expr) {};	
 	public void leave(HasType expr) {};
 
-	public Void visit(TypeDecl expr) {
+	public Void visit(DeclareType expr) {
 		this.enter(expr);
 		expr.body.accept(this);
 		this.leave(expr);
 		return null;
 	}
-	public void enter(TypeDecl expr) {};	
-	public void leave(TypeDecl expr) {};
+	public void enter(DeclareType expr) {};	
+	public void leave(DeclareType expr) {};
 	
 	//TODO:
 	public Void visit(Catch catchExpr){

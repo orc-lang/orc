@@ -3,10 +3,9 @@ package orc.ast.oil.expression;
 import java.util.Set;
 
 import orc.ast.oil.Visitor;
-import orc.ast.oil.xml.Expression;
 import orc.ast.simple.argument.Argument;
-import orc.ast.simple.argument.NamedVar;
-import orc.ast.simple.argument.Var;
+import orc.ast.simple.argument.NamedVariable;
+import orc.ast.simple.argument.Variable;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
@@ -14,12 +13,12 @@ import orc.runtime.nodes.Leave;
 import orc.runtime.nodes.Node;
 import orc.type.Type;
 
-public class Otherwise extends Expr {
+public class Otherwise extends Expression {
 
-	public Expr left;
-	public Expr right;
+	public Expression left;
+	public Expression right;
 	
-	public Otherwise(Expr left, Expr right)
+	public Otherwise(Expression left, Expression right)
 	{
 		this.left = left;
 		this.right = right;
@@ -58,7 +57,7 @@ public class Otherwise extends Expr {
 	}
 
 	@Override
-	public Expression marshal() throws CompilationException {
-		return new orc.ast.oil.xml.Semicolon(left.marshal(), right.marshal());
+	public orc.ast.xml.expression.Expression marshal() throws CompilationException {
+		return new orc.ast.xml.expression.Otherwise(left.marshal(), right.marshal());
 	}
 }

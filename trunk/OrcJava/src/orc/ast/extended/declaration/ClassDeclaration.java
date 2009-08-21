@@ -3,10 +3,10 @@ package orc.ast.extended.declaration;
 import orc.ast.extended.Visitor;
 import orc.ast.extended.type.ClassnameType;
 import orc.ast.extended.type.SiteType;
-import orc.ast.simple.WithLocation;
 import orc.ast.simple.argument.Argument;
-import orc.ast.simple.argument.NamedVar;
-import orc.ast.simple.argument.Var;
+import orc.ast.simple.argument.NamedVariable;
+import orc.ast.simple.argument.Variable;
+import orc.ast.simple.expression.WithLocation;
 import orc.runtime.sites.java.ClassProxy;
 
 /**
@@ -32,14 +32,14 @@ public class ClassDeclaration extends Declaration {
 
 	public orc.ast.simple.expression.Expression bindto(orc.ast.simple.expression.Expression target) {
 		
-		NamedVar x = new NamedVar(varname);
-		Var v = new Var();
+		NamedVariable x = new NamedVariable(varname);
+		Variable v = new Variable();
 		
 		orc.ast.sites.Site s = orc.ast.sites.Site.build(orc.ast.sites.Site.JAVA, classname);
 		Argument a = new orc.ast.simple.argument.Site(s);
 		
 		return new WithLocation(
-			new orc.ast.simple.expression.TypeDecl(new ClassnameType(classname),
+			new orc.ast.simple.expression.DeclareType(new ClassnameType(classname),
 				varname,
 				new orc.ast.simple.expression.Pruning(target.subvar(v,x), new orc.ast.simple.expression.Let(a), v)),
 			getSourceLocation());

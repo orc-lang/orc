@@ -5,11 +5,11 @@ import orc.ast.extended.expression.Expression.Arg;
 import orc.ast.extended.pattern.Pattern;
 import orc.ast.extended.pattern.PatternSimplifier;
 import orc.ast.extended.pattern.VariablePattern;
-import orc.ast.simple.WithLocation;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;
 import orc.ast.extended.pattern.WildcardPattern;
-import orc.ast.simple.argument.Var;
+import orc.ast.simple.argument.Variable;
+import orc.ast.simple.expression.WithLocation;
 
 /**
  * @author matsuoka 

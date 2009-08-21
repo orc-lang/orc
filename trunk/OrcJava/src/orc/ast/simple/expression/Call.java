@@ -7,11 +7,9 @@ import java.util.List;
 import java.util.Set;
 
 import orc.ast.extended.type.Type;
-import orc.ast.oil.expression.Expr;
-import orc.ast.oil.expression.argument.Arg;
 import orc.ast.simple.argument.Argument;
-import orc.ast.simple.argument.NamedVar;
-import orc.ast.simple.argument.Var;
+import orc.ast.simple.argument.NamedVariable;
+import orc.ast.simple.argument.Variable;
 import orc.env.Env;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
@@ -62,7 +60,7 @@ public class Call extends Expression {
 	}
 	
 	@Override
-	public Expression subst(Argument a, NamedVar x) {
+	public Expression subst(Argument a, NamedVariable x) {
 		List<Argument> newargs = new LinkedList<Argument>();
 		for (Argument b : args)	{
 			newargs.add(b.subst(a, x));
@@ -70,8 +68,8 @@ public class Call extends Expression {
 		return new Call(callee.subst(a, x), newargs, typeArgs);
 	}
 
-	public Set<Var> vars() {
-		Set<Var> freeset = new HashSet<Var>();
+	public Set<Variable> vars() {
+		Set<Variable> freeset = new HashSet<Variable>();
 		callee.addFree(freeset);
 		for(Argument a : args) {
 			a.addFree(freeset);
@@ -80,11 +78,11 @@ public class Call extends Expression {
 	}
 
 	@Override
-	public Expr convert(Env<Var> vars, Env<String> typevars) throws CompilationException {
+	public orc.ast.oil.expression.Expression convert(Env<Variable> vars, Env<String> typevars) throws CompilationException {
 		
-		Arg newcallee = callee.convert(vars);
+		orc.ast.oil.expression.argument.Argument newcallee = callee.convert(vars);
 		
-		List<Arg> newargs = new ArrayList<Arg>();
+		List<orc.ast.oil.expression.argument.Argument> newargs = new ArrayList<orc.ast.oil.expression.argument.Argument>();
 		for(Argument arg : args) {
 			newargs.add(arg.convert(vars));
 		}

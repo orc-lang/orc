@@ -3,7 +3,7 @@
  */
 package orc.runtime.nodes;
 
-import orc.ast.simple.argument.Var;
+import orc.ast.simple.argument.Variable;
 import orc.error.runtime.TokenLimitReachedError;
 import orc.runtime.Token;
 import orc.runtime.regions.GroupRegion;

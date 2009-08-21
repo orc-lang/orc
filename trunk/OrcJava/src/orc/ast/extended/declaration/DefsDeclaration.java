@@ -12,14 +12,14 @@ import java.util.Map.Entry;
 
 import orc.ast.extended.Visitor;
 import orc.ast.extended.declaration.DFS.direction;
-import orc.ast.extended.declaration.defn.AggregateDefn;
-import orc.ast.extended.declaration.defn.Clause;
-import orc.ast.extended.declaration.defn.Defn;
-import orc.ast.extended.declaration.defn.DefnClause;
+import orc.ast.extended.declaration.def.AggregateDef;
+import orc.ast.extended.declaration.def.Clause;
+import orc.ast.extended.declaration.def.DefMember;
+import orc.ast.extended.declaration.def.DefMemberClause;
 import orc.ast.extended.expression.Expression;
-import orc.ast.simple.Definition;
-import orc.ast.simple.WithLocation;
 import orc.ast.simple.argument.*;
+import orc.ast.simple.expression.Def;
+import orc.ast.simple.expression.WithLocation;
 import orc.error.compiletime.CompilationException;
 
 /**
@@ -36,9 +36,9 @@ import orc.error.compiletime.CompilationException;
 
 public class DefsDeclaration extends Declaration {
 
-	public List<Defn> defs;
+	public List<DefMember> defs;
 	
-	public DefsDeclaration(List<Defn> defs)
+	public DefsDeclaration(List<DefMember> defs)
 	{
 		this.defs = defs;
 	}
@@ -46,33 +46,33 @@ public class DefsDeclaration extends Declaration {
 	public orc.ast.simple.expression.Expression bindto(orc.ast.simple.expression.Expression target) throws CompilationException {
 		
 		
-		Map<String, AggregateDefn> dmap = new TreeMap<String, AggregateDefn>(); 
+		Map<String, AggregateDef> dmap = new TreeMap<String, AggregateDef>(); 
 		
 		// Aggregate all of the definitions in the list into the map
-		for (Defn d : defs) {
+		for (DefMember d : defs) {
 			String name = d.name;
 			if (!dmap.containsKey(name)) {
-				dmap.put(name, new AggregateDefn());
+				dmap.put(name, new AggregateDef());
 			}
 			d.extend(dmap.get(name));
 		}
 		
 		// Associate the names of the definitions with their bound variables
-		Map<NamedVar, Var> vmap = new TreeMap<NamedVar, Var>();
+		Map<NamedVariable, Variable> vmap = new TreeMap<NamedVariable, Variable>();
 		
-		for (Entry<String, AggregateDefn> e : dmap.entrySet()) {
-			NamedVar x = new NamedVar(e.getKey());
-			Var v = e.getValue().getVar();
+		for (Entry<String, AggregateDef> e : dmap.entrySet()) {
+			NamedVariable x = new NamedVariable(e.getKey());
+			Variable v = e.getValue().getVar();
 			vmap.put(x,v);
 		}
 		
 		// Create the new list of simplified definitions,
 		// with their names mutually bound.
 		
-		List<orc.ast.simple.Definition> newdefs = new LinkedList<orc.ast.simple.Definition>();
+		List<orc.ast.simple.expression.Def> newdefs = new LinkedList<orc.ast.simple.expression.Def>();
 		
-		for (AggregateDefn d : dmap.values()) {
-			Definition newd = d.simplify().suball(vmap);
+		for (AggregateDef d : dmap.values()) {
+			Def newd = d.simplify().suball(vmap);
 			newdefs.add(newd);
 		}
 		
@@ -81,11 +81,11 @@ public class DefsDeclaration extends Declaration {
 		
 		// Partition the list of definitions into mutually recursive groups,
 		// and bind them onto the target expression in the correct order
-		List<List<Definition>> defparts = defpartition(newdefs);
+		List<List<Def>> defparts = defpartition(newdefs);
 		
 		orc.ast.simple.expression.Expression result = newtarget;
-		for (List<Definition> part : defparts) {
-			result = new orc.ast.simple.expression.Defs(part, result);
+		for (List<Def> part : defparts) {
+			result = new orc.ast.simple.expression.DeclareDefs(part, result);
 		}
 		
 		// Attach a source location to the whole expression and return it
@@ -97,18 +97,18 @@ public class DefsDeclaration extends Declaration {
 	// The list of lists is returned in reverse scope order; a definition
 	// name that appears in one sublist may not occur as a free variable in
 	// a later sublist.
-	private List<List<Definition>> defpartition(List<Definition> defs) {
+	private List<List<Def>> defpartition(List<Def> defs) {
 		
-		List<Node<Definition>> graph = new LinkedList<Node<Definition>>();
+		List<Node<Def>> graph = new LinkedList<Node<Def>>();
 		
-		for(Definition d : defs) {
-			graph.add(new Node<Definition>(d));
+		for(Def d : defs) {
+			graph.add(new Node<Def>(d));
 		}
 		
-		for (Node<Definition> n : graph) {
-			Set<Var> nvars = n.item.vars();
+		for (Node<Def> n : graph) {
+			Set<Variable> nvars = n.item.vars();
 			
-			for (Node<Definition> m : graph) {
+			for (Node<Def> m : graph) {
 				
 				if (n == m) { continue; }
 				
@@ -129,7 +129,7 @@ public class DefsDeclaration extends Declaration {
 		 */
 		DFS dfs = new DFS(DFS.direction.FORWARD);
 		dfs.search(graph);
-		Collections.sort(graph, new NodeComparator<Definition>());
+		Collections.sort(graph, new NodeComparator<Def>());
 		
 		
 		/*
@@ -142,16 +142,16 @@ public class DefsDeclaration extends Declaration {
 		 * sorted by dependency.
 		 */
 		DFS backdfs = new DFS(DFS.direction.BACKWARD);
-		List<List<Node<Definition>>> forest = backdfs.search(graph);
+		List<List<Node<Def>>> forest = backdfs.search(graph);
 		
 		
 		/*
 		 * Extract the groups of definitions from the groups of nodes and return them. 
 		 */
-		List<List<Definition>> results = new LinkedList<List<Definition>>();		
-		for(List<Node<Definition>> tree : forest) {
-			List<Definition> group = new LinkedList<Definition>();
-			for (Node<Definition> n : tree) {
+		List<List<Def>> results = new LinkedList<List<Def>>();		
+		for(List<Node<Def>> tree : forest) {
+			List<Def> group = new LinkedList<Def>();
+			for (Node<Def> n : tree) {
 				group.add(n.item);
 			}
 			results.add(group);

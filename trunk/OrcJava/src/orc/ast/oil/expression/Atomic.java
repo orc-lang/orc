@@ -11,11 +11,11 @@ import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Store;
 import orc.type.Type;
 
-public class Atomic extends Expr {
+public class Atomic extends Expression {
 
-	public Expr body;
+	public Expression body;
 	
-	public Atomic(Expr body)
+	public Atomic(Expression body)
 	{
 		this.body = body;
 	}
@@ -45,7 +45,7 @@ public class Atomic extends Expr {
 	}
 
 	@Override
-	public orc.ast.oil.xml.Expression marshal() throws CompilationException {
-		return new orc.ast.oil.xml.Atomic(body.marshal());
+	public orc.ast.xml.expression.Expression marshal() throws CompilationException {
+		return new orc.ast.xml.expression.Atomic(body.marshal());
 	}
 }

@@ -6,11 +6,9 @@ import java.util.List;
 import java.util.Set;
 
 import orc.ast.oil.Visitor;
-import orc.ast.oil.expression.argument.Arg;
-import orc.ast.oil.xml.Expression;
-import orc.ast.simple.argument.Argument;
-import orc.ast.simple.argument.NamedVar;
-import orc.ast.simple.argument.Var;
+import orc.ast.oil.expression.argument.Argument;
+import orc.ast.simple.argument.NamedVariable;
+import orc.ast.simple.argument.Variable;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.ArgumentArityException;
@@ -23,54 +21,54 @@ import orc.type.inference.Constraint;
 import orc.type.inference.InferenceRequest;
 import orc.type.tycon.Variance;
 
-public class Call extends Expr {
+public class Call extends Expression {
 
-	public Arg callee;
-	public List<Arg> args;
+	public Argument callee;
+	public List<Argument> args;
 	public List<Type> typeArgs; /* may be null to request inference */
 	
-	public Call(Arg callee, List<Arg> args, List<Type> typeArgs)
+	public Call(Argument callee, List<Argument> args, List<Type> typeArgs)
 	{
 		this.callee = callee;
 		this.args = args;
 		this.typeArgs = typeArgs;
 	}
 	
-	public Call(Arg callee, List<Arg> args)
+	public Call(Argument callee, List<Argument> args)
 	{
 		this.callee = callee;
 		this.args = args;
 	}
 	
 	/* Binary call constructor */
-	public Call(Arg callee, Arg arga, Arg argb)
+	public Call(Argument callee, Argument arga, Argument argb)
 	{
 		this.callee = callee;
-		this.args = new LinkedList<Arg>();
+		this.args = new LinkedList<Argument>();
 		this.args.add(arga);
 		this.args.add(argb);
 	}
 	
 	/* Unary call constructor */
-	public Call(Arg callee, Arg arg)
+	public Call(Argument callee, Argument arg)
 	{
 		this.callee = callee;
-		this.args = new LinkedList<Arg>();
+		this.args = new LinkedList<Argument>();
 		this.args.add(arg);
 	}
 	
 	/* Nullary call constructor */
-	public Call(Arg callee)
+	public Call(Argument callee)
 	{
 		this.callee = callee;
-		this.args = new LinkedList<Arg>();
+		this.args = new LinkedList<Argument>();
 	}
 
 	@Override
 	public void addIndices(Set<Integer> indices, int depth) {
 		
 		callee.addIndices(indices, depth);
-		for (Arg arg : args) {
+		for (Argument arg : args) {
 			arg.addIndices(indices, depth);
 		}
 	}
@@ -78,7 +76,7 @@ public class Call extends Expr {
 	public String toString() {
 		
 		String arglist = " ";
-		for (Arg a : args) {
+		for (Argument a : args) {
 			arglist += a + " ";
 		}
 	
@@ -236,13 +234,13 @@ public class Call extends Expr {
 	}
 
 	@Override
-	public Expression marshal() throws CompilationException {
-		LinkedList<orc.ast.oil.xml.Argument> arguments
-			= new LinkedList<orc.ast.oil.xml.Argument>();
-		for (orc.ast.oil.expression.argument.Arg a : args) {
+	public orc.ast.xml.expression.Expression marshal() throws CompilationException {
+		LinkedList<orc.ast.xml.expression.argument.Argument> arguments
+			= new LinkedList<orc.ast.xml.expression.argument.Argument>();
+		for (orc.ast.oil.expression.argument.Argument a : args) {
 			arguments.add(a.marshal());
 		}
-		return new orc.ast.oil.xml.Call(callee.marshal(),
-				arguments.toArray(new orc.ast.oil.xml.Argument[]{}));
+		return new orc.ast.xml.expression.Call(callee.marshal(),
+				arguments.toArray(new orc.ast.xml.expression.argument.Argument[]{}));
 	}
 }

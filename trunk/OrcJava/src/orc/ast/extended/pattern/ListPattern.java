@@ -4,9 +4,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import orc.ast.extended.Visitor;
-import orc.ast.simple.WithLocation;
-import orc.ast.simple.argument.Var;
+import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.Expression;
+import orc.ast.simple.expression.WithLocation;
 import orc.error.compiletime.PatternException;
 
 public class ListPattern extends Pattern {
@@ -29,7 +29,7 @@ public class ListPattern extends Pattern {
 
 
 	@Override
-	public void process(Var fragment, PatternSimplifier visitor)
+	public void process(Variable fragment, PatternSimplifier visitor)
 			throws PatternException {
 		// HACK: a list pattern is precisely equivalent to a series of cons
 		// patterns terminated by a nil pattern. However we want to record
@@ -38,7 +38,7 @@ public class ListPattern extends Pattern {
 		boolean hasLocation = false;
 		
 		for (Pattern p : ps) {
-			Var pair = new Var();
+			Variable pair = new Variable();
 			Expression e = Pattern.trycons(fragment);
 			if (!hasLocation) {
 				e = new WithLocation(e, getSourceLocation());
@@ -47,15 +47,15 @@ public class ListPattern extends Pattern {
 			visitor.assign(pair, e);
 			visitor.require(pair);
 			
-			Var head = new Var();
+			Variable head = new Variable();
 			visitor.assign(head, Pattern.nth(pair, 0));
 			p.process(head, visitor);
 			
-			fragment = new Var();
+			fragment = new Variable();
 			visitor.assign(fragment, Pattern.nth(pair, 1));
 		}
 		
-		Var nilp = new Var();
+		Variable nilp = new Variable();
 		Expression e = Pattern.trynil(fragment);
 		if (!hasLocation) {
 			e = new WithLocation(e, getSourceLocation());

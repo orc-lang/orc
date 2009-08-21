@@ -108,11 +108,11 @@ public class DatatypeTycon extends Tycon {
 	}
 
 	@Override
-	public orc.ast.oil.xml.type.Type marshal() throws UnrepresentableTypeException {
-		orc.ast.oil.xml.type.Type[][] newCs = new orc.ast.oil.xml.type.Type[cs.size()][];
+	public orc.ast.xml.type.Type marshal() throws UnrepresentableTypeException {
+		orc.ast.xml.type.Type[][] newCs = new orc.ast.xml.type.Type[cs.size()][];
 		int i = 0;
 		for (List<Type> c : cs) {
-			newCs[i] = new orc.ast.oil.xml.type.Type[c.size()];
+			newCs[i] = new orc.ast.xml.type.Type[c.size()];
 			int j = 0;
 			for (Type t : c) {
 				newCs[i][j] = t.marshal();
@@ -120,6 +120,6 @@ public class DatatypeTycon extends Tycon {
 			}
 			++i;
 		}
-		return new orc.ast.oil.xml.type.Datatype(name, newCs, vs.size());
+		return new orc.ast.xml.type.Datatype(name, newCs, vs.size());
 	}
 }

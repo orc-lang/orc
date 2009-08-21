@@ -1,7 +1,7 @@
 package orc.ast.oil;
 
-import orc.ast.oil.expression.Expr;
-import orc.ast.oil.expression.argument.Var;
+import orc.ast.oil.expression.Expression;
+import orc.ast.oil.expression.argument.Variable;
 
 /**
  * Renumber variables in an expression according
@@ -14,7 +14,7 @@ public class RenameVariables extends Walker {
 		public int rename(int var);
 	}
 	
-	public static void rename(Expr expr, Renamer r) {
+	public static void rename(Expression expr, Renamer r) {
 		expr.accept(new RenameVariables(r));
 	}
 	
@@ -32,7 +32,7 @@ public class RenameVariables extends Walker {
 	public void leaveScope(int n) { depth -= n; }
 	
 	@Override
-	public void leave(Var arg) {
+	public void leave(Variable arg) {
 		arg.index = depth + renamer.rename(arg.index - depth);
 	}
 }

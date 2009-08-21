@@ -12,8 +12,8 @@ import java.util.Map.Entry;
 
 import orc.ast.extended.type.Type;
 import orc.ast.simple.argument.Argument;
-import orc.ast.simple.argument.NamedVar;
-import orc.ast.simple.argument.Var;
+import orc.ast.simple.argument.NamedVariable;
+import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.Expression;
 import orc.ast.simple.expression.Let;
 import orc.ast.simple.expression.Parallel;
@@ -33,28 +33,28 @@ public class PatternSimplifier {
 	
 	List<Argument> requiredVars;
 	List<Argument> boundVars;
-	Map<NamedVar, Integer> bindingEntries;
-	Map<Var, Type> ascriptions;
+	Map<NamedVariable, Integer> bindingEntries;
+	Map<Variable, Type> ascriptions;
 	List<Attachment> attachments;
 	
 	public PatternSimplifier() 
 	{
 		this.requiredVars = new LinkedList<Argument>();
 		this.boundVars = new LinkedList<Argument>();
-		this.bindingEntries = new TreeMap<NamedVar,Integer>();
+		this.bindingEntries = new TreeMap<NamedVariable,Integer>();
 		this.attachments = new LinkedList<Attachment>();
-		this.ascriptions = new HashMap<Var, Type>();
+		this.ascriptions = new HashMap<Variable, Type>();
 	}
 
-	public void assign(Var s, Expression e) {
+	public void assign(Variable s, Expression e) {
 		attachments.add(0, new Attachment(s,e));
 	}
 	
-	public void ascribe(Var s, Type t) {
+	public void ascribe(Variable s, Type t) {
 		ascriptions.put(s, t);
 	}
 	
-	public void subst(Var s, NamedVar x) throws NonlinearPatternException {
+	public void subst(Variable s, NamedVariable x) throws NonlinearPatternException {
 		
 		if (bindingEntries.containsKey(x)) {
 			throw new NonlinearPatternException(x);
@@ -64,11 +64,11 @@ public class PatternSimplifier {
 		}	
 	}
 	
-	public void require(Var s) {
+	public void require(Variable s) {
 		requiredVars.add(s);
 	}
 	
-	private int bind(Var s) {
+	private int bind(Variable s) {
 		int i = boundVars.indexOf(s);
 		
 		if (i < 0) {
@@ -79,7 +79,7 @@ public class PatternSimplifier {
 		return i;
 	}
 	
-	public Set<NamedVar> vars() {
+	public Set<NamedVariable> vars() {
 		return bindingEntries.keySet();
 	}
 	
@@ -94,7 +94,7 @@ public class PatternSimplifier {
 		
 		if (requiredVars.size() > 0) {
 			Expression required = new Let(requiredVars); 
-			root = new Sequential(required, root, new Var());
+			root = new Sequential(required, root, new Variable());
 		}
 		
 		for (Attachment a : attachments) {
@@ -104,27 +104,27 @@ public class PatternSimplifier {
 		return root;
 	}
 	
-	public Expression target(Var u, Expression g) {
+	public Expression target(Variable u, Expression g) {
 		
 		/* If there is exactly one bound value, u has just that value;
 		 * it is not a tuple, so we do not do any lookup.
 		 */
 		if (boundVars.size() == 1) {
-			for (Entry<NamedVar, Integer> e : bindingEntries.entrySet()) {
-				NamedVar x = e.getKey();
+			for (Entry<NamedVariable, Integer> e : bindingEntries.entrySet()) {
+				NamedVariable x = e.getKey();
 				// we don't use the index since it must be 0.
 				g = g.subvar(u, x);
 			}
 		}
 		/* Otherwise, each entry is retrieved with a lookup */
 		else {		
-			for (Entry<NamedVar, Integer> e : bindingEntries.entrySet()) {
-				NamedVar x = e.getKey();
+			for (Entry<NamedVariable, Integer> e : bindingEntries.entrySet()) {
+				NamedVariable x = e.getKey();
 				
 				int i = e.getValue();
 				Expression getter = Pattern.nth(u,i);
 				
-				Var v = new Var();
+				Variable v = new Variable();
 				g = g.subvar(v, x);
 				g = new Pruning(g, getter, v);
 			}

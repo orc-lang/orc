@@ -4,6 +4,7 @@ import orc.ast.extended.Visitor;
 import orc.ast.extended.expression.Literal;
 import orc.ast.simple.*;
 import orc.ast.simple.argument.*;
+import orc.ast.simple.expression.WithLocation;
 import orc.error.compiletime.PatternException;
 import xtc.util.Utilities;
 
@@ -34,9 +35,9 @@ public class LiteralPattern extends Pattern {
 //	}
 
 	@Override
-	public void process(Var fragment, PatternSimplifier visitor)
+	public void process(Variable fragment, PatternSimplifier visitor)
 			throws PatternException {
-		Var test = new Var();
+		Variable test = new Variable();
 		visitor.assign(test, new WithLocation(
 				Pattern.compare(fragment, lit.argify().asArg()),
 				getSourceLocation()));

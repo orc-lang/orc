@@ -3,7 +3,6 @@ package orc.ast.oil.expression.argument;
 import java.util.Set;
 
 import orc.ast.oil.Visitor;
-import orc.ast.oil.xml.Argument;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
@@ -17,7 +16,7 @@ import orc.type.ground.Message;
  * @author dkitchin
  */
 
-public class Field extends Arg implements Comparable<Field>{
+public class Field extends Argument implements Comparable<Field>{
 	private static final long serialVersionUID = 1L;
 	public String key;
 	
@@ -58,7 +57,7 @@ public class Field extends Arg implements Comparable<Field>{
 	}
 
 	@Override
-	public Argument marshal() throws CompilationException {
-		return new orc.ast.oil.xml.Field(key);
+	public orc.ast.xml.expression.argument.Argument marshal() throws CompilationException {
+		return new orc.ast.xml.expression.argument.Field(key);
 	}
 }

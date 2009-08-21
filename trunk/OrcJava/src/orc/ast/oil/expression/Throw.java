@@ -6,18 +6,15 @@ import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.type.Type;
-
 import orc.ast.oil.Visitor;
-import orc.ast.oil.expression.argument.Arg;
-import orc.ast.oil.expression.argument.Var;
-import orc.ast.oil.xml.Expression;
-import orc.ast.simple.argument.Argument;
+import orc.ast.oil.expression.argument.Argument;
+import orc.ast.oil.expression.argument.Variable;
 
-public class Throw extends Expr {
+public class Throw extends Expression {
 	
-	public Expr exception;
+	public Expression exception;
 	
-	public Throw(Expr e){
+	public Throw(Expression e){
 		exception = e;
 	}
 	
@@ -42,8 +39,8 @@ public class Throw extends Expr {
 		return Type.BOT;
 	}
 	
-	public Expression marshal() throws CompilationException {
-		return new orc.ast.oil.xml.Throw(exception.marshal());
+	public orc.ast.xml.expression.Expression marshal() throws CompilationException {
+		return new orc.ast.xml.expression.Throw(exception.marshal());
 	}
 
 }

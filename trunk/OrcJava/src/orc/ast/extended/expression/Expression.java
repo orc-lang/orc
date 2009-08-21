@@ -44,7 +44,7 @@ public abstract class Expression implements ASTNode, Locatable {
 	 */
 	protected Arg argify() throws CompilationException
 	{
-		return new complexArg(new orc.ast.simple.argument.Var(), this.simplify());
+		return new complexArg(new orc.ast.simple.argument.Variable(), this.simplify());
 	}
 	
 	
@@ -116,10 +116,10 @@ public abstract class Expression implements ASTNode, Locatable {
 	 */
 	class complexArg implements Arg
 	{
-		orc.ast.simple.argument.Var v;
+		orc.ast.simple.argument.Variable v;
 		orc.ast.simple.expression.Expression nested;
 		
-		public complexArg(orc.ast.simple.argument.Var v, orc.ast.simple.expression.Expression nested)
+		public complexArg(orc.ast.simple.argument.Variable v, orc.ast.simple.expression.Expression nested)
 		{
 			this.v = v;
 			this.nested = nested;

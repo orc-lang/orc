@@ -1,7 +1,7 @@
 package orc.ast.extended.pattern;
 
 import orc.ast.extended.Visitor;
-import orc.ast.simple.argument.Var;
+import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.Call;
 import orc.ast.simple.expression.Expression;
 
@@ -11,7 +11,7 @@ public class WildcardPattern extends Pattern {
 	}
 
 	@Override
-	public void process(Var fragment, PatternSimplifier visitor) {
+	public void process(Variable fragment, PatternSimplifier visitor) {
 		// Do nothing.
 	}
 

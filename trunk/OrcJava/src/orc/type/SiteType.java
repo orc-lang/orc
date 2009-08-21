@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Set;
 
 import orc.Config;
-import orc.ast.oil.expression.TypeDecl;
-import orc.ast.oil.expression.argument.Arg;
+import orc.ast.oil.expression.DeclareType;
+import orc.ast.oil.expression.argument.Argument;
 import orc.env.Env;
 import orc.error.OrcError;
 import orc.error.compiletime.typing.MissingTypeException;
@@ -60,8 +60,8 @@ public class SiteType extends Type {
 	}
 	
 	@Override
-	public orc.ast.oil.xml.type.Type marshal() throws UnrepresentableTypeException {
-		return new orc.ast.oil.xml.type.SiteType(classname);
+	public orc.ast.xml.type.Type marshal() throws UnrepresentableTypeException {
+		return new orc.ast.xml.type.SiteType(classname);
 	}
 
 
@@ -84,7 +84,7 @@ public class SiteType extends Type {
 	}
 
 	@Override
-	public Type call(Env<Type> ctx, Env<Type> typectx, List<Arg> args, List<Type> typeActuals) throws TypeException {
+	public Type call(Env<Type> ctx, Env<Type> typectx, List<Argument> args, List<Type> typeActuals) throws TypeException {
 		// TODO Auto-generated method stub
 		return type.call(ctx, typectx, args, typeActuals);
 	}
