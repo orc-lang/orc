@@ -13,7 +13,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.imp.builders;
+package edu.utexas.cs.orceclipse.build;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.imp.builder.ProjectNatureBase;
@@ -27,7 +27,7 @@ import edu.utexas.cs.orc.orceclipse.Activator;
  * Orc project actions, and so on.
  */
 public class OrcNature extends ProjectNatureBase {
-	private static final String natureID = Activator.getInstance().getID() + ".imp.nature";
+	private static final String natureID = Activator.getInstance().getID() + ".project.orcNature";
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.imp.builder.ProjectNatureBase#getNatureID()

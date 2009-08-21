@@ -13,7 +13,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.imp.parser;
+package edu.utexas.cs.orceclipse.parse;
 
 import java.io.IOException;
 import java.io.StringReader;

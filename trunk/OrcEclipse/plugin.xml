@@ -9,7 +9,7 @@
             icon="orc16.gif"
             extensions="orc,inc"
             description="A language for distributed and concurrent programming from The University of Texas at Austin."
-            natureID="edu.utexas.cs.orc.orceclipse.imp.nature"
+            natureID="edu.utexas.cs.orc.orceclipse.project.orcNature"
             language="Orc">
       </language>
    </extension>
@@ -51,7 +51,7 @@
          name="Orc Parser Wrapper"
          point="org.eclipse.imp.runtime.parser">
       <parserWrapper
-            class="orc.imp.parser.OrcParseController"
+            class="edu.utexas.cs.orceclipse.parse.OrcParseController"
             language="Orc">
       </parserWrapper>
    </extension>
@@ -59,27 +59,27 @@
          point="org.eclipse.ui.popupMenus">
       <objectContribution
             adaptable="false"
-            id="Orc.imp.projectContextMenu"
+            id="edu.utexas.cs.orc.orceclipse.project.projectContextMenu"
             nameFilter="*"
             objectClass="org.eclipse.core.resources.IProject">
          <action
-               class="orc.imp.actions.EnableOrcNature"
+               class="edu.utexas.cs.orc.orceclipse.project.EnableOrcNature"
                enablesFor="+"
                icon="orc16.gif"
-               id="Orc.imp.actions.enableNatureAction"
+               id="edu.utexas.cs.orc.orceclipse.project.enableNatureAction"
                label="Enable Orc Builder"
                tooltip="Enable the Orc builder for this project">
          </action>
       </objectContribution>
    </extension>
    <extension
-         id="orc.imp.builder"
+         id="build.orcBuilder"
          name="Orc Compiler"
          point="org.eclipse.core.resources.builders">
       <builder
             hasNature="true">
          <run
-               class="orc.imp.builders.OrcBuilder">
+               class="edu.utexas.cs.orceclipse.build.OrcBuilder">
             <parameter
                   name="foo"
                   value="bar">
@@ -88,15 +88,15 @@
       </builder>
    </extension>
    <extension
-         id="imp.nature"
+         id="project.orcNature"
          name="Orc Nature"
          point="org.eclipse.core.resources.natures">
       <builder
-            id="edu.utexas.cs.orc.orceclipse.orc.imp.builder">
+            id="edu.utexas.cs.orc.orceclipse.build.orcBuilder">
       </builder>
       <runtime>
          <run
-               class="orc.imp.builders.OrcNature">
+               class="edu.utexas.cs.orceclipse.build.OrcNature">
          </run>
       </runtime>
    </extension>
@@ -114,7 +114,7 @@
    <extension
          point="org.eclipse.imp.runtime.tokenColorer">
       <tokenColorer
-            class="orc.imp.tokenColorer.OrcTokenColorer"
+            class="edu.utexas.cs.orceclipse.edit.OrcTokenColorer"
             language="Orc">
       </tokenColorer>
    </extension>
@@ -184,14 +184,14 @@
    <extension
          point="org.eclipse.imp.runtime.modelTreeBuilder">
       <treeBuilder
-            class="orc.imp.treeModelBuilder.OrcTreeModelBuilder"
+            class="edu.utexas.cs.orceclipse.edit.OrcTreeModelBuilder"
             language="Orc">
       </treeBuilder>
    </extension>
    <extension
          point="org.eclipse.imp.runtime.labelProvider">
       <labelProvider
-            class="orc.imp.treeModelBuilder.OrcLabelProvider"
+            class="edu.utexas.cs.orceclipse.edit.OrcLabelProvider"
             language="Orc">
       </labelProvider>
    </extension>
@@ -367,7 +367,7 @@
             name="New Orc Project"
             icon="orc16.gif"
             category="edu.utexas.cs.orc.orceclipse.wizards.OrcCategory"
-            class="edu.utexas.cs.orc.orceclipse.wizards.OrcNewProjectWizard"
+            class="edu.utexas.cs.orc.orceclipse.project.OrcNewProjectWizard"
             preferredPerspectives="edu.utexas.cs.orc.orceclipse.perspective.main"
             project="true"
             finalPerspective="edu.utexas.cs.orc.orceclipse.perspective.main"
@@ -393,7 +393,7 @@
       <image
             icon="icons/orc_ovr.gif"
             id="edu.utexas.cs.orc.orceclipse.orcProjectNatureImage"
-            natureId="edu.utexas.cs.orc.orceclipse.imp.nature">
+            natureId="edu.utexas.cs.orc.orceclipse.project.orcNature">
          <description>
             Orc project nature
          </description>

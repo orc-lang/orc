@@ -13,7 +13,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.imp.builders;
+package edu.utexas.cs.orceclipse.build;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,7 +49,7 @@ public class OrcBuilder extends BuilderBase {
 	 * Extension ID of the Orc builder, which matches the ID in the
 	 * corresponding extension definition in plugin.xml.
 	 */
-	public static final String BUILDER_ID = Activator.getInstance().getID() + ".orc.imp.builder";
+	public static final String BUILDER_ID = Activator.getInstance().getID() + ".build.orcBuilder";
 
 	/**
 	 * A marker ID that identifies problems detected by the builder

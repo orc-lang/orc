@@ -13,11 +13,12 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package edu.utexas.cs.orc.orceclipse.wizards;
+package edu.utexas.cs.orc.orceclipse.project;
 
-import orc.imp.builders.OrcNature;
 
 import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
+
+import edu.utexas.cs.orceclipse.build.OrcNature;
 
 /**
  * Adds only one aspect to the BasicNewProjectResourceWizard --
