@@ -19,7 +19,7 @@ import java.io.StringReader;
 
 import orc.Config;
 import orc.Orc;
-import orc.ast.oil.xml.Oil;
+import orc.ast.xml.Oil;
 import orc.error.compiletime.CompilationException;
 
 import org.junit.Test;
