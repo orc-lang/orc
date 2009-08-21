@@ -22,7 +22,7 @@ import orc.ast.extended.ASTNode;
 import orc.ast.extended.declaration.ClassDeclaration;
 import orc.ast.extended.declaration.SiteDeclaration;
 import orc.ast.extended.declaration.ValDeclaration;
-import orc.ast.extended.declaration.defn.Defn;
+import orc.ast.extended.declaration.def.DefMember;
 import orc.ast.extended.declaration.type.DatatypeDeclaration;
 import orc.ast.extended.declaration.type.TypeAliasDeclaration;
 import orc.ast.extended.declaration.type.TypeDeclaration;
@@ -126,7 +126,7 @@ public class OrcLabelProvider implements ILabelProvider {
 	 * @return Image representing the type of the given AST node 
 	 */
 	public static Image getImageFor(final ASTNode n) {
-		if (n instanceof Defn) {
+		if (n instanceof DefMember) {
 			return ORC_DEF_OBJ_IMAGE;
 		}
 		if (n instanceof SiteDeclaration) {
@@ -164,8 +164,8 @@ public class OrcLabelProvider implements ILabelProvider {
 	 * @return String representing a label of the given AST node 
 	 */
 	public static String getLabelFor(final ASTNode n) {
-		if (n instanceof Defn) {
-			final String name = ((Defn) n).name;
+		if (n instanceof DefMember) {
+			final String name = ((DefMember) n).name;
 			return name.equals("") ? "lambda" : "def " + name;
 		}
 		if (n instanceof SiteDeclaration) {
