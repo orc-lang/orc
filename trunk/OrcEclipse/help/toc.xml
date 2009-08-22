@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<toc label="Orc Plug-in User Guide">
+   <topic href="help/pluginhelp/overview.html" label="Orc plug-in overview">
+   </topic>
+   <topic label="Getting started">
+   </topic>
+   <topic label="Concepts">
+   </topic>
+   <topic label="Tasks">
+   </topic>
+   <topic label="Reference">
+   </topic>
+   <topic href="help/pluginhelp/tips.html" label="Tips and tricks">
+   </topic>
+   <topic href="help/pluginhelp/whatsnew.html" label="What&apos;s new">
+   </topic>
+   <topic href="help/pluginhelp/notices.html" label="Legal">
+   </topic>
+</toc>
