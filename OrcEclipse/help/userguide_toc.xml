@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<toc label="Orc Programming Language User Guide" topic="help/orcuserguide/index.html">
+   <topic href="help/orcuserguide/pr01.html" label="Introduction">
+   </topic>
+   <topic href="help/orcuserguide/ch01.html" label="1. The Orc Programming Language">
+      <topic href="help/orcuserguide/ch01.html#N10019" label="1.1. Introduction">
+      </topic>
+      <topic href="help/orcuserguide/ch01s02.html" label="1.2. Cor: A Functional Subset">
+      </topic>
+      <topic href="help/orcuserguide/ch01s03.html" label="1.3. Orc: Orchestrating services">
+      </topic>
+      <topic href="help/orcuserguide/ch01s04.html" label="1.4. Advanced Features of Orc">
+      </topic>
+   </topic>
+   <topic href="help/orcuserguide/ch02.html" label="2. Programming Methodology">
+      <topic href="help/orcuserguide/ch02.html#N10D9A" label="2.1. Syntactic and Stylistic Conventions">
+      </topic>
+      <topic href="help/orcuserguide/ch02s02.html" label="2.2. Programming Idioms">
+      </topic>
+      <topic href="help/orcuserguide/ch02s03.html" label="2.3. Larger Examples">
+      </topic>
+   </topic>
+   <topic href="help/orcuserguide/ch03.html" label="3. Accessing and Creating External Services">
+      <topic href="help/orcuserguide/ch03.html#section.services.intro" label="3.1. Introduction">
+      </topic>
+      <topic href="help/orcuserguide/ch03s02.html" label="3.2. class Sites">
+      </topic>
+      <topic href="help/orcuserguide/ch03s03.html" label="3.3. site Sites">
+      </topic>
+      <topic href="help/orcuserguide/ch03s04.html" label="3.4. Web Services">
+      </topic>
+   </topic>
+   <topic href="help/orcuserguide/ch04.html" label="4. Type Checking">
+      <topic href="help/orcuserguide/ch04.html#N1184D" label="4.1. Simple Typing">
+      </topic>
+      <topic href="help/orcuserguide/ch04s02.html" label="4.2. Polymorphism">
+      </topic>
+      <topic href="help/orcuserguide/ch04s03.html" label="4.3. Interacting with Java">
+      </topic>
+      <topic href="help/orcuserguide/ch04s04.html" label="4.4. Exception Handling">
+      </topic>
+      <topic href="help/orcuserguide/ch04s05.html" label="4.5. Syntax of Typed Orc">
+      </topic>
+   </topic>
+   <topic href="help/orcuserguide/apa.html" label="A. Complete Syntax of Orc">
+   </topic>
+   <topic href="help/orcuserguide/apb.html" label="B. Standard Library">
+      <topic href="help/orcuserguide/apb.html#N12003" label="B.1. Overview">
+      </topic>
+      <topic href="help/orcuserguide/apbs02.html" label="B.2. Types and Notation">
+      </topic>
+      <topic href="help/orcuserguide/apbs03.html" label="B.3. Reference">
+      </topic>
+   </topic>
+</toc>
