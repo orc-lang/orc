@@ -36,7 +36,7 @@ public class OrcResources {
 	/**
 	 * Name of the 16x16 icon representing an Orc include file
 	 */
-	public static final String ORC_INCLUDE_OBJ = "orc_inclue_obj";
+	public static final String ORC_INCLUDE_OBJ = "orc_include_obj";
 
 	/**
 	 * Name of the 16x16 icon representing a generic Orc object
