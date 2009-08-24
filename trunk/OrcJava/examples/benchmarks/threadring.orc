@@ -15,8 +15,6 @@ def threadRing(id, m, in, next) =
 
 val N = 503
 
-class Integer = java.lang.Integer
-
 val ring = IArray(N, lambda(_)=Buffer())
 
 def threadRingRunner(p) = 
@@ -25,12 +23,10 @@ upto(N) >i> threadRing(i+1, p, ring(i), ring((i+1) % N)) | ring(0).put(0)
 
 threadRingRunner(1000) >> 
 threadRingRunner(10000) >> 
-threadRingRunner(100000) >> 
-threadRingRunner(1000000) >> stop
+threadRingRunner(100000) >> stop 
 {-
 OUTPUT:
 498
 444
 407
-37
 -}
