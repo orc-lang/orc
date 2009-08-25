@@ -8,7 +8,7 @@ Bundle-Vendor: The University of Texas at Austin
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.jdt.core,
- org.eclipse.imp.runtime,
+ org.eclipse.imp.runtime;bundle-version="0.1.99",
  org.eclipse.debug.ui,
  org.eclipse.jface.text,
  org.eclipse.team.core,
