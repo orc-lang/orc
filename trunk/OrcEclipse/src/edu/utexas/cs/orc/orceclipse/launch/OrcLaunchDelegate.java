@@ -55,6 +55,7 @@ import edu.utexas.cs.orc.orceclipse.Activator;
  *
  * @author jthywiss
  */
+@SuppressWarnings("restriction")
 public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 
 	/**
