@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.0"?>
+
+<!-- plugin.xml - Eclipse plug-in manifest
+     Project OrcEclipse
+
+     $Id$
+
+     Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
 <plugin>
 
    <extension
@@ -40,8 +53,20 @@
             class="org.eclipse.imp.editor.UniversalEditor"
             contributorClass="org.eclipse.imp.editor.internal.TextEditorActionContributor"
             default="true"
-            extensions="orc, inc"
+            extensions="orc"
             icon="icons/orc_file_obj.gif"
+            id="org.eclipse.imp.runtime.impEditor"
+            name="Orc Editor">
+      </editor>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="org.eclipse.imp.editor.UniversalEditor"
+            contributorClass="org.eclipse.imp.editor.internal.TextEditorActionContributor"
+            default="true"
+            extensions="inc"
+            icon="icons/orc_include_obj.gif"
             id="org.eclipse.imp.runtime.impEditor"
             name="Orc Editor">
       </editor>
