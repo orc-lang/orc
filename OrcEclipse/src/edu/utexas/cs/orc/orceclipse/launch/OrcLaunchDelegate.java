@@ -145,13 +145,13 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 				pgmArgs += "-noprelude ";
 			}
 			if (configuration.getAttribute(INCLUDE_PATH_ATTR_NAME, (List) null) != null) {
-				pgmArgs += "-I \'" + convertClassPath(configuration.getAttribute(INCLUDE_PATH_ATTR_NAME, INCLUDE_PATH_DEFAULT)) + "\' ";
+				pgmArgs += "-I \"" + convertClassPath(configuration.getAttribute(INCLUDE_PATH_ATTR_NAME, INCLUDE_PATH_DEFAULT)) + "\" ";
 			}
 			if (configuration.getAttribute(SITE_CLASSPATH_ATTR_NAME, (List) null) != null) {
-				pgmArgs += "-cp \'" + convertClassPath(configuration.getAttribute(SITE_CLASSPATH_ATTR_NAME, SITE_CLASSPATH_DEFAULT)) + "\' ";
+				pgmArgs += "-cp \"" + convertClassPath(configuration.getAttribute(SITE_CLASSPATH_ATTR_NAME, SITE_CLASSPATH_DEFAULT)) + "\" ";
 			}
 			if (configuration.getAttribute(OIL_OUT_ATTR_NAME, "").length() > 0) {
-				pgmArgs += "-oilOut \'" + configuration.getAttribute(OIL_OUT_ATTR_NAME, "") + "\' ";
+				pgmArgs += "-oilOut \"" + configuration.getAttribute(OIL_OUT_ATTR_NAME, "") + "\" ";
 			}
 			if (configuration.getAttribute(MAX_PUBS_ATTR_NAME, -1) != -1) {
 				pgmArgs += "-pub " + configuration.getAttribute(MAX_PUBS_ATTR_NAME, 0) + " ";
@@ -160,12 +160,12 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 				pgmArgs += "-numSiteThreads " + configuration.getAttribute(NUM_SITE_THREADS_ATTR_NAME, 0) + " ";
 			}
 			if (configuration.getAttribute(TRACE_OUT_ATTR_NAME, "").length() > 0) {
-				pgmArgs += "-trace \'" + configuration.getAttribute(TRACE_OUT_ATTR_NAME, "") + "\' ";
+				pgmArgs += "-trace \"" + configuration.getAttribute(TRACE_OUT_ATTR_NAME, "") + "\" ";
 			}
 			for (int i = 0; i < configuration.getAttribute(DEBUG_LEVEL_ATTR_NAME, 0); i++) {
 				pgmArgs += "-debug ";
 			}
-			pgmArgs += "-- ${resource_loc}";
+			pgmArgs += "-- \"${resource_loc}\"";
 			pgmArgs = VariablesPlugin.getDefault().getStringVariableManager().performStringSubstitution(pgmArgs);
 			final String vmArgs = getVMArguments(configuration);
 			final ExecutionArguments execArgs = new ExecutionArguments(vmArgs, pgmArgs);
