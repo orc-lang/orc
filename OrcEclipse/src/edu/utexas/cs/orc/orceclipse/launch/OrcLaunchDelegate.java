@@ -24,7 +24,9 @@ import orc.Orc;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.variables.VariablesPlugin;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
@@ -32,12 +34,14 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.model.IProcess;
+import org.eclipse.debug.internal.ui.stringsubstitution.SelectedResourceManager;
 import org.eclipse.jdt.launching.AbstractJavaLaunchConfigurationDelegate;
 import org.eclipse.jdt.launching.ExecutionArguments;
 import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
 import org.eclipse.osgi.baseadaptor.BaseData;
 import org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader;
+import org.eclipse.ui.statushandlers.StatusManager;
 import org.osgi.framework.BundleException;
 
 import com.ibm.icu.text.DateFormat;
@@ -100,6 +104,11 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 	 * @see org.eclipse.debug.core.model.ILaunchConfigurationDelegate#launch(org.eclipse.debug.core.ILaunchConfiguration, java.lang.String, org.eclipse.debug.core.ILaunch, org.eclipse.core.runtime.IProgressMonitor)
 	 */
 	public void launch(final ILaunchConfiguration configuration, final String mode, final ILaunch launch, IProgressMonitor monitor) throws CoreException {
+
+		if (SelectedResourceManager.getDefault().getSelectedResource() == null) {
+			StatusManager.getManager().handle(new Status(IStatus.INFO, Activator.getInstance().getID(), 1, "Unable to Launch -- No resource selected.", null), StatusManager.SHOW);
+			return;
+		}
 
 		// Derived from org.eclipse.jdt.launching.JavaLaunchDelegate.java,
 		// Revision 1.8 (02 Oct 2007), trunk rev as of 04 Aug 2009
@@ -191,13 +200,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 			// Launch the configuration - 1 unit of work
 			runner.run(runConfig, launch, monitor);
 			for (final IProcess proc : launch.getProcesses()) {
-				final String processLabel =
-					VariablesPlugin.getDefault().getStringVariableManager().performStringSubstitution("${resource_path}")
-					+ " ["
-					+ configuration.getType().getName()
-					+ "] ("
-					+ DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM).format(new Date(System.currentTimeMillis()))
-					+ ")";
+				final String processLabel = VariablesPlugin.getDefault().getStringVariableManager().performStringSubstitution("${resource_path}") + " [" + configuration.getType().getName() + "] (" + DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM).format(new Date(System.currentTimeMillis())) + ")";
 				proc.setAttribute(IProcess.ATTR_PROCESS_LABEL, processLabel);
 			}
 
@@ -217,7 +220,15 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 		try {
 			classpath = basedata.getClassPath();
 			for (int i = 0; i < classpath.length; i++) {
-				classpath[i] = basedata.getBundleFile().getFile(classpath[i], false).getAbsolutePath();
+				final File classpathEntryFile = basedata.getBundleFile().getFile(classpath[i], false);
+				if (classpathEntryFile != null) {
+					classpath[i] = classpathEntryFile.getAbsolutePath();
+				} else {
+					// Cannot get the file for this classpath entry.
+					// This happens, for example, for "." in a deployed plugin.
+					// We'll just guess the bundle location itself, then.
+					classpath[i] = basedata.getBundleFile().getBaseFile().getAbsolutePath();
+				}
 			}
 		} catch (final BundleException e) {
 			// This is thrown on an invalid JAR manifest, but then we wouldn't be here, so this is an "impossible" case
