@@ -31,39 +31,66 @@ import org.eclipse.jface.text.Region;
  */
 public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 	/**
-	 * 
+	 * A categorization of Orc lexical tokens into token types
 	 *
 	 * @author jthywiss
 	 */
 	public enum TokenType {
+		/** Character that is not any valid Orc lexeme */
 		UNKNOWN, 
+		/** Numeric literal (interger or floating point) */
 		NUMBER_LITERAL, 
+		/** String literal -- quoted character sequence */
 		STRING_LITERAL, 
+		/** "true" or "false" */
 		BOOLEAN_LITERAL, 
-		NULL_LITERAL, 
+		/** "null" */
+		NULL_LITERAL,
+		/** Lexeme that follows identifier rules, but it might be a keyword.
+		 * This can be refined into IDENTIFIER or KEYWORD token types. */
 		IDENTIFIER_OR_KEYWORD, // When we don't know yet
+		/** An identifier, not a keyword */
 		IDENTIFIER, // We've checked against keyword list
+		/** An Orc keyword */
 		KEYWORD, // We've checked against keyword list
+		/** An operator that isn't a combinator.
+		 * Note for "<" and ">", we guess based on whitespace around the token.
+		 * This could be wrong, so don't rely on the OPERATOR / COMBINATOR distinction
+		 * for anything critical. */
 		OPERATOR, 
+		/** An Orc combinator.
+		 * Note for "<" and ">", we guess based on whitespace around the token.
+		 * This could be wrong, so don't rely on the OPERATOR / COMBINATOR distinction
+		 * for anything critical. */
 		COMBINATOR, 
+		/** Parenthesis, square brackets, or curly braces */
 		BRACKET, 
+		/** Lexemes like ",", ";", etc. */
 		SEPERATOR, 
+		/** Comment to end of line (a.k.a. "single line comment") */
 		COMMENT_ENDLINE, 
+		/** Comment bracketed by "{-" "-}".
+		 * These brackets are included in the token.
+		 * Despite the name, the comment could be on one line. */
 		COMMENT_MULTILINE, 
+		/** Spaces, tabs, end of line chars, etc. */
 		WHITESPACE,
 	}
 
 	/**
-	 * 
+	 * A single token in a file.
 	 *
 	 * @author jthywiss
 	 */
 	public static class OrcToken implements Located {
+		/** The type of this token */
 		public TokenType type;
+		/** The characters comprising this token. */
 		public String text;
+		/** The location of this token in its file. */
 		public SourceLocation location;
 
-		public OrcToken(final TokenType type, final String text, final SourceLocation location) {
+		protected OrcToken(final TokenType type, final String text, final SourceLocation location) {
 			this.type = type;
 			this.text = text;
 			this.location = location;
