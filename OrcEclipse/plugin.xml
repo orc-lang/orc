@@ -76,7 +76,7 @@
          name="Orc Parser Wrapper"
          point="org.eclipse.imp.runtime.parser">
       <parserWrapper
-            class="edu.utexas.cs.orceclipse.parse.OrcParseController"
+            class="edu.utexas.cs.orc.orceclipse.parse.OrcParseController"
             language="Orc">
       </parserWrapper>
    </extension>
@@ -104,7 +104,7 @@
       <builder
             hasNature="true">
          <run
-               class="edu.utexas.cs.orceclipse.build.OrcBuilder">
+               class="edu.utexas.cs.orc.orceclipse.build.OrcBuilder">
             <parameter
                   name="foo"
                   value="bar">
@@ -121,7 +121,7 @@
       </builder>
       <runtime>
          <run
-               class="edu.utexas.cs.orceclipse.build.OrcNature">
+               class="edu.utexas.cs.orc.orceclipse.build.OrcNature">
          </run>
       </runtime>
    </extension>
@@ -139,7 +139,7 @@
    <extension
          point="org.eclipse.imp.runtime.tokenColorer">
       <tokenColorer
-            class="edu.utexas.cs.orceclipse.edit.OrcTokenColorer"
+            class="edu.utexas.cs.orc.orceclipse.edit.OrcTokenColorer"
             language="Orc">
       </tokenColorer>
    </extension>
@@ -209,14 +209,14 @@
    <extension
          point="org.eclipse.imp.runtime.modelTreeBuilder">
       <treeBuilder
-            class="edu.utexas.cs.orceclipse.edit.OrcTreeModelBuilder"
+            class="edu.utexas.cs.orc.orceclipse.edit.OrcTreeModelBuilder"
             language="Orc">
       </treeBuilder>
    </extension>
    <extension
          point="org.eclipse.imp.runtime.labelProvider">
       <labelProvider
-            class="edu.utexas.cs.orceclipse.edit.OrcLabelProvider"
+            class="edu.utexas.cs.orc.orceclipse.edit.OrcLabelProvider"
             language="Orc">
       </labelProvider>
    </extension>
