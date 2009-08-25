@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- site.xml - Eclipse update site manifest
+     Project OrcEclipseUpdateSite
+
+     $Id$
+
+     Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<site>
+   <description name="Orc programming language" url="http://orc.csres.utexas.edu/eclipse_updates/">
+      The Orc programming language plug-in for the Eclipse IDE (Integrated Development Environment). Provides editing, parsing, building, and execution services for the Orc programming language in Eclipse. Orc is a structured concurrent programming language.
+   </description>
+   <feature url="features/edu.utexas.cs.orc.orceclipse_0.2.0.200908251311.jar" id="edu.utexas.cs.orc.orceclipse" version="0.2.0.200908251311">
+      <category name="Orc programming language"/>
+   </feature>
+   <category-def name="Orc programming language" label="Orc programming language">
+      <description>
+         The Orc programming language, a structured concurrent programming language, from The University of Texas at Austin.
+      </description>
+   </category-def>
+</site>
