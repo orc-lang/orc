@@ -15,7 +15,6 @@
 
 package edu.utexas.cs.orc.orceclipse.edit;
 
-
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.services.ITokenColorer;
 import org.eclipse.imp.services.base.TokenColorerBase;

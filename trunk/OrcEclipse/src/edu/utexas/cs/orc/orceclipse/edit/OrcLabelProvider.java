@@ -168,11 +168,11 @@ public class OrcLabelProvider implements ILabelProvider {
 	 */
 	public static String getLabelFor(final ASTNode n) {
 		if (n instanceof DefMemberClause) {
-			DefMemberClause dmc = (DefMemberClause)n;
-			return dmc.name.equals("") ? "lambda" : "def " + dmc.name + "(" + Expression.join(dmc.formals, ", ")  +")";
+			final DefMemberClause dmc = (DefMemberClause) n;
+			return dmc.name.equals("") ? "lambda" : "def " + dmc.name + "(" + Expression.join(dmc.formals, ", ") + ")";
 		}
 		if (n instanceof DefMemberType) {
-			DefMemberType dmt = (DefMemberType)n;
+			final DefMemberType dmt = (DefMemberType) n;
 			return "def " + dmt.name + " (" + Expression.join(dmt.argTypes, ", ") + ") :: " + dmt.resultType;
 		}
 		if (n instanceof SiteDeclaration) {
