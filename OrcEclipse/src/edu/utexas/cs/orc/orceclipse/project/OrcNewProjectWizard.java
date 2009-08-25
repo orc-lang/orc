@@ -15,7 +15,6 @@
 
 package edu.utexas.cs.orc.orceclipse.project;
 
-
 import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 
 import edu.utexas.cs.orc.orceclipse.build.OrcNature;

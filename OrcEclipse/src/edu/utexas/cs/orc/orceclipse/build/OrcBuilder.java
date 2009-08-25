@@ -27,7 +27,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.imp.builder.BuilderBase;
-import org.eclipse.imp.builder.MarkerCreator;
 import org.eclipse.imp.builder.MarkerCreatorWithBatching;
 import org.eclipse.imp.language.Language;
 import org.eclipse.imp.language.LanguageRegistry;
