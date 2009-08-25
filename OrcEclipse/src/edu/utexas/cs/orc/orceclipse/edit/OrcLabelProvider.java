@@ -13,7 +13,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package edu.utexas.cs.orceclipse.edit;
+package edu.utexas.cs.orc.orceclipse.edit;
 
 import java.util.HashSet;
 import java.util.Set;

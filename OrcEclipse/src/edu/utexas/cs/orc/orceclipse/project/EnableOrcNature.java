@@ -24,7 +24,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
-import edu.utexas.cs.orceclipse.build.OrcNature;
+import edu.utexas.cs.orc.orceclipse.build.OrcNature;
 
 /**
  * Adds an Orc "nature" to the selected project's attributes.

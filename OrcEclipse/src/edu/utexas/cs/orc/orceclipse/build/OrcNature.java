@@ -13,7 +13,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package edu.utexas.cs.orceclipse.build;
+package edu.utexas.cs.orc.orceclipse.build;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.imp.builder.ProjectNatureBase;

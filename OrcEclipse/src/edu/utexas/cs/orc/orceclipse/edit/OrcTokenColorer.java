@@ -13,7 +13,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package edu.utexas.cs.orceclipse.edit;
+package edu.utexas.cs.orc.orceclipse.edit;
 
 
 import org.eclipse.imp.parser.IParseController;
@@ -23,7 +23,7 @@ import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 
-import edu.utexas.cs.orceclipse.parse.OrcLexer.OrcToken;
+import edu.utexas.cs.orc.orceclipse.parse.OrcLexer.OrcToken;
 
 /**
  * Provides token-coloring services for the Orc language to the IMP source code editor.
