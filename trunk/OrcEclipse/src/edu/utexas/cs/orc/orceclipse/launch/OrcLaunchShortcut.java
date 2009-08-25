@@ -29,6 +29,7 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.IDebugModelPresentation;
 import org.eclipse.debug.ui.ILaunchShortcut;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.Window;
@@ -61,12 +62,16 @@ public class OrcLaunchShortcut implements ILaunchShortcut {
 	 * @see org.eclipse.debug.ui.ILaunchShortcut#launch(org.eclipse.jface.viewers.ISelection, java.lang.String)
 	 */
 	public void launch(final ISelection selection, final String mode) {
+		// Make sure the selection is the active resource, so the launch delegate knows who to launch.
+		//Activator.getInstance().getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(part);
+
 		try {
 			final IFile file = (IFile) ((IAdaptable) ((IStructuredSelection) selection).getFirstElement()).getAdapter(IFile.class);
 			launch(file, mode);
 		} catch (final ClassCastException e) {
 			// Ignore -- got something not launchable
 			Activator.logErrorMessage("OrcLaunchShortcut.launch(ISelection,String): Got a selection that wasn't an IStructuredSelection with one element that is an IFile. selection=" + selection);
+			ErrorDialog.openError(Display.getCurrent().getActiveShell(), "Unable to Launch", "The current selection cannot be launched. Try selecting a launchable resource.", null);
 		} catch (final NullPointerException e) {
 			// Ignore -- got nothing
 		}
