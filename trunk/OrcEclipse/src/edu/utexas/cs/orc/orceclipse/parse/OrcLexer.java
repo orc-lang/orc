@@ -140,7 +140,7 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 
 			// Find the first token at or before the region start
 			int prevOffset = 0;
-			while (currOffset <= regionOfInterest.getOffset() && hasNext()) {
+			while (currOffset <= regionOfInterest.getOffset() && currOffsetInRegion()) {
 				nextToken = getFirstTokenAt(currOffset);
 				prevOffset = currOffset;
 				currOffset += nextToken.text.length();
@@ -148,20 +148,14 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 			currOffset = prevOffset;
 
 			// Position at the next interesting token
-			while (hasNext()) {
-				nextToken = getFirstTokenAt(currOffset);
-				currOffset += nextToken.text.length();
-				if (!(skipWhitespace && nextToken.type == TokenType.WHITESPACE && skipComments && (nextToken.type == TokenType.COMMENT_ENDLINE || nextToken.type == TokenType.COMMENT_MULTILINE))) {
-					break;
-				}
-			}
+			prepNextToken(skipWhitespace, skipComments);
 		}
 
 		/* (non-Javadoc)
 		 * @see java.util.Iterator#hasNext()
 		 */
 		public boolean hasNext() {
-			return currOffset < getParseController().getCurrentParseString().length() && currOffset < regionOfInterest.getOffset() + regionOfInterest.getLength();
+			return nextToken != null;
 		}
 
 		/* (non-Javadoc)
@@ -174,15 +168,27 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 			final OrcToken currTok = nextToken;
 
 			// Position at the next interesting token
-			while (hasNext()) {
+			prepNextToken(skipWhitespace, skipComments);
+
+			return currTok;
+		}
+
+		private boolean currOffsetInRegion() {
+			// before EOF and in region 
+			return currOffset < getParseController().getCurrentParseString().length() && currOffset < regionOfInterest.getOffset() + regionOfInterest.getLength();
+		}
+
+		private void prepNextToken(final boolean skipWhitespace, final boolean skipComments) {
+			nextToken = null;
+			while (currOffsetInRegion()) {
 				nextToken = getFirstTokenAt(currOffset);
 				currOffset += nextToken.text.length();
+				// If we found an "interesting" token, break
 				if (!(skipWhitespace && nextToken.type == TokenType.WHITESPACE && skipComments && (nextToken.type == TokenType.COMMENT_ENDLINE || nextToken.type == TokenType.COMMENT_MULTILINE))) {
 					break;
 				}
+				nextToken = null; // Not interesting, keep looking
 			}
-
-			return currTok;
 		}
 
 		/* (non-Javadoc)
