@@ -17,10 +17,14 @@ package edu.utexas.cs.orc.orceclipse.parse;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 import orc.Config;
 import orc.ast.extended.ASTNode;
+import orc.ast.extended.declaration.Declaration;
+import orc.ast.extended.expression.Declare;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.CompileMessageRecorder.Severity;
 import orc.parser.OrcParser;
@@ -197,16 +201,31 @@ public class OrcParseController extends ParseControllerBase {
 
 		final Config config = new Config();
 		// TODO: Set options per project settings
+		final IPath absolutePath = getProject().getRawProject().getLocation().append(getPath());
 
 		config.setMessageRecorder(new ImpToOrcMessageAdapter(handler));
-		config.getMessageRecorder().beginProcessing(fFilePath.toFile());
+		config.getMessageRecorder().beginProcessing(absolutePath.toFile());
 		if (lexer == null) {
 			lexer = new OrcLexer(this);
 		}
-		parser = new OrcParser(config, new StringReader(contents), getPath().toOSString());
+
+		parser = new OrcParser(config, new StringReader(contents), absolutePath.toOSString());
 
 		try {
-			currentAst = parser.parseProgram();
+			if (!Activator.isOrcIncludeFile(absolutePath)) {
+				currentAst = parser.parseProgram();
+			} else {
+				orc.ast.extended.expression.Expression e = new orc.ast.extended.expression.Stop();
+				final LinkedList<Declaration> decls = new LinkedList<Declaration>();
+
+				decls.addAll(parser.parseModule());
+				Collections.reverse(decls);
+				for (final Declaration d : decls) {
+					e = new Declare(d, e);
+				}
+
+				currentAst = e;
+			}
 		} catch (final CompilationException e) {
 			config.getMessageRecorder().recordMessage(Severity.FATAL, 0, e.getMessageOnly(), e.getSourceLocation(), null, e);
 		} catch (final IOException e) {

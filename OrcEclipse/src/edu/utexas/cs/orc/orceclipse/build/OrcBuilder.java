@@ -148,9 +148,9 @@ public class OrcBuilder extends BuilderBase {
 		}
 
 		if (emitDiags) {
-			getConsoleStream().println("isSourceFile(" + file + ")=" + LANGUAGE.hasExtension(path.getFileExtension()));
+			getConsoleStream().println("isSourceFile(" + file + ")=" + (LANGUAGE.hasExtension(path.getFileExtension()) && !isNonRootSourceFile(file)));
 		}
-		return LANGUAGE.hasExtension(path.getFileExtension());
+		return LANGUAGE.hasExtension(path.getFileExtension()) && !isNonRootSourceFile(file);
 	}
 
 	/**
@@ -164,8 +164,8 @@ public class OrcBuilder extends BuilderBase {
 	 * @see org.eclipse.imp.builder.BuilderBase#isNonRootSourceFile(org.eclipse.core.resources.IFile)
 	 */
 	@Override
-	protected boolean isNonRootSourceFile(final IFile resource) {
-		return false;
+	protected boolean isNonRootSourceFile(final IFile file) {
+		return Activator.isOrcIncludeFile(file.getFullPath());
 	}
 
 	/**
@@ -194,6 +194,7 @@ public class OrcBuilder extends BuilderBase {
 	 */
 	@Override
 	protected boolean isOutputFolder(final IResource resource) {
+		//TODO: This template code from IMP is bogus
 		return resource.getFullPath().lastSegment().equals("bin");
 	}
 
