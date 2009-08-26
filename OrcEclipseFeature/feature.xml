@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- feature.xml - Eclipse feature manifest
      Project OrcEclipseFeature
 
@@ -10,11 +9,10 @@
      Use and redistribution of this file is governed by the license terms at
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
-
 <feature
       id="edu.utexas.cs.orc.orceclipse"
       label="Orc Eclipse plug-in"
-      version="0.2.0.qualifier"
+      version="0.3.0.qualifier"
       provider-name="The University of Texas at Austin"
       plugin="edu.utexas.cs.orc.orceclipse">
 
@@ -69,9 +67,11 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
       <import plugin="org.eclipse.ui"/>
       <import plugin="org.eclipse.core.runtime"/>
       <import plugin="org.eclipse.jdt.core"/>
+      <import plugin="org.eclipse.imp.runtime" version="0.1.99" match="greaterOrEqual"/>
       <import plugin="org.eclipse.debug.ui"/>
       <import plugin="org.eclipse.jface.text"/>
       <import plugin="org.eclipse.team.core"/>
+      <import plugin="org.eclipse.help"/>
       <import plugin="com.ibm.icu"/>
       <import plugin="org.eclipse.core.resources"/>
       <import plugin="org.eclipse.core.variables"/>
@@ -83,7 +83,6 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
       <import plugin="org.eclipse.ui.ide"/>
       <import plugin="org.eclipse.compare"/>
       <import plugin="org.eclipse.core.filesystem"/>
-      <import plugin="org.eclipse.help"/>
       <import plugin="org.eclipse.jdt.debug"/>
       <import plugin="org.eclipse.jdt.ui"/>
       <import plugin="org.eclipse.ltk.core.refactoring"/>
