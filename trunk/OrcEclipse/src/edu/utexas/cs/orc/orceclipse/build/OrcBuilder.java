@@ -20,7 +20,6 @@ import java.io.IOException;
 
 import orc.Config;
 import orc.OrcCompiler;
-import orc.error.compiletime.CompileMessageRecorder.Severity;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -223,7 +222,9 @@ public class OrcBuilder extends BuilderBase {
 				compiler.call();
 				// Disregard returned OIL, we just want the errors
 			} catch (final IOException e) {
-				config.getMessageRecorder().recordMessage(Severity.FATAL, 0, e.getLocalizedMessage(), null, null, e);
+				//TODO: Handle this differently?
+				getConsoleStream().println("I/O error when building: " + file.getName() + ": " + e.getMessage());
+				getPlugin().logException(e.getMessage(), e);
 			}
 
 			doRefresh(file.getParent()); // N.B.: Assumes all generated files go into parent folder
