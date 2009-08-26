@@ -139,7 +139,13 @@ List<Declaration> Include =
 	INCLUDE filename:StringLiteral Space ^{
 		File thisfile = new File(location(yyStart).file);
 		String thisdir = thisfile.getParent();
-		OrcParserRats parser = new OrcParserRats(config, config.openInclude(filename, thisdir), new File(thisdir, filename).getPath());
+		Reader includeReader = null;
+		try {
+			includeReader = config.openInclude(filename, thisdir);
+		} catch (FileNotFoundException e) {
+			abort(new ParseError(e.getLocalizedMessage(), yyStart));
+		}
+		OrcParserRats parser = new OrcParserRats(config, includeReader, new File(thisdir, filename).getPath());
 		Result result = parser.pModule(0);
 		if (result.hasValue()) {
 			yyResult = new SemanticValue(result.semanticValue(), yyBase);
