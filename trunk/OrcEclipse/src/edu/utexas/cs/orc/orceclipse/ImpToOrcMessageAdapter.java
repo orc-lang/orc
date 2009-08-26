@@ -72,14 +72,18 @@ public class ImpToOrcMessageAdapter implements CompileMessageRecorder {
 		final int eclipseSeverity = eclipseSeverityFromOrcSeverity(severity);
 
 		if (impMessageHandler instanceof MarkerCreatorWithBatching) {
+			final int safeLineNumber = location.line >= 1 ? location.line : -1;
 			try {
-				((MarkerCreatorWithBatching) impMessageHandler).addMarker(eclipseSeverity, message, location.line, location.offset, location.endOffset);
+				((MarkerCreatorWithBatching) impMessageHandler).addMarker(eclipseSeverity, message, safeLineNumber, location.offset, location.endOffset);
 			} catch (final LimitExceededException e) {
 				// Shouldn't happen, since we don't use problem limits
 				Activator.log(e);
 			}
 		} else {
-			impMessageHandler.handleSimpleMessage(message, location.offset, location.endOffset, location.column, location.endColumn, location.line, location.endLine);
+			// AnnotationCreator breaks for our UNKNOWN offset values
+			final int safeStartOffset = location.offset >= 0 ? location.endOffset : 0;
+			final int safeEndOffset = location.endOffset >= 0 ? location.endOffset : -1;
+			impMessageHandler.handleSimpleMessage(message, safeStartOffset, safeEndOffset, location.column, location.endColumn, location.line, location.endLine);
 		}
 	}
 
