@@ -32,7 +32,7 @@ public class SourceLocation implements Serializable {
 	public Integer endLine;
 	public Integer endColumn;
 	public File file;
-	public static final SourceLocation UNKNOWN = new SourceLocation(null, -1, 0, 0, -1, 0, 0) {
+	public static final SourceLocation UNKNOWN = new SourceLocation(null, 0, 0, 0, 0, 0, 0) {
 		@Override
 		public String toString() {
 			return "<unknown source location>";
