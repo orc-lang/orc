@@ -21,6 +21,7 @@ import java.io.InputStreamReader;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.imp.runtime.PluginBase;
 import org.osgi.framework.BundleContext;
@@ -147,5 +148,9 @@ public class Activator extends PluginBase {
 		final char fileContentsBuffer[] = new char[fileStream.available()];
 		final int fileSize = fileReader.read(fileContentsBuffer);
 		return new String(fileContentsBuffer, 0, fileSize);
+	}
+
+	public static boolean isOrcIncludeFile(final IPath file) {
+		return "inc".equals(file.getFileExtension());
 	}
 }
