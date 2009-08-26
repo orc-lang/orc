@@ -15,6 +15,15 @@
 
 package edu.utexas.cs.orc.orceclipse;
 
+import java.net.URL;
+
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.ImageRegistry;
+import org.osgi.framework.Bundle;
+
 /**
  * A collection of shared resources (mostly images) for the Orc plug-in,
  * along with some convenience methods,
@@ -86,60 +95,44 @@ public class OrcResources {
 	/**
 	 * Bundle path to the icons
 	 */
-	public static final org.eclipse.core.runtime.IPath ICONS_PATH = new org.eclipse.core.runtime.Path("icons/"); //$NON-NLS-1$("icons/"); 
+	public static final IPath ICONS_PATH = new Path("icons/");
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#initializeImageRegistry(org.eclipse.jface.resource.ImageRegistry)
 	 */
-	protected static void initializeImageRegistry(final org.osgi.framework.Bundle bundle, final org.eclipse.jface.resource.ImageRegistry reg) {
+	protected static void initializeImageRegistry(final Bundle bundle, final ImageRegistry reg) {
 
-		org.eclipse.core.runtime.IPath path = new org.eclipse.core.runtime.Path("orc16.gif");//$NON-NLS-1$
-		org.eclipse.jface.resource.ImageDescriptor imageDescriptor = createImageDescriptor(bundle, path);
-		reg.put(OrcResources.ORC_PLUGIN_ICON, imageDescriptor);
+		addImageDescriptor(bundle, OrcResources.ORC_PLUGIN_ICON, "gif", reg);
 
-		path = ICONS_PATH.append("orc_file_obj.gif");//$NON-NLS-1$
+		addImageDescriptor(bundle, OrcResources.ORC_FILE_OBJ, "gif", reg);
+
+		addImageDescriptor(bundle, OrcResources.ORC_INCLUDE_OBJ, "gif", reg);
+
+		addImageDescriptor(bundle, OrcResources.ORC_GENERIC_OBJ, "gif", reg);
+
+		addImageDescriptor(bundle, OrcResources.ORC_DEF_OBJ, "gif", reg);
+
+		addImageDescriptor(bundle, OrcResources.ORC_SITE_OBJ, "gif", reg);
+
+		addImageDescriptor(bundle, OrcResources.ORC_CLASS_OBJ, "gif", reg);
+
+		addImageDescriptor(bundle, OrcResources.ORC_VARIABLE_OBJ, "gif", reg);
+
+		addImageDescriptor(bundle, OrcResources.ORC_TYPE_OBJ, "gif", reg);
+
+		addImageDescriptor(bundle, OrcResources.ORC_OVR, "gif", reg);
+
+		addImageDescriptor(bundle, OrcResources.ERROR_OVR, "gif", reg);
+
+		addImageDescriptor(bundle, OrcResources.WARNING_OVR, "gif", reg);
+	}
+
+	private static void addImageDescriptor(final Bundle bundle, final String name, final String fileType, final ImageRegistry reg) {
+		IPath path;
+		ImageDescriptor imageDescriptor;
+		path = ICONS_PATH.append(name + "." + fileType);
 		imageDescriptor = createImageDescriptor(bundle, path);
-		reg.put(OrcResources.ORC_FILE_OBJ, imageDescriptor);
-
-		path = ICONS_PATH.append("orc_inclue_obj.gif");//$NON-NLS-1$
-		imageDescriptor = createImageDescriptor(bundle, path);
-		reg.put(OrcResources.ORC_INCLUDE_OBJ, imageDescriptor);
-
-		path = ICONS_PATH.append("orc_generic_obj.gif");//$NON-NLS-1$
-		imageDescriptor = createImageDescriptor(bundle, path);
-		reg.put(OrcResources.ORC_GENERIC_OBJ, imageDescriptor);
-
-		path = ICONS_PATH.append("orc_def_obj.gif");//$NON-NLS-1$
-		imageDescriptor = createImageDescriptor(bundle, path);
-		reg.put(OrcResources.ORC_DEF_OBJ, imageDescriptor);
-
-		path = ICONS_PATH.append("orc_site_obj.gif");//$NON-NLS-1$
-		imageDescriptor = createImageDescriptor(bundle, path);
-		reg.put(OrcResources.ORC_SITE_OBJ, imageDescriptor);
-
-		path = ICONS_PATH.append("orc_class_obj.gif");//$NON-NLS-1$
-		imageDescriptor = createImageDescriptor(bundle, path);
-		reg.put(OrcResources.ORC_CLASS_OBJ, imageDescriptor);
-
-		path = ICONS_PATH.append("orc_variable_obj.gif");//$NON-NLS-1$
-		imageDescriptor = createImageDescriptor(bundle, path);
-		reg.put(OrcResources.ORC_VARIABLE_OBJ, imageDescriptor);
-
-		path = ICONS_PATH.append("orc_type_obj.gif");//$NON-NLS-1$
-		imageDescriptor = createImageDescriptor(bundle, path);
-		reg.put(OrcResources.ORC_TYPE_OBJ, imageDescriptor);
-
-		path = ICONS_PATH.append("orc_ovr.gif");//$NON-NLS-1$
-		imageDescriptor = createImageDescriptor(bundle, path);
-		reg.put(OrcResources.ORC_OVR, imageDescriptor);
-
-		path = ICONS_PATH.append("error_ovr.gif");//$NON-NLS-1$
-		imageDescriptor = createImageDescriptor(bundle, path);
-		reg.put(OrcResources.ERROR_OVR, imageDescriptor);
-
-		path = ICONS_PATH.append("warning_ovr.gif");//$NON-NLS-1$
-		imageDescriptor = createImageDescriptor(bundle, path);
-		reg.put(OrcResources.WARNING_OVR, imageDescriptor);
+		reg.put(name, imageDescriptor);
 	}
 
 	/**
@@ -151,10 +144,10 @@ public class OrcResources {
 	 * @param path Path to the image file in the give plug-in
 	 * @return ImageDescriptor of image or null
 	 */
-	public static org.eclipse.jface.resource.ImageDescriptor createImageDescriptor(final org.osgi.framework.Bundle bundle, final org.eclipse.core.runtime.IPath path) {
-		final java.net.URL url = org.eclipse.core.runtime.FileLocator.find(bundle, path, null);
+	public static ImageDescriptor createImageDescriptor(final Bundle bundle, final IPath path) {
+		final URL url = FileLocator.find(bundle, path, null);
 		if (url != null) {
-			return org.eclipse.jface.resource.ImageDescriptor.createFromURL(url);
+			return ImageDescriptor.createFromURL(url);
 		}
 		return null;
 	}
