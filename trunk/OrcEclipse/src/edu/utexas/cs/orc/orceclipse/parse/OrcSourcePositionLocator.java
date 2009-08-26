@@ -26,6 +26,8 @@ import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.parser.ISourcePositionLocator;
 
+import edu.utexas.cs.orc.orceclipse.Activator;
+
 /**
  * Locates nodes in an AST, given offsets in a file 
  *
@@ -53,16 +55,15 @@ public class OrcSourcePositionLocator implements ISourcePositionLocator {
 		}
 
 		@Override
-		@SuppressWarnings("unused") // This is NOT an Unnecessary @SuppressWarnings("unused")	
+		@SuppressWarnings("unused")
+		// This is NOT an Unnecessary @SuppressWarnings("unused")	
 		// enter(ASTNode) is called from Walker
 		public boolean enter(final ASTNode element) {
 			final int nodeStartOffset = getStartOffset(element);
 			final int nodeEndOffset = getEndOffset(element);
-//			System.out.println("OrcSourcePositionLocator.NodeVisitor.preVisit(ASTNode):  Examining " + element.getClass().getName() + " @ [" + nodeStartOffset + "->" + nodeEndOffset + ']');
 
 			// If this node contains the span of interest then record it
 			if (nodeStartOffset <= fStartOffset && nodeEndOffset >= fEndOffset) {
-//				System.out.println("OrcSourcePositionLocator.NodeVisitor.preVisit(ASTNode) SELECTED for offsets [" + fStartOffset + ".." + fEndOffset + "]");
 				fNode = element;
 				return true; // to continue visiting here
 			}
@@ -82,21 +83,13 @@ public class OrcSourcePositionLocator implements ISourcePositionLocator {
 	 */
 	public Object findNode(final Object ast, final int startOffset, final int endOffset) {
 		final NodeVisitor fVisitor = new NodeVisitor(startOffset, endOffset);
-		
-//		System.out.println("Looking for node spanning offsets " + startOffset + " => " + endOffset);
 
 		if (startOffset < 0 || endOffset < 0) {
 			fVisitor.fNode = null;
 		} else {
 			((ASTNode) ast).accept(fVisitor);
 		}
-		
-//		if (fVisitor.fNode == null) {
-//			System.out.println("Selected node:  null");
-//		} else {
-//			System.out.println("Selected node: " + fVisitor.fNode + " [" +
-//					getStartOffset(fVisitor.fNode) + ".." + getEndOffset(fVisitor.fNode) + "]");
-//		}
+
 		return fVisitor.fNode;
 	}
 
@@ -104,34 +97,31 @@ public class OrcSourcePositionLocator implements ISourcePositionLocator {
 	 * @see org.eclipse.imp.parser.ISourcePositionLocator#getStartOffset(java.lang.Object)
 	 */
 	public int getStartOffset(final Object node) {
+		// node could be an AST node, a token, or a ModelTreeNode
+
+		// Bizarrely, IMP requires, for unknown locations, both:
+		//   offsets to be >= 0 (for annotations)
+		//   offsets to be -1 (for text editor repositioning)
+		// If we can distinguish these cases, we'll handle.  In the meantime, annotations win.
+
 		if (node instanceof Located) {
 			final Located n = (Located) node;
-			if (n.getSourceLocation() == null) {
-				return SourceLocation.UNKNOWN.offset;
+			if (n.getSourceLocation() == null || SourceLocation.UNKNOWN.equals(n)) {
+				return 0;
 			}
 			return n.getSourceLocation().offset;
 		} else if (node instanceof ModelTreeNode) {
-			final ModelTreeNode treeNode = (ModelTreeNode) node;
-			return getStartOffset(treeNode.getASTNode());
-		}
-		return SourceLocation.UNKNOWN.offset;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.eclipse.imp.parser.ISourcePositionLocator#getEndOffset(java.lang.Object)
-	 */
-	public int getEndOffset(final Object node) {
-		if (node instanceof Located) {
-			final Located n = (Located) node;
-			if (n.getSourceLocation() == null) {
-				return SourceLocation.UNKNOWN.endOffset;
+			final Located n = (Located) ((ModelTreeNode) node).getASTNode();
+			if (n.getSourceLocation() == null || SourceLocation.UNKNOWN.equals(n)) {
+				return -1;
 			}
-			return n.getSourceLocation().endOffset;
-		} else if (node instanceof ModelTreeNode) {
-			final ModelTreeNode treeNode = (ModelTreeNode) node;
-			return getStartOffset(treeNode.getASTNode());
+			return n.getSourceLocation().offset;
+		} else {
+			final ClassCastException e = new ClassCastException(this.getClass().getName() + ".getStartOffset got an unrecognized node type");
+			// Make sure this is logged -- Callers in IMP sometimes disregard exceptions
+			Activator.log(e);
+			throw e;
 		}
-		return SourceLocation.UNKNOWN.endOffset;
 	}
 
 	/* (non-Javadoc)
@@ -142,10 +132,46 @@ public class OrcSourcePositionLocator implements ISourcePositionLocator {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.eclipse.imp.parser.ISourcePositionLocator#getEndOffset(java.lang.Object)
+	 */
+	public int getEndOffset(final Object node) {
+		// node could be an AST node, a token, or a ModelTreeNode
+
+		// IMP requires, for unknown locations, length to be -1
+		// length = end - start + 1, thus for UNKNOWN, end must be
+		// start - 2
+
+		if (node instanceof Located) {
+			final Located n = (Located) node;
+			if (n.getSourceLocation() == null || SourceLocation.UNKNOWN.equals(n)) {
+				return getStartOffset(node) - 2;
+			}
+			return n.getSourceLocation().endOffset;
+		} else if (node instanceof ModelTreeNode) {
+			final Located n = (Located) ((ModelTreeNode) node).getASTNode();
+			if (n.getSourceLocation() == null || SourceLocation.UNKNOWN.equals(n)) {
+				return getStartOffset(node) - 2;
+			}
+			return n.getSourceLocation().endOffset;
+		} else {
+			final ClassCastException e = new ClassCastException(this.getClass().getName() + ".getEndOffset got an unrecognized node type");
+			// Make sure this is logged -- Callers in IMP sometimes disregard exceptions
+			Activator.log(e);
+			throw e;
+		}
+	}
+
+	/* (non-Javadoc)
 	 * @see org.eclipse.imp.parser.ISourcePositionLocator#getPath(java.lang.Object)
 	 */
 	public IPath getPath(final Object node) {
-		final Located n = (Located) node;
-		return Path.fromOSString(n.getSourceLocation().file.getPath());
+		try {
+			final Located n = (Located) node;
+			return Path.fromOSString(n.getSourceLocation().file.getPath());
+		} catch (final ClassCastException e) {
+			// Make sure this is logged -- Callers in IMP sometimes disregard exceptions
+			Activator.log(e);
+			throw e;
+		}
 	}
 }
