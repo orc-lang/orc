@@ -7,10 +7,11 @@ Bundle-Activator: edu.utexas.cs.orc.orceclipse.Activator
 Bundle-Vendor: The University of Texas at Austin
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
+ org.eclipse.core.resources,
  org.eclipse.jdt.core,
- org.eclipse.imp.runtime;bundle-version="0.1.99",
- org.eclipse.debug.ui,
  org.eclipse.jface.text,
+ org.eclipse.debug.ui,
+ org.eclipse.imp.runtime;bundle-version="0.1.99",
  org.eclipse.team.core,
  org.eclipse.help
 Bundle-RequiredExecutionEnvironment: J2SE-1.5

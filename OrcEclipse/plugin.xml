@@ -1,18 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.0"?>
-
-<!-- plugin.xml - Eclipse plug-in manifest
-     Project OrcEclipse
-
-     $Id$
-
-     Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
-
-     Use and redistribution of this file is governed by the license terms in
-     the LICENSE file found in the project's top-level directory and also found at
-     URL: http://orc.csres.utexas.edu/license.shtml .
-  -->
-
 <plugin>
 
    <extension
@@ -31,61 +18,61 @@
          name="Orc content types"
          point="org.eclipse.core.contenttype.contentTypes">
       <content-type
-            base-type="org.eclipse.core.runtime.text"
             file-extensions="orc"
-            id="edu.utexas.cs.orc.source"
-            name="Orc source code"
-            priority="normal">
-      </content-type>
-      <content-type
             base-type="org.eclipse.core.runtime.text"
-            file-extensions="inc"
-            id="edu.utexas.cs.orc.include"
-            name="Orc include file"
-            priority="normal">
+            name="Orc source code"
+            priority="normal"
+            id="edu.utexas.cs.orc.source">
       </content-type>
       <content-type
-            base-type="org.eclipse.core.runtime.xml"
+            file-extensions="inc"
+            base-type="org.eclipse.core.runtime.text"
+            name="Orc include file"
+            priority="normal"
+            id="edu.utexas.cs.orc.include">
+      </content-type>
+      <content-type
             file-extensions="oil"
-            id="edu.utexas.cs.orc.oil"
+            base-type="org.eclipse.core.runtime.xml"
             name="Orc Intermediate Language (OIL) file"
-            priority="normal">
+            priority="normal"
+            id="edu.utexas.cs.orc.oil">
       </content-type>
    </extension>
    <extension
          point="org.eclipse.team.core.fileTypes">
       <fileTypes
-            extension="orc"
-            type="text">
+            type="text"
+            extension="orc">
       </fileTypes>
       <fileTypes
-            extension="inc"
-            type="text">
+            type="text"
+            extension="inc">
       </fileTypes>
       <fileTypes
-            extension="oil"
-            type="text">
+            type="text"
+            extension="oil">
       </fileTypes>
    </extension>
    <extension
          point="org.eclipse.ui.editors">
       <editor
-            class="org.eclipse.imp.editor.UniversalEditor"
-            contributorClass="org.eclipse.imp.editor.internal.TextEditorActionContributor"
+            name="Orc Editor"
             default="true"
-            extensions="orc"
             icon="icons/orc_file_obj.gif"
-            id="org.eclipse.imp.runtime.impEditor"
-            name="Orc Editor">
+            extensions="orc"
+            contributorClass="org.eclipse.imp.editor.internal.TextEditorActionContributor"
+            class="org.eclipse.imp.editor.UniversalEditor"
+            id="org.eclipse.imp.runtime.impEditor">
       </editor>
       <editor
-            class="org.eclipse.imp.editor.UniversalEditor"
-            contributorClass="org.eclipse.imp.editor.internal.TextEditorActionContributor"
+            name="Orc Editor"
             default="true"
-            extensions="inc"
             icon="icons/orc_include_obj.gif"
-            id="org.eclipse.imp.runtime.impEditor"
-            name="Orc Editor">
+            extensions="inc"
+            contributorClass="org.eclipse.imp.editor.internal.TextEditorActionContributor"
+            class="org.eclipse.imp.editor.UniversalEditor"
+            id="org.eclipse.imp.runtime.impEditor">
       </editor>
    </extension>
    <extension
@@ -100,17 +87,17 @@
    <extension
          point="org.eclipse.ui.popupMenus">
       <objectContribution
+            objectClass="org.eclipse.core.resources.IProject"
             adaptable="false"
-            id="edu.utexas.cs.orc.orceclipse.project.projectContextMenu"
             nameFilter="*"
-            objectClass="org.eclipse.core.resources.IProject">
+            id="edu.utexas.cs.orc.orceclipse.project.projectContextMenu">
          <action
+               label="Enable Orc Builder"
+               icon="orc16.gif"
+               tooltip="Enable the Orc builder for this project"
                class="edu.utexas.cs.orc.orceclipse.project.EnableOrcNature"
                enablesFor="+"
-               icon="orc16.gif"
-               id="edu.utexas.cs.orc.orceclipse.project.enableNatureAction"
-               label="Enable Orc Builder"
-               tooltip="Enable the Orc builder for this project">
+               id="edu.utexas.cs.orc.orceclipse.project.enableNatureAction">
          </action>
       </objectContribution>
    </extension>
@@ -251,76 +238,76 @@
       <perspectiveExtension
             targetID="edu.utexas.cs.orc.orceclipse.perspective.main">
          <view
-               closeable="true"
+               relative="org.eclipse.ui.editorss"
                id="org.eclipse.ui.navigator.ProjectExplorer"
+               closeable="true"
+               visible="true"
+               standalone="false"
                minimized="false"
-               moveable="true"
-               ratio="0.25"
+               showTitle="true"
                relationship="left"
-               relative="org.eclipse.ui.editorss"
-               showTitle="true"
-               standalone="false"
-               visible="true">
+               ratio="0.25"
+               moveable="true">
          </view>
          <view
-               closeable="true"
+               relative="org.eclipse.ui.editorss"
                id="org.eclipse.ui.views.ProblemView"
-               minimized="false"
-               moveable="true"
-               ratio="0.75"
-               relationship="bottom"
-               relative="org.eclipse.ui.editorss"
-               showTitle="true"
-               standalone="false"
-               visible="true">
-         </view>
-         <view
-               id="org.eclipse.ui.views.TaskList"
-               relationship="stack"
-               relative="org.eclipse.ui.views.ProblemView"
-               visible="true">
-         </view>
-         <view
-               id="org.eclipse.ui.console.ConsoleView"
-               relationship="stack"
-               relative="org.eclipse.ui.views.ProblemView"
-               visible="true">
-         </view>
-         <view
                closeable="true"
-               id="org.eclipse.ui.views.ContentOutline"
-               minimized="false"
-               moveable="true"
-               ratio="0.75"
-               relationship="right"
-               relative="org.eclipse.ui.editorss"
-               showTitle="true"
+               visible="true"
                standalone="false"
-               visible="true">
+               minimized="false"
+               showTitle="true"
+               relationship="bottom"
+               ratio="0.75"
+               moveable="true">
          </view>
          <view
-               id="org.eclipse.ui.views.ResourceNavigator"
+               relative="org.eclipse.ui.views.ProblemView"
+               visible="true"
                relationship="stack"
+               id="org.eclipse.ui.views.TaskList">
+         </view>
+         <view
+               relative="org.eclipse.ui.views.ProblemView"
+               visible="true"
+               relationship="stack"
+               id="org.eclipse.ui.console.ConsoleView">
+         </view>
+         <view
+               relative="org.eclipse.ui.editorss"
+               id="org.eclipse.ui.views.ContentOutline"
+               closeable="true"
+               visible="true"
+               standalone="false"
+               minimized="false"
+               showTitle="true"
+               relationship="right"
+               ratio="0.75"
+               moveable="true">
+         </view>
+         <view
                relative="org.eclipse.ui.navigator.ProjectExplorer"
-               visible="false">
+               visible="false"
+               relationship="stack"
+               id="org.eclipse.ui.views.ResourceNavigator">
          </view>
          <view
-               id="org.eclipse.search.ui.views.SearchView"
-               relationship="stack"
                relative="org.eclipse.ui.views.ProblemView"
-               visible="false">
+               visible="false"
+               relationship="stack"
+               id="org.eclipse.search.ui.views.SearchView">
          </view>
          <view
-               id="org.eclipse.ui.views.BookmarkView"
-               relationship="stack"
                relative="org.eclipse.ui.views.ProblemView"
-               visible="false">
+               visible="false"
+               relationship="stack"
+               id="org.eclipse.ui.views.BookmarkView">
          </view>
          <view
-               id="org.eclipse.ui.views.ProgressView"
-               relationship="stack"
                relative="org.eclipse.ui.views.ProblemView"
-               visible="false">
+               visible="false"
+               relationship="stack"
+               id="org.eclipse.ui.views.ProgressView">
          </view>
          <actionSet
                id="org.eclipse.debug.ui.launchActionSet">
@@ -434,8 +421,8 @@
          point="org.eclipse.ui.ide.projectNatureImages">
       <image
             icon="icons/orc_ovr.gif"
-            id="edu.utexas.cs.orc.orceclipse.orcProjectNatureImage"
-            natureId="edu.utexas.cs.orc.orceclipse.project.orcNature">
+            natureId="edu.utexas.cs.orc.orceclipse.project.orcNature"
+            id="edu.utexas.cs.orc.orceclipse.orcProjectNatureImage">
          <description>
             Orc project nature
          </description>
@@ -454,6 +441,13 @@
             file="help/userguide_toc.xml"
             primary="true">
       </toc>
+   </extension>
+   <extension
+         point="org.eclipse.imp.runtime.annotationHover">
+      <annotationHover
+            class="edu.utexas.cs.orc.orceclipse.edit.OrcAnnotationHover"
+            language="Orc">
+      </annotationHover>
    </extension>
 
 </plugin>
