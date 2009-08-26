@@ -15,7 +15,10 @@
 
 package edu.utexas.cs.orc.orceclipse.edit;
 
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.imp.editor.AnnotationHoverBase;
 import org.eclipse.jface.text.source.Annotation;
@@ -38,9 +41,15 @@ public class OrcAnnotationHover extends AnnotationHoverBase implements IAnnotati
 	public String getHoverInfo(ISourceViewer sourceViewer, int lineNumber) {
         List<Annotation> srcAnnotations= getSourceAnnotationsForLine(sourceViewer, lineNumber);
         
-        for (Annotation annotation : srcAnnotations) {
+        Set<String> annotationMessages = new HashSet<String>();
+        for (Iterator<Annotation> annoIter = srcAnnotations.iterator(); annoIter.hasNext(); ) {
+        	Annotation annotation = annoIter.next();
         	if (annotation.getType().startsWith("org.eclipse.ui.workbench.texteditor.quickdiff")) {
-        		srcAnnotations.remove(annotation);
+        		annoIter.remove();
+        	} else if (annotationMessages.contains(annotation.getText())) {
+        		annoIter.remove();
+        	} else {
+        		annotationMessages.add(annotation.getText());
         	}
         }
 
