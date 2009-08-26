@@ -27,12 +27,28 @@
       </language>
    </extension>
    <extension
+         id="edit.contentTypes"
+         name="Orc content types"
          point="org.eclipse.core.contenttype.contentTypes">
       <content-type
             base-type="org.eclipse.core.runtime.text"
             file-extensions="orc"
             id="edu.utexas.cs.orc.source"
             name="Orc source code"
+            priority="normal">
+      </content-type>
+      <content-type
+            base-type="org.eclipse.core.runtime.text"
+            file-extensions="inc"
+            id="edu.utexas.cs.orc.include"
+            name="Orc include file"
+            priority="normal">
+      </content-type>
+      <content-type
+            base-type="org.eclipse.core.runtime.xml"
+            file-extensions="oil"
+            id="edu.utexas.cs.orc.oil"
+            name="Orc Intermediate Language (OIL) file"
             priority="normal">
       </content-type>
    </extension>
@@ -44,6 +60,10 @@
       </fileTypes>
       <fileTypes
             extension="inc"
+            type="text">
+      </fileTypes>
+      <fileTypes
+            extension="oil"
             type="text">
       </fileTypes>
    </extension>
@@ -58,9 +78,6 @@
             id="org.eclipse.imp.runtime.impEditor"
             name="Orc Editor">
       </editor>
-   </extension>
-   <extension
-         point="org.eclipse.ui.editors">
       <editor
             class="org.eclipse.imp.editor.UniversalEditor"
             contributorClass="org.eclipse.imp.editor.internal.TextEditorActionContributor"
