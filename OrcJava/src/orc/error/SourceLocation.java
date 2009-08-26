@@ -32,7 +32,7 @@ public class SourceLocation implements Serializable {
 	public Integer endLine;
 	public Integer endColumn;
 	public File file;
-	public static final SourceLocation UNKNOWN = new SourceLocation(null, 0, 0, 0, 0, 0, 0) {
+	public static final SourceLocation UNKNOWN = new SourceLocation(null, -1, 0, 0, -2, 0, 0) {
 		@Override
 		public String toString() {
 			return "<unknown source location>";
@@ -41,6 +41,11 @@ public class SourceLocation implements Serializable {
 		@Override
 		public boolean isUnknown() {
 			return true;
+		}
+
+		@Override
+		public String getCaret() {
+			return null;
 		}
 	};
 
@@ -68,6 +73,12 @@ public class SourceLocation implements Serializable {
 	 * returns UNKNOWN if the filenames are not equal. 
 	 */
 	public SourceLocation overlap(final SourceLocation that) {
+		if (this.equals(UNKNOWN)) {
+			return that;
+		}
+		if (that.equals(UNKNOWN)) {
+			return this;
+		}
 
 		if (!this.file.equals(that.file)) {
 			return UNKNOWN;
