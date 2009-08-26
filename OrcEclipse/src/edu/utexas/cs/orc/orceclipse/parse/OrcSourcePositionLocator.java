@@ -18,6 +18,7 @@ package edu.utexas.cs.orc.orceclipse.parse;
 import orc.ast.extended.ASTNode;
 import orc.ast.extended.Walker;
 import orc.error.Located;
+import orc.error.SourceLocation;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -106,14 +107,14 @@ public class OrcSourcePositionLocator implements ISourcePositionLocator {
 		if (node instanceof Located) {
 			final Located n = (Located) node;
 			if (n.getSourceLocation() == null) {
-				return -1;
+				return SourceLocation.UNKNOWN.offset;
 			}
 			return n.getSourceLocation().offset;
 		} else if (node instanceof ModelTreeNode) {
 			final ModelTreeNode treeNode = (ModelTreeNode) node;
 			return getStartOffset(treeNode.getASTNode());
 		}
-		return -1;
+		return SourceLocation.UNKNOWN.offset;
 	}
 
 	/* (non-Javadoc)
@@ -123,14 +124,14 @@ public class OrcSourcePositionLocator implements ISourcePositionLocator {
 		if (node instanceof Located) {
 			final Located n = (Located) node;
 			if (n.getSourceLocation() == null) {
-				return -1;
+				return SourceLocation.UNKNOWN.endOffset;
 			}
 			return n.getSourceLocation().endOffset;
 		} else if (node instanceof ModelTreeNode) {
 			final ModelTreeNode treeNode = (ModelTreeNode) node;
 			return getStartOffset(treeNode.getASTNode());
 		}
-		return -1;
+		return SourceLocation.UNKNOWN.endOffset;
 	}
 
 	/* (non-Javadoc)
