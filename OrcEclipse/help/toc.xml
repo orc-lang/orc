@@ -2,7 +2,7 @@
 <toc label="Orc Plug-in User Guide">
    <topic href="help/pluginhelp/overview.html" label="Orc plug-in overview">
    </topic>
-   <topic label="Getting started">
+   <topic href="help/pluginhelp/gettingstarted/gettingstarted.html" label="Getting started">
    </topic>
    <topic label="Concepts">
    </topic>

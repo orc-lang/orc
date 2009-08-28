@@ -1,0 +1,19 @@
+@charset "UTF-8";
+/*
+ * orc_intro_item.css -- CSS style sheet for Orc's entries in Eclipse's universal intro
+ * Project OrcEclipse
+ *
+ * $Id$
+ *
+ * Created by jthywiss on Aug 28, 2009.
+ *
+ * Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+ *
+ * Use and redistribution of this file is governed by the license terms in
+ * the LICENSE file found in the project's top-level directory and also found at
+ * URL: http://orc.csres.utexas.edu/license.shtml .
+ */
+
+a#orcIntroLink img {
+		background-image: url('orc48.gif');
+	}
