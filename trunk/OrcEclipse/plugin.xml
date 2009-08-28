@@ -429,6 +429,13 @@
       </image>
    </extension>
    <extension
+         point="org.eclipse.imp.runtime.annotationHover">
+      <annotationHover
+            class="edu.utexas.cs.orc.orceclipse.edit.OrcAnnotationHover"
+            language="Orc">
+      </annotationHover>
+   </extension>
+   <extension
          point="org.eclipse.help.toc">
       <toc
             file="help/toc.xml"
@@ -443,11 +450,41 @@
       </toc>
    </extension>
    <extension
-         point="org.eclipse.imp.runtime.annotationHover">
-      <annotationHover
-            class="edu.utexas.cs.orc.orceclipse.edit.OrcAnnotationHover"
-            language="Orc">
-      </annotationHover>
+         point="org.eclipse.ui.intro.configExtension">
+      <configExtension
+            configId="org.eclipse.ui.intro.universalConfig"
+            content="help/intro/overview.xml">
+      </configExtension>
+<!--
+      <configExtension
+            configId="org.eclipse.ui.intro.universalConfig"
+            content="help/intro/firststeps.xml">
+      </configExtension>
+-->
+      <configExtension
+            configId="org.eclipse.ui.intro.universalConfig"
+            content="help/intro/tutorials.xml">
+      </configExtension>
+<!--
+      <configExtension
+            configId="org.eclipse.ui.intro.universalConfig"
+            content="help/intro/samples.xml">
+      </configExtension>
+-->
+      <configExtension
+            configId="org.eclipse.ui.intro.universalConfig"
+            content="help/intro/whatsnew.xml">
+      </configExtension>
+<!--
+      <configExtension
+            configId="org.eclipse.ui.intro.universalConfig"
+            content="help/intro/migrate.xml">
+      </configExtension>
+      <configExtension
+            configId="org.eclipse.ui.intro.universalConfig"
+            content="help/intro/webresources.xml">
+      </configExtension>
+-->
    </extension>
 
 </plugin>
