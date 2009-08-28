@@ -12,7 +12,7 @@
 <feature
       id="edu.utexas.cs.orc.orceclipse"
       label="Orc Eclipse plug-in"
-      version="0.3.2.qualifier"
+      version="0.3.3.qualifier"
       provider-name="The University of Texas at Austin"
       plugin="edu.utexas.cs.orc.orceclipse">
 
@@ -61,19 +61,32 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
    <url>
       <update label="Orc programming language" url="http://orc.csres.utexas.edu/eclipse_updates/"/>
+      <discovery label="IMP update site" url="http://download.eclipse.org/technology/imp/updates/"/>
    </url>
+
+   <includes
+         id="org.eclipse.imp.runtime"
+         version="0.1.101"
+         name="IMP Runtime"
+         search-location="both"/>
+
+   <includes
+         id="lpg.runtime"
+         version="2.0.16"
+         name="LPG Runtime"
+         search-location="both"/>
 
    <requires>
       <import plugin="org.eclipse.ui"/>
       <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.core.resources"/>
       <import plugin="org.eclipse.jdt.core"/>
-      <import plugin="org.eclipse.imp.runtime" version="0.1.99" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.debug.ui"/>
       <import plugin="org.eclipse.jface.text"/>
+      <import plugin="org.eclipse.debug.ui"/>
+      <import plugin="org.eclipse.imp.runtime" version="0.1.101" match="greaterOrEqual"/>
       <import plugin="org.eclipse.team.core"/>
       <import plugin="org.eclipse.help"/>
       <import plugin="com.ibm.icu"/>
-      <import plugin="org.eclipse.core.resources"/>
       <import plugin="org.eclipse.core.variables"/>
       <import plugin="org.eclipse.debug.core"/>
       <import plugin="org.eclipse.jdt.debug.ui"/>
@@ -81,38 +94,13 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
       <import plugin="org.eclipse.ui.console"/>
       <import plugin="org.eclipse.ui.editors"/>
       <import plugin="org.eclipse.ui.ide"/>
-      <import plugin="org.eclipse.compare"/>
-      <import plugin="org.eclipse.core.filesystem"/>
-      <import plugin="org.eclipse.jdt.debug"/>
-      <import plugin="org.eclipse.jdt.ui"/>
-      <import plugin="org.eclipse.ltk.core.refactoring"/>
-      <import plugin="org.eclipse.ltk.ui.refactoring"/>
-      <import plugin="org.eclipse.imp.smapi"/>
-      <import plugin="org.eclipse.pde.ui"/>
-      <import plugin="org.eclipse.ui.navigator"/>
-      <import plugin="org.eclipse.ui.views"/>
-      <import plugin="org.eclipse.ui.workbench.texteditor"/>
    </requires>
 
    <plugin
          id="edu.utexas.cs.orc.orceclipse"
          download-size="187"
          install-size="187"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.imp.runtime"
-         download-size="807"
-         install-size="808"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="lpg.runtime"
-         download-size="86"
-         install-size="96"
-         version="0.0.0"
+         version="0.3.3.qualifier"
          unpack="false"/>
 
 </feature>
