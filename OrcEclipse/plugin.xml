@@ -465,12 +465,10 @@
             configId="org.eclipse.ui.intro.universalConfig"
             content="help/intro/tutorials.xml">
       </configExtension>
-<!--
       <configExtension
             configId="org.eclipse.ui.intro.universalConfig"
             content="help/intro/samples.xml">
       </configExtension>
--->
       <configExtension
             configId="org.eclipse.ui.intro.universalConfig"
             content="help/intro/whatsnew.xml">
