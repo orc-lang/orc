@@ -116,8 +116,11 @@ Expression Body =
 		}
 		yyValue = out;
 	}
-	;
-
+	/ ds:Declarations ^{
+         yyError = new ParseError("no goal expression", yyStart);
+         yyResult = yyError;
+     }
+     ;
 List<Declaration> Declarations =
 	ds:Include ds2:Declarations {
 		ds.addAll(ds2);
