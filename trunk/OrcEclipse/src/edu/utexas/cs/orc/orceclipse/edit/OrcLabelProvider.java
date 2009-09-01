@@ -169,30 +169,31 @@ public class OrcLabelProvider implements ILabelProvider {
 	public static String getLabelFor(final ASTNode n) {
 		if (n instanceof DefMemberClause) {
 			final DefMemberClause dmc = (DefMemberClause) n;
-			return dmc.name.equals("") ? "lambda" : "def " + dmc.name + "(" + Expression.join(dmc.formals, ", ") + ")";
+			return dmc.name + "(" + Expression.join(dmc.formals, ", ") + ")";
 		}
 		if (n instanceof DefMemberType) {
 			final DefMemberType dmt = (DefMemberType) n;
-			return "def " + dmt.name + " (" + Expression.join(dmt.argTypes, ", ") + ") :: " + dmt.resultType;
+			return dmt.name + " (" + Expression.join(dmt.argTypes, ", ") + ") :: " + dmt.resultType;
 		}
 		if (n instanceof SiteDeclaration) {
-			return "site " + ((SiteDeclaration) n).varname;
+			return ((SiteDeclaration) n).varname;
 		}
 		if (n instanceof ClassDeclaration) {
-			return "class " + ((ClassDeclaration) n).varname;
+			return ((ClassDeclaration) n).varname;
 		}
 		if (n instanceof ValDeclaration) {
-			return "val " + ((ValDeclaration) n).p;
+			return ((ValDeclaration) n).p.toString();
 		}
 		if (n instanceof TypeDeclaration) {
-			return "type " + ((TypeDeclaration) n).varname;
+			return ((TypeDeclaration) n).varname;
 		}
 		if (n instanceof TypeAliasDeclaration) {
-			return "type " + ((TypeAliasDeclaration) n).typename;
+			return ((TypeAliasDeclaration) n).typename;
 		}
 		if (n instanceof DatatypeDeclaration) {
-			return "type " + ((DatatypeDeclaration) n).typename;
+			return ((DatatypeDeclaration) n).typename;
 		}
+		// If we get here, someone forgot to add a case above....
 		return "<" + n.getClass().getSimpleName() + ">";
 	}
 
