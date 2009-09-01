@@ -22,11 +22,9 @@ upto(N) >i> threadRing(i+1, p, ring(i), ring((i+1) % N)) | ring(0).put(0)
 
 
 threadRingRunner(1000) >> 
-threadRingRunner(10000) >> 
-threadRingRunner(100000) >> stop 
+threadRingRunner(10000) >> stop 
 {-
 OUTPUT:
 498
 444
-407
 -}
