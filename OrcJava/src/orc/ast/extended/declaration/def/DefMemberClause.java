@@ -37,16 +37,13 @@ public class DefMemberClause extends DefMember {
 		this.resultType = resultType;
 	}
 	public String toString() {
-		return sigToString() + " = " + body;
+		return (name.equals("") ? "lambda" : "def ") + sigToString() + " = " + body;
 	}
 	
 	public String sigToString() {
 		StringBuilder s = new StringBuilder();
 		
-		s.append(name.equals("") ? "lambda" : "def ");
 		s.append(name);
-		s.append(" ");
-
 		for (List<Pattern> ps : formals) {
 			s.append('(');	
 				s.append(Expression.join(ps, ","));

@@ -36,7 +36,6 @@ public class DefMemberType extends DefMember {
 		public String sigToString() {
 			StringBuilder s = new StringBuilder();
 			
-			s.append("def ");
 			s.append(name);
 			
 			s.append('[');
@@ -50,14 +49,14 @@ public class DefMemberType extends DefMember {
 			}
 				
 			s.append(')');
-			s.append("::");
+			s.append(" :: ");
 			s.append(resultType);
 
 			return s.toString();
 		}
 		
 		public String toString() {
-			return sigToString();
+			return "def " + sigToString();
 		}
 
 		/* (non-Javadoc)
