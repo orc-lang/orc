@@ -18,6 +18,7 @@ package edu.utexas.cs.orc.orceclipse.edit;
 import orc.ast.extended.ASTNode;
 import orc.ast.extended.Walker;
 import orc.ast.extended.declaration.ClassDeclaration;
+import orc.ast.extended.declaration.IncludeDeclaration;
 import orc.ast.extended.declaration.SiteDeclaration;
 import orc.ast.extended.declaration.ValDeclaration;
 import orc.ast.extended.declaration.def.DefMember;
@@ -142,6 +143,15 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 		public boolean enter(final DatatypeDeclaration decl) {
 			createSubItem(decl, TYPE_DECL_CATEGORY);
 			return true;
+		}
+
+		/* (non-Javadoc)
+		 * @see orc.ast.extended.Walker#enter(orc.ast.extended.declaration.IncludeDeclaration)
+		 */
+		@Override
+		public boolean enter(final IncludeDeclaration decl) {
+			createSubItem(decl); //TODO: new cat?
+			return false;
 		}
 
 		/* (non-Javadoc)
