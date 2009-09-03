@@ -10,7 +10,7 @@
 <ul>
 <li><a href="#casual">Casual users</a> who are interested in playing with Orc.</li>
 <li><a href="#eclipse">Eclipse users</a> who want to develop Orc programs on their own machine under the Eclipse IDE.
-<li><a href="#cmdline">Command line users</a> who want to run Orc programs on the command line using the compiler JAR file.</li>
+<li><a href="#cmdline">Command line users</a> who want to run Orc programs from the command line.</li>
 <li><a href="#devs">Developers</a> who want to explore Orc's implementation.</li>
 </ul>
 
@@ -26,9 +26,9 @@ us</a> if you are interested in obtaining an account.</p>
 <a name="eclipse"></a>
 <h3>Eclipse Users</h3>
 
-<p>There is an Orc plugin available for the Eclipse IDE. It is compatible with Eclipse versions 3.3 and later.</p> 
+<p>There is an Orc plugin available for the <a href="http://www.eclipse.org/">Eclipse IDE</a>. It is compatible with Eclipse versions 3.3 and later.</p> 
 
-To install the Orc Eclipse plugin within Eclipse 3.5, follow these steps:
+To install the Orc Eclipse plugin within Eclipse 3.4 or 3.5, follow these steps:
 <ol>
 <li> Select <b>Help</b>, then <b>Install New Software...</b> </li>
 <li> Press the <b>Add...</b> button in the upper right of the Install window. </li>
@@ -48,15 +48,16 @@ To install the Orc Eclipse plugin within Eclipse 3.3, follow these steps:
 <ol>
 <li> Select <b>Help</b>, go over <b>Software Updates</b> and then click on <b>Find and Install...</b>.</li>
 <li> Select <b>Search for new features to install</b> and then click <b>Next</b>.</li>
-<li> From the right hand side select <b>New Remote Site...</b> and fill in the following in the <b>New Update Site</b> dialog box, and press <b>OK</b>:
+<li> From the right hand side select <b>New Remote Site...</b></li>
+<li> Fill in the following in the <b>New Update Site</b> dialog box, and press <b>OK</b></li>:
   <ul>
     <li><b>Name:</b> <tt>Orc programming language</tt></li>
     <li><b>Location:</b> <tt>http://orc.csres.utexas.edu/eclipse_updates/</tt></li>
   </ul>
 </li>
 <li> Press Finish.</li>
-<li> A window titled <b>Updates</b> would appear. Select <b>Orc programming language</b> and click on <b>Next</b>.</li>
-<li> Go through license page and click <b>Finish</b> at the end. </li>
+<li> A window titled <b>Updates</b> will appear. Select <b>Orc programming language</b> and click on <b>Next</b>.</li>
+<li> Go through the license page and click <b>Finish</b> at the end. </li>
 <li> Confirm the installation by clicking on <b>Install</b>.</li>
 </ol>
 
