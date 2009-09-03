@@ -10,7 +10,9 @@ package orc.ast.extended;
 import java.util.List;
 
 import orc.ast.extended.declaration.ClassDeclaration;
+import orc.ast.extended.declaration.Declaration;
 import orc.ast.extended.declaration.DefsDeclaration;
+import orc.ast.extended.declaration.IncludeDeclaration;
 import orc.ast.extended.declaration.SiteDeclaration;
 import orc.ast.extended.declaration.ValDeclaration;
 import orc.ast.extended.declaration.def.DefMember;
@@ -467,6 +469,22 @@ public class Walker implements Visitor<Void> {
 	}
 	
 	public void leave(CatchHandler handler) {
+	}
+
+
+	public Void visit(IncludeDeclaration decl) {
+		if (!this.enter(decl)) return null;
+		for (Declaration aDecl : decl.decls)
+			aDecl.accept(this);
+		this.leave(decl);
+		return null;
+	}
+	
+	public boolean enter(IncludeDeclaration decl) {
+		return enter((ASTNode)decl);
+	}
+	
+	public void leave(IncludeDeclaration decl) {
 	}
 
 
