@@ -20,6 +20,7 @@ import java.util.Set;
 
 import orc.ast.extended.ASTNode;
 import orc.ast.extended.declaration.ClassDeclaration;
+import orc.ast.extended.declaration.IncludeDeclaration;
 import orc.ast.extended.declaration.SiteDeclaration;
 import orc.ast.extended.declaration.ValDeclaration;
 import orc.ast.extended.declaration.def.DefMember;
@@ -129,6 +130,9 @@ public class OrcLabelProvider implements ILabelProvider {
 	 * @return Image representing the type of the given AST node 
 	 */
 	public static Image getImageFor(final ASTNode n) {
+		if (n instanceof IncludeDeclaration) {
+			return ORC_INCLUDE_OBJ_IMAGE;
+		}
 		if (n instanceof DefMember) {
 			return ORC_DEF_OBJ_IMAGE;
 		}
@@ -167,6 +171,10 @@ public class OrcLabelProvider implements ILabelProvider {
 	 * @return String representing a label of the given AST node 
 	 */
 	public static String getLabelFor(final ASTNode n) {
+		if (n instanceof IncludeDeclaration) {
+			final IncludeDeclaration idecl = (IncludeDeclaration) n;
+			return idecl.sourceFile.getName();
+		}
 		if (n instanceof DefMemberClause) {
 			final DefMemberClause dmc = (DefMemberClause) n;
 			return dmc.sigToString();
