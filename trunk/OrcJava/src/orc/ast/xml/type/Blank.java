@@ -1,15 +1,14 @@
 package orc.ast.xml.type;
 
-import orc.Config;
 import orc.env.Env;
 
 /**
  * The syntactic type '_', a placeholder for an unknown type.
- * @author quark
+ * @author quark, dkitchin
  */
 public class Blank extends Type {
 	@Override
-	public orc.type.Type unmarshal(Config config) {
-		return orc.type.Type.BLANK;
+	public orc.ast.oil.type.Type unmarshal() {
+		return orc.ast.oil.type.Type.BLANK;
 	}
 }

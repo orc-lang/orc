@@ -7,6 +7,8 @@
  */
 package orc.ast.extended;
 
+import java.util.List;
+
 import orc.ast.extended.declaration.ClassDeclaration;
 import orc.ast.extended.declaration.DefsDeclaration;
 import orc.ast.extended.declaration.SiteDeclaration;
@@ -14,6 +16,7 @@ import orc.ast.extended.declaration.ValDeclaration;
 import orc.ast.extended.declaration.def.DefMember;
 import orc.ast.extended.declaration.def.DefMemberClause;
 import orc.ast.extended.declaration.def.DefMemberType;
+import orc.ast.extended.declaration.type.Constructor;
 import orc.ast.extended.declaration.type.DatatypeDeclaration;
 import orc.ast.extended.declaration.type.TypeAliasDeclaration;
 import orc.ast.extended.declaration.type.TypeDeclaration;
@@ -54,10 +57,9 @@ import orc.ast.extended.pattern.TuplePattern;
 import orc.ast.extended.pattern.TypedPattern;
 import orc.ast.extended.pattern.VariablePattern;
 import orc.ast.extended.pattern.WildcardPattern;
-import orc.ast.extended.type.Constructor;
 import orc.ast.extended.type.Type;
 import orc.ast.oil.expression.argument.Argument;
-import orc.ast.simple.argument.NamedVariable;
+import orc.ast.simple.argument.FreeVariable;
 
 /**
  * 
@@ -257,7 +259,9 @@ public class Walker implements Visitor<Void> {
 	public Void visit(Lambda expr) {
 		if (!this.enter(expr)) return null;
 		this.enterScope(expr);
-		for (Pattern formal : expr.formals) formal.accept(this);
+		for (List<Pattern> ps : expr.formals)
+			for (Pattern formal : ps) 
+				formal.accept(this);
 //		expr.resultType.accept(this);
 		expr.body.accept(this);
 		this.leaveScope(expr);
@@ -528,7 +532,9 @@ public class Walker implements Visitor<Void> {
 	public Void visit(DefMemberClause defn) {
 		if (!this.enter(defn)) return null;
 		this.enterScope(defn);
-		for (Pattern formal : defn.formals) formal.accept(this);
+		for (List<Pattern> ps : defn.formals)
+			for (Pattern formal : ps) 
+				formal.accept(this);
 //		defn.resultType.accept(this);
 		defn.body.accept(this);
 		this.leaveScope(defn);

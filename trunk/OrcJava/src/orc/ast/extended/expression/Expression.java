@@ -2,8 +2,13 @@ package orc.ast.extended.expression;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
 
 import orc.ast.extended.ASTNode;
+import orc.ast.extended.pattern.Pattern;
+import orc.ast.extended.type.LambdaType;
 import orc.ast.simple.argument.Argument;
 import orc.error.Located;
 import orc.error.Locatable;
@@ -155,4 +160,27 @@ public abstract class Expression implements ASTNode, Locatable {
 		}
 		return out.toString();
 	}
+	
+	/**
+	 * Utility method to fold a group of pattern lists into a lambda.
+	 * 
+	 * If the pattern list is empty, just return b.
+	 *  
+	 * @param Pattern list list (P),...,(P)
+	 * @param Body b
+	 * @return Expression lambda(P) = ( ... ( lambda(P) = b ) ... )
+	 */
+	public static Expression uncurry(List<List<Pattern>> ps, Expression body) {
+		
+		ListIterator<List<Pattern>> it = ps.listIterator(ps.size());
+		while (it.hasPrevious()) {
+			List<List<Pattern>> lp = new LinkedList<List<Pattern>>();
+			lp.add(it.previous());
+			body = new Lambda(lp, body, null);
+		}
+			
+		return body;
+	}
+	
+	
 }

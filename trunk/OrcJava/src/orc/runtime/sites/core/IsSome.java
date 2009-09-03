@@ -10,12 +10,12 @@ import orc.runtime.Token;
 import orc.runtime.sites.Site;
 import orc.runtime.values.TupleValue;
 import orc.runtime.values.Value;
-import orc.type.ArrowType;
-import orc.type.ListType;
-import orc.type.OptionType;
-import orc.type.TupleType;
 import orc.type.Type;
 import orc.type.TypeVariable;
+import orc.type.structured.ArrowType;
+import orc.type.structured.ListType;
+import orc.type.structured.OptionType;
+import orc.type.structured.TupleType;
 
 /**
  * @author dkitchin

@@ -24,14 +24,16 @@ public class TupleType extends Type {
 	}
 	
 	@Override
-	public orc.type.Type convert(Env<String> env) throws TypeException {
-		List<orc.type.Type> newitems = new LinkedList<orc.type.Type>();
-		
-		for (Type T : items) {
-			newitems.add(T.convert(env));
-		}
-		
-		return new orc.type.TupleType(newitems);
+	public orc.ast.oil.type.Type convert(Env<TypeVariable> env) throws TypeException {
+		return new orc.ast.oil.type.TupleType(Type.convertAll(items, env));
+	}
+	
+	/* (non-Javadoc)
+	 * @see orc.ast.simple.type.Type#subst(orc.ast.simple.type.Type, orc.ast.simple.type.FreeTypeVariable)
+	 */
+	@Override
+	public Type subst(Type T, FreeTypeVariable X) {
+		return new TupleType(Type.substAll(items, T, X));
 	}
 	
 	

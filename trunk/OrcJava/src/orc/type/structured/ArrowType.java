@@ -1,4 +1,4 @@
-package orc.type;
+package orc.type.structured;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -14,6 +14,7 @@ import orc.error.compiletime.typing.TypeArityException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
 import orc.error.compiletime.typing.UnrepresentableTypeException;
+import orc.type.Type;
 import orc.type.ground.Top;
 import orc.type.inference.Constraint;
 import orc.type.inference.InferenceRequest;
@@ -231,7 +232,7 @@ public class ArrowType extends Type {
 	}
 	
 	
-	public Variance findVariance(Integer var) throws TypeException {
+	public Variance findVariance(Integer var) {
 		
 		Variance result = resultType.findVariance(var);
 		

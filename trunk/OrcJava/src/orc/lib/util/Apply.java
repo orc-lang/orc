@@ -15,10 +15,10 @@ import orc.runtime.sites.Site;
 import orc.runtime.values.Callable;
 import orc.runtime.values.ListValue;
 import orc.runtime.values.Value;
-import orc.type.ArrowType;
-import orc.type.EllipsisArrowType;
-import orc.type.ListType;
 import orc.type.Type;
+import orc.type.structured.ArrowType;
+import orc.type.structured.EllipsisArrowType;
+import orc.type.structured.ListType;
 
 /**
  * Apply a callable to a list of arguments.

@@ -20,7 +20,7 @@ public class Constant extends Argument {
 	}
 	
 	public String toString() {
-		return super.toString() + "(" + String.valueOf(v) + ")";
+		return String.valueOf(v);
 	}
 
 	@Override

@@ -1,12 +1,11 @@
 package orc.ast.xml.type;
 
-import orc.Config;
 import orc.env.Env;
 
 public class Top extends Type {
 
 	@Override
-	public orc.type.Type unmarshal(Config config) {
-		return orc.type.Type.TOP;
+	public orc.ast.oil.type.Type unmarshal() {
+		return orc.ast.oil.type.Type.TOP;
 	}
 }

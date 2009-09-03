@@ -41,6 +41,6 @@ public class HasType extends Expression {
 	}
 	@Override
 	public orc.ast.oil.expression.Expression unmarshal(Config config) throws CompilationException {
-		return new orc.ast.oil.expression.HasType(body.unmarshal(config), type.unmarshal(config), checked);
+		return new orc.ast.oil.expression.HasType(body.unmarshal(config), type.unmarshal(), checked);
 	}
 }

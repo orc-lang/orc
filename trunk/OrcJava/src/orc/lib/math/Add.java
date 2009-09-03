@@ -9,9 +9,9 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Args.NumericBinaryOperator;
 import orc.runtime.sites.EvalSite;
-import orc.type.ArrowType;
-import orc.type.MultiType;
 import orc.type.Type;
+import orc.type.structured.ArrowType;
+import orc.type.structured.MultiType;
 
 /**
  * NB: this is overloaded to operate on strings,

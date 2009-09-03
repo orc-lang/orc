@@ -5,13 +5,11 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
-import orc.Config;
 import orc.env.Env;
 import orc.error.OrcError;
 import orc.error.compiletime.typing.ArgumentArityException;
 import orc.error.compiletime.typing.MissingTypeException;
 import orc.error.compiletime.typing.SubtypeFailureException;
-import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
 import orc.type.TypeVariable;
 
@@ -35,7 +33,7 @@ public class SiteType extends Type {
 	}
 	
 	@Override
-	public orc.type.Type unmarshal(Config config) throws TypeException {
-		return new orc.type.SiteType(classname).resolveSites(config);
+	public orc.ast.oil.type.Type unmarshal() {
+		return new orc.ast.oil.type.SiteType(classname);
 	}
 }

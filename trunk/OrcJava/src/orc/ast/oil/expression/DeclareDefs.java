@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import orc.ast.oil.ContextualVisitor;
 import orc.ast.oil.Visitor;
 import orc.ast.oil.expression.argument.Variable;
 import orc.env.Env;
@@ -14,8 +15,8 @@ import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UnspecifiedReturnTypeException;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Unwind;
-import orc.type.ArrowType;
 import orc.type.Type;
+import orc.type.structured.ArrowType;
 
 public class DeclareDefs extends Expression {
 
@@ -47,6 +48,10 @@ public class DeclareDefs extends Expression {
 	@Override
 	public <E> E accept(Visitor<E> visitor) {
 		return visitor.visit(this);
+	}
+	
+	public <E,C> E accept(ContextualVisitor<E,C> cvisitor, C initialContext) {
+		return cvisitor.visit(this, initialContext);
 	}
 
 	@Override

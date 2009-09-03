@@ -1,4 +1,4 @@
-package orc.type;
+package orc.type.structured;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -7,6 +7,7 @@ import java.util.Set;
 import orc.ast.oil.expression.argument.Argument;
 import orc.env.Env;
 import orc.error.compiletime.typing.TypeException;
+import orc.type.Type;
 
 /**
  * A composite type supporting ad-hoc polymorphic calls.

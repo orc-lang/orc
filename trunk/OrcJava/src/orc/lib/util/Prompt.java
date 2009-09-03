@@ -5,8 +5,8 @@ import javax.swing.JOptionPane;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.ThreadedPartialSite;
-import orc.type.ArrowType;
 import orc.type.Type;
+import orc.type.structured.ArrowType;
 
 /**
  * A prompt dialog. Publishes the user's response. If the

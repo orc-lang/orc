@@ -1,6 +1,5 @@
 package orc.ast.extended.type;
 
-import orc.env.Env;
 
 /**
  * The syntactic type '_', a placeholder for an unknown type.
@@ -11,8 +10,8 @@ import orc.env.Env;
 public class Blank extends Type {
 
 	@Override
-	public orc.type.Type convert(Env<String> env) {
-		return orc.type.Type.BLANK;
+	public orc.ast.simple.type.Type simplify()  {
+		return orc.ast.simple.type.Type.BLANK;
 	}
 
 	public String toString() { return "_"; }

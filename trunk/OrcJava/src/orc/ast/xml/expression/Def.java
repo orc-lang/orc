@@ -2,6 +2,7 @@ package orc.ast.xml.expression;
 
 import java.io.Serializable;
 import java.util.LinkedList;
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -45,13 +46,15 @@ public class Def implements Serializable {
 		return "(" + super.toString() + "(" + arity + ") = " + body + ")";
 	}
 	public orc.ast.oil.expression.Def unmarshal(Config config) throws CompilationException {
-		LinkedList<orc.type.Type> newArgTypes = null;
+		
+		List<orc.ast.oil.type.Type> newArgTypes = null;
 		if (argTypes != null) {
-			newArgTypes = new LinkedList<orc.type.Type>();
-			for (Type t : argTypes) newArgTypes.add(t.unmarshal(config));
+			newArgTypes = Type.unmarshalAll(argTypes);
 		}
-		orc.type.Type newResultType = null;
-		if (resultType != null) newResultType = resultType.unmarshal(config);
+		orc.ast.oil.type.Type newResultType = null;
+		if (resultType != null) { 
+			newResultType = resultType.unmarshal();
+		}
 		
 		return new orc.ast.oil.expression.Def(arity, body.unmarshal(config), typeArity,
 				newArgTypes, newResultType, location, name);

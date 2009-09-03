@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import orc.ast.oil.ContextualVisitor;
 import orc.ast.oil.Visitor;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
@@ -23,8 +24,8 @@ public class Catch extends Expression {
 		 * in advance of a more complete solution that accounts for both explicitly
 		 * thrown values and Java-level exceptions thrown by sites.
 		 */
-		handler.argTypes = new LinkedList<Type>(); 
-		handler.argTypes.add(Type.BOT);
+		handler.argTypes = new LinkedList<orc.ast.oil.type.Type>(); 
+		handler.argTypes.add(orc.ast.oil.type.Type.BOT);
 		
 		this.tryBlock = tryBlock;
 	}
@@ -41,7 +42,8 @@ public class Catch extends Expression {
 		 * in constructor), it is saner to check against a stated type rather than trying to 
 		 * synthesize one.
 		 */
-		handler.resultType = blockType;
+		// FIXME
+		//handler.resultType = blockType;
 		handler.checkDef(ctx, typectx);
 		handler.resultType = null;
 		
@@ -56,6 +58,10 @@ public class Catch extends Expression {
 	
 	public <E> E accept(Visitor<E> visitor) {
 		return visitor.visit(this);
+	}
+	
+	public <E,C> E accept(ContextualVisitor<E,C> cvisitor, C initialContext) {
+		return cvisitor.visit(this, initialContext);
 	}
 	
 	public orc.ast.xml.expression.Expression marshal() throws CompilationException {

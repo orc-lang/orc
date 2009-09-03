@@ -13,13 +13,13 @@ import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.TupleValue;
 import orc.runtime.values.Value;
-import orc.type.ArrowType;
-import orc.type.DotType;
-import orc.type.TupleType;
 import orc.type.Type;
 import orc.type.TypeApplication;
 import orc.type.TypeVariable;
 import orc.type.ground.LetType;
+import orc.type.structured.ArrowType;
+import orc.type.structured.DotType;
+import orc.type.structured.TupleType;
 
 /**
  * 

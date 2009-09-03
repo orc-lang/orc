@@ -51,7 +51,7 @@ public class ClassTycon extends Tycon {
 	}
 
 	@Override
-	public List<Variance> variances() throws TypeException {
+	public List<Variance> variances() {
 		/* 
 		 * All Java type parameters should be considered invariant, to be safe.
 		 */

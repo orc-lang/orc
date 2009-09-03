@@ -25,24 +25,16 @@ public class ClassnameType extends Type {
 	}
 	
 	@Override
-	public orc.type.Type convert(Env<String> env) throws TypeException {
-		return new orc.type.ClassnameType(classname);
-		// FIXME: the following breaks conversion between orc.ast.oil and orc.ast.oil.xml.
-		// See comments in issue 26.
-		/*
-		
-		Class cls;
-		
-		try
-		{
-			cls = Class.forName(classname);
-		} catch (ClassNotFoundException e) {
-			throw new TypeException("Failed to load class " + classname + " as a type.");
-		}
-		
-		return orc.type.Type.fromJavaClass(cls);
-		*/
-
+	public orc.ast.oil.type.Type convert(Env<orc.ast.simple.type.TypeVariable> env) throws TypeException {
+		return new orc.ast.oil.type.ClassType(classname);
+	}
+	
+	/* (non-Javadoc)
+	 * @see orc.ast.simple.type.Type#subst(orc.ast.simple.type.Type, orc.ast.simple.type.FreeTypeVariable)
+	 */
+	@Override
+	public Type subst(Type T, FreeTypeVariable X) {
+		return this;
 	}
 		
 	public String toString() {		

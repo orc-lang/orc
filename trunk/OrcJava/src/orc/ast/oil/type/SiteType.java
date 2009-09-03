@@ -1,9 +1,8 @@
-package orc.ast.extended.type;
+package orc.ast.oil.type;
 
 import java.util.LinkedList;
 import java.util.List;
 
-import orc.env.Env;
 import orc.error.OrcError;
 import orc.error.compiletime.typing.ArgumentArityException;
 import orc.error.compiletime.typing.SubtypeFailureException;
@@ -29,12 +28,21 @@ public class SiteType extends Type {
 	}
 	
 	@Override
-	public orc.type.Type convert(Env<String> env) {
-		return new orc.type.SiteType(classname);
+	public orc.type.Type transform() {
+		// FIXME: resolve site types
+		return orc.type.Type.BOT;
 	}
 		
 	public String toString() {		
 		return classname;
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.oil.type.Type#marshal()
+	 */
+	@Override
+	public orc.ast.xml.type.Type marshal() {
+		return new orc.ast.xml.type.SiteType(classname);
 	}	
 	
 }

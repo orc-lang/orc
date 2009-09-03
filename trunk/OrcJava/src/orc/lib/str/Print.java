@@ -8,8 +8,8 @@ import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.Site;
 import orc.runtime.values.Value;
-import orc.type.EllipsisArrowType;
 import orc.type.Type;
+import orc.type.structured.EllipsisArrowType;
 
 /**
  * @author dkitchin

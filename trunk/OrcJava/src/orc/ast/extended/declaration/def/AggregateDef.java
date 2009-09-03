@@ -2,15 +2,19 @@ package orc.ast.extended.declaration.def;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import orc.ast.extended.expression.AssertType;
 import orc.ast.extended.pattern.Pattern;
-import orc.ast.extended.type.ArrowType;
+import orc.ast.extended.type.LambdaType;
 import orc.ast.extended.type.AssertedType;
 import orc.ast.extended.type.Type;
 import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.Def;
-import orc.ast.simple.expression.HasType;
+import orc.ast.simple.type.ArrowType;
+import orc.ast.simple.type.FreeTypeVariable;
+import orc.ast.simple.type.TypeVariable;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;
 
@@ -66,25 +70,68 @@ public class AggregateDef {
 			body = c.simplify(formals,body);
 		}
 		
-		if (resultType != null && resultType instanceof AssertedType) {
+		
+		boolean asserted = false;
+		if (resultType instanceof AssertedType) {
 			AssertedType atype = (AssertedType)resultType;
 			resultType = atype.type;
-			body = new HasType(body, atype.type, false);
+			asserted = true;
+
+			
 		}
 		
-		return new orc.ast.simple.expression.Def(var, formals, body, typeParams, argTypes, resultType, location);
+		List<List<Type>> dummyArgTypes = new LinkedList<List<Type>>();
+		dummyArgTypes.add(argTypes);
+		ArrowType converted = (ArrowType)((new LambdaType(dummyArgTypes, resultType, typeParams)).simplify());
+		if (typeParams != null) {
+			for (int i = 0; i < typeParams.size(); i++) {
+				FreeTypeVariable X = new FreeTypeVariable(typeParams.get(i));
+				TypeVariable Y = converted.typeParams.get(i);
+				body = body.subvar(Y,X);
+			}
+		}
+		
+		if (asserted) {
+			body = new orc.ast.simple.expression.HasType(body, converted.resultType, false);
+		}
+		
+		
+		
+		return new orc.ast.simple.expression.Def(var, formals, body, converted.typeParams, converted.argTypes, converted.resultType, location);
 	}
 
-	public void setTypeParams(List<String> typeParams) {
-		this.typeParams = typeParams;
+	public void setTypeParams(List<String> typeParams) throws CompilationException {
+		if (this.typeParams == null) {
+			this.typeParams = typeParams;
+		}
+		else {
+			CompilationException ce = new CompilationException("Multiple type parameter definitions");
+			ce.setSourceLocation(location);
+			throw ce;
+		}
+		
 	}
 
-	public void setResultType(Type resultType) {
-		this.resultType = resultType;
+	public void setResultType(Type resultType) throws CompilationException {
+		if (this.resultType == null) {
+			this.resultType = resultType;
+		}
+		else {
+			CompilationException ce = new CompilationException("Multiple result type definitions");
+			ce.setSourceLocation(location);
+			throw ce;
+		}
 	}
 
-	public void setArgTypes(List<Type> argTypes) {
-		this.argTypes = argTypes;
+	public void setArgTypes(List<Type> argTypes) throws CompilationException {
+		if (this.argTypes == null) {
+			this.argTypes = argTypes;
+		}
+		else { 
+			CompilationException ce = new CompilationException("Multiple argument type definitions");
+			ce.setSourceLocation(location);
+			throw ce;
+		}
 	}
 
 	public void addLocation(SourceLocation sourceLocation) {

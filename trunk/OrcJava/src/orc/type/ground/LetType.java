@@ -6,9 +6,9 @@ import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
 import orc.runtime.values.TupleValue;
 import orc.runtime.values.Value;
-import orc.type.ArrowType;
-import orc.type.TupleType;
 import orc.type.Type;
+import orc.type.structured.ArrowType;
+import orc.type.structured.TupleType;
 
 /**
  * 

@@ -15,15 +15,11 @@ import orc.error.compiletime.CompilationException;
 
 public class Lambda extends Expression {
 
-	public List<Pattern> formals;
+	public List<List<Pattern>> formals;
 	public Expression body;
 	public Type resultType; /* optional, may be null */
 	
-	public Lambda(List<Pattern> formals, Expression body) {
-		
-	}
-	
-	public Lambda(List<Pattern> formals, Expression body, Type resultType) {
+	public Lambda(List<List<Pattern>> formals, Expression body, Type resultType) {
 		this.formals = formals;
 		this.body = body;
 		this.resultType = resultType;

@@ -29,8 +29,16 @@ public class SiteType extends Type {
 	}
 	
 	@Override
-	public orc.type.Type convert(Env<String> env) {
-		return new orc.type.SiteType(classname);
+	public orc.ast.oil.type.Type convert(Env<orc.ast.simple.type.TypeVariable> env) {
+		return new orc.ast.oil.type.SiteType(classname);
+	}
+	
+	/* (non-Javadoc)
+	 * @see orc.ast.simple.type.Type#subst(orc.ast.simple.type.Type, orc.ast.simple.type.FreeTypeVariable)
+	 */
+	@Override
+	public Type subst(Type T, FreeTypeVariable X) {
+		return this;
 	}
 		
 	public String toString() {		

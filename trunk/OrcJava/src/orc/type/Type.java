@@ -35,6 +35,8 @@ import orc.type.ground.StringType;
 import orc.type.ground.Top;
 import orc.type.inference.Constraint;
 import orc.type.java.ClassTycon;
+import orc.type.structured.ArrowType;
+import orc.type.structured.MultiType;
 import orc.type.tycon.Tycon;
 import orc.type.tycon.Variance;
 import orc.type.TypeVariable;
@@ -60,10 +62,10 @@ public abstract class Type {
 	/* Create singleton representatives for some common types */
 	public static final Type TOP = new Top();
 	public static final Type BOT = new Bot();
-	public static final Type NUMBER = GroundTypes.numberType();
-	public static final Type STRING = GroundTypes.stringType();
-	public static final Type BOOLEAN = GroundTypes.booleanType();
-	public static final Type INTEGER = GroundTypes.integerType();
+	public static final Type NUMBER = new NumberType();
+	public static final Type STRING = new StringType();
+	public static final Type BOOLEAN = new BooleanType();
+	public static final Type INTEGER = new IntegerType();
 	public static final Type LET = new LetType();
 	
 	/**
@@ -236,7 +238,7 @@ public abstract class Type {
 	// TODO: Migrate variances method to Tycon, fix TypeApplication accordingly
 
 	/* Get the variances of each type parameters for this type (by default, an empty list) */
-	public List<Variance> variances() throws TypeException {
+	public List<Variance> variances() {
 		return new LinkedList<Variance>();
 	}
 	
@@ -322,7 +324,7 @@ public abstract class Type {
 	 * The default implementation assumes that the variable does not occur
 	 * and thus reports constant variance.
 	 */
-	public Variance findVariance(Integer var) throws TypeException {
+	public Variance findVariance(Integer var) {
 		return Variance.CONSTANT;
 	}
 
@@ -643,46 +645,6 @@ public abstract class Type {
 	 */
 	public orc.ast.xml.type.Type marshal() throws UnrepresentableTypeException {
 		throw new UnrepresentableTypeException(this);
-	}
-	
-}
-
-abstract class GroundTypes {
-	
-	public static Type numberType() {
-		return new NumberType();
-//		try {
-//			return (new ClassTycon(Number.class)).instance();
-//		} catch (TypeException e) {
-//			throw new OrcError("Could not instantiate the Number ground type.");
-//		}
-	}
-	
-	public static Type integerType() {
-		return new IntegerType();
-//		try {
-//			return (new ClassTycon(Integer.class)).instance();
-//		} catch (TypeException e) {
-//			throw new OrcError("Could not instantiate the Integer ground type.");
-//		}
-	}
-	
-	public static Type booleanType() {
-		return new BooleanType();
-//		try {
-//			return (new ClassTycon(Boolean.class)).instance();
-//		} catch (TypeException e) {
-//			throw new OrcError("Could not instantiate the Boolean ground type.");
-//		}
-	}
-	
-	public static Type stringType() {
-		return new StringType();
-//		try {
-//			return (new ClassTycon(String.class)).instance();
-//		} catch (TypeException e) {
-//			throw new OrcError("Could not instantiate the String ground type.");
-//		}
 	}
 	
 }

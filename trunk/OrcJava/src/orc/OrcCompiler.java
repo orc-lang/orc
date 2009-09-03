@@ -28,6 +28,7 @@ import orc.ast.oil.expression.Expression;
 import orc.ast.oil.SiteResolver;
 import orc.ast.oil.UnguardedRecursionChecker;
 import orc.ast.simple.argument.Variable;
+import orc.ast.simple.type.TypeVariable;
 import orc.ast.xml.Oil;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
@@ -127,8 +128,6 @@ public class OrcCompiler implements Callable<Expression> {
 			return null;
 		}
 
-		//System.out.println(e);
-
 		//System.out.println("Importing declarations...");
 		progress.setNote("Parsing include files");
 		final LinkedList<Declaration> decls = new LinkedList<Declaration>();
@@ -158,6 +157,8 @@ public class OrcCompiler implements Callable<Expression> {
 		if (progress.isCanceled()) {
 			return null;
 		}
+		
+		//System.out.println(e);
 
 		return e;
 	}
@@ -173,8 +174,9 @@ public class OrcCompiler implements Callable<Expression> {
 		final ProgressListener progress = config.getProgressListener();
 
 		progress.setNote("Simplifying the AST");
-		Expression ex = ((orc.ast.extended.expression.Expression) astRoot).simplify().convert(new Env<Variable>(), new Env<String>());
-		// System.out.println(ex);
+		//System.out.println(((orc.ast.extended.expression.Expression) astRoot).simplify().toString());
+		Expression ex = ((orc.ast.extended.expression.Expression) astRoot).simplify().convert(new Env<Variable>(), new Env<TypeVariable>());
+		
 		progress.setProgress(0.66);
 		if (progress.isCanceled()) {
 			return null;

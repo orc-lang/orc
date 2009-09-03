@@ -1,20 +1,25 @@
 
 package orc.ast.simple.expression;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import orc.ast.extended.expression.Call;
 import orc.ast.simple.argument.Argument;
-import orc.ast.simple.argument.NamedVariable;
+import orc.ast.simple.argument.FreeVariable;
 import orc.ast.simple.argument.Variable;
+import orc.ast.simple.type.FreeTypeVariable;
+import orc.ast.simple.type.Type;
+import orc.ast.simple.type.TypeVariable;
 import orc.env.Env;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.UnboundVariableException;
+import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Node;
-import orc.type.Type;
 
 /**
  * Base class for the simplified abstract syntax tree.
@@ -40,8 +45,31 @@ public abstract class Expression {
 	 * @return TODO
 	 * @return A new node.
 	 */
-	public abstract orc.ast.oil.expression.Expression convert(Env<Variable> vars, Env<String> typevars) throws CompilationException;
+	public abstract orc.ast.oil.expression.Expression convert(Env<Variable> vars, Env<TypeVariable> typevars) throws CompilationException;
 	
+	/**
+	 * Convenience method, to apply convert to a list of expressions.
+	 * 
+	 * @param ts  A list of expressions.
+	 * @param env Environments for conversion
+	 * @return The list of expressions, converted
+	 * @throws TypeException
+	 */
+	public static List<orc.ast.oil.expression.Expression> convertAll(List<Expression> es, Env<Variable> vars, Env<TypeVariable> typevars) throws CompilationException {
+		
+		if (es != null) {
+			List<orc.ast.oil.expression.Expression> newes = new LinkedList<orc.ast.oil.expression.Expression>();
+
+			for (Expression e : es) {
+				newes.add(e.convert(vars, typevars));
+			}
+
+			return newes;
+		}
+		else {
+			return null;
+		}
+	}
 	
 	/**
 	 * Performs the substitution [a/x], replacing occurrences of the free variable x
@@ -52,8 +80,18 @@ public abstract class Expression {
 	 * 
 	 * @return A new copy of the expression with the substitution performed
 	 */
-	public abstract Expression subst(Argument a, NamedVariable x);
+	public abstract Expression subst(Argument a, FreeVariable x);
 	
+	/**
+	 * Convenience method, to apply a substitution to a list of expressions.
+	 */
+	public static List<Expression> substAll(List<Expression> es, Argument a, FreeVariable x) {
+		List<Expression> newes = new LinkedList<Expression>();
+		for (Expression e : es) {
+			newes.add(e.subst(a, x));
+		}
+		return newes;
+	}
 	
 	/**
 	 * 
@@ -68,7 +106,7 @@ public abstract class Expression {
 	 * 
 	 * @return A new copy of the expression with the substitution performed
 	 */
-	public Expression subvar(Variable v, NamedVariable x) {
+	public Expression subvar(Variable v, FreeVariable x) {
 		v.name = x.name;
 		return subst(v,x);
 	}
@@ -82,24 +120,56 @@ public abstract class Expression {
 	 * 
 	 * @param m
 	 */
-	public Expression suball(Map<NamedVariable, ? extends Argument> m)
+	public Expression subMap(Map<FreeVariable, ? extends Argument> m)
 	{
 		Expression result = this;
 		
-		for (NamedVariable x : m.keySet())
+		for (FreeVariable x : m.keySet())
 		{
 			Argument a = m.get(x);
 			if (a instanceof Variable) {
-				((Variable)a).name = x.name;
+				result = result.subvar((Variable)a, x);
 			}
-			result = result.subst(a,x);
+			else {
+				result = result.subst(a,x);
+			}
 		}
 		
 		return result;
 	}
 	
+	
 	/**
-	 * Find the set of all unbound Vars (note: not FreeVars) in this expression.
+	 * Performs the substitution [T/X], replacing occurrences of the free type variable X
+	 * with the type T (which could be any type, including another variable).
+	 * 
+	 * @param T The replacing type
+	 * @param X The free type variable whose occurrences will be replaced
+	 * 
+	 * @return A new copy of the expression with the substitution performed
+	 */
+	public abstract Expression subst(Type T, FreeTypeVariable X);
+	
+	/**
+	 * 
+	 * Performs the substitution [U/X], replacing occurrences of the free type variable X
+	 * with the nameless type variable U. Additionally, attach the name of X as documentation
+	 * on U so that it can be used later for debugging or other purposes.
+	 * 
+	 * This method delegates to the subst method after attaching the name. 
+	 * 
+	 * @param U The replacing type variable
+	 * @param X The free type variable whose occurrences will be replaced
+	 * 
+	 * @return A new copy of the type with the substitution performed
+	 */
+	public Expression subvar(TypeVariable U, FreeTypeVariable X) {
+		U.name = X.name;
+		return this.subst(U,X);
+	}
+	
+	/**
+	 * Find the set of all Variables (note: not FreeVariables) that are not bound within this expression.
 	 */
 	public abstract Set<Variable> vars();
 }

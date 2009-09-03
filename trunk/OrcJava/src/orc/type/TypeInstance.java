@@ -143,7 +143,7 @@ public class TypeInstance extends Type {
 	}
 	
 	
-	public Variance findVariance(Integer var) throws TypeException {
+	public Variance findVariance(Integer var) {
 		
 		Variance result = Variance.CONSTANT;
 		

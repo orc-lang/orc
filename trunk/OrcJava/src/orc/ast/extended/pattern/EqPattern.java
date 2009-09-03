@@ -11,11 +11,11 @@ import xtc.util.Utilities;
 
 public class EqPattern extends Pattern {
 
-	public NamedVariable x;
+	public FreeVariable x;
 	
 	public EqPattern(String s)
 	{
-		x = new NamedVariable(s);
+		x = new FreeVariable(s);
 	}
 
 	@Override

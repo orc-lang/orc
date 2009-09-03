@@ -7,8 +7,8 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.PartialSite;
 import orc.runtime.values.Value;
-import orc.type.ArrowType;
 import orc.type.Type;
+import orc.type.structured.ArrowType;
 
 /**
  * @author dkitchin

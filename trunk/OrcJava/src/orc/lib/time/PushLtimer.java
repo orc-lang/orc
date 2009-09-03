@@ -6,8 +6,8 @@ import orc.runtime.Token;
 import orc.runtime.nodes.Node;
 import orc.runtime.sites.Site;
 import orc.runtime.values.Closure;
-import orc.type.ArrowType;
 import orc.type.Type;
+import orc.type.structured.ArrowType;
 
 public class PushLtimer extends Site {
 	@Override

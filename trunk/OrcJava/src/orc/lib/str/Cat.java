@@ -7,8 +7,8 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.*;
-import orc.type.EllipsisArrowType;
 import orc.type.Type;
+import orc.type.structured.EllipsisArrowType;
 
 /**
  * Note that you can also use the syntax "a" + "b" for string concatenation.

@@ -7,28 +7,27 @@ import orc.runtime.values.Value;
 
 
 /**
- * Named (implicitly, free) variables. All such variables embed a String key.
+ * Free variables. All such variables embed a String key.
  * Equivalence on these variables is equality of the embedded string.
  * 
- * Like normal Vars, these occur in argument position. However, since they
- * can never be bound at runtime, they compile to dead nodes.
+ * Like normal Variables, these occur in argument position. 
  * 
  * The subst method on simplified expressions can only substitute for
- * a named variable.
+ * a free variable.
  * 
  * @author dkitchin
  */
 
-public class NamedVariable extends Argument implements Comparable<NamedVariable> {
+public class FreeVariable extends Argument implements Comparable<FreeVariable> {
 	private static final long serialVersionUID = 1L;
 	public String name;
 	
-	public NamedVariable(String key)
+	public FreeVariable(String key)
 	{
 		this.name = key;
 	}
 	
-	public int compareTo(NamedVariable f) {
+	public int compareTo(FreeVariable f) {
 		String s = this.name;
 		String t = f.name;
 		return s.compareTo(t);
@@ -36,9 +35,9 @@ public class NamedVariable extends Argument implements Comparable<NamedVariable>
 	
 	public boolean equals(Object o) {
 		
-		if (o instanceof NamedVariable)
+		if (o instanceof FreeVariable)
 		{
-			return (this.compareTo((NamedVariable)o) == 0);
+			return (this.compareTo((FreeVariable)o) == 0);
 		}
 		else
 		{
@@ -46,7 +45,7 @@ public class NamedVariable extends Argument implements Comparable<NamedVariable>
 		}
 	}
 	public String toString() {
-		return super.toString() + "(" + name + ")";
+		return name;
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package orc.ast.oil.expression;
 
 import java.util.Set;
 
+import orc.ast.oil.ContextualVisitor;
 import orc.ast.oil.Visitor;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
@@ -38,6 +39,10 @@ public class Isolated extends Expression {
 		return visitor.visit(this);
 	}
 
+	public <E,C> E accept(ContextualVisitor<E,C> cvisitor, C initialContext) {
+		return cvisitor.visit(this, initialContext);
+	}
+	
 	@Override
 	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
 		return body.typesynth(ctx, typectx);

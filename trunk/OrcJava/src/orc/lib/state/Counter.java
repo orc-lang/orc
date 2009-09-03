@@ -10,9 +10,9 @@ import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.PartialSite;
 import orc.runtime.sites.Site;
-import orc.type.ArrowType;
-import orc.type.MultiType;
 import orc.type.Type;
+import orc.type.structured.ArrowType;
+import orc.type.structured.MultiType;
 
 /**
  * Factory for counters. 

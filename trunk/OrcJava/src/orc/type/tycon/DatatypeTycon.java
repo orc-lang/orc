@@ -41,7 +41,7 @@ public class DatatypeTycon extends Tycon {
 	}
 	
 	
-	public List<Variance> variances() throws TypeException { 
+	public List<Variance> variances() { 
 		return vs;
 	}
 	

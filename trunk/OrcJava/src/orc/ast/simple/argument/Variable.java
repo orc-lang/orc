@@ -39,6 +39,6 @@ public class Variable extends Argument {
 	}
 	
 	public String toString() {
-		return (name != null ? name : super.toString());
+		return (name != null ? name : "#" + hashCode());
 	}
 }

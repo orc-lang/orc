@@ -36,6 +36,6 @@ public class DeclareType extends Expression {
 	}
 	@Override
 	public orc.ast.oil.expression.Expression unmarshal(Config config) throws CompilationException {
-		return new orc.ast.oil.expression.DeclareType(type.unmarshal(config), body.unmarshal(config));
+		return new orc.ast.oil.expression.DeclareType(type.unmarshal(), body.unmarshal(config));
 	}
 }

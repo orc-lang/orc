@@ -1,10 +1,8 @@
-package orc.ast.extended.type;
+package orc.ast.oil.type;
 
 import java.util.LinkedList;
 import java.util.List;
 
-import orc.env.Env;
-import orc.error.compiletime.typing.TypeException;
 import orc.type.tycon.Variance;
 
 /**
@@ -17,26 +15,21 @@ import orc.type.tycon.Variance;
 public class PolymorphicTypeAlias extends Type {
 
 	public Type type;
-	public List<String> formals;
+	public int typeArity;
 	
-	public PolymorphicTypeAlias(Type type, List<String> formals) {
+	public PolymorphicTypeAlias(Type type, int typeArity) {
 		this.type = type;
-		this.formals = formals;
+		this.typeArity = typeArity;
 	}
 
 	@Override
-	public orc.type.Type convert(Env<String> env) throws TypeException {
-		
-		// Add the type parameters to the context
-		for (String formal : formals) {
-			env = env.extend(formal);
-		}
+	public orc.type.Type transform() {
 		
 		// Convert the syntactic type to a true type
-		orc.type.Type newType = type.convert(env);
+		orc.type.Type newType = type.transform();
 		
 		// Infer the variance of each type parameter
-		Variance[] V = new Variance[formals.size()];
+		Variance[] V = new Variance[typeArity];
 		for (int i = 0; i < V.length; i++) {
 			V[i] = newType.findVariance(i);
 		}
@@ -47,6 +40,14 @@ public class PolymorphicTypeAlias extends Type {
 		}
 		
 		return new orc.type.tycon.PolymorphicAliasedType(newType, vs);
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.oil.type.Type#marshal()
+	 */
+	@Override
+	public orc.ast.xml.type.Type marshal() {
+		return new orc.ast.xml.type.PolymorphicTypeAlias(type.marshal(), typeArity);
 	}
 
 }

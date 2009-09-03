@@ -21,7 +21,7 @@ import orc.type.tycon.Variance;
  * A bound type variable.
  * 
  * Subtype comparisons may occur between types with bound variables (such as between
- * the type bodies of parametrized arrow types), so there is a subtype relation
+ * the type bodies of parameterized arrow types), so there is a subtype relation
  * specified for type variables: it is simply variable equality.
  * 
  * @author dkitchin

@@ -16,11 +16,11 @@ import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.ConsValue;
 import orc.runtime.values.ListValue;
-import orc.type.ArrowType;
-import orc.type.ListType;
 import orc.type.Type;
 import orc.type.TypeApplication;
 import orc.type.TypeVariable;
+import orc.type.structured.ArrowType;
+import orc.type.structured.ListType;
 
 /**
  * Implements the "cons" constructor site.

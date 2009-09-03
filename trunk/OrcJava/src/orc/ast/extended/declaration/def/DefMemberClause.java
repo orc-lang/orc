@@ -6,9 +6,11 @@ import java.util.Map;
 
 import orc.ast.extended.Visitor;
 import orc.ast.extended.expression.Expression;
+import orc.ast.extended.expression.HasType;
 import orc.ast.extended.pattern.Pattern;
 import orc.ast.extended.pattern.TypedPattern;
 import orc.ast.extended.type.Type;
+import orc.error.compiletime.CompilationException;
 
 /**
  * 
@@ -23,11 +25,11 @@ import orc.ast.extended.type.Type;
 
 public class DefMemberClause extends DefMember {
 
-	public List<Pattern> formals;
+	public List<List<Pattern>> formals;
 	public Expression body;
-	public Type resultType;
+	public Type resultType; // May be null
 	
-	public DefMemberClause(String name, List<Pattern> formals, Expression body, Type resultType)
+	public DefMemberClause(String name, List<List<Pattern>> formals, Expression body, Type resultType)
 	{
 		this.name = name;	/* name is "" when used for anonymous functions */
 		this.formals = formals;
@@ -46,28 +48,47 @@ public class DefMemberClause extends DefMember {
 		return visitor.visit(this);
 	}
 	
-	public void extend(AggregateDef adef) {
+	public void extend(AggregateDef adef) throws CompilationException {
 		
+		List<Pattern> phead = formals.get(0);
 		List<Pattern> newformals = new LinkedList<Pattern>();
-		List<Type> argTypes = new LinkedList<Type>();
-		for (Pattern p : formals) {
-			/* Strip a toplevel type ascription from every argument pattern */
-			if (p instanceof TypedPattern) {
-				TypedPattern tp = (TypedPattern)p;
-				argTypes.add(tp.t);
-				newformals.add(tp.p);
+		
+		if (phead.size() > 0) {
+			List<Type> argTypes = new LinkedList<Type>();
+			for (Pattern p : phead) {
+				/* Strip a toplevel type ascription from every argument pattern */
+				if (p instanceof TypedPattern) {
+					TypedPattern tp = (TypedPattern)p;
+					argTypes.add(tp.t);
+					newformals.add(tp.p);
+				}
+				else {
+					newformals = phead;
+					argTypes = null;
+					break;
+				}
 			}
-			else {
-				newformals = formals;
-				argTypes = null;
-				break;
-			}
+			if (argTypes != null) { adef.setArgTypes(argTypes); }
 		}
 		
-		if (argTypes != null) { adef.setArgTypes(argTypes); }
+		
+		
+		Expression newbody = body;
+		
+		if (formals.size() > 1) {
+			List<List<Pattern>> ptail = formals.subList(1, formals.size());
+			if (resultType != null) {
+				newbody = new HasType(newbody, resultType);
+			}
+			newbody = Expression.uncurry(ptail, newbody);
+		}
+		
+		
 		if (resultType != null) { adef.setResultType(resultType); }
 		
-		adef.addClause(new Clause(newformals, body));
+		Type blankedResultType = (resultType != null ? resultType : Type.BLANK);
+		
+		adef.addClause(new Clause(newformals, newbody));
 		
 		adef.addLocation(getSourceLocation());
 		

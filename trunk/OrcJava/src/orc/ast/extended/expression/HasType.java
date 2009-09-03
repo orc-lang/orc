@@ -23,14 +23,18 @@ public class HasType extends Expression {
 		boolean checkable = true;
 		
 		/* If this is an asserted type, it is not checkable */
+		orc.ast.simple.type.Type newType;
 		if (type instanceof AssertedType) {
 			AssertedType atype = (AssertedType)type;
-			type = atype.type;
+			newType = atype.type.simplify();
 			checkable = false;
 		}
+		else {
+			newType = type.simplify();
+		}
 		
-		return new WithLocation(
-				new orc.ast.simple.expression.HasType(body.simplify(), type, checkable),
+		return new orc.ast.simple.expression.WithLocation(
+				new orc.ast.simple.expression.HasType(body.simplify(), newType, checkable),
 				getSourceLocation());
 	}
 	

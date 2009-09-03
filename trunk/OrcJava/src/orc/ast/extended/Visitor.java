@@ -54,7 +54,7 @@ import orc.ast.extended.pattern.TypedPattern;
 import orc.ast.extended.pattern.VariablePattern;
 import orc.ast.extended.pattern.WildcardPattern;
 import orc.ast.extended.type.Type;
-import orc.ast.simple.argument.NamedVariable;
+import orc.ast.simple.argument.FreeVariable;
 
 /**
  * Visitor for extended ASTs.

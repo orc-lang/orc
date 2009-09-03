@@ -1,16 +1,19 @@
 package orc.ast.extended.declaration.type;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import orc.ast.extended.Visitor;
 import orc.ast.extended.declaration.Declaration;
-import orc.ast.extended.type.PolymorphicTypeAlias;
 import orc.ast.extended.type.Type;
 import orc.ast.simple.argument.Argument;
-import orc.ast.simple.argument.NamedVariable;
+import orc.ast.simple.argument.FreeVariable;
 import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.DeclareType;
 import orc.ast.simple.expression.WithLocation;
+import orc.ast.simple.type.FreeTypeVariable;
+import orc.ast.simple.type.SiteType;
+import orc.ast.simple.type.TypeVariable;
 import orc.runtime.sites.Site;
 
 /**
@@ -34,12 +37,28 @@ public class TypeAliasDeclaration extends Declaration {
 
 	public orc.ast.simple.expression.Expression bindto(orc.ast.simple.expression.Expression target) {
 		
+		orc.ast.simple.type.Type T = t.simplify();
+		
 		if (formals != null && formals.size() > 0) {
-			return new DeclareType(new PolymorphicTypeAlias(t, formals), typename, target);
+			List<orc.ast.simple.type.TypeVariable> newFormals = new LinkedList<orc.ast.simple.type.TypeVariable>();
+			for (String formal : formals) {
+				TypeVariable Y = new TypeVariable();
+				FreeTypeVariable X = new FreeTypeVariable(formal);
+				newFormals.add(Y);
+				T = T.subvar(Y,X);
+			}
+			T = new orc.ast.simple.type.PolymorphicTypeAlias(T, newFormals);
 		}
-		else {
-			return new DeclareType(t, typename, target);
-		}
+		
+		orc.ast.simple.expression.Expression body = target;
+		
+		TypeVariable Y = new TypeVariable();
+		FreeTypeVariable X = new FreeTypeVariable(typename);
+		body = body.subvar(Y,X);
+		body = new orc.ast.simple.expression.DeclareType(T, Y, body);
+		body = new WithLocation(body, getSourceLocation());
+		
+		return body;
 	}
 
 	public String toString() {

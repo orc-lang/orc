@@ -8,9 +8,9 @@ import orc.runtime.regions.LogicalClock;
 import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.Site;
-import orc.type.ArrowType;
-import orc.type.DotType;
 import orc.type.Type;
+import orc.type.structured.ArrowType;
+import orc.type.structured.DotType;
 
 /**
  * Site interface to the Orc engine's logical clock.

@@ -1,7 +1,7 @@
 package orc.ast.extended.pattern;
 
 import orc.ast.extended.Visitor;
-import orc.ast.simple.argument.NamedVariable;
+import orc.ast.simple.argument.FreeVariable;
 import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.Call;
 import orc.ast.simple.expression.Expression;
@@ -9,11 +9,11 @@ import orc.error.compiletime.NonlinearPatternException;
 
 public class VariablePattern extends Pattern {
 
-	public NamedVariable x;
+	public FreeVariable x;
 	
 	public VariablePattern(String s)
 	{
-		x = new NamedVariable(s);
+		x = new FreeVariable(s);
 	}
 	
 	public boolean strict() {

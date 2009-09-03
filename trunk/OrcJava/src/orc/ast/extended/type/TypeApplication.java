@@ -3,11 +3,10 @@ package orc.ast.extended.type;
 import java.util.LinkedList;
 import java.util.List;
 
-import orc.env.Env;
+import orc.ast.simple.type.FreeTypeVariable;
 import orc.env.SearchFailureException;
 import orc.error.compiletime.typing.ArgumentArityException;
 import orc.error.compiletime.typing.SubtypeFailureException;
-import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UnboundTypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
 import orc.type.TypeVariable;
@@ -29,18 +28,14 @@ public class TypeApplication extends Type {
 	}
 	
 	@Override
-	public orc.type.Type convert(Env<String> env) throws TypeException {
+	public orc.ast.simple.type.Type simplify() {
 		 
-		List<orc.type.Type> ts = new LinkedList<orc.type.Type>();
+		List<orc.ast.simple.type.Type> ts = new LinkedList<orc.ast.simple.type.Type>();
 		for (Type t : params) {
-			ts.add(t.convert(env));
+			ts.add(t.simplify());
 		}
 				
-		try {
-			return new orc.type.TypeApplication(new TypeVariable(env.search(name)), ts);
-		} catch (SearchFailureException e) {
-			throw new UnboundTypeException(name);
-		}
+		return new orc.ast.simple.type.TypeApplication(new FreeTypeVariable(name), ts);
 	}
 	
 	

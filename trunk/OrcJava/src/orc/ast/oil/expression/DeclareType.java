@@ -2,6 +2,7 @@ package orc.ast.oil.expression;
 
 import java.util.Set;
 
+import orc.ast.oil.ContextualVisitor;
 import orc.ast.oil.Visitor;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
@@ -18,10 +19,10 @@ import orc.type.Type;
  */
 public class DeclareType extends Expression {
 
-	public Type type;
+	public orc.ast.oil.type.Type type;
 	public Expression body;
 	
-	public DeclareType(Type type, Expression body) {
+	public DeclareType(orc.ast.oil.type.Type type, Expression body) {
 		this.type = type;
 		this.body = body;
 	}
@@ -30,6 +31,10 @@ public class DeclareType extends Expression {
 	public <E> E accept(Visitor<E> visitor) {
 		return visitor.visit(this);
 	}
+	
+	public <E,C> E accept(ContextualVisitor<E,C> cvisitor, C initialContext) {
+		return cvisitor.visit(this, initialContext);
+	}
 
 	@Override
 	public void addIndices(Set<Integer> indices, int depth) {
@@ -37,13 +42,13 @@ public class DeclareType extends Expression {
 	}
 
 	@Override
-	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
-		Type actualType = type.subst(typectx);
+	public orc.type.Type typesynth(Env<orc.type.Type> ctx, Env<orc.type.Type> typectx) throws TypeException {
+		orc.type.Type actualType = type.transform().subst(typectx);
 		return body.typesynth(ctx, typectx.extend(actualType));
 	}
 
-	public void typecheck(Type T, Env<Type> ctx, Env<Type> typectx) throws TypeException {
-		Type actualType = type.subst(typectx);
+	public void typecheck(orc.type.Type T, Env<orc.type.Type> ctx, Env<orc.type.Type> typectx) throws TypeException {
+		orc.type.Type actualType = type.transform().subst(typectx);
 		body.typecheck(T, ctx, typectx.extend(actualType));
 	}
 
