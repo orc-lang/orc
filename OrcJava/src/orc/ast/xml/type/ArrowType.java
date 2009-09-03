@@ -7,23 +7,21 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 
-import orc.Config;
 import orc.env.Env;
 import orc.error.compiletime.typing.ArgumentArityException;
 import orc.error.compiletime.typing.SubtypeFailureException;
-import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
 
 /**
  * A syntactic arrow type: lambda[X,...,X](T,...,T) :: T
  * 
- * @author quark
+ * @author quark, dkitchin
  */
 public class ArrowType extends Type {
 	@XmlElementWrapper(required=true)
 	@XmlElement(name="argType")
 	public Type[] argTypes;
-	@XmlElement(required=false)
+	@XmlElement(required=true)
 	public Type resultType;
 	@XmlAttribute(required=true)
 	public int typeArity;
@@ -36,14 +34,9 @@ public class ArrowType extends Type {
 		this.typeArity = typeArity;
 	}
 
-	public orc.type.Type unmarshal(Config config) throws TypeException {
-		LinkedList<orc.type.Type> newargs = new LinkedList<orc.type.Type>();
-		for (Type t : argTypes) {
-			newargs.add(t.unmarshal(config));
-		}
-		orc.type.Type newResultType = null;
-		if (resultType != null) newResultType = resultType.unmarshal(config);
-		
-		return new orc.type.ArrowType(newargs, newResultType, typeArity);
+	public orc.ast.oil.type.Type unmarshal() {
+		return new orc.ast.oil.type.ArrowType(Type.unmarshalAll(argTypes), 
+											  resultType.unmarshal(), 
+											  typeArity);
 	}
 }

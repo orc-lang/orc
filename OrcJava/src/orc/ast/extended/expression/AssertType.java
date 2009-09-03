@@ -34,7 +34,7 @@ public class AssertType extends Expression {
 	public orc.ast.simple.expression.Expression simplify()
 			throws CompilationException {
 		return new orc.ast.simple.expression.WithLocation(
-				new orc.ast.simple.expression.HasType(body.simplify(), type, false),
+				new orc.ast.simple.expression.HasType(body.simplify(), type.simplify(), false),
 				getSourceLocation());
 	}
 }

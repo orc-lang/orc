@@ -17,63 +17,45 @@ import orc.type.tycon.Variance;
  */
 public class Datatype extends Type {
 
-	public String typename;
-	public List<Constructor> members;
-	public List<String> formals;
-	Object id;
+	public TypeVariable typename;
+	public List<List<Type>> members;
+	public List<TypeVariable> formals;
 	
-	public Datatype(String typename, List<Constructor> members, List<String> formals) {
+	public Datatype(TypeVariable typename, List<List<Type>> members, List<TypeVariable> formals) {
 		this.typename = typename;
 		this.members = members;
 		this.formals = formals;
-		this.id = new Object(); // identifier for this syntactic occurrence
 	}
 
 	@Override
-	public orc.type.Type convert(Env<String> env) throws TypeException {
+	public orc.ast.oil.type.Type convert(Env<TypeVariable> env) throws TypeException {
 		
 		// First, add the datatype name itself to the context
-		env = env.extend(typename);
+		Env<TypeVariable> newenv = env.extend(typename);
 		
 		// Then, add the type parameters
-		for (String formal : formals) {
-			env = env.extend(formal);
-		}
+		newenv = newenv.extendAll(formals);
 		
-		// We use this array to infer the variance of each type parameter
-		Variance[] V = new Variance[formals.size()];
-		for (int i = 0; i < V.length; i++) {
-			V[i] = Variance.CONSTANT;
-		}
-		
-		/* Reduce each constructor to a list of its argument types.
-		 * The constructor names are used separately in the dynamic
-		 * semantics to give a string representation for the constructed
-		 * values.
-		 */
-		List<List<orc.type.Type>> cs = new LinkedList<List<orc.type.Type>>();
-		for (Constructor con : members) {
-			List<orc.type.Type> ts = new LinkedList<orc.type.Type>();
-			for (Type t : con.args) {
-				// Convert the syntactic type to a true type
-				orc.type.Type newT = t.convert(env);
-				// Add it as an entry for the new constructor
-				ts.add(newT);
-				// Infer the variance of each type parameter it uses;
-				// add that information to the array V.
-				for (int i = 0; i < V.length; i++) {
-					V[i] = V[i].and(newT.findVariance(i));
-				}
-			}
-			cs.add(ts);
+		List<List<orc.ast.oil.type.Type>> cs = new LinkedList<List<orc.ast.oil.type.Type>>();
+		for (List<Type> args : members) {
+			cs.add(Type.convertAll(args, newenv));
 		}
 
-		List<Variance> vs = new LinkedList<Variance>();
-		for(Variance v : V) {
-			vs.add(0,v);
+		return new orc.ast.oil.type.Datatype(cs, formals.size(), typename.name);
+	}
+	
+	/* (non-Javadoc)
+	 * @see orc.ast.simple.type.Type#subst(orc.ast.simple.type.Type, orc.ast.simple.type.FreeTypeVariable)
+	 */
+	@Override
+	public Type subst(Type T, FreeTypeVariable X) {
+		
+		List<List<Type>> cs = new LinkedList<List<Type>>();
+		for (List<Type> args : members) {
+			cs.add(Type.substAll(args,T,X));
 		}
 		
-		return new DatatypeTycon(typename, vs, cs, id);
+		return new Datatype(typename, cs, formals);
 	}
 
 }

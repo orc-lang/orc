@@ -9,11 +9,11 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.Site;
-import orc.type.ArrowType;
-import orc.type.ListType;
-import orc.type.TupleType;
 import orc.type.Type;
 import orc.type.TypeVariable;
+import orc.type.structured.ArrowType;
+import orc.type.structured.ListType;
+import orc.type.structured.TupleType;
 
 /**
  * @author dkitchin

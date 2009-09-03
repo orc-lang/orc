@@ -4,12 +4,15 @@ import java.util.List;
 
 import orc.ast.extended.Visitor;
 import orc.ast.extended.declaration.Declaration;
-import orc.ast.extended.type.SiteType;
 import orc.ast.simple.argument.Argument;
-import orc.ast.simple.argument.NamedVariable;
+import orc.ast.simple.argument.FreeVariable;
 import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.DeclareType;
 import orc.ast.simple.expression.WithLocation;
+import orc.ast.simple.type.ClassnameType;
+import orc.ast.simple.type.FreeTypeVariable;
+import orc.ast.simple.type.SiteType;
+import orc.ast.simple.type.TypeVariable;
 import orc.runtime.sites.Site;
 
 /**
@@ -33,7 +36,18 @@ public class TypeDeclaration extends Declaration {
 
 	public orc.ast.simple.expression.Expression bindto(orc.ast.simple.expression.Expression target) {
 		
-		return new DeclareType(new SiteType(classname), varname, target);
+		orc.ast.simple.expression.Expression body = target;
+		
+		TypeVariable Y = new TypeVariable();
+		FreeTypeVariable X = new FreeTypeVariable(varname);
+		body = body.subvar(Y,X);
+		
+		orc.ast.simple.type.Type T = new SiteType(classname);
+		body = new orc.ast.simple.expression.DeclareType(T, Y, body);
+		
+		body = new WithLocation(body, getSourceLocation());
+		
+		return body;
 	}
 
 	public String toString() {

@@ -5,7 +5,7 @@ import java.util.List;
 import orc.ast.extended.Visitor;
 import orc.ast.simple.argument.Argument;
 import orc.ast.simple.argument.Field;
-import orc.ast.simple.argument.NamedVariable;
+import orc.ast.simple.argument.FreeVariable;
 import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.Call;
 import orc.ast.simple.expression.Expression;
@@ -17,12 +17,12 @@ import orc.error.compiletime.PatternException;
 
 public class CallPattern extends Pattern {
 
-	public NamedVariable site;
+	public FreeVariable site;
 	public Pattern p;
 	
 	// Create a call based on a string name
 	public CallPattern(String site, List<Pattern> args) {
-		this.site = new NamedVariable(site);
+		this.site = new FreeVariable(site);
 		this.p = Pattern.condense(args);
 	}
 	

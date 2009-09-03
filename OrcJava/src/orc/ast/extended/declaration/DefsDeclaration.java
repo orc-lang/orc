@@ -58,10 +58,10 @@ public class DefsDeclaration extends Declaration {
 		}
 		
 		// Associate the names of the definitions with their bound variables
-		Map<NamedVariable, Variable> vmap = new TreeMap<NamedVariable, Variable>();
+		Map<FreeVariable, Variable> vmap = new TreeMap<FreeVariable, Variable>();
 		
 		for (Entry<String, AggregateDef> e : dmap.entrySet()) {
-			NamedVariable x = new NamedVariable(e.getKey());
+			FreeVariable x = new FreeVariable(e.getKey());
 			Variable v = e.getValue().getVar();
 			vmap.put(x,v);
 		}
@@ -72,12 +72,12 @@ public class DefsDeclaration extends Declaration {
 		List<orc.ast.simple.expression.Def> newdefs = new LinkedList<orc.ast.simple.expression.Def>();
 		
 		for (AggregateDef d : dmap.values()) {
-			Def newd = d.simplify().suball(vmap);
+			Def newd = d.simplify().subMap(vmap);
 			newdefs.add(newd);
 		}
 		
 		// Bind all of these definition names in their scope
-		orc.ast.simple.expression.Expression newtarget = target.suball(vmap);		
+		orc.ast.simple.expression.Expression newtarget = target.subMap(vmap);		
 		
 		// Partition the list of definitions into mutually recursive groups,
 		// and bind them onto the target expression in the correct order

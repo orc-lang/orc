@@ -1,11 +1,14 @@
 package orc.ast.oil.expression;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import orc.ast.oil.ContextualVisitor;
 import orc.ast.oil.Visitor;
 import orc.ast.oil.expression.argument.Variable;
+import orc.ast.oil.type.Type;
 import orc.ast.sites.JavaSite;
 import orc.ast.sites.OrcSite;
 import orc.env.Env;
@@ -15,7 +18,6 @@ import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Pub;
-import orc.type.Type;
 
 /**
  * Base class for the portable (.oil, for Orc Intermediate Language) abstract syntax tree.
@@ -28,7 +30,7 @@ public abstract class Expression {
 	/* Typechecking */
 	
 	/* Given a context, infer this expression's type */
-	public abstract Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException;
+	public abstract orc.type.Type typesynth(Env<orc.type.Type> ctx, Env<orc.type.Type> typectx) throws TypeException;
 	
 	
 	/* Check that this expression has type t in the given context. 
@@ -37,8 +39,8 @@ public abstract class Expression {
 	 * the default checking behavior is to infer the type and make
 	 * sure that the inferred type is a subtype of the checked type.
 	 */
-	public void typecheck(Type T, Env<Type> ctx, Env<Type> typectx) throws TypeException {
-		Type S = typesynth(ctx, typectx);
+	public void typecheck(orc.type.Type T, Env<orc.type.Type> ctx, Env<orc.type.Type> typectx) throws TypeException {
+		orc.type.Type S = typesynth(ctx, typectx);
 		if (!S.subtype(T)) {
 			throw new SubtypeFailureException(S,T);
 		}
@@ -79,6 +81,22 @@ public abstract class Expression {
 	public abstract void addIndices(Set<Integer> indices, int depth);
 	
 	public abstract <E> E accept(Visitor<E> visitor);
+	//public abstract <E,C> E accept(ContextualVisitor<E,C> cvisitor, C initialContext);
 	
 	public abstract orc.ast.xml.expression.Expression marshal() throws CompilationException;
+	
+	/**
+	 * Convenience method, to marshal a list of expressions.
+	 */
+	public static orc.ast.xml.expression.Expression[] marshalAll(List<Expression> es) throws CompilationException {
+		
+		orc.ast.xml.expression.Expression[] newes = new orc.ast.xml.expression.Expression[es.size()];
+		int i = 0;
+		for (Expression e : es) {
+			newes[i++] = e.marshal();
+		}
+		
+		return newes;
+	}
+	
 }

@@ -28,21 +28,7 @@ public class PolymorphicTypeAlias extends Type {
 	}
 
 	@Override
-	public orc.type.Type unmarshal(Config config) throws TypeException {
-		// Convert the syntactic type to a true type
-		orc.type.Type newType = type.unmarshal(config);
-		
-		// Infer the variance of each type parameter
-		Variance[] V = new Variance[arity];
-		for (int i = 0; i < V.length; i++) {
-			V[i] = newType.findVariance(i);
-		}
-		
-		List<Variance> vs = new LinkedList<Variance>();
-		for(Variance v : V) {
-			vs.add(0,v);
-		}
-		
-		return new orc.type.tycon.PolymorphicAliasedType(newType, vs);
+	public orc.ast.oil.type.Type unmarshal() {
+		return new orc.ast.oil.type.PolymorphicTypeAlias(type.unmarshal(), arity);
 	}
 }

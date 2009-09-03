@@ -5,9 +5,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import orc.ast.oil.ContextualVisitor;
 import orc.ast.oil.Visitor;
 import orc.ast.oil.expression.argument.Argument;
-import orc.ast.simple.argument.NamedVariable;
+import orc.ast.simple.argument.FreeVariable;
 import orc.ast.simple.argument.Variable;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
@@ -15,19 +16,19 @@ import orc.error.compiletime.typing.ArgumentArityException;
 import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Node;
-import orc.type.ArrowType;
 import orc.type.Type;
 import orc.type.inference.Constraint;
 import orc.type.inference.InferenceRequest;
+import orc.type.structured.ArrowType;
 import orc.type.tycon.Variance;
 
 public class Call extends Expression {
 
 	public Argument callee;
 	public List<Argument> args;
-	public List<Type> typeArgs; /* may be null to request inference */
+	public List<orc.ast.oil.type.Type> typeArgs; /* may be null to request inference */
 	
-	public Call(Argument callee, List<Argument> args, List<Type> typeArgs)
+	public Call(Argument callee, List<Argument> args, List<orc.ast.oil.type.Type> typeArgs)
 	{
 		this.callee = callee;
 		this.args = args;
@@ -87,6 +88,10 @@ public class Call extends Expression {
 	public <E> E accept(Visitor<E> visitor) {
 		return visitor.visit(this);
 	}
+	
+	public <E,C> E accept(ContextualVisitor<E,C> cvisitor, C initialContext) {
+		return cvisitor.visit(this, initialContext);
+	}
 
 
 	/* Try to call the type without type argument synthesis */
@@ -98,8 +103,8 @@ public class Call extends Expression {
 		
 		if (typeArgs != null) {
 			typeActuals = new LinkedList<Type>();
-			for (Type t : typeArgs) {
-				typeActuals.add(t.subst(typectx));
+			for (orc.ast.oil.type.Type t : typeArgs) {
+				typeActuals.add(t.transform().subst(typectx));
 			}
 		}
 		
@@ -123,7 +128,7 @@ public class Call extends Expression {
 			 * as non-empty.
 			 */
 			if (typeArgs == null) {
-				typeArgs = new LinkedList<Type>();
+				typeArgs = new LinkedList<orc.ast.oil.type.Type>();
 			}
 			
 			return S;
@@ -171,7 +176,8 @@ public class Call extends Expression {
 			}
 				
 			/* We have successfully inferred the type arguments */
-			typeArgs = inferredTypeArgs;
+			// FIXME
+			//typeArgs = inferredTypeArgs;
 				
 			return R.subst(subs);	
 		}
@@ -191,7 +197,7 @@ public class Call extends Expression {
 			 * as non-empty.
 			 */
 			if (typeArgs == null) {
-				typeArgs = new LinkedList<Type>();
+				typeArgs = new LinkedList<orc.ast.oil.type.Type>();
 			}
 			return;
 		}
@@ -229,7 +235,8 @@ public class Call extends Expression {
 				}
 				
 				/* We have successfully inferred the type arguments */
-				typeArgs = inferredTypeArgs;
+				// FIXME
+				//typeArgs = inferredTypeArgs;
 			}
 	}
 

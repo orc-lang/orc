@@ -17,34 +17,28 @@ import orc.error.compiletime.typing.UncallableTypeException;
  */
 public class ArrowType extends Type {
 
-	public List<String> typeParams;
+	public List<TypeVariable> typeParams;
 	public List<Type> argTypes;
 	public Type resultType;
 		
-	public ArrowType(List<Type> argTypes, Type resultType, List<String> typeParams) {
+	public ArrowType(List<Type> argTypes, Type resultType, List<TypeVariable> typeParams) {
 		this.typeParams = typeParams;
 		this.argTypes = argTypes;
 		this.resultType = resultType;
 	}
 
-	public orc.type.Type convert(Env<String> env) throws TypeException {
-		
-		int arity = typeParams.size();
-		
-		Env<String> newenv = env;
-		for (String X : typeParams) {
-			newenv = newenv.extend(X);
-		}
-		
-		List<orc.type.Type> newargs = new LinkedList<orc.type.Type>();
-		for (Type T : argTypes) {
-			newargs.add(T.convert(newenv));
-		}
-		orc.type.Type newresult = (resultType != null ? resultType.convert(newenv) : null);
-		
-		return new orc.type.ArrowType(newargs, newresult, arity);
+	public orc.ast.oil.type.Type convert(Env<TypeVariable> env) throws TypeException {
+		Env<TypeVariable> newenv = env.extendAll(typeParams);
+		return new orc.ast.oil.type.ArrowType(Type.convertAll(argTypes, newenv), resultType.convert(newenv), typeParams.size());
 	}
 	
+	/* (non-Javadoc)
+	 * @see orc.ast.simple.type.Type#subst(orc.ast.simple.type.Type, orc.ast.simple.type.FreeTypeVariable)
+	 */
+	@Override
+	public Type subst(Type T, FreeTypeVariable X) {
+		return new ArrowType(Type.substAll(argTypes, T, X), resultType.subst(T,X), typeParams);
+	}	
 	
 	public String toString() {
 		
@@ -71,6 +65,7 @@ public class ArrowType extends Type {
 		s.append(')');
 		
 		return s.toString();
-	}	
+	}
+
 	
 }

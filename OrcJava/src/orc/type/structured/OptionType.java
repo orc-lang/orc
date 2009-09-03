@@ -1,4 +1,4 @@
-package orc.type;
+package orc.type.structured;
 
 import java.util.LinkedList;
 import java.util.List;

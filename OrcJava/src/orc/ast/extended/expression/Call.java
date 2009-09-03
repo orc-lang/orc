@@ -69,7 +69,16 @@ public class Call extends Expression {
 		
 		List<Argument> newargs = new LinkedList<Argument>();
 		Arg newcaller = caller.argify();
-		orc.ast.simple.expression.Expression e = new orc.ast.simple.expression.Call(newcaller.asArg(), newargs, typeArgs);
+		
+		List<orc.ast.simple.type.Type> newTypeArgs = null;
+		if (typeArgs != null) {
+			newTypeArgs = new LinkedList<orc.ast.simple.type.Type>();
+			for (Type t : typeArgs) {
+				newTypeArgs.add(t.simplify());
+			}
+		}
+		
+		orc.ast.simple.expression.Expression e = new orc.ast.simple.expression.Call(newcaller.asArg(), newargs, newTypeArgs);
 		e = newcaller.bind(e);
 		
 		for (Expression r : args)

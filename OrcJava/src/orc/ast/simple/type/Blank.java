@@ -11,9 +11,17 @@ import orc.env.Env;
 public class Blank extends Type {
 
 	@Override
-	public orc.type.Type convert(Env<String> env) {
-		return orc.type.Type.BLANK;
+	public orc.ast.oil.type.Type convert(Env<TypeVariable> env) {
+		return orc.ast.oil.type.Type.BLANK;
 	}
 
+	/* (non-Javadoc)
+	 * @see orc.ast.simple.type.Type#subst(orc.ast.simple.type.Type, orc.ast.simple.type.FreeTypeVariable)
+	 */
+	@Override
+	public Type subst(Type T, FreeTypeVariable X) {
+		return this;
+	}
+	
 	public String toString() { return "_"; }
 }

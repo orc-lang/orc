@@ -6,10 +6,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import orc.ast.extended.type.Type;
 import orc.ast.simple.argument.Argument;
-import orc.ast.simple.argument.NamedVariable;
+import orc.ast.simple.argument.FreeVariable;
 import orc.ast.simple.argument.Variable;
+import orc.ast.simple.type.FreeTypeVariable;
+import orc.ast.simple.type.Type;
+import orc.ast.simple.type.TypeVariable;
 import orc.env.Env;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
@@ -60,12 +62,12 @@ public class Call extends Expression {
 	}
 	
 	@Override
-	public Expression subst(Argument a, NamedVariable x) {
-		List<Argument> newargs = new LinkedList<Argument>();
-		for (Argument b : args)	{
-			newargs.add(b.subst(a, x));
-		}
-		return new Call(callee.subst(a, x), newargs, typeArgs);
+	public Expression subst(Argument a, FreeVariable x) {
+		return new Call(callee.subst(a, x), Argument.substAll(args, a, x), typeArgs);
+	}
+	
+	public Expression subst(Type T, FreeTypeVariable X) {
+		return new Call(callee, args, Type.substAll(typeArgs, T, X));
 	}
 
 	public Set<Variable> vars() {
@@ -78,23 +80,33 @@ public class Call extends Expression {
 	}
 
 	@Override
-	public orc.ast.oil.expression.Expression convert(Env<Variable> vars, Env<String> typevars) throws CompilationException {
+	public orc.ast.oil.expression.Expression convert(Env<Variable> vars, Env<TypeVariable> typevars) throws CompilationException {
+		return new orc.ast.oil.expression.Call(callee.convert(vars), 
+											   Argument.convertAll(args, vars), 
+											   Type.convertAll(typeArgs, typevars));
+	}
+	
+	public String toString() {
 		
-		orc.ast.oil.expression.argument.Argument newcallee = callee.convert(vars);
+		StringBuilder s = new StringBuilder();
 		
-		List<orc.ast.oil.expression.argument.Argument> newargs = new ArrayList<orc.ast.oil.expression.argument.Argument>();
-		for(Argument arg : args) {
-			newargs.add(arg.convert(vars));
-		}
-		
-		List<orc.type.Type> newTypeArgs = null; 
+
+		s.append(callee);
 		if (typeArgs != null) {
-			newTypeArgs = new LinkedList<orc.type.Type>();
-			for (Type t : typeArgs) {
-				newTypeArgs.add(t.convert(typevars));
+			s.append('[');
+			for (int i = 0; i < typeArgs.size(); i++) {
+				if (i > 0) { s.append(", "); }
+				s.append(typeArgs.get(i));
 			}
+			s.append(']');
 		}
+		s.append('(');
+		for (int i = 0; i < args.size(); i++) {
+			if (i > 0) { s.append(", "); }
+			s.append(args.get(i));
+		}
+		s.append(')');
 		
-		return new orc.ast.oil.expression.Call(newcallee, newargs, newTypeArgs);
+		return s.toString();
 	}
 }

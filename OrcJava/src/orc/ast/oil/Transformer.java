@@ -23,7 +23,7 @@ import orc.ast.oil.expression.argument.Constant;
 import orc.ast.oil.expression.argument.Field;
 import orc.ast.oil.expression.argument.Site;
 import orc.ast.oil.expression.argument.Variable;
-import orc.type.Type;
+import orc.ast.oil.type.Type;
 
 /**
  * Abstract base class tree transformer for Oil expressions.

@@ -9,10 +9,10 @@ import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.Site;
-import orc.type.ArrowType;
-import orc.type.DotType;
-import orc.type.EllipsisArrowType;
 import orc.type.Type;
+import orc.type.structured.ArrowType;
+import orc.type.structured.DotType;
+import orc.type.structured.EllipsisArrowType;
 
 import java.util.Timer;
 import java.util.TimerTask;

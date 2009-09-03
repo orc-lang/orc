@@ -126,4 +126,19 @@ public final class Env<T> implements Serializable, Cloneable {
 	public Env<T> extend(T item) {
 		return new Env(new Binding(head, item));
 	}
+	
+	/**
+	 * Create an independent copy of the environment, extended with a list of new item.
+	 * The extensions occur in list order, so the last item of the list will be the
+	 * most recent binding.
+	 */
+	public Env<T> extendAll(List<T> items) {
+		Env<T> env = this;
+		
+		for (T item : items) {
+			env = env.extend(item);
+		}
+		
+		return env;
+	}
 }

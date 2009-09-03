@@ -2,7 +2,6 @@ package orc.ast.xml.type;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
-import orc.Config;
 
 /**
  * A syntactic type which refers to a Java class (which we will treat as a type).
@@ -18,9 +17,8 @@ public class ClassnameType extends Type {
 	}
 	
 	@Override
-	public orc.type.Type unmarshal(Config config) {
-		// FIXME: generate a more useful type
-		return new orc.type.ClassnameType(classname);
+	public orc.ast.oil.type.Type unmarshal() {
+		return new orc.ast.oil.type.ClassType(classname);
 	}
 		
 	public String toString() {		

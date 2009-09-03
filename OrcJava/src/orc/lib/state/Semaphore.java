@@ -10,8 +10,8 @@ import orc.runtime.Token;
 import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.Site;
-import orc.type.ArrowType;
 import orc.type.Type;
+import orc.type.structured.ArrowType;
 
 /**
  * @author quark

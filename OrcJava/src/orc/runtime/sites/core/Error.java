@@ -5,8 +5,8 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.Site;
-import orc.type.ArrowType;
 import orc.type.Type;
+import orc.type.structured.ArrowType;
 
 public class Error extends Site {
 	@Override

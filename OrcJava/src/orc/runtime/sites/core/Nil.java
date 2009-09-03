@@ -7,9 +7,9 @@ import orc.error.compiletime.typing.TypeException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.NilValue;
-import orc.type.ArrowType;
-import orc.type.ListType;
 import orc.type.Type;
+import orc.type.structured.ArrowType;
+import orc.type.structured.ListType;
 
 /**
  * Implements the empty list constructor.

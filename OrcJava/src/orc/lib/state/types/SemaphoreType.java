@@ -2,9 +2,9 @@ package orc.lib.state.types;
 
 import java.util.List;
 
-import orc.type.ArrowType;
-import orc.type.DotType;
 import orc.type.Type;
+import orc.type.structured.ArrowType;
+import orc.type.structured.DotType;
 import orc.type.tycon.MutableContainerType;
 
 public class SemaphoreType extends DotType {

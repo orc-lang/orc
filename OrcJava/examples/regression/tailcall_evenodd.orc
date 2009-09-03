@@ -13,7 +13,7 @@ def odd(n) =
   else if (n < 0) then even(n+1)
   else false
 
-val n = 2 ** 17 :!: Integer
+val n = 2 ** 14 :!: Integer
 
 even(n) | odd(1 - n)
 

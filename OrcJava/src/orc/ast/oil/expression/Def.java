@@ -16,8 +16,6 @@ import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UnrepresentableTypeException;
 import orc.error.compiletime.typing.UnspecifiedArgTypesException;
 import orc.error.compiletime.typing.UnspecifiedReturnTypeException;
-import orc.type.ArrowType;
-import orc.type.Type;
 
 /**
  * 
@@ -35,8 +33,8 @@ public class Def implements Locatable {
 	public Expression body;
 	public int typeArity;
 	// FIXME: we need an OIL format for types
-	public List<Type> argTypes; /* May be null only if this def was derived from a lambda form, and only if it will be in a checking context. */
-	public Type resultType; /* May be null to request inference, which will succeed only for non-recursive functions */
+	public List<orc.ast.oil.type.Type> argTypes; /* May be null only if this def was derived from a lambda form, and only if it will be in a checking context. */
+	public orc.ast.oil.type.Type resultType; /* May be null to request inference, which will succeed only for non-recursive functions */
 	public SourceLocation location;
 	
 	/* An optional variable name, used for documentation purposes.
@@ -45,8 +43,8 @@ public class Def implements Locatable {
 	 */
 	public String name;
 	
-	public Def(int arity, Expression body, int typeArity, List<Type> argTypes,
-			Type resultType, SourceLocation location, String name) {
+	public Def(int arity, Expression body, int typeArity, List<orc.ast.oil.type.Type> argTypes,
+			orc.ast.oil.type.Type resultType, SourceLocation location, String name) {
 		this.arity = arity;
 		this.body = body;
 		this.typeArity = typeArity;
@@ -83,7 +81,7 @@ public class Def implements Locatable {
 	/* Construct an arrow type from the type information contained in this definition 
 	 * This construction fails if the result type or arg types are null.
 	 */
-	public ArrowType type(Env<Type> typectx) throws TypeException {
+	public orc.type.structured.ArrowType type(Env<orc.type.Type> typectx) throws TypeException {
 		
 		for(int i = 0; i < typeArity; i++) {
 			typectx = typectx.extend(null);
@@ -96,7 +94,7 @@ public class Def implements Locatable {
 			throw new UnspecifiedReturnTypeException();
 		}
 		else {
-			return new ArrowType(Type.substAll(argTypes,typectx), resultType.subst(typectx), typeArity);
+			return new orc.type.structured.ArrowType(orc.type.Type.substAll(orc.ast.oil.type.Type.transformAll(argTypes),typectx), resultType.transform().subst(typectx), typeArity);
 		}
 	}
 	
@@ -106,10 +104,10 @@ public class Def implements Locatable {
 	 * If the return type is missing, try to synthesize it from the type of the body.
 	 * Any use of the function name will fail to typecheck if the return type is unspecified.
 	 */
-	public void checkDef(Env<Type> ctx, Env<Type> typectx) throws TypeException {
+	public void checkDef(Env<orc.type.Type> ctx, Env<orc.type.Type> typectx) throws TypeException {
 		
-		Env<Type> bodyctx = ctx;
-		Env<Type> newtypectx = typectx;
+		Env<orc.type.Type> bodyctx = ctx;
+		Env<orc.type.Type> newtypectx = typectx;
 		
 		if (argTypes == null) { 
 			throw new UnspecifiedArgTypesException(); 
@@ -126,19 +124,20 @@ public class Def implements Locatable {
 		}
 		
 		/* Add the argument types to the context */
-		for (Type t : argTypes) {
-			Type actualT = t.subst(newtypectx);
+		for (orc.ast.oil.type.Type t : argTypes) {
+			orc.type.Type actualT = t.transform().subst(newtypectx);
 			bodyctx = bodyctx.extend(actualT);
 		}
 
 		/* Begin in checking mode if the result type is specified */
 		if (resultType != null) {
-			Type actualResultType = resultType.subst(newtypectx);
+			orc.type.Type actualResultType = resultType.transform().subst(newtypectx);
 			body.typecheck(actualResultType, bodyctx, newtypectx);
 		}
 		/* Otherwise, synthesize it from the function body */
 		else {
-			resultType = body.typesynth(bodyctx, newtypectx);
+			// FIXME
+			//resultType = body.typesynth(bodyctx, newtypectx);
 		}
 	}
 	
@@ -151,10 +150,10 @@ public class Def implements Locatable {
 	 * unannotated lambda functions when they occur in a checking
 	 * context that provides that information.
 	 */
-	public void checkLambda(ArrowType t, Env<Type> ctx, Env<Type> typectx) throws TypeException {
+	public void checkLambda(orc.type.structured.ArrowType t, Env<orc.type.Type> ctx, Env<orc.type.Type> typectx) throws TypeException {
 		
-		Env<Type> bodyctx = ctx;
-		Env<Type> newtypectx = typectx;
+		Env<orc.type.Type> bodyctx = ctx;
+		Env<orc.type.Type> newtypectx = typectx;
 		
 		/* Add the type arguments to the type context */
 		for(int i = 0; i < typeArity; i++) {
@@ -171,15 +170,15 @@ public class Def implements Locatable {
 		
 		if (argTypes != null) {
 			for (int i = 0; i < t.argTypes.size(); i++) {
-				Type U = t.argTypes.get(i);
-				Type V = argTypes.get(i).subst(newtypectx);
+				orc.type.Type U = t.argTypes.get(i);
+				orc.type.Type V = argTypes.get(i).transform().subst(newtypectx);
 				if (!U.subtype(V)) {
 					throw new TypeException("Checked type " + t + " did not match type ascriptions on this lambda.", getSourceLocation());
 				}
 			}
 		}
 		if (resultType != null) {
-			if (!resultType.subst(newtypectx).subtype(t.resultType)) {
+			if (!resultType.transform().subst(newtypectx).subtype(t.resultType)) {
 				throw new TypeException("Checked type " + t + " did not match type ascriptions on this lambda.", getSourceLocation());
 			}
 		}
@@ -187,7 +186,7 @@ public class Def implements Locatable {
 		
 		
 		/* Add the argument types to the context */
-		for (Type ty : t.argTypes) {
+		for (orc.type.Type ty : t.argTypes) {
 			bodyctx = bodyctx.extend(ty);
 		}
 		
@@ -215,10 +214,12 @@ public class Def implements Locatable {
 		 * 
 		 */
 		if (argTypes == null) {
-			argTypes = t.argTypes;
+			//FIXME
+			//argTypes = t.argTypes;
 		}
 		if (resultType == null) {
-			resultType = t.resultType;
+			//FIXME
+			//resultType = t.resultType;
 		}
 	}
 	
@@ -234,24 +235,14 @@ public class Def implements Locatable {
 	
 	public orc.ast.xml.expression.Def marshal() throws CompilationException {
 		orc.ast.xml.type.Type newResultType = null;
-		try {
-			if (resultType != null) newResultType = resultType.marshal();
-		} catch (UnrepresentableTypeException e) {
-			// assume the unrepresentable types can be inferred
-			newResultType = null;
-		}
+		if (resultType != null) newResultType = resultType.marshal();
 		orc.ast.xml.type.Type[] newArgTypes = null;
 		if (argTypes != null) {
-			try {
-				newArgTypes = new orc.ast.xml.type.Type[argTypes.size()];
-				int i = 0;
-				for (orc.type.Type t : argTypes) {
-					newArgTypes[i] = t.marshal();
-					++i;
-				}
-			} catch (UnrepresentableTypeException e) {
-				// assume the unrepresentable types can be inferred
-				newArgTypes = null;
+			newArgTypes = new orc.ast.xml.type.Type[argTypes.size()];
+			int i = 0;
+			for (orc.ast.oil.type.Type t : argTypes) {
+				newArgTypes[i] = t.marshal();
+				++i;
 			}
 		}
 		return new orc.ast.xml.expression.Def(arity, body.marshal(),

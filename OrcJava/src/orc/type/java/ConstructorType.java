@@ -13,8 +13,8 @@ import orc.error.compiletime.typing.TypeArityException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.MessageNotUnderstoodException;
 import orc.lib.state.types.RefType;
-import orc.type.ArrowType;
 import orc.type.Type;
+import orc.type.structured.ArrowType;
 
 
 /**

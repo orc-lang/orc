@@ -134,6 +134,7 @@ public class SourceLocation implements Serializable {
 	 */
 	public String getCaret() {
 		try {
+			if (file == null) { throw new IOException(); }
 			final BufferedReader input = new BufferedReader(new FileReader(file));
 			String str = "";
 			for (int i = 0; i < line; i++) {

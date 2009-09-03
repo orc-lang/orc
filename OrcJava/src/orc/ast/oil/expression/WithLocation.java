@@ -2,6 +2,7 @@ package orc.ast.oil.expression;
 
 import java.util.Set;
 
+import orc.ast.oil.ContextualVisitor;
 import orc.ast.oil.Visitor;
 import orc.env.Env;
 import orc.error.Located;
@@ -29,6 +30,10 @@ public class WithLocation extends Expression implements Located {
 	@Override
 	public <E> E accept(Visitor<E> visitor) {
 		return visitor.visit(this);
+	}
+	
+	public <E,C> E accept(ContextualVisitor<E,C> cvisitor, C initialContext) {
+		return cvisitor.visit(this, initialContext);
 	}
 
 	@Override
@@ -60,7 +65,7 @@ public class WithLocation extends Expression implements Located {
 	}
 	
 	public String toString() {
-		return "{-" + location + "-}(" + body +")";
+		return "{-" + location + "-}\n(" + body +")";
 	}
 	
 	@Override

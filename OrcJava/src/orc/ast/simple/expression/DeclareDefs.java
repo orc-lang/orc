@@ -7,8 +7,11 @@ import java.util.List;
 import java.util.Set;
 
 import orc.ast.simple.argument.Argument;
-import orc.ast.simple.argument.NamedVariable;
+import orc.ast.simple.argument.FreeVariable;
 import orc.ast.simple.argument.Variable;
+import orc.ast.simple.type.FreeTypeVariable;
+import orc.ast.simple.type.Type;
+import orc.ast.simple.type.TypeVariable;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.runtime.nodes.Node;
@@ -25,15 +28,16 @@ public class DeclareDefs extends Expression {
 	}
 	
 	@Override
-	public Expression subst(Argument a, NamedVariable x) {
-		
-		List<Def> newdefs = new LinkedList<Def>();
-		for (Def d : defs)
-		{
-			newdefs.add(d.subst(a,x));
-		}
-		
-		return new DeclareDefs(newdefs, body.subst(a,x));
+	public Expression subst(Argument a, FreeVariable x) {
+		return new DeclareDefs(Def.substAll(defs, a, x), body.subst(a,x));
+	}
+	
+	/* (non-Javadoc)
+	 * @see orc.ast.simple.expression.Expression#subst(orc.ast.simple.type.Type, orc.ast.simple.type.FreeTypeVariable)
+	 */
+	@Override
+	public Expression subst(Type T, FreeTypeVariable X) {
+		return new DeclareDefs(Def.substAll(defs, T, X), body.subst(T,X));
 	}
 
 	@Override
@@ -56,26 +60,24 @@ public class DeclareDefs extends Expression {
 	}
 
 	@Override
-	public orc.ast.oil.expression.Expression convert(Env<Variable> vars, Env<String> typevars) throws CompilationException {
+	public orc.ast.oil.expression.Expression convert(Env<Variable> vars, Env<TypeVariable> typevars) throws CompilationException {
 		
 		List<Variable> names = new ArrayList<Variable>();
-		
 		for (Def d : defs) {
 			names.add(d.name);
 		}
+		Env<Variable> newvars = vars.extendAll(names);
 		
-		Env<Variable> newvars = vars.clone();
-		newvars.addAll(names);
-		
-		List<orc.ast.oil.expression.Def> newdefs = new ArrayList<orc.ast.oil.expression.Def>();
-		
-		for (Def d : defs) {
-			orc.ast.oil.expression.Def newd = d.convert(newvars, typevars);
-			newdefs.add(newd);
-		}
-		
-		return new orc.ast.oil.expression.DeclareDefs(newdefs, body.convert(newvars, typevars));
+		return new orc.ast.oil.expression.DeclareDefs(Def.convertAll(defs, newvars, typevars), 
+													  body.convert(newvars, typevars));
 	}
-
 	
+	public String toString() {
+		String repn = "(defs  ";
+		for (Def d : defs) {
+			repn += "\n  " + d.toString();
+		}
+		repn += "\n)\n" + body.toString();
+		return repn;
+	}
 }

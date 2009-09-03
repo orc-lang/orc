@@ -6,14 +6,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import orc.ast.extended.type.ArrowType;
-import orc.ast.extended.type.Type;
+import orc.ast.simple.type.FreeTypeVariable;
+import orc.ast.simple.type.Type;
 import orc.ast.simple.argument.Argument;
-import orc.ast.simple.argument.NamedVariable;
+import orc.ast.simple.argument.FreeVariable;
 import orc.ast.simple.argument.Variable;
+import orc.ast.simple.type.TypeVariable;
 import orc.env.Env;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;
+import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Node;
 
 /**
@@ -31,7 +33,7 @@ public class Def {
 	public Variable name;
 	public List<Variable> formals;
 	public Expression body;
-	protected List<String> typeParams; /* Never null; if there are no type params, this will be an empty list */
+	protected List<TypeVariable> typeParams; /* Never null; if there are no type params, this will be an empty list */
 	protected List<Type> argTypes; /* May be null, but only for defs derived from lambda, and only in a checking context */
 	protected Type resultType; /* May be null to request inference */
 	protected SourceLocation location;
@@ -43,11 +45,11 @@ public class Def {
 	 * @param location 
 	 */
 	public Def(Variable name, List<Variable> formals, Expression body,
-			List<String> typeParams, List<Type> argTypes, Type resultType, SourceLocation location) {
+			List<TypeVariable> typeParams, List<Type> argTypes, Type resultType, SourceLocation location) {
 		this.name = name;
 		this.formals = formals;
 		this.body = body;
-		this.typeParams = (typeParams != null ? typeParams : new LinkedList<String>());
+		this.typeParams = (typeParams != null ? typeParams : new LinkedList<TypeVariable>());
 		this.argTypes = argTypes;
 		this.resultType = resultType;
 		this.location = location;
@@ -55,12 +57,34 @@ public class Def {
 
 	
 
-	public Def subst(Argument a, NamedVariable x) {
+	public Def subst(Argument a, FreeVariable x) {
 		return new Def(name, formals, body.subst(a, x), typeParams, argTypes, resultType, location);
 	}
 	
-	public Def suball(Map<NamedVariable, ? extends Argument> m) {
-		return new Def(name, formals, body.suball(m), typeParams, argTypes, resultType, location);
+	public Def subMap(Map<FreeVariable, ? extends Argument> m) {
+		return new Def(name, formals, body.subMap(m), typeParams, argTypes, resultType, location);
+	}
+	
+	public Def subst(Type T, FreeTypeVariable X) {
+		return new Def(name, formals, body.subst(T, X), typeParams, Type.substAll(argTypes, T, X), resultType.subst(T, X), location);
+	}
+	
+	public static List<Def> substAll(List<Def> defs, Argument a, FreeVariable x) {
+		List<Def> newdefs = new LinkedList<Def>();
+		for (Def d : defs)
+		{
+			newdefs.add(d.subst(a,x));
+		}
+		return newdefs;
+	}
+	
+	public static List<Def> substAll(List<Def> defs, Type T, FreeTypeVariable X) {
+		List<Def> newdefs = new LinkedList<Def>();
+		for (Def d : defs)
+		{
+			newdefs.add(d.subst(T,X));
+		}
+		return newdefs;
 	}
 	
 	// Does not validly compute the set of free vars if this definition is in a mutually recursive group.
@@ -73,32 +97,92 @@ public class Def {
 		return freeset;
 	}
 
-	public orc.ast.oil.expression.Def convert(Env<Variable> vars, Env<String> typevars) throws CompilationException {
-	
-		Env<Variable> newvars = vars.clone();
-		newvars.addAll(formals);
+	public orc.ast.oil.expression.Def convert(Env<Variable> vars, Env<TypeVariable> typevars) throws CompilationException {
 		
-		Env<String> newtypevars = typevars.clone();
-		newtypevars.addAll(typeParams);
-		
-		List<orc.type.Type> newArgTypes = null;
-		if (argTypes != null) {
-			newArgTypes = new LinkedList<orc.type.Type>();
-			for (Type t : argTypes) {
-				newArgTypes.add(t.convert(newtypevars));
-			}
-		}
-		
-		orc.type.Type newResultType = (resultType != null ? resultType.convert(newtypevars) : null);
+		Env<Variable> newvars = vars.extendAll(formals);
+		Env<TypeVariable> newtypevars = typevars.extendAll(typeParams);
+				
+		orc.ast.oil.type.Type newResultType = (resultType != null ? resultType.convert(newtypevars) : null);
 		
 		return new orc.ast.oil.expression.Def(formals.size(), 
 								   body.convert(newvars, newtypevars),
 								   typeParams.size(),
-								   newArgTypes,
+								   Type.convertAll(argTypes, newtypevars),
 								   newResultType,
 								   location,
 								   name.name);
 									
 	}
+	
+	/**
+	 * Convenience method, to apply convert to a list of defs.
+	 * 
+	 * @param ts  A list of defs
+	 * @param env Environments for conversion
+	 * @return The list of expressions, converted
+	 * @throws TypeException
+	 */
+	public static List<orc.ast.oil.expression.Def> convertAll(List<Def> ds, Env<Variable> vars, Env<TypeVariable> typevars) throws CompilationException {
+		
+		if (ds != null) {
+			List<orc.ast.oil.expression.Def> newds = new LinkedList<orc.ast.oil.expression.Def>();
+
+			for (Def d : ds) {
+				newds.add(d.convert(vars, typevars));
+			}
+
+			return newds;
+		}
+		else {
+			return null;
+		}
+	}
+
+
+	public String toString() {
+		
+		StringBuilder s = new StringBuilder();
+			
+		s.append("def ");
+		s.append(name);
+		s.append('[');
+		for (int i = 0; i < typeParams.size(); i++) {
+			if (i > 0) { s.append(", "); }
+			s.append(typeParams.get(i));
+		}
+		s.append(']');
+		s.append('(');
+		if (argTypes != null) {
+			for (int i = 0; i < argTypes.size(); i++) {
+				if (i > 0) { s.append(", "); }
+				s.append(argTypes.get(i));
+			}
+		}
+		s.append(')');
+		s.append(" :: ");
+		s.append(resultType);
+		s.append('\n');
+
+		
+		s.append("def ");
+		s.append(name);
+		s.append('(');
+		for (int i = 0; i < formals.size(); i++) {
+			if (i > 0) { s.append(", "); }
+			s.append(formals.get(i));
+		}
+		s.append(')');
+		s.append(" = ");
+		s.append(body);
+
+		s.append('\n');
+		
+		return s.toString();
+	}
+	
+
+
+
+	
 	
 }

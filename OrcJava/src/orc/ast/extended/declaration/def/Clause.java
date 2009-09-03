@@ -10,7 +10,7 @@ import orc.ast.extended.pattern.Pattern;
 import orc.ast.extended.pattern.PatternSimplifier;
 import orc.ast.simple.argument.Argument;
 import orc.ast.simple.argument.Constant;
-import orc.ast.simple.argument.NamedVariable;
+import orc.ast.simple.argument.FreeVariable;
 import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.Expression;
 import orc.error.compiletime.CompilationException;
@@ -53,7 +53,7 @@ public class Clause {
 		Expression newbody = body.simplify();
 		List<PatternSimplifier> stricts = new LinkedList<PatternSimplifier>();
 				
-		Set<NamedVariable> allvars = new TreeSet<NamedVariable>();
+		Set<FreeVariable> allvars = new TreeSet<FreeVariable>();
 		for(int i = 0; i < ps.size(); i++) {
 			Pattern p = ps.get(i);
 			Variable arg = formals.get(i);
@@ -62,7 +62,7 @@ public class Clause {
 			PatternSimplifier pv = p.process(arg);
 			
 			// Let's make sure this pattern didn't duplicate any existing variables
-			for (NamedVariable x : pv.vars()) {
+			for (FreeVariable x : pv.vars()) {
 				if (allvars.contains(x)) {
 					throw new NonlinearPatternException(x);
 				}

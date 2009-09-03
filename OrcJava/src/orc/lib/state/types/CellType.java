@@ -3,10 +3,10 @@ package orc.lib.state.types;
 import java.util.List;
 
 import orc.error.compiletime.typing.TypeException;
-import orc.type.ArrowType;
-import orc.type.DotType;
-import orc.type.ListType;
 import orc.type.Type;
+import orc.type.structured.ArrowType;
+import orc.type.structured.DotType;
+import orc.type.structured.ListType;
 import orc.type.tycon.MutableContainerType;
 
 public class CellType extends MutableContainerType {

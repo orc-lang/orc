@@ -26,5 +26,7 @@ public class Site extends Argument {
 		return new orc.ast.oil.expression.argument.Site(site);
 	}
 
-	
+	public String toString() {
+		return site.toString();
+	}
 }

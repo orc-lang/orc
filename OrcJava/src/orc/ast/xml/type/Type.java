@@ -1,12 +1,13 @@
 package orc.ast.xml.type;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlSeeAlso;
 
-import orc.Config;
-import orc.error.compiletime.typing.TypeException;
 
 /**
- * @author quark
+ * @author quark, dkitchin
  */
 @XmlSeeAlso(value={Blank.class, ArrowType.class, ClassnameType.class,
 		Datatype.class, PolymorphicTypeAlias.class, SiteType.class,
@@ -15,7 +16,14 @@ import orc.error.compiletime.typing.TypeException;
 public abstract class Type {
 	/** Convert this syntactic type into an actual type.
 	 * @return A new node.
-	 * @throws TypeException 
 	 */
-	public abstract orc.type.Type unmarshal(Config config) throws TypeException;
+	public abstract orc.ast.oil.type.Type unmarshal();
+	
+	public static List<orc.ast.oil.type.Type> unmarshalAll(Type[] ts) {
+		List<orc.ast.oil.type.Type> newts = new LinkedList<orc.ast.oil.type.Type>();
+		for (Type t : ts) {
+			newts.add(t.unmarshal());
+		}
+		return newts;
+	}
 }

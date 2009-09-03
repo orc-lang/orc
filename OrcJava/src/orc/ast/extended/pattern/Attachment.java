@@ -1,10 +1,10 @@
 package orc.ast.extended.pattern;
 
-import orc.ast.extended.type.Type;
 import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.Expression;
 import orc.ast.simple.expression.HasType;
 import orc.ast.simple.expression.Pruning;
+import orc.ast.simple.type.Type;
 
 public class Attachment {
 

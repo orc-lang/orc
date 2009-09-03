@@ -1,12 +1,13 @@
 package orc.ast.extended.declaration;
 
 import orc.ast.extended.Visitor;
-import orc.ast.extended.type.ClassnameType;
-import orc.ast.extended.type.SiteType;
 import orc.ast.simple.argument.Argument;
-import orc.ast.simple.argument.NamedVariable;
+import orc.ast.simple.argument.FreeVariable;
 import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.WithLocation;
+import orc.ast.simple.type.FreeTypeVariable;
+import orc.ast.simple.type.TypeVariable;
+import orc.ast.simple.type.ClassnameType;
 import orc.runtime.sites.java.ClassProxy;
 
 /**
@@ -32,24 +33,23 @@ public class ClassDeclaration extends Declaration {
 
 	public orc.ast.simple.expression.Expression bindto(orc.ast.simple.expression.Expression target) {
 		
-		NamedVariable x = new NamedVariable(varname);
-		Variable v = new Variable();
-		
 		orc.ast.sites.Site s = orc.ast.sites.Site.build(orc.ast.sites.Site.JAVA, classname);
 		Argument a = new orc.ast.simple.argument.Site(s);
+		orc.ast.simple.expression.Expression body = new orc.ast.simple.expression.Let(a);
 		
-		return new WithLocation(
-			new orc.ast.simple.expression.DeclareType(new ClassnameType(classname),
-				varname,
-				new orc.ast.simple.expression.Pruning(target.subvar(v,x), new orc.ast.simple.expression.Let(a), v)),
-			getSourceLocation());
+		Variable v = new Variable();
+		FreeVariable x = new FreeVariable(varname);
+		body = new orc.ast.simple.expression.Pruning(target.subvar(v,x), body, v);
+		 
+		TypeVariable Y = new TypeVariable();
+		FreeTypeVariable X = new FreeTypeVariable(varname);
+		orc.ast.simple.type.Type T = new ClassnameType(classname);
+		body = new orc.ast.simple.expression.DeclareType(T, Y, body);
+		body = body.subvar(Y,X);
 		
-		/*
-		orc.ast.simple.arg.Argument a = new orc.ast.simple.arg.Site(orc.ast.sites.Site.build(orc.ast.sites.Site.JAVA, classname));
-		orc.ast.simple.arg.NamedVar x = new orc.ast.simple.arg.NamedVar(varname);
+		body = new WithLocation(body, getSourceLocation());
 		
-		return target.subst(a,x);
-		*/
+		return body;
 	}
 	public String toString() {
 		return "class " + varname + " = " + classname;

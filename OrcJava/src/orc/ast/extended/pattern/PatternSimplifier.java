@@ -10,9 +10,9 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 
-import orc.ast.extended.type.Type;
+import orc.ast.simple.type.Type;
 import orc.ast.simple.argument.Argument;
-import orc.ast.simple.argument.NamedVariable;
+import orc.ast.simple.argument.FreeVariable;
 import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.Expression;
 import orc.ast.simple.expression.Let;
@@ -27,13 +27,14 @@ import orc.error.compiletime.NonlinearPatternException;
  * This used to be called PatternVisitor, but it was renamed
  * because it doesn't actually use the visitor pattern and we
  * may want to someday introduce an actual abstract PatternVisitor.
+ * 
  * @author dkitchin
  */
 public class PatternSimplifier {
 	
 	List<Argument> requiredVars;
 	List<Argument> boundVars;
-	Map<NamedVariable, Integer> bindingEntries;
+	Map<FreeVariable, Integer> bindingEntries;
 	Map<Variable, Type> ascriptions;
 	List<Attachment> attachments;
 	
@@ -41,7 +42,7 @@ public class PatternSimplifier {
 	{
 		this.requiredVars = new LinkedList<Argument>();
 		this.boundVars = new LinkedList<Argument>();
-		this.bindingEntries = new TreeMap<NamedVariable,Integer>();
+		this.bindingEntries = new TreeMap<FreeVariable,Integer>();
 		this.attachments = new LinkedList<Attachment>();
 		this.ascriptions = new HashMap<Variable, Type>();
 	}
@@ -54,7 +55,7 @@ public class PatternSimplifier {
 		ascriptions.put(s, t);
 	}
 	
-	public void subst(Variable s, NamedVariable x) throws NonlinearPatternException {
+	public void subst(Variable s, FreeVariable x) throws NonlinearPatternException {
 		
 		if (bindingEntries.containsKey(x)) {
 			throw new NonlinearPatternException(x);
@@ -79,7 +80,7 @@ public class PatternSimplifier {
 		return i;
 	}
 	
-	public Set<NamedVariable> vars() {
+	public Set<FreeVariable> vars() {
 		return bindingEntries.keySet();
 	}
 	
@@ -110,16 +111,16 @@ public class PatternSimplifier {
 		 * it is not a tuple, so we do not do any lookup.
 		 */
 		if (boundVars.size() == 1) {
-			for (Entry<NamedVariable, Integer> e : bindingEntries.entrySet()) {
-				NamedVariable x = e.getKey();
+			for (Entry<FreeVariable, Integer> e : bindingEntries.entrySet()) {
+				FreeVariable x = e.getKey();
 				// we don't use the index since it must be 0.
 				g = g.subvar(u, x);
 			}
 		}
 		/* Otherwise, each entry is retrieved with a lookup */
 		else {		
-			for (Entry<NamedVariable, Integer> e : bindingEntries.entrySet()) {
-				NamedVariable x = e.getKey();
+			for (Entry<FreeVariable, Integer> e : bindingEntries.entrySet()) {
+				FreeVariable x = e.getKey();
 				
 				int i = e.getValue();
 				Expression getter = Pattern.nth(u,i);

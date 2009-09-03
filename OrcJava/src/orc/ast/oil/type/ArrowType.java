@@ -1,12 +1,10 @@
-package orc.ast.extended.type;
+package orc.ast.oil.type;
 
 import java.util.LinkedList;
 import java.util.List;
 
-import orc.env.Env;
 import orc.error.compiletime.typing.ArgumentArityException;
 import orc.error.compiletime.typing.SubtypeFailureException;
-import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
 
 /**
@@ -17,34 +15,33 @@ import orc.error.compiletime.typing.UncallableTypeException;
  */
 public class ArrowType extends Type {
 
-	public List<String> typeParams;
 	public List<Type> argTypes;
 	public Type resultType;
+	public int typeArity;
 		
-	public ArrowType(List<Type> argTypes, Type resultType, List<String> typeParams) {
-		this.typeParams = typeParams;
+	public ArrowType(List<Type> argTypes, Type resultType, int typeArity) {
 		this.argTypes = argTypes;
 		this.resultType = resultType;
+		this.typeArity = typeArity;
 	}
 
-	public orc.type.Type convert(Env<String> env) throws TypeException {
-		
-		int arity = typeParams.size();
-		
-		Env<String> newenv = env;
-		for (String X : typeParams) {
-			newenv = newenv.extend(X);
-		}
+	public orc.type.Type transform() {
 		
 		List<orc.type.Type> newargs = new LinkedList<orc.type.Type>();
 		for (Type T : argTypes) {
-			newargs.add(T.convert(newenv));
+			newargs.add(T.transform());
 		}
-		orc.type.Type newresult = (resultType != null ? resultType.convert(newenv) : null);
+		orc.type.Type newresult = resultType.transform();
 		
-		return new orc.type.ArrowType(newargs, newresult, arity);
+		return new orc.type.structured.ArrowType(newargs, newresult, typeArity);
 	}
 	
+	
+	public orc.ast.xml.type.Type marshal() {
+		return new orc.ast.xml.type.ArrowType(Type.marshalAll(argTypes),
+											  resultType.marshal(),
+											  typeArity);
+	}
 	
 	public String toString() {
 		
@@ -54,9 +51,9 @@ public class ArrowType extends Type {
 			
 			s.append("lambda ");
 			s.append('[');
-			for (int i = 0; i < typeParams.size(); i++) {
+			for (int i = 0; i < typeArity; i++) {
 				if (i > 0) { s.append(", "); }
-				s.append(typeParams.get(i));
+				s.append(".");
 			}
 			s.append(']');
 			s.append('(');

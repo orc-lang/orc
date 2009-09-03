@@ -1,4 +1,4 @@
-package orc.type;
+package orc.type.structured;
 
 import java.util.List;
 import java.util.Map;
@@ -9,6 +9,7 @@ import orc.ast.oil.expression.argument.Argument;
 import orc.ast.oil.expression.argument.Field;
 import orc.env.Env;
 import orc.error.compiletime.typing.TypeException;
+import orc.type.Type;
 
 
 /**

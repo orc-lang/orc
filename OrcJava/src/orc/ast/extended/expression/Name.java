@@ -14,14 +14,14 @@ public class Name extends Expression {
 	
 	@Override
 	public orc.ast.simple.expression.Expression simplify() {
-		orc.ast.simple.argument.Argument var = new orc.ast.simple.argument.NamedVariable(name);
+		orc.ast.simple.argument.Argument var = new orc.ast.simple.argument.FreeVariable(name);
 		var.setSourceLocation(getSourceLocation());
 		return new WithLocation(new orc.ast.simple.expression.Let(var),
 				getSourceLocation());
 	}
 
 	public Arg argify() {
-		orc.ast.simple.argument.Argument var = new orc.ast.simple.argument.NamedVariable(name);
+		orc.ast.simple.argument.Argument var = new orc.ast.simple.argument.FreeVariable(name);
 		var.setSourceLocation(getSourceLocation());
 		return new simpleArg(var);
 	}

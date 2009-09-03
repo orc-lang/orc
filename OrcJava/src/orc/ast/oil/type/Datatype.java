@@ -1,9 +1,8 @@
-package orc.ast.extended.type;
+package orc.ast.oil.type;
 
 import java.util.LinkedList;
 import java.util.List;
 
-import orc.env.Env;
 import orc.error.compiletime.typing.TypeException;
 import orc.type.tycon.DatatypeTycon;
 import orc.type.tycon.Variance;
@@ -17,31 +16,21 @@ import orc.type.tycon.Variance;
  */
 public class Datatype extends Type {
 
-	public String typename;
-	public List<Constructor> members;
-	public List<String> formals;
-	Object id;
+	public List<List<Type>> members;
+	public int typeArity;
+	String name;
 	
-	public Datatype(String typename, List<Constructor> members, List<String> formals) {
-		this.typename = typename;
+	public Datatype(List<List<Type>> members, int typeArity, String name) {
 		this.members = members;
-		this.formals = formals;
-		this.id = new Object(); // identifier for this syntactic occurrence
+		this.typeArity = typeArity;
+		this.name = name;
 	}
 
 	@Override
-	public orc.type.Type convert(Env<String> env) throws TypeException {
-		
-		// First, add the datatype name itself to the context
-		env = env.extend(typename);
-		
-		// Then, add the type parameters
-		for (String formal : formals) {
-			env = env.extend(formal);
-		}
+	public orc.type.Type transform() {
 		
 		// We use this array to infer the variance of each type parameter
-		Variance[] V = new Variance[formals.size()];
+		Variance[] V = new Variance[typeArity];
 		for (int i = 0; i < V.length; i++) {
 			V[i] = Variance.CONSTANT;
 		}
@@ -52,11 +41,11 @@ public class Datatype extends Type {
 		 * values.
 		 */
 		List<List<orc.type.Type>> cs = new LinkedList<List<orc.type.Type>>();
-		for (Constructor con : members) {
+		for (List<Type> con : members) {
 			List<orc.type.Type> ts = new LinkedList<orc.type.Type>();
-			for (Type t : con.args) {
+			for (Type t : con) {
 				// Convert the syntactic type to a true type
-				orc.type.Type newT = t.convert(env);
+				orc.type.Type newT = t.transform();
 				// Add it as an entry for the new constructor
 				ts.add(newT);
 				// Infer the variance of each type parameter it uses;
@@ -73,7 +62,22 @@ public class Datatype extends Type {
 			vs.add(0,v);
 		}
 		
-		return new DatatypeTycon(typename, vs, cs, id);
+		return new DatatypeTycon(name, vs, cs, this);
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.oil.type.Type#marshal()
+	 */
+	@Override
+	public orc.ast.xml.type.Type marshal() {
+		
+		orc.ast.xml.type.Type[][] cs = new orc.ast.xml.type.Type[members.size()][0];
+		int i = 0;
+		for (List<Type> ts : members) {
+			cs[i++] = Type.marshalAll(ts);
+		}
+		
+		return new orc.ast.xml.type.Datatype(name, cs, typeArity);
 	}
 
 }

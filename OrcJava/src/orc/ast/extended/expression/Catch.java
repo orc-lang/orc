@@ -15,6 +15,7 @@ import orc.ast.extended.declaration.def.Clause;
 import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.HasType;
 import orc.ast.simple.expression.Throw;
+import orc.ast.simple.type.TypeVariable;
 
 public class Catch extends Expression {
 	public List<CatchHandler> handlers;
@@ -61,7 +62,7 @@ public class Catch extends Expression {
 		
 		orc.ast.simple.expression.Expression simpleTryBlock = tryBlock.simplify();
 		Variable v = new Variable();
-		List<String> l = new ArrayList<String>();
+		List<TypeVariable> l = new ArrayList<TypeVariable>();
 		SourceLocation sl = getSourceLocation();
 		orc.ast.simple.expression.Def def = new orc.ast.simple.expression.Def(v, formals, body, l, null, null, sl);
 		return new orc.ast.simple.expression.Catch(def, simpleTryBlock);

@@ -2,8 +2,6 @@ package orc.ast.xml.type;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
-import orc.Config;
-import orc.error.compiletime.typing.TypeException;
 
 /**
  * A simple named type.
@@ -14,14 +12,19 @@ import orc.error.compiletime.typing.TypeException;
 public class TypeVariable extends Type {
 	@XmlAttribute(required=true)
 	public int index;
+	@XmlAttribute(required=false)
+	public String name;
 	
-	public TypeVariable() {}
 	public TypeVariable(int index) {
+		this(index, null);
+	}
+	public TypeVariable(int index, String name) {
 		this.index = index;
+		this.name = name;
 	}
 	
 	@Override
-	public orc.type.Type unmarshal(Config config) throws TypeException {
-		return new orc.type.TypeVariable(index);
+	public orc.ast.oil.type.Type unmarshal() {
+		return new orc.ast.oil.type.TypeVariable(index, name);
 	}
 }

@@ -2,13 +2,13 @@ package orc.ast.oil.expression;
 
 import java.util.Set;
 
+import orc.ast.oil.ContextualVisitor;
 import orc.ast.oil.Visitor;
+import orc.ast.oil.type.Type;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Node;
-import orc.type.Type;
-
 
 /**
  * 
@@ -20,10 +20,10 @@ import orc.type.Type;
 public class HasType extends Expression {
 
 	public Expression body;
-	public Type type;
+	public orc.ast.oil.type.Type type;
 	public boolean checkable; // set to false if this is a type assertion, not a type ascription
 	
-	public HasType(Expression body, Type type, boolean checkable) {
+	public HasType(Expression body, orc.ast.oil.type.Type type, boolean checkable) {
 		this.body = body;
 		this.type = type;
 		this.checkable = checkable;
@@ -34,15 +34,19 @@ public class HasType extends Expression {
 		return visitor.visit(this);
 	}
 
+	public <E,C> E accept(ContextualVisitor<E,C> cvisitor, C initialContext) {
+		return cvisitor.visit(this, initialContext);
+	}
+	
 	@Override
 	public void addIndices(Set<Integer> indices, int depth) {
 		body.addIndices(indices, depth);
 	}
 
 	@Override
-	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
+	public orc.type.Type typesynth(Env<orc.type.Type> ctx, Env<orc.type.Type> typectx) throws TypeException {
 		
-		Type actualType = type.subst(typectx);
+		orc.type.Type actualType = type.transform().subst(typectx);
 		
 		/* If this ascription can be checked, check it */ 
 		if (checkable) {

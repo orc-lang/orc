@@ -11,9 +11,9 @@ import orc.parser.OrcLiteralParser;
 import orc.parser.OrcParser;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
-import orc.type.ArrowType;
 import orc.type.Type;
 import orc.type.TypeVariable;
+import orc.type.structured.ArrowType;
 import xtc.parser.ParseException;
 import xtc.parser.Result;
 

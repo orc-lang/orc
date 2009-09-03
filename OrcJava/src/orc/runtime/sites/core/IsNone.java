@@ -9,10 +9,10 @@ import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.Site;
 import orc.runtime.values.Value;
-import orc.type.ArrowType;
-import orc.type.OptionType;
 import orc.type.Type;
 import orc.type.TypeVariable;
+import orc.type.structured.ArrowType;
+import orc.type.structured.OptionType;
 
 /**
  * @author dkitchin

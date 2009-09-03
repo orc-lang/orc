@@ -12,8 +12,8 @@ import orc.runtime.Args;
 import orc.runtime.Args.NumericBinaryOperator;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.values.Eq;
-import orc.type.ArrowType;
 import orc.type.Type;
+import orc.type.structured.ArrowType;
 
 /**
  * Implement standard equality.

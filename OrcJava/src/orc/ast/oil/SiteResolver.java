@@ -5,11 +5,11 @@ import orc.ast.oil.expression.Expression;
 import orc.ast.oil.expression.argument.Constant;
 import orc.ast.oil.expression.argument.ResolvedSite;
 import orc.ast.oil.expression.argument.Site;
+import orc.ast.oil.type.Type;
 import orc.error.OrcException;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.SiteResolutionException;
 import orc.error.compiletime.typing.MissingTypeException;
-import orc.type.Type;
 
 /**
  * Resolve sites in an expression. Must be done before typechecking,
@@ -54,10 +54,12 @@ public class SiteResolver extends Transformer {
 
 	@Override
 	public Type visit(Type type) {
-		try {
-			return type.resolveSites(config);
-		} catch (MissingTypeException e) {
-			throw new SiteResolverException(e);
-		}
+		// TODO: fix this, if it even needs to be fixed
+//		try {
+//			return type.resolveSites(config);
+//		} catch (MissingTypeException e) {
+//			throw new SiteResolverException(e);
+//		}
+		return type;
 	}
 }

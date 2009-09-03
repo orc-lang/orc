@@ -17,36 +17,24 @@ import orc.type.tycon.Variance;
 public class PolymorphicTypeAlias extends Type {
 
 	public Type type;
-	public List<String> formals;
+	public List<TypeVariable> formals;
 	
-	public PolymorphicTypeAlias(Type type, List<String> formals) {
+	public PolymorphicTypeAlias(Type type, List<TypeVariable> formals) {
 		this.type = type;
 		this.formals = formals;
 	}
 
 	@Override
-	public orc.type.Type convert(Env<String> env) throws TypeException {
-		
-		// Add the type parameters to the context
-		for (String formal : formals) {
-			env = env.extend(formal);
-		}
-		
-		// Convert the syntactic type to a true type
-		orc.type.Type newType = type.convert(env);
-		
-		// Infer the variance of each type parameter
-		Variance[] V = new Variance[formals.size()];
-		for (int i = 0; i < V.length; i++) {
-			V[i] = newType.findVariance(i);
-		}
-		
-		List<Variance> vs = new LinkedList<Variance>();
-		for(Variance v : V) {
-			vs.add(0,v);
-		}
-		
-		return new orc.type.tycon.PolymorphicAliasedType(newType, vs);
+	public orc.ast.oil.type.Type convert(Env<TypeVariable> env) throws TypeException {
+		return new orc.ast.oil.type.PolymorphicTypeAlias(type.convert(env.extendAll(formals)), formals.size());
+	}
+	
+	/* (non-Javadoc)
+	 * @see orc.ast.simple.type.Type#subst(orc.ast.simple.type.Type, orc.ast.simple.type.FreeTypeVariable)
+	 */
+	@Override
+	public Type subst(Type T, FreeTypeVariable X) {
+		return this;
 	}
 
 }

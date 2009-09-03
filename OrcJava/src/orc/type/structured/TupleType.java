@@ -1,4 +1,4 @@
-package orc.type;
+package orc.type.structured;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -10,6 +10,7 @@ import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
 import orc.error.compiletime.typing.UnrepresentableTypeException;
+import orc.type.Type;
 import orc.type.ground.ConstIntType;
 import orc.type.ground.IntegerType;
 import orc.type.ground.Message;
@@ -162,7 +163,7 @@ public class TupleType extends Type {
 	
 	
 	
-	public Variance findVariance(Integer var) throws TypeException {
+	public Variance findVariance(Integer var) {
 		
 		Variance result = Variance.CONSTANT;
 		

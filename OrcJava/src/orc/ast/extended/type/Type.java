@@ -1,7 +1,5 @@
 package orc.ast.extended.type;
 
-import orc.env.Env;
-import orc.error.compiletime.typing.TypeException;
 
 /**
  * 
@@ -32,11 +30,8 @@ public abstract class Type {
 	public static final Type BOT = new Bot();
 	
 	/** Convert this syntactic type into an actual type, given an appropriate type context
-	 * @param env	The type environment, used in content addressable mode to 
-	 * 				find the appropriate deBruijn index of a type variable.
 	 * @return A new node.
-	 * @throws TypeException 
 	 */
-	public abstract orc.type.Type convert(Env<String> env) throws TypeException;
+	public abstract orc.ast.simple.type.Type simplify();
 	
 }

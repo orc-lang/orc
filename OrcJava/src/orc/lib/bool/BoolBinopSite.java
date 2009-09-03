@@ -6,8 +6,8 @@ package orc.lib.bool;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
-import orc.type.ArrowType;
 import orc.type.Type;
+import orc.type.structured.ArrowType;
 
 /**
  * @author dkitchin

@@ -2,16 +2,17 @@ package orc.ast.extended.pattern;
 
 import orc.ast.extended.Visitor;
 import orc.ast.extended.type.Type;
-import orc.ast.simple.argument.NamedVariable;
+import orc.ast.simple.argument.FreeVariable;
 import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.Expression;
 import orc.error.compiletime.PatternException;
+import orc.error.compiletime.typing.TypeException;
 
 /**
  * 
  * A pattern with a type ascription.
  * 
- * FIXME: The pattern simplifier will occasionally ignore type ascriptions because they
+ * WARNING: The pattern simplifier will occasionally ignore type ascriptions because they
  * are not ascribed to attachments.
  * 
  * @author dkitchin
@@ -33,10 +34,9 @@ public class TypedPattern extends Pattern {
 	}
 
 	@Override
-	public void process(Variable fragment, PatternSimplifier visitor)
-			throws PatternException {
+	public void process(Variable fragment, PatternSimplifier visitor) throws PatternException {
 		
-		visitor.ascribe(fragment, t);
+		visitor.ascribe(fragment, t.simplify());
 		p.process(fragment, visitor);
 	}
 	

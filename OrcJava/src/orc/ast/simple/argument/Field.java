@@ -21,7 +21,7 @@ public class Field extends Argument {
 	}
 	
 	public String toString() {
-		return super.toString() + "(" + key + ")";
+		return "." + key;
 	}
 
 	@Override

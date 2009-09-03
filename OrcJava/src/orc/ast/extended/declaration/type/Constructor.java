@@ -1,8 +1,9 @@
-package orc.ast.extended.type;
+package orc.ast.extended.declaration.type;
 
 import java.util.List;
 
 import orc.ast.extended.expression.Expression;
+import orc.ast.extended.type.Type;
 
 
 /**

@@ -15,10 +15,10 @@ import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.Site;
 import orc.runtime.values.ListValue;
-import orc.type.ArrowType;
-import orc.type.DotType;
 import orc.type.Type;
 import orc.type.TypeVariable;
+import orc.type.structured.ArrowType;
+import orc.type.structured.DotType;
 import orc.type.tycon.MutableContainerType;
 
 /**

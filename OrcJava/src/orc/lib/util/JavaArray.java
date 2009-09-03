@@ -10,10 +10,10 @@ import orc.lib.state.types.ArrayType;
 import orc.lib.state.types.RefType;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
-import orc.type.ArrowType;
-import orc.type.MultiType;
 import orc.type.Type;
 import orc.type.TypeVariable;
+import orc.type.structured.ArrowType;
+import orc.type.structured.MultiType;
 
 public class JavaArray extends EvalSite {
 	private static HashMap<String, Class> types = new HashMap<String, Class>();

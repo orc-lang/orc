@@ -5,10 +5,10 @@ import java.util.List;
 
 import orc.error.compiletime.typing.TypeArityException;
 import orc.error.compiletime.typing.TypeException;
-import orc.type.OptionType;
 import orc.type.Type;
 import orc.type.TypeApplication;
 import orc.type.TypeInstance;
+import orc.type.structured.OptionType;
 
 /**
  * 

@@ -208,31 +208,12 @@ List<Constructor> ConstructorList =
 
 
 DefMember Definition =
-	DEF name:RequiredSiteName Space LPAREN formals:PatternList RPAREN Space
-	curried0:(LPAREN yyValue:PatternList RPAREN Space)*
-	resultType:MaybeResultType
-	EQ body0:Body {
-		Type linearResultType = resultType;
-		List<List<Pattern>> curried = curried0.list();
-		ListIterator<List<Pattern>> it = curried.listIterator(curried.size());
-		Expression body = body0;
-		while (it.hasPrevious()) {
-			body = new Lambda(it.previous(), body, linearResultType);
-			linearResultType = null;
-		}
-		yyValue = new DefMemberClause(name, formals, body, linearResultType);
+	DEF name:RequiredSiteName Space formals:PatternListGroup resultType:MaybeResultType EQ body:Body {
+		yyValue = new DefMemberClause(name, formals, body, resultType);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ DEF name:RequiredSiteName Space typeFormals:TypeFormals LPAREN argTypes:TypeList RPAREN Space
-	curried0:(LPAREN yyValue:TypeList RPAREN Space)*
-	resultType:MaybeResultType {
-		Type curriedType = resultType;
-		List<List<Type>> curried = curried0.list();
-		ListIterator<List<Type>> it = curried.listIterator(curried.size());
-		while (it.hasPrevious()) {
-			curriedType = new ArrowType(it.previous(), curriedType, new LinkedList<String>() /* curried type params not allowed */);
-		}
-		yyValue = new DefMemberType(name, argTypes, curriedType, typeFormals);
+	/ DEF name:RequiredSiteName Space typeFormals:TypeFormals argTypes:TypeListGroup resultType:MaybeResultType {
+		yyValue = new DefMemberType(name, argTypes, resultType, typeFormals);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
@@ -256,6 +237,12 @@ List<Pattern> PatternList =
 	}
 	/ /* empty */ {
 		yyValue = new LinkedList<Pattern>();
+	}
+	;
+	
+List<List<Pattern>> PatternListGroup =
+	ls:(LPAREN yyValue:PatternList RPAREN Space)+ {
+		yyValue = ls.list();
 	}
 	;
 	
@@ -359,19 +346,8 @@ Action<Expression> OtherwiseExpressionTail =
 	;
 
 Expression Lambda = 
-	LAMBDA LPAREN formals:PatternList RPAREN Space
-	curried0:(LPAREN yyValue:PatternList RPAREN Space)*
-	resultType:MaybeResultType
-	RequiredEQ body0:Body {
-		List<List<Pattern>> curried = curried0.list();
-		ListIterator<List<Pattern>> it = curried.listIterator(curried.size());
-		Type linearResultType = resultType;
-		Expression body = body0;
-		while (it.hasPrevious()) {
-			body = new Lambda(it.previous(), body, linearResultType);
-			linearResultType = null;
-		}
-		yyValue = new Lambda(formals, body, linearResultType);
+	LAMBDA formals:PatternListGroup resultType:MaybeResultType RequiredEQ body:Body {
+		yyValue = new Lambda(formals, body, resultType);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
@@ -854,16 +830,10 @@ Type Type =
 		}
 	}
 	/ UNDERSCORE { yyValue = Type.BLANK; }
-	/ LAMBDA typeFormals:TypeFormals LPAREN argTypes:TypeList RPAREN Space
-	  curried0:(LPAREN yyValue:TypeList RPAREN Space)*
-	  DOUBLE_COLON resultType:Type {
-		Type curriedType = resultType;
-		List<List<Type>> curried = curried0.list();
-		ListIterator<List<Type>> it = curried.listIterator(curried.size());
-		while (it.hasPrevious()) {
-			curriedType = new ArrowType(it.previous(), curriedType, new LinkedList<String>() /* curried type params not allowed */);
-		}
-		yyValue = new ArrowType(argTypes, curriedType, typeFormals);
+	/ TOP { yyValue = Type.TOP; }
+	/ BOT { yyValue = Type.BOT; }
+	/ LAMBDA typeFormals:TypeFormals argTypes:TypeListGroup DOUBLE_COLON resultType:Type {
+		yyValue = new LambdaType(argTypes, resultType, typeFormals);
 	}
 	/ name:Identifier actualTypes:TypeActuals Space { yyValue = new TypeApplication(name, actualTypes); }
 	/ name:Identifier Space { yyValue = new NamedType(name); }
@@ -891,6 +861,11 @@ List<Type> TypeList =
 	}
 	;
 	
+List<List<Type>> TypeListGroup =
+	ls:(LPAREN yyValue:TypeList RPAREN Space)+ {
+		yyValue = ls.list();
+	}
+	;
 
 List<String> TypeFormals = 
 	LBRACKET tf:RequiredIdentifier tfs:(void:COMMA tfs:Identifier)* RBRACKET {
@@ -976,6 +951,8 @@ transient String THEN = "then":Word Space;
 transient String ELSE = "else":Word Space;
 transient String STOP = "stop":Word HSpace;
 transient String SIGNAL = "signal":Word HSpace;
+transient String TOP = "Top":Word Space;
+transient String BOT = "Bot":Word Space;
 transient String DOUBLE_COLON = "::" Space;
 transient String DOUBLE_COLON_BANG = ":!:" Space;
 transient String EQ = "=" Space;
