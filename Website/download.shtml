@@ -46,7 +46,7 @@ select <b>Automatic Updates</b>. Select the checkbox labeled <b>"Automatically f
 <br/>
 To install the Orc Eclipse plugin within Eclipse 3.3, follow these steps:
 <ol>
-<li> Select <b>Help</b>, go over <b>Software Updates</b> and then click on <b>Find and Intsall...</b>.</li>
+<li> Select <b>Help</b>, go over <b>Software Updates</b> and then click on <b>Find and Install...</b>.</li>
 <li> Select <b>Search for new features to install</b> and then click <b>Next</b>.</li>
 <li> From the right hand side select <b>New Remote Site...</b> and fill in the following in the <b>New Update Site</b> dialog box, and press <b>OK</b>:
   <ul>
