@@ -97,10 +97,10 @@ public Expression Program = Space yyValue:Body EndOfFile;
 	
 /*
  * Include files are treated differently than programs;
- * the may not have a goal expression.
+ * they must not have a goal expression.
  */
 public List<Declaration> Module =
-	Space yyValue:Declarations EndOfFile
+	Space yyValue:Declarations EndOfFile 
 	;
 
 /*
@@ -122,8 +122,8 @@ Expression Body =
      }
      ;
 List<Declaration> Declarations =
-	ds:Include ds2:Declarations {
-		ds.addAll(ds2);
+	d:Include ds:Declarations {
+		ds.add(0, d);
 		yyValue = ds;
 	}
 	/ d:Declaration ds:Declarations {
@@ -138,7 +138,7 @@ List<Declaration> Declarations =
 /*
  * Include files are parsed in place.
  */
-List<Declaration> Include =
+Declaration Include =
 	INCLUDE filename:StringLiteral Space ^{
 		File thisfile = new File(location(yyStart).file);
 		String thisdir = thisfile.getParent();
@@ -148,10 +148,13 @@ List<Declaration> Include =
 		} catch (FileNotFoundException e) {
 			abort(new ParseError(e.getLocalizedMessage(), yyStart));
 		}
-		OrcParserRats parser = new OrcParserRats(config, includeReader, new File(thisdir, filename).getPath());
+		File incfile = new File(thisdir, filename);
+		OrcParserRats parser = new OrcParserRats(config, includeReader, incfile.getPath());
 		Result result = parser.pModule(0);
 		if (result.hasValue()) {
-			yyResult = new SemanticValue(result.semanticValue(), yyBase);
+			List<Declaration> ds = (List<Declaration>)(result.semanticValue());
+			Declaration id = new IncludeDeclaration(ds, incfile);
+			yyResult = new SemanticValue(id, yyBase);
 		} else {
 			parser.abort(result.parseError());
 		}
