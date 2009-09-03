@@ -37,8 +37,23 @@ public class DefMemberClause extends DefMember {
 		this.resultType = resultType;
 	}
 	public String toString() {
-		String prefix = name.equals("") ? "lambda" : "def " + name + " ";
-		return prefix + "(" + Expression.join(formals, ", ") + ") = " + body;
+		return sigToString() + " = " + body;
+	}
+	
+	public String sigToString() {
+		StringBuilder s = new StringBuilder();
+		
+		s.append(name.equals("") ? "lambda" : "def ");
+		s.append(name);
+		s.append(" ");
+
+		for (List<Pattern> ps : formals) {
+			s.append('(');	
+				s.append(Expression.join(ps, ","));
+			s.append(')');
+		}
+		
+		return s.toString();
 	}
 
 	/* (non-Javadoc)

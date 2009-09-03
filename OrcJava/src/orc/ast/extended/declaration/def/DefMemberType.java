@@ -33,7 +33,7 @@ public class DefMemberType extends DefMember {
 			this.typeParams = typeParams;
 		}
 
-		public String toString() {
+		public String sigToString() {
 			StringBuilder s = new StringBuilder();
 			
 			s.append("def ");
@@ -54,6 +54,10 @@ public class DefMemberType extends DefMember {
 			s.append(resultType);
 
 			return s.toString();
+		}
+		
+		public String toString() {
+			return sigToString();
 		}
 
 		/* (non-Javadoc)
