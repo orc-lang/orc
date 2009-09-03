@@ -10,6 +10,7 @@ package orc.ast.extended;
 import orc.ast.extended.declaration.ClassDeclaration;
 import orc.ast.extended.declaration.Declaration;
 import orc.ast.extended.declaration.DefsDeclaration;
+import orc.ast.extended.declaration.IncludeDeclaration;
 import orc.ast.extended.declaration.SiteDeclaration;
 import orc.ast.extended.declaration.ValDeclaration;
 import orc.ast.extended.declaration.def.DefMemberClause;
@@ -88,6 +89,7 @@ public interface Visitor<E> {
 	public E visit(Pruning expr);
 	//TODO: public E visit(Type expr); 
 	public E visit(CatchHandler handler);
+	public E visit(IncludeDeclaration decl);
 	public E visit(ClassDeclaration decl);
 	public E visit(DefsDeclaration decl);
 	public E visit(SiteDeclaration decl);
