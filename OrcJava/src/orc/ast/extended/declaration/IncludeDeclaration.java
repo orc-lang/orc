@@ -56,7 +56,7 @@ public class IncludeDeclaration extends Declaration {
 	 */
 	public <E> E accept(Visitor<E> visitor) {
 		// TODO Auto-generated method stub
-		return null;
+		return visitor.visit(this);
 	}
 
 }
