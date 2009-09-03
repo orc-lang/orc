@@ -43,6 +43,23 @@ To install the Orc Eclipse plugin within Eclipse 3.5, follow these steps:
 <li> <i>(recommended)</i> In <b>Eclipse Preferences</b>, expand the <b>Install/Update</b> category, and
 select <b>Automatic Updates</b>. Select the checkbox labeled <b>"Automatically find new updates and notify me"</b>.</li>
 </ol>
+<br/>
+To install the Orc Eclipse plugin within Eclipse 3.3, follow these steps:
+<ol>
+<li> Select <b>Help</b>, go over <b>Software Updates</b> and then click on <b>Find and Intsall...</b>.</li>
+<li> Select <b>Search for new features to install</b> and then click <b>Next</b>.</li>
+<li> From the right hand side select <b>New Remote Site...</b> and fill in the following in the <b>New Update Site</b> dialog box, and press <b>OK</b>:
+  <ul>
+    <li><b>Name:</b> <tt>Orc programming language</tt></li>
+    <li><b>Location:</b> <tt>http://orc.csres.utexas.edu/eclipse_updates/</tt></li>
+  </ul>
+</li>
+<li> Press Finish.</li>
+<li> A window for titled <b>Updates</b> would appear. Select <b>Orc programming language</b> and click on <b>Next</b>.</li>
+<li> Go through license page and click <b>Finish</b> at the end. </li>
+<li> Confirm the installation by Clicking on <b>Install</b>.</li>
+</ol>
+
 
 <a name="cmdline"></a>
 <h3>Command Line Users</h3>
