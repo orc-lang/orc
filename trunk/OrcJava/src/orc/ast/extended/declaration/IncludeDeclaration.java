@@ -30,9 +30,9 @@ import orc.error.compiletime.CompilationException;
 public class IncludeDeclaration extends Declaration {
 
 	public List<Declaration> decls;
-	public File sourceFile;
+	public String sourceFile;
 	
-	public IncludeDeclaration(List<Declaration> decls, File sourceFile) {
+	public IncludeDeclaration(List<Declaration> decls, String sourceFile) {
 		this.decls = decls;
 		this.sourceFile = sourceFile;
 	}
