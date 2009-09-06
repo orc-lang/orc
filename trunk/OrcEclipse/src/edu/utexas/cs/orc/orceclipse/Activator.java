@@ -23,7 +23,9 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.imp.runtime.PluginBase;
+import org.eclipse.ui.statushandlers.StatusManager;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -115,10 +117,24 @@ public class Activator extends PluginBase {
 	 */
 	public static void log(final Throwable e) {
 		if (e instanceof CoreException) {
-			getInstance().logException(e.getMessage(), e.getCause());
+			getInstance().logException(e.getMessage(), e);
 		} else {
 			getInstance().logException("Internal Error", e);
 		}
+	}
+
+	/**
+	 * Logs an internal error with the specified throwable
+	 * 
+	 * @param e the exception to be logged
+	 */
+	public static void logAndShow(final Throwable e) {
+		log(e);
+		String msg = "Internal Error";
+		if (e instanceof CoreException) {
+			msg = e.getLocalizedMessage();
+		}
+		StatusManager.getManager().handle(new Status(IStatus.ERROR, Activator.getInstance().getID(), msg, e), StatusManager.SHOW);
 	}
 
 	/*
