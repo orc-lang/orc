@@ -107,6 +107,56 @@ public class Config implements Cloneable {
 			System.exit(1);
 		}
 	}
+	
+	public String composeCmdLine() {
+		StringBuffer cmdLine = new StringBuffer();
+		//TODO: If possible, re-write to use arg4j annotations
+		if (getTypeChecking()) {
+			cmdLine.append("-typecheck ");
+		}
+		if (getNoPrelude()) {
+			cmdLine.append("-noprelude ");
+		}
+		if (!".".equals(getIncludePath())) {
+			cmdLine.append("-I \"");
+			cmdLine.append(getIncludePath());
+			cmdLine.append("\" ");
+		}
+		if (!"".equals(getClassPath())) {
+			cmdLine.append("-cp \"");
+			cmdLine.append(getClassPath());
+			cmdLine.append("\" ");
+		}
+		if (hasOilOutputFile()) {
+			cmdLine.append("-oilOut \"");
+			cmdLine.append(getOilOutputFile().getPath());
+			cmdLine.append("\" ");
+		}
+		if (getMaxPubs() != 0) {
+			cmdLine.append("-pub ");
+			cmdLine.append(getMaxPubs());
+			cmdLine.append(" ");
+		}
+		if (getNumSiteThreads() != 2) {
+			cmdLine.append("-numSiteThreads ");
+			cmdLine.append(getNumSiteThreads());
+			cmdLine.append(" ");
+		}
+		if (hasTraceOutputFile()) {
+			cmdLine.append("-trace \"");
+			cmdLine.append(getTraceOutputFile());
+			cmdLine.append("\" ");
+		}
+		for (int i = 0; i < getDebugLevel(); i++) {
+			cmdLine.append("-debug ");
+		}
+		if (this.hasInputFile()) {
+			cmdLine.append("-- \"");
+			cmdLine.append(getInputFilename());
+			cmdLine.append("\"");
+		}
+		return cmdLine.toString();
+	}
 
 	@Option(name = "-help", usage = "Show command-line argument usage")
 	public void printUsage(final boolean _) throws CmdLineException {
@@ -122,6 +172,10 @@ public class Config implements Cloneable {
 		}
 	}
 
+	public void setDebugLevel(final int debugLevel) {
+		this.debugLevel = debugLevel;
+	}
+	
 	@Option(name = "-typecheck", usage = "Enable typechecking, which is disabled by default.")
 	public void setTypeChecking(final boolean typecheck) {
 		this.typecheck = typecheck;
@@ -261,6 +315,10 @@ public class Config implements Cloneable {
 
 	public File getTraceOutputFile() {
 		return traceOutputFile;
+	}
+
+	public boolean hasTraceOutputFile() {
+		return !traceOutputFile.getPath().equals("");
 	}
 
 	public File getOilOutputFile() {

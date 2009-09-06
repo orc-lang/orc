@@ -16,6 +16,8 @@
 package edu.utexas.cs.orc.orceclipse.launch;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
@@ -26,8 +28,10 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.statushandlers.StatusManager;
 
 import edu.utexas.cs.orc.orceclipse.Activator;
+import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
 import edu.utexas.cs.orc.orceclipse.OrcResources;
 
 /**
@@ -90,24 +94,25 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 		final Composite comp = new Composite(parent, SWT.NONE);
 		setControl(comp);
 		comp.setLayout(new GridLayout());
+		SelectionAdapter ourSelectionAdapter = new SelectionAdapter() {
+			@Override
+			public void widgetSelected(final SelectionEvent e) {
+				widgetSelectedAction(e);
+			}
+		};
 
 		typeCheckCheckButton = createCheckButton(comp, "Type check");
-		typeCheckCheckButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(final SelectionEvent e) {
-				widgetSelectedAction(e);
-			}
-		});
+		typeCheckCheckButton.addSelectionListener(ourSelectionAdapter);
 
 		noPreludeCheckButton = createCheckButton(comp, "Do not include standard prelude");
-		noPreludeCheckButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(final SelectionEvent e) {
-				widgetSelectedAction(e);
-			}
-		});
+		noPreludeCheckButton.addSelectionListener(ourSelectionAdapter);
 
 		// TODO: Finish adding controls for the remaining attributes
+		// - OIL output file
+		// - Maximum allowed number of publications
+		// - Number of site call threads
+		// - Trace output file name
+		// - Debug level 0 to 4
 	}
 
 	protected void widgetSelectedAction(final SelectionEvent e) {
@@ -119,11 +124,16 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 	 */
 	public void initializeFrom(final ILaunchConfiguration configuration) {
 		try {
-			typeCheckCheckButton.setSelection(configuration.getAttribute(OrcLaunchDelegate.TYPE_CHECK_ATTR_NAME, OrcLaunchDelegate.TYPE_CHECK_DEFAULT));
-			noPreludeCheckButton.setSelection(configuration.getAttribute(OrcLaunchDelegate.NO_PRELUDE_ATTR_NAME, OrcLaunchDelegate.NO_PRELUDE_DEFAULT));
+			typeCheckCheckButton.setSelection(configuration.getAttribute(OrcConfigSettings.TYPE_CHECK_ATTR_NAME, OrcConfigSettings.TYPE_CHECK_DEFAULT));
+			noPreludeCheckButton.setSelection(configuration.getAttribute(OrcConfigSettings.NO_PRELUDE_ATTR_NAME, OrcConfigSettings.NO_PRELUDE_DEFAULT));
 			// TODO: Finish initializing controls for the remaining attributes
+			//.setSelection(configuration.getAttribute(OrcConfigSettings.OIL_OUT_ATTR_NAME, OrcConfigSettings.OIL_OUT_DEFAULT));
+			//.setSelection(configuration.getAttribute(OrcConfigSettings.MAX_PUBS_ATTR_NAME, OrcConfigSettings.MAX_PUBS_DEFAULT));
+			//.setSelection(configuration.getAttribute(OrcConfigSettings.NUM_SITE_THREADS_ATTR_NAME, OrcConfigSettings.NUM_SITE_THREADS_DEFAULT));
+			//.setSelection(configuration.getAttribute(OrcConfigSettings.TRACE_OUT_ATTR_NAME, OrcConfigSettings.TRACE_OUT_DEFAULT));
+			//.setSelection(configuration.getAttribute(OrcConfigSettings.DEBUG_LEVEL_ATTR_NAME, OrcConfigSettings.DEBUG_LEVEL_DEFAULT));
 		} catch (final CoreException e) {
-			Activator.log(e);
+			Activator.logAndShow(e);
 		}
 	}
 
@@ -140,9 +150,14 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#performApply(org.eclipse.debug.core.ILaunchConfigurationWorkingCopy)
 	 */
 	public void performApply(final ILaunchConfigurationWorkingCopy configuration) {
-		configuration.setAttribute(OrcLaunchDelegate.TYPE_CHECK_ATTR_NAME, typeCheckCheckButton.getSelection());
-		configuration.setAttribute(OrcLaunchDelegate.NO_PRELUDE_ATTR_NAME, noPreludeCheckButton.getSelection());
+		configuration.setAttribute(OrcConfigSettings.TYPE_CHECK_ATTR_NAME, typeCheckCheckButton.getSelection());
+		configuration.setAttribute(OrcConfigSettings.NO_PRELUDE_ATTR_NAME, noPreludeCheckButton.getSelection());
 		// TODO: Finish setting the remaining attributes
+		//configuration.setAttribute(OrcConfigSettings.OIL_OUT_ATTR_NAME, .getSelection());
+		//configuration.setAttribute(OrcConfigSettings.MAX_PUBS_ATTR_NAME, .getSelection());
+		//configuration.setAttribute(OrcConfigSettings.NUM_SITE_THREADS_ATTR_NAME, .getSelection());
+		//configuration.setAttribute(OrcConfigSettings.TRACE_OUT_ATTR_NAME, .getSelection());
+		//configuration.setAttribute(OrcConfigSettings.DEBUG_LEVEL_ATTR_NAME, .getSelection());
 	}
 
 	/* (non-Javadoc)
