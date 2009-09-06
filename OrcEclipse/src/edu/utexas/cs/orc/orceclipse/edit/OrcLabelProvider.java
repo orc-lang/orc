@@ -173,7 +173,7 @@ public class OrcLabelProvider implements ILabelProvider {
 	public static String getLabelFor(final ASTNode n) {
 		if (n instanceof IncludeDeclaration) {
 			final IncludeDeclaration idecl = (IncludeDeclaration) n;
-			return idecl.sourceFile.getName();
+			return idecl.sourceFile;
 		}
 		if (n instanceof DefMemberClause) {
 			final DefMemberClause dmc = (DefMemberClause) n;
