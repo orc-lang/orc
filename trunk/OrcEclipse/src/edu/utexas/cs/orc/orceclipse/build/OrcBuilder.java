@@ -18,7 +18,6 @@ package edu.utexas.cs.orc.orceclipse.build;
 import java.io.File;
 import java.io.IOException;
 
-import orc.Config;
 import orc.OrcCompiler;
 
 import org.eclipse.core.resources.IFile;
@@ -34,6 +33,7 @@ import org.eclipse.imp.runtime.PluginBase;
 import edu.utexas.cs.orc.orceclipse.Activator;
 import edu.utexas.cs.orc.orceclipse.ImpToOrcMessageAdapter;
 import edu.utexas.cs.orc.orceclipse.ImpToOrcProgressAdapter;
+import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
 
 /**
  * Incremental builder for Orc source code.
@@ -208,8 +208,7 @@ public class OrcBuilder extends BuilderBase {
 		getConsoleStream().println("Building Orc file: " + file.getName());
 
 		try {
-			final Config config = new Config();
-			// TODO: Set options per project settings
+			final OrcConfigSettings config = new OrcConfigSettings(getProject(), null);
 
 			final File inputFile = new File(file.getLocation().toOSString());
 			config.setInputFile(inputFile);

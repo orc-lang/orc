@@ -102,7 +102,7 @@ public class OrcResources {
 	 */
 	protected static void initializeImageRegistry(final Bundle bundle, final ImageRegistry reg) {
 
-		addImageDescriptor(bundle, OrcResources.ORC_PLUGIN_ICON, "gif", reg);
+		reg.put(OrcResources.ORC_PLUGIN_ICON, createImageDescriptor(bundle, new Path(ORC_PLUGIN_ICON + ".gif")));
 
 		addImageDescriptor(bundle, OrcResources.ORC_FILE_OBJ, "gif", reg);
 

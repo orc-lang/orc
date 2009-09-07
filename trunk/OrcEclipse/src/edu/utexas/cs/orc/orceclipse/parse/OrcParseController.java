@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import orc.Config;
 import orc.ast.extended.ASTNode;
 import orc.ast.extended.declaration.Declaration;
 import orc.ast.extended.expression.Declare;
@@ -29,6 +28,7 @@ import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.CompileMessageRecorder.Severity;
 import orc.parser.OrcParser;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.imp.model.ISourceProject;
@@ -45,6 +45,7 @@ import org.eclipse.jface.text.IRegion;
 
 import edu.utexas.cs.orc.orceclipse.Activator;
 import edu.utexas.cs.orc.orceclipse.ImpToOrcMessageAdapter;
+import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
 
 /**
  * A parsing environment (file, project, etc.) that IMP constructs when it will request Orc parsing.
@@ -199,8 +200,19 @@ public class OrcParseController extends ParseControllerBase {
 
 		currentParseString = contents;
 
-		final Config config = new Config();
-		// TODO: Set options per project settings
+		OrcConfigSettings config;
+		try {
+			config = new OrcConfigSettings(getProject().getRawProject(), null);
+		} catch (final IOException e) {
+			// Shouldn't happen with project settings only
+			Activator.logAndShow(e);
+			return currentAst;
+		} catch (final CoreException e) {
+			// Shouldn't happen with project settings only
+			Activator.logAndShow(e);
+			return currentAst;
+		}
+
 		final IPath absolutePath = getProject().getRawProject().getLocation().append(getPath());
 
 		config.setMessageRecorder(new ImpToOrcMessageAdapter(handler));
@@ -230,6 +242,8 @@ public class OrcParseController extends ParseControllerBase {
 			config.getMessageRecorder().recordMessage(Severity.FATAL, 0, e.getMessageOnly(), e.getSourceLocation(), null, e);
 		} catch (final IOException e) {
 			config.getMessageRecorder().recordMessage(Severity.FATAL, 0, e.getLocalizedMessage(), null, null, e);
+		} finally {
+			config.getMessageRecorder().endProcessing(absolutePath.toFile());
 		}
 
 		// Walk AST and tie id refs to id defs
