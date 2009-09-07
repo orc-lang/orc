@@ -12,7 +12,7 @@
 <feature
       id="edu.utexas.cs.orc.orceclipse"
       label="Orc Eclipse plug-in"
-      version="0.3.3.qualifier"
+      version="0.4.0.qualifier"
       provider-name="The University of Texas at Austin"
       plugin="edu.utexas.cs.orc.orceclipse">
 
@@ -77,8 +77,6 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
          search-location="both"/>
 
    <requires>
-      <import plugin="org.eclipse.ui"/>
-      <import plugin="org.eclipse.core.runtime"/>
       <import plugin="org.eclipse.core.resources"/>
       <import plugin="org.eclipse.jdt.core"/>
       <import plugin="org.eclipse.jface.text"/>
@@ -94,13 +92,16 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
       <import plugin="org.eclipse.ui.console"/>
       <import plugin="org.eclipse.ui.editors"/>
       <import plugin="org.eclipse.ui.ide"/>
+      <import plugin="org.eclipse.ui" version="3.3.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.core.runtime" version="3.3.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.ui.intro"/>
    </requires>
 
    <plugin
          id="edu.utexas.cs.orc.orceclipse"
          download-size="187"
          install-size="187"
-         version="0.3.3.qualifier"
+         version="0.4.0.qualifier"
          unpack="false"/>
 
 </feature>
