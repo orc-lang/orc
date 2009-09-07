@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.0"?>
+<!-- plugin.xml - Eclipse plug-in manifest
+     Project OrcEclipse
+
+     $Id$
+
+     Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
 <plugin>
 
    <extension
@@ -139,6 +150,25 @@
       <persistent
             value="true">
       </persistent>
+   </extension>
+   <extension
+         point="org.eclipse.ui.propertyPages">
+      <page
+            class="edu.utexas.cs.orc.orceclipse.project.OrcProjectPropertyPage"
+            id="edu.utexas.cs.orc.orceclipse.project.propertyPage"
+            name="Orc Project Settings">
+         <enabledWhen>
+            <and>
+               <adapt
+                     type="org.eclipse.core.resources.IProject">
+                  <test
+                        property="org.eclipse.core.resources.projectNature"
+                        value="edu.utexas.cs.orc.orceclipse.project.orcNature">
+                  </test>
+               </adapt>
+            </and>
+         </enabledWhen>
+      </page>
    </extension>
    <extension
          point="org.eclipse.imp.runtime.tokenColorer">
