@@ -37,9 +37,10 @@ import org.eclipse.imp.services.base.TreeModelBuilderBase;
  * Builds an Outline view tree that is a subset of the Orc extended AST
  */
 public class OrcTreeModelBuilder extends TreeModelBuilderBase {
-	private static final int TYPE_DECL_CATEGORY = 1;
-	private static final int CALLABLE_DECL_CATEGORY = 2;
-	private static final int SIMPLE_VAL_DECL_CATEGORY = 3;
+	private static final int INCLUDE_CATEGORY = 1;
+	private static final int TYPE_DECL_CATEGORY = 2;
+	private static final int CALLABLE_DECL_CATEGORY = 3;
+	private static final int SIMPLE_VAL_DECL_CATEGORY = 4;
 	
 	/* (non-Javadoc)
 	 * @see org.eclipse.imp.services.base.TreeModelBuilderBase#visitTree(java.lang.Object)
@@ -150,7 +151,7 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 		 */
 		@Override
 		public boolean enter(final IncludeDeclaration decl) {
-			createSubItem(decl); //TODO: new cat?
+			createSubItem(decl, INCLUDE_CATEGORY);
 			return false;
 		}
 
