@@ -62,7 +62,9 @@ import org.kohsuke.args4j.CmdLineException;
  */
 public class ExamplesTest {
 	public static Test suite() {
-		return buildSuite(new Config());
+		Config config = new Config();
+		config.setIsolatedOn(true);
+		return buildSuite(config);
 	}
 
 	public static TestSuite buildSuite(final Config config) {

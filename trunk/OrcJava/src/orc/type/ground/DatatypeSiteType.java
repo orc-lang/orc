@@ -3,6 +3,7 @@ package orc.type.ground;
 import java.util.LinkedList;
 import java.util.List;
 
+import orc.runtime.sites.core.Let;
 import orc.type.Type;
 import orc.type.TypeApplication;
 import orc.type.TypeVariable;
@@ -46,7 +47,7 @@ public class DatatypeSiteType extends Type {
 		List<Type> cTypes = new LinkedList<Type>();
 		for (List<Type> cArgs : dt.getConstructors()) {
 			Type construct = new ArrowType(cArgs, cResult, cArity);
-			Type destruct = new ArrowType(cResult, new TupleType(cArgs), cArity);
+			Type destruct = new ArrowType(cResult, LetType.condense(cArgs), cArity);
 			
 			DotType both = new DotType(construct);
 			both.addField("?", destruct);
