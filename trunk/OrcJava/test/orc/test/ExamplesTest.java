@@ -110,7 +110,12 @@ public class ExamplesTest {
 		config.setQuietChecking(true);
 
 		final OrcEngine engine = new OrcEngine(config);
-		engine.start(orc.ast.oil.Compiler.compile(Orc.compile(config.getReader(), config)));
+		orc.ast.oil.expression.Expression expr = Orc.compile(config.getReader(), config);
+		if (expr == null) {
+			throw new CompilationException("Compilation to OIL failed");
+		}
+		orc.runtime.nodes.Node node = orc.ast.oil.Compiler.compile(expr);
+		engine.start(node);
 
 		// run the engine with a fixed timeout
 		final FutureTask<?> future = new FutureTask<Void>(engine, null);

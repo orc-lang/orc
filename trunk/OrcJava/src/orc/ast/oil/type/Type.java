@@ -39,7 +39,6 @@ import orc.type.TypingContext;
 public abstract class Type {
 
 	/* Create singleton representatives for some common types */
-	public static final Type BLANK = null;
 	public static final Type TOP = new Top();
 	public static final Type BOT = new Bot();
 	
