@@ -111,17 +111,17 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 		}
 		try {
 			monitor.subTask("Verifying launch attributes...");
-			
-			IResource orcProgToLaunch = SelectedResourceManager.getDefault().getSelectedResource();
+
+			final IResource orcProgToLaunch = SelectedResourceManager.getDefault().getSelectedResource();
 			OrcConfigSettings orcConfig;
 			try {
 				orcConfig = new OrcConfigSettings(orcProgToLaunch.getProject(), configuration);
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				throw new ResourceException(IResourceStatus.OPERATION_FAILED, null, e.getLocalizedMessage(), e);
 			}
 			try {
 				orcConfig.setInputFile(orcProgToLaunch.getRawLocation().toFile());
-			} catch (CmdLineException e) {
+			} catch (final CmdLineException e) {
 				throw new ResourceException(IResourceStatus.NOT_FOUND_LOCAL, orcProgToLaunch.getRawLocation(), e.getLocalizedMessage(), e);
 			}
 

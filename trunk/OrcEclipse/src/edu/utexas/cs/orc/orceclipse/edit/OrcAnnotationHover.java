@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.imp.editor.AnnotationHoverBase;
-import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.imp.services.IAnnotationHover;
+import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.ISourceViewer;
 
 /**
@@ -38,22 +38,22 @@ public class OrcAnnotationHover extends AnnotationHoverBase implements IAnnotati
 	 * @see org.eclipse.imp.editor.AnnotationHoverBase#getHoverInfo(org.eclipse.jface.text.source.ISourceViewer, int)
 	 */
 	@Override
-	public String getHoverInfo(ISourceViewer sourceViewer, int lineNumber) {
-        List<Annotation> srcAnnotations= getSourceAnnotationsForLine(sourceViewer, lineNumber);
-        
-        Set<String> annotationMessages = new HashSet<String>();
-        for (Iterator<Annotation> annoIter = srcAnnotations.iterator(); annoIter.hasNext(); ) {
-        	Annotation annotation = annoIter.next();
-        	if (annotation.getType().startsWith("org.eclipse.ui.workbench.texteditor.quickdiff")) {
-        		annoIter.remove();
-        	} else if (annotationMessages.contains(annotation.getText())) {
-        		annoIter.remove();
-        	} else {
-        		annotationMessages.add(annotation.getText());
-        	}
-        }
+	public String getHoverInfo(final ISourceViewer sourceViewer, final int lineNumber) {
+		final List<Annotation> srcAnnotations = getSourceAnnotationsForLine(sourceViewer, lineNumber);
 
-        return formatAnnotationList(srcAnnotations);
+		final Set<String> annotationMessages = new HashSet<String>();
+		for (final Iterator<Annotation> annoIter = srcAnnotations.iterator(); annoIter.hasNext();) {
+			final Annotation annotation = annoIter.next();
+			if (annotation.getType().startsWith("org.eclipse.ui.workbench.texteditor.quickdiff")) {
+				annoIter.remove();
+			} else if (annotationMessages.contains(annotation.getText())) {
+				annoIter.remove();
+			} else {
+				annotationMessages.add(annotation.getText());
+			}
+		}
+
+		return formatAnnotationList(srcAnnotations);
 	}
 
 }
