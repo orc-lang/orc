@@ -58,7 +58,7 @@ public class OrcNature extends ProjectNatureBase {
 	 */
 	@Override
 	protected void refreshPrefs() {
-		// TODO: implement preferences and hook in here
+		// Nothing needed here presently
 	}
 
 	/* (non-Javadoc)

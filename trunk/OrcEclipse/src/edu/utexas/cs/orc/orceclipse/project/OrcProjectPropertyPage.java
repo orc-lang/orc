@@ -42,7 +42,6 @@ public class OrcProjectPropertyPage extends FieldEditorPreferencePage implements
 	 */
 	public OrcProjectPropertyPage() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	/*
