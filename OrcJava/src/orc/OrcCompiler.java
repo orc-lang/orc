@@ -102,6 +102,7 @@ public class OrcCompiler implements Callable<Expression> {
 		} finally {
 			config.getMessageRecorder().endProcessing(new File(config.getInputFilename()));
 		}
+		
 		return oilAst;
 	}
 

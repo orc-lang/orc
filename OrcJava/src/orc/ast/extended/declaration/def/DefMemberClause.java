@@ -101,8 +101,6 @@ public class DefMemberClause extends DefMember {
 		
 		if (resultType != null) { adef.setResultType(resultType); }
 		
-		Type blankedResultType = (resultType != null ? resultType : Type.BLANK);
-		
 		adef.addClause(new Clause(newformals, newbody));
 		
 		adef.addLocation(getSourceLocation());

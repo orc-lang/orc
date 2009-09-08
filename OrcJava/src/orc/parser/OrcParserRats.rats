@@ -833,7 +833,6 @@ Type Type =
 			yyValue = Type.TOP;
 		}
 	}
-	/ UNDERSCORE { yyValue = Type.BLANK; }
 	/ TOP { yyValue = Type.TOP; }
 	/ BOT { yyValue = Type.BOT; }
 	/ LAMBDA typeFormals:TypeFormals argTypes:TypeListGroup DOUBLE_COLON resultType:Type {

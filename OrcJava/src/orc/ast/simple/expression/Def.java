@@ -66,7 +66,8 @@ public class Def {
 	}
 	
 	public Def subst(Type T, FreeTypeVariable X) {
-		return new Def(name, formals, body.subst(T, X), typeParams, Type.substAll(argTypes, T, X), resultType.subst(T, X), location);
+		
+		return new Def(name, formals, body.subst(T, X), typeParams, Type.substAll(argTypes, T, X), Type.substMaybe(resultType, T, X), location);
 	}
 	
 	public static List<Def> substAll(List<Def> defs, Argument a, FreeVariable x) {

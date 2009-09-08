@@ -63,8 +63,7 @@ public class LambdaType extends Type {
 			
 		orc.ast.simple.type.Type newResultType;		 
 		if (newLambda.resultType == null) {
-			// If the result type is absent, fill in a blank type
-			newResultType = orc.ast.simple.type.Type.BLANK;
+			newResultType = null;
 		}
 		else {
 			newResultType = newLambda.resultType.simplify().subMap(bindings);

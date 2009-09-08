@@ -9,7 +9,7 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 /**
  * @author quark, dkitchin
  */
-@XmlSeeAlso(value={Blank.class, ArrowType.class, ClassnameType.class,
+@XmlSeeAlso(value={ArrowType.class, ClassnameType.class,
 		Datatype.class, PolymorphicTypeAlias.class, SiteType.class,
 		Top.class, TupleType.class, TypeApplication.class,
 		TypeVariable.class})

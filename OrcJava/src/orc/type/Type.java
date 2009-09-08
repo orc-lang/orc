@@ -68,17 +68,6 @@ public abstract class Type {
 	public static final Type INTEGER = new IntegerType();
 	public static final Type LET = new LetType();
 	
-	/**
-	 * Placeholder for an unspecified type.
-	 * FIXME: do we need to override new methods
-	 */
-	public static final Type BLANK = new Type() {
-		public orc.ast.xml.type.Type marshal() throws UnrepresentableTypeException {
-			return new orc.ast.xml.type.Blank();
-		}
-	};
-
-	
 	/* Check if a type is Top */
 	public boolean isTop() {
 		return false;
