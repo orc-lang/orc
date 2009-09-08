@@ -2613,240 +2613,6 @@ declarations occur twice.
 
 </section>
 
-<!-- 
-<section><title>Exceptions in Orc</title>
-
-<para>
-We have added an experimental implementation of <emphasis>exceptions</emphasis> to the Orc language,
-which allows exceptions to be raised, caught, and handled (to be added in release 0.9.9).
-We introduce three new keywords to the Orc syntax: 
-<code>throw</code>, <code>try</code>, and <code>catch</code>, which are defined as follows:
-
-<para>
-<code>throw</code> E: for each publication x by expression E, raise an exception with value x.
-</para>
-
-<para>
-<code>try </code> E: Defines E to be a block, possibly containing throw expressions.
-</para>
-
-<para>
-<code>catch (</code> P <code>) </code>E: Given pattern P and expression E, any exception
-with value x that matches pattern P causes execution of E under the binding of P to x.
-For each corresponding try expression, one or more catch statements are defined.  Catch
-statements are executed in order, and the first to match is the statement executed.
-</para>
-
-<para>
-Examples of throw expressions:
-
-<para>
-<programlisting><![CDATA[
-throw 3
-throw "error"
-throw (3 | 4)    {- throws two exceptions -}
-throw stop       {- throws no exceptions -}
-]]></programlisting>
-</para>
-
-</para>
-
-Below we combine both exception raising and handling:
-
-<para>
-<programlisting><![CDATA[
-{- simple exception expressions -}
-try(0 | throw 1 | throw 2) 
-catch (1) "one"
-catch (x) x               
-catch (2) "two"           
-
-{- Output: 0, "one", 2 -}
-]]></programlisting>
-</para>
-
-The value <code>0</code> is published by the expression directly, while <code>"one"</code> is
-published by <code>catch (1) "one"</code>, and <code>2</code> is published by <code>catch(x) x</code>.
-The handler <code>catch (2) "two"</code> is not executed.
-
-</para>
-
-<para>
-Exception handlers can also be nested; if the immediately enclosing
-try/catch block has no handler that matches the thrown exception, the
-Orc interpreter attempts to match against the next enclosing handler.  If
-no handler matches the exception (or no enclosing handler exists) the exception
-is dropped (for example, it is treated as a <code>stop</code>) 
-and an error is reported to the interpreter.
-</para>
-
-<para>
-<programlisting><![CDATA[
-{- a contrived nested handler example -}
-try(
-  try(throw 3)
-  catch (1) "one"
-)
-catch (x) x
-]]></programlisting>
-</para>
-
-<para>
-When combining exceptions with the combinators, i.e., the pruning or
-otherwise combinators, exceptions are silent, that is, they do not publish any value.
-For example, in the following expression, both <code>0</code> and
-<code>1</code> are published; <code>throw 0</code> is silent, not publishing
-any value, causing the otherwise combinator to also execute its alternate expression:
-</para>
-
-<para>
-<programlisting><![CDATA[
-{- the throw expression is treated as a silent by the combinators -}
-try (throw 0; 1) catch(x) x
-
-{- output: 
-0
-1
--}
-]]></programlisting>
-</para>
-
-<para>
-Similarly, exceptions thrown within a pruning combinator do not terminate 
-the expression (since the throw is treated as a silent), and throwing a silent expression
-(i.e., <code>throw stop</code>) results in no exception being thrown; the entire
-expression functions as a stop.  Unlike other languages, an uncaught exception
-only kills the process that threw it, and the other processes in the system
-will continue running.  In the example below, the entire expression publishes no value
-(because the expression inside the pruning combinator does not publish).  Instead,
-the exception thrown is uncaught and results in a runtime error:
-</para>
-
-<para>
-<programlisting><![CDATA[
-x <x< throw 2
-
-{- output:
-Error: uncaught exception:
-Backtrace:
-OrcJava/examples/uncaught.orc:1:8-15:  x <x< throw 2
--}
-]]></programlisting>
-</para>
-
-
-<section><title>Catching Java exceptions</title>
-
-<para>
-Orc also allows Java exceptions thrown by sites 
-to be matched against by Orc exception
-handlers.  This is especially useful when calling Java code directly,
-which might throw exceptions in cases of failure, seen here in this 
-short example.  Attemping to create a <code>FileInputSteam</code> with
-a nonexistent file path returns an error by throwing a <code>FileNotFoundException</code>.
-By pattern matching for a <code>FileNotFoundException</code>, the
-error can be detected and handled by the Orc program.
-
-</para>
-
-<para>
-<programlisting><![CDATA[
-{- catching exceptions thrown by Java sites via pattern matching -}
-class FileInputStream = java.io.FileInputStream
-class FileNotFoundException = java.io.FileNotFoundException
-
-...
-
-try(
-FileInputStream("non/existent/file/path")
-) catch (FileNotFoundException(e)) e
-
-...
-]]></programlisting>
-</para>
-</section>
-
-<section><title>Catching Orc Engine Errors</title>
-<para>
-This functionality also allows certain Orc runtime errors to be caught.
-Here are a few examples of runtime errors which might occur, and a full
-list can be found in the 
-<link
-xlink:href="http://orc.csres.utexas.edu/javadoc/STABLE/orc/error/runtime/TokenException.html">Javadoc</link>.
-</para>
-
-<para>
-<itemizedlist>
-
-<listitem>
-<code>ArgumentTypeMismatchException</code>
-</listitem>
-
-<listitem>
-<code>ArityMismatchException</code>
-</listitem> 
-
-<listitem>
-<code>MessageNotUnderstoodException</code>
-</listitem>
-
-</itemizedlist>
-</para>
-
-<para>
-<programlisting><![CDATA[
-{- Detecting runtime errors using exceptions -}
-class ArgumentTypeMismatchException = orc.error.runtime.ArgumentTypeMismatchException
-
-try(
-  if 3 then "foo"
-) catch (ArgumentTypeMismatchException(e)) "error"
-]]></programlisting>
-</para>
-
-</section>
-
-<section><title>Exceptions in Practice</title>
-Exceptions add two important capabilities to the Orc language.  First, they allow 
-Java exceptions thrown by Java based sites, as well the Orc engine itself, to be
-caught, allowing previously undetectable errors to be handled by the programmer.  Additionally,
-they simplify error handling significantly, by removing error handling code from the body of
-the program.  This is especially helpful when propagating error information across 
-function calls or various parts of the program.  In the examples below, let <code>request</code> be
-a function that will return a single value eventually:
-
-<para>
-<programlisting><![CDATA[
-{- error handling without exceptions: -}
-def makeRequest() = 
-  let(request() >x> (true, x) | Rtimer(1000) >> (false, "timeout"))
-
-def call() =
-  makeRequest() >(success, result)> if success then result else "failed"
-]]></programlisting>
-</para>
-
-Compare this to using exceptions, where error handling is made explicit and
-the program as a whole is simplified.  (Note the improvement would be more marked if
-a deeper layer of function nesting was used.)
-
-<para>
-<programlisting><![CDATA[
-{- error handling with exceptions -}
-def makeRequest() = 
-  request() | Rtimer(1000) >> throw("timeout")
-
-def call() =
-  try( makeRequest() ) catch (_) "failed"
-]]></programlisting>
-</para>
-
-
-
-</section>
-
-</section>
- -->
 
 </section>
 
@@ -7219,6 +6985,250 @@ arbitrary element type <code>A</code>, it will return a value of the same type.
 </section>
 
 <xi:include href="stdlib.xml"/>
+
+</appendix>
+
+<appendix><title>Experimental Features</title>
+
+<section><title>Exceptions in Orc</title>
+
+<para>
+We have added an experimental implementation of <emphasis>exceptions</emphasis> to the Orc language,
+which allows exceptions to be raised, caught, and handled.  Exceptions
+are currently off by default, and can be enabled by adding the <code>-exceptions</code> flag
+on the command line.  It should also be noted that exception handling in Orc are currently experimental, and may be
+removed in a future release.
+</para>
+
+<para>
+Exceptions introduce three new keywords to the Orc syntax: 
+<code>throw</code>, <code>try</code>, and <code>catch</code>, which are defined as follows:
+
+<para>
+<code>throw</code> E: for each publication x by expression E, raise an exception with value x.
+</para>
+
+<para>
+<code>try </code> E: Defines E to be a block, possibly containing throw expressions.
+</para>
+
+<para>
+<code>catch (</code> P <code>) </code>E: Given pattern P and expression E, any exception
+with value x that matches pattern P causes execution of E under the binding of P to x.
+For each corresponding try expression, one or more catch statements are defined.  Catch
+statements are executed in order, and the first to match is the statement executed.
+</para>
+
+<para>
+Examples of throw expressions:
+
+<para>
+<programlisting><![CDATA[
+throw 3
+throw "error"
+throw (3 | 4)    {- throws two exceptions -}
+throw stop       {- throws no exceptions -}
+]]></programlisting>
+</para>
+
+</para>
+
+Below we combine both exception raising and handling:
+
+<para>
+<programlisting><![CDATA[
+{- simple exception expressions -}
+try(0 | throw 1 | throw 2) 
+catch (1) "one"
+catch (x) x               
+catch (2) "two"           
+
+{- Output: 0, "one", 2 -}
+]]></programlisting>
+</para>
+
+The value <code>0</code> is published by the expression directly, while <code>"one"</code> is
+published by <code>catch (1) "one"</code>, and <code>2</code> is published by <code>catch(x) x</code>.
+The handler <code>catch (2) "two"</code> is not executed.
+
+</para>
+
+<para>
+Exception handlers can also be nested; if the immediately enclosing
+try/catch block has no handler that matches the thrown exception, the
+Orc interpreter attempts to match against the next enclosing handler.  If
+no handler matches the exception (or no enclosing handler exists) the exception
+is dropped (for example, it is treated as a <code>stop</code>) 
+and an error is reported to the interpreter.
+</para>
+
+<para>
+<programlisting><![CDATA[
+{- a contrived nested handler example -}
+try(
+  try(throw 3)
+  catch (1) "one"
+)
+catch (x) x
+]]></programlisting>
+</para>
+
+<para>
+When combining exceptions with the combinators, i.e., the pruning or
+otherwise combinators, exceptions are silent, that is, they do not publish any value.
+For example, in the following expression, both <code>0</code> and
+<code>1</code> are published; <code>throw 0</code> is silent, not publishing
+any value, causing the otherwise combinator to also execute its alternate expression:
+</para>
+
+<para>
+<programlisting><![CDATA[
+{- the throw expression is treated as a silent by the combinators -}
+try (throw 0; 1) catch(x) x
+
+{- output: 
+0
+1
+-}
+]]></programlisting>
+</para>
+
+<para>
+Similarly, exceptions thrown within a pruning combinator do not terminate 
+the expression (since the throw is treated as a silent), and throwing a silent expression
+(i.e., <code>throw stop</code>) results in no exception being thrown; the entire
+expression functions as a stop.  Unlike other languages, an uncaught exception
+only kills the process that threw it, and the other processes in the system
+will continue running.  In the example below, the entire expression publishes no value
+(because the expression inside the pruning combinator does not publish).  Instead,
+the exception thrown is uncaught and results in a runtime error:
+</para>
+
+<para>
+<programlisting><![CDATA[
+x <x< throw 2
+
+{- output:
+Error: uncaught exception:
+Backtrace:
+OrcJava/examples/uncaught.orc:1:8-15:  x <x< throw 2
+-}
+]]></programlisting>
+</para>
+
+
+<section><title>Catching Java exceptions</title>
+
+<para>
+Orc also allows Java exceptions thrown by sites 
+to be matched against by Orc exception
+handlers.  This is especially useful when calling Java code directly,
+which might throw exceptions in cases of failure, seen here in this 
+short example.  Attemping to create a <code>FileInputSteam</code> with
+a nonexistent file path returns an error by throwing a <code>FileNotFoundException</code>.
+By pattern matching for a <code>FileNotFoundException</code>, the
+error can be detected and handled by the Orc program.
+
+</para>
+
+<para>
+<programlisting><![CDATA[
+{- catching exceptions thrown by Java sites via pattern matching -}
+class FileInputStream = java.io.FileInputStream
+class FileNotFoundException = java.io.FileNotFoundException
+
+...
+
+try(
+FileInputStream("non/existent/file/path")
+) catch (FileNotFoundException(e)) e
+
+...
+]]></programlisting>
+</para>
+</section>
+
+<section><title>Catching Orc Engine Errors</title>
+<para>
+This functionality also allows certain Orc runtime errors to be caught.
+Here are a few examples of runtime errors which might occur, and a full
+list can be found in the 
+<link
+xlink:href="http://orc.csres.utexas.edu/javadoc/STABLE/orc/error/runtime/TokenException.html">Javadoc</link>.
+</para>
+
+<para>
+<itemizedlist>
+
+<listitem>
+<code>ArgumentTypeMismatchException</code>
+</listitem>
+
+<listitem>
+<code>ArityMismatchException</code>
+</listitem> 
+
+<listitem>
+<code>MessageNotUnderstoodException</code>
+</listitem>
+
+</itemizedlist>
+</para>
+
+<para>
+<programlisting><![CDATA[
+{- Detecting runtime errors using exceptions -}
+class ArgumentTypeMismatchException = orc.error.runtime.ArgumentTypeMismatchException
+
+try(
+  if 3 then "foo"
+) catch (ArgumentTypeMismatchException(e)) "error"
+]]></programlisting>
+</para>
+
+</section>
+
+<section><title>Exceptions in Practice</title>
+Exceptions add two important capabilities to the Orc language.  First, they allow 
+Java exceptions thrown by Java based sites, as well the Orc engine itself, to be
+caught, allowing previously undetectable errors to be handled by the programmer.  Additionally,
+they simplify error handling significantly, by removing error handling code from the body of
+the program.  This is especially helpful when propagating error information across 
+function calls or various parts of the program.  In the examples below, let <code>request</code> be
+a function that will return a single value eventually:
+
+<para>
+<programlisting><![CDATA[
+{- error handling without exceptions: -}
+def makeRequest() = 
+  let(request() >x> (true, x) | Rtimer(1000) >> (false, "timeout"))
+
+def call() =
+  makeRequest() >(success, result)> if success then result else "failed"
+]]></programlisting>
+</para>
+
+Compare this to using exceptions, where error handling is made explicit and
+the program as a whole is simplified.  (Note the improvement would be more marked if
+a deeper layer of function nesting was used.)
+
+<para>
+<programlisting><![CDATA[
+{- error handling with exceptions -}
+def makeRequest() = 
+  request() | Rtimer(1000) >> throw("timeout")
+
+def call() =
+  try( makeRequest() ) catch (_) "failed"
+]]></programlisting>
+</para>
+
+
+
+</section>
+
+</section>
+
 
 </appendix>
 
