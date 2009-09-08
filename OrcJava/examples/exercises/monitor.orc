@@ -10,7 +10,7 @@ Hint: create a single process running in the background which
 manages the shared state.
 --}
 
-type Callback = (lambda() :: Top)
+type Callback = lambda() :: Top
 type Message = Dec() | Wait(Callback)
 
 val m = Buffer[Message]()

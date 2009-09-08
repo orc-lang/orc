@@ -1,8 +1,11 @@
 package orc.ast.oil.type;
 
+import orc.error.compiletime.typing.TypeException;
+import orc.type.TypingContext;
+
 
 /**
- * The syntactic type 'Bot', subtype of all other types.
+ * The type 'Bot', subtype of all other types.
  * 
  * @author dkitchin
  *
@@ -10,7 +13,7 @@ package orc.ast.oil.type;
 public class Bot extends Type {
 
 	@Override
-	public orc.type.Type transform() {
+	public orc.type.Type transform(TypingContext ctx) throws TypeException {
 		return orc.type.Type.BOT;
 	}
 

@@ -14,7 +14,7 @@ Ranges from 0 to <code>Long.MAX_VALUE</code>.
 site Rtimer = orc.lib.time.Rtimer
 
 {--
-@def Clock()() :: Integer
+@def Clock()() :: Number
 A call to <code>Clock</code> creates a new relative real-time clock.
 Calling a relative clock returns the number
 of milliseconds which have elapsed since the
@@ -26,6 +26,7 @@ Example:
 val c = Clock()
 Rtimer(1000) >> c()]]></programlisting>
 --}
+def Clock()() :: Integer
 def Clock() =
   val time = Rtimer.time()
   lambda () = Rtimer.time() - time

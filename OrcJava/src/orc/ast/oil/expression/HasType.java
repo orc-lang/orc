@@ -5,10 +5,10 @@ import java.util.Set;
 import orc.ast.oil.ContextualVisitor;
 import orc.ast.oil.Visitor;
 import orc.ast.oil.type.Type;
-import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Node;
+import orc.type.TypingContext;
 
 /**
  * 
@@ -43,20 +43,26 @@ public class HasType extends Expression {
 		body.addIndices(indices, depth);
 	}
 
+	
+	
 	@Override
-	public orc.type.Type typesynth(Env<orc.type.Type> ctx, Env<orc.type.Type> typectx) throws TypeException {
+	public orc.type.Type typesynth(TypingContext ctx) throws TypeException {
 		
-		orc.type.Type actualType = type.transform().subst(typectx);
+		orc.type.Type actualType = ctx.promote(type);
 		
 		/* If this ascription can be checked, check it */ 
 		if (checkable) {
-			body.typecheck(actualType, ctx, typectx);
+			body.typecheck(ctx, actualType);
 		}
 		/* If not, it is a type assertion, so we do not check it. */
+		else {}
 	
 		return actualType;
 	}
 
+	
+	
+	
 	@Override
 	public orc.ast.xml.expression.Expression marshal() throws CompilationException {
 		return new orc.ast.xml.expression.HasType(body.marshal(),

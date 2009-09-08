@@ -2,7 +2,7 @@ package orc.ast.extended.type;
 
 
 /**
- * The syntactic type '_', a placeholder for an unknown type.
+ * The type '_', a placeholder for an unknown type.
  * 
  * @author dkitchin
  *

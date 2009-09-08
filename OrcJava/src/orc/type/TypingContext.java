@@ -15,6 +15,8 @@
 
 package orc.type;
 
+import java.util.List;
+
 import orc.Config;
 import orc.env.Env;
 import orc.env.LookupFailureException;
@@ -48,6 +50,13 @@ public class TypingContext {
 		this.config = config;
 	}
 	
+	public TypingContext(Env<Type> varContext, Env<Type> typeContext,
+			Config config) {
+		this.varContext = varContext;
+		this.typeContext = typeContext;
+		this.config = config;
+	}
+
 	/**
 	 * Find the binding for this program variable.
 	 * 
@@ -76,21 +85,13 @@ public class TypingContext {
 		}
 	}
 	
-	/**
-	 * Find the binding for this type variable,
-	 * making sure it is a type operator.
-	 * 
-	 * @param var
-	 * @return The type of var in this context
-	 */
-	public Tycon lookupTycon(int var) throws TypeException {
-		try {
-			return typeContext.lookup(var).asTycon();
-		} catch (LookupFailureException e) {
-			throw new OrcError(e);
-		}
+	public TypingContext bindVar(Type T) {
+		return new TypingContext(varContext.extend(T), typeContext, config);
 	}
 	
+	public TypingContext bindType(Type T) {
+		return new TypingContext(varContext, typeContext.extend(T), config);
+	}
 	
 	public Type resolveSiteType(String classname) throws TypeException {
 		Class<?> cls;
@@ -131,7 +132,24 @@ public class TypingContext {
 		return orc.type.Type.fromJavaClass(cls);
 	}
 	
-	
+	/*
+	 * Entry point for substitution, so that we don't need to reveal
+	 * the typing context with a getter.
+	 */
+	public Type subst(Type T) throws TypeException {
+		return T.subst(typeContext);
+	}
 
+	/*
+	 * Convert a syntactic type to a real type, and then bind all
+	 * of its free variables using the current type context.
+	 */
+	public orc.type.Type promote(orc.ast.oil.type.Type t) throws TypeException {
+		return t.transform(this).subst(typeContext);
+	}
+	
+	public List<orc.type.Type> promoteAll(List<orc.ast.oil.type.Type> ts) throws TypeException {
+		return orc.type.Type.substAll(orc.ast.oil.type.Type.transformAll(ts, this), typeContext);
+	}
 	
 }

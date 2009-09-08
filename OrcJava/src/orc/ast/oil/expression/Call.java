@@ -17,6 +17,7 @@ import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Node;
 import orc.type.Type;
+import orc.type.TypingContext;
 import orc.type.inference.Constraint;
 import orc.type.inference.InferenceRequest;
 import orc.type.structured.ArrowType;
@@ -33,12 +34,6 @@ public class Call extends Expression {
 		this.callee = callee;
 		this.args = args;
 		this.typeArgs = typeArgs;
-	}
-	
-	public Call(Argument callee, List<Argument> args)
-	{
-		this.callee = callee;
-		this.args = args;
 	}
 	
 	/* Binary call constructor */
@@ -95,32 +90,32 @@ public class Call extends Expression {
 
 
 	/* Try to call the type without type argument synthesis */
-	public Type noInferenceTypeSynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
+	public Type noInferenceTypeSynth(TypingContext ctx) throws TypeException {
 		
-		Type calleeType = callee.typesynth(ctx, typectx);
+		Type calleeType = callee.typesynth(ctx);
 		
 		List<Type> typeActuals = null;
 		
 		if (typeArgs != null) {
 			typeActuals = new LinkedList<Type>();
 			for (orc.ast.oil.type.Type t : typeArgs) {
-				typeActuals.add(t.transform().subst(typectx));
+				typeActuals.add(ctx.promote(t));
 			}
 		}
 		
 		/* Delegate the checking of the args and the call itself to the callee type.
 		 * Some types do it differently than ArrowType does.
 		 */
-		return calleeType.call(ctx, typectx, args, typeActuals);
+		return calleeType.call(ctx, args, typeActuals);
 		
 	}
 	
 	@Override
-	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
+	public Type typesynth(TypingContext ctx) throws TypeException {
 		
 		/* Try to type the call */
 		try {
-			Type S = noInferenceTypeSynth(ctx, typectx);
+			Type S = noInferenceTypeSynth(ctx);
 			
 			/* If typing succeeded with null type parameters,
 			 * set the type parameters to be an empty list,
@@ -153,7 +148,7 @@ public class Call extends Expression {
 				
 			/* Add constraints for the argument types */
 			for (int i = 0; i < args.size(); i++) {
-				Type A = args.get(i).typesynth(ctx, typectx);
+				Type A = args.get(i).typesynth(ctx);
 				Type B = arrow.argTypes.get(i);
 				
 				A.addConstraints(VX, B, C);
@@ -184,11 +179,11 @@ public class Call extends Expression {
 		
 	}
 	
-	public void typecheck(Type T, Env<Type> ctx, Env<Type> typectx) throws TypeException {
+	public void typecheck(TypingContext ctx, Type T) throws TypeException {
 		
 		/* Try to type the call */
 		try {
-			Type S = noInferenceTypeSynth(ctx, typectx);			
+			Type S = noInferenceTypeSynth(ctx);			
 			S.assertSubtype(T);
 			
 			/* If typing succeeded without any type parameters,
@@ -220,7 +215,7 @@ public class Call extends Expression {
 				
 				/* Add constraints for the argument types */
 				for (int i = 0; i < args.size(); i++) {
-					Type A = args.get(i).typesynth(ctx, typectx);
+					Type A = args.get(i).typesynth(ctx);
 					Type B = arrow.argTypes.get(i);
 					A.addConstraints(VX, B, C);
 				}
@@ -248,6 +243,7 @@ public class Call extends Expression {
 			arguments.add(a.marshal());
 		}
 		return new orc.ast.xml.expression.Call(callee.marshal(),
-				arguments.toArray(new orc.ast.xml.expression.argument.Argument[]{}));
+				arguments.toArray(new orc.ast.xml.expression.argument.Argument[]{}),
+				orc.ast.oil.type.Type.marshalAll(typeArgs));
 	}
 }

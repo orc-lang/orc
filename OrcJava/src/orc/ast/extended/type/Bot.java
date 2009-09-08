@@ -2,7 +2,7 @@ package orc.ast.extended.type;
 
 
 /**
- * The syntactic type 'Bot', subtype of all other types.
+ * The type 'Bot', subtype of all other types.
  * 
  * @author dkitchin
  *

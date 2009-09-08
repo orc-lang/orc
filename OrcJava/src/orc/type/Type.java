@@ -168,7 +168,7 @@ public abstract class Type {
 	 * This may be overridden by types which want to handle calls
 	 * in their own way (for example, arrow types).
 	 */
-	public Type call(Env<Type> ctx, Env<Type> typectx, List<Argument> args, List<Type> typeActuals) throws TypeException {
+	public Type call(TypingContext ctx, List<Argument> args, List<Type> typeActuals) throws TypeException {
 		
 		/* Default type arity is 0 */
 		if (typeActuals != null && typeActuals.size() > 0) {
@@ -178,7 +178,7 @@ public abstract class Type {
 		/* Synthesize the argument types */
 		List<Type> argTypes = new LinkedList<Type>();
 		for (Argument a : args) {
-			argTypes.add(a.typesynth(ctx, typectx));
+			argTypes.add(a.typesynth(ctx));
 		}
 		
 		/* Attempt to use the simplified call form */

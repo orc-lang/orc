@@ -11,13 +11,13 @@ import orc.ast.oil.expression.argument.Variable;
 import orc.ast.oil.type.Type;
 import orc.ast.sites.JavaSite;
 import orc.ast.sites.OrcSite;
-import orc.env.Env;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Pub;
+import orc.type.TypingContext;
 
 /**
  * Base class for the portable (.oil, for Orc Intermediate Language) abstract syntax tree.
@@ -30,17 +30,17 @@ public abstract class Expression {
 	/* Typechecking */
 	
 	/* Given a context, infer this expression's type */
-	public abstract orc.type.Type typesynth(Env<orc.type.Type> ctx, Env<orc.type.Type> typectx) throws TypeException;
+	public abstract orc.type.Type typesynth(TypingContext ctx) throws TypeException;
 	
 	
-	/* Check that this expression has type t in the given context. 
+	/* Check that this expression has type T in the given context. 
 	 * 
 	 * Some expressions will always have inferred types, so
 	 * the default checking behavior is to infer the type and make
 	 * sure that the inferred type is a subtype of the checked type.
 	 */
-	public void typecheck(orc.type.Type T, Env<orc.type.Type> ctx, Env<orc.type.Type> typectx) throws TypeException {
-		orc.type.Type S = typesynth(ctx, typectx);
+	public void typecheck(TypingContext ctx, orc.type.Type T) throws TypeException {
+		orc.type.Type S = typesynth(ctx);
 		if (!S.subtype(T)) {
 			throw new SubtypeFailureException(S,T);
 		}

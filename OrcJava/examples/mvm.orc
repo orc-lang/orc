@@ -1,11 +1,14 @@
 {-
 MVM: This function does a matrix vector multiplication.
 -}
+
+def dotproduct(List[Number], List[Number]) :: Number
+def dotproduct([], []) = 0
+def dotproduct(a:v1, b:v2) = a*b+dotproduct(v1, v2)
+
+def mvm(List[List[Number]],List[Number]) :: List[Number] 
 def mvm([], _) = []
-def mvm(vm:mt, v) = 
-  def multvv([], []) = 0
-  def multvv(a:v1, b:v2) = a*b+multvv(v1, v2)
-  multvv(vm, v):mvm(mt, v)
+def mvm(vm:mt, v) = dotproduct(vm, v):mvm(mt, v)
 
 
 -- A 4x7 matrix

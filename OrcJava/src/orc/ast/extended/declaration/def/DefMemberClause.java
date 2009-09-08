@@ -64,24 +64,27 @@ public class DefMemberClause extends DefMember {
 		
 		List<Pattern> phead = formals.get(0);
 		List<Pattern> newformals = new LinkedList<Pattern>();
+		List<Type> argTypes = new LinkedList<Type>();
 		
-		if (phead.size() > 0) {
-			List<Type> argTypes = new LinkedList<Type>();
-			for (Pattern p : phead) {
-				/* Strip a toplevel type ascription from every argument pattern */
-				if (p instanceof TypedPattern) {
-					TypedPattern tp = (TypedPattern)p;
-					argTypes.add(tp.t);
-					newformals.add(tp.p);
-				}
-				else {
-					newformals = phead;
-					argTypes = null;
-					break;
-				}
+		for (Pattern p : phead) {
+			/* Strip a toplevel type ascription from every argument pattern */
+			if (p instanceof TypedPattern) {
+				TypedPattern tp = (TypedPattern)p;
+				argTypes.add(tp.t);
+				newformals.add(tp.p);
 			}
-			if (argTypes != null) { adef.setArgTypes(argTypes); }
+			else {
+				newformals = phead;
+				
+				/* There is at least one argument with a missing annotation.
+				 * Request inference.
+				 */
+				argTypes = null;
+				
+				break;
+			}
 		}
+		if (argTypes != null) { adef.setArgTypes(argTypes); }
 		
 		
 		

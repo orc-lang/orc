@@ -104,6 +104,11 @@ public class ExamplesTest {
 		 */
 		config.setShortErrors(true);
 
+		/*
+		 * If the typechecker does run, silence its output.
+		 */
+		config.setQuietChecking(true);
+
 		final OrcEngine engine = new OrcEngine(config);
 		engine.start(orc.ast.oil.Compiler.compile(Orc.compile(config.getReader(), config)));
 

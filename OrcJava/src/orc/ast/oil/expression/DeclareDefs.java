@@ -16,6 +16,7 @@ import orc.error.compiletime.typing.UnspecifiedReturnTypeException;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Unwind;
 import orc.type.Type;
+import orc.type.TypingContext;
 import orc.type.structured.ArrowType;
 
 public class DeclareDefs extends Expression {
@@ -55,21 +56,21 @@ public class DeclareDefs extends Expression {
 	}
 
 	@Override
-	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
+	public Type typesynth(TypingContext ctx) throws TypeException {
 
 		/* This is the typing context we will use to check the scoped expression */
-		Env<Type> dctx = ctx;
+		TypingContext dctx = ctx;
 			
 		/* Add the types for each definition in the group to the context */
 		for (Def d : defs) {
 			try {
-				dctx = dctx.extend(d.type(typectx));
+				dctx = dctx.bindVar(d.type(ctx));
 			}
 			/* If the return type is unspecified, this function can't be called recursively,
-			 * so its name cannot have a type associated with it.
+			 * so its name cannot have a type associated with it; use null instead.
 			 */
 			catch (UnspecifiedReturnTypeException e) {
-				dctx = dctx.extend(null);
+				dctx = dctx.bindVar(null);
 			}
 			catch (TypeException e) {
 				e.setSourceLocation(d.getSourceLocation());
@@ -82,27 +83,27 @@ public class DeclareDefs extends Expression {
 		 * to verify each definition individually.
 		 */ 
 		for (Def d : defs) {
-			d.checkDef(dctx, typectx);
+			d.checkDef(dctx);
 		}
 		
 		/* Now, repeat the process, but require each definition to provide a type.
 		 * Any missing return type ascriptions should now be filled in.
 		 */
-		Env<Type> bodyctx = ctx;
+		TypingContext bodyctx = ctx;
 		for (Def d : defs) {
-			bodyctx = bodyctx.extend(d.type(typectx));
+			bodyctx = bodyctx.bindVar(d.type(ctx));
 		}
 		
 		/*
 		 * The synthesized type of the body in this context is
 		 * the synthesized type for the whole expression.
 		 */ 
-		return body.typesynth(bodyctx, typectx); 
+		return body.typesynth(bodyctx); 
 	}
 	
 	
 	/* There is a special case when checking translated lambdas, so we override this method */
-	public void typecheck(Type T, Env<Type> ctx, Env<Type> typectx) throws TypeException {
+	public void typecheck(TypingContext ctx, Type T) throws TypeException {
 		
 		/* Check whether this definition group is a translated lambda,
 		 * and make sure that the type being checked is an arrow type.
@@ -114,13 +115,13 @@ public class DeclareDefs extends Expression {
 			/* Add an empty mapping for the type of the function itself;
 			 * since it is anonymous, recursion can never occur.
 			 */
-			ctx = ctx.extend(null);
+			ctx = ctx.bindVar(null);
 			
-			defs.get(0).checkLambda((ArrowType)T, ctx, typectx);
+			defs.get(0).checkLambda(ctx, (ArrowType)T);
 		}
 		else {
 			/* Otherwise, perform checking as usual */
-			super.typecheck(T, ctx, typectx);
+			super.typecheck(ctx, T);
 		}
 	}
 

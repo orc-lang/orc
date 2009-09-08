@@ -10,16 +10,22 @@ Description from
 http://shootout.alioth.debian.org/u32q/benchmark.php?test=threadring&lang=all
 -}
 
+def threadRing(Integer, Integer, Buffer[Integer], Buffer[Integer]) :: Integer
 def threadRing(id, m, in, next) =
-    (in.get() >x> if (m = x) then println(id) else next.put(x+1)) >> stop ;threadRing(id, m, in, next)
+    in.get() >x> 
+    (if (m = x) then 
+	id 
+     else 
+        next.put(x+1) >> threadRing(id, m, in, next))
 
 val N = 503
 
-val ring = IArray(N, lambda(_)=Buffer())
-
-def threadRingRunner(p) = 
-upto(N) >i> threadRing(i+1, p, ring(i), ring((i+1) % N)) | ring(0).put(0)
-
+def threadRingRunner(Integer) :: Top
+def threadRingRunner(p) =
+  val ring = IArray(N, lambda(_ :: Integer) = Buffer[Integer]()) 
+  val _ = ring(0).put(0)
+  val lastid = upto(N) >i> threadRing(i+1, p, ring(i), ring((i+1) % N))
+  println(lastid)
 
 threadRingRunner(1000) >> 
 threadRingRunner(10000) >> stop 

@@ -6,10 +6,11 @@ import java.util.Set;
 
 import orc.ast.oil.ContextualVisitor;
 import orc.ast.oil.Visitor;
-import orc.env.Env;
+import orc.ast.oil.type.InferredType;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.type.Type;
+import orc.type.TypingContext;
 
 public class Catch extends Expression {
 	
@@ -30,10 +31,10 @@ public class Catch extends Expression {
 		this.tryBlock = tryBlock;
 	}
 	
-	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
+	public Type typesynth(TypingContext ctx) throws TypeException {
 		
 		// Find the type of the try block
-		Type blockType = tryBlock.typesynth(ctx, typectx);
+		Type blockType = tryBlock.typesynth(ctx);
 	
 		/* We ensure that the handler returns the try block type or some subtype.
 		 * This is too conservative; the overall try-catch type could instead
@@ -42,9 +43,8 @@ public class Catch extends Expression {
 		 * in constructor), it is saner to check against a stated type rather than trying to 
 		 * synthesize one.
 		 */
-		// FIXME
-		//handler.resultType = blockType;
-		handler.checkDef(ctx, typectx);
+		handler.resultType = new InferredType(blockType);
+		handler.checkDef(ctx);
 		handler.resultType = null;
 		
 		// The type of a try-catch, as described above, is just the type of the try block.

@@ -7,12 +7,12 @@ import orc.ast.oil.Visitor;
 import orc.ast.simple.argument.Argument;
 import orc.ast.simple.argument.FreeVariable;
 import orc.ast.simple.argument.Variable;
-import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Leave;
 import orc.runtime.nodes.Node;
 import orc.type.Type;
+import orc.type.TypingContext;
 
 public class Otherwise extends Expression {
 
@@ -46,18 +46,18 @@ public class Otherwise extends Expression {
 	
 	
 	@Override
-	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
+	public Type typesynth(TypingContext ctx) throws TypeException {
 		
-		Type L = left.typesynth(ctx, typectx);
-		Type R = right.typesynth(ctx, typectx);
+		Type L = left.typesynth(ctx);
+		Type R = right.typesynth(ctx);
 		return L.join(R);
 	}
 
 	
 	@Override
-	public void typecheck(Type T, Env<Type> ctx, Env<Type> typectx) throws TypeException {
-		left.typecheck(T, ctx, typectx);
-		right.typecheck(T, ctx, typectx);
+	public void typecheck(TypingContext ctx, Type T) throws TypeException {
+		left.typecheck(ctx, T);
+		right.typecheck(ctx, T);
 	}
 
 	@Override

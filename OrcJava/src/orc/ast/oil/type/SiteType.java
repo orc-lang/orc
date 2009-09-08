@@ -9,12 +9,11 @@ import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
 import orc.type.TypeVariable;
+import orc.type.TypingContext;
 
 /**
- * A syntactic type corresponding to a Java class implementing a type.
- * 
- * In order to convert this to an actual type, the Java class must be
- * a subtype of orc.type.Type
+ * A type corresponding to a Java class which subclasses orc.type.Type,
+ * so that it can be instantiated as an external Orc type by the typechecker.
  * 
  * @author dkitchin
  *
@@ -28,9 +27,8 @@ public class SiteType extends Type {
 	}
 	
 	@Override
-	public orc.type.Type transform() {
-		// FIXME: resolve site types
-		return orc.type.Type.BOT;
+	public orc.type.Type transform(TypingContext ctx) throws TypeException {
+		return ctx.resolveSiteType(classname);
 	}
 		
 	public String toString() {		

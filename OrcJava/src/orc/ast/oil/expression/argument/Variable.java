@@ -9,6 +9,7 @@ import orc.error.OrcError;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.type.Type;
+import orc.type.TypingContext;
 
 
 /**
@@ -59,13 +60,8 @@ public class Variable extends Argument implements Comparable<Variable> {
 	}
 
 	@Override
-	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
-		Type t;
-		try {
-			t = ctx.lookup(index);
-		} catch (LookupFailureException e) {
-			throw new OrcError(e);
-		}
+	public Type typesynth(TypingContext ctx) throws TypeException {
+		Type t = ctx.lookupVar(index);
 		
 		if (t != null) {
 			return t;

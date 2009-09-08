@@ -3,7 +3,7 @@ package orc.ast.simple.type;
 import orc.env.Env;
 
 /**
- * The syntactic type 'Bot', subtype of all other types.
+ * The type 'Bot', subtype of all other types.
  * 
  * @author dkitchin
  *

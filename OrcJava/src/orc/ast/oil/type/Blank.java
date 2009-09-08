@@ -1,8 +1,11 @@
 package orc.ast.oil.type;
 
+import orc.error.compiletime.typing.TypeException;
+import orc.type.TypingContext;
+
 
 /**
- * The syntactic type '_', a placeholder for an unknown type.
+ * The type '_', a placeholder for an unknown type.
  * 
  * @author dkitchin
  *
@@ -10,8 +13,9 @@ package orc.ast.oil.type;
 public class Blank extends Type {
 
 	@Override
-	public orc.type.Type transform() {
-		return orc.type.Type.BLANK;
+	public orc.type.Type transform(TypingContext ctx) throws TypeException {
+		// FIXME: Support or deprecate blank type
+		throw new TypeException("Blank type unsupported");
 	}
 
 	public String toString() { return "_"; }

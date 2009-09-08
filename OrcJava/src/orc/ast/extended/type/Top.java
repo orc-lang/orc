@@ -2,7 +2,7 @@ package orc.ast.extended.type;
 
 
 /**
- * The syntactic type 'Top', supertype of all other types.
+ * The type 'Top', supertype of all other types.
  * 
  * @author dkitchin
  *

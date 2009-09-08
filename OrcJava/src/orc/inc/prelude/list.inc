@@ -4,7 +4,7 @@ Many of these functions are similar to those in the Haskell prelude, but
 operate on the elements of a list in parallel.
 --}
 
-{--
+{-- 
 @def each[A](List[A]) :: A
 Publish every value in a list, simultaneously.
 

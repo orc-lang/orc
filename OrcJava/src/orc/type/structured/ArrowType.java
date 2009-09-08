@@ -15,6 +15,7 @@ import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
 import orc.error.compiletime.typing.UnrepresentableTypeException;
 import orc.type.Type;
+import orc.type.TypingContext;
 import orc.type.ground.Top;
 import orc.type.inference.Constraint;
 import orc.type.inference.InferenceRequest;
@@ -181,7 +182,7 @@ public class ArrowType extends Type {
 	}
 	
 	
-	public Type call(Env<Type> ctx, Env<Type> typectx, List<Argument> args, List<Type> typeActuals) throws TypeException {
+	public Type call(TypingContext ctx, List<Argument> args, List<Type> typeActuals) throws TypeException {
 		
 		/* Arity check */
 		if (argTypes.size() != args.size()) {
@@ -207,17 +208,17 @@ public class ArrowType extends Type {
 		
 		/* Add each type argument to the type context */
 		for(Type targ : typeActuals) {
-			typectx = typectx.extend(targ);
+			ctx = ctx.bindType(targ);
 		}
 		
 		/* Check each argument against its respective argument type */
 		for(int i = 0; i < argTypes.size(); i++) {
-			Type thisType = argTypes.get(i).subst(typectx);
+			Type thisType = ctx.subst(argTypes.get(i));
 			Argument thisArg = args.get(i);
-			thisArg.typecheck(thisType, ctx, typectx);
+			thisArg.typecheck(ctx, thisType);
 		}
 		
-		return resultType.subst(typectx);
+		return ctx.subst(resultType);
 	}
 	
 	

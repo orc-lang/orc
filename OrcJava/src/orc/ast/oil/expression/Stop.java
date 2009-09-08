@@ -8,10 +8,10 @@ import orc.ast.oil.Visitor;
 import orc.ast.simple.argument.Argument;
 import orc.ast.simple.argument.FreeVariable;
 import orc.ast.simple.argument.Variable;
-import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.runtime.nodes.Node;
 import orc.type.Type;
+import orc.type.TypingContext;
 
 public class Stop extends Expression {
 
@@ -29,15 +29,10 @@ public class Stop extends Expression {
 	}
 
 	@Override
-	public Type typesynth(Env<Type> ctx, Env<Type> typectx) {
+	public Type typesynth(TypingContext ctx) {
 		return Type.BOT;
 	}
 	
-	@Override
-	public void typecheck(Type t, Env<Type> ctx, Env<Type> typectx) {
-		// Do nothing. Silent checks against all types.
-	}
-
 	@Override
 	public void addIndices(Set<Integer> indices, int depth) {
 		return;

@@ -12,10 +12,8 @@ import orc.error.compiletime.typing.UncallableTypeException;
 import orc.type.TypeVariable;
 
 /**
- * A syntactic type corresponding to a Java class implementing a type.
- * 
- * In order to convert this to an actual type, the Java class must be
- * a subtype of orc.type.Type
+ * A type corresponding to a Java class which subclasses orc.type.Type,
+ * so that it can be instantiated as an external Orc type by the typechecker.
  * 
  * @author dkitchin
  *

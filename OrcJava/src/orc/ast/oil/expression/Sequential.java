@@ -14,6 +14,7 @@ import orc.runtime.nodes.Assign;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Unwind;
 import orc.type.Type;
+import orc.type.TypingContext;
 
 public class Sequential extends Expression {
 
@@ -53,18 +54,17 @@ public class Sequential extends Expression {
 	}
 	
 	@Override
-	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
-		Env<Type> rctx = ctx.clone();
-		rctx.add(left.typesynth(ctx, typectx));
-		return right.typesynth(rctx, typectx);
+	public Type typesynth(TypingContext ctx) throws TypeException {
+		Type ltype = left.typesynth(ctx);
+		return right.typesynth(ctx.bindVar(ltype));
 	}
 
 	@Override
-	public void typecheck(Type T, Env<Type> ctx, Env<Type> typectx) throws TypeException {
-		Env<Type> rctx = ctx.clone();
-		rctx.add(left.typesynth(ctx, typectx));
-		right.typecheck(T, rctx, typectx);
+	public void typecheck(TypingContext ctx, Type T) throws TypeException {
+		Type ltype = left.typesynth(ctx);
+		right.typecheck(ctx.bindVar(ltype), T);
 	}
+
 
 	@Override
 	public orc.ast.xml.expression.Expression marshal() throws CompilationException {

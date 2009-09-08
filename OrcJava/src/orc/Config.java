@@ -89,7 +89,9 @@ public class Config implements Cloneable {
 	private String classPath = "";
 	private ClassLoader classLoader = Config.class.getClassLoader();
 	private boolean shortErrors = false;
+	private boolean quietChecking = false;
 	private boolean exceptionsOn = false;
+	
 
 	/**
 	 * Set properties based on command-line arguments.
@@ -290,9 +292,23 @@ public class Config implements Cloneable {
 	public void setShortErrors(final boolean b) {
 		shortErrors = b;
 	}
-
+	
 	public boolean getShortErrors() {
 		return shortErrors;
+	}
+	
+	/**
+	 * If the typechecker runs, suppress all its output.
+	 * Quiet checking is currently used only for regression testing.
+	 * 
+	 * @param b
+	 */
+	public void setQuietChecking(boolean b) {
+		quietChecking = b;
+	}
+
+	public boolean getQuietChecking() {
+		return quietChecking;
 	}
 
 	/**
@@ -531,5 +547,6 @@ public class Config implements Cloneable {
 		out.caps = (HashMap<String, Boolean>) caps.clone();
 		return out;
 	}
+
 
 }

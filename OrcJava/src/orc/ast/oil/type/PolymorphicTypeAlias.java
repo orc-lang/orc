@@ -3,11 +3,13 @@ package orc.ast.oil.type;
 import java.util.LinkedList;
 import java.util.List;
 
+import orc.error.compiletime.typing.TypeException;
+import orc.type.TypingContext;
 import orc.type.tycon.Variance;
 
 /**
  * 
- * A syntactic type representing an aliased type with type parameters.
+ * A representation of an aliased type with type parameters.
  * 
  * @author dkitchin
  *
@@ -23,10 +25,10 @@ public class PolymorphicTypeAlias extends Type {
 	}
 
 	@Override
-	public orc.type.Type transform() {
+	public orc.type.Type transform(TypingContext ctx) throws TypeException {
 		
 		// Convert the syntactic type to a true type
-		orc.type.Type newType = type.transform();
+		orc.type.Type newType = type.transform(ctx);
 		
 		// Infer the variance of each type parameter
 		Variance[] V = new Variance[typeArity];

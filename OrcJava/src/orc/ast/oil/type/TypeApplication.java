@@ -7,8 +7,10 @@ import orc.env.SearchFailureException;
 import orc.error.OrcError;
 import orc.error.compiletime.typing.ArgumentArityException;
 import orc.error.compiletime.typing.SubtypeFailureException;
+import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UnboundTypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
+import orc.type.TypingContext;
 
 /**
  * A type instantiation with explicit type parameters: T[T,..,T]
@@ -27,8 +29,8 @@ public class TypeApplication extends Type {
 	}
 	
 	@Override
-	public orc.type.Type transform() {
-		return new orc.type.TypeApplication(typeOperator.transform(), Type.transformAll(params));
+	public orc.type.Type transform(TypingContext ctx) throws TypeException {
+		return new orc.type.TypeApplication(typeOperator.transform(ctx), Type.transformAll(params, ctx));
 	}
 	
 	

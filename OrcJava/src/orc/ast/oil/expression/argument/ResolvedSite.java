@@ -9,6 +9,7 @@ import orc.error.OrcError;
 import orc.error.compiletime.SiteResolutionException;
 import orc.error.compiletime.typing.TypeException;
 import orc.type.Type;
+import orc.type.TypingContext;
 
 
 /**
@@ -43,7 +44,7 @@ public class ResolvedSite extends Site {
 	}
 
 	@Override
-	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
+	public Type typesynth(TypingContext ctx) throws TypeException {
 		return instance.type();
 	}
 	

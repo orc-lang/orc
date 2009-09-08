@@ -47,14 +47,8 @@ public class Def implements Serializable {
 	}
 	public orc.ast.oil.expression.Def unmarshal(Config config) throws CompilationException {
 		
-		List<orc.ast.oil.type.Type> newArgTypes = null;
-		if (argTypes != null) {
-			newArgTypes = Type.unmarshalAll(argTypes);
-		}
-		orc.ast.oil.type.Type newResultType = null;
-		if (resultType != null) { 
-			newResultType = resultType.unmarshal();
-		}
+		List<orc.ast.oil.type.Type> newArgTypes = Type.unmarshalAll(argTypes);
+		orc.ast.oil.type.Type newResultType = (resultType != null ? resultType.unmarshal() : null);
 		
 		return new orc.ast.oil.expression.Def(arity, body.unmarshal(config), typeArity,
 				newArgTypes, newResultType, location, name);
