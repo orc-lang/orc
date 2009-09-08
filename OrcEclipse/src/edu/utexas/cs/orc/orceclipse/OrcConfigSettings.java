@@ -21,6 +21,8 @@ import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.preferences.DefaultScope;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.imp.preferences.PreferencesService;
 import org.kohsuke.args4j.CmdLineException;
@@ -44,6 +46,7 @@ import orc.Config;
 public class OrcConfigSettings extends Config {
 	public static final String TYPE_CHECK_ATTR_NAME = Activator.getInstance().getID() + ".TYPE_CHECK";
 	public static final String NO_PRELUDE_ATTR_NAME = Activator.getInstance().getID() + ".NO_PRELUDE";
+	public static final String EXCEPTIONS_ON_ATTR_NAME = Activator.getInstance().getID() + ".EXCEPTIONS_ON";
 	public static final String INCLUDE_PATH_ATTR_NAME = Activator.getInstance().getID() + ".INCLUDE_PATH";
 	public static final String SITE_CLASSPATH_ATTR_NAME = Activator.getInstance().getID() + ".SITE_CLASSPATH";
 	public static final String OIL_OUT_ATTR_NAME = Activator.getInstance().getID() + ".OIL_OUT";
@@ -56,8 +59,9 @@ public class OrcConfigSettings extends Config {
 
 	public static final boolean TYPE_CHECK_DEFAULT = defaultConfig.getTypeChecking();
 	public static final boolean NO_PRELUDE_DEFAULT = defaultConfig.getNoPrelude();
-	public static final String INCLUDE_PATH_DEFAULT = defaultConfig.getIncludePath();
-	public static final String SITE_CLASSPATH_DEFAULT = defaultConfig.getClassPath();
+	public static final boolean EXCEPTIONS_ON_DEFAULT = defaultConfig.getExceptionsOn();
+	public static final String INCLUDE_PATH_DEFAULT = defaultConfig.getIncludePath().length()==0 ? defaultConfig.getIncludePath() : defaultConfig.getIncludePath().concat(":"); //Eclipse path pref entries always have a trailing :
+	public static final String SITE_CLASSPATH_DEFAULT = defaultConfig.getClassPath().length()==0 ? defaultConfig.getClassPath() : defaultConfig.getClassPath().concat(":"); //Eclipse path pref entries always have a trailing :
 	public static final String OIL_OUT_DEFAULT = defaultConfig.getOilOutputFile().getPath();
 	public static final int MAX_PUBS_DEFAULT = defaultConfig.getMaxPubs();
 	public static final int NUM_SITE_THREADS_DEFAULT = defaultConfig.getNumSiteThreads();
@@ -97,6 +101,9 @@ public class OrcConfigSettings extends Config {
 		}
 		if (prefSvc.isDefined(NO_PRELUDE_ATTR_NAME)) {
 			setNoPrelude(prefSvc.getBooleanPreference(NO_PRELUDE_ATTR_NAME));
+		}
+		if (prefSvc.isDefined(EXCEPTIONS_ON_ATTR_NAME)) {
+			setNoPrelude(prefSvc.getBooleanPreference(EXCEPTIONS_ON_ATTR_NAME));
 		}
 		if (prefSvc.isDefined(INCLUDE_PATH_ATTR_NAME)) {
 			setIncludePath(prefSvc.getStringPreference(INCLUDE_PATH_ATTR_NAME));
@@ -142,6 +149,9 @@ public class OrcConfigSettings extends Config {
 		if (launchConfig.hasAttribute(NO_PRELUDE_ATTR_NAME)) {
 			setNoPrelude(launchConfig.getAttribute(NO_PRELUDE_ATTR_NAME, NO_PRELUDE_DEFAULT));
 		}
+		if (launchConfig.hasAttribute(EXCEPTIONS_ON_ATTR_NAME)) {
+			setNoPrelude(launchConfig.getAttribute(EXCEPTIONS_ON_ATTR_NAME, EXCEPTIONS_ON_DEFAULT));
+		}
 		if (launchConfig.hasAttribute(INCLUDE_PATH_ATTR_NAME)) {
 			setIncludePath(launchConfig.getAttribute(INCLUDE_PATH_ATTR_NAME, INCLUDE_PATH_DEFAULT));
 		}
@@ -167,5 +177,22 @@ public class OrcConfigSettings extends Config {
 		if (launchConfig.hasAttribute(DEBUG_LEVEL_ATTR_NAME)) {
 			setDebugLevel(launchConfig.getAttribute(DEBUG_LEVEL_ATTR_NAME, DEBUG_LEVEL_DEFAULT));
 		}
+	}
+
+	protected static void initDefaultPrefs() {
+		// We don't want to use a preferences.ini / preferences.properties file for default preferences,
+		// but instead get them from the Config class's defaults. Activator gives us the opportunity to set the defaults here.
+		IEclipsePreferences defaultPrefs = new DefaultScope().getNode(Activator.getInstance().getLanguageID());
+		defaultPrefs.putBoolean(TYPE_CHECK_ATTR_NAME, TYPE_CHECK_DEFAULT);
+		defaultPrefs.putBoolean(NO_PRELUDE_ATTR_NAME, NO_PRELUDE_DEFAULT);
+		defaultPrefs.putBoolean(EXCEPTIONS_ON_ATTR_NAME, EXCEPTIONS_ON_DEFAULT);
+		defaultPrefs.put(INCLUDE_PATH_ATTR_NAME, INCLUDE_PATH_DEFAULT);
+		defaultPrefs.put(SITE_CLASSPATH_ATTR_NAME, SITE_CLASSPATH_DEFAULT);
+		defaultPrefs.put(OIL_OUT_ATTR_NAME, OIL_OUT_DEFAULT);
+		defaultPrefs.putInt(MAX_PUBS_ATTR_NAME, MAX_PUBS_DEFAULT);
+		defaultPrefs.putInt(NUM_SITE_THREADS_ATTR_NAME, NUM_SITE_THREADS_DEFAULT);
+		defaultPrefs.put(TRACE_OUT_ATTR_NAME, TRACE_OUT_DEFAULT);
+		defaultPrefs.putInt(DEBUG_LEVEL_ATTR_NAME, DEBUG_LEVEL_DEFAULT);
+		//No need to flush() nodes in default scope
 	}
 }

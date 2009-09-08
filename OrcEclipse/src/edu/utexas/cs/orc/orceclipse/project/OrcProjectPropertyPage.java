@@ -15,15 +15,22 @@
 
 package edu.utexas.cs.orc.orceclipse.project;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.preference.BooleanFieldEditor;
+import org.eclipse.jface.preference.FieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PathEditor;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
+import org.kohsuke.args4j.CmdLineException;
 
 import edu.utexas.cs.orc.orceclipse.Activator;
 import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
@@ -73,6 +80,7 @@ public class OrcProjectPropertyPage extends FieldEditorPreferencePage implements
 	protected void createFieldEditors() {
 		addField(new BooleanFieldEditor(OrcConfigSettings.TYPE_CHECK_ATTR_NAME, "Type check", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		addField(new BooleanFieldEditor(OrcConfigSettings.NO_PRELUDE_ATTR_NAME, "Do not include standard prelude", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addField(new BooleanFieldEditor(OrcConfigSettings.EXCEPTIONS_ON_ATTR_NAME, "Enable exceptions (experimental)", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		addField(new PathEditor(OrcConfigSettings.INCLUDE_PATH_ATTR_NAME, "Include path:", "Choose a directory to add to the Orc include search path", getFieldEditorParent()));
 		addField(new PathEditor(OrcConfigSettings.SITE_CLASSPATH_ATTR_NAME, "Site class path:", "Choose a directory to add to the Orc site class path", getFieldEditorParent()));
 	}
