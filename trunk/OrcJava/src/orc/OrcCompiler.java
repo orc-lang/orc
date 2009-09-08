@@ -25,7 +25,9 @@ import orc.ast.extended.ASTNode;
 import orc.ast.extended.expression.Declare;
 import orc.ast.extended.declaration.Declaration;
 import orc.ast.oil.expression.Expression;
+import orc.ast.oil.AtomicOnChecker;
 import orc.ast.oil.ExceptionsOnChecker;
+import orc.ast.oil.IsolatedOnChecker;
 import orc.ast.oil.SiteResolver;
 import orc.ast.oil.UnguardedRecursionChecker;
 import orc.ast.simple.argument.Variable;
@@ -217,6 +219,20 @@ public class OrcCompiler implements Callable<Expression> {
 		
 		if (config.getExceptionsOn() == false) {
 			ExceptionsOnChecker.check(ex);
+			if (progress.isCanceled()) {
+				return null;
+			}
+		}
+		
+		if (config.getAtomicOn() == false) {
+			AtomicOnChecker.check(ex);
+			if (progress.isCanceled()) {
+				return null;
+			}
+		}
+		
+		if (config.getIsolatedOn() == false) {
+			IsolatedOnChecker.check(ex);
 			if (progress.isCanceled()) {
 				return null;
 			}
