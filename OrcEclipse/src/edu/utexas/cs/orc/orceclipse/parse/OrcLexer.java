@@ -37,13 +37,13 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 	 */
 	public enum TokenType {
 		/** Character that is not any valid Orc lexeme */
-		UNKNOWN, 
+		UNKNOWN,
 		/** Numeric literal (interger or floating point) */
-		NUMBER_LITERAL, 
+		NUMBER_LITERAL,
 		/** String literal -- quoted character sequence */
-		STRING_LITERAL, 
+		STRING_LITERAL,
 		/** "true" or "false" */
-		BOOLEAN_LITERAL, 
+		BOOLEAN_LITERAL,
 		/** "null" */
 		NULL_LITERAL,
 		/** Lexeme that follows identifier rules, but it might be a keyword.
@@ -57,22 +57,22 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 		 * Note for "<" and ">", we guess based on whitespace around the token.
 		 * This could be wrong, so don't rely on the OPERATOR / COMBINATOR distinction
 		 * for anything critical. */
-		OPERATOR, 
+		OPERATOR,
 		/** An Orc combinator.
 		 * Note for "<" and ">", we guess based on whitespace around the token.
 		 * This could be wrong, so don't rely on the OPERATOR / COMBINATOR distinction
 		 * for anything critical. */
-		COMBINATOR, 
+		COMBINATOR,
 		/** Parenthesis, square brackets, or curly braces */
-		BRACKET, 
+		BRACKET,
 		/** Lexemes like ",", ";", etc. */
-		SEPERATOR, 
+		SEPERATOR,
 		/** Comment to end of line (a.k.a. "single line comment") */
-		COMMENT_ENDLINE, 
+		COMMENT_ENDLINE,
 		/** Comment bracketed by "{-" "-}".
 		 * These brackets are included in the token.
 		 * Despite the name, the comment could be on one line. */
-		COMMENT_MULTILINE, 
+		COMMENT_MULTILINE,
 		/** Spaces, tabs, end of line chars, etc. */
 		WHITESPACE,
 	}

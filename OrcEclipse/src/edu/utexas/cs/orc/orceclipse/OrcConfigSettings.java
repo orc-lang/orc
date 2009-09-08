@@ -17,7 +17,8 @@ package edu.utexas.cs.orc.orceclipse;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+
+import orc.Config;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -26,8 +27,6 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.imp.preferences.PreferencesService;
 import org.kohsuke.args4j.CmdLineException;
-
-import orc.Config;
 
 /**
  * Orc configuration ({@link orc.Config}) extended to read its state from
@@ -54,20 +53,20 @@ public class OrcConfigSettings extends Config {
 	public static final String NUM_SITE_THREADS_ATTR_NAME = Activator.getInstance().getID() + ".NUM_SITE_THREADS";
 	public static final String TRACE_OUT_ATTR_NAME = Activator.getInstance().getID() + ".TRACE_OUT";
 	public static final String DEBUG_LEVEL_ATTR_NAME = Activator.getInstance().getID() + ".DEBUG_LEVEL";
-	
-	private static final Config defaultConfig = new Config(); 
+
+	private static final Config defaultConfig = new Config();
 
 	public static final boolean TYPE_CHECK_DEFAULT = defaultConfig.getTypeChecking();
 	public static final boolean NO_PRELUDE_DEFAULT = defaultConfig.getNoPrelude();
 	public static final boolean EXCEPTIONS_ON_DEFAULT = defaultConfig.getExceptionsOn();
-	public static final String INCLUDE_PATH_DEFAULT = defaultConfig.getIncludePath().length()==0 ? defaultConfig.getIncludePath() : defaultConfig.getIncludePath().concat(":"); //Eclipse path pref entries always have a trailing :
-	public static final String SITE_CLASSPATH_DEFAULT = defaultConfig.getClassPath().length()==0 ? defaultConfig.getClassPath() : defaultConfig.getClassPath().concat(":"); //Eclipse path pref entries always have a trailing :
+	public static final String INCLUDE_PATH_DEFAULT = defaultConfig.getIncludePath().length() == 0 ? defaultConfig.getIncludePath() : defaultConfig.getIncludePath().concat(":"); //Eclipse path pref entries always have a trailing :
+	public static final String SITE_CLASSPATH_DEFAULT = defaultConfig.getClassPath().length() == 0 ? defaultConfig.getClassPath() : defaultConfig.getClassPath().concat(":"); //Eclipse path pref entries always have a trailing :
 	public static final String OIL_OUT_DEFAULT = defaultConfig.getOilOutputFile().getPath();
 	public static final int MAX_PUBS_DEFAULT = defaultConfig.getMaxPubs();
 	public static final int NUM_SITE_THREADS_DEFAULT = defaultConfig.getNumSiteThreads();
 	public static final String TRACE_OUT_DEFAULT = defaultConfig.getTraceOutputFile().getPath();
 	public static final int DEBUG_LEVEL_DEFAULT = defaultConfig.getDebugLevel();
-	
+
 	/**
 	 * Constructs an object of class OrcConfigSettings.
 	 *
@@ -76,7 +75,7 @@ public class OrcConfigSettings extends Config {
 	 * @throws IOException 
 	 * @throws CoreException 
 	 */
-	public OrcConfigSettings(IProject project, ILaunchConfiguration launchConfig) throws IOException, CoreException {
+	public OrcConfigSettings(final IProject project, final ILaunchConfiguration launchConfig) throws IOException, CoreException {
 		super();
 		if (project != null) {
 			fillFromProject(project);
@@ -90,12 +89,12 @@ public class OrcConfigSettings extends Config {
 	 * @param project
 	 * @throws IOException 
 	 */
-	private void fillFromProject(IProject project) throws IOException {
-		PreferencesService prefSvc = Activator.getInstance().getPreferencesService();
+	private void fillFromProject(final IProject project) throws IOException {
+		final PreferencesService prefSvc = Activator.getInstance().getPreferencesService();
 		prefSvc.setProject(project);
-		
+
 		// Will also look upwards in prefs levels if not found in project.
-		
+
 		if (prefSvc.isDefined(TYPE_CHECK_ATTR_NAME)) {
 			setTypeChecking(prefSvc.getBooleanPreference(TYPE_CHECK_ATTR_NAME));
 		}
@@ -123,7 +122,7 @@ public class OrcConfigSettings extends Config {
 		if (prefSvc.isDefined(TRACE_OUT_ATTR_NAME)) {
 			try {
 				setTraceOutputFile(new File(prefSvc.getStringPreference(TRACE_OUT_ATTR_NAME)));
-			} catch (CmdLineException e) {
+			} catch (final CmdLineException e) {
 				throw new IOException(e.getMessage());
 			}
 		}
@@ -137,12 +136,12 @@ public class OrcConfigSettings extends Config {
 	 * @throws CoreException 
 	 * @throws IOException 
 	 */
-	private void fillFromLaunchConfig(ILaunchConfiguration launchConfig) throws CoreException, IOException {
-		
+	private void fillFromLaunchConfig(final ILaunchConfiguration launchConfig) throws CoreException, IOException {
+
 		// The use of *_DEFAULT below is for type info. during compile-time overloaded method
 		// resolution.  At runtime, *_DEFAULT is never used, because we test hasAttribute before
 		// calling getAttribute.
-		
+
 		if (launchConfig.hasAttribute(TYPE_CHECK_ATTR_NAME)) {
 			setTypeChecking(launchConfig.getAttribute(TYPE_CHECK_ATTR_NAME, TYPE_CHECK_DEFAULT));
 		}
@@ -170,7 +169,7 @@ public class OrcConfigSettings extends Config {
 		if (launchConfig.hasAttribute(TRACE_OUT_ATTR_NAME)) {
 			try {
 				setTraceOutputFile(new File(launchConfig.getAttribute(TRACE_OUT_ATTR_NAME, TRACE_OUT_DEFAULT)));
-			} catch (CmdLineException e) {
+			} catch (final CmdLineException e) {
 				throw new IOException(e.getMessage());
 			}
 		}
@@ -182,7 +181,7 @@ public class OrcConfigSettings extends Config {
 	protected static void initDefaultPrefs() {
 		// We don't want to use a preferences.ini / preferences.properties file for default preferences,
 		// but instead get them from the Config class's defaults. Activator gives us the opportunity to set the defaults here.
-		IEclipsePreferences defaultPrefs = new DefaultScope().getNode(Activator.getInstance().getLanguageID());
+		final IEclipsePreferences defaultPrefs = new DefaultScope().getNode(Activator.getInstance().getLanguageID());
 		defaultPrefs.putBoolean(TYPE_CHECK_ATTR_NAME, TYPE_CHECK_DEFAULT);
 		defaultPrefs.putBoolean(NO_PRELUDE_ATTR_NAME, NO_PRELUDE_DEFAULT);
 		defaultPrefs.putBoolean(EXCEPTIONS_ON_ATTR_NAME, EXCEPTIONS_ON_DEFAULT);

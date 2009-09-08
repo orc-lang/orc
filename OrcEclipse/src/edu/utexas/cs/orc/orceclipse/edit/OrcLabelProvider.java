@@ -29,7 +29,6 @@ import orc.ast.extended.declaration.def.DefMemberType;
 import orc.ast.extended.declaration.type.DatatypeDeclaration;
 import orc.ast.extended.declaration.type.TypeAliasDeclaration;
 import orc.ast.extended.declaration.type.TypeDeclaration;
-import orc.ast.extended.expression.Expression;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
