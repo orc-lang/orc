@@ -157,7 +157,7 @@ public class Config implements Cloneable {
 			cmdLine.append("\"");
 		}
 		if (this.getExceptionsOn()){
-			cmdLine.append("-exceptions");
+			cmdLine.append("-exceptions ");
 		}
 		return cmdLine.toString();
 	}
