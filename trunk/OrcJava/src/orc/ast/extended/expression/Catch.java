@@ -61,10 +61,13 @@ public class Catch extends Expression {
 		}
 		
 		orc.ast.simple.expression.Expression simpleTryBlock = tryBlock.simplify();
-		Variable v = new Variable();
-		List<TypeVariable> l = new ArrayList<TypeVariable>();
-		SourceLocation sl = getSourceLocation();
-		orc.ast.simple.expression.Def def = new orc.ast.simple.expression.Def(v, formals, body, l, null, null, sl);
+		Variable unnamedVar = new Variable();
+		List<TypeVariable> typeParams = new ArrayList<TypeVariable>();
+		SourceLocation sourceLocation = getSourceLocation();
+		orc.ast.simple.type.Type resultType = new orc.ast.simple.type.Bot();
+		orc.ast.simple.expression.Def def = 
+			new orc.ast.simple.expression.Def(unnamedVar, formals, body, 
+											  typeParams, null, resultType, sourceLocation);
 		return new orc.ast.simple.expression.Catch(def, simpleTryBlock);
 	}
 	

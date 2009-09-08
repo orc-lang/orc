@@ -89,6 +89,7 @@ public class Config implements Cloneable {
 	private String classPath = "";
 	private ClassLoader classLoader = Config.class.getClassLoader();
 	private boolean shortErrors = false;
+	private boolean exceptionsOn = false;
 
 	/**
 	 * Set properties based on command-line arguments.
@@ -154,6 +155,9 @@ public class Config implements Cloneable {
 			cmdLine.append("-- \"");
 			cmdLine.append(getInputFilename());
 			cmdLine.append("\"");
+		}
+		if (this.getExceptionsOn()){
+			cmdLine.append("-exceptions");
 		}
 		return cmdLine.toString();
 	}
@@ -264,6 +268,11 @@ public class Config implements Cloneable {
 		} catch (final FileNotFoundException e) {
 			throw new CmdLineException("Could not find input file '" + file + "'");
 		}
+	}
+	
+	@Option(name = "-exceptions", usage = "Enable exceptions (experimental), which is disabled by default.")
+	public void setExceptionsOn(final boolean exceptionsOn) {
+		this.exceptionsOn = exceptionsOn;
 	}
 
 	public void addInclude(final String include) {
@@ -445,6 +454,10 @@ public class Config implements Cloneable {
 
 	public String getClassPath() {
 		return classPath;
+	}
+	
+	public boolean getExceptionsOn() {
+		return exceptionsOn;
 	}
 
 	/**
