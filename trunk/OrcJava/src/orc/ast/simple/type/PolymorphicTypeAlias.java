@@ -9,7 +9,7 @@ import orc.type.tycon.Variance;
 
 /**
  * 
- * A syntactic type representing an aliased type with type parameters.
+ * A representation of an aliased type with type parameters.
  * 
  * @author dkitchin
  *

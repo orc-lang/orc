@@ -5,10 +5,12 @@ import java.util.List;
 
 import orc.error.compiletime.typing.ArgumentArityException;
 import orc.error.compiletime.typing.SubtypeFailureException;
+import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
+import orc.type.TypingContext;
 
 /**
- * A syntactic type tuple: (T,...,T)
+ * A type tuple: (T,...,T)
  * 
  * @author dkitchin
  *
@@ -22,11 +24,11 @@ public class TupleType extends Type {
 	}
 	
 	@Override
-	public orc.type.Type transform() {
+	public orc.type.Type transform(TypingContext ctx) throws TypeException {
 		List<orc.type.Type> newitems = new LinkedList<orc.type.Type>();
 		
 		for (Type T : items) {
-			newitems.add(T.transform());
+			newitems.add(T.transform(ctx));
 		}
 		
 		return new orc.type.structured.TupleType(newitems);

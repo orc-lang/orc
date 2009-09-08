@@ -130,8 +130,8 @@ public class TypeInstance extends Type {
 	}
 	
 	/* Call the type as a type instance using the params */
-	public Type call(Env<Type> ctx, Env<Type> typectx, List<Argument> args, List<Type> typeActuals) throws TypeException {
-		return tycon.makeCallableInstance(params).call(ctx,typectx,args,typeActuals);
+	public Type call(TypingContext ctx, List<Argument> args, List<Type> typeActuals) throws TypeException {
+		return tycon.makeCallableInstance(params).call(ctx,args,typeActuals);
 	}
 	
 	public Type call(List<Type> args) throws TypeException {

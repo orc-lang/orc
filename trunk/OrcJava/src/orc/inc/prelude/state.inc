@@ -3,7 +3,7 @@ General-purpose supplemental data structures.
 --}
 
 -- Make the List type constructor available
-type List = orc.type.ListType
+type List = orc.type.structured.ListType
 
 {--
 @site Some[A](A) :: Option[A]
@@ -23,7 +23,7 @@ An optional value which is not available.
 This site may also be used in a pattern.
 
 --}
-type Option = orc.type.OptionType
+type Option = orc.type.structured.OptionType
 site Some = orc.runtime.sites.core.Some
 site None = orc.runtime.sites.core.None
 

@@ -22,6 +22,7 @@ import orc.error.compiletime.typing.TypeException;
 
 /**
  * 
+ * A bound type variable.
  *
  * @author dkitchin
  */

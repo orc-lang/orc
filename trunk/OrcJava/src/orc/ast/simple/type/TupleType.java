@@ -10,7 +10,7 @@ import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
 
 /**
- * A syntactic type tuple: (T,...,T)
+ * A type tuple: (T,...,T)
  * 
  * @author dkitchin
  *

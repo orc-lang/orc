@@ -70,7 +70,8 @@ public class Let extends Expression {
 		else {
 			// Otherwise, use the tuple creation site
 			return new orc.ast.oil.expression.Call(new orc.ast.oil.expression.argument.Site(orc.ast.sites.Site.LET), 
-												   Argument.convertAll(args,vars));
+												   Argument.convertAll(args,vars),
+												   new LinkedList<orc.ast.oil.type.Type>());
 		}
 	}
 	

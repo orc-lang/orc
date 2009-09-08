@@ -17,7 +17,7 @@ import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.UncallableTypeException;
 
 /**
- * A syntactic arrow type: lambda[X,...,X](T,...,T) :: T
+ * A lambda type: lambda[X,...,X](T,...,T) :: T
  * 
  * @author dkitchin
  *

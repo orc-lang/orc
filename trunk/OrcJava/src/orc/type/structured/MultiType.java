@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.Set;
 
 import orc.ast.oil.expression.argument.Argument;
-import orc.env.Env;
 import orc.error.compiletime.typing.TypeException;
 import orc.type.Type;
+import orc.type.TypingContext;
 
 /**
  * A composite type supporting ad-hoc polymorphic calls.
@@ -45,11 +45,11 @@ public class MultiType extends Type {
 		return false;
 	}
 	
-	public Type call(Env<Type> ctx, Env<Type> typectx, List<Argument> args, List<Type> typeActuals) throws TypeException {
+	public Type call(TypingContext ctx, List<Argument> args, List<Type> typeActuals) throws TypeException {
 		
 		for(Type alt : alts) {
 			try {
-				return alt.call(ctx, typectx, args, typeActuals);
+				return alt.call(ctx, args, typeActuals);
 			}
 			catch (TypeException e) {}
 		}

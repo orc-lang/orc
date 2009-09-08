@@ -4,13 +4,13 @@ import java.util.Set;
 
 import orc.ast.oil.ContextualVisitor;
 import orc.ast.oil.Visitor;
-import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Fork;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Store;
 import orc.type.Type;
+import orc.type.TypingContext;
 
 public class Atomic extends Expression {
 
@@ -40,13 +40,13 @@ public class Atomic extends Expression {
 	}
 
 	@Override
-	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
-		return body.typesynth(ctx, typectx);
+	public Type typesynth(TypingContext ctx) throws TypeException {
+		return body.typesynth(ctx);
 	}
 
 	@Override
-	public void typecheck(Type T, Env<Type> ctx, Env<Type> typectx) throws TypeException {
-		body.typecheck(T, ctx, typectx);
+	public void typecheck(TypingContext ctx, Type T) throws TypeException {
+		body.typecheck(ctx, T);
 	}
 
 	@Override

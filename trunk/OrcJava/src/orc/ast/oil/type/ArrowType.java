@@ -5,10 +5,15 @@ import java.util.List;
 
 import orc.error.compiletime.typing.ArgumentArityException;
 import orc.error.compiletime.typing.SubtypeFailureException;
+import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
+import orc.type.TypingContext;
 
 /**
- * A syntactic arrow type: lambda[X,...,X](T,...,T) :: T
+ * An arrow (lambda) type: lambda[n](T,...,T) :: T
+ * 
+ * n is just a type arity, since type variables are nameless
+ * in the OIL AST.
  * 
  * @author dkitchin
  *
@@ -25,13 +30,13 @@ public class ArrowType extends Type {
 		this.typeArity = typeArity;
 	}
 
-	public orc.type.Type transform() {
+	public orc.type.Type transform(TypingContext ctx) throws TypeException {
 		
 		List<orc.type.Type> newargs = new LinkedList<orc.type.Type>();
 		for (Type T : argTypes) {
-			newargs.add(T.transform());
+			newargs.add(T.transform(ctx));
 		}
-		orc.type.Type newresult = resultType.transform();
+		orc.type.Type newresult = resultType.transform(ctx);
 		
 		return new orc.type.structured.ArrowType(newargs, newresult, typeArity);
 	}

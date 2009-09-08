@@ -12,21 +12,23 @@ import orc.error.compiletime.typing.TypeException;
 
 /**
  * 
- * Abstract superclass of all syntactic types.
+ * Abstract superclass of syntactic types in the simple AST.
  * 
- * Syntactic types occur in extended and simple ASTs. They must be converted
- * to actual types (orc.type.*) before use in the Orc typechecker, since they
- * use a named representation of type variables. This conversion occurs when
- * the simple AST is translated to OIL.
+ * Within the simple AST, bound type variables are represented by objects (TypeVariable),
+ * rather than strings (NamedType). Free type variables may still occur (FreeTypeVariable),
+ * but they must be eliminated before conversion to the next AST stage.
  * 
- * Syntactic types do not have methods like meet, join, and subtype; their
- * actual type counterparts do. Thus, syntactic types permit only the simplest
- * analyses; more complex analysis must wait until the syntactic type is
- * resolved to an actual type.
+ * Syntactic types occur in all of the AST forms. The typechecker
+ * converts them to a different form (subclasses of orc.type.Type)
+ * for its own internal use.
+ * 
+ * Syntactic types do not have methods like meet, join, and subtype; only their
+ * typechecker counterparts do. Thus, syntactic types permit only the simplest
+ * analyses; more complex analyses must wait until the syntactic type is
+ * converted within the typechecker.
  * 
  * All syntactic types can be written explicitly in a program, whereas
- * some actual types are only generated during compiler translations or during
- * typechecking itself.
+ * many of the typechecker's internal types are not representable in programs.
  * 
  * @author dkitchin
  *

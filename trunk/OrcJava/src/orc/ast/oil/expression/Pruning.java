@@ -14,6 +14,7 @@ import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Store;
 import orc.runtime.nodes.Unwind;
 import orc.type.Type;
+import orc.type.TypingContext;
 
 public class Pruning extends Expression {
 
@@ -53,17 +54,15 @@ public class Pruning extends Expression {
 	}
 	
 	@Override
-	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
-		
-		Type rtype = right.typesynth(ctx, typectx);
-		return left.typesynth(ctx.extend(rtype), typectx);
+	public Type typesynth(TypingContext ctx) throws TypeException {
+		Type rtype = right.typesynth(ctx);
+		return left.typesynth(ctx.bindVar(rtype));
 	}
 
 	@Override
-	public void typecheck(Type T, Env<Type> ctx, Env<Type> typectx) throws TypeException {
-		Env<Type> lctx = ctx.clone();
-		lctx.add(right.typesynth(ctx, typectx));
-		left.typecheck(T, lctx, typectx);
+	public void typecheck(TypingContext ctx, Type T) throws TypeException {
+		Type rtype = right.typesynth(ctx);
+		left.typecheck(ctx.bindVar(rtype), T);
 	}
 
 	@Override

@@ -6,6 +6,7 @@ import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.type.Type;
+import orc.type.TypingContext;
 import orc.ast.oil.ContextualVisitor;
 import orc.ast.oil.Visitor;
 import orc.ast.oil.expression.argument.Argument;
@@ -34,11 +35,9 @@ public class Throw extends Expression {
 	}
 	
 	@Override
-	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
-		Env<Type> rctx = ctx.clone();
-		
+	public Type typesynth(TypingContext ctx) throws TypeException {
 		/* TODO: thrown type = join of thrown type and this synthesized type */ 
-		exception.typesynth(ctx, typectx);
+		exception.typesynth(ctx);
 		
 		// throw e : Bot, so long as e is typable.
 		return Type.BOT;

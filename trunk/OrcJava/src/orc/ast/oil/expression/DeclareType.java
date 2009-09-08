@@ -4,11 +4,11 @@ import java.util.Set;
 
 import orc.ast.oil.ContextualVisitor;
 import orc.ast.oil.Visitor;
-import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Node;
 import orc.type.Type;
+import orc.type.TypingContext;
 
 /**
  * 
@@ -42,14 +42,16 @@ public class DeclareType extends Expression {
 	}
 
 	@Override
-	public orc.type.Type typesynth(Env<orc.type.Type> ctx, Env<orc.type.Type> typectx) throws TypeException {
-		orc.type.Type actualType = type.transform().subst(typectx);
-		return body.typesynth(ctx, typectx.extend(actualType));
+	public orc.type.Type typesynth(TypingContext ctx) throws TypeException {
+		orc.type.Type actualType = ctx.promote(type);
+		TypingContext newctx = ctx.bindType(actualType);
+		return body.typesynth(newctx);
 	}
 
-	public void typecheck(orc.type.Type T, Env<orc.type.Type> ctx, Env<orc.type.Type> typectx) throws TypeException {
-		orc.type.Type actualType = type.transform().subst(typectx);
-		body.typecheck(T, ctx, typectx.extend(actualType));
+	public void typecheck(TypingContext ctx, orc.type.Type T) throws TypeException {
+		orc.type.Type actualType = ctx.promote(type);
+		TypingContext newctx = ctx.bindType(actualType);
+		body.typecheck(newctx, T);
 	}
 
 	@Override

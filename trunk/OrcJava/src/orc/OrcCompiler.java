@@ -38,6 +38,7 @@ import orc.error.compiletime.CompileMessageRecorder.Severity;
 import orc.parser.OrcParser;
 import orc.progress.ProgressListener;
 import orc.type.Type;
+import orc.type.TypingContext;
 
 /**
  * Provides Orc's compilation functions.
@@ -194,10 +195,12 @@ public class OrcCompiler implements Callable<Expression> {
 		if (config.getTypeChecking()) {
 			progress.setNote("Typechecking");
 
-			final Type rt = ex.typesynth(new Env<Type>(), new Env<Type>());
-			config.getStdout().println("... :: " + rt);
-			config.getStdout().println("Program typechecked successfully.");
-			config.getStdout().println();
+			final Type rt = ex.typesynth(new TypingContext(config));
+			if (!config.getQuietChecking()) {
+				config.getStdout().println("... :: " + rt);
+				config.getStdout().println("Program typechecked successfully.");
+				config.getStdout().println();
+			}
 		}
 		progress.setProgress(0.73);
 		if (progress.isCanceled()) {

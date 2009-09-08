@@ -9,12 +9,12 @@ import java.util.List;
 import java.util.Map;
 
 import orc.ast.oil.expression.argument.Argument;
-import orc.env.Env;
 import orc.error.compiletime.typing.TypeArityException;
 import orc.error.compiletime.typing.TypeException;
 import orc.lib.state.types.ArrayType;
 import orc.lib.state.types.RefType;
 import orc.type.Type;
+import orc.type.TypingContext;
 import orc.type.tycon.Tycon;
 import orc.type.tycon.Variance;
 
@@ -87,8 +87,7 @@ class CallableJavaInstance extends Type {
 	}
 	
 	@Override
-	public Type call(Env<Type> ctx, Env<Type> typectx, List<Argument> args,
-			List<Type> typeActuals) throws TypeException {
+	public Type call(TypingContext ctx, List<Argument> args, List<Type> typeActuals) throws TypeException {
 				
 		String f = Argument.asField(args);
 		
@@ -129,7 +128,7 @@ class CallableJavaInstance extends Type {
 
 			if (!matchingMethods.isEmpty()) {
 				Type target = Type.fromJavaMethods(matchingMethods, javaCtx);
-				return target.call(ctx, typectx, args, typeActuals);
+				return target.call(ctx, args, typeActuals);
 			}
 			else {
 				throw new TypeException("This Java class does not implement the 'apply' method, so it has no default site behavior. Use a method call.");

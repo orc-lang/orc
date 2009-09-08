@@ -20,7 +20,8 @@ import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UnboundTypeException;
 
 /**
- * 
+ *
+ * A free type variable.
  *
  * @author dkitchin
  */

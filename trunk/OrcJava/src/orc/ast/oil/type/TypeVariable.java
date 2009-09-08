@@ -17,9 +17,14 @@ package orc.ast.oil.type;
 
 import orc.env.SearchFailureException;
 import orc.error.OrcError;
+import orc.error.compiletime.typing.TypeException;
+import orc.type.TypingContext;
 
 /**
+ * A bound type variable.
  * 
+ * Type variables in OIL, like program variables, are
+ * represented namelessly by deBruijn indices. 
  *
  * @author dkitchin
  */
@@ -38,7 +43,7 @@ public class TypeVariable extends Type {
 	 * @see orc.ast.simple.type.Type#convert(orc.env.Env)
 	 */
 	@Override
-	public orc.type.Type transform() {
+	public orc.type.Type transform(TypingContext ctx) throws TypeException {
 		return new orc.type.TypeVariable(index, name);
 	}
 	

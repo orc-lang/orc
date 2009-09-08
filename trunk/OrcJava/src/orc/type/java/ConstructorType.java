@@ -8,12 +8,12 @@ import java.util.List;
 import java.util.Map;
 
 import orc.ast.oil.expression.argument.Argument;
-import orc.env.Env;
 import orc.error.compiletime.typing.TypeArityException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.MessageNotUnderstoodException;
 import orc.lib.state.types.RefType;
 import orc.type.Type;
+import orc.type.TypingContext;
 import orc.type.structured.ArrowType;
 
 
@@ -36,8 +36,7 @@ public class ConstructorType extends Type {
 	}
 
 	@Override
-	public Type call(Env<Type> ctx, Env<Type> typectx, List<Argument> args,
-			List<Type> typeActuals) throws TypeException {
+	public Type call(TypingContext ctx, List<Argument> args, List<Type> typeActuals) throws TypeException {
 		
 		/* Type inference for type parameters to Java constructors is 
 		 * not yet implemented, and may be impossible to reasonably
@@ -103,7 +102,7 @@ public class ConstructorType extends Type {
 					if (javaTypes.length != args.size()) { continue; }
 					for(int i = 0; i < javaTypes.length; i++) {
 						Type orcType = Type.fromJavaType(javaTypes[i], javaCtx);
-						args.get(i).typecheck(orcType, ctx, typectx);
+						args.get(i).typecheck(ctx, orcType);
 					}
 				}
 				catch (TypeException e) { continue; }

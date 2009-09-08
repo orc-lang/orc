@@ -13,7 +13,8 @@ import orc.error.compiletime.typing.UncallableTypeException;
 import orc.type.java.ClassTycon;
 
 /**
- * A syntactic type which refers to a Java class (which we will treat as an Orc type).
+ * A type which refers to a Java class (which we will treat as an Orc type).
+ * 
  * @author quark, dkitchin
  */
 public class ClassnameType extends Type {

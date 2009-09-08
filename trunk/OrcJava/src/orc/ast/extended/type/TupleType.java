@@ -8,7 +8,7 @@ import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.UncallableTypeException;
 
 /**
- * A syntactic type tuple: (T,...,T)
+ * A type tuple: (T,...,T)
  * 
  * @author dkitchin
  *

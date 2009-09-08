@@ -4,12 +4,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 import orc.error.compiletime.typing.TypeException;
+import orc.type.TypingContext;
 import orc.type.tycon.DatatypeTycon;
 import orc.type.tycon.Variance;
 
 /**
  * 
- * A syntactic type encompassing all of the information associated with a datatype.
+ * A type encompassing all of the information associated with a datatype.
  * 
  * @author dkitchin
  *
@@ -27,7 +28,7 @@ public class Datatype extends Type {
 	}
 
 	@Override
-	public orc.type.Type transform() {
+	public orc.type.Type transform(TypingContext ctx) throws TypeException {
 		
 		// We use this array to infer the variance of each type parameter
 		Variance[] V = new Variance[typeArity];
@@ -45,7 +46,7 @@ public class Datatype extends Type {
 			List<orc.type.Type> ts = new LinkedList<orc.type.Type>();
 			for (Type t : con) {
 				// Convert the syntactic type to a true type
-				orc.type.Type newT = t.transform();
+				orc.type.Type newT = t.transform(ctx);
 				// Add it as an entry for the new constructor
 				ts.add(newT);
 				// Infer the variance of each type parameter it uses;

@@ -10,7 +10,7 @@ import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UncallableTypeException;
 
 /**
- * A syntactic arrow type: lambda[X,...,X](T,...,T) :: T
+ * An arrow (lambda) type: lambda[X,...,X](T,...,T) :: T
  * 
  * @author dkitchin
  *

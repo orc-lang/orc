@@ -7,6 +7,7 @@ import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.type.Type;
+import orc.type.TypingContext;
 import orc.type.ground.Message;
 
 
@@ -47,7 +48,7 @@ public class Field extends Argument implements Comparable<Field>{
 	}
 
 	@Override
-	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
+	public Type typesynth(TypingContext ctx) throws TypeException {
 		return new Message(this);
 	}
 	

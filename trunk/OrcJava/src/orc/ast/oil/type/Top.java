@@ -1,5 +1,8 @@
 package orc.ast.oil.type;
 
+import orc.error.compiletime.typing.TypeException;
+import orc.type.TypingContext;
+
 
 /**
  * The syntactic type 'Top', supertype of all other types.
@@ -10,7 +13,7 @@ package orc.ast.oil.type;
 public class Top extends Type {
 
 	@Override
-	public orc.type.Type transform() {
+	public orc.type.Type transform(TypingContext ctx) throws TypeException {
 		return orc.type.Type.TOP;
 	}
 

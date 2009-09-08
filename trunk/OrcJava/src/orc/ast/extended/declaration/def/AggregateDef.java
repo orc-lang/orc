@@ -127,6 +127,10 @@ public class AggregateDef {
 		if (this.argTypes == null) {
 			this.argTypes = argTypes;
 		}
+		else if (this.argTypes.size() == 0 && argTypes.size() == 0) {
+			// Do nothing.
+			// Redefining arg types from empty to empty is fine.
+		}
 		else { 
 			CompilationException ce = new CompilationException("Multiple argument type definitions");
 			ce.setSourceLocation(location);

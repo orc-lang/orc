@@ -10,6 +10,7 @@ import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.SiteResolutionException;
 import orc.error.compiletime.typing.TypeException;
 import orc.type.Type;
+import orc.type.TypingContext;
 
 
 /**
@@ -47,7 +48,7 @@ public class Site extends Argument {
 	}
 
 	@Override
-	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
+	public Type typesynth(TypingContext ctx) throws TypeException {
 		throw new OrcError("Unexpected orc.ast.oil.arg.Site");
 	}
 	

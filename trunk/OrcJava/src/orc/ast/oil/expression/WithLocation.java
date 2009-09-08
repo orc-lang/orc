@@ -4,13 +4,13 @@ import java.util.Set;
 
 import orc.ast.oil.ContextualVisitor;
 import orc.ast.oil.Visitor;
-import orc.env.Env;
 import orc.error.Located;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Node;
 import orc.type.Type;
+import orc.type.TypingContext;
 
 /**
  * Annotate an expression with a source location.
@@ -37,9 +37,9 @@ public class WithLocation extends Expression implements Located {
 	}
 
 	@Override
-	public Type typesynth(Env<Type> ctx, Env<Type> typectx) throws TypeException {
+	public Type typesynth(TypingContext ctx) throws TypeException {
 		try {
-			return body.typesynth(ctx, typectx);
+			return body.typesynth(ctx);
 		}
 		catch (TypeException e) {
 			/* If this error has no location, give it this (least enclosing) location */
@@ -51,9 +51,9 @@ public class WithLocation extends Expression implements Located {
 	}
 	
 	@Override
-	public void typecheck(Type T, Env<Type> ctx, Env<Type> typectx) throws TypeException {
+	public void typecheck(TypingContext ctx, Type T) throws TypeException {
 		try {
-			body.typecheck(T, ctx, typectx);
+			body.typecheck(ctx, T);
 		}
 		catch (TypeException e) {
 			/* If this error has no location, give it this (least enclosing) location */
