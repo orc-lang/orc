@@ -835,6 +835,7 @@ Type Type =
 	}
 	/ TOP { yyValue = Type.TOP; }
 	/ BOT { yyValue = Type.BOT; }
+	/ UNDERSCORE { yyValue = Type.TOP; } /* allows _ in datatype decls for untyped mode */ 
 	/ LAMBDA typeFormals:TypeFormals argTypes:TypeListGroup DOUBLE_COLON resultType:Type {
 		yyValue = new LambdaType(argTypes, resultType, typeFormals);
 	}
