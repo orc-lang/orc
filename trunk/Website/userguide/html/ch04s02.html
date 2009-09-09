@@ -1,11 +1,11 @@
-<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>4.2.&nbsp;Polymorphism</title><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide v0.9.9"><link rel="up" href="ch04.html" title="Chapter&nbsp;4.&nbsp;Type Checking"><link rel="prev" href="ch04.html" title="Chapter&nbsp;4.&nbsp;Type Checking"><link rel="next" href="ch04s03.html" title="4.3.&nbsp;Interacting with Java"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"><link href="style.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">4.2.&nbsp;Polymorphism</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch04.html">Prev</a>&nbsp;</td><th align="center" width="60%">Chapter&nbsp;4.&nbsp;Type Checking</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ch04s03.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N11A18"></a>4.2.&nbsp;Polymorphism</h2></div></div></div>
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>4.2.&nbsp;Polymorphism</title><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide v1.0.0"><link rel="up" href="ch04.html" title="Chapter&nbsp;4.&nbsp;Type Checking"><link rel="prev" href="ch04.html" title="Chapter&nbsp;4.&nbsp;Type Checking"><link rel="next" href="ch04s03.html" title="4.3.&nbsp;Interacting with Java"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"><link href="style.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">4.2.&nbsp;Polymorphism</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch04.html">Prev</a>&nbsp;</td><th align="center" width="60%">Chapter&nbsp;4.&nbsp;Type Checking</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ch04s03.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N1192A"></a>4.2.&nbsp;Polymorphism</h2></div></div></div>
 
 In this section we examine a powerful feature of Orc's typechecker: <span class="emphasis"><em>parametric polymorphism</em></span>.
 This allows us to define types that take other types as parameters; the same theory underlies Java's generics.
 
 
  
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11A1F"></a>4.2.1.&nbsp;Parametric types</h3></div></div></div><p>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11931"></a>4.2.1.&nbsp;Parametric types</h3></div></div></div><p>
 What is the type of <code class="code">[<span class="hl-literal">1</span>,<span class="hl-literal">2</span>,<span class="hl-literal">3</span>]</code>? It is a list, containing Integers. What about <code class="code">[<span class="hl-literal">true</span>, <span class="hl-literal">true</span>]</code>?
 Again a list, but it contains Booleans instead. It would be very cumbersome to have separate types such
 as <code class="code"><span class="hl-variable">IntegerList</span></code> and <code class="code"><span class="hl-variable">BooleanList</span></code> for each of these possibilities, and in fact
@@ -27,7 +27,7 @@ declaration
 
 is part of the standard library; it declares the <code class="code"><span class="hl-variable">Buffer</span></code> type operator. 
  
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11A59"></a>4.2.2.&nbsp;Parametric functions</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1196B"></a>4.2.2.&nbsp;Parametric functions</h3></div></div></div><p>
 How do we write functions that use parametric types? Consider the following definition
 of the <code class="code"><span class="hl-variable">append</span></code> function, which appends two lists:
 
@@ -40,7 +40,7 @@ of the <code class="code"><span class="hl-variable">append</span></code> functio
 The function <code class="code"><span class="hl-variable">append</span></code> has a <span class="emphasis"><em>type argument</em></span>, T, in its
 signature. The type T is the type of elements in the lists that we are appending. Notice that both argument
 lists must contain the same type of elements. The resulting list contains elements of that same type.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11A6B"></a>4.2.3.&nbsp;Generic calls</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1197D"></a>4.2.3.&nbsp;Generic calls</h3></div></div></div><p>
 When calling the <code class="code"><span class="hl-variable">append</span></code> function, in addition to providing its normal arguments, we must
 also provide its type argument:
 
@@ -79,7 +79,7 @@ a buffer that will contain Numbers, a type parameter must be given:
 <span class="hl-keyword">val</span> <span class="hl-variable">b</span> = <span class="hl-site">Buffer</span>[<span class="hl-variable">Number</span>]()
 </pre>
 
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11A8E"></a>4.2.4.&nbsp;Polymorphic aliases</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N119A0"></a>4.2.4.&nbsp;Polymorphic aliases</h3></div></div></div><p>
 A type alias may have type parameters. For example, here is a type alias for triples:
 
 <pre class="programlisting">
@@ -89,7 +89,7 @@ A type alias may have type parameters. For example, here is a type alias for tri
 <code class="code"><span class="hl-variable">Triple</span></code> is now a type operator that takes one parameter. Any occurrence of
 <code class="code"><span class="hl-site">Triple</span>[<span class="hl-variable">T</span>]</code> is equivalent to <code class="code">(<span class="hl-variable">T</span>,<span class="hl-variable">T</span>,<span class="hl-variable">T</span>)</code>.
 
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11AA0"></a>4.2.5.&nbsp;Polymorphic datatypes</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N119B2"></a>4.2.5.&nbsp;Polymorphic datatypes</h3></div></div></div><p>
 Datatypes can also have type parameters. This allows a programmer to
 define very useful generic data structures. For example, this is necessary
 to define a reasonable datatype for trees:
