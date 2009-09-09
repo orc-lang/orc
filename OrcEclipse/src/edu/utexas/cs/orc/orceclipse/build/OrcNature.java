@@ -23,8 +23,10 @@ import edu.utexas.cs.orc.orceclipse.Activator;
 
 /**
  * Orc project nature. When a project is configured with the 
- * Orc nature, it will have the Orc builder, Orc project preferences,
+ * Orc nature, it will have the Orc builder,
  * Orc project actions, and so on.
+ *
+ * @see org.eclipse.core.resources.IProjectNature
  */
 public class OrcNature extends ProjectNatureBase {
 	private static final String natureID = Activator.getInstance().getID() + ".project.orcNature"; //$NON-NLS-1$

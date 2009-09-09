@@ -27,7 +27,7 @@ import org.eclipse.ui.IPerspectiveFactory;
  * When a new page is created in the workbench a perspective is used to define
  * the initial page layout.
  * <p>
- * This perspective is whole defined by the <code>plugin.xml</code> file,
+ * This perspective is wholly defined by the <code>plugin.xml</code> file,
  * but a class is required. 
  * 
  * @author jthywiss

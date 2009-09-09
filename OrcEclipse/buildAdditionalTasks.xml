@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- build.xml - Ant buildfile (additional tasks for Eclipse build)
+<!-- buildAdditionalTasks.xml - Ant buildfile (additional tasks for Eclipse build)
      Project OrcEclipse
 
      $Id$

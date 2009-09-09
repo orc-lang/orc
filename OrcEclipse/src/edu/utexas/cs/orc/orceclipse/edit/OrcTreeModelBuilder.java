@@ -35,6 +35,9 @@ import org.eclipse.imp.services.base.TreeModelBuilderBase;
 
 /**
  * Builds an Outline view tree that is a subset of the Orc extended AST
+ *
+ * @see orc.ast.extended.ASTNode
+ * @see org.eclipse.imp.editor.ModelTreeNode
  */
 public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 	private static final int INCLUDE_CATEGORY = 1;

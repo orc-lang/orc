@@ -41,7 +41,9 @@ import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
  * <p>
  * A builder may be activated on a file containing Orc code every time it has
  * changed (when "Build automatically" is on), or when the programmer chooses to
- * "Build" a project. 
+ * "Build" a project.
+ *
+ * @see org.eclipse.core.resources.IncrementalProjectBuilder
  */
 public class OrcBuilder extends BuilderBase {
 	/**
