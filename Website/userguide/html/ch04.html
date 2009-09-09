@@ -1,12 +1,12 @@
-<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Chapter&nbsp;4.&nbsp;Type Checking</title><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide v0.9.9"><link rel="up" href="index.html" title="Orc User Guide v0.9.9"><link rel="prev" href="ch03s04.html" title="3.4.&nbsp;Web Services"><link rel="next" href="ch04s02.html" title="4.2.&nbsp;Polymorphism"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"><link href="style.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">Chapter&nbsp;4.&nbsp;Type Checking</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch03s04.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ch04s02.html">Next</a></td></tr></table><hr></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="chapter.typechecker"></a>Chapter&nbsp;4.&nbsp;Type Checking</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="ch04.html#N1184D">4.1. Simple Typing</a></span></dt><dd><dl><dt><span class="section"><a href="ch04.html#N11851">4.1.1. Values and Operators</a></span></dt><dt><span class="section"><a href="ch04.html#N11888">4.1.2. 
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Chapter&nbsp;4.&nbsp;Type Checking</title><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide v1.0.0"><link rel="up" href="index.html" title="Orc User Guide v1.0.0"><link rel="prev" href="ch03s04.html" title="3.4.&nbsp;Web Services"><link rel="next" href="ch04s02.html" title="4.2.&nbsp;Polymorphism"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"><link href="style.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">Chapter&nbsp;4.&nbsp;Type Checking</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch03s04.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ch04s02.html">Next</a></td></tr></table><hr></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="chapter.typechecker"></a>Chapter&nbsp;4.&nbsp;Type Checking</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="ch04.html#N1175F">4.1. Simple Typing</a></span></dt><dd><dl><dt><span class="section"><a href="ch04.html#N11763">4.1.1. Values and Operators</a></span></dt><dt><span class="section"><a href="ch04.html#N1179A">4.1.2. 
                     signal and stop
-                </a></span></dt><dt><span class="section"><a href="ch04.html#N118C8">4.1.3. Tuples</a></span></dt><dt><span class="section"><a href="ch04.html#N118D5">4.1.4. Combinators</a></span></dt><dt><span class="section"><a href="ch04.html#N11940">4.1.5. Conditionals</a></span></dt><dt><span class="section"><a href="ch04.html#N11951">4.1.6. Defined Functions</a></span></dt><dt><span class="section"><a href="ch04.html#N119AD">4.1.7. Ascriptions</a></span></dt><dt><span class="section"><a href="ch04.html#N119BF">4.1.8. Aliasing</a></span></dt><dt><span class="section"><a href="ch04.html#N119CD">4.1.9. Datatypes</a></span></dt><dt><span class="section"><a href="ch04.html#N119DE">4.1.10. Interacting with External Services</a></span></dt><dt><span class="section"><a href="ch04.html#N11A07">4.1.11. Assertions</a></span></dt></dl></dd><dt><span class="section"><a href="ch04s02.html">4.2. Polymorphism</a></span></dt><dd><dl><dt><span class="section"><a href="ch04s02.html#N11A1F">4.2.1. Parametric types</a></span></dt><dt><span class="section"><a href="ch04s02.html#N11A59">4.2.2. Parametric functions</a></span></dt><dt><span class="section"><a href="ch04s02.html#N11A6B">4.2.3. Generic calls</a></span></dt><dt><span class="section"><a href="ch04s02.html#N11A8E">4.2.4. Polymorphic aliases</a></span></dt><dt><span class="section"><a href="ch04s02.html#N11AA0">4.2.5. Polymorphic datatypes</a></span></dt></dl></dd><dt><span class="section"><a href="ch04s03.html">4.3. Interacting with Java</a></span></dt><dt><span class="section"><a href="ch04s04.html">4.4. Exception Handling</a></span></dt><dt><span class="section"><a href="ch04s05.html">4.5. Syntax of Typed Orc</a></span></dt></dl></div><p>
+                </a></span></dt><dt><span class="section"><a href="ch04.html#N117DA">4.1.3. Tuples</a></span></dt><dt><span class="section"><a href="ch04.html#N117E7">4.1.4. Combinators</a></span></dt><dt><span class="section"><a href="ch04.html#N11852">4.1.5. Conditionals</a></span></dt><dt><span class="section"><a href="ch04.html#N11863">4.1.6. Defined Functions</a></span></dt><dt><span class="section"><a href="ch04.html#N118BF">4.1.7. Ascriptions</a></span></dt><dt><span class="section"><a href="ch04.html#N118D1">4.1.8. Aliasing</a></span></dt><dt><span class="section"><a href="ch04.html#N118DF">4.1.9. Datatypes</a></span></dt><dt><span class="section"><a href="ch04.html#N118F0">4.1.10. Interacting with External Services</a></span></dt><dt><span class="section"><a href="ch04.html#N11919">4.1.11. Assertions</a></span></dt></dl></dd><dt><span class="section"><a href="ch04s02.html">4.2. Polymorphism</a></span></dt><dd><dl><dt><span class="section"><a href="ch04s02.html#N11931">4.2.1. Parametric types</a></span></dt><dt><span class="section"><a href="ch04s02.html#N1196B">4.2.2. Parametric functions</a></span></dt><dt><span class="section"><a href="ch04s02.html#N1197D">4.2.3. Generic calls</a></span></dt><dt><span class="section"><a href="ch04s02.html#N119A0">4.2.4. Polymorphic aliases</a></span></dt><dt><span class="section"><a href="ch04s02.html#N119B2">4.2.5. Polymorphic datatypes</a></span></dt></dl></dd><dt><span class="section"><a href="ch04s03.html">4.3. Interacting with Java</a></span></dt><dt><span class="section"><a href="ch04s04.html">4.4. Syntax of Typed Orc</a></span></dt></dl></div><p>
 The Orc language, as it is described in <a class="link" href="ch01.html" title="Chapter&nbsp;1.&nbsp;The Orc Programming Language">Chapter 1</a>, is
 dynamically typed. If an operation occurs at runtime which is not type-correct, the call
 which attempted that operation becomes silent, and produces a type error that is reported
 on the console. 
 </p><p>
-Orc also has a static typechecker, which will guarantee that a program is
+Orc also has an optional static typechecker, which will guarantee that a program is
 free of type errors before the program is run. For every expression in the program,
 the typechecker tries to find the types of values that it could publish, 
 and checks that all such types are consistent. It performs a limited form of
@@ -24,20 +24,23 @@ and a typing strategy for external services. The typechecker supports both
 though it does not currently implement the extended version 
 of the algorithm which allows both of them simultaneously (bounded polymorphism).
 </p><p>
-The typechecker is enabled with the <code class="code">-<span class="hl-variable">typecheck</span></code> command line switch. If the typechecker 
-can verify that a program is correctly typed, it will display the message
+The typechecker is disabled by default, though typed syntax is still permitted (and types are still
+checked for syntax errors) even when the typechecker is not used. It may be enabled as a project
+property in the Eclipse plugin, or by using the <code class="code">-<span class="hl-variable">typecheck</span></code> switch on the command line. 
+</p><p>
+If the typechecker can verify that a program is correctly typed, it will display the message
 </p><p>
 <code class="code">... :: </code>T
 </p><p>
 on the console. The symbol <code class="code">::</code> means "has type", and T is the type of any value that
 the program might publish.
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N1184D"></a>4.1.&nbsp;Simple Typing</h2></div></div></div>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N1175F"></a>4.1.&nbsp;Simple Typing</h2></div></div></div>
 
 In this section we will see how Orc programs are typechecked, starting with
 simple expressions like constants and arithmetic operations, and working up to more interesting
 cases such as defined functions, the concurrency combinators, and calls to external services.
 
-<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11851"></a>4.1.1.&nbsp;Values and Operators</h3></div></div></div><p>
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11763"></a>4.1.1.&nbsp;Values and Operators</h3></div></div></div><p>
 Each of the Orc constants has the expected type:
 
 <div class="itemizedlist"><ul type="disc"><li><code class="code"><span class="hl-literal">true</span> , <span class="hl-literal">false</span></code><code class="code"> :: </code><code class="code"><span class="hl-variable">Boolean</span></code></li><li> ... <code class="code"> -<span class="hl-literal">1</span>, <span class="hl-literal">0</span>, <span class="hl-literal">1</span> </code> ... <code class="code"> :: </code><code class="code"><span class="hl-variable">Integer</span></code></li><li> ... <code class="code"> <span class="hl-literal">"orc"</span> , <span class="hl-literal">"ceci n'est pas une |"</span></code> ... <code class="code"> :: </code><code class="code"><span class="hl-variable">String</span></code></li><li> ... <code class="code"> <span class="hl-literal">0.001</span>, -<span class="hl-literal">1.5</span>, <span class="hl-literal">2.71828</span> </code> ... <code class="code"> :: </code><code class="code"><span class="hl-variable">Number</span></code></li></ul></div>
@@ -51,7 +54,7 @@ two Boolean operands and returns a Boolean result. Some of the arithmetic operat
 operands has type Integer, but with one or more Number operands it instead has type Number. 
 
 
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11888"></a>4.1.2.&nbsp;
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1179A"></a>4.1.2.&nbsp;
                     <code class="code"><span class="hl-keyword">signal</span></code> and <code class="code"><span class="hl-keyword">stop</span></code>
                 </h3></div></div></div><p>
 There are two other important types:
@@ -75,12 +78,12 @@ In Orc, however, <code class="code"><span class="hl-variable">Bot</span></code> 
 are written to carry out ongoing concurrent activities but never publish any values, and the type system 
 can use the type <code class="code"><span class="hl-variable">Bot</span></code> to indicate that no publications will ever be seen from such
 expressions.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N118C8"></a>4.1.3.&nbsp;Tuples</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N117DA"></a>4.1.3.&nbsp;Tuples</h3></div></div></div><p>
 The type of a tuple is a tuple of the types of each of its elements.
 
 <div class="itemizedlist"><ul type="disc"><li><code class="code">(<span class="hl-literal">3</span>+<span class="hl-literal">3</span>, <span class="hl-literal">true</span>) :: (<span class="hl-variable">Integer</span>, <span class="hl-variable">Boolean</span>)</code></li><li><code class="code">(<span class="hl-literal">"orc"</span>, (<span class="hl-literal">2</span>, <span class="hl-literal">"orc"</span>)) :: (<span class="hl-variable">String</span>, (<span class="hl-variable">Integer</span>, <span class="hl-variable">String</span>))</code></li></ul></div>
 
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N118D5"></a>4.1.4.&nbsp;Combinators</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N118D8"></a>4.1.4.1.&nbsp;Parallel</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N117E7"></a>4.1.4.&nbsp;Combinators</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N117EA"></a>4.1.4.1.&nbsp;Parallel</h4></div></div></div><p>
 The type of F <code class="code"><span class="hl-combinator">|</span></code> G is the <span class="emphasis"><em>join</em></span> of the types of F and G.
 </p><p>
 A <span class="emphasis"><em>common supertype</em></span> of two types S and T is any type U such that 
@@ -116,7 +119,7 @@ therefore always a safe join, if not a very useful one.
 
 <div class="itemizedlist"><ul type="disc"><li><code class="code"><span class="hl-literal">3</span> <span class="hl-combinator">|</span> <span class="hl-literal">"three"</span>  ::  <span class="hl-variable">Top</span></code></li></ul></div>
 
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1190D"></a>4.1.4.2.&nbsp;Sequential</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1181F"></a>4.1.4.2.&nbsp;Sequential</h4></div></div></div><p>
 The type of F <code class="code">&gt;<span class="hl-variable">x</span>&gt;</code> G is the type of G using the assumption x :: T, where T is the type of F.
 </p><p>
 If a pattern is used instead of a variable, the structure of the pattern must match the structure
@@ -124,20 +127,20 @@ of the type of F, and the types for each variable bound in G are taken from the 
 pieces of the type of F. For example, in the expression F <code class="code">&gt;(<span class="hl-variable">x</span>,<span class="hl-variable">b</span>)&gt;</code> G,
 where F <code class="code">:: (<span class="hl-variable">Integer</span>, <span class="hl-variable">Boolean</span>)</code>, G is typechecked with the assumptions <code class="code"><span class="hl-variable">x</span> :: <span class="hl-variable">Integer</span></code>
 and <code class="code"><span class="hl-variable">b</span> :: <span class="hl-variable">Boolean</span></code>.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11923"></a>4.1.4.3.&nbsp;Pruning</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11835"></a>4.1.4.3.&nbsp;Pruning</h4></div></div></div><p>
 The type of F <code class="code">&lt;<span class="hl-variable">x</span>&lt;</code> G is the type of F using the assumption x :: T, where T is the type of G.
 </p><p>
 When a declaration <code class="code"><span class="hl-keyword">val</span> <span class="hl-variable">x</span> = </code> F occurs, the expression in scope for the declaration
 is typechecked using the assumption x :: T, where T is the type of F.
 </p><p>
 Patterns in the pruning combinator and in <code class="code"><span class="hl-keyword">val</span></code> declarations are typechecked in the same way as in the sequential combinator.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11935"></a>4.1.4.4.&nbsp;Otherwise</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11847"></a>4.1.4.4.&nbsp;Otherwise</h4></div></div></div><p>
 The type of F <code class="code"><span class="hl-combinator">;</span></code> G is the <span class="emphasis"><em>join</em></span> of the types of F and G, as described for the parallel combinator.
-</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11940"></a>4.1.5.&nbsp;Conditionals</h3></div></div></div><p>
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11852"></a>4.1.5.&nbsp;Conditionals</h3></div></div></div><p>
 In the conditional expression <code class="code"><span class="hl-keyword">if</span></code> E <code class="code"><span class="hl-keyword">then</span></code> F <code class="code"><span class="hl-keyword">else</span></code> G, the expression E must have type
 <code class="code"><span class="hl-variable">Boolean</span></code>, and the type of the whole expression is the join of the types of F and G, as described for the
 parallel combinator.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11951"></a>4.1.6.&nbsp;Defined Functions</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11863"></a>4.1.6.&nbsp;Defined Functions</h3></div></div></div><p>
 Though the typechecker can infer the types of many expressions without additional information from the programmer, there are some
 cases where the algorithm does need assistance. In particular, whenever a function is defined (using the <code class="code"><span class="hl-keyword">def</span></code> keyword),
 the programmer must also include a <span class="emphasis"><em>signature</em></span> for that function, supplying its argument types and return type.
@@ -186,7 +189,7 @@ very much like a signature, but using the <code class="code"><span class="hl-key
 name.
 
 <div class="itemizedlist"><ul type="disc"><li><code class="code"><span class="hl-variable">magsq</span></code>, defined earlier, has type <code class="code"><span class="hl-keyword">lambda</span> (<span class="hl-variable">Number</span>, <span class="hl-variable">Number</span>) :: <span class="hl-variable">Number</span></code></li><li><code class="code"><span class="hl-keyword">lambda</span> (<span class="hl-variable">x</span> :: <span class="hl-variable">Integer</span>) = <span class="hl-variable">x</span>+<span class="hl-literal">1</span></code>  has type  <code class="code"><span class="hl-keyword">lambda</span> (<span class="hl-variable">Integer</span>) :: <span class="hl-variable">Integer</span></code></li><li><code class="code"><span class="hl-keyword">lambda</span> () = <span class="hl-keyword">signal</span></code> has type <code class="code"><span class="hl-keyword">lambda</span> () :: <span class="hl-variable">Top</span></code></li><li><code class="code"><span class="hl-keyword">lambda</span> (<span class="hl-variable">a</span> :: <span class="hl-variable">Boolean</span>, <span class="hl-variable">b</span> :: <span class="hl-variable">Boolean</span>) = (<span class="hl-variable">b</span>,<span class="hl-variable">a</span>)</code> has type <code class="code"><span class="hl-keyword">lambda</span> (<span class="hl-variable">Boolean</span>,<span class="hl-variable">Boolean</span>) :: (<span class="hl-variable">Boolean</span>,<span class="hl-variable">Boolean</span>)</code></li></ul></div>
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N119AD"></a>4.1.7.&nbsp;Ascriptions</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N118BF"></a>4.1.7.&nbsp;Ascriptions</h3></div></div></div><p>
 In addition to annotation defined functions with a signature, the typechecker can also accept programmer-supplied type
 information for any expression. An <span class="emphasis"><em>ascription</em></span>, written E <code class="code">::</code> T, asks the typechecker 
 to verify that expression E has type T.
@@ -198,7 +201,7 @@ type information makes it easier to pinpoint the source of a typechecking failur
 </p><p>
 Ascriptions are also allowed in patterns; P <code class="code">::</code> T is a valid pattern, instructing the typechecker to verify
 that the value fragment bound by the pattern P will always be of type T.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N119BF"></a>4.1.8.&nbsp;Aliasing</h3></div></div></div>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N118D1"></a>4.1.8.&nbsp;Aliasing</h3></div></div></div>
 
 When adding function signatures and ascriptions, it is often helpful to have simpler names for
 complex types that frequently occur. In the same way that variable binding can be used to give
@@ -218,7 +221,7 @@ definition.
 While it does not change the behavior of the typing algorithm, aliasing can substantially improve
 readability and make the intention of one's code much clearer.
 
-</div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N119CD"></a>4.1.9.&nbsp;Datatypes</h3></div></div></div>
+</div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N118DF"></a>4.1.9.&nbsp;Datatypes</h3></div></div></div>
 
 We have already seen user-defined datatypes in the untyped Orc language. In the typed language, they are
 declared in the same way, except that the slots in the datatype, which previously were always <code class="code"><span class="hl-variable">_</span></code>,
@@ -236,7 +239,7 @@ shapes.
 
 We will see how to declare generic datatypes, like <code class="code"><span class="hl-variable">Tree</span></code> or <code class="code"><span class="hl-variable">Option</span></code>, in the next section.
 
-</div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N119DE"></a>4.1.10.&nbsp;Interacting with External Services</h3></div></div></div>
+</div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N118F0"></a>4.1.10.&nbsp;Interacting with External Services</h3></div></div></div>
 
 In addition to verifying the correctness of code written within Orc itself, the typechecker must also ensure that
 external services are used correctly in the context of the Orc program. 
@@ -268,7 +271,7 @@ because it is used in the signature of <code class="code"><span class="hl-variab
 </p><p>
 <code class="code"><span class="hl-keyword">type</span></code> definitions occur alongside <code class="code"><span class="hl-keyword">site</span></code> definitions in the standard library, so the
 types returned by many of the library functions are already available.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11A07"></a>4.1.11.&nbsp;Assertions</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11919"></a>4.1.11.&nbsp;Assertions</h3></div></div></div><p>
 While the typechecker can be helpful, it will not accept programs that are not safe according to
 its algorithm, which can be burdensome when the programmer knows that an expression will have a
 certain type but the typechecker cannot verify it.
