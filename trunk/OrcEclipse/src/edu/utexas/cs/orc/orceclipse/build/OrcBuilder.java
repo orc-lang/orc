@@ -33,6 +33,7 @@ import org.eclipse.imp.runtime.PluginBase;
 import edu.utexas.cs.orc.orceclipse.Activator;
 import edu.utexas.cs.orc.orceclipse.ImpToOrcMessageAdapter;
 import edu.utexas.cs.orc.orceclipse.ImpToOrcProgressAdapter;
+import edu.utexas.cs.orc.orceclipse.Messages;
 import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
 
 /**
@@ -47,17 +48,17 @@ public class OrcBuilder extends BuilderBase {
 	 * Extension ID of the Orc builder, which matches the ID in the
 	 * corresponding extension definition in plugin.xml.
 	 */
-	public static final String BUILDER_ID = Activator.getInstance().getID() + ".build.orcBuilder";
+	public static final String BUILDER_ID = Activator.getInstance().getID() + ".build.orcBuilder"; //$NON-NLS-1$
 
 	/**
 	 * A marker ID that identifies problems detected by the builder
 	 */
-	public static final String PROBLEM_MARKER_ID = Activator.getInstance().getID() + ".problemmarker";
+	public static final String PROBLEM_MARKER_ID = Activator.getInstance().getID() + ".problemmarker"; //$NON-NLS-1$
 
 	/**
 	 * Name of the language for this builder.
 	 */
-	public static final String LANGUAGE_NAME = "Orc";
+	public static final String LANGUAGE_NAME = "Orc"; //$NON-NLS-1$
 
 	/**
 	 * Language for this builder.
@@ -133,21 +134,21 @@ public class OrcBuilder extends BuilderBase {
 		final IPath path = file.getRawLocation();
 		if (path == null) {
 			if (emitDiags) {
-				getConsoleStream().println("isSourceFile on a null path");
+				getConsoleStream().println("isSourceFile on a null path"); //$NON-NLS-1$
 			}
 			return false;
 		}
 
 		final String pathString = path.toString();
-		if (pathString.indexOf("/bin/") != -1) {
+		if (pathString.indexOf("/bin/") != -1) { //$NON-NLS-1$
 			if (emitDiags) {
-				getConsoleStream().println("isSourceFile(" + file + ")=false, since it contains '/bin/'");
+				getConsoleStream().println("isSourceFile(" + file + ")=false, since it contains '/bin/'"); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 			return false;
 		}
 
 		if (emitDiags) {
-			getConsoleStream().println("isSourceFile(" + file + ")=" + (LANGUAGE.hasExtension(path.getFileExtension()) && !isNonRootSourceFile(file)));
+			getConsoleStream().println("isSourceFile(" + file + ")=" + (LANGUAGE.hasExtension(path.getFileExtension()) && !isNonRootSourceFile(file))); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		return LANGUAGE.hasExtension(path.getFileExtension()) && !isNonRootSourceFile(file);
 	}
@@ -179,7 +180,7 @@ public class OrcBuilder extends BuilderBase {
 
 		final boolean emitDiags = getDiagPreference();
 		if (emitDiags) {
-			getConsoleStream().println("Collecting dependencies from Orc file: " + file.getName());
+			getConsoleStream().println("Collecting dependencies from Orc file: " + file.getName()); //$NON-NLS-1$
 		}
 
 		// TODO: implement dependency collector
@@ -194,7 +195,7 @@ public class OrcBuilder extends BuilderBase {
 	@Override
 	protected boolean isOutputFolder(final IResource resource) {
 		//TODO: This template code from IMP is bogus
-		return resource.getFullPath().lastSegment().equals("bin");
+		return resource.getFullPath().lastSegment().equals("bin"); //$NON-NLS-1$
 	}
 
 	/**
@@ -205,7 +206,7 @@ public class OrcBuilder extends BuilderBase {
 	@Override
 	protected void compile(final IFile file, final IProgressMonitor monitor) {
 
-		getConsoleStream().println("Building Orc file: " + file.getName());
+		getConsoleStream().println(Messages.OrcBuilder_BuildingOrcFile + file.getName());
 
 		try {
 			final OrcConfigSettings config = new OrcConfigSettings(getProject(), null);
@@ -222,7 +223,7 @@ public class OrcBuilder extends BuilderBase {
 				// Disregard returned OIL, we just want the errors
 			} catch (final IOException e) {
 				//TODO: Handle this differently?
-				getConsoleStream().println("I/O error when building: " + file.getName() + ": " + e.getMessage());
+				getConsoleStream().println(Messages.OrcBuilder_IOErrorWhenBuilding + file.getName() + ": " + e.getMessage()); //$NON-NLS-2$
 				getPlugin().logException(e.getMessage(), e);
 			}
 
@@ -230,10 +231,10 @@ public class OrcBuilder extends BuilderBase {
 		} catch (final Exception e) {
 			// catch Exception, because any exception could break the
 			// builder infrastructure.
-			getConsoleStream().println("Compiler internal error on: " + file.getName() + ": " + e.getMessage());
+			getConsoleStream().println(Messages.OrcBuilder_CompilerInternalErrorOn + file.getName() + ": " + e.getMessage()); //$NON-NLS-2$
 			getPlugin().logException(e.getMessage(), e);
 		}
-		getConsoleStream().println("Done building Orc file: " + file.getName());
+		getConsoleStream().println(Messages.OrcBuilder_DoneBuildingOrcFile + file.getName());
 		monitor.done();
 	}
 
@@ -242,6 +243,6 @@ public class OrcBuilder extends BuilderBase {
 	 */
 	@Override
 	protected String getConsoleName() {
-		return "Orc Compiler";
+		return Messages.OrcBuilder_OrcCompilerConsoleName;
 	}
 }

@@ -108,7 +108,7 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 		 */
 		@Override
 		public String toString() {
-			return "OrcToken " + type + " \"" + text + "\" " + location;
+			return "OrcToken " + type + " \"" + text + "\" " + location; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		}
 
 	}
@@ -163,7 +163,7 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 		 */
 		public OrcToken next() {
 			if (!hasNext()) {
-				throw new NoSuchElementException("OrcTokenIterator.next() called when no more tokens available");
+				throw new NoSuchElementException("OrcTokenIterator.next() called when no more tokens available"); //$NON-NLS-1$
 			}
 			final OrcToken currTok = nextToken;
 
@@ -195,7 +195,7 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 		 * @see java.util.Iterator#remove()
 		 */
 		public void remove() throws UnsupportedOperationException {
-			throw new UnsupportedOperationException("OrcTokenIterator.remove() not permitted");
+			throw new UnsupportedOperationException("OrcTokenIterator.remove() not permitted"); //$NON-NLS-1$
 		}
 
 	}
@@ -222,25 +222,25 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 			// IDENTIFIER,
 			// KEYWORD,
 			// OPERATOR,
-			new TokenRecord("=", TokenType.OPERATOR), new TokenRecord("/=", TokenType.OPERATOR), new TokenRecord("<:", TokenType.OPERATOR), new TokenRecord("<=", TokenType.OPERATOR), new TokenRecord(":>", TokenType.OPERATOR), new TokenRecord(">=", TokenType.OPERATOR), new TokenRecord(":=", TokenType.OPERATOR), new TokenRecord("?", TokenType.OPERATOR), new TokenRecord("&&", TokenType.OPERATOR), new TokenRecord("||", TokenType.OPERATOR), new TokenRecord("~", TokenType.OPERATOR),
-			new TokenRecord(":", TokenType.OPERATOR), new TokenRecord("+", TokenType.OPERATOR), new TokenRecord("-", TokenType.OPERATOR), new TokenRecord("*", TokenType.OPERATOR), new TokenRecord("/", TokenType.OPERATOR), new TokenRecord("%", TokenType.OPERATOR), new TokenRecord("**", TokenType.OPERATOR), new TokenRecord("0-", TokenType.OPERATOR),
+			new TokenRecord("=", TokenType.OPERATOR), new TokenRecord("/=", TokenType.OPERATOR), new TokenRecord("<:", TokenType.OPERATOR), new TokenRecord("<=", TokenType.OPERATOR), new TokenRecord(":>", TokenType.OPERATOR), new TokenRecord(">=", TokenType.OPERATOR), new TokenRecord(":=", TokenType.OPERATOR), new TokenRecord("?", TokenType.OPERATOR), new TokenRecord("&&", TokenType.OPERATOR), new TokenRecord("||", TokenType.OPERATOR), new TokenRecord("~", TokenType.OPERATOR), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$
+			new TokenRecord(":", TokenType.OPERATOR), new TokenRecord("+", TokenType.OPERATOR), new TokenRecord("-", TokenType.OPERATOR), new TokenRecord("*", TokenType.OPERATOR), new TokenRecord("/", TokenType.OPERATOR), new TokenRecord("%", TokenType.OPERATOR), new TokenRecord("**", TokenType.OPERATOR), new TokenRecord("0-", TokenType.OPERATOR), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
 			// COMBINATOR,
-			new TokenRecord(">", TokenType.COMBINATOR), new TokenRecord("|", TokenType.COMBINATOR), new TokenRecord("<", TokenType.COMBINATOR), new TokenRecord(";", TokenType.COMBINATOR),
+			new TokenRecord(">", TokenType.COMBINATOR), new TokenRecord("|", TokenType.COMBINATOR), new TokenRecord("<", TokenType.COMBINATOR), new TokenRecord(";", TokenType.COMBINATOR), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			// BRACKET,
-			new TokenRecord("(", TokenType.BRACKET), new TokenRecord(")", TokenType.BRACKET), new TokenRecord("[", TokenType.BRACKET), new TokenRecord("]", TokenType.BRACKET), new TokenRecord("{", TokenType.BRACKET), new TokenRecord("}", TokenType.BRACKET),
+			new TokenRecord("(", TokenType.BRACKET), new TokenRecord(")", TokenType.BRACKET), new TokenRecord("[", TokenType.BRACKET), new TokenRecord("]", TokenType.BRACKET), new TokenRecord("{", TokenType.BRACKET), new TokenRecord("}", TokenType.BRACKET), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
 			// SEPERATOR,
-			new TokenRecord(",", TokenType.SEPERATOR), new TokenRecord("::", TokenType.SEPERATOR), new TokenRecord(":!:", TokenType.SEPERATOR), new TokenRecord(".", TokenType.SEPERATOR), new TokenRecord("!", TokenType.SEPERATOR),
+			new TokenRecord(",", TokenType.SEPERATOR), new TokenRecord("::", TokenType.SEPERATOR), new TokenRecord(":!:", TokenType.SEPERATOR), new TokenRecord(".", TokenType.SEPERATOR), new TokenRecord("!", TokenType.SEPERATOR), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 			// COMMENT_ENDLINE,
-			new TokenRecord("--", TokenType.COMMENT_ENDLINE),
+			new TokenRecord("--", TokenType.COMMENT_ENDLINE), //$NON-NLS-1$
 			// COMMENT_MULTILINE,
-			new TokenRecord("{-", TokenType.COMMENT_MULTILINE), };
+			new TokenRecord("{-", TokenType.COMMENT_MULTILINE), }; //$NON-NLS-1$
 
-	private static String keywords[] = { "def", "val", "class", "site", "include", "type", "lambda", "atomic", "isolated", "try", "throw", "catch", "as", "if", "then", "else", "stop", "signal", };
+	private static String keywords[] = { "def", "val", "class", "site", "include", "type", "lambda", "atomic", "isolated", "try", "throw", "catch", "as", "if", "then", "else", "stop", "signal", }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$ //$NON-NLS-12$ //$NON-NLS-13$ //$NON-NLS-14$ //$NON-NLS-15$ //$NON-NLS-16$ //$NON-NLS-17$ //$NON-NLS-18$
 
-	private static final String WHITESPACE_CHARS = " \t\f\r\n";
-	private static final String IDENTIFIER_FIRST_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_";
-	private static final String IDENTIFIER_FOLLOW_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_'";
-	private static final String DECIMAL_DIGIT_CHARS = "0123456789";
+	private static final String WHITESPACE_CHARS = " \t\f\r\n"; //$NON-NLS-1$
+	private static final String IDENTIFIER_FIRST_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_"; //$NON-NLS-1$
+	private static final String IDENTIFIER_FOLLOW_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_'"; //$NON-NLS-1$
+	private static final String DECIMAL_DIGIT_CHARS = "0123456789"; //$NON-NLS-1$
 
 	private final OrcParseController parseController;
 
@@ -273,7 +273,7 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 		if (ttEntry != null && ttEntry.tokenType != TokenType.COMMENT_ENDLINE && ttEntry.tokenType != TokenType.COMMENT_MULTILINE) {
 
 			// Special case for our friends, < and > -- are they operators or combinators?  Guess based on whitespace.
-			if ("<".equals(ttEntry.tokenText) || ">".equals(ttEntry.tokenText)) {
+			if ("<".equals(ttEntry.tokenText) || ">".equals(ttEntry.tokenText)) { //$NON-NLS-1$ //$NON-NLS-2$
 				// If whitespace on both sides or neither side, guess an operator
 				if (isIn(safeCharAt(text, offset - 1), WHITESPACE_CHARS) == isIn(safeCharAt(text, offset + 1), WHITESPACE_CHARS)) {
 					return newToken(TokenType.OPERATOR, text, offset, ttEntry.tokenText.length());
@@ -292,13 +292,13 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 				++tokenLength;
 			}
 			final String word = text.substring(offset, offset + tokenLength);
-			if ("null".equals(word)) {
+			if ("null".equals(word)) { //$NON-NLS-1$
 				return newToken(TokenType.NULL_LITERAL, text, offset, tokenLength);
 			}
-			if ("true".equals(word)) {
+			if ("true".equals(word)) { //$NON-NLS-1$
 				return newToken(TokenType.BOOLEAN_LITERAL, text, offset, tokenLength);
 			}
-			if ("false".equals(word)) {
+			if ("false".equals(word)) { //$NON-NLS-1$
 				return newToken(TokenType.BOOLEAN_LITERAL, text, offset, tokenLength);
 			}
 			if (isKeyword(word)) {
@@ -318,9 +318,9 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 			while (isIn(safeCharAt(text, offset + tokenLength), DECIMAL_DIGIT_CHARS)) {
 				++tokenLength;
 			}
-			if (isIn(safeCharAt(text, offset + tokenLength), "Ee")) {
+			if (isIn(safeCharAt(text, offset + tokenLength), "Ee")) { //$NON-NLS-1$
 				++tokenLength;
-				if (isIn(safeCharAt(text, offset + tokenLength), "+-")) {
+				if (isIn(safeCharAt(text, offset + tokenLength), "+-")) { //$NON-NLS-1$
 					++tokenLength;
 				}
 				while (isIn(safeCharAt(text, offset + tokenLength), DECIMAL_DIGIT_CHARS)) {

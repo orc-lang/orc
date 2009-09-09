@@ -27,7 +27,7 @@ import edu.utexas.cs.orc.orceclipse.Activator;
  * Orc project actions, and so on.
  */
 public class OrcNature extends ProjectNatureBase {
-	private static final String natureID = Activator.getInstance().getID() + ".project.orcNature";
+	private static final String natureID = Activator.getInstance().getID() + ".project.orcNature"; //$NON-NLS-1$
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.imp.builder.ProjectNatureBase#getNatureID()

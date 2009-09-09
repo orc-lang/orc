@@ -72,14 +72,14 @@ public class OrcParseController extends ParseControllerBase {
 		 * @see org.eclipse.imp.services.ILanguageSyntaxProperties#getBlockCommentEnd()
 		 */
 		public String getBlockCommentEnd() {
-			return "-}";
+			return "-}"; //$NON-NLS-1$
 		}
 
 		/* (non-Javadoc)
 		 * @see org.eclipse.imp.services.ILanguageSyntaxProperties#getBlockCommentStart()
 		 */
 		public String getBlockCommentStart() {
-			return "{-";
+			return "{-"; //$NON-NLS-1$
 		}
 
 		/* (non-Javadoc)
@@ -89,7 +89,7 @@ public class OrcParseController extends ParseControllerBase {
 			return orcFences;
 		}
 
-		private static String[][] orcFences = { { "(", ")" }, { "[", "]" }, { "{", "}" }, { "{-", "-}" }, };
+		private static String[][] orcFences = { { "(", ")" }, { "[", "]" }, { "{", "}" }, { "{-", "-}" }, }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
 
 		/**
 		 * Not used. Orc doesn't have multi-component identifiers at present.
@@ -106,14 +106,14 @@ public class OrcParseController extends ParseControllerBase {
 		 * @see org.eclipse.imp.services.ILanguageSyntaxProperties#getIdentifierConstituentChars()
 		 */
 		public String getIdentifierConstituentChars() {
-			return "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_'";
+			return "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_'"; //$NON-NLS-1$
 		}
 
 		/* (non-Javadoc)
 		 * @see org.eclipse.imp.services.ILanguageSyntaxProperties#getSingleLineCommentPrefix()
 		 */
 		public String getSingleLineCommentPrefix() {
-			return "--";
+			return "--"; //$NON-NLS-1$
 		}
 
 	}
@@ -295,7 +295,7 @@ public class OrcParseController extends ParseControllerBase {
 			for (final OrcLexer.OrcToken currToken : lexer) {
 				System.out.println(currToken);
 			}
-			System.out.println("END-OF-FILE");
+			System.out.println("END-OF-FILE"); //$NON-NLS-1$
 		}
 	}
 }

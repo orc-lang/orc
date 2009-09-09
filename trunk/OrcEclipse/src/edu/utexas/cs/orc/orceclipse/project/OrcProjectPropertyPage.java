@@ -26,6 +26,7 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 import edu.utexas.cs.orc.orceclipse.Activator;
+import edu.utexas.cs.orc.orceclipse.Messages;
 import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
 
 /**
@@ -70,11 +71,11 @@ public class OrcProjectPropertyPage extends FieldEditorPreferencePage implements
 	 */
 	@Override
 	protected void createFieldEditors() {
-		addField(new BooleanFieldEditor(OrcConfigSettings.TYPE_CHECK_ATTR_NAME, "Type check", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
-		addField(new BooleanFieldEditor(OrcConfigSettings.NO_PRELUDE_ATTR_NAME, "Do not include standard prelude", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
-		addField(new BooleanFieldEditor(OrcConfigSettings.EXCEPTIONS_ON_ATTR_NAME, "Enable exceptions (experimental)", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
-		addField(new PathEditor(OrcConfigSettings.INCLUDE_PATH_ATTR_NAME, "Include path:", "Choose a directory to add to the Orc include search path", getFieldEditorParent()));
-		addField(new PathEditor(OrcConfigSettings.SITE_CLASSPATH_ATTR_NAME, "Site class path:", "Choose a directory to add to the Orc site class path", getFieldEditorParent()));
+		addField(new BooleanFieldEditor(OrcConfigSettings.TYPE_CHECK_ATTR_NAME, Messages.OrcProjectPropertyPage_TypeCheckLabel, BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addField(new BooleanFieldEditor(OrcConfigSettings.NO_PRELUDE_ATTR_NAME, Messages.OrcProjectPropertyPage_NoStdPreludeLabel, BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addField(new BooleanFieldEditor(OrcConfigSettings.EXCEPTIONS_ON_ATTR_NAME, Messages.OrcProjectPropertyPage_EnableExceptionsLabel, BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addField(new PathEditor(OrcConfigSettings.INCLUDE_PATH_ATTR_NAME, Messages.OrcProjectPropertyPage_IncludePathLabel, Messages.OrcProjectPropertyPage_IncludePathMessage, getFieldEditorParent()));
+		addField(new PathEditor(OrcConfigSettings.SITE_CLASSPATH_ATTR_NAME, Messages.OrcProjectPropertyPage_SiteClassPathLabel, Messages.OrcProjectPropertyPage_SiteClassPathMessage, getFieldEditorParent()));
 	}
 
 	/* (non-Javadoc)

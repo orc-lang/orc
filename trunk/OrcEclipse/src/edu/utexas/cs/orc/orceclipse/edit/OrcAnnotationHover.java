@@ -44,7 +44,7 @@ public class OrcAnnotationHover extends AnnotationHoverBase implements IAnnotati
 		final Set<String> annotationMessages = new HashSet<String>();
 		for (final Iterator<Annotation> annoIter = srcAnnotations.iterator(); annoIter.hasNext();) {
 			final Annotation annotation = annoIter.next();
-			if (annotation.getType().startsWith("org.eclipse.ui.workbench.texteditor.quickdiff")) {
+			if (annotation.getType().startsWith("org.eclipse.ui.workbench.texteditor.quickdiff")) { //$NON-NLS-1$
 				annoIter.remove();
 			} else if (annotationMessages.contains(annotation.getText())) {
 				annoIter.remove();

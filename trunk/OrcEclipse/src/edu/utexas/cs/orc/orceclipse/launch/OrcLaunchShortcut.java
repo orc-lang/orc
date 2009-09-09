@@ -38,6 +38,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 
 import edu.utexas.cs.orc.orceclipse.Activator;
+import edu.utexas.cs.orc.orceclipse.Messages;
 
 /**
  * Launch shortcut for Orc programs.
@@ -70,8 +71,8 @@ public class OrcLaunchShortcut implements ILaunchShortcut {
 			launch(file, mode);
 		} catch (final ClassCastException e) {
 			// Ignore -- got something not launchable
-			Activator.logErrorMessage("OrcLaunchShortcut.launch(ISelection,String): Got a selection that wasn't an IStructuredSelection with one element that is an IFile. selection=" + selection);
-			ErrorDialog.openError(Display.getCurrent().getActiveShell(), "Unable to Launch", "The current selection cannot be launched. Try selecting a launchable resource.", null);
+			Activator.logErrorMessage("OrcLaunchShortcut.launch(ISelection,String): Got a selection that wasn't an IStructuredSelection with one element that is an IFile. selection=" + selection); //$NON-NLS-1$
+			ErrorDialog.openError(Display.getCurrent().getActiveShell(), Messages.OrcLaunchShortcut_UnableToLaunchTitle, Messages.OrcLaunchShortcut_UnableToLaunchMessage, null);
 		} catch (final NullPointerException e) {
 			// Ignore -- got nothing
 		}
@@ -132,8 +133,8 @@ public class OrcLaunchShortcut implements ILaunchShortcut {
 		final IDebugModelPresentation labelProvider = DebugUITools.newDebugModelPresentation();
 		final ElementListSelectionDialog dialog = new ElementListSelectionDialog(Display.getCurrent().getActiveShell(), labelProvider);
 		dialog.setElements(configList.toArray());
-		dialog.setTitle("Select Launch Configuration");
-		dialog.setMessage("&Select existing configuration:");
+		dialog.setTitle(Messages.OrcLaunchShortcut_SelectLaunchConfigTitle);
+		dialog.setMessage(Messages.OrcLaunchShortcut_SelectLaunchConfigMessage);
 		dialog.setMultipleSelection(false);
 		final int result = dialog.open();
 		labelProvider.dispose();
@@ -153,7 +154,7 @@ public class OrcLaunchShortcut implements ILaunchShortcut {
 		ILaunchConfigurationWorkingCopy wc = null;
 		try {
 			final ILaunchConfigurationType configType = OrcLaunchDelegate.getLaunchConfigType();
-			wc = configType.newInstance(null, DebugPlugin.getDefault().getLaunchManager().generateUniqueLaunchConfigurationNameFrom("Orc Program"));
+			wc = configType.newInstance(null, DebugPlugin.getDefault().getLaunchManager().generateUniqueLaunchConfigurationNameFrom(Messages.OrcLaunchShortcut_OrcProgramLaunchConfigName));
 			OrcLaunchDelegate.setDefaults(wc);
 			config = wc.doSave();
 		} catch (final CoreException e) {

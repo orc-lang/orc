@@ -53,6 +53,7 @@ import com.ibm.icu.text.DateFormat;
 import com.ibm.icu.text.MessageFormat;
 
 import edu.utexas.cs.orc.orceclipse.Activator;
+import edu.utexas.cs.orc.orceclipse.Messages;
 import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
 
 /**
@@ -71,7 +72,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 	/**
 	 * Launch configuration extension type ID for an Orc Program Launch configuration
 	 */
-	public static final String LAUNCH_CONFIG_ID = "edu.utexas.cs.orc.orceclipse.launch.orcApplication";
+	public static final String LAUNCH_CONFIG_ID = "edu.utexas.cs.orc.orceclipse.launch.orcApplication"; //$NON-NLS-1$
 
 	/**
 	 * @return LaunchConfigurationType for Orc Applications
@@ -94,7 +95,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 	public void launch(final ILaunchConfiguration configuration, final String mode, final ILaunch launch, IProgressMonitor monitor) throws CoreException {
 
 		if (SelectedResourceManager.getDefault().getSelectedResource() == null) {
-			StatusManager.getManager().handle(new Status(IStatus.INFO, Activator.getInstance().getID(), 1, "Unable to Launch -- No resource selected.", null), StatusManager.SHOW);
+			StatusManager.getManager().handle(new Status(IStatus.INFO, Activator.getInstance().getID(), 1, Messages.OrcLaunchDelegate_UnableToLaunchNoResourceSelected, null), StatusManager.SHOW);
 			return;
 		}
 
@@ -110,7 +111,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 			return;
 		}
 		try {
-			monitor.subTask("Verifying launch attributes...");
+			monitor.subTask(Messages.OrcLaunchDelegate_VerifyingLaunchAttributes);
 
 			final IResource orcProgToLaunch = SelectedResourceManager.getDefault().getSelectedResource();
 			OrcConfigSettings orcConfig;
@@ -125,7 +126,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 				throw new ResourceException(IResourceStatus.NOT_FOUND_LOCAL, orcProgToLaunch.getRawLocation(), e.getLocalizedMessage(), e);
 			}
 
-			final String mainTypeName = "orc.Orc";
+			final String mainTypeName = "orc.Orc"; //$NON-NLS-1$
 			final IVMRunner runner = getVMRunner(configuration, mode);
 
 			final File workingDir = verifyWorkingDirectory(configuration);
@@ -172,7 +173,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 			// Launch the configuration - 1 unit of work
 			runner.run(runConfig, launch, monitor);
 			for (final IProcess proc : launch.getProcesses()) {
-				final String processLabel = VariablesPlugin.getDefault().getStringVariableManager().performStringSubstitution("${resource_path}") + " [" + configuration.getType().getName() + "] (" + DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM).format(new Date(System.currentTimeMillis())) + ")";
+				final String processLabel = VariablesPlugin.getDefault().getStringVariableManager().performStringSubstitution("${resource_path}") + " [" + configuration.getType().getName() + "] (" + DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM).format(new Date(System.currentTimeMillis())) + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 				proc.setAttribute(IProcess.ATTR_PROCESS_LABEL, processLabel);
 			}
 

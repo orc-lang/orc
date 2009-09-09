@@ -90,7 +90,7 @@ public class OrcLabelProvider implements ILabelProvider {
 
 			Image elemImage = null;
 			final int sev = MarkerUtils.getMaxProblemMarkerSeverity(file, IResource.DEPTH_ONE);
-			if (!file.getName().toLowerCase().endsWith(".inc")) {
+			if (!file.getName().toLowerCase().endsWith(".inc")) { //$NON-NLS-1$
 				// Assume Orc file
 				switch (sev) {
 				case IMarker.SEVERITY_ERROR:
@@ -201,7 +201,7 @@ public class OrcLabelProvider implements ILabelProvider {
 			return ((DatatypeDeclaration) n).typename;
 		}
 		// If we get here, someone forgot to add a case above....
-		return "<" + n.getClass().getSimpleName() + ">";
+		return "<" + n.getClass().getSimpleName() + ">"; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	/* (non-Javadoc)
