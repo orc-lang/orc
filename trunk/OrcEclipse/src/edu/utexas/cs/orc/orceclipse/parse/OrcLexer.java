@@ -27,6 +27,7 @@ import org.eclipse.jface.text.Region;
 /**
  * Provides lexical scanning for the currently parsed string in the given ParseController.
  *
+ * @see OrcParseController
  * @author jthywiss
  */
 public class OrcLexer implements Iterable<OrcLexer.OrcToken> {

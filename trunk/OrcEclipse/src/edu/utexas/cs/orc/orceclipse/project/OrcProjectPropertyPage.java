@@ -32,6 +32,7 @@ import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
 /**
  * Property page for editing Orc project properties.
  *
+ * @see org.eclipse.ui.IWorkbenchPropertyPage
  * @author jthywiss
  */
 public class OrcProjectPropertyPage extends FieldEditorPreferencePage implements IWorkbenchPropertyPage {

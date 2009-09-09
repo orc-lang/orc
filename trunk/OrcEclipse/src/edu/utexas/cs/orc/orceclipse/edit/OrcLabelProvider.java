@@ -50,7 +50,9 @@ import edu.utexas.cs.orc.orceclipse.OrcResources;
  * <p>
  * A label provider maps an element of a tree model to
  * an optional image and optional text string used to display
- * the element in the user interface. 
+ * the element in the user interface.
+ *
+ * @see org.eclipse.imp.editor.ModelTreeNode
  */
 public class OrcLabelProvider implements ILabelProvider {
 	private final Set<ILabelProviderListener> fListeners = new HashSet<ILabelProviderListener>();
