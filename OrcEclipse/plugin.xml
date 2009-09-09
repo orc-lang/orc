@@ -71,16 +71,7 @@
             name="Orc Editor"
             default="true"
             icon="icons/orc_file_obj.gif"
-            extensions="orc"
-            contributorClass="org.eclipse.imp.editor.internal.TextEditorActionContributor"
-            class="org.eclipse.imp.editor.UniversalEditor"
-            id="org.eclipse.imp.runtime.impEditor">
-      </editor>
-      <editor
-            name="Orc Editor"
-            default="true"
-            icon="icons/orc_include_obj.gif"
-            extensions="inc"
+            extensions="orc,inc"
             contributorClass="org.eclipse.imp.editor.internal.TextEditorActionContributor"
             class="org.eclipse.imp.editor.UniversalEditor"
             id="org.eclipse.imp.runtime.impEditor">
