@@ -38,8 +38,8 @@ import org.osgi.framework.BundleContext;
 public class Activator extends PluginBase {
 
 	// These must correspond to the values in plugin.xml
-	private static final String pluginID = "edu.utexas.cs.orc.orceclipse";
-	private static final String languageName = "Orc";
+	private static final String pluginID = "edu.utexas.cs.orc.orceclipse"; //$NON-NLS-1$
+	private static final String languageName = "Orc"; //$NON-NLS-1$
 
 	/**
 	 * The unique instance of this plugin class
@@ -120,7 +120,7 @@ public class Activator extends PluginBase {
 		if (e instanceof CoreException) {
 			getInstance().logException(e.getMessage(), e);
 		} else {
-			getInstance().logException("Internal Error", e);
+			getInstance().logException(Messages.Activator_InternalError, e);
 		}
 	}
 
@@ -131,7 +131,7 @@ public class Activator extends PluginBase {
 	 */
 	public static void logAndShow(final Throwable e) {
 		log(e);
-		String msg = "Internal Error";
+		String msg = Messages.Activator_InternalError;
 		if (e instanceof CoreException) {
 			msg = e.getLocalizedMessage();
 		}
@@ -168,6 +168,6 @@ public class Activator extends PluginBase {
 	}
 
 	public static boolean isOrcIncludeFile(final IPath file) {
-		return "inc".equals(file.getFileExtension());
+		return "inc".equals(file.getFileExtension()); //$NON-NLS-1$
 	}
 }

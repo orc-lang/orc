@@ -35,102 +35,102 @@ public class OrcResources {
 	/**
 	 * Name of the 16x16 icon representing the Orc plug-in
 	 */
-	public static final String ORC_PLUGIN_ICON = "orc16";
+	public static final String ORC_PLUGIN_ICON = "orc16"; //$NON-NLS-1$
 
 	/**
 	 * Name of the 16x16 icon representing an Orc file
 	 */
-	public static final String ORC_FILE_OBJ = "orc_file_obj";
+	public static final String ORC_FILE_OBJ = "orc_file_obj"; //$NON-NLS-1$
 
 	/**
 	 * Name of the 16x16 icon representing an Orc include file
 	 */
-	public static final String ORC_INCLUDE_OBJ = "orc_include_obj";
+	public static final String ORC_INCLUDE_OBJ = "orc_include_obj"; //$NON-NLS-1$
 
 	/**
 	 * Name of the 16x16 icon representing a generic Orc object
 	 */
-	public static final String ORC_GENERIC_OBJ = "orc_generic_obj";
+	public static final String ORC_GENERIC_OBJ = "orc_generic_obj"; //$NON-NLS-1$
 
 	/**
 	 * Name of the 16x16 icon representing an Orc def
 	 */
-	public static final String ORC_DEF_OBJ = "orc_def_obj";
+	public static final String ORC_DEF_OBJ = "orc_def_obj"; //$NON-NLS-1$
 
 	/**
 	 * Name of the 16x16 icon representing an Orc site declaration
 	 */
-	public static final String ORC_SITE_OBJ = "orc_site_obj";
+	public static final String ORC_SITE_OBJ = "orc_site_obj"; //$NON-NLS-1$
 
 	/**
 	 * Name of the 16x16 icon representing an Orc Java class declaration
 	 */
-	public static final String ORC_CLASS_OBJ = "orc_class_obj";
+	public static final String ORC_CLASS_OBJ = "orc_class_obj"; //$NON-NLS-1$
 
 	/**
 	 * Name of the 16x16 icon representing an Orc variable (val) declaration
 	 */
-	public static final String ORC_VARIABLE_OBJ = "orc_variable_obj";
+	public static final String ORC_VARIABLE_OBJ = "orc_variable_obj"; //$NON-NLS-1$
 
 	/**
 	 * Name of the 16x16 icon representing an Orc type declaration
 	 */
-	public static final String ORC_TYPE_OBJ = "orc_type_obj";
+	public static final String ORC_TYPE_OBJ = "orc_type_obj"; //$NON-NLS-1$
 
 	/**
 	 * Name of the 7x8 overlay image for the Orc project nature 
 	 */
-	public static final String ORC_OVR = "orc_ovr";
+	public static final String ORC_OVR = "orc_ovr"; //$NON-NLS-1$
 
 	/**
 	 * Name of the 7x8 overlay image for an object with an error
 	 */
-	public static final String ERROR_OVR = "error_ovr";
+	public static final String ERROR_OVR = "error_ovr"; //$NON-NLS-1$
 
 	/**
 	 * Name of the 7x8 overlay image for an object with a warning
 	 */
-	public static final String WARNING_OVR = "warning_ovr";
+	public static final String WARNING_OVR = "warning_ovr"; //$NON-NLS-1$
 
 	/**
 	 * Bundle path to the icons
 	 */
-	public static final IPath ICONS_PATH = new Path("icons/");
+	public static final IPath ICONS_PATH = new Path("icons/"); //$NON-NLS-1$
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#initializeImageRegistry(org.eclipse.jface.resource.ImageRegistry)
 	 */
 	protected static void initializeImageRegistry(final Bundle bundle, final ImageRegistry reg) {
 
-		reg.put(OrcResources.ORC_PLUGIN_ICON, createImageDescriptor(bundle, new Path(ORC_PLUGIN_ICON + ".gif")));
+		reg.put(OrcResources.ORC_PLUGIN_ICON, createImageDescriptor(bundle, new Path(ORC_PLUGIN_ICON + ".gif"))); //$NON-NLS-1$
 
-		addImageDescriptor(bundle, OrcResources.ORC_FILE_OBJ, "gif", reg);
+		addImageDescriptor(bundle, OrcResources.ORC_FILE_OBJ, "gif", reg); //$NON-NLS-1$
 
-		addImageDescriptor(bundle, OrcResources.ORC_INCLUDE_OBJ, "gif", reg);
+		addImageDescriptor(bundle, OrcResources.ORC_INCLUDE_OBJ, "gif", reg); //$NON-NLS-1$
 
-		addImageDescriptor(bundle, OrcResources.ORC_GENERIC_OBJ, "gif", reg);
+		addImageDescriptor(bundle, OrcResources.ORC_GENERIC_OBJ, "gif", reg); //$NON-NLS-1$
 
-		addImageDescriptor(bundle, OrcResources.ORC_DEF_OBJ, "gif", reg);
+		addImageDescriptor(bundle, OrcResources.ORC_DEF_OBJ, "gif", reg); //$NON-NLS-1$
 
-		addImageDescriptor(bundle, OrcResources.ORC_SITE_OBJ, "gif", reg);
+		addImageDescriptor(bundle, OrcResources.ORC_SITE_OBJ, "gif", reg); //$NON-NLS-1$
 
-		addImageDescriptor(bundle, OrcResources.ORC_CLASS_OBJ, "gif", reg);
+		addImageDescriptor(bundle, OrcResources.ORC_CLASS_OBJ, "gif", reg); //$NON-NLS-1$
 
-		addImageDescriptor(bundle, OrcResources.ORC_VARIABLE_OBJ, "gif", reg);
+		addImageDescriptor(bundle, OrcResources.ORC_VARIABLE_OBJ, "gif", reg); //$NON-NLS-1$
 
-		addImageDescriptor(bundle, OrcResources.ORC_TYPE_OBJ, "gif", reg);
+		addImageDescriptor(bundle, OrcResources.ORC_TYPE_OBJ, "gif", reg); //$NON-NLS-1$
 
-		addImageDescriptor(bundle, OrcResources.ORC_OVR, "gif", reg);
+		addImageDescriptor(bundle, OrcResources.ORC_OVR, "gif", reg); //$NON-NLS-1$
 
-		addImageDescriptor(bundle, OrcResources.ERROR_OVR, "gif", reg);
+		addImageDescriptor(bundle, OrcResources.ERROR_OVR, "gif", reg); //$NON-NLS-1$
 
-		addImageDescriptor(bundle, OrcResources.WARNING_OVR, "gif", reg);
+		addImageDescriptor(bundle, OrcResources.WARNING_OVR, "gif", reg); //$NON-NLS-1$
 	}
 
 	private static void addImageDescriptor(final Bundle bundle, final String name, final String fileType, final ImageRegistry reg) {
 		IPath path;
 		ImageDescriptor imageDescriptor;
-		path = ICONS_PATH.append(name + "." + fileType);
+		path = ICONS_PATH.append(name + "." + fileType); //$NON-NLS-1$
 		imageDescriptor = createImageDescriptor(bundle, path);
 		reg.put(name, imageDescriptor);
 	}

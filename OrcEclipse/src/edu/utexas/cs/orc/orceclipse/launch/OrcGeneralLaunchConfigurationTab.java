@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 
 import edu.utexas.cs.orc.orceclipse.Activator;
+import edu.utexas.cs.orc.orceclipse.Messages;
 import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
 import edu.utexas.cs.orc.orceclipse.OrcResources;
 
@@ -65,7 +66,7 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#getName()
 	 */
 	public String getName() {
-		return "General";
+		return Messages.OrcGeneralLaunchConfigurationTab_GeneralTabName;
 	}
 
 	/*
@@ -82,7 +83,7 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 	 */
 	@Override
 	public String getId() {
-		return "edu.utexas.cs.orc.orceclipse.launch.orcGeneralTab";
+		return "edu.utexas.cs.orc.orceclipse.launch.orcGeneralTab"; //$NON-NLS-1$
 	}
 
 	/* (non-Javadoc)
@@ -122,26 +123,26 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 
 		final Composite labelWidgetComp = SWTFactory.createComposite(comp, comp.getFont(), 2, 1, GridData.FILL_HORIZONTAL, 0, 0);
 
-		SWTFactory.createLabel(labelWidgetComp, "Maximum allowed number of publications:", 1);
+		SWTFactory.createLabel(labelWidgetComp, Messages.OrcGeneralLaunchConfigurationTab_MaxPubsLabel, 1);
 
 		maxPubsSpinner = new Spinner(labelWidgetComp, SWT.NONE);
 		maxPubsSpinner.setFont(parent.getFont());
 		maxPubsSpinner.setValues(OrcConfigSettings.MAX_PUBS_DEFAULT, 0, Integer.MAX_VALUE, 0, 1, 100);
 		maxPubsSpinner.addSelectionListener(ourSelectionAdapter);
 
-		SWTFactory.createLabel(labelWidgetComp, "Number of site call threads:", 1);
+		SWTFactory.createLabel(labelWidgetComp, Messages.OrcGeneralLaunchConfigurationTab_NumSiteThreadsLabel, 1);
 
 		numSiteThreadsSpinner = new Spinner(labelWidgetComp, SWT.NONE);
 		numSiteThreadsSpinner.setFont(parent.getFont());
 		numSiteThreadsSpinner.setValues(OrcConfigSettings.NUM_SITE_THREADS_DEFAULT, 1, Integer.MAX_VALUE, 0, 1, 10);
 		numSiteThreadsSpinner.addSelectionListener(ourSelectionAdapter);
 
-		SWTFactory.createLabel(labelWidgetComp, "Trace output file name:", 1);
+		SWTFactory.createLabel(labelWidgetComp, Messages.OrcGeneralLaunchConfigurationTab_TraceOutFilenameLabel, 1);
 
 		traceOutFilenameText = SWTFactory.createSingleText(labelWidgetComp, 1);
 		traceOutFilenameText.addModifyListener(ourModifyListener);
 
-		SWTFactory.createLabel(labelWidgetComp, "Orc engine debug level:", 1);
+		SWTFactory.createLabel(labelWidgetComp, Messages.OrcGeneralLaunchConfigurationTab_DebugLevelLabel, 1);
 
 		debugLevelSpinner = new Spinner(labelWidgetComp, SWT.NONE);
 		debugLevelSpinner.setFont(parent.getFont());

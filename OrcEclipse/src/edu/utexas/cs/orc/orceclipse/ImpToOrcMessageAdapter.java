@@ -45,7 +45,7 @@ public class ImpToOrcMessageAdapter implements CompileMessageRecorder {
 	public ImpToOrcMessageAdapter(final IMessageHandler impMessageHandler) {
 		super();
 		if (impMessageHandler == null) {
-			throw new NullPointerException("Cannot instantiate ImpToOrcMessageAdapter with a null impMessageHandler");
+			throw new NullPointerException("Cannot instantiate ImpToOrcMessageAdapter with a null impMessageHandler"); //$NON-NLS-1$
 		}
 		this.impMessageHandler = impMessageHandler;
 	}

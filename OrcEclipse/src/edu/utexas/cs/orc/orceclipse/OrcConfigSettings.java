@@ -43,24 +43,24 @@ import org.kohsuke.args4j.CmdLineException;
  * @author jthywiss
  */
 public class OrcConfigSettings extends Config {
-	public static final String TYPE_CHECK_ATTR_NAME = Activator.getInstance().getID() + ".TYPE_CHECK";
-	public static final String NO_PRELUDE_ATTR_NAME = Activator.getInstance().getID() + ".NO_PRELUDE";
-	public static final String EXCEPTIONS_ON_ATTR_NAME = Activator.getInstance().getID() + ".EXCEPTIONS_ON";
-	public static final String INCLUDE_PATH_ATTR_NAME = Activator.getInstance().getID() + ".INCLUDE_PATH";
-	public static final String SITE_CLASSPATH_ATTR_NAME = Activator.getInstance().getID() + ".SITE_CLASSPATH";
-	public static final String OIL_OUT_ATTR_NAME = Activator.getInstance().getID() + ".OIL_OUT";
-	public static final String MAX_PUBS_ATTR_NAME = Activator.getInstance().getID() + ".MAX_PUBS";
-	public static final String NUM_SITE_THREADS_ATTR_NAME = Activator.getInstance().getID() + ".NUM_SITE_THREADS";
-	public static final String TRACE_OUT_ATTR_NAME = Activator.getInstance().getID() + ".TRACE_OUT";
-	public static final String DEBUG_LEVEL_ATTR_NAME = Activator.getInstance().getID() + ".DEBUG_LEVEL";
+	public static final String TYPE_CHECK_ATTR_NAME = Activator.getInstance().getID() + ".TYPE_CHECK"; //$NON-NLS-1$
+	public static final String NO_PRELUDE_ATTR_NAME = Activator.getInstance().getID() + ".NO_PRELUDE"; //$NON-NLS-1$
+	public static final String EXCEPTIONS_ON_ATTR_NAME = Activator.getInstance().getID() + ".EXCEPTIONS_ON"; //$NON-NLS-1$
+	public static final String INCLUDE_PATH_ATTR_NAME = Activator.getInstance().getID() + ".INCLUDE_PATH"; //$NON-NLS-1$
+	public static final String SITE_CLASSPATH_ATTR_NAME = Activator.getInstance().getID() + ".SITE_CLASSPATH"; //$NON-NLS-1$
+	public static final String OIL_OUT_ATTR_NAME = Activator.getInstance().getID() + ".OIL_OUT"; //$NON-NLS-1$
+	public static final String MAX_PUBS_ATTR_NAME = Activator.getInstance().getID() + ".MAX_PUBS"; //$NON-NLS-1$
+	public static final String NUM_SITE_THREADS_ATTR_NAME = Activator.getInstance().getID() + ".NUM_SITE_THREADS"; //$NON-NLS-1$
+	public static final String TRACE_OUT_ATTR_NAME = Activator.getInstance().getID() + ".TRACE_OUT"; //$NON-NLS-1$
+	public static final String DEBUG_LEVEL_ATTR_NAME = Activator.getInstance().getID() + ".DEBUG_LEVEL"; //$NON-NLS-1$
 
 	private static final Config defaultConfig = new Config();
 
 	public static final boolean TYPE_CHECK_DEFAULT = defaultConfig.getTypeChecking();
 	public static final boolean NO_PRELUDE_DEFAULT = defaultConfig.getNoPrelude();
 	public static final boolean EXCEPTIONS_ON_DEFAULT = defaultConfig.getExceptionsOn();
-	public static final String INCLUDE_PATH_DEFAULT = defaultConfig.getIncludePath().length() == 0 ? defaultConfig.getIncludePath() : defaultConfig.getIncludePath().concat(":"); //Eclipse path pref entries always have a trailing :
-	public static final String SITE_CLASSPATH_DEFAULT = defaultConfig.getClassPath().length() == 0 ? defaultConfig.getClassPath() : defaultConfig.getClassPath().concat(":"); //Eclipse path pref entries always have a trailing :
+	public static final String INCLUDE_PATH_DEFAULT = defaultConfig.getIncludePath().length() == 0 ? defaultConfig.getIncludePath() : defaultConfig.getIncludePath().concat(":"); //Eclipse path pref entries always have a trailing : //$NON-NLS-1$
+	public static final String SITE_CLASSPATH_DEFAULT = defaultConfig.getClassPath().length() == 0 ? defaultConfig.getClassPath() : defaultConfig.getClassPath().concat(":"); //Eclipse path pref entries always have a trailing : //$NON-NLS-1$
 	public static final String OIL_OUT_DEFAULT = defaultConfig.getOilOutputFile().getPath();
 	public static final int MAX_PUBS_DEFAULT = defaultConfig.getMaxPubs();
 	public static final int NUM_SITE_THREADS_DEFAULT = defaultConfig.getNumSiteThreads();

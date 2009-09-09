@@ -117,7 +117,7 @@ public class OrcSourcePositionLocator implements ISourcePositionLocator {
 			}
 			return n.getSourceLocation().offset;
 		} else {
-			final ClassCastException e = new ClassCastException(this.getClass().getName() + ".getStartOffset got an unrecognized node type");
+			final ClassCastException e = new ClassCastException(this.getClass().getName() + ".getStartOffset got an unrecognized node type"); //$NON-NLS-1$
 			// Make sure this is logged -- Callers in IMP sometimes disregard exceptions
 			Activator.log(e);
 			throw e;
@@ -154,7 +154,7 @@ public class OrcSourcePositionLocator implements ISourcePositionLocator {
 			}
 			return n.getSourceLocation().endOffset;
 		} else {
-			final ClassCastException e = new ClassCastException(this.getClass().getName() + ".getEndOffset got an unrecognized node type");
+			final ClassCastException e = new ClassCastException(this.getClass().getName() + ".getEndOffset got an unrecognized node type"); //$NON-NLS-1$
 			// Make sure this is logged -- Callers in IMP sometimes disregard exceptions
 			Activator.log(e);
 			throw e;
