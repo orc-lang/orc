@@ -1,0 +1,24 @@
+label {
+	display: block;
+	margin: 1ex;
+	font-weight: bold;
+}
+
+label * {
+	margin-left: 1ex;
+	vertical-align: top;
+}
+
+table.DateRangesField {
+    margin: 1ex 0;
+}
+.DateRangesField td {
+    border-bottom: 1px solid gray;
+    border-right: 3px double gray;
+}
+.DateRangesField th {
+    border-bottom: 1px solid gray;
+    text-align: right;
+    border-right: 3px double gray;
+    padding: 0 5px;
+}
