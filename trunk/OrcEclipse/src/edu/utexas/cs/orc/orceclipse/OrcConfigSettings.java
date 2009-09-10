@@ -138,44 +138,24 @@ public class OrcConfigSettings extends Config {
 	 */
 	private void fillFromLaunchConfig(final ILaunchConfiguration launchConfig) throws CoreException, IOException {
 
-		// The use of *_DEFAULT below is for type info. during compile-time overloaded method
-		// resolution.  At runtime, *_DEFAULT is never used, because we test hasAttribute before
-		// calling getAttribute.
-
-		if (launchConfig.hasAttribute(TYPE_CHECK_ATTR_NAME)) {
-			setTypeChecking(launchConfig.getAttribute(TYPE_CHECK_ATTR_NAME, TYPE_CHECK_DEFAULT));
+		setTypeChecking(launchConfig.getAttribute(TYPE_CHECK_ATTR_NAME, getTypeChecking()));
+		setNoPrelude(launchConfig.getAttribute(NO_PRELUDE_ATTR_NAME, getNoPrelude()));
+		setExceptionsOn(launchConfig.getAttribute(EXCEPTIONS_ON_ATTR_NAME, getExceptionsOn()));
+		setIncludePath(launchConfig.getAttribute(INCLUDE_PATH_ATTR_NAME, getIncludePath()));
+		setClassPath(launchConfig.getAttribute(SITE_CLASSPATH_ATTR_NAME, getClassPath()));
+		if (launchConfig.getAttribute(OIL_OUT_ATTR_NAME, (String)null) != null) {
+			setOilOutputFile(new File(launchConfig.getAttribute(OIL_OUT_ATTR_NAME, (String)null)));
 		}
-		if (launchConfig.hasAttribute(NO_PRELUDE_ATTR_NAME)) {
-			setNoPrelude(launchConfig.getAttribute(NO_PRELUDE_ATTR_NAME, NO_PRELUDE_DEFAULT));
-		}
-		if (launchConfig.hasAttribute(EXCEPTIONS_ON_ATTR_NAME)) {
-			setNoPrelude(launchConfig.getAttribute(EXCEPTIONS_ON_ATTR_NAME, EXCEPTIONS_ON_DEFAULT));
-		}
-		if (launchConfig.hasAttribute(INCLUDE_PATH_ATTR_NAME)) {
-			setIncludePath(launchConfig.getAttribute(INCLUDE_PATH_ATTR_NAME, INCLUDE_PATH_DEFAULT));
-		}
-		if (launchConfig.hasAttribute(SITE_CLASSPATH_ATTR_NAME)) {
-			setClassPath(launchConfig.getAttribute(SITE_CLASSPATH_ATTR_NAME, SITE_CLASSPATH_DEFAULT));
-		}
-		if (launchConfig.hasAttribute(OIL_OUT_ATTR_NAME)) {
-			setOilOutputFile(new File(launchConfig.getAttribute(OIL_OUT_ATTR_NAME, OIL_OUT_DEFAULT)));
-		}
-		if (launchConfig.hasAttribute(MAX_PUBS_ATTR_NAME)) {
-			setMaxPubs(launchConfig.getAttribute(MAX_PUBS_ATTR_NAME, MAX_PUBS_DEFAULT));
-		}
-		if (launchConfig.hasAttribute(NUM_SITE_THREADS_ATTR_NAME)) {
-			setNumSiteThreads(launchConfig.getAttribute(NUM_SITE_THREADS_ATTR_NAME, NUM_SITE_THREADS_DEFAULT));
-		}
-		if (launchConfig.hasAttribute(TRACE_OUT_ATTR_NAME)) {
+		setMaxPubs(launchConfig.getAttribute(MAX_PUBS_ATTR_NAME, getMaxPubs()));
+		setNumSiteThreads(launchConfig.getAttribute(NUM_SITE_THREADS_ATTR_NAME, getNumSiteThreads()));
+		if (launchConfig.getAttribute(TRACE_OUT_ATTR_NAME, (String)null) != null) {
 			try {
-				setTraceOutputFile(new File(launchConfig.getAttribute(TRACE_OUT_ATTR_NAME, TRACE_OUT_DEFAULT)));
+				setTraceOutputFile(new File(launchConfig.getAttribute(TRACE_OUT_ATTR_NAME, (String)null)));
 			} catch (final CmdLineException e) {
 				throw new IOException(e.getMessage());
 			}
 		}
-		if (launchConfig.hasAttribute(DEBUG_LEVEL_ATTR_NAME)) {
-			setDebugLevel(launchConfig.getAttribute(DEBUG_LEVEL_ATTR_NAME, DEBUG_LEVEL_DEFAULT));
-		}
+		setDebugLevel(launchConfig.getAttribute(DEBUG_LEVEL_ATTR_NAME, getDebugLevel()));
 	}
 
 	protected static void initDefaultPrefs() {
