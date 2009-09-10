@@ -20,6 +20,9 @@ public abstract class Type {
 	public abstract orc.ast.oil.type.Type unmarshal();
 	
 	public static List<orc.ast.oil.type.Type> unmarshalAll(Type[] ts) {
+		
+		if (ts == null) { return null; }
+		
 		List<orc.ast.oil.type.Type> newts = new LinkedList<orc.ast.oil.type.Type>();
 		for (Type t : ts) {
 			newts.add(t.unmarshal());

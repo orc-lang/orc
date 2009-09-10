@@ -58,7 +58,7 @@ public final class BackendDemo {
 		final Config cfg = new Config();
 		cfg.processArgs(args);
 		// compile the specified input stream to OIL
-		final Expression e = Orc.compile(cfg.getReader(), cfg);
+		final Expression e = Orc.compile(cfg);
 		if (e == null) {
 			return;
 		}

@@ -14,7 +14,6 @@
 package orc;
 
 import java.io.IOException;
-import java.io.Reader;
 
 import orc.ast.extended.declaration.Declaration;
 import orc.ast.extended.expression.Declare;
@@ -75,7 +74,7 @@ public class Orc {
 		engine.run(n);
 	}
 
-	public static Expression compile(final Reader source, final Config cfg) throws IOException {
+	public static Expression compile(final Config cfg) throws IOException {
 		final OrcCompiler compiler = new OrcCompiler(cfg);
 		return compiler.call();
 	}
