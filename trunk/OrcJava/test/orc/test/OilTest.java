@@ -15,7 +15,6 @@ package orc.test;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 
 import orc.Config;
 import orc.Orc;
@@ -30,7 +29,7 @@ public class OilTest {
 	public void unmarshal() throws CompilationException, IOException, CmdLineException {
 		final Config config = new Config();
 		config.setInputFile(new File("examples/strcat.orc")); //Must have a file in config.  It can be bogus. :-)
-		final Oil oil1 = new Oil(Orc.compile(new StringReader("1"), config));
+		final Oil oil1 = new Oil(Orc.compile(config));
 		final String xml = oil1.toXML();
 		System.out.println(xml);
 		// TODO: verify the syntax of the XML;

@@ -15,6 +15,7 @@
 
 package orc;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -278,6 +279,12 @@ public class Config implements Cloneable {
 		} catch (final FileNotFoundException e) {
 			throw new CmdLineException("Could not find input file '" + file + "'");
 		}
+	}
+	
+	public void inputFromString(final String source) {
+		instream = new ByteArrayInputStream(source.getBytes());
+		filename = "text";
+		hasInputFile = true;
 	}
 	
 	@Option(name = "-exceptions", usage = "Enable exceptions (experimental), which is disabled by default.")

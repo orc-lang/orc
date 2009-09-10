@@ -60,6 +60,7 @@ public abstract class Type {
 	public static orc.ast.xml.type.Type[] marshalAll(List<Type> ts) {
 		
 		if (ts == null) { return null; }
+		
 		orc.ast.xml.type.Type[] newts = new orc.ast.xml.type.Type[ts.size()];
 		int i = 0;
 		for (Type t : ts) {

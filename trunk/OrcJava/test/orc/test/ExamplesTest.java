@@ -112,7 +112,7 @@ public class ExamplesTest {
 		config.setQuietChecking(true);
 
 		final OrcEngine engine = new OrcEngine(config);
-		orc.ast.oil.expression.Expression expr = Orc.compile(config.getReader(), config);
+		orc.ast.oil.expression.Expression expr = Orc.compile(config);
 		if (expr == null) {
 			throw new CompilationException("Compilation to OIL failed");
 		}

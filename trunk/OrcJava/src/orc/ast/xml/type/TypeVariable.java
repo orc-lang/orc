@@ -15,6 +15,7 @@ public class TypeVariable extends Type {
 	@XmlAttribute(required=false)
 	public String name;
 	
+	public TypeVariable() {}
 	public TypeVariable(int index) {
 		this(index, null);
 	}
