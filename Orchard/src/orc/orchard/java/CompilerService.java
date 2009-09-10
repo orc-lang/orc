@@ -2,7 +2,7 @@ package orc.orchard.java;
 
 import java.util.logging.Logger;
 
-import orc.ast.oil.xml.Oil;
+import orc.ast.xml.Oil;
 import orc.orchard.AbstractCompilerService;
 import orc.orchard.errors.InvalidProgramException;
 

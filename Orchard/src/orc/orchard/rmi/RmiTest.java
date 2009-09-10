@@ -4,7 +4,7 @@ import java.net.URI;
 import java.rmi.Naming;
 import java.util.List;
 
-import orc.ast.oil.xml.Oil;
+import orc.ast.xml.Oil;
 import orc.orchard.api.ExecutorServiceInterface;
 import orc.orchard.errors.InvalidOilException;
 import orc.orchard.events.JobEvent;

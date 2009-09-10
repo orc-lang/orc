@@ -7,8 +7,8 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 import orc.Config;
-import orc.ast.oil.Expr;
-import orc.ast.oil.xml.Oil;
+import orc.ast.oil.expression.Expression;
+import orc.ast.xml.Oil;
 import orc.error.compiletime.CompilationException;
 import orc.orchard.api.ExecutorServiceInterface;
 import orc.orchard.errors.InvalidJobException;
@@ -57,7 +57,7 @@ public abstract class AbstractExecutorService implements ExecutorServiceInterfac
 	{
 		logger.info("submit(" + devKey + ", ...)");
 		String id = createJobID();
-		final Expr expr;
+		final Expression expr;
 		try {
 			expr = program.unmarshal(new Config());
 		} catch (CompilationException e) {
