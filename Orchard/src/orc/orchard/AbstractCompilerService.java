@@ -35,7 +35,8 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
 			config.setIncludePath("");
 			// Include sites specifically for orchard services
 			config.addInclude("orchard.inc");
-			orc.ast.oil.expression.Expression ex1 = Orc.compile(new StringReader(program), config);
+			config.inputFromString(program);
+			orc.ast.oil.expression.Expression ex1 = Orc.compile(config);
 			if (ex1 == null) {
 				// FIXME: obviously need more detail here
 				throw new InvalidProgramException("Syntax error in: " + program);
