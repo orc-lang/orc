@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import orc.ast.oil.Walker;
-import orc.ast.oil.arg.Site;
+import orc.ast.oil.expression.argument.Site;
 import orc.error.Located;
 import orc.error.SourceLocation;
 

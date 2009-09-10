@@ -7,7 +7,7 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 import javax.xml.ws.Endpoint;
 
-import orc.ast.oil.xml.Oil;
+import orc.ast.xml.Oil;
 import orc.orchard.AbstractCompilerService;
 import orc.orchard.errors.InvalidProgramException;
 

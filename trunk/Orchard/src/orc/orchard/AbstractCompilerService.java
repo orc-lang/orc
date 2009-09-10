@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 
 import orc.Config;
 import orc.Orc;
-import orc.ast.oil.xml.Oil;
+import orc.ast.xml.Oil;
 import orc.error.compiletime.CompilationException;
 import orc.orchard.errors.InvalidProgramException;
 
@@ -35,7 +35,7 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
 			config.setIncludePath("");
 			// Include sites specifically for orchard services
 			config.addInclude("orchard.inc");
-			orc.ast.oil.Expr ex1 = Orc.compile(new StringReader(program), config);
+			orc.ast.oil.expression.Expression ex1 = Orc.compile(new StringReader(program), config);
 			if (ex1 == null) {
 				// FIXME: obviously need more detail here
 				throw new InvalidProgramException("Syntax error in: " + program);

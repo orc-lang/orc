@@ -5,7 +5,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Set;
 
-import orc.ast.oil.xml.Oil;
+import orc.ast.xml.Oil;
 import orc.orchard.errors.InvalidJobException;
 import orc.orchard.errors.InvalidJobStateException;
 import orc.orchard.errors.InvalidOilException;

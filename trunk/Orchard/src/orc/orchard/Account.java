@@ -11,7 +11,7 @@ import java.util.Set;
 import javax.management.ObjectName;
 
 import orc.Config;
-import orc.ast.oil.Expr;
+import orc.ast.oil.expression.Expression;
 import orc.error.compiletime.CompilationException;
 import orc.orchard.errors.InvalidJobException;
 import orc.orchard.errors.InvalidOilException;
@@ -63,7 +63,7 @@ public abstract class Account implements AccountMBean {
 		this.canImportJava = canImportJava;
 	}
 
-	public synchronized void addJob(final String id, Expr expr) throws QuotaException, InvalidOilException {
+	public synchronized void addJob(final String id, Expression expr) throws QuotaException, InvalidOilException {
 		Config config = new Config();
 		config.setCapability("send mail", canSendMail);
 		config.setCapability("import java", canImportJava);

@@ -17,7 +17,7 @@ import javax.xml.ws.Endpoint;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.handler.MessageContext;
 
-import orc.ast.oil.xml.Oil;
+import orc.ast.xml.Oil;
 import orc.orchard.AbstractExecutorService;
 import orc.orchard.Waiter;
 import orc.orchard.errors.InvalidJobException;
