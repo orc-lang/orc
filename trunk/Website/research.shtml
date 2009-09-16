@@ -37,7 +37,7 @@
 <a name="Introduction" id="Introduction"></a><h2>Introduction to Orc <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
-	<li class="new"><a target="_blank" class="paper" href="papers/forte09.pdf">The Orc Programming Language</a>
+	<li><a target="_blank" class="paper" href="papers/forte09.pdf">The Orc Programming Language</a>
 	<a target="_blank" class="doi" href="http://dx.doi.org/10.1007/978-3-642-02138-1_1">DOI</a>
 	<a class="bibtex" href="papers/forte09.bib">BibTeX</a>
 	<br />
@@ -50,14 +50,12 @@ Wide-Area Networks</a><br />
 	FORTE 2009
 	</li>
 	
-	<li class="new"><a target="_blank" class="paper" href="papers/qs.pdf">Quicksort: Combining Concurrency, Recursion,
+	<li><a target="_blank" class="paper" href="papers/qs.pdf">Quicksort: Combining Concurrency, Recursion,
 and Mutable Data Structures</a>
 	<a class="bibtex" href="papers/qs.bib">BibTeX</a>
 	<br />
 	David Kitchin, Adrian Quark, and Jayadev Misra<br />
 	Submitted to a Festschrift in honor of Tony Hoare on his 75th birthday</li>
-	
-	<
 	
 	<li><a target="_blank" class="paper" href="papers/structured_interacting_computations_2008.pdf">Structured Interacting Computations (A position paper)</a>
 	<a target="_blank" class="doi" href="http://dx.doi.org/10.1007/978-3-540-89437-7_9">DOI</a>
