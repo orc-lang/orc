@@ -545,6 +545,18 @@ public abstract class Type {
 		else if (cls.equals(Void.TYPE)) {
 			return Type.TOP;
 		}
+		
+		/*
+		 * Technically, this weakens the metatheory of the
+		 * typechecker, since it exposes the fact that all
+		 * Orc values are representable as Java objects.
+		 * However, this compromise is necessary in practice. 
+		 * -dkitchin
+		 */
+		else if (cls.equals(Object.class)) {
+			return Type.TOP;
+		}
+		
 		else if (Double.class.isAssignableFrom(cls) 
 				|| cls.equals(Double.TYPE)) { 
 			return (new ClassTycon(Double.class)).instance();
