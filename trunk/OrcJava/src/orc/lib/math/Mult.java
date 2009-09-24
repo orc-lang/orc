@@ -9,6 +9,7 @@ import orc.runtime.Args.NumericBinaryOperator;
 import orc.runtime.sites.EvalSite;
 import orc.type.Type;
 import orc.type.structured.ArrowType;
+import orc.type.structured.MultiType;
 
 public class Mult extends EvalSite {
 	private static final MyOperator op = new MyOperator();
@@ -46,6 +47,9 @@ public class Mult extends EvalSite {
 	}
 	
 	public Type type() {
-		return new ArrowType(Type.NUMBER, Type.NUMBER, Type.NUMBER);
+		return new MultiType(
+				new ArrowType(Type.INTEGER, Type.INTEGER, Type.INTEGER),
+				new ArrowType(Type.NUMBER, Type.NUMBER, Type.NUMBER)
+				);
 	}
 }
