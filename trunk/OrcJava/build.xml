@@ -93,6 +93,7 @@
 			<arg value="state.inc"/>
 			<arg value="idioms.inc"/>
 			<arg value="list.inc"/>
+			<arg value="reflect.inc"/>
 			<arg value="text.inc"/>
 			<arg value="time.inc"/>
 			<arg value="util.inc"/>
