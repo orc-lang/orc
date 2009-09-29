@@ -32,10 +32,10 @@ public abstract class Account implements AccountMBean {
 	private boolean canSendMail = false;
 	private boolean canImportJava = false;
 	// NB: right now these limits are hard-coded for all accounts,
-	// because it's too easy to write recursive programs
-	// which take down the server otherwise.
-	private int tokenPoolSize = 1024;
-	private int stackSize = 1024;
+	// because otherwise it's too easy to write recursive programs
+	// which take down the server.
+	private int tokenPoolSize = 1024 * 1024;
+	private int stackSize = 1024 * 128;
 
 	public Account() {}
 
