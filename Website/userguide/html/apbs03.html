@@ -1457,7 +1457,20 @@ The disjunction of an empty list is <code class="code"><span class="hl-literal">
 <span class="hl-keyword">def</span> <span class="hl-site">maximum</span>(<span class="hl-variable">xs</span>) =
   <span class="hl-comment">-- this def appeases the typechecker</span>
   <span class="hl-keyword">def</span> <span class="hl-site">maxA</span>(<span class="hl-variable">x</span>::<span class="hl-variable">A</span>,<span class="hl-variable">y</span>::<span class="hl-variable">A</span>) = <span class="hl-site">max</span>(<span class="hl-variable">x</span>,<span class="hl-variable">y</span>)
-  <span class="hl-site">foldl1</span>(<span class="hl-variable">maxA</span>, <span class="hl-variable">xs</span>)</pre></p></td></tr></tbody></table></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N12FF1"></a>B.3.5.&nbsp;text.inc: Operations on strings.</h3></div></div></div><p>Operations on strings.</p><div class="variablelist"><table border="0"><col valign="top" align="left"><tbody><tr><td><p><span class="term">
+  <span class="hl-site">foldl1</span>(<span class="hl-variable">maxA</span>, <span class="hl-variable">xs</span>)</pre></p></td></tr></tbody></table></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N12FF1"></a>B.3.5.&nbsp;reflect.inc: Metalanguage operations.</h3></div></div></div><p>Metalanguage operations.</p><div class="variablelist"><table border="0"><col valign="top" align="left"><tbody><tr><td><p><span class="term">
+                            <code class="code"><span class="hl-variable">Site</span></code>
+                        </span></p></td><td><p>
+                                <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Site</span>[<span class="hl-variable">A</span>](<span class="hl-variable">A</span>) :: <span class="hl-variable">A</span></code>
+                            </p><p>This site promotes an Orc closure to a site; when the site is called, the
+closure is executed on those arguments. These executions behave
+like site calls; in particular, the following four properties hold:</p><p>
+                                <div class="itemizedlist"><ul type="disc"><li> The site, like all sites, is strict in its arguments. </li><li> The site returns only the first value published by the executed closure. The closure continues to run, but its subsequent publications are discarded. </li><li> The execution of the closure is protected from termination. If the site call is terminated, the closure still runs, and its publications are simply ignored. </li><li> If the execution of the closure halts, so does the site call. </li></ul></div>
+                            </p><p>The typical usage of Site looks like:</p><p>
+                                <pre class="orc">
+<span class="hl-keyword">def</span> <span class="hl-site">foo</span>(...) = ...
+<span class="hl-keyword">val</span> <span class="hl-variable">Foo</span> = <span class="hl-site">Site</span>(<span class="hl-variable">foo</span>)</pre>
+                            </p><p>The typing of Site will enforce the side condition that the type A is an arrow
+type.</p></td></tr></tbody></table></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1301D"></a>B.3.6.&nbsp;text.inc: Operations on strings.</h3></div></div></div><p>Operations on strings.</p><div class="variablelist"><table border="0"><col valign="top" align="left"><tbody><tr><td><p><span class="term">
                             <code class="code"><span class="hl-variable">String</span></code>
                         </span></p></td><td><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">String</span></code>
@@ -1574,7 +1587,7 @@ and concatenate the results.</p><p><b>Implementation.&nbsp;</b><pre class="progr
 each string.</p><p><b>Implementation.&nbsp;</b><pre class="programlisting"><span class="hl-keyword">def</span> <span class="hl-site">unwords</span>(<span class="hl-site">List</span>[<span class="hl-variable">String</span>]) :: <span class="hl-variable">String</span>
 <span class="hl-keyword">def</span> <span class="hl-site">unwords</span>([]) = <span class="hl-literal">""</span>
 <span class="hl-keyword">def</span> <span class="hl-site">unwords</span>([<span class="hl-variable">word</span>]) = <span class="hl-variable">word</span>
-<span class="hl-keyword">def</span> <span class="hl-site">unwords</span>(<span class="hl-variable">word</span>:<span class="hl-variable">words</span>) = <span class="hl-site">cat</span>(<span class="hl-variable">word</span>, <span class="hl-literal">" "</span>, <span class="hl-site">unwords</span>(<span class="hl-variable">words</span>))</pre></p></td></tr></tbody></table></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N130F2"></a>B.3.6.&nbsp;time.inc: Real and logical time.</h3></div></div></div><p>Real and logical time.</p><div class="variablelist"><table border="0"><col valign="top" align="left"><tbody><tr><td><p><span class="term">
+<span class="hl-keyword">def</span> <span class="hl-site">unwords</span>(<span class="hl-variable">word</span>:<span class="hl-variable">words</span>) = <span class="hl-site">cat</span>(<span class="hl-variable">word</span>, <span class="hl-literal">" "</span>, <span class="hl-site">unwords</span>(<span class="hl-variable">words</span>))</pre></p></td></tr></tbody></table></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1311E"></a>B.3.7.&nbsp;time.inc: Real and logical time.</h3></div></div></div><p>Real and logical time.</p><div class="variablelist"><table border="0"><col valign="top" align="left"><tbody><tr><td><p><span class="term">
                             <code class="code"><span class="hl-variable">Rtimer</span></code>
                         </span></p></td><td><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">Rtimer</span>(<span class="hl-variable">Integer</span>) :: <span class="hl-variable">Top</span></code>
@@ -1623,7 +1636,7 @@ quiescent.</p></td></tr><tr><td><p><span class="term">
                         </span></p></td><td><p>
                                 <code class="code"><span class="hl-keyword">def</span> <span class="hl-site">metronome</span>(<span class="hl-variable">Integer</span>) :: <span class="hl-variable">Top</span></code>
                             </p><p>Publish a signal at regular intervals, indefinitely. The period is given by the
-argument, in milliseconds.</p></td></tr></tbody></table></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N13177"></a>B.3.7.&nbsp;util.inc: Miscellaneous utility functions.</h3></div></div></div><p>Miscellaneous utility functions.</p><div class="variablelist"><table border="0"><col valign="top" align="left"><tbody><tr><td><p><span class="term">
+argument, in milliseconds.</p></td></tr></tbody></table></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N131A3"></a>B.3.8.&nbsp;util.inc: Miscellaneous utility functions.</h3></div></div></div><p>Miscellaneous utility functions.</p><div class="variablelist"><table border="0"><col valign="top" align="left"><tbody><tr><td><p><span class="term">
                             <code class="code"><span class="hl-variable">random</span></code>
                         </span></p></td><td><p>
                                 <code class="code"><span class="hl-keyword">site</span> <span class="hl-site">random</span>() :: <span class="hl-variable">Integer</span></code>
