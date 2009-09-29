@@ -28,6 +28,7 @@ import orc.error.runtime.TokenLimitReachedError;
 import orc.runtime.nodes.Node;
 import orc.runtime.regions.Execution;
 import orc.runtime.regions.LogicalClock;
+import orc.runtime.regions.Region;
 import orc.runtime.values.Value;
 import orc.trace.Tracer;
 
@@ -134,6 +135,29 @@ public class OrcEngine implements Runnable {
 		onTerminate();
 	}
 
+	/**
+	 * Create a new toplevel token hosted by this engine.
+	 * Used to implement the Site site.
+	 * 
+	 * Returns null if the operation could not be performed
+	 * because a token limit was reached, or because the engine is
+	 * halted, or due to some other restriction.
+	 * 
+	 * @param root
+	 */
+	public final Token newExecution(final Node node, final Token initiator) {
+		if (!isDead()) {
+			Token token;
+			try {
+				token = pool.newToken();
+				token.initializeRoot(node, region, this, initiator.getTracer());
+				return token;
+			}
+			catch (final TokenLimitReachedError e) {}
+		}
+		return null;
+	}
+	
 	/** Override this to customize termination. */
 	public void onTerminate() {
 		// do nothing
@@ -177,7 +201,7 @@ public class OrcEngine implements Runnable {
 		start(root);
 		run();
 	}
-
+	
 	public final void start(final Node root) {
 		assert root != null;
 		region = new Execution(this);
