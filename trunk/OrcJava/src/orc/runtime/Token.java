@@ -360,7 +360,7 @@ public class Token implements Serializable, Locatable {
 		 * make sure we haven't exceeded it.
 		 */
 		if (stackAvailable >= 0 && stackAvailable < continuation.stacksize) {
-			throw new StackLimitReachedError();
+			throw new StackLimitReachedError(stackAvailable);
 		}
 		
 		tracer.enter(closure);
