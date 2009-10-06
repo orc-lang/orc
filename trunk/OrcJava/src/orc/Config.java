@@ -557,10 +557,23 @@ public class Config implements Cloneable {
 			return new FileReader(file);
 		}
 		final InputStream stream = Config.class.getResourceAsStream("/orc/inc/" + name);
-		if (stream == null) {
-			throw new FileNotFoundException("Include file '" + name + "' not found; check the include path.");
+		if (stream != null) {
+			return new InputStreamReader(stream);
 		}
-		return new InputStreamReader(stream);
+		else {
+			// Try to read this include as a URL instead of as a local file
+			try {
+				URL incurl = new URL(name);
+				return new InputStreamReader(incurl.openConnection().getInputStream());
+			} 
+			catch (MalformedURLException e) {} 
+			catch (IOException e) {
+				throw new FileNotFoundException("Could not open a connection to '" + name + "'.");
+			}
+		}
+			
+		throw new FileNotFoundException("Include file '" + name + "' not found; check the include path.");
+		
 	}
 
 	public final Class loadClass(final String name) throws ClassNotFoundException {
