@@ -77,22 +77,31 @@ public class DotType extends Type {
 	public String toString() {
 		
 		StringBuilder s = new StringBuilder();
+		String sep = "";
 		
-		s.append('(');
-		s.append(defaultType);
-		for (String f : fieldMap.keySet()) {
+		
+		if (!(defaultType instanceof NoDefaultType)) {
+			s.append('(');
+			s.append(defaultType);
 			s.append(" & ");
-			s.append("." + f + " :: ");
+		}
+		s.append('{');
+		for (String f : fieldMap.keySet()) {
+			s.append(sep); sep = ", ";
+			s.append(f + " :: ");
 			s.append(fieldMap.get(f));
 		}
-		s.append(')');
+		s.append('}');
+		if (!(defaultType instanceof NoDefaultType)) {
+			s.append(')');
+		}
 		
 		return s.toString();
 	}
 	
 }
 	
-class NoDefaultType extends Type {
+final class NoDefaultType extends Type {
 
 	public Type call(TypingContext ctx, List<Argument> args, List<Type> typeActuals) throws TypeException {
 		throw new TypeException("This site has no default behavior; it can only be called via messages");
