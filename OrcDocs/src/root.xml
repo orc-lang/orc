@@ -5477,6 +5477,10 @@ Each of the Orc constants has the expected type:
 <listitem> ... <code> 0.001, -1.5, 2.71828 </code> ... <code> :: </code> <code>Number</code></listitem>
 </itemizedlist>
 
+The expression <code>signal</code> has its own unique type, <code>Signal</code>.
+</para>
+
+<para>
 Orc allows <emphasis>subtyping</emphasis>: some types are included in other types. For example,
 Integer is a subtype of Number, because all Integers are also Numbers. 
 </para>
@@ -5496,21 +5500,15 @@ ad-hoc polymorphism; only external services can.
 
 </section>
 
-<section><title><code>signal</code> and <code>stop</code></title>
+<section><title><code>Top</code> and <code>Bot</code></title>
 
 <para>
-There are two other important types:
-
-<itemizedlist>
-<listitem> <code>signal :: Top</code></listitem>
-<listitem> <code>stop :: Bot</code></listitem>
-</itemizedlist>
-
+There are two other important types: <code>Top</code> and <code>Bot</code>. 
 </para>
 
 <para>
 <code>Top</code> is the universal type; it is the type of any value, and all other types are subtypes 
-of it. In particular, signals only have type <code>Top</code>, since they carry no information.
+of it. 
 </para>
 
 <para>
