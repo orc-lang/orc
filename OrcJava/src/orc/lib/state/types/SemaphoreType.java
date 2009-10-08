@@ -15,7 +15,7 @@ public class SemaphoreType extends DotType {
 	
 	public SemaphoreType() {
 		super();
-		Type t = new ArrowType(Type.TOP); /* A method which takes no arguments and returns a signal */
+		Type t = new ArrowType(Type.SIGNAL); /* A method which takes no arguments and returns a signal */
 		addField("acquire", t);
 		addField("acquirenb", t);
 		addField("release", t);

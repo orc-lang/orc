@@ -9,4 +9,4 @@ OUTPUT:
 
 ( (1,2) | (1,2,3) | (5,6) | (5,6,7) ) >(x,y)> (y,x)
 
-) :!: Top  {- As currently written, this program cannot pass the typechecker -} 
+) :!: Signal  {- As currently written, this program cannot pass the typechecker -} 

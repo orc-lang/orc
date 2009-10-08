@@ -22,9 +22,9 @@ public class BufferType extends MutableContainerType {
 		DotType dt = new DotType(/* no default behavior */);
 		dt.addField("get", new ArrowType(T));
 		dt.addField("getnb", new ArrowType(T));
-		dt.addField("put", new ArrowType(T, Type.TOP));
-		dt.addField("close", new ArrowType(Type.TOP));
-		dt.addField("closenb", new ArrowType(Type.TOP));
+		dt.addField("put", new ArrowType(T, Type.SIGNAL));
+		dt.addField("close", new ArrowType(Type.SIGNAL));
+		dt.addField("closenb", new ArrowType(Type.SIGNAL));
 		dt.addField("isClosed", new ArrowType(Type.BOOLEAN));
 		dt.addField("getAll", new ArrowType(ListType.listOf(T)));
 		return dt;

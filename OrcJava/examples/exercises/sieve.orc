@@ -35,7 +35,7 @@ def primes(n) =
   def sieve(Number, Set[Number]) :: List[Number]
   def sieve(1, _) = []
   def sieve(n, set) =
-  	def remove(Number) :: Top
+  	def remove(Number) :: Signal
     def remove(p) = joinMap(set.remove, rangeBy(p*p, n, p))
     sieve(sqrt(n), set) >ps>
     joinMap(remove, ps) >>

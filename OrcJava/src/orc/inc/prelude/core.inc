@@ -23,7 +23,7 @@ type Top = orc.type.ground.Top
 type Bot = orc.type.ground.Bot
 
 {--
-@site let() :: Top
+@site let() :: Signal
 When applied to no arguments, return a signal.
 
 @site let[A](A) :: A
@@ -35,7 +35,7 @@ When applied to two or more arguments, return the arguments in a tuple.
 site let = orc.runtime.sites.core.Let
 
 {--
-@site if(Boolean) :: Top
+@site if(Boolean) :: Signal
 Fail silently if the argument is false. Otherwise return a signal.
 
 Example:
@@ -118,31 +118,31 @@ the expression <code>a - (a/b)*b</code>. For a full description, see the
 site (%) = orc.lib.math.Mod
 
 {--
-@site (<)(Top, Top) :: Boolean
+@site (<)(Signal, Signal) :: Boolean
 <code>a &lt; b</code> returns true if <code>a</code> is less than <code>b</code>, and false otherwise.
 --}
 site (<) = orc.lib.comp.Less
 
 {--
-@site (<=)(Top, Top) :: Boolean
+@site (<=)(Signal, Signal) :: Boolean
 <code>a &lt;= b</code> returns true if <code>a</code> is less than or equal to <code>b</code>, and false otherwise.
 --}
 site (<=) = orc.lib.comp.Leq
 
 {--
-@site (>)(Top, Top) :: Boolean
+@site (>)(Signal, Signal) :: Boolean
 <code>a > b</code> returns true if <code>a</code> is greater than <code>b</code>, and false otherwise.
 --}
 site (>) = orc.lib.comp.Greater
 
 {--
-@site (>=)(Top, Top) :: Boolean
+@site (>=)(Signal, Signal) :: Boolean
 <code>a >= b</code> returns true if <code>a</code> is greater than or equal to <code>b</code>, and false otherwise.
 --}
 site (>=) = orc.lib.comp.Greq
 
 {--
-@site (=)(Top, Top) :: Boolean
+@site (=)(Signal, Signal) :: Boolean
 <code>a = b</code> returns true if <code>a</code> is equal to <code>b</code>,
 and false otherwise.  The precise definition of "equal" depends on the values
 being compared, but always obeys the rule that if two values are considered
@@ -162,7 +162,7 @@ always considered inequal, i.e. the comparison will return <code>false</code>.
 site (=) = orc.runtime.sites.core.Equal
 
 {--
-@site (/=)(Top, Top) :: Boolean
+@site (/=)(Signal, Signal) :: Boolean
 <code>a/=b</code> returns false if <code>a=b</code>, and true otherwise.
 --}
 site (/=) = orc.runtime.sites.core.Inequal

@@ -21,7 +21,7 @@ public class RefType extends MutableContainerType {
 		DotType dt = new DotType(/* no default behavior */);
 		dt.addField("read", new ArrowType(T));
 		dt.addField("readnb", new ArrowType(T));
-		dt.addField("write", new ArrowType(T, Type.TOP));
+		dt.addField("write", new ArrowType(T, Type.SIGNAL));
 		return dt;
 	}
 	

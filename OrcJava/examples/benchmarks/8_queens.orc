@@ -3,7 +3,7 @@
 {- The position of a queen on the chessboard is a coordinate pair -}
 type Queen = (Integer,Integer)
 
-def check(Queen,Queen) :: Top
+def check(Queen,Queen) :: Signal
 def check((a,b),(x,y)) = if(a /= x) >> if(b /= y) >> if(a - b /= x - y) >> if(a + b /= x + y)
 
 def addqueen(Queen, List[Queen]) :: List[Queen]

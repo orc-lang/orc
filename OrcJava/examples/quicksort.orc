@@ -14,11 +14,11 @@ unneeded.
 -}
 
 {- swap two refs' values -}
-def swapRefs[X](Ref[X], Ref[X]) :: Top
+def swapRefs[X](Ref[X], Ref[X]) :: Signal
 def swapRefs(x, y) = x? >z> x := y? >> y := z
 
 {- parallel quicksort -}
-def quicksort[X](Array[X]) :: Top
+def quicksort[X](Array[X]) :: Signal
 def quicksort(a) =
 
 --------------  Partition Procedure --------------
@@ -54,7 +54,7 @@ def partition(p, l, r) =
 
 --------------  Sort an array segment -------------
 {- sort(l, r) sorts the segment a(l).. a(r) -}
-def sort(Integer, Integer) :: Top
+def sort(Integer, Integer) :: Signal
 def sort(l, r) =
    if l >= r then signal
    else

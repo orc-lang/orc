@@ -3,7 +3,7 @@ Real and logical time.
 --}
 
 {--
-@site Rtimer(Integer) :: Top
+@site Rtimer(Integer) :: Signal
 Publish a signal after the given number of milliseconds.
 
 @method Rtimer.time() :: Integer
@@ -32,7 +32,7 @@ def Clock() =
   lambda () = Rtimer.time() - time
 
 {--
-@site Ltimer(Integer) :: Top
+@site Ltimer(Integer) :: Signal
 Publish a signal after the given number of logical timesteps,
 as measured by the current logical clock.
 The logical time advances whenever the computation controlled
@@ -64,9 +64,9 @@ def withLtimer(thunk) =
   x
 
 {--
-@def metronome(Integer) :: Top
+@def metronome(Integer) :: Signal
 Publish a signal at regular intervals, indefinitely. The period is given by the
 argument, in milliseconds.
 --}
-def metronome(Integer) :: Top
+def metronome(Integer) :: Signal
 def metronome(t) = signal | Rtimer(t) >> metronome(t)
