@@ -31,6 +31,7 @@ import orc.type.ground.Bot;
 import orc.type.ground.IntegerType;
 import orc.type.ground.LetType;
 import orc.type.ground.NumberType;
+import orc.type.ground.SignalType;
 import orc.type.ground.StringType;
 import orc.type.ground.Top;
 import orc.type.inference.Constraint;
@@ -67,6 +68,7 @@ public abstract class Type {
 	public static final Type BOOLEAN = new BooleanType();
 	public static final Type INTEGER = new IntegerType();
 	public static final Type LET = new LetType();
+	public static final Type SIGNAL = new SignalType();
 	
 	/* Check if a type is Top */
 	public boolean isTop() {

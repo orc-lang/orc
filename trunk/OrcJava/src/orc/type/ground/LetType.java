@@ -41,7 +41,7 @@ public class LetType extends Type {
 	 */
 	public static Type condense(List<Type> types) {
 		if (types.size() == 0) {
-			return Type.TOP;
+			return Type.SIGNAL;
 		} else if (types.size() == 1) {
 			return types.get(0);
 		} else {
