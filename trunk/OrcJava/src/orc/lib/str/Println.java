@@ -30,7 +30,7 @@ public class Println extends Site {
 	}
 	
 	public Type type() {
-		return new EllipsisArrowType(Type.TOP, Type.TOP);
+		return new EllipsisArrowType(Type.TOP, Type.SIGNAL);
 	}
 
 }

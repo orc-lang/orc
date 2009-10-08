@@ -6,8 +6,8 @@ Create a new actor with two methods:
 - stop() halts the actor.
 -}
 
-type thunk = lambda () :: Top
-type actor = lambda(thunk) :: Top
+type thunk = lambda () :: Signal
+type actor = lambda(thunk) :: Signal
 
 def Actor() :: actor
 def Actor() =

@@ -3,7 +3,7 @@
   and will keep its host execution alive.
 -}
 
-def countdown(Integer) :: Top
+def countdown(Integer) :: Signal
 def countdown(0) = signal
 def countdown(i) = println(i) >> Rtimer(500) >> countdown(i-1)
 val Countdown = Site(countdown)

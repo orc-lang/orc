@@ -42,7 +42,7 @@ public class Ltimer extends Site {
 	}
 
 	public Type type() {
-		return new DotType(new ArrowType(Type.NUMBER, Type.TOP))
+		return new DotType(new ArrowType(Type.NUMBER, Type.SIGNAL))
 			.addField("time", new ArrowType(Type.INTEGER));
 	}
 }

@@ -25,7 +25,7 @@ public class If extends PartialSite {
 	}
 	
 	public Type type() {
-		return new ArrowType(Type.BOOLEAN, Type.TOP);
+		return new ArrowType(Type.BOOLEAN, Type.SIGNAL);
 	}
 
 }

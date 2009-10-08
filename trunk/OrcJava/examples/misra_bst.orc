@@ -149,7 +149,7 @@ insert(38) >>
 delete(35)>>
   sort()
   
-) :!: Top  {- As currently written, this program cannot pass the typechecker -} 
+) :!: Signal  {- As currently written, this program cannot pass the typechecker -} 
   
 {-
 OUTPUT:

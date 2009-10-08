@@ -10,14 +10,14 @@ Hint: create a single process running in the background which
 manages the shared state.
 --}
 
-type Callback = lambda() :: Top
+type Callback = lambda() :: Signal
 type Message = Dec() | Wait(Callback)
 
 val m = Buffer[Message]()
 
-def actor(Integer, List[Callback]) :: Top 
+def actor(Integer, List[Callback]) :: Signal 
 def actor(n, waiters) =
-  def on(Message) :: Top
+  def on(Message) :: Signal
   def on(Dec()) =
     if n = 1 then join(waiters)
     else actor(n-1, waiters)

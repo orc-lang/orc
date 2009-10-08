@@ -20,7 +20,7 @@ def threadRing(id, m, in, next) =
 
 val N = 503
 
-def threadRingRunner(Integer) :: Top
+def threadRingRunner(Integer) :: Signal
 def threadRingRunner(p) =
   val ring = IArray(N, lambda(_ :: Integer) = Buffer[Integer]()) 
   val _ = ring(0).put(0)

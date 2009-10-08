@@ -43,24 +43,24 @@ println("Entering critical section") >>
 println("Leaving critical section") >>
 lock.release()]]></programlisting>
 
-@method Semaphore.acquire() :: Top
+@method Semaphore.acquire() :: Signal
 If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a signal.
 If the semaphore's value is <code>0</code>, block until it becomes greater than <code>0</code>.
 
-@method Semaphore.acquirenb() :: Top
+@method Semaphore.acquirenb() :: Signal
 If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a signal.
 If the semaphore's value is <code>0</code>, halt.
 
-@method Semaphore.release() :: Top
+@method Semaphore.release() :: Signal
 If any calls to <code>acquire</code> are blocked, allow the oldest such call
 to return.  Otherwise, increment the value of the semaphore.  This may
 increment the value beyond that with which the semaphore was constructed.  
 
-@method Semaphore.snoop() :: Top
+@method Semaphore.snoop() :: Signal
 If any calls to <code>acquire</code> are blocked, return a signal.
 Otherwise, block until some call to <code>acquire</code> blocks.
 
-@method Semaphore.snoopnb() :: Top
+@method Semaphore.snoopnb() :: Signal
 If any calls to <code>acquire</code> are blocked, return a signal.
 Otherwise, halt.
 --}
@@ -95,18 +95,18 @@ linkend="orc.lib.Buffer.close">closed</link> and no items are available, halt.
 @method Buffer[A].getnb() :: A
 Get an item from the buffer. If no items are available, halt.
 
-@method Buffer[A].put(A) :: Top
+@method Buffer[A].put(A) :: Signal
 Put an item in the buffer. If the buffer is <link
 linkend="orc.lib.Buffer.close">closed</link>, halt.
 
-@method Buffer[A].close() :: Top
+@method Buffer[A].close() :: Signal
 Close the buffer and block until it is empty.
 This has the effect of immediately causing any blocked calls to
 <code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
 will halt, and once the buffer becomes empty, any subsequent calls to
 <code>get</code> will halt.
 
-@method Buffer[A].closenb() :: Top
+@method Buffer[A].closenb() :: Signal
 Close the buffer and return a signal immediately.
 This has the effect of immediately causing any blocked calls to
 <code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
@@ -156,15 +156,15 @@ linkend="orc.lib.BoundedBuffer.close">closed</link> and no items are available, 
 @method BoundedBuffer[A].getnb() :: A
 Get an item from the buffer. If no items are available, halt.
 
-@method BoundedBuffer[A].put(A) :: Top
+@method BoundedBuffer[A].put(A) :: Signal
 Put an item in the buffer. If no slots are open, block until one becomes open.
 If the buffer is <link linkend="orc.lib.BoundedBuffer.close">closed</link>, halt.
 
-@method BoundedBuffer[A].putnb(A) :: Top
+@method BoundedBuffer[A].putnb(A) :: Signal
 Put an item in the buffer. If no slots are open, halt.
 If the buffer is <link linkend="orc.lib.BoundedBuffer.close">closed</link>, halt.
 
-@method BoundedBuffer[A].close() :: Top
+@method BoundedBuffer[A].close() :: Signal
 <!-- XSL/FO doesn't like me using an anchor tag here -->
 <para id="orc.lib.BoundedBuffer.close">
 Close the buffer and block until it is empty.
@@ -175,7 +175,7 @@ will halt, and once the buffer becomes empty, any subsequent calls to
 initiated prior to closing the buffer may still be allowed to return as usual.
 </para>
 
-@method BoundedBuffer[A].closenb() :: Top
+@method BoundedBuffer[A].closenb() :: Signal
 Close the buffer and return a signal immediately.
 This has the effect of immediately causing any blocked calls to
 <code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
@@ -219,7 +219,7 @@ val c = SyncChannel()
 @method SyncChannel[A].get() :: A
 Receive an item over the channel. If no sender is available, block until one becomes available.
 
-@method SyncChannel[A].put(A) :: Top
+@method SyncChannel[A].put(A) :: Signal
 Send an item over the channel. If no receiver is available, block until one becomes available.
 --}
 site SyncChannel = orc.lib.state.SyncChannel
@@ -242,7 +242,7 @@ Read a value from the cell. If the cell does not yet have a value, block until i
 @method Cell[A].readnb() :: A
 Read a value from the cell. If the cell does not yet have a value, halt.
 
-@method Cell[A].write() :: Top
+@method Cell[A].write() :: Signal
 Write a value to the cell. If the cell already has a value, halt.
 --}
 site Cell = orc.lib.state.Cell
@@ -272,7 +272,7 @@ Read the value of the ref. If the ref does not yet have a value, block until it 
 @method Ref[A].readnb() :: A
 Read the value of the ref. If the ref does not yet have a value, halt.
 
-@method Ref[A].write(A) :: Top
+@method Ref[A].write(A) :: Signal
 Write a value to the ref.
 
 --}
@@ -290,22 +290,22 @@ def (?)[A](Ref[A]) :: A
 def (?)(r) = r.read()
 
 {--
-@def (:=)[A](Ref[A], A) :: Top
+@def (:=)[A](Ref[A], A) :: Signal
 Set the value held by a reference.
 <code>x := y</code> is equivalent to <code>x.write(y)</code>.
 
 @implementation
 --}
-def (:=)[A](Ref[A], A) :: Top
+def (:=)[A](Ref[A], A) :: Signal
 def (:=)(r,v) = r.write(v)
 
 {--
-@def swap[A](Ref[A], Ref[A]) :: Top
+@def swap[A](Ref[A], Ref[A]) :: Signal
 Swap the values in two references.
 
 @implementation
 --}
-def swap[A](Ref[A], Ref[A]) :: Top
+def swap[A](Ref[A], Ref[A]) :: Signal
 def swap(r,s) = (r?,s?) >(rval,sval)> (r := sval, s := rval) >> signal
 
 
@@ -352,7 +352,7 @@ programs will just use the  <code>Array(Integer)</code> constructor.
 Get the element of the array given by the index, counting from 0.
 <code>a.get(i)</code> is equivalent to <code>a(i)?</code>.
 
-@method Array[A].set(Integer, A) :: Top
+@method Array[A].set(Integer, A) :: Signal
 Set the element of the array given by the index, counting from 0.
 <code>a.set(i,v)</code> is equivalent to <code>a(i) := v</code>.
 
@@ -363,7 +363,7 @@ half-open range. The result array is still indexed counting from 0.
 @method Array[A].length() :: Integer
 Return the size of the array.
 
-@method Array[A].fill(A) :: Top
+@method Array[A].fill(A) :: Signal
 Set every element of the array to the given value. The given value is not
 copied, but is shared by every element of the array, so for example
 <code>a.fill(Semaphore(1))</code> would allow you to access the same semaphore
@@ -405,7 +405,7 @@ a(3)]]></programlisting>
 def IArray[A](Integer, lambda (Integer) :: A)(Integer) :: A
 def IArray(n, f) =
   val a = Array[A](n)
-  def fill(Integer, lambda (Integer) :: A) :: Top
+  def fill(Integer, lambda (Integer) :: A) :: Signal
   def fill(i, f) =
     if i < 0 then signal
     else (a.set(i, f(i)), fill(i-1, f)) >> signal
@@ -424,17 +424,17 @@ elements rather than Java rules.
 Add a value to the set, returning true if the set did not already contain the value,
 and false otherwise.
 
-@method Set[A].remove(Top) :: Boolean
+@method Set[A].remove(Signal) :: Boolean
 Remove a value from the set, returning true if the set contained the value,
 and false otherwise.
 
-@method Set[A].contains(Top) :: Boolean
+@method Set[A].contains(Signal) :: Boolean
 Return true if the set contains the given value, and false otherwise.
 
 @method Set[A].isEmpty() :: Boolean
 Return true if the set contains no values.
 
-@method Set[A].clear() :: Top
+@method Set[A].clear() :: Signal
 Remove all values from the set.
 
 @method Set[A].size() :: Integer
@@ -461,17 +461,17 @@ if any, otherwise return <code>Null()</code>.
 Return the value currently associated with the given key, if any, otherwise
 return <code>Null()</code>.
 
-@method Map[K,V].remove(Top) :: V
+@method Map[K,V].remove(Signal) :: V
 Remove the given key from the map. Return the value previously associated with the key,
 if any, otherwise return <code>Null()</code>.
 
-@method Map[K,V].containsKey(Top) :: Boolean
+@method Map[K,V].containsKey(Signal) :: Boolean
 Return true if the map contains the given key, and false otherwise.
 
 @method Map[K,V].isEmpty() :: Boolean
 Return true if the map contains no keys.
 
-@method Map[K,V].clear() :: Top
+@method Map[K,V].clear() :: Signal
 Remove all keys from the map.
 
 @method Map[K,V].size() :: Integer
@@ -486,14 +486,14 @@ Create a new counter initialized to the given value.
 @method Counter() :: Counter
 Create a new counter initialized to zero.
 
-@method Counter.inc() :: Top
+@method Counter.inc() :: Signal
 Increment the counter.
 
-@method Counter.dec() :: Top
+@method Counter.dec() :: Signal
 If the counter is already at zero, halt. Otherwise, decrement
 the counter and return a signal.
 
-@method Counter.onZero() :: Top
+@method Counter.onZero() :: Signal
 If the counter is at zero, return a signal. Otherwise
 block until the counter reaches zero.
 

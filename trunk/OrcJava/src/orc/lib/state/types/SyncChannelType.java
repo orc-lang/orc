@@ -21,7 +21,7 @@ public class SyncChannelType extends MutableContainerType {
 		
 		DotType dt = new DotType(/* no default behavior */);
 		dt.addField("get", new ArrowType(T));
-		dt.addField("put", new ArrowType(T, Type.TOP));
+		dt.addField("put", new ArrowType(T, Type.SIGNAL));
 		return dt;
 	}
 	

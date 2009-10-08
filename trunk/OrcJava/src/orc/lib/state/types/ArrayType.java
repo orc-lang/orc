@@ -24,10 +24,10 @@ public class ArrayType extends MutableContainerType {
 
 		Type ArrayOfT = (new ArrayType()).instance(T);
 		arrayType.addField("get", new ArrowType(Type.INTEGER, T));
-		arrayType.addField("set", new ArrowType(Type.INTEGER, T, Type.TOP));
+		arrayType.addField("set", new ArrowType(Type.INTEGER, T, Type.SIGNAL));
 		arrayType.addField("slice", new ArrowType(Type.INTEGER, Type.INTEGER, ArrayOfT));
 		arrayType.addField("length", new ArrowType(Type.INTEGER));
-		arrayType.addField("fill", new ArrowType(T, Type.TOP));
+		arrayType.addField("fill", new ArrowType(T, Type.SIGNAL));
 		return arrayType;
 	}
 	

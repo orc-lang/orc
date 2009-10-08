@@ -182,7 +182,7 @@ def forkMap(f, []) = stop
 def forkMap(f, x:xs) = f(x) | forkMap(f, xs)
 
 {--
-@def seq[A](List[lambda () :: A]) :: Top
+@def seq[A](List[lambda () :: A]) :: Signal
 Call a list of functions in sequence, publishing
 a signal whenever the last function publishes. The
 actual publications of the given functions are not
@@ -193,12 +193,12 @@ the expression <code>f() >> g() >> h() >> signal</code>
 
 @implementation
 --}
-def seq[A](List[lambda () :: A]) :: Top
+def seq[A](List[lambda () :: A]) :: Signal
 def seq([]) = signal
 def seq(p:ps) = p() >> seq(ps)
 
 {--
-@def seqMap[A,B](lambda (A) :: B, List[A]) :: Top
+@def seqMap[A,B](lambda (A) :: B, List[A]) :: Signal
 Apply a function to a list in in sequence, publishing
 a signal whenever the last application publishes. The
 actual publications of the given functions are not
@@ -209,12 +209,12 @@ the expression <code>f(a) >> f(b) >> f(c) >> signal</code>
 
 @implementation
 --}
-def seqMap[A,B](lambda (A) :: B, List[A]) :: Top
+def seqMap[A,B](lambda (A) :: B, List[A]) :: Signal
 def seqMap(f, []) = signal
 def seqMap(f, x:xs) = f(x) >> seqMap(f, xs)
  
 {--
-@def join[A](List[lambda () :: A]) :: Top
+@def join[A](List[lambda () :: A]) :: Signal
 Call a list of functions in parallel and publish
 a signal once all functions have completed.
 
@@ -223,12 +223,12 @@ the expression <code>(f(), g(), h()) >> signal</code>
 
 @implementation
 --}
-def join[A](List[lambda () :: A]) :: Top
+def join[A](List[lambda () :: A]) :: Signal
 def join([]) = signal
 def join(p:ps) = (p(), join(ps)) >> signal
  
 {--
-@def joinMap[A,B](lambda (A) :: B, List[A]) :: Top
+@def joinMap[A,B](lambda (A) :: B, List[A]) :: Signal
 Apply a function to a list in parallel and publish
 a signal once all applications have completed.
 
@@ -237,7 +237,7 @@ the expression <code>(f(a), f(b), f(c)) >> signal</code>
 
 @implementation
 --}
-def joinMap[A,B](lambda (A) :: B, List[A]) :: Top
+def joinMap[A,B](lambda (A) :: B, List[A]) :: Signal
 def joinMap(f, []) = signal
 def joinMap(f, x:xs) = (f(x), joinMap(f, xs)) >> signal
 

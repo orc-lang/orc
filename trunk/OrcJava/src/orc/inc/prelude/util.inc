@@ -28,7 +28,7 @@ Return a random (type 4) UUID represented as a string.
 site UUID = orc.lib.util.UUID
 
 {--
-@site Thread(Top) :: Bot
+@site Thread(Signal) :: Bot
 Given a site, return a new site which calls the original site
 in a separate thread.  This is necessary when calling
 a Java site which does not cooperate with Orc's scheduler
@@ -63,7 +63,7 @@ Prompt("Enter an integer:") >r> read(r)]]></programlisting>
 site Prompt = orc.lib.util.Prompt
 
 {--
-@def signals(Integer) :: Top
+@def signals(Integer) :: Signal
 Publish the given number of signals, simultaneously.
 
 Example:
@@ -73,7 +73,7 @@ signals(5)]]></programlisting>
 
 @implementation
 --}
-def signals(Integer) :: Top
+def signals(Integer) :: Signal
 def signals(n) = if n > 0 then (signal | signals(n-1))
 
 {--
