@@ -6180,7 +6180,7 @@ The original Orc grammar rules are abbreviated by ellipses (...).
 <entry></entry>
 <entry>|</entry>
 
-<entry><code>Integer</code> | <code>Boolean</code> | <code>String</code> | <code>Number</code> | <code>Top</code> | <code>Bot</code></entry>
+<entry><code>Integer</code> | <code>Boolean</code> | <code>String</code> | <code>Number</code> | <code>Signal</code> | <code>Top</code> | <code>Bot</code></entry>
 
 <entry></entry>
 <entry><emphasis>Ground type</emphasis></entry>
@@ -7066,7 +7066,7 @@ example, <code>site Foo()() :: Top</code> is equivalent to
 <entry></entry>
 <entry>|</entry>
 
-<entry><code>Integer</code> | <code>Boolean</code> | <code>String</code> | <code>Number</code> | <code>Top</code> | <code>Bot</code></entry>
+<entry><code>Integer</code> | <code>Boolean</code> | <code>String</code> | <code>Number</code> | <code>Signal</code> | <code>Top</code> | <code>Bot</code></entry>
 
 <entry></entry>
 <entry><emphasis>Ground type</emphasis></entry>
