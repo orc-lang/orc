@@ -6146,8 +6146,8 @@ The original Orc grammar rules are abbreviated by ellipses (...).
 <table id="types-ebnf-table" frame="none" rowsep="0" colsep="0">
 <title>Typed Orc</title>  
 <?dbhtml table-width="80%" ?>
-<?dbfo table-width="80%" ?>
-<?dbfo keep-together="always" ?>
+<?dbfo table-width="100%" ?>
+<!--  <?dbfo keep-together="always" ?>  -->
 <tgroup cols="5" >
 <colspec colnum="1" colname="bexp" colwidth="1*" align="right"/>
 <colspec colnum="2" colname="texp" colwidth="1*" align="center"/>
@@ -6160,7 +6160,7 @@ The original Orc grammar rules are abbreviated by ellipses (...).
 <entry>T</entry>
 <entry>::=</entry>
 
-<entry> ... </entry>
+<entry> </entry>
 
 <entry><emphasis>Type</emphasis></entry>
 <entry></entry>
@@ -6168,7 +6168,7 @@ The original Orc grammar rules are abbreviated by ellipses (...).
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry></entry>
 
 <entry>X</entry>
 
@@ -6457,7 +6457,7 @@ example, <code>site Foo()() :: Top</code> is equivalent to
 <title>Complete Syntax of Orc</title> 
 <?dbhtml table-width="80%" ?>
 <?dbfo table-width="100%" ?>
-<?dbfo keep-together="always" ?>
+<!--  <?dbfo keep-together="always" ?>  -->
 <tgroup cols="5" >
 <colspec colnum="1" colwidth="1*" align="right"/>
 <colspec colnum="2" colwidth="1*" align="center"/>
@@ -6745,7 +6745,7 @@ example, <code>site Foo()() :: Top</code> is equivalent to
 
 <row>
 <entry></entry>
-<entry></entry>
+<entry>|</entry>
 
 <entry> <code>[</code> T <code>,</code> ... <code>,</code> T <code>]</code> <code>(</code> E <code>,</code> ... <code>,</code> E <code>)</code> </entry>
 
@@ -7054,7 +7054,7 @@ example, <code>site Foo()() :: Top</code> is equivalent to
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry></entry>
 
 <entry>X</entry>
 
@@ -7108,6 +7108,7 @@ example, <code>site Foo()() :: Top</code> is equivalent to
 </tgroup>
 </table>
 </para>
+
 
 <para>
 Where relevant, syntactic constructs are ordered by precedence, from highest to lowest. For example, among expressions, calls have higher precedence than
