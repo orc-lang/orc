@@ -79,13 +79,28 @@ public class DefsDeclaration extends Declaration {
 		// Bind all of these definition names in their scope
 		orc.ast.simple.expression.Expression newtarget = target.subMap(vmap);		
 		
-		// Partition the list of definitions into mutually recursive groups,
-		// and bind them onto the target expression in the correct order
+		// Partition the list of definitions into mutually recursive groups
 		List<List<Def>> defparts = defpartition(newdefs);
 		
+		// Bind the definitions onto the target expression in the correct order
 		orc.ast.simple.expression.Expression result = newtarget;
 		for (List<Def> part : defparts) {
-			result = new orc.ast.simple.expression.DeclareDefs(part, result);
+			
+			/* If no member of the set of definitions is ever mentioned in the target,
+			 * do not bind them. This prevents the AST from becoming bloated
+			 * with unused code.
+			 */
+			boolean used = false;
+			for(Def d : part) {
+				if (result.vars().contains(d.name)) {
+					used = true; 
+					break;
+				}
+			}
+			if (used) {
+				result = new orc.ast.simple.expression.DeclareDefs(part, result);
+			}
+			
 		}
 		
 		// Attach a source location to the whole expression and return it
