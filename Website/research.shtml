@@ -30,6 +30,7 @@
 	<li><a href="#Introduction">Introduction to Orc</a></li>
 	<li><a href="#Semantics">Semantics &amp; Verification</a></li>
 	<li><a href="#Applications">Applications</a></li>
+	<li><a href="#Presentations">Presentations</a></li>
 	<li><a href="#Student_Reports">Student Reports</a></li>
 	<li><a href="#Other">Other Resources</a></li>
 </ul>
@@ -43,12 +44,6 @@
 	<br />
 	David Kitchin, Adrian Quark, William Cook and Jayadev Misra<br />
 	<span class="venue">Proceedings of FMOODS/FORTE</span>, Springer Verlag, LNCS 5522, pp 1--25, 2009.</li>
-	
-	<li class="new"><a target="_blank" class="paper" href="papers/orc-presentation.pdf">Structured Application Development over
-Wide-Area Networks</a><br />
-	William Cook, Jayadev Misra, David Kitchin, Adrian Quark, Andrew Matsuoka, John Thywissen<br />
-	FORTE 2009
-	</li>
 	
 	<li><a target="_blank" class="paper" href="papers/qs.pdf">Quicksort: Combining Concurrency, Recursion,
 and Mutable Data Structures</a>
@@ -114,11 +109,6 @@ and Mutable Data Structures</a>
 <a name="Applications" id="Applications"></a><h2>Applications <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
-	<li><a target="_blank" class="paper" href="papers/orc-pads09.pdf">Describing Simulations in the Orc Programming
-Language</a><br />
-	David Kitchin, Adrian Quark, Jayadev Misra<br />
-	23rd ACM/IEEE/SCS Workshop on Principles of Advanced and Distributed Simulation (PADS 2009)</li>
-
 	<li><a target="_blank" href="papers/OrcSimulation.pdf" class="paper">Simulation using Orchestration (DRAFT)</a>
 	<a target="_blank" class="doi" href="http://dx.doi.org/10.1007/978-3-540-79980-1_2">DOI</a>
 	<a class="bibtex" href="papers/OrcSimulation.bib">BibTeX</a>
@@ -141,10 +131,26 @@ Language</a><br />
 	(<a target="_blank" href="papers/workflow_slides.pdf">slides from talk</a>)</li>
 </ul>
 
+<a name="Presentations" id="Presentations"></a><h2>Presentations <small>(<a href="#top">top</a>)</small></h2>
+<ul>
+	<li class="new"><a target="_blank" class="paper" href="papers/orc-presentation.pdf">Structured Application Development over
+Wide-Area Networks</a><br />
+	William Cook, Jayadev Misra, David Kitchin, Adrian Quark, Andrew Matsuoka, John Thywissen<br />
+	FORTE 2009
+	</li>
+	
+	<li><a target="_blank" class="paper" href="papers/orc-pads09.pdf">Describing Simulations in the Orc Programming
+Language</a><br />
+	David Kitchin, Adrian Quark, Jayadev Misra<br />
+	23rd ACM/IEEE/SCS Workshop on Principles of Advanced and Distributed Simulation (PADS 2009)</li>
+	
+</ul>
+
+
 <a name="Student_Reports" id="Student_Reports"></a><h2>Student Reports <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
-	<li class="new"><a target="_blank" class="paper" href="papers/quark_sif_09_draft.pdf">Secure Information Flow in Orc (DRAFT)</a><br />
+	<li><a target="_blank" class="paper" href="papers/quark_sif_09_draft.pdf">Secure Information Flow in Orc (DRAFT)</a><br />
 	Adrian Quark<br />
 	The University of Texas at Austin, Department of Computer Sciences, Spring 2009</li>
 
@@ -160,7 +166,7 @@ Language</a><br />
 <a name="Other" id="Other"></a><h2>Other Resources <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
-	<li class="new"><a target="_blank" class="paper" href="papers/OrcExceptionSemantics.pdf">A Semantics for Exception Handling in Orc</a>
+	<li><a target="_blank" class="paper" href="papers/OrcExceptionSemantics.pdf">A Semantics for Exception Handling in Orc</a>
 	<a class="bibtex" href="papers/OrcExceptionSemantics.bib">BibTeX</a>
 	<br />
 	Andrew Matsuoka and David Kitchin<br />
@@ -168,7 +174,7 @@ Language</a><br />
 </ul>
 
 <ul>
-	<li class="new"><a target="_blank" class="paper" href="papers/OrcOtherwiseSemantics.pdf">Operational and Denotational Semantics of the Otherwise Combinator (DRAFT)</a>
+	<li><a target="_blank" class="paper" href="papers/OrcOtherwiseSemantics.pdf">Operational and Denotational Semantics of the Otherwise Combinator (DRAFT)</a>
 	<a class="bibtex" href="papers/OrcOtherwiseSemantics.bib">BibTeX</a>
 	<br />
 	David Kitchin<br />
