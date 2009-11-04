@@ -133,7 +133,7 @@ and Mutable Data Structures</a>
 
 <a name="Presentations" id="Presentations"></a><h2>Presentations <small>(<a href="#top">top</a>)</small></h2>
 <ul>
-	<li class="new"><a target="_blank" class="paper" href="papers/orc-presentation.pdf">Structured Application Development over
+	<li><a target="_blank" class="paper" href="papers/orc-presentation.pdf">Structured Application Development over
 Wide-Area Networks</a><br />
 	William Cook, Jayadev Misra, David Kitchin, Adrian Quark, Andrew Matsuoka, John Thywissen<br />
 	FORTE 2009
