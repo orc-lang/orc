@@ -23,6 +23,7 @@ import orc.ast.extended.expression.Atomic;
 import orc.ast.extended.expression.Call;
 import orc.ast.extended.expression.Catch;
 import orc.ast.extended.expression.CatchHandler;
+import orc.ast.extended.expression.Choice;
 import orc.ast.extended.expression.ConsExpr;
 import orc.ast.extended.expression.Declare;
 import orc.ast.extended.expression.Dot;
@@ -40,6 +41,7 @@ import orc.ast.extended.expression.Parallel;
 import orc.ast.extended.expression.Otherwise;
 import orc.ast.extended.expression.Sequential;
 import orc.ast.extended.expression.Stop;
+import orc.ast.extended.expression.Temporary;
 import orc.ast.extended.expression.Throw;
 import orc.ast.extended.expression.Pruning;
 import orc.ast.extended.pattern.AsPattern;
@@ -68,6 +70,7 @@ public interface Visitor<E> {
 	public E visit(Atomic expr);
 	public E visit(Call expr);
 	public E visit(Catch expr);
+	public E visit(Choice choice);
 	public E visit(ConsExpr expr);
 	public E visit(Declare expr);
 	public E visit(Dot expr);
@@ -85,6 +88,7 @@ public interface Visitor<E> {
 	public E visit(Otherwise expr);
 	public E visit(Sequential expr);
 	public E visit(Stop expr);
+	public E visit(Temporary expr);
 	public E visit(Throw expr);
 	public E visit(Pruning expr);
 	//TODO: public E visit(Type expr); 
@@ -110,4 +114,5 @@ public interface Visitor<E> {
 	public E visit(TypedPattern patn);
 	public E visit(VariablePattern patn);
 	public E visit(WildcardPattern patn);
+	
 }

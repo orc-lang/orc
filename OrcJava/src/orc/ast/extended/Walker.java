@@ -27,6 +27,7 @@ import orc.ast.extended.expression.Atomic;
 import orc.ast.extended.expression.Call;
 import orc.ast.extended.expression.Catch;
 import orc.ast.extended.expression.CatchHandler;
+import orc.ast.extended.expression.Choice;
 import orc.ast.extended.expression.ConsExpr;
 import orc.ast.extended.expression.Declare;
 import orc.ast.extended.expression.Dot;
@@ -45,6 +46,7 @@ import orc.ast.extended.expression.Parallel;
 import orc.ast.extended.expression.Otherwise;
 import orc.ast.extended.expression.Sequential;
 import orc.ast.extended.expression.Stop;
+import orc.ast.extended.expression.Temporary;
 import orc.ast.extended.expression.Throw;
 import orc.ast.extended.expression.Pruning;
 import orc.ast.extended.pattern.AsPattern;
@@ -146,6 +148,19 @@ public class Walker implements Visitor<Void> {
 	public void leave(Catch expr) {
 	}
 
+	public Void visit(Choice expr) {
+		if (!this.enter(expr)) return null;
+		for (Expression arg : expr.choices) arg.accept(this);
+		this.leave(expr);
+		return null;
+	}
+	
+	public boolean enter(Choice expr) {
+		return enter((ASTNode)expr);
+	}
+	
+	public void leave(Choice expr) {
+	}
 
 	public Void visit(ConsExpr expr) {
 		if (!this.enter(expr)) return null;
@@ -415,6 +430,18 @@ public class Walker implements Visitor<Void> {
 	public void leave(Stop expr) {
 	}
 
+	public Void visit(Temporary expr) {
+		if (!this.enter(expr)) return null;
+		this.leave(expr);
+		return null;
+	}
+	
+	public boolean enter(Temporary expr) {
+		return enter((ASTNode)expr);
+	}
+	
+	public void leave(Temporary expr) {
+	}
 
 	public Void visit(Throw expr) {
 		if (!this.enter(expr)) return null;
@@ -534,7 +561,7 @@ public class Walker implements Visitor<Void> {
 	public Void visit(ValDeclaration decl) {
 		if (!this.enter(decl)) return null;
 		decl.p.accept(this);
-		decl.f.accept(this);
+		decl.e.accept(this);
 		this.leave(decl);
 		return null;
 	}

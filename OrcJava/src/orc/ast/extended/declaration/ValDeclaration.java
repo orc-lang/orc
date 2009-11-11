@@ -11,17 +11,17 @@ import orc.error.compiletime.CompilationException;
 public class ValDeclaration extends Declaration {
 
 	public Pattern p;
-	public Expression f;
+	public Expression e;
 	
-	public ValDeclaration(Pattern p, Expression f) {
+	public ValDeclaration(Pattern p, Expression e) {
 		this.p = p;
-		this.f = f;
+		this.e = e;
 	}
 
 	
 	public orc.ast.simple.expression.Expression bindto(orc.ast.simple.expression.Expression target) throws CompilationException {
 		
-		orc.ast.simple.expression.Expression source = f.simplify();
+		orc.ast.simple.expression.Expression source = e.simplify();
 		
 		Variable s = new Variable();
 		Variable t = new Variable();
@@ -37,7 +37,7 @@ public class ValDeclaration extends Declaration {
 	}
 
 	public String toString() {
-		return "val " + p + " = " + f;
+		return "val " + p + " = " + e;
 	}
 
 	/* (non-Javadoc)
