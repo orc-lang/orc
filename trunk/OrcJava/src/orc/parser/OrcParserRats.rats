@@ -108,7 +108,13 @@ public List<Declaration> Module =
  * declarations and must include a goal expression.
  */
 Expression Body =
-	ds:Declarations g:GoalExpression {
+	e:ChoiceExpression es:(void:PLUSPLUS e:ChoiceExpression)+ {
+		List<Expression> result = es.list();
+		result.add(0, e);
+		yyValue = new Choice(result);
+		yyValue = at(yyStart, yyCount, yyValue);
+	} 
+	/ ds:Declarations g:GoalExpression {
 		Expression out = g;
 		ListIterator<Declaration> it = ds.listIterator(ds.size());
 		while (it.hasPrevious()) {
@@ -121,6 +127,8 @@ Expression Body =
          yyResult = yyError;
      }
      ;
+     
+     
 List<Declaration> Declarations =
 	d:Include ds:Declarations {
 		ds.add(0, d);
@@ -132,6 +140,13 @@ List<Declaration> Declarations =
 	}
 	/ /* empty */ {
 		yyValue = new LinkedList<Declaration>();
+	}
+	;
+	
+Expression ChoiceExpression = 
+	vd:ValDeclaration e:Body {
+		yyValue = new Declare(vd, e);
+		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
 	
@@ -177,10 +192,7 @@ Declaration Declaration =
 		yyValue = new DefsDeclaration(defs.list());
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ VAL p:Pattern RequiredEQ e:Body {
-		yyValue = new ValDeclaration(p, e);
-		yyValue = at(yyStart, yyCount, yyValue);
-	}
+	/ yyValue:ValDeclaration
 	/ TYPE name:Identifier tf:TypeFormals Space EQ cs:ConstructorList {
 		yyValue = new DatatypeDeclaration(name, cs, tf);
 		yyValue = at(yyStart, yyCount, yyValue);
@@ -194,7 +206,13 @@ Declaration Declaration =
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
-
+	
+ValDeclaration ValDeclaration =
+	VAL p:Pattern RequiredEQ e:Body {
+		yyValue = new ValDeclaration(p, e);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	;
 
 Constructor Constructor =
 	name:Identifier &{ !name.equals("lambda") } LPAREN ts:TypeList RPAREN Space {
@@ -331,7 +349,7 @@ Expression GoalExpression =
 	Lambda
 	/ MaybeOtherwiseExpression
 	;
-	
+		
 Expression MaybeOtherwiseExpression =
 	seed:MaybePruningExpression actions:OtherwiseExpressionTail* {
 		yyValue = apply(actions, seed);
@@ -643,6 +661,13 @@ Expression DotExpression =
 	SIGNAL {
 		yyValue = new Let();
 		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/* Allow stop to be used as a caller syntactically. 
+	   Permits full compatibility with the new operational semantics. */
+	/ STOP tail:CallTail {
+		yyValue = new Stop();
+		yyValue = at(yyStart, yyCount, yyValue);
+		yyValue = apply(tail, yyValue);	
 	}
 	/ STOP {
 		yyValue = new Stop();
@@ -970,6 +995,7 @@ transient String BANG = "!" Space;
 transient String BAR = "|" Space;
 transient String UNDERSCORE = "_" Space;
 transient String SEMICOLON = ";" Space;
+transient String PLUSPLUS = "++" Space;
 transient String ANDAND = "&&" Space;
 transient String OROR = "||" Space;
 transient String NOT = "~" Space;

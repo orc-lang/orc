@@ -42,6 +42,9 @@ def dfs(i) =
 >>
 parent(0) := N >> dfs(0) >> upto(N) >i> (i,parent(i)?)
 
+-- Note that this test may occasionally spontaneously fail due to nondeterminism,
+-- since (0, 6) and (1, 0) might occur in the opposite order.
+-- This is just a weakness of the test harness.
 
 {-
 OUTPUT:
