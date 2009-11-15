@@ -93,7 +93,9 @@ public class Config implements Cloneable {
 	private boolean quietChecking = false;
 	private boolean exceptionsOn = false;
 	private boolean isolatedOn = false;
-	private boolean atomicOn = false;
+	
+	// In this experimental branch, atomic is enabled by default
+	private boolean atomicOn = true;
 	
 
 	/**
