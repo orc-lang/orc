@@ -40,6 +40,7 @@ import orc.ast.oil.expression.argument.Field;
 import orc.ast.oil.expression.argument.Site;
 import orc.ast.oil.expression.argument.Variable;
 import orc.runtime.nodes.Assign;
+import orc.runtime.nodes.AtomicPub;
 import orc.runtime.nodes.Fork;
 import orc.runtime.nodes.Leave;
 import orc.runtime.nodes.Node;
@@ -179,7 +180,7 @@ public final class Compiler implements Visitor<Node> {
 	}
 
 	public Node visit(final Atomic atomic) {
-		return new orc.runtime.transaction.Atomic(compile(atomic.body, new Store()), output);
+		return new orc.runtime.nodes.Atomic(compile(atomic.body, new AtomicPub()), output);
 	}
 
 	public Node visit(final Isolated expr) {

@@ -50,19 +50,21 @@ public abstract class Site extends Value implements Callable {
 		}
 	
 		callToken.getTracer().send(this, values);
-		enterTransaction(callToken.getTransaction());
-		callSite(new Args(values), callToken.move(nextNode));
+		callSite(new Args(values), callToken.move(nextNode), callToken.getTransaction());
 	}
 	
 	/* 
-	 * Attempt to add this site as a cohort to the transaction.
+	 * Attempt to call a site within a transaction.
 	 * The default behavior is to refuse to participate in any
 	 * transaction by raising an exception, and to accept any
 	 * call that is not within a transaction.
 	 */
-	protected void enterTransaction(Transaction transaction) throws NontransactionalSiteException {
+	public void callSite(Args args, Token caller, Transaction transaction) throws TokenException {
 		if (transaction != null) {
 			throw new NontransactionalSiteException(this, transaction);
+		}
+		else {
+			callSite(args, caller);
 		}
 	}
 

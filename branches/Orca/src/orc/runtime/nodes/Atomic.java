@@ -1,8 +1,9 @@
-package orc.runtime.transaction;
+package orc.runtime.nodes;
 
 import orc.error.runtime.TokenLimitReachedError;
 import orc.runtime.Token;
-import orc.runtime.nodes.Node;
+import orc.runtime.regions.TransRegion;
+import orc.runtime.transaction.Transaction;
 import orc.runtime.values.GroupCell;
 
 /**
@@ -14,7 +15,7 @@ import orc.runtime.values.GroupCell;
  */
 public class Atomic extends Node {
 
-	Node body; // must end with a Store node
+	Node body; 
 	Node output;
 	
 	public Atomic(Node body, Node output) {
@@ -27,7 +28,6 @@ public class Atomic extends Node {
 		GroupCell cell = new GroupCell(t.getGroup(), t.getTracer().pull());
 		Transaction trans = new Transaction(t, output, cell);
 		TransRegion region = new TransRegion(t.getRegion(), trans);
-		cell.setTransaction(trans);
 		try {
 			t.fork(cell, region).setTransaction(trans).move(body).activate();
 		} catch (TokenLimitReachedError e) {

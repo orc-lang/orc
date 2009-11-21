@@ -6,6 +6,7 @@ import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.DotSite;
 import orc.runtime.sites.PartialSite;
+import orc.runtime.transaction.Transaction;
 import orc.runtime.values.TaggedValue;
 import orc.runtime.values.TupleValue;
 
@@ -28,7 +29,7 @@ public final class Datasite extends DotSite {
 	}
 	
 	@Override
-	protected void defaultTo(Args args, Token token) throws TokenException {
+	protected void defaultTo(Args args, Token token, Transaction transaction) throws TokenException {
 		token.resume(new TaggedValue(this, args.asArray()));
 	}
 

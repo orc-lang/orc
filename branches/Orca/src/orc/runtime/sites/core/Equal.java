@@ -11,6 +11,7 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Args.NumericBinaryOperator;
 import orc.runtime.sites.EvalSite;
+import orc.runtime.sites.PureSite;
 import orc.runtime.values.Eq;
 import orc.type.Type;
 import orc.type.structured.ArrowType;
@@ -20,7 +21,7 @@ import orc.type.structured.ArrowType;
  * 
  * @author dkitchin, quark
  */
-public class Equal extends EvalSite {
+public class Equal extends PureSite {
 	private static HashSet<Class> valueClasses = new HashSet<Class>();
 	static {
 		synchronized (Equal.class) {

@@ -3,6 +3,7 @@ package orc.runtime.sites.core;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
+import orc.runtime.sites.PureSite;
 import orc.runtime.values.TupleValue;
 import orc.runtime.values.Value;
 import orc.type.Type;
@@ -16,7 +17,7 @@ import orc.type.ground.DatatypeSiteType;
  * @author dkitchin
  *
  */
-public class Datatype extends EvalSite {
+public class Datatype extends PureSite {
 
 	@Override
 	public Object evaluate(Args args) throws TokenException {

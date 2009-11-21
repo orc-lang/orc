@@ -15,6 +15,7 @@ import orc.runtime.sites.DotSite;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.PartialSite;
 import orc.runtime.sites.core.Equal;
+import orc.runtime.transaction.Transaction;
 
 /**
  * A tuple value container
@@ -40,8 +41,7 @@ public class TupleValue extends DotSite implements Iterable<Object>, Eq {
 		});
 	}
 	
-	@Override
-	protected void defaultTo(Args args, Token token) throws TokenException {
+	protected void defaultTo(Args args, Token token, Transaction transaction) throws TokenException {
 		try {
 			token.resume(values[args.intArg(0)]);
 		} catch (ArrayIndexOutOfBoundsException e) {

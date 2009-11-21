@@ -11,6 +11,7 @@ import orc.error.runtime.TokenException;
 import orc.error.runtime.UncallableValueException;
 import orc.runtime.Args;
 import orc.runtime.Token;
+import orc.runtime.transaction.Transaction;
 import orc.trace.values.RecordValue;
 import orc.trace.values.Marshaller;
 import orc.trace.values.TraceableValue;
@@ -29,7 +30,7 @@ import orc.trace.values.Value;
  * raises a type error.
  * 
  */
-public abstract class DotSite extends Site implements TraceableValue {
+public abstract class DotSite extends TransactionalSite implements TraceableValue {
 
 	Map<String,Object> methodMap;
 	
@@ -39,23 +40,24 @@ public abstract class DotSite extends Site implements TraceableValue {
 		this.addMembers();
 	}
 	
-	/* (non-Javadoc)
-	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
+	
+	/*
+	 * A dotsite within a transaction behaves normally except that its default behavior must
+	 * be transactional too.
 	 */
-	@Override
-	public void callSite(Args args, Token t) throws TokenException {
+	public void callSite(Args args, Token t, Transaction transaction) throws TokenException {
 		
 		String f;
-		
 		// Check if the argument is a message
 		try {
 			f = args.fieldName();
 		}
 		catch (TokenException e) {
 			// If not, invoke the default behavior and return.
-			defaultTo(args, t);
+			defaultTo(args, t, transaction);
 			return;
 		}
+		
 		
 		// If it is a message, look it up.
 		Object m = getMember(f);
@@ -63,6 +65,8 @@ public abstract class DotSite extends Site implements TraceableValue {
 			{ t.resume(m); }
 		else
 			{ throw new MessageNotUnderstoodException(f); }
+		
+		
 	}
 	
 	Object getMember(String f) {
@@ -75,7 +79,7 @@ public abstract class DotSite extends Site implements TraceableValue {
 		methodMap.put(f, s);
 	}
 	
-	protected void defaultTo(Args args, Token token) throws TokenException {
+	protected void defaultTo(Args args, Token token, Transaction transaction) throws TokenException {
 		throw new UncallableValueException("This dot site has no default behavior; it only responds to messages.");
 	}
 	

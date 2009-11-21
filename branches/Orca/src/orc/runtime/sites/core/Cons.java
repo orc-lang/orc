@@ -14,6 +14,7 @@ import orc.error.runtime.ArgumentTypeMismatchException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
+import orc.runtime.sites.PureSite;
 import orc.runtime.values.ConsValue;
 import orc.runtime.values.ListValue;
 import orc.type.Type;
@@ -27,11 +28,10 @@ import orc.type.structured.ListType;
  * 
  * @author dkitchin
  */
-public class Cons extends EvalSite {
+public class Cons extends PureSite {
 
 	
 	
-	@Override
 	public Object evaluate(Args args) throws TokenException {
 		Object t = args.getArg(1);
 		if (!(t instanceof ListValue)) {

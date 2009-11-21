@@ -5,6 +5,7 @@ package orc.runtime.sites.core;
 
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
+import orc.runtime.sites.PartialPureSite;
 import orc.runtime.sites.PartialSite;
 import orc.runtime.values.Value;
 import orc.type.Type;
@@ -14,7 +15,7 @@ import orc.type.structured.ArrowType;
  * @author dkitchin
  *
  */
-public class If extends PartialSite {
+public class If extends PartialPureSite {
 
 	@Override
 	public Object evaluate(Args args) throws TokenException {

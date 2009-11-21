@@ -1,27 +1,27 @@
-package orc.runtime.transaction;
+package orc.runtime.regions;
 
 import orc.runtime.Token;
-import orc.runtime.regions.Region;
+import orc.runtime.transaction.Transaction;
 import orc.runtime.values.GroupCell;
 import orc.trace.events.Event;
 
 /**
  * 
- * This region encloses the tokens of a running transaction.
+ * This region encloses tokens waiting for verification of a transaction
+ * commitment from each cohort site.
  * 
- * When the region closes, it instructs the transaction to
- * prepare to commit.
+ * When the region closes, the transaction commitment is verified.
  * 
  * @author dkitchin
  *
  */
-public class TransRegion extends Region {
+public class ReadyRegion extends Region {
 
 	Region parent;
 	Transaction trans;
 	
 	/* Create a new group region with the given parent and coupled group cell */
-	public TransRegion(Region parent, Transaction trans) {
+	public ReadyRegion(Region parent, Transaction trans) {
 		this.parent = parent;
 		this.parent.add(this);
 		this.trans = trans;
@@ -29,6 +29,6 @@ public class TransRegion extends Region {
 	
 	protected void onClose() {
 		parent.remove(this);
-		trans.prepareCommit();
+		trans.verifyCommit();
 	}
 }

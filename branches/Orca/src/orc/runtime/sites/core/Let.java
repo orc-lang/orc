@@ -8,6 +8,7 @@ import orc.error.compiletime.typing.TypeException;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.Site;
+import orc.runtime.transaction.Transaction;
 import orc.runtime.values.TupleValue;
 import orc.runtime.values.Value;
 import orc.type.Type;
@@ -30,6 +31,10 @@ public class Let extends Site {
 		caller.getTracer().receive(caller.getResult());
 		// Activate the token
 		caller.activate();
+	}
+	
+	public void callSite(Args args, Token caller, Transaction transaction) {
+		callSite(args, caller);
 	}
 	
 	public Type type() throws TypeException {
