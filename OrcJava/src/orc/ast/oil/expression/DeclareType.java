@@ -58,4 +58,8 @@ public class DeclareType extends Expression {
 	public orc.ast.xml.expression.Expression marshal() throws CompilationException {
 		return new orc.ast.xml.expression.DeclareType(type.marshal(), body.marshal());
 	}
+	
+	public String toString() {
+		return "type = " + type.toString() + "\n" + body.toString();
+	}
 }
