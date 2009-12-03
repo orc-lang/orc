@@ -1,6 +1,263 @@
-@Unpublished{orc-quicksort-09,
-author =      {Kitchin, David   and Quark, Adrian   and Misra, Jayadev},
-title =      {Quicksort: Combining Concurrency, Recursion, and Mutable Data Structures},
-key =      {orc, quicksort},
+@inproceedings{lehmann81,
+	author="Lehmann, D. J. and Rabin, M. O.",
+	title="On the Advantages of Free Choice: A Symmetric and Fully Distributed Solution to the Dining Philosophers Problem",
+	booktitle="POPL",
+	year="1981",
+	pages="133--138",
+}
+
+@article{courtois71,
+	author="Courtois, P. J. and Heymans, F. and Parnas, D. L.",
+	title="Concurrent control with ``readers'' and ``writers''",
+	journal="Communications of the ACM",
+	volume="14",
+	number="10",
+	year="1971",
+	pages="667--668",
+}
+
+
+@article{hoare61,
+	author="Hoare, C. A. R.",
+	title="Partition: Algorithm 63, Quicksort: Algorithm 64, and Find: Algorithm 65",
+	journal="Communications of the ACM",
+	volume="4",
+	number="7",
+	year="1961",
+	pages="321--322",
+}
+
+@article{Hoare1978CSP,
+ author = {Hoare, C. A. R.},
+ title = {Communicating sequential processes},
+ journal = {Commun. ACM},
+ volume = {21},
+ number = {8},
+ year = {1978},
+ issn = {0001-0782},
+ pages = {666--677},
+ doi = {http://doi.acm.org/10.1145/359576.359585},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ }
+
+@article{Hewitt1973ActorFormalism,
+  author = {Carl Hewitt and Peter Bishop and Richard Steiger},
+  title = {A Universal Modular ACTOR Formalism for Artificial Intelligence},
+  journal = {International Joint Conference on Artificial Intelligence},
+  year = {1973}
+}
+
+@BOOK{MilnerCCSBook,
+   author="Robin Milner",
+   title="A Calculus of Communicating Systems",  
+   publisher="Springer Verlag",
+   isbn="0-387-10235-3",
+   year="1980",
+}
+
+@BOOK{fisher-yates-1948,
+   author="R.A. Fisher and F. Yates",
+   title="Statistical tables for biological, agricultural and medical research",  
+   edition="Third", 
+   pages="26Ð-27",
+   publisher="Oliver and Boyd",
+   address="London",
+   year="1948",
+}
+
+@BOOK{knuth-vol2,
+   author = "Donald E. Knuth",
+   title = "Seminumerical Algorithms",
+   volume = 2,
+   series = "The Art of Computer Programming",
+   publisher = "Addison-Wesley",
+   address = "Reading, Massachusetts",
+   edition = "Third",
+   year = "1997",
+}
+
+
+@BOOK{knuth-vol3,
+   author = "Donald E. Knuth",
+   title = "Sorting and Searching",
+   volume = 2,
+   series = "The Art of Computer Programming",
+   publisher = "Addison-Wesley",
+   address = "Reading, Massachusetts",
+   edition = "Second",
+   year = "1998",
+   pages="113--122",
+}
+
+@phdthesis{sedgewick-thesis,
+   author = "Sedgewick, R.",
+   title = "Quicksort",
+   school = "Stanford University",
+   year = "1975"
+}
+
+@Misc{Cook-Misra-OrcImp,
+  author =	 {William R. Cook and Jayadev Misra},
+  title =		 {Implementation Outline for Orc},
+  howpublished = {Unpublished manuscript},
+  year = 2005
+}
+
+@inproceedings{cookWF06,
+ author="William R. Cook and Sourabh Patwardhan and Jayadev Misra",
+ title="Workflow Patterns in {Orc}",
+ booktitle="Proc. of the International Conference on Coordination Models and Languages (COORDINATION)",
+ year="2006"
+}
+
+@InProceedings{KPM,
+  author = 	 {David Kitchin and Evan Powell and Jayadev Misra},
+  title = 	 {Simulation using Orchestration},
+  booktitle = {Proceedings of AMAST},
+  year = 	 2008
+}
+
+@INPROCEEDINGS{OrcSemantics-Marktoberdorf04,
+	AUTHOR = {Tony Hoare and Galen Menzel and Jayadev Misra}, 
+	TITLE = {A Tree Semantics of an Orchestration Language}, 
+	BOOKTITLE = {Proc. of the NATO Advanced Study Institute, Engineering Theories of Software Intensive Systems},
+	ADDRESS = {Marktoberdorf, Germany},
+	SERIES = {NATO ASI Series},
+	EDITOR = {Manfred Broy},
+        NOTE = {Also available at {\tt http://www.cs.utexas.edu/users/psp/Semantics.Orc.pdf}},
+	YEAR = 2004
+}
+
+@INPROCEEDINGS{Orc-Marktoberdorf04,
+	AUTHOR = {Jayadev Misra}, 
+	TITLE = {Computation Orchestration: A Basis for Wide-Area Computing}, 
+	BOOKTITLE = {Proc. of the NATO Advanced Study Institute, Engineering Theories of Software Intensive Systems},
+	ADDRESS = {Marktoberdorf, Germany},
+	SERIES = {NATO ASI Series},
+	EDITOR = {Manfred Broy},
+	YEAR = 2004
+}
+
+@inproceedings{Concur06,
+  author    = {David Kitchin and
+               William R. Cook and
+               Jayadev Misra},
+  title     = {A Language for Task Orchestration and Its Semantic Properties.},
+  booktitle = {CONCUR},
+  year      = {2006},
+  pages     = {477-491},
+}
+
+@article{tcs08,
+	author = {Wehrman, I.  and Kitchin, D.  and Cook, W.  and Misra, J. },
+	doi = {10.1016/j.tcs.2008.04.037},
+	issn = {03043975},
+	journal = {Theoretical Computer Science},
+	keywords = {orc},
+	month = {August},
+	number = {2-3},
+	pages = {234--248},
+	posted-at = {2009-05-18 19:31:01},
+	priority = {2},
+	title = "A Timed Semantics of {O}rc",
+	url = {http://dx.doi.org/10.1016/j.tcs.2008.04.037},
+	volume = {402},
+	year = {2008}
+}
+
+@techreport{tcs08-tr,
+	author = {Wehrman, Ian   and Kitchin, David   and Cook, William  R.  and Misra, Jayadev  },
+	citeulike-article-id = {4543935},
+	institution = {The University of Texas at Austin, Department of Computer Sciences},
+	keywords = {orc},
+	month = {December},
+	number = {TR-07-65},
+	posted-at = {2009-05-18 23:20:48},
+	priority = {2},
+	title = "Properties of the Timed Operational and Denotational Semantics of {O}rc",
+	year = {2007}
+}
+
+@INCOLLECTION{PierceTurner:PictDesign,
+  author = {Benjamin C. Pierce and David N. Turner},
+  title = {Pict: A Programming Language Based on the Pi-Calculus},
+  year = {2000},
+  booktitle = {Proof, Language and Interaction: Essays in Honour of Robin
+                  Milner},
+  editor = {Gordon Plotkin and Colin Stirling and Mads Tofte},
+  publisher = {MIT Press},
+  pages = {455--494},
+  checked = {Yes},
+  plclub = {Yes},
+  bcp = {Yes},
+  full = {http://www.cis.upenn.edu/~bcpierce/papers/pict-design.ps},
+  keys = {pict}
+}
+
+@book{VanRoyAndHaridi2004,
+	address = {Cambridge, Mass.},
+	author = {Van Roy, Peter   and Haridi, Seif  },
+	citeulike-article-id = {167575},
+	howpublished = {Hardcover},
+	isbn = {0262220695},
+	keywords = {multi-paradigm, programming, programming-languages},
+	month = {March},
+	posted-at = {2007-08-13 17:52:08},
+	priority = {3},
+	publisher = {The MIT Press},
+	title = {Concepts, Techniques, and Models of Computer Programming},
+	url = {http://www.amazon.ca/exec/obidos/redirect?tag=citeulike09-20\&amp;path=ASIN/0262220695},
+	year = {2004}
+}
+
+
+@book{Erlang1996,
+ author = {Armstrong,, Joe and Virding,, Robert and Wikstr\"{o}m,, Claes and Williams,, Mike},
+ title = {Concurrent programming in ERLANG (2nd ed.)},
+ year = {1996},
+ isbn = {0-13-508301-X},
+ publisher = {Prentice Hall International (UK) Ltd.},
+ address = {Hertfordshire, UK, UK},
+ }
+
+@Book{PIcalculus,
+  author =	 {Robin Milner},
+  title = 	 {Communicating and Mobile Systems: the $\pi$-Calculus},
+  publisher = 	 {Cambridge University Press},
+  year = 	 1999,
+  month =	 {May}
+}
+
+@Book{paulson, 
+        AUTHOR = {Lawrence C. Paulson}, 
+        TITLE = {{ML} for the Working Programmer}, 
+        PUBLISHER = {Cambridge University Press}, 
+        YEAR = {1991}
+}
+
+
+@Misc{orc-website,
+	title="Orc Language Project Website",
+	author = "Adrian Quark and David Kitchin and William R. Cook and Jayadev Misra",
+	howpublished="\url{http://orc.csres.utexas.edu}",
+}
+
+@Misc{orc-user-guide,
+	title="Orc User Guide",
+	author = "David Kitchin and Adrian Quark and William R. Cook and Jayadev Misra",
+	howpublished="\url{http://orc.csres.utexas.edu/userguide/html/index.html}",
+}
+
+@InProceedings{orc-forte-09,
+author =      {Kitchin, David   and Quark, Adrian   and Cook, William   and Misra, Jayadev},
+title =      "The {O}rc Programming Language",
+key =      {orc, secure-information-flow},
+booktitle = {Formal techniques for Distributed Systems; Proceedings of FMOODS/FORTE},
+pages =      {1--25},
 year =      {2009},
+editor =      {David Lee and Ant\'{o}nia Lopes and Arnd Poetzsch-Heffter},
+volume =      {5522},
+series =      {LNCS},
+publisher = {Springer}
 }
