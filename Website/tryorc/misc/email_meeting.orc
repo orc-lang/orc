@@ -6,7 +6,7 @@ to enter information about the meeting and invitees.
 include "forms.inc"
 include "mail.inc"
 
-val dateFormat = DateTimeFormat.forStyle("SS")
+val dateFormat = DateTimeFormat.forStyle("MS")
 val timeFormat = DateTimeFormat.forStyle("-S")
 
 -- returns [(name, address)]
@@ -24,34 +24,41 @@ def parseInvitees(text) =
   val filtered = filter(nonemptyLine, lines(text))
   map(parseInvitee, filtered)
 
-val (from, span, invitees, quorum, timeLimit, requestTemplate, notificationTemplate) =
+val (from, meetingTopic, duration, span, invitees, quorum, timeLimit, requestTemplate, notificationTemplate) =
   WebPrompt("Meeting Parameters", [
-    Mandatory(Textbox("from", "Your Email Address")),
-    Mandatory(DateField("start", "First Possible Meeting Date")),
-    Mandatory(DateField("end", "Last Possible Meeting Date")),
+    Mandatory(Textbox("fromName", "Your Name")),
+    Mandatory(Textbox("fromEmail", "Your E-mail Address")),
+    Mandatory(Textbox("meetingTopic", "Meeting Title/Topic")),
+    Mandatory(IntegerField("duration", "Meeting Duration (minutes)")),
+    Mandatory(DateField("start", "First Allowed Meeting Date")),
+    Mandatory(DateField("end", "Last Allowed Meeting Date")),
     FormInstructions("limiti",
       "The meeting will be scheduled once a quorum of invitees have
-      responded or the time limit is reached, whichever comes first."),
+      responded or the response time limit is reached, whichever comes first."),
     Mandatory(IntegerField("quorum", "Quorum")),
-    Mandatory(IntegerField("timeLimit", "Time Limit (hours)")),
+    Mandatory(IntegerField("timeLimit", "Response Time Limit (hours)")),
     FormInstructions("inviteesi",
-      "Invitees should be one per line: name and email address, separated by space.
+      "Invitees should be one per line: name and e-mail address, separated by space.
        You may either upload the invitees or enter them in the text box below."),
     UploadField("inviteesUpload", "Upload Invitees"),
     Textarea("inviteesText", "Enter Invitees", "", false),
     Mandatory(Textarea("requestTemplate", "Request Message", 
-      "Greetings {{NAME}},\n"
+      "Greetings {{NAME}},\n\n"
+      + "We are organizing a \"{{TOPIC}}\" meeting.\n\n"
       + "Click on the below URL to choose time slots when you"
-      + " are available for a 1-hour meeting.\n"
+      + " are available to start a {{DURATION}}-minute meeting.\n"
       + "After enough invitees have responded, everyone will receive"
-      + " an email with the chosen meeting time.\n\n{{URL}}\n\n"
+      + " an e-mail with the chosen meeting time.\n\n{{URL}}\n\n"
       + "Thank you, and if you have any questions, contact {{FROM}}"
-      + " for more information.\n")),
+      + " for more information.\n"
+      + "\n\n--\nPowered by Orc -- http://orc.csres.utexas.edu/")),
     Mandatory(Textarea("notificationTemplate", "Notification Message",
-      "Greetings {{NAME}},\n"
-      + "The chosen time slot was:\n{{TIME}}\n"
+      "Greetings {{NAME}},\n\n"
+      + "Regarding the \"{{TOPIC}}\" meeting:\n"
+      + "The chosen time slot is: {{START_TIME}} to {{END_TIME}}\n\n"
       + "Thank you, and if you have any questions, contact {{FROM}}"
-      + " for more information.\n")),
+      + " for more information.\n"
+      + "\n\n--\nPowered by Orc -- http://orc.csres.utexas.edu/")),
     Button("submit", "Submit") ])
   >data> (
     val inviteesText =
@@ -67,7 +74,9 @@ val (from, span, invitees, quorum, timeLimit, requestTemplate, notificationTempl
       if span.isEmpty()
       then error("Empty date range. Please try again.")
       else span
-    (data.get("from"), span, invitees,
+    (data.get("fromName")+" <"+data.get("fromEmail")+">",
+     data.get("meetingTopic"), data.get("duration"),
+     span, invitees,
      data.get("quorum"), data.get("timeLimit"),
      data.get("requestTemplate"),
      data.get("notificationTemplate"))
@@ -77,13 +86,18 @@ def requestBody(name, url) =
   requestTemplate
   .replace("{{NAME}}", name)
   .replace("{{FROM}}", from)
+  .replace("{{TOPIC}}", meetingTopic)
+  .replace("{{DURATION}}", duration.toString())
   .replace("{{URL}}", url)
 
-def notificationBody(name, time) =
+def notificationBody(name, startTime, endTime) =
   notificationTemplate
   .replace("{{NAME}}", name)
   .replace("{{FROM}}", from)
-  .replace("{{TIME}}", time)
+  .replace("{{TOPIC}}", meetingTopic)
+  .replace("{{DURATION}}", duration.toString())
+  .replace("{{START_TIME}}", startTime)
+  .replace("{{END_TIME}}", endTime)
 
 -- get the first n items from the channel
 -- until it is closed
@@ -112,7 +126,7 @@ def buildForm() =
   Form() >form>
   FieldGroup("data", "Meeting Request") >group>
   group.addPart(DateTimeRangesField("times",
-    "When are you available for a meeting?", span, 9, 17)) >>
+    "When are you available to start a "+duration+"-minute meeting?", span, 9, 17)) >>
   group.addPart(Button("submit", "Submit")) >>
   form.addPart(group) >>
   form
@@ -121,25 +135,25 @@ def invite((name, email)) =
   println("Inviting " + name + " at " + email) >>
   buildForm() >form>
   SendForm(form) >receiver>
-  SendMail(email, "Meeting Request", requestBody(name, receiver.getURL())) >>
+  SendMailFrom(from, email, "Meeting Request: "+meetingTopic, requestBody(name, receiver.getURL())) >>
   receiver.get() >>
   println("Received response from " + name + " at " + email) >>
   form.getValue().get("data").get("times")
 
 def notify(time, invitees, responders) =
   each(invitees) >(name, email)>
-  SendMail(email, "Meeting Notification", notificationBody(name, time))
+  SendMailFrom(from, email, "Meeting Notification: "+meetingTopic, notificationBody(name, dateFormat.print(time), dateFormat.print(time.plusMinutes(duration))))
 
 def formatResponses(responses) =
   def formatResponse((responder, times)) =
     def toString(x) =
       dateFormat.print(x.getStart())
       + " -- " + timeFormat.print(x.getEnd())
-    responder + ":\n" + unlines(map(toString, times.getRanges()))
+    responder + ":\n" + unlines(map(toString, times))
   unlines(map(formatResponse, responses))
 
 def fail(message) =
-  SendMail(from, "Meeting Request Failed",
+  SendMail(from, "Meeting Request Failed: "+meetingTopic,
     "The invitees were unable to agree on a meeting time. "
     + "Their responses follow:\n\n" + message)
 
@@ -151,14 +165,13 @@ def handleResponses((_:_) as responses) =
   afold(lambda (a,b) = a.intersect(b), ranges) >times>
   let(
     pickMeetingTime(times) >time>
-    dateFormat.print(time) >time>
-    println("Chosen time: " + time) >>
+    println("Chosen time: " + dateFormat.print(time)) >>
     notify(time, invitees, responders)
     ; println("Request failed") >>
       fail(msg) )
   >> "DONE"
 def handleResponses([]) =
-  SendMail(from, "Meeting Request Failed",
+  SendMail(from, "Meeting Request Failed: "+meetingTopic,
     "Nobody responded to the meeting request.")
 
 handleResponses(inviteQuorum(invitees))
