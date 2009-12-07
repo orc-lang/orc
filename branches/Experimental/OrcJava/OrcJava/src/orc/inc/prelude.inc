@@ -1,0 +1,8 @@
+include "prelude/core.inc"
+include "prelude/state.inc"
+include "prelude/time.inc"
+include "prelude/idioms.inc"
+include "prelude/list.inc"
+include "prelude/text.inc"
+include "prelude/util.inc"
+include "prelude/reflect.inc"
