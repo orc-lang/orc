@@ -1,3 +1,16 @@
+//
+// OrcParserRats.rats -- Rats! grammar module OrcParserRats
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 module orc.parser.OrcParserRats;
 
 import orc.parser.OrcLiteralParser;
@@ -19,6 +32,7 @@ header {
 	
 	import orc.Config;
 	import orc.ast.extended.*;
+	import orc.ast.extended.security.*;
 	import orc.ast.extended.expression.*;
 	import orc.ast.extended.pattern.*;
 	import orc.ast.extended.type.*;
@@ -858,17 +872,27 @@ Type Type =
 			yyValue = Type.TOP;
 		}
 	}
-	/ TOP { yyValue = Type.TOP; }
-	/ BOT { yyValue = Type.BOT; }
-	/ UNDERSCORE { yyValue = Type.TOP; } /* allows _ in datatype decls for untyped mode */ 
 	/ LAMBDA typeFormals:TypeFormals argTypes:TypeListGroup DOUBLE_COLON resultType:Type {
 		yyValue = new LambdaType(argTypes, resultType, typeFormals);
 	}
+	/ MaybeLabeledType
+	;
+	
+Type MaybeLabeledType =
+	t:BasicType label:SecurityLabel { yyValue = new SecurityLabeledType(t, label); }
+	/ BasicType
+	;
+
+Type BasicType =
+	TOP { yyValue = Type.TOP; }
+	/ BOT { yyValue = Type.BOT; }
+	/ UNDERSCORE { yyValue = Type.TOP; } /* allows _ in datatype decls for untyped mode */ 
 	/ name:Identifier actualTypes:TypeActuals Space { yyValue = new TypeApplication(name, actualTypes); }
 	/ name:Identifier Space { yyValue = new NamedType(name); }
 	;
 	
-
+SecurityLabel SecurityLabel =
+	LBRACE i:Integer RBRACE { yyValue = new SecurityLabel(i); };
 
 /*
 VariantTypeFormal VariantTypeFormal =
