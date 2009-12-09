@@ -56,7 +56,13 @@ public class Pruning extends Expression {
 	@Override
 	public Type typesynth(TypingContext ctx) throws TypeException {
 		Type rtype = right.typesynth(ctx);
-		return left.typesynth(ctx.bindVar(rtype));
+		Type ltype = left.typesynth(ctx.bindVar(rtype));
+		return ltype.joinWithLabel(ctx.getControlFlowLabel());
+//		if (ltype.isBot()) {
+//			return Type.BOT;
+//		} else {
+//			return ltype.joinWithLabelFrom(rtype);
+//		}
 	}
 
 	@Override

@@ -13,6 +13,7 @@ import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Assign;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Unwind;
+import orc.type.SecurityLabeledType;
 import orc.type.Type;
 import orc.type.TypingContext;
 
@@ -56,7 +57,13 @@ public class Sequential extends Expression {
 	@Override
 	public Type typesynth(TypingContext ctx) throws TypeException {
 		Type ltype = left.typesynth(ctx);
-		return right.typesynth(ctx.bindVar(ltype));
+		Type rtype = right.typesynth(ctx.bindVar(ltype));
+		return rtype.joinWithLabel(ctx.getControlFlowLabel());
+//		if (rtype.isBot()) {
+//			return Type.BOT;
+//		} else {
+//			return rtype.joinWithLabelFrom(ltype);
+//		}
 	}
 
 	@Override

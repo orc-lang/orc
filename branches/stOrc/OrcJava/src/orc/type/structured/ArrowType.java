@@ -223,16 +223,16 @@ public class ArrowType extends Type {
 		for (final Type targ : typeActuals) {
 			ctx = ctx.bindType(targ);
 		}
-
+		
 		/* Arrow type result type inference */
 		/* If result type is not labeled, use the join of the actual parms' labels */
 		SecurityLabel inferredResultLabel = null;
-		if (!(resultType instanceof SecurityLabeledType)) {
+		if (!resultType.isSecurityLabeled()) {
 			inferredResultLabel = SecurityLabel.TOP;
 			for (final Argument arg : args) {
 				final Type argType = arg.typesynth(ctx);
-				if (argType instanceof SecurityLabeledType) {
-					final SecurityLabeledType argSlt = (SecurityLabeledType) argType;
+				if (argType.isSecurityLabeled()) {
+					final SecurityLabeledType argSlt = argType.asSecurityLabeledType();
 					inferredResultLabel = inferredResultLabel.join(argSlt.label);
 				}
 			}
@@ -247,11 +247,12 @@ public class ArrowType extends Type {
 			final Argument thisArg = args.get(i);
 			final Type actualArgType = thisArg.typesynth(ctx);
 			/* Unlabeled formal parms take label of actual parm, if present */
-			if (!(formalArgType instanceof SecurityLabeledType) && actualArgType instanceof SecurityLabeledType) {
-				final SecurityLabeledType actualArgSlt = (SecurityLabeledType) actualArgType;
+			if (!formalArgType.isSecurityLabeled() && actualArgType.isSecurityLabeled()) {
+				final SecurityLabeledType actualArgSlt = actualArgType.asSecurityLabeledType();
 				formalArgType = new SecurityLabeledType(formalArgType, actualArgSlt.label);
 			}
 			thisArg.typecheck(ctx, formalArgType);
+			ctx.addControlFlowDependency(actualArgType);
 		}
 
 		if (inferredResultLabel == null) {

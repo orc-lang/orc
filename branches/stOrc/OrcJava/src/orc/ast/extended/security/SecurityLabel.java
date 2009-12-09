@@ -22,6 +22,8 @@ import java.math.BigInteger;
  */
 public class SecurityLabel {
 
+	public static final SecurityLabel TOP = new SecurityLabel(0);
+
 	public final int level;
 
 	public SecurityLabel(final int level) {
