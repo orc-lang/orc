@@ -53,12 +53,39 @@ public class SecurityLabeledType extends Type {
 	}
 
 	/* (non-Javadoc)
+	 * @see orc.type.Type#isSecurityLabeled()
+	 */
+	@Override
+	public boolean isSecurityLabeled() {
+		return true;
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.type.Type#asSecurityLabeledType()
+	 */
+	@Override
+	public SecurityLabeledType asSecurityLabeledType() throws ClassCastException {
+		return this;
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.type.Type#joinWithLabel(orc.security.labels.SecurityLabel)
+	 */
+	@Override
+	public Type joinWithLabel(SecurityLabel newLabel) {
+		if (newLabel == null || newLabel == SecurityLabel.TOP || this.label.equal(newLabel) || this.label.equal(this.label.join(newLabel))) {
+			return this;
+		}
+		return new SecurityLabeledType(this.type, this.label.join(newLabel));
+	}
+
+	/* (non-Javadoc)
 	 * @see orc.type.Type#subtype(orc.type.Type)
 	 */
 	@Override
 	public boolean subtype(final Type that) throws TypeException {
-		if (that instanceof SecurityLabeledType) {
-			final SecurityLabeledType thatSlt = (SecurityLabeledType) that;
+		if (that.isSecurityLabeled()) {
+			final SecurityLabeledType thatSlt = that.asSecurityLabeledType();
 			return type.subtype(thatSlt.type) && label.sublabel(thatSlt.label);
 		} else {
 			return type.subtype(that) && label.sublabel(SecurityLabel.TOP);
@@ -70,8 +97,8 @@ public class SecurityLabeledType extends Type {
 	 */
 	@Override
 	public Type join(final Type that) throws TypeException {
-		if (that instanceof SecurityLabeledType) {
-			final SecurityLabeledType thatSlt = (SecurityLabeledType) that;
+		if (that.isSecurityLabeled()) {
+			final SecurityLabeledType thatSlt = that.asSecurityLabeledType();
 			return new SecurityLabeledType(type.join(thatSlt.type), label.join(thatSlt.label));
 		} else {
 			return new SecurityLabeledType(type.join(that), label.join(SecurityLabel.TOP));
@@ -83,8 +110,8 @@ public class SecurityLabeledType extends Type {
 	 */
 	@Override
 	public Type meet(final Type that) throws TypeException {
-		if (that instanceof SecurityLabeledType) {
-			final SecurityLabeledType thatSlt = (SecurityLabeledType) that;
+		if (that.isSecurityLabeled()) {
+			final SecurityLabeledType thatSlt = that.asSecurityLabeledType();
 			return new SecurityLabeledType(type.meet(thatSlt.type), label.meet(thatSlt.label));
 		} else {
 			return new SecurityLabeledType(type.meet(that), label.meet(SecurityLabel.TOP));
@@ -178,32 +205,29 @@ public class SecurityLabeledType extends Type {
 		return type.findVariance(var);
 	}
 
-	/* (non-Javadoc)
-	 * @see orc.type.Type#promote(orc.env.Env)
-	 */
-	@Override
-	public Type promote(final Env<Boolean> V) throws TypeException {
-		// TODO Auto-generated method stub
-		return super.promote(V);
-	}
-
-	/* (non-Javadoc)
-	 * @see orc.type.Type#demote(orc.env.Env)
-	 */
-	@Override
-	public Type demote(final Env<Boolean> V) throws TypeException {
-		// TODO Auto-generated method stub
-		return super.demote(V);
-	}
-
-	/* (non-Javadoc)
-	 * @see orc.type.Type#addConstraints(orc.env.Env, orc.type.Type, orc.type.inference.Constraint[])
-	 */
-	@Override
-	public void addConstraints(final Env<Boolean> VX, final Type T, final Constraint[] C) throws TypeException {
-		// TODO Auto-generated method stub
-		super.addConstraints(VX, T, C);
-	}
+//	/* (non-Javadoc)
+//	 * @see orc.type.Type#promote(orc.env.Env)
+//	 */
+//	@Override
+//	public Type promote(final Env<Boolean> V) throws TypeException {
+//		return type.promote(V).joinWithLabelFrom(this);
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see orc.type.Type#demote(orc.env.Env)
+//	 */
+//	@Override
+//	public Type demote(final Env<Boolean> V) throws TypeException {
+//		return type.demote(V).joinWithLabelFrom(this);
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see orc.type.Type#addConstraints(orc.env.Env, orc.type.Type, orc.type.inference.Constraint[])
+//	 */
+//	@Override
+//	public void addConstraints(final Env<Boolean> VX, final Type T, final Constraint[] C) throws TypeException {
+//		type.addConstraints(VX, T, C);
+//	}
 
 	/* (non-Javadoc)
 	 * @see orc.type.Type#javaCounterpart()

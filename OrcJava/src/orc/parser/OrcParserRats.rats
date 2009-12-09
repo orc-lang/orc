@@ -892,7 +892,9 @@ Type BasicType =
 	;
 	
 SecurityLabel SecurityLabel =
-	LBRACE i:Integer RBRACE { yyValue = new SecurityLabel(i); };
+	LBRACE i:Integer RBRACE { yyValue = new SecurityLabel(i); }
+	/ LBRACE RBRACE { yyValue = SecurityLabel.TOP; }
+	;
 
 /*
 VariantTypeFormal VariantTypeFormal =

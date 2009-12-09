@@ -31,6 +31,8 @@ public class SecurityLabel implements Comparable<SecurityLabel> {
 	 * This is the "unrestricted" label for a value, and "no access" label for a slot.
 	 */
 	public static final SecurityLabel TOP = new SecurityLabel(0);
+	// NOTE: Keep the above in sync with package orc.ast.extended.security.SecurityLabel.TOP
+
 	/**
 	 * The least / most restrictive / bottom label -- no labels are sublabels of this.
 	 * This is the "no access" label for a value, and "unrestricted" label for a slot.
@@ -51,7 +53,7 @@ public class SecurityLabel implements Comparable<SecurityLabel> {
 		}
 	}
 
-	public boolean sublabel(final SecurityLabel that) throws TypeException {
+	public boolean sublabel(final SecurityLabel that) {
 		// equal -> true
 		// less -> true
 		// greater -> false
@@ -66,20 +68,20 @@ public class SecurityLabel implements Comparable<SecurityLabel> {
 		}
 	}
 
-	public boolean superlabel(final SecurityLabel that) throws TypeException {
+	public boolean superlabel(final SecurityLabel that) {
 		return that.sublabel(this);
 	}
 
 	/* By default, equality is based on mutual sublabels.
 	 */
-	public boolean equal(final SecurityLabel that) throws TypeException {
+	public boolean equal(final SecurityLabel that) {
 		return this.sublabel(that) && that.sublabel(this);
 	}
 
 	/* Find the join (least upper bound) in the sublabel lattice
 	 * of this label and another label.
 	 */
-	public SecurityLabel join(final SecurityLabel that) throws TypeException {
+	public SecurityLabel join(final SecurityLabel that) {
 		if (this.sublabel(that)) {
 			return that;
 		} else if (that.sublabel(this)) {
@@ -93,7 +95,7 @@ public class SecurityLabel implements Comparable<SecurityLabel> {
 	/* Find the meet (greatest lower bound) in the sublabel lattice
 	 * of this label and another label.
 	 */
-	public SecurityLabel meet(final SecurityLabel that) throws TypeException {
+	public SecurityLabel meet(final SecurityLabel that) {
 		if (this.sublabel(that)) {
 			return this;
 		} else if (that.sublabel(this)) {

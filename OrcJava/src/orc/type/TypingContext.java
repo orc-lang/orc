@@ -22,6 +22,7 @@ import orc.env.Env;
 import orc.env.LookupFailureException;
 import orc.error.OrcError;
 import orc.error.compiletime.typing.TypeException;
+import orc.security.labels.SecurityLabel;
 import orc.type.tycon.Tycon;
 
 /**
@@ -38,6 +39,7 @@ public class TypingContext {
 	protected Env<Type> varContext;
 	protected Env<Type> typeContext;
 	protected Config config;
+	protected SecurityLabel controlFlowLabel;
 	
 	public TypingContext() {
 		varContext = new Env<Type>();
@@ -51,10 +53,11 @@ public class TypingContext {
 	}
 	
 	public TypingContext(Env<Type> varContext, Env<Type> typeContext,
-			Config config) {
+			Config config, SecurityLabel controlFlowLabel) {
 		this.varContext = varContext;
 		this.typeContext = typeContext;
 		this.config = config;
+		this.controlFlowLabel = controlFlowLabel;
 	}
 
 	/**
@@ -85,12 +88,32 @@ public class TypingContext {
 		}
 	}
 	
+	/**
+	 * @return the controlFlowLabel
+	 */
+	public SecurityLabel getControlFlowLabel() {
+		return controlFlowLabel;
+	}
+
+	/**
+	 * @param newControlFlowDependency the Type the c.f. now depends on
+	 */
+	public void addControlFlowDependency(Type newControlFlowDependency) {
+		if (newControlFlowDependency.isSecurityLabeled()) {
+			if (controlFlowLabel != null) {
+				controlFlowLabel = controlFlowLabel.join(newControlFlowDependency.asSecurityLabeledType().label);
+			} else {
+				controlFlowLabel = newControlFlowDependency.asSecurityLabeledType().label;
+			}
+		}
+	}
+
 	public TypingContext bindVar(Type T) {
-		return new TypingContext(varContext.extend(T), typeContext, config);
+		return new TypingContext(varContext.extend(T.joinWithLabel(controlFlowLabel)), typeContext, config, controlFlowLabel);
 	}
 	
 	public TypingContext bindType(Type T) {
-		return new TypingContext(varContext, typeContext.extend(T), config);
+		return new TypingContext(varContext, typeContext.extend(T), config, controlFlowLabel);
 	}
 	
 	public Type resolveSiteType(String classname) throws TypeException {
