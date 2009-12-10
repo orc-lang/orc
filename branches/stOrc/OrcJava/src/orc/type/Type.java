@@ -99,6 +99,11 @@ public abstract class Type {
 			return true;
 		}
 
+		if (that.isSecurityLabeled()) {
+			final SecurityLabeledType thatSlt = that.asSecurityLabeledType();
+			return subtype(thatSlt.type) && SecurityLabel.DEFAULT.sublabel(thatSlt.label);
+		}
+		
 		return false;
 	}
 
@@ -395,10 +400,17 @@ public abstract class Type {
 	}
 
 	public Type joinWithLabel(final SecurityLabel newLabel) {
-		if (newLabel == null || newLabel == SecurityLabel.TOP) {
+		if (newLabel == null || newLabel == SecurityLabel.DEFAULT) {
 			return this;
 		}
-		return new SecurityLabeledType(this, newLabel);
+		return SecurityLabeledType.create(this, newLabel);
+	}
+
+	public Type joinWithLabelFrom(Type otherType) {
+		if (!otherType.isSecurityLabeled()) {
+			return this;
+		}
+		return joinWithLabel(otherType.asSecurityLabeledType().label);
 	}
 
 	/** 

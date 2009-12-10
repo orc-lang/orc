@@ -22,7 +22,7 @@ import java.math.BigInteger;
  */
 public class SecurityLabel {
 
-	public static final SecurityLabel TOP = new SecurityLabel(0);
+	public static final SecurityLabel DEFAULT = new SecurityLabel(0);
 
 	public final int level;
 

@@ -893,7 +893,7 @@ Type BasicType =
 	
 SecurityLabel SecurityLabel =
 	LBRACE i:Integer RBRACE { yyValue = new SecurityLabel(i); }
-	/ LBRACE RBRACE { yyValue = SecurityLabel.TOP; }
+	/ LBRACE RBRACE { yyValue = SecurityLabel.DEFAULT; }
 	;
 
 /*

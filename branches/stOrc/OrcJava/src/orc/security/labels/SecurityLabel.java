@@ -26,18 +26,18 @@ public class SecurityLabel implements Comparable<SecurityLabel> {
 	// When we get beyond experimenting, factor out interfaces for this
 	// First experiment: a total order.  Lattices come later....
 
+	public static final SecurityLabel DEFAULT = new SecurityLabel(0);
+	// NOTE: Keep the above in sync with package orc.ast.extended.security.SecurityLabel.DEFAULT
+	
 	/**
-	 * The greatest / least restrictive / top label -- all labels are sublabels of this.
-	 * This is the "unrestricted" label for a value, and "no access" label for a slot.
+	 * The greatest / top label -- all labels are sublabels of this.
 	 */
-	public static final SecurityLabel TOP = new SecurityLabel(0);
-	// NOTE: Keep the above in sync with package orc.ast.extended.security.SecurityLabel.TOP
+	public static final SecurityLabel TOPLABEL = new SecurityLabel(9);
 
 	/**
-	 * The least / most restrictive / bottom label -- no labels are sublabels of this.
-	 * This is the "no access" label for a value, and "unrestricted" label for a slot.
+	 * The least / bottom label -- no labels are sublabels of this.
 	 */
-	public static final SecurityLabel BOT = new SecurityLabel(9);
+	public static final SecurityLabel BOTLABEL = new SecurityLabel(0);
 
 	public SecurityLabel(final int level) {
 		this.level = level;
@@ -88,7 +88,7 @@ public class SecurityLabel implements Comparable<SecurityLabel> {
 			return this;
 		} else {
 			//TODO: Broken for partial orders
-			return TOP;
+			return TOPLABEL;
 		}
 	}
 
@@ -102,7 +102,7 @@ public class SecurityLabel implements Comparable<SecurityLabel> {
 			return that;
 		} else {
 			//TODO: Broken for partial orders
-			return BOT;
+			return BOTLABEL;
 		}
 
 	}

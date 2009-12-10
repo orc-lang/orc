@@ -56,7 +56,7 @@ public class SecurityLabeledType extends Type {
 	 */
 	@Override
 	public orc.type.Type transform(final TypingContext ctx) throws TypeException {
-		return new orc.type.SecurityLabeledType(type.transform(ctx), label.transform());
+		return orc.type.SecurityLabeledType.create(type.transform(ctx), label.transform());
 	}
 
 	/* (non-Javadoc)
