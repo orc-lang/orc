@@ -1,5 +1,7 @@
 -- Adrian examples
 --
+-- $Id$
+--
 -- Examples from Adrian Quark's Orc Secure Information Flow
 -- presentation of 30 Jan 2009
 --
