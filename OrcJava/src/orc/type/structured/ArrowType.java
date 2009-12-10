@@ -226,18 +226,19 @@ public class ArrowType extends Type {
 		
 		/* Arrow type result type inference */
 		/* If result type is not labeled, use the join of the actual parms' labels */
-		SecurityLabel inferredResultLabel = null;
+		/* If result type IS labeled, we trust the site to not leak! */
+		SecurityLabel actArgsLabelJoin = null;
 		if (!resultType.isSecurityLabeled()) {
-			inferredResultLabel = SecurityLabel.TOP;
+			actArgsLabelJoin = SecurityLabel.DEFAULT;
 			for (final Argument arg : args) {
 				final Type argType = arg.typesynth(ctx);
 				if (argType.isSecurityLabeled()) {
 					final SecurityLabeledType argSlt = argType.asSecurityLabeledType();
-					inferredResultLabel = inferredResultLabel.join(argSlt.label);
+					actArgsLabelJoin = actArgsLabelJoin.join(argSlt.label);
 				}
 			}
-			if (inferredResultLabel == SecurityLabel.TOP) {
-				inferredResultLabel = null;
+			if (actArgsLabelJoin == SecurityLabel.DEFAULT) {
+				actArgsLabelJoin = null;
 			}
 		}
 
@@ -245,20 +246,22 @@ public class ArrowType extends Type {
 		for (int i = 0; i < argTypes.size(); i++) {
 			Type formalArgType = ctx.subst(argTypes.get(i));
 			final Argument thisArg = args.get(i);
-			final Type actualArgType = thisArg.typesynth(ctx);
+			/* Calling this site reveals control flow to this point, so join all args with the control flow label */
+			final Type actualArgType = thisArg.typesynth(ctx);//.joinWithLabel(ctx.getControlFlowLabel());
 			/* Unlabeled formal parms take label of actual parm, if present */
 			if (!formalArgType.isSecurityLabeled() && actualArgType.isSecurityLabeled()) {
 				final SecurityLabeledType actualArgSlt = actualArgType.asSecurityLabeledType();
-				formalArgType = new SecurityLabeledType(formalArgType, actualArgSlt.label);
+				formalArgType = SecurityLabeledType.create(formalArgType, actualArgSlt.label);
 			}
 			thisArg.typecheck(ctx, formalArgType);
-			ctx.addControlFlowDependency(actualArgType);
 		}
 
-		if (inferredResultLabel == null) {
+		if (actArgsLabelJoin == null) {
 			return ctx.subst(resultType);
 		} else {
-			return new SecurityLabeledType(ctx.subst(resultType), inferredResultLabel);
+			/* Assume control flow dependency on all args */
+			ctx.addControlFlowDependency(actArgsLabelJoin);
+			return SecurityLabeledType.create(ctx.subst(resultType), actArgsLabelJoin);
 		}
 	}
 

@@ -16,6 +16,8 @@ import orc.error.compiletime.typing.ArgumentArityException;
 import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.nodes.Node;
+import orc.security.labels.SecurityLabel;
+import orc.type.SecurityLabeledType;
 import orc.type.Type;
 import orc.type.TypingContext;
 import orc.type.inference.Constraint;
@@ -151,6 +153,13 @@ public class Call extends Expression {
 				Type A = args.get(i).typesynth(ctx);
 				Type B = arrow.argTypes.get(i);
 				
+				//FIXME: Need completely unlabeled arrow types args to be automatically labeled
+//				/* Unlabeled formal parms take label of actual parm, if present */
+//				if (!B.isSecurityLabeled() && A.isSecurityLabeled()) {
+//					final SecurityLabeledType actualArgSlt = A.asSecurityLabeledType();
+//					B = SecurityLabeledType.create(B, actualArgSlt.label);
+//				}
+
 				A.addConstraints(VX, B, C);
 			}
 			
@@ -169,12 +178,37 @@ public class Call extends Expression {
 				inferredTypeArgs.add(sigmaCR);
 				subs = subs.extend(sigmaCR);
 			}
+			
+			/* Arrow type result type inference */
+			/* If result type is not labeled, use the join of the actual parms' labels */
+			/* If result type IS labeled, we trust the site to not leak! */
+			SecurityLabel actArgsLabelJoin = null;
+			if (!R.isSecurityLabeled()) {
+				actArgsLabelJoin = SecurityLabel.DEFAULT;
+				for (final Argument arg : args) {
+					final Type argType = arg.typesynth(ctx);
+					if (argType.isSecurityLabeled()) {
+						final SecurityLabeledType argSlt = argType.asSecurityLabeledType();
+						actArgsLabelJoin = actArgsLabelJoin.join(argSlt.label);
+					}
+				}
+				if (actArgsLabelJoin == SecurityLabel.DEFAULT) {
+					actArgsLabelJoin = null;
+				}
+			}
+
 				
 			/* We have successfully inferred the type arguments */
 			// FIXME
 			//typeArgs = inferredTypeArgs;
-				
-			return R.subst(subs);	
+
+			if (actArgsLabelJoin == null) {
+				return R.subst(subs);
+			} else {
+				/* Assume control flow dependency on all args */
+				ctx.addControlFlowDependency(actArgsLabelJoin);
+				return SecurityLabeledType.create(R.subst(subs), actArgsLabelJoin);
+			}
 		}
 		
 	}

@@ -49,6 +49,7 @@ public class Otherwise extends Expression {
 	public Type typesynth(TypingContext ctx) throws TypeException {
 		
 		Type L = left.typesynth(ctx);
+		// Note rhs get TypingContext with control flow label updated from lhs
 		Type R = right.typesynth(ctx);
 		return L.join(R);
 	}

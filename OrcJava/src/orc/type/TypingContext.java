@@ -34,16 +34,17 @@ import orc.type.tycon.Tycon;
  *
  * @author dkitchin
  */
-public class TypingContext {
+public class TypingContext implements Cloneable {
 
-	protected Env<Type> varContext;
-	protected Env<Type> typeContext;
-	protected Config config;
+	protected final Env<Type> varContext;
+	protected final Env<Type> typeContext;
+	protected final Config config;
 	protected SecurityLabel controlFlowLabel;
 	
 	public TypingContext() {
 		varContext = new Env<Type>();
 		typeContext = new Env<Type>();
+		config = null;
 	}
 	
 	public TypingContext(Config config) {
@@ -58,6 +59,21 @@ public class TypingContext {
 		this.typeContext = typeContext;
 		this.config = config;
 		this.controlFlowLabel = controlFlowLabel;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#clone()
+	 */
+	@Override
+	public TypingContext clone() {
+		TypingContext cloned;
+		try {
+			cloned = (TypingContext)super.clone();
+		} catch (CloneNotSupportedException e) {
+			throw new RuntimeException("super.clone() threw CloneNotSupportedException", e);
+		}
+		// OK to shallow copy controlFlowLabel, since SecurityLabels are immutable
+		return cloned;
 	}
 
 	/**
@@ -98,18 +114,20 @@ public class TypingContext {
 	/**
 	 * @param newControlFlowDependency the Type the c.f. now depends on
 	 */
-	public void addControlFlowDependency(Type newControlFlowDependency) {
-		if (newControlFlowDependency.isSecurityLabeled()) {
-			if (controlFlowLabel != null) {
-				controlFlowLabel = controlFlowLabel.join(newControlFlowDependency.asSecurityLabeledType().label);
-			} else {
-				controlFlowLabel = newControlFlowDependency.asSecurityLabeledType().label;
-			}
+	public void addControlFlowDependency(SecurityLabel newControlFlowDependencyLabel) {
+		if (controlFlowLabel != null) {
+			controlFlowLabel = controlFlowLabel.join(newControlFlowDependencyLabel);
+		} else {
+			controlFlowLabel = newControlFlowDependencyLabel;
 		}
 	}
 
 	public TypingContext bindVar(Type T) {
-		return new TypingContext(varContext.extend(T.joinWithLabel(controlFlowLabel)), typeContext, config, controlFlowLabel);
+		if (T != null) {
+			// This binding reveals control flow to this point, so join with the current control flow label
+			T = T.joinWithLabel(controlFlowLabel);
+		}
+		return new TypingContext(varContext.extend(T), typeContext, config, controlFlowLabel);
 	}
 	
 	public TypingContext bindType(Type T) {

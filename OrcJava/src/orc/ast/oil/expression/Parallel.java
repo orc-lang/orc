@@ -43,9 +43,10 @@ public class Parallel extends Expression {
 	
 	@Override
 	public Type typesynth(TypingContext ctx) throws TypeException {
+		TypingContext ctx2 = ctx.clone(); // Fresh TypingContext for rhs
 		
 		Type L = left.typesynth(ctx);
-		Type R = right.typesynth(ctx);
+		Type R = right.typesynth(ctx2);
 		return L.join(R);
 	}
 

@@ -43,13 +43,28 @@ public class SecurityLabeledType extends Type {
 	 * Constructs an object of class SecurityLabeledType.
 	 *
 	 */
-	public SecurityLabeledType(final Type type, final SecurityLabel label) {
+	private SecurityLabeledType(final Type type, final SecurityLabel label) {
 		super();
 		if (type == null || label == null) {
 			throw new NullPointerException("SecurityLabeledType constructor received null parameter");
 		}
 		this.type = type;
 		this.label = label;
+	}
+
+	public static Type create(final Type type, final SecurityLabel label) {
+		if (type == null || label == null) {
+			throw new NullPointerException("SecurityLabeledType.create received null parameter");
+		}
+		if (type.isSecurityLabeled()) {
+			return type.asSecurityLabeledType().joinWithLabel(label);
+		}
+		else if (!type.isBot()) {
+			return new SecurityLabeledType(type, label);
+		} else {
+			// Bot (absence of publications) is never labeled
+			return Type.BOT;
+		}
 	}
 
 	/* (non-Javadoc)
@@ -73,7 +88,7 @@ public class SecurityLabeledType extends Type {
 	 */
 	@Override
 	public Type joinWithLabel(SecurityLabel newLabel) {
-		if (newLabel == null || newLabel == SecurityLabel.TOP || this.label.equal(newLabel) || this.label.equal(this.label.join(newLabel))) {
+		if (newLabel == null || newLabel == SecurityLabel.DEFAULT || this.label.equal(newLabel) || this.label.equal(this.label.join(newLabel))) {
 			return this;
 		}
 		return new SecurityLabeledType(this.type, this.label.join(newLabel));
@@ -88,7 +103,7 @@ public class SecurityLabeledType extends Type {
 			final SecurityLabeledType thatSlt = that.asSecurityLabeledType();
 			return type.subtype(thatSlt.type) && label.sublabel(thatSlt.label);
 		} else {
-			return type.subtype(that) && label.sublabel(SecurityLabel.TOP);
+			return type.subtype(that) && label.sublabel(SecurityLabel.DEFAULT);
 		}
 	}
 
@@ -97,11 +112,12 @@ public class SecurityLabeledType extends Type {
 	 */
 	@Override
 	public Type join(final Type that) throws TypeException {
+		
 		if (that.isSecurityLabeled()) {
 			final SecurityLabeledType thatSlt = that.asSecurityLabeledType();
 			return new SecurityLabeledType(type.join(thatSlt.type), label.join(thatSlt.label));
 		} else {
-			return new SecurityLabeledType(type.join(that), label.join(SecurityLabel.TOP));
+			return new SecurityLabeledType(type.join(that), label.join(SecurityLabel.DEFAULT));
 		}
 	}
 
@@ -114,7 +130,7 @@ public class SecurityLabeledType extends Type {
 			final SecurityLabeledType thatSlt = that.asSecurityLabeledType();
 			return new SecurityLabeledType(type.meet(thatSlt.type), label.meet(thatSlt.label));
 		} else {
-			return new SecurityLabeledType(type.meet(that), label.meet(SecurityLabel.TOP));
+			return new SecurityLabeledType(type.meet(that), label.meet(SecurityLabel.DEFAULT));
 		}
 	}
 
