@@ -52,9 +52,9 @@ public class SecurityLabeledType extends Type {
 		this.label = label;
 	}
 
-	public static Type create(final Type type, final SecurityLabel label) {
+	public static Type createKeepDef(final Type type, final SecurityLabel label) {
 		if (type == null || label == null) {
-			throw new NullPointerException("SecurityLabeledType.create received null parameter");
+			throw new NullPointerException("SecurityLabeledType.createKeepDef received null parameter");
 		}
 		if (type.isSecurityLabeled()) {
 			return type.asSecurityLabeledType().joinWithLabel(label);
@@ -64,6 +64,17 @@ public class SecurityLabeledType extends Type {
 		} else {
 			// Bot (absence of publications) is never labeled
 			return Type.BOT;
+		}
+	}
+
+	public static Type create(final Type type, final SecurityLabel label) {
+		if (type == null || label == null) {
+			throw new NullPointerException("SecurityLabeledType.create received null parameter");
+		}
+		if (label == SecurityLabel.DEFAULT) {
+			return type;
+		} else {
+			return createKeepDef(type, label);
 		}
 	}
 
@@ -139,7 +150,7 @@ public class SecurityLabeledType extends Type {
 	 */
 	@Override
 	public Type call(final TypingContext ctx, final List<Argument> args, final List<Type> typeActuals) throws TypeException {
-		//TODO: Check correct handling of label
+		//TODO:stOrc: Check correct handling of label
 		return type.call(ctx, args, typeActuals);
 	}
 
@@ -148,7 +159,7 @@ public class SecurityLabeledType extends Type {
 	 */
 	@Override
 	public Type call(final List<Type> args) throws TypeException {
-		//TODO: Check correct handling of label
+		//TODO:stOrc: Check correct handling of label
 		return type.call(args);
 	}
 
@@ -173,7 +184,7 @@ public class SecurityLabeledType extends Type {
 	 */
 	@Override
 	public List<Variance> variances() {
-		//TODO: Check correct handling of label
+		//TODO:stOrc: Check correct handling of label
 		return type.variances();
 	}
 
@@ -182,7 +193,7 @@ public class SecurityLabeledType extends Type {
 	 */
 	@Override
 	public Type unwrapAs(final Type T) throws TypeException {
-		//TODO: Check correct handling of label
+		//TODO:stOrc: Check correct handling of label
 		return type.unwrapAs(T);
 		// or is it: return new SecurityLabeledType(type.unwrapAs(T), label);
 	}
@@ -192,7 +203,7 @@ public class SecurityLabeledType extends Type {
 	 */
 	@Override
 	public Tycon asTycon() throws TypeException {
-		//TODO: Check correct handling of label
+		//TODO:stOrc: Check correct handling of label
 		return type.asTycon();
 		// or is it: return new SecurityLabeledType(type.asTycon(), label);
 	}
@@ -258,7 +269,7 @@ public class SecurityLabeledType extends Type {
 	 */
 	@Override
 	public Type resolveSites(final Config config) throws MissingTypeException {
-		//TODO: Check correct handling of label
+		//TODO:stOrc: Check correct handling of label
 		return type.resolveSites(config);
 	}
 
@@ -267,7 +278,7 @@ public class SecurityLabeledType extends Type {
 	 */
 	@Override
 	public orc.ast.xml.type.Type marshal() throws UnrepresentableTypeException {
-		// TODO Auto-generated method stub
+		//TODO:stOrc: Need to implement read/erite of OIL files
 		return super.marshal();
 	}
 

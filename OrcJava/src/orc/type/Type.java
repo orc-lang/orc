@@ -479,7 +479,7 @@ public abstract class Type {
 				try {
 					final Class cls = (Class) wt.getUpperBounds()[0];
 					if (cls.isAssignableFrom(Object.class)) {
-						return Type.TOP; // FIXME: This may not be the correct choice.
+						return Type.TOP; //FIXME:stOrc: This may not be the correct choice, because of labels
 					}
 				} catch (final ClassCastException e) {
 				}

@@ -863,6 +863,11 @@ Pattern BasicPattern =
 /////////////////////////////////////////////
 
 Type Type =
+	t:BasicType label:SecurityLabel { yyValue = new SecurityLabeledType(t, label); }
+	/ BasicType
+	;
+
+Type BasicType =
 	LPAREN ts:TypeList RPAREN Space { 
 		if (ts.size() > 1) {
 			yyValue = new TupleType(ts);
@@ -872,21 +877,12 @@ Type Type =
 			yyValue = Type.TOP;
 		}
 	}
+	/ TOP { yyValue = Type.TOP; }
+	/ BOT { yyValue = Type.BOT; }
+	/ UNDERSCORE { yyValue = Type.TOP; } /* allows _ in datatype decls for untyped mode */ 
 	/ LAMBDA typeFormals:TypeFormals argTypes:TypeListGroup DOUBLE_COLON resultType:Type {
 		yyValue = new LambdaType(argTypes, resultType, typeFormals);
 	}
-	/ MaybeLabeledType
-	;
-	
-Type MaybeLabeledType =
-	t:BasicType label:SecurityLabel { yyValue = new SecurityLabeledType(t, label); }
-	/ BasicType
-	;
-
-Type BasicType =
-	TOP { yyValue = Type.TOP; }
-	/ BOT { yyValue = Type.BOT; }
-	/ UNDERSCORE { yyValue = Type.TOP; } /* allows _ in datatype decls for untyped mode */ 
 	/ name:Identifier actualTypes:TypeActuals Space { yyValue = new TypeApplication(name, actualTypes); }
 	/ name:Identifier Space { yyValue = new NamedType(name); }
 	;

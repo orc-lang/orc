@@ -229,7 +229,7 @@ public class ArrowType extends Type {
 		/* If result type IS labeled, we trust the site to not leak! */
 		SecurityLabel actArgsLabelJoin = null;
 		if (!resultType.isSecurityLabeled()) {
-			actArgsLabelJoin = SecurityLabel.DEFAULT;
+			actArgsLabelJoin = ctx.getControlFlowLabel()==null?SecurityLabel.DEFAULT:ctx.getControlFlowLabel();//FIXME:stOrc: Do we really want this?
 			for (final Argument arg : args) {
 				final Type argType = arg.typesynth(ctx);
 				if (argType.isSecurityLabeled()) {
@@ -247,7 +247,7 @@ public class ArrowType extends Type {
 			Type formalArgType = ctx.subst(argTypes.get(i));
 			final Argument thisArg = args.get(i);
 			/* Calling this site reveals control flow to this point, so join all args with the control flow label */
-			final Type actualArgType = thisArg.typesynth(ctx);//.joinWithLabel(ctx.getControlFlowLabel());
+			final Type actualArgType = thisArg.typesynth(ctx).joinWithLabel(ctx.getControlFlowLabel());//FIXME:stOrc: Do we really want this?
 			/* Unlabeled formal parms take label of actual parm, if present */
 			if (!formalArgType.isSecurityLabeled() && actualArgType.isSecurityLabeled()) {
 				final SecurityLabeledType actualArgSlt = actualArgType.asSecurityLabeledType();

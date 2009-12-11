@@ -153,7 +153,8 @@ public class Call extends Expression {
 				Type A = args.get(i).typesynth(ctx);
 				Type B = arrow.argTypes.get(i);
 				
-				//FIXME: Need completely unlabeled arrow types args to be automatically labeled
+//				A = A.joinWithLabel(ctx.getControlFlowLabel());//FIXME:stOrc: Do we really want this?
+				//FIXME:stOrc: Need completely unlabeled arrow types args to be automatically labeled
 //				/* Unlabeled formal parms take label of actual parm, if present */
 //				if (!B.isSecurityLabeled() && A.isSecurityLabeled()) {
 //					final SecurityLabeledType actualArgSlt = A.asSecurityLabeledType();
@@ -184,7 +185,7 @@ public class Call extends Expression {
 			/* If result type IS labeled, we trust the site to not leak! */
 			SecurityLabel actArgsLabelJoin = null;
 			if (!R.isSecurityLabeled()) {
-				actArgsLabelJoin = SecurityLabel.DEFAULT;
+				actArgsLabelJoin = ctx.getControlFlowLabel()==null?SecurityLabel.DEFAULT:ctx.getControlFlowLabel();//FIXME:stOrc: Do we really want this?
 				for (final Argument arg : args) {
 					final Type argType = arg.typesynth(ctx);
 					if (argType.isSecurityLabeled()) {

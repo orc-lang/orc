@@ -47,7 +47,7 @@ public class SecurityLabeledType extends Type {
 	 */
 	@Override
 	public orc.ast.xml.type.Type marshal() {
-		// TODO Auto-generated method stub
+		//TODO:stOrc: Need to implement read/write OIL files
 		return null;
 	}
 
@@ -56,7 +56,7 @@ public class SecurityLabeledType extends Type {
 	 */
 	@Override
 	public orc.type.Type transform(final TypingContext ctx) throws TypeException {
-		return orc.type.SecurityLabeledType.create(type.transform(ctx), label.transform());
+		return orc.type.SecurityLabeledType.createKeepDef(type.transform(ctx), label.transform());
 	}
 
 	/* (non-Javadoc)
