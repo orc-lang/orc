@@ -22,3 +22,10 @@ def checkPassword(enteredPassword) = (enteredPassword = correctPassword) :!: Boo
   "correctPassword=" + correctPassword    -- Try to reveal the secret
 ) :: Top
 -}
+
+{-
+TYPE:  Top
+OUTPUT:
+"checkPassword(wrong)=false"
+"checkPassword(secret)=true"
+-}

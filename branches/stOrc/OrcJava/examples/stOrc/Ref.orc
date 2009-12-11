@@ -22,3 +22,9 @@ val refMid = Ref[Integer{4}]()
 refMid := mid >> stop | refMid?
 
 --refMid := high >> stop | refMid?
+
+{-
+TYPE;  Integer{4}
+OUTPUT:
+4
+-}
