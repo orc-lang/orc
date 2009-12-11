@@ -87,7 +87,7 @@ public class SecurityLabel implements Comparable<SecurityLabel> {
 		} else if (that.sublabel(this)) {
 			return this;
 		} else {
-			//TODO: Broken for partial orders
+			//TODO:stOrc: Broken for partial orders
 			return TOPLABEL;
 		}
 	}
@@ -101,7 +101,7 @@ public class SecurityLabel implements Comparable<SecurityLabel> {
 		} else if (that.sublabel(this)) {
 			return that;
 		} else {
-			//TODO: Broken for partial orders
+			//TODO:stOrc: Broken for partial orders
 			return BOTLABEL;
 		}
 
