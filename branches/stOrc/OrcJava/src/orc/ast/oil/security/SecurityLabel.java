@@ -22,9 +22,9 @@ package orc.ast.oil.security;
  */
 public class SecurityLabel {
 
-	public final int level;
+	public final String level;
 
-	public SecurityLabel(final int level) {
+	public SecurityLabel(final String level) {
 		this.level = level;
 	}
 
@@ -37,7 +37,7 @@ public class SecurityLabel {
 
 	@Override
 	public String toString() {
-		return "{" + Integer.toString(this.level) + "}";
+		return "{" + level + "}";
 	}
 
 	//FIXME:stOrc: Do we need any marshal / unmarshal methods or XML annotations here?

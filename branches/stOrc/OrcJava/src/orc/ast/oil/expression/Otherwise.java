@@ -47,10 +47,12 @@ public class Otherwise extends Expression {
 	
 	@Override
 	public Type typesynth(TypingContext ctx) throws TypeException {
-		
 		Type L = left.typesynth(ctx);
-		// Note rhs get TypingContext with control flow label updated from lhs
-		Type R = right.typesynth(ctx);
+		TypingContext rctx = ctx;
+		if (L.isSecurityLabeled()) {
+			rctx = rctx.addControlFlowDependency(L.asSecurityLabeledType().label);
+		}
+		Type R = right.typesynth(rctx);
 		return L.join(R);
 	}
 

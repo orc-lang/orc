@@ -4,10 +4,10 @@
 --
 
 
-2 :: Integer{2}
+2 :: Integer{A2}
 
 {-
-TYPE:  Integer{2}
+TYPE:  Integer{A2}
 OUTPUT:
 2
 -}

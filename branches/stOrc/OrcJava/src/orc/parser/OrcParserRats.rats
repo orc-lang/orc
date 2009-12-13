@@ -888,7 +888,7 @@ Type BasicType =
 	;
 	
 SecurityLabel SecurityLabel =
-	LBRACE i:Integer RBRACE { yyValue = new SecurityLabel(i); }
+	LBRACE id:Identifier RBRACE { yyValue = new SecurityLabel(id); }
 	/ LBRACE RBRACE { yyValue = SecurityLabel.DEFAULT; }
 	;
 

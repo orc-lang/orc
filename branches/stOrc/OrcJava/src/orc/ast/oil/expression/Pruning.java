@@ -55,10 +55,8 @@ public class Pruning extends Expression {
 	
 	@Override
 	public Type typesynth(TypingContext ctx) throws TypeException {
-		TypingContext ctx2 = ctx.clone(); // Fresh TypingContext for lhs
-
 		Type rtype = right.typesynth(ctx);
-		return left.typesynth(ctx2.bindVar(rtype));
+		return left.typesynth(ctx.bindVar(rtype));
 	}
 
 	@Override

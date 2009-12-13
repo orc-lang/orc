@@ -259,8 +259,6 @@ public class ArrowType extends Type {
 		if (actArgsLabelJoin == null) {
 			return ctx.subst(resultType);
 		} else {
-			/* Assume control flow dependency on all args */
-			ctx.addControlFlowDependency(actArgsLabelJoin);
 			return SecurityLabeledType.create(ctx.subst(resultType), actArgsLabelJoin);
 		}
 	}

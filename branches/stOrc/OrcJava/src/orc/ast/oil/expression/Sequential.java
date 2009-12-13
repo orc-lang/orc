@@ -57,8 +57,11 @@ public class Sequential extends Expression {
 	@Override
 	public Type typesynth(TypingContext ctx) throws TypeException {
 		Type ltype = left.typesynth(ctx);
-		// Note rhs get TypingContext with control flow label updated from lhs
-		Type rtype = right.typesynth(ctx.bindVar(ltype));
+		TypingContext rctx = ctx.bindVar(ltype);
+		if (ltype.isSecurityLabeled()) {
+			rctx = rctx.addControlFlowDependency(ltype.asSecurityLabeledType().label);
+		}
+		Type rtype = right.typesynth(rctx);
 		return rtype.joinWithLabelFrom(ltype);
 	}
 

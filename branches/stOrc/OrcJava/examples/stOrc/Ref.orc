@@ -4,17 +4,17 @@
 --
 
 val low = 1 :: Integer
-val mid = 4 :: Integer{4}
-val high = 6 :: Integer{6}
-val unused = 8 :: Integer{8}
+val mid = 4 :: Integer{A4}
+val high = 6 :: Integer{A6}
+val unused = 8 :: Integer{F8}
 
 -- The following 3 lines are a workaround for type var inference
-type StoreType = Integer{4}
+type StoreType = Integer{A4}
 def (:=)(ref::Ref[StoreType], val::StoreType) = ref.write(val)
 def (?)(ref::Ref[StoreType]) = ref.read()
 
 
-val refMid = Ref[Integer{4}]()
+val refMid = Ref[Integer{A4}]()
 
 
 --refMid := 1 >> stop | refMid?
@@ -24,7 +24,7 @@ refMid := mid >> stop | refMid?
 --refMid := high >> stop | refMid?
 
 {-
-TYPE;  Integer{4}
+TYPE;  Integer{A4}
 OUTPUT:
 4
 -}

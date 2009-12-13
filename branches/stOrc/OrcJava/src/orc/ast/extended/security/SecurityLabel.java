@@ -13,7 +13,6 @@
 
 package orc.ast.extended.security;
 
-import java.math.BigInteger;
 
 /**
  * Extended AST node representing a security label for a value
@@ -22,16 +21,12 @@ import java.math.BigInteger;
  */
 public class SecurityLabel {
 
-	public static final SecurityLabel DEFAULT = new SecurityLabel(0);
+	public static final SecurityLabel DEFAULT = new SecurityLabel("A0");
 
-	public final int level;
+	public final String level;
 
-	public SecurityLabel(final int level) {
+	public SecurityLabel(final String level) {
 		this.level = level;
-	}
-
-	public SecurityLabel(final BigInteger level) {
-		this.level = level.intValue();
 	}
 
 	/** 
