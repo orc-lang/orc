@@ -20,9 +20,9 @@ package orc.ast.simple.security;
  */
 public class SecurityLabel {
 
-	public final int level;
+	public final String level;
 
-	public SecurityLabel(final int level) {
+	public SecurityLabel(final String level) {
 		this.level = level;
 	}
 

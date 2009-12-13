@@ -22,35 +22,25 @@ import orc.error.compiletime.typing.TypeException;
  *
  * @author jthywiss
  */
-public class SecurityLabel implements Comparable<SecurityLabel> {
+public class SecurityLabel {
 	// When we get beyond experimenting, factor out interfaces for this
 	// First experiment: a total order.  Lattices come later....
 
-	public static final SecurityLabel DEFAULT = new SecurityLabel(0);
+	public static final SecurityLabel DEFAULT = new SecurityLabel("A0");
 	// NOTE: Keep the above in sync with package orc.ast.extended.security.SecurityLabel.DEFAULT
 	
 	/**
 	 * The greatest / top label -- all labels are sublabels of this.
 	 */
-	public static final SecurityLabel TOPLABEL = new SecurityLabel(9);
+	public static final SecurityLabel TOPLABEL = new SecurityLabel("I9");
 
 	/**
 	 * The least / bottom label -- no labels are sublabels of this.
 	 */
-	public static final SecurityLabel BOTLABEL = new SecurityLabel(0);
+	public static final SecurityLabel BOTLABEL = new SecurityLabel("A0");
 
-	public SecurityLabel(final int level) {
+	public SecurityLabel(final String level) {
 		this.level = level;
-	}
-
-	public int compareTo(final SecurityLabel that) {
-		if (this.level == that.level) {
-			return 0;
-		} else if (this.level < that.level) {
-			return -1;
-		} else /* (this.level > that.level) */{
-			return 1;
-		}
 	}
 
 	public boolean sublabel(final SecurityLabel that) {
@@ -58,8 +48,9 @@ public class SecurityLabel implements Comparable<SecurityLabel> {
 		// less -> true
 		// greater -> false
 		// incomparable -> false
-
-		return this.level <= that.level;
+		
+		// Quick & dirty for the two-character label lattice
+		return (this.level.charAt(0) <= that.level.charAt(0) && this.level.charAt(1) <= that.level.charAt(1));
 	}
 
 	public void assertSublabel(final SecurityLabel that) throws TypeException {
@@ -78,39 +69,41 @@ public class SecurityLabel implements Comparable<SecurityLabel> {
 		return this.sublabel(that) && that.sublabel(this);
 	}
 
+	private static char minChar(final char c1, final char c2) {
+		if (c1 <= c2) {
+			return c1;
+		} else {
+			return c2;
+		}
+	}
+
+	private static char maxChar(final char c1, final char c2) {
+		if (c1 >= c2) {
+			return c1;
+		} else {
+			return c2;
+		}
+	}
+
 	/* Find the join (least upper bound) in the sublabel lattice
 	 * of this label and another label.
 	 */
 	public SecurityLabel join(final SecurityLabel that) {
-		if (this.sublabel(that)) {
-			return that;
-		} else if (that.sublabel(this)) {
-			return this;
-		} else {
-			//TODO:stOrc: Broken for partial orders
-			return TOPLABEL;
-		}
+		// Quick & dirty for the two-character label lattice
+		return new SecurityLabel(Character.toString(maxChar(this.level.charAt(0), that.level.charAt(0))) + Character.toString(maxChar(this.level.charAt(1), that.level.charAt(1))));
 	}
 
 	/* Find the meet (greatest lower bound) in the sublabel lattice
 	 * of this label and another label.
 	 */
 	public SecurityLabel meet(final SecurityLabel that) {
-		if (this.sublabel(that)) {
-			return this;
-		} else if (that.sublabel(this)) {
-			return that;
-		} else {
-			//TODO:stOrc: Broken for partial orders
-			return BOTLABEL;
-		}
-
+		return new SecurityLabel(Character.toString(minChar(this.level.charAt(0), that.level.charAt(0))) + Character.toString(minChar(this.level.charAt(1), that.level.charAt(1))));
 	}
 
 	@Override
 	public String toString() {
-		return "{" + Integer.toString(this.level) + "}";
+		return "{" + level + "}";
 	}
 
-	private final int level;
+	private final String level;
 }

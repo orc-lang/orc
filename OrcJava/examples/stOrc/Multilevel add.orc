@@ -6,15 +6,15 @@
 -- check that output has correct inferred label.
 -- An example of arrow type parameter/result label inference.
 
-val low = 1 :: Integer
-val mid = 4 :: Integer{4}
-val high = 6 :: Integer{6}
-val unused = 9 :: Integer{9}
+val public = 1 :: Integer
+val secret1 = 4 :: Integer{B4}
+val secret2 = 6 :: Integer{A6}
+val unused = 9 :: Integer{F9}
 
-low+mid+high
+public + secret1 + secret2
 
 {-
-TYPE:  Integer{6}
+TYPE:  Integer{B6}
 OUTPUT:
 11
 -}

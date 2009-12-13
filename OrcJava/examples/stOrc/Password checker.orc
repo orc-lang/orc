@@ -6,10 +6,10 @@
 -- Demonstration of "declassifying" the results 
 -- of an operation that used a secret.
 
-val correctPassword = "secret" :: String{5}
+val correctPassword = "secret" :: String{C5}
 
 def checkPassword(String) :: Boolean
-def checkPassword(enteredPassword) = (enteredPassword = correctPassword) :!: Boolean{0}
+def checkPassword(enteredPassword) = (enteredPassword = correctPassword) :!: Boolean{}
 
 (
   "checkPassword(wrong)=" + checkPassword("wrong")

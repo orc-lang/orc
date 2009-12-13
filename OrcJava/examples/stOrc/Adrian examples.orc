@@ -7,7 +7,7 @@
 --
 
 val l = Ref[Boolean]()
-val h = Ref[Boolean{6}]()
+val h = Ref[Boolean{C6}]()
 
 -- The following 3 lines are a workaround for type var inference
 type StoreType = Boolean

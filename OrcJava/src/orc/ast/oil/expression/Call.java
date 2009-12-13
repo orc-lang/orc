@@ -206,8 +206,6 @@ public class Call extends Expression {
 			if (actArgsLabelJoin == null) {
 				return R.subst(subs);
 			} else {
-				/* Assume control flow dependency on all args */
-				ctx.addControlFlowDependency(actArgsLabelJoin);
 				return SecurityLabeledType.create(R.subst(subs), actArgsLabelJoin);
 			}
 		}
