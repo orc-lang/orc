@@ -8,19 +8,17 @@
 
 val correctPassword = "secret" :: String{C5}
 
+def untrustedPrintln(out::Top{A0})::Signal = println(out)
+
 def checkPassword(String) :: Boolean
 def checkPassword(enteredPassword) = (enteredPassword = correctPassword) :!: Boolean{}
 
-(
-  "checkPassword(wrong)=" + checkPassword("wrong")
-| "checkPassword(secret)=" + checkPassword("secret")
-) :: Top -- expecting a non-confidential result
+  untrustedPrintln("checkPassword(wrong)=" + checkPassword("wrong"))
+| untrustedPrintln("checkPassword(secret)=" + checkPassword("secret"))
 
 {- 
 -- The following will not type check, preventing a breach:
-(
-  "correctPassword=" + correctPassword    -- Try to reveal the secret
-) :: Top
+untrustedPrintln("correctPassword=" + correctPassword)    -- Try to reveal the secret
 -}
 
 {-
