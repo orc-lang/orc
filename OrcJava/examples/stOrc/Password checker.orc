@@ -13,8 +13,8 @@ def untrustedPrintln(out::Top{A0})::Signal = println(out)
 def checkPassword(String) :: Boolean
 def checkPassword(enteredPassword) = (enteredPassword = correctPassword) :!: Boolean{}
 
-  untrustedPrintln("checkPassword(wrong)=" + checkPassword("wrong"))
-| untrustedPrintln("checkPassword(secret)=" + checkPassword("secret"))
+   untrustedPrintln("checkPassword(wrong)=" + checkPassword("wrong"))
+>> untrustedPrintln("checkPassword(secret)=" + checkPassword("secret"))
 
 {- 
 -- The following will not type check, preventing a breach:
@@ -24,6 +24,7 @@ untrustedPrintln("correctPassword=" + correctPassword)    -- Try to reveal the s
 {-
 TYPE:  Top
 OUTPUT:
-"checkPassword(wrong)=false"
-"checkPassword(secret)=true"
+checkPassword(wrong)=false
+checkPassword(secret)=true
+signal
 -}
