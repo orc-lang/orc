@@ -842,6 +842,10 @@ Pattern BasicPattern =
 		yyValue = new ListPattern(formals);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
+	/ EQ name:Identifier Space {
+		yyValue = new EqPattern(name);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
 	;
 
 /////////////////////////////////////////////
