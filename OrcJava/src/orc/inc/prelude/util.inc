@@ -28,7 +28,7 @@ Return a random (type 4) UUID represented as a string.
 site UUID = orc.lib.util.UUID
 
 {--
-@site Thread(Signal) :: Bot
+@site Thread(Top) :: Bot
 Given a site, return a new site which calls the original site
 in a separate thread.  This is necessary when calling
 a Java site which does not cooperate with Orc's scheduler
