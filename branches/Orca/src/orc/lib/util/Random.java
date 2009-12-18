@@ -2,12 +2,13 @@ package orc.lib.util;
 
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
+import orc.runtime.sites.PartialPureSite;
 import orc.runtime.sites.PartialSite;
 import orc.type.Type;
 import orc.type.structured.ArrowType;
 import orc.type.structured.MultiType;
 
-public class Random extends PartialSite {
+public class Random extends PartialPureSite {
 
 	java.util.Random rnd;
 	

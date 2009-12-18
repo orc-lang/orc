@@ -4,11 +4,13 @@
 package orc.lib.time;
 
 import orc.error.runtime.MessageNotUnderstoodException;
+import orc.error.runtime.NontransactionalSiteException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.EvalSite;
 import orc.runtime.sites.Site;
+import orc.runtime.transaction.Transaction;
 import orc.type.Type;
 import orc.type.structured.ArrowType;
 import orc.type.structured.DotType;
@@ -53,4 +55,12 @@ public class Rtimer extends Site {
 		return new DotType(new ArrowType(Type.NUMBER, Type.SIGNAL))
 			.addField("time", new ArrowType(Type.INTEGER));
 	}
+	
+	
+	public void callSite(Args args, Token caller, Transaction transaction) throws TokenException {
+		// This is for prototyping purposes only.
+		// TODO: Address theoretic concerns with Rtimer being a transaction-unaware site.
+		callSite(args, caller);
+	}
+	
 }

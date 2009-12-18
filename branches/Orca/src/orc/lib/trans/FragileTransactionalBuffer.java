@@ -1,8 +1,10 @@
 /**
  * 
  */
-package orc.lib.state;
+package orc.lib.trans;
 
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeMap;
@@ -56,7 +58,7 @@ public class FragileTransactionalBuffer extends EvalSite {
 		
 		public LinkedList<Object> buffer;
 		public LinkedList<Token> readers;
-		public TreeMap<Transaction, BufferState> children;
+		public HashMap<Transaction, BufferState> children;
 		public BufferState parent = null;
 		public LinkedList<FrozenCall> frozenCalls;
 		public Transaction frozenFor = null;
@@ -64,13 +66,13 @@ public class FragileTransactionalBuffer extends EvalSite {
 		public BufferState() {
 			buffer = new LinkedList<Object>();
 			readers = new LinkedList<Token>();
-			children = new TreeMap<Transaction, BufferState>();
+			children = new HashMap<Transaction, BufferState>();
 			frozenCalls = new LinkedList<FrozenCall>();
 		}
 
 		public BufferState(LinkedList<Object> buffer,
 				LinkedList<Token> readers,
-				TreeMap<Transaction, BufferState> children, BufferState parent,
+				HashMap<Transaction, BufferState> children, BufferState parent,
 				LinkedList<FrozenCall> frozenCalls, Transaction frozenFor) {
 			this.buffer = buffer;
 			this.readers = readers;
@@ -83,6 +85,23 @@ public class FragileTransactionalBuffer extends EvalSite {
 		public void mergeFrom(BufferState other) {
 			this.buffer = other.buffer;
 			this.readers = other.readers;
+		}
+		
+		public void fragileChange() {
+			// If this state is changed, kill all of its child transactions.
+			
+			// Fragile conflict resolution.
+			// When a transaction commits, all siblings at the site are victims
+			
+			// This copy loop avoids a concurrent modification exception
+			List<Transaction> victims = new LinkedList<Transaction>();
+			for (Transaction victim : children.keySet()) {
+				victims.add(victim);
+			}
+			children.clear();
+			for (Transaction victim : victims) {
+				victim.abort();
+			}
 		}
 		
 		public BufferState addDescendant(Transaction trans) {
@@ -129,9 +148,14 @@ public class FragileTransactionalBuffer extends EvalSite {
 			
 		}
 		
-		public void unfreeze() throws TokenException {
+		public void unfreeze() {
 			for (FrozenCall c : frozenCalls) {
+				try {
 					c.unfreeze();
+				} catch (TokenException e) {
+					// TODO: Handle this more usefully.
+					e.printStackTrace();
+				}
 			}
 			frozenCalls.clear();
 			frozenFor = null;
@@ -199,10 +223,12 @@ public class FragileTransactionalBuffer extends EvalSite {
 					}
 					
 					/* This is an effectful operation, so abort all subtransactions. */
-					for(Transaction subt : state.children.keySet()) {
-						subt.abort();
+					state.fragileChange();
+					
+					// Register this site as a cohort if this call is transactional
+					if (transaction != null) {
+						transaction.addCohort(BufferInstance.this);
 					}
-					state.children.clear();
 					
 					
 					if (state.buffer.isEmpty()) {
@@ -212,6 +238,7 @@ public class FragileTransactionalBuffer extends EvalSite {
 						// If there is an item available, pop it and return it.
 						reader.resume(state.buffer.removeFirst());
 					}
+					
 				}
 			});	
 			addMember("put", new TransactionalSite() {
@@ -223,11 +250,13 @@ public class FragileTransactionalBuffer extends EvalSite {
 					BufferState state = retrieveState(transaction);
 					
 					/* This is an effectful operation, so abort all subtransactions. */
-					for(Transaction subt : state.children.keySet()) {
-						subt.abort();
-					}
-					state.children.clear();
+					state.fragileChange();
+
 					
+					// Register this site as a cohort if this call is transactional
+					if (transaction != null) {
+						transaction.addCohort(BufferInstance.this);
+					}
 					
 					if (state.readers.isEmpty()) {
 						// If there are no waiting callers, buffer this item.
@@ -240,6 +269,8 @@ public class FragileTransactionalBuffer extends EvalSite {
 					}
 					// Since this is an asynchronous buffer, a put call always returns.
 					writer.resume();
+					
+					
 				}
 			});
 		}
@@ -252,9 +283,15 @@ public class FragileTransactionalBuffer extends EvalSite {
 		 * Merge this transaction's state version with its parent.
 		 */
 		public void confirm(Token t, Transaction trans) {
-			BufferState target = retrieveState(trans);
-			target.parent.mergeFrom(target);
-			target.parent.children.remove(trans);
+			BufferState source = retrieveState(trans);
+			BufferState target = source.parent;
+			target.mergeFrom(source);
+			target.children.remove(trans);
+			
+			/* This is an effectful operation, so abort all siblings. */
+			target.fragileChange();
+			
+			target.unfreeze();
 			t.die();
 		}
 
@@ -272,11 +309,12 @@ public class FragileTransactionalBuffer extends EvalSite {
 		 */
 		public void rollback(Token t, Transaction trans) {
 			BufferState victim = retrieveState(trans);
-			victim.parent.children.remove(trans);
+			victim.parent.children.remove(trans); // TODO: Make this threadsafe
 			t.die();
 		}
 				
 	}
+
 }
 
 	

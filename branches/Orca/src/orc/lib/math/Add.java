@@ -9,6 +9,7 @@ import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Args.NumericBinaryOperator;
 import orc.runtime.sites.EvalSite;
+import orc.runtime.sites.PureSite;
 import orc.type.Type;
 import orc.type.structured.ArrowType;
 import orc.type.structured.MultiType;
@@ -18,7 +19,7 @@ import orc.type.structured.MultiType;
  * with implicit toString coercion (just like Java).
  * @author quark
  */
-public class Add extends EvalSite {
+public class Add extends PureSite {
 	private static final MyOperator op = new MyOperator();
 	private static final class MyOperator implements NumericBinaryOperator<Number> {
 		public Number apply(BigInteger a, BigInteger b) {

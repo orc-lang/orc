@@ -628,12 +628,14 @@ public class Token implements Serializable, Locatable {
 		return location;
 	}
 	
-	public final void unsetQuiescent() {
+	public final Token unsetQuiescent() {
 		region.addActive();
+		return this;
 	}
 	
-	public final void setQuiescent() {
+	public final Token setQuiescent() {
 		region.removeActive();
+		return this;
 	}
 	
 	public final void requireCapability(String name, boolean ifNull) throws CapabilityException {

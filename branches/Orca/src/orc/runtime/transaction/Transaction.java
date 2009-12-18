@@ -1,6 +1,7 @@
 
 package orc.runtime.transaction;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -74,8 +75,8 @@ public class Transaction {
 	public Transaction(Token initial, Node next, GroupCell cell) {
 		this.initial = initial;
 		this.parent = initial.getTransaction();
-		this.children = new TreeSet();
-		this.cohorts = new TreeSet();
+		this.children = new HashSet();
+		this.cohorts = new HashSet();
 		this.publications = new LinkedList<Object>();
 		this.next = next;
 		this.cell = cell;
@@ -83,7 +84,7 @@ public class Transaction {
 	
 	public synchronized void abort() {
 		
-//		System.out.println("aborted");
+		System.err.println("aborted " + this);
 		
 		// Ensure that abort is idempotent
 		if (!aborted) {
@@ -162,9 +163,9 @@ public class Transaction {
 			/* When the commit is confirmed, release all of the publications */
 			
 			if (!cohorts.isEmpty()) {
-				Set<Token> ts = new TreeSet();
+				Set<Token> ts = new HashSet();
 				for (Object v : publications) {
-					ts.add(initial.fork().move(next).setResult(v));
+					ts.add(initial.fork().move(next).setQuiescent().setResult(v));
 				}
 				
 				MultiRegion r = new MultiRegion(initial.getRegion(), ts);
@@ -175,7 +176,7 @@ public class Transaction {
 			}
 			else {
 				for (Object v : publications) {
-					initial.fork().move(next).resume(v);
+					initial.fork().move(next).setResult(v).activate();
 				}
 				
 			}
