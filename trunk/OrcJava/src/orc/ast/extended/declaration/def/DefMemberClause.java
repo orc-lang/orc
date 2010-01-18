@@ -28,6 +28,7 @@ public class DefMemberClause extends DefMember {
 	public List<List<Pattern>> formals;
 	public Expression body;
 	public Type resultType; // May be null
+	public Boolean exported = false;
 	
 	public DefMemberClause(String name, List<List<Pattern>> formals, Expression body, Type resultType)
 	{
@@ -36,6 +37,17 @@ public class DefMemberClause extends DefMember {
 		this.body = body;
 		this.resultType = resultType;
 	}
+
+	public DefMemberClause(String name, List<List<Pattern>> formals, Expression body, 
+			Type resultType, Boolean exported)
+	{
+		this.name = name;	/* name is "" when used for anonymous functions */
+		this.formals = formals;
+		this.body = body;
+		this.resultType = resultType;
+		this.exported = exported;
+	}
+	
 	public String toString() {
 		return (name.equals("") ? "lambda" : "def ") + sigToString() + " = " + body;
 	}
@@ -100,7 +112,7 @@ public class DefMemberClause extends DefMember {
 		
 		
 		if (resultType != null) { adef.setResultType(resultType); }
-		
+
 		adef.addClause(new Clause(newformals, newbody));
 		
 		adef.addLocation(getSourceLocation());

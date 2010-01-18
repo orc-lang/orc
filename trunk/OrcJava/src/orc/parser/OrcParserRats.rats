@@ -230,10 +230,14 @@ List<Constructor> ConstructorList =
 
 
 DefMember Definition =
-	DEF name:RequiredSiteName Space formals:PatternListGroup resultType:MaybeResultType EQ body:Body {
-		yyValue = new DefMemberClause(name, formals, body, resultType);
-		yyValue = at(yyStart, yyCount, yyValue);
-	}
+  exported:EXPORT? DEF name:RequiredSiteName Space formals:PatternListGroup resultType:MaybeResultType EQ body:Body {
+    yyValue = new DefMemberClause(name, formals, body, resultType, exported != null);
+    yyValue = at(yyStart, yyCount, yyValue);
+  } 
+  / exported:EXPORT? PACKAGE name:RequiredSiteName Space formals:PatternListGroup resultType:MaybeResultType EQ body:Body {
+    yyValue = new DefPackageClause(name, formals, body, resultType, exported != null);
+    yyValue = at(yyStart, yyCount, yyValue);
+  }
 	/ DEF name:RequiredSiteName Space typeFormals:TypeFormals argTypes:TypeListGroup resultType:MaybeResultType {
 		yyValue = new DefMemberType(name, argTypes, resultType, typeFormals);
 		yyValue = at(yyStart, yyCount, yyValue);
@@ -1017,3 +1021,5 @@ transient String GEQ = ">=" Space;
 transient String NEQ = "/=" Space;
 transient String COLON_EQUALS = ":=" Space;
 transient String QMARK = "?" HSpace;
+transient String PACKAGE = "package":Word Space;
+transient String EXPORT = "export":Word Space;
