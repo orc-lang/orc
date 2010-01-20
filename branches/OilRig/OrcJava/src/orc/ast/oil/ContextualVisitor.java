@@ -6,7 +6,6 @@ import orc.ast.oil.expression.Call;
 import orc.ast.oil.expression.Catch;
 import orc.ast.oil.expression.DeclareDefs;
 import orc.ast.oil.expression.HasType;
-import orc.ast.oil.expression.Isolated;
 import orc.ast.oil.expression.Pruning;
 import orc.ast.oil.expression.Sequential;
 import orc.ast.oil.expression.Otherwise;
@@ -41,7 +40,6 @@ public interface ContextualVisitor<E,C> {
 	public E visit(Site arg, C context);
 	public E visit(Variable arg, C context);
 	public E visit(Atomic atomic, C context);
-	public E visit(Isolated expr, C context);
 	public E visit(HasType hasType, C context);
 	public E visit(DeclareType typeDecl, C context);
 	public E visit(Throw expr, C context);

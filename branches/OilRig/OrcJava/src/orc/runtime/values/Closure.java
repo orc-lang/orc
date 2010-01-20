@@ -6,14 +6,13 @@ package orc.runtime.values;
 import java.util.Iterator;
 import java.util.List;
 
+import orc.ast.oil.TokenContinuation;
+import orc.ast.oil.expression.Def;
 import orc.env.Env;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
 import orc.error.runtime.UncallableValueException;
 import orc.runtime.Token;
-import orc.runtime.nodes.Def;
-import orc.runtime.nodes.Defs;
-import orc.runtime.nodes.Node;
 
 /**
  * Represents a standard closure: a function defined in an environment.
@@ -38,12 +37,12 @@ public final class Closure extends Value implements Callable, Future {
 		this.free = free;
 	}
 
-	public void createCall(Token t, List<Object> args, Node nextNode) throws TokenException {
+	public void createCall(Token t, List<Object> args, TokenContinuation publishContinuation) throws TokenException {
 		if (args.size() != def.arity) {
 			throw new ArityMismatchException(def.arity, args.size());
 		}
 
-		t.enterClosure(this, nextNode);
+		t.enterClosure(this, publishContinuation);
 		for (Object f : args) t.bind(f);
 		t.activate();
 	}

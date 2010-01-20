@@ -189,13 +189,6 @@ public class OrcGui implements Runnable {
 			return;
 		}
 
-		progress.setNote("Creating DAG");
-		final Node n = orc.ast.oil.Compiler.compile(ex);
-		progress.setProgress(0.95);
-		if (progress.isCanceled()) {
-			return;
-		}
-
 		// initialize document
 		final JTextPane pane = new JTextPane();
 		pane.setEditable(false);
@@ -286,7 +279,7 @@ public class OrcGui implements Runnable {
 		});
 
 		// Run the Orc program
-		engine.run(n);
+		engine.run(ex);
 	}
 
 	/**

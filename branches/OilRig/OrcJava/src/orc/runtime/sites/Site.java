@@ -6,13 +6,13 @@ package orc.runtime.sites;
 import java.util.LinkedList;
 import java.util.List;
 
+import orc.ast.oil.TokenContinuation;
 import orc.error.compiletime.typing.MissingTypeException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.NontransactionalSiteException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
-import orc.runtime.nodes.Node;
 import orc.runtime.transaction.Transaction;
 import orc.runtime.values.Callable;
 import orc.runtime.values.Value;
@@ -35,7 +35,7 @@ public abstract class Site extends Value implements Callable {
 	 * 
 	 * @see orc.runtime.values.Callable#createCall(orc.runtime.Token, java.util.List, orc.runtime.nodes.Node)
 	 */
-	public void createCall(Token callToken, List<Object> args, Node nextNode) throws TokenException {
+	public void createCall(Token callToken, List<Object> args, TokenContinuation publishContinuation) throws TokenException {
 		Object[] values = new Object[args.size()];
 		
 		int i = 0;
@@ -51,7 +51,7 @@ public abstract class Site extends Value implements Callable {
 	
 		callToken.getTracer().send(this, values);
 		enterTransaction(callToken.getTransaction());
-		callSite(new Args(values), callToken.move(nextNode));
+		callSite(new Args(values), callToken);
 	}
 	
 	/* 

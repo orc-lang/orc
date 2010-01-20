@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import orc.ast.oil.ContextualVisitor;
+import orc.ast.oil.TokenContinuation;
 import orc.ast.oil.Visitor;
 import orc.ast.oil.expression.argument.Variable;
 import orc.ast.oil.type.Type;
@@ -16,6 +17,7 @@ import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
+import orc.runtime.Token;
 import orc.runtime.nodes.Pub;
 import orc.type.TypingContext;
 
@@ -27,6 +29,8 @@ import orc.type.TypingContext;
  */
 
 public abstract class Expression {
+	transient private TokenContinuation publishContinuation;
+	
 	/* Typechecking */
 	
 	/* Given a context, infer this expression's type */
@@ -99,4 +103,25 @@ public abstract class Expression {
 		return newes;
 	}
 	
+	public abstract void populateContinuations();
+
+	/**
+	 * @return the publishContinuation
+	 */
+	public TokenContinuation getPublishContinuation() {
+		return publishContinuation;
+	}
+
+	/**
+	 * @param publishContinuation the publishContinuation to set
+	 */
+	public void setPublishContinuation(TokenContinuation publishContinuation) {
+		this.publishContinuation = publishContinuation;
+	}
+	
+	abstract public void enter(Token t);
+	
+	public void leave(Token t) {
+		getPublishContinuation().execute(t);
+	}
 }

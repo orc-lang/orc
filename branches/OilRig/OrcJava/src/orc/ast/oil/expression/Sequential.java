@@ -3,6 +3,7 @@ package orc.ast.oil.expression;
 import java.util.Set;
 
 import orc.ast.oil.ContextualVisitor;
+import orc.ast.oil.TokenContinuation;
 import orc.ast.oil.Visitor;
 import orc.ast.simple.argument.Argument;
 import orc.ast.simple.argument.FreeVariable;
@@ -10,6 +11,7 @@ import orc.ast.simple.argument.Variable;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
+import orc.runtime.Token;
 import orc.runtime.nodes.Assign;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Unwind;
@@ -69,5 +71,38 @@ public class Sequential extends Expression {
 	@Override
 	public orc.ast.xml.expression.Expression marshal() throws CompilationException {
 		return new orc.ast.xml.expression.Sequential(left.marshal(), right.marshal(), name);
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.oil.expression.Expression#populateContinuations()
+	 */
+	@Override
+	public void populateContinuations() {
+		TokenContinuation leftK = new TokenContinuation() {
+			public void execute(Token t) {
+				Object val = t.getResult();
+				t.bind(val);
+				t.move(right).activate();
+			}
+		};
+		left.setPublishContinuation(leftK);
+		TokenContinuation rightK = new TokenContinuation() {
+			public void execute(Token t) {
+				t.unwind();
+				leave(t);
+			}
+		};
+		right.setPublishContinuation(rightK);
+		left.populateContinuations();
+		right.populateContinuations();
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.oil.expression.Expression#enter(orc.runtime.Token)
+	 */
+	@Override
+	public void enter(Token t) {
+		t.move(left);
+		left.enter(t);
 	}
 }

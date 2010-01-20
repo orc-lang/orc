@@ -92,7 +92,6 @@ public class Config implements Cloneable {
 	private boolean shortErrors = false;
 	private boolean quietChecking = false;
 	private boolean exceptionsOn = false;
-	private boolean isolatedOn = false;
 	private boolean atomicOn = false;
 	
 
@@ -166,9 +165,6 @@ public class Config implements Cloneable {
 		}
 		if (this.getAtomicOn()){
 			cmdLine.append("-allowAtomic ");
-		}
-		if (this.getIsolatedOn()){
-			cmdLine.append("-allowIsolated ");
 		}
 		return cmdLine.toString();
 	}
@@ -296,12 +292,7 @@ public class Config implements Cloneable {
 	public void setAtomicOn(final boolean atomicOn) {
 		this.atomicOn = atomicOn;
 	}
-	
-	@Option(name = "-allowIsolated", usage = "Enable isolated expressions (experimental), which are disabled by default.")
-	public void setIsolatedOn(final boolean isolatedOn) {
-		this.isolatedOn = isolatedOn;
-	}
-	
+		
 	public void addInclude(final String include) {
 		this.includes.add(include);
 	}
@@ -505,10 +496,6 @@ public class Config implements Cloneable {
 		return atomicOn;
 	}
 	
-	public boolean getIsolatedOn() {
-		return isolatedOn;
-	}
-
 	/**
 	 * Open an include file. Searches first the include path
 	 * defined by {@link #setIncludePath(String)} and then the

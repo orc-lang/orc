@@ -1,8 +1,8 @@
 package orc.trace;
 
+import orc.ast.oil.expression.Def;
 import orc.error.SourceLocation;
 import orc.error.runtime.TokenException;
-import orc.runtime.nodes.Def;
 import orc.runtime.values.Closure;
 import orc.trace.TokenTracer.PullTrace;
 import orc.trace.TokenTracer.StoreTrace;

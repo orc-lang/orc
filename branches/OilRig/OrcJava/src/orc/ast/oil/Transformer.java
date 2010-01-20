@@ -10,7 +10,6 @@ import orc.ast.oil.expression.Catch;
 import orc.ast.oil.expression.DeclareDefs;
 import orc.ast.oil.expression.Expression;
 import orc.ast.oil.expression.HasType;
-import orc.ast.oil.expression.Isolated;
 import orc.ast.oil.expression.Pruning;
 import orc.ast.oil.expression.Sequential;
 import orc.ast.oil.expression.Otherwise;
@@ -91,10 +90,6 @@ public abstract class Transformer implements Visitor<Expression> {
 
 	public Expression visit(HasType hasType) {
 		return new HasType(hasType.body.accept(this), visit(hasType.type), hasType.checkable);
-	}
-
-	public Expression visit(Isolated expr) {
-		return new Isolated(expr.body.accept(this));
 	}
 
 	public Expression visit(Pruning expr) {

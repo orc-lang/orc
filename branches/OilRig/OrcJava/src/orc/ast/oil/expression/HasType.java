@@ -7,6 +7,7 @@ import orc.ast.oil.Visitor;
 import orc.ast.oil.type.Type;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
+import orc.runtime.Token;
 import orc.runtime.nodes.Node;
 import orc.type.TypingContext;
 
@@ -43,8 +44,6 @@ public class HasType extends Expression {
 		body.addIndices(indices, depth);
 	}
 
-	
-	
 	@Override
 	public orc.type.Type typesynth(TypingContext ctx) throws TypeException {
 		
@@ -60,12 +59,27 @@ public class HasType extends Expression {
 		return actualType;
 	}
 
-	
-	
-	
 	@Override
 	public orc.ast.xml.expression.Expression marshal() throws CompilationException {
 		return new orc.ast.xml.expression.HasType(body.marshal(),
 				type.marshal(), checkable);
+	}
+
+
+	/* (non-Javadoc)
+	 * @see orc.ast.oil.expression.Expression#populateContinuations()
+	 */
+	@Override
+	public void populateContinuations() {
+		body.setPublishContinuation(getPublishContinuation());
+		body.populateContinuations();
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.oil.expression.Expression#enter(orc.runtime.Token)
+	 */
+	@Override
+	public void enter(Token t) {
+		body.enter(t);
 	}
 }

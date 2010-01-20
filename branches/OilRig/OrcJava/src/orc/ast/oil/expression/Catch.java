@@ -5,10 +5,16 @@ import java.util.List;
 import java.util.Set;
 
 import orc.ast.oil.ContextualVisitor;
+import orc.ast.oil.TokenContinuation;
 import orc.ast.oil.Visitor;
+import orc.ast.oil.expression.argument.Variable;
 import orc.ast.oil.type.InferredType;
+import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
+import orc.runtime.Token;
+import orc.runtime.values.Closure;
+import orc.runtime.values.Future;
 import orc.type.Type;
 import orc.type.TypingContext;
 
@@ -68,4 +74,45 @@ public class Catch extends Expression {
 		return new orc.ast.xml.expression.Catch(handler.marshal(), tryBlock.marshal());
 	}
 
+
+	/* (non-Javadoc)
+	 * @see orc.ast.oil.expression.Expression#populateContinuations()
+	 */
+	@Override
+	public void populateContinuations() {
+		TokenContinuation K = new TokenContinuation() {
+			public void execute(Token t) {
+				t.popHandler();
+				leave(t);
+			}
+		};
+		tryBlock.setPublishContinuation(K);
+		tryBlock.populateContinuations();
+		handler.populateContinuations();
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.oil.expression.Expression#enter(orc.runtime.Token)
+	 */
+	@Override
+	public void enter(Token t) {
+		/* 
+		 * Create a closure to do the call.
+		 */
+		Set<Variable> free = handler.freeVars();
+		List<Object> freeValues = new LinkedList<Object>();
+		for (Variable v : free) {
+			Object value = v.resolve(t.getEnvironment());
+			if (value instanceof Future) freeValues.add(value);
+		}
+		
+		Closure closure = new Closure(handler, freeValues);
+		Env<Object> env = new Env<Object>();
+		for (Variable v : handler.freeVars()) env.add(v.resolve(t.getEnvironment()));
+		closure.env = env;
+		
+		//	pass next so the handler knows where to return.
+		t.pushHandler(closure, getPublishContinuation());
+		tryBlock.enter(t.move(tryBlock));
+	}
 }

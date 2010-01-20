@@ -22,10 +22,10 @@ import java.util.TimerTask;
 import java.util.UUID;
 
 import orc.Config;
+import orc.ast.oil.expression.Expression;
 import orc.error.SourceLocation;
 import orc.error.runtime.TokenException;
 import orc.error.runtime.TokenLimitReachedError;
-import orc.runtime.nodes.Node;
 import orc.runtime.regions.Execution;
 import orc.runtime.regions.LogicalClock;
 import orc.runtime.regions.Region;
@@ -197,12 +197,13 @@ public class OrcEngine implements Runnable {
 	 * @param root
 	 *            node to run
 	 */
-	public final void run(final Node root) {
+	public final void run(final Expression root) {
+		root.populateContinuations();
 		start(root);
 		run();
 	}
 	
-	public final void start(final Node root) {
+	public final void start(final Expression root) {
 		assert root != null;
 		region = new Execution(this);
 		tracer = config.getTracer();

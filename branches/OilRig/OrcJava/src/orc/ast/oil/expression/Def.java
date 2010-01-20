@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import orc.ast.oil.TokenContinuation;
 import orc.ast.oil.expression.argument.Variable;
 import orc.ast.oil.type.InferredType;
 import orc.ast.oil.type.Type;
@@ -17,6 +18,7 @@ import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UnrepresentableTypeException;
 import orc.error.compiletime.typing.UnspecifiedArgTypesException;
 import orc.error.compiletime.typing.UnspecifiedReturnTypeException;
+import orc.runtime.Token;
 import orc.type.TypingContext;
 
 /**
@@ -233,5 +235,15 @@ public class Def implements Locatable {
 		return new orc.ast.xml.expression.Def(arity, body.marshal(),
 				typeArity, newArgTypes, newResultType, location, name);
 		
+	}
+	
+	public void populateContinuations() {
+		TokenContinuation K = new TokenContinuation() {
+			public void execute(Token t) {
+				t.leaveClosure();
+			}
+		};
+		body.setPublishContinuation(K);
+		body.populateContinuations();
 	}
 }

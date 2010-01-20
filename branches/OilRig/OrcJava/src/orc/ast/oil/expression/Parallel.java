@@ -3,9 +3,12 @@ package orc.ast.oil.expression;
 import java.util.Set;
 
 import orc.ast.oil.ContextualVisitor;
+import orc.ast.oil.TokenContinuation;
 import orc.ast.oil.Visitor;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
+import orc.error.runtime.TokenLimitReachedError;
+import orc.runtime.Token;
 import orc.runtime.nodes.Fork;
 import orc.runtime.nodes.Node;
 import orc.type.Type;
@@ -59,5 +62,32 @@ public class Parallel extends Expression {
 	@Override
 	public orc.ast.xml.expression.Expression marshal() throws CompilationException {
 		return new orc.ast.xml.expression.Parallel(left.marshal(), right.marshal());
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.oil.expression.Expression#populateContinuations()
+	 */
+	@Override
+	public void populateContinuations() {
+		left.setPublishContinuation(getPublishContinuation());
+		right.setPublishContinuation(getPublishContinuation());
+		left.populateContinuations();
+		right.populateContinuations();
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.oil.expression.Expression#enter(orc.runtime.Token)
+	 */
+	@Override
+	public void enter(Token t) {
+		Token forked;
+		try {
+			forked = t.fork();
+		} catch (TokenLimitReachedError e) {
+			t.error(e);
+			return;
+		}
+		left.enter(t.move(left));
+		right.enter(forked.move(right));
 	}
 }

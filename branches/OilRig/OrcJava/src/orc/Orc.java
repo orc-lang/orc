@@ -30,7 +30,6 @@ import orc.progress.NullProgressListener;
 import orc.progress.ProgressListener;
 import orc.error.compiletime.CompileMessageRecorder.Severity;
 import orc.runtime.OrcEngine;
-import orc.runtime.nodes.Node;
 
 /**
  * Main class for Orc. Parses Orc file and executes it.
@@ -65,13 +64,11 @@ public class Orc {
 			return;
 		}
 
-		final Node n = orc.ast.oil.Compiler.compile(ex);
-
 		// Configure the runtime engine
 		final OrcEngine engine = new OrcEngine(cfg);
 
 		// Run the Orc program
-		engine.run(n);
+		engine.run(ex);
 	}
 
 	public static Expression compile(final Config cfg) throws IOException {

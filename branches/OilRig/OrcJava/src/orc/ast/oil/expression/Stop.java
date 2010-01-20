@@ -9,6 +9,7 @@ import orc.ast.simple.argument.Argument;
 import orc.ast.simple.argument.FreeVariable;
 import orc.ast.simple.argument.Variable;
 import orc.error.compiletime.CompilationException;
+import orc.runtime.Token;
 import orc.runtime.nodes.Node;
 import orc.type.Type;
 import orc.type.TypingContext;
@@ -41,5 +42,20 @@ public class Stop extends Expression {
 	@Override
 	public orc.ast.xml.expression.Expression marshal() throws CompilationException {
 		return new orc.ast.xml.expression.Stop();
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.oil.expression.Expression#populateContinuations()
+	 */
+	@Override
+	public void populateContinuations() {
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.oil.expression.Expression#enter(orc.runtime.Token)
+	 */
+	@Override
+	public void enter(Token t) {
+		t.die();
 	}
 }

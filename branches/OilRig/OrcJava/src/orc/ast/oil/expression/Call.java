@@ -15,7 +15,11 @@ import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.ArgumentArityException;
 import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
+import orc.error.runtime.TokenException;
+import orc.runtime.Token;
 import orc.runtime.nodes.Node;
+import orc.runtime.values.Callable;
+import orc.runtime.values.Value;
 import orc.type.Type;
 import orc.type.TypingContext;
 import orc.type.inference.Constraint;
@@ -245,5 +249,49 @@ public class Call extends Expression {
 		return new orc.ast.xml.expression.Call(callee.marshal(),
 				arguments.toArray(new orc.ast.xml.expression.argument.Argument[]{}),
 				orc.ast.oil.type.Type.marshalAll(typeArgs));
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.oil.expression.Expression#populateContinuations()
+	 */
+	@Override
+	public void populateContinuations() {
+		// No children
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.oil.expression.Expression#enter(orc.runtime.Token)
+	 */
+	@Override
+	public void enter(Token t) {
+		try {
+			Callable target = Value.forceCall(t.lookup(callee), t);
+
+			/** 
+			 * target is null if the callee is still unbound, in which
+			 * case the calling token will be activated when the
+			 * callee value becomes available. Thus, we simply
+			 * return and wait for the token to enter the process
+			 * method again.
+			 */
+			if (target == Value.futureNotReady) { return; }
+
+			/**
+			 * Collect all of the environment's bindings for these args.
+			 * Note that some of them may still be unbound, since we are
+			 * not forcing the futures.
+			 */
+			List<Object> actuals = new LinkedList<Object>();
+
+			for (Argument a : args) {
+				actuals.add(t.lookup(a));
+			}
+
+			target.createCall(t, actuals, getPublishContinuation());
+			
+		} catch (TokenException e) {
+			// if uncaught,  t.error(e) will be called.
+			t.throwRuntimeException(e);
+		}
 	}
 }

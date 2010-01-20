@@ -35,7 +35,6 @@ import orc.ast.extended.expression.Expression;
 import orc.ast.extended.expression.Field;
 import orc.ast.extended.expression.HasType;
 import orc.ast.extended.expression.IfThenElse;
-import orc.ast.extended.expression.Isolated;
 import orc.ast.extended.expression.Lambda;
 import orc.ast.extended.expression.Let;
 import orc.ast.extended.expression.ListExpr;
@@ -255,21 +254,6 @@ public class Walker implements Visitor<Void> {
 	}
 	
 	public void leave(IfThenElse expr) {
-	}
-
-
-	public Void visit(Isolated expr) {
-		if (!this.enter(expr)) return null;
-		expr.body.accept(this);
-		this.leave(expr);
-		return null;
-	}
-	
-	public boolean enter(Isolated expr) {
-		return enter((ASTNode)expr);
-	}
-	
-	public void leave(Isolated expr) {
 	}
 
 

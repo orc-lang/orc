@@ -7,7 +7,6 @@ import orc.ast.oil.expression.Call;
 import orc.ast.oil.expression.Catch;
 import orc.ast.oil.expression.DeclareDefs;
 import orc.ast.oil.expression.HasType;
-import orc.ast.oil.expression.Isolated;
 import orc.ast.oil.expression.Pruning;
 import orc.ast.oil.expression.Sequential;
 import orc.ast.oil.expression.Otherwise;
@@ -31,15 +30,6 @@ public abstract class Walker implements Visitor<Void> {
 	public void leaveScope(int n) {}
 	
 	public Void visit(Atomic expr) {
-		this.enter(expr);
-		expr.body.accept(this);
-		this.leave(expr);
-		return null;
-	}
-	public void enter(Isolated expr) {};	
-	public void leave(Isolated expr) {};
-	
-	public Void visit(Isolated expr) {
 		this.enter(expr);
 		expr.body.accept(this);
 		this.leave(expr);

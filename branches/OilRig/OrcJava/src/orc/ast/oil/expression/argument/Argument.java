@@ -9,6 +9,8 @@ import orc.ast.oil.expression.Def;
 import orc.ast.oil.expression.Expression;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
+import orc.runtime.Token;
+import orc.runtime.values.Value;
 
 public abstract class Argument extends Expression {
 	public abstract Object resolve(Env<Object> env);
@@ -25,6 +27,26 @@ public abstract class Argument extends Expression {
 		}
 		else {
 			return null;
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.oil.expression.Expression#populateContinuations()
+	 */
+	@Override
+	public void populateContinuations() {
+		// No children
+	}
+	
+	/* (non-Javadoc)
+	 * @see orc.ast.oil.expression.Expression#enter(orc.runtime.Token)
+	 */
+	@Override
+	public void enter(Token t) {
+		Object v = Value.forceArg(t.lookup(this), t);
+		
+		if (v != Value.futureNotReady) {
+			leave(t.setResult(v));
 		}
 	}
 }

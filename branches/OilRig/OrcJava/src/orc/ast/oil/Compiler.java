@@ -27,7 +27,6 @@ import orc.ast.oil.expression.Catch;
 import orc.ast.oil.expression.DeclareDefs;
 import orc.ast.oil.expression.Expression;
 import orc.ast.oil.expression.HasType;
-import orc.ast.oil.expression.Isolated;
 import orc.ast.oil.expression.Pruning;
 import orc.ast.oil.expression.Sequential;
 import orc.ast.oil.expression.Otherwise;
@@ -180,10 +179,6 @@ public final class Compiler implements Visitor<Node> {
 
 	public Node visit(final Atomic atomic) {
 		return new orc.runtime.transaction.Atomic(compile(atomic.body, new Store()), output);
-	}
-
-	public Node visit(final Isolated expr) {
-		return new orc.runtime.nodes.Isolate(compile(expr.body, new orc.runtime.nodes.Unisolate(output)));
 	}
 
 	public Node visit(final HasType hasType) {

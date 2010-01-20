@@ -8,6 +8,7 @@ import orc.error.Located;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
+import orc.runtime.Token;
 import orc.runtime.nodes.Node;
 import orc.type.Type;
 import orc.type.TypingContext;
@@ -76,5 +77,23 @@ public class WithLocation extends Expression implements Located {
 	@Override
 	public orc.ast.xml.expression.Expression marshal() throws CompilationException {
 		return new orc.ast.xml.expression.WithLocation(body.marshal(), location);
+	}
+
+
+	/* (non-Javadoc)
+	 * @see orc.ast.oil.expression.Expression#populateContinuations()
+	 */
+	@Override
+	public void populateContinuations() {
+		body.setPublishContinuation(getPublishContinuation());
+		body.populateContinuations();
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.oil.expression.Expression#enter(orc.runtime.Token)
+	 */
+	@Override
+	public void enter(Token t) {
+		body.enter(t);
 	}
 }

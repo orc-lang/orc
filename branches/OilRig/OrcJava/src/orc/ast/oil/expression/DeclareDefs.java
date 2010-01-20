@@ -13,6 +13,7 @@ import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UnspecifiedReturnTypeException;
+import orc.runtime.Token;
 import orc.runtime.nodes.Node;
 import orc.runtime.nodes.Unwind;
 import orc.type.Type;
@@ -135,5 +136,25 @@ public class DeclareDefs extends Expression {
 		return new orc.ast.xml.expression.DeclareDefs(
 				definitions.toArray(new orc.ast.xml.expression.Def[]{}),
 				body.marshal());
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.oil.expression.Expression#populateContinuations()
+	 */
+	@Override
+	public void populateContinuations() {
+		body.setPublishContinuation(getPublishContinuation());
+		for (Def def : defs) {
+			def.populateContinuations();
+		}
+		body.populateContinuations();
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.oil.expression.Expression#enter(orc.runtime.Token)
+	 */
+	@Override
+	public void enter(Token t) {
+		body.enter(t);
 	}
 }

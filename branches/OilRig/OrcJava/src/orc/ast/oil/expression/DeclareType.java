@@ -6,6 +6,7 @@ import orc.ast.oil.ContextualVisitor;
 import orc.ast.oil.Visitor;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
+import orc.runtime.Token;
 import orc.runtime.nodes.Node;
 import orc.type.Type;
 import orc.type.TypingContext;
@@ -61,5 +62,19 @@ public class DeclareType extends Expression {
 	
 	public String toString() {
 		return "type = " + type.toString() + "\n" + body.toString();
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.oil.expression.Expression#populateContinuations()
+	 */
+	@Override
+	public void populateContinuations() {
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.oil.expression.Expression#enter(orc.runtime.Token)
+	 */
+	@Override
+	public void enter(Token t) {
 	}
 }

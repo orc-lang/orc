@@ -479,10 +479,6 @@ Expression MaybeAtomic =
 		yyValue = new Atomic(body);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ void:ISOLATED body:MaybeAssignment {
-		yyValue = new Isolated(body);
-		yyValue = at(yyStart, yyCount, yyValue);
-	}
 	/ void:THROW exception:MaybeAssignment {
 		yyValue = new Throw(exception);
 		yyValue = at(yyStart, yyCount, yyValue);
@@ -493,10 +489,6 @@ Expression MaybeAtomic =
 Expression NoCmpMaybeAtomic =
 	void:ATOMIC body:NoCmpMaybeAssignment {
 		yyValue = new Atomic(body);
-		yyValue = at(yyStart, yyCount, yyValue);
-	}
-	/ void:ISOLATED body:NoCmpMaybeAssignment {
-		yyValue = new Isolated(body);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ void:THROW exception:NoCmpMaybeAssignment {
@@ -978,7 +970,6 @@ transient String INCLUDE = "include":Word Space;
 transient String TYPE = "type":Word Space;
 transient String LAMBDA = "lambda":Word Space;
 transient String ATOMIC = "atomic":Word Space;
-transient String ISOLATED = "isolated":Word Space;
 transient String TRY = "try":Word Space;
 transient String THROW = "throw":Word Space;
 transient String CATCH = "catch":Word Space;

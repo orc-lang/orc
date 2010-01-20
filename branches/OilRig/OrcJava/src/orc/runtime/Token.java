@@ -8,6 +8,8 @@ import java.util.LinkedList;
 import java.util.Stack;
 import java.util.List;
 
+import orc.ast.oil.TokenContinuation;
+import orc.ast.oil.expression.Expression;
 import orc.ast.oil.expression.argument.Argument;
 import orc.env.Env;
 import orc.error.Locatable;
@@ -22,8 +24,6 @@ import orc.error.runtime.TokenLimitReachedError;
 import orc.error.runtime.UncaughtException;
 import orc.error.runtime.JavaError;
 import orc.lib.time.Ltimer;
-import orc.runtime.nodes.Node;
-import orc.runtime.nodes.Return;
 import orc.runtime.regions.LogicalClock;
 import orc.runtime.regions.Region;
 import orc.runtime.transaction.Transaction;
@@ -49,22 +49,29 @@ public class Token implements Serializable, Locatable {
 	 * but that was really an abuse of tokens.
 	 * @author quark
 	 */
-	private static class Continuation {
-		public Node node;
+	private static class FrameContinuation implements TokenContinuation {
+		public TokenContinuation publishContinuation;
 		public Env<Object> env;
-		public Continuation continuation;
+		public FrameContinuation parent;
 		public SourceLocation location;
 		/** Track the depth of a tail-recursive continuation. */
 		public int tracedepth = 1;
 		public int stacksize = 1;
-		public Continuation(Node node, Env<Object> env, Continuation continuation, SourceLocation location) {
-			this.node = node;
+		public FrameContinuation(TokenContinuation publishContinuation, Env<Object> env, FrameContinuation parent, SourceLocation location) {
+			this.publishContinuation = publishContinuation;
 			this.env = env;
-			this.continuation = continuation;
-			if (continuation != null) {
-				stacksize = continuation.stacksize + 1;
+			this.parent = parent;
+			if (parent != null) {
+				stacksize = parent.stacksize + 1;
 			}
 			this.location = location;
+		}
+		/* (non-Javadoc)
+		 * @see orc.ast.oil.TokenContinuation#execute(orc.runtime.Token)
+		 */
+		public void execute(Token t) {
+			t.env = env;
+			publishContinuation.execute(t);
 		}
 	}
 	
@@ -75,15 +82,15 @@ public class Token implements Serializable, Locatable {
 	 */
 	private static class ExceptionFrame {
 		public Closure handler;
-		public Node next;
+		public TokenContinuation next;
 		
 		/* Non-running Token used to create tokens in the handler's context */
 		public Token token;
 	
-		public ExceptionFrame(Token token, Closure handler, Node next){
+		public ExceptionFrame(Token token, Closure handler, TokenContinuation handlerReturn){
 			this.token = token;
 			this.handler = handler;
-			this.next = next;
+			this.next = handlerReturn;
 		}
 	}
 	
@@ -98,7 +105,7 @@ public class Token implements Serializable, Locatable {
 	 * The location of the token in the DAG; determines what the token will do
 	 * next.
 	 */
-	public Node node;
+	public Expression node;
 
 	/** The current environment, which determines the values of variables. */
 	private Env<Object> env;
@@ -122,7 +129,7 @@ public class Token implements Serializable, Locatable {
 	/** Used for tracing the activity of the token. */
 	private TokenTracer tracer;
 	/** The continuation determines where to return when a token reaches the end of a function call. */ 
-	private Continuation continuation;
+	private FrameContinuation continuation;
 	/** The value being published by this token. */
 	private Object result;
 	private boolean alive;
@@ -158,7 +165,7 @@ public class Token implements Serializable, Locatable {
 	/**
 	 * Initialize a root token.
 	 */
-	final void initializeRoot(Node node, Region region, OrcEngine engine, TokenTracer tracer) {
+	final void initializeRoot(Expression node, Region region, OrcEngine engine, TokenTracer tracer) {
 		// create the root logical clock
 		LogicalClock clock = new LogicalClock(region, null);
 		initialize(node, new Env<Object>(), null, new Group(), clock, null,
@@ -200,8 +207,8 @@ public class Token implements Serializable, Locatable {
 	}
 	
 
-	private void initialize(Node node, Env<Object> env,
-			Continuation continuation, Group group, Region region,
+	private void initialize(Expression node, Env<Object> env,
+			FrameContinuation continuation, Group group, Region region,
 			Transaction trans, Object result, OrcEngine engine,
 			SourceLocation location, TokenTracer tracer, int stackAvailable,
 			LogicalClock clock, Stack<ExceptionFrame> exceptionStack,
@@ -252,7 +259,7 @@ public class Token implements Serializable, Locatable {
 			return;
 		} else if (group.isAlive()) {
 			try {
-				node.process(this);
+				node.enter(this);
 			} catch (RuntimeException e) {
 				// HACK: I'm ambivalent about this;
 				// on the one hand it tries to gracefully
@@ -268,7 +275,7 @@ public class Token implements Serializable, Locatable {
 		}
 	}
 
-	public final Node getNode() {
+	public final Expression getNode() {
 		return node;
 	}
 
@@ -330,11 +337,11 @@ public class Token implements Serializable, Locatable {
 
 	/**
 	 * Move to a node node
-	 * @param node the node to move to
+	 * @param right the node to move to
 	 * @return returns self
 	 */
-	public final Token move(Node node) {
-		this.node = node;
+	public final Token move(Expression right) {
+		this.node = right;
 		return this;
 	}
 	
@@ -343,18 +350,18 @@ public class Token implements Serializable, Locatable {
 	 * and setting the continuation for {@link #leaveClosure()}.
 	 * @throws StackLimitReachedError 
 	 */
-	public final Token enterClosure(Closure closure, Node next) throws StackLimitReachedError {
+	public final Token enterClosure(Closure closure, TokenContinuation publishContinuation) throws StackLimitReachedError {
 				
-		if (next instanceof Return) {
+		/*if (publishContinuation instanceof Return) {
 			// tail call should return directly to our current continuation
 			// rather than going through us
 			continuation.tracedepth++;
-		} else if (next.isTerminal()) {
+		} else if (publishContinuation.isTerminal()) {
 			// handle terminal (non-returning) continuation specially
-			continuation = new Continuation(next, this.env.clone(), null, location);
-		} else {
-			continuation = new Continuation(next, this.env.clone(), continuation, location);
-		}
+			continuation = new FrameContinuation(publishContinuation, this.env.clone(), null, location);
+		} else {*/
+			continuation = new FrameContinuation(publishContinuation, this.env.clone(), continuation, location);
+		/*}*/
 		
 		/* If the stack limit is on (stackAvailable >= 0),
 		 * make sure we haven't exceeded it.
@@ -370,21 +377,18 @@ public class Token implements Serializable, Locatable {
 	
 	/**
 	 * Leave a closure by returning to the continuation set by
-	 * {@link #enterClosure(Node, Env, Node)}.
+	 * {@link #enterClosure(Expression, Env, Expression)}.
 	 */
 	public final Token leaveClosure() {
-		int depth = continuation.tracedepth;
-		this.env = continuation.env.clone();
-		move(continuation.node);
-		continuation = continuation.continuation;
-		tracer.leave(depth);		
+		tracer.leave(continuation.tracedepth);
+		continuation.execute(this);
 		return this;
 	}
 
 	/**
 	 * pop an exception frame off the stack:
 	 */
-	public void popHandler(){
+	public void popHandler() {
 		exceptionStack.pop();
 	}
 	
@@ -407,7 +411,7 @@ public class Token implements Serializable, Locatable {
 			throwBacktrace = this.getBacktrace();			
 		}
 			
-		if (exceptionStack.empty()){
+		if (exceptionStack.empty()) {
 			/*
 			 * We have an uncaught exception, and the backtrace should point to the source
 			 * of the exception.  
@@ -473,7 +477,7 @@ public class Token implements Serializable, Locatable {
 	/*
 	 * Push an exception handler onto the stack:
 	 */
-	public void pushHandler(Closure closure, Node next){
+	public void pushHandler(Closure closure, TokenContinuation handlerReturn) {
 		
 		/* Create the continuation Token, but don't run it by removing it from the region */
 		Token token = new Token();
@@ -481,7 +485,7 @@ public class Token implements Serializable, Locatable {
 		token.region.remove(token);
 		
 		/* Push the exception frame on the stack */
-		ExceptionFrame frame = new ExceptionFrame(token, closure, next);
+		ExceptionFrame frame = new ExceptionFrame(token, closure, handlerReturn);
 		exceptionStack.push(frame);
 	}
 	
@@ -495,6 +499,15 @@ public class Token implements Serializable, Locatable {
 		return this;
 	}
 
+	/**
+	 * Pop one value off of the environment stack.
+	 * Used to leave binding scopes.
+	 * @return self
+	 */
+	public final Token unwind() {
+		return unwind(1);
+	}
+	
 	/**
 	 * Pop values off of the environment stack.
 	 * Used to leave binding scopes.
@@ -522,6 +535,7 @@ public class Token implements Serializable, Locatable {
 	
 	public final void resume(Object object) {
 		this.result = object;
+		node.leave(this);
 		engine.resume(this);
 	}
 	
@@ -533,7 +547,7 @@ public class Token implements Serializable, Locatable {
 	private final SourceLocation[] getBacktrace() {
 		LinkedList<SourceLocation> out = new LinkedList<SourceLocation>();
 		out.add(location);
-		for (Continuation c = continuation; c != null; c = c.continuation) {
+		for (FrameContinuation c = continuation; c != null; c = c.parent) {
 			out.add(c.location);
 		}
 		return out.toArray(new SourceLocation[0]);
