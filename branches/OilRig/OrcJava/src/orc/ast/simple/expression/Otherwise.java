@@ -10,7 +10,6 @@ import orc.ast.simple.type.Type;
 import orc.ast.simple.type.TypeVariable;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
-import orc.runtime.nodes.Node;
 
 public class Otherwise extends Expression {
 

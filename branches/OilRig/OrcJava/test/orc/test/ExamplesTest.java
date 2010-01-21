@@ -63,7 +63,6 @@ import org.kohsuke.args4j.CmdLineException;
 public class ExamplesTest {
 	public static Test suite() {
 		Config config = new Config();
-		config.setIsolatedOn(true);
 		return buildSuite(config);
 	}
 
@@ -116,8 +115,7 @@ public class ExamplesTest {
 		if (expr == null) {
 			throw new CompilationException("Compilation to OIL failed");
 		}
-		orc.runtime.nodes.Node node = orc.ast.oil.Compiler.compile(expr);
-		engine.start(node);
+		engine.start(expr);
 
 		// run the engine with a fixed timeout
 		final FutureTask<?> future = new FutureTask<Void>(engine, null);

@@ -14,8 +14,6 @@ import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UnspecifiedReturnTypeException;
 import orc.runtime.Token;
-import orc.runtime.nodes.Node;
-import orc.runtime.nodes.Unwind;
 import orc.type.Type;
 import orc.type.TypingContext;
 import orc.type.structured.ArrowType;

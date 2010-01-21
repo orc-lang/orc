@@ -6,8 +6,6 @@ import java.util.TreeSet;
 
 import orc.error.runtime.TokenLimitReachedError;
 import orc.runtime.Token;
-import orc.runtime.nodes.Node;
-import orc.runtime.nodes.Silent;
 import orc.runtime.regions.SemiRegion;
 import orc.runtime.values.GroupCell;
 import orc.runtime.values.Value;

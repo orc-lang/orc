@@ -8,7 +8,6 @@ import orc.error.runtime.TokenException;
 import orc.error.runtime.UncallableValueException;
 import orc.lib.str.Read;
 import orc.runtime.Token;
-import orc.runtime.nodes.Node;
 import orc.runtime.sites.java.ObjectProxy;
 import xtc.util.Utilities;
 

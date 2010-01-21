@@ -19,7 +19,6 @@ import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.UnboundVariableException;
 import orc.error.compiletime.typing.TypeException;
-import orc.runtime.nodes.Node;
 
 /**
  * Base class for the simplified abstract syntax tree.
@@ -42,7 +41,6 @@ public abstract class Expression {
 	 * 				find the appropriate deBruijn index of a var.
 	 * @param typevars The type vars environment, used in content addressable
 	 * 				   mode to find the appropriate deBruijn index of a type var.
-	 * @return TODO
 	 * @return A new node.
 	 */
 	public abstract orc.ast.oil.expression.Expression convert(Env<Variable> vars, Env<TypeVariable> typevars) throws CompilationException;

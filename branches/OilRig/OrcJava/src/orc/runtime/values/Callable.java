@@ -8,7 +8,6 @@ import java.util.List;
 import orc.ast.oil.TokenContinuation;
 import orc.error.runtime.TokenException;
 import orc.runtime.Token;
-import orc.runtime.nodes.Node;
 
 /**
  * Callable objects include sites and definitions

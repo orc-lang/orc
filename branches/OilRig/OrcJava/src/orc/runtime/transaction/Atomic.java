@@ -2,7 +2,6 @@ package orc.runtime.transaction;
 
 import orc.error.runtime.TokenLimitReachedError;
 import orc.runtime.Token;
-import orc.runtime.nodes.Node;
 import orc.runtime.values.GroupCell;
 
 /**

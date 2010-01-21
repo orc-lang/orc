@@ -13,7 +13,6 @@ public class TypedExamplesTest {
 	public static Test suite() {
 		Config config = new Config();
 		config.setTypeChecking(true);
-		config.setIsolatedOn(true);
 		return ExamplesTest.buildSuite(config);
 	}
 }

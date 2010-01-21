@@ -52,7 +52,6 @@ import orc.error.compiletime.CompileMessageRecorder.Severity;
 import orc.error.runtime.TokenException;
 import orc.progress.ProgressMonitorListener;
 import orc.runtime.OrcEngine;
-import orc.runtime.nodes.Node;
 import orc.runtime.values.Value;
 
 import org.kohsuke.args4j.CmdLineException;

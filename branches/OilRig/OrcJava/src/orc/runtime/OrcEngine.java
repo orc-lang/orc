@@ -145,7 +145,7 @@ public class OrcEngine implements Runnable {
 	 * 
 	 * @param root
 	 */
-	public final Token newExecution(final Node node, final Token initiator) {
+	public final Token newExecution(final Expression node, final Token initiator) {
 		if (!isDead()) {
 			Token token;
 			try {

@@ -17,7 +17,6 @@ import java.io.IOException;
 
 import orc.ast.extended.declaration.Declaration;
 import orc.ast.extended.expression.Declare;
-import orc.ast.oil.Compiler;
 import orc.ast.oil.SiteResolver;
 import orc.ast.oil.UnguardedRecursionChecker;
 import orc.ast.oil.expression.Expression;

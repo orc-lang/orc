@@ -10,7 +10,6 @@ import orc.ast.simple.type.FreeTypeVariable;
 import orc.ast.simple.type.Type;
 import orc.ast.simple.type.TypeVariable;
 import orc.env.Env;
-import orc.runtime.nodes.Node;
 
 public class Stop extends Expression {
 

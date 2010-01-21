@@ -30,7 +30,6 @@ import orc.runtime.transaction.Transaction;
 import orc.runtime.values.Closure;
 import orc.runtime.values.Value;
 import orc.trace.TokenTracer;
-import orc.runtime.nodes.Def;
 import orc.runtime.values.Closure;
 
 /**
