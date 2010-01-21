@@ -22,6 +22,7 @@ import java.util.TimerTask;
 import java.util.UUID;
 
 import orc.Config;
+import orc.ast.oil.TokenContinuation;
 import orc.ast.oil.expression.Expression;
 import orc.error.SourceLocation;
 import orc.error.runtime.TokenException;
@@ -191,19 +192,27 @@ public class OrcEngine implements Runnable {
 
 	/**
 	 * Run Orc given a root node. Creates an initial environment and then
-	 * executes the main loop.
+	 * executes the main loop.  Convenience method for
+	 * <code>start(root); run();</code>.
 	 * 
 	 * @param root
 	 *            node to run
 	 */
 	public final void run(final Expression root) {
-		root.populateContinuations();
 		start(root);
 		run();
 	}
 
 	public final void start(final Expression root) {
 		assert root != null;
+		TokenContinuation K = new TokenContinuation() {
+			public void execute(Token t) {
+				t.publish();
+				t.die();
+			}
+		};
+		root.setPublishContinuation(K);
+		root.populateContinuations();
 		region = new Execution(this);
 		tracer = config.getTracer();
 		Token token;

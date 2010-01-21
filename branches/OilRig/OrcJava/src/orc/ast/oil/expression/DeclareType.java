@@ -80,6 +80,8 @@ public class DeclareType extends Expression {
 	 */
 	@Override
 	public void populateContinuations() {
+		body.setPublishContinuation(getPublishContinuation());
+		body.populateContinuations();
 	}
 
 	/* (non-Javadoc)
@@ -87,5 +89,6 @@ public class DeclareType extends Expression {
 	 */
 	@Override
 	public void enter(final Token t) {
+		body.enter(t);
 	}
 }

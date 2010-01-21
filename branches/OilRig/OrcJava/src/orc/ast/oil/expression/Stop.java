@@ -58,6 +58,7 @@ public class Stop extends Expression {
 	 */
 	@Override
 	public void populateContinuations() {
+		// No children
 	}
 
 	/* (non-Javadoc)
