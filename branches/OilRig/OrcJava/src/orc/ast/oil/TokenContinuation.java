@@ -1,5 +1,5 @@
 //
-// TokenContinuation.java -- Java class TokenContinuation
+// TokenContinuation.java -- Java interface TokenContinuation
 // Project OrcJava
 //
 // $Id$

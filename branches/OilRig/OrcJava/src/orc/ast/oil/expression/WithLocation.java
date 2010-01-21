@@ -1,3 +1,16 @@
+//
+// WithLocation.java -- Java class WithLocation
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.ast.oil.expression;
 
 import java.util.Set;
@@ -19,29 +32,30 @@ import orc.type.TypingContext;
 public class WithLocation extends Expression implements Located {
 	public final Expression body;
 	public final SourceLocation location;
-	public WithLocation(Expression expr, SourceLocation location) {
+
+	public WithLocation(final Expression expr, final SourceLocation location) {
 		this.body = expr;
 		this.location = location;
 	}
+
 	public SourceLocation getSourceLocation() {
 		return location;
 	}
 
 	@Override
-	public <E> E accept(Visitor<E> visitor) {
+	public <E> E accept(final Visitor<E> visitor) {
 		return visitor.visit(this);
 	}
-	
-	public <E,C> E accept(ContextualVisitor<E,C> cvisitor, C initialContext) {
+
+	public <E, C> E accept(final ContextualVisitor<E, C> cvisitor, final C initialContext) {
 		return cvisitor.visit(this, initialContext);
 	}
 
 	@Override
-	public Type typesynth(TypingContext ctx) throws TypeException {
+	public Type typesynth(final TypingContext ctx) throws TypeException {
 		try {
 			return body.typesynth(ctx);
-		}
-		catch (TypeException e) {
+		} catch (final TypeException e) {
 			/* If this error has no location, give it this (least enclosing) location */
 			if (e.getSourceLocation() == null || e.getSourceLocation().isUnknown()) {
 				e.setSourceLocation(location);
@@ -49,13 +63,12 @@ public class WithLocation extends Expression implements Located {
 			throw e;
 		}
 	}
-	
+
 	@Override
-	public void typecheck(TypingContext ctx, Type T) throws TypeException {
+	public void typecheck(final TypingContext ctx, final Type T) throws TypeException {
 		try {
 			body.typecheck(ctx, T);
-		}
-		catch (TypeException e) {
+		} catch (final TypeException e) {
 			/* If this error has no location, give it this (least enclosing) location */
 			if (e.getSourceLocation() == null || e.getSourceLocation().isUnknown()) {
 				e.setSourceLocation(location);
@@ -63,21 +76,21 @@ public class WithLocation extends Expression implements Located {
 			throw e;
 		}
 	}
-	
-	public String toString() {
-		return "{-" + location + "-}\n(" + body +")";
-	}
-	
+
 	@Override
-	public void addIndices(Set<Integer> indices, int depth) {
+	public String toString() {
+		return "{-" + location + "-}\n(" + body + ")";
+	}
+
+	@Override
+	public void addIndices(final Set<Integer> indices, final int depth) {
 		body.addIndices(indices, depth);
 	}
-	
+
 	@Override
 	public orc.ast.xml.expression.Expression marshal() throws CompilationException {
 		return new orc.ast.xml.expression.WithLocation(body.marshal(), location);
 	}
-
 
 	/* (non-Javadoc)
 	 * @see orc.ast.oil.expression.Expression#populateContinuations()
@@ -92,7 +105,7 @@ public class WithLocation extends Expression implements Located {
 	 * @see orc.ast.oil.expression.Expression#enter(orc.runtime.Token)
 	 */
 	@Override
-	public void enter(Token t) {
+	public void enter(final Token t) {
 		body.enter(t);
 	}
 }

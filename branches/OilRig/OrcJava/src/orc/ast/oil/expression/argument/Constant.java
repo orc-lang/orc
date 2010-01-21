@@ -1,3 +1,4 @@
+
 package orc.ast.oil.expression.argument;
 
 import java.math.BigInteger;
@@ -12,40 +13,41 @@ import orc.type.TypingContext;
 import orc.type.ground.ConstIntType;
 import xtc.util.Utilities;
 
-public class Constant extends Argument { 
-	
+public class Constant extends Argument {
+
 	public Object v;
 
-	public Constant(Object v) {
+	public Constant(final Object v) {
 		this.v = v;
 	}
 
 	@Override
-	public Object resolve(Env<Object> env) {
+	public Object resolve(final Env<Object> env) {
 		return v;
 	}
-	
+
+	@Override
 	public String toString() {
 		if (v == null) {
 			return "null";
 		} else if (v instanceof String) {
-			return '"' + Utilities.escape((String)v, Utilities.JAVA_ESCAPES) + '"';
+			return '"' + Utilities.escape((String) v, Utilities.JAVA_ESCAPES) + '"';
 		} else {
 			return v.toString();
 		}
 	}
-	
+
 	@Override
-	public <E> E accept(Visitor<E> visitor) {
+	public <E> E accept(final Visitor<E> visitor) {
 		return visitor.visit(this);
 	}
 
 	@Override
-	public Type typesynth(TypingContext ctx) throws TypeException {
+	public Type typesynth(final TypingContext ctx) throws TypeException {
 		if (v == null) {
 			return Type.BOT;
 		} else if (v instanceof Integer) {
-			return new ConstIntType((Integer)v);
+			return new ConstIntType((Integer) v);
 		} else if (v instanceof BigInteger) {
 			return Type.INTEGER;
 		} else if (v instanceof Number) {
@@ -59,8 +61,9 @@ public class Constant extends Argument {
 			return Type.TOP;
 		}
 	}
+
 	@Override
-	public void addIndices(Set<Integer> indices, int depth) {
+	public void addIndices(final Set<Integer> indices, final int depth) {
 		return;
 	}
 

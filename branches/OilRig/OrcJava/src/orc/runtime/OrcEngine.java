@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -28,7 +28,6 @@ import orc.error.runtime.TokenException;
 import orc.error.runtime.TokenLimitReachedError;
 import orc.runtime.regions.Execution;
 import orc.runtime.regions.LogicalClock;
-import orc.runtime.regions.Region;
 import orc.runtime.values.Value;
 import orc.trace.Tracer;
 
@@ -152,12 +151,12 @@ public class OrcEngine implements Runnable {
 				token = pool.newToken();
 				token.initializeRoot(node, region, this, initiator.getTracer());
 				return token;
+			} catch (final TokenLimitReachedError e) {
 			}
-			catch (final TokenLimitReachedError e) {}
 		}
 		return null;
 	}
-	
+
 	/** Override this to customize termination. */
 	public void onTerminate() {
 		// do nothing
@@ -202,7 +201,7 @@ public class OrcEngine implements Runnable {
 		start(root);
 		run();
 	}
-	
+
 	public final void start(final Expression root) {
 		assert root != null;
 		region = new Execution(this);

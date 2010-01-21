@@ -1,3 +1,16 @@
+//
+// Pruning.java -- Java class Pruning
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.ast.oil.expression;
 
 import java.util.Set;
@@ -5,10 +18,6 @@ import java.util.Set;
 import orc.ast.oil.ContextualVisitor;
 import orc.ast.oil.TokenContinuation;
 import orc.ast.oil.Visitor;
-import orc.ast.simple.argument.Argument;
-import orc.ast.simple.argument.FreeVariable;
-import orc.ast.simple.argument.Variable;
-import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.TokenLimitReachedError;
@@ -22,48 +31,48 @@ public class Pruning extends Expression {
 
 	public Expression left;
 	public Expression right;
-	
+
 	/* An optional variable name, used for documentation purposes.
 	 * It has no operational purpose, since the expression is already
 	 * in deBruijn index form. 
 	 */
 	public String name;
-	
-	public Pruning(Expression left, Expression right, String name)
-	{
+
+	public Pruning(final Expression left, final Expression right, final String name) {
 		this.left = left;
 		this.right = right;
 		this.name = name;
 	}
-	
+
 	@Override
-	public void addIndices(Set<Integer> indices, int depth) {
-		left.addIndices(indices,depth+1); // Pull binds a variable on the left
-		right.addIndices(indices,depth);
+	public void addIndices(final Set<Integer> indices, final int depth) {
+		left.addIndices(indices, depth + 1); // Pull binds a variable on the left
+		right.addIndices(indices, depth);
 	}
 
+	@Override
 	public String toString() {
 		return "(" + left.toString() + " << " + right.toString() + ")";
 	}
-	
+
 	@Override
-	public <E> E accept(Visitor<E> visitor) {
+	public <E> E accept(final Visitor<E> visitor) {
 		return visitor.visit(this);
 	}
-	
-	public <E,C> E accept(ContextualVisitor<E,C> cvisitor, C initialContext) {
+
+	public <E, C> E accept(final ContextualVisitor<E, C> cvisitor, final C initialContext) {
 		return cvisitor.visit(this, initialContext);
 	}
-	
+
 	@Override
-	public Type typesynth(TypingContext ctx) throws TypeException {
-		Type rtype = right.typesynth(ctx);
+	public Type typesynth(final TypingContext ctx) throws TypeException {
+		final Type rtype = right.typesynth(ctx);
 		return left.typesynth(ctx.bindVar(rtype));
 	}
 
 	@Override
-	public void typecheck(TypingContext ctx, Type T) throws TypeException {
-		Type rtype = right.typesynth(ctx);
+	public void typecheck(final TypingContext ctx, final Type T) throws TypeException {
+		final Type rtype = right.typesynth(ctx);
 		left.typecheck(ctx.bindVar(rtype), T);
 	}
 
@@ -77,16 +86,16 @@ public class Pruning extends Expression {
 	 */
 	@Override
 	public void populateContinuations() {
-		TokenContinuation rightK = new TokenContinuation() {
-			public void execute(Token t) {
-				GroupCell group = (GroupCell)t.getGroup();
+		final TokenContinuation rightK = new TokenContinuation() {
+			public void execute(final Token t) {
+				final GroupCell group = (GroupCell) t.getGroup();
 				group.setValue(t);
 				t.die();
 			}
 		};
 		right.setPublishContinuation(rightK);
-		TokenContinuation leftK = new TokenContinuation() {
-			public void execute(Token t) {
+		final TokenContinuation leftK = new TokenContinuation() {
+			public void execute(final Token t) {
 				t.unwind();
 				leave(t);
 			}
@@ -100,14 +109,14 @@ public class Pruning extends Expression {
 	 * @see orc.ast.oil.expression.Expression#enter(orc.runtime.Token)
 	 */
 	@Override
-	public void enter(Token t) {
-		GroupCell cell = new GroupCell(t.getGroup(), t.getTracer().pull());
-		GroupRegion region = new GroupRegion(t.getRegion(), cell);
-		
+	public void enter(final Token t) {
+		final GroupCell cell = new GroupCell(t.getGroup(), t.getTracer().pull());
+		final GroupRegion region = new GroupRegion(t.getRegion(), cell);
+
 		Token forked;
 		try {
 			forked = t.fork(cell, region);
-		} catch (TokenLimitReachedError e) {
+		} catch (final TokenLimitReachedError e) {
 			t.error(e);
 			return;
 		}

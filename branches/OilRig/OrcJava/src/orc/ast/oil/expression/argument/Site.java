@@ -1,3 +1,4 @@
+
 package orc.ast.oil.expression.argument;
 
 import java.util.Set;
@@ -12,7 +13,6 @@ import orc.error.compiletime.typing.TypeException;
 import orc.type.Type;
 import orc.type.TypingContext;
 
-
 /**
  * Sites, which occur in argument position. 
  * 
@@ -23,37 +23,37 @@ import orc.type.TypingContext;
 public class Site extends Argument {
 
 	public orc.ast.sites.Site site;
-	
-	public Site(orc.ast.sites.Site site)
-	{
+
+	public Site(final orc.ast.sites.Site site) {
 		this.site = site;
 	}
-	
-	public Site resolveSites(Config config) throws SiteResolutionException {
+
+	public Site resolveSites(final Config config) throws SiteResolutionException {
 		return new ResolvedSite(config, site);
 	}
-	
+
 	@Override
-	public Object resolve(Env<Object> env) {
+	public Object resolve(final Env<Object> env) {
 		throw new OrcError("Unexpected orc.ast.oil.arg.Site");
 	}
-	
+
+	@Override
 	public String toString() {
 		return site.toString();
 	}
-	
+
 	@Override
-	public <E> E accept(Visitor<E> visitor) {
+	public <E> E accept(final Visitor<E> visitor) {
 		return visitor.visit(this);
 	}
 
 	@Override
-	public Type typesynth(TypingContext ctx) throws TypeException {
+	public Type typesynth(final TypingContext ctx) throws TypeException {
 		throw new OrcError("Unexpected orc.ast.oil.arg.Site");
 	}
-	
+
 	@Override
-	public void addIndices(Set<Integer> indices, int depth) {
+	public void addIndices(final Set<Integer> indices, final int depth) {
 		throw new OrcError("Unexpected orc.ast.oil.arg.Site");
 	}
 

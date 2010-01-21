@@ -1,8 +1,19 @@
+//
+// DeclareDefs.java -- Java class DeclareDefs
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.ast.simple.expression;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -19,61 +30,58 @@ public class DeclareDefs extends Expression {
 
 	public List<Def> defs;
 	public Expression body;
-	
-	public DeclareDefs(List<Def> defs, Expression body)
-	{
+
+	public DeclareDefs(final List<Def> defs, final Expression body) {
 		this.defs = defs;
 		this.body = body;
 	}
-	
+
 	@Override
-	public Expression subst(Argument a, FreeVariable x) {
-		return new DeclareDefs(Def.substAll(defs, a, x), body.subst(a,x));
+	public Expression subst(final Argument a, final FreeVariable x) {
+		return new DeclareDefs(Def.substAll(defs, a, x), body.subst(a, x));
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see orc.ast.simple.expression.Expression#subst(orc.ast.simple.type.Type, orc.ast.simple.type.FreeTypeVariable)
 	 */
 	@Override
-	public Expression subst(Type T, FreeTypeVariable X) {
-		return new DeclareDefs(Def.substAll(defs, T, X), body.subst(T,X));
+	public Expression subst(final Type T, final FreeTypeVariable X) {
+		return new DeclareDefs(Def.substAll(defs, T, X), body.subst(T, X));
 	}
 
 	@Override
 	public Set<Variable> vars() {
-		Set<Variable> freeset = body.vars();
-		
+		final Set<Variable> freeset = body.vars();
+
 		// Standard notion of free vars
-		for (Def d : defs)
-		{
+		for (final Def d : defs) {
 			freeset.addAll(d.vars());
 		}
-		
+
 		// Enforce visibility of mutual recursion
-		for (Def d : defs)
-		{
+		for (final Def d : defs) {
 			freeset.remove(d.name);
 		}
-		
+
 		return freeset;
 	}
 
 	@Override
-	public orc.ast.oil.expression.Expression convert(Env<Variable> vars, Env<TypeVariable> typevars) throws CompilationException {
-		
-		List<Variable> names = new ArrayList<Variable>();
-		for (Def d : defs) {
+	public orc.ast.oil.expression.Expression convert(final Env<Variable> vars, final Env<TypeVariable> typevars) throws CompilationException {
+
+		final List<Variable> names = new ArrayList<Variable>();
+		for (final Def d : defs) {
 			names.add(d.name);
 		}
-		Env<Variable> newvars = vars.extendAll(names);
-		
-		return new orc.ast.oil.expression.DeclareDefs(Def.convertAll(defs, newvars, typevars), 
-													  body.convert(newvars, typevars));
+		final Env<Variable> newvars = vars.extendAll(names);
+
+		return new orc.ast.oil.expression.DeclareDefs(Def.convertAll(defs, newvars, typevars), body.convert(newvars, typevars));
 	}
-	
+
+	@Override
 	public String toString() {
 		String repn = "(defs  ";
-		for (Def d : defs) {
+		for (final Def d : defs) {
 			repn += "\n  " + d.toString();
 		}
 		repn += "\n)\n" + body.toString();
