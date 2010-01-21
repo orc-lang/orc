@@ -63,11 +63,6 @@ public class Constant extends Argument {
 	}
 
 	@Override
-	public void addIndices(final Set<Integer> indices, final int depth) {
-		return;
-	}
-
-	@Override
 	public orc.ast.xml.expression.argument.Argument marshal() throws CompilationException {
 		return new orc.ast.xml.expression.argument.Constant(v);
 	}

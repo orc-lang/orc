@@ -49,8 +49,4 @@ public class ResolvedSite extends Site {
 		return instance.type();
 	}
 
-	@Override
-	public void addIndices(final Set<Integer> indices, final int depth) {
-		// do nothing
-	}
 }

@@ -74,11 +74,6 @@ public class Field extends Argument implements Comparable<Field> {
 	}
 
 	@Override
-	public void addIndices(final Set<Integer> indices, final int depth) {
-		return;
-	}
-
-	@Override
 	public orc.ast.xml.expression.argument.Argument marshal() throws CompilationException {
 		return new orc.ast.xml.expression.argument.Field(key);
 	}

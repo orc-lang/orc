@@ -14,6 +14,7 @@
 package orc.ast.oil.expression.argument;
 
 import java.util.List;
+import java.util.Set;
 
 import orc.ast.oil.expression.Expression;
 import orc.env.Env;
@@ -38,6 +39,11 @@ public abstract class Argument extends Expression {
 		} else {
 			return null;
 		}
+	}
+	
+	@Override
+	public void addIndices(final Set<Integer> indices, final int depth) {
+		// By default, do nothing.
 	}
 
 	/* (non-Javadoc)

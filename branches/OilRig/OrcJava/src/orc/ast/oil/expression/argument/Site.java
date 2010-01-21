@@ -53,11 +53,6 @@ public class Site extends Argument {
 	}
 
 	@Override
-	public void addIndices(final Set<Integer> indices, final int depth) {
-		throw new OrcError("Unexpected orc.ast.oil.arg.Site");
-	}
-
-	@Override
 	public orc.ast.xml.expression.argument.Argument marshal() throws CompilationException {
 		return new orc.ast.xml.expression.argument.Site(site.getProtocol(), site.getLocation());
 	}
