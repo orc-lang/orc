@@ -17,8 +17,6 @@ import orc.type.Type;
  * @author wcook
  */
 public class Let extends Site {
-  private static final long serialVersionUID = 1L;
-
 	/**
 	 * Outputs a single value or creates a tuple.
 	 */

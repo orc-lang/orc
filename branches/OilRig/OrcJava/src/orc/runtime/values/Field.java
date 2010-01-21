@@ -7,7 +7,6 @@ import java.io.Serializable;
  * @author quark
  */
 public class Field extends Value implements Serializable, Eq {
-	private static final long serialVersionUID = 1L;
 	private final String key;
 	public Field(String key) {
 		assert(key != null);

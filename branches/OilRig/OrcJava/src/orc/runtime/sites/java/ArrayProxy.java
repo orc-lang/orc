@@ -22,7 +22,6 @@ class ArrayProxy<E> {
 		this.instance = instance;
 	}
 	
-	@SuppressWarnings("unused")
 	public Reference<E> apply(final int index) {
 		// check bounds here rather than when the reference is used,
 		// for easier debugging (but it's less efficient)

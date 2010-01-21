@@ -1,3 +1,15 @@
+//
+// Field.java -- Java class Field
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
 
 package orc.ast.oil.expression.argument;
 
@@ -18,7 +30,6 @@ import orc.type.ground.Message;
  */
 
 public class Field extends Argument implements Comparable<Field> {
-	private static final long serialVersionUID = 1L;
 	public String key;
 
 	public Field(final String key) {
@@ -42,6 +53,14 @@ public class Field extends Argument implements Comparable<Field> {
 	@Override
 	public boolean equals(final Object that) {
 		return that.getClass().equals(Field.class) && this.compareTo((Field) that) == 0;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return key == null ? 0 : key.hashCode();
 	}
 
 	@Override

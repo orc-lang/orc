@@ -24,7 +24,6 @@ import orc.runtime.Token;
  * @author wcook, dkitchin, quark
  */
 public final class Closure extends Value implements Callable, Future {
-	private static final long serialVersionUID = 1L;
 	public Def def;
 	public Env env = null;
 	private List<Object> free = null;

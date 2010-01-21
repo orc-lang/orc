@@ -66,7 +66,6 @@ public final class Map<K,V> extends AbstractMap<K,V> {
 		}
 	}
 	
-	@SuppressWarnings("unused")
 	public Reference<V> apply(K key) {
 		return new MapReference(key);
 	}

@@ -31,9 +31,6 @@ import orc.type.structured.ArrowType;
  * @author dkitchin
  */
 public class SiteSite extends PartialSite {
-	private static final long serialVersionUID = 1L;
-
-	
 	public Type type() {
 		return new SitemakerType();
 	}

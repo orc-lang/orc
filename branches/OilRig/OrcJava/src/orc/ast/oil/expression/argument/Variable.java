@@ -22,8 +22,6 @@ import orc.type.TypingContext;
  */
 
 public class Variable extends Argument implements Comparable<Variable> {
-	private static final long serialVersionUID = 1L;
-
 	public int index;
 
 	public Variable(final int index) {

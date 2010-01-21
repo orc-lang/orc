@@ -29,8 +29,6 @@ import orc.trace.events.PullEvent;
  * @author wcook, dkitchin
  */
 public final class GroupCell extends Group implements Serializable, Future {
-
-	private static final long serialVersionUID = 1L;
 	private Object value;
 	private boolean bound = false;
 	private List<Token> waitList;
