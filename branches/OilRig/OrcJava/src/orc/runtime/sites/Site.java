@@ -9,11 +9,9 @@ import java.util.List;
 import orc.ast.oil.TokenContinuation;
 import orc.error.compiletime.typing.MissingTypeException;
 import orc.error.compiletime.typing.TypeException;
-import orc.error.runtime.NontransactionalSiteException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
-import orc.runtime.transaction.Transaction;
 import orc.runtime.values.Callable;
 import orc.runtime.values.Value;
 import orc.runtime.values.Visitor;
@@ -50,7 +48,7 @@ public abstract class Site extends Value implements Callable {
 		}
 	
 		callToken.getTracer().send(this, values);
-		enterTransaction(callToken.getTransaction());
+		//enterTransaction(callToken.getTransaction());
 		callSite(new Args(values), callToken);
 	}
 	
@@ -60,11 +58,13 @@ public abstract class Site extends Value implements Callable {
 	 * transaction by raising an exception, and to accept any
 	 * call that is not within a transaction.
 	 */
+	/*
 	protected void enterTransaction(Transaction transaction) throws NontransactionalSiteException {
 		if (transaction != null) {
 			throw new NontransactionalSiteException(this, transaction);
 		}
 	}
+	*/
 
 	/**
 	 * Must be implemented by subclasses to implement the site behavior

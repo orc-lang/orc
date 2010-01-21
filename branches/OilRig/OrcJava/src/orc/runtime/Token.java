@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Stack;
 
 import orc.ast.oil.TokenContinuation;
+import orc.ast.oil.expression.Call;
 import orc.ast.oil.expression.Expression;
 import orc.ast.oil.expression.argument.Argument;
 import orc.env.Env;
@@ -80,6 +81,7 @@ public class Token implements Serializable, Locatable {
 		 */
 		public void execute(final Token t) {
 			t.env = env;
+			t.continuation = parent;
 			publishContinuation.execute(t);
 		}
 	}
@@ -174,7 +176,7 @@ public class Token implements Serializable, Locatable {
 	final void initializeRoot(final Expression node, final Region region, final OrcEngine engine, final TokenTracer tracer) {
 		// create the root logical clock
 		final LogicalClock clock = new LogicalClock(region, null);
-		initialize(node, new Env<Object>(), null, new Group(), clock, null, null, engine, null, tracer, engine.getConfig().getStackSize(), clock, new Stack<ExceptionFrame>(), null, null, null, ExceptionCause.UNKNOWN);
+		initialize(node, new Env<Object>(), null, new Group(), clock, /*null, */ null, engine, null, tracer, engine.getConfig().getStackSize(), clock, new Stack<ExceptionFrame>(), null, null, null, ExceptionCause.UNKNOWN);
 	}
 
 	/**
@@ -182,7 +184,7 @@ public class Token implements Serializable, Locatable {
 	 */
 	final void initializeFork(final Token that, final Group group, final Region region) {
 
-		initialize(that.node, that.env.clone(), that.continuation, group, region, that.trans, that.result, that.engine, that.location, that.tracer.fork(), that.stackAvailable, that.clock, (Stack<ExceptionFrame>) that.exceptionStack.clone(), that.exceptionOriginLocation, that.originalException, that.throwBacktrace, that.exceptionCause);
+		initialize(that.node, that.env.clone(), that.continuation, group, region, /*that.trans, */ that.result, that.engine, that.location, that.tracer.fork(), that.stackAvailable, that.clock, (Stack<ExceptionFrame>) that.exceptionStack.clone(), that.exceptionOriginLocation, that.originalException, that.throwBacktrace, that.exceptionCause);
 	}
 
 	/**
@@ -205,7 +207,7 @@ public class Token implements Serializable, Locatable {
 		*/
 	}
 
-	private void initialize(final Expression node, final Env<Object> env, final FrameContinuation continuation, final Group group, final Region region, final Transaction trans, final Object result, final OrcEngine engine, final SourceLocation location, final TokenTracer tracer, final int stackAvailable, final LogicalClock clock, final Stack<ExceptionFrame> exceptionStack, final SourceLocation exceptionOriginLocation, final TokenException originalException, final SourceLocation[] throwBacktrace,
+	private void initialize(final Expression node, final Env<Object> env, final FrameContinuation continuation, final Group group, final Region region, /* final Transaction trans, */ final Object result, final OrcEngine engine, final SourceLocation location, final TokenTracer tracer, final int stackAvailable, final LogicalClock clock, final Stack<ExceptionFrame> exceptionStack, final SourceLocation exceptionOriginLocation, final TokenException originalException, final SourceLocation[] throwBacktrace,
 			final ExceptionCause cause) {
 		this.node = node;
 		this.env = env;
@@ -345,17 +347,15 @@ public class Token implements Serializable, Locatable {
 	 */
 	public final Token enterClosure(final Closure closure, final TokenContinuation publishContinuation) throws StackLimitReachedError {
 
-		/*if (publishContinuation instanceof Return) {
-			// tail call should return directly to our current continuation
-			// rather than going through us
+		if (node instanceof Call && ((Call)node).isTailCall) {
+			// Do not push a new frame, but increment the depth for this frame
 			continuation.tracedepth++;
-		} else if (publishContinuation.isTerminal()) {
-			// handle terminal (non-returning) continuation specially
-			continuation = new FrameContinuation(publishContinuation, this.env.clone(), null, location);
-		} else {*/
-		continuation = new FrameContinuation(publishContinuation, this.env.clone(), continuation, location);
-		/*}*/
-
+		}
+		else {
+			// Push a frame, so we can return to this environment after exiting the closure 
+			continuation = new FrameContinuation(publishContinuation, this.env.clone(), continuation, location);
+		}
+		
 		/* If the stack limit is on (stackAvailable >= 0),
 		 * make sure we haven't exceeded it.
 		 */

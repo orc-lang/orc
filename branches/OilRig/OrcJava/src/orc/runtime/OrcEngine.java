@@ -144,12 +144,12 @@ public class OrcEngine implements Runnable {
 	 * 
 	 * @param root
 	 */
-	public final Token newExecution(final Expression node, final Token initiator) {
+	public final Token newExecution(final Expression ex, final Token initiator) {
 		if (!isDead()) {
 			Token token;
 			try {
 				token = pool.newToken();
-				token.initializeRoot(node, region, this, initiator.getTracer());
+				token.initializeRoot(ex, region, this, initiator.getTracer());
 				return token;
 			} catch (final TokenLimitReachedError e) {
 			}

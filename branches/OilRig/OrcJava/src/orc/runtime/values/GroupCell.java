@@ -14,7 +14,6 @@ import orc.runtime.Group;
 import orc.runtime.Token;
 import orc.runtime.regions.GroupRegion;
 import orc.runtime.regions.Region;
-import orc.runtime.transaction.Transaction;
 import orc.trace.TokenTracer;
 import orc.trace.TokenTracer.PullTrace;
 import orc.trace.TokenTracer.StoreTrace;
@@ -32,7 +31,7 @@ public final class GroupCell extends Group implements Serializable, Future {
 	private Object value;
 	private boolean bound = false;
 	private List<Token> waitList;
-	private Transaction trans;
+	//private Transaction trans;
 	private PullTrace pullTrace;
 	private StoreTrace storeTrace;
 	private Group parent;
@@ -110,11 +109,13 @@ public final class GroupCell extends Group implements Serializable, Future {
 	@Override
 	public void onKill() {
 		parent.remove(this);
+		/*
 		if (trans != null) {
 			// If this cell is supporting a transaction, abort that transaction.
 			trans.abort();
 			trans = null;
 		}
+		*/
 	}
 
 	/**
@@ -156,6 +157,7 @@ public final class GroupCell extends Group implements Serializable, Future {
 	}
 	
 	/* A group cell may be hosting a transaction */
+	/*
 	public Transaction getTransaction() {
 		return trans;
 	}
@@ -163,6 +165,7 @@ public final class GroupCell extends Group implements Serializable, Future {
 	public void setTransaction(Transaction trans) {
 		this.trans = trans; 
 	}
+	*/
 	
 	/* 
 	 * Peek at the bound value of this cell.
