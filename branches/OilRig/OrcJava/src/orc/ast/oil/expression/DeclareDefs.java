@@ -207,9 +207,15 @@ public class DeclareDefs extends Expression {
 		i = 0;
 		for (Def d : defs) {
 			Closure c = closures[i++];
-			Env<Object> env = new Env<Object>();
-			for (Variable v : d.free) env.add(v.resolve(t.getEnvironment()));
-			c.env = env;
+			
+			/*
+			 * alignment for closure compaction
+			 */
+			//Env<Object> env = new Env<Object>();
+			//for (Variable v : d.free) env.add(v.resolve(t.getEnvironment()));
+			//c.env = env;
+			
+			c.env = t.getEnvironment().clone();
 		}
 
 		body.enter(t);

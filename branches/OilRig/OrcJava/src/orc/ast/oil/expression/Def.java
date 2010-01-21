@@ -68,11 +68,10 @@ public class Def implements Locatable {
 		this.name = name;
 		
 		/* cache free variable set */
-		// rename free variables in the body
-		// so that when we construct closure environments
-		// we can omit the non-free variables
 		this.free = freeVars();
 		
+		/* closure compaction */
+		/*
 		final HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
 		int i = free.size() - 1;
 		for (final Variable v : free) {
@@ -86,6 +85,7 @@ public class Def implements Locatable {
 				return map.get(var);
 			}
 		});
+		*/
 		
 	}
 
