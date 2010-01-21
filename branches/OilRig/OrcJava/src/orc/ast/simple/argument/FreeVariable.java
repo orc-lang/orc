@@ -1,5 +1,5 @@
 //
-// ${file_name} -- Java class ${type_name}
+// FreeVariable.java -- Java class FreeVariable
 // Project OrcJava
 //
 // $Id$

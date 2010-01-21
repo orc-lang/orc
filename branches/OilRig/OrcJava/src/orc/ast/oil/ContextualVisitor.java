@@ -1,5 +1,5 @@
 //
-// ${file_name} -- Java class ${type_name}
+// ContextualVisitor.java -- Java class ContextualVisitor
 // Project OrcJava
 //
 // $Id$

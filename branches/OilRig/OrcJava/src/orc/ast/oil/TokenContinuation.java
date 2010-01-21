@@ -18,7 +18,11 @@ package orc.ast.oil;
 import orc.runtime.Token;
 
 /**
+ * An object that implements the TokenContinuation interface will, upon 
+ * invocation, execute a specific action on a given token.
  * 
+ * This is used at runtime in the OIL AST to store an action to take in a
+ * parent expression when a token publishes from a subexpression.
  *
  * @author jthywiss
  */
