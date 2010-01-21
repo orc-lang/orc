@@ -202,6 +202,8 @@ public class DeclareDefs extends Expression {
 		// Now the environment is correct relative to the body
 
 		// Step 2: set the environment of each closure
+		// These closures are compacted, which is why we
+		// consult d.free
 		i = 0;
 		for (Def d : defs) {
 			Closure c = closures[i++];
