@@ -13,10 +13,12 @@
 
 package orc.ast.oil.expression;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import orc.ast.oil.RenameVariables;
 import orc.ast.oil.TokenContinuation;
 import orc.ast.oil.expression.argument.Variable;
 import orc.ast.oil.type.InferredType;
@@ -66,7 +68,23 @@ public class Def implements Locatable {
 		this.name = name;
 		
 		/* cache free variable set */
-		this.free = freeVars();
+		// rename free variables in the body
+		// so that when we construct closure environments
+		// we can omit the non-free variables
+		free = freeVars();
+		final HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
+		int i = free.size() - 1;
+		for (final Variable v : free) {
+			map.put(v.index + arity, i-- + arity);
+		}
+		RenameVariables.rename(body, new RenameVariables.Renamer() {
+			public int rename(final int var) {
+				if (var < arity) {
+					return var;
+				}
+				return map.get(var);
+			}
+		});
 	}
 
 	public final Set<Variable> freeVars() {
