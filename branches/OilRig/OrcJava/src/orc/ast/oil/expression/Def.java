@@ -52,6 +52,9 @@ public class Def implements Locatable {
 	 * in deBruijn index form. 
 	 */
 	public String name;
+	
+	/* Cached set of free variables */
+	public Set<Variable> free;
 
 	public Def(final int arity, final Expression body, final int typeArity, final List<orc.ast.oil.type.Type> argTypes, final orc.ast.oil.type.Type resultType, final SourceLocation location, final String name) {
 		this.arity = arity;
@@ -61,6 +64,9 @@ public class Def implements Locatable {
 		this.resultType = resultType;
 		this.location = location;
 		this.name = name;
+		
+		/* cache free variable set */
+		this.free = freeVars();
 	}
 
 	public final Set<Variable> freeVars() {

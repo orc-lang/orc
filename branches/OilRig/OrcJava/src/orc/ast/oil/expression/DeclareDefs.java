@@ -16,14 +16,18 @@ package orc.ast.oil.expression;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import orc.ast.oil.ContextualVisitor;
 import orc.ast.oil.Visitor;
 import orc.ast.oil.expression.argument.Variable;
+import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UnspecifiedReturnTypeException;
 import orc.runtime.Token;
+import orc.runtime.values.Closure;
+import orc.runtime.values.Future;
 import orc.type.Type;
 import orc.type.TypingContext;
 import orc.type.structured.ArrowType;
@@ -32,10 +36,35 @@ public class DeclareDefs extends Expression {
 
 	public List<Def> defs;
 	public Expression body;
+	
+	/**
+	 * Variables defined outside this node which appear in the bodies of
+	 * the defs. If the defs are all mutually recursive, this is correct,
+	 * otherwise this is overly pessimistic and may force some defs to wait
+	 * on variables which they won't use.
+	 * 
+	 * The compiler ensures that all def groups are mutually recursive
+	 * at this point in compilation.
+	 */
+	public Set<Variable> free;
+	
 
 	public DeclareDefs(final List<Def> defs, final Expression body) {
 		this.defs = defs;
 		this.body = body;
+		
+		/* Compute the set of free variables for this group of defs,
+		 * which will be closed over when creating closures.
+		 */
+		free = new TreeSet<Variable>();
+		final Set<Integer> indices = new TreeSet<Integer>();
+		final int depth = defs.size();
+		for (final Def d : defs) {
+			d.addIndices(indices, depth);
+		}
+		for (final Integer i : indices) {
+			free.add(new Variable(i));
+		}
 	}
 
 	@Override
@@ -157,6 +186,30 @@ public class DeclareDefs extends Expression {
 	 */
 	@Override
 	public void enter(final Token t) {
+		// Step 0: find free values in the environment
+		List<Object> freeValues = new LinkedList<Object>();
+		for (Variable v : free) {
+			Object value = v.resolve(t.getEnvironment());
+			if (value instanceof Future) freeValues.add(value);
+		}
+		
+		// Step 1: create and bind the closures
+		Closure[] closures = new Closure[defs.size()];
+		int i = 0;
+		for (Def d : defs) {
+			t.bind(closures[i++] = new Closure(d, freeValues));
+		}
+		// Now the environment is correct relative to the body
+
+		// Step 2: set the environment of each closure
+		i = 0;
+		for (Def d : defs) {
+			Closure c = closures[i++];
+			Env<Object> env = new Env<Object>();
+			for (Variable v : d.free) env.add(v.resolve(t.getEnvironment()));
+			c.env = env;
+		}
+
 		body.enter(t);
 	}
 }
