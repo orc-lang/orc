@@ -14,7 +14,7 @@ import orc.runtime.Token;
  */
 public class JavaError extends TokenError {
 	public JavaError(Throwable cause) {
-		super(cause.toString(), cause);
+		super("Java exception: "+cause.toString(), cause);
 	}
 	public String toString() {
 		return getCause().toString();

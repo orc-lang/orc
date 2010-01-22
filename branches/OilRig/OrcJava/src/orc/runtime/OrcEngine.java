@@ -25,6 +25,7 @@ import orc.Config;
 import orc.ast.oil.TokenContinuation;
 import orc.ast.oil.expression.Expression;
 import orc.error.SourceLocation;
+import orc.error.runtime.JavaError;
 import orc.error.runtime.TokenException;
 import orc.error.runtime.TokenLimitReachedError;
 import orc.runtime.regions.Execution;
@@ -349,23 +350,27 @@ public class OrcEngine implements Runnable {
 		final int len = backtrace.length;
 		if (len > 0) {
 			stderr.println(backtrace[0]);
-			final String caret = backtrace[0].getCaret();
-			if (caret != null) {
-				stderr.println(caret);
+			if (backtrace[0] != null) {
+				final String caret = backtrace[0].getCaret();
+				if (caret != null) {
+					stderr.println(caret);
+				}
 			}
 		}
 		for (int i = 1; i < len; i++) {
 			stderr.println(backtrace[i]);
 		}
 		stderr.println("");
+		
+		Throwable cause = problem;
+		if (problem instanceof JavaError) {
+			// Un-wrap JavaError and reveal true Java exception 
+			cause = problem.getCause();
+		}
+		
 		// HACK: technically, we should report this information
 		// using debug(...), but then we couldn't use printStackTrace.
 		if (shouldDebug(1)) {
-			problem.printStackTrace(stderr);
-		}
-		final Throwable cause = problem.getCause();
-		if (shouldDebug(1) && cause != null) {
-			stderr.println("Caused by:");
 			cause.printStackTrace(stderr);
 		}
 	}
