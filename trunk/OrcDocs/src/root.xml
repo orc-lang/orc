@@ -5417,23 +5417,11 @@ on the console.
 <para>
 Orc also has an optional static typechecker, which will guarantee that a program is
 free of type errors before the program is run. For every expression in the program,
-the typechecker tries to find the types of values that it could publish, 
-and checks that all such types are consistent. It performs a limited form of
+the typechecker tries to find the types of values that the expression could publish, 
+and then checks that all such types are consistent. The typechecker performs a limited form of
 <emphasis>type inference</emphasis>, so it can discover many types automatically;
-however, the programmer must provide additional type information for defined functions,
-and in a few other specific cases.
-</para>
-
-<para>
-The typechecker uses the local type inference algorithm described by Pierce and Turner in their paper, 
-<link xlink:href="http://www.cis.upenn.edu/~bcpierce/papers/lti-toplas.pdf">Local Type Inference</link>.
-It extends this algorithm with polymorphic type constructors (e.g. <code>List</code> and
-<code>Buffer</code>), user-defined datatypes (which may also be polymorphic),
-and a typing strategy for external services. The typechecker supports both 
-<emphasis>parametric polymorphism</emphasis> (generics) and 
-<emphasis>inclusion polymorphism</emphasis> (subtyping), 
-though it does not currently implement the extended version 
-of the algorithm which allows both of them simultaneously (bounded polymorphism).
+however, the programmer must provide additional type information for defined functions 
+and for a few other specific cases.
 </para>
 
 <para>
@@ -5455,6 +5443,19 @@ If the typechecker can verify that a program is correctly typed, it will display
 on the console. The symbol <code>::</code> means "has type", and T is the type of any value that
 the program might publish.
 </para>
+
+<para>
+The typechecker uses the local type inference algorithm described by Pierce and Turner in the paper 
+<link xlink:href="http://www.cis.upenn.edu/~bcpierce/papers/lti-toplas.pdf">Local Type Inference</link>.
+It extends this algorithm with polymorphic type constructors (e.g. <code>List</code> and
+<code>Buffer</code>), user-defined datatypes (which may also be polymorphic),
+and a typing discipline for external services. The typechecker supports both 
+<emphasis>parametric polymorphism</emphasis> (generics) and 
+<emphasis>inclusion polymorphism</emphasis> (subtyping), 
+though it does not currently implement <emphasis>bounded polymorphism</emphasis>, which combines the two. 
+</para>
+
+
 
 
 
@@ -5597,7 +5598,7 @@ In any other case, the typechecker will try to infer the join. However, it
 may not always find the least supertype, and in some cases there may not
 even be a useful common supertype. In these cases it will default to
 the <code>Top</code> type, which is a supertype of all other types, and is
-therefore always a safe join, if not a very useful one.
+therefore always a common supertype, if not a very useful one.
 
 <itemizedlist>
 <listitem><code>3 | "three"  ::  Top</code></listitem>
