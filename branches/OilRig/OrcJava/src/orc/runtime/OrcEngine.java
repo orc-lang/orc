@@ -206,8 +206,8 @@ public class OrcEngine implements Runnable {
 
 	public final void start(final Expression root) {
 		assert root != null;
-		TokenContinuation K = new TokenContinuation() {
-			public void execute(Token t) {
+		final TokenContinuation K = new TokenContinuation() {
+			public void execute(final Token t) {
 				t.publish();
 				t.die();
 			}
@@ -256,7 +256,6 @@ public class OrcEngine implements Runnable {
 				// This marks the beginning of a new round.
 				todo = queuedReturns.remove();
 				todo.leave();
-				readyTokens.add(todo);
 				round++;
 				reportRound();
 				return true;
@@ -363,13 +362,13 @@ public class OrcEngine implements Runnable {
 			stderr.println(backtrace[i]);
 		}
 		stderr.println("");
-		
+
 		Throwable cause = problem;
 		if (problem instanceof JavaError) {
 			// Un-wrap JavaError and reveal true Java exception 
 			cause = problem.getCause();
 		}
-		
+
 		// HACK: technically, we should report this information
 		// using debug(...), but then we couldn't use printStackTrace.
 		if (shouldDebug(1)) {

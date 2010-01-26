@@ -13,12 +13,10 @@
 
 package orc.ast.oil.expression;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import orc.ast.oil.RenameVariables;
 import orc.ast.oil.TokenContinuation;
 import orc.ast.oil.expression.argument.Variable;
 import orc.ast.oil.type.InferredType;
@@ -54,7 +52,7 @@ public class Def implements Locatable {
 	 * in deBruijn index form. 
 	 */
 	public String name;
-	
+
 	/* Cached set of free variables */
 	public Set<Variable> free;
 
@@ -66,10 +64,10 @@ public class Def implements Locatable {
 		this.resultType = resultType;
 		this.location = location;
 		this.name = name;
-		
+
 		/* cache free variable set */
 		this.free = freeVars();
-		
+
 		/* closure compaction */
 		/*
 		final HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
@@ -86,7 +84,7 @@ public class Def implements Locatable {
 			}
 		});
 		*/
-		
+
 	}
 
 	public final Set<Variable> freeVars() {

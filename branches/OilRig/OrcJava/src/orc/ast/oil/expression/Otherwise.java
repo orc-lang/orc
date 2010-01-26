@@ -95,7 +95,6 @@ public class Otherwise extends Expression {
 		};
 		left.setPublishContinuation(leftK);
 		right.setPublishContinuation(getPublishContinuation());
-		setPublishContinuation(null);
 		left.populateContinuations();
 		right.populateContinuations();
 	}

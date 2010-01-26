@@ -41,7 +41,7 @@ public class Call extends Expression {
 	public List<Argument> args;
 	public List<orc.ast.oil.type.Type> typeArgs; /* may be null to request inference */
 	public boolean isTailCall = false;
-	
+
 	public Call(final Argument callee, final List<Argument> args, final List<orc.ast.oil.type.Type> typeArgs) {
 		this.callee = callee;
 		this.args = args;
@@ -277,7 +277,6 @@ public class Call extends Expression {
 			 * method again.
 			 */
 			if (target == Value.futureNotReady) {
-				t.getEngine().debug(3, ">>callee "+t.lookup(callee).getClass().getName()+" "+callee+" unbound");
 				return;
 			}
 

@@ -21,7 +21,6 @@ import java.util.TreeSet;
 import orc.ast.oil.ContextualVisitor;
 import orc.ast.oil.Visitor;
 import orc.ast.oil.expression.argument.Variable;
-import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UnspecifiedReturnTypeException;
@@ -36,7 +35,7 @@ public class DeclareDefs extends Expression {
 
 	public List<Def> defs;
 	public Expression body;
-	
+
 	/**
 	 * Variables defined outside this node which appear in the bodies of
 	 * the defs. If the defs are all mutually recursive, this is correct,
@@ -47,12 +46,11 @@ public class DeclareDefs extends Expression {
 	 * at this point in compilation.
 	 */
 	public Set<Variable> free;
-	
 
 	public DeclareDefs(final List<Def> defs, final Expression body) {
 		this.defs = defs;
 		this.body = body;
-		
+
 		/* Compute the set of free variables for this group of defs,
 		 * which will be closed over when creating closures.
 		 */
@@ -188,16 +186,18 @@ public class DeclareDefs extends Expression {
 	@Override
 	public void enter(final Token t) {
 		// Step 0: find free values in the environment
-		List<Object> freeValues = new LinkedList<Object>();
-		for (Variable v : free) {
-			Object value = v.resolve(t.getEnvironment());
-			if (value instanceof Future) freeValues.add(value);
+		final List<Object> freeValues = new LinkedList<Object>();
+		for (final Variable v : free) {
+			final Object value = v.resolve(t.getEnvironment());
+			if (value instanceof Future) {
+				freeValues.add(value);
+			}
 		}
-		
+
 		// Step 1: create and bind the closures
-		Closure[] closures = new Closure[defs.size()];
+		final Closure[] closures = new Closure[defs.size()];
 		int i = 0;
-		for (Def d : defs) {
+		for (final Def d : defs) {
 			t.bind(closures[i++] = new Closure(d, freeValues));
 		}
 		// Now the environment is correct relative to the body
@@ -206,16 +206,16 @@ public class DeclareDefs extends Expression {
 		// These closures are compacted, which is why we
 		// consult d.free
 		i = 0;
-		for (Def d : defs) {
-			Closure c = closures[i++];
-			
+		for (final Def d : defs) {
+			final Closure c = closures[i++];
+
 			/*
 			 * alignment for closure compaction
 			 */
 			//Env<Object> env = new Env<Object>();
 			//for (Variable v : d.free) env.add(v.resolve(t.getEnvironment()));
 			//c.env = env;
-			
+
 			c.env = t.getEnvironment().clone();
 		}
 

@@ -79,7 +79,8 @@ public class WithLocation extends Expression implements Located {
 
 	@Override
 	public String toString() {
-		return "{-" + location + "-}\n(" + body + ")";
+		//return "{-" + location + "-}\n(" + body + ")";
+		return body.toString();
 	}
 
 	@Override
@@ -107,7 +108,7 @@ public class WithLocation extends Expression implements Located {
 	 */
 	@Override
 	public void enter(final Token t) {
-        t.setSourceLocation(location);
+		t.setSourceLocation(location);
 		body.enter(t.move(body));
 	}
 }
