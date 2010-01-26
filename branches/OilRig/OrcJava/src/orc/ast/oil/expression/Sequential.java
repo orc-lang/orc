@@ -107,7 +107,6 @@ public class Sequential extends Expression {
 	 */
 	@Override
 	public void enter(final Token t) {
-		t.move(left);
-		left.enter(t);
+		left.enter(t.move(left));
 	}
 }

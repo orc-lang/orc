@@ -80,6 +80,7 @@ public class HasType extends Expression {
 	@Override
 	public void populateContinuations() {
 		body.setPublishContinuation(getPublishContinuation());
+		setPublishContinuation(null);
 		body.populateContinuations();
 	}
 
@@ -88,6 +89,6 @@ public class HasType extends Expression {
 	 */
 	@Override
 	public void enter(final Token t) {
-		body.enter(t);
+		body.enter(t.move(body));
 	}
 }

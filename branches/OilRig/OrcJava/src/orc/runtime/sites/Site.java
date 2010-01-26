@@ -40,6 +40,7 @@ public abstract class Site extends Value implements Callable {
 		for (Object f : args) {	
 			Object v = Value.forceArg(f, callToken);
 			if (v == Value.futureNotReady) {
+				callToken.getEngine().debug(3, ">>arg "+f+" unbound");
 				return;
 			} else {
 				values[i] = v;

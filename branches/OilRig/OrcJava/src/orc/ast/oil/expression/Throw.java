@@ -87,6 +87,6 @@ public class Throw extends Expression {
 	 */
 	@Override
 	public void enter(final Token t) {
-		exception.enter(t);
+		exception.enter(t.move(exception));
 	}
 }

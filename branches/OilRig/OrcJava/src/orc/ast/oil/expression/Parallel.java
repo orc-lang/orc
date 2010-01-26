@@ -81,6 +81,7 @@ public class Parallel extends Expression {
 	public void populateContinuations() {
 		left.setPublishContinuation(getPublishContinuation());
 		right.setPublishContinuation(getPublishContinuation());
+		setPublishContinuation(null);
 		left.populateContinuations();
 		right.populateContinuations();
 	}

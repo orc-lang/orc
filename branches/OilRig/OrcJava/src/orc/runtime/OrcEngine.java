@@ -254,7 +254,9 @@ public class OrcEngine implements Runnable {
 			} else if (!queuedReturns.isEmpty()) {
 				// If a site return is available, make it active.
 				// This marks the beginning of a new round.
-				readyTokens.add(queuedReturns.remove());
+				todo = queuedReturns.remove();
+				todo.leave();
+				readyTokens.add(todo);
 				round++;
 				reportRound();
 				return true;

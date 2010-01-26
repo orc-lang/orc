@@ -175,6 +175,7 @@ public class DeclareDefs extends Expression {
 	@Override
 	public void populateContinuations() {
 		body.setPublishContinuation(getPublishContinuation());
+		setPublishContinuation(null);
 		for (final Def def : defs) {
 			def.populateContinuations();
 		}
@@ -218,6 +219,6 @@ public class DeclareDefs extends Expression {
 			c.env = t.getEnvironment().clone();
 		}
 
-		body.enter(t);
+		body.enter(t.move(body));
 	}
 }

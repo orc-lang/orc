@@ -113,7 +113,7 @@ public class Token implements Serializable, Locatable {
 	 * The location of the token in the DAG; determines what the token will do
 	 * next.
 	 */
-	public Expression node;
+	private Expression node;
 
 	/** The current environment, which determines the values of variables. */
 	private Env<Object> env;
@@ -526,7 +526,6 @@ public class Token implements Serializable, Locatable {
 
 	public final void resume(final Object object) {
 		this.result = object;
-		node.leave(this);
 		engine.resume(this);
 	}
 
@@ -673,5 +672,12 @@ public class Token implements Serializable, Locatable {
 	/** Used for {@link Ltimer}.time(). */
 	public final LogicalClock getLtimer() {
 		return clock;
+	}
+
+	/**
+	 * Convenience method for node.leave(this);
+	 */
+	public void leave() {
+		node.leave(this);
 	}
 }

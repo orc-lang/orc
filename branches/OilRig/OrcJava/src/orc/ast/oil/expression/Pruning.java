@@ -90,6 +90,7 @@ public class Pruning extends Expression {
 			public void execute(final Token t) {
 				final GroupCell group = (GroupCell) t.getGroup();
 				group.setValue(t);
+				t.getEngine().debug(3, ">>binding "+t.getResult());
 				t.die();
 			}
 		};

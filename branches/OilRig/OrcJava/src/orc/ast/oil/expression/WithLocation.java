@@ -98,6 +98,7 @@ public class WithLocation extends Expression implements Located {
 	@Override
 	public void populateContinuations() {
 		body.setPublishContinuation(getPublishContinuation());
+		setPublishContinuation(null);
 		body.populateContinuations();
 	}
 
@@ -106,6 +107,7 @@ public class WithLocation extends Expression implements Located {
 	 */
 	@Override
 	public void enter(final Token t) {
-		body.enter(t);
+        t.setSourceLocation(location);
+		body.enter(t.move(body));
 	}
 }

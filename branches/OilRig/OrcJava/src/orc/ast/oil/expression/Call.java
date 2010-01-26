@@ -277,6 +277,7 @@ public class Call extends Expression {
 			 * method again.
 			 */
 			if (target == Value.futureNotReady) {
+				t.getEngine().debug(3, ">>callee "+t.lookup(callee).getClass().getName()+" "+callee+" unbound");
 				return;
 			}
 
