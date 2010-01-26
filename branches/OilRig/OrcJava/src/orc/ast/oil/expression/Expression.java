@@ -29,7 +29,7 @@ import orc.type.TypingContext;
 /**
  * Base class for the portable (.oil, for Orc Intermediate Language) abstract syntax tree.
  * 
- * @author dkitchin
+ * @author dkitchin, jthywiss
  */
 public abstract class Expression {
 	transient private TokenContinuation publishContinuation;

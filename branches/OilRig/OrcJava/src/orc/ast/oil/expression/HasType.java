@@ -80,6 +80,8 @@ public class HasType extends Expression {
 	@Override
 	public void populateContinuations() {
 		body.setPublishContinuation(getPublishContinuation());
+		// Trigger a NullPointerException if this node's publish continutation is executed,
+		// rather than its child (which would skip up the AST above this node)
 		setPublishContinuation(null);
 		body.populateContinuations();
 	}

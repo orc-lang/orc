@@ -48,7 +48,7 @@ import orc.trace.TokenTracer;
  * an environment, and may belong to a group. They also 
  * preserve the call chain and contain a value to be passed
  * to the next token.
- * @author wcook, dkitchin, quark
+ * @author wcook, dkitchin, quark jthywiss
  */
 public class Token implements Serializable, Locatable {
 	/**

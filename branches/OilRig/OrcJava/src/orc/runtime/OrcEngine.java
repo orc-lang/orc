@@ -38,7 +38,7 @@ import orc.trace.Tracer;
  * always processed in a single thread, but tokens might be activated or resumed
  * from other threads, so some synchronization is necessary.
  * 
- * @author wcook, dkitchin, quark
+ * @author wcook, dkitchin, quark, jthywiss
  */
 public class OrcEngine implements Runnable {
 	/** Tokens which are ready to be processed. */

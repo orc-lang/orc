@@ -120,7 +120,7 @@ public class Pruning extends Expression {
 			t.error(e);
 			return;
 		}
-		right.enter(forked.move(right));
-		left.enter(t.bind(cell).move(left));
+		forked.move(right).activate(); // Let the engine schedule this token
+		t.bind(cell).move(left).activate(); // Let the engine schedule this token
 	}
 }
