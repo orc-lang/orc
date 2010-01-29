@@ -87,6 +87,90 @@ public class Def implements Locatable {
 
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (argTypes == null ? 0 : argTypes.hashCode());
+		result = prime * result + arity;
+		result = prime * result + (body == null ? 0 : body.hashCode());
+		result = prime * result + (free == null ? 0 : free.hashCode());
+		result = prime * result + (location == null ? 0 : location.hashCode());
+		result = prime * result + (name == null ? 0 : name.hashCode());
+		result = prime * result + (resultType == null ? 0 : resultType.hashCode());
+		result = prime * result + typeArity;
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final Def other = (Def) obj;
+		if (argTypes == null) {
+			if (other.argTypes != null) {
+				return false;
+			}
+		} else if (!argTypes.equals(other.argTypes)) {
+			return false;
+		}
+		if (arity != other.arity) {
+			return false;
+		}
+		if (body == null) {
+			if (other.body != null) {
+				return false;
+			}
+		} else if (!body.equals(other.body)) {
+			return false;
+		}
+		if (free == null) {
+			if (other.free != null) {
+				return false;
+			}
+		} else if (!free.equals(other.free)) {
+			return false;
+		}
+		if (location == null) {
+			if (other.location != null) {
+				return false;
+			}
+		} else if (!location.equals(other.location)) {
+			return false;
+		}
+		if (name == null) {
+			if (other.name != null) {
+				return false;
+			}
+		} else if (!name.equals(other.name)) {
+			return false;
+		}
+		if (resultType == null) {
+			if (other.resultType != null) {
+				return false;
+			}
+		} else if (!resultType.equals(other.resultType)) {
+			return false;
+		}
+		if (typeArity != other.typeArity) {
+			return false;
+		}
+		return true;
+	}
+
 	public final Set<Variable> freeVars() {
 		final Set<Integer> indices = new TreeSet<Integer>();
 		this.addIndices(indices, 0);

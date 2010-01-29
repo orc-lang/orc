@@ -31,6 +31,36 @@ public class Atomic extends Expression {
 		this.body = body;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return body == null ? 0 : body.hashCode();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final Atomic other = (Atomic) obj;
+		if (body == null) {
+			if (other.body != null) {
+				return false;
+			}
+		} else if (!body.equals(other.body)) {
+			return false;
+		}
+		return true;
+	}
+
 	@Override
 	public void addIndices(final Set<Integer> indices, final int depth) {
 		body.addIndices(indices, depth);

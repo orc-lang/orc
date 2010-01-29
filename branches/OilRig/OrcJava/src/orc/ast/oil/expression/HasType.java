@@ -39,6 +39,59 @@ public class HasType extends Expression {
 		this.checkable = checkable;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (body == null ? 0 : body.hashCode());
+		result = prime * result + (checkable ? 1231 : 1237);
+		result = prime * result + (type == null ? 0 : type.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final HasType other = (HasType) obj;
+		if (body == null) {
+			if (other.body != null) {
+				return false;
+			}
+		} else if (!body.equals(other.body)) {
+			return false;
+		}
+		if (checkable != other.checkable) {
+			return false;
+		}
+		if (type == null) {
+			if (other.type != null) {
+				return false;
+			}
+		} else if (!type.equals(other.type)) {
+			return false;
+		}
+		return true;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "(" + body + (checkable ? " :: " : " :!: ") + ")";
+	}
+
 	@Override
 	public <E> E accept(final Visitor<E> visitor) {
 		return visitor.visit(this);

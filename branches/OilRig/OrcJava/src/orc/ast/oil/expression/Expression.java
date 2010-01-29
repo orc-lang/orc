@@ -34,6 +34,18 @@ import orc.type.TypingContext;
 public abstract class Expression {
 	transient private TokenContinuation publishContinuation;
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	abstract public int hashCode();
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	abstract public boolean equals(Object obj);
+	
 	/* Typechecking */
 
 	/* Given a context, infer this expression's type */

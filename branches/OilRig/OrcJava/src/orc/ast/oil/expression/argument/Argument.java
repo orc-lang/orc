@@ -25,6 +25,18 @@ import orc.runtime.values.Value;
 public abstract class Argument extends Expression {
 	public abstract Object resolve(Env<Object> env);
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	abstract public int hashCode();
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	abstract public boolean equals(Object obj);
+
 	@Override
 	public abstract orc.ast.xml.expression.argument.Argument marshal() throws CompilationException;
 
@@ -40,7 +52,7 @@ public abstract class Argument extends Expression {
 			return null;
 		}
 	}
-	
+
 	@Override
 	public void addIndices(final Set<Integer> indices, final int depth) {
 		// By default, do nothing.

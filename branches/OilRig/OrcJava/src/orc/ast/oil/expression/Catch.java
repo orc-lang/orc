@@ -50,6 +50,47 @@ public class Catch extends Expression {
 		this.tryBlock = tryBlock;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (handler == null ? 0 : handler.hashCode());
+		result = prime * result + (tryBlock == null ? 0 : tryBlock.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final Catch other = (Catch) obj;
+		if (handler == null) {
+			if (other.handler != null) {
+				return false;
+			}
+		} else if (!handler.equals(other.handler)) {
+			return false;
+		}
+		if (tryBlock == null) {
+			if (other.tryBlock != null) {
+				return false;
+			}
+		} else if (!tryBlock.equals(other.tryBlock)) {
+			return false;
+		}
+		return true;
+	}
+
 	@Override
 	public Type typesynth(final TypingContext ctx) throws TypeException {
 

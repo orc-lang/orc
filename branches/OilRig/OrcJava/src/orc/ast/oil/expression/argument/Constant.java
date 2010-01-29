@@ -1,8 +1,19 @@
+//
+// Constant.java -- Java class Constant
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
 
 package orc.ast.oil.expression.argument;
 
 import java.math.BigInteger;
-import java.util.Set;
 
 import orc.ast.oil.Visitor;
 import orc.env.Env;
@@ -19,6 +30,36 @@ public class Constant extends Argument {
 
 	public Constant(final Object v) {
 		this.v = v;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return v == null ? 0 : v.hashCode();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final Constant other = (Constant) obj;
+		if (v == null) {
+			if (other.v != null) {
+				return false;
+			}
+		} else if (!v.equals(other.v)) {
+			return false;
+		}
+		return true;
 	}
 
 	@Override

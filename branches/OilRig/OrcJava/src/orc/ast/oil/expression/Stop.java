@@ -24,6 +24,32 @@ import orc.type.TypingContext;
 
 public class Stop extends Expression {
 
+	/**
+	 * All instances of Stop return a constant hash code. 
+	 * 
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return -918941918; //"orc.ast.oil.expression.Stop".hashCode()
+	}
+
+	/**
+	 * All instances of Stop are equal.
+	 * 
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		return true;
+	}
+
 	@Override
 	public String toString() {
 		return "stop";

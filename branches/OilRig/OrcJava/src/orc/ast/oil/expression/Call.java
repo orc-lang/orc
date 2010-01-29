@@ -40,7 +40,7 @@ public class Call extends Expression {
 	public Argument callee;
 	public List<Argument> args;
 	public List<orc.ast.oil.type.Type> typeArgs; /* may be null to request inference */
-	public boolean isTailCall = false;
+	transient public boolean isTailCall = false;
 
 	public Call(final Argument callee, final List<Argument> args, final List<orc.ast.oil.type.Type> typeArgs) {
 		this.callee = callee;
@@ -67,6 +67,55 @@ public class Call extends Expression {
 	public Call(final Argument callee) {
 		this.callee = callee;
 		this.args = new LinkedList<Argument>();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (args == null ? 0 : args.hashCode());
+		result = prime * result + (callee == null ? 0 : callee.hashCode());
+		result = prime * result + (typeArgs == null ? 0 : typeArgs.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final Call other = (Call) obj;
+		if (args == null) {
+			if (other.args != null) {
+				return false;
+			}
+		} else if (!args.equals(other.args)) {
+			return false;
+		}
+		if (callee == null) {
+			if (other.callee != null) {
+				return false;
+			}
+		} else if (!callee.equals(other.callee)) {
+			return false;
+		}
+		if (typeArgs == null) {
+			if (other.typeArgs != null) {
+				return false;
+			}
+		} else if (!typeArgs.equals(other.typeArgs)) {
+			return false;
+		}
+		return true;
 	}
 
 	@Override

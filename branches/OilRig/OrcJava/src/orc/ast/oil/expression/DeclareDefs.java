@@ -65,6 +65,55 @@ public class DeclareDefs extends Expression {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (body == null ? 0 : body.hashCode());
+		result = prime * result + (defs == null ? 0 : defs.hashCode());
+		result = prime * result + (free == null ? 0 : free.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final DeclareDefs other = (DeclareDefs) obj;
+		if (body == null) {
+			if (other.body != null) {
+				return false;
+			}
+		} else if (!body.equals(other.body)) {
+			return false;
+		}
+		if (defs == null) {
+			if (other.defs != null) {
+				return false;
+			}
+		} else if (!defs.equals(other.defs)) {
+			return false;
+		}
+		if (free == null) {
+			if (other.free != null) {
+				return false;
+			}
+		} else if (!free.equals(other.free)) {
+			return false;
+		}
+		return true;
+	}
+
 	@Override
 	public void addIndices(final Set<Integer> indices, int depth) {
 		depth += defs.size();

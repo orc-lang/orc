@@ -13,8 +13,6 @@
 
 package orc.ast.oil.expression.argument;
 
-import java.util.Set;
-
 import orc.ast.oil.Visitor;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
@@ -36,16 +34,6 @@ public class Field extends Argument implements Comparable<Field> {
 		this.key = key;
 	}
 
-	@Override
-	public Object resolve(final Env<Object> env) {
-		return new orc.runtime.values.Field(key);
-	}
-
-	@Override
-	public String toString() {
-		return "#field(" + key + ")";
-	}
-
 	public int compareTo(final Field that) {
 		return this.key.compareTo(that.key);
 	}
@@ -61,6 +49,16 @@ public class Field extends Argument implements Comparable<Field> {
 	@Override
 	public int hashCode() {
 		return key == null ? 0 : key.hashCode();
+	}
+
+	@Override
+	public Object resolve(final Env<Object> env) {
+		return new orc.runtime.values.Field(key);
+	}
+
+	@Override
+	public String toString() {
+		return "#field(" + key + ")";
 	}
 
 	@Override

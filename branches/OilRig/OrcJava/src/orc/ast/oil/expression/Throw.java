@@ -33,6 +33,36 @@ public class Throw extends Expression {
 		exception = e;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return exception == null ? 0 : exception.hashCode();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final Throw other = (Throw) obj;
+		if (exception == null) {
+			if (other.exception != null) {
+				return false;
+			}
+		} else if (!exception.equals(other.exception)) {
+			return false;
+		}
+		return true;
+	}
+
 	@Override
 	public void addIndices(final Set<Integer> indices, final int depth) {
 		exception.addIndices(indices, depth);
