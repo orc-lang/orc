@@ -1,7 +1,8 @@
 package orc.orchard;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.StringReader;
+import java.io.PrintStream;
 import java.util.logging.Logger;
 
 import orc.Config;
@@ -36,10 +37,11 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
 			// Include sites specifically for orchard services
 			config.addInclude("orchard.inc");
 			config.inputFromString(program);
+			ByteArrayOutputStream ourStdErrBytes = new ByteArrayOutputStream();
+			config.setStderr(new PrintStream(ourStdErrBytes));
 			orc.ast.oil.expression.Expression ex1 = Orc.compile(config);
 			if (ex1 == null) {
-				// FIXME: obviously need more detail here
-				throw new InvalidProgramException("Syntax error in: " + program);
+				throw new InvalidProgramException(ourStdErrBytes.toString());
 			}
 			return new Oil("1.0", ex1.marshal());
 		} catch (CompilationException e) {
