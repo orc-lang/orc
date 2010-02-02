@@ -11,7 +11,7 @@
 			<arguments>
 				<dictionary>
 					<key>LaunchConfigHandle</key>
-					<value>&lt;project&gt;/.externalToolBuilders/Build Rats (OrcJava) [Builder].launch</value>
+					<value>&lt;project&gt;/.externalToolBuilders/Build Rats [Builder].launch</value>
 				</dictionary>
 			</arguments>
 		</buildCommand>
@@ -26,12 +26,13 @@
 			<arguments>
 				<dictionary>
 					<key>LaunchConfigHandle</key>
-					<value>&lt;project&gt;/.externalToolBuilders/Build Kilim (OrcJava).launch</value>
+					<value>&lt;project&gt;/.externalToolBuilders/Build Killim [Builder].launch</value>
 				</dictionary>
 			</arguments>
 		</buildCommand>
 		<buildCommand>
 			<name>org.eclipse.ui.externaltools.ExternalToolBuilder</name>
+			<triggers>auto,full,incremental,</triggers>
 			<arguments>
 				<dictionary>
 					<key>LaunchConfigHandle</key>

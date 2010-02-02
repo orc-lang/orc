@@ -5,9 +5,9 @@ package orc.runtime.values;
 
 import java.util.List;
 
+import orc.ast.oil.TokenContinuation;
 import orc.error.runtime.TokenException;
 import orc.runtime.Token;
-import orc.runtime.nodes.Node;
 
 /**
  * Callable objects include sites and definitions
@@ -19,7 +19,7 @@ public interface Callable {
 	 * Create a call to a callable value
 	 * @param caller	token for which the call is being made: points to the call node
 	 * @param args		argument list
-	 * @param nextNode	next node after the call node, to which the result should be sent
+	 * @param publishContinuation	next node after the call node, to which the result should be sent
 	 */
-	void createCall(Token caller, List<Object> args, Node nextNode) throws TokenException;
+	void createCall(Token caller, List<Object> args, TokenContinuation publishContinuation) throws TokenException;
 }

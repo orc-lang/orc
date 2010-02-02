@@ -6,14 +6,14 @@ package orc.lib.reflect;
 import java.util.Arrays;
 import java.util.List;
 
+import orc.ast.oil.TokenContinuation;
+import orc.ast.oil.expression.Stop;
 import orc.error.compiletime.typing.ArgumentArityException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.SiteException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
-import orc.runtime.nodes.Node;
-import orc.runtime.nodes.Silent;
 import orc.runtime.regions.LogicalClock;
 import orc.runtime.regions.Region;
 import orc.runtime.regions.SubRegion;
@@ -33,9 +33,6 @@ import orc.type.structured.ArrowType;
  * @author dkitchin
  */
 public class SiteSite extends PartialSite {
-	private static final long serialVersionUID = 1L;
-
-	
 	public Type type() {
 		return new SitemakerType();
 	}
@@ -94,37 +91,26 @@ class ClosureBackedSite extends Site {
 	@Override
 	public void callSite(Args args, Token caller) throws TokenException {
 		
-		Token token = caller.getEngine().newExecution(new Silent(), // initial node is unused 
+		Token token = caller.getEngine().newExecution(new Stop(), // initial expr is unused 
 													  caller);
 		
 		token.setRegion(new ClosureExecRegion(caller, token.getRegion())); 
 		  
 		if (token != null) {
 			List<Object> argsList = Arrays.asList(args.asArray());
-			closure.createCall(token, argsList, new ClosureExecNode());
+			TokenContinuation K = new TokenContinuation() {
+				public void execute(Token t) {
+					ClosureExecRegion cer = (ClosureExecRegion)t.getRegion();
+					cer.onPublish(t.getResult());
+					t.die();
+				}
+			};
+			closure.createCall(token, argsList, K);
 		}
 		else {
 			throw new SiteException("Failed to host closure execution as a site.");
 		}
 		
-	}
-	
-}
-
-class ClosureExecNode extends Node {
-
-	/* (non-Javadoc)
-	 * @see orc.runtime.nodes.Node#process(orc.runtime.Token)
-	 */
-	@Override
-	public void process(Token t) {
-		ClosureExecRegion cer = (ClosureExecRegion)t.getRegion();
-		cer.onPublish(t.getResult());
-		t.die();
-	}
-	
-	public boolean isTerminal() {
-		return true;
 	}
 	
 }

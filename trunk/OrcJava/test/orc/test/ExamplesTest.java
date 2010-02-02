@@ -63,7 +63,6 @@ import org.kohsuke.args4j.CmdLineException;
 public class ExamplesTest {
 	public static Test suite() {
 		Config config = new Config();
-		config.setIsolatedOn(true);
 		return buildSuite(config);
 	}
 
@@ -84,7 +83,7 @@ public class ExamplesTest {
 			}
 			suite.addTest(new TestCase(file.toString()) {
 				@Override
-				public void runTest() throws IOException, CmdLineException, CompilationException, InterruptedException, ExecutionException, TimeoutException {
+				public void runTest() throws IOException, CmdLineException, CompilationException, InterruptedException, Throwable, TimeoutException {
 					runOrcProgram(config, file, expecteds);
 				}
 			});
@@ -92,7 +91,7 @@ public class ExamplesTest {
 		return suite;
 	}
 
-	public static void runOrcProgram(final Config config, final File file, final LinkedList<String> expecteds) throws InterruptedException, ExecutionException, CmdLineException, CompilationException, IOException, TimeoutException {
+	public static void runOrcProgram(final Config config, final File file, final LinkedList<String> expecteds) throws InterruptedException, Throwable, CmdLineException, CompilationException, IOException, TimeoutException {
 		// configure engine to write to a ByteArray
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		config.setInputFile(file);
@@ -116,8 +115,7 @@ public class ExamplesTest {
 		if (expr == null) {
 			throw new CompilationException("Compilation to OIL failed");
 		}
-		orc.runtime.nodes.Node node = orc.ast.oil.Compiler.compile(expr);
-		engine.start(node);
+		engine.start(expr);
 
 		// run the engine with a fixed timeout
 		final FutureTask<?> future = new FutureTask<Void>(engine, null);
@@ -127,6 +125,8 @@ public class ExamplesTest {
 		} catch (final TimeoutException e) {
 			future.cancel(true);
 			throw e;
+		} catch (final ExecutionException e) {
+			throw e.getCause();
 		}
 
 		// compare the output to the expected result

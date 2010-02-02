@@ -30,7 +30,6 @@ import orc.ast.extended.expression.Dot;
 import orc.ast.extended.expression.Field;
 import orc.ast.extended.expression.HasType;
 import orc.ast.extended.expression.IfThenElse;
-import orc.ast.extended.expression.Isolated;
 import orc.ast.extended.expression.Lambda;
 import orc.ast.extended.expression.Let;
 import orc.ast.extended.expression.ListExpr;
@@ -77,7 +76,6 @@ public interface Visitor<E> {
 	public E visit(Field expr);
 	public E visit(HasType expr);
 	public E visit(IfThenElse expr);
-	public E visit(Isolated expr);
 	public E visit(Lambda expr);
 	public E visit(Let expr);
 	public E visit(ListExpr expr);

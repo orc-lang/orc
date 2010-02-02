@@ -1,3 +1,16 @@
+//
+// Variable.java -- Java class Variable
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.ast.oil.expression.argument;
 
 import java.util.Set;
@@ -11,7 +24,6 @@ import orc.error.compiletime.typing.TypeException;
 import orc.type.Type;
 import orc.type.TypingContext;
 
-
 /**
  * Bound variables, represented using deBruijn indices.
  * 
@@ -22,70 +34,68 @@ import orc.type.TypingContext;
  */
 
 public class Variable extends Argument implements Comparable<Variable> {
-	private static final long serialVersionUID = 1L;
-	
 	public int index;
-	
-	public Variable(int index) {
+
+	public Variable(final int index) {
 		this.index = index;
 	}
-	
+
 	@Override
-	public Object resolve(Env<Object> env) {
+	public int hashCode() {
+		return index + getClass().hashCode();
+	}
+
+	@Override
+	public boolean equals(final Object v) {
+		if (v == null) {
+			return false;
+		}
+		return v instanceof Variable && ((Variable) v).index == index;
+	}
+
+	public int compareTo(final Variable o) {
+		return ((Integer) index).compareTo(o.index);
+	}
+
+	@Override
+	public Object resolve(final Env<Object> env) {
 		return resolveGeneric(env);
 	}
 
-	public <T> T resolveGeneric(Env<T> env) {
+	public <T> T resolveGeneric(final Env<T> env) {
 		try {
 			return env.lookup(this.index);
-		} catch (LookupFailureException e) {
+		} catch (final LookupFailureException e) {
 			throw new OrcError(e);
 		}
 	}
 
 	@Override
-	public void addIndices(Set<Integer> indices, int depth) {
+	public void addIndices(final Set<Integer> indices, final int depth) {
 		if (index >= depth) {
 			indices.add(index - depth);
 		}
 	}
-	
+
+	@Override
 	public String toString() {
 		return "[#" + index + "]";
 	}
-	
+
 	@Override
-	public <E> E accept(Visitor<E> visitor) {
+	public <E> E accept(final Visitor<E> visitor) {
 		return visitor.visit(this);
 	}
 
 	@Override
-	public Type typesynth(TypingContext ctx) throws TypeException {
-		Type t = ctx.lookupVar(index);
-		
+	public Type typesynth(final TypingContext ctx) throws TypeException {
+		final Type t = ctx.lookupVar(index);
+
 		if (t != null) {
 			return t;
+		} else {
+			throw new TypeException("Could not infer sufficient type information about this variable. " + "It may be a recursive function lacking a return type ascription.");
 		}
-		else {
-			throw new TypeException("Could not infer sufficient type information about this variable. " +
-									"It may be a recursive function lacking a return type ascription.");
-		}
-	}
-	
-	@Override
-	public int hashCode() {
-		return index + getClass().hashCode();
-	}
-	
-	@Override
-	public boolean equals(Object v) {
-		if (v == null) return false;
-		return (v instanceof Variable)
-			&& ((Variable)v).index == index;
-	}
-
-	public int compareTo(Variable o) {
-		return ((Integer)index).compareTo(o.index);
 	}
 
 	@Override

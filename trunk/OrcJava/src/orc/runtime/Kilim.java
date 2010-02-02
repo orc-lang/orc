@@ -239,7 +239,7 @@ public final class Kilim {
 	/**
 	 * Spawn a thread asynchronously. If you want to block until
 	 * the thread is complete, use {@link #runThreaded(Callable)}.
-	 * The point of this over {@code new Thread() { ... }.start()} is
+	 * The point of this over <code>new Thread() { ... }.start()</code> is
 	 * that this uses a thread pool.
 	 * 
 	 * @param thunk

@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -24,12 +24,14 @@ import java.util.concurrent.Callable;
 import orc.ast.extended.ASTNode;
 import orc.ast.extended.expression.Declare;
 import orc.ast.extended.declaration.Declaration;
+import orc.ast.oil.expression.Def;
 import orc.ast.oil.expression.Expression;
 import orc.ast.oil.AtomicOnChecker;
 import orc.ast.oil.ExceptionsOnChecker;
-import orc.ast.oil.IsolatedOnChecker;
 import orc.ast.oil.SiteResolver;
+import orc.ast.oil.TailCallMarker;
 import orc.ast.oil.UnguardedRecursionChecker;
+import orc.ast.oil.Walker;
 import orc.ast.simple.argument.Variable;
 import orc.ast.simple.type.TypeVariable;
 import orc.ast.xml.Oil;
@@ -230,14 +232,7 @@ public class OrcCompiler implements Callable<Expression> {
 				return null;
 			}
 		}
-		
-		if (config.getIsolatedOn() == false) {
-			IsolatedOnChecker.check(ex);
-			if (progress.isCanceled()) {
-				return null;
-			}
-		}
-		
+				
 		return ex;
 	}
 
@@ -315,7 +310,14 @@ public class OrcCompiler implements Callable<Expression> {
 	 * @return Refined OIL AST to be run
 	 */
 	protected Expression refineOilAfterLoadSaveBeforeDag(final Expression oilAst) {
-		// Override and extend
+		
+		// Mark tail calls in all definitions.
+		oilAst.accept(new Walker() {
+			public void enter(final Def def) {
+				def.body.accept(new TailCallMarker());
+			};
+		});
+		
 		return oilAst;
 	}
 }

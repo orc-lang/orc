@@ -33,7 +33,6 @@ import orc.type.java.ConstructorType;
  * @author dkitchin, quark
  */
 public class ClassProxy extends Site {
-	private static final long serialVersionUID = 1L;
 	/** Index methods by name. */
 	private HashMap<String, MethodHandle> methods = new HashMap<String, MethodHandle>();
 	private ConstructorHandle constructor;

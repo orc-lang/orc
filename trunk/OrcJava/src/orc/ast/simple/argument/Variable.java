@@ -19,8 +19,6 @@ import orc.runtime.values.Value;
  */
 
 public class Variable extends Argument {
-	private static final long serialVersionUID = 1L;
-	
 	/* An optional string name to use for this variable in debugging contexts. */
 	public String name = null;
 	
