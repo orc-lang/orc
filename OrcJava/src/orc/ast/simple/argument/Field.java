@@ -12,7 +12,6 @@ import orc.runtime.values.Value;
  */
 
 public class Field extends Argument {
-	private static final long serialVersionUID = 1L;
 	public String key;
 	
 	public Field(String key)

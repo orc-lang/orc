@@ -1,16 +1,21 @@
-/*
- * Copyright 2005, The University of Texas at Austin. All rights reserved.
- */
+//
+// Env.java -- Java class Env
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.env;
 
-import orc.ast.simple.argument.Variable;
-import orc.error.OrcError;
-import orc.runtime.values.Future;
-import java.io.*;
-import java.util.Collections;
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Stack;
 
 /**
  * Generic indexed environment, used primarily at runtime. 
@@ -31,45 +36,48 @@ import java.util.Stack;
  */
 public final class Env<T> implements Serializable, Cloneable {
 	private Binding<T> head;
-	
+
 	/** Binding in the stack. */
 	private static final class Binding<T> {
-		private Binding<T> parent;
-		private T value;
-		public Binding(Binding<T> parent, T value) {
+		private final Binding<T> parent;
+		private final T value;
+
+		public Binding(final Binding<T> parent, final T value) {
 			this.parent = parent;
 			this.value = value;
 		}
 	}
 
 	/** Copy constructor */
-	private Env(Binding<T> head) {
+	private Env(final Binding<T> head) {
 		this.head = head;
 	}
-	
+
 	public Env() {
 		this(null);
 	}
 
 	/** Push one item. */
-	public void add(T item) {
+	public void add(final T item) {
 		head = new Binding(head, item);
 	}
-	
+
 	/** Push multiple items, in the order they appear in the list. */
-	public void addAll(List<T> items) {
-		for (T item : items) add(item);
+	public void addAll(final List<T> items) {
+		for (final T item : items) {
+			add(item);
+		}
 	}
-	
+
 	/** Return a list of items in the order they were pushed. */
 	public List<T> items() {
-		LinkedList<T> out = new LinkedList<T>();
+		final LinkedList<T> out = new LinkedList<T>();
 		for (Binding<T> node = head; node != null; node = node.parent) {
 			out.addFirst(node.value);
 		}
 		return out;
 	}
-	
+
 	/**
 	 * Look up a variable's value in the environment.
 	 * @param   index  Stack depth (a deBruijn index)
@@ -85,7 +93,7 @@ public final class Env<T> implements Serializable, Cloneable {
 		}
 		return node.value;
 	}
-	
+
 	/**
 	 * Content-addressable mode. Used in compilation
 	 * to determine the deBruijn indices from an
@@ -100,45 +108,66 @@ public final class Env<T> implements Serializable, Cloneable {
 	 * @return        The index of the target item
 	 * @throws SearchFailureException 
 	 */
-	public int search(T target) throws SearchFailureException {
+	public int search(final T target) throws SearchFailureException {
 		Binding<T> node = head;
 		for (int index = 0; node != null; ++index, node = node.parent) {
-			if (target.equals(node.value)) return index;
+			if (target.equals(node.value)) {
+				return index;
+			}
 		}
 		throw new SearchFailureException("Target item " + target + " not found in environment");
 	}
 
 	/** Pop n items. */
 	public void unwind(int n) {
-		for (; n > 0; --n) head = head.parent;
+		for (; n > 0; --n) {
+			head = head.parent;
+		}
 	}
-	
+
 	/**
 	 * Create an independent copy of the environment.
 	 */
+	@Override
 	public Env<T> clone() {
 		return new Env(head);
 	}
-	
+
 	/**
 	 * Create an independent copy of the environment, extended with a new item.
 	 */
-	public Env<T> extend(T item) {
+	public Env<T> extend(final T item) {
 		return new Env(new Binding(head, item));
 	}
-	
+
 	/**
 	 * Create an independent copy of the environment, extended with a list of new item.
 	 * The extensions occur in list order, so the last item of the list will be the
 	 * most recent binding.
 	 */
-	public Env<T> extendAll(List<T> items) {
+	public Env<T> extendAll(final List<T> items) {
 		Env<T> env = this;
-		
-		for (T item : items) {
+
+		for (final T item : items) {
 			env = env.extend(item);
 		}
-		
+
 		return env;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		final StringBuilder sb = new StringBuilder();
+		sb.append(getClass().getName() + " [");
+		for (Binding<T> currHead = head; currHead != null; currHead = currHead.parent) {
+			sb.append(currHead.value);
+			if (currHead.parent != null) {
+				sb.append(", ");
+			}
+		}
+		return sb.append(']').toString();
 	}
 }

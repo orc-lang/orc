@@ -2,6 +2,7 @@ package orc.lib.util;
 
 import java.util.List;
 
+import orc.ast.oil.TokenContinuation;
 import orc.error.compiletime.typing.ArgumentArityException;
 import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
@@ -10,7 +11,6 @@ import orc.error.runtime.RuntimeTypeException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
-import orc.runtime.nodes.Node;
 import orc.runtime.sites.Site;
 import orc.runtime.values.Callable;
 import orc.runtime.values.ListValue;
@@ -29,7 +29,7 @@ import orc.type.structured.ListType;
  */
 public class Apply extends Site {
 	@Override
-	public void createCall(Token caller, List<Object> args, Node nextNode) throws TokenException {
+	public void createCall(Token caller, List<Object> args, TokenContinuation nextNode) throws TokenException {
 		Callable callable = Value.forceCall(args.get(0), caller);
 		if (callable == Value.futureNotReady) return;
 		Object arguments = Value.forceArg(args.get(1), caller);

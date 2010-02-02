@@ -22,8 +22,6 @@ import java.util.TimerTask;
  * @author wcook, quark, dkitchin
  */
 public class Rtimer extends Site {
-	private static final long serialVersionUID = 1L;
-
 	public void callSite(Args args, final Token caller) throws TokenException {
 		String f;
 		try {

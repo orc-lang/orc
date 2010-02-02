@@ -52,7 +52,6 @@ import orc.error.compiletime.CompileMessageRecorder.Severity;
 import orc.error.runtime.TokenException;
 import orc.progress.ProgressMonitorListener;
 import orc.runtime.OrcEngine;
-import orc.runtime.nodes.Node;
 import orc.runtime.values.Value;
 
 import org.kohsuke.args4j.CmdLineException;
@@ -189,13 +188,6 @@ public class OrcGui implements Runnable {
 			return;
 		}
 
-		progress.setNote("Creating DAG");
-		final Node n = orc.ast.oil.Compiler.compile(ex);
-		progress.setProgress(0.95);
-		if (progress.isCanceled()) {
-			return;
-		}
-
 		// initialize document
 		final JTextPane pane = new JTextPane();
 		pane.setEditable(false);
@@ -286,7 +278,7 @@ public class OrcGui implements Runnable {
 		});
 
 		// Run the Orc program
-		engine.run(n);
+		engine.run(ex);
 	}
 
 	/**

@@ -1,16 +1,20 @@
+//
+// ClassType.java -- Java class ClassType
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.ast.oil.type;
 
-import java.lang.reflect.TypeVariable;
-import java.util.LinkedList;
-import java.util.List;
-
-import orc.error.OrcError;
-import orc.error.compiletime.typing.ArgumentArityException;
-import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
-import orc.error.compiletime.typing.UncallableTypeException;
 import orc.type.TypingContext;
-import orc.type.java.ClassTycon;
 
 /**
  * A type which refers to a Java class (which we will treat as an Orc type).
@@ -19,17 +23,48 @@ import orc.type.java.ClassTycon;
 public class ClassType extends Type {
 
 	public String classname;
-	
-	public ClassType(String classname) {
+
+	public ClassType(final String classname) {
 		this.classname = classname;
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
-	public orc.type.Type transform(TypingContext ctx) throws TypeException {
+	public int hashCode() {
+		return classname == null ? 0 : classname.hashCode();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final ClassType other = (ClassType) obj;
+		if (classname == null) {
+			if (other.classname != null) {
+				return false;
+			}
+		} else if (!classname.equals(other.classname)) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public orc.type.Type transform(final TypingContext ctx) throws TypeException {
 		return ctx.resolveClassType(classname);
 	}
-		
-	public String toString() {		
+
+	@Override
+	public String toString() {
 		return classname;
 	}
 
@@ -39,6 +74,6 @@ public class ClassType extends Type {
 	@Override
 	public orc.ast.xml.type.Type marshal() {
 		return new orc.ast.xml.type.ClassnameType(classname);
-	}	
-	
+	}
+
 }

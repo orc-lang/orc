@@ -12,7 +12,6 @@ import orc.env.Env;
  */
 
 public class Constant extends Argument {
-	private static final long serialVersionUID = 1L;
 	public Object v;
 	
 	public Constant(Object v) {

@@ -18,7 +18,6 @@ import orc.trace.values.ConstantValue;
  * @author quark
  */
 public class FreeEvent extends Event {
-	@SuppressWarnings("unused")
 	private Handle<Event> event;
 	public FreeEvent(Event event) {
 		this.event = new LastHandle<Event>(event);

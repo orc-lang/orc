@@ -10,9 +10,11 @@ import java.util.List;
 import java.util.Map;
 
 import orc.Config;
-import orc.ast.oil.Compiler;
+import orc.ast.oil.expression.Def;
 import orc.ast.oil.expression.Expression;
 import orc.ast.oil.SiteResolver;
+import orc.ast.oil.TailCallMarker;
+import orc.ast.oil.Walker;
 import orc.error.compiletime.CompilationException;
 import orc.error.runtime.TokenException;
 import orc.lib.orchard.Prompt.PromptCallback;
@@ -28,8 +30,6 @@ import orc.orchard.events.RedirectEvent;
 import orc.orchard.events.TokenErrorEvent;
 import orc.orchard.values.ValueMarshaller;
 import orc.runtime.OrcEngine;
-import orc.runtime.nodes.Node;
-import orc.runtime.nodes.Pub;
 
 /**
  * Standard implementation of a JobService. Extenders should only need to
@@ -234,9 +234,15 @@ public final class Job implements JobMBean {
 	protected Job(Expression expression, Config config) throws CompilationException {
 		this.events = new EventBuffer(10);
 		engine = new JobEngine(config);
-		Node node = orc.ast.oil.Compiler.compile(SiteResolver.resolve(expression, config));
+		expression = SiteResolver.resolve(expression, config);
+		// Mark tail calls in all definitions.
+		expression.accept(new Walker() {
+			public void enter(final Def def) {
+				def.body.accept(new TailCallMarker());
+			};
+		});
 		//engine.debugMode = true;
-		engine.start(node);
+		engine.start(expression);
 	}
 
 	public synchronized void start() throws InvalidJobStateException {

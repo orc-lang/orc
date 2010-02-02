@@ -1,7 +1,19 @@
+//
+// Constant.java -- Java class Constant
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.ast.oil.expression.argument;
 
 import java.math.BigInteger;
-import java.util.Set;
 
 import orc.ast.oil.Visitor;
 import orc.env.Env;
@@ -12,40 +24,71 @@ import orc.type.TypingContext;
 import orc.type.ground.ConstIntType;
 import xtc.util.Utilities;
 
-public class Constant extends Argument { 
-	
+public class Constant extends Argument {
+
 	public Object v;
 
-	public Constant(Object v) {
+	public Constant(final Object v) {
 		this.v = v;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
-	public Object resolve(Env<Object> env) {
+	public int hashCode() {
+		return v == null ? 0 : v.hashCode();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final Constant other = (Constant) obj;
+		if (v == null) {
+			if (other.v != null) {
+				return false;
+			}
+		} else if (!v.equals(other.v)) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public Object resolve(final Env<Object> env) {
 		return v;
 	}
-	
+
+	@Override
 	public String toString() {
 		if (v == null) {
 			return "null";
 		} else if (v instanceof String) {
-			return '"' + Utilities.escape((String)v, Utilities.JAVA_ESCAPES) + '"';
+			return '"' + Utilities.escape((String) v, Utilities.JAVA_ESCAPES) + '"';
 		} else {
 			return v.toString();
 		}
 	}
-	
+
 	@Override
-	public <E> E accept(Visitor<E> visitor) {
+	public <E> E accept(final Visitor<E> visitor) {
 		return visitor.visit(this);
 	}
 
 	@Override
-	public Type typesynth(TypingContext ctx) throws TypeException {
+	public Type typesynth(final TypingContext ctx) throws TypeException {
 		if (v == null) {
 			return Type.BOT;
 		} else if (v instanceof Integer) {
-			return new ConstIntType((Integer)v);
+			return new ConstIntType((Integer) v);
 		} else if (v instanceof BigInteger) {
 			return Type.INTEGER;
 		} else if (v instanceof Number) {
@@ -58,10 +101,6 @@ public class Constant extends Argument {
 			// TODO: Expand to cover arbitrary Java classes
 			return Type.TOP;
 		}
-	}
-	@Override
-	public void addIndices(Set<Integer> indices, int depth) {
-		return;
 	}
 
 	@Override

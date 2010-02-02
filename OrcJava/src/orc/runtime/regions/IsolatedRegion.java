@@ -1,7 +1,6 @@
 package orc.runtime.regions;
 
 import orc.runtime.Token;
-import orc.runtime.nodes.Isolate;
 import orc.trace.TokenTracer.StoreTrace;
 
 /**

@@ -1,3 +1,16 @@
+//
+// OrcParserRats -- Rats! grammar module for the OrcParserRats parser
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 module orc.parser.OrcParserRats;
 
 import orc.parser.OrcLiteralParser;
@@ -479,10 +492,6 @@ Expression MaybeAtomic =
 		yyValue = new Atomic(body);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ void:ISOLATED body:MaybeAssignment {
-		yyValue = new Isolated(body);
-		yyValue = at(yyStart, yyCount, yyValue);
-	}
 	/ void:THROW exception:MaybeAssignment {
 		yyValue = new Throw(exception);
 		yyValue = at(yyStart, yyCount, yyValue);
@@ -493,10 +502,6 @@ Expression MaybeAtomic =
 Expression NoCmpMaybeAtomic =
 	void:ATOMIC body:NoCmpMaybeAssignment {
 		yyValue = new Atomic(body);
-		yyValue = at(yyStart, yyCount, yyValue);
-	}
-	/ void:ISOLATED body:NoCmpMaybeAssignment {
-		yyValue = new Isolated(body);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ void:THROW exception:NoCmpMaybeAssignment {
@@ -978,7 +983,6 @@ transient String INCLUDE = "include":Word Space;
 transient String TYPE = "type":Word Space;
 transient String LAMBDA = "lambda":Word Space;
 transient String ATOMIC = "atomic":Word Space;
-transient String ISOLATED = "isolated":Word Space;
 transient String TRY = "try":Word Space;
 transient String THROW = "throw":Word Space;
 transient String CATCH = "catch":Word Space;

@@ -6,7 +6,7 @@
 //
 // Created on February 8 2007
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -92,7 +92,6 @@ public class Config implements Cloneable {
 	private boolean shortErrors = false;
 	private boolean quietChecking = false;
 	private boolean exceptionsOn = false;
-	private boolean isolatedOn = false;
 	private boolean atomicOn = false;
 	
 
@@ -166,9 +165,6 @@ public class Config implements Cloneable {
 		}
 		if (this.getAtomicOn()){
 			cmdLine.append("-allowAtomic ");
-		}
-		if (this.getIsolatedOn()){
-			cmdLine.append("-allowIsolated ");
 		}
 		return cmdLine.toString();
 	}
@@ -296,12 +292,7 @@ public class Config implements Cloneable {
 	public void setAtomicOn(final boolean atomicOn) {
 		this.atomicOn = atomicOn;
 	}
-	
-	@Option(name = "-allowIsolated", usage = "Enable isolated expressions (experimental), which are disabled by default.")
-	public void setIsolatedOn(final boolean isolatedOn) {
-		this.isolatedOn = isolatedOn;
-	}
-	
+		
 	public void addInclude(final String include) {
 		this.includes.add(include);
 	}
@@ -505,10 +496,6 @@ public class Config implements Cloneable {
 		return atomicOn;
 	}
 	
-	public boolean getIsolatedOn() {
-		return isolatedOn;
-	}
-
 	/**
 	 * Open an include file. Searches first the include path
 	 * defined by {@link #setIncludePath(String)} and then the

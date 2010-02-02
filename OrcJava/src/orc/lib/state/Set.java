@@ -42,7 +42,6 @@ public final class Set<E> extends AbstractSet<E> {
 		}
 	}
 	
-	@SuppressWarnings("unused")
 	public Reference<Boolean> apply(final E key) {
 		return new SetReference(key);
 	}

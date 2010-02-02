@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -30,7 +30,6 @@ import orc.ast.oil.expression.Catch;
 import orc.ast.oil.expression.DeclareDefs;
 import orc.ast.oil.expression.Expression;
 import orc.ast.oil.expression.HasType;
-import orc.ast.oil.expression.Isolated;
 import orc.ast.oil.expression.Pruning;
 import orc.ast.oil.expression.Sequential;
 import orc.ast.oil.expression.Otherwise;
@@ -237,13 +236,6 @@ final class BackendVisitorDemo implements Visitor<Void> {
 	public Void visit(final Atomic atomic) {
 		out.print("(atomic ");
 		atomic.body.accept(this);
-		out.print(")");
-		return null;
-	}
-
-	public Void visit(final Isolated expr) {
-		out.print("(isolated ");
-		expr.body.accept(this);
 		out.print(")");
 		return null;
 	}
