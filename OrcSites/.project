@@ -17,7 +17,7 @@
 			<arguments>
 				<dictionary>
 					<key>LaunchConfigHandle</key>
-					<value>&lt;project&gt;/.externalToolBuilders/Build Kilim (OrcSites).launch</value>
+					<value>&lt;project&gt;/.externalToolBuilders/OrcSites build.xml kilim [Builder].launch</value>
 				</dictionary>
 			</arguments>
 		</buildCommand>
