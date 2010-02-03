@@ -1,9 +1,9 @@
 package org.jvnet.jax_ws_commons.json;
 
-import com.sun.istack.NotNull;
-import com.sun.xml.ws.transport.http.HttpAdapter;
-import com.sun.xml.ws.transport.http.HttpMetadataPublisher;
-import com.sun.xml.ws.transport.http.WSHTTPConnection;
+import com.sun.istack.internal.NotNull;
+import com.sun.xml.internal.ws.transport.http.HttpAdapter;
+import com.sun.xml.internal.ws.transport.http.HttpMetadataPublisher;
+import com.sun.xml.internal.ws.transport.http.WSHTTPConnection;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;

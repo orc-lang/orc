@@ -1,3 +1,16 @@
+//
+// Redirect.java -- Java interface Redirect
+// Project Orchard
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.lib.orchard;
 
 import java.net.MalformedURLException;
@@ -24,18 +37,18 @@ public class Redirect extends Site {
 	public interface Redirectable {
 		public void redirect(URL url);
 	}
+
 	@Override
-	public void callSite(Args args, final Token caller) throws TokenException {
-		OrcEngine engine = caller.getEngine();
+	public void callSite(final Args args, final Token caller) throws TokenException {
+		final OrcEngine engine = caller.getEngine();
 		final String url = args.stringArg(0);
 		if (!(engine instanceof Redirectable)) {
-			caller.error(new SiteException(
-					"This Orc engine does not support the Redirect site."));
+			caller.error(new SiteException("This Orc engine does not support the Redirect site."));
 		}
 		try {
-			((Redirectable)engine).redirect(new URL(url));
+			((Redirectable) engine).redirect(new URL(url));
 			caller.resume(signal());
-		} catch (MalformedURLException e) {
+		} catch (final MalformedURLException e) {
 			caller.error(new JavaException(e));
 		}
 	}

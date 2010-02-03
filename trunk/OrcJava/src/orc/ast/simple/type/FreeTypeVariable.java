@@ -28,14 +28,14 @@ import orc.error.compiletime.typing.UnboundTypeException;
 public class FreeTypeVariable extends Type implements Comparable<FreeTypeVariable> {
 
 	public String name;
-	
-	public FreeTypeVariable(String name) {
+
+	public FreeTypeVariable(final String name) {
 		this.name = name;
 	}
-	
-	public int compareTo(FreeTypeVariable f) {
-		String s = this.name;
-		String t = f.name;
+
+	public int compareTo(final FreeTypeVariable f) {
+		final String s = this.name;
+		final String t = f.name;
 		return s.compareTo(t);
 	}
 
@@ -43,7 +43,7 @@ public class FreeTypeVariable extends Type implements Comparable<FreeTypeVariabl
 	 * @see orc.ast.simple.type.Type#convert(orc.env.Env)
 	 */
 	@Override
-	public orc.ast.oil.type.Type convert(Env<TypeVariable> env) throws TypeException {
+	public orc.ast.oil.type.Type convert(final Env<TypeVariable> env) throws TypeException {
 		throw new UnboundTypeException(name);
 	}
 
@@ -51,10 +51,11 @@ public class FreeTypeVariable extends Type implements Comparable<FreeTypeVariabl
 	 * @see orc.ast.simple.type.Type#subst(orc.ast.simple.type.Type, orc.ast.simple.type.FreeTypeVariable)
 	 */
 	@Override
-	public Type subst(Type T, FreeTypeVariable X) {
+	public Type subst(final Type T, final FreeTypeVariable X) {
 		return this.name.equals(X.name) ? T : this;
 	}
-	
+
+	@Override
 	public String toString() {
 		return name;
 	}

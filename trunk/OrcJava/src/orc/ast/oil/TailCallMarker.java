@@ -44,7 +44,7 @@ public class TailCallMarker implements Visitor<Void> {
 	/* (non-Javadoc)
 	 * @see orc.ast.oil.Visitor#visit(orc.ast.oil.expression.Parallel)
 	 */
-	public Void visit(Parallel expr) {
+	public Void visit(final Parallel expr) {
 		expr.left.accept(this);
 		expr.right.accept(this);
 		return null;
@@ -53,7 +53,7 @@ public class TailCallMarker implements Visitor<Void> {
 	/* (non-Javadoc)
 	 * @see orc.ast.oil.Visitor#visit(orc.ast.oil.expression.Call)
 	 */
-	public Void visit(Call expr) {
+	public Void visit(final Call expr) {
 		expr.isTailCall = true;
 		return null;
 	}
@@ -61,7 +61,7 @@ public class TailCallMarker implements Visitor<Void> {
 	/* (non-Javadoc)
 	 * @see orc.ast.oil.Visitor#visit(orc.ast.oil.expression.DeclareDefs)
 	 */
-	public Void visit(DeclareDefs expr) {
+	public Void visit(final DeclareDefs expr) {
 		expr.body.accept(this);
 		return null;
 	}
@@ -69,14 +69,14 @@ public class TailCallMarker implements Visitor<Void> {
 	/* (non-Javadoc)
 	 * @see orc.ast.oil.Visitor#visit(orc.ast.oil.expression.Stop)
 	 */
-	public Void visit(Stop expr) {
+	public Void visit(final Stop expr) {
 		return null;
 	}
 
 	/* (non-Javadoc)
 	 * @see orc.ast.oil.Visitor#visit(orc.ast.oil.expression.Pruning)
 	 */
-	public Void visit(Pruning expr) {
+	public Void visit(final Pruning expr) {
 		expr.left.accept(this);
 		return null;
 	}
@@ -84,7 +84,7 @@ public class TailCallMarker implements Visitor<Void> {
 	/* (non-Javadoc)
 	 * @see orc.ast.oil.Visitor#visit(orc.ast.oil.expression.Sequential)
 	 */
-	public Void visit(Sequential expr) {
+	public Void visit(final Sequential expr) {
 		expr.right.accept(this);
 		return null;
 	}
@@ -92,7 +92,7 @@ public class TailCallMarker implements Visitor<Void> {
 	/* (non-Javadoc)
 	 * @see orc.ast.oil.Visitor#visit(orc.ast.oil.expression.Otherwise)
 	 */
-	public Void visit(Otherwise expr) {
+	public Void visit(final Otherwise expr) {
 		expr.right.accept(this);
 		return null;
 	}
@@ -100,7 +100,7 @@ public class TailCallMarker implements Visitor<Void> {
 	/* (non-Javadoc)
 	 * @see orc.ast.oil.Visitor#visit(orc.ast.oil.expression.WithLocation)
 	 */
-	public Void visit(WithLocation expr) {
+	public Void visit(final WithLocation expr) {
 		expr.body.accept(this);
 		return null;
 	}
@@ -108,7 +108,7 @@ public class TailCallMarker implements Visitor<Void> {
 	/* (non-Javadoc)
 	 * @see orc.ast.oil.Visitor#visit(orc.ast.oil.expression.argument.Constant)
 	 */
-	public Void visit(Constant arg) {
+	public Void visit(final Constant arg) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -116,7 +116,7 @@ public class TailCallMarker implements Visitor<Void> {
 	/* (non-Javadoc)
 	 * @see orc.ast.oil.Visitor#visit(orc.ast.oil.expression.argument.Field)
 	 */
-	public Void visit(Field arg) {
+	public Void visit(final Field arg) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -124,7 +124,7 @@ public class TailCallMarker implements Visitor<Void> {
 	/* (non-Javadoc)
 	 * @see orc.ast.oil.Visitor#visit(orc.ast.oil.expression.argument.Site)
 	 */
-	public Void visit(Site arg) {
+	public Void visit(final Site arg) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -132,7 +132,7 @@ public class TailCallMarker implements Visitor<Void> {
 	/* (non-Javadoc)
 	 * @see orc.ast.oil.Visitor#visit(orc.ast.oil.expression.argument.Variable)
 	 */
-	public Void visit(Variable arg) {
+	public Void visit(final Variable arg) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -140,7 +140,7 @@ public class TailCallMarker implements Visitor<Void> {
 	/* (non-Javadoc)
 	 * @see orc.ast.oil.Visitor#visit(orc.ast.oil.expression.Atomic)
 	 */
-	public Void visit(Atomic atomic) {
+	public Void visit(final Atomic atomic) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -148,7 +148,7 @@ public class TailCallMarker implements Visitor<Void> {
 	/* (non-Javadoc)
 	 * @see orc.ast.oil.Visitor#visit(orc.ast.oil.expression.HasType)
 	 */
-	public Void visit(HasType hasType) {
+	public Void visit(final HasType hasType) {
 		hasType.body.accept(this);
 		return null;
 	}
@@ -156,7 +156,7 @@ public class TailCallMarker implements Visitor<Void> {
 	/* (non-Javadoc)
 	 * @see orc.ast.oil.Visitor#visit(orc.ast.oil.expression.DeclareType)
 	 */
-	public Void visit(DeclareType typeDecl) {
+	public Void visit(final DeclareType typeDecl) {
 		typeDecl.body.accept(this);
 		return null;
 	}
@@ -164,7 +164,7 @@ public class TailCallMarker implements Visitor<Void> {
 	/* (non-Javadoc)
 	 * @see orc.ast.oil.Visitor#visit(orc.ast.oil.expression.Throw)
 	 */
-	public Void visit(Throw expr) {
+	public Void visit(final Throw expr) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -172,7 +172,7 @@ public class TailCallMarker implements Visitor<Void> {
 	/* (non-Javadoc)
 	 * @see orc.ast.oil.Visitor#visit(orc.ast.oil.expression.Catch)
 	 */
-	public Void visit(Catch catchExpr) {
+	public Void visit(final Catch catchExpr) {
 		// TODO Auto-generated method stub
 		return null;
 	}

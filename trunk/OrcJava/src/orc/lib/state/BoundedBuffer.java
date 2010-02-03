@@ -1,3 +1,16 @@
+//
+// BoundedBuffer.java -- Java class BoundedBuffer
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.lib.state;
 
 import java.util.LinkedList;
@@ -5,7 +18,6 @@ import java.util.LinkedList;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.BoundedBufferType;
-import orc.lib.state.types.BufferType;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.DotSite;
@@ -28,37 +40,39 @@ public class BoundedBuffer extends EvalSite {
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
 	 */
 	@Override
-	public Object evaluate(Args args) throws TokenException {
+	public Object evaluate(final Args args) throws TokenException {
 		return new BufferInstance(args.intArg(0));
 	}
-	
+
+	@Override
 	public Type type() throws TypeException {
-		Type X = new TypeVariable(0);
-		Type BufferOfX = (new BoundedBufferType()).instance(X);
+		final Type X = new TypeVariable(0);
+		final Type BufferOfX = new BoundedBufferType().instance(X);
 		return new ArrowType(Type.INTEGER, BufferOfX, 1);
 	}
-	
+
 	protected class BufferInstance extends DotSite {
 
-		private LinkedList<Object> buffer;
-		private LinkedList<Token> readers;
-		private LinkedList<Token> writers;
+		private final LinkedList<Object> buffer;
+		private final LinkedList<Token> readers;
+		private final LinkedList<Token> writers;
 		private Token closer;
 		/** The number of open slots in the buffer. */
 		private int open;
 		private boolean closed = false;
 
-		BufferInstance(int bound) {
+		BufferInstance(final int bound) {
 			open = bound;
 			buffer = new LinkedList<Object>();
 			readers = new LinkedList<Token>();
 			writers = new LinkedList<Token>();
 		}
-		
+
 		@Override
 		protected void addMembers() {
 			addMember("get", new Site() {
-				public void callSite(Args args, Token reader) {
+				@Override
+				public void callSite(final Args args, final Token reader) {
 					if (buffer.isEmpty()) {
 						if (closed) {
 							reader.die();
@@ -71,7 +85,7 @@ public class BoundedBuffer extends EvalSite {
 						if (writers.isEmpty()) {
 							++open;
 						} else {
-							Token writer = writers.removeFirst();
+							final Token writer = writers.removeFirst();
 							writer.unsetQuiescent();
 							writer.resume();
 						}
@@ -82,10 +96,10 @@ public class BoundedBuffer extends EvalSite {
 						}
 					}
 				}
-			});	
+			});
 			addMember("getnb", new Site() {
 				@Override
-				public void callSite(Args args, Token reader) {
+				public void callSite(final Args args, final Token reader) {
 					if (buffer.isEmpty()) {
 						reader.die();
 					} else {
@@ -93,7 +107,7 @@ public class BoundedBuffer extends EvalSite {
 						if (writers.isEmpty()) {
 							++open;
 						} else {
-							Token writer = writers.removeFirst();
+							final Token writer = writers.removeFirst();
 							writer.unsetQuiescent();
 							writer.resume();
 						}
@@ -107,12 +121,12 @@ public class BoundedBuffer extends EvalSite {
 			});
 			addMember("put", new Site() {
 				@Override
-				public void callSite(Args args, Token writer) throws TokenException {
-					Object item = args.getArg(0);
+				public void callSite(final Args args, final Token writer) throws TokenException {
+					final Object item = args.getArg(0);
 					if (closed) {
 						writer.die();
 					} else if (!readers.isEmpty()) {
-						Token reader = readers.removeFirst();
+						final Token reader = readers.removeFirst();
 						reader.unsetQuiescent();
 						reader.resume(item);
 						writer.resume();
@@ -129,12 +143,12 @@ public class BoundedBuffer extends EvalSite {
 			});
 			addMember("putnb", new Site() {
 				@Override
-				public void callSite(Args args, Token writer) throws TokenException {
-					Object item = args.getArg(0);
+				public void callSite(final Args args, final Token writer) throws TokenException {
+					final Object item = args.getArg(0);
 					if (closed) {
 						writer.die();
 					} else if (!readers.isEmpty()) {
-						Token reader = readers.removeFirst();
+						final Token reader = readers.removeFirst();
 						reader.unsetQuiescent();
 						reader.resume(item);
 						writer.resume();
@@ -149,14 +163,14 @@ public class BoundedBuffer extends EvalSite {
 			});
 			addMember("getAll", new EvalSite() {
 				@Override
-				public Object evaluate(Args args) throws TokenException {
+				public Object evaluate(final Args args) throws TokenException {
 					// restore open slots
 					open += buffer.size() - writers.size();
 					// collect all values in a list
-					Object out = ListValue.make(buffer);
+					final Object out = ListValue.make(buffer);
 					buffer.clear();
 					// resume all writers
-					for (Token writer : writers) {
+					for (final Token writer : writers) {
 						writer.unsetQuiescent();
 						writer.resume();
 					}
@@ -169,30 +183,30 @@ public class BoundedBuffer extends EvalSite {
 					}
 					return out;
 				}
-			});	
+			});
 			addMember("getOpen", new EvalSite() {
 				@Override
-				public Object evaluate(Args args) throws TokenException {
+				public Object evaluate(final Args args) throws TokenException {
 					return open;
 				}
-			});	
+			});
 			addMember("getBound", new EvalSite() {
 				@Override
-				public Object evaluate(Args args) throws TokenException {
+				public Object evaluate(final Args args) throws TokenException {
 					return open + buffer.size() - writers.size();
 				}
-			});	
+			});
 			addMember("isClosed", new EvalSite() {
 				@Override
-				public Object evaluate(Args args) throws TokenException {
+				public Object evaluate(final Args args) throws TokenException {
 					return closed;
 				}
-			});	
+			});
 			addMember("close", new Site() {
 				@Override
-				public void callSite(Args args, Token token) {
+				public void callSite(final Args args, final Token token) {
 					closed = true;
-					for (Token reader : readers) {
+					for (final Token reader : readers) {
 						reader.unsetQuiescent();
 						reader.die();
 					}
@@ -203,18 +217,18 @@ public class BoundedBuffer extends EvalSite {
 						closer.setQuiescent();
 					}
 				}
-			});	
+			});
 			addMember("closenb", new Site() {
 				@Override
-				public void callSite(Args args, Token token) {
+				public void callSite(final Args args, final Token token) {
 					closed = true;
-					for (Token reader : readers) {
+					for (final Token reader : readers) {
 						reader.unsetQuiescent();
 						reader.die();
 					}
 					token.resume();
 				}
-			});	
+			});
 		}
 	}
 }

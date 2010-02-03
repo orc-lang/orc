@@ -1,10 +1,22 @@
+//
+// Region.java -- Java class Region
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.runtime.regions;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import orc.runtime.Token;
-import orc.trace.TokenTracer.StoreTrace;
 
 /**
  * Regions are used to track when some (sub-)computation terminates
@@ -20,53 +32,62 @@ public class Region {
 	private int active = 0;
 	private boolean isClosed = false;
 	private boolean isActive = false;
-	private Set<Token> containedTokens = new HashSet<Token>();
-	private Set<Region> containedRegions = new HashSet<Region>();
-	
-	public Region() {}
-	
+	private final Set<Token> containedTokens = new HashSet<Token>();
+	private final Set<Region> containedRegions = new HashSet<Region>();
+
+	public Region() {
+	}
+
 	/** Add an active token. */
-	public final synchronized void add(Token t) { 
-		if (isClosed) return;
-		inc(); 
+	public final synchronized void add(final Token t) {
+		if (isClosed) {
+			return;
+		}
+		inc();
 		containedTokens.add(t);
 		addActive();
 	}
-	
+
 	/** Add an inactive region. */
-	public final synchronized void add(Region r) { 
-		assert(!isClosed);
-		inc(); 
+	public final synchronized void add(final Region r) {
+		assert !isClosed;
+		inc();
 		containedRegions.add(r);
 	}
-	
+
 	/** Remove an active token. */
-	public final synchronized void remove(Token closer) { 
-		if (isClosed) return;
+	public final synchronized void remove(final Token closer) {
+		if (isClosed) {
+			return;
+		}
 		containedTokens.remove(closer);
-		dec(); 
+		dec();
 		// possibly close before becoming possibly inactive;
 		// we'll check if we're closed so we
 		// don't become inactive twice
 		removeActive();
 	}
-	
+
 	/** Remove an inactive region. */
-	public final synchronized void remove(Region r) { 
-		if (isClosed) return;
+	public final synchronized void remove(final Region r) {
+		if (isClosed) {
+			return;
+		}
 		containedRegions.remove(r);
-		dec(); 
+		dec();
 	}
 
 	private void inc() {
 		inhabitants++;
 	}
-	
+
 	private void dec() {
 		inhabitants--;
-		if (inhabitants <= 0) { close(); }
+		if (inhabitants <= 0) {
+			close();
+		}
 	}
-	
+
 	/**
 	 * Close the region. This may either
 	 * be called indirectly, when the last token
@@ -78,37 +99,42 @@ public class Region {
 		// we may be closed twice if a group
 		// cell closes the region just after the last
 		// token leaves it; so check to be safe
-		if (isClosed) return;
+		if (isClosed) {
+			return;
+		}
 		isClosed = true;
 		// do this before deactivating
 		// in case it makes something active
 		onClose();
-		if (isActive) deactivate();
+		if (isActive) {
+			deactivate();
+		}
 	}
-	
+
 	/** Override this in subclasses to handle the closing of the region. */
-	protected void onClose() {}
-	
+	protected void onClose() {
+	}
+
 	// for checkpointing and tracing
-	public final synchronized void putContainedTokens(Set<Token> acc) {
+	public final synchronized void putContainedTokens(final Set<Token> acc) {
 
 		acc.addAll(containedTokens);
-		for (Region r : containedRegions) {
+		for (final Region r : containedRegions) {
 			r.putContainedTokens(acc);
 		}
 	}
-	
+
 	/** Called when this region becomes quiescent. */
 	protected void deactivate() {
-		assert(isActive);
+		assert isActive;
 		isActive = false;
 	}
-	
+
 	/** Called when this region becomes not quiescent. */
 	protected void activate() {
 		isActive = true;
 	}
-	
+
 	/**
 	 * Called when this region might become quiescent.
 	 * This should check if the region is really quiescent,
@@ -118,14 +144,16 @@ public class Region {
 	protected void maybeDeactivate() {
 		deactivate();
 	}
-	
+
 	/**
 	 * Add an active token.
 	 * Tokens are active by default so you should
 	 * only call this for a token if you previously called {@link #removeActive()}.
 	 */
 	public final synchronized void addActive() {
-		if (!isActive && !isClosed) activate();
+		if (!isActive && !isClosed) {
+			activate();
+		}
 		++active;
 	}
 
@@ -134,8 +162,10 @@ public class Region {
 	 * Tokens are active by default.
 	 */
 	public synchronized void removeActive() {
-		assert(active > 0);
+		assert active > 0;
 		--active;
-		if (active == 0 && !isClosed) maybeDeactivate();
+		if (active == 0 && !isClosed) {
+			maybeDeactivate();
+		}
 	}
 }

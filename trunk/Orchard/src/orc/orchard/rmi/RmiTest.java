@@ -1,3 +1,16 @@
+//
+// RmiTest.java -- Java class RmiTest
+// Project Orchard
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.orchard.rmi;
 
 import java.net.URI;
@@ -12,14 +25,14 @@ import orc.orchard.events.PromptEvent;
 import orc.orchard.java.CompilerService;
 
 public class RmiTest {
-	public static void main(String[] args) throws Exception {
+	public static void main(final String[] args) throws Exception {
 		// Create an executor
-		URI executorURI = new URI("rmi://localhost/orchard/executor");
+		final URI executorURI = new URI("rmi://localhost/orchard/executor");
 		new ExecutorService(executorURI);
 		ExecutorServiceInterface executor;
-		executor = (ExecutorServiceInterface)Naming.lookup(executorURI.toString());
-		
-		CompilerService compiler = new CompilerService();
+		executor = (ExecutorServiceInterface) Naming.lookup(executorURI.toString());
+
+		final CompilerService compiler = new CompilerService();
 		// Check security validation
 		Oil oil = compiler.compile("", "class String = java.lang.String 1");
 		try {
@@ -27,9 +40,10 @@ public class RmiTest {
 			executor.submit("", oil);
 			System.err.println("Failed to catch validation error.");
 			return;
-		} catch (InvalidOilException e) {
+		} catch (final InvalidOilException e) {
 			System.out.println(e.toString());
-		};
+		}
+		;
 
 		// Compile a program
 		oil = compiler.compile("", "def M(x) = x | Rtimer(1000) >> M(x+1) M(1)");
@@ -48,21 +62,21 @@ public class RmiTest {
 				events = executor.jobEvents("", job);
 				System.out.println(events.toString());
 				executor.purgeJobEvents("", job);
-			} catch (InterruptedException e) {
+			} catch (final InterruptedException e) {
 				System.out.println("Timed out");
 				--i;
 			}
 		}
 		executor.haltJob("", job);
 		executor.finishJob("", job);
-		
+
 		// Test the Prompt site
 		job = executor.compileAndSubmit("", "Prompt(\"Hello?\")");
 		executor.startJob("", job);
 		List<JobEvent> events = executor.jobEvents("", job);
 		System.out.println(events.toString());
 		executor.purgeJobEvents("", job);
-		int promptID = ((PromptEvent)events.get(0)).promptID;
+		final int promptID = ((PromptEvent) events.get(0)).promptID;
 		executor.respondToPrompt("", job, promptID, "Hi");
 		events = executor.jobEvents("", job);
 		System.out.println(events.toString());

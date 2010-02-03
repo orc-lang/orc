@@ -1,3 +1,16 @@
+//
+// Globals.java -- Java class Globals
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.runtime;
 
 import java.util.HashMap;
@@ -12,37 +25,41 @@ import java.util.HashSet;
  * @param <V> value type
  * @author quark
  */
-public class Globals<H,V> {
+public class Globals<H, V> {
 	private class Entry {
 		public H handle;
 		public V value;
-		public Entry(H handle, V value) {
+
+		public Entry(final H handle, final V value) {
 			this.handle = handle;
 			this.value = value;
 		}
 	}
-	private HashMap<String, Entry> globals = new HashMap<String, Entry>();
-	private HashMap<H, HashSet<String>> handleKeys = new HashMap<H, HashSet<String>>();
-	
+
+	private final HashMap<String, Entry> globals = new HashMap<String, Entry>();
+	private final HashMap<H, HashSet<String>> handleKeys = new HashMap<H, HashSet<String>>();
+
 	/**
 	 * Store a global, generating a unique name.
 	 */
-	public String add(H handle, V value) {
+	public String add(final H handle, final V value) {
 		String key;
 		do {
 			key = java.util.UUID.randomUUID().toString();
 		} while (!put(handle, key, value));
 		return key;
 	}
-	
+
 	/**
 	 * Store a global, using an existing name. Only use this
 	 * if you are confident the name is globally unique, i.e.
 	 * it's some form of GUID. Returns false if the key is already
 	 * in use.
 	 */
-	public synchronized boolean put(H handle, String key, V value) {
-		if (globals.containsKey(key)) return false;
+	public synchronized boolean put(final H handle, final String key, final V value) {
+		if (globals.containsKey(key)) {
+			return false;
+		}
 		globals.put(key, new Entry(handle, value));
 		HashSet<String> activeKeys = handleKeys.get(handle);
 		if (activeKeys == null) {
@@ -52,25 +69,33 @@ public class Globals<H,V> {
 		activeKeys.add(key);
 		return true;
 	}
-	
-	public synchronized V get(String key) {
-		Entry e = globals.get(key);
-		if (e == null) return null;
+
+	public synchronized V get(final String key) {
+		final Entry e = globals.get(key);
+		if (e == null) {
+			return null;
+		}
 		return e.value;
 	}
-	
-	public synchronized V remove(String key) {
-		Entry e = globals.remove(key);
-		if (e == null) return null;
-		HashSet<String> activeKeys = handleKeys.get(e.handle);
-		if (activeKeys != null) activeKeys.remove(key);
+
+	public synchronized V remove(final String key) {
+		final Entry e = globals.remove(key);
+		if (e == null) {
+			return null;
+		}
+		final HashSet<String> activeKeys = handleKeys.get(e.handle);
+		if (activeKeys != null) {
+			activeKeys.remove(key);
+		}
 		return e.value;
 	}
-	
-	public synchronized void removeAll(H handle) {
-		HashSet<String> activeKeys = handleKeys.get(handle);
-		if (activeKeys == null) return;
-		for (String key : activeKeys) {
+
+	public synchronized void removeAll(final H handle) {
+		final HashSet<String> activeKeys = handleKeys.get(handle);
+		if (activeKeys == null) {
+			return;
+		}
+		for (final String key : activeKeys) {
 			globals.remove(key);
 		}
 		handleKeys.remove(handle);

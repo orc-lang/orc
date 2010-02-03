@@ -48,7 +48,6 @@ import orc.OrcCompiler;
 import orc.ast.oil.expression.Expression;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompileMessageRecorder;
-import orc.error.compiletime.CompileMessageRecorder.Severity;
 import orc.error.runtime.TokenException;
 import orc.progress.ProgressMonitorListener;
 import orc.runtime.OrcEngine;
@@ -162,15 +161,15 @@ public class OrcGui implements Runnable {
 				error("Compilation Error", message);
 			}
 
-			public void recordMessage(Severity severity, int code, String message, SourceLocation location, Throwable exception) {
+			public void recordMessage(final Severity severity, final int code, final String message, final SourceLocation location, final Throwable exception) {
 				recordMessage(severity, code, message, location, null, exception);
 			}
 
-			public void recordMessage(Severity severity, int code, String message, SourceLocation location, Object astNode) {
+			public void recordMessage(final Severity severity, final int code, final String message, final SourceLocation location, final Object astNode) {
 				recordMessage(severity, code, message, location, astNode, null);
 			}
 
-			public void recordMessage(Severity severity, int code, String message) {
+			public void recordMessage(final Severity severity, final int code, final String message) {
 				recordMessage(severity, code, message, null, null, null);
 			}
 		};

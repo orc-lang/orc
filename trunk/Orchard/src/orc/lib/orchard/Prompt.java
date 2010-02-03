@@ -1,3 +1,16 @@
+//
+// Prompt.java -- Java class Prompt
+// Project Orchard
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.lib.orchard;
 
 import orc.error.runtime.SiteException;
@@ -22,22 +35,25 @@ public class Prompt extends Site {
 	public interface Promptable {
 		public void prompt(String message, PromptCallback callback);
 	}
+
 	public interface PromptCallback {
 		public void respondToPrompt(String response);
+
 		public void cancelPrompt();
 	}
+
 	@Override
-	public void callSite(Args args, final Token caller) throws TokenException {
-		OrcEngine engine = caller.getEngine();
+	public void callSite(final Args args, final Token caller) throws TokenException {
+		final OrcEngine engine = caller.getEngine();
 		final String prompt = args.stringArg(0);
 		if (!(engine instanceof Promptable)) {
-			caller.error(new SiteException(
-					"This Orc engine does not support the Prompt site."));
+			caller.error(new SiteException("This Orc engine does not support the Prompt site."));
 		}
-		((Promptable)engine).prompt(prompt, new PromptCallback () {
-			public void respondToPrompt(String response) {
-				caller.resume(response);	
+		((Promptable) engine).prompt(prompt, new PromptCallback() {
+			public void respondToPrompt(final String response) {
+				caller.resume(response);
 			}
+
 			public void cancelPrompt() {
 				caller.die();
 			}

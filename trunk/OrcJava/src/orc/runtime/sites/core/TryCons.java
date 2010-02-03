@@ -1,21 +1,23 @@
-/**
- * 
- */
+//
+// TryCons.java -- Java class TryCons
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.runtime.sites.core;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-
 import orc.error.compiletime.typing.TypeException;
-import orc.error.runtime.ArgumentTypeMismatchException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
 import orc.runtime.sites.Site;
-import orc.runtime.values.ListLike;
-import orc.runtime.values.Value;
 import orc.type.Type;
 import orc.type.TypeVariable;
 import orc.type.structured.ArrowType;
@@ -28,14 +30,15 @@ import orc.type.structured.TupleType;
  */
 public class TryCons extends Site {
 	@Override
-	public void callSite(Args args, Token caller) throws TokenException {
+	public void callSite(final Args args, final Token caller) throws TokenException {
 		args.listLikeArg(0).uncons(caller);
 	}
-	
-	public Type type() throws TypeException { 	
-		Type X = new TypeVariable(0);
-		Type ListOfX = (new ListType()).instance(X);
-		return new ArrowType(ListOfX, new TupleType(X, ListOfX), 1); 
+
+	@Override
+	public Type type() throws TypeException {
+		final Type X = new TypeVariable(0);
+		final Type ListOfX = new ListType().instance(X);
+		return new ArrowType(ListOfX, new TupleType(X, ListOfX), 1);
 	}
-	
+
 }

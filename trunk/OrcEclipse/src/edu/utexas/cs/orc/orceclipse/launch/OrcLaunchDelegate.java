@@ -92,7 +92,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 	/* (non-Javadoc)
 	 * @see org.eclipse.debug.core.model.ILaunchConfigurationDelegate#launch(org.eclipse.debug.core.ILaunchConfiguration, java.lang.String, org.eclipse.debug.core.ILaunch, org.eclipse.core.runtime.IProgressMonitor)
 	 */
-	public void launch(final ILaunchConfiguration configuration, final String mode, final ILaunch launch, IProgressMonitor monitor) throws CoreException {
+	public void launch(final ILaunchConfiguration configuration, final String mode, final ILaunch launch, final IProgressMonitor monitor) throws CoreException {
 
 		if (SelectedResourceManager.getDefault().getSelectedResource() == null) {
 			StatusManager.getManager().handle(new Status(IStatus.INFO, Activator.getInstance().getID(), 1, Messages.OrcLaunchDelegate_UnableToLaunchNoResourceSelected, null), StatusManager.SHOW);
@@ -102,16 +102,17 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 		// Derived from org.eclipse.jdt.launching.JavaLaunchDelegate.java,
 		// Revision 1.8 (02 Oct 2007), trunk rev as of 04 Aug 2009
 
-		if (monitor == null) {
-			monitor = new NullProgressMonitor();
+		IProgressMonitor monitorNN = monitor;
+		if (monitorNN == null) {
+			monitorNN = new NullProgressMonitor();
 		}
-		monitor.beginTask(MessageFormat.format("{0}...", new String[] { configuration.getName() }), 2); //$NON-NLS-1$
+		monitorNN.beginTask(MessageFormat.format("{0}...", new String[] { configuration.getName() }), 2); //$NON-NLS-1$
 		// check for cancellation
-		if (monitor.isCanceled()) {
+		if (monitorNN.isCanceled()) {
 			return;
 		}
 		try {
-			monitor.subTask(Messages.OrcLaunchDelegate_VerifyingLaunchAttributes);
+			monitorNN.subTask(Messages.OrcLaunchDelegate_VerifyingLaunchAttributes);
 
 			final IResource orcProgToLaunch = SelectedResourceManager.getDefault().getSelectedResource();
 			OrcConfigSettings orcConfig;
@@ -163,26 +164,26 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 			runConfig.setBootClassPath(getBootpath(configuration));
 
 			// check for cancellation
-			if (monitor.isCanceled()) {
+			if (monitorNN.isCanceled()) {
 				return;
 			}
 
 			// done the verification phase
-			monitor.worked(1);
+			monitorNN.worked(1);
 
 			// Launch the configuration - 1 unit of work
-			runner.run(runConfig, launch, monitor);
+			runner.run(runConfig, launch, monitorNN);
 			for (final IProcess proc : launch.getProcesses()) {
 				final String processLabel = VariablesPlugin.getDefault().getStringVariableManager().performStringSubstitution("${resource_path}") + " [" + configuration.getType().getName() + "] (" + DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM).format(new Date(System.currentTimeMillis())) + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 				proc.setAttribute(IProcess.ATTR_PROCESS_LABEL, processLabel);
 			}
 
 			// check for cancellation
-			if (monitor.isCanceled()) {
+			if (monitorNN.isCanceled()) {
 				return;
 			}
 		} finally {
-			monitor.done();
+			monitorNN.done();
 		}
 	}
 

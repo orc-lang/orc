@@ -1,3 +1,16 @@
+//
+// ObjectValue.java -- Java class ObjectValue
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2008 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.trace.values;
 
 import java.io.IOException;
@@ -24,20 +37,23 @@ public class ObjectValue extends AbstractValue {
 	 */
 	public final long id;
 	public final Class class_;
-	public ObjectValue(Class class_) {
+
+	public ObjectValue(final Class class_) {
 		this.class_ = class_;
 		this.id = ++lastID;
 	}
+
 	@Override
-	public boolean equals(Object that) {
-		return that instanceof ObjectValue
-			&& ((ObjectValue)that).id == id;
+	public boolean equals(final Object that) {
+		return that instanceof ObjectValue && ((ObjectValue) that).id == id;
 	}
+
 	@Override
 	public int hashCode() {
-		return (int)(id % Integer.MAX_VALUE);
+		return (int) (id % Integer.MAX_VALUE);
 	}
-	public void prettyPrint(Writer out, int indent) throws IOException {
+
+	public void prettyPrint(final Writer out, final int indent) throws IOException {
 		out.write(class_.getName());
 		out.write("#");
 		out.write(String.valueOf(id));

@@ -13,16 +13,9 @@
 
 package orc.ast.oil.type;
 
-import java.util.LinkedList;
 import java.util.List;
 
-import orc.env.SearchFailureException;
-import orc.error.OrcError;
-import orc.error.compiletime.typing.ArgumentArityException;
-import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
-import orc.error.compiletime.typing.UnboundTypeException;
-import orc.error.compiletime.typing.UncallableTypeException;
 import orc.type.TypingContext;
 
 /**
@@ -34,12 +27,12 @@ public class TypeApplication extends Type {
 
 	public Type typeOperator;
 	public List<Type> params;
-	
-	public TypeApplication(Type typeOperator, List<Type> params) {
+
+	public TypeApplication(final Type typeOperator, final List<Type> params) {
 		this.typeOperator = typeOperator;
 		this.params = params;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -47,8 +40,8 @@ public class TypeApplication extends Type {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((params == null) ? 0 : params.hashCode());
-		result = prime * result + ((typeOperator == null) ? 0 : typeOperator.hashCode());
+		result = prime * result + (params == null ? 0 : params.hashCode());
+		result = prime * result + (typeOperator == null ? 0 : typeOperator.hashCode());
 		return result;
 	}
 
@@ -56,14 +49,14 @@ public class TypeApplication extends Type {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		TypeApplication other = (TypeApplication) obj;
+		final TypeApplication other = (TypeApplication) obj;
 		if (params == null) {
 			if (other.params != null) {
 				return false;
@@ -82,23 +75,25 @@ public class TypeApplication extends Type {
 	}
 
 	@Override
-	public orc.type.Type transform(TypingContext ctx) throws TypeException {
+	public orc.type.Type transform(final TypingContext ctx) throws TypeException {
 		return new orc.type.TypeApplication(typeOperator.transform(ctx), Type.transformAll(params, ctx));
 	}
-	
-	
+
+	@Override
 	public String toString() {
-		
-		StringBuilder s = new StringBuilder();
-		
+
+		final StringBuilder s = new StringBuilder();
+
 		s.append(typeOperator);
 		s.append('[');
 		for (int i = 0; i < params.size(); i++) {
-			if (i > 0) { s.append(", "); }
+			if (i > 0) {
+				s.append(", ");
+			}
 			s.append(params.get(i));
 		}
 		s.append(']');
-		
+
 		return s.toString();
 	}
 
@@ -108,6 +103,6 @@ public class TypeApplication extends Type {
 	@Override
 	public orc.ast.xml.type.Type marshal() {
 		return new orc.ast.xml.type.TypeApplication(typeOperator.marshal(), Type.marshalAll(params));
-	}	
-	
+	}
+
 }

@@ -35,27 +35,28 @@ public class TypeVariable extends Type {
 	 * @see orc.ast.simple.type.Type#convert(orc.env.Env)
 	 */
 	@Override
-	public orc.ast.oil.type.Type convert(Env<TypeVariable> env) throws TypeException {
-		
+	public orc.ast.oil.type.Type convert(final Env<TypeVariable> env) throws TypeException {
+
 		try {
 			return new orc.ast.oil.type.TypeVariable(env.search(this), name);
-		} catch (SearchFailureException e) {
+		} catch (final SearchFailureException e) {
 			e.printStackTrace();
 			throw new OrcError("Could not find bound variable " + name + " in environment");
 		}
-		
+
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see orc.ast.simple.type.Type#subst(orc.ast.simple.type.Type, orc.ast.simple.type.FreeTypeVariable)
 	 */
 	@Override
-	public Type subst(Type T, FreeTypeVariable X) {
+	public Type subst(final Type T, final FreeTypeVariable X) {
 		return this;
 	}
-	
+
+	@Override
 	public String toString() {
-		return (name != null ? name : super.toString());
+		return name != null ? name : super.toString();
 	}
 
 }

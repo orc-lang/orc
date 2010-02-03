@@ -45,7 +45,7 @@ public abstract class Expression {
 	 */
 	@Override
 	abstract public boolean equals(Object obj);
-	
+
 	/* Typechecking */
 
 	/* Given a context, infer this expression's type */

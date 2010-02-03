@@ -1,5 +1,5 @@
 //
-// Visitor.java -- Java class Visitor
+// Visitor.java -- Java interface Visitor
 // Project OrcJava
 //
 // $Id$

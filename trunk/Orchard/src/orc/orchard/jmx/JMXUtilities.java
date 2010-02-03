@@ -1,3 +1,16 @@
+//
+// JMXUtilities.java -- Java class JMXUtilities
+// Project Orchard
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.orchard.jmx;
 
 import java.lang.management.ManagementFactory;
@@ -13,37 +26,39 @@ import javax.management.ObjectName;
 import orc.error.OrcError;
 
 public final class JMXUtilities {
-	private JMXUtilities() {}
-	public static MBeanServer server = ManagementFactory.getPlatformMBeanServer(); 
-	
-	public static void unregisterMBean(ObjectName oname) {
+	private JMXUtilities() {
+	}
+
+	public static MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+
+	public static void unregisterMBean(final ObjectName oname) {
 		try {
 			server.unregisterMBean(oname);
-		} catch (InstanceNotFoundException e) {
+		} catch (final InstanceNotFoundException e) {
 			throw new OrcError(e);
-		} catch (MBeanRegistrationException e) {
+		} catch (final MBeanRegistrationException e) {
 			throw new OrcError(e);
 		}
 	}
-	public static ObjectName newObjectName(Object object, String id) {
+
+	public static ObjectName newObjectName(final Object object, final String id) {
 		try {
-			String name = object.getClass().getPackage().getName()
-				+ ":type=" + object.getClass().getSimpleName()
-				+ ",name=" + ObjectName.quote(id);
-			return new ObjectName(name); 
-		} catch (MalformedObjectNameException e) {
+			final String name = object.getClass().getPackage().getName() + ":type=" + object.getClass().getSimpleName() + ",name=" + ObjectName.quote(id);
+			return new ObjectName(name);
+		} catch (final MalformedObjectNameException e) {
 			throw new OrcError(e);
 		}
 	}
-	public static <T> ObjectName registerMBean(T object, ObjectName oname) {
+
+	public static <T> ObjectName registerMBean(final T object, final ObjectName oname) {
 		try {
 			server.registerMBean(new AnnotatedStandardMBean(object, null), oname);
 			return oname;
-		} catch (InstanceAlreadyExistsException e) {
+		} catch (final InstanceAlreadyExistsException e) {
 			throw new OrcError(e);
-		} catch (MBeanRegistrationException e) {
+		} catch (final MBeanRegistrationException e) {
 			throw new OrcError(e);
-		} catch (NotCompliantMBeanException e) {
+		} catch (final NotCompliantMBeanException e) {
 			throw new OrcError(e);
 		}
 	}

@@ -1,3 +1,16 @@
+//
+// BackwardEventCursor.java -- Java class BackwardEventCursor
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2008 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.trace;
 
 import orc.trace.events.Event;
@@ -9,16 +22,16 @@ import orc.trace.events.Event;
  * @author quark
  */
 public class BackwardEventCursor implements EventCursor {
-	private EventCursor cursor;
-	private BackwardEventCursor back;
-	
-	private BackwardEventCursor(EventCursor cursor, BackwardEventCursor back) {
+	private final EventCursor cursor;
+	private final BackwardEventCursor back;
+
+	private BackwardEventCursor(final EventCursor cursor, final BackwardEventCursor back) {
 		this.cursor = cursor;
 		this.back = back;
 		cursor.current().setCursor(this);
 	}
-	
-	public BackwardEventCursor(EventCursor cursor) {
+
+	public BackwardEventCursor(final EventCursor cursor) {
 		this(cursor, null);
 	}
 
@@ -31,7 +44,9 @@ public class BackwardEventCursor implements EventCursor {
 	}
 
 	public BackwardEventCursor backward() throws EndOfStream {
-		if (back == null) throw new EndOfStream();
+		if (back == null) {
+			throw new EndOfStream();
+		}
 		return back;
 	}
 }

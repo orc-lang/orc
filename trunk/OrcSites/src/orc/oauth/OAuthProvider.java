@@ -1,3 +1,16 @@
+//
+// OAuthProvider.java -- Java class OAuthProvider
+// Project OrcSites
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.oauth;
 
 import java.io.IOException;
@@ -20,29 +33,28 @@ import net.oauth.signature.RSA_SHA1;
  */
 public abstract class OAuthProvider {
 	protected SimpleOAuth oauth;
-	public OAuthProvider(String properties) throws IOException {
+
+	public OAuthProvider(final String properties) throws IOException {
 		oauth = new SimpleOAuth(properties);
 	}
-	
-	public OAuthAccessor authenticate(String name) throws Pausable, Exception {
+
+	public OAuthAccessor authenticate(final String name) throws Pausable, Exception {
 		return authenticate(name, OAuth.newList());
 	}
-	
+
 	/**
 	 * Get an authenticated OAuthAccessor.
 	 * @param  
 	 */
-	public OAuthAccessor authenticate(String name, List<OAuth.Parameter> request)
-	throws Pausable, Exception {
+	public OAuthAccessor authenticate(final String name, final List<OAuth.Parameter> request) throws Pausable, Exception {
 		throw new AssertionError("Must override OAuthProvider#authenticate(String)");
 	}
-	
-	public final OAuthConsumer getConsumer(String name) throws OAuthException {
+
+	public final OAuthConsumer getConsumer(final String name) throws OAuthException {
 		return oauth.getConsumer(name);
 	}
-	
-	public final PrivateKey getPrivateKey(String consumer) throws OAuthException {
-		return (PrivateKey)oauth.getConsumer(consumer)
-						.getProperty(RSA_SHA1.PRIVATE_KEY);
+
+	public final PrivateKey getPrivateKey(final String consumer) throws OAuthException {
+		return (PrivateKey) oauth.getConsumer(consumer).getProperty(RSA_SHA1.PRIVATE_KEY);
 	}
 }

@@ -1,13 +1,22 @@
-/**
- * 
- */
+//
+// SyncChannel.java -- Java class SyncChannel
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.lib.state;
 
 import java.util.LinkedList;
 
 import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.TokenException;
-import orc.lib.state.types.BufferType;
 import orc.lib.state.types.SyncChannelType;
 import orc.runtime.Args;
 import orc.runtime.Token;
@@ -19,10 +28,9 @@ import orc.type.TypeVariable;
 import orc.type.structured.ArrowType;
 
 /**
- * @author dkitchin
- *
  * Implements the local site SyncChannel, which creates synchronous channels.
  *
+ * @author dkitchin
  */
 public class SyncChannel extends EvalSite {
 
@@ -30,50 +38,48 @@ public class SyncChannel extends EvalSite {
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
 	 */
 	@Override
-	public Object evaluate(Args args) {
+	public Object evaluate(final Args args) {
 		return new SyncChannelInstance();
 	}
-	
-	
+
+	@Override
 	public Type type() throws TypeException {
-		Type X = new TypeVariable(0);
-		Type ChannelOfX = (new SyncChannelType()).instance(X);
+		final Type X = new TypeVariable(0);
+		final Type ChannelOfX = new SyncChannelType().instance(X);
 		return new ArrowType(ChannelOfX, 1);
 	}
-	
-	
+
 	private class SenderItem {
-		
+
 		Token sender;
 		Object sent;
-		
-		SenderItem(Token sender, Object sent)
-		{
+
+		SenderItem(final Token sender, final Object sent) {
 			this.sender = sender;
 			this.sent = sent;
 		}
 	}
-	
+
 	protected class SyncChannelInstance extends DotSite {
 
 		// Invariant: senderQueue is empty or receiverQueue is empty
-		private LinkedList<SenderItem> senderQueue;
-		private LinkedList<Token> receiverQueue;
+		private final LinkedList<SenderItem> senderQueue;
+		private final LinkedList<Token> receiverQueue;
 
 		SyncChannelInstance() {
 			senderQueue = new LinkedList<SenderItem>();
 			receiverQueue = new LinkedList<Token>();
 		}
-		
+
 		@Override
 		protected void addMembers() {
-			addMember("get", new getMethod());	
+			addMember("get", new getMethod());
 			addMember("put", new putMethod());
 		}
-		
+
 		private class getMethod extends Site {
 			@Override
-			public void callSite(Args args, Token receiver) {
+			public void callSite(final Args args, final Token receiver) {
 
 				// If there are no waiting senders, put this caller on the queue
 				if (senderQueue.isEmpty()) {
@@ -82,10 +88,10 @@ public class SyncChannel extends EvalSite {
 				}
 				// If there is a waiting sender, both sender and receiver return
 				else {
-					SenderItem si = senderQueue.removeFirst();
-					Token sender = si.sender;
-					Object item = si.sent;
-					
+					final SenderItem si = senderQueue.removeFirst();
+					final Token sender = si.sender;
+					final Object item = si.sent;
+
 					receiver.resume(item);
 					sender.unsetQuiescent();
 					sender.resume();
@@ -93,31 +99,31 @@ public class SyncChannel extends EvalSite {
 
 			}
 		}
-		
+
 		private class putMethod extends Site {
 			@Override
-			public void callSite(Args args, Token sender) throws TokenException {
+			public void callSite(final Args args, final Token sender) throws TokenException {
 
-				Object item = args.getArg(0);
-				
+				final Object item = args.getArg(0);
+
 				// If there are no waiting receivers, put this sender on the queue
 				if (receiverQueue.isEmpty()) {
 					sender.setQuiescent();
 					senderQueue.addLast(new SenderItem(sender, item));
 				}
-				
+
 				// If there is a waiting receiver, both receiver and sender return
 				else {
-					Token receiver = receiverQueue.removeFirst();
-					
+					final Token receiver = receiverQueue.removeFirst();
+
 					receiver.unsetQuiescent();
 					receiver.resume(item);
 					sender.resume();
 				}
-				
+
 			}
 		}
 
 	}
-	
+
 }

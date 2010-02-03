@@ -1,5 +1,5 @@
 //
-// ContextualVisitor.java -- Java class ContextualVisitor
+// ContextualVisitor.java -- Java interface ContextualVisitor
 // Project OrcJava
 //
 // $Id$

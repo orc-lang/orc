@@ -1,6 +1,16 @@
-/*
- * Copyright 2005, The University of Texas at Austin. All rights reserved.
- */
+//
+// Closure.java -- Java class Closure
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.runtime.values;
 
 import java.util.Iterator;
@@ -31,29 +41,31 @@ public final class Closure extends Value implements Callable, Future {
 	/**
 	 * The environment should be set later; see {@link Defs}.
 	 */
-	public Closure(Def def, List<Object> free) {
+	public Closure(final Def def, final List<Object> free) {
 		this.def = def;
 		this.free = free;
 	}
 
-	public void createCall(Token t, List<Object> args, TokenContinuation publishContinuation) throws TokenException {
+	public void createCall(final Token t, final List<Object> args, final TokenContinuation publishContinuation) throws TokenException {
 		if (args.size() != def.arity) {
 			throw new ArityMismatchException(def.arity, args.size());
 		}
 
 		t.enterClosure(this, publishContinuation);
-		for (Object f : args) t.bind(f);
+		for (final Object f : args) {
+			t.bind(f);
+		}
 		t.activate();
 	}
-	
+
 	@Override
-	public <E> E accept(Visitor<E> visitor) {
+	public <E> E accept(final Visitor<E> visitor) {
 		return visitor.visit(this);
 	}
-	
-	public Object forceArg(Token t) {
+
+	public Object forceArg(final Token t) {
 		if (free != null) {
-			Iterator<Object> freei = free.iterator();
+			final Iterator<Object> freei = free.iterator();
 			while (freei.hasNext()) {
 				if (Value.forceArg(freei.next(), t) == Value.futureNotReady) {
 					return Value.futureNotReady;
@@ -65,7 +77,7 @@ public final class Closure extends Value implements Callable, Future {
 		return this;
 	}
 
-	public Callable forceCall(Token t) throws UncallableValueException {
+	public Callable forceCall(final Token t) throws UncallableValueException {
 		return this;
 	}
 }

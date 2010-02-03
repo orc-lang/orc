@@ -1,6 +1,6 @@
 package org.jvnet.jax_ws_commons.json;
 
-import com.sun.xml.ws.transport.http.WSHTTPConnection;
+import com.sun.xml.internal.ws.transport.http.WSHTTPConnection;
 
 import java.util.HashMap;
 

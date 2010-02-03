@@ -1,3 +1,16 @@
+//
+// Webservice.java -- Java class Webservice
+// Project OrcSites
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.lib.net;
 
 import java.io.File;
@@ -5,7 +18,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
 import java.util.List;
 
 import kilim.Pausable;
@@ -46,16 +58,16 @@ public class Webservice extends Site {
 	 * Compile class files.
 	 */
 	@SuppressWarnings("unchecked")
-	private static void javac(File tmpdir, List sourcesList) {
-        // build argument list
-		String[] sources = ((List<String>)sourcesList).toArray(new String[]{});
-		String[] args = new String[sources.length + 4];
+	private static void javac(final File tmpdir, final List sourcesList) {
+		// build argument list
+		final String[] sources = ((List<String>) sourcesList).toArray(new String[] {});
+		final String[] args = new String[sources.length + 4];
 		args[0] = "-cp";
 		args[1] = classpath;
 		args[2] = "-nowarn";
 		args[3] = "-noExit";
 		int i = 4;
-		for (String source : sources) {
+		for (final String source : sources) {
 			args[i++] = source;
 		}
 		org.eclipse.jdt.internal.compiler.batch.Main.main(args);
@@ -63,23 +75,30 @@ public class Webservice extends Site {
 
 	/** Cache the classpath on load. */
 	private static String classpath = inferClasspath();
+
 	/**
 	 * Infer the classpath based on classloader information. This is a total
 	 * hack which I borrowed from CXF's DynamicClientFactory, with minor
 	 * changes.
 	 */
 	private static String inferClasspath() {
-		String pathsep = System.getProperty("path.separator");
+		final String pathsep = System.getProperty("path.separator");
 		ClassLoader leaf = Webservice.class.getClassLoader();
-		ClassLoader root = ClassLoader.getSystemClassLoader().getParent();
-		StringBuffer out = new StringBuffer();
+		final ClassLoader root = ClassLoader.getSystemClassLoader().getParent();
+		final StringBuffer out = new StringBuffer();
 		for (; leaf != null && !leaf.equals(root); leaf = leaf.getParent()) {
-			if (!(leaf instanceof URLClassLoader)) continue;
-			URL[] urls = ((URLClassLoader)leaf).getURLs();
-			if (urls == null) continue;
-			for (URL url : urls) {
-				if (!url.getProtocol().startsWith("file")) continue;
-				File file = new File(url.getPath());
+			if (!(leaf instanceof URLClassLoader)) {
+				continue;
+			}
+			final URL[] urls = ((URLClassLoader) leaf).getURLs();
+			if (urls == null) {
+				continue;
+			}
+			for (final URL url : urls) {
+				if (!url.getProtocol().startsWith("file")) {
+					continue;
+				}
+				final File file = new File(url.getPath());
 				if (file.exists()) {
 					out.append(file.getAbsolutePath());
 					out.append(pathsep);
@@ -92,9 +111,11 @@ public class Webservice extends Site {
 		}
 		return out.toString();
 	}
-	
+
+	@Override
 	public void callSite(final Args args, final Token caller) {
 		new Task() {
+			@Override
 			public void execute() throws Pausable {
 				Kilim.runThreaded(new Runnable() {
 					public void run() {
@@ -103,14 +124,17 @@ public class Webservice extends Site {
 							File tmpdir;
 							try {
 								tmpdir = caller.getEngine().createTmpdir();
-							} catch (IOException e) {
+							} catch (final IOException e) {
 								throw new JavaException(e);
 							}
-							Object out = evaluate(args, tmpdir);
+							final Object out = evaluate(args, tmpdir);
 							caller.getEngine().deleteTmpdir(tmpdir);
-							if (out == null) caller.die();
-							else caller.resume(out);
-						} catch (TokenException e) {
+							if (out == null) {
+								caller.die();
+							} else {
+								caller.resume(out);
+							}
+						} catch (final TokenException e) {
 							caller.error(e);
 						}
 					}
@@ -118,37 +142,37 @@ public class Webservice extends Site {
 			}
 		}.start();
 	}
-	
-	public Value evaluate(Args args, File tmpdir) throws TokenException {
+
+	public Value evaluate(final Args args, final File tmpdir) throws TokenException {
 		try {
 			// Generate stub source files.
 			// Emitter is the class that does all of the file creation for the
 			// WSDL2Java tool. Using Emitter will allow us to get immediate
 			// access to the class names that it generates.
-			Emitter emitter = new Emitter();
+			final Emitter emitter = new Emitter();
 			emitter.setOutputDir(tmpdir.toString());
 			emitter.run(args.stringArg(0));
-			GeneratedFileInfo info = emitter.getGeneratedFileInfo();
-			
+			final GeneratedFileInfo info = emitter.getGeneratedFileInfo();
+
 			// Compile stub source files
 			javac(tmpdir, info.getFileNames());
 
-			URLClassLoader cl = new URLClassLoader(new URL[]{tmpdir.toURI().toURL()},
-					Webservice.class.getClassLoader());
+			final URLClassLoader cl = new URLClassLoader(new URL[] { tmpdir.toURI().toURL() }, Webservice.class.getClassLoader());
 			// ensure all of the service's classes are loaded into the VM
 			// FIXME: is this necessary?
-			for (Object name : info.getClassNames()) cl.loadClass((String)name);
-			List<Entry> stubs = (ArrayList<Entry>) info.findType("interface");
-			Class stub = null;
-			Class locator = null;
-			for (Entry e : stubs) {
-				Class c = cl.loadClass(e.className);
-				if (c.getName().endsWith("Port")
-						|| c.getName().endsWith("PortType")) {
+			for (final Object name : info.getClassNames()) {
+				cl.loadClass((String) name);
+			}
+			final List<Entry> stubs = info.findType("interface");
+			Class<?> stub = null;
+			Class<?> locator = null;
+			for (final Entry e : stubs) {
+				final Class<?> c = cl.loadClass(e.className);
+				if (c.getName().endsWith("Port") || c.getName().endsWith("PortType")) {
 					stub = cl.loadClass(e.className);
 					break;
 				}
-				for (Class iface : c.getInterfaces()) {
+				for (final Class<?> iface : c.getInterfaces()) {
 					if (iface.getName().equals("java.rmi.Remote")) {
 						stub = cl.loadClass(e.className);
 						break;
@@ -160,9 +184,9 @@ public class Webservice extends Site {
 				throw new Exception("Unable to find stub among port interfaces");
 			}
 
-			List<Entry> services = (ArrayList<Entry>) info.findType("service");
+			final List<Entry> services = info.findType("service");
 
-			for (Entry e : services) {
+			for (final Entry e : services) {
 				if (e.className.endsWith("Locator")) {
 					locator = cl.loadClass(e.className);
 				}
@@ -172,14 +196,13 @@ public class Webservice extends Site {
 				throw new Exception("Unable to find Locator among services");
 			}
 
-			Method[] locatorMethods = locator.getMethods();
+			final Method[] locatorMethods = locator.getMethods();
 			Method getStub = null;
 
 			// use the stub with the default no-arg constructor
-			for (int i = 0; i < locatorMethods.length; i++) {
-				if (locatorMethods[i].getReturnType().equals(stub)
-						&& locatorMethods[i].getParameterTypes().length == 0) {
-					getStub = locatorMethods[i];
+			for (final Method locatorMethod : locatorMethods) {
+				if (locatorMethod.getReturnType().equals(stub) && locatorMethod.getParameterTypes().length == 0) {
+					getStub = locatorMethod;
 				}
 			}
 
@@ -187,12 +210,12 @@ public class Webservice extends Site {
 				throw new Exception("Unable to find getStub method within Locator");
 			}
 
-			Object arglist[] = new Object[0];
-			Object locatorObject = locator.newInstance();
-			Object stubObject = getStub.invoke(locatorObject, arglist);
+			final Object arglist[] = new Object[0];
+			final Object locatorObject = locator.newInstance();
+			final Object stubObject = getStub.invoke(locatorObject, arglist);
 
 			return new ThreadedObjectProxy(stubObject);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new JavaException(e);
 		}
 	}

@@ -1,3 +1,16 @@
+//
+// HandleOutputStream.java -- Java class HandleOutputStream
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2008 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.trace.handles;
 
 import java.io.IOException;
@@ -46,14 +59,15 @@ import java.util.Map;
 public final class HandleOutputStream extends ObjectOutputStream {
 	private int resetInterval = 0;
 	private int resetCount = 0;
-	public HandleOutputStream(OutputStream out) throws IOException {
+
+	public HandleOutputStream(final OutputStream out) throws IOException {
 		super(out);
 	}
-	
+
 	/**
 	 * The reset interval determines how often {@link #maybeReset()} actually resets.
 	 */
-	public HandleOutputStream(OutputStream out, int resetInterval) throws IOException {
+	public HandleOutputStream(final OutputStream out, final int resetInterval) throws IOException {
 		super(out);
 		this.resetInterval = resetInterval;
 	}
@@ -63,7 +77,7 @@ public final class HandleOutputStream extends ObjectOutputStream {
 	 * (relatively expensive) weak hash map because handles are cleared
 	 * explicitly using {@link LastHandle}.
 	 */
-	private Map<Object, Integer> handles = new HashMap<Object, Integer>();
+	private final Map<Object, Integer> handles = new HashMap<Object, Integer>();
 	/**
 	 * Largest handle yet used.
 	 */
@@ -73,16 +87,16 @@ public final class HandleOutputStream extends ObjectOutputStream {
 	 * This should ensure that we don't run out of
 	 * handles before running out of memory.
 	 */
-	private LinkedList<Integer> freeHandles = new LinkedList<Integer>();
-	
+	private final LinkedList<Integer> freeHandles = new LinkedList<Integer>();
+
 	/**
 	 * Change the reset interval. Also resets the current counter so the next
 	 * reset occurs after resetInterval calls to {@link #maybeReset()}.
 	 */
-	public void setResetInterval(int resetInterval) {
+	public void setResetInterval(final int resetInterval) {
 		this.resetInterval = resetInterval;
 	}
-	
+
 	/**
 	 * This uses the reset interval set by {@link #setResetInterval(int)} or
 	 * {@link #HandleOutputStream(OutputStream, int)} to decide whether to
@@ -90,48 +104,54 @@ public final class HandleOutputStream extends ObjectOutputStream {
 	 * @throws IOException 
 	 */
 	public void maybeReset() throws IOException {
-		if (resetInterval == resetCount++) reset();
-		if (resetCount > resetInterval) resetCount = 0;
+		if (resetInterval == resetCount++) {
+			reset();
+		}
+		if (resetCount > resetInterval) {
+			resetCount = 0;
+		}
 	}
-	
+
 	// I wish I could override writeObject to avoid sharing Handles,
 	// but it's declared final.
 	// public void writeObject(Object o) { ... }
-	
+
 	/**
 	 * Return the handle ID associated with a handle value.
 	 */
-	public int getHandle(Object value) {
-		assert(value != null);
-		int out = handles.get(value);
-		assert(out > 0);
+	public int getHandle(final Object value) {
+		assert value != null;
+		final int out = handles.get(value);
+		assert out > 0;
 		return out;
 	}
-	
+
 	/**
 	 * Create and return a new handle ID for the given value.
 	 */
-	public int newHandle(Object value) throws IOException {
-		assert(value != null);
+	public int newHandle(final Object value) throws IOException {
+		assert value != null;
 		int id;
 		if (freeHandles.isEmpty()) {
-			 id = ++maxHandle;
-			if (id == 0) throw new IOException("Out of handles");
+			id = ++maxHandle;
+			if (id == 0) {
+				throw new IOException("Out of handles");
+			}
 		} else {
 			id = freeHandles.poll();
 		}
 		handles.put(value, id);
 		return id;
 	}
-	
+
 	/**
 	 * Free the handle ID associated with the given value.
 	 * Only call this if you know the handle exists.
 	 */
-	public void freeHandle(Object value) {
-		assert(value != null);
-		int id = handles.remove(value);
-		assert(id != 0);
+	public void freeHandle(final Object value) {
+		assert value != null;
+		final int id = handles.remove(value);
+		assert id != 0;
 		freeHandles.add(id);
 	}
 }

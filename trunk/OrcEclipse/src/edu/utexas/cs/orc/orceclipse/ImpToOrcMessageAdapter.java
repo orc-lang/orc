@@ -62,9 +62,10 @@ public class ImpToOrcMessageAdapter implements CompileMessageRecorder {
 	 * (non-Javadoc)
 	 * @see orc.error.CompileMessageRecorder#recordMessage(orc.error.CompileMessageRecorder.Severity, int, java.lang.String, orc.error.SourceLocation, java.lang.Object, java.lang.Throwable)
 	 */
-	public void recordMessage(final Severity severity, final int code, final String message, SourceLocation location, final Object astNode, final Throwable exception) {
-		if (location == null) {
-			location = SourceLocation.UNKNOWN;
+	public void recordMessage(final Severity severity, final int code, final String message, final SourceLocation location, final Object astNode, final Throwable exception) {
+		SourceLocation locationNN = location;
+		if (locationNN == null) {
+			locationNN = SourceLocation.UNKNOWN;
 		}
 
 		maxSeverity = severity.ordinal() > maxSeverity.ordinal() ? severity : maxSeverity;
@@ -72,18 +73,18 @@ public class ImpToOrcMessageAdapter implements CompileMessageRecorder {
 		final int eclipseSeverity = eclipseSeverityFromOrcSeverity(severity);
 
 		if (impMessageHandler instanceof MarkerCreatorWithBatching) {
-			final int safeLineNumber = location.line >= 1 ? location.line : -1;
+			final int safeLineNumber = locationNN.line >= 1 ? locationNN.line : -1;
 			try {
-				((MarkerCreatorWithBatching) impMessageHandler).addMarker(eclipseSeverity, message, safeLineNumber, location.offset, location.endOffset);
+				((MarkerCreatorWithBatching) impMessageHandler).addMarker(eclipseSeverity, message, safeLineNumber, locationNN.offset, locationNN.endOffset);
 			} catch (final LimitExceededException e) {
 				// Shouldn't happen, since we don't use problem limits
 				Activator.log(e);
 			}
 		} else {
 			// AnnotationCreator breaks for our UNKNOWN offset values
-			final int safeStartOffset = location.offset >= 0 ? location.endOffset : 0;
-			final int safeEndOffset = location.endOffset >= 0 ? location.endOffset : -1;
-			impMessageHandler.handleSimpleMessage(message, safeStartOffset, safeEndOffset, location.column, location.endColumn, location.line, location.endLine);
+			final int safeStartOffset = locationNN.offset >= 0 ? locationNN.endOffset : 0;
+			final int safeEndOffset = locationNN.endOffset >= 0 ? locationNN.endOffset : -1;
+			impMessageHandler.handleSimpleMessage(message, safeStartOffset, safeEndOffset, locationNN.column, locationNN.endColumn, locationNN.line, locationNN.endLine);
 		}
 	}
 

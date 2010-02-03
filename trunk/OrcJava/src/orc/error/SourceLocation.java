@@ -71,13 +71,13 @@ public class SourceLocation implements Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((column == null) ? 0 : column.hashCode());
-		result = prime * result + ((endColumn == null) ? 0 : endColumn.hashCode());
-		result = prime * result + ((endLine == null) ? 0 : endLine.hashCode());
-		result = prime * result + ((endOffset == null) ? 0 : endOffset.hashCode());
-		result = prime * result + ((file == null) ? 0 : file.hashCode());
-		result = prime * result + ((line == null) ? 0 : line.hashCode());
-		result = prime * result + ((offset == null) ? 0 : offset.hashCode());
+		result = prime * result + (column == null ? 0 : column.hashCode());
+		result = prime * result + (endColumn == null ? 0 : endColumn.hashCode());
+		result = prime * result + (endLine == null ? 0 : endLine.hashCode());
+		result = prime * result + (endOffset == null ? 0 : endOffset.hashCode());
+		result = prime * result + (file == null ? 0 : file.hashCode());
+		result = prime * result + (line == null ? 0 : line.hashCode());
+		result = prime * result + (offset == null ? 0 : offset.hashCode());
 		return result;
 	}
 
@@ -85,7 +85,7 @@ public class SourceLocation implements Serializable {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -95,7 +95,7 @@ public class SourceLocation implements Serializable {
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		SourceLocation other = (SourceLocation) obj;
+		final SourceLocation other = (SourceLocation) obj;
 		if (column == null) {
 			if (other.column != null) {
 				return false;
@@ -219,7 +219,9 @@ public class SourceLocation implements Serializable {
 	 */
 	public String getCaret() {
 		try {
-			if (file == null) { throw new IOException(); }
+			if (file == null) {
+				throw new IOException();
+			}
 			final BufferedReader input = new BufferedReader(new FileReader(file));
 			String str = "";
 			for (int i = 0; i < line; i++) {

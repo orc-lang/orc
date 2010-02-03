@@ -1,11 +1,21 @@
-/**
- * 
- */
+//
+// Or.java -- Java class Or
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.lib.bool;
 
 /**
- * @author dkitchin
  *
+ * @author dkitchin
  */
 public class Or extends BoolBinopSite {
 
@@ -13,7 +23,7 @@ public class Or extends BoolBinopSite {
 	 * @see orc.lib.bool.BoolBinopSite#compute(boolean, boolean)
 	 */
 	@Override
-	public boolean compute(boolean a, boolean b) {
+	public boolean compute(final boolean a, final boolean b) {
 		return a || b;
 	}
 

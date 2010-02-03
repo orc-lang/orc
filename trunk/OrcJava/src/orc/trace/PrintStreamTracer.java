@@ -1,3 +1,16 @@
+//
+// PrintStreamTracer.java -- Java class PrintStreamTracer
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2008 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.trace;
 
 import java.io.IOException;
@@ -6,9 +19,7 @@ import java.io.OutputStreamWriter;
 
 import orc.error.OrcError;
 import orc.trace.events.Event;
-import orc.trace.events.ForkEvent;
 import orc.trace.handles.Handle;
-import orc.trace.values.Marshaller;
 
 /**
  * Write trace events to stdout in human-readable form.
@@ -19,17 +30,19 @@ import orc.trace.values.Marshaller;
 public final class PrintStreamTracer extends AbstractTracer {
 	private final OutputStreamWriter out;
 	private int seq = 0;
-	public PrintStreamTracer(OutputStream out) {
+
+	public PrintStreamTracer(final OutputStream out) {
 		this.out = new OutputStreamWriter(out);
 	}
 
-	protected synchronized void record(Handle<? extends Event> event) {
+	@Override
+	protected synchronized void record(final Handle<? extends Event> event) {
 		try {
 			event.get().setSeq(seq++);
 			event.get().prettyPrint(out, 0);
 			out.write('\n');
 			out.flush();
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			// FIXME: is there a better way to handle this?
 			// I don't want to pass the exception on to the
 			// caller since there's no way to recover from
@@ -38,6 +51,8 @@ public final class PrintStreamTracer extends AbstractTracer {
 			throw new OrcError(e);
 		}
 	}
-	
-	public void finish() {}
+
+	@Override
+	public void finish() {
+	}
 }

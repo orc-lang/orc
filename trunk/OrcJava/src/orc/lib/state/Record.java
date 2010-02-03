@@ -1,9 +1,21 @@
+//
+// Record.java -- Java class Record
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.lib.state;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import orc.ast.oil.expression.argument.Argument;
 import orc.ast.oil.expression.argument.Constant;
@@ -22,32 +34,34 @@ import orc.type.structured.DotType;
  */
 public class Record extends EvalSite {
 	private static class RecordInstance extends EvalSite {
-		private HashMap<String, Object> map = new HashMap<String, Object>();
+		private final HashMap<String, Object> map = new HashMap<String, Object>();
+
 		@Override
-		public Object evaluate(Args args) throws TokenException {
-			String field = args.fieldName();
+		public Object evaluate(final Args args) throws TokenException {
+			final String field = args.fieldName();
 			return map.get(field);
 		}
-		
+
+		@Override
 		public String toString() {
 			return map.toString();
 		}
-		
-		private void put(String key, Object value) {
+
+		private void put(final String key, final Object value) {
 			map.put(key, value);
 		}
 	}
 
 	@Override
-	public Object evaluate(Args args) throws TokenException {
-		RecordInstance out = new RecordInstance();
-		Iterator<Object> argsi = args.iterator();
+	public Object evaluate(final Args args) throws TokenException {
+		final RecordInstance out = new RecordInstance();
+		final Iterator<Object> argsi = args.iterator();
 		while (argsi.hasNext()) {
-			Object keyo = argsi.next();
+			final Object keyo = argsi.next();
 			String key;
 			try {
-				key = (String)keyo;
-			} catch (ClassCastException e) {
+				key = (String) keyo;
+			} catch (final ClassCastException e) {
 				throw new ArgumentTypeMismatchException(e);
 			}
 			if (!argsi.hasNext()) {
@@ -59,38 +73,39 @@ public class Record extends EvalSite {
 	}
 
 	private static class RecordBuilderType extends Type {
-	
+
 		/* Override the default type call implementation,
 		 * using the string values of the args directly
 		 * within the constructed dot type.
 		 */
-		public Type call(TypingContext ctx, List<Argument> args, List<Type> typeActuals) throws TypeException {
-			
+		@Override
+		public Type call(final TypingContext ctx, final List<Argument> args, final List<Type> typeActuals) throws TypeException {
+
 			int i = 0;
-			DotType dt = new DotType();
+			final DotType dt = new DotType();
 			String key = "";
 			try {
 				while (i < args.size()) {
-					Constant c = (Constant)args.get(i);
-					key = (String)c.v;
-					Type t = args.get(i+1).typesynth(ctx);
+					final Constant c = (Constant) args.get(i);
+					key = (String) c.v;
+					final Type t = args.get(i + 1).typesynth(ctx);
 					dt.addField(key, t);
 					i += 2;
 				}
-			}
-			catch (ClassCastException e) {
+			} catch (final ClassCastException e) {
 				throw new TypeException("Record field name at index " + i + " must be a string constant");
-			}
-			catch (IndexOutOfBoundsException e) {
+			} catch (final IndexOutOfBoundsException e) {
 				throw new TypeException("Arity mismatch: no initial value given after field name '" + key + "'");
 			}
-			
+
 			return dt;
 		}
-		
+
 	}
+
 	private static Type thisType = new RecordBuilderType();
-	
+
+	@Override
 	public Type type() {
 		return thisType;
 	}

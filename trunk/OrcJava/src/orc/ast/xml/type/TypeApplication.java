@@ -1,39 +1,41 @@
+//
+// TypeApplication.java -- Java class TypeApplication
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.ast.xml.type;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
-
-import orc.env.Env;
-import orc.env.SearchFailureException;
-import orc.error.compiletime.typing.ArgumentArityException;
-import orc.error.compiletime.typing.SubtypeFailureException;
-import orc.error.compiletime.typing.UnboundTypeException;
-import orc.error.compiletime.typing.UncallableTypeException;
 
 /**
  * A type instantiation with explicit type parameters: T[T,..,T]
  * 
  * @author dkitchin
- *
  */
 public class TypeApplication extends Type {
-	@XmlElement(required=true)
+	@XmlElement(required = true)
 	public Type constructor;
-	@XmlElement(name="param", required=true)
+	@XmlElement(name = "param", required = true)
 	public Type[] params;
-	
-	public TypeApplication() {}
-	public TypeApplication(Type ty, Type[] params) {
+
+	public TypeApplication() {
+	}
+
+	public TypeApplication(final Type ty, final Type[] params) {
 		this.constructor = ty;
 		this.params = params;
 	}
-	
+
 	@Override
-	public orc.ast.oil.type.Type unmarshal() {				
-		return new orc.ast.oil.type.TypeApplication(constructor.unmarshal(), 
-													Type.unmarshalAll(params));
+	public orc.ast.oil.type.Type unmarshal() {
+		return new orc.ast.oil.type.TypeApplication(constructor.unmarshal(), Type.unmarshalAll(params));
 	}
 }

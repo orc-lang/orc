@@ -216,7 +216,7 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 	}
 
 	private static TokenRecord tokenTable[] = {
-			// NUMBER_LITERAL,
+	// NUMBER_LITERAL,
 			// STRING_LITERAL,
 			// BOOLEAN_LITERAL,
 			// NULL_LITERAL,

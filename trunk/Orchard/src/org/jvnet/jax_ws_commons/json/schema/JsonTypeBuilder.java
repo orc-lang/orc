@@ -1,11 +1,12 @@
 package org.jvnet.jax_ws_commons.json.schema;
 
-import com.sun.xml.xsom.XSElementDecl;
-import com.sun.xml.xsom.XSParticle;
-import com.sun.xml.xsom.XSSimpleType;
-import com.sun.xml.xsom.XSType;
 import org.jvnet.jax_ws_commons.json.SchemaConvention;
 import org.jvnet.jax_ws_commons.json.SchemaWalker;
+
+import com.sun.xml.internal.xsom.XSElementDecl;
+import com.sun.xml.internal.xsom.XSParticle;
+import com.sun.xml.internal.xsom.XSSimpleType;
+import com.sun.xml.internal.xsom.XSType;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;

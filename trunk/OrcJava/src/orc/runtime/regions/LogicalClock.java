@@ -1,3 +1,16 @@
+//
+// LogicalClock.java -- Java class LogicalClock
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.runtime.regions;
 
 import java.util.PriorityQueue;
@@ -19,24 +32,24 @@ import orc.runtime.Token;
  */
 public final class LogicalClock extends SubRegion {
 	/** Tokens blocked pending future events. */
-	private PriorityQueue<LtimerQueueEntry> eventQueue;
+	private final PriorityQueue<LtimerQueueEntry> eventQueue;
 	/** The current logical time. */
 	private int currentTime = 0;
-	private LogicalClock parentClock;
-	
-	public LogicalClock(Region parent, LogicalClock parentClock) {
+	private final LogicalClock parentClock;
+
+	public LogicalClock(final Region parent, final LogicalClock parentClock) {
 		super(parent);
 		this.parentClock = parentClock;
 		eventQueue = new PriorityQueue<LtimerQueueEntry>();
 		currentTime = 0;
 	}
-	
+
 	/** Schedule a token to resume at a future time. */
-	public final void addEvent(int delay, Token token) {
+	public final void addEvent(final int delay, final Token token) {
 		eventQueue.add(new LtimerQueueEntry(delay + currentTime, token));
 		token.setQuiescent();
 	}
-	
+
 	/** Advance the logical time. Called when all child tokens and clocks are quiescent. */
 	@Override
 	protected void maybeDeactivate() {
@@ -53,14 +66,14 @@ public final class LogicalClock extends SubRegion {
 			LtimerQueueEntry top = eventQueue.peek();
 			currentTime = top.time;
 			while (top != null && top.time <= currentTime) {
-				Token token = eventQueue.remove().token;
+				final Token token = eventQueue.remove().token;
 				token.unsetQuiescent();
 				token.resume();
 				top = eventQueue.peek();
 			}
 		}
 	}
-	
+
 	/**
 	 * Class representing Ltimer Queue Entry 
 	 * @author dkitchin, based on RtimerQueueEntry by jayeshs
@@ -69,25 +82,29 @@ public final class LogicalClock extends SubRegion {
 		public int time;
 		public Token token;
 
-		public LtimerQueueEntry(int time, Token token) {
+		public LtimerQueueEntry(final int time, final Token token) {
 			this.token = token;
 			this.time = time;
 		}
-		public int compareTo(LtimerQueueEntry n) {
+
+		public int compareTo(final LtimerQueueEntry n) {
 			// sort the queue items earliest first
 			return Integer.signum(time - n.time);
 		}
 	}
 
 	public LogicalClock getParentClock() throws SiteException {
-		if (parentClock == null) throw new SiteException("Cannot pop the root logical clock.");
+		if (parentClock == null) {
+			throw new SiteException("Cannot pop the root logical clock.");
+		}
 		return parentClock;
 	}
-	
+
+	@Override
 	public void removeActive() {
 		super.removeActive();
 	}
-	
+
 	public int getCurrentTime() {
 		return currentTime;
 	}

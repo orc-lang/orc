@@ -4,9 +4,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/FastInfoset.jar"/>
 	<classpathentry kind="lib" path="lib/http.jar"/>
-	<classpathentry kind="lib" path="lib/jaxws-api.jar"/>
-	<classpathentry kind="lib" path="lib/jaxws-rt.jar"/>
-	<classpathentry kind="lib" path="lib/jaxws-tools.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-util-6.1.11.jar"/>
 	<classpathentry kind="lib" path="lib/jsr181-api.jar"/>
 	<classpathentry kind="lib" path="lib/jsr250-api.jar"/>

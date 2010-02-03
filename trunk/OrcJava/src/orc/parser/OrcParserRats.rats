@@ -1,5 +1,5 @@
 //
-// OrcParserRats -- Rats! grammar module for the OrcParserRats parser
+// OrcParserRats.rats -- Rats! grammar module for the OrcParserRats parser
 // Project OrcJava
 //
 // $Id$
@@ -21,17 +21,14 @@ header {
 	import java.util.ListIterator;
 	import java.io.FileNotFoundException;
 	import java.io.File;
-	import java.io.Reader;
 	import java.math.BigInteger;
 	import java.math.BigDecimal;
-	
+
 	import xtc.util.Utilities;
 	import xtc.util.Action;
-	import xtc.util.Pair;
 	import xtc.tree.Location;
-	
+
 	import orc.Config;
-	import orc.ast.extended.*;
 	import orc.ast.extended.expression.*;
 	import orc.ast.extended.pattern.*;
 	import orc.ast.extended.type.*;
@@ -39,10 +36,7 @@ header {
 	import orc.ast.extended.declaration.def.*;
 	import orc.ast.extended.declaration.type.*;
 	import orc.error.*;
-
-	import orc.runtime.values.Value;
-	import orc.runtime.values.ListValue;
-	import orc.runtime.values.TupleValue;
+	//End header
 }
 
 body {

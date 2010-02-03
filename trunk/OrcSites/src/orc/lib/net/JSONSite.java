@@ -1,3 +1,16 @@
+//
+// JSONSite.java -- Java class JSONSite
+// Project OrcSites
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.lib.net;
 
 import java.util.LinkedList;
@@ -24,21 +37,23 @@ import org.codehaus.jettison.json.JSONObject;
  * @author quark
  */
 class JSONSite extends EvalSite {
-	private JSONObject root;
-	private JSONSite(JSONObject root) {
+	private final JSONObject root;
+
+	private JSONSite(final JSONObject root) {
 		this.root = root;
 	}
-	public static Object wrapJSON(Object o) {
+
+	public static Object wrapJSON(final Object o) {
 		if (o instanceof JSONObject) {
-			return new JSONSite((JSONObject)o); 
+			return new JSONSite((JSONObject) o);
 		} else if (o instanceof JSONArray) {
-			List<Object> out = new LinkedList<Object>();
-			JSONArray a = (JSONArray)o;
+			final List<Object> out = new LinkedList<Object>();
+			final JSONArray a = (JSONArray) o;
 			for (int i = 0; i < a.length(); ++i) {
 				Object e;
 				try {
 					e = a.get(i);
-				} catch (JSONException _) {
+				} catch (final JSONException _) {
 					// the index does not exist
 					e = null;
 				}
@@ -49,15 +64,15 @@ class JSONSite extends EvalSite {
 			return o;
 		}
 	}
+
 	@Override
-	public Object evaluate(Args args) throws TokenException {
+	public Object evaluate(final Args args) throws TokenException {
 		try {
 			if (root == null) {
-				throw new SiteException("Tried to get a property from" +
-						" a null JSON object.");
+				throw new SiteException("Tried to get a property from" + " a null JSON object.");
 			}
 			return wrapJSON(root.get(args.fieldName()));
-		} catch (JSONException e) {
+		} catch (final JSONException e) {
 			throw new JavaException(e);
 		}
 	}

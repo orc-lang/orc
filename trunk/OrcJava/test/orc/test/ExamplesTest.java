@@ -62,7 +62,7 @@ import org.kohsuke.args4j.CmdLineException;
  */
 public class ExamplesTest {
 	public static Test suite() {
-		Config config = new Config();
+		final Config config = new Config();
 		return buildSuite(config);
 	}
 
@@ -111,7 +111,7 @@ public class ExamplesTest {
 		config.setQuietChecking(true);
 
 		final OrcEngine engine = new OrcEngine(config);
-		orc.ast.oil.expression.Expression expr = Orc.compile(config);
+		final orc.ast.oil.expression.Expression expr = Orc.compile(config);
 		if (expr == null) {
 			throw new CompilationException("Compilation to OIL failed");
 		}

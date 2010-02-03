@@ -1,9 +1,9 @@
 package org.jvnet.jax_ws_commons.json;
 
-import com.sun.xml.ws.developer.JAXWSProperties;
-import com.sun.xml.ws.model.wsdl.WSDLBoundOperationImpl;
-import com.sun.xml.ws.transport.http.HttpAdapter;
-import com.sun.xml.ws.transport.http.WSHTTPConnection;
+import com.sun.xml.internal.ws.developer.JAXWSProperties;
+import com.sun.xml.internal.ws.model.wsdl.WSDLBoundOperationImpl;
+import com.sun.xml.internal.ws.transport.http.HttpAdapter;
+import com.sun.xml.internal.ws.transport.http.WSHTTPConnection;
 import org.jvnet.jax_ws_commons.json.schema.JsonOperation;
 
 import java.beans.Introspector;
