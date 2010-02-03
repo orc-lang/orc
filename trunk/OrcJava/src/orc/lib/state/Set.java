@@ -14,6 +14,7 @@
 package orc.lib.state;
 
 import java.util.AbstractSet;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -26,7 +27,7 @@ import orc.runtime.values.Reference;
  * @author quark
  */
 public final class Set<E> extends AbstractSet<E> {
-	private final HashSet<Wrapper<E>> set = new HashSet<Wrapper<E>>();
+	private final java.util.Set<Wrapper<E>> set = Collections.synchronizedSet(new HashSet<Wrapper<E>>());
 
 	private static class Wrapper<E> {
 		public E value;
