@@ -1,3 +1,16 @@
+//
+// Clause.java -- Java class Clause
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.ast.extended.declaration.def;
 
 import java.util.LinkedList;
@@ -9,25 +22,22 @@ import orc.ast.extended.pattern.Attachment;
 import orc.ast.extended.pattern.Pattern;
 import orc.ast.extended.pattern.PatternSimplifier;
 import orc.ast.simple.argument.Argument;
-import orc.ast.simple.argument.Constant;
 import orc.ast.simple.argument.FreeVariable;
 import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.Expression;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.NonlinearPatternException;
-import orc.error.compiletime.PatternException;
 
 public class Clause {
 
 	public List<Pattern> ps;
 	public orc.ast.extended.expression.Expression body;
-	
-	public Clause(List<Pattern> ps, orc.ast.extended.expression.Expression body) {
+
+	public Clause(final List<Pattern> ps, final orc.ast.extended.expression.Expression body) {
 		this.ps = ps;
 		this.body = body;
 	}
 
-	
 	/**
 	 * Simplify a clause.
 	 * 
@@ -48,87 +58,82 @@ public class Clause {
 	 * 		   the clause fails to match.
 	 * @throws CompilationException
 	 */
-	public orc.ast.simple.expression.Expression simplify(List<Variable> formals, orc.ast.simple.expression.Expression otherwise) throws CompilationException {
+	public orc.ast.simple.expression.Expression simplify(final List<Variable> formals, final orc.ast.simple.expression.Expression otherwise) throws CompilationException {
 
 		Expression newbody = body.simplify();
-		List<PatternSimplifier> stricts = new LinkedList<PatternSimplifier>();
-				
-		Set<FreeVariable> allvars = new TreeSet<FreeVariable>();
-		for(int i = 0; i < ps.size(); i++) {
-			Pattern p = ps.get(i);
-			Variable arg = formals.get(i);
-			
+		final List<PatternSimplifier> stricts = new LinkedList<PatternSimplifier>();
+
+		final Set<FreeVariable> allvars = new TreeSet<FreeVariable>();
+		for (int i = 0; i < ps.size(); i++) {
+			final Pattern p = ps.get(i);
+			final Variable arg = formals.get(i);
+
 			// Push the argument through its matching pattern
-			PatternSimplifier pv = p.process(arg);
-			
+			final PatternSimplifier pv = p.process(arg);
+
 			// Let's make sure this pattern didn't duplicate any existing variables
-			for (FreeVariable x : pv.vars()) {
+			for (final FreeVariable x : pv.vars()) {
 				if (allvars.contains(x)) {
 					throw new NonlinearPatternException(x);
-				}
-				else {
+				} else {
 					allvars.add(x);
 				}
 			}
-			
+
 			// If this is a strict pattern, save its visitor. We'll process it later.
 			if (p.strict()) {
-				stricts.add(pv); 
-			}
-			else {
+				stricts.add(pv);
+			} else {
 				// Just substitute the argument directly, preserving non-strictness
 				newbody = pv.target(arg, newbody);
 			}
 		}
-		
-	
+
 		if (stricts.size() > 0) {
 			// If any pattern was strict, we need to put in its filter,
 			// and check all of the filters to make sure they succeeded.
-			
-			Variable binds = new Variable();
-			List<Attachment> filters = new LinkedList<Attachment>();
-			
+
+			final Variable binds = new Variable();
+			final List<Attachment> filters = new LinkedList<Attachment>();
+
 			if (stricts.size() == 1) {
 				// If there is only one strict pattern, we won't need a result tuple
-				PatternSimplifier pv = stricts.get(0);
+				final PatternSimplifier pv = stricts.get(0);
 				filters.add(new Attachment(new Variable(), pv.filter()));
-				newbody = pv.target(binds, newbody);				
-			} else /* size >= 2 */ { 
-				for(int i = 0; i < stricts.size(); i++) {
+				newbody = pv.target(binds, newbody);
+			} else /* size >= 2 */{
+				for (int i = 0; i < stricts.size(); i++) {
 					// Add this pattern's output as a component of the result tuple
-					PatternSimplifier pv = stricts.get(i);
+					final PatternSimplifier pv = stricts.get(i);
 					filters.add(new Attachment(new Variable(), pv.filter()));
-					
+
 					// Pull that output from the result tuple on the other side
-					Expression lookup = Pattern.nth(binds, i);
-					Variable x = new Variable();
-					newbody = pv.target(x, newbody);				
+					final Expression lookup = Pattern.nth(binds, i);
+					final Variable x = new Variable();
+					newbody = pv.target(x, newbody);
 					newbody = new orc.ast.simple.expression.Pruning(newbody, lookup, x);
 				}
 			}
-						
-			
-			Variable z = new Variable();
-			
+
+			final Variable z = new Variable();
+
 			/* Build the left hand side */
-			Expression caseof = Pattern.caseof(z, binds, newbody, otherwise);
-			
+			final Expression caseof = Pattern.caseof(z, binds, newbody, otherwise);
+
 			/* Build the right hand side */
 			Expression lift;
 			if (filters.size() == 1) {
-				Attachment a = filters.get(0);
+				final Attachment a = filters.get(0);
 				lift = Pattern.lift(a.v);
 				lift = a.attach(lift);
-			}
-			else {
-				
+			} else {
+
 				// First, find all of the variable names and make a list [y1...yn]
-				List<Argument> ys = new LinkedList<Argument>();
-				for (Attachment a : filters) {
+				final List<Argument> ys = new LinkedList<Argument>();
+				for (final Attachment a : filters) {
 					ys.add(a.v);
 				}
-				
+
 				/* Then construct: 
 				 * 
 				 * lift(yall) 
@@ -138,24 +143,22 @@ public class Clause {
 				 * <yn< filtern
 				 * 
 				 */
-				Variable yall = new Variable();
+				final Variable yall = new Variable();
 				lift = new orc.ast.simple.expression.Pruning(Pattern.lift(yall), new orc.ast.simple.expression.Let(ys), yall);
 
-				for (Attachment a : filters) {
+				for (final Attachment a : filters) {
 					lift = a.attach(lift);
 				}
 			}
-			
+
 			// Now put it all together.
 			newbody = new orc.ast.simple.expression.Pruning(caseof, lift, z);
-		}
-		else {
+		} else {
 			// If there are no strict patterns, it suffices to just use the
 			// body as given, since no pattern can fail.
 		}
-		
+
 		return newbody;
 	}
-	
-	
+
 }

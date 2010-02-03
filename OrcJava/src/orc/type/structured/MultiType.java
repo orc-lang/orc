@@ -1,3 +1,16 @@
+//
+// MultiType.java -- Java class MultiType
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.type.structured;
 
 import java.util.LinkedList;
@@ -16,62 +29,67 @@ import orc.type.TypingContext;
  * it will be typechecked using each type in the list sequentially until
  * one succeeds.
  * 
- * 
  * @author dkitchin
- *
  */
 public class MultiType extends Type {
 
 	List<Type> alts;
-	
-	
-	public MultiType(List<Type> alts) {
+
+	public MultiType(final List<Type> alts) {
 		this.alts = alts;
 	}
-	
+
 	// binary case
-	public MultiType(Type A, Type B) {
+	public MultiType(final Type A, final Type B) {
 		this.alts = new LinkedList<Type>();
 		alts.add(A);
 		alts.add(B);
 	}
-	
-	public boolean subtype(Type that) throws TypeException {
-		
-		for(Type alt : alts) {
-			if (alt.subtype(that)) return true;
+
+	@Override
+	public boolean subtype(final Type that) throws TypeException {
+
+		for (final Type alt : alts) {
+			if (alt.subtype(that)) {
+				return true;
+			}
 		}
-		
+
 		return false;
 	}
-	
-	public Type call(TypingContext ctx, List<Argument> args, List<Type> typeActuals) throws TypeException {
-		
-		for(Type alt : alts) {
+
+	@Override
+	public Type call(final TypingContext ctx, final List<Argument> args, final List<Type> typeActuals) throws TypeException {
+
+		for (final Type alt : alts) {
 			try {
 				return alt.call(ctx, args, typeActuals);
+			} catch (final TypeException e) {
 			}
-			catch (TypeException e) {}
 		}
-		
+
 		// TODO: Make this more informative
 		throw new TypeException("Typing failed for call; no alternatives matched in " + this + ".");
 	}
-	
+
+	@Override
 	public String toString() {
-		
-		StringBuilder s = new StringBuilder();
-		
+
+		final StringBuilder s = new StringBuilder();
+
 		s.append('(');
 		for (int i = 0; i < alts.size(); i++) {
-			if (i > 0) { s.append(" & "); }
+			if (i > 0) {
+				s.append(" & ");
+			}
 			s.append(alts.get(i));
 		}
 		s.append(')');
-		
+
 		return s.toString();
 	}
-	
+
+	@Override
 	public Set<Integer> freeVars() {
 		return Type.allFreeVars(alts);
 	}

@@ -39,24 +39,24 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import com.sun.istack.NotNull;
-import com.sun.xml.bind.unmarshaller.DOMScanner;
+import com.sun.istack.internal.NotNull;
 import com.sun.xml.stream.buffer.MutableXMLStreamBuffer;
 import com.sun.xml.stream.buffer.stax.StreamWriterBufferCreator;
-import com.sun.xml.ws.api.model.wsdl.WSDLBoundOperation;
-import com.sun.xml.ws.api.model.wsdl.WSDLPort;
-import com.sun.xml.ws.api.server.DocumentAddressResolver;
-import com.sun.xml.ws.api.server.SDDocument;
-import com.sun.xml.ws.api.server.ServiceDefinition;
-import com.sun.xml.ws.api.server.WSEndpoint;
-import com.sun.xml.ws.model.wsdl.WSDLBoundPortTypeImpl;
-import com.sun.xml.xsom.XSElementDecl;
-import com.sun.xml.xsom.XSSchema;
-import com.sun.xml.xsom.XSSchemaSet;
-import com.sun.xml.xsom.parser.JAXPParser;
-import com.sun.xml.xsom.parser.XMLParser;
-import com.sun.xml.xsom.parser.XSOMParser;
-import com.sun.xml.xsom.visitor.XSVisitor;
+import com.sun.xml.internal.bind.unmarshaller.DOMScanner;
+import com.sun.xml.internal.ws.api.model.wsdl.WSDLBoundOperation;
+import com.sun.xml.internal.ws.api.model.wsdl.WSDLPort;
+import com.sun.xml.internal.ws.api.server.DocumentAddressResolver;
+import com.sun.xml.internal.ws.api.server.SDDocument;
+import com.sun.xml.internal.ws.api.server.ServiceDefinition;
+import com.sun.xml.internal.ws.api.server.WSEndpoint;
+import com.sun.xml.internal.ws.model.wsdl.WSDLBoundPortTypeImpl;
+import com.sun.xml.internal.xsom.XSElementDecl;
+import com.sun.xml.internal.xsom.XSSchema;
+import com.sun.xml.internal.xsom.XSSchemaSet;
+import com.sun.xml.internal.xsom.parser.JAXPParser;
+import com.sun.xml.internal.xsom.parser.XMLParser;
+import com.sun.xml.internal.xsom.parser.XSOMParser;
+import com.sun.xml.internal.xsom.visitor.XSVisitor;
 
 /**
  * Captures the information parsed from XML Schema.

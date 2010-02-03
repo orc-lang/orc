@@ -1,5 +1,5 @@
 //
-// OilTest -- Java class OilTest
+// OilTest.java -- Java class OilTest
 // Project OrcJava
 //
 // $Id$

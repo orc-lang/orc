@@ -73,7 +73,7 @@ public abstract class Tycon extends Type {
 	public boolean equals(final Object that) {
 		return that.getClass().equals(that.getClass());
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */

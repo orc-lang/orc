@@ -1,3 +1,16 @@
+//
+// KilimSite.java -- Java class KilimSite
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.runtime.sites;
 
 import kilim.Fiber;
@@ -23,25 +36,23 @@ import orc.runtime.Kilim.PausableCallable;
  * don't provide a good way to define such.
  * 
  * @author quark
- * 
  */
 public abstract class KilimSite extends Site {
 	@Override
-	public void callSite(final Args args, final Token caller)
-	throws TokenException {
+	public void callSite(final Args args, final Token caller) throws TokenException {
 		Kilim.runPausable(caller, new PausableCallable<Object>() {
+			@Override
 			public Object call() throws Pausable, TokenException {
 				return evaluate(args);
 			}
 		});
 	}
-	
+
 	public abstract Object evaluate(Args args) throws Pausable, TokenException;
+
 	/** FIXME: Kilim should add this method but it doesn't */
-	public Object evaluate(Args args, Fiber f) throws Pausable, TokenException {
-		throw new AssertionError("Unwoven method "
-				+ this.getClass().toString()
-				+ "#call()");
-		
+	public Object evaluate(final Args args, final Fiber f) throws Pausable, TokenException {
+		throw new AssertionError("Unwoven method " + this.getClass().toString() + "#call()");
+
 	}
 }

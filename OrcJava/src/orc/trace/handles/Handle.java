@@ -1,7 +1,19 @@
+//
+// Handle.java -- Java class Handle
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2008 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.trace.handles;
 
 import java.io.Externalizable;
-import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
@@ -44,37 +56,46 @@ import java.io.ObjectOutput;
  */
 public abstract class Handle<E> implements Externalizable {
 	protected E value;
+
 	/**
 	 * Required by {@link Externalizable}, but should never be called
 	 * when not deserializing.
 	 */
-	public Handle() {}
+	public Handle() {
+	}
+
 	/**
 	 * Create a handle to a value, which must be non-null.
 	 */
-	public Handle(E value) {
-		assert(value != null);
+	public Handle(final E value) {
+		assert value != null;
 		this.value = value;
 	}
+
 	/**
 	 * Get the value pointed to by this handle.
 	 */
 	public final E get() {
 		return value;
 	}
+
 	@Override
 	public final String toString() {
 		return value.toString();
 	}
+
 	/**
 	 * Handles are equal if the values they point to are equal.
 	 */
 	@Override
-	public final boolean equals(Object that) {
+	public final boolean equals(final Object that) {
 		if (that instanceof Handle) {
-			return value.equals(((Handle)that).value);
-		} else return false;
+			return value.equals(((Handle) that).value);
+		} else {
+			return false;
+		}
 	}
+
 	/**
 	 * Handles which point to the same value should use the same hash code.
 	 */

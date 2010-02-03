@@ -1,3 +1,16 @@
+//
+// OrchardDemo.java -- Java class OrchardDemo
+// Project Orchard
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc;
 
 import orc.orchard.OrchardProperties;
@@ -19,7 +32,8 @@ public class OrchardDemo {
 		System.err.println("Usage: ... [<port number>]");
 		System.exit(1);
 	}
-	public static void main(String args[]) throws Exception {
+
+	public static void main(final String args[]) throws Exception {
 		int PORT;
 		if (args.length == 0) {
 			PORT = 8080;
@@ -30,7 +44,7 @@ public class OrchardDemo {
 			} else {
 				try {
 					PORT = Integer.valueOf(args[0]);
-				} catch (NumberFormatException _) {
+				} catch (final NumberFormatException _) {
 					printUsage();
 					return;
 				}
@@ -40,27 +54,22 @@ public class OrchardDemo {
 			return;
 		}
 		// set reasonable defaults for a demo
-		OrchardProperties.setProperty("orc.lib.orchard.forms.url",
-				"http://localhost:"+PORT+"/orchard/FormsServlet");
+		OrchardProperties.setProperty("orc.lib.orchard.forms.url", "http://localhost:" + PORT + "/orchard/FormsServlet");
 		OrchardProperties.setProperty("orc.orchard.Accounts.url", "");
 		OrchardProperties.setProperty("orc.orchard.GuestAccount.canImportJava", "true");
-        Server server = new Server();
-        Connector connector = new SelectChannelConnector();
-        connector.setPort(PORT);
-        connector.setHost("127.0.0.1");
-        server.addConnector(connector);
-        
-        ContextHandlerCollection contexts = new ContextHandlerCollection();
-        server.setHandler(contexts);
-        new WebAppContext(contexts,
-        		OrchardDemo.class.getResource("/web.war").toExternalForm(),
-        		"/orchard");
-        new WebAppContext(contexts,
-        		OrchardDemo.class.getResource("/root-demo.war").toExternalForm(),
-        		"/");
-        
-        server.setStopAtShutdown(true);
-        server.start();
-        BareBonesBrowserLaunch.openURL("http://localhost:" + PORT + "/demo.shtml");
-    }
+		final Server server = new Server();
+		final Connector connector = new SelectChannelConnector();
+		connector.setPort(PORT);
+		connector.setHost("127.0.0.1");
+		server.addConnector(connector);
+
+		final ContextHandlerCollection contexts = new ContextHandlerCollection();
+		server.setHandler(contexts);
+		new WebAppContext(contexts, OrchardDemo.class.getResource("/web.war").toExternalForm(), "/orchard");
+		new WebAppContext(contexts, OrchardDemo.class.getResource("/root-demo.war").toExternalForm(), "/");
+
+		server.setStopAtShutdown(true);
+		server.start();
+		BareBonesBrowserLaunch.openURL("http://localhost:" + PORT + "/demo.shtml");
+	}
 }

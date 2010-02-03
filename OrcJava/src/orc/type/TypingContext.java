@@ -22,7 +22,6 @@ import orc.env.Env;
 import orc.env.LookupFailureException;
 import orc.error.OrcError;
 import orc.error.compiletime.typing.TypeException;
-import orc.type.tycon.Tycon;
 
 /**
  * 
@@ -38,20 +37,19 @@ public class TypingContext {
 	protected Env<Type> varContext;
 	protected Env<Type> typeContext;
 	protected Config config;
-	
+
 	public TypingContext() {
 		varContext = new Env<Type>();
 		typeContext = new Env<Type>();
 	}
-	
-	public TypingContext(Config config) {
+
+	public TypingContext(final Config config) {
 		varContext = new Env<Type>();
 		typeContext = new Env<Type>();
 		this.config = config;
 	}
-	
-	public TypingContext(Env<Type> varContext, Env<Type> typeContext,
-			Config config) {
+
+	public TypingContext(final Env<Type> varContext, final Env<Type> typeContext, final Config config) {
 		this.varContext = varContext;
 		this.typeContext = typeContext;
 		this.config = config;
@@ -63,80 +61,76 @@ public class TypingContext {
 	 * @param var
 	 * @return The type of var in this context
 	 */
-	public Type lookupVar(int var) {
+	public Type lookupVar(final int var) {
 		try {
 			return varContext.lookup(var);
-		} catch (LookupFailureException e) {
+		} catch (final LookupFailureException e) {
 			throw new OrcError(e);
 		}
 	}
-	
+
 	/**
 	 * Find the binding for this type variable.
 	 * 
 	 * @param var
 	 * @return The type of var in this context
 	 */
-	public Type lookupType(int var) {
+	public Type lookupType(final int var) {
 		try {
 			return typeContext.lookup(var);
-		} catch (LookupFailureException e) {
+		} catch (final LookupFailureException e) {
 			throw new OrcError(e);
 		}
 	}
-	
-	public TypingContext bindVar(Type T) {
+
+	public TypingContext bindVar(final Type T) {
 		return new TypingContext(varContext.extend(T), typeContext, config);
 	}
-	
-	public TypingContext bindType(Type T) {
+
+	public TypingContext bindType(final Type T) {
 		return new TypingContext(varContext, typeContext.extend(T), config);
 	}
-	
-	public Type resolveSiteType(String classname) throws TypeException {
+
+	public Type resolveSiteType(final String classname) throws TypeException {
 		Class<?> cls;
 
 		try {
 			cls = config.loadClass(classname);
-		}
-		catch (ClassNotFoundException e) {
+		} catch (final ClassNotFoundException e) {
 			throw new TypeException("Failed to load class " + classname + " as an Orc external type. Class not found.");
 		}
 
 		if (!orc.type.Type.class.isAssignableFrom(cls)) {
-			throw new TypeException("Class " + cls + " cannot be used as an Orc external type because it is not a subtype of orc.type.Type."); 
+			throw new TypeException("Class " + cls + " cannot be used as an Orc external type because it is not a subtype of orc.type.Type.");
 		}
 
-		try
-		{
-			return (orc.type.Type)(cls.newInstance());
-		} catch (InstantiationException e) {
+		try {
+			return (orc.type.Type) cls.newInstance();
+		} catch (final InstantiationException e) {
 			throw new TypeException("Failed to load class " + cls + " as an external type. Instantiation error.", e);
-		} catch (IllegalAccessException e) {
+		} catch (final IllegalAccessException e) {
 			throw new TypeException("Failed to load class " + cls + " as an external type. Constructor is not accessible.");
 		}
-		
+
 	}
 
-	
-	public Type resolveClassType(String classname) throws TypeException {
+	public Type resolveClassType(final String classname) throws TypeException {
 		Class<?> cls;
 
 		try {
 			cls = config.loadClass(classname);
-		}
-		catch (ClassNotFoundException e) {
+		} catch (final ClassNotFoundException e) {
 			throw new TypeException("Failed to load class " + classname + " as an Orc class type. Class not found.");
 		}
 
 		return orc.type.Type.fromJavaClass(cls);
 	}
-	
+
 	/*
 	 * Entry point for substitution, so that we don't need to reveal
 	 * the typing context with a getter.
 	 */
-	public Type subst(Type T) throws TypeException {
+	public Type subst(final Type T) throws TypeException {
 		return T.subst(typeContext);
 	}
 
@@ -144,12 +138,12 @@ public class TypingContext {
 	 * Convert a syntactic type to a real type, and then bind all
 	 * of its free variables using the current type context.
 	 */
-	public orc.type.Type promote(orc.ast.oil.type.Type t) throws TypeException {
+	public orc.type.Type promote(final orc.ast.oil.type.Type t) throws TypeException {
 		return t.transform(this).subst(typeContext);
 	}
-	
-	public List<orc.type.Type> promoteAll(List<orc.ast.oil.type.Type> ts) throws TypeException {
+
+	public List<orc.type.Type> promoteAll(final List<orc.ast.oil.type.Type> ts) throws TypeException {
 		return orc.type.Type.substAll(orc.ast.oil.type.Type.transformAll(ts, this), typeContext);
 	}
-	
+
 }

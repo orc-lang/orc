@@ -1,10 +1,19 @@
-/**
- * 
- */
+//
+// Buffer.java -- Java class Buffer
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.lib.state;
 
 import java.util.LinkedList;
-import java.util.List;
 
 import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.TokenException;
@@ -18,8 +27,6 @@ import orc.runtime.values.ListValue;
 import orc.type.Type;
 import orc.type.TypeVariable;
 import orc.type.structured.ArrowType;
-import orc.type.structured.DotType;
-import orc.type.tycon.MutableContainerType;
 
 /**
  * @author cawellington, dkitchin
@@ -33,20 +40,21 @@ public class Buffer extends EvalSite {
 	 * @see orc.runtime.sites.Site#callSite(java.lang.Object[], orc.runtime.Token, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
 	 */
 	@Override
-	public Object evaluate(Args args) {
+	public Object evaluate(final Args args) {
 		return new BufferInstance();
 	}
-	
+
+	@Override
 	public Type type() throws TypeException {
-		Type X = new TypeVariable(0);
-		Type BufferOfX = (new BufferType()).instance(X);
+		final Type X = new TypeVariable(0);
+		final Type BufferOfX = new BufferType().instance(X);
 		return new ArrowType(BufferOfX, 1);
 	}
-	
+
 	protected class BufferInstance extends DotSite {
 
-		private LinkedList<Object> buffer;
-		private LinkedList<Token> readers;
+		private final LinkedList<Object> buffer;
+		private final LinkedList<Token> readers;
 		private Token closer;
 		/**
 		 * Once this becomes true, no new items may be put,
@@ -58,14 +66,16 @@ public class Buffer extends EvalSite {
 			buffer = new LinkedList<Object>();
 			readers = new LinkedList<Token>();
 		}
-		
+
 		@Override
 		protected void addMembers() {
 			addMember("get", new Site() {
-				public void callSite(Args args, Token reader) {
+				@Override
+				public void callSite(final Args args, final Token reader) {
 					if (buffer.isEmpty()) {
-						if (closed) reader.die();
-						else {
+						if (closed) {
+							reader.die();
+						} else {
 							reader.setQuiescent();
 							readers.addLast(reader);
 						}
@@ -79,11 +89,11 @@ public class Buffer extends EvalSite {
 						}
 					}
 				}
-			});	
+			});
 			addMember("put", new Site() {
 				@Override
-				public void callSite(Args args, Token writer) throws TokenException {
-					Object item = args.getArg(0);
+				public void callSite(final Args args, final Token writer) throws TokenException {
+					final Object item = args.getArg(0);
 					if (closed) {
 						writer.die();
 						return;
@@ -93,7 +103,7 @@ public class Buffer extends EvalSite {
 						buffer.addLast(item);
 					} else {
 						// If there are callers waiting, give this item to the top caller.
-						Token receiver = readers.removeFirst();
+						final Token receiver = readers.removeFirst();
 						receiver.unsetQuiescent();
 						receiver.resume(item);
 					}
@@ -103,7 +113,7 @@ public class Buffer extends EvalSite {
 			});
 			addMember("getnb", new Site() {
 				@Override
-				public void callSite(Args args, Token reader) {
+				public void callSite(final Args args, final Token reader) {
 					if (buffer.isEmpty()) {
 						reader.die();
 					} else {
@@ -118,8 +128,8 @@ public class Buffer extends EvalSite {
 			});
 			addMember("getAll", new EvalSite() {
 				@Override
-				public Object evaluate(Args args) throws TokenException {
-					Object out = ListValue.make(buffer);
+				public Object evaluate(final Args args) throws TokenException {
+					final Object out = ListValue.make(buffer);
 					buffer.clear();
 					if (closer != null) {
 						closer.unsetQuiescent();
@@ -128,18 +138,18 @@ public class Buffer extends EvalSite {
 					}
 					return out;
 				}
-			});	
+			});
 			addMember("isClosed", new EvalSite() {
 				@Override
-				public Object evaluate(Args args) throws TokenException {
+				public Object evaluate(final Args args) throws TokenException {
 					return closed;
 				}
-			});	
+			});
 			addMember("close", new Site() {
 				@Override
-				public void callSite(Args args, Token token) {
+				public void callSite(final Args args, final Token token) {
 					closed = true;
-					for (Token reader : readers) {
+					for (final Token reader : readers) {
 						reader.unsetQuiescent();
 						reader.die();
 					}
@@ -150,28 +160,24 @@ public class Buffer extends EvalSite {
 						closer.setQuiescent();
 					}
 				}
-			});	
+			});
 			addMember("closenb", new Site() {
 				@Override
-				public void callSite(Args args, Token token) {
+				public void callSite(final Args args, final Token token) {
 					closed = true;
-					for (Token reader : readers) {
+					for (final Token reader : readers) {
 						reader.unsetQuiescent();
 						reader.die();
 					}
 					token.resume();
 				}
-			});	
+			});
 		}
-	
+
+		@Override
 		public String toString() {
 			return super.toString() + buffer.toString();
 		}
-				
+
 	}
 }
-
-	
-
-
-

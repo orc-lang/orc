@@ -1,6 +1,16 @@
-/**
- * 
- */
+//
+// Equal.java -- Java class Equal
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.runtime.sites.core;
 
 import java.math.BigDecimal;
@@ -29,7 +39,7 @@ public class Equal extends EvalSite {
 			valueClasses.add(String.class);
 		}
 	}
-	
+
 	/**
 	 * Register a class as a "value class" which can be safely compared with
 	 * {@link #equals(Object)}. Instances of value classes should be immutable.
@@ -46,65 +56,71 @@ public class Equal extends EvalSite {
 	 * 
 	 * @param c
 	 */
-	public static synchronized void registerValueClass(Class c) {
+	public static synchronized void registerValueClass(final Class c) {
 		valueClasses.add(c);
 	}
-	
-	private static final NumericBinaryOperator<Boolean> op
-	= new NumericBinaryOperator<Boolean>() {
-		public Boolean apply(BigInteger a, BigInteger b) {
+
+	private static final NumericBinaryOperator<Boolean> op = new NumericBinaryOperator<Boolean>() {
+		public Boolean apply(final BigInteger a, final BigInteger b) {
 			return a.equals(b);
 		}
-		public Boolean apply(BigDecimal a, BigDecimal b) {
+
+		public Boolean apply(final BigDecimal a, final BigDecimal b) {
 			return a.compareTo(b) == 0;
 		}
-		public Boolean apply(int a, int b) {
+
+		public Boolean apply(final int a, final int b) {
 			return a == b;
 		}
-		public Boolean apply(long a, long b) {
+
+		public Boolean apply(final long a, final long b) {
 			return a == b;
 		}
-		public Boolean apply(byte a, byte b) {
+
+		public Boolean apply(final byte a, final byte b) {
 			return a == b;
 		}
-		public Boolean apply(short a, short b) {
+
+		public Boolean apply(final short a, final short b) {
 			return a == b;
 		}
-		public Boolean apply(double a, double b) {
+
+		public Boolean apply(final double a, final double b) {
 			return a == b;
 		}
-		public Boolean apply(float a, float b) {
+
+		public Boolean apply(final float a, final float b) {
 			return a == b;
 		}
 	};
-	
+
 	/* (non-Javadoc)
 	 * @see orc.runtime.sites.EvalSite#evaluate(java.lang.Object[])
 	 */
 	@Override
-	public Object evaluate(Args args) throws TokenException {
+	public Object evaluate(final Args args) throws TokenException {
 		return eq(args.getArg(0), args.getArg(1));
 	}
-	
+
 	/**
 	 * Are two values equivalent, in the sense that one
 	 * may be substituted for another without changing
 	 * the meaning of the program?
 	 * @see Eq
 	 */
-	public static boolean eq(Object a, Object b) {
+	public static boolean eq(final Object a, final Object b) {
 		// we have to handle Java immutable types specially;
 		// for our own immutable types, we implement Eq;
 		// for all other types, we use pointer equality
 		if (a == null || b == null) {
 			return a == b;
 		} else if (a instanceof Eq) {
-			return ((Eq)a).eqTo(b);
+			return ((Eq) a).eqTo(b);
 		} else if (a instanceof Number && b instanceof Number) {
 			try {
 				// FIXME: should be a slightly more efficient way to do this
-				return Args.applyNumericOperator((Number)a, (Number)b, op);
-			} catch (TokenException e) {
+				return Args.applyNumericOperator((Number) a, (Number) b, op);
+			} catch (final TokenException e) {
 				// should never happen
 				throw new AssertionError(e);
 			}
@@ -116,6 +132,7 @@ public class Equal extends EvalSite {
 		}
 	}
 
+	@Override
 	public Type type() {
 		return new ArrowType(Type.TOP, Type.TOP, Type.BOOLEAN);
 	}

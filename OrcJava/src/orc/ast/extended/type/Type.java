@@ -1,8 +1,19 @@
+//
+// Type.java -- Java class Type
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.ast.extended.type;
 
-
 /**
- * 
  * Abstract superclass of syntactic types in the extended AST.
  * 
  * Syntactic types occur in all of the AST forms. The typechecker
@@ -18,17 +29,16 @@ package orc.ast.extended.type;
  * many of the typechecker's internal types are not representable in programs.
  * 
  * @author dkitchin
- *
  */
 public abstract class Type {
 
 	/* Create singleton representatives for some common types */
 	public static final Type TOP = new Top();
 	public static final Type BOT = new Bot();
-	
+
 	/** 
 	 * Convert this extended AST type into a simple AST type.
 	 */
 	public abstract orc.ast.simple.type.Type simplify();
-	
+
 }

@@ -1,3 +1,16 @@
+//
+// TokenTracer.java -- Java class TokenTracer
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2008 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.trace;
 
 import orc.error.Locatable;
@@ -32,22 +45,29 @@ import orc.runtime.values.Closure;
  */
 public abstract class TokenTracer implements Locatable {
 	/** Abstract handle for a store event */
-	public interface StoreTrace {}
+	public interface StoreTrace {
+	}
+
 	/** Abstract handle for a pull event */
-	public interface PullTrace {}
+	public interface PullTrace {
+	}
+
 	/**
 	 * Create a new thread. By convention the new thread should
 	 * evaluate the right side of the combinator.
 	 */
 	public abstract TokenTracer fork();
+
 	/**
 	 * Terminate a thread.
 	 */
 	public abstract void die();
+
 	/**
 	 * Call a site.
 	 */
 	public abstract void send(Object site, Object[] arguments);
+
 	/**
 	 * Store a value for a future. The return value should be used when tracing
 	 * the results of this store. If this returns null, clients are free to
@@ -63,48 +83,58 @@ public abstract class TokenTracer implements Locatable {
 	 * @see #unblock(orc.trace.TokenTracer.StoreTrace)
 	 */
 	public abstract StoreTrace store(PullTrace event, Object value);
+
 	/**
 	 * Killed through the setting of a future.
 	 * Should be followed by {@link #die()}.
 	 */
 	public abstract void choke(StoreTrace store);
+
 	/**
 	 * Return from a site call. Should be called after
 	 * {@link #send(Object, Object[])}.
 	 */
 	public abstract void receive(Object value);
+
 	/**
 	 * Block a thread waiting for a future.
 	 */
 	public abstract void block(PullTrace pull);
+
 	/**
 	 * Receive a future we were waiting for.
 	 */
 	public abstract void unblock(StoreTrace store);
+
 	/**
 	 * Print to stdout.
 	 */
 	public abstract void print(String value, boolean newline);
+
 	/**
 	 * Publish a value from the program.
 	 * Should be followed by {@link #die()}.
 	 */
 	public abstract void publish(Object value);
+
 	/**
 	 * Report an error.
 	 * Should be followed by {@link #die()}.
 	 */
 	public abstract void error(TokenException error);
+
 	/**
 	 * Create a new future for a pull.
 	 * Should be followed by {@link #fork()}.
 	 */
 	public abstract PullTrace pull();
+
 	/**
 	 * Enter a closure.
 	 * EXPERIMENTAL
 	 */
 	public abstract void enter(Closure closure);
+
 	/**
 	 * Leave "depth" closures
 	 * EXPERIMENTAL

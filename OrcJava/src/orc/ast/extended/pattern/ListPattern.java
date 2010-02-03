@@ -1,3 +1,16 @@
+//
+// ListPattern.java -- Java class ListPattern
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.ast.extended.pattern;
 
 import java.util.Iterator;
@@ -12,33 +25,30 @@ import orc.error.compiletime.PatternException;
 public class ListPattern extends Pattern {
 
 	public List<Pattern> ps;
-	
-	public ListPattern(List<Pattern> ps) {
+
+	public ListPattern(final List<Pattern> ps) {
 		this.ps = ps;
 	}
-	
-	
-//	public Expression bind(Var u, Expression g) {
-//		
-//		return actual.bind(u,g);
-//	}
-//
-//	public Expression match(Var u) {
-//		return actual.match(u);
-//	}
 
+	//	public Expression bind(Var u, Expression g) {
+	//		
+	//		return actual.bind(u,g);
+	//	}
+	//
+	//	public Expression match(Var u) {
+	//		return actual.match(u);
+	//	}
 
 	@Override
-	public void process(Variable fragment, PatternSimplifier visitor)
-			throws PatternException {
+	public void process(Variable fragment, final PatternSimplifier visitor) throws PatternException {
 		// HACK: a list pattern is precisely equivalent to a series of cons
 		// patterns terminated by a nil pattern. However we want to record
 		// source location information slightly differently, so we have to
 		// inline and slightly change the equivalent Cons/NilPatterns.
 		boolean hasLocation = false;
-		
-		for (Pattern p : ps) {
-			Variable pair = new Variable();
+
+		for (final Pattern p : ps) {
+			final Variable pair = new Variable();
 			Expression e = Pattern.trycons(fragment);
 			if (!hasLocation) {
 				e = new WithLocation(e, getSourceLocation());
@@ -46,16 +56,16 @@ public class ListPattern extends Pattern {
 			}
 			visitor.assign(pair, e);
 			visitor.require(pair);
-			
-			Variable head = new Variable();
+
+			final Variable head = new Variable();
 			visitor.assign(head, Pattern.nth(pair, 0));
 			p.process(head, visitor);
-			
+
 			fragment = new Variable();
 			visitor.assign(fragment, Pattern.nth(pair, 1));
 		}
-		
-		Variable nilp = new Variable();
+
+		final Variable nilp = new Variable();
 		Expression e = Pattern.trynil(fragment);
 		if (!hasLocation) {
 			e = new WithLocation(e, getSourceLocation());
@@ -63,11 +73,12 @@ public class ListPattern extends Pattern {
 		visitor.assign(nilp, e);
 		visitor.require(nilp);
 	}
-	
+
+	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
+		final StringBuilder sb = new StringBuilder();
 		sb.append("[");
-		Iterator<Pattern> psi = ps.iterator();
+		final Iterator<Pattern> psi = ps.iterator();
 		if (psi.hasNext()) {
 			sb.append(psi.next().toString());
 			while (psi.hasNext()) {
@@ -82,7 +93,7 @@ public class ListPattern extends Pattern {
 	/* (non-Javadoc)
 	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
 	 */
-	public <E> E accept(Visitor<E> visitor) {
+	public <E> E accept(final Visitor<E> visitor) {
 		return visitor.visit(this);
 	}
 }

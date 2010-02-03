@@ -1,3 +1,16 @@
+//
+// TwoColumnPanel.java -- Java class TwoColumnPanel
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.gui;
 
 import java.awt.Component;
@@ -21,18 +34,18 @@ public class TwoColumnPanel extends JPanel {
 	}
 	private final Insets insetRight = new Insets(0, 0, 0, 5);
 	private final Insets insetNone = new Insets(0, 0, 0, 0);
-	
+
 	public TwoColumnPanel() {
 		super(new GridBagLayout());
 	}
-	
+
 	/**
 	 * Rows with one component span both columns.
 	 */
 	@Override
-	public Component add(Component row) {
+	public Component add(final Component row) {
 		c.gridx = 0;
-		c.gridwidth = 2; 
+		c.gridwidth = 2;
 		super.add(row, c);
 		return row;
 	}
@@ -41,8 +54,8 @@ public class TwoColumnPanel extends JPanel {
 	 * Rows with two components are split into two columns,
 	 * with 5px gap.
 	 */
-	protected void addRow(Component label, Component field) {
-		c.gridwidth = 1; 
+	protected void addRow(final Component label, final Component field) {
+		c.gridwidth = 1;
 		c.gridx = 0;
 		c.insets = insetRight;
 		add(label, c);

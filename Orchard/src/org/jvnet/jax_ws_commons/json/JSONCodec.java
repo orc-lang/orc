@@ -1,18 +1,18 @@
 package org.jvnet.jax_ws_commons.json;
 
-import com.sun.istack.NotNull;
-import com.sun.istack.Nullable;
-import com.sun.xml.ws.api.SOAPVersion;
-import com.sun.xml.ws.api.WSBinding;
-import com.sun.xml.ws.api.message.Message;
-import com.sun.xml.ws.api.message.Messages;
-import com.sun.xml.ws.api.message.Packet;
-import com.sun.xml.ws.api.pipe.Codec;
-import com.sun.xml.ws.api.pipe.ContentType;
-import com.sun.xml.ws.api.server.EndpointAwareCodec;
-import com.sun.xml.ws.api.server.EndpointComponent;
-import com.sun.xml.ws.api.server.WSEndpoint;
-import com.sun.xml.ws.transport.http.HttpMetadataPublisher;
+import com.sun.istack.internal.NotNull;
+import com.sun.istack.internal.Nullable;
+import com.sun.xml.internal.ws.api.SOAPVersion;
+import com.sun.xml.internal.ws.api.WSBinding;
+import com.sun.xml.internal.ws.api.message.Message;
+import com.sun.xml.internal.ws.api.message.Messages;
+import com.sun.xml.internal.ws.api.message.Packet;
+import com.sun.xml.internal.ws.api.pipe.Codec;
+import com.sun.xml.internal.ws.api.pipe.ContentType;
+import com.sun.xml.internal.ws.api.server.EndpointAwareCodec;
+import com.sun.xml.internal.ws.api.server.EndpointComponent;
+import com.sun.xml.internal.ws.api.server.WSEndpoint;
+import com.sun.xml.internal.ws.transport.http.HttpMetadataPublisher;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONTokener;
 

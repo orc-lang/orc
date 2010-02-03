@@ -6,4 +6,5 @@
  * other kinds of tracers and trace formats by providing your own implementation
  * of {@link TokenTracer}.
  */
+
 package orc.trace;

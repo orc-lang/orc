@@ -1,3 +1,16 @@
+//
+// CompilerService.java -- Java class CompilerService
+// Project Orchard
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.orchard.soap;
 
 import java.net.URI;
@@ -33,26 +46,26 @@ public class CompilerService extends AbstractCompilerService {
 		// FIXME: should we be trying to write to the servlet log in some way?
 		super(getDefaultLogger());
 	}
-	
-	CompilerService(URI baseURI) {
+
+	CompilerService(final URI baseURI) {
 		this();
 		logger.info("Binding to '" + baseURI + "'");
 		Endpoint.publish(baseURI.toString(), this);
 		logger.info("Bound to '" + baseURI + "'");
 	}
-	
-	public static void main(String[] args) {
+
+	public static void main(final String[] args) {
 		URI baseURI;
 		try {
 			baseURI = new URI("http://localhost:8280/orchard/compiler");
-		} catch (URISyntaxException e) {
+		} catch (final URISyntaxException e) {
 			// this is impossible by construction
 			throw new AssertionError(e);
 		}
 		if (args.length > 0) {
 			try {
 				baseURI = new URI(args[0]);
-			} catch (URISyntaxException e) {
+			} catch (final URISyntaxException e) {
 				System.err.println("Invalid URI '" + args[0] + "'");
 				return;
 			}
@@ -62,7 +75,7 @@ public class CompilerService extends AbstractCompilerService {
 
 	/** Do-nothing override */
 	@Override
-	public Oil compile(@WebParam(name="devKey") String devKey, @WebParam(name="program") String program) throws InvalidProgramException {
+	public Oil compile(@WebParam(name = "devKey") final String devKey, @WebParam(name = "program") final String program) throws InvalidProgramException {
 		return super.compile(devKey, program);
 	}
 }

@@ -1,3 +1,16 @@
+//
+// DateTimeRangesField.java -- Java class DateTimeRangesField
+// Project Orchard
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.lib.orchard.forms;
 
 import java.io.IOException;
@@ -11,14 +24,13 @@ import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
 
-@SuppressWarnings("deprecation")
 public class DateTimeRangesField extends Field<Intervals<DateTime>> {
-	private Interval<LocalDate> span;
-	private int minHour;
-	private int maxHour;
-	private static String[] daysOfWeek = {"", "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"};
-	
-	public DateTimeRangesField(String key, String label, Interval<LocalDate> span, int minHour, int maxHour) {
+	private final Interval<LocalDate> span;
+	private final int minHour;
+	private final int maxHour;
+	private static String[] daysOfWeek = { "", "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su" };
+
+	public DateTimeRangesField(final String key, final String label, final Interval<LocalDate> span, final int minHour, final int maxHour) {
 		super(key, label, new Intervals<DateTime>());
 		this.span = span;
 		this.minHour = minHour;
@@ -26,7 +38,7 @@ public class DateTimeRangesField extends Field<Intervals<DateTime>> {
 	}
 
 	@Override
-	public void renderControl(PrintWriter out) throws IOException {
+	public void renderControl(final PrintWriter out) throws IOException {
 		out.write("<table cellspacing='0' class='DateTimeRangesField'>");
 		renderTableHeader(out);
 		for (int hour = minHour; hour < maxHour; ++hour) {
@@ -34,47 +46,37 @@ public class DateTimeRangesField extends Field<Intervals<DateTime>> {
 		}
 		out.write("</table>");
 	}
-	
-	private void renderTime(PrintWriter out, DateTime date) throws IOException {
-		out.write("<input type='checkbox'" +
-				" name='" + key + "'" +
-				" value='" + toTimeID(date) + "'" +
-				(value.spans(date) ? " checked" : "") +
-				">");
+
+	private void renderTime(final PrintWriter out, final DateTime date) throws IOException {
+		out.write("<input type='checkbox'" + " name='" + key + "'" + " value='" + toTimeID(date) + "'" + (value.spans(date) ? " checked" : "") + ">");
 	}
-	
-	private static String toTimeID(DateTime date) {
-		return date.getYear() +
-			"_" + date.getMonthOfYear() +
-			"_" + date.getDayOfMonth() +
-			"_" + date.getHourOfDay();
+
+	private static String toTimeID(final DateTime date) {
+		return date.getYear() + "_" + date.getMonthOfYear() + "_" + date.getDayOfMonth() + "_" + date.getHourOfDay();
 	}
-	
-	private static Interval<DateTime> fromTimeID(String timeID) {
-		String[] parts = timeID.split("_");
-		if (parts.length != 4) return new Interval(new DateTime());
+
+	private static Interval<DateTime> fromTimeID(final String timeID) {
+		final String[] parts = timeID.split("_");
+		if (parts.length != 4) {
+			return new Interval(new DateTime());
+		}
 		try {
-			DateTime start = new DateTime(
-					Integer.parseInt(parts[0]),
-					Integer.parseInt(parts[1]),
-					Integer.parseInt(parts[2]),
-					Integer.parseInt(parts[3]),
-					0, 0, 0);
-			DateTime end = start.plusHours(1);
+			final DateTime start = new DateTime(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), 0, 0, 0);
+			final DateTime end = start.plusHours(1);
 			return new Interval<DateTime>(start, end);
-		} catch (NumberFormatException _) {
+		} catch (final NumberFormatException _) {
 			return new Interval(new DateTime());
 		}
 	}
-	
-	private void renderHour(PrintWriter out, int hour) throws IOException {
+
+	private void renderHour(final PrintWriter out, final int hour) throws IOException {
 		out.write("<tr>");
 		out.write("<th>");
 		out.write(formatHour(hour));
 		out.write("</th>");
 		LocalDate current = span.getStart();
-		LocalDate end = span.getEnd();
-		LocalTime time = new LocalTime(hour, 0);
+		final LocalDate end = span.getEnd();
+		final LocalTime time = new LocalTime(hour, 0);
 		while (current.compareTo(end) < 0) {
 			out.write("<td>");
 			renderTime(out, current.toDateTime(time));
@@ -83,11 +85,11 @@ public class DateTimeRangesField extends Field<Intervals<DateTime>> {
 		}
 		out.write("</tr>");
 	}
-	
-	private void renderTableHeader(PrintWriter out) throws IOException {
+
+	private void renderTableHeader(final PrintWriter out) throws IOException {
 		out.write("<tr><th>&nbsp;</th>");
 		LocalDate current = span.getStart();
-		LocalDate end = span.getEnd();
+		final LocalDate end = span.getEnd();
 		while (current.compareTo(end) < 0) {
 			out.write("<th>");
 			out.write(formatDateHeader(current));
@@ -96,36 +98,36 @@ public class DateTimeRangesField extends Field<Intervals<DateTime>> {
 		}
 		out.write("</tr>");
 	}
-	
-	private String formatHour(int hour) {
+
+	private String formatHour(final int hour) {
 		if (hour == 0) {
 			return "12am";
 		} else if (hour == 12) {
 			return "12pm";
 		} else if (hour > 12) {
-			return (hour % 12) + "pm";
+			return hour % 12 + "pm";
 		} else {
 			return hour + "am";
 		}
 	}
-	
-	private String formatDateHeader(LocalDate date) {
-		return daysOfWeek[date.getDayOfWeek()] +
-			" " + date.getMonthOfYear() +
-			"/" + date.getDayOfMonth();
+
+	private String formatDateHeader(final LocalDate date) {
+		return daysOfWeek[date.getDayOfWeek()] + " " + date.getMonthOfYear() + "/" + date.getDayOfMonth();
 	}
-	
-	private void readTimeIDs(String[] timeIDs) {
+
+	private void readTimeIDs(final String[] timeIDs) {
 		value = new Intervals();
-		if (timeIDs == null) return;
+		if (timeIDs == null) {
+			return;
+		}
 		// union ranges starting at the end for efficiency
-		for (int i = timeIDs.length-1; i >= 0; --i) {
-			Interval<DateTime> range = fromTimeID(timeIDs[i]);
+		for (int i = timeIDs.length - 1; i >= 0; --i) {
+			final Interval<DateTime> range = fromTimeID(timeIDs[i]);
 			value = value.union(range);
 		}
 	}
 
-	public void readRequest(FormData request, List<String> errors) {
+	public void readRequest(final FormData request, final List<String> errors) {
 		readTimeIDs(request.getParameterValues(key));
 	}
 }

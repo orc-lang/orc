@@ -1,3 +1,16 @@
+//
+// ExecutorServiceInterface.java -- Java interface ExecutorServiceInterface
+// Project Orchard
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.orchard.api;
 
 import java.rmi.Remote;
@@ -13,7 +26,6 @@ import orc.orchard.errors.InvalidProgramException;
 import orc.orchard.errors.InvalidPromptException;
 import orc.orchard.errors.QuotaException;
 import orc.orchard.events.JobEvent;
-
 
 /**
  * Broker used to create and manage running jobs.
@@ -71,16 +83,19 @@ public interface ExecutorServiceInterface extends Remote {
 	 *             if the program is invalid.
 	 */
 	public String submit(String devKey, Oil program) throws QuotaException, InvalidOilException, RemoteException;
+
 	/**
 	 * Combine compilation and submission into a single step.
 	 * This is useful for simple clients that don't want to
 	 * bother calling a separate compiler.
 	 */
 	public String compileAndSubmit(String devKey, String program) throws QuotaException, InvalidProgramException, InvalidOilException, RemoteException;
+
 	/**
 	 * URIs of unfinished jobs started from this executor.
 	 */
 	public Set<String> jobs(String devKey) throws RemoteException;
+
 	/**
 	 * Begin executing the job.
 	 * 
@@ -88,6 +103,7 @@ public interface ExecutorServiceInterface extends Remote {
 	 *             if the job was already started, or was aborted.
 	 */
 	public void startJob(String devKey, String job) throws InvalidJobException, InvalidJobStateException, RemoteException;
+
 	/**
 	 * Indicate that the client is done with the job. The job will be halted if
 	 * necessary.
@@ -102,11 +118,13 @@ public interface ExecutorServiceInterface extends Remote {
 	 * @throws RemoteException
 	 */
 	public void finishJob(String devKey, String job) throws InvalidJobException, InvalidJobStateException, RemoteException;
+
 	/**
 	 * Halt the job safely, using the same termination semantics as the "pull"
 	 * combinator.
 	 */
 	public void haltJob(String devKey, String job) throws InvalidJobException, RemoteException;
+
 	/**
 	 * What is the job's state? Possible return values:
 	 * NEW: not yet started.
@@ -116,6 +134,7 @@ public interface ExecutorServiceInterface extends Remote {
 	 * @return the current state of the job.
 	 */
 	public String jobState(String devKey, String job) throws InvalidJobException, RemoteException;
+
 	/**
 	 * Retrieve events. If no events occurred, block until at least one occurs.
 	 * If the job finishes without any more events happening, an empty list will
@@ -127,6 +146,7 @@ public interface ExecutorServiceInterface extends Remote {
 	 *             if the request times out.
 	 */
 	public List<JobEvent> jobEvents(String devKey, String job) throws InvalidJobException, InterruptedException, RemoteException;
+
 	/**
 	 * Purge all events from the event buffer which have been returned by
 	 * jobEvents. The client is responsible for calling this method regularly to
@@ -135,11 +155,13 @@ public interface ExecutorServiceInterface extends Remote {
 	 * @throws RemoteException
 	 */
 	public void purgeJobEvents(String devKey, String job) throws InvalidJobException, RemoteException;
+
 	/**
 	 * Submit a response to a prompt (initiated by the Prompt site).
 	 * @throws InvalidPromptException if the promptID is not valid.
 	 */
 	public void respondToPrompt(String devKey, String job, int promptID, String response) throws InvalidJobException, InvalidPromptException, RemoteException;
+
 	/**
 	 * Cancel a prompt (initiated by the Prompt site).
 	 * @throws InvalidPromptException if the promptID is not valid.

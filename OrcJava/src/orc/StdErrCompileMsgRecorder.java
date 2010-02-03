@@ -80,21 +80,21 @@ public class StdErrCompileMsgRecorder implements CompileMessageRecorder {
 	/* (non-Javadoc)
 	 * @see orc.error.compiletime.CompileMessageRecorder#recordMessage(orc.error.compiletime.CompileMessageRecorder.Severity, int, java.lang.String, orc.error.SourceLocation, java.lang.Throwable)
 	 */
-	public void recordMessage(Severity severity, int code, String message, SourceLocation location, Throwable exception) {
+	public void recordMessage(final Severity severity, final int code, final String message, final SourceLocation location, final Throwable exception) {
 		recordMessage(severity, code, message, location, null, exception);
 	}
 
 	/* (non-Javadoc)
 	 * @see orc.error.compiletime.CompileMessageRecorder#recordMessage(orc.error.compiletime.CompileMessageRecorder.Severity, int, java.lang.String, orc.error.SourceLocation, java.lang.Object)
 	 */
-	public void recordMessage(Severity severity, int code, String message, SourceLocation location, Object astNode) {
+	public void recordMessage(final Severity severity, final int code, final String message, final SourceLocation location, final Object astNode) {
 		recordMessage(severity, code, message, location, astNode, null);
 	}
 
 	/* (non-Javadoc)
 	 * @see orc.error.compiletime.CompileMessageRecorder#recordMessage(orc.error.compiletime.CompileMessageRecorder.Severity, int, java.lang.String)
 	 */
-	public void recordMessage(Severity severity, int code, String message) {
+	public void recordMessage(final Severity severity, final int code, final String message) {
 		recordMessage(severity, code, message, null, null, null);
 	}
 

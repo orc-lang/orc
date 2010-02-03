@@ -1,3 +1,16 @@
+//
+// OilSecurityValidator.java -- Java class OilSecurityValidator
+// Project Orchard
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.orchard;
 
 import java.util.HashSet;
@@ -16,14 +29,20 @@ import orc.error.SourceLocation;
  */
 public class OilSecurityValidator extends Walker {
 	private boolean hasProblems = false;
-	private List<SecurityProblem> problems = new LinkedList<SecurityProblem>();
-	public boolean hasProblems() {	return hasProblems; }
-	public List<SecurityProblem> getProblems() { return problems; }
-	
+	private final List<SecurityProblem> problems = new LinkedList<SecurityProblem>();
+
+	public boolean hasProblems() {
+		return hasProblems;
+	}
+
+	public List<SecurityProblem> getProblems() {
+		return problems;
+	}
+
 	private static Set<String> allowedClasses;
 	static {
 		allowedClasses = new HashSet<String>(); // a Trie might be more efficient if it were standard
-		
+
 		// java.lang
 		allowedClasses.add("java.lang.StrictMath");
 		allowedClasses.add("java.lang.Math");
@@ -38,7 +57,7 @@ public class OilSecurityValidator extends Walker {
 		allowedClasses.add("java.lang.String");
 		allowedClasses.add("java.lang.StringBuffer");
 		allowedClasses.add("java.lang.StringBuilder");
-		
+
 		// java.util
 		allowedClasses.add("java.util.ArrayList");
 		allowedClasses.add("java.util.Arrays");
@@ -58,7 +77,7 @@ public class OilSecurityValidator extends Walker {
 		allowedClasses.add("java.util.TreeMap");
 		allowedClasses.add("java.util.TreeSet");
 		allowedClasses.add("java.util.Vector");
-		
+
 		// orc.lib
 		allowedClasses.add("orc.lib.state.Set");
 		allowedClasses.add("orc.lib.state.Map");
@@ -68,7 +87,7 @@ public class OilSecurityValidator extends Walker {
 		allowedClasses.add("orc.lib.net.Geocoder");
 		allowedClasses.add("orc.lib.net.GoogleCalendar");
 		allowedClasses.add("orc.lib.net.NOAAWeather");
-		
+
 		// orc.lib.orchard
 		allowedClasses.add("orc.lib.orchard.forms.Form");
 		allowedClasses.add("orc.lib.orchard.forms.Textbox");
@@ -83,7 +102,7 @@ public class OilSecurityValidator extends Walker {
 		allowedClasses.add("orc.lib.orchard.forms.FieldGroup");
 		allowedClasses.add("orc.lib.orchard.forms.DateField");
 		allowedClasses.add("orc.lib.orchard.forms.DateTimeRangesField");
-		
+
 		// org.joda.time
 		allowedClasses.add("org.joda.time.format.DateTimeFormat");
 		allowedClasses.add("org.joda.time.DateTime");
@@ -91,50 +110,51 @@ public class OilSecurityValidator extends Walker {
 		allowedClasses.add("org.joda.time.LocalDate");
 
 	}
-	
+
 	public static class SecurityProblem implements Located {
-		private String message;
-		private SourceLocation location;
-		public SecurityProblem(String message, SourceLocation location) {
+		private final String message;
+		private final SourceLocation location;
+
+		public SecurityProblem(final String message, final SourceLocation location) {
 			this.message = message;
 			this.location = location;
 		}
+
 		public String getMessage() {
 			return message;
 		}
+
 		public SourceLocation getSourceLocation() {
 			return location;
 		}
+
+		@Override
 		public String toString() {
 			if (location != null) {
 				return message + " at " + location;
-			} else return message;
+			} else {
+				return message;
+			}
 		}
 	}
-	
+
 	@Override
-	public void enter(Site site) {
-		String protocol = site.site.getProtocol();
-		String location = site.site.getLocation().toString();
+	public void enter(final Site site) {
+		final String protocol = site.site.getProtocol();
+		final String location = site.site.getLocation().toString();
 		if (protocol.equals(orc.ast.sites.Site.JAVA)) {
 			// only whitelisted Java classes are allowed
 			if (!allowedClasses.contains(location)) {
 				hasProblems = true;
 				// FIXME: once we have source location information, use it
-				problems.add(new SecurityProblem(
-						"Site URL '"+location+"' not" +
-						" allowed.",
-						null));
+				problems.add(new SecurityProblem("Site URL '" + location + "' not" + " allowed.", null));
 			}
 		} else if (protocol.equals(orc.ast.sites.Site.ORC)) {
 			// all Orc sites are allowed
 		} else {
 			hasProblems = true;
 			// FIXME: once we have source location information, use it
-			problems.add(new SecurityProblem(
-					"Site protocol '"+protocol+"' not" +
-					" allowed.",
-					null));
+			problems.add(new SecurityProblem("Site protocol '" + protocol + "' not" + " allowed.", null));
 		}
 	}
 }

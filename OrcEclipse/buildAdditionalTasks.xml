@@ -5,7 +5,7 @@
 
      $Id$
 
-     Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
@@ -13,9 +13,14 @@
   -->
 
 <project name="OrcEclipse">
+	<description>
+		Ant build file with additional tasks for Orc Eclipse plug-in build.
+	</description>
+	<property file="build.properties" />
+
 	<target name="copylib">
 		<copy preservelastmodified="true" todir="lib" verbose="true">
-			<fileset dir="../OrcJava/build" includes="orc-*.jar"/>
+			<fileset dir="${orc.location.OrcJava}/build" includes="orc-${orc.version}.jar"/>
 		</copy>
 	</target>
 	<target name="copyuserguide">

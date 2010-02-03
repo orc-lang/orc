@@ -1,3 +1,16 @@
+//
+// Accounts.java -- Java class Accounts
+// Project Orchard
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.orchard;
 
 import java.security.NoSuchAlgorithmException;
@@ -25,20 +38,21 @@ public abstract class Accounts implements AccountsMBean {
 	static {
 		urlAccounts.put("", new GuestOnlyAccounts(""));
 	}
+
 	/**
 	 * Get a reference to a shared Accounts object based on
 	 * account information at the given URL. Currently only
 	 * supports JDBC URLs but it's easy to imagine new kinds
 	 * of backends.
 	 */
-	public static synchronized Accounts getAccounts(String url) {
+	public static synchronized Accounts getAccounts(final String url) {
 		if (urlAccounts.containsKey(url)) {
 			return urlAccounts.get(url);
 		} else {
 			Accounts out;
 			try {
 				out = new DbAccounts(url, DriverManager.getConnection(url));
-			} catch (SQLException e) {
+			} catch (final SQLException e) {
 				System.err.println(e.getMessage());
 				out = new GuestOnlyAccounts(url);
 			}
@@ -46,29 +60,28 @@ public abstract class Accounts implements AccountsMBean {
 			return out;
 		}
 	}
-	
+
 	private final Map<Integer, Account> accounts = new HashMap<Integer, Account>();
 	protected Account guest;
-	private String url;
-	
-	public Accounts(String url) {
+	private final String url;
+
+	public Accounts(final String url) {
 		this.url = url;
 		guest = new GuestAccount();
-		JMXUtilities.registerMBean(this,
-				JMXUtilities.newObjectName(this, url));
-		JMXUtilities.registerMBean(guest,
-				JMXUtilities.newObjectName(guest, url+"/guest"));
+		JMXUtilities.registerMBean(this, JMXUtilities.newObjectName(this, url));
+		JMXUtilities.registerMBean(guest, JMXUtilities.newObjectName(guest, url + "/guest"));
 	}
-	
+
 	private class CachedAccount extends Account {
-		private int account_id;
+		private final int account_id;
 		public ObjectName jmxid;
-		public CachedAccount(int account_id) {
+
+		public CachedAccount(final int account_id) {
 			this.account_id = account_id;
-			this.jmxid = JMXUtilities.newObjectName(this,
-					url+"/"+Integer.toString(account_id));
+			this.jmxid = JMXUtilities.newObjectName(this, url + "/" + Integer.toString(account_id));
 			JMXUtilities.registerMBean(this, jmxid);
 		}
+
 		@Override
 		protected void onNoMoreJobs() {
 			synchronized (Accounts.this) {
@@ -77,11 +90,15 @@ public abstract class Accounts implements AccountsMBean {
 				JMXUtilities.unregisterMBean(jmxid);
 			}
 		}
-		public boolean getIsGuest() { return false; }
+
+		@Override
+		public boolean getIsGuest() {
+			return false;
+		}
 	};
-	
-	protected synchronized Account getAccount(ResultSet rs) throws SQLException {
-		int account_id = rs.getInt("account_id");
+
+	protected synchronized Account getAccount(final ResultSet rs) throws SQLException {
+		final int account_id = rs.getInt("account_id");
 		// Get the actual account object. If one already
 		// exists, return it.
 		Account out;
@@ -90,27 +107,29 @@ public abstract class Accounts implements AccountsMBean {
 		} else {
 			out = new CachedAccount(account_id);
 			accounts.put(account_id, out);
-			out.setQuota((Integer)rs.getObject("quota"));
-			out.setLifespan((Integer)rs.getObject("lifespan"));
+			out.setQuota((Integer) rs.getObject("quota"));
+			out.setLifespan((Integer) rs.getObject("lifespan"));
 			out.setCanSendMail(rs.getBoolean("can_send_mail"));
 			out.setCanImportJava(rs.getBoolean("can_import_java"));
 		}
 		return out;
 	}
-	
+
 	/**
 	 * Get an account by developer key. If the developer key cannot
 	 * be found, a guest account will be returned, so you can assume
 	 * that this will never return null.
 	 */
 	public abstract Account getAccount(String devKey);
-	
+
 	public synchronized Set<Integer> getAccountIDs() {
 		return accounts.keySet();
 	}
-	
+
 	public synchronized void finishOldJobs() {
-		for (Account a : accounts.values()) a.finishOldJobs();
+		for (final Account a : accounts.values()) {
+			a.finishOldJobs();
+		}
 	}
 
 	public synchronized int getNumActiveAccounts() {
@@ -124,25 +143,26 @@ public abstract class Accounts implements AccountsMBean {
 class DbAccounts extends Accounts {
 	private final Connection db;
 	private final SecureRandom random;
-	public DbAccounts(String url, Connection db) {
+
+	public DbAccounts(final String url, final Connection db) {
 		super(url);
 		this.db = db;
 		try {
 			this.random = SecureRandom.getInstance("SHA1PRNG");
-		} catch (NoSuchAlgorithmException e) {
+		} catch (final NoSuchAlgorithmException e) {
 			throw new AssertionError(e);
 		}
 	}
 
 	@Override
-	public Account getAccount(String devKey) {
+	public Account getAccount(final String devKey) {
 		try {
 			// Check for obviously invalid accounts
 			if (devKey == null || devKey.equals("")) {
 				return guest;
 			}
 			return getAccountFromDB(devKey);
-		} catch (SQLException e) {
+		} catch (final SQLException e) {
 			// FIXME: hack to support database connection errors,
 			// just return the guest account
 			System.err.println("SQL exception: " + e.toString());
@@ -151,16 +171,12 @@ class DbAccounts extends Accounts {
 		}
 	}
 
-	private Account getAccountFromDB(String devKey) throws SQLException {
+	private Account getAccountFromDB(final String devKey) throws SQLException {
 		// Fetch the account information
-		PreparedStatement sql = db.prepareStatement(
-				"SELECT *" +
-				" FROM account" +
-				" INNER JOIN account_type USING (account_type_id)" +
-				" WHERE developer_key = ?::uuid");
+		final PreparedStatement sql = db.prepareStatement("SELECT *" + " FROM account" + " INNER JOIN account_type USING (account_type_id)" + " WHERE developer_key = ?::uuid");
 		try {
 			sql.setString(1, devKey);
-			ResultSet rs = sql.executeQuery();
+			final ResultSet rs = sql.executeQuery();
 			try {
 				if (!rs.next()) {
 					// If the account was not found, use 
@@ -173,68 +189,60 @@ class DbAccounts extends Accounts {
 			} finally {
 				rs.close();
 			}
-		} finally {	
+		} finally {
 			sql.close();
 		}
 	}
 
-	public boolean changeDeveloperKey(String username) {
+	public boolean changeDeveloperKey(final String username) {
 		try {
-			PreparedStatement sql = db.prepareStatement(
-					"UPDATE account" +
-					" SET developer_key = ?::uuid" +
-					" WHERE username = ?");
+			final PreparedStatement sql = db.prepareStatement("UPDATE account" + " SET developer_key = ?::uuid" + " WHERE username = ?");
 			try {
 				sql.setString(1, java.util.UUID.randomUUID().toString());
 				sql.setString(2, username);
 				sql.execute();
 				return sql.getUpdateCount() > 0;
-			} finally {	
+			} finally {
 				sql.close();
 			}
-		} catch (SQLException e) {
+		} catch (final SQLException e) {
 			throw new AssertionError(e);
 		}
 	}
 
-	public boolean changePassword(String username, String password) {
+	public boolean changePassword(final String username, final String password) {
 		try {
-			PreparedStatement sql = db.prepareStatement(
-					"UPDATE account" +
-					" SET salt = ?, password_md5 = md5(?)" +
-					" WHERE username = ?");
+			final PreparedStatement sql = db.prepareStatement("UPDATE account" + " SET salt = ?, password_md5 = md5(?)" + " WHERE username = ?");
 			try {
-				String salt = generateSalt();
+				final String salt = generateSalt();
 				sql.setString(1, salt);
 				sql.setString(2, salt + password);
 				sql.setString(3, username);
 				sql.execute();
 				return sql.getUpdateCount() > 0;
-			} finally {	
+			} finally {
 				sql.close();
 			}
-		} catch (SQLException e) {
+		} catch (final SQLException e) {
 			throw new AssertionError(e);
 		}
 	}
-	
+
 	private String generateSalt() {
-		byte[] bytes = new byte[16];
+		final byte[] bytes = new byte[16];
 		random.nextBytes(bytes);
 		return new String(bytes);
 	}
 
-	public boolean createAccount(int accountTypeID, String username, String password, String email) {
+	public boolean createAccount(final int accountTypeID, final String username, final String password, final String email) {
 		PreparedStatement sql;
 		try {
-			sql = db.prepareStatement(
-					"INSERT INTO account (account_type_id, username, salt, password_md5, developer_key, email)" +
-					" VALUES (?, ?, ?, md5(?), ?::uuid, ?)");
-		} catch (SQLException e) {
+			sql = db.prepareStatement("INSERT INTO account (account_type_id, username, salt, password_md5, developer_key, email)" + " VALUES (?, ?, ?, md5(?), ?::uuid, ?)");
+		} catch (final SQLException e) {
 			throw new AssertionError(e);
 		}
 		try {
-			String salt = generateSalt();
+			final String salt = generateSalt();
 			sql.setInt(1, accountTypeID);
 			sql.setString(2, username);
 			sql.setString(3, salt);
@@ -243,61 +251,60 @@ class DbAccounts extends Accounts {
 			sql.setString(6, email);
 			sql.execute();
 			return sql.getUpdateCount() > 0;
-		} catch (SQLException e) {
+		} catch (final SQLException e) {
 			return false;
-		} finally {	
+		} finally {
 			try {
 				sql.close();
-			} catch (SQLException e) {
+			} catch (final SQLException e) {
 				throw new AssertionError(e);
 			}
 		}
 	}
 
-	public boolean dropAccount(String username) {
+	public boolean dropAccount(final String username) {
 		try {
-			PreparedStatement sql = db.prepareStatement(
-					"DELETE FROM account WHERE username = ?");
+			final PreparedStatement sql = db.prepareStatement("DELETE FROM account WHERE username = ?");
 			try {
 				sql.setString(1, username);
 				sql.execute();
 				return sql.getUpdateCount() > 0;
-			} finally {	
+			} finally {
 				sql.close();
 			}
-		} catch (SQLException e) {
+		} catch (final SQLException e) {
 			throw new AssertionError(e);
 		}
 	}
 }
-	
+
 /**
  * Used when there is no database.
  * @author quark
  */
 class GuestOnlyAccounts extends Accounts {
-	public GuestOnlyAccounts(String url) {
+	public GuestOnlyAccounts(final String url) {
 		super(url);
 	}
 
 	@Override
-	public Account getAccount(String devKey) {
+	public Account getAccount(final String devKey) {
 		return guest;
 	}
 
-	public boolean changeDeveloperKey(String username) {
+	public boolean changeDeveloperKey(final String username) {
 		return false;
 	}
 
-	public boolean changePassword(String username, String password) {
+	public boolean changePassword(final String username, final String password) {
 		return false;
 	}
 
-	public boolean createAccount(int accountTypeID, String username, String password, String email) {
+	public boolean createAccount(final int accountTypeID, final String username, final String password, final String email) {
 		return false;
 	}
 
-	public boolean dropAccount(String username) {
+	public boolean dropAccount(final String username) {
 		return false;
 	}
 }

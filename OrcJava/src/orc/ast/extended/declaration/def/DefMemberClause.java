@@ -1,8 +1,20 @@
+//
+// DefMemberClause.java -- Java class DefMemberClause
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.ast.extended.declaration.def;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import orc.ast.extended.Visitor;
 import orc.ast.extended.expression.Expression;
@@ -29,93 +41,92 @@ public class DefMemberClause extends DefMember {
 	public Expression body;
 	public Type resultType; // May be null
 	public Boolean exported = false;
-	
-	public DefMemberClause(String name, List<List<Pattern>> formals, Expression body, Type resultType)
-	{
-		this.name = name;	/* name is "" when used for anonymous functions */
+
+	public DefMemberClause(final String name, final List<List<Pattern>> formals, final Expression body, final Type resultType) {
+		this.name = name; /* name is "" when used for anonymous functions */
 		this.formals = formals;
 		this.body = body;
 		this.resultType = resultType;
 	}
 
-	public DefMemberClause(String name, List<List<Pattern>> formals, Expression body, 
-			Type resultType, Boolean exported)
-	{
-		this.name = name;	/* name is "" when used for anonymous functions */
+	public DefMemberClause(final String name, final List<List<Pattern>> formals, final Expression body, final Type resultType, final Boolean exported) {
+		this.name = name; /* name is "" when used for anonymous functions */
 		this.formals = formals;
 		this.body = body;
 		this.resultType = resultType;
 		this.exported = exported;
 	}
-	
+
+	@Override
 	public String toString() {
 		return (name.equals("") ? "lambda" : "def ") + sigToString() + " = " + body;
 	}
-	
+
 	public String sigToString() {
-		StringBuilder s = new StringBuilder();
-		
+		final StringBuilder s = new StringBuilder();
+
 		s.append(name);
-		for (List<Pattern> ps : formals) {
-			s.append('(');	
-				s.append(Expression.join(ps, ","));
+		for (final List<Pattern> ps : formals) {
+			s.append('(');
+			s.append(Expression.join(ps, ","));
 			s.append(')');
 		}
-		
+
 		return s.toString();
 	}
 
 	/* (non-Javadoc)
 	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
 	 */
-	public <E> E accept(Visitor<E> visitor) {
+	public <E> E accept(final Visitor<E> visitor) {
 		return visitor.visit(this);
 	}
-	
-	public void extend(AggregateDef adef) throws CompilationException {
-		
-		List<Pattern> phead = formals.get(0);
+
+	@Override
+	public void extend(final AggregateDef adef) throws CompilationException {
+
+		final List<Pattern> phead = formals.get(0);
 		List<Pattern> newformals = new LinkedList<Pattern>();
 		List<Type> argTypes = new LinkedList<Type>();
-		
-		for (Pattern p : phead) {
+
+		for (final Pattern p : phead) {
 			/* Strip a toplevel type ascription from every argument pattern */
 			if (p instanceof TypedPattern) {
-				TypedPattern tp = (TypedPattern)p;
+				final TypedPattern tp = (TypedPattern) p;
 				argTypes.add(tp.t);
 				newformals.add(tp.p);
-			}
-			else {
+			} else {
 				newformals = phead;
-				
+
 				/* There is at least one argument with a missing annotation.
 				 * Request inference.
 				 */
 				argTypes = null;
-				
+
 				break;
 			}
 		}
-		if (argTypes != null) { adef.setArgTypes(argTypes); }
-		
-		
-		
+		if (argTypes != null) {
+			adef.setArgTypes(argTypes);
+		}
+
 		Expression newbody = body;
-		
+
 		if (formals.size() > 1) {
-			List<List<Pattern>> ptail = formals.subList(1, formals.size());
+			final List<List<Pattern>> ptail = formals.subList(1, formals.size());
 			if (resultType != null) {
 				newbody = new HasType(newbody, resultType);
 			}
 			newbody = Expression.uncurry(ptail, newbody);
 		}
-		
-		
-		if (resultType != null) { adef.setResultType(resultType); }
+
+		if (resultType != null) {
+			adef.setResultType(resultType);
+		}
 
 		adef.addClause(new Clause(newformals, newbody));
-		
+
 		adef.addLocation(getSourceLocation());
-		
-	}	
+
+	}
 }

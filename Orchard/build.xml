@@ -1,4 +1,17 @@
 <?xml version="1.0" ?>
+
+<!-- build.xml - Ant buildfile (additional tasks for OrcSites build)
+     Project Orchard
+
+     $Id$
+
+     Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
 <project name="orchard" default="war" basedir=".">
 	<description>
 		Ant build file for Orc binary distribution.
@@ -16,7 +29,7 @@
 		classname="com.simontuffs.onejar.ant.OneJarTask"
 		classpath="lib/one-jar-ant-task-0.96.jar"
 		onerror="report" />
-	<target name="demo-jar" depends="kilim,minify" description="generate the demo jar">
+	<target name="demo-jar" depends="copylib,kilim,minify" description="generate the demo jar">
 		<jar jarfile="build/root-demo.war" update="true">
 			<fileset dir="${orc.location.Website}">
 				<include name="demo.shtml"/>
@@ -60,7 +73,7 @@
 		</one-jar> 
 	</target>
 	
-	<target name="war" depends="kilim,minify" description="generate the war">
+	<target name="war" depends="copylib,kilim,minify" description="generate the war">
 		<jar jarfile="build/${ant.project.name}.war" update="true">
 			<fileset dir="web">
 				<include name="**/*"/>
@@ -81,24 +94,39 @@
 			</zipfileset>
 		</jar>
 	</target>
-	<taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
+<!--	<taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
 		<classpath>
-			<pathelement location="lib/jaxws-tools.jar" />
-			<fileset dir="lib" includes="orc-*.jar" />
+			<pathelement location="tools.jar" />
 		</classpath>
-	</taskdef>
+	</taskdef>-->
 	<path id="wsgen.classpath">
 		<pathelement location="build/classes"/>
+		<fileset dir="${orc.location.OrcJava}/build" includes="orc-${orc.version}.jar"/>
+		<fileset dir="${orc.location.OrcSites}/build" includes="orc-sites-${orc.version}.jar"/>
 		<pathelement location="lib/jsr181-api.jar"/>
 		<pathelement location="lib/jsr250-api.jar"/>
 	</path>
 	<target name="wsgen" description="Generate web service artifacts">
-		<wsgen sei="orc.orchard.soap.CompilerService" destdir="build/classes" xendorsed="true">
+<!--		<wsgen sei="orc.orchard.soap.CompilerService" destdir="build/classes" xendorsed="true">
 			<classpath><path refid="wsgen.classpath"/></classpath>
-		</wsgen>
-		<wsgen sei="orc.orchard.soap.ExecutorService" destdir="build/classes" xendorsed="true">
+		</wsgen>-->
+		<exec executable="wsgen">
+			<arg value="-cp"/>
+			<arg pathref="wsgen.classpath"/>
+			<arg value="-d"/>
+			<arg value="build/classes"/>
+			<arg value="orc.orchard.soap.CompilerService"/>
+		</exec>
+<!--		<wsgen sei="orc.orchard.soap.ExecutorService" destdir="build/classes" xendorsed="true">
 			<classpath><path refid="wsgen.classpath"/></classpath>
-		</wsgen>
+		</wsgen>-->
+		<exec executable="wsgen">
+			<arg value="-cp"/>
+			<arg pathref="wsgen.classpath"/>
+			<arg value="-d"/>
+			<arg value="build/classes"/>
+			<arg value="orc.orchard.soap.ExecutorService"/>
+		</exec>
 	</target>
 	
 	<target name="kilim" depends="wsgen,properties" description="Kilim weaving">
@@ -168,6 +196,16 @@
 	<target name="properties" description="Copy properties files into place">
 		<copy file="orchard.properties" todir="build/classes/orc/orchard" />
 		<copy file="oauth.jks" todir="build/classes/orc/orchard" />
+	</target>
+	
+	<target name="copylib">
+		<delete>
+			<fileset dir="lib" includes="orc-*.jar"/>
+		</delete>
+		<copy preservelastmodified="true" todir="lib" verbose="true">
+			<fileset dir="${orc.location.OrcJava}/build" includes="orc-${orc.version}.jar"/>
+			<fileset dir="${orc.location.OrcSites}/build" includes="orc-sites-${orc.version}.jar"/>
+		</copy>
 	</target>
 
 	<!-- WARNING: this does not work on non-Unix systems (without ln and tar) -->

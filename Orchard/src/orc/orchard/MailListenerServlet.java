@@ -1,3 +1,16 @@
+//
+// MailListenerServlet.java -- Java class MailListenerServlet
+// Project Orchard
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.orchard;
 
 import java.io.IOException;
@@ -25,21 +38,27 @@ import orc.runtime.OrcEngine;
 @SuppressWarnings("serial")
 public class MailListenerServlet extends HttpServlet {
 	@Override
-	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void service(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
 		// initialize and check parameters
-		String to = request.getQueryString();
-		if (to == null) throw new ServletException("Recipient missing.");
-		Object global = OrcEngine.globals.get(to);
-		if (global == null) throw new ServletException("Recipient not recognized.");
-		if (!(global instanceof MailListener)) throw new ServletException("Recipient not recognized.");
-		
+		final String to = request.getQueryString();
+		if (to == null) {
+			throw new ServletException("Recipient missing.");
+		}
+		final Object global = OrcEngine.globals.get(to);
+		if (global == null) {
+			throw new ServletException("Recipient not recognized.");
+		}
+		if (!(global instanceof MailListener)) {
+			throw new ServletException("Recipient not recognized.");
+		}
+
 		// process the message
-		MailListener receiver = (MailListener)global;
+		final MailListener receiver = (MailListener) global;
 		try {
 			if (!receiver.put(request.getInputStream())) {
 				throw new ServletException("Inbox is full");
 			}
-		} catch (MessagingException e) {
+		} catch (final MessagingException e) {
 			throw new ServletException(e);
 		}
 	}

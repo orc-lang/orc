@@ -1,3 +1,16 @@
+//
+// Ping.java -- Java class Ping
+// Project OrcSites
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.lib.net;
 
 import java.io.IOException;
@@ -23,21 +36,19 @@ import orc.runtime.sites.ThreadedPartialSite;
  */
 public class Ping extends ThreadedPartialSite {
 	@Override
-	public Object evaluate(Args args) throws TokenException {
+	public Object evaluate(final Args args) throws TokenException {
 		try {
-			InetAddress host = InetAddress.getByName(args.stringArg(0));
-			long start = System.currentTimeMillis();
-			boolean reachable = host.isReachable(args.size() > 1
-					? args.intArg(1)
-					: 10000);
+			final InetAddress host = InetAddress.getByName(args.stringArg(0));
+			final long start = System.currentTimeMillis();
+			final boolean reachable = host.isReachable(args.size() > 1 ? args.intArg(1) : 10000);
 			if (!reachable) {
 				System.err.println("Could not reach " + host.toString());
 				return null;
 			}
 			return System.currentTimeMillis() - start;
-		} catch (UnknownHostException e) {
+		} catch (final UnknownHostException e) {
 			throw new JavaException(e);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			throw new JavaException(e);
 		}
 	}

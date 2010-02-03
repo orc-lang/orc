@@ -132,9 +132,9 @@ public class OrcParseController extends ParseControllerBase {
 	public OrcParseController() {
 		super(Activator.getInstance().getLanguageID());
 		// The follow might seem to be needed, but the editor handles problem markers better without it!
-//		if (!annotationTypeInfo.getProblemMarkerTypes().contains(OrcBuilder.PROBLEM_MARKER_ID)) {
-//			annotationTypeInfo.addProblemMarkerType(OrcBuilder.PROBLEM_MARKER_ID);
-//		}
+		//		if (!annotationTypeInfo.getProblemMarkerTypes().contains(OrcBuilder.PROBLEM_MARKER_ID)) {
+		//			annotationTypeInfo.addProblemMarkerType(OrcBuilder.PROBLEM_MARKER_ID);
+		//		}
 	}
 
 	/* (non-Javadoc)
@@ -247,7 +247,7 @@ public class OrcParseController extends ParseControllerBase {
 		}
 
 		// Walk AST and tie id refs to id defs
-//		parser.resolve(currentAst);
+		//		parser.resolve(currentAst);
 
 		maybeDumpTokens();
 

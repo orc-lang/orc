@@ -1,5 +1,5 @@
 //
-// ExpressionVisitor.java -- Java class ExpressionVisitor
+// ExpressionVisitor.java -- Java interface ExpressionVisitor
 // Project OrcJava
 //
 // $Id$
@@ -47,26 +47,47 @@ import orc.ast.extended.expression.Throw;
 public interface ExpressionVisitor<E> {
 
 	public E visit(AssertType expr);
+
 	public E visit(Atomic expr);
+
 	public E visit(Call expr);
+
 	public E visit(Catch expr);
+
 	public E visit(ConsExpr expr);
+
 	public E visit(Declare expr);
+
 	public E visit(Dot expr);
+
 	public E visit(Field expr);
+
 	public E visit(HasType expr);
+
 	public E visit(IfThenElse expr);
+
 	public E visit(Lambda expr);
+
 	public E visit(Let expr);
+
 	public E visit(ListExpr expr);
+
 	public E visit(Literal expr);
+
 	public E visit(Name expr);
+
 	public E visit(NilExpr expr);
+
 	public E visit(Otherwise expr);
+
 	public E visit(Parallel expr);
+
 	public E visit(Pruning expr);
+
 	public E visit(Sequential expr);
+
 	public E visit(Stop expr);
+
 	public E visit(Throw expr);
-	
+
 }

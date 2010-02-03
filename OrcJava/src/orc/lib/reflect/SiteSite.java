@@ -1,6 +1,16 @@
-/*
- * Copyright 2005, The University of Texas at Austin. All rights reserved.
- */
+//
+// SiteSite.java -- Java class SiteSite
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.lib.reflect;
 
 import java.util.Arrays;
@@ -14,7 +24,6 @@ import orc.error.runtime.SiteException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
-import orc.runtime.regions.LogicalClock;
 import orc.runtime.regions.Region;
 import orc.runtime.regions.SubRegion;
 import orc.runtime.sites.PartialSite;
@@ -33,25 +42,26 @@ import orc.type.structured.ArrowType;
  * @author dkitchin
  */
 public class SiteSite extends PartialSite {
+	@Override
 	public Type type() {
 		return new SitemakerType();
 	}
 
-	public Object evaluate(Args args) throws TokenException {
+	@Override
+	public Object evaluate(final Args args) throws TokenException {
 		try {
-			Closure f = (Closure)args.getArg(0);
+			final Closure f = (Closure) args.getArg(0);
 			return new ClosureBackedSite(f);
-		}
-		catch (ClassCastException e) {
+		} catch (final ClassCastException e) {
 			// Argument must be a closure
 			return null;
 		}
 	}
-	
+
 }
 
 class SitemakerType extends Type {
-	
+
 	/**
 	 * Ensure that there is exactly one argument, and it is an
 	 * ArrowType, since all closures are of ArrowType.
@@ -60,28 +70,27 @@ class SitemakerType extends Type {
 	 * present type ArrowType are allowed to be arguments to
 	 * this site. Such errors will be caught at runtime.
 	 */
-	public Type call(List<Type> args) throws TypeException {
+	@Override
+	public Type call(final List<Type> args) throws TypeException {
 		if (args.size() == 1) {
-			Type T = args.get(0);
+			final Type T = args.get(0);
 			if (T instanceof ArrowType) {
 				return T;
-			}
-			else {
+			} else {
 				throw new TypeException("Expected a closure; got a value of type " + T + " instead");
 			}
-		}
-		else {
+		} else {
 			throw new ArgumentArityException(1, args.size());
 		}
 	}
-	
+
 }
 
 class ClosureBackedSite extends Site {
 
 	Closure closure;
-	
-	public ClosureBackedSite(Closure closure) {
+
+	public ClosureBackedSite(final Closure closure) {
 		this.closure = closure;
 	}
 
@@ -89,41 +98,41 @@ class ClosureBackedSite extends Site {
 	 * @see orc.runtime.sites.Site#callSite(orc.runtime.Args, orc.runtime.Token)
 	 */
 	@Override
-	public void callSite(Args args, Token caller) throws TokenException {
-		
-		Token token = caller.getEngine().newExecution(new Stop(), // initial expr is unused 
-													  caller);
-		
-		token.setRegion(new ClosureExecRegion(caller, token.getRegion())); 
-		  
+	public void callSite(final Args args, final Token caller) throws TokenException {
+
+		final Token token = caller.getEngine().newExecution(new Stop(), // initial expr is unused 
+				caller);
+
+		token.setRegion(new ClosureExecRegion(caller, token.getRegion()));
+
 		if (token != null) {
-			List<Object> argsList = Arrays.asList(args.asArray());
-			TokenContinuation K = new TokenContinuation() {
-				public void execute(Token t) {
-					ClosureExecRegion cer = (ClosureExecRegion)t.getRegion();
+			final List<Object> argsList = Arrays.asList(args.asArray());
+			final TokenContinuation K = new TokenContinuation() {
+				public void execute(final Token t) {
+					final ClosureExecRegion cer = (ClosureExecRegion) t.getRegion();
 					cer.onPublish(t.getResult());
 					t.die();
 				}
 			};
 			closure.createCall(token, argsList, K);
-		}
-		else {
+		} else {
 			throw new SiteException("Failed to host closure execution as a site.");
 		}
-		
+
 	}
-	
+
 }
 
 class ClosureExecRegion extends SubRegion {
-	
+
 	Token caller = null;
-	
-	public ClosureExecRegion(Token caller, Region parent) {
+
+	public ClosureExecRegion(final Token caller, final Region parent) {
 		super(parent);
 		this.caller = caller;
 	}
 
+	@Override
 	protected void onClose() {
 		super.onClose();
 		if (caller != null) {
@@ -131,8 +140,8 @@ class ClosureExecRegion extends SubRegion {
 			caller = null;
 		}
 	}
-	
-	public void onPublish(Object v) {
+
+	public void onPublish(final Object v) {
 		if (caller != null) {
 			caller.resume(v);
 			caller = null;

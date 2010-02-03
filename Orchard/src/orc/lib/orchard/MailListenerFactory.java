@@ -1,3 +1,16 @@
+//
+// MailListenerFactory.java -- Java class MailListenerFactory
+// Project Orchard
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.lib.orchard;
 
 import java.io.InputStream;
@@ -29,41 +42,41 @@ import orc.runtime.sites.Site;
  */
 public class MailListenerFactory extends Site {
 	public static class MailListener {
-		private Address address;
-		private Mailer mailer;
+		private final Address address;
+		private final Mailer mailer;
 		// FIXME: should this allow multiple listeners?
-		private Mailbox<OrcMessage> inbox = new Mailbox<OrcMessage>();
-		
-		public MailListener(OrcEngine engine, Mailer mailer) throws AddressException {
+		private final Mailbox<OrcMessage> inbox = new Mailbox<OrcMessage>();
+
+		public MailListener(final OrcEngine engine, final Mailer mailer) throws AddressException {
 			this.mailer = mailer;
 			this.address = mailer.newFromAddress();
 			OrcEngine.globals.put(engine, address.toString(), this);
 		}
-		
-		public boolean put(InputStream stream) throws MessagingException {
+
+		public boolean put(final InputStream stream) throws MessagingException {
 			return inbox.putnb(mailer.newMessage(stream));
 		}
-		
+
 		public Address getAddress() {
 			return address;
 		}
-		
+
 		public OrcMessage get() throws Pausable {
 			return inbox.get();
 		}
-		
+
 		public void close() {
 			OrcEngine.globals.remove(address.toString());
 		}
 	}
 
 	@Override
-	public void callSite(Args args, Token caller) throws TokenException {
+	public void callSite(final Args args, final Token caller) throws TokenException {
 		try {
-			caller.resume(new MailListener(caller.getEngine(), (Mailer)args.getArg(0)));
-		} catch (AddressException e) {
+			caller.resume(new MailListener(caller.getEngine(), (Mailer) args.getArg(0)));
+		} catch (final AddressException e) {
 			throw new JavaException(e);
-		} catch (ClassCastException e) {
+		} catch (final ClassCastException e) {
 			throw new ArgumentTypeMismatchException(e);
 		}
 	}

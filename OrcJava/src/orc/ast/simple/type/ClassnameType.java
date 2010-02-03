@@ -1,16 +1,20 @@
+//
+// ClassnameType.java -- Java class ClassnameType
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.ast.simple.type;
 
-import java.lang.reflect.TypeVariable;
-import java.util.LinkedList;
-import java.util.List;
-
 import orc.env.Env;
-import orc.error.OrcError;
-import orc.error.compiletime.typing.ArgumentArityException;
-import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
-import orc.error.compiletime.typing.UncallableTypeException;
-import orc.type.java.ClassTycon;
 
 /**
  * A type which refers to a Java class (which we will treat as an Orc type).
@@ -20,26 +24,27 @@ import orc.type.java.ClassTycon;
 public class ClassnameType extends Type {
 
 	public String classname;
-	
-	public ClassnameType(String classname) {
+
+	public ClassnameType(final String classname) {
 		this.classname = classname;
 	}
-	
+
 	@Override
-	public orc.ast.oil.type.Type convert(Env<orc.ast.simple.type.TypeVariable> env) throws TypeException {
+	public orc.ast.oil.type.Type convert(final Env<orc.ast.simple.type.TypeVariable> env) throws TypeException {
 		return new orc.ast.oil.type.ClassType(classname);
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see orc.ast.simple.type.Type#subst(orc.ast.simple.type.Type, orc.ast.simple.type.FreeTypeVariable)
 	 */
 	@Override
-	public Type subst(Type T, FreeTypeVariable X) {
+	public Type subst(final Type T, final FreeTypeVariable X) {
 		return this;
 	}
-		
-	public String toString() {		
+
+	@Override
+	public String toString() {
 		return classname;
-	}	
-	
+	}
+
 }

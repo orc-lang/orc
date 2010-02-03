@@ -40,8 +40,8 @@ public class WithLocation extends Expression implements Located {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((body == null) ? 0 : body.hashCode());
-		result = prime * result + ((location == null) ? 0 : location.hashCode());
+		result = prime * result + (body == null ? 0 : body.hashCode());
+		result = prime * result + (location == null ? 0 : location.hashCode());
 		return result;
 	}
 
@@ -49,14 +49,14 @@ public class WithLocation extends Expression implements Located {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		WithLocation other = (WithLocation) obj;
+		final WithLocation other = (WithLocation) obj;
 		if (body == null) {
 			if (other.body != null) {
 				return false;

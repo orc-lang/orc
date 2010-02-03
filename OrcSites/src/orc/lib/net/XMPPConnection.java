@@ -1,3 +1,16 @@
+//
+// XMPPConnection.java -- Java class XMPPConnection
+// Project OrcSites
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.lib.net;
 
 import java.util.LinkedList;
@@ -58,18 +71,20 @@ public class XMPPConnection extends EvalSite {
 	 * For details on the methods, refer to the Smack javadoc.
 	 */
 	private static class XMPPConnectionSite extends DotSite {
-		private org.jivesoftware.smack.XMPPConnection connection;
-		public XMPPConnectionSite(ConnectionConfiguration config) {
+		private final org.jivesoftware.smack.XMPPConnection connection;
+
+		public XMPPConnectionSite(final ConnectionConfiguration config) {
 			connection = new org.jivesoftware.smack.XMPPConnection(config);
 		}
+
 		@Override
 		protected void addMembers() {
 			addMember("connect", new ThreadedSite() {
 				@Override
-				public Object evaluate(Args args) throws TokenException {
+				public Object evaluate(final Args args) throws TokenException {
 					try {
 						connection.connect();
-					} catch (XMPPException e) {
+					} catch (final XMPPException e) {
 						throw new SiteException("XMPP connection error: " + e.getMessage(), e);
 					}
 					return Value.signal();
@@ -77,14 +92,14 @@ public class XMPPConnection extends EvalSite {
 			});
 			addMember("disconnect", new ThreadedSite() {
 				@Override
-				public Object evaluate(Args args) throws TokenException {
+				public Object evaluate(final Args args) throws TokenException {
 					connection.disconnect();
 					return Value.signal();
 				}
 			});
 			addMember("login", new ThreadedSite() {
 				@Override
-				public Object evaluate(Args args) throws TokenException {
+				public Object evaluate(final Args args) throws TokenException {
 					try {
 						switch (args.size()) {
 						case 4:
@@ -97,7 +112,7 @@ public class XMPPConnection extends EvalSite {
 							connection.login(args.stringArg(0), args.stringArg(1));
 							break;
 						}
-					} catch (XMPPException e) {
+					} catch (final XMPPException e) {
 						throw new SiteException("XMPP login error: " + e.getMessage(), e);
 					}
 					return Value.signal();
@@ -105,15 +120,18 @@ public class XMPPConnection extends EvalSite {
 			});
 			addMember("chat", new ThreadedSite() {
 				@Override
-				public Object evaluate(Args args) throws TokenException {
+				public Object evaluate(final Args args) throws TokenException {
 					return new ChatSite(connection, args.stringArg(0));
 				}
 			});
 		}
+
+		@Override
 		public void finalize() {
 			connection.disconnect();
 		}
 	}
+
 	/**
 	 * Ongoing chat with a user. Members include send and receive, which
 	 * currently support only simple string messages.
@@ -121,29 +139,32 @@ public class XMPPConnection extends EvalSite {
 	 * @author quark
 	 */
 	private static class ChatSite extends DotSite implements MessageListener {
-		private Chat chat;
+		private final Chat chat;
 		/** Buffer for received messages. */
-		private LinkedList<Object> received = new LinkedList<Object>();
+		private final LinkedList<Object> received = new LinkedList<Object>();
 		/** Queue of tokens waiting to receive messages. */
-		private LinkedList<Token> receivers = new LinkedList<Token>();
-		public ChatSite(org.jivesoftware.smack.XMPPConnection connection, String account) {
+		private final LinkedList<Token> receivers = new LinkedList<Token>();
+
+		public ChatSite(final org.jivesoftware.smack.XMPPConnection connection, final String account) {
 			this.chat = connection.getChatManager().createChat(account, this);
 		}
+
 		/**
 		 * Asynchronous listener for received messages. The messages are sent to
 		 * tokens waiting on the received site if any, otherwise they are buffed.
 		 */
-		public void processMessage(Chat _, Message message) {
+		public void processMessage(final Chat _, final Message message) {
 			synchronized (received) {
-				Object v = message.getBody();
+				final Object v = message.getBody();
 				if (receivers.isEmpty()) {
 					received.add(v);
 				} else {
-					Token receiver = receivers.removeFirst();
+					final Token receiver = receivers.removeFirst();
 					receiver.resume(v);
 				}
 			}
 		}
+
 		@Override
 		protected void addMembers() {
 			/**
@@ -151,10 +172,10 @@ public class XMPPConnection extends EvalSite {
 			 */
 			addMember("send", new ThreadedSite() {
 				@Override
-				public Object evaluate(Args args) throws TokenException {
+				public Object evaluate(final Args args) throws TokenException {
 					try {
 						chat.sendMessage(args.stringArg(0));
-					} catch (XMPPException e) {
+					} catch (final XMPPException e) {
 						throw new SiteException("XMPP message send error: " + e.getMessage(), e);
 					}
 					return Value.signal();
@@ -165,7 +186,7 @@ public class XMPPConnection extends EvalSite {
 			 */
 			addMember("receive", new Site() {
 				@Override
-				public void callSite(Args args, Token receiver) {
+				public void callSite(final Args args, final Token receiver) {
 					synchronized (received) {
 						if (received.isEmpty()) {
 							receivers.addLast(receiver);
@@ -177,18 +198,14 @@ public class XMPPConnection extends EvalSite {
 			});
 		}
 	}
+
 	@Override
-	public Object evaluate(Args args) throws TokenException {
+	public Object evaluate(final Args args) throws TokenException {
 		ConnectionConfiguration config;
 		if (args.size() > 2) {
-			config = new ConnectionConfiguration(
-					args.stringArg(0),
-					args.intArg(1),
-					args.stringArg(2));
+			config = new ConnectionConfiguration(args.stringArg(0), args.intArg(1), args.stringArg(2));
 		} else if (args.size() > 1) {
-			config = new ConnectionConfiguration(
-					args.stringArg(0),
-					args.intArg(1));
+			config = new ConnectionConfiguration(args.stringArg(0), args.intArg(1));
 		} else {
 			config = new ConnectionConfiguration(args.stringArg(0));
 		}

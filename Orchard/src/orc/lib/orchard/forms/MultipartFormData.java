@@ -1,3 +1,16 @@
+//
+// MultipartFormData.java -- Java class MultipartFormData
+// Project Orchard
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.lib.orchard.forms;
 
 import java.util.LinkedList;
@@ -12,29 +25,33 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 public class MultipartFormData implements FormData {
-	private List<FileItem> items;
-	
-	public MultipartFormData(List<FileItem> items) {
+	private final List<FileItem> items;
+
+	public MultipartFormData(final List<FileItem> items) {
 		this.items = items;
 	}
-	
-	public MultipartFormData(HttpServletRequest request) throws FileUploadException {
-		FileItemFactory factory = new DiskFileItemFactory();
-		ServletFileUpload upload = new ServletFileUpload(factory);
+
+	public MultipartFormData(final HttpServletRequest request) throws FileUploadException {
+		final FileItemFactory factory = new DiskFileItemFactory();
+		final ServletFileUpload upload = new ServletFileUpload(factory);
 		this.items = upload.parseRequest(request);
 	}
 
-	public FileItem getItem(String key) {
-		for (FileItem item : items) {
-			if (item.getFieldName().equals(key)) return item;
+	public FileItem getItem(final String key) {
+		for (final FileItem item : items) {
+			if (item.getFieldName().equals(key)) {
+				return item;
+			}
 		}
 		return null;
 	}
 
-	public FileItem[] getItems(String key) {
-		LinkedList<FileItem> out = new LinkedList<FileItem>();
-		for (FileItem item : items) {
-			if (item.getFieldName().equals(key)) out.add(item);
+	public FileItem[] getItems(final String key) {
+		final LinkedList<FileItem> out = new LinkedList<FileItem>();
+		for (final FileItem item : items) {
+			if (item.getFieldName().equals(key)) {
+				out.add(item);
+			}
 		}
 		return out.toArray(new FileItem[0]);
 	}
@@ -43,15 +60,17 @@ public class MultipartFormData implements FormData {
 		return items;
 	}
 
-	public String getParameter(String key) {
-		FileItem item = getItem(key);
-		if (item == null) return null;
+	public String getParameter(final String key) {
+		final FileItem item = getItem(key);
+		if (item == null) {
+			return null;
+		}
 		return item.getString();
 	}
 
-	public String[] getParameterValues(String key) {
-		FileItem[] items = getItems(key);
-		String[] out = new String[items.length];
+	public String[] getParameterValues(final String key) {
+		final FileItem[] items = getItems(key);
+		final String[] out = new String[items.length];
 		for (int i = 0; i < items.length; ++i) {
 			out[i] = items[i].toString();
 		}

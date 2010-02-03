@@ -15,18 +15,7 @@ package orc;
 
 import java.io.IOException;
 
-import orc.ast.extended.declaration.Declaration;
-import orc.ast.extended.expression.Declare;
-import orc.ast.oil.SiteResolver;
-import orc.ast.oil.UnguardedRecursionChecker;
 import orc.ast.oil.expression.Expression;
-import orc.ast.simple.argument.Variable;
-import orc.ast.xml.Oil;
-import orc.env.Env;
-import orc.error.compiletime.CompilationException;
-import orc.parser.OrcParser;
-import orc.progress.NullProgressListener;
-import orc.progress.ProgressListener;
 import orc.error.compiletime.CompileMessageRecorder.Severity;
 import orc.runtime.OrcEngine;
 

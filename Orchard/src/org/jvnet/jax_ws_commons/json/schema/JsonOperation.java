@@ -1,10 +1,10 @@
 package org.jvnet.jax_ws_commons.json.schema;
 
-import com.sun.xml.ws.api.model.wsdl.WSDLBoundOperation;
-import com.sun.xml.ws.api.model.wsdl.WSDLPart;
-import com.sun.xml.ws.api.model.wsdl.WSDLPartDescriptor;
-import com.sun.xml.xsom.XSElementDecl;
-import com.sun.xml.xsom.XSSchemaSet;
+import com.sun.xml.internal.ws.api.model.wsdl.WSDLBoundOperation;
+import com.sun.xml.internal.ws.api.model.wsdl.WSDLPart;
+import com.sun.xml.internal.ws.api.model.wsdl.WSDLPartDescriptor;
+import com.sun.xml.internal.xsom.XSElementDecl;
+import com.sun.xml.internal.xsom.XSSchemaSet;
 
 import javax.jws.soap.SOAPBinding.Style;
 import java.beans.Introspector;

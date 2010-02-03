@@ -260,6 +260,7 @@ public class DeclareDefs extends Expression {
 		for (final Def d : defs) {
 			final Closure c = closures[i++];
 
+			//FIXME: Add closure compaction back!
 			/*
 			 * alignment for closure compaction
 			 */

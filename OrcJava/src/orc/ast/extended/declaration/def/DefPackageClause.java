@@ -28,7 +28,6 @@ import orc.ast.extended.expression.HasType;
 import orc.ast.extended.expression.Literal;
 import orc.ast.extended.expression.Name;
 import orc.ast.extended.expression.Otherwise;
-import orc.ast.extended.expression.Parallel;
 import orc.ast.extended.expression.Sequential;
 import orc.ast.extended.expression.Stop;
 import orc.ast.extended.pattern.Pattern;
@@ -41,8 +40,7 @@ import orc.error.compiletime.CompilationException;
  * 
  * @author amshali
  */
-public class DefPackageClause
-    extends DefMemberClause {
+public class DefPackageClause extends DefMemberClause {
 
 	/**
 	 * Constructs an object of class DefPackageClause.
@@ -52,27 +50,25 @@ public class DefPackageClause
 	 * @param body
 	 * @param resultType
 	 */
-	public DefPackageClause(String name, List<List<Pattern>> formals, Expression body,
-	    Type resultType) {
+	public DefPackageClause(final String name, final List<List<Pattern>> formals, final Expression body, final Type resultType) {
 		super(name, formals, body, resultType);
 	}
 
-	public DefPackageClause(String name, List<List<Pattern>> formals, Expression body,
-	    Type resultType, Boolean exported) {
+	public DefPackageClause(final String name, final List<List<Pattern>> formals, final Expression body, final Type resultType, final Boolean exported) {
 		super(name, formals, body, resultType, exported);
 
 	}
 
 	@Override
-	public void extend(AggregateDef adef) throws CompilationException {
-		List<Pattern> phead = formals.get(0);
+	public void extend(final AggregateDef adef) throws CompilationException {
+		final List<Pattern> phead = formals.get(0);
 		List<Pattern> newformals = new LinkedList<Pattern>();
 		List<Type> argTypes = new LinkedList<Type>();
 
-		for (Pattern p : phead) {
+		for (final Pattern p : phead) {
 			/* Strip a toplevel type ascription from every argument pattern */
 			if (p instanceof TypedPattern) {
-				TypedPattern tp = (TypedPattern) p;
+				final TypedPattern tp = (TypedPattern) p;
 				argTypes.add(tp.t);
 				newformals.add(tp.p);
 			} else {
@@ -93,7 +89,7 @@ public class DefPackageClause
 
 		Expression newbody = body;
 		if (formals.size() > 1) {
-			List<List<Pattern>> ptail = formals.subList(1, formals.size());
+			final List<List<Pattern>> ptail = formals.subList(1, formals.size());
 			if (resultType != null) {
 				newbody = new HasType(newbody, resultType);
 			}
@@ -114,11 +110,11 @@ public class DefPackageClause
 
 	}
 
-	private void makeNewBody(Declare declare, List<String> exportedDefs) {
-		Declaration defs = declare.d;
-    Expression e = declare.e;
+	private void makeNewBody(final Declare declare, final List<String> exportedDefs) {
+		final Declaration defs = declare.d;
+		final Expression e = declare.e;
 		if (defs instanceof DefsDeclaration) {
-			for (DefMember d : ((DefsDeclaration) defs).defs) {
+			for (final DefMember d : ((DefsDeclaration) defs).defs) {
 				if (d instanceof DefMemberClause && ((DefMemberClause) d).exported) {
 					exportedDefs.add(d.name);
 				}
@@ -127,17 +123,16 @@ public class DefPackageClause
 		if (e instanceof Declare) {
 			makeNewBody((Declare) e, exportedDefs);
 		} else {
-			List<Expression> recordArgs = makeRecordArgs(exportedDefs);
-			Call recordCall = new Call(new Name("Record"), recordArgs);
-			Otherwise otherwise = new Otherwise(
-			    new Sequential(e, new Stop()), recordCall);
+			final List<Expression> recordArgs = makeRecordArgs(exportedDefs);
+			final Call recordCall = new Call(new Name("Record"), recordArgs);
+			final Otherwise otherwise = new Otherwise(new Sequential(e, new Stop()), recordCall);
 			declare.e = otherwise;
 		}
 	}
 
-	private List<Expression> makeRecordArgs(List<String> exportedDefs) {
-		List<Expression> args = new ArrayList<Expression>();
-		for (String s : exportedDefs) {
+	private List<Expression> makeRecordArgs(final List<String> exportedDefs) {
+		final List<Expression> args = new ArrayList<Expression>();
+		for (final String s : exportedDefs) {
 			args.add(new Literal(s));
 			args.add(new Call(new Name("Site"), new Name(s)));
 		}

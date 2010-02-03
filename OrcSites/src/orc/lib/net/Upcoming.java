@@ -1,3 +1,16 @@
+//
+// Upcoming.java -- Java class Upcoming
+// Project OrcSites
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.lib.net;
 
 import java.io.FileNotFoundException;
@@ -33,42 +46,51 @@ public final class Upcoming {
 	private static DateTimeFormatter dateFormatter = DateTimeFormat.forPattern("yyyy-MM-dd");
 	private static DateTimeFormatter timeFormatter = DateTimeFormat.forPattern("HH:mm:ss");
 	private static DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
-	
-	private static final LocalDate parseDate(String date) {
-		if (date == null || date.equals("")) return null;
+
+	private static final LocalDate parseDate(final String date) {
+		if (date == null || date.equals("")) {
+			return null;
+		}
 		return dateFormatter.parseDateTime(date).toLocalDate();
 	}
-	
-	private static final LocalDateTime parseDateTime(String dateTime) {
-		if (dateTime == null || dateTime.equals("")) return null;
+
+	private static final LocalDateTime parseDateTime(final String dateTime) {
+		if (dateTime == null || dateTime.equals("")) {
+			return null;
+		}
 		return dateTimeFormatter.parseDateTime(dateTime).toLocalDateTime();
 	}
-	
-	private static final LocalTime parseTime(String time) {
-		if (time == null || time.equals("")) return null;
+
+	private static final LocalTime parseTime(final String time) {
+		if (time == null || time.equals("")) {
+			return null;
+		}
 		try {
 			return timeFormatter.parseDateTime(time).toLocalTime();
-		} catch (IllegalArgumentException _) {
+		} catch (final IllegalArgumentException _) {
 			// FIXME: I'm seeing nonsense values like "-00001";
 			// for now we'll just ignore invalid dates and times
 			return null;
 		}
 	}
-	
-	private String key;
+
+	private final String key;
+
 	/**
 	 * Create a new Upcoming object using the given properties file.
 	 * @param file resource path to properties file which should define orc.lib.net.upcoming.key
 	 * @throws IOException if the properties file cannot be read
 	 */
-	public Upcoming(String file) throws IOException {
-		Properties p = new Properties();
-		InputStream stream = Upcoming.class.getResourceAsStream("/"+file);
-		if (stream == null) throw new FileNotFoundException(file);
+	public Upcoming(final String file) throws IOException {
+		final Properties p = new Properties();
+		final InputStream stream = Upcoming.class.getResourceAsStream("/" + file);
+		if (stream == null) {
+			throw new FileNotFoundException(file);
+		}
 		p.load(stream);
 		key = p.getProperty("orc.lib.net.upcoming.key");
 	}
-	
+
 	public EventSearch eventSearch() {
 		return new EventSearch();
 	}
@@ -78,44 +100,40 @@ public final class Upcoming {
 		public String location = null;
 		public LocalDate min_date = null;
 		public LocalDate max_date = null;
+
 		// TODO: add more parameters
-		
-		private EventSearch() {}
-		
+
+		private EventSearch() {
+		}
+
 		private String toQuery() {
 			try {
-				String out = (search_text != null ? "&search_text=" + URLEncoder.encode(search_text, "UTF-8") : "") +
-					(location != null ? "&location=" + URLEncoder.encode(location, "UTF-8") : "") +
-					(min_date != null ? "&min_date=" + URLEncoder.encode(dateFormatter.print(min_date), "UTF-8") : "") +
-					(max_date != null ? "&max_date=" + URLEncoder.encode(dateFormatter.print(max_date), "UTF-8") : "");
+				final String out = (search_text != null ? "&search_text=" + URLEncoder.encode(search_text, "UTF-8") : "") + (location != null ? "&location=" + URLEncoder.encode(location, "UTF-8") : "") + (min_date != null ? "&min_date=" + URLEncoder.encode(dateFormatter.print(min_date), "UTF-8") : "") + (max_date != null ? "&max_date=" + URLEncoder.encode(dateFormatter.print(max_date), "UTF-8") : "");
 				return out;
-			} catch (UnsupportedEncodingException e) {
+			} catch (final UnsupportedEncodingException e) {
 				// should be impossible
 				throw new OrcError(e);
 			}
 		}
-		
+
 		public Event[] run() throws IOException, SAXException, Pausable {
 			final URL url;
 			try {
-				url = new URL(baseURL +
-						"?api_key=" + key +
-						"&method=event.search" +
-						toQuery());
-			} catch (MalformedURLException e) {
+				url = new URL(baseURL + "?api_key=" + key + "&method=event.search" + toQuery());
+			} catch (final MalformedURLException e) {
 				// should be impossible
 				throw new OrcError(e);
 			}
-			Document result = XMLUtils.getURL(url);
-			NodeList events = result.getElementsByTagName("event");
-			Event[] out = new Event[events.getLength()];
+			final Document result = XMLUtils.getURL(url);
+			final NodeList events = result.getElementsByTagName("event");
+			final Event[] out = new Event[events.getLength()];
 			for (int i = 0; i < events.getLength(); ++i) {
-				out[i] = new Event((Element)events.item(i));
+				out[i] = new Event((Element) events.item(i));
 			}
 			return out;
 		}
 	}
-	
+
 	public final static class Event {
 		public final String id;
 		public final String name;
@@ -149,8 +167,8 @@ public final class Upcoming {
 		public final String ticket_price;
 		public final boolean ticket_free;
 		public final String photo_url;
-		
-		public Event(Element e) {
+
+		public Event(final Element e) {
 			id = e.getAttribute("id");
 			name = e.getAttribute("name");
 			description = e.getAttribute("description");

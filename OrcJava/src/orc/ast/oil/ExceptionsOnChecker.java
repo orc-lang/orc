@@ -21,7 +21,6 @@ import orc.ast.oil.expression.Catch;
 import orc.ast.oil.expression.Expression;
 import orc.ast.oil.expression.Throw;
 import orc.ast.oil.expression.WithLocation;
-import orc.env.Env;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;
 
@@ -31,34 +30,36 @@ import orc.error.compiletime.CompilationException;
  * @author matsuoka
  */
 public class ExceptionsOnChecker extends Walker {
-	
-	private LinkedList<CompilationException> problems = new LinkedList<CompilationException>();
+
+	private final LinkedList<CompilationException> problems = new LinkedList<CompilationException>();
 	private SourceLocation location;
-	
-	public static void check(Expression expr) throws CompilationException {
-		ExceptionsOnChecker checker = new ExceptionsOnChecker();
+
+	public static void check(final Expression expr) throws CompilationException {
+		final ExceptionsOnChecker checker = new ExceptionsOnChecker();
 		expr.accept(checker);
-		if (checker.problems.size() > 0)
+		if (checker.problems.size() > 0) {
 			throw checker.problems.getFirst();
+		}
 	}
-	
-	public Void visit(Catch catchExpr){
-		CompilationException e = new CompilationException(
-		"Catch expression found, but exceptions not enabled.");
+
+	@Override
+	public Void visit(final Catch catchExpr) {
+		final CompilationException e = new CompilationException("Catch expression found, but exceptions not enabled.");
 		e.setSourceLocation(catchExpr.handler.location);
 		problems.add(e);
 		return null;
 	}
-	
-	public Void visit(Throw throwExpr){
-		CompilationException e = new CompilationException(
-		"Throw expression found, but exceptions not enabled.");
+
+	@Override
+	public Void visit(final Throw throwExpr) {
+		final CompilationException e = new CompilationException("Throw expression found, but exceptions not enabled.");
 		e.setSourceLocation(location);
 		problems.add(e);
 		return null;
 	}
-	
-	public Void visit(WithLocation expr) {
+
+	@Override
+	public Void visit(final WithLocation expr) {
 		this.location = expr.location;
 		this.enter(expr);
 		expr.body.accept(this);

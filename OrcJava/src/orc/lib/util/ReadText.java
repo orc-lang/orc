@@ -1,7 +1,19 @@
+//
+// ReadText.java -- Java class ReadText
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.lib.util;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import orc.error.runtime.ArgumentTypeMismatchException;
@@ -16,21 +28,23 @@ import orc.runtime.sites.ThreadedSite;
  */
 public class ReadText extends ThreadedSite {
 	@Override
-	public Object evaluate(Args args) throws TokenException {
+	public Object evaluate(final Args args) throws TokenException {
 		try {
-			InputStreamReader in = (InputStreamReader)args.getArg(0);
-			StringBuilder out = new StringBuilder();
-			char[] buff = new char[1024];
+			final InputStreamReader in = (InputStreamReader) args.getArg(0);
+			final StringBuilder out = new StringBuilder();
+			final char[] buff = new char[1024];
 			while (true) {
-				int blen = in.read(buff);
-				if (blen < 0) break;
+				final int blen = in.read(buff);
+				if (blen < 0) {
+					break;
+				}
 				out.append(buff, 0, blen);
 			}
 			in.close();
 			return out.toString();
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			throw new JavaException(e);
-		} catch (ClassCastException e) {
+		} catch (final ClassCastException e) {
 			throw new ArgumentTypeMismatchException(e);
 		}
 	}

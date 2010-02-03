@@ -1,3 +1,16 @@
+//
+// Aggregate.java -- Java class Aggregate
+// Project Orchard
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.lib.orchard.forms;
 
 import java.io.IOException;
@@ -8,35 +21,34 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
 public abstract class Aggregate implements Part<Map<String, Object>> {
 	protected String key;
 	protected List<Part<?>> parts = new LinkedList<Part<?>>();
-	
-	public Aggregate(String key) {
+
+	public Aggregate(final String key) {
 		this.key = key;
 	}
-	
+
 	public Map<String, Object> getValue() {
-		HashMap<String, Object> out = new HashMap<String, Object>();
-		for (Part<?> part : parts) {
+		final HashMap<String, Object> out = new HashMap<String, Object>();
+		for (final Part<?> part : parts) {
 			out.put(part.getKey(), part.getValue());
 		}
 		return out;
 	}
-	
-	public void addPart(Part<?> part) {
+
+	public void addPart(final Part<?> part) {
 		parts.add(part);
 	}
 
-	public void readRequest(FormData request, List<String> errors) {
-		for (Part<?> part : parts) {
+	public void readRequest(final FormData request, final List<String> errors) {
+		for (final Part<?> part : parts) {
 			part.readRequest(request, errors);
 		}
 	}
 
-	public void render(PrintWriter out, Set<String> flags) throws IOException {
-		for (Part<?> part : parts) {
+	public void render(final PrintWriter out, final Set<String> flags) throws IOException {
+		for (final Part<?> part : parts) {
 			part.render(out, flags);
 		}
 	}
@@ -44,10 +56,12 @@ public abstract class Aggregate implements Part<Map<String, Object>> {
 	public String getKey() {
 		return key;
 	}
-	
+
 	public boolean needsMultipartEncoding() {
-		for (Part<?> part : parts) {
-			if (part.needsMultipartEncoding()) return true;
+		for (final Part<?> part : parts) {
+			if (part.needsMultipartEncoding()) {
+				return true;
+			}
 		}
 		return false;
 	}

@@ -1,3 +1,16 @@
+//
+// Intervals.java -- Java class Intervals
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.lib.state;
 
 import java.util.Iterator;
@@ -7,23 +20,28 @@ public final class Intervals<T extends Comparable> implements Iterable<Interval<
 	private static class DTRCons<T extends Comparable> {
 		private DTRCons<T> next;
 		private final Interval<T> interval;
-		public DTRCons(DTRCons<T> next, Interval<T> range) {
+
+		public DTRCons(final DTRCons<T> next, final Interval<T> range) {
 			this.next = next;
 			this.interval = range;
 		}
 	}
+
 	/** An ordered (increasing) linked list of disjoint intervals. */
 	private final DTRCons<T> head;
-	private Intervals(DTRCons<T> head) {
+
+	private Intervals(final DTRCons<T> head) {
 		this.head = head;
 	}
+
 	public Intervals() {
 		this.head = null;
 	}
-	public Intervals(Interval<T> range) {
+
+	public Intervals(final Interval<T> range) {
 		this(new DTRCons(null, range));
 	}
-	
+
 	/**
 	 * This is most efficient when the interval goes at the front of the set.
 	 */
@@ -54,13 +72,19 @@ public final class Intervals<T extends Comparable> implements Iterable<Interval<
 		tailOut.next = it;
 		return new Intervals(headOut.next);
 	}
-	
-	public Intervals<T> intersect(Intervals<T> that) {
+
+	public Intervals<T> intersect(final Intervals<T> that) {
 		// identical ranges
-		if (this == that) return this;
+		if (this == that) {
+			return this;
+		}
 		// empty ranges
-		if (isEmpty()) return this;
-		if (that.isEmpty()) return that;
+		if (isEmpty()) {
+			return this;
+		}
+		if (that.isEmpty()) {
+			return that;
+		}
 		DTRCons head, tail;
 		head = tail = new DTRCons(null, null);
 		DTRCons next1 = this.head;
@@ -91,34 +115,40 @@ public final class Intervals<T extends Comparable> implements Iterable<Interval<
 		}
 		return new Intervals(head.next);
 	}
-	
-	public boolean spans(T point) {
-		for (Interval<T> r : this) {
-			if (r.spans(point)) return true;
+
+	public boolean spans(final T point) {
+		for (final Interval<T> r : this) {
+			if (r.spans(point)) {
+				return true;
+			}
 		}
 		return false;
 	}
-	
+
 	public boolean isEmpty() {
 		return head == null;
 	}
-	
+
 	public Iterator<Interval<T>> iterator() {
 		return new MyIterator(head);
 	}
-	
+
 	private static class MyIterator<T extends Comparable> implements Iterator<Interval<T>> {
 		private DTRCons next;
-		public MyIterator(DTRCons next) {
+
+		public MyIterator(final DTRCons next) {
 			this.next = next;
 		}
+
 		public boolean hasNext() {
 			return next != null;
 		}
 
 		public Interval<T> next() {
-			if (next == null) throw new NoSuchElementException();
-			Interval<T> out = next.interval;
+			if (next == null) {
+				throw new NoSuchElementException();
+			}
+			final Interval<T> out = next.interval;
 			next = next.next;
 			return out;
 		}
@@ -127,11 +157,12 @@ public final class Intervals<T extends Comparable> implements Iterable<Interval<
 			throw new UnsupportedOperationException();
 		}
 	}
-	
+
+	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
+		final StringBuilder sb = new StringBuilder();
 		sb.append("{");
-		Iterator<Interval<T>> it = iterator();
+		final Iterator<Interval<T>> it = iterator();
 		if (it.hasNext()) {
 			sb.append(it.next());
 			while (it.hasNext()) {

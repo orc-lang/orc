@@ -1,3 +1,16 @@
+//
+// ExecutorService.java -- Java class ExecutorService
+// Project Orchard
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.orchard.java;
 
 import java.io.FileInputStream;
@@ -12,16 +25,23 @@ import java.util.logging.Level;
 import javax.swing.JOptionPane;
 
 import orc.orchard.AbstractExecutorService;
-import orc.orchard.errors.*;
-import orc.orchard.events.*;
+import orc.orchard.errors.InvalidJobException;
+import orc.orchard.errors.InvalidJobStateException;
+import orc.orchard.errors.InvalidOilException;
+import orc.orchard.errors.InvalidProgramException;
+import orc.orchard.errors.InvalidPromptException;
+import orc.orchard.errors.QuotaException;
+import orc.orchard.events.JobEvent;
+import orc.orchard.events.PrintlnEvent;
+import orc.orchard.events.PromptEvent;
+import orc.orchard.events.PublicationEvent;
+import orc.orchard.events.RedirectEvent;
+import orc.orchard.events.TokenErrorEvent;
+import orc.orchard.events.Visitor;
 
 public class ExecutorService extends AbstractExecutorService {
-	
-	public static void main(String[] args)
-	throws FileNotFoundException, IOException, QuotaException,
-		InvalidProgramException, InvalidOilException, InvalidJobStateException,
-		InvalidJobException, InterruptedException
-	{
+
+	public static void main(final String[] args) throws FileNotFoundException, IOException, QuotaException, InvalidProgramException, InvalidOilException, InvalidJobStateException, InvalidJobException, InterruptedException {
 		String program;
 		if (args.length > 0) {
 			program = getStreamContent(new FileInputStream(args[0]));
@@ -36,34 +56,38 @@ public class ExecutorService extends AbstractExecutorService {
 		do {
 			events = executor.jobEvents("", job);
 			executor.purgeJobEvents("", job);
-			for (JobEvent event : events) {
+			for (final JobEvent event : events) {
 				event.accept(new Visitor<Void>() {
-					public Void visit(PrintlnEvent event) {
+					public Void visit(final PrintlnEvent event) {
 						System.out.println(event.line);
 						return null;
 					}
-					public Void visit(PromptEvent event) {
-						String response = JOptionPane.showInputDialog(event.message);
+
+					public Void visit(final PromptEvent event) {
+						final String response = JOptionPane.showInputDialog(event.message);
 						try {
 							executor.respondToPrompt("", job, event.promptID, response);
-						} catch (RemoteException e) {
+						} catch (final RemoteException e) {
 							System.err.println("ERROR: " + e.getMessage());
-						} catch (InvalidPromptException e) {
+						} catch (final InvalidPromptException e) {
 							System.err.println("ERROR: " + e.getMessage());
-						} catch (InvalidJobException e) {
+						} catch (final InvalidJobException e) {
 							System.err.println("ERROR: " + e.getMessage());
 						}
 						return null;
 					}
-					public Void visit(PublicationEvent event) {
+
+					public Void visit(final PublicationEvent event) {
 						System.out.println(event.value.toString());
 						return null;
 					}
-					public Void visit(RedirectEvent event) {
+
+					public Void visit(final RedirectEvent event) {
 						System.err.println("REDIRECT: " + event.url);
 						return null;
 					}
-					public Void visit(TokenErrorEvent event) {
+
+					public Void visit(final TokenErrorEvent event) {
 						System.err.println("ERROR: " + event.message);
 						return null;
 					}
@@ -72,13 +96,13 @@ public class ExecutorService extends AbstractExecutorService {
 			Thread.yield();
 		} while (!events.isEmpty());
 	}
-	
-	private static String getStreamContent(InputStream stream) throws IOException {
+
+	private static String getStreamContent(final InputStream stream) throws IOException {
 		// read program from stdin
-		InputStreamReader reader = new InputStreamReader(stream);
-		StringBuilder sb = new StringBuilder();
+		final InputStreamReader reader = new InputStreamReader(stream);
+		final StringBuilder sb = new StringBuilder();
 		int blen;
-		char[] buffer = new char[1024];
+		final char[] buffer = new char[1024];
 		while ((blen = reader.read(buffer)) > 0) {
 			sb.append(buffer, 0, blen);
 		}

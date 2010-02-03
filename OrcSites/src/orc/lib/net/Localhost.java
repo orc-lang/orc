@@ -1,6 +1,16 @@
-/**
- * 
- */
+//
+// Localhost.java -- Java class Localhost
+// Project OrcSites
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.lib.net;
 
 import java.net.UnknownHostException;
@@ -11,18 +21,17 @@ import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 
 /**
- * @author dkitchin, mbickford
- * 
  * Return the name of the local host. If the lookup fails, the site remains silent.
  *
+ * @author dkitchin, mbickford
  */
 public class Localhost extends EvalSite {
 	@Override
-	public Object evaluate(Args args) throws TokenException {
+	public Object evaluate(final Args args) throws TokenException {
 		try {
-			java.net.InetAddress localMachine = java.net.InetAddress.getLocalHost();	
+			final java.net.InetAddress localMachine = java.net.InetAddress.getLocalHost();
 			return localMachine.getHostName();
-		} catch (UnknownHostException e) {
+		} catch (final UnknownHostException e) {
 			throw new JavaException(e);
 		}
 	}

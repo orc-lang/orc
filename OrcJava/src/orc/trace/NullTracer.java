@@ -1,3 +1,16 @@
+//
+// NullTracer.java -- Java class NullTracer
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2008 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.trace;
 
 import orc.error.SourceLocation;
@@ -9,33 +22,79 @@ import orc.runtime.values.Closure;
  * @author quark
  */
 public class NullTracer extends Tracer {
+	@Override
 	public TokenTracer start() {
 		return TOKEN_TRACER;
 	}
-	public void finish() {}
+
+	@Override
+	public void finish() {
+	}
+
 	private static final TokenTracer TOKEN_TRACER = new TokenTracer() {
-		public void send(Object site, Object[] arguments) {}
-		public void die() {}
-		public void choke(StoreTrace store) {}
-		public void receive(Object value) {}
-		public void unblock(StoreTrace store) {}
+		@Override
+		public void send(final Object site, final Object[] arguments) {
+		}
+
+		@Override
+		public void die() {
+		}
+
+		@Override
+		public void choke(final StoreTrace store) {
+		}
+
+		@Override
+		public void receive(final Object value) {
+		}
+
+		@Override
+		public void unblock(final StoreTrace store) {
+		}
+
+		@Override
 		public TokenTracer fork() {
 			return this;
 		}
-		public void enter(Closure closure) {}
-		public void leave(int depth) {}
-		public void print(String value, boolean newline) {}
-		public void publish(Object value) {}
-		public void error(TokenException error) {}
-		public void setSourceLocation(SourceLocation location) {}
+
+		@Override
+		public void enter(final Closure closure) {
+		}
+
+		@Override
+		public void leave(final int depth) {
+		}
+
+		@Override
+		public void print(final String value, final boolean newline) {
+		}
+
+		@Override
+		public void publish(final Object value) {
+		}
+
+		@Override
+		public void error(final TokenException error) {
+		}
+
+		public void setSourceLocation(final SourceLocation location) {
+		}
+
 		public SourceLocation getSourceLocation() {
 			return null;
 		}
-		public void block(PullTrace pull) {}
+
+		@Override
+		public void block(final PullTrace pull) {
+		}
+
+		@Override
 		public PullTrace pull() {
 			return null;
 		}
-		public StoreTrace store(PullTrace event, Object value) {
+
+		@Override
+		public StoreTrace store(final PullTrace event, final Object value) {
 			return null;
 		}
 	};

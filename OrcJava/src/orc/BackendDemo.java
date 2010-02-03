@@ -18,30 +18,30 @@ import java.io.PrintWriter;
 import java.util.Iterator;
 
 import orc.ast.oil.Visitor;
-import orc.env.Env;
-import orc.env.LookupFailureException;
-import orc.error.OrcError;
-import orc.error.compiletime.CompilationException;
 import orc.ast.oil.expression.Atomic;
-import orc.ast.oil.expression.Def;
-import orc.ast.oil.expression.Parallel;
 import orc.ast.oil.expression.Call;
 import orc.ast.oil.expression.Catch;
 import orc.ast.oil.expression.DeclareDefs;
+import orc.ast.oil.expression.DeclareType;
+import orc.ast.oil.expression.Def;
 import orc.ast.oil.expression.Expression;
 import orc.ast.oil.expression.HasType;
+import orc.ast.oil.expression.Otherwise;
+import orc.ast.oil.expression.Parallel;
 import orc.ast.oil.expression.Pruning;
 import orc.ast.oil.expression.Sequential;
-import orc.ast.oil.expression.Otherwise;
 import orc.ast.oil.expression.Stop;
 import orc.ast.oil.expression.Throw;
-import orc.ast.oil.expression.DeclareType;
 import orc.ast.oil.expression.WithLocation;
 import orc.ast.oil.expression.argument.Argument;
 import orc.ast.oil.expression.argument.Constant;
 import orc.ast.oil.expression.argument.Field;
 import orc.ast.oil.expression.argument.Site;
 import orc.ast.oil.expression.argument.Variable;
+import orc.env.Env;
+import orc.env.LookupFailureException;
+import orc.error.OrcError;
+import orc.error.compiletime.CompilationException;
 
 /**
  * An example of a custom compiler backend.
@@ -150,7 +150,6 @@ final class BackendVisitorDemo implements Visitor<Void> {
 		out.print(")");
 		return null;
 	}
-	
 
 	public Void visit(final Pruning expr) {
 		out.print("(");

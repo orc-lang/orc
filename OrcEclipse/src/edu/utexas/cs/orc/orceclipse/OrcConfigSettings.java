@@ -143,14 +143,14 @@ public class OrcConfigSettings extends Config {
 		setExceptionsOn(launchConfig.getAttribute(EXCEPTIONS_ON_ATTR_NAME, getExceptionsOn()));
 		setIncludePath(launchConfig.getAttribute(INCLUDE_PATH_ATTR_NAME, getIncludePath()));
 		setClassPath(launchConfig.getAttribute(SITE_CLASSPATH_ATTR_NAME, getClassPath()));
-		if (launchConfig.getAttribute(OIL_OUT_ATTR_NAME, (String)null) != null) {
-			setOilOutputFile(new File(launchConfig.getAttribute(OIL_OUT_ATTR_NAME, (String)null)));
+		if (launchConfig.getAttribute(OIL_OUT_ATTR_NAME, (String) null) != null) {
+			setOilOutputFile(new File(launchConfig.getAttribute(OIL_OUT_ATTR_NAME, (String) null)));
 		}
 		setMaxPubs(launchConfig.getAttribute(MAX_PUBS_ATTR_NAME, getMaxPubs()));
 		setNumSiteThreads(launchConfig.getAttribute(NUM_SITE_THREADS_ATTR_NAME, getNumSiteThreads()));
-		if (launchConfig.getAttribute(TRACE_OUT_ATTR_NAME, (String)null) != null) {
+		if (launchConfig.getAttribute(TRACE_OUT_ATTR_NAME, (String) null) != null) {
 			try {
-				setTraceOutputFile(new File(launchConfig.getAttribute(TRACE_OUT_ATTR_NAME, (String)null)));
+				setTraceOutputFile(new File(launchConfig.getAttribute(TRACE_OUT_ATTR_NAME, (String) null)));
 			} catch (final CmdLineException e) {
 				throw new IOException(e.getMessage());
 			}

@@ -44,7 +44,7 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 	private static final int TYPE_DECL_CATEGORY = 2;
 	private static final int CALLABLE_DECL_CATEGORY = 3;
 	private static final int SIMPLE_VAL_DECL_CATEGORY = 4;
-	
+
 	/* (non-Javadoc)
 	 * @see org.eclipse.imp.services.base.TreeModelBuilderBase#visitTree(java.lang.Object)
 	 */
@@ -76,11 +76,7 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 		 * @return true to ignore 
 		 */
 		private boolean ignoreScope(final ASTNode node) {
-			return node instanceof Declare
-					|| node instanceof Lambda
-					|| node instanceof Sequential
-					|| node instanceof Pruning
-					|| node.getSourceLocation() == null; // No location is confusing to the outline control
+			return node instanceof Declare || node instanceof Lambda || node instanceof Sequential || node instanceof Pruning || node.getSourceLocation() == null; // No location is confusing to the outline control
 		}
 
 		/* (non-Javadoc)

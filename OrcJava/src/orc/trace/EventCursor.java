@@ -1,5 +1,17 @@
-package orc.trace;
+//
+// EventCursor.java -- Java interface EventCursor
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2008 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
 
+package orc.trace;
 
 import orc.trace.events.Event;
 
@@ -10,11 +22,14 @@ import orc.trace.events.Event;
  * @author quark
  */
 public interface EventCursor {
-	public static class EndOfStream extends Exception {}
+	public static class EndOfStream extends Exception {
+	}
+
 	/**
 	 * Return the current event in the stream.
 	 */
 	public Event current();
+
 	/**
 	 * Return a cursor to the next event in the stream.
 	 * Why "forward" instead of "next"? To avoid confusion
@@ -23,6 +38,7 @@ public interface EventCursor {
 	 * the symmetry of forward/backward to next/previous.
 	 */
 	public EventCursor forward() throws EndOfStream;
+
 	/**
 	 * Return a cursor to the previous event in the stream.
 	 */
