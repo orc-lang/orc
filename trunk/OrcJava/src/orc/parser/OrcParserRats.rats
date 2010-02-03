@@ -200,7 +200,7 @@ Declaration Declaration =
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ yyValue:ValDeclaration
-	/ TYPE name:Identifier tf:TypeFormals Space EQ cs:ConstructorList {
+	/ TYPE name:Identifier tf:TypeFormals? Space EQ cs:ConstructorList {
 		yyValue = new DatatypeDeclaration(name, cs, tf);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
@@ -208,7 +208,7 @@ Declaration Declaration =
 		yyValue = new TypeDeclaration(name, className);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ TYPE name:RequiredIdentifier tf:TypeFormals Space RequiredEQ t:Type {
+	/ TYPE name:RequiredIdentifier tf:TypeFormals? Space RequiredEQ t:Type {
 		yyValue = new TypeAliasDeclaration(name, t, tf);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
@@ -237,15 +237,15 @@ List<Constructor> ConstructorList =
 
 
 DefMember Definition =
-  exported:EXPORT? DEF name:RequiredSiteName Space formals:PatternListGroup resultType:MaybeResultType EQ body:Body {
-    yyValue = new DefMemberClause(name, formals, body, resultType, exported != null);
+  exported:EXPORT? DEF name:RequiredSiteName Space typeFormals:TypeFormals? formals:PatternListGroup resultType:MaybeResultType EQ body:Body {
+    yyValue = new DefMemberClause(name, formals, body, resultType, typeFormals, exported != null);
     yyValue = at(yyStart, yyCount, yyValue);
   } 
-  / exported:EXPORT? PACKAGE name:RequiredSiteName Space formals:PatternListGroup resultType:MaybeResultType EQ body:Body {
-    yyValue = new DefPackageClause(name, formals, body, resultType, exported != null);
+  / exported:EXPORT? PACKAGE name:RequiredSiteName Space typeFormals:TypeFormals? formals:PatternListGroup resultType:MaybeResultType EQ body:Body {
+    yyValue = new DefPackageClause(name, formals, body, resultType, typeFormals, exported != null);
     yyValue = at(yyStart, yyCount, yyValue);
   }
-	/ DEF name:RequiredSiteName Space typeFormals:TypeFormals argTypes:TypeListGroup resultType:MaybeResultType {
+	/ DEF name:RequiredSiteName Space typeFormals:TypeFormals? argTypes:TypeListGroup resultType:MaybeResultType {
 		yyValue = new DefMemberType(name, argTypes, resultType, typeFormals);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
@@ -379,8 +379,8 @@ Action<Expression> OtherwiseExpressionTail =
 	;
 
 Expression Lambda = 
-	LAMBDA formals:PatternListGroup resultType:MaybeResultType RequiredEQ body:Body {
-		yyValue = new Lambda(formals, body, resultType);
+	LAMBDA typeFormals:TypeFormals? formals:PatternListGroup resultType:MaybeResultType RequiredEQ body:Body {
+		yyValue = new Lambda(formals, body, resultType, typeFormals);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
@@ -868,7 +868,7 @@ Type Type =
 	/ TOP { yyValue = Type.TOP; }
 	/ BOT { yyValue = Type.BOT; }
 	/ UNDERSCORE { yyValue = Type.TOP; } /* allows _ in datatype decls for untyped mode */ 
-	/ LAMBDA typeFormals:TypeFormals argTypes:TypeListGroup DOUBLE_COLON resultType:Type {
+	/ LAMBDA typeFormals:TypeFormals? argTypes:TypeListGroup DOUBLE_COLON resultType:Type {
 		yyValue = new LambdaType(argTypes, resultType, typeFormals);
 	}
 	/ name:Identifier actualTypes:TypeActuals Space { yyValue = new TypeApplication(name, actualTypes); }
@@ -908,9 +908,6 @@ List<String> TypeFormals =
 		List<String> out = tfs.list();
 		out.add(0, tf);
 		yyValue = out;
-	}
-	/ /* empty */ {
-		yyValue = new LinkedList<String>();
 	}
 	;
 

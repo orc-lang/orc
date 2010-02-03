@@ -38,23 +38,26 @@ import orc.error.compiletime.CompilationException;
 public class DefMemberClause extends DefMember {
 
 	public List<List<Pattern>> formals;
+	public List<String> typeFormals = null;
 	public Expression body;
 	public Type resultType; // May be null
 	public Boolean exported = false;
 
-	public DefMemberClause(final String name, final List<List<Pattern>> formals, final Expression body, final Type resultType) {
+	public DefMemberClause(final String name, final List<List<Pattern>> formals, final Expression body, final Type resultType, final List<String> typeFormals) {
 		this.name = name; /* name is "" when used for anonymous functions */
 		this.formals = formals;
 		this.body = body;
 		this.resultType = resultType;
+		this.typeFormals = typeFormals;
 	}
 
-	public DefMemberClause(final String name, final List<List<Pattern>> formals, final Expression body, final Type resultType, final Boolean exported) {
+	public DefMemberClause(final String name, final List<List<Pattern>> formals, final Expression body, final Type resultType, final List<String> typeFormals, final Boolean exported) {
 		this.name = name; /* name is "" when used for anonymous functions */
 		this.formals = formals;
 		this.body = body;
 		this.resultType = resultType;
 		this.exported = exported;
+		this.typeFormals = typeFormals;
 	}
 
 	@Override
@@ -122,6 +125,10 @@ public class DefMemberClause extends DefMember {
 
 		if (resultType != null) {
 			adef.setResultType(resultType);
+		}
+		
+		if (typeFormals != null) {
+			adef.setTypeParams(typeFormals);
 		}
 
 		adef.addClause(new Clause(newformals, newbody));

@@ -50,12 +50,12 @@ public class DefPackageClause extends DefMemberClause {
 	 * @param body
 	 * @param resultType
 	 */
-	public DefPackageClause(final String name, final List<List<Pattern>> formals, final Expression body, final Type resultType) {
-		super(name, formals, body, resultType);
+	public DefPackageClause(final String name, final List<List<Pattern>> formals, final Expression body, final Type resultType, final List<String> typeFormals) {
+		super(name, formals, body, resultType, typeFormals);
 	}
 
-	public DefPackageClause(final String name, final List<List<Pattern>> formals, final Expression body, final Type resultType, final Boolean exported) {
-		super(name, formals, body, resultType, exported);
+	public DefPackageClause(final String name, final List<List<Pattern>> formals, final Expression body, final Type resultType, final List<String> typeFormals, final Boolean exported) {
+		super(name, formals, body, resultType, typeFormals, exported);
 
 	}
 
