@@ -111,11 +111,13 @@ public class DatatypeDeclaration extends Declaration {
 		bindings.put(new FreeTypeVariable(typename), Recurse);
 
 		final List<TypeVariable> newFormals = new LinkedList<TypeVariable>();
-		for (final String formal : formals) {
-			final TypeVariable Y = new TypeVariable();
-			final FreeTypeVariable X = new FreeTypeVariable(formal);
-			newFormals.add(Y);
-			bindings.put(X, Y);
+		if (formals != null) {
+			for (final String formal : formals) {
+				final TypeVariable Y = new TypeVariable();
+				final FreeTypeVariable X = new FreeTypeVariable(formal);
+				newFormals.add(Y);
+				bindings.put(X, Y);
+			}
 		}
 
 		/* Reduce each constructor to a list of its argument types.

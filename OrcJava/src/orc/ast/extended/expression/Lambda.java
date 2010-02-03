@@ -29,11 +29,13 @@ public class Lambda extends Expression {
 	public List<List<Pattern>> formals;
 	public Expression body;
 	public Type resultType; /* optional, may be null */
+	public List<String> typeFormals;
 
-	public Lambda(final List<List<Pattern>> formals, final Expression body, final Type resultType) {
+	public Lambda(final List<List<Pattern>> formals, final Expression body, final Type resultType, final List<String> typeFormals) {
 		this.formals = formals;
 		this.body = body;
 		this.resultType = resultType;
+		this.typeFormals = typeFormals;
 	}
 
 	@Override
@@ -43,7 +45,7 @@ public class Lambda extends Expression {
 		final AggregateDef ad = new AggregateDef();
 
 		// Populate the aggregate with a single clause for this anonymous function
-		final DefMemberClause singleton = new DefMemberClause("", formals, body, resultType);
+		final DefMemberClause singleton = new DefMemberClause("", formals, body, resultType, typeFormals);
 		singleton.setSourceLocation(getSourceLocation());
 		singleton.extend(ad);
 

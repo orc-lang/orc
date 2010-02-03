@@ -182,7 +182,7 @@ public abstract class Expression implements ASTNode, Locatable {
 		while (it.hasPrevious()) {
 			final List<List<Pattern>> lp = new LinkedList<List<Pattern>>();
 			lp.add(it.previous());
-			body = new Lambda(lp, body, null);
+			body = new Lambda(lp, body, null, null);
 		}
 
 		return body;
