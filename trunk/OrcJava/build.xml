@@ -72,6 +72,7 @@
 	<target name="kilim" description="Kilim weaving">
 		<java classname="kilim.tools.Weaver" fork="yes">
 			<classpath refid="orc.classpath"/>
+		    <sysproperty key="java.awt.headless" value="true"/>
 			<assertions><enable/></assertions>
 			<arg value="-d" />
 			<arg value="build/classes" />

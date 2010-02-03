@@ -14,7 +14,7 @@
 
 <project name="orc-sites" default="jar" basedir=".">
 	<description>
-		Ant build file for Orc binary distribution.
+		Ant build file for OrcSites binary distribution.
 	</description>
 	<property file="build.properties" />
 	<property file="${orc.location.OrcJava}/googlecode.properties" />
@@ -83,6 +83,7 @@
 				<assertions>
 					<enable/>
 				</assertions>
+		    <sysproperty key="java.awt.headless" value="true"/>
 			<arg value="-d" />
 			<arg value="build/classes" />
 			<arg value="build/classes" />

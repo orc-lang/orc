@@ -135,6 +135,7 @@
 				<assertions>
 					<enable/>
 				</assertions>
+		    <sysproperty key="java.awt.headless" value="true"/>
 			<arg value="-d" />
 			<arg value="build/classes" />
 			<arg value="build/classes" />
