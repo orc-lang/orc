@@ -13,22 +13,12 @@
 
 package orc.ast.extended.declaration.def;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import orc.ast.extended.Visitor;
-import orc.ast.extended.declaration.Declaration;
-import orc.ast.extended.declaration.DefsDeclaration;
-import orc.ast.extended.expression.Call;
-import orc.ast.extended.expression.Declare;
 import orc.ast.extended.expression.Expression;
 import orc.ast.extended.expression.HasType;
-import orc.ast.extended.expression.Literal;
-import orc.ast.extended.expression.Name;
-import orc.ast.extended.expression.Parallel;
-import orc.ast.extended.expression.Sequential;
-import orc.ast.extended.expression.Stop;
 import orc.ast.extended.pattern.Pattern;
 import orc.ast.extended.pattern.TypedPattern;
 import orc.ast.extended.type.Type;
@@ -51,16 +41,6 @@ public class DefMemberClause extends DefMember {
 	public List<String> typeFormals = null;
 	public Expression body;
 	public Type resultType; // May be null
-	public List<String> modifiers = new ArrayList<String>();
-
-	public DefMemberClause(final String name, final List<List<Pattern>> formals, final Expression body, final Type resultType, final List<String> typeFormals, List<String> modifiers) {
-		this.name = name; /* name is "" when used for anonymous functions */
-		this.formals = formals;
-		this.body = body;
-		this.resultType = resultType;
-		this.typeFormals = typeFormals;
-		this.modifiers = modifiers;
-	}
 
 	public DefMemberClause(final String name, final List<List<Pattern>> formals, final Expression body, final Type resultType, final List<String> typeFormals) {
 		this.name = name; /* name is "" when used for anonymous functions */
@@ -140,42 +120,10 @@ public class DefMemberClause extends DefMember {
 		if (typeFormals != null) {
 			adef.setTypeParams(typeFormals);
 		}
-		if (newbody instanceof Declare && modifiers.contains("capsule")) {
-			makeNewBody((Declare) newbody, new ArrayList<String>());
-		}
 
 		adef.addClause(new Clause(newformals, newbody));
 
 		adef.addLocation(getSourceLocation());
 
-	}
-
-	private void makeNewBody(Declare declare, List<String> defFunctions) {
-		Declaration defs = declare.d;
-		Expression e = declare.e;
-		if (defs instanceof DefsDeclaration) {
-			for (DefMember d : ((DefsDeclaration) defs).defs) {
-				if (d instanceof DefMemberClause) {
-					defFunctions.add(d.name);
-				}
-			}
-		}
-		if (e instanceof Declare) {
-			makeNewBody((Declare) e, defFunctions);
-		} else {
-			List<Expression> recordArgs = makeRecordArgs(defFunctions);
-			Call recordCall = new Call(new Name("Record"), recordArgs);
-			Parallel parallel = new Parallel(new Sequential(e, new Stop()), recordCall);
-			declare.e = parallel;
-		}
-	}
-
-	private List<Expression> makeRecordArgs(List<String> defFunctions) {
-		List<Expression> args = new ArrayList<Expression>();
-		for (String s : defFunctions) {
-			args.add(new Literal(s));
-			args.add(new Call(new Name("Site"), new Name(s)));
-		}
-		return args;
 	}
 }

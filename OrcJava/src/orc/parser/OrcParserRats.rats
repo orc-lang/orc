@@ -199,6 +199,7 @@ Declaration Declaration =
 		yyValue = new DefsDeclaration(defs.list());
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
+	/ yyValue:CapsuleDecl
 	/ yyValue:ValDeclaration
 	/ TYPE name:Identifier tf:TypeFormals? Space EQ cs:ConstructorList {
 		yyValue = new DatatypeDeclaration(name, cs, tf);
@@ -237,8 +238,8 @@ List<Constructor> ConstructorList =
 
 
 DefMember Definition =
-  DEF modifiers:ModifiersList name:RequiredSiteName Space typeFormals:TypeFormals? formals:PatternListGroup resultType:MaybeResultType EQ body:Body {
-    yyValue = new DefMemberClause(name, formals, body, resultType, typeFormals, modifiers);
+  DEF name:RequiredSiteName Space typeFormals:TypeFormals? formals:PatternListGroup resultType:MaybeResultType EQ body:Body {
+    yyValue = new DefMemberClause(name, formals, body, resultType, typeFormals);
     yyValue = at(yyStart, yyCount, yyValue);
   } 
 	/ DEF name:RequiredSiteName Space typeFormals:TypeFormals? argTypes:TypeListGroup resultType:MaybeResultType {
@@ -246,17 +247,13 @@ DefMember Definition =
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
-
-List<String> ModifiersList =
-  LCBRACKET f:Identifier fs:(void:COMMA fs:Identifier)* RCBRACKET {
-    List<String> out = fs.list();
-    out.add(0, f);
-    yyValue = out;
+	
+Declaration CapsuleDecl = 
+  DEF CAPSULE name:RequiredSiteName Space typeFormals:TypeFormals? formals:PatternListGroup EQ body:Body {
+    yyValue = new CapsuleDeclaration(name, formals, body, typeFormals);
+    yyValue = at(yyStart, yyCount, yyValue);
   }
-  / /* empty */ {
-    yyValue = new LinkedList<String>();
-  }
-  ;
+  ; 
 
 List<String> IdentifierList =
 	f:Identifier fs:(void:COMMA fs:Identifier)* {
@@ -974,6 +971,7 @@ String RequiredIdentifier = Identifier / ^{ abort(yyError); };
 /////////////////////////////////////////////
 
 transient String DEF = "def":Word Space;
+transient String CAPSULE = "capsule":Word Space;
 transient String VAL = "val":Word Space;
 transient String CLASS = "class":Word Space;
 transient String SITE = "site":Word Space;
