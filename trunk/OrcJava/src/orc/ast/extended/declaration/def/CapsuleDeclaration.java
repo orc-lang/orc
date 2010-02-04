@@ -54,19 +54,18 @@ public class CapsuleDeclaration extends Declaration {
 
 	@Override
 	public Expression bindto(Expression target) throws CompilationException {
-		if (body instanceof Declare) 
+		if (body instanceof Declare)
 			makeNewBody((Declare) body, new ArrayList<String>());
-		else 
-			System.err.println("Capsule does not have a Declare body"); //FIXME
-		DefMemberClause defMemberClause = new DefMemberClause(name, formals, body, 
-				null, typeFormals);
-		
+		else {
+			System.err.println("Capsule does not have any definition!"); //FIXME
+			body = new Sequential(body, new Stop());
+		}
+		DefMemberClause defMemberClause = new DefMemberClause(name, formals, body, null, typeFormals);
+
 		List<DefMember> defs = new ArrayList<DefMember>();
 		defs.add(defMemberClause);
 		DefsDeclaration dd = new DefsDeclaration(defs);
-		ValDeclaration vald = new ValDeclaration(new VariablePattern(name), 
-				new Call(new Name("Site"), 
-				new Name(name)));
+		ValDeclaration vald = new ValDeclaration(new VariablePattern(name), new Call(new Name("Site"), new Name(name)));
 		return dd.bindto(vald.bindto(target));
 	}
 
@@ -88,10 +87,15 @@ public class CapsuleDeclaration extends Declaration {
 		if (e instanceof Declare) {
 			makeNewBody((Declare) e, defFunctions);
 		} else {
-			List<orc.ast.extended.expression.Expression> recordArgs = makeRecordArgs(defFunctions);
-			Call recordCall = new Call(new Name("Record"), recordArgs);
-			Parallel parallel = new Parallel(new Sequential(e, new Stop()), recordCall);
-			declare.e = parallel;
+			if (defFunctions.size() == 0) {
+				System.err.println("Capsule does not have any definition!");
+				declare.e = new Sequential(e, new Stop());
+			} else {
+				List<orc.ast.extended.expression.Expression> recordArgs = makeRecordArgs(defFunctions);
+				Call recordCall = new Call(new Name("Record"), recordArgs);
+				Parallel parallel = new Parallel(new Sequential(e, new Stop()), recordCall);
+				declare.e = parallel;
+			}
 		}
 	}
 
