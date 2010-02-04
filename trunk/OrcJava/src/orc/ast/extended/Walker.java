@@ -21,6 +21,7 @@ import orc.ast.extended.declaration.DefsDeclaration;
 import orc.ast.extended.declaration.IncludeDeclaration;
 import orc.ast.extended.declaration.SiteDeclaration;
 import orc.ast.extended.declaration.ValDeclaration;
+import orc.ast.extended.declaration.def.CapsuleDeclaration;
 import orc.ast.extended.declaration.def.DefMember;
 import orc.ast.extended.declaration.def.DefMemberClause;
 import orc.ast.extended.declaration.def.DefMemberType;
@@ -874,6 +875,11 @@ public class Walker implements Visitor<Void> {
 	}
 
 	public void leave(final WildcardPattern patn) {
+	}
+
+	@Override
+	public Void visit(CapsuleDeclaration capsule) {
+		throw new RuntimeException("No visitor defined for CapsuleDeclaration.");//FIXME
 	}
 
 }

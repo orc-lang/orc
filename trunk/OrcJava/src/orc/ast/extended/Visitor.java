@@ -18,6 +18,7 @@ import orc.ast.extended.declaration.DefsDeclaration;
 import orc.ast.extended.declaration.IncludeDeclaration;
 import orc.ast.extended.declaration.SiteDeclaration;
 import orc.ast.extended.declaration.ValDeclaration;
+import orc.ast.extended.declaration.def.CapsuleDeclaration;
 import orc.ast.extended.declaration.def.DefMemberClause;
 import orc.ast.extended.declaration.def.DefMemberType;
 import orc.ast.extended.declaration.type.DatatypeDeclaration;
@@ -159,5 +160,7 @@ public interface Visitor<E> {
 	public E visit(VariablePattern patn);
 
 	public E visit(WildcardPattern patn);
+
+	public E visit(CapsuleDeclaration capsule);
 
 }
