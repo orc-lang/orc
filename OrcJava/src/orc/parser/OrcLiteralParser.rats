@@ -122,6 +122,8 @@ transient String RPAREN = ")" HSpace;
 transient String LBRACKET = "[" Space;
 transient String RBRACKET = "]" HSpace;
 transient String COMMA = "," Space;
+transient String LCBRACKET = "{" Space;
+transient String RCBRACKET = "}" HSpace;
 	
 /////////////////////////////////////////////
 // Whitespace, Comments, etc.

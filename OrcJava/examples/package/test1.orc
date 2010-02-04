@@ -1,15 +1,15 @@
-package channel() = 
+def {capsule} channel() = 
   val ch = Buffer()
   val chlen = Ref(0)
   val s = Semaphore(1)
-  export def put(x) = 
+  def put(x) = 
     s.acquire() >>
     ch.put(x) >>
     chlen := chlen?+1 >> s.release()
-  export def get() =
+  def get() =
     ch.get() >x> s.acquire() >> 
     chlen:= chlen?-1 >>  s.release() >> x
-  export def len() = 
+  def len() = 
     s.acquire() >> chlen? >n> s.release() >> n
   signal
 
