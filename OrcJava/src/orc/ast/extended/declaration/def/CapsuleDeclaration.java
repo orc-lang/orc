@@ -54,12 +54,9 @@ public class CapsuleDeclaration extends Declaration {
 
 	@Override
 	public Expression bindto(Expression target) throws CompilationException {
-		if (body instanceof Declare)
-			makeNewBody((Declare) body, new ArrayList<String>());
-		else {
-			System.err.println("Capsule does not have any definition!"); //FIXME
-			body = new Sequential(body, new Stop());
-		}
+		
+		body = makeNewBody(body, new ArrayList<String>());
+	
 		DefMemberClause defMemberClause = new DefMemberClause(name, formals, body, null, typeFormals);
 
 		List<DefMember> defs = new ArrayList<DefMember>();
@@ -74,27 +71,32 @@ public class CapsuleDeclaration extends Declaration {
 		return visitor.visit(this);
 	}
 
-	private void makeNewBody(Declare declare, List<String> defFunctions) {
-		Declaration defs = declare.d;
-		orc.ast.extended.expression.Expression e = declare.e;
-		if (defs instanceof DefsDeclaration) {
-			for (DefMember d : ((DefsDeclaration) defs).defs) {
-				if (d instanceof DefMemberClause) {
-					defFunctions.add(d.name);
+	private orc.ast.extended.expression.Expression makeNewBody(orc.ast.extended.expression.Expression body, List<String> defFunctions) throws CompilationException {
+		if (body instanceof Declare) {
+			Declare decl = (Declare)body;
+			Declaration defs = decl.d;
+			if (defs instanceof DefsDeclaration) {
+				for (DefMember d : ((DefsDeclaration) defs).defs) {
+					if (d instanceof DefMemberClause) {
+						defFunctions.add(d.name);
+					}
 				}
 			}
-		}
-		if (e instanceof Declare) {
-			makeNewBody((Declare) e, defFunctions);
+			return new Declare(decl.d, makeNewBody(decl.e, defFunctions));
 		} else {
 			if (defFunctions.size() == 0) {
-				System.err.println("Capsule does not have any definition!");
-				declare.e = new Sequential(e, new Stop());
+				CompilationException exc = new CompilationException("A capsule must contain at least one def");
+				exc.setSourceLocation(this.getSourceLocation());
+				throw exc;
 			} else {
 				List<orc.ast.extended.expression.Expression> recordArgs = makeRecordArgs(defFunctions);
 				Call recordCall = new Call(new Name("Record"), recordArgs);
-				Parallel parallel = new Parallel(new Sequential(e, new Stop()), recordCall);
-				declare.e = parallel;
+								
+				// Semantics: body as active process
+				return new Parallel(new Sequential(body, new Stop()), recordCall);
+				
+				// Alternative semantics: body as initializer
+				// return new Otherwise(new Sequential(body, new Stop()), recordCall);
 			}
 		}
 	}
