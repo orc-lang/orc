@@ -1,0 +1,140 @@
+//
+// OrcLiteralParser.rats -- Rats! grammar module for the OrcLiteralParser parser
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
+module orc.parser.OrcLiteralParser;
+
+header {
+	import java.util.List;
+	import java.util.LinkedList;
+	import java.math.BigInteger;
+	import java.math.BigDecimal;
+
+	import xtc.util.Utilities;
+
+	import orc.runtime.values.ListValue;
+	import orc.runtime.values.TupleValue;
+}
+
+option constant;
+
+/////////////////////////////////////////////
+// Literals
+/////////////////////////////////////////////
+
+// This isn't used by the parser directly, but
+// is used by the Read site to read Orc literal
+// syntax
+public Object LiteralValue =
+	Number Space
+	/ StringLiteral Space
+	/ TRUE Space { yyValue = true; }
+	/ FALSE Space { yyValue = false; }
+	/ NULL Space { yyValue = null; }
+	/ LPAREN args:LiteralValueList RPAREN Space {
+		if (args.size() == 1) {
+			yyValue = args.get(0);
+		} else {
+			yyValue = new TupleValue(args);
+		}
+	}
+	/ LBRACKET args:LiteralValueList RBRACKET Space {
+		yyValue = ListValue.make(args);
+	}
+	;
+List<Object> LiteralValueList = 
+	f:LiteralValue fs:(COMMA yyValue:LiteralValue)* {
+		List<Object> out = fs.list();
+		out.add(0, f);
+		yyValue = out;
+	}
+	/ /* empty */ {
+		yyValue = new LinkedList<Object>();
+	}
+	;
+	
+Number Number = Float / Integer;
+BigDecimal Float =
+	rep:FloatToken HSpace {
+		try {
+			yyValue = new BigDecimal(rep);
+		} catch (NumberFormatException e) {
+			// impossible by construction
+			throw new AssertionError(e);
+		}
+	}
+	;
+// Note that even if a number has no decimal, having an exponent
+// is enough to make it floating point
+String FloatToken = SignedIntegerToken ('.' [0-9]+ Exponent? / Exponent);
+String Exponent = [eE] [+\-]? IntegerToken;
+BigInteger Integer =
+	rep:SignedIntegerToken HSpace {
+		try {
+			yyValue = BigInteger.valueOf(Long.parseLong(rep));
+		} catch (NumberFormatException e) {
+			// impossible by construction
+			throw new AssertionError(e);
+		}
+	}
+	;
+String SignedIntegerToken = '-'? IntegerToken;
+String IntegerToken = '0' / [1-9] [0-9]*;
+	
+String StringLiteral =
+	string:StringLiteralToken HSpace {
+		yyValue = Utilities.unescape(string.substring(1, string.length()-1));
+	}
+	;
+String StringLiteralToken = ["] ( EscapeSequence / !["\\] _ )* ["] ;
+transient String EscapeSequence =
+   '\\' [btnfr"'\-\[\\\]] / UnicodeEscape / OctalEscape
+   ;
+transient String UnicodeEscape = '\\' 'u' HexDigit HexDigit HexDigit HexDigit ;
+transient String HexDigit = [0-9a-fA-F] ;
+transient String OctalEscape =
+	'\\' [0-3] OctalDigit OctalDigit
+	/ '\\' OctalDigit OctalDigit
+	/ '\\' OctalDigit
+	;
+transient String OctalDigit = [0-7];
+	
+String Word = [a-zA-Z_] [a-zA-Z0-9_']*;
+
+/////////////////////////////////////////////
+// Keywords
+/////////////////////////////////////////////
+
+transient String NULL = "null":Word HSpace;
+transient String TRUE = "true":Word HSpace;
+transient String FALSE = "false":Word HSpace;
+transient String LPAREN = "(" Space;
+transient String RPAREN = ")" HSpace;
+transient String LBRACKET = "[" Space;
+transient String RBRACKET = "]" HSpace;
+transient String COMMA = "," Space;
+	
+/////////////////////////////////////////////
+// Whitespace, Comments, etc.
+/////////////////////////////////////////////
+
+/* HSpace is horizontal space only */
+transient void HSpace = (' ' / '\t' / '\f' / SingleLineComment)*;
+/* Space is both horizontal and vertical space */
+transient void Space = (' ' / '\t' / '\f' / '\r' / '\n' / EndLineComment / MultiLineComment)*;
+
+transient void EndLineComment = "--" ( ![\n\r] _ )* (EndOfLine / EndOfFile);
+transient void MultiLineComment = "{-" ( MultiLineComment / [\-] ![}] / EndOfLine / ![\-\n\r] _ )* "-}";
+transient void SingleLineComment = "{-" ( SingleLineComment / [\-] ![}] / ![\-\n\r] _ )* "-}";
+	
+transient void EndOfFile = !_;
+transient void EndOfLine = "\r\n" / '\r' / '\n';
