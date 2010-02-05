@@ -59,7 +59,13 @@ public final class Kilim {
 			// Setting the scheduler is necessary to ensure
 			// that this task can be resumed from different
 			// threads.  It's also more efficient.
-			task.setScheduler(current);
+			//
+			// Modified by Amin Shali@11:10, Feb 4, 2010
+			// comment: scheduler is being set right after the 
+			// task is created. We cannot set the scheduler after
+			// task start because the state of task is running 
+			// and the scheduler for a running task cannot be 
+			// set.
 			current.schedule(task);
 		}
 
@@ -190,22 +196,32 @@ public final class Kilim {
 		}
 
 		@Override
-		public synchronized V call() throws Pausable, Exception {
-			switch (state) {
-			case FORCING:
-				final Mailbox<V> inbox = new Mailbox<V>();
-				waiters.add(inbox);
-				return inbox.get();
-			case NEW:
-				state = State.FORCING;
+		public V call() throws Pausable, Exception {
+			final Mailbox<V> inbox = new Mailbox<V>();
+			boolean isNew = false;
+			synchronized (this) {
+				switch (state) {
+				case FORCING:
+					waiters.add(inbox);
+					break;
+				case NEW:
+					state = State.FORCING;
+					isNew = true;
+					break;
+					//$FALL-THROUGH$
+				default:
+					return value;
+				}
+			}
+			if (isNew) {
 				value = thunk.call();
 				for (final Mailbox<V> outbox : waiters) {
 					outbox.put(value);
 				}
-				//$FALL-THROUGH$
-			default:
 				return value;
 			}
+			else 
+				return inbox.get();
 		}
 	}
 
@@ -246,6 +262,7 @@ public final class Kilim {
 	 * @see #runThreaded(Callable)
 	 */
 	public static <V> void runThreaded(final Token caller, final Callable<V> thunk) {
+		Task t = 
 		new Task() {
 			@Override
 			public void execute() throws Pausable {
@@ -261,7 +278,9 @@ public final class Kilim {
 					}
 				});
 			}
-		}.start();
+		};
+		t.setScheduler(scheduler.get().value);
+		t.start();
 	}
 
 	/**

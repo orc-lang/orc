@@ -34,13 +34,14 @@ public class Semaphore {
 			this.task = task;
 		}
 
-		public boolean isValid() {
-			return valid;
-		}
-
 		public void resume() {
 			valid = false;
 			task.resume();
+		}
+
+		@Override
+		public boolean isValid(Task arg0) {
+			return valid;
 		}
 	}
 
@@ -51,13 +52,21 @@ public class Semaphore {
 		this.n = n;
 	}
 
-	public synchronized void acquire() throws Pausable {
-		if (n == 0) {
-			final Waiter w = new Waiter(Task.getCurrentTask());
-			waiters.add(w);
+	public void acquire() throws Pausable {
+		boolean mustPause = false;
+		Waiter w = null; // does it have to be final?
+		Task t = Task.getCurrentTask();
+		synchronized (this) {
+			if (n == 0) {
+				w = new Waiter(t);
+				waiters.add(w);
+				mustPause = true;
+			} else {
+				--n;
+			}
+		}
+		if (mustPause) {
 			Task.pause(w);
-		} else {
-			--n;
 		}
 	}
 

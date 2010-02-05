@@ -31,14 +31,16 @@ public class KilimBuffer<V> {
 		}
 	}
 
-	public synchronized V get() throws Pausable {
-		final V out = buffer.poll();
-		if (out != null) {
-			return out;
-		} else {
-			final Mailbox<V> waiter = new Mailbox<V>();
-			waiters.add(waiter);
-			return waiter.get();
+	public V get() throws Pausable {
+		final Mailbox<V> waiter = new Mailbox<V>();
+		synchronized (this) {
+			final V out = buffer.poll();
+			if (out != null) {
+				return out;
+			} else {
+				waiters.add(waiter);
+			}
 		}
+		return waiter.get();
 	}
 }
