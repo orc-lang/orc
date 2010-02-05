@@ -1,9 +1,9 @@
 def capsule channel() = 
-  val ch = Buffer()
-  val chlen = Ref(0)
+  val ch = Buffer[Integer]()
+  val chlen = Ref[Integer](0)
   val s = Semaphore(1)
   val _ = Rtimer(3000) >> println("time up in channel!")
-  def put(x) = 
+  def put(x :: Integer) = 
     s.acquire() >>
     ch.put(x) >>
     chlen := chlen?+1 >> s.release()

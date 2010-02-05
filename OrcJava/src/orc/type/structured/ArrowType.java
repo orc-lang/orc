@@ -203,7 +203,7 @@ public class ArrowType extends Type {
 		/* Inference request check */
 		if (typeActuals == null) {
 			if (typeArity > 0) {
-				throw new InferenceRequest(this);
+				return ctx.requestInference(this);
 			} else {
 				/* Just use an empty list */
 				typeActuals = new LinkedList<Type>();

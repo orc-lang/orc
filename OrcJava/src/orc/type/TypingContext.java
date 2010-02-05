@@ -22,6 +22,8 @@ import orc.env.Env;
 import orc.env.LookupFailureException;
 import orc.error.OrcError;
 import orc.error.compiletime.typing.TypeException;
+import orc.type.inference.InferenceContinuation;
+import orc.type.structured.ArrowType;
 
 /**
  * 
@@ -37,6 +39,7 @@ public class TypingContext {
 	protected Env<Type> varContext;
 	protected Env<Type> typeContext;
 	protected Config config;
+	protected InferenceContinuation ic = null;
 
 	public TypingContext() {
 		varContext = new Env<Type>();
@@ -53,6 +56,13 @@ public class TypingContext {
 		this.varContext = varContext;
 		this.typeContext = typeContext;
 		this.config = config;
+	}
+	
+	public TypingContext(final Env<Type> varContext, final Env<Type> typeContext, final Config config, final InferenceContinuation ic) {
+		this.varContext = varContext;
+		this.typeContext = typeContext;
+		this.config = config;
+		this.ic = ic;
 	}
 
 	/**
@@ -91,6 +101,10 @@ public class TypingContext {
 		return new TypingContext(varContext, typeContext.extend(T), config);
 	}
 
+	public TypingContext bindIC(final InferenceContinuation ic) {
+		return new TypingContext(varContext, typeContext, config, ic);
+	}
+	
 	public Type resolveSiteType(final String classname) throws TypeException {
 		Class<?> cls;
 
@@ -144,6 +158,15 @@ public class TypingContext {
 
 	public List<orc.type.Type> promoteAll(final List<orc.ast.oil.type.Type> ts) throws TypeException {
 		return orc.type.Type.substAll(orc.ast.oil.type.Type.transformAll(ts, this), typeContext);
+	}
+
+	/*
+	 *
+	 * Request inference of type arguments, given 
+	 * 
+	 */
+	public Type requestInference(ArrowType arrowType) throws TypeException {
+		return this.ic.inferFrom(arrowType);
 	}
 
 }

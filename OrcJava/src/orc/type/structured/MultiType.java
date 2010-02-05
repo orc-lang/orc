@@ -18,9 +18,11 @@ import java.util.List;
 import java.util.Set;
 
 import orc.ast.oil.expression.argument.Argument;
+import orc.error.compiletime.typing.MultiTypeException;
 import orc.error.compiletime.typing.TypeException;
 import orc.type.Type;
 import orc.type.TypingContext;
+import orc.type.inference.InferenceRequest;
 
 /**
  * A composite type supporting ad-hoc polymorphic calls.
@@ -61,15 +63,21 @@ public class MultiType extends Type {
 	@Override
 	public Type call(final TypingContext ctx, final List<Argument> args, final List<Type> typeActuals) throws TypeException {
 
+		MultiTypeException exn = new MultiTypeException();
+		
 		for (final Type alt : alts) {
 			try {
 				return alt.call(ctx, args, typeActuals);
 			} catch (final TypeException e) {
+				/* This alternative failed.
+				 * Record the failure, and try the rest.
+				 */
+				exn = exn.addAlternative(alt, e);
 			}
 		}
-
-		// TODO: Make this more informative
-		throw new TypeException("Typing failed for call; no alternatives matched in " + this + ".");
+		
+		// All of the alternatives failed.
+		throw exn;
 	}
 
 	@Override
