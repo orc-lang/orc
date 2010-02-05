@@ -60,7 +60,7 @@ public final class Kilim {
 			// that this task can be resumed from different
 			// threads.  It's also more efficient.
 			//
-			// Modified by Amin Shali@11:10, Feb 4, 2010
+			// Modified by Amin Shali@23:10, Feb 4 2010
 			// comment: scheduler is being set right after the 
 			// task is created. We cannot set the scheduler after
 			// task start because the state of task is running 
@@ -208,7 +208,7 @@ public final class Kilim {
 					state = State.FORCING;
 					isNew = true;
 					break;
-					//$FALL-THROUGH$
+					//$NO-FALL-THROUGH$ Modified by Amin Shali
 				default:
 					return value;
 				}
