@@ -31,7 +31,7 @@ import orc.runtime.values.Value;
 import orc.type.Type;
 import orc.type.TypingContext;
 import orc.type.inference.Constraint;
-import orc.type.inference.InferenceRequest;
+import orc.type.inference.InferenceContinuation;
 import orc.type.structured.ArrowType;
 import orc.type.tycon.Variance;
 
@@ -41,7 +41,7 @@ public class Call extends Expression {
 	public List<Argument> args;
 	public List<orc.ast.oil.type.Type> typeArgs; /* may be null to request inference */
 	transient public boolean isTailCall = false;
-
+	
 	public Call(final Argument callee, final List<Argument> args, final List<orc.ast.oil.type.Type> typeArgs) {
 		this.callee = callee;
 		this.args = args;
@@ -147,152 +147,115 @@ public class Call extends Expression {
 		return cvisitor.visit(this, initialContext);
 	}
 
-	/* Try to call the type without type argument synthesis */
-	public Type noInferenceTypeSynth(final TypingContext ctx) throws TypeException {
+	
+	
+	public Type findReturnType(final TypingContext ctx, final Type checkedType) throws TypeException {
 
 		final Type calleeType = callee.typesynth(ctx);
 
-		List<Type> typeActuals = null;
-
 		if (typeArgs != null) {
-			typeActuals = new LinkedList<Type>();
+			List<Type> typeActuals = new LinkedList<Type>();
 			for (final orc.ast.oil.type.Type t : typeArgs) {
 				typeActuals.add(ctx.promote(t));
 			}
+			/* Delegate the checking of the args and the call itself to the callee type.
+			 * Some types do it differently than ArrowType does.
+			 */
+			return calleeType.call(ctx, args, typeActuals);
 		}
+		/* We may need to infer type arguments. */
+		else {
+			/* Create a continuation for requests to infer type arguments
+			 * for this call.
+			 */
+			InferenceContinuation ic = new InferenceContinuation() {
+				
+				public Type inferFrom(ArrowType arrowType) throws TypeException { 
 
-		/* Delegate the checking of the args and the call itself to the callee type.
-		 * Some types do it differently than ArrowType does.
-		 */
-		return calleeType.call(ctx, args, typeActuals);
+					List<Type> inferredTypeArgs = new LinkedList<Type>();
+					
+					/* Arity check */
+					if (args.size() != arrowType.argTypes.size()) {
+						throw new ArgumentArityException(arrowType.argTypes.size(), args.size());
+					}
+					
+					Constraint[] C = new Constraint[arrowType.typeArity];
+					Env<Boolean> VX = new Env<Boolean>();
 
+					for (int i = 0; i < arrowType.typeArity; i++) {
+						VX = VX.extend(false);
+						C[i] = new Constraint();
+					}
+
+					/* Add constraints for the argument types */
+					for (int i = 0; i < args.size(); i++) {
+						final Type A = args.get(i).typesynth(ctx);
+						final Type B = arrowType.argTypes.get(i);
+
+						A.addConstraints(VX, B, C);
+					}
+					
+					/* If we are in checking mode, use the checked
+					 * type to make inference more precise.
+					 */
+					if (checkedType != null) {
+						/* Add constraints for the result type */
+						arrowType.resultType.addConstraints(VX, checkedType, C);
+
+						/* Find (any) type arguments permitted by the constraints C */
+						for (final Constraint c : C) {
+							inferredTypeArgs.add(0, c.minimal(Variance.COVARIANT));
+						}
+						
+						/* If inference has succeeded, just return the checked type */
+						return checkedType;
+					}
+					/* Otherwise, we simply try to find a minimal type */
+					else {
+						/* Find type arguments that minimize the result type */
+						Env<Type> subs = new Env<Type>();
+						final Type R = arrowType.resultType;
+						for (int i = arrowType.typeArity - 1; i >= 0; i--) {
+							final Type sigmaCR = C[i].minimal(R.findVariance(i));
+							inferredTypeArgs.add(sigmaCR);
+							subs = subs.extend(sigmaCR);
+						}
+						
+						
+						
+						return R.subst(subs);
+					}
+				}
+			};
+			/* end of continuation */
+			
+			/* FIXME:
+			 * This implementation of inference has a weakness: it may be possible for
+			 * different inference passes to infer different, incompatible type parameters.
+			 * According to the theory, this is technically incorrect.
+			 * However, in practice, it is very unlikely to occur.  
+			 */
+			
+			/* Delegate the checking of the args and the call itself to the callee type.
+			 * Some types do it differently than ArrowType does.
+			 */
+			return calleeType.call(ctx.bindIC(ic), args, null);
+		}
+		
 	}
 
 	@Override
 	public Type typesynth(final TypingContext ctx) throws TypeException {
-
-		/* Try to type the call */
-		try {
-			final Type S = noInferenceTypeSynth(ctx);
-
-			/* If typing succeeded with null type parameters,
-			 * set the type parameters to be an empty list,
-			 * in case some other call might try to infer them
-			 * as non-empty.
-			 */
-			if (typeArgs == null) {
-				typeArgs = new LinkedList<orc.ast.oil.type.Type>();
-			}
-
-			return S;
-		}
-		/* If type parameter inference is needed, this exception will be thrown */
-		catch (final InferenceRequest ir) {
-			final ArrowType arrow = ir.requestedType;
-
-			/* Arity check */
-			if (args.size() != arrow.argTypes.size()) {
-				throw new ArgumentArityException(arrow.argTypes.size(), args.size());
-			}
-
-			final Constraint[] C = new Constraint[arrow.typeArity];
-			Env<Boolean> VX = new Env<Boolean>();
-
-			for (int i = 0; i < arrow.typeArity; i++) {
-				VX = VX.extend(false);
-				C[i] = new Constraint();
-			}
-
-			/* Add constraints for the argument types */
-			for (int i = 0; i < args.size(); i++) {
-				final Type A = args.get(i).typesynth(ctx);
-				final Type B = arrow.argTypes.get(i);
-
-				A.addConstraints(VX, B, C);
-			}
-
-			/*
-			for (Constraint c : C) {
-				System.out.println(c);
-			}
-			*/
-
-			/* Find type arguments that minimize the result type */
-			final List<Type> inferredTypeArgs = new LinkedList<Type>();
-			Env<Type> subs = new Env<Type>();
-			final Type R = arrow.resultType;
-			for (int i = arrow.typeArity - 1; i >= 0; i--) {
-				final Type sigmaCR = C[i].minimal(R.findVariance(i));
-				inferredTypeArgs.add(sigmaCR);
-				subs = subs.extend(sigmaCR);
-			}
-
-			/* We have successfully inferred the type arguments */
-			// FIXME
-			//typeArgs = inferredTypeArgs;
-
-			return R.subst(subs);
-		}
-
+		return findReturnType(ctx, null);
 	}
 
 	@Override
 	public void typecheck(final TypingContext ctx, final Type T) throws TypeException {
-
-		/* Try to type the call */
-		try {
-			final Type S = noInferenceTypeSynth(ctx);
-			S.assertSubtype(T);
-
-			/* If typing succeeded without any type parameters,
-			 * set the type parameters to be an empty list,
-			 * in case some other call might try to infer them
-			 * as non-empty.
-			 */
-			if (typeArgs == null) {
-				typeArgs = new LinkedList<orc.ast.oil.type.Type>();
-			}
-			return;
-		}
-		/* If type parameter inference is needed, this exception will be thrown */
-		catch (final InferenceRequest ir) {
-			final ArrowType arrow = ir.requestedType;
-
-			/* Arity check */
-			if (args.size() != arrow.argTypes.size()) {
-				throw new ArgumentArityException(arrow.argTypes.size(), args.size());
-			}
-
-			final Constraint[] C = new Constraint[arrow.typeArity];
-			Env<Boolean> VX = new Env<Boolean>();
-
-			for (int i = 0; i < arrow.typeArity; i++) {
-				VX = VX.extend(false);
-				C[i] = new Constraint();
-			}
-
-			/* Add constraints for the argument types */
-			for (int i = 0; i < args.size(); i++) {
-				final Type A = args.get(i).typesynth(ctx);
-				final Type B = arrow.argTypes.get(i);
-				A.addConstraints(VX, B, C);
-			}
-
-			/* Add constraints for the result type */
-			arrow.resultType.addConstraints(VX, T, C);
-
-			final List<Type> inferredTypeArgs = new LinkedList<Type>();
-			/* Find (any) type arguments permitted by the constraints C */
-			for (final Constraint c : C) {
-				inferredTypeArgs.add(0, c.minimal(Variance.COVARIANT));
-			}
-
-			/* We have successfully inferred the type arguments */
-			// FIXME
-			//typeArgs = inferredTypeArgs;
-		}
+		findReturnType(ctx, T).assertSubtype(T);
+		return;
 	}
 
+	
 	@Override
 	public orc.ast.xml.expression.Expression marshal() throws CompilationException {
 		final LinkedList<orc.ast.xml.expression.argument.Argument> arguments = new LinkedList<orc.ast.xml.expression.argument.Argument>();

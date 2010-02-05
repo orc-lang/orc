@@ -236,7 +236,7 @@ final class Invariant extends Variance {
 		if (S.equal(T)) {
 			return S;
 		} else {
-			throw new TypeException("Couldn't infer type parameters; types " + S + " and " + T + " are not equal.");
+			throw new TypeException("Couldn't infer a minimal type; please add an explicit type argument, e.g. Buffer[Integer](). (Lower bound " + S + " and upper bound " + T + " are not equal, but both are candidates for an invariant argument position.)");
 		}
 	}
 }

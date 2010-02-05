@@ -25,9 +25,18 @@ import orc.type.structured.ArrowType;
 public class InferenceRequest extends TypeException {
 
 	public ArrowType requestedType;
+	public boolean replay = false; // rerun the checker on this expression after inference?
 
 	public InferenceRequest(final ArrowType requestedType) {
 		super("Type parameters missing");
 		this.requestedType = requestedType;
+	}
+
+	/**
+	 * @return
+	 */
+	public Exception addReplay() {
+		replay = true;
+		return this;
 	}
 }
