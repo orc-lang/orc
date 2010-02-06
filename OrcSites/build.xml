@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 
-<!-- build.xml - Ant buildfile (additional tasks for OrcSites build)
+<!-- build.xml - Ant buildfile (additional tasks for project build)
      Project OrcSites
 
      $Id$
@@ -78,7 +78,7 @@
 	</target>
 	
 	<target name="kilim" description="Kilim weaving">
-		<java classname="kilim.tools.Weaver" fork="yes">
+		<java classname="kilim.tools.Weaver" fork="yes" failonerror="true">
 			<classpath refid="orc.classpath"/>
 				<assertions>
 					<enable/>

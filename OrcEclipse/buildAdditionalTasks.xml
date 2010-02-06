@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- buildAdditionalTasks.xml - Ant buildfile (additional tasks for Eclipse build)
+<!-- buildAdditionalTasks.xml - Ant buildfile (additional tasks for project build)
      Project OrcEclipse
 
      $Id$
@@ -23,6 +23,7 @@
 			<fileset dir="${orc.location.OrcJava}/build" includes="orc-${orc.version}.jar"/>
 		</copy>
 	</target>
+
 	<target name="copyuserguide">
 		<copy preservelastmodified="true" todir="help/orcuserguide" verbose="true">
 			<fileset dir="../Website/userguide/html"/>
