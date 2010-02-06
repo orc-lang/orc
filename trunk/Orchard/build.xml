@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 
-<!-- build.xml - Ant buildfile (additional tasks for OrcSites build)
+<!-- build.xml - Ant buildfile (additional tasks for project build)
      Project Orchard
 
      $Id$
@@ -14,21 +14,154 @@
 
 <project name="orchard" default="war" basedir=".">
 	<description>
-		Ant build file for Orc binary distribution.
+		Ant build file for Orchard binary distribution.
 	</description>
 	<property file="build.properties" />
 	<property name="target.name" value="${ant.project.name}-${orc.version}" />
 	
 	<path id="orc.classpath">
-		<fileset dir="lib" includes="*.jar" />
 		<pathelement path="build/classes" />
 		<pathelement path="${orc.location.OrcJava}/lib/kilim.jar" />
+		<fileset dir="lib" includes="*.jar" />
 	</path>
 	
 	<taskdef name="one-jar"
 		classname="com.simontuffs.onejar.ant.OneJarTask"
 		classpath="lib/one-jar-ant-task-0.96.jar"
 		onerror="report" />
+
+	<target name="copylib">
+		<delete>
+			<fileset dir="lib" includes="orc-*.jar"/>
+		</delete>
+		<copy preservelastmodified="true" todir="lib" verbose="true">
+			<fileset dir="${orc.location.OrcJava}/build" includes="orc-${orc.version}.jar"/>
+			<fileset dir="${orc.location.OrcSites}/build" includes="orc-sites-${orc.version}.jar"/>
+		</copy>
+	</target>
+
+<!--	<taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
+			<classpath>
+				<pathelement location="tools.jar" />
+			</classpath>
+		</taskdef>-->
+	<path id="wsgen.classpath">
+		<pathelement location="build/classes"/>
+		<fileset dir="${orc.location.OrcJava}/build" includes="orc-${orc.version}.jar"/>
+		<fileset dir="${orc.location.OrcSites}/build" includes="orc-sites-${orc.version}.jar"/>
+		<pathelement location="lib/jsr181-api.jar"/>
+		<pathelement location="lib/jsr250-api.jar"/>
+	</path>
+	<target name="wsgen" description="Generate web service artifacts">
+<!--		<wsgen sei="orc.orchard.soap.CompilerService" destdir="build/classes" xendorsed="true">
+			<classpath><path refid="wsgen.classpath"/></classpath>
+		</wsgen>-->
+		<exec executable="wsgen" failonerror="true">
+			<arg value="-cp"/>
+			<arg pathref="wsgen.classpath"/>
+			<arg value="-d"/>
+			<arg value="build/classes"/>
+			<arg value="orc.orchard.soap.CompilerService"/>
+		</exec>
+<!--		<wsgen sei="orc.orchard.soap.ExecutorService" destdir="build/classes" xendorsed="true">
+			<classpath><path refid="wsgen.classpath"/></classpath>
+		</wsgen>-->
+		<exec executable="wsgen" failonerror="true">
+			<arg value="-cp"/>
+			<arg pathref="wsgen.classpath"/>
+			<arg value="-d"/>
+			<arg value="build/classes"/>
+			<arg value="orc.orchard.soap.ExecutorService"/>
+		</exec>
+	</target>
+
+	<target name="properties" description="Copy properties files into place">
+		<copy file="orchard.properties" todir="build/classes/orc/orchard" />
+		<copy file="oauth.jks" todir="build/classes/orc/orchard" />
+	</target>
+
+	<target name="kilim" depends="wsgen,properties" description="Kilim weaving">
+		<java classname="kilim.tools.Weaver" fork="yes" failonerror="true">
+			<classpath refid="orc.classpath"/>
+			<assertions>
+				<enable/>
+			</assertions>
+		    <sysproperty key="java.awt.headless" value="true"/>
+			<arg value="-d" />
+			<arg value="build/classes" />
+			<arg value="build/classes" />
+		</java>
+	</target>
+
+	<target name="minify" description="minify javascript files">
+		<java jar="lib/yuicompressor-2.3.6.jar" fork="yes" failonerror="true">
+			<arg value="--type" />
+			<arg value="js" />
+			<arg value="web/orc-ready.js" />
+			<arg value="-o" />
+			<arg value="web/orc-ready-min.js" />
+		</java>
+		<java jar="lib/yuicompressor-2.3.6.jar" fork="yes" failonerror="true">
+			<arg value="--type" />
+			<arg value="js" />
+			<arg value="web/orc-parser.js" />
+			<arg value="-o" />
+			<arg value="web/orc-parser-min.js" />
+		</java>
+		<!-- codemirror and codemirror-extra -->
+		<java jar="lib/yuicompressor-2.3.6.jar" fork="yes" failonerror="true">
+			<arg value="--type" />
+			<arg value="js" />
+			<arg value="web/codemirror/codemirror.js" />
+			<arg value="-o" />
+			<arg value="build/codemirror-min.tmp" />
+		</java>
+		<concat destfile="web/codemirror-min.js">
+			<filelist files="web/codemirror/README build/codemirror-min.tmp"/>
+		</concat>
+		<delete file="build/codemirror-min.tmp"/>
+		<concat destfile="build/codemirror-extra.tmp">
+			<fileset dir="web/codemirror">
+				<include name="*.js"/>
+				<exclude name="codemirror.js"/>
+			</fileset>
+		</concat>
+		<java jar="lib/yuicompressor-2.3.6.jar" fork="yes" failonerror="true">
+			<arg value="--type" />
+			<arg value="js" />
+			<arg value="build/codemirror-extra.tmp" />
+			<arg value="-o" />
+			<arg value="build/codemirror-extra-min.tmp" />
+		</java>
+		<delete file="build/codemirror-extra.tmp"/>
+		<concat destfile="web/codemirror-extra-min.js">
+			<filelist files="web/codemirror/README build/codemirror-extra-min.tmp"/>
+		</concat>
+		<delete file="build/codemirror-extra-min.tmp"/>
+	</target>
+
+	<target name="war" depends="copylib,kilim,minify" description="generate the war">
+		<jar jarfile="build/${ant.project.name}.war" update="true">
+			<fileset dir="web">
+				<include name="**/*"/>
+				<exclude name="codemirror"/>
+				<exclude name="orc-ready.js"/>
+				<exclude name="orc-parser.js"/>
+				<exclude name="**/CVS"/>
+				<exclude name="**/.svn"/>
+			</fileset>
+			<zipfileset prefix="WEB-INF/classes" dir="build/classes"/>
+			<zipfileset prefix="WEB-INF/lib" dir="lib">
+				<include name="*.jar"/>
+				<!-- only used in demo jar -->
+				<exclude name="jetty-*.jar"/>
+				<!-- for build only -->
+				<exclude name="yuicompressor-*.jar"/>
+				<exclude name="servlet-api.jar"/>
+			</zipfileset>
+		</jar>
+	</target>
+
 	<target name="demo-jar" depends="copylib,kilim,minify" description="generate the demo jar">
 		<jar jarfile="build/root-demo.war" update="true">
 			<fileset dir="${orc.location.Website}">
@@ -72,146 +205,11 @@
 			</lib>
 		</one-jar> 
 	</target>
-	
-	<target name="war" depends="copylib,kilim,minify" description="generate the war">
-		<jar jarfile="build/${ant.project.name}.war" update="true">
-			<fileset dir="web">
-				<include name="**/*"/>
-				<exclude name="codemirror"/>
-				<exclude name="orc-ready.js"/>
-				<exclude name="orc-parser.js"/>
-				<exclude name="**/CVS"/>
-				<exclude name="**/.svn"/>
-			</fileset>
-			<zipfileset prefix="WEB-INF/classes" dir="build/classes"/>
-			<zipfileset prefix="WEB-INF/lib" dir="lib">
-				<include name="*.jar"/>
-				<!-- only used in demo jar -->
-				<exclude name="jetty-*.jar"/>
-				<!-- for build only -->
-				<exclude name="yuicompressor-*.jar"/>
-				<exclude name="servlet-api.jar"/>
-			</zipfileset>
-		</jar>
-	</target>
-<!--	<taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
-		<classpath>
-			<pathelement location="tools.jar" />
-		</classpath>
-	</taskdef>-->
-	<path id="wsgen.classpath">
-		<pathelement location="build/classes"/>
-		<fileset dir="${orc.location.OrcJava}/build" includes="orc-${orc.version}.jar"/>
-		<fileset dir="${orc.location.OrcSites}/build" includes="orc-sites-${orc.version}.jar"/>
-		<pathelement location="lib/jsr181-api.jar"/>
-		<pathelement location="lib/jsr250-api.jar"/>
-	</path>
-	<target name="wsgen" description="Generate web service artifacts">
-<!--		<wsgen sei="orc.orchard.soap.CompilerService" destdir="build/classes" xendorsed="true">
-			<classpath><path refid="wsgen.classpath"/></classpath>
-		</wsgen>-->
-		<exec executable="wsgen">
-			<arg value="-cp"/>
-			<arg pathref="wsgen.classpath"/>
-			<arg value="-d"/>
-			<arg value="build/classes"/>
-			<arg value="orc.orchard.soap.CompilerService"/>
-		</exec>
-<!--		<wsgen sei="orc.orchard.soap.ExecutorService" destdir="build/classes" xendorsed="true">
-			<classpath><path refid="wsgen.classpath"/></classpath>
-		</wsgen>-->
-		<exec executable="wsgen">
-			<arg value="-cp"/>
-			<arg pathref="wsgen.classpath"/>
-			<arg value="-d"/>
-			<arg value="build/classes"/>
-			<arg value="orc.orchard.soap.ExecutorService"/>
-		</exec>
-	</target>
-	
-	<target name="kilim" depends="wsgen,properties" description="Kilim weaving">
-		<java classname="kilim.tools.Weaver" fork="yes">
-			<classpath refid="orc.classpath"/>
-				<assertions>
-					<enable/>
-				</assertions>
-		    <sysproperty key="java.awt.headless" value="true"/>
-			<arg value="-d" />
-			<arg value="build/classes" />
-			<arg value="build/classes" />
-		</java>
-	</target>
 
-	<target name="minify" description="minify javascript files">
-		<java jar="lib/yuicompressor-2.3.6.jar" fork="yes">
-			<arg value="--type" />
-			<arg value="js" />
-			<arg value="web/orc-ready.js" />
-			<arg value="-o" />
-			<arg value="web/orc-ready-min.js" />
-		</java>
-		<java jar="lib/yuicompressor-2.3.6.jar" fork="yes">
-			<arg value="--type" />
-			<arg value="js" />
-			<arg value="web/orc-parser.js" />
-			<arg value="-o" />
-			<arg value="web/orc-parser-min.js" />
-		</java>
-
-		<!-- codemirror and codemirror-extra -->
-		<java jar="lib/yuicompressor-2.3.6.jar" fork="yes">
-			<arg value="--type" />
-			<arg value="js" />
-			<arg value="web/codemirror/codemirror.js" />
-			<arg value="-o" />
-			<arg value="build/codemirror-min.tmp" />
-		</java>
-		<concat destfile="web/codemirror-min.js">
-			<filelist files="web/codemirror/README build/codemirror-min.tmp"/>
-		</concat>
-		<delete file="build/codemirror-min.tmp"/>
-		<concat destfile="build/codemirror-extra.tmp">
-			<fileset dir="web/codemirror">
-				<include name="*.js"/>
-				<exclude name="codemirror.js"/>
-			</fileset>
-		</concat>
-		<java jar="lib/yuicompressor-2.3.6.jar" fork="yes">
-			<arg value="--type" />
-			<arg value="js" />
-			<arg value="build/codemirror-extra.tmp" />
-			<arg value="-o" />
-			<arg value="build/codemirror-extra-min.tmp" />
-		</java>
-		<delete file="build/codemirror-extra.tmp"/>
-		<concat destfile="web/codemirror-extra-min.js">
-			<filelist files="web/codemirror/README build/codemirror-extra-min.tmp"/>
-		</concat>
-		<delete file="build/codemirror-extra-min.tmp"/>
-	</target>
-
-	<target name="clean" description="clean up">
-		<delete dir="build" />
-	</target>
-
-	<target name="properties" description="Copy properties files into place">
-		<copy file="orchard.properties" todir="build/classes/orc/orchard" />
-		<copy file="oauth.jks" todir="build/classes/orc/orchard" />
-	</target>
-	
-	<target name="copylib">
-		<delete>
-			<fileset dir="lib" includes="orc-*.jar"/>
-		</delete>
-		<copy preservelastmodified="true" todir="lib" verbose="true">
-			<fileset dir="${orc.location.OrcJava}/build" includes="orc-${orc.version}.jar"/>
-			<fileset dir="${orc.location.OrcSites}/build" includes="orc-sites-${orc.version}.jar"/>
-		</copy>
-	</target>
-
-	<!-- WARNING: this does not work on non-Unix systems (without ln and tar) -->
-	<target name="demo-app" depends="demo-jar" description="generate a Mac OS bundle">
-		<property name="appdir" value="build/Orchard.app" />
+	<!-- WARNING: this does not work on non-Unix systems (without cp and tar) -->
+	<target name="demo-app" depends="demo-jar" description="generate a Mac OS X application">
+		<property name="appname" value="Orchard" />
+		<property name="appdir" value="build/${appname}.app" />
 		<delete dir="${appdir}"/> <!-- clean up any old files -->
 		<mkdir dir="${appdir}"/>
 		<!-- copy most files without filtering -->
@@ -230,20 +228,25 @@
 				<include name="**/*.plist"/>
 			</fileset>
 			<filterset>
+				<filter token="app.jar" value="${target.name}-demo.jar"/>
 				<filter token="orc.version" value="${orc.version}"/>
-				<filter token="orc.jar" value="${target.name}-demo.jar"/>
 			</filterset>
 		</copy>
 		<!-- copy JavaApplicationStub with the unix cp command to preserve permissions -->
-		<exec executable="cp">
+		<exec executable="cp" failonerror="true">
 			<arg line="-p app-skeleton/Contents/MacOS/JavaApplicationStub" />
 			<arg value="${appdir}/Contents/MacOS/JavaApplicationStub" />
 		</exec>
 		<!-- copy jar -->
 		<copy file="build/${target.name}-demo.jar" todir="${appdir}/Contents/Resources/Java" />
 		<!-- create tgz package -->
-		<exec executable="tar" dir="build">
-			<arg line="-zcf ${target.name}-app.tgz Orchard.app" />
+		<exec executable="tar" dir="build" failonerror="true">
+			<arg line="-zcf ${target.name}-app.tgz ${appname}.app" />
 		</exec>
 	</target>
+
+	<target name="clean" description="clean up">
+		<delete dir="build" />
+	</target>
+
 </project>

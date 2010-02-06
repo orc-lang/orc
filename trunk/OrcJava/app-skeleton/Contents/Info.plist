@@ -118,7 +118,7 @@
 	<key>CFBundleExecutable</key>
 	<string>JavaApplicationStub</string>
 	<key>CFBundleGetInfoString</key>
-	<string>@orc.version@, Copyright © 2009 The University of Texas at Austin.</string>
+	<string>@orc.version@, Copyright © 2010 The University of Texas at Austin.</string>
 	<key>CFBundleIconFile</key>
 	<string>orc-app.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -140,7 +140,7 @@
 		<key>ClassPath</key>
 		<string>$JAVAROOT/@orc.jar@</string>
 		<key>JVMVersion</key>
-		<string>1.5+</string>
+		<string>1.6+</string>
 		<key>MainClass</key>
 		<string>orc.gui.OrcApp</string>
 		<key>VMOptions</key>
