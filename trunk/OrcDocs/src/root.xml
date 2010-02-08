@@ -2610,6 +2610,71 @@ declarations occur twice.
 
 </section>
 
+	<section>
+		<title><code>capsule</code> declaration</title>
+			<para>
+			Orc Capsules are the way to build active objects in Orc. The idea is to 
+			turn a definition (def) which contains a number of internal definitions 
+			into a site such that internal definitions can be called on the outer 
+			definition just like methods can be called on an object. The important 
+			thing about Orc capsules is that they are active. This means that they 
+			can call other sites or change their state without receiving any external call. 
+			</para>
+<para>
+Here is an example of defining a capsule and it's usage. 
+<programlisting><![CDATA[
+def capsule channel() = 
+  val ch = Buffer[Integer]()
+  val chlen = Ref[Integer](0)
+  val s = Semaphore(1)
+  val _ = Rtimer(3000) >> println("time up in channel!")
+  def put(x :: Integer) = 
+    s.acquire() >>
+    ch.put(x) >>
+    chlen := chlen?+1 >> s.release()
+  def get() =
+    ch.get() >x> s.acquire() >> 
+    chlen:= chlen?-1 >>  s.release() >> x  
+  def len() = 
+    s.acquire() >> chlen? >n> s.release() >> n  
+  signal
+
+val c = channel()
+
+c.put(1000) >> c.put(2000) >> println(c.len()) >> 
+c.get() >> println(c.len()) >> stop 
+]]></programlisting>
+</para>
+
+<para>
+As can be seen in the above code, defining a capsule is very similar to 
+defining a normal function. However, there is a fundamental difference between 
+them. Capsules does not publish values upon their call. Instead, they publish a 
+site. The published site exposes all the internal definitions of the capsule. 
+One can imagine calling of the capsule as calling the constructor of an object.
+</para>
+<para>
+The interesting point about the above example is that the creation and 
+existence of the capsule is protected from the rest of program execution. 
+Notice the line:
+</para>
+<para>
+<programlisting><![CDATA[
+  val _ = Rtimer(3000) >> println("time up in channel!")
+]]></programlisting>
+</para>
+<para>
+This line of the code is supposed to print the string "time up in channel!" 
+after 3 seconds into the console. The creation of the capsule returns 
+immediately. However, since the capsule is protected by a Site, it continues 
+to execute.
+</para>
+<para>
+Note that the goal expression of the capsule definition is designated to just 
+initialize the capsule and not publishing any values. 
+</para>
+	</section>
+
 
 </section>
 
