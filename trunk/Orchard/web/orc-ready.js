@@ -225,7 +225,7 @@ function orcify(code, defaultConfig) {
 	}
 
 	function getCode() {
-		return prelude + "\n" + codemirror.getCode() + "\n" + postlude;
+		return (prelude==""?"":prelude+"\n") + codemirror.getCode() + (postlude==""?"":"\n"+postlude);
 	}
 
 	function startOfLine(node) {
@@ -364,15 +364,44 @@ function orcify(code, defaultConfig) {
 	}
 
 	function renderError(response, code, exception) {
-		// unwrap response if possible
-		if (response) {
-			if (response.faultstring) {
-				response = response.faultstring;
-			}
-		} else {
-			response = exception;
-		}
-		appendEventHtml('<div class="orc-error">Service error: ' + jsonToHtml(response) + '</div>');
+        if (response && response.detail && response.detail.exception && response.detail.exception["@class"] == "orc.orchard.errors.InvalidProgramException") {
+            // Compile error, beautify if we grok format
+            errmsg = response.faultstring;
+            if (errmsg[0] == ':' && errmsg[errmsg.length-1] == '\n') {
+                colStart = errmsg.indexOf(':', 1) + 1;
+                msgStart = errmsg.indexOf(':', colStart) + 1;
+                lineString = errmsg.substring(1,colStart-1);
+                lineStart = parseInt(lineString);
+                if (lineString.split('-').length == 2) {
+                    lineEnd = parseInt(lineString.split('-')[1])
+                } else {
+                    lineEnd = lineStart;
+                }
+                colString = errmsg.substring(colStart,msgStart-1);
+                colStart = parseInt(colString);
+                if (colString.split('-').length == 2) {
+                    colEnd = parseInt(colString.split('-')[1])
+                } else {
+                    colEnd = colStart;
+                }
+                if (colStart > 2 && msgStart > 4) {
+                    errmsg = "Problem near line " + lineString + ", columns " + colString + ": " + errmsg.substring(msgStart,errmsg.length-1);
+                    //codemirror.jumpToLine(lineNum);
+                    codemirror.selectLines(codemirror.nthLine(lineStart), colStart-1, codemirror.nthLine(lineEnd), colEnd);
+                }
+            }
+            appendEventHtml('<div class="orc-error">' + escapeHtml(errmsg) + '</div>');
+        } else {
+            // unwrap response if possible
+            if (response) {
+                if (response.faultstring) {
+                    response = response.faultstring;
+                }
+            } else {
+                response = exception;
+            }
+            appendEventHtml('<div class="orc-error">Service error: ' + jsonToHtml(response) + '</div>');
+        }
 	}
 
 	/**
