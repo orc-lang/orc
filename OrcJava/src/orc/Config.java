@@ -278,7 +278,7 @@ public class Config implements Cloneable {
 
 	public void inputFromString(final String source) {
 		instream = new ByteArrayInputStream(source.getBytes());
-		filename = "text";
+		filename = "";
 		hasInputFile = true;
 	}
 
