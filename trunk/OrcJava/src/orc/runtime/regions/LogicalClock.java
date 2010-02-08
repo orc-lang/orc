@@ -100,11 +100,6 @@ public final class LogicalClock extends SubRegion {
 		return parentClock;
 	}
 
-	@Override
-	public void removeActive() {
-		super.removeActive();
-	}
-
 	public int getCurrentTime() {
 		return currentTime;
 	}
