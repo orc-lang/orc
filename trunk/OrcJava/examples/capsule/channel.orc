@@ -5,18 +5,19 @@ def capsule channel() =
   val _ = Rtimer(3000) >> println("time up in channel!")
   def put(x :: Integer) = 
     s.acquire() >>
-    ch.put(x) >>
-    chlen := chlen?+1 >> s.release()
+    (ch.put(x) >>
+    chlen := chlen?+1 >> stop; s.release())
   def get() =
-    ch.get() >x> s.acquire() >> 
-    chlen:= chlen?-1 >>  s.release() >> x  
+    s.acquire() >> ch.get() >x> 
+    (chlen:= chlen?-1 >> stop; s.release()) >> x  
   def len() = 
     s.acquire() >> chlen? >n> s.release() >> n  
   signal
 
 val c = channel()
 
-c.put(1113) >> c.put(2223) >> println(c.len()) >> c.get() >> println(c.len()) >>stop 
+c.put(1113) >> c.put(2223) >> println(c.len()) >> 
+c.get() >> println(c.len()) >>stop 
 
 {-
 OUTPUT:
