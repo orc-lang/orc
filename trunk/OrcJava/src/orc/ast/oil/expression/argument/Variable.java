@@ -15,7 +15,7 @@ package orc.ast.oil.expression.argument;
 
 import java.util.Set;
 
-import orc.ast.oil.Visitor;
+import orc.ast.oil.visitor.Visitor;
 import orc.env.Env;
 import orc.env.LookupFailureException;
 import orc.error.OrcError;

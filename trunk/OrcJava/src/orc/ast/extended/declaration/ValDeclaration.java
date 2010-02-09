@@ -13,10 +13,10 @@
 
 package orc.ast.extended.declaration;
 
-import orc.ast.extended.Visitor;
 import orc.ast.extended.expression.Expression;
 import orc.ast.extended.pattern.Pattern;
 import orc.ast.extended.pattern.PatternSimplifier;
+import orc.ast.extended.visitor.Visitor;
 import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.WithLocation;
 import orc.error.compiletime.CompilationException;

@@ -15,9 +15,8 @@ package orc.ast.oil.expression;
 
 import java.util.Set;
 
-import orc.ast.oil.ContextualVisitor;
 import orc.ast.oil.TokenContinuation;
-import orc.ast.oil.Visitor;
+import orc.ast.oil.visitor.Visitor;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.TokenLimitReachedError;
@@ -91,10 +90,6 @@ public class Otherwise extends Expression {
 	@Override
 	public <E> E accept(final Visitor<E> visitor) {
 		return visitor.visit(this);
-	}
-
-	public <E, C> E accept(final ContextualVisitor<E, C> cvisitor, final C initialContext) {
-		return cvisitor.visit(this, initialContext);
 	}
 
 	@Override

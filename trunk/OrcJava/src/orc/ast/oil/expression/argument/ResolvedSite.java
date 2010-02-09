@@ -14,7 +14,7 @@
 package orc.ast.oil.expression.argument;
 
 import orc.Config;
-import orc.ast.oil.Visitor;
+import orc.ast.oil.visitor.Visitor;
 import orc.env.Env;
 import orc.error.compiletime.SiteResolutionException;
 import orc.error.compiletime.typing.TypeException;

@@ -13,6 +13,7 @@
 
 package orc.ast.extended;
 
+import orc.ast.extended.visitor.Visitor;
 import orc.error.Located;
 import orc.error.SourceLocation;
 

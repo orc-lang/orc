@@ -24,14 +24,14 @@ import java.util.concurrent.Callable;
 import orc.ast.extended.ASTNode;
 import orc.ast.extended.declaration.Declaration;
 import orc.ast.extended.expression.Declare;
-import orc.ast.oil.AtomicOnChecker;
-import orc.ast.oil.ExceptionsOnChecker;
-import orc.ast.oil.SiteResolver;
-import orc.ast.oil.TailCallMarker;
-import orc.ast.oil.UnguardedRecursionChecker;
-import orc.ast.oil.Walker;
 import orc.ast.oil.expression.Def;
 import orc.ast.oil.expression.Expression;
+import orc.ast.oil.visitor.AtomicOnChecker;
+import orc.ast.oil.visitor.ExceptionsOnChecker;
+import orc.ast.oil.visitor.SiteResolver;
+import orc.ast.oil.visitor.TailCallMarker;
+import orc.ast.oil.visitor.UnguardedRecursionChecker;
+import orc.ast.oil.visitor.Walker;
 import orc.ast.simple.argument.Variable;
 import orc.ast.simple.type.TypeVariable;
 import orc.ast.xml.Oil;
@@ -231,6 +231,11 @@ public class OrcCompiler implements Callable<Expression> {
 			if (progress.isCanceled()) {
 				return null;
 			}
+		}
+		else {
+			// If atomic is turned on, note that it is unimplemented.
+			System.err.println("Warning: atomic is unimplemented in this version of Orc." +"\n"+
+							   "(atomic expr) will be run as just (expr).");
 		}
 
 		return ex;

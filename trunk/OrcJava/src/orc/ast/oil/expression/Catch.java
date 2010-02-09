@@ -17,11 +17,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import orc.ast.oil.ContextualVisitor;
 import orc.ast.oil.TokenContinuation;
-import orc.ast.oil.Visitor;
 import orc.ast.oil.expression.argument.Variable;
 import orc.ast.oil.type.InferredType;
+import orc.ast.oil.visitor.Visitor;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
@@ -121,10 +120,6 @@ public class Catch extends Expression {
 	@Override
 	public <E> E accept(final Visitor<E> visitor) {
 		return visitor.visit(this);
-	}
-
-	public <E, C> E accept(final ContextualVisitor<E, C> cvisitor, final C initialContext) {
-		return cvisitor.visit(this, initialContext);
 	}
 
 	@Override

@@ -18,7 +18,6 @@ package orc.ast.extended.declaration.def;
 import java.util.ArrayList;
 import java.util.List;
 
-import orc.ast.extended.Visitor;
 import orc.ast.extended.declaration.Declaration;
 import orc.ast.extended.declaration.DefsDeclaration;
 import orc.ast.extended.declaration.ValDeclaration;
@@ -31,6 +30,7 @@ import orc.ast.extended.expression.Sequential;
 import orc.ast.extended.expression.Stop;
 import orc.ast.extended.pattern.Pattern;
 import orc.ast.extended.pattern.VariablePattern;
+import orc.ast.extended.visitor.Visitor;
 import orc.ast.simple.expression.Expression;
 import orc.error.compiletime.CompilationException;
 

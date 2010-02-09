@@ -11,7 +11,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.ast.oil;
+package orc.ast.oil.visitor;
 
 import orc.Config;
 import orc.ast.oil.expression.Expression;

@@ -22,10 +22,10 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
-import orc.ast.extended.Visitor;
 import orc.ast.extended.declaration.def.AggregateDef;
 import orc.ast.extended.declaration.def.DefMember;
 import orc.ast.extended.expression.Expression;
+import orc.ast.extended.visitor.Visitor;
 import orc.ast.simple.argument.FreeVariable;
 import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.Def;

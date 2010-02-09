@@ -11,10 +11,11 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.ast.extended;
+package orc.ast.extended.visitor;
 
 import java.util.List;
 
+import orc.ast.extended.ASTNode;
 import orc.ast.extended.declaration.ClassDeclaration;
 import orc.ast.extended.declaration.Declaration;
 import orc.ast.extended.declaration.DefsDeclaration;

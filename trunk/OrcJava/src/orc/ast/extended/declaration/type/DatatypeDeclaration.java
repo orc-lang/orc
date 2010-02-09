@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import orc.ast.extended.Visitor;
 import orc.ast.extended.declaration.Declaration;
 import orc.ast.extended.expression.Expression;
 import orc.ast.extended.pattern.Pattern;
@@ -26,6 +25,7 @@ import orc.ast.extended.pattern.PatternSimplifier;
 import orc.ast.extended.pattern.TuplePattern;
 import orc.ast.extended.pattern.VariablePattern;
 import orc.ast.extended.type.Type;
+import orc.ast.extended.visitor.Visitor;
 import orc.ast.simple.argument.Argument;
 import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.DeclareType;

@@ -15,7 +15,7 @@ package orc.ast.oil.expression.argument;
 
 import java.math.BigInteger;
 
-import orc.ast.oil.Visitor;
+import orc.ast.oil.visitor.Visitor;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;

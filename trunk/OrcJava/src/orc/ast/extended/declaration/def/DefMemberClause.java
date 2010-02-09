@@ -16,12 +16,12 @@ package orc.ast.extended.declaration.def;
 import java.util.LinkedList;
 import java.util.List;
 
-import orc.ast.extended.Visitor;
 import orc.ast.extended.expression.Expression;
 import orc.ast.extended.expression.HasType;
 import orc.ast.extended.pattern.Pattern;
 import orc.ast.extended.pattern.TypedPattern;
 import orc.ast.extended.type.Type;
+import orc.ast.extended.visitor.Visitor;
 import orc.error.compiletime.CompilationException;
 
 /**

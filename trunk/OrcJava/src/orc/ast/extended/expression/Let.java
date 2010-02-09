@@ -16,7 +16,7 @@ package orc.ast.extended.expression;
 import java.util.LinkedList;
 import java.util.List;
 
-import orc.ast.extended.Visitor;
+import orc.ast.extended.visitor.Visitor;
 import orc.ast.simple.argument.Argument;
 import orc.ast.simple.expression.WithLocation;
 import orc.error.compiletime.CompilationException;

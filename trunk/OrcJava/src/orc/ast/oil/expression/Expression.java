@@ -18,8 +18,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import orc.ast.oil.TokenContinuation;
-import orc.ast.oil.Visitor;
 import orc.ast.oil.expression.argument.Variable;
+import orc.ast.oil.visitor.Visitor;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;

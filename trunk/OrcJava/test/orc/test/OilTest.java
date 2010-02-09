@@ -20,8 +20,8 @@ import java.io.IOException;
 
 import orc.Config;
 import orc.Orc;
-import orc.ast.oil.SiteResolver;
 import orc.ast.oil.expression.Expression;
+import orc.ast.oil.visitor.SiteResolver;
 import orc.ast.xml.Oil;
 import orc.error.compiletime.CompilationException;
 

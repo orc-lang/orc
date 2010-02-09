@@ -16,7 +16,6 @@ package orc.ast.extended.expression;
 import java.util.LinkedList;
 import java.util.List;
 
-import orc.ast.extended.Visitor;
 import orc.ast.extended.declaration.ValDeclaration;
 import orc.ast.extended.declaration.type.Constructor;
 import orc.ast.extended.declaration.type.DatatypeDeclaration;
@@ -25,6 +24,7 @@ import orc.ast.extended.pattern.Pattern;
 import orc.ast.extended.pattern.VariablePattern;
 import orc.ast.extended.type.NamedType;
 import orc.ast.extended.type.Type;
+import orc.ast.extended.visitor.Visitor;
 import orc.ast.simple.expression.WithLocation;
 import orc.error.compiletime.CompilationException;
 
