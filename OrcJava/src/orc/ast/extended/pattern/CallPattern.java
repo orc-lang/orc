@@ -15,7 +15,7 @@ package orc.ast.extended.pattern;
 
 import java.util.List;
 
-import orc.ast.extended.Visitor;
+import orc.ast.extended.visitor.Visitor;
 import orc.ast.simple.argument.FreeVariable;
 import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.WithLocation;

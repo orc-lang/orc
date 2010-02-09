@@ -16,8 +16,8 @@ package orc.ast.extended.expression;
 import java.util.List;
 
 import orc.ast.extended.ASTNode;
-import orc.ast.extended.Visitor;
 import orc.ast.extended.pattern.Pattern;
+import orc.ast.extended.visitor.Visitor;
 import orc.error.SourceLocation;
 
 public class CatchHandler implements ASTNode {

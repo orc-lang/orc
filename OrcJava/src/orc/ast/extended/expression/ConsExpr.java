@@ -13,7 +13,7 @@
 
 package orc.ast.extended.expression;
 
-import orc.ast.extended.Visitor;
+import orc.ast.extended.visitor.Visitor;
 import orc.ast.simple.argument.Site;
 import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.WithLocation;

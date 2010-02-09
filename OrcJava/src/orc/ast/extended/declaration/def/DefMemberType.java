@@ -15,10 +15,10 @@ package orc.ast.extended.declaration.def;
 
 import java.util.List;
 
-import orc.ast.extended.Visitor;
 import orc.ast.extended.expression.Expression;
 import orc.ast.extended.type.LambdaType;
 import orc.ast.extended.type.Type;
+import orc.ast.extended.visitor.Visitor;
 import orc.error.compiletime.CompilationException;
 
 /**

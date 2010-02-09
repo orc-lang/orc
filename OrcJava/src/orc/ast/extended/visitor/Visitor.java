@@ -11,7 +11,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.ast.extended;
+package orc.ast.extended.visitor;
 
 import orc.ast.extended.declaration.ClassDeclaration;
 import orc.ast.extended.declaration.DefsDeclaration;

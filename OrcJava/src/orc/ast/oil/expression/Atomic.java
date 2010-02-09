@@ -15,8 +15,7 @@ package orc.ast.oil.expression;
 
 import java.util.Set;
 
-import orc.ast.oil.ContextualVisitor;
-import orc.ast.oil.Visitor;
+import orc.ast.oil.visitor.Visitor;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.Token;
@@ -76,10 +75,6 @@ public class Atomic extends Expression {
 		return visitor.visit(this);
 	}
 
-	public <E, C> E accept(final ContextualVisitor<E, C> cvisitor, final C initialContext) {
-		return cvisitor.visit(this, initialContext);
-	}
-
 	@Override
 	public Type typesynth(final TypingContext ctx) throws TypeException {
 		return body.typesynth(ctx);
@@ -100,7 +95,10 @@ public class Atomic extends Expression {
 	 */
 	@Override
 	public void populateContinuations() {
-		// TODO Auto-generated method stub	
+		
+		// Atomic is currently a no-op.
+		// Will be revived in a future version of Orc.
+		
 		body.setPublishContinuation(getPublishContinuation());
 		// Trigger a NullPointerException if this node's publish continutation is executed,
 		// rather than its child (which would skip up the AST above this node)
@@ -113,6 +111,10 @@ public class Atomic extends Expression {
 	 */
 	@Override
 	public void enter(final Token t) {
+		
+		// Atomic is currently a no-op.
+		// Will be revived in a future version of Orc.
+		
 		body.enter(t.move(body));
 	}
 }

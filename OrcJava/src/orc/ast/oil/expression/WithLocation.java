@@ -15,8 +15,7 @@ package orc.ast.oil.expression;
 
 import java.util.Set;
 
-import orc.ast.oil.ContextualVisitor;
-import orc.ast.oil.Visitor;
+import orc.ast.oil.visitor.Visitor;
 import orc.error.Located;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;
@@ -86,10 +85,6 @@ public class WithLocation extends Expression implements Located {
 	@Override
 	public <E> E accept(final Visitor<E> visitor) {
 		return visitor.visit(this);
-	}
-
-	public <E, C> E accept(final ContextualVisitor<E, C> cvisitor, final C initialContext) {
-		return cvisitor.visit(this, initialContext);
 	}
 
 	@Override

@@ -23,6 +23,8 @@ package orc.runtime.transaction;
  */
 public class Transaction {
 
+	// Stubbed out, to be revived in a future version of Orc.
+	
 	/*
 	public Transaction parent;
 	public Node next;

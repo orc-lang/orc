@@ -13,8 +13,8 @@
 
 package orc.ast.extended.pattern;
 
-import orc.ast.extended.Visitor;
 import orc.ast.extended.type.Type;
+import orc.ast.extended.visitor.Visitor;
 import orc.ast.simple.argument.Variable;
 import orc.error.compiletime.PatternException;
 

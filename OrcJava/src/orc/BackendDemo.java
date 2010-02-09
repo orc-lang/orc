@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Iterator;
 
-import orc.ast.oil.Visitor;
 import orc.ast.oil.expression.Atomic;
 import orc.ast.oil.expression.Call;
 import orc.ast.oil.expression.Catch;
@@ -38,6 +37,7 @@ import orc.ast.oil.expression.argument.Constant;
 import orc.ast.oil.expression.argument.Field;
 import orc.ast.oil.expression.argument.Site;
 import orc.ast.oil.expression.argument.Variable;
+import orc.ast.oil.visitor.Visitor;
 import orc.env.Env;
 import orc.env.LookupFailureException;
 import orc.error.OrcError;

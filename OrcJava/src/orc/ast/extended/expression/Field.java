@@ -13,7 +13,7 @@
 
 package orc.ast.extended.expression;
 
-import orc.ast.extended.Visitor;
+import orc.ast.extended.visitor.Visitor;
 
 public class Field extends Expression {
 

@@ -13,7 +13,7 @@
 
 package orc.ast.extended.expression;
 
-import orc.ast.extended.Visitor;
+import orc.ast.extended.visitor.Visitor;
 import xtc.util.Utilities;
 
 public class Literal extends Expression {

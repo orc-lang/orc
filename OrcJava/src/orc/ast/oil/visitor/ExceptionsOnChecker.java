@@ -13,7 +13,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.ast.oil;
+package orc.ast.oil.visitor;
 
 import java.util.LinkedList;
 

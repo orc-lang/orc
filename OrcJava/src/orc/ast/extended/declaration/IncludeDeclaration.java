@@ -17,7 +17,7 @@ package orc.ast.extended.declaration;
 
 import java.util.List;
 
-import orc.ast.extended.Visitor;
+import orc.ast.extended.visitor.Visitor;
 import orc.ast.simple.expression.Expression;
 import orc.error.compiletime.CompilationException;
 

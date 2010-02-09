@@ -17,11 +17,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import orc.ast.extended.Visitor;
 import orc.ast.extended.declaration.def.Clause;
 import orc.ast.extended.pattern.Pattern;
 import orc.ast.extended.pattern.VariablePattern;
 import orc.ast.extended.type.Type;
+import orc.ast.extended.visitor.Visitor;
 import orc.ast.simple.argument.Variable;
 import orc.ast.simple.type.TypeVariable;
 import orc.error.SourceLocation;

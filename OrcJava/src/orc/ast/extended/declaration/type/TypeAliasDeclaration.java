@@ -16,9 +16,9 @@ package orc.ast.extended.declaration.type;
 import java.util.LinkedList;
 import java.util.List;
 
-import orc.ast.extended.Visitor;
 import orc.ast.extended.declaration.Declaration;
 import orc.ast.extended.type.Type;
+import orc.ast.extended.visitor.Visitor;
 import orc.ast.simple.expression.WithLocation;
 import orc.ast.simple.type.FreeTypeVariable;
 import orc.ast.simple.type.TypeVariable;
