@@ -23,9 +23,9 @@ import java.util.List;
 import java.util.Map;
 
 import orc.Config;
-import orc.ast.oil.SiteResolver;
-import orc.ast.oil.TailCallMarker;
-import orc.ast.oil.Walker;
+import orc.ast.oil.visitor.SiteResolver;
+import orc.ast.oil.visitor.TailCallMarker;
+import orc.ast.oil.visitor.Walker;
 import orc.ast.oil.expression.Def;
 import orc.ast.oil.expression.Expression;
 import orc.error.compiletime.CompilationException;
