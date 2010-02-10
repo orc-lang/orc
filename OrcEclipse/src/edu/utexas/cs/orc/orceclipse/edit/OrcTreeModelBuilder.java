@@ -16,7 +16,7 @@
 package edu.utexas.cs.orc.orceclipse.edit;
 
 import orc.ast.extended.ASTNode;
-import orc.ast.extended.Walker;
+import orc.ast.extended.visitor.Walker;
 import orc.ast.extended.declaration.ClassDeclaration;
 import orc.ast.extended.declaration.IncludeDeclaration;
 import orc.ast.extended.declaration.SiteDeclaration;

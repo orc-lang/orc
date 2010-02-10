@@ -16,7 +16,7 @@
 package edu.utexas.cs.orc.orceclipse.parse;
 
 import orc.ast.extended.ASTNode;
-import orc.ast.extended.Walker;
+import orc.ast.extended.visitor.Walker;
 import orc.error.Located;
 import orc.error.SourceLocation;
 
