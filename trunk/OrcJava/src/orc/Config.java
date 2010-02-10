@@ -93,6 +93,7 @@ public class Config implements Cloneable {
 	private boolean quietChecking = false;
 	private boolean exceptionsOn = false;
 	private boolean atomicOn = false;
+	private boolean noExecute = false;
 
 	/**
 	 * Set properties based on command-line arguments.
@@ -165,6 +166,9 @@ public class Config implements Cloneable {
 		if (this.getAtomicOn()) {
 			cmdLine.append("-allowAtomic ");
 		}
+		if (this.noExecute()) {
+			cmdLine.append("-noexecute");
+		}
 		return cmdLine.toString();
 	}
 
@@ -194,6 +198,11 @@ public class Config implements Cloneable {
 	@Option(name = "-noprelude", usage = "Do not implicitly include standard library (prelude), which is included by default.")
 	public void setNoPrelude(final boolean noPrelude) {
 		this.noPrelude = noPrelude;
+	}
+	
+	@Option(name = "-noexecute", usage = "Compile this program, but do not run it.")
+	public void setNoExecute(final boolean noExecute) {
+		this.noExecute = noExecute;
 	}
 
 	@Option(name = "-trace", usage = "Specify a filename for tracing. Default is not to trace.")
@@ -576,6 +585,13 @@ public class Config implements Cloneable {
 		out.includePath = includePath.clone();
 		out.caps = (HashMap<String, Boolean>) caps.clone();
 		return out;
+	}
+
+	/**
+	 * @return
+	 */
+	public boolean noExecute() {
+		return noExecute;
 	}
 
 }
