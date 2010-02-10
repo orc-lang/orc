@@ -52,11 +52,17 @@ public class Orc {
 			return;
 		}
 
-		// Configure the runtime engine
-		final OrcEngine engine = new OrcEngine(cfg);
+		
+		if (cfg.noExecute()) {
+			System.out.println("Execution suppressed by -noexecute switch.");
+		}
+		else {
+			// Configure the runtime engine
+			final OrcEngine engine = new OrcEngine(cfg);
 
-		// Run the Orc program
-		engine.run(ex);
+			// Run the Orc program
+			engine.run(ex);
+		}
 	}
 
 	public static Expression compile(final Config cfg) throws IOException {

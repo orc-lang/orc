@@ -1,6 +1,6 @@
 def capsule RW() = 
-  val read_count = Ref(0)
-  val write_count = Ref(0)
+  val read_count = Ref[Integer](0)
+  val write_count = Ref[Integer](0)
 
   val read_count_mtx = Semaphore(1)
   val write_count_mtx = Semaphore(1)
@@ -42,9 +42,10 @@ def capsule RW() =
   signal
 
     
-val v = Ref(0)
+val v = Ref[Integer](0)
 
 
+-- Typechecker will fail here because we do not have a syntax for record types yet
 def reader(lock) = 
   Rtimer((random(4)+1)*100) >>
   lock.read_start() >>
