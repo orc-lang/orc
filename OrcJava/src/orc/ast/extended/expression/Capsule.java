@@ -1,98 +1,67 @@
 //
-// DefCapsuleClause.java -- Java class DefCapsuleClause
+// Atomic.java -- Java class Atomic
 // Project OrcJava
 //
-// $Id$
+// $Id: Atomic.java 1526 2010-02-09 21:24:05Z dkitchin $
 //
-// Created by amshali on Feb 4, 2010.
-//
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.ast.extended.declaration.def;
+package orc.ast.extended.expression;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import orc.ast.extended.declaration.Declaration;
 import orc.ast.extended.declaration.DefsDeclaration;
-import orc.ast.extended.declaration.ValDeclaration;
-import orc.ast.extended.expression.Call;
-import orc.ast.extended.expression.Declare;
-import orc.ast.extended.expression.Literal;
-import orc.ast.extended.expression.Name;
-import orc.ast.extended.expression.Parallel;
-import orc.ast.extended.expression.Sequential;
-import orc.ast.extended.expression.Stop;
+import orc.ast.extended.declaration.def.DefMember;
+import orc.ast.extended.declaration.def.DefMemberClause;
 import orc.ast.extended.pattern.Pattern;
-import orc.ast.extended.pattern.VariablePattern;
 import orc.ast.extended.visitor.Visitor;
-import orc.ast.simple.expression.Expression;
+import orc.ast.simple.expression.WithLocation;
 import orc.error.compiletime.CompilationException;
 
 /**
- * This class is responsible for transforming a capsule declaration
- * to the original Orc syntax. The details of this transformation can
- * be found at: 
- * <a href="http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=OrcCapsules">OrcCapsules</a>
- * Feb 4, 2010
- * @author amshali
+ * 
+ * Expression enclosing the body of a definition annotated with "capsule".
+ *
+ * @author amshali, dkitchin
  */
-public class CapsuleDeclaration extends Declaration {
-	/**
-	 * Capsule name
-	 */
-	public String name;
-	/**
-	 * list of formal parameters
-	 */
-	public List<List<Pattern>> formals;
-	/**
-	 * body of the capsule
-	 */
-	public orc.ast.extended.expression.Expression body;
-	/**
-	 * type of formal parameters
-	 */
-	public List<String> typeFormals = null;
+public class Capsule extends Expression {
 
-	public CapsuleDeclaration(String name, List<List<Pattern>> formals, orc.ast.extended.expression.Expression body, List<String> typeFormals) {
-		this.name = name;
-		this.formals = formals;
+	public Expression body;
+
+	public Capsule(final Expression body) {
 		this.body = body;
-		this.typeFormals = typeFormals;
 	}
 
 	@Override
-	public Expression bindto(Expression target) throws CompilationException {
-
+	public orc.ast.simple.expression.Expression simplify() throws CompilationException {
+		
+		// perform capsule translation
 		body = makeNewBody(body, new ArrayList<String>());
-
-		DefMemberClause defMemberClause = new DefMemberClause(name, formals, body, null, typeFormals);
-
-		/* create a list of definitions with only one definition in it.
-		* which is the capsule definition.
-		*/
-		List<DefMember> defs = new ArrayList<DefMember>();
-		defs.add(defMemberClause);
-		DefsDeclaration dd = new DefsDeclaration(defs);
-		/*
-		 * use a ValDeclaration to shadow the original definition with 
-		 * a protected Site closure. 
-		 */
-		ValDeclaration vald = new ValDeclaration(new VariablePattern(name), new Call(new Name("Site"), new Name(name)));
-		return dd.bindto(vald.bindto(target));
+		
+		// Protect the capsule body with a thunk
+		// lambda() = capsule_body
+		body = Lambda.makeThunk(body);
+		
+		// Convert the thunk to a site
+		// Site(lambda () = capsule_body)
+		body = new Call("Site", body);
+		
+		// Force the now-protected thunk
+		// Site(...)() 
+		body = new Call(body);
+		
+		return new WithLocation(body.simplify(), getSourceLocation());
 	}
 
-	@Override
-	public <E> E accept(Visitor<E> visitor) {
-		return visitor.visit(this);
-	}
-
+	
 	/**
 	 * This function recursively looks for definitions inside the 
 	 * capsule declaration (body) and put them all in defFunctions list.
@@ -146,5 +115,18 @@ public class CapsuleDeclaration extends Declaration {
 			args.add(new Call(new Name("Site"), new Name(s)));
 		}
 		return args;
+	}
+	
+	
+	@Override
+	public String toString() {
+		return "(capsule (" + body + "))";
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
+	 */
+	public <E> E accept(final Visitor<E> visitor) {
+		return visitor.visit(this);
 	}
 }

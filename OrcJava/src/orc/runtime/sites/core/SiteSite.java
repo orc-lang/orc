@@ -11,7 +11,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.lib.reflect;
+package orc.runtime.sites.core;
 
 import java.util.Arrays;
 import java.util.List;

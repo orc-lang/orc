@@ -18,7 +18,6 @@ import orc.ast.extended.declaration.DefsDeclaration;
 import orc.ast.extended.declaration.IncludeDeclaration;
 import orc.ast.extended.declaration.SiteDeclaration;
 import orc.ast.extended.declaration.ValDeclaration;
-import orc.ast.extended.declaration.def.CapsuleDeclaration;
 import orc.ast.extended.declaration.def.DefMemberClause;
 import orc.ast.extended.declaration.def.DefMemberType;
 import orc.ast.extended.declaration.type.DatatypeDeclaration;
@@ -27,6 +26,7 @@ import orc.ast.extended.declaration.type.TypeDeclaration;
 import orc.ast.extended.expression.AssertType;
 import orc.ast.extended.expression.Atomic;
 import orc.ast.extended.expression.Call;
+import orc.ast.extended.expression.Capsule;
 import orc.ast.extended.expression.Catch;
 import orc.ast.extended.expression.CatchHandler;
 import orc.ast.extended.expression.Choice;
@@ -73,6 +73,8 @@ public interface Visitor<E> {
 	public E visit(Atomic expr);
 
 	public E visit(Call expr);
+	
+	public E visit(Capsule capsule);
 
 	public E visit(Catch expr);
 
@@ -160,7 +162,5 @@ public interface Visitor<E> {
 	public E visit(VariablePattern patn);
 
 	public E visit(WildcardPattern patn);
-
-	public E visit(CapsuleDeclaration capsule);
 
 }

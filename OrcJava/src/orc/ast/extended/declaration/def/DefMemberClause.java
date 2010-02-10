@@ -41,13 +41,15 @@ public class DefMemberClause extends DefMember {
 	public List<String> typeFormals = null;
 	public Expression body;
 	public Type resultType; // May be null
+	public boolean strict; // Some contexts (such as capsule) force clauses to be strict
 
-	public DefMemberClause(final String name, final List<List<Pattern>> formals, final Expression body, final Type resultType, final List<String> typeFormals) {
+	public DefMemberClause(final String name, final List<List<Pattern>> formals, final Expression body, final Type resultType, final List<String> typeFormals, final boolean strict) {
 		this.name = name; /* name is "" when used for anonymous functions */
 		this.formals = formals;
 		this.body = body;
 		this.resultType = resultType;
 		this.typeFormals = typeFormals;
+		this.strict = strict;
 	}
 
 	@Override
@@ -120,6 +122,8 @@ public class DefMemberClause extends DefMember {
 		if (typeFormals != null) {
 			adef.setTypeParams(typeFormals);
 		}
+		
+		adef.setStrictness(strict);
 
 		adef.addClause(new Clause(newformals, newbody));
 

@@ -199,7 +199,6 @@ Declaration Declaration =
 		yyValue = new DefsDeclaration(defs.list());
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ yyValue:CapsuleDecl
 	/ yyValue:ValDeclaration
 	/ TYPE name:Identifier tf:TypeFormals? Space EQ cs:ConstructorList {
 		yyValue = new DatatypeDeclaration(name, cs, tf);
@@ -238,8 +237,13 @@ List<Constructor> ConstructorList =
 
 
 DefMember Definition =
-  DEF name:RequiredSiteName Space typeFormals:TypeFormals? formals:PatternListGroup resultType:MaybeResultType EQ body:Body {
-    yyValue = new DefMemberClause(name, formals, body, resultType, typeFormals);
+  DEF capsule:CAPSULE? name:RequiredSiteName Space typeFormals:TypeFormals? formals:PatternListGroup resultType:MaybeResultType EQ body:Body {
+    if (capsule != null) {
+    	yyValue = new DefMemberClause(name, formals, new Capsule(body), resultType, typeFormals, true);
+    }
+    else {
+    	yyValue = new DefMemberClause(name, formals, body, resultType, typeFormals, false);
+    }
     yyValue = at(yyStart, yyCount, yyValue);
   } 
 	/ DEF name:RequiredSiteName Space typeFormals:TypeFormals? argTypes:TypeListGroup resultType:MaybeResultType {
@@ -247,13 +251,6 @@ DefMember Definition =
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
-	
-Declaration CapsuleDecl = 
-  DEF CAPSULE name:RequiredSiteName Space typeFormals:TypeFormals? formals:PatternListGroup EQ body:Body {
-    yyValue = new CapsuleDeclaration(name, formals, body, typeFormals);
-    yyValue = at(yyStart, yyCount, yyValue);
-  }
-  ; 
 
 List<String> IdentifierList =
 	f:Identifier fs:(void:COMMA fs:Identifier)* {
