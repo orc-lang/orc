@@ -15,13 +15,17 @@ package orc.ast.extended.declaration.def;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import orc.ast.extended.pattern.Pattern;
 import orc.ast.extended.type.AssertedType;
 import orc.ast.extended.type.LambdaType;
 import orc.ast.extended.type.Type;
+import orc.ast.simple.argument.Argument;
 import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.Def;
+import orc.ast.simple.expression.Let;
 import orc.ast.simple.type.ArrowType;
 import orc.ast.simple.type.FreeTypeVariable;
 import orc.ast.simple.type.TypeVariable;
@@ -36,6 +40,9 @@ public class AggregateDef {
 	protected List<Type> argTypes;
 	protected Type resultType;
 	protected SourceLocation location;
+	
+	// We use a set to detect conflicting answers
+	private Set<Boolean> isStrict = new TreeSet<Boolean>();
 
 	public AggregateDef() {
 		clauses = new LinkedList<Clause>();
@@ -102,6 +109,16 @@ public class AggregateDef {
 		if (asserted) {
 			body = new orc.ast.simple.expression.HasType(body, converted.resultType, false);
 		}
+		
+		if (isStrict()) {
+			// Make this definition strict in all of its arguments. Used for capsules.
+			List<Argument> args = new LinkedList<Argument>();
+			for (Variable formal : formals) {
+				args.add(formal);
+			}
+			orc.ast.simple.expression.Expression makeStrict = new orc.ast.simple.expression.Let(args);
+			body = new orc.ast.simple.expression.Sequential(makeStrict, body, new Variable());
+		}
 
 		return new orc.ast.simple.expression.Def(var, formals, body, converted.typeParams, converted.argTypes, converted.resultType, location);
 	}
@@ -147,4 +164,21 @@ public class AggregateDef {
 			location = location.overlap(sourceLocation);
 		}
 	}
+
+	/**
+	 * @param isStrict
+	 * @throws CompilationException 
+	 */
+	public void setStrictness(boolean strict) throws CompilationException {
+		isStrict.add(strict);
+		if (isStrict.contains(true) && isStrict.contains(false))
+		{
+			throw new CompilationException("Incompatible strictness in defs; there may be mixed modifiers on the defs.");
+		}
+	}
+	
+	public boolean isStrict() {
+		return isStrict.contains(true);
+	}
+
 }

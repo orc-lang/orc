@@ -55,7 +55,7 @@ public class Token implements Serializable, Locatable {
 	 * Return pointer for a function call.
 	 * At one point we used a token for the return pointer,
 	 * but that was really an abuse of tokens.
-	 * @author quark
+	 * @author quark, dkitchin, jthywiss
 	 */
 	private static class FrameContinuation implements TokenContinuation {
 		public TokenContinuation publishContinuation;
@@ -110,7 +110,7 @@ public class Token implements Serializable, Locatable {
 	}
 
 	/**
-	 * The location of the token in the DAG; determines what the token will do
+	 * The location of the token in the AST; determines what the token will do
 	 * next.
 	 */
 	private Expression node;
@@ -140,6 +140,7 @@ public class Token implements Serializable, Locatable {
 	private FrameContinuation continuation;
 	/** The value being published by this token. */
 	private Object result;
+	/** Is this token still alive? */
 	private boolean alive;
 	/** Number of stack frames remaining before hitting the stack size limit. */
 	private int stackAvailable;

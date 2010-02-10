@@ -22,7 +22,6 @@ import orc.ast.extended.declaration.DefsDeclaration;
 import orc.ast.extended.declaration.IncludeDeclaration;
 import orc.ast.extended.declaration.SiteDeclaration;
 import orc.ast.extended.declaration.ValDeclaration;
-import orc.ast.extended.declaration.def.CapsuleDeclaration;
 import orc.ast.extended.declaration.def.DefMember;
 import orc.ast.extended.declaration.def.DefMemberClause;
 import orc.ast.extended.declaration.def.DefMemberType;
@@ -32,6 +31,7 @@ import orc.ast.extended.declaration.type.TypeDeclaration;
 import orc.ast.extended.expression.AssertType;
 import orc.ast.extended.expression.Atomic;
 import orc.ast.extended.expression.Call;
+import orc.ast.extended.expression.Capsule;
 import orc.ast.extended.expression.Catch;
 import orc.ast.extended.expression.CatchHandler;
 import orc.ast.extended.expression.Choice;
@@ -139,6 +139,24 @@ public class Walker implements Visitor<Void> {
 	public void leave(final Call expr) {
 	}
 
+	
+	public Void visit(final Capsule expr) {
+		if (!this.enter(expr)) {
+			return null;
+		}
+		expr.body.accept(this);
+		this.leave(expr);
+		return null;
+	}
+
+	public boolean enter(final Capsule expr) {
+		return enter((ASTNode) expr);
+	}
+
+	public void leave(final Capsule expr) {
+	}
+	
+	
 	public Void visit(final Catch expr) {
 		if (!this.enter(expr)) {
 			return null;
@@ -876,11 +894,6 @@ public class Walker implements Visitor<Void> {
 	}
 
 	public void leave(final WildcardPattern patn) {
-	}
-
-	@Override
-	public Void visit(CapsuleDeclaration capsule) {
-		throw new RuntimeException("No visitor defined for CapsuleDeclaration.");//FIXME
 	}
 
 }

@@ -37,6 +37,5 @@ val Foo = Site(foo)]]></programlisting>
 
 The typing of Site will enforce the side condition that the type A is an arrow
 type.
-
 --}
-site Site = orc.lib.reflect.SiteSite
+site Site = orc.runtime.sites.core.SiteSite

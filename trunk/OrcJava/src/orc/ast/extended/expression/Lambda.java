@@ -38,6 +38,12 @@ public class Lambda extends Expression {
 		this.typeFormals = typeFormals;
 	}
 
+	public static Lambda makeThunk(final Expression body) {
+		LinkedList<List<Pattern>> outerFormals = new LinkedList<List<Pattern>>();
+		outerFormals.add(new LinkedList<Pattern>());
+		return new Lambda(outerFormals, body, null, new LinkedList<String>());
+	}
+	
 	@Override
 	public orc.ast.simple.expression.Expression simplify() throws CompilationException {
 
@@ -45,7 +51,7 @@ public class Lambda extends Expression {
 		final AggregateDef ad = new AggregateDef();
 
 		// Populate the aggregate with a single clause for this anonymous function
-		final DefMemberClause singleton = new DefMemberClause("", formals, body, resultType, typeFormals);
+		final DefMemberClause singleton = new DefMemberClause("", formals, body, resultType, typeFormals, false);
 		singleton.setSourceLocation(getSourceLocation());
 		singleton.extend(ad);
 

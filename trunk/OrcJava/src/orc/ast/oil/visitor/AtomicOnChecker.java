@@ -51,10 +51,12 @@ public class AtomicOnChecker extends Walker {
 
 	@Override
 	public Void visit(final WithLocation expr) {
+		SourceLocation oldlocation = this.location;
 		this.location = expr.location;
 		this.enter(expr);
 		expr.body.accept(this);
 		this.leave(expr);
+		this.location = oldlocation;
 		return null;
 	}
 
