@@ -8,3 +8,8 @@ def capsule gen_seq(init) =
 val sequence_generator = gen_seq(0)
 
 sequence_generator.next() | sequence_generator.next() 
+{-
+OUTPUT:
+0
+1
+-}
