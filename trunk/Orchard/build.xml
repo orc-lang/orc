@@ -19,60 +19,51 @@
 	<property file="build.properties" />
 	<property name="target.name" value="${ant.project.name}-${orc.version}" />
 	
-	<fileset id="orchard.extra.jars" dir="lib">
-		<include name="*.jar"/>
+	<fileset id="orchard.extra.jars" dir="lib" description="JARs needed for Orchard deployed in a servlet container">
+		<include name="*.jar" />
 		<!-- only used in demo jar -->
-		<exclude name="jetty-*.jar"/>
+		<exclude name="jetty-*.jar" />
 		<!-- for build only -->
-		<!-- <exclude name="servlet-api.jar"/> -->
-		<exclude name="one-jar-ant-task-*.jar"/>
-		<exclude name="yuicompressor-*.jar"/>
+		<exclude name="one-jar-ant-task-*.jar" />
+		<exclude name="yuicompressor-*.jar" />
 	</fileset>
 
-	<fileset id="orchard-demo.extra.jars" dir="lib">
-		<include name="*.jar"/>
+	<fileset id="orchard-demo.extra.jars" dir="lib" description="JARs needed for the standalone Orchard demo app">
+		<include name="*.jar" />
 		<!-- for build only -->
-		<!-- <exclude name="servlet-api.jar"/> -->
-		<exclude name="one-jar-ant-task-*.jar"/>
-		<exclude name="yuicompressor-*.jar"/>
+		<exclude name="one-jar-ant-task-*.jar" />
+		<exclude name="yuicompressor-*.jar" />
 	</fileset>
 
-	<path id="kilim.classpath">
+	<path id="kilim.classpath" description="Classpath needed to run Kilim on Orchard">
 		<pathelement path="${orc.location.OrcJava}/lib/kilim.jar" />
 		<pathelement path="build/classes" />
 		<fileset refid="orchard-demo.extra.jars" />
 	</path>
 
-	<path id="wsgen.classpath">
-		<pathelement location="build/classes"/>
-		<fileset dir="${orc.location.OrcJava}/build" includes="orc-${orc.version}.jar"/>
-		<fileset dir="${orc.location.OrcSites}/build" includes="orc-sites-${orc.version}.jar"/>
-		<pathelement location="lib/jsr181-api.jar"/>
-		<pathelement location="lib/jsr250-api.jar"/>
+	<path id="wsgen.classpath" description="Classpath needed to run wsgen on Orchard">
+		<pathelement location="build/classes" />
+		<fileset dir="${orc.location.OrcJava}/build" includes="orc-${orc.version}.jar" />
+		<fileset dir="${orc.location.OrcSites}/build" includes="orc-sites-${orc.version}.jar" />
 	</path>
 
-	<fileset id="orchard.web-war-static-files" dir="web">
-		<include name="**/*"/>
-		<exclude name="codemirror"/>
-		<exclude name="orc-ready.js"/>
-		<exclude name="orc-parser.js"/>
-		<exclude name="**/CVS"/>
-		<exclude name="**/.svn"/>
+	<fileset id="orchard.web-war-static-files" dir="web" description="Static files to include in the Orchard WAR">
+		<include name="**/*" />
+		<exclude name="codemirror" />
+		<exclude name="orc-ready.js" />
+		<exclude name="orc-parser.js" />
+		<exclude name="**/CVS" />
+		<exclude name="**/.svn" />
 	</fileset>
 
 
-	<taskdef name="one-jar"
-		classname="com.simontuffs.onejar.ant.OneJarTask"
-		classpath="lib/one-jar-ant-task-0.96.jar"
-		onerror="report" />
-
 	<target name="copylib">
 		<delete>
-			<fileset dir="lib" includes="orc-*.jar"/>
+			<fileset dir="lib" includes="orc-*.jar" />
 		</delete>
 		<copy preservelastmodified="true" todir="lib" verbose="true">
-			<fileset dir="${orc.location.OrcJava}/build" includes="orc-${orc.version}.jar"/>
-			<fileset dir="${orc.location.OrcSites}/build" includes="orc-sites-${orc.version}.jar"/>
+			<fileset dir="${orc.location.OrcJava}/build" includes="orc-${orc.version}.jar" />
+			<fileset dir="${orc.location.OrcSites}/build" includes="orc-sites-${orc.version}.jar" />
 		</copy>
 	</target>
 
@@ -83,24 +74,24 @@
 		</taskdef>-->
 	<target name="wsgen" description="Generate web service artifacts">
 <!--		<wsgen sei="orc.orchard.soap.CompilerService" destdir="build/classes" xendorsed="true">
-			<classpath><path refid="wsgen.classpath"/></classpath>
+			<classpath><path refid="wsgen.classpath" /></classpath>
 		</wsgen>-->
 		<exec executable="wsgen" failonerror="true">
-			<arg value="-cp"/>
-			<arg pathref="wsgen.classpath"/>
-			<arg value="-d"/>
-			<arg value="build/classes"/>
-			<arg value="orc.orchard.soap.CompilerService"/>
+			<arg value="-cp" />
+			<arg pathref="wsgen.classpath" />
+			<arg value="-d" />
+			<arg value="build/classes" />
+			<arg value="orc.orchard.soap.CompilerService" />
 		</exec>
 <!--		<wsgen sei="orc.orchard.soap.ExecutorService" destdir="build/classes" xendorsed="true">
-			<classpath><path refid="wsgen.classpath"/></classpath>
+			<classpath><path refid="wsgen.classpath" /></classpath>
 		</wsgen>-->
 		<exec executable="wsgen" failonerror="true">
-			<arg value="-cp"/>
-			<arg pathref="wsgen.classpath"/>
-			<arg value="-d"/>
-			<arg value="build/classes"/>
-			<arg value="orc.orchard.soap.ExecutorService"/>
+			<arg value="-cp" />
+			<arg pathref="wsgen.classpath" />
+			<arg value="-d" />
+			<arg value="build/classes" />
+			<arg value="orc.orchard.soap.ExecutorService" />
 		</exec>
 	</target>
 
@@ -111,15 +102,24 @@
 
 	<target name="kilim" depends="wsgen,properties" description="Kilim weaving">
 		<java classname="kilim.tools.Weaver" fork="yes" failonerror="true">
-			<classpath refid="kilim.classpath"/>
+			<classpath refid="kilim.classpath" />
 			<assertions>
-				<enable/>
+				<enable />
 			</assertions>
-		    <sysproperty key="java.awt.headless" value="true"/>
+		    <sysproperty key="java.awt.headless" value="true" />
 			<arg value="-d" />
 			<arg value="build/classes" />
 			<arg value="build/classes" />
 		</java>
+	</target>
+
+	<target name="jaxws-json" description="Build JAX-WS JSON JAR">
+		<jar destfile="build/jaxws-json.jar" duplicate="fail">
+			<fileset dir="build/classes">
+				<include name="org/jvnet/jax_ws_commons/json/**" />
+				<include name="META-INF/services/com.sun.xml.internal.ws.api.BindingIDFactory" />
+			</fileset>
+		</jar>
 	</target>
 
 	<target name="minify" description="minify javascript files">
@@ -146,13 +146,13 @@
 			<arg value="build/codemirror-min.tmp" />
 		</java>
 		<concat destfile="web/codemirror-min.js">
-			<filelist files="web/codemirror/README build/codemirror-min.tmp"/>
+			<filelist files="web/codemirror/README build/codemirror-min.tmp" />
 		</concat>
-		<delete file="build/codemirror-min.tmp"/>
+		<delete file="build/codemirror-min.tmp" />
 		<concat destfile="build/codemirror-extra.tmp">
 			<fileset dir="web/codemirror">
-				<include name="*.js"/>
-				<exclude name="codemirror.js"/>
+				<include name="*.js" />
+				<exclude name="codemirror.js" />
 			</fileset>
 		</concat>
 		<java jar="lib/yuicompressor-2.3.6.jar" fork="yes" failonerror="true">
@@ -162,71 +162,77 @@
 			<arg value="-o" />
 			<arg value="build/codemirror-extra-min.tmp" />
 		</java>
-		<delete file="build/codemirror-extra.tmp"/>
+		<delete file="build/codemirror-extra.tmp" />
 		<concat destfile="web/codemirror-extra-min.js">
-			<filelist files="web/codemirror/README build/codemirror-extra-min.tmp"/>
+			<filelist files="web/codemirror/README build/codemirror-extra-min.tmp" />
 		</concat>
-		<delete file="build/codemirror-extra-min.tmp"/>
+		<delete file="build/codemirror-extra-min.tmp" />
 	</target>
 
-	<target name="war" depends="copylib,kilim,minify" description="generate the war">
+	<target name="war" depends="copylib,kilim,jaxws-json,minify" description="generate the war">
+		<jar destfile="build/${target.name}.jar" duplicate="fail">
+			<fileset dir="build/classes">
+				<exclude name="orc/Orchard.class" />
+				<exclude name="orc/OrchardDemo.class" />
+				<exclude name="org/mortbay/**" />
+				<exclude name="org/jvnet/**" />
+				<exclude name="META-INF/**/*" />
+			</fileset>
+		</jar>
 		<war destfile="build/${ant.project.name}.war">
 			<fileset refid="orchard.web-war-static-files" />
-			<zipfileset prefix="WEB-INF/classes" dir="build/classes">
-				<exclude name="META-INF/**" />
+			<zipfileset src="build/${target.name}.jar" prefix="WEB-INF/classes">
+				<exclude name="META-INF/**/*" />
 			</zipfileset>
 			<zipfileset dir="build/classes" includes="META-INF/**/*" />
 			<zipfileset prefix="WEB-INF/lib" refid="orchard.extra.jars" />
+			<zipfileset prefix="WEB-INF/lib" dir="build" includes="jaxws-json.jar" />
 		</war>
 	</target>
 
-	<target name="demo-jar" depends="copylib,kilim,minify" description="generate the demo jar">
+	<target name="demo-jar" depends="war" description="generate the demo jar">
 		<war destfile="build/root-demo.war">
 			<fileset dir="${orc.location.Website}">
-				<include name="demo.shtml"/>
-				<include name="jquery.treeview.css"/>
-				<include name="tryorc-menu.css"/>
-				<include name="tryorc-menu.js"/>
-				<include name="jquery.treeview.min.js"/>
-				<include name="WEB-INF/**/*"/>
-				<include name="tryorc/**/*"/>
-				<include name="images/**/*"/>
-				<exclude name="**/CVS/*"/>
-				<exclude name="**/.svn/*"/>
+				<include name="demo.shtml" />
+				<include name="jquery.treeview.css" />
+				<include name="tryorc-menu.css" />
+				<include name="tryorc-menu.js" />
+				<include name="jquery.treeview.min.js" />
+				<include name="WEB-INF/**/*" />
+				<include name="tryorc/**/*" />
+				<include name="images/**/*" />
+				<exclude name="**/CVS/*" />
+				<exclude name="**/.svn/*" />
 			</fileset>
 		</war>
 		<war destfile="build/web.war">
 			<fileset refid="orchard.web-war-static-files" />
 		</war>
-		<!-- Construct the One-JAR file -->
-		<one-jar destfile="build/${target.name}-demo.jar" manifest="orchard-demo.mf">
-			<main>
-				<fileset dir="build/classes" />
-				<fileset dir="build">
-					<include name="web.war" />
-					<include name="root-demo.war" />
-				</fileset>
-			</main>
-			<lib>
-				<fileset refid="orchard-demo.extra.jars" />
-			</lib>
-		</one-jar> 
+		<jar destfile="build/${target.name}-demo.jar" manifest="orchard-demo.mf" duplicate="fail">
+			<fileset dir="build/classes">
+				<include name="orc/Orchard.class" />
+				<include name="orc/OrchardDemo.class" />
+				<include name="org/mortbay/**" />
+				<exclude name="org/jvnet/**" />
+				<exclude name="META-INF/**/*" />
+			</fileset>
+		</jar>
 	</target>
 
 	<!-- WARNING: this does not work on non-Unix systems (without cp and tar) -->
 	<target name="demo-app" depends="demo-jar" description="generate a Mac OS X application">
 		<property name="appname" value="Orchard" />
 		<property name="appdir" value="build/${appname}.app" />
-		<delete dir="${appdir}"/> <!-- clean up any old files -->
-		<mkdir dir="${appdir}"/>
+		<delete dir="${appdir}" /> <!-- clean up any old files -->
+		<mkdir dir="${appdir}" />
 		<!-- copy most files without filtering -->
 		<copy todir="${appdir}">
 			<fileset dir="app-skeleton">
-				<include name="**/*"/>
-				<exclude name="**/*.plist"/>
-				<exclude name="**/CVS/*"/>
-				<exclude name="**/.svn/*"/>
-				<exclude name="**/JavaApplicationStub"/>
+				<include name="**/*" />
+				<exclude name="**/*.plist" />
+				<exclude name="**/CVS/*" />
+				<exclude name="**/.svn/*" />
+				<exclude name="**/JavaApplicationStub" />
 			</fileset>
 		</copy>
 		<pathconvert property="orchard-demo.extra.jars.JAVAROOT" refid="orchard-demo.extra.jars">
@@ -235,12 +241,12 @@
 		<!-- copy plist files with token filtering -->
 		<copy todir="${appdir}">
 			<fileset dir="app-skeleton">
-				<include name="**/*.plist"/>
+				<include name="**/*.plist" />
 			</fileset>
 			<filterset>
-				<filter token="app.jar" value="${appname}.jar"/>
-				<filter token="app.classpath" value="$JAVAROOT/${appname}.jar:${orchard-demo.extra.jars.JAVAROOT}"/>
-				<filter token="orc.version" value="${orc.version}"/>
+				<filter token="app.jar" value="${appname}.jar" />
+				<filter token="app.classpath" value="$JAVAROOT/${appname}.jar:$JAVAROOT/${target.name}.jar:${orchard-demo.extra.jars.JAVAROOT}:$JAVAROOT/jaxws-json.jar" />
+				<filter token="orc.version" value="${orc.version}" />
 			</filterset>
 		</copy>
 		<!-- copy JavaApplicationStub with the unix cp command to preserve permissions -->
@@ -248,20 +254,17 @@
 			<arg line="-p app-skeleton/Contents/MacOS/JavaApplicationStub" />
 			<arg value="${appdir}/Contents/MacOS/JavaApplicationStub" />
 		</exec>
-		<jar destfile="${appdir}/Contents/Resources/Java/${appname}.jar" duplicate="fail">
-			<fileset dir="build/classes" />
-			<fileset dir="build">
-				<include name="web.war" />
-				<include name="root-demo.war" />
-			</fileset>
-		</jar>
+		<copy file="build/${target.name}-demo.jar" tofile="${appdir}/Contents/Resources/Java/${appname}.jar" />
+		<copy file="build/${target.name}.jar" todir="${appdir}/Contents/Resources/Java/" />
 		<copy todir="${appdir}/Contents/Resources/Java">
 			<fileset dir="build">
+				<include name="${target.name}.jar" />
 				<include name="web.war" />
 				<include name="root-demo.war" />
 			</fileset>
 			<fileset refid="orchard-demo.extra.jars" />
 		</copy>
+		<copy file="build/jaxws-json.jar" todir="${appdir}/Contents/Resources/Java/" />
 		<!-- create tgz package -->
 		<exec executable="tar" dir="build" failonerror="true">
 			<arg line="-zcf ${target.name}-app.tgz ${appname}.app" />

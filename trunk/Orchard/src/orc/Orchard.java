@@ -13,6 +13,8 @@
 
 package orc;
 
+import java.net.URI;
+
 import javax.xml.ws.Endpoint;
 
 import orc.orchard.OrchardProperties;
@@ -30,10 +32,36 @@ import org.mortbay.jetty.webapp.WebAppContext;
  * @author quark
  */
 public class Orchard {
-	public static final int PORT = 8081;
+	private static void printUsage() {
+		System.err.println("Usage: ... [<port number>]");
+		System.exit(1);
+	}
 
 	public static void main(final String args[]) throws Exception {
+		int PORT;
+		if (args.length == 0) {
+			PORT = 8081;
+		} else if (args.length == 1) {
+			if (args[0].equals("--help") || args[0].equals("-help")) {
+				printUsage();
+				return;
+			} else {
+				try {
+					PORT = Integer.valueOf(args[0]);
+				} catch (final NumberFormatException _) {
+					printUsage();
+					return;
+				}
+			}
+		} else {
+			printUsage();
+			return;
+		}
+
 		OrchardProperties.setProperty("orc.lib.orchard.forms.url", "http://localhost:" + PORT + "/orchard/FormsServlet");
+
+		// Set JVM-wide HTTP server to Jetty.  JAX-WS (javax.xml.ws) uses this when publishing Endpoints.
+		System.setProperty("com.sun.net.httpserver.HttpServerProvider", "org.mortbay.jetty.j2se6.JettyHttpServerProvider");
 
 		final Server server = new Server();
 		JettyHttpServerProvider.setServer(server);
@@ -49,7 +77,9 @@ public class Orchard {
 		final ContextHandlerCollection contexts = new ContextHandlerCollection();
 		handlers.addHandler(contexts);
 
-		new WebAppContext(contexts, "./web", "/orchard");
+		// Assumption: WAR is located in the same location this as this class.
+		final URI warLocation = OrchardDemo.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+		new WebAppContext(contexts, warLocation.resolve("web.war").getPath(), "/orchard");
 
 		server.setStopAtShutdown(true);
 		server.start();

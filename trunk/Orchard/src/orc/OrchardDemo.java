@@ -13,6 +13,8 @@
 
 package orc;
 
+import java.net.URI;
+
 import javax.xml.ws.Endpoint;
 
 import orc.orchard.OrchardProperties;
@@ -57,10 +59,13 @@ public class OrchardDemo {
 			printUsage();
 			return;
 		}
+
 		// set reasonable defaults for a demo
 		OrchardProperties.setProperty("orc.lib.orchard.forms.url", "http://localhost:" + PORT + "/orchard/FormsServlet");
 		OrchardProperties.setProperty("orc.orchard.Accounts.url", "");
 		OrchardProperties.setProperty("orc.orchard.GuestAccount.canImportJava", "true");
+
+		// Set JVM-wide HTTP server to Jetty.  JAX-WS (javax.xml.ws) uses this when publishing Endpoints.
 		System.setProperty("com.sun.net.httpserver.HttpServerProvider", "org.mortbay.jetty.j2se6.JettyHttpServerProvider");
 
 		final Server server = new Server();
@@ -77,10 +82,10 @@ public class OrchardDemo {
 		final ContextHandlerCollection contexts = new ContextHandlerCollection();
 		handlers.addHandler(contexts);
 
-		//		new WebAppContext(contexts, OrchardDemo.class.getResource("/web.war").toExternalForm(), "/orchard");
-		//		new WebAppContext(contexts, OrchardDemo.class.getResource("/root-demo.war").toExternalForm(), "/");
-		new WebAppContext(contexts, "Orchard.app/Contents/Resources/Java/web.war", "/orchard");
-		new WebAppContext(contexts, "Orchard.app/Contents/Resources/Java/root-demo.war", "/");
+		// Assumption: WARs are located in the same location this as this class.
+		final URI warLocation = OrchardDemo.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+		new WebAppContext(contexts, warLocation.resolve("web.war").getPath(), "/orchard");
+		new WebAppContext(contexts, warLocation.resolve("root-demo.war").getPath(), "/");
 
 		server.setStopAtShutdown(true);
 		server.start();
