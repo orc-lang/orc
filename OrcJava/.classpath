@@ -4,9 +4,21 @@
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="lib" path="lib/rats-runtime.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/junit-4.5.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/kilim-runtime.jar" sourcepath="/home/amshali/archive/kilim-0.6/src"/>
-	<classpathentry kind="lib" path="lib/AppleJavaExtensions.jar"/>
-	<classpathentry kind="lib" path="lib/args4j-2.0.12.jar" sourcepath="/home/adrian/tmp/args4j-2.0.12/src"/>
+	<classpathentry exported="true" kind="lib" path="lib/junit-4.5.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://junit.sourceforge.net/javadoc/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="lib/kilim-runtime.jar"/>
+	<classpathentry kind="lib" path="lib/AppleJavaExtensions.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://developer.apple.com/mac/library/documentation/Java/Reference/JavaSE6_AppleExtensionsRef/api/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/args4j-2.0.12.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="https://args4j.dev.java.net/nonav/maven/apidocs/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
