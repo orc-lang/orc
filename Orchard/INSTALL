@@ -1,8 +1,55 @@
-To build this package from source, you will need
-the OrcJava and OrcSites projects in Eclipse.
+BUILDING, INSTALLING, AND RUNNING ORCHARD
+-----------------------------------------
 
-Do a "Clean" build and then use the External Tool "Build WAR"
-to create a WAR file. This should be deployed to the "/orchard"
-context on your servlet container.
+See also: http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=HowToInstallOrchard
 
-Go to e.g. http://localhost:8080/orchard to test.
+
+BEFORE BUILDING
+
+To build this package from source, you will need the OrcJava, OrcSites,
+and Website projects in Eclipse.
+
+You will also need "orchard.properties" and "oauth.jks" files in the Orchard
+project directory.  These are installation-specific, and contain some security-
+sensitive data, so they are not provided in the distribution.  A
+"sample.orchard.properties" is provided to get you started.  "oath.jks"
+is your OAuth Java keystore.
+
+
+TO BUILD THE MAC OS X STANDALONE DEMO APPLICATION
+
+Do a "clean" build and then use the Ant target "demo-app" to build a
+.tgz (gzip'ed tar) archive of the application.
+
+Un-archive and run the Orchard Mac OS X app, and it will open your
+default browser to a demo page running in an an embedded HTTP/Servelet
+server on your workstation, port 8080.
+
+
+TO BUILD THE JAR'ED STANDALONE DEMO APPLICATION/SERVLETS
+
+Do a "clean" build and then use the Ant target "demo-jar" to build a
+JAR file of the application.
+
+Run the orc.OrchardDemo class, with the command:
+
+    java -cp orchard-1.0.0-demo.jar:orchard-1.0.0.jar:orc-1.0.0.jar:orc-sites-1.0.0.jar:FastInfoset.jar:commons-collections-3.2.1.jar:commons-fileupload-1.2.1.jar:commons-io-1.4.jar:commons-lang-2.4.jar:http.jar:jakarta-oro-2.0.8.jar:jaxws-json.jar:jetty-6.1.11.jar:jetty-util-6.1.11.jar:postgresql-8.3-603.jdbc3.jar:resolver.jar:root-demo.war:servlet-api.jar:stax-ex.jar:streambuffer.jar:velocity-1.5.jar orc.OrchardDemo
+
+This will open your default browser to a demo page running in an an
+embedded HTTP/Servelet server on your workstation, port 8080.
+
+Alternatively, you can run the class orc.Orchard, with:
+
+    java -cp orchard-1.0.0-demo.jar:orchard-1.0.0.jar:orc-1.0.0.jar:orc-sites-1.0.0.jar:FastInfoset.jar:commons-collections-3.2.1.jar:commons-fileupload-1.2.1.jar:commons-io-1.4.jar:commons-lang-2.4.jar:http.jar:jakarta-oro-2.0.8.jar:jaxws-json.jar:jetty-6.1.11.jar:jetty-util-6.1.11.jar:postgresql-8.3-603.jdbc3.jar:resolver.jar:root-demo.war:servlet-api.jar:stax-ex.jar:streambuffer.jar:velocity-1.5.jar orc.OrchardDemo
+
+and it will run as a standalone Orchard Web application (servlet) in
+an an embedded HTTP/Servelet server on your workstation, port 8081.
+
+
+TO BUILD THE WAR (WEB APPLICATION ARCHIVE)
+
+Do a "clean" build and then use the Ant target "war" to build a
+WAR file of the Orchard servlets and supporting libraries.
+
+This should be deployed to the "/orchard" context on your servlet
+container.
