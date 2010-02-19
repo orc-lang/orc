@@ -174,7 +174,6 @@
 			<fileset dir="build/classes">
 				<exclude name="orc/Orchard.class" />
 				<exclude name="orc/OrchardDemo.class" />
-				<exclude name="org/mortbay/**" />
 				<exclude name="org/jvnet/**" />
 				<exclude name="META-INF/**/*" />
 			</fileset>
@@ -212,7 +211,6 @@
 			<fileset dir="build/classes">
 				<include name="orc/Orchard.class" />
 				<include name="orc/OrchardDemo.class" />
-				<include name="org/mortbay/**" />
 				<exclude name="org/jvnet/**" />
 				<exclude name="META-INF/**/*" />
 			</fileset>
