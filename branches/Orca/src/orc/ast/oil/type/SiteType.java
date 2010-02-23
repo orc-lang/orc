@@ -1,14 +1,19 @@
+//
+// SiteType.java -- Java class SiteType
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.ast.oil.type;
 
-import java.util.LinkedList;
-import java.util.List;
-
-import orc.error.OrcError;
-import orc.error.compiletime.typing.ArgumentArityException;
-import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
-import orc.error.compiletime.typing.UncallableTypeException;
-import orc.type.TypeVariable;
 import orc.type.TypingContext;
 
 /**
@@ -21,17 +26,48 @@ import orc.type.TypingContext;
 public class SiteType extends Type {
 
 	public String classname;
-	
-	public SiteType(String classname) {
+
+	public SiteType(final String classname) {
 		this.classname = classname;
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
-	public orc.type.Type transform(TypingContext ctx) throws TypeException {
+	public int hashCode() {
+		return classname == null ? 0 : classname.hashCode();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final SiteType other = (SiteType) obj;
+		if (classname == null) {
+			if (other.classname != null) {
+				return false;
+			}
+		} else if (!classname.equals(other.classname)) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public orc.type.Type transform(final TypingContext ctx) throws TypeException {
 		return ctx.resolveSiteType(classname);
 	}
-		
-	public String toString() {		
+
+	@Override
+	public String toString() {
 		return classname;
 	}
 
@@ -41,6 +77,6 @@ public class SiteType extends Type {
 	@Override
 	public orc.ast.xml.type.Type marshal() {
 		return new orc.ast.xml.type.SiteType(classname);
-	}	
-	
+	}
+
 }

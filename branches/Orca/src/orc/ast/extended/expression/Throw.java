@@ -1,15 +1,21 @@
+//
+// Throw.java -- Java class Throw
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.ast.extended.expression;
 
-import orc.ast.extended.Visitor;
-import orc.ast.extended.expression.Expression.Arg;
-import orc.ast.extended.pattern.Pattern;
-import orc.ast.extended.pattern.PatternSimplifier;
-import orc.ast.extended.pattern.VariablePattern;
-import orc.error.SourceLocation;
-import orc.error.compiletime.CompilationException;
-import orc.ast.extended.pattern.WildcardPattern;
-import orc.ast.simple.argument.Variable;
+import orc.ast.extended.visitor.Visitor;
 import orc.ast.simple.expression.WithLocation;
+import orc.error.compiletime.CompilationException;
 
 /**
  * @author matsuoka 
@@ -17,15 +23,16 @@ import orc.ast.simple.expression.WithLocation;
 public class Throw extends Expression {
 	public Expression exception;
 
-	public Throw(Expression e){
+	public Throw(final Expression e) {
 		this.exception = e;
 	}
-	
+
 	@Override
 	public orc.ast.simple.expression.Expression simplify() throws CompilationException {
 		return new WithLocation(new orc.ast.simple.expression.Throw(exception.simplify()), getSourceLocation());
 	}
-	
+
+	@Override
 	public String toString() {
 		return "(throw " + exception + ")";
 	}
@@ -33,7 +40,7 @@ public class Throw extends Expression {
 	/* (non-Javadoc)
 	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
 	 */
-	public <E> E accept(Visitor<E> visitor) {
+	public <E> E accept(final Visitor<E> visitor) {
 		return visitor.visit(this);
 	}
 }

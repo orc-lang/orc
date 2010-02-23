@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -22,13 +22,14 @@ import java.util.TimerTask;
 import java.util.UUID;
 
 import orc.Config;
+import orc.ast.oil.TokenContinuation;
+import orc.ast.oil.expression.Expression;
 import orc.error.SourceLocation;
+import orc.error.runtime.JavaError;
 import orc.error.runtime.TokenException;
 import orc.error.runtime.TokenLimitReachedError;
-import orc.runtime.nodes.Node;
 import orc.runtime.regions.Execution;
 import orc.runtime.regions.LogicalClock;
-import orc.runtime.regions.Region;
 import orc.runtime.values.Value;
 import orc.trace.Tracer;
 
@@ -37,7 +38,7 @@ import orc.trace.Tracer;
  * always processed in a single thread, but tokens might be activated or resumed
  * from other threads, so some synchronization is necessary.
  * 
- * @author wcook, dkitchin, quark
+ * @author wcook, dkitchin, quark, jthywiss
  */
 public class OrcEngine implements Runnable {
 	/** Tokens which are ready to be processed. */
@@ -145,19 +146,19 @@ public class OrcEngine implements Runnable {
 	 * 
 	 * @param root
 	 */
-	public final Token newExecution(final Node node, final Token initiator) {
+	public final Token newExecution(final Expression ex, final Token initiator) {
 		if (!isDead()) {
 			Token token;
 			try {
 				token = pool.newToken();
-				token.initializeRoot(node, region, this, initiator.getTracer());
+				token.initializeRoot(ex, region, this, initiator.getTracer());
 				return token;
+			} catch (final TokenLimitReachedError e) {
 			}
-			catch (final TokenLimitReachedError e) {}
 		}
 		return null;
 	}
-	
+
 	/** Override this to customize termination. */
 	public void onTerminate() {
 		// do nothing
@@ -192,18 +193,27 @@ public class OrcEngine implements Runnable {
 
 	/**
 	 * Run Orc given a root node. Creates an initial environment and then
-	 * executes the main loop.
+	 * executes the main loop.  Convenience method for
+	 * <code>start(root); run();</code>.
 	 * 
 	 * @param root
 	 *            node to run
 	 */
-	public final void run(final Node root) {
+	public final void run(final Expression root) {
 		start(root);
 		run();
 	}
-	
-	public final void start(final Node root) {
+
+	public final void start(final Expression root) {
 		assert root != null;
+		final TokenContinuation K = new TokenContinuation() {
+			public void execute(final Token t) {
+				t.publish();
+				t.die();
+			}
+		};
+		root.setPublishContinuation(K);
+		root.populateContinuations();
 		region = new Execution(this);
 		tracer = config.getTracer();
 		Token token;
@@ -244,7 +254,8 @@ public class OrcEngine implements Runnable {
 			} else if (!queuedReturns.isEmpty()) {
 				// If a site return is available, make it active.
 				// This marks the beginning of a new round.
-				readyTokens.add(queuedReturns.remove());
+				todo = queuedReturns.remove();
+				todo.leave();
 				round++;
 				reportRound();
 				return true;
@@ -340,23 +351,27 @@ public class OrcEngine implements Runnable {
 		final int len = backtrace.length;
 		if (len > 0) {
 			stderr.println(backtrace[0]);
-			final String caret = backtrace[0].getCaret();
-			if (caret != null) {
-				stderr.println(caret);
+			if (backtrace[0] != null) {
+				final String caret = backtrace[0].getCaret();
+				if (caret != null) {
+					stderr.println(caret);
+				}
 			}
 		}
 		for (int i = 1; i < len; i++) {
 			stderr.println(backtrace[i]);
 		}
 		stderr.println("");
+
+		Throwable cause = problem;
+		if (problem instanceof JavaError) {
+			// Un-wrap JavaError and reveal true Java exception 
+			cause = problem.getCause();
+		}
+
 		// HACK: technically, we should report this information
 		// using debug(...), but then we couldn't use printStackTrace.
 		if (shouldDebug(1)) {
-			problem.printStackTrace(stderr);
-		}
-		final Throwable cause = problem.getCause();
-		if (shouldDebug(1) && cause != null) {
-			stderr.println("Caused by:");
 			cause.printStackTrace(stderr);
 		}
 	}

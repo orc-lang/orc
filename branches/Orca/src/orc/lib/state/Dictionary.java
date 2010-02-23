@@ -1,7 +1,19 @@
+//
+// Dictionary.java -- Java class Dictionary
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.lib.state;
 
 import java.util.HashMap;
-import java.util.Map;
 
 import orc.error.runtime.TokenException;
 import orc.lib.state.Ref.RefInstance;
@@ -13,10 +25,11 @@ import orc.runtime.sites.EvalSite;
  */
 public class Dictionary extends EvalSite {
 	private static class DictionaryInstance extends EvalSite {
-		private HashMap<String, RefInstance> map = new HashMap<String, RefInstance>();
+		private final HashMap<String, RefInstance> map = new HashMap<String, RefInstance>();
+
 		@Override
-		public Object evaluate(Args args) throws TokenException {
-			String field = args.fieldName();
+		public Object evaluate(final Args args) throws TokenException {
+			final String field = args.fieldName();
 			RefInstance out = map.get(field);
 			if (out == null) {
 				out = new RefInstance();
@@ -24,14 +37,15 @@ public class Dictionary extends EvalSite {
 			}
 			return out;
 		}
-		
+
+		@Override
 		public String toString() {
 			return map.toString();
 		}
 	}
 
 	@Override
-	public Object evaluate(Args args) throws TokenException {
+	public Object evaluate(final Args args) throws TokenException {
 		return new DictionaryInstance();
 	}
 }

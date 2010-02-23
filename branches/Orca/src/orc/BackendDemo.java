@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -17,32 +17,31 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Iterator;
 
-import orc.ast.oil.Visitor;
-import orc.env.Env;
-import orc.env.LookupFailureException;
-import orc.error.OrcError;
-import orc.error.compiletime.CompilationException;
 import orc.ast.oil.expression.Atomic;
-import orc.ast.oil.expression.Def;
-import orc.ast.oil.expression.Parallel;
 import orc.ast.oil.expression.Call;
 import orc.ast.oil.expression.Catch;
 import orc.ast.oil.expression.DeclareDefs;
+import orc.ast.oil.expression.DeclareType;
+import orc.ast.oil.expression.Def;
 import orc.ast.oil.expression.Expression;
 import orc.ast.oil.expression.HasType;
-import orc.ast.oil.expression.Isolated;
+import orc.ast.oil.expression.Otherwise;
+import orc.ast.oil.expression.Parallel;
 import orc.ast.oil.expression.Pruning;
 import orc.ast.oil.expression.Sequential;
-import orc.ast.oil.expression.Otherwise;
 import orc.ast.oil.expression.Stop;
 import orc.ast.oil.expression.Throw;
-import orc.ast.oil.expression.DeclareType;
 import orc.ast.oil.expression.WithLocation;
 import orc.ast.oil.expression.argument.Argument;
 import orc.ast.oil.expression.argument.Constant;
 import orc.ast.oil.expression.argument.Field;
 import orc.ast.oil.expression.argument.Site;
 import orc.ast.oil.expression.argument.Variable;
+import orc.ast.oil.visitor.Visitor;
+import orc.env.Env;
+import orc.env.LookupFailureException;
+import orc.error.OrcError;
+import orc.error.compiletime.CompilationException;
 
 /**
  * An example of a custom compiler backend.
@@ -151,7 +150,6 @@ final class BackendVisitorDemo implements Visitor<Void> {
 		out.print(")");
 		return null;
 	}
-	
 
 	public Void visit(final Pruning expr) {
 		out.print("(");
@@ -237,13 +235,6 @@ final class BackendVisitorDemo implements Visitor<Void> {
 	public Void visit(final Atomic atomic) {
 		out.print("(atomic ");
 		atomic.body.accept(this);
-		out.print(")");
-		return null;
-	}
-
-	public Void visit(final Isolated expr) {
-		out.print("(isolated ");
-		expr.body.accept(this);
 		out.print(")");
 		return null;
 	}

@@ -15,10 +15,9 @@
 
 package orc.ast.extended.declaration;
 
-import java.io.File;
 import java.util.List;
 
-import orc.ast.extended.Visitor;
+import orc.ast.extended.visitor.Visitor;
 import orc.ast.simple.expression.Expression;
 import orc.error.compiletime.CompilationException;
 
@@ -31,8 +30,8 @@ public class IncludeDeclaration extends Declaration {
 
 	public List<Declaration> decls;
 	public String sourceFile;
-	
-	public IncludeDeclaration(List<Declaration> decls, String sourceFile) {
+
+	public IncludeDeclaration(final List<Declaration> decls, final String sourceFile) {
 		this.decls = decls;
 		this.sourceFile = sourceFile;
 	}
@@ -42,19 +41,19 @@ public class IncludeDeclaration extends Declaration {
 	 */
 	@Override
 	public Expression bindto(Expression target) throws CompilationException {
-	
-		for(int i = decls.size() - 1; i >= 0; i--) {
-			Declaration d = decls.get(i);
+
+		for (int i = decls.size() - 1; i >= 0; i--) {
+			final Declaration d = decls.get(i);
 			target = d.bindto(target);
 		}
-		
+
 		return target;
 	}
 
 	/* (non-Javadoc)
 	 * @see orc.ast.extended.ASTNode#accept(orc.ast.extended.Visitor)
 	 */
-	public <E> E accept(Visitor<E> visitor) {
+	public <E> E accept(final Visitor<E> visitor) {
 		// TODO Auto-generated method stub
 		return visitor.visit(this);
 	}

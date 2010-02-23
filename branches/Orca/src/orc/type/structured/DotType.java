@@ -1,3 +1,16 @@
+//
+// DotType.java -- Java class DotType
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.type.structured;
 
 import java.util.List;
@@ -11,7 +24,6 @@ import orc.error.compiletime.typing.TypeException;
 import orc.type.Type;
 import orc.type.TypingContext;
 
-
 /**
  * Composite type for sites which can receive messages (using the . notation)
  * 
@@ -20,74 +32,74 @@ import orc.type.TypingContext;
  * for each understood message are added using addField.
  * 
  * @author dkitchin
- *
  */
 public class DotType extends Type {
 
 	public static final Type NODEFAULT = new NoDefaultType();
 	Type defaultType;
-	Map<String,Type> fieldMap;
-	
+	Map<String, Type> fieldMap;
+
 	public DotType() {
 		this.defaultType = NODEFAULT;
-		fieldMap = new TreeMap<String,Type>();
+		fieldMap = new TreeMap<String, Type>();
 	}
-	
-	public DotType(Type defaultType) {
+
+	public DotType(final Type defaultType) {
 		this.defaultType = defaultType;
-		fieldMap = new TreeMap<String,Type>();
+		fieldMap = new TreeMap<String, Type>();
 	}
-	
-	public DotType addField(String key, Type T) {
+
+	public DotType addField(final String key, final Type T) {
 		fieldMap.put(key, T);
 		return this;
 	}
-	
-	
-	public Type call(TypingContext ctx, List<Argument> args, List<Type> typeActuals) throws TypeException {
-	
+
+	@Override
+	public Type call(final TypingContext ctx, final List<Argument> args, final List<Type> typeActuals) throws TypeException {
+
 		if (args.size() == 1 && args.get(0) instanceof Field) {
-			Field f = (Field)args.get(0);
+			final Field f = (Field) args.get(0);
 			return fieldMap.get(f.key);
-		}
-		else {
-			return defaultType.call(ctx,args,typeActuals);
+		} else {
+			return defaultType.call(ctx, args, typeActuals);
 		}
 	}
-		
-	
-	public boolean subtype(Type that) throws TypeException {
+
+	@Override
+	public boolean subtype(final Type that) throws TypeException {
 		return defaultType.subtype(that) || super.subtype(that);
 	}
-	
+
 	/* A call without explicit args passed is assumed to be a call to the default type */
-	public Type call(List<Type> args) throws TypeException {
+	@Override
+	public Type call(final List<Type> args) throws TypeException {
 		return defaultType.call(args);
 	}
-	
-	
+
+	@Override
 	public Set<Integer> freeVars() {
-		
-		Set<Integer> vars = Type.allFreeVars(fieldMap.values());
+
+		final Set<Integer> vars = Type.allFreeVars(fieldMap.values());
 		vars.addAll(defaultType.freeVars());
-		
+
 		return vars;
 	}
-	
+
+	@Override
 	public String toString() {
-		
-		StringBuilder s = new StringBuilder();
+
+		final StringBuilder s = new StringBuilder();
 		String sep = "";
-		
-		
+
 		if (!(defaultType instanceof NoDefaultType)) {
 			s.append('(');
 			s.append(defaultType);
 			s.append(" & ");
 		}
 		s.append('{');
-		for (String f : fieldMap.keySet()) {
-			s.append(sep); sep = ", ";
+		for (final String f : fieldMap.keySet()) {
+			s.append(sep);
+			sep = ", ";
 			s.append(f + " :: ");
 			s.append(fieldMap.get(f));
 		}
@@ -95,27 +107,31 @@ public class DotType extends Type {
 		if (!(defaultType instanceof NoDefaultType)) {
 			s.append(')');
 		}
-		
+
 		return s.toString();
 	}
-	
+
 }
-	
+
 final class NoDefaultType extends Type {
 
-	public Type call(TypingContext ctx, List<Argument> args, List<Type> typeActuals) throws TypeException {
+	@Override
+	public Type call(final TypingContext ctx, final List<Argument> args, final List<Type> typeActuals) throws TypeException {
 		throw new TypeException("This site has no default behavior; it can only be called via messages");
 	}
-	
-	public Type call(List<Type> args) throws TypeException {
+
+	@Override
+	public Type call(final List<Type> args) throws TypeException {
 		throw new TypeException("This site has no default behavior; it can only be called via messages");
 	}
-	
+
+	@Override
 	public String toString() {
 		return "no_default_type";
 	}
-	
-	public boolean subtype(Type that) throws TypeException {
+
+	@Override
+	public boolean subtype(final Type that) throws TypeException {
 		return false;
 	}
 }

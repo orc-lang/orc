@@ -1,4 +1,17 @@
 <?xml version="1.0" ?>
+
+<!-- build.xml - Ant buildfile (additional tasks for project build)
+     Project OrcJava
+
+     $Id$
+
+     Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
 <project name="orc" default="jar" basedir=".">
 	<description>
 		Ant build file for Orc binary distribution.
@@ -57,8 +70,9 @@
 	</target>
 
 	<target name="kilim" description="Kilim weaving">
-		<java classname="kilim.tools.Weaver" fork="yes">
+		<java classname="kilim.tools.Weaver" fork="yes" failonerror="true">
 			<classpath refid="orc.classpath"/>
+		    <sysproperty key="java.awt.headless" value="true"/>
 			<assertions><enable/></assertions>
 			<arg value="-d" />
 			<arg value="build/classes" />
@@ -81,7 +95,7 @@
 	-->
 	
 	<target name="stdlib-doc" description="Build standard library docs">
-		<java classname="orc.doc.MakeDoc" fork="yes"
+		<java classname="orc.doc.MakeDoc" fork="yes" failonerror="true"
 				dir="src/orc/inc/prelude"
 				output="build/stdlib.xml">
 			<classpath refid="orc.classpath"/>
@@ -103,7 +117,7 @@
 	<target name="rats" depends="rats1,rats2,rats3" description="Build rats parser" />
 
 	<target name="rats1" depends="rats1.required" unless="rats1.notRequired">
-		<java classname="xtc.parser.Rats" fork="yes">
+		<java classname="xtc.parser.Rats" fork="yes" failonerror="true">
 			<classpath>
 				<pathelement path="lib/rats.jar" />
 			</classpath>
@@ -122,7 +136,7 @@
 	</target>
 
 	<target name="rats2" depends="rats2.required" unless="rats2.notRequired">
-		<java classname="xtc.parser.Rats" fork="yes">
+		<java classname="xtc.parser.Rats" fork="yes" failonerror="true">
 			<classpath>
 				<pathelement path="lib/rats.jar" />
 			</classpath>
@@ -141,7 +155,7 @@
 	</target>
 	
 	<target name="rats3" depends="rats3.required" unless="rats3.notRequired">
-		<java classname="xtc.parser.Rats" fork="yes">
+		<java classname="xtc.parser.Rats" fork="yes" failonerror="true">
 			<classpath>
 				<pathelement path="lib/rats.jar" />
 			</classpath>
@@ -176,10 +190,11 @@
 		<zip zipfile="build/${target.name}-doc.zip" basedir="build/javadoc" />
 	</target>
 
-	<!-- WARNING: this does not work on non-Unix systems (without ln and tar) -->
-	<target name="app" depends="jar" description="generate a Mac OS bundle">
+	<!-- WARNING: this does not work on non-Unix systems (without cp, ln, and tar) -->
+	<target name="app" depends="jar" description="generate a Mac OS X application">
+		<property name="appname" value="Orc" />
+		<property name="appdir" value="build/${target.name}/${appname}.app" />
 		<delete dir="build/${target.name}"/> <!-- clean up any old files -->
-		<property name="appdir" value="build/${target.name}/Orc.app" />
 		<mkdir dir="${appdir}"/>
 		<!-- copy most files without filtering -->
 		<copy todir="${appdir}">
@@ -197,19 +212,19 @@
 				<include name="**/*.plist"/>
 			</fileset>
 			<filterset>
-				<filter token="orc.version" value="${orc.version}"/>
 				<filter token="orc.jar" value="${target.name}.jar"/>
+				<filter token="orc.version" value="${orc.version}"/>
 			</filterset>
 		</copy>
 		<!-- copy JavaApplicationStub with the unix cp command to preserve permissions -->
-		<exec executable="cp">
+		<exec executable="cp" failonerror="true">
 			<arg line="-p app-skeleton/Contents/MacOS/JavaApplicationStub" />
 			<arg value="${appdir}/Contents/MacOS/JavaApplicationStub" />
 		</exec>
 		<!-- copy jar -->
 		<copy file="build/${target.name}.jar" todir="${appdir}/Contents/Resources/Java" />
 		<!-- create symlink -->
-		<exec executable="ln">
+		<exec executable="ln" failonerror="true">
 			<arg value="-s" />
 			<arg value="/Developer/Applications/Xcode.app/Contents/Library/Spotlight/SourceCode.mdimporter/Contents/MacOS" />
 			<arg value="${appdir}/Contents/Library/Spotlight/Orc.mdimporter/Contents/MacOS" />
@@ -247,7 +262,7 @@
 			</fileset>
 		</copy>
 		<!-- create tgz package -->
-		<exec executable="tar" dir="build">
+		<exec executable="tar" dir="build" failonerror="true">
 			<arg line="-zcf ${target.name}-app.tgz ${target.name}" />
 		</exec>
 	</target>

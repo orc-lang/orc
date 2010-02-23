@@ -1,3 +1,16 @@
+--
+-- reflect.inc -- Orc standard prelude include, metalanguage section
+-- Project OrcJava
+--
+-- $Id$
+--
+-- Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+--
+-- Use and redistribution of this file is governed by the license terms in
+-- the LICENSE file found in the project's top-level directory and also found at
+-- URL: http://orc.csres.utexas.edu/license.shtml .
+--
+
 {--
 Metalanguage operations.
 --}
@@ -24,6 +37,5 @@ val Foo = Site(foo)]]></programlisting>
 
 The typing of Site will enforce the side condition that the type A is an arrow
 type.
-
 --}
-site Site = orc.lib.reflect.SiteSite
+site Site = orc.runtime.sites.core.SiteSite

@@ -1,3 +1,16 @@
+//
+// BooleanType.java -- Java class BooleanType
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.type.ground;
 
 import java.util.List;
@@ -10,12 +23,17 @@ import orc.type.java.ClassTycon;
 
 public class BooleanType extends Type {
 
-	public String toString() { return "Boolean"; }
-	
-	public Type call(TypingContext ctx, List<Argument> args, List<Type> typeActuals) throws TypeException {
-		return (new ClassTycon(java.lang.Boolean.class)).instance().call(ctx, args, typeActuals);
+	@Override
+	public String toString() {
+		return "Boolean";
 	}
-	
+
+	@Override
+	public Type call(final TypingContext ctx, final List<Argument> args, final List<Type> typeActuals) throws TypeException {
+		return new ClassTycon(java.lang.Boolean.class).instance().call(ctx, args, typeActuals);
+	}
+
+	@Override
 	public Class javaCounterpart() {
 		return java.lang.Boolean.class;
 	}

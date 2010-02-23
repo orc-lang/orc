@@ -1,8 +1,17 @@
-package orc.error.runtime;
+//
+// TokenError.java -- Java class TokenError
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
 
-import orc.error.Locatable;
-import orc.error.OrcError;
-import orc.error.SourceLocation;
+package orc.error.runtime;
 
 /**
  * A non-recoverable error at a token, which must result in halting the whole
@@ -13,11 +22,11 @@ import orc.error.SourceLocation;
  */
 public abstract class TokenError extends TokenException {
 
-	public TokenError(String message) {
+	public TokenError(final String message) {
 		super(message);
 	}
-	
-	public TokenError(String message, Throwable cause) {
+
+	public TokenError(final String message, final Throwable cause) {
 		super(message, cause);
 	}
 }

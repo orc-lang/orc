@@ -1,14 +1,21 @@
-/**
- * Copyright (c) 2009, The University of Texas at Austin ("U. T. Austin")
- * All rights reserved.
- *
- * <p>You may distribute this file under the terms of the OSI Simplified BSD License,
- * as defined in the LICENSE file found in the project's top-level directory.
- */
+//
+// CompileMessageRecorder.java -- Java interface CompileMessageRecorder
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.error.compiletime;
 
 import java.io.File;
 
+import orc.ast.extended.ASTNode;
 import orc.error.SourceLocation;
 
 /**
@@ -59,7 +66,7 @@ public interface CompileMessageRecorder {
 		 */
 		INTERNAL
 	}
-	
+
 	/**
 	 * Record that compile processing has begun for the given file.
 	 * This also resets maxSeverity.
@@ -68,7 +75,7 @@ public interface CompileMessageRecorder {
 	 * @param file File for which compiler processing is beginning
 	 */
 	public void beginProcessing(File file);
-	
+
 	/**
 	 * Record a compile problem message.  This message is forwarded to the environment in
 	 * a manner specific to the implementing class.
@@ -103,7 +110,7 @@ public interface CompileMessageRecorder {
 	 * @param astNode {@link ASTNode} subtree containing problem, or null if not applicable or not available.
 	 */
 	public void recordMessage(Severity severity, int code, String message, SourceLocation location, Object astNode);
-	
+
 	/**
 	 * Convenience method, equivalent to <code>recordMessage(severity, code, message, null, null, null)</code>
 	 * 
@@ -112,12 +119,12 @@ public interface CompileMessageRecorder {
 	 * @param message String localized message specifically describing problem for the complier user
 	 */
 	public void recordMessage(Severity severity, int code, String message);
-	
+
 	/**
 	 * @return maximum severity of messages recoded since {@link #beginProcessing(File)} was invoked
 	 */
 	public Severity getMaxSeverity();
-	
+
 	/**
 	 * Record that compile processing is complete for the given file.
 	 * 

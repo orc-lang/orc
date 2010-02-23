@@ -1,6 +1,18 @@
+//
+// Pattern.java -- Java class Pattern
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.ast.extended.pattern;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import orc.ast.extended.ASTNode;
@@ -11,30 +23,21 @@ import orc.ast.simple.argument.Site;
 import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.Call;
 import orc.ast.simple.expression.Expression;
-import orc.ast.simple.expression.Let;
-import orc.ast.simple.expression.Parallel;
 import orc.ast.simple.expression.Otherwise;
+import orc.ast.simple.expression.Parallel;
 import orc.ast.simple.expression.Sequential;
-import orc.ast.simple.expression.Stop;
-import orc.ast.simple.expression.Pruning;
-import orc.ast.simple.expression.WithLocation;
-import orc.error.compiletime.NonlinearPatternException;
-import orc.error.compiletime.PatternException;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
-
+import orc.error.compiletime.PatternException;
 
 /**
- * 
  * Base interface for the abstract syntax of patterns.
  * 
  * Patterns exist only in the extended abstract syntax. They desugar into a
  * series of operations which terminate in variable bindings.
  * 
  * @author dkitchin
- * 
  */
-
 public abstract class Pattern implements ASTNode, Locatable {
 	private SourceLocation location = SourceLocation.UNKNOWN;
 
@@ -42,7 +45,7 @@ public abstract class Pattern implements ASTNode, Locatable {
 	public boolean strict() {
 		return true;
 	}
-	
+
 	/** 
 	 * Visit a pattern recursively, creating two products:
 	 * 
@@ -59,7 +62,6 @@ public abstract class Pattern implements ASTNode, Locatable {
 	 * @throws PatternException  
 	 */
 	public abstract void process(Variable fragment, PatternSimplifier visitor) throws PatternException;
-	
 
 	/**
 	 * 
@@ -67,13 +69,12 @@ public abstract class Pattern implements ASTNode, Locatable {
 	 * Creates a new visitor, visits the pattern, and then returns that visitor. 
 	 * @throws PatternException 
 	 */
-	public PatternSimplifier process(Variable fragment) throws PatternException {
-		PatternSimplifier pv = new PatternSimplifier();
+	public PatternSimplifier process(final Variable fragment) throws PatternException {
+		final PatternSimplifier pv = new PatternSimplifier();
 		process(fragment, pv);
 		return pv;
 	}
-	
-	
+
 	/**
 	 * 
 	 * Condense a sequence of patterns into a single pattern using the following strategy:
@@ -86,22 +87,17 @@ public abstract class Pattern implements ASTNode, Locatable {
 	 * @param ps
 	 * @return
 	 */
-	public static Pattern condense(List<Pattern> ps) {
-		
+	public static Pattern condense(final List<Pattern> ps) {
+
 		if (ps.size() == 0) {
 			return new WildcardPattern();
-		}
-		else if (ps.size() == 1) {
+		} else if (ps.size() == 1) {
 			return ps.get(0);
-		}
-		else {
+		} else {
 			return new TuplePattern(ps);
 		}
 	}
-	
-	
-	
-	
+
 	/* Sites often used in pattern matching */
 	protected static Argument IF = new Site(orc.ast.sites.Site.IF);
 	protected static Argument EQUAL = new Site(orc.ast.sites.Site.EQUAL);
@@ -110,13 +106,13 @@ public abstract class Pattern implements ASTNode, Locatable {
 	public static Argument ERROR = new Site(orc.ast.sites.Site.ERROR);
 	public static Argument TRYSOME = new Site(orc.ast.sites.Site.ISSOME);
 	public static Argument TRYNONE = new Site(orc.ast.sites.Site.ISNONE);
-	
+
 	/* This site might be replaced by a special message */
 	protected static Argument TRYCONS = new Site(orc.ast.sites.Site.TRYCONS);
-	
+
 	/* This site might not be necessary */
 	protected static Argument TRYNIL = new Site(orc.ast.sites.Site.TRYNIL);
-	
+
 	/**
 	 * 
 	 * Construct an expression comparing two arguments. 
@@ -127,20 +123,19 @@ public abstract class Pattern implements ASTNode, Locatable {
 	 * @param t  An argument to compare
 	 * @return   An expression publishing a signal if s=t, silent otherwise
 	 */
-	public static Expression compare(Argument s, Argument t) {
+	public static Expression compare(final Argument s, final Argument t) {
 
-		Variable b = new Variable();
-		
+		final Variable b = new Variable();
+
 		// s = t
-		Expression test = new Call(EQUAL, s, t);
-		
+		final Expression test = new Call(EQUAL, s, t);
+
 		// (s = t) >b> if(b)
-		Expression comp = new Sequential(test, new Call(IF,b), b);
-		
+		final Expression comp = new Sequential(test, new Call(IF, b), b);
+
 		return comp;
 	}
-	
-	
+
 	/**
 	 * Construct an expression which publishes the ith element
 	 * of tuple s. 
@@ -149,10 +144,10 @@ public abstract class Pattern implements ASTNode, Locatable {
 	 * @param i An index into a tuple (starting at 0)
 	 * @return  An expression publishing s(i)
 	 */
-	public static Expression nth(Argument s, int i) {
-		return new Call(s,new Constant(i));
+	public static Expression nth(final Argument s, final int i) {
+		return new Call(s, new Constant(i));
 	}
-	
+
 	/**
 	 * 
 	 * Constructs an expression which will try to deconstruct an
@@ -162,11 +157,11 @@ public abstract class Pattern implements ASTNode, Locatable {
 	 * 
 	 * @param s 
 	 */
-	public static Expression trycons(Argument s) {
+	public static Expression trycons(final Argument s) {
 		// TODO: Make trycons a special message
 		return new Call(TRYCONS, s);
 	}
-	
+
 	/**
 	 * 
 	 * Constructs an expression which tests whether the argument
@@ -175,7 +170,7 @@ public abstract class Pattern implements ASTNode, Locatable {
 	 * 
 	 * @param s
 	 */
-	public static Expression trynil(Argument s) {
+	public static Expression trynil(final Argument s) {
 		return new Call(TRYNIL, s);
 	}
 
@@ -188,21 +183,21 @@ public abstract class Pattern implements ASTNode, Locatable {
 	 * @param s  Argument to test
 	 * @param n  Target arity
 	 */
-	
-	public static Expression trysize(Argument s, int n) {
+
+	public static Expression trysize(final Argument s, final int n) {
 		// TODO: Make this field name a special constant
-		
+
 		// s.fits
-		Expression fits = new Call(s, new Field("fits"));
-		
+		final Expression fits = new Call(s, new Field("fits"));
+
 		// m(n)
-		Variable m = new Variable();
-		Expression invoke = new Call(m, new Constant(n));
-		
+		final Variable m = new Variable();
+		final Expression invoke = new Call(m, new Constant(n));
+
 		// s.fits >m> m(n)
-		return new Sequential(fits, invoke, m); 
+		return new Sequential(fits, invoke, m);
 	}
-	
+
 	/**
 	 * 
 	 * Construct an expression which tries to find the inverse
@@ -221,13 +216,12 @@ public abstract class Pattern implements ASTNode, Locatable {
 	 * @param m  The site to unapply
 	 * @param s  Argument to the inversion
 	 */
-	public static Expression unapply(Argument m, Argument s) {
-		Variable i = new Variable();
+	public static Expression unapply(final Argument m, final Argument s) {
+		final Variable i = new Variable();
 		// TODO: Make the field name "?" a special constant
 		return new Sequential(new Call(m, new Field("?")), new Call(i, s), i);
 	}
-	
-	
+
 	/**
 	 * Lifts a partial function to a total function, using
 	 * the ; combinator to detect a refusal to respond,
@@ -237,11 +231,10 @@ public abstract class Pattern implements ASTNode, Locatable {
 	 * 
 	 * @param x
 	 */
-	public static Expression lift(Variable x) {
+	public static Expression lift(final Variable x) {
 		return new Otherwise(new Call(SOME, x), new Call(NONE));
 	}
-	
-	
+
 	/**
 	 * Constructs an optional case statement.
 	 * 
@@ -256,18 +249,18 @@ public abstract class Pattern implements ASTNode, Locatable {
 	 * @param succ
 	 * @param fail
 	 */
-	public static Expression caseof(Variable arg, Variable s, Expression succ, Expression fail) {
-				
+	public static Expression caseof(final Variable arg, final Variable s, final Expression succ, final Expression fail) {
+
 		// trySome(arg) >s> succ
-		Expression someb = new Sequential(new Call(TRYSOME, arg), succ, s);
-		
+		final Expression someb = new Sequential(new Call(TRYSOME, arg), succ, s);
+
 		// tryNone(arg) >> fail
-		Expression noneb = new Sequential(new Call(TRYNONE, arg), fail, new Variable());
-		
+		final Expression noneb = new Sequential(new Call(TRYNONE, arg), fail, new Variable());
+
 		// trySome... | tryNone...
 		return new Parallel(someb, noneb);
-	}	
-	
+	}
+
 	/**
 	 * Return a default expression to use in case a pattern match fails.
 	 * Instead of remaining silent, we halt with an error, to aid in debugging
@@ -276,8 +269,8 @@ public abstract class Pattern implements ASTNode, Locatable {
 	public static Expression fail() {
 		return new Call(ERROR, new Constant("Pattern match failed."));
 	}
-	
-	public void setSourceLocation(SourceLocation location) {
+
+	public void setSourceLocation(final SourceLocation location) {
 		this.location = location;
 	}
 

@@ -1,17 +1,26 @@
+//
+// Type.java -- Java class Type
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.ast.simple.type;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import orc.ast.simple.argument.Argument;
-import orc.ast.simple.argument.FreeVariable;
-import orc.ast.simple.expression.Expression;
 import orc.env.Env;
 import orc.error.compiletime.typing.TypeException;
 
 /**
- * 
  * Abstract superclass of syntactic types in the simple AST.
  * 
  * Within the simple AST, bound type variables are represented by objects (TypeVariable),
@@ -31,14 +40,13 @@ import orc.error.compiletime.typing.TypeException;
  * many of the typechecker's internal types are not representable in programs.
  * 
  * @author dkitchin
- *
  */
 public abstract class Type {
 
 	/* Create singleton representatives for some common types */
 	public static final Type TOP = new Top();
 	public static final Type BOT = new Bot();
-	
+
 	/** Convert this syntactic type into an actual type, given an appropriate type context
 	 * @param env	The type environment, used in content addressable mode to 
 	 * 				find the appropriate deBruijn index of a type variable.
@@ -46,8 +54,7 @@ public abstract class Type {
 	 * @throws TypeException 
 	 */
 	public abstract orc.ast.oil.type.Type convert(Env<TypeVariable> env) throws TypeException;
-	
-	
+
 	/**
 	 * Convenience method, to apply convert to a list of types.
 	 * 
@@ -56,22 +63,21 @@ public abstract class Type {
 	 * @return The list of types, converted
 	 * @throws TypeException
 	 */
-	public static List<orc.ast.oil.type.Type> convertAll(List<Type> ts, Env<TypeVariable> env) throws TypeException {
-		
+	public static List<orc.ast.oil.type.Type> convertAll(final List<Type> ts, final Env<TypeVariable> env) throws TypeException {
+
 		if (ts != null) {
-			List<orc.ast.oil.type.Type> newts = new LinkedList<orc.ast.oil.type.Type>();
-		
-			for (Type t : ts) {
+			final List<orc.ast.oil.type.Type> newts = new LinkedList<orc.ast.oil.type.Type>();
+
+			for (final Type t : ts) {
 				newts.add(t.convert(env));
 			}
-		
+
 			return newts;
-		}
-		else {
+		} else {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Performs the substitution [T/X], replacing occurrences of the free type variable X
 	 * with the type T (which could be any type, including another variable).
@@ -82,31 +88,27 @@ public abstract class Type {
 	 * @return A new copy of the type with the substitution performed
 	 */
 	public abstract Type subst(Type T, FreeTypeVariable X);
-	
+
 	/**
 	 * Convenience method, to apply a substitution to a list of types.
 	 */
-	public static List<Type> substAll(List<Type> ts, Type T, FreeTypeVariable X) {
+	public static List<Type> substAll(final List<Type> ts, final Type T, final FreeTypeVariable X) {
 		if (ts != null) {
-			List<Type> newts = new LinkedList<Type>();
-			for (Type t : ts) {
-				Type newt = t.subst(T, X);
+			final List<Type> newts = new LinkedList<Type>();
+			for (final Type t : ts) {
+				final Type newt = t.subst(T, X);
 				newts.add(newt);
 			}
 			return newts;
-		}
-		else {
+		} else {
 			return null;
 		}
 	}
-	
-	public static Type substMaybe(Type target, Type T, FreeTypeVariable X) {
-		return (target != null ? target.subst(T, X) : null);
+
+	public static Type substMaybe(final Type target, final Type T, final FreeTypeVariable X) {
+		return target != null ? target.subst(T, X) : null;
 	}
-	
-	
-	
-	
+
 	/**
 	 * 
 	 * Performs the substitution [U/X], replacing occurrences of the free type variable X
@@ -120,12 +122,11 @@ public abstract class Type {
 	 * 
 	 * @return A new copy of the type with the substitution performed
 	 */
-	public Type subvar(TypeVariable U, FreeTypeVariable X) {
+	public Type subvar(final TypeVariable U, final FreeTypeVariable X) {
 		U.name = X.name;
-		return subst(U,X);
+		return subst(U, X);
 	}
-	
-	
+
 	/**
 	 * Perform a set of substitutions defined by a map.
 	 * For each X |-> T in the map, the substitution [T/X] occurs.
@@ -135,22 +136,19 @@ public abstract class Type {
 	 * 
 	 * @param m
 	 */
-	public Type subMap(Map<FreeTypeVariable, Type> m)
-	{
+	public Type subMap(final Map<FreeTypeVariable, Type> m) {
 		Type result = this;
-		
-		for (FreeTypeVariable x : m.keySet())
-		{
-			Type T = m.get(x);
+
+		for (final FreeTypeVariable x : m.keySet()) {
+			final Type T = m.get(x);
 			if (T instanceof TypeVariable) {
-				result = result.subvar((TypeVariable)T, x);
-			}
-			else {
-				result = result.subst(T,x);
+				result = result.subvar((TypeVariable) T, x);
+			} else {
+				result = result.subst(T, x);
 			}
 		}
-		
+
 		return result;
 	}
-	
+
 }

@@ -1,7 +1,20 @@
+//
+// Throw.java -- Java class Throw
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.ast.simple.expression;
 
-import java.util.Set;
 import java.util.HashSet;
+import java.util.Set;
 
 import orc.ast.simple.argument.Argument;
 import orc.ast.simple.argument.FreeVariable;
@@ -15,31 +28,33 @@ import orc.error.compiletime.CompilationException;
 public class Throw extends Expression {
 
 	Expression exception;
-	
-	public Throw(Expression exception){
+
+	public Throw(final Expression exception) {
 		this.exception = exception;
 	}
 
-	public Expression subst(Argument a, FreeVariable x) 
-	{
-		return new Throw(exception.subst(a,x));
+	@Override
+	public Expression subst(final Argument a, final FreeVariable x) {
+		return new Throw(exception.subst(a, x));
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see orc.ast.simple.expression.Expression#subst(orc.ast.simple.type.Type, orc.ast.simple.type.FreeTypeVariable)
 	 */
 	@Override
-	public Expression subst(Type T, FreeTypeVariable X) {
-		return new Throw(exception.subst(T,X));
+	public Expression subst(final Type T, final FreeTypeVariable X) {
+		return new Throw(exception.subst(T, X));
 	}
-	
-	public Set<Variable> vars(){
-		Set s =  new HashSet<Variable>();
+
+	@Override
+	public Set<Variable> vars() {
+		final Set s = new HashSet<Variable>();
 		s.add(exception.vars());
 		return s;
 	}
-	
-	public orc.ast.oil.expression.Expression convert(Env<Variable> vars, Env<TypeVariable> typevars) throws CompilationException {
+
+	@Override
+	public orc.ast.oil.expression.Expression convert(final Env<Variable> vars, final Env<TypeVariable> typevars) throws CompilationException {
 		return new orc.ast.oil.expression.Throw(exception.convert(vars, typevars));
 	}
 }

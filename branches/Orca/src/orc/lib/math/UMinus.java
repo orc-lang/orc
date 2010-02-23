@@ -1,12 +1,20 @@
-/**
- * 
- */
+//
+// UMinus.java -- Java class UMinus
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.lib.math;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.LinkedList;
-import java.util.List;
 
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
@@ -22,41 +30,48 @@ import orc.type.structured.MultiType;
  */
 public class UMinus extends EvalSite {
 	private static final MyOperator op = new MyOperator();
+
 	private static final class MyOperator implements NumericUnaryOperator<Number> {
-		public Number apply(BigInteger a) {
+		public Number apply(final BigInteger a) {
 			return a.negate();
 		}
-		public Number apply(BigDecimal a) {
+
+		public Number apply(final BigDecimal a) {
 			return a.negate();
 		}
-		public Number apply(int a) {
+
+		public Number apply(final int a) {
 			return -a;
 		}
-		public Number apply(long a) {
+
+		public Number apply(final long a) {
 			return -a;
 		}
-		public Number apply(byte a) {
+
+		public Number apply(final byte a) {
 			return -a;
 		}
-		public Number apply(short a) {
+
+		public Number apply(final short a) {
 			return -a;
 		}
-		public Number apply(double a) {
+
+		public Number apply(final double a) {
 			return -a;
 		}
-		public Number apply(float a) {
+
+		public Number apply(final float a) {
 			return -a;
 		}
 	}
+
 	@Override
-	public Object evaluate(Args args) throws TokenException {
+	public Object evaluate(final Args args) throws TokenException {
 		return Args.applyNumericOperator(args.numberArg(0), op);
 	}
-	
+
+	@Override
 	public Type type() {
-		return new MultiType(
-				new ArrowType(Type.INTEGER, Type.INTEGER),
-				new ArrowType(Type.NUMBER, Type.NUMBER)
-				);
+		return new MultiType(new ArrowType(Type.INTEGER, Type.INTEGER), new ArrowType(Type.NUMBER, Type.NUMBER));
 	}
 }

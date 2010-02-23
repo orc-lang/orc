@@ -1,39 +1,43 @@
+//
+// Choice.java -- Java class Choice
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.ast.extended.expression;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map.Entry;
 
-import orc.ast.extended.Visitor;
 import orc.ast.extended.declaration.ValDeclaration;
 import orc.ast.extended.declaration.type.Constructor;
 import orc.ast.extended.declaration.type.DatatypeDeclaration;
 import orc.ast.extended.pattern.CallPattern;
 import orc.ast.extended.pattern.Pattern;
-import orc.ast.extended.pattern.PatternSimplifier;
-import orc.ast.extended.pattern.TuplePattern;
 import orc.ast.extended.pattern.VariablePattern;
 import orc.ast.extended.type.NamedType;
 import orc.ast.extended.type.Type;
+import orc.ast.extended.visitor.Visitor;
 import orc.ast.simple.expression.WithLocation;
-import orc.error.OrcError;
 import orc.error.compiletime.CompilationException;
-import orc.error.compiletime.PatternException;
-import orc.runtime.ReverseListIterator;
 
 public class Choice extends Expression {
 
 	public List<Expression> choices;
 
-	public Choice(List<Expression> choices)
-	{
+	public Choice(final List<Expression> choices) {
 		this.choices = choices;
 	}
-	
+
 	@Override
 	public orc.ast.simple.expression.Expression simplify() throws CompilationException {
-		orc.ast.simple.expression.Expression expr;
-				
 		/*
 		 * Break up the expressions into their constituents.
 		 * Each expression must be of the form:
@@ -50,80 +54,78 @@ public class Choice extends Expression {
 		 * 
 		 * 
 		 */
-		
-				
+
 		// branch
 		// (manufacture a unique variable name)
-		String branch = "_branch" + choices.hashCode();
-		
+		final String branch = "_branch" + choices.hashCode();
+
 		// temp
 		// (manufacture a unique variable name)
-		String temp = "_temp" + choices.hashCode();
-		
+		final String temp = "_temp" + choices.hashCode();
+
 		// [a,b,...]
-		List<String> typevars = new LinkedList<String>();
-		
+		final List<String> typevars = new LinkedList<String>();
+
 		// A(a) | B(b) ...
-		List<Constructor> constructors = new LinkedList<Constructor>();
-		
+		final List<Constructor> constructors = new LinkedList<Constructor>();
+
 		// A(F) | B(F') ...
 		Expression competitors = new Stop();
-		
+
 		// temp >A(p)> G | temp >B(p')> G' ...
 		Expression consequents = new Stop();
-		
-		for (Expression c : choices) {
+
+		for (final Expression c : choices) {
 			Declare decl;
 			ValDeclaration vald;
 			try {
-				decl = (Declare)c;
-				vald = (ValDeclaration)decl.d;
-			}
-			catch (ClassCastException cce) {
+				decl = (Declare) c;
+				vald = (ValDeclaration) decl.d;
+			} catch (final ClassCastException cce) {
 				throw new CompilationException("Subexpressions of ++ must be a val declaration followed by an expression.");
 			}
-			
-			Pattern p = vald.p;
-			Expression F = vald.e;
-			Expression G = decl.e;
-			
+
+			final Pattern p = vald.p;
+			final Expression F = vald.e;
+			final Expression G = decl.e;
+
 			// Manufacture unique variable names
-			String tag = ("_tag" + c.hashCode());
-			String typevar = ("_tv" + c.hashCode());
-			
+			final String tag = "_tag" + c.hashCode();
+			final String typevar = "_tv" + c.hashCode();
+
 			typevars.add(typevar);
-			
-			List<Type> ts = new LinkedList<Type>();
+
+			final List<Type> ts = new LinkedList<Type>();
 			ts.add(new NamedType(typevar));
 			constructors.add(new Constructor(tag, ts));
-			
-			List<Expression> es = new LinkedList<Expression>();
+
+			final List<Expression> es = new LinkedList<Expression>();
 			es.add(F);
-			Expression competitor = new Call(new Name(tag), es);
+			final Expression competitor = new Call(new Name(tag), es);
 			competitors = new Parallel(competitor, competitors);
-			
-			List<Pattern> ps = new LinkedList<Pattern>();
+
+			final List<Pattern> ps = new LinkedList<Pattern>();
 			ps.add(p);
-			Expression consequent = new Sequential(new Name(temp), G, new CallPattern(tag, ps));
+			final Expression consequent = new Sequential(new Name(temp), G, new CallPattern(tag, ps));
 			consequents = new Parallel(consequent, consequents);
 		}
-		
+
 		Expression body = consequents;
 		body = new Declare(new ValDeclaration(new VariablePattern(temp), competitors), body);
 		body = new Declare(new DatatypeDeclaration(branch, constructors, typevars), body);
-		
+
 		return new WithLocation(body.simplify(), getSourceLocation());
 	}
-	
+
+	@Override
 	public String toString() {
 		return "(" + join(choices, " ++ ") + ")";
-	}	
-
+	}
 
 	/* (non-Javadoc)
 	 * @see orc.ast.extended.ASTNode#accept(orc.ast.oil.Visitor)
 	 */
-	public <E> E accept(Visitor<E> visitor) {
+	public <E> E accept(final Visitor<E> visitor) {
 		return visitor.visit(this);
 	}
 }

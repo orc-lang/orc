@@ -1,3 +1,16 @@
+//
+// Prompt.java -- Java class Prompt
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.lib.util;
 
 import javax.swing.JOptionPane;
@@ -13,11 +26,13 @@ import orc.type.structured.ArrowType;
  * user hits Cancel, publishes nothing.
  */
 public class Prompt extends ThreadedPartialSite {
-	public Object evaluate(Args args) throws TokenException {
-		String message = args.stringArg(0);
+	@Override
+	public Object evaluate(final Args args) throws TokenException {
+		final String message = args.stringArg(0);
 		return JOptionPane.showInputDialog(message);
 	}
-	
+
+	@Override
 	public Type type() {
 		return new ArrowType(Type.STRING, Type.STRING);
 	}

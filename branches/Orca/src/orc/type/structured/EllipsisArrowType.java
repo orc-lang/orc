@@ -1,10 +1,22 @@
+//
+// EllipsisArrowType.java -- Java class EllipsisArrowType
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.type.structured;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import orc.error.compiletime.typing.ArgumentArityException;
 import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
 import orc.type.Type;
@@ -14,118 +26,115 @@ public class EllipsisArrowType extends Type {
 
 	public Type repeatedArgType;
 	public Type resultType;
-		
-	public EllipsisArrowType(Type repeatedArgType, Type resultType) {
-		this.repeatedArgType = repeatedArgType; 
+
+	public EllipsisArrowType(final Type repeatedArgType, final Type resultType) {
+		this.repeatedArgType = repeatedArgType;
 		this.resultType = resultType;
 	}
 
-	protected ArrowType makeArrow(int arity) {
+	protected ArrowType makeArrow(final int arity) {
 
-		List<Type> argTypes = new LinkedList<Type>();
-		
-		for(int i = 0; i < arity; i++) {
+		final List<Type> argTypes = new LinkedList<Type>();
+
+		for (int i = 0; i < arity; i++) {
 			argTypes.add(repeatedArgType);
 		}
 
 		return new ArrowType(argTypes, resultType);
 	}
 
-		
-	public boolean subtype(Type that) throws TypeException {
-		
-		if (that instanceof Top) { return true; }
-		
+	@Override
+	public boolean subtype(final Type that) throws TypeException {
+
+		if (that instanceof Top) {
+			return true;
+		}
+
 		if (that instanceof EllipsisArrowType) {
-			EllipsisArrowType thatEA = (EllipsisArrowType)that;
-			
-			return (  thatEA.repeatedArgType.subtype(this.repeatedArgType)
-				   && this.resultType.subtype(thatEA.resultType) );
-		}
-		else if (that instanceof ArrowType) {
-			ArrowType thatArrow = (ArrowType)that;
-			ArrowType thisArrow = makeArrow(thatArrow.argTypes.size());
-			
+			final EllipsisArrowType thatEA = (EllipsisArrowType) that;
+
+			return thatEA.repeatedArgType.subtype(this.repeatedArgType) && this.resultType.subtype(thatEA.resultType);
+		} else if (that instanceof ArrowType) {
+			final ArrowType thatArrow = (ArrowType) that;
+			final ArrowType thisArrow = makeArrow(thatArrow.argTypes.size());
+
 			return thisArrow.subtype(thatArrow);
-		}
-		else {
+		} else {
 			return false;
 		}
 	}
-		
 
-	public Type join(Type that) throws TypeException {	
-			
+	@Override
+	public Type join(final Type that) throws TypeException {
+
 		if (that instanceof EllipsisArrowType) {
-			EllipsisArrowType thatEA = (EllipsisArrowType)that;
+			final EllipsisArrowType thatEA = (EllipsisArrowType) that;
 
-			Type joinRAT = repeatedArgType.meet(thatEA.repeatedArgType);
-			Type joinRT = resultType.join(thatEA.resultType);
+			final Type joinRAT = repeatedArgType.meet(thatEA.repeatedArgType);
+			final Type joinRT = resultType.join(thatEA.resultType);
 			return new EllipsisArrowType(joinRAT, joinRT);
-		}
-		else if (that instanceof ArrowType) {
-			ArrowType thatArrow = (ArrowType)that;
-			ArrowType thisArrow = makeArrow(thatArrow.argTypes.size());
+		} else if (that instanceof ArrowType) {
+			final ArrowType thatArrow = (ArrowType) that;
+			final ArrowType thisArrow = makeArrow(thatArrow.argTypes.size());
 
 			return thisArrow.join(thatArrow);
-		}
-		else {
+		} else {
 			return Type.TOP;
 		}
 	}
-		
-	public Type meet(Type that) throws TypeException {	
-		
-		if (that instanceof EllipsisArrowType) {
-			EllipsisArrowType thatEA = (EllipsisArrowType)that;
 
-			Type joinRAT = repeatedArgType.join(thatEA.repeatedArgType);
-			Type joinRT = resultType.meet(thatEA.resultType);
+	@Override
+	public Type meet(final Type that) throws TypeException {
+
+		if (that instanceof EllipsisArrowType) {
+			final EllipsisArrowType thatEA = (EllipsisArrowType) that;
+
+			final Type joinRAT = repeatedArgType.join(thatEA.repeatedArgType);
+			final Type joinRT = resultType.meet(thatEA.resultType);
 			return new EllipsisArrowType(joinRAT, joinRT);
-		}
-		else if (that instanceof ArrowType) {
-			ArrowType thatArrow = (ArrowType)that;
-			ArrowType thisArrow = makeArrow(thatArrow.argTypes.size());
+		} else if (that instanceof ArrowType) {
+			final ArrowType thatArrow = (ArrowType) that;
+			final ArrowType thisArrow = makeArrow(thatArrow.argTypes.size());
 
 			return thisArrow.meet(thatArrow);
-		}
-		else {
+		} else {
 			return Type.TOP;
 		}
 	}
-		
-		
-	public Type call(List<Type> args) throws TypeException {
-			
-		for (Type T : args) {
-			if (!(T.subtype(repeatedArgType))) {
+
+	@Override
+	public Type call(final List<Type> args) throws TypeException {
+
+		for (final Type T : args) {
+			if (!T.subtype(repeatedArgType)) {
 				throw new SubtypeFailureException(T, repeatedArgType);
 			}
 		}
-				
+
 		return resultType;
 	}
-	
+
+	@Override
 	public Set<Integer> freeVars() {
-		
-		Set<Integer> vars = repeatedArgType.freeVars();
+
+		final Set<Integer> vars = repeatedArgType.freeVars();
 		vars.addAll(resultType.freeVars());
-		
+
 		return vars;
 	}
-		
-		
+
+	@Override
 	public String toString() {
-			
-		StringBuilder s = new StringBuilder();
-			
+
+		final StringBuilder s = new StringBuilder();
+
 		s.append('(');
 		s.append(repeatedArgType);
 		s.append("... -> ");
 		s.append(resultType);
 		s.append(')');
-			
+
 		return s.toString();
 	}
-	
+
 }

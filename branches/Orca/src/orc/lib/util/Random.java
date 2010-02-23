@@ -1,3 +1,16 @@
+//
+// Random.java -- Java class Random
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.lib.util;
 
 import orc.error.runtime.TokenException;
@@ -11,19 +24,19 @@ import orc.type.structured.MultiType;
 public class Random extends PartialPureSite {
 
 	java.util.Random rnd;
-	
+
 	public Random() {
 		rnd = new java.util.Random();
 	}
-	
+
 	@Override
-	public Object evaluate(Args args) throws TokenException {
+	public Object evaluate(final Args args) throws TokenException {
 		if (args.size() == 0) {
 			return rnd.nextInt();
 		}
-		
-		int limit = args.intArg(0);
-		
+
+		final int limit = args.intArg(0);
+
 		if (limit > 0) {
 			return rnd.nextInt(limit);
 		} else {
@@ -31,10 +44,9 @@ public class Random extends PartialPureSite {
 		}
 	}
 
+	@Override
 	public Type type() {
-		return new MultiType(
-				new ArrowType(Type.INTEGER),
-				new ArrowType(Type.INTEGER, Type.INTEGER));
+		return new MultiType(new ArrowType(Type.INTEGER), new ArrowType(Type.INTEGER, Type.INTEGER));
 	}
 
 }

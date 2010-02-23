@@ -1,6 +1,18 @@
+//
+// Datasite.java -- Java class Datasite
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.runtime.sites.core;
 
-import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.Token;
@@ -8,41 +20,41 @@ import orc.runtime.sites.DotSite;
 import orc.runtime.sites.PartialSite;
 import orc.runtime.transaction.Transaction;
 import orc.runtime.values.TaggedValue;
-import orc.runtime.values.TupleValue;
 
 public final class Datasite extends DotSite {
 
 	public String tagName;
-	
-	public Datasite(String tagname) {
+
+	public Datasite(final String tagname) {
 		this.tagName = tagname;
 	}
-	
+
 	@Override
 	protected void addMembers() {
 		addMember("?", new PartialSite() {
 			@Override
-			public Object evaluate(Args args) throws TokenException {
+			public Object evaluate(final Args args) throws TokenException {
 				return deconstruct(args.getArg(0));
 			}
 		});
 	}
-	
+
 	@Override
 	protected void defaultTo(Args args, Token token, Transaction transaction) throws TokenException {
 		token.resume(new TaggedValue(this, args.asArray()));
 	}
 
-	public Object deconstruct(Object arg) throws TokenException {
+	public Object deconstruct(final Object arg) throws TokenException {
 		if (arg instanceof TaggedValue) {
-			TaggedValue v = (TaggedValue)arg;
+			final TaggedValue v = (TaggedValue) arg;
 			if (v.tag == this) {
 				return Let.condense(v.values);
 			}
 		}
 		return null;
 	}
-	
+
+	@Override
 	public String toString() {
 		return tagName;
 	}

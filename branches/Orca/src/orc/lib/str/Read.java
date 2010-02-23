@@ -1,14 +1,25 @@
+//
+// Read.java -- Java class Read
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.lib.str;
 
 import java.io.IOException;
 import java.io.StringReader;
 
-import orc.error.compiletime.ParsingException;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.parser.AbortParse;
 import orc.parser.OrcLiteralParser;
-import orc.parser.OrcParser;
 import orc.runtime.Args;
 import orc.runtime.sites.EvalSite;
 import orc.type.Type;
@@ -23,25 +34,24 @@ import xtc.parser.Result;
  */
 public class Read extends EvalSite {
 	@Override
-	public Object evaluate(Args args) throws TokenException {
+	public Object evaluate(final Args args) throws TokenException {
 		try {
-			OrcLiteralParser parser = new OrcLiteralParser(
-					new StringReader(args.stringArg(0)),
-					"<input string>");
-			Result result = parser.pLiteralValue(0);
+			final OrcLiteralParser parser = new OrcLiteralParser(new StringReader(args.stringArg(0)), "<input string>");
+			final Result result = parser.pLiteralValue(0);
 			return parser.value(result);
-		} catch (AbortParse e) {
+		} catch (final AbortParse e) {
 			throw new JavaException(e);
-		} catch (ParseException e) {
+		} catch (final ParseException e) {
 			throw new JavaException(e);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			// should be impossible
 			throw new AssertionError(e);
 		}
 	}
-	
+
+	@Override
 	public Type type() {
-		TypeVariable X = new TypeVariable(0);
+		final TypeVariable X = new TypeVariable(0);
 		return new ArrowType(Type.STRING, X, 1);
 	}
 }

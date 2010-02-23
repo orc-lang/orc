@@ -1,11 +1,21 @@
+//
+// MinimizeTracer.java -- Java class MinimizeTracer
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2008 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.trace;
 
 import orc.error.SourceLocation;
 import orc.error.runtime.TokenException;
 import orc.runtime.values.Closure;
-import orc.trace.TokenTracer.PullTrace;
-import orc.trace.TokenTracer.StoreTrace;
-import orc.trace.events.Event;
 
 /**
  * Wrap a tracer to ignore all but the events essential to reconstruct
@@ -20,77 +30,91 @@ import orc.trace.events.Event;
  * @author quark
  */
 public class MinimizeTracer extends DerivedTracer {
-	public MinimizeTracer(Tracer tracer) {
+	public MinimizeTracer(final Tracer tracer) {
 		super(tracer);
 	}
 
 	@Override
-	protected TokenTracer newTokenTracer(TokenTracer tracer) {
+	protected TokenTracer newTokenTracer(final TokenTracer tracer) {
 		return new MinimizeTokenTracer(tracer);
 	}
-	
+
 	private class MinimizeTokenTracer extends DerivedTokenTracer {
-		public MinimizeTokenTracer(TokenTracer tracer) {
+		public MinimizeTokenTracer(final TokenTracer tracer) {
 			super(tracer);
 		}
 
 		private boolean inSend = false;
+
 		@Override
-		public void enter(Closure closure) {}
-		
+		public void enter(final Closure closure) {
+		}
+
 		@Override
-		public void leave(int depth) {}
-	
+		public void leave(final int depth) {
+		}
+
 		@Override
-		public void block(PullTrace pull) {}
-	
+		public void block(final PullTrace pull) {
+		}
+
 		@Override
-		public void choke(StoreTrace store) {}
-	
+		public void choke(final StoreTrace store) {
+		}
+
 		@Override
-		public void print(String value, boolean newline) {}
-	
+		public void print(final String value, final boolean newline) {
+		}
+
 		@Override
-		public void publish(Object value) {}
-	
+		public void publish(final Object value) {
+		}
+
 		@Override
 		public PullTrace pull() {
 			return null;
 		}
-	
+
 		@Override
-		public void setSourceLocation(SourceLocation location) {}
-	
+		public void setSourceLocation(final SourceLocation location) {
+		}
+
 		@Override
-		public StoreTrace store(PullTrace event, Object value) {
+		public StoreTrace store(final PullTrace event, final Object value) {
 			return null;
 		}
-	
+
 		@Override
-		public void unblock(StoreTrace store) {}
-	
+		public void unblock(final StoreTrace store) {
+		}
+
 		@Override
-		public void send(Object site, Object[] arguments) {
+		public void send(final Object site, final Object[] arguments) {
 			inSend = true;
 		}
-	
+
 		@Override
-		public void receive(Object value) {
+		public void receive(final Object value) {
 			super.receive(value);
 			inSend = false;
 		}
-	
+
 		@Override
 		public void die() {
-			if (inSend) super.die();
-		}
-	
-		@Override
-		public void error(TokenException error) {
-			if (inSend) super.error(error);
+			if (inSend) {
+				super.die();
+			}
 		}
 
-		public void useStored(StoreTrace storeTrace) {
+		@Override
+		public void error(final TokenException error) {
+			if (inSend) {
+				super.error(error);
+			}
+		}
+
+		@SuppressWarnings("unused")
+		public void useStored(final StoreTrace storeTrace) {
 			// do nothing
 		}
 	}

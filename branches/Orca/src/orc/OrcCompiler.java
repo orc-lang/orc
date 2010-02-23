@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -22,14 +22,16 @@ import java.util.LinkedList;
 import java.util.concurrent.Callable;
 
 import orc.ast.extended.ASTNode;
-import orc.ast.extended.expression.Declare;
 import orc.ast.extended.declaration.Declaration;
+import orc.ast.extended.expression.Declare;
+import orc.ast.oil.expression.Def;
 import orc.ast.oil.expression.Expression;
-import orc.ast.oil.AtomicOnChecker;
-import orc.ast.oil.ExceptionsOnChecker;
-import orc.ast.oil.IsolatedOnChecker;
-import orc.ast.oil.SiteResolver;
-import orc.ast.oil.UnguardedRecursionChecker;
+import orc.ast.oil.visitor.AtomicOnChecker;
+import orc.ast.oil.visitor.ExceptionsOnChecker;
+import orc.ast.oil.visitor.SiteResolver;
+import orc.ast.oil.visitor.TailCallMarker;
+import orc.ast.oil.visitor.UnguardedRecursionChecker;
+import orc.ast.oil.visitor.Walker;
 import orc.ast.simple.argument.Variable;
 import orc.ast.simple.type.TypeVariable;
 import orc.ast.xml.Oil;
@@ -104,7 +106,7 @@ public class OrcCompiler implements Callable<Expression> {
 		} finally {
 			config.getMessageRecorder().endProcessing(new File(config.getInputFilename()));
 		}
-		
+
 		return oilAst;
 	}
 
@@ -146,7 +148,7 @@ public class OrcCompiler implements Callable<Expression> {
 		if (progress.isCanceled()) {
 			return null;
 		}
-		
+
 		// Load declarations from files specified by the configuration options
 		for (final String f : config.getIncludes()) {
 			final OrcParser fparser = new OrcParser(config, config.openInclude(f, null), f);
@@ -162,7 +164,7 @@ public class OrcCompiler implements Callable<Expression> {
 		if (progress.isCanceled()) {
 			return null;
 		}
-		
+
 		//System.out.println(e);
 
 		return e;
@@ -181,7 +183,7 @@ public class OrcCompiler implements Callable<Expression> {
 		progress.setNote("Simplifying the AST");
 		//System.out.println(((orc.ast.extended.expression.Expression) astRoot).simplify().toString());
 		Expression ex = ((orc.ast.extended.expression.Expression) astRoot).simplify().convert(new Env<Variable>(), new Env<TypeVariable>());
-		
+
 		progress.setProgress(0.66);
 		if (progress.isCanceled()) {
 			return null;
@@ -209,35 +211,33 @@ public class OrcCompiler implements Callable<Expression> {
 		if (progress.isCanceled()) {
 			return null;
 		}
-		
+
 		progress.setNote("Checking for unguarded recursion");
 		UnguardedRecursionChecker.check(ex);
 		progress.setProgress(0.75); // Still need to save oil and refine
 		if (progress.isCanceled()) {
 			return null;
 		}
-		
+
 		if (config.getExceptionsOn() == false) {
 			ExceptionsOnChecker.check(ex);
 			if (progress.isCanceled()) {
 				return null;
 			}
 		}
-		
+
 		if (config.getAtomicOn() == false) {
 			AtomicOnChecker.check(ex);
 			if (progress.isCanceled()) {
 				return null;
 			}
 		}
-		
-		if (config.getIsolatedOn() == false) {
-			IsolatedOnChecker.check(ex);
-			if (progress.isCanceled()) {
-				return null;
-			}
+		else {
+			// If atomic is turned on, note that it is unimplemented.
+			System.err.println("Warning: atomic is unimplemented in this version of Orc." +"\n"+
+							   "(atomic expr) will be run as just (expr).");
 		}
-		
+
 		return ex;
 	}
 
@@ -255,23 +255,23 @@ public class OrcCompiler implements Callable<Expression> {
 		if (progress.isCanceled()) {
 			return null;
 		}
-		
+
 		progress.setNote("Loading OIL");
 		final Oil oil = Oil.fromXML(config.getOilReader());
 		progress.setProgress(0.45);
 		if (progress.isCanceled()) {
 			return null;
 		}
-		
+
 		progress.setNote("Converting to AST");
 		Expression ex = oil.unmarshal(config);
 		progress.setProgress(0.5);
 		if (progress.isCanceled()) {
 			return null;
 		}
-		
+
 		progress.setNote("Loading sites");
-		ex =  SiteResolver.resolve(ex, config);
+		ex = SiteResolver.resolve(ex, config);
 		progress.setProgress(0.75); // Still need to save oil and refine
 		if (progress.isCanceled()) {
 			return null;
@@ -315,7 +315,15 @@ public class OrcCompiler implements Callable<Expression> {
 	 * @return Refined OIL AST to be run
 	 */
 	protected Expression refineOilAfterLoadSaveBeforeDag(final Expression oilAst) {
-		// Override and extend
+
+		// Mark tail calls in all definitions.
+		oilAst.accept(new Walker() {
+			@Override
+			public void enter(final Def def) {
+				def.body.accept(new TailCallMarker());
+			};
+		});
+
 		return oilAst;
 	}
 }

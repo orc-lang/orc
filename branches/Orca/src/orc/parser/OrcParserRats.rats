@@ -1,3 +1,16 @@
+//
+// OrcParserRats.rats -- Rats! grammar module for the OrcParserRats parser
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 module orc.parser.OrcParserRats;
 
 import orc.parser.OrcLiteralParser;
@@ -8,17 +21,14 @@ header {
 	import java.util.ListIterator;
 	import java.io.FileNotFoundException;
 	import java.io.File;
-	import java.io.Reader;
 	import java.math.BigInteger;
 	import java.math.BigDecimal;
-	
+
 	import xtc.util.Utilities;
 	import xtc.util.Action;
-	import xtc.util.Pair;
 	import xtc.tree.Location;
-	
+
 	import orc.Config;
-	import orc.ast.extended.*;
 	import orc.ast.extended.expression.*;
 	import orc.ast.extended.pattern.*;
 	import orc.ast.extended.type.*;
@@ -26,10 +36,7 @@ header {
 	import orc.ast.extended.declaration.def.*;
 	import orc.ast.extended.declaration.type.*;
 	import orc.error.*;
-
-	import orc.runtime.values.Value;
-	import orc.runtime.values.ListValue;
-	import orc.runtime.values.TupleValue;
+	//End header
 }
 
 body {
@@ -193,7 +200,7 @@ Declaration Declaration =
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ yyValue:ValDeclaration
-	/ TYPE name:Identifier tf:TypeFormals Space EQ cs:ConstructorList {
+	/ TYPE name:Identifier tf:TypeFormals? Space EQ cs:ConstructorList {
 		yyValue = new DatatypeDeclaration(name, cs, tf);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
@@ -201,7 +208,7 @@ Declaration Declaration =
 		yyValue = new TypeDeclaration(name, className);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ TYPE name:RequiredIdentifier tf:TypeFormals Space RequiredEQ t:Type {
+	/ TYPE name:RequiredIdentifier tf:TypeFormals? Space RequiredEQ t:Type {
 		yyValue = new TypeAliasDeclaration(name, t, tf);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
@@ -230,11 +237,16 @@ List<Constructor> ConstructorList =
 
 
 DefMember Definition =
-	DEF name:RequiredSiteName Space formals:PatternListGroup resultType:MaybeResultType EQ body:Body {
-		yyValue = new DefMemberClause(name, formals, body, resultType);
-		yyValue = at(yyStart, yyCount, yyValue);
-	}
-	/ DEF name:RequiredSiteName Space typeFormals:TypeFormals argTypes:TypeListGroup resultType:MaybeResultType {
+  DEF capsule:CAPSULE? name:RequiredSiteName Space typeFormals:TypeFormals? formals:PatternListGroup resultType:MaybeResultType EQ body:Body {
+    if (capsule != null) {
+    	yyValue = new DefMemberClause(name, formals, new Capsule(body), resultType, typeFormals, true);
+    }
+    else {
+    	yyValue = new DefMemberClause(name, formals, body, resultType, typeFormals, false);
+    }
+    yyValue = at(yyStart, yyCount, yyValue);
+  } 
+	/ DEF name:RequiredSiteName Space typeFormals:TypeFormals? argTypes:TypeListGroup resultType:MaybeResultType {
 		yyValue = new DefMemberType(name, argTypes, resultType, typeFormals);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
@@ -368,8 +380,8 @@ Action<Expression> OtherwiseExpressionTail =
 	;
 
 Expression Lambda = 
-	LAMBDA formals:PatternListGroup resultType:MaybeResultType RequiredEQ body:Body {
-		yyValue = new Lambda(formals, body, resultType);
+	LAMBDA typeFormals:TypeFormals? formals:PatternListGroup resultType:MaybeResultType RequiredEQ body:Body {
+		yyValue = new Lambda(formals, body, resultType, typeFormals);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
@@ -475,10 +487,6 @@ Expression MaybeAtomic =
 		yyValue = new Atomic(body);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ void:ISOLATED body:MaybeAssignment {
-		yyValue = new Isolated(body);
-		yyValue = at(yyStart, yyCount, yyValue);
-	}
 	/ void:THROW exception:MaybeAssignment {
 		yyValue = new Throw(exception);
 		yyValue = at(yyStart, yyCount, yyValue);
@@ -489,10 +497,6 @@ Expression MaybeAtomic =
 Expression NoCmpMaybeAtomic =
 	void:ATOMIC body:NoCmpMaybeAssignment {
 		yyValue = new Atomic(body);
-		yyValue = at(yyStart, yyCount, yyValue);
-	}
-	/ void:ISOLATED body:NoCmpMaybeAssignment {
-		yyValue = new Isolated(body);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ void:THROW exception:NoCmpMaybeAssignment {
@@ -842,6 +846,10 @@ Pattern BasicPattern =
 		yyValue = new ListPattern(formals);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
+	/ EQ name:Identifier Space {
+		yyValue = new EqPattern(name);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
 	;
 
 /////////////////////////////////////////////
@@ -861,7 +869,7 @@ Type Type =
 	/ TOP { yyValue = Type.TOP; }
 	/ BOT { yyValue = Type.BOT; }
 	/ UNDERSCORE { yyValue = Type.TOP; } /* allows _ in datatype decls for untyped mode */ 
-	/ LAMBDA typeFormals:TypeFormals argTypes:TypeListGroup DOUBLE_COLON resultType:Type {
+	/ LAMBDA typeFormals:TypeFormals? argTypes:TypeListGroup DOUBLE_COLON resultType:Type {
 		yyValue = new LambdaType(argTypes, resultType, typeFormals);
 	}
 	/ name:Identifier actualTypes:TypeActuals Space { yyValue = new TypeApplication(name, actualTypes); }
@@ -901,9 +909,6 @@ List<String> TypeFormals =
 		List<String> out = tfs.list();
 		out.add(0, tf);
 		yyValue = out;
-	}
-	/ /* empty */ {
-		yyValue = new LinkedList<String>();
 	}
 	;
 
@@ -963,6 +968,7 @@ String RequiredIdentifier = Identifier / ^{ abort(yyError); };
 /////////////////////////////////////////////
 
 transient String DEF = "def":Word Space;
+transient String CAPSULE = "capsule":Word Space;
 transient String VAL = "val":Word Space;
 transient String CLASS = "class":Word Space;
 transient String SITE = "site":Word Space;
@@ -970,7 +976,6 @@ transient String INCLUDE = "include":Word Space;
 transient String TYPE = "type":Word Space;
 transient String LAMBDA = "lambda":Word Space;
 transient String ATOMIC = "atomic":Word Space;
-transient String ISOLATED = "isolated":Word Space;
 transient String TRY = "try":Word Space;
 transient String THROW = "throw":Word Space;
 transient String CATCH = "catch":Word Space;

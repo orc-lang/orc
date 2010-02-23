@@ -6,7 +6,7 @@
 //
 // Created on February 8 2007
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -78,7 +78,7 @@ public class Config implements Cloneable {
 	private Integer maxPubs = null;
 	private String filename = "script";
 	private InputStream instream;
-	private int numKilimThreads = 1;
+	private final int numKilimThreads = 1;
 	private int numSiteThreads = 2;
 	private Boolean noPrelude = false;
 	private HashMap<String, Boolean> caps = new HashMap<String, Boolean>();
@@ -92,11 +92,10 @@ public class Config implements Cloneable {
 	private boolean shortErrors = false;
 	private boolean quietChecking = false;
 	private boolean exceptionsOn = false;
-	private boolean isolatedOn = false;
 	
 	// In this experimental branch, atomic is enabled by default
 	private boolean atomicOn = true;
-	
+	private boolean noExecute = false;
 
 	/**
 	 * Set properties based on command-line arguments.
@@ -115,9 +114,9 @@ public class Config implements Cloneable {
 			System.exit(1);
 		}
 	}
-	
+
 	public String composeCmdLine() {
-		StringBuffer cmdLine = new StringBuffer();
+		final StringBuffer cmdLine = new StringBuffer();
 		//TODO: If possible, re-write to use arg4j annotations
 		if (getTypeChecking()) {
 			cmdLine.append("-typecheck ");
@@ -163,14 +162,14 @@ public class Config implements Cloneable {
 			cmdLine.append(getInputFilename());
 			cmdLine.append("\"");
 		}
-		if (this.getExceptionsOn()){
+		if (this.getExceptionsOn()) {
 			cmdLine.append("-exceptions ");
 		}
-		if (this.getAtomicOn()){
+		if (this.getAtomicOn()) {
 			cmdLine.append("-allowAtomic ");
 		}
-		if (this.getIsolatedOn()){
-			cmdLine.append("-allowIsolated ");
+		if (this.noExecute()) {
+			cmdLine.append("-noexecute");
 		}
 		return cmdLine.toString();
 	}
@@ -192,7 +191,7 @@ public class Config implements Cloneable {
 	public void setDebugLevel(final int debugLevel) {
 		this.debugLevel = debugLevel;
 	}
-	
+
 	@Option(name = "-typecheck", usage = "Enable typechecking, which is disabled by default.")
 	public void setTypeChecking(final boolean typecheck) {
 		this.typecheck = typecheck;
@@ -201,6 +200,11 @@ public class Config implements Cloneable {
 	@Option(name = "-noprelude", usage = "Do not implicitly include standard library (prelude), which is included by default.")
 	public void setNoPrelude(final boolean noPrelude) {
 		this.noPrelude = noPrelude;
+	}
+	
+	@Option(name = "-noexecute", usage = "Compile this program, but do not run it.")
+	public void setNoExecute(final boolean noExecute) {
+		this.noExecute = noExecute;
 	}
 
 	@Option(name = "-trace", usage = "Specify a filename for tracing. Default is not to trace.")
@@ -282,13 +286,13 @@ public class Config implements Cloneable {
 			throw new CmdLineException("Could not find input file '" + file + "'");
 		}
 	}
-	
+
 	public void inputFromString(final String source) {
 		instream = new ByteArrayInputStream(source.getBytes());
-		filename = "text";
+		filename = "";
 		hasInputFile = true;
 	}
-	
+
 	@Option(name = "-exceptions", usage = "Enable exceptions (experimental), which is disabled by default.")
 	public void setExceptionsOn(final boolean exceptionsOn) {
 		this.exceptionsOn = exceptionsOn;
@@ -298,12 +302,7 @@ public class Config implements Cloneable {
 	public void setAtomicOn(final boolean atomicOn) {
 		this.atomicOn = atomicOn;
 	}
-	
-	@Option(name = "-allowIsolated", usage = "Enable isolated expressions (experimental), which are disabled by default.")
-	public void setIsolatedOn(final boolean isolatedOn) {
-		this.isolatedOn = isolatedOn;
-	}
-	
+
 	public void addInclude(final String include) {
 		this.includes.add(include);
 	}
@@ -319,18 +318,18 @@ public class Config implements Cloneable {
 	public void setShortErrors(final boolean b) {
 		shortErrors = b;
 	}
-	
+
 	public boolean getShortErrors() {
 		return shortErrors;
 	}
-	
+
 	/**
 	 * If the typechecker runs, suppress all its output.
 	 * Quiet checking is currently used only for regression testing.
 	 * 
 	 * @param b
 	 */
-	public void setQuietChecking(boolean b) {
+	public void setQuietChecking(final boolean b) {
 		quietChecking = b;
 	}
 
@@ -498,17 +497,13 @@ public class Config implements Cloneable {
 	public String getClassPath() {
 		return classPath;
 	}
-	
+
 	public boolean getExceptionsOn() {
 		return exceptionsOn;
 	}
-	
+
 	public boolean getAtomicOn() {
 		return atomicOn;
-	}
-	
-	public boolean getIsolatedOn() {
-		return isolatedOn;
 	}
 
 	/**
@@ -561,21 +556,19 @@ public class Config implements Cloneable {
 		final InputStream stream = Config.class.getResourceAsStream("/orc/inc/" + name);
 		if (stream != null) {
 			return new InputStreamReader(stream);
-		}
-		else {
+		} else {
 			// Try to read this include as a URL instead of as a local file
 			try {
-				URL incurl = new URL(name);
+				final URL incurl = new URL(name);
 				return new InputStreamReader(incurl.openConnection().getInputStream());
-			} 
-			catch (MalformedURLException e) {} 
-			catch (IOException e) {
+			} catch (final MalformedURLException e) {
+			} catch (final IOException e) {
 				throw new FileNotFoundException("Could not open a connection to '" + name + "'.");
 			}
 		}
-			
+
 		throw new FileNotFoundException("Include file '" + name + "' not found; check the include path.");
-		
+
 	}
 
 	public final Class loadClass(final String name) throws ClassNotFoundException {
@@ -596,5 +589,11 @@ public class Config implements Cloneable {
 		return out;
 	}
 
+	/**
+	 * @return
+	 */
+	public boolean noExecute() {
+		return noExecute;
+	}
 
 }

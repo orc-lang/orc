@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -15,22 +15,9 @@ package orc;
 
 import java.io.IOException;
 
-import orc.ast.extended.declaration.Declaration;
-import orc.ast.extended.expression.Declare;
-import orc.ast.oil.Compiler;
-import orc.ast.oil.SiteResolver;
-import orc.ast.oil.UnguardedRecursionChecker;
 import orc.ast.oil.expression.Expression;
-import orc.ast.simple.argument.Variable;
-import orc.ast.xml.Oil;
-import orc.env.Env;
-import orc.error.compiletime.CompilationException;
-import orc.parser.OrcParser;
-import orc.progress.NullProgressListener;
-import orc.progress.ProgressListener;
 import orc.error.compiletime.CompileMessageRecorder.Severity;
 import orc.runtime.OrcEngine;
-import orc.runtime.nodes.Node;
 
 /**
  * Main class for Orc. Parses Orc file and executes it.
@@ -65,13 +52,17 @@ public class Orc {
 			return;
 		}
 
-		final Node n = orc.ast.oil.Compiler.compile(ex);
+		
+		if (cfg.noExecute()) {
+			System.out.println("Execution suppressed by -noexecute switch.");
+		}
+		else {
+			// Configure the runtime engine
+			final OrcEngine engine = new OrcEngine(cfg);
 
-		// Configure the runtime engine
-		final OrcEngine engine = new OrcEngine(cfg);
-
-		// Run the Orc program
-		engine.run(n);
+			// Run the Orc program
+			engine.run(ex);
+		}
 	}
 
 	public static Expression compile(final Config cfg) throws IOException {

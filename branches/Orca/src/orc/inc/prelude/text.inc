@@ -1,3 +1,16 @@
+--
+-- text.inc -- Orc standard prelude include, strings section
+-- Project OrcJava
+--
+-- $Id$
+--
+-- Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+--
+-- Use and redistribution of this file is governed by the license terms in
+-- the LICENSE file found in the project's top-level directory and also found at
+-- URL: http://orc.csres.utexas.edu/license.shtml .
+--
+
 {--
 Operations on strings.
 --}
@@ -39,7 +52,7 @@ Example:
 --}
 
 {--
-@site cat(Signal, ...) :: String
+@site cat(Top, ...) :: String
 Return the string representation of one or more values, concatenated.
 For Java objects, this will call <code>toString()</code> to convert
 the object to a String.
@@ -47,7 +60,7 @@ the object to a String.
 site cat = orc.lib.str.Cat
 
 {--
-@site print(Signal, ...) :: Signal
+@site print(Top, ...) :: Signal
 Print one or more values as strings, concatenated, to standard output.
 For Java objects, this will call <code>toString()</code> to convert
 the object to a String.
@@ -55,7 +68,7 @@ the object to a String.
 site print = orc.lib.str.Print
 
 {--
-@site println(Signal, ...) :: Signal
+@site println(Top, ...) :: Signal
 Print one or more values as strings, concatenated,
 to standard output, with each value followed by a newline.
 For Java objects, this will call <code>toString()</code> to convert
@@ -80,7 +93,7 @@ Example:
 site read = orc.lib.str.Read
 
 {--
-@site write(Signal) :: String
+@site write(Top) :: String
 Given an Orc value, return its string representation
 using standard Orc literal syntax.  If the value is
 of a type with no literal syntax,

@@ -1,3 +1,16 @@
+//
+// Expression.java -- Java class Expression
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.ast.extended.expression;
 
 import java.util.Collection;
@@ -8,9 +21,7 @@ import java.util.ListIterator;
 
 import orc.ast.extended.ASTNode;
 import orc.ast.extended.pattern.Pattern;
-import orc.ast.extended.type.LambdaType;
 import orc.ast.simple.argument.Argument;
-import orc.error.Located;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;
@@ -26,14 +37,14 @@ import orc.error.compiletime.CompilationException;
 
 public abstract class Expression implements ASTNode, Locatable {
 	private SourceLocation location;
-	
+
 	/**
 	 * Simplify an expression which occurs in a call (non-nested) position.
 	 * 
 	 * @return The simplified expression
 	 */
 	public abstract orc.ast.simple.expression.Expression simplify() throws CompilationException;
-	
+
 	/**
 	 * Simplify an expression which occurs in an argument (nested) position.
 	 * 
@@ -47,31 +58,28 @@ public abstract class Expression implements ASTNode, Locatable {
 	 * @return The argified form of the expression
 	 * @throws CompilationException 
 	 */
-	protected Arg argify() throws CompilationException
-	{
+	protected Arg argify() throws CompilationException {
 		return new complexArg(new orc.ast.simple.argument.Variable(), this.simplify());
 	}
-	
-	
-	
+
 	/**
 	 * Variant type returned by the argify method.
 	 */
-	public interface Arg 
-	{ 
+	public interface Arg {
 		/**
 		 * Extracts the Argument component of the Arg.
 		 * @return A simplified argument
 		 */
 		orc.ast.simple.argument.Argument asArg();
+
 		/**
 		 * Wraps a binder around the given expression if needed.
 		 * @param e The target for the binder
 		 * @return The wrapped expression
 		 */
-		orc.ast.simple.expression.Expression bind(orc.ast.simple.expression.Expression e);	
+		orc.ast.simple.expression.Expression bind(orc.ast.simple.expression.Expression e);
 	}
-	
+
 	/**
 	 * 
 	 * A simpleArg embeds an argument, and does not introduce a binder.
@@ -79,25 +87,23 @@ public abstract class Expression implements ASTNode, Locatable {
 	 * @author dkitchin
 	 *
 	 */
-	class simpleArg implements Arg
-	{
+	class simpleArg implements Arg {
 		orc.ast.simple.argument.Argument a;
-		
-		
-		public simpleArg(orc.ast.simple.argument.Argument a)
-		{
+
+		public simpleArg(final orc.ast.simple.argument.Argument a) {
 			this.a = a;
 		}
-		
+
 		public Argument asArg() {
 			return a;
 		}
 
-		public orc.ast.simple.expression.Expression bind(orc.ast.simple.expression.Expression e) {
+		public orc.ast.simple.expression.Expression bind(final orc.ast.simple.expression.Expression e) {
 			return e;
 		}
-		
+
 	}
+
 	/**
 	 * 
 	 * A complexArg embeds a variable name and an expression. It represents
@@ -119,48 +125,48 @@ public abstract class Expression implements ASTNode, Locatable {
 	 * @author dkitchin
 	 *
 	 */
-	class complexArg implements Arg
-	{
+	class complexArg implements Arg {
 		orc.ast.simple.argument.Variable v;
 		orc.ast.simple.expression.Expression nested;
-		
-		public complexArg(orc.ast.simple.argument.Variable v, orc.ast.simple.expression.Expression nested)
-		{
+
+		public complexArg(final orc.ast.simple.argument.Variable v, final orc.ast.simple.expression.Expression nested) {
 			this.v = v;
 			this.nested = nested;
 		}
-		
+
 		public Argument asArg() {
 			return v;
 		}
 
-		public orc.ast.simple.expression.Expression bind(orc.ast.simple.expression.Expression e) {
-			return new orc.ast.simple.expression.Pruning(e,nested,v);
+		public orc.ast.simple.expression.Expression bind(final orc.ast.simple.expression.Expression e) {
+			return new orc.ast.simple.expression.Pruning(e, nested, v);
 		}
 	}
-	
-	public void setSourceLocation(SourceLocation location) {
+
+	public void setSourceLocation(final SourceLocation location) {
 		this.location = location;
 	}
 
 	public SourceLocation getSourceLocation() {
 		return location;
 	}
-	
+
 	/**
 	 * Utility method to join a sequence of items with a separator.
 	 */
-	public static String join(Collection<?> items, String separator) {
-		StringBuilder out = new StringBuilder();
-		Iterator<?> it = items.iterator();
-		if (it.hasNext()) out.append(it.next());
+	public static String join(final Collection<?> items, final String separator) {
+		final StringBuilder out = new StringBuilder();
+		final Iterator<?> it = items.iterator();
+		if (it.hasNext()) {
+			out.append(it.next());
+		}
 		while (it.hasNext()) {
 			out.append(separator);
 			out.append(it.next());
 		}
 		return out.toString();
 	}
-	
+
 	/**
 	 * Utility method to fold a group of pattern lists into a lambda.
 	 * 
@@ -170,17 +176,16 @@ public abstract class Expression implements ASTNode, Locatable {
 	 * @param Body b
 	 * @return Expression lambda(P) = ( ... ( lambda(P) = b ) ... )
 	 */
-	public static Expression uncurry(List<List<Pattern>> ps, Expression body) {
-		
-		ListIterator<List<Pattern>> it = ps.listIterator(ps.size());
+	public static Expression uncurry(final List<List<Pattern>> ps, Expression body) {
+
+		final ListIterator<List<Pattern>> it = ps.listIterator(ps.size());
 		while (it.hasPrevious()) {
-			List<List<Pattern>> lp = new LinkedList<List<Pattern>>();
+			final List<List<Pattern>> lp = new LinkedList<List<Pattern>>();
 			lp.add(it.previous());
-			body = new Lambda(lp, body, null);
+			body = new Lambda(lp, body, null, null);
 		}
-			
+
 		return body;
 	}
-	
-	
+
 }

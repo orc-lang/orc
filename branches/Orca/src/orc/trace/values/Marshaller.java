@@ -1,62 +1,79 @@
+//
+// Marshaller.java -- Java class Marshaller
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2008 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.trace.values;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import orc.runtime.values.Visitor;
-import orc.trace.OutputStreamTracer;
 
 public class Marshaller {
 	/**
 	 * @see #marshal(Object)
 	 */
-	private Map<Object, Value> shadows = new HashMap<Object, Value>();
-	
+	private final Map<Object, Value> shadows = new HashMap<Object, Value>();
+
 	/**
 	 * @see #marshal(Object)
 	 */
-	private Visitor<Value> visitor = new Visitor<Value>() {
+	private final Visitor<Value> visitor = new Visitor<Value>() {
 		@Override
-		public Value visit(orc.runtime.values.ConsValue v) {
-			return new ConsValue(marshal(v.head), (ListValue)marshal(v.tail));
+		public Value visit(final orc.runtime.values.ConsValue v) {
+			return new ConsValue(marshal(v.head), (ListValue) marshal(v.tail));
 		}
+
 		@Override
-		public Value visit(orc.runtime.values.TupleValue v) {
-			Value[] values2 = new Value[v.values.length];
+		public Value visit(final orc.runtime.values.TupleValue v) {
+			final Value[] values2 = new Value[v.values.length];
 			for (int i = 0; i < v.values.length; ++i) {
 				values2[i] = marshal(v.values[i]);
 			}
 			return new TupleValue(values2);
 		}
+
 		@Override
-		public Value visit(orc.runtime.values.TaggedValue v) {
-			Value[] values2 = new Value[v.values.length];
+		public Value visit(final orc.runtime.values.TaggedValue v) {
+			final Value[] values2 = new Value[v.values.length];
 			for (int i = 0; i < v.values.length; ++i) {
 				values2[i] = marshal(v.values[i]);
 			}
 			return new TaggedValue(v.tag.tagName, values2);
 		}
+
 		@Override
-		public Value visit(orc.runtime.values.Field v) {
+		public Value visit(final orc.runtime.values.Field v) {
 			return new FieldValue(v.getKey());
 		}
+
 		@Override
-		public Value visit(Object value) {
+		public Value visit(final Object value) {
 			if (value instanceof TraceableValue) {
-				return ((TraceableValue)value).marshal(Marshaller.this);
+				return ((TraceableValue) value).marshal(Marshaller.this);
 			} else if (value instanceof Boolean) {
-				return new ConstantValue((Boolean)value);
+				return new ConstantValue((Boolean) value);
 			} else if (value instanceof Character) {
-				return new ConstantValue((Character)value);
+				return new ConstantValue((Character) value);
 			} else if (value instanceof String) {
-				return new ConstantValue((String)value);
+				return new ConstantValue((String) value);
 			} else if (value instanceof Number) {
-				return new ConstantValue((Number)value);
+				return new ConstantValue((Number) value);
 			} else {
 				return new ObjectValue(value.getClass());
 			}
 		}
 	};
+
 	/**
 	 * Marshal a runtime value into an immutable, serializable representation.
 	 * To avoid wasting a lot of space and time by copying the same values
@@ -67,7 +84,7 @@ public class Marshaller {
 	 * objects share the same representation, and the same object (at different
 	 * times) may use different representations.
 	 */
-	public Value marshal(Object value) {
+	public Value marshal(final Object value) {
 		// Check for some special singleton types, which
 		// there is no need to cache explicitly
 		if (value == null) {

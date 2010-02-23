@@ -1,13 +1,22 @@
-/*
- * Copyright 2005, The University of Texas at Austin. All rights reserved.
- */
+//
+// Let.java -- Java class Let
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.runtime.sites.core;
 
-import orc.error.compiletime.typing.MissingTypeException;
 import orc.error.compiletime.typing.TypeException;
+import orc.error.runtime.TokenException;
 import orc.runtime.Args;
-import orc.runtime.Token;
-import orc.runtime.sites.Site;
+import orc.runtime.sites.EvalSite;
 import orc.runtime.transaction.Transaction;
 import orc.runtime.values.TupleValue;
 import orc.runtime.values.Value;
@@ -17,22 +26,9 @@ import orc.type.Type;
  * Implements the built-in "let" site
  * @author wcook
  */
-public class Let extends Site {
-  private static final long serialVersionUID = 1L;
+public class Let extends EvalSite {
 
-	/**
-	 * Outputs a single value or creates a tuple.
-	 */
-	public void callSite(Args args, Token caller) {
-		// Note that a let does not resume like a normal site call; it sets the result and activates directly;
-		// This is necessary to preserve the "immediate" semantics of Let.
-		caller.setResult(condense(args.asArray()));
-		// Need to trace the return even though it's weird
-		caller.getTracer().receive(caller.getResult());
-		// Activate the token
-		caller.activate();
-	}
-	
+	@Override
 	public void callSite(Args args, Token caller, Transaction transaction) {
 		callSite(args, caller);
 	}
@@ -40,7 +36,7 @@ public class Let extends Site {
 	public Type type() throws TypeException {
 		return Type.LET;
 	}
-	
+
 	/**
 	 * Classic 'let' functionality. 
 	 * Reduce a list of argument values into a single value as follows:
@@ -50,7 +46,7 @@ public class Let extends Site {
 	 * Two or more arguments: return a tuple of values
 	 * 
 	 */
-	public static Object condense(Object[] values) {
+	public static Object condense(final Object[] values) {
 		if (values.length == 0) {
 			return Value.signal();
 		} else if (values.length == 1) {
@@ -59,5 +55,14 @@ public class Let extends Site {
 			return new TupleValue(values);
 		}
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see orc.runtime.sites.EvalSite#evaluate(orc.runtime.Args)
+	 */
+	@Override
+	public Object evaluate(final Args args) throws TokenException {
+		// TODO Auto-generated method stub
+		return condense(args.asArray());
+	}
+
 }

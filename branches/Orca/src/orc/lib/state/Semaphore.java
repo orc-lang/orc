@@ -1,3 +1,16 @@
+//
+// Semaphore.java -- Java class Semaphore
+// Project OrcJava
+//
+// $Id$
+//
+// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.lib.state;
 
 import java.util.LinkedList;
@@ -19,33 +32,35 @@ import orc.type.structured.ArrowType;
 public class Semaphore extends EvalSite {
 
 	@Override
-	public Object evaluate(Args args) throws TokenException {
+	public Object evaluate(final Args args) throws TokenException {
 		return new SemaphoreInstance(args.intArg(0));
 	}
-	
+
+	@Override
 	public Type type() throws TypeException {
 		return new ArrowType(Type.INTEGER, new SemaphoreType());
 	}
-	
+
 	protected class SemaphoreInstance extends DotSite {
 
-		private LinkedList<Token> waiters = new LinkedList<Token>();
-		private LinkedList<Token> snoopers = new LinkedList<Token>();
+		private final LinkedList<Token> waiters = new LinkedList<Token>();
+		private final LinkedList<Token> snoopers = new LinkedList<Token>();
 		private int n;
 
-		SemaphoreInstance(int n) {
+		SemaphoreInstance(final int n) {
 			this.n = n;
 		}
-		
+
 		@Override
 		protected void addMembers() {
 			addMember("acquire", new Site() {
-				public void callSite(Args args, Token waiter) {
+				@Override
+				public void callSite(final Args args, final Token waiter) {
 					if (0 == n) {
 						waiter.setQuiescent();
 						waiters.addLast(waiter);
 						if (!snoopers.isEmpty()) {
-							for (Token snooper : snoopers) {
+							for (final Token snooper : snoopers) {
 								snooper.unsetQuiescent();
 								snooper.resume();
 							}
@@ -56,9 +71,10 @@ public class Semaphore extends EvalSite {
 						waiter.resume();
 					}
 				}
-			});	
+			});
 			addMember("acquirenb", new Site() {
-				public void callSite(Args args, Token waiter) {
+				@Override
+				public void callSite(final Args args, final Token waiter) {
 					if (0 == n) {
 						waiter.die();
 					} else {
@@ -66,14 +82,14 @@ public class Semaphore extends EvalSite {
 						waiter.resume();
 					}
 				}
-			});	
+			});
 			addMember("release", new Site() {
 				@Override
-				public void callSite(Args args, Token sender) throws TokenException {
+				public void callSite(final Args args, final Token sender) throws TokenException {
 					if (waiters.isEmpty()) {
 						++n;
 					} else {
-						Token waiter = waiters.removeFirst();
+						final Token waiter = waiters.removeFirst();
 						waiter.unsetQuiescent();
 						waiter.resume();
 					}
@@ -82,7 +98,7 @@ public class Semaphore extends EvalSite {
 			});
 			addMember("snoop", new Site() {
 				@Override
-				public void callSite(Args args, Token snooper) throws TokenException {
+				public void callSite(final Args args, final Token snooper) throws TokenException {
 					if (waiters.isEmpty()) {
 						snooper.setQuiescent();
 						snoopers.addLast(snooper);
@@ -93,7 +109,7 @@ public class Semaphore extends EvalSite {
 			});
 			addMember("snoopnb", new Site() {
 				@Override
-				public void callSite(Args args, Token token) throws TokenException {
+				public void callSite(final Args args, final Token token) throws TokenException {
 					if (waiters.isEmpty()) {
 						token.die();
 					} else {
