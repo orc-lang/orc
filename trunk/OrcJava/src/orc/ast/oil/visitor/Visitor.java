@@ -13,7 +13,6 @@
 
 package orc.ast.oil.visitor;
 
-import orc.ast.oil.expression.Atomic;
 import orc.ast.oil.expression.Call;
 import orc.ast.oil.expression.Catch;
 import orc.ast.oil.expression.DeclareDefs;
@@ -61,8 +60,6 @@ public interface Visitor<E> {
 	public E visit(Site arg);
 
 	public E visit(Variable arg);
-
-	public E visit(Atomic atomic);
 
 	public E visit(HasType hasType);
 

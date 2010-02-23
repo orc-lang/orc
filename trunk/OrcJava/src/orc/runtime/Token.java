@@ -37,7 +37,6 @@ import orc.error.runtime.UncaughtException;
 import orc.lib.time.Ltimer;
 import orc.runtime.regions.LogicalClock;
 import orc.runtime.regions.Region;
-import orc.runtime.transaction.Transaction;
 import orc.runtime.values.Closure;
 import orc.runtime.values.Value;
 import orc.trace.TokenTracer;
@@ -121,8 +120,6 @@ public class Token implements Serializable, Locatable {
 	private Group group;
 	/** A region corresponds to a dynamic scope in a running program. Tokens can enter and leave regions. When all the tokens have left a region, it is closed. This is how termination is detected. */
 	private Region region;
-	/** Transaction the token is currently involved in. */
-	private Transaction trans;
 	/** The engine executing the program. */
 	private OrcEngine engine;
 	/**
@@ -177,7 +174,7 @@ public class Token implements Serializable, Locatable {
 	final void initializeRoot(final Expression node, final Region region, final OrcEngine engine, final TokenTracer tracer) {
 		// create the root logical clock
 		final LogicalClock clock = new LogicalClock(region, null);
-		initialize(node, new Env<Object>(), null, new Group(), clock, null, null, engine, null, tracer, engine.getConfig().getStackSize(), clock, new Stack<ExceptionFrame>(), null, null, null, ExceptionCause.UNKNOWN);
+		initialize(node, new Env<Object>(), null, new Group(), clock, null /* result */, engine, null, tracer, engine.getConfig().getStackSize(), clock, new Stack<ExceptionFrame>(), null, null, null, ExceptionCause.UNKNOWN);
 	}
 
 	/**
@@ -185,7 +182,7 @@ public class Token implements Serializable, Locatable {
 	 */
 	final void initializeFork(final Token that, final Group group, final Region region) {
 
-		initialize(that.node, that.env.clone(), that.continuation, group, region, that.trans, that.result, that.engine, that.location, that.tracer.fork(), that.stackAvailable, that.clock, (Stack<ExceptionFrame>) that.exceptionStack.clone(), that.exceptionOriginLocation, that.originalException, that.throwBacktrace, that.exceptionCause);
+		initialize(that.node, that.env.clone(), that.continuation, group, region, that.result, that.engine, that.location, that.tracer.fork(), that.stackAvailable, that.clock, (Stack<ExceptionFrame>) that.exceptionStack.clone(), that.exceptionOriginLocation, that.originalException, that.throwBacktrace, that.exceptionCause);
 	}
 
 	/**
@@ -208,7 +205,7 @@ public class Token implements Serializable, Locatable {
 		*/
 	}
 
-	private void initialize(final Expression node, final Env<Object> env, final FrameContinuation continuation, final Group group, final Region region, final Transaction trans, final Object result, final OrcEngine engine, final SourceLocation location, final TokenTracer tracer, final int stackAvailable, final LogicalClock clock, final Stack<ExceptionFrame> exceptionStack, final SourceLocation exceptionOriginLocation, final TokenException originalException, final SourceLocation[] throwBacktrace,
+	private void initialize(final Expression node, final Env<Object> env, final FrameContinuation continuation, final Group group, final Region region, final Object result, final OrcEngine engine, final SourceLocation location, final TokenTracer tracer, final int stackAvailable, final LogicalClock clock, final Stack<ExceptionFrame> exceptionStack, final SourceLocation exceptionOriginLocation, final TokenException originalException, final SourceLocation[] throwBacktrace,
 			final ExceptionCause cause) {
 		this.node = node;
 		this.env = env;
@@ -217,7 +214,6 @@ public class Token implements Serializable, Locatable {
 		this.result = result;
 		this.engine = engine;
 		this.region = region;
-		this.trans = trans;
 		this.alive = true;
 		this.location = location;
 		this.tracer = tracer;
@@ -296,10 +292,6 @@ public class Token implements Serializable, Locatable {
 		return region;
 	}
 
-	public final Transaction getTransaction() {
-		return trans;
-	}
-
 	public final Token setResult(final Object result) {
 		this.result = result;
 		return this;
@@ -307,11 +299,6 @@ public class Token implements Serializable, Locatable {
 
 	public final Token setGroup(final Group group) {
 		this.group = group;
-		return this;
-	}
-
-	public final Token setTransaction(final Transaction trans) {
-		this.trans = trans;
 		return this;
 	}
 

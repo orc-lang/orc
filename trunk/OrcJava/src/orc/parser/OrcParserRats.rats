@@ -115,13 +115,7 @@ public List<Declaration> Module =
  * declarations and must include a goal expression.
  */
 Expression Body =
-	e:ChoiceExpression es:(void:PLUSPLUS e:ChoiceExpression)+ {
-		List<Expression> result = es.list();
-		result.add(0, e);
-		yyValue = new Choice(result);
-		yyValue = at(yyStart, yyCount, yyValue);
-	} 
-	/ ds:Declarations g:GoalExpression {
+	ds:Declarations g:GoalExpression {
 		Expression out = g;
 		ListIterator<Declaration> it = ds.listIterator(ds.size());
 		while (it.hasPrevious()) {
@@ -147,13 +141,6 @@ List<Declaration> Declarations =
 	}
 	/ /* empty */ {
 		yyValue = new LinkedList<Declaration>();
-	}
-	;
-	
-Expression ChoiceExpression = 
-	vd:ValDeclaration e:Body {
-		yyValue = new Declare(vd, e);
-		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	;
 	
@@ -300,7 +287,6 @@ Symbol   Assoc       Name
  >>      right       sequence
 ----------------------------------------------------
  ::      right       type annotation
- atomic  prefix      atomic transaction
  :=      none        ref assignment
 ----------------------------------------------------
  ||      right[2]    boolean or
@@ -426,7 +412,7 @@ Expression NoCmpMaybeBarExpression =
 	;
 	
 Expression SeqExpression =
-	left:NoCmpMaybeAtomic RANGLE p:Pattern? RANGLE right:NoCmpMaybeSeqExpression {
+	left:NoCmpMaybeTyped RANGLE p:Pattern? RANGLE right:NoCmpMaybeSeqExpression {
 		if (p == null) yyValue = new Sequential(left, right);
 		else yyValue = new Sequential(left, right, p);
 		yyValue = at(yyStart, yyCount, yyValue);
@@ -459,52 +445,28 @@ Expression TryCatch =
 ;
     
 Expression MaybeTyped =
-	body:MaybeAtomic void:DOUBLE_COLON_BANG type:Type {
+	body:MaybeAssignment void:DOUBLE_COLON_BANG type:Type {
 		yyValue = new HasType(body, new AssertedType(type));
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ body:MaybeAtomic void:DOUBLE_COLON type:Type {
+	/ body:MaybeAssignment void:DOUBLE_COLON type:Type {
 		yyValue = new HasType(body, type);
-		yyValue = at(yyStart, yyCount, yyValue);
-	}
-	/ MaybeAtomic
-	;
-
-Expression NoCmpMaybeTyped =
-	body:NoCmpMaybeAtomic void:DOUBLE_COLON_BANG type:Type {
-		yyValue = new HasType(body, new AssertedType(type));
-		yyValue = at(yyStart, yyCount, yyValue);
-	}
-	/ body:NoCmpMaybeAtomic void:DOUBLE_COLON type:Type {
-		yyValue = new HasType(body,type);
-		yyValue = at(yyStart, yyCount, yyValue);
-	}
-	/ NoCmpMaybeAtomic
-	;
-
-Expression MaybeAtomic =
-	void:ATOMIC body:MaybeAssignment {
-		yyValue = new Atomic(body);
-		yyValue = at(yyStart, yyCount, yyValue);
-	}
-	/ void:THROW exception:MaybeAssignment {
-		yyValue = new Throw(exception);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ MaybeAssignment
 	;
 
-Expression NoCmpMaybeAtomic =
-	void:ATOMIC body:NoCmpMaybeAssignment {
-		yyValue = new Atomic(body);
+Expression NoCmpMaybeTyped =
+	body:NoCmpMaybeAssignment void:DOUBLE_COLON_BANG type:Type {
+		yyValue = new HasType(body, new AssertedType(type));
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
-	/ void:THROW exception:NoCmpMaybeAssignment {
-		yyValue = new Throw(exception);
+	/ body:NoCmpMaybeAssignment void:DOUBLE_COLON type:Type {
+		yyValue = new HasType(body,type);
 		yyValue = at(yyStart, yyCount, yyValue);
 	}
 	/ NoCmpMaybeAssignment
-	; 
+	;
 
 Expression MaybeAssignment =
     left:DotExpression void:COLON_EQUALS right:MaybeDisjunction {
@@ -975,7 +937,6 @@ transient String SITE = "site":Word Space;
 transient String INCLUDE = "include":Word Space;
 transient String TYPE = "type":Word Space;
 transient String LAMBDA = "lambda":Word Space;
-transient String ATOMIC = "atomic":Word Space;
 transient String TRY = "try":Word Space;
 transient String THROW = "throw":Word Space;
 transient String CATCH = "catch":Word Space;

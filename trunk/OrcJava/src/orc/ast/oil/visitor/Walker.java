@@ -13,7 +13,6 @@
 
 package orc.ast.oil.visitor;
 
-import orc.ast.oil.expression.Atomic;
 import orc.ast.oil.expression.Call;
 import orc.ast.oil.expression.Catch;
 import orc.ast.oil.expression.DeclareDefs;
@@ -44,19 +43,6 @@ public abstract class Walker implements Visitor<Void> {
 
 	public void leaveScope(final int n) {
 	}
-
-	public Void visit(final Atomic expr) {
-		this.enter(expr);
-		expr.body.accept(this);
-		this.leave(expr);
-		return null;
-	}
-
-	public void enter(final Atomic expr) {
-	};
-
-	public void leave(final Atomic expr) {
-	};
 
 	public Void visit(final Parallel expr) {
 		this.enter(expr);
