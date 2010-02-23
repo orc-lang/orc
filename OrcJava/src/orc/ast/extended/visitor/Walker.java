@@ -29,12 +29,10 @@ import orc.ast.extended.declaration.type.DatatypeDeclaration;
 import orc.ast.extended.declaration.type.TypeAliasDeclaration;
 import orc.ast.extended.declaration.type.TypeDeclaration;
 import orc.ast.extended.expression.AssertType;
-import orc.ast.extended.expression.Atomic;
 import orc.ast.extended.expression.Call;
 import orc.ast.extended.expression.Capsule;
 import orc.ast.extended.expression.Catch;
 import orc.ast.extended.expression.CatchHandler;
-import orc.ast.extended.expression.Choice;
 import orc.ast.extended.expression.ConsExpr;
 import orc.ast.extended.expression.Declare;
 import orc.ast.extended.expression.Dot;
@@ -103,22 +101,6 @@ public class Walker implements Visitor<Void> {
 	public void leave(final AssertType expr) {
 	}
 
-	public Void visit(final Atomic expr) {
-		if (!this.enter(expr)) {
-			return null;
-		}
-		expr.body.accept(this);
-		this.leave(expr);
-		return null;
-	}
-
-	public boolean enter(final Atomic expr) {
-		return enter((ASTNode) expr);
-	}
-
-	public void leave(final Atomic expr) {
-	}
-
 	public Void visit(final Call expr) {
 		if (!this.enter(expr)) {
 			return null;
@@ -174,24 +156,6 @@ public class Walker implements Visitor<Void> {
 	}
 
 	public void leave(final Catch expr) {
-	}
-
-	public Void visit(final Choice expr) {
-		if (!this.enter(expr)) {
-			return null;
-		}
-		for (final Expression arg : expr.choices) {
-			arg.accept(this);
-		}
-		this.leave(expr);
-		return null;
-	}
-
-	public boolean enter(final Choice expr) {
-		return enter((ASTNode) expr);
-	}
-
-	public void leave(final Choice expr) {
 	}
 
 	public Void visit(final ConsExpr expr) {

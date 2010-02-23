@@ -26,7 +26,6 @@ import orc.ast.extended.declaration.Declaration;
 import orc.ast.extended.expression.Declare;
 import orc.ast.oil.expression.Def;
 import orc.ast.oil.expression.Expression;
-import orc.ast.oil.visitor.AtomicOnChecker;
 import orc.ast.oil.visitor.ExceptionsOnChecker;
 import orc.ast.oil.visitor.SiteResolver;
 import orc.ast.oil.visitor.TailCallMarker;
@@ -224,18 +223,6 @@ public class OrcCompiler implements Callable<Expression> {
 			if (progress.isCanceled()) {
 				return null;
 			}
-		}
-
-		if (config.getAtomicOn() == false) {
-			AtomicOnChecker.check(ex);
-			if (progress.isCanceled()) {
-				return null;
-			}
-		}
-		else {
-			// If atomic is turned on, note that it is unimplemented.
-			System.err.println("Warning: atomic is unimplemented in this version of Orc." +"\n"+
-							   "(atomic expr) will be run as just (expr).");
 		}
 
 		return ex;

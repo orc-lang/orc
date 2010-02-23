@@ -92,7 +92,6 @@ public class Config implements Cloneable {
 	private boolean shortErrors = false;
 	private boolean quietChecking = false;
 	private boolean exceptionsOn = false;
-	private boolean atomicOn = false;
 	private boolean noExecute = false;
 
 	/**
@@ -162,9 +161,6 @@ public class Config implements Cloneable {
 		}
 		if (this.getExceptionsOn()) {
 			cmdLine.append("-exceptions ");
-		}
-		if (this.getAtomicOn()) {
-			cmdLine.append("-allowAtomic ");
 		}
 		if (this.noExecute()) {
 			cmdLine.append("-noexecute");
@@ -294,11 +290,6 @@ public class Config implements Cloneable {
 	@Option(name = "-exceptions", usage = "Enable exceptions (experimental), which is disabled by default.")
 	public void setExceptionsOn(final boolean exceptionsOn) {
 		this.exceptionsOn = exceptionsOn;
-	}
-
-	@Option(name = "-allowAtomic", usage = "Enable atomic expressions (experimental), which are disabled by default.")
-	public void setAtomicOn(final boolean atomicOn) {
-		this.atomicOn = atomicOn;
 	}
 
 	public void addInclude(final String include) {
@@ -498,10 +489,6 @@ public class Config implements Cloneable {
 
 	public boolean getExceptionsOn() {
 		return exceptionsOn;
-	}
-
-	public boolean getAtomicOn() {
-		return atomicOn;
 	}
 
 	/**

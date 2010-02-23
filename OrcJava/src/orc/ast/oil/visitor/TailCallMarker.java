@@ -15,7 +15,6 @@
 
 package orc.ast.oil.visitor;
 
-import orc.ast.oil.expression.Atomic;
 import orc.ast.oil.expression.Call;
 import orc.ast.oil.expression.Catch;
 import orc.ast.oil.expression.DeclareDefs;
@@ -133,14 +132,6 @@ public class TailCallMarker implements Visitor<Void> {
 	 * @see orc.ast.oil.Visitor#visit(orc.ast.oil.expression.argument.Variable)
 	 */
 	public Void visit(final Variable arg) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see orc.ast.oil.Visitor#visit(orc.ast.oil.expression.Atomic)
-	 */
-	public Void visit(final Atomic atomic) {
 		// TODO Auto-generated method stub
 		return null;
 	}

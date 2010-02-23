@@ -24,12 +24,10 @@ import orc.ast.extended.declaration.type.DatatypeDeclaration;
 import orc.ast.extended.declaration.type.TypeAliasDeclaration;
 import orc.ast.extended.declaration.type.TypeDeclaration;
 import orc.ast.extended.expression.AssertType;
-import orc.ast.extended.expression.Atomic;
 import orc.ast.extended.expression.Call;
 import orc.ast.extended.expression.Capsule;
 import orc.ast.extended.expression.Catch;
 import orc.ast.extended.expression.CatchHandler;
-import orc.ast.extended.expression.Choice;
 import orc.ast.extended.expression.ConsExpr;
 import orc.ast.extended.expression.Declare;
 import orc.ast.extended.expression.Dot;
@@ -70,15 +68,11 @@ import orc.ast.extended.pattern.WildcardPattern;
 public interface Visitor<E> {
 	public E visit(AssertType expr);
 
-	public E visit(Atomic expr);
-
 	public E visit(Call expr);
 	
 	public E visit(Capsule capsule);
 
 	public E visit(Catch expr);
-
-	public E visit(Choice choice);
 
 	public E visit(ConsExpr expr);
 

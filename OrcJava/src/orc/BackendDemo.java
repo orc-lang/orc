@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Iterator;
 
-import orc.ast.oil.expression.Atomic;
 import orc.ast.oil.expression.Call;
 import orc.ast.oil.expression.Catch;
 import orc.ast.oil.expression.DeclareDefs;
@@ -229,13 +228,6 @@ final class BackendVisitorDemo implements Visitor<Void> {
 		expr.body.accept(this);
 		leaveScope(expr.defs.size());
 		out.println(")");
-		return null;
-	}
-
-	public Void visit(final Atomic atomic) {
-		out.print("(atomic ");
-		atomic.body.accept(this);
-		out.print(")");
 		return null;
 	}
 

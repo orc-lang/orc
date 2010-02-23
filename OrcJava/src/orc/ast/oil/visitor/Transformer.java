@@ -15,7 +15,6 @@ package orc.ast.oil.visitor;
 
 import java.util.LinkedList;
 
-import orc.ast.oil.expression.Atomic;
 import orc.ast.oil.expression.Call;
 import orc.ast.oil.expression.Catch;
 import orc.ast.oil.expression.DeclareDefs;
@@ -43,9 +42,6 @@ import orc.ast.oil.type.Type;
  * @author quark
  */
 public abstract class Transformer implements Visitor<Expression> {
-	public Expression visit(final Atomic expr) {
-		return new Atomic(expr.body.accept(this));
-	}
 
 	public Expression visit(final Parallel expr) {
 		return new Parallel(expr.left.accept(this), expr.right.accept(this));
