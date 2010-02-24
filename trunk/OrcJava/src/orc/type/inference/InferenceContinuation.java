@@ -15,8 +15,6 @@
 
 package orc.type.inference;
 
-import java.util.List;
-
 import orc.error.compiletime.typing.TypeException;
 import orc.type.Type;
 import orc.type.structured.ArrowType;

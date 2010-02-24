@@ -22,7 +22,6 @@ import orc.error.compiletime.typing.MultiTypeException;
 import orc.error.compiletime.typing.TypeException;
 import orc.type.Type;
 import orc.type.TypingContext;
-import orc.type.inference.InferenceRequest;
 
 /**
  * A composite type supporting ad-hoc polymorphic calls.
