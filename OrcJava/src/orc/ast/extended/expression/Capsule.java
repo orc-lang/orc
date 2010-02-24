@@ -1,8 +1,8 @@
 //
-// Atomic.java -- Java class Atomic
+// Capsule.java -- Java class Capsule
 // Project OrcJava
 //
-// $Id: Atomic.java 1526 2010-02-09 21:24:05Z dkitchin $
+// $Id$
 //
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
@@ -14,14 +14,12 @@
 package orc.ast.extended.expression;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import orc.ast.extended.declaration.Declaration;
 import orc.ast.extended.declaration.DefsDeclaration;
 import orc.ast.extended.declaration.def.DefMember;
 import orc.ast.extended.declaration.def.DefMemberClause;
-import orc.ast.extended.pattern.Pattern;
 import orc.ast.extended.visitor.Visitor;
 import orc.ast.simple.expression.WithLocation;
 import orc.error.compiletime.CompilationException;

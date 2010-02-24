@@ -27,7 +27,6 @@ import orc.error.compiletime.typing.UnrepresentableTypeException;
 import orc.type.Type;
 import orc.type.TypingContext;
 import orc.type.inference.Constraint;
-import orc.type.inference.InferenceRequest;
 import orc.type.tycon.Variance;
 
 public class ArrowType extends Type {

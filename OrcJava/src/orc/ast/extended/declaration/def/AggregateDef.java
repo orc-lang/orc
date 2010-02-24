@@ -25,7 +25,6 @@ import orc.ast.extended.type.Type;
 import orc.ast.simple.argument.Argument;
 import orc.ast.simple.argument.Variable;
 import orc.ast.simple.expression.Def;
-import orc.ast.simple.expression.Let;
 import orc.ast.simple.type.ArrowType;
 import orc.ast.simple.type.FreeTypeVariable;
 import orc.ast.simple.type.TypeVariable;
