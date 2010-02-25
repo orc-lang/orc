@@ -1,9 +1,9 @@
+Orchard build-time only
+	yuicompressor-2.3.6.jar
+
 Orchard SOAP
-	jetty-util-6.1.11.jar
-	servlet-api.jar
 	stax-ex.jar
 	streambuffer.jar
-	http.jar
 	FastInfoset.jar
 	resolver.jar
 	commons-logging-1.1.1.jar
@@ -18,3 +18,9 @@ Orchard JSON (requires Orchard SOAP)
 Web Forms File Upload
 	commons-fileupload-1.2.1.jar
 	commons-io-1.4.jar
+
+Orchard standalone apps
+	jetty-6.1.22.jar
+	jetty-j2se6-6.1.11.jar
+	jetty-util-6.1.22.jar
+	servlet-api-2.5-20081211.jar

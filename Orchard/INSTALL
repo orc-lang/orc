@@ -22,7 +22,7 @@ Do a "clean" build and then use the Ant target "demo-app" to build a
 .tgz (gzip'ed tar) archive of the application.
 
 Un-archive and run the Orchard Mac OS X app, and it will open your
-default browser to a demo page running in an an embedded HTTP/Servelet
+default browser to a demo page running in an an embedded HTTP/servlet
 server on your workstation, port 8080.
 
 
@@ -33,17 +33,17 @@ JAR file of the application.
 
 Run the orc.OrchardDemo class, with the command:
 
-    java -cp orchard-1.0.0-demo.jar:orchard-1.0.0.jar:orc-1.0.0.jar:orc-sites-1.0.0.jar:FastInfoset.jar:commons-collections-3.2.1.jar:commons-fileupload-1.2.1.jar:commons-io-1.4.jar:commons-lang-2.4.jar:http.jar:jakarta-oro-2.0.8.jar:jaxws-json.jar:jetty-6.1.11.jar:jetty-util-6.1.11.jar:postgresql-8.3-603.jdbc3.jar:resolver.jar:root-demo.war:servlet-api.jar:stax-ex.jar:streambuffer.jar:velocity-1.5.jar orc.OrchardDemo
+    java -jar orchard-1.0.0-demo.jar
 
 This will open your default browser to a demo page running in an an
-embedded HTTP/Servelet server on your workstation, port 8080.
+embedded HTTP/servlet server on your workstation, port 8080.
 
 Alternatively, you can run the class orc.Orchard, with:
 
-    java -cp orchard-1.0.0-demo.jar:orchard-1.0.0.jar:orc-1.0.0.jar:orc-sites-1.0.0.jar:FastInfoset.jar:commons-collections-3.2.1.jar:commons-fileupload-1.2.1.jar:commons-io-1.4.jar:commons-lang-2.4.jar:http.jar:jakarta-oro-2.0.8.jar:jaxws-json.jar:jetty-6.1.11.jar:jetty-util-6.1.11.jar:postgresql-8.3-603.jdbc3.jar:resolver.jar:root-demo.war:servlet-api.jar:stax-ex.jar:streambuffer.jar:velocity-1.5.jar orc.OrchardDemo
+    java -jar orchard-1.0.0-demo.jar Orchard
 
 and it will run as a standalone Orchard Web application (servlet) in
-an an embedded HTTP/Servelet server on your workstation, port 8081.
+an embedded HTTP/servlet server on your workstation, port 8081.
 
 
 TO BUILD THE WAR (WEB APPLICATION ARCHIVE)
@@ -51,5 +51,4 @@ TO BUILD THE WAR (WEB APPLICATION ARCHIVE)
 Do a "clean" build and then use the Ant target "war" to build a
 WAR file of the Orchard servlets and supporting libraries.
 
-This should be deployed to the "/orchard" context on your servlet
-container.
+This should be deployed on a servlet 2.5+ container of your choosing.
