@@ -2,6 +2,8 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/OrcJava"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/OrcSites"/>
 	<classpathentry kind="lib" path="lib/FastInfoset.jar"/>
 	<classpathentry kind="lib" path="lib/commons-collections-3.2.1.jar">
 		<attributes>
@@ -23,30 +25,15 @@
 			<attribute name="javadoc_location" value="http://commons.apache.org/lang/api-release/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/http.jar"/>
 	<classpathentry kind="lib" path="lib/jakarta-oro-2.0.8.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="http://jakarta.apache.org/oro/api/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/jetty-6.1.11.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="http://jetty.codehaus.org/jetty/jetty-6/apidocs/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/jetty-j2se6-6.1.11.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-util-6.1.11.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/OrcJava"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/OrcSites"/>
 	<classpathentry kind="lib" path="lib/postgresql-8.3-603.jdbc3.jar"/>
 	<classpathentry kind="lib" path="lib/resolver.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="http://xml.apache.org/commons/components/apidocs/resolver/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/servlet-api.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="http://java.sun.com/products/servlet/2.3/javadoc/"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/stax-ex.jar">
@@ -60,5 +47,9 @@
 			<attribute name="javadoc_location" value="http://velocity.apache.org/engine/releases/velocity-1.5/apidocs/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/jetty-6.1.22.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-j2se6-6.1.11.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-util-6.1.22.jar"/>
+	<classpathentry kind="lib" path="lib/servlet-api-2.5-20081211.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
