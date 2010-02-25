@@ -5,7 +5,7 @@
 
      $Id$
 
-     Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
@@ -24,96 +24,11 @@
 		<fileset dir="lib" includes="*.jar" />
 		<pathelement path="build/classes" />
 	</path>
-	
-	<target name="jar" depends="kilim" description="generate the distribution">
-		<jar jarfile="build/${target.name}.jar" basedir="build/classes">
-			<exclude name="orc/test/**"/>
-			<!-- Include library dependencies -->
-			<zipgroupfileset dir="lib">
-				<include name="*.jar"/>
-				<!-- Only needed for testing -->
-				<exclude name="junit-*.jar"/>
-				<!-- Only needed for compilation -->
-				<exclude name="rats.jar"/>
-				<exclude name="kilim.jar"/>
-				<exclude name="AppleJavaExtensions.jar"/>
-			</zipgroupfileset>
-			<manifest>
-				<attribute name="Main-Class" value="orc.gui.OrcGui"/>
-			</manifest>	
-		</jar>
-	</target>
-	
-	
-	<target name="zip" depends="jar,win-setup" description="generate the ZIP">
-		<zip zipfile="build/${target.name}.zip">
-			<zipfileset prefix="${target.name}" dir="build">
-				<include name="${target.name}.jar"/>
-				<include name="SETUP.BAT"/>
-			</zipfileset>
-			<zipfileset prefix="${target.name}" dir=".">
-				<include name="README"/>
-				<include name="LICENSE"/>
-				<include name="INSTALL"/>
-				<include name="examples/**"/>
-				<include name="licenses.yml"/>
-				<include name="licenses/**"/>
-				<include name="doc/**"/>
-				<exclude name="**/CVS/*"/>
-				<exclude name="**/.svn/*"/>
-			</zipfileset>
-		</zip>
-	</target>
-	
-	<target name="clean" description="clean up">
-		<delete dir="build" />
-	</target>
 
-	<target name="kilim" description="Kilim weaving">
-		<java classname="kilim.tools.Weaver" fork="yes" failonerror="true">
-			<classpath refid="orc.classpath"/>
-		    <sysproperty key="java.awt.headless" value="true"/>
-			<assertions><enable/></assertions>
-			<arg value="-d" />
-			<arg value="build/classes" />
-			<arg value="build/classes" />
-		</java>
-	</target>
 
-	<!-- javac does some weird compilation that Kilim doesn't like, so for now
-	     you have to use the eclipse compiler
-	<target name="compile" depends="rats" description="javac compile">
-		<mkdir dir="build/classes" />
-		<javac source="1.5" target="1.5" debug="yes"
-			srcdir="src"
-			destdir="build/classes"
-			classpathref="orc.classpath" />
-		<copy todir="build/classes">
-			<fileset dir="src" excludes="**/*.java **/CVS/*"/>
-		</copy>
-	</target>
-	-->
-	
-	<target name="stdlib-doc" description="Build standard library docs">
-		<java classname="orc.doc.MakeDoc" fork="yes" failonerror="true"
-				dir="src/orc/inc/prelude"
-				output="build/stdlib.xml">
-			<classpath refid="orc.classpath"/>
-				<assertions>
-					<enable/>
-				</assertions>
-			<!-- FIXME: how can we replace this with a fileset? -->
-			<arg value="core.inc"/>
-			<arg value="state.inc"/>
-			<arg value="idioms.inc"/>
-			<arg value="list.inc"/>
-			<arg value="reflect.inc"/>
-			<arg value="text.inc"/>
-			<arg value="time.inc"/>
-			<arg value="util.inc"/>
-		</java>
-	</target>
-	
+	<!-- ================================= 
+          target: rats              
+         ================================= -->
 	<target name="rats" depends="rats1,rats2,rats3" description="Build rats parser" />
 
 	<target name="rats1" depends="rats1.required" unless="rats1.notRequired">
@@ -173,6 +88,130 @@
 			targetfile="src/orc/parser/OrcLiteralParser.java"/>
 	</target>
 
+	<!-- ================================= 
+          target: compile              
+         ================================= -->
+	<!-- javac does some weird compilation that Kilim doesn't like, so for now
+	     you have to use the eclipse compiler
+	<target name="compile" depends="rats" description="javac compile">
+		<mkdir dir="build/classes" />
+		<javac source="1.5" target="1.5" debug="yes"
+			srcdir="src"
+			destdir="build/classes"
+			classpathref="orc.classpath" />
+		<copy todir="build/classes">
+			<fileset dir="src" excludes="**/*.java **/CVS/*"/>
+		</copy>
+	</target>
+	-->
+
+	<!-- ================================= 
+          target: kilim              
+         ================================= -->
+	<target name="kilim" description="Kilim weaving">
+		<java classname="kilim.tools.Weaver" fork="yes" failonerror="true">
+			<classpath refid="orc.classpath"/>
+		    <sysproperty key="java.awt.headless" value="true"/>
+			<assertions><enable/></assertions>
+			<arg value="-d" />
+			<arg value="build/classes" />
+			<arg value="build/classes" />
+		</java>
+	</target>
+
+	<!-- ================================= 
+          target: jar              
+         ================================= -->
+	<target name="jar" depends="kilim" description="generate the distribution">
+		<jar jarfile="build/${target.name}.jar" basedir="build/classes">
+			<manifest>
+				<attribute name="Main-Class" value="orc.gui.OrcGui"/>
+				<attribute name="Implementation-Title" value="Orc programming language" />
+				<attribute name="Implementation-Version" value="${orc.version}" />
+				<attribute name="Implementation-Vendor" value="The University of Texas at Austin" />
+				<attribute name="Implementation-Vendor-Id" value="edu.utexas" />
+				<section name="orc">
+					<attribute name="Implementation-Title" value="Orc programming language" />
+					<attribute name="Implementation-Version" value="${orc.version}" />
+					<attribute name="Implementation-Vendor" value="The University of Texas at Austin" />
+					<attribute name="Implementation-Vendor-Id" value="edu.utexas" />
+					<attribute name="Specification-Title" value="Orc programming language" />
+					<attribute name="Specification-Version" value="${orc.version}" />
+					<attribute name="Specification-Vendor" value="The University of Texas at Austin" />
+				</section>
+			</manifest>
+			<exclude name="orc/test/**"/>
+			<!-- Include library dependencies -->
+			<zipgroupfileset dir="lib">
+				<include name="*.jar"/>
+				<!-- Only needed for testing -->
+				<exclude name="junit-*.jar"/>
+				<!-- Only needed for compilation -->
+				<exclude name="rats.jar"/>
+				<exclude name="kilim.jar"/>
+				<exclude name="AppleJavaExtensions.jar"/>
+			</zipgroupfileset>
+		</jar>
+	</target>
+	
+	<!-- ================================= 
+          target: win-setup              
+         ================================= -->
+	<target name="win-setup" description="create SETUP.BAT">
+		<copy file="SETUP.BAT" todir="build">
+			<filterset><filter token="orc.jar" value="${target.name}.jar"/></filterset>
+		</copy>
+	</target>
+	
+	<!-- ================================= 
+          target: zip              
+         ================================= -->
+	<target name="zip" depends="jar,win-setup" description="generate the ZIP">
+		<zip zipfile="build/${target.name}.zip">
+			<zipfileset prefix="${target.name}" dir="build">
+				<include name="${target.name}.jar"/>
+				<include name="SETUP.BAT"/>
+			</zipfileset>
+			<zipfileset prefix="${target.name}" dir=".">
+				<include name="README"/>
+				<include name="LICENSE"/>
+				<include name="INSTALL"/>
+				<include name="examples/**"/>
+				<include name="licenses.yml"/>
+				<include name="licenses/**"/>
+				<include name="doc/**"/>
+				<exclude name="**/CVS/*"/>
+				<exclude name="**/.svn/*"/>
+			</zipfileset>
+		</zip>
+	</target>
+
+	<!-- ================================= 
+          target: stdlib-doc              
+         ================================= -->
+	<target name="stdlib-doc" description="Build standard library docs">
+		<java classname="orc.doc.MakeDoc" fork="yes" failonerror="true"
+				dir="src/orc/inc/prelude"
+				output="build/stdlib.xml">
+			<classpath refid="orc.classpath"/>
+				<assertions>
+					<enable/>
+				</assertions>
+			<!-- FIXME: how can we replace this with a fileset? -->
+			<arg value="core.inc"/>
+			<arg value="state.inc"/>
+			<arg value="idioms.inc"/>
+			<arg value="list.inc"/>
+			<arg value="reflect.inc"/>
+			<arg value="text.inc"/>
+			<arg value="time.inc"/>
+			<arg value="util.inc"/>
+		</java>
+	</target>
+	
+	<!-- ================================= 
+          target: javadoc              
+         ================================= -->
 	<target name="javadoc" description="Build Javadoc">
 		<delete dir="build/javadoc" />
 		<javadoc destdir="build/javadoc"
@@ -190,6 +229,9 @@
 		<zip zipfile="build/${target.name}-doc.zip" basedir="build/javadoc" />
 	</target>
 
+	<!-- ================================= 
+          target: app              
+         ================================= -->
 	<!-- WARNING: this does not work on non-Unix systems (without cp, ln, and tar) -->
 	<target name="app" depends="jar" description="generate a Mac OS X application">
 		<property name="appname" value="Orc" />
@@ -267,12 +309,14 @@
 		</exec>
 	</target>
 
-	<target name="win-setup" description="create SETUP.BAT">
-		<copy file="SETUP.BAT" todir="build">
-			<filterset><filter token="orc.jar" value="${target.name}.jar"/></filterset>
-		</copy>
-	</target>
+	<!-- ================================= 
+          target: all              
+         ================================= -->
+    <target name="all" depends="zip,stdlib-doc,javadoc,app" description="Build all targets" />
 
+	<!-- ================================= 
+          target: upload              
+         ================================= -->
 	<target name="upload" depends="zip,javadoc" description="upload to google code">
 		<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask"
 			classpath="lib/ant-googlecode-0.0.1.jar" name="gcupload"/>
@@ -292,5 +336,12 @@
 			targetfilename="${target.name}-doc.zip"
 			summary="Javadoc documentation for core Orc interpreter."
 			labels="Type-Docs, OpSys-All" />
+	</target>
+
+	<!-- ================================= 
+          target: clean              
+         ================================= -->
+	<target name="clean" description="clean up">
+		<delete dir="build" />
 	</target>
 </project>

@@ -284,9 +284,10 @@
 				<exclude name="org/jvnet/**" />
 				<exclude name="META-INF/**/*" />
 			</fileset>
-			<!-- XXX: We've got this class in two places.  But, it's one short static method with no fields, so not that bad. --> 
+			<!-- XXX: We've got this class in two places (OrcSites and the demo-app's JAR).  But, it's one short static method with no fields, so not that bad. -->
 			<fileset dir="${orc.location.OrcSites}/build/classes" includes="com/centerkey/utils/BareBonesBrowserLaunch.class" />
 		</jar>
+		<!-- Useful for testing the demo-app JAR version -->
 		<!-- <exec executable="ln" failonerror="no">
 			<arg value="-s" />
 			<arg value="../lib" />
@@ -300,10 +301,22 @@
     <target name="zip" depends="demo-jar" description="Build orchard.zip for distribution">
     	<delete file="build/${target.name}.zip" />
         <zip destfile="build/${target.name}.zip" duplicate="fail">
-        	<fileset file="build/orchard.war" />
-        	<fileset file="build/${target.name}-demo.jar" />
-			<fileset refid="orchard.extra.jars" />
-			<fileset refid="orchard-demo.extra.jars" />
+        	<zipfileset prefix="${target.name}" file="build/orchard.war" />
+        	<zipfileset prefix="${target.name}" file="build/${target.name}-demo.jar" />
+        	<zipfileset prefix="${target.name}" file="build/demo-root.war" />
+			<zipfileset prefix="${target.name}/lib" refid="orchard.extra.jars" />
+			<zipfileset prefix="${target.name}/lib" refid="orchard-demo.extra.jars" />
+			<zipfileset prefix="${target.name}" dir=".">
+				<include name="README"/>
+				<include name="LICENSE"/>
+				<include name="INSTALL"/>
+				<include name="examples/**"/>
+				<include name="licenses.yml"/>
+				<include name="licenses/**"/>
+				<include name="doc/**"/>
+				<exclude name="**/CVS/*"/>
+				<exclude name="**/.svn/*"/>
+			</zipfileset>
         </zip>
     </target>
 
@@ -362,6 +375,11 @@
 			<arg line="-zcf ${target.name}-app.tgz ${appname}.app" />
 		</exec>
 	</target>
+	
+	<!-- ================================= 
+          target: all              
+         ================================= -->
+    <target name="all" depends="zip,demo-app" description="Build all targets" />
 
 	<!-- ================================= 
           target: clean              

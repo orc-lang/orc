@@ -1,6 +1,8 @@
 BUILDING, INSTALLING, AND RUNNING ORCHARD
 -----------------------------------------
 
+$Id$
+
 See also: http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=HowToInstallOrchard
 
 
@@ -16,7 +18,7 @@ sensitive data, so they are not provided in the distribution.  A
 is your OAuth Java keystore.
 
 
-TO BUILD THE MAC OS X STANDALONE DEMO APPLICATION
+TO BUILD & RUN THE MAC OS X STANDALONE DEMO APPLICATION
 
 Do a "clean" build and then use the Ant target "demo-app" to build a
 .tgz (gzip'ed tar) archive of the application.
@@ -26,10 +28,12 @@ default browser to a demo page running in an an embedded HTTP/servlet
 server on your workstation, port 8080.
 
 
-TO BUILD THE JAR'ED STANDALONE DEMO APPLICATION/SERVLETS
+TO BUILD & RUN THE JAR'ED STANDALONE DEMO APPLICATION/SERVLETS
 
-Do a "clean" build and then use the Ant target "demo-jar" to build a
-JAR file of the application.
+Do a "clean" build and then use the Ant target "zip" to build a
+ZIP archive of the application with its required libraries.
+
+Unpack the ZIP in the location of you choice.
 
 Run the orc.OrchardDemo class, with the command:
 
@@ -46,13 +50,15 @@ and it will run as a standalone Orchard Web application (servlet) in
 an embedded HTTP/servlet server on your workstation, port 8081.
 
 
-TO BUILD THE WAR (WEB APPLICATION ARCHIVE)
+TO BUILD & DEPLOY THE WAR (WEB APPLICATION ARCHIVE)
 
-Do a "clean" build and then use the Ant target "war" to build a
-WAR file of the Orchard servlets and supporting libraries.
+Do a "clean" build and then use the Ant target "zip" to build a
+ZIP archive of WAR file of the Orchard servlets and supporting
+libraries.
 
-This should be deployed on a servlet 2.5+ container of your choosing.
+The contents of this archive should be deployed on a servlet 2.5+
 
+container of your choosing.
 Note: You will need to tell your JAX-WS implementation and servlet
       container to use the same HTTP server.  For Jetty, you'll
       need the J2SE6 module (see note below), and add the following to
@@ -68,3 +74,6 @@ Note: The J2SE6 module is found in Jetty's contrib directory. Do not
       and still is in .22.  (Later versions of Jetty itself are OK.)
       There's a Jetty 7 equivalent, the "j2sehttpspi" module, but I
       haven't tried it yet.
+
+      We've also included a subset of Jetty and its J2SE6 module in the
+      ZIP archive.
