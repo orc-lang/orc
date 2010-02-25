@@ -2613,13 +2613,79 @@ declarations occur twice.
 	<section>
 		<title><code>capsule</code> declaration</title>
 			<para>
-			Orc Capsules are the way to build active objects in Orc. The idea is to 
-			turn a definition (def) which contains a number of internal definitions 
-			into a site such that internal definitions can be called on the outer 
-			definition just like methods can be called on an object. The important 
-			thing about Orc capsules is that they are active. This means that they 
-			can call other sites or change their state without receiving any external call. 
-			</para>
+The concept of Object in computing refers to an entity which can encapsulate 
+data and enables the manipulation of the data through some functions or methods. 
+These objects are usually referred to as passive objects. This means that they 
+do not have their own thread of control. Whenever a thread calls one of the 
+object's methods it will activate the object and give the control to the object
+ and as soon as it returns from the method call object will be deactivated.
+</para>
+      <para>
+Active objects are another form of object. Unlike passive objects, active 
+objects have their own thread of control. They can initiate a computation 
+without receiving a method call (in procedural languages) or a message 
+(in languages with message passing model). Note that this definition of 
+active objects subsumes reactive objects and actors.
+</para>
+      <para>
+Orc Capsules are the way to build active objects in Orc. A subset of Orc 
+language is called Cor which is an ML like functional language. Programmers 
+can specify the computation in terms of expressions in Cor. Cor does not 
+have any notion of object. A computation entity is a function that is 
+defined by def keyword. There is no encapsulation. It is all function definition.
+</para>
+      <para>
+Let us motivate the problem by an example. Suppose you want to have a sequence 
+number generator. The normal way to do that in a functional language is to 
+define a mutable variable and a function to increase and return the sequence 
+number every time we call it. The following shows the code for this sequence 
+number generator in Orc. 			
+<programlisting><![CDATA[
+val seq_num = Ref(0)
+def gen_seq() =
+  seq_num? >x> (seq_num := seq_num?+1 >> stop) >> x
+  
+gen_seq() | gen_seq()
+]]></programlisting>
+</para>
+      <para>
+What is the problem with the above code? The first problem is that the 
+seq_num is exposed to all the expressions which come after it. This 
+means that all those expressions can possibly read and write the 
+value of seq_num. This is not always desirable. The second issue 
+with this code is that it is not flexible enough. What if we want 
+to have different sequence number generator different initial seed? 
+For example, we may want a sequence number starting at 0 and another 
+one starting at 1000. The third issue is activeness. We need something 
+that gives us the power to create services. We need computational entities 
+that have state and retain in the environment and can not only respond to 
+events but also can create events and spawns activities.
+</para>
+<para>
+Orc capsules enables us to address all the above issues. The idea is to 
+turn a definition (def) which contains a number of internal definitions 
+and defined values into a Site such that the execution of this site is 
+protected from the rest of the program. It also requires that the internal 
+functions definitions can be called on the site just like method calls 
+on the objects. 
+</para>
+<para>
+For example it is desirable to have the following interface for the above 
+defined sequence number generator. 
+<programlisting><![CDATA[
+val sequence_generator1 = gen_seq(0)
+val sequence_generator2 = gen_seq(1000)
+
+sequence_generator1.next() | sequence_generator2.next() 
+]]></programlisting>
+As the above example suggests we don't want to expose the sequence number 
+generator seed.
+</para>
+<para>
+Orc capsules provides this facility for programmer to define active objects 
+in Orc. The following part will illustrate the use of capsules with a couple 
+of examples. Further on, we explain how do we implement capsules in Orc. 
+</para>
 <para>
 Here is an example of defining a capsule and it's usage. 
 <programlisting><![CDATA[
