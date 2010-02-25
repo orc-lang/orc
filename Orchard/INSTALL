@@ -52,3 +52,19 @@ Do a "clean" build and then use the Ant target "war" to build a
 WAR file of the Orchard servlets and supporting libraries.
 
 This should be deployed on a servlet 2.5+ container of your choosing.
+
+Note: You will need to tell your JAX-WS implementation and servlet
+      container to use the same HTTP server.  For Jetty, you'll
+      need the J2SE6 module (see note below), and add the following to
+      the Configure Server element of jetty.xml: 
+
+    <!-- Use Jetty as Java 6 HTTP server provider - JAX-WS uses this for Endpoint publishing -->
+    <Call class="org.mortbay.jetty.j2se6.JettyHttpServerProvider" name="setServer">
+        <Arg><Ref id="Server"/></Arg>
+    </Call>
+
+Note: The J2SE6 module is found in Jetty's contrib directory. Do not
+      use a J2SE6 version after 6.1.20 -- the code was mangled in .21
+      and still is in .22.  (Later versions of Jetty itself are OK.)
+      There's a Jetty 7 equivalent, the "j2sehttpspi" module, but I
+      haven't tried it yet.
