@@ -19,28 +19,26 @@
 	<property file="build.properties" />
 	<property name="target.name" value="${ant.project.name}-${orc.version}" />
 
-	<fileset id="orchard.war.jars" dir="." description="JARs packaged in the Orchard WAR">
-		<include name="lib/orc-${orc.version}.jar" /> <!-- maintained by copylib target -->
-		<include name="lib/orc-sites-${orc.version}.jar" />  <!-- maintained by copylib target -->
-		<!-- FIXME: Duplicate -->
-		<include name="lib/jaxws-json.jar" />
+	<fileset id="orchard.war.jars" dir="lib" description="JARs packaged in the Orchard WAR">
+		<include name="orc-${orc.version}.jar" /> <!-- maintained by copylib target -->
+		<include name="orc-sites-${orc.version}.jar" />  <!-- maintained by copylib target -->
 	</fileset>
 
-	<fileset id="orchard.extra.jars" dir="." description="JARs needed by Orchard in the container's classpath">
-		<include name="lib/*.jar" />
+	<fileset id="orchard.extra.jars" dir="lib" description="JARs needed by Orchard in the container's classpath">
+		<include name="*.jar" />
 		<!-- already in WAR -->
-		<exclude name="lib/orc-*.jar" />
-		<exclude name="lib/orc-sites-*.jar" />
+		<exclude name="orc-*.jar" />
+		<exclude name="orc-sites-*.jar" />
 		<!-- only used in demo jar -->
-		<exclude name="lib/jetty-*.jar" />
-		<exclude name="lib/servlet-api*.jar" />
+		<exclude name="jetty-*.jar" />
+		<exclude name="servlet-api*.jar" />
 		<!-- for build only -->
-		<exclude name="lib/yuicompressor-*.jar" />
+		<exclude name="yuicompressor-*.jar" />
 	</fileset>
 
-	<fileset id="orchard-demo.extra.jars" dir="." description="JARs needed for the standalone Orchard demo app">
-		<include name="lib/jetty-*.jar" />
-		<include name="lib/servlet-api*.jar" />
+	<fileset id="orchard-demo.extra.jars" dir="lib" description="JARs needed for the standalone Orchard demo apps">
+		<include name="jetty-*.jar" />
+		<include name="servlet-api*.jar" />
 	</fileset>
 
 	<path id="wsgen.classpath" description="Classpath needed to run wsgen on Orchard">
@@ -80,6 +78,7 @@
 		<copy preservelastmodified="true" todir="lib" verbose="true">
 			<fileset dir="${orc.location.OrcJava}/build" includes="orc-${orc.version}.jar" />
 			<fileset dir="${orc.location.OrcSites}/build" includes="orc-sites-${orc.version}.jar" />
+			<fileset dir="${orc.location.OrcSites}/lib" includes="jettison-1.0.1.jar" />  <!-- jaxws-json needs this outside the WAR -->
 		</copy>
     </target>
 
@@ -145,6 +144,7 @@
 		<jar destfile="lib/jaxws-json.jar" duplicate="fail">
 			<fileset dir="build/classes">
 				<include name="org/jvnet/jax_ws_commons/json/**" />
+				<include name="META-INF/services/com.sun.xml.ws.api.BindingIDFactory" />
 				<include name="META-INF/services/com.sun.xml.internal.ws.api.BindingIDFactory" />
 			</fileset>
 		</jar>
@@ -204,33 +204,6 @@
           target: war              
          ================================= -->
 	<target name="war" depends="kilim,jaxws-json,minify" description="generate the war">
-		<!-- FIXME: Move into war task below -->
-		<jar destfile="build/${target.name}.jar" duplicate="fail">
-			<manifest>
-				<attribute name="Implementation-Title" value="Orc Orchard" />
-				<attribute name="Implementation-Version" value="${orc.version}" />
-				<attribute name="Implementation-Vendor" value="The University of Texas at Austin" />
-				<attribute name="Implementation-Vendor-Id" value="edu.utexas" />
-				<attribute name="Specification-Title" value="Orc Orchard" />
-				<attribute name="Specification-Version" value="${orc.version}" />
-				<attribute name="Specification-Vendor" value="The University of Texas at Austin" />
-				<section name="orc.orchard">
-					<attribute name="Implementation-Title" value="Orc Orchard" />
-					<attribute name="Implementation-Version" value="${orc.version}" />
-					<attribute name="Implementation-Vendor" value="The University of Texas at Austin" />
-					<attribute name="Implementation-Vendor-Id" value="edu.utexas" />
-					<attribute name="Specification-Title" value="Orc Orchard" />
-					<attribute name="Specification-Version" value="${orc.version}" />
-					<attribute name="Specification-Vendor" value="The University of Texas at Austin" />
-				</section>
-			</manifest>
-			<fileset dir="build/classes">
-				<exclude name="orc/Orchard.class" />
-				<exclude name="orc/OrchardDemo.class" />
-				<exclude name="org/jvnet/**" />
-				<exclude name="META-INF/**/*" />
-			</fileset>
-		</jar>
 		<war destfile="build/${ant.project.name}.war">
 			<manifest>
 				<attribute name="Implementation-Title" value="Orc Orchard" />
@@ -242,11 +215,13 @@
 				<attribute name="Specification-Vendor" value="The University of Texas at Austin" />
 			</manifest>
 			<fileset refid="orchard.static-web-files" />
-			<zipfileset src="build/${target.name}.jar" prefix="WEB-INF/classes">
-				<exclude name="META-INF/**/*" />
-			</zipfileset>
-			<zipfileset dir="build/classes" includes="META-INF/**/*" />
-			<zipfileset prefix="WEB-INF/lib" refid="orchard.war.jars" />
+			<classes dir="build/classes">
+				<exclude name="orc/Orchard.class" />
+				<exclude name="orc/OrchardDemo.class" />
+				<exclude name="org/jvnet/**" />
+				<exclude name="META-INF/**" />
+			</classes>
+			<lib refid="orchard.war.jars" />
 		</war>
 	</target>
 
@@ -270,10 +245,6 @@
 		</war>
 		<pathconvert property="orchard-demo.mappedclasspath">
 			<path>
-				<!-- FIXME: Remove next 3 lines -->
-				<pathelement location="lib/orc-${orc.version}.jar" />
-				<pathelement location="lib/orc-sites-${orc.version}.jar" />
-				<pathelement location="build/${target.name}.jar" />
 				<fileset refid="orchard.extra.jars" />
 				<fileset refid="orchard-demo.extra.jars" />
 			</path>
@@ -287,8 +258,6 @@
 		<manifestclasspath property="orchard-demo.manifestclasspath" jarfile="${target.name}-demo.jar">
 			<classpath>
 				<pathelement path="${orchard-demo.mappedclasspath}" />
-				<!-- FIXME: Remove next 1 lines -->
-				<pathelement location="${target.name}.jar" />
 			</classpath>
 		</manifestclasspath>
 		<jar destfile="build/${target.name}-demo.jar" duplicate="fail">
@@ -318,11 +287,11 @@
 			<!-- XXX: We've got this class in two places.  But, it's one short static method with no fields, so not that bad. --> 
 			<fileset dir="${orc.location.OrcSites}/build/classes" includes="com/centerkey/utils/BareBonesBrowserLaunch.class" />
 		</jar>
-		<exec executable="ln" failonerror="no">
+		<!-- <exec executable="ln" failonerror="no">
 			<arg value="-s" />
 			<arg value="../lib" />
 			<arg value="build/lib" />
-		</exec>
+		</exec> -->
 	</target>
 
 	<!-- ================================= 
@@ -358,10 +327,10 @@
 			</fileset>
 		</copy>
 		<pathconvert property="orchard.extra.jars.JAVAROOT" refid="orchard.extra.jars">
-			<map from="${basedir}/lib" to="$JAVAROOT/lib" />
+			<map from="${basedir}/lib" to="$JAVAROOT" />
 		</pathconvert>
 		<pathconvert property="orchard-demo.extra.jars.JAVAROOT" refid="orchard-demo.extra.jars">
-			<map from="${basedir}/lib" to="$JAVAROOT/lib" />
+			<map from="${basedir}/lib" to="$JAVAROOT" />
 		</pathconvert>
 		<!-- copy plist files with token filtering -->
 		<copy todir="${appdir}">
@@ -370,9 +339,7 @@
 			</fileset>
 			<filterset>
 				<filter token="app.jar" value="${appname}.jar" />
-				<!-- FIXME: Use currline+1 instead of currline+2 -->
-				<!--  <filter token="app.classpath" value="$JAVAROOT/${appname}.jar:${orchard.extra.jars.JAVAROOT}:${orchard-demo.extra.jars.JAVAROOT}" /> -->
-				<filter token="app.classpath" value="$JAVAROOT/${appname}.jar:$JAVAROOT/${target.name}.jar:$JAVAROOT/orc-${orc.version}.jar:$JAVAROOT/orc-sites-${orc.version}.jar:${orchard.extra.jars.JAVAROOT}:${orchard-demo.extra.jars.JAVAROOT}" />
+				<filter token="app.classpath" value="$JAVAROOT/${appname}.jar:${orchard.extra.jars.JAVAROOT}:${orchard-demo.extra.jars.JAVAROOT}" />
 				<filter token="orc.version" value="${orc.version}" />
 			</filterset>
 		</copy>
@@ -387,10 +354,6 @@
 				<include name="orchard.war" />
 				<include name="demo-root.war" />
 			</fileset>
-			<!-- FIXME: Remove next 3 lines -->
-			<fileset file="lib/orc-${orc.version}.jar" />
-			<fileset file="lib/orc-sites-${orc.version}.jar" />
-			<fileset file="build/${target.name}.jar" />
 			<fileset refid="orchard.extra.jars" />
 			<fileset refid="orchard-demo.extra.jars" />
 		</copy>

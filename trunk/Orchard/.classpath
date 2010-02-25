@@ -30,6 +30,8 @@
 			<attribute name="javadoc_location" value="http://jakarta.apache.org/oro/api/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/jaxb-impl.jar"/>
+	<classpathentry kind="lib" path="lib/jaxws-rt.jar"/>
 	<classpathentry kind="lib" path="lib/postgresql-8.3-603.jdbc3.jar"/>
 	<classpathentry kind="lib" path="lib/resolver.jar">
 		<attributes>
