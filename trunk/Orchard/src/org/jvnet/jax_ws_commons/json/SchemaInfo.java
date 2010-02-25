@@ -50,13 +50,13 @@ import com.sun.xml.ws.api.server.SDDocument;
 import com.sun.xml.ws.api.server.ServiceDefinition;
 import com.sun.xml.ws.api.server.WSEndpoint;
 import com.sun.xml.ws.model.wsdl.WSDLBoundPortTypeImpl;
-import com.sun.xml.internal.xsom.XSElementDecl;
-import com.sun.xml.internal.xsom.XSSchema;
-import com.sun.xml.internal.xsom.XSSchemaSet;
-import com.sun.xml.internal.xsom.parser.JAXPParser;
-import com.sun.xml.internal.xsom.parser.XMLParser;
-import com.sun.xml.internal.xsom.parser.XSOMParser;
-import com.sun.xml.internal.xsom.visitor.XSVisitor;
+import com.sun.xml.xsom.XSElementDecl;
+import com.sun.xml.xsom.XSSchema;
+import com.sun.xml.xsom.XSSchemaSet;
+import com.sun.xml.xsom.parser.JAXPParser;
+import com.sun.xml.xsom.parser.XMLParser;
+import com.sun.xml.xsom.parser.XSOMParser;
+import com.sun.xml.xsom.visitor.XSVisitor;
 
 /**
  * Captures the information parsed from XML Schema.
