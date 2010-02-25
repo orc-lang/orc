@@ -368,25 +368,24 @@ function orcify(code, defaultConfig) {
             // Compile error, beautify if we grok format
             errmsg = response.faultstring;
             if (errmsg[0] == ':' && errmsg[errmsg.length-1] == '\n') {
-                colStart = errmsg.indexOf(':', 1) + 1;
-                msgStart = errmsg.indexOf(':', colStart) + 1;
-                lineString = errmsg.substring(1,colStart-1);
+                colIndex = errmsg.indexOf(':', 1) + 1;
+                msgIndex = errmsg.indexOf(':', colIndex) + 1;
+                lineString = errmsg.substring(1,colIndex-1);
                 lineStart = parseInt(lineString);
                 if (lineString.split('-').length == 2) {
                     lineEnd = parseInt(lineString.split('-')[1])
                 } else {
                     lineEnd = lineStart;
                 }
-                colString = errmsg.substring(colStart,msgStart-1);
+                colString = errmsg.substring(colIndex,msgIndex-1);
                 colStart = parseInt(colString);
                 if (colString.split('-').length == 2) {
                     colEnd = parseInt(colString.split('-')[1])
                 } else {
                     colEnd = colStart;
                 }
-                if (colStart > 2 && msgStart > 4) {
-                    errmsg = "Problem near line " + lineString + ", columns " + colString + ": " + errmsg.substring(msgStart,errmsg.length-1);
-                    //codemirror.jumpToLine(lineNum);
+                if (colIndex > 2 && msgIndex > 4) {
+                    errmsg = "Problem near line " + lineString + ", columns " + colString + ": " + errmsg.substring(msgIndex,errmsg.length-1);
                     codemirror.selectLines(codemirror.nthLine(lineStart), colStart-1, codemirror.nthLine(lineEnd), colEnd);
                 }
             }
