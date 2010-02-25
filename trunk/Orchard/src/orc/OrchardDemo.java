@@ -14,14 +14,14 @@
 package orc;
 
 import java.net.URI;
-
-import javax.xml.ws.Endpoint;
-
-import orc.orchard.OrchardProperties;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.mortbay.jetty.Connector;
+import org.mortbay.jetty.Handler;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.handler.ContextHandlerCollection;
+import org.mortbay.jetty.handler.DefaultHandler;
 import org.mortbay.jetty.handler.HandlerCollection;
 import org.mortbay.jetty.j2se6.JettyHttpServerProvider;
 import org.mortbay.jetty.nio.SelectChannelConnector;
@@ -60,44 +60,38 @@ public class OrchardDemo {
 			return;
 		}
 
-		// set reasonable defaults for a demo
-		OrchardProperties.setProperty("orc.lib.orchard.forms.url", "http://localhost:" + PORT + "/orchard/FormsServlet");
-		OrchardProperties.setProperty("orc.orchard.Accounts.url", "");
-		OrchardProperties.setProperty("orc.orchard.GuestAccount.canImportJava", "true");
 
-		// Set JVM-wide HTTP server to Jetty.  JAX-WS (javax.xml.ws) uses this when publishing Endpoints.
-		System.setProperty("com.sun.net.httpserver.HttpServerProvider", "org.mortbay.jetty.j2se6.JettyHttpServerProvider");
+		// System.setProperty("DEBUG", "true");
 
 		final Server server = new Server();
 		JettyHttpServerProvider.setServer(server);
 
 		final Connector connector = new SelectChannelConnector();
+		connector.setHost("localhost");
 		connector.setPort(PORT);
-		connector.setHost("127.0.0.1");
 		server.addConnector(connector);
 
-		final HandlerCollection handlers = new HandlerCollection();
-		server.setHandler(handlers);
-
 		final ContextHandlerCollection contexts = new ContextHandlerCollection();
-		handlers.addHandler(contexts);
+		final HandlerCollection handlerCollection = new HandlerCollection();
+		handlerCollection.setHandlers(new Handler[] { contexts, new DefaultHandler() });
+		server.setHandler(handlerCollection);
 
 		// Assumption: WARs are located in the same location this as this class.
 		final URI warLocation = OrchardDemo.class.getProtectionDomain().getCodeSource().getLocation().toURI();
-		new WebAppContext(contexts, warLocation.resolve("web.war").getPath(), "/orchard");
-		new WebAppContext(contexts, warLocation.resolve("root-demo.war").getPath(), "/");
+		final WebAppContext webappContext = new WebAppContext(contexts, warLocation.resolve("orchard.war").getPath(), "/orchard");
+
+		// set reasonable defaults for a demo
+		final Map<String, String> orchardInitParms = webappContext.getInitParams() != null ? webappContext.getInitParams() : new HashMap<String, String>();
+		orchardInitParms.put("orc.lib.orchard.forms.url", "http://localhost:" + PORT + "/orchard/FormsServlet");
+		orchardInitParms.put("orc.orchard.publishAddress", "http://localhost:" + PORT + "/orchard");
+		orchardInitParms.put("orc.orchard.Accounts.url", "");
+		orchardInitParms.put("orc.orchard.GuestAccount.canImportJava", "true");
+		webappContext.setInitParams(orchardInitParms);
+		
+		new WebAppContext(contexts, warLocation.resolve("demo-root.war").getPath(), "/");
 
 		server.setStopAtShutdown(true);
 		server.start();
-
-		final Endpoint compilerSoapServiceEndpoint = Endpoint.create(new orc.orchard.soap.CompilerService());
-		compilerSoapServiceEndpoint.publish("http://localhost:" + PORT + "/orchard/soap/compiler");
-		final Endpoint executorSoapServiceEndpoint = Endpoint.create(new orc.orchard.soap.ExecutorService());
-		executorSoapServiceEndpoint.publish("http://localhost:" + PORT + "/orchard/soap/executor");
-		final Endpoint compilerJsonServiceEndpoint = Endpoint.create("https://jax-ws-commons.dev.java.net/json/", new orc.orchard.soap.CompilerService());
-		compilerJsonServiceEndpoint.publish("http://localhost:" + PORT + "/orchard/json/compiler");
-		final Endpoint executorJsonServiceEndpoint = Endpoint.create("https://jax-ws-commons.dev.java.net/json/", new orc.orchard.soap.ExecutorService());
-		executorJsonServiceEndpoint.publish("http://localhost:" + PORT + "/orchard/json/executor");
 
 		BareBonesBrowserLaunch.openURL("http://localhost:" + PORT + "/demo.shtml");
 	}

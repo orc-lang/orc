@@ -1,9 +1,9 @@
 package org.jvnet.jax_ws_commons.json;
 
-import com.sun.istack.internal.NotNull;
-import com.sun.istack.internal.Nullable;
-import com.sun.xml.internal.ws.api.BindingID;
-import com.sun.xml.internal.ws.api.BindingIDFactory;
+import com.sun.istack.NotNull;
+import com.sun.istack.Nullable;
+import com.sun.xml.ws.api.BindingID;
+import com.sun.xml.ws.api.BindingIDFactory;
 
 import javax.xml.ws.WebServiceException;
 
@@ -13,7 +13,11 @@ import javax.xml.ws.WebServiceException;
 public class JSONBindingIDFactory extends BindingIDFactory {
 
     public @Nullable BindingID parse(@NotNull String lexical) throws WebServiceException {
-        return new JSONBindingID();
+    	if (lexical.equals(JSONBindingID.JSON_BINDING)) {
+    		return new JSONBindingID();
+    	} else {
+    		return null;
+    	}
     }
     
 }

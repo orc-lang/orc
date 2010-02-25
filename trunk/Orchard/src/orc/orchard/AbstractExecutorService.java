@@ -43,7 +43,10 @@ import orc.orchard.java.CompilerService;
  */
 public abstract class AbstractExecutorService implements ExecutorServiceInterface {
 	protected Logger logger;
-	private final Accounts accounts = Accounts.getAccounts(OrchardProperties.getProperty("orc.orchard.Accounts.url"));
+
+	protected Accounts getAccounts() {
+		return Accounts.getAccounts(OrchardProperties.getProperty("orc.orchard.Accounts.url"));
+	}
 
 	protected AbstractExecutorService(final Logger logger) {
 		this.logger = logger;
@@ -73,14 +76,14 @@ public abstract class AbstractExecutorService implements ExecutorServiceInterfac
 		} catch (final CompilationException e) {
 			throw new InvalidOilException(e);
 		}
-		accounts.getAccount(devKey).addJob(id, expr);
+		getAccounts().getAccount(devKey).addJob(id, expr);
 		logger.info("submit(" + devKey + ", ...) => " + id);
 		return id;
 	}
 
 	public Set<String> jobs(final String devKey) {
 		logger.info("jobs(" + devKey + ")");
-		return accounts.getAccount(devKey).getJobIDs();
+		return getAccounts().getAccount(devKey).getJobIDs();
 	}
 
 	public String compileAndSubmit(final String devKey, final String program) throws QuotaException, InvalidProgramException, InvalidOilException, RemoteException {
@@ -99,41 +102,41 @@ public abstract class AbstractExecutorService implements ExecutorServiceInterfac
 
 	public void finishJob(final String devKey, final String job) throws InvalidJobStateException, RemoteException, InvalidJobException {
 		logger.info("finishJob(" + devKey + ", " + job + ")");
-		accounts.getAccount(devKey).getJob(job).finish();
+		getAccounts().getAccount(devKey).getJob(job).finish();
 	}
 
 	public void haltJob(final String devKey, final String job) throws RemoteException, InvalidJobException {
 		logger.info("haltJob(" + devKey + ", " + job + ")");
-		accounts.getAccount(devKey).getJob(job).halt();
+		getAccounts().getAccount(devKey).getJob(job).halt();
 	}
 
 	public List<JobEvent> jobEvents(final String devKey, final String job) throws RemoteException, InterruptedException, InvalidJobException {
 		logger.info("jobEvents(" + devKey + ", " + job + ")");
-		return accounts.getAccount(devKey).getJob(job).getEvents(getWaiter());
+		return getAccounts().getAccount(devKey).getJob(job).getEvents(getWaiter());
 	}
 
 	public String jobState(final String devKey, final String job) throws RemoteException, InvalidJobException {
 		logger.info("jobState(" + devKey + ", " + job + ")");
-		return accounts.getAccount(devKey).getJob(job).getState();
+		return getAccounts().getAccount(devKey).getJob(job).getState();
 	}
 
 	public void purgeJobEvents(final String devKey, final String job) throws RemoteException, InvalidJobException {
 		logger.info("purgeJobEvents(" + devKey + ", " + job + ")");
-		accounts.getAccount(devKey).getJob(job).purgeEvents();
+		getAccounts().getAccount(devKey).getJob(job).purgeEvents();
 	}
 
 	public void startJob(final String devKey, final String job) throws InvalidJobStateException, RemoteException, InvalidJobException {
 		logger.info("startJob(" + devKey + ", " + job + ")");
-		accounts.getAccount(devKey).getJob(job).start();
+		getAccounts().getAccount(devKey).getJob(job).start();
 	}
 
 	public void respondToPrompt(final String devKey, final String job, final int promptID, final String response) throws InvalidPromptException, RemoteException, InvalidJobException {
 		logger.info("respondToPrompt(" + devKey + ", " + job + "," + promptID + ", ...)");
-		accounts.getAccount(devKey).getJob(job).respondToPrompt(promptID, response);
+		getAccounts().getAccount(devKey).getJob(job).respondToPrompt(promptID, response);
 	}
 
 	public void cancelPrompt(final String devKey, final String job, final int promptID) throws InvalidJobException, InvalidPromptException, RemoteException {
 		logger.info("cancelPrompt(" + devKey + ", " + job + "," + promptID + ")");
-		accounts.getAccount(devKey).getJob(job).cancelPrompt(promptID);
+		getAccounts().getAccount(devKey).getJob(job).cancelPrompt(promptID);
 	}
 }
