@@ -28,21 +28,23 @@ import javax.servlet.http.HttpServletResponse;
 public class LoginServlet extends HttpServlet {
 	private Connection db = null;
 
-	@Override
-	public void init() {
-		try {
-			final String accountsUrl = OrchardProperties.getProperty("orc.orchard.Accounts.url");
-			if (accountsUrl.startsWith("jdbc:")) {
-				db = DriverManager.getConnection(accountsUrl);
+	public void initIfNeeded() {
+		if (db == null) {
+			try {
+				final String accountsUrl = OrchardProperties.getProperty("orc.orchard.Accounts.url");
+				if (accountsUrl.startsWith("jdbc:")) {
+					db = DriverManager.getConnection(accountsUrl);
+				}
+			} catch (final SQLException e) {
+				System.err.println(e.getMessage());
+				e.printStackTrace();
 			}
-		} catch (final SQLException e) {
-			System.err.println(e.getMessage());
-			e.printStackTrace();
 		}
 	}
 
 	/** Return null if dev key not found. */
 	public String getDevKey(final String username, final String password) throws SQLException {
+		initIfNeeded();
 		if (db == null) {
 			return null;
 		}

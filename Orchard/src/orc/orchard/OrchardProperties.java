@@ -25,16 +25,20 @@ import java.util.Properties;
  * @author quark
  */
 public final class OrchardProperties {
-	private static Properties props = new Properties();
-	static {
-		try {
-			final InputStream data = OrchardProperties.class.getResourceAsStream("orchard.properties");
-			if (data == null) {
-				throw new FileNotFoundException("orchard.properties");
+	private static Properties props = null;
+
+	private static void initIfNeeded() {
+		if (props == null) {
+			props = new Properties();
+			try {
+				final InputStream data = OrchardProperties.class.getResourceAsStream("orchard.properties");
+				if (data == null) {
+					throw new FileNotFoundException("orchard.properties");
+				}
+				props.load(data);
+			} catch (final IOException e) {
+				throw new AssertionError(e);
 			}
-			props.load(data);
-		} catch (final IOException e) {
-			throw new AssertionError(e);
 		}
 	}
 
@@ -42,14 +46,17 @@ public final class OrchardProperties {
 	}
 
 	public static void setProperty(final String name, final String value) {
+		initIfNeeded();
 		props.setProperty(name, value);
 	}
 
 	public static String getProperty(final String name) {
+		initIfNeeded();
 		return props.getProperty(name);
 	}
 
 	public static Integer getInteger(final String name) {
+		initIfNeeded();
 		final String out = props.getProperty(name);
 		if (out == null || out.equals("null")) {
 			return null;
@@ -58,6 +65,7 @@ public final class OrchardProperties {
 	}
 
 	public static int getInteger(final String name, final int defaultValue) {
+		initIfNeeded();
 		final String out = props.getProperty(name);
 		if (out == null || out.equals("null")) {
 			return defaultValue;
@@ -66,6 +74,7 @@ public final class OrchardProperties {
 	}
 
 	public static boolean getBoolean(final String name, final boolean defaultValue) {
+		initIfNeeded();
 		final String out = props.getProperty(name);
 		if (out == null || out.equals("null")) {
 			return defaultValue;
