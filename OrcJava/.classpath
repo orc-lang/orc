@@ -9,7 +9,6 @@
 			<attribute name="javadoc_location" value="http://junit.sourceforge.net/javadoc/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry exported="true" kind="lib" path="lib/kilim-runtime.jar"/>
 	<classpathentry kind="lib" path="lib/AppleJavaExtensions.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="http://developer.apple.com/mac/library/documentation/Java/Reference/JavaSE6_AppleExtensionsRef/api/"/>
@@ -20,5 +19,6 @@
 			<attribute name="javadoc_location" value="https://args4j.dev.java.net/nonav/maven/apidocs/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/asm-all-2.2.3.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
