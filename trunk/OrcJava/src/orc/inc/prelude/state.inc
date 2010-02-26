@@ -401,8 +401,8 @@ creates and returns a partial, pre-computed version of <code>f</code>
 restricted to the range (0, <code>n</code>-1). If <code>f</code> halts
 on any number in this range, the call to <code>IArray</code> will halt.
 
-The user may also think of the call as returning an array whose
-<code>i</code>th element is <code>f(i)</code>.
+The user may also think of the call as returning an immutable array whose
+<code>i</code>th element is accessed by calling <code>f(i)</code>.
 
 This function provides a simple form of memoisation; we avoid recomputing
 the value of <code>f(i)</code> by storing the result in an array.
