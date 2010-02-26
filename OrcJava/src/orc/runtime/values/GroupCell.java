@@ -37,7 +37,6 @@ public final class GroupCell extends Group implements Serializable, Future {
 	private Object value;
 	private boolean bound = false;
 	private List<Token> waitList;
-	//private Transaction trans;
 	private final PullTrace pullTrace;
 	private StoreTrace storeTrace;
 	private final Group parent;
@@ -97,8 +96,6 @@ public final class GroupCell extends Group implements Serializable, Future {
 	 * cell, even if that cell has not yet been bound. This
 	 * is necessary to ensure any tokens waiting on the cell
 	 * are killed.
-	 * 
-	 * <p>This is also called when a transaction is aborted.
 	 */
 	public void close() {
 		alive = false;
@@ -115,13 +112,6 @@ public final class GroupCell extends Group implements Serializable, Future {
 	@Override
 	public void onKill() {
 		parent.remove(this);
-		/*
-		if (trans != null) {
-			// If this cell is supporting a transaction, abort that transaction.
-			trans.abort();
-			trans = null;
-		}
-		*/
 	}
 
 	/**
@@ -162,17 +152,6 @@ public final class GroupCell extends Group implements Serializable, Future {
 			return Value.futureNotReady;
 		}
 	}
-
-	/* A group cell may be hosting a transaction */
-	/*
-	public Transaction getTransaction() {
-		return trans;
-	}
-	
-	public void setTransaction(Transaction trans) {
-		this.trans = trans; 
-	}
-	*/
 
 	/* 
 	 * Peek at the bound value of this cell.
