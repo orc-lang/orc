@@ -55,6 +55,9 @@ public final class Kilim {
 
 		@Override
 		public synchronized void schedule(final Task task) {
+			if (scheduler.get() == null) {
+				startEngine(1, 1);
+			}
 			final Scheduler current = scheduler.get().value;
 			// Setting the scheduler is necessary to ensure
 			// that this task can be resumed from different
@@ -130,7 +133,7 @@ public final class Kilim {
 	/**
 	 * Initialize Kilim state for a new job.
 	 */
-	public static void startEngine(final int kilimThreads, final int siteThreads) {
+	public static void startEngine(final int kilimThreads, final int siteThreads) {		
 		final Box<Scheduler> _scheduler = new Box<Scheduler>();
 		final Box<BoundedThreadPool> _pool = new Box<BoundedThreadPool>();
 		scheduler.set(_scheduler);
