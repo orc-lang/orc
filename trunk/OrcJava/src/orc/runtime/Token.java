@@ -196,7 +196,6 @@ public class Token implements Serializable, Locatable {
 		env = null;
 		group = null;
 		region = null;
-		trans = null;
 		engine = null;
 		location = null;
 		tracer = null;
