@@ -27,18 +27,19 @@ def threadRingRunner(p) =
   val lastid = upto(N) >i> threadRing(i+1, ring(i), ring((i+1) % N))
   lastid
 
-def runTest(n, t) =
+def runTest(n, t, i) =
    val c = Clock()
-   c() >start>
+   println(i+" started.")>>c() >start>
    ( val x = threadRingRunner(n) >r> Some(r = n % N + 1) 
   | Rtimer(t) >> None()
      x >> c() >end> (x, end - start)
-   )
+   ) >aa> println(i+ " ended!")>>aa
 
 def metronome2(n, x) = if x > 0 then (signal | Rtimer(n) >> metronome2(n, x-1))
                         else stop      
+val i = Ref(0)
 
-metronome2(100, 200) >> runTest(1000, 3010)
+metronome2(50, 100) >>i:=i?+1>> runTest(1000, 3000, i?)
 
 {-
 OUTPUT:
