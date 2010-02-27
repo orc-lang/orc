@@ -6,6 +6,9 @@
 
 package kilim;
 
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 
 public class WorkerThread extends Thread {
     Task runningTask;
@@ -14,7 +17,7 @@ public class WorkerThread extends Thread {
      * by kilim.ReentrantLock and Task to ensure that lock.release() is
      * done on the same thread as lock.acquire()
      */
-    RingQueue<Task> tasks = new RingQueue<Task>(10);
+    protected Queue<Task> tasks = new ConcurrentLinkedQueue<Task>();
     Scheduler scheduler;
 
     public int numResumes = 0;
@@ -43,15 +46,15 @@ public class WorkerThread extends Thread {
     
     public synchronized void addRunnableTask(Task t) {
         assert t.preferredResumeThread == null || t.preferredResumeThread == this : "Task given to wrong thread";
-        tasks.put(t);
+        tasks.offer(t);
         notify();
     }
 
     public synchronized boolean hasTasks() {
-    	return tasks.size() > 0;
+      return tasks.size() > 0;
     }
-    public synchronized Task getNextTask() {
-        return tasks.get();
+    public Task getNextTask() {
+        return tasks.poll();
     }
         
     public synchronized void waitForMsgOrSignal() {
