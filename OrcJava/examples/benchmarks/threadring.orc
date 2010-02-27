@@ -11,24 +11,35 @@ http://shootout.alioth.debian.org/u32q/benchmark.php?test=threadring&lang=all
 -}
 
 def threadRing(Integer, Integer, Buffer[Integer], Buffer[Integer]) :: Integer
-def threadRing(id, m, in, next) =
+def threadRing(id, in, next) =
     in.get() >x> 
-    (if (m = x) then 
-	id 
+    (if (x <= 0) then 
+id 
      else 
-        next.put(x+1) >> threadRing(id, m, in, next))
+        next.put(x-1) >> threadRing(id, in, next))
 
 val N = 503
 
 def threadRingRunner(Integer) :: Signal
 def threadRingRunner(p) =
   val ring = IArray(N, lambda(_ :: Integer) = Buffer[Integer]()) 
-  val _ = ring(0).put(0)
-  val lastid = upto(N) >i> threadRing(i+1, p, ring(i), ring((i+1) % N))
-  println(lastid)
+  val _ = ring(0).put(p)
+  val lastid = upto(N) >i> threadRing(i+1, ring(i), ring((i+1) % N))
+  lastid
 
-threadRingRunner(1000) >> 
-threadRingRunner(10000) >> stop 
+def runTest(n, t) =
+   val c = Clock()
+   c() >start>
+   ( val x = threadRingRunner(n) >r> Some(r = n % N + 1) 
+  | Rtimer(t) >> None()
+     x >> c() >end> (x, end - start)
+   )
+
+def metronome2(n, x) = if x > 0 then (signal | Rtimer(n) >> metronome2(n, x-1))
+                        else stop      
+
+metronome2(100, 200) >> runTest(1000, 3010)
+
 {-
 OUTPUT:
 498

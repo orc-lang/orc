@@ -78,7 +78,7 @@ public class Config implements Cloneable {
 	private Integer maxPubs = null;
 	private String filename = "script";
 	private InputStream instream;
-	private final int numKilimThreads = 1;
+	private final int numKilimThreads = 2;
 	private int numSiteThreads = 2;
 	private Boolean noPrelude = false;
 	private HashMap<String, Boolean> caps = new HashMap<String, Boolean>();

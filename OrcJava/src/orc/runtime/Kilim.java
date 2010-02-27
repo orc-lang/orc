@@ -104,7 +104,7 @@ public final class Kilim {
 			// so there's a window where we may need an extra
 			// thread or two. Worst case, if every thread stops
 			// at once, we'll need twice as many threads.
-			executor = new ThreadPoolExecutor(0, size * 2, 30, TimeUnit.SECONDS, new SynchronousQueue<Runnable>()) {
+			executor = new ThreadPoolExecutor(2, size * 2, 30, TimeUnit.SECONDS, new SynchronousQueue<Runnable>()) {
 				@Override
 				protected void afterExecute(final Runnable r, final Throwable t) {
 					super.afterExecute(r, t);
