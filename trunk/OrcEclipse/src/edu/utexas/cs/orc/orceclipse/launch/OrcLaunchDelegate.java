@@ -130,11 +130,15 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 			final String mainTypeName = "orc.Orc"; //$NON-NLS-1$
 			final IVMRunner runner = getVMRunner(configuration, mode);
 
-			final File workingDir = verifyWorkingDirectory(configuration);
-			String workingDirName = null;
-			if (workingDir != null) {
-				workingDirName = workingDir.getAbsolutePath();
+			final File launchConfigWorkingDir = verifyWorkingDirectory(configuration);
+			final String workingDirName;
+			if (launchConfigWorkingDir != null) {
+				workingDirName = launchConfigWorkingDir.getAbsolutePath();
+			} else {
+				// Default to dir of launched file
+				workingDirName = orcProgToLaunch.getParent().getLocation().toOSString();
 			}
+
 
 			// Environment variables
 			final String[] envp = getEnvironment(configuration);
