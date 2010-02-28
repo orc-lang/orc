@@ -31,14 +31,16 @@ public class OrcLaunchConfigurationTabGroup extends AbstractLaunchConfigurationT
 	 * @see org.eclipse.debug.ui.ILaunchConfigurationTabGroup#createTabs(org.eclipse.debug.ui.ILaunchConfigurationDialog, java.lang.String)
 	 */
 	public void createTabs(final ILaunchConfigurationDialog dialog, final String mode) {
-		final ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] { new OrcGeneralLaunchConfigurationTab(),
-		//new JavaMainTab(),
+		final ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] { 
+				new OrcGeneralLaunchConfigurationTab(),
+				//new JavaMainTab(),
 				//new JavaArgumentsTab(), 
 				//new JavaJRETab(), 
-				//new JavaClasspathTab(),
+				new OrcRuntimeClasspathTab(),
 				//new SourceLookupTab(),
 				//new EnvironmentTab(),
-				new CommonTab(), };
+				new CommonTab(), 
+		};
 		setTabs(tabs);
 	}
 

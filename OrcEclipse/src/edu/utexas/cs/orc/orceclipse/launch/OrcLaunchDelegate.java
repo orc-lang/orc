@@ -41,6 +41,7 @@ import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.internal.ui.stringsubstitution.SelectedResourceManager;
 import org.eclipse.jdt.launching.AbstractJavaLaunchConfigurationDelegate;
 import org.eclipse.jdt.launching.ExecutionArguments;
+import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
 import org.eclipse.osgi.baseadaptor.BaseData;
@@ -153,9 +154,13 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 			final Map vmAttributesMap = getVMSpecificAttributesMap(configuration);
 
 			// Classpath
-			final String[] classpath = getAbsoluteClasspathForClass(Orc.class);
-			//TODO: Allow entries from getClasspath(configuration) to be added to the orc.Orc's classpath?
-
+			String[] classpath;
+			if (!configuration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_DEFAULT_CLASSPATH, true) && getClasspath(configuration).length > 0) {
+				classpath = getClasspath(configuration);
+			} else {
+				classpath = getAbsoluteClasspathForClass(Orc.class);
+			}
+			
 			// Create VM config
 			final VMRunnerConfiguration runConfig = new VMRunnerConfiguration(mainTypeName, classpath);
 			runConfig.setProgramArguments(execArgs.getProgramArgumentsArray());
