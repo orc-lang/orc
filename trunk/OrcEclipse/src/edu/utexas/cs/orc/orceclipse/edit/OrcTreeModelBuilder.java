@@ -16,7 +16,6 @@
 package edu.utexas.cs.orc.orceclipse.edit;
 
 import orc.ast.extended.ASTNode;
-import orc.ast.extended.visitor.Walker;
 import orc.ast.extended.declaration.ClassDeclaration;
 import orc.ast.extended.declaration.IncludeDeclaration;
 import orc.ast.extended.declaration.SiteDeclaration;
@@ -29,6 +28,7 @@ import orc.ast.extended.expression.Declare;
 import orc.ast.extended.expression.Lambda;
 import orc.ast.extended.expression.Pruning;
 import orc.ast.extended.expression.Sequential;
+import orc.ast.extended.visitor.Walker;
 
 import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.services.base.TreeModelBuilderBase;

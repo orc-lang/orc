@@ -25,6 +25,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.part.ISetSelectionTarget;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 
 import edu.utexas.cs.orc.orceclipse.Activator;
@@ -50,20 +51,20 @@ public class NewOrcFileWizard extends Wizard implements INewWizard {
 		setNeedsProgressMonitor(true);
 	}
 
-    /**
-     * Initializes this creation wizard using the passed workbench and
-     * object selection.
-     * <p>
-     * This method is called after the no argument constructor and
-     * before other methods are called.
-     *
-     * @param workbench the current workbench
-     * @param selection the current object selection
+	/**
+	 * Initializes this creation wizard using the passed workbench and
+	 * object selection.
+	 * <p>
+	 * This method is called after the no argument constructor and
+	 * before other methods are called.
+	 *
+	 * @param workbench the current workbench
+	 * @param selection the current object selection
 	 * @see org.eclipse.ui.IWorkbenchWizard#init(org.eclipse.ui.IWorkbench, org.eclipse.jface.viewers.IStructuredSelection)
 	 */
 	@Override
 	public void init(final IWorkbench workbench, final IStructuredSelection selection) {
-        this.workbench = workbench;
+		this.workbench = workbench;
 		this.selection = selection;
 	}
 
@@ -79,45 +80,45 @@ public class NewOrcFileWizard extends Wizard implements INewWizard {
 	/**
 	 * Called when 'Finish' button is pressed in the wizard.  Creates
 	 * the file, and opens an editor on it. 
-     *
-     * @return <code>true</code> to indicate the finish request
-     *   was accepted, and <code>false</code> to indicate
-     *   that the finish request was refused
+	 *
+	 * @return <code>true</code> to indicate the finish request
+	 *   was accepted, and <code>false</code> to indicate
+	 *   that the finish request was refused
 	 * @see org.eclipse.jface.wizard.Wizard#performFinish()
 	 */
 	@Override
 	public boolean performFinish() {
-        IFile file = page.createNewFile();
-        if (file == null) {
+		final IFile file = page.createNewFile();
+		if (file == null) {
 			return false;
 		}
 
-        selectAndReveal(file);
+		selectAndReveal(file);
 
-        // Open editor on new file.
-        IWorkbenchWindow dw = workbench.getActiveWorkbenchWindow();
-        try {
-            if (dw != null) {
-                IWorkbenchPage page = dw.getActivePage();
-                if (page != null) {
-                    IDE.openEditor(page, file, true);
-                }
-            }
-        } catch (PartInitException e) {
-        	Activator.logAndShow(e);
-        }
+		// Open editor on new file.
+		final IWorkbenchWindow dw = workbench.getActiveWorkbenchWindow();
+		try {
+			if (dw != null) {
+				final IWorkbenchPage page = dw.getActivePage();
+				if (page != null) {
+					IDE.openEditor(page, file, true);
+				}
+			}
+		} catch (final PartInitException e) {
+			Activator.logAndShow(e);
+		}
 
-        return true;
+		return true;
 	}
 
 	/**
-     * Selects and reveals the newly added resource in all parts
-     * of the active workbench window's active page.
-     *
-     * @see ISetSelectionTarget
-     */
-    protected void selectAndReveal(IResource newResource) {
-    	BasicNewResourceWizard.selectAndReveal(newResource, workbench.getActiveWorkbenchWindow());
-    }
+	 * Selects and reveals the newly added resource in all parts
+	 * of the active workbench window's active page.
+	 *
+	 * @see ISetSelectionTarget
+	 */
+	protected void selectAndReveal(final IResource newResource) {
+		BasicNewResourceWizard.selectAndReveal(newResource, workbench.getActiveWorkbenchWindow());
+	}
 
 }

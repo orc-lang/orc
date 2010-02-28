@@ -39,7 +39,7 @@ public class NewOrcFileWizardPage extends WizardNewFileCreationPage {
 	 * @param pageName
 	 * @param selection
 	 */
-	public NewOrcFileWizardPage(String pageName, IStructuredSelection selection) {
+	public NewOrcFileWizardPage(final String pageName, final IStructuredSelection selection) {
 		super(pageName, selection);
 		setTitle(Messages.NewOrcFileWizardPage_Title);
 		setDescription(Messages.NewOrcFileWizardPage_Descrption);
@@ -53,10 +53,10 @@ public class NewOrcFileWizardPage extends WizardNewFileCreationPage {
 	protected InputStream getInitialContents() {
 		//TODO: Use a user-config'ed template, with variables.
 		final String contents = 
-			"{- " + getFileName() + "\n" +
-			" - \n" +
-			" - $Id$\n" +
-			" - \n" +
+			"{- " + getFileName() + "\n" + 
+			" - \n" + 
+			" - $Id$\n" + 
+			" - \n" + 
 			" - Created by " + System.getProperty("user.name") + " on " + DateFormat.getDateTimeInstance().format(new Date()) + "\n" + //$NON-NLS-2$
 			" -}\n\n";
 		return new ByteArrayInputStream(contents.getBytes());
