@@ -427,16 +427,26 @@
          </description>
       </wizard>
       <wizard
-            name="New Orc File"
-            icon="orc16.gif"
             category="edu.utexas.cs.orc.orceclipse.wizards.OrcCategory"
-            class="org.eclipse.ui.wizards.newresource.BasicNewFileResourceWizard"
-            project="false"
-            id="edu.utexas.cs.orc.orceclipse.wizards.NewOrcFileWizard">
+            class="edu.utexas.cs.orc.orceclipse.edit.NewOrcFileWizard"
+            icon="orc16.gif"
+            id="edu.utexas.cs.orc.orceclipse.wizards.NewOrcFileWizard"
+            name="New Orc File"
+            project="false">
          <description>
             Create a new Orc source code file
          </description>
       </wizard>
+      <category
+            id="edu.utexas.cs.orc.orceclipse"
+            name="Orc">
+      </category>
+      <primaryWizard
+            id="edu.utexas.cs.orc.orceclipse.wizards.NewOrcFileWizard">
+      </primaryWizard>
+      <primaryWizard
+            id="edu.utexas.cs.orc.orceclipse.wizards.NewOrcProjectWizard">
+      </primaryWizard>
    </extension>
    <extension
          point="org.eclipse.ui.ide.projectNatureImages">

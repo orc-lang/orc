@@ -25,6 +25,8 @@ import org.eclipse.osgi.util.NLS;
 public class Messages extends NLS {
 	private static final String BUNDLE_NAME = "edu.utexas.cs.orc.orceclipse.messages"; //$NON-NLS-1$
 	public static String Activator_InternalError;
+	public static String NewOrcFileWizardPage_Descrption;
+	public static String NewOrcFileWizardPage_Title;
 	public static String OrcBuilder_BuildingOrcFile;
 	public static String OrcBuilder_CompilerInternalErrorOn;
 	public static String OrcBuilder_DoneBuildingOrcFile;
