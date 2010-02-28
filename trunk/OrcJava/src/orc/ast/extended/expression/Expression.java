@@ -155,6 +155,9 @@ public abstract class Expression implements ASTNode, Locatable {
 	 * Utility method to join a sequence of items with a separator.
 	 */
 	public static String join(final Collection<?> items, final String separator) {
+		if (items == null) {
+			return "";
+		}
 		final StringBuilder out = new StringBuilder();
 		final Iterator<?> it = items.iterator();
 		if (it.hasNext()) {

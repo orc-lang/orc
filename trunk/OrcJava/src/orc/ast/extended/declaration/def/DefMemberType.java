@@ -50,17 +50,20 @@ public class DefMemberType extends DefMember {
 
 		s.append(name);
 
-		s.append('[');
-		s.append(Expression.join(typeParams, ", "));
-		s.append(']');
+		if (typeParams != null) {
+  		s.append('[');
+  		s.append(Expression.join(typeParams, ", "));
+  		s.append(']');
+		}
 
 		for (final List<Type> argTypes : argTypesList) {
 			s.append('(');
-			s.append(Expression.join(argTypes, ","));
+			if (argTypes != null) {
+			  s.append(Expression.join(argTypes, ","));
+			}
 			s.append(')');
 		}
 
-		s.append(')');
 		s.append(" :: ");
 		s.append(resultType);
 

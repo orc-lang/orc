@@ -63,7 +63,9 @@ public class DefMemberClause extends DefMember {
 		s.append(name);
 		for (final List<Pattern> ps : formals) {
 			s.append('(');
-			s.append(Expression.join(ps, ","));
+			if (ps != null) {
+			  s.append(Expression.join(ps, ","));
+			}
 			s.append(')');
 		}
 

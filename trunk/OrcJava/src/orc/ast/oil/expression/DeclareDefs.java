@@ -252,7 +252,7 @@ public class DeclareDefs extends Expression {
 		// These closures are compacted, which is why we
 		// consult d.free
 		i = 0;
-		for (final Def d : defs) {
+		for (@SuppressWarnings("unused") final Def d : defs) {
 			final Closure c = closures[i++];
 
 			//FIXME: Add closure compaction back!
