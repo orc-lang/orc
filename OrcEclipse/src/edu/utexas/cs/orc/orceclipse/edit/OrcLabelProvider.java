@@ -23,7 +23,6 @@ import orc.ast.extended.declaration.ClassDeclaration;
 import orc.ast.extended.declaration.IncludeDeclaration;
 import orc.ast.extended.declaration.SiteDeclaration;
 import orc.ast.extended.declaration.ValDeclaration;
-import orc.ast.extended.declaration.def.DefMember;
 import orc.ast.extended.declaration.def.DefMemberClause;
 import orc.ast.extended.declaration.def.DefMemberType;
 import orc.ast.extended.declaration.type.DatatypeDeclaration;
@@ -72,6 +71,8 @@ public class OrcLabelProvider implements ILabelProvider {
 	private static Image ORC_INCLUDE_W_WARNING = new DecorationOverlayIcon(ORC_INCLUDE_OBJ_IMAGE, orcImageRegistry.getDescriptor(OrcResources.WARNING_OVR), IDecoration.BOTTOM_LEFT).createImage();
 
 	private static Image ORC_GENERIC_OBJ_IMAGE = orcImageRegistry.get(OrcResources.ORC_GENERIC_OBJ);
+
+	private static Image ORC_DEF_TYPE_OBJ_IMAGE = orcImageRegistry.get(OrcResources.ORC_DEF_TYPE_OBJ);
 
 	private static Image ORC_DEF_OBJ_IMAGE = orcImageRegistry.get(OrcResources.ORC_DEF_OBJ);
 
@@ -134,7 +135,10 @@ public class OrcLabelProvider implements ILabelProvider {
 		if (n instanceof IncludeDeclaration) {
 			return ORC_INCLUDE_OBJ_IMAGE;
 		}
-		if (n instanceof DefMember) {
+		if (n instanceof DefMemberType) {
+			return ORC_DEF_TYPE_OBJ_IMAGE;
+		}
+		if (n instanceof DefMemberClause) {
 			return ORC_DEF_OBJ_IMAGE;
 		}
 		if (n instanceof SiteDeclaration) {
