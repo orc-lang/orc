@@ -51,6 +51,7 @@ public class Messages extends NLS {
 	public static String OrcProjectPropertyPage_SiteClassPathLabel;
 	public static String OrcProjectPropertyPage_SiteClassPathMessage;
 	public static String OrcProjectPropertyPage_TypeCheckLabel;
+	public static String OrcRuntimeClasspathTab_RuntimeClasspathTabName;
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);

@@ -225,7 +225,7 @@ public class OrcBuilder extends BuilderBase {
 				// Disregard returned OIL, we just want the errors
 			} catch (final IOException e) {
 				//TODO: Handle this differently?
-				getConsoleStream().println(Messages.OrcBuilder_IOErrorWhenBuilding + file.getName() + ": " + e.getMessage());
+				getConsoleStream().println(Messages.OrcBuilder_IOErrorWhenBuilding + file.getName() + ": " + e.getMessage()); //$NON-NLS-1$
 				getPlugin().logException(e.getMessage(), e);
 			}
 
@@ -233,7 +233,7 @@ public class OrcBuilder extends BuilderBase {
 		} catch (final Exception e) {
 			// catch Exception, because any exception could break the
 			// builder infrastructure.
-			getConsoleStream().println(Messages.OrcBuilder_CompilerInternalErrorOn + file.getName() + ": " + e.getMessage());
+			getConsoleStream().println(Messages.OrcBuilder_CompilerInternalErrorOn + file.getName() + ": " + e.getMessage()); //$NON-NLS-1$
 			getPlugin().logException(e.getMessage(), e);
 		}
 		getConsoleStream().println(Messages.OrcBuilder_DoneBuildingOrcFile + file.getName());
