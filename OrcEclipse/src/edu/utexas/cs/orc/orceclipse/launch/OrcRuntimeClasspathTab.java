@@ -17,6 +17,8 @@ package edu.utexas.cs.orc.orceclipse.launch;
 
 import org.eclipse.jdt.debug.ui.launchConfigurations.JavaClasspathTab;
 
+import edu.utexas.cs.orc.orceclipse.Messages;
+
 /**
  * 
  *
@@ -29,7 +31,7 @@ public class OrcRuntimeClasspathTab extends JavaClasspathTab {
 	 */
 	@Override
 	public String getName() {
-		return "Alternative Orc Runtime Engine";
+		return Messages.OrcRuntimeClasspathTab_RuntimeClasspathTabName;
 	}
 
 	/* (non-Javadoc)
@@ -37,7 +39,7 @@ public class OrcRuntimeClasspathTab extends JavaClasspathTab {
 	 */
 	@Override
 	public String getId() {
-		return "edu.utexas.cs.orc.orceclipse.launch.OrcRuntimeClasspathTab";
+		return "edu.utexas.cs.orc.orceclipse.launch.OrcRuntimeClasspathTab"; //$NON-NLS-1$
 	}
 
 	/* (non-Javadoc)
