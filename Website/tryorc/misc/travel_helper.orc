@@ -29,8 +29,9 @@ Given a calendar event description, return a probable
 trip destination.  If none is found, halt.
 --}
 def extractLocation(description) =
-  if(description.startsWith("trip to ")) >>
-  description.substring(8)
+  val desc = description.trim().toUpperCase()
+  if(desc.startsWith("TRIP TO ")) >>
+  desc.substring(8)
 
 site Geocoder = orc.lib.net.GoogleGeocoder
 val geo = Geocoder("orc/orchard/orchard.properties")
