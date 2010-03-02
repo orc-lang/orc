@@ -26,7 +26,6 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -39,11 +38,9 @@ import net.oauth.OAuthConsumer;
 import net.oauth.OAuthException;
 import net.oauth.OAuthMessage;
 import net.oauth.OAuthProblemException;
-import net.oauth.client.HttpClientPool;
-import net.oauth.client.OAuthHttpClient;
+import net.oauth.client.OAuthClient;
+import net.oauth.http.HttpResponseMessage;
 import net.oauth.signature.RSA_SHA1;
-
-import org.apache.commons.httpclient.HttpClient;
 
 import com.centerkey.utils.BareBonesBrowserLaunch;
 
@@ -86,13 +83,7 @@ public class SimpleOAuth {
 	/**
 	 * HTTP client factory.
 	 */
-	private final OAuthHttpClient client = new OAuthHttpClient(new HttpClientPool() {
-		// This trivial 'pool' simply allocates a new client every time.
-		// More efficient implementations are possible.
-		public HttpClient getHttpClient(final URL server) {
-			return new HttpClient();
-		}
-	});
+	private final OAuthClient client = new OAuthClient(new net.oauth.client.httpclient3.HttpClient3());
 
 	/**
 	 * Consumer factory.
@@ -156,19 +147,7 @@ public class SimpleOAuth {
 				// abort if it is not a redirect
 				throw e;
 			}
-			final List<OAuth.Parameter> headers = (List<OAuth.Parameter>) e.getParameters().get(OAuthProblemException.RESPONSE_HEADERS);
-			// abort if headers were not found
-			if (headers == null) {
-				throw e;
-			}
-			// find the redirect URL
-			String redirectUrl = null;
-			for (final OAuth.Parameter header : headers) {
-				if (header.getKey().equals("Location")) {
-					redirectUrl = header.getValue();
-					break;
-				}
-			}
+			final String redirectUrl = (String) e.getParameters().get(HttpResponseMessage.LOCATION);
 			// abort if redirect URL not found
 			if (redirectUrl == null) {
 				throw e;
