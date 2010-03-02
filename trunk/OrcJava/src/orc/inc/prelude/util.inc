@@ -123,7 +123,8 @@ def upto(high) = for(0, high)
 {--
 @def fillArray[A](Array[A], lambda (Integer) :: A) :: Array[A]
 Given an array and a function from indices to values, populate the array
-by calling the function for each index in the array.
+by calling the function for each index in the array. Return the array
+once it has been populated.
 
 For example, to set all elements of an array to zero:
 <programlisting language="orc-demo"><![CDATA[

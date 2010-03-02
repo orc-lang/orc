@@ -83,3 +83,14 @@ argument, in milliseconds.
 --}
 def metronome(Integer) :: Signal
 def metronome(t) = signal | Rtimer(t) >> metronome(t)
+
+
+{-
+@def timeout[A](A, Integer) :: Option[A]
+Wait for a variable to become bound, up to the specified timeout in milliseconds.
+If it does become bound to a value v, publish Some(v).
+If instead the timeout is reached, publish None().
+-}
+def timeout[A](A, Integer) :: Option[A]
+def timeout(x, t) = let(Some(x) | Rtimer(t) >> None())
+
