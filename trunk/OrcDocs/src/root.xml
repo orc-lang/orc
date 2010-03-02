@@ -2687,7 +2687,7 @@ in Orc. The following part will illustrate the use of capsules with a couple
 of examples. Further on, we explain how do we implement capsules in Orc. 
 </para>
 <para>
-Here is an example of defining a capsule and it's usage. 
+Here is an example of defining a capsule and its usage. 
 <programlisting><![CDATA[
 def capsule channel() = 
   val ch = Buffer[Integer]()
@@ -3080,7 +3080,7 @@ the result list once they all return using a fork-join.
 
 </section>
 
-<section><title>Streams</title>
+<section id="methodology.streams"><title>Streams</title>
 
 <para>
 Sometimes a source of data is not explicitly represented by a list or other data structure. Instead,
@@ -3123,73 +3123,24 @@ repeat(c.get)
 
 </section>
 
-<section><title>Arrays</title>
 
-<para>
-While lists are a very useful data structure, they are not indexed; it is not possible to get the nth element of
-a list in constant time. However, this capability is often needed in practice, so the Orc standard library
-provides a function <code>IArray</code> to create immutable arrays. Once initialized, an immutable array cannot
-be rewritten; it can only be read. 
-</para>
-
-<para>
-<code>IArray</code> takes two arguments: an array size, and a function to initialize the array. The function
-takes the index being initialized as an argument (indices start at 0), and publishes the value to be stored
-at that array position. Here are a few examples:
-
-<programlisting language="orc-demo">
-{- Create an array of 10 elements; element i is the ith power of 2 -}
-IArray(10, lambda(i) = 2 ** i)
-</programlisting>
-
-<programlisting language="orc-demo">
-{- Create an array of 5 elements; each element is a newly created buffer -}
-IArray(5, lambda(_) = Buffer())
-</programlisting>
-</para>
-
-<para>
-The array is used like a function; the call <code>A(i)</code> returns the <code>i</code>th element of the
-array <code>A</code>. A call with an out-of-bounds index halts. 
-
-<programlisting language="orc-demo">
-{- Create an array of 3 buffers -}
-val A = IArray(10, lambda(_) = Buffer())
-
-{- Send true on the 0th channel
-   and listen for a value on the 0th channel. -}
-A(0).put(true) | A(0).get()
-</programlisting>
-</para>
-
-
-<para>
-Since arrays are accessed by index, there is a library function specifically
-designed to make programming with indices easier. The function <code>upto(n)</code> 
-publishes all of the numbers from <code>0</code> to
-<code>n-1</code> simultaneously; thus, it is very easy to access all of the elements of
-an array simultaneously. Suppose we have an array <code>A</code> of <code>n</code> email 
-addresses and would like to send the message <code>m</code> to each one.
-
-<programlisting><![CDATA[
-upto(n) >i> A(i) >address> Email(address, m)
-]]></programlisting>
-
-</para>
-
-</section>
-
-
-
-<section><title>Mutable Storage</title>
+<section><title>Mutable References</title>
 
 <para>
 Variables in Orc are immutable. There is no assignment operator, and there is no way to
 change the value of a bound variable. However, it is often useful to have mutable state
 when writing certain algorithms. The Orc library contains two sites that offer simple 
-mutable storage: <code>Ref</code> and <code>Cell</code>.
+mutable storage: <code>Ref</code> and <code>Cell</code>. It also provides the site <code>Array</code>
+to create mutable arrays.
 </para>
 
+<para>
+A word of caution: References, cells, and other mutable objects may be accessed concurrently
+by many different parts of an Orc program, so race conditions may arise. 
+</para> 
+
+
+<section><title>Rewritable references</title>
 <para>
 The <code>Ref</code> site creates rewritable reference cells.
 
@@ -3223,6 +3174,10 @@ r.read() | Rtimer(1000) >> r.write(1) >> stop
 
 </para>
 
+</section>
+
+<section><title>Write-once references</title>
+
 <para>
 The Orc library also offers write-once reference cells, using the <code>Cell</code> site.
 A write-once cell has no initial value. Read operations block until the cell has been
@@ -3246,12 +3201,10 @@ they have been studied extensively in the context of the
 <link xlink:href="http://en.wikipedia.org/wiki/Oz_programming_language">Oz programming language</link>.
 </para>
 
-<para>
-A word of caution: References, cells, and other mutable objects may be accessed concurrently
-by many different parts of an Orc program, so race conditions may arise. 
-</para> 
+</section>
 
-<section><title>Reference Syntax</title>
+
+<section><title>Reference syntax</title>
 
 <para>Orc provides syntactic sugar for reading and writing mutable storage:</para>
 
@@ -3279,6 +3232,90 @@ val r = Cell()
 ]]></programlisting>
 
 </section>
+
+<section><title>Arrays</title>
+
+<para>
+While lists are a very useful data structure, they are not mutable, and they are not indexed. However, 
+these properties are often needed in practice, so the Orc standard library provides a function 
+<code>Array</code> to create mutable arrays. 
+</para>
+
+<para>
+<code>Array(n)</code> creates an array of size <code>n</code> whose elements are all initially <code>null</code>. 
+The array is used like a function; the call <code>A(i)</code> returns the <code>i</code>th element of the array 
+<code>A</code>, which is then treated as a reference, just like the references created by <code>Ref</code>. A call 
+with an out-of-bounds index halts, possibly reporting an error. 
+</para>
+
+<para>
+
+The following program creates an array of size 10, and initializes each index i with the
+ith power of 2. It then reads the array values at indices 3, 6, and 10. The read at index 10
+halts because it is out of bounds (arrays are indexed from 0).
+
+<programlisting language="orc-demo"><![CDATA[
+val a = Array(10)
+def initialize(i) = 
+  if (i < 10) 
+    then a(i) := 2 ** i  >>  initialize(i+1)
+    else signal
+initialize(0) >> (a(3)? | a(6)? | a(10)?)
+]]>
+</programlisting>
+
+</para>
+
+<para>
+
+The standard library also provides a helper function <code>fillArray</code> which makes array initialization
+easier. <code>fillArray(a, f)</code> initializes array <code>a</code> using function <code>f</code> by setting
+element <code>a(i)</code> to the first value published by <code>f(i)</code>. When the array is fully
+initialized, <code>fillArray</code> returns the array <code>a</code> that was passed (which makes it easier to
+simultaneously create and initialize an array). Here are a few examples:
+
+<programlisting language="orc-demo">
+{- Create an array of 10 elements; element i is the ith power of 2 -}
+fillArray(Array(10), lambda(i) = 2 ** i)
+</programlisting>
+
+<programlisting language="orc-demo">
+{- Create an array of 5 elements; each element is a newly created buffer -}
+fillArray(Array(5), lambda(_) = Buffer())
+</programlisting>
+
+<programlisting language="orc-demo">
+{- Create an array of 2 channels -}
+val A = fillArray(Array(2), lambda(_) = Buffer())
+
+{- 
+   Send true on channel 0,
+   listen for a value on channel 0 and forward it to channel 1, 
+   and listen for a value on channel 1 and publish it. 
+-}
+  A(0)?.put(true) >> stop
+| A(0)?.get() >x> A(1)?.put(x) >> stop
+| A(1)?.get()
+</programlisting>
+</para>
+
+
+<para>
+Since arrays are accessed by index, there is a library function specifically
+designed to make programming with indices easier. The function <code>upto(n)</code> 
+publishes all of the numbers from <code>0</code> to
+<code>n-1</code> simultaneously; thus, it is very easy to access all of the elements of
+an array simultaneously. Suppose we have an array <code>A</code> of <code>n</code> email 
+addresses and would like to send the message <code>m</code> to each one.
+
+<programlisting><![CDATA[
+upto(n) >i> A(i)? >address> Email(address, m)
+]]></programlisting>
+
+</para>
+
+</section>
+
 </section>
 
 <section><title>Loops</title>
@@ -3672,6 +3709,63 @@ val s = Some(]]><emphasis role="bold">F</emphasis><![CDATA[) | Rtimer(t) >> None
 
 </para>
 
+<para>
+
+It is even possible to encapsulate timeout as a function.
+
+<programlisting><![CDATA[
+def timeout(x, t) = let(Some(x) | Rtimer(t) >> None())
+]]></programlisting>
+
+<code><![CDATA[timeout(]]><emphasis role="bold">F</emphasis><![CDATA[, t)]]></code> waits 
+<code>t</code> milliseconds for F to publish a value. If F publishes <code>v</code> within
+the time limit, <code>timeout</code> returns <code>Some(v)</code>. Otherwise, it returns
+<code>None()</code> when the time limit is reached.
+
+</para>
+
+<section><title>Timeout streams</title>
+
+<para>
+We can also apply timeout to <link linkend="methodology.streams">streams</link>. Let's
+define a modified version of the <code>repeat</code> function as follows:
+
+<programlisting><![CDATA[
+def repeatWithTimeout(f, t) = 
+  timeout(f(), t) 
+    >Some(x)> 
+  (x | repeatWithTimeout(f, t))
+
+]]></programlisting>
+</para>
+
+<para>
+We call <code>f()</code> as before, but apply a timeout of <code>t</code> to the call.
+If a value becomes available from <code>f</code> before the timeout, then the call to
+<code>timeout</code> publishes <code>Some(x)</code>, which we match, and then publish
+<code>x</code> and recursively wait for further values from the stream.
+</para>
+
+<para>
+However, if no value is available from <code>f</code> within the timeout, the call 
+to <code>timeout</code> publishes <code>None()</code>. Since <code>None()</code> does 
+not match the pattern, the entire expression halts, indicating that the end of the
+stream has been reached.
+</para>
+
+<para>
+It is also possible to achieve this behavior with the existing <code>repeat</code> function,
+simply by changing the function passed to <code>repeat</code>:
+
+<programlisting><![CDATA[
+def f'() = timeout(f(), t) >Some(x)> x
+repeat(f')
+]]></programlisting>
+
+</para>
+
+
+</section>
  
 </section>
 
