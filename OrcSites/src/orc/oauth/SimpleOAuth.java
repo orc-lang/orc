@@ -103,6 +103,12 @@ public class SimpleOAuth {
 		RECOVERABLE_PROBLEMS.add("permission_unknown");
 	}
 
+	/**
+	 * Constructs an object of class SimpleOAuth, initializing with the given properties.
+	 *
+	 * @param resource Resource name of file containing properties of this client/consumer
+	 * @throws IOException
+	 */
 	public SimpleOAuth(final String resource) throws IOException {
 		final URL resourceURL = SimpleOAuth.class.getResource(resource);
 		if (resourceURL == null) {
@@ -111,10 +117,21 @@ public class SimpleOAuth {
 		consumers = new ConsumerProperties(ConsumerProperties.getProperties(resourceURL));
 	}
 
+	/**
+	 * Constructs an object of class SimpleOAuth, initializing with the given properties.
+	 *
+	 * @param resource URL of file containing properties of this client/consumer
+	 * @throws IOException
+	 */
 	public SimpleOAuth(final URL resource) throws IOException {
 		this(ConsumerProperties.getProperties(resource));
 	}
 
+	/**
+	 * Constructs an object of class SimpleOAuth, initializing with the given properties.
+	 *
+	 * @param properties Properties of this client/consumer
+	 */
 	public SimpleOAuth(final Properties properties) {
 		consumers = new ConsumerProperties(properties);
 	}
@@ -122,6 +139,15 @@ public class SimpleOAuth {
 	/**
 	 * Invoke an OAuth service with custom parameters while handling redirects
 	 * transparently.
+	 * 
+	 * @param accessor
+	 * @param url
+	 * @param parameters
+	 * @param maxRedirects
+	 * @return OAuthMessage response
+	 * @throws IOException
+	 * @throws OAuthException
+	 * @throws URISyntaxException
 	 */
 	@SuppressWarnings("unchecked")
 	private OAuthMessage invoke(final OAuthAccessor accessor, final String url, final Collection<? extends Map.Entry> parameters, final int maxRedirects) throws IOException, OAuthException, URISyntaxException {
@@ -156,6 +182,13 @@ public class SimpleOAuth {
 		}
 	}
 
+	/**
+	 * Get the consumer/client with the given name.
+	 * 
+	 * @param consumer String name of consumer/client
+	 * @return OAuthConsumer, with private key property set from keystore
+	 * @throws OAuthException
+	 */
 	public OAuthConsumer getConsumer(final String consumer) throws OAuthException {
 		OAuthConsumer out;
 		try {
@@ -215,24 +248,44 @@ public class SimpleOAuth {
 	}
 
 	/**
-	 * Get a new accessor for a consumer in the properties file.
+	 * Get a new accessor for a consumer/client in the properties file.
+	 * 
+	 * @param consumer
+	 * @return OAuthAccessor for this consumer/client
+	 * @throws OAuthException
 	 */
 	public OAuthAccessor newAccessor(final String consumer) throws OAuthException {
 		return new OAuthAccessor(getConsumer(consumer));
 	}
 
 	/**
-	 * Get a new request token.
+	 * Get a new request token/temporary credentials.
+	 * The consumer/client obtains a set of temporary credentials from the 
+	 * server by making an authenticated request to the Temporary 
+	 * Credential Request endpoint.
+	 * 
+	 * @param accessor
+	 * @param callbackURL
+	 * @throws IOException
+	 * @throws OAuthException
 	 */
-	public void setRequestToken(final OAuthAccessor accessor, final String callbackURL) throws IOException, OAuthException {
-		setRequestToken(accessor, OAuth.newList(), callbackURL);
+	public void obtainRequestToken(final OAuthAccessor accessor, final String callbackURL) throws IOException, OAuthException {
+		obtainRequestToken(accessor, OAuth.newList(), callbackURL);
 	}
 
 	/**
-	 * Get a new request token, with custom parameters in the request.
-	 * @param callbackURL 
+	 * Get a new request token/temporary credentials, with custom parameters in the request.
+	 * The consumer/client obtains a set of temporary credentials from the 
+	 * server by making an authenticated request to the Temporary 
+	 * Credential Request endpoint.
+	 * 
+	 * @param accessor
+	 * @param parameters
+	 * @param callbackURL
+	 * @throws IOException
+	 * @throws OAuthException
 	 */
-	public void setRequestToken(final OAuthAccessor accessor, Collection<OAuth.Parameter> parameters, final String callbackURL) throws IOException, OAuthException {
+	public void obtainRequestToken(final OAuthAccessor accessor, Collection<OAuth.Parameter> parameters, final String callbackURL) throws IOException, OAuthException {
 		accessor.requestToken = null;
 		accessor.accessToken = null;
 		accessor.tokenSecret = null;
@@ -259,16 +312,31 @@ public class SimpleOAuth {
 	}
 
 	/**
-	 * Exchange a request token for an access token.
+	 * Exchange a request token/temporary credentials for an access token/token credentials.
+	 * The consumer/client obtains a set of token credentials from the 
+	 * server by making an authenticated request to the Token 
+	 * Credential Request endpoint, using the temporary credentials.
+	 * 
+	 * @param accessor
+	 * @throws IOException
+	 * @throws OAuthException
 	 */
-	public void setAccessToken(final OAuthAccessor accessor) throws IOException, OAuthException {
-		setAccessToken(accessor, OAuth.newList());
+	public void obtainAccessToken(final OAuthAccessor accessor) throws IOException, OAuthException {
+		obtainAccessToken(accessor, OAuth.newList());
 	}
 
 	/**
-	 * Exchange a request token for an access token, with custom parameters in the request.
+	 * Exchange a request token/temporary credentials for an access token/token credentials, with custom parameters in the request.
+	 * The consumer/client obtains a set of token credentials from the 
+	 * server by making an authenticated request to the Token 
+	 * Credential Request endpoint, using the temporary credentials.
+	 * 
+	 * @param accessor
+	 * @param parameters
+	 * @throws IOException
+	 * @throws OAuthException
 	 */
-	public void setAccessToken(final OAuthAccessor accessor, final Collection<OAuth.Parameter> parameters) throws IOException, OAuthException {
+	public void obtainAccessToken(final OAuthAccessor accessor, final Collection<OAuth.Parameter> parameters) throws IOException, OAuthException {
 		OAuthMessage response;
 		parameters.add(new OAuth.Parameter(OAuth.OAUTH_TOKEN, accessor.requestToken));
 		String verifier = (String)accessor.getProperty("oauth_verifier"); 
@@ -285,10 +353,23 @@ public class SimpleOAuth {
 		accessor.tokenSecret = response.getParameter(OAuth.OAUTH_TOKEN_SECRET);
 	}
 
+	/**
+	 * @param accessor
+	 * @return
+	 * @throws IOException
+	 * @throws OAuthException
+	 */
 	public URL getAuthorizationURL(final OAuthAccessor accessor) throws IOException, OAuthException {
 		return getAuthorizationURL(accessor, accessor.consumer.callbackURL);
 	}
 
+	/**
+	 * @param accessor
+	 * @param callbackURL
+	 * @return
+	 * @throws IOException
+	 * @throws OAuthException
+	 */
 	public URL getAuthorizationURL(final OAuthAccessor accessor, final String callbackURL) throws IOException, OAuthException {
 		String out = OAuth.addParameters(accessor.consumer.serviceProvider.userAuthorizationURL, OAuth.OAUTH_TOKEN, accessor.requestToken);
 		if (callbackURL != null) {
@@ -297,12 +378,17 @@ public class SimpleOAuth {
 		return new URL(out);
 	}
 
+	/**
+	 * @param args
+	 * @throws IOException
+	 * @throws OAuthException
+	 */
 	public static void main(final String[] args) throws IOException, OAuthException {
 		// create a request token
 		SimpleOAuth oauth;
 		oauth = new SimpleOAuth("/oauth.properties");
 		final OAuthAccessor accessor = oauth.newAccessor("google");
-		oauth.setRequestToken(accessor, OAuth.newList("scope", "http://www.google.com/calendar/feeds/"), null);
+		oauth.obtainRequestToken(accessor, OAuth.newList("scope", "http://www.google.com/calendar/feeds/"), null);
 		// prompt the user for authorization
 		BareBonesBrowserLaunch.openURL(oauth.getAuthorizationURL(accessor).toExternalForm());
 		final int ok = JOptionPane.showConfirmDialog(null, "Did you authorize the token?");
@@ -310,7 +396,7 @@ public class SimpleOAuth {
 			System.exit(1);
 		}
 		// confirm authorization
-		oauth.setAccessToken(accessor);
+		oauth.obtainAccessToken(accessor);
 		System.out.println("'" + accessor.requestToken + "'");
 		System.out.println("'" + accessor.tokenSecret + "'");
 		System.out.println("'" + accessor.accessToken + "'");
