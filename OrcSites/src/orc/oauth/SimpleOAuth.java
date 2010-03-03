@@ -224,23 +224,27 @@ public class SimpleOAuth {
 	/**
 	 * Get a new request token.
 	 */
-	public void setRequestToken(final OAuthAccessor accessor) throws IOException, OAuthException {
-		setRequestToken(accessor, OAuth.newList());
+	public void setRequestToken(final OAuthAccessor accessor, final String callbackURL) throws IOException, OAuthException {
+		setRequestToken(accessor, OAuth.newList(), callbackURL);
 	}
 
 	/**
 	 * Get a new request token, with custom parameters in the request.
+	 * @param callbackURL 
 	 */
-	public void setRequestToken(final OAuthAccessor accessor, final Collection<OAuth.Parameter> parameters) throws IOException, OAuthException {
+	public void setRequestToken(final OAuthAccessor accessor, Collection<OAuth.Parameter> parameters, final String callbackURL) throws IOException, OAuthException {
 		accessor.requestToken = null;
 		accessor.accessToken = null;
 		accessor.tokenSecret = null;
+		if (callbackURL != null) {
+			parameters.add(new OAuth.Parameter(OAuth.OAUTH_CALLBACK, callbackURL));
+		}
 		{
 			// This code supports the 'Variable Accessor Secret' extension
 			// described in http://oauth.pbwiki.com/AccessorSecret
 			final Object accessorSecret = accessor.getProperty(OAuthConsumer.ACCESSOR_SECRET);
 			if (accessorSecret != null) {
-				parameters.add(new OAuth.Parameter("oauth_accessor_secret", accessorSecret.toString()));
+				parameters.add(new OAuth.Parameter(OAuthConsumer.ACCESSOR_SECRET, accessorSecret.toString()));
 			}
 		}
 		OAuthMessage response;
@@ -249,9 +253,9 @@ public class SimpleOAuth {
 		} catch (final URISyntaxException e) {
 			throw new OAuthException(e);
 		}
-		response.requireParameters("oauth_token", "oauth_token_secret");
-		accessor.requestToken = response.getParameter("oauth_token");
-		accessor.tokenSecret = response.getParameter("oauth_token_secret");
+		response.requireParameters(OAuth.OAUTH_TOKEN, OAuth.OAUTH_TOKEN_SECRET);
+		accessor.requestToken = response.getParameter(OAuth.OAUTH_TOKEN);
+		accessor.tokenSecret = response.getParameter(OAuth.OAUTH_TOKEN_SECRET);
 	}
 
 	/**
@@ -266,15 +270,19 @@ public class SimpleOAuth {
 	 */
 	public void setAccessToken(final OAuthAccessor accessor, final Collection<OAuth.Parameter> parameters) throws IOException, OAuthException {
 		OAuthMessage response;
-		parameters.add(new OAuth.Parameter("oauth_token", accessor.requestToken));
+		parameters.add(new OAuth.Parameter(OAuth.OAUTH_TOKEN, accessor.requestToken));
+		String verifier = (String)accessor.getProperty("oauth_verifier"); 
+		if (verifier != null) {
+			parameters.add(new OAuth.Parameter("oauth_verifier", verifier));
+		}
 		try {
 			response = invoke(accessor, accessor.consumer.serviceProvider.accessTokenURL, parameters, 10);
 		} catch (final URISyntaxException e) {
 			throw new OAuthException(e);
 		}
-		response.requireParameters("oauth_token", "oauth_token_secret");
-		accessor.accessToken = response.getParameter("oauth_token");
-		accessor.tokenSecret = response.getParameter("oauth_token_secret");
+		response.requireParameters(OAuth.OAUTH_TOKEN, OAuth.OAUTH_TOKEN_SECRET);
+		accessor.accessToken = response.getParameter(OAuth.OAUTH_TOKEN);
+		accessor.tokenSecret = response.getParameter(OAuth.OAUTH_TOKEN_SECRET);
 	}
 
 	public URL getAuthorizationURL(final OAuthAccessor accessor) throws IOException, OAuthException {
@@ -282,9 +290,9 @@ public class SimpleOAuth {
 	}
 
 	public URL getAuthorizationURL(final OAuthAccessor accessor, final String callbackURL) throws IOException, OAuthException {
-		String out = OAuth.addParameters(accessor.consumer.serviceProvider.userAuthorizationURL, "oauth_token", accessor.requestToken);
+		String out = OAuth.addParameters(accessor.consumer.serviceProvider.userAuthorizationURL, OAuth.OAUTH_TOKEN, accessor.requestToken);
 		if (callbackURL != null) {
-			out = OAuth.addParameters(out, "oauth_callback", callbackURL);
+			out = OAuth.addParameters(out, OAuth.OAUTH_CALLBACK, callbackURL);
 		}
 		return new URL(out);
 	}
@@ -294,7 +302,7 @@ public class SimpleOAuth {
 		SimpleOAuth oauth;
 		oauth = new SimpleOAuth("/oauth.properties");
 		final OAuthAccessor accessor = oauth.newAccessor("google");
-		oauth.setRequestToken(accessor, OAuth.newList("scope", "http://www.google.com/calendar/feeds/"));
+		oauth.setRequestToken(accessor, OAuth.newList("scope", "http://www.google.com/calendar/feeds/"), null);
 		// prompt the user for authorization
 		BareBonesBrowserLaunch.openURL(oauth.getAuthorizationURL(accessor).toExternalForm());
 		final int ok = JOptionPane.showConfirmDialog(null, "Did you authorize the token?");

@@ -57,16 +57,17 @@ public class OAuthProviderSite extends Site {
 		@Override
 		public OAuthAccessor authenticate(final String consumer, final List<OAuth.Parameter> request) throws Pausable, Exception {
 			final OAuthAccessor accessor = oauth.newAccessor(consumer);
+			final Mailbox ready = new Mailbox();
+			final String callbackURL = OrchardOAuthServlet.getCallbackURL(accessor, ready, globals);
 			// get a request token
 			Kilim.runThreaded(new Callable() {
 				public Object call() throws Exception {
-					oauth.setRequestToken(accessor, request);
+					oauth.setRequestToken(accessor, request, callbackURL);
 					return Kilim.signal;
 				}
 			});
 			// request authorization and wait for response
-			final Mailbox ready = new Mailbox();
-			redirectable.redirect(oauth.getAuthorizationURL(accessor, OrchardOAuthServlet.getCallbackURL(accessor, ready, globals)));
+			redirectable.redirect(oauth.getAuthorizationURL(accessor, callbackURL));
 			ready.get();
 			// get the access token
 			Kilim.runThreaded(new Callable() {
