@@ -19,6 +19,7 @@
 			<attribute name="javadoc_location" value="https://args4j.dev.java.net/nonav/maven/apidocs/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/asm-all-2.2.3.jar"/>
+	<classpathentry kind="lib" path="lib/kilim-runtime.jar"/>
+	<classpathentry kind="lib" path="lib/kilim.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
