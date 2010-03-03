@@ -12,7 +12,7 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<project name="orchard" default="war" basedir=".">
+<project name="orchard" default="all" basedir=".">
 	<description>
 		Ant build file for Orchard binary distribution.
 	</description>

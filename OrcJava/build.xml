@@ -12,7 +12,7 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<project name="orc" default="jar" basedir=".">
+<project name="orc" default="all" basedir=".">
 	<description>
 		Ant build file for Orc binary distribution.
 	</description>
