@@ -5,8 +5,8 @@
 	<li><a href="http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=News">News</a></li>
 	<li><a href="http://groups.google.com/group/orc-lang/">Mailing List</a>
 	<br /><form action="http://groups.google.com/group/orc-lang/boxsubscribe">
-		Email: <input type=text name=email>
-		<input type=submit name="sub" value="Subscribe">
+		<div>Email: <input type="text" name="email" />
+		<input type="submit" name="sub" value="Subscribe" /></div>
 	</form></li>
 	<li><a href="wiki">Wiki</a></li>
 	<li><a href="http://code.google.com/p/orc/issues/list">Issue Tracker</a> (for bug reports)</li>
@@ -20,7 +20,7 @@
         <li><a href="http://www.cs.utexas.edu/~misra/">Prof. Jayadev Misra</a></li>
         <li><a href="http://www.cs.utexas.edu/~wcook/">Prof. William Cook</a></li>
         <li><a href="http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=DavidKitchin">David Kitchin</a></li>
-        <li><a href="http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=JohnThywissen">John A. Thywissen</a></li>
+        <li><a href="http://www.cs.utexas.edu/~jthywiss/">John A. Thywissen</a></li>
         <li>Amin Shali</li>
         <li>Sidney Rosario</li>
 </ul>

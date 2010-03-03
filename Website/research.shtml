@@ -1,27 +1,29 @@
 <!--#include virtual="template/header.shtml" -->
 
 <style type="text/css">
+/*<![CDATA[*/
 .paper {
-	font-weight: bold;
-	text-decoration: underline;
+        font-weight: bold;
+        text-decoration: underline;
 }
 .venue {
-	font-style: italic;
+        font-style: italic;
 }
 .content ul li.new {
-	list-style: url(images/new.gif);
+        list-style: url(images/new.gif);
 }
 .doi, .bibtex {
-	border: 1px outset;
-	height: 10px;
-	font-size: 10px;
-	padding: 0 2px 0 2px;
-	text-decoration: none;
-	color: #FFF;
-	font-family: sans-serif;
-	border-color: #036;
-	background: #06C;
+        border: 1px outset;
+        height: 10px;
+        font-size: 10px;
+        padding: 0 2px 0 2px;
+        text-decoration: none;
+        color: #FFF;
+        font-family: sans-serif;
+        border-color: #036;
+        background: #06C;
 }
+/*]]>*/
 </style>
 
 <a name="top" id="top"></a><h1>Publications</h1>
@@ -45,8 +47,7 @@
 	David Kitchin, Adrian Quark, William Cook and Jayadev Misra<br />
 	<span class="venue">Proceedings of FMOODS/FORTE</span>, Springer Verlag, LNCS 5522, pp 1--25, 2009.</li>
 	
-	<li><a target="_blank" class="paper" href="papers/qs.pdf">Quicksort: Combining Concurrency, Recursion,
-and Mutable Data Structures</a>
+	<li><a target="_blank" class="paper" href="papers/qs.pdf">Quicksort: Combining Concurrency, Recursion, and Mutable Data Structures</a>
 	<a class="bibtex" href="papers/qs.bib">BibTeX</a>
 	<br />
 	David Kitchin, Adrian Quark, and Jayadev Misra<br />

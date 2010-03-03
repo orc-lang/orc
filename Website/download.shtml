@@ -9,7 +9,7 @@
 <p>Orc is available in different formats depending on what you will be doing with it:</p>
 <ul>
 <li><a href="#casual">Casual users</a> who are interested in playing with Orc.</li>
-<li><a href="#eclipse">Eclipse users</a> who want to develop Orc programs on their own machine under the Eclipse IDE.
+<li><a href="#eclipse">Eclipse users</a> who want to develop Orc programs on their own machine under the Eclipse IDE.</li>
 <li><a href="#cmdline">Command line users</a> who want to run Orc programs from the command line.</li>
 <li><a href="#devs">Developers</a> who want to explore Orc's implementation.</li>
 </ul>
@@ -49,7 +49,7 @@ To install the Orc Eclipse plugin within Eclipse 3.3, follow these steps:
 <li> Select <b>Help</b>, go over <b>Software Updates</b> and then click on <b>Find and Install...</b>.</li>
 <li> Select <b>Search for new features to install</b> and then click <b>Next</b>.</li>
 <li> From the right hand side select <b>New Remote Site...</b></li>
-<li> Fill in the following in the <b>New Update Site</b> dialog box, and press <b>OK</b></li>:
+<li> Fill in the following in the <b>New Update Site</b> dialog box, and press <b>OK</b>:
   <ul>
     <li><b>Name:</b> <tt>Orc programming language</tt></li>
     <li><b>Location:</b> <tt>http://orc.csres.utexas.edu/eclipse_updates/</tt></li>
