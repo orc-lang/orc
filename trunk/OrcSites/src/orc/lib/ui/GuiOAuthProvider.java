@@ -42,7 +42,7 @@ public class GuiOAuthProvider extends OAuthProvider {
 		final OAuthAccessor accessor = oauth.newAccessor(consumer);
 		Kilim.runThreaded(new Callable<Void>() {
 			public Void call() throws Exception {
-				oauth.setRequestToken(accessor, request, null);
+				oauth.obtainRequestToken(accessor, request, null);
 				// prompt the user for authorization;
 				// do not provide a callback URL
 				final String authURL = oauth.getAuthorizationURL(accessor, null).toExternalForm();
@@ -52,7 +52,7 @@ public class GuiOAuthProvider extends OAuthProvider {
 					throw new OAuthException("Authorization refused by user.");
 				}
 				// confirm authorization
-				oauth.setAccessToken(accessor);
+				oauth.obtainAccessToken(accessor);
 				return null;
 			}
 		});

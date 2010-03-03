@@ -33,7 +33,17 @@ import orc.runtime.OrcEngine;
 public class OrchardOAuthServlet extends HttpServlet {
 	public final static String MAILBOX = "orc.orchard.OrchardOAuthServlet.MAILBOX";
 
-	public static String getCallbackURL(final OAuthAccessor accessor, final Mailbox mbox, final OrcEngine globals) throws IOException {
+	/**
+	 * Adds this accessor to the Orc engine globals for retrieval when authorization callback is received.
+	 * This is not idempotent, only call this method once per auth request.
+	 * 
+	 * @param accessor Accessor to be autorized
+	 * @param mbox Mailbox to be signaled when authorization is received
+	 * @param globals Orc engine that will reveive the callback
+	 * @return Callback URL string
+	 * @throws IOException
+	 */
+	public static String addToGlobalsAndGetCallbackURL(final OAuthAccessor accessor, final Mailbox mbox, final OrcEngine globals) throws IOException {
 		accessor.setProperty(MAILBOX, mbox);
 		final String key = globals.addGlobal(accessor);
 		// FIXME: we should figure out the callback URL
@@ -41,6 +51,13 @@ public class OrchardOAuthServlet extends HttpServlet {
 		return OAuth.addParameters(accessor.consumer.callbackURL, "k", key);
 	}
 
+	/**
+	 * Receive and validate an authorization callback and alert the client.
+	 * 
+	 * @param request
+	 * @throws IOException
+	 * @throws OAuthException
+	 */
 	public void receiveAuthorization(final HttpServletRequest request) throws IOException, OAuthException {
 		final OAuthMessage requestMessage = OAuthServlet.getMessage(request, null);
 		requestMessage.requireParameters(OAuth.OAUTH_TOKEN, "k");
@@ -68,6 +85,9 @@ public class OrchardOAuthServlet extends HttpServlet {
 		mbox.putb(Kilim.signal);
 	}
 
+	/* (non-Javadoc)
+	 * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+	 */
 	@Override
 	protected void service(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
 		try {

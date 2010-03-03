@@ -58,11 +58,11 @@ public class OAuthProviderSite extends Site {
 		public OAuthAccessor authenticate(final String consumer, final List<OAuth.Parameter> request) throws Pausable, Exception {
 			final OAuthAccessor accessor = oauth.newAccessor(consumer);
 			final Mailbox ready = new Mailbox();
-			final String callbackURL = OrchardOAuthServlet.getCallbackURL(accessor, ready, globals);
+			final String callbackURL = OrchardOAuthServlet.addToGlobalsAndGetCallbackURL(accessor, ready, globals);
 			// get a request token
 			Kilim.runThreaded(new Callable() {
 				public Object call() throws Exception {
-					oauth.setRequestToken(accessor, request, callbackURL);
+					oauth.obtainRequestToken(accessor, request, callbackURL);
 					return Kilim.signal;
 				}
 			});
@@ -72,7 +72,7 @@ public class OAuthProviderSite extends Site {
 			// get the access token
 			Kilim.runThreaded(new Callable() {
 				public Object call() throws Exception {
-					oauth.setAccessToken(accessor);
+					oauth.obtainAccessToken(accessor);
 					return Kilim.signal;
 				}
 			});
