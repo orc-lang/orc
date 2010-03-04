@@ -204,7 +204,7 @@
           target: war              
          ================================= -->
 	<target name="war" depends="kilim,jaxws-json,minify" description="generate the war">
-		<war destfile="build/${ant.project.name}.war">
+		<war destfile="build/${ant.project.name}.war" duplicate="fail">
 			<manifest>
 				<attribute name="Implementation-Title" value="Orc Orchard" />
 				<attribute name="Implementation-Version" value="${orc.version}" />
@@ -229,7 +229,7 @@
           target: demo-jar              
          ================================= -->
 	<target name="demo-jar" depends="war" description="generate the demo jar">
-		<war destfile="build/demo-root.war">
+		<war destfile="build/demo-root.war" duplicate="fail">
 			<fileset dir="${orc.location.Website}">
 				<include name="demo.shtml" />
 				<include name="jquery.treeview.css" />
