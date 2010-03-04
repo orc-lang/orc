@@ -1,25 +1,5 @@
 <!--#include virtual="template/header.shtml" --> 
 
-<style type="text/css">
-/*<![CDATA[*/
-.orc-demo {
-        visibility: hidden;
-        position: absolute;
-        top: 0;
-        left: 0;
-}
-.content ul li {
-        margin-top: 1em;
-}
-.highlight {
-        font-weight: bold;
-        font-style: italic;
-}
-/*]]>*/
-</style>
-
-<link rel="stylesheet" type="text/css" href="/orchard/orc.css" media="screen" />
-
 <h2>Orc is ...</h2>
 
 <p>... a novel language for distributed and concurrent programming which provides
@@ -88,6 +68,7 @@ let(
     dining(5)
   | Rtimer(10000)
 ) &gt;&gt; "HALTED"
+</pre>
 </div>
 </li>
 
@@ -107,6 +88,7 @@ each(results)
   &lt;results&lt;
     Prompt("Search for:") &gt;term&gt;
     ( Yahoo(term) | Google(term) )
+</pre>
 </div>
 </li>
 
