@@ -1,6 +1,6 @@
 <!--#include virtual="template/header.shtml" -->
 
-<a id="top" id="top"></a><h1>Publications</h1>
+<a name="top" id="top"></a><h1>Publications</h1>
 
 <ul>
 	<li><a href="#Introduction">Introduction to Orc</a></li>
@@ -11,7 +11,7 @@
 	<li><a href="#Other">Other Resources</a></li>
 </ul>
 
-<a id="Introduction" id="Introduction"></a><h2>Introduction to Orc <small>(<a href="#top">top</a>)</small></h2>
+<a name="Introduction" id="Introduction"></a><h2>Introduction to Orc <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
 	<li><a target="_blank" class="paper" href="papers/forte09.pdf">The Orc Programming Language</a>
@@ -41,7 +41,7 @@
 	Journal of Software and Systems Modeling, March 2007</li>
 </ul>
 
-<a id="Semantics" id="Semantics"></a><h2>Semantics &amp; Verification <small>(<a href="#top">top</a>)</small></h2>
+<a name="Semantics" id="Semantics"></a><h2>Semantics &amp; Verification <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
 	<li><a target="_blank" class="paper" href="papers/timed_semantics.pdf">A Timed semantics of Orc</a>
@@ -81,7 +81,7 @@
 	Lecture Notes for NATO summer school, Marktoberdorf, August 2004</li>
 </ul>
 
-<a id="Applications" id="Applications"></a><h2>Applications <small>(<a href="#top">top</a>)</small></h2>
+<a name="Applications" id="Applications"></a><h2>Applications <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
 	<li><a target="_blank" href="papers/OrcSimulation.pdf" class="paper">Simulation using Orchestration (DRAFT)</a>
@@ -106,7 +106,7 @@
 	(<a target="_blank" href="papers/workflow_slides.pdf">slides from talk</a>)</li>
 </ul>
 
-<a id="Presentations" id="Presentations"></a><h2>Presentations <small>(<a href="#top">top</a>)</small></h2>
+<a name="Presentations" id="Presentations"></a><h2>Presentations <small>(<a href="#top">top</a>)</small></h2>
 <ul>
 	<li><a target="_blank" class="paper" href="papers/orc-presentation.pdf">Structured Application Development over
 Wide-Area Networks</a><br />
@@ -122,7 +122,7 @@ Language</a><br />
 </ul>
 
 
-<a id="Student_Reports" id="Student_Reports"></a><h2>Student Reports <small>(<a href="#top">top</a>)</small></h2>
+<a name="Student_Reports" id="Student_Reports"></a><h2>Student Reports <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
 	<li><a target="_blank" class="paper" href="papers/quark_sif_09_draft.pdf">Secure Information Flow in Orc (DRAFT)</a><br />
@@ -138,7 +138,7 @@ Language</a><br />
 	CS 395T Computation Orchestration, Spring 2008</li>
 </ul>
 
-<a id="Other" id="Other"></a><h2>Other Resources <small>(<a href="#top">top</a>)</small></h2>
+<a name="Other" id="Other"></a><h2>Other Resources <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
 	<li><a target="_blank" class="paper" href="papers/OrcExceptionSemantics.pdf">A Semantics for Exception Handling in Orc</a>
