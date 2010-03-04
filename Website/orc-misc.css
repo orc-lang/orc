@@ -3,6 +3,13 @@
  * $Id$
  */
 
+/* For "Opens in new window" icon */
+.newWindowIcon {
+    margin: none;
+    border: none;
+    padding: none;
+}
+
 /* For Orc in-line demos */
 .orc-demo {
         visibility: hidden;
