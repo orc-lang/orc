@@ -51,6 +51,9 @@
 	<target name="jar" depends="kilim" description="generate the distribution">
 		<!-- Put everything in build into orc-sites.jar -->
 		<jar jarfile="build/${target.name}.jar" basedir="build/classes">
+			<!-- This jar should have a duplicate="fail" attribute, but since we smash all the JARs into
+			     one, we'll have duplicate kilim state classes (kilim/S_*.class).  They're innocuous because
+			     they're all identical. -->
 			<manifest>
 				<attribute name="Implementation-Title" value="Orc sites library" />
 				<attribute name="Implementation-Version" value="${orc.version}" />
