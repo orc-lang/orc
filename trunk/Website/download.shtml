@@ -14,7 +14,7 @@
 <li><a href="#devs">Developers</a> who want to explore Orc's implementation.</li>
 </ul>
 
-<a name="casual"></a>
+<a id="casual"></a>
 <h3>Casual Users</h3>
 
 <p>Use our <a href="tryorc.shtml">Try Orc!</a> feature to experiment with Orc in
@@ -23,7 +23,7 @@ support user accounts so you can create long-running jobs; please <a
 href="mailto:webmaster at orc.cs.utexas.edu" class="obfuscated-email">contact
 us</a> if you are interested in obtaining an account.</p>
 
-<a name="eclipse"></a>
+<a id="eclipse"></a>
 <h3>Eclipse Users</h3>
 
 <p>There is an Orc plugin available for the <a href="http://www.eclipse.org/">Eclipse IDE</a>. It is compatible with Eclipse versions 3.3 and later.</p> 
@@ -62,7 +62,7 @@ To install the Orc Eclipse plugin within Eclipse 3.3, follow these steps:
 </ol>
 
 
-<a name="cmdline"></a>
+<a id="cmdline"></a>
 <h3>Command Line Users</h3>
 
 <p>Orc is also available as a standalone JAR which you can use to run programs on
@@ -71,7 +71,7 @@ the command line.</p>
 <p>Download the <a href="http://code.google.com/p/orc/downloads/list">latest release</a> from Google Code.
 For further assistance, please see the <a href="documentation.shtml">documentation</a>.</p>
 
-<a name="devs"></a>
+<a id="devs"></a>
 <h3>Developers</h3>
 
 <p>Orc is developed in Eclipse. The <a href="quickstart.shtml">developer's
