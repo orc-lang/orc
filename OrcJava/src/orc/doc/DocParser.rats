@@ -68,7 +68,7 @@ DocNode DocNode =
 	}
 	;
 
-String DocParagraph = (XML / !(EndDoc / EndLine BlankLine) _)+ ;
+String DocParagraph = (!(EndDoc / EndLine BlankLine) _ / XML)+ ;
 
 String DocCode = (!StartDoc (EndLineComment /  MultiLineComment / StringLiteral / _))+;
 
@@ -77,7 +77,7 @@ String XML =
     / "<![CDATA[" (!"]]>" _)* "]]>"
 	/ "<?" (![>] _)+ "?>"
 	/ "<" (![>] _)+ "/>"
-	/ "<" (![>] _)+ ">" (XML / ![<] _ )* "</" (![>] _)+ ">"
+	/ "<" (![>] _)+ ">" (![<] _ / XML)* "</" (![>] _)+ ">"
 	;
 
 
