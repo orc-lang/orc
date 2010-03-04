@@ -1,9 +1,8 @@
 <!--#include virtual="template/header.shtml" --> 
 
-<link rel="stylesheet" type="text/css" href="/orchard/orc.css" media="screen"/>
 <script src="/orchard/orc.js" type="text/javascript"></script>
 
-<a name="top"></a><h1>Orc in 15 Minutes</h1>
+<a id="top"></a><h1>Orc in 15 Minutes</h1>
 
 <ul>
 <li><a href="#Introduction">Introduction</a></li>
@@ -19,14 +18,14 @@
 <li><a href="#Conclusion">Conclusion</a></li>
 </ul>
 
-<a name="Introduction"></a><h2>Introduction <small>(<a href="#top">top</a>)</small></h2>
+<a id="Introduction"></a><h2>Introduction <small>(<a href="#top">top</a>)</small></h2>
 
 <p>In this tutorial you will learn the basic concepts of Orc through a series
 of interactive examples.  When you see a code example with a <b>run</b> button,
 click it to run the program. The results of the program will be printed below
 it. The demos run on our server so you may experience some network delay.</p>
 
-<a name="Sites"></a><h2>Sites <small>(<a href="#top">top</a>)</small></h2>
+<a id="Sites"></a><h2>Sites <small>(<a href="#top">top</a>)</small></h2>
 <p>The fundamental unit of computation in an Orc program is called a
 <b>site</b>.  Sites are similar to functions or procedures in other languages,
 but they may be remote and therefore unreliable.  In this tutorial we will make
@@ -45,7 +44,7 @@ used to add numbers and concatenate strings is usually implemented locally.</p>
 <p>Although Orc uses traditional infix notation for arithmetic and comparison
 operators, these are still considered sites like any other.</p>
 
-<a name="Combinators"></a><h2>Combinators <small>(<a href="#top">top</a>)</small></h2>
+<a id="Combinators"></a><h2>Combinators <small>(<a href="#top">top</a>)</small></h2>
 <p>Orc has three basic combinators, each to combine two expressions:</p>
 <ul>
 <li>Parallel, or bar, written <tt>|</tt></li>
@@ -54,7 +53,7 @@ operators, these are still considered sites like any other.</p>
 </ul>
 <p>We will examine each in turn.</p>
 
-<a name="Parallel_Combinator"></a><h3>Parallel Combinator <small>(<a href="#top">top</a>)</small></h3>
+<a id="Parallel_Combinator"></a><h3>Parallel Combinator <small>(<a href="#top">top</a>)</small></h3>
 
 <p>Two Orc expressions can be evaluated in parallel using <tt>|</tt>. For
 example, we can ask the user to choose both an eating utensil and type of
@@ -70,7 +69,7 @@ may return more than one value if it involves more than one concurrent
 computation.  To emphasize this we usually say that an expression
 <b>publishes</b> (rather than returns) values.</p>
 
-<a name="Sequential_Combinator"></a><h3>Sequential Combinator <small>(<a href="#top">top</a>)</small></h3>
+<a id="Sequential_Combinator"></a><h3>Sequential Combinator <small>(<a href="#top">top</a>)</small></h3>
 
 <p>Sites can also be called in sequence. The <tt>>></tt> combinator evaluates
 its right side when its left side publishes a value.</p>
@@ -110,7 +109,7 @@ independently for <i>each</i> value:</p>
 <p>The <tt>&gt;&gt;</tt> combinator has higher precedence than <tt>|</tt>, so
 the parentheses in the previous example are necessary.</p>
 
-<a name="Pruning_Combinator"></a><h3>Pruning Combinator <small>(<a href="#top">top</a>)</small></h3>
+<a id="Pruning_Combinator"></a><h3>Pruning Combinator <small>(<a href="#top">top</a>)</small></h3>
 
 <p>The final combinator, <tt>&lt;&lt;</tt>, combines the concepts of selection,
 blocking, and termination. It is used to select the first value published by an
@@ -163,7 +162,7 @@ For example, these two expressions are equivalent:</p>
 
 <p></p>
 
-<a name="Fundamental_Sites"></a><h2>Fundamental Sites <small>(<a href="#top">top</a>)</small></h2>
+<a id="Fundamental_Sites"></a><h2>Fundamental Sites <small>(<a href="#top">top</a>)</small></h2>
 
 <p>In addition to the <tt>Prompt</tt> and <tt>+</tt> sites we have already
 seen, Orc provides several other fundamental sites which are necessary for
@@ -192,7 +191,7 @@ example which waits for your response but does not publish it:</p>
 Prompt("I'm not listening...") &gt;&gt; stop
 </pre>
 
-<a name="Functions"></a><h2>Functions <small>(<a href="#top">top</a>)</small></h2>
+<a id="Functions"></a><h2>Functions <small>(<a href="#top">top</a>)</small></h2>
 
 <p>To facilitate the construction of large programs, Orc allows users to define
 functions.  Function calls look and act like site calls, with two key
@@ -233,7 +232,7 @@ def metronomeN(i) =
 metronomeN(0) &gt;n&gt; if(n%2 = 0) &gt;&gt; n
 </pre>
 
-<a name="Advanced"></a><h2>Advanced Techniques <small>(<a href="#top">top</a>)</small></h2>
+<a id="Advanced"></a><h2>Advanced Techniques <small>(<a href="#top">top</a>)</small></h2>
 
 <p>Orc shares many features with functional programming languages, including
 higher-order functions (functions which take functions or sites as arguments)
@@ -313,7 +312,7 @@ def bestQuote(airline:rest) =
 bestQuote([Airline("Delta"), Airline("United")])
 </pre>
 
-<a name="Conclusion"></a><h2>Conclusion <small>(<a href="#top">top</a>)</small></h2>
+<a id="Conclusion"></a><h2>Conclusion <small>(<a href="#top">top</a>)</small></h2>
 
 <p>That concludes this Orc tutorial. Please refer to the <a
 href="documentation.shtml">Documentation</a> page for further

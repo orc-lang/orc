@@ -26,7 +26,7 @@ Eclipse project <tt>OrcJava</tt>. Here is how to accomplish this using Subversiv
 <li>Open <b>SVN</b>, choose <b>Checkout Projects from SVN</b>, and click <b>Next&nbsp;&gt;</b></li>
 <li>Choose <b>Create a new repository location</b> and click <b>Next&nbsp;&gt;</b></li>
 <li>Enter for the <b>URL</b>: <tt>http://orc.googlecode.com/svn</tt></li>
-<li>Select <b>trunk -> OrcJava</b> and click <b>Finish</b>.
+<li>Select <b>trunk -> OrcJava</b> and click <b>Finish</b>.</li>
 <li><i>Warning: Do not change the project name (from <tt>OrcJava</tt>) or
 the project will not build correctly.</i></li>
 </ol>
