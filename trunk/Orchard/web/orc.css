@@ -89,7 +89,7 @@ only the inner are applied to .orc-code, and only the outer are applied to
 	color: red;
 }
 .orc-print {
-	font-color: gray;
+	/*color: gray;*/
 }
 .orc-prompt {
 	padding: 5px;
