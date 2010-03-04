@@ -203,7 +203,7 @@
 				<flattenmapper/>
 			</mapper>
 		</pathconvert>
-		<echo message="${orc.prelude.includefiles}"/>
+		<echo message="Making documentation for: ${orc.prelude.includefiles}"/>
 		<java classname="orc.doc.MakeDoc" fork="yes" failonerror="true"
 				dir="src/orc/inc/prelude"
 				output="build/stdlib.xml">
@@ -238,11 +238,14 @@
 	<!-- ================================= 
           target: app              
          ================================= -->
-	<!-- WARNING: this does not work on non-Unix systems (without cp, ln, and tar) -->
+	<!-- WARNING: this does not work on non-Unix systems (without rm, cp, ln, and tar) -->
 	<target name="app" depends="jar" description="generate a Mac OS X application">
 		<property name="appname" value="Orc" />
-		<property name="appdir" value="build/${target.name}/${appname}.app" />
-		<delete dir="build/${target.name}" followsymlinks="no" includeemptydirs="true" /> <!-- clean up any old files -->
+		<property name="appdir" value="build/${target.name}-app/${appname}.app" />
+		<exec executable="rm" failonerror="true"> <!-- clean up any old files -->
+			<arg line="-rf" />
+			<arg value="build/${target.name}-app" />
+		</exec>
 		<mkdir dir="${appdir}"/>
 		<!-- copy most files without filtering -->
 		<copy todir="${appdir}">
@@ -277,26 +280,8 @@
 			<arg value="/Developer/Applications/Xcode.app/Contents/Library/Spotlight/SourceCode.mdimporter/Contents/MacOS" />
 			<arg value="${appdir}/Contents/Library/Spotlight/Orc.mdimporter/Contents/MacOS" />
 		</exec>
-		<!-- zip doesn't include symlinks
-		<zip zipfile="build/${target.name}-app.zip">
-			<zipfileset prefix="${target.name}" dir="build">
-				<include name="${app.dir}/**"/>
-			</zipfileset>
-			<zipfileset prefix="${target.name}" dir=".">
-				<include name="README"/>
-				<include name="LICENSE"/>
-				<include name="INSTALL"/>
-				<include name="examples/**"/>
-				<include name="licenses.yml"/>
-				<include name="licenses/**"/>
-				<include name="doc/**"/>
-				<exclude name="**/CVS/*"/>
-				<exclude name="**/.svn/*"/>
-			</zipfileset>
-		</zip>
-		-->
 		<!-- create directory with supplemental files -->
-		<copy todir="build/${target.name}">
+		<copy todir="build/${target.name}-app">
 			<fileset dir=".">
 				<include name="README"/>
 				<include name="LICENSE"/>
@@ -311,7 +296,7 @@
 		</copy>
 		<!-- create tgz package -->
 		<exec executable="tar" dir="build" failonerror="true">
-			<arg line="-zcf ${target.name}-app.tgz ${target.name}" />
+			<arg line="-zcf ${target.name}-app.tgz ${target.name}-app" />
 		</exec>
 	</target>
 
@@ -348,6 +333,10 @@
           target: clean              
          ================================= -->
 	<target name="clean" description="clean up">
+		<exec executable="rm" failonerror="false"> <!-- Try this, because Ant is confused by the symlinks in here -->
+			<arg line="-rf" />
+			<arg value="build/${target.name}-app" />
+		</exec>
 		<delete dir="build" followsymlinks="no" includeemptydirs="true" />
 	</target>
 </project>
