@@ -219,7 +219,7 @@
           target: javadoc              
          ================================= -->
 	<target name="javadoc" description="Build Javadoc">
-		<delete dir="build/javadoc" />
+		<delete dir="build/javadoc" followsymlinks="no" includeemptydirs="true" />
 		<javadoc destdir="build/javadoc"
 				author="true"
 				access="protected"
@@ -242,7 +242,7 @@
 	<target name="app" depends="jar" description="generate a Mac OS X application">
 		<property name="appname" value="Orc" />
 		<property name="appdir" value="build/${target.name}/${appname}.app" />
-		<delete dir="build/${target.name}"/> <!-- clean up any old files -->
+		<delete dir="build/${target.name}" followsymlinks="no" includeemptydirs="true" /> <!-- clean up any old files -->
 		<mkdir dir="${appdir}"/>
 		<!-- copy most files without filtering -->
 		<copy todir="${appdir}">
@@ -348,6 +348,6 @@
           target: clean              
          ================================= -->
 	<target name="clean" description="clean up">
-		<delete dir="build" />
+		<delete dir="build" followsymlinks="no" includeemptydirs="true" />
 	</target>
 </project>

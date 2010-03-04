@@ -97,7 +97,7 @@
           target: javadoc              
          ================================= -->
 	<target name="javadoc" description="Build Javadoc">
-		<delete dir="build/javadoc" />
+		<delete dir="build/javadoc" followsymlinks="no" includeemptydirs="true" />
 		<javadoc destdir="build/javadoc"
 				author="true"
 				access="protected"
@@ -146,6 +146,6 @@
           target: clean              
          ================================= -->
 	<target name="clean" description="clean up">
-		<delete dir="build" />
+		<delete dir="build" followsymlinks="no" includeemptydirs="true" />
 	</target>
 </project>

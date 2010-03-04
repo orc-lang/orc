@@ -68,7 +68,7 @@
           target: copylib                      
          - - - - - - - - - - - - - - - - - -->
     <target name="copylib">
-		<delete> <!-- Remove other Orc versions' JARs -->
+		<delete followsymlinks="false" includeemptydirs="true"> <!-- Remove other Orc versions' JARs -->
 			<fileset dir="lib">
 				<include name="orc-*.jar" />
 				<exclude name="orc-${orc.version}.jar" />
@@ -327,7 +327,7 @@
 	<target name="demo-app" depends="demo-jar" description="generate a Mac OS X application">
 		<property name="appname" value="Orchard" />
 		<property name="appdir" value="build/${appname}.app" />
-		<delete dir="${appdir}" /> <!-- clean up any old files -->
+		<delete dir="${appdir}"  followsymlinks="false" includeemptydirs="true" /> <!-- clean up any old files -->
 		<mkdir dir="${appdir}" />
 		<!-- copy most files without filtering -->
 		<copy todir="${appdir}">
@@ -388,7 +388,7 @@
 		<delete file="lib/orc-${orc.version}.jar" />
 		<delete file="lib/orc-sites-${orc.version}.jar" />
 		<delete file="lib/jaxws-json.jar" />
-		<delete dir="build" followsymlinks="no" />
+		<delete dir="build" followsymlinks="false" includeemptydirs="true" />
 	</target>
 
 </project>
