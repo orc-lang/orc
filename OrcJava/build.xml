@@ -193,6 +193,17 @@
           target: stdlib-doc              
          ================================= -->
 	<target name="stdlib-doc" description="Build standard library docs">
+		<pathconvert property="orc.prelude.includefiles" pathsep=" ">
+			<path>
+				<fileset dir="src/orc/inc/prelude">
+					<include name="*.inc" />
+				</fileset>
+			</path>
+			<mapper>
+				<flattenmapper/>
+			</mapper>
+		</pathconvert>
+		<echo message="${orc.prelude.includefiles}"/>
 		<java classname="orc.doc.MakeDoc" fork="yes" failonerror="true"
 				dir="src/orc/inc/prelude"
 				output="build/stdlib.xml">
@@ -200,15 +211,7 @@
 				<assertions>
 					<enable/>
 				</assertions>
-			<!-- FIXME: how can we replace this with a fileset? -->
-			<arg value="core.inc"/>
-			<arg value="state.inc"/>
-			<arg value="idioms.inc"/>
-			<arg value="list.inc"/>
-			<arg value="reflect.inc"/>
-			<arg value="text.inc"/>
-			<arg value="time.inc"/>
-			<arg value="util.inc"/>
+			<arg line="${orc.prelude.includefiles}"/>
 		</java>
 	</target>
 	
