@@ -55,7 +55,7 @@ public class NewOrcFileWizardPage extends WizardNewFileCreationPage {
 		final String contents = 
 			"{- " + getFileName() + "\n" + 
 			" - \n" + 
-			" - $Id$\n" + 
+			" - $" + "Id$\n" + 
 			" - \n" + 
 			" - Created by " + System.getProperty("user.name") + " on " + DateFormat.getDateTimeInstance().format(new Date()) + "\n" + //$NON-NLS-2$
 			" -}\n\n";
