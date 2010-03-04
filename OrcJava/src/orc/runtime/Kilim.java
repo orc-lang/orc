@@ -55,20 +55,11 @@ public final class Kilim {
 
 		@Override
 		public synchronized void schedule(final Task task) {
-			if (scheduler.get() == null) {
-				startEngine(1, 1);
-			}
 			final Scheduler current = scheduler.get().value;
 			// Setting the scheduler is necessary to ensure
 			// that this task can be resumed from different
 			// threads.  It's also more efficient.
-			//
-			// Modified by Amin Shali@23:10, Feb 4 2010
-			// comment: scheduler is being set right after the 
-			// task is created. We cannot set the scheduler after
-			// task start because the state of task is running 
-			// and the scheduler for a running task cannot be 
-			// set.
+			task.setScheduler(current);
 			current.schedule(task);
 		}
 
@@ -104,7 +95,7 @@ public final class Kilim {
 			// so there's a window where we may need an extra
 			// thread or two. Worst case, if every thread stops
 			// at once, we'll need twice as many threads.
-			executor = new ThreadPoolExecutor(2, size * 2, 30, TimeUnit.SECONDS, new SynchronousQueue<Runnable>()) {
+			executor = new ThreadPoolExecutor(0, size * 2, 30, TimeUnit.SECONDS, new SynchronousQueue<Runnable>()) {
 				@Override
 				protected void afterExecute(final Runnable r, final Throwable t) {
 					super.afterExecute(r, t);
@@ -133,7 +124,7 @@ public final class Kilim {
 	/**
 	 * Initialize Kilim state for a new job.
 	 */
-	public static void startEngine(final int kilimThreads, final int siteThreads) {		
+	public static void startEngine(final int kilimThreads, final int siteThreads) {
 		final Box<Scheduler> _scheduler = new Box<Scheduler>();
 		final Box<BoundedThreadPool> _pool = new Box<BoundedThreadPool>();
 		scheduler.set(_scheduler);
@@ -199,32 +190,22 @@ public final class Kilim {
 		}
 
 		@Override
-		public V call() throws Pausable, Exception {
-			final Mailbox<V> inbox = new Mailbox<V>();
-			boolean isNew = false;
-			synchronized (this) {
-				switch (state) {
-				case FORCING:
-					waiters.add(inbox);
-					break;
-				case NEW:
-					state = State.FORCING;
-					isNew = true;
-					break;
-					//$NO-FALL-THROUGH$ Modified by Amin Shali
-				default:
-					return value;
-				}
-			}
-			if (isNew) {
+		public synchronized V call() throws Pausable, Exception {
+			switch (state) {
+			case FORCING:
+				final Mailbox<V> inbox = new Mailbox<V>();
+				waiters.add(inbox);
+				return inbox.get();
+			case NEW:
+				state = State.FORCING;
 				value = thunk.call();
 				for (final Mailbox<V> outbox : waiters) {
 					outbox.put(value);
 				}
+				//$FALL-THROUGH$
+			default:
 				return value;
 			}
-			else 
-				return inbox.get();
 		}
 	}
 
@@ -265,7 +246,6 @@ public final class Kilim {
 	 * @see #runThreaded(Callable)
 	 */
 	public static <V> void runThreaded(final Token caller, final Callable<V> thunk) {
-		Task t = 
 		new Task() {
 			@Override
 			public void execute() throws Pausable {
@@ -281,9 +261,7 @@ public final class Kilim {
 					}
 				});
 			}
-		};
-		t.setScheduler(scheduler.get().value);
-		t.start();
+		}.start();
 	}
 
 	/**
