@@ -1,4 +1,4 @@
-<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>1.4.&nbsp;Advanced Features of Orc</title><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide v1.0.0"><link rel="up" href="ch01.html" title="Chapter&nbsp;1.&nbsp;The Orc Programming Language"><link rel="prev" href="ch01s03.html" title="1.3.&nbsp;Orc: Orchestrating services"><link rel="next" href="ch02.html" title="Chapter&nbsp;2.&nbsp;Programming Methodology"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"><link href="style.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">1.4.&nbsp;Advanced Features of Orc</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch01s03.html">Prev</a>&nbsp;</td><th align="center" width="60%">Chapter&nbsp;1.&nbsp;The Orc Programming Language</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ch02.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N10A26"></a>1.4.&nbsp;Advanced Features of Orc</h2></div></div></div><p>
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>1.4.&nbsp;Advanced Features of Orc</title><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide v1.1.0"><link rel="up" href="ch01.html" title="Chapter&nbsp;1.&nbsp;The Orc Programming Language"><link rel="prev" href="ch01s03.html" title="1.3.&nbsp;Orc: Orchestrating services"><link rel="next" href="ch02.html" title="Chapter&nbsp;2.&nbsp;Programming Methodology"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"><link href="style.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">1.4.&nbsp;Advanced Features of Orc</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch01s03.html">Prev</a>&nbsp;</td><th align="center" width="60%">Chapter&nbsp;1.&nbsp;The Orc Programming Language</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ch02.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N10A26"></a>1.4.&nbsp;Advanced Features of Orc</h2></div></div></div><p>
 In this section we introduce some advanced features of Orc. These include curried
 function definitions and curried calls, writing an arbitrary expression as the
 target of a call, a special syntax for writing calls in an object-oriented style, 
@@ -245,7 +245,6 @@ are accessed using the dot (<code class="code">.</code>) notation, just as one w
 in Java.  For complete details of how Orc interacts with Java, see
 <a class="link" href="ch03s02.html" title="3.2.&nbsp; class Sites">Java Integration</a>.
 </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10C8F"></a>1.4.4.2.&nbsp;
-
                         <code class="code"><span class="hl-keyword">include</span></code> declaration</h4></div></div></div><p>
 It is often convenient to group related declarations into units that can be
 shared between programs. The <code class="code"><span class="hl-keyword">include</span></code> declaration offers a simple
@@ -274,4 +273,118 @@ replaced the include declaration. An included file may itself contain
 Note that these declarations still obey the rules of lexical scope. Also, Orc 
 does not detect shared declarations; if the same file is included twice, its 
 declarations occur twice.
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10CA9"></a>1.4.4.3.&nbsp;
+
+                        <code class="code"><span class="hl-variable">capsule</span></code> declaration</h4></div></div></div><p>
+The concept of Object in computing refers to an entity which can encapsulate 
+data and enables the manipulation of the data through some functions or methods. 
+These objects are usually referred to as passive objects. This means that they 
+do not have their own thread of control. Whenever a thread calls one of the 
+object's methods it will activate the object and give the control to the object
+ and as soon as it returns from the method call object will be deactivated.
+</p><p>
+Active objects are another form of object. Unlike passive objects, active 
+objects have their own thread of control. They can initiate a computation 
+without receiving a method call (in procedural languages) or a message 
+(in languages with message passing model). Note that this definition of 
+active objects subsumes reactive objects and actors.
+</p><p>
+Orc Capsules are the way to build active objects in Orc. A subset of Orc 
+language is called Cor which is an ML like functional language. Programmers 
+can specify the computation in terms of expressions in Cor. Cor does not 
+have any notion of object. A computation entity is a function that is 
+defined by def keyword. There is no encapsulation. It is all function definition.
+</p><p>
+Let us motivate the problem by an example. Suppose you want to have a sequence 
+number generator. The normal way to do that in a functional language is to 
+define a mutable variable and a function to increase and return the sequence 
+number every time we call it. The following shows the code for this sequence 
+number generator in Orc. 			
+<pre class="programlisting">
+<span class="hl-keyword">val</span> <span class="hl-variable">seq_num</span> = <span class="hl-site">Ref</span>(<span class="hl-literal">0</span>)
+<span class="hl-keyword">def</span> <span class="hl-site">gen_seq</span>() =
+  <span class="hl-variable">seq_num</span><span class="hl-site">?</span> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> (<span class="hl-variable">seq_num</span> <span class="hl-site">:=</span> <span class="hl-variable">seq_num</span><span class="hl-site">?</span>+<span class="hl-literal">1</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">x</span>
+  
+<span class="hl-site">gen_seq</span>() <span class="hl-combinator">|</span> <span class="hl-site">gen_seq</span>()
+</pre>
+</p><p>
+What is the problem with the above code? The first problem is that the 
+seq_num is exposed to all the expressions which come after it. This 
+means that all those expressions can possibly read and write the 
+value of seq_num. This is not always desirable. The second issue 
+with this code is that it is not flexible enough. What if we want 
+to have different sequence number generator different initial seed? 
+For example, we may want a sequence number starting at 0 and another 
+one starting at 1000. The third issue is activeness. We need something 
+that gives us the power to create services. We need computational entities 
+that have state and retain in the environment and can not only respond to 
+events but also can create events and spawns activities.
+</p><p>
+Orc capsules enables us to address all the above issues. The idea is to 
+turn a definition (def) which contains a number of internal definitions 
+and defined values into a Site such that the execution of this site is 
+protected from the rest of the program. It also requires that the internal 
+functions definitions can be called on the site just like method calls 
+on the objects. 
+</p><p>
+For example it is desirable to have the following interface for the above 
+defined sequence number generator. 
+<pre class="programlisting">
+<span class="hl-keyword">val</span> <span class="hl-variable">sequence_generator1</span> = <span class="hl-site">gen_seq</span>(<span class="hl-literal">0</span>)
+<span class="hl-keyword">val</span> <span class="hl-variable">sequence_generator2</span> = <span class="hl-site">gen_seq</span>(<span class="hl-literal">1000</span>)
+
+<span class="hl-variable">sequence_generator1</span>.<span class="hl-site">next</span>() <span class="hl-combinator">|</span> <span class="hl-variable">sequence_generator2</span>.<span class="hl-site">next</span>() 
+</pre>
+As the above example suggests we don't want to expose the sequence number 
+generator seed.
+</p><p>
+Orc capsules provides this facility for programmer to define active objects 
+in Orc. The following part will illustrate the use of capsules with a couple 
+of examples. Further on, we explain how do we implement capsules in Orc. 
+</p><p>
+Here is an example of defining a capsule and its usage. 
+<pre class="programlisting">
+<span class="hl-keyword">def</span> <span class="hl-variable">capsule</span> <span class="hl-site">channel</span>() = 
+  <span class="hl-keyword">val</span> <span class="hl-variable">ch</span> = <span class="hl-site">Buffer</span>[<span class="hl-variable">Integer</span>]()
+  <span class="hl-keyword">val</span> <span class="hl-variable">chlen</span> = <span class="hl-site">Ref</span>[<span class="hl-variable">Integer</span>](<span class="hl-literal">0</span>)
+  <span class="hl-keyword">val</span> <span class="hl-variable">s</span> = <span class="hl-site">Semaphore</span>(<span class="hl-literal">1</span>)
+  <span class="hl-keyword">val</span> <span class="hl-variable">_</span> = <span class="hl-site">Rtimer</span>(<span class="hl-literal">3000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"time up in channel!"</span>)
+  <span class="hl-keyword">def</span> <span class="hl-site">put</span>(<span class="hl-variable">x</span> :: <span class="hl-variable">Integer</span>) = 
+    <span class="hl-variable">s</span>.<span class="hl-site">acquire</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+    <span class="hl-variable">ch</span>.<span class="hl-site">put</span>(<span class="hl-variable">x</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+    <span class="hl-variable">chlen</span> <span class="hl-site">:=</span> <span class="hl-variable">chlen</span><span class="hl-site">?</span>+<span class="hl-literal">1</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>.<span class="hl-site">release</span>()
+  <span class="hl-keyword">def</span> <span class="hl-site">get</span>() =
+    <span class="hl-variable">ch</span>.<span class="hl-site">get</span>() <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>.<span class="hl-site">acquire</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> 
+    <span class="hl-variable">chlen</span><span class="hl-site">:=</span> <span class="hl-variable">chlen</span><span class="hl-site">?</span>-<span class="hl-literal">1</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>  <span class="hl-variable">s</span>.<span class="hl-site">release</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">x</span>  
+  <span class="hl-keyword">def</span> <span class="hl-site">len</span>() = 
+    <span class="hl-variable">s</span>.<span class="hl-site">acquire</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">chlen</span><span class="hl-site">?</span> <span class="hl-combinator">&gt;</span><span class="hl-variable">n</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>.<span class="hl-site">release</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">n</span>  
+  <span class="hl-keyword">signal</span>
+
+<span class="hl-keyword">val</span> <span class="hl-variable">c</span> = <span class="hl-site">channel</span>()
+
+<span class="hl-variable">c</span>.<span class="hl-site">put</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>.<span class="hl-site">put</span>(<span class="hl-literal">2000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-variable">c</span>.<span class="hl-site">len</span>()) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> 
+<span class="hl-variable">c</span>.<span class="hl-site">get</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-variable">c</span>.<span class="hl-site">len</span>()) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span> 
+</pre>
+</p><p>
+As can be seen in the above code, defining a capsule is very similar to 
+defining a normal function. However, there is a fundamental difference between 
+them. Capsules does not publish values upon their call. Instead, they publish a 
+site. The published site exposes all the internal definitions of the capsule. 
+One can imagine calling of the capsule as calling the constructor of an object.
+</p><p>
+The interesting point about the above example is that the creation and 
+existence of the capsule is protected from the rest of program execution. 
+Notice the line:
+</p><p>
+<pre class="programlisting">
+  <span class="hl-keyword">val</span> <span class="hl-variable">_</span> = <span class="hl-site">Rtimer</span>(<span class="hl-literal">3000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"time up in channel!"</span>)
+</pre>
+</p><p>
+This line of the code is supposed to print the string "time up in channel!" 
+after 3 seconds into the console. The creation of the capsule returns 
+immediately. However, since the capsule is protected by a Site, it continues 
+to execute.
+</p><p>
+Note that the goal expression of the capsule definition is designated to just 
+initialize the capsule and not publishing any values. 
 </p></div></div></div><script type="text/javascript" src="/orchard/orc.js"></script><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="ch01s03.html">Prev</a>&nbsp;</td><td align="center" width="20%"><a accesskey="u" href="ch01.html">Up</a></td><td align="right" width="40%">&nbsp;<a accesskey="n" href="ch02.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">1.3.&nbsp;Orc: Orchestrating services&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;Chapter&nbsp;2.&nbsp;Programming Methodology</td></tr></table></div></body></html>
