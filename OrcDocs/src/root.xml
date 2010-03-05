@@ -5680,10 +5680,27 @@ and a typing discipline for external services. The typechecker supports both
 though it does not currently implement <emphasis>bounded polymorphism</emphasis>, which combines the two. 
 </para>
 
+<para>
+While almost all of the features of the Orc language are compatible with the typechecker, there are
+still a few limitations, as of version 1.1:
+</para>
 
+<para>
+The <code>capsule</code> declaration is not fully compatible with the typechecker, in that it is not 
+currently possible to write the type of a capsule explicitly. This means that a capsule cannot be 
+used in a position that requires an explicit annotation, for example as a function argument, or as 
+the return value of a recursive function. In particular, this means that it is not currently possible 
+to typecheck recursive or mutually recursive capsule definitions.
+</para>
 
-
-
+<para>
+The Orc typechecker interacts with the Java type system in a relatively sophisticated way. However, since
+the Orc typechecker cannot currently express bounded polymorphism, it cannot interface with some Java
+types that make use of Java's own bounded polymorphism. Orc's typechecker also does not handle
+many cases related to Java intefaces. Lastly, Orc's type join operation on Java types does not currently
+compute the full join of Java classes (i.e. the least common ancestor); it will handle limited cases,
+such as when one class is a subtype of the other, but it does not compute the least upper bound.
+</para>
 
 <section><title>Simple Typing</title>
 
