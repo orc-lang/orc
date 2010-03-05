@@ -13,7 +13,8 @@ Require-Bundle: org.eclipse.ui;bundle-version="3.3.0",
  org.eclipse.team.core,
  org.eclipse.help,
  org.eclipse.ui.intro,
- org.eclipse.ui.ide
+ org.eclipse.ui.ide,
+ org.eclipse.ui.navigator
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Eclipse-LazyStart: true
