@@ -26,6 +26,13 @@ import orc.ast.simple.type.TypeVariable;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 
+/**
+ * 
+ * A group of mutually recursive definitions, 
+ * and the expression to which they are scoped.
+ *
+ * @author dkitchin
+ */
 public class DeclareDefs extends Expression {
 
 	public List<Def> defs;
