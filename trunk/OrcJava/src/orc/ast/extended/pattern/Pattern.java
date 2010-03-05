@@ -76,16 +76,14 @@ public abstract class Pattern implements ASTNode, Locatable {
 	}
 
 	/**
-	 * 
 	 * Condense a sequence of patterns into a single pattern using the following strategy:
 	 * 
 	 * An empty sequence of patterns becomes a wildcard pattern _.
 	 * A singleton sequence p becomes just that pattern p.
 	 * A sequence of two or more patterns p1..pn becomes a tuple pattern (p1,...,pn)
 	 * 
-	 * 
 	 * @param ps
-	 * @return
+	 * @return condensed Pattern
 	 */
 	public static Pattern condense(final List<Pattern> ps) {
 
@@ -211,7 +209,7 @@ public abstract class Pattern implements ASTNode, Locatable {
 	 * 
 	 * Currently we find the inverse via a special message.
 	 * 
-	 * @see Constructor
+	 * @see #Pattern()
 	 * 
 	 * @param m  The site to unapply
 	 * @param s  Argument to the inversion

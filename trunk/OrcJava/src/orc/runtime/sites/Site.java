@@ -39,7 +39,7 @@ public abstract class Site extends Value implements Callable {
 	 * Once all parameters are bound, their values are collected
 	 * and the corresponding subclass (the actual site) is called. 
 	 * 
-	 * @see orc.runtime.values.Callable#createCall(orc.runtime.Token, java.util.List, orc.runtime.nodes.Node)
+	 * @see orc.runtime.values.Callable#createCall(Token, List, TokenContinuation)
 	 */
 	public void createCall(final Token callToken, final List<Object> args, final TokenContinuation publishContinuation) throws TokenException {
 		final Object[] values = new Object[args.size()];

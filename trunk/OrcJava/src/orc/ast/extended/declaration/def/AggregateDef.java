@@ -165,8 +165,8 @@ public class AggregateDef {
 	}
 
 	/**
-	 * @param isStrict
-	 * @throws CompilationException 
+	 * @param strict
+	 * @throws CompilationException
 	 */
 	public void setStrictness(boolean strict) throws CompilationException {
 		isStrict.add(strict);

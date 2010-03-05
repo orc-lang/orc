@@ -18,7 +18,7 @@ package orc.error.runtime;
  * engine. This extends TokenException because it simplifies error handling to
  * have a common superclass for token errors and exceptions.
  * 
- * @quark
+ * @author quark
  */
 public abstract class TokenError extends TokenException {
 

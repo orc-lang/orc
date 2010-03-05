@@ -575,7 +575,7 @@ public class Config implements Cloneable {
 	}
 
 	/**
-	 * @return
+	 * @return true is noExecute flag set
 	 */
 	public boolean noExecute() {
 		return noExecute;

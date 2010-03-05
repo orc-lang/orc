@@ -39,7 +39,7 @@ public final class Closure extends Value implements Callable, Future {
 	private List<Object> free = null;
 
 	/**
-	 * The environment should be set later; see {@link Defs}.
+	 * The environment should be set later; see {@link orc.ast.extended.declaration.DefsDeclaration}.
 	 */
 	public Closure(final Def def, final List<Object> free) {
 		this.def = def;

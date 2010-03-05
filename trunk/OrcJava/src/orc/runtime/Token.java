@@ -25,7 +25,6 @@ import orc.ast.oil.expression.argument.Argument;
 import orc.env.Env;
 import orc.error.Locatable;
 import orc.error.SourceLocation;
-import orc.error.compiletime.SiteResolutionException;
 import orc.error.runtime.CapabilityException;
 import orc.error.runtime.JavaError;
 import orc.error.runtime.SiteException;
@@ -356,7 +355,7 @@ public class Token implements Serializable, Locatable {
 
   /**
    * Leave a closure by returning to the continuation set by
-   * {@link #enterClosure(Expression, Env, Expression)}.
+   * {@link #enterClosure(Closure, TokenContinuation)}.
    */
   public final Token leaveClosure() {
     tracer.leave(continuation.tracedepth);
@@ -501,7 +500,6 @@ public class Token implements Serializable, Locatable {
    * Lookup a variable in the environment
    * @param var variable name
    * @return value, or an error if the variable is undefined
-   * @throws SiteResolutionException 
    */
   public final Object lookup(final Argument var) {
     return var.resolve(env);

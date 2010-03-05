@@ -144,7 +144,9 @@ public class OrcEngine implements Runnable {
 	 * because a token limit was reached, or because the engine is
 	 * halted, or due to some other restriction.
 	 * 
-	 * @param root
+	 * @param ex
+	 * @param initiator
+	 * @return The token, or null
 	 */
 	public final Token newExecution(final Expression ex, final Token initiator) {
 		if (!isDead()) {

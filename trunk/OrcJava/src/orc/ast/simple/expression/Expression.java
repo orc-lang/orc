@@ -26,7 +26,6 @@ import orc.ast.simple.type.Type;
 import orc.ast.simple.type.TypeVariable;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
-import orc.error.compiletime.typing.TypeException;
 
 /**
  * Base class for the simplified abstract syntax tree.
@@ -54,10 +53,11 @@ public abstract class Expression {
 	/**
 	 * Convenience method, to apply convert to a list of expressions.
 	 * 
-	 * @param ts  A list of expressions.
-	 * @param env Environments for conversion
-	 * @return The list of expressions, converted
-	 * @throws TypeException
+	 * @param es A list of expressions.
+	 * @param vars
+	 * @param typevars
+	 * @return The list of expressions, after conversion
+	 * @throws CompilationException
 	 */
 	public static List<orc.ast.oil.expression.Expression> convertAll(final List<Expression> es, final Env<Variable> vars, final Env<TypeVariable> typevars) throws CompilationException {
 
