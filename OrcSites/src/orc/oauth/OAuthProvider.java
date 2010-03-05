@@ -44,7 +44,12 @@ public abstract class OAuthProvider {
 
 	/**
 	 * Get an authenticated OAuthAccessor.
-	 * @param  
+	 * 
+	 * @param name
+	 * @param request
+	 * @return
+	 * @throws Pausable
+	 * @throws Exception
 	 */
 	public OAuthAccessor authenticate(final String name, final List<OAuth.Parameter> request) throws Pausable, Exception {
 		throw new AssertionError("Must override OAuthProvider#authenticate(String)");

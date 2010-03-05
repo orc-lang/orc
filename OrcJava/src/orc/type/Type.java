@@ -403,7 +403,7 @@ public abstract class Type {
 	 * 
 	 * @param matchingMethods
 	 * @param javaCtx
-	 * @return
+	 * @return The Orc arrow type for the methods
 	 * @throws TypeException 
 	 */
 	public static Type fromJavaMethods(final List<Method> matchingMethods, final Map<java.lang.reflect.TypeVariable, Type> javaCtx) throws TypeException {
@@ -435,7 +435,6 @@ public abstract class Type {
 	}
 
 	/**
-	 * 
 	 * From a Java type, possibly a generic type, create an Orc
 	 * type. This conversion requires a context for all Java
 	 * type variables that may occur in the type to the appropriate
@@ -443,7 +442,7 @@ public abstract class Type {
 	 * 
 	 * @param genericType
 	 * @param javaCtx
-	 * @return
+	 * @return The Orc arrow type for the methods
 	 * @throws TypeException 
 	 */
 	public static Type fromJavaType(final java.lang.reflect.Type genericType, final Map<java.lang.reflect.TypeVariable, Type> javaCtx) throws TypeException {
@@ -556,7 +555,6 @@ public abstract class Type {
 	}
 
 	/**
-	 * 
 	 * From a class with Java type formals and a list
 	 * of actual Orc type parameters, create a mapping
 	 * from those Java variables to their appropriate
@@ -564,7 +562,7 @@ public abstract class Type {
 	 * 
 	 * @param cls
 	 * @param typeActuals
-	 * @return
+	 * @return A new Java context, with the parameter mapping
 	 * @throws TypeArityException 
 	 */
 	public static Map<java.lang.reflect.TypeVariable, Type> makeJavaCtx(final Class cls, final List<Type> typeActuals) throws TypeArityException {
@@ -612,7 +610,9 @@ public abstract class Type {
 	/**
 	 * Convert to a syntactic type. May return null
 	 * if the type is not representable.
-	 * @return
+	 * 
+	 * @return The syntactic type corresponding to this type
+	 * @throws UnrepresentableTypeException
 	 */
 	public orc.ast.xml.type.Type marshal() throws UnrepresentableTypeException {
 		throw new UnrepresentableTypeException(this);

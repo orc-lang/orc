@@ -73,7 +73,9 @@ public class GoogleCalendar extends EvalSite {
 		private final OAuthProvider provider;
 
 		/**
-		 * @param properties location of the resource defining OAuth properties
+		 * Constructs an object of class GoogleCalendarInstance.
+		 *
+		 * @param provider
 		 * @param consumer name of the Google consumer in the properties file
 		 * @throws IOException if properties cannot be loaded
 		 */

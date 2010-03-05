@@ -175,8 +175,8 @@ public abstract class Expression implements ASTNode, Locatable {
 	 * 
 	 * If the pattern list is empty, just return b.
 	 *  
-	 * @param Pattern list list (P),...,(P)
-	 * @param Body b
+	 * @param ps list (P),...,(P)
+	 * @param body b
 	 * @return Expression lambda(P) = ( ... ( lambda(P) = b ) ... )
 	 */
 	public static Expression uncurry(final List<List<Pattern>> ps, Expression body) {

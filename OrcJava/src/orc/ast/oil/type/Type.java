@@ -101,9 +101,7 @@ public abstract class Type {
 	 * 
 	 * @param ts  A list of types
 	 * @param ctx TODO
-	 * @param env Environment for conversion
 	 * @return The list of types, converted
-	 * @throws TypeException 
 	 * @throws TypeException
 	 */
 	public static List<orc.type.Type> transformAll(final List<Type> ts, final TypingContext ctx) throws TypeException {
@@ -119,7 +117,7 @@ public abstract class Type {
 
 	/**
 	 * @param argTypes
-	 * @return
+	 * @return inferred type
 	 */
 	public static List<orc.ast.oil.type.Type> inferredTypes(final List<orc.type.Type> argTypes) {
 

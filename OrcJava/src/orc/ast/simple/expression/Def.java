@@ -27,7 +27,6 @@ import orc.ast.simple.type.TypeVariable;
 import orc.env.Env;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;
-import orc.error.compiletime.typing.TypeException;
 
 /**
  * A unit of syntax that encapsulates an expression definition. 
@@ -114,10 +113,11 @@ public class Def {
 	/**
 	 * Convenience method, to apply convert to a list of defs.
 	 * 
-	 * @param ts  A list of defs
-	 * @param env Environments for conversion
+	 * @param ds A list of defs
+	 * @param vars
+	 * @param typevars
 	 * @return The list of expressions, converted
-	 * @throws TypeException
+	 * @throws CompilationException
 	 */
 	public static List<orc.ast.oil.expression.Def> convertAll(final List<Def> ds, final Env<Variable> vars, final Env<TypeVariable> typevars) throws CompilationException {
 

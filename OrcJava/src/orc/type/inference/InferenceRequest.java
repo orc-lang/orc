@@ -33,7 +33,7 @@ public class InferenceRequest extends TypeException {
 	}
 
 	/**
-	 * @return
+	 * @return this InferenceRequest
 	 */
 	public Exception addReplay() {
 		replay = true;
