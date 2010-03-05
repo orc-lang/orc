@@ -515,5 +515,22 @@
       </configExtension>
 -->
    </extension>
+   <extension
+         point="org.eclipse.ui.navigator.navigatorContent">
+      <commonWizard
+            type="new"
+            wizardId="edu.utexas.cs.orc.orceclipse.wizards.NewOrcFileWizard">
+         <enablement>
+         	<or>
+				<adapt type="org.eclipse.core.resources.IProject">
+					<test property="org.eclipse.core.resources.projectNature" value="edu.utexas.cs.orc.orceclipse.project.orcNature"/>
+				</adapt>
+    <adapt
+          type="org.eclipse.core.resources.IFolder">
+    </adapt>
+			</or>
+         </enablement>
+      </commonWizard>
+   </extension>
 
 </plugin>
