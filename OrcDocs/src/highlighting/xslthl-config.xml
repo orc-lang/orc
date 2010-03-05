@@ -1,0 +1,7 @@
+<?xml version='1.0'?>
+<xslthl-config>
+	<highlighter id="orc" file="orc-hl.xml" />
+	<highlighter id="java" file="java-hl.xml" />
+	<highlighter id="orc-demo" file="orc-hl.xml" />
+	<namespace prefix="xslthl" uri="http://xslthl.sf.net" />
+</xslthl-config>

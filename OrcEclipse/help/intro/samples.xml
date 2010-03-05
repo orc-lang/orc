@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<introContent>
+	<extensionContent path="samples/@" style="orc_intro_item.css">
+		<group label="Orc" id="edu.utexas.cs.orc.orceclipse.help.intro.samples_group" style-id="content-group">
+			<text style-id="group-description">The following samples demonstrate how to program in the Orc language.</text>
+			<link
+					label="Try Orc"
+					url="http://org.eclipse.ui.intro/openBrowser?url=http://orc.csres.utexas.edu/tryorc.shtml"
+					id="orcIntroLink"
+					style-id="content-link">
+				<text>A collection of about 25 sample Orc programs for you to try out.</text>
+			</link>
+		</group>
+	</extensionContent>
+</introContent>

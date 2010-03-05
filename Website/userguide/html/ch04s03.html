@@ -1,0 +1,32 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>4.3.&nbsp;Interacting with Java</title><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide v1.1.0"><link rel="up" href="ch04.html" title="Chapter&nbsp;4.&nbsp;Type Checking"><link rel="prev" href="ch04s02.html" title="4.2.&nbsp;Polymorphism"><link rel="next" href="ch04s04.html" title="4.4.&nbsp;Syntax of Typed Orc"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"><link href="style.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">4.3.&nbsp;Interacting with Java</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch04s02.html">Prev</a>&nbsp;</td><th align="center" width="60%">Chapter&nbsp;4.&nbsp;Type Checking</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ch04s04.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N11A86"></a>4.3.&nbsp;Interacting with Java</h2></div></div></div><p>
+When a Java class is made accessible to Orc using the <code class="code"><span class="hl-keyword">class</span></code> declaration,
+the Orc typechecker interacts with the Java type system to make Java types available
+in Orc. This feature is experimental and does not allow access to all of Java's typing
+features (for example, interfaces are not fully supported), but it does allow
+the typechecker to handle many of the common cases.
+</p><p>
+The type returned by the constructor of a class has the same name in Orc as the class.
+It is the Orc type of Java objects of that class.
+
+<pre class="programlisting">
+<span class="hl-keyword">class</span> <span class="hl-variable">File</span> = <span class="hl-variable">java</span>.<span class="hl-variable">io</span>.<span class="hl-variable">File</span>
+<span class="hl-site">File</span>(<span class="hl-literal">"test.orc"</span>) :: <span class="hl-variable">File</span>
+</pre>
+</p><p>
+If a <code class="code"><span class="hl-keyword">class</span></code> declaration binds a generic Java class, that type shows up
+in Orc as a parametric type, and its constructor takes type arguments. For example:
+
+<pre class="programlisting">
+<span class="hl-keyword">class</span> <span class="hl-variable">TreeSet</span> = <span class="hl-variable">java</span>.<span class="hl-variable">util</span>.<span class="hl-variable">TreeSet</span>
+<span class="hl-site">TreeSet</span>[<span class="hl-variable">String</span>]() :: <span class="hl-site">TreeSet</span>[<span class="hl-variable">String</span>]
+</pre>
+</p><p>
+There is a correspondence between Orc's primitive types and the equivalent classes
+in Java; they are interchangeable. For example, a call expecting a <code class="code"><span class="hl-variable">java</span>.<span class="hl-variable">lang</span>.<span class="hl-variable">Integer</span></code>
+can be given an Orc <code class="code"><span class="hl-variable">Integer</span></code>.
+</p><p>
+Subtyping between Java object types is determined by Java's subtyping relation: if
+one class is a subclass of the other, then one type will be a subtype of the other.
+The typechecker does not implement support a full join operation for Java types; it will
+not find the least common ancestor of two classes as the join.
+</p></div><script type="text/javascript" src="/orchard/orc.js"></script><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="ch04s02.html">Prev</a>&nbsp;</td><td align="center" width="20%"><a accesskey="u" href="ch04.html">Up</a></td><td align="right" width="40%">&nbsp;<a accesskey="n" href="ch04s04.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">4.2.&nbsp;Polymorphism&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;4.4.&nbsp;Syntax of Typed Orc</td></tr></table></div></body></html>

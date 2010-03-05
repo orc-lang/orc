@@ -1,0 +1,63 @@
+<!--#include virtual="template/header.shtml" --> 
+
+<h1>Quick Start to Developing the Orc Language Toolset</h1>
+
+<h2>Install Prerequisites</h2>
+<ol>
+<li><a href="http://java.sun.com/javase/6/webnotes/install/">Java</a> 1.6 or later.</li>
+<li><a href="http://ant.apache.org/">Ant</a> 1.7.1 or later. (Older versions may also work)</li>
+<li><a href="http://www.eclipse.org/downloads/">Eclipse</a> 3.3 or later. These
+instructions assume version 3.5.1, but other versions should behave similarly.</li>
+<li><a href="http://www.eclipse.org/subversive/">Subversive</a>. You may also use
+	<a href="http://subclipse.tigris.org">Subclipse</a>, or
+	<a href="http://code.google.com/p/orc/source/checkout">check out the
+	project manually</a> with the client of your choice.
+</li>
+</ol>
+
+<h2>Check out Orc</h2>
+
+<p>Use the method of your choice to check out
+<tt>http://orc.googlecode.com/svn/trunk/OrcJava</tt> and import it into the
+Eclipse project <tt>OrcJava</tt>. Here is how to accomplish this using Subversive:</p>
+<ol>
+<li>Launch Eclipse</li>
+<li>Go to <b>File -&gt; New -&gt; Project ...</b></li>
+<li>Open <b>SVN</b>, choose <b>Checkout Projects from SVN</b>, and click <b>Next&nbsp;&gt;</b></li>
+<li>Choose <b>Create a new repository location</b> and click <b>Next&nbsp;&gt;</b></li>
+<li>Enter for the <b>URL</b>: <tt>http://orc.googlecode.com/svn</tt></li>
+<li>Select <b>trunk -> OrcJava</b> and click <b>Finish</b>.</li>
+<li><i>Warning: Do not change the project name (from <tt>OrcJava</tt>) or
+the project will not build correctly.</i></li>
+</ol>
+
+<h2>Running Orc Programs: Alternative 1</h2>
+<p>Install the <a href="download.shtml#eclipse">Orc Eclipse plug-in</a>.  In the Orc Run Configuration
+settings, set the Alternative Orc Runtime Engine to <tt>build/orc-*.jar</tt> in
+your <tt>OrcJava</tt> project.</p>
+
+<h2>Running Orc Programs: Alternative 2</h2>
+<ol>
+<li>Within Eclipse, open the Orc program you wish to run.</li>
+<li>Go to <b>Run -&gt; Run Configurations...</b></li>
+<li>Right-click <b>Java Application</b> and select <b>New</b></li>
+<li>Fill out the Main form as follows:
+	<dl class="aligned">
+	<dt>Name</dt><dd><tt>Orc</tt></dd>
+	<dt>Project</dt><dd><tt>OrcJava</tt></dd>
+	<dt>Main class</dt><dd><tt>orc.Orc</tt></dd>
+	</dl></li>
+<li>Click the <b>Arguments</b> tab and fill out the form as follows:
+	<dl>
+	<dt>Program arguments</dt><dd><tt>"${selected_resource_loc}"</tt></dd>
+	</dl></li>
+<li>Click <b>Apply</b></li>
+</ol>
+
+<p>You only have to perform the above steps once. Then whenever you want to run an Orc program:</p>
+<ol>
+<li>Select the program source file in Eclipse (you can open it or simply select it in the Package Explorer or Navigator).</li>
+<li>Go to <b>Run -&gt; Run ...</b>, select <b>Orc</b>, and click <b>Run</b> (after doing this once, you can use the dropdown menu of the "run" icon in the toolbar as a shortcut).</li>
+</ol>
+
+<!--#include virtual="template/footer.shtml" --> 
