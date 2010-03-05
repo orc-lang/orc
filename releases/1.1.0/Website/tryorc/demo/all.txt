@@ -1,0 +1,123 @@
+-- 3+4  -- = add(3, 4)
+
+-- if(true)
+
+-- if(false)  -- = stop
+
+-- Rtimer(1500)
+
+-- random(6)
+
+-- println("Hello World")
+
+    ------------------
+def rbool() = random(2) >x> (x =0)
+-- 2 | 3
+
+-- 2 | 3 | 4
+
+-- rbool() | random(10)
+
+{-
+   "immediately"
+| Rtimer(2000) >> "...two seconds later..."
+| Rtimer(4000) >> "...four seconds later..."
+-}
+
+    ------------------
+include "mail.inc"
+def signals(n) = if(n>0) >> (signal | signals(n-1))
+-- 3 + 4 >x> x + 5  -- = 3 + 4 + 5
+
+-- wait for up to 3 seconds, randomly
+-- random(3) >x> x * 1000 >y> Rtimer(y)
+
+-- (random(1000) | random(1000) ) >x> Rtimer(x) >> println(x)
+-- (random(1000) | random(1000) ) >x> Rtimer(x) >> println(x) >> stop
+
+-- random(10) | Rtimer(1000) >> (random(10) | Rtimer(1000) >> random(10))
+
+
+-- signals(5) >> random(10)
+
+-- signals(4) >> SendMail("misra@cs.utexas.edu", "testing, testing", "wow")
+
+    ------------------
+{-
+number
+
+   <number<
+
+         Prompt("Input a number")
+       | Prompt("Input a number")
+-}
+
+
+    ------------------
+x
+
+   <x<   random(1000) >x> Rtimer(x) >> x
+       | random(1000) >x> Rtimer(x) >> x
+
+    ------------------
+
+   if(~b) >> println("first alternative after " + x + " milliseconds") >>stop
+| if(b)  >> println("second alternative after " + x + " milliseconds") >>stop
+
+   <(x,b)<   random(1000) >x> Rtimer(x) >> (x,false)
+           | random(1000) >x> Rtimer(x) >> (x,true)
+
+                 ---------------
+
+{-
+def signals(n) = if(n>0) >> (signal | signals(n-1))
+signals(10) >>
+  (  if(~b) >> println("first alternative after " + x + " milliseconds") >>stop
+   | if(b)  >> println("second alternative after " + x + " milliseconds") >>stop
+
+     <(x,b)<   random(1000) >x> Rtimer(x) >> (x,false)
+             | random(1000) >x> Rtimer(x) >> (x,true)
+
+  )
+-}
+    ------------------
+def gen(i,t) = i | Rtimer(t) >> gen(i+1,t)
+
+-- gen(2,1000)
+
+-- gen(2,1000) | gen(100,2000)
+
+    ------------------
+-- Fibonacci
+def fib(m,n) = n | Rtimer(50) >> fib(n, m+n)
+
+fib(0,1)
+
+    ------------------
+def biasedBool(p) = random(1000) >x> (x<= p*1000)
+def rrandSignal(t,p) = if(biasedBool(p)) >> random(t) >s> Rtimer(s)
+
+val n = 10 -- number of sites
+val t= 12  -- max time within which a site responds
+val p = 0.9 -- probability of response
+def tally(0) =   0
+def tally(k) =  (rrandSignal(t,p)>>  1 | Rtimer(10) >> 0) + tally(k-1)
+
+tally(n)
+
+    ------------------
+-- Parallel-or
+-- outputs the result, and how and when the sites have responded
+
+def randBool(t) =   random(2) >x> random(t) >s> Rtimer(s) >> (x=0,s)
+def signals(n) =    if(n>0) >> (signal | signals(n-1))
+-- signals(10)  >> (
+z <z<
+(
+    if(x) >> (true,"site 1:",s1) | if(y) >> (true,"site 2:",s2)
+   | ((x || y),("site 1:",s1),("site 2:",s2))
+
+     <(x,s1)< randBool(100)
+     <(y,s2)< randBool(100)
+)
+--)

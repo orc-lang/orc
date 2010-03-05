@@ -1,0 +1,228 @@
+/*
+Template name: Natural Essence
+Template URI: http://templates.arcsin.se/natural-essence-website-template/
+Release date: 2007-02-20
+Description: Soft and natural single/two-column template.
+Author: Viktor Persson
+Author URI: http://arcsin.se/
+
+This template is licensed under a Creative Commons Attribution 2.5 License:
+http://templates.arcsin.se/license/
+*/
+
+
+/* default elements */
+* {margin: 0; padding: 0;}
+
+body {
+	background: #7C6F5C;
+	color: #222;
+	font: normal 70% Georgia,serif;
+	padding: 2% 0;
+}
+
+a {color: #642;}
+a:hover {color: #963;}
+
+big {font-size: 1.1em;}
+
+h1,h2,h3 {
+	color: #442;
+	margin: 8px 0 2px;
+	font-family: "Trebuchet MS",sans-serif;
+}
+
+h1 {font-size: 1.6em;}
+h1 a {text-decoration: none;}
+h1 a:hover {text-decoration: underline;}
+
+h2 {font-size: 1.4em;}
+
+blockquote {
+	background: url('images/quote.gif') no-repeat;
+	display: block;
+	font-size: 1.1em;
+	padding-left: 26px
+}
+
+form,table {margin-bottom: 1.2em;}
+img {border: none;}
+label {display: block;}
+li {line-height: 1.5em;}
+p {padding: 2px 0 10px;}
+small, .small {font: normal 10px Verdana,sans-serif;}
+ul {padding: 0 2em 10px 1.5em;}
+ol {padding: 0 2em 10px 1.5em;}
+dl {padding: 0 2em 10px 0;}
+
+/* structure */
+#wrapper {
+	background: #332 url(images/wrapper.gif) no-repeat left bottom;
+	margin: 0 auto;
+	width: 762px;
+}
+#container {
+	background: #FBF9F4;
+	border-top: 6px solid #332;
+	font-size: 1.3em;
+	line-height: 1.3em;
+	margin: 0 auto;
+	width: 750px;
+}
+
+/* header */
+.title {
+	background: #fff url("images/logo-top.gif") no-repeat right;
+	border-top: 1px solid #996;
+	border-bottom: 1px solid #996;
+	height: 100px;
+}
+.title h1 {
+	color: #441;
+	font-size: 2.2em;
+	font-family: Georgia,serif;
+}
+.title h3 {
+	font-style: italic;
+}
+
+.header {
+	border-top: 2px solid #663;
+	background: #DAD7C5 url(images/header.jpg) no-repeat left bottom;
+	height: 220px;
+}
+
+/* navigation */
+.navigation {
+	background: #332 url("images/logo-bottom.gif") no-repeat right top;
+}
+.navigation a {
+	background: #332 url(images/nav.gif) repeat-x;
+	border-right: 1px solid #C9C6B3;
+	color: #FBF9F4;
+	float: left;
+	font: bold 1em "Trebuchet MS",sans-serif;
+	padding: 0 14px;
+	line-height: 41px;
+	text-align: center;
+	text-decoration: none;
+}
+.navigation a:hover,.navigation a#active {
+	background-color: #DED9D0;
+	color: #331;
+	background-position: left bottom;
+}
+
+/* main */
+.main#two-columns {background: #FFF url(images/two-columns.gif) repeat-y;}
+
+/* bottom */
+.bottom {
+	background: #DCDAC9 url(images/bottom.gif) no-repeat left bottom;
+	border-top: 1px solid #AA8;
+	color: #444;
+	padding: 14px 20px;
+}
+.bottom .left,.bottom .right {width: 49%;}
+
+/* footer */
+.footer {
+	background: #332;
+	color: #EED;
+	padding: 10px;
+	font: normal 10px Verdana,sans-serif;
+}
+.footer .left {width: 66%;}
+.footer .right {
+	width: 33%;
+	text-align: right;
+}
+.footer a {
+	color: #FFF;
+	text-decoration: none;
+}
+.footer a:hover {
+	color: #FFF;
+	text-decoration: underline;
+}
+
+/* gallery */
+.gallery td {
+	vertical-align: top;
+	text-align: center;
+}
+.gallery em {display: block;}
+
+/* misc */
+.clear,.clearer {clear: both;} 
+.clearer {font-size: 0;}
+.col2 .left {width: 64%;}
+.col2 .right .content {background: #FFF;}
+.col2 .right {width: 33%;}
+.content {padding: 18px 20px;}
+.left {float: left;}
+.right {float: right;}
+.right .content {padding: 18px 12px 12px;}
+
+/* block list */
+ul.block {
+	border-top: 1px dashed #BCBAAC;
+	margin: 4px 0;
+	padding: 0;
+	width: 90%;
+}
+.block li {
+	border-bottom: 1px dashed #BCBAAC;
+	list-style: none;
+}
+.block li a,.block li em {
+	color: #553;
+	display: block;
+}
+.block li em {
+	font-size: 0.9em;
+	font-style: normal;
+}
+.block li a {
+	padding: 4px 3%;
+	text-decoration: none;
+	width: 94%;
+}
+.block li a span {font-weight: bold;}
+.block li a:hover {
+	background: #D2D0C0;
+	color: #553;
+}
+
+.right .block,.right .block li {border-color: #DCDACC;}
+.right .block li a:hover {background: #F2F0EA;}
+
+.image {
+	background-color: #fff;
+	border: 1px solid #BCBAAC;
+	padding: 1ex;
+	margin: 1em 0;
+	text-align: center;
+}
+
+.image .caption {
+	border-top: 1px dashed #BCBAAC;
+	text-align: left;
+	margin-top: 1ex;
+	padding-top: 1ex;
+}
+
+dl dt {
+	float: left;
+	font-weight: bold;
+	padding-right: 1em;
+}
+
+dl.aligned dt {
+	width: 9em;
+	text-align: right;
+}
+
+tt {
+	font-size: 13px;
+}

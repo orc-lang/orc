@@ -1,0 +1,163 @@
+<?xml version="1.0"?>
+<!--
+  - Original Author:  Nathan A. Good <mail@nathanagood.com>
+  - Excerpted from "Build DocBook XML in Eclipse"
+  - at http://www.ibm.com/developerworks/xml/library/os-eclipse-docbook/index.html
+  -
+  -->
+<project name="docbook-src" default="all">
+
+	<description>
+		This Ant build.xml file is used to transform DocBook XML to various other formats
+	</description>
+
+	<!--
+      - Configure basic properties that will be used in the file.
+      -->
+	<property name="docbook.xsl.dir" value="docbook-xsl" />
+	<property name="build.dir" value="build" />
+	<property name="src.dir" value="src" />
+	<property name="xslthl.config" value="file://${user.dir}/${src.dir}/highlighting/xslthl-config.xml" />
+	<property name="xalan.lib.dir" value="lib" />
+
+	<!--
+      - Sets up the classpath for the Xalan and Xerces implementations
+      - that are to be used in this script, since the versions that ship
+      - with Ant may be out of date.
+      -->
+	<path id="xalan.classpath">
+		<fileset dir="${xalan.lib.dir}" id="xalan.fileset">
+			<include name="xalan.jar" />
+			<include name="xercesImpl.jar" />
+			<include name="xslthl-2.0.0.jar" />
+		</fileset>
+	</path>
+
+	<target name="all" depends="build-pdf,build-html-chunk,build-html-single" description="Build all documentation" />
+
+	<!--
+      - target:  usage
+      -->
+	<target name="usage" description="Prints the Ant build.xml usage">
+		<echo message="Use -projecthelp to get a list of the available targets." />
+	</target>
+
+	<!--
+      - target:  clean
+      -->
+	<target name="clean" description="Cleans up generated files.">
+		<delete dir="${build.dir}" />
+	</target>
+
+	<!--
+      - target:  depends
+      -->
+	<target name="depends">
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${build.dir}/html" />
+		<mkdir dir="${build.dir}/pdf" />
+		<mkdir dir="${build.dir}/fo" />
+	</target>
+	
+	<target name="xinclude" depends="depends">
+		<taskdef name="xinclude" classname="gr.abiss.xcluder.XercesXcluder">
+			<classpath>
+				<fileset dir="lib">
+					<include name="*.jar" />
+				</fileset>
+			</classpath>
+		</taskdef>
+		<xinclude in="${src.dir}/root.xml" out="${src.dir}/all.xml" />
+	</target>
+
+	<target name="build-html-chunk" depends="xinclude" description="Generates HTML files from DocBook XML">
+		<xslt style="${src.dir}/xsl/html-chunk.xsl" extension=".html" 
+				basedir="${src.dir}" destdir="${build.dir}/html">
+			<include name="all.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="orc.demo" expression="1"/>
+			<param name="section.autolabel" expression="1"/>
+			<param name="section.label.includes.component.label" expression="1"/>
+			<param name="section.autolabel.max.depth" expression="8"/>
+			<param name="chunk.quietly" expression="1"/>
+			
+			<param name="highlight.source" expression="1"/>
+			<param name="highlight.default.language" expression="orc"/>
+			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
+		</xslt>
+		<!-- Delete this because it confuses build-html-single otherwise -->
+		<delete file="${build.dir}/html/all.html" />
+		<!-- Copy the stylesheet to the same directory as the HTML files -->
+		<copy todir="${build.dir}/html">
+			<fileset dir="css">
+				<include name="style.css" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="build-html-single" depends="xinclude" description="Generates HTML files from DocBook XML">
+		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html" 
+				basedir="${src.dir}" destdir="${build.dir}/html">
+			<include name="all.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="orc.demo" expression="0"/>
+			<param name="section.autolabel" expression="1"/>
+			<param name="section.label.includes.component.label" expression="1"/>
+			<param name="section.autolabel.max.depth" expression="8"/>
+			
+			<param name="highlight.source" expression="1"/>
+			<param name="highlight.default.language" expression="orc"/>
+			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
+		</xslt>
+		<!-- Copy the stylesheet to the same directory as the HTML files -->
+		<copy todir="${build.dir}/html">
+			<fileset dir="css">
+				<include name="style.css" />
+			</fileset>
+		</copy>
+	</target>
+
+	<!--
+	    - target:  build-pdf
+	    - description:  Iterates through a directory and transforms
+	    -     .xml files into .fo files which can then be turned into DocBook XML
+	    -     files.
+	    -->
+	<target name="build-pdf" depends="xinclude" 
+		    description="Generates PDF files from DocBook XML">
+	    <xslt style="${src.dir}/xsl/fo.xsl" extension=".fo" 
+			basedir="${src.dir}" destdir="${build.dir}/fo">
+	        <classpath refid="xalan.classpath" />
+	    	<param name="section.autolabel" expression="1"/>
+	    	<param name="section.label.includes.component.label" expression="1"/>
+	    	<param name="section.autolabel.max.depth" expression="8"/>
+		<!-- default to indented layout to match HTML dl -->
+	    	<param name="variablelist.as.blocks" expression="1"/>
+		<!-- when table layout is used, default to 12em width for terms -->
+		<param name="variablelist.max.termlength" expression="12"/>
+	        <include name="all.xml" />
+	        	
+		<param name="highlight.source" expression="1"/>
+		<param name="highlight.default.language" expression="orc"/>
+	    	<param name="highlight.xslthl.config" expression="${xslthl.config}" />
+	    </xslt>
+
+	    <property name="fop.home" value="lib/fop" />
+
+	    <taskdef name="fop" classname="org.apache.fop.tools.anttasks.Fop">
+	        <classpath>
+	            <fileset dir="${fop.home}/lib">
+	                <include name="*.jar" />
+	            </fileset>
+	            <fileset dir="${fop.home}/build">
+	                <include name="fop.jar" />
+	                <include name="fop-hyph.jar" />
+	            </fileset>
+	        </classpath>
+	    </taskdef>
+
+	    <fop format="application/pdf" fofile="${build.dir}/fo/all.fo" 
+	        outfile="${build.dir}/pdf/all.pdf" />
+	</target>
+
+</project>

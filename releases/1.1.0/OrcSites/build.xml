@@ -1,0 +1,151 @@
+<?xml version="1.0" ?>
+
+<!-- build.xml - Ant buildfile (additional tasks for project build)
+     Project OrcSites
+
+     $Id$
+
+     Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<project name="orc-sites" default="all" basedir=".">
+	<description>
+		Ant build file for OrcSites binary distribution.
+	</description>
+	<property file="build.properties" />
+	<property file="${orc.location.OrcJava}/googlecode.properties" />
+	<property name="target.name" value="${ant.project.name}-${orc.version}" />
+
+	<path id="orc.classpath">
+		<fileset dir="lib" includes="*.jar" />
+		<pathelement path="build/classes" />
+		<!-- FIXME: I hate having to hard-code these -->
+		<pathelement path="${orc.location.OrcJava}/build/classes" />
+		<fileset dir="${orc.location.OrcJava}/lib" includes="*.jar" />
+	</path>
+
+
+	<!-- ================================= 
+          target: kilim              
+         ================================= -->
+	<target name="kilim" description="Kilim weaving">
+		<java classname="kilim.tools.Weaver" fork="yes" failonerror="true">
+			<classpath refid="orc.classpath"/>
+				<assertions>
+					<enable/>
+				</assertions>
+		    <sysproperty key="java.awt.headless" value="true"/>
+			<arg value="-d" />
+			<arg value="build/classes" />
+			<arg value="build/classes" />
+		</java>
+	</target>
+	
+	<!-- ================================= 
+          target: jar              
+         ================================= -->
+	<target name="jar" depends="kilim" description="generate the distribution">
+		<!-- Put everything in build into orc-sites.jar -->
+		<jar jarfile="build/${target.name}.jar" basedir="build/classes">
+			<!-- This jar should have a duplicate="fail" attribute, but since we smash all the JARs into
+			     one, we'll have duplicate kilim state classes (kilim/S_*.class).  They're innocuous because
+			     they're all identical. -->
+			<manifest>
+				<attribute name="Implementation-Title" value="Orc sites library" />
+				<attribute name="Implementation-Version" value="${orc.version}" />
+				<attribute name="Implementation-Vendor" value="The University of Texas at Austin" />
+				<attribute name="Implementation-Vendor-Id" value="edu.utexas" />
+				<section name="orc.lib">
+					<attribute name="Implementation-Title" value="Orc sites library" />
+					<attribute name="Implementation-Version" value="${orc.version}" />
+					<attribute name="Implementation-Vendor" value="The University of Texas at Austin" />
+					<attribute name="Implementation-Vendor-Id" value="edu.utexas" />
+					<attribute name="Specification-Title" value="Orc sites library" />
+					<attribute name="Specification-Version" value="${orc.version}" />
+					<attribute name="Specification-Vendor" value="The University of Texas at Austin" />
+				</section>
+			</manifest>
+			<!-- Include library dependencies -->
+			<zipgroupfileset dir="lib"
+				includes="*.jar" />
+		</jar>
+	</target>
+
+	<!-- ================================= 
+          target: zip              
+         ================================= -->
+	<target name="zip" depends="jar" description="generate the ZIP">
+		<zip zipfile="build/${target.name}.zip">
+			<zipfileset prefix="${target.name}" dir=".">
+				<include name="build/${target.name}.jar"/>
+				<include name="README"/>
+				<include name="LICENSE"/>
+				<include name="licenses.yml"/>
+				<include name="licenses/**"/>
+				<include name="examples/**"/>
+				<exclude name="**/CVS/*"/>
+				<exclude name="**/.svn/*"/>
+			</zipfileset>
+		</zip>
+	</target>
+
+	<!-- ================================= 
+          target: javadoc              
+         ================================= -->
+	<target name="javadoc" description="Build Javadoc">
+		<delete dir="build/javadoc" followsymlinks="no" includeemptydirs="true" />
+		<javadoc destdir="build/javadoc"
+				author="true"
+				access="protected"
+				source="1.5"
+				sourcepath="src"
+				splitindex="true"
+				windowtitle="{$ant.project.name} ${orc.version}"
+				doctitle="{$ant.project.name} ${orc.version}"
+				use="true"
+				version="true">
+			<classpath refid="orc.classpath"/>
+		</javadoc>
+		<zip zipfile="build/${target.name}-doc.zip" basedir="build/javadoc" />
+	</target>
+	
+	<!-- ================================= 
+          target: all              
+         ================================= -->
+    <target name="all" depends="zip,javadoc" description="Build all targets" />
+
+	<!-- ================================= 
+          target: upload              
+         ================================= -->
+	<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask"
+		classpath="${orc.location.OrcJava}/lib/ant-googlecode-0.0.1.jar" name="gcupload"/>
+	<target name="upload" depends="zip,javadoc" description="upload to google code">
+		<gcupload 
+			username="${orc.googlecode.username}" 
+			password="${orc.googlecode.password}" 
+			projectname="orc" 
+			filename="build/${target.name}.zip" 
+			targetfilename="${target.name}.zip"
+			summary="Supplemental Orc sites, for webservices and other demos."
+			labels="Type-Archive, OpSys-All" />
+		<gcupload 
+			username="${orc.googlecode.username}" 
+			password="${orc.googlecode.password}" 
+			projectname="orc" 
+			filename="build/${target.name}-doc.zip" 
+			targetfilename="${target.name}-doc.zip"
+			summary="Javadoc documentation for supplemental Orc sites."
+			labels="Type-Docs, OpSys-All" />
+	</target>
+
+	<!-- ================================= 
+          target: clean              
+         ================================= -->
+	<target name="clean" description="clean up">
+		<delete dir="build" followsymlinks="no" includeemptydirs="true" />
+	</target>
+</project>
