@@ -113,20 +113,24 @@ public class LambdaType extends Type {
 		s.append('(');
 
 		s.append("lambda ");
-		s.append('[');
-		for (int i = 0; i < typeParams.size(); i++) {
-			if (i > 0) {
-				s.append(", ");
+		if (typeParams != null) {
+			s.append('[');
+			for (int i = 0; i < typeParams.size(); i++) {
+				if (i > 0) {
+					s.append(", ");
+				}
+				s.append(typeParams.get(i));
 			}
-			s.append(typeParams.get(i));
+			s.append(']');
 		}
-		s.append(']');
 		s.append('(');
-		for (int i = 0; i < argTypes.size(); i++) {
-			if (i > 0) {
-				s.append(", ");
+		if (argTypes != null) {
+			for (int i = 0; i < argTypes.size(); i++) {
+				if (i > 0) {
+					s.append(", ");
+				}
+				s.append(argTypes.get(i));
 			}
-			s.append(argTypes.get(i));
 		}
 		s.append(')');
 		s.append(" :: ");
