@@ -25,7 +25,7 @@ import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 
 /**
- * A syntactic type declaration. 
+ * A syntactic type declaration, and the expression to which it is scoped.
  * 
  * @author dkitchin
  */

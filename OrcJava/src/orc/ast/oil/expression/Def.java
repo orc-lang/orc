@@ -34,7 +34,8 @@ import orc.type.TypingContext;
 /**
  * A unit of syntax that encapsulates an expression definition. 
  * 
- * Groups of mutually recursive definitions are scoped in the simplified abstract syntax tree by a Def.
+ * Groups of mutually recursive definitions are scoped in the 
+ * OIL abstract syntax tree by DeclareDefs.
  * 
  * @author dkitchin
  */

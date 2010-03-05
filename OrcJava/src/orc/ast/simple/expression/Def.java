@@ -31,7 +31,7 @@ import orc.error.compiletime.CompilationException;
 /**
  * A unit of syntax that encapsulates an expression definition. 
  * 
- * Groups of mutually recursive definitions are scoped in the simplified abstract syntax tree by Defs.
+ * Groups of mutually recursive definitions are scoped in the simplified abstract syntax tree by DeclareDefs.
  * 
  * @author dkitchin
  */
