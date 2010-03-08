@@ -63,7 +63,7 @@ To install the Orc Eclipse plugin within Eclipse 3.3, follow these steps:
 </ol>
 
 <a id="macosxeclipse"></a>
-<43>Eclipse and Java Runtime Environments on Mac OS X</h4>
+<h4>Eclipse and Java Runtime Environments on Mac OS X</h4>
 
 <p>Eclipse will run using the Java runtime environment specified in Java Preferences
 (located in your /Applications/Utilities folder).  Make sure that Java SE 6
