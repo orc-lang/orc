@@ -26,10 +26,11 @@ us</a> if you are interested in obtaining an account.</p>
 <a id="eclipse"></a>
 <h3>Eclipse Users</h3>
 
-<p>There is an Orc plugin available for the <a href="http://www.eclipse.org/">Eclipse IDE</a>. It is compatible with Eclipse versions 3.3 and later.</p>
+<p>There is an Orc plugin available for the <a href="http://www.eclipse.org/">Eclipse IDE</a>.
+It is compatible with Eclipse versions 3.3 and later.  (The Eclipse JDT is required.)</p>
 <p>(Mac OS X Users: See <a href="#macosxeclipse">note</a> below.)</p>
 
-To install the Orc Eclipse plugin within Eclipse 3.4 or 3.5, follow these steps:
+To install the Orc Eclipse plugin within Eclipse 3.4 (Ganymede) or 3.5 (Galileo), follow these steps:
 <ol>
 <li> Select <b>Help</b>, then <b>Install New Software...</b> </li>
 <li> Press the <b>Add...</b> button in the upper right of the Install window. </li>
@@ -45,7 +46,7 @@ To install the Orc Eclipse plugin within Eclipse 3.4 or 3.5, follow these steps:
 select <b>Automatic Updates</b>. Select the checkbox labeled <b>"Automatically find new updates and notify me"</b>.</li>
 </ol>
 <br/>
-To install the Orc Eclipse plugin within Eclipse 3.3, follow these steps:
+To install the Orc Eclipse plugin within Eclipse 3.3 (Europa), follow these steps:
 <ol>
 <li> Select <b>Help</b>, go over <b>Software Updates</b> and then click on <b>Find and Install...</b>.</li>
 <li> Select <b>Search for new features to install</b> and then click <b>Next</b>.</li>
