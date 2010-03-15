@@ -637,8 +637,8 @@ value published by G available to F.  However instead of terminating G after
 it publishes a value, we will continue running it, ignoring its remaining
 publications.
 </p><pre class="programlisting">
-<span class="hl-keyword">val</span> <span class="hl-variable">r</span> = <span class="hl-site">Ref</span>()
-(<span class="bold"><strong>F</strong></span> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> <span class="hl-variable">r</span>.<span class="hl-site">read</span>()) <span class="hl-combinator">|</span> (<span class="bold"><strong>G</strong></span> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">r</span>.<span class="hl-site">write</span>(<span class="hl-variable">x</span>))
+<span class="hl-keyword">val</span> <span class="hl-variable">c</span> = <span class="hl-site">Cell</span>()
+(<span class="bold"><strong>F</strong></span> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> <span class="hl-variable">c</span>.<span class="hl-site">read</span>()) <span class="hl-combinator">|</span> (<span class="bold"><strong>G</strong></span> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>.<span class="hl-site">write</span>(<span class="hl-variable">x</span>))
 
 </pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1122E"></a>2.2.14.3.&nbsp;Publication-Agnostic Otherwise</h4></div></div></div><p>
 We can also use routing to create a modified version of the otherwise combinator. We'll
