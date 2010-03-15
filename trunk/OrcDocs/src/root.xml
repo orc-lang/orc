@@ -3968,8 +3968,8 @@ publications.
 </para>
 
 <programlisting><![CDATA[
-val r = Ref()
-(]]><emphasis role="bold">F</emphasis><![CDATA[ <x< r.read()) | (]]><emphasis role="bold">G</emphasis><![CDATA[ >x> r.write(x))
+val r = Cell()
+(]]><emphasis role="bold">F</emphasis><![CDATA[ <x< c.read()) | (]]><emphasis role="bold">G</emphasis><![CDATA[ >x> c.write(x))
 ]]>
 </programlisting>
 
