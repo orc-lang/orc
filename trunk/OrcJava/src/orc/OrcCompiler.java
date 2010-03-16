@@ -95,7 +95,6 @@ public class OrcCompiler implements Callable<Expression> {
 
 				saveOil(oilAst, config.getOilWriter());
 
-				config.getOilWriter().close();
 			}
 
 			oilAst = refineOilAfterLoadSaveBeforeDag(oilAst);
