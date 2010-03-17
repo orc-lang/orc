@@ -1,4 +1,5 @@
 {-
+
 Threadring
     * create 503 linked threads (named 1 to 503)
     * thread 503 should be linked to thread 1, forming an unbroken ring
@@ -8,6 +9,7 @@ Threadring
 
 Description from 
 http://shootout.alioth.debian.org/u32q/benchmark.php?test=threadring&lang=all
+
 -}
 
 def threadRing(Integer, Integer, Buffer[Integer], Buffer[Integer]) :: Integer
