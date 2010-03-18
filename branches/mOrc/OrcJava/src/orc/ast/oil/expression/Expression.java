@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import orc.ast.oil.AstNode;
 import orc.ast.oil.TokenContinuation;
 import orc.ast.oil.expression.argument.Variable;
 import orc.ast.oil.visitor.ExpressionVisitor;
@@ -76,7 +77,7 @@ public abstract class Expression extends AstNode {
 	 * Find the set of free variables in this expression. 
 	 * 
 	 * @return 	The set of free variables.
-	 * @see orc.ast.oil.expression.AstNode#freeVars()
+	 * @see orc.ast.oil.AstNode#freeVars()
 	 */
 	@Override
 	public final Set<Variable> freeVars() {

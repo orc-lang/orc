@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import orc.ast.oil.ChildNode;
 import orc.ast.oil.expression.argument.Variable;
 import orc.ast.oil.visitor.ExpressionVisitor;
 import orc.error.compiletime.CompilationException;
@@ -39,7 +40,9 @@ import orc.type.structured.ArrowType;
  */
 public class DeclareDefs extends Expression {
 
+	@ChildNode
 	public List<Def> defs;
+	@ChildNode
 	public Expression body;
 
 	/**

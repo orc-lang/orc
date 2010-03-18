@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import orc.ast.oil.ChildNode;
 import orc.ast.oil.expression.argument.Argument;
 import orc.ast.oil.visitor.ExpressionVisitor;
 import orc.env.Env;
@@ -36,7 +37,9 @@ import orc.type.tycon.Variance;
 
 public class Call extends Expression {
 
+	@ChildNode
 	public Argument callee;
+	@ChildNode
 	public List<Argument> args;
 	public List<orc.ast.oil.type.Type> typeArgs; /* may be null to request inference */
 	transient public boolean isTailCall = false;

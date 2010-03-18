@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import orc.ast.oil.AstNode;
+import orc.ast.oil.ChildNode;
 import orc.ast.oil.TokenContinuation;
 import orc.ast.oil.expression.argument.Variable;
 import orc.ast.oil.type.InferredType;
@@ -42,6 +44,7 @@ import orc.type.TypingContext;
 public class Def extends AstNode implements Locatable {
 
 	public int arity;
+	@ChildNode
 	public Expression body;
 	public int typeArity;
 	public List<orc.ast.oil.type.Type> argTypes; /* May be null only if this def was derived from a lambda form, and only if it will be in a checking context. */

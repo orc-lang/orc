@@ -15,6 +15,7 @@ package orc.ast.oil.expression;
 
 import java.util.Set;
 
+import orc.ast.oil.ChildNode;
 import orc.ast.oil.TokenContinuation;
 import orc.ast.oil.visitor.ExpressionVisitor;
 import orc.error.compiletime.CompilationException;
@@ -26,6 +27,7 @@ import orc.type.TypingContext;
 
 public class Throw extends Expression {
 
+	@ChildNode
 	public Expression exception;
 
 	public Throw(final Expression e) {

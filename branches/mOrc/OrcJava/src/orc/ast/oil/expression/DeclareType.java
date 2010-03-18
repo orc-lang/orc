@@ -15,6 +15,7 @@ package orc.ast.oil.expression;
 
 import java.util.Set;
 
+import orc.ast.oil.ChildNode;
 import orc.ast.oil.visitor.ExpressionVisitor;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
@@ -29,6 +30,7 @@ import orc.type.TypingContext;
 public class DeclareType extends Expression {
 
 	public orc.ast.oil.type.Type type;
+	@ChildNode
 	public Expression body;
 
 	public DeclareType(final orc.ast.oil.type.Type type, final Expression body) {

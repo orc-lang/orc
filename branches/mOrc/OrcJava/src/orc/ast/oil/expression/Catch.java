@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import orc.ast.oil.ChildNode;
 import orc.ast.oil.TokenContinuation;
 import orc.ast.oil.expression.argument.Variable;
 import orc.ast.oil.type.InferredType;
@@ -32,7 +33,9 @@ import orc.type.TypingContext;
 
 public class Catch extends Expression {
 
+	@ChildNode
 	public Def handler;
+	@ChildNode
 	public Expression tryBlock;
 
 	public Catch(final Def handler, final Expression tryBlock) {

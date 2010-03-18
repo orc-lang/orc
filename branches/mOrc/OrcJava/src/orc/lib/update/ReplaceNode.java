@@ -15,7 +15,7 @@
 
 package orc.lib.update;
 
-import orc.ast.oil.expression.AstNode;
+import orc.ast.oil.AstNode;
 import orc.ast.oil.expression.Expression;
 import orc.runtime.Token;
 

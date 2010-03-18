@@ -15,6 +15,7 @@ package orc.ast.oil.expression;
 
 import java.util.Set;
 
+import orc.ast.oil.ChildNode;
 import orc.ast.oil.visitor.ExpressionVisitor;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
@@ -25,7 +26,9 @@ import orc.type.TypingContext;
 
 public class Parallel extends Expression {
 
+	@ChildNode
 	public Expression left;
+	@ChildNode
 	public Expression right;
 
 	public Parallel(final Expression left, final Expression right) {

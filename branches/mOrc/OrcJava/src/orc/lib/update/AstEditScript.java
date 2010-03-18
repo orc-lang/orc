@@ -18,7 +18,7 @@ package orc.lib.update;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import orc.ast.oil.expression.AstNode;
+import orc.ast.oil.AstNode;
 
 /**
  * An instance of AstEditScript represents a tree-edit script that modifies an OIL AST into a new OIL AST.

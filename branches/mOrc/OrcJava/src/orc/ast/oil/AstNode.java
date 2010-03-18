@@ -13,15 +13,11 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.ast.oil.expression;
+package orc.ast.oil;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
-import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -29,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import orc.ast.oil.expression.Expression;
 import orc.ast.oil.expression.argument.Variable;
 
 /**
@@ -61,54 +58,55 @@ public abstract class AstNode {
 	abstract public boolean equals(Object obj);
 
 	private void initNodeFieldLists() {
-
-		List<Field> nodeAttrFields = new ArrayList<Field>();
-		List<Field> nodeChildFields = new ArrayList<Field>();
-		final Field fields[] = getClass().getDeclaredFields();
+		final List<Field> nodeAttrFields = new ArrayList<Field>();
+		final List<Field> nodeChildFields = new ArrayList<Field>();
+		final Field fields[] = getClass().getFields();
 		AccessibleObject.setAccessible(fields, true);
 		for (final Field field : fields) {
-			if ((field.getModifiers() & (Modifier.STATIC | Modifier.TRANSIENT)) == 0) {
-				if (AstNode.class.isAssignableFrom(field.getType())) {
-					// An AstNode
-					nodeChildFields.add(field);
-				} else if (classIsCollectionOf(field.getType(), AstNode.class)) {
-					// Collection of AstNodes
-					nodeChildFields.add(field);
-				} else if (field.getType().isArray() && AstNode.class.isAssignableFrom(field.getType().getComponentType())) {
-					// Array of AstNodes
-					nodeChildFields.add(field);
-				} else {
-					nodeAttrFields.add(field);
-				}
+			sanityCheckChildAnnotation(field);
+			if (field.getAnnotation(ChildNode.class) != null) {
+				nodeChildFields.add(field);
 			}
 		}
 		nodeTypeAttrMap.put(getClass(), nodeAttrFields);
 		nodeTypeChildMap.put(getClass(), nodeChildFields);
 	}
 
-	/**
-	 * @return true if clazz is a subtype of Collection<elementClass>
-	 */
-	private boolean classIsCollectionOf(final Class clazz, final Class elementClass) {
-		if (!Collection.class.isAssignableFrom(clazz)) {
-			return false;
-		}
-
-		// elementClass.isAssignableFrom((Class)(((TypeVariable)((ParameterizedType) clazz.getGenericInterfaces()[0]).getActualTypeArguments()[0]).getGenericDeclaration()));
-
-		for (final Type ifc : clazz.getGenericInterfaces()) {
-			if (ifc instanceof ParameterizedType && ((ParameterizedType) ifc).getRawType() instanceof Class && Collection.class.isAssignableFrom(((Class) ((ParameterizedType) ifc).getRawType()))) {
-				// ifc is the Collection<E> interface
-				final Type typeArgs[] = ((ParameterizedType) ifc).getActualTypeArguments();
-				if (typeArgs.length == 1 && typeArgs[0] instanceof TypeVariable) {
-					final GenericDeclaration genDecl = ((TypeVariable) typeArgs[0]).getGenericDeclaration();
-					if (genDecl instanceof Class && elementClass.isAssignableFrom((Class) genDecl)) {
-						return true;
-					}
+	private void sanityCheckChildAnnotation(final Field field) {
+		if (field.getAnnotation(ChildNode.class) != null) {
+			// Field is annotated
+			if ((field.getModifiers() & (Modifier.STATIC | Modifier.TRANSIENT)) == 0) {
+				if (AstNode.class.isAssignableFrom(field.getType())) {
+					// An AstNode
+					return;
+				} else if (Collection.class.isAssignableFrom(field.getType())) {
+					// Collection of presumed AstNodes
+					return; // Can't check element type
+				} else if (field.getType().isArray() && AstNode.class.isAssignableFrom(field.getType().getComponentType())) {
+					// Array of AstNodes
+					return;
+				} else {
+					throw new AssertionError("Field " + field.getName() + " in " + field.getDeclaringClass() + " isn't an AstNode/collection/array, yet it carries @ChildNode annotation");
+				}
+			} else {
+				throw new AssertionError("Field " + field.getName() + " in " + field.getDeclaringClass() + " is static or transient, yet it carries @ChildNode annotation");
+			}
+		} else {
+			if ((field.getModifiers() & (Modifier.STATIC | Modifier.TRANSIENT)) == 0) {
+				if (AstNode.class.isAssignableFrom(field.getType())) {
+					// An AstNode
+					throw new AssertionError("Field " + field.getName() + " in " + field.getDeclaringClass() + " is an AstNode, yet it does NOT carry @ChildNode annotation");
+				} else if (Collection.class.isAssignableFrom(field.getType())) {
+					// Collection of AstNodes
+					return; // Can't check element type
+				} else if (field.getType().isArray() && AstNode.class.isAssignableFrom(field.getType().getComponentType())) {
+					// Array of AstNodes
+					throw new AssertionError("Field " + field.getName() + " in " + field.getDeclaringClass() + " is an AstNode array, yet it does NOT carry@ChildNode annotation");
+				} else {
+					return;
 				}
 			}
 		}
-		return false;
 	}
 
 	/**
@@ -176,8 +174,8 @@ public abstract class AstNode {
 				if (AstNode.class.isAssignableFrom(field.getType())) {
 					// An AstNode
 					children.add((AstNode) childFieldValue);
-				} else if (classIsCollectionOf(field.getType(), AstNode.class)) {
-					// Collection of AstNodes
+				} else if (Collection.class.isAssignableFrom(field.getType())) {
+					// Collection of presumed AstNodes
 					children.addAll((Collection<AstNode>) childFieldValue);
 				} else if (field.getType().isArray() && AstNode.class.isAssignableFrom(field.getType().getComponentType())) {
 					// Array of AstNodes

@@ -23,8 +23,8 @@ import java.io.InputStreamReader;
 import java.util.Iterator;
 
 import orc.Config;
+import orc.ast.oil.AstNode;
 import orc.ast.oil.TokenContinuation;
-import orc.ast.oil.expression.AstNode;
 import orc.ast.oil.expression.Def;
 import orc.ast.oil.expression.Expression;
 import orc.ast.oil.visitor.SiteResolver;
@@ -181,7 +181,7 @@ public class Update extends Site {
 			}
 			// ALL tokens in the old tree MUST be covered by some edit operation.
 			// Assuming tokens not migrated belong to other ASTs.
-			System.err.println("AstEditScript did not migrate Token " + token);
+			System.err.println("AstEditScript did not migrate Token " + token + ", which is at node " + token.getNode());
 		}
 	}
 

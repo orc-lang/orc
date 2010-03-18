@@ -15,6 +15,7 @@ package orc.ast.oil.expression;
 
 import java.util.Set;
 
+import orc.ast.oil.ChildNode;
 import orc.ast.oil.TokenContinuation;
 import orc.ast.oil.visitor.ExpressionVisitor;
 import orc.error.compiletime.CompilationException;
@@ -27,7 +28,9 @@ import orc.type.TypingContext;
 
 public class Otherwise extends Expression {
 
+	@ChildNode
 	public Expression left;
+	@ChildNode
 	public Expression right;
 
 	public Otherwise(final Expression left, final Expression right) {

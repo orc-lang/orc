@@ -15,6 +15,7 @@ package orc.ast.oil.expression;
 
 import java.util.Set;
 
+import orc.ast.oil.ChildNode;
 import orc.ast.oil.visitor.ExpressionVisitor;
 import orc.error.Located;
 import orc.error.SourceLocation;
@@ -29,6 +30,7 @@ import orc.type.TypingContext;
  * @author quark
  */
 public class WithLocation extends Expression implements Located {
+	@ChildNode
 	public final Expression body;
 	public final SourceLocation location;
 

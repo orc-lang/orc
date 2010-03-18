@@ -15,6 +15,7 @@ package orc.ast.oil.expression;
 
 import java.util.Set;
 
+import orc.ast.oil.ChildNode;
 import orc.ast.oil.visitor.ExpressionVisitor;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
@@ -28,6 +29,7 @@ import orc.type.TypingContext;
  */
 public class HasType extends Expression {
 
+	@ChildNode
 	public Expression body;
 	public orc.ast.oil.type.Type type;
 	public boolean checkable; // set to false if this is a type assertion, not a type ascription
