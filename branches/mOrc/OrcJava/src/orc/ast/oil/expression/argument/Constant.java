@@ -15,7 +15,7 @@ package orc.ast.oil.expression.argument;
 
 import java.math.BigInteger;
 
-import orc.ast.oil.visitor.Visitor;
+import orc.ast.oil.visitor.ExpressionVisitor;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
@@ -29,6 +29,7 @@ public class Constant extends Argument {
 	public Object v;
 
 	public Constant(final Object v) {
+		super();
 		this.v = v;
 	}
 
@@ -79,7 +80,7 @@ public class Constant extends Argument {
 	}
 
 	@Override
-	public <E> E accept(final Visitor<E> visitor) {
+	public <E> E accept(final ExpressionVisitor<E> visitor) {
 		return visitor.visit(this);
 	}
 

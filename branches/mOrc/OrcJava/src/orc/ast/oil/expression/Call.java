@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 import orc.ast.oil.expression.argument.Argument;
-import orc.ast.oil.visitor.Visitor;
+import orc.ast.oil.visitor.ExpressionVisitor;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.ArgumentArityException;
@@ -40,8 +40,9 @@ public class Call extends Expression {
 	public List<Argument> args;
 	public List<orc.ast.oil.type.Type> typeArgs; /* may be null to request inference */
 	transient public boolean isTailCall = false;
-	
+
 	public Call(final Argument callee, final List<Argument> args, final List<orc.ast.oil.type.Type> typeArgs) {
+		super();
 		this.callee = callee;
 		this.args = args;
 		this.typeArgs = typeArgs;
@@ -49,6 +50,7 @@ public class Call extends Expression {
 
 	/* Binary call constructor */
 	public Call(final Argument callee, final Argument arga, final Argument argb) {
+		super();
 		this.callee = callee;
 		this.args = new LinkedList<Argument>();
 		this.args.add(arga);
@@ -57,6 +59,7 @@ public class Call extends Expression {
 
 	/* Unary call constructor */
 	public Call(final Argument callee, final Argument arg) {
+		super();
 		this.callee = callee;
 		this.args = new LinkedList<Argument>();
 		this.args.add(arg);
@@ -64,6 +67,7 @@ public class Call extends Expression {
 
 	/* Nullary call constructor */
 	public Call(final Argument callee) {
+		super();
 		this.callee = callee;
 		this.args = new LinkedList<Argument>();
 	}
@@ -138,7 +142,7 @@ public class Call extends Expression {
 	}
 
 	@Override
-	public <E> E accept(final Visitor<E> visitor) {
+	public <E> E accept(final ExpressionVisitor<E> visitor) {
 		return visitor.visit(this);
 	}
 
@@ -147,7 +151,7 @@ public class Call extends Expression {
 		final Type calleeType = callee.typesynth(ctx);
 
 		if (typeArgs != null) {
-			List<Type> typeActuals = new LinkedList<Type>();
+			final List<Type> typeActuals = new LinkedList<Type>();
 			for (final orc.ast.oil.type.Type t : typeArgs) {
 				typeActuals.add(ctx.promote(t));
 			}
@@ -161,18 +165,19 @@ public class Call extends Expression {
 			/* Create a continuation for requests to infer type arguments
 			 * for this call.
 			 */
-			InferenceContinuation ic = new InferenceContinuation() {
-				
-				public Type inferFrom(ArrowType arrowType) throws TypeException { 
+			final InferenceContinuation ic = new InferenceContinuation() {
 
-					List<Type> inferredTypeArgs = new LinkedList<Type>();
-					
+				@Override
+				public Type inferFrom(final ArrowType arrowType) throws TypeException {
+
+					final List<Type> inferredTypeArgs = new LinkedList<Type>();
+
 					/* Arity check */
 					if (args.size() != arrowType.argTypes.size()) {
 						throw new ArgumentArityException(arrowType.argTypes.size(), args.size());
 					}
-					
-					Constraint[] C = new Constraint[arrowType.typeArity];
+
+					final Constraint[] C = new Constraint[arrowType.typeArity];
 					Env<Boolean> VX = new Env<Boolean>();
 
 					for (int i = 0; i < arrowType.typeArity; i++) {
@@ -187,7 +192,7 @@ public class Call extends Expression {
 
 						A.addConstraints(VX, B, C);
 					}
-					
+
 					/* If we are in checking mode, use the checked
 					 * type to make inference more precise.
 					 */
@@ -199,7 +204,7 @@ public class Call extends Expression {
 						for (final Constraint c : C) {
 							inferredTypeArgs.add(0, c.minimal(Variance.COVARIANT));
 						}
-						
+
 						/* If inference has succeeded, just return the checked type */
 						return checkedType;
 					}
@@ -213,28 +218,26 @@ public class Call extends Expression {
 							inferredTypeArgs.add(sigmaCR);
 							subs = subs.extend(sigmaCR);
 						}
-						
-						
-						
+
 						return R.subst(subs);
 					}
 				}
 			};
 			/* end of continuation */
-			
+
 			/* FIXME:
 			 * This implementation of inference has a weakness: it may be possible for
 			 * different inference passes to infer different, incompatible type parameters.
 			 * According to the theory, this is technically incorrect.
 			 * However, in practice, it is very unlikely to occur.  
 			 */
-			
+
 			/* Delegate the checking of the args and the call itself to the callee type.
 			 * Some types do it differently than ArrowType does.
 			 */
 			return calleeType.call(ctx.bindIC(ic), args, null);
 		}
-		
+
 	}
 
 	@Override
@@ -248,7 +251,6 @@ public class Call extends Expression {
 		return;
 	}
 
-	
 	@Override
 	public orc.ast.xml.expression.Expression marshal() throws CompilationException {
 		final LinkedList<orc.ast.xml.expression.argument.Argument> arguments = new LinkedList<orc.ast.xml.expression.argument.Argument>();

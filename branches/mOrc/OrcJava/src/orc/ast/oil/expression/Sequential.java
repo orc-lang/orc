@@ -16,7 +16,7 @@ package orc.ast.oil.expression;
 import java.util.Set;
 
 import orc.ast.oil.TokenContinuation;
-import orc.ast.oil.visitor.Visitor;
+import orc.ast.oil.visitor.ExpressionVisitor;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.Token;
@@ -35,6 +35,7 @@ public class Sequential extends Expression {
 	public String name;
 
 	public Sequential(final Expression left, final Expression right, final String name) {
+		super();
 		this.left = left;
 		this.right = right;
 		this.name = name;
@@ -101,7 +102,7 @@ public class Sequential extends Expression {
 	}
 
 	@Override
-	public <E> E accept(final Visitor<E> visitor) {
+	public <E> E accept(final ExpressionVisitor<E> visitor) {
 		return visitor.visit(this);
 	}
 

@@ -13,7 +13,7 @@
 
 package orc.ast.oil.expression.argument;
 
-import orc.ast.oil.visitor.Visitor;
+import orc.ast.oil.visitor.ExpressionVisitor;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
@@ -31,6 +31,7 @@ public class Field extends Argument implements Comparable<Field> {
 	public String key;
 
 	public Field(final String key) {
+		super();
 		this.key = key;
 	}
 
@@ -62,7 +63,7 @@ public class Field extends Argument implements Comparable<Field> {
 	}
 
 	@Override
-	public <E> E accept(final Visitor<E> visitor) {
+	public <E> E accept(final ExpressionVisitor<E> visitor) {
 		return visitor.visit(this);
 	}
 

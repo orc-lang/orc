@@ -1,5 +1,5 @@
 //
-// Visitor.java -- Java interface Visitor
+// ExpressionVisitor.java -- Java interface ExpressionVisitor
 // Project OrcJava
 //
 // $Id$
@@ -32,11 +32,11 @@ import orc.ast.oil.expression.argument.Variable;
 
 /**
  * Visitor for OIL expressions.
- * @author quark
  *
  * @param <E> Return type of the visitor.
+ * @author quark
  */
-public interface Visitor<E> {
+public interface ExpressionVisitor<E> {
 	public E visit(Parallel expr);
 
 	public E visit(Call expr);

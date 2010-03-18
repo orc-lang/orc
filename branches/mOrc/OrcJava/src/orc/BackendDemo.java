@@ -36,7 +36,7 @@ import orc.ast.oil.expression.argument.Constant;
 import orc.ast.oil.expression.argument.Field;
 import orc.ast.oil.expression.argument.Site;
 import orc.ast.oil.expression.argument.Variable;
-import orc.ast.oil.visitor.Visitor;
+import orc.ast.oil.visitor.ExpressionVisitor;
 import orc.env.Env;
 import orc.env.LookupFailureException;
 import orc.error.OrcError;
@@ -76,7 +76,7 @@ public final class BackendDemo {
  * mapping indices to variable names and carefully manage the stack
  * as we visit the various binding operations.
  */
-final class BackendVisitorDemo implements Visitor<Void> {
+final class BackendVisitorDemo implements ExpressionVisitor<Void> {
 	/** Environment of variable names */
 	private final Env<String> variableNames = new Env<String>();
 	/** Next free variable identifier; used to generate unique names. */

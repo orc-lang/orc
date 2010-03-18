@@ -106,7 +106,7 @@ public class Config implements Cloneable {
 			}
 		} catch (final CmdLineException e1) {
 			System.err.println(e1.getMessage());
-			System.err.println("Usage: java -jar orc.jar [options] [file]");
+			System.err.println("Usage: java -cp orc.jar orc.Orc [options] [file]");
 			parser.printUsage(System.err);
 			System.exit(1);
 		}
@@ -287,7 +287,7 @@ public class Config implements Cloneable {
 		hasInputFile = true;
 	}
 
-	@Option(name = "-exceptions", usage = "Enable exceptions (experimental), which is disabled by default.")
+	@Option(name = "-exceptions", usage = "Enable exceptions (experimental), which are disabled by default.")
 	public void setExceptionsOn(final boolean exceptionsOn) {
 		this.exceptionsOn = exceptionsOn;
 	}
@@ -375,12 +375,12 @@ public class Config implements Cloneable {
 
 	public Reader getOilReader() throws IOException {
 		assert hasOilInputFile();
-		return new InputStreamReader(new GZIPInputStream(instream));
+		return new InputStreamReader(/*new GZIPInputStream*/(instream));
 	}
 
 	public Writer getOilWriter() throws IOException {
 		assert hasOilOutputFile();
-		return new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(oilOutputFile)));
+		return new OutputStreamWriter(/*new GZIPOutputStream*/(new FileOutputStream(oilOutputFile)));
 	}
 
 	public Boolean getNoPrelude() {

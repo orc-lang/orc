@@ -15,7 +15,6 @@ package orc.ast.xml.expression.argument;
 
 import javax.xml.bind.annotation.XmlElement;
 
-import orc.Config;
 import orc.error.compiletime.CompilationException;
 
 public class Constant extends Argument {
@@ -35,7 +34,7 @@ public class Constant extends Argument {
 	}
 
 	@Override
-	public orc.ast.oil.expression.argument.Argument unmarshal(final Config config) throws CompilationException {
+	public orc.ast.oil.expression.argument.Argument unmarshal() throws CompilationException {
 		return new orc.ast.oil.expression.argument.Constant(value);
 	}
 }

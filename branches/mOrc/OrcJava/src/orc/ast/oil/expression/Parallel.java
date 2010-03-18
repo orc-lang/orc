@@ -15,7 +15,7 @@ package orc.ast.oil.expression;
 
 import java.util.Set;
 
-import orc.ast.oil.visitor.Visitor;
+import orc.ast.oil.visitor.ExpressionVisitor;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.TokenLimitReachedError;
@@ -29,6 +29,7 @@ public class Parallel extends Expression {
 	public Expression right;
 
 	public Parallel(final Expression left, final Expression right) {
+		super();
 		this.left = left;
 		this.right = right;
 	}
@@ -86,7 +87,7 @@ public class Parallel extends Expression {
 	}
 
 	@Override
-	public <E> E accept(final Visitor<E> visitor) {
+	public <E> E accept(final ExpressionVisitor<E> visitor) {
 		return visitor.visit(this);
 	}
 

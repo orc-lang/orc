@@ -41,7 +41,7 @@ public class OilTest {
 		// TODO: verify the syntax of the XML;
 		// for now we just check for exceptions
 		final Oil oil2 = Oil.fromXML(xml);
-		Expression ast2 = oil2.unmarshal(config);
+		Expression ast2 = oil2.unmarshal();
 		ast2 = SiteResolver.resolve(ast2, config);
 		//System.out.println(ast2);
 		//System.out.println("ast1 ?= ast2  "+ast1.equals(ast2));

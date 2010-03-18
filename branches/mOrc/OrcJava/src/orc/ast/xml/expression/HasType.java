@@ -16,7 +16,6 @@ package orc.ast.xml.expression;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 
-import orc.Config;
 import orc.ast.xml.type.Type;
 import orc.error.compiletime.CompilationException;
 
@@ -48,7 +47,7 @@ public class HasType extends Expression {
 	}
 
 	@Override
-	public orc.ast.oil.expression.Expression unmarshal(final Config config) throws CompilationException {
-		return new orc.ast.oil.expression.HasType(body.unmarshal(config), type.unmarshal(), checked);
+	public orc.ast.oil.expression.Expression unmarshal() throws CompilationException {
+		return new orc.ast.oil.expression.HasType(body.unmarshal(), type.unmarshal(), checked);
 	}
 }

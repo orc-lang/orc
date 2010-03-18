@@ -38,7 +38,7 @@ import orc.ast.oil.expression.argument.Variable;
  *
  * @author dkitchin
  */
-public class TailCallMarker implements Visitor<Void> {
+public class TailCallMarker implements ExpressionVisitor<Void> {
 
 	/* (non-Javadoc)
 	 * @see orc.ast.oil.Visitor#visit(orc.ast.oil.expression.Parallel)

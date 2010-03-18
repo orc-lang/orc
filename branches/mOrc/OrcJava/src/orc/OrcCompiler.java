@@ -95,10 +95,9 @@ public class OrcCompiler implements Callable<Expression> {
 
 				saveOil(oilAst, config.getOilWriter());
 
-				config.getOilWriter().close();
 			}
 
-			oilAst = refineOilAfterLoadSaveBeforeDag(oilAst);
+			oilAst = refineOilAfterLoadSaveBeforeRun(oilAst);
 
 		} catch (final CompilationException e) {
 			config.getMessageRecorder().recordMessage(Severity.FATAL, 0, e.getMessageOnly(), e.getSourceLocation(), null, e);
@@ -244,14 +243,14 @@ public class OrcCompiler implements Callable<Expression> {
 		}
 
 		progress.setNote("Loading OIL");
-		final Oil oil = Oil.fromXML(config.getOilReader());
+		final Oil oil = Oil.fromXML(oilReader);
 		progress.setProgress(0.45);
 		if (progress.isCanceled()) {
 			return null;
 		}
 
 		progress.setNote("Converting to AST");
-		Expression ex = oil.unmarshal(config);
+		Expression ex = oil.unmarshal();
 		progress.setProgress(0.5);
 		if (progress.isCanceled()) {
 			return null;
@@ -301,7 +300,7 @@ public class OrcCompiler implements Callable<Expression> {
 	 * @param oilAst OIL AST read from file or compiled from text
 	 * @return Refined OIL AST to be run
 	 */
-	protected Expression refineOilAfterLoadSaveBeforeDag(final Expression oilAst) {
+	protected Expression refineOilAfterLoadSaveBeforeRun(final Expression oilAst) {
 
 		// Mark tail calls in all definitions.
 		oilAst.accept(new Walker() {

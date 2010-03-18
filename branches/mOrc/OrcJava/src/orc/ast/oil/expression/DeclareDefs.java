@@ -19,7 +19,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import orc.ast.oil.expression.argument.Variable;
-import orc.ast.oil.visitor.Visitor;
+import orc.ast.oil.visitor.ExpressionVisitor;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.compiletime.typing.UnspecifiedReturnTypeException;
@@ -54,6 +54,7 @@ public class DeclareDefs extends Expression {
 	public Set<Variable> free;
 
 	public DeclareDefs(final List<Def> defs, final Expression body) {
+		super();
 		this.defs = defs;
 		this.body = body;
 
@@ -140,7 +141,7 @@ public class DeclareDefs extends Expression {
 	}
 
 	@Override
-	public <E> E accept(final Visitor<E> visitor) {
+	public <E> E accept(final ExpressionVisitor<E> visitor) {
 		return visitor.visit(this);
 	}
 
@@ -259,7 +260,8 @@ public class DeclareDefs extends Expression {
 		// These closures are compacted, which is why we
 		// consult d.free
 		i = 0;
-		for (@SuppressWarnings("unused") final Def d : defs) {
+		for (@SuppressWarnings("unused")
+		final Def d : defs) {
 			final Closure c = closures[i++];
 
 			//FIXME: Add closure compaction back!

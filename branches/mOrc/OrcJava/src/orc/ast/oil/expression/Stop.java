@@ -15,13 +15,17 @@ package orc.ast.oil.expression;
 
 import java.util.Set;
 
-import orc.ast.oil.visitor.Visitor;
+import orc.ast.oil.visitor.ExpressionVisitor;
 import orc.error.compiletime.CompilationException;
 import orc.runtime.Token;
 import orc.type.Type;
 import orc.type.TypingContext;
 
 public class Stop extends Expression {
+
+	public Stop() {
+		super();
+	}
 
 	/**
 	 * All instances of Stop return a constant hash code. 
@@ -55,7 +59,7 @@ public class Stop extends Expression {
 	}
 
 	@Override
-	public <E> E accept(final Visitor<E> visitor) {
+	public <E> E accept(final ExpressionVisitor<E> visitor) {
 		return visitor.visit(this);
 	}
 

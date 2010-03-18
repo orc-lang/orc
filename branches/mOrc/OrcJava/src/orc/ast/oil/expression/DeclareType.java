@@ -15,7 +15,7 @@ package orc.ast.oil.expression;
 
 import java.util.Set;
 
-import orc.ast.oil.visitor.Visitor;
+import orc.ast.oil.visitor.ExpressionVisitor;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.Token;
@@ -32,6 +32,7 @@ public class DeclareType extends Expression {
 	public Expression body;
 
 	public DeclareType(final orc.ast.oil.type.Type type, final Expression body) {
+		super();
 		this.type = type;
 		this.body = body;
 	}
@@ -78,7 +79,7 @@ public class DeclareType extends Expression {
 	}
 
 	@Override
-	public <E> E accept(final Visitor<E> visitor) {
+	public <E> E accept(final ExpressionVisitor<E> visitor) {
 		return visitor.visit(this);
 	}
 

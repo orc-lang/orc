@@ -41,7 +41,7 @@ import orc.ast.oil.type.Type;
  * 
  * @author quark
  */
-public abstract class Transformer implements Visitor<Expression> {
+public abstract class Transformer implements ExpressionVisitor<Expression> {
 
 	public Expression visit(final Parallel expr) {
 		return new Parallel(expr.left.accept(this), expr.right.accept(this));

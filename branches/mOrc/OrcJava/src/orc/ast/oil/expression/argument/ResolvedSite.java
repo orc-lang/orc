@@ -14,7 +14,7 @@
 package orc.ast.oil.expression.argument;
 
 import orc.Config;
-import orc.ast.oil.visitor.Visitor;
+import orc.ast.oil.visitor.ExpressionVisitor;
 import orc.env.Env;
 import orc.error.compiletime.SiteResolutionException;
 import orc.error.compiletime.typing.TypeException;
@@ -89,7 +89,7 @@ public class ResolvedSite extends Site {
 	}
 
 	@Override
-	public <E> E accept(final Visitor<E> visitor) {
+	public <E> E accept(final ExpressionVisitor<E> visitor) {
 		return visitor.visit(this);
 	}
 

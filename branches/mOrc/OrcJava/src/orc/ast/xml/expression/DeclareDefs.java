@@ -18,7 +18,6 @@ import java.util.LinkedList;
 
 import javax.xml.bind.annotation.XmlElement;
 
-import orc.Config;
 import orc.error.compiletime.CompilationException;
 
 public class DeclareDefs extends Expression {
@@ -41,11 +40,11 @@ public class DeclareDefs extends Expression {
 	}
 
 	@Override
-	public orc.ast.oil.expression.Expression unmarshal(final Config config) throws CompilationException {
+	public orc.ast.oil.expression.Expression unmarshal() throws CompilationException {
 		final LinkedList<orc.ast.oil.expression.Def> defs = new LinkedList<orc.ast.oil.expression.Def>();
 		for (final Def d : definitions) {
-			defs.add(d.unmarshal(config));
+			defs.add(d.unmarshal());
 		}
-		return new orc.ast.oil.expression.DeclareDefs(defs, body.unmarshal(config));
+		return new orc.ast.oil.expression.DeclareDefs(defs, body.unmarshal());
 	}
 }

@@ -15,7 +15,6 @@ package orc.ast.xml.expression;
 
 import javax.xml.bind.annotation.XmlElement;
 
-import orc.Config;
 import orc.ast.xml.type.Type;
 import orc.error.compiletime.CompilationException;
 
@@ -44,7 +43,7 @@ public class DeclareType extends Expression {
 	}
 
 	@Override
-	public orc.ast.oil.expression.Expression unmarshal(final Config config) throws CompilationException {
-		return new orc.ast.oil.expression.DeclareType(type.unmarshal(), body.unmarshal(config));
+	public orc.ast.oil.expression.Expression unmarshal() throws CompilationException {
+		return new orc.ast.oil.expression.DeclareType(type.unmarshal(), body.unmarshal());
 	}
 }

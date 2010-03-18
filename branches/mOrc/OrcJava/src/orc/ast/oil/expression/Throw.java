@@ -16,7 +16,7 @@ package orc.ast.oil.expression;
 import java.util.Set;
 
 import orc.ast.oil.TokenContinuation;
-import orc.ast.oil.visitor.Visitor;
+import orc.ast.oil.visitor.ExpressionVisitor;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.TokenException;
@@ -29,6 +29,7 @@ public class Throw extends Expression {
 	public Expression exception;
 
 	public Throw(final Expression e) {
+		super();
 		exception = e;
 	}
 
@@ -68,7 +69,7 @@ public class Throw extends Expression {
 	}
 
 	@Override
-	public <E> E accept(final Visitor<E> visitor) {
+	public <E> E accept(final ExpressionVisitor<E> visitor) {
 		return visitor.visit(this);
 	}
 

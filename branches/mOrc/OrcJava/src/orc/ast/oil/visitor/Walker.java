@@ -37,7 +37,7 @@ import orc.ast.oil.expression.argument.Variable;
  * 
  * @author quark
  */
-public abstract class Walker implements Visitor<Void> {
+public abstract class Walker implements ExpressionVisitor<Void> {
 	public void enterScope(final int n) {
 	}
 

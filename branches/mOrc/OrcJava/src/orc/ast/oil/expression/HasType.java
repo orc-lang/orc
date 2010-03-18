@@ -15,7 +15,7 @@ package orc.ast.oil.expression;
 
 import java.util.Set;
 
-import orc.ast.oil.visitor.Visitor;
+import orc.ast.oil.visitor.ExpressionVisitor;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
 import orc.runtime.Token;
@@ -33,6 +33,7 @@ public class HasType extends Expression {
 	public boolean checkable; // set to false if this is a type assertion, not a type ascription
 
 	public HasType(final Expression body, final orc.ast.oil.type.Type type, final boolean checkable) {
+		super();
 		this.body = body;
 		this.type = type;
 		this.checkable = checkable;
@@ -92,7 +93,7 @@ public class HasType extends Expression {
 	}
 
 	@Override
-	public <E> E accept(final Visitor<E> visitor) {
+	public <E> E accept(final ExpressionVisitor<E> visitor) {
 		return visitor.visit(this);
 	}
 

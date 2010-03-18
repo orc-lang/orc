@@ -19,7 +19,6 @@ import java.util.LinkedList;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 
-import orc.Config;
 import orc.ast.xml.expression.argument.Argument;
 import orc.ast.xml.type.Type;
 import orc.error.compiletime.CompilationException;
@@ -50,12 +49,12 @@ public class Call extends Expression {
 	}
 
 	@Override
-	public orc.ast.oil.expression.Expression unmarshal(final Config config) throws CompilationException {
+	public orc.ast.oil.expression.Expression unmarshal() throws CompilationException {
 		final LinkedList<orc.ast.oil.expression.argument.Argument> args = new LinkedList<orc.ast.oil.expression.argument.Argument>();
 		for (final Argument a : arguments) {
-			args.add(a.unmarshal(config));
+			args.add(a.unmarshal());
 		}
-		final orc.ast.oil.expression.Expression out = new orc.ast.oil.expression.Call(callee.unmarshal(config), args, Type.unmarshalAll(typeArgs));
+		final orc.ast.oil.expression.Expression out = new orc.ast.oil.expression.Call(callee.unmarshal(), args, Type.unmarshalAll(typeArgs));
 		return out;
 	}
 }

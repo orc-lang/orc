@@ -15,7 +15,6 @@ package orc.ast.xml.expression;
 
 import javax.xml.bind.annotation.XmlElement;
 
-import orc.Config;
 import orc.error.compiletime.CompilationException;
 
 public class Catch extends Expression {
@@ -38,7 +37,7 @@ public class Catch extends Expression {
 	}
 
 	@Override
-	public orc.ast.oil.expression.Expression unmarshal(final Config config) throws CompilationException {
-		return new orc.ast.oil.expression.Catch(catchHandler.unmarshal(config), tryExpr.unmarshal(config));
+	public orc.ast.oil.expression.Expression unmarshal() throws CompilationException {
+		return new orc.ast.oil.expression.Catch(catchHandler.unmarshal(), tryExpr.unmarshal());
 	}
 }

@@ -15,7 +15,7 @@ package orc.ast.oil.expression;
 
 import java.util.Set;
 
-import orc.ast.oil.visitor.Visitor;
+import orc.ast.oil.visitor.ExpressionVisitor;
 import orc.error.Located;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;
@@ -31,6 +31,12 @@ import orc.type.TypingContext;
 public class WithLocation extends Expression implements Located {
 	public final Expression body;
 	public final SourceLocation location;
+
+	public WithLocation(final Expression expr, final SourceLocation location) {
+		super();
+		this.body = expr;
+		this.location = location;
+	}
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
@@ -73,17 +79,12 @@ public class WithLocation extends Expression implements Located {
 		return true;
 	}
 
-	public WithLocation(final Expression expr, final SourceLocation location) {
-		this.body = expr;
-		this.location = location;
-	}
-
 	public SourceLocation getSourceLocation() {
 		return location;
 	}
 
 	@Override
-	public <E> E accept(final Visitor<E> visitor) {
+	public <E> E accept(final ExpressionVisitor<E> visitor) {
 		return visitor.visit(this);
 	}
 

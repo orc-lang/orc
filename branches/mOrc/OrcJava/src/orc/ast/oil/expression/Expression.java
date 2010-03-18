@@ -19,7 +19,7 @@ import java.util.TreeSet;
 
 import orc.ast.oil.TokenContinuation;
 import orc.ast.oil.expression.argument.Variable;
-import orc.ast.oil.visitor.Visitor;
+import orc.ast.oil.visitor.ExpressionVisitor;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.SubtypeFailureException;
 import orc.error.compiletime.typing.TypeException;
@@ -27,35 +27,43 @@ import orc.runtime.Token;
 import orc.type.TypingContext;
 
 /**
- * Base class for the portable (.oil, for Orc Intermediate Language) abstract syntax tree.
+ * A node of the OIL AST that can evaluate to an Orc value.
+ * Tokens enter and leave <code>Expression</code>s.
  * 
  * @author dkitchin, jthywiss
  */
-public abstract class Expression {
+public abstract class Expression extends AstNode {
 	transient private TokenContinuation publishContinuation;
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	abstract public int hashCode();
+	protected Expression() {
+		super();
+	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	abstract public boolean equals(Object obj);
+	public abstract <E> E accept(ExpressionVisitor<E> visitor);
+
+	//public abstract <E,C> E accept(ContextualVisitor<E,C> cvisitor, C initialContext);
 
 	/* Typechecking */
 
-	/* Given a context, infer this expression's type */
+	/**
+	 * Given a context, infer this expression's type
+	 * 
+	 * @param ctx
+	 * @return
+	 * @throws TypeException
+	 */
 	public abstract orc.type.Type typesynth(TypingContext ctx) throws TypeException;
 
-	/* Check that this expression has type T in the given context. 
+	/**
+	 * Check that this expression has type T in the given context. 
 	 * 
 	 * Some expressions will always have inferred types, so
 	 * the default checking behavior is to infer the type and make
 	 * sure that the inferred type is a subtype of the checked type.
+	 * 
+	 * @param ctx
+	 * @param T
+	 * @throws TypeException
 	 */
 	public void typecheck(final TypingContext ctx, final orc.type.Type T) throws TypeException {
 		final orc.type.Type S = typesynth(ctx);
@@ -68,7 +76,9 @@ public abstract class Expression {
 	 * Find the set of free variables in this expression. 
 	 * 
 	 * @return 	The set of free variables.
+	 * @see orc.ast.oil.expression.AstNode#freeVars()
 	 */
+	@Override
 	public final Set<Variable> freeVars() {
 		final Set<Integer> indices = new TreeSet<Integer>();
 		this.addIndices(indices, 0);
@@ -81,24 +91,11 @@ public abstract class Expression {
 		return vars;
 	}
 
-	/**
-	 * If this expression has any indices which are >= depth,
-	 * add (index - depth) to the index set accumulator. The depth 
-	 * increases each time this method recurses through a binder.
-	 * 
-	 * The default implementation is to assume the expression
-	 * has no free variables, and thus do nothing. Expressions
-	 * which contain variables or subexpressions override this
-	 * behavior.
-	 * 
-	 * @param indices   The index set accumulator.
-	 * @param depth    The minimum index for a free variable.
+	/* (non-Javadoc)
+	 * @see orc.ast.oil.expression.AstNode#addIndices(java.util.Set, int)
 	 */
+	@Override
 	public abstract void addIndices(Set<Integer> indices, int depth);
-
-	public abstract <E> E accept(Visitor<E> visitor);
-
-	//public abstract <E,C> E accept(ContextualVisitor<E,C> cvisitor, C initialContext);
 
 	public abstract orc.ast.xml.expression.Expression marshal() throws CompilationException;
 
@@ -118,16 +115,10 @@ public abstract class Expression {
 
 	public abstract void populateContinuations();
 
-	/**
-	 * @return the publishContinuation
-	 */
 	public TokenContinuation getPublishContinuation() {
 		return publishContinuation;
 	}
 
-	/**
-	 * @param publishContinuation the publishContinuation to set
-	 */
 	public void setPublishContinuation(final TokenContinuation publishContinuation) {
 		this.publishContinuation = publishContinuation;
 	}
@@ -137,4 +128,5 @@ public abstract class Expression {
 	public void leave(final Token t) {
 		getPublishContinuation().execute(t);
 	}
+
 }

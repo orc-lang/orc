@@ -17,7 +17,6 @@ import java.net.URI;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
-import orc.Config;
 import orc.error.compiletime.CompilationException;
 
 public class Site extends Argument {
@@ -40,7 +39,7 @@ public class Site extends Argument {
 	}
 
 	@Override
-	public orc.ast.oil.expression.argument.Argument unmarshal(final Config config) throws CompilationException {
+	public orc.ast.oil.expression.argument.Argument unmarshal() throws CompilationException {
 		return new orc.ast.oil.expression.argument.Site(orc.ast.sites.Site.build(protocol, location));
 	}
 }

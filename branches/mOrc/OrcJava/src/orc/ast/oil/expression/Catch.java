@@ -20,7 +20,7 @@ import java.util.Set;
 import orc.ast.oil.TokenContinuation;
 import orc.ast.oil.expression.argument.Variable;
 import orc.ast.oil.type.InferredType;
-import orc.ast.oil.visitor.Visitor;
+import orc.ast.oil.visitor.ExpressionVisitor;
 import orc.env.Env;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.typing.TypeException;
@@ -36,6 +36,7 @@ public class Catch extends Expression {
 	public Expression tryBlock;
 
 	public Catch(final Def handler, final Expression tryBlock) {
+		super();
 		this.handler = handler;
 
 		/* Currently, the argument handler type is assumed to be Bot, as a hack
@@ -118,7 +119,7 @@ public class Catch extends Expression {
 	}
 
 	@Override
-	public <E> E accept(final Visitor<E> visitor) {
+	public <E> E accept(final ExpressionVisitor<E> visitor) {
 		return visitor.visit(this);
 	}
 

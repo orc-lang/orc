@@ -14,7 +14,7 @@
 package orc.ast.oil.expression.argument;
 
 import orc.Config;
-import orc.ast.oil.visitor.Visitor;
+import orc.ast.oil.visitor.ExpressionVisitor;
 import orc.env.Env;
 import orc.error.OrcError;
 import orc.error.compiletime.CompilationException;
@@ -34,6 +34,7 @@ public class Site extends Argument {
 	public orc.ast.sites.Site site;
 
 	public Site(final orc.ast.sites.Site site) {
+		super();
 		this.site = site;
 	}
 
@@ -86,7 +87,7 @@ public class Site extends Argument {
 	}
 
 	@Override
-	public <E> E accept(final Visitor<E> visitor) {
+	public <E> E accept(final ExpressionVisitor<E> visitor) {
 		return visitor.visit(this);
 	}
 

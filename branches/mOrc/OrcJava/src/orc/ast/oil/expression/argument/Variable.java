@@ -15,7 +15,7 @@ package orc.ast.oil.expression.argument;
 
 import java.util.Set;
 
-import orc.ast.oil.visitor.Visitor;
+import orc.ast.oil.visitor.ExpressionVisitor;
 import orc.env.Env;
 import orc.env.LookupFailureException;
 import orc.error.OrcError;
@@ -37,6 +37,7 @@ public class Variable extends Argument implements Comparable<Variable> {
 	public int index;
 
 	public Variable(final int index) {
+		super();
 		this.index = index;
 	}
 
@@ -83,7 +84,7 @@ public class Variable extends Argument implements Comparable<Variable> {
 	}
 
 	@Override
-	public <E> E accept(final Visitor<E> visitor) {
+	public <E> E accept(final ExpressionVisitor<E> visitor) {
 		return visitor.visit(this);
 	}
 

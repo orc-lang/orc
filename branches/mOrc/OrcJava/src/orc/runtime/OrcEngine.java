@@ -16,6 +16,7 @@ package orc.runtime;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -34,6 +35,8 @@ import orc.runtime.values.Value;
 import orc.trace.Tracer;
 
 /**
+ * An OrcEngine instance represents one token scheduling domain.
+ *
  * The Orc Engine provides the main loop for executing active tokens. Tokens are
  * always processed in a single thread, but tokens might be activated or resumed
  * from other threads, so some synchronization is necessary.
@@ -50,6 +53,14 @@ public class OrcEngine implements Runnable {
 	 * pending site returns.
 	 */
 	private final LinkedList<Token> queuedReturns = new LinkedList<Token>();
+
+	/** 
+	 * The token that's currently in process, i.e. removed from one of the 
+	 * {@link #readyTokens} or {@link #queuedReturns} queues.
+	 * INVARIANT: Every token is either in {@link #readyTokens}, {@link #queuedReturns}, or
+	 * pointed to by currProcToken.
+	 */
+	private Token currProcToken = null;
 
 	private int round = 1;
 
@@ -208,6 +219,7 @@ public class OrcEngine implements Runnable {
 
 	public final void start(final Expression root) {
 		assert root != null;
+		root.initParents();
 		final TokenContinuation K = new TokenContinuation() {
 			public void execute(final Token t) {
 				t.publish();
@@ -234,9 +246,6 @@ public class OrcEngine implements Runnable {
 	 * if engine should halt.
 	 */
 	private final boolean step() {
-		// the next token to process
-		Token todo;
-
 		// synchronize while we decide what to do next;
 		// this block will either return from the function
 		// or set todo to a token to process
@@ -252,12 +261,13 @@ public class OrcEngine implements Runnable {
 				return true;
 			} else if (!readyTokens.isEmpty()) {
 				// If an active token is available, process it.
-				todo = readyTokens.remove();
+				currProcToken = readyTokens.remove();
 			} else if (!queuedReturns.isEmpty()) {
 				// If a site return is available, make it active.
 				// This marks the beginning of a new round.
-				todo = queuedReturns.remove();
-				todo.leave();
+				currProcToken = queuedReturns.remove();
+				currProcToken.leave();
+				currProcToken = null;
 				round++;
 				reportRound();
 				return true;
@@ -276,9 +286,12 @@ public class OrcEngine implements Runnable {
 		// processing a token; we don't want to risk
 		// locking the engine if the processing blocks
 		if (shouldDebug(3)) {
-			debug(3, "Processing " + todo + ":\n" + "  " + todo.getSourceLocation() + "\n" + "  Node: " + todo.getNode());
+			debug(3, "Processing " + currProcToken + ":\n" + "  " + currProcToken.getSourceLocation() + "\n" + "  Node: " + currProcToken.getNode());
 		}
-		todo.process();
+		currProcToken.process();
+		synchronized (this) {
+			currProcToken = null;
+		}
 		return true;
 	}
 
@@ -429,6 +442,16 @@ public class OrcEngine implements Runnable {
 		} else {
 			stdout.print(value);
 		}
+	}
+
+	/**
+	 * @return Iterator over all tokens in this engine's queues 
+	 */
+	synchronized public Iterator<Token> tokenIterator() {
+		final LinkedList<Token> allTokens = new LinkedList<Token>(readyTokens);
+		allTokens.addAll(queuedReturns);
+		allTokens.add(currProcToken);
+		return allTokens.iterator();
 	}
 
 	/**

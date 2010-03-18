@@ -20,7 +20,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 
-import orc.Config;
 import orc.ast.xml.type.Type;
 import orc.error.SourceLocation;
 import orc.error.compiletime.CompilationException;
@@ -63,11 +62,11 @@ public class Def implements Serializable {
 		return "(" + super.toString() + "(" + arity + ") = " + body + ")";
 	}
 
-	public orc.ast.oil.expression.Def unmarshal(final Config config) throws CompilationException {
+	public orc.ast.oil.expression.Def unmarshal() throws CompilationException {
 
 		final List<orc.ast.oil.type.Type> newArgTypes = Type.unmarshalAll(argTypes);
 		final orc.ast.oil.type.Type newResultType = resultType != null ? resultType.unmarshal() : null;
 
-		return new orc.ast.oil.expression.Def(arity, body.unmarshal(config), typeArity, newArgTypes, newResultType, location, name);
+		return new orc.ast.oil.expression.Def(arity, body.unmarshal(), typeArity, newArgTypes, newResultType, location, name);
 	}
 }

@@ -39,7 +39,7 @@ import orc.type.TypingContext;
  * 
  * @author dkitchin
  */
-public class Def implements Locatable {
+public class Def extends AstNode implements Locatable {
 
 	public int arity;
 	public Expression body;
@@ -58,6 +58,7 @@ public class Def implements Locatable {
 	public Set<Variable> free;
 
 	public Def(final int arity, final Expression body, final int typeArity, final List<orc.ast.oil.type.Type> argTypes, final orc.ast.oil.type.Type resultType, final SourceLocation location, final String name) {
+		super();
 		this.arity = arity;
 		this.body = body;
 		this.typeArity = typeArity;
@@ -172,6 +173,10 @@ public class Def implements Locatable {
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see orc.ast.oil.expression.AstNode#freeVars()
+	 */
+	@Override
 	public final Set<Variable> freeVars() {
 		final Set<Integer> indices = new TreeSet<Integer>();
 		this.addIndices(indices, 0);
@@ -184,6 +189,10 @@ public class Def implements Locatable {
 		return vars;
 	}
 
+	/* (non-Javadoc)
+	 * @see orc.ast.oil.expression.AstNode#addIndices(java.util.Set, int)
+	 */
+	@Override
 	public void addIndices(final Set<Integer> indices, final int depth) {
 		body.addIndices(indices, depth + arity);
 	}
@@ -353,4 +362,5 @@ public class Def implements Locatable {
 		body.setPublishContinuation(K);
 		body.populateContinuations();
 	}
+
 }

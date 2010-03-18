@@ -30,7 +30,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.transform.Result;
 import javax.xml.transform.stream.StreamResult;
 
-import orc.Config;
 import orc.ast.xml.expression.Expression;
 import orc.error.compiletime.CompilationException;
 
@@ -57,8 +56,8 @@ public class Oil implements Serializable {
 		return super.toString() + "(" + version + ", " + expression + ")";
 	}
 
-	public orc.ast.oil.expression.Expression unmarshal(final Config config) throws CompilationException {
-		return expression.unmarshal(config);
+	public orc.ast.oil.expression.Expression unmarshal() throws CompilationException {
+		return expression.unmarshal();
 	}
 
 	public String toXML() {
