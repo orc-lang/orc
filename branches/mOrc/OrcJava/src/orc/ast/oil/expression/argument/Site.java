@@ -13,8 +13,8 @@
 
 package orc.ast.oil.expression.argument;
 
-import orc.Config;
 import orc.ast.oil.visitor.ExpressionVisitor;
+import orc.ast.sites.SiteResolutionEnvironment;
 import orc.env.Env;
 import orc.error.OrcError;
 import orc.error.compiletime.CompilationException;
@@ -72,8 +72,8 @@ public class Site extends Argument {
 		return true;
 	}
 
-	public Site resolveSites(final Config config) throws SiteResolutionException {
-		return new ResolvedSite(config, site);
+	public Site resolveSites(final SiteResolutionEnvironment siteResEnv) throws SiteResolutionException {
+		return new ResolvedSite(siteResEnv, site);
 	}
 
 	@Override

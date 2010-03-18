@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import orc.ast.sites.SiteResolutionEnvironment;
 import orc.error.compiletime.CompileMessageRecorder;
 import orc.progress.NullProgressListener;
 import orc.progress.ProgressListener;
@@ -64,7 +65,7 @@ import org.kohsuke.args4j.spi.StopOptionHandler;
  * @author dkitchin, quark
  * 
  */
-public class Config implements Cloneable {
+public class Config implements Cloneable, SiteResolutionEnvironment {
 	private int debugLevel = 0;
 	private CompileMessageRecorder messageRecorder = new StdErrCompileMsgRecorder(this);
 	private ProgressListener progressListener = NullProgressListener.singleton;

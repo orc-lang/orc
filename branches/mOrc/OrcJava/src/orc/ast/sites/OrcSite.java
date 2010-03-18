@@ -15,7 +15,6 @@ package orc.ast.sites;
 
 import java.net.URI;
 
-import orc.Config;
 import orc.error.compiletime.SiteResolutionException;
 
 public class OrcSite extends Site {
@@ -36,12 +35,12 @@ public class OrcSite extends Site {
 		return ORC;
 	}
 
-	private Class classify(final Config config) throws SiteResolutionException {
+	private Class classify(final SiteResolutionEnvironment siteResEnv) throws SiteResolutionException {
 		final String classname = location.getSchemeSpecificPart();
 		Class<?> cls;
 
 		try {
-			cls = config.loadClass(classname);
+			cls = siteResEnv.loadClass(classname);
 		} catch (final ClassNotFoundException e) {
 			throw new SiteResolutionException("Failed to load class " + classname + " as a site. Class not found.");
 		}
@@ -54,9 +53,9 @@ public class OrcSite extends Site {
 	}
 
 	@Override
-	public orc.runtime.sites.Site instantiate(final Config config) throws SiteResolutionException {
+	public orc.runtime.sites.Site instantiate(final SiteResolutionEnvironment siteResEnv) throws SiteResolutionException {
 
-		final Class cls = classify(config);
+		final Class cls = classify(siteResEnv);
 		try {
 			return (orc.runtime.sites.Site) cls.newInstance();
 		} catch (final InstantiationException e) {

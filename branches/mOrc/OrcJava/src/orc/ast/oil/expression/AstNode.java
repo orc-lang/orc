@@ -24,7 +24,9 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import orc.ast.oil.expression.argument.Variable;
@@ -42,9 +44,9 @@ import orc.ast.oil.expression.argument.Variable;
  * @author jthywiss
  */
 public abstract class AstNode {
-	transient private AstNode parent;
-	transient private List<Field> nodeAttrFields;
-	transient private List<Field> nodeChildFields;
+	private transient AstNode parent;
+	private static transient Map<Class, List<Field>> nodeTypeAttrMap = new HashMap<Class, List<Field>>();
+	private static transient Map<Class, List<Field>> nodeTypeChildMap = new HashMap<Class, List<Field>>();
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
@@ -60,9 +62,8 @@ public abstract class AstNode {
 
 	private void initNodeFieldLists() {
 
-		//FIXME: Cache this in a Map of Class -> Fields, not an instance field!
-		nodeAttrFields = new ArrayList<Field>();
-		nodeChildFields = new ArrayList<Field>();
+		List<Field> nodeAttrFields = new ArrayList<Field>();
+		List<Field> nodeChildFields = new ArrayList<Field>();
 		final Field fields[] = getClass().getDeclaredFields();
 		AccessibleObject.setAccessible(fields, true);
 		for (final Field field : fields) {
@@ -81,6 +82,8 @@ public abstract class AstNode {
 				}
 			}
 		}
+		nodeTypeAttrMap.put(getClass(), nodeAttrFields);
+		nodeTypeChildMap.put(getClass(), nodeChildFields);
 	}
 
 	/**
@@ -129,11 +132,11 @@ public abstract class AstNode {
 			return false;
 		}
 
-		if (nodeAttrFields == null) {
+		if (!nodeTypeAttrMap.containsKey(getClass())) {
 			initNodeFieldLists();
 		}
 
-		for (final Field field : nodeAttrFields) {
+		for (final Field field : nodeTypeAttrMap.get(getClass())) {
 			try {
 				if (field.get(this) == null) {
 					if (field.get(that) != null) {
@@ -160,13 +163,13 @@ public abstract class AstNode {
 	 * @return Mutable list of AST node children of this node
 	 */
 	public List<AstNode> getChildren() {
-		if (nodeChildFields == null) {
+		if (!nodeTypeChildMap.containsKey(getClass())) {
 			initNodeFieldLists();
 		}
 
 		final List<AstNode> children = new ArrayList<AstNode>();
 
-		for (final Field field : nodeChildFields) {
+		for (final Field field : nodeTypeChildMap.get(getClass())) {
 			try {
 				final Object childFieldValue = field.get(this);
 				// Subtlety: This must test against the field's type, not its value's type

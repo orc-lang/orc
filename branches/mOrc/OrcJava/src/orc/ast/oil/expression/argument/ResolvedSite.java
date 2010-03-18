@@ -13,8 +13,8 @@
 
 package orc.ast.oil.expression.argument;
 
-import orc.Config;
 import orc.ast.oil.visitor.ExpressionVisitor;
+import orc.ast.sites.SiteResolutionEnvironment;
 import orc.env.Env;
 import orc.error.compiletime.SiteResolutionException;
 import orc.error.compiletime.typing.TypeException;
@@ -28,9 +28,9 @@ import orc.type.TypingContext;
 public class ResolvedSite extends Site {
 	transient private final orc.runtime.sites.Site instance;
 
-	public ResolvedSite(final Config config, final orc.ast.sites.Site site) throws SiteResolutionException {
+	public ResolvedSite(final SiteResolutionEnvironment siteResEnv, final orc.ast.sites.Site site) throws SiteResolutionException {
 		super(site);
-		instance = site.instantiate(config);
+		instance = site.instantiate(siteResEnv);
 	}
 
 	/**
@@ -73,7 +73,7 @@ public class ResolvedSite extends Site {
 	}
 
 	@Override
-	public Site resolveSites(final Config config) throws SiteResolutionException {
+	public Site resolveSites(final SiteResolutionEnvironment siteResEnv) throws SiteResolutionException {
 		// already resolved
 		return this;
 	}

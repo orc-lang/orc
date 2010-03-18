@@ -13,10 +13,10 @@
 
 package orc.ast.oil.visitor;
 
-import orc.Config;
 import orc.ast.oil.expression.Expression;
 import orc.ast.oil.expression.argument.Site;
 import orc.ast.oil.type.Type;
+import orc.ast.sites.SiteResolutionEnvironment;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.SiteResolutionException;
 
@@ -26,7 +26,7 @@ import orc.error.compiletime.SiteResolutionException;
  * @author quark
  */
 public class SiteResolver extends Transformer {
-	private final Config config;
+	private final SiteResolutionEnvironment config;
 
 	/** Hack to allow the visitor to throw an exception. */
 	private static class SiteResolverException extends RuntimeException {
@@ -41,12 +41,12 @@ public class SiteResolver extends Transformer {
 	}
 
 	/** Do not call this directly. */
-	private SiteResolver(final Config config) {
+	private SiteResolver(final SiteResolutionEnvironment config) {
 		this.config = config;
 	}
 
 	/** Call this to run the resolver on an expression. */
-	public static Expression resolve(final Expression expr, final Config config) throws CompilationException {
+	public static Expression resolve(final Expression expr, final SiteResolutionEnvironment config) throws CompilationException {
 		try {
 			return expr.accept(new SiteResolver(config));
 		} catch (final SiteResolverException e) {

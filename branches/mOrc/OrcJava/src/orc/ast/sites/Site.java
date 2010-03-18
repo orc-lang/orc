@@ -16,7 +16,6 @@ package orc.ast.sites;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import orc.Config;
 import orc.error.OrcError;
 import orc.error.compiletime.SiteResolutionException;
 
@@ -86,7 +85,7 @@ public abstract class Site {
 
 	public abstract String getProtocol();
 
-	public abstract orc.runtime.sites.Site instantiate(Config config) throws SiteResolutionException;
+	public abstract orc.runtime.sites.Site instantiate(SiteResolutionEnvironment siteResEnv) throws SiteResolutionException;
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()

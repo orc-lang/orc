@@ -38,7 +38,6 @@ public class ReplaceNode extends AstEditOperation {
 		super();
 		this.oldNode = oldNode;
 		this.newNode = newNode;
-		System.err.println(">>Repl "+oldNode+" with "+newNode);
 	}
 
 	/* (non-Javadoc)
@@ -54,7 +53,6 @@ public class ReplaceNode extends AstEditOperation {
 	 */
 	@Override
 	public boolean isTokenSafe(final Token token) {
-		// TODO Auto-generated method stub
 		return true;
 	}
 

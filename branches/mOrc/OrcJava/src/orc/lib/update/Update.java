@@ -93,7 +93,6 @@ public class Update extends Site {
 	 */
 	public boolean update(final OrcEngine engine, final AstNode oldOilAst, final File newOilFile) throws CompilationException, IOException {
 		final Expression newOilAst = loadNewProgram(newOilFile, engine);
-		System.err.println(">>Update "+oldOilAst+" to "+newOilAst);
 		final AstEditScript editList = AstEditScript.computeEditScript(oldOilAst, newOilAst);
 		if (editList != null && !editList.isEmpty()) {
 			suspendEngine(engine);
@@ -176,7 +175,6 @@ public class Update extends Site {
 		tokenLoop: while (tokenIterator.hasNext()) {
 			final Token token = tokenIterator.next();
 			for (final AstEditOperation editOperation : editList) {
-				System.err.println("tok=" + token + ", op=" + editOperation);
 				if (editOperation.migrateToken(token)) {
 					continue tokenLoop;
 				}

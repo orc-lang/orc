@@ -54,7 +54,6 @@ public class IncludeDeclaration extends Declaration {
 	 * @see orc.ast.extended.ASTNode#accept(orc.ast.extended.Visitor)
 	 */
 	public <E> E accept(final Visitor<E> visitor) {
-		// TODO Auto-generated method stub
 		return visitor.visit(this);
 	}
 

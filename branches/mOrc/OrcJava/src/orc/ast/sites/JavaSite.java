@@ -15,7 +15,6 @@ package orc.ast.sites;
 
 import java.net.URI;
 
-import orc.Config;
 import orc.error.compiletime.SiteResolutionException;
 import orc.runtime.sites.java.ClassProxy;
 
@@ -37,10 +36,10 @@ public class JavaSite extends Site {
 		return JAVA;
 	}
 
-	private Class classify(final Config config) throws SiteResolutionException {
+	private Class classify(final SiteResolutionEnvironment siteResEnv) throws SiteResolutionException {
 		final String classname = location.getSchemeSpecificPart();
 		try {
-			final Class<?> cls = config.loadClass(classname);
+			final Class<?> cls = siteResEnv.loadClass(classname);
 			if (orc.runtime.sites.Site.class.isAssignableFrom(cls)) {
 				throw new SiteResolutionException("Tried to load a subclass of orc.runtime.sites.Site as a Java class -- that's not allowed!");
 			}
@@ -51,7 +50,7 @@ public class JavaSite extends Site {
 	}
 
 	@Override
-	public orc.runtime.sites.Site instantiate(final Config config) throws SiteResolutionException {
-		return ClassProxy.forClass(classify(config));
+	public orc.runtime.sites.Site instantiate(final SiteResolutionEnvironment siteResEnv) throws SiteResolutionException {
+		return ClassProxy.forClass(classify(siteResEnv));
 	}
 }
