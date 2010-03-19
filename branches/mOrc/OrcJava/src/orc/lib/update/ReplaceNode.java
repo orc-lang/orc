@@ -15,6 +15,7 @@
 
 package orc.lib.update;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import orc.ast.oil.AstNode;
@@ -80,10 +81,10 @@ public class ReplaceNode extends AstEditOperation {
 	 */
 	@Override
 	protected void migrateClosures(final Token token) {
-		migrateClosures(token.getEnvironment().items());
+		migrateClosures(token.getEnvironment().items(), new ArrayList<Closure>());
 	}
 
-	private void migrateClosures(final List<Object> os) {
+	private void migrateClosures(final List<Object> os, final List<Closure> completedClosures) {
 		for (final Object o : os) {
 			if (o instanceof Closure) {
 				final Closure c = (Closure) o;
@@ -91,10 +92,11 @@ public class ReplaceNode extends AstEditOperation {
 					c.def = (Def) newNode;
 				}
 				final List<Object> cEnv = c.env.items();
-				while (cEnv.remove(c)) {
+				while (cEnv.removeAll(completedClosures)) {
 					// Remove any recursive bindings
 				}
-				migrateClosures(cEnv);
+				completedClosures.add(c);
+				migrateClosures(cEnv, completedClosures);
 			}
 		}
 	}
