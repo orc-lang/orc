@@ -248,7 +248,7 @@ public class OrcEngine implements Runnable {
 	private final boolean step() {
 		// synchronize while we decide what to do next;
 		// this block will either return from the function
-		// or set todo to a token to process
+		// or set currProcToken to a token to process
 		synchronized (this) {
 			if (halt) {
 				return false;

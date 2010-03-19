@@ -172,7 +172,7 @@ public class Catch extends Expression {
 		closure.env = env;
 
 		//	pass next so the handler knows where to return.
-		t.pushHandler(closure, getPublishContinuation());
+		t.pushHandler(closure, this);
 		tryBlock.enter(t.move(tryBlock));
 	}
 }

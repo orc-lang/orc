@@ -116,6 +116,7 @@ public class Update extends Site {
 	 * @throws CompilationException If new OIL file fails to unmarshal or resolve 
 	 */
 	private Expression loadNewProgram(final File newOilFile, final OrcEngine engine) throws IOException, CompilationException {
+		System.err.println(">>Load new OIL file "+newOilFile);
 		//FIXME: This is cut-and-pasted -- refactor back into OrcCompiler & Config & OrcEngine
 		final Config config = engine.getConfig();
 		final Oil oil = Oil.fromXML(new InputStreamReader(new FileInputStream(newOilFile)));
@@ -176,6 +177,8 @@ public class Update extends Site {
 			final Token token = tokenIterator.next();
 			for (final AstEditOperation editOperation : editList) {
 				if (editOperation.migrateToken(token)) {
+					editOperation.migrateClosures(token, editList);
+					editOperation.migrateFrameStack(token, editList);
 					continue tokenLoop;
 				}
 			}

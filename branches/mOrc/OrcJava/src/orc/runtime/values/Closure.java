@@ -16,8 +16,8 @@ package orc.runtime.values;
 import java.util.Iterator;
 import java.util.List;
 
-import orc.ast.oil.TokenContinuation;
 import orc.ast.oil.expression.Def;
+import orc.ast.oil.expression.Expression;
 import orc.env.Env;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
@@ -46,12 +46,12 @@ public final class Closure extends Value implements Callable, Future {
 		this.free = free;
 	}
 
-	public void createCall(final Token t, final List<Object> args, final TokenContinuation publishContinuation) throws TokenException {
+	public void createCall(final Token t, final List<Object> args, final Expression callPoint) throws TokenException {
 		if (args.size() != def.arity) {
 			throw new ArityMismatchException(def.arity, args.size());
 		}
 
-		t.enterClosure(this, publishContinuation);
+		t.enterClosure(this, callPoint);
 		for (final Object f : args) {
 			t.bind(f);
 		}

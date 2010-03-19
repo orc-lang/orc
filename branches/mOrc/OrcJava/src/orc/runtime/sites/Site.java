@@ -15,7 +15,7 @@ package orc.runtime.sites;
 
 import java.util.List;
 
-import orc.ast.oil.TokenContinuation;
+import orc.ast.oil.expression.Expression;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
@@ -39,9 +39,9 @@ public abstract class Site extends Value implements Callable {
 	 * Once all parameters are bound, their values are collected
 	 * and the corresponding subclass (the actual site) is called. 
 	 * 
-	 * @see orc.runtime.values.Callable#createCall(Token, List, TokenContinuation)
+	 * @see orc.runtime.values.Callable#createCall(Token, List, Expression)
 	 */
-	public void createCall(final Token callToken, final List<Object> args, final TokenContinuation publishContinuation) throws TokenException {
+	public void createCall(final Token callToken, final List<Object> args, final Expression callPoint) throws TokenException {
 		final Object[] values = new Object[args.size()];
 
 		int i = 0;

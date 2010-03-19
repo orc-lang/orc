@@ -15,9 +15,14 @@
 
 package orc.lib.update;
 
+import java.util.List;
+
 import orc.ast.oil.AstNode;
+import orc.ast.oil.expression.Def;
 import orc.ast.oil.expression.Expression;
 import orc.runtime.Token;
+import orc.runtime.Token.FrameContinuation;
+import orc.runtime.values.Closure;
 
 /**
  * 
@@ -62,11 +67,50 @@ public class ReplaceNode extends AstEditOperation {
 	@Override
 	public boolean migrateToken(final Token token) {
 		if (isTokenAffected(token)) {
-			System.err.println(">>Move "+token+" from "+oldNode+" to "+newNode);
+			System.err.println(">>Move " + token + " from " + oldNode + " to " + newNode);
 			token.move((Expression) newNode);
 			return true;
 		} else {
 			return false;
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.lib.update.AstEditOperation#migrateClosures(orc.runtime.Token)
+	 */
+	@Override
+	protected void migrateClosures(final Token token) {
+		migrateClosures(token.getEnvironment().items());
+	}
+
+	private void migrateClosures(final List<Object> os) {
+		for (final Object o : os) {
+			if (o instanceof Closure) {
+				final Closure c = (Closure) o;
+				if (c.def == oldNode) {
+					c.def = (Def) newNode;
+				}
+				final List<Object> cEnv = c.env.items();
+				while (cEnv.remove(c)) {
+					// Remove any recursive bindings
+				}
+				migrateClosures(cEnv);
+			}
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.lib.update.AstEditOperation#migrateFrameStack(orc.runtime.Token)
+	 */
+	@Override
+	protected void migrateFrameStack(final Token token) {
+		if (token.getContinuation() == null) {
+			return;
+		}
+		for (FrameContinuation c = token.getContinuation(); c != null; c = c.parent) {
+			if (c.callPoint == oldNode) {
+				c.callPoint = (Expression) newNode;
+			}
 		}
 	}
 

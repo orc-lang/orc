@@ -15,7 +15,7 @@ package orc.runtime.values;
 
 import java.util.List;
 
-import orc.ast.oil.TokenContinuation;
+import orc.ast.oil.expression.Expression;
 import orc.error.OrcError;
 import orc.error.runtime.TokenException;
 import orc.error.runtime.UncallableValueException;
@@ -42,7 +42,7 @@ public abstract class Value {
 	 * case.
 	 */
 	public final static Callable futureNotReady = new Callable() {
-		public void createCall(final Token caller, final List<Object> args, final TokenContinuation publishContinuation) throws TokenException {
+		public void createCall(final Token caller, final List<Object> args, final Expression callPoint) throws TokenException {
 			throw new OrcError("Value#futureNotReady#createCall should never be called");
 		}
 	};

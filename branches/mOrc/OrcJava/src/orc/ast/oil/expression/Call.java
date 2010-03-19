@@ -279,8 +279,8 @@ public class Call extends Expression {
 		try {
 			final Callable target = Value.forceCall(t.lookup(callee), t);
 
-			/** 
-			 * target is null if the callee is still unbound, in which
+			/*
+			 * target is futureNotReady if the callee is still unbound, in which
 			 * case the calling token will be activated when the
 			 * callee value becomes available. Thus, we simply
 			 * return and wait for the token to enter the process
@@ -290,7 +290,7 @@ public class Call extends Expression {
 				return;
 			}
 
-			/**
+			/*
 			 * Collect all of the environment's bindings for these args.
 			 * Note that some of them may still be unbound, since we are
 			 * not forcing the futures.
@@ -301,7 +301,7 @@ public class Call extends Expression {
 				actuals.add(t.lookup(a));
 			}
 
-			target.createCall(t, actuals, getPublishContinuation());
+			target.createCall(t, actuals, this);
 
 		} catch (final TokenException e) {
 			// if uncaught,  t.error(e) will be called.

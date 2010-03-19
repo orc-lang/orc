@@ -114,7 +114,10 @@ class ClosureBackedSite extends Site {
 					t.die();
 				}
 			};
-			closure.createCall(token, argsList, K);
+			//FIXME: Change Site site's use of TokenContinuations
+			//       Should create continuations statically
+			throw new RuntimeException("Site site is broken right now");
+			//closure.createCall(token, argsList, K);
 		} else {
 			throw new SiteException("Failed to host closure execution as a site.");
 		}

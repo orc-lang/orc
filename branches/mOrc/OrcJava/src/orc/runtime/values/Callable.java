@@ -15,7 +15,7 @@ package orc.runtime.values;
 
 import java.util.List;
 
-import orc.ast.oil.TokenContinuation;
+import orc.ast.oil.expression.Expression;
 import orc.error.runtime.TokenException;
 import orc.runtime.Token;
 
@@ -31,5 +31,5 @@ public interface Callable {
 	 * @param args		argument list
 	 * @param publishContinuation	next node after the call node, to which the result should be sent
 	 */
-	void createCall(Token caller, List<Object> args, TokenContinuation publishContinuation) throws TokenException;
+	void createCall(Token caller, List<Object> args, Expression callPoint) throws TokenException;
 }

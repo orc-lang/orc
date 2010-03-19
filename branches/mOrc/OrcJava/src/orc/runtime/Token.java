@@ -55,8 +55,8 @@ public class Token implements Serializable, Locatable {
 	 * but that was really an abuse of tokens.
 	 * @author quark, dkitchin, jthywiss
 	 */
-	private static class FrameContinuation implements TokenContinuation {
-		public TokenContinuation publishContinuation;
+	public static class FrameContinuation implements TokenContinuation {
+		public Expression callPoint;
 		public Env<Object> env;
 		public FrameContinuation parent;
 		public SourceLocation location;
@@ -64,8 +64,8 @@ public class Token implements Serializable, Locatable {
 		public int tracedepth = 1;
 		public int stacksize = 1;
 
-		public FrameContinuation(final TokenContinuation publishContinuation, final Env<Object> env, final FrameContinuation parent, final SourceLocation location) {
-			this.publishContinuation = publishContinuation;
+		public FrameContinuation(final Expression callPoint, final Env<Object> env, final FrameContinuation parent, final SourceLocation location) {
+			this.callPoint = callPoint;
 			this.env = env;
 			this.parent = parent;
 			if (parent != null) {
@@ -80,26 +80,26 @@ public class Token implements Serializable, Locatable {
 		public void execute(final Token t) {
 			t.env = env.clone();
 			t.continuation = parent;
-			publishContinuation.execute(t);
+			callPoint.getPublishContinuation().execute(t);
 		}
 	}
 
-	/*
+	/**
 	 * Exception frame.  This also must record enough data to create a new Token in the
-	 * context of the handler (its sort of like a Continuation but we need more data
+	 * context of the handler (it's sort of like a Continuation but we need more data
 	 * like the region and the group etc.) 
 	 */
 	private static class ExceptionFrame {
 		public Closure handler;
-		public TokenContinuation next;
+		public Expression catchPoint;
 
 		/* Non-running Token used to create tokens in the handler's context */
 		public Token token;
 
-		public ExceptionFrame(final Token token, final Closure handler, final TokenContinuation handlerReturn) {
+		public ExceptionFrame(final Token token, final Closure handler, final Expression catchPoint) {
 			this.token = token;
 			this.handler = handler;
-			this.next = handlerReturn;
+			this.catchPoint = catchPoint;
 		}
 	}
 
@@ -107,10 +107,7 @@ public class Token implements Serializable, Locatable {
 		EXPLICITTHROW, JAVAEXCEPTION, ORCRUNTIME, UNKNOWN
 	}
 
-	/**
-	 * The location of the token in the AST; determines what the token will do
-	 * next.
-	 */
+	/** The location of the token in the AST; determines what the token will do next. */
 	private Expression node;
 
 	/** The current environment, which determines the values of variables. */
@@ -143,22 +140,20 @@ public class Token implements Serializable, Locatable {
 	/** Each token has an associated logical clock. The token notifies the clock when it becomes quiescent. When all the clock's tokens are quiescent, it can advance logical time. */
 	private LogicalClock clock;
 
-	/**
-	 * Exception handler stack and catch return point stack:
-	 */
+	/** Exception handler stack and catch return point stack */
 	private Stack<ExceptionFrame> exceptionStack;
-
 	/** Used to trace the origin of uncaught orc exceptions */
 	private SourceLocation exceptionOriginLocation;
-
 	/** Used when throwing a Java exception.  Note this also stores source location for java exceptions*/
 	private TokenException originalException;
-
 	/** backtrace of the throw, used with both Java and Orc exceptions */
 	private SourceLocation[] throwBacktrace;
-
 	/** What kind of exception are we handling?  Used for handling errors correctly */
 	private ExceptionCause exceptionCause;
+
+	/* * * * * * * *
+	 * Constructors and init methods
+	 * * * * * * * */
 
 	/**
 	 * Create a new uninitialized token. You should get tokens from
@@ -182,25 +177,6 @@ public class Token implements Serializable, Locatable {
 	final void initializeFork(final Token that, final Group group, final Region region) {
 
 		initialize(that.node, that.env.clone(), that.continuation, group, region, that.result, that.engine, that.location, that.tracer.fork(), that.stackAvailable, that.clock, (Stack<ExceptionFrame>) that.exceptionStack.clone(), that.exceptionOriginLocation, that.originalException, that.throwBacktrace, that.exceptionCause);
-	}
-
-	/**
-	 * Free any resources held by this token.
-	 */
-	final void free() {
-		// it's not necessary to free these resources,
-		// since this token will be garbage soon anyways
-		//    /*
-		node = null;
-		env = null;
-		group = null;
-		region = null;
-		engine = null;
-		location = null;
-		tracer = null;
-		continuation = null;
-		result = null;
-		//*/
 	}
 
 	private void initialize(final Expression node, final Env<Object> env, final FrameContinuation continuation, final Group group, final Region region, final Object result, final OrcEngine engine, final SourceLocation location, final TokenTracer tracer, final int stackAvailable, final LogicalClock clock, final Stack<ExceptionFrame> exceptionStack, final SourceLocation exceptionOriginLocation, final TokenException originalException, final SourceLocation[] throwBacktrace, final ExceptionCause cause) {
@@ -229,41 +205,28 @@ public class Token implements Serializable, Locatable {
 	}
 
 	/**
-	 * Kill this token.
-	 * Should only be called on non-quiescent tokens.
-	 * Synchronized because tokens may be killed from site threads.
+	 * Free any resources held by this token.
 	 */
-	public final synchronized void die() {
-		assert alive;
-		alive = false;
-		region.remove(this);
-		tracer.die();
-		engine.pool.freeToken(this);
+	final void free() {
+		node = null;
+		env = null;
+		group = null;
+		region = null;
+		engine = null;
+		location = null;
+		tracer = null;
+		continuation = null;
+		result = null;
+		clock = null;
+		exceptionStack = null;
+		exceptionOriginLocation = null;
+		originalException = null;
+		throwBacktrace = null;
 	}
 
-	/**
-	 * If a token is alive, calls the node to perform the next action.
-	 */
-	public final void process() {
-		if (!alive) {
-			return;
-		} else if (group.isAlive()) {
-			try {
-				node.enter(this);
-			} catch (final RuntimeException e) {
-				// HACK: I'm ambivalent about this;
-				// on the one hand it tries to gracefully
-				// handle bugs in the implementation by
-				// at least shutting down the engine properly.
-				// On the other hand, it could mask the error
-				// if there was a real runtime error that is
-				// non-recoverable (e.g. out of memory).
-				error(new JavaError(e));
-			}
-		} else {
-			die();
-		}
-	}
+	/* * * * * * * *
+	 * Getters and setters
+	 * * * * * * * */
 
 	public final Expression getNode() {
 		return node;
@@ -315,6 +278,104 @@ public class Token implements Serializable, Locatable {
 		return tracer;
 	}
 
+	public final FrameContinuation getContinuation() {
+		return continuation;
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.error.Locatable#setSourceLocation(orc.error.SourceLocation)
+	 */
+	public final void setSourceLocation(final SourceLocation location) {
+		this.location = location;
+		tracer.setSourceLocation(location);
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.error.Located#getSourceLocation()
+	 */
+	public final SourceLocation getSourceLocation() {
+		return location;
+	}
+
+	/* * * * * * * *
+	 * Major token state changes
+	 * * * * * * * */
+
+	/**
+	 * If a token is alive, calls the node to perform the next action.
+	 */
+	public final void process() {
+		if (!alive) {
+			return;
+		} else if (group.isAlive()) {
+			try {
+				node.enter(this);
+			} catch (final RuntimeException e) {
+				// HACK: I'm ambivalent about this;
+				// on the one hand it tries to gracefully
+				// handle bugs in the implementation by
+				// at least shutting down the engine properly.
+				// On the other hand, it could mask the error
+				// if there was a real runtime error that is
+				// non-recoverable (e.g. out of memory).
+				error(new JavaError(e));
+			}
+		} else {
+			die();
+		}
+	}
+
+	/**
+	 * Activate a token by adding it to the queue of active tokens
+	 */
+	public final void activate() {
+		engine.activate(this);
+	}
+
+	/**
+	 * Kill this token.
+	 * Should only be called on non-quiescent tokens.
+	 * Synchronized because tokens may be killed from site threads.
+	 */
+	public final synchronized void die() {
+		assert alive;
+		alive = false;
+		region.remove(this);
+		tracer.die();
+		engine.pool.freeToken(this);
+	}
+
+	/**
+	 * Activate a token by adding it to the queue of returning tokens
+	 *
+	 * @param object result of call
+	 */
+	public final void resume(final Object object) {
+		this.result = object;
+		engine.resume(this);
+	}
+
+	/**
+	 * Convenience method for <code>resume(Value.signal());</code>
+	 */
+	public final void resume() {
+		resume(Value.signal());
+	}
+
+	/**
+	 * Removes this token from its region's active list
+	 */
+	public final void setQuiescent() {
+		region.removeActive();
+	}
+
+	/**
+	 * Adds this token to its region's active list
+	 */
+	public final void unsetQuiescent() {
+		region.addActive();
+	}
+
 	/**
 	 * Move to a node node
 	 * @param right the node to move to
@@ -326,144 +387,41 @@ public class Token implements Serializable, Locatable {
 	}
 
 	/**
-	 * Enter a closure by moving to a new node and environment,
-	 * and setting the continuation for {@link #leaveClosure()}.
-	 * @throws StackLimitReachedError 
+	 * Convenience method for node.leave(this);
 	 */
-	public final Token enterClosure(final Closure closure, final TokenContinuation publishContinuation) throws StackLimitReachedError {
+	public final void leave() {
+		node.leave(this);
+	}
 
-		if (node instanceof Call && ((Call) node).isTailCall) {
-			// Do not push a new frame, but increment the depth for this frame
-			continuation.tracedepth++;
-		} else {
-			// Push a frame, so we can return to this environment after exiting the closure 
-			continuation = new FrameContinuation(publishContinuation, this.env.clone(), continuation, location);
-		}
+	/* * * * * * * *
+	 * Creating new tokens
+	 * * * * * * * */
 
-		/* If the stack limit is on (stackAvailable >= 0),
-		 * make sure we haven't exceeded it.
-		 */
-		if (stackAvailable >= 0 && stackAvailable < continuation.stacksize) {
-			throw new StackLimitReachedError(stackAvailable);
-		}
-
-		tracer.enter(closure);
-		this.env = closure.env.clone();
-		return move(closure.def.body);
+	/**
+	 * Fork a token.
+	 * @throws TokenLimitReachedError 
+	 * @see #fork(Group, Region)
+	 */
+	public final Token fork() throws TokenLimitReachedError {
+		return fork(group, region);
 	}
 
 	/**
-	 * Leave a closure by returning to the continuation set by
-	 * {@link #enterClosure(Closure, TokenContinuation)}.
+	 * Fork a token with a specified group and region. By convention, the
+	 * original token continues on the left while the new token evaluates the
+	 * right (this order is arbitrary, but right-branching ensures fewer tokens
+	 * are created with the common left-associative asymmetric combinators).
+	 * @throws TokenLimitReachedError 
 	 */
-	public final Token leaveClosure() {
-		tracer.leave(continuation.tracedepth);
-		continuation.execute(this);
-		return this;
+	public final Token fork(final Group group, final Region region) throws TokenLimitReachedError {
+		final Token out = engine.pool.newToken();
+		out.initializeFork(this, group, region);
+		return out;
 	}
 
-	/**
-	 * pop an exception frame off the stack:
-	 */
-	public void popHandler() {
-		exceptionStack.pop();
-	}
-
-	/*
-	 * Called when an exception is thrown.  Kill the current token, and create
-	 * a new token in the correct group/region to call the handler
-	 */
-	public void throwException(final Object exceptionValue) throws TokenLimitReachedError, TokenException {
-
-		ExceptionFrame frame;
-
-		/*
-		 * If this is the first time we've seen this exception (ie, we haven't done a re-throw),
-		 * record error reporting information.
-		 */
-		if (exceptionCause == ExceptionCause.UNKNOWN) {
-			exceptionCause = ExceptionCause.EXPLICITTHROW;
-			exceptionOriginLocation = this.getSourceLocation();
-			throwBacktrace = this.getBacktrace();
-		}
-
-		if (exceptionStack.empty()) {
-			/*
-			 * We have an uncaught exception, and the backtrace should point to the source
-			 * of the exception.  
-			 */
-			TokenException e;
-
-			/*
-			 * Set the correct backtrace information:
-			 */
-			if (exceptionCause == ExceptionCause.ORCRUNTIME) {
-				e = (TokenException) exceptionValue;
-				e.setSourceLocation(exceptionOriginLocation);
-			} else if (exceptionCause == ExceptionCause.JAVAEXCEPTION) {
-				e = this.originalException;
-				e.setSourceLocation(originalException.getSourceLocation());
-			}
-			//exceptionCause == ExceptionCause.EXPLICITTHROW
-			else {
-				e = new UncaughtException("uncaught exception:");
-				e.setSourceLocation(exceptionOriginLocation);
-			}
-
-			/* the backtrace is the same for both cases: */
-			e.setBacktrace(throwBacktrace);
-			tracer.error(e);
-			engine.tokenError(e);
-			die();
-			return;
-		} else {
-			frame = exceptionStack.pop();
-			frame.token.exceptionCause = this.exceptionCause;
-		}
-
-		/* Create a new token running in the context of the handler */
-		final Token handlerToken = engine.pool.newToken();
-		handlerToken.initializeFork(frame.token, frame.token.group, frame.token.region);
-		/* Propagate the throw source location for the Orc exception */
-		if (this.exceptionOriginLocation != null) {
-			handlerToken.exceptionOriginLocation = this.exceptionOriginLocation;
-		}
-		/* Propagate the throw source location for the Java exception */
-		if (this.originalException != null) {
-			handlerToken.originalException = this.originalException;
-		}
-		/* The backtrace is the same in both cases: */
-		handlerToken.throwBacktrace = this.throwBacktrace;
-
-		/* need to update the clock of the new token: */
-		handlerToken.clock = this.clock;
-
-		final List<Object> actuals = new LinkedList<Object>();
-		actuals.add(exceptionValue);
-		frame.handler.createCall(handlerToken, actuals, frame.next);
-
-		/* kill the current token in the local group/region */
-		die();
-	}
-
-	/*
-	 * Set the location of the throw (for better error reporting)
-	 */
-
-	/*
-	 * Push an exception handler onto the stack:
-	 */
-	public void pushHandler(final Closure closure, final TokenContinuation handlerReturn) {
-
-		/* Create the continuation Token, but don't run it by removing it from the region */
-		final Token token = new Token();
-		token.initializeFork(this, group, region);
-		token.region.remove(token);
-
-		/* Push the exception frame on the stack */
-		final ExceptionFrame frame = new ExceptionFrame(token, closure, handlerReturn);
-		exceptionStack.push(frame);
-	}
+	/* * * * * * * *
+	 * Tokens' environment
+	 * * * * * * * */
 
 	/**
 	 * Push a new future onto the environment stack
@@ -504,19 +462,66 @@ public class Token implements Serializable, Locatable {
 		return var.resolve(env);
 	}
 
-	public final void activate() {
-		engine.activate(this);
+	/**
+	 * Enter a closure by moving to a new node and environment,
+	 * and setting the call point for {@link #leaveClosure()}.
+	 * @throws StackLimitReachedError 
+	 */
+	public final Token enterClosure(final Closure closure, final Expression callPoint) throws StackLimitReachedError {
+
+		if (node instanceof Call && ((Call) node).isTailCall) {
+			// Do not push a new frame, but increment the depth for this frame
+			continuation.tracedepth++;
+		} else {
+			// Push a frame, so we can return to this environment after exiting the closure 
+			continuation = new FrameContinuation(callPoint, this.env.clone(), continuation, location);
+		}
+
+		/* If the stack limit is on (stackAvailable >= 0),
+		 * make sure we haven't exceeded it.
+		 */
+		if (stackAvailable >= 0 && stackAvailable < continuation.stacksize) {
+			throw new StackLimitReachedError(stackAvailable);
+		}
+
+		tracer.enter(closure);
+		this.env = closure.env.clone();
+		return move(closure.def.body);
 	}
 
-	public final void resume(final Object object) {
-		this.result = object;
-		engine.resume(this);
+	/**
+	 * Leave a closure by returning to the continuation set by
+	 * {@link #enterClosure(Closure, Expression)}.
+	 */
+	public final Token leaveClosure() {
+		tracer.leave(continuation.tracedepth);
+		continuation.execute(this);
+		return this;
 	}
 
-	/* A return with no arguments simply returns a signal */
-	public final void resume() {
-		resume(Value.signal());
+	/* * * * * * * *
+	 * Output to external world 
+	 * * * * * * * */
+
+	/**
+	 * Publish a value to the top level.
+	 */
+	public final void publish() {
+		tracer.publish(result);
+		engine.publish(result);
 	}
+
+	/**
+	 * Print something (for use by the print and println sites).
+	 */
+	public final void print(final String string, final boolean newline) {
+		tracer.print(string, newline);
+		engine.print(string, newline);
+	}
+
+	/* * * * * * * *
+	 * Error handling
+	 * * * * * * * */
 
 	private final SourceLocation[] getBacktrace() {
 		final LinkedList<SourceLocation> out = new LinkedList<SourceLocation>();
@@ -527,8 +532,13 @@ public class Token implements Serializable, Locatable {
 		return out.toArray(new SourceLocation[0]);
 	}
 
-	/* This token has encountered an error, and dies. */
+	/**
+	 * This token has encountered an error, and dies.
+	 *
+	 * @param problem
+	 */
 	public final void error(final TokenException problem) {
+		final OrcEngine engine = this.engine;
 		problem.setSourceLocation(getSourceLocation());
 		problem.setBacktrace(getBacktrace());
 		tracer.error(problem);
@@ -542,6 +552,177 @@ public class Token implements Serializable, Locatable {
 		}
 	}
 
+	/* * * * * * * *
+	 * Security
+	 * * * * * * * */
+
+	/**
+	 * @param name
+	 * @param ifNull
+	 * @throws CapabilityException
+	 */
+	public final void requireCapability(final String name, final boolean ifNull) throws CapabilityException {
+		final Boolean ok = getEngine().getConfig().hasCapability(name);
+		if (ok == null) {
+			if (!ifNull) {
+				throw new CapabilityException(name);
+			}
+		} else if (!ok) {
+			throw new CapabilityException(name);
+		}
+	}
+
+	/* * * * * * * *
+	 * Timers/clocks
+	 * * * * * * * */
+
+	/**
+	 * @param delay
+	 */
+	public final void delay(final int delay) {
+		clock.addEvent(delay, this);
+	}
+
+	/**
+	 * 
+	 */
+	public final void pushLtimer() {
+		final LogicalClock old = clock;
+		clock = new LogicalClock(region, old);
+		setRegion(clock);
+	}
+
+	/**
+	 * @throws SiteException
+	 */
+	public final void popLtimer() throws SiteException {
+		if (clock != region) {
+			throw new SiteException("Cannot pop the clock before the end of the region.");
+		}
+		final LogicalClock old = clock;
+		clock = old.getParentClock();
+		setRegion(old.getParent());
+	}
+
+	/**
+	 * Used for {@link Ltimer}.time().
+	 *
+	 * @return
+	 */
+	public final LogicalClock getLtimer() {
+		return clock;
+	}
+
+	/* * * * * * * *
+	 * Orc Exceptions
+	 * * * * * * * */
+
+	/**
+	 * Push an exception handler onto the stack:
+	 */
+	public void pushHandler(final Closure closure, final Expression catchPoint) {
+	
+		/* Create the continuation Token, but don't run it by removing it from the region */
+		final Token token = new Token();
+		token.initializeFork(this, group, region);
+		token.region.remove(token);
+	
+		/* Push the exception frame on the stack */
+		final ExceptionFrame frame = new ExceptionFrame(token, closure, catchPoint);
+		exceptionStack.push(frame);
+	}
+
+	/**
+	 * Pop an exception frame off the stack
+	 */
+	public void popHandler() {
+		exceptionStack.pop();
+	}
+
+	/**
+	 * Called when an exception is thrown.  Kill the current token, and create
+	 * a new token in the correct group/region to call the handler.
+	 *
+	 * @param exceptionValue
+	 * @throws TokenLimitReachedError
+	 * @throws TokenException
+	 */
+	public void throwException(final Object exceptionValue) throws TokenLimitReachedError, TokenException {
+	
+		ExceptionFrame frame;
+	
+		/*
+		 * If this is the first time we've seen this exception (ie, we haven't done a re-throw),
+		 * record error reporting information.
+		 */
+		if (exceptionCause == ExceptionCause.UNKNOWN) {
+			exceptionCause = ExceptionCause.EXPLICITTHROW;
+			exceptionOriginLocation = this.getSourceLocation();
+			throwBacktrace = this.getBacktrace();
+		}
+	
+		if (exceptionStack.empty()) {
+			/*
+			 * We have an uncaught exception, and the backtrace should point to the source
+			 * of the exception.  
+			 */
+			TokenException e;
+	
+			/*
+			 * Set the correct backtrace information:
+			 */
+			if (exceptionCause == ExceptionCause.ORCRUNTIME) {
+				e = (TokenException) exceptionValue;
+				e.setSourceLocation(exceptionOriginLocation);
+			} else if (exceptionCause == ExceptionCause.JAVAEXCEPTION) {
+				e = this.originalException;
+				e.setSourceLocation(originalException.getSourceLocation());
+			}
+			//exceptionCause == ExceptionCause.EXPLICITTHROW
+			else {
+				e = new UncaughtException("uncaught exception:");
+				e.setSourceLocation(exceptionOriginLocation);
+			}
+	
+			/* the backtrace is the same for both cases: */
+			e.setBacktrace(throwBacktrace);
+			tracer.error(e);
+			engine.tokenError(e);
+			die();
+			return;
+		} else {
+			frame = exceptionStack.pop();
+			frame.token.exceptionCause = this.exceptionCause;
+		}
+	
+		/* Create a new token running in the context of the handler */
+		final Token handlerToken = engine.pool.newToken();
+		handlerToken.initializeFork(frame.token, frame.token.group, frame.token.region);
+		/* Propagate the throw source location for the Orc exception */
+		if (this.exceptionOriginLocation != null) {
+			handlerToken.exceptionOriginLocation = this.exceptionOriginLocation;
+		}
+		/* Propagate the throw source location for the Java exception */
+		if (this.originalException != null) {
+			handlerToken.originalException = this.originalException;
+		}
+		/* The backtrace is the same in both cases: */
+		handlerToken.throwBacktrace = this.throwBacktrace;
+	
+		/* need to update the clock of the new token: */
+		handlerToken.clock = this.clock;
+	
+		final List<Object> actuals = new LinkedList<Object>();
+		actuals.add(exceptionValue);
+		frame.handler.createCall(handlerToken, actuals, frame.catchPoint);
+	
+		/* kill the current token in the local group/region */
+		die();
+	}
+
+	/**
+	 * @param problem
+	 */
 	public void throwRuntimeException(final TokenException problem) {
 		this.exceptionCause = ExceptionCause.ORCRUNTIME;
 		originalException = problem;
@@ -555,6 +736,9 @@ public class Token implements Serializable, Locatable {
 		}
 	}
 
+	/**
+	 * @param problem
+	 */
 	public void throwJavaException(final TokenException problem) {
 		this.exceptionCause = ExceptionCause.JAVAEXCEPTION;
 		originalException = problem;
@@ -566,102 +750,5 @@ public class Token implements Serializable, Locatable {
 		} catch (final TokenException e) {
 			this.error(e);
 		}
-	}
-
-	/**
-	 * Print something (for use by the print and println sites).
-	 */
-	public final void print(final String string, final boolean newline) {
-		tracer.print(string, newline);
-		engine.print(string, newline);
-	}
-
-	/**
-	 * Publish a value to the top level.
-	 */
-	public final void publish() {
-		tracer.publish(result);
-		engine.publish(result);
-	}
-
-	/**
-	 * Fork a token.
-	 * @throws TokenLimitReachedError 
-	 * @see #fork(Group, Region)
-	 */
-	public final Token fork() throws TokenLimitReachedError {
-		return fork(group, region);
-	}
-
-	/**
-	 * Fork a token with a specified group and region. By convention, the
-	 * original token continues on the left while the new token evaluates the
-	 * right (this order is arbitrary, but right-branching ensures fewer tokens
-	 * are created with the common left-associative asymmetric combinators).
-	 * @throws TokenLimitReachedError 
-	 */
-	public final Token fork(final Group group, final Region region) throws TokenLimitReachedError {
-		final Token out = engine.pool.newToken();
-		out.initializeFork(this, group, region);
-		return out;
-	}
-
-	public final void setSourceLocation(final SourceLocation location) {
-		this.location = location;
-		tracer.setSourceLocation(location);
-	}
-
-	public final SourceLocation getSourceLocation() {
-		return location;
-	}
-
-	public final void unsetQuiescent() {
-		region.addActive();
-	}
-
-	public final void setQuiescent() {
-		region.removeActive();
-	}
-
-	public final void requireCapability(final String name, final boolean ifNull) throws CapabilityException {
-		final Boolean ok = getEngine().getConfig().hasCapability(name);
-		if (ok == null) {
-			if (!ifNull) {
-				throw new CapabilityException(name);
-			}
-		} else if (!ok) {
-			throw new CapabilityException(name);
-		}
-	}
-
-	public final void delay(final int delay) {
-		clock.addEvent(delay, this);
-	}
-
-	public final void pushLtimer() {
-		final LogicalClock old = clock;
-		clock = new LogicalClock(region, old);
-		setRegion(clock);
-	}
-
-	public final void popLtimer() throws SiteException {
-		if (clock != region) {
-			throw new SiteException("Cannot pop the clock before the end of the region.");
-		}
-		final LogicalClock old = clock;
-		clock = old.getParentClock();
-		setRegion(old.getParent());
-	}
-
-	/** Used for {@link Ltimer}.time(). */
-	public final LogicalClock getLtimer() {
-		return clock;
-	}
-
-	/**
-	 * Convenience method for node.leave(this);
-	 */
-	public void leave() {
-		node.leave(this);
 	}
 }

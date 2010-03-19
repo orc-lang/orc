@@ -15,7 +15,7 @@ package orc.lib.util;
 
 import java.util.List;
 
-import orc.ast.oil.TokenContinuation;
+import orc.ast.oil.expression.Expression;
 import orc.error.compiletime.typing.ArgumentArityException;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.ArgumentTypeMismatchException;
@@ -40,7 +40,7 @@ import orc.type.structured.ListType;
  */
 public class Apply extends Site {
 	@Override
-	public void createCall(final Token caller, final List<Object> args, final TokenContinuation nextNode) throws TokenException {
+	public void createCall(final Token caller, final List<Object> args, final Expression callPoint) throws TokenException {
 		final Callable callable = Value.forceCall(args.get(0), caller);
 		if (callable == Value.futureNotReady) {
 			return;
@@ -54,7 +54,7 @@ public class Apply extends Site {
 			throw new ArgumentTypeMismatchException(1, "ListValue", arguments.getClass().toString());
 		}
 
-		callable.createCall(caller, ((ListValue) arguments).enlist(), nextNode);
+		callable.createCall(caller, ((ListValue) arguments).enlist(), callPoint);
 	}
 
 	@Override
