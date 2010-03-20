@@ -26,7 +26,7 @@ import orc.runtime.Token.FrameContinuation;
 import orc.runtime.values.Closure;
 
 /**
- * 
+ * Edit operation that is a to-one mapping of an AST node. 
  *
  * @author jthywiss
  */
