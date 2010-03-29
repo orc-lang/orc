@@ -4,7 +4,7 @@
 
 <p>... a novel language for distributed and concurrent programming which provides
 uniform access to computational services, including distributed communication
-and data manipulation, through <span class="highlight">sites</span>. Using three simple
+and data manipulation, through <span class="highlight">sites</span>. Using four simple
 concurrency primitives, the programmer <span class="highlight">orchestrates</span> the
 invocation of sites to achieve a goal, while managing timeouts, priorities, and
 failures.</p>
