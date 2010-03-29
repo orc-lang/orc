@@ -45,13 +45,14 @@ used to add numbers and concatenate strings is usually implemented locally.</p>
 operators, these are still considered sites like any other.</p>
 
 <a id="Combinators"></a><h2>Combinators <small>(<a href="#top">top</a>)</small></h2>
-<p>Orc has three basic combinators, each to combine two expressions:</p>
+<p>Orc has four basic combinators, each to combine two expressions:</p>
 <ul>
 <li>Parallel, or bar, written <tt>|</tt></li>
 <li>Sequential, or push, written <tt>>></tt></li>
 <li>Pruning, or pull, written <tt>&lt;&lt;</tt></li>
+<li>Otherwise, written <tt>;</tt></li>
 </ul>
-<p>We will examine each in turn.</p>
+<p>This tutorial covers the first three combinators.</p>
 
 <a id="Parallel_Combinator"></a><h3>Parallel Combinator <small>(<a href="#top">top</a>)</small></h3>
 
