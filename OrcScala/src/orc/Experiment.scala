@@ -3,13 +3,13 @@ object Experiment {
   import Oil._
 
   val orc = new Orc {
-    	def emit(v: Value) { print(v) }
-    	def halted { print("Done.") }
+    	def emit(v: Value) { print("Published: " + v + "\n") }
+    	def halted { print("Done. \n") }
     	def invoke(t: this.Token, s: Site, vs: List[Value]) { t.publish(Signal) }
     	def schedule(ts: List[Token]) { for (t <- ts) t.run }
     }
 
-  val test = Parallel(
+  val orcTest = Parallel(
 		  		Sequence(
 		  			Constant(Literal(5)), 
 		  			Constant(Literal(3))
@@ -20,11 +20,11 @@ object Experiment {
   				)
       		)
   
-  val p = "5 >> 3 | (7 | 8) >x> (x | x)"
+  val parseTest = "5 >> 3 | (7 | 8) >x> (x | x)"
       		
   def main(args: Array[String]) {
-	  print(OrcParser.parse(p))
-      //orc.run(test)
+	  print(OrcParser.parse(parseTest))
+      //orc.run(orcTest)
   }
   
   

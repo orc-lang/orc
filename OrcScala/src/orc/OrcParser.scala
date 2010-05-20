@@ -35,37 +35,37 @@ def parseCallExpression: Parser[Expression] = (
 	| parseBaseExpression
 )
 
-
-//def parsePrefixOp = "-"
-//def parsePrefixOpExpression = (parsePrefixOp?) ~ parseCallExpression ^^ {case _ ~ e => e }
-
 def parseInfixOp = "+" | "-" | "*"
-def parseInfixOpExpression: Parser[Expression] = parseCallExpression interleave parseInfixOp apply InfixOperator
+def parseInfixOpExpression: Parser[Expression] = 
+		parseCallExpression interleave parseInfixOp apply InfixOperator
 
-//def (p: Option[Pattern]) = (f: Expression, g: Expression) => SequentialCombinator(f,p,g)
-
+		
 def parseSequentialCombinator = ">" ~> (parsePattern?) <~ ">"
 def parsePruningCombinator = "<" ~> (parsePattern?) <~ "<"
 
 def parseSequentialExpression = 
-	parseInfixOpExpression interleave parseSequentialCombinator apply SequentialExpression 
+		parseInfixOpExpression interleave parseSequentialCombinator apply SequentialExpression 
 
 def parseParallelExpression = 
-	rep1sep(parseSequentialExpression, "|") ^^ (_ reduceLeft ParallelExpression)
-
+		rep1sep(parseSequentialExpression, "|") ^^ (_ reduceLeft ParallelExpression)
+		
 def parsePruningExpression = 
-	parseParallelExpression interleave parsePruningCombinator apply PruningExpression
-
+		parseParallelExpression interleave parsePruningCombinator apply PruningExpression
+		
 def parseOtherwiseExpression = 
-	rep1sep(parsePruningExpression, ";") ^^ (_ reduceLeft OtherwiseExpression)
+		rep1sep(parsePruningExpression, ";") ^^ (_ reduceLeft OtherwiseExpression)
 
+		
 def parseExpression: Parser[Expression] = (
 	"lambda" ~> (ListOf(parseType)?) 
 		     ~ TupleOf(parsePattern) 
 		     ~ (("::" ~> parseType)?) 
 		     ~ ("=" ~> parseExpression)
 			 ^^~~~ Lambda
-  | ("if" ~> parseExpression) ~ ("then" ~> parseExpression) ~ ("else" ~> parseExpression) ^^~~ Conditional
+  | ("if" ~> parseExpression)
+    ~ ("then" ~> parseExpression) 
+    ~ ("else" ~> parseExpression) 
+    ^^~~ Conditional
   | parseDeclaration ~ parseExpression ^^~ Declare
   | parseOtherwiseExpression ~ ("::" ~> parseType) ^^~ TypeAscription
   | parseOtherwiseExpression ~ (":!:" ~> parseType) ^^~ TypeAssertion
@@ -230,6 +230,8 @@ def parse(s:String) = {
 // 	|	( T , ... , T )	 	Tuple type
 // 	|	lambda [ X , ... , X ] ( T , ... , T ) :: T	 	Function type
 // 	|	X[ T , ... , T ]	 	Type application
+
+
 
 
 // Add helper combinators for ( ... ) and [ ... ] forms
