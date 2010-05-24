@@ -277,6 +277,12 @@ public class OrcCompiler implements Callable<Expression> {
 		final ProgressListener progress = config.getProgressListener();
 		progress.setNote("Writing OIL");
 		new Oil(oilAst).toXML(oilWriter);
+		try {
+			// JAXB says it closes the stream, but that's a lie.
+			oilWriter.close();
+		} catch (IOException e) {
+			throw new CompilationException("Error closing OIL output file", e);
+		}
 		progress.setProgress(0.9);
 	}
 
