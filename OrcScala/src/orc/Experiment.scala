@@ -1,6 +1,8 @@
+package orc
+
 object Experiment {
 
-  import Oil._
+  import oil._
 
   val orc = new Orc {
     	def emit(v: Value) { print("Published: " + v + "\n") }

@@ -1,3 +1,5 @@
+package orc
+
 object PartialMapExtension {
 
 	// Adds a partialMap method to lists

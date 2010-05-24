@@ -1,3 +1,5 @@
+package orc
+
 object ExtendedSyntax {
 	
 	trait Expression
