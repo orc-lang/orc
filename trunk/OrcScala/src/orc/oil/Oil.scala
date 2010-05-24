@@ -1,10 +1,22 @@
-// OIL syntax definition
-
-object Oil {
+//
+// Oil.scala -- Scala object Oil
+// Project OrcScala
+//
+// $Id$
+//
+// Created by dkitchin on May 10, 2010.
+//
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+package orc.oil
 
 	// Abstract syntax: expressions, definitions, arguments
 
-case object Stop extends Expression
+case class Stop extends Expression
 case class Call(target: Argument, args: List[Argument]) extends Expression
 case class Parallel(left: Expression, right: Expression) extends Expression
 case class Sequence(left: Expression, right: Expression) extends Expression
@@ -15,6 +27,18 @@ case class DeclareDefs(defs : List[Def], body: Expression) extends Expression
 abstract class Argument extends Expression
 case class Constant(value: Value) extends Argument
 case class Variable(index: Int) extends Argument
+
+abstract class Type
+case class Top extends Type
+case class Bot extends Type
+case class ArrowType(paramTypes: List[Type], returnType: Type) extends Type
+
+case class Def(arity: Int, body: Expression, paramTypes : List[Type], returnType : Type) extends hasFreeVars {
+	/* Get the free vars of the body, then bind the arguments */
+	lazy val freevars: Set[Int] = shift(body.freevars, arity)
+}
+
+
 
 
 trait hasFreeVars {
@@ -75,7 +99,7 @@ abstract class Expression extends hasFreeVars {
 	 */
 	lazy val freevars: Set[Int] = {
 		this match {
-		case Stop => Set.empty
+		case Stop() => Set.empty
 		case Constant(_) => Set.empty
 		case Variable(i) => Set(i)
 		case Call(target, args) => target.freevars ++ args.flatMap(_.freevars)  
@@ -96,28 +120,10 @@ abstract class Expression extends hasFreeVars {
 
 
 
-case class Def(arity: Int, body: Expression) extends hasFreeVars {
-	/* Get the free vars of the body, then bind the arguments */
-	lazy val freevars: Set[Int] = shift(body.freevars, arity)
-}
-
-
-
-
 abstract class Value
 abstract class Site extends Value
 case class Literal(value: Int) extends Value
 case object Signal extends Value
 
 
-}
-
 // End of Oil
-
-
-
-
-
-
-
-

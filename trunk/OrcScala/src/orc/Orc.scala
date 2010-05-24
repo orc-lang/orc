@@ -1,6 +1,8 @@
+package orc
+
 abstract class Orc extends OrcAPI {
 
-	import Oil._
+	import orc.oil._
 	import PartialMapExtension._
 	
 	var exec: Option[Execution] = Some(new Execution())
@@ -315,7 +317,7 @@ abstract class Orc extends OrcAPI {
 		def run {
 			if (state == Live)
 				node match {
-				case Stop => halt
+				case Stop() => halt
 				case (a: Argument) => resolve(a).foreach(publish(_))
 				case Call(target, args) => {
 					resolve(target).foreach({

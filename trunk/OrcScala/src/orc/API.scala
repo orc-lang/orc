@@ -1,6 +1,8 @@
+package orc
+
 trait TokenAPI {
 	
-	import Oil.Value
+	import oil.Value
 	
 	def publish(v : Value): Unit
 	def halt: Unit
@@ -11,7 +13,7 @@ trait TokenAPI {
 
 trait OrcAPI {
 	
-	import Oil._
+	import oil._
 	
 	type Token <: TokenAPI
 	

@@ -1,3 +1,5 @@
+package orc
+
 import scala.util.parsing.combinator.syntactical._
 
 object OrcParser extends StandardTokenParsers {
