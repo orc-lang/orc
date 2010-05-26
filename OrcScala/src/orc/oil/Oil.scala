@@ -104,7 +104,7 @@ abstract class Expression extends hasFreeVars {
 		case Stop() => Set.empty
 		case Constant(_) => Set.empty
 		case Variable(i) => Set(i)
-		case Call(target, args) => target.freevars ++ args.flatMap(_.freevars)  
+		case Call(target, args, typeArgs) => target.freevars ++ args.flatMap(_.freevars)  
 		case f || g => f.freevars ++ g.freevars
 		case f >> g => f.freevars ++ shift(g.freevars, 1)
 		case f << g => shift(f.freevars, 1) ++ g.freevars

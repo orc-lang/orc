@@ -319,7 +319,7 @@ abstract class Orc extends OrcAPI {
 				node match {
 				case Stop() => halt
 				case (a: Argument) => resolve(a).foreach(publish(_))
-				case Call(target, args) => {
+				case Call(target, args, typeArgs) => {
 					resolve(target).foreach({
 						case Closure(arity, body, newcontext) => {
 							if (arity == args.size) {
