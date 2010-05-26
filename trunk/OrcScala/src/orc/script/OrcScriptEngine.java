@@ -27,6 +27,8 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 
+import orc.ExperimentalOrc;
+import orc.Orc;
 import orc.OrcCompiler;
 
 import scala.util.parsing.input.StreamReader;
@@ -38,6 +40,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 
 	private OrcScriptEngineFactory factory;
 	private OrcCompiler compiler;
+	private Orc executor;
 
 	/**
 	 * Constructs an object of class OrcScriptEngine.
@@ -71,7 +74,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 		 */
 		@Override
 		public Object eval(ScriptContext context) throws ScriptException {
-			// TODO Auto-generated method stub
+			OrcScriptEngine.this.getExecutor().run(astRoot);
 			return null;
 		}
 
@@ -98,7 +101,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 	 */
 	@Override
 	public CompiledScript compile(final Reader script) throws ScriptException {
-		return new OrcCompiledScript(getCompiler().compileOrc(StreamReader.apply(script)));
+		return new OrcCompiledScript(getCompiler().compile(script));
 	}
 
 	/* (non-Javadoc)
@@ -148,10 +151,10 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 	/**
 	 * @return
 	 */
-	private OrcCompiler getCompiler() {
+	OrcCompiler getCompiler() {
 		synchronized (this) {
 			if (compiler == null) {
-				compiler = new OrcCompiler();
+				compiler = new OrcCompiler(); //FIXME: Need a factory
 			}
 		}
 		return compiler;
@@ -160,13 +163,13 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 	/**
 	 * @return
 	 */
-//	private orc.OrcExecutor getExecutor() {
-//		synchronized (this) {
-//			if (executor == null) {
-//				executor = new orc.OrcExecutor();
-//			}
-//		}
-//		return executor;
-//	}
+	Orc getExecutor() {
+		synchronized (this) {
+			if (executor == null) {
+				executor = new ExperimentalOrc(); //FIXME: Need a factory
+			}
+		}
+		return executor;
+	}
 
 }
