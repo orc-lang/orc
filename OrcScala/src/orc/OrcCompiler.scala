@@ -28,7 +28,7 @@ class OrcCompiler {
 		// 1. Parse
 		val extendedAst = OrcParser.parse(source).get
 		// 2. Translate extended AST to OIL
-		translateToOil(extendedAst)
+		orc.oil.Stop() //translateToOil(extendedAst)
 		// 3. Call refineOilAfterCompileBeforeSave hook for extenders
 	}
 

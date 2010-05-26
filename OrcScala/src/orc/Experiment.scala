@@ -1,16 +1,18 @@
 package orc
 
+import oil._
+
+class ExperimentalOrc extends Orc {
+	def emit(v: Value) { print("Published: " + v + "\n") }
+	def halted { print("Done. \n") }
+	def invoke(t: this.Token, s: Site, vs: List[Value]) { t.publish(Signal) }
+	def schedule(ts: List[Token]) { for (t <- ts) t.run }
+}
+
 object Experiment {
 
-  import oil._
-
-  val orc = new Orc {
-    	def emit(v: Value) { print("Published: " + v + "\n") }
-    	def halted { print("Done. \n") }
-    	def invoke(t: this.Token, s: Site, vs: List[Value]) { t.publish(Signal) }
-    	def schedule(ts: List[Token]) { for (t <- ts) t.run }
-    }
-
+  val orc = new ExperimentalOrc 
+  
   val orcTest = Parallel(
 		  		Sequence(
 		  			Constant(Literal(5)), 

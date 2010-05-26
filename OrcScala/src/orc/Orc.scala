@@ -1,5 +1,5 @@
 //
-// Orc.scala -- Scala class OrcScala
+// Orc.scala -- Scala class Orc
 // Project OrcScala
 //
 // $Id$
