@@ -15,9 +15,11 @@
 
 package orc
 
+
 object TypeChecker {
 	import oil.{Type=>_,Top=>_,Bot=>_,ArrowType=>_,_}
 	import types._
+  import orc.error.compiletime.typing._
 	import types.TypeConversions._
 
 	def typeSynth(expr : Expression, context : List[Type], typeContext: List[Type]) : Type = {
@@ -27,12 +29,12 @@ object TypeChecker {
 				val callee = typeSynth(target, context, typeContext)
 				callee match {
 					case ArrowType(typeFormalArity, argTypes, returnType) => {
-						if (argTypes.size != args.size) throw new ArgumentArityException() //FIXME: provide source location
-						if (typeFormalArity != typeArgs.size) throw new TypeArgumentArityException() //FIXME: provide source location
+						if (argTypes.size != args.size) throw new ArgumentArityException("") //FIXME: provide source location
+						if (typeFormalArity != typeArgs.size) throw new TypeArityException("") //FIXME: provide source location
 						for ((p, a) <- argTypes zip args) typeCheck(a, p, context, typeContext)  
 						returnType
 					}
-					case _ => throw new UncallableTypeException() //FIXME: provide source location
+					case t => throw new UncallableTypeException(t) //FIXME: provide source location
 				}
 			}
 			case Parallel(left, right) => typeSynth(left, context, typeContext) join typeSynth(right, context, typeContext)   

@@ -13,6 +13,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 package orc.types
+import orc.error.compiletime.typing._
 
 abstract class Type {
 	def join(that: Type) : Type
