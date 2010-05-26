@@ -29,7 +29,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import orc.Orc;
-import orc.OrcParser;
+import orc.OrcCompiler;
 import orc.OrcEngine;
 import orc.error.compiletime.CompilationException;
 
@@ -91,19 +91,19 @@ public class ExamplesTest {
 	}
 
 	public static void runOrcProgram(final File file, final LinkedList<String> expecteds) throws InterruptedException, Throwable, CmdLineException, CompilationException, IOException, TimeoutException {
-    
-    final orc.oil.Expression expr = OrcParser.parse(OrcParserTest.readFileAsString(file.toString())).get();
+
+		final orc.oil.Expression expr = (new OrcCompiler()).compile(new FileReader(file));
 
 		if (expr == null) {
 			throw new CompilationException("Compilation to OIL failed");
 		}
-    final OrcEngine engine  = new OrcEngine();
+		final OrcEngine engine  = new OrcEngine();
 
 		// run the engine with a fixed timeout
 		final FutureTask<?> future = new FutureTask<Void>(new Runnable() {
-		  public void run() {
-		    engine.run(expr);
-		  }
+			public void run() {
+				engine.run(expr);
+			}
 		}, null);
 		new Thread(future).start();
 		try {
