@@ -1,6 +1,6 @@
 //
 // OrcBindings.java -- Java class OrcBindings
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

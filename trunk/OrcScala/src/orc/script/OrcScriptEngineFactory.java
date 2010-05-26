@@ -1,6 +1,6 @@
 //
 // OrcScriptEngineFactory.java -- Java class OrcScriptEngineFactory
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //
