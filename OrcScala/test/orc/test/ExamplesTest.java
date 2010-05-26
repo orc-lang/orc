@@ -116,7 +116,7 @@ public class ExamplesTest {
 		}
 
 		// compare the output to the expected result
-		final String actual = out.toString();
+		final String actual = engine.getOut().toString();
 		for (final String expected : expecteds) {
 			if (expected.equals(actual)) {
 				return;
