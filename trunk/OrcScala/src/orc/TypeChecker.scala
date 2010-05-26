@@ -15,18 +15,20 @@
 package orc
 
 object TypeChecker {
-	import oil._
+	import oil.{Type=>_,Top=>_,Bot=>_,ArrowType=>_,_}
 	import types._
+	import types.TypeConversions._
 
-	def typeSynth(expr : Expression, context : List[Type]) : Type = {
+	def typeSynth(expr : Expression, context : List[Type], typeContext: List[Type]) : Type = {
 		expr match {
 			case Stop() => Bot()
-			case Call(target, args) => {
-				val callee = typeSynth(target, context)
+			case Call(target, args, typeArgs) => {
+				val callee = typeSynth(target, context, typeContext)
 				callee match {
-					case ArrowType(paramTypes, returnType) => {
-						if (paramTypes.size != args.size) throw new ArgumentArityException() //FIXME: provide source location
-						for ((p, a) <- paramTypes zip args) typeCheck(a, p, context)  
+					case ArrowType(typeFormalArity, argTypes, returnType) => {
+						if (argTypes.size != args.size) throw new ArgumentArityException() //FIXME: provide source location
+						if (typeFormalArity != typeArgs.size) throw new TypeArgumentArityException() //FIXME: provide source location
+						for ((p, a) <- argTypes zip args) typeCheck(a, p, context)  
 						returnType
 					}
 					case _ => throw new UncallableTypeException() //FIXME: provide source location
@@ -37,18 +39,19 @@ object TypeChecker {
 			case Prune(left, right) => typeSynth(left, typeSynth(right, context)::context)
 			case Cascade(left, right) => typeSynth(left, context) join typeSynth(right, context)
 			case DeclareDefs(defs, body) => {
-				val defTypes = for (d <- defs) yield ArrowType(d.paramTypes, d.returnType)
+				val defTypes = for (d <- defs) yield ArrowType(d.typeFormalArity, d.argTypes, d.returnType)
 				for (d <- defs) typeCheckDef(d, defTypes.reverse:::context)
 				typeSynth(body, defTypes.reverse:::context)
 			}
+			case HasType(body, expectedType) => typeCheck(body, expectedType, context) ; expectedType
 			case Constant(value) => Top() //FIXME
 			case Variable(index) => context(index)
 		}
 	}
 
-	def typeCheckDef(defn : Def, context : List[Type]) = {
-		val Def(arity, body, paramTypes, returnType) = defn
-		typeCheck(body, returnType, paramTypes.reverse ::: context)
+	def typeCheckDef(defn : Def, context : List[Type]) {
+		val Def(typeFormalArity, arity, body, argTypes, returnType) = defn
+		typeCheck(body, returnType, argTypes.reverse ::: context)
 	}
 	
 	def typeCheck(expr : Expression, checkType : Type, context : List[Type]) {
@@ -58,7 +61,7 @@ object TypeChecker {
 			case Prune(left, right) => typeCheck(left, checkType, typeSynth(right, context)::context)
 			case Cascade(left, right) => typeCheck(left, checkType, context) ; typeCheck(right, checkType, context)
 			case DeclareDefs(defs, body) => {
-				val defTypes = for (d <- defs) yield ArrowType(d.paramTypes, d.returnType)
+				val defTypes = for (d <- defs) yield ArrowType(d.typeFormalArity, d.argTypes, d.returnType)
 				for (d <- defs) typeCheckDef(d, defTypes.reverse:::context)
 				typeCheck(body, checkType, defTypes.reverse:::context)
 			}

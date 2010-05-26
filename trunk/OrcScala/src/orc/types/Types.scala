@@ -19,6 +19,17 @@ abstract class Type {
 	def meet(that: Type) : Type
 	def assertSubtype(that: Type)
 }
+
+object TypeConversions {
+	implicit def type2type(that : orc.oil.Type) : Type = that match {
+		case orc.oil.Top() => Top()
+		case orc.oil.Bot() => Bot()
+		case orc.oil.ArrowType(a, p, r) => ArrowType(a, p map type2type, r)
+		case orc.oil.TypeVar(i) => TypeVar(i)
+	}
+	implicit def typelist2typelist(that : List[orc.oil.Type]) : List[Type] = that map type2type
+}
+
 case class Top extends Type {
 	def join(that: Type) : Type = this
 	def meet(that: Type) : Type = that
@@ -29,33 +40,57 @@ case class Top extends Type {
 		}
 	}
 }
+
 case class Bot extends Type {
 	def join(that: Type) : Type = that
 	def meet(that: Type) : Type = this
 	def assertSubtype(that: Type) { }
 }
 
-case class ArrowType(paramTypes: List[Type], returnType: Type) extends Type {
+case class ArrowType(typeFormalArity: Int, argTypes: List[Type], returnType: Type) extends Type {
 	def join(that: Type) : Type = that match {
-		case ArrowType(thatParamTypes, thatReturnType) if (paramTypes.size == thatParamTypes.size) => {
-			val combinedParamTypes = for ((t1, t2) <- paramTypes zip thatParamTypes) yield t1 meet t2
-			ArrowType(combinedParamTypes, returnType join thatReturnType)
+		case ArrowType(thatTypeFormalArity, thatargTypes, thatReturnType) if (sameShape(that)) => {
+			val combinedargTypes = for ((t1, t2) <- argTypes zip thatargTypes) yield t1 meet t2
+			ArrowType(thatTypeFormalArity, combinedargTypes, returnType join thatReturnType)
 		}
 		case _ => Top()
 	}
 	def meet(that: Type) : Type = that match {
-		case ArrowType(thatParamTypes, thatReturnType) if (paramTypes.size == thatParamTypes.size) => {
-			val combinedParamTypes = for ((t1, t2) <- paramTypes zip thatParamTypes) yield t1 join t2
-			ArrowType(combinedParamTypes, returnType meet thatReturnType)
+		case ArrowType(thatTypeFormalArity, thatargTypes, thatReturnType) if (sameShape(that)) => {
+			val combinedargTypes = for ((t1, t2) <- argTypes zip thatargTypes) yield t1 join t2
+			ArrowType(thatTypeFormalArity, combinedargTypes, returnType meet thatReturnType)
 		}
 		case _ => Bot()
 	}
 	def assertSubtype(that: Type) {
 		that match {
-			case ArrowType(thatParamTypes, thatReturnType) if (paramTypes.size == thatParamTypes.size) => {
-				val combinedParamTypes = for ((t1, t2) <- paramTypes zip thatParamTypes) yield t1 meet t2
+			case ArrowType(thatTypeFormalArity, thatargTypes, thatReturnType) if (sameShape(that)) => {
+				val combinedargTypes = for ((t1, t2) <- argTypes zip thatargTypes) yield t1 meet t2
 				returnType assertSubtype thatReturnType
 			}
+			case Top() => { }
+			case _ => throw new SubtypeFailureException(this, that) //FIXME: Supply source location
+		}
+	}
+	def sameShape(that : Type) : Boolean = that match {
+		case ArrowType(thatTypeFormalArity, thatargTypes, thatReturnType) => (typeFormalArity == thatTypeFormalArity) && (argTypes.size == thatargTypes.size)
+		case _ => false
+	}
+}
+
+case class TypeVar(index: Int) extends Type {
+	def join(that: Type) : Type = that match {
+		case TypeVar(thatIndex) if (index == thatIndex) => this
+		case _ => Top()
+	}
+	def meet(that: Type) : Type = that match {
+		case TypeVar(thatIndex) if (index == thatIndex) => this
+		case _ => Bot()
+	}
+	def assertSubtype(that: Type) {
+		that match {
+			case TypeVar(thatIndex) if (index == thatIndex) => { }
+			case Top() => { }
 			case _ => throw new SubtypeFailureException(this, that) //FIXME: Supply source location
 		}
 	}
