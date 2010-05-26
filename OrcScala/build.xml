@@ -1,0 +1,39 @@
+<?xml version="1.0" ?>
+
+<project name="orc" default="build" basedir=".">
+  <property file="build.properties" />
+  <path id="build.classpath">
+    <pathelement path="${build.dir}" />
+  </path>
+
+  <target name="init">
+    <property
+      name="scala-library.jar"
+      value="${scala.home}/lib/scala-library.jar"
+       />
+    <path id="build.classpath">
+      <pathelement location="${scala-library.jar}"   />
+      <!--<pathelement location="${your.path}"   />-->
+      <pathelement location="${build.dir}"   />
+    </path>
+    <taskdef resource="scala/tools/ant/antlib.xml">
+      <classpath>
+        <pathelement location="${scala.home}/lib/scala-compiler.jar"   />
+        <pathelement location="${scala-library.jar}"   />
+      </classpath>
+    </taskdef>
+  </target>
+
+  <target name="build" depends="init">
+    <mkdir dir="${build.dir}"   />
+    <scalac srcdir="${sources.dir}:${test.dir}"
+            destdir="${build.dir}"
+            classpathref="build.classpath">
+      <include name="**/*.scala"   />
+    </scalac>
+    <javac srcdir="${sources.dir}:${test.dir}" destdir="${build.dir}" classpathref="build.classpath"
+      classpath="${libraries}">
+      <include name="**/*.java"/>
+    </javac>
+  </target>
+</project>
