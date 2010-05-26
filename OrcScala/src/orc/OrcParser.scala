@@ -1,5 +1,6 @@
 package orc
 
+import scala.util.parsing.input.Reader
 import scala.util.parsing.combinator.syntactical._
 
 object OrcParser extends StandardTokenParsers {
@@ -168,6 +169,11 @@ lexical.reserved ++= List("Signal", "Top", "Bot")
 
 def parse(s:String) = {
         val tokens = new lexical.Scanner(s)
+        phrase(parseExpression)(tokens)
+    }
+
+def parse(r:Reader[Char]) = {
+        val tokens = new lexical.Scanner(r)
         phrase(parseExpression)(tokens)
     }
 
