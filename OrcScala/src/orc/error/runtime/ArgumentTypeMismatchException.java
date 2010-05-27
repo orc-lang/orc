@@ -15,7 +15,7 @@ package orc.error.runtime;
 
 public class ArgumentTypeMismatchException extends RuntimeTypeException {
 
-	int position;
+	int argPosition;
 	String expectedType;
 	String providedType;
 
@@ -23,16 +23,16 @@ public class ArgumentTypeMismatchException extends RuntimeTypeException {
 		super(message);
 	}
 
-	public ArgumentTypeMismatchException(final int position, final String expectedType, final String providedType) {
-		super("Expected type " + expectedType + " for argument " + position + ", got " + providedType + " instead");
-		this.position = position;
+	public ArgumentTypeMismatchException(final int argPosition, final String expectedType, final String providedType) {
+		super("Expected type " + expectedType + " for argument " + argPosition + ", got " + providedType + " instead");
+		this.argPosition = argPosition;
 		this.expectedType = expectedType;
 		this.providedType = providedType;
 	}
 
-	public ArgumentTypeMismatchException(final String message, final int position, final String expectedType, final String providedType) {
+	public ArgumentTypeMismatchException(final String message, final int argPosition, final String expectedType, final String providedType) {
 		super(message);
-		this.position = position;
+		this.argPosition = argPosition;
 		this.expectedType = expectedType;
 		this.providedType = providedType;
 	}
@@ -41,7 +41,7 @@ public class ArgumentTypeMismatchException extends RuntimeTypeException {
 		super(e.toString());
 	}
 
-	public ArgumentTypeMismatchException(final int position, final ClassCastException e) {
-		super("For argument " + position + ": " + e.toString());
+	public ArgumentTypeMismatchException(final int argPosition, final ClassCastException e) {
+		super("For argument " + argPosition + ": " + e.toString());
 	}
 }

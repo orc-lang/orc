@@ -15,7 +15,6 @@ package orc.error.compiletime;
 
 import orc.error.OrcException;
 
-import scala.util.parsing.input.NoPosition;
 import scala.util.parsing.input.NoPosition$;
 import scala.util.parsing.input.Position;
 import scala.util.parsing.input.Positional;

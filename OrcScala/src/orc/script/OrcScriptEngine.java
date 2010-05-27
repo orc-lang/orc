@@ -31,8 +31,6 @@ import orc.ExperimentalOrc;
 import orc.Orc;
 import orc.OrcCompiler;
 
-import scala.util.parsing.input.StreamReader;
-
 /**
  * @author jthywiss
  */

@@ -17,7 +17,7 @@ import orc.types.Type;
 
 /**
  * Exception raised when the typechecker finds an uncallable
- * value in call position.
+ * value in call argPosition.
  *
  * @author dkitchin
  */

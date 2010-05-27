@@ -14,7 +14,7 @@
 package orc.error.runtime;
 
 /**
- * Exception raised when an uncallable value occurs in call position.
+ * Exception raised when an uncallable value occurs in call argPosition.
  * 
  * @author dkitchin
  */
