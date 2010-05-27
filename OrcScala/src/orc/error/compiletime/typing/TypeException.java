@@ -13,7 +13,7 @@
 
 package orc.error.compiletime.typing;
 
-import orc.error.SourceLocation;
+import scala.util.parsing.input.Position;
 import orc.error.compiletime.CompilationException;
 
 public class TypeException extends CompilationException {
@@ -30,9 +30,9 @@ public class TypeException extends CompilationException {
 		super(message, cause);
 	}
 
-	public TypeException(final String message, final SourceLocation location) {
+	public TypeException(final String message, final Position location) {
 		super(message);
-		setSourceLocation(location);
+		setPos(location);
 	}
 
 }

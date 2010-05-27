@@ -17,7 +17,9 @@ package orc.error.compiletime;
 
 import java.io.PrintWriter;
 
-import orc.error.SourceLocation;
+import orc.AST;
+
+import scala.util.parsing.input.Position;
 
 /**
  * A CompileMessageRecorder that writes messages to a PrintWriter (such
@@ -43,7 +45,7 @@ public class PrintWriterCompileLogger implements CompileLogger {
 	}
 
 	/* (non-Javadoc)
-	 * @see orc.error.compiletime.CompileMessageRecorder#beginProcessing(java.io.File)
+	 * @see orc.error.compiletime.CompileLogger#beginProcessing(java.lang.String)
 	 */
 	public void beginProcessing(final String filename) {
 		if (outWriter == null) {
@@ -53,52 +55,50 @@ public class PrintWriterCompileLogger implements CompileLogger {
 	}
 
 	/* (non-Javadoc)
-	 * @see orc.error.compiletime.CompileMessageRecorder#endProcessing(java.io.File)
+	 * @see orc.error.compiletime.CompileLogger#endProcessing(java.lang.String)
 	 */
 	public void endProcessing(final String filename) {
 		// Nothing needed
 	}
 
 	/* (non-Javadoc)
-	 * @see orc.error.compiletime.CompileMessageRecorder#recordMessage(orc.error.compiletime.CompileMessageRecorder.Severity, int, java.lang.String, orc.error.SourceLocation, java.lang.Object, java.lang.Throwable)
+	 * @see orc.error.compiletime.CompileLogger#recordMessage(Severity, int, String, Position, AST, Throwable)
 	 */
-	public void recordMessage(final Severity severity, final int code, final String message, SourceLocation location, final Object astNode, final Throwable exception) {
-		if (location == null) {
-			location = SourceLocation.UNKNOWN;
-		}
+	public void recordMessage(final Severity severity, final int code, final String message, Position location, final AST astNode, final Throwable exception) {
 
 		maxSeverity = severity.ordinal() > maxSeverity.ordinal() ? severity : maxSeverity;
 
-		outWriter.println(location.toString() + ": " + message);
-		final String caret = location.getCaret();
-		if (caret != null) {
-			outWriter.println(caret);
+		if (location != null) {
+			outWriter.println(location.toString() + ": " + message);
+			outWriter.println(location.longString());
+		} else {
+			outWriter.println("<undefined position>: " + message);
 		}
 	}
 
 	/* (non-Javadoc)
-	 * @see orc.error.compiletime.CompileMessageRecorder#recordMessage(orc.error.compiletime.CompileMessageRecorder.Severity, int, java.lang.String, orc.error.SourceLocation, java.lang.Throwable)
+	 * @see orc.error.compiletime.CompileLogger#recordMessage(Severity, int, String, Position, Throwable)
 	 */
-	public void recordMessage(final Severity severity, final int code, final String message, final SourceLocation location, final Throwable exception) {
+	public void recordMessage(final Severity severity, final int code, final String message, final Position location, final Throwable exception) {
 		recordMessage(severity, code, message, location, null, exception);
 	}
 
 	/* (non-Javadoc)
-	 * @see orc.error.compiletime.CompileMessageRecorder#recordMessage(orc.error.compiletime.CompileMessageRecorder.Severity, int, java.lang.String, orc.error.SourceLocation, java.lang.Object)
+	 * @see orc.error.compiletime.CompileLogger#recordMessage(Severity, int, String, Position, AST)
 	 */
-	public void recordMessage(final Severity severity, final int code, final String message, final SourceLocation location, final Object astNode) {
+	public void recordMessage(final Severity severity, final int code, final String message, final Position location, final AST astNode) {
 		recordMessage(severity, code, message, location, astNode, null);
 	}
 
 	/* (non-Javadoc)
-	 * @see orc.error.compiletime.CompileMessageRecorder#recordMessage(orc.error.compiletime.CompileMessageRecorder.Severity, int, java.lang.String)
+	 * @see orc.error.compiletime.CompileLogger#recordMessage(orc.error.compiletime.CompileLogger.Severity, int, java.lang.String)
 	 */
 	public void recordMessage(final Severity severity, final int code, final String message) {
 		recordMessage(severity, code, message, null, null, null);
 	}
 
 	/* (non-Javadoc)
-	 * @see orc.error.compiletime.CompileMessageRecorder#getMaxSeverity()
+	 * @see orc.error.compiletime.CompileLogger#getMaxSeverity()
 	 */
 	public Severity getMaxSeverity() {
 		return maxSeverity;

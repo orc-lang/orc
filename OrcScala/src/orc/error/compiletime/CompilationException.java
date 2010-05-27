@@ -13,9 +13,12 @@
 
 package orc.error.compiletime;
 
-import orc.error.Locatable;
 import orc.error.OrcException;
-import orc.error.SourceLocation;
+
+import scala.util.parsing.input.NoPosition;
+import scala.util.parsing.input.NoPosition$;
+import scala.util.parsing.input.Position;
+import scala.util.parsing.input.Positional;
 
 /**
  * Exceptions generated during Orc compilation from source to
@@ -23,8 +26,8 @@ import orc.error.SourceLocation;
  * 
  * @author dkitchin
  */
-public class CompilationException extends OrcException implements Locatable {
-	protected SourceLocation location;
+public class CompilationException extends OrcException implements Positional {
+	Position position;
 
 	public CompilationException(final String message) {
 		super(message);
@@ -38,18 +41,10 @@ public class CompilationException extends OrcException implements Locatable {
 		super(cause);
 	}
 
-	public void setSourceLocation(final SourceLocation location) {
-		this.location = location;
-	}
-
-	public SourceLocation getSourceLocation() {
-		return location;
-	}
-
 	@Override
 	public String getMessage() {
-		if (location != null) {
-			return "At " + location + ": " + super.getMessage();
+		if (position != null) {
+			return "At " + position + ": " + super.getMessage();
 		} else {
 			return super.getMessage();
 		}
@@ -57,5 +52,32 @@ public class CompilationException extends OrcException implements Locatable {
 
 	public String getMessageOnly() {
 		return super.getMessage();
+	}
+
+	/* (non-Javadoc)
+	 * @see scala.util.parsing.input.Positional#pos()
+	 */
+	@Override
+	public Position pos() {
+		return position;
+	}
+
+	/* (non-Javadoc)
+	 * @see scala.util.parsing.input.Positional#pos_$eq(scala.util.parsing.input.Position)
+	 */
+	@Override
+	public void pos_$eq(Position newpos) {
+		position = newpos;
+	}
+
+	/* (non-Javadoc)
+	 * @see scala.util.parsing.input.Positional#setPos(scala.util.parsing.input.Position)
+	 */
+	@Override
+	public Positional setPos(Position newpos) {
+		if (position == null || position instanceof NoPosition$) {
+			position = newpos;
+		}
+		return this;
 	}
 }

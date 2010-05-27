@@ -13,10 +13,10 @@
 
 package orc.error.compiletime;
 
-import java.io.File;
+import orc.AST;
 
-//import orc.ast.extended.ASTNode;
-import orc.error.SourceLocation;
+import scala.util.parsing.input.Position;
+
 
 /**
  * Interface to environment's message mechanism for compiler diagnostics.
@@ -83,11 +83,11 @@ public interface CompileLogger {
 	 * @param severity {@link Severity} of this message
 	 * @param code integer code of this message (potentially used for filtering, is supported by the environment}
 	 * @param message String localized message specifically describing problem for the complier user
-	 * @param location {@link SourceLocation} where problem occurred. Indicate unknown location with a partially filled SourceLocation.
-	 * @param astNode {@link ASTNode} subtree containing problem, or null if not applicable or not available.
+	 * @param location {@link Position} where problem occurred. Indicate unknown location with a partially filled Position.
+	 * @param astNode {@link AST} subtree containing problem, or null if not applicable or not available.
 	 * @param exception {@link Throwable} indicating problem, or null if not applicable or not available.
 	 */
-	public void recordMessage(Severity severity, int code, String message, SourceLocation location, Object astNode, Throwable exception);
+	public void recordMessage(Severity severity, int code, String message, Position location, AST astNode, Throwable exception);
 
 	/**
 	 * Convenience method, equivalent to <code>recordMessage(severity, code, message, location, null, exception)</code>
@@ -95,10 +95,10 @@ public interface CompileLogger {
 	 * @param severity {@link Severity} of this message
 	 * @param code integer code of this message (potentially used for filtering, is supported by the environment}
 	 * @param message String localized message specifically describing problem for the complier user
-	 * @param location {@link SourceLocation} where problem occurred. Indicate unknown location with a partially filled SourceLocation.
+	 * @param location {@link Position} where problem occurred. Indicate unknown location with a partially filled Position.
 	 * @param exception {@link Throwable} indicating problem, or null if not applicable or not available.
 	 */
-	public void recordMessage(Severity severity, int code, String message, SourceLocation location, Throwable exception);
+	public void recordMessage(Severity severity, int code, String message, Position location, Throwable exception);
 
 	/**
 	 * Convenience method, equivalent to <code>recordMessage(severity, code, message, location, astNode, null)</code>
@@ -106,10 +106,10 @@ public interface CompileLogger {
 	 * @param severity {@link Severity} of this message
 	 * @param code integer code of this message (potentially used for filtering, is supported by the environment}
 	 * @param message String localized message specifically describing problem for the complier user
-	 * @param location {@link SourceLocation} where problem occurred. Indicate unknown location with a partially filled SourceLocation.
-	 * @param astNode {@link ASTNode} subtree containing problem, or null if not applicable or not available.
+	 * @param location {@link Position} where problem occurred. Indicate unknown location with a partially filled Position.
+	 * @param astNode {@link AST} subtree containing problem, or null if not applicable or not available.
 	 */
-	public void recordMessage(Severity severity, int code, String message, SourceLocation location, Object astNode);
+	public void recordMessage(Severity severity, int code, String message, Position location, AST astNode);
 
 	/**
 	 * Convenience method, equivalent to <code>recordMessage(severity, code, message, null, null, null)</code>
@@ -121,7 +121,7 @@ public interface CompileLogger {
 	public void recordMessage(Severity severity, int code, String message);
 
 	/**
-	 * @return maximum severity of messages recoded since {@link #beginProcessing(File)} was invoked
+	 * @return maximum severity of messages recoded since {@link #beginProcessing(String)} was invoked
 	 */
 	public Severity getMaxSeverity();
 
