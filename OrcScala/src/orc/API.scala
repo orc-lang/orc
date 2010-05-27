@@ -1,5 +1,5 @@
 //
-// API.scala -- Scala objects OrcAPI and TokenAPI
+// API.scala -- Scala traits OrcCompilerAPI, OrcAPI, and TokenAPI
 // Project OrcScala
 //
 // $Id$
@@ -14,6 +14,21 @@
 //
 
 package orc
+
+abstract trait OrcCompilerAPI {
+	import orc.error.compiletime.CompileMessageRecorder
+	import scala.util.parsing.input.Reader
+
+	def compile(options: OrcOptions, source: Reader[Char]): orc.oil.Expression 
+	def compile(options: OrcOptions, source: java.io.Reader): orc.oil.Expression
+	
+	def refineOil(oilAstRoot: orc.oil.Expression): orc.oil.Expression = oilAstRoot
+	
+//	def progress: ProgressListener
+	def msgRecorder: CompileMessageRecorder
+	def openInclude(includeFileName: String, relativeToFileName: String): java.io.Reader 
+	def loadClass(className: String): Class[_]
+}
 
 trait TokenAPI {
 	
@@ -45,5 +60,6 @@ trait OrcAPI {
 	// Schedule function is overloaded for convenience
 	def schedule(t: Token) { schedule(List(t)) }
 	def schedule(t: Token, u: Token) { schedule(List(t,u)) }
+	
+	def loadClass(className: String): Class[_]
 }
-
