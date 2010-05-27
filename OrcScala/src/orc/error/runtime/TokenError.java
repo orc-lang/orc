@@ -2,7 +2,7 @@
 // TokenError.java -- Java class TokenError
 // Project OrcJava
 //
-// $Id: TokenError.java 1597 2010-03-05 17:55:46Z jthywissen $
+// $Id$
 //
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
