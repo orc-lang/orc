@@ -94,15 +94,6 @@ class Translator {
 		A sequence of operations which extract intermediate values from the source expression.
 		A sequence of context bindings for the target expression.
 	*/
-	
-	//List (e, some(x)) says "compute e, assign its value to x"
-	//List (e, none) says "compute e, but just use it as a guard"
-	// (if the list is empty then the pattern is irrefutable, since there is no guard that could halt)
-	//Map (name, x) says "for var named name, its value is carried by temp x"
-	// range of map is a subset of vars in list plus given x.
-	// post-hoc linearity check is fine, esp because the name is available
-
-	
 	type PatternDecomposition = (List[(Expression, EVar)], List[(String,EVar)])
 	
 	def convertPattern(p : ext.Pattern, x : EVar, context : Map[String, EVar], typecontext : Map[String, TVar]) = {
@@ -180,7 +171,6 @@ class Translator {
 	
 	
 	
-	// Incomplete.
 	def combinatorPattern(combinator: (Expression, EVar, Expression) => Expression,
 						  source: ext.Expression,
 						  p : ext.Pattern,
@@ -189,18 +179,31 @@ class Translator {
 						  typecontext : Map[String, TVar]): Expression = 
 	{ 
 		val sourceVar = generateEVar
-		val resultsVar = generateEVar
 		val (compute, bindings) = convertPattern(p, sourceVar, context, typecontext)
-		val fragments = Set() ++ (for ((_,z) <- bindings) yield z)
-		val seed = makeLet(fragments.toList)
-		val newCompute = (convert(source, context, typecontext), sourceVar)::compute
-		def compose(binding: (Expression, EVar), expr2: Expression) =
-			binding match { 
-				case (expr1, x) => Sequence(expr1, x, expr2) 
-			}
-		val newsource = newCompute.foldRight(seed)(compose)
-		val newtarget = Stop()
-		combinator(newsource, resultsVar, newtarget)
+		val fragments = (for ((_,z) <- bindings) yield z).toList.removeDuplicates
+		
+		val nil = makeLet(fragments)
+		def cons(oneCompute: (Expression, EVar), expr2: Expression) = {
+			val (expr1, x) = oneCompute
+			Sequence(expr1, x, expr2)
+		}
+		val convertedSource = convert(source, context, typecontext)
+		val newCompute = (convertedSource, sourceVar)::compute
+		val newsource = newCompute.foldRight(nil)(cons)
+		
+		val mappedVar = generateEVar
+		val mapping = Map() ++ (fragments map (x => (x,generateEVar)))
+		val newbindings = bindings map { case (name,z) => (name, mapping(z)) }
+		
+		val nil2 = convert(target, context ++ newbindings, typecontext)
+		def cons2(indexedFragment: (EVar, Int), expr: Expression) = {
+			val (z, i) = indexedFragment
+ 			combinator(callNth(mappedVar,i), mapping(z), expr)
+		}
+		val indexedFragments = fragments.zipWithIndex
+		val newtarget = indexedFragments.foldRight(nil2)(cons2)
+		 
+		combinator(newsource, mappedVar, newtarget)
 	}
 	
 	
@@ -214,7 +217,23 @@ class Translator {
 	def convertClause(context: Map[String, EVar], typecontext: Map[String, TVar])
 	 				 (args: List[EVar])
 					 (clause: Clause, fallthrough: Expression): Expression = {
-		Stop()
+		
+		val (ps, body) = clause
+		
+		val (groupedComputes, groupedBindings) = 
+			List unzip {
+				(ps zip args) map 
+					{ pair => 
+						val (p,x) = pair
+						convertPattern(p, x, context, typecontext)
+					}
+			}
+		val _ = groupedComputes.flatten
+		val bindings = groupedBindings.flatten
+		
+		val fragments = (for ((_,z) <- bindings) yield z).toList.removeDuplicates -- args
+		
+		convert(body, context ++ bindings, typecontext)		
 	}
 	
 	
@@ -432,7 +451,6 @@ class Translator {
 		}
 	}	
 	
-
 	private def renameDef(defn: Def, context: List[EVar], typecontext: List[TVar]): oil.Def = {
 		defn -> {
 			case Def(_, args, body, typeformals, argtypes, returntype) => {
@@ -446,16 +464,12 @@ class Translator {
 		}
 	}
 
-	
-	
-
 	private def renameArgument(a: Argument, context: List[EVar], typecontext: List[TVar]): oil.Argument = {
 		a -> {
 			case Constant(v) => oil.Constant(oil.Literal(v))
 			case (x: EVar) => oil.Variable(seek(x, context)) 
 		}
 	}
-	
 	
 	private def rename(e: Expression, context: List[EVar], typecontext: List[TVar]): oil.Expression = {
 		def renamer(e: Expression) = rename(e, context, typecontext)
@@ -495,40 +509,29 @@ class Translator {
 		def <<(g: Expression) = Prune(this,generateEVar,g)
 		def semicolon(g: Expression) = Otherwise(this,g)
 	}
-	
-	
-
-	case class Stop extends Expression
-	case class Call(target: Argument, args: List[Argument], typeargs: Option[List[Type]]) extends Expression
-	case class Parallel(left: Expression, right: Expression) extends Expression
-	case class Sequence(left: Expression, x: EVar, right: Expression) extends Expression 
-	case class Prune(left: Expression, x: EVar, right: Expression) extends Expression
-	case class Otherwise(left: Expression, right: Expression) extends Expression
-	case class DeclareDefs(defs : List[Def], body: Expression) extends Expression
-	case class HasType(body: Expression, expectedType: Type) extends Expression
-	
-	abstract class Argument extends Expression
-	class EVar extends Argument
-	case class Constant(value: Any) extends Argument
+		case class Stop extends Expression
+		case class Call(target: Argument, args: List[Argument], typeargs: Option[List[Type]]) extends Expression
+		case class Parallel(left: Expression, right: Expression) extends Expression
+		case class Sequence(left: Expression, x: EVar, right: Expression) extends Expression 
+		case class Prune(left: Expression, x: EVar, right: Expression) extends Expression
+		case class Otherwise(left: Expression, right: Expression) extends Expression
+		case class DeclareDefs(defs : List[Def], body: Expression) extends Expression
+		case class HasType(body: Expression, expectedType: Type) extends Expression
+		abstract class Argument extends Expression
+			class EVar extends Argument
+			case class Constant(value: Any) extends Argument
 	
 	case class Def(f: EVar, args: List[EVar], body: Expression, typeformals: List[TVar], argtypes: List[Type], returntype: Option[Type]) extends AST
 	
 	abstract class Type extends AST
-	case class TVar extends Type
-	case class Top extends Type
-	case class Bot extends Type
-	case class NativeType(name: String) extends Type
-	case class TupleType(elements: List[Type]) extends Type
-	case class FunctionType(typeformals: List[TVar], argtypes: List[Type], returntype: Type) extends Type
-	case class TypeApplication(tycon: TVar, typeactuals: List[Type]) extends Type
-	case class AssertedType(assertedType: Type) extends Type
-
-	
-	
-	
-	
-	
-	
+		case class TVar extends Type
+		case class Top extends Type
+		case class Bot extends Type
+		case class NativeType(name: String) extends Type
+		case class TupleType(elements: List[Type]) extends Type
+		case class FunctionType(typeformals: List[TVar], argtypes: List[Type], returntype: Type) extends Type
+		case class TypeApplication(tycon: TVar, typeactuals: List[Type]) extends Type
+		case class AssertedType(assertedType: Type) extends Type
 	
 
 }}}
