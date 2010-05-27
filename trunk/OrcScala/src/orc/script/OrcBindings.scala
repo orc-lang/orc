@@ -2,7 +2,7 @@
 // OrcBindings.java -- Scala class OrcBindings
 // Project OrcScala
 //
-// $Id: OrcBindings.java 1641 2010-05-26 21:48:46Z jthywissen $
+// $Id$
 //
 // Created by jthywiss on May 26, 2010.
 //

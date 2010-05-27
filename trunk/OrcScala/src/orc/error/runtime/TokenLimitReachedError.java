@@ -2,7 +2,7 @@
 // TokenLimitReachedError.java -- Java class TokenLimitReachedError
 // Project OrcJava
 //
-// $Id: TokenLimitReachedError.java 1502 2010-02-03 06:25:53Z jthywissen $
+// $Id$
 //
 // Copyright (c) 2008 The University of Texas at Austin. All rights reserved.
 //

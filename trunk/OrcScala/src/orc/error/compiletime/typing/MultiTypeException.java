@@ -2,7 +2,7 @@
 // MultiTypeException.java -- Java class MultiTypeException
 // Project OrcJava
 //
-// $Id: MultiTypeException.java 1541 2010-02-24 19:49:00Z jthywissen $
+// $Id$
 //
 // Created by dkitchin on Feb 5, 2010.
 //
