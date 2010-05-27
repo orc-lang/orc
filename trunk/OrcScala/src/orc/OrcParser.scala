@@ -182,12 +182,12 @@ lexical.reserved ++= List("Signal", "Top", "Bot")
 
 
 
-def parse(s:String) = {
+def parse(options: OrcOptions, s:String) = {
         val tokens = new lexical.Scanner(s)
         phrase(parseExpression)(tokens)
     }
 
-def parse(r:Reader[Char]) = {
+def parse(options: OrcOptions, r:Reader[Char]) = {
         val tokens = new lexical.Scanner(r)
         phrase(parseExpression)(tokens)
     }
