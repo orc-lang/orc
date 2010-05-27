@@ -16,7 +16,7 @@
 package orc {
 
 abstract trait OrcCompilerAPI {
-	import orc.error.compiletime.CompileMessageRecorder
+	import orc.error.compiletime.CompileLogger
 	import scala.util.parsing.input.Reader
 
 	def compile(options: OrcOptions, source: Reader[Char]): orc.oil.Expression 
@@ -25,7 +25,7 @@ abstract trait OrcCompilerAPI {
 	def refineOil(oilAstRoot: orc.oil.Expression): orc.oil.Expression = oilAstRoot
 	
 //	def progress: ProgressListener
-//	def msgRecorder: CompileMessageRecorder
+	def compileLogger: CompileLogger
 //	def openInclude(includeFileName: String, relativeToFileName: String): java.io.Reader 
 //	def loadClass(className: String): Class[_]
 }

@@ -2,7 +2,7 @@
 // ExamplesTest.java -- Java class ExamplesTest
 // Project OrcJava
 //
-// $Id: ExamplesTest.java 1502 2010-02-03 06:25:53Z jthywissen $
+// $Id$
 //
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
@@ -92,7 +92,7 @@ public class ExamplesTest {
 
 	public static void runOrcProgram(final File file, final LinkedList<String> expecteds) throws InterruptedException, Throwable, CmdLineException, CompilationException, IOException, TimeoutException {
 
-		final orc.oil.Expression expr = (new OrcCompiler()).compile(new FileReader(file));
+		final orc.oil.Expression expr = (new OrcCompiler()).compile(null, new FileReader(file));
 
 		if (expr == null) {
 			throw new CompilationException("Compilation to OIL failed");
