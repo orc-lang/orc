@@ -23,7 +23,13 @@ import orc.error.compiletime.CompileLogger
 import orc.error.compiletime.CompileLogger.Severity
 
 /**
- * 
+ * An instance of OrcCompiler is a particular Orc compiler configuration, 
+ * which is a particular Orc compiler implementation, in a JVM instance,
+ * with possibly certain implementation-dependent parameters fixed.
+ * Note, however, that an OrcCompiler instance is not specialized for
+ * a single Orc program; in fact, multiple compilations of different programs,
+ * with different options set, may be in progress concurrently within a
+ * single OrcCompiler instance.  
  *
  * @author jthywiss
  */
