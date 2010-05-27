@@ -2,7 +2,7 @@
 // PrintWriterCompileLogger.java -- Java class PrintWriterCompileLogger
 // Project OrcJava
 //
-// $Id: PrintWriterCompileLogger.java 1502 2010-02-03 06:25:53Z jthywissen $
+// $Id$
 //
 // Created by jthywiss on Aug 19, 2009.
 //
