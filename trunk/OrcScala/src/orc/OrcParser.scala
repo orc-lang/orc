@@ -225,7 +225,7 @@ class LocatingParser[+A <: AST](p : => Parser[A]) extends Parser[A] {
 	override def apply(i: Input) = {
 		val position = i.pos
 		val result: ParseResult[A] = p.apply(i)
-		result.map(x => { x.location = Some(position) ; x })
+		result.map(x => { x.pos = position ; x })
 		result
 	}
 }

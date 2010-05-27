@@ -13,8 +13,9 @@
 
 package orc.error.runtime;
 
-import orc.error.Locatable;
-import orc.error.SourceLocation;
+import scala.util.parsing.input.NoPosition$;
+import scala.util.parsing.input.Position;
+import scala.util.parsing.input.Positional;
 
 /**
  * A localized failure at runtime. Errors of this type cause the executing
@@ -26,9 +27,9 @@ import orc.error.SourceLocation;
  * 
  * @author dkitchin
  */
-public abstract class TokenException extends ExecutionException implements Locatable {
-	private SourceLocation loc = SourceLocation.UNKNOWN;
-	private SourceLocation[] backtrace = new SourceLocation[0];
+public abstract class TokenException extends ExecutionException implements Positional {
+	Position position;
+	private Position[] backtrace = new Position[0];
 
 	public TokenException(final String message) {
 		super(message);
@@ -38,24 +39,38 @@ public abstract class TokenException extends ExecutionException implements Locat
 		super(message, cause);
 	}
 
-	public void setBacktrace(final SourceLocation[] backtrace) {
+	public void setBacktrace(final Position[] backtrace) {
 		this.backtrace = backtrace;
 	}
 
-	public SourceLocation[] getBacktrace() {
+	public Position[] getBacktrace() {
 		return backtrace;
 	}
 
-	public SourceLocation getSourceLocation() {
-		return loc;
-	}
-
-	public void setSourceLocation(final SourceLocation location) {
-		this.loc = location;
-	}
-
+	/* (non-Javadoc)
+	 * @see scala.util.parsing.input.Positional#pos()
+	 */
 	@Override
-	public String toString() {
-		return loc + ": " + super.toString();
+	public Position pos() {
+		return position;
+	}
+
+	/* (non-Javadoc)
+	 * @see scala.util.parsing.input.Positional#pos_$eq(scala.util.parsing.input.Position)
+	 */
+	@Override
+	public void pos_$eq(Position newpos) {
+		position = newpos;
+	}
+
+	/* (non-Javadoc)
+	 * @see scala.util.parsing.input.Positional#setPos(scala.util.parsing.input.Position)
+	 */
+	@Override
+	public Positional setPos(Position newpos) {
+		if (position == null || position instanceof NoPosition$) {
+			position = newpos;
+		}
+		return this;
 	}
 }

@@ -13,7 +13,7 @@
 
 package orc.error.compiletime.typing;
 
-import orc.error.SourceLocation;
+import scala.util.parsing.input.Position;
 
 public abstract class InsufficientTypeInformationException extends TypeException {
 
@@ -21,7 +21,7 @@ public abstract class InsufficientTypeInformationException extends TypeException
 		super(message);
 	}
 
-	public InsufficientTypeInformationException(final String message, final SourceLocation location) {
+	public InsufficientTypeInformationException(final String message, final Position location) {
 		super(message, location);
 	}
 }

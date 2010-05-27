@@ -1,22 +1,18 @@
+import scala.util.parsing.input.Positional
+
 package orc {
-	
-	
-	abstract class Located {
-		import scala.util.parsing.input.Position
-		var location: Option[Position] = None
-	}
-	
-	abstract class AST extends Located {
+
+	abstract class AST extends Positional {
 		
 		def ->[B <: AST](f: this.type => B): B = {
-			val location = this.location
+			val location = this.pos
 			val result = f(this)
-			result.location = location
+			result.pos = location
 			result
 		}
 		
-		def !!(e : Located with Throwable) = {
-			e.location = this.location
+		def !!(e : Positional with Throwable) = {
+			e.pos = this.pos
 			throw e
 		}
 	}

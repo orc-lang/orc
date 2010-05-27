@@ -13,12 +13,12 @@
 
 package orc.error.compiletime;
 
-import orc.error.SourceLocation;
+import scala.util.parsing.input.Position;
 
 public class UnboundVariableException extends CompilationException {
-	public UnboundVariableException(final String key, final SourceLocation location) {
+	public UnboundVariableException(final String key, final Position location) {
 		this("Variable " + key + " is unbound");
-		setSourceLocation(location);
+		setPos(location);
 	}
 
 	public UnboundVariableException(final String message) {

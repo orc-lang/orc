@@ -15,12 +15,16 @@
 
 package orc
 
+import java.io.PrintWriter
+
 import scala.util.parsing.input.Reader
 import scala.util.parsing.input.StreamReader
 
 import orc.error.compiletime.CompilationException
 import orc.error.compiletime.CompileLogger
 import orc.error.compiletime.CompileLogger.Severity
+import orc.error.compiletime.PrintWriterCompileLogger
+
 
 /**
  * An instance of OrcCompiler is a particular Orc compiler configuration, 
@@ -45,7 +49,7 @@ class OrcCompiler extends OrcCompilerAPI {
 				val refinedAst = refineOil(oilAst)
 				refinedAst
 			} catch {case e: CompilationException =>
-				compileLogger.recordMessage(Severity.FATAL, 0, e.getMessageOnly(), e.getSourceLocation(), null, e)
+				compileLogger.recordMessage(Severity.FATAL, 0, e.getMessageOnly(), e.pos, null, e)
 				null
 			} finally {
 				compileLogger.endProcessing(options.filename)
@@ -54,6 +58,6 @@ class OrcCompiler extends OrcCompilerAPI {
 
 	def compile(options: OrcOptions, source: java.io.Reader): orc.oil.Expression = compile(options, StreamReader(source))
 
-	def compileLogger: CompileLogger = null
+	val compileLogger: CompileLogger = new PrintWriterCompileLogger(new PrintWriter(System.err, true))
 
 }
