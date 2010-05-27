@@ -15,6 +15,8 @@
 package orc.types
 import orc.error.compiletime.typing._
 
+class SubtypeFailureException(t1: Type, t2: Type) extends Throwable
+
 abstract class Type {
 	def join(that: Type) : Type
 	def meet(that: Type) : Type
