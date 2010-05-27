@@ -103,7 +103,7 @@ object || {
 		}
 }
 
-object << {
+object >> {
 	def unapply(e: Expression) =
 		e match {
 			case Sequence(l,r) => Some((l,r))
@@ -111,7 +111,7 @@ object << {
 		}
 }
 
-object >> {
+object << {
 	def unapply(e: Expression) =
 		e match {
 			case Prune(l,r) => Some((l,r))
