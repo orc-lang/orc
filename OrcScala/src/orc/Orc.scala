@@ -334,18 +334,24 @@ abstract class Orc extends OrcAPI {
 				node match {
 				case Stop() => halt
 				case (a: Argument) => resolve(a).foreach(publish(_))
-				case Call(target, args, typeArgs) => {
+				case (thisCall@ Call(target, args, typeArgs)) => {
 					resolve(target).foreach({
 						case Closure(arity, body, newcontext) => {
-							if (arity == args.size) {
-								/* Caution: The ordering of these statements is very important; do not permute them. */
-								val frame = new FunctionFrame(node, env)
-								this.env = newcontext
-								this.push(frame)
-								for (a <- args) { bind(lookup(a)) }
-								schedule(this.move(body))				  					
+							if (arity != args.size) halt /* arity mismatch */
+							
+							/*
+							 * Tail Call Optimisation: push a new FunctionFrame 
+							 * only if the call is not a tail call.
+							 *  
+							 * Caution: The ordering of these statements is very important;
+							 *          do not permute them. 
+							 */
+							if(!thisCall.isTailCall) {
+								this.push(new FunctionFrame(node, env))
 							}
-							else halt /* arity mismatch */
+							this.env = newcontext
+							for (a <- args) { bind(lookup(a)) }
+							schedule(this.move(body))				  					
 						}
 						case (s: Site) => {
 							val vs = args.partialMap(resolve)

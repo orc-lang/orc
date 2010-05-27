@@ -24,7 +24,9 @@ case object Signal extends Value
 	// Abstract syntax: expressions, definitions, arguments
 
 case class Stop extends Expression
-case class Call(target: Argument, args: List[Argument], typeArgs: List[Type]) extends Expression
+case class Call(target: Argument, args: List[Argument], typeArgs: List[Type]) extends Expression {
+	var isTailCall = false
+}
 case class Parallel(left: Expression, right: Expression) extends Expression
 case class Sequence(left: Expression, right: Expression) extends Expression
 case class Prune(left: Expression, right: Expression) extends Expression
@@ -81,6 +83,7 @@ abstract class Expression extends orc.AST with hasFreeVars {
 			def f(x: hasFreeVars) = shift(x.freevars, defs.length)
 			f(body) ++ defs.flatMap(f)
 			}
+		case HasType(body,_) => body.freevars
 		}
 	}
 	
