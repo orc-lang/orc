@@ -72,7 +72,7 @@ public class PrintWriterCompileLogger implements CompileLogger {
 			outWriter.println(location.toString() + ": " + message);
 			outWriter.println(location.longString());
 		} else {
-			outWriter.println("<undefined position>: " + message);
+			outWriter.println("<undefined argPosition>: " + message);
 		}
 	}
 
