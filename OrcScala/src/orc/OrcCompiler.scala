@@ -19,7 +19,8 @@ import scala.util.parsing.input.Reader
 import scala.util.parsing.input.StreamReader
 
 import orc.error.compiletime.CompilationException
-import orc.error.compiletime.CompileMessageRecorder.Severity
+import orc.error.compiletime.CompileLogger
+import orc.error.compiletime.CompileLogger.Severity
 
 /**
  * 
@@ -32,19 +33,21 @@ class OrcCompiler extends OrcCompilerAPI {
 		
 	def compile(options: OrcOptions, source: Reader[Char]): orc.oil.Expression = {
 			try {
-				//msgRecorder.beginProcessing(options.filename)
+				compileLogger.beginProcessing(options.filename)
 				val extendedAst = OrcParser.parse(options, source).get
 				val oilAst = translator.translate(options, extendedAst)
 				val refinedAst = refineOil(oilAst)
 				refinedAst
 			} catch {case e: CompilationException =>
-				//msgRecorder.recordMessage(Severity.FATAL, 0, e.getMessageOnly(), e.getSourceLocation(), null, e)
+				compileLogger.recordMessage(Severity.FATAL, 0, e.getMessageOnly(), e.getSourceLocation(), null, e)
 				null
 			} finally {
-				//msgRecorder.endProcessing(options.filename)
+				compileLogger.endProcessing(options.filename)
 			}
 	}
 
 	def compile(options: OrcOptions, source: java.io.Reader): orc.oil.Expression = compile(options, StreamReader(source))
+
+	def compileLogger: CompileLogger = null
 
 }

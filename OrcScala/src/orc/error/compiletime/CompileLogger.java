@@ -1,5 +1,5 @@
 //
-// CompileMessageRecorder.java -- Java interface CompileMessageRecorder
+// CompileLogger.java -- Java interface CompileLogger
 // Project OrcJava
 //
 // $Id$
@@ -24,7 +24,7 @@ import orc.error.SourceLocation;
  * 
  * @author jthywiss
  */
-public interface CompileMessageRecorder {
+public interface CompileLogger {
 	public enum Severity {
 		/**
 		 * Severity of this message is not known.
