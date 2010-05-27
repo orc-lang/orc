@@ -15,6 +15,12 @@
 
 package orc.oil
 
+
+abstract class Value
+abstract class Site extends Value
+case class Literal(value: Any) extends Value
+case object Signal extends Value
+
 	// Abstract syntax: expressions, definitions, arguments
 
 case class Stop extends Expression
@@ -22,7 +28,7 @@ case class Call(target: Argument, args: List[Argument], typeArgs: List[Type]) ex
 case class Parallel(left: Expression, right: Expression) extends Expression
 case class Sequence(left: Expression, right: Expression) extends Expression
 case class Prune(left: Expression, right: Expression) extends Expression
-case class Cascade(left: Expression, right: Expression) extends Expression
+case class Otherwise(left: Expression, right: Expression) extends Expression
 case class DeclareDefs(defs : List[Def], body: Expression) extends Expression
 case class HasType(body: Expression, expectedType: Type) extends Expression
 
@@ -30,13 +36,13 @@ abstract class Argument extends Expression
 case class Constant(value: Value) extends Argument
 case class Variable(index: Int) extends Argument
 
-abstract class Type
+abstract class Type extends orc.AST
 case class Top extends Type
 case class Bot extends Type
 case class ArrowType(typeFormalArity: Int, argTypes: List[Type], returnType: Type) extends Type
 case class TypeVar(index: Int) extends Type
 
-case class Def(typeFormalArity: Int, arity: Int, body: Expression, argTypes : List[Type], returnType : Type) extends hasFreeVars {
+case class Def(typeFormalArity: Int, arity: Int, body: Expression, argTypes : List[Type], returnType : Type) extends orc.AST with hasFreeVars {
 	/* Get the free vars of the body, then bind the arguments */
 	lazy val freevars: Set[Int] = shift(body.freevars, arity)
 }
@@ -53,6 +59,39 @@ trait hasFreeVars {
 }
 
 
+
+abstract class Expression extends orc.AST with hasFreeVars {
+
+	/* 
+	 * Find the set of free vars for any given expression.
+	 * Inefficient, but very easy to read, and this is only computed once per node. 
+	 */
+	lazy val freevars: Set[Int] = {
+		this match {
+		case Stop() => Set.empty
+		case Constant(_) => Set.empty
+		case Variable(i) => Set(i)
+		case Call(target, args, typeArgs) => target.freevars ++ args.flatMap(_.freevars)  
+		case f || g => f.freevars ++ g.freevars
+		case f >> g => f.freevars ++ shift(g.freevars, 1)
+		case f << g => shift(f.freevars, 1) ++ g.freevars
+		case f ow g => f.freevars ++ g.freevars
+		case DeclareDefs(defs, body) => {
+			/* Get the free vars, then bind the definition names */
+			def f(x: hasFreeVars) = shift(x.freevars, defs.length)
+			f(body) ++ defs.flatMap(f)
+			}
+		}
+	}
+	
+	// Infix combinator constructors
+	def ||(g: Expression) = Parallel(this,g)
+	def >>(g: Expression) = Sequence(this,g)
+	def <<(g: Expression) =    Prune(this,g)
+	def ow(g: Expression) =  Otherwise(this,g)
+
+	
+}
 
 // Infix combinator extractors
 object || {
@@ -83,50 +122,7 @@ object >> {
 object ow {
 	def unapply(e: Expression) =
 		e match {
-			case Cascade(l,r) => Some((l,r))
+			case Otherwise(l,r) => Some((l,r))
 			case _ => None
 		}
 }
-
-abstract class Expression extends hasFreeVars {
-	
-	// Infix combinator constructors
-	def ||(g: Expression) = Parallel(this,g)
-	def >>(g: Expression) = Sequence(this,g)
-	def <<(g: Expression) =    Prune(this,g)
-	def ow(g: Expression) =  Cascade(this,g)
-
-	/* 
-	 * Find the set of free vars for any given expression.
-	 * Inefficient, but very easy to read, and this is only computed once per node. 
-	 */
-	lazy val freevars: Set[Int] = {
-		this match {
-		case Stop() => Set.empty
-		case Constant(_) => Set.empty
-		case Variable(i) => Set(i)
-		case Call(target, args, typeArgs) => target.freevars ++ args.flatMap(_.freevars)  
-		case f || g => f.freevars ++ g.freevars
-		case f >> g => f.freevars ++ shift(g.freevars, 1)
-		case f << g => shift(f.freevars, 1) ++ g.freevars
-		case f ow g => f.freevars ++ g.freevars
-		case DeclareDefs(defs, body) => {
-			/* Get the free vars, then bind the definition names */
-			def f(x: hasFreeVars) = shift(x.freevars, defs.length)
-			f(body) ++ defs.flatMap(f)
-			}
-		}
-	}
-
-	
-}
-
-
-
-abstract class Value
-abstract class Site extends Value
-case class Literal(value: Int) extends Value
-case object Signal extends Value
-
-
-// End of Oil

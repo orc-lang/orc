@@ -13,7 +13,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc
+package orc {
 
 abstract trait OrcCompilerAPI {
 	import orc.error.compiletime.CompileMessageRecorder
@@ -25,9 +25,9 @@ abstract trait OrcCompilerAPI {
 	def refineOil(oilAstRoot: orc.oil.Expression): orc.oil.Expression = oilAstRoot
 	
 //	def progress: ProgressListener
-	def msgRecorder: CompileMessageRecorder
-	def openInclude(includeFileName: String, relativeToFileName: String): java.io.Reader 
-	def loadClass(className: String): Class[_]
+//	def msgRecorder: CompileMessageRecorder
+//	def openInclude(includeFileName: String, relativeToFileName: String): java.io.Reader 
+//	def loadClass(className: String): Class[_]
 }
 
 trait TokenAPI {
@@ -61,5 +61,7 @@ trait OrcAPI {
 	def schedule(t: Token) { schedule(List(t)) }
 	def schedule(t: Token, u: Token) { schedule(List(t,u)) }
 	
-	def loadClass(className: String): Class[_]
+//	def loadClass(className: String): Class[_]
+}
+
 }

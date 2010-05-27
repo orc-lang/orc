@@ -328,7 +328,7 @@ abstract class Orc extends OrcAPI {
 			case _ => {  }
 			}
 		}
-	
+		
 		def run {
 			if (state == Live)
 				node match {
@@ -372,7 +372,7 @@ abstract class Orc extends OrcAPI {
 							  r.join(groupcell).move(right) )
 				}
 	
-				case Cascade(left, right) => {
+				case Otherwise(left, right) => {
 					val (l,r) = fork
 					val region = Region(group, r)
 					schedule(l.join(region).move(left))

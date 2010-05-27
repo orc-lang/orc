@@ -40,7 +40,7 @@ object TypeChecker {
 			case Parallel(left, right) => typeSynth(left, context, typeContext) join typeSynth(right, context, typeContext)   
 			case Sequence(left, right) => typeSynth(right, typeSynth(left, context, typeContext)::context, typeContext)
 			case Prune(left, right) => typeSynth(left, typeSynth(right, context, typeContext)::context, typeContext)
-			case Cascade(left, right) => typeSynth(left, context, typeContext) join typeSynth(right, context, typeContext)
+			case Otherwise(left, right) => typeSynth(left, context, typeContext) join typeSynth(right, context, typeContext)
 			case DeclareDefs(defs, body) => {
 				val defTypes = for (d <- defs) yield ArrowType(d.typeFormalArity, d.argTypes, d.returnType)
 				for (d <- defs) typeCheckDef(d, defTypes.reverse:::context, typeContext)
@@ -62,7 +62,7 @@ object TypeChecker {
 			case Parallel(left, right) => typeCheck(left, checkType, context, typeContext) ; typeCheck(right, checkType, context, typeContext)
 			case Sequence(left, right) => typeCheck(right, checkType, typeSynth(left, context, typeContext)::context, typeContext)
 			case Prune(left, right) => typeCheck(left, checkType, typeSynth(right, context, typeContext)::context, typeContext)
-			case Cascade(left, right) => typeCheck(left, checkType, context, typeContext) ; typeCheck(right, checkType, context, typeContext)
+			case Otherwise(left, right) => typeCheck(left, checkType, context, typeContext) ; typeCheck(right, checkType, context, typeContext)
 			case DeclareDefs(defs, body) => {
 				val defTypes = for (d <- defs) yield ArrowType(d.typeFormalArity, d.argTypes, d.returnType)
 				for (d <- defs) typeCheckDef(d, defTypes.reverse:::context, typeContext)

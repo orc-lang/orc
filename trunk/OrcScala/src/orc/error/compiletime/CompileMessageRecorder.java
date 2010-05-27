@@ -15,7 +15,7 @@ package orc.error.compiletime;
 
 import java.io.File;
 
-import orc.ast.extended.ASTNode;
+//import orc.ast.extended.ASTNode;
 import orc.error.SourceLocation;
 
 /**

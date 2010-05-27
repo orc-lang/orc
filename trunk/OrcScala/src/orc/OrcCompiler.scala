@@ -28,18 +28,20 @@ import orc.error.compiletime.CompileMessageRecorder.Severity
  */
 class OrcCompiler extends OrcCompilerAPI {
 
+	val translator = new orc.translation.Translator
+		
 	def compile(options: OrcOptions, source: Reader[Char]): orc.oil.Expression = {
 			try {
-				msgRecorder.beginProcessing(options.filename)
+				//msgRecorder.beginProcessing(options.filename)
 				val extendedAst = OrcParser.parse(options, source).get
-				val oilAst = translateToOil(options, extendedAst)
+				val oilAst = translator.translate(options, extendedAst)
 				val refinedAst = refineOil(oilAst)
 				refinedAst
 			} catch {case e: CompilationException =>
-				msgRecorder.recordMessage(Severity.FATAL, 0, e.getMessageOnly(), e.getSourceLocation(), null, e)
+				//msgRecorder.recordMessage(Severity.FATAL, 0, e.getMessageOnly(), e.getSourceLocation(), null, e)
 				null
 			} finally {
-				msgRecorder.endProcessing(options.filename)
+				//msgRecorder.endProcessing(options.filename)
 			}
 	}
 
