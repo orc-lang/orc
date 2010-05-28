@@ -42,7 +42,7 @@ class OrcCompiler extends OrcCompilerAPI {
 
 	val translator = new orc.translation.Translator
 		
-	def compile(options: OrcOptions, source: Reader[Char]): orc.oil.Expression = {
+	def apply(source: Reader[Char], options: OrcOptions): orc.oil.Expression = {
 			try {
 				compileLogger.beginProcessing(options.filename)
 				val extendedAst = OrcParser.parse(options, source) match {
@@ -60,7 +60,7 @@ class OrcCompiler extends OrcCompilerAPI {
 			}
 	}
 
-	def compile(options: OrcOptions, source: java.io.Reader): orc.oil.Expression = compile(options, StreamReader(source))
+	def apply(source: java.io.Reader, options: OrcOptions): orc.oil.Expression = apply(StreamReader(source), options)
 
 	val compileLogger: CompileLogger = new PrintWriterCompileLogger(new PrintWriter(System.err, true))
 

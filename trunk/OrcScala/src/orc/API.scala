@@ -19,8 +19,8 @@ abstract trait OrcCompilerAPI {
 	import orc.error.compiletime.CompileLogger
 	import scala.util.parsing.input.Reader
 
-	def compile(options: OrcOptions, source: Reader[Char]): orc.oil.Expression 
-	def compile(options: OrcOptions, source: java.io.Reader): orc.oil.Expression
+	def apply(source: Reader[Char], options: OrcOptions): orc.oil.Expression 
+	def apply(source: java.io.Reader, options: OrcOptions): orc.oil.Expression
 	
 	def refineOil(oilAstRoot: orc.oil.Expression): orc.oil.Expression = oilAstRoot
 	

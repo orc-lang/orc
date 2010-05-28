@@ -50,7 +50,7 @@ object Experiment {
   val parseTest = "5 >> 3 | (7 | 8) >x> (x | x)"
       		
   def main(args: Array[String]) {
-	  print((new OrcCompiler()).compile(ExperimentOptions, new StringReader(parseTest)))
+	  print((new OrcCompiler())(new StringReader(parseTest), ExperimentOptions))
       //orc.run(orcTest)
   }
   
