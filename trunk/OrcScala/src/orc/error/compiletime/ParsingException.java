@@ -13,6 +13,8 @@
 
 package orc.error.compiletime;
 
+import scala.util.parsing.input.Position;
+
 /**
  * Problem parsing the text of an Orc program. Mostly this
  * is a wrapper around the exceptions thrown by whatever
@@ -25,7 +27,13 @@ public class ParsingException extends CompilationException {
 		super(message, cause);
 	}
 
+	public ParsingException(final String message, Position newPosition) {
+		super(message);
+		setPos(newPosition);
+	}
+
 	public ParsingException(final String message) {
 		super(message);
 	}
+
 }
