@@ -1,6 +1,6 @@
 //
 // MultiTypeException.java -- Java class MultiTypeException
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

@@ -1,10 +1,10 @@
 //
 // OrcParserTest.java -- Java class OrcParserTest
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -14,7 +14,6 @@
 package orc.test;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;

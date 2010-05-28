@@ -1,6 +1,6 @@
 //
 // PrintWriterCompileLogger.java -- Java class PrintWriterCompileLogger
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

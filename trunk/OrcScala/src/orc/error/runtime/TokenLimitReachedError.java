@@ -1,6 +1,6 @@
 //
 // TokenLimitReachedError.java -- Java class TokenLimitReachedError
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //
