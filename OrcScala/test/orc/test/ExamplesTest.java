@@ -1,10 +1,10 @@
 //
 // ExamplesTest.java -- Java class ExamplesTest
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -14,11 +14,9 @@
 package orc.test;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -28,7 +26,6 @@ import java.util.concurrent.TimeoutException;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import orc.Orc;
 import orc.OrcCompiler;
 import orc.OrcEngine;
 import orc.error.compiletime.CompilationException;
