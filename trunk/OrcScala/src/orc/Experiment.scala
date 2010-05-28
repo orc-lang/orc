@@ -3,11 +3,12 @@ package orc
 import java.io.StringReader
 import orc.script.OrcBindings
 import oil._
+import orc.sites.Site
 
 class ExperimentalOrc extends Orc {
 	def emit(v: Value) { print("Published: " + v + "\n") }
 	def halted { print("Done. \n") }
-	def invoke(t: this.Token, s: Site, vs: List[Value]) { t.publish(Signal) }
+	def invoke(t: this.Token, s: Site, vs: List[Value]) { s.call(vs,t) }
 	def schedule(ts: List[Token]) { for (t <- ts) t.run }
 }
 

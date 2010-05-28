@@ -17,16 +17,12 @@ package orc.oil
 
 
 abstract class Value
-abstract class Site extends Value
 case class Literal(value: Any) extends Value
-case object Signal extends Value
 
 	// Abstract syntax: expressions, definitions, arguments
 
 case class Stop extends Expression
-case class Call(target: Argument, args: List[Argument], typeArgs: List[Type]) extends Expression {
-	var isTailCall = false
-}
+case class Call(target: Argument, args: List[Argument], typeArgs: List[Type]) extends Expression
 case class Parallel(left: Expression, right: Expression) extends Expression
 case class Sequence(left: Expression, right: Expression) extends Expression
 case class Prune(left: Expression, right: Expression) extends Expression

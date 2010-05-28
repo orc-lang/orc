@@ -44,6 +44,7 @@ trait TokenAPI {
 trait OrcAPI {
 	
 	import oil._
+	import orc.sites.Site
 	
 	type Token <: TokenAPI
 	
