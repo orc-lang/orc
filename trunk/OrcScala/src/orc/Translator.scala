@@ -500,14 +500,60 @@ class Translator {
 		// don't forget to do topological sort as a post-pass here 
 	}
 
+	/*
+     * Removes unused definitions from the OIL AST.
+     */
+	def remUnusedDefs(e: Expression): Expression = {
+		e match {
+			case Parallel(left, right) => Parallel(remUnusedDefs(left), remUnusedDefs(right))
+			case Sequence(left, x, right) => Sequence(remUnusedDefs(left), x, remUnusedDefs(right))
+			case Prune(left, x, right) => Prune(remUnusedDefs(left), x, remUnusedDefs(right))
+			case Otherwise(left, right) => Otherwise(remUnusedDefs(left), remUnusedDefs(right))
+			case DeclareDefs(defs, body) => {
+				val newbody = remUnusedDefs(body)
+				// If none of the defs are bound in the body,
+	        	// just return the body.
+	        	if(body.freevars -- defs.map(_.name) isEmpty) {
+	        		newbody
+	        	} else {
+	        		def f(d: Def): Def = {
+	        			d match { 
+	        				case Def(name,args,body,t,a,r) => Def(name,args,remUnusedDefs(body),t,a,r)
+	        			}
+	        		}
+	        		val newdefs = defs.map(f)
+	        		DeclareDefs(newdefs, newbody)
+	        	}
+			}
+			case HasType(body, typ) => HasType(remUnusedDefs(body), typ)
+			case _ => e
+		}
+	}
 	
-	
-	abstract class Expression extends AST {
+	trait hasFreeVars {
+	  val freevars: Set[EVar]
+	}
+
+	abstract class Expression extends AST with hasFreeVars {
 		// Infix combinator constructors
 		def ||(g: Expression) = Parallel(this,g)
 		def >>(g: Expression) = Sequence(this,generateEVar,g)
 		def <<(g: Expression) = Prune(this,generateEVar,g)
 		def semicolon(g: Expression) = Otherwise(this,g)
+		
+		lazy val freevars:Set[EVar] = {
+			this match {
+			case v:EVar => Set(v)
+			case Call(target,args,_) => target.freevars ++ args.flatMap(_.freevars)
+			case Parallel(left,right) => left.freevars ++ right.freevars
+			case Sequence(left,x,right) => left.freevars ++ (right.freevars - x)
+			case Prune(left,x,right) => left.freevars ++ (right.freevars - x)
+			case Otherwise(left,right) => left.freevars ++ right.freevars
+			case DeclareDefs(defs,body) => (body.freevars ++ defs.flatMap(_.freevars)) -- defs.map(_.name)
+			case HasType(body,typ) => body.freevars
+			case _ => Set.empty
+			}
+		}
 	}
 		case class Stop extends Expression
 		case class Call(target: Argument, args: List[Argument], typeargs: Option[List[Type]]) extends Expression
@@ -521,7 +567,10 @@ class Translator {
 			class EVar extends Argument
 			case class Constant(value: Any) extends Argument
 	
-	case class Def(f: EVar, args: List[EVar], body: Expression, typeformals: List[TVar], argtypes: List[Type], returntype: Option[Type]) extends AST
+	case class Def(f: EVar, args: List[EVar], body: Expression, typeformals: List[TVar], argtypes: List[Type], returntype: Option[Type]) extends AST with hasFreeVars {
+			lazy val freevars: Set[EVar] = body.freevars -- args
+			def name = f
+		}
 	
 	abstract class Type extends AST
 		case class TVar extends Type

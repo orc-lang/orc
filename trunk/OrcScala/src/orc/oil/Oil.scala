@@ -46,8 +46,6 @@ case class Def(typeFormalArity: Int, arity: Int, body: Expression, argTypes : Li
 }
 
 
-
-
 trait hasFreeVars {
 	val freevars: Set[Int]
 
