@@ -19,6 +19,7 @@ abstract class Orc extends OrcAPI {
 
 	import orc.oil._
 	import PartialMapExtension._
+	import orc.sites.Site
 	
 	var exec: Option[Execution] = Some(new Execution())
 	
@@ -282,6 +283,10 @@ abstract class Orc extends OrcAPI {
 			env = b::env
 			stack match {
 				case BindingFrame(n)::fs => { stack = (new BindingFrame(n+1))::fs }
+				
+				/* Tail call optimization (part 1 of 2) */
+				case FunctionFrame(_,_)::fs => { /* Do not push a binding frame over a tail call.*/ }
+				
 				case fs => { stack = BindingFrame(1)::fs }
 			}
 			this
@@ -334,23 +339,39 @@ abstract class Orc extends OrcAPI {
 				node match {
 				case Stop() => halt
 				case (a: Argument) => resolve(a).foreach(publish(_))
-				case (thisCall@ Call(target, args, typeArgs)) => {
+				case (Call(target, args, typeArgs)) => {
 					resolve(target).foreach({
 						case Closure(arity, body, newcontext) => {
-							if (arity != args.size) halt /* arity mismatch */
+							if (arity != args.size) halt /* Arity mismatch. */
 							
-							/*
-							 * Tail Call Optimisation: push a new FunctionFrame 
-							 * only if the call is not a tail call.
-							 *  
+							  
+							/* 
+							 *          
+							 * 1) Push a function frame (if this is not a tail call),
+							 *    referring to the current environment
+							 * 2) Change the current environment to the closure's
+							 *    saved environment.
+							 * 3) Add bindings for the arguments to the new current
+							 *    environment
+							 * 
 							 * Caution: The ordering of these statements is very important;
-							 *          do not permute them. 
+							 *          do not permute them.    
 							 */
-							if(!thisCall.isTailCall) {
-								this.push(new FunctionFrame(node, env))
+							
+							/* Tail call optimization (part 2 of 2) */
+							stack match {
+								 /*
+								  * Push a new FunctionFrame 
+								  * only if the call is not a tail call.
+								  */
+								case FunctionFrame(_,_)::fs => {  }
+								case _ => push(new FunctionFrame(node, env))
 							}
+							
 							this.env = newcontext
+							
 							for (a <- args) { bind(lookup(a)) }
+							
 							schedule(this.move(body))				  					
 						}
 						case (s: Site) => {

@@ -27,7 +27,10 @@ def parse(s:String): Expression = {
         val tokens = new lexical.Scanner(s)
         val parser = phrase(parseExpression)
         val result = parser(tokens)
-        result.get
+        result match {
+        	case Success(result,_) => result
+        	case Failure(msg,reader) => print(msg + "\n" + reader.pos.longString + "\n") ; Stop()
+        }
     }
 
 
