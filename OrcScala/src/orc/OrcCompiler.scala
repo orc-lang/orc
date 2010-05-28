@@ -23,6 +23,7 @@ import scala.util.parsing.input.StreamReader
 import orc.error.compiletime.CompilationException
 import orc.error.compiletime.CompileLogger
 import orc.error.compiletime.CompileLogger.Severity
+import orc.error.compiletime.ParsingException
 import orc.error.compiletime.PrintWriterCompileLogger
 
 
@@ -44,12 +45,15 @@ class OrcCompiler extends OrcCompilerAPI {
 	def compile(options: OrcOptions, source: Reader[Char]): orc.oil.Expression = {
 			try {
 				compileLogger.beginProcessing(options.filename)
-				val extendedAst = OrcParser.parse(options, source).get
+				val extendedAst = OrcParser.parse(options, source) match {
+					case OrcParser.Success(result, _) => result 
+					case OrcParser.NoSuccess(msg, in) => throw new ParsingException(msg, in.pos) ; null
+				}
 				val oilAst = translator.translate(options, extendedAst)
 				val refinedAst = refineOil(oilAst)
 				refinedAst
 			} catch {case e: CompilationException =>
-				compileLogger.recordMessage(Severity.FATAL, 0, e.getMessageOnly(), e.pos, null, e)
+				compileLogger.recordMessage(Severity.FATAL, 0, e.getMessageOnly, e.pos, null, e)
 				null
 			} finally {
 				compileLogger.endProcessing(options.filename)

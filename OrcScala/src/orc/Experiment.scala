@@ -1,5 +1,7 @@
 package orc
 
+import java.io.StringReader
+import orc.script.OrcBindings
 import oil._
 
 class ExperimentalOrc extends Orc {
@@ -7,6 +9,27 @@ class ExperimentalOrc extends Orc {
 	def halted { print("Done. \n") }
 	def invoke(t: this.Token, s: Site, vs: List[Value]) { t.publish(Signal) }
 	def schedule(ts: List[Token]) { for (t <- ts) t.run }
+}
+
+object ExperimentOptions extends OrcOptions {
+	var filename = ""
+	var debugLevel = 0
+	var shortErrors = false
+
+	// Compile options
+	var noPrelude = false
+	var includePath = List[String](".")
+	var exceptionsOn = false
+	var typecheck = false
+	var quietChecking = false
+
+	// Execution options
+	var maxPublications = -1
+	var tokenPoolSize = -1
+	var stackSize = -1
+	var classPath = List[String]()
+	def hasCapability(capName: String) = false
+	def setCapability(capName: String, newVal: Boolean) { }
 }
 
 object Experiment {
@@ -27,7 +50,7 @@ object Experiment {
   val parseTest = "5 >> 3 | (7 | 8) >x> (x | x)"
       		
   def main(args: Array[String]) {
-	  print(OrcParser.parse(parseTest))
+	  print((new OrcCompiler()).compile(ExperimentOptions, new StringReader(parseTest)))
       //orc.run(orcTest)
   }
   
