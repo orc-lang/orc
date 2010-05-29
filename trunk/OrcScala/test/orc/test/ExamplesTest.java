@@ -89,7 +89,7 @@ public class ExamplesTest {
 
 	public static void runOrcProgram(final File file, final LinkedList<String> expecteds) throws InterruptedException, Throwable, CmdLineException, CompilationException, IOException, TimeoutException {
 
-		final orc.oil.Expression expr = (new OrcCompiler()).compile(null, new FileReader(file));
+		final orc.oil.Expression expr = (new OrcCompiler()).apply(new FileReader(file), null);
 
 		if (expr == null) {
 			throw new CompilationException("Compilation to OIL failed");
