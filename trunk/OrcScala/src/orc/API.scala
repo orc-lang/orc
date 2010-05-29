@@ -13,56 +13,54 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc {
+package orc
 
 abstract trait OrcCompilerAPI {
-	import orc.error.compiletime.CompileLogger
-	import scala.util.parsing.input.Reader
+  import orc.error.compiletime.CompileLogger
+  import scala.util.parsing.input.Reader
 
-	def apply(source: Reader[Char], options: OrcOptions): orc.oil.Expression 
-	def apply(source: java.io.Reader, options: OrcOptions): orc.oil.Expression
-	
-	def refineOil(oilAstRoot: orc.oil.Expression): orc.oil.Expression = oilAstRoot
-	
-//	def progress: ProgressListener
-	def compileLogger: CompileLogger
-//	def openInclude(includeFileName: String, relativeToFileName: String): java.io.Reader 
-//	def loadClass(className: String): Class[_]
+  def apply(source: Reader[Char], options: OrcOptions): orc.oil.Expression 
+  def apply(source: java.io.Reader, options: OrcOptions): orc.oil.Expression
+
+  def refineOil(oilAstRoot: orc.oil.Expression): orc.oil.Expression = oilAstRoot
+
+//  def progress: ProgressListener
+  def compileLogger: CompileLogger
+//  def openInclude(includeFileName: String, relativeToFileName: String): java.io.Reader 
+//  def loadClass(className: String): Class[_]
 }
 
 trait TokenAPI {
-	
-	import oil.Value
-	
-	def publish(v : Value): Unit
-	def halt: Unit
-	
-	def kill: Unit
-	def run: Unit
+
+  import oil.Value
+
+  def publish(v : Value): Unit
+  def halt: Unit
+
+  def kill: Unit
+  def run: Unit
 }
 
 trait OrcAPI {
-	
-	import oil._
-	import orc.sites.Site
-	
-	type Token <: TokenAPI
-	
-//	def start(e: Expression) : Unit
-//	def pause
-//	def resume
-//	def stop
-	
-	def emit(v: Value): Unit
-	def halted: Unit
-	def invoke(t: Token, s: Site, vs: List[Value]): Unit
-	def schedule(ts: List[Token]): Unit
-	
-	// Schedule function is overloaded for convenience
-	def schedule(t: Token) { schedule(List(t)) }
-	def schedule(t: Token, u: Token) { schedule(List(t,u)) }
-	
-//	def loadClass(className: String): Class[_]
-}
 
+  import oil._
+  import orc.sites.Site
+
+  type Token <: TokenAPI
+
+//  def start(e: Expression) : Unit
+//  def pause
+//  def resume
+//  def stop
+
+  def emit(v: Value): Unit
+  def halted: Unit
+  def invoke(t: Token, s: Site, vs: List[Value]): Unit
+  def schedule(ts: List[Token]): Unit
+
+  // Schedule function is overloaded for convenience
+  def schedule(t: Token) { schedule(List(t)) }
+  def schedule(t: Token, u: Token) { schedule(List(t,u)) }
+
+//  def loadClass(className: String): Class[_]
 }
