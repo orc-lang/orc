@@ -26,7 +26,6 @@ import orc.error.compiletime.CompileLogger.Severity
 import orc.error.compiletime.ParsingException
 import orc.error.compiletime.PrintWriterCompileLogger
 
-
 /**
  * An instance of OrcCompiler is a particular Orc compiler configuration, 
  * which is a particular Orc compiler implementation, in a JVM instance,
