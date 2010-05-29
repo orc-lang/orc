@@ -12,7 +12,9 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.types
+
 import orc.error.compiletime.typing._
 
 class SubtypeFailureException(t1: Type, t2: Type) extends Throwable

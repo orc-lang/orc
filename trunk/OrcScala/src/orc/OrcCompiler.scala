@@ -26,6 +26,17 @@ import orc.error.compiletime.CompileLogger.Severity
 import orc.error.compiletime.ParsingException
 import orc.error.compiletime.PrintWriterCompileLogger
 
+//type CompilerPhase[O, T] = (O) => (T) => T
+
+//class CompilerDriver[S, T, O](val parser: (O) => (S) => T, val phaseList: Traversable[(O) => (T) => T]) extends ((O) => (S) => T) {
+//	def apply(options: O)(source: S): T = {
+//		val parsedSource: T = parser.apply(options)(source)
+//		val optionApplied: Traversable[(T) => T] = phaseList map (_:(O) => ((T) => T)).apply(options)
+//		val composedPhases: (T) => T = optionApplied reduceLeft ((f, g) => g compose f)
+//		composedPhases.apply(parsedSource)
+//	}
+//}
+
 /**
  * An instance of OrcCompiler is a particular Orc compiler configuration, 
  * which is a particular Orc compiler implementation, in a JVM instance,
