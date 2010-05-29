@@ -50,28 +50,28 @@ import orc.error.compiletime.PrintWriterCompileLogger
  */
 class OrcCompiler extends OrcCompilerAPI {
 
-	val translator = new orc.translation.Translator
-		
-	def apply(source: Reader[Char], options: OrcOptions): orc.oil.Expression = {
-			try {
-				compileLogger.beginProcessing(options.filename)
-				val extendedAst = OrcParser.parse(options, source) match {
-					case OrcParser.Success(result, _) => result 
-					case OrcParser.NoSuccess(msg, in) => throw new ParsingException(msg, in.pos) ; null
-				}
-				val oilAst = translator.translate(options, extendedAst)
-				val refinedAst = refineOil(oilAst)
-				refinedAst
-			} catch {case e: CompilationException =>
-				compileLogger.recordMessage(Severity.FATAL, 0, e.getMessageOnly, e.pos, null, e)
-				null
-			} finally {
-				compileLogger.endProcessing(options.filename)
-			}
-	}
+  val translator = new orc.translation.Translator
 
-	def apply(source: java.io.Reader, options: OrcOptions): orc.oil.Expression = apply(StreamReader(source), options)
+  def apply(source: Reader[Char], options: OrcOptions): orc.oil.Expression = {
+      try {
+        compileLogger.beginProcessing(options.filename)
+        val extendedAst = OrcParser.parse(options, source) match {
+          case OrcParser.Success(result, _) => result 
+          case OrcParser.NoSuccess(msg, in) => throw new ParsingException(msg, in.pos) ; null
+        }
+        val oilAst = translator.translate(options, extendedAst)
+        val refinedAst = refineOil(oilAst)
+        refinedAst
+      } catch {case e: CompilationException =>
+        compileLogger.recordMessage(Severity.FATAL, 0, e.getMessageOnly, e.pos, null, e)
+        null
+      } finally {
+        compileLogger.endProcessing(options.filename)
+      }
+  }
 
-	val compileLogger: CompileLogger = new PrintWriterCompileLogger(new PrintWriter(System.err, true))
+  def apply(source: java.io.Reader, options: OrcOptions): orc.oil.Expression = apply(StreamReader(source), options)
+
+  val compileLogger: CompileLogger = new PrintWriterCompileLogger(new PrintWriter(System.err, true))
 
 }
