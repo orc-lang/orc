@@ -4,7 +4,7 @@ import orc.AST
 
 abstract class Expression extends AST
 
-case class Stop extends Expression
+case class Stop() extends Expression
 case class Constant(c: Any) extends Expression
 case class Variable(name: String) extends Expression
 case class TupleExpr(elements: List[Expression]) extends Expression
@@ -14,7 +14,7 @@ case class Call(target: Expression, gs: List[ArgumentGroup]) extends Expression
 abstract class ArgumentGroup extends AST
 case class Args(types: Option[List[Type]] = None, elements: List[Expression]) extends ArgumentGroup	 
 case class FieldAccess(field: String) extends ArgumentGroup
-case class Dereference extends ArgumentGroup
+case class Dereference() extends ArgumentGroup
 
 case class PrefixOperator(op: String, arg: Expression) extends Expression
 case class InfixOperator(left: Expression, op: String, right: Expression) extends Expression
@@ -59,7 +59,7 @@ case class Include(filename: String) extends Declaration
 
 abstract class Pattern extends AST
 
-case class Wildcard extends Pattern
+case class Wildcard() extends Pattern
 case class ConstantPattern(c: Any) extends Pattern
 case class VariablePattern(name: String) extends Pattern
 case class TuplePattern(elements: List[Pattern]) extends Pattern
@@ -73,8 +73,8 @@ case class TypedPattern(p: Pattern, t: Type) extends Pattern
 
 abstract class Type extends AST
 
-case class Top extends Type
-case class Bot extends Type
+case class Top() extends Type
+case class Bot() extends Type
 case class NativeType(name: String) extends Type
 case class TypeVariable(name: String) extends Type
 case class TupleType(elements: List[Type]) extends Type

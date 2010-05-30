@@ -71,7 +71,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 		 * @see javax.script.CompiledScript#eval(javax.script.ScriptContext)
 		 */
 		@Override
-		public Object eval(ScriptContext context) throws ScriptException {
+		public Object eval(ScriptContext ctx) throws ScriptException {
 			OrcScriptEngine.this.getExecutor().run(astRoot);
 			return null;
 		}
