@@ -28,6 +28,7 @@ object OrcParser extends StandardTokenParsers {
       result match {
         case Success(result,_) => result
         case Failure(msg,reader) => print(msg + "\n" + reader.pos.longString + "\n") ; Stop()
+        case Error(msg,reader) => print(msg + "\n" + reader.pos.longString + "\n") ; Stop()
       }
   }
 
