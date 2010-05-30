@@ -35,7 +35,7 @@ object TypeConversions {
   implicit def typelist2typelist(that : List[orc.oil.Type]) : List[Type] = that map type2type
 }
 
-case class Top extends Type {
+case class Top() extends Type {
   def join(that: Type) : Type = this
   def meet(that: Type) : Type = that
   def assertSubtype(that: Type) {
@@ -46,7 +46,7 @@ case class Top extends Type {
   }
 }
 
-case class Bot extends Type {
+case class Bot() extends Type {
   def join(that: Type) : Type = that
   def meet(that: Type) : Type = this
   def assertSubtype(that: Type) { }

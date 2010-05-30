@@ -21,7 +21,7 @@ case class Literal(value: Any) extends Value
 
 // Abstract syntax: expressions, definitions, arguments
 
-case class Stop extends Expression
+case class Stop() extends Expression
 case class Call(target: Argument, args: List[Argument], typeArgs: List[Type]) extends Expression
 case class Parallel(left: Expression, right: Expression) extends Expression
 case class Sequence(left: Expression, right: Expression) extends Expression
@@ -35,8 +35,8 @@ case class Constant(value: Value) extends Argument
 case class Variable(index: Int) extends Argument
 
 abstract class Type extends orc.AST
-case class Top extends Type
-case class Bot extends Type
+case class Top() extends Type
+case class Bot() extends Type
 case class ArrowType(typeFormalArity: Int, argTypes: List[Type], returnType: Type) extends Type
 case class TypeVar(index: Int) extends Type
 

@@ -2,7 +2,7 @@ package orc {
 package translation {
 	
 	
-class Translator {
+object Translator {
 	
 	import scala.collection.immutable._
 	

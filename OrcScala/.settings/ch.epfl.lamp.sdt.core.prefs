@@ -1,4 +1,4 @@
-#Sat May 29 13:21:52 CDT 2010
+#Sat May 29 22:56:47 CDT 2010
 Xcheck-null=false
 Xcheckinit=false
 Xdisable-assertions=false
@@ -32,4 +32,4 @@ no-specialization=false
 optimise=false
 scala.compiler.useProjectSettings=true
 target=jvm-1.5
-unchecked=false
+unchecked=true
