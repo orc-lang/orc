@@ -16,7 +16,7 @@
 package orc
 
 object TypeChecker {
-  import oil.{Type=>_,Top=>_,Bot=>_,ArrowType=>_,_}
+  import orc.oil.nameless.{Type=>_,Top=>_,Bot=>_,FunctionType=>_,_}
   import types._
   import orc.error.compiletime.typing._
   import types.TypeConversions._
@@ -41,7 +41,7 @@ object TypeChecker {
       case Prune(left, right) => typeSynth(left, typeSynth(right, context, typeContext)::context, typeContext)
       case Otherwise(left, right) => typeSynth(left, context, typeContext) join typeSynth(right, context, typeContext)
       case DeclareDefs(defs, body) => {
-        val defTypes = for (d <- defs) yield ArrowType(d.typeFormalArity, d.argTypes, d.returnType)
+        val defTypes = for (d <- defs) yield ArrowType(d.typeFormalArity, d.argTypes, d.returnType.get) //FIXME: Handle inference of return type
         for (d <- defs) typeCheckDef(d, defTypes.reverse:::context, typeContext)
         typeSynth(body, defTypes.reverse:::context, typeContext)
       }
@@ -53,7 +53,7 @@ object TypeChecker {
 
   def typeCheckDef(defn : Def, context : List[Type], typeContext: List[Type]) {
     val Def(typeFormalArity, arity, body, argTypes, returnType) = defn
-    typeCheck(body, returnType, argTypes.reverse ::: context, typeContext)
+    typeCheck(body, returnType.get, argTypes.reverse ::: context, typeContext) //FIXME: Handle inference of return type
   }
 
   def typeCheck(expr : Expression, checkType : Type, context : List[Type], typeContext: List[Type]) {
@@ -63,7 +63,7 @@ object TypeChecker {
       case Prune(left, right) => typeCheck(left, checkType, typeSynth(right, context, typeContext)::context, typeContext)
       case Otherwise(left, right) => typeCheck(left, checkType, context, typeContext) ; typeCheck(right, checkType, context, typeContext)
       case DeclareDefs(defs, body) => {
-        val defTypes = for (d <- defs) yield ArrowType(d.typeFormalArity, d.argTypes, d.returnType)
+        val defTypes = for (d <- defs) yield ArrowType(d.typeFormalArity, d.argTypes, d.returnType.get) //FIXME: Handle inference of return type
         for (d <- defs) typeCheckDef(d, defTypes.reverse:::context, typeContext)
         typeCheck(body, checkType, defTypes.reverse:::context, typeContext)
       }

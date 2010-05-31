@@ -63,7 +63,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 		 * Constructs an object of class OrcCompiledScript.
 		 *
 		 */
-		public OrcCompiledScript(orc.oil.Expression oilAstRoot) {
+		public OrcCompiledScript(orc.oil.nameless.Expression oilAstRoot) {
 			this.astRoot = oilAstRoot;
 		}
 

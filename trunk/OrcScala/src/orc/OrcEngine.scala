@@ -1,7 +1,8 @@
 package orc
 
 class OrcEngine {
-  import oil._
+  import orc.oil.Value
+  import orc.oil.nameless.Expression
   import java.lang._
   import orc.sites.Site
 
