@@ -279,6 +279,24 @@ object Translator {
 						sigMap update (name, (typeFormals2, unify(maybeArgTypes, maybeArgTypes2), unify(maybeReturnType, maybeReturnType2)))
 				}
 			}
+			
+			case ext.DefCapsule(name, formals, body, maybeReturnType) => {
+				val (newformals, maybeArgTypes) = formalsPartition(formals)
+				val newclause = (newformals, new ext.Capsule(body))
+				clausesMap.get(name) match {
+					case None => 
+						clausesMap update (name, List(newclause))
+					case Some(clauses) => 
+						clausesMap update (name, newclause::clauses)
+				}
+				sigMap.get(name) match {
+					case None => 
+						sigMap update (name, (None, maybeArgTypes, maybeReturnType))
+					case Some((typeFormals2, maybeArgTypes2, maybeReturnType2)) =>
+						sigMap update (name, (typeFormals2, unify(maybeArgTypes, maybeArgTypes2), unify(maybeReturnType, maybeReturnType2)))
+				}
+			}
+			
 			case ext.DefSig(name, typeformals, argtypes, maybeReturnType) => { 
 				sigMap.get(name) match {
 					case None => 
