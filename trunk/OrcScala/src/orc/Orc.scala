@@ -41,10 +41,8 @@ abstract class Orc extends OrcAPI {
   trait GroupMember {
     def kill: Unit
   }
-  
-  implicit def TokensAreGroupMembers(t: Token): GroupMember = (t : GroupMember)
-  
-  
+
+
   abstract class Group extends GroupMember {
   
     def publish(t: Token, v: Value): Unit
@@ -241,7 +239,7 @@ abstract class Orc extends OrcAPI {
       var env: List[Binding] = Nil,
       var group: Group, 
       var state: TokenState = Live
-  ) extends TokenAPI {	
+  ) extends TokenAPI with GroupMember {	
   
     def this(start: Expression, exec: Execution) = {
       this(node = start, group = exec)
@@ -377,7 +375,11 @@ abstract class Orc extends OrcAPI {
                 val vs = args.partialMap(resolve)
                 vs.foreach(invoke(this,s,_))
               }
-              case _ => halt /* uncallable value */
+              case _ => {
+                println("You can't call a "+target)
+                //TODO:FIXME: throw UncallableValueException
+                halt
+              }
             })
           }
     

@@ -37,22 +37,23 @@ object Experiment {
 
   val orc = new ExperimentalOrc 
 
-  val orcTest = Parallel(
-      Sequence(
-          Constant(Literal(5)), 
-          Constant(Literal(3))
-      ),
-      Sequence(
-          Parallel(Constant(Literal(7)),Constant(Literal(8))),
-          Parallel(Variable(0), Variable(0))
-      )
-  )
+//  val orcTest = Parallel(
+//      Sequence(
+//          Constant(Literal(5)), 
+//          Constant(Literal(3))
+//      ),
+//      Sequence(
+//          Parallel(Constant(Literal(7)),Constant(Literal(8))),
+//          Parallel(Variable(0), Variable(0))
+//      )
+//  )
 
-  val parseTest = "5 >> 3 | (7 | 8) >x> (x | x)"
+  val parseTest = "5 >> 3 | (7 | 8) >x> (x | x) | (if true then 1111 else 9999)"
 
     def main(args: Array[String]) {
-    print((new OrcCompiler())(new StringReader(parseTest), ExperimentOptions))
-    //orc.run(orcTest)
+    val parsedOil = (new OrcCompiler())(new StringReader(parseTest), ExperimentOptions)
+    println(parsedOil)
+    orc.run(parsedOil)
   }
 
 

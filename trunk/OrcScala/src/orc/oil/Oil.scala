@@ -30,11 +30,11 @@ case class Otherwise(left: Expression, right: Expression) extends Expression
 case class DeclareDefs(defs : List[Def], body: Expression) extends Expression
 case class HasType(body: Expression, expectedType: Type) extends Expression
 
-abstract class Argument extends Expression
+sealed abstract class Argument extends Expression
 case class Constant(value: Value) extends Argument
 case class Variable(index: Int) extends Argument
 
-abstract class Type extends orc.AST
+sealed abstract class Type extends orc.AST
 case class Top() extends Type
 case class Bot() extends Type
 case class ArrowType(typeFormalArity: Int, argTypes: List[Type], returnType: Type) extends Type
@@ -55,7 +55,7 @@ trait hasFreeVars {
 
 
 
-abstract class Expression extends orc.AST with hasFreeVars {
+sealed abstract class Expression extends orc.AST with hasFreeVars {
 
   /* 
    * Find the set of free vars for any given expression.
