@@ -383,7 +383,22 @@ object Translator {
 					combinatorPattern(combinator, r, p, l, context, typecontext)
 				}
 				case ext.Otherwise(l, r) => converter(l) semicolon converter(r)
-				//case ext.Lambda(typeformals, formals, returntype, body) => 
+				case ext.Lambda(typeformals: List[String], formals, returntype, body) => {
+//  				val newTypeContext = typecontext ++ (for (x:String <- typeformals) yield (x, generateTVar))
+//  				val newTypeFormals = typeformals map newTypeContext
+//          val (newformals, maybeArgTypes) = formalsPartition(formals)
+//  				val newReturnType = convertType(returntype.getOrElse(orc.ext.Top()), newTypeContext)
+//          val defname = generateEVar
+          val lambdaExtDef = ext.Def("", formals, body, returntype)
+          
+//          var defLambda = Def(defname, newformals, converter(body), newTypeFormals, maybeArgTypes, newReturnType)
+          val (newdefs, newcontext) = convertDefs(List(lambdaExtDef), context, typecontext)
+          val nameVar = 
+          newdefs(0) match {
+            case Def(nv, _, _, _, _, _) => nv
+          }
+          DeclareDefs(newdefs, nameVar)
+				}
 				case ext.Conditional(ifE, thenE, elseE) => {
 					 val t = generateEVar
 					 val f = generateEVar
