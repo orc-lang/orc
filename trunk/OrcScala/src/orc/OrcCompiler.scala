@@ -84,6 +84,7 @@ class OrcCompiler extends OrcCompilerAPI {
   val phases = parse >>> translate >>> typeCheck >>> refineOil
 
   def apply(source: Reader[Char], options: OrcOptions): orc.oil.Expression = {
+    compileLogger.beginProcessing(options.filename)
     try {
       phases(options)(source)
     } catch {case e: CompilationException =>

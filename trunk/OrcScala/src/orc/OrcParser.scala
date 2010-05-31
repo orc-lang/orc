@@ -21,23 +21,23 @@ import ext._
 
 object OrcParser extends StandardTokenParsers {
 
-  def parse(s:String): Expression = {
-      val tokens = new lexical.Scanner(s)
-      val parser = phrase(parseExpression)
-      val result = parser(tokens)
-      result match {
-        case Success(result,_) => result
-        case Failure(msg,reader) => print(msg + "\n" + reader.pos.longString + "\n") ; Stop()
-        case Error(msg,reader) => print(msg + "\n" + reader.pos.longString + "\n") ; Stop()
-      }
-  }
+//  def parse(s:String): Expression = {
+//      val tokens = new lexical.Scanner(s)
+//      val parser = phrase(parseExpression)
+//      val result = parser(tokens)
+//      result match {
+//        case Success(result,_) => result
+//        case Failure(msg,reader) => print(msg + "\n" + reader.pos.longString + "\n") ; Stop()
+//        case Error(msg,reader) => print(msg + "\n" + reader.pos.longString + "\n") ; Stop()
+//      }
+//  }
 
-  def parseIncludes(s:String): List[Declaration] = {
-      val tokens = new lexical.Scanner(s)
-      val parser = phrase(parseDeclaration+)
-      val result = parser(tokens)
-      result.get
-  }
+//  def parseIncludes(s:String): List[Declaration] = {
+//      val tokens = new lexical.Scanner(s)
+//      val parser = phrase(parseDeclaration+)
+//      val result = parser(tokens)
+//      result.get
+//  }
 
   def parseValue: Parser[Any] = (
       "true" ^^^ true 

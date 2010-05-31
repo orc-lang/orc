@@ -99,7 +99,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 	 */
 	@Override
 	public CompiledScript compile(final Reader script) throws ScriptException {
-		return new OrcCompiledScript(getCompiler().apply(script, null));
+		return new OrcCompiledScript(getCompiler().apply(script, (OrcBindings)getBindings(ScriptContext.ENGINE_SCOPE)));
 	}
 
 	/* (non-Javadoc)

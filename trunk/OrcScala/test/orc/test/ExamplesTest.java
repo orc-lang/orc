@@ -87,14 +87,69 @@ public class ExamplesTest {
 		return suite;
 	}
 
+    private static class ExamplesOptions implements orc.OrcOptions {
+        public String filename() { return ""; }
+  
+        public void filename_$eq(String newVal) { throw new UnsupportedOperationException(); }
+  
+        public int debugLevel() { return 0; }
+  
+        public void debugLevel_$eq(int newVal) { throw new UnsupportedOperationException(); }
+  
+        public boolean shortErrors() { return false; }
+  
+        public void shortErrors_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
+  
+        public boolean noPrelude() { return false; }
+  
+        public void noPrelude_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
+  
+        public scala.collection.immutable.List<String> includePath() { throw new UnsupportedOperationException(); }
+  
+        public void includePath_$eq(scala.collection.immutable.List<String> newVal) { throw new UnsupportedOperationException(); }
+  
+        public boolean exceptionsOn() { return false; }
+  
+        public void exceptionsOn_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
+  
+        public boolean typecheck() { return false; }
+  
+        public void typecheck_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
+  
+        public boolean quietChecking() { return false; }
+  
+        public void quietChecking_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
+  
+        public int maxPublications() { return -1; }
+  
+        public void maxPublications_$eq(int newVal) { throw new UnsupportedOperationException(); }
+  
+        public int tokenPoolSize() { return -1; }
+  
+        public void tokenPoolSize_$eq(int newVal) { throw new UnsupportedOperationException(); }
+  
+        public int stackSize() { return -1; }
+  
+        public void stackSize_$eq(int newVal) { throw new UnsupportedOperationException(); }
+  
+        public scala.collection.immutable.List<String> classPath() { throw new UnsupportedOperationException(); }
+  
+        public void classPath_$eq(scala.collection.immutable.List<String> newVal) { throw new UnsupportedOperationException(); }
+  
+        public boolean hasCapability(String capName) { throw new UnsupportedOperationException(); }
+  
+        public void setCapability(String capName, boolean newVal) { throw new UnsupportedOperationException(); }
+    }
+  	private static ExamplesOptions examplesOptions = new ExamplesOptions(); 
+ 
 	public static void runOrcProgram(final File file, final LinkedList<String> expecteds) throws InterruptedException, Throwable, CmdLineException, CompilationException, IOException, TimeoutException {
 
-		final orc.oil.Expression expr = (new OrcCompiler()).apply(new FileReader(file), null);
+		final orc.oil.Expression expr = (new OrcCompiler()).apply(new FileReader(file), examplesOptions);
 
 		if (expr == null) {
 			throw new CompilationException("Compilation to OIL failed");
 		}
-		final OrcEngine engine  = new OrcEngine();
+		final OrcEngine engine = new OrcEngine();
 
 		// run the engine with a fixed timeout
 		final FutureTask<?> future = new FutureTask<Void>(new Runnable() {
