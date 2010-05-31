@@ -50,11 +50,10 @@ object Experiment {
 
   val parseTest = "5 >> 3 | (7 | 8) >x> (x | x) | (if true then 1111 else 9999)"
 
-    def main(args: Array[String]) {
+  def main(args: Array[String]) {
     val parsedOil = (new OrcCompiler())(new StringReader(parseTest), ExperimentOptions)
     println(parsedOil)
     orc.run(parsedOil)
   }
-
 
 }
