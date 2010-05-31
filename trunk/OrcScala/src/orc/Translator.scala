@@ -28,7 +28,7 @@ object Translator {
 	
 	def callCons(head: Argument, tail: Argument) = Call(Constant("Cons"), List(head, tail), None)
 	def callIf(a: Argument) = Call(Constant(orc.lib.builtin.If), List(a), None)
-	def callNot(a : Argument) = Call(Constant("Not"), List(a), None)
+	def callNot(a : Argument) = Call(Constant(orc.lib.builtin.Not), List(a), None)
 	def callEq(a : Argument, b : Argument) = Call(Constant("Eq"), List(a,b), None)
 	def callNth(a : Argument, i : Int) = Call(a, List(Constant(i)), None)
 	def callIsCons(a : Argument) = Call(Constant("IsCons"), List(a), None)
