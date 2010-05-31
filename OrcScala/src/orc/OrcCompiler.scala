@@ -33,8 +33,10 @@ import orc.error.compiletime.PrintWriterCompileLogger
  *
  * @author jthywiss
  */
-trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
+abstract trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
+  val phaseName: String
   def >>>[C](that: CompilerPhase[O, B, C]) = new CompilerPhase[O, A, C] { 
+    val phaseName = self.phaseName+" >>> "+that.phaseName
     override def apply(o: O) = { a: A => that(o)(self.apply(o)(a)) }
   }
 }
@@ -50,8 +52,10 @@ trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
  * @author jthywiss
  */
 class OrcCompiler extends OrcCompilerAPI {
+  //TODO: Skip remaining phases when compileLogger.getMaxSeverity >= FATAL 
 
   val parse = new CompilerPhase[OrcOptions, Reader[Char], orc.ext.Expression] {
+    val phaseName = "parse"
     override def apply(options: OrcOptions) = { source =>
       OrcParser.parse(options, source) match {
         case OrcParser.Success(result, _) => result
@@ -61,16 +65,19 @@ class OrcCompiler extends OrcCompilerAPI {
   }
 
   val translate = new CompilerPhase[OrcOptions, orc.ext.Expression, orc.oil.Expression] { 
+    val phaseName = "translate"
     override def apply(options: OrcOptions) = { ast =>
       orc.translation.Translator.translate(options, ast)
     }
   }
 
   val typeCheck = new CompilerPhase[OrcOptions, orc.oil.Expression, orc.oil.Expression] {
+    val phaseName = "typeCheck"
     override def apply(options: OrcOptions) = { ast => ast }
   }
 
   val refineOil = new CompilerPhase[OrcOptions, orc.oil.Expression, orc.oil.Expression] {
+    val phaseName = "refineOil"
     override def apply(options: OrcOptions) = { ast => ast }
   }
 
