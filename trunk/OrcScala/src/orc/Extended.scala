@@ -34,12 +34,14 @@ case class Declare(declaration: Declaration, body: Expression) extends Expressio
 case class TypeAscription(e: Expression, t: Type) extends Expression
 case class TypeAssertion(e: Expression, t: Type) extends Expression
 
+case class Capsule(body: Expression) extends Expression
 
 
 sealed abstract class Declaration extends AST
 // to add to user guide: def is allowed to have optional inline return type
 sealed abstract class DefDeclaration extends Declaration
 case class Def(name: String, formals: List[Pattern], body: Expression, returntype: Option[Type]) extends DefDeclaration
+case class DefCapsule(name: String, formals: List[Pattern], body: Expression, returntype: Option[Type]) extends DefDeclaration
 case class DefSig(name: String, typeformals: List[String], argtypes: List[Type], returntype: Option[Type]) extends DefDeclaration
 
 sealed abstract class TypeDeclaration extends Declaration
