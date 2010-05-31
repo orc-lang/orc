@@ -16,7 +16,8 @@
 package orc.sites
 
 import orc.oil.Value
-import orc.oil.Type
+import orc.oil.nameless.Type
+import orc.oil.nameless.Bot
 import orc.TokenAPI
 
 trait Site extends Value {
@@ -38,5 +39,5 @@ trait PartialSite extends Site {
 }
 
 trait UntypedSite extends Site {
-  def orcType(argTypes: List[Type]): Type = orc.oil.Bot()
+  def orcType(argTypes: List[Type]): Type = Bot()
 }

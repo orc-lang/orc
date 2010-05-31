@@ -12,8 +12,8 @@ abstract class AST extends Positional {
       result
   }
 
-  def !!(e : Positional with Throwable) = {
-      e.pos = this.pos
-      throw e
+  def !!(exn : Throwable with Positional) = {
+      exn.pos = this.pos
+      throw exn
   }
 }

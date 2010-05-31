@@ -16,7 +16,7 @@
 package orc.sites
 
 import orc.TokenAPI
-import orc.oil.Type
+import orc.oil.nameless.Type // FIXME: Typechecker should operate on named types instead
 import orc.oil.Value
 
 /**

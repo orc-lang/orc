@@ -16,6 +16,7 @@
 package orc
 
 import orc.oil._
+import orc.oil.nameless._
 import PartialMapExtension._
 import orc.sites.Site
 import scala.collection.mutable.Set   

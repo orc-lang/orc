@@ -15,6 +15,7 @@
 
 package orc.lib.builtin
 
+import orc.oil.nameless.Type
 import orc.oil._
 import orc.sites.PartialSite
 

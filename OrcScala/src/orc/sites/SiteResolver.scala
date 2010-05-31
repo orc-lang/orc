@@ -15,7 +15,7 @@
 
 package orc.sites
 
-import orc.oil.Type
+import orc.oil.nameless.Type // FIXME: Typechecker should operate on named types instead
 
 /**
  * Trait of classes capable of resolving site names, such as {@link SiteForm}s.

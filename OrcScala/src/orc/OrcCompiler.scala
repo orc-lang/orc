@@ -64,26 +64,31 @@ class OrcCompiler extends OrcCompilerAPI {
     }
   }
 
-  val translate = new CompilerPhase[OrcOptions, orc.ext.Expression, orc.oil.Expression] { 
+  val translate = new CompilerPhase[OrcOptions, orc.ext.Expression, orc.oil.named.Expression] { 
     val phaseName = "translate"
     override def apply(options: OrcOptions) = { ast =>
       orc.translation.Translator.translate(options, ast)
     }
   }
 
-  val typeCheck = new CompilerPhase[OrcOptions, orc.oil.Expression, orc.oil.Expression] {
+  val typeCheck = new CompilerPhase[OrcOptions, orc.oil.named.Expression, orc.oil.named.Expression] {
     val phaseName = "typeCheck"
     override def apply(options: OrcOptions) = { ast => ast }
   }
 
-  val refineOil = new CompilerPhase[OrcOptions, orc.oil.Expression, orc.oil.Expression] {
-    val phaseName = "refineOil"
+  val refineNamedOil = new CompilerPhase[OrcOptions, orc.oil.named.Expression, orc.oil.named.Expression] {
+    val phaseName = "refineNamedOil"
     override def apply(options: OrcOptions) = { ast => ast }
   }
+  
+  val deBruijn = new CompilerPhase[OrcOptions, orc.oil.named.Expression, orc.oil.nameless.Expression] {
+    val phaseName = "deBruijn"
+    override def apply(options: OrcOptions) = { ast => ast.withoutNames }
+  }
 
-  val phases = parse >>> translate >>> typeCheck >>> refineOil
+  val phases = parse >>> translate >>> typeCheck >>> refineNamedOil >>> deBruijn
 
-  def apply(source: Reader[Char], options: OrcOptions): orc.oil.Expression = {
+  def apply(source: Reader[Char], options: OrcOptions): orc.oil.nameless.Expression = {
     compileLogger.beginProcessing(options.filename)
     try {
       phases(options)(source)
@@ -95,7 +100,7 @@ class OrcCompiler extends OrcCompilerAPI {
     }
   }
 
-  def apply(source: java.io.Reader, options: OrcOptions): orc.oil.Expression = apply(StreamReader(source), options)
+  def apply(source: java.io.Reader, options: OrcOptions): orc.oil.nameless.Expression = apply(StreamReader(source), options)
 
   val compileLogger: CompileLogger = new PrintWriterCompileLogger(new PrintWriter(System.err, true))
 
