@@ -27,7 +27,7 @@ object Translator {
 	}
 	
 	def callCons(head: Argument, tail: Argument) = Call(Constant("Cons"), List(head, tail), None)
-	def callIf(a: Argument) = Call(Constant("If"), List(a), None)
+	def callIf(a: Argument) = Call(Constant(orc.lib.builtin.If), List(a), None)
 	def callNot(a : Argument) = Call(Constant("Not"), List(a), None)
 	def callEq(a : Argument, b : Argument) = Call(Constant("Eq"), List(a,b), None)
 	def callNth(a : Argument, i : Int) = Call(a, List(Constant(i)), None)
@@ -466,7 +466,8 @@ object Translator {
 
 	private def renameArgument(a: Argument, context: List[EVar], typecontext: List[TVar]): oil.Argument = {
 		a -> {
-			case Constant(v) => oil.Constant(oil.Literal(v))
+            case Constant(s: orc.sites.Site) => oil.Constant(s)
+            case Constant(v) => oil.Constant(oil.Literal(v))
 			case (x: EVar) => oil.Variable(seek(x, context)) 
 		}
 	}
