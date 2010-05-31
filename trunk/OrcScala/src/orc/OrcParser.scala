@@ -163,6 +163,9 @@ object OrcParser extends StandardTokenParsers {
                 | ("def" ~> ident) ~ TupleOf(parsePattern) ~ ("=" ~> parseExpression) ~ (parseReturnType?) 
                 -> Def
 
+                | ("def" ~> "capsule" ~> ident) ~ TupleOf(parsePattern) ~ ("=" ~> parseExpression) ~ (parseReturnType?) 
+                -> DefCapsule
+
                 | "def" ~> ident ~ ListOf(parseTypeVariable) ~ TupleOf(parseType) ~ (parseReturnType?) 
                 -> DefSig
 
