@@ -47,7 +47,6 @@ case class TypeAlias(name: String, typeformals: List[String] = Nil, aliasedtype:
 case class Datatype(name: String, typeformals: List[String] = Nil, constructors: List[Constructor]) extends Declaration
 case class Constructor(name: String, types: List[Option[Type]]) extends AST
 case class TypeImport(name: String, classname: String) extends Declaration
-
 abstract class SiteDeclaration extends Declaration
 case class SiteImport(name: String, sitename: String) extends Declaration
 case class ClassImport(name: String, classname: String) extends Declaration

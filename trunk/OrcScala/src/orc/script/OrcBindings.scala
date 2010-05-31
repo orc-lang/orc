@@ -92,8 +92,8 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def getString(key: String, default: String): String = {
       val value = get(key)
       value match {
-      case s: String => s
-      case _ => default
+        case s: String => s
+        case _ => default
       }
   }
 
@@ -113,10 +113,10 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def getInt(key: String, default: Int): Int = {
       try {
         get(key) match { 
-        case s: String => s.toInt
-        case _ => default
+          case s: String => s.toInt
+          case _ => default
         }
-      } catch { case e: NumberFormatException => { }
+      } catch {   case e: NumberFormatException => { }
       default
       }
   }
@@ -137,10 +137,10 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def getLong(key: String, default: Long): Long = {
       try {
         get(key) match { 
-        case s: String => s.toLong
-        case _ => default
+          case s: String => s.toLong
+          case _ => default
         }
-      } catch { case e: NumberFormatException => { }
+      } catch {   case e: NumberFormatException => { }
       default
       }
   }
@@ -160,9 +160,9 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
    */
   def getBoolean(key: String, default: Boolean): Boolean = {
       get(key) match { 
-      case s: String if s.equalsIgnoreCase("true") => true
-      case s: String if s.equalsIgnoreCase("false") => false
-      case _ => default
+        case s: String if s.equalsIgnoreCase("true") => true
+        case s: String if s.equalsIgnoreCase("false") => false
+        case _ => default
       }
   }
 
@@ -182,10 +182,10 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def getFloat(key: String, default: Float): Float = {
       try {
         get(key) match { 
-        case s: String => s.toFloat
-        case _ => default
+          case s: String => s.toFloat
+          case _ => default
         }
-      } catch { case e: NumberFormatException => { }
+      } catch {   case e: NumberFormatException => { }
       default
       }
   }
@@ -206,10 +206,10 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def getDouble(key: String, default: Double): Double = {
       try {
         get(key) match { 
-        case s: String => s.toDouble
-        case _ => default
+          case s: String => s.toDouble
+          case _ => default
         }
-      } catch { case e: NumberFormatException => { }
+      } catch {   case e: NumberFormatException => { }
       default
       }
   }
@@ -229,8 +229,8 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def getPathList(key: String, default: List[String]): List[String] = {
       val value = get(key)
       value match {
-      case s: String => s.split(System.getProperty("path.separator")).toList
-      case _ => default
+        case s: String => s.split(System.getProperty("path.separator")).toList
+        case _ => default
       }
   }
 

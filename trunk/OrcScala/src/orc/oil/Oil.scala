@@ -48,10 +48,9 @@ case class Def(typeFormalArity: Int, arity: Int, body: Expression, argTypes : Li
 
 trait hasFreeVars {
   val freevars: Set[Int]
-
-                    /* Reduce this set of indices by n levels. */
-                    def shift(indices: Set[Int], n: Int) : Set[Int] =
-                      Set.empty ++ (for (i <- indices if i >= n) yield i-n)  
+  /* Reduce this set of indices by n levels. */
+  def shift(indices: Set[Int], n: Int) : Set[Int] =
+    Set.empty ++ (for (i <- indices if i >= n) yield i-n)  
 }
 
 
