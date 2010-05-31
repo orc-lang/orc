@@ -20,16 +20,6 @@ package orc.sites
  * @author jthywiss
  */
 object OrcSiteForm {
-  def resolve(name: String) = loadClass(lookupInternalSites(name))
+  def resolve(name: String) = loadClass(name)
   private def loadClass(name:String) = getClass().getClassLoader().loadClass(name) //TODO:FIXME: This should use the OrcAPI's loadClass, and the classpath from the OrcOptions
-  def lookupInternalSites(name: String): String = name match {
-    case "Cons" => "orc.lib.builtin.Cons"
-    case "Eq" => "orc.lib.builtin.Eq"
-    case "If" => "orc.lib.builtin.If"
-    case "IsCons" => "orc.lib.builtin.IsCons"
-    case "Not" => "orc.lib.builtin.Not"
-    case "Tuple" => "orc.lib.builtin.Tuple"
-    case "Unapply" => "orc.lib.builtin.Unapply" 
-    case _ => name
-  }
 }
