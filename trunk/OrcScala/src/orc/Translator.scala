@@ -33,19 +33,19 @@ object Translator {
 		(bindings foldLeft core) { case (f,(x,g)) => Prune(f,x,g) }
 	}
 	
-	def callCons(head: Argument, tail: Argument) = Call(Constant("Cons"), List(head, tail), None)
 	def callIf(a: Argument) = Call(Constant(orc.lib.builtin.If), List(a), None)
 	def callNot(a : Argument) = Call(Constant(orc.lib.builtin.Not), List(a), None)
 	def callEq(a : Argument, b : Argument) = Call(Constant("Eq"), List(a,b), None)
-	def callNth(a : Argument, i : Int) = Call(a, List(Constant(i)), None)
+	def callCons(head: Argument, tail: Argument) = Call(Constant("Cons"), List(head, tail), None)
 	def callIsCons(a : Argument) = Call(Constant("IsCons"), List(a), None)
 	def callUnapply(constructor : Argument, a : Argument) = {
 		val extractor = generateTempVar
 		val getExtractor = Call(Constant("Unapply"), List(constructor), None)
 		val invokeExtractor = Call(extractor, List(a), None)
-		Sequence(getExtractor, extractor, invokeExtractor)
+		getExtractor > extractor > invokeExtractor
 	}
 	
+	def callNth(a : Argument, i : Int) = Call(a, List(Constant(i)), None)
 	
 	def makeLet(args: List[Argument]): Expression = {
 		args match {
@@ -61,7 +61,7 @@ object Translator {
 		val nil: Expression = new Constant(Nil)
 		def cons(h: Argument, t: Expression): Expression = {
 			val y = generateTempVar
-			Sequence(t, y, callCons(h, y))
+			t > y > callCons(h, y)
 		}
 		elements.foldRight(nil)(cons)
 	}
@@ -397,20 +397,7 @@ object Translator {
 	  }
 	  args
 	} 
-	
-	def convertCallArgs(target: Argument, argsToDo: List[ext.Expression], argsDone: List[Argument], typeArgs: Option[List[Type]], converter: ext.Expression => Expression): Expression = {
-	  if (argsToDo.nonEmpty) {
-        converter(argsToDo.head) match {
-          case argArg: Argument => convertCallArgs(target, argsToDo.tail, argArg::argsDone, typeArgs, converter)
-          case argConverted => {
-            val tempVar = generateTempVar
-            Prune(convertCallArgs(target, argsToDo.tail, tempVar::argsDone, typeArgs, converter), tempVar, argConverted) 
-          }
-        }
-	  } else {
-	    Call(target, argsDone, typeArgs) 
-	  }
-	}
+
 	
 	// Incomplete for some cases.
 	def convert(e : ext.Expression, context : Map[String, TempVar], typecontext : Map[String, TempTypevar]): Expression = {
@@ -421,16 +408,12 @@ object Translator {
 				case ext.Variable(x) => context(x)
 				case ext.TupleExpr(es) => unfold(es map converter, makeLet)
 				case ext.ListExpr(es) => unfold(es map converter, makeList)
-				//FIXME: Simplistic handling of Call follows:
-                case ext.Call(target, List(ext.Args(types, elements))) => {
-                  val typesConverted = types map { _ map { convertType(_, typecontext) } }
-                  converter(target) match {
-                    case targetArg: Argument => convertCallArgs(targetArg, elements, List(), typesConverted, converter)
-                    case targetConverted => {
-                      val tempVar = generateTempVar
-                      Prune(convertCallArgs(tempVar, elements, List(), typesConverted, converter), tempVar, targetConverted) 
-                    }
-                  }
+                case ext.Call(target, List(ext.Args(typeargs, args))) => {
+                	val newtypeargs = typeargs map { _ map { convertType(_, typecontext) } }
+                	unfold(
+                			          (target :: args) map converter, 
+                            { case (newtarget :: newargs) => Call(newtarget, newargs, newtypeargs) }
+                		  )
                 }
                 case ext.Call(target, gs) => throw new UnsupportedOperationException("converter not implemented for calls of form: "+e)
                 //TODO: replace above with general: ext.Call(target, gs) => 
