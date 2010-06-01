@@ -7,6 +7,8 @@ import orc.oil._
 import orc.ext
 import orc.lib.builtin
 import orc.sites.Site
+import orc.sites.OrcSiteForm
+import orc.sites.JavaSiteForm
 import orc.OrcOptions
 
 object Translator {
@@ -572,8 +574,14 @@ object Translator {
 				*/
 				
 				// Incomplete.
-				case ext.Declare(ext.SiteImport(name, sitename), body) => converter(body)
-				case ext.Declare(ext.ClassImport(name, classname), body) => converter(body)
+				case ext.Declare(ext.SiteImport(name, sitename), body) => {
+				  val v = generateTempVar
+				  new Prune(convert(body, context + ((name, v)), typecontext), v, Constant(OrcSiteForm.resolve(sitename)))
+				}
+				case ext.Declare(ext.ClassImport(name, classname), body) => {
+				  val v = generateTempVar
+				  new Prune(convert(body, context + ((name, v)), typecontext), v, Constant(JavaSiteForm.resolve(classname)))
+				}
 				
 				case ext.Declare(ext.Include(_, decls), body) => converter((decls foldRight body)(ext.Declare)) //FIXME: Incorporate filename in source location information
 				
