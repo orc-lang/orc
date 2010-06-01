@@ -52,7 +52,7 @@ sealed abstract class Expression() extends orc.AST with hasFreeVars with Nameles
     }
   }
   
-  lazy val withNames: named.Expression = AddNames.addNames(this, Nil, Nil)
+  lazy val withNames: named.Expression = AddNames.namelessToNamed(this, Nil, Nil)
 }
 case class Stop() extends Expression
 case class Call(target: Argument, args: List[Argument], typeArgs: Option[List[Type]]) extends Expression
@@ -95,47 +95,47 @@ object AddNames {
   import orc.oil.named.TempTypevar
   import scala.Range
 
-  def addNames(e: Expression, context: List[named.TempVar], typecontext: List[named.TempTypevar]): named.Expression = {
-    def recurse(e: Expression): named.Expression = addNames(e, context, typecontext)
+  def namelessToNamed(e: Expression, context: List[named.TempVar], typecontext: List[named.TempTypevar]): named.Expression = {
+    def recurse(e: Expression): named.Expression = namelessToNamed(e, context, typecontext)
     e -> {
       case Stop() => named.Stop()
-      case a: Argument => addNames(a, context)		
+      case a: Argument => namelessToNamed(a, context)		
       case Call(target, args, typeargs) => {
-        val newtarget = addNames(target, context)
-        val newargs = args map (addNames(_, context))
-        val newtypeargs = typeargs map (ts => ts map (addNames(_, typecontext)))
+        val newtarget = namelessToNamed(target, context)
+        val newargs = args map { namelessToNamed(_, context) }
+        val newtypeargs = typeargs map { _ map { namelessToNamed(_, typecontext) } }
         named.Call(newtarget, newargs, newtypeargs)
       }
       case left || right => named.Parallel(recurse(left), recurse(right))
       case left >> right => {
         val x = new TempVar()
-        named.Sequence(recurse(left), x, addNames(right, x::context, typecontext))
+        named.Sequence(recurse(left), x, namelessToNamed(right, x::context, typecontext))
       }
       case left << right => {
         val x = new TempVar()
-        named.Prune(addNames(left, x::context, typecontext), x, recurse(right))
+        named.Prune(namelessToNamed(left, x::context, typecontext), x, recurse(right))
       }
       case left ow right => named.Otherwise(recurse(left), recurse(right))
       case DeclareDefs(defs, body) => {
-        val defnames = defs map (_ => new TempVar())
+        val defnames = defs map { _ => new TempVar() }
         val newcontext = defnames ::: context
-        val newdefs = for ( (x,d) <- defnames zip defs) yield addNames(x, d, newcontext, typecontext)
-        val newbody = addNames(body, newcontext, typecontext)
+        val newdefs = for ( (x,d) <- defnames zip defs) yield namelessToNamed(x, d, newcontext, typecontext)
+        val newbody = namelessToNamed(body, newcontext, typecontext)
         named.DeclareDefs(newdefs, newbody)
       }
       case HasType(body, expectedType) => {
-        named.HasType(recurse(body), addNames(expectedType, typecontext))
+        named.HasType(recurse(body), namelessToNamed(expectedType, typecontext))
       }
     } 
   }	
 
-  def addNames(a: Argument, context: List[TempVar]): named.Argument =
+  def namelessToNamed(a: Argument, context: List[TempVar]): named.Argument =
     a -> {
       case Constant(v) => named.Constant(Literal(v))
       case Variable(i) => context(i) 
     }
 
-  def addNames(t: Type, typecontext: List[TempTypevar]): named.Type = {
+  def namelessToNamed(t: Type, typecontext: List[TempTypevar]): named.Type = {
     t -> {
       case TypeVar(i) => typecontext(i)
       case Top() => named.Top()
@@ -143,31 +143,31 @@ object AddNames {
       case FunctionType(typearity, argtypes, returntype) => {
         val typeformals = (for (_ <- 0 until typearity) yield new TempTypevar()).toList
         val newTypeContext = typeformals ::: typecontext
-        val newArgTypes = argtypes map (addNames(_, newTypeContext))
-        val newReturnType = addNames(returntype, newTypeContext)
+        val newArgTypes = argtypes map { namelessToNamed(_, newTypeContext) }
+        val newReturnType = namelessToNamed(returntype, newTypeContext)
         named.FunctionType(typeformals, newArgTypes, newReturnType)
       } 
       case NativeType(name) => named.NativeType(name)
-      case TupleType(elements) => named.TupleType(elements map (addNames(_, typecontext)))
+      case TupleType(elements) => named.TupleType(elements map { namelessToNamed(_, typecontext) })
       case TypeApplication(i, typeactuals) => {
         val tycon = typecontext(i)
-        val newTypeActuals = typeactuals map (addNames(_, typecontext))
+        val newTypeActuals = typeactuals map { namelessToNamed(_, typecontext) }
         named.TypeApplication(tycon, newTypeActuals)
       }
-      case AssertedType(assertedType) => named.AssertedType(addNames(assertedType, typecontext))
+      case AssertedType(assertedType) => named.AssertedType(namelessToNamed(assertedType, typecontext))
     }
   }	
 
-  def addNames(x: TempVar, defn: Def, context: List[TempVar], typecontext: List[TempTypevar]): named.Def = {
+  def namelessToNamed(x: TempVar, defn: Def, context: List[TempVar], typecontext: List[TempTypevar]): named.Def = {
     defn -> {
       case Def(typearity, arity, body, argtypes, returntype) => {
         val formals = (for (_ <- 0 until arity) yield new TempVar()).toList
         val typeformals = (for (_ <- 0 until typearity) yield new TempTypevar()).toList
         val newContext = formals ::: context
         val newTypeContext = typeformals ::: typecontext 
-        val newbody = addNames(body, newContext, newTypeContext)
-        val newArgTypes = argtypes map (addNames(_, newTypeContext))
-        val newReturnType = returntype map (addNames(_, newTypeContext))
+        val newbody = namelessToNamed(body, newContext, newTypeContext)
+        val newArgTypes = argtypes map { namelessToNamed(_, newTypeContext) }
+        val newReturnType = returntype map  { namelessToNamed(_, newTypeContext) }
         named.Def(x, formals, newbody, typeformals, newArgTypes, newReturnType)
       }
     }

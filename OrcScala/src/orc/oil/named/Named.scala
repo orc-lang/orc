@@ -104,8 +104,8 @@ extends Type with TypeScope
 // Conversions from named to nameless representations
 trait NamedToNameless {
 
-  private def inverse_lookup[A](x: A, xs: List[A]): Int = 
-    xs match { case (h::t) => if (x == h) { 0 } else { inverse_lookup(x,t) + 1 } }
+  private def inverseLookup[A](x: A, xs: List[A]): Int = 
+    xs match { case (h::t) => if (x == h) { 0 } else { inverseLookup(x,t) + 1 } }
 
   def namedToNameless(e: Expression, context: List[TempVar], typecontext: List[TempTypevar]): nameless.Expression = {
     def toExp(e: Expression): nameless.Expression = namedToNameless(e, context, typecontext)
@@ -114,14 +114,14 @@ trait NamedToNameless {
     e -> {
       case Stop() => nameless.Stop()
       case a : Argument => namedToNameless(a, context)		
-      case Call(target, args, typeargs) => nameless.Call(toArg(target), args map toArg, typeargs map (_ map toType))
+      case Call(target, args, typeargs) => nameless.Call(toArg(target), args map toArg, typeargs map { _ map toType })
       case left || right => nameless.Parallel(toExp(left), toExp(right))
       case left > x > right => nameless.Sequence(toExp(left), namedToNameless(right, x::context, typecontext))
       case left < x < right => nameless.Prune(namedToNameless(left, x::context, typecontext), toExp(right))
       case left ow right => nameless.Otherwise(toExp(left), toExp(right))
       case DeclareDefs(defs, body) => {
-        val defnames = defs map (_.name)
-        val newdefs = defs map (namedToNameless(_, defnames ::: context, typecontext))
+        val defnames = defs map { _.name }
+        val newdefs = defs map { namedToNameless(_, defnames ::: context, typecontext) }
         val newbody = namedToNameless(body, defnames ::: context, typecontext)
         nameless.DeclareDefs(newdefs, newbody)
       }
@@ -132,7 +132,7 @@ trait NamedToNameless {
   def namedToNameless(a: Argument, context: List[TempVar]): nameless.Argument = {
     a -> {
       case Constant(v) => nameless.Constant(Literal(v))
-      case (x: TempVar) => nameless.Variable(inverse_lookup(x, context)) 
+      case (x: TempVar) => nameless.Variable(inverseLookup(x, context)) 
     }
   }
 
@@ -140,19 +140,19 @@ trait NamedToNameless {
   def namedToNameless(t: Type, typecontext: List[TempTypevar]): nameless.Type = {
     def toType(t: Type): nameless.Type = namedToNameless(t, typecontext)
     t -> {
-      case u: TempTypevar => nameless.TypeVar(inverse_lookup(u, typecontext))
+      case u: TempTypevar => nameless.TypeVar(inverseLookup(u, typecontext))
       case Top() => nameless.Top()
       case Bot() => nameless.Bot()
       case FunctionType(typeformals, argtypes, returntype) => {
         val newTypeContext = typeformals ::: typecontext
-        val newArgTypes = argtypes map (namedToNameless(_, newTypeContext))
+        val newArgTypes = argtypes map { namedToNameless(_, newTypeContext) }
         val newReturnType = namedToNameless(returntype, newTypeContext)
         nameless.FunctionType(typeformals.size, newArgTypes, newReturnType)
       }
       case NativeType(name) => nameless.NativeType(name)
       case TupleType(elements) => nameless.TupleType(elements map toType)
       case TypeApplication(tycon, typeactuals) => {
-        val i = inverse_lookup(tycon, typecontext)
+        val i = inverseLookup(tycon, typecontext)
         nameless.TypeApplication(i, typeactuals map toType)
       }	
       case AssertedType(assertedType) => nameless.AssertedType(namedToNameless(assertedType, typecontext))
@@ -165,8 +165,8 @@ trait NamedToNameless {
         val newContext = formals ::: context
         val newTypeContext = typeformals ::: typecontext 
         val newbody = namedToNameless(body, newContext, newTypeContext)
-        val newArgTypes = argtypes map (namedToNameless(_, newTypeContext))
-        val newReturnType = returntype map (namedToNameless(_, newTypeContext))
+        val newArgTypes = argtypes map { namedToNameless(_, newTypeContext) }
+        val newReturnType = returntype map { namedToNameless(_, newTypeContext) }
         nameless.Def(typeformals.size, formals.size, newbody, newArgTypes, newReturnType)
       }
     }
@@ -187,7 +187,7 @@ trait MapOnArguments { self: NamedAST =>
       case left > x > right => toExp(left) > x > toExp(right)
       case left < x < right => toExp(left) < x < toExp(right)
       case left ow right => toExp(left) ow toExp(right)
-      case DeclareDefs(defs, body) => DeclareDefs(defs map (MapOnArgs(_, f)), toExp(body))
+      case DeclareDefs(defs, body) => DeclareDefs(defs map { MapOnArgs(_, f) }, toExp(body))
       case HasType(body, expectedType) => HasType(toExp(body), expectedType)
     }
   }	
