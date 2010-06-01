@@ -398,6 +398,19 @@ object Translator {
 	  args
 	} 
 	
+	def convertCallArgs(target: Argument, argsToDo: List[ext.Expression], argsDone: List[Argument], typeArgs: Option[List[Type]], converter: ext.Expression => Expression): Expression = {
+	  if (argsToDo.nonEmpty) {
+        converter(argsToDo.head) match {
+          case argArg: Argument => convertCallArgs(target, argsToDo.tail, argArg::argsDone, typeArgs, converter)
+          case argConverted => {
+            val tempVar = generateTempVar
+            Prune(convertCallArgs(target, argsToDo.tail, tempVar::argsDone, typeArgs, converter), tempVar, argConverted) 
+          }
+        }
+	  } else {
+	    Call(target, argsDone, typeArgs) 
+	  }
+	}
 	
 	// Incomplete for some cases.
 	def convert(e : ext.Expression, context : Map[String, TempVar], typecontext : Map[String, TempTypevar]): Expression = {
@@ -408,7 +421,19 @@ object Translator {
 				case ext.Variable(x) => context(x)
 				case ext.TupleExpr(es) => unfold(es map converter, makeLet)
 				case ext.ListExpr(es) => unfold(es map converter, makeList)
-				//case ext.Call(target, gs) =>  
+				//FIXME: Simplistic handling of Call follows:
+                case ext.Call(target, List(ext.Args(types, elements))) => {
+                  val typesConverted = types map { _ map { convertType(_, typecontext) } }
+                  converter(target) match {
+                    case targetArg: Argument => convertCallArgs(targetArg, elements, List(), typesConverted, converter)
+                    case targetConverted => {
+                      val tempVar = generateTempVar
+                      Prune(convertCallArgs(tempVar, elements, List(), typesConverted, converter), tempVar, targetConverted) 
+                    }
+                  }
+                }
+                case ext.Call(target, gs) => throw new UnsupportedOperationException("converter not implemented for calls of form: "+e)
+                //TODO: replace above with general: ext.Call(target, gs) => 
 				case ext.PrefixOperator(op, arg) => {
 					val opsite = Constant(op)
 					unfold(List(arg) map converter, Call(opsite,_,None))
