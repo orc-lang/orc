@@ -190,19 +190,7 @@ object OrcParser extends StandardTokenParsers {
       -> Include
   )
 
-  override val lexical = new StdLexical() {
-    override def whitespace: Parser[Any] = rep(
-        whitespaceChar
-      | '{' ~ '-' ~ comment
-      | '-' ~ '-' ~ rep( chrExcept(EofCh, '\n') )
-      | '{' ~ '-' ~ failure("unclosed comment")
-      )
-
-    override protected def comment: Parser[Any] = (
-        '-' ~ '}'  ^^ { case _ => ' '  }
-      | chrExcept(EofCh) ~ comment
-      )
-  }
+  override val lexical = new OrcLexical()
 
   lexical.delimiters ++= List("+", "-", "*")
   lexical.delimiters ++= List("<", ">", "|", ";")
