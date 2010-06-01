@@ -276,7 +276,7 @@ object Translator {
 	def convertDefs(defs: List[ext.DefDeclaration], context: Map[String, TempVar], typecontext: Map[String, TempTypevar]): (List[Def], Map[String, TempVar]) = {
 		
 		import scala.collection.mutable._
-		val clausesMap : Map[String, (Boolean, List[Clause])] = new HashMap()
+		val clausesMap : Map[String, List[Clause]] = new HashMap()
 		val sigMap    : Map[String, Sig] = new HashMap()
 		
 		def unify[A](x: Option[A], y: Option[A]) = (x,y) match {
@@ -292,12 +292,9 @@ object Translator {
 				val newclause = (newformals, body)
 				clausesMap.get(name) match {
 					case None => 
-						clausesMap update (name, (false, List(newclause)))
-					case Some((isCapsule, clauses)) => {
-					  if (isCapsule) {
-				      throw new Exception(name+" is already defined as a capsule.")
-					  }
-						clausesMap update (name, (false, newclause::clauses))
+						clausesMap update (name, List(newclause))
+					case Some(clauses) => {
+						clausesMap update (name, newclause::clauses)
 					}
 				}
 				sigMap.get(name) match {
@@ -313,12 +310,9 @@ object Translator {
 				val newclause = (newformals, new ext.Capsule(body))
 				clausesMap.get(name) match {
 					case None => 
-						clausesMap update (name, (true, List(newclause)))
-					case Some((isCapsule, clauses)) => {
-				    if (!isCapsule) {
-				      throw new Exception(name+" is not declared as capsule.")
-				    }
-					  clausesMap update (name, (true, newclause::clauses))
+						clausesMap update (name, List(newclause))
+					case Some(clauses) => {
+					  clausesMap update (name, newclause::clauses)
 					}
 				}
 				sigMap.get(name) match {
@@ -339,8 +333,24 @@ object Translator {
 						throw new Exception("Redundant type information")
 				}
 			}
-		}		
-				
+		}
+
+    for (clkey <- clausesMap.keySet) {
+      val cl = clausesMap(clkey)
+      var existsCapsule = false
+      var existsNotCapsule = false
+      for (aclause <- cl) {
+        aclause match {
+          case (_, ext.Capsule(_)) => 
+            if (existsNotCapsule) throw new Exception(clkey+" is not declared as capsule.") 
+            else existsCapsule = true
+          case _ => 
+            if (existsCapsule) throw new Exception(clkey+" is already declared as capsule.")
+            else existsNotCapsule = true
+        }
+      }
+    }
+		
 		if (!(sigMap.keySet subsetOf clausesMap.keySet)) { throw new Exception("Unused function signature") } // Sanity check. TODO: Make more helpful.
 		
 		val newcontext = context ++ (for (name <- clausesMap.keys) yield (name, generateTempVar))
@@ -360,8 +370,7 @@ object Translator {
 				val newreturntype = returntype map (convertType(_, newtypecontext))
 				
 				val args = newargtypes map (_ => generateTempVar)
-				val (_, nameClauses) = clausesMap(name)
-				val body = convertClauses(nameClauses, args, newcontext, newtypecontext)
+				val body = convertClauses(clausesMap(name), args, newcontext, newtypecontext)
 				
 				Def(newcontext(name), args, body, newtypeformals, newargtypes, newreturntype)
 			}).toList
