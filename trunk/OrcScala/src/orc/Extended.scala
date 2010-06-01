@@ -54,7 +54,7 @@ abstract class SiteDeclaration extends Declaration
 case class SiteImport(name: String, sitename: String) extends Declaration
 case class ClassImport(name: String, classname: String) extends Declaration
 case class Val(p: Pattern, e: Expression) extends Declaration
-case class Include(filename: String) extends Declaration
+case class Include(origin: String, decls: List[Declaration]) extends Declaration
 
 
 

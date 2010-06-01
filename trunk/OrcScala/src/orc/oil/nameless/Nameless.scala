@@ -52,7 +52,7 @@ sealed abstract class Expression extends orc.AST with hasFreeVars with NamelessI
 		}
 	}
 	
-	lazy val addNames: named.Expression = AddNames.addNames(this, Nil, Nil)
+	lazy val withNames: named.Expression = AddNames.addNames(this, Nil, Nil)
 }
 case class Stop extends Expression
 case class Call(target: Argument, args: List[Argument], typeArgs: Option[List[Type]]) extends Expression

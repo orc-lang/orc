@@ -55,6 +55,7 @@ object Eq extends UnimplementedSite
 
 // Constructors
 
+object NilConstructor extends UnimplementedSite
 object TupleConstructor extends UnimplementedSite
 object RecordConstructor extends UnimplementedSite
 object ConsConstructor extends UnimplementedSite
