@@ -37,9 +37,8 @@ object JavaSiteForm extends SiteForm {
  *
  * @author jthywiss
  */
-class JavaClassProxy(val javaClass: Class[_]) extends Site with SiteResolution {
+class JavaClassProxy(val javaClass: Class[_]) extends Site {
   override lazy val name = javaClass.getName()
   override def orcType(argTypes: List[Type]) = null //TODO:FIXME: Implement this
-  override def instantiate() = this
   override def call(args: List[Value], token: TokenAPI) { println("Java site "+name+" called") }
 }

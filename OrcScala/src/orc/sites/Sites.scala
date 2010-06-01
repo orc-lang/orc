@@ -24,7 +24,6 @@ trait Site extends Value {
   def call(args: List[Value], token: TokenAPI): Unit
   def name: String
   def orcType(argTypes: List[Type]): Type
-  def instantiate() = this
 }
 
 trait PartialSite extends Site {

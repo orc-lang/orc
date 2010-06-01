@@ -23,22 +23,7 @@ import orc.oil.nameless.Type // FIXME: Typechecker should operate on named types
  * @author jthywiss
  */
 abstract trait SiteResolver {
-  def resolve(name: String): SiteResolution
-}
-
-/**
- * A mapping to a site's metadata from it's form (Orc site, Java site,
- * Web services site, etc.) and name.
- * This part of a site's implementation is needed prior to runtime, for
- * example, by the the type checker.
- *
- * @author jthywiss
- */
-abstract trait SiteResolution {
-  def name: String
-  def orcType(argTypes: List[Type]): Type
-  //other metadata here...
-  def instantiate(): Site
+  def resolve(name: String): Site
 }
 
 /**
