@@ -63,11 +63,6 @@ case class Sequence(left: Expression, x: TempVar, right: Expression) extends Exp
 case class Prune(left: Expression, x: TempVar, right: Expression) extends Expression with Scope
 case class Otherwise(left: Expression, right: Expression) extends Expression
 case class DeclareDefs(defs : List[Def], body: Expression) extends Expression with Scope
-
-sealed abstract class SiteImport() extends Expression() { val name: String; val body: Expression }
-case class OrcSiteImport(name: String, body: Expression) extends SiteImport()
-case class JavaSiteImport(name: String, body: Expression) extends SiteImport()
-
 case class HasType(body: Expression, expectedType: Type) extends Expression
 
 sealed abstract class Argument() extends Expression
