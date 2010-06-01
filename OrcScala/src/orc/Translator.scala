@@ -5,6 +5,7 @@ import orc.PartialMapExtension._
 import orc.oil.named._
 import orc.ext
 import orc.lib.builtin
+import orc.sites.Site
 import orc.OrcOptions
 
 object Translator {
@@ -28,17 +29,34 @@ object Translator {
 	
 	
 	def unfold(es: List[Expression], makeCore: List[Argument] => Expression): Expression = {
-		val bindings = for (e <- es) yield (generateTempVar, e)
-		val args = for ((x,_) <- bindings) yield x
-		val core = makeCore(args)
-		(bindings foldLeft core) { case (f,(x,g)) => Prune(f,x,g) }
+		
+		def expand(es: List[Expression]): (List[Argument], Expression => Expression) = 
+			es match {
+				case (a : Argument) :: rest => {
+					val (args, bindRest) = expand(rest)
+					(a :: args, bindRest)
+				}
+				case g :: rest => {
+					val (args, bindRest) = expand(rest)
+					val x = generateTempVar
+					(x :: args, bindRest(_) < x < g)
+				}
+				case Nil => (Nil, e => e)
+			}
+		
+		val (args, bind) = expand(es)
+		bind(makeCore(args))
 	}
 	
-	def callIf(a: Argument) = Call(Constant(builtin.If), List(a), None)
-	def callNot(a : Argument) = Call(Constant(builtin.Not), List(a), None)
-	def callEq(a : Argument, b : Argument) = Call(Constant(builtin.Eq), List(a,b), None)
-	def callCons(head: Argument, tail: Argument) = Call(Constant(builtin.ConsConstructor), List(head, tail), None)
-	def callIsCons(a : Argument) = Call(Constant(builtin.ConsExtractor), List(a), None)
+	def unaryBuiltinCall(s : Site)(a : Argument) = Call(Constant(s), List(a), None)
+	def binaryBuiltinCall(s : Site)(a : Argument, b: Argument) = Call(Constant(s), List(a, b), None)
+	
+	val callIf = unaryBuiltinCall(builtin.If) _
+	val callNot = unaryBuiltinCall(builtin.Not) _
+	val callEq = binaryBuiltinCall(builtin.Eq) _
+	val callCons = binaryBuiltinCall(builtin.ConsConstructor) _
+	val callIsCons = unaryBuiltinCall(builtin.ConsExtractor) _
+	
 	def callUnapply(constructor : Argument, a : Argument) = {
 		val extractor = generateTempVar
 		val getExtractor = Call(Constant(builtin.FindExtractor), List(constructor), None)
@@ -59,7 +77,7 @@ object Translator {
 	def makeTuple(elements: List[Argument]) = Call(Constant(builtin.TupleConstructor), elements, None)
 	
 	def makeList(elements: List[Argument]) = {
-		val nil: Expression = new Constant(Nil)
+		val nil: Expression = Call(Constant(builtin.NilConstructor), Nil, None)
 		def cons(h: Argument, t: Expression): Expression = {
 			val y = generateTempVar
 			t > y > callCons(h, y)
@@ -504,7 +522,8 @@ object Translator {
 				// Incomplete.
 				case ext.Declare(ext.SiteImport(name, sitename), body) => converter(body)
 				case ext.Declare(ext.ClassImport(name, classname), body) => converter(body)
-				case ext.Declare(ext.Include(filename), body) => converter(body)
+				
+				case ext.Declare(ext.Include(_, decls), body) => converter((decls foldRight body)(ext.Declare)) //FIXME: Incorporate filename in source location information
 				
 				case ext.TypeAscription(body, t) => HasType(converter(body),              convertType(t, typecontext)  )
 				case  ext.TypeAssertion(body, t) => HasType(converter(body), AssertedType(convertType(t, typecontext)) )
