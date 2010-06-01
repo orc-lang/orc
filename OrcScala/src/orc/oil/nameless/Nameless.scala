@@ -132,7 +132,7 @@ object AddNames {
 
   def namelessToNamed(a: Argument, context: List[TempVar]): named.Argument =
     a -> {
-      case Constant(v) => named.Constant(Literal(v))
+      case Constant(v) => named.Constant(v)
       case Variable(i) => context(i) 
     }
 

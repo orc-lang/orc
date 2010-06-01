@@ -66,7 +66,7 @@ case class DeclareDefs(defs : List[Def], body: Expression) extends Expression wi
 case class HasType(body: Expression, expectedType: Type) extends Expression
 
 sealed abstract class Argument() extends Expression
-case class Constant(value: Any) extends Argument
+case class Constant(value: Value) extends Argument
 
 
 sealed case class Def(name: TempVar, formals: List[TempVar], body: Expression, typeformals: List[TempTypevar], argtypes: List[Type], returntype: Option[Type]) 
@@ -126,7 +126,7 @@ trait NamedToNameless {
 
   def namedToNameless(a: Argument, context: List[TempVar]): nameless.Argument = {
     a -> {
-      case Constant(v) => nameless.Constant(Literal(v))
+      case Constant(v) => nameless.Constant(v)
       case (x: TempVar) => nameless.Variable(inverseLookup(x, context)) 
     }
   }
