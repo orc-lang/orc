@@ -1,8 +1,8 @@
 //
-// If.scala -- Scala object If
+// Builtin.scala -- Collection of objects implementing Orc fundamental sites
 // Project OrcScala
 //
-// $Id$
+// $Id: If.scala 1681 2010-05-31 22:31:27Z dkitchin $
 //
 // Created by dkitchin on May 28, 2010.
 //
@@ -17,11 +17,11 @@ package orc.lib.builtin
 
 import orc.oil.nameless.Type
 import orc.oil._
-import orc.sites.PartialSite
+import orc.sites._
+
+
 
 /**
- * 
- *
  * @author dkitchin
  */
 object If extends PartialSite {
@@ -30,6 +30,20 @@ object If extends PartialSite {
   def evaluate(args: List[Value]) =
     args match {
       case List(Literal(true)) => Some(Literal({}))
+      case _ => None
+  }
+}
+
+/**
+ * @author jthywiss
+ */
+object Not extends PartialSite {
+  override def name = "Not"
+  def orcType(argTypes: List[Type]) = null //TODO:FIXME: Implement this
+  def evaluate(args: List[Value]) =
+    args match {
+      case List(Literal(true)) => Some(Literal(false))
+      case List(Literal(false)) => Some(Literal(true))
       case _ => None
   }
 }
