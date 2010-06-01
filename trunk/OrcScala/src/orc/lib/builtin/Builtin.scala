@@ -20,6 +20,14 @@ import orc.oil._
 import orc.sites._
 
 
+/**
+ * @author dkitchin
+ */
+object Let extends TotalSite {
+  override def name = "Let"
+  def orcType(argTypes: List[Type]) = null //TODO:FIXME: Implement this
+  def evaluate(args: List[Value]) = Literal(args)
+}
 
 // Logic
 
@@ -65,6 +73,7 @@ object NoneConstructor extends UnimplementedSite
 
 // Extractors
 
+object NilExtractor extends UnimplementedSite
 object ConsExtractor extends UnimplementedSite
 object SomeExtractor extends UnimplementedSite
 object NoneExtractor extends UnimplementedSite

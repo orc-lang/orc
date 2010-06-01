@@ -3,6 +3,7 @@ package orc.translation
 import scala.collection.immutable._
 import orc.PartialMapExtension._
 import orc.oil.named._
+import orc.oil._
 import orc.ext
 import orc.lib.builtin
 import orc.sites.Site
@@ -48,14 +49,24 @@ object Translator {
 		bind(makeCore(args))
 	}
 	
+	def nullaryBuiltinCall(s : Site)() = Call(Constant(s), Nil, None)
 	def unaryBuiltinCall(s : Site)(a : Argument) = Call(Constant(s), List(a), None)
 	def binaryBuiltinCall(s : Site)(a : Argument, b: Argument) = Call(Constant(s), List(a, b), None)
 	
 	val callIf = unaryBuiltinCall(builtin.If) _
 	val callNot = unaryBuiltinCall(builtin.Not) _
 	val callEq = binaryBuiltinCall(builtin.Eq) _
+	
 	val callCons = binaryBuiltinCall(builtin.ConsConstructor) _
 	val callIsCons = unaryBuiltinCall(builtin.ConsExtractor) _
+	val callNil = nullaryBuiltinCall(builtin.NilConstructor) _
+	val callIsNil = unaryBuiltinCall(builtin.NilExtractor) _
+	
+	val callSome = unaryBuiltinCall(builtin.SomeConstructor) _
+	val callIsSome = unaryBuiltinCall(builtin.SomeExtractor) _
+	val callNone = nullaryBuiltinCall(builtin.NoneConstructor) _
+	val callIsNone = unaryBuiltinCall(builtin.NoneExtractor) _
+	
 	
 	def callUnapply(constructor : Argument, a : Argument) = {
 		val extractor = generateTempVar
@@ -64,11 +75,11 @@ object Translator {
 		getExtractor > extractor > invokeExtractor
 	}
 	
-	def callNth(a : Argument, i : Int) = Call(a, List(Constant(i)), None)
+	def callNth(a : Argument, i : Int) = Call(a, List(Constant(Literal(i))), None)
 	
 	def makeLet(args: List[Argument]): Expression = {
 		args match {
-			case Nil => Constant({})
+			case Nil => Constant(Literal({}))
 			case List(a) => a
 			case _ => makeTuple(args)
 		}
@@ -85,6 +96,7 @@ object Translator {
 		elements.foldRight(nil)(cons)
 	}
 	
+	def makeOperator(opName : String) = builtin.Let
 	
 	
 	
@@ -127,7 +139,7 @@ object Translator {
 			p match {
 				case ext.Wildcard() => (Nil, Nil)
 				case ext.ConstantPattern(c) => {
-					val testexpr = callEq(x, Constant(c))
+					val testexpr = callEq(x, Constant(Literal(c)))
 					val guard = (testexpr, generateTempVar)
 					(List(guard), Nil)
 				}
@@ -243,22 +255,50 @@ object Translator {
 	 				 (args: List[TempVar])
 					 (clause: Clause, fallthrough: Expression): Expression = {
 		
-		val (ps, body) = clause
+		val (ps, target) = clause
 		
 		val (groupedComputes, groupedBindings) = 
-			List unzip {
-				(ps zip args) map 
-					{ pair => 
-						val (p,x) = pair
-						convertPattern(p, x, context, typecontext)
-					}
+			List unzip { 
+				for ((p,x) <- ps zip args) yield 
+					convertPattern(p, x, context, typecontext)
 			}
-		val _ = groupedComputes.flatten
-		val bindings = groupedBindings.flatten
+		
+		val computes: List[(Expression, TempVar)] = groupedComputes.flatten
+		val bindings: List[(String, TempVar)] = groupedBindings.flatten
 		
 		val fragments = (for ((_,z) <- bindings) yield z).toList.removeDuplicates -- args
 		
-		convert(body, context ++ bindings, typecontext)		
+		val nil = makeLet(fragments)
+		def cons(oneCompute: (Expression, TempVar), expr2: Expression) = {
+			val (expr1, x) = oneCompute
+			Sequence(expr1, x, expr2)
+		}
+		val newsource = computes.foldRight(nil)(cons)
+		
+		val mappedVar = generateTempVar
+		val mapping = Map() ++ (fragments map (x => (x,generateTempVar)))
+		val newbindings = bindings map { case (name,z) => (name, mapping(z)) }
+		
+		val nil2 = convert(target, context ++ newbindings, typecontext)
+		def cons2(indexedFragment: (TempVar, Int), expr: Expression) = {
+			val (z, i) = indexedFragment
+ 			callNth(mappedVar,i)  > mapping(z) >  expr
+		}
+		val indexedFragments = fragments.zipWithIndex
+		
+		val newtarget = indexedFragments.foldRight(nil2)(cons2)
+		
+		val y = generateTempVar
+		val z = generateTempVar
+		
+		( 
+		     (newsource  > y >  callSome(y)) 
+		  ow ( callNone() ) 
+		) > z > 
+		(    
+		     (callIsSome(z)      > mappedVar >     newtarget)
+		  || (callIsNone(z)   > generateTempVar >  fallthrough)   
+		)		
 	}
 	
 	
@@ -268,7 +308,7 @@ object Translator {
 	
 	def convertClauses(clauses: List[Clause], args: List[TempVar], context: Map[String, TempVar], typecontext: Map[String, TempTypevar]): Expression = {
 		val nil: Expression = Stop()
-		val cons = convertClause(context,typecontext)(args)_
+		val cons = { convertClause(context,typecontext)(args) _ }
 		clauses.foldRight(nil)(cons)
 	}
 	
@@ -440,7 +480,10 @@ object Translator {
 			def converter(e : ext.Expression) = convert(e,context,typecontext)
 			e -> {
 				case ext.Stop() => Stop()
-				case ext.Constant(c) => Constant(c)
+				case ext.Constant(c) => c match {
+					case (v: Value) => Constant(v)
+					case lit => Constant(Literal(lit))
+				}
 				case ext.Variable(x) => context(x)
 				case ext.TupleExpr(es) => unfold(es map converter, makeLet)
 				case ext.ListExpr(es) => unfold(es map converter, makeList)
@@ -454,11 +497,11 @@ object Translator {
                 case ext.Call(target, gs) => throw new UnsupportedOperationException("converter not implemented for calls of form: "+e)
                 //TODO: replace above with general: ext.Call(target, gs) => 
 				case ext.PrefixOperator(op, arg) => {
-					val opsite = Constant(op)
+					val opsite = Constant(makeOperator(op))
 					unfold(List(arg) map converter, Call(opsite,_,None))
 				}
 				case ext.InfixOperator(l, op, r) => {
-					val opsite = Constant(op)
+					val opsite = Constant(makeOperator(op))
 					unfold(List(l,r) map converter, Call(opsite,_,None))
 				}
 				case ext.Sequential(l, None, r) => converter(l) > generateTempVar > converter(r)
