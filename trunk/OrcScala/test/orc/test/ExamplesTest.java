@@ -144,7 +144,7 @@ public class ExamplesTest {
  
 	public static void runOrcProgram(final File file, final LinkedList<String> expecteds) throws InterruptedException, Throwable, CmdLineException, CompilationException, IOException, TimeoutException {
 
-		final orc.oil.Expression expr = (new OrcCompiler()).apply(new FileReader(file), examplesOptions);
+		final orc.oil.nameless.Expression expr = (new OrcCompiler()).apply(new FileReader(file), examplesOptions);
 
 		if (expr == null) {
 			throw new CompilationException("Compilation to OIL failed");
