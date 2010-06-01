@@ -188,6 +188,7 @@ abstract class Orc extends OrcAPI {
     val arity: Int = d.arity
     val body: Expression = d.body
     var context: List[Binding] = Nil
+    val altbody: Expression = d.body
   }
   object Closure {
     def unapply(c: Closure) = Some((c.arity, c.body, c.context))
@@ -339,7 +340,7 @@ abstract class Orc extends OrcAPI {
           case (a: Argument) => resolve(a).foreach(publish(_))
           case (Call(target, args, typeArgs)) => {
             resolve(target).foreach({
-              case Closure(arity, body, newcontext) => {
+              case closure@ Closure(arity, body, newcontext) => {
                 if (arity != args.size) halt /* Arity mismatch. */
       
       
@@ -370,7 +371,7 @@ abstract class Orc extends OrcAPI {
       
                 for (a <- args) { bind(lookup(a)) }
       
-                schedule(this.move(body))				  					
+                schedule(this.move(closure.altbody))				  					
               }
               case (s: Site) => {
                 val vs = args.partialMap(resolve)
@@ -407,10 +408,17 @@ abstract class Orc extends OrcAPI {
             schedule(l.join(region).move(left))
           }
     
-          case DeclareDefs(defs, body) => {
+          case decldefs@ DeclareDefs(defs, body) => {
             val cs = defs map ( (d: Def) => new Closure(d) )
-            for (c <- cs) { bind(c) }
-            for (c <- cs) { c.context = this.env }
+            
+            /* Closure compaction: Bind only free variables
+             * of the defs in the closure's context */
+            var context: List[Binding] = Nil
+            for(n <- decldefs.freeVarList)
+                context = env(n) :: context
+            
+            for (c <- cs) { bind(c); context = c :: context }
+            for (c <- cs) { c.context = context }
             this.move(body).run
           }
         }

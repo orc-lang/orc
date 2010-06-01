@@ -60,7 +60,10 @@ case class Parallel(left: Expression, right: Expression) extends Expression
 case class Sequence(left: Expression, right: Expression) extends Expression
 case class Prune(left: Expression, right: Expression) extends Expression
 case class Otherwise(left: Expression, right: Expression) extends Expression
-case class DeclareDefs(defs: List[Def], body: Expression) extends Expression
+case class DeclareDefs(defs: List[Def], body: Expression) extends Expression {
+  /* A sorted list of the declaration's free variables. */
+  lazy val freeVarList: List[Int] = freevars.toList.sortWith((x:Int,y:Int) => x < y)
+}
 case class HasType(body: Expression, expectedType: Type) extends Expression
 
 sealed abstract class Argument() extends Expression
@@ -80,6 +83,9 @@ case class FunctionType(typeFormalArity: Int, argTypes: List[Type], returnType: 
 sealed case class Def(typeFormalArity: Int, arity: Int, body: Expression, argTypes: List[Type], returnType: Option[Type]) extends orc.AST with hasFreeVars {
   /* Get the free vars of the body, then bind the arguments */
   lazy val freevars: Set[Int] = shift(body.freevars, arity)
+  /* Body with renamed free variable for closure compaction.
+   * This is the actual expression called at runtime. */
+  var altBody : Expression = body
 }
 
 
