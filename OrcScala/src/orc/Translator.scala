@@ -4,6 +4,7 @@ import scala.collection.immutable._
 import orc.PartialMapExtension._
 import orc.oil.named._
 import orc.ext
+import orc.lib.builtin
 import orc.OrcOptions
 
 object Translator {
@@ -33,14 +34,14 @@ object Translator {
 		(bindings foldLeft core) { case (f,(x,g)) => Prune(f,x,g) }
 	}
 	
-	def callIf(a: Argument) = Call(Constant(orc.lib.builtin.If), List(a), None)
-	def callNot(a : Argument) = Call(Constant(orc.lib.builtin.Not), List(a), None)
-	def callEq(a : Argument, b : Argument) = Call(Constant("Eq"), List(a,b), None)
-	def callCons(head: Argument, tail: Argument) = Call(Constant("Cons"), List(head, tail), None)
-	def callIsCons(a : Argument) = Call(Constant("IsCons"), List(a), None)
+	def callIf(a: Argument) = Call(Constant(builtin.If), List(a), None)
+	def callNot(a : Argument) = Call(Constant(builtin.Not), List(a), None)
+	def callEq(a : Argument, b : Argument) = Call(Constant(builtin.Eq), List(a,b), None)
+	def callCons(head: Argument, tail: Argument) = Call(Constant(builtin.ConsConstructor), List(head, tail), None)
+	def callIsCons(a : Argument) = Call(Constant(builtin.ConsExtractor), List(a), None)
 	def callUnapply(constructor : Argument, a : Argument) = {
 		val extractor = generateTempVar
-		val getExtractor = Call(Constant("Unapply"), List(constructor), None)
+		val getExtractor = Call(Constant(builtin.FindExtractor), List(constructor), None)
 		val invokeExtractor = Call(extractor, List(a), None)
 		getExtractor > extractor > invokeExtractor
 	}
@@ -55,7 +56,7 @@ object Translator {
 		}
 	}
 	
-	def makeTuple(elements: List[Argument]) = Call(Constant("Tuple"), elements, None)
+	def makeTuple(elements: List[Argument]) = Call(Constant(builtin.TupleConstructor), elements, None)
 	
 	def makeList(elements: List[Argument]) = {
 		val nil: Expression = new Constant(Nil)
@@ -384,7 +385,7 @@ object Translator {
       if (name != "" && !defNames.contains(name)) defNames = name::defNames
     }
     
-    var recordCall : ext.Call = new ext.Call(new ext.Constant("Record"), List(ext.Args(None, makeRecordArgs(defNames))))
+    var recordCall : ext.Call = new ext.Call(new ext.Constant(builtin.RecordConstructor), List(ext.Args(None, makeRecordArgs(defNames))))
     
     ext.Parallel(ext.Sequential(body, None, ext.Stop()), recordCall)
 	}
@@ -393,7 +394,7 @@ object Translator {
 	  var args : List[ext.Expression] = List()
 	  for (d <- defNames) {
 	    args = args++List(new ext.Constant(d))
-	    args = args++List(new ext.Call(new ext.Constant("Site"), List(ext.Args(None, List(new ext.Constant(d))))))
+	    args = args++List(new ext.Call(new ext.Constant(builtin.SiteSite), List(ext.Args(None, List(new ext.Constant(d))))))
 	  }
 	  args
 	} 
@@ -463,7 +464,7 @@ object Translator {
 				case ext.Capsule(b) => {
 				  var capThunk = ext.Lambda(None, null, None, makeNewBody(b))				  
 				  converter(ext.Call(
-				    ext.Call(ext.Constant("Site"), List(ext.Args(None, List(capThunk)))), null))
+				    ext.Call(ext.Constant(builtin.SiteSite), List(ext.Args(None, List(capThunk)))), null))
 				}
 				case ext.Conditional(ifE, thenE, elseE) => {
 					 val t = generateTempVar
