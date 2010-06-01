@@ -190,7 +190,7 @@ object OrcParser extends StandardTokenParsers {
       -> ClassImport
 
       | "include" ~> stringLit 
-      -> Include
+      -> { Include(_ : String, Nil) }
   )
 
   override val lexical = new OrcLexical()
