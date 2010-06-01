@@ -38,6 +38,23 @@ trait PartialSite extends Site {
   def evaluate(args: List[Value]): Option[Value]
 }
 
+trait TotalSite extends Site {
+  def call(args: List[Value], token: TokenAPI) 
+  	{ token.publish(evaluate(args)) }
+  
+  def evaluate(args: List[Value]): Value
+}
+
 trait UntypedSite extends Site {
   def orcType(argTypes: List[Type]): Type = Bot()
+}
+
+trait UnimplementedSite extends Site {
+  def name = "(unimplemented)"
+  def orcType(argTypes: List[Type]): Type = {
+	  throw new Exception("Site " + this + " is unimplemented.")
+  }
+  def call(args: List[Value], token: TokenAPI) {
+	  throw new Exception("Site " + this + " is unimplemented.")
+  }
 }

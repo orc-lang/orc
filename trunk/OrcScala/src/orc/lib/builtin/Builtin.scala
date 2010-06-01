@@ -21,6 +21,8 @@ import orc.sites._
 
 
 
+// Logic
+
 /**
  * @author dkitchin
  */
@@ -47,3 +49,29 @@ object Not extends PartialSite {
       case _ => None
   }
 }
+
+object Eq extends UnimplementedSite
+
+
+// Constructors
+
+object TupleConstructor extends UnimplementedSite
+object RecordConstructor extends UnimplementedSite
+object ConsConstructor extends UnimplementedSite
+object SomeConstructor extends UnimplementedSite
+object NoneConstructor extends UnimplementedSite
+
+
+// Extractors
+
+object ConsExtractor extends UnimplementedSite
+object SomeExtractor extends UnimplementedSite
+object NoneExtractor extends UnimplementedSite
+object FindExtractor extends UnimplementedSite
+
+
+// Site site
+
+object SiteSite extends UnimplementedSite
+
+
