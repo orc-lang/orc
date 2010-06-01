@@ -368,6 +368,35 @@ object Translator {
 	}
 	
 	
+	def makeNewBody(body: ext.Expression) : ext.Expression = {
+    val (defs, g) = defPartition(body)
+    if (defs.size == 0) {
+      throw new Exception("A capsule must contain at least one def")
+      // set the source location in the exception
+    }
+    var defNames: List[String] = List()
+    for (d <- defs) {
+      val name = d match {
+        case ext.Def(n, _, _, _) => n
+        case ext.DefCapsule(n, _, _, _) => n
+        case _ => ""
+      }
+      if (name != "" && !defNames.contains(name)) defNames = name::defNames
+    }
+    
+    var recordCall : ext.Call = new ext.Call(new ext.Constant("Record"), List(ext.Args(None, makeRecordArgs(defNames))))
+    
+    ext.Parallel(ext.Sequential(body, None, ext.Stop()), recordCall)
+	}
+	
+	def makeRecordArgs(defNames: List[String]) : List[ext.Expression] = {
+	  var args : List[ext.Expression] = List()
+	  for (d <- defNames) {
+	    args = args++List(new ext.Constant(d))
+	    args = args++List(new ext.Call(new ext.Constant("Site"), List(ext.Args(None, List(new ext.Constant(d))))))
+	  }
+	  args
+	} 
 	
 	
 	// Incomplete for some cases.
@@ -422,6 +451,11 @@ object Translator {
             case Def(nv, _, _, _, _, _) => nv
           }
           DeclareDefs(newdefs, nameVar)
+				}
+				case ext.Capsule(b) => {
+				  var capThunk = ext.Lambda(None, null, None, makeNewBody(b))				  
+				  converter(ext.Call(
+				    ext.Call(ext.Constant("Site"), List(ext.Args(None, List(capThunk)))), null))
 				}
 				case ext.Conditional(ifE, thenE, elseE) => {
 					 val t = generateTempVar
