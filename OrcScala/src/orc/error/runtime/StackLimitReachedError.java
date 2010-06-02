@@ -13,6 +13,7 @@
 
 package orc.error.runtime;
 
+@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
 public class StackLimitReachedError extends TokenException {
 	public StackLimitReachedError(final int limit) {
 		super("Stack limit (limit=" + limit + ") reached");

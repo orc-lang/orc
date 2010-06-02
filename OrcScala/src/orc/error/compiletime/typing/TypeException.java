@@ -16,6 +16,7 @@ package orc.error.compiletime.typing;
 import scala.util.parsing.input.Position;
 import orc.error.compiletime.CompilationException;
 
+@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
 public class TypeException extends CompilationException {
 
 	public TypeException(final String message) {

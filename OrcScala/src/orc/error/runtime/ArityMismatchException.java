@@ -13,6 +13,7 @@
 
 package orc.error.runtime;
 
+@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
 public class ArityMismatchException extends RuntimeTypeException {
 
 	public int arityExpected;
@@ -22,13 +23,13 @@ public class ArityMismatchException extends RuntimeTypeException {
 		super(message);
 	}
 
-	public ArityMismatchException(final String message, final int arityExpected, final int arityProvided) {
+	public ArityMismatchException(final String message, @SuppressWarnings("hiding") final int arityExpected, @SuppressWarnings("hiding") final int arityProvided) {
 		super(message);
 		this.arityExpected = arityExpected;
 		this.arityProvided = arityProvided;
 	}
 
-	public ArityMismatchException(final int arityExpected, final int arityProvided) {
+	public ArityMismatchException(@SuppressWarnings("hiding") final int arityExpected, @SuppressWarnings("hiding") final int arityProvided) {
 		super("Arity mismatch, expected " + arityExpected + " arguments, got " + arityProvided + " arguments.");
 		this.arityExpected = arityExpected;
 		this.arityProvided = arityProvided;

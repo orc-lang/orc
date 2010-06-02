@@ -15,6 +15,7 @@ package orc.error.compiletime;
 
 import scala.util.parsing.input.Position;
 
+@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
 public class UnboundVariableException extends CompilationException {
 	public UnboundVariableException(final String key, final Position location) {
 		this("Variable " + key + " is unbound");

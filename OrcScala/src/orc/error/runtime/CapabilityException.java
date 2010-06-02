@@ -13,6 +13,7 @@
 
 package orc.error.runtime;
 
+@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
 public class CapabilityException extends TokenException {
 	public CapabilityException(final String name) {
 		super("This engine does not have the capability '" + name + "'");

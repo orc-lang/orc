@@ -15,12 +15,13 @@ package orc.error.compiletime.typing;
 
 import orc.types.Type;
 
+@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
 public class SubtypeFailureException extends TypeException {
 
-	Type S;
-	Type T;
+	public Type S;
+	public Type T;
 
-	public SubtypeFailureException(final Type S, final Type T) {
+	public SubtypeFailureException(@SuppressWarnings("hiding") final Type S, @SuppressWarnings("hiding") final Type T) {
 		super("Expected type " + T + " or some subtype, found type " + S + " instead.");
 		this.S = S;
 		this.T = T;

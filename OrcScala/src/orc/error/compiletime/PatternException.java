@@ -13,6 +13,7 @@
 
 package orc.error.compiletime;
 
+@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
 public class PatternException extends CompilationException {
 
 	public PatternException(final String message) {

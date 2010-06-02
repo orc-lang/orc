@@ -13,11 +13,12 @@
 
 package orc.error.runtime;
 
+@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
 public class MethodTypeMismatchException extends RuntimeTypeException {
 
 	public String methodName;
 
-	public MethodTypeMismatchException(final String methodName) {
+	public MethodTypeMismatchException(@SuppressWarnings("hiding") final String methodName) {
 		super("Argument types did not match any implementation for method '" + methodName + "'.");
 		this.methodName = methodName;
 	}

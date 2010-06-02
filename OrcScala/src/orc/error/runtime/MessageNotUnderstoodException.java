@@ -13,11 +13,12 @@
 
 package orc.error.runtime;
 
+@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
 public class MessageNotUnderstoodException extends TokenException {
 
-	String field;
+	public String field;
 
-	public MessageNotUnderstoodException(final String field) {
+	public MessageNotUnderstoodException(@SuppressWarnings("hiding") final String field) {
 		super("The message " + field + " was not understood by this site.");
 		this.field = field;
 	}

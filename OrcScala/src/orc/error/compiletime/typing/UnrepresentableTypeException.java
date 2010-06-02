@@ -20,6 +20,7 @@ import orc.types.Type;
  * be represented syntactically.
  * @author quark
  */
+@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
 public class UnrepresentableTypeException extends TypeException {
 	public UnrepresentableTypeException(final Type type) {
 		super(type.toString() + " has no concrete syntax.");

@@ -13,6 +13,7 @@
 
 package orc.error.runtime;
 
+@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
 public class InsufficientArgsException extends RuntimeTypeException {
 
 	public int missingArg;
@@ -22,13 +23,13 @@ public class InsufficientArgsException extends RuntimeTypeException {
 		super(message);
 	}
 
-	public InsufficientArgsException(final String message, final int missingArg, final int arityProvided) {
+	public InsufficientArgsException(final String message, @SuppressWarnings("hiding") final int missingArg, @SuppressWarnings("hiding") final int arityProvided) {
 		super(message);
 		this.missingArg = missingArg;
 		this.arityProvided = arityProvided;
 	}
 
-	public InsufficientArgsException(final int missingArg, final int arityProvided) {
+	public InsufficientArgsException(@SuppressWarnings("hiding") final int missingArg, @SuppressWarnings("hiding") final int arityProvided) {
 		super("Arity mismatch, could not find argument " + missingArg + ", only got " + arityProvided + " arguments.");
 		this.missingArg = missingArg;
 		this.arityProvided = arityProvided;

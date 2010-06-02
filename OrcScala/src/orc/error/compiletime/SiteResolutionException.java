@@ -20,6 +20,7 @@ package orc.error.compiletime;
  * 
  * @author quark
  */
+@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
 public class SiteResolutionException extends CompilationException {
 	public SiteResolutionException(final String message, final Throwable cause) {
 		super(message, cause);

@@ -21,6 +21,7 @@ package orc.error;
  * 
  * @author dkitchin
  */
+@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
 public class OrcException extends Exception {
 
 	public OrcException(final String message) {

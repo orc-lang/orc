@@ -13,16 +13,17 @@
 
 package orc.error.compiletime.typing;
 
+@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
 public class TypeArityException extends TypeException {
 
-	public Integer arityExpected;
-	public Integer arityReceived;
+	public int arityExpected;
+	public int arityReceived;
 
 	public TypeArityException(final String message) {
 		super(message);
 	}
 
-	public TypeArityException(final int arityExpected, final int arityReceived) {
+	public TypeArityException(@SuppressWarnings("hiding") final int arityExpected, @SuppressWarnings("hiding") final int arityReceived) {
 		super("Expected " + arityExpected + " arguments to type instantiation, got " + arityReceived + " arguments instead.");
 		this.arityExpected = arityExpected;
 		this.arityReceived = arityReceived;
