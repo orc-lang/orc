@@ -15,7 +15,6 @@
 package orc
 
 import scala.util.parsing.combinator.lexical.StdLexical
-//import scala.util.parsing.combinator.token._
 import scala.util.parsing.input.CharArrayReader.EofCh
 import scala.collection.mutable.HashSet
 
