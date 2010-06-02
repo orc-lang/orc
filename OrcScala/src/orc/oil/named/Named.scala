@@ -35,14 +35,18 @@ trait hasFreeVars {
   val freevars: Set[Var]
 }
 
-sealed abstract class NamedAST() extends AST with NamedToNameless with MapOnArguments
+sealed abstract class NamedAST() extends AST with NamedToNameless
 
 sealed abstract class Expression() 
-extends NamedAST with NamedInfixCombinators with hasFreeVars with RemoveUnusedDefinitions
+extends NamedAST with NamedInfixCombinators with hasFreeVars with RemoveUnusedDefinitions with MapOnArguments
 { 
   lazy val withoutNames: nameless.Expression = namedToNameless(this, Nil, Nil)
   def map(f: Argument => Argument): Expression = MapOnArgs(this, f)
 
+  // FIXME: Is equals correct here?
+  def subst(a: Argument, x: Argument): Expression = this map (y => if (y equals x) { a } else { y })
+  def subst(a: Argument, s: String): Expression = subst(a, new NamedVar(s))
+  
   lazy val freevars:Set[Var] = {
     this match {
       case x:Var => Set(x)
@@ -71,27 +75,42 @@ case class Constant(value: Value) extends Argument
 
 
 sealed case class Def(name: TempVar, formals: List[TempVar], body: Expression, typeformals: List[TempTypevar], argtypes: List[Type], returntype: Option[Type]) 
-extends NamedAST with Scope with TypeScope with hasFreeVars 
+extends NamedAST with Scope with TypeScope with hasFreeVars with MapOnArguments
 { 
   lazy val withoutNames: nameless.Def = namedToNameless(this, Nil, Nil)
   lazy val freevars: Set[Var] = body.freevars -- formals
   def map(f: Argument => Argument): Def = MapOnArgs(this, f)
 
   // FIXME: Is equals correct here?
-  def subst(a: Argument, x: Argument) = this map (y => if (y equals x) { a } else { y })
+  def subst(a: Argument, x: Argument): Def = this map (y => if (y equals x) { a } else { y })
+  def subst(a: Argument, s: String): Def = subst(a, new NamedVar(s))
 }
 
 
 sealed abstract class Type() extends NamedAST
 { 
   lazy val withoutNames: nameless.Type = namedToNameless(this, Nil) 
-  def map(f: Argument => Argument): Type = this
+  
+  def map(f: Typevar => Typevar): Type = 
+	  this -> {
+	 	  case x : Typevar => f(x)
+	 	  case TupleType(elements) => TupleType(elements map {_ map f})
+	 	  case TypeApplication(tycon, typeactuals) => TypeApplication(f(tycon), typeactuals map {_ map f})
+	 	  case AssertedType(assertedType) => AssertedType(assertedType map f)
+	 	  case FunctionType(typeformals, argtypes, returntype) =>
+	 	  	FunctionType(typeformals, argtypes map {_ map f}, returntype map f)
+	 	  case u => u
+	  }
+  
+  // FIXME: Is equals correct here?
+  def subst(t: Typevar, u: Typevar): Type = this map (y => if (y equals t) { u } else { y })   
+  def subst(t: Typevar, s: String): Type = subst(t, NamedTypevar(s))
 }	
 case object Top extends Type
 case object Bot extends Type
 case class NativeType(name: String) extends Type
 case class TupleType(elements: List[Type]) extends Type
-case class TypeApplication(tycon: TempTypevar, typeactuals: List[Type]) extends Type
+case class TypeApplication(tycon: Typevar, typeactuals: List[Type]) extends Type
 case class AssertedType(assertedType: Type) extends Type	
 case class FunctionType(typeformals: List[TempTypevar], argtypes: List[Type], returntype: Type) 
 extends Type with TypeScope
@@ -171,7 +190,7 @@ trait NamedToNameless {
 }	
 
 
-trait MapOnArguments { self: NamedAST =>
+trait MapOnArguments {
   
   def MapOnArgs(e: Expression, f: Argument => Argument): Expression = {
     def toExp(e: Expression): Expression = MapOnArgs(e, f)
