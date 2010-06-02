@@ -82,9 +82,9 @@ class OrcLexical() extends StdLexical() {
   override val reserved = new HashSet[String] ++ List(
       "true", "false", "signal", "stop", "null",
       "lambda", "if", "then", "else", "as",
-      "val", "def", "type", "site", "class", "include"
-      //"Integer", "Boolean", "String", "Number",
-      //"Signal", "Top", "Bot"
+      "val", "def", "type", "site", "class", "include",
+      "Integer", "Boolean", "String", "Number",
+      "Signal", "Top", "Bot"
     )
 
   /** The set of delimiters (ordering does not matter) */
