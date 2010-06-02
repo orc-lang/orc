@@ -26,7 +26,7 @@ object OrcParser extends StandardTokenParsers {
   override val lexical = new OrcLexical()
 
   def parseValue: Parser[Any] = (
-      "true" ^^^ true 
+        "true" ^^^ true 
       | "false" ^^^ false
       | "signal" ^^^ {}
       | stringLit
@@ -57,7 +57,7 @@ object OrcParser extends StandardTokenParsers {
       | parseBaseExpression
   )
 
-  def parseInfixOp = "+" | "-" | "*"
+  def parseInfixOp = "+" | "-" | "*" 
 
   def parseInfixOpExpression: Parser[Expression] = 
     parseCallExpression interleave parseInfixOp apply InfixOperator
@@ -87,7 +87,7 @@ object OrcParser extends StandardTokenParsers {
       -> Lambda
       | ("if" ~> parseExpression)
       ~ ("then" ~> parseExpression) 
-      ~ ("else" ~> parseExpression) 
+      ~ ("else" ~> parseExpression)
       -> Conditional
       | parseDeclaration ~ parseExpression -> Declare
       | parseOtherwiseExpression ~ ("::" ~> parseType) -> TypeAscription
@@ -195,13 +195,11 @@ object OrcParser extends StandardTokenParsers {
   }
 
 
-
-
   class LocatingParser[+A <: AST](p : => Parser[A]) extends Parser[A] {
     override def apply(i: Input) = {
       val position = i.pos
       val result: ParseResult[A] = p.apply(i)
-      result.map(x => { x.pos = position ; x })
+      result map { _.pos = position }
       result
     }
   }

@@ -38,23 +38,26 @@ case class Capsule(body: Expression) extends Expression
 
 
 abstract class Declaration extends AST
-// to add to user guide: def is allowed to have optional inline return type
+
+case class Val(p: Pattern, e: Expression) extends Declaration
+case class Include(origin: String, decls: List[Declaration]) extends Declaration
+
 abstract class DefDeclaration extends Declaration
 case class Def(name: String, formals: List[Pattern], body: Expression, returntype: Option[Type]) extends DefDeclaration
 case class DefCapsule(name: String, formals: List[Pattern], body: Expression, returntype: Option[Type]) extends DefDeclaration
 case class DefSig(name: String, typeformals: List[String], argtypes: List[Type], returntype: Option[Type]) extends DefDeclaration
 
 abstract class TypeDeclaration extends Declaration
-case class TypeAlias(name: String, typeformals: List[String] = Nil, aliasedtype: Type) extends Declaration
-case class Datatype(name: String, typeformals: List[String] = Nil, constructors: List[Constructor]) extends Declaration
+case class TypeAlias(name: String, typeformals: List[String] = Nil, aliasedtype: Type) extends TypeDeclaration
+case class TypeImport(name: String, classname: String) extends TypeDeclaration
+case class Datatype(name: String, typeformals: List[String] = Nil, constructors: List[Constructor]) extends TypeDeclaration
+
 case class Constructor(name: String, types: List[Option[Type]]) extends AST
-case class TypeImport(name: String, classname: String) extends Declaration
 
 abstract class SiteDeclaration extends Declaration
-case class SiteImport(name: String, sitename: String) extends Declaration
-case class ClassImport(name: String, classname: String) extends Declaration
-case class Val(p: Pattern, e: Expression) extends Declaration
-case class Include(origin: String, decls: List[Declaration]) extends Declaration
+case class SiteImport(name: String, sitename: String) extends SiteDeclaration
+case class ClassImport(name: String, classname: String) extends SiteDeclaration
+
 
 
 

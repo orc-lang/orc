@@ -67,7 +67,21 @@ object NilConstructor extends UnimplementedSite
 object TupleConstructor extends UnimplementedSite
 object RecordConstructor extends UnimplementedSite
 object ConsConstructor extends UnimplementedSite
-object SomeConstructor extends UnimplementedSite
+
+/**
+ * @author dkitchin
+ */
+object SomeConstructor extends PartialSite {
+  override def name = "If"
+  def orcType(argTypes: List[Type]) = null //TODO:FIXME: Implement this
+  def evaluate(args: List[Value]) =
+    args match {
+      case List(a) => Some(Literal(Some(a)))
+      case _ => None
+  }
+}
+
+
 object NoneConstructor extends UnimplementedSite
 
 

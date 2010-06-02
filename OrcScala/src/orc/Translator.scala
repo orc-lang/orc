@@ -14,7 +14,6 @@ import orc.OrcOptions
 object Translator {
 	
 	
-	
 	def translate(options: OrcOptions, extendedAST : ext.Expression): Expression = {
 		val namedAST = convert(extendedAST, new TreeMap(), new TreeMap())	
 		namedAST map {
@@ -26,6 +25,8 @@ object Translator {
 	
 	def generateTempVar = new TempVar()
 	def generateTempTypevar = new TempTypevar()
+	
+	
 	
 	
 	
@@ -70,14 +71,14 @@ object Translator {
 	val callIsNone = unaryBuiltinCall(builtin.NoneExtractor) _
 	
 	
-	def callUnapply(constructor : Argument, a : Argument) = {
+	def makeUnapply(constructor : Argument, a : Argument) = {
 		val extractor = generateTempVar
 		val getExtractor = Call(Constant(builtin.FindExtractor), List(constructor), None)
 		val invokeExtractor = Call(extractor, List(a), None)
 		getExtractor > extractor > invokeExtractor
 	}
 	
-	def callNth(a : Argument, i : Int) = Call(a, List(Constant(Literal(i))), None)
+	def makeNth(a : Argument, i : Int) = Call(a, List(Constant(Literal(i))), None)
 	
 	def makeLet(args: List[Argument]): Expression = {
 		args match {
@@ -98,6 +99,7 @@ object Translator {
 		elements.foldRight(nil)(cons)
 	}
 	
+	// Incomplete.
 	def makeOperator(opName : String) = builtin.Let
 	
 	
@@ -151,7 +153,7 @@ object Translator {
 				}
 				case ext.TuplePattern(ps) => {
 					val vars = (for (_ <- ps) yield generateTempVar).toList
-					val exprs = List.range(0, ps.length) map (callNth(x, _))
+					val exprs = List.range(0, ps.length) map (makeNth(x, _))
 					val tupleCompute = exprs zip vars
 					val subResults = List.map2(ps, vars)(decomposePattern)
 					val (subCompute, subBindings): PatternDecomposition = List unzip subResults
@@ -171,7 +173,7 @@ object Translator {
 				}
 				case ext.CallPattern(name, args) => {
 					val y = generateTempVar 
-					val matchCompute = (callUnapply(context(name), x), y)
+					val matchCompute = (makeUnapply(context(name), x), y)
 					val (subCompute, subBindings) = decomposePattern(ext.TuplePattern(args), y)
 					(matchCompute :: subCompute, subBindings)
 				}
@@ -237,7 +239,7 @@ object Translator {
 		val nil2 = convert(target, context ++ newbindings, typecontext)
 		def cons2(indexedFragment: (TempVar, Int), expr: Expression) = {
 			val (z, i) = indexedFragment
- 			combinator(callNth(mappedVar,i), mapping(z), expr)
+ 			combinator(makeNth(mappedVar,i), mapping(z), expr)
 		}
 		val indexedFragments = fragments.zipWithIndex
 		val newtarget = indexedFragments.foldRight(nil2)(cons2)
@@ -284,7 +286,7 @@ object Translator {
 		val nil2 = convert(target, context ++ newbindings, typecontext)
 		def cons2(indexedFragment: (TempVar, Int), expr: Expression) = {
 			val (z, i) = indexedFragment
- 			callNth(mappedVar,i)  > mapping(z) >  expr
+ 			makeNth(mappedVar,i)  > mapping(z) >  expr
 		}
 		val indexedFragments = fragments.zipWithIndex
 		
