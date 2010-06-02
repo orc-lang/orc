@@ -35,6 +35,7 @@ object OrcParser extends StandardTokenParsers {
       | stringLit
       | numericLit ^^ { BigInt(_) }
       | floatLit ^^ { BigDecimal(_) }
+      | "null" ^^^ null
   )
 
   def parseConstant = parseValue -> Constant
@@ -161,8 +162,8 @@ object OrcParser extends StandardTokenParsers {
       | ("def" ~> "capsule" ~> ident) ~ TupleOf(parsePattern) ~ ("=" ~> parseExpression) ~ (parseReturnType?) 
       -> DefCapsule
 
-      | "def" ~> ident ~ ListOf(parseTypeVariable) ~ TupleOf(parseType) ~ (parseReturnType?) 
-      -> DefSig
+      | "def" ~> ident ~ (ListOf(parseTypeVariable)?) ~ TupleOf(parseType) ~ (parseReturnType?) 
+      -> { (id, tvs, ts, rt) => DefSig(id, tvs getOrElse Nil, ts, rt) }
 
       | "type" ~> parseTypeVariable ~ ("=" ~> parseClassname) 
       -> TypeImport
