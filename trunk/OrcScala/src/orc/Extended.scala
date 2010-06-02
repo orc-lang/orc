@@ -42,7 +42,9 @@ abstract class Declaration extends AST
 case class Val(p: Pattern, e: Expression) extends Declaration
 case class Include(origin: String, decls: List[Declaration]) extends Declaration
 
-abstract class DefDeclaration extends Declaration
+abstract class DefDeclaration extends Declaration {
+	val name: String
+}
 case class Def(name: String, formals: List[Pattern], body: Expression, returntype: Option[Type]) extends DefDeclaration
 case class DefCapsule(name: String, formals: List[Pattern], body: Expression, returntype: Option[Type]) extends DefDeclaration
 case class DefSig(name: String, typeformals: List[String], argtypes: List[Type], returntype: Option[Type]) extends DefDeclaration
