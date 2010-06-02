@@ -205,7 +205,7 @@ trait RemoveUnusedDefinitions {
      * Removes unused definitions from the OIL AST.
      */
 	def removeUnusedDefs(): Expression = {
-		this match {
+		this -> {
 			case left || right => left.removeUnusedDefs() || right.removeUnusedDefs()
 			case left > x > right => left.removeUnusedDefs() > x > right.removeUnusedDefs() 
 			case left < x < right => left.removeUnusedDefs() < x < right.removeUnusedDefs()
