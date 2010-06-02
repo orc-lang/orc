@@ -23,23 +23,7 @@ import ext._
 
 object OrcParser extends StandardTokenParsers {
 
-//  def parse(s:String): Expression = {
-//      val tokens = new lexical.Scanner(s)
-//      val parser = phrase(parseExpression)
-//      val result = parser(tokens)
-//      result match {
-//        case Success(result,_) => result
-//        case Failure(msg,reader) => print(msg + "\n" + reader.pos.longString + "\n") ; Stop()
-//        case Error(msg,reader) => print(msg + "\n" + reader.pos.longString + "\n") ; Stop()
-//      }
-//  }
-
-//  def parseIncludes(s:String): List[Declaration] = {
-//      val tokens = new lexical.Scanner(s)
-//      val parser = phrase(parseDeclaration+)
-//      val result = parser(tokens)
-//      result.get
-//  }
+  override val lexical = new OrcLexical()
 
   def parseValue: Parser[Any] = (
       "true" ^^^ true 
@@ -157,9 +141,11 @@ object OrcParser extends StandardTokenParsers {
 
   def parseReturnType = "::" ~> parseType
 
-  def parseClassname = ident 
+  def javaIdent = ident //FIXME: Orc identifiers are not == Java identifiers
 
-  def parseSitename = ident
+  def parseClassname: Parser[String] = rep1sep(javaIdent, ".") ^^ { _.mkString(".") }
+
+  def parseSitename: Parser[String] = rep1sep(ident, ".") ^^ { _.mkString(".") }
 
   def parseDeclaration: Parser[Declaration] = (
       ("val" ~> parsePattern) ~ ("=" ~> parseExpression) 
@@ -192,22 +178,6 @@ object OrcParser extends StandardTokenParsers {
       | "include" ~> stringLit 
       -> { Include(_ : String, Nil) }
   )
-
-  override val lexical = new OrcLexical()
-
-  lexical.delimiters ++= List("+", "-", "*")
-  lexical.delimiters ++= List("<", ">", "|", ";")
-  lexical.delimiters ++= List("(", ")", "[", "]", ",", "=")
-  lexical.delimiters ++= List(":", "_")
-  lexical.delimiters ++= List(".", "?", ":=")
-  lexical.delimiters ++= List("::", ":!:")
-
-  lexical.reserved ++= List("true", "false", "signal", "stop")
-  lexical.reserved ++= List("lambda", "if", "then", "else", "as")
-  lexical.reserved ++= List("val", "def", "type", "site", "class", "include")
-  lexical.reserved ++= List("Integer", "Boolean", "String", "Number")
-  lexical.reserved ++= List("Signal", "Top", "Bot")
-
 
   // Add helper combinators for ( ... ) and [ ... ] forms
   def TupleOf[T](P : => Parser[T]): Parser[List[T]] = "(" ~> repsep(P, ",") <~ ")" 
@@ -282,18 +252,4 @@ object OrcParser extends StandardTokenParsers {
   implicit def CreateMaps4Parser[A,B,C,D](parser: Parser[~[~[~[A,B],C],D]]): Maps4[A,B,C,D] = new Maps4(parser)
   implicit def CreateInterleavingParser[A <: AST](parser: Parser[A]): InterleavingParser[A] = new InterleavingParser(parser)
 
-}
-
-class OrcLexical extends StdLexical() {
-  override def whitespace: Parser[Any] = rep(
-      whitespaceChar
-    | '{' ~ '-' ~ comment
-    | '-' ~ '-' ~ rep( chrExcept(EofCh, '\n') )
-    | '{' ~ '-' ~ failure("unclosed comment")
-    )
-
-  override protected def comment: Parser[Any] = (
-      '-' ~ '}'  ^^ { case _ => ' '  }
-    | chrExcept(EofCh) ~ comment
-    )
 }
