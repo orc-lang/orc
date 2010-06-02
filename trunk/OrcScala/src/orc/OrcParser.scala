@@ -15,22 +15,26 @@
 
 package orc
 
-import scala.util.parsing.combinator.lexical.StdLexical
 import scala.util.parsing.input.Reader
 import scala.util.parsing.input.CharArrayReader.EofCh
 import scala.util.parsing.combinator.syntactical._
-import ext._
+import orc.ext._
 
 object OrcParser extends StandardTokenParsers {
+  import lexical.{FloatingPointLit}
 
   override val lexical = new OrcLexical()
+
+  def floatLit: Parser[String] = 
+    elem("number", _.isInstanceOf[FloatingPointLit]) ^^ (_.chars)
 
   def parseValue: Parser[Any] = (
         "true" ^^^ true 
       | "false" ^^^ false
       | "signal" ^^^ {}
       | stringLit
-      | numericLit 
+      | numericLit ^^ { BigInt(_) }
+      | floatLit ^^ { BigDecimal(_) }
   )
 
   def parseConstant = parseValue -> Constant
