@@ -23,7 +23,7 @@ object TypeChecker {
 
   def typeSynth(expr : Expression, context : List[Type], typeContext: List[Type]) : Type = {
       expr match {
-      case Stop() => Bot()
+      case Stop => Bot
       case Call(target, args, typeArgs) => {
         val callee = typeSynth(target, context, typeContext)
         callee match {
@@ -46,7 +46,7 @@ object TypeChecker {
         typeSynth(body, defTypes.reverse:::context, typeContext)
       }
       case HasType(body, expectedType) => typeCheck(body, expectedType, context, typeContext) ; expectedType
-      case Constant(value) => Top() //FIXME
+      case Constant(value) => Top //FIXME
       case Variable(index) => context(index)
       }
   }

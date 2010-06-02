@@ -35,7 +35,7 @@ sealed abstract class Expression() extends orc.AST with hasFreeVars with Nameles
    */
   lazy val freevars: Set[Int] = {
     this match {
-      case Stop() => Set.empty
+      case Stop => Set.empty
       case Constant(_) => Set.empty
       case Variable(i) => Set(i)
       case Call(target, args, typeArgs) => target.freevars ++ args.flatMap(_.freevars)  
@@ -54,7 +54,7 @@ sealed abstract class Expression() extends orc.AST with hasFreeVars with Nameles
   
   lazy val withNames: named.Expression = AddNames.namelessToNamed(this, Nil, Nil)
 }
-case class Stop() extends Expression
+case object Stop extends Expression
 case class Call(target: Argument, args: List[Argument], typeArgs: Option[List[Type]]) extends Expression
 case class Parallel(left: Expression, right: Expression) extends Expression
 case class Sequence(left: Expression, right: Expression) extends Expression
@@ -71,8 +71,8 @@ case class Constant(value: Value) extends Argument
 case class Variable(index: Int) extends Argument
 
 sealed abstract class Type() extends orc.AST
-case class Top() extends Type
-case class Bot() extends Type
+case object Top extends Type
+case object Bot extends Type
 case class TypeVar(index: Int) extends Type
 case class NativeType(name: String) extends Type
 case class TupleType(elements: List[Type]) extends Type
@@ -99,7 +99,7 @@ object AddNames {
   def namelessToNamed(e: Expression, context: List[named.TempVar], typecontext: List[named.TempTypevar]): named.Expression = {
     def recurse(e: Expression): named.Expression = namelessToNamed(e, context, typecontext)
     e -> {
-      case Stop() => named.Stop()
+      case Stop => named.Stop
       case a: Argument => namelessToNamed(a, context)		
       case Call(target, args, typeargs) => {
         val newtarget = namelessToNamed(target, context)
@@ -139,8 +139,8 @@ object AddNames {
   def namelessToNamed(t: Type, typecontext: List[TempTypevar]): named.Type = {
     t -> {
       case TypeVar(i) => typecontext(i)
-      case Top() => named.Top()
-      case Bot() => named.Bot()
+      case Top => named.Top
+      case Bot => named.Bot
       case FunctionType(typearity, argtypes, returntype) => {
         val typeformals = (for (_ <- 0 until typearity) yield new TempTypevar()).toList
         val newTypeContext = typeformals ::: typecontext

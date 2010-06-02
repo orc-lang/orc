@@ -141,7 +141,7 @@ object Translator {
 	
 		def decomposePattern(p : ext.Pattern, x: TempVar): PatternDecomposition = {
 			p match {
-				case ext.Wildcard() => (Nil, Nil)
+				case ext.Wildcard => (Nil, Nil)
 				case ext.ConstantPattern(c) => {
 					val testexpr = callEq(x, Constant(Literal(c)))
 					val guard = (testexpr, generateTempVar)
@@ -311,7 +311,7 @@ object Translator {
 	
 	
 	def convertClauses(clauses: List[Clause], args: List[TempVar], context: Map[String, TempVar], typecontext: Map[String, TempTypevar]): Expression = {
-		val nil: Expression = Stop()
+		val nil: Expression = Stop
 		val cons = { convertClause(context,typecontext)(args) _ }
 		clauses.foldRight(nil)(cons)
 	}
@@ -429,8 +429,8 @@ object Translator {
 	
 	def convertType(t : ext.Type, typecontext : Map[String, TempTypevar]): Type = {
 		t -> {
-			case ext.Top() => Top()
-			case ext.Bot() => Bot()
+			case ext.Top => Top
+			case ext.Bot => Bot
 			case ext.NativeType(s) => NativeType(s)
 			case ext.TupleType(ts) => TupleType(ts map (convertType(_,typecontext)))
 			case ext.TypeVariable(name) => typecontext.getOrElse(name, throw new Exception("Unbound type variable"))
@@ -466,7 +466,7 @@ object Translator {
     
     var recordCall : ext.Call = new ext.Call(new ext.Constant(builtin.RecordConstructor), List(ext.Args(None, makeRecordArgs(defNames))))
     
-    ext.Parallel(ext.Sequential(body, None, ext.Stop()), recordCall)
+    ext.Parallel(ext.Sequential(body, None, ext.Stop), recordCall)
 	}
 	
 	def makeRecordArgs(defNames: List[String]) : List[ext.Expression] = {
@@ -483,7 +483,7 @@ object Translator {
 	def convert(e : ext.Expression, context : Map[String, TempVar], typecontext : Map[String, TempTypevar]): Expression = {
 			def converter(e : ext.Expression) = convert(e,context,typecontext)
 			e -> {
-				case ext.Stop() => Stop()
+				case ext.Stop => Stop
 				case ext.Constant(c) => c match {
 					case (v: Value) => Constant(v)
 					case lit => Constant(Literal(lit))
@@ -531,7 +531,7 @@ object Translator {
 //  				val newTypeContext = typecontext ++ (for (x:String <- typeformals) yield (x, generateTempTypevar))
 //  				val newTypeFormals = typeformals map newTypeContext
 //          val (newformals, maybeArgTypes) = formalsPartition(formals)
-//  				val newReturnType = convertType(returntype.getOrElse(orc.ext.Top()), newTypeContext)
+//  				val newReturnType = convertType(returntype.getOrElse(orc.ext.Top), newTypeContext)
 //          val defname = generateTempVar
           val lambdaExtDef = ext.Def("", formals, body, returntype)
           
