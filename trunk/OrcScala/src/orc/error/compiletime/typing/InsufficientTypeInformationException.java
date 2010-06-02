@@ -15,6 +15,7 @@ package orc.error.compiletime.typing;
 
 import scala.util.parsing.input.Position;
 
+@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
 public abstract class InsufficientTypeInformationException extends TypeException {
 
 	public InsufficientTypeInformationException(final String message) {

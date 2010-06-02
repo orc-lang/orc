@@ -27,9 +27,10 @@ import scala.util.parsing.input.Positional;
  * 
  * @author dkitchin
  */
+@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
 public abstract class TokenException extends ExecutionException implements Positional {
-	Position position;
-	private Position[] backtrace = new Position[0];
+	public Position position;
+	public Position[] backtrace = new Position[0];
 
 	public TokenException(final String message) {
 		super(message);
@@ -39,7 +40,7 @@ public abstract class TokenException extends ExecutionException implements Posit
 		super(message, cause);
 	}
 
-	public void setBacktrace(final Position[] backtrace) {
+	public void setBacktrace(@SuppressWarnings("hiding") final Position[] backtrace) {
 		this.backtrace = backtrace;
 	}
 

@@ -13,6 +13,7 @@
 
 package orc.error.compiletime.typing;
 
+@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
 public class UnspecifiedArgTypesException extends InsufficientTypeInformationException {
 
 	public UnspecifiedArgTypesException() {

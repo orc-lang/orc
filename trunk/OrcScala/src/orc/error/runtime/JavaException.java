@@ -20,6 +20,7 @@ package orc.error.runtime;
  * 
  * @author dkitchin
  */
+@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
 public class JavaException extends SiteException {
 	public JavaException(final Throwable cause) {
 		super(cause.toString(), cause);

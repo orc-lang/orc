@@ -21,11 +21,12 @@ import orc.types.Type;
  *
  * @author dkitchin
  */
+@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
 public class UncallableTypeException extends TypeException {
 
-	Type t;
+	public Type t;
 
-	public UncallableTypeException(final Type t) {
+	public UncallableTypeException(@SuppressWarnings("hiding") final Type t) {
 		super("Type " + t + " cannot be called as a service or function.");
 		this.t = t;
 	}

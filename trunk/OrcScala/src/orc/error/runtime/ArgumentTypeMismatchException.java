@@ -13,24 +13,25 @@
 
 package orc.error.runtime;
 
+@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
 public class ArgumentTypeMismatchException extends RuntimeTypeException {
 
-	int argPosition;
-	String expectedType;
-	String providedType;
+	public int argPosition;
+	public String expectedType;
+	public String providedType;
 
 	public ArgumentTypeMismatchException(final String message) {
 		super(message);
 	}
 
-	public ArgumentTypeMismatchException(final int argPosition, final String expectedType, final String providedType) {
+	public ArgumentTypeMismatchException(@SuppressWarnings("hiding") final int argPosition, @SuppressWarnings("hiding") final String expectedType, @SuppressWarnings("hiding") final String providedType) {
 		super("Expected type " + expectedType + " for argument " + argPosition + ", got " + providedType + " instead");
 		this.argPosition = argPosition;
 		this.expectedType = expectedType;
 		this.providedType = providedType;
 	}
 
-	public ArgumentTypeMismatchException(final String message, final int argPosition, final String expectedType, final String providedType) {
+	public ArgumentTypeMismatchException(final String message, @SuppressWarnings("hiding") final int argPosition, @SuppressWarnings("hiding") final String expectedType, @SuppressWarnings("hiding") final String providedType) {
 		super(message);
 		this.argPosition = argPosition;
 		this.expectedType = expectedType;
@@ -41,7 +42,7 @@ public class ArgumentTypeMismatchException extends RuntimeTypeException {
 		super(e.toString());
 	}
 
-	public ArgumentTypeMismatchException(final int argPosition, final ClassCastException e) {
+	public ArgumentTypeMismatchException(@SuppressWarnings("hiding") final int argPosition, final ClassCastException e) {
 		super("For argument " + argPosition + ": " + e.toString());
 	}
 }

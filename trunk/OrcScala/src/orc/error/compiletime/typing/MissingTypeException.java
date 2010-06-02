@@ -18,6 +18,7 @@ package orc.error.compiletime.typing;
  * 
  * @author dkitchin
  */
+@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
 public class MissingTypeException extends TypeException {
 
 	public MissingTypeException(final Throwable cause) {

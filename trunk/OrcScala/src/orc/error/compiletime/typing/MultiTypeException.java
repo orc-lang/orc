@@ -22,6 +22,7 @@ import orc.types.Type;
  *
  * @author dkitchin
  */
+@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
 public class MultiTypeException extends TypeException {
 
 	public String errorReport;

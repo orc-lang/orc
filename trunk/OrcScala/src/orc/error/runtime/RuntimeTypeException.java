@@ -19,6 +19,7 @@ package orc.error.runtime;
  * 
  * @author dkitchin
  */
+@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
 public class RuntimeTypeException extends TokenException {
 
 	public RuntimeTypeException(final String message) {
