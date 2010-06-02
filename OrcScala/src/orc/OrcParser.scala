@@ -62,10 +62,27 @@ object OrcParser extends StandardTokenParsers {
       | parseBaseExpression
   )
 
-  def parseInfixOp = "+" | "-" | "*" 
+  def parseLogicalExpr = chainl1(parseRelationalExpr, ("||" | "&&") ^^
+   { op =>(left:Expression,right:Expression) => InfixOperator(left, op, right)})
+  
+  def parseRelationalExpr = chainl1(parseAdditionalExpr, ("=" | "/=" | "<" | ">" | "<=" | ">=") ^^
+        { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
 
-  def parseInfixOpExpression: Parser[Expression] = 
-    parseCallExpression interleave parseInfixOp apply InfixOperator
+  def parseAdditionalExpr: Parser[Expression] = chainl1(parseMultExpr, ("+" | "-" | ":") ^^ 
+    { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) }) | 
+    "~" ~ parseAdditionalExpr ^^ { case op ~ expr => PrefixOperator(op, expr)}
+  
+  def parseMultExpr = chainl1(parseExpnExpr, ("*" | "/" | "%") ^^ 
+    { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
+    
+  def parseExpnExpr = chainl1(parseUnaryExpr, ("**") ^^ 
+    { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
+  
+  def parseUnaryExpr = "-" ~ parseCallExpression ^^ { case op ~ expr => PrefixOperator(op, expr)} |
+    parseCallExpression
+  
+  
+  def parseInfixOpExpression: Parser[Expression] = parseLogicalExpr
 
 
   def parseSequentialCombinator = ">" ~> (parsePattern?) <~ ">"
