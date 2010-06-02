@@ -145,11 +145,11 @@ object OrcParser extends StandardTokenParsers {
 
   def parseReturnType = "::" ~> parseType
 
-  def javaIdent = ident //FIXME: Orc identifiers are not == Java identifiers
-
-  def parseClassname: Parser[String] = rep1sep(javaIdent, ".") ^^ { _.mkString(".") }
-
-  def parseSitename: Parser[String] = rep1sep(ident, ".") ^^ { _.mkString(".") }
+  def parseClassname: Parser[String] =
+      ( stringLit
+        // For backwards compatibility, allow quotes to be omitted, if class name had only Orc-legal identifier characters
+      | rep1sep(ident, ".") ^^ { _.mkString(".") } 
+      )
 
   def parseDeclaration: Parser[Declaration] = (
       ("val" ~> parsePattern) ~ ("=" ~> parseExpression) 
@@ -173,7 +173,7 @@ object OrcParser extends StandardTokenParsers {
       | "type" ~> parseTypeVariable ~ (ListOf(parseTypeVariable)?) ~ ("=" ~> rep1sep(parseConstructor, "|"))
       -> ((x,ys,t) => Datatype(x, ys getOrElse Nil, t))
 
-      | "site" ~> ident ~ ("=" ~> parseSitename) 
+      | "site" ~> ident ~ ("=" ~> parseClassname) 
       -> SiteImport
 
       | "class" ~> ident ~ ("=" ~> parseClassname) 
@@ -215,6 +215,9 @@ object OrcParser extends StandardTokenParsers {
   class Maps0(s: String) {
     def ->[A <: AST](a: () => A): Parser[A] = {
         markLocation(keyword(s) ^^^ a())
+    }
+    def ->[A <: AST](a: A): Parser[A] = {
+        markLocation(keyword(s) ^^^ a)
     }
   }
   class Maps1[A](parser: Parser[A]) {

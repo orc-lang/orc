@@ -99,9 +99,4 @@ class OrcLexical() extends StdLexical() {
       "::", ":!:" 
     )
 
-  //TODO: These are the beginning of recognizing Java identifiers, but they are not used yet.  We need them for class decls and field access on Java sites.
-  def javaIdentStartChar = elem("Java ident start char", Character.isJavaIdentifierStart(_))
-  def javaIdentPartChar = elem("Java ident part char", Character.isJavaIdentifierPart(_))
-  def javaIdent = javaIdentStartChar ~ rep( javaIdentStartChar) ^^ { case first ~ rest => Identifier(first :: rest mkString "") }
-  //def javaQualifiedIdent = rep1sep(javaIdent, ".") ^^ { case first ~ rest => Identifier(first :: rest mkString ".") }
 }

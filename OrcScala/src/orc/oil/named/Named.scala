@@ -57,7 +57,7 @@ extends NamedAST with NamedInfixCombinators with hasFreeVars with RemoveUnusedDe
     }
   }
 }
-case class Stop() extends Expression
+case object Stop extends Expression
 case class Call(target: Argument, args: List[Argument], typeargs: Option[List[Type]]) extends Expression
 case class Parallel(left: Expression, right: Expression) extends Expression
 case class Sequence(left: Expression, x: TempVar, right: Expression) extends Expression with Scope
@@ -87,8 +87,8 @@ sealed abstract class Type() extends NamedAST
   lazy val withoutNames: nameless.Type = namedToNameless(this, Nil) 
   def map(f: Argument => Argument): Type = this
 }	
-case class Top() extends Type
-case class Bot() extends Type
+case object Top extends Type
+case object Bot extends Type
 case class NativeType(name: String) extends Type
 case class TupleType(elements: List[Type]) extends Type
 case class TypeApplication(tycon: TempTypevar, typeactuals: List[Type]) extends Type
@@ -108,7 +108,7 @@ trait NamedToNameless {
     def toArg(a: Argument): nameless.Argument = namedToNameless(a, context)
     def toType(t: Type): nameless.Type = namedToNameless(t, typecontext)
     e -> {
-      case Stop() => nameless.Stop()
+      case Stop => nameless.Stop
       case a : Argument => namedToNameless(a, context)		
       case Call(target, args, typeargs) => nameless.Call(toArg(target), args map toArg, typeargs map { _ map toType })
       case left || right => nameless.Parallel(toExp(left), toExp(right))
@@ -137,8 +137,8 @@ trait NamedToNameless {
     def toType(t: Type): nameless.Type = namedToNameless(t, typecontext)
     t -> {
       case u: TempTypevar => nameless.TypeVar(inverseLookup(u, typecontext))
-      case Top() => nameless.Top()
-      case Bot() => nameless.Bot()
+      case Top => nameless.Top
+      case Bot => nameless.Bot
       case FunctionType(typeformals, argtypes, returntype) => {
         val newTypeContext = typeformals ::: typecontext
         val newArgTypes = argtypes map { namedToNameless(_, newTypeContext) }
@@ -176,7 +176,7 @@ trait MapOnArguments { self: NamedAST =>
   def MapOnArgs(e: Expression, f: Argument => Argument): Expression = {
     def toExp(e: Expression): Expression = MapOnArgs(e, f)
     e -> {
-      case Stop() => Stop()
+      case Stop => Stop
       case a : Argument => f(a)	
       case Call(target, args, typeargs) => Call(f(target), args map f, typeargs)
       case left || right => toExp(left) || toExp(right)
