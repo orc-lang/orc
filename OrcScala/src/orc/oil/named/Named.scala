@@ -37,7 +37,8 @@ trait hasFreeVars {
 
 sealed abstract class NamedAST() extends AST with NamedToNameless with MapOnArguments
 
-sealed abstract class Expression() extends NamedAST with NamedInfixCombinators with hasFreeVars
+sealed abstract class Expression() 
+extends NamedAST with NamedInfixCombinators with hasFreeVars with RemoveUnusedDefinitions
 { 
   lazy val withoutNames: nameless.Expression = namedToNameless(this, Nil, Nil)
   def map(f: Argument => Argument): Expression = MapOnArgs(this, f)
@@ -196,3 +197,38 @@ trait MapOnArguments { self: NamedAST =>
   }
 
 }
+
+
+trait RemoveUnusedDefinitions {
+	self : Expression =>
+	/*
+     * Removes unused definitions from the OIL AST.
+     */
+	def removeUnusedDefs(): Expression = {
+		this match {
+			case left || right => left.removeUnusedDefs() || right.removeUnusedDefs()
+			case left > x > right => left.removeUnusedDefs() > x > right.removeUnusedDefs() 
+			case left < x < right => left.removeUnusedDefs() < x < right.removeUnusedDefs()
+			case left ow right => left.removeUnusedDefs() ow right.removeUnusedDefs()
+			case DeclareDefs(defs, body) => {
+				val newbody = body.removeUnusedDefs()
+				// If none of the defs are bound in the body,
+	        	// just return the body.
+	        	if(body.freevars -- defs.map(_.name) isEmpty) {
+	        		newbody
+	        	} else {
+	        		def f(d: Def): Def = {
+	        			d match { 
+	        				case Def(name,args,body,t,a,r) => Def(name,args,body.removeUnusedDefs(),t,a,r)
+	        			}
+	        		}
+	        		val newdefs = defs.map(f)
+	        		DeclareDefs(newdefs, newbody)
+	        	}
+			}
+			case HasType(body, typ) => HasType(body.removeUnusedDefs(), typ)
+			case _ => this
+		}
+	}
+}
+
