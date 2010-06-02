@@ -5,12 +5,17 @@ trait NamedInfixCombinators {
 	  self: Expression =>
 	
 	def ||(g: Expression) = Parallel(this,g)
-		
+	
+	def >>(g : Expression) = Sequence(this, new TempVar(), g)
+	
 	def >(x : TempVar) =
 		new {
 			def >(g: Expression) = Sequence(NamedInfixCombinators.this, x, g)
 		}
+	
 		
+    def <<(g : Expression) = Prune(this, new TempVar(), g)
+    
 	def <(x : TempVar) =
 		new {
 			def <(g: Expression) = Prune(NamedInfixCombinators.this, x, g)
