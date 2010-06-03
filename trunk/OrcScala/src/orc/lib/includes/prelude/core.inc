@@ -27,19 +27,11 @@ User Guide.
 {-
 Basic types
 -}
-<<<<<<< .mine
 type String = java.lang.String
 type Number = java.lang.BigDecimal
 type Boolean = java.lang.Boolean
 type Integer = java.lang.BigInt
 type Signal = orc.oil.Signal
-=======
-type String = orc.type.ground.StringType
-type Number = orc.type.ground.NumberType
-type Boolean = orc.type.ground.BooleanType
-type Integer = orc.type.ground.IntegerType
-type Signal = orc.type.ground.SignalType
->>>>>>> .r1733
 
 {--
 @site let() :: Signal
