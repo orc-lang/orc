@@ -12,6 +12,7 @@ class OrcEngine {
     def emit(v: Value) { out.append(v) }
     def halted { print("Done. \n") }
     def invoke(t: this.Token, s: Site, vs: List[Value]) { s.call(vs,t) }
+    def expressionPrinted(s: String) { print(s) }
     def schedule(ts: List[Token]) { for (t <- ts) t.run }
   }
 

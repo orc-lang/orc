@@ -39,6 +39,8 @@ trait TokenAPI {
 
   def kill: Unit
   def run: Unit
+
+  def printToStdout(s: String): Unit
 }
 
 trait OrcAPI {
@@ -56,6 +58,7 @@ trait OrcAPI {
   def emit(v: Value): Unit
   def halted: Unit
   def invoke(t: Token, s: Site, vs: List[Value]): Unit
+  def expressionPrinted(s: String): Unit
   def schedule(ts: List[Token]): Unit
 
   // Schedule function is overloaded for convenience
