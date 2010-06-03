@@ -13,6 +13,10 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
+/**
+ * @authors dkitchin, jthywiss
+ */
+
 package orc.lib.builtin
 
 import orc.oil.nameless.Type
@@ -20,23 +24,17 @@ import orc.oil._
 import orc.sites._
 
 
-/**
- * @author dkitchin
- */
 object Let extends TotalSite {
   override def name = "Let"
-  def orcType(argTypes: List[Type]) = null //TODO:FIXME: Implement this
+  def orcType(argTypes: List[Type]) = TupleType(argTypes)
   def evaluate(args: List[Value]) = Literal(args)
 }
 
+
 // Logic
 
-/**
- * @author dkitchin
- */
-object If extends PartialSite {
+object If extends PartialSite with UntypedSite {
   override def name = "If"
-  def orcType(argTypes: List[Type]) = null //TODO:FIXME: Implement this
   def evaluate(args: List[Value]) =
     args match {
       case List(Literal(true)) => Some(Literal({}))
@@ -44,12 +42,8 @@ object If extends PartialSite {
   }
 }
 
-/**
- * @author jthywiss
- */
-object Not extends PartialSite {
+object Not extends PartialSite with UntypedSite {
   override def name = "Not"
-  def orcType(argTypes: List[Type]) = null //TODO:FIXME: Implement this
   def evaluate(args: List[Value]) =
     args match {
       case List(Literal(true)) => Some(Literal(false))
@@ -58,44 +52,128 @@ object Not extends PartialSite {
   }
 }
 
-object Eq extends UnimplementedSite
-
-
-// Constructors
-
-object NilConstructor extends UnimplementedSite
-object TupleConstructor extends UnimplementedSite
-object RecordConstructor extends UnimplementedSite
-object ConsConstructor extends UnimplementedSite
-
-/**
- * @author dkitchin
- */
-object SomeConstructor extends PartialSite {
-  override def name = "If"
-  def orcType(argTypes: List[Type]) = null //TODO:FIXME: Implement this
+object Eq extends PartialSite with UntypedSite {
+  override def name = "Eq"
   def evaluate(args: List[Value]) =
     args match {
-      case List(a) => Some(Literal(Some(a)))
+      case List(a,b) => Some(Literal(a equals b))
       case _ => None
   }
 }
 
 
-object NoneConstructor extends UnimplementedSite
+
+// Constructors
+
+case class OrcTuple(elements: List[Value]) extends PartialSite with UntypedSite {
+  def evaluate(args: List[Value]) = 
+    args match {
+  	  case List(Literal(i: Int)) if (0 <= i < elements.size) => Some(elements(i))
+  	  case _ => None
+    }
+}
+case class OrcList(elements: List[Value]) extends Value
+case class OrcOption(contents: Option[Value]) extends Value
+
+
+object TupleConstructor extends PartialSite {
+  override def name = "Tuple"
+  def orcType(argTypes: List[Type]) = null //TODO:FIXME: Implement this
+  def evaluate(args: List[Value]) =
+    args match {
+      case List(vs) => Some(OrcTuple(vs))
+      case _ => None
+  }
+}
+
+object NoneConstructor extends PartialSite with UntypedSite {
+  override def name = "None"
+  def evaluate(args: List[Value]) =
+    args match {
+      case List() => Some(OrcOption(None()))
+      case _ => None
+  }
+}
+
+object SomeConstructor extends PartialSite {
+  override def name = "Some"
+  def orcType(argTypes: List[Type]) = null //TODO:FIXME: Implement this
+  def evaluate(args: List[Value]) =
+    args match {
+      case List(v) => Some(OrcOption(Some(v)))
+      case _ => None
+  }
+}
+
+
+
+object NilConstructor extends PartialSite with UntypedSite {
+  override def name = "Nil"
+  def evaluate(args: List[Value]) =
+    args match {
+      case List() => Some(OrcList(Nil))
+      case _ => None
+  }
+}
+
+object ConsConstructor extends PartialSite with UntypedSite {
+  override def name = "Cons"
+  def evaluate(args: List[Value]) =
+    args match {
+      case List(v, OrcList(List(vs))) => Some(OrcList(List(v :: vs)))
+      case _ => None
+  }
+}
+
+object RecordConstructor extends UnimplementedSite
+
 
 
 // Extractors
 
-object NilExtractor extends UnimplementedSite
-object ConsExtractor extends UnimplementedSite
-object SomeExtractor extends UnimplementedSite
-object NoneExtractor extends UnimplementedSite
+object NoneExtractor extends PartialSite with UntypedSite {
+  override def name = "None?"
+  def evaluate(args: List[Value]) =
+    args match {
+      case List(OrcOption(None())) => Some(signal)
+      case _ => None
+  }
+}
+
+object SomeExtractor extends PartialSite {
+  override def name = "Some?"
+  def orcType(argTypes: List[Type]) = null //TODO:FIXME: Implement this
+  def evaluate(args: List[Value]) =
+    args match {
+      case List(OrcOption(Some(v))) => Some(v)
+      case _ => None
+  }
+}
+
+
+
+object NilExtractor extends PartialSite with UntypedSite {
+  override def name = "Nil?"
+  def evaluate(args: List[Value]) =
+    args match {
+      case List(OrcList(Nil)) => Some(signal)
+      case _ => None
+  }
+}
+
+object ConsExtractor extends PartialSite with UntypedSite {
+  override def name = "Cons?"
+  def evaluate(args: List[Value]) =
+    args match {
+      case List(OrcList(List(v :: vs))) => Some(OrcTuple(v, OrcList(vs)))
+      case _ => None
+  }
+}
+
 object FindExtractor extends UnimplementedSite
 
 
 // Site site
 
 object SiteSite extends UnimplementedSite
-
 
