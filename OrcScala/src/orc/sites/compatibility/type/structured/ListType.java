@@ -2,7 +2,7 @@
 // ListType.java -- Java class ListType
 // Project OrcJava
 //
-// $Id: ListType.java 1553 2010-02-26 17:02:05Z jthywissen $
+// $Id$
 //
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
