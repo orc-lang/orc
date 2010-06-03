@@ -424,6 +424,8 @@ abstract class Orc extends OrcAPI {
         }
       }
     }
+    
+    def printToStdout(s: String) = expressionPrinted(s)
   
   }
 

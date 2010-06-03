@@ -9,6 +9,7 @@ class ExperimentalOrc extends Orc {
   def emit(v: Value) { print("Published: " + v + "\n") }
   def halted { print("Done. \n") }
   def invoke(t: this.Token, s: Site, vs: List[Value]) { s.call(vs,t) }
+  def expressionPrinted(s: String) { print(s) }
   def schedule(ts: List[Token]) { for (t <- ts) t.run }
 }
 

@@ -1,10 +1,10 @@
 //
-// Oil.scala -- Scala object Oil
+// ThreadedSite.java -- Scala class/trait/object ThreadedSite
 // Project OrcScala
 //
 // $Id$
 //
-// Created by dkitchin on May 10, 2010.
+// Created by jthywiss on Jun 2, 2010.
 //
 // Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
@@ -13,7 +13,13 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.oil
+package orc.sites.compatibility;
 
-abstract class Value
-case class Literal(value: Any) extends Value
+/**
+ * 
+ *
+ * @author jthywiss
+ */
+public abstract class ThreadedSite extends EvalSite {
+    //FIXME: Run evaluate in a seperate thread
+}
