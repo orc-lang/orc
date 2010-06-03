@@ -25,11 +25,6 @@ object OrcParser extends StandardTokenParsers {
 
   override val lexical = new OrcLexical()
 
-  def bareOperator: Parser[String] =
-      "(" ~> { elem("operator", _.isInstanceOf[Keyword]) ^^ (_.chars) } <~ ")"
-
-  def parseSiteName: Parser[String] = ( ident | bareOperator )
-  
   def parseClassname: Parser[String] = (
         stringLit
         // For backwards compatibility, allow quotes to be omitted, if class name had only Orc-legal identifier characters
@@ -56,7 +51,6 @@ object OrcParser extends StandardTokenParsers {
   def parseBaseExpression = (
       parseValue -> Constant 
       | ident -> Variable 
-      | bareOperator -> Variable 
       | "stop" -> Stop
       | "(" ~> parseExpression <~ ")"
       | ListOf(parseExpression) -> ListExpr
@@ -268,10 +262,10 @@ people intuitively use these operators.
       | "type" ~> parseTypeVariable ~ (ListOf(parseTypeVariable)?) ~ ("=" ~> rep1sep(parseConstructor, "|"))
       -> ((x,ys,t) => Datatype(x, ys getOrElse Nil, t))
 
-      | "site" ~> parseSiteName ~ ("=" ~> parseClassname) 
+      | "site" ~> ident ~ ("=" ~> parseClassname) 
       -> SiteImport
 
-      | "class" ~> parseSiteName ~ ("=" ~> parseClassname) 
+      | "class" ~> ident ~ ("=" ~> parseClassname) 
       -> ClassImport
 
       | "include" ~> stringLit 
@@ -293,6 +287,11 @@ people intuitively use these operators.
       phrase(parseExpression)(tokens)
   }
 
+  def parseInclude(options: OrcOptions, r:Reader[Char], name: String) = {
+      val parseInclude = phrase(parseDeclaration*) -> { Include(name, _) } 
+      val tokens = new lexical.Scanner(r)
+      phrase(parseInclude)(tokens)
+  }
 
   class LocatingParser[+A <: AST](p : => Parser[A]) extends Parser[A] {
     override def apply(i: Input) = {

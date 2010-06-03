@@ -116,14 +116,16 @@ object Translator {
 					convert(ext.Pruning(body, Some(p), f))
 				}
 				
-				/*
+				/*FIXME:
 				  case ext.Declare(_, body) =>
 					case class TypeAlias(name: String, typeformals: List[String] = Nil, aliasedtype: Type) extends Declaration
 					case class Datatype(name: String, typeformals: List[String] = Nil, constructors: List[Constructor]) extends Declaration
 					case class Constructor(name: String, types: List[Option[Type]]) extends Declaration
 					case class TypeImport(name: String, classname: String) extends Declaration
 				*/
-				
+				//FIXME: Ignoring type imports
+                case ext.Declare(ext.TypeImport(name, sitename), body) => { convert(body) }
+
 				case ext.Declare(ext.SiteImport(name, sitename), body) => {
 				  val site = Constant(OrcSiteForm.resolve(sitename))
 				  convert(body).subst(site, name) 

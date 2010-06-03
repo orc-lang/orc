@@ -27,11 +27,19 @@ User Guide.
 {-
 Basic types
 -}
+<<<<<<< .mine
+type String = java.lang.String
+type Number = java.lang.BigDecimal
+type Boolean = java.lang.Boolean
+type Integer = java.lang.BigInt
+type Signal = orc.oil.Signal
+=======
 type String = orc.type.ground.StringType
 type Number = orc.type.ground.NumberType
 type Boolean = orc.type.ground.BooleanType
 type Integer = orc.type.ground.IntegerType
 type Signal = orc.type.ground.SignalType
+>>>>>>> .r1733
 
 {--
 @site let() :: Signal
@@ -43,7 +51,7 @@ When applied to a single argument, return that argument (behaving as the identit
 @site let[A, ...](A, ...) :: (A, ...)
 When applied to two or more arguments, return the arguments in a tuple.
 --}
-site let = orc.runtime.sites.core.Let
+--site let = orc.lib.builtin.Let
 
 {--
 @site if(Boolean) :: Signal
@@ -55,7 +63,7 @@ Example:
   if(false) >> "Never publishes"
 | if(true) >> "Always publishes"]]></programlisting>
 --}
-site if = orc.runtime.sites.core.If
+--FIXME:site if = orc.lib.builtin.If
 
 {--
 @site error(String) :: Bot
@@ -69,7 +77,7 @@ def assert(b) =
 -- Fail with the error message: "assertion failed"
 assert(false)]]></programlisting>
 --}
-site error = orc.runtime.sites.core.Error
+--FIXME:site error = orc.lib.builtin.Error
 
 {--
 @site (+)(Number, Number) :: Number
@@ -170,19 +178,19 @@ Note that although values of different types may be compared with
 <code>=</code>, the substitutability principle requires that such values are
 always considered inequal, i.e. the comparison will return <code>false</code>.
 --}
-site (=) = orc.runtime.sites.core.Equal
+--FIXME:site (=) = orc.lib.builtin.Eq
 
 {--
 @site (/=)(Signal, Signal) :: Boolean
 <code>a/=b</code> returns false if <code>a=b</code>, and true otherwise.
 --}
-site (/=) = orc.runtime.sites.core.Inequal
+--FIXME:site (/=) = orc.lib.builtin.Inequal
 
 {--
 @site (~)(Boolean) :: Boolean
 Return the logical negation of the argument.
 --}
-site (~) = orc.runtime.sites.core.Not
+--FIXME:site (~) = orc.lib.builtin.Not
 
 {--
 @site (&&)(Boolean, Boolean) :: Boolean
@@ -221,7 +229,7 @@ old "tail"s unusable, so you should refrain from modifying a value
 while you are deconstructing it.  This feature is highly experimental
 and will probably change in future versions of the implementation.
 --}
-site (:) = orc.runtime.sites.core.Cons
+--FIXME:site (:) = orc.lib.builtin.Cons
 
 {--
 @def abs(Number) :: Number
@@ -229,8 +237,8 @@ Return the absolute value of the argument.
 
 @implementation
 --}
-def abs(Number) :: Number
-def abs(x) = if x < 0 then -x else x
+--FIXME:def abs(Number) :: Number
+--FIXME:def abs(x) = if x < 0 then -x else x
 
 {--
 @def signum(Number) :: Number
@@ -239,11 +247,11 @@ def abs(x) = if x < 0 then -x else x
 
 @implementation
 --}
-def signum(Number) :: Number
-def signum(x) =
-  if x < 0 then -1
-  else if x > 0 then 1
-  else 0
+--FIXME:def signum(Number) :: Number
+--FIXME:def signum(x) =
+--FIXME:  if x < 0 then -1
+--FIXME:  else if x > 0 then 1
+--FIXME:  else 0
 
 {--
 @def min[A](A,A) :: A
@@ -252,8 +260,8 @@ are equal, return the first argument.
 
 @implementation
 --}
-def min[A](A,A) :: A
-def min(x,y) = if y < x then y else x
+--FIXME:def min[A](A,A) :: A
+--FIXME:def min(x,y) = if y < x then y else x
 
 {--
 @def max[A](A,A) :: A
@@ -262,8 +270,8 @@ are equal, return the second argument.
 
 @implementation
 --}
-def max[A](A,A) :: A
-def max(x,y) = if x > y then x else y
+--FIXME:def max[A](A,A) :: A
+--FIXME:def max(x,y) = if x > y then x else y
 
 
 {--
