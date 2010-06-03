@@ -74,26 +74,28 @@ object OrcParser extends StandardTokenParsers {
       | parseBaseExpression
   )
 
-  def parseLogicalExpr = chainl1(parseRelationalExpr, ("||" | "&&") ^^
-   { op =>(left:Expression,right:Expression) => InfixOperator(left, op, right)})
-  
-  def parseRelationalExpr = chainl1(parseAdditionalExpr, ("=" | "/=" | "<" | ">" | "<=" | ">=") ^^
-        { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
+  def parseUnaryExpr = "-" ~ parseCallExpression ^^ { case op ~ expr => PrefixOperator(op, expr)} |
+    parseCallExpression
 
+  def parseExpnExpr = chainl1(parseUnaryExpr, ("**") ^^ 
+    { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
+
+  def parseMultExpr = chainl1(parseExpnExpr, ("*" | "/" | "%") ^^ 
+    { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
+  
   def parseAdditionalExpr: Parser[Expression] = chainl1(parseMultExpr, ("+" | "-" | ":") ^^ 
     { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) }) | 
     "~" ~ parseAdditionalExpr ^^ { case op ~ expr => PrefixOperator(op, expr)}
   
-  def parseMultExpr = chainl1(parseExpnExpr, ("*" | "/" | "%") ^^ 
-    { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
-    
-  def parseExpnExpr = chainl1(parseUnaryExpr, ("**") ^^ 
-    { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
-  
-  def parseUnaryExpr = "-" ~ parseCallExpression ^^ { case op ~ expr => PrefixOperator(op, expr)} |
-    parseCallExpression
+  def parseRelationalExpr = chainl1(parseAdditionalExpr, ("=" | "/=" | "<" | ">" | "<=" | ">=") ^^
+        { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
 
-  def parseInfixOpExpression: Parser[Expression] = parseLogicalExpr
+  def parseLogicalExpr = chainl1(parseRelationalExpr, ("||" | "&&") ^^
+   { op =>(left:Expression,right:Expression) => InfixOperator(left, op, right)})
+
+  // TODO: Add Type Annotations "::"
+  def parseInfixOpExpression: Parser[Expression] = chainl1(parseLogicalExpr, ":=" ^^ 
+    { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
 
   def parseSequentialCombinator = ">" ~> (parsePattern?) <~ ">"
  
@@ -111,6 +113,83 @@ object OrcParser extends StandardTokenParsers {
   def parseOtherwiseExpression = 
     rep1sep(parsePruningExpression, ";") -> (_ reduceLeft Otherwise)
 
+/*---------------------------------------------------------
+Expressions
+
+For reference, here are Orc's operators sorted
+and grouped in order of increasing precedence.
+
+Symbol   Assoc       Name
+----------------------------------------------------
+ lambda  prefix[3]   anonymous function
+ if      prefix[3]   if/then/else
+----------------------------------------------------
+ ;       left        semicolon
+----------------------------------------------------
+ <<      left        where
+----------------------------------------------------
+ |       right[2]    parallel
+----------------------------------------------------
+ >>      right       sequence
+----------------------------------------------------
+ ::      right       type annotation
+ :=      none        ref assignment
+----------------------------------------------------
+ ||      right[2]    boolean or
+ &&      right[2]    boolean and
+----------------------------------------------------
+ =       none        equal
+ /=      none        not equal
+ :>      none        greater
+ >       none[1]     greater
+ >=      none        greater or equal
+ <:      none        less
+ <       none[1]     less
+ <=      none        less or equal
+----------------------------------------------------
+ ~       prefix      boolean not
+ :       right       cons
+ +       left        addition
+ -       left[4]     subtraction
+----------------------------------------------------
+ *       left        multiplication
+ /       left        division
+ %       left        modulus
+----------------------------------------------------
+ **      left        exponent
+----------------------------------------------------
+ -       prefix      unary minus
+----------------------------------------------------
+ ?       postfix     dereference
+ .       postfix     field projection
+ ()      postfix[4]  application
+
+[1] An expression like (a > b > c > d) could be read as
+either ((a >b> c) > d) or (a > (b >c> d)). We could resolve
+this ambiguity with precedence, but that's likely to
+violate the principle of least suprise. So instead we just
+disallow these operators unparenthesized inside << or >>.
+This results in some unfortunate duplication of the lower-
+precedence operators: see the NoCmp_ productions.
+
+[2] These operators are semantically fully associative, but
+they are implemented as right-associative because it's
+slightly more efficient in Rats!.
+
+[3] I'm not sure whether I'd call lambda and if operators,
+but the point is they bind very loosely, so everything to
+their right is considered part of their body.
+
+[4] These operators may not be preceded by a newline, to
+avoid ambiguity about where an expression ends.  So if you
+have a newline in front of a minus, the parser assumes
+it's a unary minus, and if you have a newline in front of
+a paren, the parser assumes it's a tuple (as opposed to a
+function application).  Hopefully these rules match how
+people intuitively use these operators.
+-----------------------------------------------------------*/
+
+  
   def parseExpression: Parser[Expression] = (
       "lambda" ~> (ListOf(parseType)?) 
       ~ TupleOf(parsePattern) 
