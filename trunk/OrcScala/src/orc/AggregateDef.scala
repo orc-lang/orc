@@ -19,20 +19,20 @@ class AggregateDef(clauses: List[Clause],
 	
 		def +(defn: DefDeclaration): AggregateDef =
 			defn -> {
-				case Def(_, listListFormals, body, maybeReturnType) => {
-				    val formals = listListFormals head // List[List[Pattern]] has only one element here.
+				case Def(_, List(formals), body, maybeReturnType) => {
 					val (newformals, maybeArgTypes) = AggregateDef.formalsPartition(formals)
 					val newclause = defn ->> Clause(newformals, body)
 					val newArgTypes = unify(argtypes, maybeArgTypes, defn !! "Redundant argument typing")
 					val newReturnType = unify(returntype, maybeReturnType, defn !! "Redundant return typing")
 					new AggregateDef(newclause::clauses, typeformals, newArgTypes, newReturnType)
 				}
-				case DefCapsule(name, listListFormals, body, maybeReturnType) => {
-					this + Def(name, listListFormals, new Capsule(body), maybeReturnType)
+				case DefCapsule(name, List(formals), body, maybeReturnType) => {
+					this + Def(name, List(formals), new Capsule(body), maybeReturnType)
 				}
-				case DefSig(_, typeformals2, argtypes2, maybeReturnType) => { 
+				case DefSig(_, typeformals2, argtypes2, maybeReturnType) => {
+				    val argtypes3 = argtypes2 head // List[List[Type]] has only one entry
 					val newTypeFormals = unify(typeformals, Some(typeformals2), defn !! "Redundant type parameters")
-					val newArgTypes = unify(argtypes, Some(argtypes2), defn !! "Redundant argument typing")
+					val newArgTypes = unify(argtypes, Some(argtypes3), defn !! "Redundant argument typing")
 					val newReturnType = unify(returntype, maybeReturnType, defn !! "Redundant return typing")
 					new AggregateDef(clauses, newTypeFormals, newArgTypes, newReturnType)
 				}
