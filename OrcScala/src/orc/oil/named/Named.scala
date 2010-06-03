@@ -38,14 +38,13 @@ trait hasFreeVars {
 sealed abstract class NamedAST() extends AST with NamedToNameless
 
 sealed abstract class Expression() 
-extends NamedAST with NamedInfixCombinators with hasFreeVars with RemoveUnusedDefinitions with MapOnArguments
+extends NamedAST 
+with NamedInfixCombinators 
+with hasFreeVars 
+with hasArgumentMap[Expression]
+with ArgumentSubstitution[Expression]
 { 
   lazy val withoutNames: nameless.Expression = namedToNameless(this, Nil, Nil)
-  def map(f: Argument => Argument): Expression = MapOnArgs(this, f)
-
-  // FIXME: Is equals correct here?
-  def subst(a: Argument, x: Argument): Expression = this map (y => if (y equals x) { a } else { y })
-  def subst(a: Argument, s: String): Expression = subst(a, new NamedVar(s))
   
   lazy val freevars:Set[Var] = {
     this match {
@@ -60,7 +59,52 @@ extends NamedAST with NamedInfixCombinators with hasFreeVars with RemoveUnusedDe
       case _ => Set.empty
     }
   }
+  
+  def map(f: Argument => Argument): Expression = 
+    this -> {
+      case Stop => Stop
+      case a : Argument => f(a)	
+      case Call(target, args, typeargs) => Call(f(target), args map f, typeargs)
+      case left || right => (left map f) || (right map f)
+      case left > x > right => (left map f) > x > (right map f)
+      case left < x < right => (left map f) < x < (right map f)
+      case left ow right => (left map f) ow (right map f)
+      case DeclareDefs(defs, body) => DeclareDefs(defs map { _ map f }, body map f)
+      case HasType(body, expectedType) => HasType(body map f, expectedType)
+    }
+  
+    /*
+     * Removes unused definitions from the OIL AST.
+     */
+	def removeUnusedDefs(): Expression = {
+		this -> {
+			case left || right => left.removeUnusedDefs() || right.removeUnusedDefs()
+			case left > x > right => left.removeUnusedDefs() > x > right.removeUnusedDefs() 
+			case left < x < right => left.removeUnusedDefs() < x < right.removeUnusedDefs()
+			case left ow right => left.removeUnusedDefs() ow right.removeUnusedDefs()
+			case DeclareDefs(defs, body) => {
+				val newbody = body.removeUnusedDefs()
+				// If none of the defs are bound in the body,
+	        	// just return the body.
+	        	if(body.freevars -- defs.map(_.name) isEmpty) {
+	        		newbody
+	        	} else {
+	        		def f(d: Def): Def = {
+	        			d match { 
+	        				case Def(name,args,body,t,a,r) => Def(name,args,body.removeUnusedDefs(),t,a,r)
+	        			}
+	        		}
+	        		val newdefs = defs.map(f)
+	        		DeclareDefs(newdefs, newbody)
+	        	}
+			}
+			case HasType(body, typ) => HasType(body.removeUnusedDefs(), typ)
+			case _ => this
+		}
+	}
+    
 }
+
 case object Stop extends Expression
 case class Call(target: Argument, args: List[Argument], typeargs: Option[List[Type]]) extends Expression
 case class Parallel(left: Expression, right: Expression) extends Expression
@@ -75,15 +119,21 @@ case class Constant(value: Value) extends Argument
 
 
 sealed case class Def(name: TempVar, formals: List[TempVar], body: Expression, typeformals: List[TempTypevar], argtypes: List[Type], returntype: Option[Type]) 
-extends NamedAST with Scope with TypeScope with hasFreeVars with MapOnArguments
+extends NamedAST 
+with Scope 
+with TypeScope 
+with hasFreeVars 
+with hasArgumentMap[Def]
+with ArgumentSubstitution[Def]
 { 
   lazy val withoutNames: nameless.Def = namedToNameless(this, Nil, Nil)
   lazy val freevars: Set[Var] = body.freevars -- formals
-  def map(f: Argument => Argument): Def = MapOnArgs(this, f)
+  
+  def map(f: Argument => Argument): Def = {
+    this ->> Def(name, formals, (body map f), typeformals, argtypes, returntype)
+  }
 
-  // FIXME: Is equals correct here?
-  def subst(a: Argument, x: Argument): Def = this map (y => if (y equals x) { a } else { y })
-  def subst(a: Argument, s: String): Def = subst(a, new NamedVar(s))
+
 }
 
 
@@ -190,64 +240,39 @@ trait NamedToNameless {
 }	
 
 
-trait MapOnArguments {
+trait hasArgumentMap[X] {
+  self : X =>
   
-  def MapOnArgs(e: Expression, f: Argument => Argument): Expression = {
-    def toExp(e: Expression): Expression = MapOnArgs(e, f)
-    e -> {
-      case Stop => Stop
-      case a : Argument => f(a)	
-      case Call(target, args, typeargs) => Call(f(target), args map f, typeargs)
-      case left || right => toExp(left) || toExp(right)
-      case left > x > right => toExp(left) > x > toExp(right)
-      case left < x < right => toExp(left) < x < toExp(right)
-      case left ow right => toExp(left) ow toExp(right)
-      case DeclareDefs(defs, body) => DeclareDefs(defs map { MapOnArgs(_, f) }, toExp(body))
-      case HasType(body, expectedType) => HasType(toExp(body), expectedType)
-    }
-  }	
-
-  def MapOnArgs(defn: Def, f: Argument => Argument): Def = {
-    defn -> {
-      case Def(name, formals, body, typeformals, argtypes, returntype) => {
-        Def(name, formals, MapOnArgs(body, f), typeformals, argtypes, returntype)
-      }
-    }
-  }
-
+  def map(f : Argument => Argument): X
 }
 
-
-trait RemoveUnusedDefinitions {
-	self : Expression =>
-	/*
-     * Removes unused definitions from the OIL AST.
-     */
-	def removeUnusedDefs(): Expression = {
-		this -> {
-			case left || right => left.removeUnusedDefs() || right.removeUnusedDefs()
-			case left > x > right => left.removeUnusedDefs() > x > right.removeUnusedDefs() 
-			case left < x < right => left.removeUnusedDefs() < x < right.removeUnusedDefs()
-			case left ow right => left.removeUnusedDefs() ow right.removeUnusedDefs()
-			case DeclareDefs(defs, body) => {
-				val newbody = body.removeUnusedDefs()
-				// If none of the defs are bound in the body,
-	        	// just return the body.
-	        	if(body.freevars -- defs.map(_.name) isEmpty) {
-	        		newbody
-	        	} else {
-	        		def f(d: Def): Def = {
-	        			d match { 
-	        				case Def(name,args,body,t,a,r) => Def(name,args,body.removeUnusedDefs(),t,a,r)
-	        			}
-	        		}
-	        		val newdefs = defs.map(f)
-	        		DeclareDefs(newdefs, newbody)
-	        	}
-			}
-			case HasType(body, typ) => HasType(body.removeUnusedDefs(), typ)
-			case _ => this
-		}
-	}
+trait ArgumentSubstitution[X] extends NamedAST with hasArgumentMap[X] {
+  self : X =>
+	
+    // FIXME: Is equals correct here?
+  def subst(a: Argument, x: Argument): X = 
+	  this map (y => if (y equals x) { a } else { y })
+  
+  def substAllArgs(subs: List[(Argument, Argument)]): X = {
+	  this map (y => {
+	     val options = for ((a,x) <- subs if y equals x) yield a
+	     options match {
+	    	 case Nil => y
+	    	 case List(a) => a
+	    	 case _ => this !! ("Conflicting substitutions on " + y + ": " + options) 
+	     }
+	  })
+  }
+  
+  
+  def subst(a: Argument, s: String): X = subst(a, new NamedVar(s))
+  
+  def substAll(subs: List[(Argument, String)]): X = {
+	  val newsubs = for ((a,s) <- subs) yield (a, new NamedVar(s))
+	  substAllArgs(newsubs)
+  }
+  
+  
+	
 }
 

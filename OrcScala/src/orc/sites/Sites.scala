@@ -22,7 +22,7 @@ import orc.TokenAPI
 
 trait Site extends Value {
   def call(args: List[Value], token: TokenAPI): Unit
-  def name: String
+  def name: String = this.toString()
   def orcType(argTypes: List[Type]): Type
 }
 
@@ -49,7 +49,7 @@ trait UntypedSite extends Site {
 }
 
 trait UnimplementedSite extends Site {
-  def name = "(unimplemented)"
+  override def name = "(unimplemented)"
   def orcType(argTypes: List[Type]): Type = {
 	  throw new Exception("Site " + this + " is unimplemented.")
   }
