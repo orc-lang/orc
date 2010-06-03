@@ -243,15 +243,15 @@ object OrcParser extends StandardTokenParsers {
         markLocation(parser ^^ f)
     }
   }
-  class Maps2[A,B](parser: Parser[~[A,B]]) {
+  class Maps2[A,B](parser: Parser[A ~ B]) {
     def ->[X <: AST](f: (A,B) => X): Parser[X] = 
       markLocation(parser ^^ { case x ~ y => f(x,y) })	
   }
-  class Maps3[A,B,C](parser: Parser[~[~[A,B],C]]) {
+  class Maps3[A,B,C](parser: Parser[A ~ B ~ C]) {
     def ->[X <: AST](f: (A,B,C) => X): Parser[X] = 
       markLocation(parser ^^ { case x ~ y ~ z => f(x,y,z) })	
   }
-  class Maps4[A,B,C,D](parser: Parser[~[~[~[A,B],C],D]]) {
+  class Maps4[A,B,C,D](parser: Parser[A ~ B ~ C ~ D]) {
     def ->[X <: AST](f: (A,B,C,D) => X): Parser[X] = 
       markLocation(parser ^^ { case x ~ y ~ z ~ w => f(x,y,z,w) })	
   }
@@ -270,9 +270,9 @@ object OrcParser extends StandardTokenParsers {
 
   implicit def CreateMaps0Parser(s: String): Maps0 = new Maps0(s)
   implicit def CreateMaps1Parser[A](parser: Parser[A]): Maps1[A] = new Maps1(parser)
-  implicit def CreateMaps2Parser[A,B](parser: Parser[~[A,B]]): Maps2[A,B] =	new Maps2(parser)
-  implicit def CreateMaps3Parser[A,B,C](parser: Parser[~[~[A,B],C]]): Maps3[A,B,C] = new Maps3(parser)
-  implicit def CreateMaps4Parser[A,B,C,D](parser: Parser[~[~[~[A,B],C],D]]): Maps4[A,B,C,D] = new Maps4(parser)
+  implicit def CreateMaps2Parser[A,B](parser: Parser[A ~ B]): Maps2[A,B] =	new Maps2(parser)
+  implicit def CreateMaps3Parser[A,B,C](parser: Parser[A ~ B ~ C]): Maps3[A,B,C] = new Maps3(parser)
+  implicit def CreateMaps4Parser[A,B,C,D](parser: Parser[A ~ B ~ C ~ D]): Maps4[A,B,C,D] = new Maps4(parser)
   implicit def CreateInterleavingParser[A <: AST](parser: Parser[A]): InterleavingParser[A] = new InterleavingParser(parser)
 
 }
