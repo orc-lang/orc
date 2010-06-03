@@ -71,10 +71,9 @@ case class Constant(value: Value) extends Argument
 case class Variable(index: Int) extends Argument
 
 sealed abstract class Type() extends orc.AST
-case object Top extends Type
-case object Bot extends Type
+case class Top extends Type
+case class Bot extends Type
 case class TypeVar(index: Int) extends Type
-case class NativeType(name: String) extends Type
 case class TupleType(elements: List[Type]) extends Type
 case class TypeApplication(tycon: Int, typeactuals: List[Type]) extends Type
 case class AssertedType(assertedType: Type) extends Type	
@@ -139,8 +138,8 @@ object AddNames {
   def namelessToNamed(t: Type, typecontext: List[TempTypevar]): named.Type = {
     t -> {
       case TypeVar(i) => typecontext(i)
-      case Top => named.Top
-      case Bot => named.Bot
+      case Top() => named.Top()
+      case Bot() => named.Bot()
       case FunctionType(typearity, argtypes, returntype) => {
         val typeformals = (for (_ <- 0 until typearity) yield new TempTypevar()).toList
         val newTypeContext = typeformals ::: typecontext
@@ -148,7 +147,6 @@ object AddNames {
         val newReturnType = namelessToNamed(returntype, newTypeContext)
         named.FunctionType(typeformals, newArgTypes, newReturnType)
       } 
-      case NativeType(name) => named.NativeType(name)
       case TupleType(elements) => named.TupleType(elements map { namelessToNamed(_, typecontext) })
       case TypeApplication(i, typeactuals) => {
         val tycon = typecontext(i)

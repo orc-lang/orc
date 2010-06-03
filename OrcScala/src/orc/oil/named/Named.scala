@@ -156,9 +156,8 @@ sealed abstract class Type() extends NamedAST
   def subst(t: Typevar, u: Typevar): Type = this map (y => if (y equals t) { u } else { y })   
   def subst(t: Typevar, s: String): Type = subst(t, NamedTypevar(s))
 }	
-case object Top extends Type
-case object Bot extends Type
-case class NativeType(name: String) extends Type
+case class Top() extends Type
+case class Bot() extends Type
 case class TupleType(elements: List[Type]) extends Type
 case class TypeApplication(tycon: Typevar, typeactuals: List[Type]) extends Type
 case class AssertedType(assertedType: Type) extends Type	
@@ -206,15 +205,14 @@ trait NamedToNameless {
     def toType(t: Type): nameless.Type = namedToNameless(t, typecontext)
     t -> {
       case u: TempTypevar => nameless.TypeVar(inverseLookup(u, typecontext))
-      case Top => nameless.Top
-      case Bot => nameless.Bot
+      case Top() => nameless.Top()
+      case Bot() => nameless.Bot()
       case FunctionType(typeformals, argtypes, returntype) => {
         val newTypeContext = typeformals ::: typecontext
         val newArgTypes = argtypes map { namedToNameless(_, newTypeContext) }
         val newReturnType = namedToNameless(returntype, newTypeContext)
         nameless.FunctionType(typeformals.size, newArgTypes, newReturnType)
       }
-      case NativeType(name) => nameless.NativeType(name)
       case TupleType(elements) => nameless.TupleType(elements map toType)
       case TypeApplication(tycon, typeactuals) => {
         val i = inverseLookup(tycon, typecontext)

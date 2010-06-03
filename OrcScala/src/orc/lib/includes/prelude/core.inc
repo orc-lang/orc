@@ -32,8 +32,6 @@ type Number = orc.type.ground.NumberType
 type Boolean = orc.type.ground.BooleanType
 type Integer = orc.type.ground.IntegerType
 type Signal = orc.type.ground.SignalType
-type Top = orc.type.ground.Top
-type Bot = orc.type.ground.Bot
 
 {--
 @site let() :: Signal

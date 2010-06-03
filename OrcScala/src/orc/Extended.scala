@@ -109,9 +109,8 @@ case class TypedPattern(p: Pattern, t: Type) extends Pattern {
 
 abstract class Type extends AST
 
-case object Top extends Type
-case object Bot extends Type
-case class NativeType(name: String) extends Type
+case class Top() extends Type
+case class Bot() extends Type
 case class TypeVariable(name: String) extends Type
 case class TupleType(elements: List[Type]) extends Type
 case class FunctionType(typeformals: List[String], argtypes: List[Type], returntype: Type) extends Type

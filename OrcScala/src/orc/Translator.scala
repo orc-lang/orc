@@ -100,11 +100,12 @@ object Translator {
 				case ext.Conditional(ifE, thenE, elseE) => {
 					 val b = new TempVar()
 					 val nb = new TempVar()
-					 val ifexp = convert(ifE)
-					 val thenbranch = callIf(b) >> convert(thenE)
-					 val elsebranch = callIf(nb) >> convert(elseE)
-					 val conditional = thenbranch || elsebranch
-					 conditional  < nb <  callNot(b)  < b <  ifexp
+					 (
+					  (	  
+						   callIf(b) >> convert(thenE) 
+					   || callIf(nb) >> convert(elseE)	  
+				      ) < nb < callNot(b) 
+				     )   < b < convert(ifE)
 				}
 				case ext.Declare(decl : ext.DefDeclaration, _) => {
 					val (defs, remainder) = e.defPartition
@@ -256,7 +257,8 @@ object Translator {
 				
 				FunctionType(newTypeFormals, newArgTypes, newReturnType)
 			}
-			case u => convertType(u)			
+			case ext.Top() => Top()
+			case ext.Bot() => Bot()
 		}
 	}
 	
@@ -271,7 +273,7 @@ object Translator {
 	 *        A filter function applied to the source
 	 *  and      
 	 *        A binding function applied to the variable carrying the
-	 *  	  result and then applied to the scope
+	 *  	  result and then applied to the target
 	 *
 	 */
 	def convertPattern(p : ext.Pattern): (Expression => Expression, TempVar => Expression => Expression) = {
@@ -290,15 +292,18 @@ object Translator {
 		// Stub.
 		(e => e, _ => e => e)
 		
-//		def filter(source: Expression) = {
-//			
-//		}
-//	
-//		def scope(x : TempVar)(target : Expression) = {
-//			
-//		}
-//		
-//		(filter, scope)
+		/*def filter(source: Expression) = {
+			var filterExpression =  
+			
+			source  > x >  filterExpr    
+		}
+	
+		def scope(y : TempVar)(target : Expression) = {
+			
+		}
+		
+		(filter, scope)
+		*/
 	}
 	
 
