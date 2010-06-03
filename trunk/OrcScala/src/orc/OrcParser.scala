@@ -230,14 +230,9 @@ people intuitively use these operators.
 
   def parsePattern: Parser[Pattern] = parseTypedPattern
 
-  def parseGroundType: Parser[Type] = ( 
-      ("Integer" | "Boolean" | "String" | "Number" | "Signal") -> NativeType
-      | "Top" -> Top
-      | "Bot" -> Bot
-  )
-
   def parseType: Parser[Type] = (
-      parseGroundType
+        "Top" -> Top
+      | "Bot" -> Bot
       | parseTypeVariable -> TypeVariable
       | TupleOf(parseType) -> TupleType
       | "lambda" ~> ListOf(parseTypeVariable) ~ TupleOf(parseType) ~ parseReturnType -> FunctionType

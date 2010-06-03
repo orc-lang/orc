@@ -45,7 +45,7 @@ trait TotalSite extends Site {
 }
 
 trait UntypedSite extends Site {
-  def orcType(argTypes: List[Type]): Type = Bot
+  def orcType(argTypes: List[Type]): Type = Bot()
 }
 
 trait UnimplementedSite extends Site {
