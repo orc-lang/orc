@@ -44,16 +44,14 @@ object Translator {
 				case ext.Variable(x) => new NamedVar(x)
 				case ext.TupleExpr(es) => unfold(es map convert, makeLet)
 				case ext.ListExpr(es) => unfold(es map convert, makeList)
-                case ext.Call(target, List(ext.Args(typeargs, args))) => {
-                	val newtypeargs = typeargs map { _ map convertType }
-                	unfold(
-                			          (target :: args) map convert, 
-                            { case (newtarget :: newargs) => Call(newtarget, newargs, newtypeargs) }
-                		  )
+                case ext.Call(target, gs) => {
+                	var expr = convert(target)
+                	for (g <- gs) {
+                	  val m = new TempVar()
+                	  expr = expr  > m >  callArgumentGroup(m, g) 
+                	}
+                	expr
                 }
-                case ext.Call(target, gs) => throw new UnsupportedOperationException("converter not implemented for calls of form: "+e)
-                //FIXME: replace above with general: ext.Call(target, gs) => 
-                
                 case ext.PrefixOperator(op, exp) => {
                     val opName = if (op == "-") "0-" else op
                     unfold(List(exp) map convert, { callOperator(opName,_) })
@@ -101,12 +99,11 @@ object Translator {
 				case ext.Conditional(ifE, thenE, elseE) => {
 					 val b = new TempVar()
 					 val nb = new TempVar()
-					 (
-					  (	  
-						   callIf(b) >> convert(thenE) 
+					 ( (  callIf(b) >> convert(thenE) 
 					   || callIf(nb) >> convert(elseE)	  
 				      ) < nb < callNot(b) 
 				     )   < b < convert(ifE)
+				     
 				}
 				case ext.Declare(decl : ext.DefDeclaration, _) => {
 					val (defs, remainder) = e.defPartition
@@ -176,6 +173,21 @@ object Translator {
 		bind(makeCore(args))
 	}
 	
+	def callArgumentGroup(target: Argument, ag : ext.ArgumentGroup) : Expression = {
+      ag match {
+         case ext.Args(typeargs, args) => {
+           val newtypeargs = typeargs map { _ map convertType }
+           unfold(args map convert, { Call(target, _, newtypeargs) })
+         }
+         case ext.FieldAccess(field) => {
+           Call(target, List(Constant(Field(field))), None)
+         }
+         case ext.Dereference => {
+           val reader = new TempVar()
+           Call(target, List(Constant(Field("read"))), None)  > reader >  Call(reader, Nil, None)
+         }
+      }
+    }
 	
 	
 	/** 

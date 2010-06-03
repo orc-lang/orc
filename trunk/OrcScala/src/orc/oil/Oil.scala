@@ -15,6 +15,7 @@
 
 package orc.oil
 
+
 abstract class Value() {
   def toOrcSyntax(): String = toString()
 }
@@ -28,3 +29,4 @@ case class Literal(value: Any) extends Value {
 case object Signal extends Value {
   override def toOrcSyntax() = "signal"
 }
+case class Field(field: String) extends Value
