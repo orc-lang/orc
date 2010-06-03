@@ -15,24 +15,28 @@
 
 package orc
 
+import orc.oil.nameless.Expression
+import orc.values.Value
+import orc.values.sites.Site
+
 abstract trait OrcCompilerAPI {
+  
   import orc.error.compiletime.CompileLogger
   import scala.util.parsing.input.Reader
 
-  def apply(source: Reader[Char], options: OrcOptions): orc.oil.nameless.Expression 
-  def apply(source: java.io.Reader, options: OrcOptions): orc.oil.nameless.Expression
+  def apply(source: Reader[Char], options: OrcOptions): Expression 
+  def apply(source: java.io.Reader, options: OrcOptions): Expression
 
-  def refineOil(oilAstRoot: orc.oil.nameless.Expression): orc.oil.nameless.Expression = oilAstRoot
+  def refineOil(oilAstRoot: Expression): Expression = oilAstRoot
 
 //  def progress: ProgressListener
   def compileLogger: CompileLogger
 //  def openInclude(includeFileName: String, relativeToFileName: String): java.io.Reader 
 //  def loadClass(className: String): Class[_]
+
 }
 
 trait TokenAPI {
-
-  import oil.Value
 
   def publish(v : Value): Unit
   def halt: Unit
@@ -41,12 +45,10 @@ trait TokenAPI {
   def run: Unit
 
   def printToStdout(s: String): Unit
+
 }
 
 trait OrcAPI {
-
-  import oil._
-  import orc.sites.Site
 
   type Token <: TokenAPI
 

@@ -15,10 +15,10 @@ package orc.lib.str;
 
 import orc.TokenAPI;
 import orc.error.runtime.TokenException;
-import orc.sites.compatibility.Args;
-import orc.sites.compatibility.SiteAdaptor;
-import orc.sites.compatibility.type.Type;
-import orc.sites.compatibility.type.structured.EllipsisArrowType;
+import orc.values.sites.compatibility.Args;
+import orc.values.sites.compatibility.SiteAdaptor;
+import orc.values.sites.compatibility.type.Type;
+import orc.values.sites.compatibility.type.structured.EllipsisArrowType;
 
 /**
  * Print arguments, converted to strings, in sequence, each followed by newlines.

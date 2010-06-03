@@ -26,8 +26,8 @@ import java.util.concurrent.TimeoutException;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import orc.OrcCompiler;
-import orc.OrcEngine;
+import orc.compile.OrcCompiler;
+import orc.run.OrcEngine;
 import orc.error.compiletime.CompilationException;
 
 import org.kohsuke.args4j.CmdLineException;

@@ -19,12 +19,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 import orc.error.runtime.TokenException;
-import orc.sites.compatibility.Args;
-import orc.sites.compatibility.Args.NumericBinaryOperator;
-import orc.sites.compatibility.EvalSite;
-import orc.sites.compatibility.type.Type;
-import orc.sites.compatibility.type.structured.ArrowType;
-import orc.sites.compatibility.type.structured.MultiType;
+import orc.values.sites.compatibility.Args;
+import orc.values.sites.compatibility.EvalSite;
+import orc.values.sites.compatibility.Args.NumericBinaryOperator;
+import orc.values.sites.compatibility.type.Type;
+import orc.values.sites.compatibility.type.structured.ArrowType;
+import orc.values.sites.compatibility.type.structured.MultiType;
 
 @SuppressWarnings({ "boxing", "synthetic-access" })
 public class Mod extends EvalSite {

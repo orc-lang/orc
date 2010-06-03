@@ -14,10 +14,10 @@
 package orc.lib.str;
 
 import orc.error.runtime.TokenException;
-import orc.sites.compatibility.Args;
-import orc.sites.compatibility.EvalSite;
-import orc.sites.compatibility.type.Type;
-import orc.sites.compatibility.type.structured.EllipsisArrowType;
+import orc.values.sites.compatibility.Args;
+import orc.values.sites.compatibility.EvalSite;
+import orc.values.sites.compatibility.type.Type;
+import orc.values.sites.compatibility.type.structured.EllipsisArrowType;
 
 /**
  * Note that you can also use the syntax "a" + "b" for string concatenation.

@@ -24,7 +24,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import orc.error.compiletime.ParsingException;
-import orc.OrcParser;
+import orc.compile.parse.OrcParser;
 import scala.collection.immutable.PagedSeq;
 import scala.util.parsing.combinator.Parsers;
 import scala.util.parsing.input.StreamReader;
@@ -53,7 +53,7 @@ public class OrcParserTest {
       suite.addTest(new TestCase(file.toString()) {
         @Override
         public void runTest() throws ParsingException, IOException {
-        	Parsers.ParseResult<orc.ext.Expression> pr = OrcParser.parse(parserOptions, new StreamReader(PagedSeq.fromReader(new FileReader(file)), 0, 1));
+        	Parsers.ParseResult<orc.compile.ext.Expression> pr = OrcParser.parse(parserOptions, new StreamReader(PagedSeq.fromReader(new FileReader(file)), 0, 1));
         	assertTrue("Parsing unsucessful: "+pr.toString(), pr.successful());
         }
       });

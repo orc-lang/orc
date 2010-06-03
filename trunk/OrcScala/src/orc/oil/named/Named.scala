@@ -16,6 +16,7 @@
 package orc.oil.named
 
 import orc.oil._
+import orc.values.Value
 import orc.AST
 
 // The supertype of all variable binding nodes
