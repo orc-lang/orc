@@ -17,3 +17,4 @@ package orc.oil
 
 abstract class Value
 case class Literal(value: Any) extends Value
+case object signal extends Value
