@@ -1,6 +1,7 @@
 package orc
 
 class OrcEngine {
+  import orc.oil.Literal
   import orc.oil.Value
   import orc.oil.nameless.Expression
   import java.lang._
@@ -9,7 +10,7 @@ class OrcEngine {
   val out = new StringBuffer("")
 
   val orcRuntime = new Orc {
-    def emit(v: Value) { out.append(v) }
+    def emit(v: Value) { out.append(v.toOrcSyntax()+"\n") }
     def halted { print("Done. \n") }
     def invoke(t: this.Token, s: Site, vs: List[Value]) { s.call(vs,t) }
     def expressionPrinted(s: String) { print(s) }

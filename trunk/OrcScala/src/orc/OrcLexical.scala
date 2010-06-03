@@ -33,14 +33,14 @@ class OrcLexical() extends StdLexical() {
 
   override def token: Parser[Token] = 
     ( identChar ~ rep( identChar | digit )              ^^ { case first ~ rest => processIdent(first :: rest mkString "") }
-    | floatLit                                          ^^ { case f => FloatingPointLit(f) }
-    | signedIntegerLit                                  ^^ { case i => NumericLit(i) }
-    | '\"' ~ rep( chrExcept('\"', '\n', EofCh) ) ~ '\"' ^^ { case '\"' ~ chars ~ '\"' => StringLit(chars mkString "") }
-    | EofCh                                             ^^^ EOF
-    | '\"' ~> failure("unclosed string literal")        
     | '(' ~ delim ~ ')'                                 ^^ { case '(' ~ d ~ ')' => Identifier(d.chars) }
     | '(' ~ '0' ~ '-' ~ ')'                             ^^ { _ => Identifier("0-") }
     | delim
+    | '\"' ~ rep( chrExcept('\"', '\n', EofCh) ) ~ '\"' ^^ { case '\"' ~ chars ~ '\"' => StringLit(chars mkString "") }
+    | '\"' ~> failure("unclosed string literal")        
+    | floatLit                                          ^^ { case f => FloatingPointLit(f) }
+    | signedIntegerLit                                  ^^ { case i => NumericLit(i) }
+    | EofCh                                             ^^^ EOF
     | failure("illegal character")
     )
   

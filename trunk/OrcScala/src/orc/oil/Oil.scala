@@ -15,6 +15,16 @@
 
 package orc.oil
 
-abstract class Value
-case class Literal(value: Any) extends Value
-case object Signal extends Value
+abstract class Value() {
+  def toOrcSyntax(): String = toString()
+}
+case class Literal(value: Any) extends Value {
+  override def toOrcSyntax() = value match {
+    case null => "null"
+    case s: String => "\"" + s.replace("\"", "\\\"").replace("\n", "\\n") + "\""; //TODO: Generalize
+    case _ => value.toString()
+  }
+}
+case object Signal extends Value {
+  override def toOrcSyntax() = "signal"
+}
