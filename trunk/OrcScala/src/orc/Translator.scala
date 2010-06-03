@@ -88,8 +88,9 @@ object Translator {
 				case ext.Otherwise(l, r) => convert(l) ow convert(r)
 				
 				case lambda : ext.Lambda => {
+				    val flatLambda = reduceParamLists(lambda)
 					val lambdaName = new TempVar()
-					val newdef = AggregateDef(lambda).convert(lambdaName)
+					val newdef = AggregateDef(flatLambda).convert(lambdaName)
 					DeclareDefs(List(newdef), lambdaName)
 				}
 				case ext.Capsule(b) => {
@@ -211,8 +212,11 @@ object Translator {
 	 */
 	def convertDefs(defs: List[ext.DefDeclaration]): (List[Def], Expression => Expression) = {
 		import scala.collection.mutable
+
+		val oneParamListDefs = defs map reduceParamLists
+		
 		val defsMap : mutable.Map[String, AggregateDef] = new mutable.HashMap()
-		for (d <- defs) {
+		for (d <- oneParamListDefs) {
 			val name = d.name
 			val currentEntry = defsMap.get(name).getOrElse(AggregateDef.empty)
 			val newEntry = currentEntry + d
@@ -229,7 +233,63 @@ object Translator {
 		(newdefs, { _.substAll(namings) })
 	}
 	
+	/**
+	 * Converts a definition 
+	 * 
+	 * def f(x1,..xn)(y1,..yn)(..) = body
+	 * 
+	 * to 
+	 * 
+	 * def f(x1,..xn) = lambda(y1,..yn) (lambda(...)..) body
+	 * 
+	 */
+	private def reduceParamLists(d: ext.DefDeclaration): ext.DefDeclaration = {
+	  
+	  d -> {
+	     case ext.Def(name,formals,body,retType) => {
+	       if(formals.size == 1)
+             return d
+      
+	       val newbody = uncurry(formals,body,retType)
+	       /* Return the outermost Def */
+	       ext.Def(name,List(formals head),newbody,None) 
+	     }
+	     case ext.DefCapsule(name,formals,body,retType) => {
+	       reduceParamLists(ext.Def(name,formals,(body),retType)) //FIXME: Make capsule body.
+	     }
+//	     case ext.DefSig() =>
+	  }
+	}
 	
+	/**
+     * Given formals = (x1,..xn)(y1,..yn)(..)
+     * builds the expression
+     *   lambda(x1,..xn) = (lambda(y1,..yn) = (lambda(...) = .. body ))
+     */
+	private def uncurry(formals: List[List[ext.Pattern]], body: ext.Expression, retType: Option[ext.Type]): ext.Lambda = {
+	  
+  	  def makeLambda(body: ext.Expression, params: List[ext.Pattern]) = 
+        ext.Lambda(None,List(params),None,body)
+     
+      val tailFormals = formals tail
+      val revFormals = tailFormals reverse
+      /* Inner most lambda has the return type of the curried definition */
+      val innerLambda = ext.Lambda(None,List(revFormals head),retType,body) 
+      /* Make new Lambda expressions, one for each remaining list of formals */
+      revFormals.tail.foldLeft(innerLambda)(makeLambda)
+	}
+     
+	private def reduceParamLists(e: ext.Lambda): ext.Lambda = {
+	  e -> {
+	     case ext.Lambda(typFormals,formals,retType,body) => {
+	        if(formals.size == 1)
+               return e
+               
+           val newbody = uncurry(formals,body,retType)
+           ext.Lambda(typFormals,List(formals head),None,newbody)  
+	     }
+	  }
+	}
 	
 	/**
 	 *  Convert an extended AST type to a named OIL type.

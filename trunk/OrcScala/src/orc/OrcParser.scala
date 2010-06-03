@@ -114,6 +114,7 @@ and grouped in order of increasing precedence.
 
 Symbol   Assoc       Name
 ----------------------------------------------------
+ ::      right       type annotation
  lambda  prefix[3]   anonymous function
  if      prefix[3]   if/then/else
 ----------------------------------------------------
@@ -125,7 +126,6 @@ Symbol   Assoc       Name
 ----------------------------------------------------
  >>      right       sequence
 ----------------------------------------------------
- ::      right       type annotation
  :=      none        ref assignment
 ----------------------------------------------------
  ||      right[2]    boolean or
@@ -185,7 +185,7 @@ people intuitively use these operators.
   
   def parseExpression: Parser[Expression] = (
       "lambda" ~> (ListOf(parseType)?) 
-      ~ TupleOf(parsePattern) 
+      ~ (TupleOf(parsePattern)+)
       ~ (("::" ~> parseType)?) 
       ~ ("=" ~> parseExpression)
       -> Lambda
@@ -244,10 +244,10 @@ people intuitively use these operators.
       ("val" ~> parsePattern) ~ ("=" ~> parseExpression) 
       -> Val
 
-      | ("def" ~> ident) ~ TupleOf(parsePattern) ~ ("=" ~> parseExpression) ~ (parseReturnType?) 
+      | ("def" ~> ident) ~ (TupleOf(parsePattern)+) ~ ("=" ~> parseExpression) ~ (parseReturnType?) 
       -> Def
 
-      | ("def" ~> "capsule" ~> ident) ~ TupleOf(parsePattern) ~ ("=" ~> parseExpression) ~ (parseReturnType?) 
+      | ("def" ~> "capsule" ~> ident) ~ (TupleOf(parsePattern)+) ~ ("=" ~> parseExpression) ~ (parseReturnType?) 
       -> DefCapsule
 
       | "def" ~> ident ~ (ListOf(parseTypeVariable)?) ~ TupleOf(parseType) ~ (parseReturnType?) 
