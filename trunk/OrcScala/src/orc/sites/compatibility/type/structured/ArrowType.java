@@ -2,7 +2,7 @@
 // ArrowType.java -- Java class ArrowType
 // Project OrcJava
 //
-// $Id: ArrowType.java 1541 2010-02-24 19:49:00Z jthywissen $
+// $Id$
 //
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
