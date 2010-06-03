@@ -2,7 +2,18 @@ package orc.ext
 
 import orc.AST
 
-abstract class Expression extends AST
+abstract class Expression extends AST {
+	
+	lazy val defPartition: (List[DefDeclaration], Expression) = {
+		this match {
+			case Declare(d: DefDeclaration, f) => {
+				val (ds, g) = f.defPartition
+				(d::ds, g)
+			}
+			case _ => (Nil, this)
+		}
+	}
+}
 
 case object Stop extends Expression
 case class Constant(c: Any) extends Expression
@@ -64,18 +75,36 @@ case class ClassImport(name: String, classname: String) extends SiteDeclaration
 
 
 
-abstract class Pattern extends AST
+abstract class Pattern extends AST { 
+	val isStrict: Boolean 
+}
 
-case object Wildcard extends Pattern
-case class ConstantPattern(c: Any) extends Pattern
-case class VariablePattern(name: String) extends Pattern
-case class TuplePattern(elements: List[Pattern]) extends Pattern
-case class ListPattern(elements: List[Pattern]) extends Pattern
-case class CallPattern(name: String, args: List[Pattern]) extends Pattern
-case class ConsPattern(head: Pattern, tail: Pattern) extends Pattern
-case class AsPattern(p: Pattern, name: String) extends Pattern
-case class EqPattern(name: String) extends Pattern
-case class TypedPattern(p: Pattern, t: Type) extends Pattern
+abstract class NonStrictPattern extends Pattern {
+	val isStrict = false
+}
+case object Wildcard extends NonStrictPattern
+case class VariablePattern(name: String) extends NonStrictPattern
+
+
+abstract class StrictPattern extends Pattern {
+	val isStrict = true
+}
+case class ConstantPattern(c: Any) extends StrictPattern
+case class TuplePattern(elements: List[Pattern]) extends StrictPattern
+case class ListPattern(elements: List[Pattern]) extends StrictPattern
+case class CallPattern(name: String, args: List[Pattern]) extends StrictPattern
+case class ConsPattern(head: Pattern, tail: Pattern) extends StrictPattern
+case class EqPattern(name: String) extends StrictPattern
+
+
+case class AsPattern(p: Pattern, name: String) extends Pattern {
+	val isStrict = p.isStrict
+}
+case class TypedPattern(p: Pattern, t: Type) extends Pattern {
+	val isStrict = p.isStrict
+}
+
+
 
 
 abstract class Type extends AST
