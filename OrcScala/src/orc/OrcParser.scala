@@ -42,7 +42,7 @@ object OrcParser extends StandardTokenParsers {
   def parseValue: Parser[Any] = (
         "true" ^^^ true 
       | "false" ^^^ false
-      | "signal" ^^^ {}
+      | "signal" ^^^ orc.oil.Signal
       | stringLit
       | numericLit ^^ { BigInt(_) }
       | floatLit ^^ { BigDecimal(_) }
@@ -93,7 +93,6 @@ object OrcParser extends StandardTokenParsers {
   def parseLogicalExpr = chainl1(parseRelationalExpr, ("||" | "&&") ^^
    { op =>(left:Expression,right:Expression) => InfixOperator(left, op, right)})
 
-  // TODO: Add Type Annotations "::"
   def parseInfixOpExpression: Parser[Expression] = chainl1(parseLogicalExpr, ":=" ^^ 
     { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
 
