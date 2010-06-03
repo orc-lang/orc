@@ -13,13 +13,15 @@ abstract class AST extends Positional {
       result.pos = location
       result
   }
+  
+  def ->>[B <: AST](that : B): B = { that.pos = this.pos ; that }
 
-  def !!(exn : PositionalException) = {
+  def !!(exn : PositionalException): Nothing = {
       exn.pos = this.pos
       throw exn
   }
   
   
   // Remove this overloading to uncover uses of !! that do not carry a specific exception type
-  def !!(s : String) = !!(new PositionalException(s))
+  def !!(msg : String): Nothing = !!(new PositionalException(msg))
 }
