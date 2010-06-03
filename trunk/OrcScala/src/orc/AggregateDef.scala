@@ -45,7 +45,6 @@ class AggregateDef(clauses: List[Clause],
 			new AggregateDef(newclause::clauses, typeformals, newArgTypes, newReturnType)
 		}
 			
-		// FIXME: Incomplete.
 		def convert(x : named.TempVar): named.Def = {
 			if (clauses.isEmpty) { this !! "Unused function signature" }
 			val (newformals, newbody) = Clause.convertClauses(clauses)
@@ -55,8 +54,8 @@ class AggregateDef(clauses: List[Clause],
 			val getReturnType = returntype
 
 			val newTypeFormals = getTypeFormals map { _ => new named.TempTypevar() } 
-			// TODO: the type formals should be substituted into these types,
-			//       and into the new def body as well.
+			// FIXME: the type formals should be substituted into these types,
+			//        and into the new def body as well.
 			val newArgTypes = getArgTypes map Translator.convertType
 			val newReturnType = getReturnType map Translator.convertType
 			 

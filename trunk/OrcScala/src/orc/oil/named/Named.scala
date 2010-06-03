@@ -168,9 +168,6 @@ extends Type with TypeScope
 // Conversions from named to nameless representations
 trait NamedToNameless {
 
-  private def inverseLookup[A](x: A, xs: List[A]): Int = 
-    xs match { case (h::t) => if (x == h) { 0 } else { inverseLookup(x,t) + 1 } }
-
   def namedToNameless(e: Expression, context: List[TempVar], typecontext: List[TempTypevar]): nameless.Expression = {
     def toExp(e: Expression): nameless.Expression = namedToNameless(e, context, typecontext)
     def toArg(a: Argument): nameless.Argument = namedToNameless(a, context)
@@ -196,7 +193,7 @@ trait NamedToNameless {
   def namedToNameless(a: Argument, context: List[TempVar]): nameless.Argument = {
     a -> {
       case Constant(v) => nameless.Constant(v)
-      case (x: TempVar) => nameless.Variable(inverseLookup(x, context)) 
+      case (x: TempVar) => nameless.Variable(context indexOf x) 
     }
   }
 
@@ -204,7 +201,7 @@ trait NamedToNameless {
   def namedToNameless(t: Type, typecontext: List[TempTypevar]): nameless.Type = {
     def toType(t: Type): nameless.Type = namedToNameless(t, typecontext)
     t -> {
-      case u: TempTypevar => nameless.TypeVar(inverseLookup(u, typecontext))
+      case u: TempTypevar => nameless.TypeVar(typecontext indexOf u)
       case Top() => nameless.Top()
       case Bot() => nameless.Bot()
       case FunctionType(typeformals, argtypes, returntype) => {
@@ -215,7 +212,7 @@ trait NamedToNameless {
       }
       case TupleType(elements) => nameless.TupleType(elements map toType)
       case TypeApplication(tycon, typeactuals) => {
-        val i = inverseLookup(tycon, typecontext)
+        val i = typecontext indexOf tycon
         nameless.TypeApplication(i, typeactuals map toType)
       }	
       case AssertedType(assertedType) => nameless.AssertedType(namedToNameless(assertedType, typecontext))
