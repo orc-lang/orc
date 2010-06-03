@@ -58,7 +58,7 @@ abstract class DefDeclaration extends Declaration {
 }
 case class Def(name: String, formals: List[List[Pattern]], body: Expression, returntype: Option[Type]) extends DefDeclaration
 case class DefCapsule(name: String, formals: List[List[Pattern]], body: Expression, returntype: Option[Type]) extends DefDeclaration
-case class DefSig(name: String, typeformals: List[String], argtypes: List[Type], returntype: Option[Type]) extends DefDeclaration
+case class DefSig(name: String, typeformals: List[String], argtypes: List[List[Type]], returntype: Option[Type]) extends DefDeclaration
 
 abstract class TypeDeclaration extends Declaration
 case class TypeAlias(name: String, typeformals: List[String] = Nil, aliasedtype: Type) extends TypeDeclaration
