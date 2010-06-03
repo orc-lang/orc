@@ -24,13 +24,6 @@ import orc.oil._
 import orc.sites._
 
 
-object Let extends TotalSite {
-  override def name = "Let"
-  def orcType(argTypes: List[Type]) = TupleType(argTypes)
-  def evaluate(args: List[Value]) = Literal(args)
-}
-
-
 // Logic
 
 object If extends PartialSite with UntypedSite {
@@ -68,7 +61,7 @@ object Eq extends PartialSite with UntypedSite {
 case class OrcTuple(elements: List[Value]) extends PartialSite with UntypedSite {
   def evaluate(args: List[Value]) = 
     args match {
-  	  case List(Literal(i: Int)) if (0 <= i < elements.size) => Some(elements(i))
+  	  case List(Literal(i: Int)) if (0 <= i) && (i < elements.size) => Some(elements(i))
   	  case _ => None
     }
 }
@@ -76,21 +69,17 @@ case class OrcList(elements: List[Value]) extends Value
 case class OrcOption(contents: Option[Value]) extends Value
 
 
-object TupleConstructor extends PartialSite {
+object TupleConstructor extends TotalSite with UntypedSite {
   override def name = "Tuple"
-  def orcType(argTypes: List[Type]) = null //TODO:FIXME: Implement this
-  def evaluate(args: List[Value]) =
-    args match {
-      case List(vs) => Some(OrcTuple(vs))
-      case _ => None
-  }
+  def evaluate(args: List[Value]) = OrcTuple(args)
 }
+
 
 object NoneConstructor extends PartialSite with UntypedSite {
   override def name = "None"
   def evaluate(args: List[Value]) =
     args match {
-      case List() => Some(OrcOption(None()))
+      case List() => Some(OrcOption(None))
       case _ => None
   }
 }
@@ -120,7 +109,7 @@ object ConsConstructor extends PartialSite with UntypedSite {
   override def name = "Cons"
   def evaluate(args: List[Value]) =
     args match {
-      case List(v, OrcList(List(vs))) => Some(OrcList(List(v :: vs)))
+      case List(v, OrcList(vs)) => Some(OrcList(v :: vs))
       case _ => None
   }
 }
@@ -135,7 +124,7 @@ object NoneExtractor extends PartialSite with UntypedSite {
   override def name = "None?"
   def evaluate(args: List[Value]) =
     args match {
-      case List(OrcOption(None())) => Some(signal)
+      case List(OrcOption(None)) => Some(signal)
       case _ => None
   }
 }
@@ -165,7 +154,7 @@ object ConsExtractor extends PartialSite with UntypedSite {
   override def name = "Cons?"
   def evaluate(args: List[Value]) =
     args match {
-      case List(OrcList(List(v :: vs))) => Some(OrcTuple(v, OrcList(vs)))
+      case List(OrcList(v :: vs)) => Some(OrcTuple(List(v, OrcList(vs))))
       case _ => None
   }
 }
