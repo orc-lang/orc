@@ -266,9 +266,6 @@ object Translator {
 	
 	
 	
-	
-	// FIXME: Incomplete
-	
 	/**
 	 *  Convert an extended AST pattern to:
 	 *  
@@ -280,32 +277,57 @@ object Translator {
 	 */
 	def convertPattern(p : ext.Pattern): (Expression => Expression, TempVar => Expression => Expression) = {
 	
-		val x = new TempVar()
-		val (computes, bindings) = decomposePattern(p, x) 
+		val sourceVar = new TempVar()
+		val (computes, bindings) = decomposePattern(p, sourceVar) 
 		
-		// Check for nonlinearity.
-		val (names, _) = List unzip bindings
+		/* Check for nonlinearity */
+		val (_, names) = List unzip bindings
 		for (name <- names) {
 			if (names exists (_ equals name)) {
 				p !! ("Nonlinear pattern: " + name + " occurs more than once.")
 			}
 		}
 		
-		// Stub.
-		(e => e, _ => e => e)
+		computes match {
+			/* 
+			 * There are no strict patterns. 
+			 */
+			case Nil => {
+				({ e => e },  { x => { _.substAll(bindings).subst(x,sourceVar) } })
+			}
+			/* 
+			 * There is exactly one strict pattern.
+			 */
+			case (e, y) :: Nil => {
+				({ _  > sourceVar >  e},  { x => { _.substAll(bindings).subst(x,y) } })	
+			}
+			/*
+			 * There are multiple strict patterns.
+			 */
+			case _ => { 
+				val strictResults = computes map { case (_,y) => y }
+				
+				/* Create filter function */
+				var filterExpression = makeLet(strictResults)
+				for ((e,y) <- computes) {
+					filterExpression =  e  > y >  filterExpression
+				}
+				def filter(e : Expression) = { e  > sourceVar >  filterExpression }
+				
+				/* Create scope function */
+				def scope(filterResult : TempVar)(target : Expression) = {
+					var newtarget = target.substAll(bindings)
+					for ((y, i) <- strictResults.zipWithIndex) {
+						val z = new TempVar()
+						newtarget = newtarget.subst(z,y)  < z <  makeNth(filterResult, i)
+					}
+					newtarget
+				}
+				
+				(filter, scope)
+			}
+		}  
 		
-		/*def filter(source: Expression) = {
-			var filterExpression =  
-			
-			source  > x >  filterExpr    
-		}
-	
-		def scope(y : TempVar)(target : Expression) = {
-			
-		}
-		
-		(filter, scope)
-		*/
 	}
 	
 
@@ -317,7 +339,7 @@ object Translator {
 	 * and
 	 *  	A sequence of context bindings for the target expression.	
 	 */
-	type PatternDecomposition = (List[(Expression, TempVar)], List[(String,TempVar)])
+	type PatternDecomposition = (List[(Expression, TempVar)], List[(TempVar, String)])
 	
 	def decomposePattern(p : ext.Pattern, x: TempVar): PatternDecomposition = {
 			p match {
@@ -328,7 +350,7 @@ object Translator {
 					(List(guard), Nil)
 				}
 				case ext.VariablePattern(name) => {
-					val binding = (name, x)
+					val binding = (x, name)
 					(Nil, List(binding))
 				}
 				case ext.TuplePattern(ps) => {
@@ -358,7 +380,7 @@ object Translator {
 					(matchCompute :: subCompute, subBindings)
 				}
 				case ext.AsPattern(p, name) => {
-					val binding = (name, x)
+					val binding = (x, name)
 					val (subCompute, subBindings) = decomposePattern(p, x)
 					(subCompute, binding :: subBindings)
 				}
@@ -367,13 +389,8 @@ object Translator {
 					val guard = (testexpr, new TempVar())
 					(List(guard), Nil)
 				}
-				// Inefficient, but easier to read
-				case ext.TypedPattern(p, t) => {
-					val y = new TempVar()
-					val typedCompute = (HasType(x, convertType(t)), y)
-					val (subCompute, subBindings) = decomposePattern(p, y)
-					(typedCompute :: subCompute, subBindings) 
-				}			
+				// TODO: Reimplement correctly.
+				case ext.TypedPattern(p,t) => decomposePattern(p,x) 			
 			}
 		}
 
