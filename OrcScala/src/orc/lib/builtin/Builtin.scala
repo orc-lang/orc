@@ -20,8 +20,10 @@
 package orc.lib.builtin
 
 import orc.oil.nameless.Type
-import orc.oil._
-import orc.sites._
+import orc.values.sites._
+import orc.values.Value
+import orc.values.Literal
+import orc.values.Signal
 
 
 // Logic

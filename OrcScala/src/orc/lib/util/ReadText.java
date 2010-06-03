@@ -19,8 +19,8 @@ import java.io.InputStreamReader;
 import orc.error.runtime.ArgumentTypeMismatchException;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
-import orc.sites.compatibility.Args;
-import orc.sites.compatibility.ThreadedSite;
+import orc.values.sites.compatibility.Args;
+import orc.values.sites.compatibility.ThreadedSite;
 
 /**
  * Read an InputStreamReader into a String.

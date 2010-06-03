@@ -28,8 +28,8 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 
 import orc.ExperimentalOrc;
-import orc.Orc;
-import orc.OrcCompiler;
+import orc.run.Orc;
+import orc.compile.OrcCompiler;
 
 /**
  * @author jthywiss

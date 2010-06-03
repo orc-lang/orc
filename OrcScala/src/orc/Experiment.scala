@@ -1,9 +1,11 @@
 package orc
 
 import java.io.StringReader
+import orc.compile.OrcCompiler
 import orc.script.OrcBindings
-import oil._
-import orc.sites.Site
+import orc.run.Orc
+import orc.values.Value
+import orc.values.sites.Site
 
 class ExperimentalOrc extends Orc {
   def emit(v: Value) { print("Published: " + v + "   = " + v.toOrcSyntax() + "\n") }
