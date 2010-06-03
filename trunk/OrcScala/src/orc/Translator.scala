@@ -33,7 +33,7 @@ object Translator {
 	 *  Convert an extended AST expression to a named OIL expression.
 	 *
 	 */
-	// Incomplete for some cases.
+	// FIXME: Incomplete for some cases.
 	def convert(e : ext.Expression): named.Expression = {
 			e -> {
 				case ext.Stop => Stop
@@ -52,11 +52,12 @@ object Translator {
                 		  )
                 }
                 case ext.Call(target, gs) => throw new UnsupportedOperationException("converter not implemented for calls of form: "+e)
-                //TODO: replace above with general: ext.Call(target, gs) => 
+                //FIXME: replace above with general: ext.Call(target, gs) => 
                 
-				case ext.PrefixOperator(op, exp) => {
-					unfold(List(exp) map convert, { callOperator(op,_) })
-				}
+                case ext.PrefixOperator(op, exp) => {
+                    val opName = if (op == "-") "0-" else op
+                    unfold(List(exp) map convert, { callOperator(opName,_) })
+                }
 				case ext.InfixOperator(l, op, r) => {
 					unfold(List(l,r) map convert, { callOperator(op,_) })
 				}
@@ -262,7 +263,7 @@ object Translator {
 	
 	
 	
-	// INCOMPLETE
+	// FIXME: Incomplete
 	
 	/**
 	 *  Convert an extended AST pattern to:
