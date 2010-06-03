@@ -35,7 +35,7 @@ case class Pruning(left: Expression, p: Option[Pattern] = None, right: Expressio
 case class Otherwise(left: Expression, right: Expression) extends Expression
 case class Lambda(
     typeformals: Option[List[Type]] = None, 
-    formals: List[Pattern],
+    formals: List[List[Pattern]],
     returntype: Option[Type] = None,
     body: Expression
 ) extends Expression
@@ -56,8 +56,8 @@ case class Include(origin: String, decls: List[Declaration]) extends Declaration
 abstract class DefDeclaration extends Declaration {
 	val name: String
 }
-case class Def(name: String, formals: List[Pattern], body: Expression, returntype: Option[Type]) extends DefDeclaration
-case class DefCapsule(name: String, formals: List[Pattern], body: Expression, returntype: Option[Type]) extends DefDeclaration
+case class Def(name: String, formals: List[List[Pattern]], body: Expression, returntype: Option[Type]) extends DefDeclaration
+case class DefCapsule(name: String, formals: List[List[Pattern]], body: Expression, returntype: Option[Type]) extends DefDeclaration
 case class DefSig(name: String, typeformals: List[String], argtypes: List[Type], returntype: Option[Type]) extends DefDeclaration
 
 abstract class TypeDeclaration extends Declaration
