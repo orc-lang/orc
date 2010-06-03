@@ -15,6 +15,7 @@
 
 package orc
 
+import java.io.InputStreamReader
 import java.io.PrintWriter
 
 import scala.util.parsing.input.Reader
@@ -57,9 +58,23 @@ class OrcCompiler extends OrcCompilerAPI {
   val parse = new CompilerPhase[OrcOptions, Reader[Char], orc.ext.Expression] {
     val phaseName = "parse"
     override def apply(options: OrcOptions) = { source =>
-      OrcParser.parse(options, source) match {
-        case OrcParser.Success(result, _) => result
-        case OrcParser.NoSuccess(msg, in) => throw new ParsingException(msg, in.pos)
+      if (!options.noPrelude) {
+        //FIXME: Hack for testing -- only reading prelude/core.inc
+        val preludeReader = StreamReader(new InputStreamReader(getClass().getResourceAsStream("/orc/lib/includes/prelude/core.inc")))
+        val preludeParseResult = OrcParser.parseInclude(options, preludeReader, "prelude/core.inc")
+        preludeParseResult match {
+          case OrcParser.NoSuccess(msg, in) => throw new ParsingException(msg, in.pos)
+          case _ => {}
+        }
+        OrcParser.parse(options, source) match {
+          case OrcParser.Success(result, _) => ext.Declare(preludeParseResult.get,result)
+          case OrcParser.NoSuccess(msg, in) => throw new ParsingException(msg, in.pos)
+        }
+      } else {
+        OrcParser.parse(options, source) match {
+          case OrcParser.Success(result, _) => result
+          case OrcParser.NoSuccess(msg, in) => throw new ParsingException(msg, in.pos)
+        }
       }
     }
   }

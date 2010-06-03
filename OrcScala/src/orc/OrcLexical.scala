@@ -38,7 +38,9 @@ class OrcLexical() extends StdLexical() {
     | '\"' ~ rep( chrExcept('\"', '\n', EofCh) ) ~ '\"' ^^ { case '\"' ~ chars ~ '\"' => StringLit(chars mkString "") }
     | EofCh                                             ^^^ EOF
     | '\"' ~> failure("unclosed string literal")        
-    | delim                                             
+    | '(' ~ delim ~ ')'                                 ^^ { case '(' ~ d ~ ')' => Identifier(d.chars) }
+    | '(' ~ '0' ~ '-' ~ ')'                             ^^ { _ => Identifier("0-") }
+    | delim
     | failure("illegal character")
     )
   
@@ -92,10 +94,10 @@ class OrcLexical() extends StdLexical() {
       "&&", "||", "~",
       "<", ">", "|", ";",
       "(", ")", "[", "]", "{", "}", ",",
-      "=", "<:", ":>", ">=", "/=",
+      "=", "<:", ":>", "<=", ">=", "/=",
       ":", "_", "++",
       ".", "?", ":=",
-      "::", ":!:" 
+      "::", ":!:"
     )
 
 }
