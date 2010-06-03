@@ -37,7 +37,7 @@ object PrimitiveForms {
 	
 	def makeLet(args: List[Argument]): Expression = {
 		args match {
-			case Nil => Constant(signal)
+			case Nil => Constant(Signal)
 			case List(a) => a
 			case _ => makeTuple(args)
 		}

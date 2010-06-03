@@ -124,7 +124,7 @@ object NoneExtractor extends PartialSite with UntypedSite {
   override def name = "None?"
   def evaluate(args: List[Value]) =
     args match {
-      case List(OrcOption(None)) => Some(signal)
+      case List(OrcOption(None)) => Some(Signal)
       case _ => None
   }
 }
@@ -145,7 +145,7 @@ object NilExtractor extends PartialSite with UntypedSite {
   override def name = "Nil?"
   def evaluate(args: List[Value]) =
     args match {
-      case List(OrcList(Nil)) => Some(signal)
+      case List(OrcList(Nil)) => Some(Signal)
       case _ => None
   }
 }

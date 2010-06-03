@@ -14,6 +14,8 @@ abstract class AST extends Positional {
       result
   }
   
+  // Location transfer.
+  // x ->> y  is equivalent to  x -> (_ => y)
   def ->>[B <: AST](that : B): B = { that.pos = this.pos ; that }
 
   def !!(exn : PositionalException): Nothing = {
