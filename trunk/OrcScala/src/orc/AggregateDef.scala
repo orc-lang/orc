@@ -45,7 +45,7 @@ class AggregateDef(clauses: List[Clause],
 			new AggregateDef(newclause::clauses, typeformals, newArgTypes, newReturnType)
 		}
 			
-		// Incomplete.
+		// FIXME: Incomplete.
 		def convert(x : named.TempVar): named.Def = {
 			if (clauses.isEmpty) { this !! "Unused function signature" }
 			val (newformals, newbody) = Clause.convertClauses(clauses)

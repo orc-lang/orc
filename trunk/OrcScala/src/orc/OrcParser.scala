@@ -21,9 +21,20 @@ import scala.util.parsing.combinator.syntactical._
 import orc.ext._
 
 object OrcParser extends StandardTokenParsers {
-  import lexical.{FloatingPointLit}
+  import lexical.{Keyword, FloatingPointLit}
 
   override val lexical = new OrcLexical()
+
+  def bareOperator: Parser[String] =
+      "(" ~> { elem("operator", _.isInstanceOf[Keyword]) ^^ (_.chars) } <~ ")"
+
+  def parseSiteName: Parser[String] = ( ident | bareOperator )
+  
+  def parseClassname: Parser[String] = (
+        stringLit
+        // For backwards compatibility, allow quotes to be omitted, if class name had only Orc-legal identifier characters
+      | rep1sep(ident, ".") ^^ { _.mkString(".") } 
+  )
 
   def floatLit: Parser[String] = 
     elem("number", _.isInstanceOf[FloatingPointLit]) ^^ (_.chars)
@@ -45,6 +56,7 @@ object OrcParser extends StandardTokenParsers {
   def parseBaseExpression = (
       parseValue -> Constant 
       | ident -> Variable 
+      | bareOperator -> Variable 
       | "stop" -> Stop
       | "(" ~> parseExpression <~ ")"
       | ListOf(parseExpression) -> ListExpr
@@ -80,10 +92,8 @@ object OrcParser extends StandardTokenParsers {
   
   def parseUnaryExpr = "-" ~ parseCallExpression ^^ { case op ~ expr => PrefixOperator(op, expr)} |
     parseCallExpression
-  
-  
-  def parseInfixOpExpression: Parser[Expression] = parseLogicalExpr
 
+  def parseInfixOpExpression: Parser[Expression] = parseLogicalExpr
 
   def parseSequentialCombinator = ">" ~> (parsePattern?) <~ ">"
  
@@ -163,12 +173,6 @@ object OrcParser extends StandardTokenParsers {
 
   def parseReturnType = "::" ~> parseType
 
-  def parseClassname: Parser[String] =
-      ( stringLit
-        // For backwards compatibility, allow quotes to be omitted, if class name had only Orc-legal identifier characters
-      | rep1sep(ident, ".") ^^ { _.mkString(".") } 
-      )
-
   def parseDeclaration: Parser[Declaration] = (
       ("val" ~> parsePattern) ~ ("=" ~> parseExpression) 
       -> Val
@@ -191,10 +195,10 @@ object OrcParser extends StandardTokenParsers {
       | "type" ~> parseTypeVariable ~ (ListOf(parseTypeVariable)?) ~ ("=" ~> rep1sep(parseConstructor, "|"))
       -> ((x,ys,t) => Datatype(x, ys getOrElse Nil, t))
 
-      | "site" ~> ident ~ ("=" ~> parseClassname) 
+      | "site" ~> parseSiteName ~ ("=" ~> parseClassname) 
       -> SiteImport
 
-      | "class" ~> ident ~ ("=" ~> parseClassname) 
+      | "class" ~> parseSiteName ~ ("=" ~> parseClassname) 
       -> ClassImport
 
       | "include" ~> stringLit 
