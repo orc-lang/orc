@@ -54,8 +54,7 @@ object PrimitiveForms {
 		elements.foldRight(nil)(cons)
 	}
 	
-	// Incomplete.
 	def callOperator(opName : String, args : List[Argument]) = 
-		Call(Constant(TupleConstructor), Constant(Literal(opName)) :: args, None)
+		Call(NamedVar(opName), args, None)
 		
 }
