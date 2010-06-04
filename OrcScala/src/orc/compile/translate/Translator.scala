@@ -273,22 +273,28 @@ object Translator {
 	 * def f(x1,..xn) = lambda(y1,..yn) (lambda(...)..) body
 	 * 
 	 */
-	private def reduceParamLists(d: ext.DefDeclaration): ext.DefDeclaration = {
-	  
-	  d -> {
-	     case ext.Def(name,formals,body,retType) => {
-	       if(formals.size == 1)
-             return d
-      
-	       val newbody = uncurry(formals,body,retType)
-	       /* Return the outermost Def */
-	       ext.Def(name,List(formals head),newbody,None) 
-	     }
-	     case ext.DefCapsule(name,formals,body,retType) => {
-	       reduceParamLists(ext.Def(name,formals,(body),retType)) //FIXME: Make capsule body.
-	     }
-//	     case ext.DefSig() =>
-	  }
+	 private def reduceParamLists(d: ext.DefDeclaration): ext.DefDeclaration = {
+      import orc.error.compiletime.typing._
+      d -> {
+        case ext.Def(name,List(formals),body,retType) => d
+        case ext.Def(name,formals::tail,body,retType) => {
+          val newbody = uncurry(tail,body,retType)
+          /* Return the outermost Def */
+          ext.Def(name,List(formals),newbody,None) 
+        }
+        case ext.DefCapsule(name,formals,body,retType) => {
+          reduceParamLists(ext.Def(name,formals,ext.Capsule(body),retType))
+        }
+        case ext.DefSig(name,typFormals,List(argTypes),retType) => d
+        case ext.DefSig(name,typFormals,argTypes::tail,Some(retType)) => {
+          val newRetType = tail.foldRight(retType)({ ext.FunctionType(Nil,_,_) })
+          ext.DefSig(name,typFormals,List(argTypes),Some(newRetType))
+        }
+        case ext.DefSig(_,_,List(),_) => 
+          throw new UnspecifiedArgTypesException()
+        case ext.DefSig(_,_,argTypes::tail,None) => 
+          throw new UnspecifiedReturnTypeException()
+      }
 	}
 	
 	/**
@@ -296,29 +302,26 @@ object Translator {
      * builds the expression
      *   lambda(x1,..xn) = (lambda(y1,..yn) = (lambda(...) = .. body ))
      */
-	private def uncurry(formals: List[List[ext.Pattern]], body: ext.Expression, retType: Option[ext.Type]): ext.Lambda = {
-	  
-  	  def makeLambda(body: ext.Expression, params: List[ext.Pattern]) = 
+    private def uncurry(formals: List[List[ext.Pattern]], body: ext.Expression, retType: Option[ext.Type]): ext.Lambda = {
+      
+      def makeLambda(body: ext.Expression, params: List[ext.Pattern]) = 
         ext.Lambda(None,List(params),None,body)
      
-      val tailFormals = formals tail
-      val revFormals = tailFormals reverse
+      val revFormals = formals reverse
       /* Inner most lambda has the return type of the curried definition */
       val innerLambda = ext.Lambda(None,List(revFormals head),retType,body) 
       /* Make new Lambda expressions, one for each remaining list of formals */
       revFormals.tail.foldLeft(innerLambda)(makeLambda)
-	}
+    }
      
-	private def reduceParamLists(e: ext.Lambda): ext.Lambda = {
-	  e -> {
-	     case ext.Lambda(typFormals,formals,retType,body) => {
-	        if(formals.size == 1)
-               return e
-               
-           val newbody = uncurry(formals,body,retType)
-           ext.Lambda(typFormals,List(formals head),None,newbody)  
-	     }
-	  }
+    private def reduceParamLists(e: ext.Lambda): ext.Lambda = {
+      e -> {
+        case ext.Lambda(typFormals,List(formals),retType,body) => e
+        case ext.Lambda(typFormals,formals::tail,retType,body) => {      
+          val newbody = uncurry(tail,body,retType)
+          ext.Lambda(typFormals,List(formals),None,newbody)  
+        }
+      }
 	}
 	
 	/**
