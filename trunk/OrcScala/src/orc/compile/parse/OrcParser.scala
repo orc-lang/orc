@@ -27,10 +27,6 @@ object OrcParser extends StandardTokenParsers {
   import lexical.{Keyword, FloatingPointLit}
 
   override val lexical = new OrcLexical()
-  abstract class ParserNL[+T] extends Parser[T] {
-    def ~-[U](p : => Parser[U]) = super.~(p)
-    override def ~[U](p : => Parser[U]) = (lexical.NewLine*) ~> (for(a <- this; b <- p) yield new ~(a,b)).named("~")
-  }
 
   def parseClassname: Parser[String] = (
         stringLit
@@ -59,7 +55,7 @@ object OrcParser extends StandardTokenParsers {
       parseValue -> Constant
       | ident -> Variable
       | "stop" -> Stop
-      | "(" ~> parseExpression <~ ")"
+      | "(" ~~> parseExpression <~~ ")"
       | ListOf(parseExpression) -> ListExpr
       | TupleOf(parseExpression) -> TupleExpr
   )
@@ -75,9 +71,14 @@ object OrcParser extends StandardTokenParsers {
       | parseBaseExpression
   )
 
-  def parseUnaryExpr = "-" ~ parseCallExpression ^^ { case op ~ expr => PrefixOperator(op, expr)} |
-    parseCallExpression
+  def parseUnaryExpr = (
+      "-" ~ parseCallExpression -> PrefixOperator 
+    | parseCallExpression
+    )
 
+  // TODO: Allow infix op expressions to break across newlines  
+  // TODO: Fix parser ambiguity re: < and >
+    
   def parseExpnExpr = chainl1(parseUnaryExpr, ("**") ^^
     { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
 
@@ -197,10 +198,10 @@ people intuitively use these operators.
       ~ ("=" ~> parseExpression)
       -> Lambda
       | ("if" ~> parseExpression)
-      ~ ("then" ~> parseExpression)
-      ~ ("else" ~> parseExpression)
+      ~~ ("then" ~> parseExpression)
+      ~~ ("else" ~> parseExpression)
       -> Conditional
-      | parseDeclaration ~ parseExpression -> Declare
+      | parseDeclaration ~~ parseExpression -> Declare
       | parseOtherwiseExpression ~ ("::" ~> parseType) -> TypeAscription
       | parseOtherwiseExpression ~ (":!:" ~> parseType) -> TypeAssertion
       | parseOtherwiseExpression
@@ -251,7 +252,7 @@ people intuitively use these operators.
       ("val" ~> parsePattern) ~ ("=" ~> parseExpression)
       -> Val
 
-      | ("def" ~> ident) ~ (TupleOf(parsePattern)+) ~ ("=" ~> parseExpression) ~ (parseReturnType?)
+      | ("def" ~> ident) ~ (TupleOf(parsePattern)+) ~ ("=" ~~> parseExpression) ~ (parseReturnType?)
       -> Def
 
       | ("def" ~> "capsule" ~> ident) ~ (TupleOf(parsePattern)+) ~ ("=" ~> parseExpression) ~ (parseReturnType?)
@@ -278,7 +279,11 @@ people intuitively use these operators.
       | "include" ~> stringLit
       -> { Include(_ : String, Nil) } //FIXME: Actually include the file!
   )
+  
+  def parseDeclarations: Parser[List[Declaration]] = parseDeclaration ~~ parseDeclarations ^^ { case d ~ ds => d::ds }
 
+  def parseProgram: Parser[Expression] = (lexical.NewLine*) ~> parseExpression <~ (lexical.NewLine*)
+  
   // Add helper combinators for ( ... ) and [ ... ] forms
   def TupleOf[T](P : => Parser[T]): Parser[List[T]] = "(" ~> repsep(P, ",") <~ ")"
   def ListOf[T](P : => Parser[T]): Parser[List[T]] = "[" ~> repsep(P, ",") <~ "]"
@@ -307,16 +312,16 @@ people intuitively use these operators.
 
   def parse(options: OrcOptions, s:String) = {
       val tokens = new lexical.Scanner(s)
-      phrase(parseExpression)(tokens)
+      phrase(parseProgram)(tokens)
   }
 
   def parse(options: OrcOptions, r:Reader[Char]) = {
       val tokens = new lexical.Scanner(r)
-      phrase(parseExpression)(tokens)
+      phrase(parseProgram)(tokens)
   }
 
   def parseInclude(options: OrcOptions, r:Reader[Char], name: String) = {
-      val parseInclude = phrase(parseDeclaration*) -> { Include(name, _) }
+      val parseInclude = phrase(parseDeclarations) -> { Include(name, _) }
       val tokens = new lexical.Scanner(r)
       phrase(parseInclude)(tokens)
   }
@@ -371,6 +376,12 @@ people intuitively use these operators.
 
     } : Parser[A]
   }
+  
+  class StretchingParser[+T](parser: Parser[T]) {  
+    def ~~[U](otherParser : => Parser[U]): Parser[T ~ U] = (parser <~ (lexical.NewLine*)) ~ otherParser
+    def ~~>[U](otherParser : => Parser[U]): Parser[U] = (parser <~ (lexical.NewLine*)) ~> otherParser
+    def <~~[U](otherParser : => Parser[U]): Parser[T] = (parser <~ (lexical.NewLine*)) <~ otherParser
+  }
 
   implicit def CreateMaps0Parser(s: String): Maps0 = new Maps0(s)
   implicit def CreateMaps1Parser[A](parser: Parser[A]): Maps1[A] = new Maps1(parser)
@@ -378,5 +389,6 @@ people intuitively use these operators.
   implicit def CreateMaps3Parser[A,B,C](parser: Parser[A ~ B ~ C]): Maps3[A,B,C] = new Maps3(parser)
   implicit def CreateMaps4Parser[A,B,C,D](parser: Parser[A ~ B ~ C ~ D]): Maps4[A,B,C,D] = new Maps4(parser)
   implicit def CreateInterleavingParser[A <: AST](parser: Parser[A]): InterleavingParser[A] = new InterleavingParser(parser)
-
+  implicit def CreateStretchingParser[A](parser: Parser[A]): StretchingParser[A] = new StretchingParser(parser)
+  implicit def CreateStretchingParser(s : String): StretchingParser[String] = new StretchingParser(keyword(s))
 }
