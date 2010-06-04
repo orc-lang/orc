@@ -17,7 +17,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
@@ -27,7 +29,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import orc.compile.OrcCompiler;
-import orc.run.OrcEngine;
+import test.orc.OrcEngine;
 import orc.error.compiletime.CompilationException;
 
 import org.kohsuke.args4j.CmdLineException;
@@ -104,9 +106,13 @@ public class ExamplesTest {
   
         public void noPrelude_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
   
-        public scala.collection.immutable.List<String> includePath() { throw new UnsupportedOperationException(); }
+        public List<String> includePath() { List<String> r = new ArrayList<String>(1); r.add("."); return r; }
+        
+        public void includePath_$eq(List<String> newVal) { throw new UnsupportedOperationException(); }
   
-        public void includePath_$eq(scala.collection.immutable.List<String> newVal) { throw new UnsupportedOperationException(); }
+        public List<String> additionalIncludes() { return new ArrayList<String>(0); }
+        
+        public void additionalIncludes_$eq(List<String> newVal) { throw new UnsupportedOperationException(); }
   
         public boolean exceptionsOn() { return false; }
   
@@ -132,9 +138,9 @@ public class ExamplesTest {
   
         public void stackSize_$eq(int newVal) { throw new UnsupportedOperationException(); }
   
-        public scala.collection.immutable.List<String> classPath() { throw new UnsupportedOperationException(); }
+        public List<String> classPath() { return new ArrayList<String>(0); }
   
-        public void classPath_$eq(scala.collection.immutable.List<String> newVal) { throw new UnsupportedOperationException(); }
+        public void classPath_$eq(List<String> newVal) { throw new UnsupportedOperationException(); }
   
         public boolean hasCapability(String capName) { throw new UnsupportedOperationException(); }
   

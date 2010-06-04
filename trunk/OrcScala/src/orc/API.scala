@@ -1,5 +1,5 @@
 //
-// API.scala -- Scala traits OrcCompilerAPI, OrcAPI, and TokenAPI
+// API.scala -- Scala traits OrcCompilerAPI, CompilerEnvironmentIfc, OrcExecutionAPI, OrcExecutionEnvironmentIfc, and TokenAPI
 // Project OrcScala
 //
 // $Id$
@@ -19,37 +19,35 @@ import orc.oil.nameless.Expression
 import orc.values.Value
 import orc.values.sites.Site
 
-abstract trait OrcCompilerAPI {
-  
-  import orc.error.compiletime.CompileLogger
+/**
+ * The interface from a caller to the Orc compiler
+ */
+trait OrcCompilerAPI {
   import scala.util.parsing.input.Reader
 
   def apply(source: Reader[Char], options: OrcOptions): Expression 
   def apply(source: java.io.Reader, options: OrcOptions): Expression
 
   def refineOil(oilAstRoot: Expression): Expression = oilAstRoot
+}
+
+/**
+ * The interface from the Orc compiler to its environment
+ */
+trait CompilerEnvironmentIfc { 
+  import orc.error.compiletime.CompileLogger;
 
 //  def progress: ProgressListener
   def compileLogger: CompileLogger
-//  def openInclude(includeFileName: String, relativeToFileName: String): java.io.Reader 
+  def openInclude(includeFileName: String, relativeToFileName: String, options: OrcOptions): java.io.Reader 
 //  def loadClass(className: String): Class[_]
 
 }
 
-trait TokenAPI {
-
-  def publish(v : Value): Unit
-  def halt: Unit
-
-  def kill: Unit
-  def run: Unit
-
-  def printToStdout(s: String): Unit
-
-}
-
-trait OrcAPI {
-
+/**
+ * The interface from a caller to and Orc execution machine 
+ */
+trait OrcExecutionAPI {
   type Token <: TokenAPI
 
 //  def start(e: Expression) : Unit
@@ -66,6 +64,25 @@ trait OrcAPI {
   // Schedule function is overloaded for convenience
   def schedule(t: Token) { schedule(List(t)) }
   def schedule(t: Token, u: Token) { schedule(List(t,u)) }
+  //TODO: Move some to the methods above to OrcExecutionEnvironmentIfc
+}
 
+/**
+ * The interface from an Orc execution machine to its environment
+ */
+trait OrcExecutionEnvironmentIfc {
 //  def loadClass(className: String): Class[_]
+}
+
+/**
+ * The interface from an Orc execution machine to tokens
+ */
+trait TokenAPI {
+  def publish(v : Value): Unit
+  def halt: Unit
+
+  def kill: Unit
+  def run: Unit
+
+  def printToStdout(s: String): Unit
 }

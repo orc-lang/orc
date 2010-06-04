@@ -20,6 +20,7 @@ import java.io.PrintWriter
 
 import scala.util.parsing.input.Reader
 import scala.util.parsing.input.StreamReader
+import scala.collection.JavaConversions._
 
 import orc.error.compiletime.CompilationException
 import orc.error.compiletime.CompileLogger
@@ -27,6 +28,7 @@ import orc.error.compiletime.CompileLogger.Severity
 import orc.error.compiletime.ParsingException
 import orc.error.compiletime.PrintWriterCompileLogger
 import orc.OrcCompilerAPI
+import orc.CompilerEnvironmentIfc
 import orc.OrcOptions
 import orc.compile.parse.OrcParser
 
@@ -37,7 +39,7 @@ import orc.compile.parse.OrcParser
  *
  * @author jthywiss
  */
-abstract trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
+trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
   val phaseName: String
   def >>>[C](that: CompilerPhase[O, B, C]) = new CompilerPhase[O, A, C] { 
     val phaseName = self.phaseName+" >>> "+that.phaseName
@@ -55,30 +57,31 @@ abstract trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
  *
  * @author jthywiss
  */
-class OrcCompiler extends OrcCompilerAPI {
+class OrcCompiler extends OrcCompilerAPI with CompilerEnvironmentIfc {
   //TODO: Skip remaining phases when compileLogger.getMaxSeverity >= FATAL 
 
   val parse = new CompilerPhase[OrcOptions, Reader[Char], orc.compile.ext.Expression] {
     val phaseName = "parse"
     override def apply(options: OrcOptions) = { source =>
+      var includeFileNames = options.additionalIncludes
       if (!options.noPrelude) {
         //FIXME: Hack for testing -- only reading prelude/core.inc
-        val preludeReader = StreamReader(new InputStreamReader(getClass().getResourceAsStream("/orc/lib/includes/prelude/core.inc")))
-        val preludeParseResult = OrcParser.parseInclude(options, preludeReader, "prelude/core.inc")
+        includeFileNames = "prelude/core.inc" :: (includeFileNames).toList
+      }
+      val includeAsts = for (fileName <- includeFileNames) yield {
+        val preludeReader = StreamReader(openInclude(fileName, null, options))
+        val preludeParseResult = OrcParser.parseInclude(options, preludeReader, fileName)
         preludeParseResult match {
-          case OrcParser.NoSuccess(msg, in) => throw new ParsingException(msg, in.pos)
-          case _ => {}
-        }
-        OrcParser.parse(options, source) match {
-          case OrcParser.Success(result, _) => ext.Declare(preludeParseResult.get,result)
-          case OrcParser.NoSuccess(msg, in) => throw new ParsingException(msg, in.pos)
-        }
-      } else {
-        OrcParser.parse(options, source) match {
-          case OrcParser.Success(result, _) => result
+          case OrcParser.Success(result, _) => preludeParseResult.get
           case OrcParser.NoSuccess(msg, in) => throw new ParsingException(msg, in.pos)
         }
       }
+      println(includeAsts)
+      val progAst = OrcParser.parse(options, source) match {
+        case OrcParser.Success(result, _) => result
+        case OrcParser.NoSuccess(msg, in) => throw new ParsingException(msg, in.pos)
+      }
+      (includeAsts :\ progAst) { orc.compile.ext.Declare }
     }
   }
 
@@ -120,6 +123,46 @@ class OrcCompiler extends OrcCompilerAPI {
 
   def apply(source: java.io.Reader, options: OrcOptions): orc.oil.nameless.Expression = apply(StreamReader(source), options)
 
+  //TODO: Parameterize on these methods:
   val compileLogger: CompileLogger = new PrintWriterCompileLogger(new PrintWriter(System.err, true))
+
+  def openInclude(includeFileName: String, relativeToFileName: String, options: OrcOptions): java.io.Reader = {
+    
+    // Try filename under the include path list
+    for (ip <- options.includePath) {
+      val incPath = new java.io.File(ip);
+
+      /* Build file path as follows:
+       *   path = relTo + incPath + fileName
+       * If relTo is null, incPath must be absolute (or the path entry is skipped)
+       * Try for all paths in the include path list
+       */
+      if (incPath.isAbsolute() || relativeToFileName != null) {
+        val incPathPrefixed = new java.io.File(relativeToFileName, ip);
+        val file = new java.io.File(incPathPrefixed, includeFileName);
+        if (file.exists()) {
+          return new java.io.FileReader(file);
+        }
+      }
+    }
+    
+    // Try in the bundled include resources
+    val stream = options.getClass().getResourceAsStream("/orc/lib/includes/" + includeFileName);
+    if (stream != null) {
+      return new java.io.InputStreamReader(stream);
+    }
+
+    // Try to read this include as a URL instead of as a local file
+    try {
+      val incurl = new java.net.URL(includeFileName);
+      return new InputStreamReader(incurl.openConnection().getInputStream());
+    } catch {
+      case e: java.net.MalformedURLException => { } //ignore
+      case e: java.io.IOException =>
+        throw new java.io.FileNotFoundException("Could not open a connection to '" + includeFileName + "'.");
+    }
+
+    throw new java.io.FileNotFoundException("Include file '" + includeFileName + "' not found; check the include path.");
+  }
 
 }

@@ -28,6 +28,7 @@ import orc.OrcOptions
  * @author jthywiss
  */
 class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOptions {
+  import scala.collection.JavaConversions._
 
   /**
    * Constructs an object of class OrcBindings.
@@ -46,8 +47,10 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   // Compile options
   def noPrelude: Boolean = getBoolean("orc.noPrelude", false)
   def noPrelude_=(newVal: Boolean) = putBoolean("orc.noPrelude", newVal)
-  def includePath: List[String] = getPathList("orc.includePath", List("."))
-  def includePath_=(newVal: List[String]) = putPathList("orc.includePath", newVal)
+  def includePath: java.util.List[String] = getPathList("orc.includePath", List("."))
+  def includePath_=(newVal: java.util.List[String]) = putPathList("orc.includePath", newVal)
+  def additionalIncludes: java.util.List[String] = getPathList("orc.additionalIncludes", List())
+  def additionalIncludes_=(newVal: java.util.List[String]) = putPathList("orc.additionalIncludes", newVal)
   def exceptionsOn: Boolean = getBoolean("orc.exceptionsOn", false)
   def exceptionsOn_=(newVal: Boolean) = putBoolean("orc.exceptionsOn", newVal)
   def typecheck: Boolean = getBoolean("orc.typecheck", false)
@@ -62,8 +65,8 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def tokenPoolSize_=(newVal: Int) = putInt("orc.tokenPoolSize", newVal)
   def stackSize: Int = getInt("orc.stackSize", -1)
   def stackSize_=(newVal: Int) = putInt("orc.stackSize", newVal)
-  def classPath: List[String] = getPathList("orc.classPath", List())
-  def classPath_=(newVal: List[String]) = putPathList("orc.classPath", newVal)
+  def classPath: java.util.List[String] = getPathList("orc.classPath", List())
+  def classPath_=(newVal: java.util.List[String]) = putPathList("orc.classPath", newVal)
   var capabilities = new java.util.HashMap[String, Boolean]()
   def hasCapability(capName: String): Boolean = {
     if (capabilities.containsKey(capName)) {
@@ -218,7 +221,7 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
    * @param key
    * @param value
    */
-  def putPathList(key: String, value: List[String]) {
+  def putPathList(key: String, value: java.util.List[String]) {
     if (value.length > 0) {
       put(key, value.mkString(System.getProperty("path.separator")))
     } else {
@@ -226,7 +229,7 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
     }
   }
 
-  def getPathList(key: String, default: List[String]): List[String] = {
+  def getPathList(key: String, default: java.util.List[String]): java.util.List[String] = {
       val value = get(key)
       value match {
         case s: String => s.split(System.getProperty("path.separator")).toList

@@ -22,7 +22,7 @@ import orc.oil.nameless.Type // FIXME: Typechecker should operate on named types
  *
  * @author jthywiss
  */
-abstract trait SiteResolver {
+trait SiteResolver {
   def resolve(name: String): Site
 }
 
@@ -32,7 +32,7 @@ abstract trait SiteResolver {
  *
  * @author jthywiss
  */
-abstract trait SiteForm extends SiteResolver
+trait SiteForm extends SiteResolver
 //class OrcSiteForm extends SiteForm
 //class JavaSiteForm extends SiteForm
 //class WebServiceSiteForm extends SiteForm

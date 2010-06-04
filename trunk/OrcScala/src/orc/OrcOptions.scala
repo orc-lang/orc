@@ -15,12 +15,14 @@
 
 package orc
 
+import scala.collection.JavaConversions._
+
 /**
  * 
  *
  * @author jthywiss
  */
-abstract trait OrcOptions {
+trait OrcOptions {
   def filename: String
   def filename_=(newVal: String)
   def debugLevel: Int
@@ -31,8 +33,10 @@ abstract trait OrcOptions {
   // Compile options
   def noPrelude: Boolean
   def noPrelude_=(newVal: Boolean)
-  def includePath: List[String]
-  def includePath_=(newVal: List[String])
+  def includePath: java.util.List[String]
+  def includePath_=(newVal: java.util.List[String])
+  def additionalIncludes: java.util.List[String]
+  def additionalIncludes_=(newVal: java.util.List[String])
   def exceptionsOn: Boolean
   def exceptionsOn_=(newVal: Boolean)
   def typecheck: Boolean
@@ -47,8 +51,8 @@ abstract trait OrcOptions {
   def tokenPoolSize_=(newVal: Int)
   def stackSize: Int
   def stackSize_=(newVal: Int)
-  def classPath: List[String]
-  def classPath_=(newVal: List[String])
+  def classPath: java.util.List[String]
+  def classPath_=(newVal: java.util.List[String])
   def hasCapability(capName: String): Boolean
   def setCapability(capName: String, newVal: Boolean)
 }
