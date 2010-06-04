@@ -1,5 +1,5 @@
 //
-// OrcLexical.scala -- Scala class/trait/object OrcLexical
+// OrcLexical.scala -- Scala class OrcLexical
 // Project OrcScala
 //
 // $Id$
