@@ -253,7 +253,7 @@ people intuitively use these operators.
       | ("def" ~> "capsule" ~> ident) ~ (TupleOf(parsePattern)+) ~ ("=" ~> parseExpression) ~ (parseReturnType?) 
       -> DefCapsule
 
-      | "def" ~> ident ~ (ListOf(parseTypeVariable)?) ~ TupleOf(parseType) ~ (parseReturnType?) 
+      | "def" ~> ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)+) ~ (parseReturnType?) 
       -> { (id, tvs, ts, rt) => DefSig(id, tvs getOrElse Nil, ts, rt) }
 
       | "type" ~> parseTypeVariable ~ ("=" ~> parseClassname) 
