@@ -22,7 +22,8 @@ object ExperimentOptions extends OrcOptions {
 
   // Compile options
   var noPrelude = false
-  var includePath = List[String](".")
+  var includePath: java.util.List[String] = { val r = new java.util.ArrayList[String](1); r.add("."); r } 
+  var additionalIncludes: java.util.List[String] = new java.util.ArrayList[String](0)
   var exceptionsOn = false
   var typecheck = false
   var quietChecking = false
@@ -31,7 +32,7 @@ object ExperimentOptions extends OrcOptions {
   var maxPublications = -1
   var tokenPoolSize = -1
   var stackSize = -1
-  var classPath = List[String]()
+  var classPath: java.util.List[String] = new java.util.ArrayList[String](0)
   def hasCapability(capName: String) = false
   def setCapability(capName: String, newVal: Boolean) { }
 }
@@ -51,7 +52,7 @@ object Experiment {
 //      )
 //  )
 
-  val parseTest = "5 >> 3 | (7 | 8) >x> (x | x) | (if true then -8.8e+8 else 9999)"
+  val parseTest = "5 >> 3 | (7 | 8) {->x> (x | x)-} | (if true then -8.8e+8 else 9999)"
 
   def main(args: Array[String]) {
     val parsedOil = (new OrcCompiler())(new StringReader(parseTest), ExperimentOptions)

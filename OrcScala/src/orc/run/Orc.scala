@@ -15,7 +15,7 @@
 
 package orc.run
 
-import orc.OrcAPI
+import orc.OrcExecutionAPI
 import orc.TokenAPI
 import orc.oil._
 import orc.oil.nameless._
@@ -26,8 +26,7 @@ import orc.values.Value
 
 import scala.collection.mutable.Set   
 
-
-abstract class Orc extends OrcAPI {
+abstract class Orc extends OrcExecutionAPI {
 
   var exec: Option[Execution] = Some(new Execution())
 

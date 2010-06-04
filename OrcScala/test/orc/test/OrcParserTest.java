@@ -18,7 +18,9 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -78,9 +80,13 @@ public class OrcParserTest {
 
     public void noPrelude_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
 
-    public scala.collection.immutable.List<String> includePath() { throw new UnsupportedOperationException(); }
+    public List<String> includePath() { List<String> r = new ArrayList<String>(1); r.add("."); return r; }
 
-    public void includePath_$eq(scala.collection.immutable.List<String> newVal) { throw new UnsupportedOperationException(); }
+    public void includePath_$eq(List<String> newVal) { throw new UnsupportedOperationException(); }
+
+    public List<String> additionalIncludes() { return new ArrayList<String>(0); }
+
+    public void additionalIncludes_$eq(List<String> newVal) { throw new UnsupportedOperationException(); }
 
     public boolean exceptionsOn() { return false; }
 
@@ -106,9 +112,9 @@ public class OrcParserTest {
 
     public void stackSize_$eq(int newVal) { throw new UnsupportedOperationException(); }
 
-    public scala.collection.immutable.List<String> classPath() { throw new UnsupportedOperationException(); }
+    public List<String> classPath() { return new ArrayList<String>(0); }
 
-    public void classPath_$eq(scala.collection.immutable.List<String> newVal) { throw new UnsupportedOperationException(); }
+    public void classPath_$eq(List<String> newVal) { throw new UnsupportedOperationException(); }
 
     public boolean hasCapability(String capName) { throw new UnsupportedOperationException(); }
 

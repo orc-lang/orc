@@ -276,7 +276,7 @@ people intuitively use these operators.
       -> ClassImport
 
       | "include" ~> stringLit
-      -> { Include(_ : String, Nil) }
+      -> { Include(_ : String, Nil) } //FIXME: Actually include the file!
   )
 
   // Add helper combinators for ( ... ) and [ ... ] forms
