@@ -65,8 +65,7 @@ object Translator {
                 case ext.Call(target, gs) => {
                 	var expr = convert(target)
                 	for (g <- gs) {
-                	  val m = new TempVar()
-                	  expr = expr  > m >  callArgumentGroup(m, g) 
+                	  expr = unfold(List(expr), { case List(m) => callArgumentGroup(m, g) }) 
                 	}
                 	expr
                 }
