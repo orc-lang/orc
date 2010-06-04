@@ -65,7 +65,7 @@ class AggregateDef(clauses: List[Clause],
 			if (clauses.isEmpty) { this !! "Unused function signature" }
 			val (newformals, newbody) = Clause.convertClauses(clauses)
 			
-			val getTypeFormals = typeformals.getOrElse(this !! "Missing type formals")
+			val getTypeFormals = typeformals.getOrElse(Nil)
 			val getArgTypes = argtypes.getOrElse(this !! "Missing argument types")
 			val getReturnType = returntype
 

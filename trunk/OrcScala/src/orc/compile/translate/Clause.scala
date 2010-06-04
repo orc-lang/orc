@@ -50,7 +50,7 @@ case class Clause(formals: List[Pattern], body: Expression) extends orc.AST {
 			case Nil => {
 				// Make sure the remaining cases are not redundant.
 				fallthrough match {
-					case named.Stop => {  }
+					case named.Stop() => {  }
 					case _ => { fallthrough !! "Redundant match" }
 				}
 			}
@@ -126,7 +126,7 @@ object Clause {
 	  val arity = commonArity(clauses)
 	  val args = (for (_ <- 0 until arity) yield new named.TempVar()).toList
 	  
-	  val nil: named.Expression = named.Stop
+	  val nil: named.Expression = named.Stop()
 	  def cons(clause: Clause, fail: named.Expression) = clause.convert(args, fail)
 	  val body = clauses.foldRight(nil)(cons)
 	  

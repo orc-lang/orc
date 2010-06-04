@@ -341,7 +341,7 @@ abstract class Orc extends OrcAPI {
     def run {
       if (state == Live) {
         node match {
-          case Stop => halt
+          case Stop() => halt
           case (a: Argument) => resolve(a).foreach(publish(_))
           case (Call(target, args, typeArgs)) => {
             resolve(target).foreach({
