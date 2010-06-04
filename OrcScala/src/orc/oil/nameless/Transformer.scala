@@ -27,7 +27,7 @@ object OilTransformer {
   
   private def compactClosures(e: Expression,depth: Int): Expression = {
     e match {
-      case Stop => Stop
+      case Stop() => Stop()
       case Constant(c) => Constant(c)
       case Variable(i) => Variable(i)
       case Call(target, args, typeArgs) => Call(target,args,typeArgs)  
@@ -62,7 +62,7 @@ object OilTransformer {
    */
   def substitute(freevars:List[Int],body:Expression, depth:Int): Expression = {
     body match {
-      case Stop => Stop
+      case Stop() => Stop()
       case Constant(c) => Constant(c)
       case Variable(i) => {
         if(freevars.contains(i)) {

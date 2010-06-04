@@ -25,20 +25,20 @@ trait Scope
 trait TypeScope
 
 trait Var extends Argument
-case class TempVar() extends Var
+class TempVar() extends Var
 case class NamedVar(name : String) extends Var
 
 trait Typevar extends Type
-case class TempTypevar() extends Typevar
+class TempTypevar() extends Typevar
 case class NamedTypevar(name : String) extends Typevar
 
 trait hasFreeVars {
   val freevars: Set[Var]
 }
 
-sealed abstract class NamedAST() extends AST with NamedToNameless
+sealed abstract class NamedAST extends AST with NamedToNameless
 
-sealed abstract class Expression() 
+sealed abstract class Expression
 extends NamedAST 
 with NamedInfixCombinators 
 with hasFreeVars 
@@ -63,7 +63,7 @@ with ArgumentSubstitution[Expression]
   
   def map(f: Argument => Argument): Expression = 
     this -> {
-      case Stop => Stop
+      case Stop() => Stop()
       case a : Argument => f(a)	
       case Call(target, args, typeargs) => Call(f(target), args map f, typeargs)
       case left || right => (left map f) || (right map f)
@@ -106,7 +106,7 @@ with ArgumentSubstitution[Expression]
     
 }
 
-case object Stop extends Expression
+case class Stop() extends Expression
 case class Call(target: Argument, args: List[Argument], typeargs: Option[List[Type]]) extends Expression
 case class Parallel(left: Expression, right: Expression) extends Expression
 case class Sequence(left: Expression, x: TempVar, right: Expression) extends Expression with Scope
@@ -115,7 +115,7 @@ case class Otherwise(left: Expression, right: Expression) extends Expression
 case class DeclareDefs(defs : List[Def], body: Expression) extends Expression with Scope
 case class HasType(body: Expression, expectedType: Type) extends Expression
 
-sealed abstract class Argument() extends Expression
+sealed abstract class Argument extends Expression
 case class Constant(value: Value) extends Argument
 
 
@@ -138,7 +138,7 @@ with ArgumentSubstitution[Def]
 }
 
 
-sealed abstract class Type() extends NamedAST
+sealed abstract class Type extends NamedAST
 { 
   lazy val withoutNames: nameless.Type = namedToNameless(this, Nil) 
   
@@ -174,7 +174,7 @@ trait NamedToNameless {
     def toArg(a: Argument): nameless.Argument = namedToNameless(a, context)
     def toType(t: Type): nameless.Type = namedToNameless(t, typecontext)
     e -> {
-      case Stop => nameless.Stop
+      case Stop() => nameless.Stop()
       case a : Argument => namedToNameless(a, context)		
       case Call(target, args, typeargs) => nameless.Call(toArg(target), args map toArg, typeargs map { _ map toType })
       case left || right => nameless.Parallel(toExp(left), toExp(right))

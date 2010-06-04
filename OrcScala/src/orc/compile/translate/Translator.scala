@@ -54,7 +54,7 @@ object Translator {
 	// FIXME: Incomplete for some cases.
 	def convert(e : ext.Expression): named.Expression = {
 			e -> {
-				case ext.Stop => Stop
+				case ext.Stop() => Stop()
 				case ext.Constant(c) => c match {
 					case (v: Value) => Constant(v)
 					case lit => Constant(Literal(lit))
@@ -218,7 +218,7 @@ object Translator {
       }
 	  val defNames = (defs map { _.name }).removeDuplicates
       val recordCall : ext.Call = new ext.Call(new ext.Constant(builtin.RecordConstructor), List(ext.Args(None, makeRecordArgs(defNames))))
-      ext.Parallel(ext.Sequential(body, None, ext.Stop), recordCall)
+      ext.Parallel(ext.Sequential(body, None, ext.Stop()), recordCall)
 	}
 	def makeRecordArgs(defNames: List[String]) : List[ext.Expression] = {
 	  var args : List[ext.Expression] = List()
@@ -436,7 +436,7 @@ object Translator {
 	
 	def decomposePattern(p : ext.Pattern, x: TempVar): PatternDecomposition = {
 			p match {
-				case ext.Wildcard => (Nil, Nil)
+				case ext.Wildcard() => (Nil, Nil)
 				case ext.ConstantPattern(c) => {
 					val testexpr = callEq(x, Constant(Literal(c)))
 					val guard = (testexpr, new TempVar())
