@@ -31,6 +31,7 @@ object TypeConversions {
     case orc.oil.nameless.Bot() => Bot
     case orc.oil.nameless.FunctionType(a, p, r) => ArrowType(a, p map type2type, r)
     case orc.oil.nameless.TypeVar(i) => TypeVar(i)
+    case _ => that !! "Unimplemented conversion from syntactic to semantic type for this type"
   }
   implicit def typelist2typelist(that : List[orc.oil.nameless.Type]) : List[Type] = that map type2type
 }

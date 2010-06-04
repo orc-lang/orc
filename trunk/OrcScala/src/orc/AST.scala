@@ -40,5 +40,8 @@ abstract class AST extends Positional {
   
   
   // Remove this overloading to uncover uses of !! that do not carry a specific exception type
-  def !!(msg : String): Nothing = !!(new PositionalException(msg))
+  def !!(msg : String): Nothing = { 
+    val exn = new PositionalException(msg)
+    this.!!(exn)
+  }
 }

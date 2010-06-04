@@ -107,7 +107,7 @@ object AggregateDef {
 			}
 		maybePartitioned match {
 			case Some(l) => {
-				val (ps, ts) = List unzip l
+				val (ps, ts) = l.unzip
 				(ps, Some(ts))
 			}
 			case None => (formals, None) 

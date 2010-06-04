@@ -425,6 +425,7 @@ abstract class Orc extends OrcExecutionAPI {
             for (c <- cs) { c.context = context }
             this.move(body).run
           }
+          case HasType(expr, _) => this.move(expr).run
         }
       }
     }
