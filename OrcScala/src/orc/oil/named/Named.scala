@@ -195,6 +195,7 @@ trait NamedToNameless {
     a -> {
       case Constant(v) => nameless.Constant(v)
       case (x: TempVar) => nameless.Variable(context indexOf x) 
+      case x@ NamedVar(s) => x !! ("Unbound variable " + s) 
     }
   }
 
@@ -217,6 +218,7 @@ trait NamedToNameless {
         nameless.TypeApplication(i, typeactuals map toType)
       }	
       case AssertedType(assertedType) => nameless.AssertedType(namedToNameless(assertedType, typecontext))
+      case u@ NamedTypevar(s) => u !! ("Unbound type variable " + s)
     }
   }	
 

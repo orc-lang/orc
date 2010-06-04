@@ -69,7 +69,7 @@ case class Clause(formals: List[Pattern], body: Expression) extends orc.AST {
 			 * There are multiple strict patterns.
 			 */
 			case _ => { 
-				val (strictPatterns, strictArgs) = List unzip strictPairs
+				val (strictPatterns, strictArgs) = strictPairs.unzip
 				val (filter, scope) = Translator.convertPattern(TuplePattern(strictPatterns))
 				val source = filter(makeTuple(strictArgs))
 				val x = new named.TempVar()

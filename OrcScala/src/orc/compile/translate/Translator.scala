@@ -39,7 +39,7 @@ object Translator {
 	 */
 	def translate(options: OrcOptions, extendedAST : ext.Expression): Expression = {		
 		convert(extendedAST) map {
-			case NamedVar(s) => throw new Exception("Unbound variable " + s)
+			case x@ NamedVar(s) => x !! ("Unbound variable " + s)
 			case y => y 
 		}
 	}
@@ -131,16 +131,6 @@ object Translator {
 				case ext.Declare(ext.Val(p,f), body) => {
 					convert(ext.Pruning(body, Some(p), f))
 				}
-				
-				/*FIXME:
-				  case ext.Declare(_, body) =>
-					case class TypeAlias(name: String, typeformals: List[String] = Nil, aliasedtype: Type) extends Declaration
-					case class Datatype(name: String, typeformals: List[String] = Nil, constructors: List[Constructor]) extends Declaration
-					case class Constructor(name: String, types: List[Option[Type]]) extends Declaration
-					case class TypeImport(name: String, classname: String) extends Declaration
-				*/
-				//FIXME: Ignoring type imports
-                case ext.Declare(ext.TypeImport(name, sitename), body) => { convert(body) }
 
 				case ext.Declare(ext.SiteImport(name, sitename), body) => {
 				  val site = Constant(OrcSiteForm.resolve(sitename))
@@ -154,6 +144,9 @@ object Translator {
 				//FIXME: Incorporate filename in source location information
 				case ext.Declare(ext.Include(_, decls), body) => convert( (decls foldRight body)(ext.Declare) ) 
 				
+				//FIXME: Ignoring all other declaration types
+                case ext.Declare(_, body) => convert(body)
+                
 				case ext.TypeAscription(body, t) => HasType(convert(body), convertType(t))
 				case ext.TypeAssertion(body, t) => HasType(convert(body), AssertedType(convertType(t)))
 				
@@ -216,7 +209,7 @@ object Translator {
       if (defs.size == 0) {
         body !! "A capsule must contain at least one def"
       }
-	  val defNames = (defs map { _.name }).removeDuplicates
+	  val defNames = (defs map { _.name }).distinct
       val recordCall : ext.Call = new ext.Call(new ext.Constant(builtin.RecordConstructor), List(ext.Args(None, makeRecordArgs(defNames))))
       ext.Parallel(ext.Sequential(body, None, ext.Stop()), recordCall)
 	}
@@ -374,7 +367,7 @@ object Translator {
 		val (computes, bindings) = decomposePattern(p, sourceVar) 
 		
 		/* Check for nonlinearity */
-		val (_, names) = List unzip bindings
+		val (_, names) = bindings.unzip
 		for (name <- names) {
 			if (names exists (_ equals name)) {
 				p !! ("Nonlinear pattern: " + name + " occurs more than once.")
@@ -450,9 +443,9 @@ object Translator {
 					val vars = (for (_ <- ps) yield new TempVar()).toList
 					val exprs = List.range(0, ps.length) map (makeNth(x, _))
 					val tupleCompute = exprs zip vars
-					val subResults = List.map2(ps, vars)(decomposePattern)
-					val (subCompute, subBindings): PatternDecomposition = List unzip subResults
-					(tupleCompute ::: subCompute, subBindings)
+					val subResults = (ps, vars).zipped.map(decomposePattern)
+					val (subComputeList, subBindingsList) = subResults.unzip
+					(tupleCompute ::: subComputeList.flatten, subBindingsList.flatten)
 				}
 				case ext.ListPattern(Nil) => decomposePattern(ext.ConstantPattern(Nil), x)
 				case ext.ListPattern(ps) => {

@@ -50,10 +50,10 @@ trait UntypedSite extends Site {
 
 trait UnimplementedSite extends Site {
   override def name = "(unimplemented)"
-  def orcType(argTypes: List[Type]): Type = {
+  def orcType(argTypes: List[Type]): Nothing = {
 	  throw new Exception("Site " + this + " is unimplemented.")
   }
-  def call(args: List[Value], token: TokenAPI) {
+  def call(args: List[Value], token: TokenAPI): Nothing = {
 	  throw new Exception("Site " + this + " is unimplemented.")
   }
 }

@@ -75,7 +75,7 @@ public abstract class ComparisonSite extends EvalSite {
 				final int a = Args.applyNumericOperator((Number) arg0, (Number) arg1, new MyOperator());
 				return compare(a);
 			} else {
-				final int a = ((Comparable) arg0).compareTo(arg1);
+				final int a = ((Comparable<Object>) arg0).compareTo(arg1);
 				return compare(a);
 			}
 		} catch (final ClassCastException e) {
