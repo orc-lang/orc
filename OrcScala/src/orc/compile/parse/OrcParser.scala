@@ -72,13 +72,13 @@ object OrcParser extends StandardTokenParsers {
   )
 
   def parseUnaryExpr = (
-      "-" ~ parseCallExpression -> PrefixOperator 
+      "-" ~ parseCallExpression -> PrefixOperator
     | parseCallExpression
     )
 
-  // TODO: Allow infix op expressions to break across newlines  
+  // TODO: Allow infix op expressions to break across newlines
   // TODO: Fix parser ambiguity re: < and >
-    
+
   def parseExpnExpr = chainl1(parseUnaryExpr, ("**") ^^
     { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
 
@@ -89,7 +89,7 @@ object OrcParser extends StandardTokenParsers {
     { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) }) |
     "~" ~ parseAdditionalExpr ^^ { case op ~ expr => PrefixOperator(op, expr)}
 
-  def parseRelationalExpr = chainl1(parseAdditionalExpr, ("=" | "/=" | "<" | ">" | "<=" | ">=") ^^
+  def parseRelationalExpr = chainl1(parseAdditionalExpr, ("=" | "/=" | "<=" | ">=") ^^
         { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
 
   def parseLogicalExpr = chainl1(parseRelationalExpr, ("||" | "&&") ^^
@@ -98,9 +98,9 @@ object OrcParser extends StandardTokenParsers {
   def parseInfixOpExpression: Parser[Expression] = chainl1(parseLogicalExpr, ":=" ^^
     { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
 
-  def parseSequentialCombinator = ">" ~> (parsePattern?) <~ ">"
+  def parseSequentialCombinator = ">" ~~> (parsePattern?) <~~ ">"
 
-  def parsePruningCombinator = "<" ~> (parsePattern?) <~ "<"
+  def parsePruningCombinator = "<" ~~> (parsePattern?) <~~ "<"
 
   def parseSequentialExpression =
     parseInfixOpExpression interleave parseSequentialCombinator apply Sequential
@@ -279,11 +279,11 @@ people intuitively use these operators.
       | "include" ~> stringLit
       -> { Include(_ : String, Nil) } //FIXME: Actually include the file!
   )
-  
+
   def parseDeclarations: Parser[List[Declaration]] = parseDeclaration ~~ parseDeclarations ^^ { case d ~ ds => d::ds }
 
   def parseProgram: Parser[Expression] = (lexical.NewLine*) ~> parseExpression <~ (lexical.NewLine*)
-  
+
   // Add helper combinators for ( ... ) and [ ... ] forms
   def TupleOf[T](P : => Parser[T]): Parser[List[T]] = "(" ~> repsep(P, ",") <~ ")"
   def ListOf[T](P : => Parser[T]): Parser[List[T]] = "[" ~> repsep(P, ",") <~ "]"
@@ -302,7 +302,7 @@ people intuitively use these operators.
 
 
   def main(args: Array[String]) {
-    var r = parse("val y = 1 1") /*match {
+    var r = parse("Some(3) >x> (\nx >Some(y)> y)") /*match {
         case Parsers.Success => println("Success")
         case Parsers.NoSuccess => println("No Success")
     }*/
@@ -372,15 +372,17 @@ people intuitively use these operators.
     {
 
       def origami(b: B)(x:A, y:A): A = f(x,b,y)
-      markLocation( (markLocation(parser)) * (interparser ^^ origami) )
+      markLocation( (markLocation(parser)) ~~* (interparser ^^ origami) )
 
     } : Parser[A]
   }
-  
-  class StretchingParser[+T](parser: Parser[T]) {  
+
+  class StretchingParser[+T](parser: Parser[T]) {
     def ~~[U](otherParser : => Parser[U]): Parser[T ~ U] = (parser <~ (lexical.NewLine*)) ~ otherParser
     def ~~>[U](otherParser : => Parser[U]): Parser[U] = (parser <~ (lexical.NewLine*)) ~> otherParser
     def <~~[U](otherParser : => Parser[U]): Parser[T] = (parser <~ (lexical.NewLine*)) <~ otherParser
+    def ~~*[U >: T](sep: => Parser[(U, U) => U]) = chainl1((lexical.NewLine*) ~> parser <~ (lexical.NewLine*),
+        sep) // (lexical.NewLine*) ~> sep <~ (lexical.NewLine*)
   }
 
   implicit def CreateMaps0Parser(s: String): Maps0 = new Maps0(s)
