@@ -278,37 +278,17 @@ people intuitively use these operators.
 
       | "include" ~> stringLit
       -> { Include(_ : String, Nil) } //FIXME: Actually include the file!
+      
+      | failure("Declaration (val, def, type, etc.) expected")
   )
 
-  def parseDeclarations: Parser[List[Declaration]] = parseDeclaration ~~ parseDeclarations ^^ { case d ~ ds => d::ds }
+  def parseDeclarations: Parser[List[Declaration]] = (lexical.NewLine*) ~> (parseDeclaration <~ (lexical.NewLine*))*
 
   def parseProgram: Parser[Expression] = (lexical.NewLine*) ~> parseExpression <~ (lexical.NewLine*)
 
   // Add helper combinators for ( ... ) and [ ... ] forms
   def TupleOf[T](P : => Parser[T]): Parser[List[T]] = "(" ~> repsep(P, ",") <~ ")"
   def ListOf[T](P : => Parser[T]): Parser[List[T]] = "[" ~> repsep(P, ",") <~ "]"
-
-    def parse(f:String) = {
-      val tokens = new lexical.Scanner(f)
-      phrase(parseExpression)(tokens)
-  }
-
-  // ignore newlines
-//  override def ~()
-
-  // act like old tilda
-//  override def ~-()
-
-
-
-  def main(args: Array[String]) {
-    var r = parse("Some(3) >x> (\nx >Some(y)> y)") /*match {
-        case Parsers.Success => println("Success")
-        case Parsers.NoSuccess => println("No Success")
-    }*/
-    println(r)
-  }
-
 
   def parse(options: OrcOptions, s:String) = {
       val tokens = new lexical.Scanner(s)
