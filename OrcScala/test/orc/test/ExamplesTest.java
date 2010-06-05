@@ -90,6 +90,8 @@ public class ExamplesTest {
 	}
 
     private static class ExamplesOptions implements orc.OrcOptions {
+        protected ExamplesOptions() { }
+
         public String filename() { return ""; }
   
         public void filename_$eq(String newVal) { throw new UnsupportedOperationException(); }
