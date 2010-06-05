@@ -52,7 +52,7 @@ object Experiment {
 //      )
 //  )
 
-  val parseTest = "5 >> 3 | (7 | 8) {->x> (x | x)-} | (if true then -8.8e+8 else 9999)"
+  val parseTest = "5 >> 3 | (7 | 8) >x> (x | x) | (if true then -8.8e+8 else 9999)"
 
   def main(args: Array[String]) {
     val parsedOil = (new OrcCompiler())(new StringReader(parseTest), ExperimentOptions)
