@@ -368,7 +368,7 @@ object Translator {
 		/* Check for nonlinearity */
 		val (_, names) = bindings.unzip
 		for (name <- names) {
-			if (names exists (_ equals name)) {
+			if ((names count {_ equals name}) > 1) {
 				p !! ("Nonlinear pattern: " + name + " occurs more than once.")
 			}
 		}
