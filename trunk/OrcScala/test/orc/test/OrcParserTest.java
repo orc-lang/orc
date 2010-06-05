@@ -64,6 +64,8 @@ public class OrcParserTest {
   }
 
   private static class ParserOptions implements orc.OrcOptions {
+    protected ParserOptions() { }
+
     public String filename() { return ""; }
 
     public void filename_$eq(String newVal) { throw new UnsupportedOperationException(); }
@@ -120,5 +122,5 @@ public class OrcParserTest {
 
     public void setCapability(String capName, boolean newVal) { throw new UnsupportedOperationException(); }
   }
-  private static ParserOptions parserOptions = new ParserOptions(); 
+  protected static ParserOptions parserOptions = new ParserOptions(); 
 }
