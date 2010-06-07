@@ -11,8 +11,8 @@ is not the root(node 0) nor has a parent, N if i is the root (node 0),
 and j, 0<= j< N, if i has parent j.
 
 Edge (i,j) is a tree edge if i is j's parent, i.e., parent(j) = i;
-Ê Ê(i,j) is backward if j is an ancestor, possibly parent, of i,
-Ê ÊÊi.e., parent(j) =/ i
+ï¿½ ï¿½(i,j) is backward if j is an ancestor, possibly parent, of i,
+ï¿½ ï¿½ï¿½i.e., parent(j) =/ i
 -}
 
 val N = 6
@@ -24,9 +24,9 @@ def dfs(i) =
   def scan(List[Integer]) :: Signal
   def scan([]) = signal
   def scan(y:ys) =
-    if parent(y)? < 0 then
+    if (parent(y)? < 0) then
       ( parent(y) := i >> dfs(y) >> scan(ys) )
-    else 
+    else
       scan(ys)
   scan(conn(i)?)
 
