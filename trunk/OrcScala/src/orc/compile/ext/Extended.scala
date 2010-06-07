@@ -71,8 +71,8 @@ case class Include(origin: String, decls: List[Declaration]) extends Declaration
 sealed abstract class DefDeclaration extends Declaration {
 	val name: String
 }
-case class Def(name: String, formals: List[List[Pattern]], body: Expression, returntype: Option[Type]) extends DefDeclaration
-case class DefCapsule(name: String, formals: List[List[Pattern]], body: Expression, returntype: Option[Type]) extends DefDeclaration
+case class Def(name: String, formals: List[List[Pattern]],returntype: Option[Type], body: Expression) extends DefDeclaration
+case class DefCapsule(name: String, formals: List[List[Pattern]], returntype: Option[Type], body: Expression) extends DefDeclaration
 case class DefSig(name: String, typeformals: List[String], argtypes: List[List[Type]], returntype: Option[Type]) extends DefDeclaration
 
 sealed abstract class TypeDeclaration extends Declaration

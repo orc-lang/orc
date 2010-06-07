@@ -34,15 +34,15 @@ class AggregateDef(clauses: List[Clause],
 	
 		def +(defn: DefDeclaration): AggregateDef =
 		  defn -> {
-            case Def(_, List(formals), body, maybeReturnType) => {
+            case Def(_, List(formals), maybeReturnType, body) => {
               val (newformals, maybeArgTypes) = AggregateDef.formalsPartition(formals)
               val newclause = defn ->> Clause(newformals, body)
               val newArgTypes = unify(argtypes, maybeArgTypes, defn !! "Redundant argument typing")
               val newReturnType = unify(returntype, maybeReturnType, defn !! "Redundant return typing")
               new AggregateDef(newclause::clauses, typeformals, newArgTypes, newReturnType)
             }
-            case DefCapsule(name, List(formals), body, maybeReturnType) => {
-              this + Def(name, List(formals), new Capsule(body), maybeReturnType)
+            case DefCapsule(name, List(formals), maybeReturnType, body) => {
+              this + Def(name, List(formals), maybeReturnType, new Capsule(body))
             }
             case DefSig(_, typeformals2, argtypes2, maybeReturnType) => {
               val argtypes3 = argtypes2 head // List[List[Type]] has only one entry

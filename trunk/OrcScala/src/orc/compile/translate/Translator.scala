@@ -268,14 +268,14 @@ object Translator {
 	 private def reduceParamLists(d: ext.DefDeclaration): ext.DefDeclaration = {
       import orc.error.compiletime.typing._
       d -> {
-        case ext.Def(name,List(formals),body,retType) => d
-        case ext.Def(name,formals::tail,body,retType) => {
+        case ext.Def(name,List(formals),retType,body) => d
+        case ext.Def(name,formals::tail,retType,body) => {
           val newbody = uncurry(tail,body,retType)
           /* Return the outermost Def */
-          ext.Def(name,List(formals),newbody,None) 
+          ext.Def(name,List(formals),None,newbody) 
         }
-        case ext.DefCapsule(name,formals,body,retType) => {
-          reduceParamLists(ext.Def(name,formals,ext.Capsule(body),retType))
+        case ext.DefCapsule(name,formals,retType,body) => {
+          reduceParamLists(ext.Def(name,formals,retType,ext.Capsule(body)))
         }
         case ext.DefSig(name,typFormals,List(argTypes),retType) => d
         case ext.DefSig(name,typFormals,argTypes::tail,Some(retType)) => {
