@@ -78,9 +78,9 @@ public class OrcParserTest {
 
     public void shortErrors_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
 
-    public boolean noPrelude() { return false; }
+    public boolean usePrelude() { return false; }
 
-    public void noPrelude_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
+    public void usePrelude_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
 
     public List<String> includePath() { List<String> r = new ArrayList<String>(1); r.add("."); return r; }
 

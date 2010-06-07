@@ -64,7 +64,7 @@ class OrcCompiler extends OrcCompilerAPI with CompilerEnvironmentIfc {
     val phaseName = "parse"
     override def apply(options: OrcOptions) = { source =>
       var includeFileNames = options.additionalIncludes
-      if (!options.noPrelude) {
+      if (options.usePrelude) {
         //FIXME: Hack for testing -- only reading prelude/core.inc
         includeFileNames = "prelude/core.inc" :: (includeFileNames).toList
       }
