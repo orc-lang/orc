@@ -8,7 +8,7 @@ def GetContent(in) =
   val out = StringBuilder()
   def loop(Integer) :: String
   def loop(len) =
-    if len < 0 then
+    if (len < 0) then
       out.toString()
     else
       out.append(buf, 0, len) >>

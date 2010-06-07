@@ -58,6 +58,8 @@ object OrcParser extends StandardTokenParsers {
       | "(" ~~> parseExpression <~~ ")"
       | ListOf(parseExpression) -> ListExpr
       | TupleOf(parseExpression) -> TupleExpr
+      | "(" ~~> nlchainl1(parseInfixOpExpression, ("<" | ">" | "<=" | ">=") ^^
+        { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) }) <~~ ")"
   )
 
   def parseArgumentGroup: Parser[ArgumentGroup] = (
@@ -67,7 +69,7 @@ object OrcParser extends StandardTokenParsers {
   )
 
   def parseCallExpression: Parser[Expression] = (
-      parseBaseExpression ~ (parseArgumentGroup+) -> Call
+       parseBaseExpression ~ (parseArgumentGroup+) -> Call
       | parseBaseExpression
   )
 
@@ -79,23 +81,23 @@ object OrcParser extends StandardTokenParsers {
   // TODO: Allow infix op expressions to break across newlines
   // TODO: Fix parser ambiguity re: < and >
 
-  def parseExpnExpr = chainl1(parseUnaryExpr, ("**") ^^
+  def parseExpnExpr = nlchainl1(parseUnaryExpr, ("**") ^^
     { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
 
-  def parseMultExpr = chainl1(parseExpnExpr, ("*" | "/" | "%") ^^
+  def parseMultExpr = nlchainl1(parseExpnExpr, ("*" | "/" | "%") ^^
     { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
 
-  def parseAdditionalExpr: Parser[Expression] = chainl1(parseMultExpr, ("+" | "-" | ":") ^^
+  def parseAdditionalExpr: Parser[Expression] = nlchainl1(parseMultExpr, ("+" | "-" | ":") ^^
     { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) }) |
     "~" ~ parseAdditionalExpr ^^ { case op ~ expr => PrefixOperator(op, expr)}
 
-  def parseRelationalExpr = chainl1(parseAdditionalExpr, ("=" | "/=" | "<=" | ">=") ^^
+  def parseRelationalExpr = nlchainl1(parseAdditionalExpr, ("=" | "/=") ^^
         { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
 
-  def parseLogicalExpr = chainl1(parseRelationalExpr, ("||" | "&&") ^^
+  def parseLogicalExpr = nlchainl1(parseRelationalExpr, ("||" | "&&") ^^
    { op =>(left:Expression,right:Expression) => InfixOperator(left, op, right)})
 
-  def parseInfixOpExpression: Parser[Expression] = chainl1(parseLogicalExpr, ":=" ^^
+  def parseInfixOpExpression: Parser[Expression] = nlchainl1(parseLogicalExpr, ":=" ^^
     { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
 
   def parseSequentialCombinator = ">" ~~> (parsePattern?) <~~ ">"
@@ -260,13 +262,13 @@ people intuitively use these operators.
 
       | "def" ~> ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)+) ~ (parseReturnType?)
       -> { (id, tvs, ts, rt) => DefSig(id, tvs getOrElse Nil, ts, rt) }
-      
+
       | "type" ~> parseTypeVariable ~ (ListOf(parseTypeVariable)?) ~ ("=" ~> rep1sep(parseConstructor, "|"))
       -> ((x,ys,t) => Datatype(x, ys getOrElse Nil, t))
 
       | "type" ~> parseTypeVariable ~ (ListOf(parseTypeVariable)?) ~ ("=" ~> parseType)
       -> ((x,ys,t) => TypeAlias(x, ys getOrElse Nil, t))
-      
+
       | "type" ~> parseTypeVariable ~ ("=" ~> parseClassname)
       -> TypeImport
 
@@ -278,7 +280,7 @@ people intuitively use these operators.
 
       | "include" ~> stringLit
       -> { Include(_ : String, Nil) } //FIXME: Actually include the file!
-      
+
       | failure("Declaration (val, def, type, etc.) expected")
   )
 
@@ -291,7 +293,14 @@ people intuitively use these operators.
   def ListOf[T](P : => Parser[T]): Parser[List[T]] = "[" ~> repsep(P, wrapNewLines(",")) <~ "]"
 
   def wrapNewLines[T](p:Parser[T]): Parser[T] = (lexical.NewLine*) ~> p <~ (lexical.NewLine*)
-  
+
+  def main(args: Array[String]) = {
+      val s = "if(2 > 1)"
+      val tokens = new lexical.Scanner(s)
+      val r = phrase(parseProgram)(tokens)
+      println(r)
+  }
+
   def parse(options: OrcOptions, s:String) = {
       val tokens = new lexical.Scanner(s)
       phrase(parseProgram)(tokens)
@@ -359,6 +368,10 @@ people intuitively use these operators.
     } : Parser[A]
   }
 
+  def nlchainl1[T](p: => Parser[T], q: => Parser[(T, T) => T]): Parser[T] =
+    p ~~ rep(q ~~ p) ^^ {
+      case x ~ xs => xs.foldLeft(x){(_, _) match {case (a, f ~ b) => f(a, b)}}
+  }
   class StretchingParser[+T](parser: Parser[T]) {
     def ~~[U](otherParser : => Parser[U]): Parser[T ~ U] = (parser <~ (lexical.NewLine*)) ~ otherParser
     def ~~>[U](otherParser : => Parser[U]): Parser[U] = (parser <~ (lexical.NewLine*)) ~> otherParser

@@ -1,14 +1,14 @@
-{- 
+{-
 This program is an exercise in imperative sequential programming
 which uses pointers and mutable storage. It nicely separates the aspects of
 programming that are imperative -- updating values in place in the
 storage -- from aspects that are functional -- algorithms on trees
-described recursively. 
+described recursively.
 
 The program implements a binary search tree which stores a set of
 values. See Wikipedia entry
 http://en.wikipedia.org/wiki/Binary_search_tree
-for a desription of binary search tree. 
+for a desription of binary search tree.
 
 The following interface is supported:
 
@@ -16,9 +16,9 @@ insert(key): inserts key into the set. Returns true if key was not in
 the set prior to this operation, and false otherwise.
 
 delete(key): deletes key from the set. Returns true if key was in
-the set prior to this operation, and false otherwise. 
+the set prior to this operation, and false otherwise.
 
-search(key): Returns true if key is in the set, and false otherwise.   
+search(key): Returns true if key is in the set, and false otherwise.
 
 sort():      Returns a list of the set items in increasing order.
 
@@ -48,10 +48,10 @@ least two nodes at all times (bsent and tsent) such a scheme is always
 feasible. Further, this interface allows us to insert and delete nodes
 more easily.
 
--} 
+-}
 
 (
-   
+
 val bsent = Ref()
 val tsent = Ref() >r> r.write((0,bsent,0)) >> r
 
@@ -96,7 +96,7 @@ def delete(key) =
        def leftmost(p,d,r) =
        -- given r is the d-child of p and r /= bsent.
        -- Return (p',d,r') where r' is the d-child of p' and r'.left = bsent
-       -- Either (p,r) = (p',r') or (p',r') is in the leftmost path in 
+       -- Either (p,r) = (p',r') or (p',r') is in the leftmost path in
        -- the subtree rooted at r.
 
        val (_,l,_) = r.read()
@@ -124,7 +124,7 @@ def delete(key) =
    )
 
 def sort() = -- do an in order traversal of the BST
-    
+
     {- An explicit append operation on lists -}
     def append([],ys) = ys
     def append(xs,[]) = xs
@@ -148,9 +148,9 @@ insert(33)  >>
 insert(38) >>
 delete(35)>>
   sort()
-  
-) :!: Signal  {- As currently written, this program cannot pass the typechecker -} 
-  
+
+) :!: Signal  {- As currently written, this program cannot pass the typechecker -}
+
 {-
 OUTPUT:
 [20, 24, 30, 33, 38]
