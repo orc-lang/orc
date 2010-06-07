@@ -75,16 +75,20 @@ class OrcLexical() extends StdLexical() {
 
   override def whitespace: Parser[Any] = rep(
       whitespaceChar
-    | '{' ~ '-' ~ comment
+    | multilinecomment
     | '-' ~ '-' ~ rep( chrExcept(EofCh, '\n') )
     | '{' ~ '-' ~ failure("unclosed comment")
     )
 
-  override protected def comment: Parser[Any] = (
-      '-' ~ '}'  ^^ { case _ => ' '  }
-    | chrExcept(EofCh) ~ comment
-    )
+  def multilinecomment: Parser[Any] =
+      '{' ~ '-' ~ endcomment
 
+  def endcomment: Parser[Any] = (
+    '-' ~ '}' ^^ { case _ => ' ' }
+   | '{' ~ '-' ~ endcomment ~ endcomment // Allow inlined comments.
+   | chrExcept(EofCh) ~ endcomment
+  )
+    
   /** The set of reserved identifiers: these will be returned as `Keyword's */
   override val reserved = new HashSet[String] ++ List(
       "true", "false", "signal", "stop", "null",

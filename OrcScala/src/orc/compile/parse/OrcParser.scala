@@ -238,7 +238,7 @@ people intuitively use these operators.
       | parseTypeVariable ~ ListOf(parseType) -> TypeApplication
       | parseTypeVariable -> TypeVariable
       | TupleOf(parseType) -> TupleType
-      | "lambda" ~> ListOf(parseTypeVariable) ~ TupleOf(parseType) ~ parseReturnType -> FunctionType
+      | "lambda" ~> ((ListOf(parseTypeVariable)?) ^^ {_.getOrElse(Nil)}) ~ TupleOf(parseType) ~ parseReturnType -> FunctionType
   )
 
   def parseConstructor: Parser[Constructor] = (
@@ -252,23 +252,23 @@ people intuitively use these operators.
       ("val" ~> parsePattern) ~ ("=" ~> parseExpression)
       -> Val
 
-      | ("def" ~> ident) ~ (TupleOf(parsePattern)+) ~ ("=" ~~> parseExpression) ~ (parseReturnType?)
+      | ("def" ~> ident) ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ ("=" ~~> parseExpression)
       -> Def
 
-      | ("def" ~> "capsule" ~> ident) ~ (TupleOf(parsePattern)+) ~ ("=" ~> parseExpression) ~ (parseReturnType?)
+      | ("def" ~> "capsule" ~> ident) ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ ("=" ~~> parseExpression)
       -> DefCapsule
 
       | "def" ~> ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)+) ~ (parseReturnType?)
       -> { (id, tvs, ts, rt) => DefSig(id, tvs getOrElse Nil, ts, rt) }
-
-      | "type" ~> parseTypeVariable ~ ("=" ~> parseClassname)
-      -> TypeImport
+      
+      | "type" ~> parseTypeVariable ~ (ListOf(parseTypeVariable)?) ~ ("=" ~> rep1sep(parseConstructor, "|"))
+      -> ((x,ys,t) => Datatype(x, ys getOrElse Nil, t))
 
       | "type" ~> parseTypeVariable ~ (ListOf(parseTypeVariable)?) ~ ("=" ~> parseType)
       -> ((x,ys,t) => TypeAlias(x, ys getOrElse Nil, t))
-
-      | "type" ~> parseTypeVariable ~ (ListOf(parseTypeVariable)?) ~ ("=" ~> rep1sep(parseConstructor, "|"))
-      -> ((x,ys,t) => Datatype(x, ys getOrElse Nil, t))
+      
+      | "type" ~> parseTypeVariable ~ ("=" ~> parseClassname)
+      -> TypeImport
 
       | "site" ~> ident ~ ("=" ~> parseClassname)
       -> SiteImport
@@ -282,14 +282,16 @@ people intuitively use these operators.
       | failure("Declaration (val, def, type, etc.) expected")
   )
 
-  def parseDeclarations: Parser[List[Declaration]] = (lexical.NewLine*) ~> (parseDeclaration <~ (lexical.NewLine*))*
+  def parseDeclarations: Parser[List[Declaration]] = wrapNewLines(parseDeclaration)*
 
-  def parseProgram: Parser[Expression] = (lexical.NewLine*) ~> parseExpression <~ (lexical.NewLine*)
+  def parseProgram: Parser[Expression] = wrapNewLines(parseExpression)
 
   // Add helper combinators for ( ... ) and [ ... ] forms
-  def TupleOf[T](P : => Parser[T]): Parser[List[T]] = "(" ~> repsep(P, ",") <~ ")"
-  def ListOf[T](P : => Parser[T]): Parser[List[T]] = "[" ~> repsep(P, ",") <~ "]"
+  def TupleOf[T](P : => Parser[T]): Parser[List[T]] = "(" ~> repsep(P, wrapNewLines(",")) <~ ")"
+  def ListOf[T](P : => Parser[T]): Parser[List[T]] = "[" ~> repsep(P, wrapNewLines(",")) <~ "]"
 
+  def wrapNewLines[T](p:Parser[T]): Parser[T] = (lexical.NewLine*) ~> p <~ (lexical.NewLine*)
+  
   def parse(options: OrcOptions, s:String) = {
       val tokens = new lexical.Scanner(s)
       phrase(parseProgram)(tokens)
@@ -361,8 +363,7 @@ people intuitively use these operators.
     def ~~[U](otherParser : => Parser[U]): Parser[T ~ U] = (parser <~ (lexical.NewLine*)) ~ otherParser
     def ~~>[U](otherParser : => Parser[U]): Parser[U] = (parser <~ (lexical.NewLine*)) ~> otherParser
     def <~~[U](otherParser : => Parser[U]): Parser[T] = (parser <~ (lexical.NewLine*)) <~ otherParser
-    def ~~*[U >: T](sep: => Parser[(U, U) => U]) = chainl1((lexical.NewLine*) ~> parser <~ (lexical.NewLine*),
-        sep) // (lexical.NewLine*) ~> sep <~ (lexical.NewLine*)
+    def ~~*[U >: T](sep: => Parser[(U, U) => U]) = chainl1(wrapNewLines(parser), sep)
   }
 
   implicit def CreateMaps0Parser(s: String): Maps0 = new Maps0(s)
