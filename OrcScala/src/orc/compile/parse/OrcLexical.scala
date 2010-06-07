@@ -37,9 +37,9 @@ class OrcLexical() extends StdLexical() {
 
   override def token: Parser[Token] =
     ( identChar ~ rep( identChar | digit )              ^^ { case first ~ rest => processIdent(first :: rest mkString "") }
+    | delim
     | '(' ~ delim ~ ')'                                 ^^ { case '(' ~ d ~ ')' => Identifier(d.chars) }
     | '(' ~ '0' ~ '-' ~ ')'                             ^^ { _ => Identifier("0-") }
-    | delim
     | '\"' ~ rep( chrExcept('\"', '\n', EofCh) ) ~ '\"' ^^ { case '\"' ~ chars ~ '\"' => StringLit(chars mkString "") }
     | '\"' ~> failure("unclosed string literal")
     | floatLit                                          ^^ { case f => FloatingPointLit(f) }
@@ -89,7 +89,7 @@ class OrcLexical() extends StdLexical() {
   override val reserved = new HashSet[String] ++ List(
       "true", "false", "signal", "stop", "null",
       "lambda", "if", "then", "else", "as",
-      "val", "def", "type", "site", "class", "include",
+      "val", "def", "capsule", "type", "site", "class", "include",
       "Top", "Bot"
     )
 

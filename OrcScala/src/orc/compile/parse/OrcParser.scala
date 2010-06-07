@@ -209,9 +209,9 @@ people intuitively use these operators.
 
   def parseBasePattern = (
       parseValue -> ConstantPattern
+      | ident ~ TupleOf(parsePattern) -> CallPattern
       | ident -> VariablePattern
       | "_" -> Wildcard
-      | ident ~ TupleOf(parsePattern) -> CallPattern
       | "(" ~> parsePattern <~ ")"
       | TupleOf(parsePattern) -> TuplePattern
       | ListOf(parsePattern) -> ListPattern
@@ -235,10 +235,10 @@ people intuitively use these operators.
   def parseType: Parser[Type] = (
         "Top" -> Top
       | "Bot" -> Bot
+      | parseTypeVariable ~ ListOf(parseType) -> TypeApplication
       | parseTypeVariable -> TypeVariable
       | TupleOf(parseType) -> TupleType
       | "lambda" ~> ListOf(parseTypeVariable) ~ TupleOf(parseType) ~ parseReturnType -> FunctionType
-      | parseTypeVariable ~ ListOf(parseType) -> TypeApplication
   )
 
   def parseConstructor: Parser[Constructor] = (
