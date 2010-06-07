@@ -31,8 +31,8 @@ trait OrcOptions {
   def shortErrors_=(newVal: Boolean)
 
   // Compile options
-  def noPrelude: Boolean
-  def noPrelude_=(newVal: Boolean)
+  def usePrelude: Boolean
+  def usePrelude_=(newVal: Boolean)
   def includePath: java.util.List[String]
   def includePath_=(newVal: java.util.List[String])
   def additionalIncludes: java.util.List[String]

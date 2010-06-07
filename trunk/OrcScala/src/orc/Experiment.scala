@@ -21,7 +21,7 @@ object ExperimentOptions extends OrcOptions {
   var shortErrors = false
 
   // Compile options
-  var noPrelude = false
+  var usePrelude = true
   var includePath: java.util.List[String] = { val r = new java.util.ArrayList[String](1); r.add("."); r } 
   var additionalIncludes: java.util.List[String] = new java.util.ArrayList[String](0)
   var exceptionsOn = false
@@ -41,21 +41,15 @@ object Experiment {
 
   val orc = new ExperimentalOrc 
 
-//  val orcTest = Parallel(
-//      Sequence(
-//          Constant(Literal(5)), 
-//          Constant(Literal(3))
-//      ),
-//      Sequence(
-//          Parallel(Constant(Literal(7)),Constant(Literal(8))),
-//          Parallel(Variable(0), Variable(0))
-//      )
-//  )
-
-  val parseTest = "5 >> 3 | (7 | 8) >x> (x | x) | (if true then -8.8e+8 else 9999)"
-
   def main(args: Array[String]) {
-    val parsedOil = (new OrcCompiler())(new StringReader(parseTest), ExperimentOptions)
+    if (args.length < 1) {
+      throw new Exception("Please supply a source file name as the first argument.\n" +
+      		              "Within Eclipse, use ${resource_loc}")
+    }
+    val sourcefile = args(0)
+    ExperimentOptions.filename = sourcefile
+    val reader = scala.util.parsing.input.StreamReader(new java.io.FileReader(new java.io.File(sourcefile)))
+    val parsedOil = (new OrcCompiler())(reader, ExperimentOptions)
     println(parsedOil)
     orc.run(parsedOil)
   }

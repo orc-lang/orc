@@ -45,8 +45,8 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def shortErrors_=(newVal: Boolean) = putBoolean("orc.shortErrors", newVal)
 
   // Compile options
-  def noPrelude: Boolean = getBoolean("orc.noPrelude", false)
-  def noPrelude_=(newVal: Boolean) = putBoolean("orc.noPrelude", newVal)
+  def usePrelude: Boolean = getBoolean("orc.usePrelude", true)
+  def usePrelude_=(newVal: Boolean) = putBoolean("orc.usePrelude", newVal)
   def includePath: java.util.List[String] = getPathList("orc.includePath", List("."))
   def includePath_=(newVal: java.util.List[String]) = putPathList("orc.includePath", newVal)
   def additionalIncludes: java.util.List[String] = getPathList("orc.additionalIncludes", List())
