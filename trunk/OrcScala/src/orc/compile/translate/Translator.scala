@@ -373,45 +373,34 @@ object Translator {
 			}
 		}
 		
-		computes match {
-			/* 
-			 * There are no strict patterns. 
-			 */
-			case Nil => {
-				({ e => e },  { x => { _.substAll(bindings).subst(x,sourceVar) } })
-			}
-			/* 
-			 * There is exactly one strict pattern.
-			 */
-			case (e, y) :: Nil => {
-				({ _  > sourceVar >  e},  { x => { _.substAll(bindings).subst(x,y) } })	
-			}
-			/*
-			 * There are multiple strict patterns.
-			 */
-			case _ => { 
-				val strictResults = computes map { case (_,y) => y }
+		val neededResults = bindings.map({ case (y,_) => y }).distinct
 				
-				/* Create filter function */
-				var filterExpression = makeLet(strictResults)
-				for ((e,y) <- computes) {
-					filterExpression =  e  > y >  filterExpression
-				}
-				def filter(e : Expression) = { e  > sourceVar >  filterExpression }
 				
-				/* Create scope function */
-				def scope(filterResult : TempVar)(target : Expression) = {
-					var newtarget = target.substAll(bindings)
-					for ((y, i) <- strictResults.zipWithIndex) {
-						val z = new TempVar()
-						newtarget = newtarget.subst(z,y)  < z <  makeNth(filterResult, i)
-					}
-					newtarget
-				}
+		/* Create filter function */
+		var filterExpression = makeLet(neededResults)
+		for ((e,y) <- computes.reverse) {
+			filterExpression =  e  > y >  filterExpression
+		}
+		def filter(e : Expression) = { e  > sourceVar >  filterExpression }
 				
-				(filter, scope)
+		/* Create scope function */
+		def scope(filterResult : TempVar)(target : Expression) = {
+			var newtarget = target.substAll(bindings)
+			neededResults match {
+			  case Nil => {  }
+			  case y :: Nil => newtarget = newtarget.subst(filterResult,y)
+			  case _ => {
+			    for ((y, i) <- neededResults.zipWithIndex) {
+                  val z = new TempVar()
+                  newtarget = newtarget.subst(z,y)  < z <  makeNth(filterResult, i)
+                }
+			  }
 			}
-		}  
+			
+			newtarget
+		}
+				
+		(filter, scope)
 		
 	}
 	
@@ -430,7 +419,8 @@ object Translator {
 			p match {
 				case ext.Wildcard() => (Nil, Nil)
 				case ext.ConstantPattern(c) => {
-					val testexpr = callEq(x, Constant(Literal(c)))
+					val b = new TempVar()
+				    val testexpr = callEq(x, Constant(Literal(c))) > b > callIf(b)
 					val guard = (testexpr, new TempVar())
 					(List(guard), Nil)
 				}
@@ -440,11 +430,16 @@ object Translator {
 				}
 				case ext.TuplePattern(ps) => {
 					val vars = (for (_ <- ps) yield new TempVar()).toList
-					val exprs = List.range(0, ps.length) map (makeNth(x, _))
-					val tupleCompute = exprs zip vars
 					val subResults = (ps, vars).zipped.map(decomposePattern)
 					val (subComputeList, subBindingsList) = subResults.unzip
-					(tupleCompute ::: subComputeList.flatten, subBindingsList.flatten)
+					val subComputes = subComputeList.flatten
+					val subBindings = subBindingsList.flatten
+					
+					var computeElements: List[(Expression, TempVar)] = Nil
+					for ((y, i) <- vars.zipWithIndex) {
+					  computeElements = (makeNth(x,i), y) :: computeElements
+					}					
+					(computeElements ::: subComputes, subBindings)
 				}
 				case ext.ListPattern(Nil) => decomposePattern(ext.ConstantPattern(Nil), x)
 				case ext.ListPattern(ps) => {
@@ -454,15 +449,15 @@ object Translator {
 				}
 				case ext.ConsPattern(ph,pt) => {
 					val y = new TempVar()
-					val consCompute = (callIsCons(x), y)
-					val (subCompute, subBindings) = decomposePattern(ext.TuplePattern(List(ph,pt)), y)
-					(consCompute :: subCompute, subBindings)
+					val computeCons = (callIsCons(x), y)
+					val (subComputes, subBindings) = decomposePattern(ext.TuplePattern(List(ph,pt)), y)
+					(computeCons :: subComputes, subBindings)
 				}
 				case ext.CallPattern(name, args) => {
 					val y = new TempVar() 
 					val matchCompute = (makeUnapply(new NamedVar(name), x), y)
-					val (subCompute, subBindings) = decomposePattern(ext.TuplePattern(args), y)
-					(matchCompute :: subCompute, subBindings)
+					val (subComputes, subBindings) = decomposePattern(ext.TuplePattern(args), y)
+					(matchCompute :: subComputes, subBindings)
 				}
 				case ext.AsPattern(p, name) => {
 					val binding = (x, name)
@@ -470,7 +465,8 @@ object Translator {
 					(subCompute, binding :: subBindings)
 				}
 				case ext.EqPattern(name) => {
-					val testexpr = callEq(x, new NamedVar(name))
+					val b = new TempVar()
+				    val testexpr = callEq(x, new NamedVar(name)) > b > callIf(b)
 					val guard = (testexpr, new TempVar())
 					(List(guard), Nil)
 				}

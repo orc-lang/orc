@@ -104,7 +104,7 @@ public class ExamplesTest {
   
         public void shortErrors_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
   
-        public boolean usePrelude() { return false; }
+        public boolean usePrelude() { return true; }
   
         public void usePrelude_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
   
