@@ -55,6 +55,8 @@ sealed abstract class Expression extends orc.AST with hasFreeVars with NamelessI
   }
   
   lazy val withNames: named.Expression = AddNames.namelessToNamed(this, Nil, Nil)
+  
+  //override def toString() = this.withNames.toString()
 }
 case class Stop() extends Expression
 case class Call(target: Argument, args: List[Argument], typeArgs: Option[List[Type]]) extends Expression
@@ -70,7 +72,9 @@ case class HasType(body: Expression, expectedType: Type) extends Expression
 
 sealed abstract class Argument extends Expression
 case class Constant(value: Value) extends Argument
-case class Variable(index: Int) extends Argument
+case class Variable(index: Int) extends Argument {
+  if (index < 0) { throw new Exception("Invalid construction of indexed variable. Index must be >= 0") }
+}
 
 sealed abstract class Type extends orc.AST
 case class Top() extends Type

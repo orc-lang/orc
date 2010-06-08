@@ -22,8 +22,9 @@ import orc.TokenAPI
 
 trait Site extends Value {
   def call(args: List[Value], token: TokenAPI): Unit
-  def name: String = this.toString()
+  def name: String = "?"
   def orcType(argTypes: List[Type]): Type
+  override def toString() = this.name
 }
 
 trait PartialSite extends Site {

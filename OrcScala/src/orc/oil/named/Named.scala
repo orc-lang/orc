@@ -24,19 +24,33 @@ trait Scope
 // The supertype of all type variable binding nodes
 trait TypeScope
 
+
 trait Var extends Argument
-class TempVar() extends Var
+/*
+class TempVar(val optionalName : Option[String]) extends Var {
+  def this(name: String) = this(Some(name))
+  def this() = this(None)
+}
+*/
+class TempVar(val optionalName : Option[String] = None) extends Var {
+  def this(name: String) = this(Some(name))
+}
 case class NamedVar(name : String) extends Var
 
 trait Typevar extends Type
-class TempTypevar() extends Typevar
+class TempTypevar(val optionalName : Option[String] = None) extends Typevar {
+  def this(name: String) = this(Some(name))
+}
 case class NamedTypevar(name : String) extends Typevar
+
 
 trait hasFreeVars {
   val freevars: Set[Var]
 }
 
-sealed abstract class NamedAST extends AST with NamedToNameless
+sealed abstract class NamedAST extends AST with NamedToNameless {
+  override def toString() = (new PrettyPrint()).reduce(this)
+}
 
 sealed abstract class Expression
 extends NamedAST 
@@ -103,6 +117,8 @@ with ArgumentSubstitution[Expression]
 			case _ => this
 		}
 	}
+	
+	
     
 }
 
@@ -153,7 +169,6 @@ sealed abstract class Type extends NamedAST
 	 	  case u => u
 	  }
   
-  // FIXME: Is equals correct here?
   def subst(t: Typevar, u: Typevar): Type = this map (y => if (y equals t) { u } else { y })   
   def subst(t: Typevar, s: String): Type = subst(t, NamedTypevar(s))
 }	

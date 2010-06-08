@@ -25,6 +25,7 @@ case class Literal(value: Any) extends Value {
     case s: String => "\"" + s.replace("\"", "\\\"").replace("\n", "\\n") + "\""; //TODO: Generalize
     case _ => value.toString()
   }
+  override def toString() = toOrcSyntax()
 }
 
 case object Signal extends Value {
