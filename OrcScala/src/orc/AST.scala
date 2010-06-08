@@ -46,4 +46,9 @@ abstract class AST extends Positional {
     val exn = new PositionalException(msg)
     this !! exn
   }
+  
+  // Emit a warning
+  def !?(msg : String): Unit = { 
+    Console.err.println("Warning " + this.pos + ": " + msg)
+  }
 }
