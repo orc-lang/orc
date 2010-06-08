@@ -102,7 +102,7 @@ object ConsConstructor extends PartialSite with UntypedSite {
   }
 }
 
-object RecordConstructor extends UnimplementedSite
+object RecordConstructor extends UnimplementedSite //FIXME:TODO: Implement
 
 
 
@@ -147,10 +147,10 @@ object ConsExtractor extends PartialSite with UntypedSite {
   }
 }
 
-object FindExtractor extends UnimplementedSite
+object FindExtractor extends UnimplementedSite //FIXME:TODO: Implement
 
 
 // Site site
 
-object SiteSite extends UnimplementedSite
+object SiteSite extends UnimplementedSite //FIXME:TODO: Implement
 

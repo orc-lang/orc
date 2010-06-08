@@ -25,11 +25,22 @@ import orc.error.compiletime.SiteResolutionException
 object OrcSiteForm {
   def resolve(name: String): Site = {
     val loadedClass = loadClass(name)
-    try {
-      loadedClass.asInstanceOf[Class[Site]].newInstance()
-    } catch {
-      case e: ClassCastException =>
-        throw new SiteResolutionException("Class "+loadedClass.getName()+" does not implement the Site interface", e)
+    if (classOf[Site].isAssignableFrom(loadedClass)) {
+      try {
+        return loadedClass.asInstanceOf[Class[Site]].newInstance()
+      } catch {
+        case e =>
+          throw new SiteResolutionException("Problem loading class "+loadedClass.getName()+": "+e, e)
+      }
+    } else {
+      try { // Maybe it's a Scala object....
+        val loadedClassCompanion = loadClass(name+"$")
+        println(">>class "+loadedClass+", companion "+loadedClassCompanion+", MODULE$="+loadedClassCompanion.getField("MODULE$").get(null))
+        return loadedClassCompanion.getField("MODULE$").get(null).asInstanceOf[Site]
+      } catch {
+        case _ => { } //Ignore -- It's not a Scala object, then.
+      }
+      throw new SiteResolutionException("Class "+loadedClass.getName()+" does not implement the Site interface")
     }
   }
   private def loadClass(name:String) = getClass().getClassLoader().loadClass(name) //TODO:FIXME: This should use the OrcAPI's loadClass, and the classpath from the OrcOptions

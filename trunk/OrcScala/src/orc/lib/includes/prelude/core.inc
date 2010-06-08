@@ -43,19 +43,19 @@ When applied to a single argument, return that argument (behaving as the identit
 @site let[A, ...](A, ...) :: (A, ...)
 When applied to two or more arguments, return the arguments in a tuple.
 --}
---FIXME:site let = "orc.lib.builtin.Let"
+--FIXME:site let = "orc.lib.???.Let"
 
 {--
-@site if(Boolean) :: Signal
+@site If(Boolean) :: Signal
 Fail silently if the argument is false. Otherwise return a signal.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: "Always publishes"
-  if(false) >> "Never publishes"
-| if(true) >> "Always publishes"]]></programlisting>
+  If(false) >> "Never publishes"
+| If(true) >> "Always publishes"]]></programlisting>
 --}
---FIXME:site if = "orc.lib.builtin.If"
+site ift = "orc.lib.builtin.If"
 
 {--
 @site error(String) :: Bot
@@ -69,7 +69,7 @@ def assert(b) =
 -- Fail with the error message: "assertion failed"
 assert(false)]]></programlisting>
 --}
---FIXME:site error = "orc.lib.builtin.Error"
+--FIXME:site error = "orc.lib.???.Error"
 
 {--
 @site (+)(Number, Number) :: Number
@@ -170,19 +170,19 @@ Note that although values of different types may be compared with
 <code>=</code>, the substitutability principle requires that such values are
 always considered inequal, i.e. the comparison will return <code>false</code>.
 --}
---FIXME:site (=) = "orc.lib.builtin.Eq"
+site (=) = "orc.lib.builtin.Eq"
 
 {--
 @site (/=)(Signal, Signal) :: Boolean
 <code>a/=b</code> returns false if <code>a=b</code>, and true otherwise.
 --}
---FIXME:site (/=) = "orc.lib.builtin.Inequal"
+--FIXME:site (/=) = "orc.lib.comp.Inequal"
 
 {--
 @site (~)(Boolean) :: Boolean
 Return the logical negation of the argument.
 --}
---FIXME:site (~) = "orc.lib.builtin.Not"
+site (~) = "orc.lib.builtin.Not"
 
 {--
 @site (&&)(Boolean, Boolean) :: Boolean
@@ -221,7 +221,7 @@ old "tail"s unusable, so you should refrain from modifying a value
 while you are deconstructing it.  This feature is highly experimental
 and will probably change in future versions of the implementation.
 --}
---FIXME:site (:) = "orc.lib.builtin.Cons"
+site (:) = "orc.lib.builtin.ConsConstructor"
 
 {--
 @def abs(Number) :: Number
@@ -230,7 +230,7 @@ Return the absolute value of the argument.
 @implementation
 --}
 --FIXME:def abs(Number) :: Number
---FIXME:def abs(x) = if x < 0 then -x else x
+--FIXME:def abs(x) = if x <: 0 then -x else x
 
 {--
 @def signum(Number) :: Number
