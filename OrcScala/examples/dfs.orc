@@ -24,7 +24,7 @@ def dfs(i) =
   def scan(List[Integer]) :: Signal
   def scan([]) = signal
   def scan(y:ys) =
-    if (parent(y)? < 0) then
+    if parent(y)? <: 0 then
       ( parent(y) := i >> dfs(y) >> scan(ys) )
     else
       scan(ys)
