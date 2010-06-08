@@ -75,7 +75,8 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
   )
 
   def parseCallExpression: Parser[Expression] = (
-       parseBaseExpression ~ (parseArgumentGroup+) -> Call
+      ("if" ~> "(" ~> parseExpression <~ ")") -> { (e:Expression) => Call(Variable("If"),List(Args(None,List(e:Expression)))) }
+      | parseBaseExpression ~ (parseArgumentGroup+) -> Call
       | parseBaseExpression
   )
 
@@ -84,7 +85,6 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
     | parseCallExpression
     )
 
-  // TODO: Allow infix op expressions to break across newlines
   // TODO: Fix parser ambiguity re: < and >
 
   def parseExpnExpr = nlchainl1(parseUnaryExpr, ("**") ^^
@@ -93,9 +93,15 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
   def parseMultExpr = nlchainl1(parseExpnExpr, ("*" | "/" | "%") ^^
     { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
 
-  def parseAdditionalExpr: Parser[Expression] = nlchainl1(parseMultExpr, ("+" | "-" | ":") ^^
-    { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) }) |
-    "~" ~ parseAdditionalExpr ^^ { case op ~ expr => PrefixOperator(op, expr)}
+  def parseAdditionalExpr: Parser[Expression] = (
+      nlchainl1(parseMultExpr, ("+" | ":") ^^
+        { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) }) 
+    | "~" ~ parseAdditionalExpr ^^ { case op ~ expr => PrefixOperator(op, expr)}
+    | chainl1(parseMultExpr, ("-") ^^
+        { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) }) 
+        /* Disallow newline breaks for binary subtract,
+         * to resolve ambiguity with unary minus.*/
+  )
 
   def parseRelationalExpr = nlchainl1(parseAdditionalExpr, ("=" | "/=") ^^
         { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
@@ -307,9 +313,9 @@ people intuitively use these operators.
   def parseProgram: Parser[Expression] = wrapNewLines(parseExpression)
 
   // Add helper combinators for ( ... ) and [ ... ] forms
-  def TupleOf[T](P : => Parser[T]): Parser[List[T]] = "(" ~~> repsep(P, wrapNewLines(",")) <~~ ")"
-  def ListOf[T](P : => Parser[T]): Parser[List[T]] = "[" ~~> repsep(P, wrapNewLines(",")) <~~ "]"
-
+  def TupleOf[T](P : => Parser[T]): Parser[List[T]] = "(" ~> wrapNewLines(repsep(P, wrapNewLines(","))) <~ ")"
+  def ListOf[T](P : => Parser[T]): Parser[List[T]] = "[" ~> wrapNewLines(repsep(P, wrapNewLines(","))) <~ "]"
+  
   def wrapNewLines[T](p:Parser[T]): Parser[T] = (lexical.NewLine*) ~> p <~ (lexical.NewLine*)
 
   def main(args: Array[String]) = {
