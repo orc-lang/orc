@@ -45,7 +45,7 @@ class PrettyPrint {
   def commasep(l : List[NamedAST]): String = l match {
     case Nil => ""
     case x::Nil => reduce(x)
-    case x::y => y.foldLeft(reduce(x))({ _ + "," + reduce(_) }) 
+    case x::y => y.foldLeft(reduce(x))({ _ + ", " + reduce(_) }) 
   }
   
   def brack(l : List[NamedAST]): String = "[" + commasep(l) + "]"

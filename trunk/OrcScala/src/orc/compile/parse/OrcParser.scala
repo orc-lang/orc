@@ -307,8 +307,8 @@ people intuitively use these operators.
   def parseProgram: Parser[Expression] = wrapNewLines(parseExpression)
 
   // Add helper combinators for ( ... ) and [ ... ] forms
-  def TupleOf[T](P : => Parser[T]): Parser[List[T]] = "(" ~> repsep(P, wrapNewLines(",")) <~ ")"
-  def ListOf[T](P : => Parser[T]): Parser[List[T]] = "[" ~> repsep(P, wrapNewLines(",")) <~ "]"
+  def TupleOf[T](P : => Parser[T]): Parser[List[T]] = "(" ~~> repsep(P, wrapNewLines(",")) <~~ ")"
+  def ListOf[T](P : => Parser[T]): Parser[List[T]] = "[" ~~> repsep(P, wrapNewLines(",")) <~~ "]"
 
   def wrapNewLines[T](p:Parser[T]): Parser[T] = (lexical.NewLine*) ~> p <~ (lexical.NewLine*)
 

@@ -24,7 +24,7 @@ abstract class Value extends AnyRef {
   def commaSepValues(vs : List[Value]) = vs match {
     case Nil => ""
     case v::Nil => v.toOrcSyntax()
-    case _ => (vs map {_.toOrcSyntax()}) reduceRight { _ + "," + _ } 
+    case _ => (vs map {_.toOrcSyntax()}) reduceRight { _ + ", " + _ } 
   }
   
   override def toString() = toOrcSyntax()
