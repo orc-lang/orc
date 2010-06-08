@@ -64,8 +64,6 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
       | "(" ~~> parseExpression <~~ ")"
       | ListOf(parseExpression) -> ListExpr
       | TupleOf(parseExpression) -> TupleExpr
-      | "(" ~~> nlchainl1(parseInfixOpExpression, ("<" | ">" | "<=" | ">=") ^^
-        { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) }) <~~ ")"
   )
 
   def parseArgumentGroup: Parser[ArgumentGroup] = (
@@ -75,8 +73,7 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
   )
 
   def parseCallExpression: Parser[Expression] = (
-      ("if" ~> "(" ~> parseExpression <~ ")") -> { (e:Expression) => Call(Variable("If"),List(Args(None,List(e:Expression)))) }
-      | parseBaseExpression ~ (parseArgumentGroup+) -> Call
+        parseBaseExpression ~ (parseArgumentGroup+) -> Call
       | parseBaseExpression
   )
 
@@ -102,8 +99,8 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
         /* Disallow newline breaks for binary subtract,
          * to resolve ambiguity with unary minus.*/
   )
-
-  def parseRelationalExpr = nlchainl1(parseAdditionalExpr, ("=" | "/=") ^^
+  
+  def parseRelationalExpr = nlchainl1(parseAdditionalExpr, ("<:" | ":>" | "<=" | ">=" | "=" | "/=") ^^
         { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
 
   def parseLogicalExpr = nlchainl1(parseRelationalExpr, ("||" | "&&") ^^
