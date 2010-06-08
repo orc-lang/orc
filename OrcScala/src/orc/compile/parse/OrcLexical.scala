@@ -64,11 +64,11 @@ class OrcLexical() extends StdLexical() {
   case object NewLine extends Token {
     def chars = "\n"
   }
-
+  
   override def token: Parser[Token] =
-    ( identChar ~ rep( identChar | digit )              ^^ { case first ~ rest => processIdent(first :: rest mkString "") }
+    ( letter ~ rep( identChar | digit )                 ^^ { case first ~ rest => processIdent(first :: rest mkString "") }
     | '(' ~ oper ~ ')'                                  ^^ { case '(' ~ o ~ ')' => Identifier(o.chars) }
-    | '(' ~ '0' ~ '-' ~ ')'                             ^^ { _ => Identifier("0-") }
+    | '(' ~ '0' ~ '-' ~ ')'                             ^^^ Identifier("0-")
     | delim
     | '\"' ~ rep(stringLitChar) ~ '\"'                  ^^ { case '\"' ~ chars ~ '\"' => StringLit(chars mkString "") }
     | '\"' ~> failure("unclosed string literal")
@@ -79,8 +79,8 @@ class OrcLexical() extends StdLexical() {
     | '\r' ~ '\n'                                       ^^^ NewLine
     | '\r'                                              ^^^ NewLine
     | failure("illegal character")
-    )
-
+    )  
+  
   // legal identifier chars other than digits
   override def identChar = letter | elem('_') | elem('\'')
   
@@ -137,7 +137,7 @@ class OrcLexical() extends StdLexical() {
   /** The set of reserved identifiers: these will be returned as `Keyword's */
   override val reserved = new HashSet[String] ++ List(
       "true", "false", "signal", "stop", "null",
-      "lambda", "if", "then", "else", "as",
+      "lambda", "if", "then", "else", "as", "_",
       "val", "def", "capsule", "type", "site", "class", "include",
       "Top", "Bot"
     )

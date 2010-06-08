@@ -20,11 +20,8 @@
 package orc.lib.builtin
 
 import orc.oil.nameless.Type
+import orc.values._
 import orc.values.sites._
-import orc.values.Value
-import orc.values.Literal
-import orc.values.Signal
-
 
 // Logic
 
@@ -59,17 +56,6 @@ object Eq extends PartialSite with UntypedSite {
 
 
 // Constructors
-
-case class OrcTuple(elements: List[Value]) extends PartialSite with UntypedSite {
-  def evaluate(args: List[Value]) = 
-    args match {
-  	  case List(Literal(i: Int)) if (0 <= i) && (i < elements.size) => Some(elements(i))
-  	  case _ => None
-    }
-}
-case class OrcList(elements: List[Value]) extends Value
-case class OrcOption(contents: Option[Value]) extends Value
-
 
 object TupleConstructor extends TotalSite with UntypedSite {
   override def name = "Tuple"

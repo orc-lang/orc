@@ -15,8 +15,19 @@
 
 package orc.values
 
-abstract class Value() {
-  def toOrcSyntax(): String = toString()
+import orc.values.sites.PartialSite
+import orc.values.sites.UntypedSite
+
+abstract class Value extends AnyRef {
+  def toOrcSyntax(): String = super.toString()
+  
+  def commaSepValues(vs : List[Value]) = vs match {
+    case Nil => ""
+    case v::Nil => v.toOrcSyntax()
+    case _ => (vs map {_.toOrcSyntax()}) reduceRight { _ + "," + _ } 
+  }
+  
+  override def toString() = toOrcSyntax()
 }
 
 case class Literal(value: Any) extends Value {
@@ -25,7 +36,6 @@ case class Literal(value: Any) extends Value {
     case s: String => "\"" + s.replace("\"", "\\\"").replace("\f", "\\f").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t") + "\"";
     case _ => value.toString()
   }
-  override def toString() = toOrcSyntax()
 }
 
 case object Signal extends Value {
@@ -33,3 +43,25 @@ case object Signal extends Value {
 }
 
 case class Field(field: String) extends Value
+
+
+
+
+case class OrcTuple(elements: List[Value]) extends PartialSite with UntypedSite {
+  def evaluate(args: List[Value]) = 
+    args match {
+      case List(Literal(i: Int)) if (0 <= i) && (i < elements.size) => Some(elements(i))
+      case _ => None
+    }
+  override def toOrcSyntax() = "(" + commaSepValues(elements) + ")" 
+}
+
+case class OrcList(elements: List[Value]) extends Value {
+  override def toOrcSyntax() = "[" + commaSepValues(elements) + "]"
+}
+case class OrcOption(contents: Option[Value]) extends Value {
+  override def toOrcSyntax() = contents match {
+    case Some(v) => "Some(" + v.toOrcSyntax() + ")"
+    case None => "None()"
+  }
+}

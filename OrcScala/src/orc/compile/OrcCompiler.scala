@@ -76,7 +76,7 @@ class OrcCompiler extends OrcCompilerAPI with CompilerEnvironmentIfc {
           case parser.NoSuccess(msg, in) => throw new ParsingException(msg, in.pos)
         }
       }
-      println(includeAsts)
+      //println(includeAsts)
       val progAst = parser.scanAndParseProgram(source) match {
         case parser.Success(result, _) => result
         case parser.NoSuccess(msg, in) => throw new ParsingException(msg, in.pos)
@@ -88,9 +88,7 @@ class OrcCompiler extends OrcCompilerAPI with CompilerEnvironmentIfc {
   val translate = new CompilerPhase[OrcOptions, orc.compile.ext.Expression, orc.oil.named.Expression] { 
     val phaseName = "translate"
     override def apply(options: OrcOptions) = { ast =>
-      val result = orc.compile.translate.Translator.translate(options, ast)
-      //println(result)
-      result
+      orc.compile.translate.Translator.translate(options, ast)
     }
   }
 
