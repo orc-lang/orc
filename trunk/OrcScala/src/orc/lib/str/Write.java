@@ -30,7 +30,7 @@ public class Write extends EvalSite {
       if (v == null) {
           return "null";
       } else if (v instanceof String) {
-          return '"' + ((String)v).replace("\"", "\\\"").replace("\n", "\\n") + '"'; //TODO: Generalize
+          return '"' + ((String)v).replace("\"", "\\\"").replace("\f", "\\f").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t") + '"';
       } else {
           return v.toString();
       }

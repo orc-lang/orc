@@ -70,7 +70,7 @@ class OrcLexical() extends StdLexical() {
     | '(' ~ oper ~ ')'                                  ^^ { case '(' ~ o ~ ')' => Identifier(o.chars) }
     | '(' ~ '0' ~ '-' ~ ')'                             ^^ { _ => Identifier("0-") }
     | delim
-    | '\"' ~ rep( chrExcept('\"', '\n', EofCh) ) ~ '\"' ^^ { case '\"' ~ chars ~ '\"' => StringLit(chars mkString "") }
+    | '\"' ~ rep(stringLitChar) ~ '\"'                  ^^ { case '\"' ~ chars ~ '\"' => StringLit(chars mkString "") }
     | '\"' ~> failure("unclosed string literal")
     | floatLit                                          ^^ { case f => FloatingPointLit(f) }
     | signedIntegerLit                                  ^^ { case i => NumericLit(i) }
@@ -83,6 +83,11 @@ class OrcLexical() extends StdLexical() {
 
   // legal identifier chars other than digits
   override def identChar = letter | elem('_') | elem('\'')
+  
+  def stringLitChar = 
+    ( '\\' ~> chrExcept(EofCh)      ^^ { case 'f' => '\f'; case 'n' => '\n'; case 'r' => '\r'; case 't' => '\t'; case c => c }
+    | chrExcept('\"', '\n', EofCh)
+    )
 
   def nonZeroDigit = elem('1') | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
   def integerLit =
