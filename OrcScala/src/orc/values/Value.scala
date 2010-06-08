@@ -22,7 +22,7 @@ abstract class Value() {
 case class Literal(value: Any) extends Value {
   override def toOrcSyntax() = value match {
     case null => "null"
-    case s: String => "\"" + s.replace("\"", "\\\"").replace("\n", "\\n") + "\""; //TODO: Generalize
+    case s: String => "\"" + s.replace("\"", "\\\"").replace("\f", "\\f").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t") + "\"";
     case _ => value.toString()
   }
   override def toString() = toOrcSyntax()
