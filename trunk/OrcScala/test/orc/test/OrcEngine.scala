@@ -27,10 +27,10 @@ class OrcEngine {
   val out = new StringBuffer("")
 
   val orcRuntime = new Orc {
-    def emit(v: Value) { out.append(v.toOrcSyntax()+"\n") }
+    def emit(v: Value) { println(v); out.append(v.toOrcSyntax()+"\n") }
     def halted { print("Done. \n") }
     def invoke(t: this.Token, s: Site, vs: List[Value]) { s.call(vs,t) }
-    def expressionPrinted(s: String) { print(s) }
+    def expressionPrinted(s: String) { print(s); out.append(s) }
     def schedule(ts: List[Token]) { for (t <- ts) t.run }
   }
 
