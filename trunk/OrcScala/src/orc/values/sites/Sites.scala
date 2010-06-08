@@ -22,7 +22,7 @@ import orc.TokenAPI
 
 trait Site extends Value {
   def call(args: List[Value], token: TokenAPI): Unit
-  def name: String = "?"
+  def name: String = this.getClass().toString()
   def orcType(argTypes: List[Type]): Type
   override def toString() = this.name
 }

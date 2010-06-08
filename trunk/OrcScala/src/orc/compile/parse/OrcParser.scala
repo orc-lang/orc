@@ -80,7 +80,7 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
   )
 
   def parseUnaryExpr = (
-      "-" ~ parseCallExpression -> PrefixOperator
+      ("-" | "~") ~ parseCallExpression -> PrefixOperator
     | parseCallExpression
     )
 
@@ -111,13 +111,13 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
   def parsePruningCombinator = "<" ~~> (parsePattern?) <~~ "<"
 
   def parseSequentialExpression =
-    parseInfixOpExpression interleave parseSequentialCombinator apply Sequential
+    parseInfixOpExpression interleaveRight parseSequentialCombinator apply Sequential
 
   def parseParallelExpression =
     rep1sep(parseSequentialExpression, "|") -> (_ reduceLeft Parallel)
 
   def parsePruningExpression =
-    parseParallelExpression interleave parsePruningCombinator apply Pruning
+    parseParallelExpression interleaveLeft parsePruningCombinator apply Pruning
 
   def parseOtherwiseExpression =
     rep1sep(parsePruningExpression, ";") -> (_ reduceLeft Otherwise)
@@ -217,16 +217,16 @@ people intuitively use these operators.
 
   def parseBasePattern = (
       parseValue -> ConstantPattern
+      | "_" -> Wildcard
       | ident ~ TupleOf(parsePattern) -> CallPattern
       | ident -> VariablePattern
-      | "_" -> Wildcard
       | "(" ~> parsePattern <~ ")"
       | TupleOf(parsePattern) -> TuplePattern
       | ListOf(parsePattern) -> ListPattern
       | ("=" <~ ident) -> EqPattern
   )
 
-  def parseConsPattern = rep1sep(parseBasePattern, ":") -> (_ reduceLeft ConsPattern)
+  def parseConsPattern = rep1sep(parseBasePattern, ":") -> (_ reduceRight ConsPattern)
 
   def parseAsPattern = (
       parseConsPattern ~ ("as" ~> ident) -> AsPattern
@@ -383,20 +383,28 @@ people intuitively use these operators.
 
   // Add interleaving combinator
   class InterleavingParser[A <: AST](parser: Parser[A]) {
-    def interleave[B](interparser: Parser[B]) =
-      (f: (A,B,A) => A) =>
+    def interleave[B](chain: (=> Parser[A], => Parser[(A, A) => A]) => Parser[A]) =
+                     (interparser: Parser[B]) =>
+                     (f: (A,B,A) => A) =>
     {
-
       def origami(b: B)(x:A, y:A): A = f(x,b,y)
-      markLocation( (markLocation(parser)) ~~* (interparser ^^ origami) )
-
+      markLocation( chain(markLocation(parser), interparser ^^ origami) )
     } : Parser[A]
+    
+    def interleaveLeft[B](interparser: Parser[B]) = interleave(nlchainl1)(interparser)
+    def interleaveRight[B](interparser: Parser[B]) = interleave(nlchainr1)(interparser)
   }
 
   def nlchainl1[T](p: => Parser[T], q: => Parser[(T, T) => T]): Parser[T] =
     p ~~ rep(q ~~ p) ^^ {
       case x ~ xs => xs.foldLeft(x){(_, _) match {case (a, f ~ b) => f(a, b)}}
   }
+  
+  def nlchainr1[T](p: => Parser[T], q: => Parser[(T, T) => T]): Parser[T] =
+    rep(p ~~ q) ~~ p ^^ {
+      case xs ~ x => xs.foldRight(x){(_, _) match {case (a ~ f, b) => f(a, b)}}
+  }
+  
   class StretchingParser[+T](parser: Parser[T]) {
     def ~~[U](otherParser : => Parser[U]): Parser[T ~ U] = (parser <~ (lexical.NewLine*)) ~ otherParser
     def ~~>[U](otherParser : => Parser[U]): Parser[U] = (parser <~ (lexical.NewLine*)) ~> otherParser
