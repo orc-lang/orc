@@ -40,5 +40,5 @@ object JavaSiteForm extends SiteForm {
 class JavaClassProxy(val javaClass: Class[_]) extends Site {
   override lazy val name = javaClass.getName()
   override def orcType(argTypes: List[Type]) = null //TODO:FIXME: Implement this
-  override def call(args: List[Value], token: TokenAPI) { println("Java site "+name+" called") }
+  override def call(args: List[Value], token: TokenAPI) { println("Java site "+name+" called") }  //TODO:FIXME: Implement this
 }

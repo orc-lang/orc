@@ -35,7 +35,6 @@ object OrcSiteForm {
     } else {
       try { // Maybe it's a Scala object....
         val loadedClassCompanion = loadClass(name+"$")
-        println(">>class "+loadedClass+", companion "+loadedClassCompanion+", MODULE$="+loadedClassCompanion.getField("MODULE$").get(null))
         return loadedClassCompanion.getField("MODULE$").get(null).asInstanceOf[Site]
       } catch {
         case _ => { } //Ignore -- It's not a Scala object, then.

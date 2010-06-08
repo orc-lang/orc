@@ -315,13 +315,6 @@ people intuitively use these operators.
   
   def wrapNewLines[T](p:Parser[T]): Parser[T] = (lexical.NewLine*) ~> p <~ (lexical.NewLine*)
 
-  def main(args: Array[String]) = {
-      val s = "if(2 > 1)"
-      val tokens = new lexical.Scanner(s)
-      val r = phrase(parseProgram)(tokens)
-      println(r)
-  }
-
   def scanAndParseProgram(s: String): ParseResult[Expression] = {
       val tokens = new lexical.Scanner(s)
       phrase(parseProgram)(tokens)

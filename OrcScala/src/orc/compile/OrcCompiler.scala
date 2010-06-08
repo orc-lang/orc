@@ -76,7 +76,6 @@ class OrcCompiler extends OrcCompilerAPI with CompilerEnvironmentIfc {
           case parser.NoSuccess(msg, in) => throw new ParsingException(msg, in.pos)
         }
       }
-      //println(includeAsts)
       val progAst = parser.scanAndParseProgram(source) match {
         case parser.Success(result, _) => result
         case parser.NoSuccess(msg, in) => throw new ParsingException(msg, in.pos)
