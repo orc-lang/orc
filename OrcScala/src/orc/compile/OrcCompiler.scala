@@ -42,9 +42,16 @@ import orc.compile.parse.OrcReader
  */
 trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
   val phaseName: String
-  def >>>[C](that: CompilerPhase[O, B, C]) = new CompilerPhase[O, A, C] { 
+  def >>>[C >: Null](that: CompilerPhase[O, B, C]) = new CompilerPhase[O, A, C] { 
     val phaseName = self.phaseName+" >>> "+that.phaseName
-    override def apply(o: O) = { a: A => that(o)(self.apply(o)(a)) }
+    override def apply(o: O) = { a: A => 
+      if (a == null) null else {
+        val b = self.apply(o)(a)
+        if (b == null) null else {
+          that(o)(b)
+        }
+      }
+    }
   }
 }
 
