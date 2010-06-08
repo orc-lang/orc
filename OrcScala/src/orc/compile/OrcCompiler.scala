@@ -31,6 +31,7 @@ import orc.OrcCompilerAPI
 import orc.CompilerEnvironmentIfc
 import orc.OrcOptions
 import orc.compile.parse.OrcParser
+import orc.compile.parse.OrcReader
 
 /**
  * Represents one phase in a compiler.  It is defined as a function from
@@ -64,22 +65,21 @@ class OrcCompiler extends OrcCompilerAPI with CompilerEnvironmentIfc {
     val phaseName = "parse"
     override def apply(options: OrcOptions) = { source =>
       var includeFileNames = options.additionalIncludes
+      val parser = new OrcParser(options)
       if (options.usePrelude) {
-        //FIXME: Hack for testing -- only reading prelude/core.inc
-        includeFileNames = "prelude/core.inc" :: (includeFileNames).toList
+        includeFileNames = "prelude.inc" :: (includeFileNames).toList
       }
       val includeAsts = for (fileName <- includeFileNames) yield {
-        val preludeReader = StreamReader(openInclude(fileName, null, options))
-        val preludeParseResult = OrcParser.parseInclude(options, preludeReader, fileName)
-        preludeParseResult match {
-          case OrcParser.Success(result, _) => preludeParseResult.get
-          case OrcParser.NoSuccess(msg, in) => throw new ParsingException(msg, in.pos)
+        val r = OrcReader(openInclude(fileName, null, options), fileName, openInclude(_, _, options))
+        parser.scanAndParseInclude(r, fileName) match {
+          case parser.Success(result, _) => result
+          case parser.NoSuccess(msg, in) => throw new ParsingException(msg, in.pos)
         }
       }
       println(includeAsts)
-      val progAst = OrcParser.parse(options, source) match {
-        case OrcParser.Success(result, _) => result
-        case OrcParser.NoSuccess(msg, in) => throw new ParsingException(msg, in.pos)
+      val progAst = parser.scanAndParseProgram(source) match {
+        case parser.Success(result, _) => result
+        case parser.NoSuccess(msg, in) => throw new ParsingException(msg, in.pos)
       }
       (includeAsts :\ progAst) { orc.compile.ext.Declare }
     }

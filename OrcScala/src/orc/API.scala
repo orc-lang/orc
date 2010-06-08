@@ -18,13 +18,13 @@ package orc
 import orc.oil.nameless.Expression
 import orc.values.Value
 import orc.values.sites.Site
+import orc.error.compiletime.CompileLogger;
+import scala.util.parsing.input.Reader
 
 /**
  * The interface from a caller to the Orc compiler
  */
 trait OrcCompilerAPI {
-  import scala.util.parsing.input.Reader
-
   def apply(source: Reader[Char], options: OrcOptions): Expression 
   def apply(source: java.io.Reader, options: OrcOptions): Expression
 
@@ -35,13 +35,10 @@ trait OrcCompilerAPI {
  * The interface from the Orc compiler to its environment
  */
 trait CompilerEnvironmentIfc { 
-  import orc.error.compiletime.CompileLogger;
-
 //  def progress: ProgressListener
   def compileLogger: CompileLogger
-  def openInclude(includeFileName: String, relativeToFileName: String, options: OrcOptions): java.io.Reader 
+  def openInclude(includeFileName: String, relativeToFileName: String, options: OrcOptions): java.io.Reader
 //  def loadClass(className: String): Class[_]
-
 }
 
 /**

@@ -57,7 +57,7 @@ Return the string representation of one or more values, concatenated.
 For Java objects, this will call <code>toString()</code> to convert
 the object to a String.
 --}
-site cat = orc.lib.str.Cat
+site cat = "orc.lib.str.Cat"
 
 {--
 @site print(Top, ...) :: Signal
@@ -65,7 +65,7 @@ Print one or more values as strings, concatenated, to standard output.
 For Java objects, this will call <code>toString()</code> to convert
 the object to a String.
 --}
-site print = orc.lib.str.Print
+site print = "orc.lib.str.Print"
 
 {--
 @site println(Top, ...) :: Signal
@@ -74,7 +74,7 @@ to standard output, with each value followed by a newline.
 For Java objects, this will call <code>toString()</code> to convert
 the object to a String.
 --}
-site println = orc.lib.str.Println
+site println = "orc.lib.str.Println"
 
 {--
 @site read[A](String) :: A
@@ -90,7 +90,7 @@ Example:
 | read("(3.0, [])") -- publishes the tuple (3.0, [])
 | read("\"hi\"") -- publishes the string "hi"]]></programlisting>
 --}
-site read = orc.lib.str.Read
+site read = "orc.lib.str.Read"
 
 {--
 @site write(Top) :: String
@@ -107,7 +107,7 @@ Example:
 | write((3.0, [])) -- publishes "(3.0, [])"
 | write("hi") -- publishes "\"hi\""]]></programlisting>
 --}
-site write = orc.lib.str.Write
+site write = "orc.lib.str.Write"
 
 {--
 @def lines(String) :: List[String]

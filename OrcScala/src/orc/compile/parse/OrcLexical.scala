@@ -16,7 +16,8 @@
 package orc.compile.parse
 
 import scala.util.parsing.combinator.lexical.StdLexical
-import scala.util.parsing.input.CharArrayReader.EofCh
+import scala.util.parsing.input.CharSequenceReader.EofCh
+import scala.util.parsing.input.Reader
 import scala.collection.mutable.HashSet
 
 /**
@@ -26,6 +27,35 @@ import scala.collection.mutable.HashSet
  */
 
 class OrcLexical() extends StdLexical() {
+
+  class OrcScanner(in: Reader[Char]) extends Reader[Token] with NamedSubfileReader[Token] {
+//    def this(in: String) = this(new CharArrayReader(in.toCharArray()))
+    private val (tok, rest1, rest2) = whitespace(in) match {
+      case Success(_, in1) => 
+        token(in1) match {
+          case Success(tok, in2) => (tok, in1, in2)
+          case ns: NoSuccess => (errorToken(ns.msg), ns.next, skip(ns.next))
+        }
+      case ns: NoSuccess => (errorToken(ns.msg), ns.next, skip(ns.next))
+    }
+    private def skip(in: Reader[Char]) = if (in.atEnd) in else in.rest
+
+    override def source: java.lang.CharSequence = in.source
+    override def offset: Int = in.offset
+    override def first = tok
+    override def rest = new OrcScanner(rest2)
+    override def pos = rest1.pos
+    override def atEnd = in.atEnd || (whitespace(in) match { case Success(_, in1) => in1.atEnd case _ => false })
+
+    val descr = in match {
+      case r: NamedSubfileReader[_] => r.descr
+      case _ => ""
+    }
+    def newSubReader(newFilename: String) = in match {
+      case r: NamedSubfileReader[_] => r.newSubReader(newFilename)
+      case _ => throw new orc.error.compiletime.ParsingException("Cannot process includes from this input source (type="+in.getClass().getName()+")", in.pos)
+    }
+  }
 
   case class FloatingPointLit(chars: String) extends Token {
     override def toString = chars
@@ -37,15 +67,17 @@ class OrcLexical() extends StdLexical() {
 
   override def token: Parser[Token] =
     ( identChar ~ rep( identChar | digit )              ^^ { case first ~ rest => processIdent(first :: rest mkString "") }
-    | delim
-    | '(' ~ delim ~ ')'                                 ^^ { case '(' ~ d ~ ')' => Identifier(d.chars) }
+    | '(' ~ oper ~ ')'                                  ^^ { case '(' ~ o ~ ')' => Identifier(o.chars) }
     | '(' ~ '0' ~ '-' ~ ')'                             ^^ { _ => Identifier("0-") }
+    | delim
     | '\"' ~ rep( chrExcept('\"', '\n', EofCh) ) ~ '\"' ^^ { case '\"' ~ chars ~ '\"' => StringLit(chars mkString "") }
     | '\"' ~> failure("unclosed string literal")
     | floatLit                                          ^^ { case f => FloatingPointLit(f) }
     | signedIntegerLit                                  ^^ { case i => NumericLit(i) }
     | EofCh                                             ^^^ EOF
     | '\n'                                              ^^^ NewLine
+    | '\r' ~ '\n'                                       ^^^ NewLine
+    | '\r'                                              ^^^ NewLine
     | failure("illegal character")
     )
 
@@ -83,6 +115,14 @@ class OrcLexical() extends StdLexical() {
   def multilinecomment: Parser[Any] =
       '{' ~ '-' ~ endcomment
 
+  protected def oper: Parser[Token] = {
+    def parseOper(s: String): Parser[Token] = accept(s.toList) ^^ { x => Keyword(s) }
+    val o = new Array[String](operators.size)
+    operators.copyToArray(o, 0)
+    scala.util.Sorting.quickSort(o)
+    (o.toList map parseOper).foldRight(failure("no matching operator"): Parser[Token])((x, y) => y | x)
+  }
+
   def endcomment: Parser[Any] = (
     '-' ~ '}' ^^ { case _ => ' ' }
    | '{' ~ '-' ~ endcomment ~ endcomment // Allow inlined comments.
@@ -97,16 +137,20 @@ class OrcLexical() extends StdLexical() {
       "Top", "Bot"
     )
 
-  /** The set of delimiters (ordering does not matter) */
-  override val delimiters = new HashSet[String] ++ List(
+  val operators = List(
       "+", "-", "*", "/", "%", "**",
       "&&", "||", "~",
-      "<", ">", "|", ";",
-      "(", ")", "[", "]", "{", "}", ",",
+      "<", ">",
       "=", "<:", ":>", "<=", ">=", "/=",
       ":", "_", "++",
-      ".", "?", ":=",
-      "::", ":!:"
+      ".", "?", ":="
     )
+
+  /** The set of delimiters (ordering does not matter) */
+  override val delimiters = new HashSet[String] ++ (List(
+      "(", ")", "[", "]", "{", "}", ",",
+       "|", ";",
+      "::", ":!:"
+    ) ::: operators)
 
 }

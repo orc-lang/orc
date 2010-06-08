@@ -16,14 +16,20 @@
 package orc.compile.parse
 
 import scala.util.parsing.input.Reader
-import scala.util.parsing.input.CharArrayReader.EofCh
 import scala.util.parsing.combinator.syntactical._
+import scala.util.parsing.input.Position
 
-import orc.compile.ext._
 import orc.AST
 import orc.OrcOptions
+import orc.compile.ext._
 
-object OrcParser extends StandardTokenParsers {
+/**
+ * Need one OrcParser instance for every parse.
+ * (Limitation of scala.util.parsing.combinator.Parsers -- current parsing state kept in fields.)
+ *
+ * @author dkitchin
+ */
+class OrcParser(options: OrcOptions) extends StandardTokenParsers {
   import lexical.{Keyword, FloatingPointLit}
 
   override val lexical = new OrcLexical()
@@ -278,12 +284,24 @@ people intuitively use these operators.
       | "class" ~> ident ~ ("=" ~> parseClassname)
       -> ClassImport
 
-      | "include" ~> stringLit
-      -> { Include(_ : String, Nil) } //FIXME: Actually include the file!
+      | ("include" ~> stringLit).into(performInclude)
 
       | failure("Declaration (val, def, type, etc.) expected")
   )
 
+  def performInclude(includeName: String): Parser[Include] = 
+    Parser { in => {
+        in match {
+          case r: NamedSubfileReader[_] => scanAndParseInclude(r.newSubReader(includeName), includeName)  match {
+            case Success(result, _) => Success(result, in.rest)
+            case x => x
+          }
+          // Didn't get a NamedSubfileReader as our reader, so no includes for you!
+          case _ => throw new orc.error.compiletime.ParsingException("Cannot process includes from this input source (type="+in.getClass().getName()+")", in.pos)
+        }
+    } }
+
+//  def parseDeclarations: Parser[List[Declaration]] = (lexical.NewLine*) ~> (parseDeclaration <~ (lexical.NewLine*))*
   def parseDeclarations: Parser[List[Declaration]] = wrapNewLines(parseDeclaration)*
 
   def parseProgram: Parser[Expression] = wrapNewLines(parseExpression)
@@ -301,23 +319,30 @@ people intuitively use these operators.
       println(r)
   }
 
-  def parse(options: OrcOptions, s:String) = {
+  def scanAndParseProgram(s: String): ParseResult[Expression] = {
       val tokens = new lexical.Scanner(s)
       phrase(parseProgram)(tokens)
   }
 
-  def parse(options: OrcOptions, r:Reader[Char]) = {
-      val tokens = new lexical.Scanner(r)
+  def scanAndParseProgram(r: Reader[Char]): ParseResult[Expression] = {
+      val tokens = new lexical.OrcScanner(r)
       phrase(parseProgram)(tokens)
   }
 
-  def parseInclude(options: OrcOptions, r:Reader[Char], name: String) = {
-      val parseInclude = phrase(parseDeclarations) -> { Include(name, _) }
-      val tokens = new lexical.Scanner(r)
-      phrase(parseInclude)(tokens)
+  def scanAndParseInclude(r: Reader[Char], name: String): ParseResult[Include] = {
+      val newParser = new OrcParser(options)
+      val parseInclude = newParser.parseDeclarations ^^ { Include(name, _) }
+      val tokens = new newParser.lexical.OrcScanner(r)
+      val result = newParser.phrase(parseInclude)(tokens)
+      def dummyInput(posToUse: Position): Input = new Input { def first = null; def rest = this; def pos = posToUse; def atEnd = true }
+      result match {
+        case newParser.Success(x, y) => Success(x, dummyInput(y.pos))
+        case newParser.Failure(x, y) => Error(x, dummyInput(y.pos))
+        case newParser.Error(x, y) => Error(x, dummyInput(y.pos))
+      }
   }
 
-  class LocatingParser[+A <: AST](p : => Parser[A]) extends Parser[A] {
+  class LocatingParser[+A <: AST](p: => Parser[A]) extends Parser[A] {
     override def apply(i: Input) = {
       val position = i.pos
       val result: ParseResult[A] = p.apply(i)
@@ -325,7 +350,7 @@ people intuitively use these operators.
       result
     }
   }
-  def markLocation[A <: AST](p : => Parser[A]) = new LocatingParser(p)
+  def markLocation[A <: AST](p: => Parser[A]) = new LocatingParser(p)
 
 
 

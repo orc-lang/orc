@@ -25,20 +25,20 @@ Return a pseudorandom, uniformly distributed Integer value
 between 0 (inclusive) and the specified value (exclusive).
 If the argument is 0, halt.
 --}
-site random = orc.lib.util.Random
+site random = "orc.lib.util.Random"
 
 {--
 @site urandom() :: Number
 Returns a pseudorandom, uniformly distributed Double value
 between 0 and 1, inclusive.
 --}
-site urandom = orc.lib.util.URandom
+site urandom = "orc.lib.util.URandom"
 
 {--
 @site UUID() :: String
 Return a random (type 4) UUID represented as a string.
 --}
-site UUID = orc.lib.util.UUID
+site UUID = "orc.lib.util.UUID"
 
 {--
 @site Thread(Top) :: Bot
@@ -51,7 +51,7 @@ A limited number of threads are reserved in a pool for use
 by this site, so there is a limit to the number of blocking,
 uncooperative sites that can be called simultaneously.
 --}
-site Thread = orc.lib.util.ThreadSite
+site Thread = "orc.lib.util.ThreadSite"
 
 {--
 @site Prompt(String) :: String
@@ -73,7 +73,7 @@ to its appropriate data type, use the library function
 -- Prompts the user to enter an integer, then parses the response.
 Prompt("Enter an integer:") >r> read(r)]]></programlisting>
 --}
-site Prompt = orc.lib.util.Prompt
+site Prompt = "orc.lib.util.Prompt"
 
 {--
 @def signals(Integer) :: Signal
