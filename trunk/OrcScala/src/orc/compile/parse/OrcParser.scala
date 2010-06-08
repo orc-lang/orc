@@ -91,15 +91,15 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
     { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
 
   def parseAdditionalExpr: Parser[Expression] = (
-      nlchainl1(parseMultExpr, ("+" | ":") ^^
-        { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) }) 
-    | "~" ~ parseAdditionalExpr ^^ { case op ~ expr => PrefixOperator(op, expr)}
-    | chainl1(parseMultExpr, ("-") ^^
-        { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) }) 
+      nlchainl1(parseMultExpr, ("-" | "+" | ":") ^^
+        { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
+//    | "~" ~ parseAdditionalExpr ^^ { case op ~ expr => PrefixOperator(op, expr)}
+//    | chainl1(parseMultExpr, ("-") ^^
+//        { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
         /* Disallow newline breaks for binary subtract,
          * to resolve ambiguity with unary minus.*/
   )
-  
+
   def parseRelationalExpr = nlchainl1(parseAdditionalExpr, ("<:" | ":>" | "<=" | ">=" | "=" | "/=") ^^
         { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
 
@@ -292,7 +292,7 @@ people intuitively use these operators.
       | failure("Declaration (val, def, type, etc.) expected")
   )
 
-  def performInclude(includeName: String): Parser[Include] = 
+  def performInclude(includeName: String): Parser[Include] =
     Parser { in => {
         in match {
           case r: NamedSubfileReader[_] => scanAndParseInclude(r.newSubReader(includeName), includeName)  match {
@@ -312,7 +312,7 @@ people intuitively use these operators.
   // Add helper combinators for ( ... ) and [ ... ] forms
   def TupleOf[T](P : => Parser[T]): Parser[List[T]] = "(" ~> wrapNewLines(repsep(P, wrapNewLines(","))) <~ ")"
   def ListOf[T](P : => Parser[T]): Parser[List[T]] = "[" ~> wrapNewLines(repsep(P, wrapNewLines(","))) <~ "]"
-  
+
   def wrapNewLines[T](p:Parser[T]): Parser[T] = (lexical.NewLine*) ~> p <~ (lexical.NewLine*)
 
   def scanAndParseProgram(s: String): ParseResult[Expression] = {
@@ -386,7 +386,7 @@ people intuitively use these operators.
       def origami(b: B)(x:A, y:A): A = f(x,b,y)
       markLocation( chain(markLocation(parser), interparser ^^ origami) )
     } : Parser[A]
-    
+
     def interleaveLeft[B](interparser: Parser[B]) = interleave(nlchainl1)(interparser)
     def interleaveRight[B](interparser: Parser[B]) = interleave(nlchainr1)(interparser)
   }
@@ -395,12 +395,12 @@ people intuitively use these operators.
     p ~~ rep(q ~~ p) ^^ {
       case x ~ xs => xs.foldLeft(x){(_, _) match {case (a, f ~ b) => f(a, b)}}
   }
-  
+
   def nlchainr1[T](p: => Parser[T], q: => Parser[(T, T) => T]): Parser[T] =
-    rep(p ~~ q) ~~ p ^^ {
-      case xs ~ x => xs.foldRight(x){(_, _) match {case (a ~ f, b) => f(a, b)}}
+    p ~~ rep(q ~~ p) ^^ {
+      case x ~ xs => xs.foldRight(x){(_, _) match {case (f ~ a, b) => f(a, b)}}
   }
-  
+
   class StretchingParser[+T](parser: Parser[T]) {
     def ~~[U](otherParser : => Parser[U]): Parser[T ~ U] = (parser <~ (lexical.NewLine*)) ~ otherParser
     def ~~>[U](otherParser : => Parser[U]): Parser[U] = (parser <~ (lexical.NewLine*)) ~> otherParser
