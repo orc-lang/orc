@@ -22,7 +22,7 @@ import orc.oil.nameless._
 import orc.PartialMapExtension._
 import orc.values.sites.Site
 import orc.values.Value
-
+import orc.error.runtime.UncallableValueException
 
 import scala.collection.mutable.Set   
 
@@ -382,9 +382,8 @@ abstract class Orc extends OrcExecutionAPI {
                 vs.foreach(invoke(this,s,_))
               }
               case _ => {
-                println("You can't call a "+target)
-                //TODO:FIXME: throw UncallableValueException
                 halt
+                throw new UncallableValueException("You can't call a "+target)
               }
             })
           }
