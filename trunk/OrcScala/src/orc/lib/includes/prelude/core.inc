@@ -27,11 +27,11 @@ User Guide.
 {-
 Basic types
 -}
-type String = java.lang.String
-type Number = java.lang.BigDecimal
-type Boolean = java.lang.Boolean
-type Integer = java.lang.BigInt
-type Signal = orc.oil.Signal
+type String = "java.lang.String"
+type Number = "java.lang.BigDecimal"
+type Boolean = "java.lang.Boolean"
+type Integer = "java.lang.BigInt"
+type Signal = "orc.oil.Signal"
 
 {--
 @site let() :: Signal
@@ -43,7 +43,7 @@ When applied to a single argument, return that argument (behaving as the identit
 @site let[A, ...](A, ...) :: (A, ...)
 When applied to two or more arguments, return the arguments in a tuple.
 --}
---site let = orc.lib.builtin.Let
+--FIXME:site let = "orc.lib.builtin.Let"
 
 {--
 @site if(Boolean) :: Signal
@@ -55,7 +55,7 @@ Example:
   if(false) >> "Never publishes"
 | if(true) >> "Always publishes"]]></programlisting>
 --}
---FIXME:site if = orc.lib.builtin.If
+--FIXME:site if = "orc.lib.builtin.If"
 
 {--
 @site error(String) :: Bot
@@ -69,19 +69,19 @@ def assert(b) =
 -- Fail with the error message: "assertion failed"
 assert(false)]]></programlisting>
 --}
---FIXME:site error = orc.lib.builtin.Error
+--FIXME:site error = "orc.lib.builtin.Error"
 
 {--
 @site (+)(Number, Number) :: Number
 <code>a+b</code> returns the sum of <code>a</code> and <code>b</code>.
 --}
-site (+) = orc.lib.math.Add
+site (+) = "orc.lib.math.Add"
 
 {--
 @site (-)(Number, Number) :: Number
 <code>a-b</code> returns the value of <code>a</code> minus the value of <code>b</code>.
 --}
-site (-) = orc.lib.math.Sub
+site (-) = "orc.lib.math.Sub"
 
 {--
 @site (0-)(Number) :: Number
@@ -89,13 +89,13 @@ Return the additive inverse of the argument.
 When this site appears as an operator, it is written in prefix form without the
 zero, i.e. <code>(-a)</code>
 --}
-site (0-) = orc.lib.math.UMinus
+site (0-) = "orc.lib.math.UMinus"
 
 {--
 @site (*)(Number, Number) :: Number
 <code>a*b</code> returns the product of <code>a</code> and <code>b</code>.
 --}
-site (*) = orc.lib.math.Mult
+site (*) = "orc.lib.math.Mult"
 
 {--
 @site (**)(Number, Number) :: Number
@@ -103,7 +103,7 @@ site (*) = orc.lib.math.Mult
 <inlineequation><mathphrase>a<superscript>b</superscript></mathphrase></inlineequation>,
 i.e. <code>a</code> raised to the <code>b</code>th power.
 --}
-site (**) = orc.lib.math.Exponent
+site (**) = "orc.lib.math.Exponent"
 
 {--
 @site (/)(Number, Number) :: Number
@@ -117,7 +117,7 @@ Example:
   7/3   -- publishes 2
 | 7/3.0 -- publishes 2.333...]]></programlisting>
 --}
-site (/) = orc.lib.math.Div
+site (/) = "orc.lib.math.Div"
 
 {--
 @site (%)(Number, Number) :: Number
@@ -126,31 +126,31 @@ and <code>b</code> have integral types, then the remainder is given by
 the expression <code>a - (a/b)*b</code>. For a full description, see the
 <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://java.sun.com/docs/books/jls/third_edition/html/expressions.html#15.17.3">Java Language Specification, 3rd edition</link>.
 --}
-site (%) = orc.lib.math.Mod
+site (%) = "orc.lib.math.Mod"
 
 {--
 @site (<)(Signal, Signal) :: Boolean
 <code>a &lt; b</code> returns true if <code>a</code> is less than <code>b</code>, and false otherwise.
 --}
-site (<) = orc.lib.comp.Less
+site (<) = "orc.lib.comp.Less"
 
 {--
 @site (<=)(Signal, Signal) :: Boolean
 <code>a &lt;= b</code> returns true if <code>a</code> is less than or equal to <code>b</code>, and false otherwise.
 --}
-site (<=) = orc.lib.comp.Leq
+site (<=) = "orc.lib.comp.Leq"
 
 {--
 @site (>)(Signal, Signal) :: Boolean
 <code>a > b</code> returns true if <code>a</code> is greater than <code>b</code>, and false otherwise.
 --}
-site (>) = orc.lib.comp.Greater
+site (>) = "orc.lib.comp.Greater"
 
 {--
 @site (>=)(Signal, Signal) :: Boolean
 <code>a >= b</code> returns true if <code>a</code> is greater than or equal to <code>b</code>, and false otherwise.
 --}
-site (>=) = orc.lib.comp.Greq
+site (>=) = "orc.lib.comp.Greq"
 
 {--
 @site (=)(Signal, Signal) :: Boolean
@@ -170,19 +170,19 @@ Note that although values of different types may be compared with
 <code>=</code>, the substitutability principle requires that such values are
 always considered inequal, i.e. the comparison will return <code>false</code>.
 --}
---FIXME:site (=) = orc.lib.builtin.Eq
+--FIXME:site (=) = "orc.lib.builtin.Eq"
 
 {--
 @site (/=)(Signal, Signal) :: Boolean
 <code>a/=b</code> returns false if <code>a=b</code>, and true otherwise.
 --}
---FIXME:site (/=) = orc.lib.builtin.Inequal
+--FIXME:site (/=) = "orc.lib.builtin.Inequal"
 
 {--
 @site (~)(Boolean) :: Boolean
 Return the logical negation of the argument.
 --}
---FIXME:site (~) = orc.lib.builtin.Not
+--FIXME:site (~) = "orc.lib.builtin.Not"
 
 {--
 @site (&&)(Boolean, Boolean) :: Boolean
@@ -190,7 +190,7 @@ Return the logical conjunction of the arguments. This is not a short-circuiting
 operator; both arguments must be evaluated and available before the result is
 computed.
 --}
-site (&&) = orc.lib.bool.And
+site (&&) = "orc.lib.bool.And"
 
 {--
 @site (||)(Boolean, Boolean) :: Boolean
@@ -198,7 +198,7 @@ Return the logical disjunction of the arguments. This is not a short-circuiting
 operator; both arguments must be evaluated and available before the result is
 computed.
 --}
-site (||) = orc.lib.bool.Or
+site (||) = "orc.lib.bool.Or"
 
 {--
 @site (:)[A](A, List[A]) :: List[A]
@@ -221,7 +221,7 @@ old "tail"s unusable, so you should refrain from modifying a value
 while you are deconstructing it.  This feature is highly experimental
 and will probably change in future versions of the implementation.
 --}
---FIXME:site (:) = orc.lib.builtin.Cons
+--FIXME:site (:) = "orc.lib.builtin.Cons"
 
 {--
 @def abs(Number) :: Number
@@ -271,11 +271,11 @@ are equal, return the second argument.
 Return the greatest integer less than
 or equal to this number.
 --}
-site floor = orc.lib.math.Floor
+site floor = "orc.lib.math.Floor"
 
 {--
 @site ceil(Number) :: Integer
 Return the least integer greater than
 or equal to this number.
 --}
-site ceil = orc.lib.math.Ceil
+site ceil = "orc.lib.math.Ceil"

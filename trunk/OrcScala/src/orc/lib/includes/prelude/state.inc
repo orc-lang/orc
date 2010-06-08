@@ -16,7 +16,7 @@ General-purpose supplemental data structures.
 --}
 
 -- Make the List type constructor available
-type List = orc.values.sites.compatibility.type.structured.ListType
+type List = "orc.values.sites.compatibility.type.structured.ListType"
 
 {--
 @site Some[A](A) :: Option[A]
@@ -36,9 +36,9 @@ An optional value which is not available.
 This site may also be used in a pattern.
 
 --}
-type Option = orc.values.sites.compatibility.type.structured.OptionType
-site Some = orc.runtime.sites.core.Some
-site None = orc.runtime.sites.core.None
+type Option = "orc.values.sites.compatibility.type.structured.OptionType"
+site Some = "orc.runtime.sites.core.Some"
+site None = "orc.runtime.sites.core.None"
 
 {--
 @site Semaphore(Integer) :: Semaphore
@@ -77,8 +77,8 @@ Otherwise, block until some call to <code>acquire</code> blocks.
 If any calls to <code>acquire</code> are blocked, return a signal.
 Otherwise, halt.
 --}
-site Semaphore = orc.lib.state.Semaphore
-type Semaphore = orc.lib.state.types.SemaphoreType
+site Semaphore = "orc.lib.state.Semaphore"
+type Semaphore = "orc.lib.state.types.SemaphoreType"
 
 {--
 @site Buffer[A]() :: Buffer[A]
@@ -134,8 +134,8 @@ Get all of the items currently in the buffer, emptying the buffer and returning
 a list of the items in the order they were added. If there are no items in the
 buffer, return an empty list.
 --}
-site Buffer = orc.lib.state.Buffer
-type Buffer = orc.lib.state.types.BufferType
+site Buffer = "orc.lib.state.Buffer"
+type Buffer = "orc.lib.state.types.BufferType"
 
 {--
 @site BoundedBuffer[A](Integer) :: BoundedBuffer[A]
@@ -212,8 +212,8 @@ Get all of the items currently in the buffer or waiting to be added, emptying
 the buffer and returning a list of the items in the order they were added. If
 there are no items in the buffer or waiting to be added, return an empty list.
 --}
-site BoundedBuffer = orc.lib.state.BoundedBuffer
-type BoundedBuffer = orc.lib.state.types.BoundedBufferType
+site BoundedBuffer = "orc.lib.state.BoundedBuffer"
+type BoundedBuffer = "orc.lib.state.types.BoundedBufferType"
 
 {--
 @site SyncChannel[A]() :: SyncChannel[A]
@@ -235,8 +235,8 @@ Receive an item over the channel. If no sender is available, block until one bec
 @method SyncChannel[A].put(A) :: Signal
 Send an item over the channel. If no receiver is available, block until one becomes available.
 --}
-site SyncChannel = orc.lib.state.SyncChannel
-type SyncChannel = orc.lib.state.types.SyncChannelType
+site SyncChannel = "orc.lib.state.SyncChannel"
+type SyncChannel = "orc.lib.state.types.SyncChannelType"
 
 {--
 @site Cell[A]() :: Cell[A]
@@ -258,8 +258,8 @@ Read a value from the cell. If the cell does not yet have a value, halt.
 @method Cell[A].write() :: Signal
 Write a value to the cell. If the cell already has a value, halt.
 --}
-site Cell = orc.lib.state.Cell
-type Cell = orc.lib.state.types.CellType
+site Cell = "orc.lib.state.Cell"
+type Cell = "orc.lib.state.types.CellType"
 
 {--
 @site Ref[A]() :: Ref[A]
@@ -289,8 +289,8 @@ Read the value of the ref. If the ref does not yet have a value, halt.
 Write a value to the ref.
 
 --}
-site Ref = orc.lib.state.Ref
-type Ref = orc.lib.state.types.RefType
+site Ref = "orc.lib.state.Ref"
+type Ref = "orc.lib.state.types.RefType"
 
 {--
 @def (?)[A](Ref[A]) :: A
@@ -390,8 +390,8 @@ for example:
 val a = Array(3)
 a.fill(0) >> each(a)]]></programlisting>
 --}
-site Array = orc.lib.util.JavaArray
-type Array = orc.lib.state.types.ArrayType
+site Array = "orc.lib.util.JavaArray"
+type Array = "orc.lib.state.types.ArrayType"
 
 {--
 @def IArray[A](Integer, lambda (Integer) :: A)(Integer) :: A
@@ -453,7 +453,7 @@ Remove all values from the set.
 @method Set[A].size() :: Integer
 Return the number of unique values currently contained in the set.
 --}
-class Set = orc.lib.state.Set
+class Set = "orc.lib.state.Set"
 
 {--
 @site Map[K,V]() :: Map[K,V]
@@ -490,7 +490,7 @@ Remove all keys from the map.
 @method Map[K,V].size() :: Integer
 Return the number of unique keys currently contained in the map.
 --}
-class Map = orc.lib.state.Map
+class Map = "orc.lib.state.Map"
 
 {--
 @site Counter(Integer) :: Counter
@@ -519,8 +519,8 @@ Example:
 val c = Counter(5)
 repeat(c.dec)]]></programlisting>
 --}
-site Counter = orc.lib.state.Counter
-type Counter = orc.lib.state.types.CounterType
+site Counter = "orc.lib.state.Counter"
+type Counter = "orc.lib.state.types.CounterType"
 
 {--
 @site Dictionary() :: Dictionary
@@ -636,7 +636,7 @@ Return true if the given interval is contiguous with this one
 Return the union of this interval with another. Halts with an error if
 the two intervals are not contiguous.
 --}
-class Interval = orc.lib.state.Interval
+class Interval = "orc.lib.state.Interval"
 
 {--
 @site Intervals[A]() :: Intervals[A]
@@ -657,4 +657,4 @@ Return the union of this set of intervals with the given interval.
 This method is most efficient when the given interval is before
 most of the intervals in the set.
 --}
-class Intervals = orc.lib.state.Intervals
+class Intervals = "orc.lib.state.Intervals"

@@ -55,7 +55,7 @@ public class OrcParserTest {
       suite.addTest(new TestCase(file.toString()) {
         @Override
         public void runTest() throws ParsingException, IOException {
-        	Parsers.ParseResult<orc.compile.ext.Expression> pr = OrcParser.parse(parserOptions, new StreamReader(PagedSeq.fromReader(new FileReader(file)), 0, 1));
+        	Parsers.ParseResult<orc.compile.ext.Expression> pr = new OrcParser(parserOptions).scanAndParseProgram(new StreamReader(PagedSeq.fromReader(new FileReader(file)), 0, 1));
         	assertTrue("Parsing unsucessful: "+pr.toString(), pr.successful());
         }
       });
@@ -78,7 +78,7 @@ public class OrcParserTest {
 
     public void shortErrors_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
 
-    public boolean usePrelude() { return false; }
+    public boolean usePrelude() { return true; }
 
     public void usePrelude_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
 

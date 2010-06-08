@@ -1,12 +1,10 @@
 package orc
 
-import java.io.StringReader
 import orc.compile.OrcCompiler
-import orc.script.OrcBindings
+import orc.compile.parse.OrcReader
 import orc.run.Orc
 import orc.values.Value
 import orc.values.sites.Site
-import orc.oil.named.TempVar
 
 class ExperimentalOrc extends Orc {
   def emit(v: Value) { print("Published: " + v + "   = " + v.toOrcSyntax() + "\n") }
@@ -45,17 +43,18 @@ object Experiment {
   def main(args: Array[String]) {
     if (args.length < 1) {
       throw new Exception("Please supply a source file name as the first argument.\n" +
-      		              "Within Eclipse, use ${resource_loc}")
+                          "Within Eclipse, use ${resource_loc}")
     }
-    val sourcefile = args(0)
-    ExperimentOptions.filename = sourcefile
-    val reader = scala.util.parsing.input.StreamReader(new java.io.FileReader(new java.io.File(sourcefile)))
-    val compiledOil = (new OrcCompiler())(reader, ExperimentOptions)
+    ExperimentOptions.filename = args(0)
+    val compiler = new OrcCompiler()
+    val reader = OrcReader(new java.io.FileReader(ExperimentOptions.filename), ExperimentOptions.filename, compiler.openInclude(_, _, ExperimentOptions))
+    val compiledOil = compiler(reader, ExperimentOptions)
     if (compiledOil != null) {
+      Console.err.println("Compilation result: \n" + compiledOil + "\n")
       orc.run(compiledOil)
     }
     else {
-      println("Compilation failed.")
+      Console.err.println("Compilation failed.")
     }
   }
 

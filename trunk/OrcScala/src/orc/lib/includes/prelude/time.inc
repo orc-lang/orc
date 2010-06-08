@@ -24,7 +24,7 @@ Return the current real time in milliseconds, as
 measured from midnight January 1, 1970 UTC.
 Ranges from 0 to <code>Long.MAX_VALUE</code>.
 --}
-site Rtimer = orc.lib.time.Rtimer
+site Rtimer = "orc.lib.time.Rtimer"
 
 {--
 @def Clock()() :: Number
@@ -56,7 +56,7 @@ Return the current logical time, as measured by logical
 clock which was current when <code>Ltimer.time</code> was evaluated.
 Ranges from 0 to <code>Integer.MAX_VALUE</code>.
 --}
-site Ltimer = orc.lib.time.Ltimer
+site Ltimer = "orc.lib.time.Ltimer"
 
 {--
 @def withLtimer[A](lambda () :: A) :: A
@@ -68,8 +68,8 @@ quiescent.
 --}
 def withLtimer[A](lambda () :: A) :: A
 def withLtimer(thunk) =
-  site pushLtimer = orc.lib.time.PushLtimer
-  site popLtimer = orc.lib.time.PopLtimer
+  site pushLtimer = "orc.lib.time.PushLtimer"
+  site popLtimer = "orc.lib.time.PopLtimer"
   thunk >> -- wait for free variables to become bound
   pushLtimer() >>
   thunk() >x>
