@@ -6,6 +6,7 @@ import orc.script.OrcBindings
 import orc.run.Orc
 import orc.values.Value
 import orc.values.sites.Site
+import orc.oil.named.TempVar
 
 class ExperimentalOrc extends Orc {
   def emit(v: Value) { print("Published: " + v + "   = " + v.toOrcSyntax() + "\n") }
@@ -21,7 +22,7 @@ object ExperimentOptions extends OrcOptions {
   var shortErrors = false
 
   // Compile options
-  var usePrelude = true
+  var usePrelude = false
   var includePath: java.util.List[String] = { val r = new java.util.ArrayList[String](1); r.add("."); r } 
   var additionalIncludes: java.util.List[String] = new java.util.ArrayList[String](0)
   var exceptionsOn = false
@@ -49,9 +50,14 @@ object Experiment {
     val sourcefile = args(0)
     ExperimentOptions.filename = sourcefile
     val reader = scala.util.parsing.input.StreamReader(new java.io.FileReader(new java.io.File(sourcefile)))
-    val parsedOil = (new OrcCompiler())(reader, ExperimentOptions)
-    println(parsedOil)
-    orc.run(parsedOil)
+    val compiledOil = (new OrcCompiler())(reader, ExperimentOptions)
+    if (compiledOil != null) {
+      println("Compilation result: \n" + compiledOil + "\n")
+      orc.run(compiledOil)
+    }
+    else {
+      println("Compilation failed.")
+    }
   }
 
 }

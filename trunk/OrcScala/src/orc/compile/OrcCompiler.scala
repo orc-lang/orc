@@ -88,7 +88,9 @@ class OrcCompiler extends OrcCompilerAPI with CompilerEnvironmentIfc {
   val translate = new CompilerPhase[OrcOptions, orc.compile.ext.Expression, orc.oil.named.Expression] { 
     val phaseName = "translate"
     override def apply(options: OrcOptions) = { ast =>
-      orc.compile.translate.Translator.translate(options, ast)
+      val result = orc.compile.translate.Translator.translate(options, ast)
+      //println(result)
+      result
     }
   }
 
