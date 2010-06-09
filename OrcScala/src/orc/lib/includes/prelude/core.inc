@@ -129,10 +129,10 @@ the expression <code>a - (a/b)*b</code>. For a full description, see the
 site (%) = "orc.lib.math.Mod"
 
 {--
-@site (<)(Signal, Signal) :: Boolean
-<code>a &lt; b</code> returns true if <code>a</code> is less than <code>b</code>, and false otherwise.
+@site (<:)(Signal, Signal) :: Boolean
+<code>a &lt;: b</code> returns true if <code>a</code> is less than <code>b</code>, and false otherwise.
 --}
-site (<) = "orc.lib.comp.Less"
+site (<:) = "orc.lib.comp.Less"
 
 {--
 @site (<=)(Signal, Signal) :: Boolean
@@ -141,10 +141,10 @@ site (<) = "orc.lib.comp.Less"
 site (<=) = "orc.lib.comp.Leq"
 
 {--
-@site (>)(Signal, Signal) :: Boolean
-<code>a > b</code> returns true if <code>a</code> is greater than <code>b</code>, and false otherwise.
+@site (:>)(Signal, Signal) :: Boolean
+<code>a :> b</code> returns true if <code>a</code> is greater than <code>b</code>, and false otherwise.
 --}
-site (>) = "orc.lib.comp.Greater"
+site (:>) = "orc.lib.comp.Greater"
 
 {--
 @site (>=)(Signal, Signal) :: Boolean
@@ -241,8 +241,8 @@ Return the absolute value of the argument.
 --}
 --FIXME:def signum(Number) :: Number
 --FIXME:def signum(x) =
---FIXME:  if x < 0 then -1
---FIXME:  else if x > 0 then 1
+--FIXME:  if x <: 0 then -1
+--FIXME:  else if x :> 0 then 1
 --FIXME:  else 0
 
 {--
@@ -253,7 +253,7 @@ are equal, return the first argument.
 @implementation
 --}
 --FIXME:def min[A](A,A) :: A
---FIXME:def min(x,y) = if y < x then y else x
+--FIXME:def min(x,y) = if y <: x then y else x
 
 {--
 @def max[A](A,A) :: A
@@ -263,7 +263,7 @@ are equal, return the second argument.
 @implementation
 --}
 --FIXME:def max[A](A,A) :: A
---FIXME:def max(x,y) = if x > y then x else y
+--FIXME:def max(x,y) = if x :> y then x else y
 
 
 {--

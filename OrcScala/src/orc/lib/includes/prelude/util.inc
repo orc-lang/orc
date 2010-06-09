@@ -87,7 +87,7 @@ signals(5)]]></programlisting>
 @implementation
 --}
 def signals(Integer) :: Signal
-def signals(n) = if n > 0 then (signal | signals(n-1))
+def signals(n) = if n :> 0 then (signal | signals(n-1))
 
 {--
 @def for(Integer, Integer) :: Integer
