@@ -23,6 +23,7 @@ import orc.PartialMapExtension._
 import orc.values.sites.Site
 import orc.values.Value
 import orc.error.OrcException
+import orc.error.runtime.JavaException
 import orc.error.runtime.UncallableValueException
 
 import scala.collection.mutable.Set   
@@ -380,7 +381,12 @@ abstract class Orc extends OrcExecutionAPI {
               }
               case (s: Site) => {
                 val vs = args.partialMap(resolve)
-                vs.foreach(invoke(this,s,_))
+                vs.foreach( try {
+                  invoke(this,s,_)
+                } catch {
+                  case e: OrcException => throw e
+                  case e => throw new JavaException(e)
+                })
               }
               case _ => {
                 halt

@@ -13,9 +13,7 @@
 
 package orc.error.runtime;
 
-import scala.util.parsing.input.NoPosition$;
 import scala.util.parsing.input.Position;
-import scala.util.parsing.input.Positional;
 
 /**
  * A localized failure at runtime. Errors of this type cause the executing
@@ -28,8 +26,7 @@ import scala.util.parsing.input.Positional;
  * @author dkitchin
  */
 @SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
-public abstract class TokenException extends ExecutionException implements Positional {
-	public Position position;
+public abstract class TokenException extends ExecutionException {
 	public Position[] backtrace = new Position[0];
 
 	public TokenException(final String message) {
@@ -46,32 +43,5 @@ public abstract class TokenException extends ExecutionException implements Posit
 
 	public Position[] getBacktrace() {
 		return backtrace;
-	}
-
-	/* (non-Javadoc)
-	 * @see scala.util.parsing.input.Positional#pos()
-	 */
-	@Override
-	public Position pos() {
-		return position;
-	}
-
-	/* (non-Javadoc)
-	 * @see scala.util.parsing.input.Positional#pos_$eq(scala.util.parsing.input.Position)
-	 */
-	@Override
-	public void pos_$eq(Position newpos) {
-		position = newpos;
-	}
-
-	/* (non-Javadoc)
-	 * @see scala.util.parsing.input.Positional#setPos(scala.util.parsing.input.Position)
-	 */
-	@Override
-	public Positional setPos(Position newpos) {
-		if (position == null || position instanceof NoPosition$) {
-			position = newpos;
-		}
-		return this;
 	}
 }

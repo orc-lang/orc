@@ -24,10 +24,6 @@ package orc.error.runtime;
 public class JavaException extends SiteException {
 	public JavaException(final Throwable cause) {
 		super(cause.toString(), cause);
-	}
-
-	@Override
-	public String toString() {
-		return getCause().toString();
+		setStackTrace(getCause().getStackTrace());
 	}
 }
