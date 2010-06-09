@@ -149,7 +149,7 @@ object Translator {
 				case ext.TypeAscription(body, t) => HasType(convert(body), convertType(t))
 				case ext.TypeAssertion(body, t) => HasType(convert(body), AssertedType(convertType(t)))
 				
-		}
+		} setPos e.pos
 	}
 	
 	

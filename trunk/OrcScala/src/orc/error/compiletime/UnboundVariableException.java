@@ -19,7 +19,7 @@ import scala.util.parsing.input.Position;
 public class UnboundVariableException extends CompilationException {
 	public UnboundVariableException(final String key, final Position location) {
 		this("Variable " + key + " is unbound");
-		setPos(location);
+		setPosition(location);
 	}
 
 	public UnboundVariableException(final String message) {

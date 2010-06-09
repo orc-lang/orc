@@ -22,6 +22,7 @@ import orc.oil.nameless._
 import orc.PartialMapExtension._
 import orc.values.sites.Site
 import orc.values.Value
+import orc.error.OrcException
 import orc.error.runtime.UncallableValueException
 
 import scala.collection.mutable.Set   
@@ -342,7 +343,7 @@ abstract class Orc extends OrcExecutionAPI {
         node match {
           case Stop() => halt
           case (a: Argument) => resolve(a).foreach(publish(_))
-          case (Call(target, args, typeArgs)) => {
+          case (Call(target, args, typeArgs)) => try {
             resolve(target).foreach({
               case closure@ Closure(arity, body, newcontext) => {
                 if (arity != args.size) halt /* Arity mismatch. */
@@ -386,6 +387,16 @@ abstract class Orc extends OrcExecutionAPI {
                 throw new UncallableValueException("You can't call a "+target)
               }
             })
+          } catch {
+            case e: OrcException => {
+              halt
+              e.setPosition(node.pos)
+              caught(e)
+            }
+            case e => {
+              halt
+              caught(e)
+            }
           }
     
           case Parallel(left, right) => {

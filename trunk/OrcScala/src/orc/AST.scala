@@ -15,12 +15,8 @@
 
 package orc
 
+import orc.error.OrcException
 import scala.util.parsing.input.Positional
-
-
-class PositionalException(msg: String) extends Exception(msg) with Positional {
-  override def getMessage(): String = "\n" + this.pos.longString + "\n" + super.getMessage()
-}
 
 abstract class AST extends Positional {
 
@@ -35,18 +31,16 @@ abstract class AST extends Positional {
   // x ->> y  is equivalent to  x -> (_ => y)
   def ->>[B <: AST](that : B): B = { that.pos = this.pos ; that }
 
-  def !!(exn : PositionalException): Nothing = {
-      exn.pos = this.pos
+  def !!(exn : OrcException): Nothing = {
+      exn.setPosition(this.pos)
       throw exn
   }
   
-  
   // Remove this overloading to uncover uses of !! that do not carry a specific exception type
   def !!(msg : String): Nothing = { 
-    val exn = new PositionalException(msg)
+    val exn = new OrcException(msg)
     this !! exn
   }
-  
   
   // Emit a warning
   def !?(msg : String): Unit = { 

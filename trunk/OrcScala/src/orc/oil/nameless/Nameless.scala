@@ -132,14 +132,14 @@ object AddNames {
       case HasType(body, expectedType) => {
         named.HasType(recurse(body), namelessToNamed(expectedType, typecontext))
       }
-    } 
+    }  setPos e.pos
   }	
 
   def namelessToNamed(a: Argument, context: List[TempVar]): named.Argument =
     a -> {
       case Constant(v) => named.Constant(v)
       case Variable(i) => context(i) 
-    }
+    }  setPos a.pos
 
   def namelessToNamed(t: Type, typecontext: List[TempTypevar]): named.Type = {
     t -> {
@@ -160,7 +160,7 @@ object AddNames {
         named.TypeApplication(tycon, newTypeActuals)
       }
       case AssertedType(assertedType) => named.AssertedType(namelessToNamed(assertedType, typecontext))
-    }
+    }  setPos t.pos
   }	
 
   def namelessToNamed(x: TempVar, defn: Def, context: List[TempVar], typecontext: List[TempTypevar]): named.Def = {
@@ -175,7 +175,7 @@ object AddNames {
         val newReturnType = returntype map  { namelessToNamed(_, newTypeContext) }
         named.Def(x, formals, newbody, typeformals, newArgTypes, newReturnType)
       }
-    }
+    }  setPos defn.pos
   }
 
 }

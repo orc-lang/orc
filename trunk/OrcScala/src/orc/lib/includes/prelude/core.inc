@@ -55,7 +55,7 @@ Example:
   If(false) >> "Never publishes"
 | If(true) >> "Always publishes"]]></programlisting>
 --}
-site ift = "orc.lib.builtin.If"
+site ift = "orc.lib.builtin.IfT"
 
 {--
 @site error(String) :: Bot

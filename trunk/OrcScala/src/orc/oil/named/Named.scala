@@ -203,7 +203,7 @@ trait NamedToNameless {
         nameless.DeclareDefs(newdefs, newbody)
       }
       case HasType(body, expectedType) => nameless.HasType(toExp(body), toType(expectedType))
-    } 
+    } setPos e.pos
   }	
 
   def namedToNameless(a: Argument, context: List[TempVar]): nameless.Argument = {
@@ -211,7 +211,7 @@ trait NamedToNameless {
       case Constant(v) => nameless.Constant(v)
       case (x: TempVar) => nameless.Variable(context indexOf x) 
       case x@ NamedVar(s) => x !! ("Unbound variable " + s) 
-    }
+    } setPos a.pos
   }
 
 
@@ -234,7 +234,7 @@ trait NamedToNameless {
       }	
       case AssertedType(assertedType) => nameless.AssertedType(namedToNameless(assertedType, typecontext))
       case u@ NamedTypevar(s) => u !! ("Unbound type variable " + s)
-    }
+    } setPos t.pos
   }	
 
   def namedToNameless(defn: Def, context: List[TempVar], typecontext: List[TempTypevar]): nameless.Def = {
@@ -247,7 +247,7 @@ trait NamedToNameless {
         val newReturnType = returntype map { namedToNameless(_, newTypeContext) }
         nameless.Def(typeformals.size, formals.size, newbody, newArgTypes, newReturnType)
       }
-    }
+    } setPos defn.pos
   }
 
 }	

@@ -56,6 +56,7 @@ trait OrcExecutionAPI {
   def halted: Unit
   def invoke(t: Token, s: Site, vs: List[Value]): Unit
   def expressionPrinted(s: String): Unit
+  def caught(e: Throwable): Unit
   def schedule(ts: List[Token]): Unit
 
   // Schedule function is overloaded for convenience
