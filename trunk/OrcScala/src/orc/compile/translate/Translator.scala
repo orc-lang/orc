@@ -116,9 +116,8 @@ object Translator {
 				case ext.Conditional(ifE, thenE, elseE) => {
 					 val b = new TempVar()
 					 val nb = new TempVar()
-					 ( (  callIf(b) >> convert(thenE) 
-					   || callIf(nb) >> convert(elseE)	  
-				      ) < nb < callNot(b) 
+					 (  callIfT(b) >> convert(thenE) 
+					 || callIfF(b) >> convert(elseE)	  
 				     )   < b < convert(ifE)
 				     
 				}
@@ -420,7 +419,7 @@ object Translator {
 				case ext.Wildcard() => (Nil, Nil)
 				case ext.ConstantPattern(c) => {
 					val b = new TempVar()
-				    val testexpr = callEq(x, Constant(Literal(c))) > b > callIf(b)
+				    val testexpr = callEq(x, Constant(Literal(c))) > b > callIfT(b)
 					val guard = (testexpr, new TempVar())
 					(List(guard), Nil)
 				}
@@ -466,7 +465,7 @@ object Translator {
 				}
 				case ext.EqPattern(name) => {
 					val b = new TempVar()
-				    val testexpr = callEq(x, new NamedVar(name)) > b > callIf(b)
+				    val testexpr = callEq(x, new NamedVar(name)) > b > callIfT(b)
 					val guard = (testexpr, new TempVar())
 					(List(guard), Nil)
 				}
