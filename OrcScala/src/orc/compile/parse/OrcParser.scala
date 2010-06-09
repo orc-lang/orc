@@ -390,16 +390,20 @@ people intuitively use these operators.
 
   // Add interleaving combinator
   class InterleavingParser[A <: AST](parser: Parser[A]) {
-    def interleave[B](chain: (=> Parser[A], => Parser[(A, A) => A]) => Parser[A]) =
-                     (interparser: Parser[B]) =>
-                     (f: (A,B,A) => A) =>
-    {
-      def origami(b: B)(x:A, y:A): A = f(x,b,y)
-      markLocation( chain(markLocation(parser), interparser ^^ origami) )
-    } : Parser[A]
+    def interleaveLeft[B](interparser: Parser[B]) =
+      (f: (A,B,A) => A) =>
+        {
+          def origami(b: B)(x:A, y:A): A = f(x,b,y)
+          markLocation( nlchainl1(markLocation(parser), interparser ^^ origami) )
+        } : Parser[A]
+    
+    def interleaveRight[B](interparser: Parser[B]) =
+      (f: (A,B,A) => A) =>
+        {
+          def origami(b: B)(x:A, y:A): A = f(y,b,x)
+          markLocation( nlchainr1(markLocation(parser), interparser ^^ origami) )
+        } : Parser[A]
 
-    def interleaveLeft[B](interparser: Parser[B]) = interleave(nlchainl1)(interparser)
-    def interleaveRight[B](interparser: Parser[B]) = interleave(nlchainr1)(interparser)
   }
 
   def nlchainl1[T](p: => Parser[T], q: => Parser[(T, T) => T]): Parser[T] =
