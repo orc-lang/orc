@@ -71,7 +71,7 @@ class OrcLexical() extends StdLexical() {
     | '(' ~ oper ~ ')'                                  ^^ { case '(' ~ o ~ ')' => Identifier(o.chars) }
     | '(' ~ '0' ~ '-' ~ ')'                             ^^^ Identifier("0-")
     | floatLit                                          ^^ { case f => FloatingPointLit(f) }
-    | signedIntegerLit                                  ^^ { case i => NumericLit(i) }
+    | integerLit                                        ^^ { case i => NumericLit(i) }
     | '\"' ~ rep(stringLitChar) ~ '\"'                  ^^ { case '\"' ~ chars ~ '\"' => StringLit(chars mkString "") }
     | '\"' ~> failure("unclosed string literal")
     | delim   // Must be after other alternatives that a delim could be a prefix of
@@ -96,17 +96,15 @@ class OrcLexical() extends StdLexical() {
       | rep1(nonZeroDigit, digit) ^^ { _ mkString "" }
       )
 
-  def signedIntegerLit =
-      ( elem('-') ~ integerLit ^^ { case a ~ b => a+b }
-      | integerLit )
   def plusMinusIntegerLit =
       ( elem('+') ~ integerLit ^^ { case a ~ b => a+b }
-      | signedIntegerLit )
+      | elem('-') ~ integerLit ^^ { case a ~ b => a+b }
+      | integerLit )
 
   def floatLit =
-    ( signedIntegerLit ~ '.' ~ integerLit ~ (elem('e') |  elem('E')) ~ plusMinusIntegerLit ^^ { case a ~ b ~ c ~ d ~ e => a+b+c+d+e }
-    | signedIntegerLit                    ~ (elem('e') |  elem('E')) ~ plusMinusIntegerLit ^^ { case a ~ b ~ c => a+b+c }
-    | signedIntegerLit ~ '.' ~ integerLit                                                  ^^ { case a ~ b ~ c => a+b+c }
+    ( integerLit ~ '.' ~ integerLit ~ (elem('e') |  elem('E')) ~ plusMinusIntegerLit ^^ { case a ~ b ~ c ~ d ~ e => a+b+c+d+e }
+    | integerLit                    ~ (elem('e') |  elem('E')) ~ plusMinusIntegerLit ^^ { case a ~ b ~ c => a+b+c }
+    | integerLit ~ '.' ~ integerLit                                                  ^^ { case a ~ b ~ c => a+b+c }
     )
 
   override def whitespaceChar = elem("space char", ch => ch == ' ' || ch == '\t' || ch == '\r' || ch == '\f')

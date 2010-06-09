@@ -80,7 +80,10 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
   )
 
   def parseUnaryExpr = (
-      ("-" | "~") ~ parseCallExpression -> PrefixOperator
+    // First see if it's a unary minus for a numeric literal
+      "-" ~> numericLit -> { s => Constant(-BigInt(s)) }
+    | "-" ~> floatLit -> { s => Constant(-BigDecimal(s)) }
+    | ("-" | "~") ~ parseCallExpression -> PrefixOperator
     | parseCallExpression
     )
 
@@ -315,7 +318,9 @@ people intuitively use these operators.
   def wrapNewLines[T](p:Parser[T]): Parser[T] = (lexical.NewLine*) ~> p <~ (lexical.NewLine*)
 
   def parseConstantListTuple: Parser[Expression] = (
-      parseValue -> Constant
+      "-" ~> numericLit -> { s => Constant(-BigInt(s)) }
+    | "-" ~> floatLit -> { s => Constant(-BigDecimal(s)) }
+    | parseValue -> Constant
     | "(" ~~> parseConstantListTuple <~~ ")"
     | ListOf(parseConstantListTuple) -> ListExpr
     | TupleOf(parseConstantListTuple) -> TupleExpr
