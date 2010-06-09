@@ -53,8 +53,6 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
       | "null" ^^^ null
   )
 
-  def parseConstant = parseValue -> Constant
-
   def parseTypeVariable: Parser[String] = ident
 
   def parseBaseExpression = (
@@ -88,6 +86,7 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
 
   // TODO: Fix parser ambiguity re: < and >
 
+  //FIXME: All these uses of nlchain and ^^ are discarding position information!
   def parseExpnExpr = nlchainl1(parseUnaryExpr, ("**") ^^
     { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
 
@@ -315,6 +314,18 @@ people intuitively use these operators.
 
   def wrapNewLines[T](p:Parser[T]): Parser[T] = (lexical.NewLine*) ~> p <~ (lexical.NewLine*)
 
+  def parseConstantListTuple: Parser[Expression] = (
+      parseValue -> Constant
+    | "(" ~~> parseConstantListTuple <~~ ")"
+    | ListOf(parseConstantListTuple) -> ListExpr
+    | TupleOf(parseConstantListTuple) -> TupleExpr
+    )
+
+  def scanAndParseLiteral(s: String): ParseResult[Expression] = {
+      val tokens = new lexical.Scanner(s)
+      phrase(parseConstantListTuple)(tokens)
+  }
+
   def scanAndParseProgram(s: String): ParseResult[Expression] = {
       val tokens = new lexical.Scanner(s)
       phrase(parseProgram)(tokens)
@@ -327,7 +338,7 @@ people intuitively use these operators.
 
   def scanAndParseInclude(r: Reader[Char], name: String): ParseResult[Include] = {
       val newParser = new OrcParser(options)
-      val parseInclude = newParser.parseDeclarations ^^ { Include(name, _) }
+      val parseInclude = newParser.markLocation(newParser.parseDeclarations ^^ { Include(name, _) })
       val tokens = new newParser.lexical.OrcScanner(r)
       val result = newParser.phrase(parseInclude)(tokens)
       def dummyInput(posToUse: Position): Input = new Input { def first = null; def rest = this; def pos = posToUse; def atEnd = true }
