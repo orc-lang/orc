@@ -69,11 +69,11 @@ class OrcLexical() extends StdLexical() {
     ( letter ~ rep( identChar | digit )                 ^^ { case first ~ rest => processIdent(first :: rest mkString "") }
     | '(' ~ oper ~ ')'                                  ^^ { case '(' ~ o ~ ')' => Identifier(o.chars) }
     | '(' ~ '0' ~ '-' ~ ')'                             ^^^ Identifier("0-")
-    | delim
-    | '\"' ~ rep(stringLitChar) ~ '\"'                  ^^ { case '\"' ~ chars ~ '\"' => StringLit(chars mkString "") }
-    | '\"' ~> failure("unclosed string literal")
     | floatLit                                          ^^ { case f => FloatingPointLit(f) }
     | signedIntegerLit                                  ^^ { case i => NumericLit(i) }
+    | '\"' ~ rep(stringLitChar) ~ '\"'                  ^^ { case '\"' ~ chars ~ '\"' => StringLit(chars mkString "") }
+    | '\"' ~> failure("unclosed string literal")
+    | delim   // Must be after other alternatives that a delim could be a prefix of
     | EofCh                                             ^^^ EOF
     | '\n'                                              ^^^ NewLine
     | '\r' ~ '\n'                                       ^^^ NewLine
