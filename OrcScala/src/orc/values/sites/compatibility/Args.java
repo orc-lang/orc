@@ -26,6 +26,8 @@ import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.InsufficientArgsException;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
+import orc.values.Field;
+import orc.values.Signal$;
 
 /**
  * Container for arguments to a site. 
@@ -45,9 +47,15 @@ public class Args implements Serializable, Iterable<Object> {
 		return values.length;
 	}
 
-//	public Object condense() {
-//		return Let.condense(values);
-//	}
+	public Object condense() {
+	    if (values.length == 0) {
+	      return Signal$.MODULE$;
+	    } else if (values.length == 1) {
+	      return values[0];
+	    } else {
+	        return values; //FIXME: A tuple, not a Java array
+	    }
+	}
 
 	public String fieldName() throws TokenException {
 		if (values.length != 1) {
@@ -58,12 +66,11 @@ public class Args implements Serializable, Iterable<Object> {
 		if (v == null) {
 			throw new ArgumentTypeMismatchException(0, "message", "null");
 		}
-//		if (v instanceof Field) {
-//			return ((Field) v).getKey();
-//		} else {
-			//throw new TokenException("Bad type for field reference.");
+		if (v instanceof Field) {
+			return ((Field) v).field();
+		} else {
 			throw new ArgumentTypeMismatchException(0, "message", v.getClass().toString());
-//		}
+		}
 	}
 
 	/**

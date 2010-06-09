@@ -16,10 +16,10 @@
 package orc.values.sites.compatibility;
 
 /**
+ * Abstract class for sites whose calls may block (the Java thread).
  * 
- *
- * @author jthywiss
+ * @author quark
  */
 public abstract class ThreadedSite extends EvalSite {
-    //FIXME: Run evaluate in a seperate thread
+    //FIXME: Run evaluate in a separate thread
 }

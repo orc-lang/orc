@@ -390,7 +390,7 @@ for example:
 val a = Array(3)
 a.fill(0) >> each(a)]]></programlisting>
 --}
-site Array = "orc.lib.util.JavaArray"
+site Array = "orc.lib.state.JavaArray"
 type Array = "orc.lib.state.types.ArrayType"
 
 {--

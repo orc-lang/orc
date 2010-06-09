@@ -23,6 +23,7 @@ import orc.PartialMapExtension._
 import orc.values.sites.Site
 import orc.values.Value
 import orc.error.OrcException
+import orc.error.runtime.TokenException
 import orc.error.runtime.JavaException
 import orc.error.runtime.UncallableValueException
 
@@ -348,11 +349,8 @@ abstract class Orc extends OrcExecutionAPI {
             resolve(target).foreach({
               case closure@ Closure(arity, body, newcontext) => {
                 if (arity != args.size) halt /* Arity mismatch. */
-      
-      
-                /* 
-                 *          
-                 * 1) Push a function frame (if this is not a tail call),
+
+                /* 1) Push a function frame (if this is not a tail call),
                  *    referring to the current environment
                  * 2) Change the current environment to the closure's
                  *    saved environment.
@@ -394,6 +392,12 @@ abstract class Orc extends OrcExecutionAPI {
               }
             })
           } catch {
+            case e: TokenException => {
+              halt
+              e.setPosition(node.pos)
+              //TODO: e.backtrace = all of the FunctionFrame.callpoint.pos in this token's stack
+              caught(e)
+            }
             case e: OrcException => {
               halt
               e.setPosition(node.pos)
