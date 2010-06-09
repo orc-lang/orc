@@ -228,7 +228,7 @@ def cfold(f, L) =
     c.put(f(x,y)) >> stop | work(i+1, rest)
   def work(i, [x]) = c.put(x) >> stop | work(i+1, [])
   def work(i, []) =
-    if (i < 2) then c.get() 
+    if (i <: 2) then c.get() 
     else c.get() >x> c.get() >y>
          ( c.put(f(x,y)) >> stop | work(i-1,[]) ) 
   work(0, L)
@@ -291,7 +291,7 @@ or <code>n &lt; 0</code>, take halts with an error.
 def take[A](Integer, List[A]) :: List[A]
 def take(0, _) = []
 def take(n, x:xs) =
-  if n > 0 then x:take(n-1, xs)
+  if n :> 0 then x:take(n-1, xs)
   else error("Cannot take(" + n + ", _)")
 
 {--
@@ -306,7 +306,7 @@ or <code>n &lt; 0</code>, drop halts with an error.
 def drop[A](Integer, List[A]) :: List[A]
 def drop(0, xs) = xs
 def drop(n, x:xs) =
-  if n > 0 then drop(n-1, xs)
+  if n :> 0 then drop(n-1, xs)
   else error("Cannot drop(" + n + ", _)")
 
 {--
@@ -489,7 +489,7 @@ integer <code>i</code>), <code>n &gt;= low</code>, and <code>n &lt; high</code>.
 --}
 def rangeBy(Number, Number, Number) :: List[Number]
 def rangeBy(low, high, skip) =
-  if low < high
+  if low <: high
   then low:rangeBy(low+skip, high, skip)
   else []
  
@@ -517,7 +517,7 @@ def any(p, x:xs) =
   let(
     val b1 = p(x)
     val b2 = any(p, xs)
-    if(b1) >> true | if(b2) >> true | (b1 || b2)
+    ift(b1) >> true | ift(b2) >> true | (b1 || b2)
   )
   
 {--
@@ -535,7 +535,7 @@ def all(p, x:xs) =
   let(
     val b1 = p(x)
     val b2 = all(p, xs)
-    if(~b1) >> false | if(~b2) >> false | (b1 && b2)
+    ift(~b1) >> false | ift(~b2) >> false | (b1 && b2)
   )
 
 {--

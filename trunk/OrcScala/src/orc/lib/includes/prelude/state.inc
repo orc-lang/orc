@@ -420,7 +420,7 @@ def IArray(n, f) =
   val a = Array[A](n)
   def fill(Integer, lambda (Integer) :: A) :: Signal
   def fill(i, f) =
-    if i < 0 then signal
+    if i <: 0 then signal
     else (a.set(i, f(i)), fill(i-1, f)) >> signal
   fill(n-1, f) >> a.get
 
