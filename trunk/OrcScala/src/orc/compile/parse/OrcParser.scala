@@ -61,6 +61,10 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
       parseValue -> Constant
       | ident -> Variable
       | "stop" -> Stop
+      | ("if" ~~> parseExpression)
+      ~~ ("then" ~~> parseExpression)
+      ~~ ("else" ~~> parseExpression)
+      -> Conditional
       | "(" ~~> parseExpression <~~ ")"
       | ListOf(parseExpression) -> ListExpr
       | TupleOf(parseExpression) -> TupleExpr
@@ -206,12 +210,8 @@ people intuitively use these operators.
       "lambda" ~> (ListOf(parseType)?)
       ~ (TupleOf(parsePattern)+)
       ~ (("::" ~> parseType)?)
-      ~ ("=" ~> parseExpression)
+      ~ ("=" ~~> parseExpression)
       -> Lambda
-      | ("if" ~~> parseExpression)
-      ~~ ("then" ~~> parseExpression)
-      ~~ ("else" ~~> parseExpression)
-      -> Conditional
       | parseDeclaration ~~ parseExpression -> Declare
       | parseOtherwiseExpression ~ ("::" ~> parseType) -> TypeAscription
       | parseOtherwiseExpression ~ (":!:" ~> parseType) -> TypeAssertion
@@ -260,7 +260,7 @@ people intuitively use these operators.
   def parseReturnType = "::" ~> parseType
 
   def parseDeclaration: Parser[Declaration] = (
-      ("val" ~> parsePattern) ~ ("=" ~> parseExpression)
+      ("val" ~> parsePattern) ~ ("=" ~~> parseExpression)
       -> Val
 
       | ("def" ~> ident) ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ ("=" ~~> parseExpression)
