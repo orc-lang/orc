@@ -38,7 +38,9 @@ object Translator {
 	 *
 	 */
 	def translate(options: OrcOptions, extendedAST : ext.Expression): Expression = {		
-		convert(extendedAST) map {
+		val namedAST = convert(extendedAST)
+	    //Console.err.println("Translation result: \n" + namedAST)
+		namedAST map {
 			case x@ NamedVar(s) => x !! ("Unbound variable " + s)
 			case y => y 
 		}
@@ -123,8 +125,8 @@ object Translator {
 				}
 				case ext.Declare(decl : ext.DefDeclaration, _) => {
 					val (defs, remainder) = e.defPartition
-					val (newdefs, newcontext) = convertDefs(defs)
-					DeclareDefs(newdefs, convert(remainder))
+					val (newdefs, scope) = convertDefs(defs)
+					DeclareDefs(newdefs, scope(convert(remainder)))
 				}
 				case ext.Declare(ext.Val(p,f), body) => {
 					convert(ext.Pruning(body, Some(p), f))
