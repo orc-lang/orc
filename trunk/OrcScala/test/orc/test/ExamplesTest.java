@@ -31,6 +31,8 @@ import junit.framework.TestSuite;
 import orc.compile.OrcCompiler;
 import test.orc.OrcEngine;
 import orc.error.compiletime.CompilationException;
+import orc.error.compiletime.CompileLogger;
+import orc.error.compiletime.ExceptionCompileLogger;
 
 import org.kohsuke.args4j.CmdLineException;
 
@@ -152,7 +154,12 @@ public class ExamplesTest {
  
 	public static void runOrcProgram(final File file, final LinkedList<String> expecteds) throws InterruptedException, Throwable, CmdLineException, CompilationException, IOException, TimeoutException {
 
-		final orc.oil.nameless.Expression expr = (new OrcCompiler()).apply(new FileReader(file), examplesOptions);
+	    OrcCompiler compiler = new OrcCompiler() {
+          private final CompileLogger compileLoggerRef = new ExceptionCompileLogger();
+	      @Override public CompileLogger compileLogger() { return compileLoggerRef; }
+	    };
+	  
+		final orc.oil.nameless.Expression expr = compiler.apply(new FileReader(file), examplesOptions);
 
 		if (expr == null) {
 			throw new CompilationException("Compilation to OIL failed");
