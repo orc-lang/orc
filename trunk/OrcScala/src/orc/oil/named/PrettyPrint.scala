@@ -81,7 +81,7 @@ class PrettyPrint {
       case HasType(body, expectedType) => "(" + reduce(body) + " :: " + reduce(expectedType) + ")"
       case Constant(v) => v.toString()
       case (x: TempVar) => x.optionalName.getOrElse(lookup(x)) 
-      case NamedVar(s) => "{unbound: " + s + "}" 
+      case NamedVar(s) => "?" + s 
       case u: TempTypevar => u.optionalName.getOrElse(lookup(u))
       case Top() => "Top"
       case Bot() => "Bot"
@@ -91,7 +91,7 @@ class PrettyPrint {
       case TupleType(elements) => paren(elements)
       case TypeApplication(tycon, typeactuals) => reduce(tycon) + brack(typeactuals)
       case AssertedType(assertedType) => reduce(assertedType) + "!"
-      case NamedTypevar(s) => "{unbound: " + s + "}"
+      case NamedTypevar(s) => "?" + s
     }
 
 }

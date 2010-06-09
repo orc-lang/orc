@@ -6,6 +6,8 @@ Hint: use a Set to record the values seen in the
 channel.
 --}
 
+{-
+
 class Object = java.lang.Object
 
 def unique[X](Buffer[X]) :: X
@@ -32,6 +34,7 @@ val c = Buffer[Number]()
   unique(c)
 | (upto(50) >n> c.put(n % 10) >> stop; c.close()) >> stop
 
+-}
 
 {-
 OUTPUT:
