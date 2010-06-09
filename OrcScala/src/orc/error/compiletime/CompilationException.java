@@ -44,7 +44,7 @@ public class CompilationException extends OrcException implements Positional {
 	@Override
 	public String getMessage() {
 		if (position != null) {
-			return "At " + position + ": " + super.getMessage();
+			return position.toString() + ": " + super.getMessage() + "\n" + position.longString();
 		} else {
 			return super.getMessage();
 		}
