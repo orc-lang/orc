@@ -109,7 +109,7 @@ object Translator {
 					DeclareDefs(List(newdef), lambdaName)
 				}
 				case ext.Capsule(b) => {
-				  var capThunk = ext.Lambda(None, null, None, makeNewBody(b))				  
+				  var capThunk = ext.Lambda(None, null, None, makeCapsuleBody(b))				  
 				  convert(ext.Call(
 				    ext.Call(ext.Constant(builtin.SiteSite), List(ext.Args(None, List(capThunk)))), null))
 				}
@@ -202,15 +202,21 @@ object Translator {
 	/** 
 	 * Helper functions for capsule conversion
 	 */
-	def makeNewBody(body: ext.Expression) : ext.Expression = {
-	  val (defs, g) = body.defPartition
-      if (defs.size == 0) {
+	def makeCapsuleBody(body: ext.Expression) : ext.Expression = {
+	  def getDefNames(e: ext.Expression): List[String] = 
+	    e match {
+	      case ext.Declare(decl: ext.DefDeclaration, e) => decl.name :: getDefNames(e)
+	      case ext.Declare(_, e) => getDefNames(e)
+	      case _ => Nil
+	    }
+	  val defNames = getDefNames(body).distinct
+      if (defNames.isEmpty) {
         body !! "A capsule must contain at least one def"
       }
-	  val defNames = (defs map { _.name }).distinct
       val recordCall : ext.Call = new ext.Call(new ext.Constant(builtin.RecordConstructor), List(ext.Args(None, makeRecordArgs(defNames))))
       ext.Parallel(ext.Sequential(body, None, ext.Stop()), recordCall)
 	}
+	
 	def makeRecordArgs(defNames: List[String]) : List[ext.Expression] = {
 	  var args : List[ext.Expression] = List()
 	  for (d <- defNames) {

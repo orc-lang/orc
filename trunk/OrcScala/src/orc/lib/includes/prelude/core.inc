@@ -43,7 +43,7 @@ When applied to a single argument, return that argument (behaving as the identit
 @site let[A, ...](A, ...) :: (A, ...)
 When applied to two or more arguments, return the arguments in a tuple.
 --}
---FIXME:site let = "orc.lib.???.Let"
+site let = "orc.lib.builtin.Let"
 
 {--
 @site If(Boolean) :: Signal

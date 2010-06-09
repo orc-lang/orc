@@ -20,6 +20,7 @@ import orc.values.sites.UntypedSite
 import orc.TokenAPI
 import orc.values.Value
 import orc.values.Literal
+import orc.values.Signal
 import orc.error.runtime.TokenException
 import orc.types.Type
 
@@ -57,5 +58,5 @@ abstract class SiteAdaptor extends Site with UntypedSite {
     case _ => new Literal(o)
   }
   
-  def signal() = Literal({})
+  def signal() = Signal
 }
