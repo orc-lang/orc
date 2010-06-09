@@ -26,7 +26,7 @@ object OilTransformer {
   def compactClosures(e:Expression): Expression = compactClosures(e,0)
   
   private def compactClosures(e: Expression,depth: Int): Expression = {
-    e match {
+    (e match {
       case Stop() => Stop()
       case Constant(c) => Constant(c)
       case Variable(i) => Variable(i)
@@ -52,16 +52,16 @@ object OilTransformer {
         DeclareDefs(newdefs,newbody) 
       }
       case HasType(body,typ) => HasType(compactClosures(body,depth),typ)
-    }
+    }) setPos e.pos
   }
   
-  /* 
+  /**
    * Replace the free variables {i,j,..} in the body,
    * by {depth+(n-1),depth+(n-2),...,depth}, where n
    * is the size of the set {i,j...}.
    */
   def substitute(freevars:List[Int],body:Expression, depth:Int): Expression = {
-    body match {
+    (body match {
       case Stop() => Stop()
       case Constant(c) => Constant(c)
       case Variable(i) => {
@@ -107,7 +107,7 @@ object OilTransformer {
         DeclareDefs(newdefs,newbody)
       }
       case HasType(body,typ) => HasType(substitute(freevars,body,depth),typ)
-    }
+    }) setPos body.pos
   }
   
   private def shift(indices: List[Int], n: Int): List[Int] = {
