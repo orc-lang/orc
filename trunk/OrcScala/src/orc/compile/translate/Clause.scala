@@ -50,8 +50,8 @@ case class Clause(formals: List[Pattern], body: Expression) extends orc.AST {
 			case Nil => {
 				// Make sure the remaining cases are not redundant.
 				fallthrough match {
-					case named.Stop() => {  } // FIXME: For I Am Wrong
-					case _ => { fallthrough !? ("Redundant match: " + this.toString() ) }
+					case named.Stop() => {  }
+					case _ => { fallthrough !? ("Redundant match") }
 				}
 			}
 			/* 
@@ -90,7 +90,7 @@ case class Clause(formals: List[Pattern], body: Expression) extends orc.AST {
 		}  
 		
 		/* Finally, return the newly constructed expression */
-		newbody
+		this ->> newbody
 	}
 	
 }
