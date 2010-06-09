@@ -17,18 +17,17 @@ type Bid = Number
 
 def auction(List[lambda(Bid) :: Bid], Bid) :: Bid
 def auction(bidders, max) =
-  val (done, bid) =
-    Ltimer(1) >> (true, max)
+  val (done, bid) = Ltimer(1) >> (true, max)
     | each(bidders) >bidder>
       bidder(max) >bid>
-      if(bid > max) >>
+      ift(bid :> max) >>
       (false, bid)
   println("Current bid: " +  max) >>
   if done then max else auction(bidders, bid)
   
 
 def bidder(Bid)(Bid) :: Bid
-def bidder(max)(n) = if(n < max) >> n + 1
+def bidder(max)(n) = ift(n <: max) >> n + 1
 
 auction(map(lambda (x :: Bid) = bidder(x), range(0,10)), 1)
 
