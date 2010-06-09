@@ -117,13 +117,13 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
     parseInfixOpExpression interleaveRight parseSequentialCombinator apply Sequential
 
   def parseParallelExpression =
-    rep1sep(parseSequentialExpression, "|") -> (_ reduceLeft Parallel)
+    nlrep1sep(parseSequentialExpression, "|") -> (_ reduceLeft Parallel)
 
   def parsePruningExpression =
     parseParallelExpression interleaveLeft parsePruningCombinator apply Pruning
 
   def parseOtherwiseExpression =
-    rep1sep(parsePruningExpression, ";") -> (_ reduceLeft Otherwise)
+    nlrep1sep(parsePruningExpression, ";") -> (_ reduceLeft Otherwise)
 
 /*---------------------------------------------------------
 Expressions
@@ -208,9 +208,9 @@ people intuitively use these operators.
       ~ (("::" ~> parseType)?)
       ~ ("=" ~> parseExpression)
       -> Lambda
-      | ("if" ~> parseExpression)
-      ~~ ("then" ~> parseExpression)
-      ~~ ("else" ~> parseExpression)
+      | ("if" ~~> parseExpression)
+      ~~ ("then" ~~> parseExpression)
+      ~~ ("else" ~~> parseExpression)
       -> Conditional
       | parseDeclaration ~~ parseExpression -> Declare
       | parseOtherwiseExpression ~ ("::" ~> parseType) -> TypeAscription
@@ -400,6 +400,9 @@ people intuitively use these operators.
     p ~~ rep(q ~~ p) ^^ {
       case x ~ xs => xs.foldRight(x){(_, _) match {case (f ~ a, b) => f(a, b)}}
   }
+  
+  def nlrep1sep[T](p : => Parser[T], q : => Parser[Any]): Parser[List[T]] = 
+    p ~~ rep(q ~~> p) ^^ {case x~y => x::y}
 
   class StretchingParser[+T](parser: Parser[T]) {
     def ~~[U](otherParser : => Parser[U]): Parser[T ~ U] = (parser <~ (lexical.NewLine*)) ~ otherParser
