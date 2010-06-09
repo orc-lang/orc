@@ -67,6 +67,7 @@ class OrcLexical() extends StdLexical() {
   
   override def token: Parser[Token] =
     ( letter ~ rep( identChar | digit )                 ^^ { case first ~ rest => processIdent(first :: rest mkString "") }
+    | '_'                                               ^^^ Keyword("_")
     | '(' ~ oper ~ ')'                                  ^^ { case '(' ~ o ~ ')' => Identifier(o.chars) }
     | '(' ~ '0' ~ '-' ~ ')'                             ^^^ Identifier("0-")
     | floatLit                                          ^^ { case f => FloatingPointLit(f) }
@@ -137,7 +138,7 @@ class OrcLexical() extends StdLexical() {
   /** The set of reserved identifiers: these will be returned as `Keyword's */
   override val reserved = new HashSet[String] ++ List(
       "true", "false", "signal", "stop", "null",
-      "lambda", "if", "then", "else", "as",
+      "lambda", "if", "then", "else", "as", "_",
       "val", "def", "capsule", "type", "site", "class", "include",
       "Top", "Bot"
     )
@@ -147,7 +148,7 @@ class OrcLexical() extends StdLexical() {
       "&&", "||", "~",
       "<", ">",
       "=", "<:", ":>", "<=", ">=", "/=",
-      ":", "_", "++",
+      ":", "++",
       ".", "?", ":="
     )
 

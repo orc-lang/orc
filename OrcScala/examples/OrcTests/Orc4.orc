@@ -10,9 +10,4 @@ y <y< (4 | 6)
 {-
 OUTPUT:
 4
-
-OR
-
-OUTPUT:
-6
 -}
