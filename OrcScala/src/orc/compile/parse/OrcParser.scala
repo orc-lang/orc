@@ -272,7 +272,7 @@ people intuitively use these operators.
       | "def" ~> ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)+) ~ (parseReturnType?)
       -> { (id, tvs, ts, rt) => DefSig(id, tvs getOrElse Nil, ts, rt) }
 
-      | "type" ~> parseTypeVariable ~ (ListOf(parseTypeVariable)?) ~ ("=" ~> rep1sep(parseConstructor, "|"))
+      | "type" ~> parseTypeVariable ~ (ListOf(parseTypeVariable)?) ~ ("=" ~> nlrep1sep(parseConstructor, "|"))
       -> ((x,ys,t) => Datatype(x, ys getOrElse Nil, t))
 
       | "type" ~> parseTypeVariable ~ (ListOf(parseTypeVariable)?) ~ ("=" ~> parseType)

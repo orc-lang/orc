@@ -3,12 +3,12 @@ def isPrime(n) =
   def primeat(Integer) :: Boolean
   def primeat(i) =
     val b = i * (i <= n)
-      if(b) >> (n % i /= 0) && primeat(i+1)
-    | if(~b) >> true
+      ift(b) >> (n % i /= 0) && primeat(i+1)
+    | ift(~b) >> true
   primeat(2)
 
 -- Publish only prime numbers
-each(range(1, 100)) >n> if(isPrime(n)) >> n
+each(range(1, 100)) >n> ift(isPrime(n)) >> n
 {-
 OUTPUT:
 1

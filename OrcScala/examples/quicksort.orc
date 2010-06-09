@@ -46,9 +46,9 @@ def partition(p, l, r) =
       Below, lr and rl run in parallel. -}
    (lr(l), rl(r)) >(l', r')>
 
-   ( if (l' + 1 < r') >> swapRefs(a(l'), a(r')) >> partition(p, l'+1, r'-1)
-   | if (l' + 1 = r') >> swapRefs(a(l'), a(r')) >> l'
-   | if (l' + 1 > r') >> r'
+   ( ift (l' + 1 <: r') >> swapRefs(a(l'), a(r')) >> partition(p, l'+1, r'-1)
+   | ift (l' + 1 = r') >> swapRefs(a(l'), a(r')) >> l'
+   | ift (l' + 1 :> r') >> r'
    )
 --------------  End of Partition Procedure --------------
 
