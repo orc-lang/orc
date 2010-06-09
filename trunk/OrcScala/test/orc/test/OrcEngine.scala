@@ -31,7 +31,8 @@ class OrcEngine {
     def halted { print("Done. \n") }
     def invoke(t: this.Token, s: Site, vs: List[Value]) { s.call(vs,t) }
     def expressionPrinted(s: String) { print(s); out.append(s) }
-    def caught(e: Throwable) { throw e }
+    //def caught(e: Throwable) { Console.err.println("Error: " + e.getMessage()); out.append("Error: " + e.getMessage()) } // for test cases with expected exceptions
+    def caught(e: Throwable) { throw e } // for debugging (will fail test cases with expected exceptions)
     def schedule(ts: List[Token]) { for (t <- ts) t.run }
   }
 
