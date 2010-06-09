@@ -2,13 +2,11 @@
 -- An immutable array with the value equal to the index
 val a = IArray[Integer](3, let)
 -- A mutable array with the value equal to the index
-val b =
-  Array[Integer](5) >a>
+val b = Array[Integer](5) >a>
   fillArray[Integer](a, let) >>
   a
 -- A mutable array initialized to constant value 0
-val c =
-  Array[Integer](3) >a>
+val c = Array[Integer](3) >a>
   a.fill(0) >>
   a
 
