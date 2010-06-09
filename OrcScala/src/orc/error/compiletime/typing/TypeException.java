@@ -33,7 +33,7 @@ public class TypeException extends CompilationException {
 
 	public TypeException(final String message, final Position location) {
 		super(message);
-		setPos(location);
+		setPosition(location);
 	}
 
 }

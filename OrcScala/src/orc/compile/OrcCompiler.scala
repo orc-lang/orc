@@ -120,7 +120,7 @@ class OrcCompiler extends OrcCompilerAPI with CompilerEnvironmentIfc {
     try {
       phases(options)(source)
     } catch {case e: CompilationException =>
-      compileLogger.recordMessage(Severity.FATAL, 0, e.getMessageOnly, e.pos, null, e)
+      compileLogger.recordMessage(Severity.FATAL, 0, e.getMessageOnly, e.getPosition(), null, e)
       null
     } finally {
       compileLogger.endProcessing(options.filename)

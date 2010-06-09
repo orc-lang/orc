@@ -30,7 +30,7 @@ public class ParsingException extends CompilationException {
 
 	public ParsingException(final String message, Position newPosition) {
 		super(message);
-		setPos(newPosition);
+		setPosition(newPosition);
 	}
 
 	public ParsingException(final String message) {

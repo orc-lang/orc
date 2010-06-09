@@ -15,10 +15,6 @@ package orc.error.compiletime;
 
 import orc.error.OrcException;
 
-import scala.util.parsing.input.NoPosition$;
-import scala.util.parsing.input.Position;
-import scala.util.parsing.input.Positional;
-
 /**
  * Exceptions generated during Orc compilation from source to
  * portable compiled representations.
@@ -26,8 +22,7 @@ import scala.util.parsing.input.Positional;
  * @author dkitchin
  */
 @SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
-public class CompilationException extends OrcException implements Positional {
-	Position position;
+public class CompilationException extends OrcException {
 
 	public CompilationException(final String message) {
 		super(message);
@@ -41,43 +36,4 @@ public class CompilationException extends OrcException implements Positional {
 		super(cause);
 	}
 
-	@Override
-	public String getMessage() {
-		if (position != null) {
-			return position.toString() + ": " + super.getMessage() + "\n" + position.longString();
-		} else {
-			return super.getMessage();
-		}
-	}
-
-	public String getMessageOnly() {
-		return super.getMessage();
-	}
-
-	/* (non-Javadoc)
-	 * @see scala.util.parsing.input.Positional#pos()
-	 */
-	@Override
-	public Position pos() {
-		return position;
-	}
-
-	/* (non-Javadoc)
-	 * @see scala.util.parsing.input.Positional#pos_$eq(scala.util.parsing.input.Position)
-	 */
-	@Override
-	public void pos_$eq(Position newpos) {
-		position = newpos;
-	}
-
-	/* (non-Javadoc)
-	 * @see scala.util.parsing.input.Positional#setPos(scala.util.parsing.input.Position)
-	 */
-	@Override
-	public Positional setPos(Position newpos) {
-		if (position == null || position instanceof NoPosition$) {
-			position = newpos;
-		}
-		return this;
-	}
 }
