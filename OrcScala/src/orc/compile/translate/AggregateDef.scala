@@ -47,7 +47,7 @@ class AggregateDef(clauses: List[Clause],
               val newclause = defn ->> Clause(newformals, body)
               val newArgTypes = unifyList(argtypes, maybeArgTypes, defn !! "Redundant argument typing")
               val newReturnType = unify(returntype, maybeReturnType, defn !! "Redundant return typing")
-              new AggregateDef(newclause::clauses, typeformals, newArgTypes, newReturnType)
+              new AggregateDef(clauses ::: List(newclause), typeformals, newArgTypes, newReturnType)
             }
             case DefCapsule(name, List(formals), maybeReturnType, body) => {
               this + Def(name, List(formals), maybeReturnType, new Capsule(body))
@@ -66,7 +66,7 @@ class AggregateDef(clauses: List[Clause],
 			val newclause = lambda ->> Clause(newformals, lambda.body)
 			val newArgTypes = unifyList(argtypes, maybeArgTypes, lambda !! "Redundant argument typing")
 			val newReturnType = unify(returntype, lambda.returntype, lambda !! "Redundant return typing")
-			new AggregateDef(newclause::clauses, typeformals, newArgTypes, newReturnType)
+			new AggregateDef(clauses ::: List(newclause), typeformals, newArgTypes, newReturnType)
 		}
 			
 		def convert(x : named.TempVar): named.Def = {
