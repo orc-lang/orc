@@ -86,7 +86,7 @@ with ArgumentSubstitution[Expression]
       case left ow right => (left map f) ow (right map f)
       case DeclareDefs(defs, body) => DeclareDefs(defs map { _ map f }, body map f)
       case HasType(body, expectedType) => HasType(body map f, expectedType)
-    }
+    } setPos pos
   
     /*
      * Removes unused definitions from the OIL AST.
