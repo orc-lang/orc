@@ -50,6 +50,8 @@ more easily.
 
 -}
 
+{-
+
 (
 
 val bsent = Ref()
@@ -150,6 +152,8 @@ delete(35)>>
   sort()
 
 ) :!: Signal  {- As currently written, this program cannot pass the typechecker -}
+
+-}
 
 {-
 OUTPUT:

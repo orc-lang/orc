@@ -405,7 +405,7 @@ people intuitively use these operators.
     def interleaveRight[B](interparser: Parser[B]) =
       (f: (A,B,A) => A) =>
         {
-          def origami(b: B)(x:A, y:A): A = f(y,b,x)
+          def origami(b: B)(x:A, y:A): A = f(x,b,y)
           markLocation( nlchainr1(markLocation(parser), interparser ^^ origami) )
         } : Parser[A]
 
@@ -417,8 +417,8 @@ people intuitively use these operators.
   }
 
   def nlchainr1[T](p: => Parser[T], q: => Parser[(T, T) => T]): Parser[T] =
-    p ~~ rep(q ~~ p) ^^ {
-      case x ~ xs => xs.foldRight(x){(_, _) match {case (f ~ a, b) => f(a, b)}}
+    rep(p ~~ q) ~~ p ^^ {
+      case xs ~ x => xs.foldRight(x){(_, _) match {case (a ~ f, b) => f(a, b)}}
   }
   
   def nlrep1sep[T](p : => Parser[T], q : => Parser[Any]): Parser[List[T]] = 
