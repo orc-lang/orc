@@ -50,7 +50,7 @@ more easily.
 
 -}
 
-{-
+
 
 (
 
@@ -153,7 +153,7 @@ delete(35)>>
 
 ) :!: Signal  {- As currently written, this program cannot pass the typechecker -}
 
--}
+
 
 {-
 OUTPUT:
