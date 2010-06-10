@@ -119,13 +119,13 @@ Endline characters are not included in the result.
 @implementation
 --}
 --FIXME:def lines(String) :: List[String]
---FIXME:def lines(text) =
---FIXME:  (
---FIXME:  val out = text.split("\n|\r\n|\r")
---FIXME:  if out.get(out.length()-1) = "" then
---FIXME:    out.split(0, out.length()-1)
---FIXME:  else out
---FIXME:  ) :!: List[String]
+def lines(text) =
+  (
+  val out = text.split("\n|\r\n|\r")
+  if out.get(out.length()-1) = "" then
+    out.split(0, out.length()-1)
+  else out
+  ) --FIXME: :!: List[String]
 
 {--
 @def unlines(List[String]) :: String
@@ -135,8 +135,8 @@ and concatenate the results.
 @implementation
 --}
 --FIXME:def unlines(List[String]) :: String
---FIXME:def unlines(line:lines) = cat(line, "\n", unlines(lines))
---FIXME:def unlines([]) = ""
+def unlines(line:lines) = cat(line, "\n", unlines(lines))
+def unlines([]) = ""
   
 {--
 @def words(String) :: List[String]
@@ -146,7 +146,7 @@ Split a string into words, which are sequences of non-whitespace characters sepa
 --}
 
 --FIXME:def words(String) :: List[String]
---FIXME:def words(text) = (text.trim().split("\\s+")) :!: List[String]
+def words(text) = (text.trim().split("\\s+")) --FIXME: :!: List[String]
 
 
 {--
@@ -157,6 +157,6 @@ each string.
 @implementation
 --}
 --FIXME:def unwords(List[String]) :: String
---FIXME:def unwords([]) = ""
---FIXME:def unwords([word]) = word
---FIXME:def unwords(word:words) = cat(word, " ", unwords(words))
+def unwords([]) = ""
+def unwords([word]) = word
+def unwords(word:words) = cat(word, " ", unwords(words))

@@ -21,6 +21,7 @@ import java.io.PrintWriter
 import scala.util.parsing.input.Reader
 import scala.util.parsing.input.StreamReader
 import scala.collection.JavaConversions._
+import scala.compat.Platform.currentTime
 
 import orc.error.compiletime.CompilationException
 import orc.error.compiletime.CompileLogger
@@ -53,6 +54,16 @@ trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
       }
     }
   }
+  def timePhase: CompilerPhase[O, A, B] = new CompilerPhase[O, A, B] { 
+    val phaseName = self.phaseName
+    override def apply(o: O) = { a: A =>
+      val phaseStart = currentTime
+      val b = self.apply(o)(a)
+      val phaseEnd = currentTime
+      Console.err.println("[phase duration: "+phaseName+": "+(phaseEnd-phaseStart)+" ms]")
+      b
+    }
+  }
 }
 
 /**
@@ -66,8 +77,7 @@ trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
  * @author jthywiss
  */
 class OrcCompiler extends OrcCompilerAPI with CompilerEnvironmentIfc {
-  //TODO: Skip remaining phases when compileLogger.getMaxSeverity >= FATAL 
-
+  
   val parse = new CompilerPhase[OrcOptions, Reader[Char], orc.compile.ext.Expression] {
     val phaseName = "parse"
     override def apply(options: OrcOptions) = { source =>
@@ -113,7 +123,7 @@ class OrcCompiler extends OrcCompilerAPI with CompilerEnvironmentIfc {
     override def apply(options: OrcOptions) = { ast => ast.withoutNames }
   }
 
-  val phases = parse >>> translate >>> typeCheck >>> refineNamedOil >>> deBruijn
+  val phases = parse.timePhase >>> translate.timePhase >>> typeCheck.timePhase >>> refineNamedOil.timePhase >>> deBruijn.timePhase
 
   def apply(source: Reader[Char], options: OrcOptions): orc.oil.nameless.Expression = {
     compileLogger.beginProcessing(options.filename)
