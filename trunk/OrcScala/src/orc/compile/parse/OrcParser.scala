@@ -482,11 +482,16 @@ people intuitively use these operators.
       case x ~ xs => xs.foldLeft(x){(_, _) match {case (a, f ~ b) => f(a, b)}}
   }
 
-  def nlchainr1[T](p: => Parser[T], q: => Parser[(T, T) => T]): Parser[T] =
-    rep(p ~~ q) ~~ p ^^ {
-      case xs ~ x => xs.foldRight(x){(_, _) match {case (a ~ f, b) => f(a, b)}}
+   def nlchainr1[T](p: => Parser[T], q: => Parser[(T, T) => T]): Parser[T] = {
+    def myFold[T](list: List[((T,T)=>T) ~ T]): (T => T) = {
+      list match {
+        case f ~ a :: xs => if(xs.isEmpty) f(_,a) else f(_,myFold(xs)(a))
+      }
+    }
+    
+    p ~~ rep(q ~~ p) ^^ {case x ~ xs => if (xs.isEmpty) x else myFold(xs)(x)}
   }
-  
+   
   def nlrep1sep[T](p : => Parser[T], q : => Parser[Any]): Parser[List[T]] = 
     p ~~ rep(q ~~> p) ^^ {case x~y => x::y}
 
