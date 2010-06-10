@@ -49,17 +49,6 @@ object IfF extends PartialSite with UntypedSite {
   }
 }
 
-object Not extends TotalSite with UntypedSite {
-  override def name = "Not"
-  def evaluate(args: List[Value]) =
-    args match {
-      case List(Literal(true)) => Literal(false)
-      case List(Literal(false)) => Literal(true)
-      case List(a) => throw new ArgumentTypeMismatchException(0, "Boolean", a.getClass().toString())
-      case _ => throw new ArityMismatchException(1, args.size)
-  }
-}
-
 object Eq extends TotalSite with UntypedSite {
   override def name = "Eq"
   def evaluate(args: List[Value]) =

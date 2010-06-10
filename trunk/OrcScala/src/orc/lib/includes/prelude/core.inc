@@ -176,13 +176,13 @@ site (=) = "orc.lib.builtin.Eq"
 @site (/=)(Signal, Signal) :: Boolean
 <code>a/=b</code> returns false if <code>a=b</code>, and true otherwise.
 --}
---FIXME:site (/=) = "orc.lib.comp.Inequal"
+site (/=) = "orc.lib.comp.Inequal"
 
 {--
 @site (~)(Boolean) :: Boolean
 Return the logical negation of the argument.
 --}
-site (~) = "orc.lib.builtin.Not"
+site (~) = "orc.lib.bool.Not"
 
 {--
 @site (&&)(Boolean, Boolean) :: Boolean
