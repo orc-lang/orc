@@ -2,7 +2,7 @@ def isPrime(Number) :: Boolean
 def isPrime(n) =
   def primeat(Integer) :: Boolean
   def primeat(i) =
-    val b = i * (i <= n)
+    val b = i * i <= n
       ift(b) >> (n % i /= 0) && primeat(i+1)
     | ift(~b) >> true
   primeat(2)
