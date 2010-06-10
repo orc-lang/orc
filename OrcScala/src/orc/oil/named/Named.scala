@@ -67,7 +67,7 @@ with ArgumentSubstitution[Expression]
       case Call(target,args,_) => target.freevars ++ args.flatMap(_.freevars)
       case left || right => left.freevars ++ right.freevars
       case left > x > right => left.freevars ++ (right.freevars - x)
-      case left < x < right => left.freevars ++ (right.freevars - x)
+      case left < x < right => (left.freevars - x) ++ right.freevars
       case left ow right => left.freevars ++ right.freevars
       case DeclareDefs(defs,body) => (body.freevars ++ defs.flatMap(_.freevars)) -- defs.map(_.name)
       case HasType(body,typ) => body.freevars
