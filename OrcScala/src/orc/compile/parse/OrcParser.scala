@@ -485,7 +485,8 @@ people intuitively use these operators.
    def nlchainr1[T](p: => Parser[T], q: => Parser[(T, T) => T]): Parser[T] = {
     def myFold[T](list: List[((T,T)=>T) ~ T]): (T => T) = {
       list match {
-        case f ~ a :: xs => if(xs.isEmpty) f(_,a) else f(_,myFold(xs)(a))
+        case List(f ~ a) => f(_,a)
+        case f ~ a :: xs => f(_,myFold(xs)(a))
       }
     }
     
