@@ -19,8 +19,8 @@ def tallyVotes(votes) =
   def tallyVote((mv, mt), v) =
     table(v) >t>
     t := default(t?, 0) + 1 >>
-    (if t? :> mt then (v, mt+1)
-    else (mv, mt))
+    if t? :> mt then (v, mt+1)
+    else (mv, mt)
   foldl(tallyVote, (0, 0), votes)
   
 -- decision algorithm for a good process
