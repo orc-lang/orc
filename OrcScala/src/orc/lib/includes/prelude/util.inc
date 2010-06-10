@@ -51,7 +51,7 @@ A limited number of threads are reserved in a pool for use
 by this site, so there is a limit to the number of blocking,
 uncooperative sites that can be called simultaneously.
 --}
-site Thread = "orc.lib.util.ThreadSite"
+--FIXME:site Thread = "orc.lib.util.ThreadSite"
 
 {--
 @site Prompt(String) :: String
@@ -87,7 +87,7 @@ signals(5)]]></programlisting>
 @implementation
 --}
 --FIXME:def signals(Integer) :: Signal
-def signals(n) = if n :> 0 then (signal | signals(n-1))
+def signals(n) = if n :> 0 then (signal | signals(n-1)) else stop
 
 {--
 @def for(Integer, Integer) :: Integer
@@ -138,7 +138,7 @@ a.get(0) | a.get(1) | a.get(2)]]></programlisting>
 --FIXME:  :: Array[A]
 def fillArray(a, f) =
   val n = a.length()
-  def fill(Integer, lambda(Integer) :: A) :: Bot
+--FIXME:  def fill(Integer, lambda(Integer) :: A) :: Bot
   def fill(i, f) =
     if i = n then stop
     else ( a.set(i, f(i)) >> stop
@@ -155,15 +155,15 @@ halts.
 @implementation
 --}
 --FIXME:def takePubs[A](Integer, lambda () :: A) :: A
-def takePubs(n, f) =
-  val out = Buffer[A]()
-  val c = Counter(n)
-  let(
-    f() >x>
-    if(c.dec() >> out.put(x) >> false
-       ; out.closenb() >> true)
-  ) >> stop | repeat(out.get)
-  
+--FIXME:def takePubs(n, f) =
+--FIXME:  val out = Buffer[A]()
+--FIXME:  val c = Counter(n)
+--FIXME:  let(
+--FIXME:    f() >x>
+--FIXME:    ift(c.dec() >> out.put(x) >> false
+--FIXME:       ; out.closenb() >> true)
+--FIXME:  ) >> stop | repeat(out.get)
+
 {--
 @def withLock[A](Semaphore, lambda () :: A) :: A
 Acquire the semaphore and run a thunk which is expected to publish
@@ -173,14 +173,14 @@ thunk and releases the semaphore.
 @implementation
 --}
 --FIXME:def withLock[A](Semaphore, lambda () :: A) :: A
-def withLock(s, f) =
-  s.acquire() >> (
-    let(f()) >x>
-    s.release() >>
-    x
-    ; s.release() >> stop
-  )
- 
+--FIXME:def withLock(s, f) =
+--FIXME:  s.acquire() >> (
+--FIXME:    let(f()) >x>
+--FIXME:    s.release() >>
+--FIXME:    x
+--FIXME:    ; s.release() >> stop
+--FIXME:  )
+
 {--
 @def synchronized[A](Semaphore, lambda () :: A)() :: A
 Given a lock and thunk, return a new thunk which is serialized
@@ -189,4 +189,4 @@ on the lock. Similar to Java's synchronized keyword.
 @implementation
 --}
 --FIXME:def synchronized[A](Semaphore, lambda () :: A)() :: A
-def synchronized(s,f)() = withLock(s, f)
+--FIXME:def synchronized(s,f)() = withLock(s, f)
