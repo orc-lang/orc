@@ -12,10 +12,10 @@
 --
 
 include "prelude/core.inc"
---FIXME:include "prelude/state.inc"
+include "prelude/state.inc"
 --FIXME:include "prelude/time.inc"
---FIXME:include "prelude/idioms.inc"
---FIXME:include "prelude/list.inc"
+include "prelude/idioms.inc"
+include "prelude/list.inc"
 include "prelude/text.inc"
 --FIXME:include "prelude/util.inc"
 --FIXME:include "prelude/reflect.inc"

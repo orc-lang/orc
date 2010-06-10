@@ -86,7 +86,7 @@ signals(5)]]></programlisting>
 
 @implementation
 --}
-def signals(Integer) :: Signal
+--FIXME:def signals(Integer) :: Signal
 def signals(n) = if n :> 0 then (signal | signals(n-1))
 
 {--
@@ -100,7 +100,7 @@ for(1,6)]]></programlisting>
 
 @implementation
 --}
-def for(Integer, Integer) :: Integer
+--FIXME:def for(Integer, Integer) :: Integer
 def for(low, high) =
   if low >= high then stop
   else ( low | for(low+1, high) )
@@ -117,7 +117,7 @@ upto(5)]]></programlisting>
 
 @implementation
 --}
-def upto(Integer) :: Integer
+--FIXME:def upto(Integer) :: Integer
 def upto(high) = for(0, high)
 
 {--
@@ -134,8 +134,8 @@ a.get(0) | a.get(1) | a.get(2)]]></programlisting>
 
 @implementation
 --}
-def fillArray[A](Array[A], lambda (Integer) :: A)
-  :: Array[A]
+--FIXME:def fillArray[A](Array[A], lambda (Integer) :: A)
+--FIXME:  :: Array[A]
 def fillArray(a, f) =
   val n = a.length()
   def fill(Integer, lambda(Integer) :: A) :: Bot
@@ -154,7 +154,7 @@ halts.
 
 @implementation
 --}
-def takePubs[A](Integer, lambda () :: A) :: A
+--FIXME:def takePubs[A](Integer, lambda () :: A) :: A
 def takePubs(n, f) =
   val out = Buffer[A]()
   val c = Counter(n)
@@ -172,7 +172,7 @@ thunk and releases the semaphore.
 
 @implementation
 --}
-def withLock[A](Semaphore, lambda () :: A) :: A
+--FIXME:def withLock[A](Semaphore, lambda () :: A) :: A
 def withLock(s, f) =
   s.acquire() >> (
     let(f()) >x>
@@ -188,5 +188,5 @@ on the lock. Similar to Java's synchronized keyword.
 
 @implementation
 --}
-def synchronized[A](Semaphore, lambda () :: A)() :: A
+--FIXME:def synchronized[A](Semaphore, lambda () :: A)() :: A
 def synchronized(s,f)() = withLock(s, f)

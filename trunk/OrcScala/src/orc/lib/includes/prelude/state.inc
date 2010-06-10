@@ -37,8 +37,8 @@ This site may also be used in a pattern.
 
 --}
 type Option = "orc.values.sites.compatibility.type.structured.OptionType"
-site Some = "orc.runtime.sites.core.Some"
-site None = "orc.runtime.sites.core.None"
+site Some = "orc.lib.builtin.SomeConstructor"
+site None = "orc.lib.builtin.NoneConstructor"
 
 {--
 @site Semaphore(Integer) :: Semaphore
@@ -77,8 +77,8 @@ Otherwise, block until some call to <code>acquire</code> blocks.
 If any calls to <code>acquire</code> are blocked, return a signal.
 Otherwise, halt.
 --}
-site Semaphore = "orc.lib.state.Semaphore"
-type Semaphore = "orc.lib.state.types.SemaphoreType"
+--FIXME:site Semaphore = "orc.lib.state.Semaphore"
+--FIXME:type Semaphore = "orc.lib.state.types.SemaphoreType"
 
 {--
 @site Buffer[A]() :: Buffer[A]
@@ -134,8 +134,8 @@ Get all of the items currently in the buffer, emptying the buffer and returning
 a list of the items in the order they were added. If there are no items in the
 buffer, return an empty list.
 --}
-site Buffer = "orc.lib.state.Buffer"
-type Buffer = "orc.lib.state.types.BufferType"
+--FIXME:site Buffer = "orc.lib.state.Buffer"
+--FIXME:type Buffer = "orc.lib.state.types.BufferType"
 
 {--
 @site BoundedBuffer[A](Integer) :: BoundedBuffer[A]
@@ -212,8 +212,8 @@ Get all of the items currently in the buffer or waiting to be added, emptying
 the buffer and returning a list of the items in the order they were added. If
 there are no items in the buffer or waiting to be added, return an empty list.
 --}
-site BoundedBuffer = "orc.lib.state.BoundedBuffer"
-type BoundedBuffer = "orc.lib.state.types.BoundedBufferType"
+--FIXME:site BoundedBuffer = "orc.lib.state.BoundedBuffer"
+--FIXME:type BoundedBuffer = "orc.lib.state.types.BoundedBufferType"
 
 {--
 @site SyncChannel[A]() :: SyncChannel[A]
@@ -235,8 +235,8 @@ Receive an item over the channel. If no sender is available, block until one bec
 @method SyncChannel[A].put(A) :: Signal
 Send an item over the channel. If no receiver is available, block until one becomes available.
 --}
-site SyncChannel = "orc.lib.state.SyncChannel"
-type SyncChannel = "orc.lib.state.types.SyncChannelType"
+--FIXME:site SyncChannel = "orc.lib.state.SyncChannel"
+--FIXME:type SyncChannel = "orc.lib.state.types.SyncChannelType"
 
 {--
 @site Cell[A]() :: Cell[A]
@@ -258,8 +258,8 @@ Read a value from the cell. If the cell does not yet have a value, halt.
 @method Cell[A].write() :: Signal
 Write a value to the cell. If the cell already has a value, halt.
 --}
-site Cell = "orc.lib.state.Cell"
-type Cell = "orc.lib.state.types.CellType"
+--FIXME:site Cell = "orc.lib.state.Cell"
+--FIXME:type Cell = "orc.lib.state.types.CellType"
 
 {--
 @site Ref[A]() :: Ref[A]
@@ -299,7 +299,7 @@ Get the value held by a reference.
 
 @implementation
 --}
-def (?)[A](Ref[A]) :: A
+--FIXME:def (?)[A](Ref[A]) :: A
 def (?)(r) = r.read()
 
 {--
@@ -309,7 +309,7 @@ Set the value held by a reference.
 
 @implementation
 --}
-def (:=)[A](Ref[A], A) :: Signal
+--FIXME:def (:=)[A](Ref[A], A) :: Signal
 def (:=)(r,v) = r.write(v)
 
 {--
@@ -318,7 +318,7 @@ Swap the values in two references.
 
 @implementation
 --}
-def swap[A](Ref[A], Ref[A]) :: Signal
+--FIXME:def swap[A](Ref[A], Ref[A]) :: Signal
 def swap(r,s) = (r?,s?) >(rval,sval)> (r := sval, s := rval) >> signal
 
 
@@ -415,14 +415,14 @@ a(3)]]></programlisting>
 
 @implementation
 --}
-def IArray[A](Integer, lambda (Integer) :: A)(Integer) :: A
-def IArray(n, f) =
-  val a = Array[A](n)
-  def fill(Integer, lambda (Integer) :: A) :: Signal
-  def fill(i, f) =
-    if i <: 0 then signal
-    else (a.set(i, f(i)), fill(i-1, f)) >> signal
-  fill(n-1, f) >> a.get
+--FIXME:def IArray[A](Integer, lambda (Integer) :: A)(Integer) :: A
+--FIXME:def IArray(n, f) =
+--FIXME:  val a = Array[A](n)
+--FIXME:  def fill(Integer, lambda (Integer) :: A) :: Signal
+--FIXME:  def fill(i, f) =
+--FIXME:    if i <: 0 then signal
+--FIXME:    else (a.set(i, f(i)), fill(i-1, f)) >> signal
+--FIXME:  fill(n-1, f) >> a.get
 
 
 {--
@@ -453,7 +453,7 @@ Remove all values from the set.
 @method Set[A].size() :: Integer
 Return the number of unique values currently contained in the set.
 --}
-class Set = "orc.lib.state.Set"
+--FIXME:class Set = "orc.lib.state.Set"
 
 {--
 @site Map[K,V]() :: Map[K,V]
@@ -490,7 +490,7 @@ Remove all keys from the map.
 @method Map[K,V].size() :: Integer
 Return the number of unique keys currently contained in the map.
 --}
-class Map = "orc.lib.state.Map"
+--FIXME:class Map = "orc.lib.state.Map"
 
 {--
 @site Counter(Integer) :: Counter
@@ -519,8 +519,8 @@ Example:
 val c = Counter(5)
 repeat(c.dec)]]></programlisting>
 --}
-site Counter = "orc.lib.state.Counter"
-type Counter = "orc.lib.state.types.CounterType"
+--FIXME:site Counter = "orc.lib.state.Counter"
+--FIXME:type Counter = "orc.lib.state.types.CounterType"
 
 {--
 @site Dictionary() :: Dictionary
@@ -571,7 +571,7 @@ For readers familiar with the C language, this is the same reason you must
 write <code language="c">s->field</code> instead of <code>s.field</code> when
 <code>s</code> is a pointer to a struct.
 --}
-site Dictionary = orc.lib.state.Dictionary
+--FIXME:site Dictionary = orc.lib.state.Dictionary
 
 {--
 @site Record(String, A, String, B, ...) :: Record[A, B, ...]
@@ -589,7 +589,7 @@ val r = Record(
   "two", 2)
 r.one]]></programlisting>
 --}
-site Record = orc.lib.state.Record
+--FIXME:site Record = orc.lib.state.Record
 
 {--
 @def fst[A,B]((A,B)) :: A
@@ -597,7 +597,7 @@ Return the first element of a pair.
 
 @implementation
 --}
-def fst[A,B]((A,B)) :: A
+--FIXME:def fst[A,B]((A,B)) :: A
 def fst((x,_)) = x
 
 {--
@@ -606,7 +606,7 @@ Return the second element of a pair.
 
 @implementation
 --}
-def snd[A,B]((A,B)) :: B
+--FIXME:def snd[A,B]((A,B)) :: B
 def snd((_,y)) = y
 
 {--
