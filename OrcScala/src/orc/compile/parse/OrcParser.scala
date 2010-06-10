@@ -23,6 +23,8 @@ import orc.AST
 import orc.OrcOptions
 import orc.compile.ext._
 
+import scala.compat.Platform.currentTime
+
 /**
  * Need one OrcParser instance for every parse.
  * (Limitation of scala.util.parsing.combinator.Parsers -- current parsing state kept in fields.)
@@ -55,28 +57,43 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
 
   def parseTypeVariable: Parser[String] = ident
 
+  
+  def parseBaseExpressionTail: Parser[Option[List[Expression]]] = (
+        ")" ^^^ None
+      | wrapNewLines(",") ~> CommaSeparated(parseExpression) <~ ")" ^^ {Some(_)} 
+  )
+  
   def parseBaseExpression = (
       parseValue -> Constant
       | ident -> Variable
       | "stop" -> Stop
       | ("if" ~~> parseExpression)
-      ~~ ("then" ~~> parseExpression)
-      ~~ ("else" ~~> parseExpression)
-      -> Conditional
-      | "(" ~~> parseExpression <~~ ")"
-      | ListOf(parseExpression) -> ListExpr
-      | TupleOf(parseExpression) -> TupleExpr
+          ~~ ("then" ~~> parseExpression)
+            ~~ ("else" ~~> parseExpression)
+              -> Conditional
+      | ("[" ~> CommaSeparated(parseExpression) <~ "]") -> ListExpr
+      | ("(" ~> parseExpression ~ parseBaseExpressionTail) 
+          -> 
+          { (_,_) match {
+            case (e, None) => e
+            case (e, Some(es)) => TupleExpr(e::es)
+          }}
   )
-
+          
   def parseArgumentGroup: Parser[ArgumentGroup] = (
-      (ListOf(parseType)?) ~ TupleOf(parseExpression) -> Args
+      (("[" ~> CommaSeparated(parseType) <~ "]")?) ~ ("(" ~> CommaSeparated(parseExpression) <~ ")") -> Args
       | "." ~> ident -> FieldAccess
       | "?" -> Dereference
   )
 
   def parseCallExpression: Parser[Expression] = (
-        parseBaseExpression ~ (parseArgumentGroup+) -> Call
-      | parseBaseExpression
+        parseBaseExpression ~ ((parseArgumentGroup+)?) -> 
+        { (_,_) match
+          {
+            case (e, None) => e
+            case (e, Some(aggies)) => Call(e, aggies)
+          }
+        }
   )
 
   def parseUnaryExpr = (
@@ -208,6 +225,11 @@ people intuitively use these operators.
 -----------------------------------------------------------*/
 
 
+  def parseAscription = (
+        ("::" ~ parseType)
+      | (":!:" ~ parseType)
+  )  
+    
   def parseExpression: Parser[Expression] = (
       "lambda" ~> (ListOf(parseType)?)
       ~ (TupleOf(parsePattern)+)
@@ -215,41 +237,72 @@ people intuitively use these operators.
       ~ ("=" ~~> parseExpression)
       -> Lambda
       | parseDeclaration ~~ parseExpression -> Declare
-      | parseOtherwiseExpression ~ ("::" ~> parseType) -> TypeAscription
-      | parseOtherwiseExpression ~ (":!:" ~> parseType) -> TypeAssertion
-      | parseOtherwiseExpression
+      | parseOtherwiseExpression ~ (parseAscription?) -> 
+        { (_,_) match
+          {
+            case (e, None) => e
+            case (e, Some("::" ~ t)) => TypeAscription(e,t)
+            case (e, Some(":!:" ~ t)) => TypeAssertion(e,t)
+          }
+        }
   )
 
+  def parseBasePatternTail: Parser[Option[List[Pattern]]] = (
+        ")" ^^^ None
+      | wrapNewLines(",") ~> CommaSeparated(parsePattern) <~ ")" ^^ {Some(_)} 
+  )
+  
   def parseBasePattern = (
       parseValue -> ConstantPattern
       | "_" -> Wildcard
       | ident ~ TupleOf(parsePattern) -> CallPattern
       | ident -> VariablePattern
-      | "(" ~> parsePattern <~ ")"
-      | TupleOf(parsePattern) -> TuplePattern
+      | ("(" ~> parsePattern ~ parseBasePatternTail)
+        -> 
+          { (_,_) match {
+            case (p, None) => p
+            case (p, Some(ps)) => TuplePattern(p::ps)
+          }}
       | ListOf(parsePattern) -> ListPattern
       | ("=" <~ ident) -> EqPattern
   )
+    
 
   def parseConsPattern = rep1sep(parseBasePattern, ":") -> (_ reduceRight ConsPattern)
 
   def parseAsPattern = (
-      parseConsPattern ~ ("as" ~> ident) -> AsPattern
-      | parseConsPattern
+      parseConsPattern ~ (("as" ~> ident)?) -> 
+        { (_,_) match
+          {
+            case (p, None) => p
+            case (p, Some(id)) => AsPattern(p,id)
+          }
+        }
   )
 
   def parseTypedPattern = (
-      parseAsPattern ~ ("::" ~> parseType) -> TypedPattern
-      | parseAsPattern
+      parseAsPattern ~ (("::" ~> parseType)?) ->
+        { (_,_) match
+          {
+            case (p, None) => p
+            case (p, Some(t)) => TypedPattern(p,t)
+          }
+        }
   )
 
   def parsePattern: Parser[Pattern] = parseTypedPattern
 
+  
   def parseType: Parser[Type] = (
         "Top" -> Top
       | "Bot" -> Bot
-      | parseTypeVariable ~ ListOf(parseType) -> TypeApplication
-      | parseTypeVariable -> TypeVariable
+      | parseTypeVariable ~ (ListOf(parseType)?) -> 
+        { (_,_) match
+          {
+            case (id, None) => TypeVariable(id)
+            case (id, Some(ts)) => TypeApplication(id, ts)
+          }
+        }
       | TupleOf(parseType) -> TupleType
       | "lambda" ~> ((ListOf(parseTypeVariable)?) ^^ {_.getOrElse(Nil)}) ~ TupleOf(parseType) ~ parseReturnType -> FunctionType
   )
@@ -261,27 +314,24 @@ people intuitively use these operators.
 
   def parseReturnType = "::" ~> parseType
 
+  
+  def parseDefDeclaration: Parser[DefDeclaration] = (
+        ident ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ ("=" ~~> parseExpression)
+      -> Def
+
+      | ("capsule" ~> ident) ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ ("=" ~~> parseExpression)
+      -> DefCapsule
+
+      | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)+) ~ (parseReturnType?)
+      -> { (id, tvs, ts, rt) => DefSig(id, tvs getOrElse Nil, ts, rt) }
+  )
+  
+  
   def parseDeclaration: Parser[Declaration] = (
       ("val" ~> parsePattern) ~ ("=" ~~> parseExpression)
       -> Val
 
-      | ("def" ~> ident) ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ ("=" ~~> parseExpression)
-      -> Def
-
-      | ("def" ~> "capsule" ~> ident) ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ ("=" ~~> parseExpression)
-      -> DefCapsule
-
-      | "def" ~> ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)+) ~ (parseReturnType?)
-      -> { (id, tvs, ts, rt) => DefSig(id, tvs getOrElse Nil, ts, rt) }
-
-      | "type" ~> parseTypeVariable ~ (ListOf(parseTypeVariable)?) ~ ("=" ~> nlrep1sep(parseConstructor, "|"))
-      -> ((x,ys,t) => Datatype(x, ys getOrElse Nil, t))
-
-      | "type" ~> parseTypeVariable ~ (ListOf(parseTypeVariable)?) ~ ("=" ~> parseType)
-      -> ((x,ys,t) => TypeAlias(x, ys getOrElse Nil, t))
-
-      | "type" ~> parseTypeVariable ~ ("=" ~> parseClassname)
-      -> TypeImport
+      | "def" ~> parseDefDeclaration
 
       | "site" ~> ident ~ ("=" ~> parseClassname)
       -> SiteImport
@@ -290,6 +340,15 @@ people intuitively use these operators.
       -> ClassImport
 
       | ("include" ~> stringLit).into(performInclude)
+      
+      | "type" ~> parseTypeVariable ~ (ListOf(parseTypeVariable)?) ~ ("=" ~> nlrep1sep(parseConstructor, "|"))
+      -> ((x,ys,t) => Datatype(x, ys getOrElse Nil, t))
+
+      | "type" ~> parseTypeVariable ~ (ListOf(parseTypeVariable)?) ~ ("=" ~> parseType)
+      -> ((x,ys,t) => TypeAlias(x, ys getOrElse Nil, t))
+
+      | "type" ~> parseTypeVariable ~ ("=" ~> parseClassname)
+      -> TypeImport
 
       | failure("Declaration (val, def, type, etc.) expected")
   )
@@ -312,8 +371,9 @@ people intuitively use these operators.
   def parseProgram: Parser[Expression] = wrapNewLines(parseExpression)
 
   // Add helper combinators for ( ... ) and [ ... ] forms
-  def TupleOf[T](P : => Parser[T]): Parser[List[T]] = "(" ~> wrapNewLines(repsep(P, wrapNewLines(","))) <~ ")"
-  def ListOf[T](P : => Parser[T]): Parser[List[T]] = "[" ~> wrapNewLines(repsep(P, wrapNewLines(","))) <~ "]"
+  def CommaSeparated[T](P : => Parser[T]): Parser[List[T]] = wrapNewLines(repsep(P, wrapNewLines(",")))
+  def TupleOf[T](P : => Parser[T]): Parser[List[T]] = "(" ~> CommaSeparated(P) <~ ")"
+  def ListOf[T](P : => Parser[T]): Parser[List[T]] = "[" ~> CommaSeparated(P) <~ "]"
 
   def wrapNewLines[T](p:Parser[T]): Parser[T] = (lexical.NewLine*) ~> p <~ (lexical.NewLine*)
 
@@ -354,15 +414,21 @@ people intuitively use these operators.
       }
   }
 
-  class LocatingParser[+A <: AST](p: => Parser[A]) extends Parser[A] {
+  class LocatingAndTimingParser[+A <: AST](p: => Parser[A]) extends Parser[A] {
     override def apply(i: Input) = {
       val position = i.pos
+      //val phaseStart = currentTime
       val result: ParseResult[A] = p.apply(i)
+      //val phaseEnd = currentTime
       result map { _.pos = position }
+      //val elapsed = phaseEnd - phaseStart
+      //if (elapsed > 200) {
+      //  Console.err.println("[rule time: "+ position +": "+elapsed+" ms]")
+      //}
       result
     }
   }
-  def markLocation[A <: AST](p: => Parser[A]) = new LocatingParser(p)
+  def markLocation[A <: AST](p: => Parser[A]) = new LocatingAndTimingParser(p)
 
 
 
