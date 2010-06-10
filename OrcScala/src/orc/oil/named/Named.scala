@@ -198,7 +198,7 @@ trait NamedToNameless {
       case left ow right => nameless.Otherwise(toExp(left), toExp(right))
       case DeclareDefs(defs, body) => {
         val defnames = defs map { _.name }
-        val newdefs = defs map { namedToNameless(_, defnames ::: context, typecontext) }
+        val newdefs = defs map { namedToNameless(_, defnames.reverse ::: context, typecontext) }
         val newbody = namedToNameless(body, defnames ::: context, typecontext)
         nameless.DeclareDefs(newdefs, newbody)
       }
@@ -240,7 +240,7 @@ trait NamedToNameless {
   def namedToNameless(defn: Def, context: List[TempVar], typecontext: List[TempTypevar]): nameless.Def = {
     defn -> {
       case Def(_, formals, body, typeformals, argtypes, returntype) => {
-        val newContext = formals ::: context
+        val newContext = formals.reverse ::: context
         val newTypeContext = typeformals ::: typecontext 
         val newbody = namedToNameless(body, newContext, newTypeContext)
         val newArgTypes = argtypes map { namedToNameless(_, newTypeContext) }
