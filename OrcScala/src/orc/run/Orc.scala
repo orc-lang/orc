@@ -386,9 +386,9 @@ abstract class Orc extends OrcExecutionAPI {
                   case e => throw new JavaException(e)
                 })
               }
-              case _ => {
+              case uncallable => {
                 halt
-                throw new UncallableValueException("You can't call a "+target)
+                throw new UncallableValueException("You can't call a " + uncallable)
               }
             })
           } catch {
