@@ -12,10 +12,10 @@
 --
 
 include "prelude/core.inc"
---FIXME:include "prelude/state.inc" -- works; commented to speed up parsing
+include "prelude/state.inc"
 --FIXME:include "prelude/time.inc" -- not implemented yet
---FIXME:include "prelude/idioms.inc" -- works; commented to speed up parsing
---FIXME:include "prelude/list.inc" -- works; commented to speed up parsing
---FIXME:include "prelude/text.inc" -- works; commented to speed up parsing
---FIXME:include "prelude/util.inc" -- works; commented to speed up parsing
---FIXME:include "prelude/reflect.inc" -- not implemented yet
+include "prelude/idioms.inc"
+include "prelude/list.inc"
+include "prelude/text.inc"
+include "prelude/util.inc"
+include "prelude/reflect.inc"
