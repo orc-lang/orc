@@ -2,7 +2,7 @@
 // Interval.java -- Java class Interval
 // Project OrcJava
 //
-// $Id: Interval.java 1502 2010-02-03 06:25:53Z jthywissen $
+// $Id$
 //
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
