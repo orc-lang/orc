@@ -72,7 +72,7 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
             ~~ ("else" ~~> parseExpression)
               -> Conditional
       | ("[" ~> CommaSeparated(parseExpression) <~ "]") -> ListExpr
-      | ("(" ~> parseExpression ~ parseBaseExpressionTail) 
+      | ("(" ~~> parseExpression ~ parseBaseExpressionTail) 
           -> 
           { (_,_) match {
             case (e, None) => e
