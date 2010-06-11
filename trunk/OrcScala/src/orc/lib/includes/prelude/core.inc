@@ -46,16 +46,28 @@ When applied to two or more arguments, return the arguments in a tuple.
 site let = "orc.lib.builtin.Let"
 
 {--
-@site If(Boolean) :: Signal
+@site IfT(Boolean) :: Signal
 Fail silently if the argument is false. Otherwise return a signal.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: "Always publishes"
-  If(false) >> "Never publishes"
-| If(true) >> "Always publishes"]]></programlisting>
+  IfT(false) >> "Never publishes"
+| IfT(true) >> "Always publishes"]]></programlisting>
 --}
 site ift = "orc.lib.builtin.IfT"
+
+{--
+@site IfF(Boolean) :: Signal
+Fail silently if the argument is true. Otherwise return a signal.
+
+Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: "Always publishes"
+  IfF(false) >> "Always publishes"
+| IfF(true) >> "Never publishes"]]></programlisting>
+--}
+site iff = "orc.lib.builtin.IfF"
 
 {--
 @site error(String) :: Bot
