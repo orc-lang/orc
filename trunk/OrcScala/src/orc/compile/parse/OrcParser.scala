@@ -64,13 +64,9 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
   )
   
   def parseBaseExpression = (
-      parseValue -> Constant
+        parseValue -> Constant
       | ident -> Variable
       | "stop" -> Stop
-      | ("if" ~~> parseExpression)
-          ~~ ("then" ~~> parseExpression)
-            ~~ ("else" ~~> parseExpression)
-              -> Conditional
       | ("[" ~> CommaSeparated(parseExpression) <~ "]") -> ListExpr
       | ("(" ~~> parseExpression ~ parseBaseExpressionTail) -?-> 
             { (e: Expression, es: List[Expression]) => TupleExpr(e::es) }
@@ -86,12 +82,21 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
         parseBaseExpression ~ ((parseArgumentGroup+)?) -?-> Call
   )
 
+   def parseConditionalExpression: Parser[Expression] = (
+      ("if" ~~> parseOtherwiseExpression)
+         ~~ ("then" ~~> parseOtherwiseExpression)
+           ~~ ("else" ~~> parseOtherwiseExpression)
+              -> Conditional
+    | 
+      parseCallExpression
+  )
+      
   def parseUnaryExpr = (
     // First see if it's a unary minus for a numeric literal
       "-" ~> numericLit -> { s => Constant(-BigInt(s)) }
     | "-" ~> floatLit -> { s => Constant(-BigDecimal(s)) }
-    | ("-" | "~") ~ parseCallExpression -> PrefixOperator
-    | parseCallExpression
+    | ("-" | "~") ~ parseConditionalExpression -> PrefixOperator
+    | parseConditionalExpression
     )
 
   // TODO: Fix parser ambiguity re: < and >
