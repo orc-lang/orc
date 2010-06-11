@@ -50,8 +50,6 @@ more easily.
 
 -}
 
-
-
 (
 
 val bsent = Ref()
@@ -68,9 +66,9 @@ def searchstart(key) = -- return (p,d,q) where p.d = q and q.val = key
        Start search from q. Return (s,d,t) where s.d = t and t.val = key
     -}
         val (v,l,r) = q.read()
-        ift(key <: v) >> searchloop(q,false,l,key)
-      | ift(key = v) >> (p,d,q)
-      | ift(key :> v) >> searchloop(q,true,r,key)
+        if(key < v) >> searchloop(q,false,l,key)
+      | if(key = v) >> (p,d,q)
+      | if(key > v) >> searchloop(q,true,r,key)
 
   {- Goal for searchstart -}
   val (_,root,_) = tsent.read()
@@ -152,8 +150,6 @@ delete(35)>>
   sort()
 
 ) :!: Signal  {- As currently written, this program cannot pass the typechecker -}
-
-
 
 {-
 OUTPUT:
