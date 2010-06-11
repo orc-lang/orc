@@ -9,7 +9,6 @@ written to the output channel must correspond to the
 order values were received on the input channel.
 --}
 
-{-
 type inType = Number
 type outType = Number
 type siteType = (lambda(inType) :: outType)
@@ -36,8 +35,6 @@ def compute(n)(x) = println("Site " + n) >> x*x
 | ( upto(10) >n> in.put(n) >> stop
     ; in.close() >> stop )
 | repeat(out.get)
-
--}
 
 {-
 OUTPUT:
