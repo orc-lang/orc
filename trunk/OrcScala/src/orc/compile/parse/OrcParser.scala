@@ -72,12 +72,8 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
             ~~ ("else" ~~> parseExpression)
               -> Conditional
       | ("[" ~> CommaSeparated(parseExpression) <~ "]") -> ListExpr
-      | ("(" ~~> parseExpression ~ parseBaseExpressionTail) 
-          -> 
-          { (_,_) match {
-            case (e, None) => e
-            case (e, Some(es)) => TupleExpr(e::es)
-          }}
+      | ("(" ~~> parseExpression ~ parseBaseExpressionTail) -?-> 
+            { (e: Expression, es: List[Expression]) => TupleExpr(e::es) }
   )
           
   def parseArgumentGroup: Parser[ArgumentGroup] = (
@@ -87,13 +83,7 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
   )
 
   def parseCallExpression: Parser[Expression] = (
-        parseBaseExpression ~ ((parseArgumentGroup+)?) -> 
-        { (_,_) match
-          {
-            case (e, None) => e
-            case (e, Some(aggies)) => Call(e, aggies)
-          }
-        }
+        parseBaseExpression ~ ((parseArgumentGroup+)?) -?-> Call
   )
 
   def parseUnaryExpr = (
@@ -237,12 +227,11 @@ people intuitively use these operators.
       ~ ("=" ~~> parseExpression)
       -> Lambda
       | parseDeclaration ~~ parseExpression -> Declare
-      | parseOtherwiseExpression ~ (parseAscription?) -> 
+      | parseOtherwiseExpression ~ (parseAscription?) -?->
         { (_,_) match
           {
-            case (e, None) => e
-            case (e, Some("::" ~ t)) => TypeAscription(e,t)
-            case (e, Some(":!:" ~ t)) => TypeAssertion(e,t)
+            case (e, "::" ~ t) => TypeAscription(e,t)
+            case (e, ":!:" ~ t) => TypeAssertion(e,t)
           }
         }
   )
@@ -257,12 +246,8 @@ people intuitively use these operators.
       | "_" -> Wildcard
       | ident ~ TupleOf(parsePattern) -> CallPattern
       | ident -> VariablePattern
-      | ("(" ~> parsePattern ~ parseBasePatternTail)
-        -> 
-          { (_,_) match {
-            case (p, None) => p
-            case (p, Some(ps)) => TuplePattern(p::ps)
-          }}
+      | ("(" ~> parsePattern ~ parseBasePatternTail) -?-> 
+          { (p: Pattern, ps: List[Pattern]) => TuplePattern(p::ps) }
       | ListOf(parsePattern) -> ListPattern
       | ("=" <~ ident) -> EqPattern
   )
@@ -271,23 +256,11 @@ people intuitively use these operators.
   def parseConsPattern = rep1sep(parseBasePattern, ":") -> (_ reduceRight ConsPattern)
 
   def parseAsPattern = (
-      parseConsPattern ~ (("as" ~> ident)?) -> 
-        { (_,_) match
-          {
-            case (p, None) => p
-            case (p, Some(id)) => AsPattern(p,id)
-          }
-        }
+      parseConsPattern ~ (("as" ~> ident)?) -?-> AsPattern
   )
 
   def parseTypedPattern = (
-      parseAsPattern ~ (("::" ~> parseType)?) ->
-        { (_,_) match
-          {
-            case (p, None) => p
-            case (p, Some(t)) => TypedPattern(p,t)
-          }
-        }
+      parseAsPattern ~ (("::" ~> parseType)?) -?-> TypedPattern
   )
 
   def parsePattern: Parser[Pattern] = parseTypedPattern
@@ -417,14 +390,8 @@ people intuitively use these operators.
   class LocatingAndTimingParser[+A <: AST](p: => Parser[A]) extends Parser[A] {
     override def apply(i: Input) = {
       val position = i.pos
-      //val phaseStart = currentTime
       val result: ParseResult[A] = p.apply(i)
-      //val phaseEnd = currentTime
       result map { _.pos = position }
-      //val elapsed = phaseEnd - phaseStart
-      //if (elapsed > 200) {
-      //  Console.err.println("[rule time: "+ position +": "+elapsed+" ms]")
-      //}
       result
     }
   }
@@ -458,7 +425,16 @@ people intuitively use these operators.
     def ->[X <: AST](f: (A,B,C,D) => X): Parser[X] =
       markLocation(parser ^^ { case x ~ y ~ z ~ w => f(x,y,z,w) })
   }
+  
+  class Maps1Optional2[A <: AST,B](parser: Parser[A ~ Option[B]]) {
+    def -?->(f: (A,B) => A): Parser[A] =
+      markLocation(parser ^^ { 
+        case x ~ None => x
+        case x ~ Some(y) => f(x,y)
+      })
+  }
 
+  
   // Add interleaving combinator
   class InterleavingParser[A <: AST](parser: Parser[A]) {
     def interleaveLeft[B](interparser: Parser[B]) =
@@ -508,6 +484,9 @@ people intuitively use these operators.
   implicit def CreateMaps2Parser[A,B](parser: Parser[A ~ B]): Maps2[A,B] =	new Maps2(parser)
   implicit def CreateMaps3Parser[A,B,C](parser: Parser[A ~ B ~ C]): Maps3[A,B,C] = new Maps3(parser)
   implicit def CreateMaps4Parser[A,B,C,D](parser: Parser[A ~ B ~ C ~ D]): Maps4[A,B,C,D] = new Maps4(parser)
+  
+  implicit def CreateMaps1Optional2Parser[A <: AST,B](parser: Parser[A ~ Option[B]]): Maps1Optional2[A,B] = new Maps1Optional2(parser)
+  
   implicit def CreateInterleavingParser[A <: AST](parser: Parser[A]): InterleavingParser[A] = new InterleavingParser(parser)
   implicit def CreateStretchingParser[A](parser: Parser[A]): StretchingParser[A] = new StretchingParser(parser)
   implicit def CreateStretchingParser(s : String): StretchingParser[String] = new StretchingParser(keyword(s))
