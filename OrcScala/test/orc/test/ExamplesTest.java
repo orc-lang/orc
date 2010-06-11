@@ -84,6 +84,7 @@ public class ExamplesTest {
 			suite.addTest(new TestCase(file.toString()) {
 				@Override
 				public void runTest() throws IOException, CmdLineException, CompilationException, InterruptedException, Throwable, TimeoutException {
+				    System.out.println("\n==== Starting "+file+" ====");
 					runOrcProgram(file, expecteds);
 				}
 			});
@@ -102,7 +103,7 @@ public class ExamplesTest {
   
         public void debugLevel_$eq(int newVal) { throw new UnsupportedOperationException(); }
   
-        public boolean shortErrors() { return false; }
+        public boolean shortErrors() { return true; }
   
         public void shortErrors_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
   
@@ -158,7 +159,6 @@ public class ExamplesTest {
           private final CompileLogger compileLoggerRef = new ExceptionCompileLogger();
 	      @Override public CompileLogger compileLogger() { return compileLoggerRef; }
 	    };
-	  
 		final orc.oil.nameless.Expression expr = compiler.apply(new FileReader(file), examplesOptions);
 
 		if (expr == null) {

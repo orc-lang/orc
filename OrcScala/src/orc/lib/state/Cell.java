@@ -1,8 +1,8 @@
 //
-// Ref.java -- Java class Ref
+// Cell.java -- Java class Cell
 // Project OrcJava
 //
-// $Id$
+// $Id: Cell.java 1502 2010-02-03 06:25:53Z jthywissen $
 //
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
@@ -18,7 +18,7 @@ import java.util.Queue;
 
 import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.TokenException;
-//import orc.lib.state.types.RefType;
+//import orc.lib.state.types.CellType;
 import orc.values.sites.compatibility.Args;
 import orc.TokenAPI;
 import orc.values.sites.compatibility.DotSite;
@@ -27,66 +27,47 @@ import orc.values.sites.compatibility.SiteAdaptor;
 import orc.values.sites.compatibility.type.Type;
 import orc.values.sites.compatibility.type.TypeVariable;
 import orc.values.sites.compatibility.type.structured.ArrowType;
-import orc.values.sites.compatibility.type.structured.MultiType;
 
 /**
+ * Write-once cell. 
+ * Read operations block while the cell is empty.
+ * Write operatons fail once the cell is full.
+ *
  * @author dkitchin
- *
- * Rewritable mutable reference.
- * The reference can be initialized with a value, or left initially empty. 
- * Read operations block if the reference is empty.
- * Write operatons always succeed.
- *
  */
-public class Ref extends EvalSite {
+public class Cell extends EvalSite {
 
 	/* (non-Javadoc)
-	 * @see orc.values.sites.compatibility.EvalSite#evaluate(orc.values.sites.compatibility.Args)
+	 * @see orc.values.sites.compatibility.SiteAdaptor#callSite(java.lang.Object[], orc.TokenAPI, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
 	 */
 	@Override
 	public Object evaluate(final Args args) {
-
-		// If we were passed arguments, condense those arguments and store them in the ref as an initial value
-		if (args.size() > 0) {
-			return new RefInstance(args.condense());
-		}
-		// Otherwise, create an initially empty reference
-		else {
-			return new RefInstance();
-		}
+		return new CellInstance();
 	}
 
 	@Override
 	public Type type() throws TypeException {
 		final Type X = new TypeVariable(0);
-		final Type RefOfX = null;//FIXME:new RefType().instance(X);
-		return new MultiType(new ArrowType(RefOfX, 1), new ArrowType(X, RefOfX, 1));
+		final Type CellOfX = null;//FIXME:new CellType().instance(X);
+		return new ArrowType(CellOfX, 1);
 	}
 
-	public static class RefInstance extends DotSite {
+	protected class CellInstance extends DotSite {
 
 		protected Queue<TokenAPI> readQueue;
 		Object contents;
 
-		public RefInstance() {
+		CellInstance() {
 			this.contents = null;
 
-			/* Note that the readQueue also signals whether the reference has been assigned.
-			 * If it is non-null (as it is initially), the reference is unassigned.
-			 * If it is null, the reference has been assigned.
+			/* Note that the readQueue also signals whether the cell contents have been assigned.
+			 * If it is non-null (as it is initially), the cell is empty.
+			 * If it is null, the cell has been written.
 			 * 
-			 * This allows the reference to contain a null value if needed, and it also
-			 * frees the memory associated with the read queue once the reference has been assigned.
+			 * This allows the cell to contain a null value if needed, and it also
+			 * frees the memory associated with the read queue once the cell has been assigned.
 			 */
 			this.readQueue = new LinkedList<TokenAPI>();
-		}
-
-		/* Create the reference with an initial value already assigned.
-		 * In this case, we don't need a reader queue.
-		 */
-		public RefInstance(final Object initial) {
-			this.contents = initial;
-			this.readQueue = null;
 		}
 
 		@Override
@@ -109,14 +90,14 @@ public class Ref extends EvalSite {
 			@Override
 			public void callSite(final Args args, final TokenAPI reader) {
 
-				/* If the read queue is not null, the ref has not been set.
+				/* If the read queue is not null, the cell has not been set.
 				 * Add this caller to the read queue.
 				 */
 				if (readQueue != null) {
-					readQueue.add(reader);
 					//FIXME:reader.setQuiescent();
+					readQueue.add(reader);
 				}
-				/* Otherwise, return the contents of the ref */
+				/* Otherwise, return the contents of the cell */
 				else {
 					reader.publish(object2value(contents));
 				}
@@ -129,11 +110,10 @@ public class Ref extends EvalSite {
 
 				final Object val = args.getArg(0);
 
-				/* Set the contents of the ref */
-				contents = val;
-
-				/* If the read queue is not null, the ref has not yet been set. */
+				/* If the read queue is not null, the cell has not yet been set. */
 				if (readQueue != null) {
+					/* Set the contents of the cell */
+					contents = val;
 
 					/* Wake up all queued readers and report the written value to them. */
 					for (final TokenAPI reader : readQueue) {
@@ -142,21 +122,21 @@ public class Ref extends EvalSite {
 					}
 
 					/* Null out the read queue. 
-					 * This indicates that the ref has been written.
+					 * This indicates that the cell has been written.
 					 * It also allowed the associated memory to be reclaimed.
 					 */
 					readQueue = null;
+
+					/* A successful write publishes a signal. */
+					writer.publish(signal());
+				} else {
+					/* A failed write kills the writer. */
+					writer.halt();
 				}
 
-				/* A write always succeeds and publishes a signal. */
-				writer.publish(object2value(signal()));
 			}
 		}
 
-		@Override
-		public String toString() {
-			return "Ref(" + contents + ")";
-		}
 	}
 
 }
