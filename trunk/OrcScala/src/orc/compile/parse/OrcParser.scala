@@ -68,7 +68,7 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
       | ident -> Variable
       | "stop" -> Stop
       | ("[" ~> CommaSeparated(parseExpression) <~ "]") -> ListExpr
-      | ("(" ~~> parseExpression ~ parseBaseExpressionTail) -?-> 
+      | ("(" ~~> parseExpression ~~ parseBaseExpressionTail) -?-> 
             { (e: Expression, es: List[Expression]) => TupleExpr(e::es) }
   )
           
@@ -108,15 +108,11 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
   def parseMultExpr = nlchainl1(parseExpnExpr, ("*" | "/" | "%") ^^
     { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
 
-  def parseAdditionalExpr: Parser[Expression] = (
-      nlchainl1(parseMultExpr, ("-" | "+" | ":") ^^
+  def parseAdditionalExpr: Parser[Expression] =
+     chainl1(parseMultExpr, (wrapRight("-") | wrapNewLines("+") | wrapNewLines(":")) ^^
         { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
-//    | "~" ~ parseAdditionalExpr ^^ { case op ~ expr => PrefixOperator(op, expr)}
-//    | chainl1(parseMultExpr, ("-") ^^
-//        { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
         /* Disallow newline breaks for binary subtract,
          * to resolve ambiguity with unary minus.*/
-  )
 
   def parseRelationalExpr = nlchainl1(parseAdditionalExpr, ("<:" | ":>" | "<=" | ">=" | "=" | "/=") ^^
         { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
@@ -232,7 +228,7 @@ people intuitively use these operators.
       ~ ("=" ~~> parseExpression)
       -> Lambda
       | parseDeclaration ~~ parseExpression -> Declare
-      | parseOtherwiseExpression ~ (parseAscription?) -?->
+      | parseOtherwiseExpression ~~ (parseAscription?) -?->
         { (_,_) match
           {
             case (e, "::" ~ t) => TypeAscription(e,t)
@@ -353,7 +349,7 @@ people intuitively use these operators.
   def TupleOf[T](P : => Parser[T]): Parser[List[T]] = "(" ~> CommaSeparated(P) <~ ")"
   def ListOf[T](P : => Parser[T]): Parser[List[T]] = "[" ~> CommaSeparated(P) <~ "]"
 
-  def wrapNewLines[T](p:Parser[T]): Parser[T] = (lexical.NewLine*) ~> p <~ (lexical.NewLine*)
+  
 
   def parseConstantListTuple: Parser[Expression] = (
       "-" ~> numericLit -> { s => Constant(-BigInt(s)) }
@@ -457,9 +453,13 @@ people intuitively use these operators.
         } : Parser[A]
 
   }
-
+  
+  def wrapLeft[T](parser: Parser[T]): Parser[T] = (lexical.NewLine*) ~> parser
+  def wrapRight[T](parser: Parser[T]): Parser[T] = parser <~ (lexical.NewLine*)
+  def wrapNewLines[T](parser: Parser[T]) = wrapRight(wrapLeft(parser))
+  
   def nlchainl1[T](p: => Parser[T], q: => Parser[(T, T) => T]): Parser[T] =
-    p ~~ rep(q ~~ p) ^^ {
+    p ~ rep(wrapNewLines(q) ~~ p) ^^ {
       case x ~ xs => xs.foldLeft(x){(_, _) match {case (a, f ~ b) => f(a, b)}}
   }
 
@@ -471,11 +471,11 @@ people intuitively use these operators.
       }
     }
     
-    p ~~ rep(q ~~ p) ^^ {case x ~ xs => if (xs.isEmpty) x else myFold(xs)(x)}
+    p ~ rep(wrapNewLines(q) ~~ p) ^^ {case x ~ xs => if (xs.isEmpty) x else myFold(xs)(x)}
   }
    
   def nlrep1sep[T](p : => Parser[T], q : => Parser[Any]): Parser[List[T]] = 
-    p ~~ rep(q ~~> p) ^^ {case x~y => x::y}
+    p ~ rep(wrapNewLines(q) ~~> p) ^^ {case x~y => x::y}
 
   class StretchingParser[+T](parser: Parser[T]) {
     def ~~[U](otherParser : => Parser[U]): Parser[T ~ U] = (parser <~ (lexical.NewLine*)) ~ otherParser
