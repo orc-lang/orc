@@ -2,7 +2,7 @@
 // Buffer.java -- Java class Buffer
 // Project OrcJava
 //
-// $Id: Buffer.java 1502 2010-02-03 06:25:53Z jthywissen $
+// $Id$
 //
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //

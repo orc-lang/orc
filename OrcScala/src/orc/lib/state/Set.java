@@ -2,7 +2,7 @@
 // Set.java -- Java class Set
 // Project OrcJava
 //
-// $Id: Set.java 1505 2010-02-03 22:18:47Z dkitchin $
+// $Id$
 //
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
