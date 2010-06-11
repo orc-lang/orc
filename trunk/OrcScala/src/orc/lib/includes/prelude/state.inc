@@ -204,7 +204,7 @@ Remove all values from the set.
 @method Set[A].size() :: Integer
 Return the number of unique values currently contained in the set.
 --}
---FIXME:class Set = "orc.lib.state.Set"
+class Set = "orc.lib.state.Set"
 
 {--
 @site Map[K,V]() :: Map[K,V]
@@ -241,7 +241,7 @@ Remove all keys from the map.
 @method Map[K,V].size() :: Integer
 Return the number of unique keys currently contained in the map.
 --}
---FIXME:class Map = "orc.lib.state.Map"
+class Map = "orc.lib.state.Map"
 
 {--
 @site Counter(Integer) :: Counter
@@ -270,7 +270,7 @@ Example:
 val c = Counter(5)
 repeat(c.dec)]]></programlisting>
 --}
---FIXME:site Counter = "orc.lib.state.Counter"
+site Counter = "orc.lib.state.Counter"
 --FIXME:type Counter = "orc.lib.state.types.CounterType"
 
 {--
@@ -322,7 +322,7 @@ For readers familiar with the C language, this is the same reason you must
 write <code language="c">s->field</code> instead of <code>s.field</code> when
 <code>s</code> is a pointer to a struct.
 --}
---FIXME:site Dictionary = orc.lib.state.Dictionary
+site Dictionary = orc.lib.state.Dictionary
 
 {--
 @site Record(String, A, String, B, ...) :: Record[A, B, ...]
@@ -340,7 +340,7 @@ val r = Record(
   "two", 2)
 r.one]]></programlisting>
 --}
---FIXME:site Record = orc.lib.state.Record
+site Record = orc.lib.state.Record
 
 {--
 @def fst[A,B]((A,B)) :: A
