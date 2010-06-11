@@ -51,7 +51,6 @@ object Experiment {
     val reader = OrcReader(new java.io.FileReader(ExperimentOptions.filename), ExperimentOptions.filename, compiler.openInclude(_, _, ExperimentOptions))
     val compiledOil = compiler(reader, ExperimentOptions)
     if (compiledOil != null) {
-      Console.err.println("Compilation result: \n" + compiledOil + "\n")
       orc.run(compiledOil)
     }
     else {

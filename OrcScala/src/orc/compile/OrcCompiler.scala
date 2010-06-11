@@ -64,6 +64,14 @@ trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
       b
     }
   }
+  def printOut: CompilerPhase[O, A, B] = new CompilerPhase[O, A, B] { 
+    val phaseName = self.phaseName
+    override def apply(o: O) = { a: A =>
+      val b = self.apply(o)(a)
+      Console.err.println(phaseName+" result = "+b.toString())
+      b
+    }
+  }
 }
 
 /**
@@ -123,7 +131,7 @@ class OrcCompiler extends OrcCompilerAPI with CompilerEnvironmentIfc {
     override def apply(options: OrcOptions) = { ast => ast.withoutNames }
   }
 
-  val phases = parse.timePhase >>> translate.timePhase >>> typeCheck.timePhase >>> refineNamedOil.timePhase >>> deBruijn.timePhase
+  val phases = parse.timePhase.printOut >>> translate.timePhase.printOut >>> typeCheck.timePhase >>> refineNamedOil.timePhase >>> deBruijn.timePhase.printOut
 
   def apply(source: Reader[Char], options: OrcOptions): orc.oil.nameless.Expression = {
     compileLogger.beginProcessing(options.filename)
