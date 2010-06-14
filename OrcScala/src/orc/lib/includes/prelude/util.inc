@@ -86,7 +86,7 @@ signals(5)]]></programlisting>
 
 @implementation
 --}
---FIXME:def signals(Integer) :: Signal
+def signals(Integer) :: Signal
 def signals(n) = if n :> 0 then (signal | signals(n-1)) else stop
 
 {--
@@ -100,7 +100,7 @@ for(1,6)]]></programlisting>
 
 @implementation
 --}
---FIXME:def for(Integer, Integer) :: Integer
+def for(Integer, Integer) :: Integer
 def for(low, high) =
   if low >= high then stop
   else ( low | for(low+1, high) )
@@ -117,7 +117,7 @@ upto(5)]]></programlisting>
 
 @implementation
 --}
---FIXME:def upto(Integer) :: Integer
+def upto(Integer) :: Integer
 def upto(high) = for(0, high)
 
 {--
@@ -134,11 +134,11 @@ a.get(0) | a.get(1) | a.get(2)]]></programlisting>
 
 @implementation
 --}
---FIXME:def fillArray[A](Array[A], lambda (Integer) :: A)
---FIXME:  :: Array[A]
+def fillArray[A](Array[A], lambda (Integer) :: A)
+  :: Array[A]
 def fillArray(a, f) =
   val n = a.length()
---FIXME:  def fill(Integer, lambda(Integer) :: A) :: Bot
+  def fill(Integer, lambda(Integer) :: A) :: Bot
   def fill(i, f) =
     if i = n then stop
     else ( a.set(i, f(i)) >> stop
@@ -154,15 +154,15 @@ halts.
 
 @implementation
 --}
---FIXME:def takePubs[A](Integer, lambda () :: A) :: A
---FIXME:def takePubs(n, f) =
---FIXME:  val out = Buffer[A]()
---FIXME:  val c = Counter(n)
---FIXME:  let(
---FIXME:    f() >x>
---FIXME:    ift(c.dec() >> out.put(x) >> false
---FIXME:       ; out.closenb() >> true)
---FIXME:  ) >> stop | repeat(out.get)
+def takePubs[A](Integer, lambda () :: A) :: A
+def takePubs(n, f) =
+  val out = Buffer[A]()
+  val c = Counter(n)
+  let(
+    f() >x>
+    ift(c.dec() >> out.put(x) >> false
+       ; out.closenb() >> true)
+  ) >> stop | repeat(out.get)
 
 {--
 @def withLock[A](Semaphore, lambda () :: A) :: A
@@ -172,14 +172,14 @@ thunk and releases the semaphore.
 
 @implementation
 --}
---FIXME:def withLock[A](Semaphore, lambda () :: A) :: A
---FIXME:def withLock(s, f) =
---FIXME:  s.acquire() >> (
---FIXME:    let(f()) >x>
---FIXME:    s.release() >>
---FIXME:    x
---FIXME:    ; s.release() >> stop
---FIXME:  )
+def withLock[A](Semaphore, lambda () :: A) :: A
+def withLock(s, f) =
+  s.acquire() >> (
+    let(f()) >x>
+    s.release() >>
+    x
+    ; s.release() >> stop
+  )
 
 {--
 @def synchronized[A](Semaphore, lambda () :: A)() :: A
@@ -188,5 +188,5 @@ on the lock. Similar to Java's synchronized keyword.
 
 @implementation
 --}
---FIXME:def synchronized[A](Semaphore, lambda () :: A)() :: A
---FIXME:def synchronized(s,f)() = withLock(s, f)
+def synchronized[A](Semaphore, lambda () :: A)() :: A
+def synchronized(s,f)() = withLock(s, f)

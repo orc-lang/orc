@@ -29,7 +29,7 @@ Curry a function of two arguments.
 
 @implementation
 --}
---FIXME:def curry[A,B,C](lambda (A,B) :: C)(A)(B) :: C
+def curry[A,B,C](lambda (A,B) :: C)(A)(B) :: C
 def curry(f)(x)(y) = f(x,y)
 
 {--
@@ -38,7 +38,7 @@ Curry a function of three arguments.
 
 @implementation
 --}
---FIXME:def curry3[A,B,C,D](lambda (A,B,C) :: D)(A)(B)(C) :: D
+def curry3[A,B,C,D](lambda (A,B,C) :: D)(A)(B)(C) :: D
 def curry3(f)(x)(y)(z) = f(x,y,z)
 
 {--
@@ -47,7 +47,7 @@ Uncurry a function of two arguments.
 
 @implementation
 --}
---FIXME:def uncurry[A,B,C](lambda (A)(B) :: C)(A, B) :: C
+def uncurry[A,B,C](lambda (A)(B) :: C)(A, B) :: C
 def uncurry(f)(x,y) = f(x)(y)
 
 {--
@@ -56,7 +56,7 @@ Uncurry a function of three arguments.
 
 @implementation
 --}
---FIXME:def uncurry3[A,B,C,D](lambda (A)(B)(C) :: D)(A,B,C) :: D
+def uncurry3[A,B,C,D](lambda (A)(B)(C) :: D)(A,B,C) :: D
 def uncurry3(f)(x,y,z) = f(x)(y)(z)
 
 {--
@@ -65,7 +65,7 @@ Flip the order of parameters of a two-argument function.
 
 @implementation
 --}
---FIXME:def flip[A,B,C](lambda (A, B) :: C)(B, A) :: C
+def flip[A,B,C](lambda (A, B) :: C)(B, A) :: C
 def flip(f)(x,y) = f(y,x)
 
 {--
@@ -74,7 +74,7 @@ Create a function which returns a constant value.
 
 @implementation
 --}
---FIXME:def constant[A](A)() :: A
+def constant[A](A)() :: A
 def constant(x)() = x
 
 {--
@@ -83,7 +83,7 @@ Given a function and its argument, return a thunk which applies the function.
 
 @implementation
 --}
---FIXME:def defer[A,B](lambda (A) :: B, A)() :: B
+def defer[A,B](lambda (A) :: B, A)() :: B
 def defer(f, x)() = f(x)
 
 {--
@@ -92,7 +92,7 @@ Given a function and its arguments, return a thunk which applies the function.
 
 @implementation
 --}
---FIXME:def defer2[A,B,C](lambda (A,B) :: C, A, B)() :: C
+def defer2[A,B,C](lambda (A,B) :: C, A, B)() :: C
 def defer2(f, x, y)() = f(x, y)
 
 {--
@@ -102,7 +102,7 @@ of one argument, which is ignored.
 
 @implementation
 --}
---FIXME:def ignore[A,B](lambda () :: B)(A) :: B
+def ignore[A,B](lambda () :: B)(A) :: B
 def ignore(f)(_) = f()
 
 {--
@@ -112,7 +112,7 @@ of two arguments, which are ignored.
 
 @implementation
 --}
---FIXME:def ignore2[A,B,C](lambda () :: C)(A, B) :: C
+def ignore2[A,B,C](lambda () :: C)(A, B) :: C
 def ignore2(f)(_, _) = f()
 
 {--
@@ -121,8 +121,8 @@ Compose two single-argument functions.
 
 @implementation
 --}
---FIXME:def compose[A,B,C](lambda (B) :: C,
---FIXME:                   lambda (A) :: B)(A) :: C
+def compose[A,B,C](lambda (B) :: C,
+                   lambda (A) :: B)(A) :: C
 def compose(f,g)(x) = f(g(x))
 
 {--
@@ -147,11 +147,11 @@ while(
 
 @implementation
 --}
---FIXME:def while[A](lambda (A) :: Boolean,
---FIXME:             lambda (A) :: A)(A)
---FIXME:  :: A
+def while[A](lambda (A) :: Boolean,
+             lambda (A) :: A)(A)
+  :: A
 def while(p,f) = 
---FIXME:  def loop(A) :: A
+  def loop(A) :: A
   def loop(x) = ift(p(x)) >> ( x | loop(f(x)) )
   loop
 
@@ -163,7 +163,7 @@ the infinite expression <code>f() >x> ( x | f() >x> ( x | f() >x> ... ) )</code>
 
 @implementation
 --}
---FIXME:def repeat[A](lambda () :: A) :: A
+def repeat[A](lambda () :: A) :: A
 def repeat(f) = f() >x> (x | repeat(f))
 
 {--
@@ -176,7 +176,7 @@ the expression <code>f() | g() | h()</code>
 
 @implementation
 --}
---FIXME:def fork[A](List[lambda () :: A]) :: A
+def fork[A](List[lambda () :: A]) :: A
 def fork([]) = stop
 def fork(p:ps) = p() | fork(ps)
 
@@ -190,7 +190,7 @@ the expression <code>f(a) | f(b) | f(c)</code>
 
 @implementation
 --}
---FIXME:def forkMap[A,B](lambda (A) :: B, List[A]) :: B
+def forkMap[A,B](lambda (A) :: B, List[A]) :: B
 def forkMap(f, []) = stop
 def forkMap(f, x:xs) = f(x) | forkMap(f, xs)
 
@@ -206,7 +206,7 @@ the expression <code>f() >> g() >> h() >> signal</code>
 
 @implementation
 --}
---FIXME:def seq[A](List[lambda () :: A]) :: Signal
+def seq[A](List[lambda () :: A]) :: Signal
 def seq([]) = signal
 def seq(p:ps) = p() >> seq(ps)
 
@@ -222,7 +222,7 @@ the expression <code>f(a) >> f(b) >> f(c) >> signal</code>
 
 @implementation
 --}
---FIXME:def seqMap[A,B](lambda (A) :: B, List[A]) :: Signal
+def seqMap[A,B](lambda (A) :: B, List[A]) :: Signal
 def seqMap(f, []) = signal
 def seqMap(f, x:xs) = f(x) >> seqMap(f, xs)
  
@@ -236,7 +236,7 @@ the expression <code>(f(), g(), h()) >> signal</code>
 
 @implementation
 --}
---FIXME:def join[A](List[lambda () :: A]) :: Signal
+def join[A](List[lambda () :: A]) :: Signal
 def join([]) = signal
 def join(p:ps) = (p(), join(ps)) >> signal
  
@@ -250,7 +250,7 @@ the expression <code>(f(a), f(b), f(c)) >> signal</code>
 
 @implementation
 --}
---FIXME:def joinMap[A,B](lambda (A) :: B, List[A]) :: Signal
+def joinMap[A,B](lambda (A) :: B, List[A]) :: Signal
 def joinMap(f, []) = signal
 def joinMap(f, x:xs) = (f(x), joinMap(f, xs)) >> signal
 
@@ -263,7 +263,7 @@ the expression <code>f() ; g() ; h()</code>
 
 @implementation
 --}
---FIXME:def alt[A](List[lambda () :: A]) :: A
+def alt[A](List[lambda () :: A]) :: A
 def alt([]) = stop
 def alt(p:ps) = p() ; alt(ps)
 
@@ -276,7 +276,7 @@ the expression <code>f(a) ; f(b) ; f(c)</code>
 
 @implementation
 --}
---FIXME:def altMap[A,B](lambda (A) :: B, List[A]) :: B
+def altMap[A,B](lambda (A) :: B, List[A]) :: B
 def altMap(f, []) = stop
 def altMap(f, x:xs) = f(x) ; altMap(f, xs)
 
@@ -288,7 +288,7 @@ computation.
 
 @implementation
 --}
---FIXME:def por(List[lambda () :: Boolean]) :: Boolean
+def por(List[lambda () :: Boolean]) :: Boolean
 def por([]) = false
 def por(p:ps) =
   let(
@@ -305,7 +305,7 @@ computation.
 
 @implementation
 --}
---FIXME:def pand(List[lambda () :: Boolean]) :: Boolean
+def pand(List[lambda () :: Boolean]) :: Boolean
 def pand([]) = true
 def pand(p:ps) =
   let(
@@ -326,8 +326,8 @@ collect(defer(signals, 5))]]></programlisting>
 
 @implementation
 --}
---FIXME:def collect[A](lambda () :: A) :: List[A]
---FIXME:def collect(p) =
---FIXME:  val b = Buffer[A]()
---FIXME:  p() >x> b.put(x) >> stop
---FIXME:  ; b.getAll()
+def collect[A](lambda () :: A) :: List[A]
+def collect(p) =
+  val b = Buffer[A]()
+  p() >x> b.put(x) >> stop
+  ; b.getAll()
