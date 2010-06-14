@@ -241,7 +241,7 @@ Return the absolute value of the argument.
 
 @implementation
 --}
---FIXME:def abs(Number) :: Number
+def abs(Number) :: Number
 def abs(x) = if x <: 0 then -x else x
 
 {--
@@ -251,7 +251,7 @@ def abs(x) = if x <: 0 then -x else x
 
 @implementation
 --}
---FIXME:def signum(Number) :: Number
+def signum(Number) :: Number
 def signum(x) =
   if x <: 0 then -1
   else if x :> 0 then 1
@@ -264,7 +264,7 @@ are equal, return the first argument.
 
 @implementation
 --}
---FIXME:def min[A](A,A) :: A
+def min[A](A,A) :: A
 def min(x,y) = if y <: x then y else x
 
 {--
@@ -274,7 +274,7 @@ are equal, return the second argument.
 
 @implementation
 --}
---FIXME:def max[A](A,A) :: A
+def max[A](A,A) :: A
 def max(x,y) = if x :> y then x else y
 
 

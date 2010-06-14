@@ -50,7 +50,7 @@ Get the value held by a reference.
 
 @implementation
 --}
---FIXME:def (?)[A](Ref[A]) :: A
+def (?)[A](Ref[A]) :: A
 def (?)(r) = r.read()
 
 {--
@@ -60,7 +60,7 @@ Set the value held by a reference.
 
 @implementation
 --}
---FIXME:def (:=)[A](Ref[A], A) :: Signal
+def (:=)[A](Ref[A], A) :: Signal
 def (:=)(r,v) = r.write(v)
 
 {--
@@ -69,7 +69,7 @@ Swap the values in two references.
 
 @implementation
 --}
---FIXME:def swap[A](Ref[A], Ref[A]) :: Signal
+def swap[A](Ref[A], Ref[A]) :: Signal
 def swap(r,s) = (r?,s?) >(rval,sval)> (r := sval, s := rval) >> signal
 
 
@@ -166,14 +166,14 @@ a(3)]]></programlisting>
 
 @implementation
 --}
---FIXME:def IArray[A](Integer, lambda (Integer) :: A)(Integer) :: A
---FIXME:def IArray(n, f) =
---FIXME:  val a = Array[A](n)
---FIXME:  def fill(Integer, lambda (Integer) :: A) :: Signal
---FIXME:  def fill(i, f) =
---FIXME:    if i <: 0 then signal
---FIXME:    else (a.set(i, f(i)), fill(i-1, f)) >> signal
---FIXME:  fill(n-1, f) >> a.get
+def IArray[A](Integer, lambda (Integer) :: A)(Integer) :: A
+def IArray(n, f) =
+  val a = Array[A](n)
+  def fill(Integer, lambda (Integer) :: A) :: Signal
+  def fill(i, f) =
+    if i <: 0 then signal
+    else (a.set(i, f(i)), fill(i-1, f)) >> signal
+  fill(n-1, f) >> a.get
 
 
 {--
@@ -271,7 +271,7 @@ val c = Counter(5)
 repeat(c.dec)]]></programlisting>
 --}
 site Counter = "orc.lib.state.Counter"
---FIXME:type Counter = "orc.lib.state.types.CounterType"
+type Counter = "orc.lib.state.types.CounterType"
 
 {--
 @site Dictionary() :: Dictionary
@@ -348,7 +348,7 @@ Return the first element of a pair.
 
 @implementation
 --}
---FIXME:def fst[A,B]((A,B)) :: A
+def fst[A,B]((A,B)) :: A
 def fst((x,_)) = x
 
 {--
@@ -357,7 +357,7 @@ Return the second element of a pair.
 
 @implementation
 --}
---FIXME:def snd[A,B]((A,B)) :: B
+def snd[A,B]((A,B)) :: B
 def snd((_,y)) = y
 
 {--
