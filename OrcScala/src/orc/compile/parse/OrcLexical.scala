@@ -117,8 +117,14 @@ class OrcLexical() extends StdLexical() {
     )
 
   def multilinecomment: Parser[Any] =
-      '{' ~ '-' ~ endcomment
+      '{' ~ '-' ~ rep(endcomment) ~ '-' ~ '}' ^^ { case _ => ' ' }
 
+  def endcomment: Parser[Any] = (
+     multilinecomment // Allow inlined comments.
+   | not(guard('-' ~ '}')) ~ chrExcept(EofCh)
+   | '-' ~ guard('-') 
+   | chrExcept(EofCh,'-','}')
+  )
   protected def oper: Parser[Token] = {
     def parseOper(s: String): Parser[Token] = accept(s.toList) ^^ { x => Keyword(s) }
     val o = new Array[String](operators.size)
@@ -127,11 +133,6 @@ class OrcLexical() extends StdLexical() {
     (o.toList map parseOper).foldRight(failure("no matching operator"): Parser[Token])((x, y) => y | x)
   }
 
-  def endcomment: Parser[Any] = (
-    '-' ~ '}' ^^ { case _ => ' ' }
-   | '{' ~ '-' ~ endcomment ~ endcomment // Allow inlined comments.
-   | chrExcept(EofCh) ~ endcomment
-  )
     
   /** The set of reserved identifiers: these will be returned as `Keyword's */
   override val reserved = new HashSet[String] ++ List(
