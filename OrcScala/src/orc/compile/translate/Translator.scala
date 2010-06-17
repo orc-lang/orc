@@ -40,9 +40,11 @@ object Translator {
 	def translate(options: OrcOptions, extendedAST : ext.Expression): Expression = {		
 		val namedAST = convert(extendedAST)
 	    //Console.err.println("Translation result: \n" + namedAST)
-		namedAST map {
+		namedAST remapArgument {
+		  a:Argument => a match {
 			case x@ NamedVar(s) => x !! ("Unbound variable " + s)
 			case y => y 
+		  }
 		}
 	}
 	
@@ -53,7 +55,6 @@ object Translator {
 	 *  Convert an extended AST expression to a named OIL expression.
 	 *
 	 */
-	// FIXME: Incomplete for some cases.
 	def convert(e : ext.Expression): named.Expression = {
 			e -> {
 				case ext.Stop() => Stop()
@@ -80,27 +81,17 @@ object Translator {
 				}
 				
 				case ext.Sequential(l, None, r) => convert(l) >> convert(r)
-				case ext.Sequential(l, Some(ext.VariablePattern(name)), r) => {
-					val x = new TempVar()
-					convert(l)  > x >  convert(r).subst(x, name)
-				}
 				case ext.Sequential(l, Some(p), r) => {
 					val (filter, scope) = convertPattern(p)
 					val x = new TempVar()
 					filter(convert(l)) > x > scope(x)(convert(r))
 				}
-				
 				case ext.Pruning(l, None, r) => convert(l) << convert(r)
-				case ext.Pruning(l, Some(ext.VariablePattern(name)), r) => {
-					val x = new TempVar()
-					convert(l).subst(x, name)  < x <  convert(r) 
-				}
 				case ext.Pruning(l, Some(p), r) => {
 					val (filter, scope) = convertPattern(p)
 					val x = new TempVar()
 					scope(x)(convert(l)) < x < filter(convert(r))
 				}
-				
 				case ext.Parallel(l,r) => convert(l) || convert(r)
 				case ext.Otherwise(l, r) => convert(l) ow convert(r)
 				
@@ -144,8 +135,54 @@ object Translator {
 				//FIXME: Incorporate filename in source location information
 				case ext.Declare(ext.Include(_, decls), body) => convert( (decls foldRight body)(ext.Declare) ) 
 				
-				//FIXME: Ignoring all other declaration types
-                case ext.Declare(_, body) => convert(body)
+				
+				case ext.Declare(ext.TypeImport(name, classname), body) => {
+				  val u = new TempTypevar()
+                  val newbody = convert(body).substType(u, name)
+                  DeclareType(u, ClassType(classname), newbody)
+				}
+				
+				case ext.Declare(ext.TypeAlias(name, typeformals, t), body) => {
+				  val u = new TempTypevar()
+                  val newbody = convert(body).substType(u, name)
+                  val newtype = typeformals match {
+                     case Nil => convertType(t)
+                     case _ => {
+                       val subs = for (tf <- typeformals) yield (new TempTypevar(), tf)
+                       val newTypeFormals = for ((w,_) <- subs) yield w
+                       TypeAbstraction(newTypeFormals, convertType(t).substAllTypes(subs))
+                     }
+                  }
+				  DeclareType(u, newtype, newbody)
+				}
+				
+				case ext.Declare(ext.Datatype(name, typeformals, constructors), body) => {
+				  val d = new TempTypevar()
+				  var newbody = convert(body)
+				  
+				  val cs = new TempVar()
+				  for ((ext.Constructor(name, _), i) <- constructors.zipWithIndex) {
+                      val x = new TempVar()
+                      newbody = newbody.subst(x, name)
+				      newbody = newbody < x < makeNth(cs,i)
+                    }
+				  newbody = newbody < cs < makeDatatype(d, constructors) 
+				  
+				  val variantType = { 
+                    val subs = for (tf <- typeformals) yield (new TempTypevar(), tf)
+                    val newTypeFormals = for ((w,_) <- subs) yield w
+                    val variants = 
+                      for (ext.Constructor(name, types) <- constructors) yield {
+                        val newtypes = types map {_ map { convertType(_).substAllTypes(subs) } }
+                        (name, newtypes)
+                      }
+                    TypeAbstraction(newTypeFormals, VariantType(variants))
+                  }
+				  newbody = newbody.substType(d, name)
+				  newbody = DeclareType(d, variantType, newbody)
+				  
+				  newbody
+				}
                 
 				case ext.TypeAscription(body, t) => HasType(convert(body), convertType(t))
 				case ext.TypeAssertion(body, t) => HasType(convert(body), AssertedType(convertType(t)))
@@ -335,20 +372,10 @@ object Translator {
 				TypeApplication(new NamedTypevar(name), typeactuals map convertType)
 			}
 			case ext.FunctionType(typeformals, argtypes, returntype) => {
-				
-				val substitutions = for (tf <- typeformals) yield (new TempTypevar(), tf)
-				val doSubstitution : (Type, (Typevar,String)) => Type = { 
-					case (t, (u,n)) => t.subst(u,n) 
-				} 
-				val doAllSubstitutions : Type => Type = { 
-					substitutions.foldLeft(_)(doSubstitution) 
-				}
-				val convertAndSub = { convertType _ } andThen doAllSubstitutions
-				
-				val newTypeFormals = for ((u,_) <- substitutions) yield u
-				val newArgTypes = argtypes map convertAndSub
-				val newReturnType = convertAndSub(returntype)
-				
+				val subs = for (tf <- typeformals) yield (new TempTypevar(), tf)
+				val newTypeFormals = for ((u,_) <- subs) yield u
+				val newArgTypes = argtypes map { convertType(_).substAllTypes(subs) }
+				val newReturnType = convertType(returntype).substAllTypes(subs)
 				FunctionType(newTypeFormals, newArgTypes, newReturnType)
 			}
 			case ext.Top() => Top()
@@ -384,27 +411,34 @@ object Translator {
 				
 				
 		/* Create filter function */
-		var filterExpression = makeLet(neededResults)
-		for ((e,y) <- computes.reverse) {
-			filterExpression =  e  > y >  filterExpression
+		def filter(e : Expression) = {
+		  computes match {
+		     case Nil => e
+		     case _ => {
+		       var filterExpression = makeLet(neededResults)
+		       for ((f,y) <- computes.reverse) {
+		         filterExpression =  f  > y >  filterExpression
+		       }
+		       e > sourceVar > filterExpression
+		     }
+		  }
 		}
-		def filter(e : Expression) = { e  > sourceVar >  filterExpression }
 				
 		/* Create scope function */
-		def scope(filterResult : TempVar)(target : Expression) = {
-			var newtarget = target.substAll(bindings)
+		def scope(filterResult : TempVar)(e : Expression) = {
+			val target = e.substAll(bindings)
 			neededResults match {
-			  case Nil => {  }
-			  case y :: Nil => newtarget = newtarget.subst(filterResult,y)
+			  case Nil => target
+			  case y :: Nil => target.subst(filterResult,y)
 			  case _ => {
+			    var newtarget = target
 			    for ((y, i) <- neededResults.zipWithIndex) {
                   val z = new TempVar()
                   newtarget = newtarget.subst(z,y)  < z <  makeNth(filterResult, i)
                 }
+			    newtarget
 			  }
 			}
-			
-			newtarget
 		}
 				
 		(filter, scope)
@@ -477,8 +511,13 @@ object Translator {
 					val guard = (testexpr, new TempVar())
 					(List(guard), Nil)
 				}
-				// TODO: Reimplement correctly.
-				case ext.TypedPattern(p,t) => decomposePattern(p,x) 			
+				// TODO: Make this more efficient; the runtime compute is unnecessary.
+				case ext.TypedPattern(p,t) => {
+				  val y = new TempVar()
+				  val typedCompute = (HasType(x, convertType(t)), y)
+                  val (subCompute, subBindings) = decomposePattern(p, y)
+                  (typedCompute :: subCompute, subBindings)
+				}
 			}
 		}
 

@@ -42,7 +42,10 @@ object TypeChecker {
       case Prune(left, right) => typeSynth(left, typeSynth(right, context, typeContext)::context, typeContext)
       case Otherwise(left, right) => typeSynth(left, context, typeContext) join typeSynth(right, context, typeContext)
       case DeclareDefs(defs, body) => {
-        val defTypes = for (d <- defs) yield ArrowType(d.typeFormalArity, d.argTypes, d.returnType.get) //FIXME: Handle inference of return type
+        val defTypes = for (d <- defs) yield {
+          //FIXME: Handle inference of arg types and/or return type
+          ArrowType(d.typeFormalArity, d.argTypes.get, d.returnType.get) 
+        }
         for (d <- defs) typeCheckDef(d, defTypes.reverse:::context, typeContext)
         typeSynth(body, defTypes.reverse:::context, typeContext)
       }
@@ -54,7 +57,8 @@ object TypeChecker {
 
   def typeCheckDef(defn : Def, context : List[Type], typeContext: List[Type]) {
     val Def(typeFormalArity, arity, body, argTypes, returnType) = defn
-    typeCheck(body, returnType.get, argTypes.reverse ::: context, typeContext) //FIXME: Handle inference of return type
+    //FIXME: Handle inference of arg types and/or return type
+    typeCheck(body, returnType.get, argTypes.get.reverse ::: context, typeContext) 
   }
 
   def typeCheck(expr : Expression, checkType : Type, context : List[Type], typeContext: List[Type]) {
@@ -64,7 +68,8 @@ object TypeChecker {
       case Prune(left, right) => typeCheck(left, checkType, typeSynth(right, context, typeContext)::context, typeContext)
       case Otherwise(left, right) => typeCheck(left, checkType, context, typeContext) ; typeCheck(right, checkType, context, typeContext)
       case DeclareDefs(defs, body) => {
-        val defTypes = for (d <- defs) yield ArrowType(d.typeFormalArity, d.argTypes, d.returnType.get) //FIXME: Handle inference of return type
+        //FIXME: Handle inference of arg types and/or return type
+        val defTypes = for (d <- defs) yield ArrowType(d.typeFormalArity, d.argTypes.get, d.returnType.get)
         for (d <- defs) typeCheckDef(d, defTypes.reverse:::context, typeContext)
         typeCheck(body, checkType, defTypes.reverse:::context, typeContext)
       }

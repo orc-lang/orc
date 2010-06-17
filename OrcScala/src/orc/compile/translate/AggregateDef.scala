@@ -73,17 +73,13 @@ class AggregateDef(clauses: List[Clause],
 			if (clauses.isEmpty) { this !! "Unused function signature" }
 			val (newformals, newbody) = Clause.convertClauses(clauses)
 			
-			val getTypeFormals = typeformals.getOrElse(Nil)
-			val getArgTypes = argtypes.getOrElse({this !? "Missing argument types" ; Nil})
-			val getReturnType = returntype
-
-			val newTypeFormals = getTypeFormals map { _ => new named.TempTypevar() } 
-			// FIXME: the type formals should be substituted into these types,
-			//        and into the new def body as well.
-			val newArgTypes = getArgTypes map Translator.convertType
-			val newReturnType = getReturnType map Translator.convertType
-			 
-			named.Def(x, newformals, newbody, newTypeFormals, newArgTypes, newReturnType)
+			val subs = for (tf <- typeformals.getOrElse(Nil)) yield (new named.TempTypevar(), tf)
+            val newTypeFormals = for ((u,_) <- subs) yield u
+            val newArgTypes = argtypes map { _ map { Translator.convertType(_).substAllTypes(subs) } }
+            val newReturnType = returntype map { Translator.convertType(_).substAllTypes(subs) }
+            val newerbody = newbody.substAllTypes(subs)
+						 
+			named.Def(x, newformals, newerbody, newTypeFormals, newArgTypes, newReturnType)
 		}
 			
 		
