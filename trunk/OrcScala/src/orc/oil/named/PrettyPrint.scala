@@ -79,6 +79,7 @@ class PrettyPrint {
         "\n"
       }
       case HasType(body, expectedType) => "(" + reduce(body) + " :: " + reduce(expectedType) + ")"
+      case DeclareType(u, t, body) => "type " + reduce(u) + " = " + reduce(t) + "\n" + reduce(body)
       case Constant(v) => v.toString()
       case (x: TempVar) => x.optionalName.getOrElse(lookup(x)) 
       case NamedVar(s) => "?" + s  
