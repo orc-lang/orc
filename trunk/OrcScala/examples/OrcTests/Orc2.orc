@@ -11,9 +11,8 @@
 OUTPUT:
 2
 3
-
-OR
-
+-}
+{-
 OUTPUT:
 3
 2

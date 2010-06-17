@@ -102,9 +102,9 @@ object Translator {
 					DeclareDefs(List(newdef), lambdaName)
 				}
 				case ext.Capsule(b) => {
-				  var capThunk = ext.Lambda(None, null, None, makeCapsuleBody(b))				  
+				  var capThunk = ext.Lambda(None, List(Nil), None, makeCapsuleBody(b))				  
 				  convert(ext.Call(
-				    ext.Call(ext.Constant(builtin.SiteSite), List(ext.Args(None, List(capThunk)))), null))
+				    ext.Call(ext.Constant(builtin.SiteSite), List(ext.Args(None, List(capThunk)))), List(ext.Args(None, Nil))))
 				}
 				case ext.Conditional(ifE, thenE, elseE) => {
 					 val b = new TempVar()
