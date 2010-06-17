@@ -35,6 +35,9 @@
       classpath="${libraries}">
       <include name="**/*.java"/>
     </javac>
+    <copy todir="${build.dir}/orc/lib/includes/">
+      <fileset dir="${sources.dir}/orc/lib/includes/"/>
+    </copy>
   </target>
   <target name="clean">
       <delete dir="${build.dir}"/>
