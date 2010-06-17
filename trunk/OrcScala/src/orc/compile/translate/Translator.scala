@@ -322,14 +322,13 @@ object Translator {
           reduceParamLists(ext.Def(name,formals,retType,ext.Capsule(body)))
         }
         case ext.DefSig(name,typFormals,List(argTypes),retType) => d
-        case ext.DefSig(name,typFormals,argTypes::tail,Some(retType)) => {
-          val newRetType = tail.foldRight(retType)({ ext.FunctionType(Nil,_,_) })
-          ext.DefSig(name,typFormals,List(argTypes),Some(newRetType))
+        case ext.DefSig(name,typFormals,argTypes::tail,retType) => {
+          val lambdaType = ext.LambdaType(Nil,tail,retType)
+          val newRetType = lambdaType.cut
+          ext.DefSig(name,typFormals,List(argTypes),newRetType)
         }
         case ext.DefSig(_,_,List(),_) => 
           throw new UnspecifiedArgTypesException()
-        case ext.DefSig(_,_,argTypes::tail,None) => 
-          throw new UnspecifiedReturnTypeException()
       }
 	}
 	
@@ -371,12 +370,16 @@ object Translator {
 			case ext.TypeApplication(name, typeactuals) => {
 				TypeApplication(new NamedTypevar(name), typeactuals map convertType)
 			}
-			case ext.FunctionType(typeformals, argtypes, returntype) => {
+			case ext.LambdaType(typeformals, List(argtypes), returntype) => {
 				val subs = for (tf <- typeformals) yield (new TempTypevar(), tf)
 				val newTypeFormals = for ((u,_) <- subs) yield u
 				val newArgTypes = argtypes map { convertType(_).substAllTypes(subs) }
 				val newReturnType = convertType(returntype).substAllTypes(subs)
 				FunctionType(newTypeFormals, newArgTypes, newReturnType)
+			}
+			case ltype@ ext.LambdaType(typeformals, args::tail, returntype) => { 
+			  /* Multiple type argument groups, first uncurry it.*/
+			  convertType(ltype.cut)
 			}
 			case ext.Top() => Top()
 			case ext.Bot() => Bot()

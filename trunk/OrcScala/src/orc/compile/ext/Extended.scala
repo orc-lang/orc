@@ -75,7 +75,7 @@ sealed abstract class NamedDeclaration extends Declaration {
 sealed abstract class DefDeclaration extends NamedDeclaration 
 case class Def(name: String, formals: List[List[Pattern]],returntype: Option[Type], body: Expression) extends DefDeclaration
 case class DefCapsule(name: String, formals: List[List[Pattern]], returntype: Option[Type], body: Expression) extends DefDeclaration
-case class DefSig(name: String, typeformals: List[String], argtypes: List[List[Type]], returntype: Option[Type]) extends DefDeclaration
+case class DefSig(name: String, typeformals: List[String], argtypes: List[List[Type]], returntype: Type) extends DefDeclaration
 
 sealed abstract class SiteDeclaration extends NamedDeclaration
 case class SiteImport(name: String, sitename: String) extends SiteDeclaration
@@ -131,5 +131,20 @@ case class Top() extends Type
 case class Bot() extends Type
 case class TypeVariable(name: String) extends Type
 case class TupleType(elements: List[Type]) extends Type
-case class FunctionType(typeformals: List[String], argtypes: List[Type], returntype: Type) extends Type
+case class LambdaType(typeformals: List[String], argtypes: List[List[Type]], returntype: Type) extends Type {
+  /* 
+   * Converts the type 'lambda (A)(B)(C) :: D'
+   * to 'lambda (A) :: (lambda (B) :: (lambda (C) :: D))'.
+   */
+  def cut = {
+    this match {
+      case LambdaType(typeFormals,List(args),retType) => this // Single type argument group
+      case LambdaType(typeFormals,argGroup::argGroupsTail,retType) => {
+        val f = (args: List[Type],ret: Type) => LambdaType(Nil,List(args),ret)
+        val newRetType = argGroupsTail.foldRight(retType)(f)
+        LambdaType(typeFormals,List(argGroup),newRetType)
+      }
+    }
+  }
+}
 case class TypeApplication(name: String, typeactuals: List[Type]) extends Type	

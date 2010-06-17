@@ -278,7 +278,7 @@ people intuitively use these operators.
           }
         }
       | TupleOf(parseType) -> TupleType
-      | "lambda" ~> ((ListOf(parseTypeVariable)?) ^^ {_.getOrElse(Nil)}) ~ TupleOf(parseType) ~ parseReturnType -> FunctionType
+      | "lambda" ~> ((ListOf(parseTypeVariable)?) ^^ {_.getOrElse(Nil)}) ~ (TupleOf(parseType)+) ~ parseReturnType -> LambdaType
   )
 
   def parseConstructor: Parser[Constructor] = (
@@ -296,7 +296,7 @@ people intuitively use these operators.
       | ("capsule" ~> ident) ~ (TupleOf(parsePattern)+) ~~ (parseReturnType?) ~ ("=" ~~> parseExpression)
       -> DefCapsule
 
-      | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)+) ~~ (parseReturnType?)
+      | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)+) ~~ parseReturnType
       -> { (id, tvs, ts, rt) => DefSig(id, tvs getOrElse Nil, ts, rt) }
   )
   

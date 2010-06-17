@@ -56,7 +56,7 @@ class AggregateDef(clauses: List[Clause],
               val argtypes3 = argtypes2 head // List[List[Type]] has only one entry
               val newTypeFormals = unifyList(typeformals, Some(typeformals2), defn !! "Redundant type parameters")
               val newArgTypes = unifyList(argtypes, Some(argtypes3), defn !! "Redundant argument typing")
-              val newReturnType = unify(returntype, maybeReturnType, defn !! "Redundant return typing")
+              val newReturnType = unify(returntype, Some(maybeReturnType), defn !! "Redundant return typing")
               new AggregateDef(clauses, newTypeFormals, newArgTypes, newReturnType)
             }
 		  }
