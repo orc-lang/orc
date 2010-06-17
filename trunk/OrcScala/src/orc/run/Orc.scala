@@ -446,6 +446,7 @@ abstract class Orc extends OrcExecutionAPI {
             this.move(body).run
           }
           case HasType(expr, _) => this.move(expr).run
+          case DeclareType(_, expr) => this.move(expr).run
         }
       }
     }

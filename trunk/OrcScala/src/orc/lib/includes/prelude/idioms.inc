@@ -47,8 +47,11 @@ Uncurry a function of two arguments.
 
 @implementation
 --}
+{-
+FIXME: Support curried lambda type argument groups in parser
 def uncurry[A,B,C](lambda (A)(B) :: C)(A, B) :: C
 def uncurry(f)(x,y) = f(x)(y)
+-}
 
 {--
 @def uncurry3[A,B,C,D](lambda (A)(B)(C) :: D)(A,B,C) :: D
@@ -56,8 +59,11 @@ Uncurry a function of three arguments.
 
 @implementation
 --}
+{-
+FIXME: Support curried lambda type argument groups in parser
 def uncurry3[A,B,C,D](lambda (A)(B)(C) :: D)(A,B,C) :: D
 def uncurry3(f)(x,y,z) = f(x)(y)(z)
+-}
 
 {--
 @def flip[A,B,C](lambda (A, B) :: C)(B, A) :: C
@@ -148,7 +154,7 @@ while(
 @implementation
 --}
 def while[A](lambda (A) :: Boolean,
-             lambda (A) :: A)(A)
+             lambda (A) :: A)(A) 
   :: A
 def while(p,f) = 
   def loop(A) :: A
@@ -326,8 +332,10 @@ collect(defer(signals, 5))]]></programlisting>
 
 @implementation
 --}
+{-
 def collect[A](lambda () :: A) :: List[A]
 def collect(p) =
   val b = Buffer[A]()
   p() >x> b.put(x) >> stop
   ; b.getAll()
+-}

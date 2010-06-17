@@ -69,7 +69,7 @@ class PrettyPrint {
       case DeclareDefs(defs, body) => (defs map reduce).foldLeft("")({_ + _}) + reduce(body)
       case Def(f, formals, body, typeformals, argtypes, returntype) => {  
         val name = f.optionalName.getOrElse(lookup(f))
-        "def " + name + brack(typeformals) + paren(argtypes) + 
+        "def " + name + brack(typeformals) + paren(argtypes.getOrElse(Nil)) + 
         (returntype match {
           case Some(t) => " :: " + reduce(t)
           case None => ""
@@ -81,7 +81,7 @@ class PrettyPrint {
       case HasType(body, expectedType) => "(" + reduce(body) + " :: " + reduce(expectedType) + ")"
       case Constant(v) => v.toString()
       case (x: TempVar) => x.optionalName.getOrElse(lookup(x)) 
-      case NamedVar(s) => "?" + s 
+      case NamedVar(s) => "?" + s  
       case u: TempTypevar => u.optionalName.getOrElse(lookup(u))
       case Top() => "Top"
       case Bot() => "Bot"
@@ -91,6 +91,13 @@ class PrettyPrint {
       case TupleType(elements) => paren(elements)
       case TypeApplication(tycon, typeactuals) => reduce(tycon) + brack(typeactuals)
       case AssertedType(assertedType) => reduce(assertedType) + "!"
+      case TypeAbstraction(typeformals, t) => brack(typeformals) + "{" + reduce(t) + "}"
+      case ClassType(classname) => classname
+      case VariantType(variants) => {
+        (for ((name, variant) <- variants) yield {
+          name + (variant map {t: Option[Type] => (t map reduce).getOrElse("_")}).mkString(",")
+        }).mkString(" | ")
+      }
       case NamedTypevar(s) => "?" + s
     }
 

@@ -290,13 +290,13 @@ people intuitively use these operators.
 
   
   def parseDefDeclaration: Parser[DefDeclaration] = (
-        ident ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ ("=" ~~> parseExpression)
+        ident ~ (TupleOf(parsePattern)+) ~~ (parseReturnType?) ~ ("=" ~~> parseExpression)
       -> Def
 
-      | ("capsule" ~> ident) ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ ("=" ~~> parseExpression)
+      | ("capsule" ~> ident) ~ (TupleOf(parsePattern)+) ~~ (parseReturnType?) ~ ("=" ~~> parseExpression)
       -> DefCapsule
 
-      | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)+) ~ (parseReturnType?)
+      | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)+) ~~ (parseReturnType?)
       -> { (id, tvs, ts, rt) => DefSig(id, tvs getOrElse Nil, ts, rt) }
   )
   

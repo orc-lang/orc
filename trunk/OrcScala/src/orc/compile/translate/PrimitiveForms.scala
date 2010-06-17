@@ -18,6 +18,7 @@ package orc.compile.translate
 import orc.oil.named._
 import orc.lib.builtin._
 import orc.oil._
+import orc.compile.ext
 import orc.values.Value
 import orc.values.Literal
 import orc.values.Signal
@@ -61,7 +62,7 @@ object PrimitiveForms {
 		}
 	}
 	
-	def makeTuple(elements: List[Argument]) = Call(Constant(TupleConstructor), elements, None)
+	def makeTuple(elements: List[Argument]) = Call(Constant(TupleConstructor), elements, None)	
 	
 	def makeList(elements: List[Argument]) = {
 		val nil : Expression = callNil()
@@ -72,7 +73,21 @@ object PrimitiveForms {
 		elements.foldRight(nil)(cons)
 	}
 	
+	def makeDatatype(declaredVariant : TempTypevar, constructors : List[ext.Constructor]) = {
+	  val datatypeSite = Constant(DatatypeBuilder)
+	  val datatypePairs = 
+	    for (ext.Constructor(name, types) <- constructors) yield 
+          { makeTuple(List(Constant(Literal(name)), Constant(Literal(types.size)))) }
+      val pairsVar = new TempVar()
+      
+      Translator.unfold(datatypePairs, makeTuple) > pairsVar > 
+          Call(datatypeSite, List(pairsVar), Some(List(declaredVariant)))
+	}
+	  
+	
 	def callOperator(opName : String, args : List[Argument]) = 
 		Call(NamedVar(opName), args, None)
+		
+		
 		
 }

@@ -26,12 +26,6 @@ trait TypeScope
 
 
 trait Var extends Argument
-/*
-class TempVar(val optionalName : Option[String]) extends Var {
-  def this(name: String) = this(Some(name))
-  def this() = this(None)
-}
-*/
 class TempVar(val optionalName : Option[String] = None) extends Var {
   def this(name: String) = this(Some(name))
 }
@@ -49,15 +43,17 @@ trait hasFreeVars {
 }
 
 sealed abstract class NamedAST extends AST with NamedToNameless {
-  override def toString() = (new PrettyPrint()).reduce(this)
+  def prettyprint() = (new PrettyPrint()).reduce(this)
 }
 
 sealed abstract class Expression
 extends NamedAST 
 with NamedInfixCombinators 
 with hasFreeVars 
-with hasArgumentMap[Expression]
+with hasArgumentRemap[Expression]
 with ArgumentSubstitution[Expression]
+with hasTypeRemap[Expression]
+with TypeSubstitution[Expression]
 { 
   lazy val withoutNames: nameless.Expression = namedToNameless(this, Nil, Nil)
   
@@ -75,17 +71,32 @@ with ArgumentSubstitution[Expression]
     }
   }
   
-  def map(f: Argument => Argument): Expression = 
+  def remapArgument(f: Argument => Argument): Expression = 
     this -> {
       case Stop() => Stop()
       case a : Argument => f(a)	
       case Call(target, args, typeargs) => Call(f(target), args map f, typeargs)
-      case left || right => (left map f) || (right map f)
-      case left > x > right => (left map f) > x > (right map f)
-      case left < x < right => (left map f) < x < (right map f)
-      case left ow right => (left map f) ow (right map f)
-      case DeclareDefs(defs, body) => DeclareDefs(defs map { _ map f }, body map f)
-      case HasType(body, expectedType) => HasType(body map f, expectedType)
+      case left || right => (left remapArgument f) || (right remapArgument f)
+      case left > x > right => (left remapArgument f) > x > (right remapArgument f)
+      case left < x < right => (left remapArgument f) < x < (right remapArgument f)
+      case left ow right => (left remapArgument f) ow (right remapArgument f)
+      case DeclareDefs(defs, body) => DeclareDefs(defs map { _ remapArgument f }, body remapArgument f)
+      case DeclareType(u, t, body) => DeclareType(u, t, body remapArgument f)
+      case HasType(body, expectedType) => HasType(body remapArgument f, expectedType)
+    } setPos pos
+    
+  def remapType(f: Typevar => Type): Expression = 
+    this -> {
+      case Stop() => Stop()
+      case a : Argument => a
+      case Call(target, args, typeargs) => Call(target, args, typeargs map { _ map { _ remapType f } })
+      case left || right => (left remapType f) || (right remapType f)
+      case left > x > right => (left remapType f) > x > (right remapType f)
+      case left < x < right => (left remapType f) < x < (right remapType f)
+      case left ow right => (left remapType f) ow (right remapType f)
+      case DeclareDefs(defs, body) => DeclareDefs(defs map { _ remapType f }, body remapType f)
+      case DeclareType(u, t, body) => DeclareType(u, t remapType f, body remapType f)
+      case HasType(body, expectedType) => HasType(body remapType f, expectedType remapType f)
     } setPos pos
   
     /*
@@ -129,47 +140,61 @@ case class Sequence(left: Expression, x: TempVar, right: Expression) extends Exp
 case class Prune(left: Expression, x: TempVar, right: Expression) extends Expression with Scope
 case class Otherwise(left: Expression, right: Expression) extends Expression
 case class DeclareDefs(defs : List[Def], body: Expression) extends Expression with Scope
+case class DeclareType(name: TempTypevar, t: Type, body: Expression) extends Expression with TypeScope
 case class HasType(body: Expression, expectedType: Type) extends Expression
 
 sealed abstract class Argument extends Expression
 case class Constant(value: Value) extends Argument
 
 
-sealed case class Def(name: TempVar, formals: List[TempVar], body: Expression, typeformals: List[TempTypevar], argtypes: List[Type], returntype: Option[Type]) 
+sealed case class Def(name: TempVar, formals: List[TempVar], body: Expression, typeformals: List[TempTypevar], argtypes: Option[List[Type]], returntype: Option[Type]) 
 extends NamedAST 
 with Scope 
 with TypeScope 
 with hasFreeVars 
-with hasArgumentMap[Def]
+with hasArgumentRemap[Def]
 with ArgumentSubstitution[Def]
+with hasTypeRemap[Def]
+with TypeSubstitution[Def]
 { 
   lazy val withoutNames: nameless.Def = namedToNameless(this, Nil, Nil)
   lazy val freevars: Set[Var] = body.freevars -- formals
   
-  def map(f: Argument => Argument): Def = {
-    this ->> Def(name, formals, (body map f), typeformals, argtypes, returntype)
+  def remapArgument(f: Argument => Argument): Def = {
+    this ->> Def(name, formals, body remapArgument f, typeformals, argtypes, returntype)
   }
 
+  def remapType(f: Typevar => Type): Def = {
+    this ->> Def(name, formals, body remapType f, typeformals, argtypes map {_ map {_ remapType f} }, returntype map {_ remapType f})
+  }
 
 }
 
 
 sealed abstract class Type extends NamedAST
+with hasTypeRemap[Type]
+with TypeSubstitution[Type]
 { 
   lazy val withoutNames: nameless.Type = namedToNameless(this, Nil) 
   
-  def map(f: Typevar => Typevar): Type = 
+  def remapType(f: Typevar => Type): Type = 
 	  this -> {
 	 	  case x : Typevar => f(x)
-	 	  case TupleType(elements) => TupleType(elements map {_ map f})
-	 	  case TypeApplication(tycon, typeactuals) => TypeApplication(f(tycon), typeactuals map {_ map f})
-	 	  case AssertedType(assertedType) => AssertedType(assertedType map f)
+	 	  case TupleType(elements) => TupleType(elements map {_ remapType f})
+	 	  case TypeApplication(tycon, typeactuals) => {
+	 	     f(tycon) match {
+	 	       case (u : Typevar) => TypeApplication(u, typeactuals map {_ remapType f})
+	 	       case other => this !! ("Erroneous type substitution; can't substitute " + other + " as a type constructor")
+	 	     }
+	 	     
+	 	  }
+	 	  case AssertedType(assertedType) => AssertedType(assertedType remapType f)
 	 	  case FunctionType(typeformals, argtypes, returntype) =>
-	 	  	FunctionType(typeformals, argtypes map {_ map f}, returntype map f)
+	 	  	FunctionType(typeformals, argtypes map {_ remapType f}, returntype remapType f)
 	 	  case u => u
 	  }
   
-  def subst(t: Typevar, u: Typevar): Type = this map (y => if (y equals t) { u } else { y })   
+  def subst(t: Typevar, u: Typevar): Type = this remapType (y => if (y equals t) { u } else { y })   
   def subst(t: Typevar, s: String): Type = subst(t, NamedTypevar(s))
 }	
 case class Top() extends Type
@@ -177,8 +202,11 @@ case class Bot() extends Type
 case class TupleType(elements: List[Type]) extends Type
 case class TypeApplication(tycon: Typevar, typeactuals: List[Type]) extends Type
 case class AssertedType(assertedType: Type) extends Type	
-case class FunctionType(typeformals: List[TempTypevar], argtypes: List[Type], returntype: Type) 
-extends Type with TypeScope
+case class FunctionType(typeformals: List[TempTypevar], argtypes: List[Type], returntype: Type) extends Type with TypeScope
+case class TypeAbstraction(typeformals: List[TempTypevar], t: Type) extends Type with TypeScope
+case class ClassType(classname: String) extends Type
+case class VariantType(variants: List[(String, List[Option[Type]])]) extends Type
+
 
 
 // Conversions from named to nameless representations
@@ -202,6 +230,13 @@ trait NamedToNameless {
         val newbody = namedToNameless(body, defnames ::: context, typecontext)
         nameless.DeclareDefs(newdefs, newbody)
       }
+      case DeclareType(x, t, body) => {
+        val newTypeContext = x::typecontext
+        /* A type may be defined recursively, so its name is in scope for its own definition */
+        val newt = namedToNameless(t, newTypeContext) 
+        val newbody = namedToNameless(body, context, newTypeContext)
+        nameless.DeclareType(newt, newbody)
+      }
       case HasType(body, expectedType) => nameless.HasType(toExp(body), toType(expectedType))
     } setPos e.pos
   }	
@@ -223,7 +258,7 @@ trait NamedToNameless {
       case Bot() => nameless.Bot()
       case FunctionType(typeformals, argtypes, returntype) => {
         val newTypeContext = typeformals ::: typecontext
-        val newArgTypes = argtypes map { namedToNameless(_, newTypeContext) }
+        val newArgTypes = argtypes map toType
         val newReturnType = namedToNameless(returntype, newTypeContext)
         nameless.FunctionType(typeformals.size, newArgTypes, newReturnType)
       }
@@ -232,7 +267,20 @@ trait NamedToNameless {
         val i = typecontext indexOf tycon
         nameless.TypeApplication(i, typeactuals map toType)
       }	
-      case AssertedType(assertedType) => nameless.AssertedType(namedToNameless(assertedType, typecontext))
+      case AssertedType(assertedType) => nameless.AssertedType(toType(assertedType))
+      case TypeAbstraction(typeformals, t) => {
+        val newTypeContext = typeformals ::: typecontext
+        val newt = namedToNameless(t, newTypeContext)
+        nameless.TypeAbstraction(typeformals.size, newt)
+      }
+      case ClassType(classname) => nameless.ClassType(classname)
+      case VariantType(variants) => {
+        val newVariants =
+          for ((name, variant) <- variants) yield {
+            (name, variant map {_ map toType})
+          }
+        nameless.VariantType(newVariants)
+      }
       case u@ NamedTypevar(s) => u !! ("Unbound type variable " + s)
     } setPos t.pos
   }	
@@ -243,7 +291,7 @@ trait NamedToNameless {
         val newContext = formals.reverse ::: context
         val newTypeContext = typeformals ::: typecontext 
         val newbody = namedToNameless(body, newContext, newTypeContext)
-        val newArgTypes = argtypes map { namedToNameless(_, newTypeContext) }
+        val newArgTypes = argtypes map { _ map { namedToNameless(_, newTypeContext) } }
         val newReturnType = returntype map { namedToNameless(_, newTypeContext) }
         nameless.Def(typeformals.size, formals.size, newbody, newArgTypes, newReturnType)
       }
@@ -253,21 +301,20 @@ trait NamedToNameless {
 }	
 
 
-trait hasArgumentMap[X] {
+trait hasArgumentRemap[X] {
   self : X =>
   
-  def map(f : Argument => Argument): X
+  def remapArgument(f : Argument => Argument): X
 }
 
-trait ArgumentSubstitution[X] extends NamedAST with hasArgumentMap[X] {
+trait ArgumentSubstitution[X] extends NamedAST with hasArgumentRemap[X] {
   self : X =>
 	
-    // FIXME: Is equals correct here?
   def subst(a: Argument, x: Argument): X = 
-	  this map (y => if (y equals x) { a } else { y })
+	  this remapArgument (y => if (y equals x) { a } else { y })
   
   def substAllArgs(subs: List[(Argument, Argument)]): X = {
-	  this map (y => {
+	  this remapArgument (y => {
 	     val options = for ((a,x) <- subs if y equals x) yield a
 	     options match {
 	    	 case Nil => y
@@ -287,5 +334,39 @@ trait ArgumentSubstitution[X] extends NamedAST with hasArgumentMap[X] {
   
   
 	
+}
+
+trait hasTypeRemap[X] {
+  self : X =>
+  
+  def remapType(f : Typevar => Type): X
+}
+
+trait TypeSubstitution[X] extends NamedAST with hasTypeRemap[X] {
+  self : X =>
+    
+  def substType(t: Type, u: Typevar): X = 
+      this remapType (y => if (y equals u) { t } else { y })
+  
+  def substTypes(subs: List[(Type, Typevar)]): X = {
+      this remapType (y => {
+         val options = for ((a,x) <- subs if y equals x) yield a
+         options match {
+             case Nil => y
+             case List(a) => a
+             case _ => this !! ("Conflicting substitutions on " + y + ": " + options) 
+         }
+      })
+  }
+  
+  def substType(t: Type, s: String): X = substType(t, new NamedTypevar(s))
+  
+  def substAllTypes(subs: List[(Type, String)]): X = {
+      val newsubs = for ((t,s) <- subs) yield (t, new NamedTypevar(s))
+      substTypes(newsubs)
+  }
+  
+  
+    
 }
 

@@ -120,7 +120,15 @@ object ConsConstructor extends TotalSite with UntypedSite {
 
 object RecordConstructor extends UnimplementedSite //FIXME:TODO: Implement
 
-
+object DatatypeBuilder extends TotalSite with UntypedSite {
+  
+  override def name = "Datatype"
+  def evaluate(args: List[Value]) =
+    args match {
+      case List(OrcTuple(vs @ _::_)) => OrcList(Nil) //TODO: finish 
+    }
+  
+}
 
 // Extractors
 

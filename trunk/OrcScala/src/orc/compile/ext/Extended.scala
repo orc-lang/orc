@@ -63,28 +63,31 @@ case class TypeAssertion(e: Expression, t: Type) extends Expression
 case class Capsule(body: Expression) extends Expression
 
 
-sealed abstract class Declaration extends AST
+sealed abstract class Declaration extends AST 
 
 case class Val(p: Pattern, e: Expression) extends Declaration
 case class Include(origin: String, decls: List[Declaration]) extends Declaration
 
-sealed abstract class DefDeclaration extends Declaration {
-	val name: String
+sealed abstract class NamedDeclaration extends Declaration {
+    val name: String
 }
+
+sealed abstract class DefDeclaration extends NamedDeclaration 
 case class Def(name: String, formals: List[List[Pattern]],returntype: Option[Type], body: Expression) extends DefDeclaration
 case class DefCapsule(name: String, formals: List[List[Pattern]], returntype: Option[Type], body: Expression) extends DefDeclaration
 case class DefSig(name: String, typeformals: List[String], argtypes: List[List[Type]], returntype: Option[Type]) extends DefDeclaration
 
-sealed abstract class TypeDeclaration extends Declaration
+sealed abstract class SiteDeclaration extends NamedDeclaration
+case class SiteImport(name: String, sitename: String) extends SiteDeclaration
+case class ClassImport(name: String, classname: String) extends SiteDeclaration
+
+sealed abstract class TypeDeclaration extends NamedDeclaration
 case class TypeAlias(name: String, typeformals: List[String] = Nil, aliasedtype: Type) extends TypeDeclaration
 case class TypeImport(name: String, classname: String) extends TypeDeclaration
 case class Datatype(name: String, typeformals: List[String] = Nil, constructors: List[Constructor]) extends TypeDeclaration
 
 case class Constructor(name: String, types: List[Option[Type]]) extends AST
 
-sealed abstract class SiteDeclaration extends Declaration
-case class SiteImport(name: String, sitename: String) extends SiteDeclaration
-case class ClassImport(name: String, classname: String) extends SiteDeclaration
 
 
 
