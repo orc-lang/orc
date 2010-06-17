@@ -23,10 +23,9 @@ def capsule Servercall() =
 stop
 
 {- Typical call
-
+-}
 def Server(j) = j
 
 val serve = Servercall().main
 
 serve(5)
--}
