@@ -9,6 +9,5 @@
 
 {- 
 OUTPUT:
-[error to console, silent output]
-java.lang.ArithmeticException
+Error: java.lang.ArithmeticException: BigInteger divide by zero
 -}

@@ -44,6 +44,7 @@ trait hasFreeVars {
 
 sealed abstract class NamedAST extends AST with NamedToNameless {
   def prettyprint() = (new PrettyPrint()).reduce(this)
+  override def toString() = prettyprint()
 }
 
 sealed abstract class Expression
