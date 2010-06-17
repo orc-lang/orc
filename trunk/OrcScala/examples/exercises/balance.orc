@@ -13,7 +13,7 @@ type inType = Number
 type outType = Number
 type siteType = (lambda(inType) :: outType)
 
-def balance(Buffer[inType], Buffer[outType], List[siteType])
+def balance(Buffer[inType], Buffer[outType], List[siteType]) :: Bot
 def balance(in, out, ps) =
   def makeBuffer(_ :: Top) = Buffer[outType]()
   val bs = map(makeBuffer, ps)
