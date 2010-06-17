@@ -57,7 +57,7 @@ def start() =
   then (state := 1 >> cumstop := cumstop? + clk() - laststop?)
   else signal
 
-def stop() = 
+def halt() = 
  if (state? = 1)
   then (state := 2 >> laststop := clk() >> laststop? - cumstop?)
   else signal 
