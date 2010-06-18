@@ -40,6 +40,31 @@ type Option = "orc.values.sites.compatibility.type.structured.OptionType"
 site Some = "orc.lib.builtin.SomeConstructor"
 site None = "orc.lib.builtin.NoneConstructor"
 
+
+{--
+@site Cell[A]() :: Cell[A]
+Create a write-once storage location.
+
+Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: 5 5
+val c = Cell()
+  c.write(5) >> c.read()
+| Rtimer(1) >> ( c.write(10) ; c.read() )]]></programlisting>
+
+@method Cell[A].read() :: A
+Read a value from the cell. If the cell does not yet have a value, block until it receives one.
+
+@method Cell[A].readnb() :: A
+Read a value from the cell. If the cell does not yet have a value, halt.
+
+@method Cell[A].write() :: Signal
+Write a value to the cell. If the cell already has a value, halt.
+--}
+site Cell = orc.lib.state.Cell
+--type Cell = orc.lib.state.types.CellType
+
+
 site Ref = "orc.lib.state.Ref"
 type Ref = "orc.lib.state.types.RefType"
 
