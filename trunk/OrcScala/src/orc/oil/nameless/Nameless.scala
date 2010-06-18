@@ -131,7 +131,7 @@ object AddNames {
       case left ow right => named.Otherwise(recurse(left), recurse(right))
       case DeclareDefs(defs, body) => {
         val defnames = defs map { _ => new TempVar() }
-        val newcontext = defnames ::: context
+        val newcontext = defnames.reverse ::: context
         val newdefs = for ( (x,d) <- defnames zip defs) yield namelessToNamed(x, d, newcontext, typecontext)
         val newbody = namelessToNamed(body, newcontext, typecontext)
         named.DeclareDefs(newdefs, newbody)
