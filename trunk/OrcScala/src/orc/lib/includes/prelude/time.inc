@@ -56,7 +56,7 @@ Return the current logical time, as measured by logical
 clock which was current when <code>Ltimer.time</code> was evaluated.
 Ranges from 0 to <code>Integer.MAX_VALUE</code>.
 --}
-site Ltimer = "orc.lib.time.Ltimer"
+--site Ltimer = "orc.lib.time.Ltimer"
 
 {--
 @def withLtimer[A](lambda () :: A) :: A
@@ -66,6 +66,7 @@ Within the computation represented by the thunk, calls to
 outer clock can only advance when the inner clock becomes
 quiescent.
 --}
+{-
 def withLtimer[A](lambda () :: A) :: A
 def withLtimer(thunk) =
   site pushLtimer = "orc.lib.time.PushLtimer"
@@ -75,7 +76,7 @@ def withLtimer(thunk) =
   thunk() >x>
   popLtimer() >>
   x
-
+-}
 {--
 @def metronome(Integer) :: Signal
 Publish a signal at regular intervals, indefinitely. The period is given by the
