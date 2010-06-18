@@ -11,9 +11,8 @@ picknum()
 {-
 OUTPUT:
 1
-
-OR
-
+-}
+{-
 OUTPUT:
 2
 -}
