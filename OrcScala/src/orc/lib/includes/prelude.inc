@@ -13,7 +13,7 @@
 
 include "prelude/core.inc"
 include "prelude/state.inc"
---FIXME:include "prelude/time.inc" -- not implemented yet
+include "prelude/time.inc" -- not implemented yet
 include "prelude/idioms.inc"
 include "prelude/list.inc"
 include "prelude/text.inc"
