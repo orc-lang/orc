@@ -461,3 +461,14 @@ abstract class Orc extends OrcExecutionAPI {
   }
 
 }
+
+
+/**
+ * A typical setup for an Orc execution; emit and halted are still abstract.
+ */
+trait StandardOrcExecution extends Orc {
+  def invoke(t: this.Token, s: Site, vs: List[Value]) { s.call(vs,t) }
+  def expressionPrinted(s: String) { print(s) }
+  def caught(e: Throwable) { e.printStackTrace() }
+  def schedule(ts: List[Token]) { for (t <- ts) t.run }
+}

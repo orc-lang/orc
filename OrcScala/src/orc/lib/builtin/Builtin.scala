@@ -24,6 +24,11 @@ import orc.values._
 import orc.values.sites._
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
+import orc.run.StandardOrcExecution
+import scala.actors.Actor
+import orc.TokenAPI
+import orc.oil.nameless.Call
+import orc.oil.nameless.Constant
 
 // Logic
 
@@ -186,9 +191,40 @@ object SiteSite extends TotalSite with UntypedSite {
   override def name = "Site"
   def evaluate(args: List[Value]) =
     args match {
-      case List(c : Closure) => Signal //FIXME:TODO: finish
+      case List(c : Closure) => {
+        new Site with UntypedSite {
+          override def name = "_capsule_"
+          def call(args: List[Value], token: TokenAPI) {
+            val capsule = new CapsuleExecution(token, c)
+            capsule.start
+          }
+        }
+      }
       case List(a) => throw new ArgumentTypeMismatchException(0, "Closure", a.getClass().toString())
       case _ => throw new ArityMismatchException(1, args.size)
+  }
+}
+
+class CapsuleExecution(caller: TokenAPI, code: Closure) extends StandardOrcExecution with Actor {
+  
+  var listener: Option[TokenAPI] = Some(caller)
+  
+  def act() {
+    this.run(Call(Constant(code), Nil, Some(Nil)))
+  }
+  
+  def emit(v: Value) { 
+    listener foreach { 
+      listener = None
+      _.publish(v)
+    }
+  }
+  
+  def halted { 
+    listener foreach {
+      listener = None
+      _.halt
+    }
   }
 }
 
