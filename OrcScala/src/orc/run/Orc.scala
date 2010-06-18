@@ -22,6 +22,7 @@ import orc.oil.nameless._
 import orc.PartialMapExtension._
 import orc.values.sites.Site
 import orc.values.Value
+import orc.values.Closure
 import orc.error.OrcException
 import orc.error.runtime.TokenException
 import orc.error.runtime.JavaException
@@ -187,21 +188,7 @@ abstract class Orc extends OrcExecutionAPI {
   case class BoundValue(v: Value) extends Binding
   case class BoundCell(g: Groupcell) extends Binding
   implicit def ValuesAreBindings(v: Value): Binding = BoundValue(v)
-  implicit def GroupcellsAreBindings(g: Groupcell): Binding = BoundCell(g)
-  
-  
-  // Closures //
-  class Closure(d: Def) extends Value {
-    val arity: Int = d.arity
-    val body: Expression = d.body
-    var context: List[Binding] = Nil
-    val altbody: Expression = d.body
-  }
-  object Closure {
-    def unapply(c: Closure) = Some((c.arity, c.body, c.context))
-  }
-  
-  
+  implicit def GroupcellsAreBindings(g: Groupcell): Binding = BoundCell(g) 
   
   // Control Frames //
   abstract class Frame {
@@ -374,7 +361,7 @@ abstract class Orc extends OrcExecutionAPI {
                   case _ => push(new FunctionFrame(node, env))
                 }
       
-                this.env = newcontext      
+                this.env = newcontext map BoundValue      
                 for (a <- actuals) { bind(a) }
                 
                 schedule(this.move(closure.altbody))				  					
@@ -435,17 +422,33 @@ abstract class Orc extends OrcExecutionAPI {
           }
     
           case decldefs@ DeclareDefs(defs, body) => {
-            val cs = defs map ( (d: Def) => new Closure(d) )
+            
             
             /* Closure compaction: Bind only free variables
              * of the defs in the closure's context */
-            var context: List[Binding] = Nil
-            for(n <- decldefs.freeVarList)
-                context = env(n) :: context
             
-            for (c <- cs) { bind(c); context = c :: context }
-            for (c <- cs) { c.context = context }
-            this.move(body).run
+            /* Closures are strict, so we use a partialMap of resolve.
+             * If any variable fails to resolve, then resolveContext
+             * is None, and the blocked token will resume once one
+             * or more unbound variables becomes bound.
+             */
+            // Dirt simple O(n^2) solution.
+            // TODO: Optimize this to O(n) instead of O(n^2) in the case of many unbound vars;
+            //       the token itself must keep track of the bound values discovered so far.
+            val resolveContext = decldefs.freeVarList partialMap { n:Int => resolve(Variable(n)) }
+            
+            resolveContext match {
+              case Some(vs) => {
+                var context: List[Value] = vs
+                
+                val cs = defs map ( (d: Def) => new Closure(d) )
+                for (c <- cs) { bind(c); context = c :: context }
+                for (c <- cs) { c.context = context }
+                
+                this.move(body).run
+              }
+              case None => { /* Blocked on some unbound variable. Do nothing */ }
+            }
           }
           case HasType(expr, _) => this.move(expr).run
           case DeclareType(_, expr) => this.move(expr).run

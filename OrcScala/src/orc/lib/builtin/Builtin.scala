@@ -87,9 +87,8 @@ object NoneConstructor extends TotalSite with UntypedSite {
   }
 }
 
-object SomeConstructor extends TotalSite {
+object SomeConstructor extends TotalSite with UntypedSite {
   override def name = "Some"
-  def orcType(argTypes: List[Type]) = null //TODO:FIXME: Implement this
   def evaluate(args: List[Value]) =
     args match {
       case List(v) => OrcOption(Some(v))
@@ -125,7 +124,7 @@ object DatatypeBuilder extends TotalSite with UntypedSite {
   override def name = "Datatype"
   def evaluate(args: List[Value]) =
     args match {
-      case List(OrcTuple(vs @ _::_)) => OrcList(Nil) //TODO: finish 
+      case List(OrcTuple(vs @ _::_)) => OrcList(Nil) //FIXME:TODO: finish 
     }
   
 }
@@ -137,18 +136,19 @@ object NoneExtractor extends PartialSite with UntypedSite {
   def evaluate(args: List[Value]) =
     args match {
       case List(OrcOption(None)) => Some(Signal)
-      case List(a) => throw new ArgumentTypeMismatchException(0, "None", a.getClass().toString())
+      case List(OrcOption(_)) => None
+      case List(a) => throw new ArgumentTypeMismatchException(0, "Option", a.getClass().toString())
       case _ => throw new ArityMismatchException(1, args.size)
   }
 }
 
-object SomeExtractor extends PartialSite {
+object SomeExtractor extends PartialSite with UntypedSite {
   override def name = "Some?"
-  def orcType(argTypes: List[Type]) = null //TODO:FIXME: Implement this
   def evaluate(args: List[Value]) =
     args match {
       case List(OrcOption(Some(v))) => Some(v)
-      case List(a) => throw new ArgumentTypeMismatchException(0, "Some", a.getClass().toString())
+      case List(OrcOption(_)) => None
+      case List(a) => throw new ArgumentTypeMismatchException(0, "Option", a.getClass().toString())
       case _ => throw new ArityMismatchException(1, args.size)
   }
 }
@@ -160,7 +160,8 @@ object NilExtractor extends PartialSite with UntypedSite {
   def evaluate(args: List[Value]) =
     args match {
       case List(OrcList(Nil)) => Some(Signal)
-      case List(a) => throw new ArgumentTypeMismatchException(0, "Nil", a.getClass().toString())
+      case List(OrcList(_)) => None
+      case List(a) => throw new ArgumentTypeMismatchException(0, "List", a.getClass().toString())
       case _ => throw new ArityMismatchException(1, args.size)
   }
 }
@@ -170,6 +171,7 @@ object ConsExtractor extends PartialSite with UntypedSite {
   def evaluate(args: List[Value]) =
     args match {
       case List(OrcList(v :: vs)) => Some(OrcTuple(List(v, OrcList(vs))))
+      case List(OrcList(_)) => None
       case List(a) => throw new ArgumentTypeMismatchException(0, "List", a.getClass().toString())
       case _ => throw new ArityMismatchException(1, args.size)
   }
@@ -180,5 +182,20 @@ object FindExtractor extends UnimplementedSite //FIXME:TODO: Implement
 
 // Site site
 
-object SiteSite extends UnimplementedSite //FIXME:TODO: Implement
+object SiteSite extends TotalSite with UntypedSite {
+  override def name = "Site"
+  def evaluate(args: List[Value]) =
+    args match {
+      case List(c : Closure) => Signal //FIXME:TODO: finish
+      case List(a) => throw new ArgumentTypeMismatchException(0, "Closure", a.getClass().toString())
+      case _ => throw new ArityMismatchException(1, args.size)
+  }
+}
+
+
+
+
+
+
+
 

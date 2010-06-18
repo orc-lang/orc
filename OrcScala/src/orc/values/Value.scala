@@ -17,6 +17,8 @@ package orc.values
 
 import orc.values.sites.PartialSite
 import orc.values.sites.UntypedSite
+import orc.oil.nameless.Def
+import orc.oil.nameless.Expression
 
 abstract class Value extends AnyRef {
   def toOrcSyntax(): String = super.toString()
@@ -65,3 +67,18 @@ case class OrcOption(contents: Option[Value]) extends Value {
     case None => "None()"
   }
 }
+
+
+
+// Closures //
+class Closure(d: Def) extends Value {
+    val arity: Int = d.arity
+    val body: Expression = d.body
+    var context: List[Value] = Nil
+    val altbody: Expression = d.body
+}
+object Closure {
+    def unapply(c: Closure) = Some((c.arity, c.body, c.context))
+}
+
+
