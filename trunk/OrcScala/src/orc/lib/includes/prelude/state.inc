@@ -99,6 +99,183 @@ def swap(r,s) = (r?,s?) >(rval,sval)> (r := sval, s := rval) >> signal
 
 
 {--
+@site Semaphore(Integer) :: Semaphore
+Return a semaphore with the given value. The semaphore maintains the invariant
+that its value is always non-negative.
+
+An example using a semaphore as a lock for a critical section:
+<programlisting language="orc-demo"><![CDATA[
+-- Prints:
+-- Entering critical section
+-- Leaving critical section
+val lock = Semaphore(1)
+lock.acquire() >>
+println("Entering critical section") >>
+println("Leaving critical section") >>
+lock.release()]]></programlisting>
+
+@method Semaphore.acquire() :: Signal
+If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a signal.
+If the semaphore's value is <code>0</code>, block until it becomes greater than <code>0</code>.
+
+@method Semaphore.acquirenb() :: Signal
+If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a signal.
+If the semaphore's value is <code>0</code>, halt.
+
+@method Semaphore.release() :: Signal
+If any calls to <code>acquire</code> are blocked, allow the oldest such call
+to return.  Otherwise, increment the value of the semaphore.  This may
+increment the value beyond that with which the semaphore was constructed.  
+
+@method Semaphore.snoop() :: Signal
+If any calls to <code>acquire</code> are blocked, return a signal.
+Otherwise, block until some call to <code>acquire</code> blocks.
+
+@method Semaphore.snoopnb() :: Signal
+If any calls to <code>acquire</code> are blocked, return a signal.
+Otherwise, halt.
+--}
+site Semaphore = orc.lib.state.Semaphore
+--type Semaphore = orc.lib.state.types.SemaphoreType
+
+{--
+@site Buffer[A]() :: Buffer[A]
+<!-- XSL/FO doesn't like me using an anchor tag here -->
+<para id="orc.lib.Buffer.close">
+Create a new buffer (FIFO channel) of unlimited size. A buffer supports
+get, put and close operations.
+</para>
+
+A buffer may be either empty or non-empty, and either open or closed.  When
+empty and open, calls to <code>get</code> block.  When empty and closed, calls
+to <code>get</code> halt.  When closed, calls to <code>put</code> halt.  In all
+other cases, calls return normally.
+
+Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: 10
+val b = Buffer()
+  Rtimer(1000) >> b.put(10) >> stop
+| b.get()]]></programlisting>
+
+@method Buffer[A].get() :: A
+Get an item from the buffer. If the buffer is open and no items are available,
+block until one becomes available. If the buffer is <link
+linkend="orc.lib.Buffer.close">closed</link> and no items are available, halt.
+
+@method Buffer[A].getnb() :: A
+Get an item from the buffer. If no items are available, halt.
+
+@method Buffer[A].put(A) :: Signal
+Put an item in the buffer. If the buffer is <link
+linkend="orc.lib.Buffer.close">closed</link>, halt.
+
+@method Buffer[A].close() :: Signal
+Close the buffer and block until it is empty.
+This has the effect of immediately causing any blocked calls to
+<code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
+will halt, and once the buffer becomes empty, any subsequent calls to
+<code>get</code> will halt.
+
+@method Buffer[A].closenb() :: Signal
+Close the buffer and return a signal immediately.
+This has the effect of immediately causing any blocked calls to
+<code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
+will halt, and once the buffer becomes empty, any subsequent calls to
+<code>get</code> will halt.
+
+@method Buffer[A].isClosed() :: Boolean
+If the buffer is currently closed, return true, otherwise return false.
+
+@method Buffer[A].getAll() :: List[A]
+Get all of the items currently in the buffer, emptying the buffer and returning
+a list of the items in the order they were added. If there are no items in the
+buffer, return an empty list.
+--}
+site Buffer = orc.lib.state.Buffer
+--type Buffer = orc.lib.state.types.BufferType
+
+
+{--
+@site BoundedBuffer[A](Integer) :: BoundedBuffer[A]
+Create a new buffer (FIFO channel) with the given number of slots.
+Putting an item into the buffer fills a slot, and getting an item opens a slot.
+A buffer with zero slots is equivalent to a
+<link linkend="orc.lib.state.SyncChannel">synchronous channel</link>.
+
+A bounded buffer may be empty, partly filled, or full, and either open or
+closed.  When empty and open, calls to <code>get</code> block.  When empty and
+closed, calls to <code>get</code> halt. When full and open, calls to
+<code>put</code> block. When closed, calls to <code>put</code> halt.  In all
+other cases, calls return normally.
+
+Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: "Put 1" "Got 1" "Put 2" "Got 2"
+val c = BoundedBuffer(1)
+  c.put(1) >> "Put " + 1
+| c.put(2) >> "Put " + 2
+| Rtimer(1000) >> (
+    c.get() >n> "Got " + n
+  | c.get() >n> "Got " + n
+  )]]></programlisting>
+
+@method BoundedBuffer[A].get() :: A
+Get an item from the buffer. If the buffer is open and no items are available,
+block until one becomes available. If the buffer is <link
+linkend="orc.lib.BoundedBuffer.close">closed</link> and no items are available, halt.
+
+@method BoundedBuffer[A].getnb() :: A
+Get an item from the buffer. If no items are available, halt.
+
+@method BoundedBuffer[A].put(A) :: Signal
+Put an item in the buffer. If no slots are open, block until one becomes open.
+If the buffer is <link linkend="orc.lib.BoundedBuffer.close">closed</link>, halt.
+
+@method BoundedBuffer[A].putnb(A) :: Signal
+Put an item in the buffer. If no slots are open, halt.
+If the buffer is <link linkend="orc.lib.BoundedBuffer.close">closed</link>, halt.
+
+@method BoundedBuffer[A].close() :: Signal
+<!-- XSL/FO doesn't like me using an anchor tag here -->
+<para id="orc.lib.BoundedBuffer.close">
+Close the buffer and block until it is empty.
+This has the effect of immediately causing any blocked calls to
+<code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
+will halt, and once the buffer becomes empty, any subsequent calls to
+<code>get</code> will halt. Note that any blocked calls to <code>put</code>
+initiated prior to closing the buffer may still be allowed to return as usual.
+</para>
+
+@method BoundedBuffer[A].closenb() :: Signal
+Close the buffer and return a signal immediately.
+This has the effect of immediately causing any blocked calls to
+<code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
+will halt, and once the buffer becomes empty, any subsequent calls to
+<code>get</code> will halt. Note that any blocked calls to <code>put</code>
+initiated prior to closing the buffer may still be allowed to return as usual.
+
+@method BoundedBuffer[A].isClosed() :: Boolean
+If the buffer is currently closed, return true, otherwise return false.
+
+@method BoundedBuffer[A].getOpen() :: Integer
+Return the number of open slots in the buffer. Because of concurrency
+this value may become out-of-date so it should only be used for debugging
+or statistical measurements.
+
+@method BoundedBuffer[A].getBound() :: Integer
+Return the total number of slots (open or filled) in the buffer.
+
+@method BoundedBuffer[A].getAll() :: [A]
+Get all of the items currently in the buffer or waiting to be added, emptying
+the buffer and returning a list of the items in the order they were added. If
+there are no items in the buffer or waiting to be added, return an empty list.
+--}
+site BoundedBuffer = orc.lib.state.BoundedBuffer
+--type BoundedBuffer = orc.lib.state.types.BoundedBufferType
+
+
+{--
 @site Array[A](Integer) :: Array[A]
 Create a new native array of the given size. The array is initialized
 to contain <code>null</code>s.
