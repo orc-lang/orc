@@ -50,6 +50,7 @@ object TypeChecker {
         typeSynth(body, defTypes.reverse:::context, typeContext)
       }
       case HasType(body, expectedType) => typeCheck(body, expectedType, context, typeContext) ; expectedType
+      case DeclareType(t, body) => typeSynth(body, context, t :: typeContext)
       case Constant(value) => Top //FIXME
       case Variable(index) => context(index)
       }

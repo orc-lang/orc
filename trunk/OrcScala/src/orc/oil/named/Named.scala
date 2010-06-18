@@ -20,9 +20,9 @@ import orc.values.Value
 import orc.AST
 
 // The supertype of all variable binding nodes
-trait Scope
+sealed trait Scope
 // The supertype of all type variable binding nodes
-trait TypeScope
+sealed trait TypeScope
 
 
 trait Var extends Argument
@@ -61,13 +61,14 @@ with TypeSubstitution[Expression]
   lazy val freevars:Set[Var] = {
     this match {
       case x:Var => Set(x)
-      case Call(target,args,_) => target.freevars ++ args.flatMap(_.freevars)
+      case Call(target,args,_) => target.freevars ++ (args flatMap { _.freevars })
       case left || right => left.freevars ++ right.freevars
       case left > x > right => left.freevars ++ (right.freevars - x)
       case left < x < right => (left.freevars - x) ++ right.freevars
       case left ow right => left.freevars ++ right.freevars
-      case DeclareDefs(defs,body) => (body.freevars ++ defs.flatMap(_.freevars)) -- defs.map(_.name)
-      case HasType(body,typ) => body.freevars
+      case DeclareDefs(defs,body) => (body.freevars ++ (defs flatMap { _.freevars }) ) -- (defs map { _.name }) 
+      case HasType(body, _) => body.freevars
+      case DeclareType(_, _, body) => body.freevars
       case _ => Set.empty
     }
   }
@@ -126,6 +127,7 @@ with TypeSubstitution[Expression]
 	        	}
 			}
 			case HasType(body, typ) => HasType(body.removeUnusedDefs(), typ)
+			case DeclareType(u, t, body) => DeclareType(u, t, body.removeUnusedDefs())
 			case _ => this
 		}
 	}

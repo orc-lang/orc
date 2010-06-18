@@ -204,7 +204,9 @@ abstract class Orc extends OrcExecutionAPI {
   
   
   // Control Frames //
-  abstract class Frame extends ((Token, Value) => Unit)
+  abstract class Frame {
+    def apply(t: Token, v: Value): Unit
+  }
   
   case class BindingFrame(n: Int) extends Frame {
     def apply(t: Token, v: Value) {
@@ -345,11 +347,12 @@ abstract class Orc extends OrcExecutionAPI {
         node match {
           case Stop() => halt
           case (a: Argument) => resolve(a).foreach(publish(_))
-          case (Call(target, args, typeArgs)) => try {
+          case (Call(target, args, typeArgs)) => try {            
             resolve(target).foreach({
               case closure@ Closure(arity, body, newcontext) => {
                 if (arity != args.size) halt /* Arity mismatch. */
-
+                val actuals = args map lookup
+                
                 /* 1) Push a function frame (if this is not a tail call),
                  *    referring to the current environment
                  * 2) Change the current environment to the closure's
@@ -371,10 +374,9 @@ abstract class Orc extends OrcExecutionAPI {
                   case _ => push(new FunctionFrame(node, env))
                 }
       
-                this.env = newcontext
-      
-                for (a <- args) { bind(lookup(a)) }
-      
+                this.env = newcontext      
+                for (a <- actuals) { bind(a) }
+                
                 schedule(this.move(closure.altbody))				  					
               }
               case (s: Site) => {

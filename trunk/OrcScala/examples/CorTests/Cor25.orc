@@ -9,5 +9,5 @@
 
 {- 
 OUTPUT:
-Error: java.lang.ArithmeticException: BigInteger divide by zero
+Error: orc.error.runtime.JavaException: java.lang.ArithmeticException: BigInteger divide by zero
 -}

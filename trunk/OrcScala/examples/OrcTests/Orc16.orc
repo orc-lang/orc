@@ -17,9 +17,25 @@ V ran
 U ran
 F ran
 G ran
-
-OR
-
-V and U may switch places and F and G may switch places
-however V and U must strictly come before F and G
+-}
+{-
+OUTPUT:
+U ran
+V ran
+F ran
+G ran
+-}
+{-
+OUTPUT:
+V ran
+U ran
+G ran
+F ran
+-}
+{-
+OUTPUT:
+U ran
+V ran
+G ran
+F ran
 -}

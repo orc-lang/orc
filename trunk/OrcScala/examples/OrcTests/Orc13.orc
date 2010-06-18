@@ -10,9 +10,8 @@ let(2, 3, 4) >(x,y,z)> let (x | z)
 {-
 OUTPUT:
 4
-
-OR
-
+-}
+{-
 OUTPUT:
 2
 -}
