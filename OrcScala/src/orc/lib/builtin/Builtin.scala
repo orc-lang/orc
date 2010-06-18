@@ -195,7 +195,7 @@ object SiteSite extends TotalSite with UntypedSite {
         new Site with UntypedSite {
           override def name = "_capsule_"
           def call(args: List[Value], token: TokenAPI) {
-            val capsule = new CapsuleExecution(token, c)
+            val capsule = new CapsuleExecution(token, c, args)
             capsule.start
           }
         }
@@ -205,12 +205,12 @@ object SiteSite extends TotalSite with UntypedSite {
   }
 }
 
-class CapsuleExecution(caller: TokenAPI, code: Closure) extends StandardOrcExecution with Actor {
+class CapsuleExecution(caller: TokenAPI, code: Closure, args: List[Value]) extends StandardOrcExecution with Actor {
   
   var listener: Option[TokenAPI] = Some(caller)
   
   def act() {
-    this.run(Call(Constant(code), Nil, Some(Nil)))
+    this.run(Call(Constant(code), args map Constant, Some(Nil)))
   }
   
   def emit(v: Value) { 
