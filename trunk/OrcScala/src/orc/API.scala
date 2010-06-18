@@ -42,7 +42,7 @@ trait CompilerEnvironmentIfc {
 }
 
 /**
- * The interface from a caller to and Orc execution machine 
+ * The interface from a caller to an Orc execution machine 
  */
 trait OrcExecutionAPI {
   type Token <: TokenAPI

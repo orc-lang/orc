@@ -2,17 +2,13 @@ package orc
 
 import orc.compile.OrcCompiler
 import orc.compile.parse.OrcReader
-import orc.run.Orc
+import orc.run.StandardOrcExecution
 import orc.values.Value
 import orc.values.sites.Site
 
-class ExperimentalOrc extends Orc {
+class ExperimentalOrc extends StandardOrcExecution {
   def emit(v: Value) { print("Published: " + v + "   = " + v.toOrcSyntax() + "\n") }
   def halted { print("Done. \n") }
-  def invoke(t: this.Token, s: Site, vs: List[Value]) { s.call(vs,t) }
-  def expressionPrinted(s: String) { print(s) }
-  def caught(e: Throwable) { e.printStackTrace() }
-  def schedule(ts: List[Token]) { for (t <- ts) t.run }
 }
 
 object ExperimentOptions extends OrcOptions {
