@@ -479,11 +479,16 @@ object Translator {
 					val subComputes = subComputeList.flatten
 					val subBindings = subBindingsList.flatten
 					
+					/* Test that the pattern's size matches the source tuple's size */
+					val m = new TempVar()
+					val testSizeExpr = callVar(x,Field("fits")) > m > callVar(m,Literal(vars.size))
+					val testSize = (testSizeExpr,new TempVar())
+					
 					var computeElements: List[(Expression, TempVar)] = Nil
 					for ((y, i) <- vars.zipWithIndex) {
 					  computeElements = (makeNth(x,i), y) :: computeElements
 					}					
-					(computeElements ::: subComputes, subBindings)
+					(testSize :: computeElements ::: subComputes, subBindings)
 				}
 				case ext.ListPattern(Nil) => decomposePattern(ext.ConstantPattern(Nil), x)
 				case ext.ListPattern(ps) => {
