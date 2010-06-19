@@ -377,7 +377,7 @@ abstract class Orc extends OrcExecutionAPI {
               }
               case uncallable => {
                 halt
-                throw new UncallableValueException("You can't call a " + uncallable)
+                throw new UncallableValueException("You can't call the "+uncallable.getClass().getName()+" \""+uncallable.toString()+"\"")
               }
             })
           } catch {

@@ -17,7 +17,6 @@ package test.orc
 
 import orc.run.Orc
 import orc.oil.nameless.Expression
-import orc.values.Literal
 import orc.values.Value
 import orc.values.sites.Site
 import java.lang._
