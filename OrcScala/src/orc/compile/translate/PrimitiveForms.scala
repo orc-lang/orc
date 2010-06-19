@@ -88,6 +88,7 @@ object PrimitiveForms {
 	def callOperator(opName : String, args : List[Argument]) = 
 		Call(NamedVar(opName), args, None)
 		
-		
-		
+	def callVar(siteArg: TempVar, arg: Value) = 
+      Call(siteArg,List(Constant(arg)),None)
+      
 }

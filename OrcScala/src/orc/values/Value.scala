@@ -18,6 +18,7 @@ package orc.values
 import orc.values.sites.PartialSite
 import orc.values.sites.UntypedSite
 import orc.oil.nameless.Def
+import orc.oil.nameless.Type
 import orc.oil.nameless.Expression
 
 abstract class Value extends AnyRef {
@@ -53,6 +54,14 @@ case class OrcTuple(elements: List[Value]) extends PartialSite with UntypedSite 
   def evaluate(args: List[Value]) = 
     args match {
       case List(Literal(i: Int)) if (0 <= i) && (i < elements.size) => Some(elements(i))
+      case List(Field("fits")) => Some(new PartialSite with UntypedSite {
+        def evaluate(arguments: List[Value]) = {
+          arguments.head match {
+            case Literal(length) => if(length == elements.size) Some(Signal) else None
+            case _ => None
+          }
+        }
+      }) // FIXME: Implement Tuple and fits as a DOT site.
       case _ => None
     }
   override def toOrcSyntax() = "(" + commaSepValues(elements) + ")" 
