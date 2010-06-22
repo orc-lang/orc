@@ -28,6 +28,7 @@ import orc.values.sites.compatibility.SiteAdaptor;
  * @author wcook, quark, dkitchin
  */
 public class Rtimer extends SiteAdaptor {
+    private static java.util.Timer timer = new java.util.Timer(); 
 	@Override
 	public void callSite(final Args args, final TokenAPI caller) throws TokenException {
 		String f;
@@ -35,8 +36,7 @@ public class Rtimer extends SiteAdaptor {
 			f = args.fieldName();
 		} catch (final TokenException e) {
 			// default behavior is to wait
-		    java.util.Timer timer = new java.util.Timer(); 
-			timer.schedule(new TimerTask() {
+		  Rtimer.timer.schedule(new TimerTask() {
 				@Override
 				public void run() {
 					caller.publish(signal());
@@ -55,5 +55,4 @@ public class Rtimer extends SiteAdaptor {
 			throw new MessageNotUnderstoodException(f);
 		}
 	}
-
 }
