@@ -25,6 +25,9 @@ trait Site extends Value {
   def name: String = this.getClass().toString()
   def orcType(argTypes: List[Type]): Type
   override def toString() = this.name
+  def extract: Option[PartialSite] = {
+    throw new Exception("Site " + this + " has no default extractor.")
+  }
 }
 
 trait PartialSite extends Site {

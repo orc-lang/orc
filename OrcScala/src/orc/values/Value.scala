@@ -16,10 +16,12 @@
 package orc.values
 
 import orc.values.sites.PartialSite
+
 import orc.values.sites.UntypedSite
 import orc.oil.nameless.Def
 import orc.oil.nameless.Type
 import orc.oil.nameless.Expression
+import orc.lib.builtin.DataSite
 
 abstract class Value extends AnyRef {
   def toOrcSyntax(): String = super.toString()
@@ -47,8 +49,7 @@ case object Signal extends Value {
 
 case class Field(field: String) extends Value
 
-
-
+case class TaggedValues(tag: DataSite, values: List[Value]) extends Value
 
 case class OrcTuple(elements: List[Value]) extends PartialSite with UntypedSite {
   def evaluate(args: List[Value]) = 
