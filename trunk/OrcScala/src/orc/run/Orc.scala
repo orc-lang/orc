@@ -470,5 +470,23 @@ trait StandardOrcExecution extends Orc {
   def invoke(t: this.Token, s: Site, vs: List[Value]) { s.call(vs,t) }
   def expressionPrinted(s: String) { print(s) }
   def caught(e: Throwable) { e.printStackTrace() }
-  def schedule(ts: List[Token]) { for (t <- ts) t.run }
+  val worker = new Worker()
+  
+  import scala.actors.Actor
+  import scala.actors.Actor._
+
+  worker.start
+  
+  override def schedule(ts: List[Token]) { for (t <- ts) worker ! Some(t) }
+  class Worker extends Actor {
+    def act() {
+      loop {
+        react {
+          case Some(x:Token) => x.run
+          case _ =>
+            Console.println("Invalid Message to Worker Actor!")
+        }
+      }
+    }
+  }
 }
