@@ -66,7 +66,12 @@ with TypeSubstitution[Expression]
       case left > x > right => left.freevars ++ (right.freevars - x)
       case left < x < right => (left.freevars - x) ++ right.freevars
       case left ow right => left.freevars ++ right.freevars
-      case DeclareDefs(defs,body) => (body.freevars ++ (defs flatMap { _.freevars }) ) -- (defs map { _.name }) 
+      case DeclareDefs(defs,body) => {
+        val defSet = defs.toSet
+        val defFreeVars = defSet flatMap {_.freevars}
+        val defNameVars = defSet map {_.name }
+        (body.freevars ++ defFreeVars) -- defNameVars
+      }
       case HasType(body, _) => body.freevars
       case DeclareType(_, _, body) => body.freevars
       case _ => Set.empty
@@ -114,15 +119,13 @@ with TypeSubstitution[Expression]
 				val newbody = body.removeUnusedDefs()
 				// If none of the defs are bound in the body,
 	        	// just return the body.
-	        	if(body.freevars -- defs.map(_.name) isEmpty) {
-	        		newbody
+	        	val defNamesSet: Set[Var] = defs.toSet map ((a:Def) => a.name)
+                if(newbody.freevars intersect defNamesSet isEmpty) {
+                  newbody
 	        	} else {
-	        		def f(d: Def): Def = {
-	        			d match { 
-	        				case Def(name,args,body,t,a,r) => Def(name,args,body.removeUnusedDefs(),t,a,r)
-	        			}
-	        		}
-	        		val newdefs = defs.map(f)
+	        		val newdefs = defs.map({
+	        		  case Def(name,args,body,t,a,r) => Def(name,args,body.removeUnusedDefs(),t,a,r)
+	        		})
 	        		DeclareDefs(newdefs, newbody)
 	        	}
 			}
