@@ -129,9 +129,38 @@ object DatatypeBuilder extends TotalSite with UntypedSite {
   override def name = "Datatype"
   def evaluate(args: List[Value]) =
     args match {
-      case List(OrcTuple(vs @ _::_)) => OrcList(Nil) //FIXME:TODO: finish 
+      case List(OrcTuple(vs)) => {
+        val datasites: List[Value] = 
+          for (OrcTuple(Literal(name: String) :: List(Literal(arity: Int))) <- vs)
+            yield new DataSite(name,arity)
+        OrcTuple(datasites)
+      }
     }
+}
+
+class DataSite(name: String, arity: Int) extends Site with UntypedSite {
   
+  override def call(args: List[Value], token: TokenAPI) {
+      if(args.size != arity) 
+        throw new ArityMismatchException(arity, args.size)
+   
+      token.publish(new TaggedValues(this,args))
+  }
+  
+  override def extract = Some(new PartialSite  with UntypedSite {
+ 
+    override def evaluate(args: List[Value]) = {
+        args match {
+          case List(TaggedValues(tag,values)) => {
+            if (tag == DataSite.this)
+              Some(OrcTuple(values))
+            else 
+              None
+          }
+          case _ => None
+        }
+    }
+  })
 }
 
 // Extractors
@@ -182,7 +211,16 @@ object ConsExtractor extends PartialSite with UntypedSite {
   }
 }
 
-object FindExtractor extends UnimplementedSite //FIXME:TODO: Implement
+object FindExtractor extends TotalSite with UntypedSite {
+  override def name = "FindExtractor"
+  def evaluate(args: List[Value]) =
+    args match {
+      case List(s : Site) => s.extract match {
+        case Some(extractor) => extractor
+        case None => throw new Exception("Could not find extractor for site"+s)
+      }
+    }
+}
 
 
 // Site site
