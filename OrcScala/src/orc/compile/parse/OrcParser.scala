@@ -60,7 +60,7 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
   
   def parseBaseExpressionTail: Parser[Option[List[Expression]]] = (
         ")" ^^^ None
-      | wrapNewLines(",") ~> CommaSeparated(parseExpression) <~ ")" ^^ {Some(_)} 
+      | wrapNewLines(",") ~> CommaSeparated1(parseExpression) <~ ")" ^^ {Some(_)} 
   )
   
   def parseBaseExpression = (
@@ -127,7 +127,7 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
 
   def parsePruningCombinator = "<" ~~> (parsePattern?) <~~ "<"
 
-  def parseSequentialExpression =
+  def parseSequentialExpression = 
     parseInfixOpExpression interleaveRight parseSequentialCombinator apply Sequential
 
   def parseParallelExpression =
@@ -235,7 +235,7 @@ people intuitively use these operators.
             case (e, ":!:" ~ t) => TypeAssertion(e,t)
           }
         }
-      | failure("Goal expression expected.")
+//      | failure("Goal expression expected.")
   )
 
   def parseBasePatternTail: Parser[Option[List[Pattern]]] = (
@@ -347,6 +347,7 @@ people intuitively use these operators.
 
   // Add helper combinators for ( ... ) and [ ... ] forms
   def CommaSeparated[T](P : => Parser[T]): Parser[List[T]] = wrapNewLines(repsep(P, wrapNewLines(",")))
+  def CommaSeparated1[T](P : => Parser[T]): Parser[List[T]] = wrapNewLines(rep1sep(P, wrapNewLines(",")))
   def TupleOf[T](P : => Parser[T]): Parser[List[T]] = "(" ~> CommaSeparated(P) <~ ")"
   def ListOf[T](P : => Parser[T]): Parser[List[T]] = "[" ~> CommaSeparated(P) <~ "]"
 
@@ -366,14 +367,39 @@ people intuitively use these operators.
       phrase(parseConstantListTuple)(tokens)
   }
 
+  def enhanceErrorMsg(r : ParseResult[Expression]): ParseResult[Expression] = {
+    r match {
+      case Failure(msg, in) => {
+        if (msg.equals("``('' expected but EOF found")) {
+          Failure(msg+"\n"+
+          "This error usually means that the expression is incomplete.\n" +
+          "The following cases can create this parser problem:\n" +
+          "  1. The right hand side expression in a combinator is missing.\n" +
+          "  2. The expression missing after a comma.\n" +
+          "  3. The goal expression of the program is missing.\n"
+          , in)
+        } else if (msg.startsWith("`NewLine' expected but")) {
+          Failure(msg+"\n"+
+          "This error usually means that there are unexpected new lines\n" +
+          "right after the name of a function or site in a call. The ``(''\n" +
+          "should come after the name of the function or site and cannot\n" +
+          "be separated with new lines.\n"
+          , in)
+        }
+        else r
+      }
+      case _ => r
+    }
+  }
+  
   def scanAndParseProgram(s: String): ParseResult[Expression] = {
       val tokens = new lexical.Scanner(s)
-      phrase(parseProgram)(tokens)
+      enhanceErrorMsg(phrase(parseProgram)(tokens))
   }
 
   def scanAndParseProgram(r: Reader[Char]): ParseResult[Expression] = {
       val tokens = new lexical.OrcScanner(r)
-      phrase(parseProgram)(tokens)
+      enhanceErrorMsg(phrase(parseProgram)(tokens))
   }
 
   def scanAndParseInclude(r: Reader[Char], name: String): ParseResult[Include] = {
