@@ -389,7 +389,7 @@ people intuitively use these operators.
           val name = msg.substring(23, msg.lastIndexOf("found")-1) 
           Failure(msg+"\n"+
           "  This error usually means that there is an unexpected expression\n" +
-          "before the "+name+".\n"
+          "before the "+name+" or the "+name+" itself is unexpected at this point.\n"
           , in)
         }
         else r
