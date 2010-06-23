@@ -250,7 +250,7 @@ people intuitively use these operators.
       | ("(" ~> parsePattern ~ parseBasePatternTail) -?-> 
           { (p: Pattern, ps: List[Pattern]) => TuplePattern(p::ps) }
       | ListOf(parsePattern) -> ListPattern
-      | ("=" <~ ident) -> EqPattern
+      | ("=" ~> ident) -> EqPattern
   )
     
 
