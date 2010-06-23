@@ -372,18 +372,24 @@ people intuitively use these operators.
       case Failure(msg, in) => {
         if (msg.equals("``('' expected but EOF found")) {
           Failure(msg+"\n"+
-          "This error usually means that the expression is incomplete.\n" +
+          "  This error usually means that the expression is incomplete.\n" +
           "The following cases can create this parser problem:\n" +
           "  1. The right hand side expression in a combinator is missing.\n" +
           "  2. The expression missing after a comma.\n" +
           "  3. The goal expression of the program is missing.\n"
           , in)
-        } else if (msg.startsWith("`NewLine' expected but")) {
+        } else if (msg.startsWith("`NewLine' expected but `(' found")) {
           Failure(msg+"\n"+
-          "This error usually means that there are unexpected new lines\n" +
-          "right after the name of a function or site in a call. The ``(''\n" +
+          "  This error usually means that there are unexpected new lines\n" +
+          "right after the name of a function or site in a call. The `('\n" +
           "should come after the name of the function or site and cannot\n" +
           "be separated with new lines.\n"
+          , in)
+        } else if (msg.startsWith("`NewLine' expected but")) {
+          val name = msg.substring(23, msg.lastIndexOf("found")-1) 
+          Failure(msg+"\n"+
+          "  This error usually means that there is an unexpected expression\n" +
+          "before the "+name+".\n"
           , in)
         }
         else r
