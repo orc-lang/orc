@@ -235,6 +235,7 @@ people intuitively use these operators.
             case (e, ":!:" ~ t) => TypeAssertion(e,t)
           }
         }
+      | failure("Goal expression expected.")
   )
 
   def parseBasePatternTail: Parser[Option[List[Pattern]]] = (
