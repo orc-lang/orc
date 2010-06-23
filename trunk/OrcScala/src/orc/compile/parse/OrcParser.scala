@@ -406,6 +406,24 @@ people intuitively use these operators.
           "  This error usually means an illegal start for an expression with "+name+".\n"
           , in)
         }
+        else if (msg.startsWith("``<'' expected but")) {
+          Failure(msg+"\n"+
+          "  This error usually happens in the following occasions:\n" +
+          "  1. You are intending to use the pruning combinator `<<' and\n" +
+          "     you have typed `<'.\n" +
+          "  2. You are intending to use `<' as less than operator in which\n" +
+          "     case you should know that the less than operator in Orc is `<:'."
+          , in)
+        }
+        else if (msg.startsWith("``>'' expected but")) {
+          Failure(msg+"\n"+
+          "  This error usually happens in the following occasions:\n" +
+          "  1. You are intending to use the sequential combinator `>>' and\n" +
+          "     you have typed `>'.\n" +
+          "  2. You are intending to use `>' as greater than operator in which\n" +
+          "     case you should know that the greater than operator in Orc is `:>'."
+          , in)
+        }
         else r
       }
       case _ => r
