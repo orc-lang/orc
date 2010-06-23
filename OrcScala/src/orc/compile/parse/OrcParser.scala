@@ -400,6 +400,12 @@ people intuitively use these operators.
           "use `::' along with the type name."
           , in)
         }
+        else if (msg.startsWith("``('' expected but")) {
+          val name = msg.substring(19, msg.lastIndexOf("found")-1) 
+          Failure(msg+"\n"+
+          "  This error usually means an illegal start for an expression with "+name+".\n"
+          , in)
+        }
         else r
       }
       case _ => r
