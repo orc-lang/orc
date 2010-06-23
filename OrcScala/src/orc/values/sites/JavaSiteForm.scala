@@ -67,11 +67,30 @@ abstract class JavaProxy extends Site {
     case _ => new JavaObjectProxy(javaValue)
   }
 
-  def orc2java(orcValue: Value): Object = orcValue match {
-    case JavaObjectProxy(j) => j
-    case Literal(v) => v.asInstanceOf[Object]
-    case _ => orcValue
-  }
+  def orc2java(orcValue: Value): Object = orc2java(orcValue, classOf[Object])
+
+  def orc2java(orcValue: Value, expectedType: Class[_]): Object =
+    (orcValue, expectedType) match {
+      case (JavaObjectProxy(j), _) => j
+      case (Literal(i: BigInt), `byteRefClass`) => i.toByte.asInstanceOf[java.lang.Byte]
+      case (Literal(i: BigInt), `shortRefClass`) => i.toShort.asInstanceOf[java.lang.Short]
+      case (Literal(i: BigInt), `intRefClass`) => i.toInt.asInstanceOf[java.lang.Integer]
+      case (Literal(i: BigInt), `longRefClass`) => i.toLong.asInstanceOf[java.lang.Long]
+      case (Literal(i: BigInt), `floatRefClass`) => i.toFloat.asInstanceOf[java.lang.Float]
+      case (Literal(i: BigInt), `doubleRefClass`) => i.toDouble.asInstanceOf[java.lang.Double]
+      case (Literal(f: BigDecimal), `floatRefClass`) => f.toFloat.asInstanceOf[java.lang.Float]
+      case (Literal(f: BigDecimal), `doubleRefClass`) => f.toDouble.asInstanceOf[java.lang.Double]
+      case (Literal(i: BigInt), java.lang.Byte.TYPE) => i.toByte.asInstanceOf[java.lang.Byte] //Boxed for passing to invoke(...)
+      case (Literal(i: BigInt), java.lang.Short.TYPE) => i.toShort.asInstanceOf[java.lang.Short] //Boxed for passing to invoke(...)
+      case (Literal(i: BigInt), java.lang.Integer.TYPE) => i.toInt.asInstanceOf[java.lang.Integer] //Boxed for passing to invoke(...)
+      case (Literal(i: BigInt), java.lang.Long.TYPE) =>  i.toLong.asInstanceOf[java.lang.Long] //Boxed for passing to invoke(...)
+      case (Literal(i: BigInt), java.lang.Float.TYPE) => i.toFloat.asInstanceOf[java.lang.Float] //Boxed for passing to invoke(...)
+      case (Literal(i: BigInt), java.lang.Double.TYPE) => i.toDouble.asInstanceOf[java.lang.Double] //Boxed for passing to invoke(...)
+      case (Literal(f: BigDecimal), java.lang.Float.TYPE) => f.toFloat.asInstanceOf[java.lang.Float] //Boxed for passing to invoke(...)
+      case (Literal(f: BigDecimal), java.lang.Double.TYPE) => f.toDouble.asInstanceOf[java.lang.Double] //Boxed for passing to invoke(...)
+      case (Literal(v), _) => v.asInstanceOf[Object]
+      case (_, _) => orcValue
+    }
 
   def hasMember(memberName: String): Boolean =
     //TODO: Memoize!  This is expensive!
@@ -79,19 +98,25 @@ abstract class JavaProxy extends Site {
         javaClass.getFields().exists({_.getName().equals(memberName)})
 
   def invoke(theObject: Object, methodName: String, args: List[Value]): Value = {
-    val method = try {
-      chooseMethodForInvocation(methodName, args.map(orc2java(_)))
-    } catch { // Fill in "blank" exceptions with more details
-      case e: java.lang.NoSuchMethodError if (e.getMessage() == null) => throw new java.lang.NoSuchMethodError(classNameAndSignatureA(methodName, args.map(orc2java(_))))
-      case e: java.lang.AbstractMethodError if (e.getMessage() == null) => throw new java.lang.AbstractMethodError(classNameAndSignatureA(methodName, args.map(orc2java(_))))
+    val unOrcWrappedArgs = args.map(orc2java(_)) // Un-wrapped from Orc's Literal, JavaObjectProxy, etc., but not Orc number conversions
+    val method = try { 
+      try {
+        chooseMethodForInvocation(methodName, unOrcWrappedArgs)
+      } catch { // Fill in "blank" exceptions with more details
+        case e: java.lang.NoSuchMethodException if (e.getMessage() == null) => throw new java.lang.NoSuchMethodException(classNameAndSignatureA(methodName, unOrcWrappedArgs))
+      }
+    } catch {
+      case e: InvocationTargetException => throw new JavaException(e.getCause())
+      case e => throw new JavaException(e)
     }
-    val convertedArgs = args.map(orc2java(_)).toArray //FIXME:TODO:convert Orc values to needed types for chosen method's formal params
+    val convertedArgs = (args, method.getParameterTypes()).zipped.map(orc2java(_, _)).toArray
+    //FIXME:TODO:Checks per JLS 15.12.3 Is the Chosen Method Appropriate?
 //    println(javaClass.getCanonicalName())
 //    println(method)
 //    println(convertedArgs.getClass().getCanonicalName())
 //    println(convertedArgs.length)
 //    println(convertedArgs)
-    java2orc(method.invoke(theObject, convertedArgs: _*))
+    java2orc(method.invoke(theObject, convertedArgs))
   }
 
   private def classNameAndSignature(methodName: String, argTypes: List[Class[_]]): String = {
@@ -100,8 +125,29 @@ abstract class JavaProxy extends Site {
   private def classNameAndSignatureA(methodName: String, args: List[Object]): String = {
     classNameAndSignature(methodName, args.map(_.getClass()))
   }
-  
-  def chooseMethodForInvocation(methodName: String, args: List[Object]): JavaMethod = {
+
+  // Java Method and Constructor do NOT have a decent supertype, so we wrap them here
+  // to at least share an comon invocation method.  Ugh.
+  abstract class Invocable {def getParameterTypes(): Array[java.lang.Class[_]]; def invoke(obj: Object, args: Array[Object]): Object}
+  object Invocable {
+    def apply(wrapped: java.lang.reflect.Member): Invocable = {
+      wrapped match {
+        case meth: JavaMethod => new InvocableMethod(meth)
+        case ctor: JavaConstructor[_] => new InvocableCtor(ctor)
+        case _ => throw new IllegalArgumentException("Invocable can only wrap a Method or a Constructor")
+      }
+    }
+  }
+  class InvocableMethod(method: JavaMethod) extends Invocable {
+    def getParameterTypes(): Array[java.lang.Class[_]] = method.getParameterTypes
+    def invoke(obj: Object, args: Array[Object]): Object = method.invoke(obj, args: _*)
+  }
+  class InvocableCtor(ctor: JavaConstructor[_]) extends Invocable {
+    def getParameterTypes(): Array[java.lang.Class[_]] = ctor.getParameterTypes
+    def invoke(obj: Object, args: Array[Object]): Object = ctor.newInstance(args: _*).asInstanceOf[Object]
+  }
+
+  def chooseMethodForInvocation(memberName: String, args: List[Object]): Invocable = {
     //Phase 0: Identify Potentially Applicable Methods
     //A member method is potentially applicable to a method invocation if and only if all of the following are true:
     //* The name of the member is identical to the name of the method in the method invocation.
@@ -110,21 +156,25 @@ abstract class JavaProxy extends Site {
     //* If the member is a variable arity method with arity n, the arity of the method invocation is greater or equal to n-1.
     //* If the member is a fixed arity method with arity n, the arity of the method invocation is equal to n.
     //* If the method invocation includes explicit type parameters, and the member is a generic method, then the number of actual type parameters is equal to the number of formal type parameters.
-    val potentiallyApplicableMethods = javaClass.getMethods().filter({m => 
+    type JavaMethodOrCtor = java.lang.reflect.Member {def getParameterTypes(): Array[java.lang.Class[_]]; def isVarArgs(): Boolean}
+    val methodName = if ("<init>".equals(memberName)) javaClass.getName() else memberName
+    val ms: Array[JavaMethodOrCtor] = if ("<init>".equals(memberName)) javaClass.getConstructors().asInstanceOf[Array[JavaMethodOrCtor]] else javaClass.getMethods().asInstanceOf[Array[JavaMethodOrCtor]]
+    val potentiallyApplicableMethods = ms.filter({m => 
         m.getName().equals(methodName) &&
         Modifier.isPublic(m.getModifiers()) &&
         // Modfier ABSTRACT is handled later.
         (m.getParameterTypes().size == args.size ||
          m.isVarArgs() && m.getParameterTypes().size-1 <= args.size)})
+//    Console.err.println(memberName+" potentiallyApplicableMethods="+potentiallyApplicableMethods.mkString("{", ", ", "}"))
 
     //Phase 1: Identify Matching Arity Methods Applicable by Subtyping
     val phase1Results = potentiallyApplicableMethods.filter( { m =>
       !m.isVarArgs() &&
       m.getParameterTypes().corresponds(args)({(fp, arg) => isApplicable(fp, arg, false)})
     } )
-
+//    Console.err.println(memberName+" phase1Results="+phase1Results.mkString("{", ", ", "}"))
     if (phase1Results.nonEmpty) {
-      return mostSpecificMethod(phase1Results.toList)
+      return Invocable(mostSpecificMethod(phase1Results.toList))
     }
     
     //Phase 2: Identify Matching Arity Methods Applicable by Method Invocation Conversion
@@ -132,15 +182,16 @@ abstract class JavaProxy extends Site {
       !m.isVarArgs() &&
       m.getParameterTypes().corresponds(args)({(fp, arg) => isApplicable(fp, arg, true)})
     } )
+//    Console.err.println(memberName+" phase2Results="+phase2Results.mkString("{", ", ", "}"))
     if (phase2Results.nonEmpty) {
-      return mostSpecificMethod(phase2Results.toList)
+      return Invocable(mostSpecificMethod(phase2Results.toList))
     }
 
     //Phase 3: Identify Applicable Variable Arity Methods
     //FIXME:TODO: Implement var arg calls
     
     // No match
-    throw new java.lang.NoSuchMethodError();
+    throw new java.lang.NoSuchMethodException();  //TODO: throw a MethodTypeMismatchException instead
   }
 
   private def isApplicable(formalParamType: Class[_], actualArg: Object, allowConversion: Boolean): Boolean = {
@@ -178,8 +229,8 @@ abstract class JavaProxy extends Site {
   private val floatRefClass = classOf[java.lang.Float]
   private val doubleRefClass = classOf[java.lang.Double]
   
-  private val orcIntegralClass = classOf[java.math.BigInteger]
-  private val orcFloatingPointClass = classOf[java.math.BigDecimal]
+  private val orcIntegralClass = classOf[BigInt]
+  private val orcFloatingPointClass = classOf[BigDecimal]
 
   private def box(primType: Class[_]): Class[_] = {
     primType match {
@@ -224,26 +275,26 @@ abstract class JavaProxy extends Site {
 
   private def isOrcJavaNumConvertable(fromType: Class[_], toType: Class[_]): Boolean = {
     toType match {
-      case `byteRefClass` => fromType == orcIntegralClass || fromType == orcFloatingPointClass
-      case `shortRefClass` => fromType == orcIntegralClass || fromType == orcFloatingPointClass
-      case `intRefClass` => fromType == orcIntegralClass || fromType == orcFloatingPointClass
-      case `longRefClass` => fromType == orcIntegralClass || fromType == orcFloatingPointClass
-      case `floatRefClass` => fromType == orcFloatingPointClass
-      case `doubleRefClass` => fromType == orcFloatingPointClass
-      case java.lang.Byte.TYPE => fromType == orcIntegralClass || fromType == orcFloatingPointClass
-      case java.lang.Short.TYPE => fromType == orcIntegralClass || fromType == orcFloatingPointClass
-      case java.lang.Integer.TYPE => fromType == orcIntegralClass || fromType == orcFloatingPointClass
-      case java.lang.Long.TYPE => fromType == orcIntegralClass || fromType == orcFloatingPointClass 
-      case java.lang.Float.TYPE => fromType == orcFloatingPointClass
-      case java.lang.Double.TYPE => fromType == orcFloatingPointClass
+      case `byteRefClass` => orcIntegralClass.isAssignableFrom(fromType)
+      case `shortRefClass` => orcIntegralClass.isAssignableFrom(fromType)
+      case `intRefClass` => orcIntegralClass.isAssignableFrom(fromType)
+      case `longRefClass` => orcIntegralClass.isAssignableFrom(fromType)
+      case `floatRefClass` => orcIntegralClass.isAssignableFrom(fromType) || orcFloatingPointClass.isAssignableFrom(fromType)
+      case `doubleRefClass` => orcIntegralClass.isAssignableFrom(fromType) || orcFloatingPointClass.isAssignableFrom(fromType)
+      case java.lang.Byte.TYPE => orcIntegralClass.isAssignableFrom(fromType)
+      case java.lang.Short.TYPE => orcIntegralClass.isAssignableFrom(fromType)
+      case java.lang.Integer.TYPE => orcIntegralClass.isAssignableFrom(fromType)
+      case java.lang.Long.TYPE => orcIntegralClass.isAssignableFrom(fromType) 
+      case java.lang.Float.TYPE => orcIntegralClass.isAssignableFrom(fromType) || orcFloatingPointClass.isAssignableFrom(fromType)
+      case java.lang.Double.TYPE => orcIntegralClass.isAssignableFrom(fromType) || orcFloatingPointClass.isAssignableFrom(fromType)
       case _ => false
     }
   }
 
-  private def mostSpecificMethod(methods: List[JavaMethod]): JavaMethod = {
+  private def mostSpecificMethod[M <: {def getDeclaringClass(): java.lang.Class[_]; def getParameterTypes(): Array[java.lang.Class[_]]; def getModifiers(): Int}](methods: List[M]): M = {
     //FIXME:TODO: Implement var arg calls
     val maximallySpecificMethods = 
-      methods.foldLeft(List[JavaMethod]())({(prevMostSpecific: List[JavaMethod], nextMethod: JavaMethod) =>
+      methods.foldLeft(List[M]())({(prevMostSpecific: List[M], nextMethod: M) =>
         if (prevMostSpecific.isEmpty) {
           List(nextMethod)
         } else { 
@@ -258,22 +309,38 @@ abstract class JavaProxy extends Site {
           }
         }
       })
+//    Console.err.println("maximallySpecificMethods="+maximallySpecificMethods.mkString("{", ", ", "}"))
     if (maximallySpecificMethods.length == 1) {
       return maximallySpecificMethods.head
+    } else if (maximallySpecificMethods.length == 0) {
+      throw new java.lang.NoSuchMethodException()  //TODO: throw a MethodTypeMismatchException instead
     } else {
       val concreteMethods = maximallySpecificMethods.filter({m => !Modifier.isAbstract(m.getModifiers())})
       concreteMethods.length match {
         case 1 => return concreteMethods.head
-        case 0 => throw new java.lang.NoSuchMethodError()
-        case _ => throw new java.lang.AbstractMethodError()
+        case 0 => return maximallySpecificMethods.head //pick arbitrarily per JLS §15.12.2.5
+        case _ => throw new orc.error.runtime.AmbiguousInvocationException(concreteMethods.map(_.toString).toArray)
       }
     }
   }
   
   /** left is more or equally specific than right */
-  private def isEqOrMoreSpecific(left: JavaMethod, right: JavaMethod): Boolean = {
-    //FIXME:TODO: Add primitive types, since isAssignableFrom is too stupid
-    left.getParameterTypes().corresponds(right.getParameterTypes())({(l,r) => r.isAssignableFrom(l)})
+  private def isEqOrMoreSpecific(left: {def getDeclaringClass(): java.lang.Class[_]; def getParameterTypes(): Array[java.lang.Class[_]]}, right: {def getDeclaringClass(): java.lang.Class[_]; def getParameterTypes(): Array[java.lang.Class[_]]}): Boolean = {
+    if (isSameArgumentTypes(left, right)) {
+      left.getDeclaringClass().getClasses().contains(right.getDeclaringClass())  // An override is more specific than super
+    } else {
+      left.getParameterTypes().corresponds(right.getParameterTypes())({(l,r) => isJavaSubtypeOf(l, r)})
+    }
+  }
+
+  private def isJavaSubtypeOf(left: java.lang.Class[_], right: java.lang.Class[_]): Boolean = {
+    (left == right) || (right.isAssignableFrom(left)) || isPrimWidenable(left, right) ||
+    (left.isArray && right.isArray && isJavaSubtypeOf(left.getComponentType, right.getComponentType))
+  }
+
+  private def isSameArgumentTypes(left: {def getParameterTypes(): Array[java.lang.Class[_]]}, right: {def getParameterTypes(): Array[java.lang.Class[_]]}): Boolean = {
+    left.getParameterTypes().length == right.getParameterTypes().length &&
+    left.getParameterTypes().corresponds(right.getParameterTypes())({(l,r) => r.isAssignableFrom(l) && l.isAssignableFrom(r)})
   }
 }
 
@@ -294,17 +361,7 @@ case class JavaClassProxy(val javaClass: Class[Object]) extends JavaProxy {
     args match {
       case List(OrcField("?")) => throw new NotYetImplementedException("MatchProxy not implemented yet") //TODO:FIXME: Implement this -- publish(new MatchProxy(javaClass))
       case List(OrcField(memberName)) => callingToken.publish(new JavaStaticMemberProxy(javaClass, memberName))
-      case _ => {
-        (try {
-          javaClass.newInstance() //FIXME:TODO: use ctorArgs
-        } catch {
-          case e: InvocationTargetException => throw new JavaException(e.getCause())
-          case e => throw new JavaException(e)
-        }) match {
-          case v: Value => callingToken.publish(v)
-          case o => callingToken.publish(new JavaObjectProxy(o))
-        }
-      }
+      case _ => callingToken.publish(invoke(null, "<init>", args))
     }
   }
 }
