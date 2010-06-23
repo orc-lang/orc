@@ -392,6 +392,14 @@ people intuitively use these operators.
           "before the "+name+" or the "+name+" itself is unexpected at this point.\n"
           , in)
         }
+        else if (msg.startsWith("``::'' expected but")) {
+          Failure(msg+"\n"+
+          "  This error usually means that the `=' is missing in front of\n" +
+          "the funtion definition.\n" +
+          "  In case you want to specify the return type of the function\n" +
+          "use `::' along with the type name."
+          , in)
+        }
         else r
       }
       case _ => r
