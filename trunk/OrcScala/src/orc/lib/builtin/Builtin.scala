@@ -90,6 +90,7 @@ object NoneConstructor extends TotalSite with UntypedSite {
       case List() => OrcOption(None)
       case _ => throw new ArityMismatchException(0, args.size)
   }
+  override def extract = Some(NoneExtractor)
 }
 
 object SomeConstructor extends TotalSite with UntypedSite {
@@ -99,6 +100,7 @@ object SomeConstructor extends TotalSite with UntypedSite {
       case List(v) => OrcOption(Some(v))
       case _ => throw new ArityMismatchException(1, args.size)
   }
+  override def extract = Some(SomeExtractor)
 }
 
 
@@ -110,6 +112,7 @@ object NilConstructor extends TotalSite with UntypedSite {
       case List() => OrcList(Nil)
       case _ => throw new ArityMismatchException(0, args.size)
   }
+  override def extract = Some(NilExtractor)
 }
 
 object ConsConstructor extends TotalSite with UntypedSite {
@@ -120,6 +123,7 @@ object ConsConstructor extends TotalSite with UntypedSite {
       case List(v1, v2) => throw new ArgumentTypeMismatchException(1, "List", v2.getClass().toString())
       case _ => throw new ArityMismatchException(2, args.size)
   }
+  override def extract = Some(ConsExtractor)
 }
 
 object RecordConstructor extends UnimplementedSite //FIXME:TODO: Implement
@@ -206,6 +210,27 @@ object ConsExtractor extends PartialSite with UntypedSite {
     args match {
       case List(OrcList(v :: vs)) => Some(OrcTuple(List(v, OrcList(vs))))
       case List(OrcList(_)) => None
+      case List(a) => throw new ArgumentTypeMismatchException(0, "List", a.getClass().toString())
+      case _ => throw new ArityMismatchException(1, args.size)
+  }
+}
+
+/* 
+ * Checks if a Tuple t has a given number of elements.
+ * If the check succeeds, the Some(t) is returned,
+ * else None.
+ */
+object TupleArityChecker extends PartialSite with UntypedSite {
+  override def name = "TupleArityChecker?"
+  def evaluate(args: List[Value]) =
+    args match {
+      case List(OrcTuple(elems),Literal(arity:Int)) =>
+        if (elems.size == arity) {
+          Some(OrcTuple(elems))
+        } else {
+          None
+        }
+      case List(OrcTuple(_),_) => None
       case List(a) => throw new ArgumentTypeMismatchException(0, "List", a.getClass().toString())
       case _ => throw new ArityMismatchException(1, args.size)
   }

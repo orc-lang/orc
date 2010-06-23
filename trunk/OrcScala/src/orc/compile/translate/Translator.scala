@@ -472,16 +472,16 @@ object Translator {
 					val binding = (x, name)
 					(Nil, List(binding))
 				}
+				case ext.TuplePattern(List(p)) => decomposePattern(p,x)
 				case ext.TuplePattern(ps) => {
-					val vars = (for (_ <- ps) yield new TempVar()).toList
+				    val vars = (for (_ <- ps) yield new TempVar()).toList
 					val subResults = (ps, vars).zipped.map(decomposePattern)
 					val (subComputeList, subBindingsList) = subResults.unzip
 					val subComputes = subComputeList.flatten
 					val subBindings = subBindingsList.flatten
 					
 					/* Test that the pattern's size matches the source tuple's size */
-					val m = new TempVar()
-					val testSizeExpr = callVar(x,Field("fits")) > m > callVar(m,Literal(vars.size))
+				    val testSizeExpr = callTupleArityChecker(x,Constant(Literal(vars.size)))
 					val testSize = (testSizeExpr,new TempVar())
 					
 					var computeElements: List[(Expression, TempVar)] = Nil

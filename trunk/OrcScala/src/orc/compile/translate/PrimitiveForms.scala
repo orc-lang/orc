@@ -43,7 +43,7 @@ object PrimitiveForms {
 	val callIsSome = unaryBuiltinCall(SomeExtractor) _
 	val callNone = nullaryBuiltinCall(NoneConstructor) _
 	val callIsNone = unaryBuiltinCall(NoneExtractor) _
-	
+	val callTupleArityChecker = binaryBuiltinCall(TupleArityChecker) _
 	
 	def makeUnapply(constructor : Argument, a : Argument) = {
 		val extractor = new TempVar()
@@ -88,7 +88,4 @@ object PrimitiveForms {
 	def callOperator(opName : String, args : List[Argument]) = 
 		Call(NamedVar(opName), args, None)
 		
-	def callVar(siteArg: TempVar, arg: Value) = 
-      Call(siteArg,List(Constant(arg)),None)
-      
 }
