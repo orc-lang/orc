@@ -354,8 +354,10 @@ abstract class Orc extends OrcExecutionAPI {
         node match {
           case Stop() => halt
           case (a: Argument) => resolve(a).foreach(publish(_))
-          case (Call(target, args, typeArgs)) => try {            
-            resolve(target).foreach({
+          case (Call(target, args, typeArgs)) => try {
+            resolve(target).foreach({ (result:  Value) =>
+             val caller = Value.asCaller(result)
+             caller match {
               case closure@ Closure(arity, body, newcontext) => {
                 if (arity != args.size) halt /* Arity mismatch. */
                 val actuals = args map lookup /* Look up all of the args */
@@ -403,7 +405,8 @@ abstract class Orc extends OrcExecutionAPI {
                 halt
                 throw new UncallableValueException("You can't call the "+uncallable.getClass().getName()+" \""+uncallable.toString()+"\"")
               }
-            })
+            }
+           })
           } catch {
             case e: TokenException => {
               halt
