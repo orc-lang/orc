@@ -26,17 +26,17 @@ class OrcEngine {
 
   val out = new StringBuffer("")
 
-  val orcRuntime = new Orc {
+  val orcRuntime = new StandardOrcExecution {
     def emit(v: Value) { println(v); out.append(v.toOrcSyntax()+"\n") }
-    def halted { print("Done. \n") }
-    def invoke(t: this.Token, s: Site, vs: List[Value]) { s.call(vs,t) }
-    def expressionPrinted(s: String) { print(s); out.append(s) }
+    //def halted { print("Done. \n") }
+    //def invoke(t: this.Token, s: Site, vs: List[Value]) { s.call(vs,t) }
+    override def expressionPrinted(s: String) { print(s); out.append(s) }
     //def caught(e: Throwable) { Console.err.println("Error: " + e.getMessage()); out.append("Error: " + e.getMessage()) } // for test cases with expected exceptions
-    def caught(e: Throwable) { throw e } // for debugging (will fail test cases with expected exceptions)
+    override def caught(e: Throwable) { throw e } // for debugging (will fail test cases with expected exceptions)
     
     // Currently blows the stack (or causes Rtimer to fail) on many examples, 
     // but switching to the actor version causes very bizarre failures.
-    def schedule(ts: List[Token]) { for (t <- ts) t.run }
+    override def schedule(ts: List[Token]) { for (t <- ts) t.run }
   }
 
   def getOut() : StringBuffer = out

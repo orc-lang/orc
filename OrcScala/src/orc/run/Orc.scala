@@ -105,6 +105,8 @@ abstract class Orc extends OrcExecutionAPI {
       }
     }
     
+    override def kill { super.kill ; parent.remove(this) }
+    
     // Specific to Groupcells
     def read(reader: Token): Option[Value] = 
       state match {
@@ -151,6 +153,8 @@ abstract class Orc extends OrcExecutionAPI {
       pending foreach { schedule(_) }
       parent.remove(this)
     }
+    
+    override def kill { super.kill ; parent.remove(this) }
   
   }	
   
