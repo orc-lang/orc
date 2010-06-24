@@ -58,8 +58,9 @@ abstract class Orc extends OrcExecutionAPI {
     var members: Set[GroupMember] = Set()
   
     def halt(t: Token) { remove(t) }
-    def kill { for (m <- members) m.kill } 
+    
     /* Note: this is _not_ lazy termination */
+    def kill { for (m <- members) m.kill } 
   
     def add(m: GroupMember) { members.add(m) }
   
@@ -70,6 +71,13 @@ abstract class Orc extends OrcExecutionAPI {
   
   }
   
+  // A subgroup has some parent group,
+  // and removes itself from its parent group when killed.
+  abstract class Subgroup(parent: Group) extends Group {
+    override def kill { super.kill ; parent.remove(this) }
+    def onHalt { parent.remove(this) }
+  }
+  
   // A Groupcell is the group associated with expression g in (f <x< g)
   
   // Possible states of a Groupcell
@@ -78,7 +86,7 @@ abstract class Orc extends OrcExecutionAPI {
   case class Bound(v: Value) extends GroupcellState
   case object Dead extends GroupcellState
   
-  class Groupcell(parent: Group) extends Group {
+  class Groupcell(parent: Group) extends Subgroup(parent) {
   
     var state: GroupcellState = Unbound(Nil) 
   
@@ -94,18 +102,18 @@ abstract class Orc extends OrcExecutionAPI {
       }
     }
     
-    def onHalt {
+    override def onHalt {
       state match {
         case Unbound(waitlist) => {
           for (t <- waitlist) t.halt
           state = Dead
-          parent.remove(this)
+          super.onHalt
         }
         case _ => {  }
       }
     }
     
-    override def kill { super.kill ; parent.remove(this) }
+    
     
     // Specific to Groupcells
     def read(reader: Token): Option[Value] = 
@@ -134,7 +142,7 @@ abstract class Orc extends OrcExecutionAPI {
   
   
   // A Region is the group associated with expression f in (f ; g)
-  class Region(parent: Group, r: Token) extends Group {
+  class Region(parent: Group, r: Token) extends Subgroup(parent) {
   
     // Some(r): No publications have left this region;
     //			if the group halts silently, pending
@@ -149,12 +157,10 @@ abstract class Orc extends OrcExecutionAPI {
       t.publish(v)
     }
     
-    def onHalt {
+    override def onHalt {
       pending foreach { schedule(_) }
-      parent.remove(this)
+      super.onHalt
     }
-    
-    override def kill { super.kill ; parent.remove(this) }
   
   }	
   
