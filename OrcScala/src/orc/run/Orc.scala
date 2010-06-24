@@ -271,6 +271,7 @@ abstract class Orc extends OrcExecutionAPI {
   
     def push(f: Frame) = { stack = f::stack ; this }
   
+    def getTimer = Timer.timer
   
     // reslice to improve contracts
     def join(child: Group) = { 
@@ -481,5 +482,7 @@ abstract class Orc extends OrcExecutionAPI {
 
 }
 
-
+object Timer {
+  def timer: java.util.Timer  = new java.util.Timer(); 
+}
 

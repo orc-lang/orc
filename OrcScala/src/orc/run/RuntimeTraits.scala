@@ -19,7 +19,7 @@ trait ActorScheduler extends Orc {
   
   def waitUntilFinished { done.get }
   
-  def halted { worker ! None ; done.set({}) }
+  def halted { worker ! None ; done.set({}); Timer.timer.cancel() }
   
   val worker = new Worker()
   

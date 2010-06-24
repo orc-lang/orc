@@ -83,4 +83,5 @@ trait TokenAPI {
   def run: Unit
 
   def printToStdout(s: String): Unit
+  def getTimer: java.util.Timer 
 }
