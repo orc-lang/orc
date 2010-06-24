@@ -19,7 +19,7 @@ trait ActorScheduler extends Orc {
   
   def waitUntilFinished { done.get }
   
-  def halted { worker ! None ; done.set({}); Timer.timer.cancel() }
+  def halted { worker ! None ; done.set({}); timer.cancel() }
   
   val worker = new Worker()
   
@@ -31,13 +31,12 @@ trait ActorScheduler extends Orc {
   override def schedule(ts: List[Token]) { for (t <- ts) worker ! Some(t) }
   class Worker extends Actor {
     def act() {
-      def loop() {
+      loop {
         react {
-          case Some(x:Token) => x.run ; loop()
+          case Some(x:Token) => x.run
           case None => exit // execution has halted
         }
       }
-      loop()
     }
   }
 }

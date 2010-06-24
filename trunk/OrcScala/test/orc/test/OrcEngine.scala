@@ -36,7 +36,7 @@ class OrcEngine {
     
     // Currently blows the stack (or causes Rtimer to fail) on many examples, 
     // but switching to the actor version causes very bizarre failures.
-    override def schedule(ts: List[Token]) { for (t <- ts) t.run }
+//    override def schedule(ts: List[Token]) { for (t <- ts) t.run }
   }
 
   def getOut() : StringBuffer = out
