@@ -14,9 +14,8 @@ isx(7) | isx(9)
 OUTPUT:
 false
 true
-
-OR
-
+-}
+{-
 OUTPUT:
 true
 false

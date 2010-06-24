@@ -40,16 +40,12 @@ sealed abstract class Expression extends orc.AST with hasFreeVars with NamelessI
       case Stop() => Set.empty
       case Constant(_) => Set.empty
       case Variable(i) => Set(i)
-      case Call(target, args, typeArgs) => target.freevars ++ args.flatMap(_.freevars)  
+      case Call(target, args, typeArgs) => target.freevars ++ ( args flatMap { _.freevars } )  
       case f || g => f.freevars ++ g.freevars
       case f >> g => f.freevars ++ shift(g.freevars, 1)
       case f << g => shift(f.freevars, 1) ++ g.freevars
       case f ow g => f.freevars ++ g.freevars
-      case DeclareDefs(defs, body) => {
-        /* Get the free vars, then bind the definition names */
-        def f(x: hasFreeVars) = shift(x.freevars, defs.length)
-        f(body) ++ defs.flatMap(f)
-      }
+      case DeclareDefs(openvars, defs, body) => openvars.toSet ++ shift(body.freevars, defs.length)
       case HasType(body,_) => body.freevars
       case DeclareType(_,body) => body.freevars
     }
@@ -66,10 +62,7 @@ case class Parallel(left: Expression, right: Expression) extends Expression
 case class Sequence(left: Expression, right: Expression) extends Expression
 case class Prune(left: Expression, right: Expression) extends Expression
 case class Otherwise(left: Expression, right: Expression) extends Expression
-case class DeclareDefs(defs: List[Def], body: Expression) extends Expression {
-  /* A sorted list of the declaration's free variables. */
-  lazy val freeVarList: List[Int] = freevars.toList.sortWith((x:Int,y:Int) => x < y)
-}
+case class DeclareDefs(unclosedVars: List[Int], defs: List[Def], body: Expression) extends Expression
 case class DeclareType(t: Type, body: Expression) extends Expression
 case class HasType(body: Expression, expectedType: Type) extends Expression
 
@@ -95,9 +88,6 @@ case class VariantType(variants: List[(String, List[Option[Type]])]) extends Typ
 sealed case class Def(typeFormalArity: Int, arity: Int, body: Expression, argTypes: Option[List[Type]], returnType: Option[Type]) extends orc.AST with hasFreeVars {
   /* Get the free vars of the body, then bind the arguments */
   lazy val freevars: Set[Int] = shift(body.freevars, arity)
-  /* Body with renamed free variable for closure compaction.
-   * This is the actual expression called at runtime. */
-  var altBody : Expression = body
 }
 
 
@@ -129,11 +119,13 @@ object AddNames {
         named.Prune(namelessToNamed(left, x::context, typecontext), x, recurse(right))
       }
       case left ow right => named.Otherwise(recurse(left), recurse(right))
-      case DeclareDefs(defs, body) => {
+      case DeclareDefs(openvars, defs, body) => {
+        val opennames = openvars map context
         val defnames = defs map { _ => new TempVar() }
-        val newcontext = defnames.reverse ::: context
-        val newdefs = for ( (x,d) <- defnames zip defs) yield namelessToNamed(x, d, newcontext, typecontext)
-        val newbody = namelessToNamed(body, newcontext, typecontext)
+        val defcontext = defnames.reverse ::: opennames.reverse ::: context
+        val bodycontext = defnames.reverse ::: context
+        val newdefs = for ( (x,d) <- defnames zip defs) yield namelessToNamed(x, d, defcontext, typecontext)
+        val newbody = namelessToNamed(body, bodycontext, typecontext)
         named.DeclareDefs(newdefs, newbody)
       }
       case DeclareType(t, body) => {

@@ -15,8 +15,4 @@ OUTPUT:
 3
 2
 1
-
-OR
-
-any permutation of above
 -}
