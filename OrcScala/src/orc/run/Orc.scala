@@ -58,9 +58,8 @@ abstract class Orc extends OrcExecutionAPI {
     var members: Set[GroupMember] = Set()
   
     def halt(t: Token) { remove(t) }
-    
-    /* Note: this is _not_ lazy termination */
     def kill { for (m <- members) m.kill } 
+    /* Note: this is _not_ lazy termination */
   
     def add(m: GroupMember) { members.add(m) }
   
@@ -71,13 +70,6 @@ abstract class Orc extends OrcExecutionAPI {
   
   }
   
-  // A subgroup has some parent group,
-  // and removes itself from its parent group when killed.
-  abstract class Subgroup(parent: Group) extends Group {
-    override def kill { super.kill ; parent.remove(this) }
-    def onHalt { parent.remove(this) }
-  }
-  
   // A Groupcell is the group associated with expression g in (f <x< g)
   
   // Possible states of a Groupcell
@@ -86,7 +78,7 @@ abstract class Orc extends OrcExecutionAPI {
   case class Bound(v: Value) extends GroupcellState
   case object Dead extends GroupcellState
   
-  class Groupcell(parent: Group) extends Subgroup(parent) {
+  class Groupcell(parent: Group) extends Group {
   
     var state: GroupcellState = Unbound(Nil) 
   
@@ -98,22 +90,22 @@ abstract class Orc extends OrcExecutionAPI {
           t.halt
           this.kill
         }
-        case _ => t.halt	
+        case _ => t.halt    
       }
     }
     
-    override def onHalt {
+    def onHalt {
       state match {
         case Unbound(waitlist) => {
           for (t <- waitlist) t.halt
           state = Dead
-          super.onHalt
+          parent.remove(this)
         }
         case _ => {  }
       }
     }
     
-    
+    override def kill { super.kill ; parent.remove(this) }
     
     // Specific to Groupcells
     def read(reader: Token): Option[Value] = 
@@ -142,12 +134,12 @@ abstract class Orc extends OrcExecutionAPI {
   
   
   // A Region is the group associated with expression f in (f ; g)
-  class Region(parent: Group, r: Token) extends Subgroup(parent) {
+  class Region(parent: Group, r: Token) extends Group {
   
     // Some(r): No publications have left this region;
-    //			if the group halts silently, pending
-    //			will be scheduled.
-    // None:	A publication has left this region.
+    //          if the group halts silently, pending
+    //          will be scheduled.
+    // None:    A publication has left this region.
   
     var pending: Option[Token] = Some(r)
   
@@ -157,12 +149,14 @@ abstract class Orc extends OrcExecutionAPI {
       t.publish(v)
     }
     
-    override def onHalt {
+    def onHalt {
       pending foreach { schedule(_) }
-      super.onHalt
+      parent.remove(this)
     }
+    
+    override def kill { super.kill ; parent.remove(this) }
   
-  }	
+  } 
   
   object Region {
   
@@ -247,7 +241,7 @@ abstract class Orc extends OrcExecutionAPI {
       var env: List[Binding] = Nil,
       var group: Group, 
       var state: TokenState = Live
-  ) extends TokenAPI with GroupMember {	
+  ) extends TokenAPI with GroupMember { 
     
     // A live token is added to its group when it is created
     state match {
@@ -281,7 +275,7 @@ abstract class Orc extends OrcExecutionAPI {
   
     def push(f: Frame) = { stack = f::stack ; this }
   
-    def getTimer = Timer.timer
+    def getTimer = timer
   
     // reslice to improve contracts
     def join(child: Group) = { 
@@ -290,7 +284,7 @@ abstract class Orc extends OrcExecutionAPI {
       group = child
       push(GroupFrame)
       this 
-    }			
+    }           
   
     // Manipulating context frames
   
@@ -394,7 +388,7 @@ abstract class Orc extends OrcExecutionAPI {
                 for (a <- actuals) { bind(a) }
                 
                 /* Jump into the closure's body */
-                schedule(this.move(closure.body))				  					
+                schedule(this.move(closure.body))                                   
               }
               case (s: Site) => {
                 val vs = args.partialMap(resolve)
@@ -430,11 +424,11 @@ abstract class Orc extends OrcExecutionAPI {
     
           case Parallel(left, right) => {
             val (l,r) = fork
-            schedule(l.move(left), r.move(right))		
+            schedule(l.move(left), r.move(right))       
           }
     
           case Sequence(left, right) => {
-            val frame = new SequenceFrame(right)		  	  
+            val frame = new SequenceFrame(right)              
             schedule(this.push(frame).move(left))
           }
     
@@ -490,9 +484,7 @@ abstract class Orc extends OrcExecutionAPI {
   
   }
 
-}
-
-object Timer {
   def timer: java.util.Timer  = new java.util.Timer(); 
+
 }
 
