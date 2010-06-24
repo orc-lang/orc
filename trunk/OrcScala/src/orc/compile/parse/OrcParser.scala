@@ -108,13 +108,17 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
   def parseMultExpr = nlchainl1(parseExpnExpr, ("*" | "/" | "%") ^^
     { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
 
-  def parseAdditionalExpr: Parser[Expression] =
-     chainl1(parseMultExpr, (wrapRight("-") | wrapNewLines("+") | wrapNewLines(":")) ^^
+  def parseAdditionalExpr: Parser[Expression] = (
+     chainl1(parseMultExpr, (wrapRight("-") | wrapNewLines("+")) ^^
         { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
         /* Disallow newline breaks for binary subtract,
          * to resolve ambiguity with unary minus.*/
-
-  def parseRelationalExpr = nlchainl1(parseAdditionalExpr, ("<:" | ":>" | "<=" | ">=" | "=" | "/=") ^^
+  )
+  def parseConsExpr: Parser[Expression] = (
+     nlchainr1(parseAdditionalExpr, (wrapNewLines(":")) ^^
+        { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
+  )
+  def parseRelationalExpr = nlchainl1(parseConsExpr, ("<:" | ":>" | "<=" | ">=" | "=" | "/=") ^^
         { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
 
   def parseLogicalExpr = nlchainl1(parseRelationalExpr, ("||" | "&&") ^^
@@ -255,7 +259,7 @@ people intuitively use these operators.
   )
     
 
-  def parseConsPattern = rep1sep(parseBasePattern, ":") -> (_ reduceRight ConsPattern)
+  def parseConsPattern = rep1sep(parseBasePattern, ":") -> (_ reduceRight ConsPattern) 
 
   def parseAsPattern = (
       parseConsPattern ~ (("as" ~> ident)?) -?-> AsPattern
