@@ -81,7 +81,10 @@ def assert(b) =
 -- Fail with the error message: "assertion failed"
 assert(false)]]></programlisting>
 --}
+
 --FIXME:site error = "orc.lib.???.Error"
+def error(_) = stop
+
 
 {--
 @site (+)(Number, Number) :: Number

@@ -77,7 +77,6 @@ class Closure(d: Def) extends Value {
     val arity: Int = d.arity
     val body: Expression = d.body
     var context: List[Value] = Nil
-    val altbody: Expression = d.body
 }
 object Closure {
     def unapply(c: Closure) = Some((c.arity, c.body, c.context))

@@ -143,6 +143,7 @@ abstract class Orc extends OrcExecutionAPI {
   
     def publish(t: Token, v: Value) {
       pending.foreach(_.halt)
+      t.group = parent
       t.publish(v)
     }
     
@@ -208,7 +209,7 @@ abstract class Orc extends OrcExecutionAPI {
   }
   
   case class FunctionFrame(callpoint: Expression, env: List[Binding]) extends Frame {
-    def apply(t: Token, v: Value) {
+    def apply(t: Token, v: Value) {      
       t.env = env
       t.move(callpoint).publish(v)
     }
@@ -382,7 +383,7 @@ abstract class Orc extends OrcExecutionAPI {
                 for (a <- actuals) { bind(a) }
                 
                 /* Jump into the closure's body */
-                schedule(this.move(closure.altbody))				  					
+                schedule(this.move(closure.body))				  					
               }
               case (s: Site) => {
                 val vs = args.partialMap(resolve)
