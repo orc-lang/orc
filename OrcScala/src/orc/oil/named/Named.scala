@@ -186,6 +186,9 @@ with TypeSubstitution[Type]
   
   def remapType(f: Typevar => Type): Type = 
 	  this -> {
+	      case Bot() => Bot()
+	      case Top() => Top()
+	      case ClassType(cl) => ClassType(cl)
 	 	  case x : Typevar => f(x)
 	 	  case TupleType(elements) => TupleType(elements map {_ remapType f})
 	 	  case TypeApplication(tycon, typeactuals) => {
@@ -198,7 +201,16 @@ with TypeSubstitution[Type]
 	 	  case AssertedType(assertedType) => AssertedType(assertedType remapType f)
 	 	  case FunctionType(typeformals, argtypes, returntype) =>
 	 	  	FunctionType(typeformals, argtypes map {_ remapType f}, returntype remapType f)
-	 	  case u => u
+	 	  case TypeAbstraction(typeformals, t) => {
+	 	    TypeAbstraction(typeformals, t remapType f)
+	 	  }
+	 	  case VariantType(variants) => {
+	 	    val newVariants =
+	 	      for ((name, variant) <- variants) yield {
+	 	        (name, variant map { _ map { _ remapType f } })
+	 	      }
+	 	    VariantType(newVariants)
+          }
 	  }
   
   def subst(t: Typevar, u: Typevar): Type = this remapType (y => if (y equals t) { u } else { y })   
