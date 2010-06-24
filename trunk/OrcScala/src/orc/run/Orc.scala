@@ -32,8 +32,6 @@ import scala.collection.mutable.Set
 
 abstract class Orc extends OrcExecutionAPI {
 
-  var exec: Option[Execution] = Some(new Execution())
-
   def run(node: Expression) {
     val exec = new Execution()
     val t = new Token(node, exec)
@@ -149,7 +147,7 @@ abstract class Orc extends OrcExecutionAPI {
     }
     
     def onHalt {
-      pending.foreach(schedule(_))
+      pending foreach { schedule(_) }
       parent.remove(this)
     }
   
@@ -189,6 +187,7 @@ abstract class Orc extends OrcExecutionAPI {
   case class BoundCell(g: Groupcell) extends Binding
   implicit def ValuesAreBindings(v: Value): Binding = BoundValue(v)
   implicit def GroupcellsAreBindings(g: Groupcell): Binding = BoundCell(g) 
+  
   
   // Control Frames //
   abstract class Frame {
@@ -238,11 +237,19 @@ abstract class Orc extends OrcExecutionAPI {
       var group: Group, 
       var state: TokenState = Live
   ) extends TokenAPI with GroupMember {	
-  
-    def this(start: Expression, exec: Execution) = {
-      this(node = start, group = exec)
+    
+    // A live token is added to its group when it is created
+    state match {
+      case Live => group.add(this)
+      case Halted => {  }
+      case Killed => {  }
     }
-  
+    
+    
+    def this(start: Expression, exec: Execution) = {
+      this(node = start, group = exec, stack = List(GroupFrame))
+    }
+    
     // Copy constructor with defaults
     private def copy(
         node: Expression = node,
@@ -254,6 +261,7 @@ abstract class Orc extends OrcExecutionAPI {
       new Token(node, stack, env, group, state)
         }
   
+    
   
   
     def fork = (this, copy())
@@ -317,14 +325,20 @@ abstract class Orc extends OrcExecutionAPI {
   
     def halt {
       state match {
-        case Live => { state = Halted }
+        case Live => { 
+          state = Halted 
+          group.halt(this) 
+        }
         case _ => {  }
       }
     }
   
     def kill {
       state match {
-        case Live => { state = Killed }
+        case Live => { 
+          state = Killed
+          group.halt(this) 
+        }
         case _ => {  }
       }
     }
@@ -338,7 +352,7 @@ abstract class Orc extends OrcExecutionAPI {
             resolve(target).foreach({
               case closure@ Closure(arity, body, newcontext) => {
                 if (arity != args.size) halt /* Arity mismatch. */
-                val actuals = args map lookup
+                val actuals = args map lookup /* Look up all of the args */
                 
                 /* 1) Push a function frame (if this is not a tail call),
                  *    referring to the current environment
@@ -361,9 +375,13 @@ abstract class Orc extends OrcExecutionAPI {
                   case _ => push(new FunctionFrame(node, env))
                 }
       
-                this.env = newcontext map BoundValue      
+                /* Jump into the closure's lexical context */
+                this.env = newcontext map BoundValue
+                
+                /* Bind the args */
                 for (a <- actuals) { bind(a) }
                 
+                /* Jump into the closure's body */
                 schedule(this.move(closure.altbody))				  					
               }
               case (s: Site) => {
@@ -417,11 +435,11 @@ abstract class Orc extends OrcExecutionAPI {
     
           case Otherwise(left, right) => {
             val (l,r) = fork
-            val region = Region(group, r)
+            val region = Region(group, r.move(right))
             schedule(l.join(region).move(left))
           }
     
-          case decldefs@ DeclareDefs(defs, body) => {
+          case decldefs@ DeclareDefs(openvars, defs, body) => {
             
             
             /* Closure compaction: Bind only free variables
@@ -434,8 +452,8 @@ abstract class Orc extends OrcExecutionAPI {
              */
             // Dirt simple O(n^2) solution.
             // TODO: Optimize this to O(n) instead of O(n^2) in the case of many unbound vars;
-            //       the token itself must keep track of the bound values discovered so far.
-            val resolveContext = decldefs.freeVarList partialMap { n:Int => resolve(Variable(n)) }
+            //       the token itself should keep track of the bound values discovered so far.
+            val resolveContext = openvars partialMap { n:Int => resolve(Variable(n)) }
             
             resolveContext match {
               case Some(vs) => {
@@ -463,30 +481,4 @@ abstract class Orc extends OrcExecutionAPI {
 }
 
 
-/**
- * A typical setup for an Orc execution; emit and halted are still abstract.
- */
-trait StandardOrcExecution extends Orc {
-  def invoke(t: this.Token, s: Site, vs: List[Value]) { s.call(vs,t) }
-  def expressionPrinted(s: String) { print(s) }
-  def caught(e: Throwable) { e.printStackTrace() }
-  val worker = new Worker()
-  
-  import scala.actors.Actor
-  import scala.actors.Actor._
 
-  worker.start
-  
-  override def schedule(ts: List[Token]) { for (t <- ts) worker ! Some(t) }
-  class Worker extends Actor {
-    def act() {
-      loop {
-        react {
-          case Some(x:Token) => x.run
-          case _ =>
-            Console.println("Invalid Message to Worker Actor!")
-        }
-      }
-    }
-  }
-}

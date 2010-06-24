@@ -2,14 +2,11 @@ package orc
 
 import orc.compile.OrcCompiler
 import orc.compile.parse.OrcReader
-import orc.run.StandardOrcExecution
+import orc.run._
 import orc.values.Value
 import orc.values.sites.Site
 
-class ExperimentalOrc extends StandardOrcExecution {
-  def emit(v: Value) { print("Published: " + v + "   = " + v.toOrcSyntax() + "\n") }
-  def halted { print("Done. \n") }
-}
+class ExperimentalOrc extends StandardOrcExecution with PublishToConsole
 
 object ExperimentOptions extends OrcOptions {
   var filename = ""
@@ -35,7 +32,7 @@ object ExperimentOptions extends OrcOptions {
 
 object Experiment {
 
-  val orc = new ExperimentalOrc 
+  val orc = new ExperimentalOrc
 
   def main(args: Array[String]) {
     if (args.length < 1) {
@@ -48,6 +45,7 @@ object Experiment {
     val compiledOil = compiler(reader, ExperimentOptions)
     if (compiledOil != null) {
       orc.run(compiledOil)
+      orc.waitUntilFinished
     }
     else {
       Console.err.println("Compilation failed.")

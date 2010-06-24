@@ -9,5 +9,4 @@ stop
 
 {-
 OUTPUT:
-[silent expression, screen should be blank]
 -}

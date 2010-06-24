@@ -39,7 +39,8 @@ case class NamedTypevar(name : String) extends Typevar
 
 
 trait hasFreeVars {
-  val freevars: Set[Var]
+  /* Note: As is evident from the type, NamedVars are not included in this set */
+  val freevars: Set[TempVar]
 }
 
 sealed abstract class NamedAST extends AST with NamedToNameless {
@@ -58,9 +59,9 @@ with TypeSubstitution[Expression]
 { 
   lazy val withoutNames: nameless.Expression = namedToNameless(this, Nil, Nil)
   
-  lazy val freevars:Set[Var] = {
+  lazy val freevars:Set[TempVar] = {
     this match {
-      case x:Var => Set(x)
+      case x:TempVar => Set(x)
       case Call(target,args,_) => target.freevars ++ (args flatMap { _.freevars })
       case left || right => left.freevars ++ right.freevars
       case left > x > right => left.freevars ++ (right.freevars - x)
@@ -119,7 +120,7 @@ with TypeSubstitution[Expression]
 				val newbody = body.removeUnusedDefs()
 				// If none of the defs are bound in the body,
 	        	// just return the body.
-	        	val defNamesSet: Set[Var] = defs.toSet map ((a:Def) => a.name)
+	        	val defNamesSet: Set[TempVar] = defs.toSet map ((a:Def) => a.name)
                 if(newbody.freevars intersect defNamesSet isEmpty) {
                   newbody
 	        	} else {
@@ -164,7 +165,7 @@ with hasTypeRemap[Def]
 with TypeSubstitution[Def]
 { 
   lazy val withoutNames: nameless.Def = namedToNameless(this, Nil, Nil)
-  lazy val freevars: Set[Var] = body.freevars -- formals
+  lazy val freevars: Set[TempVar] = body.freevars -- formals
   
   def remapArgument(f: Argument => Argument): Def = {
     this ->> Def(name, formals, body remapArgument f, typeformals, argtypes, returntype)
@@ -232,10 +233,13 @@ trait NamedToNameless {
       case left ow right => nameless.Otherwise(toExp(left), toExp(right))
       case DeclareDefs(defs, body) => {
         val defnames = defs map { _.name }
-        val newcontext = defnames.reverse ::: context
-        val newdefs = defs map { namedToNameless(_, newcontext, typecontext) }
-        val newbody = namedToNameless(body, newcontext, typecontext)
-        nameless.DeclareDefs(newdefs, newbody)
+        val opennames = (defs flatMap { _.freevars }).distinct filterNot { defnames contains _ }
+        val defcontext = defnames.reverse ::: opennames ::: context
+        val bodycontext = defnames.reverse ::: context
+        val newdefs = defs map { namedToNameless(_, defcontext, typecontext) }
+        val newbody = namedToNameless(body, bodycontext, typecontext)
+        val openvars = opennames map { context indexOf _ }
+        nameless.DeclareDefs(openvars, newdefs, newbody)
       }
       case DeclareType(x, t, body) => {
         val newTypeContext = x::typecontext
