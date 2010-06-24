@@ -32,9 +32,9 @@ trait ActorScheduler extends Orc {
   class Worker extends Actor {
     def act() {
       def loop() {
-        receive {
+        react {
           case Some(x:Token) => x.run ; loop()
-          case None => { } // execution has halted
+          case None => exit // execution has halted
         }
       }
       loop()

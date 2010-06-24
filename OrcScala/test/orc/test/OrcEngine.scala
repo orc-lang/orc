@@ -16,6 +16,7 @@
 package test.orc
 
 import orc.run.Orc
+import orc.run.StandardOrcExecution
 import orc.oil.nameless.Expression
 import orc.values.Value
 import orc.values.sites.Site
@@ -32,6 +33,9 @@ class OrcEngine {
     def expressionPrinted(s: String) { print(s); out.append(s) }
     //def caught(e: Throwable) { Console.err.println("Error: " + e.getMessage()); out.append("Error: " + e.getMessage()) } // for test cases with expected exceptions
     def caught(e: Throwable) { throw e } // for debugging (will fail test cases with expected exceptions)
+    
+    // Currently blows the stack (or causes Rtimer to fail) on many examples, 
+    // but switching to the actor version causes very bizarre failures.
     def schedule(ts: List[Token]) { for (t <- ts) t.run }
   }
 
