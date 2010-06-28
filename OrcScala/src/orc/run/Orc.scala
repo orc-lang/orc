@@ -349,7 +349,12 @@ trait Orc extends OrcExecutionAPI {
       }
     }
     
-    override def !!(e: OrcException): Nothing = node !! e
+    override def !!(e: OrcException) { 
+      halt
+      e.setPosition(node.pos)
+      //TODO: e.backtrace = all of the FunctionFrame.callpoint.pos in this token's stack
+      caught(e) 
+    }
   
     def run {
       if (state == Live) {
@@ -410,17 +415,7 @@ trait Orc extends OrcExecutionAPI {
             }
            })
           } catch {
-            case e: TokenException => {
-              halt
-              e.setPosition(node.pos)
-              //TODO: e.backtrace = all of the FunctionFrame.callpoint.pos in this token's stack
-              caught(e)
-            }
-            case e: OrcException => {
-              halt
-              e.setPosition(node.pos)
-              caught(e)
-            }
+            case e: OrcException => this !! e
             case e => {
               halt
               caught(e)

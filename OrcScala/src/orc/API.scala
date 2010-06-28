@@ -83,7 +83,7 @@ trait TokenAPI {
   def kill: Unit
   def run: Unit
   
-  def !!(e: OrcException): Nothing = { throw e } 
+  def !!(e: OrcException): Unit = { throw e } 
 
   def printToStdout(s: String): Unit
   def getTimer: java.util.Timer 
