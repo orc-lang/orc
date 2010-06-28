@@ -131,7 +131,7 @@ class OrcCompiler extends OrcCompilerAPI with CompilerEnvironmentIfc {
     override def apply(options: OrcOptions) = { ast => ast.withoutNames }
   }
 
-  val phases = parse.timePhase.printOut >>> translate.timePhase >>> typeCheck.timePhase >>> refineNamedOil.timePhase >>> deBruijn.timePhase.printOut
+  val phases = parse.timePhase.printOut >>> translate.timePhase.printOut >>> typeCheck.timePhase >>> refineNamedOil.timePhase >>> deBruijn.timePhase
 
   def apply(source: Reader[Char], options: OrcOptions): orc.oil.nameless.Expression = {
     compileLogger.beginProcessing(options.filename)

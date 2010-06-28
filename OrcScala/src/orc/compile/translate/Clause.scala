@@ -60,20 +60,7 @@ case class Clause(formals: List[Pattern], body: Expression) extends orc.AST {
 			case (strictPattern, strictArg) :: Nil => {
 				val (filter, scope) = Translator.convertPattern(strictPattern)
 				val source = filter(strictArg)
-				
-				val x = new named.TempVar()
-				val target = scope(x)(newbody)
-				
-				val z = new named.TempVar()
-                val y = new named.TempVar()
-                
-                
-                newbody = (    (source  > z >  callSome(z)) 
-                            ow ( callNone() )
-                          ) > y >
-                          (    (callIsSome(y)  > x >  target)
-                            || (callIsNone(y) >> fallthrough)   
-                          )
+                newbody = makeMatch(source, { scope(_)(newbody) }, fallthrough)                  
 			}
 			/*
 			 * There are multiple strict patterns.
@@ -82,21 +69,7 @@ case class Clause(formals: List[Pattern], body: Expression) extends orc.AST {
 				val (strictPatterns, strictArgs) = strictPairs.unzip
 				val (filter, scope) = Translator.convertPattern(TuplePattern(strictPatterns))
 				val source = filter(makeTuple(strictArgs))
-				
-				val x = new named.TempVar()
-				val target = scope(x)(newbody)
-				
-				val z = new named.TempVar()
-				val y = new named.TempVar()
-				
-				
-				newbody = (    (source  > z >  callSome(z)) 
-							ow ( callNone() )
-						  ) > y >
-						  (    (callIsSome(y)  > x >  target)
-						    || (callIsNone(y) >> fallthrough)   
-						  )
-				
+				newbody = makeMatch(source, { scope(_)(newbody) }, fallthrough)
 			}
 		}  
 		
