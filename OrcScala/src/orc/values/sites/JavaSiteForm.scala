@@ -110,7 +110,9 @@ abstract class JavaProxy extends Site {
       case e => throw new JavaException(e)
     }
     val convertedArgs = (args, method.getParameterTypes()).zipped.map(orc2java(_, _)).toArray
-    //FIXME:TODO:Checks per JLS 15.12.3 Is the Chosen Method Appropriate?
+    if (theObject == null && !method.isStatic) {
+      throw new NullPointerException("Instance method called without a target object (i.e. non-static method called on a class)")
+    }
 //    println(javaClass.getCanonicalName())
 //    println(method)
 //    println(convertedArgs.getClass().getCanonicalName())
@@ -128,7 +130,7 @@ abstract class JavaProxy extends Site {
 
   // Java Method and Constructor do NOT have a decent supertype, so we wrap them here
   // to at least share an comon invocation method.  Ugh.
-  abstract class Invocable {def getParameterTypes(): Array[java.lang.Class[_]]; def invoke(obj: Object, args: Array[Object]): Object}
+  abstract class Invocable {def getParameterTypes(): Array[java.lang.Class[_]]; def isStatic: Boolean; def invoke(obj: Object, args: Array[Object]): Object}
   object Invocable {
     def apply(wrapped: java.lang.reflect.Member): Invocable = {
       wrapped match {
@@ -140,10 +142,12 @@ abstract class JavaProxy extends Site {
   }
   class InvocableMethod(method: JavaMethod) extends Invocable {
     def getParameterTypes(): Array[java.lang.Class[_]] = method.getParameterTypes
+    def isStatic = Modifier.isStatic(method.getModifiers())
     def invoke(obj: Object, args: Array[Object]): Object = method.invoke(obj, args: _*)
   }
   class InvocableCtor(ctor: JavaConstructor[_]) extends Invocable {
     def getParameterTypes(): Array[java.lang.Class[_]] = ctor.getParameterTypes
+    def isStatic = true
     def invoke(obj: Object, args: Array[Object]): Object = ctor.newInstance(args: _*).asInstanceOf[Object]
   }
 
@@ -191,7 +195,7 @@ abstract class JavaProxy extends Site {
     //FIXME:TODO: Implement var arg calls
     
     // No match
-    throw new java.lang.NoSuchMethodException();  //TODO: throw a MethodTypeMismatchException instead
+    throw new orc.error.runtime.MethodTypeMismatchException(memberName);
   }
 
   private def isApplicable(formalParamType: Class[_], actualArg: Object, allowConversion: Boolean): Boolean = {
