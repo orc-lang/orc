@@ -22,7 +22,7 @@ import orc.TokenAPI
 import orc.error.OrcException
 
 trait Site extends Value {
-  def call(args: List[Value], token: TokenAPI): Unit
+  def call(args: List[Value], callingToken: TokenAPI): Unit
   def name: String = this.getClass().toString()
   def orcType(argTypes: List[Type]): Type
   override def toString() = this.name
