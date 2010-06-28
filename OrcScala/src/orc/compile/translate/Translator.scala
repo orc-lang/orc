@@ -490,7 +490,10 @@ object Translator {
 					}					
 					(testSize :: computeElements ::: subComputes, subBindings)
 				}
-				case ext.ListPattern(Nil) => decomposePattern(ext.ConstantPattern(Nil), x)
+				case ext.ListPattern(Nil) => {
+				  val computeNil = (callIsNil(x),new TempVar())
+				  (List(computeNil), Nil)
+				}
 				case ext.ListPattern(ps) => {
 					val seed : ext.Pattern = ext.ListPattern(Nil)
 					val folded = (ps foldRight seed)(ext.ConsPattern)	
