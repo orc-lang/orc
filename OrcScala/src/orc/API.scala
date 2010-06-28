@@ -18,7 +18,8 @@ package orc
 import orc.oil.nameless.Expression
 import orc.values.Value
 import orc.values.sites.Site
-import orc.error.compiletime.CompileLogger;
+import orc.error.compiletime.CompileLogger
+import orc.error.OrcException
 import scala.util.parsing.input.Reader
 
 /**
@@ -81,6 +82,8 @@ trait TokenAPI {
 
   def kill: Unit
   def run: Unit
+  
+  def !!(e: OrcException): Nothing = { throw e } 
 
   def printToStdout(s: String): Unit
   def getTimer: java.util.Timer 

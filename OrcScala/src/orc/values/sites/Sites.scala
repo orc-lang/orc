@@ -19,6 +19,7 @@ import orc.values.Value
 import orc.oil.nameless.Type
 import orc.oil.nameless.Bot
 import orc.TokenAPI
+import orc.error.OrcException
 
 trait Site extends Value {
   def call(args: List[Value], token: TokenAPI): Unit
@@ -26,7 +27,7 @@ trait Site extends Value {
   def orcType(argTypes: List[Type]): Type
   override def toString() = this.name
   def extract: Option[PartialSite] = {
-    throw new Exception("Site " + this + " has no default extractor.")
+    throw (new Exception("Site " + this + " has no default extractor."))
   }
 }
 
@@ -42,8 +43,13 @@ trait PartialSite extends Site {
 }
 
 trait TotalSite extends Site {
-  def call(args: List[Value], token: TokenAPI) 
-  	{ token.publish(evaluate(args)) }
+  def call(args: List[Value], token: TokenAPI) {
+  	try { 
+  	  token.publish(evaluate(args)) 
+  	} catch { 
+  	  case (e : OrcException) => token !! e 
+  	}
+  }
   
   def evaluate(args: List[Value]): Value
 }
