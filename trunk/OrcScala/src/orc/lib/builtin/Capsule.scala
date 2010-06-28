@@ -48,7 +48,9 @@ class Capsule(clo: Closure) extends UntypedSite with StandardOrcExecution {
           t.halt
           caller.publish(v)
         }
-        case None => {  }
+        case None => { 
+          t.halt 
+        }
       }
     }
     
