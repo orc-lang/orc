@@ -2,6 +2,7 @@ package orc.run
 
 import orc.values.sites.Site
 import orc.values.Value
+import orc.error.OrcException
 import scala.concurrent.SyncVar
 
 
@@ -47,5 +48,10 @@ with DirectInvocation
 with ActorScheduler
 {
   def expressionPrinted(s: String) { print(s) }
-  def caught(e: Throwable) { e.printStackTrace() } 
+  def caught(e: Throwable) { 
+    e.printStackTrace() 
+    e match {
+      case (ex: OrcException) => println(ex.getPosition().longString) 
+    }
+  }
 }

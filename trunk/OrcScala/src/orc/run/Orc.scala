@@ -30,7 +30,7 @@ import orc.error.runtime.UncallableValueException
 
 import scala.collection.mutable.Set   
 
-abstract class Orc extends OrcExecutionAPI {
+trait Orc extends OrcExecutionAPI {
 
   def run(node: Expression) {
     val exec = new Execution()
@@ -50,7 +50,7 @@ abstract class Orc extends OrcExecutionAPI {
   }
 
 
-  abstract class Group extends GroupMember {
+  trait Group extends GroupMember {
   
     def publish(t: Token, v: Value): Unit
     def onHalt: Unit
@@ -348,6 +348,8 @@ abstract class Orc extends OrcExecutionAPI {
         case _ => {  }
       }
     }
+    
+    override def !!(e: OrcException): Nothing = node !! e
   
     def run {
       if (state == Live) {

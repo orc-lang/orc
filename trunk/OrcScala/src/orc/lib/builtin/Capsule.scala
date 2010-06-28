@@ -18,41 +18,52 @@ object SiteSite extends TotalSite with UntypedSite {
   override def name = "Site"
   def evaluate(args: List[Value]) =
     args match {
-      case List(clo : Closure) => {
-        new Site with UntypedSite {
-          override def name = "_capsule_"
-          def call(args: List[Value], token: TokenAPI) {
-            val node = Call(Constant(clo), args map Constant, Some(Nil))
-            val capsule = new CapsuleExecution(token, node)
-            capsule.start
-          }
-        }
-      }
+      case List(clo : Closure) => new Capsule(clo)
       case List(a) => throw new ArgumentTypeMismatchException(0, "Closure", a.getClass().toString())
       case _ => throw new ArityMismatchException(1, args.size)
   }
 }
 
-class CapsuleExecution(caller: TokenAPI, node: Expression) extends StandardOrcExecution with Actor {
+// Standalone capsule execution
+
+class Capsule(clo: Closure) extends UntypedSite with StandardOrcExecution {
   
-  var listener: Option[TokenAPI] = Some(caller)
-  
-  def act() {
-    this.run(node)
+  override def name = "_capsule_"
+    
+  def call(args: List[Value], caller: TokenAPI) {
+    val exec = new CapsuleExecution(caller)
+    val node = Call(Constant(clo), args map Constant, Some(Nil))
+    val t = new Token(node, exec)
+    t.run
   }
   
-  def emit(v: Value) { 
-    listener foreach { 
-      listener = None
-      _.publish(v)
+  class CapsuleExecution(caller: TokenAPI) extends Execution {
+    
+    var listener: Option[TokenAPI] = Some(caller)
+    
+    override def publish(t: Capsule.this.Token, v: Value) { 
+      listener match {
+        case Some(caller) => {
+          listener = None
+          t.halt
+          caller.publish(v)
+        }
+        case None => {  }
+      }
     }
+    
+    override def onHalt {
+      listener match {
+        case Some(caller) => {
+          listener = None
+          caller.halt
+        }
+        case None => {  }
+      }
+    }
+    
   }
   
-  override def halted {
-    listener foreach {
-      listener = None
-      _.halt
-    }
-    super.halted
-  }
+  def emit(v: Value) { /* Do nothing. This will never be called. */ }
+  
 }
