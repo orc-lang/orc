@@ -86,9 +86,9 @@ trait Orc extends OrcExecutionAPI {
       state match {
         case Unbound(waitlist) => {
           state = Bound(v)
-          schedule(waitlist)
           t.halt
           this.kill
+          schedule(waitlist)
         }
         case _ => t.halt    
       }
