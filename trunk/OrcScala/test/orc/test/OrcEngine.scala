@@ -43,6 +43,7 @@ class OrcEngine {
 
   def run(e : Expression) {
     orcRuntime.run(e)
+    orcRuntime.waitUntilFinished
   }
 
 }
