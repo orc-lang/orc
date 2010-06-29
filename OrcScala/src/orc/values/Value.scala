@@ -16,6 +16,8 @@
 package orc.values
 
 import orc.values.sites.PartialSite
+import orc.values.sites.compatibility.ArrayProxy
+import orc.values.sites.JavaObjectProxy
 import orc.values.sites.Site
 
 import orc.values.sites.UntypedSite
@@ -23,7 +25,7 @@ import orc.oil.nameless.Def
 import orc.oil.nameless.Type
 import orc.oil.nameless.Expression
 import orc.lib.builtin.DataSite
-import orc.values.sites.ArrayProxy
+
 
 abstract class Value extends AnyRef {
   def toOrcSyntax(): String = super.toString()
@@ -43,10 +45,8 @@ object Value {
     v match {
       case s: Site => s
       case cl: Closure => cl
-      case Literal(l : Array[Any]) => {
-        // A special case for calling Arrays.
-        new ArrayProxy(l)
-      }
+      case Literal(l : Array[Any]) => JavaObjectProxy(new ArrayProxy(l))
+      case Literal(obj : AnyRef) => JavaObjectProxy(obj)
       case _ => v
    }
 }

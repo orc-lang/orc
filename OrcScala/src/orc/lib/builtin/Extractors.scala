@@ -36,6 +36,8 @@ object NilExtractor extends PartialSite with UntypedSite {
     args match {
       case List(OrcList(Nil)) => Some(Signal)
       case List(OrcList(_)) => None
+      case List(Literal(arr: Array[AnyRef])) if (arr.size == 0) => Some(Signal)
+      case List(Literal(arr: Array[AnyRef])) if (arr.size != 0) => None
       case List(a) => throw new ArgumentTypeMismatchException(0, "List", a.getClass().toString())
       case _ => throw new ArityMismatchException(1, args.size)
   }
@@ -47,6 +49,10 @@ object ConsExtractor extends PartialSite with UntypedSite {
     args match {
       case List(OrcList(v :: vs)) => Some(OrcTuple(List(v, OrcList(vs))))
       case List(OrcList(_)) => None
+      case List(Literal(arr: Array[AnyRef])) if (arr.size != 0) => { // Allow List-like pattern matching on arrays.
+        Some(OrcTuple(List(Literal(arr(0)),Literal(arr.slice(1,arr.size)))))
+      }
+      case List(Literal(arr: Array[AnyRef])) if (arr.size != 0) => None
       case List(a) => throw new ArgumentTypeMismatchException(0, "List", a.getClass().toString())
       case _ => throw new ArityMismatchException(1, args.size)
   }
