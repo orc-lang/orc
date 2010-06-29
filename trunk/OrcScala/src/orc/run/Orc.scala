@@ -32,8 +32,9 @@ import scala.collection.mutable.Set
 
 trait Orc extends OrcExecutionAPI {
 
+  val exec = new Execution()
+  
   def run(node: Expression) {
-    val exec = new Execution()
     val t = new Token(node, exec)
     t.run
   }
@@ -45,7 +46,7 @@ trait Orc extends OrcExecutionAPI {
   // tracking all of the executions occurring within that expression.
   // Different combinators make use of different Group subclasses.
   
-  trait GroupMember {
+  sealed trait GroupMember {
     def kill: Unit
   }
 
@@ -67,6 +68,12 @@ trait Orc extends OrcExecutionAPI {
       members.remove(m)
       if (members.isEmpty) { onHalt }
     }
+    
+    def inhabitants: List[Token] = 
+      members.toList flatMap {
+        case t: Token => List(t) 
+        case g: Group => g.inhabitants
+      }
   
   }
   
@@ -145,7 +152,11 @@ trait Orc extends OrcExecutionAPI {
   
     def publish(t: Token, v: Value) {
       pending.foreach(_.halt)
+      // TODO: Clean up!
+      val child = t.group
       t.group = parent
+      parent.add(t)
+      child.remove(t)
       t.publish(v)
     }
     
@@ -325,7 +336,7 @@ trait Orc extends OrcExecutionAPI {
           stack = fs
           f(this, v)
         }
-        case Nil => { emit(v) } // !!!
+        case Nil => { emit(v) ; halt } // !!!
       }
     }
   
@@ -401,12 +412,13 @@ trait Orc extends OrcExecutionAPI {
               }
               case (s: Site) => {
                 val vs = args.partialMap(resolve)
-                vs.foreach( try {
-                  invoke(this,s,_)
-                } catch {
-                  case e: OrcException => throw e
-                  case e => throw new JavaException(e)
-                })
+                try {
+                  vs foreach { invoke(this,s,_) }
+                } 
+                catch {
+                  case e: OrcException => this !! e
+                  case e => this !! (new JavaException(e))
+                }
               }
               case uncallable => {
                 halt
