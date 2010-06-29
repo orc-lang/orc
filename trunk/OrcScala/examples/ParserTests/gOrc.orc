@@ -6,8 +6,7 @@
  - are valid Orc tokens and puts them together with a space
  - as the token separator.  This simulates gibberish
  - input to the parser.  The tokens are randomized from a Map().
- - The idea is to copy/paste it into Eclipse and run it.  You can
- - modify it to make it an actual program if a sequence pops up that
+ - You can modify it to make it an actual program if a sequence pops up that
  - looks like it would make a good test case.  Another good way to 
  - use it is to put the totalTokens at a really high number, then
  - examine the output to see if any interesting sequences appear.
@@ -18,9 +17,11 @@
  - Created by brian on Jun 23, 2010 3:00:53 PM
  -}
 
+-- CHANGE NUMBER OF TOKENS HERE
 val totalTokens = 1000
-val wordlist = Map()
 
+
+val wordlist = Map()
 def popList() =
    wordlist.put(0, "def") >>
    wordlist.put(1, "val") >>
