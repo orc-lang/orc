@@ -64,7 +64,7 @@ abstract class JavaProxy extends Site {
     case f: java.lang.Double => Literal(BigDecimal(f.doubleValue))
     case s: java.lang.String => Literal(s)
     case b: java.lang.Boolean => Literal(b.booleanValue)
-    case _ => new JavaObjectProxy(javaValue)
+    case _ => new Literal(javaValue)
   }
 
   def orc2java(orcValue: Value): Object = orc2java(orcValue, classOf[Object])
@@ -143,7 +143,10 @@ abstract class JavaProxy extends Site {
   class InvocableMethod(method: JavaMethod) extends Invocable {
     def getParameterTypes(): Array[java.lang.Class[_]] = method.getParameterTypes
     def isStatic = Modifier.isStatic(method.getModifiers())
-    def invoke(obj: Object, args: Array[Object]): Object = method.invoke(obj, args: _*)
+    def invoke(obj: Object, args: Array[Object]): Object = {
+      method.setAccessible(true)
+      method.invoke(obj, args: _*)
+    }
   }
   class InvocableCtor(ctor: JavaConstructor[_]) extends Invocable {
     def getParameterTypes(): Array[java.lang.Class[_]] = ctor.getParameterTypes
