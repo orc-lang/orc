@@ -36,7 +36,7 @@ println("(10, 3):") >> partition(10, 3)
 
 
 {-
-OUTPUT:
+OUTPUT:PERMUTABLE
 (10, 3):
 [8, 1, 1]
 [7, 2, 1]

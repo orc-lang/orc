@@ -1,6 +1,6 @@
 -- Use wildcards to ignore subpatterns
 {-
-OUTPUT:
+OUTPUT:PERMUTABLE
 1
 4
 5

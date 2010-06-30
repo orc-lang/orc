@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -29,12 +30,13 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import orc.compile.OrcCompiler;
-import test.orc.OrcEngine;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.CompileLogger;
 import orc.error.compiletime.ExceptionCompileLogger;
 
 import org.kohsuke.args4j.CmdLineException;
+
+import test.orc.OrcEngine;
 
 /**
  * Test Orc by running annotated sample programs from the "examples" directory.
@@ -54,12 +56,27 @@ import org.kohsuke.args4j.CmdLineException;
  * 1 | 2
  * </pre>
  *
+ * An output block starting with "OUTPUT:PERMUTABLE" specifies that any permutation
+ * of the given values is a valid output. Example:
+ * 
+ *  <pre>
+ * {-
+ * OUTPUT:PERMUTABLE
+ * 1
+ * 2
+ * 3
+ * -}
+ * </pre>
+ * says that the program may publish the values 1, 2 and 3 in any order.
+ * 
  * If none of the expected outputs match the actual output, the test fails for
- * that example. The multiple output blocks let us cope with limited
+ * that example. 
+ * 
+ * The multiple output blocks and OUTPUT:PERMUTABLE feature let us cope with limited
  * non-determinism, but a better solution is needed for serious testing of
  * non-deterministic programs.
  *
- * @author quark
+ * @author quark, srosario
  */
 public class ExamplesTest {
 	public static Test suite() {
@@ -71,7 +88,7 @@ public class ExamplesTest {
 		final LinkedList<File> files = new LinkedList<File>();
 		TestUtils.findOrcFiles(new File("examples"), files);
 		for (final File file : files) {
-			final LinkedList<String> expecteds;
+			final ExpectedOutput expecteds;
 			try {
 				expecteds = extractExpectedOutput(file);
 			} catch (final IOException e) {
@@ -153,7 +170,7 @@ public class ExamplesTest {
     }
   	private static ExamplesOptions examplesOptions = new ExamplesOptions(); 
  
-	public static void runOrcProgram(final File file, final LinkedList<String> expecteds) throws InterruptedException, Throwable, CmdLineException, CompilationException, IOException, TimeoutException {
+	public static void runOrcProgram(final File file, final ExpectedOutput expecteds) throws InterruptedException, Throwable, CmdLineException, CompilationException, IOException, TimeoutException {
 
 	    OrcCompiler compiler = new OrcCompiler() {
           private final CompileLogger compileLoggerRef = new ExceptionCompileLogger();
@@ -184,31 +201,96 @@ public class ExamplesTest {
 
 		// compare the output to the expected result
 		final String actual = engine.getOut().toString();
-		for (final String expected : expecteds) {
-			if (expected.equals(actual)) {
-				return;
-			}
+		if (expecteds.contains(actual)) {
+		  return;
 		}
 		throw new AssertionError("Unexpected output:\n" + actual);
 	}
 
-	public static LinkedList<String> extractExpectedOutput(final File file) throws IOException {
-		final BufferedReader r = new BufferedReader(new FileReader(file));
-		final LinkedList<String> out = new LinkedList<String>();
-		StringBuilder oneOutput = null;
-		for (String line = r.readLine(); line != null; line = r.readLine()) {
-			if (oneOutput != null) {
-				if (line.startsWith("-}")) {
-					out.add(oneOutput.toString());
-					oneOutput = null;
-				} else {
-					oneOutput.append(line);
-					oneOutput.append("\n");
-				}
-			} else if (line.startsWith("OUTPUT:")) {
-				oneOutput = new StringBuilder();
-			}
-		}
-		return out;
+	private static ExpectedOutput extractExpectedOutput(final File file) throws IOException {
+	  final BufferedReader r = new BufferedReader(new FileReader(file));
+	  List<MaybePermutableOutput> outputs = new LinkedList<MaybePermutableOutput>();
+	  
+	  boolean permutable = false;
+	  StringBuilder oneOutput = null;
+	  for (String line = r.readLine(); line != null; line = r.readLine()) {
+	      if (oneOutput != null) {
+	          if (line.startsWith("-}")) {
+	              outputs.add(new MaybePermutableOutput(permutable,oneOutput.toString()));
+	              oneOutput = null;
+	          } else {
+	              oneOutput.append(line);
+	              oneOutput.append("\n");
+	          }
+	      } else if (line.startsWith("OUTPUT:PERMUTABLE")) {
+	        permutable = true;
+	        oneOutput = new StringBuilder();
+	      } else if (line.startsWith("OUTPUT:")) {
+	        permutable = false;
+	        oneOutput = new StringBuilder();
+	      }
+	  }
+	  return new ExpectedOutput(outputs);
 	}
+}
+
+class ExpectedOutput {
+  private List<MaybePermutableOutput> outs = new LinkedList<MaybePermutableOutput>();
+  
+  public ExpectedOutput(List<MaybePermutableOutput> outputs) {
+    this.outs = outputs;
+  }
+  
+  public boolean contains(String actual) {
+    for(MaybePermutableOutput o : outs) {
+      if(o.matches(actual))
+        return true;
+    }
+    return false;
+  }
+  
+  public boolean isEmpty() {
+    return outs.isEmpty();
+  }
+}
+
+class MaybePermutableOutput {
+  private boolean permutable = false;
+  String output;
+  
+  public MaybePermutableOutput(boolean perm, String out) {
+    this.permutable = perm;
+    this.output = out;
+  }
+
+  public boolean matches(String actual) {
+      if(!permutable)
+        return output.equals(actual);
+      
+      // Check all if the actual output is a permutation of the expected output.
+      String[] actualArr = actual.split("\\n");
+      String[] expectedArr = output.split("\\n");
+      
+      if(actualArr.length != expectedArr.length)
+        return false;
+      
+      LinkedList<String> actuals = new LinkedList<String>();
+      for(String s : actualArr) {
+        actuals.add(s);
+      }
+      
+      LinkedList<String> expected = new LinkedList<String>();
+      for(String s : expectedArr) {
+        expected.add(s);
+      }
+      
+      for(String s: actuals) {
+        if(!expected.contains(s))
+          return false;
+        
+        expected.remove(s);
+      }
+
+      return true;
+    }
 }
