@@ -1,6 +1,6 @@
 -- Create some lists
 {-
-OUTPUT:
+OUTPUT:PERMUTABLE
 []
 [7]
 [1, 2, 3]
