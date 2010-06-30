@@ -154,7 +154,7 @@ halts.
 
 @implementation
 --}
-{-
+
 def takePubs[A](Integer, lambda () :: A) :: A
 def takePubs(n, f) =
   val out = Buffer[A]()
@@ -164,7 +164,7 @@ def takePubs(n, f) =
     ift(c.dec() >> out.put(x) >> false
        ; out.closenb() >> true)
   ) >> stop | repeat(out.get)
--}
+
 {--
 @def withLock[A](Semaphore, lambda () :: A) :: A
 Acquire the semaphore and run a thunk which is expected to publish
@@ -173,7 +173,7 @@ thunk and releases the semaphore.
 
 @implementation
 --}
-{-
+
 def withLock[A](Semaphore, lambda () :: A) :: A
 def withLock(s, f) =
   s.acquire() >> (
@@ -182,7 +182,7 @@ def withLock(s, f) =
     x
     ; s.release() >> stop
   )
--}
+
 
 {--
 @def synchronized[A](Semaphore, lambda () :: A)() :: A
@@ -191,7 +191,7 @@ on the lock. Similar to Java's synchronized keyword.
 
 @implementation
 --}
-{-
+
 def synchronized[A](Semaphore, lambda () :: A)() :: A
 def synchronized(s,f)() = withLock(s, f)
--}
+
