@@ -320,14 +320,14 @@ people intuitively use these operators.
 
       | ("include" ~> stringLit).into(performInclude)
       
+      | "type" ~> parseTypeVariable ~ ("=" ~> parseClassname)
+      -> TypeImport
+      
       | "type" ~> parseTypeVariable ~ (ListOf(parseTypeVariable)?) ~ ("=" ~> nlrep1sep(parseConstructor, "|"))
       -> ((x,ys,t) => Datatype(x, ys getOrElse Nil, t))
 
       | "type" ~> parseTypeVariable ~ (ListOf(parseTypeVariable)?) ~ ("=" ~> parseType)
       -> ((x,ys,t) => TypeAlias(x, ys getOrElse Nil, t))
-
-      | "type" ~> parseTypeVariable ~ ("=" ~> parseClassname)
-      -> TypeImport
 
       | failure("Declaration (val, def, type, etc.) expected")
   )

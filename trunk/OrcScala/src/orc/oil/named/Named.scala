@@ -46,6 +46,40 @@ trait hasFreeVars {
 sealed abstract class NamedAST extends AST with NamedToNameless {
   def prettyprint() = (new PrettyPrint()).reduce(this)
   override def toString() = prettyprint()
+  
+  /*
+  lazy val subtrees = this match {
+    case Stop() => Nil
+    case (_ : Argument) => Nil
+    case Call(target, args, typeargs) => target :: args ::: typeargs.toList.flatten
+    case left || right => List(left, right)
+    case Sequence(left,x,right) => List(left, x, right)
+    case Prune(left,x,right) => List(left, x, right)
+    case left ow right => List(left, right)
+    case DeclareDefs(defs, body) => defs ::: List(body)
+    case Def(f, formals, body, typeformals, argtypes, returntype) => {
+      f :: formals ::: List(body) ::: typeformals ::: argtypes.toList.flatten ::: returntype.toList
+    }
+    case HasType(body, expectedType) => List(body, expectedType)
+    case DeclareType(u, t, body) => List(u, t, body)          
+    case Top() => Nil
+    case Bot() => Nil
+    case ImportedType(_) => Nil
+    case ClassType(_) => Nil
+    case (_ : Typevar) => Nil
+    case FunctionType(typeformals, argtypes, returntype) => {
+      typeformals ::: argtypes ::: List(returntype)  
+    }
+    case TupleType(elements) => elements
+    case TypeApplication(tycon, typeactuals) => tycon :: typeactuals
+    case AssertedType(assertedType) => List(assertedType)
+    case TypeAbstraction(typeformals, t) => typeformals ::: List(t)
+    case VariantType(variants) => {
+      for ((_, variant) <- variants; Some(t) <- variant) yield t
+    }
+  }
+  */
+  
 }
 
 sealed abstract class Expression
@@ -107,17 +141,30 @@ with TypeSubstitution[Expression]
       case HasType(body, expectedType) => HasType(body remapType f, expectedType remapType f)
     } setPos pos
   
+    
+    
+    
+    
+    
+    
+    
+    
     /*
      * Removes unused definitions from the OIL AST.
+     * 
+     * This is more useful on an AST with separated defs.
      */
-	def removeUnusedDefs(): Expression = {
-		this -> {
-			case left || right => left.removeUnusedDefs() || right.removeUnusedDefs()
-			case left > x > right => left.removeUnusedDefs() > x > right.removeUnusedDefs() 
-			case left < x < right => left.removeUnusedDefs() < x < right.removeUnusedDefs()
-			case left ow right => left.removeUnusedDefs() ow right.removeUnusedDefs()
+	lazy val withoutUnusedDefs: Expression = {
+		  this -> {
+		    case Stop() => this
+            case (_ : Argument) => this 
+            case Call(_,_,_) => this
+			case left || right => left.withoutUnusedDefs || right.withoutUnusedDefs
+			case left > x > right => left.withoutUnusedDefs > x > right.withoutUnusedDefs 
+			case left < x < right => left.withoutUnusedDefs < x < right.withoutUnusedDefs
+			case left ow right => left.withoutUnusedDefs ow right.withoutUnusedDefs
 			case DeclareDefs(defs, body) => {
-				val newbody = body.removeUnusedDefs()
+				val newbody = body.withoutUnusedDefs
 				// If none of the defs are bound in the body,
 	        	// just return the body.
 	        	val defNamesSet: Set[TempVar] = defs.toSet map ((a:Def) => a.name)
@@ -125,15 +172,14 @@ with TypeSubstitution[Expression]
                   newbody
 	        	} else {
 	        		val newdefs = defs.map({
-	        		  case Def(name,args,body,t,a,r) => Def(name,args,body.removeUnusedDefs(),t,a,r)
+	        		  case Def(name,args,body,t,a,r) => Def(name,args,body.withoutUnusedDefs,t,a,r)
 	        		})
 	        		DeclareDefs(newdefs, newbody)
 	        	}
 			}
-			case HasType(body, typ) => HasType(body.removeUnusedDefs(), typ)
-			case DeclareType(u, t, body) => DeclareType(u, t, body.removeUnusedDefs())
-			case _ => this
-		}
+			case HasType(body, typ) => HasType(body.withoutUnusedDefs, typ)
+			case DeclareType(u, t, body) => DeclareType(u, t, body.withoutUnusedDefs)
+		  }
 	}
 	
 	
@@ -188,6 +234,7 @@ with TypeSubstitution[Type]
 	  this -> {
 	      case Bot() => Bot()
 	      case Top() => Top()
+	      case ImportedType(cl) => ImportedType(cl)
 	      case ClassType(cl) => ClassType(cl)
 	 	  case x : Typevar => f(x)
 	 	  case TupleType(elements) => TupleType(elements map {_ remapType f})
@@ -223,6 +270,7 @@ case class TypeApplication(tycon: Typevar, typeactuals: List[Type]) extends Type
 case class AssertedType(assertedType: Type) extends Type	
 case class FunctionType(typeformals: List[TempTypevar], argtypes: List[Type], returntype: Type) extends Type with TypeScope
 case class TypeAbstraction(typeformals: List[TempTypevar], t: Type) extends Type with TypeScope
+case class ImportedType(classname: String) extends Type
 case class ClassType(classname: String) extends Type
 case class VariantType(variants: List[(String, List[Option[Type]])]) extends Type
 
@@ -250,7 +298,12 @@ trait NamedToNameless {
         val bodycontext = defnames.reverse ::: context
         val newdefs = defs map { namedToNameless(_, defcontext, typecontext) }
         val newbody = namedToNameless(body, bodycontext, typecontext)
-        val openvars = opennames map { context indexOf _ }
+        val openvars = 
+          opennames map { x =>
+            val i = context indexOf x
+            if (i < 0) { e !! "Compiler fault: unbound closure variable in deBruijn conversion" }
+            i
+          }
         nameless.DeclareDefs(openvars, newdefs, newbody)
       }
       case DeclareType(x, t, body) => {
@@ -267,7 +320,11 @@ trait NamedToNameless {
   def namedToNameless(a: Argument, context: List[TempVar]): nameless.Argument = {
     a -> {
       case Constant(v) => nameless.Constant(v)
-      case (x: TempVar) => nameless.Variable(context indexOf x) 
+      case (x: TempVar) => {
+        var i = context indexOf x
+        if (i < 0) { a !! "Compiler fault: unbound variable in deBruijn conversion" } 
+        nameless.Variable(i) 
+      }
       case x@ NamedVar(s) => x !! ("Unbound variable " + s) 
     } setPos a.pos
   }
@@ -276,7 +333,11 @@ trait NamedToNameless {
   def namedToNameless(t: Type, typecontext: List[TempTypevar]): nameless.Type = {
     def toType(t: Type): nameless.Type = namedToNameless(t, typecontext)
     t -> {
-      case u: TempTypevar => nameless.TypeVar(typecontext indexOf u)
+      case u: TempTypevar => {
+        var i = typecontext indexOf u
+        if (i < 0) { t !! "Compiler fault: unbound type variable in deBruijn conversion" } 
+        nameless.TypeVar(i)
+      }
       case Top() => nameless.Top()
       case Bot() => nameless.Bot()
       case FunctionType(typeformals, argtypes, returntype) => {
@@ -288,6 +349,7 @@ trait NamedToNameless {
       case TupleType(elements) => nameless.TupleType(elements map toType)
       case TypeApplication(tycon, typeactuals) => {
         val i = typecontext indexOf tycon
+        if (i < 0) { t !! "Compiler fault: unbound type constructor in deBruijn conversion" } 
         nameless.TypeApplication(i, typeactuals map toType)
       }	
       case AssertedType(assertedType) => nameless.AssertedType(toType(assertedType))
@@ -296,6 +358,7 @@ trait NamedToNameless {
         val newt = namedToNameless(t, newTypeContext)
         nameless.TypeAbstraction(typeformals.size, newt)
       }
+      case ImportedType(classname) => nameless.ImportedType(classname)
       case ClassType(classname) => nameless.ClassType(classname)
       case VariantType(variants) => {
         val newVariants =

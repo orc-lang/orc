@@ -136,7 +136,7 @@ If any calls to <code>acquire</code> are blocked, return a signal.
 Otherwise, halt.
 --}
 site Semaphore = orc.lib.state.Semaphore
---type Semaphore = orc.lib.state.types.SemaphoreType
+type Semaphore = orc.lib.state.types.SemaphoreType
 
 {--
 @site Buffer[A]() :: Buffer[A]
@@ -193,7 +193,7 @@ a list of the items in the order they were added. If there are no items in the
 buffer, return an empty list.
 --}
 site Buffer = orc.lib.state.Buffer
---type Buffer = orc.lib.state.types.BufferType
+type Buffer = orc.lib.state.types.BufferType
 
 
 {--
@@ -272,7 +272,7 @@ the buffer and returning a list of the items in the order they were added. If
 there are no items in the buffer or waiting to be added, return an empty list.
 --}
 site BoundedBuffer = orc.lib.state.BoundedBuffer
---type BoundedBuffer = orc.lib.state.types.BoundedBufferType
+type BoundedBuffer = orc.lib.state.types.BoundedBufferType
 
 
 {--

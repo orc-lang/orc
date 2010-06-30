@@ -93,6 +93,7 @@ class PrettyPrint {
       case TypeApplication(tycon, typeactuals) => reduce(tycon) + brack(typeactuals)
       case AssertedType(assertedType) => reduce(assertedType) + "!"
       case TypeAbstraction(typeformals, t) => brack(typeformals) + "{" + reduce(t) + "}"
+      case ImportedType(classname) => classname
       case ClassType(classname) => classname
       case VariantType(variants) => {
         (for ((name, variant) <- variants) yield {
@@ -100,6 +101,7 @@ class PrettyPrint {
         }).mkString(" | ")
       }
       case NamedTypevar(s) => "?" + s
+      case _ => "???"
     }
 
 }

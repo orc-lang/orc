@@ -81,6 +81,7 @@ case class TypeApplication(tycon: Int, typeactuals: List[Type]) extends Type
 case class AssertedType(assertedType: Type) extends Type	
 case class FunctionType(typeFormalArity: Int, argTypes: List[Type], returnType: Type) extends Type
 case class TypeAbstraction(typeFormalArity: Int, t: Type) extends Type
+case class ImportedType(classname: String) extends Type
 case class ClassType(classname: String) extends Type
 case class VariantType(variants: List[(String, List[Option[Type]])]) extends Type
 
@@ -174,6 +175,7 @@ object AddNames {
         val newt = namelessToNamed(t, newTypeContext)
         named.TypeAbstraction(typeformals, newt)
       }
+      case ImportedType(classname) => named.ImportedType(classname)
       case ClassType(classname) => named.ClassType(classname)
       case VariantType(variants) => {
         val newVariants =

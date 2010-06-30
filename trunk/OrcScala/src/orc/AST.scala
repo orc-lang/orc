@@ -17,26 +17,28 @@ package orc
 
 import orc.error.OrcException
 import scala.util.parsing.input.Positional
+import scala.util.parsing.input.Position
+import scala.util.parsing.input.NoPosition
 
-abstract class AST extends Positional {
+trait AST extends Positional {
 
   def ->[B <: AST](f: this.type => B): B = {
       val location = this.pos
       val result = f(this)
-      result.pos = location
+      result.applyPos(location)
       result
   }
   
   // Location transfer.
   // x ->> y  is equivalent to  x -> (_ => y)
-  def ->>[B <: AST](that : B): B = { that.pos = this.pos ; that }
+  def ->>[B <: AST](that : B): B = { that.applyPos(this.pos); that }
 
   def !!(exn : OrcException): Nothing = {
       exn.setPosition(this.pos)
       throw exn
   }
   
-  // Remove this overloading to uncover uses of !! that do not carry a specific exception type
+  // TODO: remove this overloading to uncover uses of !! that do not carry a specific exception type
   def !!(msg : String): Nothing = { 
     val exn = new OrcException(msg)
     this !! exn
@@ -47,4 +49,20 @@ abstract class AST extends Positional {
     //FIXME: This should use the compile message recorder -- this is broken for GUI or Web Orc versions 
     Console.err.println("Warning " + this.pos + ": " + msg)
   }
+  
+  def applyPos(p : Position): Unit = {
+    this.pos match {
+      case NoPosition => {
+        this.pos = p
+        this.subtrees map { _.applyPos(p) }
+      }
+      case _ => {  }
+    }
+  }
+  
+  // Used to propagate source location information
+  // Currently only implemented for named OIL
+  val subtrees: List[AST] = Nil
+  
+  
 }

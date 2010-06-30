@@ -123,7 +123,7 @@ class OrcCompiler extends OrcCompilerAPI with CompilerEnvironmentIfc {
 
   val refineNamedOil = new CompilerPhase[OrcOptions, orc.oil.named.Expression, orc.oil.named.Expression] {
     val phaseName = "refineNamedOil"
-    override def apply(options: OrcOptions) = { ast => ast.removeUnusedDefs }
+    override def apply(options: OrcOptions) = { ast => ast.withoutUnusedDefs }
   }
   
   val deBruijn = new CompilerPhase[OrcOptions, orc.oil.named.Expression, orc.oil.nameless.Expression] {
@@ -131,8 +131,20 @@ class OrcCompiler extends OrcCompilerAPI with CompilerEnvironmentIfc {
     override def apply(options: OrcOptions) = { ast => ast.withoutNames }
   }
 
-  val phases = parse.timePhase.printOut >>> translate.timePhase.printOut >>> typeCheck.timePhase >>> refineNamedOil.timePhase >>> deBruijn.timePhase
+  
+  
+  /* ***************** */
+  /*                   */
+  /*  Compiler Phases  */
+  /*                   */
+  /* ***************** */
+  
+  val phases = parse.timePhase >>> translate.timePhase >>> typeCheck.timePhase >>> refineNamedOil.timePhase.printOut >>> deBruijn.timePhase
 
+  
+  
+  
+  
   def apply(source: Reader[Char], options: OrcOptions): orc.oil.nameless.Expression = {
     compileLogger.beginProcessing(options.filename)
     try {
