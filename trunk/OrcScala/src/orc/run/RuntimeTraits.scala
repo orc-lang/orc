@@ -11,7 +11,7 @@ trait DirectInvocation extends Orc {
 }
 
 trait PublishToConsole extends Orc {
-  def emit(v: Value) { print("Published: " + v + "   = " + v.toOrcSyntax() + "\n") }
+  override def emit(v: Value) { print("Published: " + v + "   = " + v.toOrcSyntax() + "\n") }
 }
 
 
@@ -20,7 +20,7 @@ trait ActorScheduler extends Orc {
   
   def waitUntilFinished { done.get }
   
-  def halted { worker ! None ; done.set({}); timer.cancel() }
+  def halted { worker ! None }
   
   val worker = new Worker()
   
@@ -35,7 +35,13 @@ trait ActorScheduler extends Orc {
       loop {
         react {
           case Some(x:Token) => x.run
-          case None => exit // execution has halted
+          
+          // execution has halted
+          case None => {
+            timer.cancel()
+            done.set({})
+            exit 
+          }
         }
       }
     }
@@ -47,11 +53,12 @@ trait StandardOrcExecution extends Orc
 with DirectInvocation 
 with ActorScheduler
 {
+  def emit(v : Value) = { /* By default, ignore toplevel publications */ }
   def expressionPrinted(s: String) { print(s) }
   def caught(e: Throwable) { 
-    e.printStackTrace() 
     e match {
       case (ex: OrcException) => println(ex.getPosition().longString) 
     }
+    e.printStackTrace() 
   }
 }
