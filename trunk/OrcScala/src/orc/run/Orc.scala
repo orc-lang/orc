@@ -331,13 +331,15 @@ trait Orc extends OrcExecutionAPI {
     // Publicly accessible methods
   
     def publish(v: Value) {
-      stack match {
-        case f::fs => { 
-          stack = fs
-          f(this, v)
+      if (state == Live) {
+        stack match {
+          case f::fs => { 
+            stack = fs
+            f(this, v)
+          }
+          case Nil => { emit(v) ; halt } // !!!
         }
-        case Nil => { emit(v) ; halt } // !!!
-      }
+      } 
     }
   
     def halt {
