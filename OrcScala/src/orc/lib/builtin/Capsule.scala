@@ -42,30 +42,17 @@ class Capsule(clo: Closure) extends UntypedSite with StandardOrcExecution {
     var listener: Option[TokenAPI] = Some(caller)
     
     override def publish(t: Capsule.this.Token, v: Value) { 
-      listener match {
-        case Some(caller) => {
-          listener = None
-          t.halt
-          caller.publish(v)
-        }
-        case None => { 
-          t.halt 
-        }
-      }
+      t.halt
+      listener foreach { _.publish(v) }
+      listener = None
     }
     
     override def onHalt {
-      listener match {
-        case Some(caller) => {
-          listener = None
-          caller.halt
-        }
-        case None => {  }
-      }
+      halted
+      listener foreach { _.halt }
+      listener = None
     }
     
   }
-  
-  def emit(v: Value) { /* Do nothing. This will never be called. */ }
   
 }

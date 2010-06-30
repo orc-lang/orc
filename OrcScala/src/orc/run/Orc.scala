@@ -419,7 +419,7 @@ trait Orc extends OrcExecutionAPI {
                 } 
                 catch {
                   case e: OrcException => this !! e
-                  case e => this !! (new JavaException(e))
+                  case e: Exception => this !! (new JavaException(e))
                 }
               }
               case uncallable => {
