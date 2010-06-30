@@ -25,6 +25,10 @@ import orc.oil.nameless.Def
 import orc.oil.nameless.Type
 import orc.oil.nameless.Expression
 import orc.lib.builtin.DataSite
+import orc.error.runtime.ArgumentTypeMismatchException
+import orc.error.runtime.ArityMismatchException
+
+import scala.collection.mutable.Map
 
 
 abstract class Value extends AnyRef {
@@ -101,4 +105,16 @@ object Closure {
 object Resolver {
   
   
+}
+
+// Records.
+case class OrcRecord(values: Map[String,Value]) extends PartialSite with UntypedSite {
+  override def evaluate(args: List[Value]) = 
+    args match {
+      case List(Field(name)) => values.get(name)
+      case List(a) => throw new ArgumentTypeMismatchException(0, "Field", a.getClass().toString())
+      case _ => throw new ArityMismatchException(1, args.size)
+    }
+  
+  override def toOrcSyntax() = "[" + values + "]"
 }

@@ -56,4 +56,17 @@ object ConsConstructor extends TotalSite with UntypedSite {
   override def extract = Some(ConsExtractor)
 }
 
-object RecordConstructor extends UnimplementedSite //FIXME:TODO: Implement
+// Input to a RecordConstructor is a list of tuples, each tuple
+// being a (string,site) mapping. Eg: (("x",Site(x)), ("y", Site(y)), ("z", Site(z))..))
+object RecordConstructor extends TotalSite with UntypedSite {
+  override def name = "Record"
+  override def evaluate(args: List[Value]) = {
+    val valueMap = new scala.collection.mutable.HashMap[String,Value]()
+    args map {
+          case OrcTuple(List(Literal(key: String),value)) =>
+            valueMap+=((key,value))
+          case v => throw new ArgumentTypeMismatchException(1, "OrcTuple(String,Value)", v.getClass().toString())
+        }
+    OrcRecord(valueMap)
+  }
+}
