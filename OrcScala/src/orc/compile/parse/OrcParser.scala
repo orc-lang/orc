@@ -41,6 +41,12 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
         // For backwards compatibility, allow quotes to be omitted, if class name had only Orc-legal identifier characters
       | rep1sep(ident, ".") ^^ { _.mkString(".") }
   )
+  
+  def parseStrictClassname: Parser[String] = (
+        stringLit
+        // For backwards compatibility, allow quotes to be omitted, if class name had only Orc-legal identifier characters
+      | ident ~ "." ~ rep1sep(ident, ".") ^^ { case x ~ "." ~ xs => x + "." + xs.mkString(".") }
+  )
 
   def floatLit: Parser[String] =
     elem("number", _.isInstanceOf[FloatingPointLit]) ^^ (_.chars)
@@ -320,13 +326,13 @@ people intuitively use these operators.
 
       | ("include" ~> stringLit).into(performInclude)
       
-      | "type" ~> parseTypeVariable ~ ("=" ~> parseClassname)
+      | "type" ~> parseTypeVariable ~ ("=" ~> parseStrictClassname)
       -> TypeImport
       
-      | "type" ~> parseTypeVariable ~ (ListOf(parseTypeVariable)?) ~ ("=" ~> nlrep1sep(parseConstructor, "|"))
+      | "type" ~> parseTypeVariable ~ ((ListOf(parseTypeVariable))?) ~ ("=" ~> nlrep1sep(parseConstructor, "|"))
       -> ((x,ys,t) => Datatype(x, ys getOrElse Nil, t))
 
-      | "type" ~> parseTypeVariable ~ (ListOf(parseTypeVariable)?) ~ ("=" ~> parseType)
+      | "type" ~> parseTypeVariable ~ ((ListOf(parseTypeVariable))?) ~ ("=" ~> parseType)
       -> ((x,ys,t) => TypeAlias(x, ys getOrElse Nil, t))
 
       | failure("Declaration (val, def, type, etc.) expected")

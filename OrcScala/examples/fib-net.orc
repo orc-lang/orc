@@ -2,7 +2,7 @@
 author: Amin Shali
 date: Wednesday, June 09 2010
 -}
-{-
+
 def fib(Buffer[Integer], Buffer[Integer], Integer) :: Top
 def fib(in, out, 0) = in.get() >> out.put(0) >> fib(in, out, 0)
 def fib(in, out, 1) = in.get() >> out.put(1) >> fib(in, out, 1)
@@ -43,7 +43,7 @@ def userin() = upto(13) >v> in1.put(v+1) >> stop
 def userout() :: Top
 def userout() = out1.get() >z> println(z) >> userout()
 fib(in1,out1,15) | userin() | userout()
--}
+
 {-
 OUTPUT:
 1
