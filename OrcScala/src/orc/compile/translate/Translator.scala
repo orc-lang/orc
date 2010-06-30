@@ -184,7 +184,7 @@ object Translator {
                     TypeAbstraction(newTypeFormals, VariantType(variants))
                   }
 				  newbody = newbody.substType(d, name)
-				  newbody = DeclareType(d, variantType, newbody)
+				  newbody = DeclareType(d, variantType.substType(d, name), newbody)
 				  
 				  newbody
 				}
