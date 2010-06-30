@@ -41,11 +41,14 @@ object Translator {
 		val namedAST = convert(extendedAST)
 	    //Console.err.println("Translation result: \n" + namedAST)
 		namedAST remapArgument {
-		  a:Argument => a match {
-			case x@ NamedVar(s) => x !! ("Unbound variable " + s)
-			case y => y 
-		  }
+		  case x@ NamedVar(s) => x !! ("Unbound variable " + s)
+		  case a => a 
 		}
+		namedAST remapType {
+		  case u@ NamedTypevar(s) => u !! ("Unbound type variable " + s)
+		  case t => t
+		}
+		
 	}
 	
 	
@@ -128,8 +131,10 @@ object Translator {
 				  convert(body).subst(site, name) 
 				}
 				case ext.Declare(ext.ClassImport(name, classname), body) => {
+				  val u = new TempTypevar()
 				  val site = Constant(JavaSiteForm.resolve(classname))
-				  convert(body).subst(site, name)
+				  val newbody = convert(body).subst(site, name).substType(u, name)
+				  DeclareType(u, ClassType(classname), newbody)
 				}
 				
 				//FIXME: Incorporate filename in source location information
@@ -139,7 +144,7 @@ object Translator {
 				case ext.Declare(ext.TypeImport(name, classname), body) => {
 				  val u = new TempTypevar()
                   val newbody = convert(body).substType(u, name)
-                  DeclareType(u, ClassType(classname), newbody)
+                  DeclareType(u, ImportedType(classname), newbody)
 				}
 				
 				case ext.Declare(ext.TypeAlias(name, typeformals, t), body) => {
