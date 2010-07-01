@@ -13,4 +13,9 @@ def capsule A() =
 
 val a = A()
 
-a.myX
+a.myX()
+
+{-
+OUTPUT:
+4
+-}

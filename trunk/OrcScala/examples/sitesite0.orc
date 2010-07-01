@@ -6,12 +6,7 @@ TwentyThree() | 24
 
 
 {-
-OUTPUT:
+OUTPUT:PERMUTABLE
 23
 24
--}
-{-
-OUTPUT:
-24
-23
 -}

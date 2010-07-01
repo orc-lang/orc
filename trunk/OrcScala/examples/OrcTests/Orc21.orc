@@ -11,12 +11,7 @@ def isx(_) = false
 isx(7) | isx(9)
 
 {-
-OUTPUT:
+OUTPUT:PERMUTABLE
 false
 true
--}
-{-
-OUTPUT:
-true
-false
 -}

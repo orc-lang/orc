@@ -7,12 +7,7 @@
 ) :!: Signal  {- As currently written, this program cannot pass the typechecker -}
 
 {-
-OUTPUT:
+OUTPUT:PERMUTABLE
 (2, 1)
 (6, 5)
--} 
-{-
-OUTPUT:
-(6, 5)
-(2, 1)
--} 
+-}
