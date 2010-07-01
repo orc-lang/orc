@@ -8,12 +8,7 @@
 2 | 3
 
 {-
-OUTPUT:
+OUTPUT:PERMUTABLE
 2
 3
--}
-{-
-OUTPUT:
-3
-2
 -}
