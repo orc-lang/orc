@@ -22,16 +22,17 @@ import scala.util.parsing.input.NoPosition
 
 trait AST extends Positional {
 
+  // Location-preserving transform
   def ->[B <: AST](f: this.type => B): B = {
       val location = this.pos
       val result = f(this)
-      result.applyPos(location)
+      result.pushDownPosition(location)
       result
   }
   
   // Location transfer.
   // x ->> y  is equivalent to  x -> (_ => y)
-  def ->>[B <: AST](that : B): B = { that.applyPos(this.pos); that }
+  def ->>[B <: AST](that : B): B = { that.pushDownPosition(this.pos); that }
 
   def !!(exn : OrcException): Nothing = {
       exn.setPosition(this.pos)
@@ -50,11 +51,13 @@ trait AST extends Positional {
     Console.err.println("Warning " + this.pos + ": " + msg)
   }
   
-  def applyPos(p : Position): Unit = {
+  // Set source location at this node and propagate
+  // the change to any children without source locations.
+  def pushDownPosition(p : Position): Unit = {
     this.pos match {
       case NoPosition => {
-        this.pos = p
-        this.subtrees map { _.applyPos(p) }
+        this setPos p
+        this.subtrees map { _.pushDownPosition(p) }
       }
       case _ => {  }
     }

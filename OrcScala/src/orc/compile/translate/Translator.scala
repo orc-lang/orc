@@ -66,7 +66,12 @@ object Translator {
 					case lit => Constant(Literal(lit))
 				}
 				case ext.Variable(x) => new NamedVar(x)
-				case ext.TupleExpr(es) => unfold(es map convert, makeLet)
+				case ext.TupleExpr(es) => {
+				  if (es.size < 2) { 
+				    e !! "Malformed tuple expression; a tuple must contain at least 2 elements" 
+				  } 
+				  unfold(es map convert, makeTuple)
+				}
 				case ext.ListExpr(es) => unfold(es map convert, makeList)
                 case ext.Call(target, gs) => {
                 	var expr = convert(target)

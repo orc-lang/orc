@@ -17,6 +17,7 @@ package orc.oil.nameless
 
 import orc.oil._
 import orc.values.Value
+import orc.AST
 
 
 
@@ -28,8 +29,31 @@ trait hasFreeVars {
     Set.empty ++ (for (i <- indices if i >= n) yield i-n)  
 }
 
+sealed abstract class NamelessAST extends AST {
+  override val subtrees: List[NamelessAST] = this match {
+    case Call(target, args, typeargs) => target :: ( args ::: typeargs.toList.flatten )
+    case left || right => List(left, right)
+    case Sequence(left,right) => List(left, right)
+    case Prune(left,right) => List(left, right)
+    case left ow right => List(left, right)
+    case DeclareDefs(_, defs, body) => defs ::: List(body)
+    case HasType(body, expectedType) => List(body, expectedType)
+    case DeclareType(t, body) => List(t, body)
+    case Def(_, _, body, argtypes, returntype) => {
+      body :: ( argtypes.toList.flatten ::: returntype.toList )
+    }
+    case TupleType(elements) => elements
+    case TypeApplication(_, typeactuals) => typeactuals
+    case AssertedType(assertedType) => List(assertedType)
+    case TypeAbstraction(_, t) => List(t)
+    case VariantType(variants) => {
+      for ((_, variant) <- variants; Some(t) <- variant) yield t
+    }
+    case _ => Nil
+  }
+}
 
-sealed abstract class Expression extends orc.AST with hasFreeVars with NamelessInfixCombinators {
+sealed abstract class Expression extends NamelessAST with hasFreeVars with NamelessInfixCombinators {
 
   /* 
    * Find the set of free vars for any given expression.
@@ -72,7 +96,7 @@ case class Variable(index: Int) extends Argument {
   if (index < 0) { throw new Exception("Invalid construction of indexed variable. Index must be >= 0") }
 }
 
-sealed abstract class Type extends orc.AST
+sealed abstract class Type extends NamelessAST
 case class Top() extends Type
 case class Bot() extends Type
 case class TypeVar(index: Int) extends Type
@@ -86,7 +110,7 @@ case class ClassType(classname: String) extends Type
 case class VariantType(variants: List[(String, List[Option[Type]])]) extends Type
 
 
-sealed case class Def(typeFormalArity: Int, arity: Int, body: Expression, argTypes: Option[List[Type]], returnType: Option[Type]) extends orc.AST with hasFreeVars {
+sealed case class Def(typeFormalArity: Int, arity: Int, body: Expression, argTypes: Option[List[Type]], returnType: Option[Type]) extends NamelessAST with hasFreeVars {
   /* Get the free vars of the body, then bind the arguments */
   lazy val freevars: Set[Int] = shift(body.freevars, arity)
 }

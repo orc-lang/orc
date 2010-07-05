@@ -45,5 +45,5 @@ find("/")
 
 {-
 OUTPUT:
-[/, /usr/, /usr/local/, /usr/bin/, /usr/bin/ls, /usr/bin/sh, /usr/bin/find, /usr/lib/, /bin/, /lib/]
+["/", "/usr/", "/usr/local/", "/usr/bin/", "/usr/bin/ls", "/usr/bin/sh", "/usr/bin/find", "/usr/lib/", "/bin/", "/lib/"]
 -}

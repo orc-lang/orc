@@ -43,32 +43,26 @@ trait hasFreeVars {
   val freevars: Set[TempVar]
 }
 
+trait hasFreeTypeVars {
+  /* Note: As is evident from the type, NamedTypevars are not included in this set */
+  val freetypevars: Set[TempTypevar]
+}
+
 sealed abstract class NamedAST extends AST with NamedToNameless {
   def prettyprint() = (new PrettyPrint()).reduce(this)
   override def toString() = prettyprint()
   
-  /*
-  lazy val subtrees = this match {
-    case Stop() => Nil
-    case (_ : Argument) => Nil
-    case Call(target, args, typeargs) => target :: args ::: typeargs.toList.flatten
+  override val subtrees: List[NamedAST] = this match {
+    case Call(target, args, typeargs) => target :: ( args ::: typeargs.toList.flatten )
     case left || right => List(left, right)
     case Sequence(left,x,right) => List(left, x, right)
     case Prune(left,x,right) => List(left, x, right)
     case left ow right => List(left, right)
     case DeclareDefs(defs, body) => defs ::: List(body)
-    case Def(f, formals, body, typeformals, argtypes, returntype) => {
-      f :: formals ::: List(body) ::: typeformals ::: argtypes.toList.flatten ::: returntype.toList
-    }
     case HasType(body, expectedType) => List(body, expectedType)
-    case DeclareType(u, t, body) => List(u, t, body)          
-    case Top() => Nil
-    case Bot() => Nil
-    case ImportedType(_) => Nil
-    case ClassType(_) => Nil
-    case (_ : Typevar) => Nil
-    case FunctionType(typeformals, argtypes, returntype) => {
-      typeformals ::: argtypes ::: List(returntype)  
+    case DeclareType(u, t, body) => List(u, t, body)
+    case Def(f, formals, body, typeformals, argtypes, returntype) => {
+      f :: ( formals ::: ( List(body) ::: typeformals ::: argtypes.toList.flatten ::: returntype.toList ) )
     }
     case TupleType(elements) => elements
     case TypeApplication(tycon, typeactuals) => tycon :: typeactuals
@@ -77,8 +71,8 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     case VariantType(variants) => {
       for ((_, variant) <- variants; Some(t) <- variant) yield t
     }
+    case _ => Nil
   }
-  */
   
 }
 
@@ -86,6 +80,7 @@ sealed abstract class Expression
 extends NamedAST 
 with NamedInfixCombinators 
 with hasFreeVars 
+with hasFreeTypeVars
 with hasArgumentRemap[Expression]
 with ArgumentSubstitution[Expression]
 with hasTypeRemap[Expression]
@@ -109,6 +104,22 @@ with TypeSubstitution[Expression]
       }
       case HasType(body, _) => body.freevars
       case DeclareType(_, _, body) => body.freevars
+      case _ => Set.empty
+    }
+  }
+  
+  lazy val freetypevars:Set[TempTypevar] = {
+    this match {
+      case Call(target,args,ts) => target.freetypevars ++ (args flatMap { _.freetypevars }) ++ (ts.toList.flatten flatMap { _.freetypevars })
+      case left || right => left.freetypevars ++ right.freetypevars
+      case left > x > right => left.freetypevars ++ right.freetypevars
+      case left < x < right => left.freetypevars ++ right.freetypevars
+      case left ow right => left.freetypevars ++ right.freetypevars
+      case DeclareDefs(defs,body) => {
+        body.freetypevars ++ ( defs flatMap {_.freetypevars} )
+      }
+      case HasType(body, t) => body.freetypevars ++ t.freetypevars
+      case DeclareType(u, t, body) => (body.freetypevars ++ t.freetypevars) - u
       case _ => Set.empty
     }
   }
@@ -145,7 +156,34 @@ with TypeSubstitution[Expression]
     
     
     
-    
+    lazy val withoutUnusedTypes: Expression = {
+          this -> {
+            case Stop() => this
+            case (_ : Argument) => this 
+            case Call(_,_,_) => this
+            case left || right => left.withoutUnusedTypes || right.withoutUnusedTypes
+            case left > x > right => left.withoutUnusedTypes > x > right.withoutUnusedTypes
+            case left < x < right => left.withoutUnusedTypes < x < right.withoutUnusedTypes
+            case left ow right => left.withoutUnusedTypes ow right.withoutUnusedTypes
+            case DeclareDefs(defs, body) => {
+              val newbody = body.withoutUnusedTypes
+              val newdefs = defs map {
+                case Def(name,args,body,t,a,r) => Def(name,args,body.withoutUnusedTypes,t,a,r)
+              }
+              DeclareDefs(newdefs, newbody)
+            }
+            case HasType(body, typ) => HasType(body.withoutUnusedTypes, typ)
+            case DeclareType(u, t, body) => {
+              val newbody = body.withoutUnusedTypes
+              if (newbody.freetypevars contains u) {
+                DeclareType(u, t, newbody)
+              }
+              else {
+                newbody
+              }
+            }
+          }
+    }
     
     
     
@@ -171,9 +209,9 @@ with TypeSubstitution[Expression]
                 if(newbody.freevars intersect defNamesSet isEmpty) {
                   newbody
 	        	} else {
-	        		val newdefs = defs.map({
+	        		val newdefs = defs map {
 	        		  case Def(name,args,body,t,a,r) => Def(name,args,body.withoutUnusedDefs,t,a,r)
-	        		})
+	        		}
 	        		DeclareDefs(newdefs, newbody)
 	        	}
 			}
@@ -205,6 +243,7 @@ extends NamedAST
 with Scope 
 with TypeScope 
 with hasFreeVars 
+with hasFreeTypeVars
 with hasArgumentRemap[Def]
 with ArgumentSubstitution[Def]
 with hasTypeRemap[Def]
@@ -212,6 +251,13 @@ with TypeSubstitution[Def]
 { 
   lazy val withoutNames: nameless.Def = namedToNameless(this, Nil, Nil)
   lazy val freevars: Set[TempVar] = body.freevars -- formals
+  
+  lazy val freetypevars: Set[TempTypevar] = {
+    val argvars = argtypes.toList.flatten flatMap { _.freetypevars }
+    val retvars = returntype.toList flatMap { _.freetypevars }
+    val bodyvars = body.freetypevars
+    (argvars ++ retvars ++ bodyvars).toSet -- typeformals
+  }
   
   def remapArgument(f: Argument => Argument): Def = {
     this ->> Def(name, formals, body remapArgument f, typeformals, argtypes, returntype)
@@ -225,10 +271,42 @@ with TypeSubstitution[Def]
 
 
 sealed abstract class Type extends NamedAST
+with hasFreeTypeVars
 with hasTypeRemap[Type]
 with TypeSubstitution[Type]
 { 
   lazy val withoutNames: nameless.Type = namedToNameless(this, Nil) 
+  
+  lazy val freetypevars: Set[TempTypevar] = 
+    this match {
+      case u : TempTypevar => {
+        Set(u)
+      }
+      case TupleType(elements) => {
+        ( elements flatMap { _.freetypevars } ).toSet
+      }
+      case AssertedType(assertedType) => {
+        assertedType.freetypevars
+      }
+      case FunctionType(typeformals, argtypes, returntype) => {
+        val argvars = ( argtypes flatMap { _.freetypevars } ).toSet 
+        val retvars = ( returntype.freetypevars ).toSet
+        argvars ++ retvars -- typeformals
+      }
+      case TypeAbstraction(typeformals, t) => {
+        t.freetypevars -- typeformals
+      }
+      case TypeApplication(tycon : TempTypevar, ts) => {
+        val vars = ts flatMap { _.freetypevars }
+        vars.toSet + tycon
+      }
+      case VariantType(variants) => {
+        val ts = for ((_, variant) <- variants; Some(t) <- variant) yield t
+        val vars = ts flatMap { _.freetypevars }
+        vars.toSet
+      }
+      case _ => Set.empty
+    }
   
   def remapType(f: Typevar => Type): Type = 
 	  this -> {
@@ -243,7 +321,6 @@ with TypeSubstitution[Type]
 	 	       case (u : Typevar) => TypeApplication(u, typeactuals map {_ remapType f})
 	 	       case other => this !! ("Erroneous type substitution; can't substitute " + other + " as a type constructor")
 	 	     }
-	 	     
 	 	  }
 	 	  case AssertedType(assertedType) => AssertedType(assertedType remapType f)
 	 	  case FunctionType(typeformals, argtypes, returntype) =>

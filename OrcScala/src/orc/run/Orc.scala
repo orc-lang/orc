@@ -59,8 +59,10 @@ trait Orc extends OrcExecutionAPI {
     var members: Set[GroupMember] = Set()
   
     def halt(t: Token) { remove(t) }
-    def kill { for (m <- members) m.kill } 
+    
     /* Note: this is _not_ lazy termination */
+    def kill { for (m <- members) m.kill } 
+    
   
     def add(m: GroupMember) { members.add(m) }
   
@@ -77,15 +79,22 @@ trait Orc extends OrcExecutionAPI {
   
   }
   
+  abstract class Subgroup(parent: Group) extends Group {
+    
+    override def kill { super.kill ; parent.remove(this) }
+    
+  }
+  
+  
   // A Groupcell is the group associated with expression g in (f <x< g)
   
   // Possible states of a Groupcell
   class GroupcellState
-  case class Unbound(waitlist: List[Token]) extends GroupcellState
+  case class Unbound(waitlist: List[Option[Value] => Unit]) extends GroupcellState
   case class Bound(v: Value) extends GroupcellState
   case object Dead extends GroupcellState
   
-  class Groupcell(parent: Group) extends Group {
+  class Groupcell(parent: Group) extends Subgroup(parent) {
   
     var state: GroupcellState = Unbound(Nil) 
   
@@ -95,7 +104,7 @@ trait Orc extends OrcExecutionAPI {
           state = Bound(v)
           t.halt
           this.kill
-          schedule(waitlist)
+          for (k <- waitlist) { k(Some(v)) }
         }
         case _ => t.halt    
       }
@@ -104,29 +113,25 @@ trait Orc extends OrcExecutionAPI {
     def onHalt {
       state match {
         case Unbound(waitlist) => {
-          for (t <- waitlist) t.halt
           state = Dead
           parent.remove(this)
+          for (k <- waitlist) { k(None) }     
         }
         case _ => {  }
       }
     }
     
-    override def kill { super.kill ; parent.remove(this) }
-    
     // Specific to Groupcells
-    def read(reader: Token): Option[Value] = 
+    def read(k: Option[Value] => Unit): Unit = {
       state match {
-        case Bound(v) => Some(v)
         case Unbound(waitlist) => {
-          state = Unbound(reader :: waitlist)
-          None
+          state = Unbound(k :: waitlist)
         }
-        case Dead => {
-          reader.halt
-          None
-        }
+        case Bound(v) => k(Some(v))
+        case Dead => k(None)
+      }
     }
+    
   }
   
   object Groupcell {
@@ -141,23 +146,19 @@ trait Orc extends OrcExecutionAPI {
   
   
   // A Region is the group associated with expression f in (f ; g)
-  class Region(parent: Group, r: Token) extends Group {
+  class Region(parent: Group, t: Token) extends Subgroup(parent) {
   
-    // Some(r): No publications have left this region;
-    //          if the group halts silently, pending
-    //          will be scheduled.
-    // None:    A publication has left this region.
-  
-    var pending: Option[Token] = Some(r)
+    
+    /* Some(t): No publications have left this region.
+     *          If the group halts silently, t will be scheduled.
+     *
+     *    None: One or more publications has left this region.
+     */
+    var pending: Option[Token] = Some(t)
   
     def publish(t: Token, v: Value) {
-      pending.foreach(_.halt)
-      // TODO: Clean up!
-      val child = t.group
-      t.group = parent
-      parent.add(t)
-      child.remove(t)
-      t.publish(v)
+      pending foreach { _.halt }
+      t.migrate(parent).publish(v)
     }
     
     def onHalt {
@@ -165,12 +166,9 @@ trait Orc extends OrcExecutionAPI {
       parent.remove(this)
     }
     
-    override def kill { super.kill ; parent.remove(this) }
-  
   } 
   
   object Region {
-  
     def apply(parent: Group, r: Token): Region = {
       val g = new Region(parent, r)
       parent.add(g)
@@ -205,7 +203,7 @@ trait Orc extends OrcExecutionAPI {
   implicit def GroupcellsAreBindings(g: Groupcell): Binding = BoundCell(g) 
   
   
-  // Control Frames //
+  // Control frames //
   abstract class Frame {
     def apply(t: Token, v: Value): Unit
   }
@@ -241,7 +239,7 @@ trait Orc extends OrcExecutionAPI {
   
   // Token //
   
-  class TokenState
+  sealed trait TokenState
   case object Live extends TokenState
   case object Halted extends TokenState
   case object Killed extends TokenState
@@ -288,17 +286,15 @@ trait Orc extends OrcExecutionAPI {
   
     def getTimer = timer
   
-    // reslice to improve contracts
-    def join(child: Group) = { 
-      val parent = group
-      child.add(this); parent.remove(this)
-      group = child
-      push(GroupFrame)
+    def migrate(newGroup: Group) = { 
+      val oldGroup = group
+      newGroup.add(this); oldGroup.remove(this)
+      group = newGroup
       this 
-    }           
-  
-    // Manipulating context frames
-  
+    }
+    
+    def join(newGroup: Group) = { this.push(GroupFrame).migrate(newGroup) }
+      
     def bind(b: Binding): Token = {
       env = b::env
       stack match {
@@ -319,13 +315,69 @@ trait Orc extends OrcExecutionAPI {
         case Variable(n) => env(n)
     }
   
-    // Caution: has a side effect! :-P
-    def resolve(a: Argument): Option[Value] =
-      lookup(a) match {
-        case BoundValue(v) => Some(v)
-        case BoundCell(g) => g.read(this)
+    /* Attempt to resolve an argument to a value.
+     * When the argument becomes bound to v, call k(v).
+     * (If it is already bound, k is called immediately)
+     */
+    def resolve(arg: Argument)(k : Value => Unit) {
+      lookup(arg) match {
+        case BoundValue(v) => k(v)
+        case BoundCell(g) => {
+          g read { 
+            case Some(v) => k(v)
+            case None => halt
+          }
+        }
+      }
     }
   
+    /* Attempt to resolve a list of arguments.
+     * When all of the arguments become bound, call k(vs).
+     * (If they are all already bound, k is called immediately) 
+     */
+    def resolve(args: List[Argument])(k : List[Value] => Unit) {
+      def resolveLeftToRight(args : List[Argument], vs : List[Value]): Unit =
+        args match {
+          case z::zs => resolve(z) { v : Value => resolveLeftToRight(zs, v::vs) }
+          case Nil => k(vs.reverse)
+        }
+      resolveLeftToRight(args, Nil)
+    }
+    
+    
+    def functionCall(c : Closure, actuals : List[Binding]) {
+      val Closure(arity, body, newcontext) = c
+      
+      if (actuals.size != arity) halt /* Arity mismatch. */
+                    
+      /* 1) If this is not a tail call, push a function frame referring to the current environment.
+       * 2) Change the current environment to the closure's saved environment.
+       * 3) Add bindings for the arguments to the new current environment.
+       * 
+       * Caution: The ordering of these operations is very important;
+       *          do not permute them.    
+       */
+          
+      /* Tail call optimization (part 2 of 2) */
+      stack match {
+        /*
+         * Push a new FunctionFrame 
+         * only if the call is not a tail call.
+         */
+        case FunctionFrame(_,_)::fs => {  }
+        case _ => push(new FunctionFrame(node, env))
+      }
+          
+      /* Jump into the closure's lexical context */
+      this.env = newcontext map BoundValue
+                    
+      /* Bind the args */
+      for (a <- actuals) { bind(a) }
+                    
+      /* Jump into the closure's body */
+      schedule(this.move(c.body))                                   
+
+    }
   
   
     // Publicly accessible methods
@@ -373,68 +425,17 @@ trait Orc extends OrcExecutionAPI {
       if (state == Live) {
         node match {
           case Stop() => halt
-          case (a: Argument) => resolve(a).foreach(publish(_))
-          case (Call(target, args, typeArgs)) => try {
-            resolve(target).foreach({ (result:  Value) =>
-             val caller = Value.asCaller(result)
-             caller match {
-              case closure@ Closure(arity, body, newcontext) => {
-                if (arity != args.size) halt /* Arity mismatch. */
-                val actuals = args map lookup /* Look up all of the args */
-                
-                /* 1) Push a function frame (if this is not a tail call),
-                 *    referring to the current environment
-                 * 2) Change the current environment to the closure's
-                 *    saved environment.
-                 * 3) Add bindings for the arguments to the new current
-                 *    environment
-                 * 
-                 * Caution: The ordering of these statements is very important;
-                 *          do not permute them.    
-                 */
-      
-                /* Tail call optimization (part 2 of 2) */
-                stack match {
-                  /*
-                   * Push a new FunctionFrame 
-                   * only if the call is not a tail call.
-                   */
-                  case FunctionFrame(_,_)::fs => {  }
-                  case _ => push(new FunctionFrame(node, env))
-                }
-      
-                /* Jump into the closure's lexical context */
-                this.env = newcontext map BoundValue
-                
-                /* Bind the args */
-                for (a <- actuals) { bind(a) }
-                
-                /* Jump into the closure's body */
-                schedule(this.move(closure.body))                                   
+          case (a: Argument) => resolve(a) { publish }
+          case Call(target, args, _) => 
+            try
+              resolve(target) {
+                case c: Closure => functionCall(c, args map lookup)
+                case v => resolve(args) { invoke(this, v, _) }
               }
-              case (s: Site) => {
-                val vs = args.partialMap(resolve)
-                try {
-                  vs foreach { invoke(this,s,_) }
-                } 
-                catch {
-                  case e: OrcException => this !! e
-                  case e: Exception => this !! (new JavaException(e))
-                }
-              }
-              case uncallable => {
-                halt
-                throw new UncallableValueException("You can't call the "+uncallable.getClass().getName()+" \""+uncallable.toString()+"\"")
-              }
+            catch {
+              case e: OrcException => this !! e
+              case e => { halt ; caught(e) }
             }
-           })
-          } catch {
-            case e: OrcException => this !! e
-            case e => {
-              halt
-              caught(e)
-            }
-          }
     
           case Parallel(left, right) => {
             val (l,r) = fork
@@ -450,7 +451,7 @@ trait Orc extends OrcExecutionAPI {
             val (l,r) = fork
             val groupcell = Groupcell(group)
             schedule( l.bind(groupcell).move(left),
-                r.join(groupcell).move(right) )
+                      r.join(groupcell).move(right) )
           }
     
           case Otherwise(left, right) => {
@@ -460,23 +461,12 @@ trait Orc extends OrcExecutionAPI {
           }
     
           case decldefs@ DeclareDefs(openvars, defs, body) => {
-            
-            
             /* Closure compaction: Bind only free variables
-             * of the defs in the closure's context */
-            
-            /* Closures are strict, so we use a partialMap of resolve.
-             * If any variable fails to resolve, then resolveContext
-             * is None, and the blocked token will resume once one
-             * or more unbound variables becomes bound.
-             */
-            // Dirt simple O(n^2) solution.
-            // TODO: Optimize this to O(n) instead of O(n^2) in the case of many unbound vars;
-            //       the token itself should keep track of the bound values discovered so far.
-            val resolveContext = openvars partialMap { n:Int => resolve(Variable(n)) }
-            
-            resolveContext match {
-              case Some(vs) => {
+             * of the defs in the closure's context.
+			 */           
+            val vars = openvars map { Variable } 
+            resolve(vars) {
+              vs: List[Value] => {
                 var context: List[Value] = vs
                 
                 val cs = defs map ( (d: Def) => new Closure(d) )
@@ -485,7 +475,6 @@ trait Orc extends OrcExecutionAPI {
                 
                 this.move(body).run
               }
-              case None => { /* Blocked on some unbound variable. Do nothing */ }
             }
           }
           case HasType(expr, _) => this.move(expr).run
@@ -497,7 +486,9 @@ trait Orc extends OrcExecutionAPI {
     def printToStdout(s: String) = expressionPrinted(s)
   
   }
-
+  // end of Token
+  
+  
   def timer: java.util.Timer  = new java.util.Timer(); 
 
 }

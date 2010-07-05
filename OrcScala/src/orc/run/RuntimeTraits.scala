@@ -4,11 +4,61 @@ import orc.values.sites.Site
 import orc.values.Value
 import orc.error.OrcException
 import scala.concurrent.SyncVar
+import orc.values.sites.compatibility.ArrayProxy
+import orc.values.sites.JavaObjectProxy
+import orc.error.runtime.JavaException
+import orc.error.runtime.UncallableValueException
+import orc.values.Literal
+import orc.TokenAPI
+import orc.OrcExecutionAPI
 
 
-trait DirectInvocation extends Orc {
-  def invoke(t: this.Token, s: Site, vs: List[Value]) { s.call(vs,t) }
+trait InvocationBehavior extends OrcExecutionAPI {
+  /* By default, an invocation halts silently. This will be overridden by other traits. */
+  def invoke(t: TokenAPI, v: Value, vs: List[Value]): Unit = { t.halt }
 }
+
+
+trait DefaultInvocationRaisesError extends InvocationBehavior {
+  /* This replaces the default behavior because it does not call super */
+  override def invoke(t: TokenAPI, v: Value, vs: List[Value]) {
+    val error = "You can't call the "+v.getClass().getName()+" \""+v.toString()+"\""
+    t !! new UncallableValueException(error)
+  }
+}
+
+
+// TODO: Move functionality of JavaObjectProxy class into this trait
+trait JavaObjectInvocation extends InvocationBehavior {
+  
+  override def invoke(t: TokenAPI, v: Value, vs: List[Value]) { 
+    v match {
+      case Literal(l : Array[Any]) => invoke(t, JavaObjectProxy(new ArrayProxy(l)), vs)
+      case Literal(obj : AnyRef) => invoke(t, JavaObjectProxy(obj), vs)
+      case _ => super.invoke(t, v, vs)
+   }
+  }
+
+}
+  
+
+trait SiteInvocation extends InvocationBehavior {  
+  override def invoke(t: TokenAPI, v: Value, vs: List[Value]) {
+    v match {
+      case (s: Site) => 
+        try {
+          s.call(vs, t)
+        }
+        catch {
+          case e: OrcException => t !! e
+          case e: Exception => t !! (new JavaException(e))
+        }
+      case _ => super.invoke(t, v, vs)
+    }
+  }
+}
+
+
 
 trait PublishToConsole extends Orc {
   override def emit(v: Value) { print("Published: " + v + "   = " + v.toOrcSyntax() + "\n") }
@@ -48,9 +98,15 @@ trait ActorScheduler extends Orc {
   }
 }
 
+/* The first behavior in the trait list will be tried last */
+trait StandardOrcInvoke extends InvocationBehavior
+with DefaultInvocationRaisesError
+with SiteInvocation
+with JavaObjectInvocation
 
+  
 trait StandardOrcExecution extends Orc 
-with DirectInvocation 
+with StandardOrcInvoke
 with ActorScheduler
 {
   def emit(v : Value) = { /* By default, ignore toplevel publications */ }

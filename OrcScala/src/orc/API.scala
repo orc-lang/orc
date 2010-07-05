@@ -17,7 +17,6 @@ package orc
 
 import orc.oil.nameless.Expression
 import orc.values.Value
-import orc.values.sites.Site
 import orc.error.compiletime.CompileLogger
 import orc.error.OrcException
 import scala.util.parsing.input.Reader
@@ -55,7 +54,7 @@ trait OrcExecutionAPI {
 
   def emit(v: Value): Unit
   def halted: Unit
-  def invoke(t: Token, s: Site, vs: List[Value]): Unit
+  def invoke(t: TokenAPI, v: Value, vs: List[Value]): Unit
   def expressionPrinted(s: String): Unit
   def caught(e: Throwable): Unit
   def schedule(ts: List[Token]): Unit
