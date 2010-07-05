@@ -123,7 +123,7 @@ class OrcCompiler extends OrcCompilerAPI with CompilerEnvironmentIfc {
 
   val refineNamedOil = new CompilerPhase[OrcOptions, orc.oil.named.Expression, orc.oil.named.Expression] {
     val phaseName = "refineNamedOil"
-    override def apply(options: OrcOptions) = { ast => ast.withoutUnusedDefs }
+    override def apply(options: OrcOptions) = { ast => ast.withoutUnusedDefs.withoutUnusedTypes }
   }
   
   val deBruijn = new CompilerPhase[OrcOptions, orc.oil.named.Expression, orc.oil.nameless.Expression] {
