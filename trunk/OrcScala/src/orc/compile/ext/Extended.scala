@@ -35,6 +35,7 @@ case class Constant(c: Any) extends Expression
 case class Variable(name: String) extends Expression
 case class TupleExpr(elements: List[Expression]) extends Expression
 case class ListExpr(elements: List[Expression]) extends Expression
+case class RecordExpr(elements: List[(String, Expression)]) extends Expression
 case class Call(target: Expression, gs: List[ArgumentGroup]) extends Expression
 
 sealed abstract class ArgumentGroup extends AST

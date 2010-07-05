@@ -73,6 +73,8 @@ object PrimitiveForms {
 		elements.foldRight(nil)(cons)
 	}
 	
+	def makeRecord(tuples: List[Argument]) = Call(Constant(RecordConstructor), tuples, None)
+	
 	def makeDatatype(declaredVariant : TempTypevar, constructors : List[ext.Constructor]) = {
 	  val datatypeSite = Constant(DatatypeBuilder)
 	  val datatypePairs = 

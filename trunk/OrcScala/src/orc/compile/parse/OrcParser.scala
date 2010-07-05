@@ -64,6 +64,9 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
   def parseTypeVariable: Parser[String] = ident
 
   
+  def parseRecordEntry: Parser[(String, Expression)] =
+    (ident <~~ "=") ~~ parseExpression ^^ { case x ~ e => (x,e) }  
+  
   def parseBaseExpressionTail: Parser[Option[List[Expression]]] = (
         ")" ^^^ None
       | wrapNewLines(",") ~> CommaSeparated1(parseExpression) <~ ")" ^^ {Some(_)} 
@@ -74,6 +77,7 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
       | ident -> Variable
       | "stop" -> Stop
       | ("[" ~> CommaSeparated(parseExpression) <~ "]") -> ListExpr
+      | ("{." ~~> CommaSeparated(parseRecordEntry) <~~ ".}") -> RecordExpr
       | ("(" ~~> parseExpression ~~ parseBaseExpressionTail) -?-> 
             { (e: Expression, es: List[Expression]) => TupleExpr(e::es) }
   )

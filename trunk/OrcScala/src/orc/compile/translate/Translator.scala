@@ -73,6 +73,10 @@ object Translator {
 				  unfold(es map convert, makeTuple)
 				}
 				case ext.ListExpr(es) => unfold(es map convert, makeList)
+				case ext.RecordExpr(es) => {
+				  val tuples = es map { case (s,e) => ext.TupleExpr(List(ext.Constant(s),e)) }
+				  unfold(tuples map convert, makeRecord)
+				}
                 case ext.Call(target, gs) => {
                 	var expr = convert(target)
                 	for (g <- gs) {
