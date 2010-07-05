@@ -58,6 +58,13 @@ Ranges from 0 to <code>Integer.MAX_VALUE</code>.
 --}
 --site Ltimer = "orc.lib.time.Ltimer"
 
+{-
+  Ltimer is not yet implemented in OrcScala
+  Currently we use Rtimer as a stub for Ltimer, 
+  increasing the granularity to avoid mis-ordering on small inputs.
+-}
+def Ltimer(i) = Rtimer(100 * i)
+
 {--
 @def withLtimer[A](lambda () :: A) :: A
 Run the given thunk in the context of a new inner logical clock.

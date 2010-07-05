@@ -70,6 +70,7 @@ case class OrcTuple(elements: List[Value]) extends PartialSite with UntypedSite 
       case _ => None
     }
   override def toOrcSyntax() = "(" + commaSepValues(elements) + ")" 
+  override def toString() = toOrcSyntax() /* to replace toString overriding induced by site traits */
 }
 
 case class OrcList(elements: List[Value]) extends Value {

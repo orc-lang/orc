@@ -62,7 +62,7 @@ Read a value from the cell. If the cell does not yet have a value, halt.
 Write a value to the cell. If the cell already has a value, halt.
 --}
 site Cell = orc.lib.state.Cell
---type Cell = orc.lib.state.types.CellType
+type Cell = orc.lib.state.types.CellType
 
 
 site Ref = "orc.lib.state.Ref"
