@@ -1,5 +1,5 @@
 {-
-OUTPUT:
+OUTPUT:PERMUTABLE
 1
 2
 1
@@ -21,3 +21,4 @@ l.add(2) >>
 l.add(3) >>
 -- verify that iterators are fully independent
 each(l) >i> (i | each(l))
+
