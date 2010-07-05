@@ -55,9 +55,13 @@ case object Signal extends Value {
   override def toOrcSyntax() = "signal"
 }
 
-case class Field(field: String) extends Value
+case class Field(field: String) extends Value {
+  override def toString() = "." + field
+}
 
-case class TaggedValues(tag: DataSite, values: List[Value]) extends Value
+case class TaggedValues(tag: DataSite, values: List[Value]) extends Value {
+  override def toOrcSyntax = tag.toOrcSyntax() + "(" + commaSepValues(values) + ")"
+}
 
 case class OrcTuple(elements: List[Value]) extends PartialSite with UntypedSite {
   def evaluate(args: List[Value]) = 
@@ -90,11 +94,6 @@ object Closure {
     def unapply(c: Closure) = Some((c.arity, c.body, c.context))
 }
 
-object Resolver {
-  
-  
-}
-
 // Records.
 case class OrcRecord(values: Map[String,Value]) extends PartialSite with UntypedSite {
   override def evaluate(args: List[Value]) = 
@@ -104,5 +103,13 @@ case class OrcRecord(values: Map[String,Value]) extends PartialSite with Untyped
       case _ => throw new ArityMismatchException(1, args.size)
     }
   
-  override def toOrcSyntax() = "[" + values + "]"
+  override def toOrcSyntax() = {
+    val entries = for (s <- values.keys) yield { s + " = " + values(s) }
+    val contents = 
+      entries match {
+        case Nil => " "
+        case _ => entries reduceRight { _ + ", " + _ }
+      }
+    "{. " + contents + " .}"
+  }
 }

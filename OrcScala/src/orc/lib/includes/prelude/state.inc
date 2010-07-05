@@ -527,24 +527,6 @@ write <code language="c">s->field</code> instead of <code>s.field</code> when
 site Dictionary = orc.lib.state.Dictionary
 
 {--
-@site Record(String, A, String, B, ...) :: Record[A, B, ...]
-
-Create a new record (an immutable map from field names to values).
-Arguments are consumed in pairs; the first argument of each pair
-is the key, and the second is the value for that key.
-
-To access the value in record <code>r</code> for key <code>"x"</code>,
-use the syntax <code>r.x</code>. For example:
-<programlisting language="orc-demo"><![CDATA[
--- Publishes: 1
-val r = Record(
-  "one", 1,
-  "two", 2)
-r.one]]></programlisting>
---}
-site Record = orc.lib.state.Record
-
-{--
 @def fst[A,B]((A,B)) :: A
 Return the first element of a pair.
 

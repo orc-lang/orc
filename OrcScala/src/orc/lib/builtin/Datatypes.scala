@@ -43,4 +43,6 @@ class DataSite(name: String, arity: Int) extends TotalSite with UntypedSite {
         }
     }
   })
+  
+  override def toOrcSyntax() = name
 }

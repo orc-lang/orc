@@ -153,7 +153,7 @@ class OrcLexical() extends StdLexical() {
 
   /** The set of delimiters (ordering does not matter) */
   override val delimiters = new HashSet[String] ++ (List(
-      "(", ")", "[", "]", "{", "}", ",",
+      "(", ")", "[", "]", "{.", ".}", ",",
        "|", ";",
       "::", ":!:"
     ) ::: operators)
