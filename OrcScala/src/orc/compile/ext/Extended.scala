@@ -132,6 +132,7 @@ case class Top() extends Type
 case class Bot() extends Type
 case class TypeVariable(name: String) extends Type
 case class TupleType(elements: List[Type]) extends Type
+case class RecordType(elements: List[(String, Type)]) extends Type
 case class LambdaType(typeformals: List[String], argtypes: List[List[Type]], returntype: Type) extends Type {
   /* 
    * Converts the type 'lambda (A)(B)(C) :: D'

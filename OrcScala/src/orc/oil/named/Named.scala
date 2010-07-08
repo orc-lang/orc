@@ -285,6 +285,9 @@ with TypeSubstitution[Type]
       case TupleType(elements) => {
         ( elements flatMap { _.freetypevars } ).toSet
       }
+      case RecordType(entries) => { 
+        ( entries.values flatMap { _.freetypevars } ).toSet
+      }
       case AssertedType(assertedType) => {
         assertedType.freetypevars
       }
@@ -316,6 +319,10 @@ with TypeSubstitution[Type]
 	      case ClassType(cl) => ClassType(cl)
 	 	  case x : Typevar => f(x)
 	 	  case TupleType(elements) => TupleType(elements map {_ remapType f})
+	 	  case RecordType(entries) => {
+	 	     val newEntries = entries map { case (s,t) => (s, t remapType f) }
+	 	     RecordType(newEntries)
+	 	  }
 	 	  case TypeApplication(tycon, typeactuals) => {
 	 	     f(tycon) match {
 	 	       case (u : Typevar) => TypeApplication(u, typeactuals map {_ remapType f})
@@ -343,6 +350,7 @@ with TypeSubstitution[Type]
 case class Top() extends Type
 case class Bot() extends Type
 case class TupleType(elements: List[Type]) extends Type
+case class RecordType(entries: Map[String,Type]) extends Type
 case class TypeApplication(tycon: Typevar, typeactuals: List[Type]) extends Type
 case class AssertedType(assertedType: Type) extends Type	
 case class FunctionType(typeformals: List[TempTypevar], argtypes: List[Type], returntype: Type) extends Type with TypeScope
@@ -424,6 +432,10 @@ trait NamedToNameless {
         nameless.FunctionType(typeformals.size, newArgTypes, newReturnType)
       }
       case TupleType(elements) => nameless.TupleType(elements map toType)
+      case RecordType(entries) => {
+        val newEntries = entries map { case (s,t) => (s, toType(t)) }
+        nameless.RecordType(newEntries)
+      }
       case TypeApplication(tycon, typeactuals) => {
         val i = typecontext indexOf tycon
         if (i < 0) { t !! "Compiler fault: unbound type constructor in deBruijn conversion" } 
