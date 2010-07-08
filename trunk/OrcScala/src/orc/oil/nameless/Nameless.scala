@@ -91,7 +91,7 @@ case class DeclareType(t: Type, body: Expression) extends Expression
 case class HasType(body: Expression, expectedType: Type) extends Expression
 
 sealed abstract class Argument extends Expression
-case class Constant(value: Value) extends Argument
+case class Constant(value: AnyRef) extends Argument
 case class Variable(index: Int) extends Argument {
   if (index < 0) { throw new Exception("Invalid construction of indexed variable. Index must be >= 0") }
 }

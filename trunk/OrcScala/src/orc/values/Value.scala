@@ -29,75 +29,70 @@ import orc.error.runtime.ArityMismatchException
 import scala.collection.mutable.Map
 
 
-abstract class Value extends AnyRef {
-  def toOrcSyntax(): String = super.toString()
+trait OrcValue extends AnyRef {
+  def toOrcSyntax(): String = super.toString() 
+  override def toString() = toOrcSyntax()  
   
-  def commaSepValues(vs : List[Value]) = vs match {
-    case Nil => ""
-    case v::Nil => v.toOrcSyntax()
-    case _ => (vs map {_.toOrcSyntax()}) reduceRight { _ + ", " + _ } 
-  }
-  
-  override def toString() = toOrcSyntax()
-  
-}
-
-
-case class Literal(value: Any) extends Value {
-  override def toOrcSyntax() = value match {
-    case null => "null"
-    case s: String => "\"" + s.replace("\"", "\\\"").replace("\f", "\\f").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t") + "\"";
-    case _ => value.toString()
+  def letLike(vs: List[AnyRef]) = {
+    vs match {
+      case Nil => Signal
+      case List(v) => v
+      case _ => OrcTuple(vs)
+    }
   }
 }
 
-case object Signal extends Value {
+
+//case class Literal(value: Any) extends Value {
+//  override def toOrcSyntax() = value match {
+//    case null => "null"
+//    case s: String => "\"" + s.replace("\"", "\\\"").replace("\f", "\\f").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t") + "\"";
+//    case _ => value.toString()
+//  }
+//}
+
+case object Signal extends OrcValue {
   override def toOrcSyntax() = "signal"
 }
 
-case class Field(field: String) extends Value {
-  override def toString() = "." + field
+case class Field(field: String) extends OrcValue {
+  override def toOrcSyntax() = "." + field
 }
 
-case class TaggedValues(tag: DataSite, values: List[Value]) extends Value {
-  override def toOrcSyntax = tag.toOrcSyntax() + "(" + commaSepValues(values) + ")"
+case class TaggedValue(tag: DataSite, values: List[AnyRef]) extends OrcValue {
+  override def toOrcSyntax = tag.toOrcSyntax() + "(" + Format.formatSequence(values) + ")"
 }
 
-case class OrcTuple(elements: List[Value]) extends PartialSite with UntypedSite {
-  def evaluate(args: List[Value]) = 
+case class OrcTuple(values: List[AnyRef]) extends PartialSite with UntypedSite {
+  def evaluate(args: List[AnyRef]) = 
     args match {
-      case List(Literal(i: Int)) if (0 <= i) && (i < elements.size) => Some(elements(i))
+      case List(bi: BigInt) => {
+        val i: Int = bi.intValue
+        if (0 <= i  &&  i < values.size) 
+          { Some(values(i)) }
+        else
+          { None }
+      }
       case _ => None
     }
-  override def toOrcSyntax() = "(" + commaSepValues(elements) + ")" 
-  override def toString() = toOrcSyntax() /* to replace toString overriding induced by site traits */
+  override def toOrcSyntax() = "(" + Format.formatSequence(values) + ")" 
 }
-
-case class OrcList(elements: List[Value]) extends Value {
-  override def toOrcSyntax() = "[" + commaSepValues(elements) + "]"
-}
-case class OrcOption(contents: Option[Value]) extends Value {
-  override def toOrcSyntax() = contents match {
-    case Some(v) => "Some(" + v.toOrcSyntax() + ")"
-    case None => "None()"
-  }
-}
-
-
 
 // Closures //
-class Closure(d: Def) extends Value {
+class Closure(d: Def) extends OrcValue {
     val arity: Int = d.arity
     val body: Expression = d.body
-    var context: List[Value] = Nil
+    var context: List[AnyRef] = Nil
+    
+    override def toOrcSyntax() = "closure"
 }
 object Closure {
     def unapply(c: Closure) = Some((c.arity, c.body, c.context))
 }
 
 // Records.
-case class OrcRecord(values: Map[String,Value]) extends PartialSite with UntypedSite {
-  override def evaluate(args: List[Value]) = 
+case class OrcRecord(values: Map[String,AnyRef]) extends PartialSite with UntypedSite {
+  override def evaluate(args: List[AnyRef]) = 
     args match {
       case List(Field(name)) => values.get(name)
       case List(a) => throw new ArgumentTypeMismatchException(0, "Field", a.getClass().toString())
@@ -106,11 +101,31 @@ case class OrcRecord(values: Map[String,Value]) extends PartialSite with Untyped
   
   override def toOrcSyntax() = {
     val entries = for (s <- values.keys) yield { s + " = " + values(s) }
-    val contents = 
-      entries match {
-        case Nil => " "
-        case _ => entries reduceRight { _ + ", " + _ }
-      }
-    "{. " + contents + " .}"
+    "{. " + Format.formatSequence(entries.toList) + " .}"
   }
+
+}
+
+// TODO: Move this functionality somewhere more appropriate
+object Format {
+  
+  def formatValue(v: AnyRef): String =
+    v match {
+      case null => "null"
+      case l: List[AnyRef] => "[" + formatSequence(l) + "]"
+      case s: String => unparseString(s)
+      case orcv: OrcValue => orcv.toOrcSyntax()
+      case other => other.toString()
+    }
+  
+  def formatSequence(vs : List[AnyRef]) = 
+    vs match {
+      case Nil => ""
+      case _ => ( vs map { formatValue } ) reduceRight { _ + ", " + _ } 
+    }
+  
+  def unparseString(s : String) = {
+    "\"" + s.replace("\"", "\\\"").replace("\f", "\\f").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t") + "\""
+  }
+  
 }

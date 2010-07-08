@@ -8,10 +8,10 @@ import orc.error.runtime.ArityMismatchException
 
 object NoneExtractor extends PartialSite with UntypedSite {
   override def name = "None?"
-  def evaluate(args: List[Value]) =
+  def evaluate(args: List[AnyRef]) =
     args match {
-      case List(OrcOption(None)) => Some(Signal)
-      case List(OrcOption(_)) => None
+      case List(None) => Some(Signal)
+      case List(Some(_)) => None
       case List(a) => throw new ArgumentTypeMismatchException(0, "Option", a.getClass().toString())
       case _ => throw new ArityMismatchException(1, args.size)
   }
@@ -19,10 +19,10 @@ object NoneExtractor extends PartialSite with UntypedSite {
 
 object SomeExtractor extends PartialSite with UntypedSite {
   override def name = "Some?"
-  def evaluate(args: List[Value]) =
+  def evaluate(args: List[AnyRef]) =
     args match {
-      case List(OrcOption(Some(v))) => Some(v)
-      case List(OrcOption(_)) => None
+      case List(Some(v : AnyRef)) => Some(v)
+      case List(None) => None
       case List(a) => throw new ArgumentTypeMismatchException(0, "Option", a.getClass().toString())
       case _ => throw new ArityMismatchException(1, args.size)
   }
@@ -32,16 +32,14 @@ object SomeExtractor extends PartialSite with UntypedSite {
 
 object NilExtractor extends PartialSite with UntypedSite {
   override def name = "Nil?"
-  def evaluate(args: List[Value]) = {
+  def evaluate(args: List[AnyRef]) = {
     args match {
-      case List(OrcList(Nil)) => Some(Signal)
-      case List(OrcList(_)) => None
-      case List(Literal(OrcList(Nil))) => Some(Signal)
-      case List(Literal(OrcList(_))) => None
-      case List(Literal(arr: Array[AnyRef])) if (arr.size == 0) => Some(Signal)
-      case List(Literal(arr: Array[AnyRef])) if (arr.size != 0) => None
-      case List(Literal(c:java.util.List[Any])) if (c.size == 0) => Some(Signal)
-      case List(Literal(c:java.util.List[Any])) if (c.size != 0) => None
+      case List(Nil) => Some(Signal)
+      case List(_::_) => None
+      case List(arr: Array[AnyRef]) if (arr.size == 0) => Some(Signal)
+      case List(arr: Array[AnyRef]) if (arr.size != 0) => None
+      case List(c:java.util.List[Any]) if (c.size == 0) => Some(Signal)
+      case List(c:java.util.List[Any]) if (c.size != 0) => None
       case List(a) => throw new ArgumentTypeMismatchException(0, "List", a.getClass().toString())
       case _ => throw new ArityMismatchException(1, args.size)
   }
@@ -50,20 +48,18 @@ object NilExtractor extends PartialSite with UntypedSite {
 
 object ConsExtractor extends PartialSite with UntypedSite {
   override def name = "Cons?"
-  def evaluate(args: List[Value]) =
+  def evaluate(args: List[AnyRef]) =
     args match {
-      case List(OrcList(v :: vs)) => Some(OrcTuple(List(v, OrcList(vs))))
-      case List(OrcList(_)) => None
-      case List(Literal(OrcList(v :: vs))) => Some(OrcTuple(List(v, OrcList(vs))))
-      case List(Literal(OrcList(_))) => None
-      case List(Literal(c:java.util.List[Any])) if (c.size != 0) => {
-        Some(OrcTuple(List(Literal(c.get(0)),Literal(c.subList(1,c.size)))))
+      case List((v : AnyRef) :: vs) => Some(OrcTuple(List(v, vs)))
+      case List(Nil) => None
+      case List(c:java.util.List[AnyRef]) if (c.size != 0) => {
+        Some(OrcTuple(List(c.get(0),c.subList(1,c.size))))
       }
-      case List(Literal(c:java.util.List[Any])) if (c.size == 0) => None
-      case List(Literal(arr: Array[AnyRef])) if (arr.size != 0) => { // Allow List-like pattern matching on arrays.
-        Some(OrcTuple(List(Literal(arr(0)),Literal(arr.slice(1,arr.size)))))
+      case List(c:java.util.List[AnyRef]) if (c.size == 0) => None
+      case List(arr: Array[AnyRef]) if (arr.size != 0) => { // Allow List-like pattern matching on arrays.
+        Some(OrcTuple(List(arr(0), arr.slice(1,arr.size))))
       }
-      case List(Literal(arr: Array[AnyRef])) if (arr.size == 0) => None
+      case List(arr: Array[AnyRef]) if (arr.size == 0) => None
       case List(a) => throw new ArgumentTypeMismatchException(0, "List", a.getClass().toString())
       case _ => throw new ArityMismatchException(1, args.size)
   }
@@ -76,23 +72,22 @@ object ConsExtractor extends PartialSite with UntypedSite {
  */
 object TupleArityChecker extends PartialSite with UntypedSite {
   override def name = "TupleArityChecker?"
-  def evaluate(args: List[Value]) =
+  def evaluate(args: List[AnyRef]) =
     args match {
-      case List(OrcTuple(elems),Literal(arity:Int)) =>
+      case List(OrcTuple(elems), arity: BigInt) =>
         if (elems.size == arity) {
           Some(OrcTuple(elems))
         } else {
           None
         }
-      case List(OrcTuple(_),_) => None
-      case List(a) => throw new ArgumentTypeMismatchException(0, "List", a.getClass().toString())
+      case List(a,_) => throw new ArgumentTypeMismatchException(0, "Tuple", a.getClass().toString())
       case _ => throw new ArityMismatchException(1, args.size)
   }
 }
 
 object FindExtractor extends TotalSite with UntypedSite {
   override def name = "FindExtractor"
-  def evaluate(args: List[Value]) =
+  def evaluate(args: List[AnyRef]) =
     args match {
       case List(s : Site) => s.extract match {
         case Some(extractor) => extractor

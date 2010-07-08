@@ -17,7 +17,6 @@ package orc.lib.str
 import orc.values.sites.TotalSite
 import orc.values.sites.UntypedSite
 import orc.values.Value
-import orc.values.Literal
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
 import orc.compile.parse.OrcParser
@@ -26,13 +25,12 @@ import orc.compile.ext.Expression
 import orc.compile.ext.Constant
 import orc.compile.ext.ListExpr
 import orc.compile.ext.TupleExpr
-import orc.values.OrcList
 import orc.values.OrcTuple
 
 object Read extends TotalSite with UntypedSite {
-  def evaluate(args: List[Value]): Value = {
+  def evaluate(args: List[AnyRef]): AnyRef = {
     val parsedValue = args match {
-      case List(Literal(s: String)) => {
+      case List(s: String) => {
         val parser = new OrcParser(null)
         parser.scanAndParseLiteral(s) match {
           case parser.Success(v, _) => v
@@ -44,10 +42,10 @@ object Read extends TotalSite with UntypedSite {
     }
     convertToOrcValue(parsedValue)
   }
-  def convertToOrcValue(v: Expression): Value = v match {
-    case Constant(v) => Literal(v)
-    case ListExpr(vs) => OrcList(vs map convertToOrcValue)
+  def convertToOrcValue(v: Expression): AnyRef = v match {
+    case Constant(v) => v
+    case ListExpr(vs) => vs map convertToOrcValue
     case TupleExpr(vs) => OrcTuple(vs map convertToOrcValue)
-    case mystery => throw new ParsingException("Don't know how to convert a "+mystery.getClass().getName()+" to a Value")
+    case mystery => throw new ParsingException("Don't know how to convert a "+mystery.getClass().getName()+" to an Orc value")
   }
 }

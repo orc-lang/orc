@@ -18,8 +18,6 @@ package orc.values.sites.compatibility
 import orc.values.sites.Site
 import orc.values.sites.UntypedSite
 import orc.TokenAPI
-import orc.values.Value
-import orc.values.Literal
 import orc.values.Signal
 import orc.error.runtime.TokenException
 import orc.types.Type
@@ -31,12 +29,11 @@ import orc.types.Type
  */
 abstract class SiteAdaptor extends Site with UntypedSite {
 
-  def call(args: List[Value], token: TokenAPI) {
+  def call(args: List[AnyRef], token: TokenAPI) {
     val jl = new java.util.ArrayList[Object](args.size)
     for (arg <- args) arg match {
-      case Literal(i: scala.math.BigInt) => jl.add(i.bigInteger)
-      case Literal(d: scala.math.BigDecimal) => jl.add(d.bigDecimal)
-      case Literal(v) => jl.add(v.asInstanceOf[AnyRef])
+      case i: scala.math.BigInt => jl.add(i.bigInteger)
+      case d: scala.math.BigDecimal => jl.add(d.bigDecimal)
       case _ => jl.add(arg)
     }
     callSite(new Args(jl), token)
@@ -51,11 +48,11 @@ abstract class SiteAdaptor extends Site with UntypedSite {
    */
   @throws(classOf[TokenException]) def callSite(args: Args, caller: TokenAPI): Unit
   
-  def object2value(o: java.lang.Object): Value = o match {
+  def object2value(o: java.lang.Object): AnyRef = o match {
     case s: Site => s
-    case i: java.math.BigInteger => new Literal(new scala.math.BigInt(i))
-    case d: java.math.BigDecimal=> new Literal(new scala.math.BigDecimal(d))
-    case _ => new Literal(o)
+    case i: java.math.BigInteger => new scala.math.BigInt(i)
+    case d: java.math.BigDecimal => new scala.math.BigDecimal(d)
+    case _ => o
   }
   
   def signal() = Signal

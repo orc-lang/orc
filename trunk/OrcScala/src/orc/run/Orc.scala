@@ -21,12 +21,13 @@ import orc.oil._
 import orc.oil.nameless._
 import orc.PartialMapExtension._
 import orc.values.sites.Site
-import orc.values.Value
+import orc.values.OrcValue
 import orc.values.Closure
 import orc.error.OrcException
 import orc.error.runtime.TokenException
 import orc.error.runtime.JavaException
 import orc.error.runtime.UncallableValueException
+import orc.error.runtime.ArityMismatchException
 
 import scala.collection.mutable.Set   
 
@@ -53,7 +54,7 @@ trait Orc extends OrcExecutionAPI {
 
   trait Group extends GroupMember {
   
-    def publish(t: Token, v: Value): Unit
+    def publish(t: Token, v: AnyRef): Unit
     def onHalt: Unit
   
     var members: Set[GroupMember] = Set()
@@ -90,15 +91,15 @@ trait Orc extends OrcExecutionAPI {
   
   // Possible states of a Groupcell
   class GroupcellState
-  case class Unbound(waitlist: List[Option[Value] => Unit]) extends GroupcellState
-  case class Bound(v: Value) extends GroupcellState
+  case class Unbound(waitlist: List[Option[AnyRef] => Unit]) extends GroupcellState
+  case class Bound(v: AnyRef) extends GroupcellState
   case object Dead extends GroupcellState
   
   class Groupcell(parent: Group) extends Subgroup(parent) {
   
     var state: GroupcellState = Unbound(Nil) 
   
-    def publish(t: Token, v: Value) {
+    def publish(t: Token, v: AnyRef) {
       state match {
         case Unbound(waitlist) => {
           state = Bound(v)
@@ -122,7 +123,7 @@ trait Orc extends OrcExecutionAPI {
     }
     
     // Specific to Groupcells
-    def read(k: Option[Value] => Unit): Unit = {
+    def read(k: Option[AnyRef] => Unit): Unit = {
       state match {
         case Unbound(waitlist) => {
           state = Unbound(k :: waitlist)
@@ -156,7 +157,7 @@ trait Orc extends OrcExecutionAPI {
      */
     var pending: Option[Token] = Some(t)
   
-    def publish(t: Token, v: Value) {
+    def publish(t: Token, v: AnyRef) {
       pending foreach { _.halt }
       t.migrate(parent).publish(v)
     }
@@ -180,7 +181,7 @@ trait Orc extends OrcExecutionAPI {
   // associated with the entire program.
   class Execution extends Group {
   
-    def publish(t: Token, v: Value) {
+    def publish(t: Token, v: AnyRef) {
       emit(v)
       t.halt
     }
@@ -197,39 +198,36 @@ trait Orc extends OrcExecutionAPI {
   
   // Context entries //
   trait Binding
-  case class BoundValue(v: Value) extends Binding
-  case class BoundCell(g: Groupcell) extends Binding
-  implicit def ValuesAreBindings(v: Value): Binding = BoundValue(v)
-  implicit def GroupcellsAreBindings(g: Groupcell): Binding = BoundCell(g) 
-  
+  case class BoundValue(v: AnyRef) extends Binding
+  case class BoundCell(g: Groupcell) extends Binding 
   
   // Control frames //
   abstract class Frame {
-    def apply(t: Token, v: Value): Unit
+    def apply(t: Token, v: AnyRef): Unit
   }
   
   case class BindingFrame(n: Int) extends Frame {
-    def apply(t: Token, v: Value) {
+    def apply(t: Token, v: AnyRef) {
       t.env = t.env.drop(n)
       t.publish(v)
     }
   }
   
   case class SequenceFrame(node: Expression) extends Frame {
-    def apply(t: Token, v: Value) {
-      schedule(t.bind(v).move(node))
+    def apply(t: Token, v: AnyRef) {
+      schedule(t.bind(BoundValue(v)).move(node))
     }
   }
   
   case class FunctionFrame(callpoint: Expression, env: List[Binding]) extends Frame {
-    def apply(t: Token, v: Value) {      
+    def apply(t: Token, v: AnyRef) {      
       t.env = env
       t.move(callpoint).publish(v)
     }
   }
   
   case object GroupFrame extends Frame {
-    def apply(t: Token, v: Value) {
+    def apply(t: Token, v: AnyRef) {
       t.group.publish(t,v)
     }
   }
@@ -311,7 +309,7 @@ trait Orc extends OrcExecutionAPI {
   
     def lookup(a: Argument): Binding = 
       a match {
-        case Constant(v) => v
+        case Constant(v) => BoundValue(v)
         case Variable(n) => env(n)
     }
   
@@ -319,7 +317,7 @@ trait Orc extends OrcExecutionAPI {
      * When the argument becomes bound to v, call k(v).
      * (If it is already bound, k is called immediately)
      */
-    def resolve(arg: Argument)(k : Value => Unit) {
+    def resolve(arg: Argument)(k : AnyRef => Unit) {
       lookup(arg) match {
         case BoundValue(v) => k(v)
         case BoundCell(g) => {
@@ -335,10 +333,10 @@ trait Orc extends OrcExecutionAPI {
      * When all of the arguments become bound, call k(vs).
      * (If they are all already bound, k is called immediately) 
      */
-    def resolve(args: List[Argument])(k : List[Value] => Unit) {
-      def resolveLeftToRight(args : List[Argument], vs : List[Value]): Unit =
+    def resolve(args: List[Argument])(k : List[AnyRef] => Unit) {
+      def resolveLeftToRight(args : List[Argument], vs : List[AnyRef]): Unit =
         args match {
-          case z::zs => resolve(z) { v : Value => resolveLeftToRight(zs, v::vs) }
+          case z::zs => resolve(z) { v : AnyRef => resolveLeftToRight(zs, v::vs) }
           case Nil => k(vs.reverse)
         }
       resolveLeftToRight(args, Nil)
@@ -348,8 +346,10 @@ trait Orc extends OrcExecutionAPI {
     def functionCall(c : Closure, actuals : List[Binding]) {
       val Closure(arity, body, newcontext) = c
       
-      if (actuals.size != arity) halt /* Arity mismatch. */
-                    
+      if (actuals.size != arity) {
+        this !! new ArityMismatchException(arity, actuals.size) /* Arity mismatch. */
+      }
+            
       /* 1) If this is not a tail call, push a function frame referring to the current environment.
        * 2) Change the current environment to the closure's saved environment.
        * 3) Add bindings for the arguments to the new current environment.
@@ -382,7 +382,7 @@ trait Orc extends OrcExecutionAPI {
   
     // Publicly accessible methods
   
-    def publish(v: Value) {
+    def publish(v: AnyRef) {
       if (state == Live) {
         stack match {
           case f::fs => { 
@@ -450,7 +450,7 @@ trait Orc extends OrcExecutionAPI {
           case Prune(left, right) => {
             val (l,r) = fork
             val groupcell = Groupcell(group)
-            schedule( l.bind(groupcell).move(left),
+            schedule( l.bind(BoundCell(groupcell)).move(left),
                       r.join(groupcell).move(right) )
           }
     
@@ -466,11 +466,11 @@ trait Orc extends OrcExecutionAPI {
 			 */           
             val vars = openvars map { Variable } 
             resolve(vars) {
-              vs: List[Value] => {
-                var context: List[Value] = vs
+              vs: List[AnyRef] => {
+                var context: List[AnyRef] = vs
                 
                 val cs = defs map ( (d: Def) => new Closure(d) )
-                for (c <- cs) { bind(c); context = c :: context }
+                for (c <- cs) { bind(BoundValue(c)); context = c :: context }
                 for (c <- cs) { c.context = context }
                 
                 this.move(body).run

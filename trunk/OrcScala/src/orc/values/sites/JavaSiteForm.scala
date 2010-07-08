@@ -17,8 +17,6 @@ package orc.values.sites
 
 import orc.TokenAPI
 import orc.oil.nameless.Type // FIXME: Typechecker should operate on named types instead
-import orc.values.Value
-import orc.values.Literal
 import orc.values.Signal
 import orc.values.{Field => OrcField}
 import orc.error.NotYetImplementedException
@@ -52,44 +50,44 @@ abstract class JavaProxy extends Site {
 
   lazy val javaClassName: String = javaClass.getCanonicalName()
 
-  def java2orc(javaValue: Object): Value = javaValue match {
-    case v: Value => v
+  def java2orc(javaValue: Object): AnyRef = javaValue match {
     case _: java.lang.Void => orc.values.Signal
-    case null => Literal(null)
-    case i: java.lang.Byte => Literal(BigInt(i.byteValue))
-    case i: java.lang.Short => Literal(BigInt(i.shortValue))
-    case i: java.lang.Integer => Literal(BigInt(i.intValue))
-    case i: java.lang.Long => Literal(BigInt(i.longValue))
-    case f: java.lang.Float => Literal(BigDecimal(f.floatValue))
-    case f: java.lang.Double => Literal(BigDecimal(f.doubleValue))
-    case s: java.lang.String => Literal(s)
-    case b: java.lang.Boolean => Literal(b.booleanValue)
-    case _ => new Literal(javaValue)
+    case i: java.lang.Byte => BigInt(i.byteValue)
+    case i: java.lang.Short => BigInt(i.shortValue)
+    case i: java.lang.Integer => BigInt(i.intValue)
+    case i: java.lang.Long => BigInt(i.longValue)
+    case f: java.lang.Float => BigDecimal(f.floatValue)
+    case f: java.lang.Double => BigDecimal(f.doubleValue)
+    case s: java.lang.String => s
+    case b: java.lang.Boolean => b
+    case null => null
+    case v => v 
   }
 
-  def orc2java(orcValue: Value): Object = orc2java(orcValue, classOf[Object])
+  def orc2java(orcValue: AnyRef): Object = orc2java(orcValue, classOf[Object])
 
-  def orc2java(orcValue: Value, expectedType: Class[_]): Object =
-    (orcValue, expectedType) match {
-      case (JavaObjectProxy(j), _) => j
-      case (Literal(i: BigInt), `byteRefClass`) => i.toByte.asInstanceOf[java.lang.Byte]
-      case (Literal(i: BigInt), `shortRefClass`) => i.toShort.asInstanceOf[java.lang.Short]
-      case (Literal(i: BigInt), `intRefClass`) => i.toInt.asInstanceOf[java.lang.Integer]
-      case (Literal(i: BigInt), `longRefClass`) => i.toLong.asInstanceOf[java.lang.Long]
-      case (Literal(i: BigInt), `floatRefClass`) => i.toFloat.asInstanceOf[java.lang.Float]
-      case (Literal(i: BigInt), `doubleRefClass`) => i.toDouble.asInstanceOf[java.lang.Double]
-      case (Literal(f: BigDecimal), `floatRefClass`) => f.toFloat.asInstanceOf[java.lang.Float]
-      case (Literal(f: BigDecimal), `doubleRefClass`) => f.toDouble.asInstanceOf[java.lang.Double]
-      case (Literal(i: BigInt), java.lang.Byte.TYPE) => i.toByte.asInstanceOf[java.lang.Byte] //Boxed for passing to invoke(...)
-      case (Literal(i: BigInt), java.lang.Short.TYPE) => i.toShort.asInstanceOf[java.lang.Short] //Boxed for passing to invoke(...)
-      case (Literal(i: BigInt), java.lang.Integer.TYPE) => i.toInt.asInstanceOf[java.lang.Integer] //Boxed for passing to invoke(...)
-      case (Literal(i: BigInt), java.lang.Long.TYPE) =>  i.toLong.asInstanceOf[java.lang.Long] //Boxed for passing to invoke(...)
-      case (Literal(i: BigInt), java.lang.Float.TYPE) => i.toFloat.asInstanceOf[java.lang.Float] //Boxed for passing to invoke(...)
-      case (Literal(i: BigInt), java.lang.Double.TYPE) => i.toDouble.asInstanceOf[java.lang.Double] //Boxed for passing to invoke(...)
-      case (Literal(f: BigDecimal), java.lang.Float.TYPE) => f.toFloat.asInstanceOf[java.lang.Float] //Boxed for passing to invoke(...)
-      case (Literal(f: BigDecimal), java.lang.Double.TYPE) => f.toDouble.asInstanceOf[java.lang.Double] //Boxed for passing to invoke(...)
-      case (Literal(v), _) => v.asInstanceOf[Object]
-      case (_, _) => orcValue
+  def orc2java(orcValue: AnyRef, expectedType: Class[_]): Object =
+    orcValue match {
+      case i: BigInt => {
+        expectedType match {
+          case `byteRefClass` | java.lang.Byte.TYPE => i.toByte.asInstanceOf[java.lang.Byte]
+          case `shortRefClass` | java.lang.Short.TYPE => i.toShort.asInstanceOf[java.lang.Short]
+          case `intRefClass` | java.lang.Integer.TYPE => i.toInt.asInstanceOf[java.lang.Integer]
+          case `longRefClass` | java.lang.Long.TYPE => i.toLong.asInstanceOf[java.lang.Long]
+          case `floatRefClass` | java.lang.Float.TYPE => i.toFloat.asInstanceOf[java.lang.Float]
+          case `doubleRefClass` | java.lang.Double.TYPE => i.toDouble.asInstanceOf[java.lang.Double]
+          case _ => i
+        }
+      }
+      case f: BigDecimal => {
+        expectedType match {
+          case `floatRefClass` | java.lang.Float.TYPE => f.toFloat.asInstanceOf[java.lang.Float]
+          case `doubleRefClass` | java.lang.Double.TYPE => f.toDouble.asInstanceOf[java.lang.Double]
+          case _ => f
+        }
+      }
+      case JavaObjectProxy(j) => j
+      case _ => orcValue.asInstanceOf[Object]
     }
 
   def hasMember(memberName: String): Boolean =
@@ -97,7 +95,7 @@ abstract class JavaProxy extends Site {
     javaClass.getMethods().exists({_.getName().equals(memberName)}) ||
         javaClass.getFields().exists({_.getName().equals(memberName)})
 
-  def invoke(theObject: Object, methodName: String, args: List[Value]): Value = {
+  def invoke(theObject: Object, methodName: String, args: List[AnyRef]): AnyRef = {
     val unOrcWrappedArgs = args.map(orc2java(_)) // Un-wrapped from Orc's Literal, JavaObjectProxy, etc., but not Orc number conversions
     val method = try { 
       try {
@@ -364,7 +362,7 @@ case class JavaClassProxy(val javaClass: Class[Object]) extends JavaProxy {
 
   override def orcType(argTypes: List[Type]) = null //TODO:FIXME: Implement this
 
-  override def call(args: List[Value], callingToken: TokenAPI) {
+  override def call(args: List[AnyRef], callingToken: TokenAPI) {
     args match {
       case List(OrcField("?")) => throw new NotYetImplementedException("MatchProxy not implemented yet") //TODO:FIXME: Implement this -- publish(new MatchProxy(javaClass))
       case List(OrcField(memberName)) => callingToken.publish(new JavaStaticMemberProxy(javaClass, memberName))
@@ -387,7 +385,7 @@ case class JavaObjectProxy(val theObject: Object) extends JavaProxy {
 
   override def javaClass = theObject.getClass()
 
-  override def call(args: List[Value], callingToken: TokenAPI) {
+  override def call(args: List[AnyRef], callingToken: TokenAPI) {
     args match {
       case List(OrcField(memberName)) => callingToken.publish(new JavaMemberProxy(theObject, memberName))
       case _ => callingToken.publish(invoke(theObject, "apply", args))
@@ -410,7 +408,7 @@ case class JavaMemberProxy(val theObject: Object, val memberName: String) extend
 
   override def javaClass = theObject.getClass()
 
-  def call(args: List[Value], callingToken: TokenAPI) {
+  def call(args: List[AnyRef], callingToken: TokenAPI) {
     args match {
       case List(OrcField(submemberName)) => {
         val javaField = javaClass.getField(memberName)
@@ -455,7 +453,7 @@ case class JavaFieldDerefSite(val theObject: Object, val javaField: JavaField) e
 
   override lazy val name = this.getClass().getCanonicalName()+"("+javaClassName+"."+javaField.getName()+", "+theObject+")"
 
-  def call(args: List[Value], callingToken: TokenAPI) {
+  def call(args: List[AnyRef], callingToken: TokenAPI) {
     args match {
       case List() => callingToken.publish(java2orc(javaField.get(theObject)))
       case _ => throw new ArityMismatchException(0, args.size)
@@ -478,7 +476,7 @@ case class JavaFieldAssignSite(val theObject: Object, val javaField: JavaField) 
 
   override lazy val name = this.getClass().getCanonicalName()+"("+javaClassName+"."+javaField.getName()+", "+theObject+")"
 
-  def call(args: List[Value], callingToken: TokenAPI) {
+  def call(args: List[AnyRef], callingToken: TokenAPI) {
     args match {
       case List(a) => {
         javaField.set(theObject, orc2java(a))

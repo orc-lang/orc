@@ -15,35 +15,36 @@
 
 package orc.values.sites
 
-import orc.values.Value
+import orc.values.OrcValue
 import orc.oil.nameless.Type
 import orc.oil.nameless.Bot
 import orc.TokenAPI
 import orc.error.OrcException
 
-trait Site extends Value {
-  def call(args: List[Value], callingToken: TokenAPI): Unit
+trait Site extends OrcValue {
+  
+  def call(args: List[AnyRef], callingToken: TokenAPI): Unit
   def name: String = this.getClass().toString()
   def orcType(argTypes: List[Type]): Type
-  override def toString() = this.name
+  override def toOrcSyntax() = this.name
   def extract: Option[PartialSite] = {
     throw (new Exception("Site " + this + " has no default extractor."))
   }
 }
 
 trait PartialSite extends Site {
-  def call(args: List[Value], token: TokenAPI) {
+  def call(args: List[AnyRef], token: TokenAPI) {
     evaluate(args) match {
       case Some(v) => token.publish(v)
       case None => token.halt
     }
   }
 
-  def evaluate(args: List[Value]): Option[Value]
+  def evaluate(args: List[AnyRef]): Option[AnyRef]
 }
 
 trait TotalSite extends Site {
-  def call(args: List[Value], token: TokenAPI) {
+  def call(args: List[AnyRef], token: TokenAPI) {
   	try { 
   	  token.publish(evaluate(args)) 
   	} catch { 
@@ -51,7 +52,7 @@ trait TotalSite extends Site {
   	}
   }
   
-  def evaluate(args: List[Value]): Value
+  def evaluate(args: List[AnyRef]): AnyRef
 }
 
 trait UntypedSite extends Site {
@@ -63,7 +64,7 @@ trait UnimplementedSite extends Site {
   def orcType(argTypes: List[Type]): Nothing = {
 	  throw new Exception("Site " + this + " is unimplemented.")
   }
-  def call(args: List[Value], token: TokenAPI): Nothing = {
+  def call(args: List[AnyRef], token: TokenAPI): Nothing = {
 	  throw new Exception("Site " + this + " is unimplemented.")
   }
 }

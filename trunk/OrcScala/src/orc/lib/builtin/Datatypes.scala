@@ -9,12 +9,12 @@ import orc.error.runtime.ArityMismatchException
 object DatatypeBuilder extends TotalSite with UntypedSite {
   
   override def name = "Datatype"
-  def evaluate(args: List[Value]) =
+  def evaluate(args: List[AnyRef]) =
     args match {
       case List(OrcTuple(vs)) => {
-        val datasites: List[Value] = 
-          for (OrcTuple(Literal(name: String) :: List(Literal(arity: Int))) <- vs)
-            yield new DataSite(name,arity)
+        val datasites: List[AnyRef] = 
+          for ( OrcTuple(List(name: String, arity: BigInt)) <- vs)
+            yield new DataSite(name,arity.intValue)
         OrcTuple(datasites)
       }
     }
@@ -22,24 +22,20 @@ object DatatypeBuilder extends TotalSite with UntypedSite {
 
 class DataSite(name: String, arity: Int) extends TotalSite with UntypedSite {
   
-  def evaluate(args: List[Value]): Value = {
+  def evaluate(args: List[AnyRef]): AnyRef = {
       if(args.size != arity) {
         throw new ArityMismatchException(arity, args.size)
       }
-      TaggedValues(this,args)
+      TaggedValue(this,args)
   }
   
   override def extract = Some(new PartialSite  with UntypedSite {
  
-    override def evaluate(args: List[Value]) = {
+    override def evaluate(args: List[AnyRef]) = {
         args match {
-          case List(TaggedValues(tag,values)) => {
-            if (tag == DataSite.this)
-              Some(OrcTuple(values))
-            else 
-              None
-          }
-          case _ => None
+          case List(TaggedValue(tag,values)) if (tag == DataSite.this) => Some(letLike(values))
+          case List(_) => None
+          case _ => throw new ArityMismatchException(1, args.size)
         }
     }
   })

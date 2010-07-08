@@ -52,9 +52,9 @@ trait OrcExecutionAPI {
 //  def resume
 //  def stop
 
-  def emit(v: Value): Unit
+  def emit(v: AnyRef): Unit
   def halted: Unit
-  def invoke(t: TokenAPI, v: Value, vs: List[Value]): Unit
+  def invoke(t: TokenAPI, v: AnyRef, vs: List[AnyRef]): Unit
   def expressionPrinted(s: String): Unit
   def caught(e: Throwable): Unit
   def schedule(ts: List[Token]): Unit
@@ -76,7 +76,7 @@ trait OrcExecutionEnvironmentIfc {
  * The interface from an Orc execution machine to tokens
  */
 trait TokenAPI {
-  def publish(v : Value): Unit
+  def publish(v : AnyRef): Unit
   def halt: Unit
 
   def kill: Unit

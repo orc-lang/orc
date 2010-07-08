@@ -14,6 +14,11 @@
 //
 package orc.oil.named
 
+import orc.oil.named._
+import scala.collection.mutable._
+import orc.values.Format
+
+
 /**
  * 
  * Nicer printing for named OIL syntax trees.
@@ -23,10 +28,7 @@ package orc.oil.named
 
 
 class PrettyPrint {
-  
-  import orc.oil.named._
-  import scala.collection.mutable._
-  
+    
   val vars: Map[TempVar, String] = new HashMap()
   var varCounter : Int = 0
   def newVarName() : String = { varCounter += 1 ; "`t" + varCounter }
@@ -80,7 +82,7 @@ class PrettyPrint {
       }
       case HasType(body, expectedType) => "(" + reduce(body) + " :: " + reduce(expectedType) + ")"
       case DeclareType(u, t, body) => "type " + reduce(u) + " = " + reduce(t) + "\n" + reduce(body)
-      case Constant(v) => v.toString()
+      case Constant(v) => Format.formatValue(v)
       case (x: TempVar) => x.optionalName.getOrElse(lookup(x)) 
       case NamedVar(s) => "?" + s  
       case u: TempTypevar => u.optionalName.getOrElse(lookup(u))
