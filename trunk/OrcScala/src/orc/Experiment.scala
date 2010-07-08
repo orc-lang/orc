@@ -1,6 +1,7 @@
 package orc
 
-import orc.compile.OrcCompiler
+import orc.compile.StandardOrcCompiler
+import orc.run.StandardOrcRuntime
 import orc.compile.parse.OrcReader
 import orc.run._
 import orc.values.Value
@@ -38,17 +39,20 @@ object Experiment {
                           "Within Eclipse, use ${resource_loc}")
     }
     ExperimentOptions.filename = args(0)
-    val orc = new StandardOrcExecution()
-    val compiler = new OrcCompiler()
+    val orc = new StandardOrcRuntime()
+    val compiler = new StandardOrcCompiler()
     val reader = OrcReader(new java.io.FileReader(ExperimentOptions.filename), ExperimentOptions.filename, compiler.openInclude(_, _, ExperimentOptions))
     val compiledOil = compiler(reader, ExperimentOptions)
     if (compiledOil != null) {
+      try {
       orc.runSynchronous(compiledOil, { v: AnyRef => println("Published: " + Format.formatValue(v)) })
+      } finally {
+        orc.stop // kill threads and reclaim resources
+      }
     }
     else {
       Console.err.println("Compilation failed.")
     }
-    orc.stop // kill threads and reclaim resources
   }
 
 }

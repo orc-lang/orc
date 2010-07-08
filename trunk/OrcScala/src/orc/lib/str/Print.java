@@ -15,6 +15,7 @@ package orc.lib.str;
 
 import orc.TokenAPI;
 import orc.error.runtime.TokenException;
+import orc.run.SupportForStdout;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.SiteAdaptor;
 import orc.values.sites.compatibility.type.Type;
@@ -32,7 +33,8 @@ public class Print extends SiteAdaptor {
 		for (int i = 0; i < args.size(); i++) {
 			sb.append(String.valueOf(args.getArg(i)));
 		}
-		caller.printToStdout(sb.toString());
+		SupportForStdout runtime = (SupportForStdout)caller.runtime();
+		runtime.printToStdout(sb.toString());
 		caller.publish(signal());
 	}
 

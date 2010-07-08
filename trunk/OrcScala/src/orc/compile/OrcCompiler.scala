@@ -28,11 +28,10 @@ import orc.error.compiletime.CompileLogger
 import orc.error.compiletime.CompileLogger.Severity
 import orc.error.compiletime.ParsingException
 import orc.error.compiletime.PrintWriterCompileLogger
-import orc.OrcCompilerAPI
-import orc.CompilerEnvironmentIfc
 import orc.OrcOptions
 import orc.compile.parse.OrcParser
 import orc.compile.parse.OrcReader
+import orc.OrcCompiler
 
 /**
  * Represents one phase in a compiler.  It is defined as a function from
@@ -84,7 +83,7 @@ trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
  *
  * @author jthywiss
  */
-class OrcCompiler extends OrcCompilerAPI with CompilerEnvironmentIfc {
+class StandardOrcCompiler extends OrcCompiler {
   
   val parse = new CompilerPhase[OrcOptions, Reader[Char], orc.compile.ext.Expression] {
     val phaseName = "parse"
@@ -166,7 +165,7 @@ class OrcCompiler extends OrcCompilerAPI with CompilerEnvironmentIfc {
     
     // Try filename under the include path list
     for (ip <- options.includePath) {
-      val incPath = new java.io.File(ip);
+      val incPath = new java.io.File(ip)
 
       /* Build file path as follows:
        *   path = relTo + incPath + fileName
@@ -174,10 +173,10 @@ class OrcCompiler extends OrcCompilerAPI with CompilerEnvironmentIfc {
        * Try for all paths in the include path list
        */
       if (incPath.isAbsolute() || relativeToFileName != null) {
-        val incPathPrefixed = new java.io.File(relativeToFileName, ip);
-        val file = new java.io.File(incPathPrefixed, includeFileName);
+        val incPathPrefixed = new java.io.File(relativeToFileName, ip)
+        val file = new java.io.File(incPathPrefixed, includeFileName)
         if (file.exists()) {
-          return new java.io.FileReader(file);
+          return new java.io.FileReader(file)
         }
       }
     }

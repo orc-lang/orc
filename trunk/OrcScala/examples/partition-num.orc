@@ -11,8 +11,8 @@ def seq(Integer, Integer) :: Integer
 def seq(m, n) = if (m <: n) then (m | seq(m+1, n)) else stop
 
 {-
-relpacing >= with > would cause the algorithm to eliminate repeated numbers in a list
-ignoring the m would cause the algorithm to generate all permutation
+replacing >= with > would cause the algorithm to eliminate repeated numbers in a list
+ignoring the m would cause the algorithm to generate all permutations
 -}
 
 def partition(Integer, Integer) :: List[Integer]

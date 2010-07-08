@@ -5,8 +5,6 @@ import orc.values._
 import orc.values.sites._
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
-import orc.run.StandardOrcExecution
-import scala.actors.Actor
 import orc.TokenAPI
 import orc.oil.nameless.Expression
 import orc.oil.nameless.Call
