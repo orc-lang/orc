@@ -197,7 +197,10 @@ public class ExamplesTest {
 			throw e;
 		} catch (final ExecutionException e) {
 			throw e.getCause();
+		} finally { 
+		  engine.stop(); 
 		}
+		
 
 		// compare the output to the expected result
 		final String actual = engine.getOut().toString();

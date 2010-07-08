@@ -3,7 +3,6 @@ package orc.run
 import orc.values.sites.Site
 import orc.values.OrcValue
 import orc.error.OrcException
-import scala.concurrent.SyncVar
 import orc.values.sites.compatibility.ArrayProxy
 import orc.values.sites.JavaObjectProxy
 import orc.error.runtime.JavaException
@@ -61,38 +60,25 @@ trait SiteInvocation extends InvocationBehavior {
 
 
 
-trait PublishToConsole extends Orc {
-  override def emit(v: AnyRef) { 
-    print("Published: " + Format.formatValue(v) + "\n") 
-  }
-}
-
-
+import scala.actors.Actor
+import scala.actors.Actor._
+  
 trait ActorScheduler extends Orc {
-  val done: SyncVar[Unit] = new SyncVar()
-  
-  def waitUntilFinished { done.get }
-  
-  def halted { worker ! None }
-  
   val worker = new Worker()
-  
-  import scala.actors.Actor
-  import scala.actors.Actor._
-
   worker.start
   
   override def schedule(ts: List[Token]) { for (t <- ts) worker ! Some(t) }
+  
+  def stop = worker ! None
+  
   class Worker extends Actor {
     def act() {
       loop {
         react {
           case Some(x:Token) => x.run
-          
-          // execution has halted
+          // machine has stopped
           case None => {
             timer.cancel()
-            done.set({})
             exit 
           }
         }
@@ -108,12 +94,11 @@ with SiteInvocation
 with JavaObjectInvocation
 
   
-trait StandardOrcExecution extends Orc 
+class StandardOrcExecution extends Orc 
 with StandardOrcInvoke
 with ActorScheduler
 with SupportForCapsules
 {
-  def emit(v : AnyRef) = { /* By default, ignore toplevel publications */ }
   def expressionPrinted(s: String) { print(s) }
   def caught(e: Throwable) { 
     e match {

@@ -41,19 +41,52 @@ trait CompilerEnvironmentIfc {
 //  def loadClass(className: String): Class[_]
 }
 
+
 /**
- * The interface from a caller to an Orc execution machine 
+ * Events reported by an Orc execution
+ */
+trait OrcEvent
+case class Publication(value: AnyRef) extends OrcEvent
+case object Halted extends OrcEvent
+
+
+/**
+ * The interface from a caller to an Orc execution
  */
 trait OrcExecutionAPI {
   type Token <: TokenAPI
 
-//  def start(e: Expression) : Unit
+  def run(e: Expression, k: OrcEvent => Unit): Unit
+  
+  /* Wait for execution to complete, rather than dispatching asynchronously.
+   * The continuation takes only values, not events.
+   */
+  def runSynchronous(node: Expression, k: AnyRef => Unit) {
+    val done: scala.concurrent.SyncVar[Unit] = new scala.concurrent.SyncVar()
+    def ksync(event: OrcEvent): Unit = {
+      event match {
+        case orc.Publication(v) => k(v)
+        case orc.Halted => { done.set({}) }
+      }
+    }
+    this.run(node, ksync)
+    done.get
+  }
+  
+  /* If no continuation is given, discard published values and run silently to completion. */
+  def runSynchronous(node: Expression) {
+    runSynchronous(node, { v: AnyRef => { /* suppress publications */ } })
+  }
 //  def pause
 //  def resume
-//  def stop
+  
+  /* Shut down this runtime and all of its backing threads.
+   * All executions stop without cleanup, though they are not guaranteed to stop immediately. 
+   * This will cause all synchronous executions to hang. 
+   */
+  // TODO: Implement cleaner alternatives.
+  def stop: Unit
 
-  def emit(v: AnyRef): Unit
-  def halted: Unit
   def invoke(t: TokenAPI, v: AnyRef, vs: List[AnyRef]): Unit
   def expressionPrinted(s: String): Unit
   def caught(e: Throwable): Unit
@@ -73,20 +106,17 @@ trait OrcExecutionEnvironmentIfc {
 }
 
 /**
- * The interface from an Orc execution machine to tokens
+ * The interface from the environment to tokens of an Orc execution
  */
 trait TokenAPI {
+
   def publish(v : AnyRef): Unit
   def halt: Unit
-
-  //def kill: Unit
-  //def run: Unit
-  
-  def !!(e: OrcException): Unit = { throw e } 
-
+  def !!(e: OrcException): Unit 
   
   val runtime: OrcExecutionAPI
   
+  // TODO: Move these into specialized versions of the runtime
   def printToStdout(s: String): Unit
   def getTimer: java.util.Timer 
 }

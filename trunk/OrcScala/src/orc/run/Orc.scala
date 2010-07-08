@@ -17,6 +17,8 @@ package orc.run
 
 import orc.OrcExecutionAPI
 import orc.TokenAPI
+import orc.OrcEvent
+import orc.Publication
 import orc.oil._
 import orc.oil.nameless._
 import orc.PartialMapExtension._
@@ -33,12 +35,11 @@ import scala.collection.mutable.Set
 
 trait Orc extends OrcExecutionAPI {
   
-  def run(node: Expression) {
-    val exec = new Execution()
+  def run(node: Expression, k: OrcEvent => Unit) {
+    val exec = new Execution(k)
     val t = new Token(node, exec)
     schedule(t)
   }
-  
   
   // Groups
   
@@ -166,15 +167,15 @@ trait Orc extends OrcExecutionAPI {
     
   // An execution is a special toplevel group, 
   // associated with the entire program.
-  class Execution extends Group {
+  class Execution(k: OrcEvent => Unit) extends Group {
   
     def publish(t: Token, v: AnyRef) {
-      emit(v)
+      k(Publication(v))
       t.halt
     }
   
     def onHalt {
-      halted
+      k(orc.Halted)
     }
   }
   
@@ -368,48 +369,6 @@ trait Orc extends OrcExecutionAPI {
 
     }
   
-  
-    // Publicly accessible methods
-  
-    def publish(v: AnyRef) {
-      if (state == Live) {
-        stack match {
-          case f::fs => { 
-            stack = fs
-            f(this, v)
-          }
-          case Nil => { emit(v) ; halt } // !!!
-        }
-      } 
-    }
-  
-    def halt {
-      state match {
-        case Live => { 
-          state = Halted 
-          group.halt(this) 
-        }
-        case _ => {  }
-      }
-    }
-  
-    def kill {
-      state match {
-        case Live => { 
-          state = Killed
-          group.halt(this) 
-        }
-        case _ => {  }
-      }
-    }
-    
-    override def !!(e: OrcException) { 
-      halt
-      e.setPosition(node.pos)
-      //TODO: e.backtrace = all of the FunctionFrame.callpoint.pos in this token's stack
-      caught(e) 
-    }
-  
     def run {
       if (state == Live) {
         node match {
@@ -471,8 +430,51 @@ trait Orc extends OrcExecutionAPI {
         }
       }
     }
+  
+    
+    def kill {
+      state match {
+        case Live => { 
+          state = Killed
+          group.halt(this) 
+        }
+        case _ => {  }
+      }
+    }
+    
     
     def printToStdout(s: String) = expressionPrinted(s)
+    
+    
+    // Publicly accessible methods
+  
+    def publish(v: AnyRef) {
+      if (state == Live) {
+        stack match {
+          case f::fs => { 
+            stack = fs
+            f(this, v)
+          }
+        }
+      } 
+    }
+  
+    def halt {
+      state match {
+        case Live => { 
+          state = Halted 
+          group.halt(this) 
+        }
+        case _ => {  }
+      }
+    }
+    
+    override def !!(e: OrcException) { 
+      halt
+      e.setPosition(node.pos)
+      //TODO: e.backtrace = all of the FunctionFrame.callpoint.pos in this token's stack
+      caught(e) 
+    }
   
   }
   // end of Token
