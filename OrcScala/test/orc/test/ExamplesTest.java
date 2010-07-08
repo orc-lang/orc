@@ -29,7 +29,8 @@ import java.util.concurrent.TimeoutException;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import orc.compile.OrcCompiler;
+import orc.compile.StandardOrcCompiler;
+import orc.OrcCompilerProvides;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.CompileLogger;
 import orc.error.compiletime.ExceptionCompileLogger;
@@ -172,7 +173,7 @@ public class ExamplesTest {
  
 	public static void runOrcProgram(final File file, final ExpectedOutput expecteds) throws InterruptedException, Throwable, CmdLineException, CompilationException, IOException, TimeoutException {
 
-	    OrcCompiler compiler = new OrcCompiler() {
+	    OrcCompilerProvides compiler = new StandardOrcCompiler() {
           private final CompileLogger compileLoggerRef = new ExceptionCompileLogger();
 	      @Override public CompileLogger compileLogger() { return compileLoggerRef; }
 	    };

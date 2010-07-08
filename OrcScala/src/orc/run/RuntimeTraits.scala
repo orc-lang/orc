@@ -8,18 +8,20 @@ import orc.values.sites.JavaObjectProxy
 import orc.error.runtime.JavaException
 import orc.error.runtime.UncallableValueException
 import orc.TokenAPI
-import orc.OrcExecutionAPI
 import orc.values.Format
 import orc.oil.nameless.Expression
+import orc.OrcRuntime
+import orc.OrcEvent
+import orc.Publication
+import orc.Halted
 
-
-trait InvocationBehavior extends OrcExecutionAPI {
+trait InvocationBehavior extends OrcRuntime {
   /* By default, an invocation halts silently. This will be overridden by other traits. */
   def invoke(t: TokenAPI, v: AnyRef, vs: List[AnyRef]): Unit = { t.halt }
 }
 
 
-trait DefaultInvocationRaisesError extends InvocationBehavior {
+trait ErrorOnUndefinedInvocation extends InvocationBehavior {
   /* This replaces the default behavior because it does not call super */
   override def invoke(t: TokenAPI, v: AnyRef, vs: List[AnyRef]) {
     val error = "You can't call the "+v.getClass().getName()+" \" "+Format.formatValue(v)+" \""
@@ -28,21 +30,31 @@ trait DefaultInvocationRaisesError extends InvocationBehavior {
 }
 
 
-// TODO: Move functionality of JavaObjectProxy class into this trait
-trait JavaObjectInvocation extends InvocationBehavior {
+trait SupportForJavaObjectInvocation extends InvocationBehavior {
   
   override def invoke(t: TokenAPI, v: AnyRef, vs: List[AnyRef]) { 
     v match {
-      case v : OrcValue => super.invoke(t, v, vs) // TODO: Make this orcvalue/javavalue distinction clearer
-      case l : Array[Any] => invoke(t, JavaObjectProxy(new ArrayProxy(l)), vs)
+      case v : OrcValue => super.invoke(t, v, vs)
       case obj => invoke(t, JavaObjectProxy(obj), vs)
-   }
+    }
+  }
+
+}
+
+
+trait SupportForJavaArrayAccess extends InvocationBehavior {
+  
+  override def invoke(t: TokenAPI, v: AnyRef, vs: List[AnyRef]) { 
+    v match {
+      case l : Array[Any] => invoke(t, JavaObjectProxy(new ArrayProxy(l)), vs)
+      case other => super.invoke(t, other, vs)
+    }
   }
 
 }
   
 
-trait SiteInvocation extends InvocationBehavior {  
+trait SupportForSiteInvocation extends InvocationBehavior {  
   override def invoke(t: TokenAPI, v: AnyRef, vs: List[AnyRef]) {
     v match {
       case (s: Site) => 
@@ -63,13 +75,19 @@ trait SiteInvocation extends InvocationBehavior {
 import scala.actors.Actor
 import scala.actors.Actor._
   
-trait ActorScheduler extends Orc {
+trait ActorBasedScheduler extends Orc {
+  
   val worker = new Worker()
   worker.start
   
   override def schedule(ts: List[Token]) { for (t <- ts) worker ! Some(t) }
   
-  def stop = worker ! None
+  /* Shut down this runtime and all of its backing threads.
+   * All executions stop without cleanup, though they are not guaranteed to stop immediately. 
+   * This will cause all synchronous executions to hang. 
+   */
+  // TODO: Implement cleaner alternatives.
+  override def stop = { worker ! None ; super.stop }
   
   class Worker extends Actor {
     def act() {
@@ -77,35 +95,56 @@ trait ActorScheduler extends Orc {
         react {
           case Some(x:Token) => x.run
           // machine has stopped
-          case None => {
-            timer.cancel()
-            exit 
-          }
+          case None => exit
         }
       }
     }
   }
+  
 }
 
 /* The first behavior in the trait list will be tried last */
-trait StandardOrcInvoke extends InvocationBehavior
-with DefaultInvocationRaisesError
-with SiteInvocation
-with JavaObjectInvocation
+trait StandardInvocationSemantics extends InvocationBehavior
+with ErrorOnUndefinedInvocation
+with SupportForSiteInvocation
+with SupportForJavaObjectInvocation
+with SupportForJavaArrayAccess
 
   
-class StandardOrcExecution extends Orc 
-with StandardOrcInvoke
-with ActorScheduler
+class StandardOrcRuntime extends OrcRuntime
+with Orc
+with StandardInvocationSemantics
+with ActorBasedScheduler
 with SupportForCapsules
-{
-  def expressionPrinted(s: String) { print(s) }
+with SupportForSynchronousExecution
+with SupportForRtimer
+with SupportForStdout
+with ExceptionReportingOnConsole
+
+
+
+trait ExceptionReportingOnConsole extends OrcRuntime {
   def caught(e: Throwable) { 
     e match {
       case (ex: OrcException) => println(ex.getPosition().longString) 
     }
     e.printStackTrace() 
   }
+}
+
+trait SupportForRtimer extends Orc {
+  
+  val timer: java.util.Timer = new java.util.Timer()
+  
+  def getTimer() = timer
+  
+  override def stop = { timer.cancel() ; super.stop }
+  
+}
+
+
+trait SupportForStdout extends OrcRuntime {
+  def printToStdout(s: String) { print(s) }
 }
 
 
@@ -147,3 +186,30 @@ trait SupportForCapsules extends Orc {
   }
   
 }
+
+
+trait SupportForSynchronousExecution extends OrcRuntime {
+  
+  /* Wait for execution to complete, rather than dispatching asynchronously.
+   * The continuation takes only values, not events.
+   */
+  def runSynchronous(node: Expression, k: AnyRef => Unit) {
+    val done: scala.concurrent.SyncVar[Unit] = new scala.concurrent.SyncVar()
+    def ksync(event: OrcEvent): Unit = {
+      event match {
+        case Publication(v) => k(v)
+        case Halted => { done.set({}) }
+      }
+    }
+    this.run(node, ksync)
+    done.get
+  }
+  
+    /* If no continuation is given, discard published values and run silently to completion. */
+  def runSynchronous(node: Expression) {
+    runSynchronous(node, { v: AnyRef => { /* suppress publications */ } })
+  }
+ 
+}
+
+

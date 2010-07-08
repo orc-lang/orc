@@ -15,19 +15,18 @@
 
 package test.orc
 
-import orc.run.Orc
-import orc.run.StandardOrcExecution
+import orc.run.StandardOrcRuntime
 import orc.oil.nameless.Expression
 import orc.values.Format
 import orc.values.sites.Site
-import java.lang._
+import java.lang.StringBuffer
 
 class OrcEngine {
 
   val out = new StringBuffer("")
 
-  val orcRuntime = new StandardOrcExecution {
-    override def expressionPrinted(s: String) { print(s); out.append(s) }
+  val orcRuntime = new StandardOrcRuntime {
+    override def printToStdout(s: String) { print(s); out.append(s) }
     override def caught(e: Throwable) {
       // TODO: Make this less simplistic (while keeping it robust)
       out.append("Error!\n") 

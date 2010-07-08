@@ -27,9 +27,11 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 
-import orc.run.Orc;
-import orc.run.StandardOrcExecution;
-import orc.compile.OrcCompiler;
+import orc.run.SupportForSynchronousExecution;
+import orc.OrcRuntimeProvides;
+import orc.run.StandardOrcRuntime;
+import orc.OrcCompilerProvides;
+import orc.compile.StandardOrcCompiler;
 
 /**
  * @author jthywiss
@@ -37,8 +39,8 @@ import orc.compile.OrcCompiler;
 public class OrcScriptEngine extends AbstractScriptEngine implements Compilable {
 
 	private OrcScriptEngineFactory factory;
-	private OrcCompiler compiler;
-	private Orc executor;
+	private OrcCompilerProvides compiler;
+	private OrcRuntimeProvides executor;
 
 	/**
 	 * Constructs an object of class OrcScriptEngine.
@@ -72,7 +74,8 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 		 */
 		@Override
 		public Object eval(ScriptContext ctx) throws ScriptException {
-			OrcScriptEngine.this.getExecutor().runSynchronous(astRoot); // FIXME: Probably don't want to ignore publications.
+			SupportForSynchronousExecution exec = (SupportForSynchronousExecution)OrcScriptEngine.this.getExecutor();
+			exec.runSynchronous(astRoot); // FIXME: Probably don't want to ignore publications.
 			return null;
 		}
 
@@ -149,10 +152,10 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 	/**
 	 * @return
 	 */
-	OrcCompiler getCompiler() {
+	OrcCompilerProvides getCompiler() {
 		synchronized (this) {
 			if (compiler == null) {
-				compiler = new OrcCompiler(); //FIXME: Need a factory
+				compiler = new StandardOrcCompiler(); //FIXME: Need a factory
 			}
 		}
 		return compiler;
@@ -161,10 +164,10 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 	/**
 	 * @return
 	 */
-	Orc getExecutor() {
+	OrcRuntimeProvides getExecutor() {
 		synchronized (this) {
 			if (executor == null) {
-				executor = new StandardOrcExecution(); //FIXME: Need a factory
+				executor = new StandardOrcRuntime(); //FIXME: Need a factory
 			}
 		}
 		return executor;

@@ -22,6 +22,7 @@ import orc.types.Type;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
+import orc.run.SupportForRtimer;
 
 /**
  * Implements the RTimer site
@@ -34,8 +35,9 @@ public class Rtimer extends SiteAdaptor {
 		try {
 			f = args.fieldName();
 		} catch (final TokenException e) {
-			// default behavior is to wait
-		  caller.getTimer().schedule(new TimerTask() {
+		  SupportForRtimer runtime = (SupportForRtimer)caller.runtime();
+		  // default behavior is to wait
+		  runtime.getTimer().schedule(new TimerTask() {
 				@Override
 				public void run() {
 					caller.publish(signal());

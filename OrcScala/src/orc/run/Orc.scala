@@ -15,10 +15,9 @@
 
 package orc.run
 
-import orc.OrcExecutionAPI
+import orc.OrcRuntime
 import orc.TokenAPI
 import orc.OrcEvent
-import orc.Publication
 import orc.oil._
 import orc.oil.nameless._
 import orc.PartialMapExtension._
@@ -33,7 +32,9 @@ import orc.error.runtime.ArityMismatchException
 
 import scala.collection.mutable.Set   
 
-trait Orc extends OrcExecutionAPI {
+trait Orc extends OrcRuntime {
+  
+  
   
   def run(node: Expression, k: OrcEvent => Unit) {
     val exec = new Execution(k)
@@ -41,7 +42,10 @@ trait Orc extends OrcExecutionAPI {
     schedule(t)
   }
   
-  // Groups
+  def stop = { /* By default, do nothing on stop. */ }
+  
+  
+  // Groups //
   
   // A Group is a structure associated with dynamic instances of an expression,
   // tracking all of the executions occurring within that expression.
@@ -170,7 +174,7 @@ trait Orc extends OrcExecutionAPI {
   class Execution(k: OrcEvent => Unit) extends Group {
   
     def publish(t: Token, v: AnyRef) {
-      k(Publication(v))
+      k(orc.Publication(v))
       t.halt
     }
   
@@ -181,15 +185,15 @@ trait Orc extends OrcExecutionAPI {
   
   
   
-  // Tokens and their auxilliary structures //
   
-  
-  // Context entries //
+  // Bindings //
   trait Binding
   case class BoundValue(v: AnyRef) extends Binding
   case class BoundCell(g: Groupcell) extends Binding 
   
-  // Control frames //
+  
+  
+  // Frames //
   abstract class Frame {
     def apply(t: Token, v: AnyRef): Unit
   }
@@ -223,7 +227,7 @@ trait Orc extends OrcExecutionAPI {
   
   
   
-  // Token //
+  // Tokens //
   
   sealed trait TokenState
   case object Live extends TokenState
@@ -236,16 +240,9 @@ trait Orc extends OrcExecutionAPI {
       var env: List[Binding] = Nil,
       var group: Group, 
       var state: TokenState = Live
-  ) extends TokenAPI with GroupMember { 
+  ) extends TokenAPI with GroupMember {     
     
-    // A live token is added to its group when it is created
-    state match {
-      case Live => group.add(this)
-      case Halted => {  }
-      case Killed => {  }
-    }
-    
-    
+    // Public constructor
     def this(start: Expression, g: Group) = {
       this(node = start, group = g, stack = List(GroupFrame))
     }
@@ -260,19 +257,30 @@ trait Orc extends OrcExecutionAPI {
         {
       new Token(node, stack, env, group, state)
         }
-  
+    
+    // A live token is added to its group when it is created
+    state match {
+      case Live => group.add(this)
+      case Halted => {  }
+      case Killed => {  }
+    }
     
   
-  
+    def kill {
+      state match {
+        case Live => { 
+          state = Killed
+          group.halt(this) 
+        }
+        case _ => {  }
+      }
+    }
+    
     def fork = (this, copy())
   
     def move(e: Expression) = { node = e ; this }
   
     def push(f: Frame) = { stack = f::stack ; this }
-  
-    def getTimer = timer
-    
-    val runtime = Orc.this
   
     def migrate(newGroup: Group) = { 
       val oldGroup = group
@@ -432,20 +440,10 @@ trait Orc extends OrcExecutionAPI {
     }
   
     
-    def kill {
-      state match {
-        case Live => { 
-          state = Killed
-          group.halt(this) 
-        }
-        case _ => {  }
-      }
-    }
     
     
-    def printToStdout(s: String) = expressionPrinted(s)
     
-    
+       
     // Publicly accessible methods
   
     def publish(v: AnyRef) {
@@ -476,11 +474,14 @@ trait Orc extends OrcExecutionAPI {
       halt
     }
   
-  }
-  // end of Token
-  
-  
-  def timer: java.util.Timer  = new java.util.Timer(); 
+    val runtime = Orc.this
+    
+  } // end of Token
 
-}
+  
+  
+  
+  
+
+} // end of Orc
 
