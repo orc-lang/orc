@@ -11,6 +11,7 @@ import orc.error.runtime.UncallableValueException
 import orc.TokenAPI
 import orc.OrcExecutionAPI
 import orc.values.Format
+import orc.oil.nameless.Expression
 
 
 trait InvocationBehavior extends OrcExecutionAPI {
@@ -110,6 +111,7 @@ with JavaObjectInvocation
 trait StandardOrcExecution extends Orc 
 with StandardOrcInvoke
 with ActorScheduler
+with SupportForCapsules
 {
   def emit(v : AnyRef) = { /* By default, ignore toplevel publications */ }
   def expressionPrinted(s: String) { print(s) }
@@ -119,4 +121,44 @@ with ActorScheduler
     }
     e.printStackTrace() 
   }
+}
+
+
+trait SupportForCapsules extends Orc {
+  
+  def runEncapsulated(node: Expression, caller: Token) = {
+    val host = caller.group.root
+    val exec = new CapsuleExecution(caller, host)
+    val t = new Token(node, exec)
+    schedule(t)
+  }
+  
+  class CapsuleExecution(caller: Token, host: Group) extends Subgroup(host) {
+    
+    var listener: Option[Token] = Some(caller)
+    
+    override def publish(t: Token, v: AnyRef) { 
+      listener match {
+        case Some(l) => {
+          listener = None
+          l.publish(v)
+        }
+        case None => { } 
+      }
+      t.halt
+    }
+    
+    override def onHalt {
+      listener match {
+        case Some(l) => {
+          listener = None
+          l.halt
+        }
+        case None => { } 
+      }
+      host.remove(this)
+    }
+    
+  }
+  
 }

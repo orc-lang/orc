@@ -79,11 +79,14 @@ trait TokenAPI {
   def publish(v : AnyRef): Unit
   def halt: Unit
 
-  def kill: Unit
-  def run: Unit
+  //def kill: Unit
+  //def run: Unit
   
   def !!(e: OrcException): Unit = { throw e } 
 
+  
+  val runtime: OrcExecutionAPI
+  
   def printToStdout(s: String): Unit
   def getTimer: java.util.Timer 
 }

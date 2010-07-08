@@ -6,7 +6,7 @@ then terminate the call to f.
 --}
 
 {- Example f -}
-def f() = upto(10) >n> Rtimer(n*20) >> n
+def f() = upto(10) >n> Rtimer(n*19) >> n
 
 {- Main program -}
 val c = Buffer[Integer]()

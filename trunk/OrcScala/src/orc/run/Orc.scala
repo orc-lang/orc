@@ -32,12 +32,11 @@ import orc.error.runtime.ArityMismatchException
 import scala.collection.mutable.Set   
 
 trait Orc extends OrcExecutionAPI {
-
-  val exec = new Execution()
   
   def run(node: Expression) {
+    val exec = new Execution()
     val t = new Token(node, exec)
-    t.run
+    schedule(t)
   }
   
   
@@ -77,12 +76,18 @@ trait Orc extends OrcExecutionAPI {
         case t: Token => List(t) 
         case g: Group => g.inhabitants
       }
+    
+    /* Find the root of this group tree. By default, a group is its own root. */
+    def root: Group = this
   
   }
   
   abstract class Subgroup(parent: Group) extends Group {
     
     override def kill { super.kill ; parent.remove(this) }
+    override def root = parent.root
+    
+    parent.add(this)
     
   }
   
@@ -135,16 +140,6 @@ trait Orc extends OrcExecutionAPI {
     
   }
   
-  object Groupcell {
-    def apply(parent: Group): Groupcell = {
-        val g = new Groupcell(parent)
-        parent.add(g)
-        g
-    }
-  }
-  
-  
-  
   
   // A Region is the group associated with expression f in (f ; g)
   class Region(parent: Group, t: Token) extends Subgroup(parent) {
@@ -168,15 +163,7 @@ trait Orc extends OrcExecutionAPI {
     }
     
   } 
-  
-  object Region {
-    def apply(parent: Group, r: Token): Region = {
-      val g = new Region(parent, r)
-      parent.add(g)
-      g
-    }
-  }
-  
+    
   // An execution is a special toplevel group, 
   // associated with the entire program.
   class Execution extends Group {
@@ -258,8 +245,8 @@ trait Orc extends OrcExecutionAPI {
     }
     
     
-    def this(start: Expression, exec: Execution) = {
-      this(node = start, group = exec, stack = List(GroupFrame))
+    def this(start: Expression, g: Group) = {
+      this(node = start, group = g, stack = List(GroupFrame))
     }
     
     // Copy constructor with defaults
@@ -283,6 +270,8 @@ trait Orc extends OrcExecutionAPI {
     def push(f: Frame) = { stack = f::stack ; this }
   
     def getTimer = timer
+    
+    val runtime = Orc.this
   
     def migrate(newGroup: Group) = { 
       val oldGroup = group
@@ -449,14 +438,14 @@ trait Orc extends OrcExecutionAPI {
     
           case Prune(left, right) => {
             val (l,r) = fork
-            val groupcell = Groupcell(group)
+            val groupcell = new Groupcell(group)
             schedule( l.bind(BoundCell(groupcell)).move(left),
                       r.join(groupcell).move(right) )
           }
     
           case Otherwise(left, right) => {
             val (l,r) = fork
-            val region = Region(group, r.move(right))
+            val region = new Region(group, r.move(right))
             schedule(l.join(region).move(left))
           }
     
@@ -473,7 +462,7 @@ trait Orc extends OrcExecutionAPI {
                 for (c <- cs) { bind(BoundValue(c)); context = c :: context }
                 for (c <- cs) { c.context = context }
                 
-                this.move(body).run
+                schedule(this.move(body))
               }
             }
           }
