@@ -5,8 +5,8 @@ import orc.compile.parse.OrcReader
 import orc.run._
 import orc.values.Value
 import orc.values.sites.Site
-
-class ExperimentalOrc extends StandardOrcExecution with PublishToConsole
+import orc.values.Format
+import scala.concurrent.SyncVar
 
 object ExperimentOptions extends OrcOptions {
   var filename = ""
@@ -32,24 +32,23 @@ object ExperimentOptions extends OrcOptions {
 
 object Experiment {
 
-  val orc = new ExperimentalOrc
-
   def main(args: Array[String]) {
     if (args.length < 1) {
       throw new Exception("Please supply a source file name as the first argument.\n" +
                           "Within Eclipse, use ${resource_loc}")
     }
     ExperimentOptions.filename = args(0)
+    val orc = new StandardOrcExecution()
     val compiler = new OrcCompiler()
     val reader = OrcReader(new java.io.FileReader(ExperimentOptions.filename), ExperimentOptions.filename, compiler.openInclude(_, _, ExperimentOptions))
     val compiledOil = compiler(reader, ExperimentOptions)
     if (compiledOil != null) {
-      orc.run(compiledOil)
-      orc.waitUntilFinished
+      orc.runSynchronous(compiledOil, { v: AnyRef => println("Published: " + Format.formatValue(v)) })
     }
     else {
       Console.err.println("Compilation failed.")
     }
+    orc.stop // kill threads and reclaim resources
   }
 
 }

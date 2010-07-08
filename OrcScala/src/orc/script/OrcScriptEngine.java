@@ -27,8 +27,8 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 
-import orc.ExperimentalOrc;
 import orc.run.Orc;
+import orc.run.StandardOrcExecution;
 import orc.compile.OrcCompiler;
 
 /**
@@ -72,7 +72,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 		 */
 		@Override
 		public Object eval(ScriptContext ctx) throws ScriptException {
-			OrcScriptEngine.this.getExecutor().run(astRoot);
+			OrcScriptEngine.this.getExecutor().runSynchronous(astRoot); // FIXME: Probably don't want to ignore publications.
 			return null;
 		}
 
@@ -164,7 +164,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 	Orc getExecutor() {
 		synchronized (this) {
 			if (executor == null) {
-				executor = new ExperimentalOrc(); //FIXME: Need a factory
+				executor = new StandardOrcExecution(); //FIXME: Need a factory
 			}
 		}
 		return executor;

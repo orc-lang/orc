@@ -27,11 +27,6 @@ class OrcEngine {
   val out = new StringBuffer("")
 
   val orcRuntime = new StandardOrcExecution {
-    override def emit(v: AnyRef) {
-      val vf = Format.formatValue(v)
-      println(vf)
-      out.append(vf + "\n") 
-    }
     override def expressionPrinted(s: String) { print(s); out.append(s) }
     override def caught(e: Throwable) {
       // TODO: Make this less simplistic (while keeping it robust)
@@ -39,12 +34,18 @@ class OrcEngine {
       super.caught(e)
     }
   }
+  
+  def stop() = orcRuntime.stop
 
   def getOut() : StringBuffer = out
 
-  def run(e : Expression) {
-    orcRuntime.run(e)
-    orcRuntime.waitUntilFinished
+  def run(e : Expression) {    
+    def k(v: AnyRef) {
+      val vf = Format.formatValue(v)
+      println(vf)
+      out.append(vf + "\n") 
+    }
+    orcRuntime.runSynchronous(e, k)
   }
 
 }
