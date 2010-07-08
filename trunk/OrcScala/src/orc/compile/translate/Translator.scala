@@ -381,8 +381,13 @@ object Translator {
 	 */
 	def convertType(t : ext.Type): named.Type = {
 		t -> {
+		    case ext.TypeVariable(name) => NamedTypevar(name)
 			case ext.TupleType(ts) => TupleType(ts map convertType)
-			case ext.TypeVariable(name) => NamedTypevar(name)
+			case ext.RecordType(entries) => {
+			  val emptyMap = new scala.collection.immutable.HashMap[String,Type]()
+			  val newEntries = entries map { case (s,t) => (s,convertType(t)) }			 
+			  RecordType(emptyMap ++ newEntries)
+			}
 			case ext.TypeApplication(name, typeactuals) => {
 				TypeApplication(new NamedTypevar(name), typeactuals map convertType)
 			}

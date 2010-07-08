@@ -470,10 +470,10 @@ trait Orc extends OrcExecutionAPI {
     }
     
     override def !!(e: OrcException) { 
-      halt
       e.setPosition(node.pos)
       //TODO: e.backtrace = all of the FunctionFrame.callpoint.pos in this token's stack
       caught(e) 
+      halt
     }
   
   }

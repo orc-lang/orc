@@ -91,17 +91,25 @@ object Closure {
 }
 
 // Records.
-case class OrcRecord(values: Map[String,AnyRef]) extends PartialSite with UntypedSite {
+case class OrcRecord(entries: Map[String,AnyRef]) extends PartialSite with UntypedSite {
   override def evaluate(args: List[AnyRef]) = 
     args match {
-      case List(Field(name)) => values.get(name)
+      case List(Field(name)) => entries.get(name)
       case List(a) => throw new ArgumentTypeMismatchException(0, "Field", a.getClass().toString())
       case _ => throw new ArityMismatchException(1, args.size)
     }
   
   override def toOrcSyntax() = {
-    val entries = for (s <- values.keys) yield { s + " = " + values(s) }
-    "{. " + Format.formatSequence(entries.toList) + " .}"
+    val formattedEntries = 
+      for ( (s,v) <- entries) yield { 
+        s + " = " + Format.formatValue(v) 
+      }
+    val contents = 
+      formattedEntries.toList match {
+        case Nil => ""
+        case l => l reduceRight { _ + ", " + _ } 
+      }
+    "{. " + contents + " .}"
   }
 
 }

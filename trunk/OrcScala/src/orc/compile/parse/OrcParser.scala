@@ -93,10 +93,10 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
   )
 
    def parseConditionalExpression: Parser[Expression] = (
-      ("if" ~~> parseOtherwiseExpression)
-         ~~ ("then" ~~> parseOtherwiseExpression)
-           ~~ ("else" ~~> parseOtherwiseExpression)
-              -> Conditional
+        ("if" ~~> parseOtherwiseExpression)
+        ~~ ("then" ~~> parseOtherwiseExpression)
+        ~~ ("else" ~~> parseOtherwiseExpression)
+        -> Conditional
     | 
       parseCallExpression
   )
@@ -108,8 +108,6 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
     | ("-" | "~") ~ parseConditionalExpression -> PrefixOperator
     | parseConditionalExpression
     )
-
-  // TODO: Fix parser ambiguity re: < and >
 
   //FIXME: All these uses of nlchain and ^^ are discarding position information!
   def parseExpnExpr = nlchainl1(parseUnaryExpr, ("**") ^^
@@ -282,6 +280,9 @@ people intuitively use these operators.
   def parsePattern: Parser[Pattern] = parseTypedPattern
 
   
+  def parseRecordTypeEntry: Parser[(String, Type)] =
+    (ident <~~ "::") ~~ parseType ^^ { case x ~ t => (x,t) }  
+  
   def parseType: Parser[Type] = (
         "Top" -> Top
       | "Bot" -> Bot
@@ -293,6 +294,7 @@ people intuitively use these operators.
           }
         }
       | TupleOf(parseType) -> TupleType
+      | ("{." ~~> CommaSeparated(parseRecordTypeEntry) <~~ ".}") -> RecordType
       | "lambda" ~> ((ListOf(parseTypeVariable)?) ^^ {_.getOrElse(Nil)}) ~ (TupleOf(parseType)+) ~ parseReturnType -> LambdaType
   )
 

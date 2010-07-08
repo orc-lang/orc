@@ -101,6 +101,7 @@ case class Top() extends Type
 case class Bot() extends Type
 case class TypeVar(index: Int) extends Type
 case class TupleType(elements: List[Type]) extends Type
+case class RecordType(entries: Map[String,Type]) extends Type
 case class TypeApplication(tycon: Int, typeactuals: List[Type]) extends Type
 case class AssertedType(assertedType: Type) extends Type	
 case class FunctionType(typeFormalArity: Int, argTypes: List[Type], returnType: Type) extends Type
@@ -187,6 +188,10 @@ object AddNames {
         named.FunctionType(typeformals, newArgTypes, newReturnType)
       } 
       case TupleType(elements) => named.TupleType(elements map toType)
+      case RecordType(entries) => {
+        val newEntries = entries map { case (s,t) => (s, toType(t)) }
+        named.RecordType(newEntries)
+      }
       case TypeApplication(i, typeactuals) => {
         val tycon = typecontext(i)
         val newTypeActuals = typeactuals map toType
