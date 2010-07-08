@@ -19,8 +19,6 @@ import orc.oil.named._
 import orc.lib.builtin._
 import orc.oil._
 import orc.compile.ext
-import orc.values.Value
-import orc.values.Literal
 import orc.values.Signal
 import orc.values.sites.Site
 
@@ -52,7 +50,7 @@ object PrimitiveForms {
 		getExtractor > extractor > invokeExtractor
 	}
 	
-	def makeNth(a : Argument, i : Int) = Call(a, List(Constant(Literal(i))), None)
+	def makeNth(a : Argument, i : Int) = Call(a, List(Constant(BigInt(i))), None)
 	
 	def makeLet(args: List[Argument]): Expression = {
 		args match {
@@ -79,7 +77,7 @@ object PrimitiveForms {
 	  val datatypeSite = Constant(DatatypeBuilder)
 	  val datatypePairs = 
 	    for (ext.Constructor(name, types) <- constructors) yield 
-          { makeTuple(List(Constant(Literal(name)), Constant(Literal(types.size)))) }
+          { makeTuple(List(Constant(name), Constant(BigInt(types.size)))) }
       val pairsVar = new TempVar()
       
       Translator.unfold(datatypePairs, makeTuple) > pairsVar > 

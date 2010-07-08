@@ -31,7 +31,7 @@ sealed abstract class Expression extends AST {
 }
 
 case class Stop() extends Expression
-case class Constant(c: Any) extends Expression
+case class Constant(c: AnyRef) extends Expression
 case class Variable(name: String) extends Expression
 case class TupleExpr(elements: List[Expression]) extends Expression
 case class ListExpr(elements: List[Expression]) extends Expression
@@ -108,7 +108,7 @@ case class VariablePattern(name: String) extends NonStrictPattern
 sealed abstract class StrictPattern extends Pattern {
 	val isStrict = true
 }
-case class ConstantPattern(c: Any) extends StrictPattern
+case class ConstantPattern(c: AnyRef) extends StrictPattern
 case class TuplePattern(elements: List[Pattern]) extends StrictPattern
 case class ListPattern(elements: List[Pattern]) extends StrictPattern
 case class CallPattern(name: String, args: List[Pattern]) extends StrictPattern

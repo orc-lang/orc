@@ -25,9 +25,8 @@ import orc.values.sites.Site
 import orc.values.sites.OrcSiteForm
 import orc.values.sites.JavaSiteForm
 import orc.OrcOptions
-import orc.values.Value
-import orc.values.Literal
 import orc.values.Field
+import orc.values.Signal
 
 import orc.compile.translate.PrimitiveForms._
 
@@ -61,10 +60,7 @@ object Translator {
 	def convert(e : ext.Expression): named.Expression = {
 			e -> {
 				case ext.Stop() => Stop()
-				case ext.Constant(c) => c match {
-					case (v: Value) => Constant(v)
-					case lit => Constant(Literal(lit))
-				}
+				case ext.Constant(c) => Constant(c)
 				case ext.Variable(x) => new NamedVar(x)
 				case ext.TupleExpr(es) => {
 				  if (es.size < 2) { 
@@ -484,7 +480,7 @@ object Translator {
 				case ext.Wildcard() => (Nil, Nil)
 				case ext.ConstantPattern(c) => {
 					val b = new TempVar()
-				    val testexpr = callEq(x, Constant(Literal(c))) > b > callIfT(b)
+				    val testexpr = callEq(x, Constant(c)) > b > callIfT(b)
 					val guard = (testexpr, new TempVar())
 					(List(guard), Nil)
 				}
@@ -492,6 +488,7 @@ object Translator {
 					val binding = (x, name)
 					(Nil, List(binding))
 				}
+				case ext.TuplePattern(Nil) => decomposePattern(ext.ConstantPattern(Signal), x)
 				case ext.TuplePattern(List(p)) => decomposePattern(p,x)
 				case ext.TuplePattern(ps) => {
 				    val vars = (for (_ <- ps) yield new TempVar()).toList
@@ -501,7 +498,7 @@ object Translator {
 					val subBindings = subBindingsList.flatten
 					
 					/* Test that the pattern's size matches the source tuple's size */
-				    val testSizeExpr = callTupleArityChecker(x,Constant(Literal(vars.size)))
+				    val testSizeExpr = callTupleArityChecker(x,Constant(BigInt(vars.size)))
 					val testSize = (testSizeExpr,new TempVar())
 					
 					var computeElements: List[(Expression, TempVar)] = Nil

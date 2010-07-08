@@ -18,7 +18,7 @@ package test.orc
 import orc.run.Orc
 import orc.run.StandardOrcExecution
 import orc.oil.nameless.Expression
-import orc.values.Value
+import orc.values.Format
 import orc.values.sites.Site
 import java.lang._
 
@@ -27,7 +27,11 @@ class OrcEngine {
   val out = new StringBuffer("")
 
   val orcRuntime = new StandardOrcExecution {
-    override def emit(v: Value) { println(v); out.append(v.toOrcSyntax()+"\n") }
+    override def emit(v: AnyRef) {
+      val vf = Format.formatValue(v)
+      println(vf)
+      out.append(vf + "\n") 
+    }
     override def expressionPrinted(s: String) { print(s); out.append(s) }
     override def caught(e: Throwable) {
       // TODO: Make this less simplistic (while keeping it robust)

@@ -13,8 +13,6 @@
 
 package orc.lib.bool
 
-import orc.values.Value
-import orc.values.Literal
 import orc.values.sites.TotalSite
 import orc.values.sites.UntypedSite
 import orc.error.runtime.ArityMismatchException
@@ -25,11 +23,10 @@ import orc.error.runtime.ArgumentTypeMismatchException
  */
 object Not extends TotalSite with UntypedSite {
   override def name = "Not"
-  def evaluate(args: List[Value]) =
+  def evaluate(args: List[AnyRef]) =
     args match {
-      case List(Literal(true)) => Literal(false)
-      case List(Literal(false)) => Literal(true)
+      case List(b : java.lang.Boolean) => new java.lang.Boolean(!b.booleanValue) 
       case List(a) => throw new ArgumentTypeMismatchException(0, "Boolean", a.getClass().toString())
       case _ => throw new ArityMismatchException(1, args.size)
-  }
+    }
 }

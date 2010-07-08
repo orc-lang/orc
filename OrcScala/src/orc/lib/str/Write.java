@@ -24,16 +24,11 @@ import orc.values.sites.compatibility.type.structured.ArrowType;
  * @author quark
  */
 public class Write extends EvalSite {
+  
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
       Object v = args.getArg(0);
-      if (v == null) {
-          return "null";
-      } else if (v instanceof String) {
-          return '"' + ((String)v).replace("\"", "\\\"").replace("\f", "\\f").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t") + '"';
-      } else {
-          return v.toString();
-      }
+      return orc.values.Format.formatValue(v);
 	}
 
 	@Override

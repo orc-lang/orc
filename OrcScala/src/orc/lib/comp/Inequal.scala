@@ -16,8 +16,6 @@
 package orc.lib.comp
 
 import scala.Integer
-import orc.values.Value
-import orc.values.Literal
 import orc.values.sites.TotalSite
 import orc.values.sites.UntypedSite
 import orc.error.runtime.ArityMismatchException
@@ -28,9 +26,9 @@ import orc.error.runtime.ArgumentTypeMismatchException
  */
 object Inequal extends TotalSite with UntypedSite {
   override def name = "Inequal"
-  def evaluate(args: List[Value]) =
+  def evaluate(args: List[AnyRef]) =
     args match {
-      case List(a,b) => Literal(!(a equals b))
+      case List(a,b) => new java.lang.Boolean(!(a equals b))
       case _ => throw new ArityMismatchException(2, args.size)
   }
 }

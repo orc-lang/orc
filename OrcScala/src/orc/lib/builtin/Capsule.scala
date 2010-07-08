@@ -16,7 +16,7 @@ import orc.oil.nameless.Constant
 
 object SiteSite extends TotalSite with UntypedSite {
   override def name = "Site"
-  def evaluate(args: List[Value]) =
+  def evaluate(args: List[AnyRef]) =
     args match {
       case List(clo : Closure) => new Capsule(clo)
       case List(a) => throw new ArgumentTypeMismatchException(0, "Closure", a.getClass().toString())
@@ -30,7 +30,7 @@ class Capsule(clo: Closure) extends UntypedSite with StandardOrcExecution {
   
   override def name = "_capsule_"
     
-  def call(args: List[Value], caller: TokenAPI) {
+  def call(args: List[AnyRef], caller: TokenAPI) {
     val exec = new CapsuleExecution(caller)
     val node = Call(Constant(clo), args map Constant, Some(Nil))
     val t = new Token(node, exec)
@@ -41,16 +41,26 @@ class Capsule(clo: Closure) extends UntypedSite with StandardOrcExecution {
     
     var listener: Option[TokenAPI] = Some(caller)
     
-    override def publish(t: Capsule.this.Token, v: Value) { 
+    override def publish(t: Capsule.this.Token, v: AnyRef) { 
+      listener match {
+        case Some(l) => {
+          listener = None
+          l.publish(v)
+        }
+        case None => { } 
+      }
       t.halt
-      listener foreach { _.publish(v) }
-      listener = None
     }
     
     override def onHalt {
       halted
-      listener foreach { _.halt }
-      listener = None
+      listener match {
+        case Some(l) => {
+          listener = None
+          l.halt
+        }
+        case None => { } 
+      }
     }
     
   }

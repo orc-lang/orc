@@ -1,28 +1,28 @@
 package orc.run
 
 import orc.values.sites.Site
-import orc.values.Value
+import orc.values.OrcValue
 import orc.error.OrcException
 import scala.concurrent.SyncVar
 import orc.values.sites.compatibility.ArrayProxy
 import orc.values.sites.JavaObjectProxy
 import orc.error.runtime.JavaException
 import orc.error.runtime.UncallableValueException
-import orc.values.Literal
 import orc.TokenAPI
 import orc.OrcExecutionAPI
+import orc.values.Format
 
 
 trait InvocationBehavior extends OrcExecutionAPI {
   /* By default, an invocation halts silently. This will be overridden by other traits. */
-  def invoke(t: TokenAPI, v: Value, vs: List[Value]): Unit = { t.halt }
+  def invoke(t: TokenAPI, v: AnyRef, vs: List[AnyRef]): Unit = { t.halt }
 }
 
 
 trait DefaultInvocationRaisesError extends InvocationBehavior {
   /* This replaces the default behavior because it does not call super */
-  override def invoke(t: TokenAPI, v: Value, vs: List[Value]) {
-    val error = "You can't call the "+v.getClass().getName()+" \""+v.toString()+"\""
+  override def invoke(t: TokenAPI, v: AnyRef, vs: List[AnyRef]) {
+    val error = "You can't call the "+v.getClass().getName()+" \" "+Format.formatValue(v)+" \""
     t !! new UncallableValueException(error)
   }
 }
@@ -31,11 +31,11 @@ trait DefaultInvocationRaisesError extends InvocationBehavior {
 // TODO: Move functionality of JavaObjectProxy class into this trait
 trait JavaObjectInvocation extends InvocationBehavior {
   
-  override def invoke(t: TokenAPI, v: Value, vs: List[Value]) { 
+  override def invoke(t: TokenAPI, v: AnyRef, vs: List[AnyRef]) { 
     v match {
-      case Literal(l : Array[Any]) => invoke(t, JavaObjectProxy(new ArrayProxy(l)), vs)
-      case Literal(obj : AnyRef) => invoke(t, JavaObjectProxy(obj), vs)
-      case _ => super.invoke(t, v, vs)
+      case v : OrcValue => super.invoke(t, v, vs) // TODO: Make this orcvalue/javavalue distinction clearer
+      case l : Array[Any] => invoke(t, JavaObjectProxy(new ArrayProxy(l)), vs)
+      case obj => invoke(t, JavaObjectProxy(obj), vs)
    }
   }
 
@@ -43,7 +43,7 @@ trait JavaObjectInvocation extends InvocationBehavior {
   
 
 trait SiteInvocation extends InvocationBehavior {  
-  override def invoke(t: TokenAPI, v: Value, vs: List[Value]) {
+  override def invoke(t: TokenAPI, v: AnyRef, vs: List[AnyRef]) {
     v match {
       case (s: Site) => 
         try {
@@ -51,7 +51,7 @@ trait SiteInvocation extends InvocationBehavior {
         }
         catch {
           case e: OrcException => t !! e
-          case e: Exception => t !! (new JavaException(e))
+          case e: Exception => t !! new JavaException(e)
         }
       case _ => super.invoke(t, v, vs)
     }
@@ -61,7 +61,9 @@ trait SiteInvocation extends InvocationBehavior {
 
 
 trait PublishToConsole extends Orc {
-  override def emit(v: Value) { print("Published: " + v + "   = " + v.toOrcSyntax() + "\n") }
+  override def emit(v: AnyRef) { 
+    print("Published: " + Format.formatValue(v) + "\n") 
+  }
 }
 
 
@@ -109,7 +111,7 @@ trait StandardOrcExecution extends Orc
 with StandardOrcInvoke
 with ActorScheduler
 {
-  def emit(v : Value) = { /* By default, ignore toplevel publications */ }
+  def emit(v : AnyRef) = { /* By default, ignore toplevel publications */ }
   def expressionPrinted(s: String) { print(s) }
   def caught(e: Throwable) { 
     e match {

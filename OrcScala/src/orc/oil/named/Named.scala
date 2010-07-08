@@ -235,7 +235,7 @@ case class DeclareType(name: TempTypevar, t: Type, body: Expression) extends Exp
 case class HasType(body: Expression, expectedType: Type) extends Expression
 
 sealed abstract class Argument extends Expression
-case class Constant(value: Value) extends Argument
+case class Constant(value: AnyRef) extends Argument
 
 
 sealed case class Def(name: TempVar, formals: List[TempVar], body: Expression, typeformals: List[TempTypevar], argtypes: Option[List[Type]], returntype: Option[Type]) 
