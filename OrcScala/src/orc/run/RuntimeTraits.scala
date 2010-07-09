@@ -3,7 +3,6 @@ package orc.run
 import orc.values.sites.Site
 import orc.values.OrcValue
 import orc.error.OrcException
-import orc.values.sites.compatibility.ArrayProxy
 import orc.values.sites.JavaObjectProxy
 import orc.error.runtime.JavaException
 import orc.error.runtime.UncallableValueException
@@ -36,18 +35,6 @@ trait SupportForJavaObjectInvocation extends InvocationBehavior {
     v match {
       case v : OrcValue => super.invoke(t, v, vs)
       case obj => invoke(t, JavaObjectProxy(obj), vs)
-    }
-  }
-
-}
-
-
-trait SupportForJavaArrayAccess extends InvocationBehavior {
-  
-  override def invoke(t: TokenAPI, v: AnyRef, vs: List[AnyRef]) { 
-    v match {
-      case l : Array[Any] => invoke(t, JavaObjectProxy(new ArrayProxy(l)), vs)
-      case other => super.invoke(t, other, vs)
     }
   }
 
@@ -108,7 +95,6 @@ trait StandardInvocationSemantics extends InvocationBehavior
 with ErrorOnUndefinedInvocation
 with SupportForSiteInvocation
 with SupportForJavaObjectInvocation
-with SupportForJavaArrayAccess
 
   
 class StandardOrcRuntime extends OrcRuntime
