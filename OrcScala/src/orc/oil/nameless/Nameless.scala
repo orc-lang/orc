@@ -75,6 +75,49 @@ sealed abstract class Expression extends NamelessAST with hasFreeVars with Namel
     }
   }
   
+  /**
+   * 
+   * Substitute values for variables in a nameless expression.
+   * The context ctx is a stack of optional bindings.
+   * The binding is Some(v) if the variable at that depth is to be replaced by v.
+   * The binding is None if the variable at that depth is to remain unchanged.
+   * 
+   */
+  def subst(ctx: List[Option[AnyRef]]): Expression = {
+    this match {
+      case Stop() => Stop()
+      case Constant(v) => Constant(v)
+      case Variable(i) => 
+        if (i < ctx.size) {
+          ctx(i) match {
+            case Some(v) => Constant(v)
+            case None => Variable(i)
+          }
+        }
+        else {
+          Variable(i)
+        }
+      case Call(target, args, typeArgs) => {
+        Call(target.subst(ctx).asInstanceOf[Argument], args map { _.subst(ctx).asInstanceOf[Argument] }, typeArgs)  
+      }
+      case f || g => f.subst(ctx) || g.subst(ctx)
+      case f >> g => f.subst(ctx) >> g.subst(None::ctx)
+      case f << g => f.subst(None::ctx) << g.subst(ctx)
+      case f ow g => f.subst(ctx) ow g.subst(ctx)
+      case DeclareDefs(openvars, defs, body) => {
+        val newctx = ( for (_ <- defs) yield None ).toList ::: ctx
+        val newdefs = {
+          val defctx = ( for (_ <- openvars) yield None ).toList ::: newctx
+          defs map { _.subst(defctx) }
+        }
+        val newbody = body.subst(newctx)
+        DeclareDefs(openvars, newdefs, newbody)
+      }
+      case HasType(body,t) => HasType(body.subst(ctx), t)
+      case DeclareType(t,body) => DeclareType(t, body.subst(ctx))
+    }
+  }
+  
   lazy val withNames: named.Expression = AddNames.namelessToNamed(this, Nil, Nil)
   
   def prettyprint() = this.withNames.prettyprint()
@@ -113,6 +156,11 @@ case class VariantType(variants: List[(String, List[Option[Type]])]) extends Typ
 sealed case class Def(typeFormalArity: Int, arity: Int, body: Expression, argTypes: Option[List[Type]], returnType: Option[Type]) extends NamelessAST with hasFreeVars {
   /* Get the free vars of the body, then bind the arguments */
   lazy val freevars: Set[Int] = shift(body.freevars, arity)
+  
+  def subst(ctx: List[Option[AnyRef]]): Def = {
+    val newctx = ( for (_ <- List.range(0, arity)) yield None ).toList ::: ctx
+    Def(typeFormalArity, arity, body.subst(newctx), argTypes, returnType)
+  }
 }
 
 

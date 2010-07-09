@@ -425,7 +425,7 @@ trait Orc extends OrcRuntime {
               vs: List[AnyRef] => {
                 var context: List[AnyRef] = vs
                 
-                val cs = defs map ( (d: Def) => new Closure(d) )
+                val cs = defs map ( (d: Def) => new Closure(d, defs) )
                 for (c <- cs) { bind(BoundValue(c)); context = c :: context }
                 for (c <- cs) { c.context = context }
                 

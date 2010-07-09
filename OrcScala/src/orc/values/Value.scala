@@ -25,7 +25,9 @@ import orc.oil.nameless.Expression
 import orc.lib.builtin.DataSite
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
-
+import orc.oil.nameless.AddNames
+import orc.oil.named.PrettyPrint
+import orc.oil.named.TempVar
 
 trait OrcValue extends AnyRef {
   def toOrcSyntax(): String = super.toString() 
@@ -77,12 +79,27 @@ case class OrcTuple(values: List[AnyRef]) extends PartialSite with UntypedSite {
 }
 
 // Closures //
-class Closure(d: Def) extends OrcValue {
+class Closure(d: Def, ds: List[Def]) extends OrcValue {
     val arity: Int = d.arity
     val body: Expression = d.body
     var context: List[AnyRef] = Nil
     
-    override def toOrcSyntax() = "closure"
+    override def toOrcSyntax() = {
+      val (defs, rest) = context.splitAt(ds.size)
+      val newctx = (defs map {_ => None}) ::: (rest map { Some(_) })
+      val subdef = d.subst(newctx)
+      val myName = new TempVar()
+      val defNames = 
+        for (d <- defs) yield 
+          if (d == this) { myName } else { new TempVar() }
+      val namedDef = AddNames.namelessToNamed(myName, subdef, defNames, Nil)
+      val pp = new PrettyPrint()
+      "lambda" +
+        pp.reduce(namedDef.name) + 
+          pp.paren(namedDef.formals) + 
+            " = " + 
+              pp.reduce(namedDef.body)
+    }
 }
 object Closure {
     def unapply(c: Closure) = Some((c.arity, c.body, c.context))
