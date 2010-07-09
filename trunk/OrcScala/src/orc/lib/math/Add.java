@@ -74,17 +74,25 @@ public class Add extends EvalSite {
 		try {
 			return Args.applyNumericOperator(args.numberArg(0), args.numberArg(1), op);
 		} catch (final TokenException _1) {
-			// If the arguments aren't both numbers, maybe
-			// one or the other is a string
-			try {
-				// the first argument is a string
-				final String a = args.stringArg(0);
-				return a + String.valueOf(args.getArg(1));
-			} catch (final TokenException _2) {
-				// the second argument is a string
-				final String b = args.stringArg(1);
-				return String.valueOf(args.getArg(0)) + b;
-			}
+		    try { 
+		      orc.values.OrcRecord a = (orc.values.OrcRecord)args.getArg(0);
+		      orc.values.OrcRecord b = (orc.values.OrcRecord)args.getArg(1);
+		      return a.extendWith(b);
+		    }
+		    catch (final ClassCastException _2)
+		    {
+    			// If the arguments aren't both numbers or records, maybe
+    			// one or the other is a string
+    			try {
+    				// the first argument is a string
+    				final String a = args.stringArg(0);
+    				return a + String.valueOf(args.getArg(1));
+    			} catch (final TokenException _3) {
+    				// the second argument is a string
+    				final String b = args.stringArg(1);
+    				return String.valueOf(args.getArg(0)) + b;
+    			}
+		    }
 		}
 	}
 
