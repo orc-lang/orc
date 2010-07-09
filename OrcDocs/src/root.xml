@@ -7094,7 +7094,7 @@ example, <code>site Foo()() :: Top</code> is equivalent to
 <entry></entry>
 <entry>|</entry>
 
-<entry><code>def</code> X<code>(</code> P <code>,</code> ... <code>,</code> P <code>)</code> <code>=</code> E</entry>
+<entry><code>def</code> X<code>(</code> P <code>,</code> ... <code>,</code> P <code>)</code>+ <code>::</code> T <code>=</code> E</entry>
 
 <entry></entry>
 <entry><emphasis>function declaration</emphasis></entry>
@@ -7104,7 +7104,7 @@ example, <code>site Foo()() :: Top</code> is equivalent to
 <entry></entry>
 <entry>|</entry>
 
-<entry><code>def</code> X<code>[</code> X <code>,</code> ... <code>,</code> X <code>]</code><code>(</code> T <code>,</code> ... <code>,</code> T <code>)</code> <code>::</code> T</entry>
+<entry><code>def</code> X<code>[</code> X <code>,</code> ... <code>,</code> X <code>]</code><code>(</code> T <code>,</code> ... <code>,</code> T <code>)</code>+ <code>::</code> T</entry>
 
 <entry></entry>
 <entry><emphasis>function signature</emphasis></entry>
