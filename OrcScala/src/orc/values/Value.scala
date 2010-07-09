@@ -26,8 +26,6 @@ import orc.lib.builtin.DataSite
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
 
-import scala.collection.mutable.Map
-
 
 trait OrcValue extends AnyRef {
   def toOrcSyntax(): String = super.toString() 
@@ -91,7 +89,7 @@ object Closure {
 }
 
 // Records.
-case class OrcRecord(entries: Map[String,AnyRef]) extends PartialSite with UntypedSite {
+case class OrcRecord(entries: scala.collection.mutable.Map[String,AnyRef]) extends PartialSite with UntypedSite {
   override def evaluate(args: List[AnyRef]) = 
     args match {
       case List(Field(name)) => entries.get(name)
@@ -111,7 +109,18 @@ case class OrcRecord(entries: Map[String,AnyRef]) extends PartialSite with Untyp
       }
     "{. " + contents + " .}"
   }
+  
+  /* Create a new record, extending this record with the bindings of the other record.
+   * When there is overlap, the other record's bindings override this record.
+   */
+  def +(other: OrcRecord): OrcRecord = {
+    val empty = this.entries.empty
+    OrcRecord(empty ++ this.entries ++ other.entries)
+  }
 
+  /* Aliased for easier use in Java code */
+  def extendWith(other: OrcRecord): OrcRecord = this + other
+  
 }
 
 // TODO: Move this functionality somewhere more appropriate

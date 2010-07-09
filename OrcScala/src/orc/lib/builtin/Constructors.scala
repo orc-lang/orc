@@ -61,13 +61,17 @@ object RecordConstructor extends TotalSite with UntypedSite {
   override def name = "Record"
   override def evaluate(args: List[AnyRef]) = {
     val valueMap = new scala.collection.mutable.HashMap[String,AnyRef]()
-    args map {
-          case OrcTuple(List(key: String, value : AnyRef)) =>
-            valueMap += ( (key,value) )
-          case v => throw new ArgumentTypeMismatchException(1, "OrcTuple(String,AnyRef)", v.getClass().toString())
-        }
+    args.zipWithIndex map
+      { case (v: AnyRef, i: Int) =>
+          v match {
+            case OrcTuple(List(key: String, value : AnyRef)) =>
+              valueMap += ( (key,value) )
+            case _ => throw new ArgumentTypeMismatchException(i, "(String, AnyRef)", v.getClass().toString())
+          }
+      }
     OrcRecord(valueMap)
   }
+  
 }
 
 
