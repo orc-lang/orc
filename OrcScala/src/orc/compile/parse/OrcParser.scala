@@ -52,8 +52,8 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
     elem("number", _.isInstanceOf[FloatingPointLit]) ^^ (_.chars)
 
   def parseValue: Parser[AnyRef] = (
-        "true" ^^^ (new java.lang.Boolean(true))
-      | "false" ^^^ (new java.lang.Boolean(false))
+        "true" ^^^ java.lang.Boolean.TRUE
+      | "false" ^^^ java.lang.Boolean.FALSE
       | "signal" ^^^ orc.values.Signal
       | stringLit
       | numericLit ^^ { BigInt(_) }
