@@ -9,7 +9,7 @@ import orc.TokenAPI
 import orc.oil.nameless.Expression
 import orc.oil.nameless.Call
 import orc.oil.nameless.Constant
-import orc.run.SupportForCapsules
+import orc.run.extensions.SupportForCapsules
 import orc.error.OrcException
 
 // Site site

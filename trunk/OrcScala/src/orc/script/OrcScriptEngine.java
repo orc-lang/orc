@@ -27,7 +27,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 
-import orc.run.SupportForSynchronousExecution;
+import orc.run.extensions.SupportForSynchronousExecution;
 import orc.OrcRuntimeProvides;
 import orc.run.StandardOrcRuntime;
 import orc.OrcCompilerProvides;

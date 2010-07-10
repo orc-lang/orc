@@ -34,8 +34,6 @@ import scala.collection.mutable.Set
 
 trait Orc extends OrcRuntime {
   
-  
-  
   def run(node: Expression, k: OrcEvent => Unit) {
     val exec = new Execution(k)
     val t = new Token(node, exec)

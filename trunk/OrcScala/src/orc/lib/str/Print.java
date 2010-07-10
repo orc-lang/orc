@@ -15,7 +15,7 @@ package orc.lib.str;
 
 import orc.TokenAPI;
 import orc.error.runtime.TokenException;
-import orc.run.SupportForStdout;
+import orc.run.extensions.SupportForStdout;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.SiteAdaptor;
 import orc.values.sites.compatibility.type.Type;

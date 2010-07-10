@@ -22,7 +22,7 @@ import orc.types.Type;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
-import orc.run.SupportForRtimer;
+import orc.run.extensions.SupportForRtimer;
 
 /**
  * Implements the RTimer site
