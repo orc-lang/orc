@@ -30,6 +30,7 @@ trait hasFreeVars {
 }
 
 sealed abstract class NamelessAST extends AST {
+  
   override val subtrees: List[NamelessAST] = this match {
     case Call(target, args, typeargs) => target :: ( args ::: typeargs.toList.flatten )
     case left || right => List(left, right)

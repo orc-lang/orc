@@ -15,17 +15,11 @@
 
 package orc.oil.named
 
-import scala.collection.mutable.LinkedList
+
 
 import orc.oil._
 import orc.values.Value
 import orc.AST
-
-// The supertype of all variable binding nodes
-sealed trait Scope
-// The supertype of all type variable binding nodes
-sealed trait TypeScope
-
 
 trait Var extends Argument
 class BoundVar(val optionalName : Option[String] = None) extends Var {
@@ -38,6 +32,11 @@ class BoundTypevar(val optionalName : Option[String] = None) extends Typevar {
   def this(name: String) = this(Some(name))
 }
 case class UnboundTypevar(name : String) extends Typevar
+
+// The supertype of all variable binding nodes
+sealed trait Scope
+// The supertype of all type variable binding nodes
+sealed trait TypeScope
 
 
 trait hasFreeVars {
@@ -138,7 +137,7 @@ with TypeSubstitution[Expression]
       case DeclareDefs(defs, body) => DeclareDefs(defs map { _ remapArgument f }, body remapArgument f)
       case DeclareType(u, t, body) => DeclareType(u, t, body remapArgument f)
       case HasType(body, expectedType) => HasType(body remapArgument f, expectedType)
-    } setPos pos
+    }
     
   def remapType(f: Typevar => Type): Expression = 
     this -> {
@@ -152,7 +151,7 @@ with TypeSubstitution[Expression]
       case DeclareDefs(defs, body) => DeclareDefs(defs map { _ remapType f }, body remapType f)
       case DeclareType(u, t, body) => DeclareType(u, t remapType f, body remapType f)
       case HasType(body, expectedType) => HasType(body remapType f, expectedType remapType f)
-    } setPos pos
+    }
   
     
     
@@ -570,111 +569,4 @@ trait TypeSubstitution[X] extends NamedAST with hasTypeRemap[X] {
     
 }
 
-object DefFractioner {
-    /**
-     * Divides a list of defs into a list of mutually recursive (sub)lists
-     * of defs. The return list is ordered such that no mutually recursive
-     * sub-list has references to definitions in the mutually recursive
-     * sub-lists that follow it. 
-     */
-    def fraction(decls: List[Def]): LinkedList[List[Def]] = {
-      if(decls.size == 1)
-         return new LinkedList(decls,LinkedList.empty)
-         
-      val nodes = for(d <- decls) yield new Node(d)
-      val g = new Graph(nodes)
-       
-      // Add edges in the graph.
-      for{ n1 <- g.nodes 
-           n2 <- g.nodes
-           if (n1 != n2)
-         } {
-         val def1 = n1.elem 
-         val def2 = n2.elem
-         if (def1.freevars contains def2.name) {
-           // Add Def (its node) points to other Defs that it refers to
-           g.addEdge(n1,n2)
-         }
-      }
-
-      /* Do a DFS on the graph, ignoring the resulting forest*/
-      g.depthSearch(Direction.Forward)
-      /* Sort the elements of the graph in decreasing order
-       * of their finish times. */
-      g.sort 
-      /* Do a second DFS, on the complement of the original graph
-       * (i.e, do a backward DFS). The result is a topologically
-       * sorted collection of mutually recursive definitions */ 
-      val forest:LinkedList[List[Node[Def]]] = g.depthSearch(Direction.Backward)
-      // Extract the Defs from the Nodes.
-      forest map {
-         case l: List[Node[Def]] => l map {(n: Node[Def]) => n.elem}
-      }
-    }
-}
     
- class Graph[T](var nodes: List[Node[T]]) {
-      
-     def addEdge(from: Node[T], to: Node[T]) {
-        from.succs = to :: from.succs
-        to.precs = from :: to.precs
-      }
-
-     def depthSearch(dir: Direction.Value): LinkedList[List[Node[T]]] = {
-       var time = 0
-       
-       def search(node: Node[T], tree: List[Node[T]] ): List[Node[T]] = {
-         var resultTree = node :: tree
-         time = time + 1
-         node.startTime = Some(time)
-         var nextNodes = if (dir == Direction.Forward) { node.succs } else { node.precs }
-         for (next <- nextNodes) {
-           next.startTime match {
-             case None => { resultTree = search(next,resultTree) }
-             case Some(i) => {}
-           }
-         }
-         time = time + 1
-         node.finishTime = Some(time)
-         resultTree
-       }
-       
-       clear
-       var forest: LinkedList[List[Node[T]]] = LinkedList.empty
-       for (n <- nodes) {
-         n.startTime match {
-           case None => { forest = new LinkedList(search(n,Nil),forest) }
-           case Some(i) => {}
-         }
-       }
-       forest
-     }
-     
-     def sort {
-       nodes = nodes sortWith { (n1: Node[T], n2: Node[T]) => 
-         (n1.finishTime ,n2.finishTime ) match {
-           case (Some(i), Some(j)) => i > j
-           case _ => false // !! Shd not occur.
-         }
-       }
-     }
-     
-     def clear {
-       for(n <- nodes) {
-           n.startTime = None
-           n.finishTime = None
-       }
-     }
-    }
-
-    object Direction extends Enumeration {
-         type Direction = Value
-         val Forward, Backward = Value
-    }
-    
-    class Node[T](val elem: T) {
-        var startTime:  Option[Int] = None   // Start time of the DFS for this node
-        var finishTime: Option[Int] = None   // End time of the DFS for this node
-        var succs:      List[Node[T]] = Nil
-        var precs:      List[Node[T]] = Nil
-    }

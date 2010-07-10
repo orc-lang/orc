@@ -29,7 +29,7 @@ import scala.compat.Platform.currentTime
  * Need one OrcParser instance for every parse.
  * (Limitation of scala.util.parsing.combinator.Parsers -- current parsing state kept in fields.)
  *
- * @author dkitchin
+ * @author dkitchin, amshali, srosario, jthywiss
  */
 class OrcParser(options: OrcOptions) extends StandardTokenParsers {
   import lexical.{Keyword, FloatingPointLit}
