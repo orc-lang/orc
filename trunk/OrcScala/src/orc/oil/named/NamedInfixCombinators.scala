@@ -21,17 +21,17 @@ trait NamedInfixCombinators {
 	
 	def ||(g: Expression) = Parallel(this,g)
 	
-	def >>(g : Expression) = Sequence(this, new TempVar(), g)
+	def >>(g : Expression) = Sequence(this, new BoundVar(), g)
 	
-	def >(x : TempVar) =
+	def >(x : BoundVar) =
 		new {
 			def >(g: Expression) = Sequence(NamedInfixCombinators.this, x, g)
 		}
 	
 		
-    def <<(g : Expression) = Prune(this, new TempVar(), g)
+    def <<(g : Expression) = Prune(this, new BoundVar(), g)
     
-	def <(x : TempVar) =
+	def <(x : BoundVar) =
 		new {
 			def <(g: Expression) = Prune(NamedInfixCombinators.this, x, g)
 		}
@@ -57,7 +57,7 @@ object > {
 			case _ => None
 		}
 	}
-	def unapply(p: (Expression, TempVar)) = Some(p)	
+	def unapply(p: (Expression, BoundVar)) = Some(p)	
 }
 
 object < {
@@ -67,7 +67,7 @@ object < {
 			case _ => None
 		}
 	}
-	def unapply(p: (Expression, TempVar)) = Some(p)	
+	def unapply(p: (Expression, BoundVar)) = Some(p)	
 }
 
 object ow {

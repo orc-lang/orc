@@ -29,15 +29,15 @@ import orc.values.Format
 
 class PrettyPrint {
     
-  val vars: Map[TempVar, String] = new HashMap()
+  val vars: Map[BoundVar, String] = new HashMap()
   var varCounter : Int = 0
   def newVarName() : String = { varCounter += 1 ; "`t" + varCounter }
-  def lookup(temp : TempVar) = vars.getOrElseUpdate(temp, newVarName())
+  def lookup(temp : BoundVar) = vars.getOrElseUpdate(temp, newVarName())
   
-  val typevars: Map[TempTypevar, String] = new HashMap()
+  val typevars: Map[BoundTypevar, String] = new HashMap()
   var typevarCounter : Int = 0
   def newTypevarName() : String = { typevarCounter += 1 ; "`T" + typevarCounter }
-  def lookup(temp : TempTypevar) = typevars.getOrElseUpdate(temp, newVarName())  
+  def lookup(temp : BoundTypevar) = typevars.getOrElseUpdate(temp, newVarName())  
   
   
 
@@ -83,9 +83,9 @@ class PrettyPrint {
       case HasType(body, expectedType) => "(" + reduce(body) + " :: " + reduce(expectedType) + ")"
       case DeclareType(u, t, body) => "type " + reduce(u) + " = " + reduce(t) + "\n" + reduce(body)
       case Constant(v) => Format.formatValue(v)
-      case (x: TempVar) => x.optionalName.getOrElse(lookup(x)) 
-      case NamedVar(s) => "?" + s  
-      case u: TempTypevar => u.optionalName.getOrElse(lookup(u))
+      case (x: BoundVar) => x.optionalName.getOrElse(lookup(x)) 
+      case UnboundVar(s) => "?" + s  
+      case u: BoundTypevar => u.optionalName.getOrElse(lookup(u))
       case Top() => "Top"
       case Bot() => "Bot"
       case FunctionType(typeformals, argtypes, returntype) => {
@@ -102,7 +102,7 @@ class PrettyPrint {
           name + (variant map {t: Option[Type] => (t map reduce).getOrElse("_")}).mkString(",")
         }).mkString(" | ")
       }
-      case NamedTypevar(s) => "?" + s
+      case UnboundTypevar(s) => "?" + s
       case _ => "???"
     }
 

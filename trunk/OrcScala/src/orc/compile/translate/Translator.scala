@@ -40,11 +40,11 @@ object Translator {
 		val namedAST = convert(extendedAST)
 	    //Console.err.println("Translation result: \n" + namedAST)
 		namedAST remapArgument {
-		  case x@ NamedVar(s) => x !! ("Unbound variable " + s)
+		  case x@ UnboundVar(s) => x !! ("Unbound variable " + s)
 		  case a => a 
 		}
 		namedAST remapType {
-		  case u@ NamedTypevar(s) => u !! ("Unbound type variable " + s)
+		  case u@ UnboundTypevar(s) => u !! ("Unbound type variable " + s)
 		  case t => t
 		}
 		
@@ -61,7 +61,7 @@ object Translator {
 			e -> {
 				case ext.Stop() => Stop()
 				case ext.Constant(c) => Constant(c)
-				case ext.Variable(x) => new NamedVar(x)
+				case ext.Variable(x) => new UnboundVar(x)
 				case ext.TupleExpr(es) => {
 				  if (es.size < 2) { 
 				    e !! "Malformed tuple expression; a tuple must contain at least 2 elements" 
@@ -91,13 +91,13 @@ object Translator {
 				case ext.Sequential(l, None, r) => convert(l) >> convert(r)
 				case ext.Sequential(l, Some(p), r) => {
 					val (filter, scope) = convertPattern(p)
-					val x = new TempVar()
+					val x = new BoundVar()
 					filter(convert(l)) > x > scope(x)(convert(r))
 				}
 				case ext.Pruning(l, None, r) => convert(l) << convert(r)
 				case ext.Pruning(l, Some(p), r) => {
 					val (filter, scope) = convertPattern(p)
-					val x = new TempVar()
+					val x = new BoundVar()
 					scope(x)(convert(l)) < x < filter(convert(r))
 				}
 				case ext.Parallel(l,r) => convert(l) || convert(r)
@@ -105,7 +105,7 @@ object Translator {
 				
 				case lambda : ext.Lambda => {
 				    val flatLambda = reduceParamLists(lambda)
-					val lambdaName = new TempVar()
+					val lambdaName = new BoundVar()
 					val newdef = AggregateDef(flatLambda).convert(lambdaName)
 					DeclareDefs(List(newdef), lambdaName)
 				}
@@ -115,8 +115,8 @@ object Translator {
 				    ext.Call(ext.Constant(builtin.SiteSite), List(ext.Args(None, List(capThunk)))), List(ext.Args(None, Nil))))
 				}
 				case ext.Conditional(ifE, thenE, elseE) => {
-					 val b = new TempVar()
-					 val nb = new TempVar()
+					 val b = new BoundVar()
+					 val nb = new BoundVar()
 					 (  callIfT(b) >> convert(thenE) 
 					 || callIfF(b) >> convert(elseE)	  
 				     )   < b < convert(ifE)
@@ -136,7 +136,7 @@ object Translator {
 				  convert(body).subst(site, name) 
 				}
 				case ext.Declare(ext.ClassImport(name, classname), body) => {
-				  val u = new TempTypevar()
+				  val u = new BoundTypevar()
 				  val site = Constant(JavaSiteForm.resolve(classname))
 				  val newbody = convert(body).subst(site, name).substType(u, name)
 				  DeclareType(u, ClassType(classname), newbody)
@@ -147,18 +147,18 @@ object Translator {
 				
 				
 				case ext.Declare(ext.TypeImport(name, classname), body) => {
-				  val u = new TempTypevar()
+				  val u = new BoundTypevar()
                   val newbody = convert(body).substType(u, name)
                   DeclareType(u, ImportedType(classname), newbody)
 				}
 				
 				case ext.Declare(ext.TypeAlias(name, typeformals, t), body) => {
-				  val u = new TempTypevar()
+				  val u = new BoundTypevar()
                   val newbody = convert(body).substType(u, name)
                   val newtype = typeformals match {
                      case Nil => convertType(t)
                      case _ => {
-                       val subs = for (tf <- typeformals) yield (new TempTypevar(), tf)
+                       val subs = for (tf <- typeformals) yield (new BoundTypevar(), tf)
                        val newTypeFormals = for ((w,_) <- subs) yield w
                        TypeAbstraction(newTypeFormals, convertType(t).substAllTypes(subs))
                      }
@@ -167,19 +167,19 @@ object Translator {
 				}
 				
 				case ext.Declare(ext.Datatype(name, typeformals, constructors), body) => {
-				  val d = new TempTypevar()
+				  val d = new BoundTypevar()
 				  var newbody = convert(body)
 				  
-				  val cs = new TempVar()
+				  val cs = new BoundVar()
 				  for ((ext.Constructor(name, _), i) <- constructors.zipWithIndex) {
-                      val x = new TempVar()
+                      val x = new BoundVar()
                       newbody = newbody.subst(x, name)
 				      newbody = newbody < x < makeNth(cs,i)
                     }
 				  newbody = newbody < cs < makeDatatype(d, constructors) 
 				  
 				  val variantType = { 
-                    val subs = for (tf <- typeformals) yield (new TempTypevar(), tf)
+                    val subs = for (tf <- typeformals) yield (new BoundTypevar(), tf)
                     val newTypeFormals = for ((w,_) <- subs) yield w
                     val variants = 
                       for (ext.Constructor(name, types) <- constructors) yield {
@@ -221,7 +221,7 @@ object Translator {
 				}
 				case g :: rest => {
 					val (args, bindRest) = expand(rest)
-					val x = new TempVar()
+					val x = new BoundVar()
 					(x :: args, bindRest(_) < x < g)
 				}
 				case Nil => (Nil, e => e)
@@ -241,7 +241,7 @@ object Translator {
            Call(target, List(Constant(Field(field))), None)
          }
          case ext.Dereference => {
-           val reader = new TempVar()
+           val reader = new BoundVar()
            Call(target, List(Constant(Field("read"))), None)  > reader >  Call(reader, Nil, None)
          }
       }
@@ -307,7 +307,7 @@ object Translator {
 
 		defsMap.values foreach { _.capsuleCheck }
 		
-		val namings = ( for (name <- defsMap.keys) yield (new TempVar(), name) ).toList
+		val namings = ( for (name <- defsMap.keys) yield (new BoundVar(), name) ).toList
 		val newdefs = for ((x, name) <- namings) yield {
 			defsMap(name).convert(x).substAll(namings)
 		}
@@ -381,7 +381,7 @@ object Translator {
 	 */
 	def convertType(t : ext.Type): named.Type = {
 		t -> {
-		    case ext.TypeVariable(name) => NamedTypevar(name)
+		    case ext.TypeVariable(name) => UnboundTypevar(name)
 			case ext.TupleType(ts) => TupleType(ts map convertType)
 			case ext.RecordType(entries) => {
 			  val emptyMap = new scala.collection.immutable.HashMap[String,Type]()
@@ -389,10 +389,10 @@ object Translator {
 			  RecordType(emptyMap ++ newEntries)
 			}
 			case ext.TypeApplication(name, typeactuals) => {
-				TypeApplication(new NamedTypevar(name), typeactuals map convertType)
+				TypeApplication(new UnboundTypevar(name), typeactuals map convertType)
 			}
 			case ext.LambdaType(typeformals, List(argtypes), returntype) => {
-				val subs = for (tf <- typeformals) yield (new TempTypevar(), tf)
+				val subs = for (tf <- typeformals) yield (new BoundTypevar(), tf)
 				val newTypeFormals = for ((u,_) <- subs) yield u
 				val newArgTypes = argtypes map { convertType(_).substAllTypes(subs) }
 				val newReturnType = convertType(returntype).substAllTypes(subs)
@@ -418,9 +418,9 @@ object Translator {
 	 *  	  result and then applied to the target
 	 *
 	 */
-	def convertPattern(p : ext.Pattern): (Expression => Expression, TempVar => Expression => Expression) = {
+	def convertPattern(p : ext.Pattern): (Expression => Expression, BoundVar => Expression => Expression) = {
 	
-		val sourceVar = new TempVar()
+		val sourceVar = new BoundVar()
 		val (computes, bindings) = decomposePattern(p, sourceVar) 
 		
 		/* Check for nonlinearity */
@@ -449,7 +449,7 @@ object Translator {
 		}
 				
 		/* Create scope function */
-		def scope(filterResult : TempVar)(e : Expression) = {
+		def scope(filterResult : BoundVar)(e : Expression) = {
 			val target = e.substAll(bindings)
 			neededResults match {
 			  case Nil => target
@@ -457,7 +457,7 @@ object Translator {
 			  case _ => {
 			    var newtarget = target
 			    for ((y, i) <- neededResults.zipWithIndex) {
-                  val z = new TempVar()
+                  val z = new BoundVar()
                   newtarget = newtarget.subst(z,y)  < z <  makeNth(filterResult, i)
                 }
 			    newtarget
@@ -478,15 +478,15 @@ object Translator {
 	 * and
 	 *  	A sequence of context bindings for the target expression.	
 	 */
-	type PatternDecomposition = (List[(Expression, TempVar)], List[(TempVar, String)])
+	type PatternDecomposition = (List[(Expression, BoundVar)], List[(BoundVar, String)])
 	
-	def decomposePattern(p : ext.Pattern, x: TempVar): PatternDecomposition = {
+	def decomposePattern(p : ext.Pattern, x: BoundVar): PatternDecomposition = {
 			p match {
 				case ext.Wildcard() => (Nil, Nil)
 				case ext.ConstantPattern(c) => {
-					val b = new TempVar()
+					val b = new BoundVar()
 				    val testexpr = callEq(x, Constant(c)) > b > callIfT(b)
-					val guard = (testexpr, new TempVar())
+					val guard = (testexpr, new BoundVar())
 					(List(guard), Nil)
 				}
 				case ext.VariablePattern(name) => {
@@ -496,7 +496,7 @@ object Translator {
 				case ext.TuplePattern(Nil) => decomposePattern(ext.ConstantPattern(Signal), x)
 				case ext.TuplePattern(List(p)) => decomposePattern(p,x)
 				case ext.TuplePattern(ps) => {
-				    val vars = (for (_ <- ps) yield new TempVar()).toList
+				    val vars = (for (_ <- ps) yield new BoundVar()).toList
 					val subResults = (ps, vars).zipped.map(decomposePattern)
 					val (subComputeList, subBindingsList) = subResults.unzip
 					val subComputes = subComputeList.flatten
@@ -504,16 +504,16 @@ object Translator {
 					
 					/* Test that the pattern's size matches the source tuple's size */
 				    val testSizeExpr = callTupleArityChecker(x,Constant(BigInt(vars.size)))
-					val testSize = (testSizeExpr,new TempVar())
+					val testSize = (testSizeExpr,new BoundVar())
 					
-					var computeElements: List[(Expression, TempVar)] = Nil
+					var computeElements: List[(Expression, BoundVar)] = Nil
 					for ((y, i) <- vars.zipWithIndex) {
 					  computeElements = (makeNth(x,i), y) :: computeElements
 					}					
 					(testSize :: computeElements ::: subComputes, subBindings)
 				}
 				case ext.ListPattern(Nil) => {
-				  val computeNil = (callIsNil(x),new TempVar())
+				  val computeNil = (callIsNil(x),new BoundVar())
 				  (List(computeNil), Nil)
 				}
 				case ext.ListPattern(ps) => {
@@ -522,14 +522,14 @@ object Translator {
 					decomposePattern(folded, x)
 				}
 				case ext.ConsPattern(ph,pt) => {
-					val y = new TempVar()
+					val y = new BoundVar()
 					val computeCons = (callIsCons(x), y)
 					val (subComputes, subBindings) = decomposePattern(ext.TuplePattern(List(ph,pt)), y)
 					(computeCons :: subComputes, subBindings)
 				}
 				case ext.CallPattern(name, args) => {
-					val y = new TempVar() 
-					val matchCompute = (makeUnapply(new NamedVar(name), x), y)
+					val y = new BoundVar() 
+					val matchCompute = (makeUnapply(new UnboundVar(name), x), y)
 					val (subComputes, subBindings) = decomposePattern(ext.TuplePattern(args), y)
 					(matchCompute :: subComputes, subBindings)
 				}
@@ -539,14 +539,14 @@ object Translator {
 					(subCompute, binding :: subBindings)
 				}
 				case ext.EqPattern(name) => {
-					val b = new TempVar()
-				    val testexpr = callEq(x, new NamedVar(name)) > b > callIfT(b)
-					val guard = (testexpr, new TempVar())
+					val b = new BoundVar()
+				    val testexpr = callEq(x, new UnboundVar(name)) > b > callIfT(b)
+					val guard = (testexpr, new BoundVar())
 					(List(guard), Nil)
 				}
 				// TODO: Make this more efficient; the runtime compute is unnecessary.
 				case ext.TypedPattern(p,t) => {
-				  val y = new TempVar()
+				  val y = new BoundVar()
 				  val typedCompute = (HasType(x, convertType(t)), y)
                   val (subCompute, subBindings) = decomposePattern(p, y)
                   (typedCompute :: subCompute, subBindings)

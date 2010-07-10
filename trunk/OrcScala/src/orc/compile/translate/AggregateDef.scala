@@ -69,11 +69,11 @@ class AggregateDef(clauses: List[Clause],
 			new AggregateDef(clauses ::: List(newclause), typeformals, newArgTypes, newReturnType)
 		}
 			
-		def convert(x : named.TempVar): named.Def = {
+		def convert(x : named.BoundVar): named.Def = {
 			if (clauses.isEmpty) { this !! "Unused function signature" }
 			val (newformals, newbody) = Clause.convertClauses(clauses)
 			
-			val subs = for (tf <- typeformals.getOrElse(Nil)) yield (new named.TempTypevar(), tf)
+			val subs = for (tf <- typeformals.getOrElse(Nil)) yield (new named.BoundTypevar(), tf)
             val newTypeFormals = for ((u,_) <- subs) yield u
             val newArgTypes = argtypes map { _ map { Translator.convertType(_).substAllTypes(subs) } }
             val newReturnType = returntype map { Translator.convertType(_).substAllTypes(subs) }
