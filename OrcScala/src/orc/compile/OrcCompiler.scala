@@ -122,7 +122,7 @@ class StandardOrcCompiler extends OrcCompiler {
 
   val refineNamedOil = new CompilerPhase[OrcOptions, orc.oil.named.Expression, orc.oil.named.Expression] {
     val phaseName = "refineNamedOil"
-    override def apply(options: OrcOptions) = { ast => ast.withoutUnusedDefs.withoutUnusedTypes }
+    override def apply(options: OrcOptions) = { ast => ast.fractionDefs.withoutUnusedDefs.withoutUnusedTypes }
   }
   
   val deBruijn = new CompilerPhase[OrcOptions, orc.oil.named.Expression, orc.oil.nameless.Expression] {

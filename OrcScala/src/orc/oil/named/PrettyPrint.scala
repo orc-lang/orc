@@ -68,7 +68,7 @@ class PrettyPrint {
       case Sequence(left, x, right) => "(" + reduce(left) + " >"+reduce(x)+"> " + reduce(right) + ")"
       case Prune(left, x, right) => "(" + reduce(left) + " <"+reduce(x)+"< " + reduce(right) + ")"
       case left ow right => "(" + reduce(left) + " ; " + reduce(right) + ")"
-      case DeclareDefs(defs, body) => (defs map reduce).foldLeft("")({_ + _}) + reduce(body)
+      case DeclareDefs(defs, body) => "\n" + (defs map reduce).foldLeft("")({_ + _}) + reduce(body)
       case Def(f, formals, body, typeformals, argtypes, returntype) => {  
         val name = f.optionalName.getOrElse(lookup(f))
         "def " + name + brack(typeformals) + paren(argtypes.getOrElse(Nil)) + 
