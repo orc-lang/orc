@@ -234,7 +234,7 @@ with TypeSubstitution[Expression]
             case DeclareDefs(defs, body) => {
                 val defslists = DefFractioner.fraction(defs)
                 val newbody = body.fractionDefs
-                defslists.foldLeft(newbody)((e,d) => DeclareDefs(d,e))
+                defslists.foldRight(newbody) { DeclareDefs }
             }
             case HasType(body, typ) => {
               val newb = body.fractionDefs
