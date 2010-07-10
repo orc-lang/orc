@@ -28,26 +28,26 @@ sealed trait TypeScope
 
 
 trait Var extends Argument
-class TempVar(val optionalName : Option[String] = None) extends Var {
+class BoundVar(val optionalName : Option[String] = None) extends Var {
   def this(name: String) = this(Some(name))
 }
-case class NamedVar(name : String) extends Var
+case class UnboundVar(name : String) extends Var
 
 trait Typevar extends Type
-class TempTypevar(val optionalName : Option[String] = None) extends Typevar {
+class BoundTypevar(val optionalName : Option[String] = None) extends Typevar {
   def this(name: String) = this(Some(name))
 }
-case class NamedTypevar(name : String) extends Typevar
+case class UnboundTypevar(name : String) extends Typevar
 
 
 trait hasFreeVars {
-  /* Note: As is evident from the type, NamedVars are not included in this set */
-  val freevars: Set[TempVar]
+  /* Note: As is evident from the type, UnboundVars are not included in this set */
+  val freevars: Set[BoundVar]
 }
 
 trait hasFreeTypeVars {
   /* Note: As is evident from the type, NamedTypevars are not included in this set */
-  val freetypevars: Set[TempTypevar]
+  val freetypevars: Set[BoundTypevar]
 }
 
 sealed abstract class NamedAST extends AST with NamedToNameless {
@@ -90,9 +90,9 @@ with TypeSubstitution[Expression]
 { 
   lazy val withoutNames: nameless.Expression = namedToNameless(this, Nil, Nil)
   
-  lazy val freevars:Set[TempVar] = {
+  lazy val freevars:Set[BoundVar] = {
     this match {
-      case x:TempVar => Set(x)
+      case x:BoundVar => Set(x)
       case Call(target,args,_) => target.freevars ++ (args flatMap { _.freevars })
       case left || right => left.freevars ++ right.freevars
       case left > x > right => left.freevars ++ (right.freevars - x)
@@ -110,7 +110,7 @@ with TypeSubstitution[Expression]
     }
   }
   
-  lazy val freetypevars:Set[TempTypevar] = {
+  lazy val freetypevars:Set[BoundTypevar] = {
     this match {
       case Call(target,args,ts) => target.freetypevars ++ (args flatMap { _.freetypevars }) ++ (ts.toList.flatten flatMap { _.freetypevars })
       case left || right => left.freetypevars ++ right.freetypevars
@@ -207,7 +207,7 @@ with TypeSubstitution[Expression]
 				val newbody = body.withoutUnusedDefs
 				// If none of the defs are bound in the body,
 	        	// just return the body.
-	        	val defNamesSet: Set[TempVar] = defs.toSet map ((a:Def) => a.name)
+	        	val defNamesSet: Set[BoundVar] = defs.toSet map ((a:Def) => a.name)
                 if(newbody.freevars intersect defNamesSet isEmpty) {
                   newbody
 	        	} else {
@@ -252,18 +252,18 @@ with TypeSubstitution[Expression]
 case class Stop() extends Expression
 case class Call(target: Argument, args: List[Argument], typeargs: Option[List[Type]]) extends Expression
 case class Parallel(left: Expression, right: Expression) extends Expression
-case class Sequence(left: Expression, x: TempVar, right: Expression) extends Expression with Scope
-case class Prune(left: Expression, x: TempVar, right: Expression) extends Expression with Scope
+case class Sequence(left: Expression, x: BoundVar, right: Expression) extends Expression with Scope
+case class Prune(left: Expression, x: BoundVar, right: Expression) extends Expression with Scope
 case class Otherwise(left: Expression, right: Expression) extends Expression
 case class DeclareDefs(defs : List[Def], body: Expression) extends Expression with Scope
-case class DeclareType(name: TempTypevar, t: Type, body: Expression) extends Expression with TypeScope
+case class DeclareType(name: BoundTypevar, t: Type, body: Expression) extends Expression with TypeScope
 case class HasType(body: Expression, expectedType: Type) extends Expression
 
 sealed abstract class Argument extends Expression
 case class Constant(value: AnyRef) extends Argument
 
 
-sealed case class Def(name: TempVar, formals: List[TempVar], body: Expression, typeformals: List[TempTypevar], argtypes: Option[List[Type]], returntype: Option[Type]) 
+sealed case class Def(name: BoundVar, formals: List[BoundVar], body: Expression, typeformals: List[BoundTypevar], argtypes: Option[List[Type]], returntype: Option[Type]) 
 extends NamedAST 
 with Scope 
 with TypeScope 
@@ -275,9 +275,9 @@ with hasTypeRemap[Def]
 with TypeSubstitution[Def]
 { 
   lazy val withoutNames: nameless.Def = namedToNameless(this, Nil, Nil)
-  lazy val freevars: Set[TempVar] = body.freevars -- formals
+  lazy val freevars: Set[BoundVar] = body.freevars -- formals
   
-  lazy val freetypevars: Set[TempTypevar] = {
+  lazy val freetypevars: Set[BoundTypevar] = {
     val argvars = argtypes.toList.flatten flatMap { _.freetypevars }
     val retvars = returntype.toList flatMap { _.freetypevars }
     val bodyvars = body.freetypevars
@@ -302,9 +302,9 @@ with TypeSubstitution[Type]
 { 
   lazy val withoutNames: nameless.Type = namedToNameless(this, Nil) 
   
-  lazy val freetypevars: Set[TempTypevar] = 
+  lazy val freetypevars: Set[BoundTypevar] = 
     this match {
-      case u : TempTypevar => {
+      case u : BoundTypevar => {
         Set(u)
       }
       case TupleType(elements) => {
@@ -324,7 +324,7 @@ with TypeSubstitution[Type]
       case TypeAbstraction(typeformals, t) => {
         t.freetypevars -- typeformals
       }
-      case TypeApplication(tycon : TempTypevar, ts) => {
+      case TypeApplication(tycon : BoundTypevar, ts) => {
         val vars = ts flatMap { _.freetypevars }
         vars.toSet + tycon
       }
@@ -370,7 +370,7 @@ with TypeSubstitution[Type]
 	  }
   
   def subst(t: Typevar, u: Typevar): Type = this remapType (y => if (y equals t) { u } else { y })   
-  def subst(t: Typevar, s: String): Type = subst(t, NamedTypevar(s))
+  def subst(t: Typevar, s: String): Type = subst(t, UnboundTypevar(s))
 }	
 case class Top() extends Type
 case class Bot() extends Type
@@ -378,8 +378,8 @@ case class TupleType(elements: List[Type]) extends Type
 case class RecordType(entries: Map[String,Type]) extends Type
 case class TypeApplication(tycon: Typevar, typeactuals: List[Type]) extends Type
 case class AssertedType(assertedType: Type) extends Type	
-case class FunctionType(typeformals: List[TempTypevar], argtypes: List[Type], returntype: Type) extends Type with TypeScope
-case class TypeAbstraction(typeformals: List[TempTypevar], t: Type) extends Type with TypeScope
+case class FunctionType(typeformals: List[BoundTypevar], argtypes: List[Type], returntype: Type) extends Type with TypeScope
+case class TypeAbstraction(typeformals: List[BoundTypevar], t: Type) extends Type with TypeScope
 case class ImportedType(classname: String) extends Type
 case class ClassType(classname: String) extends Type
 case class VariantType(variants: List[(String, List[Option[Type]])]) extends Type
@@ -389,7 +389,7 @@ case class VariantType(variants: List[(String, List[Option[Type]])]) extends Typ
 // Conversions from named to nameless representations
 trait NamedToNameless {
 
-  def namedToNameless(e: Expression, context: List[TempVar], typecontext: List[TempTypevar]): nameless.Expression = {
+  def namedToNameless(e: Expression, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.Expression = {
     def toExp(e: Expression): nameless.Expression = namedToNameless(e, context, typecontext)
     def toArg(a: Argument): nameless.Argument = namedToNameless(a, context)
     def toType(t: Type): nameless.Type = namedToNameless(t, typecontext)
@@ -427,23 +427,23 @@ trait NamedToNameless {
     } setPos e.pos
   }	
 
-  def namedToNameless(a: Argument, context: List[TempVar]): nameless.Argument = {
+  def namedToNameless(a: Argument, context: List[BoundVar]): nameless.Argument = {
     a -> {
       case Constant(v) => nameless.Constant(v)
-      case (x: TempVar) => {
+      case (x: BoundVar) => {
         var i = context indexOf x
         if (i < 0) { a !! "Compiler fault: unbound variable in deBruijn conversion" } 
         nameless.Variable(i) 
       }
-      case x@ NamedVar(s) => x !! ("Unbound variable " + s) 
+      case x@ UnboundVar(s) => x !! ("Unbound variable " + s) 
     } setPos a.pos
   }
 
 
-  def namedToNameless(t: Type, typecontext: List[TempTypevar]): nameless.Type = {
+  def namedToNameless(t: Type, typecontext: List[BoundTypevar]): nameless.Type = {
     def toType(t: Type): nameless.Type = namedToNameless(t, typecontext)
     t -> {
-      case u: TempTypevar => {
+      case u: BoundTypevar => {
         var i = typecontext indexOf u
         if (i < 0) { t !! "Compiler fault: unbound type variable in deBruijn conversion" } 
         nameless.TypeVar(i)
@@ -481,11 +481,11 @@ trait NamedToNameless {
           }
         nameless.VariantType(newVariants)
       }
-      case u@ NamedTypevar(s) => u !! ("Unbound type variable " + s)
+      case u@ UnboundTypevar(s) => u !! ("Unbound type variable " + s)
     } setPos t.pos
   }	
 
-  def namedToNameless(defn: Def, context: List[TempVar], typecontext: List[TempTypevar]): nameless.Def = {
+  def namedToNameless(defn: Def, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.Def = {
     defn -> {
       case Def(_, formals, body, typeformals, argtypes, returntype) => {
         val newContext = formals.reverse ::: context
@@ -525,10 +525,10 @@ trait ArgumentSubstitution[X] extends NamedAST with hasArgumentRemap[X] {
   }
   
   
-  def subst(a: Argument, s: String): X = subst(a, new NamedVar(s))
+  def subst(a: Argument, s: String): X = subst(a, new UnboundVar(s))
   
   def substAll(subs: List[(Argument, String)]): X = {
-	  val newsubs = for ((a,s) <- subs) yield (a, new NamedVar(s))
+	  val newsubs = for ((a,s) <- subs) yield (a, new UnboundVar(s))
 	  substAllArgs(newsubs)
   }
   
@@ -559,10 +559,10 @@ trait TypeSubstitution[X] extends NamedAST with hasTypeRemap[X] {
       })
   }
   
-  def substType(t: Type, s: String): X = substType(t, new NamedTypevar(s))
+  def substType(t: Type, s: String): X = substType(t, new UnboundTypevar(s))
   
   def substAllTypes(subs: List[(Type, String)]): X = {
-      val newsubs = for ((t,s) <- subs) yield (t, new NamedTypevar(s))
+      val newsubs = for ((t,s) <- subs) yield (t, new UnboundTypevar(s))
       substTypes(newsubs)
   }
   

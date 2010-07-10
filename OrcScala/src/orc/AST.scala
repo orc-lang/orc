@@ -56,7 +56,7 @@ trait AST extends Positional {
   def pushDownPosition(p : Position): Unit = {
     this.pos match {
       case NoPosition => {
-        this setPos p
+        this.setPos(p)
         this.subtrees map { _.pushDownPosition(p) }
       }
       case _ => {  }
@@ -64,7 +64,7 @@ trait AST extends Positional {
   }
   
   // Used to propagate source location information
-  // Currently only implemented for named OIL
+  // Currently only implemented for OIL
   val subtrees: List[AST] = Nil
   
   

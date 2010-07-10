@@ -44,7 +44,7 @@ object PrimitiveForms {
 	val callTupleArityChecker = binaryBuiltinCall(TupleArityChecker) _
 	
 	def makeUnapply(constructor : Argument, a : Argument) = {
-		val extractor = new TempVar()
+		val extractor = new BoundVar()
 		val getExtractor = Call(Constant(FindExtractor), List(constructor), None)
 		val invokeExtractor = Call(extractor, List(a), None)
 		getExtractor > extractor > invokeExtractor
@@ -65,7 +65,7 @@ object PrimitiveForms {
 	def makeList(elements: List[Argument]) = {
 		val nil : Expression = callNil()
 		def cons(h: Argument, t: Expression): Expression = {
-			val y = new TempVar()
+			val y = new BoundVar()
 			t > y > callCons(h, y)
 		}
 		elements.foldRight(nil)(cons)
@@ -73,12 +73,12 @@ object PrimitiveForms {
 	
 	def makeRecord(tuples: List[Argument]) = Call(Constant(RecordConstructor), tuples, None)
 	
-	def makeDatatype(declaredVariant : TempTypevar, constructors : List[ext.Constructor]) = {
+	def makeDatatype(declaredVariant : BoundTypevar, constructors : List[ext.Constructor]) = {
 	  val datatypeSite = Constant(DatatypeBuilder)
 	  val datatypePairs = 
 	    for (ext.Constructor(name, types) <- constructors) yield 
           { makeTuple(List(Constant(name), Constant(BigInt(types.size)))) }
-      val pairsVar = new TempVar()
+      val pairsVar = new BoundVar()
       
       Translator.unfold(datatypePairs, makeTuple) > pairsVar > 
           Call(datatypeSite, List(pairsVar), Some(List(declaredVariant)))
@@ -93,14 +93,14 @@ object PrimitiveForms {
 	 * If source halts without publishing a value, execute fail.
 	 * 
 	 */
-	def makeMatch(source: Expression, succ: TempVar => Expression, fail: Expression) = {
-	  val x = new named.TempVar()
+	def makeMatch(source: Expression, succ: BoundVar => Expression, fail: Expression) = {
+	  val x = new named.BoundVar()
 	  val target = succ(x)
 	  fail match {
 	     case Stop() => source  > x >  target
 	     case _ => {
-	       val y = new named.TempVar()
-           val z = new named.TempVar()
+	       val y = new named.BoundVar()
+           val z = new named.BoundVar()
 	       ( 
 	         (  source  > z >  callSome(z)  )  ow  ( callNone() )
            ) > y >
@@ -114,6 +114,6 @@ object PrimitiveForms {
 
 	
 	def callOperator(opName : String, args : List[Argument]) = 
-		Call(NamedVar(opName), args, None)
+		Call(UnboundVar(opName), args, None)
 		
 }

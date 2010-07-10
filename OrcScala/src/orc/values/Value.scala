@@ -27,7 +27,7 @@ import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
 import orc.oil.nameless.AddNames
 import orc.oil.named.PrettyPrint
-import orc.oil.named.TempVar
+import orc.oil.named.BoundVar
 
 trait OrcValue extends AnyRef {
   def toOrcSyntax(): String = super.toString() 
@@ -41,15 +41,6 @@ trait OrcValue extends AnyRef {
     }
   }
 }
-
-
-//case class Literal(value: Any) extends Value {
-//  override def toOrcSyntax() = value match {
-//    case null => "null"
-//    case s: String => "\"" + s.replace("\"", "\\\"").replace("\f", "\\f").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t") + "\"";
-//    case _ => value.toString()
-//  }
-//}
 
 case object Signal extends OrcValue {
   override def toOrcSyntax() = "signal"
@@ -88,10 +79,10 @@ class Closure(d: Def, ds: List[Def]) extends OrcValue {
       val (defs, rest) = context.splitAt(ds.size)
       val newctx = (defs map {_ => None}) ::: (rest map { Some(_) })
       val subdef = d.subst(newctx)
-      val myName = new TempVar()
+      val myName = new BoundVar()
       val defNames = 
         for (d <- defs) yield 
-          if (d == this) { myName } else { new TempVar() }
+          if (d == this) { myName } else { new BoundVar() }
       val namedDef = AddNames.namelessToNamed(myName, subdef, defNames, Nil)
       val pp = new PrettyPrint()
       "lambda" +

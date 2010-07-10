@@ -31,7 +31,7 @@ case class Clause(formals: List[Pattern], body: Expression) extends orc.AST {
 	 * The supplied args are the formal parameters of the overall function.
 	 * 
 	 */
-	def convert(args: List[named.TempVar], fallthrough: named.Expression): named.Expression = {		
+	def convert(args: List[named.BoundVar], fallthrough: named.Expression): named.Expression = {		
 		
 		val (strictPairs, nonstrictPairs) = (formals zip args) partition { case (p,_) => p.isStrict }
 		var newbody = Translator.convert(body)
@@ -105,10 +105,10 @@ object Clause {
    * 
    * The list of clauses is assumed to be nonempty.
    */
-  def convertClauses(clauses: List[Clause]): (List[named.TempVar], named.Expression) = {
+  def convertClauses(clauses: List[Clause]): (List[named.BoundVar], named.Expression) = {
 		
 	  val arity = commonArity(clauses)
-	  val args = (for (_ <- 0 until arity) yield new named.TempVar()).toList
+	  val args = (for (_ <- 0 until arity) yield new named.BoundVar()).toList
 	  
 	  val nil: named.Expression = named.Stop()
 	  def cons(clause: Clause, fail: named.Expression) = clause.convert(args, fail)
