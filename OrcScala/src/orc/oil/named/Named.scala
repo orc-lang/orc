@@ -22,16 +22,18 @@ import orc.values.Value
 import orc.AST
 
 trait Var extends Argument
+case class UnboundVar(name : String) extends Var
 class BoundVar(val optionalName : Option[String] = None) extends Var {
   def this(name: String) = this(Some(name))
 }
-case class UnboundVar(name : String) extends Var
+
 
 trait Typevar extends Type
+case class UnboundTypevar(name : String) extends Typevar
 class BoundTypevar(val optionalName : Option[String] = None) extends Typevar {
   def this(name: String) = this(Some(name))
 }
-case class UnboundTypevar(name : String) extends Typevar
+
 
 // The supertype of all variable binding nodes
 sealed trait Scope
@@ -45,13 +47,14 @@ trait hasFreeVars {
 }
 
 trait hasFreeTypeVars {
-  /* Note: As is evident from the type, NamedTypevars are not included in this set */
+  /* Note: As is evident from the type, UnboundTypevars are not included in this set */
   val freetypevars: Set[BoundTypevar]
 }
 
 sealed abstract class NamedAST extends AST with NamedToNameless {
   def prettyprint() = (new PrettyPrint()).reduce(this)
   override def toString() = prettyprint()
+  
   
   override val subtrees: List[NamedAST] = this match {
     case Call(target, args, typeargs) => target :: ( args ::: typeargs.toList.flatten )
@@ -382,122 +385,6 @@ case class TypeAbstraction(typeformals: List[BoundTypevar], t: Type) extends Typ
 case class ImportedType(classname: String) extends Type
 case class ClassType(classname: String) extends Type
 case class VariantType(variants: List[(String, List[Option[Type]])]) extends Type
-
-
-
-// Conversions from named to nameless representations
-trait NamedToNameless {
-
-  def namedToNameless(e: Expression, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.Expression = {
-    def toExp(e: Expression): nameless.Expression = namedToNameless(e, context, typecontext)
-    def toArg(a: Argument): nameless.Argument = namedToNameless(a, context)
-    def toType(t: Type): nameless.Type = namedToNameless(t, typecontext)
-    e -> {
-      case Stop() => nameless.Stop()
-      case a : Argument => namedToNameless(a, context)		
-      case Call(target, args, typeargs) => nameless.Call(toArg(target), args map toArg, typeargs map { _ map toType })
-      case left || right => nameless.Parallel(toExp(left), toExp(right))
-      case left > x > right => nameless.Sequence(toExp(left), namedToNameless(right, x::context, typecontext))
-      case left < x < right => nameless.Prune(namedToNameless(left, x::context, typecontext), toExp(right))
-      case left ow right => nameless.Otherwise(toExp(left), toExp(right))
-      case DeclareDefs(defs, body) => {
-        val defnames = defs map { _.name }
-        val opennames = (defs flatMap { _.freevars }).distinct filterNot { defnames contains _ }
-        val defcontext = defnames.reverse ::: opennames ::: context
-        val bodycontext = defnames.reverse ::: context
-        val newdefs = defs map { namedToNameless(_, defcontext, typecontext) }
-        val newbody = namedToNameless(body, bodycontext, typecontext)
-        val openvars = 
-          opennames map { x =>
-            val i = context indexOf x
-            if (i < 0) { e !! "Compiler fault: unbound closure variable in deBruijn conversion"+newbody }
-            i
-          }
-        nameless.DeclareDefs(openvars, newdefs, newbody)
-      }
-      case DeclareType(x, t, body) => {
-        val newTypeContext = x::typecontext
-        /* A type may be defined recursively, so its name is in scope for its own definition */
-        val newt = namedToNameless(t, newTypeContext) 
-        val newbody = namedToNameless(body, context, newTypeContext)
-        nameless.DeclareType(newt, newbody)
-      }
-      case HasType(body, expectedType) => nameless.HasType(toExp(body), toType(expectedType))
-    } setPos e.pos
-  }	
-
-  def namedToNameless(a: Argument, context: List[BoundVar]): nameless.Argument = {
-    a -> {
-      case Constant(v) => nameless.Constant(v)
-      case (x: BoundVar) => {
-        var i = context indexOf x
-        if (i < 0) { a !! "Compiler fault: unbound variable in deBruijn conversion" } 
-        nameless.Variable(i) 
-      }
-      case x@ UnboundVar(s) => x !! ("Unbound variable " + s) 
-    } setPos a.pos
-  }
-
-
-  def namedToNameless(t: Type, typecontext: List[BoundTypevar]): nameless.Type = {
-    def toType(t: Type): nameless.Type = namedToNameless(t, typecontext)
-    t -> {
-      case u: BoundTypevar => {
-        var i = typecontext indexOf u
-        if (i < 0) { t !! "Compiler fault: unbound type variable in deBruijn conversion" } 
-        nameless.TypeVar(i)
-      }
-      case Top() => nameless.Top()
-      case Bot() => nameless.Bot()
-      case FunctionType(typeformals, argtypes, returntype) => {
-        val newTypeContext = typeformals ::: typecontext
-        val newArgTypes = argtypes map toType
-        val newReturnType = namedToNameless(returntype, newTypeContext)
-        nameless.FunctionType(typeformals.size, newArgTypes, newReturnType)
-      }
-      case TupleType(elements) => nameless.TupleType(elements map toType)
-      case RecordType(entries) => {
-        val newEntries = entries map { case (s,t) => (s, toType(t)) }
-        nameless.RecordType(newEntries)
-      }
-      case TypeApplication(tycon, typeactuals) => {
-        val i = typecontext indexOf tycon
-        if (i < 0) { t !! "Compiler fault: unbound type constructor in deBruijn conversion" } 
-        nameless.TypeApplication(i, typeactuals map toType)
-      }	
-      case AssertedType(assertedType) => nameless.AssertedType(toType(assertedType))
-      case TypeAbstraction(typeformals, t) => {
-        val newTypeContext = typeformals ::: typecontext
-        val newt = namedToNameless(t, newTypeContext)
-        nameless.TypeAbstraction(typeformals.size, newt)
-      }
-      case ImportedType(classname) => nameless.ImportedType(classname)
-      case ClassType(classname) => nameless.ClassType(classname)
-      case VariantType(variants) => {
-        val newVariants =
-          for ((name, variant) <- variants) yield {
-            (name, variant map {_ map toType})
-          }
-        nameless.VariantType(newVariants)
-      }
-      case u@ UnboundTypevar(s) => u !! ("Unbound type variable " + s)
-    } setPos t.pos
-  }	
-
-  def namedToNameless(defn: Def, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.Def = {
-    defn -> {
-      case Def(_, formals, body, typeformals, argtypes, returntype) => {
-        val newContext = formals.reverse ::: context
-        val newTypeContext = typeformals ::: typecontext 
-        val newbody = namedToNameless(body, newContext, newTypeContext)
-        val newArgTypes = argtypes map { _ map { namedToNameless(_, newTypeContext) } }
-        val newReturnType = returntype map { namedToNameless(_, newTypeContext) }
-        nameless.Def(typeformals.size, formals.size, newbody, newArgTypes, newReturnType)
-      }
-    } setPos defn.pos
-  }
-
-}	
 
 
 trait hasArgumentRemap[X] {

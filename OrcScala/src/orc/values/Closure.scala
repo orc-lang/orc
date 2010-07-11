@@ -16,10 +16,10 @@ package orc.values
 
 import orc.oil.nameless.Def
 import orc.oil.nameless.Expression
-import orc.oil.nameless.AddNames
 
 import orc.oil.named.PrettyPrint
 import orc.oil.named.BoundVar
+import orc.oil.nameless.NamelessToNamed
 
 
 /**
@@ -27,7 +27,7 @@ import orc.oil.named.BoundVar
  *
  * @author dkitchin
  */
-class Closure(d: Def, ds: List[Def]) extends OrcValue {
+class Closure(d: Def, ds: List[Def]) extends OrcValue with NamelessToNamed {
     val arity: Int = d.arity
     val body: Expression = d.body
     var context: List[AnyRef] = Nil
@@ -40,7 +40,7 @@ class Closure(d: Def, ds: List[Def]) extends OrcValue {
       val defNames = 
         for (d <- defs) yield 
           if (d == this) { myName } else { new BoundVar() }
-      val namedDef = AddNames.namelessToNamed(myName, subdef, defNames, Nil)
+      val namedDef = namelessToNamed(myName, subdef, defNames, Nil)
       val pp = new PrettyPrint()
       "lambda" +
         pp.reduce(namedDef.name) + 

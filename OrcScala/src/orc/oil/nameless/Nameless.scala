@@ -54,7 +54,11 @@ sealed abstract class NamelessAST extends AST {
   }
 }
 
-sealed abstract class Expression extends NamelessAST with hasFreeVars with NamelessInfixCombinators {
+sealed abstract class Expression extends NamelessAST 
+with hasFreeVars 
+with NamelessInfixCombinators
+with NamelessToNamed
+{
 
   /* 
    * Find the set of free vars for any given expression.
@@ -119,7 +123,7 @@ sealed abstract class Expression extends NamelessAST with hasFreeVars with Namel
     }
   }
   
-  lazy val withNames: named.Expression = AddNames.namelessToNamed(this, Nil, Nil)
+  lazy val withNames: named.Expression = namelessToNamed(this, Nil, Nil)
   
   def prettyprint() = this.withNames.prettyprint()
 }
@@ -133,13 +137,15 @@ case class DeclareDefs(unclosedVars: List[Int], defs: List[Def], body: Expressio
 case class DeclareType(t: Type, body: Expression) extends Expression
 case class HasType(body: Expression, expectedType: Type) extends Expression
 
-sealed abstract class Argument extends Expression
+sealed abstract class Argument extends Expression 
 case class Constant(value: AnyRef) extends Argument
 case class Variable(index: Int) extends Argument {
   if (index < 0) { throw new Exception("Invalid construction of indexed variable. Index must be >= 0") }
 }
 
-sealed abstract class Type extends NamelessAST
+sealed abstract class Type extends NamelessAST with NamelessToNamed {
+  lazy val withNames: named.Type = namelessToNamed(this, Nil)
+}
 case class Top() extends Type
 case class Bot() extends Type
 case class TypeVar(index: Int) extends Type
@@ -154,7 +160,9 @@ case class ClassType(classname: String) extends Type
 case class VariantType(variants: List[(String, List[Option[Type]])]) extends Type
 
 
-sealed case class Def(typeFormalArity: Int, arity: Int, body: Expression, argTypes: Option[List[Type]], returnType: Option[Type]) extends NamelessAST with hasFreeVars {
+sealed case class Def(typeFormalArity: Int, arity: Int, body: Expression, argTypes: Option[List[Type]], returnType: Option[Type]) extends NamelessAST 
+with hasFreeVars 
+{
   /* Get the free vars of the body, then bind the arguments */
   lazy val freevars: Set[Int] = shift(body.freevars, arity)
   
@@ -162,121 +170,6 @@ sealed case class Def(typeFormalArity: Int, arity: Int, body: Expression, argTyp
     val newctx = ( for (_ <- List.range(0, arity)) yield None ).toList ::: ctx
     Def(typeFormalArity, arity, body.subst(newctx), argTypes, returnType)
   }
+    
 }
 
-
-// Conversions from nameless to named representations
-object AddNames {
-
-  import orc.oil.named.BoundVar
-  import orc.oil.named.BoundTypevar
-  import scala.Range
-
-  def namelessToNamed(e: Expression, context: List[named.BoundVar], typecontext: List[named.BoundTypevar]): named.Expression = {
-    def recurse(e: Expression): named.Expression = namelessToNamed(e, context, typecontext)
-    e -> {
-      case Stop() => named.Stop()
-      case a: Argument => namelessToNamed(a, context)		
-      case Call(target, args, typeargs) => {
-        val newtarget = namelessToNamed(target, context)
-        val newargs = args map { namelessToNamed(_, context) }
-        val newtypeargs = typeargs map { _ map { namelessToNamed(_, typecontext) } }
-        named.Call(newtarget, newargs, newtypeargs)
-      }
-      case left || right => named.Parallel(recurse(left), recurse(right))
-      case left >> right => {
-        val x = new BoundVar()
-        named.Sequence(recurse(left), x, namelessToNamed(right, x::context, typecontext))
-      }
-      case left << right => {
-        val x = new BoundVar()
-        named.Prune(namelessToNamed(left, x::context, typecontext), x, recurse(right))
-      }
-      case left ow right => named.Otherwise(recurse(left), recurse(right))
-      case DeclareDefs(openvars, defs, body) => {
-        val opennames = openvars map context
-        val defnames = defs map { _ => new BoundVar() }
-        val defcontext = defnames.reverse ::: opennames.reverse ::: context
-        val bodycontext = defnames.reverse ::: context
-        val newdefs = for ( (x,d) <- defnames zip defs) yield namelessToNamed(x, d, defcontext, typecontext)
-        val newbody = namelessToNamed(body, bodycontext, typecontext)
-        named.DeclareDefs(newdefs, newbody)
-      }
-      case DeclareType(t, body) => {
-        val x = new BoundTypevar()
-        val newTypeContext = x::typecontext
-        /* A type may be defined recursively, so its name is in scope for its own definition */
-        val newt = namelessToNamed(t, newTypeContext) 
-        val newbody = namelessToNamed(body, context, newTypeContext)
-        named.DeclareType(x, newt, newbody)
-      }
-      case HasType(body, expectedType) => {
-        named.HasType(recurse(body), namelessToNamed(expectedType, typecontext))
-      }
-    }  setPos e.pos
-  }	
-
-  def namelessToNamed(a: Argument, context: List[BoundVar]): named.Argument =
-    a -> {
-      case Constant(v) => named.Constant(v)
-      case Variable(i) => context(i) 
-    }  setPos a.pos
-
-  def namelessToNamed(t: Type, typecontext: List[BoundTypevar]): named.Type = {
-    def toType(t: Type): named.Type = namelessToNamed(t, typecontext)
-    t -> {
-      case TypeVar(i) => typecontext(i)
-      case Top() => named.Top()
-      case Bot() => named.Bot()
-      case FunctionType(typearity, argtypes, returntype) => {
-        val typeformals = (for (_ <- 0 until typearity) yield new BoundTypevar()).toList
-        val newTypeContext = typeformals ::: typecontext
-        val newArgTypes = argtypes map { namelessToNamed(_, newTypeContext) }
-        val newReturnType = namelessToNamed(returntype, newTypeContext)
-        named.FunctionType(typeformals, newArgTypes, newReturnType)
-      } 
-      case TupleType(elements) => named.TupleType(elements map toType)
-      case RecordType(entries) => {
-        val newEntries = entries map { case (s,t) => (s, toType(t)) }
-        named.RecordType(newEntries)
-      }
-      case TypeApplication(i, typeactuals) => {
-        val tycon = typecontext(i)
-        val newTypeActuals = typeactuals map toType
-        named.TypeApplication(tycon, newTypeActuals)
-      }
-      case AssertedType(assertedType) => named.AssertedType(toType(assertedType))
-      case TypeAbstraction(typearity, t) => {
-        val typeformals = (for (_ <- 0 until typearity) yield new BoundTypevar()).toList
-        val newTypeContext = typeformals ::: typecontext
-        val newt = namelessToNamed(t, newTypeContext)
-        named.TypeAbstraction(typeformals, newt)
-      }
-      case ImportedType(classname) => named.ImportedType(classname)
-      case ClassType(classname) => named.ClassType(classname)
-      case VariantType(variants) => {
-        val newVariants =
-          for ((name, variant) <- variants) yield {
-            (name, variant map {_ map toType})
-          }
-        named.VariantType(newVariants)
-      }
-    }  setPos t.pos
-  }	
-
-  def namelessToNamed(x: BoundVar, defn: Def, context: List[BoundVar], typecontext: List[BoundTypevar]): named.Def = {
-    defn -> {
-      case Def(typearity, arity, body, argtypes, returntype) => {
-        val formals = (for (_ <- 0 until arity) yield new BoundVar()).toList
-        val typeformals = (for (_ <- 0 until typearity) yield new BoundTypevar()).toList
-        val newContext = formals ::: context
-        val newTypeContext = typeformals ::: typecontext 
-        val newbody = namelessToNamed(body, newContext, newTypeContext)
-        val newArgTypes = argtypes map { _ map { namelessToNamed(_, newTypeContext) } }
-        val newReturnType = returntype map  { namelessToNamed(_, newTypeContext) }
-        named.Def(x, formals, newbody, typeformals, newArgTypes, newReturnType)
-      }
-    }  setPos defn.pos
-  }
-
-}
