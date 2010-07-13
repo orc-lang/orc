@@ -201,10 +201,10 @@ object OrcXML {
       case i:scala.math.BigInt => <bigint>{a}</bigint>
       case x:orc.values.sites.JavaClassProxy => <jclassproxy>{x.name}</jclassproxy>
       case x:orc.values.sites.Site => 
-        println(x.getClass); <site>{a.asInstanceOf[AnyRef].getClass().getName}</site>
+        <site>{a.asInstanceOf[AnyRef].getClass().getName}</site>
       case orc.values.Signal => <signal/>
       case orc.values.Field(s) => <field>{s}</field>
-      case x:AnyRef => println(x.getClass); <any>{a}</any>
+      case x:AnyRef => println(">>>> "+x.getClass); <any>{a}</any>
     }
   }
 
