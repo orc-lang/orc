@@ -25,7 +25,8 @@ object OrcXML {
     val xmlout = <orc>
     {toXML(e)}
     </orc>    
-    println(xmlout)
+    val pp = new PrettyPrinter(0, 0)
+    println(pp.format(xmlout))
   }
   
   def toXML(e : NamelessAST) : Elem = {
@@ -51,7 +52,7 @@ object OrcXML {
                   </arg>
                 }
               </typeargs>
-            case None =>
+            case None => <typeargs/>
           }
         }
         </call>
@@ -103,7 +104,8 @@ object OrcXML {
           <body>{toXML(body)}</body>
           <expectedtype>{toXML(expectedType)}</expectedtype>
         </hastype>
-      case Constant(v: AnyRef) => <constant>{v}</constant>
+      case Constant(v: Any) => <constant>{anyToXML(v)}</constant>
+      case Constant(null) => <constant><nil/></constant>
       case Variable(i: Int) => <variable>{i}</variable>
       case Top() => <top/>
       case Bot() => <bot/>
@@ -142,7 +144,7 @@ object OrcXML {
               <arg>{toXML(t)}</arg>
             }
           </argtypes>
-          <returntype>{returnType}</returntype>
+          <returntype>{toXML(returnType)}</returntype>
         </functiontype>
       case TypeAbstraction(typeFormalArity: Int, t: Type) =>
         <typeabstraction>
@@ -174,17 +176,103 @@ object OrcXML {
           <body>{toXML(body)}</body>
           {argTypes match {
             case Some(l) => <argtypes>{ l map { x => <arg>{toXML(x)}</arg>}}</argtypes>
-            case None => <argtypes></argtypes>
+            case None => <argtypes/>
           }}
           {returnType match {
             case Some(t) => <returntype>{toXML(t)}</returntype>
-            case None => <returntype></returntype>
+            case None => <returntype/>
           }}
         </definition>
       case _ => throw new Error("Invalid Node for XML conversion!")
     }
   }
+  
+  def anyToXML(a : Any) : Elem = {
+    a match { 
+      case i:Int => <int>{a}</int> 
+      case f:Float => <float>{a}</float> 
+      case d:Double => <double>{a}</double> 
+      case l:Long => <long>{a}</long> 
+      case c:Char => <char>{a}</char> 
+      case b:Boolean => <boolean>{b}</boolean> 
+      case b:Byte => <byte>{b}</byte> 
+      case b:Short => <short>{b}</short> 
+      case s:String => <string>{a}</string>
+      case i:scala.math.BigInt => <bigint>{a}</bigint>
+      case x:orc.values.sites.JavaClassProxy => <jclassproxy>{x.name}</jclassproxy>
+      case x:orc.values.sites.Site => 
+        println(x.getClass); <site>{a.asInstanceOf[AnyRef].getClass().getName}</site>
+      case orc.values.Signal => <signal/>
+      case orc.values.Field(s) => <field>{s}</field>
+      case x:AnyRef => println(x.getClass); <any>{a}</any>
+    }
+  }
 
+  def fromXML(inxml: Seq[scala.xml.Node]) : Expression = {
+    inxml match {
+      case <orc>{prog@ _*}</orc> => fromXML(prog)
+      case <stop/> => Stop()
+      case <parallel><left>{left@ _*}</left>
+        <right>{right@ _*}</right></parallel> => Parallel(fromXML(left), fromXML(right))
+      case <sequence><left>{left@ _*}</left>
+        <right>{right@ _*}</right></sequence> => Sequence(fromXML(left), fromXML(right))
+      case <prune><left>{left@ _*}</left>
+        <right>{right@ _*}</right></prune> => Prune(fromXML(left), fromXML(right))
+      case <otherwise><left>{left@ _*}</left>
+        <right>{right@ _*}</right></otherwise> => Otherwise(fromXML(left), fromXML(right))
+      case <declaredefs>
+          <unclosedvars>{uvars@ _*}</unclosedvars>
+          <defs>{defs@ _*}</defs>
+          <body>{body@ _*}</body>
+        </declaredefs> => {
+          val t1 = for (<uv>{i @ _*}</uv> <- uvars) yield i.text.toInt
+          val t2 = for (<adef>{d @ _*}</adef> <- defs) yield defFromXML(d)
+          val t3 = fromXML(body)
+          DeclareDefs(t1.toList, t2.toList, t3)
+        }
+      case <call>
+      <target>{target@ _*}</target>
+      <args>{args@ _*}</args>
+      <typeargs>{typeargs@ _*}</typeargs>
+      </call> => {
+        val t1 = argumentFromXML(target)
+        val t2 = for (<arg>{a @ _*}</arg> <- args) yield argumentFromXML(a)
+        val t3 = for (<arg>{a @ _*}</arg> <- args) yield typeFromXML(a)
+        Call(t1, t2.toList, if (t3.size==0) None else Some(t3.toList))
+      }
+    }    
+  }
+  
+  def argumentFromXML(inxml: Seq[scala.xml.Node]) : Argument = {
+    inxml match {
+      case <constant>{c@ _*}</constant> => Constant(c.text)
+      case <variable>{v@ _*}</variable> => Variable(v.text.toInt)
+    }
+  }
+  
+  def defFromXML(inxml: Seq[scala.xml.Node]) : Def = {
+    inxml match {
+      case <definition>
+      <typearity>{typeFormalArity@ _*}</typearity>
+      <arity>{arity@ _*}</arity>
+      <body>{body@ _*}</body>
+      <argtypes>{argTypes@ _*}</argtypes>
+      <returntype>{returnType@ _*}</returntype>
+      </definition> => {
+        val t1 = if (argTypes.text.trim == "") None 
+            else Some((for (<arg>{a @ _*}</arg> <- argTypes) yield typeFromXML(a)).toList)
+        
+        val t2 = if (returnType.text.trim == "") None
+          else Some(typeFromXML(returnType))
+        Def(typeFormalArity.text.toInt, arity.text.toInt, fromXML(body), t1, t2)
+      }   
+    }
+  }
+  
+  def typeFromXML(inxml: Seq[scala.xml.Node]) : Type = {
+    Top()
+  }
+  
   import orc.compile.StandardOrcCompiler
   import orc.run.StandardOrcRuntime
   import orc.compile.parse.OrcReader
