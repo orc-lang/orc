@@ -18,8 +18,8 @@ public class MessageNotUnderstoodException extends TokenException {
 
 	public String field;
 
-	public MessageNotUnderstoodException(@SuppressWarnings("hiding") final String field) {
-		super("The message " + field + " was not understood by this site.");
+	public MessageNotUnderstoodException(@SuppressWarnings("hiding") final String field, final String siteName) {
+		super("The message '" + field + "' was not understood by the " + siteName + " site.");
 		this.field = field;
 	}
 

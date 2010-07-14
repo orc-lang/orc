@@ -53,7 +53,7 @@ public class Rtimer extends SiteAdaptor {
 				}
 			});
 		} else {
-			throw new MessageNotUnderstoodException(f);
+			throw new MessageNotUnderstoodException(f, name());
 		}
 	}
 }

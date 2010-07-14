@@ -18,8 +18,8 @@ public class MethodTypeMismatchException extends RuntimeTypeException {
 
 	public String methodName;
 
-	public MethodTypeMismatchException(@SuppressWarnings("hiding") final String methodName) {
-		super("Argument types did not match any implementation for method '" + methodName + "'.");
+	public MethodTypeMismatchException(@SuppressWarnings("hiding") final String methodName, final Class<?> clazz) {
+		super("Argument types did not match any implementation for method '" + methodName + "' in " + clazz.getName() + ".");
 		this.methodName = methodName;
 	}
 
