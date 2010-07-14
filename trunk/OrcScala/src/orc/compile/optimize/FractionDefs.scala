@@ -1,5 +1,5 @@
 //
-// DefFractioner.scala -- Scala class/trait/object DefFractioner
+// FractionDefs.scala -- Scala object FractionDefs
 // Project OrcScala
 //
 // $Id$
@@ -12,19 +12,31 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
-package orc.oil.named
+package orc.compile.optimize
 
 import orc.util.Graph
 import orc.util.Node
 import orc.util.Direction
 import scala.collection.mutable.LinkedList
 
+import orc.oil.named._
+
 /**
  * 
  *
  * @author srosario
  */
-object DefFractioner {
+object FractionDefs extends NamedASTTransform {
+  
+    override def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar]) = {
+      case DeclareDefs(defs, body) => {
+        val defnames = defs map { _.name }
+        val defslists = fraction(defs) 
+        val newbody = transform(body, defnames ::: context, typecontext)
+        defslists.foldRight(newbody) { DeclareDefs }
+      }
+    }  
+  
     /**
      * Divides a list of defs into a list of mutually recursive (sub)lists
      * of defs. The return list is ordered such that no mutually recursive
@@ -65,4 +77,6 @@ object DefFractioner {
          case l: List[Node[Def]] => l map {(n: Node[Def]) => n.elem}
       }
     }
+       
+    
 }
