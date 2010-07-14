@@ -16,7 +16,6 @@ package orc.lib.str
 
 import orc.values.sites.TotalSite
 import orc.values.sites.UntypedSite
-import orc.values.Value
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
 import orc.compile.parse.OrcParser

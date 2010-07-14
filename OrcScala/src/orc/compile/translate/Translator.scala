@@ -38,15 +38,17 @@ object Translator {
 	 */
 	def translate(options: OrcOptions, extendedAST : ext.Expression): Expression = {		
 		val namedAST = convert(extendedAST)
-	    //Console.err.println("Translation result: \n" + namedAST)
-		namedAST remapArgument {
-		  case x@ UnboundVar(s) => x !! ("Unbound variable " + s)
-		  case a => a 
-		}
-		namedAST remapType {
-		  case u@ UnboundTypevar(s) => u !! ("Unbound type variable " + s)
-		  case t => t
-		}
+		 
+		val noUnboundVars = 
+		  new NamedASTTransform {
+		    override def onArgument(context: List[BoundVar]) = {
+		      case x@ UnboundVar(s) => x !! ("Unbound variable " + s)
+		    }
+		    override def onType(typecontext: List[BoundTypevar]) = {
+		      case u@ UnboundTypevar(s) => u !! ("Unbound type variable " + s)
+		    }
+		  }
+		noUnboundVars(namedAST)
 		
 	}
 	
@@ -133,12 +135,12 @@ object Translator {
 
 				case ext.Declare(ext.SiteImport(name, sitename), body) => {
 				  val site = Constant(OrcSiteForm.resolve(sitename))
-				  convert(body).subst(site, name) 
+				  convert(body).subst(site, name)
 				}
 				case ext.Declare(ext.ClassImport(name, classname), body) => {
 				  val u = new BoundTypevar()
 				  val site = Constant(JavaSiteForm.resolve(classname))
-				  val newbody = convert(body).subst(site, name).substType(u, name)
+				  val newbody = convert(body).subst(site, name).subst(u, name)
 				  DeclareType(u, ClassType(classname), newbody)
 				}
 				
@@ -148,13 +150,13 @@ object Translator {
 				
 				case ext.Declare(ext.TypeImport(name, classname), body) => {
 				  val u = new BoundTypevar()
-                  val newbody = convert(body).substType(u, name)
+                  val newbody = convert(body).subst(u, name)
                   DeclareType(u, ImportedType(classname), newbody)
 				}
 				
 				case ext.Declare(ext.TypeAlias(name, typeformals, t), body) => {
 				  val u = new BoundTypevar()
-                  val newbody = convert(body).substType(u, name)
+                  val newbody = convert(body).subst(u, name)
                   val newtype = typeformals match {
                      case Nil => convertType(t)
                      case _ => {
@@ -188,8 +190,8 @@ object Translator {
                       }
                     TypeAbstraction(newTypeFormals, VariantType(variants))
                   }
-				  newbody = newbody.substType(d, name)
-				  newbody = DeclareType(d, variantType.substType(d, name), newbody)
+				  newbody = newbody.subst(d, name)
+				  newbody = DeclareType(d, variantType.subst(d, name), newbody)
 				  
 				  newbody
 				}
@@ -197,7 +199,7 @@ object Translator {
 				case ext.TypeAscription(body, t) => HasType(convert(body), convertType(t))
 				case ext.TypeAssertion(body, t) => HasType(convert(body), AssertedType(convertType(t)))
 				
-		} setPos e.pos
+		} 
 	}
 	
 	

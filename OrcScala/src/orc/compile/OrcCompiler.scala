@@ -33,6 +33,8 @@ import orc.compile.parse.OrcParser
 import orc.compile.parse.OrcReader
 import orc.OrcCompiler
 
+import orc.compile.optimize._
+
 /**
  * Represents one phase in a compiler.  It is defined as a function from
  * compiler options to a function from a phase's input to its output.
@@ -122,7 +124,11 @@ class StandardOrcCompiler extends OrcCompiler {
 
   val refineNamedOil = new CompilerPhase[OrcOptions, orc.oil.named.Expression, orc.oil.named.Expression] {
     val phaseName = "refineNamedOil"
-    override def apply(options: OrcOptions) = { ast => ast.fractionDefs.withoutUnusedDefs.withoutUnusedTypes }
+    override def apply(options: OrcOptions) =
+      (e : orc.oil.named.Expression) => { 
+        val refine = FractionDefs andThen RemoveUnusedDefs andThen RemoveUnusedTypes
+        refine(e)
+      }
   }
   
   val deBruijn = new CompilerPhase[OrcOptions, orc.oil.named.Expression, orc.oil.nameless.Expression] {

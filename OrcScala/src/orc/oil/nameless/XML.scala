@@ -277,7 +277,7 @@ object OrcXML {
   import orc.run.StandardOrcRuntime
   import orc.compile.parse.OrcReader
   import orc.run._
-  import orc.values.Value
+  import orc.values.OrcValue
   import orc.values.sites.Site
   import orc.values.Format
   import scala.concurrent.SyncVar

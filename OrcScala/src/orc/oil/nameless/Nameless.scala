@@ -16,7 +16,6 @@
 package orc.oil.nameless
 
 import orc.oil._
-import orc.values.Value
 import orc.AST
 
 

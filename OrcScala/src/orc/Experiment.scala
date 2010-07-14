@@ -4,7 +4,6 @@ import orc.compile.StandardOrcCompiler
 import orc.run.StandardOrcRuntime
 import orc.compile.parse.OrcReader
 import orc.run._
-import orc.values.Value
 import orc.values.sites.Site
 import orc.values.Format
 import scala.concurrent.SyncVar
@@ -39,11 +38,11 @@ object Experiment {
                           "Within Eclipse, use ${resource_loc}")
     }
     ExperimentOptions.filename = args(0)
-    val orc = new StandardOrcRuntime()
     val compiler = new StandardOrcCompiler()
     val reader = OrcReader(new java.io.FileReader(ExperimentOptions.filename), ExperimentOptions.filename, compiler.openInclude(_, _, ExperimentOptions))
     val compiledOil = compiler(reader, ExperimentOptions)
     if (compiledOil != null) {
+      val orc = new StandardOrcRuntime()
       try {
       orc.runSynchronous(compiledOil, { v: AnyRef => println("Published: " + Format.formatValue(v)) })
       } finally {
