@@ -61,7 +61,7 @@ public abstract class DotSite extends SiteAdaptor  {
 		if (m != null) {
 			t.publish(object2value(m));
 		} else {
-			throw new MessageNotUnderstoodException(f);
+			throw new MessageNotUnderstoodException(f, this.name());
 		}
 	}
 

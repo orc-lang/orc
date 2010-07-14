@@ -177,6 +177,9 @@ abstract class JavaProxy extends Site {
         (m.getParameterTypes().size == args.size ||
          m.isVarArgs() && m.getParameterTypes().size-1 <= args.size)})
     Logger.finest(memberName+" potentiallyApplicableMethods="+potentiallyApplicableMethods.mkString("{", ", ", "}"))
+    if (potentiallyApplicableMethods.isEmpty) {
+      throw new MessageNotUnderstoodException(methodName, javaClass.getName())
+    }
 
     //Phase 1: Identify Matching Arity Methods Applicable by Subtyping
     val phase1Results = potentiallyApplicableMethods.filter( { m =>
@@ -202,7 +205,7 @@ abstract class JavaProxy extends Site {
     //FIXME:TODO: Implement var arg calls
     
     // No match
-    throw new orc.error.runtime.MethodTypeMismatchException(memberName);
+    throw new orc.error.runtime.MethodTypeMismatchException(memberName, javaClass);
   }
 
   private def isApplicable(formalParamType: Class[_], actualArg: Object, allowConversion: Boolean): Boolean = {
@@ -510,10 +513,11 @@ case class JavaArrayAccess(val theArray: Array[Any], val index: Int) extends Jav
   def call(args: List[AnyRef], callingToken: TokenAPI) {
     args match {
       case List(OrcField("read")) => callingToken.publish(new JavaArrayDerefSite(theArray, index))
+      case List(OrcField("readnb")) => callingToken.publish(new JavaArrayDerefSite(theArray, index))
       case List(OrcField("write")) => callingToken.publish(new JavaArrayAssignSite(theArray, index))
-      case List(OrcField(fieldname)) => throw new MessageNotUnderstoodException(fieldname)
+      case List(OrcField(fieldname)) => throw new MessageNotUnderstoodException(fieldname, "Ref") //A "white lie"
       case List(v) => throw new ArgumentTypeMismatchException(0, "message", v.getClass().toString())
-      case _ => throw new ArityMismatchException(1, args.length)
+      case _ => throw new ArityMismatchException(1, args.length) //Is there a better exception to throw?
     }
   }
 }
