@@ -169,7 +169,7 @@ object OrcXML {
             </variant>
           }
         </varianttype> 
-      case Def(typeFormalArity: Int, arity: Int, body: Expression, argTypes: Option[List[Type]], returnType: Option[Type]) =>
+      case Def(typeFormalArity: Int, arity: Int, body: Expression, argTypes, returnType) =>
         <definition>
           <typearity>{typeFormalArity}</typearity>
           <arity>{arity}</arity>
@@ -199,6 +199,7 @@ object OrcXML {
       case b:Short => <short>{b}</short> 
       case s:String => <string>{a}</string>
       case i:scala.math.BigInt => <bigint>{a}</bigint>
+      case i:scala.math.BigDecimal => <bigdecimal>{a}</bigdecimal>
       case x:orc.values.sites.JavaClassProxy => <jclassproxy>{x.name}</jclassproxy>
       case x:orc.values.sites.Site => 
         <site>{a.asInstanceOf[AnyRef].getClass().getName}</site>
@@ -208,6 +209,25 @@ object OrcXML {
     }
   }
 
+  def anyRefFromXML(inxml: Seq[scala.xml.Node]) : AnyRef = {
+    inxml match { 
+      case <nil/> => null
+      case <boolean>{b@ _*}</boolean> => b.text.trim.toBoolean.asInstanceOf[AnyRef]
+      case <string>{s@ _*}</string> => new String(s.text.trim)
+      case <bigint>{i@ _*}</bigint> => BigInt(i.text.trim)
+      case <bigdecimal>{f@ _*}</bigdecimal> => BigDecimal(f.text.trim)
+      case <jclassproxy>{x@ _*}</jclassproxy> => 
+        new orc.values.sites.JavaClassProxy(
+              Class.forName(x.text.trim).asInstanceOf[Class[Object]])
+      case <site>{c@ _*}</site> => 
+        Class.forName(c.text.trim).asInstanceOf[Class[orc.values.sites.Site]].newInstance
+      case <signal/> => orc.values.Signal
+      case <field>{s@ _*}</field> => orc.values.Field(s.text.trim)
+      case _ =>  throw new Error("Invalid XML Node!")
+    }
+  }
+
+  
   def fromXML(inxml: Seq[scala.xml.Node]) : Expression = {
     inxml match {
       case <orc>{prog@ _*}</orc> => fromXML(prog)
@@ -231,15 +251,30 @@ object OrcXML {
           DeclareDefs(t1.toList, t2.toList, t3)
         }
       case <call>
-      <target>{target@ _*}</target>
-      <args>{args@ _*}</args>
-      <typeargs>{typeargs@ _*}</typeargs>
-      </call> => {
-        val t1 = argumentFromXML(target)
-        val t2 = for (<arg>{a @ _*}</arg> <- args) yield argumentFromXML(a)
-        val t3 = for (<arg>{a @ _*}</arg> <- args) yield typeFromXML(a)
-        Call(t1, t2.toList, if (t3.size==0) None else Some(t3.toList))
-      }
+        <target>{target@ _*}</target>
+        <args>{args@ _*}</args>
+        <typeargs>{typeargs@ _*}</typeargs>
+        </call> => {
+          val t1 = argumentFromXML(target)
+          val t2 = for (<arg>{a @ _*}</arg> <- args) yield argumentFromXML(a)
+          val t3 = for (<arg>{a @ _*}</arg> <- args) yield typeFromXML(a)
+          Call(t1, t2.toList, if (t3.size==0) None else Some(t3.toList))
+        }
+      case <declaretype>
+        <atype>{atype@ _*}</atype>
+        <body>{body@ _*}</body>
+        </declaretype> => {
+          DeclareType(typeFromXML(atype), fromXML(body))
+        }
+      case <hastype>
+          <body>{body@ _*}</body>
+          <expectedtype>{expectedType@ _*}</expectedtype>
+        </hastype> => {
+          HasType(fromXML(body), typeFromXML(expectedType))
+        }
+      case <constant>{v@ _*}</constant> => Constant(anyRefFromXML(v))
+      case <variable>{i@ _*}</variable> => Variable(i.text.trim.toInt)
+      
     }    
   }
   
@@ -270,7 +305,45 @@ object OrcXML {
   }
   
   def typeFromXML(inxml: Seq[scala.xml.Node]) : Type = {
-    Top()
+    inxml match {
+      case <top/> => Top()
+      case <bot/> => Bot()
+      case <typevar>{i@ _*}</typevar> => TypeVar(i.text.trim.toInt)
+      case <tupletype>{elements@ _*}</tupletype> => {
+        val t1 = for (<element>{e @ _*}</element> <- elements) yield typeFromXML(e)
+        TupleType(t1.toList)
+      }
+      case <recordtype>{entries@ _*}</recordtype> => {
+        var t1 : Map[String, Type] = Map.empty
+        for(<entry><name>{n@ _*}</name><rtype>{t@ _*}</rtype></entry> <- entries) 
+          t1 +=  n.text.trim -> typeFromXML(t)
+        RecordType(t1)
+      }
+      case <typeapplication><typeconst>{tycon@ _*}</typeconst>
+          <typeactuals>{tactuals@ _*}</typeactuals></typeapplication> => {
+            val t1 = for (<typeactual>{t@ _*}</typeactual> <- tactuals) yield typeFromXML(t)
+            TypeApplication(tycon.text.trim.toInt, t1.toList)
+          }
+      case <assertedtype>{assertedType@ _*}</assertedtype> => 
+        AssertedType(typeFromXML(assertedType))
+      case <functiontype>
+          <typearity>{typeFormalArity@ _*}</typearity>
+          <argtypes>{argtypes@ _*}</argtypes>
+          <returntype>{returnType@ _*}</returntype>
+        </functiontype> => {
+          val t1 = for (<arg>{t@ _*}</arg> <- argtypes) yield typeFromXML(t)
+          FunctionType(typeFormalArity.text.trim.toInt, t1.toList,
+              typeFromXML(returnType))
+        }
+      case <typeabstraction>
+          <typearity>{typeFormalArity@ _*}</typearity>
+          <atype>{t@ _*}</atype>
+        </typeabstraction> => TypeAbstraction(typeFormalArity.text.trim.toInt, typeFromXML(t))
+      case <importedtype>{classname@ _*}</importedtype> =>
+        ImportedType(classname.text.trim)
+      case <classtype>{classname@ _*}</classtype> => ClassType(classname.text.trim)
+      // TODO: variant 
+    }
   }
   
   import orc.compile.StandardOrcCompiler
