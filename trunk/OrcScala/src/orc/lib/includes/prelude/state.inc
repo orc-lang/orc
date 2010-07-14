@@ -346,6 +346,11 @@ a.fill(0) >> each(a)]]></programlisting>
 site Array = "orc.lib.state.JavaArray"
 type Array = "orc.lib.state.types.ArrayType"
 
+--TODO: define former array methods: get set slice fill length
+def slice(xs, from, until) =
+  class ScalaPredef = "scala.Predef"
+  ScalaPredef.refArrayOps(xs).slice(from, until)
+
 {--
 @def IArray[A](Integer, lambda (Integer) :: A)(Integer) :: A
 The call <code>IArray(n,f)</code>, where <code>n</code> is a

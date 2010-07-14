@@ -20,7 +20,7 @@ import orc.error.runtime.UncallableValueException
 import orc.error.OrcException
 import orc.error.runtime.JavaException
 import orc.values._
-import orc.values.sites.JavaObjectProxy
+import orc.values.sites.JavaCall
 import orc.values.sites.Site
 
 
@@ -48,7 +48,7 @@ trait SupportForJavaObjectInvocation extends InvocationBehavior {
   override def invoke(t: TokenAPI, v: AnyRef, vs: List[AnyRef]) { 
     v match {
       case v : OrcValue => super.invoke(t, v, vs)
-      case obj => invoke(t, JavaObjectProxy(obj), vs)
+      case _ => JavaCall(v, vs, t)
     }
   }
 
