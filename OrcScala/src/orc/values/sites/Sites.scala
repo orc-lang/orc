@@ -29,6 +29,7 @@ trait Site extends OrcValue {
   override def toOrcSyntax() = this.name
   def extract: Option[PartialSite] = {
     throw (new Exception("Site " + this + " has no default extractor."))
+    None
   }
 }
 
