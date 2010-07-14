@@ -6,7 +6,7 @@ def sum(lambda(Integer)::Integer, Buffer[Integer], Integer) :: Integer
 def sum(a, b, n) =
 	def aux(Integer, Integer) :: Integer
   def aux(l, h) =
-    if (l = h) then (a(l) >x> b.put(x) >> x)
+    if (l = h) then (a(l)? >x> b.put(x) >> x)
     else aux(l, floor((l+h)/2)) + aux(floor((l+h)/2)+1, h)
   aux(0, n-1)
 
