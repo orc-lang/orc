@@ -67,7 +67,7 @@ def sort(l, r) =
 -------------- End of Sort an array segment -------------
 
 {- Goal Expression for quicksort(a) -}
-sort(0, a.length()-1)
+sort(0, a.length?-1)
 
 --------------  Test Routines -------------
 {- sorted(xs) returns true if non-empty list xs is sorted.

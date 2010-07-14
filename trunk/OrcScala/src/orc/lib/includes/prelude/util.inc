@@ -137,11 +137,11 @@ a.get(0) | a.get(1) | a.get(2)]]></programlisting>
 def fillArray[A](Array[A], lambda (Integer) :: A)
   :: Array[A]
 def fillArray(a, f) =
-  val n = a.length()
+  val n = a.length?
   def fill(Integer, lambda(Integer) :: A) :: Bot
   def fill(i, f) =
     if i = n then stop
-    else ( a.set(i, f(i)) >> stop
+    else ( a(i) := f(i) >> stop
          | fill(i+1, f) )
   fill(0, f) ; a
 

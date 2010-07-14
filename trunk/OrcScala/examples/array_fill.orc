@@ -9,16 +9,16 @@ val b =
 -- A mutable array initialized to constant value 0
 val c = 
   Array[Integer](3) >a>
-  a.fill(0) >>
+  fill(a, 0) >>
   a
 
 -- Publish the values of each array in
 -- a predictable sequence
 val pubs = Buffer[Integer]()
 (
-  pubs.put(a(0)) >> stop
-  ; pubs.put(a(1)) >> stop
-  ; pubs.put(a(2)) >> stop
+  pubs.put(a(0)?) >> stop
+  ; pubs.put(a(1)?) >> stop
+  ; pubs.put(a(2)?) >> stop
   ; each(b) >x> pubs.put(x) >> stop
   ; each(c) >x> pubs.put(x) >> stop
   ; pubs.close() >> stop

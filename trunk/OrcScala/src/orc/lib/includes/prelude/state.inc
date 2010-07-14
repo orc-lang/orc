@@ -298,7 +298,7 @@ More complex example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: 0 1 2
 val a = Array(3)
-for(0, a.length()) >i>
+for(0, a.length?) >i>
 a(i) := i >>
 stop
 ; a(0)? | a(1)? | a(2)?]]></programlisting>
@@ -326,7 +326,7 @@ Set the element of the array given by the index, counting from 0.
 Return a copy of the portion of the array with indices covered by the given
 half-open range. The result array is still indexed counting from 0.
 
-@method Array[A].length() :: Integer
+@method Array[A].length? :: Integer
 Return the size of the array.
 
 @method Array[A].fill(A) :: Signal
@@ -347,9 +347,17 @@ site Array = "orc.lib.state.JavaArray"
 type Array = "orc.lib.state.types.ArrayType"
 
 --TODO: define former array methods: get set slice fill length
+def slice(Array, Integer, Integer) :: Signal
 def slice(xs, from, until) =
   class ScalaPredef = "scala.Predef"
   ScalaPredef.refArrayOps(xs).slice(from, until)
+
+def fill[A](Array, A) :: Signal
+def fill(a, x) =
+  def fillBelow(i) =
+    if i <: 0 then signal
+    else ((a(i) := x), fillBelow(i-1)) >> signal
+  fillBelow(a.length?-1)
 
 {--
 @def IArray[A](Integer, lambda (Integer) :: A)(Integer) :: A
@@ -379,8 +387,8 @@ def IArray(n, f) =
   def fill(Integer, lambda (Integer) :: A) :: Signal
   def fill(i, f) =
     if i <: 0 then signal
-    else (a.set(i, f(i)), fill(i-1, f)) >> signal
-  fill(n-1, f) >> a.get
+    else ((a(i) := f(i)), fill(i-1, f)) >> signal
+  fill(n-1, f) >> a
 
 
 {--
