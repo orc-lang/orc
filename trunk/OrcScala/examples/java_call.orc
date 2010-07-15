@@ -44,23 +44,22 @@ class FieldTestClass = "org.omg.CORBA.portable.ServantObject"
 
 -- 12. Conversion tests: Test Java-Orc conversion
 (if (
-	127.byteValue() = 127 &&
+	126.byteValue() = 126 &&
 	8e307.doubleValue() :> 7.99e307 && 
 	1e38.floatValue() :> 0.99e38 &&
-	2147483647.intValue() = 2147483647 &&
-	9223372036854775807.longValue() = 9223372036854775807 &&
-	32767.shortValue() = 32767
+	2147483640.intValue() = 2147483640 &&
+	9223372036854775800.longValue() = 9223372036854775800 &&
+	32766.shortValue() = 32766
     ) then "12 pass" else "12 FAIL") |
 
---TODO:
 
+--TODO: These require a custom Java class to test against: 
 -- "apply" default method
 -- identical member name -- method vs. field
-
 -- Invocation conversions.... prim widen, subclass, box, box-subclass, unbox, unbox-widen 
 -- Overloading where boxing would select a different method (i.e. JLS 15.12.2 Phase 1 & 2 different)
 -- Check "most specific" picks right method
--- Ambigous
+-- Ambiguous method invocation
 
 stop
 
