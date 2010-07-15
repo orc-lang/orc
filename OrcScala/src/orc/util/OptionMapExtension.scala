@@ -13,7 +13,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc
+package orc.util
 
 object OptionMapExtension {
 
