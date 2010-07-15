@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import orc.TokenAPI;
-import orc.error.runtime.MessageNotUnderstoodException;
 import orc.error.runtime.TokenException;
 import orc.error.runtime.UncallableValueException;
 
@@ -61,7 +60,7 @@ public abstract class DotSite extends SiteAdaptor  {
 		if (m != null) {
 			t.publish(object2value(m));
 		} else {
-			throw new MessageNotUnderstoodException(f, this.name());
+			throw new NoSuchMethodError(f + " in " + name());
 		}
 	}
 
