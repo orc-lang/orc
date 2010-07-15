@@ -45,7 +45,7 @@ public class JavaArray extends EvalSite {
 	public Object evaluate(final Args args) throws TokenException {
 		if (args.size() == 1) {
 			return Array.newInstance(Object.class, args.intArg(0));
-		} else if (args.size() == 1) {
+		} else if (args.size() == 2) {
 			final Class<?> type = types.get(args.stringArg(1));
 			if (type == null) {
 				throw new SiteException("Unrecognized array element type: " + args.stringArg(0));
