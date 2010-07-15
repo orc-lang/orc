@@ -16,7 +16,6 @@
 package orc.compile.translate
 
 import scala.collection.immutable._
-import orc.PartialMapExtension._
 import orc.oil.named._
 import orc.oil._
 import orc.compile.ext

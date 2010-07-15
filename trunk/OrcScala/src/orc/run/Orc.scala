@@ -20,7 +20,6 @@ import orc.TokenAPI
 import orc.OrcEvent
 import orc.oil._
 import orc.oil.nameless._
-import orc.PartialMapExtension._
 import orc.values.sites.Site
 import orc.values.OrcValue
 import orc.values.Closure

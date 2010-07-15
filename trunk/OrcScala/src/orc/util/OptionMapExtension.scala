@@ -15,11 +15,11 @@
 
 package orc
 
-object PartialMapExtension {
+object OptionMapExtension {
 
-  // Adds a partialMap method to lists
-  class ListWithPartialMap[A](xs: List[A]) {
-    def partialMap[B](f: A => Option[B]): Option[List[B]] = {
+  // Adds an optionMap method to lists
+  class ListWithOptionMap[A](xs: List[A]) {
+    def optionMap[B](f: A => Option[B]): Option[List[B]] = {
         def helperFunction(xs: List[A], ys: List[B]): Option[List[B]] = { 
             xs match {
               case Nil => Some(ys.reverse)
@@ -32,6 +32,6 @@ object PartialMapExtension {
         helperFunction(xs, Nil)
     }
   }
-  implicit def addPartialMapToList[A](xs: List[A]) = new ListWithPartialMap(xs)
+  implicit def addOptionMapToList[A](xs: List[A]) = new ListWithOptionMap(xs)
 
 }

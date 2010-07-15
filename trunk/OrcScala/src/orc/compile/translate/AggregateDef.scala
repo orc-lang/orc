@@ -15,7 +15,7 @@
 
 package orc.compile.translate
 
-import orc.PartialMapExtension._
+import orc.OptionMapExtension._
 import orc.compile.ext._
 import orc.oil.named
 
@@ -105,7 +105,7 @@ object AggregateDef {
 	
 	def formalsPartition(formals: List[Pattern]): (List[Pattern], Option[List[Type]]) = {
 		val maybePartitioned = 
-			formals partialMap {
+			formals optionMap {
 				case TypedPattern(p, t) => Some(p, t)
 				case _ => None
 			}
