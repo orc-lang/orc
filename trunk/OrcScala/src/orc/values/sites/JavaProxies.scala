@@ -24,7 +24,6 @@ import orc.error.NotYetImplementedException
 import orc.error.runtime.JavaException
 import orc.error.runtime.ArityMismatchException
 import orc.error.runtime.ArgumentTypeMismatchException
-import orc.error.runtime.MessageNotUnderstoodException
 import orc.error.runtime.MalformedArrayAccessException
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.{Member => JavaMember}
@@ -63,6 +62,7 @@ abstract class JavaProxy extends Site {
 
   lazy val javaClassName: String = javaClass.getCanonicalName()
 
+  /** Java to Orc value conversion */
   def java2orc(javaValue: Object): AnyRef = javaValue match {
     case _: java.lang.Void => orc.values.Signal
     case i: java.lang.Byte => BigInt(i.byteValue)
@@ -77,8 +77,10 @@ abstract class JavaProxy extends Site {
     case v => v 
   }
 
+  /** Convenience method for <code>Orc2java(orcValue, classOf[Object])</code> */
   def orc2java(orcValue: AnyRef): Object = orc2java(orcValue, classOf[Object])
 
+  /** Orc to Java value conversion, given an expected Java type */
   def orc2java(orcValue: AnyRef, expectedType: Class[_]): Object =
     orcValue match {
       case i: BigInt => {
@@ -103,11 +105,13 @@ abstract class JavaProxy extends Site {
       case _ => orcValue.asInstanceOf[Object]
     }
 
+  /** Does this class have a method or field of the given name? */
   def hasMember(memberName: String): Boolean =
     //TODO: Memoize!  This is expensive!
     javaClass.getMethods().exists({_.getName().equals(memberName)}) ||
         javaClass.getFields().exists({_.getName().equals(memberName)})
 
+  /** Invoke a method on the given Java object of the given name with the given arguments */
   def invoke(theObject: Object, methodName: String, args: List[AnyRef]): AnyRef = {
     val unOrcWrappedArgs = args.map(orc2java(_)) // Un-wrapped from Orc's Literal, JavaObjectProxy, etc., but not Orc number conversions
     val method = try { 
@@ -158,6 +162,7 @@ abstract class JavaProxy extends Site {
     def invoke(obj: Object, args: Array[Object]): Object = ctor.newInstance(args: _*).asInstanceOf[Object]
   }
 
+  /** Given a mthod name and arg list, find the correct Method to call, per JLS §15.12.2's rules */
   def chooseMethodForInvocation(memberName: String, args: List[Object]): Invocable = {
     //Phase 0: Identify Potentially Applicable Methods
     //A member method is potentially applicable to a method invocation if and only if all of the following are true:
@@ -178,7 +183,7 @@ abstract class JavaProxy extends Site {
          m.isVarArgs() && m.getParameterTypes().size-1 <= args.size)})
     Logger.finest(memberName+" potentiallyApplicableMethods="+potentiallyApplicableMethods.mkString("{", ", ", "}"))
     if (potentiallyApplicableMethods.isEmpty) {
-      throw new MessageNotUnderstoodException(methodName, javaClass.getName())
+      throw new NoSuchMethodException(methodName + " in " + javaClass.getName())
     }
 
     //Phase 1: Identify Matching Arity Methods Applicable by Subtyping
@@ -208,13 +213,14 @@ abstract class JavaProxy extends Site {
     throw new orc.error.runtime.MethodTypeMismatchException(memberName, javaClass);
   }
 
+  /** Given a formal param list and an actual arg list, determine if the method applies per JLS §15.12.2.2/3 rules */ 
   private def isApplicable(formalParamType: Class[_], actualArg: Object, allowConversion: Boolean): Boolean = {
     // allowConversion refers to method invocation conversion (JLS §5.3), which is one of:
     // 0. identity conversion
     // 1. widening primitive conversion (JLS §5.1.2) -- one of 19 conversions
     // 2. widening reference conversion (JLS §5.1.5) -- i.e., normal subtyping
     // 3. boxing conversion (one of 8) (JLS §5.1.7) optionally followed by widening reference conversion
-    // 4. unboxing conversion (one of 8) (§5.1.8) optionally followed by a widening primitive conversion
+    // 4. unboxing conversion (one of 8) (JLS §5.1.8) optionally followed by a widening primitive conversion
     // "Method invocation conversions specifically do not include the implicit narrowing of integer constants which is part of assignment conversion"
 
     //TODO: Consider converting OrcList, etc. to java List, etc.
@@ -234,6 +240,7 @@ abstract class JavaProxy extends Site {
     }
   }
 
+  // Java's reference types for primitive types
   private val booleanRefClass = classOf[java.lang.Boolean]
   private val byteRefClass = classOf[java.lang.Byte]
   private val charRefClass = classOf[java.lang.Character]
@@ -243,9 +250,11 @@ abstract class JavaProxy extends Site {
   private val floatRefClass = classOf[java.lang.Float]
   private val doubleRefClass = classOf[java.lang.Double]
   
+  // Orc's numeric types
   private val orcIntegralClass = classOf[BigInt]
   private val orcFloatingPointClass = classOf[BigDecimal]
 
+  /** Java boxing conversion per JLS §5.1.7 */
   private def box(primType: Class[_]): Class[_] = {
     primType match {
       case java.lang.Boolean.TYPE => booleanRefClass
@@ -260,6 +269,7 @@ abstract class JavaProxy extends Site {
     }
   }
 
+  /** Java unboxing conversion per JLS §5.1.8 */
   private def unbox(refType: Class[_]): Class[_] = {
     refType match {
       case `booleanRefClass` => java.lang.Boolean.TYPE
@@ -287,6 +297,7 @@ abstract class JavaProxy extends Site {
     })
   }
 
+  /** "true" if an Orc value conversion applies */
   private def isOrcJavaNumConvertable(fromType: Class[_], toType: Class[_]): Boolean = {
     toType match {
       case `byteRefClass` => orcIntegralClass.isAssignableFrom(fromType)
@@ -305,6 +316,7 @@ abstract class JavaProxy extends Site {
     }
   }
 
+  /** Most specific method per JLS §15.12.2.5 */
   private def mostSpecificMethod[M <: {def getDeclaringClass(): java.lang.Class[_]; def getParameterTypes(): Array[java.lang.Class[_]]; def getModifiers(): Int}](methods: List[M]): M = {
     //FIXME:TODO: Implement var arg calls
     val maximallySpecificMethods = 
@@ -338,7 +350,7 @@ abstract class JavaProxy extends Site {
     }
   }
   
-  /** left is more or equally specific than right */
+  /** Left is more or equally specific than right (per JLS §15.12.2.5) */
   private def isEqOrMoreSpecific(left: {def getDeclaringClass(): java.lang.Class[_]; def getParameterTypes(): Array[java.lang.Class[_]]}, right: {def getDeclaringClass(): java.lang.Class[_]; def getParameterTypes(): Array[java.lang.Class[_]]}): Boolean = {
     if (isSameArgumentTypes(left, right)) {
       left.getDeclaringClass().getClasses().contains(right.getDeclaringClass())  // An override is more specific than super
@@ -347,11 +359,13 @@ abstract class JavaProxy extends Site {
     }
   }
 
+  /** Java subtyping per JLS §4.10 */
   private def isJavaSubtypeOf(left: java.lang.Class[_], right: java.lang.Class[_]): Boolean = {
     (left == right) || (right.isAssignableFrom(left)) || isPrimWidenable(left, right) ||
     (left.isArray && right.isArray && isJavaSubtypeOf(left.getComponentType, right.getComponentType))
   }
 
+  /** Same argument types per JLS §8.4.2 */
   private def isSameArgumentTypes(left: {def getParameterTypes(): Array[java.lang.Class[_]]}, right: {def getParameterTypes(): Array[java.lang.Class[_]]}): Boolean = {
     left.getParameterTypes().length == right.getParameterTypes().length &&
     left.getParameterTypes().corresponds(right.getParameterTypes())({(l,r) => r.isAssignableFrom(l) && l.isAssignableFrom(r)})
@@ -415,7 +429,7 @@ case class JavaMemberProxy(val theObject: Object, val memberName: String) extend
   def call(args: List[AnyRef], callingToken: TokenAPI) {
     args match {
       case List(OrcField(submemberName)) => {
-        // In violation of JLS 10.7, arrays don't really have a length field!  Java bug 5047859
+        // In violation of JLS §10.7, arrays don't really have a length field!  Java bug 5047859
         if (memberName.equals("length") && submemberName.equals("read") && javaClass.isArray())
           return callingToken.publish(new JavaArrayLengthPseudofield(theObject.asInstanceOf[Array[Any]]))
 
@@ -515,7 +529,7 @@ case class JavaArrayAccess(val theArray: Array[Any], val index: Int) extends Jav
       case List(OrcField("read")) => callingToken.publish(new JavaArrayDerefSite(theArray, index))
       case List(OrcField("readnb")) => callingToken.publish(new JavaArrayDerefSite(theArray, index))
       case List(OrcField("write")) => callingToken.publish(new JavaArrayAssignSite(theArray, index))
-      case List(OrcField(fieldname)) => throw new MessageNotUnderstoodException(fieldname, "Ref") //A "white lie"
+      case List(OrcField(fieldname)) => throw new NoSuchMethodException(fieldname + " in Ref") //A "white lie"
       case List(v) => throw new ArgumentTypeMismatchException(0, "message", v.getClass().toString())
       case _ => throw new ArityMismatchException(1, args.length) //Is there a better exception to throw?
     }

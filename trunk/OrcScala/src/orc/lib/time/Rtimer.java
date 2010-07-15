@@ -16,7 +16,6 @@ package orc.lib.time;
 import java.util.TimerTask;
 
 import orc.TokenAPI;
-import orc.error.runtime.MessageNotUnderstoodException;
 import orc.error.runtime.TokenException;
 import orc.types.Type;
 import orc.values.sites.compatibility.Args;
@@ -53,7 +52,7 @@ public class Rtimer extends SiteAdaptor {
 				}
 			});
 		} else {
-			throw new MessageNotUnderstoodException(f, name());
+			throw new NoSuchMethodError(f + " in " + name());
 		}
 	}
 }
