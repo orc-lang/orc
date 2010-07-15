@@ -26,7 +26,6 @@ import orc.values.OrcValue
 import orc.values.Closure
 import orc.error.OrcException
 import orc.error.runtime.TokenException
-import orc.error.runtime.JavaException
 import orc.error.runtime.UncallableValueException
 import orc.error.runtime.ArityMismatchException
 
@@ -467,7 +466,14 @@ trait Orc extends OrcRuntime {
     
     override def !!(e: OrcException) { 
       e.setPosition(node.pos)
-      //TODO: e.backtrace = all of the FunctionFrame.callpoint.pos in this token's stack
+      e match {
+        case te: TokenException if (te.getBacktrace() == null || te.getBacktrace().length == 0) => {
+          val callStack = stack.filter({_.isInstanceOf[FunctionFrame]}).map({_.asInstanceOf[FunctionFrame]})
+          val callPoints = callStack.map({_.callpoint.pos})
+          te.setBacktrace(callPoints.toArray)
+        }
+        case _ => { }
+      }
       caught(e) 
       halt
     }
