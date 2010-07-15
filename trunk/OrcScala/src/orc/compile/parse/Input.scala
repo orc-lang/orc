@@ -31,7 +31,8 @@ trait PositionWithFilename extends Position {
 }
 
 /**
- * Position that understands files
+ * Position that understands files.
+ * (Also fixes bug in OffsetPosition.lineContents)
  *
  * @author jthywiss
  */
@@ -50,6 +51,8 @@ class OrcPosition(source: java.lang.CharSequence, val filename: String, offset: 
       case p => super.<(p)
     }
   }
+  
+  override def lineContents = super.lineContents.stripLineEnd
 
 }
 
