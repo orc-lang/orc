@@ -468,8 +468,7 @@ trait Orc extends OrcRuntime {
       e.setPosition(node.pos)
       e match {
         case te: TokenException if (te.getBacktrace() == null || te.getBacktrace().length == 0) => {
-          val callStack = stack.filter({_.isInstanceOf[FunctionFrame]}).map({_.asInstanceOf[FunctionFrame]})
-          val callPoints = callStack.map({_.callpoint.pos})
+          val callPoints = stack collect { case f : FunctionFrame => f.callpoint.pos }
           te.setBacktrace(callPoints.toArray)
         }
         case _ => { }
