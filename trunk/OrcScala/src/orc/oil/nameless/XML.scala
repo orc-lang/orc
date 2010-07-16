@@ -21,12 +21,19 @@ import orc.oil.nameless._
 
 object OrcXML {
   
-  def writeXML(e : NamelessAST) {
+  def writeXML(e : NamelessAST) : Elem = {
     val xmlout = <orc>
     {toXML(e)}
     </orc>    
-    val pp = new PrettyPrinter(0, 0)
-    println(pp.format(xmlout))
+    trimElem(xmlout) 
+  }
+  
+  def trimElem(x : Elem) : Elem =  {
+      val nc = x.child filter {a => 
+          if (a.isInstanceOf[Text] && a.text.trim == "") false
+          else true
+      } map {a => if (a.isInstanceOf[Elem]) trimElem(a.asInstanceOf[Elem]) else a}
+      x.copy(child=nc)
   }
   
   def toXML(e : NamelessAST) : Elem = {
@@ -209,7 +216,7 @@ object OrcXML {
     }
   }
 
-  def anyRefFromXML(inxml: Seq[scala.xml.Node]) : AnyRef = {
+  def anyRefFromXML(inxml: scala.xml.Node) : AnyRef = {
     inxml match { 
       case <nil/> => null
       case <boolean>{b@ _*}</boolean> => b.text.trim.toBoolean.asInstanceOf[AnyRef]
@@ -219,8 +226,9 @@ object OrcXML {
       case <jclassproxy>{x@ _*}</jclassproxy> => 
         new orc.values.sites.JavaClassProxy(
               Class.forName(x.text.trim).asInstanceOf[Class[Object]])
-      case <site>{c@ _*}</site> => 
+      case <site>{c@ _*}</site> => {
         Class.forName(c.text.trim).asInstanceOf[Class[orc.values.sites.Site]].newInstance
+      }
       case <signal/> => orc.values.Signal
       case <field>{s@ _*}</field> => orc.values.Field(s.text.trim)
       case _ =>  throw new Error("Invalid XML Node!")
@@ -228,74 +236,54 @@ object OrcXML {
   }
 
   
-  def fromXML(inxml: Seq[scala.xml.Node]) : Expression = {
+  def fromXML(inxml: scala.xml.Node) : Expression = {
     inxml match {
-      case <orc>{prog@ _*}</orc> => fromXML(prog)
+      case <orc>{prog}</orc> => fromXML(prog)
       case <stop/> => Stop()
-      case <parallel><left>{left@ _*}</left>
-        <right>{right@ _*}</right></parallel> => Parallel(fromXML(left), fromXML(right))
-      case <sequence><left>{left@ _*}</left>
-        <right>{right@ _*}</right></sequence> => Sequence(fromXML(left), fromXML(right))
-      case <prune><left>{left@ _*}</left>
-        <right>{right@ _*}</right></prune> => Prune(fromXML(left), fromXML(right))
-      case <otherwise><left>{left@ _*}</left>
-        <right>{right@ _*}</right></otherwise> => Otherwise(fromXML(left), fromXML(right))
-      case <declaredefs>
-          <unclosedvars>{uvars@ _*}</unclosedvars>
-          <defs>{defs@ _*}</defs>
-          <body>{body@ _*}</body>
-        </declaredefs> => {
+      case <parallel><left>{left}</left><right>{right}</right></parallel> => 
+        Parallel(fromXML(left), fromXML(right))
+      case <sequence><left>{left}</left><right>{right}</right></sequence> => 
+        Sequence(fromXML(left), fromXML(right))
+      case <prune><left>{left}</left><right>{right}</right></prune> => 
+        Prune(fromXML(left), fromXML(right))
+      case <otherwise><left>{left}</left><right>{right}</right></otherwise> => 
+        Otherwise(fromXML(left), fromXML(right))
+      case <declaredefs><unclosedvars>{uvars@ _*}</unclosedvars><defs>{defs@ _*}</defs><body>{body}</body></declaredefs> => {
           val t1 = for (<uv>{i @ _*}</uv> <- uvars) yield i.text.toInt
-          val t2 = for (<adef>{d @ _*}</adef> <- defs) yield defFromXML(d)
+          val t2 = for (<adef>{d}</adef> <- defs) yield defFromXML(d)
           val t3 = fromXML(body)
           DeclareDefs(t1.toList, t2.toList, t3)
         }
-      case <call>
-        <target>{target@ _*}</target>
-        <args>{args@ _*}</args>
-        <typeargs>{typeargs@ _*}</typeargs>
-        </call> => {
+      case <call><target>{target}</target><args>{args@ _*}</args><typeargs>{typeargs@ _*}</typeargs></call> => {
           val t1 = argumentFromXML(target)
-          val t2 = for (<arg>{a @ _*}</arg> <- args) yield argumentFromXML(a)
-          val t3 = for (<arg>{a @ _*}</arg> <- args) yield typeFromXML(a)
+          val t2 = for (<arg>{a}</arg> <- args) yield argumentFromXML(a)
+          val t3 = for (<arg>{a}</arg> <- typeargs) yield typeFromXML(a)
           Call(t1, t2.toList, if (t3.size==0) None else Some(t3.toList))
         }
-      case <declaretype>
-        <atype>{atype@ _*}</atype>
-        <body>{body@ _*}</body>
-        </declaretype> => {
+      case <declaretype><atype>{atype}</atype><body>{body}</body></declaretype> => {
           DeclareType(typeFromXML(atype), fromXML(body))
         }
-      case <hastype>
-          <body>{body@ _*}</body>
-          <expectedtype>{expectedType@ _*}</expectedtype>
-        </hastype> => {
+      case <hastype><body>{body}</body><expectedtype>{expectedType}</expectedtype></hastype> => {
           HasType(fromXML(body), typeFromXML(expectedType))
         }
-      case <constant>{v@ _*}</constant> => Constant(anyRefFromXML(v))
+      case <constant>{v}</constant> => Constant(anyRefFromXML(v))
       case <variable>{i@ _*}</variable> => Variable(i.text.trim.toInt)
       
     }    
   }
   
-  def argumentFromXML(inxml: Seq[scala.xml.Node]) : Argument = {
+  def argumentFromXML(inxml: scala.xml.Node) : Argument = {
     inxml match {
-      case <constant>{c@ _*}</constant> => Constant(c.text)
+      case <constant>{c}</constant> => Constant(anyRefFromXML(c))
       case <variable>{v@ _*}</variable> => Variable(v.text.toInt)
     }
   }
   
-  def defFromXML(inxml: Seq[scala.xml.Node]) : Def = {
+  def defFromXML(inxml: scala.xml.Node) : Def = {
     inxml match {
-      case <definition>
-      <typearity>{typeFormalArity@ _*}</typearity>
-      <arity>{arity@ _*}</arity>
-      <body>{body@ _*}</body>
-      <argtypes>{argTypes@ _*}</argtypes>
-      <returntype>{returnType@ _*}</returntype>
-      </definition> => {
+      case <definition><typearity>{typeFormalArity@ _*}</typearity><arity>{arity@ _*}</arity><body>{body}</body><argtypes>{argTypes@ _*}</argtypes><returntype>{returnType}</returntype></definition> => {
         val t1 = if (argTypes.text.trim == "") None 
-            else Some((for (<arg>{a @ _*}</arg> <- argTypes) yield typeFromXML(a)).toList)
+            else Some((for (<arg>{a}</arg> <- argTypes) yield typeFromXML(a)).toList)
         
         val t2 = if (returnType.text.trim == "") None
           else Some(typeFromXML(returnType))
@@ -304,45 +292,49 @@ object OrcXML {
     }
   }
   
-  def typeFromXML(inxml: Seq[scala.xml.Node]) : Type = {
+  def typeFromXML(inxml: scala.xml.Node) : Type = {
     inxml match {
       case <top/> => Top()
       case <bot/> => Bot()
       case <typevar>{i@ _*}</typevar> => TypeVar(i.text.trim.toInt)
       case <tupletype>{elements@ _*}</tupletype> => {
-        val t1 = for (<element>{e @ _*}</element> <- elements) yield typeFromXML(e)
+        val t1 = for (<element>{e}</element> <- elements) yield typeFromXML(e)
         TupleType(t1.toList)
       }
       case <recordtype>{entries@ _*}</recordtype> => {
         var t1 : Map[String, Type] = Map.empty
-        for(<entry><name>{n@ _*}</name><rtype>{t@ _*}</rtype></entry> <- entries) 
+        for(<entry><name>{n@ _*}</name><rtype>{t}</rtype></entry> <- entries) 
           t1 +=  n.text.trim -> typeFromXML(t)
         RecordType(t1)
       }
-      case <typeapplication><typeconst>{tycon@ _*}</typeconst>
-          <typeactuals>{tactuals@ _*}</typeactuals></typeapplication> => {
-            val t1 = for (<typeactual>{t@ _*}</typeactual> <- tactuals) yield typeFromXML(t)
+      case <typeapplication><typeconst>{tycon@ _*}</typeconst><typeactuals>{tactuals@ _*}</typeactuals></typeapplication> => {
+            val t1 = for (<typeactual>{t}</typeactual> <- tactuals) yield typeFromXML(t)
             TypeApplication(tycon.text.trim.toInt, t1.toList)
           }
-      case <assertedtype>{assertedType@ _*}</assertedtype> => 
+      case <assertedtype>{assertedType}</assertedtype> => 
         AssertedType(typeFromXML(assertedType))
-      case <functiontype>
-          <typearity>{typeFormalArity@ _*}</typearity>
-          <argtypes>{argtypes@ _*}</argtypes>
-          <returntype>{returnType@ _*}</returntype>
-        </functiontype> => {
-          val t1 = for (<arg>{t@ _*}</arg> <- argtypes) yield typeFromXML(t)
+      case <functiontype><typearity>{typeFormalArity@ _*}</typearity><argtypes>{argtypes@ _*}</argtypes><returntype>{returnType}</returntype></functiontype> => {
+          val t1 = for (<arg>{t}</arg> <- argtypes) yield typeFromXML(t)
           FunctionType(typeFormalArity.text.trim.toInt, t1.toList,
               typeFromXML(returnType))
         }
-      case <typeabstraction>
-          <typearity>{typeFormalArity@ _*}</typearity>
-          <atype>{t@ _*}</atype>
-        </typeabstraction> => TypeAbstraction(typeFormalArity.text.trim.toInt, typeFromXML(t))
+      case <typeabstraction><typearity>{typeFormalArity@ _*}</typearity><atype>{t}</atype></typeabstraction> => 
+        TypeAbstraction(typeFormalArity.text.trim.toInt, typeFromXML(t))
       case <importedtype>{classname@ _*}</importedtype> =>
         ImportedType(classname.text.trim)
       case <classtype>{classname@ _*}</classtype> => ClassType(classname.text.trim)
-      // TODO: variant 
+      case <varianttype>{variants@ _*}</varianttype> => {
+        val t1 = 
+           for (<variant><name>{n@ _*}</name><params>{params@ _*}</params></variant> <- variants) yield {
+             val t2 = for (<param>{p}</param> <- params) yield {
+               if (p.text.trim == "") None
+               else Some(typeFromXML(p))
+             }
+             (n.text.trim, t2.toList)
+           }
+        VariantType(t1.toList)
+      }
+
     }
   }
   
@@ -367,7 +359,18 @@ object OrcXML {
     val reader = OrcReader(new java.io.FileReader(ExperimentOptions.filename), ExperimentOptions.filename, compiler.openInclude(_, _, ExperimentOptions))
     val compiledOil = compiler(reader, ExperimentOptions)
     if (compiledOil != null) {
-      OrcXML.writeXML(compiledOil)
+      println(compiledOil)
+      val x = OrcXML.writeXML(compiledOil)
+      println(x)
+      val e = OrcXML.fromXML(x)
+      println(e)
+      val orc = new StandardOrcRuntime()
+      try {
+      orc.runSynchronous(e, { v: AnyRef => println("Published: " + Format.formatValue(v)) })
+      } finally {
+        orc.stop // kill threads and reclaim resources
+      }
+
     }
     else {
       Console.err.println("Compilation failed.")
