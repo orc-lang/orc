@@ -15,7 +15,7 @@
 
 package orc.compile.translate
 
-import orc.OptionMapExtension._
+import orc.util.OptionMapExtension._
 import orc.compile.ext._
 import orc.oil.named
 
