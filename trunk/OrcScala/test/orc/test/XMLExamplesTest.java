@@ -1,8 +1,8 @@
 //
-// ExamplesTest.java -- Java class ExamplesTest
+// XMLExamplesTest.java -- Java class XMLExamplesTest
 // Project OrcScala
 //
-// $Id: ExamplesTest.java -1   $
+// $Id: XMLExamplesTest.java 1934 2010-07-19 18:57:03Z jthywissen $
 //
 // Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
@@ -34,8 +34,6 @@ import orc.OrcCompilerProvides;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.CompileLogger;
 import orc.error.compiletime.ExceptionCompileLogger;
-
-import org.kohsuke.args4j.CmdLineException;
 
 import test.orc.OrcEngine;
 
@@ -79,36 +77,36 @@ import test.orc.OrcEngine;
  *
  * @author quark, srosario
  */
-public class ExamplesTest {
-	public static Test suite() {
-		return buildSuite();
-	}
+public class XMLExamplesTest {
+    public static Test suite() {
+        return buildSuite();
+    }
 
-	public static TestSuite buildSuite() {
-		final TestSuite suite = new TestSuite("orc.test.ExamplesTest");
-		final LinkedList<File> files = new LinkedList<File>();
-		TestUtils.findOrcFiles(new File("examples"), files);
-		for (final File file : files) {
-			final ExpectedOutput expecteds;
-			try {
-				expecteds = extractExpectedOutput(file);
-			} catch (final IOException e) {
-				throw new AssertionError(e);
-			}
-			// skip tests with no expected output
-			if (expecteds.isEmpty()) {
-				continue;
-			}
-			suite.addTest(new TestCase(file.toString()) {
-				@Override
-				public void runTest() throws IOException, CmdLineException, CompilationException, InterruptedException, Throwable, TimeoutException {
-				    System.out.println("\n==== Starting "+file+" ====");
-					runOrcProgram(file, expecteds);
-				}
-			});
-		}
-		return suite;
-	}
+    public static TestSuite buildSuite() {
+        final TestSuite suite = new TestSuite("orc.test.ExamplesTest");
+        final LinkedList<File> files = new LinkedList<File>();
+        TestUtils.findOrcFiles(new File("examples"), files);
+        for (final File file : files) {
+            final ExpectedOutput expecteds;
+            try {
+                expecteds = extractExpectedOutput(file);
+            } catch (final IOException e) {
+                throw new AssertionError(e);
+            }
+            // skip tests with no expected output
+            if (expecteds.isEmpty()) {
+                continue;
+            }
+            suite.addTest(new TestCase(file.toString()) {
+                @Override
+                public void runTest() throws IOException, CompilationException, InterruptedException, Throwable, TimeoutException {
+                    System.out.println("\n==== Starting "+file+" ====");
+                    runOrcProgram(file, expecteds);
+                }
+            });
+        }
+        return suite;
+    }
 
     private static class ExamplesOptions implements orc.OrcOptions {
         protected ExamplesOptions() { }
@@ -169,134 +167,73 @@ public class ExamplesTest {
   
         public void setCapability(String capName, boolean newVal) { throw new UnsupportedOperationException(); }
     }
-  	private static ExamplesOptions examplesOptions = new ExamplesOptions(); 
+    private static ExamplesOptions examplesOptions = new ExamplesOptions(); 
  
-	public static void runOrcProgram(final File file, final ExpectedOutput expecteds) throws InterruptedException, Throwable, CmdLineException, CompilationException, IOException, TimeoutException {
+    public static void runOrcProgram(final File file, final ExpectedOutput expecteds) throws InterruptedException, Throwable, CompilationException, IOException, TimeoutException {
 
-	    OrcCompilerProvides compiler = new StandardOrcCompiler() {
+        OrcCompilerProvides compiler = new StandardOrcCompiler() {
           private final CompileLogger compileLoggerRef = new ExceptionCompileLogger();
-	      @Override public CompileLogger compileLogger() { return compileLoggerRef; }
-	    };
-		final orc.oil.nameless.Expression expr = compiler.apply(new FileReader(file), examplesOptions);
-		
-		final orc.oil.nameless.Expression exprXML = orc.oil.nameless.OrcXML.fromXML(orc.oil.nameless.OrcXML.writeXML(expr));
-		
-		if (exprXML == null) {
-			throw new CompilationException("Compilation to OIL failed");
-		}
-		final OrcEngine engine = new OrcEngine();
-
-		// run the engine with a fixed timeout
-		final FutureTask<?> future = new FutureTask<Void>(new Runnable() {
-			public void run() {
-				engine.run(exprXML);
-			}
-		}, null);
-		new Thread(future).start();
-		try {
-			future.get(10L, TimeUnit.SECONDS);
-		} catch (final TimeoutException e) {
-			future.cancel(true);
-			throw e;
-		} catch (final ExecutionException e) {
-			throw e.getCause();
-		} finally { 
-		  engine.stop(); 
-		}
-		
-
-		// compare the output to the expected result
-		final String actual = engine.getOut().toString();
-		if (expecteds.contains(actual)) {
-		  return;
-		}
-		throw new AssertionError("Unexpected output:\n" + actual);
-	}
-
-	private static ExpectedOutput extractExpectedOutput(final File file) throws IOException {
-	  final BufferedReader r = new BufferedReader(new FileReader(file));
-	  List<MaybePermutableOutput> outputs = new LinkedList<MaybePermutableOutput>();
-	  
-	  boolean permutable = false;
-	  StringBuilder oneOutput = null;
-	  for (String line = r.readLine(); line != null; line = r.readLine()) {
-	      if (oneOutput != null) {
-	          if (line.startsWith("-}")) {
-	              outputs.add(new MaybePermutableOutput(permutable,oneOutput.toString()));
-	              oneOutput = null;
-	          } else {
-	              oneOutput.append(line);
-	              oneOutput.append("\n");
-	          }
-	      } else if (line.startsWith("OUTPUT:PERMUTABLE")) {
-	        permutable = true;
-	        oneOutput = new StringBuilder();
-	      } else if (line.startsWith("OUTPUT:")) {
-	        permutable = false;
-	        oneOutput = new StringBuilder();
-	      }
-	  }
-	  return new ExpectedOutput(outputs);
-	}
-}
-
-class ExpectedOutput {
-  private List<MaybePermutableOutput> outs = new LinkedList<MaybePermutableOutput>();
-  
-  public ExpectedOutput(List<MaybePermutableOutput> outputs) {
-    this.outs = outputs;
-  }
-  
-  public boolean contains(String actual) {
-    for(MaybePermutableOutput o : outs) {
-      if(o.matches(actual))
-        return true;
-    }
-    return false;
-  }
-  
-  public boolean isEmpty() {
-    return outs.isEmpty();
-  }
-}
-
-class MaybePermutableOutput {
-  private boolean permutable = false;
-  String output;
-  
-  public MaybePermutableOutput(boolean perm, String out) {
-    this.permutable = perm;
-    this.output = out;
-  }
-
-  public boolean matches(String actual) {
-      if(!permutable)
-        return output.equals(actual);
-      
-      // Check all if the actual output is a permutation of the expected output.
-      String[] actualArr = actual.split("\\n");
-      String[] expectedArr = output.split("\\n");
-      
-      if(actualArr.length != expectedArr.length)
-        return false;
-      
-      LinkedList<String> actuals = new LinkedList<String>();
-      for(String s : actualArr) {
-        actuals.add(s);
-      }
-      
-      LinkedList<String> expected = new LinkedList<String>();
-      for(String s : expectedArr) {
-        expected.add(s);
-      }
-      
-      for(String s: actuals) {
-        if(!expected.contains(s))
-          return false;
+          @Override public CompileLogger compileLogger() { return compileLoggerRef; }
+        };
+        final orc.oil.nameless.Expression expr = compiler.apply(new FileReader(file), examplesOptions);
         
-        expected.remove(s);
-      }
+        final orc.oil.nameless.Expression exprXML = orc.oil.nameless.OrcXML.fromXML(orc.oil.nameless.OrcXML.writeXML(expr));
+        
+        if (exprXML == null) {
+            throw new CompilationException("Compilation to OIL failed");
+        }
+        final OrcEngine engine = new OrcEngine();
 
-      return true;
+        // run the engine with a fixed timeout
+        final FutureTask<?> future = new FutureTask<Void>(new Runnable() {
+            public void run() {
+                engine.run(exprXML);
+            }
+        }, null);
+        new Thread(future).start();
+        try {
+            future.get(10L, TimeUnit.SECONDS);
+        } catch (final TimeoutException e) {
+            future.cancel(true);
+            throw e;
+        } catch (final ExecutionException e) {
+            throw e.getCause();
+        } finally { 
+          engine.stop(); 
+        }
+        
+
+        // compare the output to the expected result
+        final String actual = engine.getOut().toString();
+        if (expecteds.contains(actual)) {
+          return;
+        }
+        throw new AssertionError("Unexpected output:\n" + actual);
+    }
+
+    private static ExpectedOutput extractExpectedOutput(final File file) throws IOException {
+      final BufferedReader r = new BufferedReader(new FileReader(file));
+      List<MaybePermutableOutput> outputs = new LinkedList<MaybePermutableOutput>();
+      
+      boolean permutable = false;
+      StringBuilder oneOutput = null;
+      for (String line = r.readLine(); line != null; line = r.readLine()) {
+          if (oneOutput != null) {
+              if (line.startsWith("-}")) {
+                  outputs.add(new MaybePermutableOutput(permutable,oneOutput.toString()));
+                  oneOutput = null;
+              } else {
+                  oneOutput.append(line);
+                  oneOutput.append("\n");
+              }
+          } else if (line.startsWith("OUTPUT:PERMUTABLE")) {
+            permutable = true;
+            oneOutput = new StringBuilder();
+          } else if (line.startsWith("OUTPUT:")) {
+            permutable = false;
+            oneOutput = new StringBuilder();
+          }
+      }
+      return new ExpectedOutput(outputs);
     }
 }
