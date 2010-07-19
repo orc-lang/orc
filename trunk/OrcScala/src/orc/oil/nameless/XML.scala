@@ -209,25 +209,28 @@ object OrcXML {
       case i:scala.math.BigDecimal => <bigdecimal>{a}</bigdecimal>
       case x:orc.values.sites.JavaClassProxy => <jclassproxy>{x.name}</jclassproxy>
       case x:orc.values.sites.Site => 
-        <site>{a.asInstanceOf[AnyRef].getClass().getName}</site>
+        <site>{strip$(a.asInstanceOf[AnyRef].getClass().getName)}</site>
       case orc.values.Signal => <signal/>
       case orc.values.Field(s) => <field>{s}</field>
       case x:AnyRef => println(">>>> "+x.getClass); <any>{a}</any>
     }
+  }
+  
+  def strip$(s: String) : String = {
+    if (s.charAt(s.length-1) == '$') s.substring(0, s.length-1) else s
   }
 
   def anyRefFromXML(inxml: scala.xml.Node) : AnyRef = {
     inxml match { 
       case <nil/> => null
       case <boolean>{b@ _*}</boolean> => b.text.trim.toBoolean.asInstanceOf[AnyRef]
-      case <string>{s@ _*}</string> => new String(s.text.trim)
+      case <string>{s@ _*}</string> => new String(s.text)
       case <bigint>{i@ _*}</bigint> => BigInt(i.text.trim)
       case <bigdecimal>{f@ _*}</bigdecimal> => BigDecimal(f.text.trim)
       case <jclassproxy>{x@ _*}</jclassproxy> => 
-        new orc.values.sites.JavaClassProxy(
-              Class.forName(x.text.trim).asInstanceOf[Class[Object]])
+        orc.values.sites.JavaSiteForm.resolve(x.text.trim)
       case <site>{c@ _*}</site> => {
-        Class.forName(c.text.trim).asInstanceOf[Class[orc.values.sites.Site]].newInstance
+        orc.values.sites.OrcSiteForm.resolve(c.text.trim)
       }
       case <signal/> => orc.values.Signal
       case <field>{s@ _*}</field> => orc.values.Field(s.text.trim)
@@ -281,13 +284,13 @@ object OrcXML {
   
   def defFromXML(inxml: scala.xml.Node) : Def = {
     inxml match {
-      case <definition><typearity>{typeFormalArity@ _*}</typearity><arity>{arity@ _*}</arity><body>{body}</body><argtypes>{argTypes@ _*}</argtypes><returntype>{returnType}</returntype></definition> => {
+      case <definition><typearity>{typeFormalArity@ _*}</typearity><arity>{arity@ _*}</arity><body>{body@ _*}</body><argtypes>{argTypes@ _*}</argtypes><returntype>{returnType@ _*}</returntype></definition> => {
         val t1 = if (argTypes.text.trim == "") None 
             else Some((for (<arg>{a}</arg> <- argTypes) yield typeFromXML(a)).toList)
         
         val t2 = if (returnType.text.trim == "") None
-          else Some(typeFromXML(returnType))
-        Def(typeFormalArity.text.toInt, arity.text.toInt, fromXML(body), t1, t2)
+          else Some(typeFromXML(returnType.head))
+        Def(typeFormalArity.text.toInt, arity.text.toInt, fromXML(body.head), t1, t2)
       }   
     }
   }
