@@ -27,8 +27,6 @@ trait OrcOptions {
   def filename_=(newVal: String)
   def debugLevel: Int
   def debugLevel_=(newVal: Int)
-  def shortErrors: Boolean
-  def shortErrors_=(newVal: Boolean)
 
   // Compile options
   def usePrelude: Boolean
@@ -41,8 +39,6 @@ trait OrcOptions {
   def exceptionsOn_=(newVal: Boolean)
   def typecheck: Boolean
   def typecheck_=(newVal: Boolean)
-  def quietChecking: Boolean
-  def quietChecking_=(newVal: Boolean)
 
   // Execution options
   def maxPublications: Int

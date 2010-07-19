@@ -35,8 +35,6 @@ import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.CompileLogger;
 import orc.error.compiletime.ExceptionCompileLogger;
 
-import org.kohsuke.args4j.CmdLineException;
-
 import test.orc.OrcEngine;
 
 /**
@@ -101,7 +99,7 @@ public class ExamplesTest {
 			}
 			suite.addTest(new TestCase(file.toString()) {
 				@Override
-				public void runTest() throws IOException, CmdLineException, CompilationException, InterruptedException, Throwable, TimeoutException {
+				public void runTest() throws IOException, CompilationException, InterruptedException, Throwable, TimeoutException {
 				    System.out.println("\n==== Starting "+file+" ====");
 					runOrcProgram(file, expecteds);
 				}
@@ -171,7 +169,7 @@ public class ExamplesTest {
     }
   	private static ExamplesOptions examplesOptions = new ExamplesOptions(); 
  
-	public static void runOrcProgram(final File file, final ExpectedOutput expecteds) throws InterruptedException, Throwable, CmdLineException, CompilationException, IOException, TimeoutException {
+	public static void runOrcProgram(final File file, final ExpectedOutput expecteds) throws InterruptedException, Throwable, CompilationException, IOException, TimeoutException {
 
 	    OrcCompilerProvides compiler = new StandardOrcCompiler() {
           private final CompileLogger compileLoggerRef = new ExceptionCompileLogger();
