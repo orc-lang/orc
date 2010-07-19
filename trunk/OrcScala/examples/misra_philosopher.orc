@@ -92,7 +92,7 @@ holds both its forks).
 -}
 def philosophers(n) =
   {- channels -}
-  val cs = uncurry(IArray(n, lambda (_) = IArray(n, ignore(Buffer))))
+  val cs = uncurry(Table(n, lambda (_) = Table(n, ignore(Buffer))))
 
   {- first row -}
   philosopher((0,0), cs(0,0), makeSet([]))
