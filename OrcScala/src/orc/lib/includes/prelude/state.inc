@@ -360,12 +360,12 @@ def fill(a, x) =
   fillBelow(a.length?-1)
 
 {--
-@def IArray[A](Integer, lambda (Integer) :: A)(Integer) :: A
-The call <code>IArray(n,f)</code>, where <code>n</code> is a
+@def Table[A](Integer, lambda (Integer) :: A)(Integer) :: A
+The call <code>Table(n,f)</code>, where <code>n</code> is a
 natural number and <code>f</code> a total function over natural numbers,
 creates and returns a partial, pre-computed version of <code>f</code>
 restricted to the range (0, <code>n</code>-1). If <code>f</code> halts
-on any number in this range, the call to <code>IArray</code> will halt.
+on any number in this range, the call to <code>Table</code> will halt.
 
 The user may also think of the call as returning an immutable array whose
 <code>i</code>th element is accessed by calling <code>f(i)</code>.
@@ -375,14 +375,14 @@ the value of <code>f(i)</code> by storing the result in an array.
 
 Example:
 <programlisting><![CDATA[
-val a = IArray(5, fib)
+val a = Table(5, fib)
 -- Publishes the 4th number of the fibonnaci sequence: 5
 a(3)]]></programlisting>
 
 @implementation
 --}
-def IArray[A](Integer, lambda (Integer) :: A)(Integer) :: A
-def IArray(n, f) =
+def Table[A](Integer, lambda (Integer) :: A)(Integer) :: A
+def Table(n, f) =
   val a = Array[A](n)
   def fill(Integer, lambda (Integer) :: A) :: Signal
   def fill(i, f) =

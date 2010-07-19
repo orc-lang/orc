@@ -9,5 +9,5 @@
 
 val x = Ref(3)
 def echo(a) = a
-val q = IArray(10, echo)
+val q = Table(10, echo)
 q(x)?

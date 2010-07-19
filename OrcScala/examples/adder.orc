@@ -18,7 +18,7 @@ def seq_sum(b, n, s) =
 val b = Buffer[Integer]()
 val N = 100
 
-val a = IArray(N, lambda(_ :: Integer) :: Integer = random(10))
+val a = Table(N, lambda(_ :: Integer) :: Integer = random(10))
 
 s1-s2<(s1, s2)< (sum(a, b, N), seq_sum(b, N, 0))
 

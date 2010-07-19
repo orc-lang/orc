@@ -47,7 +47,7 @@ among the callback cells.
 -}
 
 def capsule Rendezvous(n,f) =
-  val b = IArray(n,Buffer)
+  val b = Table(n,Buffer)
 
   def go(i,v) = 
    val c = Cell()
@@ -109,9 +109,9 @@ into b(i) until p has completed its cycle, i.e., removed the result
 from c(i).
 
 def capsule Rendezvous(n,f) =
-  val b = IArray(n,Buffer)
-  val c = IArray(n,Buffer)
-  val sem = IArray(n,Semaphore)
+  val b = Table(n,Buffer)
+  val c = Table(n,Buffer)
+  val sem = Table(n,Semaphore)
 
   def initsem(0) = signal
   def initsem(i) = sem(i-1).release() >> initsem(i-1)

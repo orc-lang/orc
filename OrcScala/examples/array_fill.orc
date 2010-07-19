@@ -1,6 +1,6 @@
 -- Three different ways to prefill arrays:
 -- An immutable array with the value equal to the index
-val a = IArray[Integer](3, let)
+val a = Table[Integer](3, let)
 -- A mutable array with the value equal to the index
 val b = 
   Array[Integer](5) >a>
