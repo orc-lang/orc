@@ -2,7 +2,7 @@
 // XMLExamplesTest.java -- Java class XMLExamplesTest
 // Project OrcScala
 //
-// $Id: XMLExamplesTest.java 1934 2010-07-19 18:57:03Z jthywissen $
+// $Id$
 //
 // Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
@@ -187,7 +187,7 @@ public class XMLExamplesTest {
         // run the engine with a fixed timeout
         final FutureTask<?> future = new FutureTask<Void>(new Runnable() {
             public void run() {
-                engine.run(exprXML);
+                engine.run(exprXML, examplesOptions);
             }
         }, null);
         new Thread(future).start();
