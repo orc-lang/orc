@@ -5,7 +5,7 @@ val c = BoundedBuffer[Integer](2)
   )
 
 {-
-OUTPUT:
+OUTPUT:PERMUTABLE:
 "Put 1"
 "Put 2"
 "Got 1"
