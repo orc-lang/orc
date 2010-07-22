@@ -144,7 +144,7 @@ class StandardOrcCompiler extends OrcCompiler {
   /*                   */
   /* ***************** */
   
-  val phases = parse.timePhase >>> translate.timePhase >>> typeCheck.timePhase >>> refineNamedOil.timePhase.printOut >>> deBruijn.timePhase
+  val phases = parse.timePhase >>> translate.timePhase >>> typeCheck.timePhase >>> refineNamedOil.timePhase >>> deBruijn.timePhase
 
   
   

@@ -38,7 +38,7 @@ public class OrcScriptEngineFactory implements ScriptEngineFactory {
 	 */
 	@Override
 	public String getEngineName() {
-		return "orc";
+		return "Orc";
 	}
 
 	/* (non-Javadoc)

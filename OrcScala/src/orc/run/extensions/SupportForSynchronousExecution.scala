@@ -16,8 +16,9 @@ package orc.run.extensions
 
 import orc.OrcRuntime
 import orc.OrcEvent
-import orc.Publication
-import orc.Halted
+import orc.PublishEvent
+import orc.HaltEvent
+import orc.OrcOptions
 import orc.oil.nameless.Expression
 
 
@@ -28,24 +29,26 @@ import orc.oil.nameless.Expression
  */
 trait SupportForSynchronousExecution extends OrcRuntime {
   
-  /* Wait for execution to complete, rather than dispatching asynchronously.
+  /**
+   * Wait for execution to complete, rather than dispatching asynchronously.
    * The continuation takes only values, not events.
    */
-  def runSynchronous(node: Expression, k: AnyRef => Unit) {
+  def runSynchronous(node: Expression, k: OrcEvent => Unit, options: OrcOptions) {
     val done: scala.concurrent.SyncVar[Unit] = new scala.concurrent.SyncVar()
-    def ksync(event: OrcEvent): Unit = {
+    def syncAction(event: OrcEvent): Unit = {
       event match {
-        case Publication(v) => k(v)
-        case Halted => { done.set({}) }
+        case HaltEvent => { done.set({}) }
+        case _ => { }
       }
+      k(event)
     }
-    this.run(node, ksync)
+    this.run(node, syncAction, options)
     done.get
   }
-  
-    /* If no continuation is given, discard published values and run silently to completion. */
-  def runSynchronous(node: Expression) {
-    runSynchronous(node, { v: AnyRef => { /* suppress publications */ } })
+
+  /** If no continuation is given, discard published values and run silently to completion. */
+  def runSynchronous(node: Expression, options: OrcOptions) {
+    runSynchronous(node, { _: OrcEvent => }, options)
   }
  
 }

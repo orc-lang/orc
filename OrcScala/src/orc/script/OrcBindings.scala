@@ -30,19 +30,12 @@ import orc.OrcOptions
 class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOptions {
   import scala.collection.JavaConversions._
 
-  /**
-   * Constructs an object of class OrcBindings.
-   * 
-   * @param m
-   */
   def this() = this(new java.util.HashMap[String,Object])
 
   def filename: String = getString("javax.script.filename", "")
   def filename_=(newVal: String) = putString("javax.script.filename", newVal)
   def debugLevel: Int = getInt("orc.debugLevel", 0)
   def debugLevel_=(newVal: Int) = putInt("orc.debugLevel", newVal)
-  def shortErrors: Boolean = getBoolean("orc.shortErrors", false)
-  def shortErrors_=(newVal: Boolean) = putBoolean("orc.shortErrors", newVal)
 
   // Compile options
   def usePrelude: Boolean = getBoolean("orc.usePrelude", true)
@@ -55,8 +48,6 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def exceptionsOn_=(newVal: Boolean) = putBoolean("orc.exceptionsOn", newVal)
   def typecheck: Boolean = getBoolean("orc.typecheck", false)
   def typecheck_=(newVal: Boolean) = putBoolean("orc.typecheck", newVal)
-  def quietChecking: Boolean = getBoolean("orc.quietChecking", false)
-  def quietChecking_=(newVal: Boolean) = putBoolean("orc.quietChecking", newVal)
 
   // Execution options
   def maxPublications: Int = getInt("orc.maxPublications", -1)
