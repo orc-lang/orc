@@ -74,10 +74,6 @@ public class OrcParserTest {
 
     public void debugLevel_$eq(int newVal) { throw new UnsupportedOperationException(); }
 
-    public boolean shortErrors() { return false; }
-
-    public void shortErrors_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
-
     public boolean usePrelude() { return true; }
 
     public void usePrelude_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
@@ -97,10 +93,6 @@ public class OrcParserTest {
     public boolean typecheck() { return false; }
 
     public void typecheck_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
-
-    public boolean quietChecking() { return false; }
-
-    public void quietChecking_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
 
     public int maxPublications() { return -1; }
 

@@ -21,7 +21,6 @@ import orc.error.OrcException
 import scala.util.parsing.input.Reader
 
 
-
 /**
  * The interface from a caller to the Orc compiler
  */
@@ -31,6 +30,7 @@ trait OrcCompilerProvides {
 
   def refineOil(oilAstRoot: Expression): Expression = oilAstRoot
 }
+
 
 /**
  * The interface from the Orc compiler to its environment
@@ -42,26 +42,36 @@ trait OrcCompilerRequires {
 //  def loadClass(className: String): Class[_]
 }
 
-/** An Orc compiler */
+
+/** 
+ * An Orc compiler
+ */
 trait OrcCompiler extends OrcCompilerProvides with OrcCompilerRequires
 
 
-
-/** The interface from a caller to an Orc runtime */
+/**
+ * The interface from a caller to an Orc runtime
+ */
 trait OrcRuntimeProvides {
   type Token <: TokenAPI 
   
-  def run(e: Expression, k: OrcEvent => Unit): Unit
+  def run(e: Expression, k: OrcEvent => Unit, options: OrcOptions): Unit
   def stop: Unit
 }
 
-/** The interface from an Orc runtime to its environment */
+
+/**
+ *  The interface from an Orc runtime to its environment
+ */
 trait OrcRuntimeRequires { 
   def invoke(t: TokenAPI, v: AnyRef, vs: List[AnyRef]): Unit
   def caught(e: Throwable): Unit
 }
 
-/** An Orc runtime */
+
+/**
+ * An Orc runtime 
+ */
 trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {  
   type Token <: TokenAPI
   
@@ -71,7 +81,6 @@ trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
   def schedule(t: Token) { schedule(List(t)) }
   def schedule(t: Token, u: Token) { schedule(List(t,u)) }
 }
-
 
 
 /**
@@ -86,10 +95,31 @@ trait TokenAPI {
 }
 
 
-
 /**
  * An event reported by an Orc execution
  */
 trait OrcEvent
-case class Publication(value: AnyRef) extends OrcEvent
-case object Halted extends OrcEvent
+case class PublishEvent(value: AnyRef) extends OrcEvent
+case object HaltEvent extends OrcEvent
+// If this list grows, it should become a sub-package
+
+
+/**
+ * An action for a few major events reported by an Orc execution.
+ * This is an alternative to receiving <code>OrcEvents</code> for a client
+ * with simple needs, or for Java code that cannot create Scala functions.
+ */
+class OrcEventAction {
+  val asFunction: (OrcEvent => Unit) = _ match {
+    case PublishEvent(v) => published(v)
+    //case PrintEvent(v) => printed(v)
+    //case ThrowEvent(v) => threw(v)
+    case HaltEvent => halted()
+    case _ => { }
+  }
+  
+  def published(value: AnyRef) { }
+  //def printed(output: String) { }
+  //def threw(e: Throwable) { }
+  def halted() { }
+}

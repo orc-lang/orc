@@ -18,6 +18,9 @@ package orc.run
 import orc.OrcRuntime
 import orc.TokenAPI
 import orc.OrcEvent
+import orc.PublishEvent
+import orc.HaltEvent
+import orc.OrcOptions
 import orc.oil._
 import orc.oil.nameless._
 import orc.values.sites.Site
@@ -32,7 +35,7 @@ import scala.collection.mutable.Set
 
 trait Orc extends OrcRuntime {
   
-  def run(node: Expression, k: OrcEvent => Unit) {
+  def run(node: Expression, k: OrcEvent => Unit, options: OrcOptions) {
     val exec = new Execution(k)
     val t = new Token(node, exec)
     schedule(t)
@@ -170,12 +173,12 @@ trait Orc extends OrcRuntime {
   class Execution(k: OrcEvent => Unit) extends Group {
   
     def publish(t: Token, v: AnyRef) {
-      k(orc.Publication(v))
+      k(PublishEvent(v))
       t.halt
     }
   
     def onHalt {
-      k(orc.Halted)
+      k(HaltEvent)
     }
   }
   
@@ -480,10 +483,4 @@ trait Orc extends OrcRuntime {
     
   } // end of Token
 
-  
-  
-  
-  
-
 } // end of Orc
-

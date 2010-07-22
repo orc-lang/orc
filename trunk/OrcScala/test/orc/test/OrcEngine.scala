@@ -16,6 +16,8 @@
 package test.orc
 
 import orc.run.StandardOrcRuntime
+import orc.OrcOptions
+import orc.OrcEventAction
 import orc.error.OrcException
 import orc.oil.nameless.Expression
 import orc.values.Format
@@ -41,13 +43,15 @@ class OrcEngine {
 
   def getOut() : StringBuffer = out
 
-  def run(e : Expression) {    
-    def k(v: AnyRef) {
-      val vf = Format.formatValue(v)
-      println(vf)
-      out.append(vf + "\n") 
+  def run(e : Expression, options: OrcOptions) {    
+    val printAndOutput = new OrcEventAction() {
+      override def published(v: AnyRef) {
+        val vf = Format.formatValue(v)
+        println(vf)
+        out.append(vf + "\n") 
+      }
     }
-    orcRuntime.runSynchronous(e, k)
+    orcRuntime.runSynchronous(e, printAndOutput.asFunction, options)
   }
 
 }

@@ -340,44 +340,4 @@ object OrcXML {
 
     }
   }
-  
-  import orc.compile.StandardOrcCompiler
-  import orc.run.StandardOrcRuntime
-  import orc.compile.parse.OrcReader
-  import orc.run._
-  import orc.values.OrcValue
-  import orc.values.sites.Site
-  import orc.values.Format
-  import scala.concurrent.SyncVar
-  import orc.OrcOptions
-  import orc.ExperimentOptions
-
-  def main(args: Array[String]) {
-    if (args.length < 1) {
-      throw new Exception("Please supply a source file name as the first argument.\n" +
-                          "Within Eclipse, use ${resource_loc}")
-    }
-    ExperimentOptions.filename = args(0)
-    val compiler = new StandardOrcCompiler()
-    val reader = OrcReader(new java.io.FileReader(ExperimentOptions.filename), ExperimentOptions.filename, compiler.openInclude(_, _, ExperimentOptions))
-    val compiledOil = compiler(reader, ExperimentOptions)
-    if (compiledOil != null) {
-      println(compiledOil)
-      val x = OrcXML.writeXML(compiledOil)
-      println(x)
-      val e = OrcXML.fromXML(x)
-      println(e)
-      val orc = new StandardOrcRuntime()
-      try {
-      orc.runSynchronous(e, { v: AnyRef => println("Published: " + Format.formatValue(v)) })
-      } finally {
-        orc.stop // kill threads and reclaim resources
-      }
-
-    }
-    else {
-      Console.err.println("Compilation failed.")
-    }
-  }
-
 }

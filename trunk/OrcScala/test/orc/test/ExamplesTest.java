@@ -119,10 +119,6 @@ public class ExamplesTest {
   
         public void debugLevel_$eq(int newVal) { throw new UnsupportedOperationException(); }
   
-        public boolean shortErrors() { return true; }
-  
-        public void shortErrors_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
-  
         public boolean usePrelude() { return true; }
   
         public void usePrelude_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
@@ -142,10 +138,6 @@ public class ExamplesTest {
         public boolean typecheck() { return false; }
   
         public void typecheck_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
-  
-        public boolean quietChecking() { return false; }
-  
-        public void quietChecking_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
   
         public int maxPublications() { return -1; }
   
@@ -185,7 +177,7 @@ public class ExamplesTest {
 		// run the engine with a fixed timeout
 		final FutureTask<?> future = new FutureTask<Void>(new Runnable() {
 			public void run() {
-				engine.run(expr);
+				engine.run(expr, examplesOptions);
 			}
 		}, null);
 		new Thread(future).start();
