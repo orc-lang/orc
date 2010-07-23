@@ -15,6 +15,8 @@
 package orc.run.extensions
 
 import orc.run.Orc
+import scala.concurrent._
+
 
 /**
  * 
@@ -25,18 +27,30 @@ import scala.actors.Actor
 import scala.actors.Actor._
   
 trait ActorBasedScheduler extends Orc {
+  val workers : List[Worker] = 
+//    List(new Worker())
+    List(new Worker(), new Worker(), new Worker(), new Worker())
+          
+  for (w <- workers) {w.start}
   
-  val worker = new Worker()
-  worker.start
-  
-  override def schedule(ts: List[Token]) { for (t <- ts) worker ! Some(t) }
+  // distribute the work between actors in a round-robin fashion
+  override def schedule(ts: List[Token]) = synchronized { 
+    var i = 0
+    for (t <- ts) {
+      workers(i) ! Some(t)
+      i = (i + 1) % workers.size
+    }
+  }
   
   /* Shut down this runtime and all of its backing threads.
    * All executions stop without cleanup, though they are not guaranteed to stop immediately. 
    * This will cause all synchronous executions to hang. 
    */
   // TODO: Implement cleaner alternatives.
-  override def stop = { worker ! None ; super.stop }
+  override def stop = {
+    for (w <- workers) w ! None
+    super.stop 
+  }
   
   class Worker extends Actor {
     def act() {

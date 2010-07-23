@@ -35,7 +35,7 @@ trait SupportForCapsules extends Orc {
     
     var listener: Option[Token] = Some(caller)
     
-    override def publish(t: Token, v: AnyRef) { 
+    override def publish(t: Token, v: AnyRef)= synchronized  { 
       listener match {
         case Some(l) => {
           listener = None
@@ -46,7 +46,7 @@ trait SupportForCapsules extends Orc {
       t.halt
     }
     
-    override def onHalt {
+    override def onHalt= synchronized  {
       listener match {
         case Some(l) => {
           listener = None
