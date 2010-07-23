@@ -33,6 +33,9 @@ import orc.error.runtime.ArityMismatchException
 
 import scala.collection.mutable.Set   
 
+import scala.concurrent._
+
+    
 trait Orc extends OrcRuntime {
   
   def run(node: Expression, k: OrcEvent => Unit, options: OrcOptions) {
@@ -57,20 +60,20 @@ trait Orc extends OrcRuntime {
 
   trait Group extends GroupMember {
   
-    def publish(t: Token, v: AnyRef): Unit
-    def onHalt: Unit
+    def publish(t: Token, v: AnyRef): Unit 
+    def onHalt: Unit 
   
     var members: Set[GroupMember] = Set()
   
-    def halt(t: Token) { remove(t) }
+    def halt(t: Token) = synchronized { remove(t) }
     
     /* Note: this is _not_ lazy termination */
-    def kill { for (m <- members) m.kill } 
+    def kill = synchronized { for (m <- members) m.kill} 
     
   
-    def add(m: GroupMember) { members.add(m) }
+    def add(m: GroupMember) = synchronized { members.add(m) }
   
-    def remove(m: GroupMember) { 
+    def remove(m: GroupMember) = synchronized { 
       members.remove(m)
       if (members.isEmpty) { onHalt }
     }
@@ -88,7 +91,7 @@ trait Orc extends OrcRuntime {
   
   abstract class Subgroup(parent: Group) extends Group {
     
-    override def kill { super.kill ; parent.remove(this) }
+    override def kill = synchronized { super.kill ; parent.remove(this) }
     override def root = parent.root
     
     parent.add(this)
@@ -105,10 +108,10 @@ trait Orc extends OrcRuntime {
   case object Dead extends GroupcellState
   
   class Groupcell(parent: Group) extends Subgroup(parent) {
-  
+
     var state: GroupcellState = Unbound(Nil) 
   
-    def publish(t: Token, v: AnyRef) {
+    def publish(t: Token, v: AnyRef) = synchronized {
       state match {
         case Unbound(waitlist) => {
           state = Bound(v)
@@ -120,7 +123,7 @@ trait Orc extends OrcRuntime {
       }
     }
     
-    def onHalt {
+    def onHalt = synchronized  {
       state match {
         case Unbound(waitlist) => {
           state = Dead
@@ -132,7 +135,7 @@ trait Orc extends OrcRuntime {
     }
     
     // Specific to Groupcells
-    def read(k: Option[AnyRef] => Unit): Unit = {
+    def read(k: Option[AnyRef] => Unit) = synchronized {
       state match {
         case Unbound(waitlist) => {
           state = Unbound(k :: waitlist)
@@ -156,12 +159,12 @@ trait Orc extends OrcRuntime {
      */
     var pending: Option[Token] = Some(t)
   
-    def publish(t: Token, v: AnyRef) {
+    def publish(t: Token, v: AnyRef) = synchronized {
       pending foreach { _.halt }
       t.migrate(parent).publish(v)
     }
     
-    def onHalt {
+    def onHalt = synchronized {
       pending foreach { schedule(_) }
       parent.remove(this)
     }
@@ -172,12 +175,12 @@ trait Orc extends OrcRuntime {
   // associated with the entire program.
   class Execution(k: OrcEvent => Unit) extends Group {
   
-    def publish(t: Token, v: AnyRef) {
+    def publish(t: Token, v: AnyRef) = synchronized {
       k(PublishEvent(v))
       t.halt
     }
   
-    def onHalt {
+    def onHalt = synchronized {
       k(HaltEvent)
     }
   }
@@ -418,7 +421,7 @@ trait Orc extends OrcRuntime {
           case decldefs@ DeclareDefs(openvars, defs, body) => {
             /* Closure compaction: Bind only free variables
              * of the defs in the closure's context.
-			 */           
+             */           
             val vars = openvars map { Variable } 
             resolve(vars) {
               vs: List[AnyRef] => {
@@ -451,6 +454,9 @@ trait Orc extends OrcRuntime {
           case f::fs => { 
             stack = fs
             f(this, v)
+          }
+          case List() => {
+            // TODO: What should we do in this case
           }
         }
       } 

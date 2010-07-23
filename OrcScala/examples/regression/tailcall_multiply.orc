@@ -12,7 +12,7 @@ def tailmult(a,b) =
 tailmult(2, 30003) | tailmult(20002, 4) 
 
 {-
-OUTPUT:
+OUTPUT:PERMUTABLE:
 60006
 80008
 -}
