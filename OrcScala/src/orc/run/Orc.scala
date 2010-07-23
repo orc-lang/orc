@@ -53,10 +53,28 @@ trait Orc extends OrcRuntime {
   // tracking all of the executions occurring within that expression.
   // Different combinators make use of different Group subclasses.
   
+  
+  abstract class GroupMemberState
+  case object KILLED extends GroupMemberState
+  case object ALIVE  extends GroupMemberState
+  
   sealed trait GroupMember {
+    var gmstate: GroupMemberState = ALIVE
     def kill: Unit
   }
 
+  import scala.actors.Actor
+  import scala.actors.Actor._
+    
+  object Killer extends Actor {
+    def act() {
+      loop {
+        react {
+          case x:GroupMember => x.kill
+        }
+      }
+    }    
+  }
 
   trait Group extends GroupMember {
   
@@ -68,7 +86,12 @@ trait Orc extends OrcRuntime {
     def halt(t: Token) = synchronized { remove(t) }
     
     /* Note: this is _not_ lazy termination */
-    def kill = synchronized { for (m <- members) m.kill} 
+    def kill = synchronized { 
+      if (gmstate == ALIVE) {
+        gmstate = KILLED; 
+        for (m <- members) Killer ! m
+      }
+    } 
     
   
     def add(m: GroupMember) = synchronized { members.add(m) }
