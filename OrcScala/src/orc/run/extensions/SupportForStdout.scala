@@ -22,5 +22,5 @@ import orc.OrcRuntime
  * @author dkitchin
  */
 trait SupportForStdout extends OrcRuntime {
-  def printToStdout(s: String) { print(s) }
+  //TODO: This should add PrintedEvent to this runtime's event type
 }

@@ -17,6 +17,8 @@ package orc.script;
 
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.PrintWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,35 +31,33 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 
-import orc.OrcCompilerProvides;
 import orc.OrcEventAction;
-import orc.OrcRuntimeProvides;
 import orc.compile.StandardOrcCompiler;
 import orc.run.StandardOrcRuntime;
-import orc.run.extensions.SupportForSynchronousExecution;
+import orc.error.OrcException;
 
 /**
- * 
- *
  * @author jthywiss
  */
 public class OrcScriptEngine extends AbstractScriptEngine implements Compilable {
 
-	private OrcScriptEngineFactory	factory;
-	private OrcCompilerProvides		compiler;
-	private OrcRuntimeProvides		executor;
+	private OrcScriptEngineFactory factory;
+	private StandardOrcCompiler compiler;
+	private StandardOrcRuntime executor;
 
 	/**
-	 * Constructs an object of class OrcScriptEngine using a <code>SimpleScriptContext</code>
-     * as its default <code>ScriptContext</code>.
+	 * Constructs an object of class OrcScriptEngine using a
+	 * <code>SimpleScriptContext</code> as its default
+	 * <code>ScriptContext</code>.
 	 */
 	public OrcScriptEngine() {
 		super();
 	}
 
 	/**
-	 * Constructs an object of class OrcScriptEngine using the specified <code>Bindings</code> as the
-     * <code>ENGINE_SCOPE</code> <code>Bindings</code>.
+	 * Constructs an object of class OrcScriptEngine using the specified
+	 * <code>Bindings</code> as the <code>ENGINE_SCOPE</code>
+	 * <code>Bindings</code>.
 	 * 
 	 * @param n
 	 */
@@ -66,11 +66,11 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 	}
 
 	public class OrcCompiledScript extends CompiledScript {
-		private final orc.oil.nameless.Expression	astRoot;
+		private final orc.oil.nameless.Expression astRoot;
 
 		/**
 		 * Constructs an object of class OrcCompiledScript.
-		 *
+		 * 
 		 * @param oilAstRoot Root node of the OIL AST from the compilation
 		 */
 		/*default-access*/ OrcCompiledScript(final orc.oil.nameless.Expression oilAstRoot) {
@@ -84,37 +84,55 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 		public Object eval(final ScriptContext ctx) throws ScriptException {
 			final List<Object> pubs = new ArrayList<Object>();
 			final OrcEventAction addPubToList = new OrcEventAction() {
-				public void published(Object value) {
-					pubs.add(value);
+				public void published(Object value) { pubs.add(value); }
+				public void printed(String output) {
+					try {
+						ctx.getWriter().write(output);
+					} catch (IOException e) {
+						//Can't happen, according to API spec
+						e.printStackTrace();
+					}
 				}
-                public void halted() {
-                    /* Do nothing */
-                }
+				public void caught(Throwable e) {
+					//TODO: Consider saving the exception and throwing it out of this eval() invocation.  Can't throw here, because we're in engine when this OrcEventAction is called.
+					try {
+						if (e instanceof OrcException)
+							ctx.getErrorWriter().write(((OrcException)e).getMessageAndDiagnostics());
+						else
+							e.printStackTrace(new PrintWriter(ctx.getErrorWriter()));
+						ctx.getErrorWriter().flush();
+					} catch (IOException e1) {
+						//Can't happen, according to API spec
+						e1.printStackTrace();
+					}
+				}
+				public void halted() { /* Do nothing */ }
 			};
 			run(ctx, addPubToList);
 			return pubs;
 		}
 
 		/**
-		 * Executes the program stored in this <code>CompiledScript</code> object.
+		 * Executes the program stored in this <code>CompiledScript</code>
+		 * object. This, like <code>eval</code>, runs synchronously. Instead of
+		 * returning a list of publications, <code>run</code> calls the
+		 * <code>publish</code> method of the given <code>OrcEventAction</code>
+		 * object.
 		 * 
-		 * This, like <code>eval</code>, runs synchronously.  Instead of returning a list of publications,
-		 * <code>run</code> calls the <code>publish</code> method of the given <code>OrcEventAction</code> object.
-		 *
-		 * @param ctx A <code>ScriptContext</code> that is used in the same way as
-		 * the <code>ScriptContext</code> passed to the <code>eval</code> methods of
-		 * <code>ScriptEngine</code>.
-         * @param pubAct A <code>OrcEventAction</code> that receives publish messages
-         * for each published value from the script.
+		 * @param ctx A <code>ScriptContext</code> that is used in the same way
+		 *            as the <code>ScriptContext</code> passed to the
+		 *            <code>eval</code> methods of <code>ScriptEngine</code>.
+		 * @param pubAct A <code>OrcEventAction</code> that receives publish
+		 *            messages for each published value from the script.
 		 * @throws ScriptException if an error occurs.
 		 * @throws NullPointerException if context is null.
 		 */
 		public void run(final ScriptContext ctx, final OrcEventAction pubAct) throws ScriptException {
-    		// We make the assumption that the standard runtime implements SupportForSynchronousExecution.
-		    // JSR 223 requires the eval methods to run synchronously.
-			final SupportForSynchronousExecution exec = (SupportForSynchronousExecution) OrcScriptEngine.this.getExecutor();
-            //TODO:FIXME: Use ctx.reader, ctx.writer, ctx.errorWriter in the Engine
-            //TODO: Make ENGINE_SCOPE bindings visible in Orc execution?
+			// We make the assumption that the standard runtime implements
+			// SupportForSynchronousExecution.
+			// JSR 223 requires the eval methods to run synchronously.
+			final StandardOrcRuntime exec = OrcScriptEngine.this.getExecutor();
+			// TODO: Make ENGINE_SCOPE bindings visible in Orc execution?
 			try {
 				exec.runSynchronous(astRoot, pubAct.asFunction(), asOrcBindings(ctx.getBindings(ScriptContext.ENGINE_SCOPE)));
 			} catch (final Exception e) {
@@ -124,19 +142,20 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 			}
 		}
 
-        /**
-         * Convenience method for <code>run(getEngine().getContext(), pubAct)</code>.
-         *
-         * @param pubAct A <code>OrcEventAction</code> that receives publish messages
-         * for each published value from the script.
-         * @throws ScriptException if an error occurs.
-         * @throws NullPointerException if context is null.
-         */
-        public void run(final OrcEventAction pubAct) throws ScriptException {
-            run(getEngine().getContext(), pubAct);
-        }
+		/**
+		 * Convenience method for
+		 * <code>run(getEngine().getContext(), pubAct)</code>.
+		 * 
+		 * @param pubAct A <code>OrcEventAction</code> that receives publish
+		 *            messages for each published value from the script.
+		 * @throws ScriptException if an error occurs.
+		 * @throws NullPointerException if context is null.
+		 */
+		public void run(final OrcEventAction pubAct) throws ScriptException {
+			run(getEngine().getContext(), pubAct);
+		}
 
-        /* (non-Javadoc)
+		/* (non-Javadoc)
 		 * @see javax.script.CompiledScript#getEngine()
 		 */
 		@Override
@@ -160,7 +179,14 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 	@Override
 	public CompiledScript compile(final Reader script) throws ScriptException {
 		try {
-			return new OrcCompiledScript(getCompiler().apply(script, asOrcBindings(getBindings(ScriptContext.ENGINE_SCOPE))));
+			final orc.oil.nameless.Expression result = getCompiler().apply(script, asOrcBindings(getBindings(ScriptContext.ENGINE_SCOPE)), getContext().getErrorWriter());
+			if (result == null) {
+				throw new ScriptException("Compilation failed");
+			} else {
+				return new OrcCompiledScript(result);
+			}
+		} catch (final ScriptException e) {
+			throw e;
 		} catch (final Exception e) {
 			throw new ScriptException(e);
 		}
@@ -204,8 +230,9 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 	}
 
 	/**
-     * Set the <code>ScriptEngineFactory</code> instance to which this <code>ScriptEngine</code> belongs.
-     *
+	 * Set the <code>ScriptEngineFactory</code> instance to which this
+	 * <code>ScriptEngine</code> belongs.
+	 * 
 	 * @param factory The <code>ScriptEngineFactory</code>
 	 */
 	void setFactory(final OrcScriptEngineFactory owningFactory) {
@@ -213,10 +240,10 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 	}
 
 	/**
-	 * @return The <code>StandardOrcCompiler</code> which this <code>OrcScriptEngine</code> 
-	 * uses to compile the Orc script.
+	 * @return The <code>StandardOrcCompiler</code> which this
+	 *         <code>OrcScriptEngine</code> uses to compile the Orc script.
 	 */
-	OrcCompilerProvides getCompiler() {
+	StandardOrcCompiler getCompiler() {
 		synchronized (this) {
 			if (compiler == null) {
 				compiler = new StandardOrcCompiler();
@@ -226,10 +253,10 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 	}
 
 	/**
-     * @return The <code>StandardOrcRuntime</code> which this <code>OrcScriptEngine</code> 
-     * uses to run the Orc script.
+	 * @return The <code>StandardOrcRuntime</code> which this
+	 *         <code>OrcScriptEngine</code> uses to run the Orc script.
 	 */
-	OrcRuntimeProvides getExecutor() {
+	StandardOrcRuntime getExecutor() {
 		synchronized (this) {
 			if (executor == null) {
 				executor = new StandardOrcRuntime();
@@ -239,9 +266,10 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 	}
 
 	/**
-	 * Takes an unknown <code>Bindings</code> and makes an instance of <code>OrcBindings</code>.
-	 * Copies if needed; returns the argument unchanged if it's already an <code>OrcBindings</code>.
-	 *
+	 * Takes an unknown <code>Bindings</code> and makes an instance of
+	 * <code>OrcBindings</code>. Copies if needed; returns the argument
+	 * unchanged if it's already an <code>OrcBindings</code>.
+	 * 
 	 * @param b The unknown <code>Bindings</code>
 	 * @return An <code>OrcBindings</code>
 	 */

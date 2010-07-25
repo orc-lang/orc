@@ -16,8 +16,7 @@ package orc.run.extensions
 
 import orc.OrcRuntime
 import orc.OrcEvent
-import orc.PublishEvent
-import orc.HaltEvent
+import orc.HaltedEvent
 import orc.OrcOptions
 import orc.oil.nameless.Expression
 
@@ -37,7 +36,7 @@ trait SupportForSynchronousExecution extends OrcRuntime {
     val done: scala.concurrent.SyncVar[Unit] = new scala.concurrent.SyncVar()
     def syncAction(event: OrcEvent): Unit = {
       event match {
-        case HaltEvent => { done.set({}) }
+        case HaltedEvent => { done.set({}) }
         case _ => { }
       }
       k(event)

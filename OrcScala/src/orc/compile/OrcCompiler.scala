@@ -16,6 +16,7 @@
 package orc.compile
 
 import java.io.InputStreamReader
+import java.io.Writer
 import java.io.PrintWriter
 
 import scala.util.parsing.input.Reader
@@ -85,8 +86,12 @@ trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
  *
  * @author jthywiss
  */
-class StandardOrcCompiler extends OrcCompiler {
+abstract class CoreOrcCompiler extends OrcCompiler {
   
+  ////////
+  // Definition of the phases of the compiler
+  ////////
+
   val parse = new CompilerPhase[OrcOptions, Reader[Char], orc.compile.ext.Expression] {
     val phaseName = "parse"
     override def apply(options: OrcOptions) = { source =>
@@ -136,36 +141,42 @@ class StandardOrcCompiler extends OrcCompiler {
     override def apply(options: OrcOptions) = { ast => ast.withoutNames }
   }
 
-  
-  
-  /* ***************** */
-  /*                   */
-  /*  Compiler Phases  */
-  /*                   */
-  /* ***************** */
-  
+  ////////
+  // Compose phases into a compiler
+  ////////
+
   val phases = parse.timePhase >>> translate.timePhase >>> typeCheck.timePhase >>> refineNamedOil.timePhase >>> deBruijn.timePhase
 
-  
-  
-  
-  
-  def apply(source: Reader[Char], options: OrcOptions): orc.oil.nameless.Expression = {
+  ////////
+  // Compiler methods
+  ////////
+
+  def apply(source: Reader[Char], options: OrcOptions, compileLogger: CompileLogger): orc.oil.nameless.Expression = {
     compileLogger.beginProcessing(options.filename)
     try {
-      phases(options)(source)
+      val result = phases(options)(source)
+      if (compileLogger.getMaxSeverity().ordinal() >= Severity.ERROR.ordinal()) null else result
     } catch {case e: CompilationException =>
-      compileLogger.recordMessage(Severity.FATAL, 0, e.getMessageOnly, e.getPosition(), null, e)
+      compileLogger.recordMessage(Severity.FATAL, 0, e.getMessage, e.getPosition(), null, e)
       null
     } finally {
       compileLogger.endProcessing(options.filename)
     }
   }
 
-  def apply(source: java.io.Reader, options: OrcOptions): orc.oil.nameless.Expression = apply(StreamReader(source), options)
+  def apply(source: java.io.Reader, options: OrcOptions, compileLogger: CompileLogger): orc.oil.nameless.Expression = apply(StreamReader(source), options, compileLogger)
 
-  //TODO: Parameterize on these methods:
-  val compileLogger: CompileLogger = new PrintWriterCompileLogger(new PrintWriter(System.err, true))
+}
+
+
+class StandardOrcCompiler() extends CoreOrcCompiler {
+
+  //TODO: Maybe refactor this?
+  def apply(source: Reader[Char], options: OrcOptions, err: Writer): orc.oil.nameless.Expression = 
+    apply(source, options, new PrintWriterCompileLogger(new PrintWriter(err, true)))
+
+  def apply(source: java.io.Reader, options: OrcOptions, err: Writer): orc.oil.nameless.Expression = 
+    apply(source, options, new PrintWriterCompileLogger(new PrintWriter(err, true)))
 
   def openInclude(includeFileName: String, relativeToFileName: String, options: OrcOptions): java.io.Reader = {
     

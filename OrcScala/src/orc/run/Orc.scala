@@ -18,8 +18,9 @@ package orc.run
 import orc.OrcRuntime
 import orc.TokenAPI
 import orc.OrcEvent
-import orc.PublishEvent
-import orc.HaltEvent
+import orc.PublishedEvent
+import orc.HaltedEvent
+import orc.CaughtEvent
 import orc.OrcOptions
 import orc.oil._
 import orc.oil.nameless._
@@ -53,14 +54,16 @@ trait Orc extends OrcRuntime {
   // tracking all of the executions occurring within that expression.
   // Different combinators make use of different Group subclasses.
   
-  
-  abstract class GroupMemberState
-  case object KILLED extends GroupMemberState
-  case object ALIVE  extends GroupMemberState
+  object GroupMemberState extends Enumeration {
+    type GroupMemberState = Value
+    val Killed, Alive = Value
+  }
+  //Don't import GroupMemberState._ because of name conflicts
   
   sealed trait GroupMember {
-    var gmstate: GroupMemberState = ALIVE
+    var gmstate = GroupMemberState.Alive
     def kill: Unit
+    def notify(event: OrcEvent): Unit
   }
 
   import scala.actors.Actor
@@ -87,8 +90,8 @@ trait Orc extends OrcRuntime {
     
     /* Note: this is _not_ lazy termination */
     def kill = synchronized { 
-      if (gmstate == ALIVE) {
-        gmstate = KILLED; 
+      if (gmstate == GroupMemberState.Alive) {
+        gmstate = GroupMemberState.Killed; 
         for (m <- members) Killer ! m
       }
     } 
@@ -115,6 +118,8 @@ trait Orc extends OrcRuntime {
   abstract class Subgroup(parent: Group) extends Group {
     
     override def kill = synchronized { super.kill ; parent.remove(this) }
+    def notify(event: OrcEvent) = parent.notify(event)
+
     override def root = parent.root
     
     parent.add(this)
@@ -199,13 +204,18 @@ trait Orc extends OrcRuntime {
   class Execution(k: OrcEvent => Unit) extends Group {
   
     def publish(t: Token, v: AnyRef) = synchronized {
-      k(PublishEvent(v))
+      k(PublishedEvent(v))
       t.halt
     }
   
     def onHalt = synchronized {
-      k(HaltEvent)
+      k(HaltedEvent)
     }
+
+    def notify(event: OrcEvent) {
+        k(event)
+    }
+
   }
   
   
@@ -290,6 +300,7 @@ trait Orc extends OrcRuntime {
       case Killed => {  }
     }
     
+    def notify(event: OrcEvent) { group.notify(event) }
   
     def kill {
       state match {
@@ -415,7 +426,7 @@ trait Orc extends OrcRuntime {
               }
             catch {
               case e: OrcException => this !! e
-              case e => { halt ; caught(e) }
+              case e => { halt ; notify(CaughtEvent(e)) }
             }
     
           case Parallel(left, right) => {
@@ -504,7 +515,7 @@ trait Orc extends OrcRuntime {
         }
         case _ => { }
       }
-      caught(e) 
+      notify(CaughtEvent(e))
       halt
     }
   

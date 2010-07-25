@@ -14,6 +14,10 @@
 //
 package orc
 
+import java.io.FileReader
+import java.io.FileNotFoundException
+import java.io.PrintStream
+import orc.error.OrcException
 import orc.script.OrcScriptEngine
 import orc.script.OrcBindings
 import orc.compile.parse.OrcReader
@@ -39,17 +43,20 @@ object Main {
       val options = new OrcBindings() with CmdLineOptions
       options.parseCmdLine(args)
       engine.setBindings(options, ENGINE_SCOPE)
-      val reader = new java.io.FileReader(options.filename) //OrcReader(new java.io.FileReader(options.filename), options.filename, compiler.openInclude(_, _, options))
+      val reader = new FileReader(options.filename) //FIXME:OrcReader(new FileReader(options.filename), options.filename, compiler.openInclude(_, _, options))
       val compiledOrc = engine.compile(reader).asInstanceOf[OrcScriptEngine#OrcCompiledScript]
       val printPubs = new OrcEventAction() {
         override def published(value: AnyRef) { println(Format.formatValue(value)) }
+        override def printed(s: String) { print(s) }
+        override def caught(e: Throwable) { printException(e, Console.err) }
       }
       compiledOrc.run(printPubs)
     } catch {
       case e: CmdLineUsageException => Console.err.println("Orc: " + e.getMessage)
       case e: PrintVersionAndMessageException => println("Orc "+orcVersion+"\n"+orcURL+"\n"+orcCopyright+"\n\n"+e.getMessage)
-      case e: java.io.FileNotFoundException => Console.err.println("Orc: File not found: " + e.getMessage)
-      case e: ScriptException => throw e.getCause // un-wrap and propagate
+      case e: FileNotFoundException => Console.err.println("Orc: File not found: " + e.getMessage)
+      case e: ScriptException if (e.getCause == null) => Console.err.println(e.getMessage)
+      case e: ScriptException => printException(e.getCause, Console.err)
     }
   }
 
@@ -59,4 +66,11 @@ object Main {
   lazy val orcCopyright: String = "© "+coyrightYear+" "+valOrElse(Package.getPackage("orc").getImplementationVendor, "The University of Texas at Austin")
   lazy val coyrightYear: String = "2010" //TODO: Automate this somehow from build timestamp
   def valOrElse[T](testVal: T, defaultVal: T): T = if (testVal != null) testVal else defaultVal
+  
+  def printException(e: Throwable, err: PrintStream) {
+    e match {
+      case oe: OrcException => err.print(oe.getMessageAndDiagnostics())
+      case _ => e.printStackTrace(err)
+    }
+  }
 }

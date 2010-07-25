@@ -26,7 +26,6 @@ with SupportForCapsules
 with SupportForSynchronousExecution
 with SupportForRtimer
 with SupportForStdout
-with ExceptionReportingOnConsole
 
 
 /* The first behavior in the trait list will be tried last */
