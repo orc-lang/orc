@@ -13,6 +13,8 @@
 
 package orc.error.runtime;
 
+import scala.util.parsing.input.NoPosition$;
+
 /**
  * A container for Java-level exceptions raised by code
  * implementing sites. These are wrapped as Orc exceptions
@@ -25,5 +27,25 @@ public class JavaException extends SiteException {
 	public JavaException(final Throwable cause) {
 		super(cause.toString(), cause);
 		setStackTrace(getCause().getStackTrace());
+	}
+
+	/**
+	 * @return "position: ClassName: detailMessage (newline) position.longString"
+	 */
+	@Override
+	public String getMessageAndPositon() {
+		if (getPosition() != null && !(getPosition() instanceof NoPosition$)) {
+			return getPosition().toString() + ": " + getCause().toString() + "\n" + getPosition().longString();
+		} else {
+			return getCause().toString();
+		}
+	}
+
+	/**
+	 * @return "position: ClassName: detailMessage (newline) position.longString (newline) Orc stack trace... (newline) Java stack trace..."
+	 */
+	@Override
+	public String getMessageAndDiagnostics() {
+		return getMessageAndPositon() + "\n" + getOrcStacktraceAsString() + getJavaStacktraceAsString(getCause());
 	}
 }

@@ -25,8 +25,8 @@ import scala.util.parsing.input.Reader
  * The interface from a caller to the Orc compiler
  */
 trait OrcCompilerProvides {
-  def apply(source: Reader[Char], options: OrcOptions): Expression 
-  def apply(source: java.io.Reader, options: OrcOptions): Expression
+  def apply(source: Reader[Char], options: OrcOptions, compileLogger: CompileLogger): Expression 
+  def apply(source: java.io.Reader, options: OrcOptions, compileLogger: CompileLogger): Expression
 
   def refineOil(oilAstRoot: Expression): Expression = oilAstRoot
 }
@@ -37,7 +37,7 @@ trait OrcCompilerProvides {
  */
 trait OrcCompilerRequires { 
 //  def progress: ProgressListener
-  def compileLogger: CompileLogger
+//  def compileLogger: CompileLogger
   def openInclude(includeFileName: String, relativeToFileName: String, options: OrcOptions): java.io.Reader
 //  def loadClass(className: String): Class[_]
 }
@@ -65,7 +65,6 @@ trait OrcRuntimeProvides {
  */
 trait OrcRuntimeRequires { 
   def invoke(t: TokenAPI, v: AnyRef, vs: List[AnyRef]): Unit
-  def caught(e: Throwable): Unit
 }
 
 
@@ -90,7 +89,8 @@ trait TokenAPI {
   def publish(v : AnyRef): Unit
   def halt: Unit
   def !!(e: OrcException): Unit 
-  
+  def notify(event: OrcEvent): Unit
+
   val runtime: OrcRuntime
 }
 
@@ -98,10 +98,14 @@ trait TokenAPI {
 /**
  * An event reported by an Orc execution
  */
+//TODO: Move this to be part of an engine's signature
 trait OrcEvent
-case class PublishEvent(value: AnyRef) extends OrcEvent
-case object HaltEvent extends OrcEvent
-// If this list grows, it should become a sub-package
+// Not all executions will support all four of these events
+case class PublishedEvent(value: AnyRef) extends OrcEvent
+case object HaltedEvent extends OrcEvent
+case class PrintedEvent(s: String) extends OrcEvent
+case class CaughtEvent(e: Throwable) extends OrcEvent
+// If this list grows, maybe it should become a sub-package
 
 
 /**
@@ -111,15 +115,15 @@ case object HaltEvent extends OrcEvent
  */
 class OrcEventAction {
   val asFunction: (OrcEvent => Unit) = _ match {
-    case PublishEvent(v) => published(v)
-    //case PrintEvent(v) => printed(v)
-    //case ThrowEvent(v) => threw(v)
-    case HaltEvent => halted()
+    case PublishedEvent(v) => published(v)
+    case PrintedEvent(s) => printed(s)
+    case CaughtEvent(e) => caught(e)
+    case HaltedEvent => halted()
     case _ => { }
   }
   
   def published(value: AnyRef) { }
-  //def printed(output: String) { }
-  //def threw(e: Throwable) { }
+  def printed(output: String) { }
+  def caught(e: Throwable) { }
   def halted() { }
 }

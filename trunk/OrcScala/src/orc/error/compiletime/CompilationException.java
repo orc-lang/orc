@@ -13,6 +13,7 @@
 
 package orc.error.compiletime;
 
+import scala.util.parsing.input.NoPosition$;
 import orc.error.OrcException;
 
 /**
@@ -36,4 +37,15 @@ public class CompilationException extends OrcException {
 		super(cause);
 	}
 
+	/**
+	 * @return "position: detailMessage (newline) position.longString"
+	 */
+	@Override
+	public String getMessageAndPositon() {
+		if (getPosition() != null && !(getPosition() instanceof NoPosition$)) {
+			return getPosition().toString() + ": " + getLocalizedMessage() + "\n" + getPosition().longString();
+		} else {
+			return getLocalizedMessage();
+		}
+	}
 }

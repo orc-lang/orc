@@ -13,227 +13,81 @@
 
 package orc.test;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.lang.reflect.Field;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import orc.compile.StandardOrcCompiler;
-import orc.OrcCompilerProvides;
-import orc.error.compiletime.CompilationException;
-import orc.error.compiletime.CompileLogger;
-import orc.error.compiletime.ExceptionCompileLogger;
-
-import test.orc.OrcEngine;
+import orc.error.OrcException;
+import orc.oil.nameless.Expression;
+import orc.oil.nameless.OrcXML;
+import orc.script.OrcScriptEngine;
 
 /**
  * Test Orc by running annotated sample programs from the "examples" directory.
- * Each program is given at most 10 seconds to complete.
- *
+ * Each program is compiled, written to XML, then read back as an AST. This
+ * second AST is run. Each program is given at most 10 seconds to complete.
  * <p>
- * We look for one or more comment blocks with a line starting with "OUTPUT:",
- * and take everything in the comment after the "OUTPUT:" line to be a possible
- * output of the program. Example:
- *
- * <pre>
- * {-
- * OUTPUT:
- * 1
- * 2
- * -}
- * 1 | 2
- * </pre>
- *
- * An output block starting with "OUTPUT:PERMUTABLE" specifies that any permutation
- * of the given values is a valid output. Example:
+ * We look for one or more comment blocks formatted per
+ * <code>ExampleOutput</code>'s specs.
  * 
- *  <pre>
- * {-
- * OUTPUT:PERMUTABLE
- * 1
- * 2
- * 3
- * -}
- * </pre>
- * says that the program may publish the values 1, 2 and 3 in any order.
- * 
- * If none of the expected outputs match the actual output, the test fails for
- * that example. 
- * 
- * The multiple output blocks and OUTPUT:PERMUTABLE feature let us cope with limited
- * non-determinism, but a better solution is needed for serious testing of
- * non-deterministic programs.
- *
- * @author quark, srosario
+ * @see ExpectedOutput
+ * @author quark, srosario, amshali
  */
 public class XMLExamplesTest {
-    public static Test suite() {
-        return buildSuite();
-    }
+	public static Test suite() {
+		return buildSuite();
+	}
 
-    public static TestSuite buildSuite() {
-        final TestSuite suite = new TestSuite("orc.test.ExamplesTest");
-        final LinkedList<File> files = new LinkedList<File>();
-        TestUtils.findOrcFiles(new File("examples"), files);
-        for (final File file : files) {
-            final ExpectedOutput expecteds;
-            try {
-                expecteds = extractExpectedOutput(file);
-            } catch (final IOException e) {
-                throw new AssertionError(e);
-            }
-            // skip tests with no expected output
-            if (expecteds.isEmpty()) {
-                continue;
-            }
-            suite.addTest(new TestCase(file.toString()) {
-                @Override
-                public void runTest() throws IOException, CompilationException, InterruptedException, Throwable, TimeoutException {
-                    System.out.println("\n==== Starting "+file+" ====");
-                    runOrcProgram(file, expecteds);
-                }
-            });
-        }
-        return suite;
-    }
+	public static TestSuite buildSuite() {
+		final TestSuite suite = new TestSuite("orc.test.XMLExamplesTest");
+		final LinkedList<File> files = new LinkedList<File>();
+		TestUtils.findOrcFiles(new File("examples"), files);
+		for (final File file : files) {
+			final ExpectedOutput expecteds;
+			try {
+				expecteds = new ExpectedOutput(file);
+			} catch (final IOException e) {
+				throw new AssertionError(e);
+			}
+			// skip tests with no expected output
+			if (expecteds.isEmpty()) {
+				continue;
+			}
+			suite.addTest(new TestCase(file.toString()) {
+				@Override
+				public void runTest() throws InterruptedException, IOException, TimeoutException, OrcException, ClassNotFoundException, SecurityException, NoSuchFieldException, IllegalAccessException {
+					System.out.println("\n==== Starting " + file + " ====");
+					final OrcScriptEngine.OrcCompiledScript compiledScript = OrcForTesting.compile(file.getPath());
+					final Expression expr = getAstRoot(compiledScript);
+					final Expression exprXML = orc.oil.nameless.OrcXML.fromXML(OrcXML.writeXML(expr));
+					setAstRoot(compiledScript, exprXML);
+					final String actual = OrcForTesting.run(compiledScript, 10L);
+					if (!expecteds.contains(actual)) {
+						throw new AssertionError("Unexpected output:\n" + actual);
+					}
+				}
+			});
+		}
+		return suite;
+	}
 
-    private static class ExamplesOptions implements orc.OrcOptions {
-        protected ExamplesOptions() { }
+	static Expression getAstRoot(final OrcScriptEngine.OrcCompiledScript compiledScript) throws SecurityException, NoSuchFieldException, IllegalAccessException {
+		// Violate access controls of OrcCompiledScript.astRoot field
+		final Field astRootField = compiledScript.getClass().getDeclaredField("astRoot");
+		astRootField.setAccessible(true);
+		return (Expression) astRootField.get(compiledScript);
+	}
 
-        public String filename() { return ""; }
-  
-        public void filename_$eq(String newVal) { throw new UnsupportedOperationException(); }
-  
-        public int debugLevel() { return 0; }
-  
-        public void debugLevel_$eq(int newVal) { throw new UnsupportedOperationException(); }
-  
-        public boolean shortErrors() { return true; }
-  
-        public void shortErrors_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
-  
-        public boolean usePrelude() { return true; }
-  
-        public void usePrelude_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
-  
-        public List<String> includePath() { List<String> r = new ArrayList<String>(1); r.add("."); return r; }
-        
-        public void includePath_$eq(List<String> newVal) { throw new UnsupportedOperationException(); }
-  
-        public List<String> additionalIncludes() { return new ArrayList<String>(0); }
-        
-        public void additionalIncludes_$eq(List<String> newVal) { throw new UnsupportedOperationException(); }
-  
-        public boolean exceptionsOn() { return false; }
-  
-        public void exceptionsOn_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
-  
-        public boolean typecheck() { return false; }
-  
-        public void typecheck_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
-  
-        public boolean quietChecking() { return false; }
-  
-        public void quietChecking_$eq(boolean newVal) { throw new UnsupportedOperationException(); }
-  
-        public int maxPublications() { return -1; }
-  
-        public void maxPublications_$eq(int newVal) { throw new UnsupportedOperationException(); }
-  
-        public int tokenPoolSize() { return -1; }
-  
-        public void tokenPoolSize_$eq(int newVal) { throw new UnsupportedOperationException(); }
-  
-        public int stackSize() { return -1; }
-  
-        public void stackSize_$eq(int newVal) { throw new UnsupportedOperationException(); }
-  
-        public List<String> classPath() { return new ArrayList<String>(0); }
-  
-        public void classPath_$eq(List<String> newVal) { throw new UnsupportedOperationException(); }
-  
-        public boolean hasCapability(String capName) { throw new UnsupportedOperationException(); }
-  
-        public void setCapability(String capName, boolean newVal) { throw new UnsupportedOperationException(); }
-    }
-    private static ExamplesOptions examplesOptions = new ExamplesOptions(); 
- 
-    public static void runOrcProgram(final File file, final ExpectedOutput expecteds) throws InterruptedException, Throwable, CompilationException, IOException, TimeoutException {
+	static void setAstRoot(final OrcScriptEngine.OrcCompiledScript compiledScript, final Expression astRoot) throws SecurityException, NoSuchFieldException, IllegalAccessException {
+		// Violate access controls of OrcCompiledScript.astRoot field
+		final Field astRootField = compiledScript.getClass().getDeclaredField("astRoot");
+		astRootField.setAccessible(true);
+		astRootField.set(compiledScript, astRoot);
+	}
 
-        OrcCompilerProvides compiler = new StandardOrcCompiler() {
-          private final CompileLogger compileLoggerRef = new ExceptionCompileLogger();
-          @Override public CompileLogger compileLogger() { return compileLoggerRef; }
-        };
-        final orc.oil.nameless.Expression expr = compiler.apply(new FileReader(file), examplesOptions);
-        
-        final orc.oil.nameless.Expression exprXML = orc.oil.nameless.OrcXML.fromXML(orc.oil.nameless.OrcXML.writeXML(expr));
-        
-        if (exprXML == null) {
-            throw new CompilationException("Compilation to OIL failed");
-        }
-        final OrcEngine engine = new OrcEngine();
-
-        // run the engine with a fixed timeout
-        final FutureTask<?> future = new FutureTask<Void>(new Runnable() {
-            public void run() {
-                engine.run(exprXML, examplesOptions);
-            }
-        }, null);
-        new Thread(future).start();
-        try {
-            future.get(10L, TimeUnit.SECONDS);
-        } catch (final TimeoutException e) {
-            future.cancel(true);
-            throw e;
-        } catch (final ExecutionException e) {
-            throw e.getCause();
-        } finally { 
-          engine.stop(); 
-        }
-        
-
-        // compare the output to the expected result
-        final String actual = engine.getOut().toString();
-        if (expecteds.contains(actual)) {
-          return;
-        }
-        throw new AssertionError("Unexpected output:\n" + actual);
-    }
-
-    private static ExpectedOutput extractExpectedOutput(final File file) throws IOException {
-      final BufferedReader r = new BufferedReader(new FileReader(file));
-      List<MaybePermutableOutput> outputs = new LinkedList<MaybePermutableOutput>();
-      
-      boolean permutable = false;
-      StringBuilder oneOutput = null;
-      for (String line = r.readLine(); line != null; line = r.readLine()) {
-          if (oneOutput != null) {
-              if (line.startsWith("-}")) {
-                  outputs.add(new MaybePermutableOutput(permutable,oneOutput.toString()));
-                  oneOutput = null;
-              } else {
-                  oneOutput.append(line);
-                  oneOutput.append("\n");
-              }
-          } else if (line.startsWith("OUTPUT:PERMUTABLE")) {
-            permutable = true;
-            oneOutput = new StringBuilder();
-          } else if (line.startsWith("OUTPUT:")) {
-            permutable = false;
-            oneOutput = new StringBuilder();
-          }
-      }
-      return new ExpectedOutput(outputs);
-    }
 }
