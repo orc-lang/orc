@@ -56,7 +56,12 @@ trait ActorBasedScheduler extends Orc {
     def act() {
       loop {
         react {
-          case Some(x:Token) => x.run
+          case Some(x:Token) => {
+            // If this thread should be interrupted, then reflect now, rather than wait for I/O
+            if (Thread.interrupted())  // Note: Clears thread's interrupted status bit
+              throw new InterruptedException()
+            x.run
+          }
           // machine has stopped
           case None => exit
         }
