@@ -16,6 +16,7 @@
 package orc.script
 
 import java.util.Map
+import java.io.File
 
 import javax.script.SimpleBindings
 
@@ -84,11 +85,11 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
    * @return
    */
   def getString(key: String, default: String): String = {
-      val value = get(key)
-      value match {
-        case s: String => s
-        case _ => default
-      }
+    val value = get(key)
+    value match {
+      case s: String => s
+      case _ => default
+    }
   }
 
   /**
@@ -105,14 +106,14 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
    * @return
    */
   def getInt(key: String, default: Int): Int = {
-      try {
-        get(key) match { 
-          case s: String => s.toInt
-          case _ => default
-        }
-      } catch {   case e: NumberFormatException => { }
-      default
+    try {
+      get(key) match { 
+        case s: String => s.toInt
+        case _ => default
       }
+    } catch {
+      case e: NumberFormatException => default
+    }
   }
 
   /**
@@ -129,14 +130,14 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
    * @return
    */
   def getLong(key: String, default: Long): Long = {
-      try {
-        get(key) match { 
-          case s: String => s.toLong
-          case _ => default
-        }
-      } catch {   case e: NumberFormatException => { }
-      default
+    try {
+      get(key) match { 
+        case s: String => s.toLong
+        case _ => default
       }
+    } catch {
+      case e: NumberFormatException => default
+    }
   }
 
   /**
@@ -153,11 +154,11 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
    * @return
    */
   def getBoolean(key: String, default: Boolean): Boolean = {
-      get(key) match { 
-        case s: String if s.equalsIgnoreCase("true") => true
-        case s: String if s.equalsIgnoreCase("false") => false
-        case _ => default
-      }
+    get(key) match { 
+      case s: String if s.equalsIgnoreCase("true") => true
+      case s: String if s.equalsIgnoreCase("false") => false
+      case _ => default
+    }
   }
 
   /**
@@ -174,14 +175,14 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
    * @return
    */
   def getFloat(key: String, default: Float): Float = {
-      try {
-        get(key) match { 
-          case s: String => s.toFloat
-          case _ => default
-        }
-      } catch {   case e: NumberFormatException => { }
-      default
+    try {
+      get(key) match { 
+        case s: String => s.toFloat
+        case _ => default
       }
+    } catch {
+      case e: NumberFormatException => default
+    }
   }
 
   /**
@@ -198,14 +199,14 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
    * @return
    */
   def getDouble(key: String, default: Double): Double = {
-      try {
-        get(key) match { 
-          case s: String => s.toDouble
-          case _ => default
-        }
-      } catch {   case e: NumberFormatException => { }
-      default
+    try {
+      get(key) match { 
+        case s: String => s.toDouble
+        case _ => default
       }
+    } catch {
+      case e: NumberFormatException => default
+    }
   }
 
   /**
@@ -214,18 +215,18 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
    */
   def putPathList(key: String, value: java.util.List[String]) {
     if (value.length > 0) {
-      put(key, value.mkString(System.getProperty("path.separator")))
+      put(key, value.mkString(File.pathSeparator))
     } else {
       put(key, "")
     }
   }
 
   def getPathList(key: String, default: java.util.List[String]): java.util.List[String] = {
-      val value = get(key)
-      value match {
-        case s: String => s.split(System.getProperty("path.separator")).toList
-        case _ => default
-      }
+    val value = get(key)
+    value match {
+      case s: String => s.split(File.pathSeparator).toList
+      case _ => default
+    }
   }
 
 }

@@ -24,17 +24,18 @@ import scala.util.parsing.input.StreamReader
 import scala.collection.JavaConversions._
 import scala.compat.Platform.currentTime
 
+import orc.OrcCompiler
+import orc.OrcOptions
+import orc.compile.parse.OrcParser
+import orc.compile.parse.OrcReader
+import orc.compile.optimize._
 import orc.error.compiletime.CompilationException
 import orc.error.compiletime.CompileLogger
 import orc.error.compiletime.CompileLogger.Severity
 import orc.error.compiletime.ParsingException
 import orc.error.compiletime.PrintWriterCompileLogger
-import orc.OrcOptions
-import orc.compile.parse.OrcParser
-import orc.compile.parse.OrcReader
-import orc.OrcCompiler
+import orc.values.sites.SiteClassLoading
 
-import orc.compile.optimize._
 
 /**
  * Represents one phase in a compiler.  It is defined as a function from
@@ -169,7 +170,11 @@ abstract class CoreOrcCompiler extends OrcCompiler {
 }
 
 
-class StandardOrcCompiler() extends CoreOrcCompiler {
+class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
+  override def apply(source: Reader[Char], options: OrcOptions, compileLogger: CompileLogger): orc.oil.nameless.Expression = {
+    SiteClassLoading.initWithClassPathStrings(options.classPath)
+    super.apply(source, options, compileLogger)
+  }
 
   //TODO: Maybe refactor this?
   def apply(source: Reader[Char], options: OrcOptions, err: Writer): orc.oil.nameless.Expression = 

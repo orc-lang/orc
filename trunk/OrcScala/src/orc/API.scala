@@ -37,9 +37,8 @@ trait OrcCompilerProvides {
  */
 trait OrcCompilerRequires { 
 //  def progress: ProgressListener
-//  def compileLogger: CompileLogger
   def openInclude(includeFileName: String, relativeToFileName: String, options: OrcOptions): java.io.Reader
-//  def loadClass(className: String): Class[_]
+  def loadClass(className: String): Class[_]
 }
 
 

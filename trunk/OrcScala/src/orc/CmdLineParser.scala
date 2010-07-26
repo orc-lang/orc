@@ -131,7 +131,7 @@ trait CmdLineParser {
 
   case class StringListOprd(val setter: (Seq[String] => Unit), override val position: Int, override val argName: String = "STRING", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
     extends CmdLineOprd(position, argName, usage, required, hidden) {
-    def setValue(value: String) { setter(value.split(System.getProperty("path.separator"))) }
+    def setValue(value: String) { setter(value.split(File.pathSeparator)) }
   }
 
   case class FileOprd(val setter: (File => Unit), override val position: Int, override val argName: String = "FILE", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
@@ -141,7 +141,7 @@ trait CmdLineParser {
 
   case class PathListOprd(val setter: (Seq[File] => Unit), override val position: Int, override val argName: String = "PATH", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
     extends CmdLineOprd(position, argName, usage, required, hidden) {
-    def setValue(value: String) { setter(value.split(System.getProperty("path.separator")).map(new File(_))) }
+    def setValue(value: String) { setter(value.split(File.pathSeparator).map(new File(_))) }
   }
 
   case class UnitOpt(val setter: (() => Unit), override val shortName: Char, override val longName: String, override val argName: String = "", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
@@ -176,7 +176,7 @@ trait CmdLineParser {
 
   case class StringListOpt(val setter: (Seq[String] => Unit), override val shortName: Char, override val longName: String, override val argName: String = "STRING", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
-    def setValue(value: String) { setter(value.split(System.getProperty("path.separator"))) }
+    def setValue(value: String) { setter(value.split(File.pathSeparator)) }
   }
 
   case class FileOpt(val setter: (File => Unit), override val shortName: Char, override val longName: String, override val argName: String = "FILE", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
@@ -186,7 +186,7 @@ trait CmdLineParser {
 
   case class PathListOpt(val setter: (Seq[File] => Unit), override val shortName: Char, override val longName: String, override val argName: String = "PATH", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
-    def setValue(value: String) { setter(value.split(System.getProperty("path.separator")).map(new File(_))) }
+    def setValue(value: String) { setter(value.split(File.pathSeparator).map(new File(_))) }
   }
 
   ////////

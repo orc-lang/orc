@@ -15,7 +15,6 @@
 
 package orc.values.sites
 
-import orc.oil.nameless.Type // FIXME: Typechecker should operate on named types instead
 
 /**
  * Trait of classes capable of resolving site names, such as {@link SiteForm}s.
@@ -32,7 +31,7 @@ trait SiteResolver {
  *
  * @author jthywiss
  */
-trait SiteForm extends SiteResolver
+trait SiteForm extends SiteResolver with SiteClassLoading //FIXME: This should use the OrcCompiler API's loadClass
 //class OrcSiteForm extends SiteForm
 //class JavaSiteForm extends SiteForm
 //class WebServiceSiteForm extends SiteForm

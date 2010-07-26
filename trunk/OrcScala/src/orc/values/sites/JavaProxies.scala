@@ -378,7 +378,7 @@ abstract class JavaProxy extends Site {
  *
  * @author jthywiss
  */
-case class JavaClassProxy(val javaClass: Class[Object]) extends JavaProxy {
+case class JavaClassProxy(val javaClass: Class[_]) extends JavaProxy {
   // Reminder: A java.lang.Class could be a regular class, an interface, an array, or a primitive type.  
 
   override lazy val name = javaClass.getName()
