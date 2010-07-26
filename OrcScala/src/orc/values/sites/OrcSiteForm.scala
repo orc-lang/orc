@@ -22,7 +22,7 @@ import orc.error.compiletime.SiteResolutionException
  *
  * @author jthywiss
  */
-object OrcSiteForm {
+object OrcSiteForm extends SiteForm {
   def resolve(name: String): Site = {
     val loadedClass = loadClass(name)
     if (classOf[Site].isAssignableFrom(loadedClass)) {
@@ -42,5 +42,4 @@ object OrcSiteForm {
       throw new SiteResolutionException("Class "+loadedClass.getName()+" does not implement the Site interface")
     }
   }
-  private def loadClass(name:String) = getClass().getClassLoader().loadClass(name) //TODO:FIXME: This should use the OrcAPI's loadClass, and the classpath from the OrcOptions
 }

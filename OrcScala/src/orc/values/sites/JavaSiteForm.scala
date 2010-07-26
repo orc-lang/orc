@@ -26,5 +26,4 @@ object JavaSiteForm extends SiteForm {
   def resolve(name: String) = {
     new JavaClassProxy(loadClass(name))
   }
-  private def loadClass(name:String) = getClass().getClassLoader().loadClass(name).asInstanceOf[Class[Object]] //TODO:FIXME: This should use the OrcAPI's loadClass, and the classpath from the OrcOptions
 }
