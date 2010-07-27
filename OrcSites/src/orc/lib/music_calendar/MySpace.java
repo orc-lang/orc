@@ -1,151 +1,161 @@
-//
-// MySpace.java -- Java class MySpace
-// Project OrcSites
-//
-// $Id$
-//
-// Copyright (c) 2008 The University of Texas at Austin. All rights reserved.
-//
-// Use and redistribution of this file is governed by the license terms in
-// the LICENSE file found in the project's top-level directory and also found at
-// URL: http://orc.csres.utexas.edu/license.shtml .
-//
-
 package orc.lib.music_calendar;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.runtime.Args;
 import orc.runtime.sites.DotSite;
 import orc.runtime.sites.PartialSite;
 
 import org.htmlparser.Parser;
+import org.htmlparser.Tag;
+import org.htmlparser.filters.CssSelectorNodeFilter;
 import org.htmlparser.filters.LinkRegexFilter;
 import org.htmlparser.filters.StringFilter;
-import org.htmlparser.filters.TagNameFilter;
 import org.htmlparser.nodes.TextNode;
-import org.htmlparser.tags.FormTag;
-import org.htmlparser.tags.InputTag;
 import org.htmlparser.tags.LinkTag;
 import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
 
-/**
- * @author tfinster
- */
 public class MySpace extends DotSite {
+    
+    @Override
+    protected void addMembers() {
+        addMember("scrapeMusicShows", new scrapeMusicMethod());  
+    }
 
-	@Override
-	protected void addMembers() {
-		addMember("scrapeMusicShows", new scrapeMusicMember());
-	}
+    private class scrapeMusicMethod extends PartialSite {
+        
+        private Map<String, Boolean> seenURLs = new HashMap<String, Boolean>();
+        
+        @Override
+        public Object evaluate(Args args) {
 
-	private class scrapeMusicMember extends PartialSite {
+            try {
+                String myspaceURL = (String)args.getArg(0);
+                
+        		/* stay silent if we've processed this URL before */
+        		if (seenURLs.containsKey(myspaceURL)) {
+        			return null;
+        		}
+        		seenURLs.put(myspaceURL, true);
 
-		private final Map<String, Boolean> seenURLs = new HashMap<String, Boolean>();
+        		Parser profileParser = new Parser(myspaceURL);
 
-		@Override
-		public Object evaluate(final Args args) throws TokenException {
+        		NodeList list = profileParser.extractAllNodesThatMatch(new LinkRegexFilter("Events/1"));
 
-			try {
-				final String myspaceURL = args.stringArg(0);
+        		if (list.size() != 1) {
+        			return null;
+        		}
 
-				/* stay silent if we've processed this URL before */
-				if (seenURLs.containsKey(myspaceURL)) {
-					return null;
-				}
-				seenURLs.put(myspaceURL, true);
+        		LinkTag link = (LinkTag)list.elementAt(0);
+        		String showUrl = link.extractLink();
 
-				final Parser profileParser = new Parser(myspaceURL);
+        		List<MusicShow> musicShows = extractMusicShows(showUrl);
+                return musicShows;
+            } catch (TokenException e) {
+            } catch (ParserException e) {
+            }
+            
+            return null;
+        }
+    }
+    
+	private List<MusicShow> extractMusicShows(String showUrl) throws ParserException {
+		List<MusicShow> musicShows = new ArrayList<MusicShow>();
 
-				final NodeList list = profileParser.extractAllNodesThatMatch(new LinkRegexFilter("bandprofile.listAllShows"));
-
-				if (list.size() != 1) {
-					return null;
-				}
-
-				final LinkTag link = (LinkTag) list.elementAt(0);
-				final String showUrl = link.extractLink();
-
-				return extractMusicShows(showUrl);
-			} catch (final ParserException e) {
-				throw new JavaException(e);
-			}
-		}
-	}
-
-	private List<MusicShow> extractMusicShows(final String showUrl) throws ParserException {
-		final List<MusicShow> musicShows = new ArrayList<MusicShow>();
-
-		final Parser showParser = new Parser(showUrl);
+		Parser showParser = new Parser(showUrl);
 
 		// extract band name
-		final String bandName = extractBandName(showUrl);
+		String bandName = extractBandName(showUrl);
 
 		// extract shows
-		final NodeList formList = showParser.extractAllNodesThatMatch(new TagNameFilter("form"));
-
-		for (int i = 0; i < formList.size(); i++) {
-
-			final FormTag form = (FormTag) formList.elementAt(i);
-
-			if (form.getAttribute("action") != null && form.getAttribute("action").contains("mycalendar")) {
-				final NodeList inputList = form.getFormInputs();
-
-				final MusicShow show = new MusicShow();
-				show.setBandName(bandName);
-
-				for (int j = 0; j < inputList.size(); j++) {
-					final InputTag input = (InputTag) inputList.elementAt(j);
-					if (input.getAttribute("name") != null) {
-						if (input.getAttribute("name").equals("calEvtLocation")) {
-							show.setLocation(input.getAttribute("value"));
-						} else if (input.getAttribute("name").equals("calEvtTitle")) {
-							show.setTitle(input.getAttribute("value"));
-						} else if (input.getAttribute("name").equals("calEvtCity")) {
-							show.setCity(input.getAttribute("value"));
-						} else if (input.getAttribute("name").equals("calEvtState")) {
-							show.setState(input.getAttribute("value"));
-						} else if (input.getAttribute("name").equals("calEvtDateTime")) {
-							try {
-								final DateFormat fmt = new SimpleDateFormat("MM-dd-yyyy HH:mm");
-								final String dateStr = input.getAttribute("value");
-								show.setDate(fmt.parse(dateStr));
-							} catch (final ParseException e) {
-							}
-						}
-					}
-				}
-				musicShows.add(show);
+		NodeList showList = showParser.extractAllNodesThatMatch(new CssSelectorNodeFilter("div.event-info"));
+		for(int i = 0; i < showList.size(); i++) {
+			
+			MusicShow show = new MusicShow();
+			show.setBandName(bandName);
+			
+			Tag infoTag = (Tag) showList.elementAt(i);
+			
+			String title = infoTag.getFirstChild().getFirstChild().getFirstChild().getFirstChild().getText();
+			show.setTitle(title);
+			
+			String location = infoTag.getFirstChild().getLastChild().getLastChild().getFirstChild().getText();
+			String[] parts = location.split(", ");
+			if (parts.length != 3) {
+				continue;
 			}
+			show.setLocation(parts[0]);
+			show.setCity(parts[1]);
+			show.setState(parts[2]);
+			
+			String dateStr = infoTag.getChildren().elementAt(1).getFirstChild().getText();
+			
+			try {
+				Calendar eventDate = Calendar.getInstance();
+				Calendar today = Calendar.getInstance();
+				
+				// handle 'Today' and 'Tomorrow'
+				if (dateStr.contains("Today") || dateStr.contains("Tomorrow")) {
+					DateFormat fmt = new SimpleDateFormat("HH:mm aa");
+					
+					Date parsedTime;
+					if (dateStr.contains("Today")) {
+						parsedTime = fmt.parse(dateStr.split("Today @ ")[1]);
+					} else {
+						parsedTime = fmt.parse(dateStr.split("Tomorrow @ ")[1]);
+					}
+
+					eventDate.setTime(parsedTime);
+					eventDate.set(Calendar.MONTH, today.get(Calendar.MONTH));
+					eventDate.set(Calendar.DAY_OF_MONTH, today.get(Calendar.DAY_OF_MONTH));
+					
+				} else {
+					DateFormat fmt = new SimpleDateFormat("EEE, MMMM dd @ HH:mm a");
+					Date parsedTime = fmt.parse(dateStr);	
+					eventDate.setTime(parsedTime);	
+				}
+				
+				eventDate.set(Calendar.YEAR, today.get(Calendar.YEAR));
+				
+				if (dateStr.contains("AM")) {
+					eventDate.set(Calendar.AM_PM, Calendar.AM);
+				} else {
+					eventDate.set(Calendar.AM_PM, Calendar.PM);
+				}
+					
+				show.setDate(eventDate.getTime());
+
+			} catch (ParseException e) { 
+				continue;
+			}
+			
+			musicShows.add(show);
 		}
 
 		return musicShows;
 	}
 
-	private String extractBandName(final String showUrl) throws ParserException {
-		final Parser showParser = new Parser(showUrl);
-		final NodeList bandNameList = showParser.extractAllNodesThatMatch(new StringFilter("All Shows for"));
+	private String extractBandName(String showUrl) throws ParserException {
+		Parser showParser = new Parser(showUrl);
+		NodeList bandNameList = showParser.extractAllNodesThatMatch(new StringFilter("Upcoming Shows"));
 
-		if (bandNameList.size() != 1) {
-			throw new ParserException("Unable to extract band name");
-		}
-
-		final TextNode bandNameNode = (TextNode) bandNameList.elementAt(0);
-		final String[] parts = bandNameNode.getText().split("All Shows for ");
+		TextNode bandNameNode = (TextNode)bandNameList.elementAt(0);
+		String[] parts = bandNameNode.getText().split(" - Upcoming Shows");
 
 		if (parts.length != 2) {
 			throw new ParserException("Unable to extract band name");
 		}
 
-		return parts[1];
+		return parts[0];
 	}
 }
