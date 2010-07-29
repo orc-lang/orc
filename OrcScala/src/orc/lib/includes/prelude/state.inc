@@ -364,14 +364,16 @@ def fill(a, x) =
 The call <code>Table(n,f)</code>, where <code>n</code> is a
 natural number and <code>f</code> a total function over natural numbers,
 creates and returns a partial, pre-computed version of <code>f</code>
-restricted to the range (0, <code>n</code>-1). If <code>f</code> halts
-on any number in this range, the call to <code>Table</code> will halt.
+restricted to the range (0, <code>n</code>-1). <code>Table</code> does
+not return a value until all calls to <code>f</code> have completed.
+Consequently, if <code>f</code> halts on any call, the call to 
+<code>Table</code> will halt.
 
 The user may also think of the call as returning an immutable array whose
 <code>i</code>th element is accessed by calling <code>f(i)</code>.
 
 This function provides a simple form of memoisation; we avoid recomputing
-the value of <code>f(i)</code> by storing the result in an array.
+the value of <code>f(i)</code> by internally storing the result in an array.
 
 Example:
 <programlisting><![CDATA[
