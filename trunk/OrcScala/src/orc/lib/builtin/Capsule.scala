@@ -18,20 +18,19 @@ object SiteSite extends TotalSite with UntypedSite {
   override def name = "Site"
   def evaluate(args: List[AnyRef]) =
     args match {
-      case List(clo : Closure) => new Capsule(clo)
-      case List(a) => throw new ArgumentTypeMismatchException(0, "Closure", a.getClass().toString())
+      case List(closure) => new Capsule(closure)
       case _ => throw new ArityMismatchException(1, args.size)
   }
 }
 
 // Standalone capsule execution
 
-class Capsule(clo: Closure) extends UntypedSite {
+class Capsule(closure: AnyRef) extends UntypedSite {
   
-  override def name = "capsule " + Format.formatValue(clo)
+  override def name = "capsule " + Format.formatValue(closure)
    
   def call(args: List[AnyRef], caller: TokenAPI) {
-    val node = Call(Constant(clo), args map Constant, Some(Nil))
+    val node = Call(Constant(closure), args map Constant, Some(Nil))
     caller.runtime match {
       case r : SupportForCapsules => r.runEncapsulated(node, caller.asInstanceOf[r.Token])
       case _ => caller !! new OrcException("This runtime does not support encapsulated execution.")
