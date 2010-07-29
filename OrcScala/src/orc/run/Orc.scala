@@ -224,9 +224,8 @@ trait Orc extends OrcRuntime {
   // Bindings //
   trait Binding
   case class BoundValue(v: AnyRef) extends Binding
-  case class BoundCell(g: Groupcell) extends Binding 
-  
-  
+  case class BoundCell(g: Groupcell) extends Binding
+  case class BoundDefs(defs: List[Def], pos: Int, lexicalContext: List[Binding]) extends Binding 
   
   // Frames //
   abstract class Frame {
@@ -345,14 +344,14 @@ trait Orc extends OrcRuntime {
       a match {
         case Constant(v) => BoundValue(v)
         case Variable(n) => env(n)
-    }
+      }
   
-    /* Attempt to resolve an argument to a value.
-     * When the argument becomes bound to v, call k(v).
-     * (If it is already bound, k is called immediately)
+    /* Attempt to resolve a binding to a value.
+     * When the binding resolves to v, call k(v).
+     * (If it is already resolved, k is called immediately)
      */
-    def resolve(arg: Argument)(k : AnyRef => Unit) {
-      lookup(arg) match {
+    def resolve(b: Binding)(k : AnyRef => Unit) {
+      b match {
         case BoundValue(v) => k(v)
         case BoundCell(g) => {
           g read { 
@@ -360,28 +359,30 @@ trait Orc extends OrcRuntime {
             case None => halt
           }
         }
+        case BoundDefs(defs, pos, lexicalContext) => {
+          resolve(lexicalContext) {
+            valueContext: List[AnyRef] => k( Closure(defs, pos, valueContext) ) 
+          }         
+        }
       }
     }
   
-    /* Attempt to resolve a list of arguments.
-     * When all of the arguments become bound, call k(vs).
-     * (If they are all already bound, k is called immediately) 
+    /* Attempt to resolve a list of bindings.
+     * When all of the bindings are resolved, call k(vs).
+     * (If they are all already resolved, k is called immediately) 
      */
-    def resolve(args: List[Argument])(k : List[AnyRef] => Unit) {
-      def resolveLeftToRight(args : List[Argument], vs : List[AnyRef]): Unit =
-        args match {
+    def resolve(bs: List[Binding])(k : List[AnyRef] => Unit) {
+      def resolveLeftToRight(bs : List[Binding], vs : List[AnyRef]): Unit =
+        bs match {
           case z::zs => resolve(z) { v : AnyRef => resolveLeftToRight(zs, v::vs) }
           case Nil => k(vs.reverse)
         }
-      resolveLeftToRight(args, Nil)
+      resolveLeftToRight(bs, Nil)
     }
-    
-    
-    def functionCall(c : Closure, actuals : List[Binding]) {
-      val Closure(arity, body, newcontext) = c
-      
-      if (actuals.size != arity) {
-        this !! new ArityMismatchException(arity, actuals.size) /* Arity mismatch. */
+       
+    def functionCall(d: Def, context: List[Binding], params: List[Binding]) {  
+      if (params.size != d.arity) {
+        this !! new ArityMismatchException(d.arity, params.size) /* Arity mismatch. */
       }
             
       /* 1) If this is not a tail call, push a function frame referring to the current environment.
@@ -402,14 +403,14 @@ trait Orc extends OrcRuntime {
         case _ => push(new FunctionFrame(node, env))
       }
           
-      /* Jump into the closure's lexical context */
-      this.env = newcontext map BoundValue
-                    
+      /* Jump into the function context */
+      this.env = context
+                
       /* Bind the args */
-      for (a <- actuals) { bind(a) }
+      for (p <- params) { bind(p) }
                     
-      /* Jump into the closure's body */
-      schedule(this.move(c.body))                                   
+      /* Jump into the function body */
+      schedule(this.move(d.body))                                   
 
     }
   
@@ -417,17 +418,41 @@ trait Orc extends OrcRuntime {
       if (state == Live) {
         node match {
           case Stop() => halt
-          case (a: Argument) => resolve(a) { publish }
-          case Call(target, args, _) => 
-            try
-              resolve(target) {
-                case c: Closure => functionCall(c, args map lookup)
-                case v => resolve(args) { invoke(this, v, _) }
+          case (a: Argument) => resolve(lookup(a)) { publish }
+          case Call(target, args, _) => {
+            val params = args map lookup
+            lookup(target) match {
+              case BoundDefs(defs, pos, lexicalContext) => {
+                val fs = 
+                  for (i <- defs.indices) yield {
+                    BoundDefs(defs, i, lexicalContext)
+                  }
+                val context = fs.toList.reverse ::: lexicalContext
+                functionCall(defs(pos), context, params)
               }
-            catch {
-              case e: OrcException => this !! e
-              case e => { halt ; notify(CaughtEvent(e)) }
+              case y => 
+                resolve(y) {
+                  case Closure(defs, pos, valueContext) => {
+                    val fs = 
+                      for (i <- defs.indices) yield {
+                        BoundValue( Closure(defs, i, valueContext) )
+                      }
+                    val context = fs.toList.reverse ::: ( valueContext map { BoundValue(_) } )
+                    functionCall(defs(pos), context, params)
+                  }
+                  case v => 
+                    resolve(params) { vs =>
+                      try {
+                        invoke(this, v, vs)
+                      }
+                      catch {
+                        case e: OrcException => this !! e
+                        case e => { halt ; notify(CaughtEvent(e)) }
+                      }
+                    }
+                }
             }
+          }
     
           case Parallel(left, right) => {
             val (l,r) = fork
@@ -453,21 +478,14 @@ trait Orc extends OrcRuntime {
           }
     
           case decldefs@ DeclareDefs(openvars, defs, body) => {
-            /* Closure compaction: Bind only free variables
-             * of the defs in the closure's context.
-             */           
-            val vars = openvars map { Variable } 
-            resolve(vars) {
-              vs: List[AnyRef] => {
-                var context: List[AnyRef] = vs
-                
-                val cs = defs map ( (d: Def) => new Closure(d, defs) )
-                for (c <- cs) { bind(BoundValue(c)); context = c :: context }
-                for (c <- cs) { c.context = context }
-                
-                schedule(this.move(body))
-              }
+            /* Closure compaction: Bind only the free variables
+             * of the defs in this lexical context. 
+             */
+            val lexicalContext = openvars map { i:Int => lookup(Variable(i)) }
+            for (i <- defs.indices) { 
+              bind(BoundDefs(defs, i, lexicalContext)) 
             }
+            schedule(this.move(body))
           }
           case HasType(expr, _) => this.move(expr).run
           case DeclareType(_, expr) => this.move(expr).run

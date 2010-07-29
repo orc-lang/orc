@@ -27,28 +27,31 @@ import orc.oil.nameless.NamelessToNamed
  *
  * @author dkitchin
  */
-class Closure(d: Def, ds: List[Def]) extends OrcValue with NamelessToNamed {
-    val arity: Int = d.arity
-    val body: Expression = d.body
-    var context: List[AnyRef] = Nil
+case class Closure(defs: List[Def], pos: Int, valueContext: List[AnyRef]) extends OrcValue with NamelessToNamed {
+  
+  if (!(defs isDefinedAt pos)) { throw new Error("Invalid arguments to Closure constructor"); }
+  
+  val arity: Int = defs(pos).arity
+  val body: Expression = defs(pos).body
     
-    override def toOrcSyntax() = {
-      val (defs, rest) = context.splitAt(ds.size)
-      val newctx = (defs map {_ => None}) ::: (rest map { Some(_) })
-      val subdef = d.subst(newctx)
-      val myName = new BoundVar()
-      val defNames = 
-        for (d <- defs) yield 
-          if (d == this) { myName } else { new BoundVar() }
-      val namedDef = namelessToNamed(myName, subdef, defNames, Nil)
-      val pp = new PrettyPrint()
-      "lambda" +
-        pp.reduce(namedDef.name) + 
-          pp.paren(namedDef.formals) + 
-            " = " + 
-              pp.reduce(namedDef.body)
+  override def toOrcSyntax() = "closure"
+  /*
+  {
+    val (defs, rest) = context.splitAt(ds.size)
+    val newctx = (defs map {_ => None}) ::: (rest map { Some(_) })
+    val subdef = defs(pos).subst(context map { Some(_) })
     }
-}
-object Closure {
-    def unapply(c: Closure) = Some((c.arity, c.body, c.context))
+    val myName = new BoundVar()
+    val defNames = 
+      for (d <- defs) yield 
+        if (d == this) { myName } else { new BoundVar() }
+    val namedDef = namelessToNamed(myName, subdef, defNames, Nil)
+    val pp = new PrettyPrint()
+    "lambda" +
+      pp.reduce(namedDef.name) + 
+        pp.paren(namedDef.formals) + 
+          " = " + 
+            pp.reduce(namedDef.body)
+    }
+    */
 }
