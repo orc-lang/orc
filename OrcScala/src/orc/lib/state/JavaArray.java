@@ -16,17 +16,11 @@ package orc.lib.state;
 import java.lang.reflect.Array;
 import java.util.HashMap;
 
-import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.SiteException;
 import orc.error.runtime.TokenException;
-//import orc.lib.state.types.ArrayType;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
-import orc.values.sites.compatibility.type.Type;
-import orc.values.sites.compatibility.type.TypeVariable;
-import orc.values.sites.compatibility.type.structured.ArrowType;
-import orc.values.sites.compatibility.type.structured.MultiType;
 
 public class JavaArray extends EvalSite {
 	private static HashMap<String, Class<?>> types = new HashMap<String, Class<?>>();
@@ -56,10 +50,10 @@ public class JavaArray extends EvalSite {
 		}
 	}
 
-	@Override
-	public Type type() throws TypeException {
-		final Type X = new TypeVariable(0);
-		final Type ArrayOfX = null;//FIXME:new ArrayType().instance(X);
-		return new MultiType(new ArrowType(Type.INTEGER, ArrayOfX, 1), new ArrowType(Type.INTEGER, Type.STRING, ArrayOfX, 1));
-	}
+//	@Override
+//	public Type type() throws TypeException {
+//		final Type X = new TypeVariable(0);
+//		final Type ArrayOfX = new ArrayType().instance(X);
+//		return new MultiType(new ArrowType(Type.INTEGER, ArrayOfX, 1), new ArrowType(Type.INTEGER, Type.STRING, ArrayOfX, 1));
+//	}
 }

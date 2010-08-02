@@ -20,7 +20,7 @@ object DatatypeBuilder extends TotalSite with UntypedSite {
     }
 }
 
-class DataSite(name: String, arity: Int) extends TotalSite with UntypedSite {
+class DataSite(name: String, arity: Int) extends TotalSite with Extractable with UntypedSite {
   
   def evaluate(args: List[AnyRef]): AnyRef = {
       if(args.size != arity) {
@@ -29,7 +29,7 @@ class DataSite(name: String, arity: Int) extends TotalSite with UntypedSite {
       TaggedValue(this,args)
   }
   
-  override def extract = Some(new PartialSite  with UntypedSite {
+  override def extract = new PartialSite  with UntypedSite {
  
     override def evaluate(args: List[AnyRef]) = {
         args match {
@@ -38,7 +38,7 @@ class DataSite(name: String, arity: Int) extends TotalSite with UntypedSite {
           case _ => throw new ArityMismatchException(1, args.size)
         }
     }
-  })
+  }
   
   override def toOrcSyntax() = name
 }

@@ -15,17 +15,12 @@ package orc.lib.state;
 
 import java.util.LinkedList;
 
-import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.TokenException;
-//import orc.lib.state.types.BufferType;
 import orc.values.sites.compatibility.Args;
 import orc.TokenAPI;
 import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
-import orc.values.sites.compatibility.type.Type;
-import orc.values.sites.compatibility.type.TypeVariable;
-import orc.values.sites.compatibility.type.structured.ArrowType;
 
 /**
  * Implements the local site Buffer, which creates buffers (asynchronous channels).
@@ -43,12 +38,12 @@ public class Buffer extends EvalSite {
 		return new BufferInstance();
 	}
 
-	@Override
-	public Type type() throws TypeException {
-		final Type X = new TypeVariable(0);
-		final Type BufferOfX = null;//FIXME:new BufferType().instance(X);
-		return new ArrowType(BufferOfX, 1);
-	}
+//	@Override
+//	public Type type() throws TypeException {
+//		final Type X = new TypeVariable(0);
+//		final Type BufferOfX = new BufferType().instance(X);
+//		return new ArrowType(BufferOfX, 1);
+//	}
 
 	protected class BufferInstance extends DotSite {
 

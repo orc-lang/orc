@@ -6,6 +6,11 @@ import orc.values.sites._
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
 
+trait Extractable extends Site {
+  def extract: PartialSite
+}
+
+
 object NoneExtractor extends PartialSite with UntypedSite {
   override def name = "None?"
   def evaluate(args: List[AnyRef]) =
@@ -17,6 +22,7 @@ object NoneExtractor extends PartialSite with UntypedSite {
   }
 }
 
+
 object SomeExtractor extends PartialSite with UntypedSite {
   override def name = "Some?"
   def evaluate(args: List[AnyRef]) =
@@ -27,7 +33,6 @@ object SomeExtractor extends PartialSite with UntypedSite {
       case _ => throw new ArityMismatchException(1, args.size)
   }
 }
-
 
 
 object NilExtractor extends PartialSite with UntypedSite {
@@ -45,6 +50,7 @@ object NilExtractor extends PartialSite with UntypedSite {
   }
   }
 }
+
 
 object ConsExtractor extends PartialSite with UntypedSite {
   override def name = "Cons?"
@@ -64,6 +70,7 @@ object ConsExtractor extends PartialSite with UntypedSite {
       case _ => throw new ArityMismatchException(1, args.size)
   }
 }
+
 
 /* 
  * Checks if a Tuple t has a given number of elements.
@@ -85,13 +92,14 @@ object TupleArityChecker extends PartialSite with UntypedSite {
   }
 }
 
+
 object FindExtractor extends TotalSite with UntypedSite {
   override def name = "FindExtractor"
   def evaluate(args: List[AnyRef]) =
     args match {
-      case List(s : Site) => s.extract match {
-        case Some(extractor) => extractor
-        case None => throw new Exception("Could not find extractor for site"+s)
-      }
+      case List(s: Extractable) => s.extract
+      case List(s: Site) => throw new Exception("Could not find extractor for site"+s)
+      case List(a) => throw new ArgumentTypeMismatchException(0, "Site", a.getClass().toString())
+      case _ => throw new ArityMismatchException(1, args.size)
     }
 }

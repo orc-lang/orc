@@ -15,17 +15,12 @@ package orc.lib.state;
 
 import java.util.LinkedList;
 
-import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.TokenException;
-//import orc.lib.state.types.BoundedBufferType;
 import orc.values.sites.compatibility.Args;
 import orc.TokenAPI;
 import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
-import orc.values.sites.compatibility.type.Type;
-import orc.values.sites.compatibility.type.TypeVariable;
-import orc.values.sites.compatibility.type.structured.ArrowType;
 
 /**
  * A bounded buffer.
@@ -44,12 +39,12 @@ public class BoundedBuffer extends EvalSite {
 		return new BufferInstance(args.intArg(0));
 	}
 
-	@Override
-	public Type type() throws TypeException {
-		final Type X = new TypeVariable(0);
-		final Type BufferOfX = null;//FIXME:new BoundedBufferType().instance(X);
-		return new ArrowType(Type.INTEGER, BufferOfX, 1);
-	}
+//	@Override
+//	public Type type() throws TypeException {
+//		final Type X = new TypeVariable(0);
+//		final Type BufferOfX = new BoundedBufferType().instance(X);
+//		return new ArrowType(Type.INTEGER, BufferOfX, 1);
+//	}
 
 	protected class BufferInstance extends DotSite {
 

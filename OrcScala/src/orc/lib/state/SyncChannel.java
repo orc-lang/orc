@@ -15,7 +15,6 @@ package orc.lib.state;
 
 import java.util.LinkedList;
 
-import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.TokenException;
 //import orc.lib.state.types.SyncChannelType;
 import orc.values.sites.compatibility.Args;
@@ -23,9 +22,6 @@ import orc.TokenAPI;
 import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
-import orc.values.sites.compatibility.type.Type;
-import orc.values.sites.compatibility.type.TypeVariable;
-import orc.values.sites.compatibility.type.structured.ArrowType;
 
 /**
  * Implements the local site SyncChannel, which creates synchronous channels.
@@ -43,12 +39,12 @@ public class SyncChannel extends EvalSite {
 		return new SyncChannelInstance();
 	}
 
-	@Override
-	public Type type() throws TypeException {
-		final Type X = new TypeVariable(0);
-		final Type ChannelOfX = null;//FIXME:new SyncChannelType().instance(X);
-		return new ArrowType(ChannelOfX, 1);
-	}
+//	@Override
+//	public Type type() throws TypeException {
+//		final Type X = new TypeVariable(0);
+//		final Type ChannelOfX = new SyncChannelType().instance(X);
+//		return new ArrowType(ChannelOfX, 1);
+//	}
 
 	private class SenderItem {
 

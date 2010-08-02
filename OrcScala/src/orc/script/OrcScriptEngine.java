@@ -84,7 +84,9 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 		public Object eval(final ScriptContext ctx) throws ScriptException {
 			final List<Object> pubs = new ArrayList<Object>();
 			final OrcEventAction addPubToList = new OrcEventAction() {
+                @Override
 				public void published(Object value) { pubs.add(value); }
+                @Override
 				public void printed(String output) {
 					try {
 						ctx.getWriter().write(output);
@@ -93,6 +95,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 						e.printStackTrace();
 					}
 				}
+				@Override
 				public void caught(Throwable e) {
 					//TODO: Consider saving the exception and throwing it out of this eval() invocation.  Can't throw here, because we're in engine when this OrcEventAction is called.
 					try {
@@ -106,6 +109,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 						e1.printStackTrace();
 					}
 				}
+				@Override
 				public void halted() { /* Do nothing */ }
 			};
 			run(ctx, addPubToList);

@@ -16,17 +16,12 @@ package orc.lib.state;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.TokenException;
-//import orc.lib.state.types.CellType;
 import orc.values.sites.compatibility.Args;
 import orc.TokenAPI;
 import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
-import orc.values.sites.compatibility.type.Type;
-import orc.values.sites.compatibility.type.TypeVariable;
-import orc.values.sites.compatibility.type.structured.ArrowType;
 
 /**
  * Write-once cell. 
@@ -45,12 +40,12 @@ public class Cell extends EvalSite {
 		return new CellInstance();
 	}
 
-	@Override
-	public Type type() throws TypeException {
-		final Type X = new TypeVariable(0);
-		final Type CellOfX = null;//FIXME:new CellType().instance(X);
-		return new ArrowType(CellOfX, 1);
-	}
+//	@Override
+//	public Type type() throws TypeException {
+//		final Type X = new TypeVariable(0);
+//		final Type CellOfX = new CellType().instance(X);
+//		return new ArrowType(CellOfX, 1);
+//	}
 
 	protected class CellInstance extends DotSite {
 
