@@ -1,5 +1,5 @@
 //
-// OrcCompiler.scala -- Scala class OrcCompiler
+// OrcCompiler.scala -- Scala classes CoreOrcCompiler and StandradOrcCompiler
 // Project OrcScala
 //
 // $Id$
@@ -15,9 +15,14 @@
 
 package orc.compile
 
+import java.io.File
 import java.io.InputStreamReader
+import java.io.BufferedReader
 import java.io.Writer
 import java.io.PrintWriter
+import java.io.IOException
+import java.io.FileNotFoundException
+import java.net.URI
 
 import scala.util.parsing.input.Reader
 import scala.util.parsing.input.StreamReader
@@ -26,8 +31,10 @@ import scala.compat.Platform.currentTime
 
 import orc.OrcCompiler
 import orc.OrcOptions
-import orc.compile.parse.OrcParser
-import orc.compile.parse.OrcReader
+import orc.compile.parse.OrcIncludeParser
+import orc.compile.parse.OrcProgramParser
+import orc.compile.parse.OrcInputContext
+import orc.compile.parse.OrcResourceInputContext
 import orc.compile.optimize._
 import orc.error.compiletime.CompilationException
 import orc.error.compiletime.CompileLogger
@@ -78,12 +85,12 @@ trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
 }
 
 /**
- * An instance of OrcCompiler is a particular Orc compiler configuration, 
+ * An instance of CoreOrcCompiler is a particular Orc compiler configuration, 
  * which is a particular Orc compiler implementation, in a JVM instance.
- * Note, however, that an OrcCompiler instance is not specialized for
+ * Note, however, that an CoreOrcCompiler instance is not specialized for
  * a single Orc program; in fact, multiple compilations of different programs,
  * with different options set, may be in progress concurrently within a
- * single OrcCompiler instance.  
+ * single CoreOrcCompiler instance.  
  *
  * @author jthywiss
  */
@@ -93,24 +100,23 @@ abstract class CoreOrcCompiler extends OrcCompiler {
   // Definition of the phases of the compiler
   ////////
 
-  val parse = new CompilerPhase[OrcOptions, Reader[Char], orc.compile.ext.Expression] {
+  val parse = new CompilerPhase[OrcOptions, OrcInputContext, orc.compile.ext.Expression] {
     val phaseName = "parse"
     override def apply(options: OrcOptions) = { source =>
       var includeFileNames = options.additionalIncludes
-      val parser = new OrcParser(options)
       if (options.usePrelude) {
         includeFileNames = "prelude.inc" :: (includeFileNames).toList
       }
       val includeAsts = for (fileName <- includeFileNames) yield {
-        val r = OrcReader(openInclude(fileName, null, options), fileName, openInclude(_, _, options))
-        parser.scanAndParseInclude(r, fileName) match {
-          case parser.Success(result, _) => result
-          case parser.NoSuccess(msg, in) => throw new ParsingException(msg, in.pos)
+        val ic = openInclude(fileName, null, options)
+        OrcIncludeParser(ic, options, CoreOrcCompiler.this) match {
+          case r if r.successful             => r.get
+          case n: OrcIncludeParser.NoSuccess => throw new ParsingException(n.msg, n.next.pos)
         }
       }
-      val progAst = parser.scanAndParseProgram(source) match {
-        case parser.Success(result, _) => result
-        case parser.NoSuccess(msg, in) => throw new ParsingException(msg, in.pos)
+      val progAst = OrcProgramParser(source, options, CoreOrcCompiler.this) match {
+          case r if r.successful             => r.get
+          case n: OrcIncludeParser.NoSuccess => throw new ParsingException(n.msg, n.next.pos)
       }
       (includeAsts :\ progAst) { orc.compile.ext.Declare }
     }
@@ -152,7 +158,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
   // Compiler methods
   ////////
 
-  def apply(source: Reader[Char], options: OrcOptions, compileLogger: CompileLogger): orc.oil.nameless.Expression = {
+  def apply(source: OrcInputContext, options: OrcOptions, compileLogger: CompileLogger): orc.oil.nameless.Expression = {
     compileLogger.beginProcessing(options.filename)
     try {
       val result = phases(options)(source)
@@ -165,61 +171,62 @@ abstract class CoreOrcCompiler extends OrcCompiler {
     }
   }
 
-  def apply(source: java.io.Reader, options: OrcOptions, compileLogger: CompileLogger): orc.oil.nameless.Expression = apply(StreamReader(source), options, compileLogger)
-
 }
 
 
+/**
+ * StandardOrcCompiler extends CoreOrcCompiler with "standard" environment interfaces. 
+ *
+ * @author jthywiss
+ */
 class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
-  override def apply(source: Reader[Char], options: OrcOptions, compileLogger: CompileLogger): orc.oil.nameless.Expression = {
+  override def apply(source: OrcInputContext, options: OrcOptions, compileLogger: CompileLogger): orc.oil.nameless.Expression = {
     SiteClassLoading.initWithClassPathStrings(options.classPath)
     super.apply(source, options, compileLogger)
   }
 
-  //TODO: Maybe refactor this?
-  def apply(source: Reader[Char], options: OrcOptions, err: Writer): orc.oil.nameless.Expression = 
-    apply(source, options, new PrintWriterCompileLogger(new PrintWriter(err, true)))
+  private class OrcReaderInputContext(val javaReader: java.io.Reader, override val descr: String) extends OrcInputContext {
+    val file = new File(descr)
+    override val reader = orc.compile.parse.OrcReader(new BufferedReader(javaReader), descr)
+    override def toURI = file.toURI
+    override def toURL = toURI.toURL
+  }
 
-  def apply(source: java.io.Reader, options: OrcOptions, err: Writer): orc.oil.nameless.Expression = 
-    apply(source, options, new PrintWriterCompileLogger(new PrintWriter(err, true)))
+  def apply(source: java.io.Reader, options: OrcOptions, err: Writer): orc.oil.nameless.Expression = {
+    this(new OrcReaderInputContext(source, options.filename), options, new PrintWriterCompileLogger(new PrintWriter(err, true)))
+  }
 
-  def openInclude(includeFileName: String, relativeToFileName: String, options: OrcOptions): java.io.Reader = {
-    
+  private object OrcNullInputContext extends OrcInputContext {
+    override val descr = ""
+    override val reader = null
+    override val toURI = new URI("")
+    override def toURL = toURI.toURL
+  }
+
+  def openInclude(includeFileName: String, relativeTo: OrcInputContext, options: OrcOptions): OrcInputContext = {
+    val baseIC = if (relativeTo != null) relativeTo else OrcNullInputContext
+
     // Try filename under the include path list
-    for (ip <- options.includePath) {
-      val incPath = new java.io.File(ip)
-
-      /* Build file path as follows:
-       *   path = relTo + incPath + fileName
-       * If relTo is null, incPath must be absolute (or the path entry is skipped)
-       * Try for all paths in the include path list
-       */
-      if (incPath.isAbsolute() || relativeToFileName != null) {
-        val incPathPrefixed = new java.io.File(relativeToFileName, ip)
-        val file = new java.io.File(incPathPrefixed, includeFileName)
-        if (file.exists()) {
-          return new java.io.FileReader(file)
-        }
+    for (incPath <- scala.collection.JavaConversions.asIterable(options.includePath)) {
+      try {
+        //FIXME: Security implications of including local files:
+        // For Orchard's sake, OrcJava disallowed relative file names
+        // in certain cases, to prevent examining files by including
+        // them.  This seems a weak barrier, and in fact was broken.
+        // We need an alternative way to control local file reads.
+        return baseIC.newInputFromPath(incPath, includeFileName)
+      } catch {
+        case _: IOException => /* Ignore, must not be here */
       }
     }
     
     // Try in the bundled include resources
-    val stream = options.getClass().getResourceAsStream("/orc/lib/includes/" + includeFileName);
-    if (stream != null) {
-      return new java.io.InputStreamReader(stream);
-    }
-
-    // Try to read this include as a URL instead of as a local file
     try {
-      val incurl = new java.net.URL(includeFileName);
-      return new InputStreamReader(incurl.openConnection().getInputStream());
+      return new OrcResourceInputContext("orc/lib/includes/" + includeFileName, getResource)
     } catch {
-      case e: java.net.MalformedURLException => { } //ignore
-      case e: java.io.IOException =>
-        throw new java.io.FileNotFoundException("Could not open a connection to '" + includeFileName + "'.");
+      case _: IOException => /* Ignore, must not be here */
     }
 
-    throw new java.io.FileNotFoundException("Include file '" + includeFileName + "' not found; check the include path.");
+    throw new FileNotFoundException("Include file '" + includeFileName + "' not found; check the include path.");
   }
-
 }

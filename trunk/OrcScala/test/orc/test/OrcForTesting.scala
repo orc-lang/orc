@@ -34,7 +34,8 @@ import orc.error.OrcException
 
 
 /**
- * An
+ * A test harness for the standard Orc compiler and runtime
+ * engine, as exposed through the JSR-223 interface.
  *
  * @author jthywiss
  */
@@ -49,7 +50,7 @@ object OrcForTesting {
       val options = new OrcBindings()
       options.filename = filename
       engine.setBindings(options, ENGINE_SCOPE)
-      val reader = new FileReader(options.filename) //FIXME:OrcReader(new FileReader(options.filename), options.filename, compiler.openInclude(_, _, options))
+      val reader = new FileReader(options.filename)
       engine.compile(reader).asInstanceOf[OrcScriptEngine#OrcCompiledScript]
     } catch {
       case e: ScriptException => throw e.getCause // un-wrap and propagate

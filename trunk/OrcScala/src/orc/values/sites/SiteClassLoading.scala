@@ -15,17 +15,23 @@
 package orc.values.sites
 
 import scala.collection.JavaConversions._
+
+import java.io.File
+import java.net.URL
+import java.net.URLClassLoader
+
 import orc.util.FirstNonNull
 
 
 /**
- * Provides a loadClass implementation that uses the Java class path,
+ * Provides a loadClass/getResource implementation that uses the Java class path,
  * plus the class path supplied to SiteClassLoading.initWithClassPath.
  *
  * @author jthywiss
  */
 trait SiteClassLoading {
-  def loadClass(name:String): Class[_] = SiteClassLoading.classLoader.loadClass(name)
+  def loadClass(name: String) = SiteClassLoading.classLoader.loadClass(name)
+  def getResource(name: String) = SiteClassLoading.classLoader.getResource(name)
 }
 
 
@@ -59,23 +65,23 @@ object SiteClassLoading {
 
   def initWithClassPathStrings(classPath: Array[String]) { initWithClassPathUrls(classPath.map(path2URL(_)).toArray) }
 
-  def initWithClassPathUrls(classPath: Array[java.net.URL]) {
+  def initWithClassPathUrls(classPath: Array[URL]) {
     if (!initted) 
       stackClassLoaderWithPath(classPath) 
     else
       throw new IllegalStateException("Cannot double-init SiteClassLoading")
   }
 
-  private def path2URL(path: String): java.net.URL = {
+  private def path2URL(path: String): URL = {
     // The same logic as the AppClassLoader uses to parse system.class.path
-    var canFile = new java.io.File(if (path.length == 0) "." else path)
+    var canFile = new File(if (path.length == 0) "." else path)
     try { canFile = canFile.getCanonicalFile } catch { case _ => { } }
     canFile.toURI.toURL
   }
 
-  private def stackClassLoaderWithPath(classPath: Array[java.net.URL]) {
+  private def stackClassLoaderWithPath(classPath: Array[URL]) {
     if (classPath != null && classPath.length > 0) {
-      classLoader = java.net.URLClassLoader.newInstance(classPath, classLoader)
+      classLoader = URLClassLoader.newInstance(classPath, classLoader)
     } else {
       // Leave alone
     }

@@ -1,5 +1,5 @@
 //
-// OrcParser.scala -- Scala object OrcParser
+// OrcParsers.scala -- Scala objects Orc...Parser, and class OrcParsers
 // Project OrcScala
 //
 // $Id$
@@ -19,53 +19,98 @@ import scala.util.parsing.input.Reader
 import scala.util.parsing.combinator.syntactical._
 import scala.util.parsing.input.Position
 
+import java.io.IOException
+
 import orc.AST
 import orc.OrcOptions
+import orc.OrcCompilerRequires
 import orc.compile.ext._
 
 
 /**
- * Need one OrcParser instance for every parse.
+ * Mix-in for result types from Orc parsers
+ *
+ * @author jthywiss
+ */
+trait OrcParserResultTypes {
+  type ParseResult
+  type Success
+  type NoSuccess = OrcParsers#NoSuccess
+  type Error =  OrcParsers#Error
+  type Failure = OrcParsers#Failure
+}
+
+
+/**
+ * An Orc parser that analyzes a given string as an Orc literal value.
+ * The result of applying this function is an Expression Extended AST,
+ * in particular a Constant, ListValue, or TupleValue.
+ *
+ * @see orc.compile.ext.Expression
+ * @see orc.compile.ext.Constant
+ * @see orc.compile.ext.ListValue
+ * @see orc.compile.ext.TupleValue
+ * @author jthywiss
+ */
+object OrcLiteralParser extends (String => OrcParsers#ParseResult[Expression]) with OrcParserResultTypes {
+  type ParseResult = OrcParsers#ParseResult[Expression]
+  type Success = OrcParsers#Success[Expression]
+  def apply(s: String): ParseResult = {
+    val parsers = new OrcParsers(null, null, null)
+    val tokens = new parsers.lexical.Scanner(s)
+    parsers.phrase(parsers.parseConstantListTuple)(tokens)
+  }
+}
+
+/**
+ * An Orc parser that analyzes a given input as an Orc program.
+ * The result of applying this function is an Expression Extended AST
+ * representing the whole program and included files.
+ *
+ * @author jthywiss
+ */
+object OrcProgramParser extends ((OrcInputContext, OrcOptions, OrcCompilerRequires) => OrcParsers#ParseResult[Expression]) with OrcParserResultTypes {
+  type ParseResult = OrcParsers#ParseResult[Expression]
+  type Success = OrcParsers#Success[Expression]
+  def apply(ic: OrcInputContext, options: OrcOptions, envServices: OrcCompilerRequires): ParseResult = {
+    val parsers = new OrcParsers(ic, options, envServices)
+    val tokens = new parsers.lexical.Scanner(ic.reader)
+    parsers.enhanceErrorMsg(parsers.phrase(parsers.parseProgram)(tokens))
+  }
+}
+
+/**
+ * An Orc parser that analyzes a given input as an Orc include file.
+ * The result of applying this function is an Include Extended AST
+ * representing the include and sub-included files.
+ *
+ * @author jthywiss
+ */
+object OrcIncludeParser extends ((OrcInputContext, OrcOptions, OrcCompilerRequires) => OrcParsers#ParseResult[Include]) with OrcParserResultTypes {
+  type ParseResult = OrcParsers#ParseResult[Include]
+  type Success = OrcParsers#Success[Include]
+  def apply(ic: OrcInputContext, options: OrcOptions, envServices: OrcCompilerRequires): ParseResult = {
+    val newParsers = new OrcParsers(ic, options, envServices)
+    val parseInclude = newParsers.markLocation(newParsers.parseDeclarations ^^ { Include(ic.descr, _) })
+    val tokens = new newParsers.lexical.Scanner(ic.reader)
+    newParsers.phrase(parseInclude)(tokens)
+  }
+}
+
+
+/**
+ * This is a container for the various Parsers that embody the Orc grammar
+ * productions, and some parsing helper methods.
+ * <p>
+ * A fresh OrcParsers instance is needed for every parse.
  * (Limitation of scala.util.parsing.combinator.Parsers -- current parsing state kept in fields.)
  *
  * @author dkitchin, amshali, srosario, jthywiss
  */
-class OrcParser(options: OrcOptions) extends StandardTokenParsers {
+class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices: OrcCompilerRequires) extends StandardTokenParsers {
   import lexical.{Keyword, FloatingPointLit}
 
   override val lexical = new OrcLexical()
-
-  ////////
-  // Top-level methods to begin scanning and parsing an input source
-  ////////
-
-  def scanAndParseLiteral(s: String): ParseResult[Expression] = {
-      val tokens = new lexical.Scanner(s)
-      phrase(parseConstantListTuple)(tokens)
-  }
-
-  def scanAndParseProgram(s: String): ParseResult[Expression] = {
-      val tokens = new lexical.Scanner(s)
-      enhanceErrorMsg(phrase(parseProgram)(tokens))
-  }
-
-  def scanAndParseProgram(r: Reader[Char]): ParseResult[Expression] = {
-      val tokens = new lexical.OrcScanner(r)
-      enhanceErrorMsg(phrase(parseProgram)(tokens))
-  }
-
-  def scanAndParseInclude(r: Reader[Char], name: String): ParseResult[Include] = {
-      val newParser = new OrcParser(options)
-      val parseInclude = newParser.markLocation(newParser.parseDeclarations ^^ { Include(name, _) })
-      val tokens = new newParser.lexical.OrcScanner(r)
-      val result = newParser.phrase(parseInclude)(tokens)
-      def dummyInput(posToUse: Position): Input = new Input { def first = null; def rest = this; def pos = posToUse; def atEnd = true }
-      result match {
-        case newParser.Success(x, y) => Success(x, dummyInput(y.pos))
-        case newParser.Failure(x, y) => Error(x, dummyInput(y.pos))
-        case newParser.Error(x, y) => Error(x, dummyInput(y.pos))
-      }
-  }
 
   ////////
   // Grammar productions (in bottom-up order)
@@ -376,17 +421,17 @@ class OrcParser(options: OrcOptions) extends StandardTokenParsers {
       | failure("Declaration (val, def, type, etc.) expected")
   )
 
-  def performInclude(includeName: String): Parser[Include] =
-    Parser { in => {
-        in match {
-          case r: NamedSubfileReader[_] => scanAndParseInclude(r.newSubReader(includeName), includeName)  match {
-            case Success(result, _) => Success(result, in.rest)
-            case x => x
-          }
-          // Didn't get a NamedSubfileReader as our reader, so no includes for you!
-          case _ => throw new orc.error.compiletime.ParsingException("Cannot process includes from this input source (type="+in.getClass().getName()+")", in.pos)
-        }
-    } }
+  def performInclude(includeName: String): Parser[Include] = {
+    val newInputContext = try {
+      envServices.openInclude(includeName, inputContext, options)
+    } catch {
+      case e: IOException => return error(e.toString)
+    }
+    OrcIncludeParser(newInputContext, options, envServices) match {
+      case r if r.successful             => success(r.get)
+      case n: OrcIncludeParser.NoSuccess => Parser{ in => Error(n.msg, new Input{ def first = null; def rest = this; def pos = n.next.pos; def atEnd = true }) }
+    }
+  }
 
   //def parseDeclarations: Parser[List[Declaration]] = (lexical.NewLine*) ~> (parseDeclaration <~ (lexical.NewLine*))*
 

@@ -18,7 +18,7 @@ import orc.values.sites.TotalSite
 import orc.values.sites.UntypedSite
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
-import orc.compile.parse.OrcParser
+import orc.compile.parse.OrcLiteralParser
 import orc.error.compiletime.ParsingException
 import orc.compile.ext.Expression
 import orc.compile.ext.Constant
@@ -30,10 +30,9 @@ object Read extends TotalSite with UntypedSite {
   def evaluate(args: List[AnyRef]): AnyRef = {
     val parsedValue = args match {
       case List(s: String) => {
-        val parser = new OrcParser(null)
-        parser.scanAndParseLiteral(s) match {
-          case parser.Success(v, _) => v
-          case parser.NoSuccess(msg, _) => throw new ParsingException(msg+" when reading \""+s+"\"")
+        OrcLiteralParser(s) match {
+          case r if r.successful             => r.get
+          case n: OrcLiteralParser.NoSuccess => throw new ParsingException(n.msg+" when reading \""+s+"\"")
         }
       }
       case List(a) => throw new ArgumentTypeMismatchException(0, "String", a.getClass().toString())

@@ -15,11 +15,21 @@
 
 package orc.compile.parse
 
+import java.net.URI
+import java.net.URL
+import java.io.File
+import java.io.FileInputStream
+import java.io.InputStreamReader
+import java.io.BufferedReader
+import java.io.StringReader
+import java.io.IOException
 import scala.collection.immutable.PagedSeq
 import scala.util.parsing.input.Position
 import scala.util.parsing.input.OffsetPosition
 import scala.util.parsing.input.Reader
 import scala.util.parsing.input.PagedSeqReader
+import orc.util.FirstNonNull
+
 
 /**
  * Adds a filename field to scala.util.parsing.input.Position
@@ -30,6 +40,7 @@ trait PositionWithFilename extends Position {
   val filename: String
 }
 
+
 /**
  * Position that understands files.
  * (Also fixes bug in OffsetPosition.lineContents)
@@ -37,6 +48,7 @@ trait PositionWithFilename extends Position {
  * @author jthywiss
  */
 class OrcPosition(source: java.lang.CharSequence, val filename: String, offset: Int) extends OffsetPosition(source, offset) with PositionWithFilename {
+
   override def toString = ""+filename+":"+line+":"+column
   
   override def <(that: Position) = {
@@ -56,57 +68,132 @@ class OrcPosition(source: java.lang.CharSequence, val filename: String, offset: 
 
 }
 
+
 /**
- * Reader that has a filename (description) and can create new readers with a relative filename
+ * Reader implementation that has a filename (description) and uses OrcPosition for pos
  *
  * @author jthywiss
  */
-trait NamedSubfileReader[T] extends Reader[T] {
-  val descr: String;
-  def newSubReader(newFilename: String): NamedSubfileReader[Char]
-}
-
-/**
- * Function that converts filenames into paged character sequences
- *
- * @author jthywiss
- */
-trait NameToCharSeq {
-  def apply(newFilename: String): (PagedSeq[Char], NameToCharSeq)
-}
-
-
-/**
- * Reader implementation that has a filename (description) and can create new readers with a relative filename
- *
- * @author jthywiss
- */
-class OrcReader(seq: PagedSeq[Char], val descr: String, nameToPagedSeq: NameToCharSeq, offset: Int) extends PagedSeqReader(seq, offset) with NamedSubfileReader[Char] {
+class OrcReader(seq: PagedSeq[Char], val descr: String, offset: Int) extends PagedSeqReader(seq, offset) {
+  if (seq == null) throw new NullPointerException("OrcReader.<init>(seq == null)")
+  if (descr == null) throw new NullPointerException("OrcReader.<init>(descr == null)")
 
   override def rest: OrcReader =
-    if (seq.isDefinedAt(offset)) new OrcReader(seq, descr, nameToPagedSeq, offset + 1)
+    if (seq.isDefinedAt(offset)) new OrcReader(seq, descr, offset + 1)
     else this
 
   override def drop(n: Int): OrcReader = 
-    new OrcReader(seq, descr, nameToPagedSeq, offset + n)
+    new OrcReader(seq, descr, offset + n)
 
   override def pos: OrcPosition = new OrcPosition(source, descr, offset)
-
-  def newSubReader(newFilename: String): OrcReader = {
-      val (newSeq, newFileToSeq) = nameToPagedSeq(newFilename) 
-      new OrcReader(newSeq, newFilename, newFileToSeq, 0)
-    }
 }
 
 object OrcReader {
-  def fileNameToCharSeq(startingPointName: String, openInclude: (String, String) => java.io.Reader): NameToCharSeq = new NameToCharSeq {
-    def apply (newFilename: String) = {
-      val relToPath = (new java.io.File(startingPointName)).getParent()
-      val includeReader = openInclude(newFilename, relToPath)
-      val incfile = new java.io.File(relToPath, newFilename)
-      (PagedSeq.fromReader(includeReader), fileNameToCharSeq(incfile.toString, openInclude))
-    }
+  def apply(in: java.io.Reader, descr: String): OrcReader = new OrcReader(PagedSeq.fromReader(in), descr, 0)
+}
+
+
+/**
+ * Container for a reader, its description, and a means of obtaining
+ * "sub-input"s. By sub-input, we mean another <code>OrcInputContext</code>
+ * referring to an input stream that corresponds to the given name.
+ * This name is interpreted as a relative name in the namespace of the
+ * original <code>OrcInputContext</code>.
+ * <p>
+ * This is intended to abstract reading from files, JAR resources,
+ * network URLs, strings, etc. with relative file name references such
+ * as those in <code>include</code> statements.
+ *
+ * @author jthywiss
+ */
+trait OrcInputContext {
+  val reader: OrcReader
+  val descr: String
+  def toURI: URI
+  def toURL: URL
+
+  protected def resolve(baseURI: URI, pathElements: String*): URI = {
+    def allowedURIchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;="
+    def looksLikeFilename(s: String): Boolean =
+      (s(0).isLetter && s(1) == ':') ||                  // CP/M style drive letter
+      !s.filterNot(allowedURIchars.contains(_)).isEmpty  // Illegal URI chars
+    def nameToURI(s: String): URI = if (!looksLikeFilename(s)) new URI(s) else new File(s).toURI()
+    pathElements.foldLeft(baseURI)((x,y) => x.resolve(nameToURI(y)))
   }
 
-  def apply(in: java.io.Reader, name: String, openInclude: (String, String) => java.io.Reader): OrcReader = new OrcReader(PagedSeq.fromReader(in), name, fileNameToCharSeq(name, openInclude), 0)
+  def newInputFromPath(pathElements: String*): OrcInputContext = {
+    val resolvedURI = resolve(this.toURI, pathElements:_*)
+    OrcInputContext(resolvedURI)
+  }
+
+}
+
+
+object OrcInputContext {
+  // Factory method
+  def apply(inputURI: URI): OrcInputContext = {
+    inputURI.getScheme match {
+      case "file" => new OrcFileInputContext(new File(inputURI))
+      case null   => new OrcFileInputContext(new File(inputURI.getPath()))
+      case "data" => { val ssp = inputURI.getSchemeSpecificPart(); new OrcStringInputContext(ssp.drop(ssp.indexOf(',')+1)) }
+      //case "jar"  => { val ssp = inputURI.getSchemeSpecificPart(); new OrcResourceInputContext(ssp.drop(ssp.indexOf("!/")+1), ????) }
+      case _      => new OrcNetInputContext(inputURI)
+    }
+  }
+}
+
+
+/**
+ * An OrcInputContext that reads from a given file.
+ *
+ * @author jthywiss
+ */
+class OrcFileInputContext(val file: File) extends OrcInputContext {
+  override val descr: String = file.toString()
+  override def toURI: URI = file.toURI
+  override def toURL: URL = toURI.toURL
+  override val reader: OrcReader = OrcReader(new BufferedReader(new InputStreamReader(new FileInputStream(file))), descr)
+}
+
+
+/**
+ * An OrcInputContext that reads from a given string.
+ *
+ * @author jthywiss
+ */
+class OrcStringInputContext(val sourceString: String) extends OrcInputContext {
+  override val descr: String = ""
+  override def toURI: URI = new URI("data", "," + sourceString, null)
+  override def toURL: URL = toURI.toURL
+  override val reader: OrcReader = OrcReader(new StringReader(sourceString), descr)
+}
+
+
+/**
+ * An OrcInputContext that reads from a JAR resource.
+ *
+ * @author jthywiss
+ */
+class OrcResourceInputContext(val resourceName: String, getResource: (String => URL)) extends OrcInputContext {
+  override val descr: String = resourceName
+  override def toURI: URI = toURL.toURI
+  override def toURL: URL = getResource(resourceName)
+  override val reader: OrcReader = {
+    val r = toURL
+    if (r == null) throw new IOException("Cannot open resource "+resourceName)
+    OrcReader(new InputStreamReader(r.openStream()), descr)
+  }
+}
+
+
+/**
+ * An OrcInputContext that reads from a given network location (URI).
+ *
+ * @author jthywiss
+ */
+class OrcNetInputContext(val uri: URI) extends OrcInputContext {
+  override val descr: String = uri.toString
+  override def toURI: URI = uri
+  override def toURL: URL = uri.toURL
+  override val reader: OrcReader = OrcReader(new InputStreamReader(toURL.openStream), descr)  //URL.openStream returns a buffered SockentInputStream, so no additional buffering should be needed
 }
