@@ -22,6 +22,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import orc.error.OrcException;
+import orc.error.compiletime.CompilationException;
 
 /**
  * Test Orc by running annotated sample programs from the "examples" directory.
@@ -57,9 +58,13 @@ public class ExamplesTest {
 				@Override
 				public void runTest() throws InterruptedException, IOException, TimeoutException, OrcException, ClassNotFoundException {
 					System.out.println("\n==== Starting " + file + " ====");
-					final String actual = OrcForTesting.compileAndRun(file.getPath(), 10L);
-					if (!expecteds.contains(actual)) {
-						throw new AssertionError("Unexpected output:\n" + actual);
+					try {
+					    final String actual = OrcForTesting.compileAndRun(file.getPath(), 10L);
+	                    if (!expecteds.contains(actual)) {
+	                        throw new AssertionError("Unexpected output:\n" + actual);
+	                    }
+					} catch (CompilationException ce) {
+					    throw new AssertionError(ce.getMessageAndDiagnostics());
 					}
 				}
 			});
