@@ -17,7 +17,6 @@ import java.util.TimerTask;
 
 import orc.TokenAPI;
 import orc.error.runtime.TokenException;
-import orc.types.Type;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
@@ -47,8 +46,8 @@ public class Rtimer extends SiteAdaptor {
 		if (f.equals("time")) {
 			caller.publish(new EvalSite() {
 				@Override
-				public Object evaluate(final Args args) throws TokenException {
-					return System.currentTimeMillis();
+				public Object evaluate(final Args evalArgs) throws TokenException {
+					return new Long(System.currentTimeMillis());
 				}
 			});
 		} else {

@@ -23,7 +23,7 @@ import orc.error.runtime.TokenException
 import orc.types.Type
 
 /**
- * 
+ * Adapts old OrcJava sites to the new OrcScala site interface
  *
  * @author jthywiss
  */
@@ -56,4 +56,5 @@ abstract class SiteAdaptor extends Site with UntypedSite {
   }
   
   def signal() = Signal
+
 }

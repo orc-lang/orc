@@ -22,15 +22,10 @@ import orc.TokenAPI
 import orc.error.OrcException
 
 trait Site extends OrcValue {
-  
   def call(args: List[AnyRef], callingToken: TokenAPI): Unit
   def name: String = this.getClass().toString()
   def orcType(argTypes: List[Type]): Type
   override def toOrcSyntax() = this.name
-  def extract: Option[PartialSite] = {
-    throw (new Exception("Site " + this + " has no default extractor."))
-    None
-  }
 }
 
 trait PartialSite extends Site {

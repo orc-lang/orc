@@ -18,7 +18,7 @@ import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map.Entry;
+import java.util.Map.Entry;  //Yes, this IS used, even though ECJ claims otherwise
 
 /**
  * Map which uses Orc's rules for equality for keys. They are not used for

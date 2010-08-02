@@ -428,7 +428,7 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
       case e: IOException => return error(e.toString)
     }
     OrcIncludeParser(newInputContext, options, envServices) match {
-      case r if r.successful             => success(r.get)
+      case r: OrcIncludeParser.Success   => success(r.get)
       case n: OrcIncludeParser.NoSuccess => Parser{ in => Error(n.msg, new Input{ def first = null; def rest = this; def pos = n.next.pos; def atEnd = true }) }
     }
   }
