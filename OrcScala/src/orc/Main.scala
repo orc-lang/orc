@@ -43,7 +43,7 @@ object Main {
       val options = new OrcBindings() with CmdLineOptions
       options.parseCmdLine(args)
       engine.setBindings(options, ENGINE_SCOPE)
-      val reader = new FileReader(options.filename) //FIXME:OrcReader(new FileReader(options.filename), options.filename, compiler.openInclude(_, _, options))
+      val reader = new FileReader(options.filename)
       val compiledOrc = engine.compile(reader).asInstanceOf[OrcScriptEngine#OrcCompiledScript]
       val printPubs = new OrcEventAction() {
         override def published(value: AnyRef) { println(Format.formatValue(value)) }

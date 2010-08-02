@@ -15,19 +15,17 @@
 
 package orc
 
-import orc.oil.nameless.Expression
+import orc.compile.parse.OrcInputContext
 import orc.error.compiletime.CompileLogger
 import orc.error.OrcException
-import scala.util.parsing.input.Reader
+import orc.oil.nameless.Expression
 
 
 /**
  * The interface from a caller to the Orc compiler
  */
 trait OrcCompilerProvides {
-  def apply(source: Reader[Char], options: OrcOptions, compileLogger: CompileLogger): Expression 
-  def apply(source: java.io.Reader, options: OrcOptions, compileLogger: CompileLogger): Expression
-
+  def apply(source: OrcInputContext, options: OrcOptions, compileLogger: CompileLogger): Expression
   def refineOil(oilAstRoot: Expression): Expression = oilAstRoot
 }
 
@@ -37,7 +35,7 @@ trait OrcCompilerProvides {
  */
 trait OrcCompilerRequires { 
 //  def progress: ProgressListener
-  def openInclude(includeFileName: String, relativeToFileName: String, options: OrcOptions): java.io.Reader
+  def openInclude(includeFileName: String, relativeTo: OrcInputContext, options: OrcOptions): OrcInputContext
   def loadClass(className: String): Class[_]
 }
 

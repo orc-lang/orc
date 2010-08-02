@@ -21,41 +21,14 @@ import scala.util.parsing.input.Reader
 import scala.collection.mutable.HashSet
 
 /**
- *
+ * Lexical scanner (tokenizer) for Orc.  This extends and overrides
+ * <code>scala.util.parsing.combinator.lexical.StdLexical</code>
+ * with Orc's lexical definitions.
  *
  * @author jthywiss
  */
 
 class OrcLexical() extends StdLexical() {
-
-  class OrcScanner(in: Reader[Char]) extends Reader[Token] with NamedSubfileReader[Token] {
-//    def this(in: String) = this(new CharArrayReader(in.toCharArray()))
-    private val (tok, rest1, rest2) = whitespace(in) match {
-      case Success(_, in1) => 
-        token(in1) match {
-          case Success(tok, in2) => (tok, in1, in2)
-          case ns: NoSuccess => (errorToken(ns.msg), ns.next, skip(ns.next))
-        }
-      case ns: NoSuccess => (errorToken(ns.msg), ns.next, skip(ns.next))
-    }
-    private def skip(in: Reader[Char]) = if (in.atEnd) in else in.rest
-
-    override def source: java.lang.CharSequence = in.source
-    override def offset: Int = in.offset
-    override def first = tok
-    override def rest = new OrcScanner(rest2)
-    override def pos = rest1.pos
-    override def atEnd = in.atEnd || (whitespace(in) match { case Success(_, in1) => in1.atEnd case _ => false })
-
-    val descr = in match {
-      case r: NamedSubfileReader[_] => r.descr
-      case _ => ""
-    }
-    def newSubReader(newFilename: String) = in match {
-      case r: NamedSubfileReader[_] => r.newSubReader(newFilename)
-      case _ => throw new orc.error.compiletime.ParsingException("Cannot process includes from this input source (type="+in.getClass().getName()+")", in.pos)
-    }
-  }
 
   case class FloatingPointLit(chars: String) extends Token {
     override def toString = chars
@@ -64,7 +37,7 @@ class OrcLexical() extends StdLexical() {
   case object NewLine extends Token {
     def chars = "\n"
   }
-  
+
   override def token: Parser[Token] =
     ( letter ~ rep( identChar | digit )                 ^^ { case first ~ rest => processIdent(first :: rest mkString "") }
     | '_'                                               ^^^ Keyword("_")
@@ -80,17 +53,18 @@ class OrcLexical() extends StdLexical() {
     | '\r' ~ '\n'                                       ^^^ NewLine
     | '\r'                                              ^^^ NewLine
     | failure("illegal character")
-    )  
-  
+    )
+
   // legal identifier chars other than digits
   override def identChar = letter | elem('_') | elem('\'')
-  
-  def stringLitChar = 
+
+  def stringLitChar =
     ( '\\' ~> chrExcept(EofCh)      ^^ { case 'f' => '\f'; case 'n' => '\n'; case 'r' => '\r'; case 't' => '\t'; case c => c }
     | chrExcept('\"', '\n', EofCh)
     )
 
   def nonZeroDigit = elem('1') | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
+
   def integerLit =
       ( elem('0')                 ^^ { _.toString() }
       | rep1(nonZeroDigit, digit) ^^ { _ mkString "" }
@@ -122,18 +96,23 @@ class OrcLexical() extends StdLexical() {
   def endcomment: Parser[Any] = (
      multilinecomment // Allow inlined comments.
    | not(guard('-' ~ '}')) ~ chrExcept(EofCh)
-   | '-' ~ guard('-') 
+   | '-' ~ guard('-')
    | chrExcept(EofCh,'-','}')
   )
-  protected def oper: Parser[Token] = {
+
+  protected lazy val sortedOperParsers = {
     def parseOper(s: String): Parser[Token] = accept(s.toList) ^^ { x => Keyword(s) }
     val o = new Array[String](operators.size)
     operators.copyToArray(o, 0)
     scala.util.Sorting.quickSort(o)
-    (o.toList map parseOper).foldRight(failure("no matching operator"): Parser[Token])((x, y) => y | x)
+    o.toList map parseOper
   }
 
-    
+  protected def oper: Parser[Token] = {
+    sortedOperParsers.foldRight(failure("no matching operator"): Parser[Token])((x, y) => y | x)
+  }
+
+
   /** The set of reserved identifiers: these will be returned as `Keyword's */
   override val reserved = new HashSet[String] ++ List(
       "true", "false", "signal", "stop", "null",
