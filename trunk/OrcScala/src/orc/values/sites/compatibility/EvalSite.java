@@ -1,5 +1,5 @@
 //
-// EvalSite.java -- Scala class/trait/object EvalSite
+// EvalSite.java -- Java class EvalSite
 // Project OrcScala
 //
 // $Id$

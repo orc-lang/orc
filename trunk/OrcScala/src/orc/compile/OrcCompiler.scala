@@ -102,6 +102,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
 
   val parse = new CompilerPhase[OrcOptions, OrcInputContext, orc.compile.ext.Expression] {
     val phaseName = "parse"
+    @throws(classOf[IOException])
     override def apply(options: OrcOptions) = { source =>
       var includeFileNames = options.additionalIncludes
       if (options.usePrelude) {
@@ -124,6 +125,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
 
   val translate = new CompilerPhase[OrcOptions, orc.compile.ext.Expression, orc.oil.named.Expression] { 
     val phaseName = "translate"
+    @throws(classOf[ClassNotFoundException])
     override def apply(options: OrcOptions) = { ast =>
       orc.compile.translate.Translator.translate(options, ast)
     }
@@ -158,6 +160,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
   // Compiler methods
   ////////
 
+  @throws(classOf[IOException]) @throws(classOf[ClassNotFoundException])
   def apply(source: OrcInputContext, options: OrcOptions, compileLogger: CompileLogger): orc.oil.nameless.Expression = {
     compileLogger.beginProcessing(options.filename)
     try {
@@ -180,6 +183,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
  * @author jthywiss
  */
 class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
+  @throws(classOf[IOException]) @throws(classOf[ClassNotFoundException])
   override def apply(source: OrcInputContext, options: OrcOptions, compileLogger: CompileLogger): orc.oil.nameless.Expression = {
     SiteClassLoading.initWithClassPathStrings(options.classPath)
     super.apply(source, options, compileLogger)
@@ -192,6 +196,7 @@ class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
     override def toURL = toURI.toURL
   }
 
+  @throws(classOf[IOException]) @throws(classOf[ClassNotFoundException])
   def apply(source: java.io.Reader, options: OrcOptions, err: Writer): orc.oil.nameless.Expression = {
     this(new OrcReaderInputContext(source, options.filename), options, new PrintWriterCompileLogger(new PrintWriter(err, true)))
   }
@@ -200,9 +205,10 @@ class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
     override val descr = ""
     override val reader = null
     override val toURI = new URI("")
-    override def toURL = toURI.toURL
+    override def toURL = throw new UnsupportedOperationException("OrcNullInputContext.toURL")
   }
 
+  @throws(classOf[IOException])
   def openInclude(includeFileName: String, relativeTo: OrcInputContext, options: OrcOptions): OrcInputContext = {
     val baseIC = if (relativeTo != null) relativeTo else OrcNullInputContext
 

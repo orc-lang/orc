@@ -23,6 +23,7 @@ import orc.error.compiletime.SiteResolutionException
  * @author jthywiss
  */
 object OrcSiteForm extends SiteForm {
+  @throws(classOf[ClassNotFoundException])
   def resolve(name: String): Site = {
     val loadedClass = loadClass(name)
     if (classOf[Site].isAssignableFrom(loadedClass)) {

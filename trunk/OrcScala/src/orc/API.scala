@@ -15,16 +15,20 @@
 
 package orc
 
+import java.io.IOException
 import orc.compile.parse.OrcInputContext
+import orc.oil.nameless.Expression
 import orc.error.compiletime.CompileLogger
 import orc.error.OrcException
-import orc.oil.nameless.Expression
+import orc.error.compiletime.CompilationException
+import orc.error.runtime.ExecutionException
 
 
 /**
  * The interface from a caller to the Orc compiler
  */
 trait OrcCompilerProvides {
+  @throws(classOf[IOException])
   def apply(source: OrcInputContext, options: OrcOptions, compileLogger: CompileLogger): Expression
   def refineOil(oilAstRoot: Expression): Expression = oilAstRoot
 }
@@ -35,7 +39,9 @@ trait OrcCompilerProvides {
  */
 trait OrcCompilerRequires { 
 //  def progress: ProgressListener
+  @throws(classOf[IOException])
   def openInclude(includeFileName: String, relativeTo: OrcInputContext, options: OrcOptions): OrcInputContext
+  @throws(classOf[ClassNotFoundException])
   def loadClass(className: String): Class[_]
 }
 
@@ -51,7 +57,8 @@ trait OrcCompiler extends OrcCompilerProvides with OrcCompilerRequires
  */
 trait OrcRuntimeProvides {
   type Token <: TokenAPI 
-  
+
+  @throws(classOf[ExecutionException])
   def run(e: Expression, k: OrcEvent => Unit, options: OrcOptions): Unit
   def stop: Unit
 }
@@ -60,7 +67,7 @@ trait OrcRuntimeProvides {
 /**
  *  The interface from an Orc runtime to its environment
  */
-trait OrcRuntimeRequires { 
+trait OrcRuntimeRequires {
   def invoke(t: TokenAPI, v: AnyRef, vs: List[AnyRef]): Unit
 }
 

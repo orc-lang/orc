@@ -31,7 +31,5 @@ trait SiteResolver {
  *
  * @author jthywiss
  */
-trait SiteForm extends SiteResolver with SiteClassLoading //FIXME: This should use the OrcCompiler API's loadClass
-//class OrcSiteForm extends SiteForm
-//class JavaSiteForm extends SiteForm
-//class WebServiceSiteForm extends SiteForm
+trait SiteForm extends SiteResolver with SiteClassLoading
+//subclasses are OrcSiteForm, JavaSiteForm, WebServiceSiteForm, etc.
