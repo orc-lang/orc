@@ -136,6 +136,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 			// SupportForSynchronousExecution.
 			// JSR 223 requires the eval methods to run synchronously.
 			final StandardOrcRuntime exec = OrcScriptEngine.this.getExecutor();
+			ctx.setAttribute("context", ctx, ScriptContext.ENGINE_SCOPE);  // Required by JSR-223 §SCR.4.3.4.1.2
 			// TODO: Make ENGINE_SCOPE bindings visible in Orc execution?
 			try {
 				exec.runSynchronous(astRoot, pubAct.asFunction(), asOrcBindings(ctx.getBindings(ScriptContext.ENGINE_SCOPE)));
@@ -143,6 +144,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 				throw new ScriptException(e);
 			} finally {
 				exec.stop(); // kill threads and reclaim resources
+				ctx.removeAttribute("context", ScriptContext.ENGINE_SCOPE);
 			}
 		}
 
