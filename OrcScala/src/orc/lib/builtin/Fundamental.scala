@@ -44,6 +44,6 @@ object Let extends TotalSite with UntypedSite {
     args match {
       case Nil => Signal
       case (v : AnyRef) :: Nil => v
-      case (vs : List[AnyRef]) => OrcTuple(vs)
+      case (vs : List[_]) => OrcTuple(vs)
     }
 }

@@ -31,8 +31,8 @@ object Read extends TotalSite with UntypedSite {
     val parsedValue = args match {
       case List(s: String) => {
         OrcLiteralParser(s) match {
-          case r: OrcLiteralParser.Success   => r.get
-          case n: OrcLiteralParser.NoSuccess => throw new ParsingException(n.msg+" when reading \""+s+"\"")
+          case r: OrcLiteralParser.SuccessT[_] => r.get.asInstanceOf[Expression]
+          case n: OrcLiteralParser.NoSuccess   => throw new ParsingException(n.msg+" when reading \""+s+"\"")
         }
       }
       case List(a) => throw new ArgumentTypeMismatchException(0, "String", a.getClass().toString())

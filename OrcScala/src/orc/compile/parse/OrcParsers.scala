@@ -32,9 +32,12 @@ import orc.compile.ext._
  *
  * @author jthywiss
  */
-trait OrcParserResultTypes {
-  type ParseResult
-  type Success
+trait OrcParserResultTypes[T] {
+  type ResultType = T
+  type ParseResult = OrcParsers#ParseResult[T]
+  type ParseResultT[U] = OrcParsers#ParseResult[U]
+  type Success = OrcParsers#Success[T]
+  type SuccessT[U] = OrcParsers#Success[U]
   type NoSuccess = OrcParsers#NoSuccess
   type Error =  OrcParsers#Error
   type Failure = OrcParsers#Failure
@@ -52,9 +55,7 @@ trait OrcParserResultTypes {
  * @see orc.compile.ext.TupleValue
  * @author jthywiss
  */
-object OrcLiteralParser extends (String => OrcParsers#ParseResult[Expression]) with OrcParserResultTypes {
-  type ParseResult = OrcParsers#ParseResult[Expression]
-  type Success = OrcParsers#Success[Expression]
+object OrcLiteralParser extends (String => OrcParsers#ParseResult[Expression]) with OrcParserResultTypes[Expression] {
   def apply(s: String): ParseResult = {
     val parsers = new OrcParsers(null, null, null)
     val tokens = new parsers.lexical.Scanner(s)
@@ -69,9 +70,7 @@ object OrcLiteralParser extends (String => OrcParsers#ParseResult[Expression]) w
  *
  * @author jthywiss
  */
-object OrcProgramParser extends ((OrcInputContext, OrcOptions, OrcCompilerRequires) => OrcParsers#ParseResult[Expression]) with OrcParserResultTypes {
-  type ParseResult = OrcParsers#ParseResult[Expression]
-  type Success = OrcParsers#Success[Expression]
+object OrcProgramParser extends ((OrcInputContext, OrcOptions, OrcCompilerRequires) => OrcParsers#ParseResult[Expression]) with OrcParserResultTypes[Expression] {
   def apply(ic: OrcInputContext, options: OrcOptions, envServices: OrcCompilerRequires): ParseResult = {
     val parsers = new OrcParsers(ic, options, envServices)
     val tokens = new parsers.lexical.Scanner(ic.reader)
@@ -86,9 +85,7 @@ object OrcProgramParser extends ((OrcInputContext, OrcOptions, OrcCompilerRequir
  *
  * @author jthywiss
  */
-object OrcIncludeParser extends ((OrcInputContext, OrcOptions, OrcCompilerRequires) => OrcParsers#ParseResult[Include]) with OrcParserResultTypes {
-  type ParseResult = OrcParsers#ParseResult[Include]
-  type Success = OrcParsers#Success[Include]
+object OrcIncludeParser extends ((OrcInputContext, OrcOptions, OrcCompilerRequires) => OrcParsers#ParseResult[Include]) with OrcParserResultTypes[Include] {
   def apply(ic: OrcInputContext, options: OrcOptions, envServices: OrcCompilerRequires): ParseResult = {
     val newParsers = new OrcParsers(ic, options, envServices)
     val parseInclude = newParsers.markLocation(newParsers.parseDeclarations ^^ { Include(ic.descr, _) })
@@ -428,8 +425,8 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
       case e: IOException => return error(e.toString)
     }
     OrcIncludeParser(newInputContext, options, envServices) match {
-      case r: OrcIncludeParser.Success   => success(r.get)
-      case n: OrcIncludeParser.NoSuccess => Parser{ in => Error(n.msg, new Input{ def first = null; def rest = this; def pos = n.next.pos; def atEnd = true }) }
+      case r: OrcIncludeParser.SuccessT[_] => success(r.get)
+      case n: OrcIncludeParser.NoSuccess   => Parser{ in => Error(n.msg, new Input{ def first = null; def rest = this; def pos = n.next.pos; def atEnd = true }) }
     }
   }
 

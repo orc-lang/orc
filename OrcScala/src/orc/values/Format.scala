@@ -28,16 +28,16 @@ package orc.values
  */
 object Format {
   
-  def formatValue(v: AnyRef): String =
+  def formatValue(v: Any): String =
     v match {
       case null => "null"
-      case l: List[AnyRef] => "[" + formatSequence(l) + "]"
+      case l: List[_] => "[" + formatSequence(l) + "]"
       case s: String => unparseString(s)
       case orcv: OrcValue => orcv.toOrcSyntax()
       case other => other.toString()
     }
   
-  def formatSequence(vs : List[AnyRef]) = 
+  def formatSequence(vs : List[_]) = 
     vs match {
       case Nil => ""
       case _ => ( vs map { formatValue } ) reduceRight { _ + ", " + _ } 
