@@ -43,8 +43,8 @@ object NilExtractor extends PartialSite with UntypedSite {
       case List(_::_) => None
       case List(arr: Array[AnyRef]) if (arr.size == 0) => Some(Signal)
       case List(arr: Array[AnyRef]) if (arr.size != 0) => None
-      case List(c:java.util.List[Any]) if (c.size == 0) => Some(Signal)
-      case List(c:java.util.List[Any]) if (c.size != 0) => None
+      case List(c:java.util.List[_]) if (c.size == 0) => Some(Signal)
+      case List(c:java.util.List[_]) if (c.size != 0) => None
       case List(a) => throw new ArgumentTypeMismatchException(0, "List", a.getClass().toString())
       case _ => throw new ArityMismatchException(1, args.size)
   }
@@ -58,12 +58,12 @@ object ConsExtractor extends PartialSite with UntypedSite {
     args match {
       case List((v : AnyRef) :: vs) => Some(OrcTuple(List(v, vs)))
       case List(Nil) => None
-      case List(c:java.util.List[AnyRef]) if (c.size != 0) => {
-        Some(OrcTuple(List(c.get(0),c.subList(1,c.size))))
+      case List(c:java.util.List[_]) if (c.size != 0) => {
+        Some(OrcTuple(List(c.get(0).asInstanceOf[AnyRef], c.subList(1, c.size))))
       }
-      case List(c:java.util.List[AnyRef]) if (c.size == 0) => None
+      case List(c:java.util.List[_]) if (c.size == 0) => None
       case List(arr: Array[AnyRef]) if (arr.size != 0) => { // Allow List-like pattern matching on arrays.
-        Some(OrcTuple(List(arr(0), arr.slice(1,arr.size))))
+        Some(OrcTuple(List(arr(0), arr.slice(1, arr.size))))
       }
       case List(arr: Array[AnyRef]) if (arr.size == 0) => None
       case List(a) => throw new ArgumentTypeMismatchException(0, "List", a.getClass().toString())
@@ -74,7 +74,7 @@ object ConsExtractor extends PartialSite with UntypedSite {
 
 /* 
  * Checks if a Tuple t has a given number of elements.
- * If the check succeeds, the Some(t) is returned,
+ * If the check succeeds, the Some(t) is returned, 
  * else None.
  */
 object TupleArityChecker extends PartialSite with UntypedSite {
@@ -87,7 +87,7 @@ object TupleArityChecker extends PartialSite with UntypedSite {
         } else {
           None
         }
-      case List(a,_) => throw new ArgumentTypeMismatchException(0, "Tuple", a.getClass().toString())
+      case List(a, _) => throw new ArgumentTypeMismatchException(0, "Tuple", a.getClass().toString())
       case _ => throw new ArityMismatchException(1, args.size)
   }
 }

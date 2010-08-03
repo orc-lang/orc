@@ -48,7 +48,7 @@ object ConsConstructor extends TotalSite with Extractable with UntypedSite {
   override def name = "Cons"
   def evaluate(args: List[AnyRef]) =
     args match {
-      case List(v, vs : List[AnyRef]) => v :: vs
+      case List(v, vs : List[_]) => v :: vs
       case List(_, vs) => throw new ArgumentTypeMismatchException(1, "List", vs.getClass().toString())
       case _ => throw new ArityMismatchException(2, args.size)
   }

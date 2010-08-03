@@ -110,13 +110,13 @@ abstract class CoreOrcCompiler extends OrcCompiler {
       val includeAsts = for (fileName <- includeFileNames) yield {
         val ic = openInclude(fileName, null, options)
         OrcIncludeParser(ic, options, CoreOrcCompiler.this) match {
-          case r: OrcIncludeParser.Success   => r.get
-          case n: OrcIncludeParser.NoSuccess => throw new ParsingException(n.msg, n.next.pos)
+          case r: OrcIncludeParser.SuccessT[_] => r.get.asInstanceOf[OrcIncludeParser.ResultType]
+          case n: OrcIncludeParser.NoSuccess   => throw new ParsingException(n.msg, n.next.pos)
         }
       }
       val progAst = OrcProgramParser(source, options, CoreOrcCompiler.this) match {
-          case r: OrcProgramParser.Success   => r.get
-          case n: OrcProgramParser.NoSuccess => throw new ParsingException(n.msg, n.next.pos)
+          case r: OrcProgramParser.SuccessT[_] => r.get.asInstanceOf[OrcProgramParser.ResultType]
+          case n: OrcProgramParser.NoSuccess   => throw new ParsingException(n.msg, n.next.pos)
       }
       (includeAsts :\ progAst) { orc.compile.ext.Declare }
     }

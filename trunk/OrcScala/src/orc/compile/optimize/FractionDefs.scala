@@ -71,11 +71,9 @@ object FractionDefs extends NamedASTTransform {
       /* Do a second DFS, on the complement of the original graph
        * (i.e, do a backward DFS). The result is a topologically
        * sorted collection of mutually recursive definitions */ 
-      val forest:LinkedList[List[Node[Def]]] = g.depthSearch(Direction.Backward)
+      val forest: LinkedList[List[Node[Def]]] = g.depthSearch(Direction.Backward)
       // Extract the Defs from the Nodes.
-      forest map {
-         case l: List[Node[Def]] => l map {(n: Node[Def]) => n.elem}
-      }
+      forest map { _ map { _.elem } }
     }
        
     
