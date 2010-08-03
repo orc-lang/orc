@@ -1,5 +1,5 @@
 //
-// ThreadedSite.java -- Scala class/trait/object ThreadedSite
+// ThreadedSite.java -- Java class ThreadedSite
 // Project OrcScala
 //
 // $Id$

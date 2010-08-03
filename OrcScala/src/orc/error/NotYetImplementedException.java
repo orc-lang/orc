@@ -1,5 +1,5 @@
 //
-// NotYetImplementedException.java -- Scala class/trait/object NotYetImplementedException
+// NotYetImplementedException.java -- Java class NotYetImplementedException
 // Project OrcScala
 //
 // $Id$

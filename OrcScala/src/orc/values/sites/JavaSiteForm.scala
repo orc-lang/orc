@@ -23,6 +23,7 @@ package orc.values.sites
  * @author jthywiss
  */
 object JavaSiteForm extends SiteForm {
+  @throws(classOf[ClassNotFoundException])
   def resolve(name: String) = {
     new JavaClassProxy(loadClass(name))
   }

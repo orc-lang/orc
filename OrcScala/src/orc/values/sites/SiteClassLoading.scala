@@ -30,6 +30,7 @@ import orc.util.FirstNonNull
  * @author jthywiss
  */
 trait SiteClassLoading {
+  @throws(classOf[ClassNotFoundException])
   def loadClass(name: String) = SiteClassLoading.classLoader.loadClass(name)
   def getResource(name: String) = SiteClassLoading.classLoader.getResource(name)
 }

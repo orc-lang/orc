@@ -1,5 +1,5 @@
 //
-// AmbiguousInvocationException.java -- Scala class/trait/object AmbiguousInvocationException
+// AmbiguousInvocationException.java -- Java class AmbiguousInvocationException
 // Project OrcScala
 //
 // $Id$
