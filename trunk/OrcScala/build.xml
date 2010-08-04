@@ -17,8 +17,8 @@
 		Ant build file for Orc binary distribution.
 	</description>
 	
-	<property file="build-user.properties"/>
-	<!-- At a minimum, build-user.properties needs the dir holding your Scala Library, like: scala.lib.dir=${eclipse.home}/configuration/org.eclipse.osgi/bundles/228/1/.cp/lib -->
+	<property file="build-local.properties"/>
+	<!-- At a minimum, build-local.properties needs the dir holding your Scala Library, like: scala.lib.dir=${eclipse.home}/configuration/org.eclipse.osgi/bundles/228/1/.cp/lib -->
 
 	<property file="build.properties"/>
 	<property file="googlecode.properties"/>
@@ -48,7 +48,7 @@
           target: compile
          ================================= -->
 	<!--  DISABLED in preference to the Scala IDE for Eclipse builder
-	<target name="compile" description="Compile Scala and Java file to class files">
+	<target name="compile" depends="version" description="Compile Scala and Java file to class files">
 		<taskdef resource="scala/tools/ant/antlib.xml">
 			<classpath>
 				<pathelement location="${scala.compiler.jar}"/>
@@ -68,6 +68,32 @@
         </javac>
 	</target>
 	-->
+
+	<!-- =================================
+          target: version
+         ================================= -->
+	<target name="version" description="Build version.properites">
+		<exec executable="svnversion" outputproperty="svnversion"/>  <!-- Format: 9999[:9999][M][S][P] -->
+		<tstamp>
+			<format property="build.date" pattern="yyyy-MM-dd-HH:mm:ss" timezone="Etc/UTC" />
+		</tstamp>
+		<delete file="build/classes/orc/version.properties" quiet="true"/>
+		<propertyfile file="build/classes/orc/version.properties" comment="version.properties -- Orc versioning information -- Automatically built -- ** Do NOT commit to repository **">
+			<entry key="orc.title" value="${orc.title}"/>
+			<entry key="orc.version" value="${orc.version}"/>
+			<entry key="orc.vendor" value="${orc.vendor}"/>
+			<entry key="orc.url" value="${orc.url}"/>
+			<entry key="orc.copyright-year" value="${orc.copyright-year}"/>
+			<entry key="orc.svn-revision" value="${svnversion}"/>
+			<entry key="orc.build.date" value="${build.date}Z"/>
+			<entry key="orc.build.user" value="${user.name}"/>
+			<entry key="orc.build.java.version" value="${java.version}"/>
+			<entry key="orc.build.java.vendor" value="${java.vendor}"/>
+			<entry key="orc.build.os.name" value="${os.name}"/>
+			<entry key="orc.build.os.arch" value="${os.arch}"/>
+			<entry key="orc.build.os.version" value="${os.version}"/>
+		</propertyfile>
+	</target>
 
 	<!-- =================================
           target: test
@@ -104,27 +130,25 @@
 	<!-- =================================
           target: jar
          ================================= -->
-	<target name="jar" description="Build orc-*.zip for distribution">
-		<tstamp>
-			<format property="build.date" pattern="yyyy-MM-dd-HH:mm:ss" timezone="Etc/UTC" />
-		</tstamp>
-		<jar jarfile="build/${target.name}.jar" basedir="build/classes" duplicate="fail">
+	<target name="jar" depends="version" description="Build orc-*.zip for distribution">
+		<jar jarfile="build/${target.name}.jar" basedir="build/classes" whenmanifestonly="fail" duplicate="fail" index="true" strict="fail">
 			<manifest>
 				<attribute name="Main-Class" value="${orc.main-class}"/>
 				<attribute name="Implementation-Title" value="${orc.title}"/>
 				<attribute name="Implementation-Version" value="${orc.version}"/>
 				<attribute name="Implementation-Vendor" value="${orc.vendor}"/>
 				<attribute name="Implementation-Vendor-Id" value="${orc.vendor-id}"/>
+				<attribute name="SVN-Revision" value="${svnversion}"/>
 				<attribute name="Built-Date" value="${build.date}"/>
 				<attribute name="Built-By" value="${user.name}"/>
 				<section name="orc">
+					<attribute name="Specification-Title" value="${orc.title}"/>
+					<attribute name="Specification-Version" value="${orc.version}"/>
+					<attribute name="Specification-Vendor" value="${orc.vendor}"/>
 					<attribute name="Implementation-Title" value="${orc.title}"/>
 					<attribute name="Implementation-Version" value="${orc.version}"/>
 					<attribute name="Implementation-Vendor" value="${orc.vendor}"/>
 					<attribute name="Implementation-Vendor-Id" value="${orc.vendor-id}"/>
-					<attribute name="Specification-Title" value="${orc.title}"/>
-					<attribute name="Specification-Version" value="${orc.version}"/>
-					<attribute name="Specification-Vendor" value="${orc.vendor}"/>
 				</section>
 			</manifest>
 			<exclude name="orc/test/**"/>
