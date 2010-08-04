@@ -11,5 +11,5 @@ if unity=unity then "include_resource pass" else "huh?"
 
 {-
 OUTPUT:
-signal
+"include_resource pass"
 -}
