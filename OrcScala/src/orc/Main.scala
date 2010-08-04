@@ -53,19 +53,24 @@ object Main {
       compiledOrc.run(printPubs)
     } catch {
       case e: CmdLineUsageException => Console.err.println("Orc: " + e.getMessage)
-      case e: PrintVersionAndMessageException => println("Orc "+orcVersion+"\n"+orcURL+"\n"+orcCopyright+"\n\n"+e.getMessage)
+      case e: PrintVersionAndMessageException => println(orcImplName+" "+orcVersion+"\n"+orcURL+"\n"+orcCopyright+"\n\n"+e.getMessage)
       case e: FileNotFoundException => Console.err.println("Orc: File not found: " + e.getMessage)
       case e: ScriptException if (e.getCause == null) => Console.err.println(e.getMessage)
       case e: ScriptException => printException(e.getCause, Console.err)
     }
   }
 
-  lazy val orcImplName: String = valOrElse(Package.getPackage("orc").getImplementationTitle, "Orc")
-  lazy val orcVersion: String = valOrElse(Package.getPackage("orc").getImplementationVersion, "(dev build)")
-  lazy val orcURL: String = "http://orc.csres.utexas.edu/"
-  lazy val orcCopyright: String = "(c) "+coyrightYear+" "+valOrElse(Package.getPackage("orc").getImplementationVendor, "The University of Texas at Austin")
-  lazy val coyrightYear: String = "2010" //TODO: use first 4 chars of JAR manifest attribute "Built-Date" 
-  def valOrElse[T](testVal: T, defaultVal: T): T = if (testVal != null) testVal else defaultVal
+  val versionProperties = {
+    val p = new java.util.Properties()
+    p.load(getClass().getResourceAsStream("version.properties"))
+    p
+  }
+  lazy val orcImplName: String = versionProperties.getProperty("orc.title")
+  lazy val svnRevision: String = versionProperties.getProperty("orc.svn-revision")
+  lazy val orcVersion: String = versionProperties.getProperty("orc.version")+" rev. "+svnRevision+(if (svnRevision.forall(_.isDigit)) "" else " (dev. build "+versionProperties.getProperty("orc.build.date")+" "+versionProperties.getProperty("orc.build.user")+")")
+  lazy val orcURL: String = versionProperties.getProperty("orc.url")
+  lazy val orcCopyright: String = "(c) "+coyrightYear+" "+versionProperties.getProperty("orc.vendor")
+  lazy val coyrightYear: String = versionProperties.getProperty("orc.copyright-year") 
   
   def printException(e: Throwable, err: PrintStream) {
     e match {
