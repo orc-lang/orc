@@ -1,0 +1,335 @@
+<?xml version="1.0" ?>
+
+<!-- build.xml - Ant buildfile (tasks for project build)
+     Project OrcScala
+
+     $Id$
+
+     Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<project name="orc" default="all" basedir=".">
+	<description>
+		Ant build file for Orc binary distribution.
+	</description>
+	
+	<property file="build-user.properties"/>
+	<!-- At a minimum, build-user.properties needs the dir holding your Scala Library, like: scala.lib.dir=${eclipse.home}/configuration/org.eclipse.osgi/bundles/228/1/.cp/lib -->
+
+	<property file="build.properties"/>
+	<property file="googlecode.properties"/>
+	<property name="target.name" value="${ant.project.name}-${orc.version}"/>
+    <property name="junit.output.dir" value="build/tests/reports"/>
+    <property name="junit.output.dir" value="build/tests/reports"/>
+    <property name="scala.compiler.jar" value="${eclipse.home}/plugins/org.scala-ide.scala.compiler_2.8.0.jar"/>
+
+    <path id="scala.lib.classpath" description="Scala runtime library classpath">
+        <pathelement location="${scala.lib.dir}/scala-library.jar"/>
+        <pathelement location="${scala.lib.dir}/scala-dbc.jar"/>
+        <pathelement location="${scala.lib.dir}/scala-swing.jar"/>
+    </path>
+
+	<path id="orc.runtime.jars" description="JARs needed by Orc in its classpath at runtime">
+		<!-- If we add dependencies here, consider adding the Orchard-demo manifest classpath trick -->
+	</path>
+
+	<path id="orc.classpath" description="Build-time classpath">
+        <pathelement location="build/classes"/>
+        <path refid="scala.lib.classpath"/>
+		<path refid="orc.runtime.jars"/>
+        <pathelement location="lib/junit-4.5.jar"/>
+    </path>
+
+	<!-- =================================
+          target: compile
+         ================================= -->
+	<!--  DISABLED in preference to the Scala IDE for Eclipse builder
+	<target name="compile" description="Compile Scala and Java file to class files">
+		<taskdef resource="scala/tools/ant/antlib.xml">
+			<classpath>
+				<pathelement location="${scala.compiler.jar}"/>
+		        <path refid="scala.lib.classpath"/>
+			</classpath>
+		</taskdef>
+		<mkdir dir="build/classes"/>
+        <scalac destdir="build/classes" target="jvm-1.5" deprecation="yes" optimise="yes" unchecked="yes" addparams="-g -Yclosure-elim -Ydead-code -Yinline">
+            <src path="src"/>
+            <src path="test"/>
+            <classpath refid="orc.classpath"/>
+        </scalac>
+		<javac destdir="build/classes" source="${ant.build.javac.source}" target="${ant.build.javac.target}" deprecation="yes" optimize="on" debug="true">
+            <src path="src"/>
+            <src path="test"/>
+            <classpath refid="orc.classpath"/>
+        </javac>
+	</target>
+	-->
+
+	<!-- =================================
+          target: test
+         ================================= -->
+	<target name="test" description="Execute JUnit tests">
+        <mkdir dir="${junit.output.dir}"/>
+		<junit fork="yes" printsummary="withOutAndErr" haltonfailure="on">
+            <formatter type="xml"/>
+            <test name="orc.test.AllTests" todir="${junit.output.dir}"/>
+            <classpath refid="orc.classpath"/>
+		</junit>
+        <junitreport todir="${junit.output.dir}">
+            <fileset dir="${junit.output.dir}">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report format="frames" todir="${junit.output.dir}"/>
+        </junitreport>
+	</target>
+
+	<!-- =================================
+          target: copy-resources
+         ================================= -->
+	<!--  DISABLED in preference to the Scala IDE for Eclipse builder
+	<target name="copy-resources" description="Copy non-compiled resources to build">
+		<copy todir="build/classes" includeEmptyDirs="false">
+		    <fileset dir="src">
+				<exclude name="**/*.scala"/>
+				<exclude name="**/*.java"/>
+		    </fileset>
+		</copy>
+	</target>
+	-->
+
+	<!-- =================================
+          target: jar
+         ================================= -->
+	<target name="jar" description="Build orc-*.zip for distribution">
+		<tstamp>
+			<format property="build.date" pattern="yyyy-MM-dd-HH:mm:ss" timezone="Etc/UTC" />
+		</tstamp>
+		<jar jarfile="build/${target.name}.jar" basedir="build/classes" duplicate="fail">
+			<manifest>
+				<attribute name="Main-Class" value="${orc.main-class}"/>
+				<attribute name="Implementation-Title" value="${orc.title}"/>
+				<attribute name="Implementation-Version" value="${orc.version}"/>
+				<attribute name="Implementation-Vendor" value="${orc.vendor}"/>
+				<attribute name="Implementation-Vendor-Id" value="${orc.vendor-id}"/>
+				<attribute name="Built-Date" value="${build.date}"/>
+				<attribute name="Built-By" value="${user.name}"/>
+				<section name="orc">
+					<attribute name="Implementation-Title" value="${orc.title}"/>
+					<attribute name="Implementation-Version" value="${orc.version}"/>
+					<attribute name="Implementation-Vendor" value="${orc.vendor}"/>
+					<attribute name="Implementation-Vendor-Id" value="${orc.vendor-id}"/>
+					<attribute name="Specification-Title" value="${orc.title}"/>
+					<attribute name="Specification-Version" value="${orc.version}"/>
+					<attribute name="Specification-Vendor" value="${orc.vendor}"/>
+				</section>
+			</manifest>
+			<exclude name="orc/test/**"/>
+		</jar>
+	</target>
+	
+	<!-- - - - - - - - - - - - - - - - - -
+          target: windows-setup
+         - - - - - - - - - - - - - - - - - -->
+	<target name="windows-setup">
+		<copy file="SETUP.BAT" todir="build">
+			<filterset><filter token="orc.jar" value="${target.name}.jar"/></filterset>
+		</copy>
+	</target>
+
+	<!-- - - - - - - - - - - - - - - - - -
+          target: stdlib-doc
+         - - - - - - - - - - - - - - - - - -->
+	<target name="stdlib-doc">
+		<pathconvert property="orc.prelude.includefiles" pathsep=" ">
+			<path>
+				<fileset dir="src/orc/inc/prelude">
+					<include name="*.inc"/>
+				</fileset>
+			</path>
+			<mapper>
+				<flattenmapper/>
+			</mapper>
+		</pathconvert>
+		<echo message="Making documentation for: ${orc.prelude.includefiles}"/>
+		<java classname="orc.doc.MakeDoc" fork="yes" failonerror="true"
+				dir="src/orc/inc/prelude"
+				output="build/stdlib.xml">
+			<classpath refid="orc.classpath"/>
+				<assertions>
+					<enable/>
+				</assertions>
+			<arg line="${orc.prelude.includefiles}"/>
+		</java>
+	</target>
+	
+	<!-- - - - - - - - - - - - - - - - - -
+          target: javadoc
+         - - - - - - - - - - - - - - - - - -->
+	<target name="javadoc">
+		<delete dir="build/javadoc" followsymlinks="no" includeemptydirs="true"/>
+		<javadoc destdir="build/javadoc"
+				author="true"
+				access="protected"
+				source="1.5"
+				sourcepath="src"
+				splitindex="true"
+				windowtitle="Orc ${orc.version}"
+				doctitle="Orc ${orc.version}"
+				use="true"
+				version="true">
+			<classpath refid="orc.classpath"/>
+		</javadoc>
+		<zip zipfile="build/${target.name}-doc.zip" basedir="build/javadoc"/>
+	</target>
+
+	<!-- - - - - - - - - - - - - - - - - -
+          target: macosx-app
+         - - - - - - - - - - - - - - - - - -->
+	<!-- WARNING: this does not work on non-Unix systems (without rm, cp, ln, and tar) -->
+	<target name="macosx-app" depends="jar">
+		<property name="macosx-app.name" value="Orc"/>
+		<property name="macosx-app.dir" value="build/${target.name}-app/${macosx-app.name}.app"/>
+		<exec executable="rm" failonerror="true"> <!-- clean up any old files -->
+			<arg line="-rf"/>
+			<arg value="build/${target.name}-app"/>
+		</exec>
+		<mkdir dir="${macosx-app.dir}"/>
+		<!-- copy most files without filtering -->
+		<copy todir="${macosx-app.dir}">
+			<fileset dir="app-skeleton">
+				<include name="**/*"/>
+				<exclude name="**/*.plist"/>
+				<exclude name="**/CVS/*"/>
+				<exclude name="**/.svn/*"/>
+				<exclude name="**/JavaApplicationStub"/>
+			</fileset>
+		</copy>
+		<!-- copy plist files with token filtering -->
+		<copy todir="${macosx-app.dir}">
+			<fileset dir="app-skeleton">
+				<include name="**/*.plist"/>
+			</fileset>
+			<filterset>
+				<filter token="orc.jar" value="${target.name}.jar"/>
+				<filter token="orc.version" value="${orc.version}"/>
+			</filterset>
+		</copy>
+		<!-- copy JavaApplicationStub with the unix cp command to preserve permissions -->
+		<exec executable="cp" failonerror="true">
+			<arg line="-p app-skeleton/Contents/MacOS/JavaApplicationStub"/>
+			<arg value="${macosx-app.dir}/Contents/MacOS/JavaApplicationStub"/>
+		</exec>
+		<!-- copy jar -->
+		<copy file="build/${target.name}.jar" todir="${macosx-app.dir}/Contents/Resources/Java"/>
+		<!-- create symlink -->
+		<exec executable="ln" failonerror="true">
+			<arg value="-s"/>
+			<arg value="/Developer/Applications/Xcode.app/Contents/Library/Spotlight/SourceCode.mdimporter/Contents/MacOS"/>
+			<arg value="${macosx-app.dir}/Contents/Library/Spotlight/Orc.mdimporter/Contents/MacOS"/>
+		</exec>
+		<!-- create directory with supplemental files -->
+		<copy todir="build/${target.name}-app">
+			<fileset dir=".">
+				<include name="README"/>
+				<include name="LICENSE"/>
+				<include name="INSTALL"/>
+				<include name="examples/**"/>
+				<include name="licenses.yml"/>
+				<include name="licenses/**"/>
+				<include name="doc/**"/>
+				<exclude name="**/CVS/*"/>
+				<exclude name="**/.svn/*"/>
+			</fileset>
+		</copy>
+	</target>
+
+	<!-- =================================
+          target: build
+         ================================= -->
+    <target name="build" depends="jar,stdlib-doc,javadoc,macosx-app" description="Build all targets"/>
+
+	<!-- - - - - - - - - - - - - - - - - -
+          target: zip
+         - - - - - - - - - - - - - - - - - -->
+	<target name="zip" depends="jar,windows-setup">
+		<zip zipfile="build/${target.name}.zip">
+			<zipfileset prefix="${target.name}" dir="build">
+				<include name="${target.name}.jar"/>
+				<include name="SETUP.BAT"/>
+			</zipfileset>
+			<zipfileset prefix="${target.name}/lib" refid="orc.runtime.jars" />
+			<zipfileset prefix="${target.name}" dir=".">
+				<include name="README"/>
+				<include name="LICENSE"/>
+				<include name="INSTALL"/>
+				<include name="examples/**"/>
+				<include name="licenses.yml"/>
+				<include name="licenses/**"/>
+				<include name="doc/**"/>
+				<exclude name="**/CVS/*"/>
+				<exclude name="**/.svn/*"/>
+			</zipfileset>
+		</zip>
+	</target>
+
+	<!-- - - - - - - - - - - - - - - - - -
+          target: macosx-app-tgz
+         - - - - - - - - - - - - - - - - - -->
+	<!-- WARNING: this does not work on non-Unix systems (without rm, cp, ln, and tar) -->
+	<target name="macosx-app-tgz" depends="macosx-app">
+		<!-- create tgz package -->
+		<exec executable="tar" dir="build" failonerror="true">
+			<arg line="-zcf ${target.name}-app.tgz ${target.name}-app"/>
+		</exec>
+	</target>
+
+	<!-- =================================
+          target: package
+         ================================= -->
+	<target name="package" depends="zip,macosx-app-tgz" description="Package for distribution">
+	</target>
+
+	<!-- =================================
+          target: all
+         ================================= -->
+    <target name="all" depends="build,test,package" description="Build all targets"/>
+
+	<!-- =================================
+          target: upload
+         ================================= -->
+	<target name="upload" depends="zip,javadoc" description="upload to google code">
+		<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask"
+			classpath="lib/ant-googlecode-0.0.1.jar" name="gcupload"/>
+		<gcupload
+			username="${orc.googlecode.username}"
+			password="${orc.googlecode.password}"
+			projectname="orc"
+			filename="build/${target.name}.zip"
+			targetfilename="${target.name}.zip"
+			summary="Core Orc interpreter."
+			labels="Featured, Type-Archive, OpSys-All"/>
+		<gcupload
+			username="${orc.googlecode.username}"
+			password="${orc.googlecode.password}"
+			projectname="orc"
+			filename="build/${target.name}-doc.zip"
+			targetfilename="${target.name}-doc.zip"
+			summary="Javadoc documentation for core Orc interpreter."
+			labels="Type-Docs, OpSys-All"/>
+	</target>
+
+	<!-- =================================
+          target: clean
+         ================================= -->
+	<target name="clean" description="clean up">
+		<exec executable="rm" failonerror="false"> <!-- Try this, because Ant is confused by the symlinks in here -->
+			<arg line="-rf"/>
+			<arg value="build/${target.name}-app"/>
+		</exec>
+		<delete dir="build" followsymlinks="no" includeemptydirs="true"/>
+	</target>
+</project>

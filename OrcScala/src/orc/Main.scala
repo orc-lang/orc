@@ -63,8 +63,8 @@ object Main {
   lazy val orcImplName: String = valOrElse(Package.getPackage("orc").getImplementationTitle, "Orc")
   lazy val orcVersion: String = valOrElse(Package.getPackage("orc").getImplementationVersion, "(dev build)")
   lazy val orcURL: String = "http://orc.csres.utexas.edu/"
-  lazy val orcCopyright: String = "© "+coyrightYear+" "+valOrElse(Package.getPackage("orc").getImplementationVendor, "The University of Texas at Austin")
-  lazy val coyrightYear: String = "2010" //TODO: Automate this somehow from build timestamp
+  lazy val orcCopyright: String = "(c) "+coyrightYear+" "+valOrElse(Package.getPackage("orc").getImplementationVendor, "The University of Texas at Austin")
+  lazy val coyrightYear: String = "2010" //TODO: use first 4 chars of JAR manifest attribute "Built-Date" 
   def valOrElse[T](testVal: T, defaultVal: T): T = if (testVal != null) testVal else defaultVal
   
   def printException(e: Throwable, err: PrintStream) {
