@@ -128,9 +128,24 @@ abstract class CoreOrcCompiler extends OrcCompiler {
     @throws(classOf[ClassNotFoundException])
     override def apply(options: OrcOptions) = { ast =>
       orc.compile.translate.Translator.translate(options, ast)
+      
+      
     }
   }
 
+  val noUnboundVars = new CompilerPhase[OrcOptions, orc.oil.named.Expression, orc.oil.named.Expression] {
+    val phaseName = "noUnboundVars"
+    override def apply(options: OrcOptions) = { ast =>
+      for (x <- ast.unboundvars) {
+         x !! ("Unbound variable: " + x.name)
+      }
+      for (u <- ast.unboundtypevars) {
+         u !! ("Unbound type variable: " + u.name)
+      }
+      ast
+    }
+  }
+  
   val typeCheck = new CompilerPhase[OrcOptions, orc.oil.named.Expression, orc.oil.named.Expression] {
     val phaseName = "typeCheck"
     override def apply(options: OrcOptions) = { ast => ast }
@@ -139,10 +154,15 @@ abstract class CoreOrcCompiler extends OrcCompiler {
   val refineNamedOil = new CompilerPhase[OrcOptions, orc.oil.named.Expression, orc.oil.named.Expression] {
     val phaseName = "refineNamedOil"
     override def apply(options: OrcOptions) =
-      (e : orc.oil.named.Expression) => { 
+      (e : orc.oil.named.Expression) => {
         val refine = FractionDefs andThen RemoveUnusedDefs andThen RemoveUnusedTypes
         refine(e)
       }
+  }
+  
+  val noUnguardedRecursion = new CompilerPhase[OrcOptions, orc.oil.named.Expression, orc.oil.named.Expression] {
+    val phaseName = "noUnguardedRecursion"
+    override def apply(options: OrcOptions) = { ast => ast.checkGuarded ; ast }
   }
   
   val deBruijn = new CompilerPhase[OrcOptions, orc.oil.named.Expression, orc.oil.nameless.Expression] {
@@ -154,7 +174,14 @@ abstract class CoreOrcCompiler extends OrcCompiler {
   // Compose phases into a compiler
   ////////
 
-  val phases = parse.timePhase >>> translate.timePhase >>> typeCheck.timePhase >>> refineNamedOil.timePhase >>> deBruijn.timePhase
+  val phases = 
+    parse.timePhase >>> 
+    translate.timePhase >>>
+    noUnboundVars >>>
+    typeCheck.timePhase >>> 
+    refineNamedOil.timePhase >>>
+    noUnguardedRecursion.timePhase >>>
+    deBruijn.timePhase
 
   ////////
   // Compiler methods

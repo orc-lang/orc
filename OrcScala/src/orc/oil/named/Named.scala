@@ -50,14 +50,12 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
 }
 
 
-
-
 sealed abstract class Expression
 extends NamedAST 
 with NamedInfixCombinators 
-with hasFreeVars 
-with hasFreeTypeVars
+with hasVars
 with Substitution[Expression]
+with Guarding
 { 
   lazy val withoutNames: nameless.Expression = namedToNameless(this, Nil, Nil)
 }

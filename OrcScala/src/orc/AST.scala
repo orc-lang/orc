@@ -46,7 +46,7 @@ trait AST extends Positional {
   }
   
   // Emit a warning
-  def !?(msg : String): Unit = { 
+  def emitWarning(msg : String): Unit = { 
     //FIXME: This should use the compile message recorder -- this is broken for GUI or Web Orc versions 
     Console.err.println("Warning " + this.pos + ": " + msg)
   }
