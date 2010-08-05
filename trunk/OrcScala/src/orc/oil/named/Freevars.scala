@@ -20,6 +20,12 @@ package orc.oil.named
  * @author dkitchin
  */
 
+trait hasVars 
+extends hasFreeVars 
+with hasFreeTypeVars
+with hasUnboundVars
+with hasUnboundTypeVars { self : NamedAST => }
+
 trait hasFreeVars {
   self : NamedAST =>
   
@@ -53,3 +59,36 @@ trait hasFreeTypeVars {
   }
 
 }
+
+trait hasUnboundVars {
+  self : NamedAST =>
+  
+  /* Note: As is evident from the type, UnboundVars are not included in this set */
+  lazy val unboundvars: Set[UnboundVar] = {
+    val varset = new scala.collection.mutable.HashSet[UnboundVar]()
+    val collect = new NamedASTTransform {
+      override def onArgument(context: List[BoundVar]) = {
+        case x : UnboundVar => varset += x ; x
+      }
+    }
+    collect(this)
+    Set.empty ++ varset
+  }
+}
+
+trait hasUnboundTypeVars {
+  self : NamedAST =>
+  
+  /* Note: As is evident from the type, UnboundVars are not included in this set */
+  lazy val unboundtypevars: Set[UnboundTypevar] = {
+    val varset = new scala.collection.mutable.HashSet[UnboundTypevar]()
+    val collect = new NamedASTTransform {
+      override def onType(typecontext: List[BoundTypevar]) = {
+        case u: UnboundTypevar => varset += u ; u
+      }
+    }
+    collect(this)
+    Set.empty ++ varset
+  }
+}
+

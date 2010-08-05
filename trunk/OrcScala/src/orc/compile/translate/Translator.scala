@@ -35,20 +35,8 @@ object Translator {
 	 *  Translate an extended AST to a named OIL AST.
 	 *
 	 */
-	def translate(options: OrcOptions, extendedAST : ext.Expression): Expression = {		
-		val namedAST = convert(extendedAST)
-		 
-		val noUnboundVars = 
-		  new NamedASTTransform {
-		    override def onArgument(context: List[BoundVar]) = {
-		      case x@ UnboundVar(s) => x !! ("Unbound variable " + s)
-		    }
-		    override def onType(typecontext: List[BoundTypevar]) = {
-		      case u@ UnboundTypevar(s) => u !! ("Unbound type variable " + s)
-		    }
-		  }
-		noUnboundVars(namedAST)
-		
+	def translate(options: OrcOptions, extendedAST : ext.Expression): Expression = {
+	  convert(extendedAST) 
 	}
 	
 	
