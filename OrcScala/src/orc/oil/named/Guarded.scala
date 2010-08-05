@@ -1,4 +1,5 @@
 //
+
 // Guarded.scala -- Scala class/trait/object Guarded
 // Project OrcScala
 //
@@ -52,7 +53,7 @@ trait Guarding {
       }
       case left > x > right => {
         val l = left.checkGuarded(context) 
-        val r = right.checkGuarded(Nil)
+        val r = right.checkGuarded(if (l) { Nil } else context)
         l || r
       }
       case left < x < right => {
@@ -62,7 +63,7 @@ trait Guarding {
       }
       case left ow right => {
         val l = left.checkGuarded(context)
-        val r = right.checkGuarded(context)
+        val r = right.checkGuarded(if (l) { Nil } else context)
         l || r
       }
       case DeclareDefs(defs, body) => {
