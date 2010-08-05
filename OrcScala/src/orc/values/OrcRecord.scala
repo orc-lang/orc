@@ -18,6 +18,7 @@ import orc.values.sites.UntypedSite
 import orc.values.sites.PartialSite
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
+import orc.error.runtime.RuntimeTypeException
 
 
 /**
@@ -28,7 +29,12 @@ import orc.error.runtime.ArityMismatchException
 case class OrcRecord(entries: scala.collection.mutable.Map[String,AnyRef]) extends PartialSite with UntypedSite {
   override def evaluate(args: List[AnyRef]) = 
     args match {
-      case List(Field(name)) => entries.get(name)
+      case List(Field(name)) => 
+        entries.get(name) match {
+          case Some(v) => Some(v)
+          // TODO: Make this exception more specific
+          case None => throw new RuntimeTypeException("There is no member " + name + " of value " + this)
+        }
       case List(a) => throw new ArgumentTypeMismatchException(0, "Field", a.getClass().toString())
       case _ => throw new ArityMismatchException(1, args.size)
     }
