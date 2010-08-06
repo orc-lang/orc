@@ -1,5 +1,5 @@
 //
-// ProgressMonitor.scala -- Scala class/trait/object ProgressMonitor
+// ProgressMonitor.scala -- Scala trait ProgressMonitor and object NullProgressMonitor
 // Project OrcScala
 //
 // $Id$
@@ -24,6 +24,7 @@ trait ProgressMonitor {
   type WorkQty = Int
   def setTaskName(name: String): Unit
   def setWorkRemaining(remainWorkQty: WorkQty): Unit
+  def setIndeterminate(): Unit //Cleared by setWorkRemaining
   
   def worked(completedWorkIncrement: WorkQty): Unit
   def newChild(delegatedWorkQty: WorkQty): ProgressMonitor
@@ -42,6 +43,7 @@ trait ProgressMonitor {
 object NullProgressMonitor extends ProgressMonitor  {
   def setTaskName(name: String) { }
   def setWorkRemaining(remainWorkQty: WorkQty) { }
+  def setIndeterminate() { }
   
   def worked(completedWorkIncrement: WorkQty) { }
   def newChild(delegatedWorkQty: WorkQty) = this
