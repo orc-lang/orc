@@ -20,7 +20,6 @@ import java.io.PrintStream
 import orc.error.OrcException
 import orc.script.OrcScriptEngine
 import orc.script.OrcBindings
-import orc.compile.parse.OrcReader
 import orc.values.Format
 import javax.script.ScriptEngineManager
 import javax.script.ScriptEngine

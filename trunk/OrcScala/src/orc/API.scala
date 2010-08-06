@@ -22,6 +22,7 @@ import orc.error.compiletime.CompileLogger
 import orc.error.OrcException
 import orc.error.compiletime.CompilationException
 import orc.error.runtime.ExecutionException
+import orc.progress.ProgressMonitor
 
 
 /**
@@ -29,7 +30,7 @@ import orc.error.runtime.ExecutionException
  */
 trait OrcCompilerProvides {
   @throws(classOf[IOException])
-  def apply(source: OrcInputContext, options: OrcOptions, compileLogger: CompileLogger): Expression
+  def apply(source: OrcInputContext, options: OrcOptions, compileLogger: CompileLogger, progress: ProgressMonitor): Expression
   def refineOil(oilAstRoot: Expression): Expression = oilAstRoot
 }
 
@@ -38,7 +39,6 @@ trait OrcCompilerProvides {
  * The interface from the Orc compiler to its environment
  */
 trait OrcCompilerRequires { 
-//  def progress: ProgressListener
   @throws(classOf[IOException])
   def openInclude(includeFileName: String, relativeTo: OrcInputContext, options: OrcOptions): OrcInputContext
   @throws(classOf[ClassNotFoundException])

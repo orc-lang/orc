@@ -422,7 +422,7 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
     val newInputContext = try {
       envServices.openInclude(includeName, inputContext, options)
     } catch {
-      case e: IOException => return error(e.toString)
+      case e: IOException => return err(e.toString)
     }
     OrcIncludeParser(newInputContext, options, envServices) match {
       case r: OrcIncludeParser.SuccessT[_] => success(r.get)
