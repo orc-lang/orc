@@ -23,22 +23,21 @@ import scala.collection.JavaConversions._
  * @author jthywiss
  */
 trait CmdLineOptions extends OrcOptions with CmdLineParser {
-  StringOprd(filename=_, position = 0, argName = "file", required = true, usage = "Path to script to execute.")
+  StringOprd(()=>filename, filename=_, position = 0, argName = "file", required = true, usage = "Path to script to execute.")
 
-  UnitOpt(()=>incrementDebugLevel, 'd', "debug", usage = "Enable debugging output, which is disabled by default. Repeat this argument to increase verbosity.")
-  def incrementDebugLevel { debugLevel += 1 }
+  IntOpt(()=>debugLevel, debugLevel=_, 'd', "debug", usage = "Enable debugging output, which is disabled by default. Higher numbers increase level of detail.")
 
-  UnitOpt(()=>usePrelude=false, ' ', "noprelude", usage = "Do not implicitly include standard library (prelude), which is included by default.")
+  UnitOpt(()=>(!usePrelude), ()=>usePrelude=false, ' ', "noprelude", usage = "Do not implicitly include standard library (prelude), which is included by default.")
 
-  StringListOpt(includePath=_, 'I', "include-path", usage = "Set the include path for Orc includes (same syntax as CLASSPATH). Default is \".\", the current directory. Prelude files are always available for include regardless of this setting.")  
+  StringListOpt(()=>includePath, includePath=_, 'I', "include-path", usage = "Set the include path for Orc includes (same syntax as CLASSPATH). Default is \".\", the current directory. Prelude files are always available for include regardless of this setting.")  
 
-  UnitOpt(()=>exceptionsOn=true, ' ', "exceptions", usage = "Enable exceptions (experimental), which is disabled by default.")
+  UnitOpt(()=>exceptionsOn, ()=>exceptionsOn=true, ' ', "exceptions", usage = "Enable exceptions (experimental), which is disabled by default.")
 
-  UnitOpt(()=>typecheck=true, ' ', "typecheck", usage = "Enable typechecking, which is disabled by default.")
+  UnitOpt(()=>typecheck, ()=>typecheck=true, ' ', "typecheck", usage = "Enable typechecking, which is disabled by default.")
 
-  IntOpt(maxPublications=_, ' ', "pub", usage = "Terminate the program after this many values are published. Default=infinity.")
+  IntOpt(()=>maxPublications, maxPublications=_, ' ', "pub", usage = "Terminate the program after this many values are published. Default=infinity.")
 
-  StringListOpt(classPath=_, ' ', "cp", usage = "Set the class path for Orc sites (same syntax as CLASSPATH). This is only used for classes not found in the Java VM classpath.")
+  StringListOpt(()=>classPath, classPath=_, ' ', "cp", usage = "Set the class path for Orc sites (same syntax as CLASSPATH). This is only used for classes not found in the Java VM classpath.")
 
   //UnitOpt({=true}, 'c', "noexecute", usage = "Compile this program, but do not run it.")
   //FileOpt(, 'o', "oilOut", usage = "Write the compiled OIL to the given filename.")
