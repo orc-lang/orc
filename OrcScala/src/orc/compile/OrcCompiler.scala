@@ -41,6 +41,8 @@ import orc.error.compiletime.CompileLogger
 import orc.error.compiletime.CompileLogger.Severity
 import orc.error.compiletime.ParsingException
 import orc.error.compiletime.PrintWriterCompileLogger
+import orc.progress.ProgressMonitor
+import orc.progress.NullProgressMonitor
 import orc.values.sites.SiteClassLoading
 
 
@@ -188,7 +190,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
   ////////
 
   @throws(classOf[IOException]) @throws(classOf[ClassNotFoundException])
-  def apply(source: OrcInputContext, options: OrcOptions, compileLogger: CompileLogger): orc.oil.nameless.Expression = {
+  def apply(source: OrcInputContext, options: OrcOptions, compileLogger: CompileLogger, progress: ProgressMonitor): orc.oil.nameless.Expression = {
     compileLogger.beginProcessing(options.filename)
     try {
       val result = phases(options)(source)
@@ -211,9 +213,9 @@ abstract class CoreOrcCompiler extends OrcCompiler {
  */
 class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
   @throws(classOf[IOException]) @throws(classOf[ClassNotFoundException])
-  override def apply(source: OrcInputContext, options: OrcOptions, compileLogger: CompileLogger): orc.oil.nameless.Expression = {
+  override def apply(source: OrcInputContext, options: OrcOptions, compileLogger: CompileLogger, progress: ProgressMonitor): orc.oil.nameless.Expression = {
     SiteClassLoading.initWithClassPathStrings(options.classPath)
-    super.apply(source, options, compileLogger)
+    super.apply(source, options, compileLogger, progress)
   }
 
   private class OrcReaderInputContext(val javaReader: java.io.Reader, override val descr: String) extends OrcInputContext {
@@ -225,7 +227,7 @@ class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
 
   @throws(classOf[IOException]) @throws(classOf[ClassNotFoundException])
   def apply(source: java.io.Reader, options: OrcOptions, err: Writer): orc.oil.nameless.Expression = {
-    this(new OrcReaderInputContext(source, options.filename), options, new PrintWriterCompileLogger(new PrintWriter(err, true)))
+    this(new OrcReaderInputContext(source, options.filename), options, new PrintWriterCompileLogger(new PrintWriter(err, true)), NullProgressMonitor)
   }
 
   private object OrcNullInputContext extends OrcInputContext {
