@@ -69,10 +69,17 @@
 	</target>
 	-->
 
+	<!-- - - - - - - - - - - - - - - - - -
+          target: build-dir-exists
+         - - - - - - - - - - - - - - - - - -->
+	<target name="build-dir-exists">
+		<available file="build/classes/orc/" property="build.dir.exists"/>
+	</target>
+
 	<!-- =================================
           target: version
          ================================= -->
-	<target name="version" description="Build version.properites">
+	<target name="version" depends="build-dir-exists" if="build.dir.exists" description="Build version.properites">
 		<exec executable="svnversion" outputproperty="svnversion"/>  <!-- Format: 9999[:9999][M][S][P] -->
 		<tstamp>
 			<format property="build.date" pattern="yyyy-MM-dd-HH:mm:ss" timezone="Etc/UTC" />
@@ -98,7 +105,7 @@
 	<!-- =================================
           target: test
          ================================= -->
-	<target name="test" description="Execute JUnit tests">
+	<target name="test" depends="build-dir-exists" if="build.dir.exists" description="Execute JUnit tests">
         <mkdir dir="${junit.output.dir}"/>
 		<junit fork="yes" printsummary="withOutAndErr" haltonfailure="on">
             <formatter type="xml"/>
@@ -130,7 +137,7 @@
 	<!-- =================================
           target: jar
          ================================= -->
-	<target name="jar" depends="version" description="Build orc-*.zip for distribution">
+	<target name="jar" depends="build-dir-exists,version" if="build.dir.exists" description="Build orc-*.zip for distribution">
 		<jar jarfile="build/${target.name}.jar" basedir="build/classes" whenmanifestonly="fail" duplicate="fail" index="true" strict="fail">
 			<manifest>
 				<attribute name="Main-Class" value="${orc.main-class}"/>
@@ -274,7 +281,7 @@
 	<!-- =================================
           target: build
          ================================= -->
-    <target name="build" depends="jar,stdlib-doc,javadoc,macosx-app" description="Build all targets"/>
+    <target name="build" depends="build-dir-exists,jar,stdlib-doc,javadoc,macosx-app" description="Build all targets"/>
 
 	<!-- - - - - - - - - - - - - - - - - -
           target: zip
@@ -314,7 +321,7 @@
 	<!-- =================================
           target: package
          ================================= -->
-	<target name="package" depends="zip,macosx-app-tgz" description="Package for distribution">
+	<target name="package" depends="build-dir-exists,zip,macosx-app-tgz" description="Package for distribution">
 	</target>
 
 	<!-- =================================
