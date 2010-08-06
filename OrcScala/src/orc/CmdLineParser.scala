@@ -43,7 +43,7 @@ trait CmdLineParser {
   // Constructor
   ////////
 
-  UnitOpt(()=>printHelp, '?', "help", usage = "Give this help list")
+  UnitOpt(()=>false, ()=>printHelp, '?', "help", usage = "Give this help list")
   protected def printHelp {
     def shortOptHelp(opt: CmdLineOpt) =
       if (opt.shortName != 0 && opt.shortName != ' ')
@@ -67,10 +67,10 @@ trait CmdLineParser {
     throw new PrintVersionAndMessageException(helpString)
   }
 
-  UnitOpt(()=>printUsage, ' ', "usage", usage = "Give a short usage message")
+  UnitOpt(()=>false, ()=>printUsage, ' ', "usage", usage = "Give a short usage message")
   protected def printUsage { throw new PrintVersionAndMessageException(usageString) }
 
-  UnitOpt(()=>printVersion, 'V', "version", usage = "Print program version")
+  UnitOpt(()=>false, ()=>printVersion, 'V', "version", usage = "Print program version")
   protected def printVersion { throw new PrintVersionAndMessageException("") }
 
   def usageString =
@@ -84,6 +84,7 @@ trait CmdLineParser {
   ////////
 
   abstract class CmdLineOprdOpt(val argName: String, val usage: String, val required: Boolean, val hidden: Boolean) {
+    def getValue: String
     def setValue(s: String): Unit
   }
 
@@ -104,88 +105,105 @@ trait CmdLineParser {
     recognizedOpts += this
   }
 
-  case class BooleanOprd(val setter: (Boolean => Unit), override val position: Int, override val argName: String = "BOOL", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
+  case class BooleanOprd(val getter: Function0[Boolean], val setter: (Boolean => Unit), override val position: Int, override val argName: String = "BOOL", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
     extends CmdLineOprd(position, argName, usage, required, hidden) {
+    def getValue: String = { getter().toString }
     def setValue(value: String) { setter(value.toBoolean) }
   }
 
-  case class DoubleOprd(val setter: (Double => Unit), override val position: Int, override val argName: String = "DOUBLE", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
+  case class DoubleOprd(val getter: Function0[Double], val setter: (Double => Unit), override val position: Int, override val argName: String = "DOUBLE", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
     extends CmdLineOprd(position, argName, usage, required, hidden) {
+    def getValue: String = { getter().toString }
     def setValue(value: String) { setter(value.toDouble) }
   }
 
-  case class IntOprd(val setter: (Int => Unit), override val position: Int, override val argName: String = "INT", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
+  case class IntOprd(val getter: Function0[Int], val setter: (Int => Unit), override val position: Int, override val argName: String = "INT", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
     extends CmdLineOprd(position, argName, usage, required, hidden) {
+    def getValue: String = { getter().toString }
     def setValue(value: String) { setter(value.toInt) }
   }
 
-  case class CharOprd(val setter: (Char => Unit), override val position: Int, override val argName: String = "CHAR", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
+  case class CharOprd(val getter: Function0[Char], val setter: (Char => Unit), override val position: Int, override val argName: String = "CHAR", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
     extends CmdLineOprd(position, argName, usage, required, hidden) {
+    def getValue: String = { getter().toString }
     def setValue(value: String) { setter(value(0)) }
   }
 
-  case class StringOprd(val setter: (String => Unit), override val position: Int, override val argName: String = "STRING", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
+  case class StringOprd(val getter: Function0[String], val setter: (String => Unit), override val position: Int, override val argName: String = "STRING", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
     extends CmdLineOprd(position, argName, usage, required, hidden) {
+    def getValue: String = { getter().toString }
     def setValue(value: String) { setter(value) }
   }
 
-  case class StringListOprd(val setter: (Seq[String] => Unit), override val position: Int, override val argName: String = "STRING", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
+  case class StringListOprd(val getter: Function0[Seq[String]], val setter: (Seq[String] => Unit), override val position: Int, override val argName: String = "STRING", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
     extends CmdLineOprd(position, argName, usage, required, hidden) {
+    def getValue: String = { getter().mkString(File.pathSeparator) }
     def setValue(value: String) { setter(value.split(File.pathSeparator)) }
   }
 
-  case class FileOprd(val setter: (File => Unit), override val position: Int, override val argName: String = "FILE", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
+  case class FileOprd(val getter: Function0[File], val setter: (File => Unit), override val position: Int, override val argName: String = "FILE", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
     extends CmdLineOprd(position, argName, usage, required, hidden) {
+    def getValue: String = { getter().toString }
     def setValue(value: String) { setter(new File(value)) }
   }
 
-  case class PathListOprd(val setter: (Seq[File] => Unit), override val position: Int, override val argName: String = "PATH", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
+  case class PathListOprd(val getter: Function0[Seq[File]], val setter: (Seq[File] => Unit), override val position: Int, override val argName: String = "PATH", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
     extends CmdLineOprd(position, argName, usage, required, hidden) {
+    def getValue: String = { getter().map(_.toString).mkString(File.pathSeparator) }
     def setValue(value: String) { setter(value.split(File.pathSeparator).map(new File(_))) }
   }
 
-  case class UnitOpt(val setter: (() => Unit), override val shortName: Char, override val longName: String, override val argName: String = "", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
+  case class UnitOpt(val getter: Function0[Boolean], val setter: (() => Unit), override val shortName: Char, override val longName: String, override val argName: String = "", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
+    def getValue: String = ""
     def setValue(value: String) { setter() }
   }
 
-  case class BooleanOpt(val setter: (Boolean => Unit), override val shortName: Char, override val longName: String, override val argName: String = "BOOL", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
+  case class BooleanOpt(val getter: Function0[Boolean], val setter: (Boolean => Unit), override val shortName: Char, override val longName: String, override val argName: String = "BOOL", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
+    def getValue: String = { getter().toString }
     def setValue(value: String) { setter(value.toBoolean) }
   }
 
-  case class DoubleOpt(val setter: (Double => Unit), override val shortName: Char, override val longName: String, override val argName: String = "DOUBLE", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
+  case class DoubleOpt(val getter: Function0[Double], val setter: (Double => Unit), override val shortName: Char, override val longName: String, override val argName: String = "DOUBLE", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
+    def getValue: String = { getter().toString }
     def setValue(value: String) { setter(value.toDouble) }
   }
 
-  case class IntOpt(val setter: (Int => Unit), override val shortName: Char, override val longName: String, override val argName: String = "INT", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
+  case class IntOpt(val getter: Function0[Int], val setter: (Int => Unit), override val shortName: Char, override val longName: String, override val argName: String = "INT", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
+    def getValue: String = { getter().toString }
     def setValue(value: String) { setter(value.toInt) }
   }
 
-  case class CharOpt(val setter: (Char => Unit), override val shortName: Char, override val longName: String, override val argName: String = "CHAR", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
+  case class CharOpt(val getter: Function0[Char], val setter: (Char => Unit), override val shortName: Char, override val longName: String, override val argName: String = "CHAR", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
+    def getValue: String = { getter().toString }
     def setValue(value: String) { setter(value(0)) }
   }
 
-  case class StringOpt(val setter: (String => Unit), override val shortName: Char, override val longName: String, override val argName: String = "STRING", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
+  case class StringOpt(val getter: Function0[String], val setter: (String => Unit), override val shortName: Char, override val longName: String, override val argName: String = "STRING", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
+    def getValue: String = { getter().toString }
     def setValue(value: String) { setter(value) }
   }
 
-  case class StringListOpt(val setter: (Seq[String] => Unit), override val shortName: Char, override val longName: String, override val argName: String = "STRING", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
+  case class StringListOpt(val getter: Function0[Seq[String]], val setter: (Seq[String] => Unit), override val shortName: Char, override val longName: String, override val argName: String = "STRING", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
+    def getValue: String = { getter().mkString(File.pathSeparator) }
     def setValue(value: String) { setter(value.split(File.pathSeparator)) }
   }
 
-  case class FileOpt(val setter: (File => Unit), override val shortName: Char, override val longName: String, override val argName: String = "FILE", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
+  case class FileOpt(val getter: Function0[File], val setter: (File => Unit), override val shortName: Char, override val longName: String, override val argName: String = "FILE", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
+    def getValue: String = { getter().toString }
     def setValue(value: String) { setter(new File(value)) }
   }
 
-  case class PathListOpt(val setter: (Seq[File] => Unit), override val shortName: Char, override val longName: String, override val argName: String = "PATH", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
+  case class PathListOpt(val getter: Function0[List[File]], val setter: (Seq[File] => Unit), override val shortName: Char, override val longName: String, override val argName: String = "PATH", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
+    def getValue: String = { getter().map(_.toString).mkString(File.pathSeparator) }
     def setValue(value: String) { setter(value.split(File.pathSeparator).map(new File(_))) }
   }
 
@@ -267,6 +285,26 @@ trait CmdLineParser {
       }
     }
   }
+
+  ////////
+  // Parse method
+  ////////
+
+  def composeCmdLine(): String = {
+    (recognizedOpts.toList.sortBy(o => (o.longName, o.shortName)).map({ opt: CmdLineOpt =>
+      if (!opt.isInstanceOf[UnitOpt]) {
+        if (opt.shortName != 0 && opt.shortName != ' ') "-" + opt.shortName + " " + opt.getValue + " " else "--" + opt.longName + "=" + opt.getValue + " "
+      } else {
+        if (opt.asInstanceOf[UnitOpt].getter()) {
+          if (opt.shortName != 0 && opt.shortName != ' ') "-" + opt.shortName else "--" + opt.longName + " "
+        } else {
+          ""
+        }
+      }
+    })).mkString("") +
+    (for { i <- 0 until recognizedOprds.size } yield recognizedOprds(i).getValue).mkString(" ")
+  }
+
 }
 
 ////////
