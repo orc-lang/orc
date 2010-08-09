@@ -55,8 +55,7 @@ extends NamedAST
 with NamedInfixCombinators 
 with hasVars
 with Substitution[Expression]
-with Guarding
-{ 
+with Guarding { 
   lazy val withoutNames: nameless.Expression = namedToNameless(this, Nil, Nil)
 }
 
@@ -66,7 +65,7 @@ case class Parallel(left: Expression, right: Expression) extends Expression
 case class Sequence(left: Expression, x: BoundVar, right: Expression) extends Expression
 case class Prune(left: Expression, x: BoundVar, right: Expression) extends Expression
 case class Otherwise(left: Expression, right: Expression) extends Expression
-case class DeclareDefs(defs : List[Def], body: Expression) extends Expression
+case class DeclareDefs(defs: List[Def], body: Expression) extends Expression
 case class DeclareType(name: BoundTypevar, t: Type, body: Expression) extends Expression
 case class HasType(body: Expression, expectedType: Type) extends Expression
 
@@ -74,10 +73,10 @@ case class HasType(body: Expression, expectedType: Type) extends Expression
 sealed abstract class Argument extends Expression
 case class Constant(value: AnyRef) extends Argument
 trait Var extends Argument
-  case class UnboundVar(name : String) extends Var
-  class BoundVar(val optionalName : Option[String] = None) extends Var 
-  {
+  case class UnboundVar(name: String) extends Var
+  class BoundVar(val optionalName: Option[String] = None) extends Var {
     def this(name: String) = this(Some(name))
+    def productIterator = if (optionalName.isDefined) List(optionalName.get).iterator else Nil.iterator
   }
 
 
@@ -87,8 +86,7 @@ sealed case class Def(name: BoundVar, formals: List[BoundVar], body: Expression,
 extends NamedAST 
 with hasFreeVars 
 with hasFreeTypeVars
-with Substitution[Def]
-{ 
+with Substitution[Def] { 
   lazy val withoutNames: nameless.Def = namedToNameless(this, Nil, Nil)  
 }
 
@@ -98,8 +96,7 @@ with Substitution[Def]
 sealed abstract class Type 
 extends NamedAST 
 with hasFreeTypeVars 
-with Substitution[Type]
-{ 
+with Substitution[Type] { 
   lazy val withoutNames: nameless.Type = namedToNameless(this, Nil) 
 }	
 case class Top() extends Type
@@ -116,8 +113,9 @@ case class VariantType(variants: List[(String, List[Option[Type]])]) extends Typ
 
 
 trait Typevar extends Type
-  case class UnboundTypevar(name : String) extends Typevar
-  class BoundTypevar(val optionalName : Option[String] = None) extends Typevar 
-  {
+  case class UnboundTypevar(name: String) extends Typevar
+  class BoundTypevar(val optionalName: Option[String] = None) extends Typevar {
     def this(name: String) = this(Some(name))
-  } 
+    def productIterator = if (optionalName.isDefined) List(optionalName.get).iterator else Nil.iterator
+
+  }
