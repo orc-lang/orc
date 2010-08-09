@@ -22,7 +22,9 @@ import scala.util.parsing.input.NoPosition
 
 trait AST extends Positional {
 
-  // Location-preserving transform
+  /**
+   * Location-preserving transform
+   */
   def ->[B <: AST](f: this.type => B): B = {
       val location = this.pos
       val result = f(this)
@@ -30,10 +32,14 @@ trait AST extends Positional {
       result
   }
   
-  // Location transfer.
-  // x ->> y  is equivalent to  x -> (_ => y)
+  /**
+   * Location transfer.
+   * x ->> y  is equivalent to  x -> (_ => y)
+   */
   def ->>[B <: AST](that : B): B = { that.pushDownPosition(this.pos); that }
 
+  /**
+   */
   def !!(exn : OrcException): Nothing = {
       exn.setPosition(this.pos)
       throw exn
@@ -51,8 +57,10 @@ trait AST extends Positional {
     Console.err.println("Warning " + this.pos + ": " + msg)
   }
   
-  // Set source location at this node and propagate
-  // the change to any children without source locations.
+  /**
+   * Set source location at this node and propagate
+   * the change to any children without source locations.
+   */
   def pushDownPosition(p : Position): Unit = {
     this.pos match {
       case NoPosition => {
@@ -63,9 +71,42 @@ trait AST extends Positional {
     }
   }
   
-  // Used to propagate source location information
-  // Currently only implemented for OIL
-  val subtrees: List[AST] = Nil
-  
+  /**
+   * All AST node children of this node, as a single list
+   */
+  def subtrees: List[AST] = {
+    import java.lang.reflect.InvocationTargetException
+    import scala.collection.JavaConversions
+    import scala.collection.mutable.MutableList
+
+    def flatenAstNodes(x: Any, flatList: MutableList[AST]) {
+      def isGood(y: Any): Boolean = y match {
+        case _: AST => true
+        case i: Iterable[_] => i.forall(isGood(_))
+        case _ => false
+      }
+      def traverseAndAdd(z: Any) {
+        z match {
+          case a: AST => flatList += a
+          case i: Iterable[_] => i.foreach(traverseAndAdd(_))
+        }
+      }
+      if (isGood(x)) traverseAndAdd(x)
+    }
+
+    val goodKids = new MutableList[AST]();
+    for (m <- this.getClass().getMethods()) {
+      val retType = m.getReturnType();
+      if (!m.getName().contains("$") && !m.getName.equals("subtrees") && m.getParameterTypes().length == 0 &&
+          (classOf[AST].isAssignableFrom(retType) || classOf[java.lang.Iterable[_]].isAssignableFrom(retType) || classOf[scala.collection.Iterable[_]].isAssignableFrom(retType))) {
+        try {
+          flatenAstNodes(m.invoke(this), goodKids);
+        } catch {
+          case e: InvocationTargetException => { } // Disregard silently
+        }
+      }
+    }
+    goodKids.toList
+  }
   
 }
