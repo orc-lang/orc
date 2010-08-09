@@ -16,17 +16,15 @@
 package edu.utexas.cs.orc.orceclipse.parse;
 
 import java.io.IOException;
-import java.io.StringReader;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
 
-import orc.ast.extended.ASTNode;
-import orc.ast.extended.declaration.Declaration;
-import orc.ast.extended.expression.Declare;
-import orc.error.compiletime.CompilationException;
-import orc.error.compiletime.CompileMessageRecorder.Severity;
-import orc.parser.OrcParser;
+import orc.AST;
+import orc.OrcOptions;
+import orc.compile.parse.OrcIncludeParser;
+import orc.compile.parse.OrcInputContext;
+import orc.compile.parse.OrcProgramParser;
+import orc.compile.parse.OrcStringInputContext;
+import orc.error.compiletime.CompileLogger.Severity;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -46,6 +44,9 @@ import org.eclipse.jface.text.IRegion;
 import edu.utexas.cs.orc.orceclipse.Activator;
 import edu.utexas.cs.orc.orceclipse.ImpToOrcMessageAdapter;
 import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
+
+import scala.util.parsing.combinator.Parsers.ParseResult;
+import scala.util.parsing.combinator.Parsers.NoSuccess;
 
 /**
  * A parsing environment (file, project, etc.) that IMP constructs when it will request Orc parsing.
@@ -121,9 +122,8 @@ public class OrcParseController extends ParseControllerBase {
 	private final static SimpleAnnotationTypeInfo annotationTypeInfo = new SimpleAnnotationTypeInfo();
 	private final static OrcSyntaxProperties syntaxProperties = new OrcSyntaxProperties();
 	private OrcSourcePositionLocator sourcePositionLocator;
-	private OrcParser parser;
 	private String currentParseString;
-	private ASTNode currentAst;
+	private AST currentAst;
 	private OrcLexer lexer;
 
 	/**
@@ -131,7 +131,7 @@ public class OrcParseController extends ParseControllerBase {
 	 */
 	public OrcParseController() {
 		super(Activator.getInstance().getLanguageID());
-		// The follow might seem to be needed, but the editor handles problem markers better without it!
+		// The following might seem to be needed, but the editor handles problem markers better without it!
 		//		if (!annotationTypeInfo.getProblemMarkerTypes().contains(OrcBuilder.PROBLEM_MARKER_ID)) {
 		//			annotationTypeInfo.addProblemMarkerType(OrcBuilder.PROBLEM_MARKER_ID);
 		//		}
@@ -196,7 +196,7 @@ public class OrcParseController extends ParseControllerBase {
 	 * @param monitor ProgressMonitor to check for cancellation
 	 * @see org.eclipse.imp.parser.IParseController#parse(java.lang.String, org.eclipse.core.runtime.IProgressMonitor)
 	 */
-	public Object parse(final String contents, final IProgressMonitor monitor) {
+	public AST parse(final String contents, final IProgressMonitor monitor) {
 
 		currentParseString = contents;
 
@@ -215,50 +215,53 @@ public class OrcParseController extends ParseControllerBase {
 
 		final IPath absolutePath = getProject().getRawProject().getLocation().append(getPath());
 
-		config.setMessageRecorder(new ImpToOrcMessageAdapter(handler));
-		config.getMessageRecorder().beginProcessing(absolutePath.toFile());
+		ImpToOrcMessageAdapter compileLogger = new ImpToOrcMessageAdapter(handler);
+		compileLogger.beginProcessing(absolutePath.toFile().toString());
 		if (lexer == null) {
 			lexer = new OrcLexer(this);
 		}
 
-		parser = new OrcParser(config, new StringReader(contents), absolutePath.toOSString());
+		OrcStringInputContext ic = new OrcStringInputContext(contents);
+
+		orc.OrcCompilerRequires dummyEnvServices = new orc.OrcCompilerRequires() {
+		    public OrcInputContext openInclude(final String includeName, OrcInputContext orcinputcontext, OrcOptions orcoptions) {
+		    	return new OrcStringInputContext("") {
+		    		public String descr() {
+		    			return includeName;
+		    		}
+		    	};
+		    }
+
+		    public Class loadClass(String s) {
+		    	return null;
+		    }
+		};
 
 		try {
+			ParseResult<?> result;
 			if (!Activator.isOrcIncludeFile(absolutePath)) {
-				currentAst = parser.parseProgram();
+				result = OrcProgramParser.apply(ic, config, dummyEnvServices);
 			} else {
-				orc.ast.extended.expression.Expression e = new orc.ast.extended.expression.Stop();
-				final LinkedList<Declaration> decls = new LinkedList<Declaration>();
-
-				decls.addAll(parser.parseModule());
-				Collections.reverse(decls);
-				for (final Declaration d : decls) {
-					e = new Declare(d, e);
-				}
-
-				currentAst = e;
+				result = OrcIncludeParser.apply(ic, config, dummyEnvServices);
 			}
-		} catch (final CompilationException e) {
-			config.getMessageRecorder().recordMessage(Severity.FATAL, 0, e.getMessageOnly(), e.getSourceLocation(), null, e);
-		} catch (final IOException e) {
-			config.getMessageRecorder().recordMessage(Severity.FATAL, 0, e.getLocalizedMessage(), null, null, e);
+			if (result.successful())
+				currentAst = (AST) result.get();
+			else {
+				NoSuccess n = (NoSuccess) result;
+				compileLogger.recordMessage(Severity.FATAL, 0, n.msg(), n.next().pos(), null, null);
+			}
+		} catch (final Exception e) {
+			compileLogger.recordMessage(Severity.FATAL, 0, e.getLocalizedMessage(), null, null, e);
 		} finally {
-			config.getMessageRecorder().endProcessing(absolutePath.toFile());
+			compileLogger.endProcessing(absolutePath.toFile().toString());
 		}
 
 		// Walk AST and tie id refs to id defs
-		//		parser.resolve(currentAst);
+//		parser.resolve(currentAst);
 
 		maybeDumpTokens();
 
 		return currentAst;
-	}
-
-	/**
-	 * @return the OrcParser, as used by the last invocation of {@link #parse(String, IProgressMonitor)}, or null
-	 */
-	public OrcParser getParser() {
-		return parser;
 	}
 
 	/**
@@ -272,7 +275,7 @@ public class OrcParseController extends ParseControllerBase {
 	 * @return the current AST, as created by the last invocation of {@link #parse(String, IProgressMonitor)}, or null
 	 */
 	@Override
-	public ASTNode getCurrentAst() {
+	public AST getCurrentAst() {
 		return currentAst;
 	}
 

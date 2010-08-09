@@ -17,7 +17,7 @@
          point="org.eclipse.imp.runtime.languageDescription">
       <language
             url="http://orc.csres.utexas.edu/"
-            icon="orc16.gif"
+            icon="icons/orc_file_obj.gif"
             extensions="orc,inc"
             description="A language for distributed and concurrent programming from The University of Texas at Austin."
             natureID="edu.utexas.cs.orc.orceclipse.project.orcNature"
@@ -64,18 +64,6 @@
             type="text"
             extension="oil">
       </fileTypes>
-   </extension>
-   <extension
-         point="org.eclipse.ui.editors">
-      <editor
-            name="Orc Editor"
-            default="true"
-            icon="icons/orc_file_obj.gif"
-            extensions="orc,inc"
-            contributorClass="org.eclipse.imp.editor.internal.TextEditorActionContributor"
-            class="org.eclipse.imp.editor.UniversalEditor"
-            id="org.eclipse.imp.runtime.impEditor">
-      </editor>
    </extension>
    <extension
          id="OrcEclipse.parser"

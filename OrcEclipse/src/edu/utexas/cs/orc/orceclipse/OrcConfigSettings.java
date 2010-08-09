@@ -15,10 +15,10 @@
 
 package edu.utexas.cs.orc.orceclipse;
 
-import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
-import orc.Config;
+import orc.script.OrcBindings;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -26,10 +26,9 @@ import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.imp.preferences.PreferencesService;
-import org.kohsuke.args4j.CmdLineException;
 
 /**
- * Orc configuration ({@link orc.Config}) extended to read its state from
+ * Orc configuration ({@link orc.OrcOptions}) extended to read its state from
  * Eclipse preferences and run configurations.
  * <p>
  * Note that OrcConfigSettings uses Eclipse's default preferences hierarchy,
@@ -42,7 +41,7 @@ import org.kohsuke.args4j.CmdLineException;
  * @see org.eclipse.debug.core.ILaunchConfiguration
  * @author jthywiss
  */
-public class OrcConfigSettings extends Config {
+public class OrcConfigSettings extends OrcBindings {
 	public static final String TYPE_CHECK_ATTR_NAME = Activator.getInstance().getID() + ".TYPE_CHECK"; //$NON-NLS-1$
 	public static final String NO_PRELUDE_ATTR_NAME = Activator.getInstance().getID() + ".NO_PRELUDE"; //$NON-NLS-1$
 	public static final String EXCEPTIONS_ON_ATTR_NAME = Activator.getInstance().getID() + ".EXCEPTIONS_ON"; //$NON-NLS-1$
@@ -54,18 +53,18 @@ public class OrcConfigSettings extends Config {
 	public static final String TRACE_OUT_ATTR_NAME = Activator.getInstance().getID() + ".TRACE_OUT"; //$NON-NLS-1$
 	public static final String DEBUG_LEVEL_ATTR_NAME = Activator.getInstance().getID() + ".DEBUG_LEVEL"; //$NON-NLS-1$
 
-	private static final Config defaultConfig = new Config();
+	private static final OrcBindings defaultConfig = new OrcBindings();
 
-	public static final boolean TYPE_CHECK_DEFAULT = defaultConfig.getTypeChecking();
-	public static final boolean NO_PRELUDE_DEFAULT = defaultConfig.getNoPrelude();
-	public static final boolean EXCEPTIONS_ON_DEFAULT = defaultConfig.getExceptionsOn();
-	public static final String INCLUDE_PATH_DEFAULT = defaultConfig.getIncludePath().length() == 0 ? defaultConfig.getIncludePath() : defaultConfig.getIncludePath().concat(":"); //Eclipse path pref entries always have a trailing : //$NON-NLS-1$
-	public static final String SITE_CLASSPATH_DEFAULT = defaultConfig.getClassPath().length() == 0 ? defaultConfig.getClassPath() : defaultConfig.getClassPath().concat(":"); //Eclipse path pref entries always have a trailing : //$NON-NLS-1$
-	public static final String OIL_OUT_DEFAULT = defaultConfig.getOilOutputFile().getPath();
-	public static final int MAX_PUBS_DEFAULT = defaultConfig.getMaxPubs();
-	public static final int NUM_SITE_THREADS_DEFAULT = defaultConfig.getNumSiteThreads();
-	public static final String TRACE_OUT_DEFAULT = defaultConfig.getTraceOutputFile().getPath();
-	public static final int DEBUG_LEVEL_DEFAULT = defaultConfig.getDebugLevel();
+	public static final boolean TYPE_CHECK_DEFAULT = defaultConfig.typecheck();
+	public static final boolean NO_PRELUDE_DEFAULT = !defaultConfig.usePrelude();
+	public static final boolean EXCEPTIONS_ON_DEFAULT = defaultConfig.exceptionsOn();
+	public static final String INCLUDE_PATH_DEFAULT = defaultConfig.includePath().isEmpty() ? "" : listMkString(defaultConfig.includePath(),":").concat(":"); //Eclipse path pref entries always have a trailing : //$NON-NLS-1$
+	public static final String SITE_CLASSPATH_DEFAULT = defaultConfig.classPath().isEmpty() ? "" : listMkString(defaultConfig.classPath(),":").concat(":"); //Eclipse path pref entries always have a trailing : //$NON-NLS-1$
+	//public static final String OIL_OUT_DEFAULT = defaultConfig.oilOutputFile().getPath();
+	public static final int MAX_PUBS_DEFAULT = defaultConfig.maxPublications();
+	//public static final int NUM_SITE_THREADS_DEFAULT = defaultConfig.numSiteThreads();
+	//public static final String TRACE_OUT_DEFAULT = defaultConfig.traceOutputFile().getPath();
+	public static final int DEBUG_LEVEL_DEFAULT = defaultConfig.debugLevel();
 
 	/**
 	 * Constructs an object of class OrcConfigSettings.
@@ -96,38 +95,38 @@ public class OrcConfigSettings extends Config {
 		// Will also look upwards in prefs levels if not found in project.
 
 		if (prefSvc.isDefined(TYPE_CHECK_ATTR_NAME)) {
-			setTypeChecking(prefSvc.getBooleanPreference(TYPE_CHECK_ATTR_NAME));
+			typecheck_$eq(prefSvc.getBooleanPreference(TYPE_CHECK_ATTR_NAME));
 		}
 		if (prefSvc.isDefined(NO_PRELUDE_ATTR_NAME)) {
-			setNoPrelude(prefSvc.getBooleanPreference(NO_PRELUDE_ATTR_NAME));
+			usePrelude_$eq(!prefSvc.getBooleanPreference(NO_PRELUDE_ATTR_NAME));
 		}
 		if (prefSvc.isDefined(EXCEPTIONS_ON_ATTR_NAME)) {
-			setNoPrelude(prefSvc.getBooleanPreference(EXCEPTIONS_ON_ATTR_NAME));
+			exceptionsOn_$eq(prefSvc.getBooleanPreference(EXCEPTIONS_ON_ATTR_NAME));
 		}
 		if (prefSvc.isDefined(INCLUDE_PATH_ATTR_NAME)) {
-			setIncludePath(prefSvc.getStringPreference(INCLUDE_PATH_ATTR_NAME));
+			includePath_$eq(Arrays.asList(prefSvc.getStringPreference(INCLUDE_PATH_ATTR_NAME).split(":")));
 		}
 		if (prefSvc.isDefined(SITE_CLASSPATH_ATTR_NAME)) {
-			setClassPath(prefSvc.getStringPreference(SITE_CLASSPATH_ATTR_NAME));
+			classPath_$eq(Arrays.asList(prefSvc.getStringPreference(SITE_CLASSPATH_ATTR_NAME).split(":")));
 		}
-		if (prefSvc.isDefined(OIL_OUT_ATTR_NAME)) {
-			setOilOutputFile(new File(prefSvc.getStringPreference(OIL_OUT_ATTR_NAME)));
-		}
+		//if (prefSvc.isDefined(OIL_OUT_ATTR_NAME)) {
+		//	oilOutputFile_$eq(new File(prefSvc.getStringPreference(OIL_OUT_ATTR_NAME)));
+		//}
 		if (prefSvc.isDefined(MAX_PUBS_ATTR_NAME)) {
-			setMaxPubs(prefSvc.getIntPreference(MAX_PUBS_ATTR_NAME));
+			maxPublications_$eq(prefSvc.getIntPreference(MAX_PUBS_ATTR_NAME));
 		}
-		if (prefSvc.isDefined(NUM_SITE_THREADS_ATTR_NAME)) {
-			setNumSiteThreads(prefSvc.getIntPreference(NUM_SITE_THREADS_ATTR_NAME));
-		}
-		if (prefSvc.isDefined(TRACE_OUT_ATTR_NAME)) {
-			try {
-				setTraceOutputFile(new File(prefSvc.getStringPreference(TRACE_OUT_ATTR_NAME)));
-			} catch (final CmdLineException e) {
-				throw new IOException(e.getMessage());
-			}
-		}
+		//if (prefSvc.isDefined(NUM_SITE_THREADS_ATTR_NAME)) {
+		//	numSiteThreads_$eq(prefSvc.getIntPreference(NUM_SITE_THREADS_ATTR_NAME));
+		//}
+		//if (prefSvc.isDefined(TRACE_OUT_ATTR_NAME)) {
+		//	try {
+		//		traceOutputFile_$eq(new File(prefSvc.getStringPreference(TRACE_OUT_ATTR_NAME)));
+		//	} catch (final CmdLineException e) {
+		//		throw new IOException(e.getMessage());
+		//	}
+		//}
 		if (prefSvc.isDefined(DEBUG_LEVEL_ATTR_NAME)) {
-			setDebugLevel(prefSvc.getIntPreference(DEBUG_LEVEL_ATTR_NAME));
+			debugLevel_$eq(prefSvc.getIntPreference(DEBUG_LEVEL_ATTR_NAME));
 		}
 	}
 
@@ -138,40 +137,49 @@ public class OrcConfigSettings extends Config {
 	 */
 	private void fillFromLaunchConfig(final ILaunchConfiguration launchConfig) throws CoreException, IOException {
 
-		setTypeChecking(launchConfig.getAttribute(TYPE_CHECK_ATTR_NAME, getTypeChecking()));
-		setNoPrelude(launchConfig.getAttribute(NO_PRELUDE_ATTR_NAME, getNoPrelude()));
-		setExceptionsOn(launchConfig.getAttribute(EXCEPTIONS_ON_ATTR_NAME, getExceptionsOn()));
-		setIncludePath(launchConfig.getAttribute(INCLUDE_PATH_ATTR_NAME, getIncludePath()));
-		setClassPath(launchConfig.getAttribute(SITE_CLASSPATH_ATTR_NAME, getClassPath()));
-		if (launchConfig.getAttribute(OIL_OUT_ATTR_NAME, (String) null) != null) {
-			setOilOutputFile(new File(launchConfig.getAttribute(OIL_OUT_ATTR_NAME, (String) null)));
-		}
-		setMaxPubs(launchConfig.getAttribute(MAX_PUBS_ATTR_NAME, getMaxPubs()));
-		setNumSiteThreads(launchConfig.getAttribute(NUM_SITE_THREADS_ATTR_NAME, getNumSiteThreads()));
-		if (launchConfig.getAttribute(TRACE_OUT_ATTR_NAME, (String) null) != null) {
-			try {
-				setTraceOutputFile(new File(launchConfig.getAttribute(TRACE_OUT_ATTR_NAME, (String) null)));
-			} catch (final CmdLineException e) {
-				throw new IOException(e.getMessage());
-			}
-		}
-		setDebugLevel(launchConfig.getAttribute(DEBUG_LEVEL_ATTR_NAME, getDebugLevel()));
+		typecheck_$eq(launchConfig.getAttribute(TYPE_CHECK_ATTR_NAME, typecheck()));
+		usePrelude_$eq(!launchConfig.getAttribute(NO_PRELUDE_ATTR_NAME, !usePrelude()));
+		exceptionsOn_$eq(launchConfig.getAttribute(EXCEPTIONS_ON_ATTR_NAME, exceptionsOn()));
+		includePath_$eq(launchConfig.getAttribute(INCLUDE_PATH_ATTR_NAME, includePath()));
+		classPath_$eq(launchConfig.getAttribute(SITE_CLASSPATH_ATTR_NAME, classPath()));
+		//if (launchConfig.getAttribute(OIL_OUT_ATTR_NAME, (String) null) != null) {
+		//	oilOutputFile_$eq(new File(launchConfig.getAttribute(OIL_OUT_ATTR_NAME, (String) null)));
+		//}
+		maxPublications_$eq(launchConfig.getAttribute(MAX_PUBS_ATTR_NAME, maxPublications()));
+		//numSiteThreads_$eq(launchConfig.getAttribute(NUM_SITE_THREADS_ATTR_NAME, numSiteThreads()));
+		//if (launchConfig.getAttribute(TRACE_OUT_ATTR_NAME, (String) null) != null) {
+		//	try {
+		//		traceOutputFile_$eq(new File(launchConfig.getAttribute(TRACE_OUT_ATTR_NAME, (String) null)));
+		//	} catch (final CmdLineException e) {
+		//		throw new IOException(e.getMessage());
+		//	}
+		//}
+		debugLevel_$eq(launchConfig.getAttribute(DEBUG_LEVEL_ATTR_NAME, debugLevel()));
 	}
 
 	protected static void initDefaultPrefs() {
 		// We don't want to use a preferences.ini / preferences.properties file for default preferences,
-		// but instead get them from the Config class's defaults. Activator gives us the opportunity to set the defaults here.
+		// but instead get them from the OrcOptions class's defaults. Activator gives us the opportunity to set the defaults here.
 		final IEclipsePreferences defaultPrefs = new DefaultScope().getNode(Activator.getInstance().getLanguageID());
 		defaultPrefs.putBoolean(TYPE_CHECK_ATTR_NAME, TYPE_CHECK_DEFAULT);
 		defaultPrefs.putBoolean(NO_PRELUDE_ATTR_NAME, NO_PRELUDE_DEFAULT);
 		defaultPrefs.putBoolean(EXCEPTIONS_ON_ATTR_NAME, EXCEPTIONS_ON_DEFAULT);
 		defaultPrefs.put(INCLUDE_PATH_ATTR_NAME, INCLUDE_PATH_DEFAULT);
 		defaultPrefs.put(SITE_CLASSPATH_ATTR_NAME, SITE_CLASSPATH_DEFAULT);
-		defaultPrefs.put(OIL_OUT_ATTR_NAME, OIL_OUT_DEFAULT);
+		//defaultPrefs.put(OIL_OUT_ATTR_NAME, OIL_OUT_DEFAULT);
 		defaultPrefs.putInt(MAX_PUBS_ATTR_NAME, MAX_PUBS_DEFAULT);
-		defaultPrefs.putInt(NUM_SITE_THREADS_ATTR_NAME, NUM_SITE_THREADS_DEFAULT);
-		defaultPrefs.put(TRACE_OUT_ATTR_NAME, TRACE_OUT_DEFAULT);
+		//defaultPrefs.putInt(NUM_SITE_THREADS_ATTR_NAME, NUM_SITE_THREADS_DEFAULT);
+		//defaultPrefs.put(TRACE_OUT_ATTR_NAME, TRACE_OUT_DEFAULT);
 		defaultPrefs.putInt(DEBUG_LEVEL_ATTR_NAME, DEBUG_LEVEL_DEFAULT);
 		//No need to flush() nodes in default scope
+	}
+	
+	private static String listMkString(final Iterable<?> theList, final String sep) {
+		StringBuilder sb = new StringBuilder();
+		for (Object o : theList) {
+			sb.append(o.toString());
+			sb.append(sep);
+		}
+		return sb.substring(0, sb.length()-sep.length());
 	}
 }

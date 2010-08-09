@@ -15,16 +15,19 @@
 
 package edu.utexas.cs.orc.orceclipse.parse;
 
-import orc.ast.extended.ASTNode;
-import orc.ast.extended.visitor.Walker;
-import orc.error.Located;
-import orc.error.SourceLocation;
+import orc.AST;
+import orc.compile.parse.OrcPosition;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.parser.IParseController;
 import org.eclipse.imp.parser.ISourcePositionLocator;
+
+import scala.collection.JavaConversions;
+import scala.util.parsing.input.NoPosition$;
+import scala.util.parsing.input.OffsetPosition;
+import scala.util.parsing.input.Positional;
 
 import edu.utexas.cs.orc.orceclipse.Activator;
 
@@ -43,34 +46,6 @@ public class OrcSourcePositionLocator implements ISourcePositionLocator {
 	public OrcSourcePositionLocator(final IParseController parseController) {
 	}
 
-	private final class NodeVisitor extends Walker {
-
-		public ASTNode fNode;
-		private final int fStartOffset;
-		private final int fEndOffset;
-
-		public NodeVisitor(final int startOffset, final int endOffset) {
-			fStartOffset = startOffset;
-			fEndOffset = endOffset;
-		}
-
-		@Override
-		@SuppressWarnings("unused")
-		// This is NOT an Unnecessary @SuppressWarnings("unused")	
-		// enter(ASTNode) is called from Walker
-		public boolean enter(final ASTNode element) {
-			final int nodeStartOffset = getStartOffset(element);
-			final int nodeEndOffset = getEndOffset(element);
-
-			// If this node contains the span of interest then record it
-			if (nodeStartOffset <= fStartOffset && nodeEndOffset >= fEndOffset) {
-				fNode = element;
-				return true; // to continue visiting here
-			}
-			return false; // to stop visiting here
-		}
-	}
-
 	/* (non-Javadoc)
 	 * @see org.eclipse.imp.parser.ISourcePositionLocator#findNode(java.lang.Object, int)
 	 */
@@ -82,16 +57,21 @@ public class OrcSourcePositionLocator implements ISourcePositionLocator {
 	 * @see org.eclipse.imp.parser.ISourcePositionLocator#findNode(java.lang.Object, int, int)
 	 */
 	public Object findNode(final Object ast, final int startOffset, final int endOffset) {
-		final NodeVisitor fVisitor = new NodeVisitor(startOffset, endOffset);
-
+		Object theWinner = null;
 		if (startOffset < 0 || endOffset < 0) {
-			fVisitor.fNode = null;
+			return null;
 		} else {
-			((ASTNode) ast).accept(fVisitor);
+			for (AST child : JavaConversions.asList(((AST) ast).subtrees())) {
+				int childOffset = ((OffsetPosition) child.pos()).offset();
+				if (childOffset >= startOffset && childOffset <= endOffset && (theWinner == null || childOffset <= ((OffsetPosition) ((Positional)theWinner).pos()).offset())) {
+					theWinner = findNode(child, startOffset, endOffset);
+				}
+			}
 		}
 
-		return fVisitor.fNode;
+		return theWinner;
 	}
+
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.imp.parser.ISourcePositionLocator#getStartOffset(java.lang.Object)
@@ -104,18 +84,18 @@ public class OrcSourcePositionLocator implements ISourcePositionLocator {
 		//   offsets to be -1 (for text editor repositioning)
 		// If we can distinguish these cases, we'll handle.  In the meantime, annotations win.
 
-		if (node instanceof Located) {
-			final Located n = (Located) node;
-			if (n.getSourceLocation() == null || SourceLocation.UNKNOWN.equals(n)) {
+		if (node instanceof Positional) {
+			final Positional n = (Positional) node;
+			if (n.pos() == null || n.pos() instanceof NoPosition$) {
 				return 0;
 			}
-			return n.getSourceLocation().offset;
+			return ((OffsetPosition) n.pos()).offset();
 		} else if (node instanceof ModelTreeNode) {
-			final Located n = (Located) ((ModelTreeNode) node).getASTNode();
-			if (n.getSourceLocation() == null || SourceLocation.UNKNOWN.equals(n)) {
+			final Positional n = (Positional) ((ModelTreeNode) node).getASTNode();
+			if (n.pos() == null || n.pos() instanceof NoPosition$) {
 				return -1;
 			}
-			return n.getSourceLocation().offset;
+			return ((OffsetPosition) n.pos()).offset();
 		} else {
 			final ClassCastException e = new ClassCastException(this.getClass().getName() + ".getStartOffset got an unrecognized node type"); //$NON-NLS-1$
 			// Make sure this is logged -- Callers in IMP sometimes disregard exceptions
@@ -141,18 +121,24 @@ public class OrcSourcePositionLocator implements ISourcePositionLocator {
 		// length = end - start + 1, thus for UNKNOWN, end must be
 		// start - 2
 
-		if (node instanceof Located) {
-			final Located n = (Located) node;
-			if (n.getSourceLocation() == null || SourceLocation.UNKNOWN.equals(n)) {
+		if (node instanceof OrcLexer.OrcToken) {
+			final OrcLexer.OrcToken n = (OrcLexer.OrcToken) node;
+			if (n.pos() == null || n.pos() instanceof NoPosition$) {
 				return getStartOffset(node) - 2;
 			}
-			return n.getSourceLocation().endOffset;
+			return getStartOffset(node) + n.text.length() - 1;
+		} else if (node instanceof Positional) {
+			final Positional n = (Positional) node;
+			if (n.pos() == null || n.pos() instanceof NoPosition$) {
+				return getStartOffset(node) - 2;
+			}
+			return getStartOffset(node);
 		} else if (node instanceof ModelTreeNode) {
-			final Located n = (Located) ((ModelTreeNode) node).getASTNode();
-			if (n.getSourceLocation() == null || SourceLocation.UNKNOWN.equals(n)) {
+			final Positional n = (Positional) ((ModelTreeNode) node).getASTNode();
+			if (n.pos() == null || n.pos() instanceof NoPosition$) {
 				return getStartOffset(node) - 2;
 			}
-			return n.getSourceLocation().endOffset;
+			return getStartOffset(node);
 		} else {
 			final ClassCastException e = new ClassCastException(this.getClass().getName() + ".getEndOffset got an unrecognized node type"); //$NON-NLS-1$
 			// Make sure this is logged -- Callers in IMP sometimes disregard exceptions
@@ -166,8 +152,8 @@ public class OrcSourcePositionLocator implements ISourcePositionLocator {
 	 */
 	public IPath getPath(final Object node) {
 		try {
-			final Located n = (Located) node;
-			return Path.fromOSString(n.getSourceLocation().file.getPath());
+			final Positional n = (Positional) node;
+			return Path.fromOSString(((OrcPosition)n.pos()).filename());
 		} catch (final ClassCastException e) {
 			// Make sure this is logged -- Callers in IMP sometimes disregard exceptions
 			Activator.log(e);
