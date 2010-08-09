@@ -95,18 +95,12 @@ trait AST extends Positional {
     }
 
     val goodKids = new MutableList[AST]();
-    for (m <- this.getClass().getMethods()) {
-      val retType = m.getReturnType();
-      if (!m.getName().contains("$") && !m.getName.equals("subtrees") && m.getParameterTypes().length == 0 &&
-          (classOf[AST].isAssignableFrom(retType) || classOf[java.lang.Iterable[_]].isAssignableFrom(retType) || classOf[scala.collection.Iterable[_]].isAssignableFrom(retType))) {
-        try {
-          flatenAstNodes(m.invoke(this), goodKids);
-        } catch {
-          case e: InvocationTargetException => { } // Disregard silently
-        }
+    for (f <- this.productIterator) {
+      if (f.isInstanceOf[AST] || f.isInstanceOf[scala.collection.Iterable[_]]) {
+        flatenAstNodes(f, goodKids);
       }
     }
     goodKids.toList
   }
-  
+  def productIterator: Iterator[Any] //Subclasses that are case classes will supply automatically
 }

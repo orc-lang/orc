@@ -19,10 +19,10 @@ import orc.util.OptionMapExtension._
 import orc.compile.ext._
 import orc.oil.named
 
-class AggregateDef(clauses: List[Clause], 
-		           typeformals: Option[List[String]], 
-		           argtypes: Option[List[Type]], 
-		           returntype: Option[Type]) extends orc.AST {
+case class AggregateDef(clauses: List[Clause], 
+                        typeformals: Option[List[String]], 
+                        argtypes: Option[List[Type]], 
+                        returntype: Option[Type]) extends orc.AST {
 	
 		def unify[A](x: Option[A], y: Option[A], err: => Nothing): Option[A] = 
 		  (x,y) match {
