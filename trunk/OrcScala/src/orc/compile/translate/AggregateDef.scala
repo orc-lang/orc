@@ -19,6 +19,8 @@ import orc.util.OptionMapExtension._
 import orc.compile.ext._
 import orc.oil.named
 
+import orc.compile.translate.Translator._
+
 case class AggregateDef(clauses: List[Clause],
   typeformals: Option[List[String]],
   argtypes: Option[List[Type]],
@@ -69,17 +71,17 @@ case class AggregateDef(clauses: List[Clause],
     new AggregateDef(clauses ::: List(newclause), typeformals, newArgTypes, newReturnType)
   }
 
-  def convert(x: named.BoundVar): named.Def = {
+  def convert(x : named.BoundVar, context: Map[String, named.Argument], typecontext: Map[String, named.Type]): named.Def = {
     if (clauses.isEmpty) { this !! "Unused function signature" }
-    val (newformals, newbody) = Clause.convertClauses(clauses)
 
-    val subs = for (tf <- typeformals.getOrElse(Nil)) yield (new named.BoundTypevar(), tf)
-    val newTypeFormals = for ((u, _) <- subs) yield u
-    val newArgTypes = argtypes map { _ map { Translator.convertType(_).substAllTypes(subs) } }
-    val newReturnType = returntype map { Translator.convertType(_).substAllTypes(subs) }
-    val newerbody = newbody.substAllTypes(subs)
+    val (newTypeFormals, dtypecontext) = convertTypeFormals(typeformals.getOrElse(Nil), {this !! _ })
+    val newtypecontext = typecontext ++ dtypecontext
+    val newArgTypes = argtypes map { _ map { convertType(_, newtypecontext) } }
+    val newReturnType = returntype map { convertType(_, newtypecontext) }
 
-    named.Def(x, newformals, newerbody, newTypeFormals, newArgTypes, newReturnType)
+    val (newformals, newbody) = Clause.convertClauses(clauses, context, newtypecontext)
+
+    named.Def(x, newformals, newbody, newTypeFormals, newArgTypes, newReturnType)
   }
 
   def capsuleCheck {
