@@ -2547,7 +2547,7 @@ stimulus, not necessarily explicitly called methods.
 
 <para>
 A capsule definition can be translated to pure Orc calculus, making
-use of the site <code>Site</code> (see the <code>Site</code> site in <xref linkend="appendix.library"/>).
+use of the site <code>Site</code>. (See <xref linkend="appendix.library"/> for details of <code>Site</code>.)
 </para>
 
 <section><title>Object Definition</title>
@@ -2645,8 +2645,8 @@ Concurrent calls to methods: Methods of a capsule instance may
 </para></listitem>
 
 <listitem><para>
-Prune on capsule call: Capsule methods are not terminated
-  prematurely by prune, as in sites. In the following program,
+Prune on capsule call: Like site calls, running capsule method invocations 
+  are not terminated by the pruning combinator. In the following program,
   <code>x</code> is assigned value 3 because execution of <code>testprune().run()</code> never
   publishes. However,
   <code>testprune().run()</code> is treated as a site call which continues
@@ -2664,7 +2664,13 @@ def capsule testprune() =
 </itemizedlist>
 </section>
 
-<section><title>Example: Multi-dimensional Matrix</title>
+<section><title>Examples</title>
+
+<para>
+We show a few examples of capsule usage.
+</para>
+
+<section><title>Multi-dimensional Matrix</title>
 
 <para>
 We declare a two dimensional matrix whose index ranges may span any
@@ -2690,7 +2696,7 @@ traditional style.
 </para>
 </section>
 
-<section><title>Example: Create a new site</title>
+<section><title>Create a new site</title>
 
 <para>
 We create a new site, bounded buffer, using <code>Buffer</code> and
@@ -2717,7 +2723,7 @@ executions of
 </para>
 </section>
 
-<section><title>Example: Extend functionality of existing site</title>
+<section><title>Extend functionality of existing site</title>
 
 <para>
 We add a <code>length</code> function to the <code>Buffer</code> site, that returns
@@ -2736,7 +2742,7 @@ def capsule Channel() =
 ]]></programlisting>
 </section>
 
-<section><title>Example: A Communication protocol; Rendezvous</title>
+<section><title>A Communication protocol; Rendezvous</title>
 
 <para>
 A set of senders and receivers communicate in the following manner. A
@@ -2772,12 +2778,13 @@ imposed by rendezvous.
 val group1 = Rendezvous()
 val group2 = Rendezvous()
 
-  group1.send(3) | Rtimer(1000) >> group2.recv()
+  group1.send(3)
+| Rtimer(1000) >> group2.recv()
 | group2.send(5) >> group1.recv()
 ]]></programlisting>
 </section>
 
-<section><title>Example: A capsule operating in real time</title>
+<section><title>A capsule operating in real time</title>
 
 <para>
 We create a capsule to mimic a stopwatch. A stopwatch allows the
@@ -2793,6 +2800,11 @@ We implement an instance of a stopwatch by assigning a new clock to it
 (created by calling site <code>Clock()</code> that returns a new clock
 with value 0). Additionally, two mutable variables are used with
 the following meaning.
+<itemizedlist>
+<listitem><code>timeshown</code>: clock value when the stopwatch was last stopped,</listitem>
+<listitem><code>laststart</code>: clock value when the stopwatch was last started.</listitem>
+</itemizedlist>
+Initially, both variable values are 0.
 </para>
 
 <programlisting><![CDATA[
@@ -2815,6 +2827,8 @@ the staus of the stopwatch (running or not) should be provided. Such
 an implementation is given for the library site, <code>Stopwatch</code>; see
  the <code>Stopwatch</code> site in <xref linkend="appendix.library"/>.  
 </para>
+</section>
+
 </section>
 
 </section>
