@@ -16,9 +16,8 @@
 package orc
 
 import orc.error.OrcException
-import scala.util.parsing.input.Positional
-import scala.util.parsing.input.Position
-import scala.util.parsing.input.NoPosition
+import scala.collection.mutable.MutableList
+import scala.util.parsing.input.{NoPosition, Position, Positional}
 
 trait AST extends Positional {
 
@@ -75,9 +74,6 @@ trait AST extends Positional {
    * All AST node children of this node, as a single list
    */
   def subtrees: List[AST] = {
-    import java.lang.reflect.InvocationTargetException
-    import scala.collection.JavaConversions
-    import scala.collection.mutable.MutableList
 
     def flatenAstNodes(x: Any, flatList: MutableList[AST]) {
       def isGood(y: Any): Boolean = y match {

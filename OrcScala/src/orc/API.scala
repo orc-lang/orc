@@ -17,13 +17,11 @@ package orc
 
 import java.io.IOException
 import orc.compile.parse.OrcInputContext
-import orc.oil.nameless.Expression
-import orc.error.compiletime.CompileLogger
 import orc.error.OrcException
-import orc.error.compiletime.CompilationException
+import orc.error.compiletime.{CompilationException, CompileLogger}
 import orc.error.runtime.ExecutionException
+import orc.oil.nameless.Expression
 import orc.progress.ProgressMonitor
-
 
 /**
  * The interface from a caller to the Orc compiler
@@ -34,35 +32,31 @@ trait OrcCompilerProvides {
   def refineOil(oilAstRoot: Expression): Expression = oilAstRoot
 }
 
-
 /**
  * The interface from the Orc compiler to its environment
  */
-trait OrcCompilerRequires { 
+trait OrcCompilerRequires {
   @throws(classOf[IOException])
   def openInclude(includeFileName: String, relativeTo: OrcInputContext, options: OrcOptions): OrcInputContext
   @throws(classOf[ClassNotFoundException])
   def loadClass(className: String): Class[_]
 }
 
-
 /** 
  * An Orc compiler
  */
 trait OrcCompiler extends OrcCompilerProvides with OrcCompilerRequires
 
-
 /**
  * The interface from a caller to an Orc runtime
  */
 trait OrcRuntimeProvides {
-  type Token <: TokenAPI 
+  type Token <: TokenAPI
 
   @throws(classOf[ExecutionException])
   def run(e: Expression, k: OrcEvent => Unit, options: OrcOptions): Unit
   def stop: Unit
 }
-
 
 /**
  *  The interface from an Orc runtime to its environment
@@ -71,33 +65,30 @@ trait OrcRuntimeRequires {
   def invoke(t: TokenAPI, v: AnyRef, vs: List[AnyRef]): Unit
 }
 
-
 /**
  * An Orc runtime 
  */
-trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {  
+trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
   type Token <: TokenAPI
-  
+
   def schedule(ts: List[Token]): Unit
- 
+
   // Schedule function is overloaded for convenience
   def schedule(t: Token) { schedule(List(t)) }
-  def schedule(t: Token, u: Token) { schedule(List(t,u)) }
+  def schedule(t: Token, u: Token) { schedule(List(t, u)) }
 }
-
 
 /**
  * The interface from the environment to tokens of an Orc runtime
  */
 trait TokenAPI {
-  def publish(v : AnyRef): Unit
+  def publish(v: AnyRef): Unit
   def halt: Unit
-  def !!(e: OrcException): Unit 
+  def !!(e: OrcException): Unit
   def notify(event: OrcEvent): Unit
 
   val runtime: OrcRuntime
 }
-
 
 /**
  * An event reported by an Orc execution
@@ -111,7 +102,6 @@ case class PrintedEvent(s: String) extends OrcEvent
 case class CaughtEvent(e: Throwable) extends OrcEvent
 // If this list grows, maybe it should become a sub-package
 
-
 /**
  * An action for a few major events reported by an Orc execution.
  * This is an alternative to receiving <code>OrcEvents</code> for a client
@@ -123,11 +113,11 @@ class OrcEventAction {
     case PrintedEvent(s) => printed(s)
     case CaughtEvent(e) => caught(e)
     case HaltedEvent => halted()
-    case _ => { }
+    case _ => {}
   }
-  
-  def published(value: AnyRef) { }
-  def printed(output: String) { }
-  def caught(e: Throwable) { }
-  def halted() { }
+
+  def published(value: AnyRef) {}
+  def printed(output: String) {}
+  def caught(e: Throwable) {}
+  def halted() {}
 }

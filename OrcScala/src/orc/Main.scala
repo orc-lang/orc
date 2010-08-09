@@ -13,19 +13,12 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 package orc
-
-import java.io.FileReader
-import java.io.FileNotFoundException
-import java.io.PrintStream
-import orc.error.OrcException
-import orc.script.OrcScriptEngine
-import orc.script.OrcBindings
-import orc.values.Format
-import javax.script.ScriptEngineManager
-import javax.script.ScriptEngine
-import javax.script.Compilable
+import javax.script.{ScriptException, Compilable, ScriptEngine, ScriptEngineManager}
 import javax.script.ScriptContext.ENGINE_SCOPE
-import javax.script.ScriptException
+import java.io.{PrintStream, FileNotFoundException, FileReader}
+import orc.error.OrcException
+import orc.script.{OrcBindings, OrcScriptEngine}
+import orc.values.Format
 
 
 /**

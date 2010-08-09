@@ -18,16 +18,16 @@ package orc.compile.ext
 import orc.AST
 
 sealed abstract class Expression extends AST {
-	
-	lazy val defPartition: (List[DefDeclaration], Expression) = {
-		this match {
-			case Declare(d: DefDeclaration, f) => {
-				val (ds, g) = f.defPartition
-				(d::ds, g)
-			}
-			case _ => (Nil, this)
-		}
-	}
+
+  lazy val defPartition: (List[DefDeclaration], Expression) = {
+    this match {
+      case Declare(d: DefDeclaration, f) => {
+        val (ds, g) = f.defPartition
+        (d :: ds, g)
+      }
+      case _ => (Nil, this)
+    }
+  }
 }
 
 case class Stop() extends Expression
@@ -39,7 +39,7 @@ case class RecordExpr(elements: List[(String, Expression)]) extends Expression
 case class Call(target: Expression, gs: List[ArgumentGroup]) extends Expression
 
 sealed abstract class ArgumentGroup extends AST
-case class Args(types: Option[List[Type]] = None, elements: List[Expression]) extends ArgumentGroup	 
+case class Args(types: Option[List[Type]] = None, elements: List[Expression]) extends ArgumentGroup
 case class FieldAccess(field: String) extends ArgumentGroup
 case object Dereference extends ArgumentGroup
 
@@ -50,11 +50,10 @@ case class Parallel(left: Expression, right: Expression) extends Expression
 case class Pruning(left: Expression, p: Option[Pattern] = None, right: Expression) extends Expression
 case class Otherwise(left: Expression, right: Expression) extends Expression
 case class Lambda(
-    typeformals: Option[List[Type]] = None, 
-    formals: List[List[Pattern]],
-    returntype: Option[Type] = None,
-    body: Expression
-) extends Expression
+  typeformals: Option[List[Type]] = None,
+  formals: List[List[Pattern]],
+  returntype: Option[Type] = None,
+  body: Expression) extends Expression
 
 case class Conditional(ifE: Expression, thenE: Expression, elseE: Expression) extends Expression
 case class Declare(declaration: Declaration, body: Expression) extends Expression
@@ -63,18 +62,17 @@ case class TypeAssertion(e: Expression, t: Type) extends Expression
 
 case class Capsule(body: Expression) extends Expression
 
-
-sealed abstract class Declaration extends AST 
+sealed abstract class Declaration extends AST
 
 case class Val(p: Pattern, e: Expression) extends Declaration
 case class Include(origin: String, decls: List[Declaration]) extends Declaration
 
 sealed abstract class NamedDeclaration extends Declaration {
-    val name: String
+  val name: String
 }
 
-sealed abstract class DefDeclaration extends NamedDeclaration 
-case class Def(name: String, formals: List[List[Pattern]],returntype: Option[Type], body: Expression) extends DefDeclaration
+sealed abstract class DefDeclaration extends NamedDeclaration
+case class Def(name: String, formals: List[List[Pattern]], returntype: Option[Type], body: Expression) extends DefDeclaration
 case class DefCapsule(name: String, formals: List[List[Pattern]], returntype: Option[Type], body: Expression) extends DefDeclaration
 case class DefSig(name: String, typeformals: List[String], argtypes: List[List[Type]], returntype: Type) extends DefDeclaration
 
@@ -89,24 +87,18 @@ case class Datatype(name: String, typeformals: List[String] = Nil, constructors:
 
 case class Constructor(name: String, types: List[Option[Type]]) extends AST
 
-
-
-
-
-
-sealed abstract class Pattern extends AST { 
-	val isStrict : Boolean
+sealed abstract class Pattern extends AST {
+  val isStrict: Boolean
 }
 
 sealed abstract class NonStrictPattern extends Pattern {
-	val isStrict = false
+  val isStrict = false
 }
 case class Wildcard() extends NonStrictPattern
 case class VariablePattern(name: String) extends NonStrictPattern
 
-
 sealed abstract class StrictPattern extends Pattern {
-	val isStrict = true
+  val isStrict = true
 }
 case class ConstantPattern(c: AnyRef) extends StrictPattern
 case class TuplePattern(elements: List[Pattern]) extends StrictPattern
@@ -115,16 +107,12 @@ case class CallPattern(name: String, args: List[Pattern]) extends StrictPattern
 case class ConsPattern(head: Pattern, tail: Pattern) extends StrictPattern
 case class EqPattern(name: String) extends StrictPattern
 
-
 case class AsPattern(p: Pattern, name: String) extends Pattern {
-	val isStrict = p.isStrict
+  val isStrict = p.isStrict
 }
 case class TypedPattern(p: Pattern, t: Type) extends Pattern {
-	val isStrict = p.isStrict
+  val isStrict = p.isStrict
 }
-
-
-
 
 sealed abstract class Type extends AST
 
@@ -140,13 +128,13 @@ case class LambdaType(typeformals: List[String], argtypes: List[List[Type]], ret
    */
   def cut = {
     this match {
-      case LambdaType(typeFormals,List(args),retType) => this // Single type argument group
-      case LambdaType(typeFormals,argGroup::argGroupsTail,retType) => {
-        val f = (args: List[Type],ret: Type) => LambdaType(Nil,List(args),ret)
+      case LambdaType(typeFormals, List(args), retType) => this // Single type argument group
+      case LambdaType(typeFormals, argGroup :: argGroupsTail, retType) => {
+        val f = (args: List[Type], ret: Type) => LambdaType(Nil, List(args), ret)
         val newRetType = argGroupsTail.foldRight(retType)(f)
-        LambdaType(typeFormals,List(argGroup),newRetType)
+        LambdaType(typeFormals, List(argGroup), newRetType)
       }
     }
   }
 }
-case class TypeApplication(name: String, typeactuals: List[Type]) extends Type	
+case class TypeApplication(name: String, typeactuals: List[Type]) extends Type

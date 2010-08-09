@@ -14,37 +14,18 @@
 //
 
 package orc.compile
-
-import java.io.File
-import java.io.InputStreamReader
-import java.io.BufferedReader
-import java.io.Writer
-import java.io.PrintWriter
-import java.io.IOException
-import java.io.FileNotFoundException
+import java.io.{ FileNotFoundException, IOException, PrintWriter, Writer, BufferedReader, InputStreamReader, File }
 import java.net.URI
-
-import scala.util.parsing.input.Reader
-import scala.util.parsing.input.StreamReader
+import orc.{ OrcOptions, OrcCompiler }
+import orc.compile.optimize._
+import orc.compile.parse.{ OrcResourceInputContext, OrcInputContext, OrcProgramParser, OrcIncludeParser }
+import orc.error.compiletime.{ PrintWriterCompileLogger, ParsingException, CompileLogger, CompilationException }
+import orc.error.compiletime.CompileLogger.Severity
+import orc.progress.{ NullProgressMonitor, ProgressMonitor }
+import orc.values.sites.SiteClassLoading
 import scala.collection.JavaConversions._
 import scala.compat.Platform.currentTime
-
-import orc.OrcCompiler
-import orc.OrcOptions
-import orc.compile.parse.OrcIncludeParser
-import orc.compile.parse.OrcProgramParser
-import orc.compile.parse.OrcInputContext
-import orc.compile.parse.OrcResourceInputContext
-import orc.compile.optimize._
-import orc.error.compiletime.CompilationException
-import orc.error.compiletime.CompileLogger
-import orc.error.compiletime.CompileLogger.Severity
-import orc.error.compiletime.ParsingException
-import orc.error.compiletime.PrintWriterCompileLogger
-import orc.progress.ProgressMonitor
-import orc.progress.NullProgressMonitor
-import orc.values.sites.SiteClassLoading
-
+import scala.util.parsing.input.{ StreamReader, Reader }
 
 /**
  * Represents one phase in a compiler.  It is defined as a function from
@@ -55,9 +36,9 @@ import orc.values.sites.SiteClassLoading
  */
 trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
   val phaseName: String
-  def >>>[C >: Null](that: CompilerPhase[O, B, C]) = new CompilerPhase[O, A, C] { 
-    val phaseName = self.phaseName+" >>> "+that.phaseName
-    override def apply(o: O) = { a: A => 
+  def >>>[C >: Null](that: CompilerPhase[O, B, C]) = new CompilerPhase[O, A, C] {
+    val phaseName = self.phaseName + " >>> " + that.phaseName
+    override def apply(o: O) = { a: A =>
       if (a == null) null else {
         val b = self.apply(o)(a)
         if (b == null) null else {
@@ -66,21 +47,21 @@ trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
       }
     }
   }
-  def timePhase: CompilerPhase[O, A, B] = new CompilerPhase[O, A, B] { 
+  def timePhase: CompilerPhase[O, A, B] = new CompilerPhase[O, A, B] {
     val phaseName = self.phaseName
     override def apply(o: O) = { a: A =>
       val phaseStart = currentTime
       val b = self.apply(o)(a)
       val phaseEnd = currentTime
-      Console.err.println("[phase duration: "+phaseName+": "+(phaseEnd-phaseStart)+" ms]")
+      Console.err.println("[phase duration: " + phaseName + ": " + (phaseEnd - phaseStart) + " ms]")
       b
     }
   }
-  def printOut: CompilerPhase[O, A, B] = new CompilerPhase[O, A, B] { 
+  def printOut: CompilerPhase[O, A, B] = new CompilerPhase[O, A, B] {
     val phaseName = self.phaseName
     override def apply(o: O) = { a: A =>
       val b = self.apply(o)(a)
-      Console.err.println(phaseName+" result = "+b.toString())
+      Console.err.println(phaseName + " result = " + b.toString())
       b
     }
   }
@@ -97,7 +78,7 @@ trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
  * @author jthywiss
  */
 abstract class CoreOrcCompiler extends OrcCompiler {
-  
+
   ////////
   // Definition of the phases of the compiler
   ////////
@@ -114,24 +95,23 @@ abstract class CoreOrcCompiler extends OrcCompiler {
         val ic = openInclude(fileName, null, options)
         OrcIncludeParser(ic, options, CoreOrcCompiler.this) match {
           case r: OrcIncludeParser.SuccessT[_] => r.get.asInstanceOf[OrcIncludeParser.ResultType]
-          case n: OrcIncludeParser.NoSuccess   => throw new ParsingException(n.msg, n.next.pos)
+          case n: OrcIncludeParser.NoSuccess => throw new ParsingException(n.msg, n.next.pos)
         }
       }
       val progAst = OrcProgramParser(source, options, CoreOrcCompiler.this) match {
-          case r: OrcProgramParser.SuccessT[_] => r.get.asInstanceOf[OrcProgramParser.ResultType]
-          case n: OrcProgramParser.NoSuccess   => throw new ParsingException(n.msg, n.next.pos)
+        case r: OrcProgramParser.SuccessT[_] => r.get.asInstanceOf[OrcProgramParser.ResultType]
+        case n: OrcProgramParser.NoSuccess => throw new ParsingException(n.msg, n.next.pos)
       }
       (includeAsts :\ progAst) { orc.compile.ext.Declare }
     }
   }
 
-  val translate = new CompilerPhase[OrcOptions, orc.compile.ext.Expression, orc.oil.named.Expression] { 
+  val translate = new CompilerPhase[OrcOptions, orc.compile.ext.Expression, orc.oil.named.Expression] {
     val phaseName = "translate"
     @throws(classOf[ClassNotFoundException])
     override def apply(options: OrcOptions) = { ast =>
       orc.compile.translate.Translator.translate(options, ast)
-      
-      
+
     }
   }
 
@@ -139,15 +119,15 @@ abstract class CoreOrcCompiler extends OrcCompiler {
     val phaseName = "noUnboundVars"
     override def apply(options: OrcOptions) = { ast =>
       for (x <- ast.unboundvars) {
-         x !! ("Unbound variable: " + x.name)
+        x !! ("Unbound variable: " + x.name)
       }
       for (u <- ast.unboundtypevars) {
-         u !! ("Unbound type variable: " + u.name)
+        u !! ("Unbound type variable: " + u.name)
       }
       ast
     }
   }
-  
+
   val typeCheck = new CompilerPhase[OrcOptions, orc.oil.named.Expression, orc.oil.named.Expression] {
     val phaseName = "typeCheck"
     override def apply(options: OrcOptions) = { ast => ast }
@@ -156,17 +136,17 @@ abstract class CoreOrcCompiler extends OrcCompiler {
   val refineNamedOil = new CompilerPhase[OrcOptions, orc.oil.named.Expression, orc.oil.named.Expression] {
     val phaseName = "refineNamedOil"
     override def apply(options: OrcOptions) =
-      (e : orc.oil.named.Expression) => {
+      (e: orc.oil.named.Expression) => {
         val refine = FractionDefs andThen RemoveUnusedDefs andThen RemoveUnusedTypes
         refine(e)
       }
   }
-  
+
   val noUnguardedRecursion = new CompilerPhase[OrcOptions, orc.oil.named.Expression, orc.oil.named.Expression] {
     val phaseName = "noUnguardedRecursion"
-    override def apply(options: OrcOptions) = { ast => ast.checkGuarded ; ast }
+    override def apply(options: OrcOptions) = { ast => ast.checkGuarded; ast }
   }
-  
+
   val deBruijn = new CompilerPhase[OrcOptions, orc.oil.named.Expression, orc.oil.nameless.Expression] {
     val phaseName = "deBruijn"
     override def apply(options: OrcOptions) = { ast => ast.withoutNames }
@@ -176,35 +156,37 @@ abstract class CoreOrcCompiler extends OrcCompiler {
   // Compose phases into a compiler
   ////////
 
-  val phases = 
-    parse.timePhase >>> 
-    translate.timePhase >>>
-    noUnboundVars >>>
-    typeCheck.timePhase >>> 
-    refineNamedOil.timePhase >>>
-    noUnguardedRecursion.timePhase >>>
-    deBruijn.timePhase
+  val phases =
+    parse.timePhase >>>
+      translate.timePhase >>>
+      noUnboundVars >>>
+      typeCheck.timePhase >>>
+      refineNamedOil.timePhase >>>
+      noUnguardedRecursion.timePhase >>>
+      deBruijn.timePhase
 
   ////////
   // Compiler methods
   ////////
 
-  @throws(classOf[IOException]) @throws(classOf[ClassNotFoundException])
+  @throws(classOf[IOException])
+  @throws(classOf[ClassNotFoundException])
   def apply(source: OrcInputContext, options: OrcOptions, compileLogger: CompileLogger, progress: ProgressMonitor): orc.oil.nameless.Expression = {
     compileLogger.beginProcessing(options.filename)
     try {
       val result = phases(options)(source)
       if (compileLogger.getMaxSeverity().ordinal() >= Severity.ERROR.ordinal()) null else result
-    } catch {case e: CompilationException =>
-      compileLogger.recordMessage(Severity.FATAL, 0, e.getMessage, e.getPosition(), null, e)
-      null
-    } finally {
+    } catch {
+      case e: CompilationException =>
+        compileLogger.recordMessage(Severity.FATAL, 0, e.getMessage, e.getPosition(), null, e)
+        null
+    }
+    finally {
       compileLogger.endProcessing(options.filename)
     }
   }
 
 }
-
 
 /**
  * StandardOrcCompiler extends CoreOrcCompiler with "standard" environment interfaces. 
@@ -212,7 +194,8 @@ abstract class CoreOrcCompiler extends OrcCompiler {
  * @author jthywiss
  */
 class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
-  @throws(classOf[IOException]) @throws(classOf[ClassNotFoundException])
+  @throws(classOf[IOException])
+  @throws(classOf[ClassNotFoundException])
   override def apply(source: OrcInputContext, options: OrcOptions, compileLogger: CompileLogger, progress: ProgressMonitor): orc.oil.nameless.Expression = {
     SiteClassLoading.initWithClassPathStrings(options.classPath)
     super.apply(source, options, compileLogger, progress)
@@ -225,7 +208,8 @@ class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
     override def toURL = toURI.toURL
   }
 
-  @throws(classOf[IOException]) @throws(classOf[ClassNotFoundException])
+  @throws(classOf[IOException])
+  @throws(classOf[ClassNotFoundException])
   def apply(source: java.io.Reader, options: OrcOptions, err: Writer): orc.oil.nameless.Expression = {
     this(new OrcReaderInputContext(source, options.filename), options, new PrintWriterCompileLogger(new PrintWriter(err, true)), NullProgressMonitor)
   }
@@ -254,7 +238,7 @@ class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
         case _: IOException => /* Ignore, must not be here */
       }
     }
-    
+
     // Try in the bundled include resources
     try {
       return new OrcResourceInputContext("orc/lib/includes/" + includeFileName, getResource)
