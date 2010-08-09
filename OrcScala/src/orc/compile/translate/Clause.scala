@@ -18,11 +18,12 @@ package orc.compile.translate
 import orc.compile.ext._
 import orc.oil.named
 import orc.compile.translate.PrimitiveForms._
+import orc.compile.translate.Translator._
 
 case class Clause(formals: List[Pattern], body: Expression) extends orc.AST {
-
+	
   val arity = formals.size
-
+	
   /**
    * 
    * Convert a clause into a cascading match; if the clause patterns match,
@@ -31,50 +32,57 @@ case class Clause(formals: List[Pattern], body: Expression) extends orc.AST {
    * The supplied args are the formal parameters of the overall function.
    * 
    */
-  def convert(args: List[named.BoundVar], fallthrough: named.Expression): named.Expression = {
+  def convert(args: List[named.BoundVar], fallthrough: named.Expression, context: Map[String, named.Argument], typecontext: Map[String, named.Type]): named.Expression = {		
 
-    val (strictPairs, nonstrictPairs) = (formals zip args) partition { case (p, _) => p.isStrict }
-    var newbody = Translator.convert(body)
+    var targetConversion: Conversion = id
+    var targetContext: Map[String, named.Argument] = scala.collection.immutable.HashMap.empty
 
-    // Map all of the nonstrict patterns directly.
-    for ((p, x) <- nonstrictPairs) {
-      val (_, scope) = Translator.convertPattern(p)
-      newbody = scope(x)(newbody)
+    val (strictPairs, nonstrictPairs) = (formals zip args) partition { case (p,_) => p.isStrict }
+
+    for ((p,x) <- nonstrictPairs) {
+      val (source, dcontext, target) = convertPattern(p, x, context, typecontext)
+      targetConversion = targetConversion andThen target
+      targetContext = targetContext ++ dcontext
     }
 
     strictPairs match {
       /* 
-			 * There are no strict patterns. 
-			 * There is no possibility of a failed match, so we just ignore the fallthrough case.
-			 */
+       * There are no strict patterns. 
+       * There is no possibility of a failed match, so we just ignore the fallthrough case.
+       */
       case Nil => {
         // Make sure the remaining cases are not redundant.
         fallthrough match {
-          case named.Stop() => {}
+          case named.Stop() => {  }
           case _ => { fallthrough !! ("Redundant match") }
         }
       }
       /* 
-			 * There is exactly one strict pattern.
-			 */
+       * There is exactly one strict pattern.
+       */
       case (strictPattern, strictArg) :: Nil => {
-        val (filter, scope) = Translator.convertPattern(strictPattern)
-        val source = filter(strictArg)
-        newbody = makeMatch(source, { scope(_)(newbody) }, fallthrough)
+        val x = new named.BoundVar()
+        val (source, dcontext, target) = convertPattern(strictPattern, x, context, typecontext)
+        val src = source(strictArg)
+        targetContext = targetContext ++ dcontext
+        targetConversion = targetConversion andThen target andThen { makeMatch(src, x, _, fallthrough) }                  
       }
       /*
-			 * There are multiple strict patterns.
-			 */
-      case _ => {
+       * There are multiple strict patterns.
+       */
+      case _ => { 
         val (strictPatterns, strictArgs) = strictPairs.unzip
-        val (filter, scope) = Translator.convertPattern(TuplePattern(strictPatterns))
-        val source = filter(makeTuple(strictArgs))
-        newbody = makeMatch(source, { scope(_)(newbody) }, fallthrough)
+        val x = new named.BoundVar()
+        val (source, dcontext, target) = convertPattern(TuplePattern(strictPatterns), x, context, typecontext)
+        val src = source(makeTuple(strictArgs))
+        targetContext = targetContext ++ dcontext
+        targetConversion = targetConversion andThen target andThen { makeMatch(src, x, _, fallthrough) }
       }
-    }
+    }  
 
-    /* Finally, return the newly constructed expression */
-    this ->> newbody
+    /* Finally, construct the new expression */
+    val newbody = Translator.convert(body, context ++ targetContext, typecontext)
+    this ->> targetConversion(newbody)
   }
 
 }
@@ -97,7 +105,7 @@ object Clause {
   }
 
   /**
-   * Convert this list of clauses to a single expression
+   * Convert a list of clauses to a single expression
    * which linearly matches those clauses.
    * 
    * Also return the list of arguments against which the
@@ -105,16 +113,15 @@ object Clause {
    * 
    * The list of clauses is assumed to be nonempty.
    */
-  def convertClauses(clauses: List[Clause]): (List[named.BoundVar], named.Expression) = {
+  def convertClauses(clauses: List[Clause], context: Map[String, named.Argument], typecontext: Map[String, named.Type]): (List[named.BoundVar], named.Expression) = {		
+	val arity = commonArity(clauses)
+	val args = (for (_ <- 0 until arity) yield new named.BoundVar()).toList
 
-    val arity = commonArity(clauses)
-    val args = (for (_ <- 0 until arity) yield new named.BoundVar()).toList
+	val nil: named.Expression = named.Stop()
+	def cons(clause: Clause, fail: named.Expression) = clause.convert(args, fail, context, typecontext)
+	val body = clauses.foldRight(nil)(cons)
 
-    val nil: named.Expression = named.Stop()
-    def cons(clause: Clause, fail: named.Expression) = clause.convert(args, fail)
-    val body = clauses.foldRight(nil)(cons)
-
-    (args, body)
+	(args, body)
   }
-
+	
 }

@@ -84,33 +84,28 @@ object PrimitiveForms {
   }
 
   /*
-	 * Return a composite expression with the following behavior:
-	 * 
-	 * If source publishes a value, bind that value to a temp var x, and then
-	 * execute succ(x).
-	 * 
-	 * If source halts without publishing a value, execute fail.
-	 * 
-	 */
-  def makeMatch(source: Expression, succ: BoundVar => Expression, fail: Expression) = {
-    val x = new named.BoundVar()
-    val target = succ(x)
+   * Return a composite expression with the following behavior:
+   * 
+   * If source publishes a value, bind that value to x, and then
+   * execute target.
+   * 
+   * If source halts without publishing a value, execute fail.
+   * 
+   */
+  def makeMatch(source: Expression, x: BoundVar, target: Expression, fail: Expression) = {
     fail match {
       case Stop() => source  > x >  target
       case _ => {
-        val y = new named.BoundVar()
-        val z = new named.BoundVar()
-        (
-          (source  > z >  callSome(z))  ow  (callNone())
+        val y = new BoundVar()
+        val z = new BoundVar()
+        ( 
+            (  source  > z >  callSome(z)  )  ow  ( callNone() )
         ) > y >
-        (
-          (callIsSome(y)  > x >  target)  ||  (callIsNone(y) >> fail)
+        ( 
+            ( callIsSome(y)  > x >  target )  ||  ( callIsNone(y) >> fail )
         )
       }
     }
   }
-
-  def callOperator(opName: String, args: List[Argument]) =
-    Call(UnboundVar(opName), args, None)
-
+		
 }
