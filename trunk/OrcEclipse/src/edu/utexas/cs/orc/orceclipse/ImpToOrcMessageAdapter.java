@@ -15,15 +15,17 @@
 
 package edu.utexas.cs.orc.orceclipse;
 
-import java.io.File;
-
-import orc.error.SourceLocation;
-import orc.error.compiletime.CompileMessageRecorder;
+import orc.AST;
+import orc.error.compiletime.CompileLogger;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.imp.builder.MarkerCreatorWithBatching;
 import org.eclipse.imp.builder.ProblemLimit.LimitExceededException;
 import org.eclipse.imp.parser.IMessageHandler;
+
+import scala.util.parsing.input.NoPosition$;
+import scala.util.parsing.input.OffsetPosition;
+import scala.util.parsing.input.Position;
 
 /**
  * Wraps IMP's IMessageHandler interface in Orc's CompileMessageRecorder
@@ -31,7 +33,7 @@ import org.eclipse.imp.parser.IMessageHandler;
  * 
  * @author jthywiss
  */
-public class ImpToOrcMessageAdapter implements CompileMessageRecorder {
+public class ImpToOrcMessageAdapter implements CompileLogger {
 
 	private final IMessageHandler impMessageHandler;
 
@@ -51,59 +53,62 @@ public class ImpToOrcMessageAdapter implements CompileMessageRecorder {
 	}
 
 	/* (non-Javadoc)
-	 * @see orc.error.compiletime.CompileMessageRecorder#beginProcessing(java.io.File)
+	 * @see orc.error.compiletime.CompileLogger#beginProcessing(java.lang.String)
 	 */
-	public void beginProcessing(final File file) {
+	public void beginProcessing(final String filename) {
 		impMessageHandler.clearMessages();
 		maxSeverity = Severity.UNKNOWN;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see orc.error.CompileMessageRecorder#recordMessage(orc.error.CompileMessageRecorder.Severity, int, java.lang.String, orc.error.SourceLocation, java.lang.Object, java.lang.Throwable)
+	/* (non-Javadoc)
+	 * @see orc.error.compiletime.CompileLogger#recordMessage(orc.error.compiletime.CompileLogger.Severity, int, java.lang.String, scala.util.parsing.input.Position, orc.AST, java.lang.Throwable)
 	 */
-	public void recordMessage(final Severity severity, final int code, final String message, final SourceLocation location, final Object astNode, final Throwable exception) {
-		SourceLocation locationNN = location;
+	public void recordMessage(final Severity severity, final int code, final String message, final Position position, final AST astNode, final Throwable exception) {
+		Position locationNN = position;
 		if (locationNN == null) {
-			locationNN = SourceLocation.UNKNOWN;
+			locationNN = NoPosition$.MODULE$;
 		}
 
 		maxSeverity = severity.ordinal() > maxSeverity.ordinal() ? severity : maxSeverity;
 
 		final int eclipseSeverity = eclipseSeverityFromOrcSeverity(severity);
 
+		// AnnotationCreator breaks for our UNKNOWN offset values
+		int safeStartOffset = 0;
+		int safeEndOffset = -1;
+		if (locationNN instanceof OffsetPosition && ((OffsetPosition) locationNN).offset() >= 0) {
+			safeStartOffset = safeEndOffset = ((OffsetPosition) locationNN).offset();
+		}
+
 		if (impMessageHandler instanceof MarkerCreatorWithBatching) {
-			final int safeLineNumber = locationNN.line >= 1 ? locationNN.line : -1;
+			final int safeLineNumber = locationNN.line() >= 1 ? locationNN.line() : -1;
 			try {
-				((MarkerCreatorWithBatching) impMessageHandler).addMarker(eclipseSeverity, message, safeLineNumber, locationNN.offset, locationNN.endOffset);
+				((MarkerCreatorWithBatching) impMessageHandler).addMarker(eclipseSeverity, message, safeLineNumber, safeStartOffset, safeEndOffset);
 			} catch (final LimitExceededException e) {
 				// Shouldn't happen, since we don't use problem limits
 				Activator.log(e);
 			}
 		} else {
-			// AnnotationCreator breaks for our UNKNOWN offset values
-			final int safeStartOffset = locationNN.offset >= 0 ? locationNN.endOffset : 0;
-			final int safeEndOffset = locationNN.endOffset >= 0 ? locationNN.endOffset : -1;
-			impMessageHandler.handleSimpleMessage(message, safeStartOffset, safeEndOffset, locationNN.column, locationNN.endColumn, locationNN.line, locationNN.endLine);
+			impMessageHandler.handleSimpleMessage(message, safeStartOffset, safeEndOffset, locationNN.column(), locationNN.column(), locationNN.line(), locationNN.line());
 		}
 	}
 
 	/* (non-Javadoc)
-	 * @see orc.error.compiletime.CompileMessageRecorder#recordMessage(orc.error.compiletime.CompileMessageRecorder.Severity, int, java.lang.String, orc.error.SourceLocation, java.lang.Throwable)
+	 * @see orc.error.compiletime.CompileLogger#recordMessage(orc.error.compiletime.CompileLogger.Severity, int, java.lang.String, scala.util.parsing.input.Position, java.lang.Throwable)
 	 */
-	public void recordMessage(final Severity severity, final int code, final String message, final SourceLocation location, final Throwable exception) {
-		recordMessage(severity, code, message, location, null, exception);
+	public void recordMessage(final Severity severity, final int code, final String message, final Position position, final Throwable exception) {
+		recordMessage(severity, code, message, position, null, exception);
 	}
 
 	/* (non-Javadoc)
-	 * @see orc.error.compiletime.CompileMessageRecorder#recordMessage(orc.error.compiletime.CompileMessageRecorder.Severity, int, java.lang.String, orc.error.SourceLocation, java.lang.Object)
+	 * @see orc.error.compiletime.CompileLogger#recordMessage(orc.error.compiletime.CompileLogger.Severity, int, java.lang.String, scala.util.parsing.input.Position, orc.AST)
 	 */
-	public void recordMessage(final Severity severity, final int code, final String message, final SourceLocation location, final Object astNode) {
-		recordMessage(severity, code, message, location, astNode, null);
+	public void recordMessage(final Severity severity, final int code, final String message, final Position position, final AST astNode) {
+		recordMessage(severity, code, message, position, astNode, null);
 	}
 
 	/* (non-Javadoc)
-	 * @see orc.error.compiletime.CompileMessageRecorder#recordMessage(orc.error.compiletime.CompileMessageRecorder.Severity, int, java.lang.String)
+	 * @see orc.error.compiletime.CompileLogger#recordMessage(orc.error.compiletime.CompileLogger.Severity, int, java.lang.String)
 	 */
 	public void recordMessage(final Severity severity, final int code, final String message) {
 		recordMessage(severity, code, message, null, null, null);
@@ -132,16 +137,16 @@ public class ImpToOrcMessageAdapter implements CompileMessageRecorder {
 	}
 
 	/* (non-Javadoc)
-	 * @see orc.error.compiletime.CompileMessageRecorder#getMaxSeverity()
+	 * @see orc.error.compiletime.CompileLogger#getMaxSeverity()
 	 */
 	public Severity getMaxSeverity() {
 		return maxSeverity;
 	}
 
 	/* (non-Javadoc)
-	 * @see orc.error.compiletime.CompileMessageRecorder#endProcessing(java.io.File)
+	 * @see orc.error.compiletime.CompileLogger#endProcessing(java.lang.String)
 	 */
-	public void endProcessing(final File file) {
+	public void endProcessing(final String filename) {
 		if (impMessageHandler == null) {
 			return;
 		}

@@ -18,11 +18,13 @@ package edu.utexas.cs.orc.orceclipse.parse;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import orc.error.Located;
-import orc.error.SourceLocation;
-
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
+
+import scala.util.parsing.input.NoPosition$;
+import scala.util.parsing.input.OffsetPosition;
+import scala.util.parsing.input.Position;
+import scala.util.parsing.input.Positional;
 
 /**
  * Provides lexical scanning for the currently parsed string in the given ParseController.
@@ -83,25 +85,44 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 	 *
 	 * @author jthywiss
 	 */
-	public static class OrcToken implements Located {
+	public static class OrcToken implements Positional {
 		/** The type of this token */
 		public TokenType type;
 		/** The characters comprising this token. */
 		public String text;
 		/** The location of this token in its file. */
-		public SourceLocation location;
+		public Position pos;
 
-		protected OrcToken(final TokenType type, final String text, final SourceLocation location) {
+		protected OrcToken(final TokenType type, final String text, final Position pos) {
 			this.type = type;
 			this.text = text;
-			this.location = location;
+			this.pos = pos;
 		}
 
 		/* (non-Javadoc)
 		 * @see orc.error.Located#getSourceLocation()
 		 */
-		public SourceLocation getSourceLocation() {
-			return location;
+		public Position pos() {
+			return pos;
+		}
+
+		/* (non-Javadoc)
+		 * @see scala.util.parsing.input.Positional#pos_$eq(scala.util.parsing.input.Position)
+		 */
+		@Override
+		public void pos_$eq(final Position newPos) {
+			pos = newPos;
+		}
+
+		/* (non-Javadoc)
+		 * @see scala.util.parsing.input.Positional#setPos(scala.util.parsing.input.Position)
+		 */
+		@Override
+		public Positional setPos(final Position newPos) {
+		    if (pos == NoPosition$.MODULE$) {
+		    	pos = newPos;
+		    }
+		    return this;
 		}
 
 		/* (non-Javadoc)
@@ -109,7 +130,7 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 		 */
 		@Override
 		public String toString() {
-			return "OrcToken " + type + " \"" + text + "\" " + location; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			return "OrcToken " + type + " \"" + text + "\" " + pos; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		}
 
 	}
@@ -216,25 +237,25 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 	}
 
 	private static TokenRecord tokenTable[] = {
-	// NUMBER_LITERAL,
-			// STRING_LITERAL,
-			// BOOLEAN_LITERAL,
-			// NULL_LITERAL,
-			// IDENTIFIER,
-			// KEYWORD,
-			// OPERATOR,
-			new TokenRecord("=", TokenType.OPERATOR), new TokenRecord("/=", TokenType.OPERATOR), new TokenRecord("<:", TokenType.OPERATOR), new TokenRecord("<=", TokenType.OPERATOR), new TokenRecord(":>", TokenType.OPERATOR), new TokenRecord(">=", TokenType.OPERATOR), new TokenRecord(":=", TokenType.OPERATOR), new TokenRecord("?", TokenType.OPERATOR), new TokenRecord("&&", TokenType.OPERATOR), new TokenRecord("||", TokenType.OPERATOR), new TokenRecord("~", TokenType.OPERATOR), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$
-			new TokenRecord(":", TokenType.OPERATOR), new TokenRecord("+", TokenType.OPERATOR), new TokenRecord("-", TokenType.OPERATOR), new TokenRecord("*", TokenType.OPERATOR), new TokenRecord("/", TokenType.OPERATOR), new TokenRecord("%", TokenType.OPERATOR), new TokenRecord("**", TokenType.OPERATOR), new TokenRecord("0-", TokenType.OPERATOR), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-			// COMBINATOR,
-			new TokenRecord(">", TokenType.COMBINATOR), new TokenRecord("|", TokenType.COMBINATOR), new TokenRecord("<", TokenType.COMBINATOR), new TokenRecord(";", TokenType.COMBINATOR), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-			// BRACKET,
-			new TokenRecord("(", TokenType.BRACKET), new TokenRecord(")", TokenType.BRACKET), new TokenRecord("[", TokenType.BRACKET), new TokenRecord("]", TokenType.BRACKET), new TokenRecord("{", TokenType.BRACKET), new TokenRecord("}", TokenType.BRACKET), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-			// SEPERATOR,
-			new TokenRecord(",", TokenType.SEPERATOR), new TokenRecord("::", TokenType.SEPERATOR), new TokenRecord(":!:", TokenType.SEPERATOR), new TokenRecord(".", TokenType.SEPERATOR), new TokenRecord("!", TokenType.SEPERATOR), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
-			// COMMENT_ENDLINE,
-			new TokenRecord("--", TokenType.COMMENT_ENDLINE), //$NON-NLS-1$
-			// COMMENT_MULTILINE,
-			new TokenRecord("{-", TokenType.COMMENT_MULTILINE), }; //$NON-NLS-1$
+		// NUMBER_LITERAL,
+		// STRING_LITERAL,
+		// BOOLEAN_LITERAL,
+		// NULL_LITERAL,
+		// IDENTIFIER,
+		// KEYWORD,
+		// OPERATOR,
+		new TokenRecord("=", TokenType.OPERATOR), new TokenRecord("/=", TokenType.OPERATOR), new TokenRecord("<:", TokenType.OPERATOR), new TokenRecord("<=", TokenType.OPERATOR), new TokenRecord(":>", TokenType.OPERATOR), new TokenRecord(">=", TokenType.OPERATOR), new TokenRecord(":=", TokenType.OPERATOR), new TokenRecord("?", TokenType.OPERATOR), new TokenRecord("&&", TokenType.OPERATOR), new TokenRecord("||", TokenType.OPERATOR), new TokenRecord("~", TokenType.OPERATOR), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$
+		new TokenRecord(":", TokenType.OPERATOR), new TokenRecord("+", TokenType.OPERATOR), new TokenRecord("-", TokenType.OPERATOR), new TokenRecord("*", TokenType.OPERATOR), new TokenRecord("/", TokenType.OPERATOR), new TokenRecord("%", TokenType.OPERATOR), new TokenRecord("**", TokenType.OPERATOR), new TokenRecord("0-", TokenType.OPERATOR), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		// COMBINATOR,
+		new TokenRecord(">", TokenType.COMBINATOR), new TokenRecord("|", TokenType.COMBINATOR), new TokenRecord("<", TokenType.COMBINATOR), new TokenRecord(";", TokenType.COMBINATOR), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		// BRACKET,
+		new TokenRecord("(", TokenType.BRACKET), new TokenRecord(")", TokenType.BRACKET), new TokenRecord("[", TokenType.BRACKET), new TokenRecord("]", TokenType.BRACKET), new TokenRecord("{", TokenType.BRACKET), new TokenRecord("}", TokenType.BRACKET), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
+		// SEPERATOR,
+		new TokenRecord(",", TokenType.SEPERATOR), new TokenRecord("::", TokenType.SEPERATOR), new TokenRecord(":!:", TokenType.SEPERATOR), new TokenRecord(".", TokenType.SEPERATOR), new TokenRecord("!", TokenType.SEPERATOR), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+		// COMMENT_ENDLINE,
+		new TokenRecord("--", TokenType.COMMENT_ENDLINE), //$NON-NLS-1$
+		// COMMENT_MULTILINE,
+		new TokenRecord("{-", TokenType.COMMENT_MULTILINE), }; //$NON-NLS-1$
 
 	private static String keywords[] = { "def", "val", "class", "site", "include", "type", "lambda", "atomic", "isolated", "try", "throw", "catch", "as", "if", "then", "else", "stop", "signal", }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$ //$NON-NLS-12$ //$NON-NLS-13$ //$NON-NLS-14$ //$NON-NLS-15$ //$NON-NLS-16$ //$NON-NLS-17$ //$NON-NLS-18$
 
@@ -272,15 +293,6 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 		final String text = parseController.getCurrentParseString();
 		final TokenRecord ttEntry = findInTokenTable(text, offset);
 		if (ttEntry != null && ttEntry.tokenType != TokenType.COMMENT_ENDLINE && ttEntry.tokenType != TokenType.COMMENT_MULTILINE) {
-
-			// Special case for our friends, < and > -- are they operators or combinators?  Guess based on whitespace.
-			if ("<".equals(ttEntry.tokenText) || ">".equals(ttEntry.tokenText)) { //$NON-NLS-1$ //$NON-NLS-2$
-				// If whitespace on both sides or neither side, guess an operator
-				if (isIn(safeCharAt(text, offset - 1), WHITESPACE_CHARS) == isIn(safeCharAt(text, offset + 1), WHITESPACE_CHARS)) {
-					return newToken(TokenType.OPERATOR, text, offset, ttEntry.tokenText.length());
-				}
-			}
-
 			return newToken(ttEntry.tokenType, text, offset, ttEntry.tokenText.length());
 		}
 
@@ -460,8 +472,6 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 	}
 
 	private OrcToken newToken(final TokenType tokenType, final String text, final int startOffset, final int length) {
-		return new OrcToken(tokenType, text.substring(startOffset, startOffset + length), new SourceLocation(parseController.getPath().toFile(),
-		//TODO: line number/column tracking -- not needed yet
-				startOffset, 0, 0, startOffset + length - 1, 0, 0));
+		return new OrcToken(tokenType, text.substring(startOffset, startOffset + length), new OffsetPosition(text, startOffset));
 	}
 }

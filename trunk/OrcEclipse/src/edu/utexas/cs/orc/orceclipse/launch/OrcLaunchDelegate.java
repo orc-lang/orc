@@ -21,7 +21,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import orc.Orc;
+import orc.Main;
 
 import org.eclipse.core.internal.resources.ResourceException;
 import org.eclipse.core.resources.IResource;
@@ -47,7 +47,6 @@ import org.eclipse.jdt.launching.VMRunnerConfiguration;
 import org.eclipse.osgi.baseadaptor.BaseData;
 import org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader;
 import org.eclipse.ui.statushandlers.StatusManager;
-import org.kohsuke.args4j.CmdLineException;
 import org.osgi.framework.BundleException;
 
 import com.ibm.icu.text.DateFormat;
@@ -122,13 +121,9 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 			} catch (final IOException e) {
 				throw new ResourceException(IResourceStatus.OPERATION_FAILED, null, e.getLocalizedMessage(), e);
 			}
-			try {
-				orcConfig.setInputFile(orcProgToLaunch.getRawLocation().toFile());
-			} catch (final CmdLineException e) {
-				throw new ResourceException(IResourceStatus.NOT_FOUND_LOCAL, orcProgToLaunch.getRawLocation(), e.getLocalizedMessage(), e);
-			}
+			orcConfig.filename_$eq(orcProgToLaunch.getRawLocation().toFile().toString());
 
-			final String mainTypeName = "orc.Orc"; //$NON-NLS-1$
+			final String mainTypeName = "orc.Main"; //$NON-NLS-1$
 			final IVMRunner runner = getVMRunner(configuration, mode);
 
 			final File launchConfigWorkingDir = verifyWorkingDirectory(configuration);
@@ -145,7 +140,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 			final String[] envp = getEnvironment(configuration);
 
 			// Program & VM arguments
-			String pgmArgs = orcConfig.composeCmdLine();
+			String pgmArgs = "";//FIXME:orcConfig.composeCmdLine();
 			pgmArgs = VariablesPlugin.getDefault().getStringVariableManager().performStringSubstitution(pgmArgs);
 			final String vmArgs = getVMArguments(configuration);
 			final ExecutionArguments execArgs = new ExecutionArguments(vmArgs, pgmArgs);
@@ -158,7 +153,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 			if (!configuration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_DEFAULT_CLASSPATH, true) && getClasspath(configuration).length > 0) {
 				classpath = getClasspath(configuration);
 			} else {
-				classpath = getAbsoluteClasspathForClass(Orc.class);
+				classpath = getAbsoluteClasspathForClass(Main.class);
 			}
 			
 			// Create VM config

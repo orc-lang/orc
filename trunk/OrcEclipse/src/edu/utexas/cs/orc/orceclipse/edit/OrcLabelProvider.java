@@ -18,16 +18,17 @@ package edu.utexas.cs.orc.orceclipse.edit;
 import java.util.HashSet;
 import java.util.Set;
 
-import orc.ast.extended.ASTNode;
-import orc.ast.extended.declaration.ClassDeclaration;
-import orc.ast.extended.declaration.IncludeDeclaration;
-import orc.ast.extended.declaration.SiteDeclaration;
-import orc.ast.extended.declaration.ValDeclaration;
-import orc.ast.extended.declaration.def.DefMemberClause;
-import orc.ast.extended.declaration.def.DefMemberType;
-import orc.ast.extended.declaration.type.DatatypeDeclaration;
-import orc.ast.extended.declaration.type.TypeAliasDeclaration;
-import orc.ast.extended.declaration.type.TypeDeclaration;
+import orc.AST;
+import orc.compile.ext.ClassImport;
+import orc.compile.ext.DefCapsule;
+import orc.compile.ext.Include;
+import orc.compile.ext.Pattern;
+import orc.compile.ext.SiteDeclaration;
+import orc.compile.ext.Type;
+import orc.compile.ext.Val;
+import orc.compile.ext.Def;
+import orc.compile.ext.DefSig;
+import orc.compile.ext.TypeDeclaration;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -40,6 +41,8 @@ import org.eclipse.jface.viewers.DecorationOverlayIcon;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.graphics.Image;
+
+import scala.collection.JavaConversions;
 
 import edu.utexas.cs.orc.orceclipse.Activator;
 import edu.utexas.cs.orc.orceclipse.OrcResources;
@@ -123,7 +126,7 @@ public class OrcLabelProvider implements ILabelProvider {
 
 			return elemImage;
 		}
-		final ASTNode n = element instanceof ModelTreeNode ? (ASTNode) ((ModelTreeNode) element).getASTNode() : (ASTNode) element;
+		final AST n = element instanceof ModelTreeNode ? (AST) ((ModelTreeNode) element).getASTNode() : (AST) element;
 		return getImageFor(n);
 	}
 
@@ -131,32 +134,26 @@ public class OrcLabelProvider implements ILabelProvider {
 	 * @param n AST node to retrieve an image
 	 * @return Image representing the type of the given AST node 
 	 */
-	public static Image getImageFor(final ASTNode n) {
-		if (n instanceof IncludeDeclaration) {
+	public static Image getImageFor(final AST n) {
+		if (n instanceof Include) {
 			return ORC_INCLUDE_OBJ_IMAGE;
 		}
-		if (n instanceof DefMemberType) {
+		if (n instanceof DefSig) {
 			return ORC_DEF_TYPE_OBJ_IMAGE;
 		}
-		if (n instanceof DefMemberClause) {
+		if (n instanceof Def || n instanceof DefCapsule) {
 			return ORC_DEF_OBJ_IMAGE;
 		}
 		if (n instanceof SiteDeclaration) {
 			return ORC_SITE_OBJ_IMAGE;
 		}
-		if (n instanceof ClassDeclaration) {
+		if (n instanceof ClassImport) {
 			return ORC_CLASS_OBJ_IMAGE;
 		}
-		if (n instanceof ValDeclaration) {
+		if (n instanceof Val) {
 			return ORC_VARIABLE_OBJ_IMAGE;
 		}
 		if (n instanceof TypeDeclaration) {
-			return ORC_TYPE_OBJ_IMAGE;
-		}
-		if (n instanceof TypeAliasDeclaration) {
-			return ORC_TYPE_OBJ_IMAGE;
-		}
-		if (n instanceof DatatypeDeclaration) {
 			return ORC_TYPE_OBJ_IMAGE;
 		}
 		return ORC_GENERIC_OBJ_IMAGE;
@@ -166,7 +163,7 @@ public class OrcLabelProvider implements ILabelProvider {
 	 * @see org.eclipse.jface.viewers.ILabelProvider#getText(java.lang.Object)
 	 */
 	public String getText(final Object element) {
-		final ASTNode n = element instanceof ModelTreeNode ? (ASTNode) ((ModelTreeNode) element).getASTNode() : (ASTNode) element;
+		final AST n = element instanceof ModelTreeNode ? (AST) ((ModelTreeNode) element).getASTNode() : (AST) element;
 
 		return getLabelFor(n);
 	}
@@ -175,36 +172,30 @@ public class OrcLabelProvider implements ILabelProvider {
 	 * @param n AST node to label
 	 * @return String representing a label of the given AST node 
 	 */
-	public static String getLabelFor(final ASTNode n) {
-		if (n instanceof IncludeDeclaration) {
-			final IncludeDeclaration idecl = (IncludeDeclaration) n;
-			return idecl.sourceFile;
+	public static String getLabelFor(final AST n) {
+		if (n instanceof Include) {
+			final Include idecl = (Include) n;
+			return idecl.origin();
 		}
-		if (n instanceof DefMemberClause) {
-			final DefMemberClause dmc = (DefMemberClause) n;
-			return dmc.sigToString();
+		if (n instanceof Def) {
+			final Def dmc = (Def) n;
+			return sigToString(dmc);
 		}
-		if (n instanceof DefMemberType) {
-			final DefMemberType dmt = (DefMemberType) n;
-			return dmt.sigToString();
+		if (n instanceof DefSig) {
+			final DefSig dmt = (DefSig) n;
+			return sigToString(dmt);
 		}
 		if (n instanceof SiteDeclaration) {
-			return ((SiteDeclaration) n).varname;
+			return ((SiteDeclaration) n).name();
 		}
-		if (n instanceof ClassDeclaration) {
-			return ((ClassDeclaration) n).varname;
+		if (n instanceof ClassImport) {
+			return ((ClassImport) n).name();
 		}
-		if (n instanceof ValDeclaration) {
-			return ((ValDeclaration) n).p.toString();
+		if (n instanceof Val) {
+			return ((Val) n).p().toString();
 		}
 		if (n instanceof TypeDeclaration) {
-			return ((TypeDeclaration) n).varname;
-		}
-		if (n instanceof TypeAliasDeclaration) {
-			return ((TypeAliasDeclaration) n).typename;
-		}
-		if (n instanceof DatatypeDeclaration) {
-			return ((DatatypeDeclaration) n).typename;
+			return ((TypeDeclaration) n).name();
 		}
 		// If we get here, someone forgot to add a case above....
 		return "<" + n.getClass().getSimpleName() + ">"; //$NON-NLS-1$ //$NON-NLS-2$
@@ -236,4 +227,58 @@ public class OrcLabelProvider implements ILabelProvider {
 	public void removeListener(final ILabelProviderListener listener) {
 		fListeners.remove(listener);
 	}
+	
+	private static String sigToString(Def d) {
+		final StringBuilder s = new StringBuilder();
+
+		s.append(d.name());
+		for (final scala.collection.immutable.List<Pattern> ps : JavaConversions.asIterable(d.formals())) {
+			s.append('(');
+			if (ps != null) {
+				s.append(listMkString(JavaConversions.asIterable(ps), ","));
+			}
+			s.append(')');
+		}
+
+		return s.toString();
+	}
+
+	private static String sigToString(DefSig d) {
+		final StringBuilder s = new StringBuilder();
+
+		s.append(d.name());
+
+		if (d.typeformals() != null) {
+			s.append('[');
+			s.append(listMkString(JavaConversions.asIterable(d.typeformals()), ", "));
+			s.append(']');
+		}
+
+		for (final scala.collection.immutable.List<Type> argTypes : JavaConversions.asIterable(d.argtypes())) {
+			s.append('(');
+			if (argTypes != null) {
+				s.append(listMkString(JavaConversions.asIterable(argTypes), ","));
+			}
+			s.append(')');
+		}
+
+		s.append(" :: ");
+		s.append(d.returntype());
+
+		return s.toString();
+	}
+
+	private static String listMkString(final Iterable<?> theList, final String sep) {
+		StringBuilder sb = new StringBuilder();
+		for (Object o : theList) {
+			sb.append(o.toString());
+			sb.append(sep);
+		}
+		if (sb.length() == 0) {
+			return "";
+		} else {
+			return sb.substring(0, sb.length()-sep.length());
+		}
+	}
+
 }

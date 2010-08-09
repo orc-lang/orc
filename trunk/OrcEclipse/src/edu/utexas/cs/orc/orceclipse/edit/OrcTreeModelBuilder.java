@@ -15,28 +15,24 @@
 
 package edu.utexas.cs.orc.orceclipse.edit;
 
-import orc.ast.extended.ASTNode;
-import orc.ast.extended.declaration.ClassDeclaration;
-import orc.ast.extended.declaration.IncludeDeclaration;
-import orc.ast.extended.declaration.SiteDeclaration;
-import orc.ast.extended.declaration.ValDeclaration;
-import orc.ast.extended.declaration.def.DefMember;
-import orc.ast.extended.declaration.type.DatatypeDeclaration;
-import orc.ast.extended.declaration.type.TypeAliasDeclaration;
-import orc.ast.extended.declaration.type.TypeDeclaration;
-import orc.ast.extended.expression.Declare;
-import orc.ast.extended.expression.Lambda;
-import orc.ast.extended.expression.Pruning;
-import orc.ast.extended.expression.Sequential;
-import orc.ast.extended.visitor.Walker;
+import orc.AST;
+import orc.compile.ext.ClassImport;
+import orc.compile.ext.Include;
+import orc.compile.ext.SiteDeclaration;
+import orc.compile.ext.Val;
+import orc.compile.ext.DefDeclaration;
+import orc.compile.ext.TypeDeclaration;
 
 import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.services.base.TreeModelBuilderBase;
 
+import scala.collection.JavaConversions;
+import scala.util.parsing.input.NoPosition$;
+
 /**
  * Builds an Outline view tree that is a subset of the Orc extended AST
  *
- * @see orc.ast.extended.ASTNode
+ * @see orc.AST
  * @see org.eclipse.imp.editor.ModelTreeNode
  */
 public class OrcTreeModelBuilder extends TreeModelBuilderBase {
@@ -53,148 +49,45 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 		if (root == null) {
 			return;
 		}
-		final ASTNode rootNode = (ASTNode) root;
-		final OrcModelVisitor visitor = new OrcModelVisitor();
-
-		rootNode.accept(visitor);
+		visit(((AST) root));
 	}
 
-	/**
-	 * Walks the OrcParser-generated AST and generates a tree of
-	 * ModelTreeNodes that is the outline view user-visible subset
-	 * of the full parsed AST.
-	 *
-	 * @author jthywiss
-	 */
-	protected class OrcModelVisitor extends Walker {
-		/**
-		 * Helper method -- return true if this is an Orc
-		 * identifier context (scope) that we don't want to
-		 * show to the user in the outline view.
-		 *  
-		 * @param node ASTNode to test
-		 * @return true to ignore 
-		 */
-		private boolean ignoreScope(final ASTNode node) {
-			return node instanceof Declare || node instanceof Lambda || node instanceof Sequential || node instanceof Pruning || node.getSourceLocation() == null; // No location is confusing to the outline control
+	private void visit(final AST ast) {
+		if (ast.pos() instanceof NoPosition$) {
+			return;  // NoPosition$ is confusing to the outline control
 		}
-
-		/* (non-Javadoc)
-		 * @see orc.ast.extended.Walker#enterScope(orc.ast.extended.ASTNode)
-		 */
-		@Override
-		public void enterScope(final ASTNode node) {
-			if (!ignoreScope(node)) {
-				super.enterScope(node);
-				if (node instanceof DefMember) {
-					pushSubItem(node, CALLABLE_DECL_CATEGORY);
-				} else {
-					pushSubItem(node);
-				}
-			}
-		}
-
-		/* (non-Javadoc)
-		 * @see orc.ast.extended.Walker#leaveScope(orc.ast.extended.ASTNode)
-		 */
-		@Override
-		public void leaveScope(final ASTNode node) {
-			if (!ignoreScope(node)) {
-				popSubItem();
-				super.leaveScope(node);
-			}
-		}
-
-		/* HOW TO ADD NEW NODE TYPES:
-		 * 
-		 * For every ASTNode that is of interest to the outline view user
-		 * (i.e., should be reflected as a node in the view), there are two
-		 * possibilities:
-		 * 
-		 * 1. If the ASTNode type does NOT form an identifier context/scope,
-		 * simply add a public boolean enter(<<NodeType>>) method below.
-		 * The enter method should normally return true, but if the children
-		 * of the visited AST node should be disregarded, return false.
-		 * 
-		 * 2. If the ASTNode type DOES form an identifier context/scope,
-		 * Walker should already call enterScope/leaveScope, so enhance those
-		 * methods above if needed. (May not be necessary to change anything.)
-		 * 
+		/*
 		 * Don't forget to update OrcLabelProvider.getImageFor and getLabelFor
 		 * to handle new node types in the outline view.
-		 * 
-		 * Of course, the Walker class in ast.extended needs to be enhanced
-		 * appropriately for any of this to work.
 		 */
-
-		/* (non-Javadoc)
-		 * @see orc.ast.extended.Walker#enter(orc.ast.extended.declaration.ClassDeclaration)
-		 */
-		@Override
-		public boolean enter(final ClassDeclaration decl) {
-			createSubItem(decl, CALLABLE_DECL_CATEGORY);
-			return true;
+		if (ast instanceof ClassImport) {
+			createSubItem(ast, CALLABLE_DECL_CATEGORY);
+		} else if (ast instanceof DefDeclaration) {
+			pushSubItem(ast, CALLABLE_DECL_CATEGORY);
+		} else if (ast instanceof Include && ((Include) ast).origin() != null && ((Include) ast).origin().length() > 0) {
+			createSubItem(ast, INCLUDE_CATEGORY);
+		} else if (ast instanceof SiteDeclaration) {
+			createSubItem(ast, CALLABLE_DECL_CATEGORY);
+		} else if (ast instanceof TypeDeclaration) {
+			createSubItem(ast, TYPE_DECL_CATEGORY);
+		} else if (ast instanceof Val) {
+			createSubItem(ast, SIMPLE_VAL_DECL_CATEGORY);
 		}
 
-		/* (non-Javadoc)
-		 * @see orc.ast.extended.Walker#enter(orc.ast.extended.declaration.type.DatatypeDeclaration)
-		 */
-		@Override
-		public boolean enter(final DatatypeDeclaration decl) {
-			createSubItem(decl, TYPE_DECL_CATEGORY);
-			return true;
+		for (AST currChild : JavaConversions.asIterable(ast.subtrees())) {
+			visit(currChild);
 		}
 
-		/* (non-Javadoc)
-		 * @see orc.ast.extended.Walker#enter(orc.ast.extended.declaration.IncludeDeclaration)
-		 */
-		@Override
-		public boolean enter(final IncludeDeclaration decl) {
-			createSubItem(decl, INCLUDE_CATEGORY);
-			return false;
-		}
-
-		/* (non-Javadoc)
-		 * @see orc.ast.extended.Walker#enter(orc.ast.extended.declaration.SiteDeclaration)
-		 */
-		@Override
-		public boolean enter(final SiteDeclaration decl) {
-			createSubItem(decl, CALLABLE_DECL_CATEGORY);
-			return true;
-		}
-
-		/* (non-Javadoc)
-		 * @see orc.ast.extended.Walker#enter(orc.ast.extended.declaration.type.TypeAliasDeclaration)
-		 */
-		@Override
-		public boolean enter(final TypeAliasDeclaration decl) {
-			createSubItem(decl, TYPE_DECL_CATEGORY);
-			return true;
-		}
-
-		/* (non-Javadoc)
-		 * @see orc.ast.extended.Walker#enter(orc.ast.extended.declaration.type.TypeDeclaration)
-		 */
-		@Override
-		public boolean enter(final TypeDeclaration decl) {
-			createSubItem(decl, TYPE_DECL_CATEGORY);
-			return true;
-		}
-
-		/* (non-Javadoc)
-		 * @see orc.ast.extended.Walker#enter(orc.ast.extended.declaration.ValDeclaration)
-		 */
-		@Override
-		public boolean enter(final ValDeclaration decl) {
-			createSubItem(decl, SIMPLE_VAL_DECL_CATEGORY);
-			return true;
+		if (ast instanceof DefDeclaration) {
+			popSubItem();
 		}
 	}
+
 
 	/**
 	 * Creates a child of the current node in the model tree.
 	 * 
-	 * @param n ASTNode to associate with this node in the model tree
+	 * @param n AST node to associate with this node in the model tree
 	 * @param category integer category of model tree node (currently used for sorting -- sort on category then label text)
 	 * @return ModeTreeNode created with current node as parent
 	 * @see org.eclipse.imp.services.base.TreeModelBuilderBase#createSubItem(java.lang.Object, int)
@@ -209,7 +102,7 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 	 * 
 	 * Equivalent to <code>createSubItem(n, DEFAULT_CATEGORY)</code> 
 	 * 
-	 * @param n ASTNode to associate with this node in the model tree
+	 * @param n AST node to associate with this node in the model tree
 	 * @return ModeTreeNode created with current node as parent
 	 * @see org.eclipse.imp.services.base.TreeModelBuilderBase#createSubItem(java.lang.Object)
 	 */
@@ -221,7 +114,7 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 	/**
 	 * Creates a node for the model tree which has no parent node.
 	 * 
-	 * @param n ASTNode to associate with this node in the model tree
+	 * @param n AST node to associate with this node in the model tree
 	 * @param category integer category of model tree node (currently used for sorting -- sort on category then label text)
 	 * @return ModeTreeNode created with no parent
 	 * @see org.eclipse.imp.services.base.TreeModelBuilderBase#createTopItem(java.lang.Object, int)
@@ -236,7 +129,7 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 	 * 
 	 * Equivalent to <code>createTopItem(n, DEFAULT_CATEGORY)</code> 
 	 * 
-	 * @param n ASTNode to associate with this node in the model tree
+	 * @param n AST node to associate with this node in the model tree
 	 * @return ModeTreeNode created with no parent
 	 * @see org.eclipse.imp.services.base.TreeModelBuilderBase#createTopItem(java.lang.Object)
 	 */
@@ -259,7 +152,7 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 	 * Creates a child of the current node in the model tree, then makes it the current node.
 	 * Thus, future nodes will be build in this sub-tree, until {@link #popSubItem()} is invoked.
 	 * 
-	 * @param n ASTNode to associate with this node in the model tree
+	 * @param n AST node to associate with this node in the model tree
 	 * @param category integer category of model tree node (currently used for sorting -- sort on category then label text)
 	 * @return ModeTreeNode created with previous current node as parent
 	 * @see org.eclipse.imp.services.base.TreeModelBuilderBase#pushSubItem(java.lang.Object, int)
@@ -275,7 +168,7 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 	 * 
 	 * Equivalent to <code>pushSubItem(n, DEFAULT_CATEGORY)</code> 
 	 * 
-	 * @param n ASTNode to associate with this node in the model tree
+	 * @param n AST node to associate with this node in the model tree
 	 * @return ModeTreeNode created with previous current node as parent
 	 * @see org.eclipse.imp.services.base.TreeModelBuilderBase#pushSubItem(java.lang.Object)
 	 */

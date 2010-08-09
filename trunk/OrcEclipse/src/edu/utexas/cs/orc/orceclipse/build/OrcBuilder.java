@@ -18,7 +18,8 @@ package edu.utexas.cs.orc.orceclipse.build;
 import java.io.File;
 import java.io.IOException;
 
-import orc.OrcCompiler;
+import orc.compile.StandardOrcCompiler;
+import orc.compile.parse.OrcFileInputContext;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -212,16 +213,14 @@ public class OrcBuilder extends BuilderBase {
 
 		try {
 			final OrcConfigSettings config = new OrcConfigSettings(getProject(), null);
-
-			final File inputFile = new File(file.getLocation().toOSString());
-			config.setInputFile(inputFile);
-			config.setProgressListener(new ImpToOrcProgressAdapter(monitor));
-			config.setMessageRecorder(new ImpToOrcMessageAdapter(new MarkerCreatorWithBatching(file, null, this)));
+			config.filename_$eq(file.getLocation().toOSString());
+			OrcFileInputContext ic = new OrcFileInputContext(new File(file.getLocation().toOSString()));
+			ImpToOrcProgressAdapter prgsLstnr = new ImpToOrcProgressAdapter(monitor);
+			ImpToOrcMessageAdapter compileLogger = new ImpToOrcMessageAdapter(new MarkerCreatorWithBatching(file, null, this));
 			file.deleteMarkers(OrcBuilder.PROBLEM_MARKER_ID, true, IResource.DEPTH_INFINITE);
 
-			final OrcCompiler compiler = new OrcCompiler(config);
 			try {
-				compiler.call();
+				(new StandardOrcCompiler()).apply(ic, config, compileLogger, prgsLstnr);
 				// Disregard returned OIL, we just want the errors
 			} catch (final IOException e) {
 				//TODO: Handle this differently?

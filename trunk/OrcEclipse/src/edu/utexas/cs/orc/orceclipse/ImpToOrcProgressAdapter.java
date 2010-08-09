@@ -15,18 +15,21 @@
 
 package edu.utexas.cs.orc.orceclipse;
 
-import orc.progress.ProgressListener;
+import orc.progress.ProgressMonitor;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
 
 /**
- * Wraps IMP's IProgressMonitor interface in Orc's ProgressListener
+ * Wraps Eclipse's IProgressMonitor interface in Orc's ProgressListener
  * interface.
  *
  * @author jthywiss
  */
-public class ImpToOrcProgressAdapter implements ProgressListener {
-	private final IProgressMonitor impProgressMonitor;
+public class ImpToOrcProgressAdapter implements ProgressMonitor {
+	private final SubMonitor prgrsMntr;
 
 	/**
 	 * Constructs an object of class ImpToOrcProgressAdapter.
@@ -34,31 +37,71 @@ public class ImpToOrcProgressAdapter implements ProgressListener {
 	 * @param monitor the IProgressMonitor to wrap
 	 */
 	public ImpToOrcProgressAdapter(final IProgressMonitor monitor) {
-		this.impProgressMonitor = monitor;
+		prgrsMntr = SubMonitor.convert(monitor);
 	}
 
 	/* (non-Javadoc)
-	 * @see orc.progress.ProgressListener#isCanceled()
+	 * @see orc.progress.ProgressMonitor#setTaskName(java.lang.String)
 	 */
+	@Override
+	public void setTaskName(String name) {
+		prgrsMntr.setTaskName(name);
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.progress.ProgressMonitor#setWorkRemaining(int)
+	 */
+	@Override
+	public void setWorkRemaining(int remainWorkQty) {
+		prgrsMntr.setWorkRemaining(remainWorkQty);
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.progress.ProgressMonitor#setIndeterminate()
+	 */
+	@Override
+	public void setIndeterminate() {
+		// Can't do this in a SubMonitor (IProgressMonitor.UNKNOWN will cause problems)
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.progress.ProgressMonitor#worked(int)
+	 */
+	@Override
+	public void worked(int completedWorkIncrement) {
+		prgrsMntr.worked(completedWorkIncrement);
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.progress.ProgressMonitor#newChild(int)
+	 */
+	@Override
+	public ProgressMonitor newChild(int delegatedWorkQty) {
+		return new ImpToOrcProgressAdapter(prgrsMntr.newChild(delegatedWorkQty, 0));
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.progress.ProgressMonitor#isCanceled()
+	 */
+	@Override
 	public boolean isCanceled() {
-		return impProgressMonitor.isCanceled();
+		return prgrsMntr.isCanceled();
 	}
 
 	/* (non-Javadoc)
-	 * @see orc.progress.ProgressListener#setNote(java.lang.String)
+	 * @see orc.progress.ProgressMonitor#setBlocked(java.lang.String)
 	 */
-	public void setNote(final String note) {
-		impProgressMonitor.subTask(note);
+	@Override
+	public void setBlocked(String reason) {
+		prgrsMntr.setBlocked(new Status(IStatus.INFO, Activator.getInstance().getID(), reason));
 	}
 
 	/* (non-Javadoc)
-	 * @see orc.progress.ProgressListener#setProgress(double)
+	 * @see orc.progress.ProgressMonitor#clearBlocked()
 	 */
-	public void setProgress(final double v) {
-		impProgressMonitor.worked((int) (100 * v));
-		if (v > 0.99) { // "Close enough" :-)
-			impProgressMonitor.done();
-		}
+	@Override
+	public void clearBlocked() {
+		prgrsMntr.clearBlocked();
 	}
 
 }

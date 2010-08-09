@@ -115,6 +115,7 @@ public class NewOrcFileWizard extends Wizard implements INewWizard {
 	 * Selects and reveals the newly added resource in all parts
 	 * of the active workbench window's active page.
 	 *
+	 * @param newResource
 	 * @see ISetSelectionTarget
 	 */
 	protected void selectAndReveal(final IResource newResource) {
