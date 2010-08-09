@@ -18,6 +18,7 @@ package edu.utexas.cs.orc.orceclipse;
 import java.io.IOException;
 import java.util.Arrays;
 
+import orc.Main.OrcCmdLineOptions$1;
 import orc.script.OrcBindings;
 
 import org.eclipse.core.resources.IProject;
@@ -41,7 +42,7 @@ import org.eclipse.imp.preferences.PreferencesService;
  * @see org.eclipse.debug.core.ILaunchConfiguration
  * @author jthywiss
  */
-public class OrcConfigSettings extends OrcBindings {
+public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 	public static final String TYPE_CHECK_ATTR_NAME = Activator.getInstance().getID() + ".TYPE_CHECK"; //$NON-NLS-1$
 	public static final String NO_PRELUDE_ATTR_NAME = Activator.getInstance().getID() + ".NO_PRELUDE"; //$NON-NLS-1$
 	public static final String EXCEPTIONS_ON_ATTR_NAME = Activator.getInstance().getID() + ".EXCEPTIONS_ON"; //$NON-NLS-1$

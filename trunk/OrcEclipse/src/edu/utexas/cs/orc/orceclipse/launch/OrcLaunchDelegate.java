@@ -140,7 +140,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 			final String[] envp = getEnvironment(configuration);
 
 			// Program & VM arguments
-			String pgmArgs = "";//FIXME:orcConfig.composeCmdLine();
+			String pgmArgs = orcConfig.composeCmdLine();
 			pgmArgs = VariablesPlugin.getDefault().getStringVariableManager().performStringSubstitution(pgmArgs);
 			final String vmArgs = getVMArguments(configuration);
 			final ExecutionArguments execArgs = new ExecutionArguments(vmArgs, pgmArgs);

@@ -29,10 +29,11 @@ import orc.values.Format
 object Main {
 
   def main(args: Array[String]) {
+    class OrcCmdLineOptions() extends OrcBindings() with CmdLineOptions
     val engine = (new ScriptEngineManager).getEngineByName("orc").asInstanceOf[ScriptEngine with Compilable]
     if (engine == null) throw new ClassNotFoundException("Unable to load Orc ScriptEngine")
     try {
-      val options = new OrcBindings() with CmdLineOptions
+      val options = new OrcCmdLineOptions()
       options.parseCmdLine(args)
       engine.setBindings(options, ENGINE_SCOPE)
       val reader = new FileReader(options.filename)
