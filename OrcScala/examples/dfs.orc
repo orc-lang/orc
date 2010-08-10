@@ -47,7 +47,7 @@ parent(0) := N >> dfs(0) >> upto(N) >i> (i,parent(i)?)
 -- This is just a weakness of the test harness.
 
 {-
-OUTPUT:
+OUTPUT:PERMUTABLE:
 (0, 6)
 (1, 0)
 (2, 0)
