@@ -59,6 +59,11 @@ trait NamedToNameless {
         nameless.DeclareType(newt, newbody)
       }
       case HasType(body, expectedType) => nameless.HasType(toExp(body), toType(expectedType))
+      case Hole(holeContext, holeTypeContext) => {
+        val newHoleContext = holeContext mapValues { namedToNameless(_, context) }
+        val newHoleTypeContext = holeTypeContext mapValues { namedToNameless(_, typecontext) }
+        nameless.Hole(newHoleContext, newHoleTypeContext)
+      }
     }
   } 
 

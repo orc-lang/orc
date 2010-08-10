@@ -481,6 +481,7 @@ trait Orc extends OrcRuntime {
       if (state == Live) {
         node match {
           case Stop() => halt
+          case Hole(_,_) => halt
           case (a: Argument) => resolve(lookup(a)) { publish }
           
           case Call(target, args, _) => {

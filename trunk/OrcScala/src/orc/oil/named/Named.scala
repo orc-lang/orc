@@ -55,6 +55,7 @@ extends NamedAST
 with NamedInfixCombinators 
 with hasVars
 with Substitution[Expression]
+with ContextualSubstitution
 with Guarding { 
   lazy val withoutNames: nameless.Expression = namedToNameless(this, Nil, Nil)
 }
@@ -68,6 +69,9 @@ case class Otherwise(left: Expression, right: Expression) extends Expression
 case class DeclareDefs(defs: List[Def], body: Expression) extends Expression
 case class DeclareType(name: BoundTypevar, t: Type, body: Expression) extends Expression
 case class HasType(body: Expression, expectedType: Type) extends Expression
+case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) extends Expression {
+  def apply(e: Expression): Expression = e.subst(context, typecontext)
+}
 
 
 sealed abstract class Argument extends Expression

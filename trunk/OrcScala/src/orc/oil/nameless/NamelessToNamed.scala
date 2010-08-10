@@ -70,6 +70,11 @@ trait NamelessToNamed {
       case HasType(body, expectedType) => {
         named.HasType(recurse(body), namelessToNamed(expectedType, typecontext))
       }
+      case Hole(holeContext, holeTypeContext) => {
+        val newHoleContext = holeContext mapValues { namelessToNamed(_, context) }
+        val newHoleTypeContext = holeTypeContext mapValues { namelessToNamed(_, typecontext) }
+        named.Hole(newHoleContext, newHoleTypeContext)
+      }
     } 
   } 
 
