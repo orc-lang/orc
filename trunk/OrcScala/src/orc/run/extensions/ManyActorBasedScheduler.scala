@@ -36,7 +36,7 @@ trait ManyActorBasedScheduler extends Orc {
   }
 
   object ActorPool {
-    val queue : Queue[Worker] = Queue()
+    val queue : java.util.Queue[Worker] = new java.util.concurrent.ConcurrentLinkedQueue()
     val all : java.util.LinkedList[Worker] = new java.util.LinkedList() 
     def get() : Worker = synchronized {
       if (queue.size == 0) {
@@ -44,10 +44,10 @@ trait ManyActorBasedScheduler extends Orc {
         all.add(tmp)
         tmp
       }
-      else queue.dequeue
+      else queue.poll
     }
-    def store(w : Worker) = synchronized {
-      queue.enqueue(w)
+    def store(w : Worker) {
+      queue.offer(w)
     }
     def shutdown() {
       var i = 0
