@@ -17,6 +17,7 @@ package orc.oil.nameless
 
 import scala.xml._
 import orc.oil.nameless._
+import scala.collection.immutable.HashMap
 
 
 object OrcXML {
@@ -114,6 +115,25 @@ object OrcXML {
       case Constant(v: Any) => <constant>{anyToXML(v)}</constant>
       case Constant(null) => <constant><nil/></constant>
       case Variable(i: Int) => <variable>{i}</variable>
+      case Hole(context, typecontext) =>
+        <hole>
+        <context>
+          {for ((n, a) <- context) yield 
+            <binding>
+              <name>{n}</name>
+              <mapsto>{toXML(a)}</mapsto>
+            </binding>
+          }
+        </context>
+        <typecontext>
+          {for ((n, t) <- context) yield 
+            <binding>
+              <name>{n}</name>
+              <mapsto>{toXML(t)}</mapsto>
+            </binding>
+          }
+        </typecontext>
+        </hole>
       case Top() => <top/>
       case Bot() => <bot/>
       case TypeVar(i) => <typevar>{i}</typevar>
@@ -269,6 +289,17 @@ object OrcXML {
       case <hastype><body>{body}</body><expectedtype>{expectedType}</expectedtype></hastype> => {
           HasType(fromXML(body), typeFromXML(expectedType))
         }
+      case <hole><context>{ctx@ _*}</context><typecontext>{typectx@ _*}</typecontext></hole> => { 
+        val context = HashMap.empty ++ { 
+          for (<binding><name>{n}</name><mapsto>{a}</mapsto></binding> <- ctx) yield 
+            (n.text.trim, argumentFromXML(a))
+        }
+        val typecontext = HashMap.empty ++ {
+          for (<binding><name>{n}</name><mapsto>{t}</mapsto></binding> <- typectx) yield 
+            (n.text.trim, typeFromXML(t))
+        }
+        Hole(context, typecontext)
+      }
       case <constant>{v}</constant> => Constant(anyRefFromXML(v))
       case <variable>{i@ _*}</variable> => Variable(i.text.trim.toInt)
       

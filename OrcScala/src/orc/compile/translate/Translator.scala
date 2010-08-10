@@ -191,10 +191,14 @@ object Translator {
 	      
 	      DeclareType(d, variantType, target(newbody) < x < source(makeSites))
 	    }
+	    
+	    case ext.Declare(decl, _) => decl !! "Declaration not understood."
 
 	    case ext.TypeAscription(body, t) => HasType(toExp(body), toType(t))
 	    case ext.TypeAssertion(body, t) => HasType(toExp(body), AssertedType(toType(t)))
 
+	    case ext.Hole => Hole(context, typecontext)
+	    
 	    } 
 	}
 	

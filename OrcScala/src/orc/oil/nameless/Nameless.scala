@@ -76,6 +76,10 @@ with NamelessToNamed
       case DeclareDefs(openvars, defs, body) => openvars.toSet ++ shift(body.freevars, defs.length)
       case HasType(body,_) => body.freevars
       case DeclareType(_,body) => body.freevars
+      case Hole(_,_) => {
+        this emitWarning "Free variable determination may be incorrect on an expression with holes"
+        Set.empty
+      }
     }
   }
   
@@ -119,6 +123,9 @@ with NamelessToNamed
       }
       case HasType(body,t) => HasType(body.subst(ctx), t)
       case DeclareType(t,body) => DeclareType(t, body.subst(ctx))
+      case Hole(holeContext, holeTypeContext) => {
+        Hole(holeContext mapValues { _.subst(ctx).asInstanceOf[Argument] }, holeTypeContext)
+      }
     }
   }
   
@@ -135,6 +142,7 @@ case class Otherwise(left: Expression, right: Expression) extends Expression
 case class DeclareDefs(unclosedVars: List[Int], defs: List[Def], body: Expression) extends Expression
 case class DeclareType(t: Type, body: Expression) extends Expression
 case class HasType(body: Expression, expectedType: Type) extends Expression
+case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) extends Expression
 
 sealed abstract class Argument extends Expression 
 case class Constant(value: AnyRef) extends Argument

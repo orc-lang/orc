@@ -25,6 +25,7 @@ object TypeChecker {
   def typeSynth(expr: Expression, context: List[Type], typeContext: List[Type]): Type = {
     expr match {
       case Stop() => Bot
+      case Hole(_,_) => Bot
       case Call(target, args, typeArgs) => {
         val callee = typeSynth(target, context, typeContext)
         callee match {

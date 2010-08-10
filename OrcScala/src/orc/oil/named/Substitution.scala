@@ -93,3 +93,25 @@ object Substitution {
     }  
   
 }
+
+
+
+
+trait ContextualSubstitution {
+  self : Expression =>
+    
+  def subst(subContext: Map[String, Argument], subTypeContext: Map[String, Type]): Expression = {
+    val transform = 
+      new NamedASTTransform {
+        override def onArgument(unusedContext: List[BoundVar]) = {
+          case x@ UnboundVar(s) => subContext.getOrElse(s, x)
+        }
+        override def onType(unusedTypeContext: List[BoundTypevar]) = {
+          case x@ UnboundTypevar(s) => subTypeContext.getOrElse(s, x)
+        }
+      }
+    transform(this)
+  }
+  
+  
+}

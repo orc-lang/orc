@@ -26,6 +26,7 @@ case class TupleExpr(elements: List[Expression]) extends Expression
 case class ListExpr(elements: List[Expression]) extends Expression
 case class RecordExpr(elements: List[(String, Expression)]) extends Expression
 case class Call(target: Expression, gs: List[ArgumentGroup]) extends Expression
+case object Hole extends Expression
 
 sealed abstract class ArgumentGroup extends AST
 case class Args(types: Option[List[Type]] = None, elements: List[Expression]) extends ArgumentGroup	 
