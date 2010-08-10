@@ -96,11 +96,13 @@ public class Ref extends EvalSite {
 			addMember("readnb", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final TokenAPI caller) throws TokenException {
-					if (readQueue != null) {
+				  synchronized(RefInstance.this) {
+				    if (readQueue != null) {
 						caller.halt();
 					} else {
 						caller.publish(object2value(contents));
 					}
+				  }
 				}
 			});
 		}
@@ -108,7 +110,7 @@ public class Ref extends EvalSite {
 		protected class readMethod extends SiteAdaptor {
 			@Override
 			public void callSite(final Args args, final TokenAPI reader) {
-
+              synchronized(RefInstance.this) {
 				/* If the read queue is not null, the ref has not been set.
 				 * Add this caller to the read queue.
 				 */
@@ -120,12 +122,14 @@ public class Ref extends EvalSite {
 				else {
 					reader.publish(object2value(contents));
 				}
+              }
 			}
 		}
 
 		protected class writeMethod extends SiteAdaptor {
 			@Override
 			public void callSite(final Args args, final TokenAPI writer) throws TokenException {
+              synchronized(RefInstance.this) {
 
 				final Object val = args.getArg(0);
 
@@ -150,6 +154,7 @@ public class Ref extends EvalSite {
 
 				/* A write always succeeds and publishes a signal. */
 				writer.publish(object2value(signal()));
+              }
 			}
 		}
 

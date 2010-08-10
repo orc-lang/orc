@@ -37,7 +37,7 @@ def compute(n)(x) = println("Site " + n) >> x*x
 | repeat(out.get)
 
 {-
-OUTPUT:
+OUTPUT:PERMUTABLE:
 Site 1
 0
 Site 2

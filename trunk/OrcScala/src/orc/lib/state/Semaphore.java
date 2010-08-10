@@ -14,6 +14,8 @@
 package orc.lib.state;
 
 import java.util.LinkedList;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.TokenException;
@@ -44,8 +46,8 @@ public class Semaphore extends EvalSite {
 
 	protected class SemaphoreInstance extends DotSite {
 
-		protected final LinkedList<TokenAPI> waiters = new LinkedList<TokenAPI>();
-		protected final LinkedList<TokenAPI> snoopers = new LinkedList<TokenAPI>();
+		protected final Queue<TokenAPI> waiters = new LinkedList<TokenAPI>();
+		protected final Queue<TokenAPI> snoopers = new LinkedList<TokenAPI>();
 		protected int n;
 
 		SemaphoreInstance(final int n) {
@@ -57,9 +59,10 @@ public class Semaphore extends EvalSite {
 			addMember("acquire", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final TokenAPI waiter) {
+				  synchronized(SemaphoreInstance.this) {
 					if (0 == n) {
 						//FIXME:waiter.setQuiescent();
-						waiters.addLast(waiter);
+						waiters.offer(waiter);
 						if (!snoopers.isEmpty()) {
 							for (final TokenAPI snooper : snoopers) {
 								//FIXME:snooper.unsetQuiescent();
@@ -71,51 +74,60 @@ public class Semaphore extends EvalSite {
 						--n;
 						waiter.publish(signal());
 					}
+				  }
 				}
 			});
 			addMember("acquirenb", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final TokenAPI waiter) {
+                  synchronized(SemaphoreInstance.this) {
 					if (0 == n) {
 						waiter.halt();
 					} else {
 						--n;
 						waiter.publish(signal());
 					}
+                  }
 				}
 			});
 			addMember("release", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final TokenAPI sender) throws TokenException {
+                  synchronized(SemaphoreInstance.this) {
 					if (waiters.isEmpty()) {
 						++n;
 					} else {
-						final TokenAPI waiter = waiters.removeFirst();
+						final TokenAPI waiter = waiters.poll();
 						//FIXME:waiter.unsetQuiescent();
 						waiter.publish(signal());
 					}
 					sender.publish(signal());
+                  }
 				}
 			});
 			addMember("snoop", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final TokenAPI snooper) throws TokenException {
+                  synchronized(SemaphoreInstance.this) {
 					if (waiters.isEmpty()) {
 						//FIXME:snooper.setQuiescent();
-						snoopers.addLast(snooper);
+						snoopers.offer(snooper);
 					} else {
 						snooper.publish(signal());
 					}
+                  }
 				}
 			});
 			addMember("snoopnb", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final TokenAPI token) throws TokenException {
+                  synchronized(SemaphoreInstance.this) {
 					if (waiters.isEmpty()) {
 						token.halt();
 					} else {
 						token.publish(signal());
 					}
+                  }
 				}
 			});
 		}
