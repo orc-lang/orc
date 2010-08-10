@@ -66,7 +66,8 @@ public class Buffer extends EvalSite {
 			addMember("get", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final TokenAPI reader) {
-					if (buffer.isEmpty()) {
+				  synchronized(BufferInstance.this) {
+				    if (buffer.isEmpty()) {
 						if (closed) {
 							reader.halt();
 						} else {
@@ -82,11 +83,13 @@ public class Buffer extends EvalSite {
 							closer = null;
 						}
 					}
+				  }
 				}
 			});
 			addMember("put", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final TokenAPI writer) throws TokenException {
+                  synchronized(BufferInstance.this) {
 					final Object item = args.getArg(0);
 					if (closed) {
 						writer.halt();
@@ -103,11 +106,13 @@ public class Buffer extends EvalSite {
 					}
 					// Since this is an asynchronous buffer, a put call always returns.
 					writer.publish(signal());
+                  }
 				}
 			});
 			addMember("getnb", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final TokenAPI reader) {
+                  synchronized(BufferInstance.this) {
 					if (buffer.isEmpty()) {
 						reader.halt();
 					} else {
@@ -118,11 +123,13 @@ public class Buffer extends EvalSite {
 							closer = null;
 						}
 					}
+                  }
 				}
 			});
 			addMember("getAll", new EvalSite() {
 				@Override
 				public Object evaluate(final Args args) throws TokenException {
+                  synchronized(BufferInstance.this) {
 					final Object out = null;//OrcList(buffer);
 					buffer.clear();
 					if (closer != null) {
@@ -131,6 +138,7 @@ public class Buffer extends EvalSite {
 						closer = null;
 					}
 					return out;
+                  }
 				}
 			});
 			addMember("isClosed", new EvalSite() {
@@ -142,6 +150,7 @@ public class Buffer extends EvalSite {
 			addMember("close", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final TokenAPI token) {
+                  synchronized(BufferInstance.this) {
 					closed = true;
 					for (final TokenAPI reader : readers) {
 						//FIXME:reader.unsetQuiescent();
@@ -153,17 +162,20 @@ public class Buffer extends EvalSite {
 						closer = token;
 						//FIXME:closer.setQuiescent();
 					}
+                  }
 				}
 			});
 			addMember("closenb", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final TokenAPI token) {
+                  synchronized(BufferInstance.this) {
 					closed = true;
 					for (final TokenAPI reader : readers) {
 						//FIXME:reader.unsetQuiescent();
 						reader.halt();
 					}
 					token.publish(signal());
+                  }
 				}
 			});
 		}
