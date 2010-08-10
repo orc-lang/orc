@@ -19,6 +19,7 @@ import orc.compile.ext._
 import orc.oil.named
 import orc.compile.translate.PrimitiveForms._
 import orc.compile.translate.Translator._
+import scala.collection.immutable._
 
 case class Clause(formals: List[Pattern], body: Expression) extends orc.AST {
 	
@@ -34,8 +35,20 @@ case class Clause(formals: List[Pattern], body: Expression) extends orc.AST {
    */
   def convert(args: List[named.BoundVar], fallthrough: named.Expression, context: Map[String, named.Argument], typecontext: Map[String, named.Type]): named.Expression = {		
 
+    /* Ensure that patterns are linear even across multiple arguments of a clause */
+    var varNames: Set[String] = Set.empty
+    def mentioned(name: String) = {
+      if (varNames contains name) {
+        this !! ("Nonlinearity in function arguments: " + name + " occurs more than once.")
+      }
+      else {
+        varNames = varNames + name
+      }
+    }
+    
+    
     var targetConversion: Conversion = id
-    var targetContext: Map[String, named.Argument] = scala.collection.immutable.HashMap.empty
+    var targetContext: Map[String, named.Argument] = HashMap.empty
 
     val (strictPairs, nonstrictPairs) = (formals zip args) partition { case (p,_) => p.isStrict }
 
@@ -43,6 +56,7 @@ case class Clause(formals: List[Pattern], body: Expression) extends orc.AST {
       val (source, dcontext, target) = convertPattern(p, x, context, typecontext)
       targetConversion = targetConversion andThen target
       targetContext = targetContext ++ dcontext
+      for (name <- dcontext.keys) { mentioned(name) }
     }
 
     strictPairs match {
@@ -63,6 +77,7 @@ case class Clause(formals: List[Pattern], body: Expression) extends orc.AST {
       case (strictPattern, strictArg) :: Nil => {
         val x = new named.BoundVar()
         val (source, dcontext, target) = convertPattern(strictPattern, x, context, typecontext)
+        for (name <- dcontext.keys) { mentioned(name) }
         val src = source(strictArg)
         targetContext = targetContext ++ dcontext
         targetConversion = targetConversion andThen target andThen { makeMatch(src, x, _, fallthrough) }                  
@@ -74,6 +89,7 @@ case class Clause(formals: List[Pattern], body: Expression) extends orc.AST {
         val (strictPatterns, strictArgs) = strictPairs.unzip
         val x = new named.BoundVar()
         val (source, dcontext, target) = convertPattern(TuplePattern(strictPatterns), x, context, typecontext)
+        for (name <- dcontext.keys) { mentioned(name) }
         val src = source(makeTuple(strictArgs))
         targetContext = targetContext ++ dcontext
         targetConversion = targetConversion andThen target andThen { makeMatch(src, x, _, fallthrough) }
