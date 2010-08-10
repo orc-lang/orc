@@ -10,7 +10,7 @@ def isPrime(n) =
 -- Publish only prime numbers
 each(range(1, 100)) >n> ift(isPrime(n)) >> n
 {-
-OUTPUT:
+OUTPUT:PERMUTABLE:
 1
 2
 3

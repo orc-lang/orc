@@ -12,7 +12,7 @@ def fib(n) = helpfib(n, (1,1))
 upto(10) >i> fib(floor(2 ** i))
 
 {-
-OUTPUT:
+OUTPUT:PERMUTABLE:
 1
 2
 5

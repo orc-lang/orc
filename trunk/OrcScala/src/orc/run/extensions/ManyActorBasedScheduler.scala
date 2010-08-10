@@ -1,10 +1,10 @@
 //
-// ActorBasedScheduler.scala -- Scala class/trait/object ActorBasedScheduler
+// ManyActorBasedScheduler.scala -- Scala class/trait/object ManyActorBasedScheduler
 // Project OrcScala
 //
 // $Id$
 //
-// Created by dkitchin on Jul 10, 2010.
+// Created by amshali on Aug 10, 2010.
 //
 // Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
@@ -16,6 +16,9 @@ package orc.run.extensions
 
 import orc.run.Orc
 import scala.concurrent._
+import scala.actors.Actor
+import scala.actors.Actor._
+import scala.collection.mutable.Queue
 
 
 /**
@@ -23,21 +26,26 @@ import scala.concurrent._
  *
  * @author amshali, dkitchin
  */
-import scala.actors.Actor
-import scala.actors.Actor._
-  
-trait ActorBasedScheduler extends Orc {
-  val workers : List[Worker] = 
-    List(new Worker(), new Worker(), new Worker(), new Worker())
-          
-  for (w <- workers) {w.start}
-  
+trait ManyActorBasedScheduler extends Orc {
   // distribute the work between actors in a round-robin fashion
-  override def schedule(ts: List[Token]) = synchronized { 
+  override def schedule(ts: List[Token]) = synchronized {
     var i = 0
     for (t <- ts) {
-      workers(i) ! Some(t)
-      i = (i + 1) % workers.size
+      ActorPool.get ! Some(t)
+    }
+  }
+
+  object ActorPool {
+    val queue : Queue[Worker] = Queue()
+    def get() : Worker = synchronized {
+      if (queue.size == 0) new Worker().start
+      else queue.dequeue
+    }
+    def store(w : Worker) = synchronized {
+      queue.enqueue(w)
+    }
+    def shutdown() {
+      for (x <- queue) x ! None
     }
   }
   
@@ -47,19 +55,24 @@ trait ActorBasedScheduler extends Orc {
    */
   // TODO: Implement cleaner alternatives.
   override def stop = {
-    for (w <- workers) w ! None
-    super.stop 
+    ActorPool.shutdown
+    super.stop
   }
-  
+
   class Worker extends Actor {
+    override def start() = {
+      super.start
+      this
+    }
     def act() {
       loop {
         react {
-          case Some(x:Token) => {
+          case Some(x: Token) => {
             // If this thread should be interrupted, then reflect now, rather than wait for I/O
-            if (Thread.interrupted())  // Note: Clears thread's interrupted status bit
+            if (Thread.interrupted()) // Note: Clears thread's interrupted status bit
               throw new InterruptedException()
             x.run
+            ActorPool.store(this)
           }
           // machine has stopped
           case None => exit
@@ -67,5 +80,5 @@ trait ActorBasedScheduler extends Orc {
       }
     }
   }
-  
+
 }
