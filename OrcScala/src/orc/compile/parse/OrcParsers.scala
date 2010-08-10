@@ -141,11 +141,11 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
   def parseTypeVariable: Parser[String] = ident
 
   def parseRecordEntry: Parser[(String, Expression)] =
-    (ident <~~ "=") ~~ parseExpression ^^ { case x ~ e => (x,e) }
+    (ident <~ "=") ~ parseExpression ^^ { case x ~ e => (x,e) }
 
   def parseBaseExpressionTail: Parser[Option[List[Expression]]] = (
         ")" ^^^ None
-      | wrapNewLines(",") ~> CommaSeparated1(parseExpression) <~ ")" ^^ {Some(_)}
+      | "," ~> CommaSeparated1(parseExpression) <~ ")" ^^ {Some(_)}
   )
 
   def parseBaseExpression = (
@@ -153,8 +153,8 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
       | ident -> Variable
       | "stop" -> Stop
       | ("[" ~> CommaSeparated(parseExpression) <~ "]") -> ListExpr
-      | ("{." ~~> CommaSeparated(parseRecordEntry) <~~ ".}") -> RecordExpr
-      | ("(" ~~> parseExpression ~~ parseBaseExpressionTail) -?->
+      | ("{." ~> CommaSeparated(parseRecordEntry) <~ ".}") -> RecordExpr
+      | ("(" ~> parseExpression ~ parseBaseExpressionTail) -?->
             { (e: Expression, es: List[Expression]) => TupleExpr(e::es) }
   )
 
@@ -169,9 +169,9 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
   )
 
   def parseConditionalExpression: Parser[Expression] = (
-        ("if" ~~> parseOtherwiseExpression)
-        ~~ ("then" ~~> parseOtherwiseExpression)
-        ~~ ("else" ~~> parseOtherwiseExpression)
+        ("if" ~> parseOtherwiseExpression)
+        ~ ("then" ~> parseOtherwiseExpression)
+        ~ ("else" ~> parseOtherwiseExpression)
         -> Conditional
     |
       parseCallExpression
@@ -185,50 +185,50 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
     | parseConditionalExpression
     )
 
-  //FIXME: All these uses of nlchain and ^^ are discarding position information!
+  //FIXME: All these uses of ^^ are discarding position information!
 
-  def parseExpnExpr = nlchainl1(parseUnaryExpr, ("**") ^^
+  def parseExpnExpr = chainl1(parseUnaryExpr, ("**") ^^
     { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
 
-  def parseMultExpr = nlchainl1(parseExpnExpr, ("*" | "/" | "%") ^^
+  def parseMultExpr = chainl1(parseExpnExpr, ("*" | "/" | "%") ^^
     { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
 
   def parseAdditionalExpr: Parser[Expression] = (
-     chainl1(parseMultExpr, (wrapRight("-") | wrapNewLines("+")) ^^
+     chainl1(parseMultExpr, ("-" | "+") ^^
         { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
         /* Disallow newline breaks for binary subtract,
          * to resolve ambiguity with unary minus.*/
   )
 
   def parseConsExpr: Parser[Expression] = (
-     nlchainr1(parseAdditionalExpr, (wrapNewLines(":")) ^^
+     chainr1(parseAdditionalExpr, ":" ^^
         { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
   )
 
-  def parseRelationalExpr = nlchainl1(parseConsExpr, ("<:" | ":>" | "<=" | ">=" | "=" | "/=") ^^
+  def parseRelationalExpr = chainl1(parseConsExpr, ("<:" | ":>" | "<=" | ">=" | "=" | "/=") ^^
         { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
 
-  def parseLogicalExpr = nlchainl1(parseRelationalExpr, ("||" | "&&") ^^
+  def parseLogicalExpr = chainl1(parseRelationalExpr, ("||" | "&&") ^^
    { op =>(left:Expression,right:Expression) => InfixOperator(left, op, right)})
 
-  def parseInfixOpExpression: Parser[Expression] = nlchainl1(parseLogicalExpr, ":=" ^^
+  def parseInfixOpExpression: Parser[Expression] = chainl1(parseLogicalExpr, ":=" ^^
     { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
 
-  def parseSequentialCombinator = ">" ~~> (parsePattern?) <~~ ">"
+  def parseSequentialCombinator = ">" ~> (parsePattern?) <~ ">"
 
-  def parsePruningCombinator = "<" ~~> (parsePattern?) <~~ "<"
+  def parsePruningCombinator = "<" ~> (parsePattern?) <~ "<"
 
   def parseSequentialExpression =
     parseInfixOpExpression interleaveRight parseSequentialCombinator apply Sequential
 
   def parseParallelExpression =
-    nlrep1sep(parseSequentialExpression, "|") -> (_ reduceLeft Parallel)
+    rep1sep(parseSequentialExpression, "|") -> (_ reduceLeft Parallel)
 
   def parsePruningExpression =
     parseParallelExpression interleaveLeft parsePruningCombinator apply Pruning
 
   def parseOtherwiseExpression =
-    nlrep1sep(parsePruningExpression, ";") -> (_ reduceLeft Otherwise)
+    rep1sep(parsePruningExpression, ";") -> (_ reduceLeft Otherwise)
 
 /*---------------------------------------------------------
   Expressions
@@ -315,10 +315,10 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
       "lambda" ~> (ListOf(parseType)?)
       ~ (TupleOf(parsePattern)+)
       ~ (("::" ~> parseType)?)
-      ~ ("=" ~~> parseExpression)
+      ~ ("=" ~> parseExpression)
       -> Lambda
-      | parseDeclaration ~~ parseExpression -> Declare
-      | parseOtherwiseExpression ~~ (parseAscription?) -?->
+      | parseDeclaration ~ parseExpression -> Declare
+      | parseOtherwiseExpression ~ (parseAscription?) -?->
         { (_,_) match
           {
             case (e, "::" ~ t) => TypeAscription(e,t)
@@ -330,7 +330,7 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
 
   def parseBasePatternTail: Parser[Option[List[Pattern]]] = (
         ")" ^^^ None
-      | wrapNewLines(",") ~> CommaSeparated(parsePattern) <~ ")" ^^ {Some(_)}
+      | "," ~> CommaSeparated(parsePattern) <~ ")" ^^ {Some(_)}
   )
 
   def parseBasePattern = (
@@ -357,7 +357,7 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
   def parsePattern: Parser[Pattern] = parseTypedPattern
 
   def parseRecordTypeEntry: Parser[(String, Type)] =
-    (ident <~~ "::") ~~ parseType ^^ { case x ~ t => (x,t) }
+    (ident <~ "::") ~ parseType ^^ { case x ~ t => (x,t) }
 
   def parseType: Parser[Type] = (
         "Top" -> Top
@@ -370,7 +370,7 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
           }
         }
       | TupleOf(parseType) -> TupleType
-      | ("{." ~~> CommaSeparated(parseRecordTypeEntry) <~~ ".}") -> RecordType
+      | ("{." ~> CommaSeparated(parseRecordTypeEntry) <~ ".}") -> RecordType
       | "lambda" ~> ((ListOf(parseTypeVariable)?) ^^ {_.getOrElse(Nil)}) ~ (TupleOf(parseType)+) ~ parseReturnType -> LambdaType
   )
 
@@ -382,18 +382,18 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
   def parseReturnType = "::" ~> parseType
 
   def parseDefDeclaration: Parser[DefDeclaration] = (
-        ident ~ (TupleOf(parsePattern)+) ~~ (parseReturnType?) ~ ("=" ~~> parseExpression)
+        ident ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ ("=" ~> parseExpression)
       -> Def
 
-      | ("capsule" ~> ident) ~ (TupleOf(parsePattern)+) ~~ (parseReturnType?) ~ ("=" ~~> parseExpression)
+      | ("capsule" ~> ident) ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ ("=" ~> parseExpression)
       -> DefCapsule
 
-      | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)+) ~~ parseReturnType
+      | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)+) ~ parseReturnType
       -> { (id, tvs, ts, rt) => DefSig(id, tvs getOrElse Nil, ts, rt) }
   )
 
   def parseDeclaration: Parser[Declaration] = (
-      ("val" ~> parsePattern) ~ ("=" ~~> parseExpression)
+      ("val" ~> parsePattern) ~ ("=" ~> parseExpression)
       -> Val
 
       | "def" ~> parseDefDeclaration
@@ -409,7 +409,7 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
       | "type" ~> parseTypeVariable ~ ("=" ~> parseStrictClassname)
       -> TypeImport
 
-      | "type" ~> parseTypeVariable ~ ((ListOf(parseTypeVariable))?) ~ ("=" ~> nlrep1sep(parseConstructor, "|"))
+      | "type" ~> parseTypeVariable ~ ((ListOf(parseTypeVariable))?) ~ ("=" ~> rep1sep(parseConstructor, "|"))
       -> ((x,ys,t) => Datatype(x, ys getOrElse Nil, t))
 
       | "type" ~> parseTypeVariable ~ ((ListOf(parseTypeVariable))?) ~ ("=" ~> parseType)
@@ -432,17 +432,17 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
 
   //def parseDeclarations: Parser[List[Declaration]] = (lexical.NewLine*) ~> (parseDeclaration <~ (lexical.NewLine*))*
 
-  def parseDeclarations: Parser[List[Declaration]] = wrapNewLines(parseDeclaration)*
+  def parseDeclarations: Parser[List[Declaration]] = parseDeclaration*
 
-  def parseProgram: Parser[Expression] = wrapNewLines(parseExpression)
+  def parseProgram: Parser[Expression] = parseExpression
 
   ////////
   // Helper combinators for ( ... ) and [ ... ] forms
   ////////
 
-  def CommaSeparated[T](P: => Parser[T]): Parser[List[T]] = wrapNewLines(repsep(P, wrapNewLines(",")))
+  def CommaSeparated[T](P: => Parser[T]): Parser[List[T]] = repsep(P, ",")
 
-  def CommaSeparated1[T](P: => Parser[T]): Parser[List[T]] = wrapNewLines(rep1sep(P, wrapNewLines(",")))
+  def CommaSeparated1[T](P: => Parser[T]): Parser[List[T]] = rep1sep(P, ",")
 
   def TupleOf[T](P: => Parser[T]): Parser[List[T]] = "(" ~> CommaSeparated(P) <~ ")"
 
@@ -452,7 +452,7 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
       "-" ~> numericLit -> { s => Constant(-BigInt(s)) }
     | "-" ~> floatLit -> { s => Constant(-BigDecimal(s)) }
     | parseValue -> Constant
-    | "(" ~~> parseConstantListTuple <~~ ")"
+    | "(" ~> parseConstantListTuple <~ ")"
     | ListOf(parseConstantListTuple) -> ListExpr
     | TupleOf(parseConstantListTuple) -> TupleExpr
     )
@@ -592,48 +592,27 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
     def interleaveLeft[B](interparser: Parser[B]) =
       (f: (A,B,A) => A) => {
         def origami(b: B)(x:A, y:A): A = f(x,b,y)
-        markLocation( nlchainl1(markLocation(parser), interparser ^^ origami) )
+        markLocation( chainl1(markLocation(parser), interparser ^^ origami) )
       }: Parser[A]
     def interleaveRight[B](interparser: Parser[B]) =
       (f: (A,B,A) => A) => {
         def origami(b: B)(x:A, y:A): A = f(x,b,y)
-        markLocation( nlchainr1(markLocation(parser), interparser ^^ origami) )
+        markLocation( chainr1(markLocation(parser), interparser ^^ origami) )
       }: Parser[A]
   }
 
   ////////
-  // NewLine token handling
+  // Our own chainr1
   ////////
 
-  def wrapLeft[T](parser: Parser[T]): Parser[T] = (lexical.NewLine*) ~> parser
-
-  def wrapRight[T](parser: Parser[T]): Parser[T] = parser <~ (lexical.NewLine*)
-
-  def wrapNewLines[T](parser: Parser[T]) = wrapRight(wrapLeft(parser))
-
-  def nlchainl1[T](p: => Parser[T], q: => Parser[(T, T) => T]): Parser[T] =
-    p ~ rep(wrapNewLines(q) ~~ p) ^^ {
-      case x ~ xs => xs.foldLeft(x){(_, _) match {case (a, f ~ b) => f(a, b)}}
-  }
-
-  def nlchainr1[T](p: => Parser[T], q: => Parser[(T, T) => T]): Parser[T] = {
+  def chainr1[T](p: => Parser[T], q: => Parser[(T, T) => T]): Parser[T] = {
       def myFold[T](list: List[((T,T)=>T) ~ T]): (T => T) = {
         list match {
           case List(f ~ a) => f(_,a)
           case f ~ a :: xs => f(_,myFold(xs)(a))
         }
       }
-      p ~ rep(wrapNewLines(q) ~~ p) ^^ {case x ~ xs => if (xs.isEmpty) x else myFold(xs)(x)}
-  }
-
-  def nlrep1sep[T](p: => Parser[T], q: => Parser[Any]): Parser[List[T]] =
-    p ~ rep(wrapNewLines(q) ~~> p) ^^ {case x~y => x::y}
-
-  class StretchingParser[+T](parser: Parser[T]) {
-    def ~~[U](otherParser: => Parser[U]): Parser[T ~ U] = (parser <~ (lexical.NewLine*)) ~ otherParser
-    def ~~>[U](otherParser: => Parser[U]): Parser[U] = (parser <~ (lexical.NewLine*)) ~> otherParser
-    def <~~[U](otherParser: => Parser[U]): Parser[T] = (parser <~ (lexical.NewLine*)) <~ otherParser
-    def ~~*[U >: T](sep: => Parser[(U, U) => U]) = chainl1(wrapNewLines(parser), sep)
+      p ~ rep(q ~ p) ^^ {case x ~ xs => if (xs.isEmpty) x else myFold(xs)(x)}
   }
 
   ////////
@@ -649,6 +628,4 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
   implicit def CreateMaps1Optional2Parser[A <: AST,B](parser: Parser[A ~ Option[B]]): Maps1Optional2[A,B] = new Maps1Optional2(parser)
 
   implicit def CreateInterleavingParser[A <: AST](parser: Parser[A]): InterleavingParser[A] = new InterleavingParser(parser)
-  implicit def CreateStretchingParser[A](parser: Parser[A]): StretchingParser[A] = new StretchingParser(parser)
-  implicit def CreateStretchingParser(s: String): StretchingParser[String] = new StretchingParser(keyword(s))
 }
