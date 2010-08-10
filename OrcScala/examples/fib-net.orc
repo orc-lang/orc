@@ -46,7 +46,7 @@ def userout(n) = out1.get() >z> println(z) >> userout(n-1)
 let(fib(in1,out1,15) >> stop | userin(13) >> stop | userout(13)) >> stop
 
 {-
-OUTPUT:
+OUTPUT:PERMUTABLE:
 1
 1
 2
