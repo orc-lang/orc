@@ -34,10 +34,6 @@ class OrcLexical() extends StdLexical() {
     override def toString = chars
   }
 
-  case object NewLine extends Token {
-    def chars = "\n"
-  }
-
   override def token: Parser[Token] =
     ( letter ~ rep( identChar | digit )                 ^^ { case first ~ rest => processIdent(first :: rest mkString "") }
     | '_'                                               ^^^ Keyword("_")
@@ -49,9 +45,6 @@ class OrcLexical() extends StdLexical() {
     | '\"' ~> failure("unclosed string literal")
     | delim   // Must be after other alternatives that a delim could be a prefix of
     | EofCh                                             ^^^ EOF
-    | '\n'                                              ^^^ NewLine
-    | '\r' ~ '\n'                                       ^^^ NewLine
-    | '\r'                                              ^^^ NewLine
     | failure("illegal character")
     )
 
@@ -81,7 +74,7 @@ class OrcLexical() extends StdLexical() {
     | integerLit ~ '.' ~ integerLit                                                  ^^ { case a ~ b ~ c => a+b+c }
     )
 
-  override def whitespaceChar = elem("space char", ch => ch == ' ' || ch == '\t' || ch == '\r' || ch == '\f')
+  override def whitespaceChar = elem("space char", ch => ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r' || ch == '\f')
 
   override def whitespace: Parser[Any] = rep(
       whitespaceChar
