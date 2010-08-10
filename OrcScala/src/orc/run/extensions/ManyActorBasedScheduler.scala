@@ -28,8 +28,7 @@ import scala.collection.mutable.Queue
  */
 trait ManyActorBasedScheduler extends Orc {
   // distribute the work between actors in a round-robin fashion
-  override def schedule(ts: List[Token]) = synchronized {
-    var i = 0
+  override def schedule(ts: List[Token]) {
     for (t <- ts) {
       ActorPool.get ! Some(t)
     }
