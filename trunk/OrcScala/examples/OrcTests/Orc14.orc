@@ -9,7 +9,7 @@ def pubNums(n) = if(n :> 0) then (n | pubNums(n-1)) else stop
 pubNums(5) >x> x
 
 {-
-OUTPUT:
+OUTPUT:PERMUTABLE:
 5
 4
 3
