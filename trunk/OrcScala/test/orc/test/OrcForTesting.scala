@@ -53,7 +53,7 @@ object OrcForTesting {
       val reader = new FileReader(options.filename)
       engine.compile(reader).asInstanceOf[OrcScriptEngine#OrcCompiledScript]
     } catch {
-      case e: ScriptException => throw e.getCause // un-wrap and propagate
+      case e: ScriptException if (e.getCause != null) => throw e.getCause // un-wrap and propagate
     }
   }
 
