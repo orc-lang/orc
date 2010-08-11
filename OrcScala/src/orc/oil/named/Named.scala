@@ -73,6 +73,40 @@ case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) 
   def apply(e: Expression): Expression = e.subst(context, typecontext)
 }
 
+/* Match an expression with exactly one hole. 
+ * Matches as Module(f), where f is a function which takes
+ * a hole-filling expression and returns this expression
+ * with the hole filled. 
+ */
+object Module {
+  def unapply(e: Expression): Option[Expression => Expression] = {
+    if (countHoles(e) == 1) {
+      def fillWith(fill: Expression): Expression = {
+        val transform = new NamedASTTransform {
+          override def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar]) = {
+            case h : Hole => h(fill)
+          }
+        }
+        transform(e)
+      }
+      Some(fillWith)
+    }
+    else {
+      None
+    }
+  }
+  
+  def countHoles(e: Expression): Int = {
+    var holes = 0 
+    val search = new NamedASTTransform {
+      override def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar]) = {
+        case h : Hole => holes += 1 ; h
+      }
+    }
+    search(e)
+    holes
+  }
+}
 
 sealed abstract class Argument extends Expression
 case class Constant(value: AnyRef) extends Argument
