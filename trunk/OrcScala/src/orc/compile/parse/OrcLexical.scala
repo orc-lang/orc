@@ -16,9 +16,11 @@
 package orc.compile.parse
 
 import scala.util.parsing.combinator.lexical.StdLexical
+import scala.util.parsing.combinator.RegexParsers
 import scala.util.parsing.input.CharSequenceReader.EofCh
 import scala.util.parsing.input.Reader
 import scala.collection.mutable.HashSet
+import java.util.regex.Pattern
 
 /**
  * Lexical scanner (tokenizer) for Orc.  This extends and overrides
@@ -27,107 +29,119 @@ import scala.collection.mutable.HashSet
  *
  * @author jthywiss
  */
+class OrcLexical() extends StdLexical() with RegexParsers {
+  override type Elem = Char
 
-class OrcLexical() extends StdLexical() {
+  ////////
+  // Character categories
+  ////////
+
+  // Identifiers per Unicode Standard Annex #31, Unicode Identifier and Pattern Syntax
+  val identifier: Parser[String] = """[\p{javaUnicodeIdentifierStart}][\p{javaUnicodeIdentifierPart}']*""".r
+
+  // StdLexical wants a func for legal identifier chars other than digits
+  override def identChar = elem("identifier character", { ch => ch.isUnicodeIdentifierPart || ch == '\'' })
+
+  // Per Unicode standard section 5.8, Newline Guidelines, recommendation R4
+  // "A readline function should stop at [CR, LF, CRLF, NEL[0085]], LS[2028], FF, or PS[2029]"
+  val unicodeNewlineChars = "\r\n\u0085\u2028\f\u2029"
+
+  // Per Unicode Standard Annex #31, section 4, recommendation R3
+  // "...programming language can define its own whitespace characters ... relative to the Unicode Pattern_White_Space ... characters"
+  val unicodeWhitespaceChars = "\t\u000B \u200E\u200F" + unicodeNewlineChars
+
+  override def whitespaceChar = elem("space char", unicodeWhitespaceChars.contains(_)) //From Lexical
+  override protected val whiteSpace = ("[" + Pattern.quote(unicodeWhitespaceChars) + "]+").r //From RegexParsers
+
+  override def skipWhitespace = false
+  override protected def handleWhiteSpace(source: java.lang.CharSequence, offset: Int): Int = offset
+
+  ////////
+  // Lists used by the token parsers, along with supporting functions
+  ////////
+
+  /** The set of reserved identifiers: these will be returned as `Keyword's */
+  override val reserved = new HashSet[String] ++ List(
+    "true", "false", "signal", "stop", "null",
+    "lambda", "if", "then", "else", "as", "_",
+    "val", "def", "capsule", "type", "site", "class", "include", "within",
+    "Top", "Bot"
+    )
+
+  val operators = List(
+    "+", "-", "*", "/", "%", "**",
+    "&&", "||", "~",
+    "<", ">",
+    "=", "<:", ":>", "<=", ">=", "/=",
+    ":", "++",
+    ".", "?", ":="
+    )
+
+  /** The set of delimiters (ordering does not matter) */
+  override val delimiters = new HashSet[String] ++ (List(
+    "(", ")", "[", "]", "{.", ".}", ",",
+    "|", ";",
+    "::", ":!:"
+    ) ::: operators)
+
+  protected lazy val operRegex = {
+    val o = new Array[String](operators.size)
+    operators.copyToArray(o, 0)
+    scala.util.Sorting.quickSort(o)(new Ordering[String] { def compare(x: String, y: String) = y.length - x.length })
+    o.toList.map(Pattern.quote(_)).mkString("|").r
+  }
+
+  protected lazy val delimRegex = {
+    val o = new Array[String](delimiters.size)
+    delimiters.copyToArray(o, 0)
+    scala.util.Sorting.quickSort(o)(new Ordering[String] { def compare(x: String, y: String) = y.length - x.length })
+    o.toList.map(Pattern.quote(_)).mkString("|").r
+  }
+
+  ////////
+  // Token types in addition to those in StdTokens and Tokens 
+  ////////
 
   case class FloatingPointLit(chars: String) extends Token {
     override def toString = chars
   }
 
-  override def token: Parser[Token] =
-    ( letter ~ rep( identChar | digit )                 ^^ { case first ~ rest => processIdent(first :: rest mkString "") }
-    | '_'                                               ^^^ Keyword("_")
-    | '(' ~ oper ~ ')'                                  ^^ { case '(' ~ o ~ ')' => Identifier(o.chars) }
-    | '(' ~ '0' ~ '-' ~ ')'                             ^^^ Identifier("0-")
-    | floatLit                                          ^^ { case f => FloatingPointLit(f) }
-    | integerLit                                        ^^ { case i => NumericLit(i) }
-    | '\"' ~ rep(stringLitChar) ~ '\"'                  ^^ { case '\"' ~ chars ~ '\"' => StringLit(chars mkString "") }
-    | '\"' ~> failure("unclosed string literal")
-    | delim   // Must be after other alternatives that a delim could be a prefix of
-    | EofCh                                             ^^^ EOF
-    | failure("illegal character")
-    )
-
-  // legal identifier chars other than digits
-  override def identChar = letter | elem('_') | elem('\'')
-
-  def stringLitChar =
-    ( '\\' ~> chrExcept(EofCh)      ^^ { case 'f' => '\f'; case 'n' => '\n'; case 'r' => '\r'; case 't' => '\t'; case c => c }
-    | chrExcept('\"', '\n', EofCh)
-    )
-
-  def nonZeroDigit = elem('1') | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
-
-  def integerLit =
-      ( elem('0')                 ^^ { _.toString() }
-      | rep1(nonZeroDigit, digit) ^^ { _ mkString "" }
-      )
-
-  def plusMinusIntegerLit =
-      ( elem('+') ~ integerLit ^^ { case a ~ b => a+b }
-      | elem('-') ~ integerLit ^^ { case a ~ b => a+b }
-      | integerLit )
-
-  def floatLit =
-    ( integerLit ~ '.' ~ integerLit ~ (elem('e') |  elem('E')) ~ plusMinusIntegerLit ^^ { case a ~ b ~ c ~ d ~ e => a+b+c+d+e }
-    | integerLit                    ~ (elem('e') |  elem('E')) ~ plusMinusIntegerLit ^^ { case a ~ b ~ c => a+b+c }
-    | integerLit ~ '.' ~ integerLit                                                  ^^ { case a ~ b ~ c => a+b+c }
-    )
-
-  override def whitespaceChar = elem("space char", ch => ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r' || ch == '\f')
-
-  override def whitespace: Parser[Any] = rep(
-      whitespaceChar
-    | multilinecomment
-    | '-' ~ '-' ~ rep( chrExcept(EofCh, '\n') )
-    | '{' ~ '-' ~ failure("unclosed comment")
-    )
-
-  def multilinecomment: Parser[Any] =
-      '{' ~ '-' ~ rep(endcomment) ~ '-' ~ '}' ^^ { case _ => ' ' }
-
-  def endcomment: Parser[Any] = (
-     multilinecomment // Allow inlined comments.
-   | not(guard('-' ~ '}')) ~ chrExcept(EofCh)
-   | '-' ~ guard('-')
-   | chrExcept(EofCh,'-','}')
-  )
-
-  protected lazy val sortedOperParsers = {
-    def parseOper(s: String): Parser[Token] = accept(s.toList) ^^ { x => Keyword(s) }
-    val o = new Array[String](operators.size)
-    operators.copyToArray(o, 0)
-    scala.util.Sorting.quickSort(o)
-    o.toList map parseOper
+  def numberToken(s: String) = {
+    if (s.contains('.') || s.contains('e') || s.contains('E')) FloatingPointLit(s) else NumericLit(s)
   }
 
-  protected def oper: Parser[Token] = {
-    sortedOperParsers.foldRight(failure("no matching operator"): Parser[Token])((x, y) => y | x)
-  }
+  ////////
+  // Token parsers, in bottom-up order
+  ////////
 
+  def multiLineCommentBody: Parser[Any] =
+    """(?s).*?(?=((\{-)|(-\})))""".r ~ ("-}"
+      | "{-" ~ multiLineCommentBody ~ multiLineCommentBody)
 
-  /** The set of reserved identifiers: these will be returned as `Keyword's */
-  override val reserved = new HashSet[String] ++ List(
-      "true", "false", "signal", "stop", "null",
-      "lambda", "if", "then", "else", "as", "_",
-      "val", "def", "capsule", "type", "site", "class", "include",
-      "Top", "Bot"
+  override val whitespace: Parser[Any] = rep(("[" + unicodeWhitespaceChars + "]+").r
+    | """(?m)--.*$""".r
+    | "{-" ~ multiLineCommentBody
+    | '{' ~ '-' ~ err("unclosed comment")
     )
 
-  val operators = List(
-      "+", "-", "*", "/", "%", "**",
-      "&&", "||", "~",
-      "<", ">",
-      "=", "<:", ":>", "<=", ">=", "/=",
-      ":", "++",
-      ".", "?", ":="
-    )
+  val numberLit: Parser[String] =
+    """(([1-9][0-9]*)|0)([.][0-9]+)?([Ee][+-]?(([1-9][0-9]*)|0))?""".r
 
-  /** The set of delimiters (ordering does not matter) */
-  override val delimiters = new HashSet[String] ++ (List(
-      "(", ")", "[", "]", "{.", ".}", ",",
-       "|", ";",
-      "::", ":!:"
-    ) ::: operators)
+  val stringLit: Parser[String] =
+    '\"' ~>
+      (('\\' ~> chrExcept(EofCh) ^^ { case 'f' => "\f"; case 'n' => "\n"; case 'r' => "\r"; case 't' => "\t"; case c => c.toString }
+        | ("[^\\\\\"" + Pattern.quote(unicodeNewlineChars) + "]+").r)*) <~ '\"' ^^ { _.mkString }
+
+  override val token: Parser[Token] = (whitespace?) ~>
+    (identifier ^^ { processIdent(_) }
+      | '_' ^^^ Keyword("_")
+      | '(' ~> operRegex <~ ')' ^^ { Identifier(_) }
+      | "(0-)" ^^^ Identifier("0-")
+      | numberLit ^^ { numberToken(_) }
+      | stringLit ^^ { StringLit(_) }
+      | '\"' ~> err("unclosed string literal")
+      | // Must be after other alternatives that a delim could be a prefix of
+      delimRegex ^^ { Keyword(_) }
+      | EofCh ^^^ EOF)
 
 }
