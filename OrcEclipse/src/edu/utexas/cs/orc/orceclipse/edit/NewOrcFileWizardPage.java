@@ -53,7 +53,7 @@ public class NewOrcFileWizardPage extends WizardNewFileCreationPage {
 	protected InputStream getInitialContents() {
 		//TODO: Use a user-config'ed template, with variables.
 		final String contents = 
-			"{- " + getFileName() + "\n" + 
+			"{- " + getFileName() + " -- Orc program "+getFileName().replaceFirst("\\.orc$", "")+"\n" + 
 			" - \n" + 
 			" - $" + "Id$\n" + 
 			" - \n" + 
