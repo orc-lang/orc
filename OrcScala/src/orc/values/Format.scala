@@ -44,7 +44,7 @@ object Format {
     }
   
   def unparseString(s : String) = {
-    "\"" + s.replace("\"", "\\\"").replace("\f", "\\f").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t") + "\""
+    "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\f", "\\f").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t") + "\""
   }
   
 }
