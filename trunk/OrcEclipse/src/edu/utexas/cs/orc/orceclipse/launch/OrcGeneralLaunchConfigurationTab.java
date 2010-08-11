@@ -148,6 +148,12 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 		debugLevelSpinner.setFont(parent.getFont());
 		debugLevelSpinner.setValues(OrcConfigSettings.DEBUG_LEVEL_DEFAULT, 0, 4, 0, 1, 1);
 		debugLevelSpinner.addSelectionListener(ourSelectionAdapter);
+
+		SWTFactory.createLabel(labelWidgetComp, "\nDefault Orc runtime engine version: \n" + orcVersionText(), 2);
+	}
+
+	protected String orcVersionText() {
+		return orc.Main.orcImplName()+" "+orc.Main.orcVersion()+"\n"+orc.Main.orcURL()+"\n"+(orc.Main.orcCopyright().replace("(c)", "©"));
 	}
 
 	protected void widgetSelectedAction(final SelectionEvent e) {
