@@ -18,23 +18,24 @@ import scala.util.parsing.input.Position
 
 import orc.error.compiletime.CompileLogger.Severity
 
+// Severity marker traits
 trait CompilationExceptionSeverity
 trait ContinuableSeverity extends CompilationExceptionSeverity
 trait HaltingSeverity extends CompilationExceptionSeverity
 /** Severity of this exception is internal, for tool debugging -- users don't care. */
-trait SeverityDebug extends ContinuableSeverity { val severity = Severity.DEBUG }
+trait SeverityDebug extends ContinuableSeverity
 /** Severity of this exception is completely routine.  For example, counts of output size. */
-trait SeverityInfo extends ContinuableSeverity { val severity = Severity.INFO }
+trait SeverityInfo extends ContinuableSeverity
 /** Severity of this exception is not routine, but not a problem. */
-trait SeverityNotice extends ContinuableSeverity { val severity = Severity.NOTICE }
+trait SeverityNotice extends ContinuableSeverity
 /** Severity of this exception is a potential problem, but not bad enough to cause output to be disregarded -- it may still be usable. */
-trait SeverityWarning extends ContinuableSeverity { val severity = Severity.WARNING }
+trait SeverityWarning extends ContinuableSeverity
 /** Severity of this exception is a problem that is severe enough that output was discarded or should be discarded -- it is not usable. */
-trait SeverityError extends ContinuableSeverity { val severity = Severity.ERROR }
+trait SeverityError extends ContinuableSeverity
 /** Severity of this exception is a problem that has caused input processing to be stopped. */
-trait SeverityFatal extends HaltingSeverity { val severity = Severity.FATAL }
+trait SeverityFatal extends HaltingSeverity
 /** Severity of this exception is an internal failure of the tool (not the user's fault). */
-trait SeverityInternal extends HaltingSeverity { val severity = Severity.INTERNAL }
+trait SeverityInternal extends HaltingSeverity
 
 /**
  * Problem parsing the text of an Orc program. Mostly this
