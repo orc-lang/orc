@@ -18,22 +18,23 @@ import scala.util.parsing.input.Position
 
 import orc.error.compiletime.CompileLogger.Severity
 
-trait CompilationExceptionSeverity { }
-
+trait CompilationExceptionSeverity
+trait ContinuableSeverity extends CompilationExceptionSeverity
+trait HaltingSeverity extends CompilationExceptionSeverity
 /** Severity of this exception is internal, for tool debugging -- users don't care. */
-trait SeverityDebug { val severity = Severity.DEBUG }
+trait SeverityDebug extends ContinuableSeverity { val severity = Severity.DEBUG }
 /** Severity of this exception is completely routine.  For example, counts of output size. */
-trait SeverityInfo { val severity = Severity.INFO }
+trait SeverityInfo extends ContinuableSeverity { val severity = Severity.INFO }
 /** Severity of this exception is not routine, but not a problem. */
-trait SeverityNotice { val severity = Severity.NOTICE }
+trait SeverityNotice extends ContinuableSeverity { val severity = Severity.NOTICE }
 /** Severity of this exception is a potential problem, but not bad enough to cause output to be disregarded -- it may still be usable. */
-trait SeverityWarning { val severity = Severity.WARNING }
+trait SeverityWarning extends ContinuableSeverity { val severity = Severity.WARNING }
 /** Severity of this exception is a problem that is severe enough that output was discarded or should be discarded -- it is not usable. */
-trait SeverityError{ val severity = Severity.ERROR }
+trait SeverityError extends ContinuableSeverity { val severity = Severity.ERROR }
 /** Severity of this exception is a problem that has caused input processing to be stopped. */
-trait SeverityFatal { val severity = Severity.FATAL }
+trait SeverityFatal extends HaltingSeverity { val severity = Severity.FATAL }
 /** Severity of this exception is an internal failure of the tool (not the user's fault). */
-trait SeverityInternal{ val severity = Severity.INTERNAL }
+trait SeverityInternal extends HaltingSeverity { val severity = Severity.INTERNAL }
 
 /**
  * Problem parsing the text of an Orc program. Mostly this
