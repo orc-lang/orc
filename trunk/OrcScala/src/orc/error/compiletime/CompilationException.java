@@ -37,8 +37,17 @@ public abstract class CompilationException extends OrcException {
 	public CompilationException(final Throwable cause) {
 		super(cause);
 	}
-	
-	abstract Severity severity();
+
+	public Severity severity() {
+		     if (this instanceof SeverityInternal) return Severity.INTERNAL;
+		else if (this instanceof SeverityFatal)    return Severity.FATAL;
+		else if (this instanceof SeverityError)    return Severity.ERROR;
+		else if (this instanceof SeverityWarning)  return Severity.WARNING;
+		else if (this instanceof SeverityNotice)   return Severity.NOTICE;
+		else if (this instanceof SeverityInfo)     return Severity.INFO;
+		else if (this instanceof SeverityDebug)    return Severity.DEBUG;
+		else                                       return Severity.UNKNOWN;
+	}
 
 	/**
 	 * @return "position: detailMessage (newline) position.longString"
