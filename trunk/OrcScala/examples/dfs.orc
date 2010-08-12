@@ -28,7 +28,7 @@ def dfs(i) =
       ( parent(y) := i >> dfs(y) >> scan(ys) )
     else
       scan(ys)
-  scan(conn(i)?)
+  scan(conn(i)?) within
 
 -- Goal expression. First specify the graph structure.
 
