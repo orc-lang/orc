@@ -72,11 +72,13 @@ public class Cell extends EvalSite {
 			addMember("readnb", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final TokenAPI caller) throws TokenException {
-					if (readQueue != null) {
+				  synchronized(CellInstance.this) {
+				    if (readQueue != null) {
 						caller.halt();
 					} else {
 						caller.publish(object2value(contents));
 					}
+				  }
 				}
 			});
 		}
@@ -84,7 +86,7 @@ public class Cell extends EvalSite {
 		protected class readMethod extends SiteAdaptor {
 			@Override
 			public void callSite(final Args args, final TokenAPI reader) {
-
+              synchronized(CellInstance.this) {
 				/* If the read queue is not null, the cell has not been set.
 				 * Add this caller to the read queue.
 				 */
@@ -96,12 +98,14 @@ public class Cell extends EvalSite {
 				else {
 					reader.publish(object2value(contents));
 				}
+              }
 			}
 		}
 
 		protected class writeMethod extends SiteAdaptor {
 			@Override
 			public void callSite(final Args args, final TokenAPI writer) throws TokenException {
+              synchronized(CellInstance.this) {
 
 				final Object val = args.getArg(0);
 
@@ -128,7 +132,7 @@ public class Cell extends EvalSite {
 					/* A failed write kills the writer. */
 					writer.halt();
 				}
-
+              }
 			}
 		}
 

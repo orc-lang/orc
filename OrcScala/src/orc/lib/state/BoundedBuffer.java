@@ -68,6 +68,7 @@ public class BoundedBuffer extends EvalSite {
 			addMember("get", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final TokenAPI reader) {
+                  synchronized(BufferInstance.this) {
 					if (buffer.isEmpty()) {
 						if (closed) {
 							reader.halt();
@@ -90,11 +91,13 @@ public class BoundedBuffer extends EvalSite {
 							closer = null;
 						}
 					}
+                  }
 				}
 			});
 			addMember("getnb", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final TokenAPI reader) {
+                  synchronized(BufferInstance.this) {
 					if (buffer.isEmpty()) {
 						reader.halt();
 					} else {
@@ -112,12 +115,14 @@ public class BoundedBuffer extends EvalSite {
 							closer = null;
 						}
 					}
+                  }
 				}
 			});
 			addMember("put", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final TokenAPI writer) throws TokenException {
-					final Object item = args.getArg(0);
+                  synchronized(BufferInstance.this) {
+                    final Object item = args.getArg(0);
 					if (closed) {
 						writer.halt();
 					} else if (!readers.isEmpty()) {
@@ -134,11 +139,13 @@ public class BoundedBuffer extends EvalSite {
 						--open;
 						writer.publish(signal());
 					}
+                  }
 				}
 			});
 			addMember("putnb", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final TokenAPI writer) throws TokenException {
+                  synchronized(BufferInstance.this) {
 					final Object item = args.getArg(0);
 					if (closed) {
 						writer.halt();
@@ -154,11 +161,13 @@ public class BoundedBuffer extends EvalSite {
 						--open;
 						writer.publish(signal());
 					}
+                  }
 				}
 			});
 			addMember("getAll", new EvalSite() {
 				@Override
 				public Object evaluate(final Args args) throws TokenException {
+                  synchronized(BufferInstance.this) {
 					// restore open slots
 					open += buffer.size() - writers.size();
 					// collect all values in a list
@@ -177,6 +186,7 @@ public class BoundedBuffer extends EvalSite {
 						closer = null;
 					}
 					return out;
+                  }
 				}
 			});
 			addMember("getOpen", new EvalSite() {
@@ -200,6 +210,7 @@ public class BoundedBuffer extends EvalSite {
 			addMember("close", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final TokenAPI token) {
+                  synchronized(BufferInstance.this) {
 					closed = true;
 					for (final TokenAPI reader : readers) {
 						//FIXME:reader.unsetQuiescent();
@@ -211,17 +222,20 @@ public class BoundedBuffer extends EvalSite {
 						closer = token;
 						//FIXME:closer.setQuiescent();
 					}
+                  }
 				}
 			});
 			addMember("closenb", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final TokenAPI token) {
+                  synchronized(BufferInstance.this) {
 					closed = true;
 					for (final TokenAPI reader : readers) {
 						//FIXME:reader.unsetQuiescent();
 						reader.halt();
 					}
 					token.publish(signal());
+                  }
 				}
 			});
 		}
