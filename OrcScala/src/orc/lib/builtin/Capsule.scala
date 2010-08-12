@@ -5,6 +5,7 @@ import orc.values._
 import orc.values.sites._
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
+import orc.error.runtime.CapabilityException
 import orc.TokenAPI
 import orc.oil.nameless.Expression
 import orc.oil.nameless.Call
@@ -33,7 +34,7 @@ class Capsule(closure: AnyRef) extends UntypedSite {
     val node = Call(Constant(closure), args map Constant, Some(Nil))
     caller.runtime match {
       case r : SupportForCapsules => r.runEncapsulated(node, caller.asInstanceOf[r.Token])
-      case _ => caller !! new OrcException("This runtime does not support encapsulated execution.")
+      case _ => caller !! new CapabilityException("encapsulated execution")
     }
   }
   
