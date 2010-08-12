@@ -24,10 +24,10 @@ class RuntimeSupportException(name :String) extends
  TokenException("This runtime does not support '"+name+"'.")
 
 /**
- * 
+ * Access denied to an operation because the engine does not have a required right
  */
-class CapabilityException(val name: String) extends
- TokenException("This engine does not have the capability '" + name + "'")
+class RightException(val rightName: String) extends
+ TokenException("This engine does not have the right '" + rightName + "'")
 
 /**
  * 

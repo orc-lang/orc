@@ -49,6 +49,6 @@ trait OrcOptions {
   def stackSize_=(newVal: Int)
   def classPath: java.util.List[String]
   def classPath_=(newVal: java.util.List[String])
-  def hasCapability(capName: String): Boolean
-  def setCapability(capName: String, newVal: Boolean)
+  def hasRight(rightName: String): Boolean
+  def setRight(rightName: String, newVal: Boolean)
 }
