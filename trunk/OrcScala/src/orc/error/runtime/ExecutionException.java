@@ -21,7 +21,7 @@ import orc.error.OrcException;
  * @author dkitchin
  */
 @SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
-public class ExecutionException extends OrcException {
+public abstract class ExecutionException extends OrcException {
 
 	public ExecutionException(final String message) {
 		super(message);

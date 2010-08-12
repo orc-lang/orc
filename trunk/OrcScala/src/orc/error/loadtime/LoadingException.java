@@ -23,7 +23,7 @@ import orc.error.OrcException;
  * @author dkitchin
  */
 @SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
-public class LoadingException extends OrcException {
+public abstract class LoadingException extends OrcException {
 
 	public LoadingException(final String message) {
 		super(message);
