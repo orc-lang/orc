@@ -44,12 +44,6 @@ trait AST extends Positional {
       throw exn
   }
   
-  // TODO: remove this overloading to uncover uses of !! that do not carry a specific exception type
-  def !!(msg : String): Nothing = { 
-    val exn = new OrcException(msg)
-    this !! exn
-  }
-  
   // Emit a warning
   def emitWarning(msg : String): Unit = { 
     //FIXME: This should use the compile message recorder -- this is broken for GUI or Web Orc versions 

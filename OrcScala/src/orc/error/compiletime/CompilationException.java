@@ -23,7 +23,7 @@ import orc.error.OrcException;
  * @author dkitchin
  */
 @SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
-public class CompilationException extends OrcException {
+public abstract class CompilationException extends OrcException {
 
 	public CompilationException(final String message) {
 		super(message);
