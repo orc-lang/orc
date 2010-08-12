@@ -38,7 +38,7 @@ class PatternException(message: String) extends
  * resolution is done at runtime.
  */
 class SiteResolutionException(val siteName: String, cause: Throwable) extends
-  CompilationException("Cannot resolve site "+siteName, cause)
+  CompilationException("Problem loading site "+siteName, cause)
 
 /**
  * 

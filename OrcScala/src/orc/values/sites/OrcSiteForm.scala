@@ -31,7 +31,7 @@ object OrcSiteForm extends SiteForm {
         return loadedClass.asInstanceOf[Class[Site]].newInstance()
       } catch {
         case e =>
-          throw new SiteResolutionException("Problem loading class "+loadedClass.getName()+": "+e, e)
+          throw new SiteResolutionException(loadedClass.getName(), e)
       }
     } else {
       try { // Maybe it's a Scala object....
@@ -40,7 +40,7 @@ object OrcSiteForm extends SiteForm {
       } catch {
         case _ => { } //Ignore -- It's not a Scala object, then.
       }
-      throw new SiteResolutionException("Class "+loadedClass.getName()+" does not implement the Site interface")
+      throw new SiteResolutionException(loadedClass.getName(),new ClassCastException(loadedClass.getClass().getCanonicalName()+" cannot be cast to "+classOf[Site].getCanonicalName()))
     }
   }
 }

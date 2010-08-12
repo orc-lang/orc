@@ -40,6 +40,8 @@ class ExceptionCompileLogger extends CompileLogger {
     def endProcessing(filename: String) {
         // Nothing needed
     }
+    
+    class GenericCompilationException(message: String) extends CompilationException(message)
 
     /* (non-Javadoc)
      * @see orc.error.compiletime.CompileLogger#recordMessage(Severity, int, String, Position, AST, Throwable)
@@ -52,11 +54,12 @@ class ExceptionCompileLogger extends CompileLogger {
           if (exception != null) {
             throw exception;
           } else {
+            // We don't have an exception to throw -- use our "fake" one
+            val e = new GenericCompilationException(message)
             if (location != null) {
-              throw new CompilationException(location.toString() + ": " + message + "\n" + location.longString)
-            } else {
-              throw new CompilationException("<undefined position>: " + message)
+              e.setPosition(location)
             }
+            throw e
           }
         } // else disregard
     }

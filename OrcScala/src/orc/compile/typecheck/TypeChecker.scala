@@ -30,8 +30,8 @@ object TypeChecker {
         val callee = typeSynth(target, context, typeContext)
         callee match {
           case ArrowType(typeFormalArity, argTypes, returnType) => {
-            if (argTypes.size != args.size) throw new ArgumentArityException("") //FIXME: provide source location
-            if (typeFormalArity != typeArgs.size) throw new TypeArityException("") //FIXME: provide source location
+            if (argTypes.size != args.size) throw new ArgumentArityException(argTypes.size, args.size) //FIXME: provide source location
+            if (typeFormalArity != typeArgs.size) throw new TypeArityException(typeFormalArity, typeArgs.size) //FIXME: provide source location
             for ((p, a) <- argTypes zip args) typeCheck(a, p, context, typeContext)
             returnType
           }
