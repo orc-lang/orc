@@ -20,6 +20,7 @@ import orc.oil.nameless.Type
 import orc.oil.nameless.Bot
 import orc.TokenAPI
 import orc.error.OrcException
+import orc.error.NotYetImplementedException
 
 trait Site extends OrcValue {
   def call(args: List[AnyRef], callingToken: TokenAPI): Unit
@@ -58,9 +59,9 @@ trait UntypedSite extends Site {
 trait UnimplementedSite extends Site {
   override def name = "(unimplemented)"
   def orcType(argTypes: List[Type]): Nothing = {
-	  throw new Exception("Site " + this + " is unimplemented.")
+	  throw new NotYetImplementedException("Site " + this + " is unimplemented.")
   }
   def call(args: List[AnyRef], token: TokenAPI): Nothing = {
-	  throw new Exception("Site " + this + " is unimplemented.")
+	  throw new NotYetImplementedException("Site " + this + " is unimplemented.")
   }
 }
