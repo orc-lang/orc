@@ -20,6 +20,9 @@ import scala.util.parsing.input.NoPosition
 // Token exceptions
 ////////
 
+class RuntimeSupportException(name :String) extends 
+ TokenException("This runtime does not support '"+name+"'.")
+
 /**
  * 
  */
