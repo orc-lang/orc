@@ -45,13 +45,16 @@ public class Counter extends EvalSite {
 				addMember("inc", new EvalSite() {
 					@Override
 					public Object evaluate(final Args args) throws TokenException {
+	                  synchronized(Counter.this) {
 						++count;
-						return signal();
+                      }
+	                  return signal();
 					}
 				});
 				addMember("dec", new PartialSite() {
 					@Override
 					public Object evaluate(final Args args) throws TokenException {
+                      synchronized(Counter.this) {
 						if (count > 0) {
 							--count;
 							if (count == 0) {
@@ -65,17 +68,20 @@ public class Counter extends EvalSite {
 						} else {
 							return null;
 						}
+                      }
 					}
 				});
 				addMember("onZero", new SiteAdaptor() {
 					@Override
 					public void callSite(final Args args, final TokenAPI caller) throws TokenException {
+                      synchronized(Counter.this) {
 						if (count == 0) {
 							caller.publish(signal());
 						} else {
 							//FIXME:caller.setQuiescent();
 							waiters.add(caller);
 						}
+                      }
 					}
 				});
 				addMember("value", new EvalSite() {
