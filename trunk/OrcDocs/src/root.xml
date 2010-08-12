@@ -69,8 +69,6 @@ they are not essential to the understanding of the language.
 
 <section><title>Cor: A Functional Subset</title>
 
-
-
  
 <para>
 In this section we introduce Cor, a pure functional subset of the Orc language.
@@ -887,7 +885,7 @@ def Zero() = 0
 Functions can be recursive; that is, the name of a function may be used in its own body.
 
 <programlisting><![CDATA[
-def sumto(n) = if n < 1 then 0 else n + Sumto(n-1)
+def sumto(n) = if n < 1 then 0 else n + sumto(n-1)
 ]]></programlisting>
 
 Then, <code>sumto(5)</code> evaluates to 15.
