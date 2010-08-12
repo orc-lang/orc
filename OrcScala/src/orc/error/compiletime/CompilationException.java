@@ -15,6 +15,7 @@ package orc.error.compiletime;
 
 import scala.util.parsing.input.NoPosition$;
 import orc.error.OrcException;
+import orc.error.compiletime.CompileLogger.Severity;
 
 /**
  * Exceptions generated during Orc compilation from source to
@@ -36,6 +37,8 @@ public abstract class CompilationException extends OrcException {
 	public CompilationException(final Throwable cause) {
 		super(cause);
 	}
+	
+	abstract Severity severity();
 
 	/**
 	 * @return "position: detailMessage (newline) position.longString"
