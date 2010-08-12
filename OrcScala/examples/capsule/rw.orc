@@ -58,7 +58,7 @@ def writer(lock) =
   v := v? + 1 >>
   lock.write_finish()
 
-val rw = RW()
+val rw = RW() within
 
 
 (upto(1000) >> reader(rw) >> stop | upto(1000) >> writer(rw) >> stop); 

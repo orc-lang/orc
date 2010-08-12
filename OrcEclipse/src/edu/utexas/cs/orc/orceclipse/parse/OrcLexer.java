@@ -257,7 +257,7 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 		// COMMENT_MULTILINE,
 		new TokenRecord("{-", TokenType.COMMENT_MULTILINE), }; //$NON-NLS-1$
 
-	private static String keywords[] = { "def", "val", "class", "site", "include", "type", "lambda", "atomic", "isolated", "try", "throw", "catch", "as", "if", "then", "else", "stop", "signal", }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$ //$NON-NLS-12$ //$NON-NLS-13$ //$NON-NLS-14$ //$NON-NLS-15$ //$NON-NLS-16$ //$NON-NLS-17$ //$NON-NLS-18$
+	private static String keywords[] = { "_", "as", "capsule", "class", "def", "else", "if", "include", "lambda", "signal", "site", "stop", "then", "type", "val", "within", }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$ //$NON-NLS-12$ //$NON-NLS-13$ //$NON-NLS-14$ //$NON-NLS-15$ //$NON-NLS-16$
 
 	private static final String WHITESPACE_CHARS = " \t\f\r\n"; //$NON-NLS-1$
 	private static final String IDENTIFIER_FIRST_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_"; //$NON-NLS-1$

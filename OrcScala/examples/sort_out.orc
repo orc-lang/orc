@@ -9,7 +9,7 @@ def sort(input, comparator) =
   def sort_aux(x, []) = [x]
   def sort_aux(x, y:[]) = if (comparator(x, y) <: 0) then x:[y] else y:[x]
   def sort_aux(x, y:yl) = if (comparator(x, y) <: 0) then x:y:yl else y:sort_aux(x, yl)
-  def sort_buffer() = (b.get() >x> (l := sort_aux(x, l?))  >> sort_buffer() >> stop); signal
+  def sort_buffer() = (b.get() >x> (l := sort_aux(x, l?))  >> sort_buffer() >> stop); signal within
  
   (input() >x> b.put(x)  >> stop; b.close()>>stop) | sort_buffer() >> l?
 

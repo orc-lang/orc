@@ -5,8 +5,8 @@ ambiguous parses.
 def ambiguous1() =
   def ambiguous2() =
     4
-    + 5
-  -2
+    + 5 within
+  -2 within
 (3)
 {-
 OUTPUT:
