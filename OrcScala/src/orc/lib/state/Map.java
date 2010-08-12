@@ -16,6 +16,7 @@ package orc.lib.state;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;  //Yes, this IS used, even though ECJ claims otherwise
@@ -29,7 +30,7 @@ import java.util.Map.Entry;  //Yes, this IS used, even though ECJ claims otherwi
  */
 @SuppressWarnings("hiding")
 public final class Map<K, V> extends AbstractMap<K, V> {
-	private final HashMap<Wrapper<K>, V> map = new HashMap<Wrapper<K>, V>();
+	private final java.util.Map<Wrapper<K>, V> map = Collections.synchronizedMap(new HashMap<Wrapper<K>, V>());
 
 	private static class Wrapper<K> {
 		public K value;
