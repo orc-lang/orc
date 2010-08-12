@@ -60,14 +60,14 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def classPath: java.util.List[String] = getPathList("orc.classPath", List())
   def classPath_=(newVal: java.util.List[String]) = putPathList("orc.classPath", newVal)
   var capabilities = new java.util.HashMap[String, Boolean]()
-  def hasCapability(capName: String): Boolean = {
-    if (capabilities.containsKey(capName)) {
-      capabilities.get(capName)
+  def hasRight(rightName: String): Boolean = {
+    if (capabilities.containsKey(rightName)) {
+      capabilities.get(rightName)
     } else {
       false
     }
   }
-  def setCapability(capName: String, newVal: Boolean) {
+  def setRight(capName: String, newVal: Boolean) {
     capabilities.put(capName, newVal)
   }
 
