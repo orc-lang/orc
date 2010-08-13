@@ -20,15 +20,15 @@ import java.util.Set;
 
 import orc.AST;
 import orc.compile.ext.ClassImport;
+import orc.compile.ext.Def;
 import orc.compile.ext.DefCapsule;
+import orc.compile.ext.DefSig;
 import orc.compile.ext.Include;
 import orc.compile.ext.Pattern;
 import orc.compile.ext.SiteDeclaration;
 import orc.compile.ext.Type;
-import orc.compile.ext.Val;
-import orc.compile.ext.Def;
-import orc.compile.ext.DefSig;
 import orc.compile.ext.TypeDeclaration;
+import orc.compile.ext.Val;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -43,7 +43,6 @@ import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.graphics.Image;
 
 import scala.collection.JavaConversions;
-
 import edu.utexas.cs.orc.orceclipse.Activator;
 import edu.utexas.cs.orc.orceclipse.OrcResources;
 
@@ -227,15 +226,15 @@ public class OrcLabelProvider implements ILabelProvider {
 	public void removeListener(final ILabelProviderListener listener) {
 		fListeners.remove(listener);
 	}
-	
-	private static String sigToString(Def d) {
+
+	private static String sigToString(final Def d) {
 		final StringBuilder s = new StringBuilder();
 
 		s.append(d.name());
 		for (final scala.collection.immutable.List<Pattern> ps : JavaConversions.asIterable(d.formals())) {
 			s.append('(');
 			if (ps != null) {
-				s.append(listMkString(JavaConversions.asIterable(ps), ","));
+				s.append(listMkString(JavaConversions.asIterable(ps), ",")); //$NON-NLS-1$
 			}
 			s.append(')');
 		}
@@ -243,41 +242,41 @@ public class OrcLabelProvider implements ILabelProvider {
 		return s.toString();
 	}
 
-	private static String sigToString(DefSig d) {
+	private static String sigToString(final DefSig d) {
 		final StringBuilder s = new StringBuilder();
 
 		s.append(d.name());
 
 		if (d.typeformals() != null) {
 			s.append('[');
-			s.append(listMkString(JavaConversions.asIterable(d.typeformals()), ", "));
+			s.append(listMkString(JavaConversions.asIterable(d.typeformals()), ", ")); //$NON-NLS-1$
 			s.append(']');
 		}
 
 		for (final scala.collection.immutable.List<Type> argTypes : JavaConversions.asIterable(d.argtypes())) {
 			s.append('(');
 			if (argTypes != null) {
-				s.append(listMkString(JavaConversions.asIterable(argTypes), ","));
+				s.append(listMkString(JavaConversions.asIterable(argTypes), ",")); //$NON-NLS-1$
 			}
 			s.append(')');
 		}
 
-		s.append(" :: ");
+		s.append(" :: "); //$NON-NLS-1$
 		s.append(d.returntype());
 
 		return s.toString();
 	}
 
 	private static String listMkString(final Iterable<?> theList, final String sep) {
-		StringBuilder sb = new StringBuilder();
-		for (Object o : theList) {
+		final StringBuilder sb = new StringBuilder();
+		for (final Object o : theList) {
 			sb.append(o.toString());
 			sb.append(sep);
 		}
 		if (sb.length() == 0) {
-			return "";
+			return ""; //$NON-NLS-1$
 		} else {
-			return sb.substring(0, sb.length()-sep.length());
+			return sb.substring(0, sb.length() - sep.length());
 		}
 	}
 

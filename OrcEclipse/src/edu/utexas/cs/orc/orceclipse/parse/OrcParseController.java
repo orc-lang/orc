@@ -41,12 +41,11 @@ import org.eclipse.imp.services.IAnnotationTypeInfo;
 import org.eclipse.imp.services.ILanguageSyntaxProperties;
 import org.eclipse.jface.text.IRegion;
 
+import scala.util.parsing.combinator.Parsers.NoSuccess;
+import scala.util.parsing.combinator.Parsers.ParseResult;
 import edu.utexas.cs.orc.orceclipse.Activator;
 import edu.utexas.cs.orc.orceclipse.ImpToOrcMessageAdapter;
 import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
-
-import scala.util.parsing.combinator.Parsers.ParseResult;
-import scala.util.parsing.combinator.Parsers.NoSuccess;
 
 /**
  * A parsing environment (file, project, etc.) that IMP constructs when it will request Orc parsing.
@@ -215,26 +214,27 @@ public class OrcParseController extends ParseControllerBase {
 
 		final IPath absolutePath = getProject().getRawProject().getLocation().append(getPath());
 
-		ImpToOrcMessageAdapter compileLogger = new ImpToOrcMessageAdapter(handler);
+		final ImpToOrcMessageAdapter compileLogger = new ImpToOrcMessageAdapter(handler);
 		compileLogger.beginProcessing(absolutePath.toFile().toString());
 		if (lexer == null) {
 			lexer = new OrcLexer(this);
 		}
 
-		OrcStringInputContext ic = new OrcStringInputContext(contents);
+		final OrcStringInputContext ic = new OrcStringInputContext(contents);
 
-		orc.OrcCompilerRequires dummyEnvServices = new orc.OrcCompilerRequires() {
-		    public OrcInputContext openInclude(final String includeName, OrcInputContext orcinputcontext, OrcOptions orcoptions) {
-		    	return new OrcStringInputContext("") {
-		    		public String descr() {
-		    			return includeName;
-		    		}
-		    	};
-		    }
+		final orc.OrcCompilerRequires dummyEnvServices = new orc.OrcCompilerRequires() {
+			public OrcInputContext openInclude(final String includeName, final OrcInputContext orcinputcontext, final OrcOptions orcoptions) {
+				return new OrcStringInputContext("") { //$NON-NLS-1$
+					@Override
+					public String descr() {
+						return includeName;
+					}
+				};
+			}
 
-		    public Class loadClass(String s) {
-		    	return null;
-		    }
+			public Class loadClass(final String s) {
+				return null;
+			}
 		};
 
 		try {
@@ -244,10 +244,10 @@ public class OrcParseController extends ParseControllerBase {
 			} else {
 				result = OrcIncludeParser.apply(ic, config, dummyEnvServices);
 			}
-			if (result.successful())
+			if (result.successful()) {
 				currentAst = (AST) result.get();
-			else {
-				NoSuccess n = (NoSuccess) result;
+			} else {
+				final NoSuccess n = (NoSuccess) result;
 				compileLogger.recordMessage(Severity.FATAL, 0, n.msg(), n.next().pos(), null, null);
 			}
 		} catch (final Exception e) {
@@ -257,7 +257,7 @@ public class OrcParseController extends ParseControllerBase {
 		}
 
 		// Walk AST and tie id refs to id defs
-//		parser.resolve(currentAst);
+		//		parser.resolve(currentAst);
 
 		maybeDumpTokens();
 

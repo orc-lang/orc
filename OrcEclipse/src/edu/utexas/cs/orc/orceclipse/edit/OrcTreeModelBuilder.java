@@ -17,11 +17,11 @@ package edu.utexas.cs.orc.orceclipse.edit;
 
 import orc.AST;
 import orc.compile.ext.ClassImport;
+import orc.compile.ext.DefDeclaration;
 import orc.compile.ext.Include;
 import orc.compile.ext.SiteDeclaration;
-import orc.compile.ext.Val;
-import orc.compile.ext.DefDeclaration;
 import orc.compile.ext.TypeDeclaration;
+import orc.compile.ext.Val;
 
 import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.services.base.TreeModelBuilderBase;
@@ -54,7 +54,7 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 
 	private void visit(final AST ast) {
 		if (ast.pos() instanceof NoPosition$) {
-			return;  // NoPosition$ is confusing to the outline control
+			return; // NoPosition$ is confusing to the outline control
 		}
 		/*
 		 * Don't forget to update OrcLabelProvider.getImageFor and getLabelFor
@@ -74,7 +74,7 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 			createSubItem(ast, SIMPLE_VAL_DECL_CATEGORY);
 		}
 
-		for (AST currChild : JavaConversions.asIterable(ast.subtrees())) {
+		for (final AST currChild : JavaConversions.asIterable(ast.subtrees())) {
 			visit(currChild);
 		}
 
@@ -82,7 +82,6 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 			popSubItem();
 		}
 	}
-
 
 	/**
 	 * Creates a child of the current node in the model tree.

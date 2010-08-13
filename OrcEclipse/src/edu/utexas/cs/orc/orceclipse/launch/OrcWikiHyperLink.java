@@ -35,7 +35,7 @@ import edu.utexas.cs.orc.orceclipse.Activator;
  */
 public class OrcWikiHyperLink implements IHyperlink {
 
-	private static final String orcWikiUri = "http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=";
+	private static final String orcWikiUri = "http://orc.csres.utexas.edu/wiki/Wiki.jsp?page="; //$NON-NLS-1$
 	protected String pageName;
 
 	/**
@@ -44,7 +44,7 @@ public class OrcWikiHyperLink implements IHyperlink {
 	 * @param console TextConsole on which the link is displayed
 	 * @param matchedName String that was matched as an Orc Wiki page name
 	 */
-	public OrcWikiHyperLink(TextConsole console, String matchedName) {
+	public OrcWikiHyperLink(final TextConsole console, final String matchedName) {
 		super();
 		pageName = matchedName;
 	}
@@ -55,10 +55,10 @@ public class OrcWikiHyperLink implements IHyperlink {
 	@Override
 	public void linkActivated() {
 		try {
-			org.eclipse.ui.PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(orcWikiUri+pageName));
-		} catch (PartInitException e) {
+			org.eclipse.ui.PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(orcWikiUri + pageName));
+		} catch (final PartInitException e) {
 			Activator.logAndShow(e);
-		} catch (MalformedURLException e) {
+		} catch (final MalformedURLException e) {
 			StatusManager.getManager().handle(new Status(IStatus.ERROR, Activator.getInstance().getID(), e.getLocalizedMessage(), e), StatusManager.SHOW);
 		}
 	}
@@ -67,7 +67,8 @@ public class OrcWikiHyperLink implements IHyperlink {
 	 * @see org.eclipse.ui.console.IHyperlink#linkEntered()
 	 */
 	@Override
-	public void linkEntered() {	}
+	public void linkEntered() {
+	}
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.ui.console.IHyperlink#linkExited()

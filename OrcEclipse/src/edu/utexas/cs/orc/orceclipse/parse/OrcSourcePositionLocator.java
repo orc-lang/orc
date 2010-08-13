@@ -28,7 +28,6 @@ import scala.collection.JavaConversions;
 import scala.util.parsing.input.NoPosition$;
 import scala.util.parsing.input.OffsetPosition;
 import scala.util.parsing.input.Positional;
-
 import edu.utexas.cs.orc.orceclipse.Activator;
 
 /**
@@ -61,17 +60,18 @@ public class OrcSourcePositionLocator implements ISourcePositionLocator {
 		if (startOffset < 0 || endOffset < 0) {
 			return null;
 		} else {
-			for (AST child : JavaConversions.asList(((AST) ast).subtrees())) {
-				int childOffset = ((OffsetPosition) child.pos()).offset();
-				if (childOffset >= startOffset && childOffset <= endOffset && (theWinner == null || childOffset <= ((OffsetPosition) ((Positional)theWinner).pos()).offset())) {
-					theWinner = findNode(child, startOffset, endOffset);
+			for (final AST child : JavaConversions.asList(((AST) ast).subtrees())) {
+				if (child.pos() instanceof OffsetPosition) {
+					final int childOffset = ((OffsetPosition) child.pos()).offset();
+					if (childOffset >= startOffset && childOffset <= endOffset && (theWinner == null || childOffset <= ((OffsetPosition) ((Positional) theWinner).pos()).offset())) {
+						theWinner = findNode(child, startOffset, endOffset);
+					}
 				}
 			}
 		}
 
 		return theWinner;
 	}
-
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.imp.parser.ISourcePositionLocator#getStartOffset(java.lang.Object)
@@ -153,7 +153,7 @@ public class OrcSourcePositionLocator implements ISourcePositionLocator {
 	public IPath getPath(final Object node) {
 		try {
 			final Positional n = (Positional) node;
-			return Path.fromOSString(((OrcPosition)n.pos()).filename());
+			return Path.fromOSString(((OrcPosition) n.pos()).filename());
 		} catch (final ClassCastException e) {
 			// Make sure this is logged -- Callers in IMP sometimes disregard exceptions
 			Activator.log(e);

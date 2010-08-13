@@ -46,7 +46,7 @@ public class OrcPosPatternMatchListener implements IPatternMatchListenerDelegate
 	 * @see org.eclipse.ui.console.IPatternMatchListenerDelegate#connect(org.eclipse.ui.console.TextConsole)
 	 */
 	@Override
-	public void connect(TextConsole console) {
+	public void connect(final TextConsole console) {
 		observedConsole = console;
 	}
 
@@ -62,25 +62,35 @@ public class OrcPosPatternMatchListener implements IPatternMatchListenerDelegate
 	 * @see org.eclipse.ui.console.IPatternMatchListenerDelegate#matchFound(org.eclipse.ui.console.PatternMatchEvent)
 	 */
 	@Override
-	public void matchFound(PatternMatchEvent event) {
+	public void matchFound(final PatternMatchEvent event) {
 		try {
-			int offset = event.getOffset();
-			int length = event.getLength();
-			String matchedText = observedConsole.getDocument().get(offset, length-1); // -1 too drop final ": "
-			int lineColSep = matchedText.lastIndexOf(':');
-			if (lineColSep < 3) return;
-			int nameLineSep = matchedText.lastIndexOf(':', lineColSep-1);
-			if (nameLineSep < 1) return;
-			IFile file = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(matchedText.substring(0, nameLineSep)));
-			if (file == null) return;
-			int lineNum = Integer.parseInt(matchedText.substring(nameLineSep+1, lineColSep));
-			if (lineNum < 1) return;
-			int colNum = Integer.parseInt(matchedText.substring(lineColSep+1));
-			if (colNum < 1) return;
-			IHyperlink link = new FileLink(file, null, -1, -1, lineNum);
-			observedConsole.addHyperlink(link, offset, length-1);
-		} catch (BadLocationException e) {
-		} catch (NumberFormatException e) {
+			final int offset = event.getOffset();
+			final int length = event.getLength();
+			final String matchedText = observedConsole.getDocument().get(offset, length - 1); // -1 too drop final ": "
+			final int lineColSep = matchedText.lastIndexOf(':');
+			if (lineColSep < 3) {
+				return;
+			}
+			final int nameLineSep = matchedText.lastIndexOf(':', lineColSep - 1);
+			if (nameLineSep < 1) {
+				return;
+			}
+			final IFile file = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(matchedText.substring(0, nameLineSep)));
+			if (file == null) {
+				return;
+			}
+			final int lineNum = Integer.parseInt(matchedText.substring(nameLineSep + 1, lineColSep));
+			if (lineNum < 1) {
+				return;
+			}
+			final int colNum = Integer.parseInt(matchedText.substring(lineColSep + 1));
+			if (colNum < 1) {
+				return;
+			}
+			final IHyperlink link = new FileLink(file, null, -1, -1, lineNum);
+			observedConsole.addHyperlink(link, offset, length - 1);
+		} catch (final BadLocationException e) {
+		} catch (final NumberFormatException e) {
 		}
 	}
 

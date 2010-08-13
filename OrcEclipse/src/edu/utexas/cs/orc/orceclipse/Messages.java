@@ -36,6 +36,7 @@ public class Messages extends NLS {
 	public static String OrcGeneralLaunchConfigurationTab_GeneralTabName;
 	public static String OrcGeneralLaunchConfigurationTab_MaxPubsLabel;
 	public static String OrcGeneralLaunchConfigurationTab_NumSiteThreadsLabel;
+	public static String OrcGeneralLaunchConfigurationTab_runtimeVersion;
 	public static String OrcGeneralLaunchConfigurationTab_TraceOutFilenameLabel;
 	public static String OrcLaunchDelegate_UnableToLaunchNoResourceSelected;
 	public static String OrcLaunchDelegate_VerifyingLaunchAttributes;

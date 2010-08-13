@@ -44,7 +44,7 @@ public class ImpToOrcProgressAdapter implements ProgressMonitor {
 	 * @see orc.progress.ProgressMonitor#setTaskName(java.lang.String)
 	 */
 	@Override
-	public void setTaskName(String name) {
+	public void setTaskName(final String name) {
 		prgrsMntr.setTaskName(name);
 	}
 
@@ -52,7 +52,7 @@ public class ImpToOrcProgressAdapter implements ProgressMonitor {
 	 * @see orc.progress.ProgressMonitor#setWorkRemaining(int)
 	 */
 	@Override
-	public void setWorkRemaining(int remainWorkQty) {
+	public void setWorkRemaining(final int remainWorkQty) {
 		prgrsMntr.setWorkRemaining(remainWorkQty);
 	}
 
@@ -68,7 +68,7 @@ public class ImpToOrcProgressAdapter implements ProgressMonitor {
 	 * @see orc.progress.ProgressMonitor#worked(int)
 	 */
 	@Override
-	public void worked(int completedWorkIncrement) {
+	public void worked(final int completedWorkIncrement) {
 		prgrsMntr.worked(completedWorkIncrement);
 	}
 
@@ -76,7 +76,7 @@ public class ImpToOrcProgressAdapter implements ProgressMonitor {
 	 * @see orc.progress.ProgressMonitor#newChild(int)
 	 */
 	@Override
-	public ProgressMonitor newChild(int delegatedWorkQty) {
+	public ProgressMonitor newChild(final int delegatedWorkQty) {
 		return new ImpToOrcProgressAdapter(prgrsMntr.newChild(delegatedWorkQty, 0));
 	}
 
@@ -92,7 +92,7 @@ public class ImpToOrcProgressAdapter implements ProgressMonitor {
 	 * @see orc.progress.ProgressMonitor#setBlocked(java.lang.String)
 	 */
 	@Override
-	public void setBlocked(String reason) {
+	public void setBlocked(final String reason) {
 		prgrsMntr.setBlocked(new Status(IStatus.INFO, Activator.getInstance().getID(), reason));
 	}
 
