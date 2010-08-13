@@ -520,5 +520,37 @@
          </enablement>
       </commonWizard>
    </extension>
+   <extension
+         point="org.eclipse.ui.console.consolePatternMatchListeners">
+      <consolePatternMatchListener
+            class="edu.utexas.cs.orc.orceclipse.launch.HttpPatternMatchListener"
+            id="edu.utexas.cs.orc.orceclipse.launch.httpPatternMatchListener"
+            qualifier="http://"
+            regex="http://[A-Za-z0-9\-\.\_\~\:\/\?\#\[\]\@\!\$\&amp;\&apos;\(\)\*\+\,\;\=]+">
+         <enablement>
+         </enablement>
+      </consolePatternMatchListener>
+      <consolePatternMatchListener
+            class="edu.utexas.cs.orc.orceclipse.launch.OrcPosPatternMatchListener"
+            id="edu.utexas.cs.orc.orceclipse.launch.orcPosPatternMatchListener"
+            qualifier="\.orc\:[0-9]+\:[0-9]+\: "
+            regex=".+\.orc\:[0-9]+\:[0-9]+\: ">
+         <enablement>
+         </enablement>
+      </consolePatternMatchListener>
+      <consolePatternMatchListener
+            class="edu.utexas.cs.orc.orceclipse.launch.OrcWikiPatternMatchListener"
+            id="edu.utexas.cs.orc.orceclipse.launch.orcExceptionPatternMatchListener"
+            qualifier="\[\[OrcWiki\:"
+            regex="\[\[OrcWiki\:[A-Za-z0-9_\-\#]+\]\]">
+         <enablement>
+            <or>
+			  <test property="org.eclipse.ui.console.consoleTypeTest" value="javaStackTraceConsole"/>
+               <test property="org.eclipse.debug.ui.processTypeTest" value="java"/>
+               <test property="org.eclipse.debug.ui.processTypeTest" value="org.eclipse.ant.ui.antProcess"/>
+            </or>
+         </enablement>
+      </consolePatternMatchListener>
+   </extension>
 
 </plugin>
