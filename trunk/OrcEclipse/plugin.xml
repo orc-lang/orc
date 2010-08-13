@@ -526,7 +526,7 @@
             class="edu.utexas.cs.orc.orceclipse.launch.HttpPatternMatchListener"
             id="edu.utexas.cs.orc.orceclipse.launch.httpPatternMatchListener"
             qualifier="http://"
-            regex="http://[A-Za-z0-9\-\.\_\~\:\/\?\#\[\]\@\!\$\&amp;\&apos;\(\)\*\+\,\;\=]+">
+            regex="http://[A-Za-z0-9\-\.\_\~\:\/\?\#\[\]\@\!\$\&amp;\&apos;\(\)\*\+\,\;\=\%]+">
          <enablement>
          </enablement>
       </consolePatternMatchListener>
@@ -542,7 +542,7 @@
             class="edu.utexas.cs.orc.orceclipse.launch.OrcWikiPatternMatchListener"
             id="edu.utexas.cs.orc.orceclipse.launch.orcExceptionPatternMatchListener"
             qualifier="\[\[OrcWiki\:"
-            regex="\[\[OrcWiki\:[A-Za-z0-9_\-\#]+\]\]">
+            regex="\[\[OrcWiki\:[A-Za-z0-9_\-\#\%]+\]\]">
          <enablement>
             <or>
 			  <test property="org.eclipse.ui.console.consoleTypeTest" value="javaStackTraceConsole"/>
