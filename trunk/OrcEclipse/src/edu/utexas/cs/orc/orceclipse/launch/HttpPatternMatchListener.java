@@ -42,7 +42,7 @@ public class HttpPatternMatchListener implements IPatternMatchListenerDelegate {
 	 * @see org.eclipse.ui.console.IPatternMatchListenerDelegate#connect(org.eclipse.ui.console.TextConsole)
 	 */
 	@Override
-	public void connect(TextConsole console) {
+	public void connect(final TextConsole console) {
 		observedConsole = console;
 	}
 
@@ -58,14 +58,14 @@ public class HttpPatternMatchListener implements IPatternMatchListenerDelegate {
 	 * @see org.eclipse.ui.console.IPatternMatchListenerDelegate#matchFound(org.eclipse.ui.console.PatternMatchEvent)
 	 */
 	@Override
-	public void matchFound(PatternMatchEvent event) {
+	public void matchFound(final PatternMatchEvent event) {
 		try {
-			int offset = event.getOffset();
-			int length = event.getLength();
-			String uriText = observedConsole.getDocument().get(offset, length);
-			IHyperlink link = new HttpHyperLink(observedConsole, uriText);
+			final int offset = event.getOffset();
+			final int length = event.getLength();
+			final String uriText = observedConsole.getDocument().get(offset, length);
+			final IHyperlink link = new HttpHyperLink(observedConsole, uriText);
 			observedConsole.addHyperlink(link, offset, length);
-		} catch (BadLocationException e) {
+		} catch (final BadLocationException e) {
 		}
 	}
 

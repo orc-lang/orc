@@ -59,8 +59,8 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 	public static final boolean TYPE_CHECK_DEFAULT = defaultConfig.typecheck();
 	public static final boolean NO_PRELUDE_DEFAULT = !defaultConfig.usePrelude();
 	public static final boolean EXCEPTIONS_ON_DEFAULT = defaultConfig.exceptionsOn();
-	public static final String INCLUDE_PATH_DEFAULT = defaultConfig.includePath().isEmpty() ? "" : listMkString(defaultConfig.includePath(),":").concat(":"); //Eclipse path pref entries always have a trailing : //$NON-NLS-1$
-	public static final String SITE_CLASSPATH_DEFAULT = defaultConfig.classPath().isEmpty() ? "" : listMkString(defaultConfig.classPath(),":").concat(":"); //Eclipse path pref entries always have a trailing : //$NON-NLS-1$
+	public static final String INCLUDE_PATH_DEFAULT = defaultConfig.includePath().isEmpty() ? "" : listMkString(defaultConfig.includePath(), ":").concat(":"); //Eclipse path pref entries always have a trailing : //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	public static final String SITE_CLASSPATH_DEFAULT = defaultConfig.classPath().isEmpty() ? "" : listMkString(defaultConfig.classPath(), ":").concat(":"); //Eclipse path pref entries always have a trailing : //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	//public static final String OIL_OUT_DEFAULT = defaultConfig.oilOutputFile().getPath();
 	public static final int MAX_PUBS_DEFAULT = defaultConfig.maxPublications();
 	//public static final int NUM_SITE_THREADS_DEFAULT = defaultConfig.numSiteThreads();
@@ -105,10 +105,10 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 			exceptionsOn_$eq(prefSvc.getBooleanPreference(EXCEPTIONS_ON_ATTR_NAME));
 		}
 		if (prefSvc.isDefined(INCLUDE_PATH_ATTR_NAME)) {
-			includePath_$eq(Arrays.asList(prefSvc.getStringPreference(INCLUDE_PATH_ATTR_NAME).split(":")));
+			includePath_$eq(Arrays.asList(prefSvc.getStringPreference(INCLUDE_PATH_ATTR_NAME).split(":"))); //$NON-NLS-1$
 		}
 		if (prefSvc.isDefined(SITE_CLASSPATH_ATTR_NAME)) {
-			classPath_$eq(Arrays.asList(prefSvc.getStringPreference(SITE_CLASSPATH_ATTR_NAME).split(":")));
+			classPath_$eq(Arrays.asList(prefSvc.getStringPreference(SITE_CLASSPATH_ATTR_NAME).split(":"))); //$NON-NLS-1$
 		}
 		//if (prefSvc.isDefined(OIL_OUT_ATTR_NAME)) {
 		//	oilOutputFile_$eq(new File(prefSvc.getStringPreference(OIL_OUT_ATTR_NAME)));
@@ -174,13 +174,13 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 		defaultPrefs.putInt(DEBUG_LEVEL_ATTR_NAME, DEBUG_LEVEL_DEFAULT);
 		//No need to flush() nodes in default scope
 	}
-	
+
 	private static String listMkString(final Iterable<?> theList, final String sep) {
-		StringBuilder sb = new StringBuilder();
-		for (Object o : theList) {
+		final StringBuilder sb = new StringBuilder();
+		for (final Object o : theList) {
 			sb.append(o.toString());
 			sb.append(sep);
 		}
-		return sb.substring(0, sb.length()-sep.length());
+		return sb.substring(0, sb.length() - sep.length());
 	}
 }

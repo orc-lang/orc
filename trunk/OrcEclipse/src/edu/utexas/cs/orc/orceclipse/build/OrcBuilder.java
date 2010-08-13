@@ -214,13 +214,13 @@ public class OrcBuilder extends BuilderBase {
 		try {
 			final OrcConfigSettings config = new OrcConfigSettings(getProject(), null);
 			config.filename_$eq(file.getLocation().toOSString());
-			OrcFileInputContext ic = new OrcFileInputContext(new File(file.getLocation().toOSString()));
-			ImpToOrcProgressAdapter prgsLstnr = new ImpToOrcProgressAdapter(monitor);
-			ImpToOrcMessageAdapter compileLogger = new ImpToOrcMessageAdapter(new MarkerCreatorWithBatching(file, null, this));
+			final OrcFileInputContext ic = new OrcFileInputContext(new File(file.getLocation().toOSString()));
+			final ImpToOrcProgressAdapter prgsLstnr = new ImpToOrcProgressAdapter(monitor);
+			final ImpToOrcMessageAdapter compileLogger = new ImpToOrcMessageAdapter(new MarkerCreatorWithBatching(file, null, this));
 			file.deleteMarkers(OrcBuilder.PROBLEM_MARKER_ID, true, IResource.DEPTH_INFINITE);
 
 			try {
-				(new StandardOrcCompiler()).apply(ic, config, compileLogger, prgsLstnr);
+				new StandardOrcCompiler().apply(ic, config, compileLogger, prgsLstnr);
 				// Disregard returned OIL, we just want the errors
 			} catch (final IOException e) {
 				//TODO: Handle this differently?

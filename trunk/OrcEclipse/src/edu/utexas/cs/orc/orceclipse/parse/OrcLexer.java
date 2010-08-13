@@ -119,10 +119,10 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 		 */
 		@Override
 		public Positional setPos(final Position newPos) {
-		    if (pos == NoPosition$.MODULE$) {
-		    	pos = newPos;
-		    }
-		    return this;
+			if (pos == NoPosition$.MODULE$) {
+				pos = newPos;
+			}
+			return this;
 		}
 
 		/* (non-Javadoc)

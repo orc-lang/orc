@@ -135,7 +135,6 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 				workingDirName = orcProgToLaunch.getParent().getLocation().toOSString();
 			}
 
-
 			// Environment variables
 			final String[] envp = getEnvironment(configuration);
 
@@ -155,7 +154,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 			} else {
 				classpath = getAbsoluteClasspathForClass(Main.class);
 			}
-			
+
 			// Create VM config
 			final VMRunnerConfiguration runConfig = new VMRunnerConfiguration(mainTypeName, classpath);
 			runConfig.setProgramArguments(execArgs.getProgramArgumentsArray());

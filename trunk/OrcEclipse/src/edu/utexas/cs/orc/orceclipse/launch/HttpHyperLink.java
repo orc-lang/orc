@@ -43,7 +43,7 @@ public class HttpHyperLink implements IHyperlink {
 	 * @param console TextConsole on which the link is displayed
 	 * @param matchedText String that was matched as a URI
 	 */
-	public HttpHyperLink(TextConsole console, String matchedText) {
+	public HttpHyperLink(final TextConsole console, final String matchedText) {
 		super();
 		uriText = matchedText;
 	}
@@ -55,9 +55,9 @@ public class HttpHyperLink implements IHyperlink {
 	public void linkActivated() {
 		try {
 			org.eclipse.ui.PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(uriText));
-		} catch (PartInitException e) {
+		} catch (final PartInitException e) {
 			Activator.logAndShow(e);
-		} catch (MalformedURLException e) {
+		} catch (final MalformedURLException e) {
 			StatusManager.getManager().handle(new Status(IStatus.ERROR, Activator.getInstance().getID(), e.getLocalizedMessage(), e), StatusManager.SHOW);
 		}
 	}
@@ -66,7 +66,8 @@ public class HttpHyperLink implements IHyperlink {
 	 * @see org.eclipse.ui.console.IHyperlink#linkEntered()
 	 */
 	@Override
-	public void linkEntered() {	}
+	public void linkEntered() {
+	}
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.ui.console.IHyperlink#linkExited()

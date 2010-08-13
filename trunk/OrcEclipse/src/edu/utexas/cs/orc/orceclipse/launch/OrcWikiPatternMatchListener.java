@@ -42,7 +42,7 @@ public class OrcWikiPatternMatchListener implements IPatternMatchListenerDelegat
 	 * @see org.eclipse.ui.console.IPatternMatchListenerDelegate#connect(org.eclipse.ui.console.TextConsole)
 	 */
 	@Override
-	public void connect(TextConsole console) {
+	public void connect(final TextConsole console) {
 		observedConsole = console;
 	}
 
@@ -58,14 +58,14 @@ public class OrcWikiPatternMatchListener implements IPatternMatchListenerDelegat
 	 * @see org.eclipse.ui.console.IPatternMatchListenerDelegate#matchFound(org.eclipse.ui.console.PatternMatchEvent)
 	 */
 	@Override
-	public void matchFound(PatternMatchEvent event) {
+	public void matchFound(final PatternMatchEvent event) {
 		try {
-			int offset = event.getOffset();
-			int length = event.getLength();
-			String pageName = observedConsole.getDocument().get(offset+10, length-12);
-			IHyperlink link = new OrcWikiHyperLink(observedConsole, pageName);
-			observedConsole.addHyperlink(link, offset+2, length-4);
-		} catch (BadLocationException e) {
+			final int offset = event.getOffset();
+			final int length = event.getLength();
+			final String pageName = observedConsole.getDocument().get(offset + 10, length - 12);
+			final IHyperlink link = new OrcWikiHyperLink(observedConsole, pageName);
+			observedConsole.addHyperlink(link, offset + 2, length - 4);
+		} catch (final BadLocationException e) {
 		}
 	}
 
