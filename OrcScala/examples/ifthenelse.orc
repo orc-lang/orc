@@ -6,7 +6,7 @@ def downfrom(n) =
 
 downfrom(5)
 {-
-OUTPUT:
+OUTPUT:PERMUTABLE:
 5
 4
 3
