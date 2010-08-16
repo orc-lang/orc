@@ -16,10 +16,11 @@
 package orc.compile.translate
 
 import orc.compile.ext._
+import orc.error.OrcExceptionExtension._
 import orc.oil.named
 import orc.compile.translate.PrimitiveForms._
-import orc.compile.translate.Translator._
 import scala.collection.immutable._
+import orc.error.compiletime._
 
 case class Clause(formals: List[Pattern], body: Expression) extends orc.AST {
 	
@@ -33,13 +34,20 @@ case class Clause(formals: List[Pattern], body: Expression) extends orc.AST {
    * The supplied args are the formal parameters of the overall function.
    * 
    */
-  def convert(args: List[named.BoundVar], fallthrough: named.Expression, context: Map[String, named.Argument], typecontext: Map[String, named.Type]): named.Expression = {		
+  def convert(args: List[named.BoundVar], 
+              fallthrough: named.Expression, 
+              context: Map[String, named.Argument], 
+              typecontext: Map[String, named.Type],
+              translator: Translator
+             ): named.Expression = {		
 
+    import translator._
+    
     /* Ensure that patterns are linear even across multiple arguments of a clause */
     var varNames: Set[String] = Set.empty
-    def mentioned(name: String) = {
+    def mentioned(name: String) {
       if (varNames contains name) {
-        this !! ("Nonlinearity in function arguments: " + name + " occurs more than once.")
+        reportProblem(NonlinearPatternException(name) at this)
       }
       else {
         varNames = varNames + name
@@ -50,7 +58,10 @@ case class Clause(formals: List[Pattern], body: Expression) extends orc.AST {
     var targetConversion: Conversion = id
     var targetContext: Map[String, named.Argument] = HashMap.empty
 
-    val (strictPairs, nonstrictPairs) = (formals zip args) partition { case (p,_) => p.isStrict }
+    val (strictPairs, nonstrictPairs) = { 
+      val zipped: List[(Pattern, named.BoundVar)] = formals zip args 
+      zipped partition { case (p,_) => p.isStrict }
+    }
 
     for ((p,x) <- nonstrictPairs) {
       val (source, dcontext, target) = convertPattern(p, x, context, typecontext)
@@ -68,7 +79,7 @@ case class Clause(formals: List[Pattern], body: Expression) extends orc.AST {
         // Make sure the remaining cases are not redundant.
         fallthrough match {
           case named.Stop() => {  }
-          case _ => { fallthrough !! ("Redundant match") }
+          case _ => { reportProblem(RedundantMatch() at fallthrough) }
         }
       }
       /* 
@@ -97,7 +108,7 @@ case class Clause(formals: List[Pattern], body: Expression) extends orc.AST {
     }  
 
     /* Finally, construct the new expression */
-    val newbody = Translator.convert(body, context ++ targetContext, typecontext)
+    val newbody = translator.convert(body, context ++ targetContext, typecontext)
     this ->> targetConversion(newbody)
   }
 
@@ -115,7 +126,7 @@ object Clause {
     val first :: rest = clauses
 
     rest find { _.arity != first.arity } match {
-      case Some(clause) => clause !! "Clause has wrong number of parameters."
+      case Some(clause) => throw (ClauseArityMismatch() at clause)
       case None => first.arity
     }
   }
@@ -129,12 +140,16 @@ object Clause {
    * 
    * The list of clauses is assumed to be nonempty.
    */
-  def convertClauses(clauses: List[Clause], context: Map[String, named.Argument], typecontext: Map[String, named.Type]): (List[named.BoundVar], named.Expression) = {		
+  def convertClauses(clauses: List[Clause], 
+                     context: Map[String, named.Argument], 
+                     typecontext: Map[String, named.Type],
+                     translator: Translator
+                    ): (List[named.BoundVar], named.Expression) = {		
 	val arity = commonArity(clauses)
 	val args = (for (_ <- 0 until arity) yield new named.BoundVar()).toList
 
 	val nil: named.Expression = named.Stop()
-	def cons(clause: Clause, fail: named.Expression) = clause.convert(args, fail, context, typecontext)
+	def cons(clause: Clause, fail: named.Expression) = clause.convert(args, fail, context, typecontext, translator)
 	val body = clauses.foldRight(nil)(cons)
 
 	(args, body)

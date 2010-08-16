@@ -27,27 +27,27 @@ import orc.values.sites.JavaSiteForm
 import orc.OrcOptions
 import orc.values.Field
 import orc.values.Signal
-import orc.error.OrcException
+
+import orc.error.compiletime._
+import orc.error.OrcExceptionExtension._
+import scala.util.parsing.input.Position
 
 import orc.compile.translate.PrimitiveForms._
 import orc.compile.translate.CapsuleForms._
 import orc.compile.translate.CurriedForms._
 
 
-object Translator {
+class Translator(val reportProblem: CompilationException with ContinuableSeverity => Unit) {
 	  
 	/**
 	 *  Translate an extended AST to a named OIL AST.
 	 *
 	 */
-	def translate(options: OrcOptions, extendedAST : ext.Expression): named.Expression = {
+	def translate(extendedAST : ext.Expression): named.Expression = {
 	  convert(extendedAST, 
 	          HashMap.empty withDefault { UnboundVar(_) }, 
 	          HashMap.empty withDefault { UnboundTypevar(_) }) 
 	}
-	
-	
-	
 	
 	/**
 	 *  Convert an extended AST expression to a named OIL expression.
@@ -60,12 +60,7 @@ object Translator {
 	    case ext.Stop() => Stop()
 	    case ext.Constant(c) => Constant(c)
 	    case ext.Variable(x) => context(x)
-	    case ext.TupleExpr(es) => {
-	      if (es.size < 2) { 
-	        e !! "Malformed tuple expression; a tuple must contain at least 2 elements" 
-	      } 
-	      unfold(es map toExp, makeTuple)
-	    }
+	    case ext.TupleExpr(es) => unfold(es map toExp, makeTuple)
 	    case ext.ListExpr(es) => unfold(es map toExp, makeList)
 	    case ext.RecordExpr(es) => {
 	      val tuples = es map { case (s,e) => ext.TupleExpr(List(ext.Constant(s),e)) }
@@ -110,11 +105,11 @@ object Translator {
 	    case lambda : ext.Lambda => {
 	      val flatLambda = reduceParamLists(lambda)
 	      val lambdaName = new BoundVar()
-	      val newdef = AggregateDef(flatLambda).convert(lambdaName, context, typecontext)
+	      val newdef = AggregateDef(flatLambda, this).convert(lambdaName, context, typecontext)
 	      DeclareDefs(List(newdef), lambdaName)
 	    }
 	    case ext.Capsule(b) => {
-	      var capThunk = ext.Lambda(None, List(Nil), None, makeCapsuleBody(b))				  
+	      var capThunk = ext.Lambda(None, List(Nil), None, makeCapsuleBody(b, reportProblem))				  
 	      toExp(ext.Call(
 	          ext.Call(ext.Constant(builtin.SiteSite), List(ext.Args(None, List(capThunk)))), List(ext.Args(None, Nil))))
 	    }
@@ -159,7 +154,7 @@ object Translator {
 	        typeformals match {
     	      case Nil => convertType(t, typecontext)
     	      case _ => {
-    	        val (newTypeFormals, dtypecontext) = convertTypeFormals(typeformals, {decl !! _ })
+    	        val (newTypeFormals, dtypecontext) = convertTypeFormals(typeformals, decl)
     	        val enclosedType = convertType(t, typecontext ++ dtypecontext)
     	        TypeAbstraction(newTypeFormals, enclosedType)
     	      }
@@ -171,7 +166,7 @@ object Translator {
 	    case ext.Declare(decl@ ext.Datatype(name, typeformals, constructors), body) => {
 	      val d = new BoundTypevar()
 	      val variantType = { 
-	        val (newTypeFormals, dtypecontext) = convertTypeFormals(typeformals, {decl !! _})
+	        val (newTypeFormals, dtypecontext) = convertTypeFormals(typeformals, decl)
 	        val newtypecontext = typecontext ++ dtypecontext + { (name, d) }
 	        val variants = 
 	          for (ext.Constructor(name, types) <- constructors) yield {
@@ -187,12 +182,12 @@ object Translator {
 	      val (source, dcontext, target) = convertPattern(p, x, context, typecontext)
 
 	      val newbody = convert(body, context ++ dcontext, typecontext + { (name, d) })
-	      val makeSites = makeDatatype(d, constructors)
+	      val makeSites = makeDatatype(d, constructors, this)
 	      
 	      DeclareType(d, variantType, target(newbody) < x < source(makeSites))
 	    }
 	    
-	    case ext.Declare(decl, _) => decl !! "Declaration not understood."
+	    case ext.Declare(decl, _) => throw (MalformedExpression("Invalid declaration form") at decl)
 
 	    case ext.TypeAscription(body, t) => HasType(toExp(body), toType(t))
 	    case ext.TypeAssertion(body, t) => HasType(toExp(body), AssertedType(toType(t)))
@@ -268,7 +263,7 @@ object Translator {
 	def convertDefs(defs: List[ext.DefDeclaration], context: Map[String, Argument], typecontext: Map[String, Type]): (List[Def], Map[String, BoundVar]) = {
 		val reducedDefs = defs map reduceParamLists
 		
-		var defsMap : Map[String, AggregateDef] = HashMap.empty.withDefaultValue(AggregateDef.empty)
+		var defsMap : Map[String, AggregateDef] = HashMap.empty.withDefaultValue(AggregateDef.empty(this))
 		
 		for (d <- reducedDefs; n = d.name) {
 		  defsMap = defsMap + { (n, defsMap(n) + d) }
@@ -305,7 +300,7 @@ object Translator {
   	      TypeApplication(typecontext(name), typeactuals map toType)
   	    }
   	    case ext.LambdaType(typeformals, List(argtypes), returntype) => {
-  	      val (newTypeFormals, dtypecontext) = convertTypeFormals(typeformals, { t !! _ })
+  	      val (newTypeFormals, dtypecontext) = convertTypeFormals(typeformals, t)
   	      val newtypecontext = typecontext ++ dtypecontext
   	      val newArgTypes = argtypes map { convertType(_, newtypecontext)  }
   	      val newReturnType = convertType(returntype, newtypecontext)
@@ -328,14 +323,18 @@ object Translator {
 	 * and 
 	 *     A context mapping those names to those vars
 	 */
-	def convertTypeFormals(typeformals: List[String], err: OrcException => Nothing): (List[BoundTypevar], Map[String,BoundTypevar]) = {
+	def convertTypeFormals(typeformals: List[String], ast: orc.AST): (List[BoundTypevar], Map[String,BoundTypevar]) = {
 	   var newTypeFormals: List[BoundTypevar] = Nil
 	   var formalsMap = new HashMap[String, BoundTypevar]()
        for (name <- typeformals.reverse) {
-         if (formalsMap contains name) { err(new OrcException("Duplicate type variable in type parameter list")) }
-         val w = new BoundTypevar()
-         newTypeFormals = w :: newTypeFormals
-         formalsMap = formalsMap + { (name, w) }
+         if (formalsMap contains name) { 
+           reportProblem(DuplicateTypeFormalException(name) at ast) 
+         }
+         else {
+           val w = new BoundTypevar()
+           newTypeFormals = w :: newTypeFormals
+           formalsMap = formalsMap + { (name, w) }
+         }
        }
 	   (newTypeFormals, formalsMap)
 	}
@@ -360,7 +359,7 @@ object Translator {
 	  var bindingMap: mutable.Map[String, BoundVar] = new mutable.HashMap()
 	  def bind(name: String, x: BoundVar) {
 	    if (bindingMap contains name) {
-          p !! ("Nonlinear pattern: " + name + " occurs more than once.")
+          reportProblem(NonlinearPatternException(name) at p)
         }
         else {
           bindingMap += { (name, x) }

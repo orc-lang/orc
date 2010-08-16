@@ -73,13 +73,13 @@ object PrimitiveForms {
 
   def makeRecord(tuples: List[Argument]) = Call(Constant(RecordConstructor), tuples, None)
 
-  def makeDatatype(declaredVariant: BoundTypevar, constructors: List[ext.Constructor]) = {
+  def makeDatatype(declaredVariant: BoundTypevar, constructors: List[ext.Constructor], translator: Translator) = {
     val datatypeSite = Constant(DatatypeBuilder)
     val datatypePairs =
       for (ext.Constructor(name, types) <- constructors) yield { makeTuple(List(Constant(name), Constant(BigInt(types.size)))) }
     val pairsVar = new BoundVar()
 
-    Translator.unfold(datatypePairs, makeTuple) > pairsVar >
+    translator.unfold(datatypePairs, makeTuple) > pairsVar >
       Call(datatypeSite, List(pairsVar), Some(List(declaredVariant)))
   }
 

@@ -82,12 +82,14 @@ trait NamelessToNamed {
     a -> {
       case Constant(v) => named.Constant(v)
       case Variable(i) => context(i) 
+      case UnboundVariable(s) => named.UnboundVar(s)
     } 
 
   def namelessToNamed(t: Type, typecontext: List[BoundTypevar]): named.Type = {
     def toType(t: Type): named.Type = namelessToNamed(t, typecontext)
     t -> {
       case TypeVar(i) => typecontext(i)
+      case UnboundTypeVariable(u) => named.UnboundTypevar(u)
       case Top() => named.Top()
       case Bot() => named.Bot()
       case FunctionType(typearity, argtypes, returntype) => {

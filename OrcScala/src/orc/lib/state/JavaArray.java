@@ -17,7 +17,7 @@ import java.lang.reflect.Array;
 import java.util.HashMap;
 
 import orc.error.runtime.ArityMismatchException;
-import orc.error.runtime.SiteException;
+import orc.error.runtime.BadArrayElementTypeException;
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
@@ -42,7 +42,7 @@ public class JavaArray extends EvalSite {
 		} else if (args.size() == 2) {
 			final Class<?> type = types.get(args.stringArg(1));
 			if (type == null) {
-				throw new SiteException("Unrecognized array element type: " + args.stringArg(0));
+				throw new BadArrayElementTypeException(args.stringArg(0));
 			}
 			return Array.newInstance(type, args.intArg(0));
 		} else {

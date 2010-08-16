@@ -20,7 +20,7 @@ import scala.collection.mutable.MutableList
 import scala.util.parsing.input.{NoPosition, Position, Positional}
 
 trait AST extends Positional {
-
+  
   /**
    * Location-preserving transform
    */
@@ -36,21 +36,6 @@ trait AST extends Positional {
    * x ->> y  is equivalent to  x -> (_ => y)
    */
   def ->>[B <: AST](that : B): B = { that.pushDownPosition(this.pos); that }
-
-  /**
-   */
-  def !!(exn : OrcException): Nothing = {
-      exn.setPosition(this.pos)
-      throw exn
-  }
-  
-  // Emit a warning
-  def emitWarning(msg : String): Unit = {
-    //FIXME: This should use the compile logger -- this is broken for GUI or Web Orc versions
-    // exn: ContinuableSeverity
-    //compileLogger.recordMessage(exn.severity, 0, exn.getLocalizedMessage, this.pos, this, exn)
-    Console.err.println("Warning " + this.pos + ": " + msg)
-  }
   
   /**
    * Set source location at this node and propagate
@@ -71,7 +56,7 @@ trait AST extends Positional {
    */
   def subtrees: List[AST] = {
 
-    def flatenAstNodes(x: Any, flatList: MutableList[AST]) {
+    def flattenAstNodes(x: Any, flatList: MutableList[AST]) {
       def isGood(y: Any): Boolean = y match {
         case _: AST => true
         case i: Iterable[_] => i.forall(isGood(_))
@@ -89,7 +74,7 @@ trait AST extends Positional {
     val goodKids = new MutableList[AST]();
     for (f <- this.productIterator) {
       if (f.isInstanceOf[AST] || f.isInstanceOf[scala.collection.Iterable[_]]) {
-        flatenAstNodes(f, goodKids);
+        flattenAstNodes(f, goodKids);
       }
     }
     goodKids.toList

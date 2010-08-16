@@ -16,7 +16,7 @@ package orc.lib.comp;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import orc.error.runtime.ArgumentTypeMismatchException;
+import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
@@ -80,7 +80,7 @@ public abstract class ComparisonSite extends EvalSite {
 				return compare(a);
 			}
 		} catch (final ClassCastException e) {
-			throw new ArgumentTypeMismatchException(e);
+			throw new JavaException(e); // TODO: Make more specific
 		}
 	}
 

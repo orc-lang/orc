@@ -18,7 +18,7 @@ import orc.values.sites.UntypedSite
 import orc.values.sites.PartialSite
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
-import orc.error.runtime.RuntimeTypeException
+import orc.error.runtime.NoSuchMemberException
 
 
 /**
@@ -32,8 +32,7 @@ case class OrcRecord(entries: scala.collection.mutable.Map[String,AnyRef]) exten
       case List(Field(name)) => 
         entries.get(name) match {
           case Some(v) => Some(v)
-          // TODO: Make this exception more specific
-          case None => throw new RuntimeTypeException("There is no member " + name + " of value " + this)
+          case None => throw new NoSuchMemberException(this, name)
         }
       case List(a) => throw new ArgumentTypeMismatchException(0, "Field", a.getClass().toString())
       case _ => throw new ArityMismatchException(1, args.size)

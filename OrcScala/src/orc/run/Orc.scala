@@ -380,6 +380,7 @@ trait Orc extends OrcRuntime {
       a match {
         case Constant(v) => BoundValue(v)
         case Variable(n) => env(n)
+        case UnboundVariable(x) => BoundStop //TODO: Also report the presence of an unbound variable.
       }
   
     /* Attempt to resolve a binding to a value.

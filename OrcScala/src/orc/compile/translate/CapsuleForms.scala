@@ -16,6 +16,8 @@ package orc.compile.translate
 
 import orc.compile.ext
 import orc.lib.builtin
+import orc.error.compiletime._
+import orc.error.OrcExceptionExtension._
 
 /**
  * 
@@ -27,21 +29,26 @@ object CapsuleForms {
   /** 
    * Helper functions for capsule conversion
    */
-  def makeCapsuleBody(body: ext.Expression): ext.Expression = makeCapsuleBody(body, Nil)
+  def makeCapsuleBody(body: ext.Expression,
+                      reportProblem: CompilationException with ContinuableSeverity => Unit
+                     ): ext.Expression = makeCapsuleBody(body, Nil, reportProblem)
 
-  def makeCapsuleBody(body: ext.Expression, defNames: List[String]): ext.Expression = {
+  def makeCapsuleBody(body: ext.Expression, 
+                      defNames: List[String],
+                      reportProblem: CompilationException with ContinuableSeverity => Unit
+                     ): ext.Expression = {
     body match {
       case ext.Declare(decl: ext.DefDeclaration, e) => {
-        return new ext.Declare(decl, makeCapsuleBody(e, decl.name :: defNames))
+        return new ext.Declare(decl, makeCapsuleBody(e, decl.name :: defNames, reportProblem))
       }
       case ext.Declare(decl, e) => {
-        return new ext.Declare(decl, makeCapsuleBody(e, defNames))
+        return new ext.Declare(decl, makeCapsuleBody(e, defNames, reportProblem))
       }
       case _ => {}
     }
     val dNames = defNames.distinct
     if (dNames.isEmpty) {
-      body !! "A capsule must contain at least one def"
+      throw (DeflessCapsule() at body)
     }
     val recordCall: ext.Call = new ext.Call(new ext.Constant(builtin.RecordConstructor), List(ext.Args(None, makeRecordArgs(dNames))))
     ext.Parallel(ext.Sequential(body, None, ext.Stop()), recordCall)

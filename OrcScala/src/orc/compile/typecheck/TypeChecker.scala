@@ -54,6 +54,7 @@ object TypeChecker {
       case DeclareType(t, body) => typeSynth(body, context, t :: typeContext)
       case Constant(value) => Top //FIXME
       case Variable(index) => context(index)
+      case UnboundVariable(_) => Bot
     }
   }
 
