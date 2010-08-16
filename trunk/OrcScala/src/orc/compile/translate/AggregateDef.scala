@@ -18,28 +18,31 @@ package orc.compile.translate
 import orc.util.OptionMapExtension._
 import orc.compile.ext._
 import orc.oil.named
-
-import orc.compile.translate.Translator._
+import orc.error.compiletime._
+import orc.error.OrcExceptionExtension._
 
 case class AggregateDef(clauses: List[Clause],
   typeformals: Option[List[String]],
   argtypes: Option[List[Type]],
-  returntype: Option[Type]) extends orc.AST {
+  returntype: Option[Type],
+  translator: Translator) extends orc.AST {
 
-  def unify[A](x: Option[A], y: Option[A], err: => Nothing): Option[A] =
+  import translator._
+  
+  def unify[A](x: Option[A], y: Option[A], reportCollision: => Unit): Option[A] =
     (x, y) match {
       case (None, None) => None
       case (Some(x), None) => Some(x)
       case (None, Some(y)) => Some(y)
-      case (Some(x), Some(y)) => err
+      case (Some(x), Some(y)) => reportCollision ; Some(x)
     }
-  def unifyList[A](x: Option[List[A]], y: Option[List[A]], err: => Nothing): Option[List[A]] =
+  def unifyList[A](x: Option[List[A]], y: Option[List[A]], reportCollision: => Unit): Option[List[A]] =
     (x, y) match {
       case (None, None) => None
       case (Some(x), None) => Some(x)
       case (None, Some(y)) => Some(y)
       case (Some(Nil), Some(Nil)) => Some(Nil) // Nils are allowed to unify
-      case (Some(x), Some(y)) => err
+      case (Some(x), Some(y)) => reportCollision ; Some(x)
     }
 
   def +(defn: DefDeclaration): AggregateDef =
@@ -47,39 +50,39 @@ case class AggregateDef(clauses: List[Clause],
       case Def(_, List(formals), maybeReturnType, body) => {
         val (newformals, maybeArgTypes) = AggregateDef.formalsPartition(formals)
         val newclause = defn ->> Clause(newformals, body)
-        val newArgTypes = unifyList(argtypes, maybeArgTypes, defn !! "Redundant argument typing")
-        val newReturnType = unify(returntype, maybeReturnType, defn !! "Redundant return typing")
-        new AggregateDef(clauses ::: List(newclause), typeformals, newArgTypes, newReturnType)
+        val newArgTypes = unifyList(argtypes, maybeArgTypes, reportProblem(RedundantArgumentType() at defn))
+        val newReturnType = unify(returntype, maybeReturnType, reportProblem(RedundantReturnType() at defn))
+        AggregateDef(clauses ::: List(newclause), typeformals, newArgTypes, newReturnType, translator)
       }
       case DefCapsule(name, List(formals), maybeReturnType, body) => {
         this + Def(name, List(formals), maybeReturnType, new Capsule(body))
       }
       case DefSig(_, typeformals2, argtypes2, maybeReturnType) => {
         val argtypes3 = argtypes2 head // List[List[Type]] has only one entry
-        val newTypeFormals = unifyList(typeformals, Some(typeformals2), defn !! "Redundant type parameters")
-        val newArgTypes = unifyList(argtypes, Some(argtypes3), defn !! "Redundant argument typing")
-        val newReturnType = unify(returntype, Some(maybeReturnType), defn !! "Redundant return typing")
-        new AggregateDef(clauses, newTypeFormals, newArgTypes, newReturnType)
+        val newTypeFormals = unifyList(typeformals, Some(typeformals2), reportProblem(RedundantTypeParameters() at defn))
+        val newArgTypes = unifyList(argtypes, Some(argtypes3), reportProblem(RedundantArgumentType() at defn))
+        val newReturnType = unify(returntype, Some(maybeReturnType), reportProblem(RedundantReturnType() at defn))
+        AggregateDef(clauses, newTypeFormals, newArgTypes, newReturnType, translator)
       }
     }
 
   def +(lambda: Lambda): AggregateDef = {
     val (newformals, maybeArgTypes) = AggregateDef.formalsPartition(lambda.formals.head)
     val newclause = lambda ->> Clause(newformals, lambda.body)
-    val newArgTypes = unifyList(argtypes, maybeArgTypes, lambda !! "Redundant argument typing")
-    val newReturnType = unify(returntype, lambda.returntype, lambda !! "Redundant return typing")
-    new AggregateDef(clauses ::: List(newclause), typeformals, newArgTypes, newReturnType)
+    val newArgTypes = unifyList(argtypes, maybeArgTypes, reportProblem(RedundantArgumentType() at lambda))
+    val newReturnType = unify(returntype, lambda.returntype, reportProblem(RedundantReturnType() at lambda))
+    AggregateDef(clauses ::: List(newclause), typeformals, newArgTypes, newReturnType, translator)
   }
 
   def convert(x : named.BoundVar, context: Map[String, named.Argument], typecontext: Map[String, named.Type]): named.Def = {
-    if (clauses.isEmpty) { this !! "Unused function signature" }
+    if (clauses.isEmpty) { reportProblem(UnusedFunctionSignature() at this) }
 
-    val (newTypeFormals, dtypecontext) = convertTypeFormals(typeformals.getOrElse(Nil), {this !! _ })
+    val (newTypeFormals, dtypecontext) = convertTypeFormals(typeformals.getOrElse(Nil), this)
     val newtypecontext = typecontext ++ dtypecontext
     val newArgTypes = argtypes map { _ map { convertType(_, newtypecontext) } }
     val newReturnType = returntype map { convertType(_, newtypecontext) }
 
-    val (newformals, newbody) = Clause.convertClauses(clauses, context, newtypecontext)
+    val (newformals, newbody) = Clause.convertClauses(clauses, context, newtypecontext, translator)
 
     named.Def(x, newformals, newbody, newTypeFormals, newArgTypes, newReturnType)
   }
@@ -90,10 +93,10 @@ case class AggregateDef(clauses: List[Clause],
     for (aclause <- clauses) {
       aclause match {
         case Clause(_, Capsule(_)) =>
-          if (existsNotCapsule) { aclause !! "This function is not declared as a capsule." }
+          if (existsNotCapsule) { reportProblem(CapsuleDefInNoncapsuleContext() at aclause) }
           else existsCapsule = true
         case _ =>
-          if (existsCapsule) { aclause !! "This function is already declared as a capsule." }
+          if (existsCapsule) { reportProblem(NoncapsuleDefInCapsuleContext() at aclause) }
           else existsNotCapsule = true
       }
     }
@@ -118,10 +121,10 @@ object AggregateDef {
     }
   }
 
-  val empty = new AggregateDef(Nil, None, None, None)
+  def empty(tl: Translator) = new AggregateDef(Nil, None, None, None, tl)
 
-  def apply(defn: DefDeclaration) = defn -> { empty + _ }
-  def apply(lambda: Lambda) = lambda -> { empty + _ }
+  def apply(defn: DefDeclaration, tl: Translator) = defn -> { empty(tl) + _ }
+  def apply(lambda: Lambda, tl: Translator) = lambda -> { empty(tl) + _ }
 
 }
 

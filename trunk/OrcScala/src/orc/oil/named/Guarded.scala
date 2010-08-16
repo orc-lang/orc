@@ -23,19 +23,19 @@ package orc.oil.named
 trait Guarding {
   self : Expression =>
   
-  def checkGuarded: Boolean = this.checkGuarded(Nil)
+  def checkGuarded(unguardedRecursion: => Unit) { checkGuarded(Nil, unguardedRecursion) }
   
   /* The context contains only those variables which would be
    * considered recursive call targets in the current context.
    */
-  def checkGuarded(context: List[BoundVar]): Boolean = {
+  def checkGuarded(context: List[BoundVar], unguardedRecursion: => Unit): Boolean = {
+    def check(e: Expression) = e.checkGuarded(context, unguardedRecursion)
     this match {
       case Stop() => true
       case a : Argument => false
       case Call(target, _, _) => {
         if (context contains target) {
-          this emitWarning "Unguarded recursion" ; 
-          false
+          unguardedRecursion ; false
         } else {
           /* This is a liberal approximation and will generate false negatives. 
            * Not all calls are truly guarding; only calls to sites or to guarded
@@ -47,32 +47,32 @@ trait Guarding {
         }
       }
       case left || right => {
-        val l = left.checkGuarded(context)
-        val r = right.checkGuarded(context)
+        val l = check(left)
+        val r = check(right)
         l && r
       }
       case left > x > right => {
-        val l = left.checkGuarded(context) 
-        val r = right.checkGuarded(if (l) { Nil } else context)
+        val l = check(left) 
+        val r = right.checkGuarded(if (l) { Nil } else context, unguardedRecursion)
         l || r
       }
       case left < x < right => {
-        val l = left.checkGuarded(context)
-        val r = right.checkGuarded(context)
+        val l = check(left)
+        val r = check(right)
         l && r
       }
       case left ow right => {
-        val l = left.checkGuarded(context)
-        val r = right.checkGuarded(if (l) { Nil } else context)
+        val l = check(left) 
+        val r = right.checkGuarded(if (l) { Nil } else context, unguardedRecursion)
         l || r
       }
       case DeclareDefs(defs, body) => {
         val newcontext = (defs map { _.name }) ::: context
-        val _ = for (d <- defs) yield { d.body.checkGuarded(newcontext) }
-        body.checkGuarded(context)
+        val _ = for (d <- defs) yield { d.body.checkGuarded(newcontext, unguardedRecursion) }
+        check(body)
       }
-      case DeclareType(_, _, body) => body.checkGuarded(context)
-      case HasType(body, _) => body.checkGuarded(context)
+      case DeclareType(_, _, body) => check(body)
+      case HasType(body, _) => check(body)
     }
   }
   

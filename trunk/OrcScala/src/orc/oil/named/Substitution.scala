@@ -30,10 +30,8 @@ trait Substitution[X <: NamedAST] {
     val subs = new scala.collection.mutable.HashMap[Argument, Argument]()
     for ((a,s) <- sublist) {
       val x = UnboundVar(s)
-      if ( subs.contains(x) )
-        { this !! ("Conflicting substitutions on " + x + ": " + a + " vs " + subs(x)) }
-      else 
-        { subs += ( (x,a) ) }
+      assert( !subs.contains(x) )
+      subs += ( (x,a) )
     }
     Substitution.allArgs(subs)(this).asInstanceOf[X]
   }
@@ -44,10 +42,8 @@ trait Substitution[X <: NamedAST] {
     val subs = new scala.collection.mutable.HashMap[Typevar, Type]()
     for ((t,s) <- sublist) {
       val u = UnboundTypevar(s)
-      if ( subs.isDefinedAt(u) )
-        { this !! ("Conflicting substitutions on " + u + ": " + t + " vs " + subs(u)) }
-      else 
-        { subs += ( (u,t) ) }
+      assert( !subs.isDefinedAt(u) )
+      subs += ( (u,t) )
     }
     Substitution.allTypes(subs)(this).asInstanceOf[X]
   }

@@ -76,8 +76,8 @@ with NamelessToNamed
       case DeclareDefs(openvars, defs, body) => openvars.toSet ++ shift(body.freevars, defs.length)
       case HasType(body,_) => body.freevars
       case DeclareType(_,body) => body.freevars
+      // Free variable determination will probably be incorrect on an expression with holes
       case Hole(_,_) => {
-        this emitWarning "Free variable determination may be incorrect on an expression with holes"
         Set.empty
       }
     }
@@ -147,8 +147,9 @@ case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) 
 sealed abstract class Argument extends Expression 
 case class Constant(value: AnyRef) extends Argument
 case class Variable(index: Int) extends Argument {
-  if (index < 0) { throw new Exception("Invalid construction of indexed variable. Index must be >= 0") }
+  require(index >= 0)
 }
+case class UnboundVariable(name: String) extends Argument
 
 sealed abstract class Type extends NamelessAST with NamelessToNamed {
   lazy val withNames: named.Type = namelessToNamed(this, Nil)
@@ -165,7 +166,7 @@ case class TypeAbstraction(typeFormalArity: Int, t: Type) extends Type
 case class ImportedType(classname: String) extends Type
 case class ClassType(classname: String) extends Type
 case class VariantType(variants: List[(String, List[Option[Type]])]) extends Type
-
+case class UnboundTypeVariable(name: String) extends Type
 
 sealed case class Def(typeFormalArity: Int, arity: Int, body: Expression, argTypes: Option[List[Type]], returnType: Option[Type]) extends NamelessAST 
 with hasFreeVars 

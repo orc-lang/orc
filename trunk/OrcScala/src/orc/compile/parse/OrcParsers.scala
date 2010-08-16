@@ -177,7 +177,7 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
       parseCallExpression
   )
 
-  val parseUnaryExpr = (
+  val parseUnaryExpr: Parser[Expression] = (
     // First see if it's a unary minus for a numeric literal
       "-" ~> numericLit -> { s => Constant(-BigInt(s)) }
     | "-" ~> floatLit -> { s => Constant(-BigDecimal(s)) }
@@ -185,37 +185,15 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
     | parseConditionalExpression
     )
 
-  //FIXME: All these uses of ^^ are discarding position information!
-
-  val parseExpnExpr = chainl1(parseUnaryExpr, ("**") ^^
-    { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
-
-  val parseMultExpr = chainl1(parseExpnExpr, ("*" | "/" | "%") ^^
-    { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
-
-  val parseAdditionalExpr: Parser[Expression] = (
-     chainl1(parseMultExpr, ("-" | "+") ^^
-        { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
-        /* Disallow newline breaks for binary subtract,
-         * to resolve ambiguity with unary minus.*/
-  )
-
-  val parseConsExpr: Parser[Expression] = (
-     chainr1(parseAdditionalExpr, ":" ^^
-        { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
-  )
-
-  val parseRelationalExpr = chainl1(parseConsExpr, ("<:" | ":>" | "<=" | ">=" | "=" | "/=") ^^
-        { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
-
-  val parseLogicalExpr = chainl1(parseRelationalExpr, ("||" | "&&") ^^
-   { op =>(left:Expression,right:Expression) => InfixOperator(left, op, right)})
-
-  val parseInfixOpExpression: Parser[Expression] = chainl1(parseLogicalExpr, ":=" ^^
-    { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
+  def parseExpnExpr          = parseUnaryExpr      withInfix List("**")
+  def parseMultExpr          = parseExpnExpr       withInfix List("*", "/", "%")
+  def parseAdditionalExpr    = parseMultExpr       withInfix List("-", "+")
+  def parseConsExpr          = parseAdditionalExpr withInfix List(":")
+  def parseRelationalExpr    = parseConsExpr       withInfix List("<:", ":>", "<=", ">=", "=", "/=")
+  def parseLogicalExpr       = parseRelationalExpr withInfix List("||", "&&")
+  def parseInfixOpExpression = parseLogicalExpr    withInfix List(":=")
 
   val parseSequentialCombinator = ">" ~> (parsePattern?) <~ ">"
-
   val parsePruningCombinator = "<" ~> (parsePattern?) <~ "<"
 
   val parseSequentialExpression =
@@ -458,21 +436,6 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
     )
 
   ////////
-  // Preserve input source position
-  ////////
-
-  class LocatingParser[+A <: AST](p: => Parser[A]) extends Parser[A] {
-    override def apply(i: Input) = {
-      val position = i.pos
-      val result: ParseResult[A] = p.apply(i)
-      result map { _.pos = position }
-      result
-    }
-  }
-
-  def markLocation[A <: AST](p: => Parser[A]) = new LocatingParser(p)
-
-  ////////
   // Re-write some error messages with explanatory detail
   ////////
 
@@ -545,6 +508,24 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
     }
   }
 
+  
+  
+  ////////
+  // Preserve input source position
+  ////////
+
+  class LocatingParser[+A <: AST](p: => Parser[A]) extends Parser[A] {
+    override def apply(i: Input) = {
+      val position = i.pos
+      val result: ParseResult[A] = p.apply(i)
+      result map { _.pos = position }
+      result
+    }
+  }
+
+  def markLocation[A <: AST](p: => Parser[A]) = new LocatingParser(p)
+  
+  
   ////////
   // Extended apply combinator ->
   ////////
@@ -600,19 +581,46 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
         markLocation( chainr1(markLocation(parser), interparser ^^ origami) )
       }: Parser[A]
   }
+  
+  ////////
+  // Infixing combinator
+  ///////
+  
+  class InfixingParser[A <: Expression](parser: Parser[A]) {
+    def withInfix(ops: List[String]) = {
+      val opsParser: Parser[String] = ops map keyword reduceRight { _ | _ }
+      chainr1(parser, opsParser ^^ { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
+    }
+  }
 
   ////////
   // Our own chainr1
   ////////
 
-  def chainr1[T](p: => Parser[T], q: => Parser[(T, T) => T]): Parser[T] = {
-      def myFold[T](list: List[((T,T)=>T) ~ T]): (T => T) = {
+  def chainr1[T <: AST](p: => Parser[T], q: => Parser[(T, T) => T]): Parser[T] = {
+      def myFold(list: List[((T,T)=>T) ~ T]): (T => T) = {
         list match {
           case List(f ~ a) => f(_,a)
           case f ~ a :: xs => f(_,myFold(xs)(a))
         }
       }
-      p ~ rep(q ~ p) ^^ {case x ~ xs => if (xs.isEmpty) x else myFold(xs)(x)}
+      val markingQ = new Parser[(T,T) => T] {
+        override def apply(i: Input) = {
+          val position = i.pos
+          val result: ParseResult[(T,T) => T] = q.apply(i)
+          result map 
+            { (f: (T,T) => T) => 
+              { (a: T, b: T) =>
+                {
+                  val ast = f(a,b)
+                  ast.pos = position
+                  ast
+                }
+              }
+            }
+        } 
+      }
+      p ~ rep(markingQ ~ p) ^^ {case x ~ xs => if (xs.isEmpty) x else myFold(xs)(x)}
   }
 
   ////////
@@ -628,4 +636,5 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
   implicit def CreateMaps1Optional2Parser[A <: AST,B](parser: Parser[A ~ Option[B]]): Maps1Optional2[A,B] = new Maps1Optional2(parser)
 
   implicit def CreateInterleavingParser[A <: AST](parser: Parser[A]): InterleavingParser[A] = new InterleavingParser(parser)
+  implicit def CreateInfixingParser[A <: Expression](parser: Parser[A]): InfixingParser[A] = new InfixingParser(parser)
 }

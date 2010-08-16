@@ -88,6 +88,10 @@ class InsufficientArgsException(val missingArg: Int, val arityProvided: Int) ext
 class MalformedArrayAccessException(val args: List[AnyRef]) extends
   RuntimeTypeException("Array access requires a single Integer as an argument")
 
+class BadArrayElementTypeException(val badType: String) extends
+  TokenException("Unrecognized array element type: " + badType)
+
+
 /**
  * 
  */
@@ -99,6 +103,13 @@ class MethodTypeMismatchException(val methodName: String, val clazz: Class[_]) e
  */
 class UncallableValueException(val uncallable: Any) extends
  RuntimeTypeException("Value not callable: \""+uncallable.toString()+"\"")
+
+
+/**
+ * Attempted dot access at an unknown member.
+ */
+class NoSuchMemberException(val v: AnyRef, val unknownMember: String) extends
+  RuntimeTypeException("Value " + v + " does not have a '" + unknownMember + "' member")
 
 ////////
 // Site exceptions

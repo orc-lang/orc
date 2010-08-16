@@ -113,7 +113,7 @@ public abstract class OrcException extends Exception {
 	public Position getPosition() {
 		return position;
 	}
-
+	
 	public void resetPosition(final Position newpos) {
 		position = newpos;
 	}
@@ -124,4 +124,5 @@ public abstract class OrcException extends Exception {
 		}
 		return this;
 	}
+	
 }

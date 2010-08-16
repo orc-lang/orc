@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import orc.error.OrcError;
 import orc.error.runtime.ArgumentTypeMismatchException;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.InsufficientArgsException;
@@ -351,7 +350,7 @@ public class Args implements Serializable, Iterable<Object> {
 			} else if (a instanceof Byte || b instanceof Byte) {
 				return op.apply(a.byteValue(), b.byteValue());
 			} else {
-				throw new OrcError("Unexpected Number type in (" + a.getClass().toString() + ", " + b.getClass().toString() + ")");
+				throw new JavaException(new IllegalArgumentException("Unexpected Number type in (" + a.getClass().toString() + ", " + b.getClass().toString() + ")"));
 			}
 		} catch (final ArithmeticException e) {
 			throw new JavaException(e);
@@ -361,7 +360,7 @@ public class Args implements Serializable, Iterable<Object> {
 	/**
 	 * Dispatch a unary operator based on the type of a number.
 	 */
-	public static <T> T applyNumericOperator(final Number a, final NumericUnaryOperator<T> op) {
+	public static <T> T applyNumericOperator(final Number a, final NumericUnaryOperator<T> op) throws TokenException {
 		if (a instanceof BigDecimal) {
 			return op.apply((BigDecimal) a);
 		} else if (a instanceof Double) {
@@ -379,7 +378,7 @@ public class Args implements Serializable, Iterable<Object> {
 		} else if (a instanceof Byte) {
 			return op.apply(a.byteValue());
 		} else {
-			throw new OrcError("Unexpected Number type in (" + a.getClass().toString() + ")");
+			throw new JavaException(new IllegalArgumentException("Unexpected Number type in (" + a.getClass().toString() + ")"));
 		}
 	}
 

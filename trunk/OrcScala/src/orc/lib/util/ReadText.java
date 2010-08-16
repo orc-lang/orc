@@ -16,7 +16,6 @@ package orc.lib.util;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import orc.error.runtime.ArgumentTypeMismatchException;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
@@ -45,7 +44,7 @@ public class ReadText extends ThreadedSite {
 		} catch (final IOException e) {
 			throw new JavaException(e);
 		} catch (final ClassCastException e) {
-			throw new ArgumentTypeMismatchException(e);
+			throw new JavaException(e); // TODO: Make more specific
 		}
 	}
 }

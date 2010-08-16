@@ -22,7 +22,7 @@ sealed abstract class Expression extends AST
 case class Stop() extends Expression
 case class Constant(c: AnyRef) extends Expression
 case class Variable(name: String) extends Expression
-case class TupleExpr(elements: List[Expression]) extends Expression
+case class TupleExpr(elements: List[Expression]) extends Expression { require(elements.size > 1) }
 case class ListExpr(elements: List[Expression]) extends Expression
 case class RecordExpr(elements: List[(String, Expression)]) extends Expression
 case class Call(target: Expression, gs: List[ArgumentGroup]) extends Expression

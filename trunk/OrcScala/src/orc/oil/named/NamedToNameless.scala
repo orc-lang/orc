@@ -46,7 +46,7 @@ trait NamedToNameless {
         val openvars = 
           opennames map { x =>
             val i = context indexOf x
-            if (i < 0) { e !! "Compiler fault: unbound closure variable in deBruijn conversion"+newbody }
+            assert(i >= 0)
             i
           }
         nameless.DeclareDefs(openvars, newdefs, newbody)
@@ -72,10 +72,10 @@ trait NamedToNameless {
       case Constant(v) => nameless.Constant(v)
       case (x: BoundVar) => {
         var i = context indexOf x
-        if (i < 0) { a !! "Compiler fault: unbound variable in deBruijn conversion" } 
+        assert(i >= 0) 
         nameless.Variable(i) 
       }
-      case x@ UnboundVar(s) => x !! ("Unbound variable " + s) 
+      case UnboundVar(s) => nameless.UnboundVariable(s) 
     }
   }
 
@@ -85,7 +85,7 @@ trait NamedToNameless {
     t -> {
       case u: BoundTypevar => {
         var i = typecontext indexOf u
-        if (i < 0) { t !! "Compiler fault: unbound type variable in deBruijn conversion" } 
+        assert(i >= 0) 
         nameless.TypeVar(i)
       }
       case Top() => nameless.Top()
@@ -103,7 +103,7 @@ trait NamedToNameless {
       }
       case TypeApplication(tycon, typeactuals) => {
         val i = typecontext indexOf tycon
-        if (i < 0) { t !! "Compiler fault: unbound type constructor in deBruijn conversion" } 
+        assert(i >= 0) 
         nameless.TypeApplication(i, typeactuals map toType)
       } 
       case AssertedType(assertedType) => nameless.AssertedType(toType(assertedType))
@@ -121,7 +121,7 @@ trait NamedToNameless {
           }
         nameless.VariantType(newVariants)
       }
-      case u@ UnboundTypevar(s) => u !! ("Unbound type variable " + s)
+      case UnboundTypevar(s) => nameless.UnboundTypeVariable(s)
     } 
   } 
 
