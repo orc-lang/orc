@@ -4,7 +4,7 @@
 type Queen = (Integer,Integer)
 
 def check(Queen,Queen) :: Signal
-def check((a,b),(x,y)) = ift(a /= x) >> ift(b /= y) >> ift(a - b /= x - y) >> ift(a + b /= x + y)
+def check((a,b),(x,y)) = IfT(a /= x) >> IfT(b /= y) >> IfT(a - b /= x - y) >> IfT(a + b /= x + y)
 
 def addqueen(Queen, List[Queen]) :: List[Queen]
 def addqueen(r, []) = [r]

@@ -7,7 +7,7 @@
 
 val b = true
 
-ift(b) >> "true" | iff(b) >> "false"
+IfT(b) >> "true" | IfF(b) >> "false"
 
 {-
 OUTPUT:
