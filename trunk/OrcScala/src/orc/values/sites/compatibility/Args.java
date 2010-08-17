@@ -16,8 +16,6 @@ package orc.values.sites.compatibility;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 import orc.error.runtime.ArgumentTypeMismatchException;
@@ -34,7 +32,7 @@ import orc.values.Signal$;
  * @author dkitchin
  */
 @SuppressWarnings("serial")
-public class Args implements Serializable, Iterable<Object> {
+public class Args implements Serializable {
 	Object[] values;
 
 	public Args(@SuppressWarnings("hiding") final List<Object> values) {
@@ -177,98 +175,6 @@ public class Args implements Serializable, Iterable<Object> {
 		}
 	}
 
-//	private static class StringListValue implements ListLike {
-//		private final String value;
-//
-//		public StringListValue(final String value) {
-//			this.value = value;
-//		}
-//
-//		public void uncons(final Token caller) {
-//			if (value.equals("")) {
-//				caller.die();
-//			} else {
-//				caller.resume(new TupleValue(value.substring(0, 1), value.substring(1)));
-//			}
-//		}
-//
-//		public void unnil(final Token caller) {
-//			if (value.equals("")) {
-//				caller.resume(Value.signal());
-//			} else {
-//				caller.die();
-//			}
-//		}
-//	}
-
-//	/**
-//	 * ListValue view for iterators. Because iterators are not cloneable and are
-//	 * mutable, we have to cache the head and tail.
-//	 * 
-//	 * @author quark
-//	 */
-//	private static class IteratorListValue implements ListLike {
-//		private final Iterator iterator;
-//
-//		private TupleValue cons = null;
-//
-//		private boolean forced = false;
-//
-//		public IteratorListValue(final Iterator iterator) {
-//			this.iterator = iterator;
-//		}
-//
-//		private void force() {
-//			if (forced) {
-//				return;
-//			}
-//			forced = true;
-//			if (iterator.hasNext()) {
-//				cons = new TupleValue(iterator.next(), new IteratorListValue(iterator));
-//			}
-//		}
-//
-//		public void uncons(final Token caller) {
-//			force();
-//			if (cons == null) {
-//				caller.die();
-//			} else {
-//				caller.resume(cons);
-//			}
-//		}
-//
-//		public void unnil(final Token caller) {
-//			force();
-//			if (cons == null) {
-//				caller.resume(Value.signal());
-//			} else {
-//				caller.die();
-//			}
-//		}
-//	}
-//
-//	public ListLike listLikeArg(final int n) throws TokenException {
-//		final Object a = getArg(n);
-//		if (a == null) {
-//			throw new ArgumentTypeMismatchException(n, "ListLike", "null");
-//		} else if (a instanceof ListLike) {
-//			return (ListLike) a;
-//		} else if (a instanceof String) {
-//			return new StringListValue((String) a);
-//		} else if (a instanceof Iterable) {
-//			final Iterator it = ((Iterable) a).iterator();
-//			return new IteratorListValue(it);
-//		} else if (a instanceof Object[]) {
-//			// FIXME: we should be able to iterate
-//			// over primitive arrays, but that requires
-//			// a different approach (asList won't work
-//			// with primitive arrays).
-//			return new IteratorListValue(Arrays.asList((Object[]) a).iterator());
-//		} else {
-//			throw new ArgumentTypeMismatchException(n, "ListLike", a.getClass().toString());
-//		}
-//	}
-
 	/** A unary operator on numbers */
 	public interface NumericUnaryOperator<T> {
 		public T apply(BigInteger a);
@@ -380,9 +286,5 @@ public class Args implements Serializable, Iterable<Object> {
 		} else {
 			throw new JavaException(new IllegalArgumentException("Unexpected Number type in (" + a.getClass().toString() + ")"));
 		}
-	}
-
-	public Iterator<Object> iterator() {
-		return Arrays.asList(values).iterator();
 	}
 }
