@@ -1,6 +1,6 @@
 //
 // Buffer.java -- Java class Buffer
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

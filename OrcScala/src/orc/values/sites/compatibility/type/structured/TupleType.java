@@ -1,6 +1,6 @@
 //
 // TupleType.java -- Java class TupleType
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

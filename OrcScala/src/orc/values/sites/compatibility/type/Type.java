@@ -1,6 +1,6 @@
 //
 // Type.java -- Java class Type
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

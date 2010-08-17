@@ -1,6 +1,6 @@
 //
 // OptionType.java -- Java class OptionType
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

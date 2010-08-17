@@ -1,6 +1,6 @@
 //
 // Floor.java -- Java class Floor
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

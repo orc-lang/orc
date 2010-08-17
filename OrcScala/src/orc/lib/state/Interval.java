@@ -1,6 +1,6 @@
 //
 // Interval.java -- Java class Interval
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

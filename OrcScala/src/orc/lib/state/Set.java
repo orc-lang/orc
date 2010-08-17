@@ -1,6 +1,6 @@
 //
 // Set.java -- Java class Set
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

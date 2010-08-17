@@ -1,6 +1,6 @@
 //
 // Greq.java -- Java class Greq
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

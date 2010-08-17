@@ -1,6 +1,6 @@
 //
 // Println.java -- Java class Println
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

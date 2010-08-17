@@ -1,6 +1,6 @@
 //
 // BoundedBuffer.java -- Java class BoundedBuffer
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

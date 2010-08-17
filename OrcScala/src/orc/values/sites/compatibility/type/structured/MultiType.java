@@ -1,6 +1,6 @@
 //
 // MultiType.java -- Java class MultiType
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

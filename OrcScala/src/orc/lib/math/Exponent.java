@@ -1,6 +1,6 @@
 //
 // Exponent.java -- Java class Exponent
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

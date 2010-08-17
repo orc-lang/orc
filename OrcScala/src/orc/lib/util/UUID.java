@@ -1,6 +1,6 @@
 //
 // UUID.java -- Java class UUID
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

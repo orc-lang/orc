@@ -1,6 +1,6 @@
 //
 // Counter.java -- Java class Counter
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

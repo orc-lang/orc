@@ -1,6 +1,6 @@
 //
 // Mult.java -- Java class Mult
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

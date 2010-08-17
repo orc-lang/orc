@@ -1,6 +1,6 @@
 //
 // Greater.java -- Java class Greater
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

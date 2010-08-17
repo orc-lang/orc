@@ -1,6 +1,6 @@
 //
 // JavaArray.java -- Java class JavaArray
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

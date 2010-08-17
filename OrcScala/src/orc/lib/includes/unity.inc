@@ -1,6 +1,6 @@
 --
 -- unity.inc -- Orc include for the UNITY execution scheduler
--- Project OrcJava
+-- Project OrcScala
 --
 -- $Id$
 --

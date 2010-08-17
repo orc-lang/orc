@@ -1,6 +1,6 @@
 //
 // BoolBinopSite.java -- Java class BoolBinopSite
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

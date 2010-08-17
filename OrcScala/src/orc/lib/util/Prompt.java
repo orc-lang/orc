@@ -1,6 +1,6 @@
 //
 // Prompt.java -- Java class Prompt
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

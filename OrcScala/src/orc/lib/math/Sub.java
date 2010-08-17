@@ -1,6 +1,6 @@
 //
 // Sub.java -- Java class Sub
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

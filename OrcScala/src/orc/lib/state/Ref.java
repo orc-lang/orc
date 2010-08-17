@@ -1,6 +1,6 @@
 //
 // Ref.java -- Java class Ref
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

@@ -1,6 +1,6 @@
 //
 // ComparisonSite.java -- Java class ComparisonSite
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

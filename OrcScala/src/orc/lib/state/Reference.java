@@ -1,6 +1,6 @@
 //
 // Reference.java -- Java interface Reference
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

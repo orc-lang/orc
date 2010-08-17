@@ -1,6 +1,6 @@
 //
 // Semaphore.java -- Java class Semaphore
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

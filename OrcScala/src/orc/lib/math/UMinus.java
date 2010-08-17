@@ -1,6 +1,6 @@
 //
 // UMinus.java -- Java class UMinus
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

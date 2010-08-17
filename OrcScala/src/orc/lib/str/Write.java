@@ -1,6 +1,6 @@
 //
 // Write.java -- Java class Write
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //
