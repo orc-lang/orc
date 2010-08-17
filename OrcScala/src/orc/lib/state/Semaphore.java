@@ -15,7 +15,6 @@ package orc.lib.state;
 
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.TokenException;
