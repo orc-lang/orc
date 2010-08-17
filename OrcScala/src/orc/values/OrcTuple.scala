@@ -1,5 +1,5 @@
 //
-// OrcTuple.scala -- Scala class/trait/object OrcTuple
+// OrcTuple.scala -- Scala class OrcTuple
 // Project OrcScala
 //
 // $Id$
@@ -16,6 +16,9 @@ package orc.values
 
 import orc.values.sites.UntypedSite
 import orc.values.sites.PartialSite
+import orc.error.runtime.ArgumentTypeMismatchException
+import orc.error.runtime.ArityMismatchException
+import orc.error.runtime.TupleIndexOutOfBoundsException
 
 
 /**
@@ -31,9 +34,10 @@ case class OrcTuple(values: List[AnyRef]) extends PartialSite with UntypedSite {
         if (0 <= i  &&  i < values.size) 
           { Some(values(i)) }
         else
-          { None }
+          { throw new TupleIndexOutOfBoundsException(i) }
       }
-      case _ => None
+      case List(a) => throw new ArgumentTypeMismatchException(0, "Integer", a.getClass().toString())
+      case _ => throw new ArityMismatchException(1, args.size)
     }
   override def toOrcSyntax() = "(" + Format.formatSequence(values) + ")" 
 }
