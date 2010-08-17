@@ -91,6 +91,11 @@ class MalformedArrayAccessException(val args: List[AnyRef]) extends
 class BadArrayElementTypeException(val badType: String) extends
   TokenException("Unrecognized array element type: " + badType)
 
+/**
+ * 
+ */
+class TupleIndexOutOfBoundsException(val index: Int) extends
+  RuntimeTypeException("String index out of range: " + index)
 
 /**
  * 
