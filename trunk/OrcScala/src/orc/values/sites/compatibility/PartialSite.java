@@ -1,6 +1,6 @@
 //
 // PartialSite.java -- Java class PartialSite
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

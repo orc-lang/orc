@@ -1,6 +1,6 @@
 //
 // And.java -- Java class And
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

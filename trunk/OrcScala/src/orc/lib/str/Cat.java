@@ -1,6 +1,6 @@
 //
 // Cat.java -- Java class Cat
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

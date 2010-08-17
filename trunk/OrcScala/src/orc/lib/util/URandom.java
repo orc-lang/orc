@@ -1,6 +1,6 @@
 //
 // URandom.java -- Java class URandom
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

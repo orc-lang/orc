@@ -1,6 +1,6 @@
 //
 // Less.java -- Java class Less
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

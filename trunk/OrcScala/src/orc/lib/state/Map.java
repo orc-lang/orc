@@ -1,6 +1,6 @@
 //
 // Map.java -- Java class Map
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

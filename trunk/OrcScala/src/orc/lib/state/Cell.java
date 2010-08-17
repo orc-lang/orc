@@ -1,6 +1,6 @@
 //
 // Cell.java -- Java class Cell
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

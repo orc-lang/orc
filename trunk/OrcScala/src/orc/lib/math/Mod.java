@@ -1,6 +1,6 @@
 //
 // Mod.java -- Java class Mod
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

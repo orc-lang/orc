@@ -1,6 +1,6 @@
 //
 // ReadText.java -- Java class ReadText
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

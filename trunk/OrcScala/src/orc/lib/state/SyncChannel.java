@@ -1,6 +1,6 @@
 //
 // SyncChannel.java -- Java class SyncChannel
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

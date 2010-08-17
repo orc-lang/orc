@@ -1,6 +1,6 @@
 //
 // DotSite.java -- Java class DotSite
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

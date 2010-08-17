@@ -1,6 +1,6 @@
 //
 // EllipsisArrowType.java -- Java class EllipsisArrowType
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

@@ -1,6 +1,6 @@
 //
 // TypeVariable.java -- Java class TypeVariable
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

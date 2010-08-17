@@ -1,6 +1,6 @@
 //
 // Print.java -- Java class Print
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

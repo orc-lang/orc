@@ -1,6 +1,6 @@
 //
 // ThreadedPartialSite.java -- Java class ThreadedPartialSite
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

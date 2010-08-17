@@ -1,10 +1,10 @@
 --
 -- prelude.inc -- Orc standard prelude include file
--- Project OrcJava
+-- Project OrcScala
 --
 -- $Id$
 --
--- Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+-- Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 --
 -- Use and redistribution of this file is governed by the license terms in
 -- the LICENSE file found in the project's top-level directory and also found at
@@ -13,7 +13,7 @@
 
 include "prelude/core.inc"
 include "prelude/state.inc"
-include "prelude/time.inc" -- not implemented yet
+include "prelude/time.inc"
 include "prelude/idioms.inc"
 include "prelude/list.inc"
 include "prelude/text.inc"

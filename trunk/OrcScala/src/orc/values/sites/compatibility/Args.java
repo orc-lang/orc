@@ -1,6 +1,6 @@
 //
 // Args.java -- Java class Args
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

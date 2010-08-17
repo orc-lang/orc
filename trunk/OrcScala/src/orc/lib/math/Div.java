@@ -1,6 +1,6 @@
 //
 // Div.java -- Java class Div
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

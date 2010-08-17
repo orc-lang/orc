@@ -1,6 +1,6 @@
 //
 // Rtimer.java -- Java class Rtimer
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

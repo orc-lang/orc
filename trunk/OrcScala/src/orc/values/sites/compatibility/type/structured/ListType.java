@@ -1,6 +1,6 @@
 //
 // ListType.java -- Java class ListType
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

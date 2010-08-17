@@ -1,6 +1,6 @@
 //
 // Ceil.java -- Java class Ceil
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

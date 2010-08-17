@@ -1,6 +1,6 @@
 //
 // Add.java -- Java class Add
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

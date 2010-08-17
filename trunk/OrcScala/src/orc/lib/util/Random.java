@@ -1,6 +1,6 @@
 //
 // Random.java -- Java class Random
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

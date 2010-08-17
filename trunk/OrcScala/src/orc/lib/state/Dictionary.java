@@ -1,6 +1,6 @@
 //
 // Dictionary.java -- Java class Dictionary
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

@@ -1,6 +1,6 @@
 //
 // DotType.java -- Java class DotType
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

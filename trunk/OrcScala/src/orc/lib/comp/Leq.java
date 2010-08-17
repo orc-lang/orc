@@ -1,6 +1,6 @@
 //
 // Leq.java -- Java class Leq
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //

@@ -1,6 +1,6 @@
 //
 // ArrowType.java -- Java class ArrowType
-// Project OrcJava
+// Project OrcScala
 //
 // $Id$
 //
