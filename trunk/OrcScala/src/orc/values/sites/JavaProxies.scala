@@ -16,7 +16,7 @@ package orc.values.sites
 
 import scala.collection.immutable.List
 import orc.TokenAPI
-import orc.oil.nameless.Type // FIXME: Typechecker should operate on named types instead
+import orc.ast.oil.nameless.Type // FIXME: Typechecker should operate on named types instead
 import orc.values.Signal
 import orc.values.{Field => OrcField}
 import orc.run.Logger

@@ -20,10 +20,10 @@ import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
 import orc.compile.parse.OrcLiteralParser
 import orc.error.compiletime.ParsingException
-import orc.compile.ext.Expression
-import orc.compile.ext.Constant
-import orc.compile.ext.ListExpr
-import orc.compile.ext.TupleExpr
+import orc.ast.ext.Expression
+import orc.ast.ext.Constant
+import orc.ast.ext.ListExpr
+import orc.ast.ext.TupleExpr
 import orc.values.OrcTuple
 
 object Read extends TotalSite with UntypedSite {

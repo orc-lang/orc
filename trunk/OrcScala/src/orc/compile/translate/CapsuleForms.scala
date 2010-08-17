@@ -14,7 +14,7 @@
 //
 package orc.compile.translate
 
-import orc.compile.ext
+import orc.ast.ext
 import orc.lib.builtin
 import orc.error.compiletime._
 import orc.error.OrcExceptionExtension._

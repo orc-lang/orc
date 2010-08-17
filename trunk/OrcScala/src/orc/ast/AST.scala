@@ -13,7 +13,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc
+package orc.ast
 
 import orc.error.OrcException
 import scala.collection.mutable.MutableList

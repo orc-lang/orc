@@ -13,10 +13,10 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.oil.nameless
+package orc.ast.oil.nameless
 
-import orc.oil._
-import orc.AST
+import orc.ast.oil._
+import orc.ast.AST
 
 
 

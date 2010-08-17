@@ -16,8 +16,8 @@
 package orc.compile.translate
 
 import orc.util.OptionMapExtension._
-import orc.compile.ext._
-import orc.oil.named
+import orc.ast.ext._
+import orc.ast.oil.named
 import orc.error.compiletime._
 import orc.error.OrcExceptionExtension._
 
@@ -25,7 +25,7 @@ case class AggregateDef(clauses: List[Clause],
   typeformals: Option[List[String]],
   argtypes: Option[List[Type]],
   returntype: Option[Type],
-  translator: Translator) extends orc.AST {
+  translator: Translator) extends orc.ast.AST {
 
   import translator._
   

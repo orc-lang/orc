@@ -16,8 +16,8 @@
 package orc.values.sites
 
 import orc.values.OrcValue
-import orc.oil.nameless.Type
-import orc.oil.nameless.Bot
+import orc.ast.oil.nameless.Type
+import orc.ast.oil.nameless.Bot
 import orc.TokenAPI
 import orc.error.OrcException
 import orc.error.NotYetImplementedException

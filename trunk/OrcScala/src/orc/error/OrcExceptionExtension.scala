@@ -30,7 +30,7 @@ object OrcExceptionExtension {
 
 case class ExtendedOrcException[E <: OrcException](e: E) {
   
-  def at(ast : orc.AST): E = {
+  def at(ast : orc.ast.AST): E = {
     e.resetPosition(ast.pos);
     e
   }

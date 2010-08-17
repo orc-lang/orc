@@ -12,10 +12,12 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
-package orc.oil.named
+package orc.ast.oil.named
+
 
 /**
- * 
+ *
+ * Direct substitutions on named ASTs.
  *
  * @author dkitchin
  */

@@ -16,11 +16,12 @@
 package orc
 
 import java.io.IOException
+import scala.collection.JavaConversions._
 import orc.compile.parse.OrcInputContext
 import orc.error.OrcException
 import orc.error.compiletime.{CompilationException, CompileLogger}
 import orc.error.runtime.ExecutionException
-import orc.oil.nameless.Expression
+import orc.ast.oil.nameless.Expression
 import orc.progress.ProgressMonitor
 
 /**
@@ -121,3 +122,44 @@ class OrcEventAction {
   def caught(e: Throwable) {}
   def halted() {}
 }
+
+
+
+
+
+/**
+ * Options for Orc compilation and execution.
+ *
+ * @author jthywiss
+ */
+trait OrcOptions {
+  def filename: String
+  def filename_=(newVal: String)
+  def debugLevel: Int
+  def debugLevel_=(newVal: Int)
+
+  // Compile options
+  def usePrelude: Boolean
+  def usePrelude_=(newVal: Boolean)
+  def includePath: java.util.List[String]
+  def includePath_=(newVal: java.util.List[String])
+  def additionalIncludes: java.util.List[String]
+  def additionalIncludes_=(newVal: java.util.List[String])
+  def exceptionsOn: Boolean
+  def exceptionsOn_=(newVal: Boolean)
+  def typecheck: Boolean
+  def typecheck_=(newVal: Boolean)
+
+  // Execution options
+  def maxPublications: Int
+  def maxPublications_=(newVal: Int)
+  def tokenPoolSize: Int
+  def tokenPoolSize_=(newVal: Int)
+  def stackSize: Int
+  def stackSize_=(newVal: Int)
+  def classPath: java.util.List[String]
+  def classPath_=(newVal: java.util.List[String])
+  def hasRight(rightName: String): Boolean
+  def setRight(rightName: String, newVal: Boolean)
+}
+

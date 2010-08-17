@@ -31,7 +31,7 @@ type String = "java.lang.String"
 type Number = "java.lang.BigDecimal"
 type Boolean = "java.lang.Boolean"
 type Integer = "java.lang.BigInt"
-type Signal = "orc.oil.Signal"
+type Signal = "orc.ast.oil.Signal"
 
 {--
 @site let() :: Signal
