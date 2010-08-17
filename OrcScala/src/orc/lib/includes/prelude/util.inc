@@ -161,7 +161,7 @@ def takePubs(n, f) =
   val c = Counter(n)
   let(
     f() >x>
-    ift(c.dec() >> out.put(x) >> false
+    IfT(c.dec() >> out.put(x) >> false
        ; out.closenb() >> true)
   ) >> stop | repeat(out.get)
 

@@ -55,7 +55,7 @@ Example:
   IfT(false) >> "Never publishes"
 | IfT(true) >> "Always publishes"]]></programlisting>
 --}
-site ift = "orc.lib.builtin.IfT"
+site IfT = "orc.lib.builtin.IfT"
 
 {--
 @site IfF(Boolean) :: Signal
@@ -67,7 +67,7 @@ Example:
   IfF(false) >> "Always publishes"
 | IfF(true) >> "Never publishes"]]></programlisting>
 --}
-site iff = "orc.lib.builtin.IfF"
+site IfF = "orc.lib.builtin.IfF"
 
 {--
 @site error(String) :: Bot
@@ -181,7 +181,7 @@ linkend="cor.data">data structures</link> are considered equal if their
 contents are equal. Other types are free to implement their own equality
 relationship provided it conforms to the rules given here.
 
-Note that although values of different types may be compared with
+Note that although values of dIfFerent types may be compared with
 <code>=</code>, the substitutability principle requires that such values are
 always considered inequal, i.e. the comparison will return <code>false</code>.
 --}
