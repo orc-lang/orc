@@ -16,26 +16,29 @@
 	<description>
 		Ant build file for Orc binary distribution.
 	</description>
-	
-	<property file="build-local.properties"/>
-	<!-- At a minimum, build-local.properties needs the dir holding your Scala Library, like: scala.lib.dir=${eclipse.home}/configuration/org.eclipse.osgi/bundles/228/1/.cp/lib -->
 
 	<property file="build.properties"/>
 	<property file="googlecode.properties"/>
 	<property name="target.name" value="${ant.project.name}-${orc.version}"/>
     <property name="junit.output.dir" value="build/tests/reports"/>
     <property name="junit.output.dir" value="build/tests/reports"/>
+	
+	<!-- Try to locate Scala in the current Eclipse build -->
     <property name="scala.compiler.jar" value="${eclipse.home}/plugins/org.scala-ide.scala.compiler_2.8.0.jar"/>
-
     <path id="scala.lib.classpath" description="Scala runtime library classpath">
-        <pathelement location="${scala.lib.dir}/scala-library.jar"/>
-        <pathelement location="${scala.lib.dir}/scala-dbc.jar"/>
-        <pathelement location="${scala.lib.dir}/scala-swing.jar"/>
+		<fileset dir="${eclipse.home}/configuration/org.eclipse.osgi/bundles" erroronmissingdir="false">
+		    <include name="*/*/.cp/lib/scala-library.jar"/>
+		    <include name="*/*/.cp/lib/scala-dbc.jar"/>
+		    <include name="*/*/.cp/lib/scala-swing.jar"/>
+		</fileset>
     </path>
 
 	<path id="orc.runtime.jars" description="JARs needed by Orc in its classpath at runtime">
 		<!-- If we add dependencies here, consider adding the Orchard-demo manifest classpath trick -->
 	</path>
+
+	<!-- Optional build-local.xml -->
+	<property file="build-local.xml"/>
 
 	<path id="orc.classpath" description="Build-time classpath">
         <pathelement location="build/classes"/>
@@ -69,17 +72,10 @@
 	</target>
 	-->
 
-	<!-- - - - - - - - - - - - - - - - - -
-          target: build-dir-exists
-         - - - - - - - - - - - - - - - - - -->
-	<target name="build-dir-exists">
-		<available file="build/classes/orc/" property="build.dir.exists"/>
-	</target>
-
 	<!-- =================================
           target: version
          ================================= -->
-	<target name="version" depends="build-dir-exists" if="build.dir.exists" description="Build version.properites">
+	<target name="version" description="Build version.properites">
 		<exec executable="svnversion" outputproperty="svnversion"/>  <!-- Format: 9999[:9999][M][S][P] -->
 		<tstamp>
 			<format property="build.date" pattern="yyyy-MM-dd-HH:mm:ss" timezone="Etc/UTC" />
@@ -105,7 +101,7 @@
 	<!-- =================================
           target: test
          ================================= -->
-	<target name="test" depends="build-dir-exists" if="build.dir.exists" description="Execute JUnit tests">
+	<target name="test" description="Execute JUnit tests">
         <mkdir dir="${junit.output.dir}"/>
 		<junit fork="yes" printsummary="withOutAndErr" haltonfailure="on">
             <formatter type="xml"/>
@@ -137,7 +133,7 @@
 	<!-- =================================
           target: jar
          ================================= -->
-	<target name="jar" depends="build-dir-exists,version" if="build.dir.exists" description="Build orc-*.zip for distribution">
+	<target name="jar" description="Build orc-*.zip for distribution">
 		<jar jarfile="build/${target.name}.jar" basedir="build/classes" whenmanifestonly="fail" duplicate="fail" index="true" strict="fail">
 			<manifest>
 				<attribute name="Main-Class" value="${orc.main-class}"/>
@@ -281,7 +277,7 @@
 	<!-- =================================
           target: build
          ================================= -->
-    <target name="build" depends="build-dir-exists,jar,stdlib-doc,javadoc,macosx-app" description="Build all targets"/>
+    <target name="build" depends="jar,stdlib-doc,javadoc,macosx-app" description="Build all targets"/>
 
 	<!-- - - - - - - - - - - - - - - - - -
           target: zip
@@ -321,7 +317,7 @@
 	<!-- =================================
           target: package
          ================================= -->
-	<target name="package" depends="build-dir-exists,zip,macosx-app-tgz" description="Package for distribution">
+	<target name="package" depends="zip,macosx-app-tgz" description="Package for distribution">
 	</target>
 
 	<!-- =================================
