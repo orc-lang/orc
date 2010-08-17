@@ -66,14 +66,14 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 	}
 
 	public class OrcCompiledScript extends CompiledScript {
-		private final orc.oil.nameless.Expression astRoot;
+		private final orc.ast.oil.nameless.Expression astRoot;
 
 		/**
 		 * Constructs an object of class OrcCompiledScript.
 		 * 
 		 * @param oilAstRoot Root node of the OIL AST from the compilation
 		 */
-		/*default-access*/ OrcCompiledScript(final orc.oil.nameless.Expression oilAstRoot) {
+		/*default-access*/ OrcCompiledScript(final orc.ast.oil.nameless.Expression oilAstRoot) {
 			this.astRoot = oilAstRoot;
 		}
 
@@ -185,7 +185,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 	@Override
 	public CompiledScript compile(final Reader script) throws ScriptException {
 		try {
-			final orc.oil.nameless.Expression result = getCompiler().apply(script, asOrcBindings(getBindings(ScriptContext.ENGINE_SCOPE)), getContext().getErrorWriter());
+			final orc.ast.oil.nameless.Expression result = getCompiler().apply(script, asOrcBindings(getBindings(ScriptContext.ENGINE_SCOPE)), getContext().getErrorWriter());
 			if (result == null) {
 				throw new ScriptException("Compilation failed");
 			} else {

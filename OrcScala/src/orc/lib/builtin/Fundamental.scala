@@ -1,6 +1,6 @@
 package orc.lib.builtin
 
-import orc.oil.nameless.Type
+import orc.ast.oil.nameless.Type
 import orc.values._
 import orc.values.sites._
 import orc.error.runtime.ArgumentTypeMismatchException

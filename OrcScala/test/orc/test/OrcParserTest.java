@@ -57,7 +57,7 @@ public class OrcParserTest {
         public void runTest() throws ParsingException, IOException {
           OrcFileInputContext ic = new OrcFileInputContext(file);
           options.filename_$eq(file.toString());
-          Parsers.ParseResult<orc.compile.ext.Expression> pr = OrcProgramParser.apply(ic, options, envServices);
+          Parsers.ParseResult<orc.ast.ext.Expression> pr = OrcProgramParser.apply(ic, options, envServices);
           assertTrue("Parsing unsucessful: "+pr.toString(), pr.successful());
         }
       });

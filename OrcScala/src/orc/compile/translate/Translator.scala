@@ -17,9 +17,9 @@ package orc.compile.translate
 
 import scala.collection.immutable._
 import scala.collection.mutable
-import orc.oil.named._
-import orc.oil._
-import orc.compile.ext
+import orc.ast.oil.named._
+import orc.ast.oil._
+import orc.ast.ext
 import orc.lib.builtin
 import orc.values.sites.Site
 import orc.values.sites.OrcSiteForm
@@ -323,7 +323,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
 	 * and 
 	 *     A context mapping those names to those vars
 	 */
-	def convertTypeFormals(typeformals: List[String], ast: orc.AST): (List[BoundTypevar], Map[String,BoundTypevar]) = {
+	def convertTypeFormals(typeformals: List[String], ast: orc.ast.AST): (List[BoundTypevar], Map[String,BoundTypevar]) = {
 	   var newTypeFormals: List[BoundTypevar] = Nil
 	   var formalsMap = new HashMap[String, BoundTypevar]()
        for (name <- typeformals.reverse) {

@@ -12,11 +12,11 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
-package orc.oil.nameless
+package orc.ast.oil.nameless
 
 
 import scala.xml._
-import orc.oil.nameless._
+import orc.ast.oil.nameless._
 import scala.collection.immutable.HashMap
 
 

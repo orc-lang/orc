@@ -15,14 +15,14 @@
 
 package orc.compile.translate
 
-import orc.compile.ext._
+import orc.ast.ext._
 import orc.error.OrcExceptionExtension._
-import orc.oil.named
+import orc.ast.oil.named
 import orc.compile.translate.PrimitiveForms._
 import scala.collection.immutable._
 import orc.error.compiletime._
 
-case class Clause(formals: List[Pattern], body: Expression) extends orc.AST {
+case class Clause(formals: List[Pattern], body: Expression) extends orc.ast.AST {
 	
   val arity = formals.size
 	

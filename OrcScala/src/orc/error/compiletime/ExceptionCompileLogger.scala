@@ -15,7 +15,7 @@
 package orc.error.compiletime
 
 import orc.error.compiletime.CompileLogger.Severity
-import orc.AST
+import orc.ast.AST
 import scala.util.parsing.input.Position
 
 /**

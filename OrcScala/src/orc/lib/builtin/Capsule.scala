@@ -1,15 +1,15 @@
 package orc.lib.builtin
 
-import orc.oil.nameless.Type
+import orc.ast.oil.nameless.Type
 import orc.values._
 import orc.values.sites._
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
 import orc.error.runtime.RuntimeSupportException
 import orc.TokenAPI
-import orc.oil.nameless.Expression
-import orc.oil.nameless.Call
-import orc.oil.nameless.Constant
+import orc.ast.oil.nameless.Expression
+import orc.ast.oil.nameless.Call
+import orc.ast.oil.nameless.Constant
 import orc.run.extensions.SupportForCapsules
 import orc.error.OrcException
 

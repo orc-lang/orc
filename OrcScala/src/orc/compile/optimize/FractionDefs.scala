@@ -19,7 +19,7 @@ import orc.util.Node
 import orc.util.Direction
 import scala.collection.mutable.LinkedList
 
-import orc.oil.named._
+import orc.ast.oil.named._
 
 /**
  * 

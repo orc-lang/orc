@@ -23,8 +23,8 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import orc.error.OrcException;
-import orc.oil.nameless.Expression;
-import orc.oil.nameless.OrcXML;
+import orc.ast.oil.nameless.Expression;
+import orc.ast.oil.nameless.OrcXML;
 import orc.script.OrcScriptEngine;
 
 /**
@@ -64,7 +64,7 @@ public class XMLExamplesTest {
 					System.out.println("\n==== Starting " + file + " ====");
 					final OrcScriptEngine.OrcCompiledScript compiledScript = OrcForTesting.compile(file.getPath());
 					final Expression expr = getAstRoot(compiledScript);
-					final Expression exprXML = orc.oil.nameless.OrcXML.fromXML(OrcXML.writeXML(expr));
+					final Expression exprXML = orc.ast.oil.nameless.OrcXML.fromXML(OrcXML.writeXML(expr));
 					setAstRoot(compiledScript, exprXML);
 					final String actual = OrcForTesting.run(compiledScript, 10L);
 					if (!expecteds.contains(actual)) {

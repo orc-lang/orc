@@ -24,13 +24,13 @@ abstract class Type {
 }
 
 object TypeConversions {
-  implicit def type2type(that: orc.oil.nameless.Type): Type = that match {
-    case orc.oil.nameless.Top() => Top
-    case orc.oil.nameless.Bot() => Bot
-    case orc.oil.nameless.FunctionType(a, p, r) => ArrowType(a, p map type2type, r)
-    case orc.oil.nameless.TypeVar(i) => TypeVar(i)
+  implicit def type2type(that: orc.ast.oil.nameless.Type): Type = that match {
+    case orc.ast.oil.nameless.Top() => Top
+    case orc.ast.oil.nameless.Bot() => Bot
+    case orc.ast.oil.nameless.FunctionType(a, p, r) => ArrowType(a, p map type2type, r)
+    case orc.ast.oil.nameless.TypeVar(i) => TypeVar(i)
   }
-  implicit def typelist2typelist(that: List[orc.oil.nameless.Type]): List[Type] = that map type2type
+  implicit def typelist2typelist(that: List[orc.ast.oil.nameless.Type]): List[Type] = that map type2type
 }
 
 case object Top extends Type {

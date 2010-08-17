@@ -15,10 +15,10 @@
 
 package orc.compile.translate
 
-import orc.oil.named._
+import orc.ast.oil.named._
 import orc.lib.builtin._
-import orc.oil._
-import orc.compile.ext
+import orc.ast.oil._
+import orc.ast.ext
 import orc.values.Signal
 import orc.values.sites.Site
 

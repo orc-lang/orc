@@ -22,8 +22,8 @@ import orc.PublishedEvent
 import orc.HaltedEvent
 import orc.CaughtEvent
 import orc.OrcOptions
-import orc.oil._
-import orc.oil.nameless._
+import orc.ast.oil._
+import orc.ast.oil.nameless._
 import orc.values.sites.Site
 import orc.values.OrcValue
 import orc.error.OrcException

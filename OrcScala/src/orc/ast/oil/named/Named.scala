@@ -13,12 +13,12 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.oil.named
+package orc.ast.oil.named
 
 
 
-import orc.oil._
-import orc.AST
+import orc.ast.oil._
+import orc.ast.AST
 
 
 sealed abstract class NamedAST extends AST with NamedToNameless {

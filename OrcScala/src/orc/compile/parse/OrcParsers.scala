@@ -21,10 +21,10 @@ import scala.util.parsing.input.Position
 
 import java.io.IOException
 
-import orc.AST
+import orc.ast.AST
 import orc.OrcOptions
 import orc.OrcCompilerRequires
-import orc.compile.ext._
+import orc.ast.ext._
 
 
 /**
@@ -49,10 +49,10 @@ trait OrcParserResultTypes[T] {
  * The result of applying this function is an Expression Extended AST,
  * in particular a Constant, ListValue, or TupleValue.
  *
- * @see orc.compile.ext.Expression
- * @see orc.compile.ext.Constant
- * @see orc.compile.ext.ListValue
- * @see orc.compile.ext.TupleValue
+ * @see orc.ast.ext.Expression
+ * @see orc.ast.ext.Constant
+ * @see orc.ast.ext.ListValue
+ * @see orc.ast.ext.TupleValue
  * @author jthywiss
  */
 object OrcLiteralParser extends (String => OrcParsers#ParseResult[Expression]) with OrcParserResultTypes[Expression] {

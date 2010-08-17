@@ -34,7 +34,7 @@ val c = Buffer[Number]()
 
 
 {-
-OUTPUT:
+OUTPUT:PERMUTABLE:
 0
 1
 2

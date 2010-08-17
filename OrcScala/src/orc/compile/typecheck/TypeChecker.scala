@@ -15,7 +15,7 @@
 
 package orc.compile.typecheck
 
-import orc.oil.nameless.{ Type => _, Top => _, Bot => _, FunctionType => _, _ }
+import orc.ast.oil.nameless.{ Type => _, Top => _, Bot => _, FunctionType => _, _ }
 import orc.types._
 import orc.error.compiletime.typing._
 import orc.types.TypeConversions._

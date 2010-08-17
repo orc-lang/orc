@@ -19,4 +19,4 @@ package orc.run
  *
  * @author jthywiss
  */
-object Logger extends orc.Logger("orc.run")
+object Logger extends orc.util.Logger("orc.run")

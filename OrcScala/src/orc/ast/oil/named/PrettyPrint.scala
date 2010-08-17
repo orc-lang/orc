@@ -12,9 +12,9 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
-package orc.oil.named
+package orc.ast.oil.named
 
-import orc.oil.named._
+import orc.ast.oil.named._
 import scala.collection.mutable._
 import orc.values.Format
 

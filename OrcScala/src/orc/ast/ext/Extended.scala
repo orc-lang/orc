@@ -13,9 +13,9 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.compile.ext
+package orc.ast.ext
 
-import orc.AST
+import orc.ast.AST
 
 sealed abstract class Expression extends AST
 

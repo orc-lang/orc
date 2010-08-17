@@ -17,7 +17,7 @@ package orc.error.compiletime;
 
 import java.io.PrintWriter;
 
-import orc.AST;
+import orc.ast.AST;
 
 import scala.util.parsing.input.Position;
 

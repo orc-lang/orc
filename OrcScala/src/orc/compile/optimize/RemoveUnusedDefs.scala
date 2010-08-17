@@ -14,7 +14,7 @@
 //
 package orc.compile.optimize
 
-import orc.oil.named._
+import orc.ast.oil.named._
 
 /**
  * Removes unused definitions from the OIL AST.

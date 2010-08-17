@@ -13,7 +13,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.oil.named
+package orc.ast.oil.named
 
 // Infix combinator constructors
 trait NamedInfixCombinators {
