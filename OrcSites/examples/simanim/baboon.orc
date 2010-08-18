@@ -43,9 +43,9 @@ def spurtSource(lMin,lMax,sMin,sMax,oMin,oMax,mnMn,mnMx,mxMn,mxMx) =
 		<tMin< randRange(mnMn,mnMx)
 		<tMax< randRange(mxMn,mxMx)
 		) 
-	>x>	( 	if (x=false)
+	>x>	( 	IfT(x=false)
 			>> spurtSource(lMin,lMax,sMin,sMax,oMin,oMax,mnMn,mnMx,mxMn,mxMx)
-		|	if (~(x=false)) >> x
+		|	IfT(~(x=false)) >> x
 		) 
 ----------------------------------------------------------------------	
 
@@ -75,7 +75,7 @@ def rightDone() =
 	link.  Once you own the next link, you release the first.
 -}
 def makeRope(len,lb,ls) =
-	(IfT(len=0) >> let((),false,lb,ls)
+	(IfT(len=0) >> let(signal,false,lb,ls)
 	|	(  IfT(1<=len) 
 		>> Buffer()
 		>b> makeRope(len-1,b,true)
@@ -191,7 +191,7 @@ disp.open() >>
  )
 < aPack < let( leftFlag, leftDeck, leftAck,followRight,lb,ls, leftDone,disp.leftPop)
 < oPack < let(rightFlag,rightDeck,rightAck, followLeft,rb,rs,rightDone,disp.rightPop)
-<(lb,ls,rb,rs)< makeRope(10,(),false)
+<(lb,ls,rb,rs)< makeRope(10,signal,false)
 < mainLine < Buffer()
 < leftDeck < Buffer()
 < rightDeck< Buffer()

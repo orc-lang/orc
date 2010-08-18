@@ -15,7 +15,7 @@ def nbPut(mb,v) =
 def nbTry(mb) =
 	mb 	>(cnt,q)> cnt.get() 
 		>size> 	( (IfT(size>=1) >> q.get() >v> cnt.put(size-1) >> let(v,true))
-				| (IfT(size<=0) >> cnt.put(size) >> let((),false))
+				| (IfT(size<=0) >> cnt.put(size) >> let(signal,false))
 				)
 
 def nbGet(mb) =
@@ -57,9 +57,9 @@ def spurtSource(lMin,lMax,sMin,sMax,oMin,oMax,mnMn,mnMx,mxMn,mxMx) =
 		<tMin< randRange(mnMn,mnMx)
 		<tMax< randRange(mxMn,mxMx)
 		) 
-	>x>	( 	if (x=false)
+	>x>	( 	IfT(x=false)
 			>> spurtSource(lMin,lMax,sMin,sMax,oMin,oMax,mnMn,mnMx,mxMn,mxMx)
-		|	if (~(x=false)) >> x
+		|	IfT(~(x=false)) >> x
 		) 
 ------------------------------------------------------------------
 -- Globals
@@ -297,8 +297,8 @@ def barber(bID,jobQ,chDone) =
 	>> barber(bID,jobQ,chDone) 
 -----------------------------------------------------------------
 def forLoop(ii,f) =
-	if (ii>=1) >> f(ii) >> forLoop(ii-1,f)
-	| IfT(ii<=0) >> ()
+	  IfT(ii>=1) >> f(ii) >> forLoop(ii-1,f)
+	| IfT(ii<=0) >> signal
 
 def fillShop(ii) =
 	nbPut(shop,ii)
