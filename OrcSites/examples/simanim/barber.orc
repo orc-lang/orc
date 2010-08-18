@@ -14,8 +14,8 @@ def nbPut(mb,v) =
 	
 def nbTry(mb) =
 	mb 	>(cnt,q)> cnt.get() 
-		>size> 	( (if(size>=1) >> q.get() >v> cnt.put(size-1) >> let(v,true))
-				| (if(size<=0) >> cnt.put(size) >> let((),false))
+		>size> 	( (IfT(size>=1) >> q.get() >v> cnt.put(size-1) >> let(v,true))
+				| (IfT(size<=0) >> cnt.put(size) >> let((),false))
 				)
 
 def nbGet(mb) =
@@ -39,13 +39,13 @@ def randRange(mn,mx) =
 	random(mx+1-mn)+mn
 
 def nSpurt(n,tMin,tMax,oMin,oMax) =
-	( if(n>=1) 
+	( IfT(n>=1) 
 	  >> randRange(tMin,tMax)
 	  >d> Ltimer(d)				-- Delay
 	  >>	( randRange(oMin,oMax) 	-- Deliver a value
 			| nSpurt(n-1,tMin,tMax,oMin,oMax) -- Recurse
 			) 
-	| if(n<=0)
+	| IfT(n<=0)
 	  >> false
 	)
 	
@@ -81,16 +81,16 @@ val disp = canvas(8,3)
 -----------------
 def lswitch(n,l) =
 	l >h:t>
-	( (if(n=0) >> h) |
-	  (if(~(n=0)) >> lswitch(n-1,t) )
+	( (IfT(n=0) >> h) |
+	  (IfT(~(n=0)) >> lswitch(n-1,t) )
 	)
 
 def animateTransition(tt,n,d) =
-	(	if(n<=19)
+	(	IfT(n<=19)
 		>> disp.setTransition(tt,n)
 		>> Ltimer(d/8+1)
 		>> animateTransition(tt,n+1,d)
-	|   if(n>=20)
+	|   IfT(n>=20)
 	)
 
 -------------------------------------------------------------------
@@ -99,7 +99,7 @@ def animateTransition(tt,n,d) =
 -- If the shop is full, we can't enter
 def tryToEnterShop(cID) =
 	nbTry(shop)
-	>(x,ok)> 	(	if(ok)
+	>(x,ok)> 	(	IfT(ok)
 					>>print("Cst ",cID," enters\n")
 					>>disp.pushFloor(cID) 
 					>>stop
@@ -120,14 +120,14 @@ def leaveAngry(cID) =
 
 def tryToGetBarberChair(cID) =
 	nbTry(bChair) 
-	>(ch,ok)> 	(	if(ok) -- There's no wait for the barber
+	>(ch,ok)> 	(	IfT(ok) -- There's no wait for the barber
 					>> ch 
 					>(chID,chDone,bJob)> disp.popFloor() --Leave the floor
 					>> disp.lineToBChair(chID,cID)
 					>tt> animateTransition(tt,1,cID)
 					>> disp.endTransition(tt)
 					>> disp.setBChairState(chID,cID) -- Take a seat at the barber's
-				|	if(~ok)
+				|	IfT(~ok)
 				)
 	>>(ch,ok)
 	
@@ -211,13 +211,13 @@ def waitForReceipt(cID,rcpt) =
 -----------------------------------------------------------------}
 def customer(cID) =
 	tryToEnterShop(cID) >gotIn>  
-	( 	( if(gotIn) 
+	( 	( IfT(gotIn) 
 		>>tryToGetBarberChair(cID) 
-		>(chair,ok)> 	( if(~ok)>> getWaitChair(cID)
+		>(chair,ok)> 	( IfT(~ok)>> getWaitChair(cID)
 								 >wait> getBarberChair(cID) 
 								 >chair> freeWaitChair(cID,chair,wait)
 								 >> chair
-						| if(ok) >> chair  -- We got the chair without waiting
+						| IfT(ok) >> chair  -- We got the chair without waiting
 						)
 		>chair> signalBarber(cID,chair)
 		>> waitForHairCut(cID,chair)
@@ -227,7 +227,7 @@ def customer(cID) =
 		>rcpt> waitForReceipt(cID,rcpt) -- This also frees the cashReg
 		>> leaveShop(cID) 
 		)
-	| 	( if(~gotIn) >> leaveAngry(cID) )
+	| 	( IfT(~gotIn) >> leaveAngry(cID) )
 	) >> stop	  
 
 ------------------------------------------------------------------
@@ -284,21 +284,21 @@ def giveReceipt(bID,cash) =
 -----------------------------------------------------------------}
 def barber(bID,jobQ,chDone) =
 	waitForJob(bID,jobQ) -- True for a haircut, false for a cashier job
-	>(job,cust)> (	if(job) 
+	>(job,cust)> (	IfT(job) 
 					>> cutHair(bID,cust,chDone)
-				 |	if(~job)
+				 |	IfT(~job)
 				 	>> nbTry(cust)
-				 	>(cust,ok)> ( 	if(ok) 
+				 	>(cust,ok)> ( 	IfT(ok) 
 				 					>> takePayment(bID,cust)
 				 					>cash> giveReceipt(bID,cash)
-				 				| 	if(~ok) -- The customer's been taken care of
+				 				| 	IfT(~ok) -- The customer's been taken care of
 				 				) 
 				 )
 	>> barber(bID,jobQ,chDone) 
 -----------------------------------------------------------------
 def forLoop(ii,f) =
 	if (ii>=1) >> f(ii) >> forLoop(ii-1,f)
-	| if(ii<=0) >> ()
+	| IfT(ii<=0) >> ()
 
 def fillShop(ii) =
 	nbPut(shop,ii)

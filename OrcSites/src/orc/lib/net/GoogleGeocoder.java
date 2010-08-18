@@ -22,19 +22,15 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Properties;
 
-import kilim.Pausable;
-import orc.error.OrcError;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.SiteException;
 import orc.error.runtime.TokenException;
-import orc.runtime.Args;
-import orc.runtime.Kilim;
-import orc.runtime.sites.EvalSite;
-import orc.runtime.sites.KilimSite;
-import orc.runtime.values.TupleValue;
+import orc.values.OrcTuple;
+import orc.values.sites.compatibility.Args;
+import orc.values.sites.compatibility.EvalSite;
 
 /**
- * API for http://geocoder.us. This service returns a latitude/longitude tuple
+ * API for Google Geocoding service. This service returns a latitude/longitude tuple
  * given a city/state, zip code, or full address in the United States.
  * 
  * @author quark
@@ -42,7 +38,7 @@ import orc.runtime.values.TupleValue;
 public class GoogleGeocoder extends EvalSite {
 	private static String baseURL = "http://maps.google.com/maps/geo?";
 
-	private static class GeocoderInstance extends KilimSite {
+	private static class GeocoderInstance extends EvalSite {
 		private final String apiKey;
 
 		public GeocoderInstance(final String apiKey) throws IOException {
@@ -50,43 +46,43 @@ public class GoogleGeocoder extends EvalSite {
 		}
 
 		@Override
-		public Object evaluate(final Args args) throws Pausable, TokenException {
+		public Object evaluate(final Args args) throws TokenException {
 			try {
 				final URL url = new URL(baseURL + "key=" + apiKey + "&q=" + URLEncoder.encode(args.stringArg(0), "UTF-8") + "&sensor=false" + "&output=csv" + "&oe=utf8");
 				System.out.println(url);
 				return parseCSV(HTTPUtils.getURL(url));
 			} catch (final MalformedURLException e) {
-				throw new OrcError(e);
+				throw new AssertionError(e);
 			} catch (final UnsupportedEncodingException e) {
-				throw new OrcError(e);
+				throw new AssertionError(e);
 			} catch (final IOException e) {
 				throw new JavaException(e);
 			}
 		}
 	}
 
-	private static TupleValue parseCSV(final String csv) throws Pausable, TokenException {
+	private static OrcTuple parseCSV(final String csv) throws TokenException {
 		final String[] parts = csv.split(",");
 		final String statusCode = parts[0];
 		if (statusCode.equals("200")) {
 			try {
 				if (parts.length != 4) {
-					throw new SiteException("Unexpected input: " + csv);
+					throw new GoogleGeocoderException("Unexpected input: " + csv);
 				}
-				return new TupleValue(Double.parseDouble(parts[2].trim()), Double.parseDouble(parts[3].trim()));
+				return makePair(Double.parseDouble(parts[2].trim()), Double.parseDouble(parts[3].trim()));
 			} catch (final NumberFormatException e) {
-				throw new SiteException("Unexpected input: " + csv);
+				throw new GoogleGeocoderException("Unexpected input: " + csv);
 			}
 		} else if (statusCode.equals("602")) {
 			// address unknown
-			Kilim.exit();
+//			Kilim.exit();
 			return null;
 		} else if (statusCode.equals("603")) {
 			// address unavailable
-			Kilim.exit();
+//			Kilim.exit();
 			return null;
 		} else {
-			throw new SiteException("Geocoding error code: " + statusCode);
+			throw new GoogleGeocoderException("Geocoding error code: " + statusCode);
 		}
 	}
 
@@ -103,6 +99,13 @@ public class GoogleGeocoder extends EvalSite {
 			return new GeocoderInstance(p.getProperty("orc.lib.net.google.key"));
 		} catch (final IOException e) {
 			throw new JavaException(e);
+		}
+	}
+	
+	public static class GoogleGeocoderException extends SiteException {
+		private static final long serialVersionUID = 4572428654641968903L;
+		public GoogleGeocoderException(final String msg) {
+			super(msg);
 		}
 	}
 }

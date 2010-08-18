@@ -17,8 +17,8 @@ import java.net.UnknownHostException;
 
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
-import orc.runtime.Args;
-import orc.runtime.sites.EvalSite;
+import orc.values.sites.compatibility.Args;
+import orc.values.sites.compatibility.EvalSite;
 
 /**
  * Return the name of the local host. If the lookup fails, the site remains silent.

@@ -14,26 +14,21 @@
 package orc.lib.net;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
+import java.util.UUID;
 
-import kilim.Pausable;
-import kilim.Task;
+import orc.TokenAPI;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
-import orc.runtime.Args;
-import orc.runtime.Kilim;
-import orc.runtime.Token;
-import orc.runtime.sites.Site;
-import orc.runtime.sites.java.ThreadedObjectProxy;
-import orc.runtime.values.Value;
+import orc.values.sites.compatibility.Args;
+import orc.values.sites.compatibility.SiteAdaptor;
+//import orc.values.sites.compatibility.java.ThreadedObjectProxy;
 
 import org.apache.axis.wsdl.toJava.Emitter;
 import org.apache.axis.wsdl.toJava.GeneratedFileInfo;
-import org.apache.axis.wsdl.toJava.GeneratedFileInfo.Entry;
 
 /**
  * JAX-RPC-based webservice site.
@@ -53,7 +48,7 @@ import org.apache.axis.wsdl.toJava.GeneratedFileInfo.Entry;
  * <p>TODO: allow webservices to provide constructors for complex objects.
  * @author quark, unknown
  */
-public class Webservice extends Site {
+public class Webservice extends SiteAdaptor {
 	/**
 	 * Compile class files.
 	 */
@@ -70,7 +65,7 @@ public class Webservice extends Site {
 		for (final String source : sources) {
 			args[i++] = source;
 		}
-		org.eclipse.jdt.internal.compiler.batch.Main.main(args);
+		//FIXME:org.eclipse.jdt.internal.compiler.batch.Main.main(args);
 	}
 
 	/** Cache the classpath on load. */
@@ -113,37 +108,44 @@ public class Webservice extends Site {
 	}
 
 	@Override
-	public void callSite(final Args args, final Token caller) {
-		new Task() {
-			@Override
-			public void execute() throws Pausable {
-				Kilim.runThreaded(new Runnable() {
-					public void run() {
+	public void callSite(final Args args, final TokenAPI caller) {
+//		new Task() {
+//			@Override
+//			public void execute() throws Pausable {
+//				Kilim.runThreaded(new Runnable() {
+//					public void run() {
 						try {
 							// Create a temporary directory to host compilation of stubs
-							File tmpdir;
-							try {
-								tmpdir = caller.getEngine().createTmpdir();
-							} catch (final IOException e) {
-								throw new JavaException(e);
-							}
+							File tmpdir = new File(System.getProperty("java.io.tmpdir"), "orc-" + UUID.randomUUID().toString());
 							final Object out = evaluate(args, tmpdir);
-							caller.getEngine().deleteTmpdir(tmpdir);
+							deleteDirectory(tmpdir);
 							if (out == null) {
-								caller.die();
+								caller.halt();
 							} else {
-								caller.resume(out);
+								caller.publish(out);
 							}
 						} catch (final TokenException e) {
-							caller.error(e);
+							caller.$bang$bang(e);
 						}
-					}
-				});
-			}
-		}.start();
+//					}
+//				});
+//			}
+//		}.start();
 	}
 
-	public Value evaluate(final Args args, final File tmpdir) throws TokenException {
+	/** Delete a directory recursively */
+	private final boolean deleteDirectory(final File directory) {
+		boolean out = true;
+		final File[] fileArray = directory.listFiles();
+		if (fileArray != null) {
+			for (final File f : fileArray) {
+				out = deleteDirectory(f) && out;
+			}
+		}
+		return directory.delete() && out;
+	}
+
+	public Object evaluate(final Args args, final File tmpdir) throws TokenException {
 		try {
 			// Generate stub source files.
 			// Emitter is the class that does all of the file creation for the
@@ -163,10 +165,10 @@ public class Webservice extends Site {
 			for (final Object name : info.getClassNames()) {
 				cl.loadClass((String) name);
 			}
-			final List<Entry> stubs = info.findType("interface");
+			final List<GeneratedFileInfo.Entry> stubs = info.findType("interface");
 			Class<?> stub = null;
 			Class<?> locator = null;
-			for (final Entry e : stubs) {
+			for (final GeneratedFileInfo.Entry e : stubs) {
 				final Class<?> c = cl.loadClass(e.className);
 				if (c.getName().endsWith("Port") || c.getName().endsWith("PortType")) {
 					stub = cl.loadClass(e.className);
@@ -184,9 +186,9 @@ public class Webservice extends Site {
 				throw new Exception("Unable to find stub among port interfaces");
 			}
 
-			final List<Entry> services = info.findType("service");
+			final List<GeneratedFileInfo.Entry> services = info.findType("service");
 
-			for (final Entry e : services) {
+			for (final GeneratedFileInfo.Entry e : services) {
 				if (e.className.endsWith("Locator")) {
 					locator = cl.loadClass(e.className);
 				}
@@ -214,7 +216,7 @@ public class Webservice extends Site {
 			final Object locatorObject = locator.newInstance();
 			final Object stubObject = getStub.invoke(locatorObject, arglist);
 
-			return new ThreadedObjectProxy(stubObject);
+			return stubObject;//new ThreadedObjectProxy(stubObject);
 		} catch (final Exception e) {
 			throw new JavaException(e);
 		}

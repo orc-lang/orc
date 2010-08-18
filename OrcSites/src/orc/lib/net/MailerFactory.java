@@ -23,7 +23,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.Callable;
 
 import javax.mail.Address;
 import javax.mail.Authenticator;
@@ -54,15 +53,11 @@ import javax.mail.search.RecipientTerm;
 import javax.mail.search.SearchTerm;
 import javax.mail.search.SubjectTerm;
 
-import kilim.Fiber;
-import kilim.Pausable;
-import orc.error.OrcError;
+import orc.TokenAPI;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
-import orc.runtime.Args;
-import orc.runtime.Kilim;
-import orc.runtime.Token;
-import orc.runtime.sites.Site;
+import orc.values.sites.compatibility.Args;
+import orc.values.sites.compatibility.SiteAdaptor;
 
 /**
  * Wrapper around JavaMail API for reading and sending mail. For the most part
@@ -93,10 +88,10 @@ import orc.runtime.sites.Site;
  * 
  * @author quark
  */
-public class MailerFactory extends Site {
+public class MailerFactory extends SiteAdaptor {
 	/**
 	 * Keep track of an outgoing mail quota.
-	 * FIXME: Kilim incorrectly adds methods to an interface
+	 *
 	 * @author quark
 	 */
 	private static abstract class QuotaManager {
@@ -104,13 +99,7 @@ public class MailerFactory extends Site {
 		 * Call before sending a message, blocking if the quota
 		 * does not allow a send yet.
 		 */
-		public abstract void use(int count) throws Pausable, InterruptedException;
-
-		/** FIXME: Kilim should add this method but it doesn't */
-		@SuppressWarnings("unused")
-		public void use(final int count, final Fiber f) throws InterruptedException {
-			throw new AssertionError("Unwoven method " + this.getClass().toString() + "#use(int)");
-		}
+		public abstract void use(int count) throws InterruptedException;
 	}
 
 	/**
@@ -139,7 +128,7 @@ public class MailerFactory extends Site {
 		}
 
 		@Override
-		public void use(final int count) throws Pausable, InterruptedException {
+		public void use(final int count) throws InterruptedException {
 			final long currentTime = System.currentTimeMillis();
 			if (currentTime - duration > endTime) {
 				// start a new burst
@@ -149,12 +138,12 @@ public class MailerFactory extends Site {
 			if (count < remaining) {
 				remaining -= count;
 			} else {
-				throw new OrcError("Mail quota exceeded");
+				throw new AssertionError("Mail quota exceeded");
 			}
 		}
 
 		/* FIXME: this implementation triggers a ValidationError when Kilim-processed.
-		public void use(int count) throws Pausable, InterruptedException {
+		public void use(int count) throws InterruptedException {
 			int durations;
 			long currentTime = System.currentTimeMillis();
 			if (currentTime - duration > endTime) {
@@ -184,7 +173,7 @@ public class MailerFactory extends Site {
 
 	private static QuotaManager NULL_QUOTA_MANAGER = new QuotaManager() {
 		@Override
-		public void use(final int count) throws Pausable, InterruptedException {
+		public void use(final int count) throws InterruptedException {
 			// do nothing
 		}
 	};
@@ -215,24 +204,24 @@ public class MailerFactory extends Site {
 		return out;
 	}
 
-	/**
-	 * Utility method to run a blocking mail operation.
-	 */
-	private static <E> E runThreaded(final Callable<E> thunk) throws MessagingException, Pausable {
-		try {
-			return Kilim.runThreaded(thunk);
-		} catch (final Exception e) {
-			// HACK: for some reason when I put these
-			// as separate catch clauses it doesn't work like I expect
-			if (e instanceof MessagingException) {
-				throw (MessagingException) e;
-			} else if (e instanceof RuntimeException) {
-				throw (RuntimeException) e;
-			} else {
-				throw new AssertionError(e);
-			}
-		}
-	}
+//	/**
+//	 * Utility method to run a blocking mail operation.
+//	 */
+//	private static <E> E runThreaded(final Callable<E> thunk) throws MessagingException {
+//		try {
+//			return Kilim.runThreaded(thunk);
+//		} catch (final Exception e) {
+//			// HACK: for some reason when I put these
+//			// as separate catch clauses it doesn't work like I expect
+//			if (e instanceof MessagingException) {
+//				throw (MessagingException) e;
+//			} else if (e instanceof RuntimeException) {
+//				throw (RuntimeException) e;
+//			} else {
+//				throw new AssertionError(e);
+//			}
+//		}
+//	}
 
 	/**
 	 * Extract the text part from the result of {@link Part#getContent()}.
@@ -393,22 +382,22 @@ public class MailerFactory extends Site {
 			this.transport = transport;
 		}
 
-		public void close() throws MessagingException, Pausable {
-			runThreaded(new Callable<Void>() {
-				public Void call() throws MessagingException {
+		public void close() throws MessagingException {
+//			runThreaded(new Callable<Void>() {
+//				public Void call() throws MessagingException {
 					transport.close();
-					return null;
-				}
-			});
+//					return null;
+//				}
+//			});
 		}
 
-		public void connect() throws MessagingException, Pausable {
-			runThreaded(new Callable<Void>() {
-				public Void call() throws MessagingException {
+		public void connect() throws MessagingException {
+//			runThreaded(new Callable<Void>() {
+//				public Void call() throws MessagingException {
 					transport.connect();
-					return null;
-				}
-			});
+//					return null;
+//				}
+//			});
 		}
 
 		public URLName getURLName() {
@@ -424,7 +413,7 @@ public class MailerFactory extends Site {
 		 * this on messages returned from a store, only on those created by
 		 * your program (e.g. via {@link Mailer#newMessage()}).
 		 */
-		public void send(final OrcMessage arg0) throws MessagingException, Pausable {
+		public void send(final OrcMessage arg0) throws MessagingException {
 			arg0.message.saveChanges();
 			final boolean wasConnected = transport.isConnected();
 			if (!wasConnected) {
@@ -436,18 +425,18 @@ public class MailerFactory extends Site {
 			}
 		}
 
-		public void sendMessage(final OrcMessage arg0, final Address[] arg1) throws MessagingException, Pausable {
+		public void sendMessage(final OrcMessage arg0, final Address[] arg1) throws MessagingException {
 			try {
 				quota.use(arg1.length);
 			} catch (final InterruptedException e) {
 				return;
 			}
-			runThreaded(new Callable<Void>() {
-				public Void call() throws MessagingException {
+//			runThreaded(new Callable<Void>() {
+//				public Void call() throws MessagingException {
 					transport.sendMessage(arg0.message, arg1);
-					return null;
-				}
-			});
+//					return null;
+//				}
+//			});
 		}
 	}
 
@@ -507,17 +496,17 @@ public class MailerFactory extends Site {
 			this.folder = folder;
 		}
 
-		public void open() throws MessagingException, Pausable {
+		public void open() throws MessagingException {
 			open(true);
 		}
 
-		public void open(final boolean write) throws MessagingException, Pausable {
-			runThreaded(new Callable<Void>() {
-				public Void call() throws MessagingException {
+		public void open(final boolean write) throws MessagingException {
+//			runThreaded(new Callable<Void>() {
+//				public Void call() throws MessagingException {
 					folder.open(write ? Folder.READ_WRITE : Folder.READ_ONLY);
-					return null;
-				}
-			});
+//					return null;
+//				}
+//			});
 		}
 
 		public String getName() {
@@ -528,20 +517,20 @@ public class MailerFactory extends Site {
 			return folder.getFullName();
 		}
 
-		public int getMessageCount() throws MessagingException, Pausable {
-			return runThreaded(new Callable<Integer>() {
-				public Integer call() throws MessagingException {
+		public int getMessageCount() throws MessagingException {
+//			return runThreaded(new Callable<Integer>() {
+//				public Integer call() throws MessagingException {
 					return folder.getMessageCount();
-				}
-			});
+//				}
+//			});
 		}
 
-		public boolean exists() throws MessagingException, Pausable {
-			return runThreaded(new Callable<Boolean>() {
-				public Boolean call() throws MessagingException {
+		public boolean exists() throws MessagingException {
+//			return runThreaded(new Callable<Boolean>() {
+//				public Boolean call() throws MessagingException {
 					return folder.exists();
-				}
-			});
+//				}
+//			});
 		}
 
 		private static OrcFolder[] wrap(final Folder[] folders) {
@@ -552,41 +541,41 @@ public class MailerFactory extends Site {
 			return foldersOut;
 		}
 
-		public OrcFolder[] list() throws MessagingException, Pausable {
-			return runThreaded(new Callable<OrcFolder[]>() {
-				public OrcFolder[] call() throws MessagingException {
+		public OrcFolder[] list() throws MessagingException {
+//			return runThreaded(new Callable<OrcFolder[]>() {
+//				public OrcFolder[] call() throws MessagingException {
 					return wrap(folder.list());
-				}
-			});
+//				}
+//			});
 		}
 
-		public OrcFolder[] list(final String name) throws MessagingException, Pausable {
-			return runThreaded(new Callable<OrcFolder[]>() {
-				public OrcFolder[] call() throws MessagingException {
+		public OrcFolder[] list(final String name) throws MessagingException {
+//			return runThreaded(new Callable<OrcFolder[]>() {
+//				public OrcFolder[] call() throws MessagingException {
 					return wrap(folder.list(name));
-				}
-			});
+//				}
+//			});
 		}
 
-		public void close() throws MessagingException, Pausable {
+		public void close() throws MessagingException {
 			close(true);
 		}
 
-		public void close(final boolean expunge) throws MessagingException, Pausable {
-			runThreaded(new Callable<Void>() {
-				public Void call() throws MessagingException {
+		public void close(final boolean expunge) throws MessagingException {
+//			runThreaded(new Callable<Void>() {
+//				public Void call() throws MessagingException {
 					folder.close(expunge);
-					return null;
-				}
-			});
+//					return null;
+//				}
+//			});
 		}
 
-		public OrcMessage[] getMessages() throws MessagingException, Pausable {
-			return runThreaded(new Callable<OrcMessage[]>() {
-				public OrcMessage[] call() throws MessagingException {
+		public OrcMessage[] getMessages() throws MessagingException {
+//			return runThreaded(new Callable<OrcMessage[]>() {
+//				public OrcMessage[] call() throws MessagingException {
 					return OrcMessage.wrap(folder.getMessages());
-				}
-			});
+//				}
+//			});
 		}
 
 		@Override
@@ -666,33 +655,33 @@ public class MailerFactory extends Site {
 			return true;
 		}
 
-		public Enumeration<?> getAllHeaders() throws MessagingException, Pausable {
-			return runThreaded(new Callable<Enumeration<?>>() {
-				public Enumeration<?> call() throws MessagingException {
+		public Enumeration<?> getAllHeaders() throws MessagingException {
+//			return runThreaded(new Callable<Enumeration<?>>() {
+//				public Enumeration<?> call() throws MessagingException {
 					return message.getAllHeaders();
-				}
-			});
+//				}
+//			});
 		}
 
-		public Address[] getAllRecipients() throws MessagingException, Pausable {
-			return runThreaded(new Callable<Address[]>() {
-				public Address[] call() throws MessagingException {
+		public Address[] getAllRecipients() throws MessagingException {
+//			return runThreaded(new Callable<Address[]>() {
+//				public Address[] call() throws MessagingException {
 					return message.getAllRecipients();
-				}
-			});
+//				}
+//			});
 		}
 
 		public OrcFolder getFolder() {
 			return new OrcFolder(message.getFolder());
 		}
 
-		public Object getContent() throws IOException, MessagingException, Pausable {
+		public Object getContent() throws IOException, MessagingException {
 			try {
-				return Kilim.runThreaded(new Callable<Object>() {
-					public Object call() throws IOException, MessagingException {
+//				return Kilim.runThreaded(new Callable<Object>() {
+//					public Object call() throws IOException, MessagingException {
 						return message.getContent();
-					}
-				});
+//					}
+//				});
 			} catch (final Exception e) {
 				// HACK: for some reason when I put these
 				// as separate catch clauses it doesn't work like I expect
@@ -708,72 +697,72 @@ public class MailerFactory extends Site {
 			}
 		}
 
-		public Address[] getFrom() throws MessagingException, Pausable {
-			return runThreaded(new Callable<Address[]>() {
-				public Address[] call() throws MessagingException {
+		public Address[] getFrom() throws MessagingException {
+//			return runThreaded(new Callable<Address[]>() {
+//				public Address[] call() throws MessagingException {
 					return message.getFrom();
-				}
-			});
+//				}
+//			});
 		}
 
-		public String[] getHeader(final String arg0) throws MessagingException, Pausable {
-			return runThreaded(new Callable<String[]>() {
-				public String[] call() throws MessagingException {
+		public String[] getHeader(final String arg0) throws MessagingException {
+//			return runThreaded(new Callable<String[]>() {
+//				public String[] call() throws MessagingException {
 					return message.getHeader(arg0);
-				}
-			});
+//				}
+//			});
 		}
 
-		public int getLineCount() throws MessagingException, Pausable {
-			return runThreaded(new Callable<Integer>() {
-				public Integer call() throws MessagingException {
+		public int getLineCount() throws MessagingException {
+//			return runThreaded(new Callable<Integer>() {
+//				public Integer call() throws MessagingException {
 					return message.getLineCount();
-				}
-			});
+//				}
+//			});
 		}
 
-		public Date getReceivedDate() throws MessagingException, Pausable {
-			return runThreaded(new Callable<Date>() {
-				public Date call() throws MessagingException {
+		public Date getReceivedDate() throws MessagingException {
+//			return runThreaded(new Callable<Date>() {
+//				public Date call() throws MessagingException {
 					return message.getReceivedDate();
-				}
-			});
+//				}
+//			});
 		}
 
-		public Address[] getRecipients(final RecipientType arg0) throws MessagingException, Pausable {
-			return runThreaded(new Callable<Address[]>() {
-				public Address[] call() throws MessagingException {
+		public Address[] getRecipients(final RecipientType arg0) throws MessagingException {
+//			return runThreaded(new Callable<Address[]>() {
+//				public Address[] call() throws MessagingException {
 					return message.getRecipients(arg0);
-				}
-			});
+//				}
+//			});
 		}
 
-		public Address[] getReplyTo() throws MessagingException, Pausable {
-			return runThreaded(new Callable<Address[]>() {
-				public Address[] call() throws MessagingException {
+		public Address[] getReplyTo() throws MessagingException {
+//			return runThreaded(new Callable<Address[]>() {
+//				public Address[] call() throws MessagingException {
 					return message.getReplyTo();
-				}
-			});
+//				}
+//			});
 		}
 
-		public Date getSentDate() throws MessagingException, Pausable {
-			return runThreaded(new Callable<Date>() {
-				public Date call() throws MessagingException {
+		public Date getSentDate() throws MessagingException {
+//			return runThreaded(new Callable<Date>() {
+//				public Date call() throws MessagingException {
 					return message.getSentDate();
-				}
-			});
+//				}
+//			});
 		}
 
 		public int getSize() throws MessagingException {
 			return message.getSize();
 		}
 
-		public String getSubject() throws MessagingException, Pausable {
-			return runThreaded(new Callable<String>() {
-				public String call() throws MessagingException {
+		public String getSubject() throws MessagingException {
+//			return runThreaded(new Callable<String>() {
+//				public String call() throws MessagingException {
 					return message.getSubject();
-				}
-			});
+//				}
+//			});
 		}
 
 		public boolean isExpunged() {
@@ -788,12 +777,12 @@ public class MailerFactory extends Site {
 			message.removeHeader(arg0);
 		}
 
-		public OrcMessage reply(final boolean arg0) throws MessagingException, Pausable {
-			return runThreaded(new Callable<OrcMessage>() {
-				public OrcMessage call() throws MessagingException {
+		public OrcMessage reply(final boolean arg0) throws MessagingException {
+//			return runThreaded(new Callable<OrcMessage>() {
+//				public OrcMessage call() throws MessagingException {
 					return new OrcMessage(message.reply(arg0));
-				}
-			});
+//				}
+//			});
 		}
 
 		public void saveChanges() throws MessagingException {
@@ -841,7 +830,7 @@ public class MailerFactory extends Site {
 		}
 
 		/** Added utility method. */
-		public String getText() throws IOException, MessagingException, Pausable {
+		public String getText() throws IOException, MessagingException {
 			return findText(getContent());
 		}
 
@@ -890,16 +879,16 @@ public class MailerFactory extends Site {
 			return new MailFilter(term == null ? otherTerm : new AndTerm(term, otherTerm));
 		}
 
-		public OrcMessage[] search(final OrcFolder folder) throws MessagingException, Pausable {
-			return runThreaded(new Callable<OrcMessage[]>() {
-				public OrcMessage[] call() throws MessagingException {
+		public OrcMessage[] search(final OrcFolder folder) throws MessagingException {
+//			return runThreaded(new Callable<OrcMessage[]>() {
+//				public OrcMessage[] call() throws MessagingException {
 					if (term == null) {
 						return OrcMessage.wrap(folder.folder.getMessages());
 					} else {
 						return OrcMessage.wrap(folder.folder.search(term));
 					}
-				}
-			});
+//				}
+//			});
 		}
 
 		public MailFilter and(final MailFilter that) {
@@ -952,10 +941,10 @@ public class MailerFactory extends Site {
 	}
 
 	@Override
-	public void callSite(final Args args, final Token caller) throws TokenException {
-		caller.requireCapability("send mail", true);
+	public void callSite(final Args args, final TokenAPI caller) throws TokenException {
+		//FIXME:Implement:  caller.requireRight("send mail", true);
 		try {
-			caller.resume(new Mailer("/" + args.stringArg(0)));
+			caller.publish(new Mailer("/" + args.stringArg(0)));
 		} catch (final IOException e) {
 			throw new JavaException(e);
 		}

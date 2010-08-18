@@ -22,9 +22,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Properties;
 
-import kilim.Pausable;
-import orc.error.OrcError;
-
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
 import org.joda.time.LocalTime;
@@ -112,17 +109,17 @@ public final class Upcoming {
 				return out;
 			} catch (final UnsupportedEncodingException e) {
 				// should be impossible
-				throw new OrcError(e);
+				throw new AssertionError(e);
 			}
 		}
 
-		public Event[] run() throws IOException, SAXException, Pausable {
+		public Event[] run() throws IOException, SAXException {
 			final URL url;
 			try {
 				url = new URL(baseURL + "?api_key=" + key + "&method=event.search" + toQuery());
 			} catch (final MalformedURLException e) {
 				// should be impossible
-				throw new OrcError(e);
+				throw new AssertionError(e);
 			}
 			final Document result = XMLUtils.getURL(url);
 			final NodeList events = result.getElementsByTagName("event");

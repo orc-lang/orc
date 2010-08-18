@@ -22,13 +22,10 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Properties;
 
-import kilim.Pausable;
-import orc.error.OrcError;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
-import orc.runtime.Args;
-import orc.runtime.sites.EvalSite;
-import orc.runtime.sites.KilimSite;
+import orc.values.sites.compatibility.Args;
+import orc.values.sites.compatibility.EvalSite;
 
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -40,7 +37,7 @@ import org.codehaus.jettison.json.JSONObject;
  * @author quark
  */
 public class YahooSearchFactory extends EvalSite {
-	private static class YahooSearch extends KilimSite {
+	private static class YahooSearch extends EvalSite {
 		private final static String apiURL = "http://search.yahooapis.com/WebSearchService/V1/webSearch";
 		private final String appid;
 
@@ -55,7 +52,7 @@ public class YahooSearchFactory extends EvalSite {
 		}
 
 		@Override
-		public Object evaluate(final Args args) throws TokenException, Pausable {
+		public Object evaluate(final Args args) throws TokenException {
 			// get the first page of results and the cursor
 			try {
 				final String search = args.stringArg(0);
@@ -70,10 +67,10 @@ public class YahooSearchFactory extends EvalSite {
 				return JSONSite.wrapJSON(response.getJSONArray("Result"));
 			} catch (final UnsupportedEncodingException e) {
 				// should be impossible
-				throw new OrcError(e);
+				throw new AssertionError(e);
 			} catch (final MalformedURLException e) {
 				// should be impossible
-				throw new OrcError(e);
+				throw new AssertionError(e);
 			} catch (final IOException e) {
 				throw new JavaException(e);
 			} catch (final JSONException e) {

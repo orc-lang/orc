@@ -15,16 +15,13 @@ package orc.lib.ui;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import javax.swing.JOptionPane;
 
-import kilim.Pausable;
 import net.oauth.OAuth;
 import net.oauth.OAuthAccessor;
 import net.oauth.OAuthException;
 import orc.oauth.OAuthProvider;
-import orc.runtime.Kilim;
 
 import com.centerkey.utils.BareBonesBrowserLaunch;
 
@@ -38,10 +35,10 @@ public class GuiOAuthProvider extends OAuthProvider {
 	}
 
 	@Override
-	public OAuthAccessor authenticate(final String consumer, final List<OAuth.Parameter> request) throws Pausable, Exception {
+	public OAuthAccessor authenticate(final String consumer, final List<OAuth.Parameter> request) throws Exception {
 		final OAuthAccessor accessor = oauth.newAccessor(consumer);
-		Kilim.runThreaded(new Callable<Void>() {
-			public Void call() throws Exception {
+//		Kilim.runThreaded(new Callable<Void>() {
+//			public Void call() throws Exception {
 				oauth.obtainRequestToken(accessor, request, null);
 				// prompt the user for authorization;
 				// do not provide a callback URL
@@ -53,9 +50,9 @@ public class GuiOAuthProvider extends OAuthProvider {
 				}
 				// confirm authorization
 				oauth.obtainAccessToken(accessor);
-				return null;
-			}
-		});
+//				return null;
+//			}
+//		});
 		return accessor;
 	}
 }

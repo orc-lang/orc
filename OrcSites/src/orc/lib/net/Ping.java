@@ -19,8 +19,8 @@ import java.net.UnknownHostException;
 
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
-import orc.runtime.Args;
-import orc.runtime.sites.ThreadedPartialSite;
+import orc.values.sites.compatibility.Args;
+import orc.values.sites.compatibility.ThreadedPartialSite;
 
 /**
  * Implement ping using {@link InetAddress#isReachable(int)}. Accepts the host

@@ -24,17 +24,13 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Properties;
 
-import orc.error.OrcError;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
-import orc.runtime.Args;
-import orc.runtime.sites.EvalSite;
-import orc.runtime.sites.Site;
-import orc.runtime.sites.ThreadedSite;
-import orc.runtime.values.ConsValue;
-import orc.runtime.values.ListValue;
-import orc.runtime.values.NilValue;
-import orc.runtime.values.Value;
+import orc.values.sites.compatibility.Args;
+import orc.values.sites.compatibility.EvalSite;
+import orc.values.sites.Site;
+import orc.values.sites.compatibility.ThreadedSite;
+import scala.collection.immutable.List;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -77,7 +73,7 @@ public class GoogleSearchFactory extends EvalSite {
 		}
 
 		@Override
-		public Value evaluate(final Args args) throws TokenException {
+		public Object evaluate(final Args args) throws TokenException {
 			final String url;
 			final JSONArray results;
 			final JSONArray pages;
@@ -91,10 +87,10 @@ public class GoogleSearchFactory extends EvalSite {
 				pages = response.getJSONObject("cursor").getJSONArray("pages");
 			} catch (final UnsupportedEncodingException e) {
 				// should be impossible
-				throw new OrcError(e);
+				throw new AssertionError(e);
 			} catch (final MalformedURLException e) {
 				// should be impossible
-				throw new OrcError(e);
+				throw new AssertionError(e);
 			} catch (final IOException e) {
 				throw new JavaException(e);
 			} catch (final JSONException e) {
@@ -102,12 +98,12 @@ public class GoogleSearchFactory extends EvalSite {
 			}
 
 			// build a list of pages
-			ListValue<Site> out = NilValue.singleton;
+			List<Site> out = nilList();
 			for (int i = pages.length() - 1; i > 1; --i) {
 				final String page;
 				try {
 					page = pages.getJSONObject(i).getString("start");
-					out = new ConsValue<Site>(new ThreadedSite() {
+					out = makeCons(new ThreadedSite() {
 						@Override
 						public Object evaluate(final Args args) throws TokenException {
 							JSONObject root;
@@ -118,7 +114,7 @@ public class GoogleSearchFactory extends EvalSite {
 								return JSONSite.wrapJSON(results);
 							} catch (final MalformedURLException e) {
 								// should be impossible
-								throw new OrcError(e);
+								throw new AssertionError(e);
 							} catch (final IOException e) {
 								throw new JavaException(e);
 							} catch (final JSONException e) {
@@ -131,7 +127,7 @@ public class GoogleSearchFactory extends EvalSite {
 				}
 			}
 			// the first page, we already got the results, so it is much simpler
-			out = new ConsValue<Site>(new EvalSite() {
+			out = makeCons(new EvalSite() {
 				@Override
 				public Object evaluate(final Args args) throws TokenException {
 					return JSONSite.wrapJSON(results);

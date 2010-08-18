@@ -17,8 +17,8 @@ import java.io.IOException;
 
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
-import orc.runtime.Args;
-import orc.runtime.sites.EvalSite;
+import orc.values.sites.compatibility.Args;
+import orc.values.sites.compatibility.EvalSite;
 
 public class OAuthProviderSite extends EvalSite {
 	@Override

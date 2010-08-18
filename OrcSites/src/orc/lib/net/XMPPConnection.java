@@ -15,15 +15,14 @@ package orc.lib.net;
 
 import java.util.LinkedList;
 
-import orc.error.runtime.SiteException;
+import orc.TokenAPI;
+import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
-import orc.runtime.Args;
-import orc.runtime.Token;
-import orc.runtime.sites.DotSite;
-import orc.runtime.sites.EvalSite;
-import orc.runtime.sites.Site;
-import orc.runtime.sites.ThreadedSite;
-import orc.runtime.values.Value;
+import orc.values.sites.compatibility.Args;
+import orc.values.sites.compatibility.DotSite;
+import orc.values.sites.compatibility.EvalSite;
+import orc.values.sites.compatibility.SiteAdaptor;
+import orc.values.sites.compatibility.ThreadedSite;
 
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ConnectionConfiguration;
@@ -85,16 +84,16 @@ public class XMPPConnection extends EvalSite {
 					try {
 						connection.connect();
 					} catch (final XMPPException e) {
-						throw new SiteException("XMPP connection error: " + e.getMessage(), e);
+						throw new JavaException(e);
 					}
-					return Value.signal();
+					return signal();
 				}
 			});
 			addMember("disconnect", new ThreadedSite() {
 				@Override
 				public Object evaluate(final Args args) throws TokenException {
 					connection.disconnect();
-					return Value.signal();
+					return signal();
 				}
 			});
 			addMember("login", new ThreadedSite() {
@@ -113,9 +112,9 @@ public class XMPPConnection extends EvalSite {
 							break;
 						}
 					} catch (final XMPPException e) {
-						throw new SiteException("XMPP login error: " + e.getMessage(), e);
+						throw new JavaException(e);
 					}
-					return Value.signal();
+					return signal();
 				}
 			});
 			addMember("chat", new ThreadedSite() {
@@ -143,7 +142,7 @@ public class XMPPConnection extends EvalSite {
 		/** Buffer for received messages. */
 		private final LinkedList<Object> received = new LinkedList<Object>();
 		/** Queue of tokens waiting to receive messages. */
-		private final LinkedList<Token> receivers = new LinkedList<Token>();
+		private final LinkedList<TokenAPI> receivers = new LinkedList<TokenAPI>();
 
 		public ChatSite(final org.jivesoftware.smack.XMPPConnection connection, final String account) {
 			this.chat = connection.getChatManager().createChat(account, this);
@@ -159,8 +158,8 @@ public class XMPPConnection extends EvalSite {
 				if (receivers.isEmpty()) {
 					received.add(v);
 				} else {
-					final Token receiver = receivers.removeFirst();
-					receiver.resume(v);
+					final TokenAPI receiver = receivers.removeFirst();
+					receiver.publish(v);
 				}
 			}
 		}
@@ -176,22 +175,22 @@ public class XMPPConnection extends EvalSite {
 					try {
 						chat.sendMessage(args.stringArg(0));
 					} catch (final XMPPException e) {
-						throw new SiteException("XMPP message send error: " + e.getMessage(), e);
+						throw new JavaException(e);
 					}
-					return Value.signal();
+					return signal();
 				}
 			});
 			/**
 			 * Receive a message (blocks until one is received).
 			 */
-			addMember("receive", new Site() {
+			addMember("receive", new SiteAdaptor() {
 				@Override
-				public void callSite(final Args args, final Token receiver) {
+				public void callSite(final Args args, final TokenAPI receiver) {
 					synchronized (received) {
 						if (received.isEmpty()) {
 							receivers.addLast(receiver);
 						} else {
-							receiver.resume(received.removeFirst());
+							receiver.publish(received.removeFirst());
 						}
 					}
 				}

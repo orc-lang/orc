@@ -5,8 +5,8 @@ val disp = canvas(10)
 -- List switch
 def lswitch(n,l) =
 	l >h:t>
-	( (if(n=0) >> h) |
-	  (if(~(n=0)) >> lswitch(n-1,t) )
+	( (IfT(n=0) >> h) |
+	  (IfT(~(n=0)) >> lswitch(n-1,t) )
 	)
 
 {--------------------------------------------------------------------
@@ -25,13 +25,13 @@ def randRange(mn,mx) =
 	random(mx+1-mn)+mn
 
 def nSpurt(n,tMin,tMax,oMin,oMax) =
-	( if(n>=1) 
+	( IfT(n>=1) 
 	  >> randRange(tMin,tMax)
 	  >d> Ltimer(d)				-- Delay
 	  >>	( randRange(oMin,oMax) 	-- Deliver a value
 			| nSpurt(n-1,tMin,tMax,oMin,oMax) -- Recurse
 			) 
-	| if(n<=0)
+	| IfT(n<=0)
 	  >> false
 	)
 	
@@ -75,8 +75,8 @@ def rightDone() =
 	link.  Once you own the next link, you release the first.
 -}
 def makeRope(len,lb,ls) =
-	(if(len=0) >> let((),false,lb,ls)
-	|	(  if(1<=len) 
+	(IfT(len=0) >> let((),false,lb,ls)
+	|	(  IfT(1<=len) 
 		>> Buffer()
 		>b> makeRope(len-1,b,true)
 		>(rb,rs,eb,es)> b.put((lb,ls,rb,rs,len))
@@ -90,20 +90,20 @@ def makeRope(len,lb,ls) =
 	Between links, we logically delay for d units. 
 -}
 def followRight(b,s,f,d) =
-	(	( if(~s) >> (let() | f()>>stop)
+	(	( IfT(~s) >> (let() | f()>>stop)
 		)
-	|	(  if(s) 
+	|	(  IfT(s) 
 		>> b.get()
 		>(lb,ls,rb,rs,len)> ( disp.setLink(len,d) >> false 
 							| (Ltimer(d) >> true)
 							)
-		>c>	(	( if(c)
+		>c>	(	( IfT(c)
 				>> followRight(rb,rs,f,d)
 				>> b.put((lb,ls,rb,rs,len))
 				>> disp.setLink(len,0)
 				>> stop
 				)
-			|	if(~c)
+			|	IfT(~c)
 			)
 		)
 	)
@@ -114,20 +114,20 @@ def followRight(b,s,f,d) =
 	Between links, we logically delay for d units. 
 -}
 def followLeft(b,s,f,d) =
-	(	( if(~s) >> (let() | f()>>stop)
+	(	( IfT(~s) >> (let() | f()>>stop)
 		)
-	|	(  if(s) 
+	|	(  IfT(s) 
 		>> b.get()
 		>(lb,ls,rb,rs,len)> ( disp.setLink(len,d) >> false 
 							| (Ltimer(d) >> true)
 							)
-		>c>	(	( if(c)
+		>c>	(	( IfT(c)
 				>> followLeft(lb,ls,f,d)
 				>> disp.setLink(len,0)
 				>> b.put((lb,ls,rb,rs,len))
 				>> stop
 				)
-			|	if(~c)
+			|	IfT(~c)
 			)
 		)
 	)	
@@ -154,7 +154,7 @@ def bManager(mainLine,aPack,oPack) =
 	mainLine.get() 
 	>> oFlag.get() -- Check opposite side
 	>rdy> oFlag.put(false) -- Replace notifier
-	>>	((	if(rdy) -- A monkey's waiting
+	>>	((	IfT(rdy) -- A monkey's waiting
 			>> oDeck.get() -- Get the waiting monkey
 			>d> oAck.put(true) -- Acknowledge the opposite guide
 			>> aFollow(aLink,aSign,freeSideLock,0) -- Flush current side
@@ -163,7 +163,7 @@ def bManager(mainLine,aPack,oPack) =
 			>> oPop()
 			>> bManager(mainLine,oPack,aPack)
 		)|(
-			if(~rdy) -- No opposite monkey to worry about.
+			IfT(~rdy) -- No opposite monkey to worry about.
 			>> aFlag.get() -- Assume this is true (one has to be)
 			>> aFlag.put(false) -- Reset
 			>> aDeck.get() -- Get the waiting monkey

@@ -20,12 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import kilim.ExitMsg;
-import kilim.Mailbox;
-import kilim.Pausable;
-import kilim.Task;
 import orc.lib.state.Interval;
-import orc.runtime.Kilim;
 
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
@@ -390,7 +385,7 @@ public class NOAAWeather {
 	 * Call the NDFDgenByDay() service, with a 24-hour period;
 	 * exit if no forecast is available.
 	 */
-	public static Forecast getDailyForecast(final double lat, final double lon, final LocalDate startDate, final int numDays) throws IOException, SAXException, Pausable {
+	public static Forecast getDailyForecast(final double lat, final double lon, final LocalDate startDate, final int numDays) throws IOException, SAXException {
 		final URL url;
 		try {
 			url = new URL(dailyURL + "&lat=" + lat + "&lon=" + lon + "&format=24+hourly" + "&startDate=" + startDate + "&numDays=" + numDays);
@@ -401,26 +396,26 @@ public class NOAAWeather {
 		final Document doc = XMLUtils.getURL(url);
 		final Forecast[] fcs = getForecasts(doc);
 		if (fcs.length == 0) {
-			Kilim.exit();
+//			Kilim.exit();
 			return null;
 		} else {
 			return fcs[0];
 		}
 	}
 
-	public static void main(final String[] args) {
-		Kilim.startEngine(1, 1);
-		final Mailbox<ExitMsg> m = new Mailbox<ExitMsg>();
-		final Task task = new Task() {
-			@Override
-			public void execute() throws Pausable, Exception {
-				final Forecast forecast = getDailyForecast(47.606, -122.331, new LocalDate(), 1);
-				System.out.println(forecast);
-			}
-		};
-		task.informOnExit(m);
-		task.start();
-		m.getb();
-		Kilim.stopEngine();
-	}
+//	public static void main(final String[] args) {
+//		Kilim.startEngine(1, 1);
+//		final Mailbox<ExitMsg> m = new Mailbox<ExitMsg>();
+//		final Task task = new Task() {
+//			@Override
+//			public void execute() throws Exception {
+//				final Forecast forecast = getDailyForecast(47.606, -122.331, new LocalDate(), 1);
+//				System.out.println(forecast);
+//			}
+//		};
+//		task.informOnExit(m);
+//		task.start();
+//		m.getb();
+//		Kilim.stopEngine();
+//	}
 }

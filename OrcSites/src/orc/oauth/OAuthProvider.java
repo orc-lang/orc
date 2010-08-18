@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.security.PrivateKey;
 import java.util.List;
 
-import kilim.Pausable;
 import net.oauth.OAuth;
 import net.oauth.OAuthAccessor;
 import net.oauth.OAuthConsumer;
@@ -38,7 +37,7 @@ public abstract class OAuthProvider {
 		oauth = new SimpleOAuth(properties);
 	}
 
-	public OAuthAccessor authenticate(final String name) throws Pausable, Exception {
+	public OAuthAccessor authenticate(final String name) throws Exception {
 		return authenticate(name, OAuth.newList());
 	}
 
@@ -48,10 +47,9 @@ public abstract class OAuthProvider {
 	 * @param name
 	 * @param request
 	 * @return
-	 * @throws Pausable
 	 * @throws Exception
 	 */
-	public OAuthAccessor authenticate(final String name, final List<OAuth.Parameter> request) throws Pausable, Exception {
+	public OAuthAccessor authenticate(final String name, final List<OAuth.Parameter> request) throws Exception {
 		throw new AssertionError("Must override OAuthProvider#authenticate(String)");
 	}
 
