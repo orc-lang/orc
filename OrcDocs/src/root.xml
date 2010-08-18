@@ -4920,24 +4920,24 @@ There are two primary ways to create sites which can be used in Orc:
 </para>
 
 <orderedlist>
-<listitem>Implement sites as regular Java classes.
+<listitem>Implement sites as regular Scala or Java classes.
 	Orc programs can import and use these classes directly with the
 	<code>class</code> declaration. This approach is easy for anyone
-	already familiar with Java, and such sites are straightforward to share
-	between Orc and Java code.  However such sites are limited in how they
+	already familiar with Scala/Java, and such sites are straightforward to share
+	between Orc and the Java Virtual Machine.  However such sites are limited in how they
 	can interact with the Orc engine.
 </listitem>
 <listitem>Implement sites using Orc's low-level site API.  Orc programs can
 	import and use these sites with the <code>site</code> declaration.
 	This approach provides full access to the features of the Orc engine.
-	However such sites are difficult to use from Java code.
+	However such sites are difficult to use from Scala or Java code.
 </listitem>
 </orderedlist>
 
 <para>
 External services (including web services) are handled using the <link
 	xlink:href="http://en.wikipedia.org/wiki/Proxy_pattern">Proxy
-	pattern</link>.  A site implemented in Java (using one of the two
+	pattern</link>.  A site implemented in the base language (using one of the two
 techniques above) must act as the local proxy for the service, translating Orc
 site calls into the appropriate requests and translating responses into site
 return values, halts, or errors.
@@ -4947,7 +4947,7 @@ return values, halts, or errors.
 <section id="section.services.java"><title><code>class</code> Sites</title>
 
 <para>
-Java classes can be imported into Orc as sites using the <link
+Scala and Java classes can be imported into Orc as sites using the <link
 	linkend="section.orc.class"><code>class</code> declaration</link>.
 Imported classes must be in the classpath of the JVM running the Orc
 interpreter.  The following sections describe in detail how such imported
@@ -4957,11 +4957,11 @@ classes behave in Orc programs.
 <section id="section.services.java.dot"><title>Dot Operator</title>
 
 <para>
-<code>x.member</code>, where <code>x</code> evaluates to a Java class or object, is evaluated as follows:
+<code>x.member</code>, where <code>x</code> evaluates to a Scala/Java class or object, is evaluated as follows:
 <itemizedlist>
 <listitem>If <code>x</code> has one or more methods named <code>member</code>,
 a "method handle" site is returned which may be called like any other Orc site.
-When a method handle is actually called with arguments, the appropriate Java
+When a method handle is actually called with arguments, the appropriate Scala/Java
 method is selected and called depending on the number and type of arguments, as
 described in <link linkend="section.services.java.method">Method Resolution</link>
 below.</listitem>
@@ -5003,12 +5003,12 @@ i.toString()
 <section><title>Direct Calls</title>
 
 <para>
-When <code>x</code> evaluates to a Java object (but not a Java class), the syntax
+When <code>x</code> evaluates to a Scala/Java object (but not a Scala/Java class), the syntax
 <code>x(...)</code> is equivalent to <code>x.apply(...)</code>.
 </para>
 
 <para>
-When <code>x</code> evaluates to a Java class, the syntax <code>x(...)</code>
+When <code>x</code> evaluates to a Scala/Java class, the syntax <code>x(...)</code>
 calls the class's constructor.  In case of overloaded constructors, the
 appropriate constructor is chosen based on the number and types of arguments as
 described in <link linkend="section.services.java.method">Method Resolution</link>.
@@ -5019,8 +5019,8 @@ described in <link linkend="section.services.java.method">Method Resolution</lin
 <section><title>Pattern Matching</title>
 
 <para>
-If <code>C</code> is bound to a Java class, it can be used as a pattern.
-A pattern <code>C(x)</code> matches any Java object of that class or
+If <code>C</code> is bound to a Scala/Java class, it can be used as a pattern.
+A pattern <code>C(x)</code> matches any Scala/Java object of that class or
 any of its subclasses. The variable <code>x</code> is simply bound
 to the object again; thus the matcher is just a partial identity function.
 </para>
@@ -5039,7 +5039,7 @@ against specific Java exception types in a <code>catch</code>.
 <section id="section.services.java.method"><title>Method Resolution</title>
 
 <para>
-When a method handle is called, the actual Java method called is chosen based
+When a method handle is called, the actual Scala/Java method called is chosen based
 on the runtime types of the arguments, as follows:
 <orderedlist>
 <listitem>If only one method has the appropriate number of arguments, that method is called.</listitem>
@@ -5088,12 +5088,12 @@ instead varargs may be passed as an array of the appropriate type.
 
 </section>
 
-<section><title>Orc values in Java</title>
+<section><title>Orc values in Scala</title>
 
 <para>
-Orc values are implemented by Java objects, so in general any Orc value may be
-passed to a site implemented in Java.  Standard Orc values have the following
-Java types:
+Orc values are implemented by Scala objects, so in general any Orc value may be
+passed to a site implemented in Scala.  Standard Orc values have the following
+Scala types:
 </para>
 
 <variablelist>
@@ -5112,11 +5112,11 @@ which can be called from Java code to invoke the behavior of the site.</para></l
 </variablelist>
 </section>
 
-<section><title>Java Values in Orc</title>
+<section><title>Scala Values in Orc</title>
 
 <para>
-Java objects may be used directly as values anywhere in an Orc program.
-Primitive Java values cannot be used directly in an Orc program, but are
+Scala objects may be used directly as values anywhere in an Orc program.
+Primitive Scala values cannot be used directly in an Orc program, but are
 automatically boxed (and unboxed) as necessary.
 </para>
 
@@ -5134,11 +5134,11 @@ wider than": BigDecimal > Double > Float > BigInteger > Long > Integer > Short
 
 <section><title>Overview</title>
 <para>
-In order to support massive concurrency efficiently in Java, Orc uses
+In order to support massive concurrency efficiently in Scala, Orc uses
 cooperative threading.  Orc programs are broken into discrete steps which
 are executed by a fixed-size thread pool.  This approach works for Orc
-expressions, but the internals of an Orc site written in Java cannot be easily
-broken down.  So Orc has two choices when it needs to call a local Java site:
+expressions, but the internals of an Orc site written in Scala/Java cannot be easily
+broken down.  So Orc has two choices when it needs to call a local Scala/Java site:
 </para>
 
 <itemizedlist>
@@ -5156,197 +5156,8 @@ Fortunately, in practice most Orc site calls take a short, deterministic amount
 of time to complete. Of those that don't, it's usually only because they are
 blocked waiting for some external event, like another site call.  In this case,
 instead of blocking the site can return control to the Orc engine, asking to
-be run again when the external event occurs.  In typical Java applications this
-kind of non-blocking behavior is implemented using callbacks (or in its most
-general form, continuation passing).  Unfortunately this creates convoluted and
-verbose code: what if you need to block in the middle of a <code
-	language="java">for</code> loop, for example?
+be run again when the external event occurs.
 </para>
-
-<para>
-<link xlink:href="http://kilim.malhar.net/">Kilim</link> resolves this issue by
-allowing programmers to write code in a natural blocking style and then
-rewriting the bytecode to perform a form of CPS conversion, so that instead
-of blocking the code actually returns control to a scheduler. Orc supports
-Kilim, allowing site authors to write sites with internal concurrency and
-blocking behavior which don't use Java threads and cooperate with the Orc
-engine.
-</para>
-</section>
-
-<section><title>Kilim Fundamentals</title>
-
-<para>
-For a full introduction to <link xlink:href="http://kilim.malhar.net/">Kilim</link>, see <link
-xlink:href="http://www.malhar.net/sriram/kilim/thread_of_ones_own.pdf">A Thread of
-One's Own</link>, by Sriram Srinivasan. In the following, we will cover just
-enough to get you started writing Orc sites using Kilim.
-</para>
-
-<para>
-Kilim introduces three key primitives:
-<variablelist>
-<varlistentry>
-<term>
-<code language="java">Pausable</code>
-</term>
-<listitem>
-<para>
-This checked exception marks methods which may block. You should never catch
-this exception, and you should always declare it even if you have already
-declared <code language="java">throws Exception</code> or <code
-language="java">throws Throwable</code>.  In all other respects it follows the
-normal rules for checked exceptions: an override can only throw it if the
-superclass method throws it, and you must throw it if you call any method which
-throws it.
-</para>
-
-<para>Originally Kilim used annotations to mark pausable methods. It turned
-out that <command>javac</command> would sometimes manipulate code in ways which violate the
-invariants regarding use of the annotation. Annotations also have the
-disadvantage that the invariants on their use are not checked automatically by
-tools like Eclipse.</para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term>
-<code language="java">Mailbox</code>
-</term>
-<listitem>
-<para>
-A multiple-producer, single-consumer queue used to communicate
-between tasks. The most important methods are <code language="java">put(Object)</code>, which places an item in the
-mailbox, and <code language="java">get()</code>, which blocks until the mailbox
-is non-empty and then returns the first item.
-</para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term>
-<code language="java">Task</code>
-</term>
-<listitem>
-Kilim analogue of a <code language="java">Thread</code>. Every <code language="java">Pausable</code>
-method must be run within a task. To create and run a task:
-
-<programlisting language="java">
-new Task() {
-    public void execute() throws Pausable {
-        // do some stuff
-    }
-}.start();
-</programlisting>
-</listitem>
-</varlistentry>
-</variablelist>
-</para>
-
-<para>
-Together, these primitives allow you to write highly-concurrent Java programs
-in a familiar threaded style.  Under the hood, Kilim can schedule any number of
-concurrent tasks on a fixed number of physical threads, providing better
-scalability and performance than possible with Java threads.
-</para>
-
-<para>
-When writing Orc sites you rarely need to use tasks explicitly because every Orc
-site call is implicitly run inside a Kilim task if necessary. Therefore all you need to do is mark
-<code language="java">Pausable</code> methods. Here's a short example of a
-buffer site written using Kilim <code language="java">Mailbox</code>es:
-
-<programlisting language="java"><![CDATA[
-public class KilimBuffer<V> {
-	private LinkedList<Mailbox<V>> waiters =
-		new LinkedList<Mailbox<V>>();
-	private LinkedList<V> buffer = new LinkedList<V>();
-	public synchronized void put(V o) {
-		Mailbox<V> waiter = waiters.poll();
-		if (waiter != null) waiter.putnb(o);
-		else buffer.add(o);
-	}
-	public synchronized V get() throws Pausable {
-		V out = buffer.poll();
-		if (out != null) return out;
-		else {
-			Mailbox<V> waiter = new Mailbox<V>();
-			waiters.add(waiter);
-			return waiter.get();
-		}
-	}
-}]]></programlisting>
-</para>
-
-<para>Classes using Kilim can be imported like other Java classes using the Orc
-<code>class</code> declaration.  For example, we can use the
-<code language="java">KilimBuffer</code> class defined above:
-<programlisting><![CDATA[
-class Buffer = orc.lib.state.KilimBuffer
-val b = Buffer()
-  Rtimer(1000) >> b.put("1 second later") >> null
-| b.get()]]></programlisting>
-</para>
-
-<warning>
-The version of Kilim bundled with Orc does not support calls to pausable
-methods in constructor arguments. For example, this does not work:
-<programlisting language="java">
-new Foo(bar.pausable());
-</programlisting>
-The workaround is to use a temporary variable:
-<programlisting language="java">
-Object tmp = bar.pausable();
-new Foo(tmp);
-</programlisting>
-</warning>
-
-</section>
-
-<section><title>When you must block</title>
-
-<para>
-Sometimes blocking is unavoidable, for example if a site must perform blocking
-IO.  For such cases, Orc provides a utility method <code
-language="java">orc.runtime.Kilim#runThreaded(Callable)</code> which farms work
-out to a thread pool.  The advantage of doing this over spawning your own
-thread is that there is no chance of using too many threads; if no thread is
-available, the method pauses until one becomes available.  The disadvantage is
-that if you have too many Java methods which must communicate with each other
-concurrently and can't use Mailboxes, there won't be enough threads for them
-all and execution will deadlock.  This situation is sufficiently rare that
-<code language="java">runThreaded</code> is usually the correct approach.
-</para>
-
-</section>
-
-<section><title>Compiling Kilim Sites</title>
-
-<para>
-Code which uses Kilim must be processed with the Kilim "weaver" after compiling
-and before running.  The weaver is bundled with the Orc source code, or may be
-downloaded separately from the <link
-	xlink:href="http://www.malhar.net/sriram/kilim/">Kilim project
-	site</link>.
-</para>
-
-<para>
-To process compiled classes, run <code language="java">kilim.tools.Weaver</code>.
-If your <filename>.class</filename> files are in the
-<filename>build/</filename> directory, you would run the weaver like this:
-<command>java -cp kilim.jar:build/ kilim.tools.Weaver -d build/ build/</command>
-</para>
-
-<para>
-The Orc source distribution includes an ant <command>kilim</command>
-task (in <filename>build.xml</filename>) which weaves compiled classes in the
-<filename>build</filename> directory.  If you are compiling Orc in Eclipse, an
-Eclipse "Builder" is included which does this automatically whenever any source
-files change.
-</para>
-</section>
-
-</section>
-
-</section>
 
 <section id="section.services.site"><title><code>site</code> Sites</title>
 
@@ -5354,7 +5165,7 @@ files change.
 
 <para>
 Orc sites imported with the <code>site</code> declaration are implemented as
-Java classes which extend <code language="java">orc.runtime.sites.Site</code>.
+Scala classes which extend <code language="java">orc.runtime.sites.Site</code>.
 Here we will summarize the most important features of this and related classes;
 for a detailed description, refer to the <link
 xlink:href="http://orc.csres.utexas.edu/javadoc/STABLE/index.html">Javadoc</link>.
@@ -5414,7 +5225,7 @@ language="java">orc.error.runtime.JavaException</code>.</listitem></varlistentry
 
 <varlistentry><term><code language="java">die()</code></term><listitem>halt,
 without publishing a value or reporting an error. For example, the built-in
-site <code>if</code> uses this method to halt when called with a
+site <code>IfT</code> uses this method to halt when called with a
 <code>false</code> argument.</listitem></varlistentry>
 </variablelist>
 
@@ -5447,7 +5258,7 @@ indicate an error.
 <section id="section.services.sites.ThreadedSite"><title>ThreadedSite</title>
 
 <para>
-Some sites need to perform blocking IO or use other Java blocking methods like
+Some sites need to perform blocking IO or use other Scala/Java blocking methods like
 <code language="java">Object#wait()</code>.  This cannot be done directly in
 the <code language="java">callSite</code> or <code
 language="java">EvalSite#evaluate</code>  methods because that might block the
@@ -5478,7 +5289,7 @@ language="java">orc.runtime.sites.DotSite</code>.
 </para>
 
 <para>
-In your site's constructor, call the method <code
+In the site's constructor, call the method <code
 language="java">addMember(String message, Object value)</code> once for each
 message you wish the site to respond to. The call <code
 language="java">addMember(m, v)</code> instructs the site to return the value
