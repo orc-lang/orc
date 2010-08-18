@@ -1,3 +1,4 @@
+
 package orc.lib.music_calendar;
 
 import java.text.DateFormat;
@@ -26,88 +27,88 @@ import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
 
 public class MySpace extends DotSite {
-    
-    @Override
-    protected void addMembers() {
-        addMember("scrapeMusicShows", new scrapeMusicMethod());  
-    }
 
-    private class scrapeMusicMethod extends PartialSite {
-        
-        private Map<String, Boolean> seenURLs = new HashMap<String, Boolean>();
-        
-        @Override
-        public Object evaluate(Args args) {
+	@Override
+	protected void addMembers() {
+		addMember("scrapeMusicShows", new scrapeMusicMethod());
+	}
 
-            try {
-                String myspaceURL = (String)args.getArg(0);
-                
-        		/* stay silent if we've processed this URL before */
-        		if (seenURLs.containsKey(myspaceURL)) {
-        			return null;
-        		}
-        		seenURLs.put(myspaceURL, true);
+	private class scrapeMusicMethod extends PartialSite {
 
-        		Parser profileParser = new Parser(myspaceURL);
+		private final Map<String, Boolean> seenURLs = new HashMap<String, Boolean>();
 
-        		NodeList list = profileParser.extractAllNodesThatMatch(new LinkRegexFilter("Events/1"));
+		@Override
+		public Object evaluate(final Args args) {
 
-        		if (list.size() != 1) {
-        			return null;
-        		}
+			try {
+				final String myspaceURL = (String) args.getArg(0);
 
-        		LinkTag link = (LinkTag)list.elementAt(0);
-        		String showUrl = link.extractLink();
+				/* stay silent if we've processed this URL before */
+				if (seenURLs.containsKey(myspaceURL)) {
+					return null;
+				}
+				seenURLs.put(myspaceURL, true);
 
-        		List<MusicShow> musicShows = extractMusicShows(showUrl);
-                return musicShows;
-            } catch (TokenException e) {
-            } catch (ParserException e) {
-            }
-            
-            return null;
-        }
-    }
-    
-	private List<MusicShow> extractMusicShows(String showUrl) throws ParserException {
-		List<MusicShow> musicShows = new ArrayList<MusicShow>();
+				final Parser profileParser = new Parser(myspaceURL);
 
-		Parser showParser = new Parser(showUrl);
+				final NodeList list = profileParser.extractAllNodesThatMatch(new LinkRegexFilter("Events/1"));
+
+				if (list.size() != 1) {
+					return null;
+				}
+
+				final LinkTag link = (LinkTag) list.elementAt(0);
+				final String showUrl = link.extractLink();
+
+				final List<MusicShow> musicShows = extractMusicShows(showUrl);
+				return musicShows;
+			} catch (final TokenException e) {
+			} catch (final ParserException e) {
+			}
+
+			return null;
+		}
+	}
+
+	private List<MusicShow> extractMusicShows(final String showUrl) throws ParserException {
+		final List<MusicShow> musicShows = new ArrayList<MusicShow>();
+
+		final Parser showParser = new Parser(showUrl);
 
 		// extract band name
-		String bandName = extractBandName(showUrl);
+		final String bandName = extractBandName(showUrl);
 
 		// extract shows
-		NodeList showList = showParser.extractAllNodesThatMatch(new CssSelectorNodeFilter("div.event-info"));
-		for(int i = 0; i < showList.size(); i++) {
-			
-			MusicShow show = new MusicShow();
+		final NodeList showList = showParser.extractAllNodesThatMatch(new CssSelectorNodeFilter("div.event-info"));
+		for (int i = 0; i < showList.size(); i++) {
+
+			final MusicShow show = new MusicShow();
 			show.setBandName(bandName);
-			
-			Tag infoTag = (Tag) showList.elementAt(i);
-			
-			String title = infoTag.getFirstChild().getFirstChild().getFirstChild().getFirstChild().getText();
+
+			final Tag infoTag = (Tag) showList.elementAt(i);
+
+			final String title = infoTag.getFirstChild().getFirstChild().getFirstChild().getFirstChild().getText();
 			show.setTitle(title);
-			
-			String location = infoTag.getFirstChild().getLastChild().getLastChild().getFirstChild().getText();
-			String[] parts = location.split(", ");
+
+			final String location = infoTag.getFirstChild().getLastChild().getLastChild().getFirstChild().getText();
+			final String[] parts = location.split(", ");
 			if (parts.length != 3) {
 				continue;
 			}
 			show.setLocation(parts[0]);
 			show.setCity(parts[1]);
 			show.setState(parts[2]);
-			
-			String dateStr = infoTag.getChildren().elementAt(1).getFirstChild().getText();
-			
+
+			final String dateStr = infoTag.getChildren().elementAt(1).getFirstChild().getText();
+
 			try {
-				Calendar eventDate = Calendar.getInstance();
-				Calendar today = Calendar.getInstance();
-				
+				final Calendar eventDate = Calendar.getInstance();
+				final Calendar today = Calendar.getInstance();
+
 				// handle 'Today' and 'Tomorrow'
 				if (dateStr.contains("Today") || dateStr.contains("Tomorrow")) {
-					DateFormat fmt = new SimpleDateFormat("HH:mm aa");
-					
+					final DateFormat fmt = new SimpleDateFormat("HH:mm aa");
+
 					Date parsedTime;
 					if (dateStr.contains("Today")) {
 						parsedTime = fmt.parse(dateStr.split("Today @ ")[1]);
@@ -118,39 +119,39 @@ public class MySpace extends DotSite {
 					eventDate.setTime(parsedTime);
 					eventDate.set(Calendar.MONTH, today.get(Calendar.MONTH));
 					eventDate.set(Calendar.DAY_OF_MONTH, today.get(Calendar.DAY_OF_MONTH));
-					
+
 				} else {
-					DateFormat fmt = new SimpleDateFormat("EEE, MMMM dd @ HH:mm a");
-					Date parsedTime = fmt.parse(dateStr);	
-					eventDate.setTime(parsedTime);	
+					final DateFormat fmt = new SimpleDateFormat("EEE, MMMM dd @ HH:mm a");
+					final Date parsedTime = fmt.parse(dateStr);
+					eventDate.setTime(parsedTime);
 				}
-				
+
 				eventDate.set(Calendar.YEAR, today.get(Calendar.YEAR));
-				
+
 				if (dateStr.contains("AM")) {
 					eventDate.set(Calendar.AM_PM, Calendar.AM);
 				} else {
 					eventDate.set(Calendar.AM_PM, Calendar.PM);
 				}
-					
+
 				show.setDate(eventDate.getTime());
 
-			} catch (ParseException e) { 
+			} catch (final ParseException e) {
 				continue;
 			}
-			
+
 			musicShows.add(show);
 		}
 
 		return musicShows;
 	}
 
-	private String extractBandName(String showUrl) throws ParserException {
-		Parser showParser = new Parser(showUrl);
-		NodeList bandNameList = showParser.extractAllNodesThatMatch(new StringFilter("Upcoming Shows"));
+	private String extractBandName(final String showUrl) throws ParserException {
+		final Parser showParser = new Parser(showUrl);
+		final NodeList bandNameList = showParser.extractAllNodesThatMatch(new StringFilter("Upcoming Shows"));
 
-		TextNode bandNameNode = (TextNode)bandNameList.elementAt(0);
-		String[] parts = bandNameNode.getText().split(" - Upcoming Shows");
+		final TextNode bandNameNode = (TextNode) bandNameList.elementAt(0);
+		final String[] parts = bandNameNode.getText().split(" - Upcoming Shows");
 
 		if (parts.length != 2) {
 			throw new ParserException("Unable to extract band name");

@@ -37,22 +37,17 @@ public class GuiOAuthProvider extends OAuthProvider {
 	@Override
 	public OAuthAccessor authenticate(final String consumer, final List<OAuth.Parameter> request) throws Exception {
 		final OAuthAccessor accessor = oauth.newAccessor(consumer);
-//		Kilim.runThreaded(new Callable<Void>() {
-//			public Void call() throws Exception {
-				oauth.obtainRequestToken(accessor, request, null);
-				// prompt the user for authorization;
-				// do not provide a callback URL
-				final String authURL = oauth.getAuthorizationURL(accessor, null).toExternalForm();
-				BareBonesBrowserLaunch.openURL(authURL);
-				final int ok = JOptionPane.showConfirmDialog(null, "Your browser should open and ask you to" + " confirm authorization.\n\nPlease click Yes once" + " you have confirmed authorization.");
-				if (ok != 0) {
-					throw new OAuthException("Authorization refused by user.");
-				}
-				// confirm authorization
-				oauth.obtainAccessToken(accessor);
-//				return null;
-//			}
-//		});
+		oauth.obtainRequestToken(accessor, request, null);
+		// prompt the user for authorization;
+		// do not provide a callback URL
+		final String authURL = oauth.getAuthorizationURL(accessor, null).toExternalForm();
+		BareBonesBrowserLaunch.openURL(authURL);
+		final int ok = JOptionPane.showConfirmDialog(null, "Your browser should open and ask you to" + " confirm authorization.\n\nPlease click Yes once" + " you have confirmed authorization.");
+		if (ok != 0) {
+			throw new OAuthException("Authorization refused by user.");
+		}
+		// confirm authorization
+		oauth.obtainAccessToken(accessor);
 		return accessor;
 	}
 }

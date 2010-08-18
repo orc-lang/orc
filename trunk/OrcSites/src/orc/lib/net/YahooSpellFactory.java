@@ -69,9 +69,6 @@ public class YahooSpellFactory extends EvalSite {
 			} catch (final UnsupportedEncodingException e) {
 				// should be impossible
 				throw new AssertionError(e);
-//			} catch (final MalformedURLException e) {
-//				// should be impossible
-//				throw new AssertionError(e);
 			} catch (final IOException e) {
 				throw new JavaException(e);
 			} catch (final JSONException e) {

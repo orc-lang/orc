@@ -33,7 +33,6 @@ import java.util.Stack;
 
 import javax.swing.JPanel;
 
-
 /** An example of drawing/filling shapes with Java2D in Java 1.2.
  *
  *  From tutorial on learning Java2D at

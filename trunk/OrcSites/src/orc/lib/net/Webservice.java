@@ -25,7 +25,6 @@ import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.SiteAdaptor;
-//import orc.values.sites.compatibility.java.ThreadedObjectProxy;
 
 import org.apache.axis.wsdl.toJava.Emitter;
 import org.apache.axis.wsdl.toJava.GeneratedFileInfo;
@@ -109,28 +108,19 @@ public class Webservice extends SiteAdaptor {
 
 	@Override
 	public void callSite(final Args args, final TokenAPI caller) {
-//		new Task() {
-//			@Override
-//			public void execute() throws Pausable {
-//				Kilim.runThreaded(new Runnable() {
-//					public void run() {
-						try {
-							// Create a temporary directory to host compilation of stubs
-							File tmpdir = new File(System.getProperty("java.io.tmpdir"), "orc-" + UUID.randomUUID().toString());
-							final Object out = evaluate(args, tmpdir);
-							deleteDirectory(tmpdir);
-							if (out == null) {
-								caller.halt();
-							} else {
-								caller.publish(out);
-							}
-						} catch (final TokenException e) {
-							caller.$bang$bang(e);
-						}
-//					}
-//				});
-//			}
-//		}.start();
+		try {
+			// Create a temporary directory to host compilation of stubs
+			final File tmpdir = new File(System.getProperty("java.io.tmpdir"), "orc-" + UUID.randomUUID().toString());
+			final Object out = evaluate(args, tmpdir);
+			deleteDirectory(tmpdir);
+			if (out == null) {
+				caller.halt();
+			} else {
+				caller.publish(out);
+			}
+		} catch (final TokenException e) {
+			caller.$bang$bang(e);
+		}
 	}
 
 	/** Delete a directory recursively */

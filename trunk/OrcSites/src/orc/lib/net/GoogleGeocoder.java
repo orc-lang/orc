@@ -75,11 +75,9 @@ public class GoogleGeocoder extends EvalSite {
 			}
 		} else if (statusCode.equals("602")) {
 			// address unknown
-//			Kilim.exit();
 			return null;
 		} else if (statusCode.equals("603")) {
 			// address unavailable
-//			Kilim.exit();
 			return null;
 		} else {
 			throw new GoogleGeocoderException("Geocoding error code: " + statusCode);
@@ -101,9 +99,10 @@ public class GoogleGeocoder extends EvalSite {
 			throw new JavaException(e);
 		}
 	}
-	
+
 	public static class GoogleGeocoderException extends SiteException {
 		private static final long serialVersionUID = 4572428654641968903L;
+
 		public GoogleGeocoderException(final String msg) {
 			super(msg);
 		}

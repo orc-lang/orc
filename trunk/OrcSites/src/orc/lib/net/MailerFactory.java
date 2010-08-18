@@ -204,25 +204,6 @@ public class MailerFactory extends SiteAdaptor {
 		return out;
 	}
 
-//	/**
-//	 * Utility method to run a blocking mail operation.
-//	 */
-//	private static <E> E runThreaded(final Callable<E> thunk) throws MessagingException {
-//		try {
-//			return Kilim.runThreaded(thunk);
-//		} catch (final Exception e) {
-//			// HACK: for some reason when I put these
-//			// as separate catch clauses it doesn't work like I expect
-//			if (e instanceof MessagingException) {
-//				throw (MessagingException) e;
-//			} else if (e instanceof RuntimeException) {
-//				throw (RuntimeException) e;
-//			} else {
-//				throw new AssertionError(e);
-//			}
-//		}
-//	}
-
 	/**
 	 * Extract the text part from the result of {@link Part#getContent()}.
 	 */
@@ -383,21 +364,11 @@ public class MailerFactory extends SiteAdaptor {
 		}
 
 		public void close() throws MessagingException {
-//			runThreaded(new Callable<Void>() {
-//				public Void call() throws MessagingException {
-					transport.close();
-//					return null;
-//				}
-//			});
+			transport.close();
 		}
 
 		public void connect() throws MessagingException {
-//			runThreaded(new Callable<Void>() {
-//				public Void call() throws MessagingException {
-					transport.connect();
-//					return null;
-//				}
-//			});
+			transport.connect();
 		}
 
 		public URLName getURLName() {
@@ -431,12 +402,7 @@ public class MailerFactory extends SiteAdaptor {
 			} catch (final InterruptedException e) {
 				return;
 			}
-//			runThreaded(new Callable<Void>() {
-//				public Void call() throws MessagingException {
-					transport.sendMessage(arg0.message, arg1);
-//					return null;
-//				}
-//			});
+			transport.sendMessage(arg0.message, arg1);
 		}
 	}
 
@@ -501,12 +467,7 @@ public class MailerFactory extends SiteAdaptor {
 		}
 
 		public void open(final boolean write) throws MessagingException {
-//			runThreaded(new Callable<Void>() {
-//				public Void call() throws MessagingException {
-					folder.open(write ? Folder.READ_WRITE : Folder.READ_ONLY);
-//					return null;
-//				}
-//			});
+			folder.open(write ? Folder.READ_WRITE : Folder.READ_ONLY);
 		}
 
 		public String getName() {
@@ -518,19 +479,11 @@ public class MailerFactory extends SiteAdaptor {
 		}
 
 		public int getMessageCount() throws MessagingException {
-//			return runThreaded(new Callable<Integer>() {
-//				public Integer call() throws MessagingException {
-					return folder.getMessageCount();
-//				}
-//			});
+			return folder.getMessageCount();
 		}
 
 		public boolean exists() throws MessagingException {
-//			return runThreaded(new Callable<Boolean>() {
-//				public Boolean call() throws MessagingException {
-					return folder.exists();
-//				}
-//			});
+			return folder.exists();
 		}
 
 		private static OrcFolder[] wrap(final Folder[] folders) {
@@ -542,19 +495,11 @@ public class MailerFactory extends SiteAdaptor {
 		}
 
 		public OrcFolder[] list() throws MessagingException {
-//			return runThreaded(new Callable<OrcFolder[]>() {
-//				public OrcFolder[] call() throws MessagingException {
-					return wrap(folder.list());
-//				}
-//			});
+			return wrap(folder.list());
 		}
 
 		public OrcFolder[] list(final String name) throws MessagingException {
-//			return runThreaded(new Callable<OrcFolder[]>() {
-//				public OrcFolder[] call() throws MessagingException {
-					return wrap(folder.list(name));
-//				}
-//			});
+			return wrap(folder.list(name));
 		}
 
 		public void close() throws MessagingException {
@@ -562,20 +507,11 @@ public class MailerFactory extends SiteAdaptor {
 		}
 
 		public void close(final boolean expunge) throws MessagingException {
-//			runThreaded(new Callable<Void>() {
-//				public Void call() throws MessagingException {
-					folder.close(expunge);
-//					return null;
-//				}
-//			});
+			folder.close(expunge);
 		}
 
 		public OrcMessage[] getMessages() throws MessagingException {
-//			return runThreaded(new Callable<OrcMessage[]>() {
-//				public OrcMessage[] call() throws MessagingException {
-					return OrcMessage.wrap(folder.getMessages());
-//				}
-//			});
+			return OrcMessage.wrap(folder.getMessages());
 		}
 
 		@Override
@@ -656,19 +592,11 @@ public class MailerFactory extends SiteAdaptor {
 		}
 
 		public Enumeration<?> getAllHeaders() throws MessagingException {
-//			return runThreaded(new Callable<Enumeration<?>>() {
-//				public Enumeration<?> call() throws MessagingException {
-					return message.getAllHeaders();
-//				}
-//			});
+			return message.getAllHeaders();
 		}
 
 		public Address[] getAllRecipients() throws MessagingException {
-//			return runThreaded(new Callable<Address[]>() {
-//				public Address[] call() throws MessagingException {
-					return message.getAllRecipients();
-//				}
-//			});
+			return message.getAllRecipients();
 		}
 
 		public OrcFolder getFolder() {
@@ -677,11 +605,7 @@ public class MailerFactory extends SiteAdaptor {
 
 		public Object getContent() throws IOException, MessagingException {
 			try {
-//				return Kilim.runThreaded(new Callable<Object>() {
-//					public Object call() throws IOException, MessagingException {
-						return message.getContent();
-//					}
-//				});
+				return message.getContent();
 			} catch (final Exception e) {
 				// HACK: for some reason when I put these
 				// as separate catch clauses it doesn't work like I expect
@@ -698,59 +622,31 @@ public class MailerFactory extends SiteAdaptor {
 		}
 
 		public Address[] getFrom() throws MessagingException {
-//			return runThreaded(new Callable<Address[]>() {
-//				public Address[] call() throws MessagingException {
-					return message.getFrom();
-//				}
-//			});
+			return message.getFrom();
 		}
 
 		public String[] getHeader(final String arg0) throws MessagingException {
-//			return runThreaded(new Callable<String[]>() {
-//				public String[] call() throws MessagingException {
-					return message.getHeader(arg0);
-//				}
-//			});
+			return message.getHeader(arg0);
 		}
 
 		public int getLineCount() throws MessagingException {
-//			return runThreaded(new Callable<Integer>() {
-//				public Integer call() throws MessagingException {
-					return message.getLineCount();
-//				}
-//			});
+			return message.getLineCount();
 		}
 
 		public Date getReceivedDate() throws MessagingException {
-//			return runThreaded(new Callable<Date>() {
-//				public Date call() throws MessagingException {
-					return message.getReceivedDate();
-//				}
-//			});
+			return message.getReceivedDate();
 		}
 
 		public Address[] getRecipients(final RecipientType arg0) throws MessagingException {
-//			return runThreaded(new Callable<Address[]>() {
-//				public Address[] call() throws MessagingException {
-					return message.getRecipients(arg0);
-//				}
-//			});
+			return message.getRecipients(arg0);
 		}
 
 		public Address[] getReplyTo() throws MessagingException {
-//			return runThreaded(new Callable<Address[]>() {
-//				public Address[] call() throws MessagingException {
-					return message.getReplyTo();
-//				}
-//			});
+			return message.getReplyTo();
 		}
 
 		public Date getSentDate() throws MessagingException {
-//			return runThreaded(new Callable<Date>() {
-//				public Date call() throws MessagingException {
-					return message.getSentDate();
-//				}
-//			});
+			return message.getSentDate();
 		}
 
 		public int getSize() throws MessagingException {
@@ -758,11 +654,7 @@ public class MailerFactory extends SiteAdaptor {
 		}
 
 		public String getSubject() throws MessagingException {
-//			return runThreaded(new Callable<String>() {
-//				public String call() throws MessagingException {
-					return message.getSubject();
-//				}
-//			});
+			return message.getSubject();
 		}
 
 		public boolean isExpunged() {
@@ -778,11 +670,7 @@ public class MailerFactory extends SiteAdaptor {
 		}
 
 		public OrcMessage reply(final boolean arg0) throws MessagingException {
-//			return runThreaded(new Callable<OrcMessage>() {
-//				public OrcMessage call() throws MessagingException {
-					return new OrcMessage(message.reply(arg0));
-//				}
-//			});
+			return new OrcMessage(message.reply(arg0));
 		}
 
 		public void saveChanges() throws MessagingException {
@@ -880,15 +768,11 @@ public class MailerFactory extends SiteAdaptor {
 		}
 
 		public OrcMessage[] search(final OrcFolder folder) throws MessagingException {
-//			return runThreaded(new Callable<OrcMessage[]>() {
-//				public OrcMessage[] call() throws MessagingException {
-					if (term == null) {
-						return OrcMessage.wrap(folder.folder.getMessages());
-					} else {
-						return OrcMessage.wrap(folder.folder.search(term));
-					}
-//				}
-//			});
+			if (term == null) {
+				return OrcMessage.wrap(folder.folder.getMessages());
+			} else {
+				return OrcMessage.wrap(folder.folder.search(term));
+			}
 		}
 
 		public MailFilter and(final MailFilter that) {
