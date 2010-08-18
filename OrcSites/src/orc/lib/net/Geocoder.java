@@ -20,7 +20,6 @@ import java.net.URLEncoder;
 import orc.values.OrcTuple;
 import orc.values.sites.compatibility.SiteAdaptor;
 
-
 /**
  * API for http://geocoder.us. This service returns a latitude/longitude tuple
  * given a city/state, zip code, or full address in the United States.
@@ -35,13 +34,11 @@ public class Geocoder {
 	private static OrcTuple parseCSV(final String csv) {
 		final String[] parts = csv.split(",");
 		if (parts.length < 3) {
-//			Kilim.exit();
 			return null;
 		}
 		try {
 			return SiteAdaptor.makePair(Double.parseDouble(parts[0].trim()), Double.parseDouble(parts[1].trim()));
 		} catch (final NumberFormatException e) {
-//			Kilim.exit();
 			return null;
 		}
 	}

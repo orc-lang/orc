@@ -63,36 +63,16 @@ public class GoogleCalendar {
 		return new GoogleCalendar(service);
 	}
 
-//	private static <E> E runThreaded(final Callable<E> thunk) throws IOException, ServiceException {
-//		try {
-//			return Kilim.runThreaded(thunk);
-//		} catch (final IOException e) {
-//			throw e;
-//		} catch (final ServiceException e) {
-//			throw e;
-//		} catch (final Exception e) {
-//			throw (RuntimeException) e;
-//		}
-//	}
-
 	public CalendarEventFeed getEvents(final DateTime start, final DateTime end) throws IOException, ServiceException {
-//		return runThreaded(new Callable<CalendarEventFeed>() {
-//			public CalendarEventFeed call() throws IOException, ServiceException {
-				final CalendarQuery query = new CalendarQuery(eventsURL);
-				query.setMinimumStartTime(new com.google.gdata.data.DateTime(start.getMillis()));
-				query.setMaximumStartTime(new com.google.gdata.data.DateTime(end.getMillis() - 1));
-				return service.query(query, CalendarEventFeed.class);
-//			}
-//		});
+		final CalendarQuery query = new CalendarQuery(eventsURL);
+		query.setMinimumStartTime(new com.google.gdata.data.DateTime(start.getMillis()));
+		query.setMaximumStartTime(new com.google.gdata.data.DateTime(end.getMillis() - 1));
+		return service.query(query, CalendarEventFeed.class);
 	}
 
 	public DateTimeZone getDefaultTimeZone() throws IOException, ServiceException {
-//		return runThreaded(new Callable<DateTimeZone>() {
-//			public DateTimeZone call() throws IOException, ServiceException {
-				final CalendarFeed resultFeed = service.getFeed(calendarsURL, CalendarFeed.class);
-				final CalendarEntry calendar = resultFeed.getEntries().get(0);
-				return DateTimeZone.forID(calendar.getTimeZone().getValue());
-//			}
-//		});
+		final CalendarFeed resultFeed = service.getFeed(calendarsURL, CalendarFeed.class);
+		final CalendarEntry calendar = resultFeed.getEntries().get(0);
+		return DateTimeZone.forID(calendar.getTimeZone().getValue());
 	}
 }

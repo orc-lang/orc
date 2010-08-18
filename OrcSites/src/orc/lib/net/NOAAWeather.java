@@ -396,26 +396,10 @@ public class NOAAWeather {
 		final Document doc = XMLUtils.getURL(url);
 		final Forecast[] fcs = getForecasts(doc);
 		if (fcs.length == 0) {
-//			Kilim.exit();
 			return null;
 		} else {
 			return fcs[0];
 		}
 	}
 
-//	public static void main(final String[] args) {
-//		Kilim.startEngine(1, 1);
-//		final Mailbox<ExitMsg> m = new Mailbox<ExitMsg>();
-//		final Task task = new Task() {
-//			@Override
-//			public void execute() throws Exception {
-//				final Forecast forecast = getDailyForecast(47.606, -122.331, new LocalDate(), 1);
-//				System.out.println(forecast);
-//			}
-//		};
-//		task.informOnExit(m);
-//		task.start();
-//		m.getb();
-//		Kilim.stopEngine();
-//	}
 }

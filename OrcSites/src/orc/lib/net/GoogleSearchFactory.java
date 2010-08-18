@@ -26,15 +26,16 @@ import java.util.Properties;
 
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
+import orc.values.sites.Site;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
-import orc.values.sites.Site;
 import orc.values.sites.compatibility.ThreadedSite;
-import scala.collection.immutable.List;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+
+import scala.collection.immutable.List;
 
 /**
  * Wrapper for the Google Search AJAX API described at

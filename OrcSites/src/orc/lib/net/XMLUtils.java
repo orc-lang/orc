@@ -33,28 +33,6 @@ public class XMLUtils {
 		builderFactory.setCoalescing(true);
 	}
 
-//	/**
-//	 * Utility method to run a blocking operation.
-//	 * XXX: duplicates code from HTTPUtils
-//	 */
-//	private static <E> E runThreaded(final Callable<E> thunk) throws IOException, SAXException {
-//		try {
-//			return Kilim.runThreaded(thunk);
-//		} catch (final Exception e) {
-//			// HACK: for some reason when I put these
-//			// as separate catch clauses it doesn't work like I expect
-//			if (e instanceof IOException) {
-//				throw (IOException) e;
-//			} else if (e instanceof SAXException) {
-//				throw (IOException) e;
-//			} else if (e instanceof RuntimeException) {
-//				throw (RuntimeException) e;
-//			} else {
-//				throw new AssertionError(e);
-//			}
-//		}
-//	}
-
 	public static String escapeXML(final String text) {
 		final StringBuilder sb = new StringBuilder();
 		final int len = text.length();
@@ -97,16 +75,12 @@ public class XMLUtils {
 			// should never happen
 			throw new AssertionError(e);
 		}
-//		return runThreaded(new Callable<Document>() {
-//			public Document call() throws IOException, SAXException {
-				final HttpURLConnection conn = HTTPUtils.connect(url, false);
-				final InputStream in = conn.getInputStream();
-				final Document doc = builder.parse(conn.getInputStream());
-				in.close();
-				conn.disconnect();
-				return doc;
-//			}
-//		});
+		final HttpURLConnection conn = HTTPUtils.connect(url, false);
+		final InputStream in = conn.getInputStream();
+		final Document doc = builder.parse(conn.getInputStream());
+		in.close();
+		conn.disconnect();
+		return doc;
 	}
 
 	public static Document postURL(final URL url, final String request) throws IOException, SAXException {
@@ -117,18 +91,14 @@ public class XMLUtils {
 			// should never happen
 			throw new AssertionError(e);
 		}
-//		return runThreaded(new Callable<Document>() {
-//			public Document call() throws IOException, SAXException {
-				final HttpURLConnection conn = HTTPUtils.connect(url, true);
-				final OutputStreamWriter out = new OutputStreamWriter(conn.getOutputStream());
-				out.write(request);
-				out.close();
-				final InputStream in = conn.getInputStream();
-				final Document doc = builder.parse(conn.getInputStream());
-				in.close();
-				conn.disconnect();
-				return doc;
-//			}
-//		});
+		final HttpURLConnection conn = HTTPUtils.connect(url, true);
+		final OutputStreamWriter out = new OutputStreamWriter(conn.getOutputStream());
+		out.write(request);
+		out.close();
+		final InputStream in = conn.getInputStream();
+		final Document doc = builder.parse(conn.getInputStream());
+		in.close();
+		conn.disconnect();
+		return doc;
 	}
 }

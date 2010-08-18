@@ -91,16 +91,10 @@ public class GoogleCalendar extends EvalSite {
 			service.setAuthSubToken(accessor.accessToken, provider.getPrivateKey(consumer));
 
 			// Create the calendar we'll post events to
-//			Kilim.runThreaded(new Callable<Object>() {
-//				public Object call() throws Exception {
-					final CalendarEntry cal = createMusicCalendar();
-					// MAGIC: this technique for getting the events
-					// URL is undocumented but works well
-					eventsURL = new URL(cal.getLink("alternate", null).getHref());
-//					// return a signal to indicate that the method finished
-//					return Kilim.signal;
-//				}
-//			});
+			final CalendarEntry cal = createMusicCalendar();
+			// MAGIC: this technique for getting the events
+			// URL is undocumented but works well
+			eventsURL = new URL(cal.getLink("alternate", null).getHref());
 
 			synchronized (this) {
 				authenticated = true;
@@ -149,12 +143,7 @@ public class GoogleCalendar extends EvalSite {
 
 			final String location = String.format("%s, %s, %s", show.getLocation(), show.getCity(), show.getState());
 
-//			Kilim.runThreaded(new Callable<Void>() {
-//				public Void call() throws Exception {
-					addEventToCalendar(show.getTitle(), show.getTitle(), location, startDate, endDate);
-//					return null;
-//				}
-//			});
+			addEventToCalendar(show.getTitle(), show.getTitle(), location, startDate, endDate);
 		}
 
 		/**

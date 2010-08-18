@@ -285,7 +285,7 @@ public class SimpleOAuth {
 	 * @throws IOException
 	 * @throws OAuthException
 	 */
-	public void obtainRequestToken(final OAuthAccessor accessor, Collection<OAuth.Parameter> parameters, final String callbackURL) throws IOException, OAuthException {
+	public void obtainRequestToken(final OAuthAccessor accessor, final Collection<OAuth.Parameter> parameters, final String callbackURL) throws IOException, OAuthException {
 		accessor.requestToken = null;
 		accessor.accessToken = null;
 		accessor.tokenSecret = null;
@@ -339,7 +339,7 @@ public class SimpleOAuth {
 	public void obtainAccessToken(final OAuthAccessor accessor, final Collection<OAuth.Parameter> parameters) throws IOException, OAuthException {
 		OAuthMessage response;
 		parameters.add(new OAuth.Parameter(OAuth.OAUTH_TOKEN, accessor.requestToken));
-		String verifier = (String)accessor.getProperty("oauth_verifier"); 
+		final String verifier = (String) accessor.getProperty("oauth_verifier");
 		if (verifier != null) {
 			parameters.add(new OAuth.Parameter("oauth_verifier", verifier));
 		}

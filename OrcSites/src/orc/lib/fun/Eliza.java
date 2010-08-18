@@ -58,8 +58,10 @@ public class Eliza extends EvalSite {
 			}
 		};
 	}
+
 	public static class ElizaException extends SiteException {
 		private static final long serialVersionUID = 410086571116992559L;
+
 		public ElizaException(final String msg) {
 			super(msg);
 		}
