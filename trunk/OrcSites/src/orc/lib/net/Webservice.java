@@ -65,7 +65,7 @@ public class Webservice extends SiteAdaptor {
 		for (final String source : sources) {
 			args[i++] = source;
 		}
-		//FIXME:org.eclipse.jdt.internal.compiler.batch.Main.main(args);
+		org.eclipse.jdt.internal.compiler.batch.Main.main(args);
 	}
 
 	/** Cache the classpath on load. */
