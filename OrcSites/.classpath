@@ -22,9 +22,10 @@
 	<classpathentry kind="lib" path="lib/smackx.jar"/>
 	<classpathentry kind="lib" path="lib/wsdl4j-1.6.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jettison-1.0.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/oauth-20090825.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/oauth-20100527.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/oauth-consumer-20100527.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/oauth-httpclient3-20090617.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/oauth-provider-20090531.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/oauth-provider-20100527.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/joda-time-1.5.2.jar"/>
 	<classpathentry kind="lib" path="lib/eclipse-ecj.jar"/>
 	<classpathentry kind="lib" path="lib/commons-httpclient-3.1.jar"/>
