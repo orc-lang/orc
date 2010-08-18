@@ -19,6 +19,7 @@ import orc.values.sites.Site
 import orc.values.sites.UntypedSite
 import orc.TokenAPI
 import orc.values.Signal
+import orc.values.OrcTuple
 import orc.error.runtime.TokenException
 import orc.types.Type
 
@@ -47,14 +48,29 @@ abstract class SiteAdaptor extends Site with UntypedSite {
    * @param caller    where the result should be sent
    */
   @throws(classOf[TokenException]) def callSite(args: Args, caller: TokenAPI): Unit
-  
+
+}
+
+object SiteAdaptor {
+  import scala.collection.JavaConversions._
+
   def object2value(o: java.lang.Object): AnyRef = o match {
     case s: Site => s
     case i: java.math.BigInteger => new scala.math.BigInt(i)
     case d: java.math.BigDecimal => new scala.math.BigDecimal(d)
     case _ => o
   }
-  
+
   def signal() = Signal
+
+  def makePair(left: AnyRef, right: AnyRef) = OrcTuple(List(left, right))
+
+  def makeCons[T](head: T, tail: List[T]) = head :: tail
+
+  def makeListFromArray(array: AnyRef) = array.asInstanceOf[Array[_]].toList
+
+  def makeList(javaIterable: java.lang.Iterable[_]) = javaIterable.toList
+
+  def nilList[T](): List[T] = Nil
 
 }
