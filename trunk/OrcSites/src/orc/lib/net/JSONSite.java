@@ -17,11 +17,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import orc.error.runtime.JavaException;
-import orc.error.runtime.SiteException;
 import orc.error.runtime.TokenException;
-import orc.runtime.Args;
-import orc.runtime.sites.EvalSite;
-import orc.runtime.values.ListValue;
+import orc.values.sites.compatibility.Args;
+import orc.values.sites.compatibility.EvalSite;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -59,7 +57,7 @@ class JSONSite extends EvalSite {
 				}
 				out.add(wrapJSON(e));
 			}
-			return ListValue.make(out);
+			return makeList(out);
 		} else {
 			return o;
 		}
@@ -69,7 +67,7 @@ class JSONSite extends EvalSite {
 	public Object evaluate(final Args args) throws TokenException {
 		try {
 			if (root == null) {
-				throw new SiteException("Tried to get a property from" + " a null JSON object.");
+				throw new NullPointerException("Tried to get a property from" + " a null JSON object.");
 			}
 			return wrapJSON(root.get(args.fieldName()));
 		} catch (final JSONException e) {

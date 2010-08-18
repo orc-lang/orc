@@ -16,8 +16,8 @@ package orc.lib.ui;
 import javax.swing.JOptionPane;
 
 import orc.error.runtime.TokenException;
-import orc.runtime.Args;
-import orc.runtime.sites.ThreadedPartialSite;
+import orc.values.sites.compatibility.Args;
+import orc.values.sites.compatibility.ThreadedPartialSite;
 
 /**
  * A Yes/No/Cancel confirmation dialog. "Yes" = true, "No" = false,

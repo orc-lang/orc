@@ -18,18 +18,16 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import kilim.Pausable;
-import orc.error.OrcError;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
-import orc.runtime.Args;
-import orc.runtime.sites.KilimSite;
-import orc.runtime.values.ListValue;
-import orc.runtime.values.NilValue;
+import orc.values.sites.compatibility.Args;
+import orc.values.sites.compatibility.EvalSite;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import scala.collection.immutable.Nil$;
 
 /**
  * See examples/spell.orc
@@ -37,11 +35,11 @@ import org.xml.sax.SAXException;
  * http://developer.yahoo.com/search/web/V1/spellingSuggestion.html
  * @author quark
  */
-public class GoogleSpellUnofficial extends KilimSite {
+public class GoogleSpellUnofficial extends EvalSite {
 	private final static String apiURL = "https://www.google.com/tbproxy/spell?lang=en&hl=en";
 
 	@Override
-	public Object evaluate(final Args args) throws TokenException, Pausable {
+	public Object evaluate(final Args args) throws TokenException {
 		// get the first page of results and the cursor
 		try {
 			final String search = args.stringArg(0);
@@ -52,16 +50,17 @@ public class GoogleSpellUnofficial extends KilimSite {
 			final Document root = XMLUtils.postURL(new URL(apiURL), request.toString());
 			final NodeList nodes = root.getElementsByTagName("c");
 			if (nodes.getLength() == 0) {
-				return NilValue.singleton;
+				return Nil$.MODULE$;
 			}
 			final String[] words = nodes.item(0).getTextContent().split("\t");
-			return ListValue.make(words);
+			//return ListValue.make(words);
+			return makeList(words);
 		} catch (final UnsupportedEncodingException e) {
 			// should be impossible
-			throw new OrcError(e);
+			throw new AssertionError(e);
 		} catch (final MalformedURLException e) {
 			// should be impossible
-			throw new OrcError(e);
+			throw new AssertionError(e);
 		} catch (final IOException e) {
 			throw new JavaException(e);
 		} catch (final SAXException e) {

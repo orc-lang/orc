@@ -19,9 +19,7 @@ import java.net.URL;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
-import java.util.concurrent.Callable;
 
-import kilim.Pausable;
 import net.oauth.OAuth;
 import net.oauth.OAuthAccessor;
 import net.oauth.OAuthException;
@@ -29,9 +27,8 @@ import orc.error.runtime.ArgumentTypeMismatchException;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.oauth.OAuthProvider;
-import orc.runtime.Args;
-import orc.runtime.Kilim;
-import orc.runtime.sites.EvalSite;
+import orc.values.sites.compatibility.Args;
+import orc.values.sites.compatibility.EvalSite;
 
 import com.google.gdata.client.calendar.CalendarService;
 import com.google.gdata.data.DateTime;
@@ -89,21 +86,21 @@ public class GoogleCalendar extends EvalSite {
 		 * Authenticate with Google using OAuth.
 		 * Also creates a calendar as a side effect.
 		 */
-		public void authenticate() throws Pausable, Exception {
+		public void authenticate() throws Exception {
 			final OAuthAccessor accessor = provider.authenticate(consumer, OAuth.newList("scope", "http://www.google.com/calendar/feeds/"));
 			service.setAuthSubToken(accessor.accessToken, provider.getPrivateKey(consumer));
 
 			// Create the calendar we'll post events to
-			Kilim.runThreaded(new Callable<Object>() {
-				public Object call() throws Exception {
+//			Kilim.runThreaded(new Callable<Object>() {
+//				public Object call() throws Exception {
 					final CalendarEntry cal = createMusicCalendar();
 					// MAGIC: this technique for getting the events
 					// URL is undocumented but works well
 					eventsURL = new URL(cal.getLink("alternate", null).getHref());
-					// return a signal to indicate that the method finished
-					return Kilim.signal;
-				}
-			});
+//					// return a signal to indicate that the method finished
+//					return Kilim.signal;
+//				}
+//			});
 
 			synchronized (this) {
 				authenticated = true;
@@ -137,7 +134,7 @@ public class GoogleCalendar extends EvalSite {
 		}
 
 		/** Add a music show record. */
-		public void addMusicShow(final MusicShow show) throws Pausable, Exception {
+		public void addMusicShow(final MusicShow show) throws Exception {
 			synchronized (this) {
 				if (!authenticated) {
 					throw new OAuthException("Not authenticated.");
@@ -152,12 +149,12 @@ public class GoogleCalendar extends EvalSite {
 
 			final String location = String.format("%s, %s, %s", show.getLocation(), show.getCity(), show.getState());
 
-			Kilim.runThreaded(new Callable<Void>() {
-				public Void call() throws Exception {
+//			Kilim.runThreaded(new Callable<Void>() {
+//				public Void call() throws Exception {
 					addEventToCalendar(show.getTitle(), show.getTitle(), location, startDate, endDate);
-					return null;
-				}
-			});
+//					return null;
+//				}
+//			});
 		}
 
 		/**
@@ -189,7 +186,7 @@ public class GoogleCalendar extends EvalSite {
 		} catch (final IOException e) {
 			throw new JavaException(e);
 		} catch (final ClassCastException e) {
-			throw new ArgumentTypeMismatchException(e);
+			throw new ArgumentTypeMismatchException(0, "OAuthProvider", args.getArg(0).getClass().getCanonicalName());
 		}
 	}
 }

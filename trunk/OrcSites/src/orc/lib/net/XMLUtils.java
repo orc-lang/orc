@@ -18,14 +18,10 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.concurrent.Callable;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
-import kilim.Pausable;
-import orc.runtime.Kilim;
 
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -37,27 +33,27 @@ public class XMLUtils {
 		builderFactory.setCoalescing(true);
 	}
 
-	/**
-	 * Utility method to run a blocking operation.
-	 * FIXME: duplicates code from HTTPUtils
-	 */
-	private static <E> E runThreaded(final Callable<E> thunk) throws IOException, SAXException, Pausable {
-		try {
-			return Kilim.runThreaded(thunk);
-		} catch (final Exception e) {
-			// HACK: for some reason when I put these
-			// as separate catch clauses it doesn't work like I expect
-			if (e instanceof IOException) {
-				throw (IOException) e;
-			} else if (e instanceof SAXException) {
-				throw (IOException) e;
-			} else if (e instanceof RuntimeException) {
-				throw (RuntimeException) e;
-			} else {
-				throw new AssertionError(e);
-			}
-		}
-	}
+//	/**
+//	 * Utility method to run a blocking operation.
+//	 * XXX: duplicates code from HTTPUtils
+//	 */
+//	private static <E> E runThreaded(final Callable<E> thunk) throws IOException, SAXException {
+//		try {
+//			return Kilim.runThreaded(thunk);
+//		} catch (final Exception e) {
+//			// HACK: for some reason when I put these
+//			// as separate catch clauses it doesn't work like I expect
+//			if (e instanceof IOException) {
+//				throw (IOException) e;
+//			} else if (e instanceof SAXException) {
+//				throw (IOException) e;
+//			} else if (e instanceof RuntimeException) {
+//				throw (RuntimeException) e;
+//			} else {
+//				throw new AssertionError(e);
+//			}
+//		}
+//	}
 
 	public static String escapeXML(final String text) {
 		final StringBuilder sb = new StringBuilder();
@@ -93,7 +89,7 @@ public class XMLUtils {
 		return sb.toString();
 	}
 
-	public static Document getURL(final URL url) throws IOException, SAXException, Pausable {
+	public static Document getURL(final URL url) throws IOException, SAXException {
 		final DocumentBuilder builder;
 		try {
 			builder = builderFactory.newDocumentBuilder();
@@ -101,19 +97,19 @@ public class XMLUtils {
 			// should never happen
 			throw new AssertionError(e);
 		}
-		return runThreaded(new Callable<Document>() {
-			public Document call() throws IOException, SAXException {
+//		return runThreaded(new Callable<Document>() {
+//			public Document call() throws IOException, SAXException {
 				final HttpURLConnection conn = HTTPUtils.connect(url, false);
 				final InputStream in = conn.getInputStream();
 				final Document doc = builder.parse(conn.getInputStream());
 				in.close();
 				conn.disconnect();
 				return doc;
-			}
-		});
+//			}
+//		});
 	}
 
-	public static Document postURL(final URL url, final String request) throws IOException, SAXException, Pausable {
+	public static Document postURL(final URL url, final String request) throws IOException, SAXException {
 		final DocumentBuilder builder;
 		try {
 			builder = builderFactory.newDocumentBuilder();
@@ -121,8 +117,8 @@ public class XMLUtils {
 			// should never happen
 			throw new AssertionError(e);
 		}
-		return runThreaded(new Callable<Document>() {
-			public Document call() throws IOException, SAXException {
+//		return runThreaded(new Callable<Document>() {
+//			public Document call() throws IOException, SAXException {
 				final HttpURLConnection conn = HTTPUtils.connect(url, true);
 				final OutputStreamWriter out = new OutputStreamWriter(conn.getOutputStream());
 				out.write(request);
@@ -132,7 +128,7 @@ public class XMLUtils {
 				in.close();
 				conn.disconnect();
 				return doc;
-			}
-		});
+//			}
+//		});
 	}
 }

@@ -17,17 +17,16 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import kilim.Pausable;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
-import orc.runtime.Args;
-import orc.runtime.sites.KilimSite;
+import orc.values.sites.compatibility.Args;
+import orc.values.sites.compatibility.EvalSite;
 
-public class TrueRandom extends KilimSite {
+public class TrueRandom extends EvalSite {
 	private static String baseURL = "http://www.random.org/integers/?num=1&col=1&base=10&format=plain&rnd=new";
 
 	@Override
-	public Object evaluate(final Args args) throws TokenException, Pausable {
+	public Object evaluate(final Args args) throws TokenException {
 		try {
 			final String number = HTTPUtils.getURL(new URL(baseURL + "&min=" + args.longArg(0) + "&max=" + (args.longArg(1) - 1)));
 			return new Long(number.trim());

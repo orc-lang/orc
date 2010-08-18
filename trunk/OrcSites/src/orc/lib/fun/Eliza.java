@@ -19,9 +19,9 @@ import java.io.InputStreamReader;
 
 import orc.error.runtime.SiteException;
 import orc.error.runtime.TokenException;
-import orc.runtime.Args;
-import orc.runtime.sites.EvalSite;
-import orc.runtime.sites.PartialSite;
+import orc.values.sites.compatibility.Args;
+import orc.values.sites.compatibility.EvalSite;
+import orc.values.sites.compatibility.PartialSite;
 
 public class Eliza extends EvalSite {
 	@Override
@@ -35,12 +35,12 @@ public class Eliza extends EvalSite {
 		}
 		final InputStream stream = Eliza.class.getResourceAsStream(script);
 		if (stream == null) {
-			throw new SiteException("Eliza script '" + script + "' not found.");
+			throw new ElizaException("Eliza script '" + script + "' not found.");
 		}
 		try {
 			eliza.readScript(new InputStreamReader(stream));
 		} catch (final IOException e) {
-			throw new SiteException("Error reading script '" + script + "'", e);
+			throw new ElizaException("Error reading script '" + script + "': " + e.toString());
 		}
 		return new PartialSite() {
 			@Override
@@ -52,10 +52,16 @@ public class Eliza extends EvalSite {
 					try {
 						return eliza.processInput(args.stringArg(0));
 					} catch (final IOException e) {
-						throw new SiteException("Error processing script", e);
+						throw new ElizaException("Error processing script: " + e.toString());
 					}
 				}
 			}
 		};
+	}
+	public static class ElizaException extends SiteException {
+		private static final long serialVersionUID = 410086571116992559L;
+		public ElizaException(final String msg) {
+			super(msg);
+		}
 	}
 }

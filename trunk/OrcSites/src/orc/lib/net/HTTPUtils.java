@@ -18,10 +18,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.concurrent.Callable;
-
-import kilim.Pausable;
-import orc.runtime.Kilim;
 
 public class HTTPUtils {
 	private HTTPUtils() {
@@ -37,30 +33,30 @@ public class HTTPUtils {
 		return conn;
 	}
 
-	/**
-	 * Utility method to run a blocking operation.
-	 */
-	private static <E> E runThreaded(final Callable<E> thunk) throws IOException, Pausable {
-		try {
-			return Kilim.runThreaded(thunk);
-		} catch (final Exception e) {
-			// HACK: for some reason when I put these
-			// as separate catch clauses it doesn't work like I expect
-			if (e instanceof IOException) {
-				throw (IOException) e;
-			} else if (e instanceof RuntimeException) {
-				throw (RuntimeException) e;
-			} else {
-				throw new AssertionError(e);
-			}
-		}
-	}
+//	/**
+//	 * Utility method to run a blocking operation.
+//	 */
+//	private static <E> E runThreaded(final Callable<E> thunk) throws IOException {
+//		try {
+//			return Kilim.runThreaded(thunk);
+//		} catch (final Exception e) {
+//			// HACK: for some reason when I put these
+//			// as separate catch clauses it doesn't work like I expect
+//			if (e instanceof IOException) {
+//				throw (IOException) e;
+//			} else if (e instanceof RuntimeException) {
+//				throw (RuntimeException) e;
+//			} else {
+//				throw new AssertionError(e);
+//			}
+//		}
+//	}
 
 	private static String FF_UA = "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.4) Gecko/2008111317 Ubuntu/8.04 (hardy) Firefox/3.0.4";
 
-	public static String getURL(final URL url) throws IOException, Pausable {
-		return runThreaded(new Callable<String>() {
-			public String call() throws IOException {
+	public static String getURL(final URL url) throws IOException {
+//		return runThreaded(new Callable<String>() {
+//			public String call() throws IOException {
 				final HttpURLConnection conn = connect(url, false);
 				final StringBuilder content = new StringBuilder();
 				final InputStreamReader in = new InputStreamReader(conn.getInputStream(), "UTF-8");
@@ -75,13 +71,13 @@ public class HTTPUtils {
 				in.close();
 				conn.disconnect();
 				return content.toString();
-			}
-		});
+//			}
+//		});
 	}
 
-	public static String postURL(final URL url, final String request) throws IOException, Pausable {
-		return runThreaded(new Callable<String>() {
-			public String call() throws IOException {
+	public static String postURL(final URL url, final String request) throws IOException {
+//		return runThreaded(new Callable<String>() {
+//			public String call() throws IOException {
 				final HttpURLConnection conn = connect(url, true);
 				final OutputStreamWriter out = new OutputStreamWriter(conn.getOutputStream());
 				out.write(request);
@@ -99,7 +95,7 @@ public class HTTPUtils {
 				in.close();
 				conn.disconnect();
 				return content.toString();
-			}
-		});
+//			}
+//		});
 	}
 }

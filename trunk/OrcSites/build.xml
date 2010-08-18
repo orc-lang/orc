@@ -17,43 +17,24 @@
 		Ant build file for OrcSites binary distribution.
 	</description>
 	<property file="build.properties" />
-	<property file="${orc.location.OrcJava}/googlecode.properties" />
+	<property file="${orc.location.OrcScala}/googlecode.properties" />
 	<property name="target.name" value="${ant.project.name}-${orc.version}" />
 
 	<path id="orc.classpath">
 		<fileset dir="lib" includes="*.jar" />
 		<pathelement path="build/classes" />
 		<!-- FIXME: I hate having to hard-code these -->
-		<pathelement path="${orc.location.OrcJava}/build/classes" />
-		<fileset dir="${orc.location.OrcJava}/lib" includes="*.jar" />
+		<pathelement path="${orc.location.OrcScala}/build/classes" />
+		<fileset dir="${orc.location.OrcScala}/lib" includes="*.jar" />
 	</path>
 
 
 	<!-- ================================= 
-          target: kilim              
-         ================================= -->
-	<target name="kilim" description="Kilim weaving">
-		<java classname="kilim.tools.Weaver" fork="yes" failonerror="true">
-			<classpath refid="orc.classpath"/>
-				<assertions>
-					<enable/>
-				</assertions>
-		    <sysproperty key="java.awt.headless" value="true"/>
-			<arg value="-d" />
-			<arg value="build/classes" />
-			<arg value="build/classes" />
-		</java>
-	</target>
-	
-	<!-- ================================= 
           target: jar              
          ================================= -->
-	<target name="jar" depends="kilim" description="generate the distribution">
+	<target name="jar" description="generate the distribution">
 		<!-- Put everything in build into orc-sites.jar -->
-		<jar jarfile="build/${target.name}.jar" basedir="build/classes">
-			<!-- This jar should have a duplicate="fail" attribute, but since we smash all the JARs into
-			     one, we'll have duplicate kilim state classes (kilim/S_*.class).  They're innocuous because
-			     they're all identical. -->
+		<jar jarfile="build/${target.name}.jar" basedir="build/classes"> <!-- duplicate="fail" -->
 			<manifest>
 				<attribute name="Implementation-Title" value="Orc sites library" />
 				<attribute name="Implementation-Version" value="${orc.version}" />
@@ -122,7 +103,7 @@
           target: upload              
          ================================= -->
 	<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask"
-		classpath="${orc.location.OrcJava}/lib/ant-googlecode-0.0.1.jar" name="gcupload"/>
+		classpath="${orc.location.OrcScala}/lib/ant-googlecode-0.0.1.jar" name="gcupload"/>
 	<target name="upload" depends="zip,javadoc" description="upload to google code">
 		<gcupload 
 			username="${orc.googlecode.username}" 

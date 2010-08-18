@@ -17,20 +17,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Properties;
 
-import kilim.Pausable;
-import orc.error.OrcError;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
-import orc.runtime.Args;
-import orc.runtime.sites.EvalSite;
-import orc.runtime.sites.KilimSite;
-import orc.runtime.values.ConsValue;
-import orc.runtime.values.NilValue;
+import orc.values.sites.compatibility.Args;
+import orc.values.sites.compatibility.EvalSite;
 
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -40,7 +34,7 @@ import org.codehaus.jettison.json.JSONObject;
  * @author quark
  */
 public class YahooSpellFactory extends EvalSite {
-	private static class YahooSpell extends KilimSite {
+	private static class YahooSpell extends EvalSite {
 		private final static String apiURL = "http://search.yahooapis.com/WebSearchService/V1/spellingSuggestion";
 		private final String appid;
 
@@ -55,7 +49,7 @@ public class YahooSpellFactory extends EvalSite {
 		}
 
 		@Override
-		public Object evaluate(final Args args) throws TokenException, Pausable {
+		public Object evaluate(final Args args) throws TokenException {
 			// get the first page of results and the cursor
 			try {
 				final String search = args.stringArg(0);
@@ -65,19 +59,19 @@ public class YahooSpellFactory extends EvalSite {
 				final Object response = root.get("ResultSet");
 				if (response instanceof String) {
 					// indicates no result was returned
-					return NilValue.singleton;
+					return nilList();
 				} else {
-					return new ConsValue<String>(((JSONObject) response).getString("Result"), NilValue.singleton);
+					return makeCons(((JSONObject) response).getString("Result"), nilList());
 				}
 			} catch (final ClassCastException e) {
 				// should be impossible
-				throw new OrcError(e);
+				throw new AssertionError(e);
 			} catch (final UnsupportedEncodingException e) {
 				// should be impossible
-				throw new OrcError(e);
-			} catch (final MalformedURLException e) {
-				// should be impossible
-				throw new OrcError(e);
+				throw new AssertionError(e);
+//			} catch (final MalformedURLException e) {
+//				// should be impossible
+//				throw new AssertionError(e);
 			} catch (final IOException e) {
 				throw new JavaException(e);
 			} catch (final JSONException e) {

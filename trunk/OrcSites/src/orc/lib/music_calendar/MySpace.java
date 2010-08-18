@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Map;
 
 import orc.error.runtime.TokenException;
-import orc.runtime.Args;
-import orc.runtime.sites.DotSite;
-import orc.runtime.sites.PartialSite;
+import orc.values.sites.compatibility.Args;
+import orc.values.sites.compatibility.DotSite;
+import orc.values.sites.compatibility.PartialSite;
 
 import org.htmlparser.Parser;
 import org.htmlparser.Tag;

@@ -27,11 +27,12 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Stack;
 
 import javax.swing.JPanel;
 
-import orc.runtime.ReverseListIterator;
 
 /** An example of drawing/filling shapes with Java2D in Java 1.2.
  *
@@ -397,5 +398,29 @@ public class MonkeyCross extends JPanel {
 			e.printStackTrace();
 		}
 		se.redraw();
+	}
+
+	/**
+	 * In Java 6 we can replace this with the builtin decreasingIterator.
+	 * @author quark
+	 */
+	public static class ReverseListIterator<E> implements Iterator<E> {
+		private final ListIterator<E> that;
+
+		public ReverseListIterator(final List<E> list) {
+			that = list.listIterator(list.size());
+		}
+
+		public boolean hasNext() {
+			return that.hasPrevious();
+		}
+
+		public E next() {
+			return that.previous();
+		}
+
+		public void remove() {
+			that.remove();
+		}
 	}
 }
