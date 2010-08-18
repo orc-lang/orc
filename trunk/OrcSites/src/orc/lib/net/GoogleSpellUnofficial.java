@@ -14,7 +14,6 @@
 package orc.lib.net;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -27,12 +26,12 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import scala.collection.immutable.Nil$;
 
 /**
- * See examples/spell.orc
+ * See examples/spell_web.orc
  * <p>
- * http://developer.yahoo.com/search/web/V1/spellingSuggestion.html
+ * Uses Google Toolbar's unofficial spelling API
+ *
  * @author quark
  */
 public class GoogleSpellUnofficial extends EvalSite {
@@ -50,14 +49,11 @@ public class GoogleSpellUnofficial extends EvalSite {
 			final Document root = XMLUtils.postURL(new URL(apiURL), request.toString());
 			final NodeList nodes = root.getElementsByTagName("c");
 			if (nodes.getLength() == 0) {
-				return Nil$.MODULE$;
+				return nilList();
 			}
 			final String[] words = nodes.item(0).getTextContent().split("\t");
 			//return ListValue.make(words);
-			return makeList(words);
-		} catch (final UnsupportedEncodingException e) {
-			// should be impossible
-			throw new AssertionError(e);
+			return makeListFromArray(words);
 		} catch (final MalformedURLException e) {
 			// should be impossible
 			throw new AssertionError(e);
