@@ -1,5 +1,5 @@
 //
-// XML.scala -- Scala class/trait/object XML
+// OrcXML.scala -- Scala object OrcXML
 // Project OrcScala
 //
 // $Id$
@@ -14,22 +14,21 @@
 //
 package orc.ast.oil.nameless
 
-
 import scala.xml._
 import orc.ast.oil.nameless._
 import scala.collection.immutable.HashMap
 
 
 object OrcXML {
-  
-  def writeXML(e : NamelessAST) : Elem = {
+
+  def writeXML(e: NamelessAST): Elem = {
     val xmlout = <orc>
     {toXML(e)}
     </orc>    
     trimElem(xmlout) 
   }
   
-  def trimElem(x : Elem) : Elem =  {
+  def trimElem(x: Elem): Elem =  {
       val nc = x.child filter {a => 
           if (a.isInstanceOf[Text] && a.text.trim == "") false
           else true
@@ -37,7 +36,7 @@ object OrcXML {
       x.copy(child=nc)
   }
   
-  def toXML(e : NamelessAST) : Elem = {
+  def toXML(e: NamelessAST): Elem = {
     e match {
       case Stop() => <stop/>
       case Call(target, args, typeArgs) =>
@@ -214,7 +213,7 @@ object OrcXML {
     }
   }
   
-  def anyToXML(a : Any) : Elem = {
+  def anyToXML(a: Any): Elem = {
     a match { 
       case i:Int => <int>{a}</int> 
       case f:Float => <float>{a}</float> 
@@ -236,11 +235,11 @@ object OrcXML {
     }
   }
   
-  def strip$(s: String) : String = {
+  def strip$(s: String): String = {
     if (s.charAt(s.length-1) == '$') s.substring(0, s.length-1) else s
   }
 
-  def anyRefFromXML(inxml: scala.xml.Node) : AnyRef = {
+  def anyRefFromXML(inxml: scala.xml.Node): AnyRef = {
     inxml match { 
       case <nil/> => null
       case <boolean>{b@ _*}</boolean> => b.text.trim.toBoolean.asInstanceOf[AnyRef]
@@ -259,7 +258,7 @@ object OrcXML {
   }
 
   
-  def fromXML(inxml: scala.xml.Node) : Expression = {
+  def fromXML(inxml: scala.xml.Node): Expression = {
     inxml match {
       case <orc>{prog}</orc> => fromXML(prog)
       case <stop/> => Stop()
@@ -306,14 +305,14 @@ object OrcXML {
     }    
   }
   
-  def argumentFromXML(inxml: scala.xml.Node) : Argument = {
+  def argumentFromXML(inxml: scala.xml.Node): Argument = {
     inxml match {
       case <constant>{c}</constant> => Constant(anyRefFromXML(c))
       case <variable>{v@ _*}</variable> => Variable(v.text.toInt)
     }
   }
   
-  def defFromXML(inxml: scala.xml.Node) : Def = {
+  def defFromXML(inxml: scala.xml.Node): Def = {
     inxml match {
       case <definition><typearity>{typeFormalArity@ _*}</typearity><arity>{arity@ _*}</arity><body>{body@ _*}</body><argtypes>{argTypes@ _*}</argtypes><returntype>{returnType@ _*}</returntype></definition> => {
         val t1 = if (argTypes.text.trim == "") None 
@@ -326,7 +325,7 @@ object OrcXML {
     }
   }
   
-  def typeFromXML(inxml: scala.xml.Node) : Type = {
+  def typeFromXML(inxml: scala.xml.Node): Type = {
     inxml match {
       case <top/> => Top()
       case <bot/> => Bot()
@@ -336,7 +335,7 @@ object OrcXML {
         TupleType(t1.toList)
       }
       case <recordtype>{entries@ _*}</recordtype> => {
-        var t1 : Map[String, Type] = Map.empty
+        var t1: Map[String, Type] = Map.empty
         for(<entry><name>{n@ _*}</name><rtype>{t}</rtype></entry> <- entries) 
           t1 +=  n.text.trim -> typeFromXML(t)
         RecordType(t1)
@@ -368,7 +367,7 @@ object OrcXML {
            }
         VariantType(t1.toList)
       }
-
     }
   }
+
 }
