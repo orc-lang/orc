@@ -155,10 +155,11 @@ public class Webservice extends SiteAdaptor {
 			for (final Object name : info.getClassNames()) {
 				cl.loadClass((String) name);
 			}
-			final List<GeneratedFileInfo.Entry> stubs = info.findType("interface");
+			final List<?> stubs = info.findType("interface");
 			Class<?> stub = null;
 			Class<?> locator = null;
-			for (final GeneratedFileInfo.Entry e : stubs) {
+			for (final Object o : stubs) {
+				final GeneratedFileInfo.Entry e = (GeneratedFileInfo.Entry) o;
 				final Class<?> c = cl.loadClass(e.className);
 				if (c.getName().endsWith("Port") || c.getName().endsWith("PortType")) {
 					stub = cl.loadClass(e.className);
@@ -176,9 +177,10 @@ public class Webservice extends SiteAdaptor {
 				throw new Exception("Unable to find stub among port interfaces");
 			}
 
-			final List<GeneratedFileInfo.Entry> services = info.findType("service");
+			final List<?> services = info.findType("service");
 
-			for (final GeneratedFileInfo.Entry e : services) {
+			for (final Object o : services) {
+				final GeneratedFileInfo.Entry e = (GeneratedFileInfo.Entry) o;
 				if (e.className.endsWith("Locator")) {
 					locator = cl.loadClass(e.className);
 				}

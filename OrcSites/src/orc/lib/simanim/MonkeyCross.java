@@ -135,7 +135,6 @@ public class MonkeyCross extends JPanel {
 		try {
 			javax.imageio.ImageIO.write(bImage, "jpeg", new File("c:/Temp/pics/frame"+frameNo+".jpeg"));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		++frameNo;*/
@@ -241,161 +240,81 @@ public class MonkeyCross extends JPanel {
 		super.paintComponent(g);
 	}
 
-	public static void main(final String[] args) {
+	public static void main(final String[] args) throws InterruptedException {
 		final MonkeyCross se = new MonkeyCross();
 		se.open();
 		se.leftCount.add(1);
-		try {
-			Thread.sleep(500);
-		} catch (final InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Thread.sleep(500);
 		se.redraw();
 
 		se.leftCount.add(11);
-		try {
-			Thread.sleep(500);
-		} catch (final InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Thread.sleep(500);
 		se.redraw();
 
 		se.leftCount.add(21);
-		try {
-			Thread.sleep(500);
-		} catch (final InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Thread.sleep(500);
 		se.redraw();
 
 		se.leftCount.add(31);
-		try {
-			Thread.sleep(500);
-		} catch (final InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Thread.sleep(500);
 		se.redraw();
 
 		se.leftCount.add(41);
-		try {
-			Thread.sleep(500);
-		} catch (final InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Thread.sleep(500);
 		se.redraw();
 
 		final int mk = se.leftPop();
 		se.setLink(1, mk);
-		try {
-			Thread.sleep(500);
-		} catch (final InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Thread.sleep(500);
 		se.redraw();
 
 		se.setLink(1, 0);
 		se.setLink(1, mk);
-		try {
-			Thread.sleep(500);
-		} catch (final InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Thread.sleep(500);
 		se.redraw();
 
 		se.setLink(1, 0);
 		se.setLink(2, mk);
-		try {
-			Thread.sleep(500);
-		} catch (final InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Thread.sleep(500);
 		se.redraw();
 
 		se.setLink(2, 0);
 		se.setLink(3, mk);
-		try {
-			Thread.sleep(500);
-		} catch (final InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Thread.sleep(500);
 		se.redraw();
 
 		se.setLink(3, 0);
 		se.setLink(4, mk);
-		try {
-			Thread.sleep(500);
-		} catch (final InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Thread.sleep(500);
 		se.redraw();
 
 		se.setLink(4, 0);
 		se.setLink(5, mk);
-		try {
-			Thread.sleep(500);
-		} catch (final InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Thread.sleep(500);
 		se.redraw();
 
 		se.setLink(5, 0);
 		se.setLink(6, mk);
-		try {
-			Thread.sleep(500);
-		} catch (final InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Thread.sleep(500);
 		se.redraw();
 
 		se.setLink(6, 0);
 		se.setLink(7, mk);
-		try {
-			Thread.sleep(500);
-		} catch (final InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Thread.sleep(500);
 		se.redraw();
 
 		se.setLink(7, 0);
 		se.setLink(8, mk);
-		try {
-			Thread.sleep(500);
-		} catch (final InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Thread.sleep(500);
 		se.redraw();
 
 		se.setLink(8, 0);
 		se.setLink(9, mk);
-		try {
-			Thread.sleep(500);
-		} catch (final InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Thread.sleep(500);
 		se.redraw();
 
 		se.setLink(9, 0);
-		try {
-			Thread.sleep(500);
-		} catch (final InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Thread.sleep(500);
 		se.redraw();
 	}
 

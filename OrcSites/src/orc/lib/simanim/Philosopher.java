@@ -118,7 +118,6 @@ public class Philosopher extends JPanel {
 		try {
 			javax.imageio.ImageIO.write(bImage, "jpeg", new File("c:/Temp/pics/frame"+frameNo+".jpeg"));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		++frameNo;*/
