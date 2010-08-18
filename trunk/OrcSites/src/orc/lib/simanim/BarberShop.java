@@ -331,7 +331,6 @@ public class BarberShop extends JPanel {
 		try {
 			javax.imageio.ImageIO.write(bImage, "jpeg", new File("c:/Temp/pics/frame"+frameNo+".jpeg"));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		++frameNo;*/
@@ -439,7 +438,7 @@ public class BarberShop extends JPanel {
 		super.paintComponent(g);
 	}
 
-	public static void main(final String[] args) {
+	public static void main(final String[] args) throws InterruptedException {
 		final BarberShop se = new BarberShop();
 		se.open();
 
@@ -460,12 +459,7 @@ public class BarberShop extends JPanel {
 		for (int ii = 0; ii <= 20; ++ii) {
 			se.setTransition(tt, ii);
 			se.redraw();
-			try {
-				Thread.sleep(50);
-			} catch (final InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			Thread.sleep(50);
 		}
 
 	}
