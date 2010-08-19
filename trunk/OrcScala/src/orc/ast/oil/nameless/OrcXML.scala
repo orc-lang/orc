@@ -14,6 +14,8 @@
 //
 package orc.ast.oil.nameless
 
+import scala.util.parsing.input.NoPosition
+import scala.util.parsing.input.Position
 import scala.xml._
 import orc.ast.oil.nameless._
 import scala.collection.immutable.HashMap
@@ -36,11 +38,16 @@ object OrcXML {
       x.copy(child=nc)
   }
   
+  def posToString(p : Position) : String = {
+    if (p == NoPosition) ""
+    else p.toString
+  }
+  
   def toXML(e: NamelessAST): Elem = {
     e match {
-      case Stop() => <stop/>
+      case Stop() => <stop pos={posToString(e.pos)}/>
       case Call(target, args, typeArgs) =>
-        <call>
+        <call pos={posToString(e.pos)}>
         <target>{toXML(target)}</target>
         <args>
             {for (a <- args) yield
@@ -64,27 +71,27 @@ object OrcXML {
         }
         </call>
       case Parallel(left, right) => 
-        <parallel>
+        <parallel pos={posToString(e.pos)}>
         <left>{toXML(left)}</left>
         <right>{toXML(right)}</right>
         </parallel>
       case Sequence(left, right) => 
-        <sequence>
+        <sequence pos={posToString(e.pos)}>
         <left>{toXML(left)}</left>
         <right>{toXML(right)}</right>
         </sequence>
       case Prune(left, right) => 
-        <prune>
+        <prune pos={posToString(e.pos)}>
         <left>{toXML(left)}</left>
         <right>{toXML(right)}</right>
         </prune>
       case Otherwise(left, right) => 
-        <otherwise>
+        <otherwise pos={posToString(e.pos)}>
         <left>{toXML(left)}</left>
         <right>{toXML(right)}</right>
         </otherwise> 
       case DeclareDefs(unclosedVars, defs, body: Expression) =>
-        <declaredefs>
+        <declaredefs pos={posToString(e.pos)}>
           <unclosedvars>
           {for (a <- unclosedVars) yield
             <uv>{a}</uv>
@@ -102,20 +109,20 @@ object OrcXML {
           </body>
         </declaredefs>
       case DeclareType(t: Type, body: Expression) =>
-        <declaretype>
+        <declaretype pos={posToString(e.pos)}>
         <atype>{toXML(t)}</atype>
         <body>{toXML(body)}</body>
         </declaretype> 
       case HasType(body: Expression, expectedType: Type) => 
-        <hastype>
+        <hastype pos={posToString(e.pos)}>
           <body>{toXML(body)}</body>
           <expectedtype>{toXML(expectedType)}</expectedtype>
         </hastype>
-      case Constant(v: Any) => <constant>{anyToXML(v)}</constant>
-      case Constant(null) => <constant><nil/></constant>
-      case Variable(i: Int) => <variable>{i}</variable>
+      case Constant(v: Any) => <constant pos={posToString(e.pos)}>{anyToXML(v)}</constant>
+      case Constant(null) => <constant pos={posToString(e.pos)}><nil/></constant>
+      case Variable(i: Int) => <variable pos={posToString(e.pos)}>{i}</variable>
       case Hole(context, typecontext) =>
-        <hole>
+        <hole pos={posToString(e.pos)}>
         <context>
           {for ((n, a) <- context) yield 
             <binding>
@@ -133,17 +140,17 @@ object OrcXML {
           }
         </typecontext>
         </hole>
-      case Top() => <top/>
-      case Bot() => <bot/>
-      case TypeVar(i) => <typevar>{i}</typevar>
+      case Top() => <top pos={posToString(e.pos)}/>
+      case Bot() => <bot pos={posToString(e.pos)}/>
+      case TypeVar(i) => <typevar pos={posToString(e.pos)}>{i}</typevar>
       case TupleType(elements) =>
-        <tupletype>
+        <tupletype pos={posToString(e.pos)}>
         {for (a <- elements) yield
           <element>{toXML(a)}</element>
         }
         </tupletype>
       case RecordType(entries) =>
-        <recordtype>
+        <recordtype pos={posToString(e.pos)}>
         {for ((n, t) <- entries) yield
           <entry>
           <name>{n}</name>
@@ -152,7 +159,7 @@ object OrcXML {
         }        
         </recordtype>
       case TypeApplication(tycon: Int, typeactuals) =>
-        <typeapplication>
+        <typeapplication pos={posToString(e.pos)}>
           <typeconst>{tycon}</typeconst>
           <typeactuals>
             {for (t <- typeactuals) yield
@@ -161,9 +168,9 @@ object OrcXML {
           </typeactuals>
         </typeapplication>
       case AssertedType(assertedType: Type) =>
-        <assertedtype>{toXML(assertedType)}</assertedtype>
+        <assertedtype pos={posToString(e.pos)}>{toXML(assertedType)}</assertedtype>
       case FunctionType(typeFormalArity: Int, argTypes, returnType: Type) =>
-        <functiontype>
+        <functiontype pos={posToString(e.pos)}>
           <typearity>{typeFormalArity}</typearity>
           <argtypes>
             {for (t <- argTypes) yield
@@ -173,16 +180,16 @@ object OrcXML {
           <returntype>{toXML(returnType)}</returntype>
         </functiontype>
       case TypeAbstraction(typeFormalArity: Int, t: Type) =>
-        <typeabstraction>
+        <typeabstraction pos={posToString(e.pos)}>
           <typearity>{typeFormalArity}</typearity>
           <atype>{toXML(t)}</atype>
         </typeabstraction>
       case ImportedType(classname: String) =>
-        <importedtype>{classname}</importedtype>
+        <importedtype pos={posToString(e.pos)}>{classname}</importedtype>
       case ClassType(classname: String) =>
-        <classtype>{classname}</classtype>
+        <classtype pos={posToString(e.pos)}>{classname}</classtype>
       case VariantType(variants) =>
-        <varianttype>
+        <varianttype pos={posToString(e.pos)}>
           {for ((n, l) <- variants) yield
             <variant>
               <name>n</name>
@@ -196,7 +203,7 @@ object OrcXML {
           }
         </varianttype> 
       case Def(typeFormalArity: Int, arity: Int, body: Expression, argTypes, returnType) =>
-        <definition>
+        <definition pos={posToString(e.pos)}>
           <typearity>{typeFormalArity}</typearity>
           <arity>{arity}</arity>
           <body>{toXML(body)}</body>
