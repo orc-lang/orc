@@ -18,6 +18,37 @@ import java.util.logging.Level
 
 /**
  * A Scala wrapper around java.util.logging.Logger
+ * <p>
+ * Sometimes, it may be unclear whether an event should be logged or sent to the user. 
+ * Imagine Orc running as a service, for example the "Try Orc" demo.
+ * Logged messages are intended for system administrators to help determine "what is going
+ * on on this server" or "why does Orc appear broken".  Events that are solely functions of end
+ * user input (compile errors, etc.) should not be logged. 
+ * <p>
+ * Levels: [from <code>java.util.Logger</code>]
+ * <ul><li>
+ * <strong>SEVERE</strong> is a message level indicating a serious failure.
+ * In general, SEVERE messages should describe events that are of considerable importance and which will prevent normal program execution. They should be reasonably intelligible to end users and to system administrators.
+ * </li><li>
+ * <strong>WARNING</strong> is a message level indicating a potential problem.
+ * In general, WARNING messages should describe events that will be of interest to end users or system managers, or which indicate potential problems.
+ * </li><li>
+ * <strong>INFO</strong> is a message level for informational messages.
+ * Typically, INFO messages will be written to the console or its equivalent. So the INFO level should only be used for reasonably significant messages that will make sense to end users and system admins.
+ * </li><li>
+ * <strong>CONFIG</strong> is a message level for static configuration messages.
+ * CONFIG messages are intended to provide a variety of static configuration information, to assist in debugging problems that may be associated with particular configurations. For example, CONFIG message might include the CPU type, the graphics depth, the GUI look-and-feel, etc.
+ * </li></ul>
+ * <em>Note:</em> All of the following levels, FINE, FINER, and FINEST, are intended for relatively detailed tracing. The exact meaning of the three levels will vary between subsystems, but in general, FINEST should be used for the most voluminous detailed output, FINER for somewhat less detailed output, and FINE for the lowest volume (and most important) messages.
+ * <ul><li>
+ * <strong>FINE</strong> is a message level providing tracing information.
+ * In general, the FINE level should be used for information that will be broadly interesting to developers who do not have a specialized interest in the specific subsystem.
+ * FINE messages might include things like minor (recoverable) failures. Issues indicating potential performance problems are also worth logging as FINE.
+ * </li><li>
+ * <strong>FINER</strong> indicates a fairly detailed tracing message. By default logging calls for entering, returning, or throwing an exception are traced at this level.
+ * </li><li>
+ * <strong>FINEST</strong> indicates a highly detailed tracing message.
+ * </li></ul>
  *
  * @author jthywiss
  */
@@ -38,7 +69,7 @@ class Logger(name: String) {
   final def logrb(level: Level, sourceClass: => String, sourceMethod: => String, bundleName: => String, msg: => String, params: => Seq[Object]): Unit = if (julLogger.isLoggable(level)) julLogger.logrb(level, sourceClass, sourceMethod, bundleName, msg, params)
   final def logrb(level: Level, sourceClass: => String, sourceMethod: => String, bundleName: => String, msg: => String, thrown: Throwable): Unit = if (julLogger.isLoggable(level)) julLogger.logrb(level, sourceClass, sourceMethod, bundleName, msg, thrown)
   final def entering(sourceClass: => String, sourceMethod: => String): Unit = if (julLogger.isLoggable(Level.FINER)) julLogger.entering(sourceClass, sourceMethod)
-  final def entering(sourceClass: => String, sourceMethod: => String, param1: Object): Unit = if (julLogger.isLoggable(Level.FINER)) julLogger.entering(sourceClass, sourceMethod, param1)
+  //final def entering(sourceClass: => String, sourceMethod: => String, param1: Object): Unit = if (julLogger.isLoggable(Level.FINER)) julLogger.entering(sourceClass, sourceMethod, param1)
   final def entering(sourceClass: => String, sourceMethod: => String, params: => Seq[Object]): Unit = if (julLogger.isLoggable(Level.FINER)) julLogger.entering(sourceClass, sourceMethod, params)
   final def exiting(sourceClass: => String, sourceMethod: => String): Unit = if (julLogger.isLoggable(Level.FINER)) julLogger.exiting(sourceClass, sourceMethod)
   final def exiting(sourceClass: => String, sourceMethod: => String, result: Object): Unit = if (julLogger.isLoggable(Level.FINER)) julLogger.exiting(sourceClass, sourceMethod, result)

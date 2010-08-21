@@ -1,5 +1,5 @@
 //
-// JavaSiteForm.scala -- Scala object JavaSiteForm and class JavaClassProxy
+// JavaSiteForm.scala -- Scala object JavaSiteForm
 // Project OrcScala
 //
 // $Id$
@@ -15,6 +15,8 @@
 
 package orc.values.sites
 
+import orc.compile.Logger
+
 
 /**
  * Services (such as name resolution) for use of plain old Java classes
@@ -25,6 +27,7 @@ package orc.values.sites
 object JavaSiteForm extends SiteForm {
   @throws(classOf[ClassNotFoundException])
   def resolve(name: String) = {
+    Logger.finer("Resolving Java class "+name)
     new JavaClassProxy(loadClass(name))
   }
 }

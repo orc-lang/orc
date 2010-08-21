@@ -16,6 +16,7 @@ package orc.run.extensions
 
 import orc.run.Orc
 import orc.ast.oil.nameless.Expression
+import orc.error.runtime.ExecutionException
 
 /**
  * 
@@ -24,6 +25,7 @@ import orc.ast.oil.nameless.Expression
  */
 trait SupportForCapsules extends Orc {
   
+  @throws(classOf[ExecutionException])
   def runEncapsulated(node: Expression, caller: Token) = {
     val host = caller.group.root
     val exec = new CapsuleExecution(caller, host)

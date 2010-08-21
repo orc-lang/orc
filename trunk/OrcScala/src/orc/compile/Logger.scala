@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Created by jthywiss on Jul 10, 2010.
+// Created by jthywiss on Aug 21, 2010.
 //
 // Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
@@ -12,11 +12,11 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
-package orc.run
+package orc.compile
 
 /**
- * Logger for the orc.run subsystem
+ * Logger for the orc.compile subsystem
  *
  * @author jthywiss
  */
-object Logger extends orc.util.Logger("orc.run")
+object Logger extends orc.util.Logger("orc.compile")

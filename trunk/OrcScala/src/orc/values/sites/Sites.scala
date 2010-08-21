@@ -21,6 +21,7 @@ import orc.ast.oil.nameless.Bot
 import orc.TokenAPI
 import orc.error.OrcException
 import orc.error.NotYetImplementedException
+import orc.run.Logger
 
 trait Site extends OrcValue {
   def call(args: List[AnyRef], callingToken: TokenAPI): Unit
@@ -31,6 +32,7 @@ trait Site extends OrcValue {
 
 trait PartialSite extends Site {
   def call(args: List[AnyRef], token: TokenAPI) {
+    Logger.entering(this.getClass.getCanonicalName, "call", args)
     evaluate(args) match {
       case Some(v) => token.publish(v)
       case None => token.halt
@@ -42,6 +44,7 @@ trait PartialSite extends Site {
 
 trait TotalSite extends Site {
   def call(args: List[AnyRef], token: TokenAPI) {
+    Logger.entering(this.getClass.getCanonicalName, "call", args)
   	try { 
   	  token.publish(evaluate(args)) 
   	} catch { 

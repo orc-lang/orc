@@ -132,6 +132,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 		 * @throws NullPointerException if context is null.
 		 */
 		public void run(final ScriptContext ctx, final OrcEventAction pubAct) throws ScriptException {
+			Logger.julLogger().entering(getClass().getCanonicalName(), "run");
 			// We make the assumption that the standard runtime implements
 			// SupportForSynchronousExecution.
 			// JSR 223 requires the eval methods to run synchronously.
@@ -140,11 +141,12 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 			// TODO: Make ENGINE_SCOPE bindings visible in Orc execution?
 			try {
 				exec.runSynchronous(astRoot, pubAct.asFunction(), asOrcBindings(ctx.getBindings(ScriptContext.ENGINE_SCOPE)));
-			} catch (final Exception e) {
-				throw new ScriptException(e);
+            } catch (final OrcException e) {
+				throw new OrcScriptException(e);
 			} finally {
 				exec.stop(); // kill threads and reclaim resources
 				ctx.removeAttribute("context", ScriptContext.ENGINE_SCOPE);
+				Logger.julLogger().exiting(getClass().getCanonicalName(), "run");
 			}
 		}
 
@@ -184,17 +186,21 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 	 */
 	@Override
 	public CompiledScript compile(final Reader script) throws ScriptException {
+		Logger.julLogger().entering(getClass().getCanonicalName(), "compile", script);
 		try {
 			final orc.ast.oil.nameless.Expression result = getCompiler().apply(script, asOrcBindings(getBindings(ScriptContext.ENGINE_SCOPE)), getContext().getErrorWriter());
 			if (result == null) {
 				throw new ScriptException("Compilation failed");
 			} else {
+				Logger.julLogger().exiting(getClass().getCanonicalName(), "compile", result);
 				return new OrcCompiledScript(result);
 			}
 		} catch (final ScriptException e) {
 			throw e;
-		} catch (final Exception e) {
-			throw new ScriptException(e);
+        } catch (final IOException e) {
+          throw new ScriptException(e);
+        } catch (final ClassNotFoundException e) {
+          throw new ScriptException(e);
 		}
 	}
 

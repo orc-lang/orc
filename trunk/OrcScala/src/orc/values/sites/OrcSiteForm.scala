@@ -16,6 +16,7 @@
 package orc.values.sites
 
 import orc.error.compiletime.SiteResolutionException
+import orc.compile.Logger
 
 /**
  * Services (such as name resolution) for normal Orc sites.
@@ -25,6 +26,7 @@ import orc.error.compiletime.SiteResolutionException
 object OrcSiteForm extends SiteForm {
   @throws(classOf[ClassNotFoundException])
   def resolve(name: String): Site = {
+    Logger.finer("Resolving Orc site "+name)
     val loadedClass = loadClass(name)
     if (classOf[Site].isAssignableFrom(loadedClass)) {
       try {

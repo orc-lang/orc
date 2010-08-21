@@ -31,7 +31,7 @@ import orc.values.sites.compatibility.SiteAdaptor;
 public class Buffer extends EvalSite {
 
 	/* (non-Javadoc)
-	 * @see orc.values.sites.compatibility.SiteAdaptor#callSite(java.lang.Object[], orc.TokenAPI, orc.runtime.values.GroupCell, orc.runtime.OrcEngine)
+	 * @see orc.values.sites.compatibility.SiteAdaptor#callSite(java.lang.Object[], orc.TokenAPI, orc.runtime.values.GroupCell, orc.OrcRuntime)
 	 */
 	@Override
 	public Object evaluate(final Args args) {
