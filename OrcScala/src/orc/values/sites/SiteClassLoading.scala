@@ -21,6 +21,7 @@ import java.net.URL
 import java.net.URLClassLoader
 
 import orc.util.FirstNonNull
+import orc.compile.Logger
 
 
 /**
@@ -67,6 +68,7 @@ object SiteClassLoading {
   def initWithClassPathStrings(classPath: Array[String]) { initWithClassPathUrls(classPath.map(path2URL(_)).toArray) }
 
   def initWithClassPathUrls(classPath: Array[URL]) {
+    Logger.config("Initializing site & class loading with class path "+classPath.mkString(":"))
     if (!initted) 
       stackClassLoaderWithPath(classPath) 
     else

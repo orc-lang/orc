@@ -64,7 +64,8 @@ trait SupportForSiteInvocation extends InvocationBehavior {
         }
         catch {
           case e: OrcException => t !! e
-          case e: Exception => t !! new JavaException(e)
+          case e: InterruptedException => throw e
+          case e: Exception => t !! new JavaException(e) //This seems risky
         }
       case _ => super.invoke(t, v, vs)
     }

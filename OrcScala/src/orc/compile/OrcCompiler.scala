@@ -35,7 +35,7 @@ import scala.util.parsing.input.{ StreamReader, Reader }
 class CompilerOptions(val options: OrcOptions, val logger: CompileLogger) {
   
   def reportProblem(exn: CompilationException with ContinuableSeverity) {
-    logger.recordMessage(exn.severity, 1, exn.getMessage(), exn.getPosition(), exn)
+    logger.recordMessage(exn.severity, 0, exn.getMessage(), exn.getPosition(), exn)
   }
   
 }
@@ -66,7 +66,7 @@ trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
       val phaseStart = currentTime
       val b = self.apply(o)(a)
       val phaseEnd = currentTime
-      Console.err.println("[phase duration: " + phaseName + ": " + (phaseEnd - phaseStart) + " ms]")
+      Logger.fine("phase duration: " + phaseName + ": " + (phaseEnd - phaseStart) + " ms")
       b
     }
   }
@@ -74,7 +74,7 @@ trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
     val phaseName = self.phaseName
     override def apply(o: O) = { a: A =>
       val b = self.apply(o)(a)
-      Console.err.println(phaseName + " result = " + b.toString())
+      Logger.info(phaseName + " result = " + b.toString())
       b
     }
   }
@@ -134,7 +134,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
     val phaseName = "noUnboundVars"
     override def apply(co: CompilerOptions) = { ast =>
       def reportProblem(exn: CompilationException with ContinuableSeverity) {
-            co.logger.recordMessage(exn.severity, 1, exn.getMessage(), exn.getPosition(), exn)
+            co.logger.recordMessage(exn.severity, 0, exn.getMessage(), exn.getPosition(), exn)
           }
       for (x <- ast.unboundvars) {
         co.reportProblem(UnboundVariableException(x.name) at x)
@@ -182,7 +182,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
   val phases =
     parse.timePhase >>>
       translate.timePhase >>>
-      noUnboundVars >>>
+      noUnboundVars.timePhase >>>
       typeCheck.timePhase >>>
       refineNamedOil.timePhase >>>
       noUnguardedRecursion.timePhase >>>
@@ -195,6 +195,8 @@ abstract class CoreOrcCompiler extends OrcCompiler {
   @throws(classOf[IOException])
   @throws(classOf[ClassNotFoundException])
   def apply(source: OrcInputContext, options: OrcOptions, compileLogger: CompileLogger, progress: ProgressMonitor): orc.ast.oil.nameless.Expression = {
+    //Logger.config(options)
+    Logger.config("Begin compile "+options.filename)
     compileLogger.beginProcessing(options.filename)
     try {
       val result = phases(new CompilerOptions(options, compileLogger))(source)
@@ -206,6 +208,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
     }
     finally {
       compileLogger.endProcessing(options.filename)
+      Logger.config("End compile "+options.filename)
     }
   }
 
@@ -247,6 +250,7 @@ class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
   @throws(classOf[IOException])
   def openInclude(includeFileName: String, relativeTo: OrcInputContext, options: OrcOptions): OrcInputContext = {
     val baseIC = if (relativeTo != null) relativeTo else OrcNullInputContext
+    Logger.finer("openInclude "+includeFileName+", relative to "+baseIC.getClass.getCanonicalName+"("+baseIC.descr+")")
 
     // Try filename under the include path list
     for (incPath <- scala.collection.JavaConversions.asIterable(options.includePath)) {
@@ -256,7 +260,9 @@ class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
         // in certain cases, to prevent examining files by including
         // them.  This seems a weak barrier, and in fact was broken.
         // We need an alternative way to control local file reads.
-        return baseIC.newInputFromPath(incPath, includeFileName)
+        val newIC = baseIC.newInputFromPath(incPath, includeFileName)
+        Logger.finer("include "+includeFileName+", found on include path entry "+incPath+", opened as "+newIC.getClass.getCanonicalName+"("+newIC.descr+")")
+        return newIC
       } catch {
         case _: IOException => /* Ignore, must not be here */
       }
@@ -264,11 +270,14 @@ class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
 
     // Try in the bundled include resources
     try {
-      return new OrcResourceInputContext("orc/lib/includes/" + includeFileName, getResource)
+      val newIC = new OrcResourceInputContext("orc/lib/includes/" + includeFileName, getResource)
+        Logger.finer("include "+includeFileName+", found in bundled resources, opened as "+newIC.getClass.getCanonicalName+"("+newIC.descr+")")
+        return newIC
     } catch {
       case _: IOException => /* Ignore, must not be here */
     }
 
+    Logger.finer("include "+includeFileName+" not found")
     throw new FileNotFoundException("Include file '" + includeFileName + "' not found; check the include path.");
   }
 }

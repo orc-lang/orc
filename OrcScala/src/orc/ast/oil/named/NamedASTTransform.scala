@@ -52,7 +52,7 @@ trait NamedASTFunction
 
 object EmptyFunction extends PartialFunction[Any,Nothing] {
   def isDefinedAt(x : Any): Boolean = false
-  def apply(x: Any): Nothing = throw new Exception("EmptyFunction is undefined for all inputs.")
+  def apply(x: Any): Nothing = throw new AssertionError("EmptyFunction is undefined for all inputs.")
 }
 
 trait NamedASTTransform extends NamedASTFunction
