@@ -57,14 +57,17 @@ public final class Map<K, V> extends AbstractMap<K, V> {
 			this.entry = entry;
 		}
 
+		@Override
 		public K getKey() {
 			return entry.getKey().value;
 		}
 
+		@Override
 		public V getValue() {
 			return entry.getValue();
 		}
 
+		@Override
 		public V setValue(final V value) {
 			return entry.setValue(value);
 		}
@@ -77,10 +80,12 @@ public final class Map<K, V> extends AbstractMap<K, V> {
 			this.key = key;
 		}
 
+		@Override
 		public V read() {
 			return get(key);
 		}
 
+		@Override
 		public void write(final V value) {
 			put(key, value);
 		}
@@ -114,14 +119,17 @@ public final class Map<K, V> extends AbstractMap<K, V> {
 				final Iterator<Entry<Wrapper<K>, V>> iterator = set.iterator();
 				return new Iterator<Entry<K, V>>() {
 
+					@Override
 					public boolean hasNext() {
 						return iterator.hasNext();
 					}
 
+					@Override
 					public java.util.Map.Entry<K, V> next() {
 						return new MyEntry<K, V>(iterator.next());
 					}
 
+					@Override
 					public void remove() {
 						iterator.remove();
 					}

@@ -28,12 +28,14 @@ public class Exponent extends EvalSite {
 	private static final MyOperator op = new MyOperator();
 
 	private static final class MyOperator implements NumericBinaryOperator<Number> {
+		@Override
 		public Number apply(final BigInteger a, final BigInteger b) {
 			return a.pow(b.intValue());
 		}
 
 		
-    public Number apply(final BigDecimal a, final BigDecimal b) {
+    @Override
+	public Number apply(final BigDecimal a, final BigDecimal b) {
 
 			try {
 				// Arbitrary-precision exponentiation only works if the exponent is integral
@@ -46,26 +48,32 @@ public class Exponent extends EvalSite {
 
 		}
 
+		@Override
 		public Number apply(final int a, final int b) {
 			return java.lang.Math.pow(a, b);
 		}
 
+		@Override
 		public Number apply(final long a, final long b) {
 			return java.lang.Math.pow(a, b);
 		}
 
+		@Override
 		public Number apply(final byte a, final byte b) {
 			return java.lang.Math.pow(a, b);
 		}
 
+		@Override
 		public Number apply(final short a, final short b) {
 			return java.lang.Math.pow(a, b);
 		}
 
+		@Override
 		public Number apply(final double a, final double b) {
 			return java.lang.Math.pow(a, b);
 		}
 
+		@Override
 		public Number apply(final float a, final float b) {
 			return java.lang.Math.pow(a, b);
 		}

@@ -13,7 +13,7 @@
 
 package orc.lib.state;
 
-@SuppressWarnings({ "hiding", "unchecked" })
+@SuppressWarnings({ "hiding", "unchecked", "rawtypes" })
 public final class Interval<T extends Comparable> implements Comparable<Interval<T>> {
 	private final T start;
 	private final T end;
@@ -110,6 +110,7 @@ public final class Interval<T extends Comparable> implements Comparable<Interval
 	 * <p>Note that even if this method returns 0, the two objects are
 	 * not necessarily equal.
 	 */
+	@Override
 	public int compareTo(final Interval<T> that) {
 		if (that.end.compareTo(this.start) < 0) {
 			return 1;

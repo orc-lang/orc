@@ -33,34 +33,42 @@ public class UMinus extends EvalSite {
 	private static final MyOperator op = new MyOperator();
 
 	private static final class MyOperator implements NumericUnaryOperator<Number> {
+		@Override
 		public Number apply(final BigInteger a) {
 			return a.negate();
 		}
 
+		@Override
 		public Number apply(final BigDecimal a) {
 			return a.negate();
 		}
 
+		@Override
 		public Number apply(final int a) {
 			return -a;
 		}
 
+		@Override
 		public Number apply(final long a) {
 			return -a;
 		}
 
+		@Override
 		public Number apply(final byte a) {
 			return -a;
 		}
 
+		@Override
 		public Number apply(final short a) {
 			return -a;
 		}
 
+		@Override
 		public Number apply(final double a) {
 			return -a;
 		}
 
+		@Override
 		public Number apply(final float a) {
 			return -a;
 		}

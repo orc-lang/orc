@@ -149,8 +149,7 @@ public class SimpleOAuth {
 	 * @throws OAuthException
 	 * @throws URISyntaxException
 	 */
-	@SuppressWarnings("unchecked")
-	private OAuthMessage invoke(final OAuthAccessor accessor, final String url, final Collection<? extends Map.Entry> parameters, final int maxRedirects) throws IOException, OAuthException, URISyntaxException {
+	private OAuthMessage invoke(final OAuthAccessor accessor, final String url, final Collection<? extends Map.Entry<?,?>> parameters, final int maxRedirects) throws IOException, OAuthException, URISyntaxException {
 		if (maxRedirects < 0) {
 			throw new OAuthException("Maximum number of redirects reached");
 		}

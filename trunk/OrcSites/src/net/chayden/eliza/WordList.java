@@ -29,6 +29,7 @@ public final class WordList implements Iterable<String> {
     boolean find(String s) {
     	return words.contains(s);
     }
+	@Override
 	public Iterator<String> iterator() {
 		return words.iterator();
 	}

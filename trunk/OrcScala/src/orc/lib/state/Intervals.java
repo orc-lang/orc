@@ -16,7 +16,7 @@ package orc.lib.state;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-@SuppressWarnings({ "hiding", "unchecked" })
+@SuppressWarnings({ "hiding", "unchecked", "rawtypes" })
 public final class Intervals<T extends Comparable> implements Iterable<Interval<T>> {
 	private static class DTRCons<T extends Comparable> {
 		protected DTRCons<T> next;
@@ -131,6 +131,7 @@ public final class Intervals<T extends Comparable> implements Iterable<Interval<
 		return head == null;
 	}
 
+	@Override
 	public Iterator<Interval<T>> iterator() {
 		return new MyIterator(head);
 	}
@@ -142,10 +143,12 @@ public final class Intervals<T extends Comparable> implements Iterable<Interval<
 			this.next = next;
 		}
 
+		@Override
 		public boolean hasNext() {
 			return next != null;
 		}
 
+		@Override
 		public Interval<T> next() {
 			if (next == null) {
 				throw new NoSuchElementException();
@@ -155,6 +158,7 @@ public final class Intervals<T extends Comparable> implements Iterable<Interval<
 			return out;
 		}
 
+		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
 		}

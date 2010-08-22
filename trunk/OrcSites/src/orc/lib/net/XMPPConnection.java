@@ -70,9 +70,10 @@ public class XMPPConnection extends EvalSite {
 	 * For details on the methods, refer to the Smack javadoc.
 	 */
 	private static class XMPPConnectionSite extends DotSite {
-		private final org.jivesoftware.smack.XMPPConnection connection;
+		protected final org.jivesoftware.smack.XMPPConnection connection;
 
 		public XMPPConnectionSite(final ConnectionConfiguration config) {
+			System.out.println(getClass().getSimpleName()+" c'tor ihc="+System.identityHashCode(this));
 			connection = new org.jivesoftware.smack.XMPPConnection(config);
 		}
 
@@ -81,6 +82,7 @@ public class XMPPConnection extends EvalSite {
 			addMember("connect", new ThreadedSite() {
 				@Override
 				public Object evaluate(final Args args) throws TokenException {
+					System.out.println(getClass().getSimpleName()+" connect ihc="+System.identityHashCode(this));
 					try {
 						connection.connect();
 					} catch (final XMPPException e) {
@@ -92,6 +94,7 @@ public class XMPPConnection extends EvalSite {
 			addMember("disconnect", new ThreadedSite() {
 				@Override
 				public Object evaluate(final Args args) throws TokenException {
+					System.out.println(getClass().getSimpleName()+" disconnect ihc="+System.identityHashCode(this));
 					connection.disconnect();
 					return signal();
 				}
@@ -99,6 +102,7 @@ public class XMPPConnection extends EvalSite {
 			addMember("login", new ThreadedSite() {
 				@Override
 				public Object evaluate(final Args args) throws TokenException {
+					System.out.println(getClass().getSimpleName()+" login ihc="+System.identityHashCode(this));
 					try {
 						switch (args.size()) {
 						case 4:
@@ -120,13 +124,15 @@ public class XMPPConnection extends EvalSite {
 			addMember("chat", new ThreadedSite() {
 				@Override
 				public Object evaluate(final Args args) throws TokenException {
-					return new ChatSite(connection, args.stringArg(0));
+					System.out.println(getClass().getSimpleName()+" chat ihc="+System.identityHashCode(this));
+					return new ChatSite(XMPPConnectionSite.this, args.stringArg(0));
 				}
 			});
 		}
 
 		@Override
 		public void finalize() {
+			System.out.println(getClass().getSimpleName()+".finalize() ihc="+System.identityHashCode(this));
 			connection.disconnect();
 		}
 	}
@@ -143,16 +149,21 @@ public class XMPPConnection extends EvalSite {
 		private final LinkedList<Object> received = new LinkedList<Object>();
 		/** Queue of tokens waiting to receive messages. */
 		private final LinkedList<TokenAPI> receivers = new LinkedList<TokenAPI>();
+		private final XMPPConnectionSite xmppConnectionSite;
 
-		public ChatSite(final org.jivesoftware.smack.XMPPConnection connection, final String account) {
-			this.chat = connection.getChatManager().createChat(account, this);
+		public ChatSite(final XMPPConnectionSite xmppConnectionSite, final String account) {
+			System.out.println(getClass().getSimpleName()+" c'tor ihc="+System.identityHashCode(this));
+			this.xmppConnectionSite = xmppConnectionSite;
+			this.chat = this.xmppConnectionSite.connection.getChatManager().createChat(account, this);
 		}
 
 		/**
 		 * Asynchronous listener for received messages. The messages are sent to
 		 * tokens waiting on the received site if any, otherwise they are buffed.
 		 */
+		@Override
 		public void processMessage(final Chat _, final Message message) {
+			System.out.println(getClass().getSimpleName()+" processMessage ihc="+System.identityHashCode(this));
 			synchronized (received) {
 				final Object v = message.getBody();
 				if (receivers.isEmpty()) {
@@ -172,6 +183,7 @@ public class XMPPConnection extends EvalSite {
 			addMember("send", new ThreadedSite() {
 				@Override
 				public Object evaluate(final Args args) throws TokenException {
+					System.out.println(getClass().getSimpleName()+" send ihc="+System.identityHashCode(this));
 					try {
 						chat.sendMessage(args.stringArg(0));
 					} catch (final XMPPException e) {
@@ -186,10 +198,13 @@ public class XMPPConnection extends EvalSite {
 			addMember("receive", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final TokenAPI receiver) {
+					System.out.println(getClass().getSimpleName()+" receive ihc="+System.identityHashCode(this));
 					synchronized (received) {
 						if (received.isEmpty()) {
+							System.out.println("(enqueued)");
 							receivers.addLast(receiver);
 						} else {
+							System.out.println("(immed publish)");
 							receiver.publish(received.removeFirst());
 						}
 					}
@@ -200,6 +215,7 @@ public class XMPPConnection extends EvalSite {
 
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
+		System.out.println(getClass().getSimpleName()+" () ihc="+System.identityHashCode(this));
 		ConnectionConfiguration config;
 		if (args.size() > 2) {
 			config = new ConnectionConfiguration(args.stringArg(0), args.intArg(1), args.stringArg(2));

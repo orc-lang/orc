@@ -1,21 +1,21 @@
 include "fun.inc"
 include "net.inc"
 
-val USERNAME = "you@gmail.com"
-val PASSWORD = "your password"
-val FRIEND = "your friend@gmail.com"
+val USERNAME = "orchardserver@gmail.com"
+val PASSWORD = "ckyogack"
+val FRIEND = "jthywissen@gmail.com"
 
 val chat =
 	val c = XMPPConnection("talk.google.com", 5222, "gmail.com")
-	c.connect() >>
-	c.login(USERNAME, PASSWORD) >>
-	c.chat(FRIEND)
+	println("connecting") >> c.connect() >>
+	println("logging in") >> c.login(USERNAME, PASSWORD) >>
+	println("chatting") >> c.chat(FRIEND)
 
 def ElizaChat(init) =
     val eliza = Eliza()
     def loop(message) =
-        eliza(chat.send(message) >> chat.receive()) >response>
+        print(message) >> eliza(chat.send(message) >> println(" -- sent") >> chat.receive() >r> print("rcv: "+r) >> r) >response>
         loop(response)
     loop(init)
 	
-ElizaChat("How do you do.  Please tell me your problem.")
+ElizaChat("How do you do.  Please tell me your problem.") | Rtimer(1000)
