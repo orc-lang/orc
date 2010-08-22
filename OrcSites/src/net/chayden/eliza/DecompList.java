@@ -27,7 +27,8 @@ public class DecompList implements Iterable<Decomp> {
         }
     }
     
-    public Iterator<Decomp> iterator() {
+    @Override
+	public Iterator<Decomp> iterator() {
     	return list.iterator();
     }
 }

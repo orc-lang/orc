@@ -30,34 +30,42 @@ import orc.values.sites.compatibility.type.structured.ArrowType;
 @SuppressWarnings({"synthetic-access", "boxing"})
 public abstract class ComparisonSite extends EvalSite {
 	private static class MyOperator implements NumericBinaryOperator<Integer> {
+		@Override
 		public Integer apply(final BigInteger a, final BigInteger b) {
 			return a.compareTo(b);
 		}
 
+		@Override
 		public Integer apply(final BigDecimal a, final BigDecimal b) {
 			return a.compareTo(b);
 		}
 
+		@Override
 		public Integer apply(final int a, final int b) {
 			return a - b;
 		}
 
+		@Override
 		public Integer apply(final long a, final long b) {
 			return (int) (a - b);
 		}
 
+		@Override
 		public Integer apply(final byte a, final byte b) {
 			return a - b;
 		}
 
+		@Override
 		public Integer apply(final short a, final short b) {
 			return a - b;
 		}
 
+		@Override
 		public Integer apply(final double a, final double b) {
 			return Double.compare(a, b);
 		}
 
+		@Override
 		public Integer apply(final float a, final float b) {
 			return Float.compare(a, b);
 		}

@@ -221,7 +221,6 @@ public class NOAAWeather {
 			this.time = time;
 		}
 
-		@SuppressWarnings("unused")
 		public Interval<DateTime> getTime() {
 			return time;
 		}
@@ -240,6 +239,7 @@ public class NOAAWeather {
 			return degreesF;
 		}
 
+		@Override
 		public int compareTo(final Temperature o) {
 			return degreesF < o.degreesF ? -1 : degreesF > o.degreesF ? 1 : 0;
 		}
@@ -263,6 +263,7 @@ public class NOAAWeather {
 			return percent;
 		}
 
+		@Override
 		public int compareTo(final RainChance o) {
 			return percent < o.percent ? -1 : percent > o.percent ? 1 : 0;
 		}

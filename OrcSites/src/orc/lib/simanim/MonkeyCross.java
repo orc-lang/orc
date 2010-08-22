@@ -329,14 +329,17 @@ public class MonkeyCross extends JPanel {
 			that = list.listIterator(list.size());
 		}
 
+		@Override
 		public boolean hasNext() {
 			return that.hasPrevious();
 		}
 
+		@Override
 		public E next() {
 			return that.previous();
 		}
 
+		@Override
 		public void remove() {
 			that.remove();
 		}

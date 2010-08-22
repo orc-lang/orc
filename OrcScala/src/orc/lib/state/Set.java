@@ -52,10 +52,12 @@ public final class Set<E> extends AbstractSet<E> {
 			this.key = key;
 		}
 
+		@Override
 		public Boolean read() {
 			return contains(key);
 		}
 
+		@Override
 		public void write(final Boolean value) {
 			if (value) {
 				add(key);
@@ -93,14 +95,17 @@ public final class Set<E> extends AbstractSet<E> {
 	public Iterator<E> iterator() {
 		final Iterator<Wrapper<E>> iterator = set.iterator();
 		return new Iterator<E>() {
+			@Override
 			public boolean hasNext() {
 				return iterator.hasNext();
 			}
 
+			@Override
 			public E next() {
 				return iterator.next().value;
 			}
 
+			@Override
 			public void remove() {
 				iterator.remove();
 			}

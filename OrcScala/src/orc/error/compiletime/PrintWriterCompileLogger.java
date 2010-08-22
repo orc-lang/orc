@@ -47,6 +47,7 @@ public class PrintWriterCompileLogger implements CompileLogger {
 	/* (non-Javadoc)
 	 * @see orc.error.compiletime.CompileLogger#beginProcessing(java.lang.String)
 	 */
+	@Override
 	public void beginProcessing(final String filename) {
 		if (outWriter == null) {
 			throw new NullPointerException("Cannot use a options with a null stderr");
@@ -57,6 +58,7 @@ public class PrintWriterCompileLogger implements CompileLogger {
 	/* (non-Javadoc)
 	 * @see orc.error.compiletime.CompileLogger#endProcessing(java.lang.String)
 	 */
+	@Override
 	public void endProcessing(final String filename) {
 		// Nothing needed
 	}
@@ -64,6 +66,7 @@ public class PrintWriterCompileLogger implements CompileLogger {
 	/* (non-Javadoc)
 	 * @see orc.error.compiletime.CompileLogger#recordMessage(Severity, int, String, Position, AST, Throwable)
 	 */
+	@Override
 	public void recordMessage(final Severity severity, final int code, final String message, Position location, final AST astNode, final Throwable exception) {
 
 		maxSeverity = severity.ordinal() > maxSeverity.ordinal() ? severity : maxSeverity;
@@ -79,6 +82,7 @@ public class PrintWriterCompileLogger implements CompileLogger {
 	/* (non-Javadoc)
 	 * @see orc.error.compiletime.CompileLogger#recordMessage(Severity, int, String, Position, Throwable)
 	 */
+	@Override
 	public void recordMessage(final Severity severity, final int code, final String message, final Position location, final Throwable exception) {
 		recordMessage(severity, code, message, location, null, exception);
 	}
@@ -86,6 +90,7 @@ public class PrintWriterCompileLogger implements CompileLogger {
 	/* (non-Javadoc)
 	 * @see orc.error.compiletime.CompileLogger#recordMessage(Severity, int, String, Position, AST)
 	 */
+	@Override
 	public void recordMessage(final Severity severity, final int code, final String message, final Position location, final AST astNode) {
 		recordMessage(severity, code, message, location, astNode, null);
 	}
@@ -93,6 +98,7 @@ public class PrintWriterCompileLogger implements CompileLogger {
 	/* (non-Javadoc)
 	 * @see orc.error.compiletime.CompileLogger#recordMessage(orc.error.compiletime.CompileLogger.Severity, int, java.lang.String)
 	 */
+	@Override
 	public void recordMessage(final Severity severity, final int code, final String message) {
 		recordMessage(severity, code, message, null, null, null);
 	}
@@ -100,6 +106,7 @@ public class PrintWriterCompileLogger implements CompileLogger {
 	/* (non-Javadoc)
 	 * @see orc.error.compiletime.CompileLogger#getMaxSeverity()
 	 */
+	@Override
 	public Severity getMaxSeverity() {
 		return maxSeverity;
 	}

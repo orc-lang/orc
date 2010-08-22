@@ -29,10 +29,12 @@ public class Div extends EvalSite {
 	private static final MyOperator op = new MyOperator();
 
 	private static final class MyOperator implements NumericBinaryOperator<Number> {
+		@Override
 		public Number apply(final BigInteger a, final BigInteger b) {
 			return a.divide(b);
 		}
 
+		@Override
 		public Number apply(final BigDecimal a, final BigDecimal b) {
 			try {
 				return a.divide(b);
@@ -45,26 +47,32 @@ public class Div extends EvalSite {
 			}
 		}
 
+		@Override
 		public Number apply(final int a, final int b) {
 			return a / b;
 		}
 
+		@Override
 		public Number apply(final long a, final long b) {
 			return a / b;
 		}
 
+		@Override
 		public Number apply(final byte a, final byte b) {
 			return a / b;
 		}
 
+		@Override
 		public Number apply(final short a, final short b) {
 			return a / b;
 		}
 
+		@Override
 		public Number apply(final double a, final double b) {
 			return a / b;
 		}
 
+		@Override
 		public Number apply(final float a, final float b) {
 			return a / b;
 		}

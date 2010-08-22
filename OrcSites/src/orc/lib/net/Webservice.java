@@ -51,9 +51,9 @@ public class Webservice extends SiteAdaptor {
 	/**
 	 * Compile class files.
 	 */
-	@SuppressWarnings("unchecked")
-	private static void javac(final File tmpdir, final List sourcesList) {
+	private static void javac(final File tmpdir, final List<?> sourcesList) {
 		// build argument list
+		@SuppressWarnings("unchecked")
 		final String[] sources = ((List<String>) sourcesList).toArray(new String[] {});
 		final String[] args = new String[sources.length + 4];
 		args[0] = "-cp";
