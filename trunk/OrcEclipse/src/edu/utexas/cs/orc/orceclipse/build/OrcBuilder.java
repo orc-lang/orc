@@ -214,7 +214,7 @@ public class OrcBuilder extends BuilderBase {
 		try {
 			final OrcConfigSettings config = new OrcConfigSettings(getProject(), null);
 			config.filename_$eq(file.getLocation().toOSString());
-			final OrcFileInputContext ic = new OrcFileInputContext(new File(file.getLocation().toOSString()));
+			final OrcFileInputContext ic = new OrcFileInputContext(new File(file.getLocation().toOSString()), file.getCharset());
 			final ImpToOrcProgressAdapter prgsLstnr = new ImpToOrcProgressAdapter(monitor);
 			final ImpToOrcMessageAdapter compileLogger = new ImpToOrcMessageAdapter(new MarkerCreatorWithBatching(file, null, this));
 			file.deleteMarkers(OrcBuilder.PROBLEM_MARKER_ID, true, IResource.DEPTH_INFINITE);
