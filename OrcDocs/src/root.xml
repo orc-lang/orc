@@ -1355,7 +1355,64 @@ The original Cor grammar rules are abbreviated by ellipses (...).
 </tgroup>
 </table>
 </para>
+	
+<para>
+<table id="orc-keyword-table" frame="none" rowsep="0" colsep="0">
+<title>Orc Keywords</title>  
+<?dbhtml table-width="80%" ?>
+<?dbfo table-width="80%" ?>
+<?dbfo keep-together="always" ?>
+<tgroup cols="7" >
+	<!--
+<colspec colnum="1" colname="word1" colwidth="1*" align="right"/>
+<colspec colnum="2" colname="word2" colwidth="1*" align="center"/>
+<colspec colnum="3" colname="word3" colwidth="10*" align="left"/>
+		-->
+<colspec colnum="1" colname="word1" colwidth="1*" align="left"/>
+<colspec colnum="2" colname="word2" colwidth="1*" align="left"/>
+<colspec colnum="3" colname="word3" colwidth="1*" align="left"/>
+<colspec colnum="4" colname="word4" colwidth="1*" align="left"/>
+<colspec colnum="5" colname="word5" colwidth="1*" align="left"/>
+<colspec colnum="6" colname="word6" colwidth="1*" align="left"/>
+<colspec colnum="7" colname="word7" colwidth="1*" align="left"/>
+<tbody>
+	
+<row>
+		<entry><code>true</code></entry>
+		<entry><code>false</code></entry>
+		<entry><code>signal</code></entry>
+		<entry><code>stop</code></entry>
+		<entry><code>null</code></entry>
+		<entry><code>lambda</code></entry>
+		<entry><code>_</code></entry>
+</row>
+	
+<row>
+		<entry><code>if</code></entry>
+		<entry><code>then</code></entry>
+		<entry><code>else</code></entry>
+		<entry><code>as</code></entry>
+		<entry><code>val</code></entry>
+		<entry><code>def</code></entry>
+		<entry><code>capsule</code></entry>
+</row>
+	
+<row>
+		<entry><code>type</code></entry>
+		<entry><code>site</code></entry>
+		<entry><code>class</code></entry>
+		<entry><code>include</code></entry>
+		<entry><code>within</code></entry>
+		<entry><code>Top</code></entry>
+		<entry><code>Bot</code></entry>
+</row>
+	
+</tbody>
+</tgroup>
+</table>
+</para>
 
+		
 <section><title>Communicating with external services</title>
 
 <para>
@@ -5195,27 +5252,25 @@ wider than": BigDecimal > Double > Float > BigInteger > Long > Integer > Short
 
 </section>
 
-<section id="section.services.kilim"><title>Cooperative Scheduling and Concurrency</title>
+<section id="section.services.coopsched"><title>Cooperative Scheduling and Concurrency</title>
 
 <section><title>Overview</title>
 <para>
 In order to support massive concurrency efficiently in Scala, Orc uses
-cooperative threading.  Orc programs are broken into discrete steps which
-are executed by a fixed-size thread pool.  This approach works for Orc
+the Scala actor library.  Orc programs are broken into discrete steps which
+are executed by a pool of actors.  This approach works for Orc
 expressions, but the internals of an Orc site written in Scala/Java cannot be easily
-broken down.  So Orc has two choices when it needs to call a local Scala/Java site:
+broken down.  So Orc uses the following method to call a local Scala/Java site:
 </para>
 
 <itemizedlist>
-<listitem>Run the site call in a new thread.  This means site calls never
-	unnecessarily block the Orc engine, but it introduces the
-	potentially-unnecessary overhead of creating and context-switching
-	threads.</listitem>
-<listitem>Run the site call in the same thread as the Orc engine, which
-is efficient and conserves thread resources but may block the engine from
-making further progress until the site call finishes.</listitem>
+<listitem>Run the site call within a new actor.  This means site calls never
+	unnecessarily block the Orc engine.  Orc manages the actor pool.
+    The Orc engine never blocks, it only creates new actors or reuses actors
+    from the pool.</listitem>
 </itemizedlist>
 
+	<!--
 <para>
 Fortunately, in practice most Orc site calls take a short, deterministic amount
 of time to complete. Of those that don't, it's usually only because they are
@@ -5223,6 +5278,7 @@ blocked waiting for some external event, like another site call.  In this case,
 instead of blocking the site can return control to the Orc engine, asking to
 be run again when the external event occurs.
 </para>
+		-->
 
 </section>
 </section>
@@ -5233,12 +5289,15 @@ be run again when the external event occurs.
 
 <para>
 Orc sites imported with the <code>site</code> declaration are implemented as
-Scala classes which extend <code language="java">orc.runtime.sites.Site</code>.
+Scala classes which extend <code language="java">orc.values.sites.Sites</code>.
 Here we will summarize the most important features of this and related classes;
+<!--
 for a detailed description, refer to the <link
 xlink:href="http://orc.csres.utexas.edu/javadoc/STABLE/index.html">Javadoc</link>.
+-->
 </para>
 
+	
 <para>
 Sites must implement a single method: <code language="java">callSite(Args args,
 Token token)</code>.  The Orc engine calls this method whenever the site is
@@ -5315,7 +5374,7 @@ appropriate method on the <code language="java">token</code>.
 <para>
 Many sites are deterministic, always returning a value immediately when called.
 Such sites can be implemented easily by extending <code
-language="java">orc.runtime.sites.EvalSite</code> and implementing the method
+language="java">orc.values.sites.compatability.EvalSite</code> and implementing the method
 <code language="java">evaluate(Args args)</code>.  This method should read the
 arguments from <code language="java">args</code> as usual, and then return the
 value to be returned from the site call, or throw a checked exception to
@@ -5331,7 +5390,7 @@ Some sites need to perform blocking IO or use other Scala/Java blocking methods 
 the <code language="java">callSite</code> or <code
 language="java">EvalSite#evaluate</code>  methods because that might block the
 Orc engine. Instead, extend <code
-language="java">orc.runtime.sites.ThreadedSite</code> and implement the method
+language="java">orc.values.sites.compatability.ThreadedSite</code> and implement the method
 <code language="java">evaluate(Args args)</code>.  This method should read the
 arguments from <code language="java">args</code> as usual, and then return the
 value to be returned from the site call, or throw a checked exception to
@@ -5353,7 +5412,7 @@ block until threads become available.
 Recall that the notation <code>x.msg</code> corresponds to calling the site
 <code>x</code> with the special message value <code>msg</code>.  To implement a
 site which responds to such messages, extend <code
-language="java">orc.runtime.sites.DotSite</code>.
+language="java">orc.values.sites.compatability.DotSite</code>.
 </para>
 
 <para>
@@ -5481,9 +5540,9 @@ Putting it all together, here is the entire implementation:
 <programlisting language="java"><![CDATA[
 import java.util.LinkedList;
 
-import orc.runtime.sites.EvalSite;
-import orc.runtime.sites.DotSite;
-import orc.runtime.sites.Site;
+import orc.values.sites.compatability.EvalSite;
+import orc.values.sites.compatability.DotSite;
+import orc.values.sites.Sites;
 import orc.runtime.Token;
 
 public class ExampleBuffer extends EvalSite {
@@ -5579,8 +5638,8 @@ Web services use a variety of protocols, so there are a variety of ways to
 contact them. All of them boil down to creating a Java proxy site for the
 service and calling that.  Previous sections explain how to implement such Java
 sites which can be called in Orc. Because web services tend to use blocking
-I/O, Java wrappers make frequent use of <link linkend="section.services.sites.ThreadedSite">ThreadedSite</link> and
-<link linkend="section.services.kilim">Kilim</link> to ensure that web service calls don't block the Orc engine.
+I/O, Java wrappers make frequent use of <link linkend="section.services.sites.ThreadedSite">ThreadedSite</link> 
+	to ensure that web service calls don't block the Orc engine.
 </para>
 
 <section><title>Java APIs</title>
@@ -5672,7 +5731,7 @@ requests and parsing responses.</para>
 
 </chapter>
 
-
+<!--
 <chapter id="chapter.typechecker"><title>Type Checking</title> 
 
 <para>
@@ -5777,11 +5836,11 @@ two Boolean operands and returns a Boolean result. Some of the arithmetic operat
 <emphasis>ad-hoc polymorphism</emphasis>; for example, a <code>+</code> expression with two Integer 
 operands has type Integer, but with one or more Number operands it instead has type Number. 
 
-<!-- 
+ 
 This kind of polymorphism is not unique to the primitive operators; operators are simply sites,
 and any site call can exhibit such polymorphism. However, functions defined in Orc cannot have
 ad-hoc polymorphism; only external services can.
- -->
+
 </para>
 
 </section>
@@ -6044,10 +6103,10 @@ This is called <emphasis>aliasing</emphasis>, and it is accomplished using the <
 definition. 
 
 <programlisting language="orc"><![CDATA[
--- A rectangle is defined by its lower left and upper right coordinates.
+ A rectangle is defined by its lower left and upper right coordinates.
 type Rect = ((Number, Number), (Number, Number))
 
--- Transpose such a rectangle, rotating it around an x=y axis
+ Transpose such a rectangle, rotating it around an x=y axis
 def flip(Rect) :: Rect
 def flip( ((a, b), (c, d)) ) = ((a, b), (d, c))
 ]]></programlisting>
@@ -6159,11 +6218,11 @@ they are not recommended for production code.
 In this section we examine a powerful feature of Orc's typechecker: <emphasis>parametric polymorphism</emphasis>.
 This allows us to define types that take other types as parameters; the same theory underlies Java's generics.
 
-<!-- 
+
 We will start by considering simple parametric types, like Orc's lists, and demonstrate how to write
 and invoke typed functions that operate on these parametric types, no matter what the parameter is. Then
 we'll talk about how to define parametric types, such as a generic datatype or an external generic type.
- -->
+
  
 <section><title>Parametric types</title>
 
@@ -6215,7 +6274,7 @@ signature. The type T is the type of elements in the lists that we are appending
 lists must contain the same type of elements. The resulting list contains elements of that same type.
 </para>
 
-<!-- 
+ 
 <para>
 Functions defined using <code>lambda</code> can also have type parameters, such as the following
 anonymous function, which returns the first element of a list, or is silent if the list is empty:
@@ -6224,7 +6283,7 @@ anonymous function, which returns the first element of a list, or is silent if t
 lambda[T](h:_ :: List[T]) = h
 ]]></programlisting>
 </para>
- -->
+
  
 </section>
 
@@ -6310,7 +6369,7 @@ passed recursively to <code>Tree</code> to define the type of the subtrees.
 
 </section>
 
-<!-- 
+ 
 <section><title>Variance: Subtyping for parametric types</title>
 
 type constructors
@@ -6318,12 +6377,10 @@ type constructors
 (mutable type constructors, like Buffer, are _invariant_, so C[A] <: C[B] only if A = B
 
 </section>
- -->
-
 
 </section>
-
-
+-->
+<!--
 <section><title>Interacting with Java</title>
 
 <para>
@@ -6368,7 +6425,7 @@ not find the least common ancestor of two classes as the join.
 </para>
 
 </section>
-
+-->
 
 <!-- 
 <section><title>Exception Handling</title>
@@ -6420,7 +6477,7 @@ Since this effectively performs a cast, the variable <code>e</code> is given the
 
  -->
 
-
+<!--
 <section><title>Syntax of Typed Orc</title>
 
 <para>
@@ -6432,8 +6489,9 @@ The original Orc grammar rules are abbreviated by ellipses (...).
 <table id="types-ebnf-table" frame="none" rowsep="0" colsep="0">
 <title>Typed Orc</title>  
 <?dbhtml table-width="80%" ?>
-<?dbfo table-width="100%" ?>
+<?dbfo table-width="100%" ?> -->
 <!--  <?dbfo keep-together="always" ?>  -->
+	<!--
 <tgroup cols="5" >
 <colspec colnum="1" colname="bexp" colwidth="1*" align="right"/>
 <colspec colnum="2" colname="texp" colwidth="1*" align="center"/>
@@ -6651,7 +6709,7 @@ The original Orc grammar rules are abbreviated by ellipses (...).
 </para>
 
 </section>
-
+-->
 <!-- 
 
 raw extra material:
@@ -6715,9 +6773,9 @@ example, <code>site Foo()() :: Top</code> is equivalent to
 
 
 -->
-
-</chapter>
-
+<!--
+ </chapter>
+ -->
 
 <!-- 
 <chapter><title>Execution Environment</title>
@@ -6949,7 +7007,15 @@ example, <code>site Foo()() :: Top</code> is equivalent to
 <entry><emphasis>type assertion</emphasis></entry>
 </row>
 
+<row>
+<entry></entry>
+<entry>|</entry>
 
+<entry>D <code>within</code> E</entry>
+
+<entry></entry>
+<entry><emphasis>goal expression w/declarations</emphasis></entry>
+</row>
 
 <!-- 
 <row>
