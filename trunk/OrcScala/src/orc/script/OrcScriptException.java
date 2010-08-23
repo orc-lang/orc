@@ -20,7 +20,7 @@ import java.io.PrintWriter;
 
 import javax.script.ScriptException;
 
-import orc.compile.parse.OrcPosition;
+import orc.compile.parse.PositionWithFilename;
 import orc.error.OrcException;
 import scala.util.parsing.input.Position;
 
@@ -58,8 +58,8 @@ public class OrcScriptException extends ScriptException {
 	@Override
 	public String getFileName() {
 		final Position pos = orcE.getPosition();
-		if (pos instanceof OrcPosition) {
-			return ((OrcPosition)pos).filename();
+		if (pos instanceof PositionWithFilename) {
+			return ((PositionWithFilename)pos).filename();
 		} else {
 			return "";
 		}
