@@ -11,7 +11,7 @@ def qs(a) =
  val less = filter(lambda(x) = x <: pivot, a)
  val equal = filter(lambda(x) = x = pivot, a)
  val greater = filter(lambda(x) = x :> pivot, a)
- if length(a) :> 1 then append(append(qs(less), equal), qs(greater))
+ if length(a) :> 1 then (append(le, g) <le< append(qs(less), equal) <g< qs(greater))
  else a
 
 class Random = java.util.Random
