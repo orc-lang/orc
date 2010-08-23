@@ -14,6 +14,8 @@
 //
 package orc.ast.oil.nameless
 
+import orc.compile.parse.OrcPosition
+import orc.compile.parse.PositionWithFilename
 import scala.util.parsing.input.NoPosition
 import scala.util.parsing.input.Position
 import scala.xml._
@@ -26,8 +28,12 @@ object OrcXML {
   def writeXML(e: NamelessAST): Elem = {
     val xmlout = <orc>
     {toXML(e)}
-    </orc>    
+    </orc>
     trimElem(xmlout) 
+  }
+  
+  def readOilFromStream(source: java.io.InputStream) : Expression = {
+    fromXML(XML.load(source))
   }
   
   def trimElem(x: Elem): Elem =  {
@@ -263,10 +269,33 @@ object OrcXML {
       case _ =>  throw new Error("Invalid XML Node!")
     }
   }
+  
+  class PositionFilenameLineCol(fn:String, l:Int, c:Int) extends PositionWithFilename {
+    override val filename = fn
+    override def line = l
+    override def column = c
+    override def lineContents = ""
+    override def toString = filename+":"+line+":"+column
+  }
 
+  def posStringToOrcPosition(ps: Option[Seq[scala.xml.Node]]) : Position =  {
+    ps match {
+      case None => NoPosition
+      case Some(s) => {
+        val stringTokenizer = new java.util.StringTokenizer(s(0).toString, ":")
+        if (stringTokenizer.hasMoreTokens) {
+          new PositionFilenameLineCol(stringTokenizer.nextToken, 
+              Integer.parseInt(stringTokenizer.nextToken), 
+              Integer.parseInt(stringTokenizer.nextToken))
+        }
+        else NoPosition
+      }
+    }
+  }
   
   def fromXML(inxml: scala.xml.Node): Expression = {
-    inxml match {
+    val pos = posStringToOrcPosition(inxml.attribute("pos"))
+    val exp = inxml match {
       case <orc>{prog}</orc> => fromXML(prog)
       case <stop/> => Stop()
       case <parallel><left>{left}</left><right>{right}</right></parallel> => 
@@ -308,19 +337,24 @@ object OrcXML {
       }
       case <constant>{v}</constant> => Constant(anyRefFromXML(v))
       case <variable>{i@ _*}</variable> => Variable(i.text.trim.toInt)
-      
-    }    
+    }  
+    exp.pos = pos
+    exp
   }
   
   def argumentFromXML(inxml: scala.xml.Node): Argument = {
-    inxml match {
+    val pos = posStringToOrcPosition(inxml.attribute("pos"))
+    val exp = inxml match {
       case <constant>{c}</constant> => Constant(anyRefFromXML(c))
       case <variable>{v@ _*}</variable> => Variable(v.text.toInt)
     }
+    exp.pos = pos
+    exp
   }
   
   def defFromXML(inxml: scala.xml.Node): Def = {
-    inxml match {
+    val pos = posStringToOrcPosition(inxml.attribute("pos"))
+    val exp = inxml match {
       case <definition><typearity>{typeFormalArity@ _*}</typearity><arity>{arity@ _*}</arity><body>{body@ _*}</body><argtypes>{argTypes@ _*}</argtypes><returntype>{returnType@ _*}</returntype></definition> => {
         val t1 = if (argTypes.text.trim == "") None 
             else Some((for (<arg>{a}</arg> <- argTypes) yield typeFromXML(a)).toList)
@@ -330,10 +364,13 @@ object OrcXML {
         Def(typeFormalArity.text.toInt, arity.text.toInt, fromXML(body.head), t1, t2)
       }   
     }
+    exp.pos = pos
+    exp
   }
   
   def typeFromXML(inxml: scala.xml.Node): Type = {
-    inxml match {
+    val pos = posStringToOrcPosition(inxml.attribute("pos"))
+    val exp = inxml match {
       case <top/> => Top()
       case <bot/> => Bot()
       case <typevar>{i@ _*}</typevar> => TypeVar(i.text.trim.toInt)
@@ -375,6 +412,8 @@ object OrcXML {
         VariantType(t1.toList)
       }
     }
+    exp.pos = pos
+    exp
   }
 
 }
