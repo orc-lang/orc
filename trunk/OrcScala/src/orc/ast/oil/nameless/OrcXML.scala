@@ -36,6 +36,10 @@ object OrcXML {
     fromXML(XML.load(source))
   }
   
+  def writeOilToStream(oil : Expression, dest: java.io.OutputStream) : Unit = {
+    XML.write(new java.io.OutputStreamWriter(dest), writeXML(oil), "UTF-8", true, null)
+  }
+  
   def trimElem(x: Elem): Elem =  {
       val nc = x.child filter {a => 
           if (a.isInstanceOf[Text] && a.text.trim == "") false
