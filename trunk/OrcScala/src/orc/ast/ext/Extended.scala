@@ -60,7 +60,7 @@ case class Val(p: Pattern, e: Expression) extends Declaration
 case class Include(origin: String, decls: List[Declaration]) extends Declaration
 
 sealed abstract class NamedDeclaration extends Declaration {
-    val name: String
+  val name: String
 }
 
 sealed abstract class DefDeclaration extends NamedDeclaration 
@@ -71,12 +71,12 @@ case class DefSig(name: String, typeformals: List[String], argtypes: List[List[T
 // Convenience extractor for sequences of definitions enclosing some scope
 object DefGroup {
   def unapply(e: Expression): Option[(List[DefDeclaration], Expression)] = {
-    partition(e) match {
-      case (Nil, _) => None
-      case (ds, f) => Some((ds,f))
-    }
+      partition(e) match {
+        case (Nil, _) => None
+        case (ds, f) => Some((ds,f))
+      }
   }
-  
+
   private def partition(e: Expression): (List[DefDeclaration], Expression) = {
     e match {
       case Declare(d: DefDeclaration, f) => {
@@ -84,9 +84,9 @@ object DefGroup {
         (d::ds, g)
       }
       case _ => (Nil, e)
-    }
+      }
   }
-  
+
 }
 
 
@@ -107,32 +107,35 @@ case class Constructor(name: String, types: List[Option[Type]]) extends AST
 
 
 sealed abstract class Pattern extends AST { 
-	val isStrict : Boolean
+  val isStrict: Boolean
+  def toOrcSyntax: String
 }
 
 sealed abstract class NonStrictPattern extends Pattern {
-	val isStrict = false
+  val isStrict = false
 }
-case class Wildcard() extends NonStrictPattern
-case class VariablePattern(name: String) extends NonStrictPattern
+case class Wildcard() extends NonStrictPattern { override def toOrcSyntax = "_" }
+case class VariablePattern(name: String) extends NonStrictPattern { override def toOrcSyntax = name }
 
 
 sealed abstract class StrictPattern extends Pattern {
-	val isStrict = true
+  val isStrict = true
 }
-case class ConstantPattern(c: AnyRef) extends StrictPattern
-case class TuplePattern(elements: List[Pattern]) extends StrictPattern
-case class ListPattern(elements: List[Pattern]) extends StrictPattern
-case class CallPattern(name: String, args: List[Pattern]) extends StrictPattern
-case class ConsPattern(head: Pattern, tail: Pattern) extends StrictPattern
-case class EqPattern(name: String) extends StrictPattern
+case class ConstantPattern(c: AnyRef) extends StrictPattern { override def toOrcSyntax = c.toString }
+case class TuplePattern(elements: List[Pattern]) extends StrictPattern { override def toOrcSyntax = elements.mkString("(", ", ", ")") }
+case class ListPattern(elements: List[Pattern]) extends StrictPattern { override def toOrcSyntax = elements.mkString("[", ", ", "]") }
+case class CallPattern(name: String, args: List[Pattern]) extends StrictPattern { override def toOrcSyntax = name + args.mkString("(", ", ", ")") }
+case class ConsPattern(head: Pattern, tail: Pattern) extends StrictPattern { override def toOrcSyntax = "("+head.toOrcSyntax+":"+tail.toOrcSyntax+")" }
+case class EqPattern(name: String) extends StrictPattern { override def toOrcSyntax = "="+name }
 
 
 case class AsPattern(p: Pattern, name: String) extends Pattern {
-	val isStrict = p.isStrict
+  val isStrict = p.isStrict
+  override def toOrcSyntax = p.toOrcSyntax + " as " + name
 }
 case class TypedPattern(p: Pattern, t: Type) extends Pattern {
-	val isStrict = p.isStrict
+  val isStrict = p.isStrict
+  override def toOrcSyntax = p.toOrcSyntax + " :: " + t
 }
 
 
@@ -151,14 +154,14 @@ case class LambdaType(typeformals: List[String], argtypes: List[List[Type]], ret
    * to 'lambda (A) :: (lambda (B) :: (lambda (C) :: D))'.
    */
   def cut = {
-    this match {
-      case LambdaType(typeFormals,List(args),retType) => this // Single type argument group
-      case LambdaType(typeFormals,argGroup::argGroupsTail,retType) => {
-        val f = (args: List[Type],ret: Type) => LambdaType(Nil,List(args),ret)
-        val newRetType = argGroupsTail.foldRight(retType)(f)
-        LambdaType(typeFormals,List(argGroup),newRetType)
+      this match {
+        case LambdaType(typeFormals,List(args),retType) => this // Single type argument group
+        case LambdaType(typeFormals,argGroup::argGroupsTail,retType) => {
+          val f = (args: List[Type],ret: Type) => LambdaType(Nil,List(args),ret)
+          val newRetType = argGroupsTail.foldRight(retType)(f)
+          LambdaType(typeFormals,List(argGroup),newRetType)
+        }
       }
-    }
   }
 }
 case class TypeApplication(name: String, typeactuals: List[Type]) extends Type	
