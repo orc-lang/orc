@@ -21,7 +21,6 @@ import java.util.NoSuchElementException;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 
-import scala.runtime.Char;
 import scala.util.parsing.input.NoPosition$;
 import scala.util.parsing.input.OffsetPosition;
 import scala.util.parsing.input.Position;
