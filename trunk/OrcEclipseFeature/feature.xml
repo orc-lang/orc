@@ -65,15 +65,14 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
    </url>
 
    <includes
-         id="org.eclipse.imp.runtime"
-         version="0.1.108"
-         name="IMP Runtime"
-         search-location="both"/>
-
-   <includes
          id="lpg.runtime"
          version="2.0.18"
          name="LPG Runtime"
+         search-location="both"/>
+
+   <includes
+         id="org.eclipse.imp.runtime"
+         version="0.1.108.v201008201835"
          search-location="both"/>
 
    <requires>
