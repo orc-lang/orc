@@ -55,7 +55,7 @@ public class OrcParserTest {
       suite.addTest(new TestCase(file.toString()) {
         @Override
         public void runTest() throws ParsingException, IOException {
-          OrcFileInputContext ic = new OrcFileInputContext(file);
+          OrcFileInputContext ic = new OrcFileInputContext(file, "UTF-8");
           options.filename_$eq(file.toString());
           Parsers.ParseResult<orc.ast.ext.Expression> pr = OrcProgramParser.apply(ic, options, envServices);
           assertTrue("Parsing unsucessful: "+pr.toString(), pr.successful());

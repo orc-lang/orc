@@ -15,8 +15,11 @@
 
 package edu.utexas.cs.orc.orceclipse.project;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 
+import edu.utexas.cs.orc.orceclipse.Activator;
 import edu.utexas.cs.orc.orceclipse.build.OrcNature;
 
 /**
@@ -35,6 +38,11 @@ public class OrcNewProjectWizard extends BasicNewProjectResourceWizard {
 		final boolean finishAccepted = super.performFinish();
 		if (getNewProject() != null) {
 			new OrcNature().addToProject(getNewProject());
+			try {
+				getNewProject().setDefaultCharset("UTF-8", new NullProgressMonitor());
+			} catch (CoreException e) {
+				Activator.logAndShow(e);
+			}
 		}
 		return finishAccepted;
 	}

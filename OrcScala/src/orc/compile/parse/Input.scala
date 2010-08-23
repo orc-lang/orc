@@ -133,8 +133,8 @@ object OrcInputContext {
   // Factory method
   def apply(inputURI: URI): OrcInputContext = {
     inputURI.getScheme match {
-      case "file" => new OrcFileInputContext(new File(inputURI))
-      case null   => new OrcFileInputContext(new File(inputURI.getPath()))
+      case "file" => new OrcFileInputContext(new File(inputURI), "UTF-8")
+      case null   => new OrcFileInputContext(new File(inputURI.getPath()), "UTF-8")
       case "data" => { val ssp = inputURI.getSchemeSpecificPart(); new OrcStringInputContext(ssp.drop(ssp.indexOf(',')+1)) }
       //case "jar"  => { val ssp = inputURI.getSchemeSpecificPart(); new OrcResourceInputContext(ssp.drop(ssp.indexOf("!/")+1), ????) }
       case _      => new OrcNetInputContext(inputURI)
@@ -148,11 +148,11 @@ object OrcInputContext {
  *
  * @author jthywiss
  */
-class OrcFileInputContext(val file: File) extends OrcInputContext {
+class OrcFileInputContext(val file: File, val charsetName: String) extends OrcInputContext {
   override val descr: String = file.toString()
   override def toURI: URI = file.toURI
   override def toURL: URL = toURI.toURL
-  override val reader: OrcReader = OrcReader(new BufferedReader(new InputStreamReader(new FileInputStream(file))), descr)
+  override val reader: OrcReader = OrcReader(new BufferedReader(new InputStreamReader(new FileInputStream(file), charsetName)), descr)
 }
 
 

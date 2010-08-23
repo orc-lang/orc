@@ -21,6 +21,7 @@ import java.util.NoSuchElementException;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 
+import scala.runtime.Char;
 import scala.util.parsing.input.NoPosition$;
 import scala.util.parsing.input.OffsetPosition;
 import scala.util.parsing.input.Position;
@@ -259,9 +260,7 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 
 	private static String keywords[] = { "_", "as", "capsule", "class", "def", "else", "if", "include", "lambda", "signal", "site", "stop", "then", "type", "val", "within", }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$ //$NON-NLS-12$ //$NON-NLS-13$ //$NON-NLS-14$ //$NON-NLS-15$ //$NON-NLS-16$
 
-	private static final String WHITESPACE_CHARS = " \t\f\r\n"; //$NON-NLS-1$
-	private static final String IDENTIFIER_FIRST_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_"; //$NON-NLS-1$
-	private static final String IDENTIFIER_FOLLOW_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_'"; //$NON-NLS-1$
+	private static final String WHITESPACE_CHARS = "\t\u000B \u200E\u200F\r\n\u0085\u2028\f\u2029"; //$NON-NLS-1$
 	private static final String DECIMAL_DIGIT_CHARS = "0123456789"; //$NON-NLS-1$
 
 	private final OrcParseController parseController;
@@ -299,9 +298,9 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 		final char firstChar = text.charAt(0 + offset);
 		final char secondChar = safeCharAt(text, 1 + offset);
 
-		if (isIn(firstChar, IDENTIFIER_FIRST_CHARS)) {
+		if (Character.isUnicodeIdentifierStart(firstChar)) {
 			int tokenLength = 1;
-			while (isIn(safeCharAt(text, offset + tokenLength), IDENTIFIER_FOLLOW_CHARS)) {
+			while (Character.isUnicodeIdentifierPart(safeCharAt(text, offset + tokenLength)) || safeCharAt(text, offset + tokenLength) == '\'') {
 				++tokenLength;
 			}
 			final String word = text.substring(offset, offset + tokenLength);

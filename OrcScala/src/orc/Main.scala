@@ -13,9 +13,10 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 package orc
+
 import javax.script.{ScriptException, Compilable, ScriptEngine, ScriptEngineManager}
 import javax.script.ScriptContext.ENGINE_SCOPE
-import java.io.{PrintStream, FileNotFoundException, FileReader}
+import java.io.{PrintStream, FileNotFoundException, InputStreamReader, FileInputStream}
 import scala.collection.JavaConversions._
 import orc.error.OrcException
 import orc.script.{OrcBindings, OrcScriptEngine}
@@ -39,7 +40,7 @@ object Main {
       val options = new OrcCmdLineOptions()
       options.parseCmdLine(args)
       engine.setBindings(options, ENGINE_SCOPE)
-      val reader = new FileReader(options.filename)
+      val reader = new InputStreamReader(new FileInputStream(options.filename), "UTF-8")
       val compiledOrc = engine.compile(reader).asInstanceOf[OrcScriptEngine#OrcCompiledScript]
       val printPubs = new OrcEventAction() {
         override def published(value: AnyRef) { println(Format.formatValue(value)) }
