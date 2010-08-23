@@ -16,16 +16,13 @@
 package edu.utexas.cs.orc.orceclipse.launch;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import orc.Main;
 
-import org.eclipse.core.internal.resources.ResourceException;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceStatus;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -116,11 +113,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 
 			final IResource orcProgToLaunch = SelectedResourceManager.getDefault().getSelectedResource();
 			OrcConfigSettings orcConfig;
-			try {
-				orcConfig = new OrcConfigSettings(orcProgToLaunch.getProject(), configuration);
-			} catch (final IOException e) {
-				throw new ResourceException(IResourceStatus.OPERATION_FAILED, null, e.getLocalizedMessage(), e);
-			}
+			orcConfig = new OrcConfigSettings(orcProgToLaunch.getProject(), configuration);
 			orcConfig.filename_$eq(orcProgToLaunch.getRawLocation().toFile().toString());
 
 			final String mainTypeName = "orc.Main"; //$NON-NLS-1$

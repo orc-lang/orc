@@ -100,9 +100,9 @@ public class OrcLaunchShortcut implements ILaunchShortcut {
 	}
 
 	/**
-	 * @param file
-	 * @param mode
-	 * @return
+	 * @param file File being launched
+	 * @param mode Launch mode
+	 * @return The chosen Orc launch configuration
 	 */
 	protected ILaunchConfiguration findLaunchConfiguration(final IFile file, final String mode) {
 		List candidateConfigs = Collections.EMPTY_LIST;
@@ -126,8 +126,8 @@ public class OrcLaunchShortcut implements ILaunchShortcut {
 	}
 
 	/**
-	 * @param configList
-	 * @return
+	 * @param configList List of launch configs to show the user
+	 * @return User's chosen launch config
 	 */
 	protected ILaunchConfiguration chooseConfiguration(final List configList) {
 		final IDebugModelPresentation labelProvider = DebugUITools.newDebugModelPresentation();
@@ -145,9 +145,9 @@ public class OrcLaunchShortcut implements ILaunchShortcut {
 	}
 
 	/**
-	 * @param file
-	 * @param mode
-	 * @return
+	 * @param file File being run/debuged
+	 * @param mode Launch mode
+	 * @return A new launch config suitable for this file
 	 */
 	protected ILaunchConfiguration createConfiguration(final IFile file, final String mode) {
 		ILaunchConfiguration config = null;

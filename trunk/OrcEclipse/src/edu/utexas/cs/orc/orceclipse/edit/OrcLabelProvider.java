@@ -18,17 +18,17 @@ package edu.utexas.cs.orc.orceclipse.edit;
 import java.util.HashSet;
 import java.util.Set;
 
-import orc.AST;
-import orc.compile.ext.ClassImport;
-import orc.compile.ext.Def;
-import orc.compile.ext.DefCapsule;
-import orc.compile.ext.DefSig;
-import orc.compile.ext.Include;
-import orc.compile.ext.Pattern;
-import orc.compile.ext.SiteDeclaration;
-import orc.compile.ext.Type;
-import orc.compile.ext.TypeDeclaration;
-import orc.compile.ext.Val;
+import orc.ast.AST;
+import orc.ast.ext.ClassImport;
+import orc.ast.ext.Def;
+import orc.ast.ext.DefCapsule;
+import orc.ast.ext.DefSig;
+import orc.ast.ext.Include;
+import orc.ast.ext.Pattern;
+import orc.ast.ext.SiteDeclaration;
+import orc.ast.ext.Type;
+import orc.ast.ext.TypeDeclaration;
+import orc.ast.ext.Val;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -191,7 +191,7 @@ public class OrcLabelProvider implements ILabelProvider {
 			return ((ClassImport) n).name();
 		}
 		if (n instanceof Val) {
-			return ((Val) n).p().toString();
+			return ((Val) n).p().toOrcSyntax();
 		}
 		if (n instanceof TypeDeclaration) {
 			return ((TypeDeclaration) n).name();
@@ -234,7 +234,7 @@ public class OrcLabelProvider implements ILabelProvider {
 		for (final scala.collection.immutable.List<Pattern> ps : JavaConversions.asIterable(d.formals())) {
 			s.append('(');
 			if (ps != null) {
-				s.append(listMkString(JavaConversions.asIterable(ps), ",")); //$NON-NLS-1$
+				s.append(listMkOrcString(JavaConversions.asIterable(ps), ",")); //$NON-NLS-1$
 			}
 			s.append(')');
 		}
@@ -271,6 +271,20 @@ public class OrcLabelProvider implements ILabelProvider {
 		final StringBuilder sb = new StringBuilder();
 		for (final Object o : theList) {
 			sb.append(o.toString());
+			sb.append(sep);
+		}
+		if (sb.length() == 0) {
+			return ""; //$NON-NLS-1$
+		} else {
+			return sb.substring(0, sb.length() - sep.length());
+		}
+	}
+
+	private static String listMkOrcString(final Iterable<Pattern> theList, final String sep) {
+		//TODO: As toOrcSyntax() is available on more general types than, Pattern update types in here
+		final StringBuilder sb = new StringBuilder();
+		for (final Pattern p : theList) {
+			sb.append(p.toOrcSyntax());
 			sb.append(sep);
 		}
 		if (sb.length() == 0) {

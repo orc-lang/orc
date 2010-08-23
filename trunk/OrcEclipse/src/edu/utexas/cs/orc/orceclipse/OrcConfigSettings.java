@@ -15,7 +15,6 @@
 
 package edu.utexas.cs.orc.orceclipse;
 
-import java.io.IOException;
 import java.util.Arrays;
 
 import orc.Main.OrcCmdLineOptions$1;
@@ -70,12 +69,11 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 	/**
 	 * Constructs an object of class OrcConfigSettings.
 	 *
-	 * @param project
-	 * @param launchConfig
-	 * @throws IOException 
-	 * @throws CoreException 
+	 * @param project Project (possibly null) to read Orc settings from
+	 * @param launchConfig LaunchConfiguration (possibly null) to read Orc settings from
+	 * @throws CoreException For problems fetching settings from the project or launch config.
 	 */
-	public OrcConfigSettings(final IProject project, final ILaunchConfiguration launchConfig) throws IOException, CoreException {
+	public OrcConfigSettings(final IProject project, final ILaunchConfiguration launchConfig) throws CoreException {
 		super();
 		if (project != null) {
 			fillFromProject(project);
@@ -85,11 +83,7 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 		}
 	}
 
-	/**
-	 * @param project
-	 * @throws IOException 
-	 */
-	private void fillFromProject(final IProject project) throws IOException {
+	private void fillFromProject(final IProject project) {
 		final PreferencesService prefSvc = Activator.getInstance().getPreferencesService();
 		prefSvc.setProject(project);
 
@@ -134,9 +128,8 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 	/**
 	 * @param launchConfig
 	 * @throws CoreException 
-	 * @throws IOException 
 	 */
-	private void fillFromLaunchConfig(final ILaunchConfiguration launchConfig) throws CoreException, IOException {
+	private void fillFromLaunchConfig(final ILaunchConfiguration launchConfig) throws CoreException {
 
 		typecheck_$eq(launchConfig.getAttribute(TYPE_CHECK_ATTR_NAME, typecheck()));
 		usePrelude_$eq(!launchConfig.getAttribute(NO_PRELUDE_ATTR_NAME, !usePrelude()));

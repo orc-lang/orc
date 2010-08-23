@@ -15,7 +15,7 @@
 
 package edu.utexas.cs.orc.orceclipse.parse;
 
-import orc.AST;
+import orc.ast.AST;
 import orc.compile.parse.OrcPosition;
 
 import org.eclipse.core.runtime.IPath;

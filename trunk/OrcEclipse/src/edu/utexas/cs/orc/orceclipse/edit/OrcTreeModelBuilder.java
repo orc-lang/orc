@@ -15,13 +15,13 @@
 
 package edu.utexas.cs.orc.orceclipse.edit;
 
-import orc.AST;
-import orc.compile.ext.ClassImport;
-import orc.compile.ext.DefDeclaration;
-import orc.compile.ext.Include;
-import orc.compile.ext.SiteDeclaration;
-import orc.compile.ext.TypeDeclaration;
-import orc.compile.ext.Val;
+import orc.ast.AST;
+import orc.ast.ext.ClassImport;
+import orc.ast.ext.DefDeclaration;
+import orc.ast.ext.Include;
+import orc.ast.ext.SiteDeclaration;
+import orc.ast.ext.TypeDeclaration;
+import orc.ast.ext.Val;
 
 import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.services.base.TreeModelBuilderBase;
@@ -32,7 +32,7 @@ import scala.util.parsing.input.NoPosition$;
 /**
  * Builds an Outline view tree that is a subset of the Orc extended AST
  *
- * @see orc.AST
+ * @see orc.ast.AST
  * @see org.eclipse.imp.editor.ModelTreeNode
  */
 public class OrcTreeModelBuilder extends TreeModelBuilderBase {
