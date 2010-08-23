@@ -64,24 +64,12 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
       <discovery label="IMP update site" url="http://download.eclipse.org/technology/imp/updates/"/>
    </url>
 
-   <includes
-         id="lpg.runtime"
-         version="2.0.18"
-         name="LPG Runtime"
-         search-location="both"/>
-
-   <includes
-         id="org.eclipse.imp.runtime"
-         version="0.1.108.v201008201835"
-         name="IMP Runtime"
-         search-location="both"/>
-
    <requires>
       <import plugin="org.eclipse.ui" version="3.3.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.core.runtime" version="3.3.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.core.resources"/>
       <import plugin="org.eclipse.debug.ui"/>
-      <import plugin="org.eclipse.imp.runtime" version="0.1.108" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.imp.runtime" version="0.1.101" match="greaterOrEqual"/>
       <import plugin="org.eclipse.team.core"/>
       <import plugin="org.eclipse.help"/>
       <import plugin="org.eclipse.ui.intro"/>
@@ -96,6 +84,8 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
       <import plugin="org.eclipse.jface.text"/>
       <import plugin="org.eclipse.ui.console"/>
       <import plugin="org.eclipse.ui.editors"/>
+      <import feature="lpg.runtime" version="2.0.18" match="equivalent"/>
+      <import feature="org.eclipse.imp.runtime" version="0.1.108.v201008201835" match="equivalent"/>
    </requires>
 
    <plugin
