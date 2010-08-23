@@ -15,10 +15,9 @@
 
 package edu.utexas.cs.orc.orceclipse.parse;
 
-import java.io.IOException;
 import java.util.Iterator;
 
-import orc.AST;
+import orc.ast.AST;
 import orc.OrcOptions;
 import orc.compile.parse.OrcIncludeParser;
 import orc.compile.parse.OrcInputContext;
@@ -202,10 +201,6 @@ public class OrcParseController extends ParseControllerBase {
 		OrcConfigSettings config;
 		try {
 			config = new OrcConfigSettings(getProject().getRawProject(), null);
-		} catch (final IOException e) {
-			// Shouldn't happen with project settings only
-			Activator.logAndShow(e);
-			return currentAst;
 		} catch (final CoreException e) {
 			// Shouldn't happen with project settings only
 			Activator.logAndShow(e);

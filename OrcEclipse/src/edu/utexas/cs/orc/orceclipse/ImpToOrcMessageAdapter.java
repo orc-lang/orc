@@ -15,7 +15,7 @@
 
 package edu.utexas.cs.orc.orceclipse;
 
-import orc.AST;
+import orc.ast.AST;
 import orc.error.compiletime.CompileLogger;
 
 import org.eclipse.core.resources.IMarker;

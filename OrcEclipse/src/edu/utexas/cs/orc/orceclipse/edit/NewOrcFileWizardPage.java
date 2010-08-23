@@ -36,8 +36,8 @@ public class NewOrcFileWizardPage extends WizardNewFileCreationPage {
 	/**
 	 * Constructs an object of class NewOrcFileWizardPage.
 	 *
-	 * @param pageName
-	 * @param selection
+	 * @param pageName name of new page
+	 * @param selection the resources currently selected
 	 */
 	public NewOrcFileWizardPage(final String pageName, final IStructuredSelection selection) {
 		super(pageName, selection);
