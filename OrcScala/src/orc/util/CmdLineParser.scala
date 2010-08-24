@@ -290,19 +290,19 @@ trait CmdLineParser {
   // Parse method
   ////////
 
-  def composeCmdLine(): String = {
-    (recognizedOpts.toList.sortBy(o => (o.longName, o.shortName)).map({ opt: CmdLineOpt =>
+  def composeCmdLine(): Array[String] = {
+    ((recognizedOpts.toList.sortBy(o => (o.longName, o.shortName)).flatMap({ opt: CmdLineOpt =>
       if (!opt.isInstanceOf[UnitOpt]) {
-        if (opt.shortName != 0 && opt.shortName != ' ') "-" + opt.shortName + " " + opt.getValue + " " else "--" + opt.longName + "=" + opt.getValue + " "
+        if (opt.shortName != 0 && opt.shortName != ' ') List("-" + opt.shortName, opt.getValue) else List("--" + opt.longName + "=" + opt.getValue)
       } else {
         if (opt.asInstanceOf[UnitOpt].getter()) {
-          if (opt.shortName != 0 && opt.shortName != ' ') "-" + opt.shortName else "--" + opt.longName + " "
+          if (opt.shortName != 0 && opt.shortName != ' ') List("-" + opt.shortName) else List("--" + opt.longName)
         } else {
-          ""
+          Nil
         }
       }
-    })).mkString("") +
-    (for { i <- 0 until recognizedOprds.size } yield recognizedOprds(i).getValue).mkString(" ")
+    })) ++
+    (for { i <- 0 until recognizedOprds.size } yield recognizedOprds(i).getValue).toList).toArray
   }
 
 }
