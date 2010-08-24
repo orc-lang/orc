@@ -132,7 +132,11 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 			final String[] envp = getEnvironment(configuration);
 
 			// Program & VM arguments
-			String pgmArgs = orcConfig.composeCmdLine();
+			String[] pgmArgArray = orcConfig.composeCmdLine();
+			String pgmArgs = "";
+			for (String arg : pgmArgArray) {
+				pgmArgs += "\"" + arg.replaceAll("\\\\", "\\\\").replaceAll("\"", "\\\"") + "\" ";
+			}
 			pgmArgs = VariablesPlugin.getDefault().getStringVariableManager().performStringSubstitution(pgmArgs);
 			final String vmArgs = getVMArguments(configuration);
 			final ExecutionArguments execArgs = new ExecutionArguments(vmArgs, pgmArgs);

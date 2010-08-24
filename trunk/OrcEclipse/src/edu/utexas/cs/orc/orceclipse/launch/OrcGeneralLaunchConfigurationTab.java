@@ -153,7 +153,7 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 	}
 
 	protected String orcVersionText() {
-		return orc.Main.orcImplName()+" "+orc.Main.orcVersion()+"\n"+orc.Main.orcURL()+"\n"+(orc.Main.orcCopyright().replace("(c)", "©")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+		return orc.Main.orcImplName()+" "+orc.Main.orcVersion()+"\n"+orc.Main.orcURL()+"\n"+(orc.Main.orcCopyright()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 	}
 
 	protected void widgetSelectedAction(final SelectionEvent e) {
