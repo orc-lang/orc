@@ -299,7 +299,7 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 
 		if (Character.isUnicodeIdentifierStart(firstChar)) {
 			int tokenLength = 1;
-			while (Character.isUnicodeIdentifierPart(safeCharAt(text, offset + tokenLength)) || safeCharAt(text, offset + tokenLength) == '\'') {
+			while (offset + tokenLength < text.length() && (Character.isUnicodeIdentifierPart(text.charAt(offset + tokenLength)) || text.charAt(offset + tokenLength) == '\'')) {
 				++tokenLength;
 			}
 			final String word = text.substring(offset, offset + tokenLength);
