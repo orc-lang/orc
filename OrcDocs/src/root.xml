@@ -230,7 +230,16 @@ in a subsequent section.
 <entry><emphasis>scoped declaration</emphasis></entry>
 </row>
 
-
+<row>
+<entry></entry>
+<entry>|</entry>
+	
+<entry>D <code>within</code> E</entry>
+<entry></entry>
+<entry><emphasis>goal expression w/declarations</emphasis></entry>
+</row>
+	
+	
 <row>
 <entry>C</entry>
 <entry>::=</entry>
@@ -1192,6 +1201,28 @@ Multi-line comments may be nested. They may appear anywhere, even in the middle 
 </para>
 
 </section>
+	
+<section><title>Within</title>
+
+<para> Whenever one or more declarations precede an expression,
+ and the expression begins with a non-alphanumeric character, the
+ expression must be separated from the declarations using the
+ keyword <code>within</code>.
+</para>
+	
+<para>
+<programlisting><![CDATA[
+-- This program requires 'within' because its goal expression
+-- begins with a parenthesis
+def Stooge1() = println("Moe") >> stop
+def Stooge2() = println("Larry") >> stop
+def Stooge3() = println("Curly") >> stop
+within
+   (Stooge1() | Stooge2() | Stooge3())
+]]></programlisting>
+</para>
+
+</section>
 
 </section>
 
@@ -1557,7 +1588,8 @@ lower precedence than operators, but higher precedence than conditionals or decl
 Orc's simplest combinator is <code>|</code>, the parallel combinator. Orc executes
 the expression F <code>|</code> G, where F and G are Orc expressions, by executing 
 F and G concurrently. Whenever F or G communicates with a service or publishes a value, 
-F <code>|</code> G does so as well. 
+F <code>|</code> G does so as well.  The resulting publications of F <code>|</code> G
+may be published in arbitrary order.
 </para>   
 
 
@@ -1565,6 +1597,9 @@ F <code>|</code> G does so as well.
 <programlisting language="orc-demo"><![CDATA[
 -- Publish 1 and 2 in parallel  
 1 | 1+1
+
+-- Note the publication order may be either 1 then 2
+-- or 2 then 1
 ]]></programlisting>
 </para>  
 
@@ -2995,7 +3030,9 @@ shared between programs. The <code>include</code> declaration offers a simple
 way to do this. It names a source file containing a sequence of Orc declarations;
 those declarations are incorporated into the program as if they had textually
 replaced the include declaration. An included file may itself contain 
-<code>include</code> declarations. 
+<code>include</code> declarations.  Included files may come from local files, any
+URI recognized by the Java library (http, https, ftp, etc.), and include resources
+found in the Orc JAR files.
 </para>
 
 <para>
@@ -3235,6 +3272,7 @@ in parentheses as part of the call).
 
 <section><title>Declarations</title>
 
+<!--
 <para>
 Declarations should always end with a newline. 
 
@@ -3247,7 +3285,8 @@ add(z,z)
 While the parser does not require a newline to end a declaration, it uses the 
 newline to disambiguate certain corner cases in parsing, such as function application.
 </para>
-
+-->
+	
 <para>
 When the body of a declaration spans multiple lines, start the body on a new line
 after the <code>=</code> symbol, and indent the entire body.
