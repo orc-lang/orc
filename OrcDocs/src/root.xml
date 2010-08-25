@@ -2717,10 +2717,12 @@ st.push(3) >> st.push(5) >> st.pop() >> st.pop()
 A capsule is defined much like a a function. The keyword <code>capsule</code>
 is used after <code>def</code>. A capsule may have parameters (including
 other capsules), as in a function definition. The body of a capsule
-may include function and capsule definitions. Name of every definition
-in the body of a capsule is exported (a later version of Orc
-implementation will allow the programmer to specify the names to be
+may include function and capsule definitions. The name of every definition
+in the body of a capsule is exported. 
+<!--
+(a later version of Orc implementation will allow the programmer to specify the names to be
 exported through an export list).
+-->
 </para>
 
 <para>
@@ -3304,6 +3306,10 @@ def f(x,y) =
  used to separate an expression and preceding declarations
  even when its use is not required.
 </para>
+		
+<para>  The preferred format is to put <code>within</code> on
+ its own line, then indent all statements after it.
+</para>
 	
 <para>
 <programlisting><![CDATA[
@@ -3780,7 +3786,8 @@ two <code>val</code> declarations, and then form a tuple of their results, this 
 <programlisting>
 val x = <emphasis role="bold">F</emphasis>
 val y = <emphasis role="bold">G</emphasis>
-(x,y)
+within
+   (x,y)
 </programlisting>
 </para>
 
@@ -3956,10 +3963,10 @@ follows:
 let(
     val a = <emphasis role="bold">F</emphasis>
     val b = <emphasis role="bold">G</emphasis>
-
-      (a || b)
-    | if(a)<![CDATA[ >> ]]>true 
-    | if(b)<![CDATA[ >> ]]>true 
+	within
+         (a || b)
+       | if(a)<![CDATA[ >> ]]>true 
+       | if(b)<![CDATA[ >> ]]>true 
 )
 </programlisting>
 
@@ -4304,7 +4311,8 @@ publications.
 
 <programlisting><![CDATA[
 val r = Cell()
-(]]><emphasis role="bold">F</emphasis><![CDATA[ <x< c.read()) | (]]><emphasis role="bold">G</emphasis><![CDATA[ >x> c.write(x))
+within
+   (]]><emphasis role="bold">F</emphasis><![CDATA[ <x< c.read()) | (]]><emphasis role="bold">G</emphasis><![CDATA[ >x> c.write(x))
 ]]>
 </programlisting>
 
@@ -4897,11 +4905,12 @@ def quicksort(a) =
     def lr(i) = if i < t && a(i)? <= p then lr(i+1) else i
     def rl(i) = if a(i)? > p then rl(i-1) else i
 
-    (lr(s), rl(t)) >(s', t')>
-    ( if (s' + 1 < t') >> swap(s', t') >> part(p, s'+1, t'-1)
-    | if (s' + 1 = t') >> swap(s', t') >> s'
-    | if (s' + 1 > t') >> t'
-    )
+    within
+      (lr(s), rl(t)) >(s', t')>
+      ( if (s' + 1 < t') >> swap(s', t') >> part(p, s'+1, t'-1)
+      | if (s' + 1 = t') >> swap(s', t') >> s'
+      | if (s' + 1 > t') >> t'
+      )
 
   def sort(s, t) =
      if s >= t then signal
@@ -5236,7 +5245,7 @@ on the runtime types of the arguments, as follows:
 			and the argument is an instance of <code language="java">BigDecimal</code>,
 			the argument is implicitly narrowed to the formal parameter type.</listitem>
 		<listitem>If the formal parameter type is a primitive integral type
-			and the argument is an instance of <code language="java">BigInteger</code>,
+			and the argument is an instance of <code language="java">BigInt</code>,
 			the argument is implicitly narrowed to the formal parameter type.</listitem>
 		<listitem>Otherwise, the argument must be a subtype of the formal parameter type.</listitem>
 		</orderedlist>
@@ -5248,7 +5257,7 @@ on the runtime types of the arguments, as follows:
 
 <para>
 The reason for the unusual implicit narrowing of <code language="java">BigDecimal</code> and
-<code language="java">BigInteger</code> is that Orc numeric literals have these types, and it
+<code language="java">BigInt</code> is that Orc numeric literals have these types, and it
 would be awkward to have to perform an explicit conversion every time such a
 value is passed to a Java method expecting a primitive.
 </para>
