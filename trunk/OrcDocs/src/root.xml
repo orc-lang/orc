@@ -1201,28 +1201,6 @@ Multi-line comments may be nested. They may appear anywhere, even in the middle 
 </para>
 
 </section>
-	
-<section><title>Within</title>
-
-<para> Whenever one or more declarations precede an expression,
- and the expression begins with a non-alphanumeric character, the
- expression must be separated from the declarations using the
- keyword <code>within</code>.
-</para>
-	
-<para>
-<programlisting><![CDATA[
--- This program requires 'within' because its goal expression
--- begins with a parenthesis
-def Stooge1() = println("Moe") >> stop
-def Stooge2() = println("Larry") >> stop
-def Stooge3() = println("Curly") >> stop
-within
-   (Stooge1() | Stooge2() | Stooge3())
-]]></programlisting>
-</para>
-
-</section>
 
 </section>
 
@@ -3016,7 +2994,7 @@ the given arguments to the constructor.
 <para>
 This instance of String is a Java object; its methods are called and its fields
 are accessed using the dot (<code>.</code>) notation, just as one would expect
-in Java.  For complete details of how Orc interacts with Java, see
+in Java.  For complete details of how Orc interacts with Java and Scala, see
 <xref linkend="section.services.java"/>.
 </para>
 </section>
@@ -3317,6 +3295,40 @@ def f(x,y) =
 
 </para>
 
+	<section><title>Within</title>
+
+<para> Whenever one or more declarations precede an expression,
+ and the expression begins with a non-alphanumeric character, the
+ expression must be separated from the declarations using the
+ keyword <code>within</code>.  <code>within</code> may also be
+ used to separate an expression and preceding declarations
+ even when its use is not required.
+</para>
+	
+<para>
+<programlisting><![CDATA[
+-- This program requires 'within' because its goal expression
+-- begins with a parenthesis
+def Stooge1() = println("Moe") >> stop
+def Stooge2() = println("Larry") >> stop
+def Stooge3() = println("Curly") >> stop
+within
+   (Stooge1() | Stooge2() | Stooge3())
+]]></programlisting>
+</para>
+		
+<para>
+<programlisting><![CDATA[
+-- This does not require 'within' be used.  However, the use of
+-- within is still correct.
+def f(x) = x + 1
+within
+   f(1)
+]]></programlisting>
+</para>
+
+</section>
+	
 </section>
 
 </section>
@@ -5116,12 +5128,14 @@ classes behave in Orc programs.
 <section id="section.services.java.dot"><title>Dot Operator</title>
 
 <para>
-<code>x.member</code>, where <code>x</code> evaluates to a Scala/Java class or object, is evaluated as follows:
+<code>x.member</code>, where <code>x</code> evaluates to a Scala/Java class or object, 
+is evaluated as follows:
 <itemizedlist>
 <listitem>If <code>x</code> has one or more methods named <code>member</code>,
 a "method handle" site is returned which may be called like any other Orc site.
 When a method handle is actually called with arguments, the appropriate Scala/Java
 method is selected and called depending on the number and type of arguments, as
+<!-- CHANGE ME (the method resolution section) -->
 described in <link linkend="section.services.java.method">Method Resolution</link>
 below.</listitem>
 <listitem>Otherwise, if <code>x</code> has a field named <code>member</code>,
@@ -5195,6 +5209,7 @@ against specific Java exception types in a <code>catch</code>.
 
 </section>
 
+<!-- CHANGE ME (method resolution) -->
 <section id="section.services.java.method"><title>Method Resolution</title>
 
 <para>
@@ -5259,15 +5274,15 @@ Scala types:
 <?dbfo list-presentation="list" term-width="6em"?>
 <varlistentry><term>string</term><listitem><code language="java">java.lang.String</code></listitem></varlistentry>
 <varlistentry><term>boolean</term><listitem><code language="java">java.lang.Boolean</code></listitem></varlistentry>
-<varlistentry><term>number</term><listitem><code language="java">java.lang.Number</code></listitem></varlistentry>
-<varlistentry><term>tuple</term><listitem><code language="java">orc.runtime.values.TupleValue</code></listitem></varlistentry>
-<varlistentry><term>list</term><listitem><code language="java">orc.runtime.values.ListValue</code></listitem></varlistentry>
-<varlistentry><term>function</term><listitem><code language="java">orc.runtime.values.Closure</code>
+<varlistentry><term>number</term><listitem><code language="java">scala.math.BigDecimal and scala.math.BigInt</code></listitem></varlistentry>
+<varlistentry><term>tuple</term><listitem><code language="java">orc.values.OrcTuple</code></listitem></varlistentry>
+<varlistentry><term>list</term><listitem><code language="java">scala.collection.immutable.List</code></listitem></varlistentry>
+<varlistentry><term>function</term><listitem><code language="java">orc.run.Closure</code>
 		<para>Currently it is not possible to call Orc functions from Java code.</para></listitem></varlistentry>
-<varlistentry><term>site</term><listitem><code language="java">orc.runtime.values.Site</code>
+<varlistentry><term>site</term><listitem><code language="java">orc.value.sites.Site</code>
 		<para>Currently it is not possible to directly call Orc sites from Java
 code.  However if you are implementing a site yourself, you may provide methods
-which can be called from Java code to invoke the behavior of the site.</para></listitem></varlistentry>
+which can be called from Scala/Java code to invoke the behavior of the site.</para></listitem></varlistentry>
 </variablelist>
 </section>
 
@@ -5280,10 +5295,10 @@ automatically boxed (and unboxed) as necessary.
 </para>
 
 <para>
-When both arguments of an arithmetic or comparison operator are Java numeric
+When both arguments of an arithmetic or comparison operator are Java or Scala numeric
 types, the arguments are implicitly coerced to the widest of the two argument
 types.  "Widest" is defined by the following relation, where ">" means "is
-wider than": BigDecimal > Double > Float > BigInteger > Long > Integer > Short
+wider than": BigDecimal > Double > Float > BigInt > Long > Integer > Short
 > Byte
 </para>
 
@@ -5381,7 +5396,7 @@ language="java">token.resume()</code>.</listitem></varlistentry>
 
 <varlistentry><term><code language="java">error(TokenException
 problem)</code></term><listitem>halt without publishing a value and report an
-error.  This method is an appropriate way to report Java exceptions encountered
+error.  This method is an appropriate way to report Scala or Java exceptions encountered
 during a site call.  Alternatively, a site can simply throw a checked exception
 from the <code language="java">callSite</code> method; the engine will call
 <code language="java">token.error</code> on its behalf. To convert a Java
@@ -5674,8 +5689,8 @@ Within the OrcSites source code you will find:
 
 <para>
 Web services use a variety of protocols, so there are a variety of ways to
-contact them. All of them boil down to creating a Java proxy site for the
-service and calling that.  Previous sections explain how to implement such Java
+contact them. All of them boil down to creating a Scala or Java proxy site for the
+service and calling that.  Previous sections explain how to implement such
 sites which can be called in Orc. Because web services tend to use blocking
 I/O, Java wrappers make frequent use of <link linkend="section.services.sites.ThreadedSite">ThreadedSite</link> 
 	to ensure that web service calls don't block the Orc engine.
