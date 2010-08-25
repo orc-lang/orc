@@ -51,11 +51,11 @@ def capsule Rendezvous(n,f) =
 
   def go(i,v) = 
    val c = Cell()
-   b(i).put((v,c)) >> c.read()
+   b(i)?.put((v,c)) >> c.read()
 
   def collect(vcl,0) = vcl
   def collect((vl,cl),i) =  -- collect i more items
-    b(n-i).get() >(v,c)> collect((v:vl,c:cl),i-1) 
+    b(n-i)?.get() >(v,c)> collect((v:vl,c:cl),i-1) 
 
   def distribute([],[]) = signal
 {-

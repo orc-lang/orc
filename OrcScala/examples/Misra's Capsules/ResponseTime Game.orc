@@ -23,13 +23,13 @@ def game() =
 
    val (b,w) = 
  
-    sw.reset() >> Rtimer(id) >> rand_seq() >x> println(x) >>
-     if (x = v) >> sw.start() >> stop
+       sw.reset() >> Rtimer(id) >> rand_seq() >x> println(x) >>
+       IfT(x = v) >> sw.start() >> stop
 
-  | Prompt("Press ENTER/OK for "+v) >> 
-     sw.isrunning() >b> sw.stop() >w> (b,w)
-
-(b,w)
+     | Prompt("Press ENTER/OK for "+v) >> 
+       sw.isrunning() >b> sw.halt() >w> (b,w)
+   within
+     (b,w)
 
 def games() =
 {- games() conducts multiple games, a session. 
