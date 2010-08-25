@@ -36,7 +36,7 @@ case class OrcTuple(values: List[AnyRef]) extends PartialSite with UntypedSite {
         else
           { throw new TupleIndexOutOfBoundsException(i) }
       }
-      case List(a) => throw new ArgumentTypeMismatchException(0, "Integer", a.getClass().toString())
+      case List(a) => throw new ArgumentTypeMismatchException(0, "Integer", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
     }
   override def toOrcSyntax() = "(" + Format.formatSequence(values) + ")" 

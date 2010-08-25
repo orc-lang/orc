@@ -17,7 +17,7 @@ object NoneExtractor extends PartialSite with UntypedSite {
     args match {
       case List(None) => Some(Signal)
       case List(Some(_)) => None
-      case List(a) => throw new ArgumentTypeMismatchException(0, "Option", a.getClass().toString())
+      case List(a) => throw new ArgumentTypeMismatchException(0, "Option", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
   }
 }
@@ -29,7 +29,7 @@ object SomeExtractor extends PartialSite with UntypedSite {
     args match {
       case List(Some(v : AnyRef)) => Some(v)
       case List(None) => None
-      case List(a) => throw new ArgumentTypeMismatchException(0, "Option", a.getClass().toString())
+      case List(a) => throw new ArgumentTypeMismatchException(0, "Option", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
   }
 }
@@ -45,7 +45,7 @@ object NilExtractor extends PartialSite with UntypedSite {
       case List(arr: Array[AnyRef]) if (arr.size != 0) => None
       case List(c:java.util.List[_]) if (c.size == 0) => Some(Signal)
       case List(c:java.util.List[_]) if (c.size != 0) => None
-      case List(a) => throw new ArgumentTypeMismatchException(0, "List", a.getClass().toString())
+      case List(a) => throw new ArgumentTypeMismatchException(0, "List", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
   }
   }
@@ -66,7 +66,7 @@ object ConsExtractor extends PartialSite with UntypedSite {
         Some(OrcTuple(List(arr(0), arr.slice(1, arr.size))))
       }
       case List(arr: Array[AnyRef]) if (arr.size == 0) => None
-      case List(a) => throw new ArgumentTypeMismatchException(0, "List", if (a == null) "null" else a.getClass().toString())
+      case List(a) => throw new ArgumentTypeMismatchException(0, "List", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
   }
 }
@@ -87,7 +87,7 @@ object TupleArityChecker extends PartialSite with UntypedSite {
         } else {
           None
         }
-      case List(a, _) => throw new ArgumentTypeMismatchException(0, "Tuple", a.getClass().toString())
+      case List(a, _) => throw new ArgumentTypeMismatchException(0, "Tuple", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
   }
 }
@@ -99,7 +99,7 @@ object FindExtractor extends TotalSite with UntypedSite {
     args match {
       case List(s: Extractable) => s.extract
       case List(s: Site) => throw new Exception("Could not find extractor for site"+s)
-      case List(a) => throw new ArgumentTypeMismatchException(0, "Site", a.getClass().toString())
+      case List(a) => throw new ArgumentTypeMismatchException(0, "Site", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
     }
 }

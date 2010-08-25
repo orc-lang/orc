@@ -12,7 +12,7 @@ object IfT extends PartialSite with UntypedSite {
     args match {
       case List(b : java.lang.Boolean) => 
         if (b.booleanValue) { Some(Signal) } else { None }
-      case List(a) => throw new ArgumentTypeMismatchException(0, "Boolean", a.getClass().toString())
+      case List(a) => throw new ArgumentTypeMismatchException(0, "Boolean", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
   }
 }
@@ -23,7 +23,7 @@ object IfF extends PartialSite with UntypedSite {
     args match {
       case List(b : java.lang.Boolean) => 
         if (b.booleanValue) { None } else { Some(Signal) }
-      case List(a) => throw new ArgumentTypeMismatchException(0, "Boolean", a.getClass().toString())
+      case List(a) => throw new ArgumentTypeMismatchException(0, "Boolean", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
   }
 }

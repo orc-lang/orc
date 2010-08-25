@@ -26,7 +26,7 @@ object Not extends TotalSite with UntypedSite {
   def evaluate(args: List[AnyRef]) =
     args match {
       case List(b : java.lang.Boolean) => new java.lang.Boolean(!b.booleanValue) 
-      case List(a) => throw new ArgumentTypeMismatchException(0, "Boolean", a.getClass().toString())
+      case List(a) => throw new ArgumentTypeMismatchException(0, "Boolean", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
     }
 }
