@@ -18,12 +18,12 @@ def game() =
   
 val valid = 
     sw.reset() >> Rtimer(id) >> rand_seq() >x>
-     if (x = v) >> sw.start() >> stop
+     IfT(x = v) >> sw.start() >> stop
   |  Prompt("Press ENTER for "+v) >> sw.isrunning() 
 
 
   if valid
-   then (sw.stop() >w> println("Response time = " +w) >> game())
+   then (sw.halt() >w> println("Response time = " +w) >> game())
    else println("Game Over") >> stop
 
 game()
