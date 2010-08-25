@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import orc.ast.AST;
+import orc.ast.OrcSyntaxConvertable;
 import orc.ast.ext.ClassImport;
 import orc.ast.ext.Def;
 import orc.ast.ext.DefCapsule;
@@ -238,7 +239,7 @@ public class OrcLabelProvider implements ILabelProvider {
 		for (final scala.collection.immutable.List<Pattern> ps : JavaConversions.asIterable(d.formals())) {
 			s.append('(');
 			if (ps != null) {
-				s.append(listMkOrcString(JavaConversions.asIterable(ps), ",")); //$NON-NLS-1$
+				s.append(listMkString(JavaConversions.asIterable(ps), ", ")); //$NON-NLS-1$
 			}
 			s.append(')');
 		}
@@ -253,7 +254,7 @@ public class OrcLabelProvider implements ILabelProvider {
 		for (final scala.collection.immutable.List<Pattern> ps : JavaConversions.asIterable(d.formals())) {
 			s.append('(');
 			if (ps != null) {
-				s.append(listMkOrcString(JavaConversions.asIterable(ps), ",")); //$NON-NLS-1$
+				s.append(listMkString(JavaConversions.asIterable(ps), ", ")); //$NON-NLS-1$
 			}
 			s.append(')');
 		}
@@ -266,7 +267,7 @@ public class OrcLabelProvider implements ILabelProvider {
 
 		s.append(d.name());
 
-		if (d.typeformals() != null) {
+		if (d.typeformals() != null && d.typeformals().size() > 0) {
 			s.append('[');
 			s.append(listMkString(JavaConversions.asIterable(d.typeformals()), ", ")); //$NON-NLS-1$
 			s.append(']');
@@ -275,13 +276,13 @@ public class OrcLabelProvider implements ILabelProvider {
 		for (final scala.collection.immutable.List<Type> argTypes : JavaConversions.asIterable(d.argtypes())) {
 			s.append('(');
 			if (argTypes != null) {
-				s.append(listMkString(JavaConversions.asIterable(argTypes), ",")); //$NON-NLS-1$
+				s.append(listMkString(JavaConversions.asIterable(argTypes), ", ")); //$NON-NLS-1$
 			}
 			s.append(')');
 		}
 
 		s.append(" :: "); //$NON-NLS-1$
-		s.append(d.returntype());
+		s.append(d.returntype().toOrcSyntax());
 
 		return s.toString();
 	}
@@ -289,21 +290,11 @@ public class OrcLabelProvider implements ILabelProvider {
 	private static String listMkString(final Iterable<?> theList, final String sep) {
 		final StringBuilder sb = new StringBuilder();
 		for (final Object o : theList) {
-			sb.append(o.toString());
-			sb.append(sep);
-		}
-		if (sb.length() == 0) {
-			return ""; //$NON-NLS-1$
-		} else {
-			return sb.substring(0, sb.length() - sep.length());
-		}
-	}
-
-	private static String listMkOrcString(final Iterable<Pattern> theList, final String sep) {
-		//TODO: As toOrcSyntax() is available on more general types than, Pattern update types in here
-		final StringBuilder sb = new StringBuilder();
-		for (final Pattern p : theList) {
-			sb.append(p.toOrcSyntax());
+			if (o instanceof OrcSyntaxConvertable) {
+				sb.append(((OrcSyntaxConvertable) o).toOrcSyntax());
+			} else {
+				sb.append(o.toString());
+			}
 			sb.append(sep);
 		}
 		if (sb.length() == 0) {
