@@ -66,7 +66,7 @@ public class OrcPosPatternMatchListener implements IPatternMatchListenerDelegate
 		try {
 			final int offset = event.getOffset();
 			final int length = event.getLength();
-			final String matchedText = observedConsole.getDocument().get(offset, length - 1); // -1 too drop final ": "
+			final String matchedText = observedConsole.getDocument().get(offset, length - 1);
 			final int lineColSep = matchedText.lastIndexOf(':');
 			if (lineColSep < 3) {
 				return;

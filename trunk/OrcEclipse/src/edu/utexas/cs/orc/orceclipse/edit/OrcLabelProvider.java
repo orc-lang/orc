@@ -180,6 +180,10 @@ public class OrcLabelProvider implements ILabelProvider {
 			final Def dmc = (Def) n;
 			return sigToString(dmc);
 		}
+		if (n instanceof DefCapsule) {
+			final DefCapsule dmc = (DefCapsule) n;
+			return sigToString(dmc);
+		}
 		if (n instanceof DefSig) {
 			final DefSig dmt = (DefSig) n;
 			return sigToString(dmt);
@@ -228,6 +232,21 @@ public class OrcLabelProvider implements ILabelProvider {
 	}
 
 	private static String sigToString(final Def d) {
+		final StringBuilder s = new StringBuilder();
+
+		s.append(d.name());
+		for (final scala.collection.immutable.List<Pattern> ps : JavaConversions.asIterable(d.formals())) {
+			s.append('(');
+			if (ps != null) {
+				s.append(listMkOrcString(JavaConversions.asIterable(ps), ",")); //$NON-NLS-1$
+			}
+			s.append(')');
+		}
+
+		return s.toString();
+	}
+
+	private static String sigToString(final DefCapsule d) {
 		final StringBuilder s = new StringBuilder();
 
 		s.append(d.name());
