@@ -130,7 +130,7 @@ public class Buffer extends EvalSite {
 				@Override
 				public Object evaluate(final Args args) throws TokenException {
                   synchronized(BufferInstance.this) {
-					final Object out = null;//OrcList(buffer);
+					final Object out = buffer.clone();
 					buffer.clear();
 					if (closer != null) {
 						//FIXME:closer.unsetQuiescent();
