@@ -16,6 +16,7 @@
 package orc.ast.ext
 
 import orc.ast.AST
+import orc.ast.OrcSyntaxConvertable
 
 sealed abstract class Expression extends AST
 
@@ -106,9 +107,8 @@ case class Constructor(name: String, types: List[Option[Type]]) extends AST
 
 
 
-sealed abstract class Pattern extends AST { 
+sealed abstract class Pattern extends AST with OrcSyntaxConvertable { 
   val isStrict: Boolean
-  def toOrcSyntax: String
 }
 
 sealed abstract class NonStrictPattern extends Pattern {
@@ -135,20 +135,21 @@ case class AsPattern(p: Pattern, name: String) extends Pattern {
 }
 case class TypedPattern(p: Pattern, t: Type) extends Pattern {
   val isStrict = p.isStrict
-  override def toOrcSyntax = p.toOrcSyntax + " :: " + t
+  override def toOrcSyntax = p.toOrcSyntax + " :: " + t.toOrcSyntax
 }
 
 
 
 
-sealed abstract class Type extends AST
+sealed abstract class Type extends AST with OrcSyntaxConvertable
 
-case class Top() extends Type
-case class Bot() extends Type
-case class TypeVariable(name: String) extends Type
-case class TupleType(elements: List[Type]) extends Type
-case class RecordType(elements: List[(String, Type)]) extends Type
+case class Top() extends Type { override def toOrcSyntax = "Top" }
+case class Bot() extends Type { override def toOrcSyntax = "Bot" }
+case class TypeVariable(name: String) extends Type { override def toOrcSyntax = name }
+case class TupleType(elements: List[Type]) extends Type { override def toOrcSyntax = elements.map(_.toOrcSyntax).mkString("(", ", ", ")") }
+case class RecordType(elements: List[(String, Type)]) extends Type { override def toOrcSyntax = elements.map({case (f,t) => f + " :: " + t.toOrcSyntax}).mkString("{. ", ", ", " .}") }
 case class LambdaType(typeformals: List[String], argtypes: List[List[Type]], returntype: Type) extends Type {
+  override def toOrcSyntax = "lambda" + (if (typeformals.size > 0) typeformals.mkString("[", ", ", "]") else "") + argtypes.map(_.map(_.toOrcSyntax).mkString("(", ", ", ")")).mkString("(", ", ", ")") + " :: " + returntype.toOrcSyntax
   /* 
    * Converts the type 'lambda (A)(B)(C) :: D'
    * to 'lambda (A) :: (lambda (B) :: (lambda (C) :: D))'.
@@ -164,4 +165,4 @@ case class LambdaType(typeformals: List[String], argtypes: List[List[Type]], ret
       }
   }
 }
-case class TypeApplication(name: String, typeactuals: List[Type]) extends Type	
+case class TypeApplication(name: String, typeactuals: List[Type]) extends Type { override def toOrcSyntax = name + typeactuals.map(_.toOrcSyntax).mkString("[", ", ", "]") }

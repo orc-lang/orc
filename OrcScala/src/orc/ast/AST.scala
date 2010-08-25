@@ -81,3 +81,8 @@ trait AST extends Positional {
   }
   def productIterator: Iterator[Any] //Subclasses that are case classes will supply automatically
 }
+
+
+trait OrcSyntaxConvertable {
+  def toOrcSyntax: String
+}
