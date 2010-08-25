@@ -443,7 +443,7 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
     r match {
       case Failure(msg, in) => {
         if (msg.equals("``('' expected but EOF found")) {
-          Failure(msg+"\n"+
+          Failure(msg+".\n"+
               "  This error usually means that the expression is incomplete.\n" +
               "The following cases can create this parser problem:\n" +
               "  1. The right hand side expression in a combinator is missing.\n" +
@@ -451,7 +451,7 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
               "  3. The goal expression of the program is missing.\n"
               , in)
         } else if (msg.startsWith("`NewLine' expected but `(' found")) {
-          Failure(msg+"\n"+
+          Failure(msg+".\n"+
               "  This error usually means that there are unexpected new lines\n" +
               "right after the name of a function or site in a call. The `('\n" +
               "should come after the name of the function or site and cannot\n" +
@@ -459,13 +459,13 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
               , in)
         } else if (msg.startsWith("`NewLine' expected but")) {
           val name = msg.substring(23, msg.lastIndexOf("found")-1)
-          Failure(msg+"\n"+
+          Failure(msg+".\n"+
               "  This error usually means that there is an unexpected expression\n" +
               "before the "+name+" or the "+name+" itself is unexpected at this point.\n"
               , in)
         }
         else if (msg.startsWith("``::'' expected but")) {
-          Failure(msg+"\n"+
+          Failure(msg+".\n"+
               "  This error usually means that the `=' is missing in front of\n" +
               "the funtion definition.\n" +
               "  In case you want to specify the return type of the function\n" +
@@ -473,19 +473,19 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
               , in)
         }
         else if (msg.startsWith("``('' expected but `)' found")) {
-          Failure(msg+"\n"+
+          Failure(msg+".\n"+
               "  This error usually means an illegal start for an expression with `)'.\n" +
               "Check for mismatched parentheses."
               , in)
         }
         else if (msg.startsWith("``('' expected but")) {
           val name = msg.substring(19, msg.lastIndexOf("found")-1)
-          Failure(msg+"\n"+
+          Failure(msg+".\n"+
               "  This error usually means an illegal start for an expression with "+name+".\n"
               , in)
         }
         else if (msg.startsWith("``<'' expected but")) {
-          Failure(msg+"\n"+
+          Failure(msg+".\n"+
               "  This error usually happens in the following occasions:\n" +
               "  1. You are intending to use the pruning combinator `<<' and\n" +
               "     you have typed `<'.\n" +
@@ -494,7 +494,7 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
               , in)
         }
         else if (msg.startsWith("``>'' expected but")) {
-          Failure(msg+"\n"+
+          Failure(msg+".\n"+
               "  This error usually happens in the following occasions:\n" +
               "  1. You are intending to use the sequential combinator `>>' and\n" +
               "     you have typed `>'.\n" +
