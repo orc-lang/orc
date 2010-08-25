@@ -171,7 +171,7 @@ public class BoundedBuffer extends EvalSite {
 					// restore open slots
 					open += buffer.size() - writers.size();
 					// collect all values in a list
-					final Object out = null;//OrcList(buffer);
+					final Object out = buffer.clone();
 					buffer.clear();
 					// resume all writers
 					for (final TokenAPI writer : writers) {
