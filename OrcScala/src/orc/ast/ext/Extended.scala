@@ -121,10 +121,10 @@ case class VariablePattern(name: String) extends NonStrictPattern { override def
 sealed abstract class StrictPattern extends Pattern {
   val isStrict = true
 }
-case class ConstantPattern(c: AnyRef) extends StrictPattern { override def toOrcSyntax = c.toString }
-case class TuplePattern(elements: List[Pattern]) extends StrictPattern { override def toOrcSyntax = elements.mkString("(", ", ", ")") }
-case class ListPattern(elements: List[Pattern]) extends StrictPattern { override def toOrcSyntax = elements.mkString("[", ", ", "]") }
-case class CallPattern(name: String, args: List[Pattern]) extends StrictPattern { override def toOrcSyntax = name + args.mkString("(", ", ", ")") }
+case class ConstantPattern(c: AnyRef) extends StrictPattern { override def toOrcSyntax = if (c == null) "null" else c.toString }
+case class TuplePattern(elements: List[Pattern]) extends StrictPattern { override def toOrcSyntax = elements.map(_.toOrcSyntax).mkString("(", ", ", ")") }
+case class ListPattern(elements: List[Pattern]) extends StrictPattern { override def toOrcSyntax = elements.map(_.toOrcSyntax).mkString("[", ", ", "]") }
+case class CallPattern(name: String, args: List[Pattern]) extends StrictPattern { override def toOrcSyntax = name + args.map(_.toOrcSyntax).mkString("(", ", ", ")") }
 case class ConsPattern(head: Pattern, tail: Pattern) extends StrictPattern { override def toOrcSyntax = "("+head.toOrcSyntax+":"+tail.toOrcSyntax+")" }
 case class EqPattern(name: String) extends StrictPattern { override def toOrcSyntax = "="+name }
 
