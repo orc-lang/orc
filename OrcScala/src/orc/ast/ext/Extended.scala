@@ -16,7 +16,7 @@
 package orc.ast.ext
 
 import orc.ast.AST
-import orc.ast.OrcSyntaxConvertable
+import orc.ast.OrcSyntaxConvertible
 
 sealed abstract class Expression extends AST
 
@@ -107,7 +107,7 @@ case class Constructor(name: String, types: List[Option[Type]]) extends AST
 
 
 
-sealed abstract class Pattern extends AST with OrcSyntaxConvertable { 
+sealed abstract class Pattern extends AST with OrcSyntaxConvertible { 
   val isStrict: Boolean
 }
 
@@ -141,7 +141,7 @@ case class TypedPattern(p: Pattern, t: Type) extends Pattern {
 
 
 
-sealed abstract class Type extends AST with OrcSyntaxConvertable
+sealed abstract class Type extends AST with OrcSyntaxConvertible
 
 case class Top() extends Type { override def toOrcSyntax = "Top" }
 case class Bot() extends Type { override def toOrcSyntax = "Bot" }

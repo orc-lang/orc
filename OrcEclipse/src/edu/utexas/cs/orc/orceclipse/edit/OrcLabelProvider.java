@@ -19,7 +19,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import orc.ast.AST;
-import orc.ast.OrcSyntaxConvertable;
+import orc.ast.OrcSyntaxConvertible;
 import orc.ast.ext.ClassImport;
 import orc.ast.ext.Def;
 import orc.ast.ext.DefCapsule;
@@ -290,8 +290,8 @@ public class OrcLabelProvider implements ILabelProvider {
 	private static String listMkString(final Iterable<?> theList, final String sep) {
 		final StringBuilder sb = new StringBuilder();
 		for (final Object o : theList) {
-			if (o instanceof OrcSyntaxConvertable) {
-				sb.append(((OrcSyntaxConvertable) o).toOrcSyntax());
+			if (o instanceof OrcSyntaxConvertible) {
+				sb.append(((OrcSyntaxConvertible) o).toOrcSyntax());
 			} else {
 				sb.append(o.toString());
 			}
