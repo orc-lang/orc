@@ -83,6 +83,6 @@ trait AST extends Positional {
 }
 
 
-trait OrcSyntaxConvertable {
+trait OrcSyntaxConvertible {
   def toOrcSyntax: String
 }
