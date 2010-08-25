@@ -66,7 +66,7 @@ public class Args implements Serializable {
 		if (v instanceof Field) {
 			return ((Field) v).field();
 		} else {
-			throw new ArgumentTypeMismatchException(0, "message", v.getClass().toString());
+			throw new ArgumentTypeMismatchException(0, "message", ((v != null) ? v.getClass().toString() : "null"));
 		}
 	}
 
@@ -104,8 +104,8 @@ public class Args implements Serializable {
 		try {
 			return ((Number) a).intValue();
 		} catch (final ClassCastException e) {
-			// throw new TokenException("Argument " + n + " should be an int, got " + a.getClass().toString() + " instead."); 
-			throw new ArgumentTypeMismatchException(n, "int", a.getClass().toString());
+			// throw new TokenException("Argument " + n + " should be an int, got " + ((a != null) ? a.getClass().toString() : "null")+ " instead."); 
+			throw new ArgumentTypeMismatchException(n, "int", ((a != null) ? a.getClass().toString() : "null"));
 		}
 	}
 
@@ -121,9 +121,9 @@ public class Args implements Serializable {
 		try {
 			return ((Number) a).longValue();
 		} catch (final ClassCastException e) {
-			throw new ArgumentTypeMismatchException(n, "long", a.getClass().toString());
+			throw new ArgumentTypeMismatchException(n, "long", ((a != null) ? a.getClass().toString() : "null"));
 		}
-		// { throw new TokenException("Argument " + n + " should be an int, got " + a.getClass().toString() + " instead."); } 
+		// { throw new TokenException("Argument " + n + " should be an int, got " + ((a != null) ? a.getClass().toString() : "null") + " instead."); } 
 	}
 
 	public Number numberArg(final int n) throws TokenException {
@@ -134,7 +134,7 @@ public class Args implements Serializable {
 		try {
 			return (Number) a;
 		} catch (final ClassCastException e) {
-			throw new ArgumentTypeMismatchException(n, "Number", a.getClass().toString());
+			throw new ArgumentTypeMismatchException(n, "Number", ((a != null) ? a.getClass().toString() : "null"));
 		}
 	}
 
@@ -150,9 +150,9 @@ public class Args implements Serializable {
 		try {
 			return ((Boolean) a).booleanValue();
 		} catch (final ClassCastException e) {
-			throw new ArgumentTypeMismatchException(n, "boolean", a.getClass().toString());
+			throw new ArgumentTypeMismatchException(n, "boolean", ((a != null) ? a.getClass().toString() : "null"));
 		}
-		//{ throw new TokenException("Argument " + n + " to site '" + this.toString() + "' should be a boolean, got " + a.getClass().toString() + " instead."); } 
+		//{ throw new TokenException("Argument " + n + " to site '" + this.toString() + "' should be a boolean, got " + ((a != null) ? a.getClass().toString() : "null") + " instead."); } 
 
 	}
 
@@ -171,7 +171,7 @@ public class Args implements Serializable {
 		try {
 			return (String) a;
 		} catch (final ClassCastException e) {
-			throw new ArgumentTypeMismatchException(n, "String", a.getClass().toString());
+			throw new ArgumentTypeMismatchException(n, "String", ((a != null) ? a.getClass().toString() : "null"));
 		}
 	}
 
@@ -256,7 +256,7 @@ public class Args implements Serializable {
 			} else if (a instanceof Byte || b instanceof Byte) {
 				return op.apply(a.byteValue(), b.byteValue());
 			} else {
-				throw new JavaException(new IllegalArgumentException("Unexpected Number type in (" + a.getClass().toString() + ", " + b.getClass().toString() + ")"));
+				throw new JavaException(new IllegalArgumentException("Unexpected Number type in (" + ((a != null) ? a.getClass().toString() : "null") + ", " + ((b != null) ? b.getClass().toString() : "null") + ")"));
 			}
 		} catch (final ArithmeticException e) {
 			throw new JavaException(e);
@@ -284,7 +284,7 @@ public class Args implements Serializable {
 		} else if (a instanceof Byte) {
 			return op.apply(a.byteValue());
 		} else {
-			throw new JavaException(new IllegalArgumentException("Unexpected Number type in (" + a.getClass().toString() + ")"));
+			throw new JavaException(new IllegalArgumentException("Unexpected Number type in (" + ((a != null) ? a.getClass().toString() : "null") + ")"));
 		}
 	}
 }

@@ -49,7 +49,7 @@ object ConsConstructor extends TotalSite with Extractable with UntypedSite {
   def evaluate(args: List[AnyRef]) =
     args match {
       case List(v, vs : List[_]) => v :: vs
-      case List(_, vs) => throw new ArgumentTypeMismatchException(1, "List", vs.getClass().toString())
+      case List(_, vs) => throw new ArgumentTypeMismatchException(1, "List", if (vs != null) vs.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(2, args.size)
   }
   override def extract = ConsExtractor
@@ -66,7 +66,7 @@ object RecordConstructor extends TotalSite with UntypedSite {
           v match {
             case OrcTuple(List(key: String, value : AnyRef)) =>
               valueMap += ( (key,value) )
-            case _ => throw new ArgumentTypeMismatchException(i, "(String, AnyRef)", v.getClass().toString())
+            case _ => throw new ArgumentTypeMismatchException(i, "(String, AnyRef)", if (v != null) v.getClass().toString() else "null")
           }
       }
     OrcRecord(valueMap)

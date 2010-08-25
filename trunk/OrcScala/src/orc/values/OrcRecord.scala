@@ -34,7 +34,7 @@ case class OrcRecord(entries: scala.collection.mutable.Map[String,AnyRef]) exten
           case Some(v) => Some(v)
           case None => throw new NoSuchMemberException(this, name)
         }
-      case List(a) => throw new ArgumentTypeMismatchException(0, "Field", a.getClass().toString())
+      case List(a) => throw new ArgumentTypeMismatchException(0, "Field", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
     }
   

@@ -35,7 +35,7 @@ object Read extends TotalSite with UntypedSite {
           case n: OrcLiteralParser.NoSuccess   => throw new ParsingException(n.msg+" when reading \""+s+"\"", n.next.pos)
         }
       }
-      case List(a) => throw new ArgumentTypeMismatchException(0, "String", a.getClass().toString())
+      case List(a) => throw new ArgumentTypeMismatchException(0, "String", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
     }
     convertToOrcValue(parsedValue)
@@ -44,6 +44,6 @@ object Read extends TotalSite with UntypedSite {
     case Constant(v) => v
     case ListExpr(vs) => vs map convertToOrcValue
     case TupleExpr(vs) => OrcTuple(vs map convertToOrcValue)
-    case mystery => throw new ParsingException("Don't know how to convert a "+mystery.getClass().getName()+" to an Orc value", null)
+    case mystery => throw new ParsingException("Don't know how to convert a "+(if (mystery != null) mystery.getClass().toString() else "null")+" to an Orc value", null)
   }
 }
