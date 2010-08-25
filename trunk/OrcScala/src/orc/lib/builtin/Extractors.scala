@@ -66,7 +66,7 @@ object ConsExtractor extends PartialSite with UntypedSite {
         Some(OrcTuple(List(arr(0), arr.slice(1, arr.size))))
       }
       case List(arr: Array[AnyRef]) if (arr.size == 0) => None
-      case List(a) => throw new ArgumentTypeMismatchException(0, "List", a.getClass().toString())
+      case List(a) => throw new ArgumentTypeMismatchException(0, "List", if (a == null) "null" else a.getClass().toString())
       case _ => throw new ArityMismatchException(1, args.size)
   }
 }
