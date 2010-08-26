@@ -2676,6 +2676,38 @@ concurrent method invocation on objects, and (4) Create active
 objects, whose executions may be based on time or other external
 stimulus, not necessarily explicitly called methods. 
 </para>
+	
+<para>
+A capsule has the following properties:
+<orderedlist>
+<listitem>Encapsulation: Just like objects in an object-oriented language, capsules 
+	also provide the encapsulation facility for the programmer. The data defined inside 
+	the capsule can only be accessed and modified through methods defined in capsule. Therefore, 
+	it hides the representation of the data and implementation of functions and methods 
+	which work on the data and manage the state. </listitem>
+<listitem>Methods instead of functions: These are the gateways to access and manipulate the 
+	data represented by capsule. They also enable the user of the capsule to access the service 
+	provided by that. Unlike functions in Orc, methods defined in a capsule can only publish 
+	one value. </listitem>
+<listitem>Termination protection: The execution of a capsule and its methods are protected from 
+	termination of the rest of the program. In other words, the execution of capsule cannot be 
+	interrupted. In the pruning combinator as soon as the right hand side expression publishes a 
+	value, all the on going executions in the right hand side will be terminated. However, if there 
+	is any call to a capsule in the right hand side, that call will proceed until completion. For 
+	example, in the following Orc expression, suppose that c is a capsule.
+	<programlisting><![CDATA[
+	 y <y< g() | c() 
+]]></programlisting>
+	If g() publishes a value before c() does, the execution of c() will continue. Although, the published 
+	value of c() (if any) will never be used. On the other hand, if c() publishes a value first, then the 
+	execution of g() will be interrupted since its execution is not protected. This property of capsules is 
+	very important to prevent the data corruption and invalid state of an object. We will see using an 
+	example the significance of this property later on in the guide. 
+</listitem>
+	<listitem>Strict calls: unlike calls to ordinary function definitions in Orc, calls to capsule methods 
+		are strict. This means that the call will not happen unless all the parameters are bound. </listitem>
+</orderedlist>
+</para>
 
 <para>
 A capsule definition can be translated to pure Orc calculus, making
@@ -2798,11 +2830,201 @@ def capsule testprune() =
 </itemizedlist>
 </section>
 
-<section><title>Examples</title>
+<section><title>Capsule Example</title>
+	<para>
+		The following shows the code for this sequence number generator in Orc: 
+	</para>
+	
+	<programlisting><![CDATA[
+-- the mutable integer defined with seed zero
+val seq_num = Ref(0)
+-- gen_seq will increase the seq_num and return the new value
+def gen_seq() =
+  seq_num := seq_num?+1 >> seq_num?
+  
+gen_seq() >s> println(s) >> gen_seq() >s> println(s) >> stop
+]]></programlisting>
+	
+	<para>
+		What is the problem with the above code? The first problem is that the seq_num is 
+		exposed to all the expressions which come after it. This means that all those 
+		expressions can possibly read and write the value of seq_num. This is not always 
+		desirable and makes the reasoning about the program more difficult. The second issue 
+		with this code is that it is not flexible enough. What if we want to have different 
+		sequence number generator with a different initial seed? For example, we may want a 
+		sequence number starting at 0 and another one starting at 1000.
+	</para>
+
+	<para>
+		There is another issue associated with the above code from a concurrent programming 
+		viewpoint. It is not thread safe. This means that if we make two parallel calls to 
+		gen_seq(), we may get the same result. For example, the following piece of code: 
+	</para>
+	
+		<programlisting><![CDATA[
+gen_seq() | gen_seq()
+]]></programlisting>
+	
+	<para> The above code can generate "1" as the publication for both expressions, and in most of the runs
+		it will.  This is a famous phenomenon in parallel programming known as a race condition. 
+		In fact, access to the shared variable seq_num is subject to race condition between 
+		the two threads running the two calls to gen_seq(). To solve the race issue we need 
+		to add a semaphore to the above code in order to regulate the access to the shared 
+		variable, seq_num. Therefore, every call to gen_seq needs to acquire the semaphore in 
+		order to update the variable and release the semaphore at the end. The new safe code 
+		is as follows:  </para>
+	
+		<programlisting><![CDATA[
+-- the mutable integer defined with seed zero
+val seq_num = Ref(0)
+-- a semaphore to regulate access to shared variable seq_num
+val seq_num_sem = Semaphore(1)
+-- gen_seq will increase the seq_num and return the new value
+def gen_seq() =
+  seq_num_sem.acquire() >> seq_num := seq_num?+1 >> 
+  seq_num? >x> seq_num_sem.release() >> x
+  
+gen_seq() | gen_seq()
+]]></programlisting>
+	
+	<para>
+		The above code, besides the issue of encapsulation and the complexity of having more than 
+		one sequence number generator, looks fine. However, there is a subtle problem with this code. 
+		The problem is data corruption and invalid state which can be caused by abrupt termination 
+		of the call to gen_seq(). Consider the following piece of code and corresponding execution order: 
+	</para>
+	
+		<programlisting><![CDATA[
+y <y< 1+1 | gen_seq()
+		]]></programlisting>
+	
+		<programlisting><![CDATA[
+1- 1+1
+2- seq_num_sem.acquire()
+3- y is bound to 2
+4- terminate gen_seq()
+		]]></programlisting>
+	
+	<para>
+		As illustrated in the above execution sequence, the semaphore seq_num_sem got acquired but never 
+		released because of abrupt termination. Therefore consecutive calls to gen_seq will never proceed 
+		because they cannot acquire the semaphore. So, we need to somehow protect the execution of gen_seq. 
+		Capsules address all the above issues in a succinct way.
+	</para>
+	
+	<para>
+		The capsule solution to the sequence number generator is the following code:
+	</para>
+	
+			<programlisting><![CDATA[
+def capsule gen_seq(init) =
+	-- the mutable integer defined with seed init
+	val seq_num = Ref(init)
+	-- the next function will increase the seq_num and return the new value
+	def next() =
+		seq_num := seq_num?+1 >> seq_num?
+	signal
+
+	val g = gen_seq(1000)
+
+	g.next() >y> println(y) >> g.next() >y> println(y) >> stop
+		]]></programlisting>
+	
+	<para>
+		It is very easy to instantiate a new sequence number that starts with a different seed. We just need 
+		to create a new instance of gen_seq with a different seed. The following code shows an example of creating 
+		two sequence number generator with two different seeds. 
+	</para>
+	
+		<programlisting><![CDATA[
+val g0 = gen_seq(0)
+val g1 = gen_seq(1000)
+
+g0.next() >y> println(y) >> g1.next() >y> println(y) >> stop
+		]]></programlisting>
+	
+	<para>
+		Notice how easy it is to have a new sequence number generator. Comparatively, in a pure functional language where 
+		we just have functions, we need to declare new declarations of seq_num to accomplish the job.
+	</para>
+	
+	<para>
+		Now, in order to solve the issue of thread safety, we want to add a semaphore to the capsule. Note that since 
+		the execution of the capsule is protected we will not run into the problem of invalid state or data corruption 
+		caused by abrupt termination. The following code shows the thread safe version of the sequence number generator. 
+	</para>
+	
+	<programlisting><![CDATA[
+def capsule gen_seq(init) =
+	-- the mutable integer defined with seed init
+	val seq_num = Ref(init)
+	-- a semaphore to regulate access to shared variable seq_num
+	val seq_num_sem = Semaphore(1)
+	-- gen_seq will increase the seq_num and return the new value
+	def next() =
+		seq_num_sem.acquire() >> seq_num := seq_num?+1 >>
+		seq_num? >x> seq_num_sem.release() >> x
+	signal
+		]]></programlisting>
+	
+</section>
+	
+<section><title>More Capsule Examples</title>
 
 <para>
-We show a few examples of capsule usage.
+Here we show a few more examples of capsule usage.
 </para>
+	
+<section><title>Active Capsules</title></section>
+	<para>
+		Capsule is an active entity. Active objects, unlike passive ones, have 
+		their own thread of control. They can initiate a computation without receiving 
+		a method call (in procedural languages) or a message (in languages with message 
+		passing model). Note that this definition of active objects subsumes reactive 
+		objects and actors. We said that the execution of capsule is protected from the 
+		rest of the program. Here we want to clarify what do we mean by creation of the 
+		capsule and when the capsule actually exists.
+	</para>
+	
+	<para>
+		A capsule exists as soon as all the parameters and free variables in the capsule 
+		are bound to their values. Thereafter, any method on the capsule can be called. This 
+		means that the creation process would not wait for goal expression of the capsule to 
+		finish. Therefore, the creation of the capsule would return immediately. But the goal 
+		expression continues to execute. The goal expression will not publish anything. However, 
+		it can have side effects. For example, it could print something on the screen or it 
+		can initiate some other processes and send and receive data to and/or from buffers. 
+	</para>
+	
+	<para>
+		The following example explains the notion of activeness of capsules. We want to design a 
+		clock that ticks every n (user specified) milliseconds. We want to be able to get the 
+		number of ticks passed since the process started. The following example shows a capsule 
+		implementation of this clock.
+	</para>
+	
+		<programlisting><![CDATA[
+def capsule nclock(n) = -- tick every n milliseconds
+	-- tick_cnt counts the number of ticks
+	val tick_cnt = Ref(0)
+	-- getTick returns the number of ticks passed so far
+	def getTick() = tick_cnt?
+	metronome(n) >> tick_cnt:=tick_cnt?+1
+
+	val ticker = nclock(250)
+	-- prints a mutiple of 4 every one second
+	Rtimer(1000) >> metronome(1000) >> ticker.getTick()
+		]]></programlisting>
+	
+	<para>
+		In this example, the capsule nclock has a tick counter tick_cnt that records the number of 
+		ticks passed so far. The method getTick returns the number of ticks. The interesting point 
+		about this capsule is its goal expression. The goal expression is a metronome that publish 
+		a signal every n milliseconds. Each time a signal is issued it causes the tick_cnt to increase 
+		by one. As can be seen, the goal expression would never stop. It keeps increasing the tick 
+		counter for ever and a thread is always active in the nclock capsule instance. This program 
+		keeps publishing the multiples of 4 starting from 4 upward. 
+	</para>
 
 <section><title>Multi-dimensional Matrix</title>
 
