@@ -16,6 +16,7 @@
 package orc.types
 
 import orc.error.compiletime.typing.SubtypeFailureException
+import orc.error.NotYetImplementedException
 
 abstract class Type {
   def join(that: Type): Type
@@ -29,6 +30,7 @@ object TypeConversions {
     case orc.ast.oil.nameless.Bot() => Bot
     case orc.ast.oil.nameless.FunctionType(a, p, r) => ArrowType(a, p map type2type, r)
     case orc.ast.oil.nameless.TypeVar(i) => TypeVar(i)
+    case _ => throw new NotYetImplementedException()
   }
   implicit def typelist2typelist(that: List[orc.ast.oil.nameless.Type]): List[Type] = that map type2type
 }
