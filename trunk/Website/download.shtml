@@ -26,56 +26,14 @@ us</a> if you are interested in obtaining an account.</p>
 <a id="eclipse"></a>
 <h3>Eclipse Users</h3>
 
-<p>There is an Orc plugin available for the <a href="http://www.eclipse.org/">Eclipse IDE</a>.
-It is compatible with Eclipse versions 3.3 and later.  (The Eclipse JDT is required.)</p>
-<p>(Mac OS X Users: See <a href="#macosxeclipse">note</a> below.)</p>
+<p>Click on the links below for instructions on how to download and install the Orc plugin for Eclipse.
+	We provide instructions for the following operating systems: </p>
 
-To install the Orc Eclipse plugin within Eclipse 3.4 (Ganymede) or 3.5 (Galileo), follow these steps:
-<ol>
-<li> Select <b>Help</b>, then <b>Install New Software...</b> </li>
-<li> Press the <b>Add...</b> button in the upper right of the Install window. </li>
-<li> Fill in the following in the <b>Add Site</b> dialog box, and press OK:
-  <ul>
-    <li><b>Name:</b> <tt>Orc programming language</tt></li>
-    <li><b>Location:</b> <tt>http://orc.csres.utexas.edu/eclipse_updates/</tt></li>
-  </ul>
-</li>
-<li> Expand the <b>Orc programming language</b> category that appears, and select <b>Orc Eclipse plug-in</b>. </li>
-<li> Press <b>Next</b>, and proceed through the confirmation pages that appear. </li>
-<li> <i>(recommended)</i> In <b>Eclipse Preferences</b>, expand the <b>Install/Update</b> category, and
-select <b>Automatic Updates</b>. Select the checkbox labeled <b>"Automatically find new updates and notify me"</b>.</li>
-</ol>
-<br/>
-To install the Orc Eclipse plugin within Eclipse 3.3 (Europa), follow these steps:
-<ol>
-<li> Select <b>Help</b>, go over <b>Software Updates</b> and then click on <b>Find and Install...</b>.</li>
-<li> Select <b>Search for new features to install</b> and then click <b>Next</b>.</li>
-<li> From the right hand side select <b>New Remote Site...</b></li>
-<li> Fill in the following in the <b>New Update Site</b> dialog box, and press <b>OK</b>:
-  <ul>
-    <li><b>Name:</b> <tt>Orc programming language</tt></li>
-    <li><b>Location:</b> <tt>http://orc.csres.utexas.edu/eclipse_updates/</tt></li>
-  </ul>
-</li>
-<li> Press Finish.</li>
-<li> A window titled <b>Updates</b> will appear. Select <b>Orc programming language</b> and click on <b>Next</b>.</li>
-<li> Go through the license page and click <b>Finish</b> at the end. </li>
-<li> Confirm the installation by clicking on <b>Install</b>.</li>
-</ol>
-
-<a id="macosxeclipse"></a>
-<h4>Eclipse and Java Runtime Environments on Mac OS X</h4>
-
-<p>Eclipse will run using the Java runtime environment specified in Java Preferences
-(located in your /Applications/Utilities folder).  Make sure that Java SE 6
-(64- and 32-bit versions) are at the top of the Java Applications list. 
-(In fact, you may want to deselect (un-check) older versions of Java.)</p>
-
-<p>Note that because Eclipse is a mixed native and Java code application,
-Mac OS X will first match the architecture (32- or 64-bit) of the Eclipse
-executable, then the Java version.  For example, if you downloaded the
-32-bit version of Eclipse, it will run with the first preferred 32-bit
-runtime on the Java Applications list.</p>
+<ul type="disc">
+	<li><a href="https://orc.csres.utexas.edu/wiki/attach/Install%20Orc%20for%20Eclipse/Orc_install_mac.pdf">MAC OS X</a></li>
+	<li><a href="https://orc.csres.utexas.edu/wiki/attach/Install%20Orc%20for%20Eclipse/Orc_install_linux.pdf">Linux</a></li>
+	<li><a href="https://orc.csres.utexas.edu/wiki/attach/Install%20Orc%20for%20Eclipse/Orc_install_windows.pdf">Windows</a></li>
+</ul>
 
 <a id="cmdline"></a>
 <h3>Command Line Users</h3>
