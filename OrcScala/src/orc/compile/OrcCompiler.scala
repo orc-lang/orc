@@ -14,7 +14,8 @@
 //
 
 package orc.compile
-import java.io.{ FileNotFoundException, IOException, PrintWriter, Writer, BufferedReader, InputStreamReader, File }
+
+import java.io.{ BufferedReader, File, FileNotFoundException, IOException, PrintWriter, Writer }
 import java.net.URI
 import orc.{ OrcOptions, OrcCompiler }
 import orc.compile.optimize._
@@ -26,7 +27,6 @@ import orc.progress.{ NullProgressMonitor, ProgressMonitor }
 import orc.values.sites.SiteClassLoading
 import scala.collection.JavaConversions._
 import scala.compat.Platform.currentTime
-import scala.util.parsing.input.{ StreamReader, Reader }
 
 
 /**

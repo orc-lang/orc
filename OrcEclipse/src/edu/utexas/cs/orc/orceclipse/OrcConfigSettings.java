@@ -47,11 +47,13 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 	public static final String EXCEPTIONS_ON_ATTR_NAME = Activator.getInstance().getID() + ".EXCEPTIONS_ON"; //$NON-NLS-1$
 	public static final String INCLUDE_PATH_ATTR_NAME = Activator.getInstance().getID() + ".INCLUDE_PATH"; //$NON-NLS-1$
 	public static final String SITE_CLASSPATH_ATTR_NAME = Activator.getInstance().getID() + ".SITE_CLASSPATH"; //$NON-NLS-1$
-	public static final String OIL_OUT_ATTR_NAME = Activator.getInstance().getID() + ".OIL_OUT"; //$NON-NLS-1$
+	//public static final String OIL_OUT_ATTR_NAME = Activator.getInstance().getID() + ".OIL_OUT"; //$NON-NLS-1$
 	public static final String MAX_PUBS_ATTR_NAME = Activator.getInstance().getID() + ".MAX_PUBS"; //$NON-NLS-1$
-	public static final String NUM_SITE_THREADS_ATTR_NAME = Activator.getInstance().getID() + ".NUM_SITE_THREADS"; //$NON-NLS-1$
-	public static final String TRACE_OUT_ATTR_NAME = Activator.getInstance().getID() + ".TRACE_OUT"; //$NON-NLS-1$
-	public static final String DEBUG_LEVEL_ATTR_NAME = Activator.getInstance().getID() + ".DEBUG_LEVEL"; //$NON-NLS-1$
+	public static final String TOKEN_LIMIT_ATTR_NAME = Activator.getInstance().getID() + ".TOKEN_LIMIT"; //$NON-NLS-1$
+	public static final String MAX_STACK_DEPTH_ATTR_NAME = Activator.getInstance().getID() + ".MAX_STACK_DEPTH"; //$NON-NLS-1$
+	//public static final String NUM_SITE_THREADS_ATTR_NAME = Activator.getInstance().getID() + ".NUM_SITE_THREADS"; //$NON-NLS-1$
+	//public static final String TRACE_OUT_ATTR_NAME = Activator.getInstance().getID() + ".TRACE_OUT"; //$NON-NLS-1$
+	public static final String LOG_LEVEL_ATTR_NAME = Activator.getInstance().getID() + ".LOG_LEVEL"; //$NON-NLS-1$
 
 	private static final OrcBindings defaultConfig = new OrcBindings();
 
@@ -62,9 +64,11 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 	public static final String SITE_CLASSPATH_DEFAULT = defaultConfig.classPath().isEmpty() ? "" : listMkString(defaultConfig.classPath(), ":").concat(":"); //Eclipse path pref entries always have a trailing : //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	//public static final String OIL_OUT_DEFAULT = defaultConfig.oilOutputFile().getPath();
 	public static final int MAX_PUBS_DEFAULT = defaultConfig.maxPublications();
+	public static final int TOKEN_LIMIT_DEFAULT = defaultConfig.tokenPoolSize();
+	public static final int MAX_STACK_DEPTH_DEFAULT = defaultConfig.stackSize();
 	//public static final int NUM_SITE_THREADS_DEFAULT = defaultConfig.numSiteThreads();
 	//public static final String TRACE_OUT_DEFAULT = defaultConfig.traceOutputFile().getPath();
-	public static final int DEBUG_LEVEL_DEFAULT = defaultConfig.debugLevel();
+	public static final String LOG_LEVEL_DEFAULT = defaultConfig.logLevel();
 
 	/**
 	 * Constructs an object of class OrcConfigSettings.
@@ -110,6 +114,12 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 		if (prefSvc.isDefined(MAX_PUBS_ATTR_NAME)) {
 			maxPublications_$eq(prefSvc.getIntPreference(MAX_PUBS_ATTR_NAME));
 		}
+		if (prefSvc.isDefined(TOKEN_LIMIT_ATTR_NAME)) {
+			maxPublications_$eq(prefSvc.getIntPreference(TOKEN_LIMIT_ATTR_NAME));
+		}
+		if (prefSvc.isDefined(MAX_STACK_DEPTH_ATTR_NAME)) {
+			maxPublications_$eq(prefSvc.getIntPreference(MAX_STACK_DEPTH_ATTR_NAME));
+		}
 		//if (prefSvc.isDefined(NUM_SITE_THREADS_ATTR_NAME)) {
 		//	numSiteThreads_$eq(prefSvc.getIntPreference(NUM_SITE_THREADS_ATTR_NAME));
 		//}
@@ -120,8 +130,8 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 		//		throw new IOException(e.getMessage());
 		//	}
 		//}
-		if (prefSvc.isDefined(DEBUG_LEVEL_ATTR_NAME)) {
-			debugLevel_$eq(prefSvc.getIntPreference(DEBUG_LEVEL_ATTR_NAME));
+		if (prefSvc.isDefined(LOG_LEVEL_ATTR_NAME)) {
+			logLevel_$eq(prefSvc.getStringPreference(LOG_LEVEL_ATTR_NAME));
 		}
 	}
 
@@ -140,6 +150,8 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 		//	oilOutputFile_$eq(new File(launchConfig.getAttribute(OIL_OUT_ATTR_NAME, (String) null)));
 		//}
 		maxPublications_$eq(launchConfig.getAttribute(MAX_PUBS_ATTR_NAME, maxPublications()));
+		tokenPoolSize_$eq(launchConfig.getAttribute(TOKEN_LIMIT_ATTR_NAME, tokenPoolSize()));
+		stackSize_$eq(launchConfig.getAttribute(MAX_STACK_DEPTH_ATTR_NAME, stackSize()));
 		//numSiteThreads_$eq(launchConfig.getAttribute(NUM_SITE_THREADS_ATTR_NAME, numSiteThreads()));
 		//if (launchConfig.getAttribute(TRACE_OUT_ATTR_NAME, (String) null) != null) {
 		//	try {
@@ -148,7 +160,7 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 		//		throw new IOException(e.getMessage());
 		//	}
 		//}
-		debugLevel_$eq(launchConfig.getAttribute(DEBUG_LEVEL_ATTR_NAME, debugLevel()));
+		logLevel_$eq(launchConfig.getAttribute(LOG_LEVEL_ATTR_NAME, logLevel()));
 	}
 
 	protected static void initDefaultPrefs() {
@@ -162,9 +174,11 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 		defaultPrefs.put(SITE_CLASSPATH_ATTR_NAME, SITE_CLASSPATH_DEFAULT);
 		//defaultPrefs.put(OIL_OUT_ATTR_NAME, OIL_OUT_DEFAULT);
 		defaultPrefs.putInt(MAX_PUBS_ATTR_NAME, MAX_PUBS_DEFAULT);
+		defaultPrefs.putInt(TOKEN_LIMIT_ATTR_NAME, TOKEN_LIMIT_DEFAULT);
+		defaultPrefs.putInt(MAX_STACK_DEPTH_ATTR_NAME, MAX_STACK_DEPTH_DEFAULT);
 		//defaultPrefs.putInt(NUM_SITE_THREADS_ATTR_NAME, NUM_SITE_THREADS_DEFAULT);
 		//defaultPrefs.put(TRACE_OUT_ATTR_NAME, TRACE_OUT_DEFAULT);
-		defaultPrefs.putInt(DEBUG_LEVEL_ATTR_NAME, DEBUG_LEVEL_DEFAULT);
+		defaultPrefs.put(LOG_LEVEL_ATTR_NAME, LOG_LEVEL_DEFAULT);
 		//No need to flush() nodes in default scope
 	}
 

@@ -90,7 +90,7 @@ object Main {
 trait CmdLineOptions extends OrcOptions with CmdLineParser {
   StringOprd(()=>filename, filename=_, position = 0, argName = "file", required = true, usage = "Path to script to execute.")
 
-  IntOpt(()=>debugLevel, debugLevel=_, 'd', "debug", usage = "Enable debugging output, which is disabled by default. Higher numbers increase level of detail.")
+  StringOpt(()=>logLevel, logLevel=_, ' ', "loglevel", usage = "Set the level of logging. Default is INFO. Allowed values: OFF, SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST, ALL")
 
   UnitOpt(()=>(!usePrelude), ()=>usePrelude=false, ' ', "noprelude", usage = "Do not implicitly include standard library (prelude), which is included by default.")
 
@@ -101,6 +101,10 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
   UnitOpt(()=>typecheck, ()=>typecheck=true, ' ', "typecheck", usage = "Enable typechecking, which is disabled by default.")
 
   IntOpt(()=>maxPublications, maxPublications=_, ' ', "pub", usage = "Terminate the program after this many values are published. Default=infinity.")
+
+  IntOpt(()=>tokenPoolSize, tokenPoolSize=_, ' ', "max-tokens", usage = "Do not permit more than tis many tokes to be created. Default=infinity.")
+
+  IntOpt(()=>stackSize, stackSize=_, ' ', "stack-size", usage = "Terminate the program if this stack depth is exceeded. Default=infinity.")
 
   StringListOpt(()=>classPath, classPath=_, ' ', "cp", usage = "Set the class path for Orc sites (same syntax as CLASSPATH). This is only used for classes not found in the Java VM classpath.")
 

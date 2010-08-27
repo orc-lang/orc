@@ -28,9 +28,9 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Spinner;
-import org.eclipse.swt.widgets.Text;
 
 import edu.utexas.cs.orc.orceclipse.Activator;
 import edu.utexas.cs.orc.orceclipse.Messages;
@@ -50,9 +50,13 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 	private static Image ORC_PLUGIN_ICON_IMAGE = Activator.getInstance().getImageRegistry().get(OrcResources.ORC_PLUGIN_ICON);
 
 	private Spinner maxPubsSpinner;
+	private Spinner tokenLimitSpinner;
+	private Spinner stackDepthSpinner;
 	//private Spinner numSiteThreadsSpinner;
-	private Text traceOutFilenameText;
-	private Spinner debugLevelSpinner;
+	//private Text traceOutFilenameText;
+	private Combo logLevelList;
+
+	protected static final String LOG_LEVELS[] = {"OFF", "SEVERE", "WARNING", "INFO", "CONFIG", "FINE", "FINER", "FINEST", "ALL"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$
 
 	/**
 	 * Constructs an OrcGeneralLaunchConfigurationTab instance.
@@ -94,11 +98,10 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 		configuration.removeAttribute(OrcConfigSettings.NO_PRELUDE_ATTR_NAME);
 		configuration.removeAttribute(OrcConfigSettings.INCLUDE_PATH_ATTR_NAME);
 		configuration.removeAttribute(OrcConfigSettings.SITE_CLASSPATH_ATTR_NAME);
-		configuration.removeAttribute(OrcConfigSettings.OIL_OUT_ATTR_NAME);
 		configuration.removeAttribute(OrcConfigSettings.MAX_PUBS_ATTR_NAME);
-		configuration.removeAttribute(OrcConfigSettings.NUM_SITE_THREADS_ATTR_NAME);
-		configuration.removeAttribute(OrcConfigSettings.TRACE_OUT_ATTR_NAME);
-		configuration.removeAttribute(OrcConfigSettings.DEBUG_LEVEL_ATTR_NAME);
+		//configuration.removeAttribute(OrcConfigSettings.NUM_SITE_THREADS_ATTR_NAME);
+		//configuration.removeAttribute(OrcConfigSettings.TRACE_OUT_ATTR_NAME);
+		configuration.removeAttribute(OrcConfigSettings.LOG_LEVEL_ATTR_NAME);
 		OrcLaunchDelegate.setDefaults(configuration);
 	}
 
@@ -130,6 +133,20 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 		maxPubsSpinner.setValues(OrcConfigSettings.MAX_PUBS_DEFAULT, 0, Integer.MAX_VALUE, 0, 1, 100);
 		maxPubsSpinner.addSelectionListener(ourSelectionAdapter);
 
+		SWTFactory.createLabel(labelWidgetComp, Messages.OrcGeneralLaunchConfigurationTab_TokenLimitLabel, 1);
+
+		tokenLimitSpinner = new Spinner(labelWidgetComp, SWT.NONE);
+		tokenLimitSpinner.setFont(parent.getFont());
+		tokenLimitSpinner.setValues(OrcConfigSettings.TOKEN_LIMIT_DEFAULT, 0, Integer.MAX_VALUE, 0, 1, 100);
+		tokenLimitSpinner.addSelectionListener(ourSelectionAdapter);
+
+		SWTFactory.createLabel(labelWidgetComp, Messages.OrcGeneralLaunchConfigurationTab_StackSizeLabel, 1);
+
+		stackDepthSpinner = new Spinner(labelWidgetComp, SWT.NONE);
+		stackDepthSpinner.setFont(parent.getFont());
+		stackDepthSpinner.setValues(OrcConfigSettings.MAX_STACK_DEPTH_DEFAULT, 0, Integer.MAX_VALUE, 0, 1, 100);
+		stackDepthSpinner.addSelectionListener(ourSelectionAdapter);
+
 		//SWTFactory.createLabel(labelWidgetComp, Messages.OrcGeneralLaunchConfigurationTab_NumSiteThreadsLabel, 1);
 		//
 		//numSiteThreadsSpinner = new Spinner(labelWidgetComp, SWT.NONE);
@@ -137,19 +154,32 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 		//numSiteThreadsSpinner.setValues(OrcConfigSettings.NUM_SITE_THREADS_DEFAULT, 1, Integer.MAX_VALUE, 0, 1, 10);
 		//numSiteThreadsSpinner.addSelectionListener(ourSelectionAdapter);
 
-		SWTFactory.createLabel(labelWidgetComp, Messages.OrcGeneralLaunchConfigurationTab_TraceOutFilenameLabel, 1);
+		//SWTFactory.createLabel(labelWidgetComp, Messages.OrcGeneralLaunchConfigurationTab_TraceOutFilenameLabel, 1);
+		//
+		//traceOutFilenameText = SWTFactory.createSingleText(labelWidgetComp, 1);
+		//traceOutFilenameText.addModifyListener(ourModifyListener);
 
-		traceOutFilenameText = SWTFactory.createSingleText(labelWidgetComp, 1);
-		traceOutFilenameText.addModifyListener(ourModifyListener);
+		SWTFactory.createLabel(labelWidgetComp, Messages.OrcGeneralLaunchConfigurationTab_LogLevelLabel, 1);
 
-		SWTFactory.createLabel(labelWidgetComp, Messages.OrcGeneralLaunchConfigurationTab_DebugLevelLabel, 1);
-
-		debugLevelSpinner = new Spinner(labelWidgetComp, SWT.NONE);
-		debugLevelSpinner.setFont(parent.getFont());
-		debugLevelSpinner.setValues(OrcConfigSettings.DEBUG_LEVEL_DEFAULT, 0, 4, 0, 1, 1);
-		debugLevelSpinner.addSelectionListener(ourSelectionAdapter);
+		logLevelList = new Combo(labelWidgetComp, SWT.READ_ONLY);
+		logLevelList.setItems(LOG_LEVELS);
+		logLevelList.setFont(parent.getFont());
+		logLevelList.select(indexOfLevel(OrcConfigSettings.LOG_LEVEL_DEFAULT, LOG_LEVELS));
+		logLevelList.addSelectionListener(ourSelectionAdapter);
 
 		SWTFactory.createLabel(labelWidgetComp, Messages.OrcGeneralLaunchConfigurationTab_runtimeVersion + orcVersionText(), 2);
+	}
+
+	/**
+	 * @param lookup
+	 * @param logLevels
+	 * @return
+	 */
+	private int indexOfLevel(String lookup, String[] logLevels) {
+		for (int i = 0; i < logLevels.length; i++) {
+			if (logLevels[i].equals(lookup)) return i;
+		}
+		return 0;
 	}
 
 	protected String orcVersionText() {
@@ -170,9 +200,11 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 	public void initializeFrom(final ILaunchConfiguration configuration) {
 		try {
 			maxPubsSpinner.setSelection(configuration.getAttribute(OrcConfigSettings.MAX_PUBS_ATTR_NAME, OrcConfigSettings.MAX_PUBS_DEFAULT));
+			tokenLimitSpinner.setSelection(configuration.getAttribute(OrcConfigSettings.TOKEN_LIMIT_ATTR_NAME, OrcConfigSettings.TOKEN_LIMIT_DEFAULT));
+			stackDepthSpinner.setSelection(configuration.getAttribute(OrcConfigSettings.MAX_STACK_DEPTH_ATTR_NAME, OrcConfigSettings.MAX_STACK_DEPTH_DEFAULT));
 			//numSiteThreadsSpinner.setSelection(configuration.getAttribute(OrcConfigSettings.NUM_SITE_THREADS_ATTR_NAME, OrcConfigSettings.NUM_SITE_THREADS_DEFAULT));
 			//traceOutFilenameText.setText(configuration.getAttribute(OrcConfigSettings.TRACE_OUT_ATTR_NAME, OrcConfigSettings.TRACE_OUT_DEFAULT));
-			debugLevelSpinner.setSelection(configuration.getAttribute(OrcConfigSettings.DEBUG_LEVEL_ATTR_NAME, OrcConfigSettings.DEBUG_LEVEL_DEFAULT));
+			logLevelList.select(indexOfLevel(configuration.getAttribute(OrcConfigSettings.LOG_LEVEL_ATTR_NAME, OrcConfigSettings.LOG_LEVEL_DEFAULT), LOG_LEVELS));
 		} catch (final CoreException e) {
 			Activator.logAndShow(e);
 		}
@@ -192,9 +224,11 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 	 */
 	public void performApply(final ILaunchConfigurationWorkingCopy configuration) {
 		setOrUnsetIntAttr(configuration, OrcConfigSettings.MAX_PUBS_ATTR_NAME, maxPubsSpinner.getSelection(), OrcConfigSettings.MAX_PUBS_DEFAULT);
+		setOrUnsetIntAttr(configuration, OrcConfigSettings.TOKEN_LIMIT_ATTR_NAME, tokenLimitSpinner.getSelection(), OrcConfigSettings.MAX_PUBS_DEFAULT);
+		setOrUnsetIntAttr(configuration, OrcConfigSettings.MAX_STACK_DEPTH_ATTR_NAME, stackDepthSpinner.getSelection(), OrcConfigSettings.MAX_PUBS_DEFAULT);
 		//setOrUnsetIntAttr(configuration, OrcConfigSettings.NUM_SITE_THREADS_ATTR_NAME, numSiteThreadsSpinner.getSelection(), OrcConfigSettings.NUM_SITE_THREADS_DEFAULT);
 		//setOrUnsetTextAttr(configuration, OrcConfigSettings.TRACE_OUT_ATTR_NAME, traceOutFilenameText.getText());
-		setOrUnsetIntAttr(configuration, OrcConfigSettings.DEBUG_LEVEL_ATTR_NAME, debugLevelSpinner.getSelection(), OrcConfigSettings.DEBUG_LEVEL_DEFAULT);
+		setOrUnsetTextAttr(configuration, OrcConfigSettings.LOG_LEVEL_ATTR_NAME, logLevelList.getText());
 	}
 
 	private void setOrUnsetIntAttr(final ILaunchConfigurationWorkingCopy configuration, final String attrName, final int enteredNum, final int defaultValue) {
