@@ -135,8 +135,8 @@ class OrcEventAction {
 trait OrcOptions {
   def filename: String
   def filename_=(newVal: String)
-  def debugLevel: Int
-  def debugLevel_=(newVal: Int)
+  def logLevel: String
+  def logLevel_=(newVal: String)
 
   // Compile options
   def usePrelude: Boolean
