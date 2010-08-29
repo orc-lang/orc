@@ -24,7 +24,7 @@ val pubs = Buffer[Integer]() within
   ; pubs.close() >> stop
 ) | repeat(pubs.get)
 {-
-OUTPUT:
+OUTPUT:PERMUTABLE:
 0
 1
 2

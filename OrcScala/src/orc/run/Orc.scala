@@ -35,6 +35,8 @@ import scala.collection.mutable.Set
 
 import scala.concurrent._
 
+import scala.actors.Actor
+import scala.actors.Actor._
     
 trait Orc extends OrcRuntime {
   
@@ -44,7 +46,7 @@ trait Orc extends OrcRuntime {
     schedule(t)
   }
   
-  def stop = { /* By default, do nothing on stop. */ }
+  def stop = { Killer ! "exit" /* By default, do nothing on stop. */ }
   
   
   // Groups //
@@ -58,28 +60,26 @@ trait Orc extends OrcRuntime {
     val Killed, Alive = Value
   }
   //Don't import GroupMemberState._ because of name conflicts
-  
+    
   sealed trait GroupMember {
     var gmstate = GroupMemberState.Alive
     def kill: Unit
     def notify(event: OrcEvent): Unit
   }
-
-  import scala.actors.Actor
-  import scala.actors.Actor._
     
   object Killer extends Actor {
     def act() {
       loop {
         react {
           case x:GroupMember => x.kill
+          case "exit" => this.exit
         }
       }
     }    
   }
-
-  trait Group extends GroupMember {
+  Killer.start
   
+  trait Group extends GroupMember {
     def publish(t: Token, v: AnyRef): Unit 
     def onHalt: Unit 
   
@@ -212,7 +212,7 @@ trait Orc extends OrcRuntime {
     }
 
     def notify(event: OrcEvent) {
-        k(event)
+      k(event)
     }
 
   }
