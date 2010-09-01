@@ -6,8 +6,8 @@ import orc.values.sites._
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
 
-object IfT extends PartialSite with UntypedSite {
-  override def name = "IfT"
+object If extends PartialSite with UntypedSite {
+  override def name = "If"
   def evaluate(args: List[AnyRef]) =
     args match {
       case List(b : java.lang.Boolean) => 
@@ -17,8 +17,8 @@ object IfT extends PartialSite with UntypedSite {
   }
 }
 
-object IfF extends PartialSite with UntypedSite {
-  override def name = "IfF"
+object Unless extends PartialSite with UntypedSite {
+  override def name = "Unless"
   def evaluate(args: List[AnyRef]) =
     args match {
       case List(b : java.lang.Boolean) => 

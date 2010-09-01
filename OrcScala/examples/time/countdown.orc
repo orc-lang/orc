@@ -1,5 +1,5 @@
 def Countdown(Integer) :: Integer
-def Countdown(i) = IfT(i :> 0) >>
+def Countdown(i) = If(i :> 0) >>
 				   ( i
 				   | Rtimer(10) >> Countdown(i-1)
 				   )

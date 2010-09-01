@@ -40,7 +40,7 @@ def capsule Multialarm() =
   def capsule Alarm() =
     val run = Ref(true)
 
-    def set(t) = Rtimer(t) >> IfT(run?)
+    def set(t) = Rtimer(t) >> If(run?)
     def cancel() = run := false
   stop
 

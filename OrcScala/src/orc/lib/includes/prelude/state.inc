@@ -390,7 +390,7 @@ def Table(n, f) =
   def fill(i, f) =
     if i <: 0 then signal
     else ((a(i) := f(i)), fill(i-1, f)) >> signal
-  fill(n-1, f) >> a
+  fill(n-1, f) >> (lambda (i) = a(i)?)
 
 
 {--
