@@ -28,8 +28,8 @@ object PrimitiveForms {
   def unaryBuiltinCall(s: Site)(a: Argument) = Call(Constant(s), List(a), None)
   def binaryBuiltinCall(s: Site)(a: Argument, b: Argument) = Call(Constant(s), List(a, b), None)
 
-  val callIfT = unaryBuiltinCall(IfT) _
-  val callIfF = unaryBuiltinCall(IfF) _
+  val callIf = unaryBuiltinCall(If) _
+  val callUnless = unaryBuiltinCall(Unless) _
   val callEq = binaryBuiltinCall(Eq) _
 
   val callCons = binaryBuiltinCall(ConsConstructor) _

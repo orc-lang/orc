@@ -140,7 +140,7 @@ by the following implementation:
 
 <programlisting><![CDATA[
 def while(p,f) = 
-  def loop(x) = IfT(p(x)) >> ( x | loop(f(x)) )
+  def loop(x) = If(p(x)) >> ( x | loop(f(x)) )
   loop]]></programlisting>
 
 Example:
@@ -158,7 +158,7 @@ def while[A](lambda (A) :: Boolean,
   :: A
 def while(p,f) = 
   def loop(A) :: A
-  def loop(x) = IfT(p(x)) >> ( x | loop(f(x)) )
+  def loop(x) = If(p(x)) >> ( x | loop(f(x)) )
   loop
 
 {--
@@ -300,7 +300,7 @@ def por(p:ps) =
   let(
     val b1 = p()
     val b2 = por(ps)
-    IfT(b1) >> true | IfT(b2) >> true | (b1 || b2)
+    If(b1) >> true | If(b2) >> true | (b1 || b2)
   )
   
 {--
@@ -317,7 +317,7 @@ def pand(p:ps) =
   let(
     val b1 = p()
     val b2 = pand(ps)
-    IfT(~b1) >> false | IfT(~b2) >> false | (b1 && b2)
+    Unless(b1) >> false | Unless(b2) >> false | (b1 && b2)
   )
  
 {--

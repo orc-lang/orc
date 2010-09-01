@@ -517,7 +517,7 @@ def any(p, x:xs) =
   let(
     val b1 = p(x)
     val b2 = any(p, xs)
-    IfT(b1) >> true | IfT(b2) >> true | (b1 || b2)
+    If(b1) >> true | If(b2) >> true | (b1 || b2)
   )
   
 {--
@@ -535,7 +535,7 @@ def all(p, x:xs) =
   let(
     val b1 = p(x)
     val b2 = all(p, xs)
-    IfT(~b1) >> false | IfT(~b2) >> false | (b1 && b2)
+    Unless(b1) >> false | Unless(b2) >> false | (b1 && b2)
   )
 
 {--

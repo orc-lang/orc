@@ -19,7 +19,7 @@
 def capsule RandomBool() =
   val s = Semaphore(1) -- to allow only one call to execute.
   def main(f,t) =  
-   IfT(urandom() <: f) >>  s.acquire() >>
+   If(urandom() <: f) >>  s.acquire() >>
    random(t) >w> Rtimer(w) >>
    (random(2) = 1) >v>
    s.release() >> 
@@ -30,5 +30,5 @@ stop
 val rb = RandomBool().main
 val (_,x) = rb(0.5,3000) 
 val (_,y) = rb(1,3000)
-val z = IfT(x) >> true | IfT(y) >> true | x||y
+val z = If(x) >> true | If(y) >> true | x||y
  z

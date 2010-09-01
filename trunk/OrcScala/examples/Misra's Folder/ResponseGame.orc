@@ -18,7 +18,7 @@ def game() =
   
 val valid = 
     sw.reset() >> Rtimer(id) >> rand_seq() >x>
-     IfT(x = v) >> sw.start() >> stop
+     If(x = v) >> sw.start() >> stop
   |  Prompt("Press ENTER for "+v) >> sw.isrunning() 
 
 

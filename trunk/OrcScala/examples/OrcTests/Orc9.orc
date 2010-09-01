@@ -5,7 +5,7 @@
  - Created by Brian on Jun 3, 2010 11:07:52 AM
  -}
 
-(IfT(b) >> 1 | IfT(~b) >> 0) <b< true
+(If(b) >> 1 | If(~b) >> 0) <b< true
 
 {-
 OUTPUT:

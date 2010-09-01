@@ -46,28 +46,28 @@ When applied to two or more arguments, return the arguments in a tuple.
 site let = "orc.lib.builtin.Let"
 
 {--
-@site IfT(Boolean) :: Signal
+@site If(Boolean) :: Signal
 Fail silently if the argument is false. Otherwise return a signal.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: "Always publishes"
-  IfT(false) >> "Never publishes"
-| IfT(true) >> "Always publishes"]]></programlisting>
+  If(false) >> "Never publishes"
+| If(true) >> "Always publishes"]]></programlisting>
 --}
-site IfT = "orc.lib.builtin.IfT"
+site If = "orc.lib.builtin.If"
 
 {--
-@site IfF(Boolean) :: Signal
+@site Unless(Boolean) :: Signal
 Fail silently if the argument is true. Otherwise return a signal.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: "Always publishes"
-  IfF(false) >> "Always publishes"
-| IfF(true) >> "Never publishes"]]></programlisting>
+  Unless(false) >> "Always publishes"
+| Unless(true) >> "Never publishes"]]></programlisting>
 --}
-site IfF = "orc.lib.builtin.IfF"
+site Unless = "orc.lib.builtin.Unless"
 
 {--
 @site error(String) :: Bot
@@ -181,7 +181,7 @@ linkend="cor.data">data structures</link> are considered equal if their
 contents are equal. Other types are free to implement their own equality
 relationship provided it conforms to the rules given here.
 
-Note that although values of dIfFerent types may be compared with
+Note that although values of dUnlesserent types may be compared with
 <code>=</code>, the substitutability principle requires that such values are
 always considered inequal, i.e. the comparison will return <code>false</code>.
 --}

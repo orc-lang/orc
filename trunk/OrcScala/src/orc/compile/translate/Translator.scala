@@ -116,8 +116,8 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
 	    case ext.Conditional(ifE, thenE, elseE) => {
 	      val b = new BoundVar()
 	      val nb = new BoundVar()
-	      (  callIfT(b) >> toExp(thenE) 
-	          || callIfF(b) >> toExp(elseE)	  
+	      (  callIf(b) >> toExp(thenE) 
+	          || callUnless(b) >> toExp(elseE)	  
 	      )   < b < toExp(ifE)
 
 	    }
@@ -375,7 +375,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
           }
           case ext.ConstantPattern(c) => {
             val b = new BoundVar() ;
-            { callEq(focus, Constant(c)) > b > callIfT(b) >> _ }
+            { callEq(focus, Constant(c)) > b > callIf(b) >> _ }
           }
           case ext.VariablePattern(name) => {
             bind(name, focus)
@@ -432,7 +432,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
           case ext.EqPattern(name) => {
             val b = new BoundVar()
             val C = context(name) ;
-            { callEq(C, focus) > b > callIfT(b) >> _ }
+            { callEq(C, focus) > b > callIf(b) >> _ }
           }
           case ext.TypedPattern(p,t) => {
             val T = convertType(t, typecontext) 
