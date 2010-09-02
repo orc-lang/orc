@@ -34,11 +34,12 @@ object Main {
 
   def main(args: Array[String]) {
     class OrcCmdLineOptions() extends OrcBindings() with CmdLineOptions
-    val engine = (new ScriptEngineManager).getEngineByName("orc").asInstanceOf[ScriptEngine with Compilable]
-    if (engine == null) throw new ClassNotFoundException("Unable to load Orc ScriptEngine")
     try {
       val options = new OrcCmdLineOptions()
       options.parseCmdLine(args)
+      setupLogging(options)
+      val engine = (new ScriptEngineManager).getEngineByName("orc").asInstanceOf[ScriptEngine with Compilable]
+      if (engine == null) throw new ClassNotFoundException("Unable to load Orc ScriptEngine")
       engine.setBindings(options, ENGINE_SCOPE)
       val reader = new InputStreamReader(new FileInputStream(options.filename), "UTF-8")
       val compiledOrc = engine.compile(reader).asInstanceOf[OrcScriptEngine#OrcCompiledScript]
@@ -69,8 +70,18 @@ object Main {
   lazy val orcVersion: String = versionProperties.getProperty("orc.version")+" rev. "+svnRevision+(if (svnRevision.forall(_.isDigit)) "" else " (dev. build "+versionProperties.getProperty("orc.build.date")+" "+versionProperties.getProperty("orc.build.user")+")")
   lazy val orcURL: String = versionProperties.getProperty("orc.url")
   lazy val orcCopyright: String = "(c) "+copyrightYear+" "+versionProperties.getProperty("orc.vendor")
-  lazy val copyrightYear: String = versionProperties.getProperty("orc.copyright-year") 
-  
+  lazy val copyrightYear: String = versionProperties.getProperty("orc.copyright-year")
+
+  def setupLogging(options: OrcOptions) {
+    val orcLogger = java.util.logging.Logger.getLogger("orc")
+    val logLevel = java.util.logging.Level.parse(options.logLevel)
+    orcLogger.setLevel(logLevel)
+    val logHandler = new java.util.logging.ConsoleHandler() //FIXME:Allow other hanlers, or none...
+    logHandler.setLevel(logLevel)
+    orcLogger.addHandler(logHandler)
+    //TODO: orcLogger.config(options.printAllTheOptions...)
+  }
+
   def printException(e: Throwable, err: PrintStream) {
     e match {
       case oe: OrcException => err.print(oe.getMessageAndDiagnostics())
