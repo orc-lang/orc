@@ -17,6 +17,8 @@ package edu.utexas.cs.orc.orceclipse.edit;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
@@ -92,7 +94,12 @@ public class NewOrcFileWizard extends Wizard implements INewWizard {
 		if (file == null) {
 			return false;
 		}
-
+		try {
+			file.setCharset("UTF-8", new NullProgressMonitor());
+		} catch (CoreException e) {
+			Activator.logAndShow(e);
+		}
+		
 		selectAndReveal(file);
 
 		// Open editor on new file.
