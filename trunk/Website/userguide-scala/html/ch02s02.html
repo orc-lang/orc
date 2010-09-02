@@ -1,10 +1,10 @@
-<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>2.2.&nbsp;Programming Idioms</title><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide v2.0.0"><link rel="up" href="ch02.html" title="Chapter&nbsp;2.&nbsp;Programming Methodology"><link rel="prev" href="ch02.html" title="Chapter&nbsp;2.&nbsp;Programming Methodology"><link rel="next" href="ch02s03.html" title="2.3.&nbsp;Larger Examples"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"><link href="style.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">2.2.&nbsp;Programming Idioms</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch02.html">Prev</a>&nbsp;</td><th align="center" width="60%">Chapter&nbsp;2.&nbsp;Programming Methodology</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ch02s03.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N110D5"></a>2.2.&nbsp;Programming Idioms</h2></div></div></div><p>
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>2.2.&nbsp;Programming Idioms</title><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide v2.0.0"><link rel="up" href="ch02.html" title="Chapter&nbsp;2.&nbsp;Programming Methodology"><link rel="prev" href="ch02.html" title="Chapter&nbsp;2.&nbsp;Programming Methodology"><link rel="next" href="ch02s03.html" title="2.3.&nbsp;Larger Examples"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"><link href="style.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">2.2.&nbsp;Programming Idioms</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch02.html">Prev</a>&nbsp;</td><th align="center" width="60%">Chapter&nbsp;2.&nbsp;Programming Methodology</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ch02s03.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N110B1"></a>2.2.&nbsp;Programming Idioms</h2></div></div></div><p>
 In this section we give Orc implementations of some standard idioms from
 concurrent and functional programming. Despite the austerity of Orc's four
 combinators, we are able to encode a variety of idioms straightforwardly.
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N110DA"></a>2.2.1.&nbsp;Channels</h3></div></div></div><p>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N110B6"></a>2.2.1.&nbsp;Channels</h3></div></div></div><p>
 Orc has no communication primitives like pi-calculus
-channels<sup>[<a href="#ftn.N110DF" name="N110DF" class="footnote">1</a>]</sup> or Erlang mailboxes<sup>[<a href="#ftn.N110E6" name="N110E6" class="footnote">2</a>]</sup>. Instead, it makes use of sites
+channels<sup>[<a href="#ftn.N110BB" name="N110BB" class="footnote">1</a>]</sup> or Erlang mailboxes<sup>[<a href="#ftn.N110C2" name="N110C2" class="footnote">2</a>]</sup>. Instead, it makes use of sites
 to create channels of communication. 
 </p><p>
 The most frequently used of these sites is <code class="code"><span class="hl-variable">Buffer</span></code>. When called, it
@@ -21,7 +21,7 @@ once <code class="code"><span class="hl-variable">c</span></code> becomes empty.
 calling either <code class="code"><span class="hl-variable">c</span>.<span class="hl-site">close</span>()</code>, which returns a signal once
 <code class="code"><span class="hl-variable">c</span></code> becomes empty, or <code class="code"><span class="hl-variable">c</span>.<span class="hl-site">closenb</span>()</code>, which returns a
 signal immediately.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11121"></a>2.2.2.&nbsp;Lists</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N110FD"></a>2.2.2.&nbsp;Lists</h3></div></div></div><p>
 In the section on Cor, we were introduced to lists: how to construct them,
 and how to match them against patterns. While it is certainly feasible to
 write a specific function with an appropriate pattern match every time we
@@ -73,7 +73,7 @@ values put on the channel as they become available:
 <span class="hl-site">repeat</span>(<span class="hl-variable">c</span>.<span class="hl-variable">get</span>)
 </pre>
 
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1116D"></a>2.2.4.&nbsp;Mutable References</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11149"></a>2.2.4.&nbsp;Mutable References</h3></div></div></div><p>
 Variables in Orc are immutable. There is no assignment operator, and there is no way to
 change the value of a bound variable. However, it is often useful to have mutable state
 when writing certain algorithms. The Orc library contains two sites that offer simple 
@@ -82,7 +82,7 @@ to create mutable arrays.
 </p><p>
 A word of caution: References, cells, and other mutable objects may be accessed concurrently
 by many different parts of an Orc program, so race conditions may arise. 
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1117D"></a>2.2.4.1.&nbsp;Rewritable references</h4></div></div></div><p>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11159"></a>2.2.4.1.&nbsp;Rewritable references</h4></div></div></div><p>
 The <code class="code"><span class="hl-variable">Ref</span></code> site creates rewritable reference cells.
 
 <pre class="orc">
@@ -109,7 +109,7 @@ with no arguments. A read operation on an empty cell blocks until the cell is wr
 <span class="hl-variable">r</span>.<span class="hl-site">read</span>() <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">r</span>.<span class="hl-site">write</span>(<span class="hl-literal">1</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
 </pre>
 
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N111A6"></a>2.2.4.2.&nbsp;Write-once references</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11182"></a>2.2.4.2.&nbsp;Write-once references</h4></div></div></div><p>
 The Orc library also offers write-once reference cells, using the <code class="code"><span class="hl-variable">Cell</span></code> site.
 A write-once cell has no initial value. Read operations block until the cell has been
 written. A write operation succeeds only if the cell is empty; subsequent write operations
@@ -130,7 +130,7 @@ than rewritable reference cells, since the value cannot be changed once it has b
 written. The use of write-once cells for concurrent programming is not a new idea;
 they have been studied extensively in the context of the 
 <a class="link" href="http://en.wikipedia.org/wiki/Oz_programming_language" target="_top">Oz programming language</a>.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N111B6"></a>2.2.4.3.&nbsp;Reference syntax</h4></div></div></div><p>Orc provides syntactic sugar for reading and writing mutable storage:</p><div class="itemizedlist"><ul type="disc"><li><code class="code"><span class="hl-variable">x</span><span class="hl-site">?</span></code> is equivalent to <code class="code"><span class="hl-variable">x</span>.<span class="hl-site">read</span>()</code>. This operator
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11192"></a>2.2.4.3.&nbsp;Reference syntax</h4></div></div></div><p>Orc provides syntactic sugar for reading and writing mutable storage:</p><div class="itemizedlist"><ul type="disc"><li><code class="code"><span class="hl-variable">x</span><span class="hl-site">?</span></code> is equivalent to <code class="code"><span class="hl-variable">x</span>.<span class="hl-site">read</span>()</code>. This operator
 is of equal precedence with the dot operator and function application, so
 you can write things like <code class="code"><span class="hl-variable">x</span>.<span class="hl-variable">y</span><span class="hl-site">?</span>.<span class="hl-variable">v</span><span class="hl-site">?</span></code>. This operator is very similar
 to the C languages's <code class="code">*</code> operator, but is postfix instead of prefix.
@@ -144,7 +144,7 @@ but lower precedence than any of the other operators.</li></ul></div><p>Here is 
   <span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">r</span> <span class="hl-site">:=</span> <span class="hl-literal">2</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"Wrote 2"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
 <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">r</span> <span class="hl-site">:=</span> <span class="hl-literal">3</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"Wrote 3"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
 <span class="hl-combinator">|</span> <span class="hl-variable">r</span><span class="hl-site">?</span>
-</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N111D5"></a>2.2.4.4.&nbsp;Arrays</h4></div></div></div><p>
+</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N111B1"></a>2.2.4.4.&nbsp;Arrays</h4></div></div></div><p>
 While lists are a very useful data structure, they are not mutable, and they are not indexed. However, 
 these properties are often needed in practice, so the Orc standard library provides a function 
 <code class="code"><span class="hl-variable">Array</span></code> to create mutable arrays. 
@@ -212,7 +212,7 @@ addresses and would like to send the message <code class="code"><span class="hl-
 <span class="hl-site">upto</span>(<span class="hl-variable">n</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">i</span><span class="hl-combinator">&gt;</span> <span class="hl-site">A</span>(<span class="hl-variable">i</span>)<span class="hl-site">?</span> <span class="hl-combinator">&gt;</span><span class="hl-variable">address</span><span class="hl-combinator">&gt;</span> <span class="hl-site">Email</span>(<span class="hl-variable">address</span>, <span class="hl-variable">m</span>)
 </pre>
 
-</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11237"></a>2.2.5.&nbsp;Loops</h3></div></div></div><p>
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11213"></a>2.2.5.&nbsp;Loops</h3></div></div></div><p>
 Orc does not have any explicit looping constructs. Most of the time, where a loop
 might be used in other languages, Orc programs use one of two strategies: 
 </p><div class="orderedlist"><ol type="1"><li>When the iterations of the loops can occur in parallel, write an expression
@@ -225,7 +225,7 @@ tail recursion. Typically the data of interest is in a list, so one of the stand
 list functions, such as <code class="code"><span class="hl-variable">foldl</span></code>, applies. The library also defines a
 function <code class="code"><span class="hl-variable">while</span></code>, which handles many of the common use cases of
 while loops.
-</li></ol></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11250"></a>2.2.6.&nbsp;Parallel Matching</h3></div></div></div><p>
+</li></ol></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1122C"></a>2.2.6.&nbsp;Parallel Matching</h3></div></div></div><p>
 Matching a value against multiple patterns, as we have seen it so far, is a linear
 process, and requires a <code class="code"><span class="hl-keyword">def</span></code> whose clauses have patterns in their
 argument lists. Such a match is linear; each pattern is tried in order until
@@ -300,7 +300,7 @@ is <span class="emphasis"><em>not</em></span> equivalent to
 because the clauses are not mutually exclusive. Function clauses must attempt to match in linear order, whereas
 this expression matches all of the patterns in parallel. Here, it will match <code class="code">[<span class="hl-literal">5</span>]</code> two different ways,
 publishing both <code class="code"><span class="hl-literal">1</span></code> and <code class="code"><span class="hl-literal">2</span></code>.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1128D"></a>2.2.7.&nbsp;Fork-join</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11269"></a>2.2.7.&nbsp;Fork-join</h3></div></div></div><p>
 One of the most common concurrent idioms is a <em class="firstterm">fork-join</em>: run two processes concurrently,
 and wait for a result from each one. This is very easy to express in Orc. Whenever we write a <code class="code"><span class="hl-keyword">val</span></code>
 declaration, the process computing that value runs in parallel with the rest of the program. So if we write
@@ -309,8 +309,7 @@ two <code class="code"><span class="hl-keyword">val</span></code> declarations, 
 <pre class="programlisting">
 <span class="hl-keyword">val</span> <span class="hl-variable">x</span> = <span class="bold"><strong>F</strong></span>
 <span class="hl-keyword">val</span> <span class="hl-variable">y</span> = <span class="bold"><strong>G</strong></span>
-<span class="hl-site">within</span>
-   (<span class="hl-variable">x</span>,<span class="hl-variable">y</span>)
+   <span class="hl-keyword">signal</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> (<span class="hl-variable">x</span>,<span class="hl-variable">y</span>)
 </pre>
 </p><p>
 Fork-joins are a fundamental part of all Orc programs, since they are created by all nested expression
@@ -319,7 +318,7 @@ translations. In fact, the fork-join we wrote above could be expressed even more
 <pre class="programlisting">
 (<span class="bold"><strong>F</strong></span>,<span class="bold"><strong>G</strong></span>)
 </pre>
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N112B7"></a>2.2.7.1.&nbsp;Example: Machine initialization</h4></div></div></div><p>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11293"></a>2.2.7.1.&nbsp;Example: Machine initialization</h4></div></div></div><p>
 In Orc programs, we often use fork-join and recursion together to dispatch many tasks in parallel and wait
 for all of them to complete. Suppose that given a machine <code class="code"><span class="hl-variable">m</span></code>, calling <code class="code"><span class="hl-variable">m</span>.<span class="hl-site">init</span>()</code> 
 initializes <code class="code"><span class="hl-variable">m</span></code> and then publishes a signal when initialization is complete. The function 
@@ -347,7 +346,7 @@ finds the maximum of its arguments):
 Note that all bidders are called simultaneously. Also note that if some bidder fails 
 to return a bid, then the auction will never complete.  Later we will see
 a <a class="link" href="ch02s02.html#example.auction-with-timeout" title="2.2.11.1.&nbsp;Auction with timeout">different solution</a> that addresses the issue of non-termination.
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N112EE"></a>2.2.7.3.&nbsp;Example: Barrier synchronization</h4></div></div></div><p>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N112CA"></a>2.2.7.3.&nbsp;Example: Barrier synchronization</h4></div></div></div><p>
 Consider an expression of the following form, where F and G are expressions and M and N are sites:
 
 <pre class="programlisting">
@@ -364,7 +363,7 @@ free in G, nor <code class="code"><span class="hl-variable">y</span></code> in F
 ( <span class="hl-site">M</span>() , <span class="hl-site">N</span>() )  <span class="hl-combinator">&gt;</span>(<span class="hl-variable">x</span>,<span class="hl-variable">y</span>)<span class="hl-combinator">&gt;</span>  ( <span class="bold"><strong>F</strong></span> <span class="hl-combinator">|</span> <span class="bold"><strong>G</strong></span> )
 </pre>
 
-</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1131A"></a>2.2.8.&nbsp;Sequential Fork-Join</h3></div></div></div><p>
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N112F6"></a>2.2.8.&nbsp;Sequential Fork-Join</h3></div></div></div><p>
 Previous sections illustrate how Orc can use the fork-join idiom to process a
 fixed set of expressions or a list of values.  Suppose that instead we wish to
 process all the publications of an expression F, and once this processing is
@@ -387,7 +386,7 @@ assume that we can detect when F halts. If, for example,
 F is publishing the lines of the file as it receives them over a socket,
 and the sending party never closes the socket, then F never halts and no
 signal is published.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11335"></a>2.2.9.&nbsp;Priority Poll</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11311"></a>2.2.9.&nbsp;Priority Poll</h3></div></div></div><p>
 The otherwise combinator is also useful for trying alternatives in sequence. Consider an expression of
 the form <code class="code"><span class="hl-variable">F</span><sub>0</sub> <span class="hl-combinator">;</span> <span class="hl-variable">F</span><sub>1</sub> <span class="hl-combinator">;</span> <span class="hl-variable">F</span><sub>2</sub> <span class="hl-combinator">;</span> ...</code>. If F<sub>i</sub> does not publish 
 and halts, then F<sub>i+1</sub> is executed. We can think of the F<sub>i</sub>'s as a series of 
@@ -405,7 +404,7 @@ available item if there is one, and halts otherwise.
 </p><pre class="programlisting">
 <span class="hl-keyword">def</span> <span class="hl-site">priorityPoll</span>([]) = <span class="hl-keyword">stop</span>
 <span class="hl-keyword">def</span> <span class="hl-site">priorityPoll</span>(<span class="hl-variable">b</span>:<span class="hl-variable">bs</span>) = <span class="hl-variable">b</span>.<span class="hl-site">getnb</span>() <span class="hl-combinator">;</span> <span class="hl-site">priorityPoll</span>(<span class="hl-variable">bs</span>)
-</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11358"></a>2.2.10.&nbsp;Parallel Or</h3></div></div></div><p>
+</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11334"></a>2.2.10.&nbsp;Parallel Or</h3></div></div></div><p>
 ``Parallel or'' is a classic idiom of parallel programming.  The ``parallel or'' operation executes two
 expressions F and G in parallel, each of which may publish a single boolean,
 and returns the disjunction of their publications as soon as possible. 
@@ -419,8 +418,7 @@ follows:
 <span class="hl-site">let</span>(
     <span class="hl-keyword">val</span> <span class="hl-variable">a</span> = <span class="bold"><strong>F</strong></span>
     <span class="hl-keyword">val</span> <span class="hl-variable">b</span> = <span class="bold"><strong>G</strong></span>
-	<span class="hl-site">within</span>
-         (<span class="hl-variable">a</span> <span class="hl-site">||</span> <span class="hl-variable">b</span>)
+      <span class="hl-keyword">signal</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> (<span class="hl-variable">a</span> <span class="hl-site">||</span> <span class="hl-variable">b</span>)
        <span class="hl-combinator">|</span> <span class="hl-keyword">if</span>(<span class="hl-variable">a</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">true</span> 
        <span class="hl-combinator">|</span> <span class="hl-keyword">if</span>(<span class="hl-variable">b</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">true</span> 
 )
@@ -433,7 +431,7 @@ in parallel to wait for either variable to become <code class="code"><span class
 publish the result <code class="code"><span class="hl-literal">true</span></code>.  Since more than one of these expressions may
 publish <code class="code"><span class="hl-literal">true</span></code>, the surrounding <code class="code"><span class="hl-site">let</span>(...)</code> is necessary to select and
 publish only the first result.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11395"></a>2.2.11.&nbsp;Timeout</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11371"></a>2.2.11.&nbsp;Timeout</h3></div></div></div><p>
 <em class="firstterm">Timeout</em>, the ability to execute an expression for at most a specified
 amount of time, is an essential ingredient of fault-tolerant and distributed
 programming.  Orc accomplishes timeout using pruning and the <code class="code"><span class="hl-variable">Rtimer</span></code> site.
@@ -451,7 +449,7 @@ one of the bidders does not respond. We can add a timeout so that a bidder has a
   <span class="hl-site">max</span>(<span class="hl-variable">bid</span>, <span class="hl-site">auction</span>(<span class="hl-variable">bs</span>))
 </pre><p>
 This version of the auction is guaranteed to complete within 8 seconds.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N113B7"></a>2.2.11.2.&nbsp;Detecting timeout</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11393"></a>2.2.11.2.&nbsp;Detecting timeout</h4></div></div></div><p>
 Sometimes, rather than just yielding a default value, we would like to
 determine whether an expression has timed out, and if so, perform some other
 computation.  To detect the timeout, we pair the result of the original
@@ -489,7 +487,7 @@ It is even possible to encapsulate timeout as a function.
 the time limit, <code class="code"><span class="hl-variable">timeout</span></code> returns <code class="code"><span class="hl-site">Some</span>(<span class="hl-variable">v</span>)</code>. Otherwise, it returns
 <code class="code"><span class="hl-site">None</span>()</code> when the time limit is reached.
 
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N11403"></a>2.2.11.2.1.&nbsp;Timeout streams</h5></div></div></div><p>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N113DF"></a>2.2.11.2.1.&nbsp;Timeout streams</h5></div></div></div><p>
 We can also apply timeout to <a class="link" href="ch02s02.html#methodology.streams" title="2.2.3.&nbsp;Streams">streams</a>. Let's
 define a modified version of the <code class="code"><span class="hl-variable">repeat</span></code> function as follows:
 
@@ -519,7 +517,7 @@ simply by changing the function passed to <code class="code"><span class="hl-var
 <span class="hl-site">repeat</span>(<span class="hl-variable">f</span>')
 </pre>
 
-</p></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1143F"></a>2.2.12.&nbsp;Priority</h3></div></div></div><p>
+</p></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1141B"></a>2.2.12.&nbsp;Priority</h3></div></div></div><p>
 We can use a timer to give a window of priority to one computation over
 another.  In this example, we run expressions F and G concurrently.  For
 one second, F has priority; F's result is published immediately,
@@ -533,7 +531,7 @@ is published.
 <span class="hl-site">let</span>( <span class="hl-variable">y</span> <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">x</span> )
 </pre>
 
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1144F"></a>2.2.13.&nbsp;Metronome</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1142B"></a>2.2.13.&nbsp;Metronome</h3></div></div></div><p>
 A timer can be used to execute an expression repeatedly at regular
 intervals, for example to poll a service.
 Recall the definition of <code class="code"><span class="hl-variable">metronome</span></code> from the previous chapter:
@@ -551,7 +549,7 @@ the recursion is entirely contained within <code class="code"><span class="hl-va
   <span class="hl-site">metronome</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">"tick"</span>
 <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">500</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">metronome</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">"tock"</span>
 </pre>
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11465"></a>2.2.14.&nbsp;Routing</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11441"></a>2.2.14.&nbsp;Routing</h3></div></div></div><p>
 The Orc combinators restrict the passing of values among their component
 expressions. However, some programs will require greater
 flexibility.  For example, <code class="code"><span class="hl-variable">F</span> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> <span class="hl-variable">G</span></code> provides F with the first 
@@ -559,7 +557,7 @@ publication of G, but what if F needs the first n publications of G?
 In cases like this we use channels or other stateful sites to redirect or 
 store publications.  We call this technique <em class="firstterm">routing</em>
 because it involves routing values from one execution to another.
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11470"></a>2.2.14.1.&nbsp;Generalizing Termination</h4></div></div></div><p>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1144C"></a>2.2.14.1.&nbsp;Generalizing Termination</h4></div></div></div><p>
 The pruning combinator terminates an expression after it publishes its first
 value. We have <a class="link" href="ch02.html#style.pruning" title="2.1.3.&nbsp;Pruning combinator">already seen</a> how to use 
 pruning just for its termination capability, without binding a variable, using 
@@ -571,7 +569,7 @@ Our implementation strategy is to route the publications of the expression
 through a channel, so that we can put the expression inside a pruning combinator
 and still see its publications without those publications terminating the
 expression. 
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N1147E"></a>2.2.14.1.1.&nbsp;Enhanced Timeout</h5></div></div></div><p>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N1145A"></a>2.2.14.1.1.&nbsp;Enhanced Timeout</h5></div></div></div><p>
 As a simple demonstration of this concept, we construct a more powerful form 
 of timeout: allow an expression to execute, publishing arbitrarily many values 
 (not just one), until a time limit is reached.
@@ -587,7 +585,7 @@ triggering the call <code class="code"><span class="hl-variable">c</span>.<span 
 <code class="code"><span class="hl-variable">c</span>.<span class="hl-site">closenb</span>()</code> closes <code class="code"><span class="hl-variable">c</span></code> and publishes a signal,
 terminating F.  The library function <code class="code"><span class="hl-variable">repeat</span></code> is used to repeatedly
 take and publish values from <code class="code"><span class="hl-variable">c</span></code> until it is closed.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N114A0"></a>2.2.14.1.2.&nbsp;Test Pruning</h5></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N1147C"></a>2.2.14.1.2.&nbsp;Test Pruning</h5></div></div></div><p>
 We can also decide to terminate based on the values published. This expression
 executes F until it publishes a negative number, and then terminates it:
 </p><pre class="programlisting">
@@ -602,7 +600,7 @@ Each value published by F is tested. If it is non-negative, it is placed on
 channel <code class="code"><span class="hl-variable">c</span></code> (silently) and read by <code class="code"><span class="hl-site">repeat</span>(<span class="hl-variable">c</span>.<span class="hl-variable">get</span>)</code>. 
 If it is negative, the channel is closed, publishing a signal and causing
 the termination of F.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N114B3"></a>2.2.14.1.3.&nbsp;Interrupt</h5></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N1148F"></a>2.2.14.1.3.&nbsp;Interrupt</h5></div></div></div><p>
 We can use routing to interrupt an expression based on a signal from
 elsewhere in the program.  We set up the expression like a timeout, but instead
 of waiting for a timer, we wait for the semaphore <code class="code"><span class="hl-variable">done</span></code> to be released. Any
@@ -614,7 +612,7 @@ may publish any number of values.
 <span class="hl-keyword">val</span> <span class="hl-variable">done</span> = <span class="hl-site">Semaphore</span>(<span class="hl-literal">0</span>)
 <span class="hl-site">repeat</span>(<span class="hl-variable">c</span>.<span class="hl-variable">get</span>) <span class="hl-combinator">&lt;</span><span class="hl-combinator">&lt;</span>
     <span class="bold"><strong>F</strong></span> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>.<span class="hl-site">put</span>(<span class="hl-variable">x</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
-  <span class="hl-combinator">|</span> <span class="hl-variable">done</span>.<span class="hl-site">acquire</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>.<span class="hl-site">closenb</span>()</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N114C7"></a>2.2.14.1.4.&nbsp;Publication Limit</h5></div></div></div><p>
+  <span class="hl-combinator">|</span> <span class="hl-variable">done</span>.<span class="hl-site">acquire</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>.<span class="hl-site">closenb</span>()</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N114A3"></a>2.2.14.1.4.&nbsp;Publication Limit</h5></div></div></div><p>
 We can limit an expression to <span class="emphasis"><em>n</em></span> publications,
 rather than just one. Here is an expression which executes F until
 it publishes 5 values, and then terminates it.
@@ -631,7 +629,7 @@ it publishes 5 values, and then terminates it.
 We use the auxiliary function <code class="code"><span class="hl-variable">allow</span></code> to get only the first 5
 publications from the channel <code class="code"><span class="hl-variable">c</span></code>.  When no more publications are allowed,
 <code class="code"><span class="hl-variable">allow</span></code> uses the interrupt idiom to halt F and close <code class="code"><span class="hl-variable">c</span></code>.
-</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N114E3"></a>2.2.14.2.&nbsp;Non-Terminating Pruning</h4></div></div></div><p>
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N114BF"></a>2.2.14.2.&nbsp;Non-Terminating Pruning</h4></div></div></div><p>
 We can use routing to create a modified version of the pruning combinator.
 As in <code class="code"><span class="hl-variable">F</span> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> <span class="hl-variable">G</span></code>, we'll run F and G in parallel and make the first
 value published by G available to F.  However instead of terminating G after
@@ -639,10 +637,10 @@ it publishes a value, we will continue running it, ignoring its remaining
 publications.
 </p><pre class="programlisting">
 <span class="hl-keyword">val</span> <span class="hl-variable">r</span> = <span class="hl-site">Cell</span>()
-<span class="hl-site">within</span>
+<span class="hl-keyword">signal</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
    (<span class="bold"><strong>F</strong></span> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> <span class="hl-variable">c</span>.<span class="hl-site">read</span>()) <span class="hl-combinator">|</span> (<span class="bold"><strong>G</strong></span> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>.<span class="hl-site">write</span>(<span class="hl-variable">x</span>))
 
-</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N114F5"></a>2.2.14.3.&nbsp;Publication-Agnostic Otherwise</h4></div></div></div><p>
+</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N114D1"></a>2.2.14.3.&nbsp;Publication-Agnostic Otherwise</h4></div></div></div><p>
 We can also use routing to create a modified version of the otherwise combinator. We'll
 run F until it halts, and then run G, regardless of whether F published any values
 or not.
@@ -656,7 +654,7 @@ to ensure that G does not execute until all the publications of F have been
 routed. Recall that <code class="code"><span class="hl-variable">c</span>.<span class="hl-site">close</span>()</code> does not return until <code class="code"><span class="hl-variable">c</span></code> is
 empty.
 
-</div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11511"></a>2.2.15.&nbsp;Interruption</h3></div></div></div><p>
+</div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N114ED"></a>2.2.15.&nbsp;Interruption</h3></div></div></div><p>
 We can write a function <code class="code"><span class="hl-variable">interruptible</span></code> that implements the interrupt idiom
 to execute any function in an interruptible way.  <code class="code"><span class="hl-site">interruptible</span>(<span class="hl-variable">g</span>)</code>
 calls the function <code class="code"><span class="hl-variable">g</span></code>, which is assumed to take no arguments, and
@@ -699,7 +697,7 @@ execution, arises occasionally in Orc programming. When using this idiom, always
 avoid terminating that execution accidentally. Since Orc is a structured concurrent language,
 every process is contained with some other process; kill the containing process, and the
 contained processes die too.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11543"></a>2.2.16.&nbsp;Lifting</h3></div></div></div>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1151F"></a>2.2.16.&nbsp;Lifting</h3></div></div></div>
 
 It is often useful to explicitly lift an execution, so that it is in some sense protected from
 being terminated. We can do this by running a "lifter" process, to which we can send functions
@@ -733,7 +731,7 @@ The timeout stops the execution of <code class="code"><span class="hl-site">dela
 However, the lifted execution of <code class="code"><span class="hl-variable">delayedPrint</span></code> does succeed, since it is executing
 within the loop of <code class="code"><span class="hl-site">lifter</span>()</code>, unaffected by the timeout.
 
-</div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11554"></a>2.2.17.&nbsp;Fold</h3></div></div></div><p>
+</div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11530"></a>2.2.17.&nbsp;Fold</h3></div></div></div><p>
 We consider various concurrent implementations of the classic "list fold"
 function from functional programming:
 </p><pre class="programlisting">
@@ -745,7 +743,7 @@ short-circuiting --- it may finish early if the reduction operator <code class="
 not use its second argument --- but it is not concurrent; no two calls to <code class="code"><span class="hl-variable">f</span></code>
 can proceed in parallel.  However, if <code class="code"><span class="hl-variable">f</span></code> is associative, we can overcome this restriction 
 and implement fold concurrently. If <code class="code"><span class="hl-variable">f</span></code> is also commutative, we can further increase concurrency.
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1156C"></a>2.2.17.1.&nbsp;Associative Fold</h4></div></div></div><p>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11548"></a>2.2.17.1.&nbsp;Associative Fold</h4></div></div></div><p>
 We first consider the case when the reduction operator is associative.  We
 define <code class="code"><span class="hl-site">afold</span>(<span class="hl-variable">f</span>,<span class="hl-variable">xs</span>)</code> where <code class="code"><span class="hl-variable">f</span></code> is a binary associative function and
 <code class="code"><span class="hl-variable">xs</span></code> is a non-empty list.  The implementation iteratively reduces <code class="code"><span class="hl-variable">xs</span></code>
@@ -765,7 +763,7 @@ fork-join. Thus, the call <code class="code"><span class="hl-site">f</span>(<spa
 executes in parallel with the recursive call <code class="code"><span class="hl-site">step</span>(<span class="hl-variable">xs</span>)</code>. 
 As a result, all calls to <code class="code"><span class="hl-variable">f</span></code> execute concurrently within
 each iteration of <code class="code"><span class="hl-variable">afold</span></code>.   
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11596"></a>2.2.17.2.&nbsp;Associative, Commutative Fold</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N11572"></a>2.2.17.2.&nbsp;Associative, Commutative Fold</h4></div></div></div><p>
 We can make the implementation even more concurrent when the fold operator 
 is both associative and commutative. We define <code class="code"><span class="hl-site">cfold</span>(<span class="hl-variable">f</span>,<span class="hl-variable">xs</span>)</code>, where 
 <code class="code"><span class="hl-variable">f</span></code> is a associative and commutative binary function and <code class="code"><span class="hl-variable">xs</span></code> is a non-empty list. 
@@ -789,9 +787,9 @@ result of the overall fold.
                     ( <span class="hl-variable">c</span>.<span class="hl-site">put</span>(<span class="hl-site">f</span>(<span class="hl-variable">x</span>,<span class="hl-variable">y</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span> <span class="hl-combinator">|</span> <span class="hl-site">combine</span>(<span class="hl-variable">m</span>-<span class="hl-literal">1</span>))
 
   <span class="hl-site">xfer</span>(<span class="hl-variable">xs</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">n</span><span class="hl-combinator">&gt;</span> <span class="hl-site">combine</span>(<span class="hl-variable">n</span>)
-</pre></div></div><div class="footnotes"><br><hr align="left" width="100"><div class="footnote"><p><sup>[<a href="#N110DF" name="ftn.N110DF" class="para">1</a>] </sup>R. Milner. <span class="emphasis"><em>Communicating and Mobile Systems:
+</pre></div></div><div class="footnotes"><br><hr align="left" width="100"><div class="footnote"><p><sup>[<a href="#N110BB" name="ftn.N110BB" class="para">1</a>] </sup>R. Milner. <span class="emphasis"><em>Communicating and Mobile Systems:
 the &#960;-Calculus</em></span>. Cambridge University Press, May
-1999.</p></div><div class="footnote"><p><sup>[<a href="#N110E6" name="ftn.N110E6" class="para">2</a>] </sup>J. Armstrong, R.
+1999.</p></div><div class="footnote"><p><sup>[<a href="#N110C2" name="ftn.N110C2" class="para">2</a>] </sup>J. Armstrong, R.
 Virding, C. Wikstr&uml;om, and M. Williams. <span class="emphasis"><em>Concurrent programming in
 ERLANG (2nd ed.)</em></span>. Prentice Hall International (UK) Ltd.,
 Hertfordshire, UK, UK, 1996.</p></div></div></div><script type="text/javascript" src="/orchard/orc.js"></script><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="ch02.html">Prev</a>&nbsp;</td><td align="center" width="20%"><a accesskey="u" href="ch02.html">Up</a></td><td align="right" width="40%">&nbsp;<a accesskey="n" href="ch02s03.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">Chapter&nbsp;2.&nbsp;Programming Methodology&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;2.3.&nbsp;Larger Examples</td></tr></table></div></body></html>
