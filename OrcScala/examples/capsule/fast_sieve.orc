@@ -8,11 +8,11 @@
 -- a buffer to store the primes generated
 val prime_buf = Buffer()
 
--- a sieve capsule with value n represent a prime number n
+-- a sieve class with value n represent a prime number n
 -- which immediately print itself.
 -- this algorithm for generating primes is inspired
 -- by the fact that if square(p) > input v then v is a prime.
-def capsule fast_sieve(n) =
+def class fast_sieve(n) =
   val p = n
   val psq = n * n -- square of n
   val next = Cell() -- next sieve, initially empty

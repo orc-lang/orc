@@ -42,7 +42,7 @@ object CurriedForms {
         /* Return the outermost Def */
         ext.Def(name, List(formals), None, newbody)
       }
-      case ext.DefCapsule(name, formals, retType, body) => {
+      case ext.DefClass(name, formals, retType, body) => {
         reduceParamLists(ext.Def(name, formals, retType, ext.Capsule(body)))
       }
       case ext.DefSig(name, typFormals, List(argTypes), retType) => d

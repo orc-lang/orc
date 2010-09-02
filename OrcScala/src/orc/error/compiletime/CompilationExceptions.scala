@@ -107,11 +107,11 @@ case class RedundantReturnType() extends RedundantTypeInformationException("Redu
 case class UnusedFunctionSignature() extends RedundantTypeInformationException("Unused function signature")
 
 
-case class CapsuleDefInNoncapsuleContext() 
-  extends SyntacticException("Cannot declare this clause as 'capsule'; preceding clauses were not declared as 'capsule'")
+case class ClassDefInNonclassContext() 
+  extends SyntacticException("Cannot declare this clause as 'class'; preceding clauses were not declared as 'class'")
   with SeverityError
-case class NoncapsuleDefInCapsuleContext() 
-  extends SyntacticException("This clause must be declared as 'capsule'; preceding clauses were declared as 'capsule'")
+case class NonclassDefInClassContext() 
+  extends SyntacticException("This clause must be declared as 'class'; preceding clauses were declared as 'class'")
   with SeverityError
 
     
@@ -126,8 +126,8 @@ case class UnboundTypeVariableException(val typevarName: String)
   with SeverityError
 
 
-case class DeflessCapsule()
-  extends SyntacticException("A capsule must contain at least one 'def' declaration")
+case class DeflessClass()
+  extends SyntacticException("A class must contain at least one 'def' declaration")
   with SeverityFatal
   
 /**

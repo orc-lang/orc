@@ -14,7 +14,7 @@ from buffer out. The manager process collects n signals from in, and
 then writes n signals on out.
 -}
 
-def capsule BarrierSync(n) =
+def class BarrierSync(n) =
 
   val in =  Semaphore(0) 
   val out = Semaphore(0)  

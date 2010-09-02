@@ -1,6 +1,6 @@
 
 def twentythree() = 23 | 23   -- Only the first publication is used
-val TwentyThree = Site(twentythree)
+val TwentyThree = MakeSite(twentythree)
 
 TwentyThree() | 24
 

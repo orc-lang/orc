@@ -46,7 +46,7 @@ among the callback cells.
 
 -}
 
-def capsule Rendezvous(n,f) =
+def class Rendezvous(n,f) =
   val b = Table(n,Buffer)
 
   def go(i,v) = 
@@ -108,7 +108,7 @@ entitled to receive this value. So, we prevent q from depositing a value
 into b(i) until p has completed its cycle, i.e., removed the result
 from c(i).
 
-def capsule Rendezvous(n,f) =
+def class Rendezvous(n,f) =
   val b = Table(n,Buffer)
   val c = Table(n,Buffer)
   val sem = Table(n,Semaphore)

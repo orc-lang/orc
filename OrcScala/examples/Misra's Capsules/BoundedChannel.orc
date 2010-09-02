@@ -26,7 +26,7 @@ We could have a single semaphore bs instead of fs and rs.
 -}
 
 {- Orc standard library provides Bounded Buffer -}
-def capsule BBuffer(n) =
+def class BBuffer(n) =
  val B = Array(n)
  val f = Ref(0)
  val fs = Semaphore(1)   -- to guard f
@@ -52,7 +52,7 @@ stop
    instance of put or get can execute at any moment. Therfore, we may
    dispense with fs and rs. 
 -}
-def capsule Word() =
+def class Word() =
  val w = Ref()
  val puts = Semaphore(1) -- # of empty positions
  val gets = Semaphore(0) -- # of full positions

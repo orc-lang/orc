@@ -16,7 +16,7 @@
   It has just one method, main(). Ithandles one call at a time.
 -}
 
-def capsule RandomBool() =
+def class RandomBool() =
   val s = Semaphore(1) -- to allow only one call to execute.
   def main(f,t) =  
    If(urandom() <: f) >>  s.acquire() >>

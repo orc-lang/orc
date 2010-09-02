@@ -41,7 +41,7 @@ laststop is the clk value when stop was executed last.
 current stopwatch value is laststop? - cumstop?
 -}
 
-def capsule Stopwatch() =
+def class Stopwatch() =
 val clk      = Clock()
 val cumstop  = Ref(0)
 val laststop = Ref(0)

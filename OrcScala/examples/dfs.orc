@@ -28,10 +28,10 @@ def dfs(i) =
       ( parent(y) := i >> dfs(y) >> scan(ys) )
     else
       scan(ys)
-  scan(conn(i)?) within
+  scan(conn(i)?)
 
 -- Goal expression. First specify the graph structure.
-
+signal >>
 ( conn(0) := [1,2,3,4]
 , conn(1) := [0,5]
 , conn(2) := [0,4]

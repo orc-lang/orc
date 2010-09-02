@@ -7,7 +7,7 @@
 
 {-
 A general strategy for allocation, deallocation from a pool.
-Argument f to the capsule definition specifies the standard 
+Argument f to the class definition specifies the standard 
 allocation function to be used for obtaining an object, as in 
 Semaphore(0).
 
@@ -22,7 +22,7 @@ every sempahore that is deallocated must have value 0.
  
 -}
 
-def capsule Pool(f) = 
+def class Pool(f) = 
  val buff = Buffer()
  
  def allocate()    = buff.getnb() ; f

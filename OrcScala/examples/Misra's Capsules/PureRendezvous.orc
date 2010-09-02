@@ -5,7 +5,7 @@
  - Created by misra on Mar 10, 2010 8:03:02 PM
  -}
 
-def capsule PureRendezvous() =
+def class PureRendezvous() =
 val up   = Semaphore(0)
 val down = Semaphore(0)
 

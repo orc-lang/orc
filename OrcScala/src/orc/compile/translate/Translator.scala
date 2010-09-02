@@ -33,7 +33,7 @@ import orc.error.OrcExceptionExtension._
 import scala.util.parsing.input.Position
 
 import orc.compile.translate.PrimitiveForms._
-import orc.compile.translate.CapsuleForms._
+import orc.compile.translate.classForms._
 import orc.compile.translate.CurriedForms._
 
 
@@ -109,7 +109,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
 	      DeclareDefs(List(newdef), lambdaName)
 	    }
 	    case ext.Capsule(b) => {
-	      var capThunk = ext.Lambda(None, List(Nil), None, makeCapsuleBody(b, reportProblem))				  
+	      var capThunk = ext.Lambda(None, List(Nil), None, makeclassBody(b, reportProblem))				  
 	      toExp(ext.Call(
 	          ext.Call(ext.Constant(builtin.SiteSite), List(ext.Args(None, List(capThunk)))), List(ext.Args(None, Nil))))
 	    }
@@ -269,7 +269,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
 		  defsMap = defsMap + { (n, defsMap(n) + d) }
 		}
 		
-		defsMap.values foreach { _.capsuleCheck }
+		defsMap.values foreach { _.classCheck }
 		
 		// we generate these names beforehand since defs can be bound recursively in their own bodies
 		val namesMap : Map[String, BoundVar] = Map.empty ++ (for (name <- defsMap.keys) yield (name, new BoundVar()))

@@ -52,6 +52,7 @@ case class Declare(declaration: Declaration, body: Expression) extends Expressio
 case class TypeAscription(e: Expression, t: Type) extends Expression
 case class TypeAssertion(e: Expression, t: Type) extends Expression
 
+// An internal representation for the body of a 'def class'
 case class Capsule(body: Expression) extends Expression
 
 
@@ -66,7 +67,7 @@ sealed abstract class NamedDeclaration extends Declaration {
 
 sealed abstract class DefDeclaration extends NamedDeclaration 
 case class Def(name: String, formals: List[List[Pattern]],returntype: Option[Type], body: Expression) extends DefDeclaration
-case class DefCapsule(name: String, formals: List[List[Pattern]], returntype: Option[Type], body: Expression) extends DefDeclaration
+case class DefClass(name: String, formals: List[List[Pattern]], returntype: Option[Type], body: Expression) extends DefDeclaration
 case class DefSig(name: String, typeformals: List[String], argtypes: List[List[Type]], returntype: Type) extends DefDeclaration
 
 // Convenience extractor for sequences of definitions enclosing some scope

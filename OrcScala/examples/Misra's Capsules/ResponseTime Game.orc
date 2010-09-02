@@ -28,8 +28,8 @@ def game() =
 
      | Prompt("Press ENTER/OK for "+v) >> 
        sw.isrunning() >b> sw.halt() >w> (b,w)
-   within
-     (b,w)
+   
+   signal >> (b,w)
 
 def games() =
 {- games() conducts multiple games, a session. 
