@@ -1,5 +1,5 @@
 //
-// CapsuleForms.scala -- Scala class/trait/object CapsuleForms
+// classForms.scala -- Scala class/trait/object classForms
 // Project OrcScala
 //
 // $Id$
@@ -24,31 +24,31 @@ import orc.error.OrcExceptionExtension._
  *
  * @author dkitchin
  */
-object CapsuleForms {
+object classForms {
 
   /** 
-   * Helper functions for capsule conversion
+   * Helper functions for class conversion
    */
-  def makeCapsuleBody(body: ext.Expression,
+  def makeclassBody(body: ext.Expression,
                       reportProblem: CompilationException with ContinuableSeverity => Unit
-                     ): ext.Expression = makeCapsuleBody(body, Nil, reportProblem)
+                     ): ext.Expression = makeclassBody(body, Nil, reportProblem)
 
-  def makeCapsuleBody(body: ext.Expression, 
+  def makeclassBody(body: ext.Expression, 
                       defNames: List[String],
                       reportProblem: CompilationException with ContinuableSeverity => Unit
                      ): ext.Expression = {
     body match {
       case ext.Declare(decl: ext.DefDeclaration, e) => {
-        return new ext.Declare(decl, makeCapsuleBody(e, decl.name :: defNames, reportProblem))
+        return new ext.Declare(decl, makeclassBody(e, decl.name :: defNames, reportProblem))
       }
       case ext.Declare(decl, e) => {
-        return new ext.Declare(decl, makeCapsuleBody(e, defNames, reportProblem))
+        return new ext.Declare(decl, makeclassBody(e, defNames, reportProblem))
       }
       case _ => {}
     }
     val dNames = defNames.distinct
     if (dNames.isEmpty) {
-      throw (DeflessCapsule() at body)
+      throw (DeflessClass() at body)
     }
     val recordCall: ext.Call = new ext.Call(new ext.Constant(builtin.RecordConstructor), List(ext.Args(None, makeRecordArgs(dNames))))
     ext.Parallel(ext.Sequential(body, None, ext.Stop()), recordCall)

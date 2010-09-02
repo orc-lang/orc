@@ -39,7 +39,7 @@ removed.
 remove. Since coin flip is fair, it will not favor of one kind forever.
 -}
 
-def capsule RelaxedBuffer() =
+def class RelaxedBuffer() =
  val (nwr, nww) = (Ref(0),Ref(0)) -- # waiting readers, writers
  val mutex = Semaphore(1) -- to gain access to (nwr, nww)
  val count = Semaphore(0) -- nwr? + nww? 
@@ -63,7 +63,7 @@ def capsule RelaxedBuffer() =
 
  stop
 
-def capsule ReadersWriters() =
+def class ReadersWriters() =
   val buff = RelaxedBuffer()
   val cb  = Counter()
   val (r,w) = (Semaphore(0),Semaphore(0))
@@ -94,7 +94,7 @@ val rw = ReadersWriters()
 {-
 Readers-Writers written with semaphore pool
 
-def capsule ReadersWriters() =
+def class ReadersWriters() =
 val req      = Buffer()
 val sempool  = SemaphorePool()
 

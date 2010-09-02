@@ -16,7 +16,7 @@ Similarly, the lock can be accessed by the server, but it still exposes the lock
 We would like to encapsulate the lock.
 -}
 
-def capsule Servercall() =
+def class Servercall() =
   val lock = Semaphore(1)
   def main(v) = 
    lock.acquire() >> Server(v) >w> lock.release() >> w

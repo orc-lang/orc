@@ -54,7 +54,7 @@ case class AggregateDef(clauses: List[Clause],
         val newReturnType = unify(returntype, maybeReturnType, reportProblem(RedundantReturnType() at defn))
         AggregateDef(clauses ::: List(newclause), typeformals, newArgTypes, newReturnType, translator)
       }
-      case DefCapsule(name, List(formals), maybeReturnType, body) => {
+      case DefClass(name, List(formals), maybeReturnType, body) => {
         this + Def(name, List(formals), maybeReturnType, new Capsule(body))
       }
       case DefSig(_, typeformals2, argtypes2, maybeReturnType) => {
@@ -87,17 +87,17 @@ case class AggregateDef(clauses: List[Clause],
     named.Def(x, newformals, newbody, newTypeFormals, newArgTypes, newReturnType)
   }
 
-  def capsuleCheck {
-    var existsCapsule = false
-    var existsNotCapsule = false
+  def classCheck {
+    var existsClass = false
+    var existsNotClass = false
     for (aclause <- clauses) {
       aclause match {
         case Clause(_, Capsule(_)) =>
-          if (existsNotCapsule) { reportProblem(CapsuleDefInNoncapsuleContext() at aclause) }
-          else existsCapsule = true
+          if (existsNotClass) { reportProblem(ClassDefInNonclassContext() at aclause) }
+          else existsClass = true
         case _ =>
-          if (existsCapsule) { reportProblem(NoncapsuleDefInCapsuleContext() at aclause) }
-          else existsNotCapsule = true
+          if (existsClass) { reportProblem(NonclassDefInClassContext() at aclause) }
+          else existsNotClass = true
       }
     }
   }

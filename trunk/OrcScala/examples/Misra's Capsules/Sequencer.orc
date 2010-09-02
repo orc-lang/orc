@@ -24,7 +24,7 @@ Readers-Writers solution.
 include "http://userweb.cs.utexas.edu/users/misra/temporaryFiles.dir/BoundedChannel.inc"
 include "http://userweb.cs.utexas.edu/users/misra/temporaryFiles.dir/StopWatch.inc"
 
-def capsule Sequencer(n) = 
+def class Sequencer(n) = 
  val bb = BBuffer(n)  -- waiting customers' semaphores
  val sem = BBuffer(n) -- semaphore pool
  

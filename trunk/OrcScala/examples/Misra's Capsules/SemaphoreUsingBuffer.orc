@@ -5,7 +5,7 @@
  - Created by misra on Apr 15, 2010 2:08:35 PM
  -}
 
-def capsule NewSemaphore(n) =
+def class NewSemaphore(n) =
  val b = Buffer()
  def acquire() = b.get()
  def release() = b.put(signal)

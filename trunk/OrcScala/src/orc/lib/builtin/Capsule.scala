@@ -10,13 +10,13 @@ import orc.TokenAPI
 import orc.ast.oil.nameless.Expression
 import orc.ast.oil.nameless.Call
 import orc.ast.oil.nameless.Constant
-import orc.run.extensions.SupportForCapsules
+import orc.run.extensions.SupportForclasss
 import orc.error.OrcException
 
 // Site site
 
 object SiteSite extends TotalSite with UntypedSite {
-  override def name = "Site"
+  override def name = "MakeSite"
   def evaluate(args: List[AnyRef]) =
     args match {
       case List(closure) => new Capsule(closure)
@@ -24,16 +24,16 @@ object SiteSite extends TotalSite with UntypedSite {
   }
 }
 
-// Standalone capsule execution
+// Standalone class execution
 
 class Capsule(closure: AnyRef) extends UntypedSite {
   
-  override def name = "capsule " + Format.formatValue(closure)
+  override def name = "class " + Format.formatValue(closure)
    
   def call(args: List[AnyRef], caller: TokenAPI) {
     val node = Call(Constant(closure), args map Constant, Some(Nil))
     caller.runtime match {
-      case r : SupportForCapsules => r.runEncapsulated(node, caller.asInstanceOf[r.Token])
+      case r : SupportForclasss => r.runEncapsulated(node, caller.asInstanceOf[r.Token])
       case _ => caller !! new RuntimeSupportException("encapsulated execution")
     }
   }

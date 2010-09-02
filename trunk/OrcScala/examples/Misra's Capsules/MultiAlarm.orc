@@ -6,7 +6,7 @@
  -}
 
 {- 
-This capsule defines a multiple Alarm clock in which several alarms 
+This class defines a multiple Alarm clock in which several alarms 
 can be set simultaneously. The alarms can also be cancelled.
 For the instance m of Multialarm(),
 
@@ -18,7 +18,7 @@ For the instance m of Multialarm(),
    a signal is immediately returned.
 
 Implementation Strategy:
-The inner capsule Alarm controls the setting and possible
+The inner class Alarm controls the setting and possible
 cancellation of a single alarm. For the instance p of Alarm(),
 
   p.set(t), where t is an integer, 
@@ -35,9 +35,9 @@ if it is null, it emits a signal immediately; otherwise, it calls
 the cancel procedure of the associated instance of Alarm().
 -}
 
-def capsule Multialarm() =
+def class Multialarm() =
 
-  def capsule Alarm() =
+  def class Alarm() =
     val run = Ref(true)
 
     def set(t) = Rtimer(t) >> If(run?)

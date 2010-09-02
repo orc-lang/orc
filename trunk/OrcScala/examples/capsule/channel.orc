@@ -1,4 +1,4 @@
-def capsule channel() = 
+def class channel() = 
   val ch = Buffer[Integer]()
   val chlen = Ref[Integer](0)
   val s = Semaphore(1)

@@ -6,7 +6,7 @@
 def countdown(Integer) :: Signal
 def countdown(0) = signal
 def countdown(i) = println(i) >> Rtimer(500) >> countdown(i-1)
-val Countdown = Site(countdown)
+val Countdown = MakeSite(countdown)
 
 let(Rtimer(250) >> true | Countdown(4)) -- | Rtimer(750) >> false
  

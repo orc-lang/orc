@@ -295,7 +295,7 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
       ~ (("::" ~> parseType)?)
       ~ ("=" ~> parseExpression)
       -> Lambda
-      | parseDeclaration ~ (("within"?) ~> parseExpression) -> Declare
+      | parseDeclaration ~ parseExpression -> Declare
       | parseOtherwiseExpression ~ (parseAscription?) -?->
         { (_,_) match
           {
@@ -363,8 +363,8 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
         ident ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ ("=" ~> parseExpression)
       -> Def
 
-      | ("capsule" ~> ident) ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ ("=" ~> parseExpression)
-      -> DefCapsule
+      | ("class" ~> ident) ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ ("=" ~> parseExpression)
+      -> DefClass
 
       | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)+) ~ parseReturnType
       -> { (id, tvs, ts, rt) => DefSig(id, tvs getOrElse Nil, ts, rt) }

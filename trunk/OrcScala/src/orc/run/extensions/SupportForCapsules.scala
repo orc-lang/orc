@@ -1,5 +1,5 @@
 //
-// SupportForCapsules.scala -- Scala class/trait/object SupportForCapsules
+// SupportForclasss.scala -- Scala class/trait/object SupportForclasss
 // Project OrcScala
 //
 // $Id$
@@ -23,17 +23,17 @@ import orc.error.runtime.ExecutionException
  *
  * @author dkitchin
  */
-trait SupportForCapsules extends Orc {
+trait SupportForclasss extends Orc {
   
   @throws(classOf[ExecutionException])
   def runEncapsulated(node: Expression, caller: Token) = {
     val host = caller.group.root
-    val exec = new CapsuleExecution(caller, host)
+    val exec = new classExecution(caller, host)
     val t = new Token(node, exec)
     schedule(t)
   }
   
-  class CapsuleExecution(caller: Token, host: Group) extends Subgroup(host) {
+  class classExecution(caller: Token, host: Group) extends Subgroup(host) {
     
     var listener: Option[Token] = Some(caller)
     

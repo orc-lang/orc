@@ -1,4 +1,4 @@
-def capsule RW() = 
+def class RW() = 
   val read_count = Ref[Integer](0)
   val write_count = Ref[Integer](0)
 
@@ -58,9 +58,9 @@ def writer(lock) =
   v := v? + 1 >>
   lock.write_finish()
 
-val rw = RW() within
+val rw = RW()
 
-
+signal >>
 (upto(1000) >> reader(rw) >> stop | upto(1000) >> writer(rw) >> stop); 
 println("Final value: "+(v?)) >> stop
 {-

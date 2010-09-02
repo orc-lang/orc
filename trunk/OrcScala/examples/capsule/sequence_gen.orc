@@ -1,4 +1,4 @@
-def capsule gen_seq(init :: Integer) =
+def class gen_seq(init :: Integer) =
   val n = Ref[Integer](init)
   val s = Semaphore(1)
   def next() = s.acquire() >> n? >x> 

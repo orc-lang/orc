@@ -3,7 +3,7 @@
 -}
 
 def silence() = Rtimer(1000) >> stop
-val Silence = Site(silence)
+val Silence = MakeSite(silence)
 
 let( (Silence() ; true) | Rtimer(2000) >> false )
 

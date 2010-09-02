@@ -4,7 +4,7 @@
 
 def noise(Integer) :: Integer
 def noise(i) = i | Rtimer(500) >> 0 
-val Noise = Site(noise)
+val Noise = MakeSite(noise)
 
 val x = Rtimer(1000) >> 5
 Rtimer(250) >> 10 | Noise(x)

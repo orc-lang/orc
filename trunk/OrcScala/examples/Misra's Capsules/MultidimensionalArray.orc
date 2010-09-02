@@ -5,7 +5,7 @@
  - Created by misra on Mar 10, 2010 3:02:30 PM
  -}
 
-{- This capsule defines multi-dimensional array, called Matrix. 
+{- This class defines multi-dimensional array, called Matrix. 
    A matrix is instantiated by giving a list of its bounds for each dimension.
    The number of dimensions is at least 1.
    Bound for a dimension is a pair, say (-2,0), that specifies the lower 
@@ -19,12 +19,12 @@
    Then a matrix element is accessed by its list of indices.
 -}
 
-  def capsule Matrix([]) = 
+  def class Matrix([]) = 
      val Mat = Array(1)
      def item([]) = Mat(0)
   stop
 
-  def capsule Matrix(xs) =
+  def class Matrix(xs) =
      
     {- size of a matrix given a list of bounds, one per dimension -}
     def size([]) = 1

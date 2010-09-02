@@ -39,11 +39,12 @@ def partition(p, l, r) =
    def lr(Integer) :: Integer
    def rl(Integer) :: Integer
    def lr(i) = if i <: r && a(i)? <= p then lr(i+1) else i
-   def rl(i) = if a(i)? :> p then rl(i-1) else i within
+   def rl(i) = if a(i)? :> p then rl(i-1) else i
    ------ End of Helper functions ------
 
    {- Goal Expression for partition(p, l, r)
       Below, lr and rl run in parallel. -}
+   signal >>
    (lr(l), rl(r)) >(l', r')>
 
    ( If (l' + 1 <: r') >> swapRefs(a(l'), a(r')) >> partition(p, l'+1, r'-1)

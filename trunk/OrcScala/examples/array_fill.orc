@@ -14,7 +14,9 @@ val c =
 
 -- Publish the values of each array in
 -- a predictable sequence
-val pubs = Buffer[Integer]() within
+val pubs = Buffer[Integer]()
+
+signal >>
 (
   pubs.put(a(0)) >> stop
   ; pubs.put(a(1)) >> stop

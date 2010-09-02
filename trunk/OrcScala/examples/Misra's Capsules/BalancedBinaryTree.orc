@@ -10,12 +10,12 @@
 -}
 
 
-def capsule BBTree(0) =
+def class BBTree(0) =
  def read(is) = stop
  def write(v,is) = stop
 stop
 
-def capsule BBTree(n) =
+def class BBTree(n) =
  val (root, left, right) = (Ref(), BBTree(n-1), BBTree(n-1))
 
  def write(v,[])   = root := v
