@@ -50,8 +50,6 @@ in a subsequent section.
                                     <span class="emphasis"><em>closure</em></span>
                                 </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">D E</td><td align="left">&nbsp;</td><td align="left">
                                     <span class="emphasis"><em>scoped declaration</em></span>
-                                </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">D <code class="code"><span class="hl-variable">within</span></code> E</td><td align="left">&nbsp;</td><td align="left">
-                                    <span class="emphasis"><em>goal expression w/declarations</em></span>
                                 </td></tr><tr><td align="right">C</td><td align="center">::=</td><td align="left">
                                     <span class="emphasis"><em>Boolean</em></span> | <span class="emphasis"><em>Number</em></span> | <span class="emphasis"><em>String</em></span>
                                 </td><td align="left">
@@ -162,7 +160,7 @@ an integer operation and return an integer result; for example, <code class="cod
 However, if either argument to an operator has a decimal part (even if it is trivial, as in <code class="code"><span class="hl-literal">3.0</span></code>), the other argument will
 be promoted, and a decimal operation will be peformed. For example, <code class="code"><span class="hl-literal">5</span> / <span class="hl-literal">2.0</span></code> and <code class="code"><span class="hl-literal">5.0</span> / <span class="hl-literal">2</span></code> both perform decimal
 division and evaluate to <code class="code"><span class="hl-literal">2.5</span></code>.
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10360"></a>1.2.2.1.&nbsp;Silent Expression</h4></div></div></div><p>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10351"></a>1.2.2.1.&nbsp;Silent Expression</h4></div></div></div><p>
 There are situations where an expression evaluation is stuck, because it is attempting to perform 
 some impossible operation and cannot compute a value. In that case, the expression is <em class="firstterm">silent</em>. 
 An expression is also silent if it depends on the result of a silent subexpression. For example, the following
@@ -176,7 +174,7 @@ Silent expressions can produce side effects.  For example, on encountering a
 type error, Orc will print an error message to the console.  However the
 expression containing the type error will not publish a value, and in this
 respect it is silent.
-</div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10378"></a>1.2.3.&nbsp;Conditionals</h3></div></div></div><p>
+</div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10369"></a>1.2.3.&nbsp;Conditionals</h3></div></div></div><p>
 A conditional expression in Cor is of the form 
 <code class="code"><span class="hl-keyword">if</span></code> E <code class="code"><span class="hl-keyword">then</span></code> F <code class="code"><span class="hl-keyword">else</span></code> G. 
 Its meaning is similar to that in other languages: the value
@@ -247,14 +245,14 @@ may continue even though <code class="code"><span class="hl-variable">x</span></
 
 </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="cor.data"></a>1.2.5.&nbsp;Data Structures</h3></div></div></div><p>
 Cor supports three basic data structures, <em class="firstterm">tuples</em>, <em class="firstterm">lists</em>, and <em class="firstterm">records</em>.
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10475"></a>1.2.5.1.&nbsp;Tuples</h4></div></div></div><p>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10466"></a>1.2.5.1.&nbsp;Tuples</h4></div></div></div><p>
 A <em class="firstterm">tuple expression</em> is a comma-separated sequence of at least two 
 expressions, enclosed by parentheses. Each expression is evaluated; the value of the whole 
 tuple expression is a tuple containing each of these values in order. 
 If any of the expressions is silent, then the whole tuple expression is silent.
 </p><p>
 <div class="itemizedlist"><p class="title"><b>Examples</b></p><ul type="disc"><li><code class="code">(<span class="hl-literal">1</span>+<span class="hl-literal">2</span>, <span class="hl-literal">7</span>)</code> evaluates to <code class="code">(<span class="hl-literal">3</span>,<span class="hl-literal">7</span>)</code>.</li><li><code class="code"> (<span class="hl-literal">"true"</span> + <span class="hl-literal">"false"</span>, <span class="hl-literal">true</span> <span class="hl-site">||</span> <span class="hl-literal">false</span>, <span class="hl-literal">true</span> &amp;&amp; <span class="hl-literal">false</span>) </code> evaluates to <code class="code">(<span class="hl-literal">"truefalse"</span>, <span class="hl-literal">true</span>, <span class="hl-literal">false</span>)</code>.</li><li><code class="code">(<span class="hl-literal">2</span>/<span class="hl-literal">2</span>, <span class="hl-literal">2</span>/<span class="hl-literal">1</span>, <span class="hl-literal">2</span>/<span class="hl-literal">0</span>)</code> is silent.</li></ul></div>
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10495"></a>1.2.5.2.&nbsp;Lists</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10486"></a>1.2.5.2.&nbsp;Lists</h4></div></div></div><p>
 A <em class="firstterm">list expression</em> is a comma-separated sequence of expressions enclosed by
 square brackets. It may be of any length, including zero. Each expression is evaluated; the value 
 of the whole list expression is a list containing each of these values in order.   
@@ -268,7 +266,7 @@ value of F and whose remaining elements are the list value of G. The <code class
 so F<code class="code">:</code>G<code class="code">:</code>H is F<code class="code">:(</code>G<code class="code">:</code>H<code class="code">)</code>.
 </p><p>
 <div class="itemizedlist"><p class="title"><b>Examples</b></p><ul type="disc"><li><code class="code">(<span class="hl-literal">1</span>+<span class="hl-literal">3</span>):[<span class="hl-literal">2</span>+<span class="hl-literal">5</span>,<span class="hl-literal">6</span>]</code> evaluates to <code class="code">[<span class="hl-literal">4</span>,<span class="hl-literal">7</span>,<span class="hl-literal">6</span>]</code>.</li><li><code class="code"><span class="hl-literal">2</span>:<span class="hl-literal">2</span>:<span class="hl-literal">5</span>:[] </code> evaluates to <code class="code">[<span class="hl-literal">2</span>,<span class="hl-literal">2</span>,<span class="hl-literal">5</span>]</code>.</li><li>Suppose <code class="code"><span class="hl-variable">t</span></code> is bound to [3,5]. Then <code class="code"><span class="hl-literal">1</span>:<span class="hl-variable">t</span></code> evaluates to <code class="code">[<span class="hl-literal">1</span>,<span class="hl-literal">3</span>,<span class="hl-literal">5</span>]</code>.</li><li><code class="code"><span class="hl-literal">2</span>:<span class="hl-literal">3</span></code> is silent, because <code class="code"><span class="hl-literal">3</span></code> is not a list.</li></ul></div>
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N104FC"></a>1.2.5.3.&nbsp;Records</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N104ED"></a>1.2.5.3.&nbsp;Records</h4></div></div></div><p>
 A <em class="firstterm">record expression</em> is a comma-separated sequence of elements of the form 
 <span class="emphasis"><em>f</em></span>
                         <code class="code"> = </code> E, enclosed by
@@ -294,7 +292,7 @@ of the elements of <code class="code"><span class="hl-variable">s</span></code>.
 This use of <code class="code">+</code> is left-associative and does not commute.
 </p><p>
 <div class="itemizedlist"><p class="title"><b>Examples</b></p><ul type="disc"><li><code class="code">{. <span class="hl-variable">x</span> = <span class="hl-literal">0</span> .} + {. <span class="hl-variable">y</span> = <span class="hl-literal">1</span> .}</code> evaluates to <code class="code">{. <span class="hl-variable">x</span> = <span class="hl-literal">0</span>, <span class="hl-variable">y</span> = <span class="hl-literal">1</span> .}</code></li><li><code class="code">{. <span class="hl-variable">x</span> = <span class="hl-literal">0</span>, <span class="hl-variable">y</span> = <span class="hl-literal">1</span> .} + {. <span class="hl-variable">y</span> = <span class="hl-literal">2</span>, <span class="hl-variable">z</span> = <span class="hl-literal">3</span> .}</code> evaluates to <code class="code">{. <span class="hl-variable">x</span> = <span class="hl-literal">0</span>, <span class="hl-variable">y</span> = <span class="hl-literal">2</span>, <span class="hl-variable">z</span> = <span class="hl-literal">3</span> .}</code></li></ul></div>
-</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1057B"></a>1.2.6.&nbsp;Patterns</h3></div></div></div><p>
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1056C"></a>1.2.6.&nbsp;Patterns</h3></div></div></div><p>
 We have seen how to construct data structures. But how do we examine them, and use them? We use <em class="firstterm">patterns</em>.
 </p><p>
 A pattern is a powerful way to bind variables. When writing <code class="code"><span class="hl-keyword">val</span></code> declarations, instead of just
@@ -367,7 +365,7 @@ A function definition or call may have zero arguments, in which case we write <c
 <pre class="programlisting">
 <span class="hl-keyword">def</span> <span class="hl-site">Zero</span>() = <span class="hl-literal">0</span>
 </pre>
-</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10637"></a>1.2.7.1.&nbsp;Recursion</h4></div></div></div><p>
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10628"></a>1.2.7.1.&nbsp;Recursion</h4></div></div></div><p>
 Functions can be recursive; that is, the name of a function may be used in its own body.
 
 <pre class="programlisting">
@@ -418,7 +416,7 @@ Since all declarations (including function declarations) in Cor are lexically sc
 function contains any variables other than the formal parameters, the bindings for those variables are
 stored in the closure. Then, when the closure is called, the evaluation of the function body uses those 
 stored variable bindings.  
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1066C"></a>1.2.7.3.&nbsp;Lambda</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1065D"></a>1.2.7.3.&nbsp;Lambda</h4></div></div></div><p>
 Sometimes one would like to create a closure directly, without bothering to give it a name. 
 There is a special keyword <code class="code"><span class="hl-keyword">lambda</span></code> for this purpose. By writing a function
 definition without the keyword <code class="code"><span class="hl-keyword">def</span></code> and replacing the function name with
@@ -439,7 +437,7 @@ Then, <code class="code"><span class="hl-site">onetwosum</span>( <span class="hl
 </p><p>
 Since a function defined using <code class="code"><span class="hl-keyword">lambda</span></code> has no name, it is not possible to define 
 a recursive function in this way. Only <code class="code"><span class="hl-keyword">def</span></code> can create a recursive function.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10689"></a>1.2.7.4.&nbsp;Clauses</h4></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1067A"></a>1.2.7.4.&nbsp;Clauses</h4></div></div></div><p>
 The combination of functions and pattern matching offers a powerful capability: 
 <em class="firstterm">clausal</em> definition of functions. We can define expressions which execute 
 different code depending on the structure of their arguments. 
@@ -531,7 +529,7 @@ them easier to read.
 <span class="hl-keyword">def</span> <span class="hl-site">odd</span>(<span class="hl-variable">n</span>) = <span class="hl-site">even</span>(<span class="hl-keyword">if</span> <span class="hl-variable">n</span> &gt; <span class="hl-literal">0</span> <span class="hl-keyword">then</span> <span class="hl-variable">n</span>-<span class="hl-literal">1</span> <span class="hl-keyword">else</span> <span class="hl-variable">n</span>+<span class="hl-literal">1</span>)
 </pre>
 
-</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N106D5"></a>1.2.8.&nbsp;Comments</h3></div></div></div><p>
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N106C6"></a>1.2.8.&nbsp;Comments</h3></div></div></div><p>
 Cor has two kinds of comments.   
 
 </p><p>

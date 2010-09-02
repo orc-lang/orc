@@ -44,7 +44,7 @@ used to access both static and non-static methods and fields:
 <span class="hl-comment">{- call a non-static method -}</span>
 <span class="hl-variable">i</span>.<span class="hl-site">toString</span>()
 </pre>
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1177E"></a>3.2.2.&nbsp;Direct Calls</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1175A"></a>3.2.2.&nbsp;Direct Calls</h3></div></div></div><p>
 When <code class="code"><span class="hl-variable">x</span></code> evaluates to a Scala/Java object (but not a Scala/Java class), the syntax
 <code class="code"><span class="hl-site">x</span>(...)</code> is equivalent to <code class="code"><span class="hl-variable">x</span>.<span class="hl-site">apply</span>(...)</code>.
 </p><p>
@@ -52,7 +52,7 @@ When <code class="code"><span class="hl-variable">x</span></code> evaluates to a
 calls the class's constructor.  In case of overloaded constructors, the
 appropriate constructor is chosen based on the number and types of arguments as
 described in <a class="link" href="ch03s02.html#section.services.java.method" title="3.2.4.&nbsp;Method Resolution">Method Resolution</a>.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11798"></a>3.2.3.&nbsp;Pattern Matching</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11774"></a>3.2.3.&nbsp;Pattern Matching</h3></div></div></div><p>
 If <code class="code"><span class="hl-variable">C</span></code> is bound to a Scala/Java class, it can be used as a pattern.
 A pattern <code class="code"><span class="hl-site">C</span>(<span class="hl-variable">x</span>)</code> matches any Scala/Java object of that class or
 any of its subclasses. The variable <code class="code"><span class="hl-variable">x</span></code> is simply bound
@@ -86,13 +86,13 @@ Currently we do not implement specificity rules for choosing the best matching
 method; the first matching method (according to some unspecified order) is
 chosen.  Note also that we do not support varargs methods explicitly, but
 instead varargs may be passed as an array of the appropriate type.
-</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N117D4"></a>3.2.5.&nbsp;Orc values in Scala</h3></div></div></div><p>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N117B0"></a>3.2.5.&nbsp;Orc values in Scala</h3></div></div></div><p>
 Orc values are implemented by Scala objects, so in general any Orc value may be
 passed to a site implemented in Scala.  Standard Orc values have the following
 Scala types:
-</p><div class="variablelist"><dl><dt><span class="term">string</span></dt><dd><code class="code">java.lang.String</code></dd><dt><span class="term">boolean</span></dt><dd><code class="code">java.lang.Boolean</code></dd><dt><span class="term">number</span></dt><dd><code class="code">scala.math.BigDecimal and scala.math.BigInt</code></dd><dt><span class="term">tuple</span></dt><dd><code class="code">orc.values.OrcTuple</code></dd><dt><span class="term">list</span></dt><dd><code class="code">scala.collection.immutable.List</code></dd><dt><span class="term">function</span></dt><dd><code class="code">orc.run.Closure</code><p>Currently it is not possible to call Orc functions from Java code.</p></dd><dt><span class="term">site</span></dt><dd><code class="code">orc.value.sites.Site</code><p>Currently it is not possible to directly call Orc sites from Java
+</p><div class="variablelist"><dl><dt><span class="term">string</span></dt><dd><code class="code">java.lang.String</code></dd><dt><span class="term">boolean</span></dt><dd><code class="code">java.lang.Boolean</code></dd><dt><span class="term">number</span></dt><dd><code class="code">scala.math.BigDecimal and scala.math.BigInt</code></dd><dt><span class="term">tuple</span></dt><dd><code class="code">orc.values.OrcTuple</code></dd><dt><span class="term">list</span></dt><dd><code class="code">scala.collection.immutable.List</code></dd><dt><span class="term">function</span></dt><dd><code class="code">orc.run.Closure</code><p>Currently it is not possible to call Orc functions from Java code.</p></dd><dt><span class="term">site</span></dt><dd><code class="code">orc.value.sites.Sites</code><p>Currently it is not possible to directly call Orc sites from Java
 code.  However if you are implementing a site yourself, you may provide methods
-which can be called from Scala/Java code to invoke the behavior of the site.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11810"></a>3.2.6.&nbsp;Scala Values in Orc</h3></div></div></div><p>
+which can be called from Scala/Java code to invoke the behavior of the site.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N117EC"></a>3.2.6.&nbsp;Scala Values in Orc</h3></div></div></div><p>
 Scala objects may be used directly as values anywhere in an Orc program.
 Primitive Scala values cannot be used directly in an Orc program, but are
 automatically boxed (and unboxed) as necessary.
