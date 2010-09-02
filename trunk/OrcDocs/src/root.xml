@@ -230,12 +230,13 @@ in a subsequent section.
 <entry><emphasis>scoped declaration</emphasis></entry>
 </row>
 
+<!--
 <row>
 <entry></entry>
 <entry>|</entry>
-
-	<!--	
+	
 <entry>D <code>within</code> E</entry>
+	
 <entry></entry>
 <entry><emphasis>goal expression w/declarations</emphasis></entry>
 </row>
@@ -3525,7 +3526,7 @@ def f(x,y) =
 
 <para> The following situation could introduce syntactic ambiguity: the end
 of a declaration (def or val) is followed by an expression that starts with a
-non-alphanumeric symbol. Consider these examples:
+non-alphanumeric symbol. Consider these example programs:
 </para>
 
 <para>
@@ -3538,7 +3539,7 @@ def f() =       -- example 1
 		
 <para>
 <programlisting><![CDATA[
-def f() =
+def f() =       -- example 2
   val t = h
   (x,y)
 ]]></programlisting>
@@ -3546,7 +3547,7 @@ def f() =
 		
 <para>
 <programlisting><![CDATA[
-def f() =
+def f() =       -- example 3
   val t = u
   -3
 ]]></programlisting>
@@ -3558,7 +3559,7 @@ separate expressions (in this case, the goal expression of <code>def f</code>). 
 Orc imposes the following syntactic constraint:
 </para>
 		
-<para><i>An expression that follows a declaration begins with an alphanumeric symbol</i></para>
+<para><code>An expression that follows a declaration begins with an alphanumeric symbol</code></para>
 	
 <para>To circumvent this restriction, if (x,y) is an expression that follows a declaration, 
 write it as <code>signal >> (x,y)</code>. Similarly, write <code>signal >> -3</code>, in case <code>-3</code> is
@@ -7300,11 +7301,12 @@ example, <code>site Foo()() :: Top</code> is equivalent to
 <entry><emphasis>type assertion</emphasis></entry>
 </row>
 
+<!--
 <row>
 <entry></entry>
 <entry>|</entry>
 
-<!-- <entry>D <code>within</code> E</entry>
+<entry>D <code>within</code> E</entry>
 
 <entry></entry>
 <entry><emphasis>goal expression w/declarations</emphasis></entry>
