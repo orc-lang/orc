@@ -26,7 +26,7 @@
 
 	<target name="copyuserguide">
 		<copy preservelastmodified="true" todir="help/orcuserguide" verbose="true">
-			<fileset dir="../Website/userguide/html"/>
+			<fileset dir="../Website/userguide-scala/html"/>
 		</copy>
 	</target>
 </project>

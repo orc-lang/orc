@@ -22,7 +22,7 @@ import orc.ast.AST;
 import orc.ast.OrcSyntaxConvertible;
 import orc.ast.ext.ClassImport;
 import orc.ast.ext.Def;
-import orc.ast.ext.DefCapsule;
+import orc.ast.ext.DefClass;
 import orc.ast.ext.DefSig;
 import orc.ast.ext.Include;
 import orc.ast.ext.Pattern;
@@ -141,7 +141,7 @@ public class OrcLabelProvider implements ILabelProvider {
 		if (n instanceof DefSig) {
 			return ORC_DEF_TYPE_OBJ_IMAGE;
 		}
-		if (n instanceof Def || n instanceof DefCapsule) {
+		if (n instanceof Def || n instanceof DefClass) {
 			return ORC_DEF_OBJ_IMAGE;
 		}
 		if (n instanceof SiteDeclaration) {
@@ -181,8 +181,8 @@ public class OrcLabelProvider implements ILabelProvider {
 			final Def dmc = (Def) n;
 			return sigToString(dmc);
 		}
-		if (n instanceof DefCapsule) {
-			final DefCapsule dmc = (DefCapsule) n;
+		if (n instanceof DefClass) {
+			final DefClass dmc = (DefClass) n;
 			return sigToString(dmc);
 		}
 		if (n instanceof DefSig) {
@@ -247,7 +247,7 @@ public class OrcLabelProvider implements ILabelProvider {
 		return s.toString();
 	}
 
-	private static String sigToString(final DefCapsule d) {
+	private static String sigToString(final DefClass d) {
 		final StringBuilder s = new StringBuilder();
 
 		s.append(d.name());
