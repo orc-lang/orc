@@ -14,8 +14,8 @@
 		<h2>Editing a File</h2>
 		<ol>
 			<li>If needed, in the Project Explorer, expand the project and folders containing the Orc file of interest.</li>
-			<li>Double-click the Orc file you wish to view and edit, or try this simple program (cat-and-paste this text into
-			the editor):<kbd><pre>
+			<li>Double-click the Orc file you wish to view and edit, or try this simple program (copy-and-paste this text into
+			a new Orc file):<kbd><pre>
 -- Testing the Orc editor
 
 def SimpleDef() = "SimpleDef"
@@ -26,9 +26,9 @@ def OuterDef() =
     def InnerDef() = "InnerDef"
     "OuterDef"
 
-site TestSite = orc.runtime.sites.core.Let
+site TestSite = "orc.lib.builtin.Let"
 
-class TestClass = java.lang.String
+class TestClass = "java.lang.String"
 
 val testval = "testval"
 
@@ -47,10 +47,6 @@ type Type1 = Bot
 			highlighting. This is useful, for example, when cut-and-pasting code from formatted documents, where odd characters such
 			as non-breaking spaces or "curly quotes" can accidentally end up in your code. Delete the character that does not belong
 			in Orc source code.</li>
-			<li>In the Outline view, try pressing the <strong>Sort by Name</strong> button (it looks like a downward-pointing arrow with "a"
-			and "z" next to it).  Notice that the outline items are now sorted alphabetically within categories. Click on an entry in the
-			outline.  Note that this selects this declaration in the source code.  This is a quick way to navigate declarations in large files.
-			Press the <strong>Sort by Name</strong> button again to return to textual order.</li>
 			<li>In the Outline view, try pressing the <strong>Sort by Name</strong> button (it looks like a downward-pointing arrow with "a"
 			and "z" next to it).  Notice that the outline items are now sorted alphabetically within categories. Click on an entry in the
 			outline.  Note that this selects this declaration in the source code.  This is a quick way to navigate declarations in large files.
