@@ -79,12 +79,35 @@ trait Orc extends OrcRuntime {
   }
   Killer.start
   
+  class KHandler(n : Int) extends Actor {
+    var c = 0
+    def act() {
+      loop {
+        react {
+          case K(k, ov) => c= c+1; k(ov); if (c==n) {exit()}
+        }
+      }
+    }
+  }
+  
+  def mkhandler(n:Int) : KHandler = {
+//    println("mkhandler:"+n)
+    if (n > 0) {
+      val myKHandler = new KHandler(n)
+      myKHandler.start
+      myKHandler
+    }
+    else null
+  }
+  
+  case class K(k:(Option[AnyRef] => Unit), ov:Option[AnyRef])
   trait Group extends GroupMember {
     def publish(t: Token, v: AnyRef): Unit 
-    def onHalt: Unit 
-  
+    def onHalt: Unit
+    
     var members: Set[GroupMember] = Set()
   
+    
     def halt(t: Token) = synchronized { remove(t) }
     
     /* Note: this is _not_ lazy termination */
@@ -144,7 +167,8 @@ trait Orc extends OrcRuntime {
           state = Bound(v)
           t.halt
           this.kill
-          for (k <- waitlist) { k(Some(v)) }
+          val mkh = mkhandler(waitlist.size)
+          for (k <- waitlist) { mkh ! new K(k, Some(v)) }
         }
         case _ => t.halt    
       }
@@ -155,7 +179,8 @@ trait Orc extends OrcRuntime {
         case Unbound(waitlist) => {
           state = Dead
           parent.remove(this)
-          for (k <- waitlist) { k(None) }     
+          val mkh = mkhandler(waitlist.size)
+          for (k <- waitlist) { mkh ! new K(k, None) }     
         }
         case _ => {  }
       }
@@ -167,8 +192,8 @@ trait Orc extends OrcRuntime {
         case Unbound(waitlist) => {
           state = Unbound(k :: waitlist)
         }
-        case Bound(v) => k(Some(v))
-        case Dead => k(None)
+        case Bound(v) => mkhandler(1) ! new K(k, Some(v))
+        case Dead => mkhandler(1) ! new K(k, None)
       }
     }
     
