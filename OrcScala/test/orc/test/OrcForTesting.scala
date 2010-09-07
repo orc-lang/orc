@@ -54,6 +54,9 @@ object OrcForTesting {
       engine.compile(reader).asInstanceOf[OrcScriptEngine#OrcCompiledScript]
     } catch {
       case e: ScriptException if (e.getCause != null) => throw e.getCause // un-wrap and propagate
+    } finally {
+      Console.out.flush();
+      Console.err.flush();
     }
   }
 
@@ -66,9 +69,10 @@ object OrcForTesting {
         override def published(value: AnyRef) {
           output.append(Format.formatValue(value)+"\n")
           println(Format.formatValue(value))
+          Console.out.flush()
         }
-        override def printed(s: String) { print(s); output.append(s) }
-        override def caught(e: Throwable) { output.append("Error: "+e.getClass().getName()+": "+e.getMessage()+"\n") }
+        override def printed(s: String) { print(s); Console.out.flush(); output.append(s) }
+        override def caught(e: Throwable) { println("Error: "+e.getClass().getName()+": "+e.getMessage()); Console.out.flush(); output.append("Error: "+e.getClass().getName()+": "+e.getMessage()+"\n") }
       }
 
       // run the engine with a fixed timeout
@@ -92,6 +96,9 @@ object OrcForTesting {
       output.toString
     } catch {
       case e: ScriptException => throw e.getCause // un-wrap and propagate
+    } finally {
+      Console.out.flush();
+      Console.err.flush();
     }
   }
   
