@@ -90,6 +90,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 				public void printed(String output) {
 					try {
 						ctx.getWriter().write(output);
+						ctx.getWriter().flush();
 					} catch (IOException e) {
 						//Can't happen, according to API spec
 						e.printStackTrace();
@@ -99,6 +100,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 				public void caught(Throwable e) {
 					//TODO: Consider saving the exception and throwing it out of this eval() invocation.  Can't throw here, because we're in engine when this OrcEventAction is called.
 					try {
+                        ctx.getWriter().flush();
 						if (e instanceof OrcException)
 							ctx.getErrorWriter().write(((OrcException)e).getMessageAndDiagnostics());
 						else

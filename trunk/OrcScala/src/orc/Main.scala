@@ -44,9 +44,9 @@ object Main {
       val reader = new InputStreamReader(new FileInputStream(options.filename), "UTF-8")
       val compiledOrc = engine.compile(reader).asInstanceOf[OrcScriptEngine#OrcCompiledScript]
       val printPubs = new OrcEventAction() {
-        override def published(value: AnyRef) { println(Format.formatValue(value)) }
-        override def printed(s: String) { print(s) }
-        override def caught(e: Throwable) { printException(e, Console.err) }
+        override def published(value: AnyRef) { println(Format.formatValue(value)); Console.out.flush() }
+        override def printed(s: String) { print(s); Console.out.flush() }
+        override def caught(e: Throwable) { Console.out.flush(); printException(e, Console.err); Console.err.flush() }
       }
       compiledOrc.run(printPubs)
     } catch {
@@ -76,7 +76,7 @@ object Main {
     val orcLogger = java.util.logging.Logger.getLogger("orc")
     val logLevel = java.util.logging.Level.parse(options.logLevel)
     orcLogger.setLevel(logLevel)
-    val logHandler = new java.util.logging.ConsoleHandler() //FIXME:Allow other hanlers, or none...
+    val logHandler = new java.util.logging.ConsoleHandler() //FIXME:Allow other handlers, or none...
     logHandler.setLevel(logLevel)
     orcLogger.addHandler(logHandler)
     //TODO: orcLogger.config(options.printAllTheOptions...)
