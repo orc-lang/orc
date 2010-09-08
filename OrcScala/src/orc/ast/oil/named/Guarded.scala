@@ -23,19 +23,19 @@ package orc.ast.oil.named
 trait Guarding {
   self : Expression =>
   
-  def checkGuarded(unguardedRecursion: => Unit) { checkGuarded(Nil, unguardedRecursion) }
+  def checkGuarded(unguardedRecursion: Expression => Unit) { checkGuarded(Nil, unguardedRecursion) }
   
   /* The context contains only those variables which would be
    * considered recursive call targets in the current context.
    */
-  def checkGuarded(context: List[BoundVar], unguardedRecursion: => Unit): Boolean = {
+  def checkGuarded(context: List[BoundVar], unguardedRecursion: Expression => Unit): Boolean = {
     def check(e: Expression) = e.checkGuarded(context, unguardedRecursion)
     this match {
       case Stop() => true
       case a : Argument => false
       case Call(target, _, _) => {
         if (context contains target) {
-          unguardedRecursion ; false
+          unguardedRecursion(this) ; false
         } else {
           /* This is a liberal approximation and will generate false negatives. 
            * Not all calls are truly guarding; only calls to sites or to guarded
