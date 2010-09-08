@@ -164,8 +164,10 @@ abstract class CoreOrcCompiler extends OrcCompiler {
     val phaseName = "noUnguardedRecursion"
     override def apply(co: CompilerOptions) = 
       { ast =>
-          def problem = co.reportProblem(UnguardedRecursionException())
-          ast.checkGuarded(problem)
+          def warn(e: orc.ast.oil.named.Expression) = {
+            co.reportProblem(UnguardedRecursionException() at e)
+          }
+          ast.checkGuarded(warn)
           ast 
       }
   }
