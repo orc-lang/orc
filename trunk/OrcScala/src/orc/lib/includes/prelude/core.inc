@@ -69,6 +69,16 @@ Example:
 --}
 site Unless = "orc.lib.builtin.Unless"
 
+{- Aliases for different styles of conditional site usage -}
+val Ift = If
+val IfT = If
+val IfTrue = If
+
+val Iff = Unless
+val IfF = Unless
+val IfFalse = Unless
+
+
 {--
 @site error(String) :: Bot
 Halt with the given error message.
