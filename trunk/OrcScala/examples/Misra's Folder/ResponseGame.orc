@@ -5,7 +5,7 @@
  - Created by misra on Mar 17, 2010 4:29:41 PM
  -}
 
-include "http://www.cs.utexas.edu/users/misra/temporaryFiles.dir/StopWatch.inc"
+include "StopWatch.inc"
 
 val (id,dd) = (3000,100)
 -- id is the initial delay in starting a game
