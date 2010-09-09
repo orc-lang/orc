@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -15,20 +15,19 @@ package orc.orchard;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import kilim.Mailbox;
 import net.oauth.OAuth;
 import net.oauth.OAuthAccessor;
 import net.oauth.OAuthException;
 import net.oauth.OAuthMessage;
 import net.oauth.server.OAuthServlet;
-import orc.runtime.Kilim;
-import orc.runtime.OrcEngine;
+import orc.orchard.Job.JobEngine;
 
 public class OrchardOAuthServlet extends HttpServlet {
 	public final static String MAILBOX = "orc.orchard.OrchardOAuthServlet.MAILBOX";
@@ -43,13 +42,14 @@ public class OrchardOAuthServlet extends HttpServlet {
 	 * @return Callback URL string
 	 * @throws IOException
 	 */
-	public static String addToGlobalsAndGetCallbackURL(final OAuthAccessor accessor, final Mailbox mbox, final OrcEngine globals) throws IOException {
+	public static String addToGlobalsAndGetCallbackURL(final OAuthAccessor accessor, final LinkedBlockingQueue mbox, final JobEngine globals) throws IOException {
 		accessor.setProperty(MAILBOX, mbox);
 		final String key = globals.addGlobal(accessor);
-		// FIXME: we should figure out the callback URL
-		// automatically from the servlet context
+		// FIXME: we should figure out the callback URL automatically from the servlet context
 		return OAuth.addParameters(accessor.consumer.callbackURL, "k", key);
 	}
+
+	public static final Object signal = new Object();
 
 	/**
 	 * Receive and validate an authorization callback and alert the client.
@@ -57,12 +57,13 @@ public class OrchardOAuthServlet extends HttpServlet {
 	 * @param request
 	 * @throws IOException
 	 * @throws OAuthException
+	 * @throws InterruptedException 
 	 */
-	public void receiveAuthorization(final HttpServletRequest request) throws IOException, OAuthException {
+	public void receiveAuthorization(final HttpServletRequest request) throws IOException, OAuthException, InterruptedException {
 		final OAuthMessage requestMessage = OAuthServlet.getMessage(request, null);
 		requestMessage.requireParameters(OAuth.OAUTH_TOKEN, "k");
 
-		final OAuthAccessor accessor = (OAuthAccessor) OrcEngine.globals.remove(requestMessage.getParameter("k"));
+		final OAuthAccessor accessor = (OAuthAccessor) AbstractExecutorService.globals.remove(requestMessage.getParameter("k"));
 		if (accessor == null) {
 			return;
 		}
@@ -77,12 +78,12 @@ public class OrchardOAuthServlet extends HttpServlet {
 			accessor.setProperty("oauth_verifier", verifier);
 		}
 		
-		final Mailbox mbox = (Mailbox) accessor.getProperty(MAILBOX);
+		final LinkedBlockingQueue mbox = (LinkedBlockingQueue) accessor.getProperty(MAILBOX);
 		if (mbox == null) {
 			return;
 		}
 		System.out.println("OrchardOAuthServlet: approving " + accessor.requestToken);
-		mbox.putb(Kilim.signal);
+		mbox.put(signal);
 	}
 
 	/* (non-Javadoc)
@@ -94,6 +95,9 @@ public class OrchardOAuthServlet extends HttpServlet {
 			receiveAuthorization(request);
 		} catch (final OAuthException e) {
 			throw new ServletException(e);
+		} catch (InterruptedException e) {
+            // Restore the interrupted status
+            Thread.currentThread().interrupt();
 		}
 		final PrintWriter out = response.getWriter();
 		out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");

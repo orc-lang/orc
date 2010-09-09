@@ -38,13 +38,7 @@ public class ExecutorService extends AbstractExecutorService implements Executor
 	}
 
 	public static void main(final String[] args) {
-		URI baseURI;
-		try {
-			baseURI = new URI("rmi://localhost/orchard/executor");
-		} catch (final URISyntaxException e) {
-			// this is impossible by construction
-			throw new AssertionError(e);
-		}
+		URI baseURI = URI.create("rmi://localhost/orchard/executor");
 		if (args.length > 0) {
 			try {
 				baseURI = new URI(args[0]);

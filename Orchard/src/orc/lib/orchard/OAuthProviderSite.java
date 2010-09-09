@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -16,28 +16,25 @@ package orc.lib.orchard;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
-import java.util.concurrent.Callable;
+import java.util.concurrent.LinkedBlockingQueue;
 
-import kilim.Mailbox;
-import kilim.Pausable;
 import net.oauth.OAuth;
 import net.oauth.OAuthAccessor;
 import orc.error.runtime.JavaException;
-import orc.error.runtime.SiteException;
 import orc.error.runtime.TokenException;
 import orc.lib.orchard.Redirect.Redirectable;
 import orc.oauth.OAuthProvider;
 import orc.orchard.OrchardOAuthServlet;
-import orc.runtime.Args;
-import orc.runtime.Kilim;
-import orc.runtime.OrcEngine;
-import orc.runtime.Token;
-import orc.runtime.sites.Site;
+import orc.orchard.Job.JobEngine;
+import orc.values.sites.compatibility.Args;
+import orc.OrcRuntime;
+import orc.TokenAPI;
+import orc.values.sites.compatibility.SiteAdaptor;
 
-public class OAuthProviderSite extends Site {
+public class OAuthProviderSite extends SiteAdaptor {
 	public static class PendingOAuthAccessor {
 		public OAuthAccessor accessor;
-		public Mailbox<OAuthAccessor> ready;
+		public LinkedBlockingQueue<OAuthAccessor> ready;
 	}
 
 	/**
@@ -45,52 +42,42 @@ public class OAuthProviderSite extends Site {
 	 * and prompt the user to confirm authorization.
 	 */
 	public static class WebOAuthProvider extends OAuthProvider {
-		private final OrcEngine globals;
+		private final JobEngine globals;
 		private final Redirectable redirectable;
 
-		public WebOAuthProvider(final OrcEngine globals, final Redirectable redirectable, final String properties) throws IOException {
+		public WebOAuthProvider(final JobEngine globals, final Redirectable redirectable, final String properties) throws IOException {
 			super(properties);
 			this.globals = globals;
 			this.redirectable = redirectable;
 		}
 
 		@Override
-		public OAuthAccessor authenticate(final String consumer, final List<OAuth.Parameter> request) throws Pausable, Exception {
+		public OAuthAccessor authenticate(final String consumer, final List<OAuth.Parameter> request) throws Exception {
 			final OAuthAccessor accessor = oauth.newAccessor(consumer);
-			final Mailbox ready = new Mailbox();
+			final LinkedBlockingQueue ready = new LinkedBlockingQueue();
 			final String callbackURL = OrchardOAuthServlet.addToGlobalsAndGetCallbackURL(accessor, ready, globals);
 			// get a request token
-			Kilim.runThreaded(new Callable() {
-				public Object call() throws Exception {
-					oauth.obtainRequestToken(accessor, request, callbackURL);
-					return Kilim.signal;
-				}
-			});
+			oauth.obtainRequestToken(accessor, request, callbackURL);
 			// request authorization and wait for response
 			redirectable.redirect(oauth.getAuthorizationURL(accessor, callbackURL));
-			ready.get();
+			ready.take();
 			// get the access token
-			Kilim.runThreaded(new Callable() {
-				public Object call() throws Exception {
-					oauth.obtainAccessToken(accessor);
-					return Kilim.signal;
-				}
-			});
+			oauth.obtainAccessToken(accessor);
 			return accessor;
 		}
 	}
 
 	@Override
-	public void callSite(final Args args, final Token caller) throws TokenException {
-		final OrcEngine engine = caller.getEngine();
-		if (!(engine instanceof Redirectable)) {
-			throw new SiteException("This site is not supported on the engine " + engine.getClass().toString());
+	public void callSite(final Args args, final TokenAPI caller) throws TokenException {
+		final OrcRuntime engine = caller.runtime();
+		if (!(engine instanceof JobEngine)) {
+			throw new UnsupportedOperationException("This site is not supported on the engine " + engine.getClass().toString());
 		}
 		try {
 			/**
 			 * This implementation of OAuthProvider 
 			 */
-			caller.resume(new WebOAuthProvider(engine, (Redirectable) engine,
+			caller.publish(new WebOAuthProvider((JobEngine) engine, (Redirectable) engine,
 			// force root-relative resource path
 					"/" + args.stringArg(0)));
 		} catch (final IOException e) {

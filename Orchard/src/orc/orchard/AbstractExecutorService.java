@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -19,10 +19,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-import orc.Config;
-import orc.ast.oil.expression.Expression;
-import orc.ast.xml.Oil;
-import orc.error.compiletime.CompilationException;
+import orc.ast.oil.nameless.Expression;
+import orc.ast.oil.nameless.OrcXML;
 import orc.orchard.api.ExecutorServiceInterface;
 import orc.orchard.errors.InvalidJobException;
 import orc.orchard.errors.InvalidJobStateException;
@@ -32,17 +30,19 @@ import orc.orchard.errors.InvalidPromptException;
 import orc.orchard.errors.QuotaException;
 import orc.orchard.events.JobEvent;
 import orc.orchard.java.CompilerService;
+import scala.MatchError;
+import scala.xml.XML;
 
 /**
  * Standard implementation of an ExecutorService. Extenders should implement
  * createJobService.
- * 
- * <p>TODO: add executor oil validation to only allow "safe" sites
+ *
  * @author quark
  * 
  */
 public abstract class AbstractExecutorService implements ExecutorServiceInterface {
 	protected Logger logger;
+	public final static Globals<Job, Object> globals = new Globals<Job, Object>();
 
 	protected Accounts getAccounts() {
 		return Accounts.getAccounts(OrchardProperties.getProperty("orc.orchard.Accounts.url"));
@@ -67,13 +67,13 @@ public abstract class AbstractExecutorService implements ExecutorServiceInterfac
 		return UUID.randomUUID().toString();
 	}
 
-	public String submit(final String devKey, final Oil program) throws QuotaException, InvalidOilException, RemoteException {
+	public String submit(final String devKey, final String program) throws QuotaException, InvalidOilException, RemoteException {
 		logger.info("submit(" + devKey + ", ...)");
 		final String id = createJobID();
 		final Expression expr;
 		try {
-			expr = program.unmarshal(new Config());
-		} catch (final CompilationException e) {
+			expr = OrcXML.fromXML(XML.loadString(program));
+		} catch (final MatchError e) {//FIXME:Any other exceptions?
 			throw new InvalidOilException(e);
 		}
 		getAccounts().getAccount(devKey).addJob(id, expr);

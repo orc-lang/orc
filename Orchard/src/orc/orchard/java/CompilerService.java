@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -15,7 +15,6 @@ package orc.orchard.java;
 
 import java.util.logging.Logger;
 
-import orc.ast.xml.Oil;
 import orc.orchard.AbstractCompilerService;
 import orc.orchard.errors.InvalidProgramException;
 
@@ -30,7 +29,7 @@ public class CompilerService extends AbstractCompilerService {
 
 	public static void main(final String[] args) throws InvalidProgramException {
 		final CompilerService c = new CompilerService();
-		final Oil oil = c.compile("", "1 >x> x");
-		System.out.println(oil.toXML());
+		final String oil = c.compile("", "1 >x> x");
+		System.out.println(oil);
 	}
 }

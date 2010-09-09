@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -20,11 +20,12 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 import javax.xml.ws.Endpoint;
 
-import orc.ast.xml.Oil;
 import orc.orchard.AbstractCompilerService;
 import orc.orchard.errors.InvalidProgramException;
 
 /**
+ * Web Service implementation bean for the Orc executor service.
+ *
  * HACK: We must explicitly declare every published web method in this class, we
  * can't simply inherit them, for the following reasons:
  * <ul>
@@ -56,12 +57,7 @@ public class CompilerService extends AbstractCompilerService {
 
 	public static void main(final String[] args) {
 		URI baseURI;
-		try {
-			baseURI = new URI("http://localhost:8280/orchard/compiler");
-		} catch (final URISyntaxException e) {
-			// this is impossible by construction
-			throw new AssertionError(e);
-		}
+		baseURI = URI.create("http://localhost:8280/orchard/compiler");
 		if (args.length > 0) {
 			try {
 				baseURI = new URI(args[0]);
@@ -75,7 +71,7 @@ public class CompilerService extends AbstractCompilerService {
 
 	/** Do-nothing override */
 	@Override
-	public Oil compile(@WebParam(name = "devKey") final String devKey, @WebParam(name = "program") final String program) throws InvalidProgramException {
+	public String compile(@WebParam(name = "devKey") final String devKey, @WebParam(name = "program") final String program) throws InvalidProgramException {
 		return super.compile(devKey, program);
 	}
 }

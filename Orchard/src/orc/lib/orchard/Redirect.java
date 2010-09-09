@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -17,18 +17,17 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import orc.error.runtime.JavaException;
-import orc.error.runtime.SiteException;
 import orc.error.runtime.TokenException;
-import orc.runtime.Args;
-import orc.runtime.OrcEngine;
-import orc.runtime.Token;
-import orc.runtime.sites.Site;
+import orc.values.sites.compatibility.Args;
+import orc.OrcRuntime;
+import orc.TokenAPI;
+import orc.values.sites.compatibility.SiteAdaptor;
 
 /**
  * Redirect the user to a URL.
  * @author quark
  */
-public class Redirect extends Site {
+public class Redirect extends SiteAdaptor {
 	/**
 	 * Interface implemented by an engine which can handle
 	 * this site.
@@ -39,17 +38,17 @@ public class Redirect extends Site {
 	}
 
 	@Override
-	public void callSite(final Args args, final Token caller) throws TokenException {
-		final OrcEngine engine = caller.getEngine();
+	public void callSite(final Args args, final TokenAPI caller) throws TokenException {
+		final OrcRuntime engine = caller.runtime();
 		final String url = args.stringArg(0);
 		if (!(engine instanceof Redirectable)) {
-			caller.error(new SiteException("This Orc engine does not support the Redirect site."));
+			caller.$bang$bang(new JavaException(new UnsupportedOperationException("This Orc engine does not support the Redirect site.")));
 		}
 		try {
 			((Redirectable) engine).redirect(new URL(url));
-			caller.resume(signal());
+			caller.publish(signal());
 		} catch (final MalformedURLException e) {
-			caller.error(new JavaException(e));
+			caller.$bang$bang(new JavaException(e));
 		}
 	}
 }

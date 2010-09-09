@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -17,7 +17,6 @@ import java.net.URI;
 import java.rmi.Naming;
 import java.util.List;
 
-import orc.ast.xml.Oil;
 import orc.orchard.api.ExecutorServiceInterface;
 import orc.orchard.errors.InvalidOilException;
 import orc.orchard.events.JobEvent;
@@ -34,7 +33,7 @@ public class RmiTest {
 
 		final CompilerService compiler = new CompilerService();
 		// Check security validation
-		Oil oil = compiler.compile("", "class String = java.lang.String 1");
+		String oil = compiler.compile("", "class String = java.lang.String 1");
 		try {
 			System.out.println(oil);
 			executor.submit("", oil);

@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -18,16 +18,20 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import orc.ast.oil.visitor.Walker;
-import orc.ast.oil.expression.argument.Site;
-import orc.error.Located;
-import orc.error.SourceLocation;
+import orc.ast.AST;
+import orc.ast.oil.nameless.Constant;
+import orc.ast.oil.nameless.NamelessAST;
+
+import scala.collection.JavaConversions;
+import scala.util.parsing.input.NoPosition$;
+import scala.util.parsing.input.Position;
+import scala.util.parsing.input.Positional;
 
 /**
  * Check an OIL expression for security violations.
  * @author quark
  */
-public class OilSecurityValidator extends Walker {
+public class OilSecurityValidator {
 	private boolean hasProblems = false;
 	private final List<SecurityProblem> problems = new LinkedList<SecurityProblem>();
 
@@ -111,50 +115,74 @@ public class OilSecurityValidator extends Walker {
 
 	}
 
-	public static class SecurityProblem implements Located {
+	public static class SecurityProblem implements Positional {
+		//FIXME: Replace this with something that uses orc.error...
 		private final String message;
-		private final SourceLocation location;
+		private Position position;
 
-		public SecurityProblem(final String message, final SourceLocation location) {
+		public SecurityProblem(final String message, final Position position) {
 			this.message = message;
-			this.location = location;
+			this.position = position;
 		}
 
 		public String getMessage() {
 			return message;
 		}
 
-		public SourceLocation getSourceLocation() {
-			return location;
+		public Position getPosition() {
+			return position;
 		}
 
 		@Override
 		public String toString() {
-			if (location != null) {
-				return message + " at " + location;
+			if (position != null) {
+				return message + " at " + position;
 			} else {
 				return message;
 			}
 		}
+
+		/* (non-Javadoc)
+		 * @see scala.util.parsing.input.Positional#pos()
+		 */
+		@Override
+		public Position pos() {
+			return position;
+		}
+
+		/* (non-Javadoc)
+		 * @see scala.util.parsing.input.Positional#pos_$eq(scala.util.parsing.input.Position)
+		 */
+		@Override
+		public void pos_$eq(Position newpos) {
+			position = newpos;
+		}
+
+		/* (non-Javadoc)
+		 * @see scala.util.parsing.input.Positional#setPos(scala.util.parsing.input.Position)
+		 */
+		@Override
+		public Positional setPos(Position newpos) {
+		    if (position == null || position instanceof NoPosition$) position = newpos;
+		    return this;
+		}
 	}
 
-	@Override
-	public void enter(final Site site) {
-		final String protocol = site.site.getProtocol();
-		final String location = site.site.getLocation().toString();
-		if (protocol.equals(orc.ast.sites.Site.JAVA)) {
-			// only whitelisted Java classes are allowed
-			if (!allowedClasses.contains(location)) {
-				hasProblems = true;
-				// FIXME: once we have source location information, use it
-				problems.add(new SecurityProblem("Site URL '" + location + "' not" + " allowed.", null));
+	public void validate(NamelessAST astNode) {
+		for (AST node : JavaConversions.asIterable(astNode.subtrees())) {
+			NamelessAST child = (NamelessAST) node;
+			if (child instanceof Constant) {
+				final Object value = ((Constant) child).value();
+				if (!(value instanceof orc.values.sites.Site)) {
+					final String location = value.getClass().getCanonicalName();
+					if (!allowedClasses.contains(location)) {
+						hasProblems = true;
+						// FIXME: once we have source location information, use it
+						problems.add(new SecurityProblem("Site URL '" + location + "' not" + " allowed.", null));
+					}
+				}
 			}
-		} else if (protocol.equals(orc.ast.sites.Site.ORC)) {
-			// all Orc sites are allowed
-		} else {
-			hasProblems = true;
-			// FIXME: once we have source location information, use it
-			problems.add(new SecurityProblem("Site protocol '" + protocol + "' not" + " allowed.", null));
+			validate(child);
 		}
 	}
 }
