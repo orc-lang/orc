@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -23,13 +23,14 @@ import java.util.Set;
 
 import javax.management.ObjectName;
 
-import orc.Config;
-import orc.ast.oil.expression.Expression;
-import orc.error.compiletime.CompilationException;
+import orc.OrcOptions;
+import orc.ast.oil.nameless.Expression;
+import orc.error.runtime.ExecutionException;
 import orc.orchard.errors.InvalidJobException;
 import orc.orchard.errors.InvalidOilException;
 import orc.orchard.errors.QuotaException;
 import orc.orchard.jmx.JMXUtilities;
+import orc.script.OrcBindings;
 
 /**
  * Manage a group of jobs associated with a user account. Note that jobs are
@@ -78,15 +79,15 @@ public abstract class Account implements AccountMBean {
 	}
 
 	public synchronized void addJob(final String id, final Expression expr) throws QuotaException, InvalidOilException {
-		final Config config = new Config();
-		config.setCapability("send mail", canSendMail);
-		config.setCapability("import java", canImportJava);
-		config.setTokenPoolSize(tokenPoolSize);
-		config.setStackSize(stackSize);
+		final OrcOptions config = new OrcBindings(/*FIXME:From OrchardProperties*/);
+		config.setRight("send mail", canSendMail);
+		config.setRight("import java", canImportJava);
+		config.tokenPoolSize_$eq(tokenPoolSize);
+		config.stackSize_$eq(stackSize);
 
 		if (!canImportJava) {
 			final OilSecurityValidator validator = new OilSecurityValidator();
-			expr.accept(validator);
+			validator.validate(expr);
 			if (validator.hasProblems()) {
 				final StringBuffer sb = new StringBuffer();
 				sb.append("OIL security violations:");
@@ -104,8 +105,8 @@ public abstract class Account implements AccountMBean {
 		}
 		Job job;
 		try {
-			job = new Job(expr, config);
-		} catch (final CompilationException e) {
+			job = new Job(id, expr, config);
+		} catch (final ExecutionException e) {
 			throw new InvalidOilException(e);
 		}
 		job.setStartDate(new Date());

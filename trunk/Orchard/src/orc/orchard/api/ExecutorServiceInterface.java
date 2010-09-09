@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -18,7 +18,6 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Set;
 
-import orc.ast.xml.Oil;
 import orc.orchard.errors.InvalidJobException;
 import orc.orchard.errors.InvalidJobStateException;
 import orc.orchard.errors.InvalidOilException;
@@ -82,7 +81,7 @@ public interface ExecutorServiceInterface extends Remote {
 	 * @throws InvalidOilException
 	 *             if the program is invalid.
 	 */
-	public String submit(String devKey, Oil program) throws QuotaException, InvalidOilException, RemoteException;
+	public String submit(String devKey, String program) throws QuotaException, InvalidOilException, RemoteException;
 
 	/**
 	 * Combine compilation and submission into a single step.

@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import orc.lib.orchard.MailListenerFactory;
 import orc.lib.orchard.MailListenerFactory.MailListener;
-import orc.runtime.OrcEngine;
 
 /**
  * Works with {@link MailListenerFactory} to provide non-polling notification of
@@ -44,7 +43,7 @@ public class MailListenerServlet extends HttpServlet {
 		if (to == null) {
 			throw new ServletException("Recipient missing.");
 		}
-		final Object global = OrcEngine.globals.get(to);
+		final Object global = AbstractExecutorService.globals.get(to);
 		if (global == null) {
 			throw new ServletException("Recipient not recognized.");
 		}

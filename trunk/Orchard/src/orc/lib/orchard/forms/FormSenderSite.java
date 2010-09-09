@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -19,31 +19,31 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import kilim.Mailbox;
-import kilim.Pausable;
 import orc.error.runtime.ArgumentTypeMismatchException;
 import orc.error.runtime.TokenException;
+import orc.orchard.AbstractExecutorService;
 import orc.orchard.OrchardProperties;
-import orc.runtime.Args;
-import orc.runtime.OrcEngine;
-import orc.runtime.Token;
-import orc.runtime.sites.Site;
+import orc.orchard.Job.JobEngine;
+import orc.values.sites.compatibility.Args;
+import orc.TokenAPI;
+import orc.values.sites.compatibility.SiteAdaptor;
 
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
-public class FormSenderSite extends Site {
+public class FormSenderSite extends SiteAdaptor {
 	public static class FormReceiver {
-		private final Mailbox<Map<String, Object>> outbox = new Mailbox<Map<String, Object>>();
+		private final LinkedBlockingQueue<Map<String, Object>> outbox = new LinkedBlockingQueue<Map<String, Object>>();
 		private final Form form;
 		private final String key;
 
-		public FormReceiver(final OrcEngine globals, final Form form) {
+		public FormReceiver(final JobEngine globals, final Form form) {
 			this.form = form;
 			this.key = globals.addGlobal(this);
 		}
@@ -52,22 +52,22 @@ public class FormSenderSite extends Site {
 			return OrchardProperties.getProperty("orc.lib.orchard.forms.url") + "?k=" + key;
 		}
 
-		public Map<String, Object> get() throws Pausable {
-			return outbox.get();
+		public Map<String, Object> get() throws InterruptedException {
+			return outbox.take();
 		}
 
-		public void send() {
-			outbox.putb(form.getValue());
+		public void send() throws InterruptedException {
+			outbox.put(form.getValue());
 		}
 	}
 
 	@Override
-	public void callSite(final Args args, final Token caller) throws TokenException {
-		final OrcEngine engine = caller.getEngine();
+	public void callSite(final Args args, final TokenAPI caller) throws TokenException {
+		final JobEngine engine = (JobEngine) caller.runtime();
 		try {
-			caller.resume(new FormReceiver(engine, (Form) args.getArg(0)));
+			caller.publish(new FormReceiver(engine, (Form) args.getArg(0)));
 		} catch (final ClassCastException e) {
-			throw new ArgumentTypeMismatchException(e);
+			throw new ArgumentTypeMismatchException(0, "orc.lib.orchard.forms.Form", args.getArg(0).getClass().getCanonicalName());
 		}
 	}
 
@@ -105,7 +105,7 @@ public class FormSenderSite extends Site {
 			send(response, "The URL is missing the required parameter 'k'.");
 			return;
 		}
-		final FormReceiver f = (FormReceiver) OrcEngine.globals.get(key);
+		final FormReceiver f = (FormReceiver) AbstractExecutorService.globals.get(key);
 		if (f == null) {
 			send(response, "The URL is no longer valid.");
 			return;
@@ -117,8 +117,13 @@ public class FormSenderSite extends Site {
 		if (data.getParameter("x") != null) {
 			f.form.readRequest(data, errors);
 			if (errors.isEmpty()) {
-				OrcEngine.globals.remove(key);
-				f.send();
+				AbstractExecutorService.globals.remove(key);
+				try {
+					f.send();
+				} catch (InterruptedException e) {
+		             // Restore the interrupted status
+		             Thread.currentThread().interrupt();
+				}
 				send(response, "Thank you for your response.");
 				return;
 			}

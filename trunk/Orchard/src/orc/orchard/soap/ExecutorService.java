@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -30,7 +30,6 @@ import javax.xml.ws.Endpoint;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.handler.MessageContext;
 
-import orc.ast.xml.Oil;
 import orc.orchard.AbstractExecutorService;
 import orc.orchard.Waiter;
 import orc.orchard.errors.InvalidJobException;
@@ -46,6 +45,8 @@ import org.mortbay.util.ajax.Continuation;
 import org.mortbay.util.ajax.ContinuationSupport;
 
 /**
+ * Web Service implementation bean for the Orc executor service.
+ *
  * HACK: We must explicitly declare every published web method in this class, we
  * can't simply inherit them. See CompilerService for a full explanation.
  * 
@@ -118,13 +119,7 @@ public class ExecutorService extends AbstractExecutorService {
 	}
 
 	public static void main(final String[] args) {
-		URI baseURI;
-		try {
-			baseURI = new URI("http://localhost:8280/orchard/executor");
-		} catch (final URISyntaxException e) {
-			// this is impossible by construction
-			throw new AssertionError(e);
-		}
+		URI baseURI = URI.create("http://localhost:8280/orchard/executor");
 		if (args.length > 0) {
 			try {
 				baseURI = new URI(args[0]);
@@ -144,7 +139,7 @@ public class ExecutorService extends AbstractExecutorService {
 
 	/** Do-nothing override. */
 	@Override
-	public String submit(@WebParam(name = "devKey") final String devKey, @WebParam(name = "program") final Oil program) throws QuotaException, InvalidOilException, RemoteException {
+	public String submit(@WebParam(name = "devKey") final String devKey, @WebParam(name = "program") final String program) throws QuotaException, InvalidOilException, RemoteException {
 		return super.submit(devKey, program);
 	}
 

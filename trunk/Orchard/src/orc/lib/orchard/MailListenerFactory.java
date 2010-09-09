@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -14,22 +14,22 @@
 package orc.lib.orchard;
 
 import java.io.InputStream;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.mail.Address;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 
-import kilim.Mailbox;
-import kilim.Pausable;
 import orc.error.runtime.ArgumentTypeMismatchException;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.lib.net.MailerFactory.Mailer;
 import orc.lib.net.MailerFactory.OrcMessage;
-import orc.runtime.Args;
-import orc.runtime.OrcEngine;
-import orc.runtime.Token;
-import orc.runtime.sites.Site;
+import orc.orchard.AbstractExecutorService;
+import orc.orchard.Job.JobEngine;
+import orc.values.sites.compatibility.Args;
+import orc.TokenAPI;
+import orc.values.sites.compatibility.SiteAdaptor;
 
 /**
  * Support for non-polling notification of new messages. Each listener has a
@@ -40,44 +40,44 @@ import orc.runtime.sites.Site;
  * 
  * @author quark
  */
-public class MailListenerFactory extends Site {
+public class MailListenerFactory extends SiteAdaptor {
 	public static class MailListener {
 		private final Address address;
 		private final Mailer mailer;
 		// FIXME: should this allow multiple listeners?
-		private final Mailbox<OrcMessage> inbox = new Mailbox<OrcMessage>();
+		private final LinkedBlockingQueue<OrcMessage> inbox = new LinkedBlockingQueue<OrcMessage>();
 
-		public MailListener(final OrcEngine engine, final Mailer mailer) throws AddressException {
+		public MailListener(final JobEngine engine, final Mailer mailer) throws AddressException {
 			this.mailer = mailer;
 			this.address = mailer.newFromAddress();
-			OrcEngine.globals.put(engine, address.toString(), this);
+			AbstractExecutorService.globals.put(engine.getJob(), address.toString(), this);
 		}
 
 		public boolean put(final InputStream stream) throws MessagingException {
-			return inbox.putnb(mailer.newMessage(stream));
+			return inbox.offer(mailer.newMessage(stream));
 		}
 
 		public Address getAddress() {
 			return address;
 		}
 
-		public OrcMessage get() throws Pausable {
-			return inbox.get();
+		public OrcMessage get() throws InterruptedException {
+			return inbox.take();
 		}
 
 		public void close() {
-			OrcEngine.globals.remove(address.toString());
+			AbstractExecutorService.globals.remove(address.toString());
 		}
 	}
 
 	@Override
-	public void callSite(final Args args, final Token caller) throws TokenException {
+	public void callSite(final Args args, final TokenAPI caller) throws TokenException {
 		try {
-			caller.resume(new MailListener(caller.getEngine(), (Mailer) args.getArg(0)));
+			caller.publish(new MailListener((JobEngine) caller.runtime(), (Mailer) args.getArg(0)));
 		} catch (final AddressException e) {
 			throw new JavaException(e);
 		} catch (final ClassCastException e) {
-			throw new ArgumentTypeMismatchException(e);
+			throw new ArgumentTypeMismatchException(0, "orc.lib.net.MailerFactory.Mailer", args.getArg(0).getClass().getCanonicalName());
 		}
 	}
 }

@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -23,8 +23,6 @@ import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
-import orc.error.OrcError;
-
 public final class JMXUtilities {
 	private JMXUtilities() {
 	}
@@ -35,9 +33,9 @@ public final class JMXUtilities {
 		try {
 			server.unregisterMBean(oname);
 		} catch (final InstanceNotFoundException e) {
-			throw new OrcError(e);
+			throw new AssertionError(e);
 		} catch (final MBeanRegistrationException e) {
-			throw new OrcError(e);
+			throw new AssertionError(e);
 		}
 	}
 
@@ -46,7 +44,7 @@ public final class JMXUtilities {
 			final String name = object.getClass().getPackage().getName() + ":type=" + object.getClass().getSimpleName() + ",name=" + ObjectName.quote(id);
 			return new ObjectName(name);
 		} catch (final MalformedObjectNameException e) {
-			throw new OrcError(e);
+			throw new AssertionError(e);
 		}
 	}
 
@@ -55,11 +53,11 @@ public final class JMXUtilities {
 			server.registerMBean(new AnnotatedStandardMBean(object, null), oname);
 			return oname;
 		} catch (final InstanceAlreadyExistsException e) {
-			throw new OrcError(e);
+			throw new AssertionError(e);
 		} catch (final MBeanRegistrationException e) {
-			throw new OrcError(e);
+			throw new AssertionError(e);
 		} catch (final NotCompliantMBeanException e) {
-			throw new OrcError(e);
+			throw new AssertionError(e);
 		}
 	}
 }

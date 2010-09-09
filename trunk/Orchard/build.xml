@@ -47,14 +47,6 @@
 		<pathelement location="lib/orc-sites-${orc.version}.jar" />
 	</path>
 
-	<path id="kilim.classpath" description="Classpath needed to run Kilim on Orchard">
-		<pathelement path="${orc.location.OrcJava}/lib/kilim.jar" />
-		<pathelement path="build/classes" />
-		<fileset refid="orchard.war.jars" />
-		<fileset refid="orchard.extra.jars" />
-		<fileset refid="orchard-demo.extra.jars" />
-	</path>
-
 	<fileset id="orchard.static-web-files" dir="web" description="Static files to include in the Orchard WAR">
 		<include name="**/*" />
 		<exclude name="codemirror" />
@@ -76,7 +68,7 @@
 			</fileset>
 		</delete>
 		<copy preservelastmodified="true" todir="lib" verbose="true">
-			<fileset dir="${orc.location.OrcJava}/build" includes="orc-${orc.version}.jar" />
+			<fileset dir="${orc.location.OrcScala}/build" includes="orc-${orc.version}.jar" />
 			<fileset dir="${orc.location.OrcSites}/build" includes="orc-sites-${orc.version}.jar" />
 			<fileset dir="${orc.location.OrcSites}/lib" includes="jettison-1.0.1.jar" />  <!-- jaxws-json needs this outside the WAR -->
 		</copy>
@@ -122,22 +114,6 @@
 	</target>
 
 	<!-- ================================= 
-          target: kilim              
-         ================================= -->
-	<target name="kilim" depends="copylib,wsgen,properties" description="Kilim weaving">
-		<java classname="kilim.tools.Weaver" fork="yes" failonerror="true">
-			<classpath refid="kilim.classpath" />
-			<assertions>
-				<enable />
-			</assertions>
-		    <sysproperty key="java.awt.headless" value="true" />
-			<arg value="-d" />
-			<arg value="build/classes" />
-			<arg value="build/classes" />
-		</java>
-	</target>
-
-	<!-- ================================= 
           target: jaxws-json              
          ================================= -->
 	<target name="jaxws-json" description="Build JAX-WS JSON JAR">
@@ -177,7 +153,7 @@
 			<arg value="build/codemirror-min.tmp" />
 		</java>
 		<concat destfile="web/codemirror-min.js">
-			<filelist files="web/codemirror/README build/codemirror-min.tmp" />
+			<filelist dir="${basedir}" files="web/codemirror/README build/codemirror-min.tmp" />
 		</concat>
 		<delete file="build/codemirror-min.tmp" />
 		<concat destfile="build/codemirror-extra.tmp">
@@ -195,7 +171,7 @@
 		</java>
 		<delete file="build/codemirror-extra.tmp" />
 		<concat destfile="web/codemirror-extra-min.js">
-			<filelist files="web/codemirror/README build/codemirror-extra-min.tmp" />
+			<filelist dir="${basedir}" files="web/codemirror/README build/codemirror-extra-min.tmp" />
 		</concat>
 		<delete file="build/codemirror-extra-min.tmp" />
 	</target>
@@ -203,7 +179,7 @@
 	<!-- ================================= 
           target: war              
          ================================= -->
-	<target name="war" depends="kilim,jaxws-json,minify" description="generate the war">
+	<target name="war" depends="copylib,wsgen,properties,jaxws-json,minify" description="generate the war">
 		<war destfile="build/${ant.project.name}.war" duplicate="fail">
 			<manifest>
 				<attribute name="Implementation-Title" value="Orc Orchard" />

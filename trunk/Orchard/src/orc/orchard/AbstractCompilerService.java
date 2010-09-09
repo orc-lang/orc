@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,16 +13,21 @@
 
 package orc.orchard;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
 
-import orc.Config;
-import orc.Orc;
-import orc.ast.xml.Oil;
-import orc.error.compiletime.CompilationException;
+import orc.ast.oil.nameless.OrcXML;
+import orc.compile.StandardOrcCompiler;
+import orc.compile.parse.OrcStringInputContext;
+import orc.error.compiletime.CompileLogger;
+import orc.error.compiletime.CompileLogger.Severity;
+import orc.orchard.OrchardCompileLogger.CompileMessage;
 import orc.orchard.errors.InvalidProgramException;
+import orc.progress.NullProgressMonitor$;
+import orc.script.OrcBindings;
 
 /**
  * Implementation of a compiler service.
@@ -30,6 +35,7 @@ import orc.orchard.errors.InvalidProgramException;
  */
 public abstract class AbstractCompilerService implements orc.orchard.api.CompilerServiceInterface {
 	protected Logger logger;
+	private static StandardOrcCompiler compiler;
 
 	protected AbstractCompilerService(final Logger logger) {
 		this.logger = logger;
@@ -38,30 +44,47 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
 	protected AbstractCompilerService() {
 		this(getDefaultLogger());
 	}
+	
+	private static List orchardIncludePath = new java.util.ArrayList<String>(0);
+	private static List orchardAdditionalIncludes = Arrays.asList("orchard.inc");
 
-	public Oil compile(final String devKey, final String program) throws InvalidProgramException {
+	public String compile(final String devKey, final String program) throws InvalidProgramException {
 		logger.info("compile(" + devKey + ", " + program + ")");
 		if (program == null) {
 			throw new InvalidProgramException("Null program!");
 		}
 		try {
-			final Config config = new Config();
+			OrcBindings options = new OrcBindings(/*FIXME:From OrchardProperties*/);
 			// Disable file resources for includes
-			config.setIncludePath("");
+			options.includePath_$eq(orchardIncludePath);
 			// Include sites specifically for orchard services
-			config.addInclude("orchard.inc");
-			config.inputFromString(program);
-			final ByteArrayOutputStream ourStdErrBytes = new ByteArrayOutputStream();
-			config.setStderr(new PrintStream(ourStdErrBytes));
-			final orc.ast.oil.expression.Expression ex1 = Orc.compile(config);
-			if (ex1 == null) {
-				throw new InvalidProgramException(ourStdErrBytes.toString());
+			options.additionalIncludes_$eq(orchardAdditionalIncludes);
+			List<CompileMessage> compileMsgs = new LinkedList<CompileMessage>();
+			CompileLogger cl = new OrchardCompileLogger(compileMsgs);
+			final orc.ast.oil.nameless.Expression result = getCompiler().apply(new OrcStringInputContext(program), options, cl, NullProgressMonitor$.MODULE$);
+			if (cl.getMaxSeverity().compareTo(Severity.WARNING) > 0) {
+				if (compileMsgs.isEmpty()) {
+					throw new InvalidProgramException("Compilation failed");
+				} else {
+					//FIXME:Report multiple messages in a less ugly manner -- maybe in a JobEvent style
+					StringBuilder sb = new StringBuilder();
+					for (CompileMessage msg : compileMsgs) {
+						sb.append(msg.longMessage());
+						sb.append("\n");
+					}
+					sb.deleteCharAt(sb.length()-1); // Remove trailing newline
+					throw new InvalidProgramException(sb.toString());
+				}
+				//FIXME:Report warnings
+			} else {
+				final String oilString = OrcXML.writeXML(result).toString();
+				System.err.println(oilString);
+				return oilString;
 			}
-			return new Oil("1.0", ex1.marshal());
-		} catch (final CompilationException e) {
-			throw new InvalidProgramException(e.getMessage());
 		} catch (final IOException e) {
 			throw new InvalidProgramException("IO error: " + e.getMessage());
+		} catch (final ClassNotFoundException e) {
+			throw new InvalidProgramException(e.getMessage());
 		}
 	}
 
@@ -69,4 +92,14 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
 		final Logger out = Logger.getLogger(AbstractExecutorService.class.toString());
 		return out;
 	}
+
+	protected StandardOrcCompiler getCompiler() {
+		synchronized (this) {
+			if (compiler == null) {
+				compiler = new StandardOrcCompiler();
+			}
+		}
+		return compiler;
+	}
+
 }

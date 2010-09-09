@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -22,14 +22,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import orc.Config;
-import orc.ast.oil.visitor.SiteResolver;
-import orc.ast.oil.visitor.TailCallMarker;
-import orc.ast.oil.visitor.Walker;
-import orc.ast.oil.expression.Def;
-import orc.ast.oil.expression.Expression;
-import orc.error.compiletime.CompilationException;
-import orc.error.runtime.TokenException;
+import orc.OrcEventAction;
+import orc.OrcOptions;
+import orc.ast.oil.nameless.Expression;
+import orc.error.OrcException;
+import orc.error.runtime.ExecutionException;
 import orc.lib.orchard.Prompt.PromptCallback;
 import orc.lib.orchard.Prompt.Promptable;
 import orc.lib.orchard.Redirect.Redirectable;
@@ -41,9 +38,8 @@ import orc.orchard.events.PromptEvent;
 import orc.orchard.events.PublicationEvent;
 import orc.orchard.events.RedirectEvent;
 import orc.orchard.events.TokenErrorEvent;
-import orc.orchard.values.ValueMarshaller;
-import orc.runtime.OrcEngine;
-import orc.runtime.values.Visitor;
+import orc.run.StandardOrcRuntime;
+import scala.util.parsing.input.Positional;
 
 /**
  * Standard implementation of a JobService. Extenders should only need to
@@ -115,7 +111,7 @@ public final class Job implements JobMBean {
 		}
 
 		/**
-		 * Return buffered events. If necessaray, block (using the provided
+		 * Return buffered events. If necessary, block (using the provided
 		 * waiter) until new events arrive or the stream is closed. Only when
 		 * the stream is closed will this return an empty list.
 		 */
@@ -166,70 +162,106 @@ public final class Job implements JobMBean {
 		public synchronized boolean isBlocked() {
 			return blocked;
 		}
+
+		/**
+		 * Is the buffer's producer no longer adding events?
+		 */
+		public boolean isClosed() {
+			return closed;
+		}
 	}
 
 	private Date startDate;
 
-	private class JobEngine extends OrcEngine implements Promptable, Redirectable {
-		public JobEngine(final Config config) {
-			super(config);
-		}
-
+	public class JobEngine extends StandardOrcRuntime implements Runnable, Promptable, Redirectable {
 		private StringBuffer printBuffer = new StringBuffer();
+		private Expression expression;
+		private OrcOptions config;
 
-		/** Close the event stream when done running. */
-		@Override
-		public void onTerminate() {
-			// flush the buffer if anything is left
-			final String printed = printBuffer.toString();
-			if (printed.length() > 0) {
-				events.add(new PrintlnEvent(printed));
-			}
-			events.close();
+		public JobEngine(Expression expression, OrcOptions config) {
+			super();
+			this.expression = expression;
+			this.config = config;
 		}
 
-		/** Send token errors to the event stream. */
-		@Override
-		public void onError(final TokenException problem) {
-			System.err.println();
-			System.err.println("Problem: " + problem);
-			System.err.println("Source location: " + problem.getSourceLocation());
-			problem.printStackTrace();
-			final Throwable cause = problem.getCause();
-			if (cause != null) {
-				System.err.println("Caused by:");
-				cause.printStackTrace();
-			}
-			System.err.println();
-
-			final TokenErrorEvent e = new TokenErrorEvent(problem);
-			// TODO: compute a stack trace based on the token's
-			// list of callers
-			events.add(e);
+		public Job getJob() {
+			return Job.this;
 		}
 
-		/** 
-		 * Save prints in a buffer.
-		 * Send completed lines to the event stream.
+		public final String addGlobal(final Object value) {
+			return AbstractExecutorService.globals.add(this.getJob(), value);
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Runnable#run()
 		 */
 		@Override
-		public void print(final String s, final boolean newline) {
-			String out = null;
-			synchronized (printBuffer) {
-				printBuffer.append(s);
-				if (newline) {
-					out = printBuffer.toString();
-					printBuffer = new StringBuffer();
-				}
-			}
-			if (newline) {
-				events.add(new PrintlnEvent(out));
+		public void run() {
+			JobEventActions jea = new JobEventActions();
+			try {
+				runSynchronous(expression, jea.asFunction(), config);
+            } catch (final OrcException e) {
+				jea.caught(e);
+			} finally {
+				stop(); // kill threads and reclaim resources
 			}
 		}
 
-		@Override
-		public void onPublish(final Object v) {
-			events.add(new PublicationEvent(Visitor.visit(new ValueMarshaller(), v)));
+		class JobEventActions extends OrcEventAction {
+			@Override
+			public void published(final Object v) {
+				events.add(new PublicationEvent(v));
+			}
+
+			/** 
+			 * Save prints in a buffer.
+			 * Send completed lines to the event stream.
+			 */
+			@Override
+			public void printed(final String output) {
+				String out = null;
+				synchronized (printBuffer) {
+					printBuffer.append(output);
+					if (output.endsWith("\n")) {
+						out = printBuffer.toString();
+						printBuffer = new StringBuffer();
+					}
+				}
+				if (output.endsWith("\n")) {
+					events.add(new PrintlnEvent(out));
+				}
+			}
+
+			/** Send token errors to the event stream. */
+			@Override
+			public void caught(final Throwable e) {
+				System.err.println();
+				System.err.println("Problem: " + e);
+				if (e instanceof Positional) {
+					System.err.println("Source location: " + ((Positional) e).pos());
+				}
+				e.printStackTrace();
+				final Throwable cause = e.getCause();
+				if (cause != null) {
+					System.err.println("Caused by:");
+					cause.printStackTrace();
+				}
+				System.err.println();
+
+				final TokenErrorEvent ee = new TokenErrorEvent(e);
+				events.add(ee);
+			}
+
+			/** Close the event stream when done running. */
+			@Override
+			public void halted() {
+				// flush the buffer if anything is left
+				final String printed = printBuffer.toString();
+				if (printed.length() > 0) {
+					events.add(new PrintlnEvent(printed));
+				}
+				events.close();
+			}
 		}
 
 		public void prompt(final String message, final PromptCallback callback) {
@@ -249,34 +281,26 @@ public final class Job implements JobMBean {
 	private int nextPromptID = 1;
 	private final Map<Integer, PromptCallback> pendingPrompts = new HashMap<Integer, PromptCallback>();
 	/** The engine will handle all the interesting work of the job. */
-	private final OrcEngine engine;
+	private final JobEngine engine;
 	/** Events which can be monitored. */
 	private final EventBuffer events;
 	/** Tasks to run when the job finishes. */
 	private final LinkedList<FinishListener> finishers = new LinkedList<FinishListener>();
 	/** Thread in which the main engine is run. */
 	private Thread worker;
+	private String id;
 
-	protected Job(Expression expression, final Config config) throws CompilationException {
+	protected Job(String id, Expression expression, final OrcOptions config) throws ExecutionException {
+		this.id = id;
 		this.events = new EventBuffer(10);
-		engine = new JobEngine(config);
-		expression = SiteResolver.resolve(expression, config);
-		// Mark tail calls in all definitions.
-		expression.accept(new Walker() {
-			@Override
-			public void enter(final Def def) {
-				def.body.accept(new TailCallMarker());
-			};
-		});
-		//engine.debugMode = true;
-		engine.start(expression);
+		engine = new JobEngine(expression, config);
 	}
 
 	public synchronized void start() throws InvalidJobStateException {
 		if (worker != null) {
 			throw new InvalidJobStateException(getState());
 		}
-		worker = new Thread(engine);
+		worker = new Thread(engine, "Orchard Job "+id);
 		worker.start();
 	}
 
@@ -304,7 +328,7 @@ public final class Job implements JobMBean {
 		if (worker == null) {
 			return;
 		}
-		engine.terminate();
+		engine.stop();
 		// if the engine is blocked, interrupt it
 		// so it can halt
 		worker.interrupt();
@@ -327,7 +351,7 @@ public final class Job implements JobMBean {
 	public synchronized String getState() {
 		if (worker == null) {
 			return "NEW";
-		} else if (engine.isDead()) {
+		} else if (events.isClosed()) {
 			return "DONE";
 		} else if (events.isBlocked()) {
 			return "BLOCKED";
