@@ -248,7 +248,7 @@ object OrcXML {
         <site>{strip$(a.asInstanceOf[AnyRef].getClass().getName)}</site>
       case orc.values.Signal => <signal/>
       case orc.values.Field(s) => <field>{s}</field>
-      case x:AnyRef => println(">>>> "+x.getClass); <any>{a}</any>
+      case x:AnyRef => <any>{a}</any>
     }
   }
   
@@ -286,11 +286,11 @@ object OrcXML {
     ps match {
       case None => NoPosition
       case Some(s) => {
-        val stringTokenizer = new java.util.StringTokenizer(s(0).toString, ":")
-        if (stringTokenizer.hasMoreTokens) {
-          new PositionFilenameLineCol(stringTokenizer.nextToken, 
-              Integer.parseInt(stringTokenizer.nextToken), 
-              Integer.parseInt(stringTokenizer.nextToken))
+        val posParts = s(0).toString.split(":")
+        if (posParts.length == 3) {
+          new PositionFilenameLineCol(posParts(0),
+              Integer.parseInt(posParts(1)), 
+              Integer.parseInt(posParts(2)))
         }
         else NoPosition
       }

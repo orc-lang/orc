@@ -93,7 +93,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 						ctx.getWriter().flush();
 					} catch (IOException e) {
 						//Can't happen, according to API spec
-						e.printStackTrace();
+						throw new AssertionError(e);
 					}
 				}
 				@Override
@@ -108,7 +108,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 						ctx.getErrorWriter().flush();
 					} catch (IOException e1) {
 						//Can't happen, according to API spec
-						e1.printStackTrace();
+					  throw new AssertionError(e1);
 					}
 				}
 				@Override
