@@ -150,7 +150,7 @@ function dragResize(e0, top) {
 
 	// without this div, some mousemove events are
 	// lost to the iframe edit area
-	var $dragCover = $('<div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: s-resize;" />');
+	var $dragCover = $('<div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: ns-resize;" />');
 	$(document.body).append($dragCover);
 
 	$(document).mouseup(function (e) {
@@ -625,9 +625,9 @@ function orcify(code, defaultConfig) {
 	}
 	if (editable) {
 		// implement drag-resize
-		$controls.css("cursor", "s-resize");
+		$controls.css("cursor", "ns-resize");
 		$controls.mousedown(function (e) {
-			$(document).mousemove(dragResize(e, codemirror.frame));
+			$(document).mousemove(dragResize(e, codemirror.frame.parentNode));
 		});
 	}
 

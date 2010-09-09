@@ -9,7 +9,7 @@
  * complexity and hackery.
  *
  * In short, the editor 'touches' BR elements as it parses them, and
- * the History stores these. When nothing is touched in commitDelay
+ * the UndoHistory stores these. When nothing is touched in commitDelay
  * milliseconds, the changes are committed: It goes over all touched
  * nodes, throws out the ones that did not change since last commit or
  * are no longer in the document, and assembles the rest into zero or
@@ -26,7 +26,7 @@
 // delay (of no input) after which it commits a set of changes, and,
 // unfortunately, the 'parent' window -- a window that is not in
 // designMode, and on which setTimeout works in every browser.
-function History(container, maxDepth, commitDelay, editor) {
+function UndoHistory(container, maxDepth, commitDelay, editor) {
   this.container = container;
   this.maxDepth = maxDepth; this.commitDelay = commitDelay;
   this.editor = editor; this.parent = editor.parent;
@@ -47,7 +47,7 @@ function History(container, maxDepth, commitDelay, editor) {
   this.history = []; this.redoHistory = []; this.touched = [];
 }
 
-History.prototype = {
+UndoHistory.prototype = {
   // Schedule a commit (if no other touches come in for commitDelay
   // milliseconds).
   scheduleCommit: function() {
@@ -145,7 +145,7 @@ History.prototype = {
 
   // Commit unless there are pending dirty nodes.
   tryCommit: function() {
-    if (!window.History) return; // Stop when frame has been unloaded
+    if (!window.UndoHistory) return; // Stop when frame has been unloaded
     if (this.editor.highlightDirty()) this.commit(true);
     else this.scheduleCommit();
   },
@@ -192,10 +192,10 @@ History.prototype = {
   },
 
   notifyEnvironment: function() {
+    if (this.onChange) this.onChange();
     // Used by the line-wrapping line-numbering code.
     if (window.frameElement && window.frameElement.CodeMirror.updateNumbers)
       window.frameElement.CodeMirror.updateNumbers();
-    if (this.onChange) this.onChange();
   },
 
   // Link a chain into the DOM nodes (or the first/last links for null
