@@ -91,7 +91,6 @@ trait Orc extends OrcRuntime {
   }
   
   def mkhandler(n:Int) : KHandler = {
-//    println("mkhandler:"+n)
     if (n > 0) {
       val myKHandler = new KHandler(n)
       myKHandler.start

@@ -224,6 +224,7 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def getPathList(key: String, default: java.util.List[String]): java.util.List[String] = {
     val value = get(key)
     value match {
+      case s: String if (s.length == 0) => new java.util.ArrayList[String](0)
       case s: String => s.split(File.pathSeparator).toList
       case _ => default
     }
