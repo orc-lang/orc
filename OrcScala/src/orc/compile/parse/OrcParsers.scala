@@ -104,15 +104,96 @@ object OrcIncludeParser extends ((OrcInputContext, OrcOptions, OrcCompilerRequir
  *
  * @author dkitchin, amshali, srosario, jthywiss
  */
-class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices: OrcCompilerRequires) extends StandardTokenParsers {
+class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices: OrcCompilerRequires) 
+extends StandardTokenParsers 
+with EnhancedErrorMessages
+with CustomParserCombinators
+{
   import lexical.{Keyword, FloatingPointLit}
 
   override val lexical = new OrcLexical()
 
-  ////////
-  // Grammar productions (in bottom-up order)
-  ////////
 
+/*---------------------------------------------------------
+  For reference, here are Orc's operators sorted
+  and grouped in order of decreasing precedence.
+  
+  When an operator's associativity is "both",
+  the parser currently defaults to "left".
+  
+  Symbol   Assoc       Name
+  ----------------------------------------------------
+                 [highest precedence]
+  ----------------------------------------------------
+   ?       postfix     dereference
+   .       postfix     field projection
+   ()      postfix     application
+  ----------------------------------------------------
+   ~       prefix      boolean not
+   -       prefix      unary minus 
+  ----------------------------------------------------
+   **      left        exponent 
+  ----------------------------------------------------
+   *       left        multiplication
+   /       left        division
+   %       left        modulus 
+  ----------------------------------------------------
+   +       left        addition
+   -       left        subtraction 
+  ----------------------------------------------------
+   :       right       cons 
+  ----------------------------------------------------
+   =       none        equal
+   /=      none        not equal
+   :>      none        greater
+   >       none        greater
+   >=      none        greater or equal
+   <:      none        less
+   <       none        less
+   <=      none        less or equal
+  ----------------------------------------------------
+   ||      both        boolean or
+   &&      both        boolean and
+  ----------------------------------------------------
+   :=      none        ref assignment 
+  ----------------------------------------------------
+   >>      right       sequence 
+  ----------------------------------------------------
+   |       both        parallel  
+  ----------------------------------------------------
+   <<      left        where 
+  ----------------------------------------------------
+   ;       both        semicolon 
+  ----------------------------------------------------
+   ::      left        type ascription
+   :!:     left        type assertion
+   lambda  prefix      anonymous function
+  ----------------------------------------------------
+                 [lowest precedence]
+  ----------------------------------------------------*/
+  
+
+  
+  
+  
+  
+/* 
+ * Here are the productions of the Orc grammar, 
+ * given in the following order:
+ * 
+ * Literals
+ * Expressions
+ * Patterns
+ * Types
+ * Declarations 
+ * 
+ */
+  
+
+
+
+/* Literals */
+  
   val parseClassname: Parser[String] = (
         stringLit
         // For backwards compatibility, allow quotes to be omitted, if class name had only Orc-legal identifier characters
@@ -138,8 +219,14 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
       | "null" ^^^ null
   )
 
-  val parseTypeVariable: Parser[String] = ident
-
+  
+  
+  
+  
+  
+/* Expressions */
+  
+  
   val parseRecordEntry: Parser[(String, Expression)] =
     (ident <~ "=") ~ parseExpression ^^ { case x ~ e => (x,e) }
 
@@ -185,104 +272,28 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
     | parseConditionalExpression
     )
 
-  def parseExpnExpr          = parseUnaryExpr      withInfix List("**")
-  def parseMultExpr          = parseExpnExpr       withInfix List("*", "/", "%")
-  def parseAdditionalExpr    = parseMultExpr       withInfix List("-", "+")
-  def parseConsExpr          = parseAdditionalExpr withInfix List(":")
-  def parseRelationalExpr    = parseConsExpr       withInfix List("<:", ":>", "<=", ">=", "=", "/=")
-  def parseLogicalExpr       = parseRelationalExpr withInfix List("||", "&&")
-  def parseInfixOpExpression = parseLogicalExpr    withInfix List(":=")
+  def parseExpnExpr          = parseUnaryExpr      leftAssociativeInfix  List("**")
+  def parseMultExpr          = parseExpnExpr       leftAssociativeInfix  List("*", "/", "%")
+  def parseAdditionalExpr    = parseMultExpr       leftAssociativeInfix  List("-", "+")
+  def parseConsExpr          = parseAdditionalExpr rightAssociativeInfix List(":")
+  def parseRelationalExpr    = parseConsExpr       nonAssociativeInfix   List("<:", ":>", "<=", ">=", "=", "/=")
+  def parseLogicalExpr       = parseRelationalExpr fullyAssociativeInfix List("||", "&&")
+  def parseInfixOpExpression = parseLogicalExpr    nonAssociativeInfix   List(":=")
 
   val parseSequentialCombinator = ">" ~> (parsePattern?) <~ ">"
   val parsePruningCombinator = "<" ~> (parsePattern?) <~ "<"
 
   val parseSequentialExpression =
-    parseInfixOpExpression interleaveRight parseSequentialCombinator apply Sequential
+    parseInfixOpExpression rightInterleave parseSequentialCombinator apply Sequential
 
   val parseParallelExpression =
-    rep1sep(parseSequentialExpression, "|") -> (_ reduceLeft Parallel)
+    rep1sep(parseSequentialExpression, "|") -> { _ reduceLeft Parallel }
 
   val parsePruningExpression =
-    parseParallelExpression interleaveLeft parsePruningCombinator apply Pruning
+    parseParallelExpression leftInterleave parsePruningCombinator apply Pruning
 
   val parseOtherwiseExpression =
-    rep1sep(parsePruningExpression, ";") -> (_ reduceLeft Otherwise)
-
-/*---------------------------------------------------------
-  Expressions
-  
-  For reference, here are Orc's operators sorted
-  and grouped in order of increasing precedence.
-  
-  Symbol   Assoc       Name
-  ----------------------------------------------------
-   ::      right       type annotation
-   lambda  prefix[3]   anonymous function
-   if      prefix[3]   if/then/else
-  ----------------------------------------------------
-   ;       left        semicolon
-  ----------------------------------------------------
-   <<      left        where
-  ----------------------------------------------------
-   |       right[2]    parallel
-  ----------------------------------------------------
-   >>      right       sequence
-  ----------------------------------------------------
-   :=      none        ref assignment
-  ----------------------------------------------------
-   ||      right[2]    boolean or
-   &&      right[2]    boolean and
-  ----------------------------------------------------
-   =       none        equal
-   /=      none        not equal
-   :>      none        greater
-   >       none[1]     greater
-   >=      none        greater or equal
-   <:      none        less
-   <       none[1]     less
-   <=      none        less or equal
-  ----------------------------------------------------
-   ~       prefix      boolean not
-   :       right       cons
-   +       left        addition
-   -       left[4]     subtraction
-  ----------------------------------------------------
-   *       left        multiplication
-   /       left        division
-   %       left        modulus
-  ----------------------------------------------------
-   **      left        exponent
-  ----------------------------------------------------
-   -       prefix      unary minus
-  ----------------------------------------------------
-   ?       postfix     dereference
-   .       postfix     field projection
-   ()      postfix[4]  application
-  
-  [1] An expression like (a > b > c > d) could be read as
-  either ((a >b> c) > d) or (a > (b >c> d)). We could resolve
-  this ambiguity with precedence, but that's likely to
-  violate the principle of least suprise. So instead we just
-  disallow these operators unparenthesized inside << or >>.
-  This results in some unfortunate duplication of the lower-
-  precedence operators: see the NoCmp_ productions.
-  
-  [2] These operators are semantically fully associative, but
-  they are implemented as right-associative because it's
-  slightly more efficient in Rats!.
-  
-  [3] I'm not sure whether I'd call lambda and if operators,
-  but the point is they bind very loosely, so everything to
-  their right is considered part of their body.
-  
-  [4] These operators may not be preceded by a newline, to
-  avoid ambiguity about where an expression ends.  So if you
-  have a newline in front of a minus, the parser assumes
-  it's a unary minus, and if you have a newline in front of
-  a paren, the parser assumes it's a tuple (as opposed to a
-  function application).  Hopefully these rules match how
-  people intuitively use these operators.
-  -----------------------------------------------------------*/
+    rep1sep(parsePruningExpression, ";") -> { _ reduceLeft Otherwise }
 
   val parseAscription = (
         ("::" ~ parseType)
@@ -290,11 +301,11 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
   )
 
   val parseExpression: Parser[Expression] = (
-      "lambda" ~> (ListOf(parseType)?)
-      ~ (TupleOf(parsePattern)+)
-      ~ (("::" ~> parseType)?)
-      ~ ("=" ~> parseExpression)
-      -> Lambda
+        "lambda" ~> (ListOf(parseType)?)
+        ~ (TupleOf(parsePattern)+)
+        ~ (("::" ~> parseType)?)
+        ~ ("=" ~> parseExpression)
+        -> Lambda
       | parseDeclaration ~ parseExpression -> Declare
       | parseOtherwiseExpression ~ (parseAscription?) -?->
         { (_,_) match
@@ -303,8 +314,18 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
             case (e, ":!:" ~ t) => TypeAssertion(e,t)
           }
         }
-//    | failure("Goal expression expected.")
   )
+
+
+
+  
+  
+  
+  
+  
+  
+  
+/* Patterns */
 
   val parseBasePatternTail: Parser[Option[List[Pattern]]] = (
         ")" ^^^ None
@@ -334,8 +355,19 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
 
   val parsePattern: Parser[Pattern] = parseTypedPattern
 
+  
+  
+  
+  
+  
+  
+  
+/* Types */
+  
   val parseRecordTypeEntry: Parser[(String, Type)] =
     (ident <~ "::") ~ parseType ^^ { case x ~ t => (x,t) }
+  
+  val parseTypeVariable: Parser[String] = ident
 
   val parseType: Parser[Type] = (
         "Top" -> Top
@@ -352,13 +384,18 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
       | "lambda" ~> ((ListOf(parseTypeVariable)?) ^^ {_.getOrElse(Nil)}) ~ (TupleOf(parseType)+) ~ parseReturnType -> LambdaType
   )
 
+  val parseReturnType = "::" ~> parseType
+  
   val parseConstructor: Parser[Constructor] = (
       ident ~ TupleOf(parseType ^^ (Some(_))) -> Constructor
       | ident ~ TupleOf("_" ^^^ None) -> Constructor
   )
+  
+  
+  
 
-  val parseReturnType = "::" ~> parseType
-
+/* Declarations */
+  
   val parseDefDeclaration: Parser[DefDeclaration] = (
         ident ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ ("=" ~> parseExpression)
       -> Def
@@ -394,8 +431,8 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
       -> ((x,ys,t) => TypeAlias(x, ys getOrElse Nil, t))
 
       | failure("Declaration (val, def, type, etc.) expected")
-  )
-
+  )  
+  
   def performInclude(includeName: String): Parser[Include] = {
     val newInputContext = try {
       envServices.openInclude(includeName, inputContext, options)
@@ -408,14 +445,26 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
     }
   }
 
-  //def parseDeclarations: Parser[List[Declaration]] = (lexical.NewLine*) ~> (parseDeclaration <~ (lexical.NewLine*))*
-
+  
+  
+  
+  
+  
+  
+  
+  
+// Include file
   val parseDeclarations: Parser[List[Declaration]] = parseDeclaration*
-
+  
+// Orc program
   val parseProgram: Parser[Expression] = parseExpression
 
+  
+  
+  
+  
   ////////
-  // Helper combinators for ( ... ) and [ ... ] forms
+  // Helper functions for ( ... ) and [ ... ] forms
   ////////
 
   def CommaSeparated[T](P: => Parser[T]): Parser[List[T]] = repsep(P, ",")
@@ -434,194 +483,6 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices
     | ListOf(parseConstantListTuple) -> ListExpr
     | TupleOf(parseConstantListTuple) -> TupleExpr
     )
-
-  ////////
-  // Re-write some error messages with explanatory detail
-  ////////
-
-  def enhanceErrorMsg(r: ParseResult[Expression]): ParseResult[Expression] = {
-    r match {
-      case Failure(msg, in) => {
-        if (msg.equals("``('' expected but EOF found")) {
-          Failure(msg+".\n"+
-              "  This error usually means that the expression is incomplete.\n" +
-              "The following cases can create this parser problem:\n" +
-              " 1. The goal expression of the program is missing.\n" +
-              " 2. The right hand side expression of a combinator is missing.\n" +
-              " 3. An expression is missing after a comma.\n"
-              , in)
-        } 
-        else if (msg.startsWith("``::'' expected but")) {
-          Failure(msg+".\n"+
-              "  This error usually means that the `=' is missing in front of\n" +
-              "the funtion definition.\n" +
-              "  In case you want to specify the return type of the function\n" +
-              "use `::' along with the type name."
-              , in)
-        }
-        else if (msg.startsWith("``('' expected but `)' found")) {
-          Failure(msg+".\n"+
-              "  This error usually means an illegal start for an expression with `)'.\n" +
-              "Check for mismatched parentheses."
-              , in)
-        }
-        else if (msg.startsWith("``('' expected but")) {
-          val name = msg.substring(19, msg.lastIndexOf("found")-1)
-          Failure(msg+".\n"+
-              "  This error usually means an illegal start for an expression with "+name+".\n"
-              , in)
-        }
-        else if (msg.startsWith("``<'' expected but")) {
-          Failure(msg+".\n"+
-              "  This error usually happens in the following occasions:\n" +
-              "  1. You are intending to use the pruning combinator `<<' and\n" +
-              "     you have typed `<'.\n" +
-              "  2. You are intending to use `<' as less than operator in which\n" +
-              "     case you should know that the less than operator in Orc is `<:'."
-              , in)
-        }
-        else if (msg.startsWith("``>'' expected but")) {
-          Failure(msg+".\n"+
-              "  This error usually happens in the following occasions:\n" +
-              "  1. You are intending to use the sequential combinator `>>' and\n" +
-              "     you have typed `>'.\n" +
-              "  2. You are intending to use `>' as greater than operator in which\n" +
-              "     case you should know that the greater than operator in Orc is `:>'."
-              , in)
-        }
-        else r
-      }
-      case _ => r
-    }
-  }
-
   
   
-  ////////
-  // Preserve input source position
-  ////////
-
-  class LocatingParser[+A <: AST](p: => Parser[A]) extends Parser[A] {
-    override def apply(i: Input) = {
-      val position = i.pos
-      val result: ParseResult[A] = p.apply(i)
-      result map { _.pos = position }
-      result
-    }
-  }
-
-  def markLocation[A <: AST](p: => Parser[A]) = new LocatingParser(p)
-  
-  
-  ////////
-  // Extended apply combinator ->
-  ////////
-
-  class Maps0(s: String) {
-    def ->[A <: AST](a: () => A): Parser[A] = {
-        markLocation(keyword(s) ^^^ a())
-    }
-    def ->[A <: AST](a: A): Parser[A] = {
-        markLocation(keyword(s) ^^^ a)
-    }
-  }
-  class Maps1[A](parser: Parser[A]) {
-    def ->[X <: AST](f: A => X): Parser[X] = {
-        markLocation(parser ^^ f)
-    }
-  }
-  class Maps2[A,B](parser: Parser[A ~ B]) {
-    def ->[X <: AST](f: (A,B) => X): Parser[X] =
-      markLocation(parser ^^ { case x ~ y => f(x,y) })
-  }
-  class Maps3[A,B,C](parser: Parser[A ~ B ~ C]) {
-    def ->[X <: AST](f: (A,B,C) => X): Parser[X] =
-      markLocation(parser ^^ { case x ~ y ~ z => f(x,y,z) })
-  }
-  class Maps4[A,B,C,D](parser: Parser[A ~ B ~ C ~ D]) {
-    def ->[X <: AST](f: (A,B,C,D) => X): Parser[X] =
-      markLocation(parser ^^ { case x ~ y ~ z ~ w => f(x,y,z,w) })
-  }
-
-  class Maps1Optional2[A <: AST,B](parser: Parser[A ~ Option[B]]) {
-
-  def -?->(f: (A,B) => A): Parser[A] =
-      markLocation(parser ^^ {
-        case x ~ None => x
-        case x ~ Some(y) => f(x,y)
-      })
-  }
-
-  ////////
-  // Interleaving combinator
-  ///////
-
-  class InterleavingParser[A <: AST](parser: Parser[A]) {
-    def interleaveLeft[B](interparser: Parser[B]) =
-      (f: (A,B,A) => A) => {
-        def origami(b: B)(x:A, y:A): A = f(x,b,y)
-        markLocation( chainl1(markLocation(parser), interparser ^^ origami) )
-      }: Parser[A]
-    def interleaveRight[B](interparser: Parser[B]) =
-      (f: (A,B,A) => A) => {
-        def origami(b: B)(x:A, y:A): A = f(x,b,y)
-        markLocation( chainr1(markLocation(parser), interparser ^^ origami) )
-      }: Parser[A]
-  }
-  
-  ////////
-  // Infixing combinator
-  ///////
-  
-  class InfixingParser[A <: Expression](parser: Parser[A]) {
-    def withInfix(ops: List[String]) = {
-      val opsParser: Parser[String] = ops map keyword reduceRight { _ | _ }
-      chainr1(parser, opsParser ^^ { op => (left:Expression,right:Expression) => InfixOperator(left, op, right) })
-    }
-  }
-
-  ////////
-  // Our own chainr1
-  ////////
-
-  def chainr1[T <: AST](p: => Parser[T], q: => Parser[(T, T) => T]): Parser[T] = {
-      def myFold(list: List[((T,T)=>T) ~ T]): (T => T) = {
-        list match {
-          case List(f ~ a) => f(_,a)
-          case f ~ a :: xs => f(_,myFold(xs)(a))
-        }
-      }
-      val markingQ = new Parser[(T,T) => T] {
-        override def apply(i: Input) = {
-          val position = i.pos
-          val result: ParseResult[(T,T) => T] = q.apply(i)
-          result map 
-            { (f: (T,T) => T) => 
-              { (a: T, b: T) =>
-                {
-                  val ast = f(a,b)
-                  ast.pos = position
-                  ast
-                }
-              }
-            }
-        } 
-      }
-      p ~ rep(markingQ ~ p) ^^ {case x ~ xs => if (xs.isEmpty) x else myFold(xs)(x)}
-  }
-
-  ////////
-  // implicit conversions (views) for parsers
-  ////////
-
-  implicit def CreateMaps0Parser(s: String): Maps0 = new Maps0(s)
-  implicit def CreateMaps1Parser[A](parser: Parser[A]): Maps1[A] = new Maps1(parser)
-  implicit def CreateMaps2Parser[A,B](parser: Parser[A ~ B]): Maps2[A,B] =	new Maps2(parser)
-  implicit def CreateMaps3Parser[A,B,C](parser: Parser[A ~ B ~ C]): Maps3[A,B,C] = new Maps3(parser)
-  implicit def CreateMaps4Parser[A,B,C,D](parser: Parser[A ~ B ~ C ~ D]): Maps4[A,B,C,D] = new Maps4(parser)
-
-  implicit def CreateMaps1Optional2Parser[A <: AST,B](parser: Parser[A ~ Option[B]]): Maps1Optional2[A,B] = new Maps1Optional2(parser)
-
-  implicit def CreateInterleavingParser[A <: AST](parser: Parser[A]): InterleavingParser[A] = new InterleavingParser(parser)
-  implicit def CreateInfixingParser[A <: Expression](parser: Parser[A]): InfixingParser[A] = new InfixingParser(parser)
 }
