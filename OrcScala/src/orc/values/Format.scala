@@ -36,6 +36,9 @@ object Format {
       case orcv: OrcValue => orcv.toOrcSyntax()
       case other => other.toString()
     }
+
+  // For Java callers:
+  def formatValueR(v: AnyRef): String = formatValue(v)
   
   def formatSequence(vs : List[_]) = 
     vs match {
