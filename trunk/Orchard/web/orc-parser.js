@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2008 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -17,9 +17,6 @@
  * - Recognizes the following syntactic entities
  *   - combinator, pattern, site, variable, keyword, literal, comment
  * - The actual parsing is very shallow, mostly we just tokenize
- * - The combinator "<_<" is distinguished from the operator "<" using
- *   singificant whitespace (unlike the real Orc parser). A combinator
- *   should be preceeded by whitespace and followed by non-whitespace.
  * - sites are distinguished from variables based on whether they
  *   are followed by a "(".
  * - The actual styles are defined in orc-syntax.css
@@ -37,15 +34,15 @@ var ops2 = {
 "||": readOperator,
 "&&": readOperator,
 "--": readCommentSL,
-"/=": readOperator };
+"/=": readOperator,
+"{.": readOperator,
+".}": readOperator };
 
 // 1-character symbolic tokens
 var ops1 = {
 "{": readOperator,
-// the parser will decide whether this
-// is an operator or not
-"<": readOperator,
-">": readOperator,
+"<": readCombinator,
+">": readCombinator,
 "|": readCombinator,
 ":": readOperator,
 "&": readOperator,
@@ -165,9 +162,9 @@ function readWord(source, _, ch1) {
 		return { type:word, content:word, style:"literal" };
 	// keywords
 	case "val": case "def": case "as": case "include": case "type":
-	case "site": case "class": case "null": case "stop":
+	case "site": case "class": case "stop":
 	case "if": case "then": case "else":
-	case "signal": case "lambda": case "atomic":
+	case "signal": case "lambda": case "_":
 		return { type:word, content:word, style:"keyword" };
 	default:
 		return { type:"variable", content:word, style:"variable" };
@@ -281,24 +278,6 @@ function newParser(source) {
 						break;
 					}
 				} while (tmp.type == "whitespace");
-			}
-			// decide whether < or > is an operator or combinator
-			if (out.type == "<" || out.type == ">") {
-				if (inPattern) {
-					// < and > never appear inside a pattern,
-					// so they must be terminating the combinator
-					out.style = "combinator";
-					inPattern = false;
-				} else if (inWhitespace) {
-					// if it's preceeded by space and followed
-					// by non-space, it's a combinator
-					startLooking();
-					var tmp = look();
-					if (tmp && tmp.type != "whitespace") {
-						out.style = "combinator";
-						inPattern = true;
-					}
-				}
 			}
 			// if no tabstop has been set yet, use the
 			// length of the first whitespace token
