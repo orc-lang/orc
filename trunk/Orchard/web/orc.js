@@ -1,3 +1,16 @@
+//
+// orc.js -- JavaScript source for the "Try Orc" Orchard Web interface
+// Project Orchard
+//
+// $Id$
+//
+// Copyright (c) 2008 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 /**
  * This library augments every element with class="orc" with a run button.
  * It works on textareas and anything else as well.
