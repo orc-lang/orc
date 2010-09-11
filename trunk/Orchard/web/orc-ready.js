@@ -71,8 +71,12 @@ function jsonToHtml(v) {
 			return v+'';
 		case 'string':
 			return '"' + escapeHtml(v)
-					.replace('\\', '\\\\')
-					.replace('"', '\\"')
+					.replace(/\\/g, '\\\\')
+					.replace(/"/g, '\\"')
+					.replace(/\f/g, '\\f')
+					.replace(/\n/g, '\\n')
+					.replace(/\r/g, '\\r')
+					.replace(/\t/g, '\\t')
 				+ '"';
 		case 'object':
 			if (v == null) return 'null';
@@ -111,26 +115,17 @@ function publicationToHtml(v) {
 		case 'xs:decimal':
 		case 'xs:float': return jsonToHtml(parseFloat(v.$));
 		case 'xs:boolean': return jsonToHtml(v.$ == 'true');
-		// OIL types
+		// Orc types
+		case 'ns2:orcValue':
+			return escapeHtml(v.$);
+		case 'ns2:otherValue':
+			return '<i>' + escapeHtml(v["@typeName"]) + ': ' + escapeHtml(v.$) + '</i>';
 		case 'ns2:list':
 			var tmp = [];
-			$.each(toArray(v.element), function (i, e) {
+			$.each(toArray(v.elements), function (i, e) {
 				tmp[i] = publicationToHtml(e);
 			});
 			return '[' + tmp.join(', ') + ']';
-		case 'ns2:tuple':
-			if (!v.element) return 'signal';
-			var tmp = [];
-			$.each(toArray(v.element), function (i, e) {
-				tmp[i] = publicationToHtml(e);
-			});
-			return '(' + tmp.join(', ') + ')';
-		case 'ns2:tagged':
-			var tmp = [];
-			$.each(toArray(v.element), function (i, e) {
-				tmp[i] = publicationToHtml(e);
-			});
-			return v["@tagName"] + '(' + tmp.join(', ') + ')';
 		default: return '<i>' + jsonToHtml(v) + '</i>';
 	}
 }

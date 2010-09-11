@@ -13,90 +13,154 @@
 
 package orc.orchard.events;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlValue;
+
+import orc.values.OrcValue;
+import scala.collection.JavaConversions;
+
 /**
  * Job publications (published Orc values).
  * @author quark
  */
+@XmlSeeAlso({PublicationEvent.ListMarshalProxy.class, PublicationEvent.OrcValueMarshalProxy.class, PublicationEvent.UnknownValueMarshalProxy.class})
 public class PublicationEvent extends JobEvent {
-	public Object value;
+	
+	@XmlType(name="list")
+	public static class ListMarshalProxy {
+		public Object[] elements;
+
+		/** For JAXB */
+		protected ListMarshalProxy() {
+		}
+
+		public ListMarshalProxy(scala.collection.Iterable scalaList) {
+			elements = new Object[scalaList.size()];
+			int i = 0;
+			for (Object elem : JavaConversions.asIterable(scalaList)) {
+				elements[i++] = toXmlMarshallableValue(elem);
+			}
+		}
+
+		@XmlAttribute
+		public int getLength() {
+			return elements.length;
+		}
+	}
+
+	@XmlType(name="orcValue")
+	public static class OrcValueMarshalProxy {
+		@XmlAttribute
+		public String typeName;
+		@XmlValue
+		public String orcSyntax;
+
+		/** For JAXB */
+		protected OrcValueMarshalProxy() {
+		}
+
+		public OrcValueMarshalProxy(String typeName, String orcSyntax) {
+			this.typeName = typeName;
+			this.orcSyntax = orcSyntax;
+		}
+
+	}
+
+	@XmlType(name="otherValue")
+	public static class UnknownValueMarshalProxy {
+		@XmlAttribute
+		public String typeName;
+		@XmlAttribute
+		public int hashCode;
+		@XmlValue
+		public String toString;
+
+		/** For JAXB */
+		protected UnknownValueMarshalProxy() {
+		}
+
+		public UnknownValueMarshalProxy(String typeName, int hashCode, String toString) {
+			this.typeName = typeName;
+			this.hashCode = hashCode;
+			this.toString = toString;
+		}
+	}
+
+	@XmlTransient public Object value;
 
 	public PublicationEvent() {
 	}
 
 	public PublicationEvent(final Object value) {
-		this.value = makeMarshallable(value);
+		this.value = value;
 	}
 
-	/**
-	 * @param value2
-	 * @return
-	 */
-	private Object makeMarshallable(Object orcValue) {
-		if (orcValue == null ||
-			orcValue instanceof java.lang.Character ||
-			orcValue instanceof java.util.Calendar ||
-			orcValue instanceof java.util.GregorianCalendar ||
-			orcValue instanceof java.util.Date ||
-			orcValue instanceof java.io.File ||
-			orcValue instanceof java.net.URL ||
-			orcValue instanceof java.net.URI ||
-			orcValue instanceof java.lang.Class ||
-			orcValue instanceof java.awt.Image ||
-			orcValue instanceof javax.activation.DataHandler ||
-			orcValue instanceof javax.xml.transform.Source ||
-			orcValue instanceof javax.xml.datatype.XMLGregorianCalendar ||
-			orcValue instanceof java.lang.Boolean ||
-			orcValue instanceof byte[] ||
-			orcValue instanceof java.lang.Byte ||
-			orcValue instanceof java.lang.Short ||
-			orcValue instanceof java.lang.Integer ||
-			orcValue instanceof java.lang.Long ||
-			orcValue instanceof java.lang.Float ||
-			orcValue instanceof java.lang.Double ||
-			orcValue instanceof java.math.BigInteger ||
-			orcValue instanceof java.math.BigDecimal ||
-			orcValue instanceof javax.xml.namespace.QName ||
-			orcValue instanceof javax.xml.datatype.Duration ||
-			orcValue instanceof java.lang.Void ||
-			orcValue instanceof java.util.UUID) {
-			return orcValue;
-		} else if (orcValue instanceof scala.math.BigDecimal) {
-			return ((scala.math.BigDecimal) orcValue).bigDecimal();
-		} else if (orcValue instanceof scala.math.BigInt) {
-			return ((scala.math.BigInt) orcValue).bigInteger();
-		} else if (orcValue instanceof orc.values.Field) {
-			//FIXME:Properly marshall this
-			return orcValue.toString();
-		} else if (orcValue instanceof orc.values.Signal$) {
-			//FIXME:Properly marshall this
-			return orcValue.toString();
-		} else if (orcValue instanceof orc.values.TaggedValue) {
-			//FIXME:Properly marshall this
-			return orcValue.toString();
-		} else if (orcValue instanceof orc.values.sites.Site) {
-			//FIXME:Properly marshall this
-			return orcValue.toString();
-		//} else if (orcValue instanceof orc.run.Closure) {
+	@XmlElement(name="value", nillable=true, required=true) 
+	protected Object getXmlMarshallableValue() {
+		return toXmlMarshallableValue(value);
+	}
+
+	protected static Object toXmlMarshallableValue(Object value) {
+		if (value == null ||
+			// primitive types will be boxed if passed as args	
+			//value.getClass() == java.lang.Boolean.TYPE ||
+			//value.getClass() == java.lang.Byte.TYPE ||
+			//value.getClass() == java.lang.Short.TYPE ||
+			//value.getClass() == java.lang.Integer.TYPE ||
+			//value.getClass() == java.lang.Long.TYPE ||
+			//value.getClass() == java.lang.Float.TYPE ||
+			//value.getClass() == java.lang.Double.TYPE ||
+			value instanceof java.lang.String ||
+			value instanceof java.lang.Character ||
+			value instanceof java.util.Calendar ||
+			value instanceof java.util.GregorianCalendar ||
+			value instanceof java.util.Date ||
+			value instanceof java.io.File ||
+			value instanceof java.net.URL ||
+			value instanceof java.net.URI ||
+			value instanceof java.lang.Class ||
+			value instanceof java.awt.Image ||
+			value instanceof javax.activation.DataHandler ||
+			value instanceof javax.xml.transform.Source ||
+			value instanceof javax.xml.datatype.XMLGregorianCalendar ||
+			value instanceof java.lang.Boolean ||
+			value instanceof byte[] ||
+			value instanceof java.lang.Byte ||
+			value instanceof java.lang.Short ||
+			value instanceof java.lang.Integer ||
+			value instanceof java.lang.Long ||
+			value instanceof java.lang.Float ||
+			value instanceof java.lang.Double ||
+			value instanceof java.math.BigInteger ||
+			value instanceof java.math.BigDecimal ||
+			value instanceof javax.xml.namespace.QName ||
+			value instanceof javax.xml.datatype.Duration ||
+			value instanceof java.lang.Void ||
+			value instanceof java.util.UUID) {
+			return value;
+		} else if (value instanceof scala.math.BigDecimal) {
+			return ((scala.math.BigDecimal) value).bigDecimal();
+		} else if (value instanceof scala.math.BigInt) {
+			return ((scala.math.BigInt) value).bigInteger();
+		} else if (value instanceof OrcValue) {
+			return new OrcValueMarshalProxy(value.getClass().getCanonicalName(), ((OrcValue) value).toOrcSyntax());
+		//} else if (value instanceof orc.run.Closure) {
 		//	//FIXME:Properly marshall this
-		//	return orcValue.toString();
-		} else if (orcValue instanceof orc.values.OrcTuple) {
+		//	return value.toString();
+		} else if (value instanceof scala.Some) {
 			//FIXME:Properly marshall this
-			return orcValue.toString();
-		} else if (orcValue instanceof scala.Some) {
+			return value.toString();
+		} else if (value instanceof scala.None) {
 			//FIXME:Properly marshall this
-			return orcValue.toString();
-		} else if (orcValue instanceof scala.None) {
-			//FIXME:Properly marshall this
-			return orcValue.toString();
-		} else if (orcValue instanceof scala.collection.immutable.List) {
-			//FIXME:Properly marshall this
-			return orcValue.toString();
-		} else if (orcValue instanceof orc.values.OrcRecord) {
-			//FIXME:Properly marshall this
-			return orcValue.toString();
+			return value.toString();
+		} else if (value instanceof scala.collection.immutable.List) {
+			return new ListMarshalProxy((scala.collection.immutable.List) value);
 		} else {
-			//FIXME:Properly marshall this
-			return orcValue.toString();
+			return new UnknownValueMarshalProxy(value.getClass().getCanonicalName(), value.hashCode(), value.toString());
 		}
 	}
 
