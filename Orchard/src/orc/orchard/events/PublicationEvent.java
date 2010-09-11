@@ -20,6 +20,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 
+import orc.values.Format;
 import orc.values.OrcValue;
 import scala.collection.JavaConversions;
 
@@ -27,10 +28,10 @@ import scala.collection.JavaConversions;
  * Job publications (published Orc values).
  * @author quark
  */
-@XmlSeeAlso({PublicationEvent.ListMarshalProxy.class, PublicationEvent.OrcValueMarshalProxy.class, PublicationEvent.UnknownValueMarshalProxy.class})
+@XmlSeeAlso({ PublicationEvent.ListMarshalProxy.class, PublicationEvent.OrcValueMarshalProxy.class, PublicationEvent.UnknownValueMarshalProxy.class })
 public class PublicationEvent extends JobEvent {
-	
-	@XmlType(name="list")
+
+	@XmlType(name = "list")
 	public static class ListMarshalProxy {
 		public Object[] elements;
 
@@ -38,10 +39,10 @@ public class PublicationEvent extends JobEvent {
 		protected ListMarshalProxy() {
 		}
 
-		public ListMarshalProxy(scala.collection.Iterable scalaList) {
+		public ListMarshalProxy(final scala.collection.Iterable scalaList) {
 			elements = new Object[scalaList.size()];
 			int i = 0;
-			for (Object elem : JavaConversions.asIterable(scalaList)) {
+			for (final Object elem : JavaConversions.asIterable(scalaList)) {
 				elements[i++] = toXmlMarshallableValue(elem);
 			}
 		}
@@ -52,7 +53,7 @@ public class PublicationEvent extends JobEvent {
 		}
 	}
 
-	@XmlType(name="orcValue")
+	@XmlType(name = "orcValue")
 	public static class OrcValueMarshalProxy {
 		@XmlAttribute
 		public String typeName;
@@ -63,14 +64,14 @@ public class PublicationEvent extends JobEvent {
 		protected OrcValueMarshalProxy() {
 		}
 
-		public OrcValueMarshalProxy(String typeName, String orcSyntax) {
+		public OrcValueMarshalProxy(final String typeName, final String orcSyntax) {
 			this.typeName = typeName;
 			this.orcSyntax = orcSyntax;
 		}
 
 	}
 
-	@XmlType(name="otherValue")
+	@XmlType(name = "otherValue")
 	public static class UnknownValueMarshalProxy {
 		@XmlAttribute
 		public String typeName;
@@ -83,14 +84,15 @@ public class PublicationEvent extends JobEvent {
 		protected UnknownValueMarshalProxy() {
 		}
 
-		public UnknownValueMarshalProxy(String typeName, int hashCode, String toString) {
+		public UnknownValueMarshalProxy(final String typeName, final int hashCode, final String toString) {
 			this.typeName = typeName;
 			this.hashCode = hashCode;
 			this.toString = toString;
 		}
 	}
 
-	@XmlTransient public Object value;
+	@XmlTransient
+	public Object value;
 
 	public PublicationEvent() {
 	}
@@ -99,48 +101,48 @@ public class PublicationEvent extends JobEvent {
 		this.value = value;
 	}
 
-	@XmlElement(name="value", nillable=true, required=true) 
+	@XmlElement(name = "value", nillable = true, required = true)
 	protected Object getXmlMarshallableValue() {
 		return toXmlMarshallableValue(value);
 	}
 
-	protected static Object toXmlMarshallableValue(Object value) {
+	protected static Object toXmlMarshallableValue(final Object value) {
 		if (value == null ||
-			// primitive types will be boxed if passed as args	
-			//value.getClass() == java.lang.Boolean.TYPE ||
-			//value.getClass() == java.lang.Byte.TYPE ||
-			//value.getClass() == java.lang.Short.TYPE ||
-			//value.getClass() == java.lang.Integer.TYPE ||
-			//value.getClass() == java.lang.Long.TYPE ||
-			//value.getClass() == java.lang.Float.TYPE ||
-			//value.getClass() == java.lang.Double.TYPE ||
-			value instanceof java.lang.String ||
-			value instanceof java.lang.Character ||
-			value instanceof java.util.Calendar ||
-			value instanceof java.util.GregorianCalendar ||
-			value instanceof java.util.Date ||
-			value instanceof java.io.File ||
-			value instanceof java.net.URL ||
-			value instanceof java.net.URI ||
-			value instanceof java.lang.Class ||
-			value instanceof java.awt.Image ||
-			value instanceof javax.activation.DataHandler ||
-			value instanceof javax.xml.transform.Source ||
-			value instanceof javax.xml.datatype.XMLGregorianCalendar ||
-			value instanceof java.lang.Boolean ||
-			value instanceof byte[] ||
-			value instanceof java.lang.Byte ||
-			value instanceof java.lang.Short ||
-			value instanceof java.lang.Integer ||
-			value instanceof java.lang.Long ||
-			value instanceof java.lang.Float ||
-			value instanceof java.lang.Double ||
-			value instanceof java.math.BigInteger ||
-			value instanceof java.math.BigDecimal ||
-			value instanceof javax.xml.namespace.QName ||
-			value instanceof javax.xml.datatype.Duration ||
-			value instanceof java.lang.Void ||
-			value instanceof java.util.UUID) {
+				// primitive types will be boxed if passed as args	
+				//value.getClass() == java.lang.Boolean.TYPE ||
+				//value.getClass() == java.lang.Byte.TYPE ||
+				//value.getClass() == java.lang.Short.TYPE ||
+				//value.getClass() == java.lang.Integer.TYPE ||
+				//value.getClass() == java.lang.Long.TYPE ||
+				//value.getClass() == java.lang.Float.TYPE ||
+				//value.getClass() == java.lang.Double.TYPE ||
+				value instanceof java.lang.String ||
+				value instanceof java.lang.Character ||
+				value instanceof java.util.Calendar ||
+				value instanceof java.util.GregorianCalendar ||
+				value instanceof java.util.Date ||
+				value instanceof java.io.File ||
+				value instanceof java.net.URL ||
+				value instanceof java.net.URI ||
+				value instanceof java.lang.Class ||
+				value instanceof java.awt.Image ||
+				value instanceof javax.activation.DataHandler ||
+				value instanceof javax.xml.transform.Source ||
+				value instanceof javax.xml.datatype.XMLGregorianCalendar ||
+				value instanceof java.lang.Boolean ||
+				value instanceof byte[] ||
+				value instanceof java.lang.Byte ||
+				value instanceof java.lang.Short ||
+				value instanceof java.lang.Integer ||
+				value instanceof java.lang.Long ||
+				value instanceof java.lang.Float ||
+				value instanceof java.lang.Double ||
+				value instanceof java.math.BigInteger ||
+				value instanceof java.math.BigDecimal ||
+				value instanceof javax.xml.namespace.QName ||
+				value instanceof javax.xml.datatype.Duration ||
+				value instanceof java.lang.Void ||
+				value instanceof java.util.UUID) {
 			return value;
 		} else if (value instanceof scala.math.BigDecimal) {
 			return ((scala.math.BigDecimal) value).bigDecimal();
@@ -148,15 +150,14 @@ public class PublicationEvent extends JobEvent {
 			return ((scala.math.BigInt) value).bigInteger();
 		} else if (value instanceof OrcValue) {
 			return new OrcValueMarshalProxy(value.getClass().getCanonicalName(), ((OrcValue) value).toOrcSyntax());
-		//} else if (value instanceof orc.run.Closure) {
-		//	//FIXME:Properly marshall this
-		//	return value.toString();
+		} else if (value instanceof orc.run.Orc.Closure) {
+			//TODO:Is there any useful way to marshall this?
+			final orc.run.Orc.Closure closure = (orc.run.Orc.Closure) value;
+			return new UnknownValueMarshalProxy(value.getClass().getCanonicalName(), value.hashCode(), "{- " + closure.defs().size() + " defs closed over " + closure.lexicalContext().size() + " bindings -}");
 		} else if (value instanceof scala.Some) {
-			//FIXME:Properly marshall this
-			return value.toString();
+			return new OrcValueMarshalProxy(value.getClass().getCanonicalName(), "Some(" + Format.formatValueR(((scala.Some) value).x()) + ")");
 		} else if (value instanceof scala.None) {
-			//FIXME:Properly marshall this
-			return value.toString();
+			return new OrcValueMarshalProxy(value.getClass().getCanonicalName(), "None");
 		} else if (value instanceof scala.collection.immutable.List) {
 			return new ListMarshalProxy((scala.collection.immutable.List) value);
 		} else {
