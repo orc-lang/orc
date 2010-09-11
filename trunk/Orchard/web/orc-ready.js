@@ -375,7 +375,7 @@ function orcify(code, defaultConfig) {
         if (response && response.detail && response.detail.exception && response.detail.exception["@class"] == "orc.orchard.errors.InvalidProgramException") {
             // Compile error, beautify if we grok format
             errmsg = response.faultstring;
-            if (errmsg[0] == ':' && errmsg[errmsg.length-1] == '\n') {
+            if (errmsg[0] == ':') {
                 colIndex = errmsg.indexOf(':', 1) + 1;
                 msgIndex = errmsg.indexOf(':', colIndex) + 1;
                 lineString = errmsg.substring(1,colIndex-1);
@@ -393,8 +393,8 @@ function orcify(code, defaultConfig) {
                     colEnd = colStart;
                 }
                 if (colIndex > 2 && msgIndex > 4) {
-                    errmsg = "Problem near line " + lineString + ", columns " + colString + ": " + errmsg.substring(msgIndex,errmsg.length-1);
-                    codemirror.selectLines(codemirror.nthLine(lineStart), colStart-1, codemirror.nthLine(lineEnd), colEnd);
+                    errmsg = "Problem near line " + lineString + ", column " + colString + ": " + errmsg.substring(msgIndex,errmsg.length);
+                    codemirror.selectLines(codemirror.nthLine(lineStart), colStart-1, codemirror.nthLine(lineEnd), ((colStart==colEnd)?(colEnd-1):(colEnd)));
                 }
             }
             appendEventHtml('<div class="orc-error">' + escapeHtml(errmsg) + '</div>');
