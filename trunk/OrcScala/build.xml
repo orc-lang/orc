@@ -24,17 +24,9 @@
 
 	<!-- Try to locate Scala in the current Eclipse build -->
     <property name="scala.compiler.jar" value="${eclipse.home}/plugins/org.scala-ide.scala.compiler_2.8.0.jar"/>
-    <path id="scala.lib.classpath" description="Scala runtime library classpath">
-		<fileset dir="${eclipse.home}/configuration/org.eclipse.osgi/bundles" erroronmissingdir="false">
-		    <include name="*/*/.cp/lib/scala-library.jar"/>
-		    <include name="*/*/.cp/lib/scala-dbc.jar"/>
-		    <include name="*/*/.cp/lib/scala-swing.jar"/>
-		</fileset>
-    </path>
 
 	<fileset id="orc.runtime.jars" dir="lib" description="JARs needed by Orc in its classpath at runtime">
-		<!-- If we add dependencies here, consider adding the Orchard-demo manifest classpath trick -->
-		<exclude name="**/*"/>
+		<include name="*.jar"/>
 	</fileset>
 
 	<!-- Optional build-local.xml -->
@@ -42,9 +34,9 @@
 
 	<path id="orc.classpath" description="Build-time classpath">
         <pathelement location="build/classes"/>
-        <path refid="scala.lib.classpath"/>
-		<path refid="orc.runtime.jars"/>
-        <pathelement location="lib/junit-4.5.jar"/>
+		<fileset refid="orc.runtime.jars"/>
+		<pathelement location="${scala.compiler.jar}"/>
+        <fileset dir="tools" includes="*.jar"/>
     </path>
 
 	<!-- =================================
@@ -55,7 +47,7 @@
 		<taskdef resource="scala/tools/ant/antlib.xml">
 			<classpath>
 				<pathelement location="${scala.compiler.jar}"/>
-		        <path refid="scala.lib.classpath"/>
+		        <path refid="orc.classpath""/>
 			</classpath>
 		</taskdef>
 		<mkdir dir="build/classes"/>
@@ -334,7 +326,7 @@
          ================================= -->
 	<target name="upload" depends="zip,javadoc" description="Upload ZIP and Javadoc ZIP to Google Code">
 		<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask"
-			classpath="lib/ant-googlecode-0.0.1.jar" name="gcupload"/>
+			classpath="tools/ant-googlecode-0.0.1.jar" name="gcupload"/>
 		<gcupload
 			username="${orc.googlecode.username}"
 			password="${orc.googlecode.password}"
