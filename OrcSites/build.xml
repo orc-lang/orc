@@ -16,53 +16,101 @@
 	<description>
 		Ant build file for OrcSites binary distribution.
 	</description>
-	<property file="build.properties" />
-	<property file="${orc.location.OrcScala}/googlecode.properties" />
-	<property name="target.name" value="${ant.project.name}-${orc.version}" />
 
-	<path id="orc.classpath">
-		<fileset dir="lib" includes="*.jar" />
-		<pathelement path="build/classes" />
-		<!-- FIXME: I hate having to hard-code these -->
-		<pathelement path="${orc.location.OrcScala}/build/classes" />
-		<fileset dir="${orc.location.OrcScala}/lib" includes="*.jar" />
-	</path>
+	<property file="build.properties"/>
+	<property file="${orc.location.OrcScala}/build.properties"/>
+	<property file="${orc.location.OrcScala}/googlecode.properties"/>
+	<property name="target.name" value="${ant.project.name}-${orc.version}"/>
+    <property name="junit.output.dir" value="build/tests/reports"/>
+
+	<!-- Try to locate Scala in the current Eclipse build -->
+    <property name="scala.compiler.jar" value="${eclipse.home}/plugins/org.scala-ide.scala.compiler_2.8.0.jar"/>
+    <path id="scala.lib.classpath" description="Scala runtime library classpath">
+		<fileset dir="${eclipse.home}/configuration/org.eclipse.osgi/bundles" erroronmissingdir="false">
+		    <include name="*/*/.cp/lib/scala-library.jar"/>
+		    <include name="*/*/.cp/lib/scala-dbc.jar"/>
+		    <include name="*/*/.cp/lib/scala-swing.jar"/>
+		</fileset>
+    </path>
+
+	<fileset id="orcsites.runtime.jars" dir="lib" description="JARs needed by OrcSites in its classpath at runtime">
+		<include name="*.jar"/>
+	</fileset>
+
+	<!-- Optional build-local.xml -->
+	<property file="build-local.xml"/>
+
+	<path id="orcsites.classpath" description="Build-time classpath">
+        <pathelement location="build/classes"/>
+		<pathelement location="${orc.location.OrcScala}/build/classes"/>
+        <path refid="scala.lib.classpath"/>
+		<fileset refid="orcsites.runtime.jars"/>
+        <pathelement location="${orc.location.OrcScala}/lib/junit-4.5.jar"/>
+    </path>
 
 
 	<!-- ================================= 
           target: jar              
          ================================= -->
-	<target name="jar" description="generate the distribution">
-		<!-- Put everything in build into orc-sites.jar -->
-		<jar jarfile="build/${target.name}.jar" basedir="build/classes"> <!-- duplicate="fail" -->
+	<target name="jar" description="Build orc-sites-*.jar">
+		<exec executable="svnversion" outputproperty="svnversion"/>  <!-- Format: 9999[:9999][M][S][P] -->
+		<jar jarfile="build/${target.name}.jar" basedir="build/classes" whenmanifestonly="fail" duplicate="fail" index="true" strict="fail">
 			<manifest>
-				<attribute name="Implementation-Title" value="Orc sites library" />
-				<attribute name="Implementation-Version" value="${orc.version}" />
-				<attribute name="Implementation-Vendor" value="The University of Texas at Austin" />
-				<attribute name="Implementation-Vendor-Id" value="edu.utexas" />
+				<attribute name="Implementation-Title" value="${orcsites.title}"/>
+				<attribute name="Implementation-Version" value="${orc.version}"/>
+				<attribute name="Implementation-Vendor" value="${orc.vendor}"/>
+				<attribute name="Implementation-Vendor-Id" value="${orc.vendor-id}"/>
+				<attribute name="SVN-Revision" value="${svnversion}"/>
 				<section name="orc.lib">
-					<attribute name="Implementation-Title" value="Orc sites library" />
-					<attribute name="Implementation-Version" value="${orc.version}" />
-					<attribute name="Implementation-Vendor" value="The University of Texas at Austin" />
-					<attribute name="Implementation-Vendor-Id" value="edu.utexas" />
-					<attribute name="Specification-Title" value="Orc sites library" />
-					<attribute name="Specification-Version" value="${orc.version}" />
-					<attribute name="Specification-Vendor" value="The University of Texas at Austin" />
+					<attribute name="Implementation-Title" value="${orcsites.title}"/>
+					<attribute name="Implementation-Version" value="${orc.version}"/>
+					<attribute name="Implementation-Vendor" value="${orc.vendor}"/>
+					<attribute name="Implementation-Vendor-Id" value="${orc.vendor-id}"/>
+					<attribute name="Specification-Title" value="${orcsites.title}"/>
+					<attribute name="Specification-Version" value="${orc.version}"/>
+					<attribute name="Specification-Vendor" value="${orc.vendor}"/>
 				</section>
 			</manifest>
-			<!-- Include library dependencies -->
-			<zipgroupfileset dir="lib"
-				includes="*.jar" />
+			<exclude name="orc/test/**"/>
 		</jar>
 	</target>
 
 	<!-- ================================= 
+          target: javadoc              
+         ================================= -->
+	<target name="javadoc" description="Build Javadoc">
+		<delete dir="build/javadoc" followsymlinks="no" includeemptydirs="true"/>
+		<javadoc destdir="build/javadoc"
+				author="true"
+				access="protected"
+				source="1.6"
+				sourcepath="src"
+				splitindex="true"
+				windowtitle="{$ant.project.name} ${orc.version}"
+				doctitle="{$ant.project.name} ${orc.version}"
+				use="true"
+				version="true">
+			<classpath refid="orcsites.classpath"/>
+		</javadoc>
+		<zip zipfile="build/${target.name}-doc.zip" basedir="build/javadoc" duplicate="fail"/>
+	</target>
+	
+	<!-- =================================
+          target: build
+         ================================= -->
+    <target name="build" depends="jar,javadoc" description="Build all targets"/>
+
+	<!-- ================================= 
           target: zip              
          ================================= -->
-	<target name="zip" depends="jar" description="generate the ZIP">
-		<zip zipfile="build/${target.name}.zip">
+	<target name="zip" depends="jar" description="Build ZIP archive for distribution">
+    	<delete file="build/${target.name}.zip"/>
+		<zip zipfile="build/${target.name}.zip" duplicate="fail">
+			<zipfileset prefix="${target.name}" dir="build">
+				<include name="${target.name}.jar"/>
+			</zipfileset>
+			<zipfileset prefix="${target.name}/lib" refid="orcsites.runtime.jars"/>
 			<zipfileset prefix="${target.name}" dir=".">
-				<include name="build/${target.name}.jar"/>
 				<include name="README"/>
 				<include name="LICENSE"/>
 				<include name="licenses.yml"/>
@@ -74,37 +122,23 @@
 		</zip>
 	</target>
 
-	<!-- ================================= 
-          target: javadoc              
+	<!-- =================================
+          target: package
          ================================= -->
-	<target name="javadoc" description="Build Javadoc">
-		<delete dir="build/javadoc" followsymlinks="no" includeemptydirs="true" />
-		<javadoc destdir="build/javadoc"
-				author="true"
-				access="protected"
-				source="1.5"
-				sourcepath="src"
-				splitindex="true"
-				windowtitle="{$ant.project.name} ${orc.version}"
-				doctitle="{$ant.project.name} ${orc.version}"
-				use="true"
-				version="true">
-			<classpath refid="orc.classpath"/>
-		</javadoc>
-		<zip zipfile="build/${target.name}-doc.zip" basedir="build/javadoc" />
+	<target name="package" depends="zip" description="Package for distribution">
 	</target>
-	
+
 	<!-- ================================= 
           target: all              
          ================================= -->
-    <target name="all" depends="zip,javadoc" description="Build all targets" />
+    <target name="all" depends="zip,javadoc" description="Build all targets"/>
 
 	<!-- ================================= 
           target: upload              
          ================================= -->
-	<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask"
-		classpath="${orc.location.OrcScala}/lib/ant-googlecode-0.0.1.jar" name="gcupload"/>
-	<target name="upload" depends="zip,javadoc" description="upload to google code">
+	<target name="upload" depends="zip,javadoc" description="Upload ZIP and Javadoc ZIP to Google Code">
+		<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask"
+			classpath="${orc.location.OrcScala}/lib/ant-googlecode-0.0.1.jar" name="gcupload"/>
 		<gcupload 
 			username="${orc.googlecode.username}" 
 			password="${orc.googlecode.password}" 
@@ -112,7 +146,7 @@
 			filename="build/${target.name}.zip" 
 			targetfilename="${target.name}.zip"
 			summary="Supplemental Orc sites, for webservices and other demos."
-			labels="Type-Archive, OpSys-All" />
+			labels="Type-Archive, OpSys-All"/>
 		<gcupload 
 			username="${orc.googlecode.username}" 
 			password="${orc.googlecode.password}" 
@@ -120,13 +154,13 @@
 			filename="build/${target.name}-doc.zip" 
 			targetfilename="${target.name}-doc.zip"
 			summary="Javadoc documentation for supplemental Orc sites."
-			labels="Type-Docs, OpSys-All" />
+			labels="Type-Docs, OpSys-All"/>
 	</target>
 
 	<!-- ================================= 
           target: clean              
          ================================= -->
-	<target name="clean" description="clean up">
-		<delete dir="build" followsymlinks="no" includeemptydirs="true" />
+	<target name="clean" description="Delete build directory">
+		<delete dir="build" followsymlinks="no" includeemptydirs="true"/>
 	</target>
 </project>

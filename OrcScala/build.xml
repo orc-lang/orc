@@ -21,8 +21,7 @@
 	<property file="googlecode.properties"/>
 	<property name="target.name" value="${ant.project.name}-${orc.version}"/>
     <property name="junit.output.dir" value="build/tests/reports"/>
-    <property name="junit.output.dir" value="build/tests/reports"/>
-	
+
 	<!-- Try to locate Scala in the current Eclipse build -->
     <property name="scala.compiler.jar" value="${eclipse.home}/plugins/org.scala-ide.scala.compiler_2.8.0.jar"/>
     <path id="scala.lib.classpath" description="Scala runtime library classpath">
@@ -33,9 +32,10 @@
 		</fileset>
     </path>
 
-	<path id="orc.runtime.jars" description="JARs needed by Orc in its classpath at runtime">
+	<fileset id="orc.runtime.jars" dir="lib" description="JARs needed by Orc in its classpath at runtime">
 		<!-- If we add dependencies here, consider adding the Orchard-demo manifest classpath trick -->
-	</path>
+		<exclude name="**/*"/>
+	</fileset>
 
 	<!-- Optional build-local.xml -->
 	<property file="build-local.xml"/>
@@ -78,7 +78,7 @@
 	<target name="version" description="Build version.properites">
 		<exec executable="svnversion" outputproperty="svnversion"/>  <!-- Format: 9999[:9999][M][S][P] -->
 		<tstamp>
-			<format property="build.date" pattern="yyyy-MM-dd-HH:mm:ss" timezone="Etc/UTC" />
+			<format property="build.date" pattern="yyyy-MM-dd-HH:mm:ss" timezone="Etc/UTC"/>
 		</tstamp>
 		<delete file="build/classes/orc/version.properties" quiet="true"/>
 		<propertyfile file="build/classes/orc/version.properties" comment="version.properties -- Orc versioning information -- Automatically built -- ** Do NOT commit to repository **">
@@ -133,7 +133,7 @@
 	<!-- =================================
           target: jar
          ================================= -->
-	<target name="jar" depends="version" description="Build orc-*.zip for distribution">
+	<target name="jar" depends="version" description="Build orc-*.jar">
 		<jar jarfile="build/${target.name}.jar" basedir="build/classes" whenmanifestonly="fail" duplicate="fail" index="true" strict="fail">
 			<manifest>
 				<attribute name="Main-Class" value="${orc.main-class}"/>
@@ -145,13 +145,13 @@
 				<attribute name="Built-Date" value="${build.date}"/>
 				<attribute name="Built-By" value="${user.name}"/>
 				<section name="orc">
-					<attribute name="Specification-Title" value="${orc.title}"/>
-					<attribute name="Specification-Version" value="${orc.version}"/>
-					<attribute name="Specification-Vendor" value="${orc.vendor}"/>
 					<attribute name="Implementation-Title" value="${orc.title}"/>
 					<attribute name="Implementation-Version" value="${orc.version}"/>
 					<attribute name="Implementation-Vendor" value="${orc.vendor}"/>
 					<attribute name="Implementation-Vendor-Id" value="${orc.vendor-id}"/>
+					<attribute name="Specification-Title" value="${orc.title}"/>
+					<attribute name="Specification-Version" value="${orc.version}"/>
+					<attribute name="Specification-Vendor" value="${orc.vendor}"/>
 				</section>
 			</manifest>
 			<exclude name="orc/test/**"/>
@@ -173,7 +173,7 @@
 	<target name="stdlib-doc">
 		<pathconvert property="orc.prelude.includefiles" pathsep=" ">
 			<path>
-				<fileset dir="src/orc/inc/prelude">
+				<fileset dir="src/orc/lib/includes/prelude">
 					<include name="*.inc"/>
 				</fileset>
 			</path>
@@ -183,7 +183,7 @@
 		</pathconvert>
 		<echo message="Making documentation for: ${orc.prelude.includefiles}"/>
 		<java classname="orc.doc.MakeDoc" fork="yes" failonerror="true"
-				dir="src/orc/inc/prelude"
+				dir="src/orc/lib/includes/prelude"
 				output="build/stdlib.xml">
 			<classpath refid="orc.classpath"/>
 				<assertions>
@@ -201,7 +201,7 @@
 		<javadoc destdir="build/javadoc"
 				author="true"
 				access="protected"
-				source="1.5"
+				source="1.6"
 				sourcepath="src"
 				splitindex="true"
 				windowtitle="Orc ${orc.version}"
@@ -210,7 +210,7 @@
 				version="true">
 			<classpath refid="orc.classpath"/>
 		</javadoc>
-		<zip zipfile="build/${target.name}-doc.zip" basedir="build/javadoc"/>
+		<zip zipfile="build/${target.name}-doc.zip" basedir="build/javadoc" duplicate="fail"/>
 	</target>
 
 	<!-- - - - - - - - - - - - - - - - - -
@@ -283,12 +283,13 @@
           target: zip
          - - - - - - - - - - - - - - - - - -->
 	<target name="zip" depends="jar,windows-setup">
-		<zip zipfile="build/${target.name}.zip">
+    	<delete file="build/${target.name}.zip"/>
+		<zip zipfile="build/${target.name}.zip" duplicate="fail">
 			<zipfileset prefix="${target.name}" dir="build">
 				<include name="${target.name}.jar"/>
 				<include name="SETUP.BAT"/>
 			</zipfileset>
-			<zipfileset prefix="${target.name}/lib" refid="orc.runtime.jars" />
+			<zipfileset prefix="${target.name}/lib" refid="orc.runtime.jars"/>
 			<zipfileset prefix="${target.name}" dir=".">
 				<include name="README"/>
 				<include name="LICENSE"/>
@@ -328,7 +329,7 @@
 	<!-- =================================
           target: upload
          ================================= -->
-	<target name="upload" depends="zip,javadoc" description="upload to google code">
+	<target name="upload" depends="zip,javadoc" description="Upload ZIP and Javadoc ZIP to Google Code">
 		<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask"
 			classpath="lib/ant-googlecode-0.0.1.jar" name="gcupload"/>
 		<gcupload
@@ -352,7 +353,7 @@
 	<!-- =================================
           target: clean
          ================================= -->
-	<target name="clean" description="clean up">
+	<target name="clean" description="Delete build directory">
 		<exec executable="rm" failonerror="false"> <!-- Try this, because Ant is confused by the symlinks in here -->
 			<arg line="-rf"/>
 			<arg value="build/${target.name}-app"/>
