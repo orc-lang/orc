@@ -20,7 +20,10 @@
 
 	<target name="copylib">
 		<copy preservelastmodified="true" todir="lib" verbose="true">
-			<fileset dir="${orc.location.OrcJAR}/build" includes="orc-${orc.version}.jar"/>
+			<fileset dir="${orc.location.OrcScala}/build" includes="orc-${orc.version}.jar"/>
+		</copy>
+		<copy preservelastmodified="true" todir="lib" verbose="true">
+			<fileset dir="${orc.location.OrcScala}/lib" includes="*.jar"/>
 		</copy>
 	</target>
 
