@@ -25,13 +25,6 @@
 
 	<!-- Try to locate Scala in the current Eclipse build -->
     <property name="scala.compiler.jar" value="${eclipse.home}/plugins/org.scala-ide.scala.compiler_2.8.0.jar"/>
-    <path id="scala.lib.classpath" description="Scala runtime library classpath">
-		<fileset dir="${eclipse.home}/configuration/org.eclipse.osgi/bundles" erroronmissingdir="false">
-		    <include name="*/*/.cp/lib/scala-library.jar"/>
-		    <include name="*/*/.cp/lib/scala-dbc.jar"/>
-		    <include name="*/*/.cp/lib/scala-swing.jar"/>
-		</fileset>
-    </path>
 
 	<fileset id="orcsites.runtime.jars" dir="lib" description="JARs needed by OrcSites in its classpath at runtime">
 		<include name="*.jar"/>
@@ -43,9 +36,11 @@
 	<path id="orcsites.classpath" description="Build-time classpath">
         <pathelement location="build/classes"/>
 		<pathelement location="${orc.location.OrcScala}/build/classes"/>
-        <path refid="scala.lib.classpath"/>
+        <fileset dir="${orc.location.OrcScala}/lib" includes="*.jar"/>
 		<fileset refid="orcsites.runtime.jars"/>
-        <pathelement location="${orc.location.OrcScala}/lib/junit-4.5.jar"/>
+		<pathelement location="${scala.compiler.jar}"/>
+        <fileset dir="tools" includes="*.jar"/>
+        <pathelement location="${orc.location.OrcScala}/tools/junit-4.5.jar"/>
     </path>
 
 
@@ -138,7 +133,7 @@
          ================================= -->
 	<target name="upload" depends="zip,javadoc" description="Upload ZIP and Javadoc ZIP to Google Code">
 		<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask"
-			classpath="${orc.location.OrcScala}/lib/ant-googlecode-0.0.1.jar" name="gcupload"/>
+			classpath="${orc.location.OrcScala}/tools/ant-googlecode-0.0.1.jar" name="gcupload"/>
 		<gcupload 
 			username="${orc.googlecode.username}" 
 			password="${orc.googlecode.password}" 

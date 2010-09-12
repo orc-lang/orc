@@ -1,25 +1,38 @@
-This package includes assorted useful sites for Orc.
+                      THE ORC PROGRAMMING LANGUAGE
+                   STRUCTURED CONCURRENT PROGRAMMING
+
+                   The University of Texas at Austin
+
+
+                      README.txt for orc-sites.zip
+
+
+Welcome! This archive includes assorted useful sites for Orc.
 See the Javadoc for more information.
+
+These Orc sites run in a Java SE 6 runtime environment.  Required JARs
+are included here, in the "lib" directory.
+
+Examples of Orc programs using these sites are included in the
+"examples" directory.
+
+See http://orc.csres.utexas.edu/ for more information about Orc,
+including the language user's guide, discussion groups, a wiki, and more.
+
+See the files LICENSE and licenses.yml for license agreements.
 
 See licenses.yml for information on bundled third-party libraries and code.
 
-Example programs using these sites are in examples/
 
-Using the JAR
--------------
+USING ORCSITES
 
-To use the JAR, just include it in your classpath when
-running Orc.  Because of some weirdness with the classloader,
-if you want to use the include files which declare the sites
-in this package, you should not run orc with the "-jar" option.
-Instead, run programs manually with the orc.Orc class, for example:
+To use the JAR, just include it and its dependencies in your classpath
+when running Orc.  Because of some weirdness with the classloader, you
+should not run Orc with the "-jar" option. Instead, run programs
+with the orc.Main class, for example:
 
-java -cp orc-sites-0.9.2.jar:orc-0.9.2.jar orc.Orc examples/eliza.orc
+java -cp orc-2.0.0.jar:orc-sites-2.0.0.jar:lib/\* orc.Main examples/eliza.orc
 
-Building the JAR
-----------------
 
-For a source build, you need to have OrcJava open in
-your Eclipse workspace.
-
-See http://orc.csres.utexas.edu for more information.
+--
+[$Id$]

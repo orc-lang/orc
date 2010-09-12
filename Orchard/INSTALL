@@ -1,8 +1,6 @@
 BUILDING, INSTALLING, AND RUNNING ORCHARD
 -----------------------------------------
 
-$Id$
-
 See also: http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=HowToInstallOrchard
 
 
@@ -37,14 +35,14 @@ Unpack the ZIP in the location of you choice.
 
 Run the orc.OrchardDemo class, with the command:
 
-    java -jar orchard-1.0.0-demo.jar
+    java -cp orchard-2.0.0-demo.jar:lib/\* orc.OrchardDemo
 
 This will open your default browser to a demo page running in an an
 embedded HTTP/servlet server on your workstation, port 8080.
 
 Alternatively, you can run the class orc.Orchard, with:
 
-    java -jar orchard-1.0.0-demo.jar Orchard
+    java -cp orchard-2.0.0-demo.jar:lib/\* orc.Orchard
 
 and it will run as a standalone Orchard Web application (servlet) in
 an embedded HTTP/servlet server on your workstation, port 8081.
@@ -57,8 +55,8 @@ ZIP archive of WAR file of the Orchard servlets and supporting
 libraries.
 
 The contents of this archive should be deployed on a servlet 2.5+
-
 container of your choosing.
+
 Note: You will need to tell your JAX-WS implementation and servlet
       container to use the same HTTP server.  For Jetty, you'll
       need the J2SE6 module (see note below), and add the following to
@@ -77,3 +75,7 @@ Note: The J2SE6 module is found in Jetty's contrib directory. Do not
 
       We've also included a subset of Jetty and its J2SE6 module in the
       ZIP archive.
+
+
+--
+[$Id$]
