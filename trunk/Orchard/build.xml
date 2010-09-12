@@ -336,6 +336,7 @@
 				<filter token="app.classpath" value="$JAVAROOT/${appname}.jar:${orchard.extra.jars.JAVAROOT}:${orchard-demo.extra.jars.JAVAROOT}"/>
 				<filter token="orc.version" value="${orc.version}"/>
 				<filter token="orchard.svnversion" value="${svnversion}"/>
+				<filter token="orc.copyright-year" value="${orc.copyright-year}"/>
 			</filterset>
 		</copy>
 		<!-- copy JavaApplicationStub with the unix cp command to preserve permissions -->
