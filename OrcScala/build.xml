@@ -220,6 +220,7 @@
 	<target name="macosx-app" depends="jar">
 		<property name="macosx-app.name" value="Orc"/>
 		<property name="macosx-app.dir" value="build/${target.name}-app/${macosx-app.name}.app"/>
+		<exec executable="svnversion" outputproperty="svnversion"/>  <!-- Format: 9999[:9999][M][S][P] -->
 		<exec executable="rm" failonerror="true"> <!-- clean up any old files -->
 			<arg line="-rf"/>
 			<arg value="build/${target.name}-app"/>
@@ -243,6 +244,8 @@
 			<filterset>
 				<filter token="orc.jar" value="${target.name}.jar"/>
 				<filter token="orc.version" value="${orc.version}"/>
+				<filter token="orc.svnversion" value="${svnversion}"/>
+				<filter token="orc.copyright-year" value="${orc.copyright-year}"/>
 			</filterset>
 		</copy>
 		<!-- copy JavaApplicationStub with the unix cp command to preserve permissions -->
