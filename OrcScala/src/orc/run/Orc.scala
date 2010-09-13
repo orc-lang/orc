@@ -166,8 +166,7 @@ trait Orc extends OrcRuntime {
           state = Bound(v)
           t.halt
           this.kill
-          val mkh = mkhandler(waitlist.size)
-          for (k <- waitlist) { mkh ! new K(k, Some(v)) }
+          for (k <- waitlist) { mkhandler(1) ! new K(k, Some(v)) }
         }
         case _ => t.halt    
       }
@@ -178,8 +177,7 @@ trait Orc extends OrcRuntime {
         case Unbound(waitlist) => {
           state = Dead
           parent.remove(this)
-          val mkh = mkhandler(waitlist.size)
-          for (k <- waitlist) { mkh ! new K(k, None) }     
+          for (k <- waitlist) { mkhandler(1) ! new K(k, None) }     
         }
         case _ => {  }
       }
