@@ -15,6 +15,7 @@ package orc.lib.str;
 
 import orc.TokenAPI;
 import orc.error.runtime.TokenException;
+import orc.values.Format;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.SiteAdaptor;
 import orc.values.sites.compatibility.type.Type;
@@ -30,7 +31,12 @@ public class Print extends SiteAdaptor {
 	public void callSite(final Args args, final TokenAPI caller) throws TokenException {
 		final StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < args.size(); i++) {
-			sb.append(String.valueOf(args.getArg(i)));
+			Object arg = args.getArg(i);
+			if (arg instanceof String) {
+				sb.append((String) arg);
+			} else {
+				sb.append(Format.formatValueR(arg));
+			}
 		}
 		caller.notify(new orc.PrintedEvent(sb.toString()));
 		caller.publish(signal());

@@ -15,6 +15,7 @@ package orc.lib.str;
 
 import orc.TokenAPI;
 import orc.error.runtime.TokenException;
+import orc.values.Format;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.SiteAdaptor;
 import orc.values.sites.compatibility.type.Type;
@@ -29,12 +30,17 @@ import orc.values.sites.compatibility.type.structured.EllipsisArrowType;
 public class Println extends SiteAdaptor {
 	@Override
 	public void callSite(final Args args, final TokenAPI caller) throws TokenException {
+		final StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < args.size(); i++) {
-			caller.notify(new orc.PrintedEvent(String.valueOf(args.getArg(i)) + "\n"));
+			Object arg = args.getArg(i);
+			if (arg instanceof String) {
+				sb.append((String) arg);
+			} else {
+				sb.append(Format.formatValueR(arg));
+			}
 		}
-		if (args.size() == 0) {
-			caller.notify(new orc.PrintedEvent("\n"));
-		}
+		sb.append('\n');
+		caller.notify(new orc.PrintedEvent(sb.toString()));
 		caller.publish(signal());
 	}
 
