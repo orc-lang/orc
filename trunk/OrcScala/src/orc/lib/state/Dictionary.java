@@ -29,6 +29,7 @@ public class Dictionary extends EvalSite {
 
 		@Override
 		public Object evaluate(final Args args) throws TokenException {
+		  synchronized(DictionaryInstance.this) {
 			final String field = args.fieldName();
 			RefInstance out = map.get(field);
 			if (out == null) {
@@ -36,6 +37,7 @@ public class Dictionary extends EvalSite {
 				map.put(field, out);
 			}
 			return out;
+		  }
 		}
 
 		@Override
