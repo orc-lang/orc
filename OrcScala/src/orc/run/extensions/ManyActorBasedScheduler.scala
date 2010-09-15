@@ -27,6 +27,13 @@ import scala.collection.mutable.Queue
  * @author amshali, dkitchin
  */
 trait ManyActorBasedScheduler extends Orc {
+  scala.actors.Scheduler.impl.shutdown
+  scala.actors.Scheduler.impl = {
+    val s = new scala.actors.scheduler.ResizableThreadPoolScheduler(true, false)
+    s.start()
+    s
+  }
+
   // distribute the work between actors in a round-robin fashion
   override def schedule(ts: List[Token]) {
     for (t <- ts) {
