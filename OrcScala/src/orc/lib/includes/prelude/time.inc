@@ -102,3 +102,6 @@ If instead the timeout is reached, publish None().
 def timeout[A](A, Integer) :: Option[A]
 def timeout(x, t) = let(Some(x) | Rtimer(t) >> None())
 
+
+
+site Delay = "orc.lib.time.Delay"
