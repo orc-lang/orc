@@ -21,9 +21,9 @@ integer ::= digit | digit integer
 
 def stringtolist(s) = -- convert a string to a list omitting white space
   def rest(i) =
-    If (i >= s.length?) >> []
-  | If (i <: s.length?)  >> If(s.substring(i,i+1) /= " ") >> s.substring(i,i+1):rest(i+1)
-  | If (i <: s.length?)  >> If(s.substring(i,i+1)  = " ") >> rest(i+1)
+    If (i >= s.length()) >> []
+  | If (i <: s.length())  >> If(s.substring(i,i+1) /= " ") >> s.substring(i,i+1):rest(i+1)
+  | If (i <: s.length())  >> If(s.substring(i,i+1)  = " ") >> rest(i+1)
                 
   rest(0)
 
@@ -45,12 +45,12 @@ def term(xs) =   factor(xs) >(n,ys)>
 def factor(xs) =  ufactor(xs) 
                 | xs >"-":ys> ufactor(ys) >(n,zs)> (-n,zs) -- unary minus
 
-def ufactor(xs) =  integer(xs)  >(Some(n,_),ys)>     (n,ys)
+def ufactor(xs) =  integer(xs)  >(Some((n,_)),ys)>     (n,ys)
                  | xs >"(":ys> expr(ys) >(n,")":zs)> (n,zs)
 
 {- integer(xs), where xs is a list of char, returns:
     (None(),xs) when xs is empty or its first symbol is a non-digit,
-    (Some(v,m),ys) when the first symbol of xs is a digit. Then,
+    (Some((v,m)),ys) when the first symbol of xs is a digit. Then,
       v = the integer prefix of xs,
       m = the smaleest power of 10 exceeding v,
       ys = the suffix of xs after removing v from it
@@ -60,8 +60,8 @@ def integer([]) = (None(),[])
 def integer(x:xs) =
   if "0" <= x && x <= "9" then
         read(x) >d> integer(xs) >(t,ys)>
-        (  t >None()>    (Some(d,10),ys)
-         | t >Some(v,m)> (Some(m * d+v, 10*m),ys)
+        (  t >None()>    (Some((d,10)),ys)
+         | t >Some((v,m))> (Some((m * d+v, 10*m)),ys)
         )
   else (None(),x:xs)
 
