@@ -24,8 +24,8 @@ import orc.error.OrcExceptionExtension._
 case class AggregateDef(clauses: List[Clause],
   typeformals: Option[List[String]],
   argtypes: Option[List[Type]],
-  returntype: Option[Type],
-  translator: Translator) extends orc.ast.AST {
+  returntype: Option[Type])
+  (implicit translator: Translator) extends orc.ast.AST {
 
   import translator._
   
@@ -52,7 +52,7 @@ case class AggregateDef(clauses: List[Clause],
         val newclause = defn ->> Clause(newformals, body)
         val newArgTypes = unifyList(argtypes, maybeArgTypes, reportProblem(RedundantArgumentType() at defn))
         val newReturnType = unify(returntype, maybeReturnType, reportProblem(RedundantReturnType() at defn))
-        AggregateDef(clauses ::: List(newclause), typeformals, newArgTypes, newReturnType, translator)
+        AggregateDef(clauses ::: List(newclause), typeformals, newArgTypes, newReturnType)
       }
       case DefClass(name, List(formals), maybeReturnType, body) => {
         this + Def(name, List(formals), maybeReturnType, new Capsule(body))
@@ -62,7 +62,7 @@ case class AggregateDef(clauses: List[Clause],
         val newTypeFormals = unifyList(typeformals, Some(typeformals2), reportProblem(RedundantTypeParameters() at defn))
         val newArgTypes = unifyList(argtypes, Some(argtypes3), reportProblem(RedundantArgumentType() at defn))
         val newReturnType = unify(returntype, Some(maybeReturnType), reportProblem(RedundantReturnType() at defn))
-        AggregateDef(clauses, newTypeFormals, newArgTypes, newReturnType, translator)
+        AggregateDef(clauses, newTypeFormals, newArgTypes, newReturnType)
       }
     }
 
@@ -71,7 +71,7 @@ case class AggregateDef(clauses: List[Clause],
     val newclause = lambda ->> Clause(newformals, lambda.body)
     val newArgTypes = unifyList(argtypes, maybeArgTypes, reportProblem(RedundantArgumentType() at lambda))
     val newReturnType = unify(returntype, lambda.returntype, reportProblem(RedundantReturnType() at lambda))
-    AggregateDef(clauses ::: List(newclause), typeformals, newArgTypes, newReturnType, translator)
+    AggregateDef(clauses ::: List(newclause), typeformals, newArgTypes, newReturnType)
   }
 
   def convert(x : named.BoundVar, context: Map[String, named.Argument], typecontext: Map[String, named.Type]): named.Def = {
@@ -79,10 +79,10 @@ case class AggregateDef(clauses: List[Clause],
 
     val (newTypeFormals, dtypecontext) = convertTypeFormals(typeformals.getOrElse(Nil), this)
     val newtypecontext = typecontext ++ dtypecontext
-    val newArgTypes = argtypes map { _ map { convertType(_, newtypecontext) } }
-    val newReturnType = returntype map { convertType(_, newtypecontext) }
+    val newArgTypes = argtypes map { _ map { convertType(_)(newtypecontext) } }
+    val newReturnType = returntype map { convertType(_)(newtypecontext) }
 
-    val (newformals, newbody) = Clause.convertClauses(clauses, context, newtypecontext, translator)
+    val (newformals, newbody) = Clause.convertClauses(clauses)(context, newtypecontext, translator)
 
     named.Def(x, newformals, newbody, newTypeFormals, newArgTypes, newReturnType)
   }
@@ -121,10 +121,10 @@ object AggregateDef {
     }
   }
 
-  def empty(tl: Translator) = new AggregateDef(Nil, None, None, None, tl)
+  def empty(implicit translator: Translator) = new AggregateDef(Nil, None, None, None)
 
-  def apply(defn: DefDeclaration, tl: Translator) = defn -> { empty(tl) + _ }
-  def apply(lambda: Lambda, tl: Translator) = lambda -> { empty(tl) + _ }
+  def apply(defn: DefDeclaration)(implicit translator: Translator) = defn -> { empty + _ }
+  def apply(lambda: Lambda)(implicit translator: Translator) = lambda -> { empty + _ }
 
 }
 

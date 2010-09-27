@@ -35,7 +35,8 @@ case class Clause(formals: List[Pattern], body: Expression) extends orc.ast.AST 
    * 
    */
   def convert(args: List[named.BoundVar], 
-              fallthrough: named.Expression, 
+              fallthrough: named.Expression) 
+             (implicit 
               context: Map[String, named.Argument], 
               typecontext: Map[String, named.Type],
               translator: Translator
@@ -64,7 +65,7 @@ case class Clause(formals: List[Pattern], body: Expression) extends orc.ast.AST 
     }
 
     for ((p,x) <- nonstrictPairs) {
-      val (source, dcontext, target) = convertPattern(p, x, context, typecontext)
+      val (source, dcontext, target) = convertPattern(p, x)
       targetConversion = targetConversion andThen target
       targetContext = targetContext ++ dcontext
       for (name <- dcontext.keys) { mentioned(name) }
@@ -87,7 +88,7 @@ case class Clause(formals: List[Pattern], body: Expression) extends orc.ast.AST 
        */
       case (strictPattern, strictArg) :: Nil => {
         val x = new named.BoundVar()
-        val (source, dcontext, target) = convertPattern(strictPattern, x, context, typecontext)
+        val (source, dcontext, target) = convertPattern(strictPattern, x)
         for (name <- dcontext.keys) { mentioned(name) }
         val src = source(strictArg)
         targetContext = targetContext ++ dcontext
@@ -99,7 +100,7 @@ case class Clause(formals: List[Pattern], body: Expression) extends orc.ast.AST 
       case _ => { 
         val (strictPatterns, strictArgs) = strictPairs.unzip
         val x = new named.BoundVar()
-        val (source, dcontext, target) = convertPattern(TuplePattern(strictPatterns), x, context, typecontext)
+        val (source, dcontext, target) = convertPattern(TuplePattern(strictPatterns), x)
         for (name <- dcontext.keys) { mentioned(name) }
         val src = source(makeTuple(strictArgs))
         targetContext = targetContext ++ dcontext
@@ -108,7 +109,7 @@ case class Clause(formals: List[Pattern], body: Expression) extends orc.ast.AST 
     }  
 
     /* Finally, construct the new expression */
-    val newbody = translator.convert(body, context ++ targetContext, typecontext)
+    val newbody = translator.convert(body)(context ++ targetContext, typecontext)
     this ->> targetConversion(newbody)
   }
 
@@ -140,7 +141,8 @@ object Clause {
    * 
    * The list of clauses is assumed to be nonempty.
    */
-  def convertClauses(clauses: List[Clause], 
+  def convertClauses(clauses: List[Clause])
+                    (implicit
                      context: Map[String, named.Argument], 
                      typecontext: Map[String, named.Type],
                      translator: Translator
@@ -149,7 +151,7 @@ object Clause {
 	val args = (for (_ <- 0 until arity) yield new named.BoundVar()).toList
 
 	val nil: named.Expression = named.Stop()
-	def cons(clause: Clause, fail: named.Expression) = clause.convert(args, fail, context, typecontext, translator)
+	def cons(clause: Clause, fail: named.Expression) = clause.convert(args, fail)
 	val body = clauses.foldRight(nil)(cons)
 
 	(args, body)
