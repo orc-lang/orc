@@ -5,9 +5,9 @@
  - Created by jthywiss on Aug 4, 2010 10:31:05 AM
  -}
 
-include "unity.inc"
+include "test_include_resource.inc"
 
-if unity=unity then "include_resource pass" else "huh?"
+if includeTest=includeTest then "include_resource pass" else "huh?"
 
 {-
 OUTPUT:
