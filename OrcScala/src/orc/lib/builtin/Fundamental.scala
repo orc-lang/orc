@@ -33,7 +33,7 @@ object Eq extends TotalSite with UntypedSite {
   def evaluate(args: List[AnyRef]) =
     args match {
       case List(null, b) => new java.lang.Boolean(b == null)
-      case List(a,b) => new java.lang.Boolean(a equals b)
+      case List(a,b) => new java.lang.Boolean(a == b)
       case _ => throw new ArityMismatchException(2, args.size)
   }
 }

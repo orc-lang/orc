@@ -22,13 +22,13 @@ import orc.error.runtime.ArityMismatchException
 import orc.error.runtime.ArgumentTypeMismatchException
 
 /**
- * Not equals comparison -- delegates to Scala AnyRef.equals
+ * Not equals comparison -- delegates to Scala's ==
  */
 object Inequal extends TotalSite with UntypedSite {
   override def name = "Inequal"
   def evaluate(args: List[AnyRef]) =
     args match {
-      case List(a,b) => new java.lang.Boolean(!(a equals b))
+      case List(a,b) => new java.lang.Boolean(!(a == b))
       case _ => throw new ArityMismatchException(2, args.size)
   }
 }
