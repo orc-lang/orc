@@ -53,7 +53,7 @@ case class TypeAscription(e: Expression, t: Type) extends Expression
 case class TypeAssertion(e: Expression, t: Type) extends Expression
 
 // An internal representation for the body of a 'def class'
-case class Capsule(body: Expression) extends Expression
+case class DefClassBody(body: Expression) extends Expression
 
 
 sealed abstract class Declaration extends AST 

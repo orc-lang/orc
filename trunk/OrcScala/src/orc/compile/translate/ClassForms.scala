@@ -1,5 +1,5 @@
 //
-// classForms.scala -- Scala class/trait/object classForms
+// ClassForms.scala -- Scala object ClassForms
 // Project OrcScala
 //
 // $Id$
@@ -24,25 +24,25 @@ import orc.error.OrcExceptionExtension._
  *
  * @author dkitchin
  */
-object classForms {
+object ClassForms {
 
   /** 
    * Helper functions for class conversion
    */
-  def makeclassBody(body: ext.Expression,
+  def makeClassBody(body: ext.Expression,
                       reportProblem: CompilationException with ContinuableSeverity => Unit
-                     ): ext.Expression = makeclassBody(body, Nil, reportProblem)
+                     ): ext.Expression = makeClassBody(body, Nil, reportProblem)
 
-  def makeclassBody(body: ext.Expression, 
+  def makeClassBody(body: ext.Expression, 
                       defNames: List[String],
                       reportProblem: CompilationException with ContinuableSeverity => Unit
                      ): ext.Expression = {
     body match {
       case ext.Declare(decl: ext.DefDeclaration, e) => {
-        return new ext.Declare(decl, makeclassBody(e, decl.name :: defNames, reportProblem))
+        return new ext.Declare(decl, makeClassBody(e, decl.name :: defNames, reportProblem))
       }
       case ext.Declare(decl, e) => {
-        return new ext.Declare(decl, makeclassBody(e, defNames, reportProblem))
+        return new ext.Declare(decl, makeClassBody(e, defNames, reportProblem))
       }
       case _ => {}
     }
@@ -61,7 +61,7 @@ object classForms {
   def makeRecordArgs(defNames: List[String]): List[ext.Expression] = {
     var args: List[ext.Expression] = Nil
     for (d <- defNames) {
-      val call = new ext.Call(new ext.Constant(builtin.SiteSite), List(ext.Args(None, List(new ext.Variable(d)))))
+      val call = new ext.Call(new ext.Constant(builtin.MakeSite), List(ext.Args(None, List(new ext.Variable(d)))))
       val tuple = ext.TupleExpr(List(new ext.Constant(d), call))
       args = args ::: List(tuple)
     }

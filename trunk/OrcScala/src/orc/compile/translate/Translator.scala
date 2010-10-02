@@ -15,479 +15,452 @@
 
 package orc.compile.translate
 
-import scala.collection.immutable._
-import scala.collection.mutable
-import orc.ast.oil.named._
-import orc.ast.oil._
 import orc.ast.ext
-import orc.lib.builtin
-import orc.values.sites.Site
-import orc.values.sites.OrcSiteForm
-import orc.values.sites.JavaSiteForm
-import orc.OrcOptions
-import orc.values.Field
-import orc.values.Signal
-
-import orc.error.compiletime._
-import orc.error.OrcExceptionExtension._
-import scala.util.parsing.input.Position
-
-import orc.compile.translate.PrimitiveForms._
-import orc.compile.translate.classForms._
+import orc.ast.oil._
+import orc.ast.oil.named._
+import orc.compile.translate.ClassForms._
 import orc.compile.translate.CurriedForms._
-
+import orc.compile.translate.PrimitiveForms._
+import orc.error.OrcExceptionExtension._
+import orc.error.compiletime._
+import orc.lib.builtin
+import orc.values.{Signal, Field}
+import orc.values.sites.{JavaSiteForm, OrcSiteForm}
+import scala.collection.mutable
+import scala.collection.immutable._
 
 class Translator(val reportProblem: CompilationException with ContinuableSeverity => Unit) {
-	  
-	/**
-	 *  Translate an extended AST to a named OIL AST.
-	 *
-	 */
-	def translate(extendedAST : ext.Expression): named.Expression = {
-	  val rootContext: Map[String, Argument] = HashMap.empty withDefault { UnboundVar(_) }
-	  val rootTypeContext: Map[String, Type] = HashMap.empty withDefault { UnboundTypevar(_) }
-	  convert(extendedAST)(rootContext, rootTypeContext)
-	}
-	
-	/**
-	 *  Convert an extended AST expression to a named OIL expression.
-	 *
-	 */
-	def convert(e : ext.Expression)(implicit context: Map[String, Argument], typecontext: Map[String, Type]): Expression = {
-	  e -> {
-	    case ext.Stop() => Stop()
-	    case ext.Constant(c) => Constant(c)
-	    case ext.Variable(x) => context(x)
-	    case ext.TupleExpr(es) => unfold(es map convert, makeTuple)
-	    case ext.ListExpr(es) => unfold(es map convert, makeList)
-	    case ext.RecordExpr(es) => {
-	      val tuples = es map { case (s,e) => ext.TupleExpr(List(ext.Constant(s),e)) }
-	      unfold(tuples map convert, makeRecord)
-	    }
-	    case ext.Call(target, gs) => {
-	      var expr = convert(target)
-	      for (g <- gs) {
-	        expr = unfold(List(expr), { case List(m) => convertArgumentGroup(m, g) }) 
-	      }
-	      expr
-	    }
-	    case ext.PrefixOperator(opName, exp) => {
-	      val actualOpName = if (opName == "-") "0-" else opName
-	      val op = context(actualOpName)
-	      unfold(List(exp) map convert, { Call(op, _, None) })
-	    }
-	    case ext.InfixOperator(l, opName, r) => {
-	      val op = context(opName)
-	      unfold(List(l,r) map convert, { Call(op, _, None) })
-	    }
 
-	    case ext.Sequential(l, None, r) => convert(l) >> convert(r)
-	    case ext.Sequential(l, Some(p), r) => {
-	      val x = new BoundVar()
-	      val (source, dcontext, target) = convertPattern(p, x)	      
-	      val newl = convert(l)
-	      val newr = convert(r)(context ++ dcontext, typecontext)
-	      source(newl) > x > target(newr)
-	    }
-	    case ext.Pruning(l, None, r) => convert(l) << convert(r)
-	    case ext.Pruning(l, Some(p), r) => {
-	      val x = new BoundVar()
-          val (source, dcontext, target) = convertPattern(p, x)         
-          val newl = convert(l)(context ++ dcontext, typecontext)
-          val newr = convert(r)
-          target(newl) < x < source(newr)
-	    }
-	    case ext.Parallel(l,r) => convert(l) || convert(r)
-	    case ext.Otherwise(l, r) => convert(l) ow convert(r)
+  /**
+   *  Translate an extended AST to a named OIL AST.
+   *
+   */
+  def translate(extendedAST: ext.Expression): named.Expression = {
+    val rootContext: Map[String, Argument] = HashMap.empty withDefault { UnboundVar(_) }
+    val rootTypeContext: Map[String, Type] = HashMap.empty withDefault { UnboundTypevar(_) }
+    convert(extendedAST)(rootContext, rootTypeContext)
+  }
 
-	    case lambda : ext.Lambda => {
-	      val flatLambda = reduceParamLists(lambda)
-	      val lambdaName = new BoundVar()
-	      val newdef = AggregateDef(flatLambda)(this).convert(lambdaName, context, typecontext)
-	      DeclareDefs(List(newdef), lambdaName)
-	    }
-	    case ext.Capsule(b) => {
-	      var capThunk = ext.Lambda(None, List(Nil), None, makeclassBody(b, reportProblem))				  
-	      convert(ext.Call(
-	          ext.Call(ext.Constant(builtin.SiteSite), List(ext.Args(None, List(capThunk)))), List(ext.Args(None, Nil))))
-	    }
-	    case ext.Conditional(ifE, thenE, elseE) => {
-	      val b = new BoundVar()
-	      val nb = new BoundVar()
-	      (  callIf(b) >> convert(thenE) 
-	          || callUnless(b) >> convert(elseE)	  
-	      )   < b < convert(ifE)
+  /**
+   *  Convert an extended AST expression to a named OIL expression.
+   *
+   */
+  def convert(e: ext.Expression)(implicit context: Map[String, Argument], typecontext: Map[String, Type]): Expression = {
+    e -> {
+      case ext.Stop() => Stop()
+      case ext.Constant(c) => Constant(c)
+      case ext.Variable(x) => context(x)
+      case ext.TupleExpr(es) => unfold(es map convert, makeTuple)
+      case ext.ListExpr(es) => unfold(es map convert, makeList)
+      case ext.RecordExpr(es) => {
+        val tuples = es map { case (s, e) => ext.TupleExpr(List(ext.Constant(s), e)) }
+        unfold(tuples map convert, makeRecord)
+      }
+      case ext.Call(target, gs) => {
+        var expr = convert(target)
+        for (g <- gs) {
+          expr = unfold(List(expr), { case List(m) => convertArgumentGroup(m, g) })
+        }
+        expr
+      }
+      case ext.PrefixOperator(opName, exp) => {
+        val actualOpName = if (opName == "-") "0-" else opName
+        val op = context(actualOpName)
+        unfold(List(exp) map convert, { Call(op, _, None) })
+      }
+      case ext.InfixOperator(l, opName, r) => {
+        val op = context(opName)
+        unfold(List(l, r) map convert, { Call(op, _, None) })
+      }
 
-	    }
-	    case ext.DefGroup(defs, body) => {
-	      val (newdefs, dcontext) = convertDefs(defs)
-	      val newbody = convert(body)(context ++ dcontext, typecontext)
-	      DeclareDefs(newdefs, newbody)
-	    }
-	    case ext.Declare(ext.Val(p,f), body) => {
-	      convert(ext.Pruning(body, Some(p), f))
-	    }
-	    case ext.Declare(ext.SiteImport(name, sitename), body) => {
-	      val site = Constant(OrcSiteForm.resolve(sitename))
-	      convert(body)(context + { (name, site) }, typecontext)
-	    }
-	    case ext.Declare(ext.ClassImport(name, classname), body) => {
-	      val u = new BoundTypevar()
-	      val site = Constant(JavaSiteForm.resolve(classname))
-	      val newbody = convert(body)(context + { (name, site) }, typecontext + { (name, u) })
-	      DeclareType(u, ClassType(classname), newbody)
-	    }
+      case ext.Sequential(l, None, r) => convert(l) >> convert(r)
+      case ext.Sequential(l, Some(p), r) => {
+        val x = new BoundVar()
+        val (source, dcontext, target) = convertPattern(p, x)
+        val newl = convert(l)
+        val newr = convert(r)(context ++ dcontext, typecontext)
+        source(newl) > x > target(newr)
+      }
+      case ext.Pruning(l, None, r) => convert(l) << convert(r)
+      case ext.Pruning(l, Some(p), r) => {
+        val x = new BoundVar()
+        val (source, dcontext, target) = convertPattern(p, x)
+        val newl = convert(l)(context ++ dcontext, typecontext)
+        val newr = convert(r)
+        target(newl) < x < source(newr)
+      }
+      case ext.Parallel(l, r) => convert(l) || convert(r)
+      case ext.Otherwise(l, r) => convert(l) ow convert(r)
 
-	    case ext.Declare(ext.Include(_, decls), body) => convert( (decls foldRight body) { ext.Declare } ) 
-	    
-	    case ext.Declare(ext.TypeImport(name, classname), body) => {
-	      val u = new BoundTypevar()
-	      val newbody = convert(body)(context, typecontext + { (name, u) })
-	      DeclareType(u, ImportedType(classname), newbody)
-	    }
+      case lambda: ext.Lambda => {
+        val flatLambda = reduceParamLists(lambda)
+        val lambdaName = new BoundVar()
+        val newdef = AggregateDef(flatLambda)(this).convert(lambdaName, context, typecontext)
+        DeclareDefs(List(newdef), lambdaName)
+      }
+      case ext.DefClassBody(b) => {
+        var capThunk = ext.Lambda(None, List(Nil), None, makeClassBody(b, reportProblem))
+        convert(ext.Call(
+          ext.Call(ext.Constant(builtin.MakeSite), List(ext.Args(None, List(capThunk)))), List(ext.Args(None, Nil))))
+      }
+      case ext.Conditional(ifE, thenE, elseE) => {
+        val b = new BoundVar()
+        val nb = new BoundVar()
+        (callIf(b) >> convert(thenE)
+          || callUnless(b) >> convert(elseE)) < b < convert(ifE)
 
-	    case ext.Declare(decl@ ext.TypeAlias(name, typeformals, t), body) => {
-	      val u = new BoundTypevar()
-	      val newtype = 
-	        typeformals match {
-    	      case Nil => convertType(t)
-    	      case _ => {
-    	        val (newTypeFormals, dtypecontext) = convertTypeFormals(typeformals, decl)
-    	        val enclosedType = convertType(t)(typecontext ++ dtypecontext)
-    	        TypeAbstraction(newTypeFormals, enclosedType)
-    	      }
-	        }
-	      val newbody = convert(body)(context, typecontext + { (name, u) })
-	      DeclareType(u, newtype, newbody)
-	    }
+      }
+      case ext.DefGroup(defs, body) => {
+        val (newdefs, dcontext) = convertDefs(defs)
+        val newbody = convert(body)(context ++ dcontext, typecontext)
+        DeclareDefs(newdefs, newbody)
+      }
+      case ext.Declare(ext.Val(p, f), body) => {
+        convert(ext.Pruning(body, Some(p), f))
+      }
+      case ext.Declare(ext.SiteImport(name, sitename), body) => {
+        val site = Constant(OrcSiteForm.resolve(sitename))
+        convert(body)(context + { (name, site) }, typecontext)
+      }
+      case ext.Declare(ext.ClassImport(name, classname), body) => {
+        val u = new BoundTypevar()
+        val site = Constant(JavaSiteForm.resolve(classname))
+        val newbody = convert(body)(context + { (name, site) }, typecontext + { (name, u) })
+        DeclareType(u, ClassType(classname), newbody)
+      }
 
-	    case ext.Declare(decl@ ext.Datatype(name, typeformals, constructors), body) => {
-	      val d = new BoundTypevar()
-	      val variantType = { 
-	        val (newTypeFormals, dtypecontext) = convertTypeFormals(typeformals, decl)
-	        val newtypecontext = typecontext ++ dtypecontext + { (name, d) }
-	        val variants = 
-	          for (ext.Constructor(name, types) <- constructors) yield {
-	            val newtypes = types map {_ map { convertType(_)(newtypecontext) } }
-	            (name, newtypes)
-	          }
-	        TypeAbstraction(newTypeFormals, VariantType(variants))
-	      }
-	      
-	      val names = constructors map { _.name }
-	      val p = ext.TuplePattern(names map { ext.VariablePattern(_) })
-	      val x = new BoundVar()
-	      val (source, dcontext, target) = convertPattern(p, x)
+      case ext.Declare(ext.Include(_, decls), body) => convert((decls foldRight body) { ext.Declare })
 
-	      val newbody = convert(body)(context ++ dcontext, typecontext + { (name, d) })
-	      val makeSites = makeDatatype(d, constructors, this)
-	      
-	      DeclareType(d, variantType, target(newbody) < x < source(makeSites))
-	    }
-	    
-	    case ext.Declare(decl, _) => throw (MalformedExpression("Invalid declaration form") at decl)
+      case ext.Declare(ext.TypeImport(name, classname), body) => {
+        val u = new BoundTypevar()
+        val newbody = convert(body)(context, typecontext + { (name, u) })
+        DeclareType(u, ImportedType(classname), newbody)
+      }
 
-	    case ext.TypeAscription(body, t) => HasType(convert(body),              convertType(t)  )
-	    case ext.TypeAssertion(body, t)  => HasType(convert(body), AssertedType(convertType(t)) )
+      case ext.Declare(decl@ext.TypeAlias(name, typeformals, t), body) => {
+        val u = new BoundTypevar()
+        val newtype =
+          typeformals match {
+            case Nil => convertType(t)
+            case _ => {
+              val (newTypeFormals, dtypecontext) = convertTypeFormals(typeformals, decl)
+              val enclosedType = convertType(t)(typecontext ++ dtypecontext)
+              TypeAbstraction(newTypeFormals, enclosedType)
+            }
+          }
+        val newbody = convert(body)(context, typecontext + { (name, u) })
+        DeclareType(u, newtype, newbody)
+      }
 
-	    case ext.Hole => Hole(context, typecontext)
-	    
-	    } 
-	}
-	
-	
-	/**
-	 * Given (e1, ... , en) and f, return:
-	 * 
-	 * f(x1, ... , xn) <x1< e1 
-	 *                  ... 
-	 *                   <xn< en
-	 * 
-	 * As an optimization, if any e is already an argument, no << binder is generated for it.
-	 * 
-	 */
-	def unfold(es: List[Expression], makeCore: List[Argument] => Expression): Expression = {
-		
-		def expand(es: List[Expression]): (List[Argument], Conversion) = 
-			es match {
-				case (a : Argument) :: rest => {
-					val (args, bindRest) = expand(rest)
-					(a :: args, bindRest)
-				}
-				case g :: rest => {
-					val (args, bindRest) = expand(rest)
-					val x = new BoundVar()
-					(x :: args, bindRest(_) < x < g)
-				}
-				case Nil => (Nil, e => e)
-			}
-		
-		val (args, bind) = expand(es)
-		bind(makeCore(args))
-	}
-	
-	
-	
-	
-	def convertArgumentGroup(target: Argument, ag : ext.ArgumentGroup)(implicit context: Map[String, Argument], typecontext: Map[String, Type]) : Expression = {
-      
-	  ag match {
-         case ext.Args(typeargs, args) => {
-           val newtypeargs = typeargs map { _ map convertType }
-           unfold(args map convert, { Call(target, _, newtypeargs) })
-         }
-         case ext.FieldAccess(field) => {
-           Call(target, List(Constant(Field(field))), None)
-         }
-         case ext.Dereference => {
-           val reader = new BoundVar()
-           val args = List(Constant(Field("read")))
-           Call(target, args, None)  > reader >  Call(reader, Nil, None)
-         }
+      case ext.Declare(decl@ext.Datatype(name, typeformals, constructors), body) => {
+        val d = new BoundTypevar()
+        val variantType = {
+          val (newTypeFormals, dtypecontext) = convertTypeFormals(typeformals, decl)
+          val newtypecontext = typecontext ++ dtypecontext + { (name, d) }
+          val variants =
+            for (ext.Constructor(name, types) <- constructors) yield {
+              val newtypes = types map { _ map { convertType(_)(newtypecontext) } }
+              (name, newtypes)
+            }
+          TypeAbstraction(newTypeFormals, VariantType(variants))
+        }
+
+        val names = constructors map { _.name }
+        val p = ext.TuplePattern(names map { ext.VariablePattern(_) })
+        val x = new BoundVar()
+        val (source, dcontext, target) = convertPattern(p, x)
+
+        val newbody = convert(body)(context ++ dcontext, typecontext + { (name, d) })
+        val makeSites = makeDatatype(d, constructors, this)
+
+        DeclareType(d, variantType, target(newbody) < x < source(makeSites))
+      }
+
+      case ext.Declare(decl, _) => throw (MalformedExpression("Invalid declaration form") at decl)
+
+      case ext.TypeAscription(body, t) => HasType(convert(body), convertType(t))
+      case ext.TypeAssertion(body, t) => HasType(convert(body), AssertedType(convertType(t)))
+
+      case ext.Hole => Hole(context, typecontext)
+
+    }
+  }
+
+  /**
+   * Given (e1, ... , en) and f, return:
+   * 
+   * f(x1, ... , xn) <x1< e1 
+   *                  ... 
+   *                   <xn< en
+   * 
+   * As an optimization, if any e is already an argument, no << binder is generated for it.
+   * 
+   */
+  def unfold(es: List[Expression], makeCore: List[Argument] => Expression): Expression = {
+
+    def expand(es: List[Expression]): (List[Argument], Conversion) =
+      es match {
+        case (a: Argument) :: rest => {
+          val (args, bindRest) = expand(rest)
+          (a :: args, bindRest)
+        }
+        case g :: rest => {
+          val (args, bindRest) = expand(rest)
+          val x = new BoundVar()
+          (x :: args, bindRest(_) < x < g)
+        }
+        case Nil => (Nil, e => e)
+      }
+
+    val (args, bind) = expand(es)
+    bind(makeCore(args))
+  }
+
+  def convertArgumentGroup(target: Argument, ag: ext.ArgumentGroup)(implicit context: Map[String, Argument], typecontext: Map[String, Type]): Expression = {
+
+    ag match {
+      case ext.Args(typeargs, args) => {
+        val newtypeargs = typeargs map { _ map convertType }
+        unfold(args map convert, { Call(target, _, newtypeargs) })
+      }
+      case ext.FieldAccess(field) => {
+        Call(target, List(Constant(Field(field))), None)
+      }
+      case ext.Dereference => {
+        val reader = new BoundVar()
+        val args = List(Constant(Field("read")))
+        Call(target, args, None) > reader > Call(reader, Nil, None)
       }
     }
-	
-	
-	
-	
-	
-	/**
-	 *  Convert a list of extended AST def declarations to:
-	 *  
-	 *        a list of named OIL definitions 
-	 *  and   
-	 *        a mapping from their string names to their new bound names
-	 *
-	 */
-	def convertDefs(defs: List[ext.DefDeclaration])(implicit context: Map[String, Argument], typecontext: Map[String, Type]): (List[Def], Map[String, BoundVar]) = {
-		val reducedDefs = defs map reduceParamLists
-		
-		var defsMap : Map[String, AggregateDef] = HashMap.empty.withDefaultValue(AggregateDef.empty(this))
-		
-		for (d <- reducedDefs; n = d.name) {
-		  defsMap = defsMap + { (n, defsMap(n) + d) }
-		}
-		
-		defsMap.values foreach { _.classCheck }
-		
-		// we generate these names beforehand since defs can be bound recursively in their own bodies
-		val namesMap : Map[String, BoundVar] = Map.empty ++ (for (name <- defsMap.keys) yield (name, new BoundVar()))
-		val recursiveContext = context ++ namesMap
-		val newdefs = for ((n,d) <- defsMap) yield {
-		  d.convert(namesMap(n), recursiveContext, typecontext)
-		}
-		
-		(newdefs.toList, namesMap)
-	}
-	
-	
-	
-	/**
-	 *  Convert an extended AST type to a named OIL type.
-	 *
-	 */
-	def convertType(t : ext.Type)(implicit typecontext: Map[String, Type]): named.Type = {
-	  t -> {
-  	    case ext.TypeVariable(name) => typecontext(name)
-  	    case ext.TupleType(ts) => TupleType(ts map convertType)
-  	    case ext.RecordType(entries) => {
-  	      val newEntries = (HashMap.empty ++ entries) mapValues convertType			 
-  	      RecordType(newEntries)
-  	    }
-  	    case ext.TypeApplication(name, typeactuals) => {
-  	      TypeApplication(typecontext(name), typeactuals map convertType)
-  	    }
-  	    case ext.LambdaType(typeformals, List(argtypes), returntype) => {
-  	      val (newTypeFormals, dtypecontext) = convertTypeFormals(typeformals, t)
-  	      val newtypecontext = typecontext ++ dtypecontext
-  	      val newArgTypes = argtypes map { convertType(_)(newtypecontext)  }
-  	      val newReturnType = convertType(returntype)(newtypecontext)
-  	      FunctionType(newTypeFormals, newArgTypes, newReturnType)
-  	    }
-  	    case ltype@ ext.LambdaType(typeformals, args::tail, returntype) => { 
-  	      /* Multiple type argument groups, first uncurry it.*/
-  	      convertType(ltype.cut)
-  	    }
-  	    case ext.Top() => Top()
-  	    case ext.Bot() => Bot()
-	  }
-	}
-	
-	
-	/**
-	 * Convert a list of type formal names to:
-	 * 
-	 *     A list of bound type formal variables
-	 * and 
-	 *     A context mapping those names to those vars
-	 */
-	def convertTypeFormals(typeformals: List[String], ast: orc.ast.AST): (List[BoundTypevar], Map[String,BoundTypevar]) = {
-	   var newTypeFormals: List[BoundTypevar] = Nil
-	   var formalsMap = new HashMap[String, BoundTypevar]()
-       for (name <- typeformals.reverse) {
-         if (formalsMap contains name) { 
-           reportProblem(DuplicateTypeFormalException(name) at ast) 
-         }
-         else {
-           val w = new BoundTypevar()
-           newTypeFormals = w :: newTypeFormals
-           formalsMap = formalsMap + { (name, w) }
-         }
-       }
-	   (newTypeFormals, formalsMap)
-	}
-	
-	
-	/**
-	 *  Convert an extended AST pattern to:
-	 *  
-	 *        A filtering conversion for the source expression
-	 *  and      
-	 *        A binding conversion for the target expression,
-	 *        parameterized on the variable carrying the result
-	 *
-	 */
-	
-	type Conversion = Expression => Expression
-	val id: Conversion = { e => e }
-	
-	def convertPattern(p : ext.Pattern, bridge: BoundVar)(implicit context: Map[String, Argument], typecontext: Map[String, Type]): 
-	  (Conversion, Map[String, Argument], Conversion) = { 
-	
-	  var bindingMap: mutable.Map[String, BoundVar] = new mutable.HashMap()
-	  def bind(name: String, x: BoundVar) {
-	    if (bindingMap contains name) {
-          reportProblem(NonlinearPatternException(name) at p)
+  }
+
+  /**
+   *  Convert a list of extended AST def declarations to:
+   *  
+   *        a list of named OIL definitions 
+   *  and   
+   *        a mapping from their string names to their new bound names
+   *
+   */
+  def convertDefs(defs: List[ext.DefDeclaration])(implicit context: Map[String, Argument], typecontext: Map[String, Type]): (List[Def], Map[String, BoundVar]) = {
+    val reducedDefs = defs map reduceParamLists
+
+    var defsMap: Map[String, AggregateDef] = HashMap.empty.withDefaultValue(AggregateDef.empty(this))
+
+    for (d <- reducedDefs; n = d.name) {
+      defsMap = defsMap + { (n, defsMap(n) + d) }
+    }
+
+    defsMap.values foreach { _.ClassCheck }
+
+    // we generate these names beforehand since defs can be bound recursively in their own bodies
+    val namesMap: Map[String, BoundVar] = Map.empty ++ (for (name <- defsMap.keys) yield (name, new BoundVar()))
+    val recursiveContext = context ++ namesMap
+    val newdefs = for ((n, d) <- defsMap) yield {
+      d.convert(namesMap(n), recursiveContext, typecontext)
+    }
+
+    (newdefs.toList, namesMap)
+  }
+
+  /**
+   *  Convert an extended AST type to a named OIL type.
+   *
+   */
+  def convertType(t: ext.Type)(implicit typecontext: Map[String, Type]): named.Type = {
+    t -> {
+      case ext.TypeVariable(name) => typecontext(name)
+      case ext.TupleType(ts) => TupleType(ts map convertType)
+      case ext.RecordType(entries) => {
+        val newEntries = (HashMap.empty ++ entries) mapValues convertType
+        RecordType(newEntries)
+      }
+      case ext.TypeApplication(name, typeactuals) => {
+        TypeApplication(typecontext(name), typeactuals map convertType)
+      }
+      case ext.LambdaType(typeformals, List(argtypes), returntype) => {
+        val (newTypeFormals, dtypecontext) = convertTypeFormals(typeformals, t)
+        val newtypecontext = typecontext ++ dtypecontext
+        val newArgTypes = argtypes map { convertType(_)(newtypecontext) }
+        val newReturnType = convertType(returntype)(newtypecontext)
+        FunctionType(newTypeFormals, newArgTypes, newReturnType)
+      }
+      case ltype@ext.LambdaType(typeformals, args :: tail, returntype) => {
+        /* Multiple type argument groups, first uncurry it.*/
+        convertType(ltype.cut)
+      }
+      case ext.Top() => Top()
+      case ext.Bot() => Bot()
+    }
+  }
+
+  /**
+   * Convert a list of type formal names to:
+   * 
+   *     A list of bound type formal variables
+   * and 
+   *     A context mapping those names to those vars
+   */
+  def convertTypeFormals(typeformals: List[String], ast: orc.ast.AST): (List[BoundTypevar], Map[String, BoundTypevar]) = {
+    var newTypeFormals: List[BoundTypevar] = Nil
+    var formalsMap = new HashMap[String, BoundTypevar]()
+    for (name <- typeformals.reverse) {
+      if (formalsMap contains name) {
+        reportProblem(DuplicateTypeFormalException(name) at ast)
+      } else {
+        val w = new BoundTypevar()
+        newTypeFormals = w :: newTypeFormals
+        formalsMap = formalsMap + { (name, w) }
+      }
+    }
+    (newTypeFormals, formalsMap)
+  }
+
+  /**
+   *  Convert an extended AST pattern to:
+   *  
+   *        A filtering conversion for the source expression
+   *  and      
+   *        A binding conversion for the target expression,
+   *        parameterized on the variable carrying the result
+   *
+   */
+
+  type Conversion = Expression => Expression
+  val id: Conversion = { e => e }
+
+  def convertPattern(p: ext.Pattern, bridge: BoundVar)(implicit context: Map[String, Argument], typecontext: Map[String, Type]): (Conversion, Map[String, Argument], Conversion) = {
+
+    var bindingMap: mutable.Map[String, BoundVar] = new mutable.HashMap()
+    def bind(name: String, x: BoundVar) {
+      if (bindingMap contains name) {
+        reportProblem(NonlinearPatternException(name) at p)
+      } else {
+        bindingMap += { (name, x) }
+      }
+    }
+
+    def unravel(p: ext.Pattern, focus: BoundVar): (Conversion) = {
+      p match {
+        case ext.Wildcard() => {
+          id
         }
-        else {
-          bindingMap += { (name, x) }
+        case ext.ConstantPattern(c) => {
+          val b = new BoundVar();
+          { callEq(focus, Constant(c)) > b > callIf(b) >> _ }
+        }
+        case ext.VariablePattern(name) => {
+          bind(name, focus)
+          id
+        }
+        case ext.TuplePattern(Nil) => {
+          unravel(ext.ConstantPattern(Signal), focus)
+        }
+        case ext.TuplePattern(List(p)) => {
+          unravel(p, focus)
+        }
+        case ext.TuplePattern(ps) => {
+          /* Test that the pattern's size matches the focus tuple's size */
+          val tuplesize = Constant(BigInt(ps.size))
+          val sizecheck = { callTupleArityChecker(focus, tuplesize) >> _ }
+
+          /* Match each element of the tuple against its corresponding pattern */
+          var elements = id
+          for ((p, i) <- ps.zipWithIndex) {
+            val y = new BoundVar()
+            val bindElement: Conversion = { makeNth(focus, i) > y > _ }
+            elements = elements compose bindElement compose unravel(p, y)
+          }
+
+          sizecheck compose elements
+        }
+        case ext.ListPattern(Nil) => {
+          { callIsNil(focus) >> _ }
+        }
+        case ext.ListPattern(List(p)) => {
+          val consp = ext.ConsPattern(p, ext.ListPattern(Nil))
+          unravel(consp, focus)
+        }
+        case ext.ListPattern(ps) => {
+          val seed: ext.Pattern = ext.ListPattern(Nil)
+          val folded = (ps foldRight seed)(ext.ConsPattern)
+          unravel(folded, focus)
+        }
+        case ext.ConsPattern(ph, pt) => {
+          val y = new BoundVar()
+          val p = ext.TuplePattern(List(ph, pt));
+          { callIsCons(focus) > y > _ } compose unravel(p, y)
+        }
+        case ext.CallPattern(name, args) => {
+          val y = new BoundVar()
+          val p = ext.TuplePattern(args)
+          val C = context(name);
+          { makeUnapply(C, focus) > y > _ } compose unravel(p, y)
+        }
+        case ext.AsPattern(p, name) => {
+          bind(name, focus)
+          unravel(p, focus)
+        }
+        case ext.EqPattern(name) => {
+          val b = new BoundVar()
+          val C = context(name);
+          { callEq(C, focus) > b > callIf(b) >> _ }
+        }
+        case ext.TypedPattern(p, t) => {
+          val T = convertType(t)
+          val ascribe: Conversion = { HasType(_, T) }
+          ascribe compose unravel(p, focus)
         }
       }
-	  
-	  
-	  
-	  def unravel(p : ext.Pattern, focus: BoundVar): (Conversion) = {
-	    p match {
-          case ext.Wildcard() => {
-            id
+    }
+
+    val sourceVar = new BoundVar()
+    val filterInto = unravel(p, sourceVar)
+
+    bindingMap.values.toList.distinct match {
+
+      case Nil => {
+        /* None of the computed results are needed; the pattern had only guards, and no bindings. */
+
+        val sourceConversion: Conversion =
+          { _ > sourceVar > filterInto(Constant(Signal)) }
+
+        (sourceConversion, HashMap.empty, id)
+      }
+
+      case List(neededResult) => {
+        /* Only one result is needed */
+
+        val sourceConversion: Conversion =
+          { _ > sourceVar > filterInto(neededResult) }
+
+        val dcontext = HashMap.empty ++ (for ((name, `neededResult`) <- bindingMap) yield { (name, bridge) })
+
+        (sourceConversion, dcontext, id)
+      }
+
+      case neededResults => {
+        /* More than one result is needed */
+
+        val sourceConversion: Conversion =
+          { _ > sourceVar > filterInto(makeLet(neededResults)) }
+
+        var dcontext: Map[String, Argument] = HashMap.empty
+        var targetConversion = id
+
+        for ((r, i) <- neededResults.zipWithIndex) {
+          val y = new BoundVar()
+          for ((name, `r`) <- bindingMap) {
+            dcontext = dcontext + { (name, y) }
           }
-          case ext.ConstantPattern(c) => {
-            val b = new BoundVar() ;
-            { callEq(focus, Constant(c)) > b > callIf(b) >> _ }
-          }
-          case ext.VariablePattern(name) => {
-            bind(name, focus)
-            id
-          }
-          case ext.TuplePattern(Nil) => {
-            unravel(ext.ConstantPattern(Signal), focus)
-          }
-          case ext.TuplePattern(List(p)) => {
-            unravel(p, focus)
-          }
-          case ext.TuplePattern(ps) => {
-            /* Test that the pattern's size matches the focus tuple's size */
-            val tuplesize = Constant(BigInt(ps.size))
-            val sizecheck = { callTupleArityChecker(focus,tuplesize) >> _ }
-            
-            /* Match each element of the tuple against its corresponding pattern */
-            var elements = id
-            for ((p,i) <- ps.zipWithIndex) {
-              val y = new BoundVar()
-              val bindElement: Conversion = { makeNth(focus,i) > y > _ }
-              elements = elements compose bindElement compose unravel(p,y)
-            }
-            
-            sizecheck compose elements
-          }
-          case ext.ListPattern(Nil) => {
-            { callIsNil(focus) >> _ }
-          }
-          case ext.ListPattern(List(p)) => {
-            val consp = ext.ConsPattern(p, ext.ListPattern(Nil))   
-            unravel(consp, focus)
-          }
-          case ext.ListPattern(ps) => {
-            val seed : ext.Pattern = ext.ListPattern(Nil)
-            val folded = (ps foldRight seed)(ext.ConsPattern)   
-            unravel(folded, focus)
-          }
-          case ext.ConsPattern(ph,pt) => {
-            val y = new BoundVar()
-            val p = ext.TuplePattern(List(ph,pt)) ;
-            { callIsCons(focus) > y > _ } compose unravel(p,y)
-          }
-          case ext.CallPattern(name, args) => {
-            val y = new BoundVar() 
-            val p = ext.TuplePattern(args)
-            val C = context(name) ;
-            { makeUnapply(C, focus) > y > _ } compose unravel(p,y)
-          }
-          case ext.AsPattern(p, name) => {
-            bind(name, focus)
-            unravel(p, focus)
-          }
-          case ext.EqPattern(name) => {
-            val b = new BoundVar()
-            val C = context(name) ;
-            { callEq(C, focus) > b > callIf(b) >> _ }
-          }
-          case ext.TypedPattern(p,t) => {
-            val T = convertType(t) 
-            val ascribe: Conversion = { HasType(_, T) }
-            ascribe compose unravel(p,focus)
-          }
+          targetConversion = targetConversion compose { _ < y < makeNth(bridge, i) }
         }
-	  }
-	  
-	  val sourceVar = new BoundVar()
-	  val filterInto = unravel(p, sourceVar)
-      
-	  bindingMap.values.toList.distinct match {
-	     
-    	case Nil => {
-    	  /* None of the computed results are needed; the pattern had only guards, and no bindings. */
-    	  
-    	  val sourceConversion: Conversion =
-    	    { _  > sourceVar > filterInto(Constant(Signal)) } 
 
-    	  (sourceConversion, HashMap.empty, id)
-        }
-    	
-    	case List(neededResult) => {
-    	  /* Only one result is needed */
-    	  
-    	  val sourceConversion: Conversion = 
-    	    { _ > sourceVar > filterInto(neededResult) } 
-    	   
-    	  val dcontext = HashMap.empty ++ (for ((name, `neededResult`) <- bindingMap) yield { (name,bridge) })
+        (sourceConversion, dcontext, targetConversion)
+      }
 
-    	  (sourceConversion, dcontext, id)
-    	}
-    	
-    	case neededResults => {
-    	  /* More than one result is needed */
-    	  
-    	  val sourceConversion: Conversion = 
-            { _ > sourceVar > filterInto(makeLet(neededResults)) }
-    	   
-    	  var dcontext: Map[String, Argument] = HashMap.empty
-    	  var targetConversion = id
-    	  
-    	  for ((r,i) <- neededResults.zipWithIndex) {
-    	    val y = new BoundVar()
-    	    for ((name, `r`) <- bindingMap) { 
-    	      dcontext = dcontext + { (name, y) }
-    	    }
-    	    targetConversion = targetConversion compose { _  < y < makeNth(bridge, i) }
-    	  }
+    }
 
-    	  (sourceConversion, dcontext, targetConversion)
-    	}
-    	
-	  }
-	   
-	}
-
+  }
 
 }

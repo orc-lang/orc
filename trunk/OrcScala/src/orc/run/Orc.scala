@@ -14,6 +14,7 @@
 //
 
 package orc.run
+
 import orc.{OrcOptions, CaughtEvent, HaltedEvent, PublishedEvent, OrcEvent, TokenAPI, OrcRuntime}
 import orc.ast.oil.nameless._
 import orc.error.OrcException
@@ -462,7 +463,6 @@ trait Orc extends OrcRuntime {
 
       /* Jump into the function body */
       schedule(this.move(d.body))
-
     }
 
     def siteCall(s: AnyRef, actuals: List[AnyRef]): Unit = {
@@ -478,7 +478,9 @@ trait Orc extends OrcRuntime {
       if (state == Live) {
         node match {
           case Stop() => halt
+
           case Hole(_, _) => halt
+
           case (a: Argument) => resolve(lookup(a)) { publish }
 
           case Call(target, args, _) => {
@@ -526,7 +528,9 @@ trait Orc extends OrcRuntime {
             }
             schedule(this.move(body))
           }
+
           case HasType(expr, _) => this.move(expr).run
+
           case DeclareType(_, expr) => this.move(expr).run
         }
       }
