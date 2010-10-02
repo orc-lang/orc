@@ -55,7 +55,7 @@ case class AggregateDef(clauses: List[Clause],
         AggregateDef(clauses ::: List(newclause), typeformals, newArgTypes, newReturnType)
       }
       case DefClass(name, List(formals), maybeReturnType, body) => {
-        this + Def(name, List(formals), maybeReturnType, new Capsule(body))
+        this + Def(name, List(formals), maybeReturnType, new DefClassBody(body))
       }
       case DefSig(_, typeformals2, argtypes2, maybeReturnType) => {
         val argtypes3 = argtypes2 head // List[List[Type]] has only one entry
@@ -87,12 +87,12 @@ case class AggregateDef(clauses: List[Clause],
     named.Def(x, newformals, newbody, newTypeFormals, newArgTypes, newReturnType)
   }
 
-  def classCheck {
+  def ClassCheck {
     var existsClass = false
     var existsNotClass = false
     for (aclause <- clauses) {
       aclause match {
-        case Clause(_, Capsule(_)) =>
+        case Clause(_, DefClassBody(_)) =>
           if (existsNotClass) { reportProblem(ClassDefInNonclassContext() at aclause) }
           else existsClass = true
         case _ =>
@@ -127,4 +127,3 @@ object AggregateDef {
   def apply(lambda: Lambda)(implicit translator: Translator) = lambda -> { empty + _ }
 
 }
-

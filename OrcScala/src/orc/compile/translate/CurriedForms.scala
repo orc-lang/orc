@@ -1,5 +1,5 @@
 //
-// CurriedForms.scala -- Scala class/trait/object CurriedForms
+// CurriedForms.scala -- Scala object CurriedForms
 // Project OrcScala
 //
 // $Id$
@@ -43,7 +43,7 @@ object CurriedForms {
         ext.Def(name, List(formals), None, newbody)
       }
       case ext.DefClass(name, formals, retType, body) => {
-        reduceParamLists(ext.Def(name, formals, retType, ext.Capsule(body)))
+        reduceParamLists(ext.Def(name, formals, retType, ext.DefClassBody(body)))
       }
       case ext.DefSig(name, typFormals, List(argTypes), retType) => d
       case ext.DefSig(name, typFormals, argTypes :: tail, retType) => {
