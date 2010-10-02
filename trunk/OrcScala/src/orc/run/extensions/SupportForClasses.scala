@@ -1,5 +1,5 @@
 //
-// SupportForclasss.scala -- Scala class/trait/object SupportForclasss
+// SupportForClasses.scala -- Scala trait SupportForClasses
 // Project OrcScala
 //
 // $Id$
@@ -23,42 +23,42 @@ import orc.error.runtime.ExecutionException
  *
  * @author dkitchin
  */
-trait SupportForclasss extends Orc {
-  
+trait SupportForClasses extends Orc {
+
   @throws(classOf[ExecutionException])
   def runEncapsulated(node: Expression, caller: Token) = {
     val host = caller.group.root
-    val exec = new classExecution(caller, host)
+    val exec = new ClassExecution(caller, host)
     val t = new Token(node, exec)
     schedule(t)
   }
-  
-  class classExecution(caller: Token, host: Group) extends Subgroup(host) {
-    
+
+  class ClassExecution(caller: Token, host: Group) extends Subgroup(host) {
+
     var listener: Option[Token] = Some(caller)
-    
-    override def publish(t: Token, v: AnyRef)= synchronized  { 
+
+    override def publish(t: Token, v: AnyRef) = synchronized {
       listener match {
         case Some(l) => {
           listener = None
           l.publish(v)
         }
-        case None => { } 
+        case None => {}
       }
       t.halt
     }
-    
-    override def onHalt= synchronized  {
+
+    override def onHalt = synchronized {
       listener match {
         case Some(l) => {
           listener = None
           l.halt
         }
-        case None => { } 
+        case None => {}
       }
       host.remove(this)
     }
-    
+
   }
-  
+
 }

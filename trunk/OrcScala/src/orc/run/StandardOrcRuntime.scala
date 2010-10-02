@@ -22,7 +22,7 @@ class StandardOrcRuntime extends OrcRuntime
 with Orc
 with StandardInvocationBehavior
 with ManyActorBasedScheduler
-with SupportForclasss
+with SupportForClasses
 with SupportForSynchronousExecution
 with SupportForRtimer
 with SupportForStdout
