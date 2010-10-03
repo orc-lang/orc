@@ -65,6 +65,14 @@ trait SupportForVtimer extends OrcRuntime {
     }
   }
   
+  def checkCounts() {
+    val ik = kCount.get
+    val it = tokensRunning.get
+    if ((it + ik) == 0) {
+      scheduleMinVtimer()
+    }
+  }
+  
   override def scheduleVtimer(t: TokenAPI, vtime : Int) {
     addVtimer(t, vtime)
   }
@@ -96,6 +104,7 @@ trait SupportForVtimer extends OrcRuntime {
           if (token.isLive) {
             vTime.addAndGet(vtime)
             token.publish(Signal)
+            checkCounts()
           }
         }
       }

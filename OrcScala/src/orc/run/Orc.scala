@@ -19,7 +19,6 @@ import orc.{OrcOptions, CaughtEvent, HaltedEvent, PublishedEvent, OrcEvent, Toke
 import orc.ast.oil.nameless._
 import orc.error.OrcException
 import orc.error.runtime.{ArityMismatchException, TokenException}
-import scala.actors.Actor
 import scala.collection.mutable.Set
 
 trait Orc extends OrcRuntime {
@@ -30,7 +29,7 @@ trait Orc extends OrcRuntime {
     schedule(t)
   }
 
-  def stop = { Killer ! "exit" /* By default, do nothing on stop. */ }
+  def stop = { /* By default, do nothing on stop. */ }
 
   ////////
   // Groups
@@ -52,18 +51,6 @@ trait Orc extends OrcRuntime {
     def notify(event: OrcEvent): Unit
   }
 
-  object Killer extends Actor {
-    def act() {
-      loop {
-        react {
-          case x: GroupMember => x.kill
-          case "exit" => this.exit
-        }
-      }
-    }
-  }
-  Killer.start
-
   trait Group extends GroupMember {
     def publish(t: Token, v: AnyRef): Unit
     def onHalt: Unit
@@ -76,7 +63,7 @@ trait Orc extends OrcRuntime {
     def kill = synchronized {
       if (gmstate == GroupMemberState.Alive) {
         gmstate = GroupMemberState.Killed;
-        for (m <- members) Killer ! m
+        for (m <- members) scheduleK(K({a => m.kill}, None))
       }
     }
 
@@ -383,7 +370,7 @@ trait Orc extends OrcRuntime {
      * Note that resolving a closure also encloses its context.
      */
     def resolveOptional(b: Binding)(k: Option[AnyRef] => Unit): Unit = {
-      b match {
+      b match {        
         case BoundValue(v) =>
           v match {
             case c: Closure =>
