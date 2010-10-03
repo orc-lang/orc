@@ -74,7 +74,13 @@ trait SupportForVtimer extends OrcRuntime {
 
   case class VTEntry(token: TokenAPI, vtime : Int) extends scala.math.Ordered[VTEntry] { 
     def getVtime = vtime;
-    def compare(o2 : VTEntry) = {this.vtime - o2.getVtime} 
+    def getToken = token
+    def compare(o2 : VTEntry) = {
+      val d = this.vtime - o2.getVtime
+      if (d == 0 && this.getToken == o2.getToken) 0      
+      else if (d == 0 || d < 0) -1
+      else 1
+    } 
   }
   
   var vtSet : SortedSet[VTEntry] = SortedSet[VTEntry]()
@@ -86,8 +92,8 @@ trait SupportForVtimer extends OrcRuntime {
     if (vtSet.size > 0) {
       vtSet.firstKey match {
         case VTEntry(token: TokenAPI, vtime : Int) => {
+          vtSet = vtSet - vtSet.firstKey
           if (token.isLive) {
-            vtSet = vtSet - vtSet.firstKey
             vTime.addAndGet(vtime)
             token.publish(Signal)
           }
