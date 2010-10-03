@@ -26,7 +26,7 @@ import scala.collection.mutable.Queue
  *
  * @author amshali, dkitchin
  */
-trait ManyActorBasedScheduler extends Orc {
+trait ManyActorBasedScheduler extends Orc with SupportForVtimer {
   scala.actors.Scheduler.impl.shutdown
   scala.actors.Scheduler.impl = {
     val s = new scala.actors.scheduler.ResizableThreadPoolScheduler(true, false)
@@ -36,10 +36,34 @@ trait ManyActorBasedScheduler extends Orc {
 
   // distribute the work between actors in a round-robin fashion
   override def schedule(ts: List[Token]) {
+    tokensRunning.addAndGet(ts.size)
     for (t <- ts) {
       ActorPool.get ! Some(t)
     }
   }
+  
+  override def scheduleK(k : K) {
+    mkhandler() ! k
+  }
+
+
+  class KHandler() extends Actor {
+    def act() {
+      loop {
+        react {
+          case K(k, ov) => k(ov); deckCount(); exit()
+        }
+      }
+    }
+  }
+
+  def mkhandler(): KHandler = {
+    kCount.incrementAndGet()
+    val myKHandler = new KHandler()
+    myKHandler.start
+    myKHandler
+  }
+
 
   object ActorPool {
     val queue : java.util.Queue[Worker] = new java.util.concurrent.ConcurrentLinkedQueue()
@@ -87,6 +111,7 @@ trait ManyActorBasedScheduler extends Orc {
             if (Thread.interrupted()) // Note: Clears thread's interrupted status bit
               throw new InterruptedException()
             x.run
+            decTokensRunning()
             ActorPool.store(this)
           }
           // machine has stopped

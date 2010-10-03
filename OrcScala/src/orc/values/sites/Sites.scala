@@ -27,6 +27,11 @@ trait Site extends OrcValue {
   def call(args: List[AnyRef], callingToken: TokenAPI): Unit
   def name: String = this.getClass().toString()
   def orcType(argTypes: List[Type]): Type
+  /* This function returns the virtual time taken by this
+   * site. By default the virtual time taken by any site 
+   * is considered to be infinite. 
+  **/ 
+  def virtualTime() : Int = -1   // -1 represents infinity
   override def toOrcSyntax() = this.name
 }
 

@@ -14,7 +14,6 @@
 //
 
 package orc.run
-
 import orc.{OrcOptions, CaughtEvent, HaltedEvent, PublishedEvent, OrcEvent, TokenAPI, OrcRuntime}
 import orc.ast.oil.nameless._
 import orc.error.OrcException
@@ -63,27 +62,6 @@ trait Orc extends OrcRuntime {
     }
   }
   Killer.start
-
-  class KHandler(n: Int) extends Actor {
-    var c = 0
-    def act() {
-      loop {
-        react {
-          case K(k, ov) => c = c + 1; k(ov); if (c == n) { exit() }
-        }
-      }
-    }
-  }
-
-  def mkhandler(n: Int): KHandler = {
-    if (n > 0) {
-      val myKHandler = new KHandler(n)
-      myKHandler.start
-      myKHandler
-    } else null
-  }
-
-  case class K(k: (Option[AnyRef] => Unit), ov: Option[AnyRef])
 
   trait Group extends GroupMember {
     def publish(t: Token, v: AnyRef): Unit
@@ -147,7 +125,7 @@ trait Orc extends OrcRuntime {
           state = Bound(v)
           t.halt
           this.kill
-          for (k <- waitlist) { mkhandler(1) ! new K(k, Some(v)) }
+          for (k <- waitlist) { scheduleK(new K(k, Some(v))) }
         }
         case _ => t.halt
       }
@@ -158,7 +136,7 @@ trait Orc extends OrcRuntime {
         case Unbound(waitlist) => {
           state = Dead
           parent.remove(this)
-          for (k <- waitlist) { mkhandler(1) ! new K(k, None) }
+          for (k <- waitlist) { scheduleK(new K(k, None)) }
         }
         case _ => { }
       }
@@ -170,8 +148,8 @@ trait Orc extends OrcRuntime {
         case Unbound(waitlist) => {
           state = Unbound(k :: waitlist)
         }
-        case Bound(v) => mkhandler(1) ! new K(k, Some(v))
-        case Dead => mkhandler(1) ! new K(k, None)
+        case Bound(v) => scheduleK(new K(k, Some(v)))
+        case Dead => scheduleK(new K(k, None))
       }
     }
 
@@ -463,6 +441,7 @@ trait Orc extends OrcRuntime {
 
       /* Jump into the function body */
       schedule(this.move(d.body))
+
     }
 
     def siteCall(s: AnyRef, actuals: List[AnyRef]): Unit = {
@@ -478,9 +457,7 @@ trait Orc extends OrcRuntime {
       if (state == Live) {
         node match {
           case Stop() => halt
-
           case Hole(_, _) => halt
-
           case (a: Argument) => resolve(lookup(a)) { publish }
 
           case Call(target, args, _) => {
@@ -528,9 +505,7 @@ trait Orc extends OrcRuntime {
             }
             schedule(this.move(body))
           }
-
           case HasType(expr, _) => this.move(expr).run
-
           case DeclareType(_, expr) => this.move(expr).run
         }
       }
