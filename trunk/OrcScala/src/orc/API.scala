@@ -85,7 +85,6 @@ trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
   def scheduleVtimer(t: TokenAPI, vtime : Int) : Unit
   
   def getVtime() : Int
-  
 }
 
 /**
