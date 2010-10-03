@@ -1,9 +1,9 @@
-  Ltimer(0) >> write(1)
-| Ltimer(1) >> write((3.0, []))
-| Ltimer(2) >> write("hi")
-| Ltimer(3) >> read("1")
-| Ltimer(4) >> read("(3.0, [])")
-| Ltimer(5) >> read("\"hi\"")
+  Vtimer(0) >> write(1)
+| Vtimer(1) >> write((3.0, []))
+| Vtimer(2) >> write("hi")
+| Vtimer(3) >> read("1")
+| Vtimer(4) >> read("(3.0, [])")
+| Vtimer(5) >> read("\"hi\"")
 
 {-
 OUTPUT:

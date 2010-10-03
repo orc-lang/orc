@@ -103,3 +103,6 @@ def timeout[A](A, Integer) :: Option[A]
 def timeout(x, t) = let(Some(x) | Rtimer(t) >> None())
 
 
+site Vtimer = "orc.lib.time.Vtimer"
+site Vclock = "orc.lib.time.Vclock"
+
