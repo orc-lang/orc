@@ -86,9 +86,11 @@ trait SupportForVtimer extends OrcRuntime {
     if (vtSet.size > 0) {
       vtSet.firstKey match {
         case VTEntry(token: TokenAPI, vtime : Int) => {
-          vtSet = vtSet - vtSet.firstKey
-          vTime.addAndGet(vtime)
-          token.publish(Signal)
+          if (token.isLive) {
+            vtSet = vtSet - vtSet.firstKey
+            vTime.addAndGet(vtime)
+            token.publish(Signal)
+          }
         }
       }
     }

@@ -96,7 +96,7 @@ trait TokenAPI {
   def halt: Unit
   def !!(e: OrcException): Unit
   def notify(event: OrcEvent): Unit
-
+  def isLive : Boolean
   val runtime: OrcRuntime
 }
 
