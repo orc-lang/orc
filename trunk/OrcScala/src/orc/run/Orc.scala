@@ -453,6 +453,8 @@ trait Orc extends OrcRuntime {
       }
     }
 
+    def isLive : Boolean = state == Live
+    
     def run {
       if (state == Live) {
         node match {
