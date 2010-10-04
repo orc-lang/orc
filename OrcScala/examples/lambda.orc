@@ -7,7 +7,7 @@ def Counter(n :: Integer) =
 
 Counter(0) >c> each(range(0,10)) >> c()
 {-
-OUTPUT:
+OUTPUT:PERMUTABLE:
 0
 1
 2
