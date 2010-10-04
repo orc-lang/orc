@@ -43,27 +43,9 @@ trait ManyActorBasedScheduler extends Orc with SupportForVtimer {
   }
   
   override def scheduleK(k : K) {
-    mkhandler() ! k
-  }
-
-
-  class KHandler() extends Actor {
-    def act() {
-      loop {
-        react {
-          case K(k, ov) => k(ov); deckCount(); exit()
-        }
-      }
-    }
-  }
-
-  def mkhandler(): KHandler = {
     kCount.incrementAndGet()
-    val myKHandler = new KHandler()
-    myKHandler.start
-    myKHandler
+    ActorPool.get ! k
   }
-
 
   object ActorPool {
     val queue : java.util.Queue[Worker] = new java.util.concurrent.ConcurrentLinkedQueue()
@@ -112,6 +94,11 @@ trait ManyActorBasedScheduler extends Orc with SupportForVtimer {
               throw new InterruptedException()
             x.run
             decTokensRunning()
+            ActorPool.store(this)
+          }
+          case K(k, ov) => {
+            k(ov)
+            deckCount()
             ActorPool.store(this)
           }
           // machine has stopped
