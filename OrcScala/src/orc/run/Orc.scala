@@ -15,6 +15,7 @@
 
 package orc.run
 
+import orc.lib.time.Vtimer
 import orc.{OrcOptions, CaughtEvent, HaltedEvent, PublishedEvent, OrcEvent, TokenAPI, OrcRuntime}
 import orc.ast.oil.nameless._
 import orc.error.OrcException
@@ -432,15 +433,19 @@ trait Orc extends OrcRuntime {
     }
 
     def siteCall(s: AnyRef, actuals: List[AnyRef]): Unit = {
-      try {
+      try { 
+        if (s.getClass().getName().equals("orc.lib.time.Vtimer")) {
+          val vt = actuals(0).asInstanceOf[scala.math.BigInt]
+          scheduleVtimer(this, vt.toInt)
+        }
         invoke(this, s, actuals)
       } catch {
         case e: OrcException => this !! e
         case e => { halt; notify(CaughtEvent(e)) }
       }
     }
-
-    def isLive : Boolean = state == Live
+    
+    def isLive = state = Live
     
     def run {
       if (state == Live) {
