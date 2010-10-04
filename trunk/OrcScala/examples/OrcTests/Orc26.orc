@@ -8,5 +8,5 @@ Rtimer(1000) >> c.write(10) >> Vtimer(2) >> Vclock()
 {-
 OUTPUT:
 2
-5
+3
 -}

@@ -82,7 +82,7 @@ trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
   
   def scheduleK(k : K) : Unit
   
-  def scheduleVtimer(t: TokenAPI, vtime : Int) : Unit
+  def scheduleVtimer(t: Token, vtime : Int) : Unit
   
   def getVtime() : Int
 }
@@ -95,7 +95,6 @@ trait TokenAPI {
   def halt: Unit
   def !!(e: OrcException): Unit
   def notify(event: OrcEvent): Unit
-  def isLive : Boolean
   val runtime: OrcRuntime
 }
 

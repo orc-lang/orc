@@ -17,31 +17,12 @@ package orc.run.extensions
 import orc.values.Signal
 import orc.OrcRuntime
 import scala.collection.SortedSet
-import orc.TokenAPI
 /**
  * 
  *
  * @author amshali
  */
 trait SupportForVtimer extends OrcRuntime {
-  
-  /*
-   * OK! Once upon a time there was an engine called Orc!
-   * This engine used to run things. But sometimes she didn't
-   * have anything to run and the world was so silent for 
-   * Orc! The poor Orc didn't like the silence of the world!
-   * She was sad until one day when a new site came along! 
-   * The Vtimer! Vtimer asked "why are you sad Orc?" Orc said: 
-   * "World is so silent and I am bored! I have nothing to 
-   * do!" Vtimer cared a lot about Orc and wanted to do 
-   * something for her. He started to think and suddenly 
-   * a great idea came to his mind! "You can run me! Yeah run me
-   * when the world is silent!", Vtimer said! Orc was happy!
-   * "But how do I know the world is silent?" Orc asked. Vtimer
-   * answered: "Just keep track of the number of tokens running
-   * and number of continuations running and when they are both 
-   * zero you know that world is silent and then you can run me!"
-   */
   
   val tokensRunning : java.util.concurrent.atomic.AtomicInteger = 
     new java.util.concurrent.atomic.AtomicInteger(0)
@@ -73,14 +54,14 @@ trait SupportForVtimer extends OrcRuntime {
     }
   }
   
-  override def scheduleVtimer(t: TokenAPI, vtime : Int) {
+  override def scheduleVtimer(t: Token, vtime : Int) {
     addVtimer(t, vtime)
   }
   
   val vTime : java.util.concurrent.atomic.AtomicInteger = 
     new java.util.concurrent.atomic.AtomicInteger(0)
 
-  case class VTEntry(token: TokenAPI, vtime : Int) extends scala.math.Ordered[VTEntry] { 
+  case class VTEntry(token: Token, vtime : Int) extends scala.math.Ordered[VTEntry] { 
     def getVtime = vtime;
     def getToken = token
     def compare(o2 : VTEntry) = {
@@ -93,19 +74,21 @@ trait SupportForVtimer extends OrcRuntime {
   
   var vtSet : SortedSet[VTEntry] = SortedSet[VTEntry]()
   
-  def addVtimer(token: TokenAPI, n : Int) = synchronized {
+  def addVtimer(token: Token, n : Int) = synchronized {
     vtSet = vtSet + VTEntry(token, n)
   }
+
   def scheduleMinVtimer() = synchronized {
     if (vtSet.size > 0) {
       vtSet.firstKey match {
-        case VTEntry(token: TokenAPI, vtime : Int) => {
+        case VTEntry(token, vtime : Int) => {
           vtSet = vtSet - vtSet.firstKey
-          if (token.isLive) {
+//          if (token.isLive) {
+            vtSet = vtSet map {case VTEntry(t1, n1) => VTEntry(t1, n1-vtime)}
             vTime.addAndGet(vtime)
             token.publish(Signal)
             checkCounts()
-          }
+//          }
         }
       }
     }

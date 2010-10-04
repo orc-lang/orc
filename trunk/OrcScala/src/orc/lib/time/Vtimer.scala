@@ -24,8 +24,8 @@ import orc.values.sites.Site
  */
 class Vtimer extends Site with UntypedSite {
   def call(args: List[AnyRef], token: TokenAPI) {
-    val n : scala.math.BigInt  = args(0).asInstanceOf[scala.math.BigInt]
-    token.runtime.scheduleVtimer(token, n.toInt)
+//    val n : scala.math.BigInt  = args(0).asInstanceOf[scala.math.BigInt]
+//    token.runtime.scheduleVtimer(token, n.toInt)
   }
 
   override def name: String = this.getClass().getName()
