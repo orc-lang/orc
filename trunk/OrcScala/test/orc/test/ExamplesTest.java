@@ -59,7 +59,7 @@ public class ExamplesTest {
 				public void runTest() throws InterruptedException, IOException, TimeoutException, OrcException, ClassNotFoundException {
 					System.out.println("\n==== Starting " + file + " ====");
 					try {
-					    final String actual = OrcForTesting.compileAndRun(file.getPath(), 15L);
+					    final String actual = OrcForTesting.compileAndRun(file.getPath(), 10L);
 	                    if (!expecteds.contains(actual)) {
 	                        throw new AssertionError("Unexpected output:\n" + actual);
 	                    }
