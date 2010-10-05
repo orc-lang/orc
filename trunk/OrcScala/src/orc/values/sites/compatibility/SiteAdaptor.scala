@@ -40,6 +40,16 @@ abstract class SiteAdaptor extends Site with UntypedSite {
     callSite(new Args(jl), token)
   }
 
+  override def populateMetaData(args: List[AnyRef], callingToken: TokenAPI) : Unit = {
+    val jl = new java.util.ArrayList[Object](args.size)
+    for (arg <- args) arg match {
+      case i: scala.math.BigInt => jl.add(i.bigInteger)
+      case d: scala.math.BigDecimal => jl.add(d.bigDecimal)
+      case _ => jl.add(arg)
+    }
+    populateMetaDataAdaptor(new Args(jl), callingToken)
+  }
+
   override def name: String = this.getClass().getName()
 
   /**
@@ -48,6 +58,7 @@ abstract class SiteAdaptor extends Site with UntypedSite {
    * @param caller    where the result should be sent
    */
   @throws(classOf[TokenException]) def callSite(args: Args, caller: TokenAPI): Unit
+  @throws(classOf[TokenException]) def populateMetaDataAdaptor(args: Args, caller: TokenAPI): Unit = {}
 
 }
 

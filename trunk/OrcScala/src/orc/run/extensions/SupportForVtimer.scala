@@ -33,7 +33,8 @@ trait SupportForVtimer extends OrcRuntime {
   def decTokensRunning() {
     val it = tokensRunning.decrementAndGet()
     val ik = kCount.get
-    if ((it + ik) == 0) {
+    val iz = zSet.size
+    if ((it + ik+iz) == 0) {
       scheduleMinVtimer()
     }
   }
@@ -41,21 +42,10 @@ trait SupportForVtimer extends OrcRuntime {
   def deckCount() {
     val ik = kCount.decrementAndGet()
     val it = tokensRunning.get
-    if ((it + ik) == 0) {
+    val iz = zSet.size
+    if ((it + ik+iz) == 0) {
       scheduleMinVtimer()
     }
-  }
-  
-  def checkCounts() {
-    val ik = kCount.get
-    val it = tokensRunning.get
-    if ((it + ik) == 0) {
-      scheduleMinVtimer()
-    }
-  }
-  
-  override def scheduleVtimer(t: Token, vtime : Int) {
-    addVtimer(t, vtime)
   }
   
   val vTime : java.util.concurrent.atomic.AtomicInteger = 
@@ -74,8 +64,23 @@ trait SupportForVtimer extends OrcRuntime {
   
   var vtSet : SortedSet[VTEntry] = SortedSet[VTEntry]()
   
+  var zSet : java.util.Set[Token] = 
+    java.util.Collections.synchronizedSet(new java.util.HashSet());
+  
+  var nzSet : java.util.Set[Token] = 
+    java.util.Collections.synchronizedSet(new java.util.HashSet());
+  
   def addVtimer(token: Token, n : Int) = synchronized {
-    vtSet = vtSet + VTEntry(token, n)
+    if (n == 0)
+      zSet.add(token)
+    if (n > 0) {
+      nzSet.add(token)
+      vtSet = vtSet + VTEntry(token, n)
+    }
+  }
+  def removeVtimer(token: Token) = synchronized {
+    zSet.remove(token)
+    nzSet.remove(token)
   }
 
   def scheduleMinVtimer() = synchronized {
@@ -83,12 +88,11 @@ trait SupportForVtimer extends OrcRuntime {
       vtSet.firstKey match {
         case VTEntry(token, vtime : Int) => {
           vtSet = vtSet - vtSet.firstKey
-//          if (token.isLive) {
+          if (nzSet.contains(token)) {
             vtSet = vtSet map {case VTEntry(t1, n1) => VTEntry(t1, n1-vtime)}
             vTime.addAndGet(vtime)
             token.publish(Signal)
-            checkCounts()
-//          }
+          }
         }
       }
     }

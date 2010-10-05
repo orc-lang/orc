@@ -23,15 +23,20 @@ import orc.error.OrcException
 import orc.error.NotYetImplementedException
 import orc.run.Logger
 
-trait Site extends OrcValue {
+trait SiteMetaData {
+  /* This function returns the virtual time taken by this
+   * site. By default the virtual time taken by any site 
+   * is considered to be 0. 
+  **/ 
+  def virtualTime() : Int = 0   // -1 represents infinity
+}
+
+trait Site extends OrcValue with SiteMetaData {
   def call(args: List[AnyRef], callingToken: TokenAPI): Unit
   def name: String = this.getClass().toString()
   def orcType(argTypes: List[Type]): Type
-  /* This function returns the virtual time taken by this
-   * site. By default the virtual time taken by any site 
-   * is considered to be infinite. 
-  **/ 
-  def virtualTime() : Int = -1   // -1 represents infinity
+  
+  def populateMetaData(args: List[AnyRef], callingToken: TokenAPI) : Unit = {}
   override def toOrcSyntax() = this.name
 }
 
