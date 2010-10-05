@@ -27,6 +27,17 @@ import orc.run.extensions.SupportForRtimer;
  * @author wcook, quark, dkitchin
  */
 public class Rtimer extends SiteAdaptor {
+    public void populateMetaDataAdaptor(final Args args, final TokenAPI caller) throws TokenException {
+      long t = args.longArg(0);
+      if (t == 0) vtime = 0;
+    }
+
+    private int vtime = -1;
+    @Override
+    public int virtualTime() {
+      return vtime;
+    }
+
 	@Override
 	public void callSite(final Args args, final TokenAPI caller) throws TokenException {
 		String f;

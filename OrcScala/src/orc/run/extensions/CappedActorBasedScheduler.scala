@@ -25,7 +25,7 @@ import scala.collection.mutable.Queue
  *
  * @author amshali
  */
-trait CappedActorBasedScheduler extends Orc with SupportForVtimer {
+trait CappedActorBasedScheduler extends Orc {
   scala.actors.Scheduler.impl.shutdown
   scala.actors.Scheduler.impl = {
     val s = new scala.actors.scheduler.ResizableThreadPoolScheduler(true, false)

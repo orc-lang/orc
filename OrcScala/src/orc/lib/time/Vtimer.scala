@@ -14,6 +14,7 @@
 //
 package orc.lib.time
 
+import orc.values.Signal
 import orc.TokenAPI
 import orc.values.sites.UntypedSite
 import orc.values.sites.Site
@@ -24,9 +25,18 @@ import orc.values.sites.Site
  */
 class Vtimer extends Site with UntypedSite {
   def call(args: List[AnyRef], token: TokenAPI) {
-//    val n : scala.math.BigInt  = args(0).asInstanceOf[scala.math.BigInt]
-//    token.runtime.scheduleVtimer(token, n.toInt)
+    val n : scala.math.BigInt  = args(0).asInstanceOf[scala.math.BigInt]
+    if (n.toInt == 0) {
+      token.publish(Signal)
+    }
   }
+  override def populateMetaData(args: List[AnyRef], callingToken: TokenAPI) : Unit = {
+    val n : scala.math.BigInt  = args(0).asInstanceOf[scala.math.BigInt]
+    vtime = n.toInt
+  }
+
+  var vtime : Int = 0
+  override def virtualTime() : Int = vtime   // -1 represents infinity
 
   override def name: String = this.getClass().getName()
 }

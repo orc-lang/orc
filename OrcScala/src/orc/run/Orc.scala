@@ -15,6 +15,7 @@
 
 package orc.run
 
+import orc.run.extensions.SupportForVtimer
 import orc.lib.time.Vtimer
 import orc.{OrcOptions, CaughtEvent, HaltedEvent, PublishedEvent, OrcEvent, TokenAPI, OrcRuntime}
 import orc.ast.oil.nameless._
@@ -22,7 +23,7 @@ import orc.error.OrcException
 import orc.error.runtime.{ArityMismatchException, TokenException}
 import scala.collection.mutable.Set
 
-trait Orc extends OrcRuntime {
+trait Orc extends OrcRuntime with SupportForVtimer {
 
   def run(node: Expression, k: OrcEvent => Unit, options: OrcOptions) {
     val exec = new Execution(k)
@@ -303,6 +304,7 @@ trait Orc extends OrcRuntime {
     def notify(event: OrcEvent) { group.notify(event) }
 
     def kill {
+      removeVtimer(this)
       state match {
         case Live => {
           state = Killed
@@ -434,10 +436,12 @@ trait Orc extends OrcRuntime {
 
     def siteCall(s: AnyRef, actuals: List[AnyRef]): Unit = {
       try { 
-        if (s.getClass().getName().equals("orc.lib.time.Vtimer")) {
-          val vt = actuals(0).asInstanceOf[scala.math.BigInt]
-          scheduleVtimer(this, vt.toInt)
+        if (s.isInstanceOf[orc.values.sites.Site]) {
+          s.asInstanceOf[orc.values.sites.Site].populateMetaData(actuals, this)
+          addVtimer(this, s.asInstanceOf[orc.values.sites.SiteMetaData].virtualTime())
         }
+        else addVtimer(this, 0)
+
         invoke(this, s, actuals)
       } catch {
         case e: OrcException => this !! e
@@ -512,6 +516,7 @@ trait Orc extends OrcRuntime {
     // Publicly accessible methods
 
     def publish(v: AnyRef) {
+      removeVtimer(this)
       if (state == Live) {
         stack match {
           case f :: fs => {
@@ -526,6 +531,7 @@ trait Orc extends OrcRuntime {
     }
 
     def halt {
+      removeVtimer(this)
       state match {
         case Live => {
           state = Halted
