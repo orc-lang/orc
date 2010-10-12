@@ -47,15 +47,15 @@ case class AggregateDef(clauses: List[Clause],
 
   def +(defn: DefDeclaration): AggregateDef =
     defn -> {
-      case Def(_, List(formals), maybeReturnType, body) => {
+      case Def(_, List(formals), maybeReturnType, maybeGuard, body) => {
         val (newformals, maybeArgTypes) = AggregateDef.formalsPartition(formals)
-        val newclause = defn ->> Clause(newformals, body)
+        val newclause = defn ->> Clause(newformals, maybeGuard, body)
         val newArgTypes = unifyList(argtypes, maybeArgTypes, reportProblem(RedundantArgumentType() at defn))
         val newReturnType = unify(returntype, maybeReturnType, reportProblem(RedundantReturnType() at defn))
         AggregateDef(clauses ::: List(newclause), typeformals, newArgTypes, newReturnType)
       }
-      case DefClass(name, List(formals), maybeReturnType, body) => {
-        this + Def(name, List(formals), maybeReturnType, new DefClassBody(body))
+      case DefClass(name, List(formals), maybeReturnType, maybeGuard, body) => {
+        this + Def(name, List(formals), maybeReturnType, maybeGuard, new DefClassBody(body))
       }
       case DefSig(_, typeformals2, argtypes2, maybeReturnType) => {
         val argtypes3 = argtypes2 head // List[List[Type]] has only one entry
@@ -68,7 +68,7 @@ case class AggregateDef(clauses: List[Clause],
 
   def +(lambda: Lambda): AggregateDef = {
     val (newformals, maybeArgTypes) = AggregateDef.formalsPartition(lambda.formals.head)
-    val newclause = lambda ->> Clause(newformals, lambda.body)
+    val newclause = lambda ->> Clause(newformals, lambda.guard, lambda.body)
     val newArgTypes = unifyList(argtypes, maybeArgTypes, reportProblem(RedundantArgumentType() at lambda))
     val newReturnType = unify(returntype, lambda.returntype, reportProblem(RedundantReturnType() at lambda))
     AggregateDef(clauses ::: List(newclause), typeformals, newArgTypes, newReturnType)
@@ -92,7 +92,7 @@ case class AggregateDef(clauses: List[Clause],
     var existsNotClass = false
     for (aclause <- clauses) {
       aclause match {
-        case Clause(_, DefClassBody(_)) =>
+        case Clause(_, _, DefClassBody(_)) =>
           if (existsNotClass) { reportProblem(ClassDefInNonclassContext() at aclause) }
           else existsClass = true
         case _ =>

@@ -36,14 +36,14 @@ object CurriedForms {
   def reduceParamLists(d: ext.DefDeclaration): ext.DefDeclaration = {
     import orc.error.compiletime.typing._
     d -> {
-      case ext.Def(name, List(formals), retType, body) => d
-      case ext.Def(name, formals :: tail, retType, body) => {
+      case ext.Def(_, List(formals), _, _, _) => d
+      case ext.Def(name, formals :: tail, retType, guard, body) => {
         val newbody = uncurry(tail, body, retType)
         /* Return the outermost Def */
-        ext.Def(name, List(formals), None, newbody)
+        ext.Def(name, List(formals), None, guard, newbody)
       }
-      case ext.DefClass(name, formals, retType, body) => {
-        reduceParamLists(ext.Def(name, formals, retType, ext.DefClassBody(body)))
+      case ext.DefClass(name, formals, retType, guard, body) => {
+        reduceParamLists(ext.Def(name, formals, retType, guard, ext.DefClassBody(body)))
       }
       case ext.DefSig(name, typFormals, List(argTypes), retType) => d
       case ext.DefSig(name, typFormals, argTypes :: tail, retType) => {
@@ -64,21 +64,21 @@ object CurriedForms {
   def uncurry(formals: List[List[ext.Pattern]], body: ext.Expression, retType: Option[ext.Type]): ext.Lambda = {
 
     def makeLambda(body: ext.Expression, params: List[ext.Pattern]) =
-      ext.Lambda(None, List(params), None, body)
+      ext.Lambda(None, List(params), None, None, body)
 
     val revFormals = formals reverse
     /* Inner most lambda has the return type of the curried definition */
-    val innerLambda = ext.Lambda(None, List(revFormals head), retType, body)
+    val innerLambda = ext.Lambda(None, List(revFormals head), retType, None, body)
     /* Make new Lambda expressions, one for each remaining list of formals */
     revFormals.tail.foldLeft(innerLambda)(makeLambda)
   }
 
   def reduceParamLists(e: ext.Lambda): ext.Lambda = {
     e -> {
-      case ext.Lambda(typFormals, List(formals), retType, body) => e
-      case ext.Lambda(typFormals, formals :: tail, retType, body) => {
+      case ext.Lambda(_, List(formals), _, _, _) => e
+      case ext.Lambda(typFormals, formals :: tail, retType, guard, body) => {
         val newbody = uncurry(tail, body, retType)
-        ext.Lambda(typFormals, List(formals), None, newbody)
+        ext.Lambda(typFormals, List(formals), None, guard, newbody)
       }
     }
   }

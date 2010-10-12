@@ -69,7 +69,7 @@ object RecordConstructor extends TotalSite with UntypedSite {
             case _ => throw new ArgumentTypeMismatchException(i, "(String, AnyRef)", if (v != null) v.getClass().toString() else "null")
           }
       }
-    OrcRecord(valueMap)
+    OrcRecord(scala.collection.immutable.HashMap.empty ++ valueMap)
   }
   
 }

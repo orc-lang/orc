@@ -44,6 +44,7 @@ case class Lambda(
     typeformals: Option[List[Type]] = None, 
     formals: List[List[Pattern]],
     returntype: Option[Type] = None,
+    guard: Option[Expression] = None,
     body: Expression
 ) extends Expression
 
@@ -66,8 +67,8 @@ sealed abstract class NamedDeclaration extends Declaration {
 }
 
 sealed abstract class DefDeclaration extends NamedDeclaration 
-case class Def(name: String, formals: List[List[Pattern]],returntype: Option[Type], body: Expression) extends DefDeclaration
-case class DefClass(name: String, formals: List[List[Pattern]], returntype: Option[Type], body: Expression) extends DefDeclaration
+case class Def(name: String, formals: List[List[Pattern]],returntype: Option[Type], guard: Option[Expression], body: Expression) extends DefDeclaration
+case class DefClass(name: String, formals: List[List[Pattern]], returntype: Option[Type], guard: Option[Expression], body: Expression) extends DefDeclaration
 case class DefSig(name: String, typeformals: List[String], argtypes: List[List[Type]], returntype: Type) extends DefDeclaration
 
 // Convenience extractor for sequences of definitions enclosing some scope
@@ -127,8 +128,6 @@ case class TuplePattern(elements: List[Pattern]) extends StrictPattern { overrid
 case class ListPattern(elements: List[Pattern]) extends StrictPattern { override def toOrcSyntax = elements.map(_.toOrcSyntax).mkString("[", ", ", "]") }
 case class CallPattern(name: String, args: List[Pattern]) extends StrictPattern { override def toOrcSyntax = name + args.map(_.toOrcSyntax).mkString("(", ", ", ")") }
 case class ConsPattern(head: Pattern, tail: Pattern) extends StrictPattern { override def toOrcSyntax = "("+head.toOrcSyntax+":"+tail.toOrcSyntax+")" }
-case class EqPattern(name: String) extends StrictPattern { override def toOrcSyntax = "="+name }
-
 
 case class AsPattern(p: Pattern, name: String) extends Pattern {
   val isStrict = p.isStrict
