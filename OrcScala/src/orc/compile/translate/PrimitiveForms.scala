@@ -83,6 +83,14 @@ object PrimitiveForms {
       Call(datatypeSite, List(pairsVar), Some(List(declaredVariant)))
   }
 
+
+  
+  def makeConditional(test: Expression, trueBranch: Expression, falseBranch: Expression) = {
+    val b = new BoundVar()
+    val nb = new BoundVar()
+    ( (callIf(b) >> trueBranch)  ||  (callUnless(b) >> falseBranch) )  < b <  test
+  }
+  
   /*
    * Return a composite expression with the following behavior:
    * 
@@ -107,5 +115,5 @@ object PrimitiveForms {
       }
     }
   }
-		
+	  
 }

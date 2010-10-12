@@ -20,13 +20,14 @@ import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
 import orc.error.runtime.NoSuchMemberException
 
+import scala.collection.immutable.Map
 
 /**
  * 
  *
  * @author dkitchin
  */
-case class OrcRecord(entries: scala.collection.mutable.Map[String,AnyRef]) extends PartialSite with UntypedSite {
+case class OrcRecord(entries: Map[String,AnyRef]) extends PartialSite with UntypedSite {
   override def evaluate(args: List[AnyRef]) = 
     args match {
       case List(Field(name)) => 

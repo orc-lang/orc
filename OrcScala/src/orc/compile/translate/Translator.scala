@@ -99,16 +99,12 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         DeclareDefs(List(newdef), lambdaName)
       }
       case ext.DefClassBody(b) => {
-        var capThunk = ext.Lambda(None, List(Nil), None, makeClassBody(b, reportProblem))
+        var capThunk = ext.Lambda(None, List(Nil), None, None, makeClassBody(b, reportProblem))
         convert(ext.Call(
           ext.Call(ext.Constant(builtin.MakeSite), List(ext.Args(None, List(capThunk)))), List(ext.Args(None, Nil))))
       }
       case ext.Conditional(ifE, thenE, elseE) => {
-        val b = new BoundVar()
-        val nb = new BoundVar()
-        (callIf(b) >> convert(thenE)
-          || callUnless(b) >> convert(elseE)) < b < convert(ifE)
-
+        makeConditional(convert(ifE), convert(thenE), convert(elseE))
       }
       case ext.DefGroup(defs, body) => {
         val (newdefs, dcontext) = convertDefs(defs)
@@ -401,11 +397,6 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
           bind(name, focus)
           unravel(p, focus)
         }
-        case ext.EqPattern(name) => {
-          val b = new BoundVar()
-          val C = context(name);
-          { callEq(C, focus) > b > callIf(b) >> _ }
-        }
         case ext.TypedPattern(p, t) => {
           val T = convertType(t)
           val ascribe: Conversion = { HasType(_, T) }
@@ -441,7 +432,8 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
 
       case neededResults => {
         /* More than one result is needed */
-
+        /* Note: This can only occur in a strict pattern. 
+         * Thus, the source conversion for a non-strict pattern is always the identity function. */ 
         val sourceConversion: Conversion =
           { _ > sourceVar > filterInto(makeLet(neededResults)) }
 

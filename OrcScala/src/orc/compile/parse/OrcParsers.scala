@@ -303,7 +303,8 @@ with CustomParserCombinators
   val parseExpression: Parser[Expression] = (
         "lambda" ~> (ListOf(parseType)?)
         ~ (TupleOf(parsePattern)+)
-        ~ (("::" ~> parseType)?)
+        ~ (parseReturnType?)
+        ~ (parseGuard?)
         ~ ("=" ~> parseExpression)
         -> Lambda
       | parseDeclaration ~ parseExpression -> Declare
@@ -317,10 +318,6 @@ with CustomParserCombinators
   )
 
 
-
-  
-  
-  
   
   
   
@@ -340,7 +337,6 @@ with CustomParserCombinators
       | ("(" ~> parsePattern ~ parseBasePatternTail) -?->
           { (p: Pattern, ps: List[Pattern]) => TuplePattern(p::ps) }
       | ListOf(parsePattern) -> ListPattern
-      | ("=" ~> ident) -> EqPattern
   )
 
   val parseConsPattern = rep1sep(parseBasePattern, ":") -> (_ reduceRight ConsPattern)
@@ -383,8 +379,6 @@ with CustomParserCombinators
       | ("{." ~> CommaSeparated(parseRecordTypeEntry) <~ ".}") -> RecordType
       | "lambda" ~> ((ListOf(parseTypeVariable)?) ^^ {_.getOrElse(Nil)}) ~ (TupleOf(parseType)+) ~ parseReturnType -> LambdaType
   )
-
-  val parseReturnType = "::" ~> parseType
   
   val parseConstructor: Parser[Constructor] = (
       ident ~ TupleOf(parseType ^^ (Some(_))) -> Constructor
@@ -393,14 +387,13 @@ with CustomParserCombinators
   
   
   
-
 /* Declarations */
   
   val parseDefDeclaration: Parser[DefDeclaration] = (
-        ident ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ ("=" ~> parseExpression)
+        ident ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ (parseGuard?) ~ ("=" ~> parseExpression)
       -> Def
 
-      | ("class" ~> ident) ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ ("=" ~> parseExpression)
+      | ("class" ~> ident) ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ (parseGuard?) ~ ("=" ~> parseExpression)
       -> DefClass
 
       | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)+) ~ parseReturnType
@@ -453,19 +446,17 @@ with CustomParserCombinators
   
   
   
-// Include file
+/* Include file */
   val parseDeclarations: Parser[List[Declaration]] = parseDeclaration*
   
-// Orc program
+/* Orc program */
   val parseProgram: Parser[Expression] = parseExpression
 
   
   
   
   
-  ////////
-  // Helper functions for ( ... ) and [ ... ] forms
-  ////////
+/* Helper functions */
 
   def CommaSeparated[T](P: => Parser[T]): Parser[List[T]] = repsep(P, ",")
 
@@ -483,6 +474,11 @@ with CustomParserCombinators
     | ListOf(parseConstantListTuple) -> ListExpr
     | TupleOf(parseConstantListTuple) -> TupleExpr
     )
+    
+  val parseGuard = "when" ~> "(" ~> parseExpression <~ ")"
+  
+  val parseReturnType = "::" ~> parseType  
+
   
   
 }

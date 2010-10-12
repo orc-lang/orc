@@ -63,7 +63,7 @@ class OrcLexical() extends StdLexical() with RegexParsers {
   /** The set of reserved identifiers: these will be returned as `Keyword's */
   override val reserved = new HashSet[String] ++ List(
     "true", "false", "signal", "stop", "null",
-    "lambda", "if", "then", "else", "as", "_",
+    "lambda", "if", "then", "else", "as", "when", "_",
     "val", "def", "type", "site", "class", "include",
     "Top", "Bot"
     )
