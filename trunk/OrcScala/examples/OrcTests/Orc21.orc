@@ -4,11 +4,11 @@
  - (equivalent to previous test for 
  -  now-deprecated equality pattern)
  - 
- - Created by Brian on Jun 3, 2010 1:41:39 PM
+ - Created by dkitchin on Oct 12, 2010
  -}
 
 val x = 7
-def isx(y) when (y = x) = true
+def isx(y) if (y = x) = true
 def isx(_) = false
 isx(7) | isx(9)
 

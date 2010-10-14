@@ -475,7 +475,7 @@ with CustomParserCombinators
     | TupleOf(parseConstantListTuple) -> TupleExpr
     )
     
-  val parseGuard = "when" ~> "(" ~> parseExpression <~ ")"
+  val parseGuard = "if" ~> "(" ~> parseExpression <~ ")"
   
   val parseReturnType = "::" ~> parseType  
 

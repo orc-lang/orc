@@ -7,7 +7,7 @@
 
 def fib(0) = 0
 def fib(1) = 1
-def fib(n) when (n :> 1) = fib(n-1) + fib(n-2)
+def fib(n) if (n :> 1) = fib(n-1) + fib(n-2)
 
 fib(-1) ; fib(3)
 
