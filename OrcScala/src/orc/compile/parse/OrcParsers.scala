@@ -243,6 +243,7 @@ with CustomParserCombinators
       | ("{." ~> CommaSeparated(parseRecordEntry) <~ ".}") -> RecordExpr
       | ("(" ~> parseExpression ~ parseBaseExpressionTail) -?->
             { (e: Expression, es: List[Expression]) => TupleExpr(e::es) }
+      | "atomic" ~> parseExpression -> Atomic
   )
 
   val parseArgumentGroup: Parser[ArgumentGroup] = (

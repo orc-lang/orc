@@ -65,7 +65,8 @@ class OrcLexical() extends StdLexical() with RegexParsers {
     "true", "false", "signal", "stop", "null",
     "lambda", "if", "then", "else", "as", "_",
     "val", "def", "type", "site", "class", "include",
-    "Top", "Bot"
+    "Top", "Bot",
+    "atomic"
     )
 
   val operators = List(
