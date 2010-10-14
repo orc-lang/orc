@@ -19,7 +19,7 @@ import orc.ast.ext
 /**
  * 
  *
- * @author dkitchin
+ * @author srosario, dkitchin
  */
 object CurriedForms {
 
@@ -38,9 +38,9 @@ object CurriedForms {
     d -> {
       case ext.Def(_, List(formals), _, _, _) => d
       case ext.Def(name, formals :: tail, retType, guard, body) => {
-        val newbody = uncurry(tail, body, retType)
+        val newbody = uncurry(tail, body, retType, guard)
         /* Return the outermost Def */
-        ext.Def(name, List(formals), None, guard, newbody)
+        ext.Def(name, List(formals), None, None, newbody)
       }
       case ext.DefClass(name, formals, retType, guard, body) => {
         reduceParamLists(ext.Def(name, formals, retType, guard, ext.DefClassBody(body)))
@@ -61,14 +61,14 @@ object CurriedForms {
    * builds the expression
    *   lambda(x1,..xn) = (lambda(y1,..yn) = (lambda(...) = .. body ))
    */
-  def uncurry(formals: List[List[ext.Pattern]], body: ext.Expression, retType: Option[ext.Type]): ext.Lambda = {
+  def uncurry(formals: List[List[ext.Pattern]], body: ext.Expression, retType: Option[ext.Type], guard: Option[ext.Expression]): ext.Lambda = {
 
     def makeLambda(body: ext.Expression, params: List[ext.Pattern]) =
       ext.Lambda(None, List(params), None, None, body)
 
     val revFormals = formals reverse
     /* Inner most lambda has the return type of the curried definition */
-    val innerLambda = ext.Lambda(None, List(revFormals head), retType, None, body)
+    val innerLambda = ext.Lambda(None, List(revFormals head), retType, guard, body)
     /* Make new Lambda expressions, one for each remaining list of formals */
     revFormals.tail.foldLeft(innerLambda)(makeLambda)
   }
@@ -77,8 +77,8 @@ object CurriedForms {
     e -> {
       case ext.Lambda(_, List(formals), _, _, _) => e
       case ext.Lambda(typFormals, formals :: tail, retType, guard, body) => {
-        val newbody = uncurry(tail, body, retType)
-        ext.Lambda(typFormals, List(formals), None, guard, newbody)
+        val newbody = uncurry(tail, body, retType, guard)
+        ext.Lambda(typFormals, List(formals), None, None, newbody)
       }
     }
   }
