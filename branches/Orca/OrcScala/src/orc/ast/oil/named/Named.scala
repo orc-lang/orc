@@ -31,6 +31,7 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     case Sequence(left,x,right) => List(left, x, right)
     case Prune(left,x,right) => List(left, x, right)
     case left ow right => List(left, right)
+    case Atomic(body) => List(body)
     case DeclareDefs(defs, body) => defs ::: List(body)
     case HasType(body, expectedType) => List(body, expectedType)
     case DeclareType(u, t, body) => List(u, t, body)
@@ -66,6 +67,7 @@ case class Parallel(left: Expression, right: Expression) extends Expression
 case class Sequence(left: Expression, x: BoundVar, right: Expression) extends Expression
 case class Prune(left: Expression, x: BoundVar, right: Expression) extends Expression
 case class Otherwise(left: Expression, right: Expression) extends Expression
+case class Atomic(body: Expression) extends Expression
 case class DeclareDefs(defs: List[Def], body: Expression) extends Expression
 case class DeclareType(name: BoundTypevar, t: Type, body: Expression) extends Expression
 case class HasType(body: Expression, expectedType: Type) extends Expression

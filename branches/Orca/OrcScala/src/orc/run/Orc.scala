@@ -449,6 +449,11 @@ trait Orc extends OrcRuntime with SupportForVtimer {
       }
     }
     
+    def atomic(body : Expression) = {
+      this.move(body)
+      this
+    }
+    
     def isLive = state = Live
     
     def run {
@@ -493,6 +498,11 @@ trait Orc extends OrcRuntime with SupportForVtimer {
             val (l, r) = fork
             val region = new Region(group, r.move(right))
             schedule(l.join(region).move(left))
+          }
+          
+          case Atomic(body) => {
+            /* enter a transaction group */
+            this.atomic(body).run
           }
 
           case decldefs@DeclareDefs(openvars, defs, body) => {

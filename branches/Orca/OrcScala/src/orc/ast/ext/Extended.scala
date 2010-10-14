@@ -27,6 +27,7 @@ case class TupleExpr(elements: List[Expression]) extends Expression { require(el
 case class ListExpr(elements: List[Expression]) extends Expression
 case class RecordExpr(elements: List[(String, Expression)]) extends Expression
 case class Call(target: Expression, gs: List[ArgumentGroup]) extends Expression
+case class Atomic(body: Expression) extends Expression
 case object Hole extends Expression
 
 sealed abstract class ArgumentGroup extends AST

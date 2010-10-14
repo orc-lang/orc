@@ -66,6 +66,7 @@ trait Guarding {
         val r = right.checkGuarded(if (l) { Nil } else context, unguardedRecursion)
         l || r
       }
+      case Atomic(body) => check(body)
       case DeclareDefs(defs, body) => {
         val newcontext = (defs map { _.name }) ::: context
         val _ = for (d <- defs) yield { d.body.checkGuarded(newcontext, unguardedRecursion) }

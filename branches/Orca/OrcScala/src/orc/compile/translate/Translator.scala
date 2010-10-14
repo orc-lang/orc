@@ -91,7 +91,8 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       }
       case ext.Parallel(l, r) => convert(l) || convert(r)
       case ext.Otherwise(l, r) => convert(l) ow convert(r)
-
+      case ext.Atomic(body) => Atomic(convert(body))
+      
       case lambda: ext.Lambda => {
         val flatLambda = reduceParamLists(lambda)
         val lambdaName = new BoundVar()

@@ -36,6 +36,7 @@ sealed abstract class NamelessAST extends AST {
     case Sequence(left,right) => List(left, right)
     case Prune(left,right) => List(left, right)
     case left ow right => List(left, right)
+    case Atomic(body) => List(body)
     case DeclareDefs(_, defs, body) => defs ::: List(body)
     case HasType(body, expectedType) => List(body, expectedType)
     case DeclareType(t, body) => List(t, body)
@@ -73,6 +74,7 @@ with NamelessToNamed
       case f >> g => f.freevars ++ shift(g.freevars, 1)
       case f << g => shift(f.freevars, 1) ++ g.freevars
       case f ow g => f.freevars ++ g.freevars
+      case Atomic(f) => f.freevars
       case DeclareDefs(openvars, defs, body) => openvars.toSet ++ shift(body.freevars, defs.length)
       case HasType(body,_) => body.freevars
       case DeclareType(_,body) => body.freevars
@@ -112,6 +114,7 @@ with NamelessToNamed
       case f >> g => f.subst(ctx) >> g.subst(None::ctx)
       case f << g => f.subst(None::ctx) << g.subst(ctx)
       case f ow g => f.subst(ctx) ow g.subst(ctx)
+      case Atomic(f) => Atomic(f.subst(ctx))
       case DeclareDefs(openvars, defs, body) => {
         val newctx = ( for (_ <- defs) yield None ).toList ::: ctx
         val newdefs = {
@@ -138,6 +141,7 @@ case class Call(target: Argument, args: List[Argument], typeArgs: Option[List[Ty
 case class Parallel(left: Expression, right: Expression) extends Expression
 case class Sequence(left: Expression, right: Expression) extends Expression
 case class Prune(left: Expression, right: Expression) extends Expression
+case class Atomic(body: Expression) extends Expression
 case class Otherwise(left: Expression, right: Expression) extends Expression
 case class DeclareDefs(unclosedVars: List[Int], defs: List[Def], body: Expression) extends Expression
 case class DeclareType(t: Type, body: Expression) extends Expression
