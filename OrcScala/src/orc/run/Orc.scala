@@ -15,18 +15,16 @@
 
 package orc.run
 
-import orc.run.extensions.SupportForVtimer
-import orc.lib.time.Vtimer
 import orc.{OrcOptions, CaughtEvent, HaltedEvent, PublishedEvent, OrcEvent, TokenAPI, OrcRuntime}
 import orc.ast.oil.nameless._
 import orc.error.OrcException
 import orc.error.runtime.{ArityMismatchException, TokenException}
 import scala.collection.mutable.Set
 
-trait Orc extends OrcRuntime with SupportForVtimer {
+trait Orc extends OrcRuntime {
 
   def run(node: Expression, k: OrcEvent => Unit, options: OrcOptions) {
-    val exec = new Execution(k)
+    val exec = new Execution(node, k, options)
     val t = new Token(node, exec)
     schedule(t)
   }
@@ -41,15 +39,10 @@ trait Orc extends OrcRuntime with SupportForVtimer {
   // tracking all of the executions occurring within that expression.
   // Different combinators make use of different Group subclasses.
 
-  object GroupMemberState extends Enumeration {
-    type GroupMemberState = Value
-    val Killed, Alive = Value
-  }
-  //Don't import GroupMemberState._ because of name conflicts
-
   sealed trait GroupMember {
-    var gmstate = GroupMemberState.Alive
     def kill: Unit
+    def suspend(): Unit
+    def resume(): Unit
     def notify(event: OrcEvent): Unit
   }
 
@@ -63,10 +56,15 @@ trait Orc extends OrcRuntime with SupportForVtimer {
 
     /* Note: this is _not_ lazy termination */
     def kill = synchronized {
-      if (gmstate == GroupMemberState.Alive) {
-        gmstate = GroupMemberState.Killed;
         for (m <- members) scheduleK(K({a => m.kill}, None))
-      }
+    }
+
+    def suspend() = synchronized {
+      for (m <- members) m.suspend()
+    }
+
+    def resume() = synchronized {
+      for (m <- members) m.resume()
     }
 
     def add(m: GroupMember) = synchronized { members.add(m) }
@@ -153,14 +151,17 @@ trait Orc extends OrcRuntime with SupportForVtimer {
      *
      *    None: One or more publications has left this region.
      */
+    t.state = Pending
     var pending: Option[Token] = Some(t)
 
     def publish(t: Token, v: AnyRef) = synchronized {
-      pending foreach { _.halt }
+      pending foreach { _.halt } // Remove t from its group
+      pending = None
       t.migrate(parent).publish(v)
     }
 
     def onHalt = synchronized {
+      t.state = Live
       pending foreach { schedule(_) }
       parent.remove(this)
     }
@@ -171,7 +172,7 @@ trait Orc extends OrcRuntime with SupportForVtimer {
    * An execution is a special toplevel group, 
    * associated with the entire program.
    */
-  class Execution(k: OrcEvent => Unit) extends Group {
+  class Execution(var node: Expression, k: OrcEvent => Unit, var options: OrcOptions) extends Group {
 
     def publish(t: Token, v: AnyRef) = synchronized {
       k(PublishedEvent(v))
@@ -197,11 +198,11 @@ trait Orc extends OrcRuntime with SupportForVtimer {
   case object BoundStop extends Binding
   case class BoundCell(g: Groupcell) extends Binding
 
-  case class Closure(defs: List[Def], pos: Int, lexicalContext: List[Binding]) {
+  case class Closure(var defs: List[Def], pos: Int, lexicalContext: List[Binding]) {
 
-    val code: Def = defs(pos)
+    def code: Def = defs(pos)
 
-    lazy val context: List[Binding] = {
+    def context: List[Binding] = {
       val fs =
         for (i <- defs.indices) yield {
           BoundValue(Closure(defs, i, lexicalContext))
@@ -244,13 +245,13 @@ trait Orc extends OrcRuntime with SupportForVtimer {
     }
   }
 
-  case class SequenceFrame(node: Expression) extends Frame {
+  case class SequenceFrame(var node: Expression) extends Frame {
     def apply(t: Token, v: AnyRef) {
       schedule(t.bind(BoundValue(v)).move(node))
     }
   }
 
-  case class FunctionFrame(callpoint: Expression, env: List[Binding]) extends Frame {
+  case class FunctionFrame(var callpoint: Expression, env: List[Binding]) extends Frame {
     def apply(t: Token, v: AnyRef) {
       t.env = env
       t.move(callpoint).publish(v)
@@ -269,6 +270,9 @@ trait Orc extends OrcRuntime with SupportForVtimer {
 
   sealed trait TokenState
   case object Live extends TokenState
+  case object Pending extends TokenState
+  case class Suspending(prevState: TokenState) extends TokenState
+  case class Suspended(prevState: TokenState) extends TokenState
   case object Halted extends TokenState
   case object Killed extends TokenState
 
@@ -296,21 +300,37 @@ trait Orc extends OrcRuntime with SupportForVtimer {
 
     // A live token is added to its group when it is created
     state match {
-      case Live => group.add(this)
-      case Halted => { }
-      case Killed => { }
+      case Live | Pending | Suspending(_) | Suspended(_) => group.add(this)
+      case Halted | Killed => { }
     }
 
     def notify(event: OrcEvent) { group.notify(event) }
 
     def kill {
-      removeVtimer(this)
       state match {
-        case Live => {
+        case Live | Pending | Suspending(_) | Suspended(_) => {
           state = Killed
           group.halt(this)
         }
-        case _ => { }
+        case Halted | Killed => { }
+      }
+    }
+
+    def suspend() = synchronized {
+      state match {
+        case Live => state = Suspending(state)
+        case Pending | Suspending(_) | Suspended(_) | Halted | Killed => { }
+      }
+    }
+
+    def resume() = synchronized {
+      state match {
+        case Suspending(prevState)  => state = prevState
+        case Suspended(prevState) => {
+          state = prevState
+          schedule(this)
+        }
+        case Live | Pending | Halted | Killed => { }
       }
     }
 
@@ -436,12 +456,6 @@ trait Orc extends OrcRuntime with SupportForVtimer {
 
     def siteCall(s: AnyRef, actuals: List[AnyRef]): Unit = {
       try { 
-        if (s.isInstanceOf[orc.values.sites.Site]) {
-          s.asInstanceOf[orc.values.sites.Site].populateMetaData(actuals, this)
-          addVtimer(this, s.asInstanceOf[orc.values.sites.SiteMetaData].virtualTime())
-        }
-        else addVtimer(this, 0)
-
         invoke(this, s, actuals)
       } catch {
         case e: OrcException => this !! e
@@ -452,7 +466,18 @@ trait Orc extends OrcRuntime with SupportForVtimer {
     def isLive = state = Live
     
     def run {
-      if (state == Live) {
+      var runNode = false
+      synchronized {
+        state match {
+          case Live => runNode = true // Run this token's current AST node, ouside this synchronized block
+          case Pending => throw new AssertionError("pending token scheduled")
+          case Suspending(prevState) => state = Suspended(prevState)
+          case Suspended(_) => throw new AssertionError("suspended token scheduled")
+          case Halted => throw new AssertionError("halted token scheduled")
+          case Killed => { } // This token was killed while it was on the schedule queue; ignore it
+        }
+      }
+      if (runNode) {
         node match {
           case Stop() => halt
           
@@ -516,28 +541,32 @@ trait Orc extends OrcRuntime with SupportForVtimer {
     // Publicly accessible methods
 
     def publish(v: AnyRef) {
-      removeVtimer(this)
-      if (state == Live) {
-        stack match {
-          case f :: fs => {
-            stack = fs
-            f(this, v)
-          }
-          case List() => {
-            // TODO: What should we do in this case
+      state match {
+        case Live | Suspending(_) => {
+          stack match {
+            case f :: fs => {
+              stack = fs
+              f(this, v)
+            }
+            case List() => {
+              throw new AssertionError("publish on an empty stack")
+            }
           }
         }
+        case Pending => throw new AssertionError("publish on a pending Token")
+        case Suspended(_) => throw new AssertionError("publish on a suspended Token")
+        case Halted | Killed => { }
       }
     }
 
     def halt {
-      removeVtimer(this)
       state match {
-        case Live => {
+        case Live | Pending | Suspending(_) => {
           state = Halted
           group.halt(this)
         }
-        case _ => { }
+        case Suspended(_) => throw new AssertionError("halt on a suspended Token")
+        case Halted | Killed => { }
       }
     }
 
@@ -548,7 +577,7 @@ trait Orc extends OrcRuntime with SupportForVtimer {
           val callPoints = stack collect { case f: FunctionFrame => f.callpoint.pos }
           te.setBacktrace(callPoints.toArray)
         }
-        case _ => { }
+        case _ => { } // Not a TokenException; no need to collect backtrace
       }
       notify(CaughtEvent(e))
       halt
