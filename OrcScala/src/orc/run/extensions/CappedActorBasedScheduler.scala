@@ -35,7 +35,6 @@ trait CappedActorBasedScheduler extends Orc {
 
   // distribute the work between actors in a round-robin fashion
   override def schedule(ts: List[Token]) {
-    tokensRunning.addAndGet(ts.size)
     for (t <- ts) {
       ActorPool.assign(Some(t))
     }
@@ -43,7 +42,6 @@ trait CappedActorBasedScheduler extends Orc {
   val CAP = 256
   
   override def scheduleK(k : K) {
-    kCount.incrementAndGet()
     ActorPool.assign(k)
   }
   val works : java.util.Queue[AnyRef] = new java.util.concurrent.ConcurrentLinkedQueue()
@@ -106,11 +104,9 @@ trait CappedActorBasedScheduler extends Orc {
             if (Thread.interrupted()) // Note: Clears thread's interrupted status bit
               throw new InterruptedException()
             x.run
-            decTokensRunning()
           }
           case K(k, ov) => {
             k(ov)
-            deckCount()
           }
         }
         w = works.poll()

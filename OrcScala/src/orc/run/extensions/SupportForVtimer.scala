@@ -97,5 +97,5 @@ trait SupportForVtimer extends OrcRuntime {
       }
     }
   }
-  override def getVtime = vTime.get
+  def getVtime = vTime.get
 }
