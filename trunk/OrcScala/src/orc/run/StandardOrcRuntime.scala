@@ -26,6 +26,7 @@ with SupportForClasses
 with SupportForSynchronousExecution
 with SupportForRtimer
 with SupportForStdout
+with SwappableASTs
 
 
 /* The first behavior in the trait list will be tried last */

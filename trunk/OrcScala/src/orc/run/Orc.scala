@@ -198,7 +198,9 @@ trait Orc extends OrcRuntime {
   case object BoundStop extends Binding
   case class BoundCell(g: Groupcell) extends Binding
 
-  case class Closure(var defs: List[Def], pos: Int, lexicalContext: List[Binding]) {
+  case class Closure(private[run] var _defs: List[Def], pos: Int, lexicalContext: List[Binding]) {
+
+    def defs = _defs
 
     def code: Def = defs(pos)
 
@@ -245,13 +247,15 @@ trait Orc extends OrcRuntime {
     }
   }
 
-  case class SequenceFrame(var node: Expression) extends Frame {
+  case class SequenceFrame(private[run] var _node: Expression) extends Frame {
+    def node = _node
     def apply(t: Token, v: AnyRef) {
       schedule(t.bind(BoundValue(v)).move(node))
     }
   }
 
-  case class FunctionFrame(var callpoint: Expression, env: List[Binding]) extends Frame {
+  case class FunctionFrame(private[run] var _callpoint: Expression, env: List[Binding]) extends Frame {
+    def callpoint = _callpoint
     def apply(t: Token, v: AnyRef) {
       t.env = env
       t.move(callpoint).publish(v)
