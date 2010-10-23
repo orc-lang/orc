@@ -24,7 +24,7 @@ import orc.values.sites.Site
  */
 class Vclock extends Site with UntypedSite {
   def call(args: List[AnyRef], token: TokenAPI) {
-    token.publish(new java.lang.Integer(token.runtime.getVtime))
+    token.publish(BigInt(0))//FIXME
   }
 
   override def name: String = this.getClass().getName()

@@ -81,8 +81,6 @@ trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
   case class K(k: (Option[AnyRef] => Unit), ov: Option[AnyRef])
   
   def scheduleK(k : K) : Unit
-  
-  def getVtime() : Int
 }
 
 /**
