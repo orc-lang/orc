@@ -272,8 +272,11 @@
 	<!-- ================================= 
           target: demo-app              
          ================================= -->
-	<!-- WARNING: this does not work on non-Unix systems (without cp and tar) -->
+	<!-- WARNING: This target requires UNIX's cp and tar utilities, for permission and symlink reasons. -->
 	<target name="demo-app" depends="demo-jar" description="Make a Mac OS X application">
+		<fail message="The 'demo-app' target can only be built on UNIX-like platforms">
+			<condition><not><os family="unix"/></not></condition>
+		</fail>
 		<property name="appname" value="Orchard"/>
 		<property name="appdir" value="build/${appname}.app"/>
 		<delete dir="${appdir}"  followsymlinks="false" includeemptydirs="true"/> <!-- clean up any old files -->
