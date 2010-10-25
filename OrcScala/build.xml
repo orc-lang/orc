@@ -208,8 +208,11 @@
 	<!-- - - - - - - - - - - - - - - - - -
           target: macosx-app
          - - - - - - - - - - - - - - - - - -->
-	<!-- WARNING: this does not work on non-Unix systems (without rm, cp, ln, and tar) -->
+	<!-- WARNING: This target requires UNIX's rm, cp, ln, and tar utilities, for permission and symlink reasons. -->
 	<target name="macosx-app" depends="jar">
+		<fail message="The 'macosx-app' target can only be built on UNIX-like platforms">
+			<condition><not><os family="unix"/></not></condition>
+		</fail>
 		<property name="macosx-app.name" value="Orc"/>
 		<property name="macosx-app.dir" value="build/${target.name}-app/${macosx-app.name}.app"/>
 		<exec executable="svnversion" outputproperty="svnversion"/>  <!-- Format: 9999[:9999][M][S][P] -->
@@ -349,7 +352,7 @@
           target: clean
          ================================= -->
 	<target name="clean" description="Delete build directory">
-		<exec executable="rm" failonerror="false"> <!-- Try this, because Ant is confused by the symlinks in here -->
+		<exec executable="rm" osfamily="unix" failonerror="false"> <!-- Try this, because Ant is confused by the symlinks in here -->
 			<arg line="-rf"/>
 			<arg value="build/${target.name}-app"/>
 		</exec>
