@@ -226,10 +226,6 @@ with CustomParserCombinators
   
 /* Expressions */
   
-  
-  val parseRecordEntry: Parser[(String, Expression)] =
-    (ident <~ "=") ~ parseExpression ^^ { case x ~ e => (x,e) }
-
   val parseBaseExpressionTail: Parser[Option[List[Expression]]] = (
         ")" ^^^ None
       | "," ~> CommaSeparated1(parseExpression) <~ ")" ^^ {Some(_)}
@@ -239,8 +235,8 @@ with CustomParserCombinators
         parseValue -> Constant
       | ident -> Variable
       | "stop" -> Stop
-      | ("[" ~> CommaSeparated(parseExpression) <~ "]") -> ListExpr
-      | ("{." ~> CommaSeparated(parseRecordEntry) <~ ".}") -> RecordExpr
+      | ListOf(parseExpression) -> ListExpr
+      | RecordOf("=", parseExpression) -> RecordExpr
       | ("(" ~> parseExpression ~ parseBaseExpressionTail) -?->
             { (e: Expression, es: List[Expression]) => TupleExpr(e::es) }
   )
@@ -337,6 +333,7 @@ with CustomParserCombinators
       | ("(" ~> parsePattern ~ parseBasePatternTail) -?->
           { (p: Pattern, ps: List[Pattern]) => TuplePattern(p::ps) }
       | ListOf(parsePattern) -> ListPattern
+      | RecordOf("=", parsePattern) -> RecordPattern
   )
 
   val parseConsPattern = rep1sep(parseBasePattern, ":") -> (_ reduceRight ConsPattern)
@@ -359,10 +356,7 @@ with CustomParserCombinators
   
   
 /* Types */
-  
-  val parseRecordTypeEntry: Parser[(String, Type)] =
-    (ident <~ "::") ~ parseType ^^ { case x ~ t => (x,t) }
-  
+    
   val parseTypeVariable: Parser[String] = ident
 
   val parseType: Parser[Type] = (
@@ -376,7 +370,7 @@ with CustomParserCombinators
           }
         }
       | TupleOf(parseType) -> TupleType
-      | ("{." ~> CommaSeparated(parseRecordTypeEntry) <~ ".}") -> RecordType
+      | RecordOf("::", parseType) -> RecordType
       | "lambda" ~> ((ListOf(parseTypeVariable)?) ^^ {_.getOrElse(Nil)}) ~ (TupleOf(parseType)+) ~ parseReturnType -> LambdaType
   )
   
@@ -466,6 +460,13 @@ with CustomParserCombinators
 
   def ListOf[T](P: => Parser[T]): Parser[List[T]] = "[" ~> CommaSeparated(P) <~ "]"
 
+  def RecordOf[T](separator: String, P: => Parser[T]): Parser[List[(String,T)]] = {
+    def parseEntry: Parser[(String,T)] = {
+      (ident <~ separator) ~ P ^^ { case x ~ e => (x,e) }
+    }
+    "{." ~> CommaSeparated(parseEntry) <~ ".}"
+  }  
+    
   val parseConstantListTuple: Parser[Expression] = (
       "-" ~> numericLit -> { s => Constant(-BigInt(s)) }
     | "-" ~> floatLit -> { s => Constant(-BigDecimal(s)) }
