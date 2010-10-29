@@ -42,7 +42,11 @@ object PrimitiveForms {
   val callNone = nullaryBuiltinCall(NoneConstructor) _
   val callIsNone = unaryBuiltinCall(NoneExtractor) _
   val callTupleArityChecker = binaryBuiltinCall(TupleArityChecker) _
-
+  
+  def callRecordMatcher(shape: List[String]) = {
+    unaryBuiltinCall(RecordMatcher(shape)) _
+  }
+  
   def makeUnapply(constructor: Argument, a: Argument) = {
     val extractor = new BoundVar()
     val getExtractor = Call(Constant(FindExtractor), List(constructor), None)

@@ -128,6 +128,8 @@ case class TuplePattern(elements: List[Pattern]) extends StrictPattern { overrid
 case class ListPattern(elements: List[Pattern]) extends StrictPattern { override def toOrcSyntax = elements.map(_.toOrcSyntax).mkString("[", ", ", "]") }
 case class CallPattern(name: String, args: List[Pattern]) extends StrictPattern { override def toOrcSyntax = name + args.map(_.toOrcSyntax).mkString("(", ", ", ")") }
 case class ConsPattern(head: Pattern, tail: Pattern) extends StrictPattern { override def toOrcSyntax = "("+head.toOrcSyntax+":"+tail.toOrcSyntax+")" }
+case class RecordPattern(elements: List[(String, Pattern)]) extends StrictPattern { override def toOrcSyntax = elements.map({case (f,p) => f + " = " + p.toOrcSyntax}).mkString("{. ", ", ", " .}") }
+
 
 case class AsPattern(p: Pattern, name: String) extends Pattern {
   val isStrict = p.isStrict

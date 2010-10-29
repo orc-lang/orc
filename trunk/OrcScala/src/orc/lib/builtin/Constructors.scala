@@ -55,8 +55,14 @@ object ConsConstructor extends TotalSite with Extractable with UntypedSite {
   override def extract = ConsExtractor
 }
 
-// Input to a RecordConstructor is a list of tuples, each tuple
-// being a (string,site) mapping. Eg: (("x",Site(x)), ("y", Site(y)), ("z", Site(z))..))
+/* 
+ * Input to a RecordConstructor is a sequence of tuples, each tuple
+ * being a (string,site) mapping. Eg: (("x",Site(x)), ("y", Site(y)), ("z", Site(z))..))
+ * 
+ * Note that even though a Record pattern exists, the RecordConstructor
+ * is not Extractable, since record extraction is a specific two-step process,
+ * parametrized by the target shape of the record.
+ */
 object RecordConstructor extends TotalSite with UntypedSite {
   override def name = "Record"
   override def evaluate(args: List[AnyRef]) = {
@@ -71,7 +77,6 @@ object RecordConstructor extends TotalSite with UntypedSite {
       }
     OrcRecord(scala.collection.immutable.HashMap.empty ++ valueMap)
   }
-  
 }
 
 

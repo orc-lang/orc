@@ -38,6 +38,9 @@ trait OrcValue extends AnyRef {
   def toOrcSyntax(): String = super.toString() 
   override def toString() = toOrcSyntax()  
   
+}
+
+object OrcValue {
   
   /**
    * Condense a list of values, using the classic Let site behavior.
@@ -51,6 +54,7 @@ trait OrcValue extends AnyRef {
       case _ => OrcTuple(vs)
     }
   }
+  
 }
 
 

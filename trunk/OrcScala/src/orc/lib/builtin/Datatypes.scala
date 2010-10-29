@@ -33,7 +33,7 @@ class DataSite(name: String, arity: Int) extends TotalSite with Extractable with
  
     override def evaluate(args: List[AnyRef]) = {
         args match {
-          case List(TaggedValue(tag,values)) if (tag == DataSite.this) => Some(letLike(values))
+          case List(TaggedValue(tag,values)) if (tag == DataSite.this) => Some(OrcValue.letLike(values))
           case List(_) => None
           case _ => throw new ArityMismatchException(1, args.size)
         }

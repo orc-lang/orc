@@ -387,6 +387,12 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
           val p = ext.TuplePattern(List(ph, pt));
           { callIsCons(focus) > y > _ } compose unravel(p, y)
         }
+        case ext.RecordPattern(elements) => {
+          val y = new BoundVar()
+          val (labels, patterns) = elements.unzip
+          val p = ext.TuplePattern(patterns);
+          { callRecordMatcher(labels)(focus) > y > _ } compose unravel(p, y)
+        }
         case ext.CallPattern(name, args) => {
           val y = new BoundVar()
           val p = ext.TuplePattern(args)

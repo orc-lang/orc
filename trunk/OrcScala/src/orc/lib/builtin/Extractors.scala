@@ -5,6 +5,7 @@ import orc.values._
 import orc.values.sites._
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
+import orc.util.OptionMapExtension._
 
 trait Extractable extends Site {
   def extract: PartialSite
@@ -102,4 +103,20 @@ object FindExtractor extends TotalSite with UntypedSite {
       case List(a) => throw new ArgumentTypeMismatchException(0, "Site", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
     }
+}
+
+
+/*
+ * Extract a record, based on a target shape. 
+ */
+case class RecordMatcher(shape: List[String]) extends PartialSite with UntypedSite {
+  override def name = "Record" + shape.mkString("(", ",", ")") + "?"
+  override def evaluate(args: List[AnyRef]) =
+    args match {
+      case List(OrcRecord(entries)) => {
+        shape optionMap { entries.get } map { OrcValue.letLike }
+      }
+      case List(_) => None
+      case _ => throw new ArityMismatchException(1, args.size)
+  }
 }
