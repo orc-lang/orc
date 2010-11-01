@@ -28,6 +28,9 @@ import scala.collection.immutable.Map
  * @author dkitchin
  */
 case class OrcRecord(entries: Map[String,AnyRef]) extends PartialSite with UntypedSite {
+  
+  def this(entries: List[(String, AnyRef)]) = this(Map() ++ entries)
+  
   override def evaluate(args: List[AnyRef]) = 
     args match {
       case List(Field(name)) => 
