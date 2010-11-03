@@ -19,6 +19,11 @@
 	<property name="src.dir" value="src" />
 	<property name="xslthl.config" value="file://${user.dir}/${src.dir}/highlighting/xslthl-config.xml" />
 	<property name="xalan.lib.dir" value="lib" />
+	
+	<!--
+	  - New properties that pertain to the reference manual
+	  -->
+	<property name="database.olink.dir" value="${src.dir}" />
 
 	<!--
       - Sets up the classpath for the Xalan and Xerces implementations
@@ -33,8 +38,11 @@
 		</fileset>
 	</path>
 
-	<target name="all" depends="build-pdf,build-html-chunk,build-html-single" description="Build all documentation" />
-
+	<!--
+	  - target:  all
+	  -->
+	<target name="all" depends="olinks,build-pdf,build-html-chunk,build-html-single,rm-build-html-single" description="Build all documentation" />
+	
 	<!--
       - target:  usage
       -->
@@ -48,6 +56,31 @@
 	<target name="clean" description="Cleans up generated files.">
 		<delete dir="${build.dir}" />
 	</target>
+	
+	<!--
+	  - target:  olinks
+	  -->
+	<target name="olinks" description="Builds the olink databases for mutual linking">
+		<echo message="Creating olink databases..." />
+		<!-- Make database of olinks in user guide -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}"
+				destdir="${build.dir}/html">
+			<include name="all.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only"/>
+			<param name="targets.filename" expression="ugtargets.db"/>
+		</xslt>
+		<!-- Make database of olinks in reference manual -->
+		<xslt style="${src.dir}/xsl/orc.xsl"
+				basedir="${src.dir}/refmanual"
+				destdir="${build.dir}/html/refmanual">
+			<include name="refmanual.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only"/>
+			<param name="targets.filename" expression="rmtargets.db"/>
+		</xslt>
+	</target>
 
 	<!--
       - target:  depends
@@ -59,6 +92,9 @@
 		<mkdir dir="${build.dir}/fo" />
 	</target>
 	
+	<!--
+      - target:  xinclude
+      -->
 	<target name="xinclude" depends="depends">
 		<taskdef name="xinclude" classname="gr.abiss.xcluder.XercesXcluder">
 			<classpath>
@@ -70,6 +106,9 @@
 		<xinclude in="${src.dir}/root.xml" out="${src.dir}/all.xml" />
 	</target>
 
+	<!--
+      - target:  build-html-chunk
+      -->
 	<target name="build-html-chunk" depends="xinclude" description="Generates HTML files from DocBook XML">
 		<xslt style="${src.dir}/xsl/html-chunk.xsl" extension=".html" 
 				basedir="${src.dir}" destdir="${build.dir}/html">
@@ -95,8 +134,11 @@
 		</copy>
 	</target>
 
+	<!--
+      - target:  build-html-single
+      -->
 	<target name="build-html-single" depends="xinclude" description="Generates HTML files from DocBook XML">
-		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html" 
+		<xslt style="${src.dir}/xsl/orc.xsl" extension=".html" 
 				basedir="${src.dir}" destdir="${build.dir}/html">
 			<include name="all.xml" />
 			<classpath refid="xalan.classpath" />
@@ -104,6 +146,9 @@
 			<param name="section.autolabel" expression="1"/>
 			<param name="section.label.includes.component.label" expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
+			
+			<param name="target.database.document" expression="${database.olink.dir}/olinkdb.xml" />
+			<param name="current.docid" expression="root" />
 			
 			<param name="highlight.source" expression="1"/>
 			<param name="highlight.default.language" expression="orc"/>
@@ -116,7 +161,35 @@
 			</fileset>
 		</copy>
 	</target>
-
+	
+	<!--
+      - target:  rm-build-html-single
+      -->
+	<target name="rm-build-html-single" depends="xinclude" description="Generates HTML files for reference manual">
+		<xslt style="${src.dir}/xsl/orc.xsl" extension=".html" 
+				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual">
+			<include name="refmanual.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="orc.demo" expression="0"/>
+			<param name="section.autolabel" expression="1"/>
+			<param name="section.label.includes.component.label" expression="1"/>
+			<param name="section.autolabel.max.depth" expression="8"/>
+			
+			<param name="target.database.document" expression="${database.olink.dir}/olinkdb.xml" />
+			<param name="current.docid" expression="refmanual" />
+			
+			<param name="highlight.source" expression="1"/>
+			<param name="highlight.default.language" expression="orc"/>
+			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
+		</xslt>
+		<!-- Copy the stylesheet to the same directory as the HTML files -->
+		<copy todir="${build.dir}/html/refmanual">
+			<fileset dir="css">
+				<include name="style.css" />
+			</fileset>
+		</copy>
+	</target>
+	
 	<!--
 	    - target:  build-pdf
 	    - description:  Iterates through a directory and transforms

@@ -1,0 +1,44 @@
+<!DOCTYPE page [
+<!ENTITY ug "../root.xml">  <!-- userguide -->
+<!ENTITY fx "xpointer(//frag[@id='">  <!-- frag xpointer -->
+<!ENTITY xf "'])">  <!-- / frag xpointer -->
+]>
+
+<book
+	id="refmanual"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:xi="http://www.w3.org/2001/XInclude">
+<title>Orc Reference Guide v<xi:include href="../../VERSION" parse="text"/></title>
+	
+	<!-- Add in navigation?  Use the standard chunking stuff? -->
+	
+   <chapter id="ref.combinators.parallel">
+      <title>Parallel Combinator</title>
+	  <para>Insert copied code here.</para>
+      <frag id="ref.combinators.parallel.syntax">
+		  <para>EBNF: E ::= ... | . E | E </para>
+		  <para>Precedence: parallel > pruning > otherwise</para>
+		  <para>Associativity: left and right </para>
+		  <para>Commutative: true </para>
+	  </frag>
+	  <frag id="ref.combinators.parallel.behavior">
+		  <para>
+			  Orc executes the expression F | G by executing F and G concurrently. 
+			  Whenever F or G communicates with a service or publishes a value, F | G does so as well. 
+			  The resulting publications of F | G may be published in arbitrary order. 
+		  </para>
+	  </frag>
+	  <frag id="ref.combinators.parallel.examples">
+		  <!-- Put the examples in here -->
+	  </frag>
+	  <frag id="ref.combinators.parallel.links">
+		  <!-- Put the links to other sections in here -->
+	  </frag>
+   </chapter>
+</book>
+
+<!--
+   xpointer="xpointer(//section[@id='parallel'])"
+   xpointer="xpointer(/book/chapter/section[@id='parallel'])"
+   xmlns:xi="http://www.w3.org/2001/XInclude"
+-->
