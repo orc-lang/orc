@@ -5,6 +5,7 @@
 -->
 
 <book
+	id="root"
 	xmlns:xlink="http://www.w3.org/1999/xlink"
 	xmlns:xi="http://www.w3.org/2001/XInclude">
 <title>Orc User Guide v<xi:include href="../VERSION" parse="text"/></title>
@@ -1563,6 +1564,7 @@ lower precedence than operators, but higher precedence than conditionals or decl
 
 <section><title>The parallel combinator</title>
 
+<frag id="combinators.parallel">
 <para>
 Orc's simplest combinator is <code>|</code>, the parallel combinator. Orc executes
 the expression F <code>|</code> G, where F and G are Orc expressions, by executing 
@@ -1570,6 +1572,7 @@ F and G concurrently. Whenever F or G communicates with a service or publishes a
 F <code>|</code> G does so as well.  The resulting publications of F <code>|</code> G
 may be published in arbitrary order.
 </para>   
+</frag>
 
 
 <para>

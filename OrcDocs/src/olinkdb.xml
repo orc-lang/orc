@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Double check these file paths are correct if you're having problems -->
+<!DOCTYPE targetset
+   SYSTEM "file://../docbook-xsl/common/targetdatabase.dtd" [
+   <!ENTITY ugtargets SYSTEM "file://../build/html/ugtargets.db">
+   <!ENTITY rmtargets SYSTEM "file://../build/html/refmanual/rmtargets.db">
+   <!ENTITY uguri SYSTEM "all.html">
+   <!ENTITY rmuri SYSTEM "refmanual.html">
+   ]>
+<targetset>
+   <targetsetinfo>
+      This file creates all of the necessary database files that support
+	  olinks between the user guide and the reference manual to enable
+	  mutual linking between the documents.
+   </targetsetinfo>
+ 
+   <!-- Site map for generating relative paths between documents -->
+   <sitemap>
+      <dir name="documentation">  <!-- Top level not used -->
+         <dir name="OrcDocs">
+            <dir name="build">
+               <dir name="html">
+                  <document targetdoc="root">
+                     &ugtargets;
+                  </document>
+				  <dir name="refmanual">
+					  <document targetdoc="refmanual">
+						 &rmtargets;
+					  </document>
+				  </dir>
+               </dir>
+            </dir>
+         </dir>
+      </dir>
+   </sitemap>
+</targetset>
