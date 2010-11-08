@@ -16,6 +16,7 @@ package orc.lib.web
 
 import scala.util.parsing.combinator.syntactical._
 import scala.util.parsing.combinator.lexical._
+import scala.util.parsing.combinator.RegexParsers
 
 import orc.values.sites.{PartialSite, UntypedSite}
 import orc.values.OrcRecord
@@ -46,11 +47,21 @@ class ReadJSON extends PartialSite with UntypedSite {
  *  @author Derek Chen-Becker <"java"+@+"chen-becker"+"."+"org">
  *  
  */
+
+object OrcJSONLexical extends StdLexical with RegexParsers {
+  override type Elem = Char
+  
+  def numberToken = """[-]?(([1-9][0-9]*)|0)([.][0-9]+)?([Ee][+-]?(([1-9][0-9]*)|0))?""".r ^^ { NumericLit(_) }
+  
+  override def token = numberToken | super.token
+  
+  reserved ++= List("true", "false", "null")
+  delimiters ++= List("{", "}", "[", "]", ":", ",")
+}
+
 object OrcJSONParser extends StandardTokenParsers {
 
-    // Configure lexical parsing
-    lexical.reserved ++= List("true", "false", "null")
-    lexical.delimiters ++= List("{", "}", "[", "]", ":", ",")
+    override val lexical = OrcJSONLexical
     
     // Define the grammar
     def root       = jsonObj | jsonArray
@@ -58,9 +69,8 @@ object OrcJSONParser extends StandardTokenParsers {
     def jsonArray  = "[" ~> repsep(value, ",") <~ "]"
     def objEntry   = stringVal ~ (":" ~> value) ^^ { case x ~ y => (x, y) }
     def value: Parser[AnyRef] = (jsonObj | jsonArray | number | "true" ^^^ java.lang.Boolean.TRUE | "false" ^^^ java.lang.Boolean.FALSE | "null" ^^^ null | stringVal)
-    def stringVal  = accept("string", { case lexical.StringLit(s) => s } )
-    def number     = accept("number", { case lexical.NumericLit(n) => BigDecimal(n) } )
-    
+    def stringVal  = accept("string", { case lexical.StringLit(s) => s } ) 
+    def number = accept("number", { case lexical.NumericLit(n) => BigDecimal(n) })
     
     def parse(json: String): Option[AnyRef] = {
       val scanner = new lexical.Scanner(json)
