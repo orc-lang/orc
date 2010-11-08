@@ -14,9 +14,9 @@
 //
 package orc.lib.web
 
+import scala.util.parsing.combinator.JavaTokenParsers
 import scala.util.parsing.combinator.syntactical._
 import scala.util.parsing.combinator.lexical._
-import scala.util.parsing.combinator.RegexParsers
 
 import orc.values.sites.{PartialSite, UntypedSite}
 import orc.values.OrcRecord
@@ -48,33 +48,41 @@ class ReadJSON extends PartialSite with UntypedSite {
  *  
  */
 
-object OrcJSONLexical extends StdLexical with RegexParsers {
-  override type Elem = Char
-  
-  def numberToken = """[-]?(([1-9][0-9]*)|0)([.][0-9]+)?([Ee][+-]?(([1-9][0-9]*)|0))?""".r ^^ { NumericLit(_) }
-  
-  override def token = numberToken | super.token
-  
-  reserved ++= List("true", "false", "null")
-  delimiters ++= List("{", "}", "[", "]", ":", ",")
-}
+//object OrcJSONLexical extends StdLexical with RegexParsers {
+//  override type Elem = Char
+//  
+//  def numberToken = """[-]?(([1-9][0-9]*)|0)([.][0-9]+)?([Ee][+-]?(([1-9][0-9]*)|0))?""".r ^^ { NumericLit(_) }
+//  
+//  override def token = numberToken | super.token
+//  
+//  reserved ++= List("true", "false", "null")
+//  delimiters ++= List("{", "}", "[", "]", ":", ",")
+//}
 
-object OrcJSONParser extends StandardTokenParsers {
+object OrcJSONParser extends JavaTokenParsers {
 
-    override val lexical = OrcJSONLexical
+    //override val lexical = OrcJSONLexical
     
     // Define the grammar
     def root       = jsonObj | jsonArray
     def jsonObj    = ("{" ~> repsep(objEntry, ",") <~ "}") ^^ { new OrcRecord(_) } 
     def jsonArray  = "[" ~> repsep(value, ",") <~ "]"
-    def objEntry   = stringVal ~ (":" ~> value) ^^ { case x ~ y => (x, y) }
-    def value: Parser[AnyRef] = (jsonObj | jsonArray | number | "true" ^^^ java.lang.Boolean.TRUE | "false" ^^^ java.lang.Boolean.FALSE | "null" ^^^ null | stringVal)
-    def stringVal  = accept("string", { case lexical.StringLit(s) => s } ) 
-    def number = accept("number", { case lexical.NumericLit(n) => BigDecimal(n) })
+    def objEntry   = stringLiteral ~ (":" ~> value) ^^ { case x ~ y => (x, y) }
+    def value: Parser[AnyRef] = (
+        jsonObj 
+      | jsonArray 
+      | "true" ^^^ java.lang.Boolean.TRUE 
+      | "false" ^^^ java.lang.Boolean.FALSE 
+      | "null" ^^^ null
+      | floatingPointNumber ^^ { BigDecimal(_) }
+      | stringLiteral
+    )
     
     def parse(json: String): Option[AnyRef] = {
-      val scanner = new lexical.Scanner(json)
-      root(scanner) map { Some(_) } getOrElse None
+      parseAll[AnyRef](root, new java.io.StringReader(json)) match {
+        case Success(v,_) => Some(v)
+        case n: NoSuccess => System.err.println("JSON parsing failed: " + n.msg) ; None
+      }
     }
     
 }
