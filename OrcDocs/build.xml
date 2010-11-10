@@ -232,5 +232,89 @@
 	    <fop format="application/pdf" fofile="${build.dir}/fo/all.fo" 
 	        outfile="${build.dir}/pdf/all.pdf" />
 	</target>
+	
+	
+	<!-- The following code has been taken from
+		http://www.cs.put.poznan.pl/dweiss/xml/projects/ant-docbook-styler/index.xml?lang=en -->
+	<!-- ########################################################################## -->
+  <!-- ### {{{ XSLT processor recognition. If xsltproc[.exe] is found in path,    -->
+  <!-- ### it will be used for stylesheet processing (much faster than Xalan, can do olinks)     -->
+  <!-- ########################################################################## -->
+  
+	<!--
+      - target:  xsltprocessor
+      -->
+	<target name="xsltprocessor">
+    <property environment="env"/>
+
+    <condition  property="executable.file.extension"
+                value=".exe">
+            <os family="windows"/>
+    </condition>
+    <condition  property="executable.file.extension"
+                value="">
+            <os family="unix"/>
+    </condition>
+    
+    <condition  property="tmp:xsltproc.available"
+                value="xsltproc${executable.file.extension}">
+        <or>
+            <and>
+                <os family="windows"/>
+                <available file="xsltproc${executable.file.extension}" filepath="${env.Path}" />
+            </and>
+            <and>
+                <os family="unix"/>
+                <available file="xsltproc${executable.file.extension}" filepath="${env.PATH}" />
+            </and>
+        </or>
+    </condition>
+    
+    <condition property="xslt.processor" value="com.dawidweiss.ant.taskdefs.XsltProcLiaison">
+        <and>
+            <isset property="tmp:xsltproc.available" />
+            <not>
+                <isset property="disable.xsltproc" />
+            </not>
+        </and>
+    </condition>
+    
+    <condition property="xslt.processor" value="com.dawidweiss.ant.taskdefs.SaxonLiaison">
+    		<not>
+    	  	  <isset property="disable.saxon" />
+    	  </not>
+    </condition>
+
+    <condition property="xslt.processor" value="trax">
+        <not>
+        <and>
+                <isset property="tmp:xsltproc.available" />
+                <not>
+                    <isset property="disable.xsltproc" />
+                </not>
+        </and>
+        </not>
+    </condition>
+
+    <antcall target="displayXsltProcessorInfo" />
+  </target>
+
+  <!--
+    - target:  displayXsltProcessorInfo
+    -->
+	<target name="displayXsltProcessorInfo"
+          if="tmp:xsltproc.available"
+          unless="disable.xsltproc">
+    <echo>
+    
+#####################################################
+XSLTProc has been found in your path and will be used
+for processing XSLT transformations. If you experience
+any problems, you can switch to Java's default XSLT 
+processor by defining 'disable.xsltproc' property.
+#####################################################
+
+    </echo>
+  </target>
 
 </project>
