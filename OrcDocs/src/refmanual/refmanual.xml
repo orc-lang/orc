@@ -14,7 +14,10 @@
 	
    <chapter id="ref.combinators.parallel">
       <title>Parallel Combinator</title>
-	  <para>Insert copied code here.</para>
+	  <xi:include
+         href="&ug;"
+         xpointer="&fx;combinators.parallel&xf;"
+      />
       <frag id="ref.combinators.parallel.syntax">
 		  <para>EBNF: E ::= ... | . E | E </para>
 		  <para>Precedence: parallel > pruning > otherwise</para>
@@ -33,6 +36,7 @@
 	  </frag>
 	  <frag id="ref.combinators.parallel.links">
 		  <!-- Put the links to other sections in here -->
+		  <olink targetdoc="root" targetptr="combinators.parallel">Parallel Combinators</olink>
 	  </frag>
    </chapter>
 </book>
