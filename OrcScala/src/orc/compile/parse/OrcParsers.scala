@@ -359,6 +359,12 @@ with CustomParserCombinators
     
   val parseTypeVariable: Parser[String] = ident
 
+  
+  val parseTypeTail: Parser[Option[List[Type]]] = (
+        ")" ^^^ None
+      | "," ~> CommaSeparated1(parseType) <~ ")" ^^ {Some(_)}
+  )
+  
   val parseType: Parser[Type] = (
         "Top" -> Top
       | "Bot" -> Bot
@@ -369,6 +375,8 @@ with CustomParserCombinators
             case (id, Some(ts)) => TypeApplication(id, ts)
           }
         }
+      | ("(" ~> parseType ~ parseTypeTail) -?->
+          { (t: Type, ts: List[Type]) => TupleType(t::ts) }
       | TupleOf(parseType) -> TupleType
       | RecordOf("::", parseType) -> RecordType
       | "lambda" ~> ((ListOf(parseTypeVariable)?) ^^ {_.getOrElse(Nil)}) ~ (TupleOf(parseType)+) ~ parseReturnType -> LambdaType

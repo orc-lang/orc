@@ -27,6 +27,7 @@ import orc.progress.{ NullProgressMonitor, ProgressMonitor }
 import orc.values.sites.SiteClassLoading
 import scala.collection.JavaConversions._
 import scala.compat.Platform.currentTime
+import orc.ast.oil.xml.OrcXML
 
 
 /**
@@ -177,6 +178,19 @@ abstract class CoreOrcCompiler extends OrcCompiler {
     override def apply(co: CompilerOptions) = { ast => ast.withoutNames }
   }
 
+  // Generate XML for the AST and echo it to console; useful for testing.
+  val echoXML = new CompilerPhase[CompilerOptions, orc.ast.oil.nameless.Expression, orc.ast.oil.nameless.Expression] 
+  {
+    val phaseName = "Echo XML"
+    override def apply(co: CompilerOptions) = { ast =>
+      val pp = new scala.xml.PrettyPrinter(80,2)
+      val xmlheader = """<?xml version="1.0" encoding="UTF-8" ?>""" + "\n"
+      val xmlpretty = xmlheader + pp.format(OrcXML.astToXml(ast))
+      println(xmlpretty)
+      ast
+    }
+  }
+  
   ////////
   // Compose phases into a compiler
   ////////
