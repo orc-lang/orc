@@ -5,4 +5,10 @@
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 <xsl:import href="../../docbook-xsl/html/docbook.xsl"/>
 <xsl:import href="html.xsl"/>
+
+<!-- Frag tag for copying from one manual to another -->
+<xsl:template match="frag">
+  <xsl:apply-templates/>
+</xsl:template>
+
 </xsl:stylesheet>
