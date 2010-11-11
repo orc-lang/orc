@@ -8,7 +8,8 @@
 <project name="docbook-src" default="all">
 
 	<description>
-		This Ant build.xml file is used to transform DocBook XML to various other formats
+		This Ant build.xml file is used to transform DocBook XML to various other formats.
+		We use it to build all the Orc documentation (User Guide and Reference Manual).
 	</description>
 
 	<!--
@@ -21,7 +22,7 @@
 	<property name="xalan.lib.dir" value="lib" />
 	
 	<!--
-	  - New properties that pertain to the reference manual
+	  - Properties that pertain to the reference manual
 	  -->
 	<property name="database.olink.dir" value="${src.dir}" />
 
@@ -41,7 +42,7 @@
 	<!--
 	  - target:  all
 	  -->
-	<target name="all" depends="olinks,build-pdf,build-html-chunk,build-html-single,rm-build-html-single" description="Build all documentation" />
+	<target name="all" depends="xsltprocessor,olinks,build-pdf,build-html-chunk,build-html-single,rm-build-html-single" description="Build all documentation" />
 	
 	<!--
       - target:  usage
@@ -62,26 +63,23 @@
 	  -->
 	<target name="olinks" description="Builds the olink databases for mutual linking">
 		<echo message="Creating olink databases..." />
-		<!-- Make database of olinks in user guide -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}"
-				destdir="${build.dir}/html">
-			<include name="all.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only"/>
-			<param name="targets.filename" expression="ugtargets.db"/>
-		</xslt>
-		<!-- Make database of olinks in reference manual -->
-		<xslt style="${src.dir}/xsl/orc.xsl"
-				basedir="${src.dir}/refmanual"
-				destdir="${build.dir}/html/refmanual">
-			<include name="refmanual.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only"/>
-			<param name="targets.filename" expression="rmtargets.db"/>
-		</xslt>
-	</target>
-
+		<property environment="env"/>
+		 <!-- Create database of links in user guide -->
+		 <exec executable="xsltproc${executable.file.extension}">
+			 <arg line="--stringparam collect.xref.targets 'only'"/>
+			 <arg line="--stringparam targets.filename '${build.dir}/html/ugtargets.db'"/>
+			 <arg value="${src.dir}/xsl/orc.xsl"/>
+			 <arg value="${src.dir}/root.xml"/>
+		 </exec>
+		<!-- Create database of links in reference manual -->
+		 <exec executable="xsltproc${executable.file.extension}">
+			 <arg line="--stringparam collect.xref.targets 'only'"/>
+			 <arg line="--stringparam targets.filename '${build.dir}/html/refmanual/rmtargets.db'"/>
+			 <arg value="${src.dir}/xsl/orc.xsl"/>
+			 <arg value="${src.dir}/refmanual/refmanual.xml"/>
+		 </exec>
+		</target>
+		
 	<!--
       - target:  depends
       -->
@@ -163,25 +161,26 @@
 	</target>
 	
 	<!--
-      - target:  rm-build-html-single
-      -->
-	<target name="rm-build-html-single" depends="xinclude" description="Generates HTML files for reference manual">
-		<xslt style="${src.dir}/xsl/orc.xsl" extension=".html" 
-				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual">
-			<include name="refmanual.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="orc.demo" expression="0"/>
-			<param name="section.autolabel" expression="1"/>
-			<param name="section.label.includes.component.label" expression="1"/>
-			<param name="section.autolabel.max.depth" expression="8"/>
-			
-			<param name="target.database.document" expression="${database.olink.dir}/olinkdb.xml" />
-			<param name="current.docid" expression="refmanual" />
-			
-			<param name="highlight.source" expression="1"/>
-			<param name="highlight.default.language" expression="orc"/>
-			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
-		</xslt>
+	  - target:  rm-build-html-single
+	  -->
+	<target name="rm-build-html-single" depends="xinclude" 
+		description="Generates HTML files for reference manual"
+		if="tmp:xsltproc.available">
+		<property environment="env"/>
+		 <exec executable="xsltproc${executable.file.extension}">
+			 <arg line="--output '${build.dir}/html/refmanual/refmanual.html'"/>
+			 <arg line="--stringparam target.database.document '../../${database.olink.dir}/olinkdb.xml'"/>
+			 <arg line="--stringparam current.docid 'refmanual'"/>
+			 <arg line="--stringparam orc.demo '0'"/>
+			 <arg line="--stringparam section.label.includes.component.label '1'"/>
+			 <arg line="--stringparam section.autolabel.max.depth '8'"/>
+			 <arg line="--stringparam highlight.source '1'"/>
+			 <arg line="--stringparam highlight.default.language 'orc'"/>
+			 <arg line="--stringparam highlight.xslthl.config '${xslthl.config}'"/>
+			 <arg line="--xinclude"/>
+			 <arg value="${src.dir}/xsl/orc.xsl"/>
+			 <arg value="${src.dir}/refmanual/refmanual.xml"/>
+		 </exec>
 		<!-- Copy the stylesheet to the same directory as the HTML files -->
 		<copy todir="${build.dir}/html/refmanual">
 			<fileset dir="css">
@@ -234,9 +233,9 @@
 	</target>
 	
 	
-	<!-- The following code has been taken from
-		http://www.cs.put.poznan.pl/dweiss/xml/projects/ant-docbook-styler/index.xml?lang=en -->
-	<!-- ########################################################################## -->
+  <!-- The following code is based on Dawid Weiss' code at
+	http://www.cs.put.poznan.pl/dweiss/xml/projects/ant-docbook-styler/index.xml?lang=en -->
+  <!-- ########################################################################## -->
   <!-- ### {{{ XSLT processor recognition. If xsltproc[.exe] is found in path,    -->
   <!-- ### it will be used for stylesheet processing (much faster than Xalan, can do olinks)     -->
   <!-- ########################################################################## -->
@@ -247,13 +246,22 @@
 	<target name="xsltprocessor">
     <property environment="env"/>
 
+	<!-- If they are using Windows -->
     <condition  property="executable.file.extension"
                 value=".exe">
             <os family="windows"/>
     </condition>
+		
+	<!-- If they are using Unix -->
     <condition  property="executable.file.extension"
                 value="">
             <os family="unix"/>
+    </condition>
+		
+	<!-- If they are using Mac (this may not be necessary, need to test) -->
+    <condition  property="executable.file.extension"
+                value="">
+            <os family="mac"/>
     </condition>
     
     <condition  property="tmp:xsltproc.available"
@@ -267,36 +275,16 @@
                 <os family="unix"/>
                 <available file="xsltproc${executable.file.extension}" filepath="${env.PATH}" />
             </and>
+				<and>
+                <os family="mac"/>
+                <available file="xsltproc${executable.file.extension}" filepath="${env.PATH}" />
+            </and>
         </or>
     </condition>
-    
-    <condition property="xslt.processor" value="com.dawidweiss.ant.taskdefs.XsltProcLiaison">
-        <and>
-            <isset property="tmp:xsltproc.available" />
-            <not>
-                <isset property="disable.xsltproc" />
-            </not>
-        </and>
-    </condition>
-    
-    <condition property="xslt.processor" value="com.dawidweiss.ant.taskdefs.SaxonLiaison">
-    		<not>
-    	  	  <isset property="disable.saxon" />
-    	  </not>
-    </condition>
 
-    <condition property="xslt.processor" value="trax">
-        <not>
-        <and>
-                <isset property="tmp:xsltproc.available" />
-                <not>
-                    <isset property="disable.xsltproc" />
-                </not>
-        </and>
-        </not>
-    </condition>
-
-    <antcall target="displayXsltProcessorInfo" />
+  <antcall target="displayXsltProcessorInfo" />
+  <antcall target="displayXsltProcessorNotFound" />
+		
   </target>
 
   <!--
@@ -312,6 +300,26 @@ XSLTProc has been found in your path and will be used
 for processing XSLT transformations. If you experience
 any problems, you can switch to Java's default XSLT 
 processor by defining 'disable.xsltproc' property.
+#####################################################
+
+    </echo>
+  </target>
+	
+	<!-- Add some way to fail build here -->
+	<!-- Build also needs to fail if an olink fails -->
+	
+	<!--
+    - target:  displayXsltProcessorNotFound
+    -->
+	<target name="displayXsltProcessorNotFound"
+          unless="tmp:xsltproc.available">
+    <echo>
+    
+#####################################################
+XSLTProc has not been found installed on your system.
+The Orc documentation cannot be properly built.
+Please install xsltproc and make sure it is in your
+system environment path.
 #####################################################
 
     </echo>
