@@ -18,6 +18,7 @@
 	<property name="docbook.xsl.dir" value="docbook-xsl" />
 	<property name="build.dir" value="build" />
 	<property name="src.dir" value="src" />
+	<!-- Changed xslthl.config to absolute to accomodate it's URL requirements, need to change that -->
 	<property name="xslthl.config" value="file://${user.dir}/${src.dir}/highlighting/xslthl-config.xml" />
 	<property name="xalan.lib.dir" value="lib" />
 	
@@ -56,6 +57,13 @@
       -->
 	<target name="clean" description="Cleans up generated files.">
 		<delete dir="${build.dir}" />
+	</target>
+	
+	<!--
+	  - target:  test
+	  -->
+	<target name="test" depends="xsltprocessor,olinks,build-html-single,rm-build-html-single" description="Test build for modifications.">
+		<echo message="Test build complete" />
 	</target>
 	
 	<!--
@@ -132,11 +140,44 @@
 		</copy>
 	</target>
 
+	<!-- Using xsltproc instead of xalan kills all the colors in highlighting,
+		fix that -->
 	<!--
       - target:  build-html-single
       -->
+	<target name="build-html-single" depends="xinclude" 
+		description="Generates HTML files for user guide"
+		if="tmp:xsltproc.available">
+		<property environment="env"/>
+		 <exec executable="xsltproc${executable.file.extension}">
+			 <arg line="-output '${build.dir}/html/all.html'"/>
+			 <arg line="-stringparam target.database.document '../../${database.olink.dir}/olinkdb.xml'"/>
+			 <arg line="-stringparam current.docid 'root'"/>
+			 <arg line="-stringparam orc.demo '0'"/>
+			 <arg line="-stringparam section.autolabel '1'"/>
+			 <arg line="-stringparam section.label.includes.component.label '1'"/>
+			 <arg line="-stringparam section.autolabel.max.depth '8'"/>
+			 <arg line="-stringparam highlight.source '1'"/>
+			 <arg line="-stringparam highlight.default.language 'orc'"/>
+			 <arg line="-stringparam highlight.xslthl.config '${xslthl.config}'"/>
+			 <arg line="-xinclude"/>
+			 <arg value="${src.dir}/xsl/html-single.xsl"/>
+			 <arg value="${src.dir}/all.xml"/>
+		 </exec>
+		<!-- Copy the stylesheet to the same directory as the HTML files -->
+		<copy todir="${build.dir}/html">
+			<fileset dir="css">
+				<include name="style.css" />
+			</fileset>
+		</copy>
+	</target>
+		
+	<!--
+      - target:  build-html-single
+      -->
+	<!--
 	<target name="build-html-single" depends="xinclude" description="Generates HTML files from DocBook XML">
-		<xslt style="${src.dir}/xsl/orc.xsl" extension=".html" 
+		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html" 
 				basedir="${src.dir}" destdir="${build.dir}/html">
 			<include name="all.xml" />
 			<classpath refid="xalan.classpath" />
@@ -145,20 +186,23 @@
 			<param name="section.label.includes.component.label" expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
 			
-			<param name="target.database.document" expression="${database.olink.dir}/olinkdb.xml" />
-			<param name="current.docid" expression="root" />
-			
 			<param name="highlight.source" expression="1"/>
 			<param name="highlight.default.language" expression="orc"/>
 			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
+			
+			<param name="target.database.document" expression="${database.olink.dir}/olinkdb.xml" />
+			<param name="current.docid" expression="root" />
 		</xslt>
+	-->
 		<!-- Copy the stylesheet to the same directory as the HTML files -->
+	<!--
 		<copy todir="${build.dir}/html">
 			<fileset dir="css">
 				<include name="style.css" />
 			</fileset>
 		</copy>
 	</target>
+	-->
 	
 	<!--
 	  - target:  rm-build-html-single
@@ -171,6 +215,7 @@
 			 <arg line="--output '${build.dir}/html/refmanual/refmanual.html'"/>
 			 <arg line="--stringparam target.database.document '../../${database.olink.dir}/olinkdb.xml'"/>
 			 <arg line="--stringparam current.docid 'refmanual'"/>
+			 <arg line="--stringparam chapter.autolabel '0'" />
 			 <arg line="--stringparam orc.demo '0'"/>
 			 <arg line="--stringparam section.label.includes.component.label '1'"/>
 			 <arg line="--stringparam section.autolabel.max.depth '8'"/>
@@ -178,7 +223,7 @@
 			 <arg line="--stringparam highlight.default.language 'orc'"/>
 			 <arg line="--stringparam highlight.xslthl.config '${xslthl.config}'"/>
 			 <arg line="--xinclude"/>
-			 <arg value="${src.dir}/xsl/orc.xsl"/>
+			 <arg value="${src.dir}/xsl/html-single.xsl"/>
 			 <arg value="${src.dir}/refmanual/refmanual.xml"/>
 		 </exec>
 		<!-- Copy the stylesheet to the same directory as the HTML files -->
@@ -305,7 +350,6 @@ processor by defining 'disable.xsltproc' property.
     </echo>
   </target>
 	
-	<!-- Add some way to fail build here -->
 	<!-- Build also needs to fail if an olink fails -->
 	
 	<!--
@@ -313,16 +357,14 @@ processor by defining 'disable.xsltproc' property.
     -->
 	<target name="displayXsltProcessorNotFound"
           unless="tmp:xsltproc.available">
-    <echo>
-    
+	<fail message="
 #####################################################
 XSLTProc has not been found installed on your system.
 The Orc documentation cannot be properly built.
 Please install xsltproc and make sure it is in your
 system environment path.
 #####################################################
-
-    </echo>
+		"></fail>
   </target>
 
 </project>
