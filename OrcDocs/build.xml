@@ -5,6 +5,9 @@
   - at http://www.ibm.com/developerworks/xml/library/os-eclipse-docbook/index.html
   -
   -->
+
+<!-- NOTE THIS VERSION REQUIRES XSLTPROC TO BUILD SUCCESSFULLY -->
+
 <project name="docbook-src" default="all">
 
 	<description>
@@ -61,7 +64,7 @@
 	<!--
 	  - target:  test
 	  -->
-	<target name="test" depends="clean,xsltprocessor,olinks,build-html-single,rm-build-html-single" description="Test build for modifications.">
+	<target name="test" depends="clean,xsltprocessor,olinks,build-html-single,rm-build-html-single,rm-build-html-chunk" description="Test build for modifications.">
 		<echo message="Test build complete" />
 	</target>
 	
@@ -138,7 +141,42 @@
 			</fileset>
 		</copy>
 	</target>
-
+	
+	<!--
+      - target:  rm-build-html-chunk
+      -->
+	<target name="rm-build-html-chunk" depends="xinclude" 
+		description="Generates chunked HTML files for reference manual"
+		if="tmp:xsltproc.available">
+		<property environment="env"/>
+		 <exec executable="xsltproc${executable.file.extension}">
+			 <arg line="--output '${build.dir}/html/refmanual/refmanual.html'"/>
+			 <arg line="--stringparam target.database.document '../../${database.olink.dir}/olinkdb.xml'"/>
+			 <arg line="--stringparam current.docid 'refmanual'"/>
+			 <arg line="--stringparam chapter.autolabel '0'" />
+			 <arg line="--stringparam orc.demo '0'"/>
+			 <arg line="--stringparam generate.toc 'book toc'"/>
+			 <arg line="--stringparam section.label.includes.component.label '1'"/>
+			 <arg line="--stringparam section.autolabel.max.depth '8'"/>
+			 <arg line="--stringparam chunk.quietly '1'"/>
+			 <arg line="--stringparam chunk.section.depth '0'"/>
+			 <arg line="--stringparam highlight.source '1'"/>
+			 <arg line="--stringparam highlight.default.language 'orc'"/>
+			 <arg line="--stringparam highlight.xslthl.config '${xslthl.config}'"/>
+			 <arg line="--xinclude"/>
+			 <arg value="${src.dir}/xsl/html-chunk.xsl"/>
+			 <arg value="${src.dir}/refmanual/refmanual.xml"/>
+		 </exec>
+		<!-- Delete this because it confuses build-html-single otherwise -->
+		<!-- <delete file="${build.dir}/html/all.html" /> -->
+		<!-- Copy the stylesheet to the same directory as the HTML files -->
+		<copy todir="${build.dir}/html/refmanual">
+			<fileset dir="css">
+				<include name="style.css" />
+			</fileset>
+		</copy>
+	</target>
+	
 	<!-- Using xsltproc instead of xalan kills all the colors in highlighting,
 		fix that -->
 	<!--
@@ -149,17 +187,17 @@
 		if="tmp:xsltproc.available">
 		<property environment="env"/>
 		 <exec executable="xsltproc${executable.file.extension}">
-			 <arg line="-output '${build.dir}/html/all.html'"/>
-			 <arg line="-stringparam target.database.document '../../${database.olink.dir}/olinkdb.xml'"/>
-			 <arg line="-stringparam current.docid 'root'"/>
-			 <arg line="-stringparam orc.demo '0'"/>
-			 <arg line="-stringparam section.autolabel '1'"/>
-			 <arg line="-stringparam section.label.includes.component.label '1'"/>
-			 <arg line="-stringparam section.autolabel.max.depth '8'"/>
-			 <arg line="-stringparam highlight.source '1'"/>
-			 <arg line="-stringparam highlight.default.language 'orc'"/>
-			 <arg line="-stringparam highlight.xslthl.config '${xslthl.config}'"/>
-			 <arg line="-xinclude"/>
+			 <arg line="--output '${build.dir}/html/all.html'"/>
+			 <arg line="--stringparam target.database.document '../${database.olink.dir}/olinkdb.xml'"/>
+			 <arg line="--stringparam current.docid 'root'"/>
+			 <arg line="--stringparam orc.demo '1'"/>
+			 <arg line="--stringparam section.autolabel '1'"/>
+			 <arg line="--stringparam section.label.includes.component.label '1'"/>
+			 <arg line="--stringparam section.autolabel.max.depth '8'"/>
+			 <arg line="--stringparam highlight.source '1'"/>
+			 <arg line="--stringparam highlight.default.language 'orc'"/>
+			 <arg line="--stringparam highlight.xslthl.config '${xslthl.config}'"/>
+			 <arg line="--xinclude"/>
 			 <arg value="${src.dir}/xsl/html-single.xsl"/>
 			 <arg value="${src.dir}/all.xml"/>
 		 </exec>
@@ -170,38 +208,6 @@
 			</fileset>
 		</copy>
 	</target>
-		
-	<!--
-      - target:  build-html-single
-      -->
-	<!--
-	<target name="build-html-single" depends="xinclude" description="Generates HTML files from DocBook XML">
-		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html" 
-				basedir="${src.dir}" destdir="${build.dir}/html">
-			<include name="all.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="orc.demo" expression="0"/>
-			<param name="section.autolabel" expression="1"/>
-			<param name="section.label.includes.component.label" expression="1"/>
-			<param name="section.autolabel.max.depth" expression="8"/>
-			
-			<param name="highlight.source" expression="1"/>
-			<param name="highlight.default.language" expression="orc"/>
-			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
-			
-			<param name="target.database.document" expression="${database.olink.dir}/olinkdb.xml" />
-			<param name="current.docid" expression="root" />
-		</xslt>
-	-->
-		<!-- Copy the stylesheet to the same directory as the HTML files -->
-	<!--
-		<copy todir="${build.dir}/html">
-			<fileset dir="css">
-				<include name="style.css" />
-			</fileset>
-		</copy>
-	</target>
-	-->
 	
 	<!--
 	  - target:  rm-build-html-single
@@ -215,7 +221,7 @@
 			 <arg line="--stringparam target.database.document '../../${database.olink.dir}/olinkdb.xml'"/>
 			 <arg line="--stringparam current.docid 'refmanual'"/>
 			 <arg line="--stringparam chapter.autolabel '0'" />
-			 <arg line="--stringparam orc.demo '0'"/>
+			 <arg line="--stringparam orc.demo '1'"/>
 			 <arg line="--stringparam generate.toc 'book toc'"/>
 			 <arg line="--stringparam section.label.includes.component.label '1'"/>
 			 <arg line="--stringparam section.autolabel.max.depth '8'"/>

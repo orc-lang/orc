@@ -3,9 +3,9 @@
 <!-- Double check these file paths are correct if you're having problems -->
 <!-- These got altered to absolute paths for testing, make them relative again -->
 <!DOCTYPE targetset
-   SYSTEM "file:///home/bmccord/workspace/OrcDocs/docbook-xsl/common/targetdatabase.dtd" [
-   <!ENTITY ugtargets SYSTEM "file:///home/bmccord/workspace/OrcDocs/build/html/ugtargets.db">
-   <!ENTITY rmtargets SYSTEM "file:///home/bmccord/workspace/OrcDocs/build/html/refmanual/rmtargets.db">
+   SYSTEM "file:///home/brian/workspace/OrcDocs/docbook-xsl/common/targetdatabase.dtd" [
+   <!ENTITY ugtargets SYSTEM "file:///home/brian/workspace/OrcDocs/build/html/ugtargets.db">
+   <!ENTITY rmtargets SYSTEM "file:///home/brian/workspace/OrcDocs/build/html/refmanual/rmtargets.db">
    <!ENTITY uguri SYSTEM "all.html">
    <!ENTITY rmuri SYSTEM "refmanual.html">
    ]>
@@ -22,15 +22,12 @@
          <dir name="OrcDocs">
             <dir name="build">
                <dir name="html">
-				   <!-- TODO Set the URI parameter to dynamically changed as mentioned at
-					   http://www.sagehill.net/docbookxsl/Olinking.html -->
-                  <document targetdoc="root"
-					  baseuri="all.html">
+				   <!-- TODO Figure out how to dynamicall change URI for chunking -->
+                  <document targetdoc="root" baseuri="all.html"> 
                      &ugtargets;
                   </document>
 				  <dir name="refmanual">
-					  <document targetdoc="refmanual"
-						  baseuri="refmanual.html">
+					  <document targetdoc="refmanual" baseuri="refmanual.html">
 						 &rmtargets;
 					  </document>
 				  </dir>
