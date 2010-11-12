@@ -78,6 +78,7 @@
 		 <exec executable="xsltproc${executable.file.extension}">
 			 <arg line="--stringparam collect.xref.targets 'only'"/>
 			 <arg line="--stringparam targets.filename '${build.dir}/html/ugtargets.db'"/>
+			 <arg line="--stringparam user.dir '${user.dir}'"/>
 			 <arg value="${src.dir}/xsl/orc.xsl"/>
 			 <arg value="${src.dir}/root.xml"/>
 		 </exec>
@@ -85,6 +86,7 @@
 		 <exec executable="xsltproc${executable.file.extension}">
 			 <arg line="--stringparam collect.xref.targets 'only'"/>
 			 <arg line="--stringparam targets.filename '${build.dir}/html/refmanual/rmtargets.db'"/>
+			 <arg line="--stringparam user.dir '${user.dir}'"/>
 			 <arg value="${src.dir}/xsl/orc.xsl"/>
 			 <arg value="${src.dir}/refmanual/refmanual.xml"/>
 		 </exec>
@@ -153,14 +155,14 @@
 			 <arg line="--output '${build.dir}/html/refmanual/refmanual.html'"/>
 			 <arg line="--stringparam target.database.document '../../${database.olink.dir}/olinkdb.xml'"/>
 			 <arg line="--stringparam current.docid 'refmanual'"/>
-			 <arg line="--stringparam chapter.autolabel '0'" />
-			 <arg line="--stringparam orc.demo '0'"/>
+			 <arg line="--param chapter.autolabel 0" />
+			 <arg line="--param orc.demo 1"/>
 			 <arg line="--stringparam generate.toc 'book toc'"/>
-			 <arg line="--stringparam section.label.includes.component.label '1'"/>
-			 <arg line="--stringparam section.autolabel.max.depth '8'"/>
-			 <arg line="--stringparam chunk.quietly '1'"/>
-			 <arg line="--stringparam chunk.section.depth '0'"/>
-			 <arg line="--stringparam highlight.source '1'"/>
+			 <arg line="--param section.label.includes.component.label 1"/>
+			 <arg line="--param section.autolabel.max.depth 8"/>
+			 <arg line="--param chunk.quietly 1"/>
+			 <arg line="--param chunk.section.depth 0"/>
+			 <arg line="--param highlight.source 1"/>
 			 <arg line="--stringparam highlight.default.language 'orc'"/>
 			 <arg line="--stringparam highlight.xslthl.config '${xslthl.config}'"/>
 			 <arg line="--xinclude"/>
@@ -187,27 +189,52 @@
 		if="tmp:xsltproc.available">
 		<property environment="env"/>
 		 <exec executable="xsltproc${executable.file.extension}">
-			 <arg line="--output '${build.dir}/html/all.html'"/>
-			 <arg line="--stringparam target.database.document '../${database.olink.dir}/olinkdb.xml'"/>
-			 <arg line="--stringparam current.docid 'root'"/>
-			 <arg line="--stringparam orc.demo '1'"/>
-			 <arg line="--stringparam section.autolabel '1'"/>
-			 <arg line="--stringparam section.label.includes.component.label '1'"/>
-			 <arg line="--stringparam section.autolabel.max.depth '8'"/>
-			 <arg line="--stringparam highlight.source '1'"/>
-			 <arg line="--stringparam highlight.default.language 'orc'"/>
-			 <arg line="--stringparam highlight.xslthl.config '${xslthl.config}'"/>
-			 <arg line="--xinclude"/>
+			 <arg line="-output '${build.dir}/html/all.html'"/>
+			 <arg line="-stringparam target.database.document '../${database.olink.dir}/olinkdb.xml'"/>
+			 <arg line="-stringparam current.docid 'root'"/>
+			 <arg line="-param orc.demo 1"/>
+			 <arg line="-param section.autolabel 1"/>
+			 <arg line="-param section.label.includes.component.label 1"/>
+			 <arg line="-param section.autolabel.max.depth 8"/>
+			 <arg line="-param highlight.source 1"/>
+			 <arg line="-stringparam highlight.default.language 'orc'"/>
+			 <arg line="-stringparam highlight.xslthl.config '${xslthl.config}'"/>
+			 <arg line="-xinclude"/>
 			 <arg value="${src.dir}/xsl/html-single.xsl"/>
 			 <arg value="${src.dir}/all.xml"/>
 		 </exec>
-		<!-- Copy the stylesheet to the same directory as the HTML files -->
 		<copy todir="${build.dir}/html">
 			<fileset dir="css">
 				<include name="style.css" />
 			</fileset>
 		</copy>
 	</target>
+	
+	<!--
+	<target name="build-html-single" depends="xinclude" description="Generates HTML files from DocBook XML">
+		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html" 
+				basedir="${src.dir}" destdir="${build.dir}/html">
+			<include name="all.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="orc.demo" expression="0"/>
+			<param name="section.autolabel" expression="1"/>
+			<param name="section.label.includes.component.label" expression="1"/>
+			<param name="section.autolabel.max.depth" expression="8"/>
+			
+			<param name="target.database.document" expression="../${database.olink.dir}/olinkdb.xml"/>
+			<param name="current.docid" expression="root"/> 
+			
+			<param name="highlight.source" expression="1"/>
+			<param name="highlight.default.language" expression="orc"/>
+			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
+		</xslt>
+		<copy todir="${build.dir}/html">
+			<fileset dir="css">
+				<include name="style.css" />
+			</fileset>
+		</copy>
+	</target>
+	-->
 	
 	<!--
 	  - target:  rm-build-html-single
@@ -220,12 +247,12 @@
 			 <arg line="--output '${build.dir}/html/refmanual/refmanual.html'"/>
 			 <arg line="--stringparam target.database.document '../../${database.olink.dir}/olinkdb.xml'"/>
 			 <arg line="--stringparam current.docid 'refmanual'"/>
-			 <arg line="--stringparam chapter.autolabel '0'" />
-			 <arg line="--stringparam orc.demo '1'"/>
+			 <arg line="--param chapter.autolabel 0" />
+			 <arg line="--param orc.demo 1"/>
 			 <arg line="--stringparam generate.toc 'book toc'"/>
-			 <arg line="--stringparam section.label.includes.component.label '1'"/>
-			 <arg line="--stringparam section.autolabel.max.depth '8'"/>
-			 <arg line="--stringparam highlight.source '1'"/>
+			 <arg line="--param section.label.includes.component.label 1"/>
+			 <arg line="--param section.autolabel.max.depth 8"/>
+			 <arg line="--param highlight.source 1"/>
 			 <arg line="--stringparam highlight.default.language 'orc'"/>
 			 <arg line="--stringparam highlight.xslthl.config '${xslthl.config}'"/>
 			 <arg line="--xinclude"/>
@@ -239,6 +266,33 @@
 			</fileset>
 		</copy>
 	</target>
+
+	<!--
+	<target name="rm-build-html-single" depends="xinclude" description="Generates HTML files from DocBook XML">
+		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html" 
+				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual">
+			<include name="refmanual.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="orc.demo" expression="0"/>
+			<param name="section.autolabel" expression="1"/>
+			<param name="section.label.includes.component.label" expression="1"/>
+			<param name="section.autolabel.max.depth" expression="8"/>
+			
+			<param name="target.database.document" expression="../${database.olink.dir}/olinkdb.xml"/>
+			<param name="current.docid" expression="root"/>
+			<param name="generate.toc" expression="book toc"/>
+			
+			<param name="highlight.source" expression="1"/>
+			<param name="highlight.default.language" expression="orc"/>
+			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
+		</xslt>
+		<copy todir="${build.dir}/html">
+			<fileset dir="css">
+				<include name="style.css" />
+			</fileset>
+		</copy>
+	</target>
+	-->
 	
 	<!--
 	    - target:  build-pdf
