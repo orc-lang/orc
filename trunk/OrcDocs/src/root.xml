@@ -87,7 +87,7 @@ result</firstterm> of the expression.
 
 <para>
 In the following subsections we introduce the concepts of Cor. First, we talk about
-simple constants, such as numbers and truth values, and the operations that we can perform
+simple <firstterm id="terms.constant">constants</firstterm>, such as numbers and truth values, and the operations that we can perform
 on those values. Then we introduce conditionals (<code>if then else</code>). Then we 
 introduce variables and binding, as a way to give a name to the value of an expression. 
 After that, we talk about constructing data structures, and examining those structures
@@ -1617,6 +1617,11 @@ It is also commutative: F <code>|</code> G is equivalent to G <code>|</code> F.
 ]]></programlisting>
 </para>  
 
+<para>For more information, see the 
+	<olink targetdoc="refmanual" targetptr="ref.combinators.parallel">
+	Reference Manual (Parallel Combinator)	
+	</olink>.
+</para>
 
 </section>
 
@@ -2361,7 +2366,7 @@ datatypes.
 
 <section><title>Special call forms</title>
 
-<section><title>The <code>.</code> notation</title>
+<section id="special.dot"><title>The <code>.</code> notation</title>
 
 <para>
 In many object-oriented programming languages, one calls a method or accesses a field of an
