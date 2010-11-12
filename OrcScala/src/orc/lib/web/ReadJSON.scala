@@ -81,7 +81,11 @@ object OrcJSONParser extends JavaTokenParsers {
     def parse(json: String): Option[AnyRef] = {
       parseAll[AnyRef](root, new java.io.StringReader(json)) match {
         case Success(v,_) => Some(v)
-        case n: NoSuccess => System.err.println("JSON parsing failed: " + n.msg) ; None
+        case n: NoSuccess => {
+          System.err.println("JSON parsing failed: " + n.msg)
+          System.err.println(n.next.pos.longString)
+          None
+        }
       }
     }
     
