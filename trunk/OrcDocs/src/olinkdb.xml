@@ -3,9 +3,9 @@
 <!-- Double check these file paths are correct if you're having problems -->
 <!-- These got altered to absolute paths for testing, make them relative again -->
 <!DOCTYPE targetset
-   SYSTEM "file://home/brian/workspace/OrcDocs/docbook-xsl/common/targetdatabase.dtd" [
-   <!ENTITY ugtargets SYSTEM "file://home/brian/workspace/OrcDocs/build/html/ugtargets.db">
-   <!ENTITY rmtargets SYSTEM "file://home/brian/workspace/OrcDocs/build/html/refmanual/rmtargets.db">
+   SYSTEM "file:///home/bmccord/workspace/OrcDocs/docbook-xsl/common/targetdatabase.dtd" [
+   <!ENTITY ugtargets SYSTEM "file:///home/bmccord/workspace/OrcDocs/build/html/ugtargets.db">
+   <!ENTITY rmtargets SYSTEM "file:///home/bmccord/workspace/OrcDocs/build/html/refmanual/rmtargets.db">
    <!ENTITY uguri SYSTEM "all.html">
    <!ENTITY rmuri SYSTEM "refmanual.html">
    ]>

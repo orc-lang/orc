@@ -78,7 +78,7 @@ familiar with many of the key concepts of Cor.
 </para>
 
 <para>
-A Cor program is an <firstterm>expression</firstterm>. Cor expressions are built
+A Cor program is an <firstterm id="terms.expression">expression</firstterm>. Cor expressions are built
 up recursively from smaller expressions. Cor <firstterm>evaluates</firstterm> an expression
 to reduce it to some simple <firstterm>value</firstterm> which cannot be evaluated further, 
 for example a list of numbers or a Boolean truth value. This value is called the <firstterm>
@@ -1224,7 +1224,7 @@ called from an Orc program.
 As in Cor, an Orc program is an  <firstterm>expression</firstterm>; Orc expressions are built 
 up recursively from smaller expressions. Orc is a superset of Cor, i.e., all Cor expressions are 
 also Orc expressions. Orc expressions are <firstterm>executed</firstterm>, rather than evaluated; 
-an execution may call external services and <firstterm>publish</firstterm> some number of 
+an execution may call external services and <firstterm id="terms.publish">publish</firstterm> some number of 
 values (possibly zero). Different executions of the same expression may have completely different
 behaviors; they may call different services, may receive different responses from the same site,
 and may publish different values. Expressions in the functional subset, though, will display
@@ -1472,7 +1472,7 @@ A call to a site has exactly one of the following effects:
 In the last two cases, the site call is said to be silent. However, unlike a silent expression in Cor, 
 a silent site call in Orc might perform some meaningful computation or communication; silence does 
 not necessarily indicate an error. Since halted site calls and pending site calls are both silent,
-they cannot usually be distinguished from each other; only the <link linkend="combinator.otherwise">
+they cannot usually be distinguished from each other; only the <link linkend="combinators.otherwise">
 otherwise combinator</link> can tell the difference. 
 </para>
 
@@ -1562,9 +1562,9 @@ different aspect of concurrency. Syntactically, the combinators are written infi
 lower precedence than operators, but higher precedence than conditionals or declarations.
 </para>
 
-<section><title>The parallel combinator</title>
+<section id="combinators.parallel"><title>The parallel combinator</title>
 
-<frag id="combinators.parallel">
+<frag id="combinators.parallel.frag.summary">
 <para>
 Orc's simplest combinator is <code>|</code>, the parallel combinator. Orc executes
 the expression F <code>|</code> G, where F and G are Orc expressions, by executing 
@@ -1574,7 +1574,7 @@ may be published in arbitrary order.
 </para>   
 </frag>
 
-
+<frag id="combinators.parallel.frag.examples">
 <para>
 <programlisting language="orc-demo"><![CDATA[
 -- Publish 1 and 2 in parallel  
@@ -1598,6 +1598,7 @@ may be published in arbitrary order.
 Google("cupcake") | Yahoo("cupcake")
 ]]></programlisting>
 </para>  
+</frag>
 
 <para>
 The parallel combinator is fully associative: (F <code>|</code> G) <code>|</code> H and
@@ -1744,7 +1745,7 @@ them together.
 </section>
 
 
-<section><title>The pruning combinator</title>
+<section id="combinators.pruning"><title>The pruning combinator</title>
 
 <para>
 The pruning combinator, written F<code><![CDATA[ <x< ]]></code>G, allows us to block 
@@ -1831,7 +1832,7 @@ F<code><![CDATA[ <x< (]]></code>G <code>|</code> H<code>)</code>.
 </section>
 
 
-<section id="combinator.otherwise"><title>The otherwise combinator</title>
+<section id="combinators.otherwise"><title>The otherwise combinator</title>
 
 <para>
 Orc has a fourth concurrency combinator: the <firstterm>otherwise</firstterm> combinator,
