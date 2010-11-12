@@ -18,7 +18,6 @@
 	<property name="docbook.xsl.dir" value="docbook-xsl" />
 	<property name="build.dir" value="build" />
 	<property name="src.dir" value="src" />
-	<!-- Changed xslthl.config to absolute to accomodate it's URL requirements, need to change that -->
 	<property name="xslthl.config" value="file://${user.dir}/${src.dir}/highlighting/xslthl-config.xml" />
 	<property name="xalan.lib.dir" value="lib" />
 	
@@ -62,7 +61,7 @@
 	<!--
 	  - target:  test
 	  -->
-	<target name="test" depends="xsltprocessor,olinks,build-html-single,rm-build-html-single" description="Test build for modifications.">
+	<target name="test" depends="clean,xsltprocessor,olinks,build-html-single,rm-build-html-single" description="Test build for modifications.">
 		<echo message="Test build complete" />
 	</target>
 	
@@ -217,6 +216,7 @@
 			 <arg line="--stringparam current.docid 'refmanual'"/>
 			 <arg line="--stringparam chapter.autolabel '0'" />
 			 <arg line="--stringparam orc.demo '0'"/>
+			 <arg line="--stringparam generate.toc 'book toc'"/>
 			 <arg line="--stringparam section.label.includes.component.label '1'"/>
 			 <arg line="--stringparam section.autolabel.max.depth '8'"/>
 			 <arg line="--stringparam highlight.source '1'"/>
