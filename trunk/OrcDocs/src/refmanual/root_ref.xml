@@ -8,8 +8,6 @@
 	xmlns:xi="http://www.w3.org/2001/XInclude">
 <title>Orc Reference Guide v<xi:include href="../../VERSION" parse="text"/></title>
 	
-	<!-- Add in navigation?  Use the standard chunking stuff? -->
-	
 	<!-- Parallel Combinator -->
    <chapter id="ref.combinators.parallel">
       <title>Parallel Combinator</title>
@@ -36,27 +34,27 @@
 	  <section id="ref.combinators.parallel.examples">
 		  <title>Examples</title>
 		  <para>
-			<programlisting language="orc-demo"><![CDATA[
-				-- Publish 1 and 2 in parallel  
-				1 | 1+1
+<programlisting language="orc-demo"><![CDATA[
+-- Publish 1 and 2 in parallel  
+1 | 1+1
 
-				-- Note the publication order may be either 1 then 2
-				-- or 2 then 1
-				]]></programlisting>
+-- Note the publication order may be either 1 then 2
+-- or 2 then 1
+]]></programlisting>
 		  </para>  
 
 		  <para>
-				<programlisting><![CDATA[
-				{- 
-				 Access two search sites, Google and Yahoo, in parallel.
+<programlisting><![CDATA[
+{- 
+ Access two search sites, Google and Yahoo, in parallel.
 
-				 Publish any results they return.
-  
-				 Since each call may publish a value, the expression
-				 may publish up to two values.
-				-}  
-				Google("cupcake") | Yahoo("cupcake")
-				]]></programlisting>
+ Publish any results they return.
+
+ Since each call may publish a value, the expression
+ may publish up to two values.
+-}  
+Google("cupcake") | Yahoo("cupcake")
+]]></programlisting>
 		  </para>  
 	  </section>
 	  <section id="ref.combinators.parallel.links">
