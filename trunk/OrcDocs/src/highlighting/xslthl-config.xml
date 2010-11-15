@@ -1,4 +1,4 @@
-<?xml version='1.0'?>asdfae fwef zdfbv
+<?xml version='1.0'?>
 <xslthl-config>
 	<highlighter id="orc" file="orc-hl.xml" />
 	<highlighter id="java" file="java-hl.xml" />

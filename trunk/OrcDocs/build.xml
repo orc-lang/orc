@@ -6,8 +6,6 @@
   -
   -->
 
-<!-- NOTE THIS VERSION REQUIRES XSLTPROC TO BUILD SUCCESSFULLY -->
-
 <project name="docbook-src" default="all">
 
 	<description>
@@ -23,10 +21,6 @@
 	<property name="src.dir" value="src" />
 	<property name="xslthl.config" value="file://${user.dir}/${src.dir}/highlighting/xslthl-config.xml" />
 	<property name="xalan.lib.dir" value="lib" />
-	
-	<!--
-	  - Properties that pertain to the reference manual
-	  -->
 	<property name="database.olink.dir" value="${src.dir}" />
 
 	<!--
@@ -45,7 +39,7 @@
 	<!--
 	  - target:  all
 	  -->
-	<target name="all" depends="xsltprocessor,olinks,build-pdf,build-html-chunk,build-html-single,rm-build-html-single" description="Build all documentation" />
+	<target name="all" depends="olinks,build-pdf,build-html-chunk,build-html-single,rm-build-html-single" description="Build all documentation" />
 	
 	<!--
       - target:  usage
@@ -64,33 +58,34 @@
 	<!--
 	  - target:  test
 	  -->
-	<target name="test" depends="clean,xsltprocessor,olinks,build-html-single,rm-build-html-single,rm-build-html-chunk" description="Test build for modifications.">
+	<target name="test" depends="clean,olinks,build-html-single,rm-build-html-single" description="Test build for modifications.">
 		<echo message="Test build complete" />
 	</target>
 	
 	<!--
 	  - target:  olinks
 	  -->
-	<target name="olinks" description="Builds the olink databases for mutual linking">
-		<echo message="Creating olink databases..." />
-		<property environment="env"/>
-		 <!-- Create database of links in user guide -->
-		 <exec executable="xsltproc${executable.file.extension}">
-			 <arg line="--stringparam collect.xref.targets 'only'"/>
-			 <arg line="--stringparam targets.filename '${build.dir}/html/ugtargets.db'"/>
-			 <arg line="--stringparam user.dir '${user.dir}'"/>
-			 <arg value="${src.dir}/xsl/orc.xsl"/>
-			 <arg value="${src.dir}/root.xml"/>
-		 </exec>
-		<!-- Create database of links in reference manual -->
-		 <exec executable="xsltproc${executable.file.extension}">
-			 <arg line="--stringparam collect.xref.targets 'only'"/>
-			 <arg line="--stringparam targets.filename '${build.dir}/html/refmanual/rmtargets.db'"/>
-			 <arg line="--stringparam user.dir '${user.dir}'"/>
-			 <arg value="${src.dir}/xsl/orc.xsl"/>
-			 <arg value="${src.dir}/refmanual/refmanual.xml"/>
-		 </exec>
-		</target>
+	<target name="olinks" description="Builds the olink databases for mutual linking between documents">
+		<echo message="Creating olink databases..."/>
+		<!-- Create database of links for user guide -->
+		<xslt style="${src.dir}/xsl/orc.xsl"
+				basedir="${src.dir}" destdir="${build.dir}/html">
+			<include name="root.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="ugtargets.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- Create database of links for reference manual -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual">
+			<include name="refmanual.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="rmtargets.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+	</target>
 		
 	<!--
       - target:  depends
@@ -143,35 +138,32 @@
 			</fileset>
 		</copy>
 	</target>
-	
+		
 	<!--
       - target:  rm-build-html-chunk
       -->
-	<target name="rm-build-html-chunk" depends="xinclude" 
-		description="Generates chunked HTML files for reference manual"
-		if="tmp:xsltproc.available">
-		<property environment="env"/>
-		 <exec executable="xsltproc${executable.file.extension}">
-			 <arg line="--output '${build.dir}/html/refmanual/refmanual.html'"/>
-			 <arg line="--stringparam target.database.document '../../${database.olink.dir}/olinkdb.xml'"/>
-			 <arg line="--stringparam current.docid 'refmanual'"/>
-			 <arg line="--param chapter.autolabel 0" />
-			 <arg line="--param orc.demo 1"/>
-			 <arg line="--stringparam generate.toc 'book toc'"/>
-			 <arg line="--param section.label.includes.component.label 1"/>
-			 <arg line="--param section.autolabel.max.depth 8"/>
-			 <arg line="--param chunk.quietly 1"/>
-			 <arg line="--param chunk.section.depth 0"/>
-			 <arg line="--param highlight.source 1"/>
-			 <arg line="--stringparam highlight.default.language 'orc'"/>
-			 <arg line="--stringparam highlight.xslthl.config '${xslthl.config}'"/>
-			 <arg line="--xinclude"/>
-			 <arg value="${src.dir}/xsl/html-chunk.xsl"/>
-			 <arg value="${src.dir}/refmanual/refmanual.xml"/>
-		 </exec>
-		<!-- Delete this because it confuses build-html-single otherwise -->
-		<!-- <delete file="${build.dir}/html/all.html" /> -->
-		<!-- Copy the stylesheet to the same directory as the HTML files -->
+	<target name="rm-build-html-chunk" depends="xinclude" description="Generates chunked Reference Manual HTML doc">
+		<xslt style="${src.dir}/xsl/html-chunk.xsl" extension=".html" 
+				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual">
+			<include name="refmanual.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="orc.demo" expression="0"/>
+			<param name="section.autolabel" expression="1"/>
+			<param name="section.label.includes.component.label" expression="1"/>
+			<param name="section.autolabel.max.depth" expression="8"/>
+			<param name="chapter.autolabel" expression="0"/>
+			<param name="generate.toc" expression="book toc"/>
+			
+			<param name="chunk.quietly" expression="1"/>
+			<param name="chunk.section.depth" expression="0"/>
+			
+			<param name="target.database.document" expression="../${database.olink.dir}/olinkdb.xml"/>
+			<param name="current.docid" expression="root"/> 
+			
+			<param name="highlight.source" expression="1"/>
+			<param name="highlight.default.language" expression="orc"/>
+			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
+		</xslt>
 		<copy todir="${build.dir}/html/refmanual">
 			<fileset dir="css">
 				<include name="style.css" />
@@ -179,39 +171,10 @@
 		</copy>
 	</target>
 	
-	<!-- Using xsltproc instead of xalan kills all the colors in highlighting,
-		fix that -->
 	<!--
       - target:  build-html-single
       -->
-	<target name="build-html-single" depends="xinclude" 
-		description="Generates HTML files for user guide"
-		if="tmp:xsltproc.available">
-		<property environment="env"/>
-		 <exec executable="xsltproc${executable.file.extension}">
-			 <arg line="-output '${build.dir}/html/all.html'"/>
-			 <arg line="-stringparam target.database.document '../${database.olink.dir}/olinkdb.xml'"/>
-			 <arg line="-stringparam current.docid 'root'"/>
-			 <arg line="-param orc.demo 1"/>
-			 <arg line="-param section.autolabel 1"/>
-			 <arg line="-param section.label.includes.component.label 1"/>
-			 <arg line="-param section.autolabel.max.depth 8"/>
-			 <arg line="-param highlight.source 1"/>
-			 <arg line="-stringparam highlight.default.language 'orc'"/>
-			 <arg line="-stringparam highlight.xslthl.config '${xslthl.config}'"/>
-			 <arg line="-xinclude"/>
-			 <arg value="${src.dir}/xsl/html-single.xsl"/>
-			 <arg value="${src.dir}/all.xml"/>
-		 </exec>
-		<copy todir="${build.dir}/html">
-			<fileset dir="css">
-				<include name="style.css" />
-			</fileset>
-		</copy>
-	</target>
-	
-	<!--
-	<target name="build-html-single" depends="xinclude" description="Generates HTML files from DocBook XML">
+	<target name="build-html-single" depends="xinclude" description="Generates single User Guide HTML doc">
 		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html" 
 				basedir="${src.dir}" destdir="${build.dir}/html">
 			<include name="all.xml" />
@@ -234,41 +197,11 @@
 			</fileset>
 		</copy>
 	</target>
-	-->
-	
+
 	<!--
 	  - target:  rm-build-html-single
 	  -->
-	<target name="rm-build-html-single" depends="xinclude" 
-		description="Generates HTML files for reference manual"
-		if="tmp:xsltproc.available">
-		<property environment="env"/>
-		 <exec executable="xsltproc${executable.file.extension}">
-			 <arg line="--output '${build.dir}/html/refmanual/refmanual.html'"/>
-			 <arg line="--stringparam target.database.document '../../${database.olink.dir}/olinkdb.xml'"/>
-			 <arg line="--stringparam current.docid 'refmanual'"/>
-			 <arg line="--param chapter.autolabel 0" />
-			 <arg line="--param orc.demo 1"/>
-			 <arg line="--stringparam generate.toc 'book toc'"/>
-			 <arg line="--param section.label.includes.component.label 1"/>
-			 <arg line="--param section.autolabel.max.depth 8"/>
-			 <arg line="--param highlight.source 1"/>
-			 <arg line="--stringparam highlight.default.language 'orc'"/>
-			 <arg line="--stringparam highlight.xslthl.config '${xslthl.config}'"/>
-			 <arg line="--xinclude"/>
-			 <arg value="${src.dir}/xsl/html-single.xsl"/>
-			 <arg value="${src.dir}/refmanual/refmanual.xml"/>
-		 </exec>
-		<!-- Copy the stylesheet to the same directory as the HTML files -->
-		<copy todir="${build.dir}/html/refmanual">
-			<fileset dir="css">
-				<include name="style.css" />
-			</fileset>
-		</copy>
-	</target>
-
-	<!--
-	<target name="rm-build-html-single" depends="xinclude" description="Generates HTML files from DocBook XML">
+	<target name="rm-build-html-single" depends="xinclude" description="Generates single Reference Manual HTML doc">
 		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html" 
 				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual">
 			<include name="refmanual.xml" />
@@ -279,8 +212,9 @@
 			<param name="section.autolabel.max.depth" expression="8"/>
 			
 			<param name="target.database.document" expression="../${database.olink.dir}/olinkdb.xml"/>
-			<param name="current.docid" expression="root"/>
+			<param name="current.docid" expression="refmanual"/>
 			<param name="generate.toc" expression="book toc"/>
+			<param name="chapter.autolabel" expression="0"/>
 			
 			<param name="highlight.source" expression="1"/>
 			<param name="highlight.default.language" expression="orc"/>
@@ -292,7 +226,6 @@
 			</fileset>
 		</copy>
 	</target>
-	-->
 	
 	<!--
 	    - target:  build-pdf
@@ -337,7 +270,13 @@
 	        outfile="${build.dir}/pdf/all.pdf" />
 	</target>
 	
+</project>
 	
+	<!-- USE THE BELOW CODE FOR XSLTPROC DETECTION AND APPLICATION -->
+	<!-- NOTE:  Will kill syntax highlighting, and runnable code <> enables xpointer() scheme
+	            Also, because of Ant comment rules, the double dashes in the xsltproc commands
+				below were changed to single dashes.  -->
+		
   <!-- The following code is based on Dawid Weiss' code at
 	http://www.cs.put.poznan.pl/dweiss/xml/projects/ant-docbook-styler/index.xml?lang=en -->
   <!-- ########################################################################## -->
@@ -348,22 +287,29 @@
 	<!--
       - target:  xsltprocessor
       -->
+	<!--
 	<target name="xsltprocessor">
     <property environment="env"/>
-
+	-->
+		
 	<!-- If they are using Windows -->
+	<!--
     <condition  property="executable.file.extension"
                 value=".exe">
             <os family="windows"/>
     </condition>
+	-->
 		
 	<!-- If they are using Unix -->
+	<!--
     <condition  property="executable.file.extension"
                 value="">
             <os family="unix"/>
     </condition>
+	-->
 		
 	<!-- If they are using Mac (this may not be necessary, need to test) -->
+	<!--
     <condition  property="executable.file.extension"
                 value="">
             <os family="mac"/>
@@ -391,15 +337,16 @@
   <antcall target="displayXsltProcessorNotFound" />
 		
   </target>
-
+	-->
+	
   <!--
     - target:  displayXsltProcessorInfo
     -->
+	<!--
 	<target name="displayXsltProcessorInfo"
           if="tmp:xsltproc.available"
           unless="disable.xsltproc">
     <echo>
-    
 #####################################################
 XSLTProc has been found in your path and will be used
 for processing XSLT transformations. If you experience
@@ -409,12 +356,12 @@ processor by defining 'disable.xsltproc' property.
 
     </echo>
   </target>
-	
-	<!-- Build also needs to fail if an olink fails -->
+	-->
 	
 	<!--
     - target:  displayXsltProcessorNotFound
     -->
+	<!--
 	<target name="displayXsltProcessorNotFound"
           unless="tmp:xsltproc.available">
 	<fail message="
@@ -426,5 +373,121 @@ system environment path.
 #####################################################
 		"></fail>
   </target>
+	-->
 
-</project>
+	<!--
+	<target name="olinks" description="Builds the olink databases for mutual linking">
+		<echo message="Creating olink databases..." />
+		<property environment="env"/>
+	-->
+		 <!-- Create database of links in user guide -->
+		<!--
+		 <exec executable="xsltproc${executable.file.extension}">
+			 <arg line="-stringparam collect.xref.targets 'only'"/>
+			 <arg line="-stringparam targets.filename '${build.dir}/html/ugtargets.db'"/>
+			 <arg line="-stringparam user.dir '${user.dir}'"/>
+			 <arg value="${src.dir}/xsl/orc.xsl"/>
+			 <arg value="${src.dir}/root.xml"/>
+		 </exec>
+		-->
+		<!-- Create database of links in reference manual -->
+		<!--
+		 <exec executable="xsltproc${executable.file.extension}">
+			 <arg line="-stringparam collect.xref.targets 'only'"/>
+			 <arg line="-stringparam targets.filename '${build.dir}/html/refmanual/rmtargets.db'"/>
+			 <arg line="-stringparam user.dir '${user.dir}'"/>
+			 <arg value="${src.dir}/xsl/orc.xsl"/>
+			 <arg value="${src.dir}/refmanual/refmanual.xml"/>
+		 </exec>
+		</target>
+		-->
+
+
+	<!--
+	<target name="rm-build-html-chunk" depends="xinclude" 
+		description="Generates chunked HTML files for reference manual"
+		if="tmp:xsltproc.available">
+		<property environment="env"/>
+		 <exec executable="xsltproc${executable.file.extension}">
+			 <arg line="-output '${build.dir}/html/refmanual/refmanual.html'"/>
+			 <arg line="-stringparam target.database.document '../../${database.olink.dir}/olinkdb.xml'"/>
+			 <arg line="-stringparam current.docid 'refmanual'"/>
+			 <arg line="-param chapter.autolabel 0" />
+			 <arg line="-param orc.demo 1"/>
+			 <arg line="-stringparam generate.toc 'book toc'"/>
+			 <arg line="-param section.label.includes.component.label 1"/>
+			 <arg line="-param section.autolabel.max.depth 8"/>
+			 <arg line="-param chunk.quietly 1"/>
+			 <arg line="-param chunk.section.depth 0"/>
+			 <arg line="-param highlight.source 1"/>
+			 <arg line="-stringparam highlight.default.language 'orc'"/>
+			 <arg line="-stringparam highlight.xslthl.config '${xslthl.config}'"/>
+			 <arg line="-xinclude"/>
+			 <arg value="${src.dir}/xsl/html-chunk.xsl"/>
+			 <arg value="${src.dir}/refmanual/refmanual.xml"/>
+		 </exec>
+		<delete file="${build.dir}/html/all.html" />
+		<copy todir="${build.dir}/html/refmanual">
+			<fileset dir="css">
+				<include name="style.css" />
+			</fileset>
+		</copy>
+	</target>
+	-->
+
+<!--
+	<target name="build-html-single" depends="xinclude" 
+		description="Generates HTML files for user guide"
+		if="tmp:xsltproc.available">
+		<property environment="env"/>
+		 <exec executable="xsltproc${executable.file.extension}">
+			 <arg line="-output '${build.dir}/html/all.html'"/>
+			 <arg line="-stringparam target.database.document '../${database.olink.dir}/olinkdb.xml'"/>
+			 <arg line="-stringparam current.docid 'root'"/>
+			 <arg line="-param orc.demo 1"/>
+			 <arg line="-param section.autolabel 1"/>
+			 <arg line="-param section.label.includes.component.label 1"/>
+			 <arg line="-param section.autolabel.max.depth 8"/>
+			 <arg line="-param highlight.source 1"/>
+			 <arg line="-stringparam highlight.default.language 'orc'"/>
+			 <arg line="-stringparam highlight.xslthl.config '${xslthl.config}'"/>
+			 <arg line="-xinclude"/>
+			 <arg value="${src.dir}/xsl/html-single.xsl"/>
+			 <arg value="${src.dir}/all.xml"/>
+		 </exec>
+		<copy todir="${build.dir}/html">
+			<fileset dir="css">
+				<include name="style.css" />
+			</fileset>
+		</copy>
+	</target>
+		-->
+
+<!--
+	<target name="rm-build-html-single" depends="xinclude" 
+		description="Generates HTML files for reference manual"
+		if="tmp:xsltproc.available">
+		<property environment="env"/>
+		 <exec executable="xsltproc${executable.file.extension}">
+			 <arg line="-output '${build.dir}/html/refmanual/refmanual.html'"/>
+			 <arg line="-stringparam target.database.document '../../${database.olink.dir}/olinkdb.xml'"/>
+			 <arg line="-stringparam current.docid 'refmanual'"/>
+			 <arg line="-param chapter.autolabel 0" />
+			 <arg line="-param orc.demo 1"/>
+			 <arg line="-stringparam generate.toc 'book toc'"/>
+			 <arg line="-param section.label.includes.component.label 1"/>
+			 <arg line="-param section.autolabel.max.depth 8"/>
+			 <arg line="-param highlight.source 1"/>
+			 <arg line="-stringparam highlight.default.language 'orc'"/>
+			 <arg line="-stringparam highlight.xslthl.config '${xslthl.config}'"/>
+			 <arg line="-xinclude"/>
+			 <arg value="${src.dir}/xsl/html-single.xsl"/>
+			 <arg value="${src.dir}/refmanual/refmanual.xml"/>
+		 </exec>
+		<copy todir="${build.dir}/html/refmanual">
+			<fileset dir="css">
+				<include name="style.css" />
+			</fileset>
+		</copy>
+	</target>
+	-->
