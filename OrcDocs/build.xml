@@ -6,6 +6,13 @@
   -
   -->
 
+<!--
+  - Known Issues:
+	- (1) Watch the destination directories.  If you change the order of target calls, you
+	- might have to change them, since they are relative.
+	- (2) Ant will only build on files updated since the last build, so I added a hack for the rm
+-->
+
 <project name="docbook-src" default="all">
 
 	<description>
@@ -39,7 +46,8 @@
 	<!--
 	  - target:  all
 	  -->
-	<target name="all" depends="olinks,build-pdf,build-html-chunk,build-html-single,rm-build-html-single" description="Build all documentation" />
+	<target name="all" depends="olinks,build-pdf,build-html-chunk,build-html-single,rm-build-html-single,rm-build-html-chunk" 
+		description="Build all documentation" />
 	
 	<!--
       - target:  usage
@@ -58,7 +66,7 @@
 	<!--
 	  - target:  test
 	  -->
-	<target name="test" depends="clean,olinks,build-html-single,rm-build-html-single" description="Test build for modifications.">
+	<target name="test" depends="clean,olinks,build-html-chunk,rm-build-html-chunk,build-html-single,rm-build-html-single" description="Test build for modifications.">
 		<echo message="Test build complete" />
 	</target>
 	
@@ -79,12 +87,13 @@
 		<!-- Create database of links for reference manual -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
 				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual">
-			<include name="refmanual.xml" />
+			<include name="root_ref.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="rmtargets.db"/>
 			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
+
 	</target>
 		
 	<!--
@@ -114,7 +123,7 @@
 	<!--
       - target:  build-html-chunk
       -->
-	<target name="build-html-chunk" depends="xinclude" description="Generates HTML files from DocBook XML">
+	<target name="build-html-chunk" depends="xinclude" description="Generates chunked User Guide HTML doc">
 		<xslt style="${src.dir}/xsl/html-chunk.xsl" extension=".html" 
 				basedir="${src.dir}" destdir="${build.dir}/html">
 			<include name="all.xml" />
@@ -124,6 +133,9 @@
 			<param name="section.label.includes.component.label" expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
 			<param name="chunk.quietly" expression="1"/>
+			
+			<param name="target.database.document" expression="../${database.olink.dir}/olinkdb.xml"/>
+			<param name="current.docid" expression="root"/> 
 			
 			<param name="highlight.source" expression="1"/>
 			<param name="highlight.default.language" expression="orc"/>
@@ -143,12 +155,16 @@
       - target:  rm-build-html-chunk
       -->
 	<target name="rm-build-html-chunk" depends="xinclude" description="Generates chunked Reference Manual HTML doc">
+		<!-- Hack to make sure the ref manual builds every time -->
+		<!--<copy file="${src.dir}/refmanual/root_ref.xml" tofile="${src.dir}/refmanual/refmanual_chunk.xml"/>-->
+		<!-- Hack to make sure the ref manual builds every time -->
+		<copy file="${src.dir}/refmanual/root_ref.xml" tofile="${src.dir}/refmanual/refmanual.xml"/>
 		<xslt style="${src.dir}/xsl/html-chunk.xsl" extension=".html" 
 				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual">
 			<include name="refmanual.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="orc.demo" expression="0"/>
-			<param name="section.autolabel" expression="1"/>
+			<param name="section.autolabel" expression="0"/>
 			<param name="section.label.includes.component.label" expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
 			<param name="chapter.autolabel" expression="0"/>
@@ -157,13 +173,15 @@
 			<param name="chunk.quietly" expression="1"/>
 			<param name="chunk.section.depth" expression="0"/>
 			
-			<param name="target.database.document" expression="../${database.olink.dir}/olinkdb.xml"/>
-			<param name="current.docid" expression="root"/> 
+			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
+			<param name="current.docid" expression="refmanual"/> 
 			
 			<param name="highlight.source" expression="1"/>
 			<param name="highlight.default.language" expression="orc"/>
 			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
 		</xslt>
+		<!-- Delete this because it confuses rm-build-html-single otherwise -->
+		<delete file="${build.dir}/html/refmanual/refmanual.html" />
 		<copy todir="${build.dir}/html/refmanual">
 			<fileset dir="css">
 				<include name="style.css" />
@@ -179,7 +197,7 @@
 				basedir="${src.dir}" destdir="${build.dir}/html">
 			<include name="all.xml" />
 			<classpath refid="xalan.classpath" />
-			<param name="orc.demo" expression="0"/>
+			<param name="orc.demo" expression="1"/>
 			<param name="section.autolabel" expression="1"/>
 			<param name="section.label.includes.component.label" expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
@@ -202,25 +220,27 @@
 	  - target:  rm-build-html-single
 	  -->
 	<target name="rm-build-html-single" depends="xinclude" description="Generates single Reference Manual HTML doc">
+		<!-- Hack to make sure the ref manual builds every time -->
+		<copy file="${src.dir}/refmanual/root_ref.xml" tofile="${src.dir}/refmanual/refmanual.xml"/>
 		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html" 
 				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual">
 			<include name="refmanual.xml" />
 			<classpath refid="xalan.classpath" />
-			<param name="orc.demo" expression="0"/>
-			<param name="section.autolabel" expression="1"/>
+			<param name="orc.demo" expression="1"/>
+			<param name="section.autolabel" expression="0"/>
 			<param name="section.label.includes.component.label" expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
+			<param name="chapter.autolabel" expression="0"/>
 			
-			<param name="target.database.document" expression="../${database.olink.dir}/olinkdb.xml"/>
+			<param name="target.database.document" expression="file://${user.dir}/${database.olink.dir}/olinkdb.xml"/>
 			<param name="current.docid" expression="refmanual"/>
 			<param name="generate.toc" expression="book toc"/>
-			<param name="chapter.autolabel" expression="0"/>
 			
 			<param name="highlight.source" expression="1"/>
 			<param name="highlight.default.language" expression="orc"/>
 			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
 		</xslt>
-		<copy todir="${build.dir}/html">
+		<copy todir="${build.dir}/html/refmanual">
 			<fileset dir="css">
 				<include name="style.css" />
 			</fileset>
@@ -272,7 +292,7 @@
 	
 </project>
 	
-	<!-- USE THE BELOW CODE FOR XSLTPROC DETECTION AND APPLICATION -->
+	<!-- USE THE CODE BELOW FOR XSLTPROC DETECTION AND APPLICATION -->
 	<!-- NOTE:  Will kill syntax highlighting, and runnable code <> enables xpointer() scheme
 	            Also, because of Ant comment rules, the double dashes in the xsltproc commands
 				below were changed to single dashes.  -->
