@@ -13,11 +13,12 @@ Orc examples must use the "orc" CSS class.
 -->
 <xsl:template match="programlisting[@language='orc-demo']" mode="class.value">orc</xsl:template>
 
-<!-- Include orc.js if desired -->
+<!-- Include orc.js if desired and expand.js -->
 <xsl:template name="user.footer.content">
 <xsl:if test="$orc.demo">
 <script src="/orchard/orc.js" type="text/javascript"></script>
 </xsl:if>
+<script src="file://home/brian/workspace/OrcDocs/src/scripts/expand.js" type="text/javascript"></script>
 </xsl:template>
 
 <!-- Include stylsheets, including orc.css if desired -->
