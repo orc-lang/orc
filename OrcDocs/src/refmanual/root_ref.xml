@@ -34,7 +34,8 @@
 	  <section id="ref.combinators.parallel.examples">
 		  <title>Examples</title>
 		  <para>
-<programlisting language="orc-demo"><![CDATA[
+			  <html:button type="button" onclick="toggle_visibility('ref.combinators.parallel.examples.one');">Show Example1</html:button>
+<programlisting language="orc-demo" id="ref.combinators.parallel.examples.one"><![CDATA[
 -- Publish 1 and 2 in parallel  
 1 | 1+1
 
@@ -44,7 +45,7 @@
 		  </para>  
 
 		  <para>
-<programlisting><![CDATA[
+<programlisting id="ref.combinators.parallel.examples.two"><![CDATA[
 {- 
  Access two search sites, Google and Yahoo, in parallel.
 
