@@ -15,46 +15,95 @@
 package orc.lib.xml
 
 import orc.lib.builtin.Extractable
+import orc.values.OrcTuple
+import orc.values.OrcRecord
 import orc.values.sites.TotalSite
+import orc.values.sites.TotalSite1
+import orc.values.sites.PartialSite
 import orc.values.sites.UntypedSite
-import scala.xml.Elem
+import scala.xml._
+import orc.error.runtime.ArgumentTypeMismatchException
+import orc.error.runtime.ArityMismatchException
 
 /**
  * 
+ * XML elements. This version is not namespace aware; namespace is discarded
+ * on matching, and defaults to the empty namespace on construction.
  *
  * @author dkitchin
  */
-/*
-trait XmlSite extends TotalSite with Extractable with UntypedSite {
+
+class XmlLoaderSite extends TotalSite1 with UntypedSite {
+  
+  def eval(xml: AnyRef): AnyRef = {
+    XML.loadString(xml.toString)
+  }
+  
+}
+
+class XmlElementSite extends TotalSite with Extractable with UntypedSite {
 
   def evaluate(args: List[AnyRef]): AnyRef = {
     args match {
       case List(tag: String, attr: OrcRecord, children: List[_]) => {
-        //UnprefixedAttribute...
-        //Elem(null, tag, record (as MetaData), null, nodes (as Node*) )
+        val metadata = attr.entries.foldRight[MetaData](Null) { case ((k,v),rest) => new UnprefixedAttribute(k, v.toString, rest) }
+        val childNodes = for (c <- children) yield c.asInstanceOf[Node]
+        new Elem(null, tag, metadata, TopScope, new Group(childNodes))
       }
       case List(tag: String, attr: OrcRecord, z) => {
-        ArgumentTypeMismatchException(2, "List[Node]", z.getClass().toString())
+        throw new ArgumentTypeMismatchException(2, "List[Node]", z.getClass().toString())
       }
       case List(tag: String, z, _) => {
-        ArgumentTypeMismatchException(1, "Record", z.getClass().toString())
+        throw new ArgumentTypeMismatchException(1, "Record", z.getClass().toString())
       }
       case List(z, _, _) => {
-        ArgumentTypeMismatchException(0, "String", z.getClass().toString())
+        throw new ArgumentTypeMismatchException(0, "String", z.getClass().toString())
       }
       case _ => throw new ArityMismatchException(3, args.size)
     }
   }
   
-  override def extract = new PartialSite with UntypedSite {
- 
-    override def evaluate(args: List[AnyRef]) = {
+  override def extract = 
+    new PartialSite with UntypedSite {
+      override def evaluate(args: List[AnyRef]) = {
         args match {
-          case xml: Elem => 
+          case List(xml: Elem) => {
+            val tag = xml.label
+            val attr = OrcRecord(xml.attributes.asAttrMap)
+            val children = xml.child.toList
+            Some(OrcTuple(List(tag, attr, children)))
+          }
+          case _ => None
         }
+      }
+    }
+  
+  override def name = "Element"
+  
+}
+
+
+class XmlTextSite extends TotalSite1 with Extractable with UntypedSite {
+
+  def eval(x: AnyRef): AnyRef = {
+    x match {
+      case data: String => new Text(data)
+      case z => throw new ArgumentTypeMismatchException(0, "String", z.getClass().toString())
     }
   }
   
+  override def extract = 
+    new PartialSite with UntypedSite {
+      override def evaluate(args: List[AnyRef]) = {
+        args match {
+          case List(xml: Text) => {
+            Some(xml._data)
+          }
+          case _ => None
+        }
+      }
+  }
+  
+  override def name = "Text"
   
 }
-*/
