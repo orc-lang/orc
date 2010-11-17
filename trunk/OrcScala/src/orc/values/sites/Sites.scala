@@ -21,6 +21,7 @@ import orc.ast.oil.nameless.Bot
 import orc.TokenAPI
 import orc.error.OrcException
 import orc.error.NotYetImplementedException
+import orc.error.runtime.ArityMismatchException
 import orc.run.Logger
 
 trait SiteMetaData {
@@ -77,4 +78,54 @@ trait UnimplementedSite extends Site {
   def call(args: List[AnyRef], token: TokenAPI): Nothing = {
 	  throw new NotYetImplementedException("Site " + this + " is unimplemented.")
   }
+}
+
+
+trait TotalSite0 extends TotalSite {
+  
+  def evaluate(args: List[AnyRef]): AnyRef = {
+    args match {
+      case List() => eval()
+      case _ => throw new ArityMismatchException(0, args.size)
+    }
+  }
+  
+  def eval(): AnyRef
+}
+
+
+trait TotalSite1 extends TotalSite {
+  
+  def evaluate(args: List[AnyRef]): AnyRef = {
+    args match {
+      case List(x) => eval(x)
+      case _ => throw new ArityMismatchException(1, args.size)
+    }
+  }
+  
+  def eval(x: AnyRef): AnyRef
+}
+
+trait TotalSite2 extends TotalSite {
+  
+  def evaluate(args: List[AnyRef]): AnyRef = {
+    args match {
+      case List(x,y) => eval(x,y)
+      case _ => throw new ArityMismatchException(2, args.size)
+    }
+  }
+  
+  def eval(x: AnyRef, y: AnyRef): AnyRef
+}
+
+trait TotalSite3 extends TotalSite {
+  
+  def evaluate(args: List[AnyRef]): AnyRef = {
+    args match {
+      case List(x,y,z) => eval(x,y,z)
+      case _ => throw new ArityMismatchException(3, args.size)
+    }
+  }
+  
+  def eval(x: AnyRef, y: AnyRef, z: AnyRef): AnyRef
 }
