@@ -33,14 +33,6 @@ import orc.error.runtime.ArityMismatchException
  * @author dkitchin
  */
 
-class XmlLoaderSite extends TotalSite1 with UntypedSite {
-  
-  def eval(xml: AnyRef): AnyRef = {
-    XML.loadString(xml.toString)
-  }
-  
-}
-
 class XmlElementSite extends TotalSite with Extractable with UntypedSite {
 
   def evaluate(args: List[AnyRef]): AnyRef = {
@@ -48,7 +40,7 @@ class XmlElementSite extends TotalSite with Extractable with UntypedSite {
       case List(tag: String, attr: OrcRecord, children: List[_]) => {
         val metadata = attr.entries.foldRight[MetaData](Null) { case ((k,v),rest) => new UnprefixedAttribute(k, v.toString, rest) }
         val childNodes = for (c <- children) yield c.asInstanceOf[Node]
-        new Elem(null, tag, metadata, TopScope, new Group(childNodes))
+        new Elem(null, tag, metadata, TopScope, childNodes: _*)
       }
       case List(tag: String, attr: OrcRecord, z) => {
         throw new ArgumentTypeMismatchException(2, "List[Node]", z.getClass().toString())
