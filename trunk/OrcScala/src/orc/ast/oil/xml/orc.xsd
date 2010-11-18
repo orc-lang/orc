@@ -15,6 +15,11 @@
     <xs:attribute name="pos" type="xs:string"/>
   </xs:attributeGroup>
   
+  <!--  Some AST nodes have an optionally present variable name -->
+  <xs:attributeGroup name="varnamed">
+    <xs:attribute name="varname" type="xs:string"/>
+  </xs:attributeGroup>
+  
   <!--  Leaf node (AST) -->
   <xs:complexType name="leaf">
 	  <xs:attributeGroup ref="ast" />
@@ -24,12 +29,14 @@
 	<xs:complexType name="var">
 	  <xs:attribute name="index" type="index" use="required" />
 	  <xs:attributeGroup ref="ast" />
+	  <xs:attributeGroup ref="varnamed" />
 	</xs:complexType>
 	
 	<!--  Type variable (AST)  -->
 	<xs:complexType name="typevar">
 	  <xs:attribute name="index" type="index" use="required" />
 	  <xs:attributeGroup ref="ast" />
+	  <xs:attributeGroup ref="varnamed" />
 	</xs:complexType>
 
 	<!--  Combinator (AST)  -->
@@ -39,6 +46,16 @@
 			<xs:element name="right" type="exp" />
 	  </xs:sequence>
 	  <xs:attributeGroup ref="ast" />
+	</xs:complexType>
+	
+	<!--  Binding combinator (AST)  -->
+  <xs:complexType name="binding_combinator">
+		<xs:sequence>
+		  <xs:element name="left" type="exp" />
+			<xs:element name="right" type="exp" />
+	  </xs:sequence>
+	  <xs:attributeGroup ref="ast" />
+	  <xs:attributeGroup ref="varnamed" />
 	</xs:complexType>
   	
 	<!--  Argument  -->
@@ -111,6 +128,13 @@
 			</xs:element>
 			
 			<xs:element name="variable" type="var" />
+			
+			<xs:element name="unboundvariable">
+			  <xs:complexType>
+			    <xs:attribute name="name" type="xs:string" />
+			    <xs:attributeGroup ref="ast" />
+			  </xs:complexType>
+			</xs:element>
 			
 		</xs:choice>
 	</xs:group>
@@ -249,6 +273,12 @@
 		<xs:element name="top" type="leaf" />
 		<xs:element name="bot" type="leaf" />
 		<xs:element name="typevar" type="typevar" />
+		<xs:element name="unboundtypevar">
+			<xs:complexType>
+			  <xs:attribute name="name" type="xs:string" />
+			  <xs:attributeGroup ref="ast" />
+			</xs:complexType>
+	  </xs:element>
     <xs:element name="tupletype">
       <xs:complexType>
         <xs:sequence>

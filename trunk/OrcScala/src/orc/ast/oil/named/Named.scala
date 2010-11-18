@@ -19,6 +19,7 @@ package orc.ast.oil.named
 
 import orc.ast.oil._
 import orc.ast.AST
+import orc.ast.hasOptionalVariableName
 
 
 sealed abstract class NamedAST extends AST with NamedToNameless {
@@ -63,11 +64,14 @@ with Guarding {
 case class Stop() extends Expression
 case class Call(target: Argument, args: List[Argument], typeargs: Option[List[Type]]) extends Expression
 case class Parallel(left: Expression, right: Expression) extends Expression
-case class Sequence(left: Expression, x: BoundVar, right: Expression) extends Expression
+case class Sequence(left: Expression, x: BoundVar, right: Expression) extends Expression 
+  with hasOptionalVariableName { transferOptionalVariableName(x, this) }
 case class Prune(left: Expression, x: BoundVar, right: Expression) extends Expression
+  with hasOptionalVariableName { transferOptionalVariableName(x, this) }
 case class Otherwise(left: Expression, right: Expression) extends Expression
 case class DeclareDefs(defs: List[Def], body: Expression) extends Expression
 case class DeclareType(name: BoundTypevar, t: Type, body: Expression) extends Expression
+  with hasOptionalVariableName { transferOptionalVariableName(name, this) }
 case class HasType(body: Expression, expectedType: Type) extends Expression
 case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) extends Expression {
   def apply(e: Expression): Expression = e.subst(context, typecontext)
@@ -110,11 +114,12 @@ object Module {
 
 sealed abstract class Argument extends Expression
 case class Constant(value: AnyRef) extends Argument
-trait Var extends Argument
-  case class UnboundVar(name: String) extends Var
-  class BoundVar(val optionalName: Option[String] = None) extends Var {
-    def this(name: String) = this(Some(name))
-    def productIterator = if (optionalName.isDefined) List(optionalName.get).iterator else Nil.iterator
+trait Var extends Argument with hasOptionalVariableName
+  case class UnboundVar(name: String) extends Var { 
+    optionalVariableName = Some(name) 
+  }
+  class BoundVar extends Var {
+    def productIterator = optionalVariableName.toList.iterator
   }
 
 
@@ -124,8 +129,10 @@ sealed case class Def(name: BoundVar, formals: List[BoundVar], body: Expression,
 extends NamedAST 
 with hasFreeVars 
 with hasFreeTypeVars
-with Substitution[Def] { 
-  lazy val withoutNames: nameless.Def = namedToNameless(this, Nil, Nil)  
+with hasOptionalVariableName
+with Substitution[Def] {
+  transferOptionalVariableName(name, this)
+  lazy val withoutNames: nameless.Def = namedToNameless(this, Nil, Nil)
 }
 
 
@@ -150,10 +157,10 @@ case class ClassType(classname: String) extends Type
 case class VariantType(variants: List[(String, List[Option[Type]])]) extends Type
 
 
-trait Typevar extends Type
-  case class UnboundTypevar(name: String) extends Typevar
-  class BoundTypevar(val optionalName: Option[String] = None) extends Typevar {
-    def this(name: String) = this(Some(name))
-    def productIterator = if (optionalName.isDefined) List(optionalName.get).iterator else Nil.iterator
-
+trait Typevar extends Type with hasOptionalVariableName
+  case class UnboundTypevar(name: String) extends Typevar {
+    optionalVariableName = Some(name)
+  }
+  class BoundTypevar extends Typevar {
+    def productIterator = optionalVariableName.toList.iterator
   }

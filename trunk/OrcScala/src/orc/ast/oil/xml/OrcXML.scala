@@ -23,13 +23,14 @@ import orc.ast.oil.nameless._
 import scala.collection.immutable.HashMap
 import scala.math.BigInt
 import scala.math.BigDecimal
+import orc.ast.hasOptionalVariableName
 
 
 object OrcXML {
   
   /**
    * 
-   * Add a position-preserving combinator -> for conversions
+   * Add a metadata-preserving combinator --> for conversions
    * between XML and Orc's nameless ASTs, analogous to the 
    * -> conversion between ASTs.
    * 
@@ -37,26 +38,57 @@ object OrcXML {
   class NodeWithArrow(xml: Node) { 
     def -->[B <: orc.ast.AST](f: Node => B) = {
       val ast = f(xml)
+      
+      // Extract position information, if available
       (xml \ "@pos").text.split(":").toList match {
-        case List(file, line, col) => { 
-          val pos = new PositionFilenameLineCol(file, Integer.parseInt(line), Integer.parseInt(col))
+        case List(file, line, col) => {
+          val l = Integer.parseInt(line)
+          val c = Integer.parseInt(col)
+          val pos = new PositionFilenameLineCol(file, l, c)
           ast.setPos(pos)
         }
-        case _ => ast
+        case _ => {}
       }
+      
+      // Extract optional name information, if applicable and available
+      ast match {
+        case x: hasOptionalVariableName => {
+          val n = xml \ "@varname"
+          x.optionalVariableName = { 
+            if (n.isEmpty) { None } else { Some(n.text) }
+          }
+        }
+        case _ => {}
+      }
+      
+      ast
     }
   }
   
   class AstWithArrow(ast : orc.ast.AST) { 
     def -->(f: orc.ast.AST => Elem) = {
       val xml = f(ast)
-      ast.pos match {
-        case NoPosition => xml
-        case p => {
-          val posAttribute = new UnprefixedAttribute("pos", p.toString, scala.xml.Null)
-          xml.copy(attributes = xml.attributes.append(posAttribute))
+      
+      // Get position information, if available
+      val posAttribute = 
+        ast.pos match {
+          case NoPosition => scala.xml.Null
+          case p => new UnprefixedAttribute("pos", p.toString, scala.xml.Null)
+        } 
+      
+      // Get optional name information, if applicable and available
+      val nameAttribute = 
+        ast match {
+          case x: hasOptionalVariableName => {
+            x.optionalVariableName match {
+              case None => scala.xml.Null
+              case Some(n) => new UnprefixedAttribute("varname", n, scala.xml.Null)
+            }
+          }
+          case _ => scala.xml.Null
         }
-      }
+      
+      xml.copy(attributes = xml.attributes.append(posAttribute).append(nameAttribute))
     }
   }
   

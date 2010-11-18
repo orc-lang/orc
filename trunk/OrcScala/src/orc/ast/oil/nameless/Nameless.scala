@@ -17,6 +17,7 @@ package orc.ast.oil.nameless
 
 import orc.ast.oil._
 import orc.ast.AST
+import orc.ast.hasOptionalVariableName
 
 
 
@@ -136,27 +137,29 @@ with NamelessToNamed
 case class Stop() extends Expression
 case class Call(target: Argument, args: List[Argument], typeArgs: Option[List[Type]]) extends Expression
 case class Parallel(left: Expression, right: Expression) extends Expression
-case class Sequence(left: Expression, right: Expression) extends Expression
-case class Prune(left: Expression, right: Expression) extends Expression
+case class Sequence(left: Expression, right: Expression) extends Expression with hasOptionalVariableName
+case class Prune(left: Expression, right: Expression) extends Expression with hasOptionalVariableName
 case class Otherwise(left: Expression, right: Expression) extends Expression
 case class DeclareDefs(unclosedVars: List[Int], defs: List[Def], body: Expression) extends Expression
-case class DeclareType(t: Type, body: Expression) extends Expression
+case class DeclareType(t: Type, body: Expression) extends Expression with hasOptionalVariableName
 case class HasType(body: Expression, expectedType: Type) extends Expression
 case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) extends Expression
 
 sealed abstract class Argument extends Expression 
 case class Constant(value: AnyRef) extends Argument
-case class Variable(index: Int) extends Argument {
+case class Variable(index: Int) extends Argument with hasOptionalVariableName {
   require(index >= 0)
 }
-case class UnboundVariable(name: String) extends Argument
+case class UnboundVariable(name: String) extends Argument with hasOptionalVariableName {
+  optionalVariableName = Some(name)
+}
 
 sealed abstract class Type extends NamelessAST with NamelessToNamed {
   lazy val withNames: named.Type = namelessToNamed(this, Nil)
 }
 case class Top() extends Type
 case class Bot() extends Type
-case class TypeVar(index: Int) extends Type
+case class TypeVar(index: Int) extends Type with hasOptionalVariableName
 case class TupleType(elements: List[Type]) extends Type
 case class RecordType(entries: Map[String,Type]) extends Type
 case class TypeApplication(tycon: Int, typeactuals: List[Type]) extends Type
@@ -166,10 +169,13 @@ case class TypeAbstraction(typeFormalArity: Int, t: Type) extends Type
 case class ImportedType(classname: String) extends Type
 case class ClassType(classname: String) extends Type
 case class VariantType(variants: List[(String, List[Option[Type]])]) extends Type
-case class UnboundTypeVariable(name: String) extends Type
+case class UnboundTypeVariable(name: String) extends Type with hasOptionalVariableName {
+  optionalVariableName = Some(name)
+}
 
 sealed case class Def(typeFormalArity: Int, arity: Int, body: Expression, argTypes: Option[List[Type]], returnType: Option[Type]) extends NamelessAST 
 with hasFreeVars 
+with hasOptionalVariableName
 {
   /* Get the free vars of the body, then bind the arguments */
   lazy val freevars: Set[Int] = shift(body.freevars, arity)
