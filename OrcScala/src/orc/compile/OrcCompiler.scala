@@ -202,7 +202,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
       typeCheck.timePhase >>>
       refineNamedOil.timePhase >>>
       noUnguardedRecursion.timePhase >>>
-      deBruijn.timePhase
+      deBruijn.timePhase //>>> echoXML
 
   ////////
   // Compiler methods

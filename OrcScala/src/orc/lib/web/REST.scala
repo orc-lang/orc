@@ -59,7 +59,7 @@ case class RESTfulSite(baseUrl: URL) extends UntypedSite {
         //val connection = url.openConnection
         //val result = Source.fromInputStream(connection.getInputStream).foldLeft("")({ _ + _ })
         //val result = XML.load(connection.getInputStream)
-        val result = Source.fromURL(url).mkString
+        val result = Source.fromURL(url, "UTF-8").mkString
         callingToken.publish(result)
       }
       case List(z) => throw new ArgumentTypeMismatchException(0, "Record", z.getClass().toString())

@@ -27,8 +27,8 @@ import orc.error.runtime.ArityMismatchException
 
 /**
  * 
- * XML elements. This version is not namespace aware; namespace is discarded
- * on matching, and defaults to the empty namespace on construction.
+ * XML elements. These sites are not namespace aware. Construction defaults
+ * to the empty namespace, and matching discards namespace information.
  *
  * @author dkitchin
  */

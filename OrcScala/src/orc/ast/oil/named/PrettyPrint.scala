@@ -70,7 +70,7 @@ class PrettyPrint {
       case left ow right => "(" + reduce(left) + " ; " + reduce(right) + ")"
       case DeclareDefs(defs, body) => "\n" + (defs map reduce).foldLeft("")({_ + _}) + reduce(body)
       case Def(f, formals, body, typeformals, argtypes, returntype) => {  
-        val name = f.optionalName.getOrElse(lookup(f))
+        val name = f.optionalVariableName.getOrElse(lookup(f))
         "def " + name + brack(typeformals) + paren(argtypes.getOrElse(Nil)) + 
         (returntype match {
           case Some(t) => " :: " + reduce(t)
@@ -83,9 +83,9 @@ class PrettyPrint {
       case HasType(body, expectedType) => "(" + reduce(body) + " :: " + reduce(expectedType) + ")"
       case DeclareType(u, t, body) => "type " + reduce(u) + " = " + reduce(t) + "\n" + reduce(body)
       case Constant(v) => Format.formatValue(v)
-      case (x: BoundVar) => x.optionalName.getOrElse(lookup(x)) 
+      case (x: BoundVar) => x.optionalVariableName.getOrElse(lookup(x)) 
       case UnboundVar(s) => "?" + s  
-      case u: BoundTypevar => u.optionalName.getOrElse(lookup(u))
+      case u: BoundTypevar => u.optionalVariableName.getOrElse(lookup(u))
       case Top() => "Top"
       case Bot() => "Bot"
       case FunctionType(typeformals, argtypes, returntype) => {
