@@ -34,3 +34,4 @@ trait StandardInvocationBehavior extends InvocationBehavior
 with ErrorOnUndefinedInvocation
 with SupportForSiteInvocation
 with SupportForJavaObjectInvocation
+with SupportForXMLInvocation

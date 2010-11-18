@@ -71,3 +71,27 @@ trait SupportForSiteInvocation extends InvocationBehavior {
     }
   }
 }
+
+trait SupportForXMLInvocation extends InvocationBehavior {
+  
+  override def invoke(t: TokenAPI, v: AnyRef, vs: List[AnyRef]) { 
+    v match {
+      case xml: scala.xml.Elem => {
+        vs match {
+          case List(orc.values.Field(f)) => {
+            xml.attributes.get(f) match {
+              case Some(v) => t.publish(v)
+              case None => t.halt
+            }
+          }
+          case List(s: String) => {
+            t.publish((xml \ s).toList)
+          }
+          case _ => super.invoke(t, v, vs)
+        }
+      }
+      case _ => super.invoke(t, v, vs)
+    }
+  }
+
+}
