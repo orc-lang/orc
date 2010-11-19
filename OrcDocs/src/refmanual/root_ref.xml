@@ -34,7 +34,7 @@
 	  <section id="ref.combinators.parallel.examples">
 		  <title>Examples</title>
 		  <para>
-			  <html:button type="button" onclick="toggle_visibility('ref.combinators.parallel.examples.one');">Show Example1</html:button>
+		  <example caption="Example 1" id ="ex1">
 <programlisting language="orc-demo" id="ref.combinators.parallel.examples.one"><![CDATA[
 -- Publish 1 and 2 in parallel  
 1 | 1+1
@@ -42,9 +42,11 @@
 -- Note the publication order may be either 1 then 2
 -- or 2 then 1
 ]]></programlisting>
-		  </para>  
+		  </example>
+		  </para>
 
 		  <para>
+		  <example caption="Example 2" id="ex2">
 <programlisting id="ref.combinators.parallel.examples.two"><![CDATA[
 {- 
  Access two search sites, Google and Yahoo, in parallel.
@@ -56,7 +58,9 @@
 -}  
 Google("cupcake") | Yahoo("cupcake")
 ]]></programlisting>
-		  </para>  
+		  </example>
+		  </para>
+		  
 	  </section>
 	  <section id="ref.combinators.parallel.links">
 		  <title>Related Links</title>
