@@ -2,7 +2,8 @@
 <xsl:stylesheet
     xmlns:xslthl="http://xslthl.sf.net"
     exclude-result-prefixes="xslthl"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
+	version="1.0">
 
 <xsl:import href="common.xsl"/>
 
@@ -30,6 +31,7 @@ Orc examples must use the "orc" CSS class.
 	  if (lText == '+') { link.innerHTML = '&#8722;'; d.style.display = 'block'; }
 	  else { link.innerHTML = '+'; d.style.display = 'none'; } }
 </script>
+	
 </xsl:template>
 	
 <!-- Match template for collapsible example boxes -->
@@ -37,16 +39,27 @@ Orc examples must use the "orc" CSS class.
 	<xsl:variable name="ex_id" select="./@id"/>
 	<xsl:variable name="ex_link" select="concat($ex_id,'_link')"/>
 	<xsl:variable name="ex_content" select="concat($ex_id,'_content')"/>
+	<xsl:variable name="ex_toggle" select="toggle(this, '$ex_content')"/>
+	<para>ex_id = <xsl:value-of select="$ex_id"/>  </para>
+	<para>ex_link = <xsl:value-of select="$ex_link"/>  </para>
+	<para>ex_content = <xsl:value-of select="$ex_content"/>  </para>
 	<table border="0" width="60%" align="left"><tr><td>
 	<div style="border: 1px solid #000000; padding: 0px; background: #FFFFFF; ">
 		<table border="0" cellspacing="0" cellpadding="2" width="100%" style="background: #66CCFF; color: #000000; ">
 			<tr><td><xsl:value-of select="./@caption"></xsl:value-of></td><td align="right">
-			  [<a title="show/hide" id="$ex_link" href="javascript: void(0);" 
-			  onclick="toggle(this, '$ex_content');"  
-			  style="text-decoration: none; color: #000000; ">&#8722;</a>]
+			  [<a title="show/hide" href="javascript: void(0);" style="text-decoration: none; color: #000000; ">
+				<xsl:attribute name="id"><xsl:value-of select="$ex_link" /></xsl:attribute>
+				<xsl:attribute name="onclick"><xsl:value-of select="$ex_toggle"/></xsl:attribute>
+					&#8722;
+				</a>]
 			</td></tr>
 		</table>
-		<div id="$ex_content" style="padding: 3px;"><xsl:apply-templates/></div>
+		<div style="padding: 3px;">
+			<xsl:attribute name="id">
+				<xsl:value-of select="$ex_content"/>
+			</xsl:attribute>
+			<xsl:apply-templates/>
+		</div>
 	</div>
 	<noscript>
 		<para>"This example require javascript to be rendered correctly."</para>
