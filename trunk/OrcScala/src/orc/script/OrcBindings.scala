@@ -49,7 +49,18 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def exceptionsOn_=(newVal: Boolean) = putBoolean("orc.exceptionsOn", newVal)
   def typecheck: Boolean = getBoolean("orc.typecheck", false)
   def typecheck_=(newVal: Boolean) = putBoolean("orc.typecheck", newVal)
-
+  def echoOil: Boolean = getBoolean("orc.echoOil", false)
+  def echoOil_=(newVal: Boolean) = putBoolean("orc.echoOil", newVal)
+  def oilOutputFile: Option[File] = {
+    getString("orc.oilOutputFile", "") match {
+      case "" => None
+      case f => Some(new File(f))
+    }
+  }
+  def oilOutputFile_=(newVal: Option[File]) = putString("orc.oilOutputFile", newVal.map(_.toString).getOrElse(""))
+  def compileOnly: Boolean = getBoolean("orc.onlyCompile", false)
+  def compileOnly_=(newVal: Boolean) = putBoolean("orc.onlyCompile", newVal)
+  
   // Execution options
   def maxPublications: Int = getInt("orc.maxPublications", -1)
   def maxPublications_=(newVal: Int) = putInt("orc.maxPublications", newVal)

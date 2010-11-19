@@ -16,6 +16,7 @@
 package orc
 
 import java.io.IOException
+import java.io.File
 import scala.collection.JavaConversions._
 import orc.compile.parse.OrcInputContext
 import orc.error.OrcException
@@ -152,6 +153,12 @@ trait OrcOptions {
   def exceptionsOn_=(newVal: Boolean)
   def typecheck: Boolean
   def typecheck_=(newVal: Boolean)
+  def echoOil: Boolean
+  def echoOil_=(newVal: Boolean)
+  def oilOutputFile: Option[File]
+  def oilOutputFile_=(newVal: Option[File])
+  def compileOnly: Boolean
+  def compileOnly_=(newVal: Boolean)
 
   // Execution options
   def maxPublications: Int
