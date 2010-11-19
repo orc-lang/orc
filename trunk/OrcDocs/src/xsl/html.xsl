@@ -18,7 +18,42 @@ Orc examples must use the "orc" CSS class.
 <xsl:if test="$orc.demo">
 <script src="/orchard/orc.js" type="text/javascript"></script>
 </xsl:if>
-<script src="file://home/brian/workspace/OrcDocs/src/scripts/expand.js" type="text/javascript"></script>
+<script language="javascript">
+	// Expandable content script from flooble.com.
+	// For more information please visit:
+	//   http://www.flooble.com/scripts/expand.php
+	// Copyright 2002 Animus Pactum Consulting Inc.
+	//----------------------------------------------
+	var ie4 = false; if(document.all) { ie4 = true; }
+	function getObject(id) { if (ie4) { return document.all[id]; } else { return document.getElementById(id); } }
+	function toggle(link, divId) { var lText = link.innerHTML; var d = getObject(divId);
+	  if (lText == '+') { link.innerHTML = '&#8722;'; d.style.display = 'block'; }
+	  else { link.innerHTML = '+'; d.style.display = 'none'; } }
+</script>
+</xsl:template>
+	
+<!-- Match template for collapsible example boxes -->
+<xsl:template match="example">
+	<xsl:variable name="ex_id" select="./@id"/>
+	<xsl:variable name="ex_link" select="concat($ex_id,'_link')"/>
+	<xsl:variable name="ex_content" select="concat($ex_id,'_content')"/>
+	<table border="0" width="60%" align="left"><tr><td>
+	<div style="border: 1px solid #000000; padding: 0px; background: #FFFFFF; ">
+		<table border="0" cellspacing="0" cellpadding="2" width="100%" style="background: #66CCFF; color: #000000; ">
+			<tr><td><xsl:value-of select="./@caption"></xsl:value-of></td><td align="right">
+			  [<a title="show/hide" id="$ex_link" href="javascript: void(0);" 
+			  onclick="toggle(this, '$ex_content');"  
+			  style="text-decoration: none; color: #000000; ">&#8722;</a>]
+			</td></tr>
+		</table>
+		<div id="$ex_content" style="padding: 3px;"><xsl:apply-templates/></div>
+	</div>
+	<noscript>
+		<para>"This example require javascript to be rendered correctly."</para>
+		<xsl:apply-templates/>
+	</noscript>
+	</td></tr></table>
+	<script language="javascript">toggle(getObject('$ex_link'), '$ex_content');</script>
 </xsl:template>
 
 <!-- Include stylsheets, including orc.css if desired -->

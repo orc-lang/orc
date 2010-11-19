@@ -9,7 +9,7 @@
 <xsl:import href="../../docbook-xsl/html/docbook.xsl"/>
 
 <!-- ADD -->
-		
+	
 <!-- Allows use of the <frag></frag> tag
 	The tag is used for marking sections to copy
 	from one document to another (a fragment) -->
