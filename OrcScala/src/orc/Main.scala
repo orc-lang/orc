@@ -16,7 +16,7 @@ package orc
 
 import javax.script.{ScriptException, Compilable, ScriptEngine, ScriptEngineManager}
 import javax.script.ScriptContext.ENGINE_SCOPE
-import java.io.{PrintStream, FileNotFoundException, InputStreamReader, FileInputStream}
+import java.io.{PrintStream, FileNotFoundException, InputStreamReader, FileInputStream, File}
 import scala.collection.JavaConversions._
 import orc.error.OrcException
 import orc.script.{OrcBindings, OrcScriptEngine}
@@ -38,17 +38,23 @@ object Main {
       val options = new OrcCmdLineOptions()
       options.parseCmdLine(args)
       setupLogging(options)
+      
       val engine = (new ScriptEngineManager).getEngineByName("orc").asInstanceOf[ScriptEngine with Compilable]
       if (engine == null) throw new ClassNotFoundException("Unable to load Orc ScriptEngine")
       engine.setBindings(options, ENGINE_SCOPE)
+      
       val reader = new InputStreamReader(new FileInputStream(options.filename), "UTF-8")
       val compiledOrc = engine.compile(reader).asInstanceOf[OrcScriptEngine#OrcCompiledScript]
+      
+      if (options.compileOnly) { return }
+      
       val printPubs = new OrcEventAction() {
         override def published(value: AnyRef) { println(Format.formatValue(value)); Console.out.flush() }
         override def printed(s: String) { print(s); Console.out.flush() }
         override def caught(e: Throwable) { Console.out.flush(); printException(e, Console.err); Console.err.flush() }
       }
       compiledOrc.run(printPubs)
+      
     } catch {
       case e: CmdLineUsageException => Console.err.println("Orc: " + e.getMessage)
       case e: PrintVersionAndMessageException => println(orcImplName+" "+orcVersion+"\n"+orcURL+"\n"+orcCopyright+"\n\n"+e.getMessage)
@@ -119,8 +125,11 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
 
   StringListOpt(()=>classPath, classPath=_, ' ', "cp", usage = "Set the class path for Orc sites (same syntax as CLASSPATH). This is only used for classes not found in the Java VM classpath.")
 
-  //UnitOpt({=true}, 'c', "noexecute", usage = "Compile this program, but do not run it.")
-  //FileOpt(, 'o', "oilOut", usage = "Write the compiled OIL to the given filename.")
-  //IntOpt(, ' ', "numSiteThreads", usage = "Use up to this many threads for blocking site calls. Default=2.")
+  UnitOpt(()=>compileOnly, ()=>compileOnly=true, 'c', "compile-only", usage = "Compile this program, but do not run it.")
+
+  FileOpt(()=>oilOutputFile.getOrElse(null), f => oilOutputFile=Some(f), 'o', "output-oil", usage = "Write the compiled program in OIL format to the given filename.")
+
+  UnitOpt(()=>echoOil, ()=>echoOil=true, ' ', "echo-oil", usage = "Write the compiled program in OIL format to stdout.")
+  
 }
 

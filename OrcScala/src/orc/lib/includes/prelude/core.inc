@@ -70,14 +70,13 @@ Example:
 site Unless = "orc.lib.builtin.Unless"
 
 {- Aliases for different styles of conditional site usage -}
-val Ift = If
-val IfT = If
-val IfTrue = If
+site Ift = "orc.lib.builtin.If"
+site IfT = "orc.lib.builtin.If"
+site IfTrue = "orc.lib.builtin.If"
 
-val Iff = Unless
-val IfF = Unless
-val IfFalse = Unless
-
+site Iff = "orc.lib.builtin.Unless"
+site IfF = "orc.lib.builtin.Unless"
+site IfFalse = "orc.lib.builtin.Unless"
 
 {--
 @site error(String) :: Bot

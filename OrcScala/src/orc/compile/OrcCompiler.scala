@@ -15,7 +15,7 @@
 
 package orc.compile
 
-import java.io.{ BufferedReader, File, FileNotFoundException, IOException, PrintWriter, Writer }
+import java.io.{ BufferedReader, File, FileNotFoundException, IOException, PrintWriter, Writer}
 import java.net.URI
 import orc.{ OrcOptions, OrcCompiler }
 import orc.compile.optimize._
@@ -179,14 +179,28 @@ abstract class CoreOrcCompiler extends OrcCompiler {
   }
 
   // Generate XML for the AST and echo it to console; useful for testing.
-  val echoXML = new CompilerPhase[CompilerOptions, orc.ast.oil.nameless.Expression, orc.ast.oil.nameless.Expression] 
+  val outputOil = new CompilerPhase[CompilerOptions, orc.ast.oil.nameless.Expression, orc.ast.oil.nameless.Expression] 
   {
-    val phaseName = "Echo XML"
+    val phaseName = "outputOil"
     override def apply(co: CompilerOptions) = { ast =>
-      val pp = new scala.xml.PrettyPrinter(80,2)
-      val xmlheader = """<?xml version="1.0" encoding="UTF-8" ?>""" + "\n"
-      val xmlpretty = xmlheader + pp.format(OrcXML.astToXml(ast))
-      println(xmlpretty)
+      lazy val xml = OrcXML.astToXml(ast)
+      lazy val xmlnice = {
+        val pp = new scala.xml.PrettyPrinter(80,2)
+        val xmlheader = """<?xml version="1.0" encoding="UTF-8" ?>""" + "\n"
+        xmlheader + pp.format(xml)
+      }
+      
+      if (co.options.echoOil) { println(xmlnice) }
+      
+      co.options.oilOutputFile match {
+        case Some(f) => {
+          val writer = new PrintWriter(f, "UTF-8")
+          writer.println(xmlnice)
+          writer.close()
+        }
+        case None => {}
+      }
+      
       ast
     }
   }
@@ -202,7 +216,8 @@ abstract class CoreOrcCompiler extends OrcCompiler {
       typeCheck.timePhase >>>
       refineNamedOil.timePhase >>>
       noUnguardedRecursion.timePhase >>>
-      deBruijn.timePhase //>>> echoXML
+      deBruijn.timePhase >>> 
+      outputOil
 
   ////////
   // Compiler methods
