@@ -383,8 +383,6 @@ case class JavaClassProxy(val javaClass: Class[_]) extends JavaProxy {
 
   override lazy val name = javaClass.getName()
 
-  override def orcType(argTypes: List[Type]) = null //TODO:FIXME: Implement this
-
   override def call(args: List[AnyRef], callingToken: TokenAPI) {
     args match {
       case List(OrcField("?")) => throw new NotYetImplementedException("MatchProxy not implemented yet") //TODO:FIXME: Implement this -- publish(new MatchProxy(javaClass))
@@ -404,8 +402,6 @@ case class JavaObjectProxy(val theObject: Object) extends JavaProxy {
 
   override lazy val name = theObject.getClass().getName()
 
-  override def orcType(argTypes: List[Type]) = null //TODO:FIXME: Implement this
-
   override def javaClass = theObject.getClass()
 
   override def call(args: List[AnyRef], callingToken: TokenAPI) = JavaCall(theObject, args, callingToken)
@@ -421,8 +417,6 @@ case class JavaMemberProxy(val theObject: Object, val memberName: String) extend
   // Could be a method or field.  We defer this decision until we are called.
 
   override lazy val name = this.getClass().getCanonicalName()+"("+javaClassName+"."+memberName+", "+theObject.toString()+")"
-
-  override def orcType(argTypes: List[Type]) = null //TODO:FIXME: Implement this
 
   override def javaClass = theObject.getClass()
 
@@ -453,8 +447,6 @@ case class JavaMemberProxy(val theObject: Object, val memberName: String) extend
  */
 class JavaStaticMemberProxy(declaringClass: Class[_], memberName: String) extends JavaMemberProxy(null, memberName) {
 
-  override def orcType(argTypes: List[Type]) = null //TODO:FIXME: Implement this
-
   override def javaClass = declaringClass
 
   override lazy val name = this.getClass().getCanonicalName()+"("+javaClassName+"."+memberName+")"
@@ -468,8 +460,6 @@ class JavaStaticMemberProxy(declaringClass: Class[_], memberName: String) extend
  * @author jthywiss
  */
 case class JavaFieldDerefSite(val theObject: Object, val javaField: JavaField) extends JavaProxy {
-
-  override def orcType(argTypes: List[Type]) = null //TODO:FIXME: Implement this
 
   override def javaClass = javaField.getDeclaringClass()
 
@@ -491,8 +481,6 @@ case class JavaFieldDerefSite(val theObject: Object, val javaField: JavaField) e
  * @author jthywiss
  */
 case class JavaFieldAssignSite(val theObject: Object, val javaField: JavaField) extends JavaProxy {
-
-  override def orcType(argTypes: List[Type]) = null //TODO:FIXME: Implement this
 
   override def javaClass = javaField.getDeclaringClass()
 
@@ -520,8 +508,6 @@ case class JavaArrayAccess(val theArray: Array[Any], val index: Int) extends Jav
 
   override lazy val name = this.getClass().getCanonicalName()+"(element "+index+" of "+theArray+")"
 
-  override def orcType(argTypes: List[Type]) = null //TODO:FIXME: Implement this
-
   override def javaClass = theArray.getClass()
 
   def call(args: List[AnyRef], callingToken: TokenAPI) {
@@ -544,8 +530,6 @@ case class JavaArrayAccess(val theArray: Array[Any], val index: Int) extends Jav
  */
 case class JavaArrayDerefSite(val theArray: Array[Any], val index: Int) extends JavaProxy {
 
-  override def orcType(argTypes: List[Type]) = null //TODO:FIXME: Implement this
-
   override def javaClass = theArray.getClass().getComponentType()
 
   override lazy val name = this.getClass().getCanonicalName()+"(element "+index+" of "+theArray+")"
@@ -566,8 +550,6 @@ case class JavaArrayDerefSite(val theArray: Array[Any], val index: Int) extends 
  * @author jthywiss
  */
 case class JavaArrayAssignSite(val theArray: Array[Any], val index: Int) extends JavaProxy {
-
-  override def orcType(argTypes: List[Type]) = null //TODO:FIXME: Implement this
 
   override def javaClass = theArray.getClass().getComponentType()
 
@@ -592,8 +574,6 @@ case class JavaArrayAssignSite(val theArray: Array[Any], val index: Int) extends
  * @author jthywiss
  */
 case class JavaArrayLengthPseudofield(val theArray: Array[Any]) extends JavaProxy {
-
-  override def orcType(argTypes: List[Type]) = null //TODO:FIXME: Implement this
 
   override def javaClass = theArray.getClass().getComponentType()
 

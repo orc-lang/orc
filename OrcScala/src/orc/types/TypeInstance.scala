@@ -1,0 +1,93 @@
+//
+// TypeInstance.scala -- Scala class/trait/object TypeInstance
+// Project OrcScala
+//
+// $Id$
+//
+// Created by dkitchin on Nov 26, 2010.
+//
+// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+package orc.types
+
+/**
+ * 
+ * Type instances, type constructors, variances
+ *
+ * @author dkitchin
+ */
+case class TypeInstance(tycon: TypeConstructor, args: List[Type]) extends Type {
+  
+  override def toString = tycon.toString + args.mkString("[", ",", "]")
+  
+  override def join(that: Type): Type = {
+    that match {
+      case TypeInstance(`tycon`, otherArgs) => {
+        val joinArgs = {
+          for ( (v, (t, u)) <- (tycon.variances) zip (args zip otherArgs)) yield {
+            v match {
+              case Covariant => t join u
+              case Contravariant => t meet u
+              case Invariant => if (t equals u) { t } else { return Top }
+              case Constant => Bot
+            }
+          }
+        }
+        TypeInstance(tycon, joinArgs)
+      }
+      case _ => Top
+    }
+  }
+  
+  override def meet(that: Type): Type = {
+    that match {
+      case TypeInstance(`tycon`, otherArgs) => {
+        val meetArgs = {
+          for ( (v, (t, u)) <- (tycon.variances) zip (args zip otherArgs)) yield {
+            v match {
+              case Covariant => t meet u
+              case Contravariant => t join u
+              case Invariant => if (t equals u) { t } else { return Bot }
+              case Constant => Top
+            }
+          }
+        }
+        TypeInstance(tycon, meetArgs)
+      }
+      case _ => Bot
+    }
+  }
+  
+  override def <(that: Type) = {
+    that match {
+      case TypeInstance(`tycon`, otherArgs) => {
+        val perArgSubtype = 
+          for ( (v, (t, u)) <- (tycon.variances) zip (args zip otherArgs)) yield {
+            v match {
+              case Covariant => t < u
+              case Contravariant => u < t
+              case Invariant => t equals u
+              case Constant => true
+            }
+          }
+        perArgSubtype forall { b => b }
+      }
+      case _ => super.<(that)
+    }
+  }
+  
+  override def subst(sigma: Map[TypeVariable, Type]): Type = {
+    TypeInstance(tycon, args map { _ subst sigma })
+  }
+}
+
+
+
+trait TypeConstructor {
+  def variances: List[Variance] 
+}
+

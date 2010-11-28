@@ -20,6 +20,8 @@ import java.net.URI
 import orc.{ OrcOptions, OrcCompiler }
 import orc.compile.optimize._
 import orc.compile.parse.{ OrcResourceInputContext, OrcInputContext, OrcProgramParser, OrcIncludeParser }
+import orc.compile.translate.Translator
+import orc.compile.typecheck.Typechecker
 import orc.error.compiletime._
 import orc.error.compiletime.CompileLogger.Severity
 import orc.error.OrcExceptionExtension._
@@ -126,7 +128,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
     @throws(classOf[ClassNotFoundException])
     override def apply(co: CompilerOptions) = 
       { ast =>
-          val translator = new orc.compile.translate.Translator(co reportProblem _)
+          val translator = new Translator(co reportProblem _)
           translator.translate(ast)
       }
   }
@@ -147,11 +149,6 @@ abstract class CoreOrcCompiler extends OrcCompiler {
     }
   }
 
-  val typeCheck = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
-    val phaseName = "typeCheck"
-    override def apply(co: CompilerOptions) = { ast => ast }
-  }
-
   val refineNamedOil = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
     val phaseName = "refineNamedOil"
     override def apply(co: CompilerOptions) =
@@ -159,6 +156,22 @@ abstract class CoreOrcCompiler extends OrcCompiler {
         val refine = FractionDefs andThen RemoveUnusedDefs andThen RemoveUnusedTypes
         refine(e)
       }
+  }
+  
+  val typeCheck = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
+    val phaseName = "typeCheck"
+    override def apply(co: CompilerOptions) = { ast => 
+      if (co.options.typecheck) {  
+        val (newAst, programType) = Typechecker(ast)
+        val typeReport = " ... :: " + programType.toString + "\n"
+        //co.logger.recordMessage(CompileLogger.Severity.INFO, 0, typeReport, newAst.pos, newAst)
+        System.out.println(typeReport)
+        newAst
+      }
+      else { 
+        ast
+      }
+    }
   }
 
   val noUnguardedRecursion = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {

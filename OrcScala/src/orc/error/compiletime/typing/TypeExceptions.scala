@@ -20,9 +20,15 @@ import orc.error.compiletime._
 class ArgumentArityException(val arityExpected: Int, val arityReceived: Int) extends
   TypeException("Expected " + arityExpected + " arguments to call, got " + arityReceived + " arguments instead.") with SeverityError
 
+class TypeArgumentArityException(val arityExpected: Int, val arityReceived: Int) extends
+  TypeException("Expected " + arityExpected + " type arguments to call, got " + arityReceived + " arguments instead.") with SeverityError
+
 class DefinitionArityException(val arityFromType: Int, val arityFromSyntax: Int) extends
   TypeException("Definition should have " + arityFromType + " arguments according to its type, observed " + arityFromSyntax + " arguments instead.") with SeverityError
 
+class ArgumentTypeMismatchException(val argPosition: Int, val expectedType: Type, val providedType: Type) extends
+  TypeException("Expected type " + expectedType + " for argument " + argPosition + ", got " + providedType + " instead")
+  
 class MissingTypeException() extends
   TypeException("Type checker failed: couldn't obtain sufficient type information from a service or value.") with SeverityError
 
@@ -35,6 +41,9 @@ class MultiTypeException(val specificMessages: String) extends
 class SubtypeFailureException(val expectedType: Type, val receivedType: Type) extends
   TypeException("Expected type " + expectedType + " or some subtype, found type " + receivedType + " instead.") with SeverityError
 
+class FunctionTypeExpectedException(val receivedType: Type) extends
+  TypeException("Expected a function type, found type " + receivedType + " instead.") with SeverityError
+ 
 class TypeArityException(val arityExpected: Int, val arityReceived: Int) extends
   TypeException("Expected " + arityExpected + " arguments to type instantiation, got " + arityReceived + " arguments instead.") with SeverityError
 
@@ -42,13 +51,29 @@ class UnboundTypeException(val typeName: String) extends
   TypeException("Type " + typeName + " is undefined") with SeverityError
 
 class UncallableTypeException(val t: Type) extends
-  TypeException("Type " + t + " cannot be called as a service or function.") with SeverityError
+  TypeException("Type " + t + " cannot be called as a site or function.") with SeverityError
 
 class UnrepresentableTypeException(val t: Type) extends
-  TypeException(t.toString() + " has no concrete syntax.") with SeverityError
+  TypeException(t.toString() + " has no concrete representation.") with SeverityError
 
+class TypeArgumentInferenceFailureException() extends
+  TypeException("Could not infer missing type arguments; please add explicit type arguments") with SeverityError  
+  
 class UnspecifiedArgTypesException() extends
-  TypeException("Could not perform type check due to missing argument types; please add argument type annotations") with SeverityError
+  TypeException("Could not infer missing argument types; please add argument type annotations") with SeverityError
 
 class UnspecifiedReturnTypeException() extends
-  TypeException("Could not perform type check due to missing return type; please add a return type annotation") with SeverityError
+  TypeException("Could not infer missing return type; please add a return type annotation") with SeverityError
+
+class FirstOrderTypeExpectedException() extends
+  TypeException("Kinding error: expected a first-order type in this position, found a type operator instead.") with SeverityError
+
+class SecondOrderTypeExpectedException() extends
+  TypeException("Kinding error: expected a type operator in this position, found a first-order type instead.") with SeverityError
+  
+class NoMinimalTypeException() extends
+  TypeException("Inference failed; could not find a minimal type. Please add explicit type information.") with SeverityError
+
+class OverconstrainedTypeVariableException() extends
+  TypeException("A type argument is overconstrained; inference failed. Please add explicit type arguments. There may also be an underlying type error.") with SeverityError
+  
