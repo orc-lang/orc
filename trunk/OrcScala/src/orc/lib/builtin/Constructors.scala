@@ -1,15 +1,20 @@
 package orc.lib.builtin
 
-import orc.ast.oil.nameless.Type
 import orc.values._
 import orc.values.sites._
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
+import orc.types.SimpleCallableType
+import orc.types.TupleType
+import orc.types.Type
 
-
-object TupleConstructor extends TotalSite with UntypedSite {
+object TupleConstructor extends TotalSite with TypedSite {
   override def name = "Tuple"
-  def evaluate(args: List[AnyRef]) = OrcTuple(args) 
+  def evaluate(args: List[AnyRef]) = OrcTuple(args)
+  
+  val orcType = new SimpleCallableType {
+    def call(argTypes: List[Type]) = { TupleType(argTypes) }
+  }
 }
 
 object NoneConstructor extends TotalSite with Extractable with UntypedSite {

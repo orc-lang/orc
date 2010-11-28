@@ -27,6 +27,9 @@ import orc.error.runtime.TupleIndexOutOfBoundsException
  * @author dkitchin
  */
 case class OrcTuple(values: List[AnyRef]) extends PartialSite with UntypedSite {
+  
+  assert(values.size > 1)
+  
   def evaluate(args: List[AnyRef]) = 
     args match {
       case List(bi: BigInt) => {

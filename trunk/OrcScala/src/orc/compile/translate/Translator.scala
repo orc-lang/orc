@@ -18,6 +18,7 @@ package orc.compile.translate
 import orc.ast.ext
 import orc.ast.oil._
 import orc.ast.oil.named._
+import orc.ast.oil.named.Conversions._
 import orc.compile.translate.ClassForms._
 import orc.compile.translate.CurriedForms._
 import orc.compile.translate.PrimitiveForms._
@@ -119,7 +120,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         convert(body)(context + { (name, site) }, typecontext)
       }
       case ext.Declare(ext.ClassImport(name, classname), body) => {
-        val u = new BoundTypevar()
+        val u = new BoundTypevar(Some(name))
         val site = Constant(JavaSiteForm.resolve(classname))
         val newbody = convert(body)(context + { (name, site) }, typecontext + { (name, u) })
         DeclareType(u, ClassType(classname), newbody)
@@ -128,13 +129,13 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.Declare(ext.Include(_, decls), body) => convert((decls foldRight body) { ext.Declare })
 
       case ext.Declare(ext.TypeImport(name, classname), body) => {
-        val u = new BoundTypevar()
+        val u = new BoundTypevar(Some(name))
         val newbody = convert(body)(context, typecontext + { (name, u) })
         DeclareType(u, ImportedType(classname), newbody)
       }
 
       case ext.Declare(decl@ext.TypeAlias(name, typeformals, t), body) => {
-        val u = new BoundTypevar()
+        val u = new BoundTypevar(Some(name))
         val newtype =
           typeformals match {
             case Nil => convertType(t)
@@ -149,7 +150,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       }
 
       case ext.Declare(decl@ext.Datatype(name, typeformals, constructors), body) => {
-        val d = new BoundTypevar()
+        val d = new BoundTypevar(Some(name))
         val variantType = {
           val (newTypeFormals, dtypecontext) = convertTypeFormals(typeformals, decl)
           val newtypecontext = typecontext ++ dtypecontext + { (name, d) }
@@ -180,36 +181,6 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.Hole => Hole(context, typecontext)
 
     }
-  }
-
-  /**
-   * Given (e1, ... , en) and f, return:
-   * 
-   * f(x1, ... , xn) <x1< e1 
-   *                  ... 
-   *                   <xn< en
-   * 
-   * As an optimization, if any e is already an argument, no << binder is generated for it.
-   * 
-   */
-  def unfold(es: List[Expression], makeCore: List[Argument] => Expression): Expression = {
-
-    def expand(es: List[Expression]): (List[Argument], Conversion) =
-      es match {
-        case (a: Argument) :: rest => {
-          val (args, bindRest) = expand(rest)
-          (a :: args, bindRest)
-        }
-        case g :: rest => {
-          val (args, bindRest) = expand(rest)
-          val x = new BoundVar()
-          (x :: args, bindRest(_) < x < g)
-        }
-        case Nil => (Nil, e => e)
-      }
-
-    val (args, bind) = expand(es)
-    bind(makeCore(args))
   }
 
   def convertArgumentGroup(target: Argument, ag: ext.ArgumentGroup)(implicit context: Map[String, Argument], typecontext: Map[String, Type]): Expression = {
@@ -250,7 +221,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     defsMap.values foreach { _.ClassCheck }
 
     // we generate these names beforehand since defs can be bound recursively in their own bodies
-    val namesMap: Map[String, BoundVar] = Map.empty ++ (for (name <- defsMap.keys) yield (name, new BoundVar()))
+    val namesMap: Map[String, BoundVar] = Map.empty ++ (for (name <- defsMap.keys) yield (name, new BoundVar(Some(name))))
     val recursiveContext = context ++ namesMap
     val newdefs = for ((n, d) <- defsMap) yield {
       d.convert(namesMap(n), recursiveContext, typecontext)
@@ -304,7 +275,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       if (formalsMap contains name) {
         reportProblem(DuplicateTypeFormalException(name) at ast)
       } else {
-        val w = new BoundTypevar()
+        val w = new BoundTypevar(Some(name))
         newTypeFormals = w :: newTypeFormals
         formalsMap = formalsMap + { (name, w) }
       }

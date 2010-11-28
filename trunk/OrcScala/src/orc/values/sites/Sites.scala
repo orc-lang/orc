@@ -34,12 +34,17 @@ trait SiteMetaData {
 
 trait Site extends OrcValue with SiteMetaData {
   def call(args: List[AnyRef], callingToken: TokenAPI): Unit
-  def name: String = this.getClass().toString()
-  def orcType(argTypes: List[Type]): Type
   
+  def name: String = this.getClass().toString()
   def populateMetaData(args: List[AnyRef], callingToken: TokenAPI) : Unit = {}
   override def toOrcSyntax() = this.name
 }
+
+trait TypedSite extends Site {
+  val orcType: orc.types.Type
+}
+
+trait UntypedSite extends Site
 
 trait PartialSite extends Site {
   def call(args: List[AnyRef], token: TokenAPI) {
@@ -64,10 +69,6 @@ trait TotalSite extends Site {
   }
   
   def evaluate(args: List[AnyRef]): AnyRef
-}
-
-trait UntypedSite extends Site {
-  def orcType(argTypes: List[Type]): Type = Bot()
 }
 
 trait UnimplementedSite extends Site {

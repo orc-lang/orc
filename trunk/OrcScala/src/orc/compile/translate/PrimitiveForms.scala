@@ -16,6 +16,7 @@
 package orc.compile.translate
 
 import orc.ast.oil.named._
+import orc.ast.oil.named.Conversions._
 import orc.lib.builtin._
 import orc.ast.oil._
 import orc.ast.ext
@@ -83,7 +84,7 @@ object PrimitiveForms {
       for (ext.Constructor(name, types) <- constructors) yield { makeTuple(List(Constant(name), Constant(BigInt(types.size)))) }
     val pairsVar = new BoundVar()
 
-    translator.unfold(datatypePairs, makeTuple) > pairsVar >
+    unfold(datatypePairs, makeTuple) > pairsVar >
       Call(datatypeSite, List(pairsVar), Some(List(declaredVariant)))
   }
 
