@@ -39,7 +39,7 @@
 	  <xs:attributeGroup ref="varnamed" />
 	</xs:complexType>
 
-	<!--  Combinator (AST)  -->
+	<!--  Combinators (AST)  -->
   <xs:complexType name="combinator">
 		<xs:sequence>
 		  <xs:element name="left" type="exp" />
@@ -154,10 +154,10 @@
 				<xs:element name="parallel" type="combinator" />
 				
 				<!--  f >> g  -->
-				<xs:element name="sequence" type="combinator" />
+				<xs:element name="sequence" type="binding_combinator" />
 				
 				<!--  f << g  -->
-				<xs:element name="prune" type="combinator" />
+				<xs:element name="prune" type="binding_combinator" />
 				
 				<!--  f ; g  -->
 				<xs:element name="otherwise" type="combinator" />
@@ -217,6 +217,7 @@
 						  <xs:element name="body" type="exp" />
 					  </xs:sequence>
 					  <xs:attributeGroup ref="ast" />
+					  <xs:attributeGroup ref="varnamed" />
 				  </xs:complexType>
 				</xs:element>
 				
@@ -383,6 +384,7 @@
     <xs:attribute name="typearity" type="xs:integer" use="required"/>
     <xs:attribute name="arity" type="xs:integer" use="required"/>
     <xs:attributeGroup ref="ast"/>
+    <xs:attributeGroup ref="varnamed" />
   </xs:complexType>
 	
 

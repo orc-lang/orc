@@ -45,6 +45,7 @@ trait SimpleCallableType extends CallableType {
   
 }
 
+
 /* Use case: no type arguments, one argument */
 trait UnaryCallableType extends SimpleCallableType {
   

@@ -25,7 +25,7 @@ import orc.error.compiletime.typing.ArgumentTypeMismatchException
 case class TupleType(elements: List[Type]) extends UnaryCallableType {
  
    assert(elements.size > 1)
-  
+   
    override def toString = elements.mkString("(", ", ", ")")
   
    override def join(that: Type): Type = {
@@ -55,7 +55,15 @@ case class TupleType(elements: List[Type]) extends UnaryCallableType {
   
   override def call(argType: Type) = {
     argType match {
-      case IntegerConstantType(i) => elements(i.toInt)
+      case IntegerConstantType(i) => {
+        val index = i.toInt
+        if (index >= 0 && index < elements.size) {
+          elements(i.toInt)
+        }
+        else {
+          Bot
+        }
+      }
       case IntegerType => elements reduceLeft { _ join _ }
       case t => throw new ArgumentTypeMismatchException(0, IntegerType, t)
     }

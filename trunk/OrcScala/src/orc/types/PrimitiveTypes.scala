@@ -31,6 +31,7 @@ object IntegerType extends Type {
 }
 
 /* A dependent type, usually used to index into tuples. */
+// TODO: Allow join 
 case class IntegerConstantType(i: scala.math.BigInt) extends Type {
 
   override def toString = "Integer(=" + i.toString + ")"
@@ -39,7 +40,17 @@ case class IntegerConstantType(i: scala.math.BigInt) extends Type {
     that match {
       case IntegerConstantType(j) if (i equals j) => this
       case IntegerConstantType(_) => IntegerType
+      case Bot => this
       case _ => IntegerType join that
+    }
+  }
+  
+  override def meet(that: Type): Type = {
+    that match {
+      case IntegerConstantType(j) if (i equals j) => this
+      case IntegerConstantType(_) => Bot
+      case Top => this
+      case _ => Bot
     }
   }
   
@@ -51,3 +62,19 @@ case class IntegerConstantType(i: scala.math.BigInt) extends Type {
     }
   }
 }
+
+
+/* A dependent type, used to index into records, objects, and the like. */
+case class FieldType(f: String) extends Type {
+
+  override def toString = "." + f
+  
+  override def <(that: Type): Boolean = {
+    that match {
+      case FieldType(`f`) => true
+      case _ => super.<(that)
+    }
+  }
+}
+
+

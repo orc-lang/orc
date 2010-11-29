@@ -14,14 +14,16 @@
 package orc.lib.bool
 
 import orc.values.sites.TotalSite
-import orc.values.sites.UntypedSite
+import orc.values.sites.TypedSite
 import orc.error.runtime.ArityMismatchException
 import orc.error.runtime.ArgumentTypeMismatchException
+import orc.types.SimpleFunctionType
+import orc.types.BooleanType
 
 /**
  * Logical negation site
  */
-object Not extends TotalSite with UntypedSite {
+object Not extends TotalSite with TypedSite {
   override def name = "Not"
   def evaluate(args: List[AnyRef]) =
     args match {
@@ -29,4 +31,6 @@ object Not extends TotalSite with UntypedSite {
       case List(a) => throw new ArgumentTypeMismatchException(0, "Boolean", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
     }
+  
+  val orcType = SimpleFunctionType(BooleanType, BooleanType)
 }

@@ -77,3 +77,11 @@ class NoMinimalTypeException() extends
 class OverconstrainedTypeVariableException() extends
   TypeException("A type argument is overconstrained; inference failed. Please add explicit type arguments. There may also be an underlying type error.") with SeverityError
   
+  
+
+class TupleSizeException(val sizeExpected: Int, val sizeReceived: Int) extends
+  TypeException("Expected a tuple of size " + sizeExpected + ", got size " + sizeReceived + " instead.") with SeverityError
+
+class RecordShapeMismatchException(val nonconformingRecordType: orc.types.RecordType, val missingField: String) extends
+  TypeException("Type " + nonconformingRecordType + " is missing field " + missingField + ", which is required by this record pattern.") with SeverityError
+  

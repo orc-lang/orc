@@ -25,9 +25,7 @@ case class FunctionType(val typeFormals: List[TypeVariable], val argTypes: List[
   
   val arity = argTypes.size
   val typeArity = typeFormals.size
-  
-  def this(argTypes: List[Type], returnType: Type) = this(Nil, argTypes, returnType)
-  
+    
   override def toString = "lambda" + typeFormals.mkString("[",", ","]") + argTypes.mkString("(",", ",")") + " :: " + returnType
   
   override def join(that: Type): Type = that match {
@@ -88,4 +86,13 @@ case class FunctionType(val typeFormals: List[TypeVariable], val argTypes: List[
     val newThat = ( that subst (sharedFormals, that.typeFormals) ).asInstanceOf[FunctionType]
     (newThis, newThat)
   }
+}
+
+object SimpleFunctionType {
+  
+  /* Use cases */
+  def apply(returnType: Type) = FunctionType(Nil, Nil, returnType)
+  def apply(argType: Type, returnType: Type) = FunctionType(Nil, List(argType), returnType)
+  def apply(argTypes: List[Type], returnType: Type) = FunctionType(Nil, argTypes, returnType)
+  
 }
