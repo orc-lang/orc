@@ -15,6 +15,7 @@
 package orc.types
 
 import scala.collection.immutable.HashMap
+import orc.error.compiletime.typing.ArgumentTypeMismatchException
 
 /**
  * 
@@ -22,8 +23,14 @@ import scala.collection.immutable.HashMap
  *
  * @author dkitchin
  */
-case class RecordType(entries: Map[String,Type]) extends Type {
+case class RecordType(entries: Map[String,Type]) extends UnaryCallableType {
 
+  override def toString = {
+    val ks = entries.keys.toList
+    val entryStrings = ks map { k => k + " :: " + entries(k) }
+    entryStrings.mkString("{. ",", "," .}")
+  }
+  
   override def join(that: Type): Type = {
      that match {
        case RecordType(otherEntries) => {
@@ -71,6 +78,13 @@ case class RecordType(entries: Map[String,Type]) extends Type {
   
   override def subst(sigma: Map[TypeVariable, Type]): Type = {
     RecordType(entries mapValues { _ subst sigma })
+  }
+  
+  override def call(argType: Type) = {
+    argType match {
+      case FieldType(f) => entries.getOrElse(f, Bot)
+      case t => throw new ArgumentTypeMismatchException(0, FieldType("_"), t)
+    }
   }
   
 }

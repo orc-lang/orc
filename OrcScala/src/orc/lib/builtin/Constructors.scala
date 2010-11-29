@@ -5,8 +5,12 @@ import orc.values.sites._
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
 import orc.types.SimpleCallableType
-import orc.types.TupleType
-import orc.types.Type
+import orc.types._
+
+
+object OptionType extends SimpleTypeConstructor("Option", Covariant)
+object ListType extends SimpleTypeConstructor("List", Covariant)
+
 
 object TupleConstructor extends TotalSite with TypedSite {
   override def name = "Tuple"
@@ -17,7 +21,7 @@ object TupleConstructor extends TotalSite with TypedSite {
   }
 }
 
-object NoneConstructor extends TotalSite with Extractable with UntypedSite {
+object NoneConstructor extends TotalSite with Extractable with TypedSite {
   override def name = "None"
   def evaluate(args: List[AnyRef]) =
     args match {
@@ -25,9 +29,11 @@ object NoneConstructor extends TotalSite with Extractable with UntypedSite {
       case _ => throw new ArityMismatchException(0, args.size)
   }
   override def extract = NoneExtractor
+  
+  val orcType = SimpleFunctionType(OptionType(Bot))
 }
 
-object SomeConstructor extends TotalSite with Extractable with UntypedSite {
+object SomeConstructor extends TotalSite with Extractable with TypedSite {
   override def name = "Some"
   def evaluate(args: List[AnyRef]) =
     args match {
@@ -35,11 +41,13 @@ object SomeConstructor extends TotalSite with Extractable with UntypedSite {
       case _ => throw new ArityMismatchException(1, args.size)
   }
   override def extract = SomeExtractor
+  
+  val orcType = new UnaryCallableType { def call(t: Type) = OptionType(t) }
 }
 
 
 
-object NilConstructor extends TotalSite with Extractable with UntypedSite {
+object NilConstructor extends TotalSite with Extractable with TypedSite {
   override def name = "Nil"
   def evaluate(args: List[AnyRef]) =
     args match {
@@ -47,9 +55,11 @@ object NilConstructor extends TotalSite with Extractable with UntypedSite {
       case _ => throw new ArityMismatchException(0, args.size)
   }
   override def extract = NilExtractor
+  
+  val orcType = SimpleFunctionType(ListType(Bot))
 }
 
-object ConsConstructor extends TotalSite with Extractable with UntypedSite {
+object ConsConstructor extends TotalSite with Extractable with TypedSite {
   override def name = "Cons"
   def evaluate(args: List[AnyRef]) =
     args match {
@@ -58,6 +68,11 @@ object ConsConstructor extends TotalSite with Extractable with UntypedSite {
       case _ => throw new ArityMismatchException(2, args.size)
   }
   override def extract = ConsExtractor
+  
+  val orcType = {
+    val X = new TypeVariable()
+    FunctionType(List(X), List(X, ListType(X)), ListType(X))
+  }
 }
 
 /* 
@@ -68,19 +83,30 @@ object ConsConstructor extends TotalSite with Extractable with UntypedSite {
  * is not Extractable, since record extraction is a specific two-step process,
  * parametrized by the target shape of the record.
  */
-object RecordConstructor extends TotalSite with UntypedSite {
+object RecordConstructor extends TotalSite with TypedSite {
   override def name = "Record"
   override def evaluate(args: List[AnyRef]) = {
     val valueMap = new scala.collection.mutable.HashMap[String,AnyRef]()
     args.zipWithIndex map
       { case (v: AnyRef, i: Int) =>
           v match {
-            case OrcTuple(List(key: String, value : AnyRef)) =>
+            case OrcTuple(List(Field(key), value : AnyRef)) =>
               valueMap += ( (key,value) )
-            case _ => throw new ArgumentTypeMismatchException(i, "(String, AnyRef)", if (v != null) v.getClass().toString() else "null")
+            case _ => throw new ArgumentTypeMismatchException(i, "(Field, _)", if (v != null) v.getClass().toString() else "null")
           }
       }
     OrcRecord(scala.collection.immutable.HashMap.empty ++ valueMap)
+  }
+  
+  val orcType = new SimpleCallableType {
+    def call(argTypes: List[Type]) = { 
+      val bindings = 
+        (argTypes.zipWithIndex) map {
+          case (TupleType(List(FieldType(f), t)), _) => (f, t)
+          case (t, i) => throw new ArgumentTypeMismatchException(i, "(Field, _)", t.toString)
+        }
+      RecordType(bindings.toMap)
+    }
   }
 }
 

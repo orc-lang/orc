@@ -20,7 +20,9 @@ import orc.ast.oil.named.{Expression, Stop, Hole, Call, ||, ow, <, >, DeclareDef
 import orc.types._
 import orc.error.compiletime.typing._
 import orc.util.OptionMapExtension._
-import orc.values.Signal
+import orc.values.{Signal, Field, OrcTuple}
+import scala.math.BigInt
+import scala.math.BigDecimal
 import orc.values.sites.TypedSite
 import orc.compile.typecheck.ConstraintSet._
 
@@ -350,8 +352,9 @@ object Typechecker {
     value match {
       case Signal => SignalType
       case _ : java.lang.Boolean => BooleanType
-      case i : scala.math.BigInt => IntegerConstantType(i)
-      case _ : scala.math.BigDecimal => NumberType
+      case i : BigInt => IntegerConstantType(i)
+      case _ : BigDecimal => NumberType
+      case Field(f) => FieldType(f)
       case s : TypedSite => s.orcType // SupportForSiteInvocation
       // case _ : String => JavaClassType(java.lang.String.class) 
       // SupportForJavaObjectInvocation

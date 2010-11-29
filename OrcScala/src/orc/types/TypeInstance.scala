@@ -87,7 +87,4 @@ case class TypeInstance(tycon: TypeConstructor, args: List[Type]) extends Type {
 
 
 
-trait TypeConstructor {
-  def variances: List[Variance] 
-}
 

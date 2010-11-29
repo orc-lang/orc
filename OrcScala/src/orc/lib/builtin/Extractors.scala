@@ -1,18 +1,19 @@
 package orc.lib.builtin
 
-import orc.ast.oil.nameless.Type
 import orc.values._
 import orc.values.sites._
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
+import orc.error.compiletime.typing._
 import orc.util.OptionMapExtension._
+import orc.types._
 
 trait Extractable extends Site {
   def extract: PartialSite
 }
 
 
-object NoneExtractor extends PartialSite with UntypedSite {
+object NoneExtractor extends PartialSite with TypedSite {
   override def name = "None?"
   def evaluate(args: List[AnyRef]) =
     args match {
@@ -21,10 +22,12 @@ object NoneExtractor extends PartialSite with UntypedSite {
       case List(a) => throw new ArgumentTypeMismatchException(0, "Option", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
   }
+  
+  val orcType = SimpleFunctionType(OptionType(Top), SignalType)
 }
 
 
-object SomeExtractor extends PartialSite with UntypedSite {
+object SomeExtractor extends PartialSite with TypedSite {
   override def name = "Some?"
   def evaluate(args: List[AnyRef]) =
     args match {
@@ -33,10 +36,19 @@ object SomeExtractor extends PartialSite with UntypedSite {
       case List(a) => throw new ArgumentTypeMismatchException(0, "Option", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
   }
+  
+  val orcType = new UnaryCallableType {
+    def call(argType: Type): Type = {
+      argType match {
+        case OptionType(t) => t
+        case t => throw new ArgumentTypeMismatchException(0, "Option[_]", t.toString)
+      }
+    }
+  }
 }
 
 
-object NilExtractor extends PartialSite with UntypedSite {
+object NilExtractor extends PartialSite with TypedSite {
   override def name = "Nil?"
   def evaluate(args: List[AnyRef]) = {
     args match {
@@ -48,12 +60,14 @@ object NilExtractor extends PartialSite with UntypedSite {
       case List(c:java.util.List[_]) if (c.size != 0) => None
       case List(a) => throw new ArgumentTypeMismatchException(0, "List", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
+    }
   }
-  }
+  
+  val orcType = SimpleFunctionType(ListType(Top), SignalType)
 }
 
 
-object ConsExtractor extends PartialSite with UntypedSite {
+object ConsExtractor extends PartialSite with TypedSite {
   override def name = "Cons?"
   def evaluate(args: List[AnyRef]) =
     args match {
@@ -70,6 +84,15 @@ object ConsExtractor extends PartialSite with UntypedSite {
       case List(a) => throw new ArgumentTypeMismatchException(0, "List", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
   }
+  
+  val orcType = new UnaryCallableType {
+    def call(argType: Type): Type = {
+      argType match {
+        case ListType(t) => TupleType(List(t, ListType(t)))
+        case t => throw new ArgumentTypeMismatchException(0, "List[_]", t.toString)
+      }
+    }
+  }
 }
 
 
@@ -78,7 +101,7 @@ object ConsExtractor extends PartialSite with UntypedSite {
  * If the check succeeds, the Some(t) is returned, 
  * else None.
  */
-object TupleArityChecker extends PartialSite with UntypedSite {
+object TupleArityChecker extends PartialSite with TypedSite {
   override def name = "TupleArityChecker?"
   def evaluate(args: List[AnyRef]) =
     args match {
@@ -88,9 +111,30 @@ object TupleArityChecker extends PartialSite with UntypedSite {
         } else {
           None
         }
+      case List(_ : OrcTuple, a) => throw new ArgumentTypeMismatchException(1, "Integer", if (a != null) a.getClass().toString() else "null")
       case List(a, _) => throw new ArgumentTypeMismatchException(0, "Tuple", if (a != null) a.getClass().toString() else "null")
-      case _ => throw new ArityMismatchException(1, args.size)
+      case _ => throw new ArityMismatchException(2, args.size)
   }
+  
+  val orcType = new SimpleCallableType {
+    def call(argTypes: List[Type]): Type = {
+      argTypes match {
+        case List(t@ TupleType(elements), IntegerConstantType(i)) => {
+          if (elements.size != i) {
+            throw new TupleSizeException(i.toInt, elements.size)
+          }
+          OptionType(t)
+        }
+        case List(t : TupleType, IntegerType) => {
+          OptionType(t)
+        }
+        case List(_ : TupleType, t) => throw new ArgumentTypeMismatchException(1, "Integer", t.toString)
+        case List(t, _) => throw new ArgumentTypeMismatchException(0, "Tuple", t.toString)
+        case _ => throw new ArityMismatchException(2, argTypes.size)
+      }
+    }
+  }
+  
 }
 
 
@@ -109,7 +153,7 @@ object FindExtractor extends TotalSite with UntypedSite {
 /*
  * Extract a record, based on a target shape. 
  */
-case class RecordMatcher(shape: List[String]) extends PartialSite with UntypedSite {
+case class RecordMatcher(shape: List[String]) extends PartialSite with TypedSite {
   override def name = "Record" + shape.mkString("(", ",", ")") + "?"
   override def evaluate(args: List[AnyRef]) =
     args match {
@@ -119,4 +163,22 @@ case class RecordMatcher(shape: List[String]) extends PartialSite with UntypedSi
       case List(_) => None
       case _ => throw new ArityMismatchException(1, args.size)
   }
+  
+  val orcType = new UnaryCallableType {
+    def call(argType: Type): Type = {
+      argType match {
+        case t@ RecordType(entries) => {
+          val matchedElements = 
+            for (f <- shape) yield {
+              entries.getOrElse(f, throw new RecordShapeMismatchException(t, f))
+            }
+          TupleType(matchedElements.toList)
+        }
+        case t => throw new ArgumentTypeMismatchException(0, "Record", t.toString)
+      }
+    }
+  }
+  
+
+  
 }
