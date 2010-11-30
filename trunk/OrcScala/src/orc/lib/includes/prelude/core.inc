@@ -27,11 +27,11 @@ User Guide.
 {-
 Basic types
 -}
-type String = "java.lang.String"
-type Number = "java.lang.BigDecimal"
-type Boolean = "java.lang.Boolean"
-type Integer = "java.lang.BigInt"
-type Signal = "orc.ast.oil.Signal"
+type String = "orc.types.StringType"
+type Number = "orc.types.NumberType"
+type Boolean = "orc.types.BooleanType"
+type Integer = "orc.types.IntegerType"
+type Signal = "orc.types.SignalType"
 
 {--
 @site let() :: Signal

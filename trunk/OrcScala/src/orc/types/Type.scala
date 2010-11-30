@@ -185,6 +185,14 @@ trait Type extends TypeInterface {
     if (bindings.isEmpty) { this } else { subst(bindings) }
   }
   
+  def letLike(ts: List[Type]): Type = {
+    ts match {
+      case Nil => SignalType
+      case List(t) => t
+      case _ => TupleType(ts)
+    }
+  }
+  
   /* Extend join, meet, and < to lists of types */
   implicit def enrichTypeList(types: List[Type]): RichTypeList = new RichTypeList(types)
 }

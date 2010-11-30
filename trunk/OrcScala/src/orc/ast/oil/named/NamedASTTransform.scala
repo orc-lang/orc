@@ -158,12 +158,13 @@ trait NamedASTTransform extends NamedASTFunction
         case TypeAbstraction(typeformals, t) => {
           TypeAbstraction(typeformals, transform(t, typeformals ::: typecontext))
         }
-        case VariantType(variants) => {
+        case VariantType(typeformals, variants) => {
+          val newTypeContext = typeformals ::: typecontext
           val newVariants =
             for ((name, variant) <- variants) yield {
-              (name, variant map { _ map recurse })
+              (name, variant map { transform(_, newTypeContext) })
             }
-          VariantType(newVariants)
+          VariantType(typeformals, newVariants)
         }
       }
     }

@@ -41,3 +41,15 @@ class SimpleTypeConstructor(val name: String, val givenVariances: Variance*) ext
     }
   }
 }
+
+case class DatatypeConstructor(typeFormals: List[TypeVariable], variants: List[(String, List[Type])]) extends TypeConstructor {
+  
+  val variances = 
+    typeFormals map { x => 
+      Constant 
+    }
+
+}
+
+
+

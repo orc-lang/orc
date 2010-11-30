@@ -42,8 +42,8 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     case TypeApplication(tycon, typeactuals) => tycon :: typeactuals
     case AssertedType(assertedType) => List(assertedType)
     case TypeAbstraction(typeformals, t) => typeformals ::: List(t)
-    case VariantType(variants) => {
-      for ((_, variant) <- variants; Some(t) <- variant) yield t
+    case VariantType(typeformals, variants) => {
+      typeformals ::: ( for ((_, variant) <- variants; t <- variant) yield t )
     }
     case _ => Nil
   }
@@ -166,8 +166,8 @@ case class FunctionType(typeformals: List[BoundTypevar], argtypes: List[Type], r
 case class TypeAbstraction(typeformals: List[BoundTypevar], t: Type) extends Type
 case class ImportedType(classname: String) extends Type
 case class ClassType(classname: String) extends Type
-case class VariantType(variants: List[(String, List[Option[Type]])]) extends Type
-
+case class VariantType(typeformals: List[BoundTypevar], variants: List[(String, List[Type])]) extends Type
+  with hasOptionalVariableName
 
 trait Typevar extends Type with hasOptionalVariableName
   case class UnboundTypevar(name: String) extends Typevar {

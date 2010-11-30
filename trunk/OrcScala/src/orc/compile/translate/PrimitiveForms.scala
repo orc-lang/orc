@@ -20,7 +20,7 @@ import orc.ast.oil.named.Conversions._
 import orc.lib.builtin._
 import orc.ast.oil._
 import orc.ast.ext
-import orc.values.Signal
+import orc.values.{Signal, Field}
 import orc.values.sites.Site
 
 object PrimitiveForms {
@@ -44,8 +44,9 @@ object PrimitiveForms {
   val callIsNone = unaryBuiltinCall(NoneExtractor) _
   val callTupleArityChecker = binaryBuiltinCall(TupleArityChecker) _
   
-  def callRecordMatcher(shape: List[String]) = {
-    unaryBuiltinCall(RecordMatcher(shape)) _
+  def callRecordMatcher(a: Argument, shape: List[String]) = {
+    val shapeArgs = shape map { s: String => Constant(Field(s)) }
+    Call(Constant(RecordMatcher), a :: shapeArgs, None)
   }
   
   def makeUnapply(constructor: Argument, a: Argument) = {

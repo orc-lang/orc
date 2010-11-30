@@ -150,35 +150,39 @@ object FindExtractor extends TotalSite with UntypedSite {
 }
 
 
-/*
- * Extract a record, based on a target shape. 
- */
-case class RecordMatcher(shape: List[String]) extends PartialSite with TypedSite {
-  override def name = "Record" + shape.mkString("(", ",", ")") + "?"
-  override def evaluate(args: List[AnyRef]) =
-    args match {
-      case List(OrcRecord(entries)) => {
-        shape optionMap { entries.get } map { OrcValue.letLike }
+
+
+
+object RecordMatcher extends PartialSite with TypedSite {
+  override def name = "Record?"
+    
+  override def evaluate(args: List[AnyRef]): Option[AnyRef] =
+    args match {  
+      case List(OrcRecord(entries), shape@ _*) => {
+        val matchedValues: Option[List[AnyRef]] = 
+          shape.toList.zipWithIndex optionMap { 
+            case (Field(f),_) => entries get f
+            case (a,i) => throw new ArgumentTypeMismatchException(i+1, "Field", if (a != null) a.getClass().toString() else "null")
+          } 
+        matchedValues map { OrcValue.letLike }
       }
-      case List(_) => None
-      case _ => throw new ArityMismatchException(1, args.size)
-  }
+      case List(_, _*) => None
+    } 
   
-  val orcType = new UnaryCallableType {
-    def call(argType: Type): Type = {
-      argType match {
-        case t@ RecordType(entries) => {
+  
+  val orcType = new SimpleCallableType {
+    def call(argTypes: List[Type]): Type = {
+      argTypes match {
+        case List(rt @ RecordType(entries), shape @ _*) => {
           val matchedElements = 
-            for (f <- shape) yield {
-              entries.getOrElse(f, throw new RecordShapeMismatchException(t, f))
+            shape.toList.zipWithIndex map {
+              case (FieldType(f),_) => entries.getOrElse(f, throw new RecordShapeMismatchException(rt, f)) 
+              case (t,i) => throw new ArgumentTypeMismatchException(i+1, "Record", t.toString)
             }
-          TupleType(matchedElements.toList)
+          letLike(matchedElements)
         }
-        case t => throw new ArgumentTypeMismatchException(0, "Record", t.toString)
+        case List(t,_*) => throw new ArgumentTypeMismatchException(0, "Record", t.toString)
       }
     }
   }
-  
-
-  
 }

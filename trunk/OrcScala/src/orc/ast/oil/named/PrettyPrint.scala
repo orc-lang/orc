@@ -86,6 +86,7 @@ class PrettyPrint {
       case (x: BoundVar) => x.optionalVariableName.getOrElse(lookup(x)) 
       case UnboundVar(s) => "?" + s  
       case u: BoundTypevar => u.optionalVariableName.getOrElse(lookup(u))
+      case UnboundTypevar(s) => "?" + s
       case Top() => "Top"
       case Bot() => "Bot"
       case FunctionType(typeformals, argtypes, returntype) => {
@@ -94,15 +95,16 @@ class PrettyPrint {
       case TupleType(elements) => paren(elements)
       case TypeApplication(tycon, typeactuals) => reduce(tycon) + brack(typeactuals)
       case AssertedType(assertedType) => reduce(assertedType) + "!"
-      case TypeAbstraction(typeformals, t) => brack(typeformals) + "{" + reduce(t) + "}"
+      case TypeAbstraction(typeformals, t) => brack(typeformals) + "(" + reduce(t) + ")"
       case ImportedType(classname) => classname
       case ClassType(classname) => classname
-      case VariantType(variants) => {
-        (for ((name, variant) <- variants) yield {
-          name + (variant map {t: Option[Type] => (t map reduce).getOrElse("_")}).mkString(",")
+      case VariantType(typeformals, variants) => {
+        val variantSeq = 
+          (for ((name, variant) <- variants) yield {
+          name + "(" + (variant map reduce).mkString(",") + ")"
         }).mkString(" | ")
+        brack(typeformals) + "(" + variantSeq.mkString(" | ") + ")"
       }
-      case UnboundTypevar(s) => "?" + s
       case _ => "???"
     }
 

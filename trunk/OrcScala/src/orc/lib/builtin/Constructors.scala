@@ -90,9 +90,9 @@ object RecordConstructor extends TotalSite with TypedSite {
     args.zipWithIndex map
       { case (v: AnyRef, i: Int) =>
           v match {
-            case OrcTuple(List(Field(key), value : AnyRef)) =>
+            case OrcTuple(List(key: String, value : AnyRef)) =>
               valueMap += ( (key,value) )
-            case _ => throw new ArgumentTypeMismatchException(i, "(Field, _)", if (v != null) v.getClass().toString() else "null")
+            case _ => throw new ArgumentTypeMismatchException(i, "(String, _)", if (v != null) v.getClass().toString() else "null")
           }
       }
     OrcRecord(scala.collection.immutable.HashMap.empty ++ valueMap)

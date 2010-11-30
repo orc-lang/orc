@@ -47,8 +47,8 @@ sealed abstract class NamelessAST extends AST {
     case TypeApplication(_, typeactuals) => typeactuals
     case AssertedType(assertedType) => List(assertedType)
     case TypeAbstraction(_, t) => List(t)
-    case VariantType(variants) => {
-      for ((_, variant) <- variants; Some(t) <- variant) yield t
+    case VariantType(_, variants) => {
+      for ((_, variant) <- variants; t <- variant) yield t
     }
     case _ => Nil
   }
@@ -168,7 +168,7 @@ case class FunctionType(typeFormalArity: Int, argTypes: List[Type], returnType: 
 case class TypeAbstraction(typeFormalArity: Int, t: Type) extends Type
 case class ImportedType(classname: String) extends Type
 case class ClassType(classname: String) extends Type
-case class VariantType(variants: List[(String, List[Option[Type]])]) extends Type
+case class VariantType(typeFormalArity: Int, variants: List[(String, List[Type])]) extends Type
 case class UnboundTypeVariable(name: String) extends Type with hasOptionalVariableName {
   optionalVariableName = Some(name)
 }
