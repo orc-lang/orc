@@ -355,18 +355,16 @@
     <xs:element name="varianttype">
       <xs:complexType>
         <xs:sequence>
-          <xs:element name="variant" minOccurs="0" maxOccurs="unbounded">
+          <xs:element name="variant" maxOccurs="unbounded">
             <xs:complexType>
               <xs:sequence>
-                <xs:choice minOccurs="0" maxOccurs="unbounded">
-                  <xs:group ref="types" />
-                  <xs:element name="blank" />
-                </xs:choice>
-              </xs:sequence>
+							  <xs:group ref="types" minOccurs="0" maxOccurs="unbounded" />
+							</xs:sequence>
               <xs:attribute name="name" type="xs:string" />
             </xs:complexType>
           </xs:element>
         </xs:sequence>
+        <xs:attribute name="typearity" type="arity" use="required" />
         <xs:attributeGroup ref="ast" />
       </xs:complexType>
     </xs:element>

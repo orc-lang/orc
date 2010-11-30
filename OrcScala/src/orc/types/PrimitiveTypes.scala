@@ -78,3 +78,6 @@ case class FieldType(f: String) extends Type {
 }
 
 
+
+object StringType extends JvmObjectType(classOf[java.lang.String])
+

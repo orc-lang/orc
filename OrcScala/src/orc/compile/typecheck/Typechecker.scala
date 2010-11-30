@@ -20,11 +20,12 @@ import orc.ast.oil.named.{Expression, Stop, Hole, Call, ||, ow, <, >, DeclareDef
 import orc.types._
 import orc.error.compiletime.typing._
 import orc.util.OptionMapExtension._
-import orc.values.{Signal, Field, OrcTuple}
+import orc.values.{Signal, Field}
 import scala.math.BigInt
 import scala.math.BigDecimal
 import orc.values.sites.TypedSite
 import orc.compile.typecheck.ConstraintSet._
+import orc.compile.typecheck.Typeloader._
 
 /**
  * 
@@ -53,7 +54,15 @@ object Typechecker {
   type TypeContext = Map[syntactic.BoundTypevar, Type]
   type TypeOperatorContext = Map[syntactic.BoundTypevar, TypeOperator]
   
+  class TypeOperator(op: List[Type] => Type) {
+    def apply(ts: List[Type]) = op(ts)
+  }
+  
+  
   def apply(expr: Expression): (Expression, Type) = typeSynth(expr)(Map.empty, Map.empty, Map.empty)
+  
+  
+  
   
   def typeSynth(expr: Expression)(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): (Expression, Type) = {
     try {
@@ -123,6 +132,8 @@ object Typechecker {
       }
     }
   }
+  
+  
   
   
   def typeCheck(expr: Expression, T: Type)(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): Expression = {
@@ -198,6 +209,7 @@ object Typechecker {
   }
   
   
+  
 
   def typeDefs(defs: List[Def])(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): (List[Def], List[(syntactic.BoundVar, Type)]) = {
     defs match {
@@ -263,6 +275,9 @@ object Typechecker {
       }
     }
   }
+  
+  
+  
   
   def typeCall(syntacticTypeArgs: Option[List[syntactic.Type]], targetType: Type, argTypes: List[Type], checkReturnType: Option[Type])(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): (Option[List[syntactic.Type]], Type) = {
     
@@ -348,21 +363,26 @@ object Typechecker {
     (finalSyntacticTypeArgs, finalReturnType)
   }
 
+  
+  
+  
+  
   def typeValue(value: AnyRef): Type = {
     value match {
       case Signal => SignalType
       case _ : java.lang.Boolean => BooleanType
       case i : BigInt => IntegerConstantType(i)
       case _ : BigDecimal => NumberType
+      case _ : String => StringType
       case Field(f) => FieldType(f)
       case s : TypedSite => s.orcType // SupportForSiteInvocation
-      // case _ : String => JavaClassType(java.lang.String.class) 
-      // SupportForJavaObjectInvocation
+      case v => JvmObjectType(v.getClass()) // SupportForJavaObjectInvocation
       // SupportForXMLInvocation must be handled separately, since it
       // implicitly extends the Scala type scala.xml.Node
-      case _ => Top
     }
   }
+  
+  
   
   
   /**
@@ -450,144 +470,6 @@ object Typechecker {
     
     }
   }
-    
-  
-  
-  
-  
-  
-  /** 
-   * The following functions lift syntactic types to semantic types.
-   * They require contexts to resolve type variables.
-   *
-   * @author dkitchin
-   */
-  
-  /**
-   * Lift a syntactic type to a first-order semantic type.
-   */
-  def lift(t: syntactic.Type)(implicit typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): Type = {
-    t match {
-      case u: syntactic.BoundTypevar => typeContext(u)
-      case syntactic.Top() => Top
-      case syntactic.Bot() => Bot
-      case syntactic.TupleType(elements) => TupleType(elements map lift)
-      case syntactic.RecordType(entries) => RecordType(entries mapValues lift)
-      case syntactic.AssertedType(assertedType) => lift(assertedType) 
-      case syntactic.FunctionType(typeFormals, argTypes, returnType) => {
-        val newTypeFormals = typeFormals map { u => new TypeVariable(u) }
-        val typeBindings = typeFormals zip newTypeFormals
-        val newTypeContext = typeContext ++ typeBindings
-        val newArgTypes = argTypes map { lift(_)(newTypeContext, typeOperatorContext) }
-        val newReturnType = lift(returnType)(newTypeContext, typeOperatorContext)
-        FunctionType(newTypeFormals, newArgTypes, newReturnType)
-      }
-      case syntactic.TypeApplication(t, typeactuals) => {
-        val operator = liftToOperator(t)
-        operator(typeactuals map lift)
-      }
-      /*
-      case syntactic.ImportedType(classname) => {
-        // ensure class is a subtype of Type
-      }
-      
-      case syntactic.ClassType(classname) => {
-        // ensure class has no generic parameters
-      }
-      case syntactic.VariantType(variants) => {
-        
-      }
-      */
-      case syntactic.UnboundTypevar(name) => {
-        throw new UnboundTypeException(name)
-      }
-      case _ => throw new FirstOrderTypeExpectedException()
-    }
-  }
-  
-  /**
-   * Lift a syntactic type to a second-order semantic type.
-   */ 
-  def liftToOperator(t: syntactic.Type)(implicit typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): TypeOperator = {
-    t match {
-      case u: syntactic.BoundTypevar => typeOperatorContext(u)
-      /*
-      case syntactic.TypeAbstraction(typeformals, syntactic.VariantType(variants)) => {
-        
-      }
-      */
-      /*
-      case syntactic.ImportedType(classname) => {
-        // ensure class is a subtype of TypeOperator
-      }
-      case syntactic.ClassType(classname) => {
-        // ensure class has generic parameters; suspend on those parameters
-      }
-      */
-      case syntactic.UnboundTypevar(name) => {
-        throw new UnboundTypeException(name)
-      }
-      case _ => {
-        throw new SecondOrderTypeExpectedException()
-      }
-    }
-  }
-    
-  /**
-   * Lift a syntactic type to either a first or second order type;
-   * the kind is not known in advance.
-   */
-  def liftEither(t: syntactic.Type)(implicit typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): Either[Type, TypeOperator] = {
-    try {
-      Left(lift(t))
-    }
-    catch {
-      case _ : FirstOrderTypeExpectedException => {
-        Right(liftToOperator(t))
-      }
-    }
-  }
-  
-  
-  
-  /** 
-   * This function converts a semantic type back to a syntactic type.
-   * 
-   * The result is optional, since some semantic types will have
-   * no syntactic representation.
-   * 
-   * This conversion performs reverse lookups on typing contexts
-   * to find the syntactic type variable which originally bound
-   * the semantic type. If the result is not unique, reification fails.
-   * 
-   * @author dkitchin
-   */
-  def reify(that: Type)(implicit typecontext: TypeContext): Option[syntactic.Type] = {
-    None
-  }
-  
-}
 
-
-/*
- * Type operators.
- * 
- * 
- */
-case class TypeOperator(operator: List[Type] => Type) {
-    
-    def apply(actuals: List[Type]): Type = operator(actuals)
   
-    def withArity(arity: Int): TypeOperator = {
-      def newOperator(actuals: List[Type]): Type = {
-        if (actuals.size != arity) { 
-          throw new TypeArityException(arity, actuals.size)
-        }
-        else {
-          operator(actuals)
-        }
-      }
-      TypeOperator(newOperator)
-    }
-    
 }

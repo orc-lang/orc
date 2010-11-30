@@ -241,15 +241,10 @@ object OrcXML {
         <classtype>
           {classname}
         </classtype>
-      case VariantType(variants) =>
-        <varianttype>
-          {for ((n, l) <- variants) yield
-            <variant name={n}>
-              {l map {
-                case Some(t) => toXML(t)
-                case None => <blank/>
-              }}
-            </variant>
+      case VariantType(typeFormalArity, variants) =>
+        <varianttype typearity={typeFormalArity.toString}>
+          {for ((n, ts) <- variants) yield
+            <variant name={n}>{ ts map toXML }</variant>
           }
         </varianttype> 
       case Def(typeFormalArity: Int, arity: Int, body: Expression, argTypes, returnType) =>
@@ -432,18 +427,13 @@ object OrcXML {
       case <importedtype>{classname@ _*}</importedtype> =>
         ImportedType(classname.text.trim)
       case <classtype>{classname@ _*}</classtype> => ClassType(classname.text.trim)
-      case <varianttype>{variants@ _*}</varianttype> => {
-        val t1 = 
+      case vt@ <varianttype>{variants@ _*}</varianttype> => {
+        val typeFormalArity = (vt \ "@typearity").text.toInt
+        val newVariants = 
            for (v@ <variant>{params@ _*}</variant> <- variants) yield {
-             val t2 = for (p <- params) yield {
-               p match {
-                 case <blank/> => None
-                 case t => Some(typeFromXML(t))
-               }
-             }
-             ((v \ "@name").text, t2.toList)
+             ((v \ "@name").text, params.toList map typeFromXML)
            }
-        VariantType(t1.toList)
+        VariantType(typeFormalArity, newVariants.toList)
       }
     }
   }

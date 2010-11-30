@@ -76,7 +76,14 @@ class NoMinimalTypeException() extends
 
 class OverconstrainedTypeVariableException() extends
   TypeException("A type argument is overconstrained; inference failed. Please add explicit type arguments. There may also be an underlying type error.") with SeverityError
+
+case class TypeResolutionException(val typeName: String, cause: Throwable) 
+  extends CompilationException("Problem loading type "+typeName, cause) 
+  with SeverityFatal
   
+case class TypeOperatorResolutionException(val typeOperatorName: String, cause: Throwable) 
+  extends CompilationException("Problem loading type operator "+typeOperatorName, cause) 
+  with SeverityFatal
   
 
 class TupleSizeException(val sizeExpected: Int, val sizeReceived: Int) extends

@@ -92,7 +92,7 @@ trait NamedToNameless {
       case Bot() => nameless.Bot()
       case FunctionType(typeformals, argtypes, returntype) => {
         val newTypeContext = typeformals ::: typecontext
-        val newArgTypes = argtypes map toType
+        val newArgTypes = argtypes map { namedToNameless(_, newTypeContext) }
         val newReturnType = namedToNameless(returntype, newTypeContext)
         nameless.FunctionType(typeformals.size, newArgTypes, newReturnType)
       }
@@ -114,12 +114,13 @@ trait NamedToNameless {
       }
       case ImportedType(classname) => nameless.ImportedType(classname)
       case ClassType(classname) => nameless.ClassType(classname)
-      case VariantType(variants) => {
+      case VariantType(typeformals, variants) => {
+        val newTypeContext = typeformals ::: typecontext
         val newVariants =
           for ((name, variant) <- variants) yield {
-            (name, variant map {_ map toType})
+            (name, variant map { namedToNameless(_, newTypeContext) })
           }
-        nameless.VariantType(newVariants)
+        nameless.VariantType(typeformals.size, newVariants)
       }
       case UnboundTypevar(s) => nameless.UnboundTypeVariable(s)
     } 
