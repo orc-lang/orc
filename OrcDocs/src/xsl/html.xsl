@@ -18,8 +18,11 @@ Orc examples must use the "orc" CSS class.
 <xsl:template name="user.footer.content">
 <xsl:if test="$orc.demo">
 <script src="/orchard/orc.js" type="text/javascript"></script>
-</xsl:if>
-<script language="javascript">
+</xsl:if>	
+</xsl:template>
+	
+<xsl:template name="user.header.content">
+	<script language="javascript">
 	// Expandable content script from flooble.com.
 	// For more information please visit:
 	//   http://www.flooble.com/scripts/expand.php
@@ -30,8 +33,7 @@ Orc examples must use the "orc" CSS class.
 	function toggle(link, divId) { var lText = link.innerHTML; var d = getObject(divId);
 	  if (lText == '+') { link.innerHTML = '&#8722;'; d.style.display = 'block'; }
 	  else { link.innerHTML = '+'; d.style.display = 'none'; } }
-</script>
-	
+	</script>
 </xsl:template>
 	
 <!-- Match template for collapsible example boxes -->
@@ -51,9 +53,7 @@ Orc examples must use the "orc" CSS class.
 			<tr><td><xsl:value-of select="./@caption"></xsl:value-of></td><td align="right">
 			  [<a title="show/hide" href="javascript: void(0);" style="text-decoration: none; color: #000000; ">
 				<xsl:attribute name="id"><xsl:value-of select="$ex_link" /></xsl:attribute>
-				<xsl:attribute name="onclick">toggle(this, '<xsl:value-of select="$ex_content"/>')</xsl:attribute>
-					&#8722;
-				</a>]
+				<xsl:attribute name="onclick">toggle(this, '<xsl:value-of select="$ex_content"/>')</xsl:attribute>+</a>]
 			</td></tr>
 		</table>
 		<div style="padding: 3px;">
@@ -64,9 +64,9 @@ Orc examples must use the "orc" CSS class.
 		</div>
 	</div>
 	<!-- Start the box collapsed -->
-	<script language="javascript">toggle(this, '<xsl:value-of select="$ex_content"/>');</script>
+	<script language="javascript">window.onload=toggle(this, '<xsl:value-of select="$ex_content"/>');</script>
 	<noscript>
-		<para>"This example requires javascript to be rendered correctly."</para>
+		<para>"WARNING:  This example requires javascript to be rendered correctly."</para>
 		<xsl:apply-templates/>
 	</noscript>
 	</td></tr></table>
