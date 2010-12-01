@@ -33,6 +33,7 @@
 	  </section>
 	  <section id="ref.combinators.parallel.examples">
 		  <title>Examples</title>
+		  <examplescript/>
 		  <example caption="Example 1" id="ref.combinators.parallel.examples.one">
 <programlisting language="orc-demo"><![CDATA[
 -- Publish 1 and 2 in parallel  
@@ -42,7 +43,6 @@
 -- or 2 then 1
 ]]></programlisting>
 		  </example>
-		  <para></para>
 
 		  <example caption="Example 2" id="ref.combinators.parallel.examples.two">
 <programlisting><![CDATA[
@@ -57,7 +57,6 @@
 Google("cupcake") | Yahoo("cupcake")
 ]]></programlisting>
 		  </example>
-		  <para>  </para>
 		  
 	  </section>
 	  <section id="ref.combinators.parallel.links">
