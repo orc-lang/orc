@@ -23,9 +23,6 @@ import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.PartialSite;
 import orc.values.sites.compatibility.SiteAdaptor;
-import orc.values.sites.compatibility.type.Type;
-import orc.values.sites.compatibility.type.structured.ArrowType;
-import orc.values.sites.compatibility.type.structured.MultiType;
 
 /**
  * Factory for counters. 
@@ -94,8 +91,4 @@ public class Counter extends EvalSite {
 		};
 	}
 
-	@Override
-	public Type type() {
-		return new MultiType(new ArrowType(null/*FIXME:new CounterType()*/), new ArrowType(Type.INTEGER, null/*FIXME:new CounterType()*/));
-	}
 }

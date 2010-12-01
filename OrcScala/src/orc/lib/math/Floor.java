@@ -16,11 +16,12 @@ package orc.lib.math;
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
-import orc.values.sites.compatibility.type.Type;
-import orc.values.sites.compatibility.type.structured.ArrowType;
+import orc.values.sites.compatibility.Types;
+import orc.values.sites.TypedSite;
+import orc.types.Type;
 
 @SuppressWarnings("boxing")
-public class Floor extends EvalSite {
+public class Floor extends EvalSite implements TypedSite {
 
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
@@ -29,7 +30,7 @@ public class Floor extends EvalSite {
 	}
 
 	@Override
-	public Type type() {
-		return new ArrowType(Type.NUMBER, Type.INTEGER);
-	}
+	public Type orcType() {
+      return Types.function(Types.number(), Types.integer());
+   }
 }

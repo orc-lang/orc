@@ -22,9 +22,9 @@ import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.Args.NumericBinaryOperator;
-import orc.values.sites.compatibility.type.Type;
-import orc.values.sites.compatibility.type.structured.ArrowType;
-import orc.values.sites.compatibility.type.structured.MultiType;
+import orc.values.sites.compatibility.Types;
+import orc.values.sites.TypedSite;
+import orc.types.Type;
 
 /**
  * NB: this is overloaded to operate on strings,
@@ -32,7 +32,7 @@ import orc.values.sites.compatibility.type.structured.MultiType;
  * @author quark
  */
 @SuppressWarnings({ "boxing", "synthetic-access" })
-public class Add extends EvalSite {
+public class Add extends EvalSite implements TypedSite {
 	private static final MyOperator op = new MyOperator();
 
 	private static final class MyOperator implements NumericBinaryOperator<Number> {
@@ -105,14 +105,12 @@ public class Add extends EvalSite {
 	}
 
 	@Override
-	public Type type() {
-		final List<Type> alts = new LinkedList<Type>();
-
-		alts.add(new ArrowType(Type.INTEGER, Type.INTEGER, Type.INTEGER));
-		alts.add(new ArrowType(Type.NUMBER, Type.NUMBER, Type.NUMBER));
-		alts.add(new ArrowType(Type.STRING, Type.TOP, Type.STRING));
-		alts.add(new ArrowType(Type.TOP, Type.STRING, Type.STRING));
-
-		return new MultiType(alts);
+	public Type orcType() {
+	    return Types.overload(
+	      Types.function(Types.integer(), Types.integer(), Types.integer()),
+	      Types.function(Types.number(), Types.number(), Types.number()),
+	      Types.function(Types.string(), Types.number(), Types.number()),
+	      Types.function(Types.number(), Types.number(), Types.number())
+	    );
 	}
 }

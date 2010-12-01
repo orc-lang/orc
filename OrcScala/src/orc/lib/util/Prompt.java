@@ -27,14 +27,15 @@ import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.ThreadedPartialSite;
-import orc.values.sites.compatibility.type.Type;
-import orc.values.sites.compatibility.type.structured.ArrowType;
+import orc.values.sites.compatibility.Types;
+import orc.values.sites.TypedSite;
+import orc.types.Type;
 
 /**
  * A prompt dialog. Publishes the user's response. If the user hits Cancel,
  * publishes nothing.
  */
-public class Prompt extends ThreadedPartialSite {
+public class Prompt extends ThreadedPartialSite implements TypedSite {
 	protected static final String promptIconName = "orcPromptIcon.png";
 	protected static final Icon promptIcon = new ImageIcon(Prompt.class.getResource(promptIconName));
 
@@ -50,8 +51,8 @@ public class Prompt extends ThreadedPartialSite {
 	}
 
 	@Override
-	public Type type() {
-		return new ArrowType(Type.STRING, Type.STRING);
+	public Type orcType() {
+		return Types.function(Types.string(), Types.string());
 	}
 
 	public String runPromptDialog(final String title, final String message, Icon icon) throws InterruptedException {

@@ -16,14 +16,15 @@ package orc.lib.str;
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
-import orc.values.sites.compatibility.type.Type;
-import orc.values.sites.compatibility.type.structured.ArrowType;
+import orc.values.sites.compatibility.Types;
+import orc.values.sites.TypedSite;
+import orc.types.Type;
 
 /**
  * Convert an Orc literal to a String.
  * @author quark
  */
-public class Write extends EvalSite {
+public class Write extends EvalSite implements TypedSite {
   
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
@@ -32,7 +33,7 @@ public class Write extends EvalSite {
 	}
 
 	@Override
-	public Type type() {
-		return new ArrowType(Type.TOP, Type.STRING);
+	public Type orcType() {
+		return Types.function(Types.top(), Types.string());
 	}
 }

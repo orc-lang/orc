@@ -17,13 +17,7 @@ package orc.types
 import orc.error.compiletime.typing._
 
 /**
- * An opaquely callable type.
- * 
- * Note that FunctionType does not extend this trait, since its
- * type content is entirely structural; in particular, the typechecker
- * will check a call against the stated argument types of the function
- * and yield the return type, rather than synthesizing the argument
- * types and procedurally computing the return type as is done here. 
+ * A callable type.
  * 
  * @author dkitchin
  */
@@ -54,8 +48,24 @@ trait UnaryCallableType extends SimpleCallableType {
   def call(argTypes: List[Type]) = {
     argTypes match {
       case List(t) => call(t)
-      case _ => throw new ArgumentArityException(0, argTypes.size)
+      case _ => throw new ArgumentArityException(1, argTypes.size)
     }
   }
   
 }
+
+
+/* Use case: no type arguments, one field argument */
+trait TypeWithMembers extends UnaryCallableType {
+  
+  def getMember(member: String): Option[Type]
+  
+  override def call(argType: Type) = {
+    argType match {
+      case FieldType(f) => getMember(f).getOrElse(throw new NoSuchMemberException(this, f))
+      case t  => throw new ArgumentTypeMismatchException(0, FieldType("?"), t)
+    }
+  }
+  
+}
+

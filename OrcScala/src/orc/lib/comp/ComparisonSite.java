@@ -21,14 +21,16 @@ import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.Args.NumericBinaryOperator;
-import orc.values.sites.compatibility.type.Type;
-import orc.values.sites.compatibility.type.structured.ArrowType;
+import orc.values.sites.compatibility.Types;
+import orc.values.sites.TypedSite;
+import orc.types.Type;
+
 
 /**
  * @author quark
  */
 @SuppressWarnings({"synthetic-access", "boxing"})
-public abstract class ComparisonSite extends EvalSite {
+public abstract class ComparisonSite extends EvalSite implements TypedSite {
 	private static class MyOperator implements NumericBinaryOperator<Integer> {
 		@Override
 		public Integer apply(final BigInteger a, final BigInteger b) {
@@ -95,7 +97,7 @@ public abstract class ComparisonSite extends EvalSite {
 	abstract public boolean compare(int a);
 
 	@Override
-	public Type type() {
-		return new ArrowType(Type.TOP, Type.TOP, Type.BOOLEAN);
+	public Type orcType() {
+		return Types.function(Types.top(), Types.top(), Types.bool());
 	}
 }

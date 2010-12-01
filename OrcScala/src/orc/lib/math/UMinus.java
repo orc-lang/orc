@@ -17,19 +17,19 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import orc.error.runtime.TokenException;
+import orc.types.Type;
+import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
-import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.Args.NumericUnaryOperator;
-import orc.values.sites.compatibility.type.Type;
-import orc.values.sites.compatibility.type.structured.ArrowType;
-import orc.values.sites.compatibility.type.structured.MultiType;
+import orc.values.sites.compatibility.EvalSite;
+import orc.values.sites.compatibility.Types;
 
 /**
  * @author dkitchin
  *
  */
 @SuppressWarnings({ "boxing", "synthetic-access" })
-public class UMinus extends EvalSite {
+public class UMinus extends EvalSite implements TypedSite {
 	private static final MyOperator op = new MyOperator();
 
 	private static final class MyOperator implements NumericUnaryOperator<Number> {
@@ -80,7 +80,10 @@ public class UMinus extends EvalSite {
 	}
 
 	@Override
-	public Type type() {
-		return new MultiType(new ArrowType(Type.INTEGER, Type.INTEGER), new ArrowType(Type.NUMBER, Type.NUMBER));
-	}
+	public Type orcType() {
+      return Types.overload(
+               Types.function(Types.integer(), Types.integer()),
+               Types.function(Types.number(), Types.number())
+             );
+  }
 }

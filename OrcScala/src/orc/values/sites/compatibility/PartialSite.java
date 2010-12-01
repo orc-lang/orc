@@ -16,7 +16,6 @@ package orc.values.sites.compatibility;
 import orc.TokenAPI;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.TokenException;
-import orc.values.sites.compatibility.type.Type;
 
 /**
  * Abstract class for sites with a partial and immediate semantics: evaluate as for a total
@@ -41,10 +40,6 @@ public abstract class PartialSite extends SiteAdaptor {
 		}
 
 	}
-
-	  public Type type() throws TypeException {
-	      return Type.BOT;
-	  }
 
 	abstract public Object evaluate(Args args) throws TokenException;
 

@@ -52,29 +52,14 @@ Example:
 --}
 
 {--
-@site cat(Top, ...) :: String
-Return the string representation of one or more values, concatenated.
-For Java objects, this will call <code>toString()</code> to convert
-the object to a String.
---}
-site cat = "orc.lib.str.Cat"
-
-{--
-@site print(Top, ...) :: Signal
-Print one or more values as strings, concatenated, to standard output.
+@site print(Top) :: Signal
+Print a value as a string to standard output.
 For Java objects, this will call <code>toString()</code> to convert
 the object to a String.
 --}
 site print = "orc.lib.str.Print"
 
-{--
-@site println(Top, ...) :: Signal
-Print one or more values as strings, concatenated,
-to standard output, with each value followed by a newline.
-For Java objects, this will call <code>toString()</code> to convert
-the object to a String.
---}
-site println = "orc.lib.str.Println"
+def println(s) = print(s + "\n")
 
 {--
 @site read[A](String) :: A
@@ -135,7 +120,7 @@ and concatenate the results.
 @implementation
 --}
 def unlines(List[String]) :: String
-def unlines(line:lines) = cat(line, "\n", unlines(lines))
+def unlines(line:lines) = line + "\n" + unlines(lines)
 def unlines([]) = ""
   
 {--
@@ -159,4 +144,4 @@ each string.
 def unwords(List[String]) :: String
 def unwords([]) = ""
 def unwords([word]) = word
-def unwords(word:words) = cat(word, " ", unwords(words))
+def unwords(word:words) = word + " " + unwords(words)

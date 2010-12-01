@@ -20,11 +20,13 @@ import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.Args.NumericBinaryOperator;
-import orc.values.sites.compatibility.type.Type;
-import orc.values.sites.compatibility.type.structured.ArrowType;
+import orc.values.sites.compatibility.Types;
+import orc.values.sites.TypedSite;
+import orc.types.Type;
+
 
 @SuppressWarnings({ "boxing", "synthetic-access" })
-public class Exponent extends EvalSite {
+public class Exponent extends EvalSite implements TypedSite {
 	private static final MyOperator op = new MyOperator();
 
 	private static final class MyOperator implements NumericBinaryOperator<Number> {
@@ -85,7 +87,7 @@ public class Exponent extends EvalSite {
 	}
 
 	@Override
-	public Type type() {
-		return new ArrowType(Type.NUMBER, Type.NUMBER, Type.NUMBER);
+	public Type orcType() {
+		return Types.function(Types.number(), Types.number(), Types.number());
 	}
 }

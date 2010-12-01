@@ -16,29 +16,29 @@ package orc.lib.bool;
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
-import orc.values.sites.compatibility.type.Type;
-import orc.values.sites.compatibility.type.structured.ArrowType;
+import orc.values.sites.compatibility.Types;
+import orc.values.sites.TypedSite;
+import orc.types.Type;
+
 
 /**
  *
  * @author dkitchin
  */
-public abstract class BoolBinopSite extends EvalSite {
+public abstract class BoolBinopSite extends EvalSite implements TypedSite {
 
 	/* (non-Javadoc)
 	 * @see orc.runtime.sites.EvalSite#evaluate(java.lang.Object[])
 	 */
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
-
 		return new Boolean(compute(args.boolArg(0), args.boolArg(1)));
 	}
 
 	abstract public boolean compute(boolean a, boolean b);
 
 	@Override
-	public Type type() {
-		return new ArrowType(Type.BOOLEAN, Type.BOOLEAN, Type.BOOLEAN);
+	public Type orcType() {
+		return Types.function(Types.bool(), Types.bool(), Types.bool());
 	}
-
 }

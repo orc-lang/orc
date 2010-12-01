@@ -23,7 +23,7 @@ object NoneExtractor extends PartialSite with TypedSite {
       case _ => throw new ArityMismatchException(1, args.size)
   }
   
-  val orcType = SimpleFunctionType(OptionType(Top), SignalType)
+  def orcType() = SimpleFunctionType(OptionType(Top), SignalType)
 }
 
 
@@ -37,7 +37,7 @@ object SomeExtractor extends PartialSite with TypedSite {
       case _ => throw new ArityMismatchException(1, args.size)
   }
   
-  val orcType = new UnaryCallableType {
+  def orcType() = new UnaryCallableType {
     def call(argType: Type): Type = {
       argType match {
         case OptionType(t) => t
@@ -63,7 +63,7 @@ object NilExtractor extends PartialSite with TypedSite {
     }
   }
   
-  val orcType = SimpleFunctionType(ListType(Top), SignalType)
+  def orcType() = SimpleFunctionType(ListType(Top), SignalType)
 }
 
 
@@ -85,7 +85,7 @@ object ConsExtractor extends PartialSite with TypedSite {
       case _ => throw new ArityMismatchException(1, args.size)
   }
   
-  val orcType = new UnaryCallableType {
+  def orcType() = new UnaryCallableType {
     def call(argType: Type): Type = {
       argType match {
         case ListType(t) => TupleType(List(t, ListType(t)))
@@ -116,7 +116,7 @@ object TupleArityChecker extends PartialSite with TypedSite {
       case _ => throw new ArityMismatchException(2, args.size)
   }
   
-  val orcType = new SimpleCallableType {
+  def orcType() = new SimpleCallableType {
     def call(argTypes: List[Type]): Type = {
       argTypes match {
         case List(t@ TupleType(elements), IntegerConstantType(i)) => {
@@ -170,7 +170,7 @@ object RecordMatcher extends PartialSite with TypedSite {
     } 
   
   
-  val orcType = new SimpleCallableType {
+  def orcType() = new SimpleCallableType {
     def call(argTypes: List[Type]): Type = {
       argTypes match {
         case List(rt @ RecordType(entries), shape @ _*) => {

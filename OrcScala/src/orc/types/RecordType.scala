@@ -23,8 +23,10 @@ import orc.error.compiletime.typing.ArgumentTypeMismatchException
  *
  * @author dkitchin
  */
-case class RecordType(entries: Map[String,Type]) extends UnaryCallableType {
+case class RecordType(entries: Map[String,Type]) extends TypeWithMembers {
 
+  def getMember(member: String) = entries get member
+  
   override def toString = {
     val ks = entries.keys.toList
     val entryStrings = ks map { k => k + " :: " + entries(k) }
@@ -79,12 +81,6 @@ case class RecordType(entries: Map[String,Type]) extends UnaryCallableType {
   override def subst(sigma: Map[TypeVariable, Type]): Type = {
     RecordType(entries mapValues { _ subst sigma })
   }
-  
-  override def call(argType: Type) = {
-    argType match {
-      case FieldType(f) => entries.getOrElse(f, Bot)
-      case t => throw new ArgumentTypeMismatchException(0, FieldType("_"), t)
-    }
-  }
+ 
   
 }

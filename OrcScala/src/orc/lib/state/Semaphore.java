@@ -16,16 +16,12 @@ package orc.lib.state;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import orc.error.compiletime.typing.TypeException;
-import orc.error.runtime.TokenException;
-//import orc.lib.state.types.SemaphoreType;
-import orc.values.sites.compatibility.Args;
 import orc.TokenAPI;
+import orc.error.runtime.TokenException;
+import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
-import orc.values.sites.compatibility.type.Type;
-import orc.values.sites.compatibility.type.structured.ArrowType;
 
 /**
  * @author quark
@@ -36,11 +32,6 @@ public class Semaphore extends EvalSite {
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
 		return new SemaphoreInstance(args.intArg(0));
-	}
-
-	@Override
-	public Type type() throws TypeException {
-		return new ArrowType(Type.INTEGER, null/*FIXME:new SemaphoreType()*/);
 	}
 
 	protected class SemaphoreInstance extends DotSite {

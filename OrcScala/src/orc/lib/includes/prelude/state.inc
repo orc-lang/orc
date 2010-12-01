@@ -423,42 +423,6 @@ Return the number of unique values currently contained in the set.
 --}
 class Set = "orc.lib.state.Set"
 
-{--
-@site Map[K,V]() :: Map[K,V]
-Construct an empty mutable map from keys to values.  Each key contained in the
-map is associated with exactly one value.  The mapping considers two keys
-<code>a</code> and <code>b</code> to be the same if and only if
-<code>a=b</code>. This site conforms to the Java interface
-<code>java.util.Map</code>, except that it obeys Orc rules for equality of keys
-rather than Java rules.
-
-@method Map[K,V].put(K, V) :: V
-<code>map.put(k,v)</code> associates the value <code>v</code> with the key
-<code>k</code> in <code>map</code>, such that <code>map.get(k)</code> returns
-<code>v</code>. Return the value previously associated with the key,
-if any, otherwise return <code>Null()</code>.
-
-@method Map[K,V].get(K) :: V
-Return the value currently associated with the given key, if any, otherwise
-return <code>Null()</code>.
-
-@method Map[K,V].remove(Signal) :: V
-Remove the given key from the map. Return the value previously associated with the key,
-if any, otherwise return <code>Null()</code>.
-
-@method Map[K,V].containsKey(Signal) :: Boolean
-Return true if the map contains the given key, and false otherwise.
-
-@method Map[K,V].isEmpty() :: Boolean
-Return true if the map contains no keys.
-
-@method Map[K,V].clear() :: Signal
-Remove all keys from the map.
-
-@method Map[K,V].size() :: Integer
-Return the number of unique keys currently contained in the map.
---}
-class Map = "orc.lib.state.Map"
 
 {--
 @site Counter(Integer) :: Counter

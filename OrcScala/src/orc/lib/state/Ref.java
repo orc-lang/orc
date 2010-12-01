@@ -16,18 +16,12 @@ package orc.lib.state;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import orc.error.compiletime.typing.TypeException;
-import orc.error.runtime.TokenException;
-//import orc.lib.state.types.RefType;
-import orc.values.sites.compatibility.Args;
 import orc.TokenAPI;
+import orc.error.runtime.TokenException;
+import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
-import orc.values.sites.compatibility.type.Type;
-import orc.values.sites.compatibility.type.TypeVariable;
-import orc.values.sites.compatibility.type.structured.ArrowType;
-import orc.values.sites.compatibility.type.structured.MultiType;
 
 /**
  * @author dkitchin
@@ -54,13 +48,6 @@ public class Ref extends EvalSite {
 		else {
 			return new RefInstance();
 		}
-	}
-
-	@Override
-	public Type type() throws TypeException {
-		final Type X = new TypeVariable(0);
-		final Type RefOfX = null;//FIXME:new RefType().instance(X);
-		return new MultiType(new ArrowType(RefOfX, 1), new ArrowType(X, RefOfX, 1));
 	}
 
 	public static class RefInstance extends DotSite {
