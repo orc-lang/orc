@@ -16,7 +16,7 @@ object If extends PartialSite with TypedSite {
       case _ => throw new ArityMismatchException(1, args.size)
   }
   
-  val orcType = SimpleFunctionType(BooleanType, SignalType)
+  def orcType() = SimpleFunctionType(BooleanType, SignalType)
 }
 
 object Unless extends PartialSite with TypedSite {
@@ -29,7 +29,7 @@ object Unless extends PartialSite with TypedSite {
       case _ => throw new ArityMismatchException(1, args.size)
   }
   
-  val orcType = SimpleFunctionType(BooleanType, SignalType)
+  def orcType() = SimpleFunctionType(BooleanType, SignalType)
 }
 
 object Eq extends TotalSite with TypedSite {
@@ -41,7 +41,7 @@ object Eq extends TotalSite with TypedSite {
       case _ => throw new ArityMismatchException(2, args.size)
   }
   
-  val orcType = SimpleFunctionType(List(Top, Top), BooleanType)
+  def orcType() = SimpleFunctionType(Top, Top, BooleanType)
 }
 
 object Let extends TotalSite with TypedSite {
@@ -53,7 +53,7 @@ object Let extends TotalSite with TypedSite {
       case (vs : List[_]) => OrcTuple(vs)
     }
   
-  val orcType = new SimpleCallableType {
+  def orcType() = new SimpleCallableType {
     def call(argTypes: List[Type]): Type = { 
       argTypes match {
         case Nil => SignalType

@@ -21,7 +21,7 @@ package orc.types
  * @author dkitchin
  */
 
-case class FunctionType(val typeFormals: List[TypeVariable], val argTypes: List[Type], val returnType: Type) extends Type {
+case class FunctionType(val typeFormals: List[TypeVariable], val argTypes: List[Type], val returnType: Type) extends CallableType {
   
   val arity = argTypes.size
   val typeArity = typeFormals.size
@@ -86,13 +86,41 @@ case class FunctionType(val typeFormals: List[TypeVariable], val argTypes: List[
     val newThat = ( that subst (sharedFormals, that.typeFormals) ).asInstanceOf[FunctionType]
     (newThis, newThat)
   }
+  
+  
+  /* A function type may be treated as a callable type.
+   * When performing type inference, we instead treat
+   * function types structurally, to improve inference
+   * accuracy in some cases. 
+   */
+  def call(callTypeArgs: List[Type], callArgTypes: List[Type]): Type = {
+    val instantiatedArgTypes = argTypes map { _ subst (callTypeArgs, typeFormals) }
+    val instantiatedReturnType = returnType subst (callTypeArgs, typeFormals)
+    for ( (t, u) <- (callArgTypes zip instantiatedArgTypes) ) {
+      t assertSubtype u
+    }
+    instantiatedReturnType
+  }
+  
 }
 
+/* Use cases */
 object SimpleFunctionType {
   
-  /* Use cases */
-  def apply(returnType: Type) = FunctionType(Nil, Nil, returnType)
-  def apply(argType: Type, returnType: Type) = FunctionType(Nil, List(argType), returnType)
-  def apply(argTypes: List[Type], returnType: Type) = FunctionType(Nil, argTypes, returnType)
+  def apply(returnType: Type) = {
+    FunctionType(Nil, Nil, returnType)
+  }
+  
+  def apply(argType: Type, returnType: Type) = {
+    FunctionType(Nil, List(argType), returnType)
+  }
+  
+  def apply(argType1: Type, argType2: Type, returnType: Type) = {
+    FunctionType(Nil, List(argType1, argType2), returnType)
+  }
+  
+  def apply(argTypes: List[Type], returnType: Type) = {
+    FunctionType(Nil, argTypes, returnType)
+  }
   
 }

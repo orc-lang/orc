@@ -41,7 +41,7 @@ trait Site extends OrcValue with SiteMetaData {
 }
 
 trait TypedSite extends Site {
-  val orcType: orc.types.Type
+  def orcType(): orc.types.Type
 }
 
 trait UntypedSite extends Site

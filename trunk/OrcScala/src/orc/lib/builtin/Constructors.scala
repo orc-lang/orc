@@ -16,7 +16,7 @@ object TupleConstructor extends TotalSite with TypedSite {
   override def name = "Tuple"
   def evaluate(args: List[AnyRef]) = OrcTuple(args)
   
-  val orcType = new SimpleCallableType {
+  def orcType() = new SimpleCallableType {
     def call(argTypes: List[Type]) = { TupleType(argTypes) }
   }
 }
@@ -30,7 +30,7 @@ object NoneConstructor extends TotalSite with Extractable with TypedSite {
   }
   override def extract = NoneExtractor
   
-  val orcType = SimpleFunctionType(OptionType(Bot))
+  def orcType() = SimpleFunctionType(OptionType(Bot))
 }
 
 object SomeConstructor extends TotalSite with Extractable with TypedSite {
@@ -42,7 +42,7 @@ object SomeConstructor extends TotalSite with Extractable with TypedSite {
   }
   override def extract = SomeExtractor
   
-  val orcType = new UnaryCallableType { def call(t: Type) = OptionType(t) }
+  def orcType() = new UnaryCallableType { def call(t: Type) = OptionType(t) }
 }
 
 
@@ -56,7 +56,7 @@ object NilConstructor extends TotalSite with Extractable with TypedSite {
   }
   override def extract = NilExtractor
   
-  val orcType = SimpleFunctionType(ListType(Bot))
+  def orcType() = SimpleFunctionType(ListType(Bot))
 }
 
 object ConsConstructor extends TotalSite with Extractable with TypedSite {
@@ -69,7 +69,7 @@ object ConsConstructor extends TotalSite with Extractable with TypedSite {
   }
   override def extract = ConsExtractor
   
-  val orcType = {
+  def orcType() = {
     val X = new TypeVariable()
     FunctionType(List(X), List(X, ListType(X)), ListType(X))
   }
@@ -98,7 +98,7 @@ object RecordConstructor extends TotalSite with TypedSite {
     OrcRecord(scala.collection.immutable.HashMap.empty ++ valueMap)
   }
   
-  val orcType = new SimpleCallableType {
+  def orcType() = new SimpleCallableType {
     def call(argTypes: List[Type]) = { 
       val bindings = 
         (argTypes.zipWithIndex) map {

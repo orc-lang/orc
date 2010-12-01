@@ -16,12 +16,12 @@ package orc.lib.util;
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.PartialSite;
-import orc.values.sites.compatibility.type.Type;
-import orc.values.sites.compatibility.type.structured.ArrowType;
-import orc.values.sites.compatibility.type.structured.MultiType;
+import orc.values.sites.compatibility.Types;
+import orc.values.sites.TypedSite;
+import orc.types.Type;
 
 @SuppressWarnings("boxing")
-public class Random extends PartialSite {
+public class Random extends PartialSite implements TypedSite {
 
 	java.util.Random rnd;
 
@@ -45,8 +45,11 @@ public class Random extends PartialSite {
 	}
 
 	@Override
-	public Type type() {
-		return new MultiType(new ArrowType(Type.INTEGER), new ArrowType(Type.INTEGER, Type.INTEGER));
+	public Type orcType() {
+		return Types.overload(
+		         Types.function(Types.integer()), 
+		         Types.function(Types.integer(), Types.integer())
+		       ); 
 	}
 
 }

@@ -18,7 +18,6 @@ package orc.values.sites.compatibility;
 import orc.TokenAPI;
 import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.TokenException;
-import orc.values.sites.compatibility.type.Type;
 
 /**
  * 
@@ -30,10 +29,6 @@ public abstract class EvalSite extends SiteAdaptor {
   @Override
   public void callSite(Args args, TokenAPI caller) throws TokenException {
     caller.publish(object2value(evaluate(args)));
-  }
-
-  public Type type() throws TypeException {
-      return Type.BOT;
   }
 
   public abstract Object evaluate(Args args) throws TokenException;

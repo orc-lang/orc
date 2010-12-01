@@ -1,26 +1,50 @@
 package orc.lib.builtin
 
-import orc.ast.oil.nameless.Type
 import orc.values._
 import orc.values.sites._
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
+import orc.error.compiletime.typing._
+import orc.types._
 
-object DatatypeBuilder extends TotalSite with UntypedSite {
+object DatatypeBuilder extends TotalSite with TypedSite {
   
   override def name = "Datatype"
-  def evaluate(args: List[AnyRef]) =
-    args match {
-      case List(OrcTuple(vs)) => {
-        val datasites: List[AnyRef] = 
-          for ( OrcTuple(List(name: String, arity: BigInt)) <- vs)
-            yield new DataSite(name,arity.intValue)
-        OrcTuple(datasites)
+  def evaluate(args: List[AnyRef]) = {
+    val datasites: List[AnyRef] = 
+      for ( OrcTuple(List(name: String, arity: BigInt)) <- args) yield {
+        new DataSite(name,arity.intValue)
       }
+    OrcTuple(datasites)
+  }
+     
+  def orcType() = new CallableType {
+    
+    def call(typeArgs: List[Type], argTypes: List[Type]) = {
+      
+      // verify that the argument types are of the correct form
+      for (t <- argTypes) {
+        t assertSubtype TupleType(List(StringType, IntegerType))
+      }
+      
+      typeArgs match {
+        // Extract the datatype that's been smuggled in by the type arguments
+        case List(TypeInstance(d@ DatatypeConstructor(typeFormals, variants), _)) => {
+          val variantTypes = 
+            for ((_, params) <- variants) yield {
+              FunctionType(typeFormals, params, TypeInstance(d, typeFormals))
+            }
+          TupleType(variantTypes.toList)
+        }
+        case _ => throw new MalformedDatatypeCallException() 
+      }
+      
     }
+   
+  }
 }
 
-class DataSite(name: String, arity: Int) extends TotalSite with Extractable with UntypedSite {
+class DataSite(name: String, arity: Int) extends TotalSite with Extractable  {
   
   def evaluate(args: List[AnyRef]): AnyRef = {
       if(args.size != arity) {

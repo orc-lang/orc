@@ -32,5 +32,5 @@ object Not extends TotalSite with TypedSite {
       case _ => throw new ArityMismatchException(1, args.size)
     }
   
-  val orcType = SimpleFunctionType(BooleanType, BooleanType)
+  def orcType() = SimpleFunctionType(BooleanType, BooleanType)
 }

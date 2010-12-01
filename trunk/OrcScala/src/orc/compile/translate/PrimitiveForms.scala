@@ -82,11 +82,12 @@ object PrimitiveForms {
   def makeDatatype(declaredVariant: BoundTypevar, constructors: List[ext.Constructor], translator: Translator) = {
     val datatypeSite = Constant(DatatypeBuilder)
     val datatypePairs =
-      for (ext.Constructor(name, types) <- constructors) yield { makeTuple(List(Constant(name), Constant(BigInt(types.size)))) }
-    val pairsVar = new BoundVar()
-
-    unfold(datatypePairs, makeTuple) > pairsVar >
-      Call(datatypeSite, List(pairsVar), Some(List(declaredVariant)))
+      for (ext.Constructor(name, types) <- constructors) yield {
+        val cname = Constant(name)
+        val carity = Constant(BigInt(types.size))
+        makeTuple(List(cname, carity)) 
+      }
+    unfold(datatypePairs, { Call(datatypeSite, _, Some(List(declaredVariant))) })
   }
 
 

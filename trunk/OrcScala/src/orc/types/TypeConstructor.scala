@@ -14,6 +14,8 @@
 //
 package orc.types
 
+import orc.types.Variance._
+
 /**
  * 
  *
@@ -29,7 +31,7 @@ class SimpleTypeConstructor(val name: String, val givenVariances: Variance*) ext
   
   val variances = givenVariances.toList
   
-  def apply(ts: Type*): TypeInstance = {
+  def apply(ts: Type*): Type = {
     assert(variances.size == ts.size)
     TypeInstance(this, ts.toList)
   }
@@ -40,15 +42,19 @@ class SimpleTypeConstructor(val name: String, val givenVariances: Variance*) ext
       case _ => None
     }
   }
+  
 }
 
 case class DatatypeConstructor(typeFormals: List[TypeVariable], variants: List[(String, List[Type])]) extends TypeConstructor {
   
-  val variances = 
-    typeFormals map { x => 
-      Constant 
-    }
-
+  val variances = typeFormals map { x => 
+    val occurrences = 
+      for ((_, variant) <- variants; t <- variant) yield { 
+        t varianceOf x 
+      }
+    occurrences.toList.combined
+  }
+  
 }
 
 

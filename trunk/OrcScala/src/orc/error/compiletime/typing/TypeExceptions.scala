@@ -15,6 +15,7 @@
 package orc.error.compiletime.typing
 
 import orc.types.Type
+import orc.values.Field
 import orc.error.compiletime._
 
 class ArgumentArityException(val arityExpected: Int, val arityReceived: Int) extends
@@ -32,10 +33,10 @@ class ArgumentTypeMismatchException(val argPosition: Int, val expectedType: Type
 class MissingTypeException() extends
   TypeException("Type checker failed: couldn't obtain sufficient type information from a service or value.") with SeverityError
 
-class MultiTypeException(val specificMessages: String) extends
-  TypeException("All alternatives for multitype failed to typecheck.\n" + specificMessages) with SeverityError {
+class OverloadedTypeException(val specificMessages: List[String] = Nil) extends
+  TypeException("All alternatives for overloaded type failed to typecheck.\n" + specificMessages.mkString("\n")) with SeverityError {
   def addAlternative(t: Type, e: TypeException) =
-    new MultiTypeException(specificMessages + (t + " failed due to error: \n" + e + "\n"));
+    new OverloadedTypeException((t + " failed due to error: \n" + e) :: specificMessages)
 }
 
 class SubtypeFailureException(val expectedType: Type, val receivedType: Type) extends
@@ -77,13 +78,12 @@ class NoMinimalTypeException() extends
 class OverconstrainedTypeVariableException() extends
   TypeException("A type argument is overconstrained; inference failed. Please add explicit type arguments. There may also be an underlying type error.") with SeverityError
 
+  
 case class TypeResolutionException(val typeName: String, cause: Throwable) 
-  extends CompilationException("Problem loading type "+typeName, cause) 
-  with SeverityFatal
+  extends CompilationException("Problem loading type "+typeName, cause) with SeverityError
   
 case class TypeOperatorResolutionException(val typeOperatorName: String, cause: Throwable) 
-  extends CompilationException("Problem loading type operator "+typeOperatorName, cause) 
-  with SeverityFatal
+  extends CompilationException("Problem loading type operator "+typeOperatorName, cause) with SeverityError
   
 
 class TupleSizeException(val sizeExpected: Int, val sizeReceived: Int) extends
@@ -91,4 +91,10 @@ class TupleSizeException(val sizeExpected: Int, val sizeReceived: Int) extends
 
 class RecordShapeMismatchException(val nonconformingRecordType: orc.types.RecordType, val missingField: String) extends
   TypeException("Type " + nonconformingRecordType + " is missing field " + missingField + ", which is required by this record pattern.") with SeverityError
+ 
+class NoSuchMemberException(t: Type, missingMember: String) extends
+  TypeException("Type " + t + " has no member named " + missingMember) with SeverityError
+  
+class MalformedDatatypeCallException() extends
+  TypeException("Expected an instance of the datatype as a type argument")  
   

@@ -20,12 +20,12 @@ import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.Args.NumericBinaryOperator;
-import orc.values.sites.compatibility.type.Type;
-import orc.values.sites.compatibility.type.structured.ArrowType;
-import orc.values.sites.compatibility.type.structured.MultiType;
+import orc.values.sites.compatibility.Types;
+import orc.values.sites.TypedSite;
+import orc.types.Type;
 
 @SuppressWarnings({ "boxing", "synthetic-access" })
-public class Div extends EvalSite {
+public class Div extends EvalSite implements TypedSite {
 	private static final MyOperator op = new MyOperator();
 
 	private static final class MyOperator implements NumericBinaryOperator<Number> {
@@ -84,7 +84,10 @@ public class Div extends EvalSite {
 	}
 
 	@Override
-	public Type type() {
-		return new MultiType(new ArrowType(Type.INTEGER, Type.INTEGER, Type.INTEGER), new ArrowType(Type.NUMBER, Type.NUMBER, Type.NUMBER));
+	public Type orcType() {
+		return Types.overload(
+		         Types.function(Types.integer(), Types.integer(), Types.integer()),
+		         Types.function(Types.number(), Types.number(), Types.number())
+		       );
 	}
 }

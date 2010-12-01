@@ -18,15 +18,17 @@ import orc.error.runtime.TokenException;
 import orc.values.Format;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.SiteAdaptor;
-import orc.values.sites.compatibility.type.Type;
-import orc.values.sites.compatibility.type.structured.EllipsisArrowType;
+import orc.values.sites.compatibility.Types;
+import orc.values.sites.TypedSite;
+import orc.types.Type;
+
 
 /**
  * Print arguments, converted to strings, in sequence.
  * 
  * @author dkitchin
  */
-public class Print extends SiteAdaptor {
+public class Print extends SiteAdaptor implements TypedSite {
 	@Override
 	public void callSite(final Args args, final TokenAPI caller) throws TokenException {
 		final StringBuilder sb = new StringBuilder();
@@ -42,7 +44,8 @@ public class Print extends SiteAdaptor {
 		caller.publish(signal());
 	}
 
-	public Type type() {
-		return new EllipsisArrowType(Type.TOP, Type.SIGNAL);
+	@Override
+	public Type orcType() {
+		return Types.function(Types.top(), Types.signal());
 	}
 }

@@ -92,7 +92,7 @@ assert(false)]]></programlisting>
 --}
 
 --FIXME:site error = "orc.lib.???.Error"
-def error(_) = stop
+def error(_ :: Top) = stop
 
 
 {--

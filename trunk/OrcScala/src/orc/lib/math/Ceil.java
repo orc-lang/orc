@@ -14,10 +14,11 @@
 package orc.lib.math;
 
 import orc.error.runtime.TokenException;
+import orc.types.Type;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
-import orc.values.sites.compatibility.type.Type;
-import orc.values.sites.compatibility.type.structured.ArrowType;
+import orc.values.sites.compatibility.Types;
+
 
 @SuppressWarnings("boxing")
 public class Ceil extends EvalSite {
@@ -29,8 +30,8 @@ public class Ceil extends EvalSite {
 		return n.equals(i) ? i : i + 1;
 	}
 
-	@Override
-	public Type type() {
-		return new ArrowType(Type.NUMBER, Type.INTEGER);
+	
+	public Type orcType() {
+		return Types.function(Types.number(), Types.integer());
 	}
 }
