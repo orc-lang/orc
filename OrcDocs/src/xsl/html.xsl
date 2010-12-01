@@ -8,7 +8,7 @@
 <xsl:import href="common.xsl"/>
 
 <xsl:param name="orc.demo" select="0"/>
-
+	
 <!--
 Orc examples must use the "orc" CSS class.
 -->
@@ -21,7 +21,7 @@ Orc examples must use the "orc" CSS class.
 </xsl:if>	
 </xsl:template>
 	
-<xsl:template name="user.header.content">
+<xsl:template match="examplescript">
 	<script language="javascript">
 	// Expandable content script from flooble.com.
 	// For more information please visit:
@@ -53,7 +53,7 @@ Orc examples must use the "orc" CSS class.
 			<tr><td><xsl:value-of select="./@caption"></xsl:value-of></td><td align="right">
 			  [<a title="show/hide" href="javascript: void(0);" style="text-decoration: none; color: #000000; ">
 				<xsl:attribute name="id"><xsl:value-of select="$ex_link" /></xsl:attribute>
-				<xsl:attribute name="onclick">toggle(this, '<xsl:value-of select="$ex_content"/>')</xsl:attribute>+</a>]
+				<xsl:attribute name="onclick">toggle(this, '<xsl:value-of select="$ex_content"/>')</xsl:attribute>&#8722;</a>]
 			</td></tr>
 		</table>
 		<div style="padding: 3px;">
@@ -64,12 +64,13 @@ Orc examples must use the "orc" CSS class.
 		</div>
 	</div>
 	<!-- Start the box collapsed -->
-	<script language="javascript">window.onload=toggle(this, '<xsl:value-of select="$ex_content"/>');</script>
+	<script language="javascript">toggle(getObject('<xsl:value-of select="$ex_link"/>'), '<xsl:value-of select="$ex_content"/>');</script>
 	<noscript>
 		<para>"WARNING:  This example requires javascript to be rendered correctly."</para>
-		<xsl:apply-templates/>
+		<xsl:apply-templates/>  <!-- Attempt to show the text, even if javascript not present -->
 	</noscript>
 	</td></tr></table>
+	<br/> <!-- line break in output file -->
 </xsl:template>
 
 <!-- Include stylsheets, including orc.css if desired -->
