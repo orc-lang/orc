@@ -46,7 +46,7 @@
 	<!--
 	  - target:  all
 	  -->
-	<target name="all" depends="olinks,build-pdf,build-html-chunk,build-html-single,rm-build-html-single,rm-build-html-chunk" 
+	<target name="all" depends="olinks,build-pdf,build-html-chunk,build-html-single,rm-build-html-chunk,rm-build-html-single" 
 		description="Build all documentation" />
 	
 	<!--

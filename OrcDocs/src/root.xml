@@ -1621,7 +1621,7 @@ It is also commutative: F <code>|</code> G is equivalent to G <code>|</code> F.
 
 </section>
 
-<section><title>The sequential combinator</title>
+<section id="combinators.sequential"><title>The sequential combinator</title>
 
 <para>
 Now that we have expressions which publish multiple values, what can we do with those
