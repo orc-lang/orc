@@ -71,6 +71,17 @@
 	</target>
 	
 	<!--
+	  - target:  testinclude
+	  -->
+	<target name="testinclude" description="test the include other documents functionality">
+		<xslt style="${src.dir}/refmanual/test.xsl" extension=".html" 
+				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual">
+			<include name="test1.xml" />
+			<classpath refid="xalan.classpath" />
+		</xslt>
+	</target>
+	
+	<!--
 	  - target:  olinks
 	  -->
 	<target name="olinks" description="Builds the olink databases for mutual linking between documents">
