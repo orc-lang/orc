@@ -9,10 +9,10 @@
 	
 <title>Orc Reference Manual v<xi:include href="../../VERSION" parse="text"/></title>
 	
-<chapter id="ref.combinators.parallel"><include href="content/combinators_parallel.xml"/></chapter>
-<chapter id="ref.combinators.sequential"><include href="content/combinators_sequential.xml"/></chapter>
-<chapter id="ref.concept"><include href="content/examples_concept.xml"/></chapter>
-	
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/combinators_parallel.xml"/> 
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/combinators_sequential.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/examples_concept.xml"/>
+
 </book>
 
 

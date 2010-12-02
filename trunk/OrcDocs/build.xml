@@ -173,7 +173,7 @@
 			<param name="chunk.quietly" expression="1"/>
 			<param name="chunk.section.depth" expression="0"/>
 			
-			<param name="target.database.document" expression="../../../${database.olink.dir}/olinkdb.xml"/>
+			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
 			<param name="current.docid" expression="refmanual"/> 
 			
 			<param name="highlight.source" expression="1"/>
