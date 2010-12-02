@@ -66,19 +66,8 @@
 	<!--
 	  - target:  test
 	  -->
-	<target name="test" depends="clean,olinks,rm-build-html-single" description="Test build for modifications.">
+	<target name="test" depends="clean,olinks,rm-build-html-chunk,rm-build-html-single" description="Test build for modifications.">
 		<echo message="Test build complete" />
-	</target>
-	
-	<!--
-	  - target:  testinclude
-	  -->
-	<target name="testinclude" description="test the include other documents functionality">
-		<xslt style="${src.dir}/refmanual/test.xsl" extension=".html" 
-				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual">
-			<include name="test1.xml" />
-			<classpath refid="xalan.classpath" />
-		</xslt>
 	</target>
 	
 	<!--
@@ -184,7 +173,7 @@
 			<param name="chunk.quietly" expression="1"/>
 			<param name="chunk.section.depth" expression="0"/>
 			
-			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
+			<param name="target.database.document" expression="../../../${database.olink.dir}/olinkdb.xml"/>
 			<param name="current.docid" expression="refmanual"/> 
 			
 			<param name="highlight.source" expression="1"/>

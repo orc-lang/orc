@@ -1,0 +1,90 @@
+<!-- Parallel Combinator -->
+   <chapter id="ref.combinators.parallel">
+      <title>Parallel Combinator</title>
+	  <section id="ref.combinators.parallel.syntax">
+		  <title>Syntax</title>
+		  <para><emphasis role="strong">EBNF</emphasis>: <emphasis>E ::= ... | . E | E</emphasis></para>
+		  <para><emphasis role="strong">Precedence</emphasis>: 
+			  <olink targetdoc="root" targetptr="combinators.parallel">parallel</olink> > 
+			  <olink targetdoc="root" targetptr="combinators.pruning">pruning</olink> > 
+			  <olink targetdoc="root" targetptr="combinators.sequential">sequential</olink> >
+			  <olink targetdoc="root" targetptr="combinators.otherwise">otherwise</olink></para>
+		  <para><emphasis role="strong">Associativity</emphasis>: left and right </para>
+		  <para><emphasis role="strong">Commutative</emphasis>: true </para>
+	  </section>
+	  <section id="ref.combinators.parallel.behavior">
+		  <title>Behavior</title>
+		  <itemizedlist><listitem>F | G</listitem></itemizedlist>
+		  <para>
+			  Orc executes the <olink targetdoc="root" targetptr="terms.expression">expression</olink>
+			  F | G by executing F and G concurrently. Whenever F or G communicates with a service or 
+			  <olink targetdoc="root" targetptr="terms.publish">publishes</olink> a value, F | G does 
+			  so as well. The resulting publications of F | G may be published in arbitrary order. 
+		  </para>
+	  </section>
+	  <section id="ref.combinators.parallel.examples">
+		  <title>Examples</title>
+		  <examplescript/>
+		  <example caption="Parallel Publication" id="ref.combinators.parallel.examples.one">
+<programlisting language="orc-demo"><![CDATA[
+-- Publish 1 and 2 in parallel  
+1 | 1+1
+
+-- Note the publication order may be either 1 then 2
+-- or 2 then 1
+]]></programlisting>
+		  </example>
+
+		  <example caption="Parallel Sites" id="ref.combinators.parallel.examples.two">
+<programlisting><![CDATA[
+{- 
+ Access two search sites, Google and Yahoo, in parallel.
+
+ Publish any results they return.
+
+ Since each call may publish a value, the expression
+ may publish up to two values.
+-}  
+Google("cupcake") | Yahoo("cupcake")
+]]></programlisting>
+		  </example>
+		  
+	  </section>
+	  <section id="ref.combinators.parallel.links">
+		  <title>Related Links</title>
+		  <informaltable frame='all'>
+			<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+			<colspec colname='c1'/>
+			<colspec colname='c2'/> 
+			<thead>
+			<row>
+			  <entry align="center">Related Reference Topics</entry>
+			  <entry align="center">Related Tutorial Sections</entry>
+			</row>
+			</thead>
+			<tbody>
+			<row>
+			  <entry>Combinators</entry>
+			  <entry><olink targetdoc="root" targetptr="special.dot">The . notation</olink></entry>
+			</row>
+			<row>
+			  <entry>Parallel Server Network</entry>
+			  <entry><olink targetdoc="root" targetptr="terms.constant">Constants</olink></entry>
+			</row>
+			<row>
+			  <entry>Site</entry>
+			  <entry><olink targetdoc="root" targetptr="cor.closures">Closures</olink></entry>
+			</row>
+			<row>
+			  <entry>JavaCall</entry>
+			  <!-- Use the following entry to fill up any remaining empty slots in that column -->
+			  <entry morerows='1' valign='middle'><para></para></entry>
+			</row>
+			<row>
+			  <entry>Baz</entry>
+			</row>
+			</tbody>
+			</tgroup>
+		  </informaltable>
+	  </section>
+   </chapter>
