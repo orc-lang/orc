@@ -14,13 +14,14 @@ Orc examples must use the "orc" CSS class.
 -->
 <xsl:template match="programlisting[@language='orc-demo']" mode="class.value">orc</xsl:template>
 
-<!-- Include orc.js if desired and expand.js -->
+<!-- Include orc.js if desired -->
 <xsl:template name="user.footer.content">
 <xsl:if test="$orc.demo">
 <script src="/orchard/orc.js" type="text/javascript"></script>
 </xsl:if>	
 </xsl:template>
 	
+<!-- Include the script to toggle expansion of examples -->
 <xsl:template match="examplescript">
 	<script language="javascript">
 	// Expandable content script from flooble.com.
