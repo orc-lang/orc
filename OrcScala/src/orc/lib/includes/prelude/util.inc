@@ -30,7 +30,7 @@ site random = "orc.lib.util.Random"
 {--
 @site urandom() :: Number
 Returns a pseudorandom, uniformly distributed Double value
-between 0 and 1, inclusive.
+between 0.0 (inclusive) and 1.0 (exclusive).
 --}
 site urandom = "orc.lib.util.URandom"
 

@@ -195,5 +195,5 @@ class OrcNetInputContext(val uri: URI) extends OrcInputContext {
   override val descr: String = uri.toString
   override def toURI: URI = uri
   override def toURL: URL = uri.toURL
-  override val reader: OrcReader = OrcReader(new InputStreamReader(toURL.openStream), descr)  //URL.openStream returns a buffered SockentInputStream, so no additional buffering should be needed
+  override val reader: OrcReader = OrcReader(new InputStreamReader(toURL.openStream,"UTF-8"), descr)  //URL.openStream returns a buffered SockentInputStream, so no additional buffering should be needed
 }
