@@ -121,14 +121,14 @@ class OrcLexical() extends StdLexical() with RegexParsers {
       )
 
   override val whitespace: Parser[Any] = 
-    rep( ("[" + unicodeWhitespaceChars + "]+").r
-       | """(?m)--.*$""".r
+    rep( ("[" + Pattern.quote(unicodeWhitespaceChars) + "]+").r
+       | ("--[^" + Pattern.quote(unicodeNewlineChars) + "]*").r
        | "{-" ~ multiLineCommentBody
        | '{' ~ '-' ~ err("unclosed comment")
        )
 
   val numberLit: Parser[String] =
-    """(([1-9][0-9]*)|0)([.][0-9]+)?([Ee][+-]?(([1-9][0-9]*)|0))?""".r
+    """([0-9]+)([.][0-9]+)?([Ee][+-]?([0-9]+))?""".r
 
   val stringLit: Parser[String] =
     '\"' ~> (( '\\' ~> chrExcept(EofCh) ^^ { case 'f' => "\f"; case 'n' => "\n"; case 'r' => "\r"; case 't' => "\t"; case c => c.toString }
