@@ -2,6 +2,11 @@
 <!ENTITY ug "../root.xml">  <!-- userguide -->
 ]>
 
+
+<!-- Keep in mind that for olinks to work now that we're using xinclude, we may have to
+	change the targetdoc pointers in the user guide to point to the smaller content documents,
+	rather than the root_ref as a whole -->
+
 <book 
 	id="refmanual"  
 	xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -11,6 +16,15 @@
 	
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/combinators_parallel.xml"/> 
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/combinators_sequential.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/patterns_as.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/patterns_call.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/patterns_cons.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/patterns_constant.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/patterns_equality.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/patterns_list.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/patterns_tuple.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/patterns_variable.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/patterns_wildcard.xml"/>
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/examples_concept.xml"/>
 
 </book>

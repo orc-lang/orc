@@ -1,0 +1,72 @@
+<!-- Call Pattern -->
+	<chapter id="ref.patterns.call">
+		<title>Call Pattern</title>
+		<section id="ref.patterns.call.body">
+			<para>
+				In Orc pattern matching, when a value is compared to a call, the value must match the
+				form of the call to be considered a successful pattern match.
+			</para>
+			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= X ( P , ... , P )</emphasis></para>
+		</section>
+		
+		 <section id="ref.patterns.call.examples">
+		  <title>Examples</title>
+		  <examplescript/>
+		  <example caption="Associative Folding" id="ref.patterns.call.examples.one">
+<programlisting><![CDATA[
+{- Match and unwrap the arguments using a datatype (call) pattern -}
+
+type Tree = Node(_,_,_) | Empty()
+{- Build up a small binary tree -}
+val l = Node(Empty(), 0, Empty())
+val r = Node(Empty(), 2, Empty())
+val t = Node(l,1,r)
+
+{- And then match it to extract its contents -}
+t >Node(l,j,r)>
+l >Node(_,i,_)>
+r >Node(_,k,_)>
+( i | j | k )
+
+]]></programlisting>
+		  </example>
+		</section>
+		
+		<section id="ref.patterns.call.links">
+		  <title>Related Links</title>
+		  <informaltable frame='all'>
+			<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+			<colspec colname='c1'/>
+			<colspec colname='c2'/>
+			<thead>
+			<row>
+			  <entry align="center">Related Reference Topics</entry>
+			  <entry align="center">Related Tutorial Sections</entry>
+			</row>
+			</thead>
+			<tbody>
+			<row>
+			  <entry>Combinators</entry>
+			  <entry><olink targetdoc="root" targetptr="special.dot">The . notation</olink></entry>
+			</row>
+			<row>
+			  <entry>Parallel Server Network</entry>
+			  <entry><olink targetdoc="root" targetptr="terms.constant">Constants</olink></entry>
+			</row>
+			<row>
+			  <entry>Site</entry>
+			  <entry><olink targetdoc="root" targetptr="cor.closures">Closures</olink></entry>
+			</row>
+			<row>
+			  <entry>JavaCall</entry>
+			  <!-- Use the following entry to fill up any remaining empty slots in that column -->
+			  <entry morerows='1' valign='middle'><para></para></entry>
+			</row>
+			<row>
+			  <entry>Baz</entry>
+			</row>
+			</tbody>
+			</tgroup>
+		  </informaltable>
+	  </section>
+	</chapter>
