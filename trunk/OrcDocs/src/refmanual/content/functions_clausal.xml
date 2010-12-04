@@ -1,0 +1,73 @@
+<!-- Clausal Functions -->
+   <chapter id="ref.functions.clausal">
+      <title>Clausal Functions</title>
+	  <section id="ref.functions.clausal.behavior">
+		  <title>Behavior</title>
+		  <para>
+		  The combination of functions and pattern matching offers a powerful capability: clausal definition of
+functions. We can define expressions which execute different code depending on the structure of their
+arguments.
+		  </para>
+		  <para>
+		  A function may have multiple clauses, each of which has a sequence of patterns to match each argument,
+and a body expression. Naturally, all clauses of a function must have the same number of arguments. Any
+contiguous sequence of definitions with the same name and different arguments is interpreted as a clausal
+definition, where each individual declaration is a clause of the larger function.
+		  </para>
+		  <para>
+		  When the function is called, the clauses are tried in the order in which they appear until a match is found.
+If no clause matches, the call remains silent.
+		  </para>
+	  </section>
+	  <section id="ref.functions.clausal.examples">
+		  <title>Examples</title>
+		  <examplescript/>
+		  <example caption="Simple example of a clausal function" id="ref.functions.clausal.examples.one">
+<programlisting language="orc-demo"><![CDATA[
+def sum([]) = 0
+def sum(h:t) = h + sum(t)
+]]></programlisting>
+		  </example>
+
+		  <example caption="Clausal function with constant patterns" id="ref.functions.clausal.examples.two">
+<programlisting language="orc-demo"><![CDATA[
+{- Fibonacci numbers -}
+def fib(0) = 1
+def fib(1) = 1
+def fib(n) = if (n < 0) then 0 else fib(n-1) + fib(n-2)
+]]></programlisting>
+		  </example>
+
+		  <example caption="Clauses of mutually recursive functions" id="ref.functions.clausal.examples.three">
+<programlisting language="orc-demo"><![CDATA[
+def even(0) = true
+def odd(0) = false
+def even(n) = odd(if n > 0 then n-1 else n+1)
+def odd(n) = even(if n > 0 then n-1 else n+1)
+]]></programlisting>
+		  </example>
+
+		  
+	  </section>
+	  <section id="ref.functions.clausal.links">
+		  <title>Related Links</title>
+		  <informaltable frame='all'>
+			<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+			<colspec colname='c1'/>
+			<colspec colname='c2'/> 
+			<thead>
+			<row>
+			  <entry align="center">Related Reference Topics</entry>
+			  <entry align="center">Related Tutorial Sections</entry>
+			</row>
+			</thead>
+			<tbody>
+			<row>
+			  <entry>Combinators</entry>
+			  <entry><olink targetdoc="root" targetptr="special.dot">The . notation</olink></entry>
+			</row>
+			</tbody>
+			</tgroup>
+		  </informaltable>
+	  </section>
+   </chapter>
