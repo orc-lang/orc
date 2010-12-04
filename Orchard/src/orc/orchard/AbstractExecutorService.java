@@ -20,7 +20,7 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 import orc.ast.oil.nameless.Expression;
-import orc.ast.oil.nameless.OrcXML;
+import orc.ast.oil.xml.OrcXML;
 import orc.orchard.api.ExecutorServiceInterface;
 import orc.orchard.errors.InvalidJobException;
 import orc.orchard.errors.InvalidJobStateException;
@@ -72,7 +72,7 @@ public abstract class AbstractExecutorService implements ExecutorServiceInterfac
 		final String id = createJobID();
 		final Expression expr;
 		try {
-			expr = OrcXML.fromXML(XML.loadString(program));
+			expr = OrcXML.xmlToAst(XML.loadString(program));
 		} catch (final MatchError e) {//FIXME:Any other exceptions?
 			throw new InvalidOilException(e);
 		}
