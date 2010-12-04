@@ -1,0 +1,51 @@
+<!-- Lambda -->
+   <chapter id="ref.functions.lambda">
+      <title>Lambda</title>
+	  <section id="ref.functions.lambda.behavior">
+		  <title>Behavior</title>
+<para>
+There is a special keyword <code>lambda</code> for this purpose. By writing a function
+definition without the keyword <code>def</code> and replacing the function name with
+the keyword <code>lambda</code>, that definition becomes an expression which evaluates to a closure. 
+</para>
+	  </section>
+	  <section id="ref.functions.lambda.examples">
+		  <title>Examples</title>
+		  <examplescript/>
+		  <example caption="Simple example of a lambda" id="ref.functions.closure.lambda.one">
+<programlisting language="orc-demo"><![CDATA[
+def onetwosum(f) = f(1) + f(2)
+
+onetwosum( lambda(x) = x * 3 )
+{- 
+  identical to:
+  def triple(x) = x * 3
+  onetwosum(triple)
+-}
+-- evaluates to 9
+]]></programlisting>
+		  </example>
+
+	  </section>
+	  <section id="ref.functions.lambda.links">
+		  <title>Related Links</title>
+		  <informaltable frame='all'>
+			<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+			<colspec colname='c1'/>
+			<colspec colname='c2'/> 
+			<thead>
+			<row>
+			  <entry align="center">Related Reference Topics</entry>
+			  <entry align="center">Related Tutorial Sections</entry>
+			</row>
+			</thead>
+			<tbody>
+			<row>
+			  <entry>Combinators</entry>
+			  <entry><olink targetdoc="root" targetptr="special.dot">The . notation</olink></entry>
+			</row>
+			</tbody>
+			</tgroup>
+		  </informaltable>
+	  </section>
+   </chapter>

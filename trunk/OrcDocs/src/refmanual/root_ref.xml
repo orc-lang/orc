@@ -31,6 +31,7 @@
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/functions_clausal.xml"/>
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/functions_recursion.xml"/>
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/functions_closures.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/functions_lambda.xml"/>
 </book>
 
 
