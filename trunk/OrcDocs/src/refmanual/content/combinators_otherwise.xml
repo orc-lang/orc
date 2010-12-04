@@ -1,6 +1,6 @@
 <!-- Otherwise Combinator -->
    <chapter id="ref.combinators.otherwise">
-      <title>Parallel Combinator</title>
+      <title>Otherwise Combinator</title>
 	  <section id="ref.combinators.otherwise.syntax">
 		  <title>Syntax</title>
 		  <para><emphasis role="strong">EBNF</emphasis>: <emphasis>E ::= <code><![CDATA[E ; E]]></code></emphasis></para>
