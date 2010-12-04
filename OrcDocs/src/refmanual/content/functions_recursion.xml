@@ -1,0 +1,57 @@
+<!-- Recursive Functions -->
+   <chapter id="ref.functions.recursion">
+      <title>Recursive Functions</title>
+	  <section id="ref.functions.recursion.behavior">
+		  <title>Behavior</title>
+		  <para>
+Functions can be recursive; that is, the name of a function may be used in its own body.
+		  </para>
+		  <para>
+		  There is no special keyword for mutual recursion; any contiguous sequence of function declarations is
+assumed to be mutually recursive.
+		  </para>
+	  </section>
+	  <section id="ref.functions.recursion.examples">
+		  <title>Examples</title>
+		  <examplescript/>
+		  <example caption="Simple example of a recursive function" id="ref.functions.recursion.examples.one">
+<programlisting language="orc-demo"><![CDATA[
+def sumto(n) = if n < 1 then 0 else n + sumto(n-1)
+]]></programlisting>
+		  </example>
+
+		  <example caption="Mutually recursive functions" id="ref.functions.recursion.examples.two">
+<programlisting language="orc-demo"><![CDATA[
+def even(n) = 
+  if (n > 0) then odd(n-1)
+  else if (n < 0) then odd(n+1)
+  else true
+def odd(n) = 
+  if (n > 0) then even(n-1)
+  else if (n < 0) then even(n+1)
+  else false
+]]></programlisting>
+		  </example>
+	  </section>
+	  <section id="ref.functions.recursion.links">
+		  <title>Related Links</title>
+		  <informaltable frame='all'>
+			<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+			<colspec colname='c1'/>
+			<colspec colname='c2'/> 
+			<thead>
+			<row>
+			  <entry align="center">Related Reference Topics</entry>
+			  <entry align="center">Related Tutorial Sections</entry>
+			</row>
+			</thead>
+			<tbody>
+			<row>
+			  <entry>Combinators</entry>
+			  <entry><olink targetdoc="root" targetptr="special.dot">The . notation</olink></entry>
+			</row>
+			</tbody>
+			</tgroup>
+		  </informaltable>
+	  </section>
+   </chapter>
