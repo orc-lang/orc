@@ -1,0 +1,53 @@
+<!-- Closures -->
+   <chapter id="ref.functions.closure">
+      <title>Closures</title>
+	  <section id="ref.functions.closure.behavior">
+		  <title>Behavior</title>
+<para>
+Functions are actually values, just like any other value. Defining a function creates a special value called a 
+<firstterm>closure</firstterm>; the name of the function is a variable and its bound value is the closure. Thus, 
+a closure can be put into a data structure, or bound to some other variable, just like any other value.
+</para>
+<para>
+Since all declarations (including function declarations) in Cor are lexically scoped, these closures are
+<emphasis>lexical closures</emphasis>. This means that when a closure is created, if the body of the
+function contains any variables other than the formal parameters, the bindings for those variables are
+stored in the closure. Then, when the closure is called, the evaluation of the function body uses those 
+stored variable bindings.  
+</para>
+	  </section>
+	  <section id="ref.functions.closure.examples">
+		  <title>Examples</title>
+		  <examplescript/>
+		  <example caption="Simple example of a closure" id="ref.functions.closure.examples.one">
+<programlisting language="orc-demo"><![CDATA[
+def onetwosum(f) = f(1) + f(2)
+def triple(x) = x * 3
+onetwosum(triple)
+-- evaluates to: 1 * 3 + 2 * 3 = 9
+]]></programlisting>
+		  </example>
+
+	  </section>
+	  <section id="ref.functions.closure.links">
+		  <title>Related Links</title>
+		  <informaltable frame='all'>
+			<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+			<colspec colname='c1'/>
+			<colspec colname='c2'/> 
+			<thead>
+			<row>
+			  <entry align="center">Related Reference Topics</entry>
+			  <entry align="center">Related Tutorial Sections</entry>
+			</row>
+			</thead>
+			<tbody>
+			<row>
+			  <entry>Combinators</entry>
+			  <entry><olink targetdoc="root" targetptr="special.dot">The . notation</olink></entry>
+			</row>
+			</tbody>
+			</tgroup>
+		  </informaltable>
+	  </section>
+   </chapter>
