@@ -3,31 +3,39 @@
       <title>Sequential Combinator</title>
 	  <section id="ref.combinators.sequential.syntax">
 		  <title>Syntax</title>
-		  <para><emphasis role="strong">EBNF</emphasis>: <emphasis>!!!! fix me</emphasis></para>
+		  <para><emphasis role="strong">EBNF</emphasis>: <emphasis><code><![CDATA[E >P> E]]></code></emphasis></para>
 		  <para><emphasis role="strong">Precedence</emphasis>: 
+			  <olink targetdoc="root" targetptr="combinators.sequential">sequential</olink> >
 			  <olink targetdoc="root" targetptr="combinators.parallel">parallel</olink> > 
 			  <olink targetdoc="root" targetptr="combinators.pruning">pruning</olink> >
-			  <olink targetdoc="root" targetptr="combinators.sequential">sequential</olink> >
 			  <olink targetdoc="root" targetptr="combinators.otherwise">otherwise</olink></para>
 		  <para><emphasis role="strong">Associativity</emphasis>: right </para>
 		  <para><emphasis role="strong">Commutative</emphasis>: no </para>
 	  </section>
-	  <section id="ref.combinators.parallel.behavior">
+	  <section id="ref.combinators.sequential.behavior">
 		  <title>Behavior</title>
 		  <itemizedlist>
-			  <listitem>F >x> G
+			  <listitem><code><![CDATA[F >x> G]]></code>
 				  <para>
-					  The execution of F >x> G starts by executing F. Whenever F publishes a value, a new copy of G is executed in parallel with F (and with any previous copies of G); in that copy of G, variable x is bound to the value published by F. Values published by copies of G are published by the whole expression, but the values published by F are not published by the whole expression; they are consumed by the variable binding. 
+					  The execution of <code><![CDATA[F >x> G]]></code> starts by executing F. Whenever F 
+					  publishes a value, a new copy of G is executed in parallel with F (and with any previous 
+					  copies of G); in that copy of G, variable x is bound to the value published by F. Values 
+					  published by copies of G are published by the whole expression, but the values published 
+					  by F are not published by the whole expression; they are consumed by the variable binding. 
 				  </para>
 			  </listitem>
-			  <listitem>F >P> G
+			  <listitem><code><![CDATA[F >P> G]]></code>
 				  <para>
-					  The sequential combinator may be written as F >P> G, where P is a pattern instead of just a variable name. Any value published by F is matched against the pattern P. If this match is successful, a new copy of G is started with all of the bindings from the match. Otherwise, the published value is simply ignored, and no new copy of G is executed. 
+					  The sequential combinator may be written as <code><![CDATA[F >P> G]]></code>, where P is a pattern instead of 
+					  just a variable name. Any value published by F is matched against the pattern P. 
+					  If this match is successful, a new copy of G is started with all of the bindings 
+					  from the match. Otherwise, the published value is simply ignored, and no new copy 
+					  of G is executed. 
 				  </para>
 			  </listitem>
-			  <listitem>F >> G 
+			  <listitem><code><![CDATA[F >> G]]></code> 
 				  <para>
-				  This is equivalent to using a wildcard pattern:  >_> 
+				  This is equivalent to using a wildcard pattern:  <code><![CDATA[>_>]]></code> 
 				  </para>
 			  </listitem>		  
 		  </itemizedlist>
@@ -77,7 +85,7 @@
 		  </example>
 		  
 	  </section>
-	  <section id="ref.combinators.parallel.links">
+	  <section id="ref.combinators.sequential.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>

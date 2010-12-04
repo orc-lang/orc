@@ -16,6 +16,8 @@
 	
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/combinators_parallel.xml"/> 
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/combinators_sequential.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/combinators_pruning.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/combinators_otherwise.xml"/>
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/patterns_as.xml"/>
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/patterns_call.xml"/>
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/patterns_cons.xml"/>
