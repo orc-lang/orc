@@ -110,7 +110,7 @@ object OrcXML {
     trimElem(xmlout) 
   }
   
-  def xmlToAst(xml: Elem): Expression = {
+  def xmlToAst(xml: Node): Expression = {
     xml match {
       case <oil>{body}</oil> => fromXML(body)
       // If the file has been schema-validated, this match will always succeed.

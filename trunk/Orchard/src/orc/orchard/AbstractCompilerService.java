@@ -19,7 +19,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import orc.ast.oil.nameless.OrcXML;
+import orc.ast.oil.xml.OrcXML;
 import orc.compile.StandardOrcCompiler;
 import orc.compile.parse.OrcStringInputContext;
 import orc.error.compiletime.CompileLogger;
@@ -77,7 +77,7 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
 				}
 				//FIXME:Report warnings
 			} else {
-				final String oilString = OrcXML.writeXML(result).toString();
+				final String oilString = OrcXML.astToXml(result).toString();
 				System.err.println(oilString);
 				return oilString;
 			}
