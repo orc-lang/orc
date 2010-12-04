@@ -1,0 +1,110 @@
+<!-- Pruning Combinator -->
+   <chapter id="ref.combinators.pruning">
+      <title>Pruning Combinator</title>
+	  <section id="ref.combinators.pruning.syntax">
+		  <title>Syntax</title>
+		  <para><emphasis role="strong">EBNF</emphasis>: <emphasis>E <code><![CDATA[ <P< ]]></code> E</emphasis></para>
+		  <para><emphasis role="strong">Precedence</emphasis>: 
+			  <olink targetdoc="root" targetptr="combinators.sequential">sequential</olink> >
+			  <olink targetdoc="root" targetptr="combinators.parallel">parallel</olink> > 
+			  <olink targetdoc="root" targetptr="combinators.pruning">pruning</olink> >
+			  <olink targetdoc="root" targetptr="combinators.otherwise">otherwise</olink></para>
+		  <para><emphasis role="strong">Associativity</emphasis>: left </para>
+		  <para><emphasis role="strong">Commutative</emphasis>: no </para>
+	  </section>
+	  <section id="ref.combinators.parallel.behavior">
+		  <title>Behavior</title>
+		  <itemizedlist>
+			  <listitem>F <code><![CDATA[ <x< ]]></code> G
+				  <para>
+				  The execution of F <code><![CDATA[ <x< ]]></code> G starts by executing F and G in parallel. Whenever
+F publishes a value, that value is published by the entire execution. When G publishes its first value, that
+value is bound to x in F, and then the execution of G is immediately terminated. A terminated expression
+cannot call any sites or publish any values. During the execution of F, any part of the execution that depends on x will be suspended until x is bound (to
+the first value published by G). If G never publishes a value, that part of the execution is suspended forever.
+				  </para>
+			  </listitem>
+			  <listitem>F <code><![CDATA[ <P< ]]></code> G
+				  <para>
+				  The pruning combinator may include a full pattern P instead of just a variable name. Any value published
+by G is matched against the pattern P. If this match is successful, then G terminates and all of the bindings
+of the pattern P are made in F. Otherwise, the published value is simply ignored and G continues to execute.
+				  </para>
+			  </listitem>
+		  </itemizedlist>
+	  </section>
+	  <section id="ref.combinators.pruning.examples">
+		  <title>Examples</title>
+		  <examplescript/>
+		  <example caption="" id="ref.combinators.pruning.examples.one">
+<programlisting language="orc-demo"><![CDATA[
+-- Publish either 5 or 6, but not both
+x+2 <x< (3 | 4)
+]]></programlisting>
+		  </example>
+
+		  <example caption="" id="ref.combinators.pruning.examples.two">
+<programlisting><![CDATA[
+-- Query Google and Yahoo for a search result
+-- Print out the result that arrives first; ignore the other result
+println(result) <result< ( Google("cupcake") | Yahoo("cupcake") )
+]]></programlisting>
+		  </example>
+		  
+		  <example caption="" id="ref.combinators.pruning.examples.three">
+<programlisting><![CDATA[
+{-
+This example actually prints both "true" and "false" to the
+console, regardless of which call responds first.
+-}
+stop <x< println("true") | println("false")
+]]></programlisting>
+		  </example>
+		  
+		  <example caption="Pattern Publication" id="ref.combinators.pruning.examples.four">
+<programlisting><![CDATA[
+-- Publish either 9 or 25, but not 16.
+x*x <(x,true)< ( (3,true) | (4,false) | (5,true) )
+]]></programlisting>
+		  </example>
+		  		  
+	  </section>
+	  <section id="ref.combinators.pruning.links">
+		  <title>Related Links</title>
+		  <informaltable frame='all'>
+			<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+			<colspec colname='c1'/>
+			<colspec colname='c2'/> 
+			<thead>
+			<row>
+			  <entry align="center">Related Reference Topics</entry>
+			  <entry align="center">Related Tutorial Sections</entry>
+			</row>
+			</thead>
+			<tbody>
+			<row>
+			  <entry>Combinators</entry>
+			  <entry><olink targetdoc="root" targetptr="special.dot">The . notation</olink></entry>
+			</row>
+			<row>
+			  <entry>Parallel Server Network</entry>
+			  <entry><olink targetdoc="root" targetptr="terms.constant">Constants</olink></entry>
+			</row>
+			<row>
+			  <entry>Site</entry>
+			  <entry><olink targetdoc="root" targetptr="cor.closures">Closures</olink></entry>
+			</row>
+			<row>
+			  <entry>JavaCall</entry>
+			  <!-- Use the following entry to fill up any remaining empty slots in that column -->
+			  <entry morerows='1' valign='middle'><para></para></entry>
+			</row>
+			<row>
+			  <entry>Baz</entry>
+			</row>
+			</tbody>
+			</tgroup>
+		  </informaltable>
+	  </section>
+   </chapter>
+   

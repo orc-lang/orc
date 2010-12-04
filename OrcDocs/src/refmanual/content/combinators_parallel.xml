@@ -3,23 +3,23 @@
       <title>Parallel Combinator</title>
 	  <section id="ref.combinators.parallel.syntax">
 		  <title>Syntax</title>
-		  <para><emphasis role="strong">EBNF</emphasis>: <emphasis>E ::= ... | . E | E</emphasis></para>
+		  <para><emphasis role="strong">EBNF</emphasis>: <emphasis>E ::= <code><![CDATA[E | E]]></code></emphasis></para>
 		  <para><emphasis role="strong">Precedence</emphasis>: 
+			  <olink targetdoc="root" targetptr="combinators.sequential">sequential</olink> >
 			  <olink targetdoc="root" targetptr="combinators.parallel">parallel</olink> > 
 			  <olink targetdoc="root" targetptr="combinators.pruning">pruning</olink> > 
-			  <olink targetdoc="root" targetptr="combinators.sequential">sequential</olink> >
 			  <olink targetdoc="root" targetptr="combinators.otherwise">otherwise</olink></para>
 		  <para><emphasis role="strong">Associativity</emphasis>: left and right </para>
-		  <para><emphasis role="strong">Commutative</emphasis>: true </para>
+		  <para><emphasis role="strong">Commutative</emphasis>: yes </para>
 	  </section>
 	  <section id="ref.combinators.parallel.behavior">
 		  <title>Behavior</title>
-		  <itemizedlist><listitem>F | G</listitem></itemizedlist>
+		  <itemizedlist><listitem><code><![CDATA[F | G]]></code></listitem></itemizedlist>
 		  <para>
 			  Orc executes the <olink targetdoc="root" targetptr="terms.expression">expression</olink>
-			  F | G by executing F and G concurrently. Whenever F or G communicates with a service or 
-			  <olink targetdoc="root" targetptr="terms.publish">publishes</olink> a value, F | G does 
-			  so as well. The resulting publications of F | G may be published in arbitrary order. 
+			  <code><![CDATA[F | G]]></code> by executing F and G concurrently. Whenever F or G communicates with a service or 
+			  <olink targetdoc="root" targetptr="terms.publish">publishes</olink> a value, <code><![CDATA[F | G]]></code> does 
+			  so as well. The resulting publications of <code><![CDATA[F | G]]></code> may be published in arbitrary order. 
 		  </para>
 	  </section>
 	  <section id="ref.combinators.parallel.examples">
