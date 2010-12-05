@@ -250,7 +250,7 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 		// COMBINATOR,
 		new TokenRecord(">", TokenType.COMBINATOR), new TokenRecord("|", TokenType.COMBINATOR), new TokenRecord("<", TokenType.COMBINATOR), new TokenRecord(";", TokenType.COMBINATOR), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 		// BRACKET,
-		new TokenRecord("(", TokenType.BRACKET), new TokenRecord(")", TokenType.BRACKET), new TokenRecord("[", TokenType.BRACKET), new TokenRecord("]", TokenType.BRACKET), new TokenRecord("{", TokenType.BRACKET), new TokenRecord("}", TokenType.BRACKET), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
+		new TokenRecord("(", TokenType.BRACKET), new TokenRecord(")", TokenType.BRACKET), new TokenRecord("[", TokenType.BRACKET), new TokenRecord("]", TokenType.BRACKET), new TokenRecord("{.", TokenType.BRACKET), new TokenRecord(".}", TokenType.BRACKET), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
 		// SEPERATOR,
 		new TokenRecord(",", TokenType.SEPERATOR), new TokenRecord("::", TokenType.SEPERATOR), new TokenRecord(":!:", TokenType.SEPERATOR), new TokenRecord(".", TokenType.SEPERATOR), new TokenRecord("!", TokenType.SEPERATOR), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 		// COMMENT_ENDLINE,
@@ -260,7 +260,8 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 
 	private static String keywords[] = { "as", "class", "def", "else", "if", "include", "lambda", "signal", "site", "stop", "then", "type", "val", }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$ //$NON-NLS-12$ //$NON-NLS-13$ //$NON-NLS-14$ //$NON-NLS-15$
 
-	private static final String WHITESPACE_CHARS = "\t\u000B \u200E\u200F\r\n\u0085\u2028\f\u2029"; //$NON-NLS-1$
+	private static final String NEWLINE_CHARS = "\n\r\f\u0085\u2028\u2029"; //$NON-NLS-1$
+	private static final String WHITESPACE_CHARS = " \t"+NEWLINE_CHARS+"\u000B\u200E\u200F"; //$NON-NLS-1$
 	private static final String DECIMAL_DIGIT_CHARS = "0123456789"; //$NON-NLS-1$
 
 	private final OrcParseController parseController;
@@ -344,8 +345,10 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 
 		if (firstChar == '\"') {
 			int tokenLength = 1;
-			while ((safeCharAt(text, offset + tokenLength) != '\"' || safeCharAt(text, offset + tokenLength - 1) == '\\') && safeCharAt(text, offset + tokenLength) != '\0') {
+			char lastChar = safeCharAt(text, offset + tokenLength);
+			while (((lastChar != '\"' && !isIn(lastChar, NEWLINE_CHARS)) || safeCharAt(text, offset + tokenLength - 1) == '\\') && lastChar != '\0') {
 				++tokenLength;
+				lastChar = safeCharAt(text, offset + tokenLength);
 			}
 			if (safeCharAt(text, offset + tokenLength) == '\"') {
 				++tokenLength; // Include the close delimiter in the token, if we saw it
@@ -355,8 +358,10 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 
 		if (ttEntry != null && ttEntry.tokenType == TokenType.COMMENT_ENDLINE) {
 			int tokenLength = ttEntry.length();
-			while (safeCharAt(text, offset + tokenLength) != '\r' && safeCharAt(text, offset + tokenLength) != '\n' && safeCharAt(text, offset + tokenLength) != '\0') {
+			char lastChar = safeCharAt(text, offset + tokenLength);
+			while (!isIn(lastChar, NEWLINE_CHARS) && lastChar != '\0') {
 				++tokenLength;
+				lastChar = safeCharAt(text, offset + tokenLength);
 			}
 			return newToken(TokenType.COMMENT_ENDLINE, text, offset, tokenLength);
 		}
@@ -364,10 +369,12 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 		if (ttEntry != null && ttEntry.tokenType == TokenType.COMMENT_MULTILINE) {
 			int tokenLength = ttEntry.length();
 			//FUTURE: Hard-coded to use "-}" as close -- 'twould be nice to use the token table somehow.
-			while ((safeCharAt(text, offset + tokenLength) != '-' || safeCharAt(text, offset + tokenLength + 1) != '}') && safeCharAt(text, offset + tokenLength) != '\0') {
+			char lastChar = safeCharAt(text, offset + tokenLength);
+			while ((lastChar != '-' || safeCharAt(text, offset + tokenLength + 1) != '}') && lastChar != '\0') {
 				++tokenLength;
+				lastChar = safeCharAt(text, offset + tokenLength);
 			}
-			if (safeCharAt(text, offset + tokenLength) == '-' && safeCharAt(text, offset + tokenLength + 1) == '}') {
+			if (lastChar == '-' && safeCharAt(text, offset + tokenLength + 1) == '}') {
 				tokenLength += 2; // Include the close delimiter in the token, if we saw it
 			}
 			return newToken(TokenType.COMMENT_MULTILINE, text, offset, tokenLength);
