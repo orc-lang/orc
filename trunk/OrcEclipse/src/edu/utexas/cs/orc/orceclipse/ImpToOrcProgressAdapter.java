@@ -46,6 +46,7 @@ public class ImpToOrcProgressAdapter implements ProgressMonitor {
 	@Override
 	public void setTaskName(final String name) {
 		prgrsMntr.setTaskName(name);
+		prgrsMntr.subTask(name);
 	}
 
 	/* (non-Javadoc)
