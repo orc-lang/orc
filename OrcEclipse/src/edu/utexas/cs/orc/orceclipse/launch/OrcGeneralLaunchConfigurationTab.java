@@ -22,7 +22,6 @@ import org.eclipse.debug.internal.ui.SWTFactory;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -118,11 +117,11 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 				widgetSelectedAction(e);
 			}
 		};
-		final ModifyListener ourModifyListener = new ModifyListener() {
-			public void modifyText(final ModifyEvent e) {
-				widgetModifiedAction(e);
-			}
-		};
+		//final ModifyListener ourModifyListener = new ModifyListener() {
+		//	public void modifyText(final ModifyEvent e) {
+		//		widgetModifiedAction(e);
+		//	}
+		//};
 
 		final Composite labelWidgetComp = SWTFactory.createComposite(comp, comp.getFont(), 2, 1, GridData.FILL_HORIZONTAL, 0, 0);
 

@@ -17,14 +17,21 @@ package edu.utexas.cs.orc.orceclipse.build;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.Collection;
+import java.util.Map;
 
 import orc.compile.StandardOrcCompiler;
 import orc.compile.parse.OrcFileInputContext;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.imp.builder.BuilderBase;
 import org.eclipse.imp.builder.MarkerCreatorWithBatching;
 import org.eclipse.imp.language.Language;
@@ -201,21 +208,61 @@ public class OrcBuilder extends BuilderBase {
 		return resource.getFullPath().lastSegment().equals("bin"); //$NON-NLS-1$
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.imp.builder.BuilderBase#build(int, java.util.Map, org.eclipse.core.runtime.IProgressMonitor)
+	 */
+	@Override
+	protected IProject[] build(int kind, Map args, final IProgressMonitor monitor_) {
+		// This override is only needed as an IMP bug fix
+		// When IMP's BuilderBase.build correctly manages the IProgressMonitor, remove this override.
+		final IProgressMonitor monitor = monitor_ == null ? new NullProgressMonitor() : monitor_;
+		checkCancel(monitor);
+		monitor.beginTask("Preparing to build " + getProject().getName(), 100000);
+		final IProject[] requiredProjects = super.build(kind, args, monitor);
+		monitor.subTask("Build done");
+		monitor.done();
+		return requiredProjects;
+	}
+
 	/**
 	 * Compile one Orc file.
 	 *
 	 * @see org.eclipse.imp.builder.BuilderBase#compile(org.eclipse.core.resources.IFile, org.eclipse.core.runtime.IProgressMonitor)
 	 */
 	@Override
-	protected void compile(final IFile file, final IProgressMonitor monitor) {
+	protected void compile(final IFile file, final IProgressMonitor monitor_) {
+		checkCancel(monitor_);
 
-		getConsoleStream().println(Messages.OrcBuilder_BuildingOrcFile + file.getName());
+		// This block is only needed as an IMP bug fix
+		// When IMP's BuilderBase.compileNecessarySources correctly passes us a fresh SubProgressMonitor, remove this block.
+		final IProgressMonitor monitor;
+		try {
+			// Violate access controls of parent's fSourcesToCompile field
+			final Field fSourcesToCompileField = BuilderBase.class.getDeclaredField("fSourcesToCompile");
+			fSourcesToCompileField.setAccessible(true);
+			final int numFiles = ((Collection<IFile>) fSourcesToCompileField.get(this)).size();
 
+			monitor = new SubProgressMonitor(monitor_, 100000 / numFiles);
+		} catch (IllegalAccessException e) {
+			throw new AssertionError(e);
+		} catch (NoSuchFieldException e) {
+			throw new AssertionError(e);
+		}
+		// End bug fix block
+
+		final String fileName = file.getFullPath().makeRelative().toString();
+
+		final boolean emitDiags = getDiagPreference();
+		if (emitDiags) {
+			getConsoleStream().println(Messages.OrcBuilder_BuildingOrcFile + fileName);
+		}
+		monitor.beginTask("Compiling " + fileName, 1000);
+		monitor.subTask("Compiling " + fileName);
 		try {
 			final OrcConfigSettings config = new OrcConfigSettings(getProject(), null);
 			config.filename_$eq(file.getLocation().toOSString());
 			final OrcFileInputContext ic = new OrcFileInputContext(new File(file.getLocation().toOSString()), file.getCharset());
-			final ImpToOrcProgressAdapter prgsLstnr = new ImpToOrcProgressAdapter(monitor);
+			final ImpToOrcProgressAdapter prgsLstnr = new ImpToOrcProgressAdapter(new SubProgressMonitor(monitor, 1000));
 			final ImpToOrcMessageAdapter compileLogger = new ImpToOrcMessageAdapter(new MarkerCreatorWithBatching(file, null, this));
 			file.deleteMarkers(OrcBuilder.PROBLEM_MARKER_ID, true, IResource.DEPTH_INFINITE);
 
@@ -224,19 +271,22 @@ public class OrcBuilder extends BuilderBase {
 				// Disregard returned OIL, we just want the errors
 			} catch (final IOException e) {
 				//TODO: Handle this differently?
-				getConsoleStream().println(Messages.OrcBuilder_IOErrorWhenBuilding + file.getName() + ": " + e.getMessage()); //$NON-NLS-1$
-				getPlugin().logException(e.getMessage(), e);
+				getConsoleStream().println(Messages.OrcBuilder_IOErrorWhenBuilding + fileName + ": " + e.toString()); //$NON-NLS-1$
+				getPlugin().logException(e.toString(), e);
 			}
 
 			doRefresh(file.getParent()); // N.B.: Assumes all generated files go into parent folder
 		} catch (final Exception e) {
 			// catch Exception, because any exception could break the
 			// builder infrastructure.
-			getConsoleStream().println(Messages.OrcBuilder_CompilerInternalErrorOn + file.getName() + ": " + e.getMessage()); //$NON-NLS-1$
-			getPlugin().logException(e.getMessage(), e);
+			getConsoleStream().println(Messages.OrcBuilder_CompilerInternalErrorOn + fileName + ": " + e.toString()); //$NON-NLS-1$
+			getPlugin().logException(e.toString(), e);
+		} finally {
+			monitor.done();
 		}
-		getConsoleStream().println(Messages.OrcBuilder_DoneBuildingOrcFile + file.getName());
-		monitor.done();
+		if (emitDiags) {
+			getConsoleStream().println(Messages.OrcBuilder_DoneBuildingOrcFile + fileName);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -245,5 +295,13 @@ public class OrcBuilder extends BuilderBase {
 	@Override
 	protected String getConsoleName() {
 		return Messages.OrcBuilder_OrcCompilerConsoleName;
+	}
+
+	/**
+	 * Check whether the build has been canceled.
+	 */
+	public void checkCancel(final IProgressMonitor monitor) throws OperationCanceledException {
+		if (monitor != null && monitor.isCanceled())
+			throw new OperationCanceledException();
 	}
 }
