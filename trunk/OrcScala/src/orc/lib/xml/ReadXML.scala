@@ -14,12 +14,13 @@
 //
 package orc.lib.xml
 
-import orc.values.sites.PartialSite
+import orc.values.sites.TotalSite
 import orc.values.sites.UntypedSite
 import scala.xml.XML
 import org.xml.sax.SAXException
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
+import orc.error.runtime.SiteException
 
 
 /**
@@ -27,18 +28,17 @@ import orc.error.runtime.ArityMismatchException
  *
  * @author dkitchin
  */
-class ReadXML extends PartialSite with UntypedSite {
+class ReadXML extends TotalSite with UntypedSite {
   
-  def evaluate(args: List[AnyRef]): Option[AnyRef] = {
+  def evaluate(args: List[AnyRef]): AnyRef = {
     args match {
       case List(xml: String) => {
         try {
-          Some(XML.loadString(xml.toString))
+          XML.loadString(xml.toString)
         }
         catch {
           case e: SAXException => {
-            System.err.println("XML parsing failed: " + e.getMessage)
-            None
+            throw new SiteException("XML parsing failed: " + e.getMessage)
           }
           case e => throw e
         }
