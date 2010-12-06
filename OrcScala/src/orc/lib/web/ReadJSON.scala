@@ -18,9 +18,9 @@ import scala.util.parsing.combinator.JavaTokenParsers
 import scala.util.parsing.combinator.syntactical._
 import scala.util.parsing.combinator.lexical._
 
-import orc.values.sites.{PartialSite, UntypedSite}
+import orc.values.sites.{TotalSite, UntypedSite}
 import orc.values.OrcRecord
-import orc.error.runtime.{ArgumentTypeMismatchException, ArityMismatchException}
+import orc.error.runtime.{ArgumentTypeMismatchException, ArityMismatchException, SiteException}
 
 /**
  * 
@@ -28,9 +28,9 @@ import orc.error.runtime.{ArgumentTypeMismatchException, ArityMismatchException}
  *
  * @author dkitchin
  */
-class ReadJSON extends PartialSite with UntypedSite {
+class ReadJSON extends TotalSite with UntypedSite {
 
-  def evaluate(args: List[AnyRef]): Option[AnyRef] = {
+  def evaluate(args: List[AnyRef]): AnyRef = {
     args match {
       case List(s: String) => OrcJSONParser.parse(s)
       case List(z) => throw new ArgumentTypeMismatchException(0, "String", z.getClass().toString())
@@ -78,13 +78,12 @@ object OrcJSONParser extends JavaTokenParsers {
       | stringLiteral
     )
     
-    def parse(json: String): Option[AnyRef] = {
+    def parse(json: String): AnyRef = {
       parseAll[AnyRef](root, new java.io.StringReader(json)) match {
-        case Success(v,_) => Some(v)
+        case Success(v,_) => v
         case n: NoSuccess => {
-          System.err.println("JSON parsing failed: " + n.msg)
-          System.err.println(n.next.pos.longString)
-          None
+          throw new SiteException("JSON parsing failed: " + n.msg + "\n" + n.next.pos.longString)
+          // None
         }
       }
     }
