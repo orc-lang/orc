@@ -21,12 +21,17 @@ import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
 import orc.run.extensions.SupportForRtimer;
+import orc.values.sites.compatibility.Types;
+import orc.values.sites.TypedSite;
+import orc.types.Type;
+import orc.types.RecordType;
+
 
 /**
  * Implements the RTimer site
  * @author wcook, quark, dkitchin
  */
-public class Rtimer extends SiteAdaptor {
+public class Rtimer extends SiteAdaptor implements TypedSite {
     public void populateMetaDataAdaptor(final Args args, final TokenAPI caller) throws TokenException {
       long t = args.longArg(0);
       if (t == 0) vtime = 0;
@@ -65,4 +70,12 @@ public class Rtimer extends SiteAdaptor {
 			throw new NoSuchMethodError(f + " in " + name());
 		}
 	}
+	
+	@Override
+	public Type orcType() {
+	  RecordType t = Types.dotSite(Types.function(Types.integer(), Types.signal()));
+	  t = Types.addField(t, "time", Types.function(Types.integer()));
+	  return t;
+	}
+	
 }

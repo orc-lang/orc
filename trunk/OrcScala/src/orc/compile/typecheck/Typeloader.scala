@@ -38,7 +38,17 @@ object Typeloader extends SiteClassLoading {
    */
   def lift(t: syntactic.Type)(implicit typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): Type = {
     t match {
-      case u: syntactic.BoundTypevar => typeContext(u)
+      case u: syntactic.BoundTypevar => {
+        (typeContext get u) match {
+          case Some(t) => t
+          case None => {
+            (typeOperatorContext get u) match {
+              case Some(_) => throw new FirstOrderTypeExpectedException()
+              case None => throw new UnboundTypeException(u.toString) // should never occur
+            }
+          }
+        }
+      }
       case syntactic.Top() => Top
       case syntactic.Bot() => Bot
       case syntactic.TupleType(elements) => TupleType(elements map lift)
@@ -53,12 +63,27 @@ object Typeloader extends SiteClassLoading {
         FunctionType(newTypeFormals, newArgTypes, newReturnType)
       }
       case syntactic.TypeApplication(t, typeactuals) => {
-        val operator = liftToOperator(t)
-        operator(typeactuals map lift)
+        liftToOperator(t).operate(typeactuals map lift)
       }
       case syntactic.ImportedType(classname) => loadType(classname)
-      case syntactic.ClassType(classname) => throw new NotYetImplementedException()
-      case syntactic.VariantType(Nil, variants) => throw new NotYetImplementedException()
+      case syntactic.ClassType(classname) => {
+        val C = loadClass(classname)
+        if (C.getTypeParameters().isEmpty) {
+          liftJavaType(C)
+        }
+        else {
+          throw new FirstOrderTypeExpectedException()
+        }
+      }
+      case t@ syntactic.VariantType(Nil, variants) => {
+        val newVariants = 
+          for ((name, variant) <- variants) yield {
+            (name, variant map lift)
+          }
+        val d = new MonomorphicDatatype(newVariants.toList)
+        d.optionalDatatypeName = t.optionalVariableName
+        d
+      }
       case syntactic.UnboundTypevar(name) => {
         throw new UnboundTypeException(name)
       }
@@ -71,8 +96,18 @@ object Typeloader extends SiteClassLoading {
    */ 
   def liftToOperator(t: syntactic.Type)(implicit typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): TypeOperator = {
     t match {
-      case u: syntactic.BoundTypevar => typeOperatorContext(u)
-      case syntactic.VariantType(typeformals, variants) if (!typeformals.isEmpty) => {
+      case u: syntactic.BoundTypevar => {
+        (typeOperatorContext get u) match {
+          case Some(op) => op
+          case None => {
+            (typeContext get u) match {
+              case Some(_) => throw new SecondOrderTypeExpectedException()
+              case None => throw new UnboundTypeException(u.toString) // should never occur
+            }
+          }
+        }
+      }
+      case t@ syntactic.VariantType(typeformals, variants) if (!typeformals.isEmpty) => {
         val newTypeFormals = typeformals map { u => new TypeVariable(u) }
         val typeBindings = typeformals zip newTypeFormals
         val newTypeContext = typeContext ++ typeBindings
@@ -81,20 +116,29 @@ object Typeloader extends SiteClassLoading {
             val newVariant = variant map { lift(_)(newTypeContext, typeOperatorContext) }
             (name, newVariant)
           }
-        val tycon = DatatypeConstructor(newTypeFormals, newVariants)
-        new TypeOperator({ TypeInstance(tycon, _) })
+        val d = new PolymorphicDatatype(newTypeFormals, newVariants)
+        d.optionalDatatypeName = t.optionalVariableName
+        new TypeOperator { def operate(ts: List[Type]) = TypeInstance(d, ts) }
       }
       case syntactic.TypeAbstraction(typeformals, t) => {
         val newTypeFormals = typeformals map { u => new TypeVariable(u) }
         val typeBindings = typeformals zip newTypeFormals
         val newTypeContext = typeContext ++ typeBindings
         val newT = lift(t)(newTypeContext, typeOperatorContext)
-        new TypeOperator({ newT.subst(_, newTypeFormals) })
+        new TypeOperator { def operate(ts: List[Type]) = newT.subst(ts, newTypeFormals) }
       }
       case syntactic.ImportedType(classname) => {
         loadTypeOperator(classname)
       }
-      case syntactic.ClassType(classname) => throw new NotYetImplementedException()
+      case syntactic.ClassType(classname) => {
+        val C = loadClass(classname)
+        if (C.getTypeParameters().isEmpty) {
+          throw new SecondOrderTypeExpectedException()
+        }
+        else {
+          liftJavaTypeOperator(C)
+        }
+      }
       case syntactic.UnboundTypevar(name) => {
         throw new UnboundTypeException(name)
       }
@@ -113,12 +157,31 @@ object Typeloader extends SiteClassLoading {
       Left(lift(t))
     }
     catch {
-      case _ : FirstOrderTypeExpectedException => {
+      case _ : FirstOrderTypeExpectedException | _ : TypeResolutionException => {
         Right(liftToOperator(t))
       }
     }
   }
   
+  
+  /**
+   * Lift a Java type (represented by a Java class with no type parameters)
+   * to an Orc type, using a type context to resolve Java type variables.
+   */
+  def liftJavaType(C: Class[_]): Type = {
+    Bot //TODO
+  }
+  
+  
+  /**
+   * Lift a Java generic type (represented by a Java class with type parameters)
+   * to an Orc type operator, using a type context to resolve Java type variables.
+   */
+  def liftJavaTypeOperator(C: Class[_]): TypeOperator = {
+    new TypeOperator { 
+      def operate(ts: List[Type]) = Bot  //TODO
+    }
+  }
   
   
   /** 
@@ -134,10 +197,17 @@ object Typeloader extends SiteClassLoading {
    * @author dkitchin
    */
   def reify(that: Type)(implicit typecontext: TypeContext): Option[syntactic.Type] = {
-    None
+    None //TODO
   }
   
   
+  
+  /**
+   * 
+   * Given the name of a subtype of Type, instantiate that class
+   * as a type.
+   * 
+   */
   def loadType(name: String): Type = {
     val loadedClass = loadClass(name)
     if (classOf[Type] isAssignableFrom loadedClass) {
@@ -156,10 +226,17 @@ object Typeloader extends SiteClassLoading {
       catch {
         case _ => { } //Ignore -- It's not a Scala object, then.
       }
-      throw new TypeResolutionException(loadedClass.getName(),new ClassCastException(loadedClass.getClass().getCanonicalName()+" cannot be cast to "+classOf[Type].getCanonicalName()))
+      throw new TypeResolutionException(loadedClass.getName(),new ClassCastException(loadedClass.getCanonicalName()+" cannot be cast to "+classOf[Type].getCanonicalName()))
     }
   }
   
+  
+  /**
+   * 
+   * Given the name of a subtype of TypeOperator, instantiate that class
+   * as a type operator.
+   * 
+   */
   def loadTypeOperator(name: String): TypeOperator = {
     val loadedClass = loadClass(name)
     if (classOf[TypeOperator] isAssignableFrom loadedClass) {
@@ -178,7 +255,7 @@ object Typeloader extends SiteClassLoading {
       catch {
         case _ => { } //Ignore -- It's not a Scala object, then.
       }
-      throw new TypeOperatorResolutionException(loadedClass.getName(),new ClassCastException(loadedClass.getClass().getCanonicalName()+" cannot be cast to "+classOf[TypeOperator].getCanonicalName()))
+      throw new TypeOperatorResolutionException(loadedClass.getName(),new ClassCastException(loadedClass.getCanonicalName()+" cannot be cast to "+classOf[TypeOperator].getCanonicalName()))
     }
   }
   

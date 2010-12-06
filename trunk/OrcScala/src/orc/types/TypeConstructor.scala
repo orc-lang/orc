@@ -15,14 +15,25 @@
 package orc.types
 
 import orc.types.Variance._
+import orc.error.compiletime.typing.UncallableTypeException
 
 /**
  * 
  *
  * @author dkitchin
  */
-trait TypeConstructor {
+trait TypeConstructor extends TypeOperator {
+  
   val variances: List[Variance]
+  
+  /* 
+   * When an instance of this type is called, instantiate it at particular type parameters.
+   * By default, a constructed type is uncallable.
+   * Subclasses will override this method to provide the calling type behavior of instances.
+   */
+  def instance(ts: List[Type]): CallableType = {
+    throw new UncallableTypeException(TypeInstance(this, ts))
+  }
 }
 
 class SimpleTypeConstructor(val name: String, val givenVariances: Variance*) extends TypeConstructor {
@@ -30,10 +41,14 @@ class SimpleTypeConstructor(val name: String, val givenVariances: Variance*) ext
   override def toString = name
   
   val variances = givenVariances.toList
+    
+  def operate(ts: List[Type]): Type = {
+    assert(variances.size == ts.size)
+    TypeInstance(this, ts)
+  }
   
   def apply(ts: Type*): Type = {
-    assert(variances.size == ts.size)
-    TypeInstance(this, ts.toList)
+    operate(ts.toList)
   }
   
   def unapplySeq(t: Type): Option[Seq[Type]] = {
@@ -44,18 +59,3 @@ class SimpleTypeConstructor(val name: String, val givenVariances: Variance*) ext
   }
   
 }
-
-case class DatatypeConstructor(typeFormals: List[TypeVariable], variants: List[(String, List[Type])]) extends TypeConstructor {
-  
-  val variances = typeFormals map { x => 
-    val occurrences = 
-      for ((_, variant) <- variants; t <- variant) yield { 
-        t varianceOf x 
-      }
-    occurrences.toList.combined
-  }
-  
-}
-
-
-

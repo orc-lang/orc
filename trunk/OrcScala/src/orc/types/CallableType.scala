@@ -53,19 +53,3 @@ trait UnaryCallableType extends SimpleCallableType {
   }
   
 }
-
-
-/* Use case: no type arguments, one field argument */
-trait TypeWithMembers extends UnaryCallableType {
-  
-  def getMember(member: String): Option[Type]
-  
-  override def call(argType: Type) = {
-    argType match {
-      case FieldType(f) => getMember(f).getOrElse(throw new NoSuchMemberException(this, f))
-      case t  => throw new ArgumentTypeMismatchException(0, FieldType("?"), t)
-    }
-  }
-  
-}
-

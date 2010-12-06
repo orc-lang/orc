@@ -149,11 +149,17 @@ abstract class CoreOrcCompiler extends OrcCompiler {
     }
   }
 
+  val fractionDefs = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
+    val phaseName = "fractionDefs"
+    override def apply(co: CompilerOptions) = { FractionDefs(_) }
+      
+  }
+  
   val refineNamedOil = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
     val phaseName = "refineNamedOil"
     override def apply(co: CompilerOptions) =
       (e: orc.ast.oil.named.Expression) => {
-        val refine = FractionDefs andThen RemoveUnusedDefs andThen RemoveUnusedTypes
+        val refine = RemoveUnusedDefs andThen RemoveUnusedTypes
         refine(e)
       }
   }
@@ -226,6 +232,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
     parse.timePhase >>>
       translate.timePhase >>>
       noUnboundVars.timePhase >>>
+      fractionDefs.timePhase >>>
       typeCheck.timePhase >>>
       refineNamedOil.timePhase >>>
       noUnguardedRecursion.timePhase >>>

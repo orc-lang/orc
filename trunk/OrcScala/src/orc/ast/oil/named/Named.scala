@@ -251,7 +251,17 @@ object Conversions {
  * and similarly, deconstruction matches an entire subtree.
  */
 
-/* A call with argument unfolding reversed. */
+/* A call with argument unfolding reversed.
+ * 
+ * Matching this pattern can take O(N^2) steps,
+ * where N is the depth of a series of left-associative
+ * nested pruning combinators. That is, it is of the form
+ * f <x1< g1 <x2< g2 ... <xN< gN
+ * 
+ * The use cases for this pattern could be rewritten
+ * to more complex and less maintainable O(N) solutions,
+ * but I figured it wasn't worth it. -dkitchin 
+ */
 object FoldedCall {
   
   def unapply(expr: Expression): Option[(Expression, List[Expression], Option[List[Type]])] = {
@@ -259,9 +269,14 @@ object FoldedCall {
       case (Nil,Call(target, args, typeArgs)) => Some( (target, args, typeArgs) )
       case (bindings, Call(target, args, typeArgs)) => {
         val exprMap = bindings.toMap
-        val targetExpression = exprMap.getOrElse(target, target)
-        val argExpressions = args map { arg => exprMap.getOrElse(arg, arg) }
-        Some( (targetExpression, argExpressions, typeArgs) )
+        if ( (exprMap.keySet) subsetOf (args.toSet)) {
+          val targetExpression = exprMap.getOrElse(target, target)
+          val argExpressions = args map { arg => exprMap.getOrElse(arg, arg) }
+          Some( (targetExpression, argExpressions, typeArgs) )
+        }
+        else {
+          None
+        }
       }
       case _ => None
     } 

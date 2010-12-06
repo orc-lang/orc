@@ -22,18 +22,27 @@ import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
+import orc.lib.state.types.SemaphoreType;
+import orc.values.sites.TypedSite;
+import orc.types.Type;
+
 
 /**
  * @author quark
  */
 @SuppressWarnings("hiding")
-public class Semaphore extends EvalSite {
+public class Semaphore extends EvalSite implements TypedSite {
 
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
 		return new SemaphoreInstance(args.intArg(0));
 	}
 
+	@Override
+    public Type orcType() {
+      return SemaphoreType.getBuilder();
+    }
+	
 	protected class SemaphoreInstance extends DotSite {
 
 		protected final Queue<TokenAPI> waiters = new LinkedList<TokenAPI>();

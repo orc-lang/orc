@@ -11,7 +11,6 @@ import orc.types._
 object OptionType extends SimpleTypeConstructor("Option", Covariant)
 object ListType extends SimpleTypeConstructor("List", Covariant)
 
-
 object TupleConstructor extends TotalSite with TypedSite {
   override def name = "Tuple"
   def evaluate(args: List[AnyRef]) = OrcTuple(args)

@@ -15,18 +15,22 @@
 package orc.lib.time
 
 import orc.TokenAPI
-import orc.values.sites.UntypedSite
+import orc.values.sites.TypedSite
 import orc.values.sites.Site
+import orc.types.SimpleFunctionType
+import orc.types.IntegerType
 /**
  * 
  *
  * @author amshali
  */
-class Vclock extends Site with UntypedSite {
+class Vclock extends Site with TypedSite {
   def call(args: List[AnyRef], token: TokenAPI) {
     token.publish(BigInt(0))//FIXME
   }
 
   override def name: String = this.getClass().getName()
+  
+  def orcType = SimpleFunctionType(IntegerType)
 }
 

@@ -50,10 +50,4 @@ public class JavaArray extends EvalSite {
 		}
 	}
 
-//	@Override
-//	public Type type() throws TypeException {
-//		final Type X = new TypeVariable(0);
-//		final Type ArrayOfX = new ArrayType().instance(X);
-//		return new MultiType(new ArrowType(Type.INTEGER, ArrayOfX, 1), new ArrowType(Type.INTEGER, Type.STRING, ArrayOfX, 1));
-//	}
 }

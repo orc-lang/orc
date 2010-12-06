@@ -21,6 +21,10 @@ import orc.TokenAPI;
 import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
+import orc.lib.state.types.BoundedBufferType;
+import orc.values.sites.TypedSite;
+import orc.types.Type;
+
 
 /**
  * A bounded buffer.
@@ -29,7 +33,7 @@ import orc.values.sites.compatibility.SiteAdaptor;
  * @author quark
  */
 @SuppressWarnings("boxing")
-public class BoundedBuffer extends EvalSite {
+public class BoundedBuffer extends EvalSite implements TypedSite {
 
 	/* (non-Javadoc)
 	 * @see orc.values.sites.compatibility.SiteAdaptor#callSite(java.lang.Object[], orc.TokenAPI, orc.runtime.values.GroupCell, orc.OrcRuntime)
@@ -39,12 +43,10 @@ public class BoundedBuffer extends EvalSite {
 		return new BufferInstance(args.intArg(0));
 	}
 
-//	@Override
-//	public Type type() throws TypeException {
-//		final Type X = new TypeVariable(0);
-//		final Type BufferOfX = new BoundedBufferType().instance(X);
-//		return new ArrowType(Type.INTEGER, BufferOfX, 1);
-//	}
+	@Override
+    public Type orcType() {
+      return BoundedBufferType.getBuilder();
+    }
 
 	protected class BufferInstance extends DotSite {
 
