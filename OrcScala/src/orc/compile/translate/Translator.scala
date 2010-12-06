@@ -172,7 +172,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         val (source, dcontext, target) = convertPattern(p, x)
 
         val newbody = convert(body)(context ++ dcontext, typecontext + { (name, d) })
-        val makeSites = makeDatatype(d, constructors, this)
+        val makeSites = makeDatatype(d, typeformals.size, constructors, this)
 
         DeclareType(d, variantType, target(newbody) < x < source(makeSites))
       }

@@ -67,10 +67,10 @@ class UnspecifiedReturnTypeException() extends
   TypeException("Could not infer missing return type; please add a return type annotation") with SeverityError
 
 class FirstOrderTypeExpectedException() extends
-  TypeException("Kinding error: expected a first-order type in this position, found a type operator instead.") with SeverityError
+  TypeException("Kinding error: expected a first-order type, found a type operator instead.") with SeverityError
 
 class SecondOrderTypeExpectedException() extends
-  TypeException("Kinding error: expected a type operator in this position, found a first-order type instead.") with SeverityError
+  TypeException("Kinding error: expected a type operator, found a first-order type instead.") with SeverityError
   
 class NoMinimalTypeException() extends
   TypeException("Inference failed; could not find a minimal type. Please add explicit type information.") with SeverityError
@@ -80,7 +80,7 @@ class OverconstrainedTypeVariableException() extends
 
   
 case class TypeResolutionException(val typeName: String, cause: Throwable) 
-  extends CompilationException("Problem loading type "+typeName, cause) with SeverityError
+  extends CompilationException("Problem loading type "+typeName + ": " + cause.getMessage(), cause) with SeverityError
   
 case class TypeOperatorResolutionException(val typeOperatorName: String, cause: Throwable) 
   extends CompilationException("Problem loading type operator "+typeOperatorName, cause) with SeverityError

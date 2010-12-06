@@ -16,20 +16,23 @@ package orc.lib.state;
 import java.util.LinkedList;
 
 import orc.error.runtime.TokenException;
-//import orc.lib.state.types.CounterType;
 import orc.values.sites.compatibility.Args;
 import orc.TokenAPI;
 import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.PartialSite;
 import orc.values.sites.compatibility.SiteAdaptor;
+import orc.lib.state.types.CounterType;
+import orc.values.sites.TypedSite;
+import orc.types.Type;
+
 
 /**
  * Factory for counters. 
  * @author quark
  */
 @SuppressWarnings({"boxing","hiding"})
-public class Counter extends EvalSite {
+public class Counter extends EvalSite implements TypedSite {
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
 		final int init = args.size() == 0 ? 0 : args.intArg(0);
@@ -90,5 +93,10 @@ public class Counter extends EvalSite {
 			}
 		};
 	}
+	
+	@Override
+    public Type orcType() {
+      return CounterType.getBuilder();
+    }
 
 }

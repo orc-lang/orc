@@ -63,7 +63,7 @@ Ranges from 0 to <code>Integer.MAX_VALUE</code>.
   Currently we use Rtimer as a stub for Ltimer, 
   increasing the granularity to avoid mis-ordering on small inputs.
 -}
-def Ltimer(i) = Rtimer(100 * i)
+def Ltimer(i :: Integer) = Rtimer(100 * i)
 
 {--
 @def withLtimer[A](lambda () :: A) :: A

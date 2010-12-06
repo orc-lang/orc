@@ -22,6 +22,10 @@ import orc.TokenAPI;
 import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
+import orc.lib.state.types.CellType;
+import orc.values.sites.TypedSite;
+import orc.types.Type;
+
 
 /**
  * Write-once cell. 
@@ -30,7 +34,7 @@ import orc.values.sites.compatibility.SiteAdaptor;
  *
  * @author dkitchin
  */
-public class Cell extends EvalSite {
+public class Cell extends EvalSite implements TypedSite {
 
 	/* (non-Javadoc)
 	 * @see orc.values.sites.compatibility.SiteAdaptor#callSite(java.lang.Object[], orc.TokenAPI, orc.runtime.values.GroupCell, orc.OrcRuntime)
@@ -40,12 +44,10 @@ public class Cell extends EvalSite {
 		return new CellInstance();
 	}
 
-//	@Override
-//	public Type type() throws TypeException {
-//		final Type X = new TypeVariable(0);
-//		final Type CellOfX = new CellType().instance(X);
-//		return new ArrowType(CellOfX, 1);
-//	}
+	@Override
+    public Type orcType() {
+      return CellType.getBuilder();
+    }
 
 	protected class CellInstance extends DotSite {
 

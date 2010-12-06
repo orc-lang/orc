@@ -21,6 +21,10 @@ import orc.TokenAPI;
 import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
+import orc.lib.state.types.BufferType;
+import orc.values.sites.TypedSite;
+import orc.types.Type;
+
 
 /**
  * Implements the local site Buffer, which creates buffers (asynchronous channels).
@@ -28,7 +32,7 @@ import orc.values.sites.compatibility.SiteAdaptor;
  * @author cawellington, dkitchin
  */
 @SuppressWarnings("boxing")
-public class Buffer extends EvalSite {
+public class Buffer extends EvalSite implements TypedSite {
 
 	/* (non-Javadoc)
 	 * @see orc.values.sites.compatibility.SiteAdaptor#callSite(java.lang.Object[], orc.TokenAPI, orc.runtime.values.GroupCell, orc.OrcRuntime)
@@ -38,6 +42,11 @@ public class Buffer extends EvalSite {
 		return new BufferInstance();
 	}
 
+	@Override
+	public Type orcType() {
+	  return BufferType.getBuilder();
+	}
+	
 //	@Override
 //	public Type type() throws TypeException {
 //		final Type X = new TypeVariable(0);

@@ -20,7 +20,7 @@ package orc.types
  *
  * @author dkitchin
  */
-case class TypeInstance(tycon: TypeConstructor, args: List[Type]) extends Type {
+case class TypeInstance(tycon: TypeConstructor, args: List[Type]) extends CallableType {
   
   override def toString = tycon.toString + args.mkString("[", ",", "]")
   
@@ -83,6 +83,9 @@ case class TypeInstance(tycon: TypeConstructor, args: List[Type]) extends Type {
   override def subst(sigma: Map[TypeVariable, Type]): Type = {
     TypeInstance(tycon, args map { _ subst sigma })
   }
+  
+  def call(typeArgs: List[Type], argTypes: List[Type]): Type = tycon.instance(args).call(typeArgs, argTypes)  
+  
 }
 
 

@@ -16,14 +16,18 @@ package orc.lib.time
 
 import orc.values.Signal
 import orc.TokenAPI
-import orc.values.sites.UntypedSite
+import orc.values.sites.TypedSite
 import orc.values.sites.Site
+import orc.types.SimpleFunctionType
+import orc.types.IntegerType
+import orc.types.SignalType
+
 /**
  * 
  *
  * @author amshali
  */
-class Vtimer extends Site with UntypedSite {
+class Vtimer extends Site with TypedSite {
   def call(args: List[AnyRef], token: TokenAPI) {
     val n : scala.math.BigInt  = args(0).asInstanceOf[scala.math.BigInt]
     if (n.toInt == 0) {
@@ -39,5 +43,7 @@ class Vtimer extends Site with UntypedSite {
   override def virtualTime() : Int = vtime   // -1 represents infinity
 
   override def name: String = this.getClass().getName()
+  
+  def orcType = SimpleFunctionType(IntegerType, SignalType)
 }
 

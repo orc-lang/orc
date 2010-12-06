@@ -22,6 +22,9 @@ import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
+import orc.lib.state.types.RefType;
+import orc.values.sites.TypedSite;
+import orc.types.Type;
 
 /**
  * @author dkitchin
@@ -32,7 +35,7 @@ import orc.values.sites.compatibility.SiteAdaptor;
  * Write operatons always succeed.
  *
  */
-public class Ref extends EvalSite {
+public class Ref extends EvalSite implements TypedSite {
 
 	/* (non-Javadoc)
 	 * @see orc.values.sites.compatibility.EvalSite#evaluate(orc.values.sites.compatibility.Args)
@@ -49,7 +52,13 @@ public class Ref extends EvalSite {
 			return new RefInstance();
 		}
 	}
+	
+	@Override
+	public Type orcType() {
+	  return RefType.getBuilder();
+	}
 
+	
 	public static class RefInstance extends DotSite {
 
 		protected Queue<TokenAPI> readQueue;

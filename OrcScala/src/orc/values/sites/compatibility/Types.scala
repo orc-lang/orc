@@ -45,9 +45,7 @@ object Types {
   def function(r: Type) = FunctionType(Nil, Nil, r)
   def function(a: Type, r: Type) = FunctionType(Nil, List(a), r)
   def function(a0: Type, a1: Type, r: Type) = FunctionType(Nil, List(a0,a1), r)
-  
-  def binaryOperator(t: Type) = FunctionType(Nil, List(t,t), t)
-  
+    
   def overload(t: CallableType, u: CallableType) = OverloadedType(List(t,u))
   def overload(t: CallableType, u: CallableType, v: CallableType) = OverloadedType(List(t,u,v))
   def overload(t: CallableType, u: CallableType, v: CallableType, w: CallableType) = OverloadedType(List(t,u,v,w))
@@ -60,7 +58,7 @@ object Types {
   }
   
   // Creates a new record type with one entry, "apply", containing this callable type
-  def dotsite(baseType: CallableType): RecordType = {
+  def dotSite(baseType: CallableType): RecordType = {
     RecordType(List( ("apply", baseType) ).toMap)
   }
   

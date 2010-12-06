@@ -1,4 +1,4 @@
-  println(cat(null)) >> stop
+  println("" + null) >> stop
 | null >null> null
 {-
 OUTPUT:

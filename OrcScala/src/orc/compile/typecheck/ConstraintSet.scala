@@ -27,7 +27,11 @@ import orc.error.compiletime.typing._
  * @author dkitchin
  */
 class ConstraintSet(bounds: List[(TypeVariable, (Type,Type))]) {
-    
+      
+    def this(xs: Set[TypeVariable]) = {
+      this(xs.toList map { (_, (Bot, Top)) })
+    }
+  
     def this(s: Type, x: TypeVariable, t: Type) = {
       this(List( (x, (s,t)) ))
     }

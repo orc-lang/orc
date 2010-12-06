@@ -15,7 +15,8 @@
 package orc.types
 
 import scala.collection.immutable.HashMap
-import orc.error.compiletime.typing.ArgumentTypeMismatchException
+import orc.error.compiletime.typing.NoSuchMemberException
+import orc.error.compiletime.typing.UncallableTypeException
 
 /**
  * 
@@ -23,9 +24,23 @@ import orc.error.compiletime.typing.ArgumentTypeMismatchException
  *
  * @author dkitchin
  */
-case class RecordType(entries: Map[String,Type]) extends TypeWithMembers {
+case class RecordType(entries: Map[String,Type]) extends CallableType {
 
-  def getMember(member: String) = entries get member
+  def this(entries: (String, Type)*) = {
+    this(entries.toMap)
+  }
+  
+  override def call(typeArgs: List[Type], argTypes: List[Type]) = {
+    argTypes match {
+      case List(FieldType(f)) => entries.getOrElse(f, throw new NoSuchMemberException(this, f))
+      case _ => {
+        (entries get "apply") match {
+          case Some(c : CallableType) => c.call(typeArgs, argTypes)
+          case _ => throw new UncallableTypeException(this)
+        }
+      }
+    }
+  }
   
   override def toString = {
     val ks = entries.keys.toList

@@ -16,7 +16,7 @@ General-purpose supplemental data structures.
 --}
 
 -- Make the List type constructor available
-type List = "orc.values.sites.compatibility.type.structured.ListType"
+type List = "orc.lib.builtin.ListType"
 
 {--
 @site Some[A](A) :: Option[A]
@@ -36,7 +36,7 @@ An optional value which is not available.
 This site may also be used in a pattern.
 
 --}
-type Option = "orc.values.sites.compatibility.type.structured.OptionType"
+type Option = "orc.lib.builtin.OptionType"
 site Some = "orc.lib.builtin.SomeConstructor"
 site None = "orc.lib.builtin.NoneConstructor"
 
@@ -65,8 +65,8 @@ site Cell = orc.lib.state.Cell
 type Cell = orc.lib.state.types.CellType
 
 
-site Ref = "orc.lib.state.Ref"
-type Ref = "orc.lib.state.types.RefType"
+site Ref = orc.lib.state.Ref
+type Ref = orc.lib.state.types.RefType
 
 {--
 @def (?)[A](Ref[A]) :: A
@@ -347,13 +347,16 @@ site Array = "orc.lib.state.JavaArray"
 type Array = "orc.lib.state.types.ArrayType"
 
 --TODO: define former array methods: get set slice fill length
-def slice(Array, Integer, Integer) :: Signal
+
+def slice[A](Array[A], Integer, Integer) :: Signal
 def slice(xs, from, until) =
   class ScalaPredef = "scala.Predef"
   ScalaPredef.refArrayOps(xs).slice(from, until)
 
-def fill[A](Array, A) :: Signal
+
+def fill[A](Array[Top], A) :: Signal
 def fill(a, x) =
+  def fillBelow(Integer) :: Signal
   def fillBelow(i) =
     if i <: 0 then signal
     else ((a(i) := x), fillBelow(i-1)) >> signal

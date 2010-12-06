@@ -16,12 +16,15 @@ package orc.lib.state;
 import java.util.LinkedList;
 
 import orc.error.runtime.TokenException;
-//import orc.lib.state.types.SyncChannelType;
 import orc.values.sites.compatibility.Args;
 import orc.TokenAPI;
 import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
+import orc.lib.state.types.SyncChannelType;
+import orc.values.sites.TypedSite;
+import orc.types.Type;
+
 
 /**
  * Implements the local site SyncChannel, which creates synchronous channels.
@@ -29,7 +32,7 @@ import orc.values.sites.compatibility.SiteAdaptor;
  * @author dkitchin
  */
 @SuppressWarnings("hiding")
-public class SyncChannel extends EvalSite {
+public class SyncChannel extends EvalSite implements TypedSite {
 
 	/* (non-Javadoc)
 	 * @see orc.values.sites.compatibility.SiteAdaptor#callSite(java.lang.Object[], orc.TokenAPI, orc.runtime.values.GroupCell, orc.OrcRuntime)
@@ -39,12 +42,10 @@ public class SyncChannel extends EvalSite {
 		return new SyncChannelInstance();
 	}
 
-//	@Override
-//	public Type type() throws TypeException {
-//		final Type X = new TypeVariable(0);
-//		final Type ChannelOfX = new SyncChannelType().instance(X);
-//		return new ArrowType(ChannelOfX, 1);
-//	}
+	@Override
+    public Type orcType() {
+      return SyncChannelType.getBuilder();
+    }
 
 	private class SenderItem {
 

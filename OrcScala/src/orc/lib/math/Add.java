@@ -109,8 +109,8 @@ public class Add extends EvalSite implements TypedSite {
 	    return Types.overload(
 	      Types.function(Types.integer(), Types.integer(), Types.integer()),
 	      Types.function(Types.number(), Types.number(), Types.number()),
-	      Types.function(Types.string(), Types.number(), Types.number()),
-	      Types.function(Types.number(), Types.number(), Types.number())
+	      Types.function(Types.string(), Types.top(), Types.string()),
+	      Types.function(Types.top(), Types.string(), Types.string())
 	    );
 	}
 }

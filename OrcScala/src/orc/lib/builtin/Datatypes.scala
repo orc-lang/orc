@@ -27,14 +27,21 @@ object DatatypeBuilder extends TotalSite with TypedSite {
         t assertSubtype TupleType(List(StringType, IntegerType))
       }
       
+      // Extract the datatype that's been smuggled in via the type argument
       typeArgs match {
-        // Extract the datatype that's been smuggled in by the type arguments
-        case List(TypeInstance(d@ DatatypeConstructor(typeFormals, variants), _)) => {
-          val variantTypes = 
-            for ((_, params) <- variants) yield {
-              FunctionType(typeFormals, params, TypeInstance(d, typeFormals))
+        case List(d: MonomorphicDatatype) => {
+          val constructorTypes = 
+            for ((_, params) <- d.variants) yield { 
+              SimpleFunctionType(params, d) 
             }
-          TupleType(variantTypes.toList)
+          TupleType(constructorTypes.toList)
+        }
+        case List(TypeInstance(d: PolymorphicDatatype,_)) => {
+          val constructorTypes = 
+            for ((_, params) <- d.variants) yield {
+              FunctionType(d.typeFormals, params, TypeInstance(d, d.typeFormals))
+            }
+          TupleType(constructorTypes.toList)
         }
         case _ => throw new MalformedDatatypeCallException() 
       }

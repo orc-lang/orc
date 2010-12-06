@@ -59,6 +59,7 @@ the object to a String.
 --}
 site print = "orc.lib.str.Print"
 
+def println(String) :: Signal
 def println(s) = print(s + "\n")
 
 {--

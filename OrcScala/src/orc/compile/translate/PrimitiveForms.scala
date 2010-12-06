@@ -79,7 +79,7 @@ object PrimitiveForms {
 
   def makeRecord(tuples: List[Argument]) = Call(Constant(RecordConstructor), tuples, None)
 
-  def makeDatatype(declaredVariant: BoundTypevar, constructors: List[ext.Constructor], translator: Translator) = {
+  def makeDatatype(declaredVariant: BoundTypevar, variantArity: Int, constructors: List[ext.Constructor], translator: Translator) = {
     val datatypeSite = Constant(DatatypeBuilder)
     val datatypePairs =
       for (ext.Constructor(name, types) <- constructors) yield {
@@ -87,7 +87,14 @@ object PrimitiveForms {
         val carity = Constant(BigInt(types.size))
         makeTuple(List(cname, carity)) 
       }
-    unfold(datatypePairs, { Call(datatypeSite, _, Some(List(declaredVariant))) })
+    val typeParameter = 
+      if (variantArity > 0) {
+        TypeApplication(declaredVariant, List.fill(variantArity)(Top()))
+      }
+      else {
+        declaredVariant
+      }
+    unfold(datatypePairs, { Call(datatypeSite, _, Some(List(typeParameter))) })
   }
 
 
