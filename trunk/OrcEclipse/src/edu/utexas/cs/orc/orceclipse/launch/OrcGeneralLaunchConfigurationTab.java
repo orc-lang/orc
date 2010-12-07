@@ -53,6 +53,7 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 	private Spinner tokenLimitSpinner;
 	private Spinner maxSiteThreadsSpinner;
 	private Combo logLevelList;
+	private Button dumpStackButton;
 	private Button echoOilButton;
 
 	protected static final String LOG_LEVELS[] = {"OFF", "SEVERE", "WARNING", "INFO", "CONFIG", "FINE", "FINER", "FINEST", "ALL"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$
@@ -101,6 +102,7 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 		configuration.removeAttribute(OrcConfigSettings.ECHO_OIL_ATTR_NAME);
 		//configuration.removeAttribute(OrcConfigSettings.OIL_OUT_ATTR_NAME);
 		configuration.removeAttribute(OrcConfigSettings.SITE_CLASSPATH_ATTR_NAME);
+		configuration.removeAttribute(OrcConfigSettings.SHOW_JAVA_STACK_TRACE_ATTR_NAME);
 		configuration.removeAttribute(OrcConfigSettings.MAX_STACK_DEPTH_ATTR_NAME);
 		configuration.removeAttribute(OrcConfigSettings.MAX_TOKENS_ATTR_NAME);
 		configuration.removeAttribute(OrcConfigSettings.MAX_SITE_THREADS_ATTR_NAME);
@@ -157,15 +159,25 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 		logLevelList.select(indexOfLevel(OrcConfigSettings.LOG_LEVEL_DEFAULT, LOG_LEVELS));
 		logLevelList.addSelectionListener(ourSelectionAdapter);
 
+		dumpStackButton = new Button(labelWidgetComp, SWT.CHECK);
+		dumpStackButton.setFont(parent.getFont());
+		dumpStackButton.setSelection(OrcConfigSettings.SHOW_JAVA_STACK_TRACE_DEFAULT);
+		dumpStackButton.setText(Messages.OrcGeneralLaunchConfigurationTab_DumpStackLabel);
+		dumpStackButton.addSelectionListener(ourSelectionAdapter);
+		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+		gd.horizontalSpan = 2;
+		gd.grabExcessHorizontalSpace = false;
+		dumpStackButton.setLayoutData(gd);
+
 		echoOilButton = new Button(labelWidgetComp, SWT.CHECK);
 		echoOilButton.setFont(parent.getFont());
 		echoOilButton.setSelection(OrcConfigSettings.ECHO_OIL_DEFAULT);
 		echoOilButton.setText(Messages.OrcGeneralLaunchConfigurationTab_EchoOilLabel);
 		echoOilButton.addSelectionListener(ourSelectionAdapter);
-		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-		gd.horizontalSpan = 2;
-		gd.grabExcessHorizontalSpace = false;
-		echoOilButton.setLayoutData(gd);
+		GridData gd2 = new GridData(GridData.FILL_HORIZONTAL);
+		gd2.horizontalSpan = 2;
+		gd2.grabExcessHorizontalSpace = false;
+		echoOilButton.setLayoutData(gd2);
 
 		SWTFactory.createLabel(labelWidgetComp, Messages.OrcGeneralLaunchConfigurationTab_runtimeVersion + orcVersionText(), 2);
 	}
@@ -203,6 +215,8 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 			tokenLimitSpinner.setSelection(configuration.getAttribute(OrcConfigSettings.MAX_TOKENS_ATTR_NAME, OrcConfigSettings.MAX_TOKENS_DEFAULT));
 			maxSiteThreadsSpinner.setSelection(configuration.getAttribute(OrcConfigSettings.MAX_SITE_THREADS_ATTR_NAME, OrcConfigSettings.MAX_SITE_THREADS_DEFAULT));
 			logLevelList.select(indexOfLevel(configuration.getAttribute(OrcConfigSettings.LOG_LEVEL_ATTR_NAME, OrcConfigSettings.LOG_LEVEL_DEFAULT), LOG_LEVELS));
+			dumpStackButton.setSelection(configuration.getAttribute(OrcConfigSettings.SHOW_JAVA_STACK_TRACE_ATTR_NAME, OrcConfigSettings.SHOW_JAVA_STACK_TRACE_DEFAULT));
+			echoOilButton.setSelection(configuration.getAttribute(OrcConfigSettings.ECHO_OIL_ATTR_NAME, OrcConfigSettings.ECHO_OIL_DEFAULT));
 		} catch (final CoreException e) {
 			Activator.logAndShow(e);
 		}
@@ -225,6 +239,16 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 		setOrUnsetIntAttr(configuration, OrcConfigSettings.MAX_TOKENS_ATTR_NAME, tokenLimitSpinner.getSelection(), OrcConfigSettings.MAX_TOKENS_DEFAULT);
 		setOrUnsetIntAttr(configuration, OrcConfigSettings.MAX_SITE_THREADS_ATTR_NAME, maxSiteThreadsSpinner.getSelection(), OrcConfigSettings.MAX_SITE_THREADS_DEFAULT);
 		setOrUnsetTextAttr(configuration, OrcConfigSettings.LOG_LEVEL_ATTR_NAME, logLevelList.getText());
+		setOrUnsetBoolAttr(configuration, OrcConfigSettings.SHOW_JAVA_STACK_TRACE_ATTR_NAME, dumpStackButton.getSelection(), OrcConfigSettings.SHOW_JAVA_STACK_TRACE_DEFAULT);
+		setOrUnsetBoolAttr(configuration, OrcConfigSettings.ECHO_OIL_ATTR_NAME, echoOilButton.getSelection(), OrcConfigSettings.ECHO_OIL_DEFAULT);
+	}
+
+	private void setOrUnsetBoolAttr(final ILaunchConfigurationWorkingCopy configuration, final String attrName, final boolean enteredBool, final boolean defaultValue) {
+		if (enteredBool != defaultValue) {
+			configuration.setAttribute(attrName, enteredBool);
+		} else {
+			configuration.removeAttribute(attrName);
+		}
 	}
 
 	private void setOrUnsetIntAttr(final ILaunchConfigurationWorkingCopy configuration, final String attrName, final int enteredNum, final int defaultValue) {

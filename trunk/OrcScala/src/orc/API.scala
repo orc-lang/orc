@@ -161,6 +161,8 @@ trait OrcOptions {
   // Execution options
   def classPath: java.util.List[String]
   def classPath_=(newVal: java.util.List[String])
+  def showJavaStackTrace: Boolean
+  def showJavaStackTrace_=(newVal: Boolean)
   def stackSize: Int
   def stackSize_=(newVal: Int)
   def maxTokens: Int

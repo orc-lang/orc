@@ -72,7 +72,7 @@ public class PrintWriterCompileLogger implements CompileLogger {
 		maxSeverity = severity.ordinal() > maxSeverity.ordinal() ? severity : maxSeverity;
 
 		if (location != null) {
-			outWriter.println(location.toString() + ": " + message + "[[OrcWiki:"+exception.getClass().getSimpleName()+"]]");
+			outWriter.println(location.toString() + ": " + message + " [[OrcWiki:"+exception.getClass().getSimpleName()+"]]");
 			outWriter.println(location.longString());
 		} else {
 			outWriter.println("<undefined argPosition>: " + message);

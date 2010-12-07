@@ -19,6 +19,7 @@ import javax.script.ScriptContext.ENGINE_SCOPE
 import java.io.{PrintStream, FileNotFoundException, InputStreamReader, FileInputStream, File}
 import scala.collection.JavaConversions._
 import orc.error.OrcException
+import orc.error.runtime.JavaException
 import orc.script.{OrcBindings, OrcScriptEngine}
 import orc.values.Format
 import orc.util.CmdLineParser
@@ -51,7 +52,7 @@ object Main {
       val printPubs = new OrcEventAction() {
         override def published(value: AnyRef) { println(Format.formatValue(value)); Console.out.flush() }
         override def printed(s: String) { print(s); Console.out.flush() }
-        override def caught(e: Throwable) { Console.out.flush(); printException(e, Console.err); Console.err.flush() }
+        override def caught(e: Throwable) { Console.out.flush(); printException(e, Console.err, options.showJavaStackTrace); Console.err.flush() }
       }
       compiledOrc.run(printPubs)
       
@@ -60,7 +61,7 @@ object Main {
       case e: PrintVersionAndMessageException => println(orcImplName+" "+orcVersion+"\n"+orcURL+"\n"+orcCopyright+"\n\n"+e.getMessage)
       case e: FileNotFoundException => Console.err.println("Orc: File not found: " + e.getMessage)
       case e: ScriptException if (e.getCause == null) => Console.err.println(e.getMessage)
-      case e: ScriptException => printException(e.getCause, Console.err)
+      case e: ScriptException => printException(e.getCause, Console.err, false)
     }
   }
 
@@ -88,15 +89,14 @@ object Main {
     //TODO: orcLogger.config(options.printAllTheOptions...)
   }
 
-  def printException(e: Throwable, err: PrintStream) {
+  def printException(e: Throwable, err: PrintStream, showJavaStackTrace: Boolean) {
     e match {
+      case je: JavaException if (!showJavaStackTrace) => err.print(je.getMessageAndPositon() + "\n" + je.getOrcStacktraceAsString())
       case oe: OrcException => err.print(oe.getMessageAndDiagnostics())
       case _ => e.printStackTrace(err)
     }
   }
 }
-
-
 
 
 /**
@@ -124,6 +124,8 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
   FileOpt(()=>oilOutputFile.getOrElse(null), f => oilOutputFile=Some(f), 'o', "output-oil", usage = "Write the compiled program in OIL format to the given filename.")
 
   UnitOpt(()=>compileOnly, ()=>compileOnly=true, 'c', "compile-only", usage = "Compile this program, but do not run it.")
+
+  UnitOpt(()=>showJavaStackTrace, ()=>showJavaStackTrace=true, ' ', "java-stack-trace", usage = "Show Java stack traces on thrown Java exceptions.")
 
   IntOpt(()=>stackSize, stackSize=_, ' ', "stack-size", usage = "Terminate the program if this stack depth is exceeded. Default=infinity.")
 

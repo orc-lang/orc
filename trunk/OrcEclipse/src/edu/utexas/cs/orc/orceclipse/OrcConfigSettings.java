@@ -50,6 +50,7 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 	public static final String ECHO_OIL_ATTR_NAME = Activator.getInstance().getID() + ".ECHO_OIL"; //$NON-NLS-1$
 	//public static final String OIL_OUT_ATTR_NAME = Activator.getInstance().getID() + ".OIL_OUT"; //$NON-NLS-1$
 	public static final String SITE_CLASSPATH_ATTR_NAME = Activator.getInstance().getID() + ".SITE_CLASSPATH"; //$NON-NLS-1$
+	public static final String SHOW_JAVA_STACK_TRACE_ATTR_NAME = Activator.getInstance().getID() + ".SHOW_JAVA_STACK_TRACE"; //$NON-NLS-1$
 	public static final String MAX_STACK_DEPTH_ATTR_NAME = Activator.getInstance().getID() + ".MAX_STACK_DEPTH"; //$NON-NLS-1$
 	public static final String MAX_TOKENS_ATTR_NAME = Activator.getInstance().getID() + ".MAX_TOKENS"; //$NON-NLS-1$
 	public static final String MAX_SITE_THREADS_ATTR_NAME = Activator.getInstance().getID() + ".MAX_SITE_THREADS"; //$NON-NLS-1$
@@ -64,6 +65,7 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 	public static final boolean ECHO_OIL_DEFAULT = defaultConfig.echoOil();
 	//public static final String OIL_OUT_DEFAULT = defaultConfig.oilOutputFile().getPath();
 	public static final String SITE_CLASSPATH_DEFAULT = defaultConfig.classPath().isEmpty() ? "" : listMkString(defaultConfig.classPath(), ":").concat(":"); //Eclipse path pref entries always have a trailing : //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	public static final boolean SHOW_JAVA_STACK_TRACE_DEFAULT = defaultConfig.showJavaStackTrace();
 	public static final int MAX_STACK_DEPTH_DEFAULT = defaultConfig.stackSize();
 	public static final int MAX_TOKENS_DEFAULT = defaultConfig.maxTokens();
 	public static final int MAX_SITE_THREADS_DEFAULT = defaultConfig.maxSiteThreads();
@@ -115,6 +117,9 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 		if (prefSvc.isDefined(SITE_CLASSPATH_ATTR_NAME)) {
 			classPath_$eq(Arrays.asList(prefSvc.getStringPreference(SITE_CLASSPATH_ATTR_NAME).split(":"))); //$NON-NLS-1$
 		}
+		if (prefSvc.isDefined(SHOW_JAVA_STACK_TRACE_ATTR_NAME)) {
+			echoOil_$eq(prefSvc.getBooleanPreference(SHOW_JAVA_STACK_TRACE_ATTR_NAME));
+		}
 		if (prefSvc.isDefined(MAX_STACK_DEPTH_ATTR_NAME)) {
 			stackSize_$eq(prefSvc.getIntPreference(MAX_STACK_DEPTH_ATTR_NAME));
 		}
@@ -142,6 +147,7 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 		//	oilOutputFile_$eq(new File(launchConfig.getAttribute(OIL_OUT_ATTR_NAME, (String) null)));
 		//}
 		classPath_$eq(launchConfig.getAttribute(SITE_CLASSPATH_ATTR_NAME, classPath()));
+		showJavaStackTrace_$eq(launchConfig.getAttribute(SHOW_JAVA_STACK_TRACE_ATTR_NAME, showJavaStackTrace()));
 		stackSize_$eq(launchConfig.getAttribute(MAX_STACK_DEPTH_ATTR_NAME, stackSize()));
 		maxTokens_$eq(launchConfig.getAttribute(MAX_TOKENS_ATTR_NAME, maxTokens()));
 		maxSiteThreads_$eq(launchConfig.getAttribute(MAX_SITE_THREADS_ATTR_NAME, maxSiteThreads()));
@@ -159,6 +165,7 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 		defaultPrefs.putBoolean(ECHO_OIL_ATTR_NAME, ECHO_OIL_DEFAULT);
 		//defaultPrefs.put(OIL_OUT_ATTR_NAME, OIL_OUT_DEFAULT);
 		defaultPrefs.put(SITE_CLASSPATH_ATTR_NAME, SITE_CLASSPATH_DEFAULT);
+		defaultPrefs.putBoolean(SHOW_JAVA_STACK_TRACE_ATTR_NAME, SHOW_JAVA_STACK_TRACE_DEFAULT);
 		defaultPrefs.putInt(MAX_STACK_DEPTH_ATTR_NAME, MAX_STACK_DEPTH_DEFAULT);
 		defaultPrefs.putInt(MAX_TOKENS_ATTR_NAME, MAX_TOKENS_DEFAULT);
 		defaultPrefs.putInt(MAX_SITE_THREADS_ATTR_NAME, MAX_SITE_THREADS_DEFAULT);
