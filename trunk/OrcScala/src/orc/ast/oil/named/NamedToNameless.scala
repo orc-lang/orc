@@ -1,5 +1,5 @@
 //
-// NamedToNameless.scala -- Scala class/trait/object NamedToNameless
+// NamedToNameless.scala -- Scala trait NamedToNameless
 // Project OrcScala
 //
 // $Id$
@@ -139,4 +139,4 @@ trait NamedToNameless {
     } 
   }
 
-}   
+}

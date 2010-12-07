@@ -15,8 +15,6 @@ package orc.lib.math;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.LinkedList;
-import java.util.List;
 
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;

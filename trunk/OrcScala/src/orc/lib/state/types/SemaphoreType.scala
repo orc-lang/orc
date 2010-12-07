@@ -1,5 +1,5 @@
 //
-// SemaphoreType.scala -- Scala class/trait/object SemaphoreType
+// SemaphoreType.scala -- Scala object SemaphoreType
 // Project OrcScala
 //
 // $Id$
@@ -34,4 +34,3 @@ object SemaphoreType extends RecordType(
   def getBuilder: Type = SimpleFunctionType(IntegerType, this)
  
 }
-

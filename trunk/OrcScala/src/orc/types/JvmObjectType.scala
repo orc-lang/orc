@@ -1,5 +1,5 @@
 //
-// JvmObjectType.scala -- Scala class/trait/object JvmObjectType
+// JvmObjectType.scala -- Scala class JvmObjectType
 // Project OrcScala
 //
 // $Id$

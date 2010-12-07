@@ -1,5 +1,5 @@
 //
-// SupportForStdout.scala -- Scala class/trait/object SupportForStdout
+// SupportForStdout.scala -- Scala trait SupportForStdout
 // Project OrcScala
 //
 // $Id$

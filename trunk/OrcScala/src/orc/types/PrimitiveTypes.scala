@@ -2,7 +2,7 @@
 // Types.scala -- Scala package orc.types
 // Project OrcScala
 //
-// $Id: Types.scala 2087 2010-08-26 21:25:56Z dkitchin $
+// $Id$
 //
 // Created by jthywiss on May 24, 2010.
 //
@@ -80,4 +80,3 @@ case class FieldType(f: String) extends Type {
 
 
 object StringType extends JvmObjectType(classOf[java.lang.String])
-

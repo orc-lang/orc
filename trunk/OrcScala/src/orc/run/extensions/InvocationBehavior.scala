@@ -1,5 +1,5 @@
 //
-// InvocationBehavior.scala -- Scala class/trait/object InvocationBehavior
+// InvocationBehavior.scala -- Scala traits InvocationBehavior, ErrorOnUndefinedInvocation, SupportForJavaObjectInvocation, SupportForSiteInvocation, and SupportForXMLInvocation 
 // Project OrcScala
 //
 // $Id$

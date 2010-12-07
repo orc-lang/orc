@@ -1,5 +1,5 @@
 //
-// Vtimer.scala -- Scala class/trait/object Vtimer
+// Vtimer.scala -- Scala class Vtimer
 // Project OrcScala
 //
 // $Id$
@@ -34,10 +34,6 @@ class Vtimer extends Site with TypedSite {
       token.publish(Signal)
     }
   }
-  override def populateMetaData(args: List[AnyRef], callingToken: TokenAPI) : Unit = {
-    val n : scala.math.BigInt  = args(0).asInstanceOf[scala.math.BigInt]
-    vtime = n.toInt
-  }
 
   var vtime : Int = 0
   override def virtualTime() : Int = vtime   // -1 represents infinity
@@ -46,4 +42,3 @@ class Vtimer extends Site with TypedSite {
   
   def orcType = SimpleFunctionType(IntegerType, SignalType)
 }
-

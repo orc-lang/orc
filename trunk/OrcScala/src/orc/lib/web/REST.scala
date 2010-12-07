@@ -1,5 +1,5 @@
 //
-// REST.scala -- Scala class/trait/object REST
+// REST.scala -- Scala class REST
 // Project OrcScala
 //
 // $Id$

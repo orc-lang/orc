@@ -1,5 +1,5 @@
 //
-// TupleType.scala -- Scala class/trait/object TupleType
+// TupleType.scala -- Scala class TupleType
 // Project OrcScala
 //
 // $Id$

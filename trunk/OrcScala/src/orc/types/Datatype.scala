@@ -1,5 +1,5 @@
 //
-// Datatype.scala -- Scala class/trait/object Datatype
+// Datatype.scala -- Scala trait Datatype and child classes
 // Project OrcScala
 //
 // $Id$
@@ -56,6 +56,3 @@ class PolymorphicDatatype(val typeFormals: List[TypeVariable], val variants: Lis
   }
   
 }
-
-
-

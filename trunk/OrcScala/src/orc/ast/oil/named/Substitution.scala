@@ -1,5 +1,5 @@
 //
-// Substitution.scala -- Scala class/trait/object Substitution
+// Substitution.scala -- Scala trait Substitution
 // Project OrcScala
 //
 // $Id$

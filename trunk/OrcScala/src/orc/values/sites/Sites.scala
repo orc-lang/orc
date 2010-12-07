@@ -24,19 +24,19 @@ import orc.error.NotYetImplementedException
 import orc.error.runtime.ArityMismatchException
 import orc.run.Logger
 
-trait SiteMetaData {
-  /* This function returns the virtual time taken by this
-   * site. By default the virtual time taken by any site 
-   * is considered to be 0. 
-  **/ 
-  def virtualTime() : Int = 0   // -1 represents infinity
+trait SiteMetadata {
+  def name: String = this.getClass().getCanonicalName()
+
+  /**
+   * Virtual time taken by this site. By default, the virtual time
+   * taken by any site is considered to be 0. 
+   */ 
+  def virtualTime(): Int = 0   // -1 represents infinity
 }
 
-trait Site extends OrcValue with SiteMetaData {
+trait Site extends OrcValue with SiteMetadata {
   def call(args: List[AnyRef], callingToken: TokenAPI): Unit
   
-  def name: String = this.getClass().toString()
-  def populateMetaData(args: List[AnyRef], callingToken: TokenAPI) : Unit = {}
   override def toOrcSyntax() = this.name
 }
 

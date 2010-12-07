@@ -1,5 +1,5 @@
 //
-// ExecutionExceptions.scala -- Scala class/trait/object ExecutionExceptions
+// ExecutionExceptions.scala -- Scala subclasses of ExecutionException
 // Project OrcScala
 //
 // $Id$

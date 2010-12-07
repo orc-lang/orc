@@ -1,5 +1,5 @@
 //
-// RecordType.scala -- Scala class/trait/object RecordType
+// RecordType.scala -- Scala class RecordType
 // Project OrcScala
 //
 // $Id$
@@ -96,6 +96,5 @@ case class RecordType(entries: Map[String,Type]) extends CallableType {
   override def subst(sigma: Map[TypeVariable, Type]): Type = {
     RecordType(entries mapValues { _ subst sigma })
   }
- 
-  
+
 }

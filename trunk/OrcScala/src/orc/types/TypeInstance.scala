@@ -1,5 +1,5 @@
 //
-// TypeInstance.scala -- Scala class/trait/object TypeInstance
+// TypeInstance.scala -- Scala class TypeInstance
 // Project OrcScala
 //
 // $Id$
@@ -87,7 +87,3 @@ case class TypeInstance(tycon: TypeConstructor, args: List[Type]) extends Callab
   def call(typeArgs: List[Type], argTypes: List[Type]): Type = tycon.instance(args).call(typeArgs, argTypes)  
   
 }
-
-
-
-

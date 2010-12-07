@@ -16,7 +16,6 @@
 package orc.values.sites.compatibility;
 
 import orc.TokenAPI;
-import orc.error.compiletime.typing.TypeException;
 import orc.error.runtime.TokenException;
 
 /**

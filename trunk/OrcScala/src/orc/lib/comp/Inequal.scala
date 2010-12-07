@@ -1,5 +1,5 @@
 //
-// NotEq.scala -- Scala class/trait/object NotEq
+// NotEq.scala -- Scala object Inequal
 // Project OrcScala
 //
 // $Id$

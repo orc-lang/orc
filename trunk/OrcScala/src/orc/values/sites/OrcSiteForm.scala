@@ -1,5 +1,5 @@
 //
-// OrcSiteForm.scala -- Scala class/trait/object OrcSiteForm
+// OrcSiteForm.scala -- Scala object OrcSiteForm
 // Project OrcScala
 //
 // $Id$

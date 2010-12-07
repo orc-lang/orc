@@ -1,5 +1,5 @@
 //
-// RemoveUnusedTypes.scala -- Scala class/trait/object RemoveUnusedTypes
+// RemoveUnusedTypes.scala -- Scala object RemoveUnusedTypes
 // Project OrcScala
 //
 // $Id$

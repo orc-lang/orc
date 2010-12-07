@@ -1,5 +1,5 @@
 //
-// ActorBasedScheduler.scala -- Scala class/trait/object ActorBasedScheduler
+// ActorBasedScheduler.scala -- Scala trait ActorBasedScheduler
 // Project OrcScala
 //
 // $Id$

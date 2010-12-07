@@ -1,5 +1,5 @@
 //
-// SupportForVtimer.scala -- Scala class/trait/object SupportForVtimer
+// SupportForVtimer.scala -- Scala trait SupportForVtimer
 // Project OrcScala
 //
 // $Id$

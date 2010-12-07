@@ -1,5 +1,5 @@
 //
-// Format.scala -- Scala class/trait/object Format
+// Format.scala -- Scala object Format
 // Project OrcScala
 //
 // $Id$

@@ -1,5 +1,5 @@
 //
-// CappedActorBasedScheduler.scala -- Scala class/trait/object CappedActorBasedScheduler
+// CappedActorBasedScheduler.scala -- Scala trait CappedActorBasedScheduler
 // Project OrcScala
 //
 // $Id$

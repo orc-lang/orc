@@ -1,5 +1,5 @@
 //
-// PrettyPrint.scala -- Scala class/trait/object PrettyPrint
+// PrettyPrint.scala -- Scala class PrettyPrint
 // Project OrcScala
 //
 // $Id$
@@ -109,4 +109,3 @@ class PrettyPrint {
     }
 
 }
-  

@@ -1,5 +1,5 @@
 //
-// CustomParserCombinators.scala -- Scala class/trait/object CustomParserCombinators
+// CustomParserCombinators.scala -- Scala trait CustomParserCombinators
 // Project OrcScala
 //
 // $Id$
@@ -205,8 +205,5 @@ trait CustomParserCombinators {
         }
       }
   }
-        
-  
-  
-  
+
 }

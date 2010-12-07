@@ -1,5 +1,5 @@
 //
-// Types.scala -- Scala class/trait/object Types
+// Types.scala -- Scala object Types
 // Project OrcScala
 //
 // $Id$

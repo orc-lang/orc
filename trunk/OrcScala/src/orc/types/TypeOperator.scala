@@ -1,5 +1,5 @@
 //
-// TypeOperator.scala -- Scala class/trait/object TypeOperator
+// TypeOperator.scala -- Scala trait TypeOperator
 // Project OrcScala
 //
 // $Id$
