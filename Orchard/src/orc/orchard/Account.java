@@ -82,7 +82,7 @@ public abstract class Account implements AccountMBean {
 		final OrcOptions config = new OrcBindings(/*FIXME:From OrchardProperties*/);
 		config.setRight("send mail", canSendMail);
 		config.setRight("import java", canImportJava);
-		config.tokenPoolSize_$eq(tokenPoolSize);
+		config.maxTokens_$eq(tokenPoolSize);
 		config.stackSize_$eq(stackSize);
 
 		if (!canImportJava) {
