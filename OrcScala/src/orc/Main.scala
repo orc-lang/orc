@@ -113,23 +113,21 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
 
   StringListOpt(()=>includePath, includePath=_, 'I', "include-path", usage = "Set the include path for Orc includes (same syntax as CLASSPATH). Default is \".\", the current directory. Prelude files are always available for include regardless of this setting.")  
 
-  UnitOpt(()=>exceptionsOn, ()=>exceptionsOn=true, ' ', "exceptions", usage = "Enable exceptions (experimental), which is disabled by default.")
-
-  UnitOpt(()=>typecheck, ()=>typecheck=true, ' ', "typecheck", usage = "Enable typechecking, which is disabled by default.")
-
-  IntOpt(()=>maxPublications, maxPublications=_, ' ', "pub", usage = "Terminate the program after this many values are published. Default=infinity.")
-
-  IntOpt(()=>tokenPoolSize, tokenPoolSize=_, ' ', "max-tokens", usage = "Do not permit more than tis many tokes to be created. Default=infinity.")
-
-  IntOpt(()=>stackSize, stackSize=_, ' ', "stack-size", usage = "Terminate the program if this stack depth is exceeded. Default=infinity.")
+  StringListOpt(()=>additionalIncludes, additionalIncludes=_, ' ', "additional-includes", usage = "Include these files as if the program had include statements for them (same syntax as CLASSPATH). Default is none.")  
 
   StringListOpt(()=>classPath, classPath=_, ' ', "cp", usage = "Set the class path for Orc sites (same syntax as CLASSPATH). This is only used for classes not found in the Java VM classpath.")
 
-  UnitOpt(()=>compileOnly, ()=>compileOnly=true, 'c', "compile-only", usage = "Compile this program, but do not run it.")
+  UnitOpt(()=>typecheck, ()=>typecheck=true, ' ', "typecheck", usage = "Enable typechecking, which is disabled by default.")
+
+  UnitOpt(()=>echoOil, ()=>echoOil=true, ' ', "echo-oil", usage = "Write the compiled program in OIL format to stdout.")
 
   FileOpt(()=>oilOutputFile.getOrElse(null), f => oilOutputFile=Some(f), 'o', "output-oil", usage = "Write the compiled program in OIL format to the given filename.")
 
-  UnitOpt(()=>echoOil, ()=>echoOil=true, ' ', "echo-oil", usage = "Write the compiled program in OIL format to stdout.")
-  
-}
+  UnitOpt(()=>compileOnly, ()=>compileOnly=true, 'c', "compile-only", usage = "Compile this program, but do not run it.")
 
+  IntOpt(()=>stackSize, stackSize=_, ' ', "stack-size", usage = "Terminate the program if this stack depth is exceeded. Default=infinity.")
+
+  IntOpt(()=>maxTokens, maxTokens=_, ' ', "max-tokens", usage = "Terminate the program if more than this many tokens to be created. Default=infinity.")
+
+  IntOpt(()=>maxSiteThreads, maxSiteThreads=_, ' ', "max-site-threads", usage = "Terminate the program if more than this many site calls are outstanding simultaneously. Default=infinity.")
+}
