@@ -27,6 +27,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Spinner;
@@ -48,12 +49,11 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 
 	private static Image ORC_PLUGIN_ICON_IMAGE = Activator.getInstance().getImageRegistry().get(OrcResources.ORC_PLUGIN_ICON);
 
-	private Spinner maxPubsSpinner;
-	private Spinner tokenLimitSpinner;
 	private Spinner stackDepthSpinner;
-	//private Spinner numSiteThreadsSpinner;
-	//private Text traceOutFilenameText;
+	private Spinner tokenLimitSpinner;
+	private Spinner maxSiteThreadsSpinner;
 	private Combo logLevelList;
+	private Button echoOilButton;
 
 	protected static final String LOG_LEVELS[] = {"OFF", "SEVERE", "WARNING", "INFO", "CONFIG", "FINE", "FINER", "FINEST", "ALL"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$
 
@@ -93,14 +93,17 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#setDefaults(org.eclipse.debug.core.ILaunchConfigurationWorkingCopy)
 	 */
 	public void setDefaults(final ILaunchConfigurationWorkingCopy configuration) {
-		configuration.removeAttribute(OrcConfigSettings.TYPE_CHECK_ATTR_NAME);
+		configuration.removeAttribute(OrcConfigSettings.LOG_LEVEL_ATTR_NAME);
 		configuration.removeAttribute(OrcConfigSettings.NO_PRELUDE_ATTR_NAME);
 		configuration.removeAttribute(OrcConfigSettings.INCLUDE_PATH_ATTR_NAME);
+		configuration.removeAttribute(OrcConfigSettings.ADDITIONAL_INCLUDES_ATTR_NAME);
+		configuration.removeAttribute(OrcConfigSettings.TYPE_CHECK_ATTR_NAME);
+		configuration.removeAttribute(OrcConfigSettings.ECHO_OIL_ATTR_NAME);
+		//configuration.removeAttribute(OrcConfigSettings.OIL_OUT_ATTR_NAME);
 		configuration.removeAttribute(OrcConfigSettings.SITE_CLASSPATH_ATTR_NAME);
-		configuration.removeAttribute(OrcConfigSettings.MAX_PUBS_ATTR_NAME);
-		//configuration.removeAttribute(OrcConfigSettings.NUM_SITE_THREADS_ATTR_NAME);
-		//configuration.removeAttribute(OrcConfigSettings.TRACE_OUT_ATTR_NAME);
-		configuration.removeAttribute(OrcConfigSettings.LOG_LEVEL_ATTR_NAME);
+		configuration.removeAttribute(OrcConfigSettings.MAX_STACK_DEPTH_ATTR_NAME);
+		configuration.removeAttribute(OrcConfigSettings.MAX_TOKENS_ATTR_NAME);
+		configuration.removeAttribute(OrcConfigSettings.MAX_SITE_THREADS_ATTR_NAME);
 		OrcLaunchDelegate.setDefaults(configuration);
 	}
 
@@ -125,20 +128,6 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 
 		final Composite labelWidgetComp = SWTFactory.createComposite(comp, comp.getFont(), 2, 1, GridData.FILL_HORIZONTAL, 0, 0);
 
-		SWTFactory.createLabel(labelWidgetComp, Messages.OrcGeneralLaunchConfigurationTab_MaxPubsLabel, 1);
-
-		maxPubsSpinner = new Spinner(labelWidgetComp, SWT.NONE);
-		maxPubsSpinner.setFont(parent.getFont());
-		maxPubsSpinner.setValues(OrcConfigSettings.MAX_PUBS_DEFAULT, 0, Integer.MAX_VALUE, 0, 1, 100);
-		maxPubsSpinner.addSelectionListener(ourSelectionAdapter);
-
-		SWTFactory.createLabel(labelWidgetComp, Messages.OrcGeneralLaunchConfigurationTab_TokenLimitLabel, 1);
-
-		tokenLimitSpinner = new Spinner(labelWidgetComp, SWT.NONE);
-		tokenLimitSpinner.setFont(parent.getFont());
-		tokenLimitSpinner.setValues(OrcConfigSettings.TOKEN_LIMIT_DEFAULT, 0, Integer.MAX_VALUE, 0, 1, 100);
-		tokenLimitSpinner.addSelectionListener(ourSelectionAdapter);
-
 		SWTFactory.createLabel(labelWidgetComp, Messages.OrcGeneralLaunchConfigurationTab_StackSizeLabel, 1);
 
 		stackDepthSpinner = new Spinner(labelWidgetComp, SWT.NONE);
@@ -146,17 +135,19 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 		stackDepthSpinner.setValues(OrcConfigSettings.MAX_STACK_DEPTH_DEFAULT, 0, Integer.MAX_VALUE, 0, 1, 100);
 		stackDepthSpinner.addSelectionListener(ourSelectionAdapter);
 
-		//SWTFactory.createLabel(labelWidgetComp, Messages.OrcGeneralLaunchConfigurationTab_NumSiteThreadsLabel, 1);
-		//
-		//numSiteThreadsSpinner = new Spinner(labelWidgetComp, SWT.NONE);
-		//numSiteThreadsSpinner.setFont(parent.getFont());
-		//numSiteThreadsSpinner.setValues(OrcConfigSettings.NUM_SITE_THREADS_DEFAULT, 1, Integer.MAX_VALUE, 0, 1, 10);
-		//numSiteThreadsSpinner.addSelectionListener(ourSelectionAdapter);
+		SWTFactory.createLabel(labelWidgetComp, Messages.OrcGeneralLaunchConfigurationTab_TokenLimitLabel, 1);
 
-		//SWTFactory.createLabel(labelWidgetComp, Messages.OrcGeneralLaunchConfigurationTab_TraceOutFilenameLabel, 1);
-		//
-		//traceOutFilenameText = SWTFactory.createSingleText(labelWidgetComp, 1);
-		//traceOutFilenameText.addModifyListener(ourModifyListener);
+		tokenLimitSpinner = new Spinner(labelWidgetComp, SWT.NONE);
+		tokenLimitSpinner.setFont(parent.getFont());
+		tokenLimitSpinner.setValues(OrcConfigSettings.MAX_TOKENS_DEFAULT, 0, Integer.MAX_VALUE, 0, 1, 100);
+		tokenLimitSpinner.addSelectionListener(ourSelectionAdapter);
+
+		SWTFactory.createLabel(labelWidgetComp, Messages.OrcGeneralLaunchConfigurationTab_MaxSiteThreadsLabel, 1);
+
+		maxSiteThreadsSpinner = new Spinner(labelWidgetComp, SWT.NONE);
+		maxSiteThreadsSpinner.setFont(parent.getFont());
+		maxSiteThreadsSpinner.setValues(OrcConfigSettings.MAX_SITE_THREADS_DEFAULT, 0, Integer.MAX_VALUE, 0, 1, 100);
+		maxSiteThreadsSpinner.addSelectionListener(ourSelectionAdapter);
 
 		SWTFactory.createLabel(labelWidgetComp, Messages.OrcGeneralLaunchConfigurationTab_LogLevelLabel, 1);
 
@@ -165,6 +156,16 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 		logLevelList.setFont(parent.getFont());
 		logLevelList.select(indexOfLevel(OrcConfigSettings.LOG_LEVEL_DEFAULT, LOG_LEVELS));
 		logLevelList.addSelectionListener(ourSelectionAdapter);
+
+		echoOilButton = new Button(labelWidgetComp, SWT.CHECK);
+		echoOilButton.setFont(parent.getFont());
+		echoOilButton.setSelection(OrcConfigSettings.ECHO_OIL_DEFAULT);
+		echoOilButton.setText(Messages.OrcGeneralLaunchConfigurationTab_EchoOilLabel);
+		echoOilButton.addSelectionListener(ourSelectionAdapter);
+		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+		gd.horizontalSpan = 2;
+		gd.grabExcessHorizontalSpace = false;
+		echoOilButton.setLayoutData(gd);
 
 		SWTFactory.createLabel(labelWidgetComp, Messages.OrcGeneralLaunchConfigurationTab_runtimeVersion + orcVersionText(), 2);
 	}
@@ -198,11 +199,9 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 	 */
 	public void initializeFrom(final ILaunchConfiguration configuration) {
 		try {
-			maxPubsSpinner.setSelection(configuration.getAttribute(OrcConfigSettings.MAX_PUBS_ATTR_NAME, OrcConfigSettings.MAX_PUBS_DEFAULT));
-			tokenLimitSpinner.setSelection(configuration.getAttribute(OrcConfigSettings.TOKEN_LIMIT_ATTR_NAME, OrcConfigSettings.TOKEN_LIMIT_DEFAULT));
 			stackDepthSpinner.setSelection(configuration.getAttribute(OrcConfigSettings.MAX_STACK_DEPTH_ATTR_NAME, OrcConfigSettings.MAX_STACK_DEPTH_DEFAULT));
-			//numSiteThreadsSpinner.setSelection(configuration.getAttribute(OrcConfigSettings.NUM_SITE_THREADS_ATTR_NAME, OrcConfigSettings.NUM_SITE_THREADS_DEFAULT));
-			//traceOutFilenameText.setText(configuration.getAttribute(OrcConfigSettings.TRACE_OUT_ATTR_NAME, OrcConfigSettings.TRACE_OUT_DEFAULT));
+			tokenLimitSpinner.setSelection(configuration.getAttribute(OrcConfigSettings.MAX_TOKENS_ATTR_NAME, OrcConfigSettings.MAX_TOKENS_DEFAULT));
+			maxSiteThreadsSpinner.setSelection(configuration.getAttribute(OrcConfigSettings.MAX_SITE_THREADS_ATTR_NAME, OrcConfigSettings.MAX_SITE_THREADS_DEFAULT));
 			logLevelList.select(indexOfLevel(configuration.getAttribute(OrcConfigSettings.LOG_LEVEL_ATTR_NAME, OrcConfigSettings.LOG_LEVEL_DEFAULT), LOG_LEVELS));
 		} catch (final CoreException e) {
 			Activator.logAndShow(e);
@@ -222,11 +221,9 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#performApply(org.eclipse.debug.core.ILaunchConfigurationWorkingCopy)
 	 */
 	public void performApply(final ILaunchConfigurationWorkingCopy configuration) {
-		setOrUnsetIntAttr(configuration, OrcConfigSettings.MAX_PUBS_ATTR_NAME, maxPubsSpinner.getSelection(), OrcConfigSettings.MAX_PUBS_DEFAULT);
-		setOrUnsetIntAttr(configuration, OrcConfigSettings.TOKEN_LIMIT_ATTR_NAME, tokenLimitSpinner.getSelection(), OrcConfigSettings.MAX_PUBS_DEFAULT);
-		setOrUnsetIntAttr(configuration, OrcConfigSettings.MAX_STACK_DEPTH_ATTR_NAME, stackDepthSpinner.getSelection(), OrcConfigSettings.MAX_PUBS_DEFAULT);
-		//setOrUnsetIntAttr(configuration, OrcConfigSettings.NUM_SITE_THREADS_ATTR_NAME, numSiteThreadsSpinner.getSelection(), OrcConfigSettings.NUM_SITE_THREADS_DEFAULT);
-		//setOrUnsetTextAttr(configuration, OrcConfigSettings.TRACE_OUT_ATTR_NAME, traceOutFilenameText.getText());
+		setOrUnsetIntAttr(configuration, OrcConfigSettings.MAX_STACK_DEPTH_ATTR_NAME, stackDepthSpinner.getSelection(), OrcConfigSettings.MAX_STACK_DEPTH_DEFAULT);
+		setOrUnsetIntAttr(configuration, OrcConfigSettings.MAX_TOKENS_ATTR_NAME, tokenLimitSpinner.getSelection(), OrcConfigSettings.MAX_TOKENS_DEFAULT);
+		setOrUnsetIntAttr(configuration, OrcConfigSettings.MAX_SITE_THREADS_ATTR_NAME, maxSiteThreadsSpinner.getSelection(), OrcConfigSettings.MAX_SITE_THREADS_DEFAULT);
 		setOrUnsetTextAttr(configuration, OrcConfigSettings.LOG_LEVEL_ATTR_NAME, logLevelList.getText());
 	}
 

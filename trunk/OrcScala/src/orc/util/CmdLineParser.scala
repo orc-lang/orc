@@ -131,7 +131,7 @@ trait CmdLineParser {
 
   case class StringOprd(val getter: Function0[String], val setter: (String => Unit), override val position: Int, override val argName: String = "STRING", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
     extends CmdLineOprd(position, argName, usage, required, hidden) {
-    def getValue: String = { getter().toString }
+    def getValue: String = { getter() }
     def setValue(value: String) { setter(value) }
   }
 
@@ -185,7 +185,7 @@ trait CmdLineParser {
 
   case class StringOpt(val getter: Function0[String], val setter: (String => Unit), override val shortName: Char, override val longName: String, override val argName: String = "STRING", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
-    def getValue: String = { getter().toString }
+    def getValue: String = { getter() }
     def setValue(value: String) { setter(value) }
   }
 

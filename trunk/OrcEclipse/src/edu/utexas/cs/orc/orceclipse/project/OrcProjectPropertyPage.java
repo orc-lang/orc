@@ -74,7 +74,6 @@ public class OrcProjectPropertyPage extends FieldEditorPreferencePage implements
 	protected void createFieldEditors() {
 		addField(new BooleanFieldEditor(OrcConfigSettings.TYPE_CHECK_ATTR_NAME, Messages.OrcProjectPropertyPage_TypeCheckLabel, BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		addField(new BooleanFieldEditor(OrcConfigSettings.NO_PRELUDE_ATTR_NAME, Messages.OrcProjectPropertyPage_NoStdPreludeLabel, BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
-		addField(new BooleanFieldEditor(OrcConfigSettings.EXCEPTIONS_ON_ATTR_NAME, Messages.OrcProjectPropertyPage_EnableExceptionsLabel, BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		addField(new PathEditor(OrcConfigSettings.INCLUDE_PATH_ATTR_NAME, Messages.OrcProjectPropertyPage_IncludePathLabel, Messages.OrcProjectPropertyPage_IncludePathMessage, getFieldEditorParent()));
 		addField(new PathEditor(OrcConfigSettings.SITE_CLASSPATH_ATTR_NAME, Messages.OrcProjectPropertyPage_SiteClassPathLabel, Messages.OrcProjectPropertyPage_SiteClassPathMessage, getFieldEditorParent()));
 	}

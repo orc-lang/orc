@@ -149,8 +149,6 @@ trait OrcOptions {
   def includePath_=(newVal: java.util.List[String])
   def additionalIncludes: java.util.List[String]
   def additionalIncludes_=(newVal: java.util.List[String])
-  def exceptionsOn: Boolean
-  def exceptionsOn_=(newVal: Boolean)
   def typecheck: Boolean
   def typecheck_=(newVal: Boolean)
   def echoOil: Boolean
@@ -161,14 +159,14 @@ trait OrcOptions {
   def compileOnly_=(newVal: Boolean)
 
   // Execution options
-  def maxPublications: Int
-  def maxPublications_=(newVal: Int)
-  def tokenPoolSize: Int
-  def tokenPoolSize_=(newVal: Int)
-  def stackSize: Int
-  def stackSize_=(newVal: Int)
   def classPath: java.util.List[String]
   def classPath_=(newVal: java.util.List[String])
+  def stackSize: Int
+  def stackSize_=(newVal: Int)
+  def maxTokens: Int
+  def maxTokens_=(newVal: Int)
+  def maxSiteThreads: Int
+  def maxSiteThreads_=(newVal: Int)
   def hasRight(rightName: String): Boolean
   def setRight(rightName: String, newVal: Boolean)
 }
