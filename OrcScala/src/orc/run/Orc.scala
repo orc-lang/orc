@@ -15,10 +15,10 @@
 
 package orc.run
 
-import orc.{OrcOptions, CaughtEvent, HaltedEvent, PublishedEvent, OrcEvent, TokenAPI, OrcRuntime}
+import orc.{ OrcOptions, CaughtEvent, HaltedEvent, PublishedEvent, OrcEvent, TokenAPI, OrcRuntime }
 import orc.ast.oil.nameless._
 import orc.error.OrcException
-import orc.error.runtime.{ArityMismatchException, TokenException}
+import orc.error.runtime.{ ArityMismatchException, TokenException }
 import scala.collection.mutable.Set
 
 trait Orc extends OrcRuntime {
@@ -56,7 +56,7 @@ trait Orc extends OrcRuntime {
 
     /* Note: this is _not_ lazy termination */
     def kill = synchronized {
-        for (m <- members) scheduleK(K({a => m.kill}, None))
+      for (m <- members) scheduleK(K({ a => m.kill }, None))
     }
 
     def suspend() = synchronized {
@@ -126,7 +126,7 @@ trait Orc extends OrcRuntime {
           parent.remove(this)
           for (k <- waitlist) { scheduleK(new K(k, None)) }
         }
-        case _ => { }
+        case _ => {}
       }
     }
 
@@ -212,23 +212,23 @@ trait Orc extends OrcRuntime {
       fs.toList.reverse ::: lexicalContext
     }
 
-//    override def toString() = {
-//      val (defs, rest) = context.splitAt(ds.size)
-//      val newctx = (defs map {_ => None}) ::: (rest map { Some(_) })
-//      val subdef = defs(pos).subst(context map { Some(_) })
-//      }
-//    val myName = new BoundVar()
-//    val defNames = 
-//      for (d <- defs) yield 
-//        if (d == this) { myName } else { new BoundVar() }
-//    val namedDef = namelessToNamed(myName, subdef, defNames, Nil)
-//    val pp = new PrettyPrint()
-//    "lambda" +
-//      pp.reduce(namedDef.name) + 
-//        pp.paren(namedDef.formals) + 
-//          " = " + 
-//            pp.reduce(namedDef.body)
-//    }
+    //    override def toString() = {
+    //      val (defs, rest) = context.splitAt(ds.size)
+    //      val newctx = (defs map {_ => None}) ::: (rest map { Some(_) })
+    //      val subdef = defs(pos).subst(context map { Some(_) })
+    //      }
+    //    val myName = new BoundVar()
+    //    val defNames = 
+    //      for (d <- defs) yield 
+    //        if (d == this) { myName } else { new BoundVar() }
+    //    val namedDef = namelessToNamed(myName, subdef, defNames, Nil)
+    //    val pp = new PrettyPrint()
+    //    "lambda" +
+    //      pp.reduce(namedDef.name) + 
+    //        pp.paren(namedDef.formals) + 
+    //          " = " + 
+    //            pp.reduce(namedDef.body)
+    //    }
 
   }
 
@@ -279,6 +279,7 @@ trait Orc extends OrcRuntime {
   case class Suspended(prevState: TokenState) extends TokenState
   case object Halted extends TokenState
   case object Killed extends TokenState
+  case class Published(v: AnyRef) extends TokenState
 
   class Token private (
     var node: Expression,
@@ -304,37 +305,37 @@ trait Orc extends OrcRuntime {
 
     // A live token is added to its group when it is created
     state match {
-      case Live | Pending | Suspending(_) | Suspended(_) => group.add(this)
-      case Halted | Killed => { }
+      case Published(_) | Live | Pending | Suspending(_) | Suspended(_) => group.add(this)
+      case Halted | Killed => {}
     }
 
     def notify(event: OrcEvent) { group.notify(event) }
 
     def kill {
       state match {
-        case Live | Pending | Suspending(_) | Suspended(_) => {
+        case Published(_) | Live | Pending | Suspending(_) | Suspended(_) => {
           state = Killed
           group.halt(this)
         }
-        case Halted | Killed => { }
+        case Halted | Killed => {}
       }
     }
 
     def suspend() = synchronized {
       state match {
         case Live => state = Suspending(state)
-        case Pending | Suspending(_) | Suspended(_) | Halted | Killed => { }
+        case Published(_) | Pending | Suspending(_) | Suspended(_) | Halted | Killed => {}
       }
     }
 
     def resume() = synchronized {
       state match {
-        case Suspending(prevState)  => state = prevState
+        case Suspending(prevState) => state = prevState
         case Suspended(prevState) => {
           state = prevState
           schedule(this)
         }
-        case Live | Pending | Halted | Killed => { }
+        case Published(_) | Live | Pending | Halted | Killed => {}
       }
     }
 
@@ -397,7 +398,7 @@ trait Orc extends OrcRuntime {
      * Note that resolving a closure also encloses its context.
      */
     def resolveOptional(b: Binding)(k: Option[AnyRef] => Unit): Unit = {
-      b match {        
+      b match {
         case BoundValue(v) =>
           v match {
             case c: Closure =>
@@ -444,7 +445,7 @@ trait Orc extends OrcRuntime {
          * Push a new FunctionFrame 
          * only if the call is not a tail call.
          */
-        case FunctionFrame(_, _) :: fs => { }
+        case FunctionFrame(_, _) :: fs => {}
         case _ => push(new FunctionFrame(node, env))
       }
 
@@ -459,94 +460,26 @@ trait Orc extends OrcRuntime {
     }
 
     def siteCall(s: AnyRef, actuals: List[AnyRef]): Unit = {
-      try { 
+      try {
         invoke(this, s, actuals)
       } catch {
         case e: OrcException => this !! e
         case e => { halt; notify(CaughtEvent(e)) }
       }
     }
-    
+
     def isLive = state = Live
-    
+
     def run {
-      var runNode = false
-      synchronized {
-        state match {
-          case Live => runNode = true // Run this token's current AST node, ouside this synchronized block
-          case Pending => throw new AssertionError("pending token scheduled")
-          case Suspending(prevState) => state = Suspended(prevState)
-          case Suspended(_) => throw new AssertionError("suspended token scheduled")
-          case Halted => throw new AssertionError("halted token scheduled")
-          case Killed => { } // This token was killed while it was on the schedule queue; ignore it
-        }
-      }
-      if (runNode) {
-        node match {
-          case Stop() => halt
-          
-          case Hole(_, _) => halt
-          
-          case (a: Argument) => resolve(lookup(a)) { publish }
-
-          case Call(target, args, _) => {
-            val params = args map lookup
-            lookup(target) match {
-              case BoundValue(c: Closure) => functionCall(c.code, c.context, params)
-              case b =>
-                resolve(b) {
-                  case c: Closure => functionCall(c.code, c.context, params)
-                  case s => leftToRight(resolve, params) { siteCall(s, _) }
-                }
-            }
-          }
-
-          case Parallel(left, right) => {
-            val (l, r) = fork
-            schedule(l.move(left), r.move(right))
-          }
-
-          case Sequence(left, right) => {
-            val frame = new SequenceFrame(right)
-            schedule(this.push(frame).move(left))
-          }
-
-          case Prune(left, right) => {
-            val (l, r) = fork
-            val groupcell = new Groupcell(group)
-            schedule(l.bind(BoundCell(groupcell)).move(left),
-              r.join(groupcell).move(right))
-          }
-
-          case Otherwise(left, right) => {
-            val (l, r) = fork
-            val region = new Region(group, r.move(right))
-            schedule(l.join(region).move(left))
-          }
-
-          case decldefs@DeclareDefs(openvars, defs, body) => {
-            /* Closure compaction: Bind only the free variables
-             * of the defs in this lexical context. 
-             */
-            val lexicalContext = openvars map { i: Int => lookup(Variable(i)) }
-            for (i <- defs.indices) {
-              bind(BoundValue(Closure(defs, i, lexicalContext)))
-            }
-            schedule(this.move(body))
-          }
-          
-          case HasType(expr, _) => this.move(expr).run
-          
-          case DeclareType(_, expr) => this.move(expr).run
-        }
-      }
-    }
-
-    // Publicly accessible methods
-
-    def publish(v: AnyRef) {
       state match {
-        case Live | Suspending(_) => {
+        case Live => eval(node) // Run this token's current AST node, ouside this synchronized block
+        case Pending => throw new AssertionError("pending token scheduled")
+        case Suspending(prevState) => state = Suspended(prevState)
+        case Suspended(_) => throw new AssertionError("suspended token scheduled")
+        case Halted => throw new AssertionError("halted token scheduled")
+        case Killed => {} // This token was killed while it was on the schedule queue; ignore it
+        case Published(v) => {
+          state = Live
           stack match {
             case f :: fs => {
               stack = fs
@@ -557,20 +490,92 @@ trait Orc extends OrcRuntime {
             }
           }
         }
+      }
+    }
+
+    def eval(node: orc.ast.oil.nameless.Expression) {
+      node match {
+        case Stop() => halt
+
+        case Hole(_, _) => halt
+
+        case (a: Argument) => resolve(lookup(a)) { publish }
+
+        case Call(target, args, _) => {
+          val params = args map lookup
+          lookup(target) match {
+            case BoundValue(c: Closure) => functionCall(c.code, c.context, params)
+            case b =>
+              resolve(b) {
+                case c: Closure => functionCall(c.code, c.context, params)
+                case s => leftToRight(resolve, params) { siteCall(s, _) }
+              }
+          }
+        }
+
+        case Parallel(left, right) => {
+          val (l, r) = fork
+          schedule(l.move(left), r.move(right))
+        }
+
+        case Sequence(left, right) => {
+          val frame = new SequenceFrame(right)
+          schedule(this.push(frame).move(left))
+        }
+
+        case Prune(left, right) => {
+          val (l, r) = fork
+          val groupcell = new Groupcell(group)
+          schedule(l.bind(BoundCell(groupcell)).move(left),
+            r.join(groupcell).move(right))
+        }
+
+        case Otherwise(left, right) => {
+          val (l, r) = fork
+          val region = new Region(group, r.move(right))
+          schedule(l.join(region).move(left))
+        }
+
+        case decldefs@DeclareDefs(openvars, defs, body) => {
+          /* Closure compaction: Bind only the free variables
+             * of the defs in this lexical context. 
+             */
+          val lexicalContext = openvars map { i: Int => lookup(Variable(i)) }
+          for (i <- defs.indices) {
+            bind(BoundValue(Closure(defs, i, lexicalContext)))
+          }
+          schedule(this.move(body))
+        }
+
+        case HasType(expr, _) => this.move(expr).run
+
+        case DeclareType(_, expr) => this.move(expr).run
+      }
+    }
+
+    // Publicly accessible methods
+
+    def publish(v: AnyRef) {
+      state match {
+        case Live | Suspending(_) => {
+          state = Published(v)
+          schedule(this)
+        }
+        case Published(_) => throw new AssertionError("Already published!")
         case Pending => throw new AssertionError("publish on a pending Token")
         case Suspended(_) => throw new AssertionError("publish on a suspended Token")
-        case Halted | Killed => { }
+        case Halted | Killed => {}
       }
     }
 
     def halt {
       state match {
-        case Live | Pending | Suspending(_) => {
+        case Published(_) | Live | Pending | Suspending(_) => {
           state = Halted
           group.halt(this)
         }
         case Suspended(_) => throw new AssertionError("halt on a suspended Token")
-        case Halted | Killed => { }
+        case Halted | Killed => {}
       }
     }
 
@@ -581,7 +586,7 @@ trait Orc extends OrcRuntime {
           val callPoints = stack collect { case f: FunctionFrame => f.callpoint.pos }
           te.setBacktrace(callPoints.toArray)
         }
-        case _ => { } // Not a TokenException; no need to collect backtrace
+        case _ => {} // Not a TokenException; no need to collect backtrace
       }
       notify(CaughtEvent(e))
       halt
