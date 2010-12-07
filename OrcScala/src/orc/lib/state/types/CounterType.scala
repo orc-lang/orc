@@ -1,5 +1,5 @@
 //
-// BufferType.scala -- Scala class/trait/object BufferType
+// BufferType.scala -- Scala object BufferType
 // Project OrcScala
 //
 // $Id$

@@ -1,5 +1,5 @@
 //
-// Top.scala -- Scala class/trait/object Top
+// Top.scala -- Scala object Top
 // Project OrcScala
 //
 // $Id$
@@ -24,4 +24,3 @@ case object Top extends Type {
   override def join(that: Type): Type = this
   override def meet(that: Type): Type = that
 }
-

@@ -1,5 +1,5 @@
 //
-// OrcJSON.scala -- Scala class/trait/object OrcJSON
+// OrcJSON.scala -- Scala class ReadJSON and object OrcJSONParser
 // Project OrcScala
 //
 // $Id$

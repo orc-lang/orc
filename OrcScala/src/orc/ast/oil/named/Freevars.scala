@@ -1,5 +1,5 @@
 //
-// Freevars.scala -- Scala class/trait/object Freevars
+// Freevars.scala -- Scala traits hasVars, hasFreeVars, hasFreeTypeVars, hasUnboundVars, hasUnboundTypeVars
 // Project OrcScala
 //
 // $Id$
@@ -91,4 +91,3 @@ trait hasUnboundTypeVars {
     Set.empty ++ varset
   }
 }
-

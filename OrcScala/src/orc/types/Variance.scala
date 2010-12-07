@@ -1,5 +1,5 @@
 //
-// Variance.scala -- Scala class/trait/object Variance
+// Variance.scala -- Scala trait Variance and its child object
 // Project OrcScala
 //
 // $Id$

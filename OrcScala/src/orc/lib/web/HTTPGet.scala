@@ -1,5 +1,5 @@
 //
-// HTTPGet.scala -- Scala class/trait/object HTTPGet
+// HTTPGet.scala -- Scala class HTTPGet
 // Project OrcScala
 //
 // $Id$
@@ -38,4 +38,3 @@ class HTTPGet extends TotalSite with UntypedSite {
   }
 
 }
-

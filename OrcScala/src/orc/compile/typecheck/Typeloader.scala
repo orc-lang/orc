@@ -1,5 +1,5 @@
 //
-// Typeloader.scala -- Scala class/trait/object Typeloader
+// Typeloader.scala -- Scala object Typeloader
 // Project OrcScala
 //
 // $Id$

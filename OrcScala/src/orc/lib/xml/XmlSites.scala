@@ -1,5 +1,5 @@
 //
-// XmlSite.scala -- Scala class/trait/object XmlSite
+// XmlSite.scala -- Scala classes XmlElementSite and XmlTextSite
 // Project OrcScala
 //
 // $Id$

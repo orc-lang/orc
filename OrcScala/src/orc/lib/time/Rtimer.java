@@ -32,10 +32,6 @@ import orc.types.RecordType;
  * @author wcook, quark, dkitchin
  */
 public class Rtimer extends SiteAdaptor implements TypedSite {
-    public void populateMetaDataAdaptor(final Args args, final TokenAPI caller) throws TokenException {
-      long t = args.longArg(0);
-      if (t == 0) vtime = 0;
-    }
 
     private int vtime = -1;
     @Override

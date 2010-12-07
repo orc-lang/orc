@@ -1,5 +1,5 @@
 //
-// TypeExceptions.scala -- Scala class/trait/object TypeExceptions
+// TypeExceptions.scala -- Scala child classes of TypeException
 // Project OrcScala
 //
 // $Id$
@@ -97,4 +97,3 @@ class NoSuchMemberException(t: Type, missingMember: String) extends
   
 class MalformedDatatypeCallException() extends
   TypeException("Expected an instance of the datatype as a type argument")  
-  

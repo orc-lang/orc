@@ -1,5 +1,5 @@
 //
-// ExceptionCompileLogger.scala -- Scala class/trait/object ExceptionCompileLogger
+// ExceptionCompileLogger.scala -- Scala class ExceptionCompileLogger
 // Project OrcScala
 //
 // $Id$

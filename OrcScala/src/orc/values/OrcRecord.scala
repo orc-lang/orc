@@ -1,5 +1,5 @@
 //
-// OrcRecord.scala -- Scala class/trait/object OrcRecord
+// OrcRecord.scala -- Scala class OrcRecord
 // Project OrcScala
 //
 // $Id$

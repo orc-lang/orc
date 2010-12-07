@@ -1,6 +1,5 @@
 //
-
-// Guarded.scala -- Scala class/trait/object Guarded
+// Guarded.scala -- Scala trait Guarding
 // Project OrcScala
 //
 // $Id$

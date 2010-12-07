@@ -1,5 +1,5 @@
 //
-// Clazz.scala -- Scala class/trait/object Clazz
+// ReadXML.scala -- Scala class ReadXML
 // Project OrcScala
 //
 // $Id$

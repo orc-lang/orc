@@ -1,5 +1,5 @@
 //
-// FunctionType.scala -- Scala class/trait/object FunctionType
+// FunctionType.scala -- Scala class FunctionType
 // Project OrcScala
 //
 // $Id$

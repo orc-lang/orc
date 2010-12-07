@@ -1,5 +1,5 @@
 //
-// RemoveUnusedDefs.scala -- Scala class/trait/object RemoveUnusedDefs
+// RemoveUnusedDefs.scala -- Scala object RemoveUnusedDefs
 // Project OrcScala
 //
 // $Id$

@@ -1,5 +1,5 @@
 //
-// CallableType.scala -- Scala class/trait/object CallableType
+// CallableType.scala -- Scala trait CallableType
 // Project OrcScala
 //
 // $Id$

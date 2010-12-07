@@ -1,5 +1,5 @@
 //
-// SupportForSynchronousExecution.scala -- Scala class/trait/object SupportForSynchronousExecution
+// SupportForSynchronousExecution.scala -- Scala trait SupportForSynchronousExecution
 // Project OrcScala
 //
 // $Id$

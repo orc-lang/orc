@@ -1,5 +1,5 @@
 //
-// Graph.scala -- Scala class/trait/object Graph
+// Graph.scala -- Scala class Graph, object Direction, and class Node
 // Project OrcScala
 //
 // $Id$

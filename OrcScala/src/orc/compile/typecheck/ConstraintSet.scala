@@ -1,5 +1,5 @@
 //
-// ConstraintSet.scala -- Scala class/trait/object ConstraintSet
+// ConstraintSet.scala -- Scala class ConstraintSet
 // Project OrcScala
 //
 // $Id$

@@ -1,5 +1,5 @@
 //
-// EnhancedErrorMessages.scala -- Scala class/trait/object EnhancedErrorMessages
+// EnhancedErrorMessages.scala -- Scala trait EnhancedErrorMessages
 // Project OrcScala
 //
 // $Id$

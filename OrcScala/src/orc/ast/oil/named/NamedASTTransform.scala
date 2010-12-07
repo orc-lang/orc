@@ -1,5 +1,5 @@
 //
-// Transformation.scala -- Scala class/trait/object Transformation
+// Transformation.scala -- Scala traits NamedASTFunction and NamedASTTransform and object EmptyFunction
 // Project OrcScala
 //
 // $Id$
@@ -190,10 +190,4 @@ trait NamedASTTransform extends NamedASTFunction
     }
   }
 
-
-  
-
-     
-
 }
-

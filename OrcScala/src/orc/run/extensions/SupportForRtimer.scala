@@ -1,5 +1,5 @@
 //
-// SupportForRtimer.scala -- Scala class/trait/object SupportForRtimer
+// SupportForRtimer.scala -- Scala trait SupportForRtimer
 // Project OrcScala
 //
 // $Id$

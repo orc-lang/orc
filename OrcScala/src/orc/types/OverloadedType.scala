@@ -1,5 +1,5 @@
 //
-// OverloadedFunctionType.scala -- Scala class/trait/object OverloadedFunctionType
+// OverloadedType.scala -- Scala class OverloadedType
 // Project OrcScala
 //
 // $Id$

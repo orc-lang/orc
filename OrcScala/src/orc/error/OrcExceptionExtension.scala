@@ -1,5 +1,5 @@
 //
-// OrcExceptionExtension.scala -- Scala class/trait/object OrcExceptionExtension
+// OrcExceptionExtension.scala -- Scala class ExtendedOrcException and object OrcExceptionExtension
 // Project OrcScala
 //
 // $Id$
@@ -15,7 +15,6 @@
 package orc.error
 
 /**
- * 
  * Implicitly extend Orc exceptions with an additional method to set their location.
  * This is in Scala so that the exception's specific type can be maintained through the call.
  * Plus, this is a hook to add additional functionality to exceptions later. 

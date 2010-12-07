@@ -1,5 +1,5 @@
 //
-// TypeVariable.scala -- Scala class/trait/object TypeVariable
+// TypeVariable.scala -- Scala class TypeVariable
 // Project OrcScala
 //
 // $Id$

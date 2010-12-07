@@ -1,5 +1,5 @@
 //
-// Input.scala -- Scala class/trait/object Input
+// Input.scala -- Scala classes, traits, and objects relating to parser input sources
 // Project OrcScala
 //
 // $Id$

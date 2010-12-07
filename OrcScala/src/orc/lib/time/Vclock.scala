@@ -1,5 +1,5 @@
 //
-// Vclock.scala -- Scala class/trait/object Vclock
+// Vclock.scala -- Scala class Vclock
 // Project OrcScala
 //
 // $Id$
@@ -33,4 +33,3 @@ class Vclock extends Site with TypedSite {
   
   def orcType = SimpleFunctionType(IntegerType)
 }
-

@@ -1,5 +1,5 @@
 //
-// TypeConstructor.scala -- Scala class/trait/object TypeConstructor
+// TypeConstructor.scala -- Scala trait TypeConstructor
 // Project OrcScala
 //
 // $Id$

@@ -1,5 +1,5 @@
 //
-// Bot.scala -- Scala class/trait/object Bot
+// Bot.scala -- Scala object Bot
 // Project OrcScala
 //
 // $Id$
