@@ -32,6 +32,7 @@ public class Messages extends NLS {
 	public static String OrcBuilder_DoneBuildingOrcFile;
 	public static String OrcBuilder_IOErrorWhenBuilding;
 	public static String OrcBuilder_OrcCompilerConsoleName;
+	public static String OrcGeneralLaunchConfigurationTab_DumpStackLabel;
 	public static String OrcGeneralLaunchConfigurationTab_EchoOilLabel;
 	public static String OrcGeneralLaunchConfigurationTab_GeneralTabName;
 	public static String OrcGeneralLaunchConfigurationTab_LogLevelLabel;

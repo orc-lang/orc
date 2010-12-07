@@ -62,6 +62,8 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   // Execution options
   def classPath: java.util.List[String] = getPathList("orc.classPath", List())
   def classPath_=(newVal: java.util.List[String]) = putPathList("orc.classPath", newVal)
+  def showJavaStackTrace: Boolean = getBoolean("orc.showJavaStackTrace", false)
+  def showJavaStackTrace_=(newVal: Boolean) = putBoolean("orc.showJavaStackTrace", newVal)
   def stackSize: Int = getInt("orc.stackSize", -1)
   def stackSize_=(newVal: Int) = putInt("orc.stackSize", newVal)
   def maxTokens: Int = getInt("orc.maxTokens", -1)
