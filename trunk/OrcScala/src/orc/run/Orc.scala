@@ -21,6 +21,9 @@ import orc.error.OrcException
 import orc.error.runtime.{ ArityMismatchException, TokenException }
 import scala.collection.mutable.Set
 
+import scala.actors.Actor
+import scala.actors.Actor._
+
 trait Orc extends OrcRuntime {
 
   def run(node: Expression, k: OrcEvent => Unit, options: OrcOptions) {
@@ -29,7 +32,7 @@ trait Orc extends OrcRuntime {
     schedule(t)
   }
 
-  def stop = { /* By default, do nothing on stop. */ }
+  def stop = { Killer ! "exit" /* By default, do nothing on stop. */ }
 
   ////////
   // Groups
@@ -46,6 +49,18 @@ trait Orc extends OrcRuntime {
     def notify(event: OrcEvent): Unit
   }
 
+  object Killer extends Actor {
+    def act() {
+      loop {
+        react {
+          case x: GroupMember => x.kill
+          case "exit" => this.exit
+        }
+      }
+    }
+  }
+  Killer.start
+
   trait Group extends GroupMember {
     def publish(t: Token, v: AnyRef): Unit
     def onHalt: Unit
@@ -56,7 +71,7 @@ trait Orc extends OrcRuntime {
 
     /* Note: this is _not_ lazy termination */
     def kill = synchronized {
-      for (m <- members) scheduleK(K({ a => m.kill }, None))
+      for (m <- members) Killer ! m
     }
 
     def suspend() = synchronized {
@@ -98,7 +113,7 @@ trait Orc extends OrcRuntime {
 
   /** Possible states of a Groupcell */
   class GroupcellState
-  case class Unbound(waitlist: List[Option[AnyRef] => Unit]) extends GroupcellState
+  case class Unbound(waitlist: List[Token]) extends GroupcellState
   case class Bound(v: AnyRef) extends GroupcellState
   case object Dead extends GroupcellState
 
@@ -113,7 +128,7 @@ trait Orc extends OrcRuntime {
           state = Bound(v)
           t.halt
           this.kill
-          for (k <- waitlist) { scheduleK(new K(k, Some(v))) }
+          for (t <- waitlist) { t.publish(Some(v)) }
         }
         case _ => t.halt
       }
@@ -124,20 +139,20 @@ trait Orc extends OrcRuntime {
         case Unbound(waitlist) => {
           state = Dead
           parent.remove(this)
-          for (k <- waitlist) { scheduleK(new K(k, None)) }
+          for (t <- waitlist) { t.publish(None) }
         }
         case _ => {}
       }
     }
 
     // Specific to Groupcells
-    def read(k: Option[AnyRef] => Unit) = synchronized {
+    def read(t: Token) = synchronized {
       state match {
         case Unbound(waitlist) => {
-          state = Unbound(k :: waitlist)
+          state = Unbound(t :: waitlist)
         }
-        case Bound(v) => scheduleK(new K(k, Some(v)))
-        case Dead => scheduleK(new K(k, None))
+        case Bound(v) => t.publish(Some(v))
+        case Dead => t.publish(None)
       }
     }
 
@@ -259,6 +274,14 @@ trait Orc extends OrcRuntime {
     def apply(t: Token, v: AnyRef) {
       t.env = env
       t.move(callpoint).publish(v)
+    }
+  }
+
+  case class KFrame(private[run] _k : (Option[AnyRef] => Unit)) extends Frame {
+    def k = _k
+    def apply(t: Token, v: AnyRef) {
+      val _v = v.asInstanceOf[Option[AnyRef]]
+      k(_v)
     }
   }
 
@@ -408,7 +431,7 @@ trait Orc extends OrcRuntime {
             case u => k(Some(u))
           }
         case BoundStop => k(None)
-        case BoundCell(g) => g read k
+        case BoundCell(g) => stack = KFrame(k) :: stack; g read this // TODO: push k on stack before calling read
       }
     }
 

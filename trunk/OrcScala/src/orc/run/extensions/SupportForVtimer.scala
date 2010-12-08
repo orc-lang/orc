@@ -27,23 +27,10 @@ trait SupportForVtimer extends OrcRuntime {
   val tokensRunning : java.util.concurrent.atomic.AtomicInteger = 
     new java.util.concurrent.atomic.AtomicInteger(0)
   
-  val kCount : java.util.concurrent.atomic.AtomicInteger = 
-    new java.util.concurrent.atomic.AtomicInteger(0)
-  
   def decTokensRunning() {
     val it = tokensRunning.decrementAndGet()
-    val ik = kCount.get
     val iz = zSet.size
-    if ((it + ik+iz) == 0) {
-      scheduleMinVtimer()
-    }
-  }
-  
-  def deckCount() {
-    val ik = kCount.decrementAndGet()
-    val it = tokensRunning.get
-    val iz = zSet.size
-    if ((it + ik+iz) == 0) {
+    if ((it + iz) == 0) {
       scheduleMinVtimer()
     }
   }

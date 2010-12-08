@@ -41,9 +41,6 @@ trait CappedActorBasedScheduler extends Orc {
   }
   val CAP = 256
   
-  override def scheduleK(k : K) {
-    ActorPool.assign(k)
-  }
   val works : java.util.Queue[AnyRef] = new java.util.concurrent.ConcurrentLinkedQueue()
 
   object ActorPool {
@@ -104,9 +101,6 @@ trait CappedActorBasedScheduler extends Orc {
             if (Thread.interrupted()) // Note: Clears thread's interrupted status bit
               throw new InterruptedException()
             x.run
-          }
-          case K(k, ov) => {
-            k(ov)
           }
         }
         w = works.poll()
