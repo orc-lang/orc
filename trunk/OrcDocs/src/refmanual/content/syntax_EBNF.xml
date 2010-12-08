@@ -1,5 +1,5 @@
 <!-- Syntax: EBNF -->
-	<chapter id="ref.syntax.EBNF">
+	<section id="ref.syntax.EBNF">
 		<title>EBNF Grammar</title>
 		<section id="ref.syntax.EBNF.body">
 			<para>
@@ -710,4 +710,4 @@
 			</tgroup>
 		  </informaltable>
 	  </section>
-	</chapter>
+	</section>

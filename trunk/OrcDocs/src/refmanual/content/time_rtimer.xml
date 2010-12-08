@@ -1,5 +1,5 @@
 <!-- Rtimer -->
-   <chapter id="ref.time.rtimer">
+   <section id="ref.time.rtimer">
       <title>Rtimer</title>
 	  <section id="ref.time.rtimer.behavior">
 		  <title>Behavior</title>
@@ -53,5 +53,5 @@ result
 			</tgroup>
 		  </informaltable>
 	  </section>
-   </chapter>
+   </section>
    

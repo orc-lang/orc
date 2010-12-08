@@ -1,7 +1,7 @@
 <!-- Class -->
    <chapter id="ref.class">
       <title>Class</title>
-    <section>
+	  <section><title>Class</title>
 	  <section id="ref.class.syntax">
 		  <title>Syntax</title>
 		  <para><emphasis role="strong">EBNF</emphasis>:</para>
@@ -87,6 +87,6 @@ g.next() >y> println(y) >> g.next() >y> println(y) >> stop
 			</tgroup>
 		  </informaltable>
 	  </section>
-   </section>
+	</section>
    </chapter>
    
