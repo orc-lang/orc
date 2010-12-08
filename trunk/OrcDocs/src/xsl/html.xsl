@@ -72,6 +72,7 @@ Orc examples must use the "orc" CSS class.
 	</noscript>
 	</td></tr></table>
 	<br/> <!-- line break in output file -->
+	<br/> <!-- line break in output file -->
 </xsl:template>
 
 <!-- Include stylsheets, including orc.css if desired -->
