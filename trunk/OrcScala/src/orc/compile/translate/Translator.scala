@@ -22,6 +22,7 @@ import orc.ast.oil.named.Conversions._
 import orc.compile.translate.ClassForms._
 import orc.compile.translate.CurriedForms._
 import orc.compile.translate.PrimitiveForms._
+import orc.error.OrcException
 import orc.error.OrcExceptionExtension._
 import orc.error.compiletime._
 import orc.lib.builtin
@@ -116,14 +117,22 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         convert(ext.Pruning(body, Some(p), f))
       }
       case ext.Declare(ext.SiteImport(name, sitename), body) => {
-        val site = Constant(OrcSiteForm.resolve(sitename))
-        convert(body)(context + { (name, site) }, typecontext)
+        try {
+          val site = Constant(OrcSiteForm.resolve(sitename))
+          convert(body)(context + { (name, site) }, typecontext)
+        } catch {
+          case oe: OrcException => throw oe at e
+        }
       }
       case ext.Declare(ext.ClassImport(name, classname), body) => {
-        val u = new BoundTypevar(Some(name))
-        val site = Constant(JavaSiteForm.resolve(classname))
-        val newbody = convert(body)(context + { (name, site) }, typecontext + { (name, u) })
-        DeclareType(u, ClassType(classname), newbody)
+        try {
+          val u = new BoundTypevar(Some(name))
+          val site = Constant(JavaSiteForm.resolve(classname))
+          val newbody = convert(body)(context + { (name, site) }, typecontext + { (name, u) })
+          DeclareType(u, ClassType(classname), newbody)
+        } catch {
+          case oe: OrcException => throw oe at e
+        }
       }
 
       case ext.Declare(ext.Include(_, decls), body) => convert((decls foldRight body) { ext.Declare })

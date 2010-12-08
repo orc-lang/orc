@@ -201,8 +201,6 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 			throw e;
         } catch (final IOException e) {
           throw new ScriptException(e);
-        } catch (final ClassNotFoundException e) {
-          throw new ScriptException(e);
 		}
 	}
 
