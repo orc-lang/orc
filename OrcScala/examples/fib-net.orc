@@ -14,7 +14,8 @@ def fib(in, out, n) =
 
 	def input(Buffer[Integer], Buffer[Integer], Buffer[Integer], Buffer[Integer], Buffer[Integer]) :: Top
 	def input(i, outn_1, outn_2, outn_1', outn_2') = 
-		i.get() >x> (
+  val s = Semaphore(1)
+		s.acquire() >> i.get() >x> (
 			if (x = 0) then
 				(outn_1'.put(0), outn_2'.put(0)) >> signal 
 			else (
@@ -23,7 +24,7 @@ def fib(in, out, n) =
 				else 
 					(outn_1.put(x-1), outn_2.put(x-2)) >> signal
 			)
-		) >>
+		) >> s.release() >> 
 		input(i, outn_1, outn_2, outn_1', outn_2')
 
 	def output(Buffer[Integer], Buffer[Integer], Buffer[Integer]) :: Top
