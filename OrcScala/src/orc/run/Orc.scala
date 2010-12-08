@@ -277,7 +277,7 @@ trait Orc extends OrcRuntime {
     }
   }
 
-  case class KFrame(private[run] _k : (Option[AnyRef] => Unit)) extends Frame {
+  case class KFrame(private[run]_k: (Option[AnyRef] => Unit)) extends Frame {
     def k = _k
     def apply(t: Token, v: AnyRef) {
       val _v = v.asInstanceOf[Option[AnyRef]]
@@ -494,26 +494,30 @@ trait Orc extends OrcRuntime {
     def isLive = state = Live
 
     def run {
-      state match {
-        case Live => eval(node) // Run this token's current AST node, ouside this synchronized block
-        case Pending => throw new AssertionError("pending token scheduled")
-        case Suspending(prevState) => state = Suspended(prevState)
-        case Suspended(_) => throw new AssertionError("suspended token scheduled")
-        case Halted => throw new AssertionError("halted token scheduled")
-        case Killed => {} // This token was killed while it was on the schedule queue; ignore it
-        case Published(v) => {
-          state = Live
-          stack match {
-            case f :: fs => {
-              stack = fs
-              f(this, v)
-            }
-            case List() => {
-              throw new AssertionError("publish on an empty stack")
+      var runNode = false
+      synchronized {
+        state match {
+          case Live => runNode = true // Run this token's current AST node, ouside this synchronized block
+          case Pending => throw new AssertionError("pending token scheduled")
+          case Suspending(prevState) => state = Suspended(prevState)
+          case Suspended(_) => throw new AssertionError("suspended token scheduled")
+          case Halted => throw new AssertionError("halted token scheduled")
+          case Killed => {} // This token was killed while it was on the schedule queue; ignore it
+          case Published(v) => {
+            state = Live
+            stack match {
+              case f :: fs => {
+                stack = fs
+                f(this, v)
+              }
+              case List() => {
+                throw new AssertionError("publish on an empty stack")
+              }
             }
           }
         }
       }
+      if (runNode) eval(node)
     }
 
     def eval(node: orc.ast.oil.nameless.Expression) {
