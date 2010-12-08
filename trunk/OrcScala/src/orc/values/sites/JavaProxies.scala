@@ -16,7 +16,6 @@ package orc.values.sites
 
 import scala.collection.immutable.List
 import orc.TokenAPI
-import orc.ast.oil.nameless.Type // FIXME: Typechecker should operate on named types instead
 import orc.values.Signal
 import orc.values.{Field => OrcField}
 import orc.run.Logger
@@ -390,6 +389,7 @@ case class JavaClassProxy(val javaClass: Class[_]) extends JavaProxy {
       case _ => callingToken.publish(invoke(null, "<init>", args))
     }
   }
+  
 }
 
 
@@ -405,6 +405,7 @@ case class JavaObjectProxy(val theObject: Object) extends JavaProxy {
   override def javaClass = theObject.getClass()
 
   override def call(args: List[AnyRef], callingToken: TokenAPI) = JavaCall(theObject, args, callingToken)
+  
 }
 
 

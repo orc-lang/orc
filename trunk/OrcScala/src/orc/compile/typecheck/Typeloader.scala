@@ -10,7 +10,7 @@
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
-// URL: http://orc.csres.utexas.edu/license.shtml .
+// URL: http://orc.csres.utexas.edu/license.shtml.
 //
 package orc.compile.typecheck
 
@@ -20,7 +20,8 @@ import orc.values.sites.SiteClassLoading
 import orc.compile.typecheck.Typechecker._
 import orc.types.Variance._
 import orc.error.compiletime.typing._
-import orc.error.NotYetImplementedException
+import orc.error.compiletime.UnboundTypeVariableException
+import orc.util.OptionMapExtension._
 
 
 /** 
@@ -196,8 +197,67 @@ object Typeloader extends SiteClassLoading {
    * 
    * @author dkitchin
    */
-  def reify(that: Type)(implicit typecontext: TypeContext): Option[syntactic.Type] = {
-    None //TODO
+  def reify(that: Type)(implicit typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): Option[syntactic.Type] = {
+    that match {
+      case Top => Some(syntactic.Top())
+      case Bot => Some(syntactic.Bot())
+      case IntegerConstantType(_) => reify(IntegerType)     
+      case TupleType(elements) => {
+        val newElements = elements optionMap reify
+        newElements match {
+          case Some(syntacticElements) => {
+            Some(syntactic.TupleType(syntacticElements)) 
+          }
+          case _ => None
+        }
+      }
+      case RecordType(entries) => {
+        val newEntries = 
+          entries mapValues {
+            reify(_) match {
+              case Some(u) => u
+              case None => return None
+            }
+          }
+        Some(syntactic.RecordType(newEntries))
+      }
+      case FunctionType(typeFormals, argTypes, returnType) => {
+        val syntacticTypeFormals = typeFormals map { u => new syntactic.BoundTypevar(u.optionalVariableName) }
+        val typeBindings = syntacticTypeFormals zip typeFormals
+        val newTypeContext = typeContext ++ typeBindings // exploit reverse lookup to restore syntactic parameters
+        val newArgTypes = argTypes optionMap { reify(_)(newTypeContext, typeOperatorContext) }
+        val newReturnType = reify(returnType)(newTypeContext, typeOperatorContext) 
+        (newArgTypes, newReturnType) match {
+          case (Some(syntacticArgTypes), Some(syntacticReturnType)) => {
+            Some(syntactic.FunctionType(syntacticTypeFormals, syntacticArgTypes, syntacticReturnType))
+          }
+          case _ => None
+        }
+      }
+      case TypeInstance(tycon, args) => {
+        val newTycon = reverseLookup(typeOperatorContext, tycon)
+        val newArgs = args optionMap reify
+        (newTycon, newArgs) match {
+          case (Some(syntacticTycon), Some(syntacticArgs)) => {
+            Some(syntactic.TypeApplication(syntacticTycon, syntacticArgs))
+          }
+          case _ => None
+        }
+      }
+      case t => {
+        reverseLookup(typeContext, t)
+      }
+    }
+  }
+
+  
+  def reverseLookup[X,Y](m: Map[X, Y], target: Y): Option[X] = {
+    val candidates = m filter { case (x, y) => y equals target }
+    candidates.keys.toList match {
+      case Nil => None
+      case List(x) => Some(x)
+      case alts => None // TODO Issue warning: multiple candidates
+    }
   }
   
   
