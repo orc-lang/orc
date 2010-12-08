@@ -24,16 +24,22 @@ import orc.compile.Logger
  * @author jthywiss
  */
 object OrcSiteForm extends SiteForm {
-  @throws(classOf[ClassNotFoundException])
+  @throws(classOf[SiteResolutionException])
   def resolve(name: String): Site = {
     Logger.finer("Resolving Orc site "+name)
-    val loadedClass = loadClass(name)
+    var loadedClass: java.lang.Class[_] = null
+    try {
+      loadedClass = loadClass(name)
+    } catch {
+      case e =>
+        throw new SiteResolutionException(name, e)
+    }
     if (classOf[Site].isAssignableFrom(loadedClass)) {
       try {
         return loadedClass.asInstanceOf[Class[Site]].newInstance()
       } catch {
         case e =>
-          throw new SiteResolutionException(loadedClass.getName(), e)
+          throw new SiteResolutionException(loadedClass.getCanonicalName(), e)
       }
     } else {
       try { // Maybe it's a Scala object....
@@ -42,7 +48,7 @@ object OrcSiteForm extends SiteForm {
       } catch {
         case _ => { } //Ignore -- It's not a Scala object, then.
       }
-      throw new SiteResolutionException(loadedClass.getName(),new ClassCastException(loadedClass.getClass().getCanonicalName()+" cannot be cast to "+classOf[Site].getCanonicalName()))
+      throw new SiteResolutionException(loadedClass.getCanonicalName(),new ClassCastException(loadedClass.getClass().getCanonicalName()+" cannot be cast to "+classOf[Site].getCanonicalName()))
     }
   }
 }

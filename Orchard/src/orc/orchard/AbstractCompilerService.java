@@ -83,8 +83,6 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
 			}
 		} catch (final IOException e) {
 			throw new InvalidProgramException("IO error: " + e.getMessage());
-		} catch (final ClassNotFoundException e) {
-			throw new InvalidProgramException(e.getMessage());
 		}
 	}
 

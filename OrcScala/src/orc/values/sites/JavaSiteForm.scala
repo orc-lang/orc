@@ -15,6 +15,7 @@
 
 package orc.values.sites
 
+import orc.error.compiletime.SiteResolutionException
 import orc.compile.Logger
 
 
@@ -25,9 +26,14 @@ import orc.compile.Logger
  * @author jthywiss
  */
 object JavaSiteForm extends SiteForm {
-  @throws(classOf[ClassNotFoundException])
+  @throws(classOf[SiteResolutionException])
   def resolve(name: String) = {
     Logger.finer("Resolving Java class "+name)
-    new JavaClassProxy(loadClass(name))
+    try {
+      new JavaClassProxy(loadClass(name))
+    } catch {
+      case e =>
+        throw new SiteResolutionException(name, e)
+    }
   }
 }
