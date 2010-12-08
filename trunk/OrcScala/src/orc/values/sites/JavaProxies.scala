@@ -384,7 +384,6 @@ case class JavaClassProxy(val javaClass: Class[_]) extends JavaProxy {
 
   override def call(args: List[AnyRef], callingToken: TokenAPI) {
     args match {
-      case List(OrcField("?")) => throw new NotYetImplementedException("MatchProxy not implemented yet") //TODO:FIXME: Implement this -- publish(new MatchProxy(javaClass))
       case List(OrcField(memberName)) => callingToken.publish(new JavaStaticMemberProxy(javaClass, memberName))
       case _ => callingToken.publish(invoke(null, "<init>", args))
     }
