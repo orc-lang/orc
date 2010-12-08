@@ -1,5 +1,5 @@
 <!-- Variable Pattern -->
-	<chapter id="ref.patterns.variable">
+	<section id="ref.patterns.variable">
 		<title>Variable Pattern</title>
 		<section id="ref.patterns.variable.body">
 			<para>
@@ -57,4 +57,4 @@ def foldl(f,[],s) = s
 			</tgroup>
 		  </informaltable>
 	  </section>
-	</chapter>
+	</section>

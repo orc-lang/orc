@@ -66,7 +66,7 @@
 	<!--
 	  - target:  test
 	  -->
-	<target name="test" depends="clean,olinks,rm-build-html-single" description="Test build for modifications.">
+	<target name="test" depends="clean,olinks,rm-build-html-chunk" description="Test build for modifications.">
 		<echo message="Test build complete" />
 	</target>
 	
@@ -164,14 +164,15 @@
 			<include name="refmanual.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="orc.demo" expression="0"/>
-			<param name="section.autolabel" expression="0"/>
+			<param name="section.autolabel" expression="1"/>
 			<param name="section.label.includes.component.label" expression="1"/>
-			<param name="section.autolabel.max.depth" expression="8"/>
-			<param name="chapter.autolabel" expression="0"/>
-			<param name="generate.toc" expression="book toc"/>
+			<param name="section.autolabel.max.depth" expression="1"/>
+			<param name="chunk.first.sections" expression="1"/>
+			<param name="chapter.autolabel" expression="1"/>
+			<param name="generate.toc" expression="book toc \n chapter toc"/>
 			
 			<param name="chunk.quietly" expression="1"/>
-			<param name="chunk.section.depth" expression="0"/>
+			<param name="chunk.section.depth" expression="1"/>
 			
 			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
 			<param name="current.docid" expression="refmanual"/> 

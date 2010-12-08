@@ -1,5 +1,5 @@
 <!-- Call Pattern -->
-	<chapter id="ref.patterns.call">
+	<section id="ref.patterns.call">
 		<title>Call Pattern</title>
 		<section id="ref.patterns.call.body">
 			<para>
@@ -69,4 +69,4 @@ r >Node(_,k,_)>
 			</tgroup>
 		  </informaltable>
 	  </section>
-	</chapter>
+	</section>

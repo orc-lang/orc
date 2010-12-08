@@ -1,5 +1,5 @@
 <!-- Wildcard Pattern -->
-	<chapter id="ref.patterns.wildcard">
+	<section id="ref.patterns.wildcard">
 		<title>Wildcard Pattern</title>
 		<section id="ref.patterns.wildcard.body">
 			<para>
@@ -57,4 +57,4 @@ val [[_,x],[_,y]] = [[1,3],[2,4]] -- binds x to 3 and y to 4.
 			</tgroup>
 		  </informaltable>
 	  </section>
-	</chapter>
+	</section>

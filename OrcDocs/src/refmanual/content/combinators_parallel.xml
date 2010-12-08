@@ -1,5 +1,5 @@
 <!-- Parallel Combinator -->
-   <chapter id="ref.combinators.parallel">
+   <section id="ref.combinators.parallel">
       <title>Parallel Combinator</title>
 	  <section id="ref.combinators.parallel.syntax">
 		  <title>Syntax</title>
@@ -87,4 +87,4 @@ Google("cupcake") | Yahoo("cupcake")
 			</tgroup>
 		  </informaltable>
 	  </section>
-   </chapter>
+   </section>

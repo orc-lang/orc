@@ -1,5 +1,5 @@
 <!-- List Pattern -->
-	<chapter id="ref.patterns.list">
+	<section id="ref.patterns.list">
 		<title>List Pattern</title>
 		<section id="ref.patterns.list.body">
 			<para>
@@ -63,4 +63,4 @@ def afold(f, xs) =
 			</tgroup>
 		  </informaltable>
 	  </section>
-	</chapter>
+	</section>

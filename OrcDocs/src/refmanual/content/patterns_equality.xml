@@ -1,5 +1,5 @@
 <!-- Equality Pattern -->
-	<chapter id="ref.patterns.equality">
+	<section id="ref.patterns.equality">
 		<title>Equality Pattern</title>
 		<section id="ref.patterns.equality.body">
 			<para>
@@ -76,4 +76,4 @@ def withz(x,=z) = x
 			</tgroup>
 		  </informaltable>
 	  </section>
-	</chapter>
+	</section>

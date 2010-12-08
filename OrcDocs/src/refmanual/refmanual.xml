@@ -10,28 +10,15 @@
 <book 
 	id="refmanual"  
 	xmlns:xlink="http://www.w3.org/1999/xlink"
-	xmlns:xi="http://www.w3.org/2001/XInclude">
+	xmlns:xi="http://www.w3.org/2001/XInclude"><?dbhtml filename="refmanual_toc.html" ?>
 	
 <title>Orc Reference Manual v<xi:include href="../../VERSION" parse="text"/></title>
 	
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/combinators_parallel.xml"/> 
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/combinators_sequential.xml"/>
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/combinators_pruning.xml"/>
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/combinators_otherwise.xml"/>
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/patterns_as.xml"/>
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/patterns_call.xml"/>
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/patterns_cons.xml"/>
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/patterns_constant.xml"/>
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/patterns_equality.xml"/>
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/patterns_list.xml"/>
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/patterns_tuple.xml"/>
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/patterns_variable.xml"/>
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/patterns_wildcard.xml"/>
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/examples_concept.xml"/>
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/functions_clausal.xml"/>
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/functions_recursion.xml"/>
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/functions_closures.xml"/>
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/functions_lambda.xml"/>
+<xi:include href="content/combinators.xml"/>
+<xi:include href="content/functions.xml"/>
+<xi:include href="content/patterns.xml"/>
+<xi:include href="content/syntax.xml"/>
+	
 </book>
 
 
@@ -53,4 +40,11 @@
 		 href="&ug;"
 	     xpointer="&fx;combinators.parallel.frag.examples&xf;"
 	  />
+-->
+
+<!--
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/combinators_parallel.xml"/> 
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/combinators_sequential.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/combinators_pruning.xml"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/combinators_otherwise.xml"/>
 -->

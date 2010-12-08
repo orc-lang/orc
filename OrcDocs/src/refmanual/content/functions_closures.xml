@@ -1,5 +1,5 @@
 <!-- Closures -->
-   <chapter id="ref.functions.closure">
+   <section id="ref.functions.closure">
       <title>Closures</title>
 	  <section id="ref.functions.closure.behavior">
 		  <title>Behavior</title>
@@ -50,4 +50,4 @@ onetwosum(triple)
 			</tgroup>
 		  </informaltable>
 	  </section>
-   </chapter>
+   </section>
