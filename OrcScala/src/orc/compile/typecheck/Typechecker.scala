@@ -19,6 +19,7 @@ import orc.ast.oil.{named => syntactic}
 import orc.ast.oil.named.{Expression, Stop, Hole, Call, ||, ow, <, >, DeclareDefs, HasType, DeclareType, Constant, UnboundVar, Def, FoldedCall, FoldedLambda}
 import orc.types._
 import orc.error.compiletime.typing._
+import orc.error.compiletime.{UnboundVariableException, UnboundTypeVariableException}
 import orc.util.OptionMapExtension._
 import orc.values.{Signal, Field}
 import scala.math.BigInt
@@ -67,10 +68,7 @@ object Typechecker {
           case Hole(_,_) => (expr, Bot)
           case Constant(value) => (expr, typeValue(value))
           case x: syntactic.BoundVar => (x, context(x))
-          case UnboundVar(_) => (expr, Bot)  // TODO: Emit a warning: unbound variable
-          /* FoldedCall must be checked before prune, since it
-           * may contain some number of enclosing prunings.
-           */
+          case UnboundVar(name) => throw new UnboundVariableException(name)
           case FoldedCall(target, args, typeArgs) => {
             val (newTarget, typeTarget) = typeSynthExpr(target)
             val (newArgs, argTypes) = (args map typeSynthExpr).unzip

@@ -17,6 +17,7 @@ package orc.values.sites.compatibility
 import orc.types._
 import orc.lib.builtin.ListType
 import orc.lib.builtin.OptionType
+import orc.compile.typecheck.Typeloader
 
 /**
  * 
@@ -37,7 +38,7 @@ object Types {
   
   
   
-  def java(C: Class[_]) = JvmObjectType(C) 
+  def java(C: Class[_]) = Typeloader.liftJavaType(C)
   
   def list(t: Type) = ListType(t)
   def option(t: Type) = OptionType(t)
