@@ -16,6 +16,8 @@
 	
 <xi:include href="content/combinators.xml"/>
 <xi:include href="content/functions.xml"/>
+<xi:include href="content/class.xml"/>
+<xi:include href="content/time.xml"/>
 <xi:include href="content/patterns.xml"/>
 <xi:include href="content/syntax.xml"/>
 	

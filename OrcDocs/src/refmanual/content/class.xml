@@ -1,0 +1,92 @@
+<!-- Class -->
+   <chapter id="ref.class">
+      <title>Class</title>
+    <section>
+	  <section id="ref.class.syntax">
+		  <title>Syntax</title>
+		  <para><emphasis role="strong">EBNF</emphasis>:</para>
+		  <para>
+<programlisting language="orc"><![CDATA[
+D::=                             Declaration     
+  val P = E                      Value Declaration
+  | def X( P , ... , P ) = E       
+CP::=                            Class Declaration
+  def class C( P , ... , P ) = 
+    (D | CP)* 
+    def X( P , ... , P ) = E
+    E                            Goal Expression    
+]]></programlisting>
+		  </para>
+	  </section>
+	  <section id="ref.class.behavior">
+		  <title>Behavior</title>
+<para>
+It is required for the class to have at least one internal definition. 
+It can have zero or more value declaration. The role of the goal expression 
+is to do the necessary initialization for the class. It is analogous to 
+constructors in the object oriented languages. Note that the goal expression 
+merely initialize and construct the class. No value is published from goal 
+expression. In fact, any value published from the goal expression is suppressed 
+from publication. All the functions and classes defined inside a class are 
+accessible from outside the class and can be called (They are considered public 
+as in object oriented languages). However, no val declaration is accessible 
+from outside the class. (They are considered private as in object oriented 
+languages). The internal definitions of the class can be called by specifying 
+their name and list of parameters after the name of the class instance followed 
+by a dot. Here is the syntax for calls to the class:
+<para>
+<code>
+class_instance.X( V, ..., V )
+</code>
+</para>
+</para>
+	  </section>
+	  <section id="ref.class.examples">
+		  <title>Examples</title>
+		  <examplescript/>
+		  <example caption="A sequence number generator" id="ref.class.examples.one">
+<programlisting language="orc-demo"><![CDATA[
+def class gen_seq(init) =
+  -- the mutable integer defined with seed init
+  val seq_num = Ref(init)
+  -- the next function will increase the seq_num and return the new value
+  def next() =
+    seq_num := seq_num?+1 >> seq_num?
+  signal
+
+val g = gen_seq(1000)
+
+g.next() >y> println(y) >> g.next() >y> println(y) >> stop
+]]></programlisting>
+		  </example>
+
+		  <example caption="" id="ref.class.examples.two">
+<programlisting language="orc-demo"><![CDATA[
+]]></programlisting>
+		  </example>
+
+	  </section>
+	  <section id="ref.class.links">
+		  <title>Related Links</title>
+		  <informaltable frame='all'>
+			<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+			<colspec colname='c1'/>
+			<colspec colname='c2'/> 
+			<thead>
+			<row>
+			  <entry align="center">Related Reference Topics</entry>
+			  <entry align="center">Related Tutorial Sections</entry>
+			</row>
+			</thead>
+			<tbody>
+			<row>
+			  <entry>Combinators</entry>
+			  <entry><olink targetdoc="root" targetptr="special.dot">The . notation</olink></entry>
+			</row>
+			</tbody>
+			</tgroup>
+		  </informaltable>
+	  </section>
+   </section>
+   </chapter>
+   

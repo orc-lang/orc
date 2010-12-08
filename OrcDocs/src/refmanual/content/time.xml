@@ -1,0 +1,12 @@
+<chapter 
+	id="ref.time"  
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:xi="http://www.w3.org/2001/XInclude">
+	
+<title>Time</title>
+
+<para>Introduction paragraph about time.</para>
+
+<xi:include href="time_rtimer.xml"/>
+
+</chapter>
