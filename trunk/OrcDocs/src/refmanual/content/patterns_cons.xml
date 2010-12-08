@@ -1,5 +1,5 @@
 <!-- Cons Pattern -->
-	<chapter id="ref.patterns.cons">
+	<section id="ref.patterns.cons">
 		<title>Cons Pattern</title>
 		<section id="ref.patterns.cons.body">
 			<para>
@@ -55,4 +55,4 @@
 			</tgroup>
 		  </informaltable>
 	  </section>
-	</chapter>
+	</section>

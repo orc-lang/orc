@@ -1,5 +1,5 @@
 <!-- Lambda -->
-   <chapter id="ref.functions.lambda">
+   <section id="ref.functions.lambda">
       <title>Lambda</title>
 	  <section id="ref.functions.lambda.behavior">
 		  <title>Behavior</title>
@@ -48,4 +48,4 @@ onetwosum( lambda(x) = x * 3 )
 			</tgroup>
 		  </informaltable>
 	  </section>
-   </chapter>
+   </section>

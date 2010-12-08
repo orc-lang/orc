@@ -1,5 +1,5 @@
 <!-- Sequential Combinator -->
-   <chapter id="ref.combinators.sequential">
+   <section id="ref.combinators.sequential">
       <title>Sequential Combinator</title>
 	  <section id="ref.combinators.sequential.syntax">
 		  <title>Syntax</title>
@@ -122,4 +122,4 @@
 			</tgroup>
 		  </informaltable>
 	  </section>
-   </chapter>
+   </section>

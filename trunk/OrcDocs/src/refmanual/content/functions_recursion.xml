@@ -1,5 +1,5 @@
 <!-- Recursive Functions -->
-   <chapter id="ref.functions.recursion">
+   <section id="ref.functions.recursion">
       <title>Recursive Functions</title>
 	  <section id="ref.functions.recursion.behavior">
 		  <title>Behavior</title>
@@ -54,4 +54,4 @@ def odd(n) =
 			</tgroup>
 		  </informaltable>
 	  </section>
-   </chapter>
+   </section>

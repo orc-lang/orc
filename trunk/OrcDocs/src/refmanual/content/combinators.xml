@@ -1,0 +1,15 @@
+<chapter 
+	id="ref.combinators"  
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:xi="http://www.w3.org/2001/XInclude">
+	
+<title>Combinators</title>
+
+<para>Introduction paragraph about combinators.</para>
+
+<xi:include href="combinators_otherwise.xml"/>	
+<xi:include href="combinators_parallel.xml"/>
+<xi:include href="combinators_pruning.xml"/> 
+<xi:include href="combinators_sequential.xml"/> 
+
+</chapter>

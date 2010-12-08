@@ -1,0 +1,20 @@
+<chapter 
+	id="ref.patterns"  
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:xi="http://www.w3.org/2001/XInclude">
+	
+<title>Patterns</title>
+
+<para>Introduction paragraph about patterns.</para>
+
+<xi:include href="patterns_as.xml"/>
+<xi:include href="patterns_call.xml"/>
+<xi:include href="patterns_cons.xml"/>
+<xi:include href="patterns_constant.xml"/>
+<xi:include href="patterns_equality.xml"/>
+<xi:include href="patterns_list.xml"/>
+<xi:include href="patterns_tuple.xml"/>
+<xi:include href="patterns_variable.xml"/>
+<xi:include href="patterns_wildcard.xml"/>
+
+</chapter>

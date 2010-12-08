@@ -1,5 +1,5 @@
 <!-- Otherwise Combinator -->
-   <chapter id="ref.combinators.otherwise">
+   <section id="ref.combinators.otherwise">
       <title>Otherwise Combinator</title>
 	  <section id="ref.combinators.otherwise.syntax">
 		  <title>Syntax</title>
@@ -103,4 +103,4 @@ stop completes immediately.
 			</tgroup>
 		  </informaltable>
 	  </section>
-   </chapter>
+   </section>

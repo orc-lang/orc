@@ -1,5 +1,5 @@
 <!-- Tuple Pattern -->
-	<chapter id="ref.patterns.tuple">
+	<section id="ref.patterns.tuple">
 		<title>Tuple Pattern</title>
 		<section id="ref.patterns.tuple.body">
 			<para>
@@ -57,4 +57,4 @@
 			</tgroup>
 		  </informaltable>
 	  </section>
-	</chapter>
+	</section>

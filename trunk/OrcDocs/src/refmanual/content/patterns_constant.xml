@@ -1,5 +1,5 @@
 <!-- Constant Pattern -->
-	<chapter id="ref.patterns.constant">
+	<section id="ref.patterns.constant">
 		<title>Constant Pattern</title>
 		<section id="ref.patterns.constant.body">
 			<para>
@@ -62,4 +62,4 @@ def fib(n) = if (n < 0) then 0 else fib(n-1) + fib(n-2)
 			</tgroup>
 		  </informaltable>
 	  </section>
-	</chapter>
+	</section>

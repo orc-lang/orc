@@ -1,5 +1,5 @@
 <!-- Clausal Functions -->
-   <chapter id="ref.functions.clausal">
+   <section id="ref.functions.clausal">
       <title>Clausal Functions</title>
 	  <section id="ref.functions.clausal.behavior">
 		  <title>Behavior</title>
@@ -70,4 +70,4 @@ def odd(n) = even(if n > 0 then n-1 else n+1)
 			</tgroup>
 		  </informaltable>
 	  </section>
-   </chapter>
+   </section>

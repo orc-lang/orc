@@ -1,5 +1,5 @@
 <!-- Pruning Combinator -->
-   <chapter id="ref.combinators.pruning">
+   <section id="ref.combinators.pruning">
       <title>Pruning Combinator</title>
 	  <section id="ref.combinators.pruning.syntax">
 		  <title>Syntax</title>
@@ -106,5 +106,5 @@ x*x <(x,true)< ( (3,true) | (4,false) | (5,true) )
 			</tgroup>
 		  </informaltable>
 	  </section>
-   </chapter>
+   </section>
    

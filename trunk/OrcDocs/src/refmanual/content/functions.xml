@@ -1,0 +1,15 @@
+<chapter 
+	id="ref.functions"  
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:xi="http://www.w3.org/2001/XInclude">
+	
+<title>Functions</title>
+
+<para>Introduction paragraph about functions.</para>
+
+<xi:include href="functions_clausal.xml"/>
+<xi:include href="functions_recursion.xml"/>
+<xi:include href="functions_closures.xml"/>
+<xi:include href="functions_lambda.xml"/>
+
+</chapter>

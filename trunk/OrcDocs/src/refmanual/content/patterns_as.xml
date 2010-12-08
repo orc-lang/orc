@@ -1,5 +1,5 @@
 <!-- As Pattern -->
-	<chapter id="ref.patterns.as">
+	<section id="ref.patterns.as">
 		<title>As Pattern</title>
 		<section id="ref.patterns.as.body">
 			<para>
@@ -62,4 +62,4 @@ val ((ax,ay) as a, (bx,by) as b) = ((1,2),(3,4))
 			</tgroup>
 		  </informaltable>
 	  </section>
-	</chapter>
+	</section>
