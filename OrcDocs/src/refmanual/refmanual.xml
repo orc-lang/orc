@@ -10,16 +10,17 @@
 <book 
 	id="refmanual"  
 	xmlns:xlink="http://www.w3.org/1999/xlink"
-	xmlns:xi="http://www.w3.org/2001/XInclude"><?dbhtml filename="refmanual_toc.html" ?>
+	xmlns:xi="http://www.w3.org/2001/XInclude"><?dbhtml filename="ref.toc.html" ?>
 	
 <title>Orc Reference Manual v<xi:include href="../../VERSION" parse="text"/></title>
 	
 <xi:include href="content/combinators.xml"/>
-<xi:include href="content/functions.xml"/>
 <xi:include href="content/class.xml"/>
-<xi:include href="content/time.xml"/>
+<xi:include href="content/functions.xml"/>
 <xi:include href="content/patterns.xml"/>
 <xi:include href="content/syntax.xml"/>
+<xi:include href="content/time.xml"/>
+
 	
 </book>
 

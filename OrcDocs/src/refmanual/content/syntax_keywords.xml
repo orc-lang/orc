@@ -1,5 +1,5 @@
 <!-- Syntax: Keywords -->
-	<chapter id="ref.syntax.keywords">
+	<section id="ref.syntax.keywords">
 		<title>Keywords</title>
 		<section id="ref.syntax.keywords.body">
 			<para>
@@ -98,4 +98,4 @@
 			</tgroup>
 		  </informaltable>
 	  </section>
-	</chapter>
+	</section>
