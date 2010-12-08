@@ -24,3 +24,7 @@ f([constant(100), constant(50), constant(200), constant(40)])
 OUTPUT:
 50
 -}
+{-
+OUTPUT:
+40
+-}
