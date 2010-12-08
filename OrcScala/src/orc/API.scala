@@ -78,10 +78,6 @@ trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
   // Schedule function is overloaded for convenience
   def schedule(t: Token) { schedule(List(t)) }
   def schedule(t: Token, u: Token) { schedule(List(t, u)) }
-  
-  case class K(k: (Option[AnyRef] => Unit), ov: Option[AnyRef])
-  
-  def scheduleK(k : K) : Unit
 }
 
 /**
