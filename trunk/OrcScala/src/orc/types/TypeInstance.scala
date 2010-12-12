@@ -14,6 +14,8 @@
 //
 package orc.types
 
+import orc.error.compiletime.typing.UncallableTypeException
+
 /**
  * 
  * Type instances, type constructors, variances
@@ -84,6 +86,19 @@ case class TypeInstance(tycon: TypeConstructor, args: List[Type]) extends Callab
     TypeInstance(tycon, args map { _ subst sigma })
   }
   
-  def call(typeArgs: List[Type], argTypes: List[Type]): Type = tycon.instance(args).call(typeArgs, argTypes)  
+  def call(typeArgs: List[Type], argTypes: List[Type]): Type = {
+    tycon.instance(args) match {
+      case u: TypeInstance => {
+        /* Avoiding an infinte regress. */
+        throw new UncallableTypeException(u) 
+      }
+      case ct: CallableType => {
+        ct.call(typeArgs, argTypes)
+      }
+      case u => {
+        throw new UncallableTypeException(u)
+      }
+    }
+  }
   
 }

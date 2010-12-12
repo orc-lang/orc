@@ -17,8 +17,15 @@
 
 
   <!-- An Orc program is an 'oil' element containing exactly one expression -->
-  <xs:element name="oil" type="exp" />
-  
+  <xs:element name="oil">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="exp">
+          <xs:attribute name="created-by" type="xs:string"/> 
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
   
   <!--  Common attributes for all AST nodes -->
   <xs:attributeGroup name="ast">

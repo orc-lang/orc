@@ -98,13 +98,14 @@ object OrcXML {
   val oilNamespace = "http://orc.csres.utexas.edu/oil"
   val oilXSD = "http://orc.csres.utexas.edu/oil.xsd"
   
-     
+  def createdBy = "OrcScala" //TODO: Add a meaningful origin string, including version number 
          
   def astToXml(ast: Expression): Elem = {
     val xmlout = 
       <oil xmlns={oilNamespace}
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation={oilXSD}>
+           xsi:schemaLocation={oilXSD}
+           created-by={createdBy}>
         {toXML(ast)}
       </oil>
     trimElem(xmlout) 

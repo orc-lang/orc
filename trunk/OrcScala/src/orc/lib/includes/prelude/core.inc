@@ -37,10 +37,10 @@ type Signal = "orc.types.SignalType"
 @site let() :: Signal
 When applied to no arguments, return a signal.
 
-@site let[A](A) :: A
+@site let(A) :: A
 When applied to a single argument, return that argument (behaving as the identity function).
 
-@site let[A, ...](A, ...) :: (A, ...)
+@site let(A, ...) :: (A, ...)
 When applied to two or more arguments, return the arguments in a tuple.
 --}
 site let = "orc.lib.builtin.Let"
