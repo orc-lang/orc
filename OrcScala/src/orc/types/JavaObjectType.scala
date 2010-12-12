@@ -15,6 +15,7 @@
 package orc.types
 
 import orc.error.NotYetImplementedException
+import java.lang.{reflect => java}
 
 /**
  *
@@ -22,7 +23,7 @@ import orc.error.NotYetImplementedException
  *
  * @author dkitchin
  */
-case class JvmObjectType(C: Class[_]) extends SimpleCallableType {
+case class JavaObjectType(C: Class[_], javaContext: Map[java.TypeVariable[_], Type] = Nil.toMap) extends SimpleCallableType {
 
   /* JVM object types do not yet have an implementation of join or meet.
    * Such an implementation would require a time-intensive traversal of
@@ -39,7 +40,7 @@ case class JvmObjectType(C: Class[_]) extends SimpleCallableType {
   
   override def <(that: Type): Boolean = { 
     that match {
-      case JvmObjectType(otherC) => otherC isAssignableFrom C
+      case JavaObjectType(otherC, _) => otherC isAssignableFrom C
       case _ => super.<(that)
     }
   }

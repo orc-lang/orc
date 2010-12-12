@@ -54,5 +54,5 @@ class PolymorphicDatatype(val typeFormals: List[TypeVariable], val variants: Lis
     assert(typeFormals.size == ts.size)
     TypeInstance(this, ts)
   }
-  
+    
 }

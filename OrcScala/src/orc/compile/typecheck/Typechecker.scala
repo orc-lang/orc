@@ -2,7 +2,7 @@
 // TypeChecker.scala -- Scala object TypeChecker
 // Project OrcScala
 //
-// $Id: Typechecker.scala 2204 2010-11-30 04:23:40Z dkitchin $
+// $Id$
 //
 // Created by jthywiss on May 24, 2010.
 //

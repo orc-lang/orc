@@ -31,7 +31,7 @@ trait TypeConstructor extends TypeOperator {
    * By default, a constructed type is uncallable.
    * Subclasses will override this method to provide the calling type behavior of instances.
    */
-  def instance(ts: List[Type]): CallableType = {
+  def instance(ts: List[Type]): Type = {
     throw new UncallableTypeException(TypeInstance(this, ts))
   }
 }
