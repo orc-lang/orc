@@ -145,7 +145,7 @@ object OrcJavaCompatibility {
     throw new orc.error.runtime.MethodTypeMismatchException(memberName, targetClass);
   }
 
-  /** Given a formal param list and an actual arg list, determine if the method applies per JLS §15.12.2.2/3 rules */ 
+  /** Given a formal param type and an actual arg type, determine if the method applies per JLS §15.12.2.2/3 rules */ 
   private def isApplicable(formalParamType: Class[_], actualArgType: Class[_], allowConversion: Boolean): Boolean = {
     // allowConversion refers to method invocation conversion (JLS §5.3), which is one of:
     // 0. identity conversion

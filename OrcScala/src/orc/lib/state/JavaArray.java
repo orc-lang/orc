@@ -19,10 +19,13 @@ import java.util.HashMap;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.BadArrayElementTypeException;
 import orc.error.runtime.TokenException;
+import orc.lib.state.types.ArrayType;
+import orc.types.Type;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
+import orc.values.sites.TypedSite;
 
-public class JavaArray extends EvalSite {
+public class JavaArray extends EvalSite implements TypedSite {
 	private static HashMap<String, Class<?>> types = new HashMap<String, Class<?>>();
 	static {
 		types.put("double", Double.TYPE);
@@ -50,4 +53,8 @@ public class JavaArray extends EvalSite {
 		}
 	}
 
+	@Override
+    public Type orcType() {
+      return ArrayType.getBuilder();
+    }
 }

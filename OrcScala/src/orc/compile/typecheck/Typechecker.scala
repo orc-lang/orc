@@ -306,10 +306,7 @@ object Typechecker {
               funReturnType subst (typeArgs, funTypeFormals)
             }
             case ct: CallableType => { 
-              /* Type variables cannot be exposed to external types. */
-              val safeTypeArgs = typeArgs map { _.clean }
-              val safeArgTypes = argTypes map { _.clean }
-              ct.call(safeTypeArgs, safeArgTypes) 
+              ct.call(typeArgs, argTypes) 
             }
             case _ => throw new UncallableTypeException(targetType)
           }
