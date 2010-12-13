@@ -14,6 +14,9 @@
 //
 package orc.types
 
+import orc.error.compiletime.typing.ArgumentArityException
+import orc.error.compiletime.typing.TypeArgumentArityException
+
 /**
  * 
  * The semantic type of functions.
@@ -94,6 +97,12 @@ case class FunctionType(val typeFormals: List[TypeVariable], val argTypes: List[
    * accuracy in some cases. 
    */
   def call(callTypeArgs: List[Type], callArgTypes: List[Type]): Type = {
+    if (typeFormals.size != callTypeArgs.size) {
+      throw new TypeArgumentArityException(typeFormals.size, callTypeArgs.size)
+    }
+    if (argTypes.size != callArgTypes.size) {
+      throw new ArgumentArityException(argTypes.size, callArgTypes.size)
+    }
     val instantiatedArgTypes = argTypes map { _ subst (callTypeArgs, typeFormals) }
     val instantiatedReturnType = returnType subst (callTypeArgs, typeFormals)
     for ( (t, u) <- (callArgTypes zip instantiatedArgTypes) ) {

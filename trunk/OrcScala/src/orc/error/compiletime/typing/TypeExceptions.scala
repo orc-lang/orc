@@ -97,3 +97,7 @@ class NoSuchMemberException(t: Type, missingMember: String) extends
   
 class MalformedDatatypeCallException() extends
   TypeException("Expected an instance of the datatype as a type argument")  
+
+
+class NoMatchingConstructorException() extends
+  TypeException("No matching constructor found for the types of these arguments")

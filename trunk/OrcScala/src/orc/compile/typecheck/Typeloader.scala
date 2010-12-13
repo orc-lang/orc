@@ -26,6 +26,7 @@ import orc.util.OptionMapExtension._
 import java.lang.{reflect => java}
 
 import orc.lib.state.types.ArrayType
+import orc.lib.state.types.RefType
 
 
 /** 
@@ -254,6 +255,28 @@ object Typeloader extends SiteClassLoading {
       case _ => throw new NotYetImplementedException()
     }
     
+  }
+  
+  
+  
+  def liftJavaField(jf: java.Field, jctx: Map[java.TypeVariable[_], Type]): Type = {
+    val javaT = jf.getGenericType()
+    val T = liftJavaType(javaT, jctx)
+    RefType(T)
+  }
+  
+  
+  def liftJavaMethod(jm: java.Method, jctx: Map[java.TypeVariable[_], Type]): CallableType = {
+    val javaTypeFormals = jm.getTypeParameters().toList
+    val javaArgTypes = jm.getGenericParameterTypes().toList
+    val javaReturnType = jm.getGenericReturnType()
+    
+    val newTypeFormals = javaTypeFormals map { jx => new TypeVariable(Some(jx.getName())) }
+    val newJavaContext = jctx ++ (javaTypeFormals zip newTypeFormals)
+    val newArgTypes = javaArgTypes map { liftJavaType(_, newJavaContext) } 
+    val newReturnType = liftJavaType(javaReturnType, newJavaContext)
+    
+    FunctionType(newTypeFormals, newArgTypes, newReturnType)
   }
   
   
