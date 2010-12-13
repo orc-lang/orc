@@ -14,7 +14,7 @@
 //
 package orc.types
 
-import java.lang.{reflect => java}
+import java.lang.{reflect => jvm}
 import orc.compile.typecheck.Typeloader._
 import orc.error.compiletime.typing.NoSuchMemberException
 
@@ -28,26 +28,26 @@ trait JavaType {
 
   val cl: Class[_]
   
-  def findField(name: String, isStatic: Boolean): Option[java.Field] = {
+  def findField(name: String, isStatic: Boolean): Option[jvm.Field] = {
     cl.getFields().toList find 
       { f => 
           f.getName().equals(name) &&
-          java.Modifier.isPublic(f.getModifiers()) &&
-          (java.Modifier.isStatic(f.getModifiers()) == isStatic)
+          jvm.Modifier.isPublic(f.getModifiers()) &&
+          (jvm.Modifier.isStatic(f.getModifiers()) == isStatic)
       }
   }
   
-  def findMethods(name: String, isStatic: Boolean): List[java.Method] = {
+  def findMethods(name: String, isStatic: Boolean): List[jvm.Method] = {
     cl.getMethods().toList filter 
       { m =>
           m.getName().equals(name) &&
-          java.Modifier.isPublic(m.getModifiers()) &&
-          (java.Modifier.isStatic(m.getModifiers()) == isStatic)
+          jvm.Modifier.isPublic(m.getModifiers()) &&
+          (jvm.Modifier.isStatic(m.getModifiers()) == isStatic) &&
           !m.isVarArgs()
       }
   }
   
-  def typeOfMember(name: String, isStatic: Boolean, javaContext: Map[java.TypeVariable[_], Type]): Type = {
+  def typeOfMember(name: String, isStatic: Boolean, javaContext: Map[jvm.TypeVariable[_], Type]): Type = {
     findMethods(name, isStatic) match {
     // No matching methods; maybe it's a field?
       case Nil => {

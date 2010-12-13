@@ -16,7 +16,6 @@
 package orc.types
 
 object SignalType extends Type { override def toString = "Signal" }
-object BooleanType extends Type { override def toString = "Boolean" }
 object NumberType extends Type { override def toString = "Number" }
 
 object IntegerType extends Type {
@@ -34,7 +33,7 @@ object IntegerType extends Type {
 // TODO: Allow join 
 case class IntegerConstantType(i: scala.math.BigInt) extends Type {
 
-  override def toString = "Integer(=" + i.toString + ")"
+  override def toString = IntegerType.toString
   
   override def join(that: Type): Type = {
     that match {
@@ -80,3 +79,4 @@ case class FieldType(f: String) extends Type {
 
 
 object StringType extends JavaObjectType(classOf[java.lang.String])
+object BooleanType extends JavaObjectType(classOf[java.lang.Boolean])

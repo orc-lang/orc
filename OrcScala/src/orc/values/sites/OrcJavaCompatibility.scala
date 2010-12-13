@@ -181,11 +181,11 @@ object OrcJavaCompatibility {
   private val doubleRefClass = classOf[java.lang.Double]
   
   // Orc's numeric types
-  private val orcIntegralClass = classOf[BigInt]
-  private val orcFloatingPointClass = classOf[BigDecimal]
+  val orcIntegralClass = classOf[BigInt]
+  val orcFloatingPointClass = classOf[BigDecimal]
 
   /** Java boxing conversion per JLS §5.1.7 */
-  private def box(primType: Class[_]): Class[_] = {
+  def box(primType: Class[_]): Class[_] = {
     primType match {
       case java.lang.Boolean.TYPE => booleanRefClass
       case java.lang.Byte.TYPE => byteRefClass
@@ -200,7 +200,7 @@ object OrcJavaCompatibility {
   }
 
   /** Java unboxing conversion per JLS §5.1.8 */
-  private def unbox(refType: Class[_]): Class[_] = {
+  def unbox(refType: Class[_]): Class[_] = {
     refType match {
       case `booleanRefClass` => java.lang.Boolean.TYPE
       case `byteRefClass` => java.lang.Byte.TYPE
@@ -215,7 +215,7 @@ object OrcJavaCompatibility {
   }
 
   /** "true" for an identity conversion (JLS §5.1.1) or a widening primitive conversion (JLS §5.1.2) */
-  private def isPrimWidenable(fromPrimType: Class[_], toPrimType: Class[_]): Boolean = {
+  def isPrimWidenable(fromPrimType: Class[_], toPrimType: Class[_]): Boolean = {
     (fromPrimType == toPrimType) || (fromPrimType match {
       case java.lang.Byte.TYPE => toPrimType == java.lang.Short.TYPE || toPrimType == java.lang.Integer.TYPE || toPrimType == java.lang.Long.TYPE || toPrimType == java.lang.Float.TYPE || toPrimType == java.lang.Double.TYPE
       case java.lang.Short.TYPE => toPrimType == java.lang.Integer.TYPE || toPrimType == java.lang.Long.TYPE || toPrimType == java.lang.Float.TYPE || toPrimType == java.lang.Double.TYPE
@@ -228,7 +228,7 @@ object OrcJavaCompatibility {
   }
 
   /** "true" if an Orc value conversion applies */
-  private def isOrcJavaNumConvertable(fromType: Class[_], toType: Class[_]): Boolean = {
+  def isOrcJavaNumConvertable(fromType: Class[_], toType: Class[_]): Boolean = {
     toType match {
       case `byteRefClass` => orcIntegralClass.isAssignableFrom(fromType)
       case `shortRefClass` => orcIntegralClass.isAssignableFrom(fromType)
