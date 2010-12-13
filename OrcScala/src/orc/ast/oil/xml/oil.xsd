@@ -11,8 +11,8 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
-	xmlns="http://orc.csres.utexas.edu/oil"
-	targetNamespace="http://orc.csres.utexas.edu/oil"
+	xmlns="http://orc.csres.utexas.edu/oil.xsd"
+	targetNamespace="http://orc.csres.utexas.edu/oil.xsd"
 	elementFormDefault="qualified">
 
 

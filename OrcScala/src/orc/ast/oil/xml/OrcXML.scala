@@ -95,10 +95,10 @@ object OrcXML {
   implicit def addArrow(xml: Node): NodeWithArrow = new NodeWithArrow(xml)
   implicit def addArrow(ast: orc.ast.AST): AstWithArrow = new AstWithArrow(ast)
   
-  val oilNamespace = "http://orc.csres.utexas.edu/oil"
+  val oilNamespace = "http://orc.csres.utexas.edu/oil.xsd"
   val oilXSD = "http://orc.csres.utexas.edu/oil.xsd"
   
-  def createdBy = "OrcScala" //TODO: Add a meaningful origin string, including version number 
+  def createdBy = orc.Main.orcImplName + " v" + orc.Main.orcVersion 
          
   def astToXml(ast: Expression): Elem = {
     val xmlout = 
