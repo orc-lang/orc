@@ -1,7 +1,7 @@
 <!-- Class -->
    <chapter id="ref.class">
       <title>Class</title>
-	  <section><title>Class</title>
+	  <section id="ref.class.body"><title>Class</title>
 	  <section id="ref.class.syntax">
 		  <title>Syntax</title>
 		  <para><emphasis role="strong">EBNF</emphasis>:</para>
