@@ -21,9 +21,8 @@ import orc.compile.typecheck.Typechecker._
 import orc.types.Variance._
 import orc.error.compiletime.typing._
 import orc.error.compiletime.UnboundTypeVariableException
-import orc.error.NotYetImplementedException
 import orc.util.OptionMapExtension._
-import java.lang.{reflect => java}
+import java.lang.{reflect => jvm}
 
 import orc.lib.state.types.ArrayType
 import orc.lib.state.types.RefType
@@ -48,7 +47,7 @@ object Typeloader extends SiteClassLoading {
           case Some(t) => t
           case None => {
             (typeOperatorContext get u) match {
-              case Some(_) => throw new FirstOrderTypeExpectedException()
+              case Some(t) => throw new FirstOrderTypeExpectedException(t.toString)
               case None => throw new UnboundTypeException(u.toString) // should never occur
             }
           }
@@ -87,7 +86,7 @@ object Typeloader extends SiteClassLoading {
       case syntactic.UnboundTypevar(name) => {
         throw new UnboundTypeException(name)
       }
-      case _ => throw new FirstOrderTypeExpectedException()
+      case t => throw new FirstOrderTypeExpectedException(t.toString)
     }
   }
   
@@ -101,13 +100,13 @@ object Typeloader extends SiteClassLoading {
           case Some(op) => op
           case None => {
             (typeContext get u) match {
-              case Some(_) => throw new SecondOrderTypeExpectedException()
+              case Some(tt) => throw new SecondOrderTypeExpectedException(tt.toString)
               case None => throw new UnboundTypeException(u.toString) // should never occur
             }
           }
         }
       }
-      case t@ syntactic.VariantType(typeformals, variants) if (!typeformals.isEmpty) => {
+      case tt@ syntactic.VariantType(typeformals, variants) if (!typeformals.isEmpty) => {
         val newTypeFormals = typeformals map { u => new TypeVariable(u) }
         val typeBindings = typeformals zip newTypeFormals
         val newTypeContext = typeContext ++ typeBindings
@@ -117,7 +116,7 @@ object Typeloader extends SiteClassLoading {
             (name, newVariant)
           }
         val d = new PolymorphicDatatype(newTypeFormals, newVariants)
-        d.optionalDatatypeName = t.optionalVariableName
+        d.optionalDatatypeName = tt.optionalVariableName
         new TypeOperator { def operate(ts: List[Type]) = TypeInstance(d, ts) }
       }
       case syntactic.TypeAbstraction(typeformals, t) => {
@@ -137,8 +136,8 @@ object Typeloader extends SiteClassLoading {
       case syntactic.UnboundTypevar(name) => {
         throw new UnboundTypeException(name)
       }
-      case _ => {
-        throw new SecondOrderTypeExpectedException()
+      case tt => {
+        throw new SecondOrderTypeExpectedException(tt.toString)
       }
     }
   }
@@ -163,57 +162,63 @@ object Typeloader extends SiteClassLoading {
    * Lift a Java object type (represented by a Java class with no type parameters)
    * to an Orc type.
    */
-  def liftJavaType(jt: java.Type, jctx: Map[java.TypeVariable[_], Type] = Nil.toMap): Type = {
+  def liftJavaType(jt: jvm.Type, jctx: Map[jvm.TypeVariable[_], Type] = Nil.toMap): Type = {
     jt match {
       // C
       case cl: Class[_] => {
-        if (cl.getTypeParameters().length > 0) {
-          throw new FirstOrderTypeExpectedException()
+        // Make sure the parameters have been set in the context;
+        // otherwise we are probably trying to lift a second-order type
+        // by mistake.
+        for (x <- cl.getTypeParameters()) {
+          if (!(jctx contains x)) {
+            throw new FirstOrderTypeExpectedException(cl.getCanonicalName())
+          }
+        }
+        // Check if this is actually a primitive array class
+        if (cl.isArray()) {
+          val T = liftJavaType(cl.getComponentType(), jctx)
+          ArrayType(T)
+        }
+        else if (java.lang.Boolean.TYPE isAssignableFrom cl) {
+          BooleanType
         }
         else {
-          // Check if this is actually a primitive array class
-          if (cl.isArray()) {
-            val T = liftJavaType(cl.getComponentType(), jctx)
-            ArrayType(T)
-          }
-          else {
-            JavaObjectType(cl)
-          }
-          /*TODO: Add explicit conversions from Java primitive types to Orc primitive types,
-           *      or add appropriate subtyping in JavaObjectType and in the primitive types.
-           */
+          JavaObjectType(cl)
         }
+        /*TODO: Add explicit conversions from Java primitive types to Orc primitive types,
+         *      or add appropriate subtyping in JavaObjectType and in the primitive types.
+         */
       }
       // X
-      case x: java.TypeVariable[_] => {
+      case x: jvm.TypeVariable[_] => {
         x.getBounds().toList match {
           case List(b: Class[_]) if b.isAssignableFrom(classOf[Object]) => {
             jctx(x)
           }
           case _ => {
-            throw new NotYetImplementedException("Can't handle nontrivial type bounds (... extends T) on Java types; bounded polymorphism is not supported in Orc.")
+            throw new NoJavaTypeBoundsException()
           }
         }
       }
       // ?
-      case w: java.WildcardType => {
+      case w: jvm.WildcardType => {
         w.getUpperBounds().toList match {
           case List(upperBound: Class[_]) if upperBound.isAssignableFrom(classOf[Object]) => {
             Top
           }
           case _ => {
-            throw new NotYetImplementedException("Can't handle nontrivial type bounds (... extends T) on Java types; bounded polymorphism is not supported in Orc.")
+            throw new NoJavaTypeBoundsException()
           }
         }
       }
       // C<D>
-      case pt: java.ParameterizedType => {
+      case pt: jvm.ParameterizedType => {
         val typeActuals = pt.getActualTypeArguments.toList map { liftJavaType(_, jctx) }
         val typeOp = liftJavaTypeOperator(pt.getRawType())
         typeOp.operate(typeActuals)
       }
       // C[]
-      case gat: java.GenericArrayType => {
+      case gat: jvm.GenericArrayType => {
         val T = liftJavaType(gat.getGenericComponentType(), jctx)
         ArrayType(T)
       }
@@ -229,13 +234,13 @@ object Typeloader extends SiteClassLoading {
    * Lift a Java generic type (represented by a Java class with type parameters)
    * to an Orc type operator.
    */
-  def liftJavaTypeOperator(jt: java.Type): TypeOperator = {
+  def liftJavaTypeOperator(jt: jvm.Type): TypeOperator = {
     
     jt match {
       case cl: Class[_] => {
         val formals = cl.getTypeParameters().toList
         if (formals.isEmpty) {
-          throw new SecondOrderTypeExpectedException()
+          throw new SecondOrderTypeExpectedException(cl.getCanonicalName())
         }
         else {
           val name = cl.getName()
@@ -252,21 +257,21 @@ object Typeloader extends SiteClassLoading {
       // At present, due to the type kinding assumptions of the Orc typechecker,
       // (namely, that type arguments are always first order), we can only allow
       // raw generic classes as type operators.
-      case _ => throw new NotYetImplementedException()
+      case _ => throw new SecondOrderTypeExpectedException(jt.toString())
     }
     
   }
   
   
   
-  def liftJavaField(jf: java.Field, jctx: Map[java.TypeVariable[_], Type]): Type = {
+  def liftJavaField(jf: jvm.Field, jctx: Map[jvm.TypeVariable[_], Type]): Type = {
     val javaT = jf.getGenericType()
     val T = liftJavaType(javaT, jctx)
     RefType(T)
   }
   
   
-  def liftJavaMethod(jm: java.Method, jctx: Map[java.TypeVariable[_], Type]): CallableType = {
+  def liftJavaMethod(jm: jvm.Method, jctx: Map[jvm.TypeVariable[_], Type]): CallableType = {
     val javaTypeFormals = jm.getTypeParameters().toList
     val javaArgTypes = jm.getGenericParameterTypes().toList
     val javaReturnType = jm.getGenericReturnType()

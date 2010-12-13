@@ -66,11 +66,11 @@ class UnspecifiedArgTypesException() extends
 class UnspecifiedReturnTypeException() extends
   TypeException("Could not infer missing return type; please add a return type annotation") with SeverityError
 
-class FirstOrderTypeExpectedException() extends
-  TypeException("Kinding error: expected a first-order type, found a type operator instead.") with SeverityError
+class FirstOrderTypeExpectedException(val nonFirstOrderType: String) extends
+  TypeException("Kinding error: expected a first-order type, found " + nonFirstOrderType + " instead.") with SeverityError
 
-class SecondOrderTypeExpectedException() extends
-  TypeException("Kinding error: expected a type operator, found a first-order type instead.") with SeverityError
+class SecondOrderTypeExpectedException(val nonSecondOrderType: String) extends
+  TypeException("Kinding error: expected a type operator, found " + nonSecondOrderType + " instead.") with SeverityError
   
 class NoMinimalTypeException() extends
   TypeException("Inference failed; could not find a minimal type. Please add explicit type information.") with SeverityError
@@ -78,11 +78,16 @@ class NoMinimalTypeException() extends
 class OverconstrainedTypeVariableException() extends
   TypeException("A type argument is overconstrained; inference failed. Please add explicit type arguments. There may also be an underlying type error.") with SeverityError
 
+class NoBoundedPolymorphismException() extends
+  TypeException("Bounded polymorphism is not yet supported by the Orc typechecker.")
+
+class NoJavaTypeBoundsException() extends
+  TypeException("Can't handle nontrivial type bounds (... extends T) on Java types; bounded polymorphism is not yet supported by the Orc typechecker.")
   
-case class TypeResolutionException(val typeName: String, cause: Throwable) 
+class TypeResolutionException(val typeName: String, cause: Throwable) 
   extends CompilationException("Problem loading type "+typeName + ": " + cause.getMessage(), cause) with SeverityError
   
-case class TypeOperatorResolutionException(val typeOperatorName: String, cause: Throwable) 
+class TypeOperatorResolutionException(val typeOperatorName: String, cause: Throwable) 
   extends CompilationException("Problem loading type operator "+typeOperatorName, cause) with SeverityError
   
 

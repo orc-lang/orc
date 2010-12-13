@@ -388,7 +388,6 @@ object Typechecker {
   
   
   
-  
   /**
    * Find constraints on the variables xs such that S <: T
    * 
@@ -464,12 +463,8 @@ object Typechecker {
         meetAll(C)
       }
       case (s,t) => {
-        if (s < t) {
-          NoConstraints
-        }
-        else {
-          throw new SubtypeFailureException(s, t)
-        }
+        s assertSubtype t
+        NoConstraints
       }
     
     }

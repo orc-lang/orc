@@ -17,7 +17,7 @@ package orc.types
 import orc.error.compiletime.typing.TypeArgumentArityException
 import orc.error.compiletime.typing.UncallableTypeException
 import orc.error.compiletime.typing.NoSuchMemberException
-import java.lang.{reflect => java}
+import java.lang.{reflect => jvm}
 import orc.compile.typecheck.Typeloader._
 
 /**
@@ -26,9 +26,9 @@ import orc.compile.typecheck.Typeloader._
  *
  * @author dkitchin
  */
-case class JavaObjectType(val cl: Class[_], javaContext: Map[java.TypeVariable[_], Type] = Nil.toMap) extends CallableType with JavaType {
+case class JavaObjectType(val cl: Class[_], javaContext: Map[jvm.TypeVariable[_], Type] = Nil.toMap) extends CallableType with JavaType {
 
-  override def toString = cl.getName()
+  override def toString = cl.getCanonicalName()
   
   /* JVM object types do not yet have an implementation of join or meet.
    * Such an implementation would require a time-intensive traversal of

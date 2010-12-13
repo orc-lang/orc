@@ -348,13 +348,11 @@ type Array = "orc.lib.state.types.ArrayType"
 
 --TODO: define former array methods: get set slice fill length
 
-{- TYPECHECKER ISSUE -}
-{-
-def slice[A](Array[A], Integer, Integer) :: Signal
+def slice[A](Array[A], Integer, Integer) :: Top
 def slice(xs, from, until) =
   class ScalaPredef = "scala.Predef"
-  ScalaPredef.refArrayOps(xs).slice(from, until)
--}
+  ScalaPredef.refArrayOps[A](xs).slice(from, until)
+
 
 def fill[A](Array[Top], A) :: Signal
 def fill(a, x) =

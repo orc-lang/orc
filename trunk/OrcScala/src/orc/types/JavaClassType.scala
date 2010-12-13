@@ -17,7 +17,7 @@ package orc.types
 import orc.error.NotYetImplementedException
 import orc.error.compiletime.typing.TypeArgumentArityException
 import orc.error.compiletime.typing.NoMatchingConstructorException
-import java.lang.{reflect => java}
+import java.lang.{reflect => jvm}
 import orc.compile.typecheck.Typeloader._
 
 /**
@@ -26,7 +26,7 @@ import orc.compile.typecheck.Typeloader._
  *
  * @author dkitchin
  */
-case class JavaClassType(val cl: Class[_], javaContext: Map[java.TypeVariable[_], Type] = Nil.toMap) extends CallableType with JavaType {
+case class JavaClassType(val cl: Class[_], javaContext: Map[jvm.TypeVariable[_], Type] = Nil.toMap) extends CallableType with JavaType {
 
   override def toString = "(class " + cl.getName() + ")"
   
@@ -67,13 +67,13 @@ case class JavaClassType(val cl: Class[_], javaContext: Map[java.TypeVariable[_]
         }
         else {
           val newJavaContext = javaContext ++ (formals zip typeArgs) 
-          def valid(ctor: java.Constructor[_]): Boolean = {
+          def valid(ctor: jvm.Constructor[_]): Boolean = {
             val ctorFormals = ctor.getGenericParameterTypes()
-            java.Modifier.isPublic(ctor.getModifiers()) && 
+            jvm.Modifier.isPublic(ctor.getModifiers()) && 
             ctorFormals.size == argTypes.size && 
             {
               val orcFormals = ctorFormals map { liftJavaType(_, newJavaContext) }
-              (argTypes corresponds orcFormals) { _ < _ } //TODO: Allow coercions
+              (argTypes corresponds orcFormals) { _ < _ }
             }
           }
           if (cl.getConstructors() exists valid) {
