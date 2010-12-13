@@ -50,6 +50,14 @@ span.hl-literal, span.hl-number, span.hl-string {
 	font-weight: bold;
 }
 
+.navheader {
+	position: fixed;
+	background: #FFFFFF;
+	width: 100%;
+	top: 0px;
+	left: 0px;
+}
+
 /* Fix for Mozilla ignoring the <col valign="top"> */
 div.variablelist > table > tbody > tr > td:first-child {
 	vertical-align: top;

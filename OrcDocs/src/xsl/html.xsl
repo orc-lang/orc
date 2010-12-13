@@ -32,8 +32,8 @@ Orc examples must use the "orc" CSS class.
 	var ie4 = false; if(document.all) { ie4 = true; }
 	function getObject(id) { if (ie4) { return document.all[id]; } else { return document.getElementById(id); } }
 	function toggle(link, divId) { var lText = link.innerHTML; var d = getObject(divId);
-	  if (lText == '+') { link.innerHTML = '&#8722;'; d.style.display = 'block'; }
-	  else { link.innerHTML = '+'; d.style.display = 'none'; } }
+	  if (lText == '+') { link.innerHTML = '&#8722;'; d.style.display = 'block';}
+	  else { link.innerHTML = '+'; d.style.display = 'none';} }
 	</script>
 </xsl:template>
 	
@@ -42,37 +42,35 @@ Orc examples must use the "orc" CSS class.
 	<xsl:variable name="ex_id" select="./@id"/>
 	<xsl:variable name="ex_link" select="concat($ex_id,'_link')"/>
 	<xsl:variable name="ex_content" select="concat($ex_id,'_content')"/>
-	<!-- <xsl:variable name="ex_toggle" select="toggle(this, '$ex_content')"/> -->
-	<!--
-	<para>ex_id = <xsl:value-of select="$ex_id"/>  </para>
-	<para>ex_link = <xsl:value-of select="$ex_link"/>  </para>
-	<para>ex_content = <xsl:value-of select="$ex_content"/>  </para>
-		-->
-	<table border="0" width="60%" align="left"><tr><td>
-	<div style="border: 1px solid #000000; padding: 0px; background: #FFFFFF; ">
-		<table border="0" cellspacing="0" cellpadding="2" width="100%" style="background: #66CCFF; color: #000000; ">
-			<tr><td><xsl:value-of select="./@caption"></xsl:value-of></td><td align="right">
-			  [<a title="show/hide" href="javascript: void(0);" style="text-decoration: none; color: #000000; ">
-				<xsl:attribute name="id"><xsl:value-of select="$ex_link" /></xsl:attribute>
-				<xsl:attribute name="onclick">toggle(this, '<xsl:value-of select="$ex_content"/>')</xsl:attribute>&#8722;</a>]
-			</td></tr>
-		</table>
-		<div style="padding: 3px;">
-			<xsl:attribute name="id">
-				<xsl:value-of select="$ex_content"/>
-			</xsl:attribute>
-			<xsl:apply-templates/>
-		</div>
-	</div>
-	<!-- Start the box collapsed -->
-	<script language="javascript">toggle(getObject('<xsl:value-of select="$ex_link"/>'), '<xsl:value-of select="$ex_content"/>');</script>
+	<table border="0" width="90%" align="center">
+		<tr><td>
+			<div style="border: 1px solid #000000; padding: 0px; background: #FFFFFF;">
+				<table border="0" cellspacing="0" cellpadding="2" width="100%" style="background: #66CCFF; color: #000000; ">
+					<tr>
+						<td align="left" width="30px">
+							[<a title="show/hide" href="javascript: void(0);" style="text-decoration: none; color: #000000; ">
+							<xsl:attribute name="id"><xsl:value-of select="$ex_link" /></xsl:attribute>
+							<xsl:attribute name="onclick">toggle(this, '<xsl:value-of select="$ex_content"/>')</xsl:attribute>&#8722;</a>]
+						</td>
+						<td align="left">
+							<xsl:value-of select="./@caption"></xsl:value-of>
+						</td>
+					</tr>
+				</table>
+				<div style="padding: 3px;">
+					<xsl:attribute name="id">
+						<xsl:value-of select="$ex_content"/>
+					</xsl:attribute>
+				<xsl:apply-templates/>
+				</div>
+			</div>	
+	</td></tr></table>	
 	<noscript>
 		<para>"WARNING:  This example requires javascript to be rendered correctly."</para>
 		<xsl:apply-templates/>  <!-- Attempt to show the text, even if javascript not present -->
 	</noscript>
-	</td></tr></table>
-	<br/> <!-- line break in output file -->
-	<br/> <!-- line break in output file -->
+	<!-- Start the box collapsed -->
+	<script language="javascript">toggle(getObject('<xsl:value-of select="$ex_link"/>'), '<xsl:value-of select="$ex_content"/>');</script>
 </xsl:template>
 
 <!-- Include stylsheets, including orc.css if desired -->
