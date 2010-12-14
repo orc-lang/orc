@@ -16,6 +16,7 @@
 package edu.utexas.cs.orc.orceclipse;
 
 import orc.ast.AST;
+import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.CompileLogger;
 
 import org.eclipse.core.resources.IMarker;
@@ -55,6 +56,7 @@ public class ImpToOrcMessageAdapter implements CompileLogger {
 	/* (non-Javadoc)
 	 * @see orc.error.compiletime.CompileLogger#beginProcessing(java.lang.String)
 	 */
+	@Override
 	public void beginProcessing(final String filename) {
 		impMessageHandler.clearMessages();
 		maxSeverity = Severity.UNKNOWN;
@@ -72,8 +74,9 @@ public class ImpToOrcMessageAdapter implements CompileLogger {
 		maxSeverity = severity.ordinal() > maxSeverity.ordinal() ? severity : maxSeverity;
 
 		final int eclipseSeverity = eclipseSeverityFromOrcSeverity(severity);
+		final String markerText = message + (exception instanceof CompilationException ? " [[OrcWiki:" + exception.getClass().getSimpleName() + "]]" : "");
 
-		// AnnotationCreator breaks for our UNKNOWN offset values
+		// IMP's AnnotationCreator breaks for our UNKNOWN offset values
 		int safeStartOffset = 0;
 		int safeEndOffset = -1;
 		if (locationNN instanceof OffsetPosition && ((OffsetPosition) locationNN).offset() >= 0) {
@@ -83,19 +86,20 @@ public class ImpToOrcMessageAdapter implements CompileLogger {
 		if (impMessageHandler instanceof MarkerCreatorWithBatching) {
 			final int safeLineNumber = locationNN.line() >= 1 ? locationNN.line() : -1;
 			try {
-				((MarkerCreatorWithBatching) impMessageHandler).addMarker(eclipseSeverity, message, safeLineNumber, safeStartOffset, safeEndOffset);
+				((MarkerCreatorWithBatching) impMessageHandler).addMarker(eclipseSeverity, markerText, safeLineNumber, safeStartOffset, safeEndOffset);
 			} catch (final LimitExceededException e) {
-				// Shouldn't happen, since we don't use problem limits
-				Activator.log(e);
+				// IMP hasn't implemented problem limits yet, so it's not clear how this should be handled
+				// We'll ignore for now
 			}
 		} else {
-			impMessageHandler.handleSimpleMessage(message, safeStartOffset, safeEndOffset, locationNN.column(), locationNN.column(), locationNN.line(), locationNN.line());
+			impMessageHandler.handleSimpleMessage(markerText, safeStartOffset, safeEndOffset, locationNN.column(), locationNN.column(), locationNN.line(), locationNN.line());
 		}
 	}
 
 	/* (non-Javadoc)
 	 * @see orc.error.compiletime.CompileLogger#recordMessage(orc.error.compiletime.CompileLogger.Severity, int, java.lang.String, scala.util.parsing.input.Position, java.lang.Throwable)
 	 */
+	@Override
 	public void recordMessage(final Severity severity, final int code, final String message, final Position position, final Throwable exception) {
 		recordMessage(severity, code, message, position, null, exception);
 	}
@@ -110,6 +114,7 @@ public class ImpToOrcMessageAdapter implements CompileLogger {
 	/* (non-Javadoc)
 	 * @see orc.error.compiletime.CompileLogger#recordMessage(orc.error.compiletime.CompileLogger.Severity, int, java.lang.String)
 	 */
+	@Override
 	public void recordMessage(final Severity severity, final int code, final String message) {
 		recordMessage(severity, code, message, null, null, null);
 	}
@@ -139,6 +144,7 @@ public class ImpToOrcMessageAdapter implements CompileLogger {
 	/* (non-Javadoc)
 	 * @see orc.error.compiletime.CompileLogger#getMaxSeverity()
 	 */
+	@Override
 	public Severity getMaxSeverity() {
 		return maxSeverity;
 	}
@@ -146,6 +152,7 @@ public class ImpToOrcMessageAdapter implements CompileLogger {
 	/* (non-Javadoc)
 	 * @see orc.error.compiletime.CompileLogger#endProcessing(java.lang.String)
 	 */
+	@Override
 	public void endProcessing(final String filename) {
 		if (impMessageHandler == null) {
 			return;
