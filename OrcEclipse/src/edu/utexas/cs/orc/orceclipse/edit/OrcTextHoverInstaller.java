@@ -81,23 +81,23 @@ public class OrcTextHoverInstaller implements ILanguageService, IEditorService {
 		if (editor.fLanguage == LanguageRegistry.findLanguage(Activator.getInstance().getLanguageID())) {
 			try {
 				// This gets ugly....
-				final Field fServiceControllerManagerField = editor.getClass().getDeclaredField("fServiceControllerManager");
+				final Field fServiceControllerManagerField = editor.getClass().getDeclaredField("fServiceControllerManager"); //$NON-NLS-1$
 				fServiceControllerManagerField.setAccessible(true);
 				final ServiceControllerManager fServiceControllerManager = (ServiceControllerManager) fServiceControllerManagerField.get(editor);
 
-				final Field fHoverHelpControllerField = fServiceControllerManager.getClass().getDeclaredField("fHoverHelpController");
+				final Field fHoverHelpControllerField = fServiceControllerManager.getClass().getDeclaredField("fHoverHelpController"); //$NON-NLS-1$
 				fHoverHelpControllerField.setAccessible(true);
-				IModelListener fHoverHelpController = (IModelListener) fHoverHelpControllerField.get(fServiceControllerManager);
-				
+				final IModelListener fHoverHelpController = (IModelListener) fHoverHelpControllerField.get(fServiceControllerManager);
+
 				final OrcTextHover newTextHover = new OrcTextHover(editor, fHoverHelpController);
-				
+
 				// IMP's ServiceControllerManager.fHoverHelpController's type is internal (private),
 				// so we can't set it.
 				//fHoverHelpControllerField.set(fServiceControllerManager, newTextHover);
-				
-		        editor.fParserScheduler.addModelListener(newTextHover);
 
-				final Method getSourceViewerMethod = AbstractTextEditor.class.getDeclaredMethod("getSourceViewer");
+				editor.fParserScheduler.addModelListener(newTextHover);
+
+				final Method getSourceViewerMethod = AbstractTextEditor.class.getDeclaredMethod("getSourceViewer"); //$NON-NLS-1$
 				getSourceViewerMethod.setAccessible(true);
 				final StructuredSourceViewer sourceViewer = (StructuredSourceViewer) getSourceViewerMethod.invoke(editor);
 

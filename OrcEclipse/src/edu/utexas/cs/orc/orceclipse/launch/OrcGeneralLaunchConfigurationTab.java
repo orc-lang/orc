@@ -56,7 +56,7 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 	private Button dumpStackButton;
 	private Button echoOilButton;
 
-	protected static final String LOG_LEVELS[] = {"OFF", "SEVERE", "WARNING", "INFO", "CONFIG", "FINE", "FINER", "FINEST", "ALL"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$
+	protected static final String LOG_LEVELS[] = { "OFF", "SEVERE", "WARNING", "INFO", "CONFIG", "FINE", "FINER", "FINEST", "ALL" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$
 
 	/**
 	 * Constructs an OrcGeneralLaunchConfigurationTab instance.
@@ -69,6 +69,7 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 	 * (non-Javadoc)
 	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#getName()
 	 */
+	@Override
 	public String getName() {
 		return Messages.OrcGeneralLaunchConfigurationTab_GeneralTabName;
 	}
@@ -93,6 +94,7 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 	/* (non-Javadoc)
 	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#setDefaults(org.eclipse.debug.core.ILaunchConfigurationWorkingCopy)
 	 */
+	@Override
 	public void setDefaults(final ILaunchConfigurationWorkingCopy configuration) {
 		configuration.removeAttribute(OrcConfigSettings.LOG_LEVEL_ATTR_NAME);
 		configuration.removeAttribute(OrcConfigSettings.NO_PRELUDE_ATTR_NAME);
@@ -112,6 +114,7 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 	/* (non-Javadoc)
 	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#createControl(org.eclipse.swt.widgets.Composite)
 	 */
+	@Override
 	public void createControl(final Composite parent) {
 		final Composite comp = new Composite(parent, SWT.NONE);
 		setControl(comp);
@@ -164,7 +167,7 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 		dumpStackButton.setSelection(OrcConfigSettings.SHOW_JAVA_STACK_TRACE_DEFAULT);
 		dumpStackButton.setText(Messages.OrcGeneralLaunchConfigurationTab_DumpStackLabel);
 		dumpStackButton.addSelectionListener(ourSelectionAdapter);
-		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+		final GridData gd = new GridData(GridData.FILL_HORIZONTAL);
 		gd.horizontalSpan = 2;
 		gd.grabExcessHorizontalSpace = false;
 		dumpStackButton.setLayoutData(gd);
@@ -174,7 +177,7 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 		echoOilButton.setSelection(OrcConfigSettings.ECHO_OIL_DEFAULT);
 		echoOilButton.setText(Messages.OrcGeneralLaunchConfigurationTab_EchoOilLabel);
 		echoOilButton.addSelectionListener(ourSelectionAdapter);
-		GridData gd2 = new GridData(GridData.FILL_HORIZONTAL);
+		final GridData gd2 = new GridData(GridData.FILL_HORIZONTAL);
 		gd2.horizontalSpan = 2;
 		gd2.grabExcessHorizontalSpace = false;
 		echoOilButton.setLayoutData(gd2);
@@ -187,15 +190,17 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 	 * @param logLevels
 	 * @return
 	 */
-	private int indexOfLevel(String lookup, String[] logLevels) {
+	private int indexOfLevel(final String lookup, final String[] logLevels) {
 		for (int i = 0; i < logLevels.length; i++) {
-			if (logLevels[i].equals(lookup)) return i;
+			if (logLevels[i].equals(lookup)) {
+				return i;
+			}
 		}
 		return 0;
 	}
 
 	protected String orcVersionText() {
-		return orc.Main.orcImplName()+" "+orc.Main.orcVersion()+"\n"+orc.Main.orcURL()+"\n"+(orc.Main.orcCopyright()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+		return orc.Main.orcImplName() + " " + orc.Main.orcVersion() + "\n" + orc.Main.orcURL() + "\n" + orc.Main.orcCopyright(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ 
 	}
 
 	protected void widgetSelectedAction(final SelectionEvent e) {
@@ -209,6 +214,7 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 	/* (non-Javadoc)
 	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#initializeFrom(org.eclipse.debug.core.ILaunchConfiguration)
 	 */
+	@Override
 	public void initializeFrom(final ILaunchConfiguration configuration) {
 		try {
 			stackDepthSpinner.setSelection(configuration.getAttribute(OrcConfigSettings.MAX_STACK_DEPTH_ATTR_NAME, OrcConfigSettings.MAX_STACK_DEPTH_DEFAULT));
@@ -234,6 +240,7 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 	/* (non-Javadoc)
 	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#performApply(org.eclipse.debug.core.ILaunchConfigurationWorkingCopy)
 	 */
+	@Override
 	public void performApply(final ILaunchConfigurationWorkingCopy configuration) {
 		setOrUnsetIntAttr(configuration, OrcConfigSettings.MAX_STACK_DEPTH_ATTR_NAME, stackDepthSpinner.getSelection(), OrcConfigSettings.MAX_STACK_DEPTH_DEFAULT);
 		setOrUnsetIntAttr(configuration, OrcConfigSettings.MAX_TOKENS_ATTR_NAME, tokenLimitSpinner.getSelection(), OrcConfigSettings.MAX_TOKENS_DEFAULT);

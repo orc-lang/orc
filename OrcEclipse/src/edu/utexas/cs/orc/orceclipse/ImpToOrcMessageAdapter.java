@@ -74,7 +74,7 @@ public class ImpToOrcMessageAdapter implements CompileLogger {
 		maxSeverity = severity.ordinal() > maxSeverity.ordinal() ? severity : maxSeverity;
 
 		final int eclipseSeverity = eclipseSeverityFromOrcSeverity(severity);
-		final String markerText = message + (exception instanceof CompilationException ? " [[OrcWiki:" + exception.getClass().getSimpleName() + "]]" : "");
+		final String markerText = message + (exception instanceof CompilationException ? " [[OrcWiki:" + exception.getClass().getSimpleName() + "]]" : ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
 		// IMP's AnnotationCreator breaks for our UNKNOWN offset values
 		int safeStartOffset = 0;

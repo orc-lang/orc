@@ -50,6 +50,7 @@ public class OrcProjectPropertyPage extends FieldEditorPreferencePage implements
 	 *  (non-Javadoc)
 	 * @see org.eclipse.ui.IWorkbenchPropertyPage#getElement()
 	 */
+	@Override
 	public IAdaptable getElement() {
 		return project;
 	}
@@ -63,6 +64,7 @@ public class OrcProjectPropertyPage extends FieldEditorPreferencePage implements
 	 * 
 	 * @param element the project
 	 */
+	@Override
 	public void setElement(final IAdaptable element) {
 		this.project = (IProject) element;
 	}

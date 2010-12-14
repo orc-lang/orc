@@ -212,14 +212,14 @@ public class OrcBuilder extends BuilderBase {
 	 * @see org.eclipse.imp.builder.BuilderBase#build(int, java.util.Map, org.eclipse.core.runtime.IProgressMonitor)
 	 */
 	@Override
-	protected IProject[] build(int kind, Map args, final IProgressMonitor monitor_) {
+	protected IProject[] build(final int kind, final Map args, final IProgressMonitor monitor_) {
 		// This override is only needed as an IMP bug fix
 		// When IMP's BuilderBase.build correctly manages the IProgressMonitor, remove this override.
 		final IProgressMonitor monitor = monitor_ == null ? new NullProgressMonitor() : monitor_;
 		checkCancel(monitor);
-		monitor.beginTask("Preparing to build " + getProject().getName(), 100000);
+		monitor.beginTask(Messages.OrcBuilder_Preparing + getProject().getName(), 100000);
 		final IProject[] requiredProjects = super.build(kind, args, monitor);
-		monitor.subTask("Build done");
+		monitor.subTask(Messages.OrcBuilder_Done);
 		monitor.done();
 		return requiredProjects;
 	}
@@ -238,14 +238,14 @@ public class OrcBuilder extends BuilderBase {
 		final IProgressMonitor monitor;
 		try {
 			// Violate access controls of parent's fSourcesToCompile field
-			final Field fSourcesToCompileField = BuilderBase.class.getDeclaredField("fSourcesToCompile");
+			final Field fSourcesToCompileField = BuilderBase.class.getDeclaredField("fSourcesToCompile"); //$NON-NLS-1$
 			fSourcesToCompileField.setAccessible(true);
 			final int numFiles = ((Collection<IFile>) fSourcesToCompileField.get(this)).size();
 
 			monitor = new SubProgressMonitor(monitor_, 100000 / numFiles);
-		} catch (IllegalAccessException e) {
+		} catch (final IllegalAccessException e) {
 			throw new AssertionError(e);
-		} catch (NoSuchFieldException e) {
+		} catch (final NoSuchFieldException e) {
 			throw new AssertionError(e);
 		}
 		// End bug fix block
@@ -256,8 +256,8 @@ public class OrcBuilder extends BuilderBase {
 		if (emitDiags) {
 			getConsoleStream().println(Messages.OrcBuilder_BuildingOrcFile + fileName);
 		}
-		monitor.beginTask("Compiling " + fileName, 1000);
-		monitor.subTask("Compiling " + fileName);
+		monitor.beginTask(Messages.OrcBuilder_Compiling + fileName, 1000);
+		monitor.subTask(Messages.OrcBuilder_Compiling + fileName);
 		try {
 			final OrcConfigSettings config = new OrcConfigSettings(getProject(), null);
 			config.filename_$eq(file.getLocation().toOSString());
@@ -301,7 +301,8 @@ public class OrcBuilder extends BuilderBase {
 	 * Check whether the build has been canceled.
 	 */
 	public void checkCancel(final IProgressMonitor monitor) throws OperationCanceledException {
-		if (monitor != null && monitor.isCanceled())
+		if (monitor != null && monitor.isCanceled()) {
 			throw new OperationCanceledException();
+		}
 	}
 }
