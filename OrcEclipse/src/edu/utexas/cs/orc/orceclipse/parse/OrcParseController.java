@@ -17,13 +17,14 @@ package edu.utexas.cs.orc.orceclipse.parse;
 
 import java.util.Iterator;
 
-import orc.ast.AST;
 import orc.OrcOptions;
+import orc.ast.AST;
 import orc.compile.parse.OrcIncludeParser;
 import orc.compile.parse.OrcInputContext;
 import orc.compile.parse.OrcProgramParser;
 import orc.compile.parse.OrcStringInputContext;
 import orc.error.compiletime.CompileLogger.Severity;
+import orc.error.compiletime.ParsingException;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -63,6 +64,7 @@ public class OrcParseController extends ParseControllerBase {
 		/* (non-Javadoc)
 		 * @see org.eclipse.imp.services.ILanguageSyntaxProperties#getBlockCommentContinuation()
 		 */
+		@Override
 		public String getBlockCommentContinuation() {
 			return null;
 		}
@@ -70,6 +72,7 @@ public class OrcParseController extends ParseControllerBase {
 		/* (non-Javadoc)
 		 * @see org.eclipse.imp.services.ILanguageSyntaxProperties#getBlockCommentEnd()
 		 */
+		@Override
 		public String getBlockCommentEnd() {
 			return "-}"; //$NON-NLS-1$
 		}
@@ -77,6 +80,7 @@ public class OrcParseController extends ParseControllerBase {
 		/* (non-Javadoc)
 		 * @see org.eclipse.imp.services.ILanguageSyntaxProperties#getBlockCommentStart()
 		 */
+		@Override
 		public String getBlockCommentStart() {
 			return "{-"; //$NON-NLS-1$
 		}
@@ -84,6 +88,7 @@ public class OrcParseController extends ParseControllerBase {
 		/* (non-Javadoc)
 		 * @see org.eclipse.imp.services.ILanguageSyntaxProperties#getFences()
 		 */
+		@Override
 		public String[][] getFences() {
 			return orcFences;
 		}
@@ -95,6 +100,7 @@ public class OrcParseController extends ParseControllerBase {
 		 * @param ident ignored
 		 * @return Dummy value -- an int array with one zero element 
 		 */
+		@Override
 		public int[] getIdentifierComponents(final String ident) {
 			return dummyComponents;
 		}
@@ -104,6 +110,7 @@ public class OrcParseController extends ParseControllerBase {
 		/* (non-Javadoc)
 		 * @see org.eclipse.imp.services.ILanguageSyntaxProperties#getIdentifierConstituentChars()
 		 */
+		@Override
 		public String getIdentifierConstituentChars() {
 			return "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_'"; //$NON-NLS-1$
 		}
@@ -111,6 +118,7 @@ public class OrcParseController extends ParseControllerBase {
 		/* (non-Javadoc)
 		 * @see org.eclipse.imp.services.ILanguageSyntaxProperties#getSingleLineCommentPrefix()
 		 */
+		@Override
 		public String getSingleLineCommentPrefix() {
 			return "--"; //$NON-NLS-1$
 		}
@@ -147,6 +155,7 @@ public class OrcParseController extends ParseControllerBase {
 	 * (non-Javadoc)
 	 * @see org.eclipse.imp.parser.IParseController#getSourcePositionLocator()
 	 */
+	@Override
 	public ISourcePositionLocator getSourcePositionLocator() {
 		if (sourcePositionLocator == null) {
 			sourcePositionLocator = new OrcSourcePositionLocator(this);
@@ -161,6 +170,7 @@ public class OrcParseController extends ParseControllerBase {
 	 * 
 	 * @see org.eclipse.imp.parser.IParseController#getTokenIterator(org.eclipse.jface.text.IRegion)
 	 */
+	@Override
 	public Iterator getTokenIterator(final IRegion region) {
 		// Will throw a NullPointerException if called before parsing
 		return lexer.iterator(region);
@@ -170,6 +180,7 @@ public class OrcParseController extends ParseControllerBase {
 	 * (non-Javadoc)
 	 * @see org.eclipse.imp.parser.IParseController#getAnnotationTypeInfo()
 	 */
+	@Override
 	public IAnnotationTypeInfo getAnnotationTypeInfo() {
 		return annotationTypeInfo;
 	}
@@ -177,6 +188,7 @@ public class OrcParseController extends ParseControllerBase {
 	/* (non-Javadoc)
 	 * @see org.eclipse.imp.parser.IParseController#getSyntaxProperties()
 	 */
+	@Override
 	public ILanguageSyntaxProperties getSyntaxProperties() {
 		return syntaxProperties;
 	}
@@ -194,6 +206,7 @@ public class OrcParseController extends ParseControllerBase {
 	 * @param monitor ProgressMonitor to check for cancellation
 	 * @see org.eclipse.imp.parser.IParseController#parse(java.lang.String, org.eclipse.core.runtime.IProgressMonitor)
 	 */
+	@Override
 	public AST parse(final String contents, final IProgressMonitor monitor) {
 
 		currentParseString = contents;
@@ -243,7 +256,7 @@ public class OrcParseController extends ParseControllerBase {
 				currentAst = (AST) result.get();
 			} else {
 				final NoSuccess n = (NoSuccess) result;
-				compileLogger.recordMessage(Severity.FATAL, 0, n.msg(), n.next().pos(), null, null);
+				compileLogger.recordMessage(Severity.FATAL, 0, n.msg(), n.next().pos(), null, new ParsingException(n.msg(), n.next().pos()));
 			}
 		} catch (final Exception e) {
 			compileLogger.recordMessage(Severity.FATAL, 0, e.getLocalizedMessage(), null, null, e);

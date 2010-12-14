@@ -552,5 +552,18 @@
          </enablement>
       </consolePatternMatchListener>
    </extension>
+   <extension
+         point="org.eclipse.help.contexts">
+      <contexts
+            file="help/contexts.xml">
+      </contexts>
+   </extension>
+   <extension
+         point="org.eclipse.imp.runtime.editorService">
+      <editorService
+            class="edu.utexas.cs.orc.orceclipse.edit.OrcTextHoverInstaller"
+            language="Orc">
+      </editorService>
+   </extension>
 
 </plugin>
