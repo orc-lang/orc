@@ -29,9 +29,12 @@ public class Messages extends NLS {
 	public static String NewOrcFileWizardPage_Title;
 	public static String OrcBuilder_BuildingOrcFile;
 	public static String OrcBuilder_CompilerInternalErrorOn;
+	public static String OrcBuilder_Compiling;
+	public static String OrcBuilder_Done;
 	public static String OrcBuilder_DoneBuildingOrcFile;
 	public static String OrcBuilder_IOErrorWhenBuilding;
 	public static String OrcBuilder_OrcCompilerConsoleName;
+	public static String OrcBuilder_Preparing;
 	public static String OrcGeneralLaunchConfigurationTab_DumpStackLabel;
 	public static String OrcGeneralLaunchConfigurationTab_EchoOilLabel;
 	public static String OrcGeneralLaunchConfigurationTab_GeneralTabName;
@@ -54,6 +57,7 @@ public class Messages extends NLS {
 	public static String OrcProjectPropertyPage_SiteClassPathMessage;
 	public static String OrcProjectPropertyPage_TypeCheckLabel;
 	public static String OrcRuntimeClasspathTab_RuntimeClasspathTabName;
+	public static String OrcTextHover_HoverHelpThrew;
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);

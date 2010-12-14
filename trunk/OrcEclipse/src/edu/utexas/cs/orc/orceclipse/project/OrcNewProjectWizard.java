@@ -39,8 +39,8 @@ public class OrcNewProjectWizard extends BasicNewProjectResourceWizard {
 		if (getNewProject() != null) {
 			new OrcNature().addToProject(getNewProject());
 			try {
-				getNewProject().setDefaultCharset("UTF-8", new NullProgressMonitor());
-			} catch (CoreException e) {
+				getNewProject().setDefaultCharset("UTF-8", new NullProgressMonitor()); //$NON-NLS-1$
+			} catch (final CoreException e) {
 				Activator.logAndShow(e);
 			}
 		}

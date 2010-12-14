@@ -62,6 +62,7 @@ public class OrcLaunchShortcut implements ILaunchShortcut {
 	 * (non-Javadoc)
 	 * @see org.eclipse.debug.ui.ILaunchShortcut#launch(org.eclipse.jface.viewers.ISelection, java.lang.String)
 	 */
+	@Override
 	public void launch(final ISelection selection, final String mode) {
 		// Make sure the selection is the active resource, so the launch delegate knows who to launch.
 		//Activator.getInstance().getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(part);
@@ -81,6 +82,7 @@ public class OrcLaunchShortcut implements ILaunchShortcut {
 	/* (non-Javadoc)
 	 * @see org.eclipse.debug.ui.ILaunchShortcut#launch(org.eclipse.ui.IEditorPart, java.lang.String)
 	 */
+	@Override
 	public void launch(final IEditorPart editor, final String mode) {
 		launch((IFile) editor.getAdapter(IFile.class), mode);
 	}

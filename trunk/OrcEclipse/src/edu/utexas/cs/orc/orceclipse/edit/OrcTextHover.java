@@ -35,6 +35,7 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.source.ISourceViewer;
 
 import edu.utexas.cs.orc.orceclipse.Activator;
+import edu.utexas.cs.orc.orceclipse.Messages;
 
 /**
  * Provides "tool tip" for the text in an Orc text editor.
@@ -79,7 +80,7 @@ public class OrcTextHover implements ITextHover, ITextHoverExtension, IModelList
 			}
 			return OrcHoverUtils.getHoverInfo(help);
 		} catch (final Throwable e) {
-			ErrorHandler.reportError("Hover help service implementation threw an exception", e);
+			ErrorHandler.reportError(Messages.OrcTextHover_HoverHelpThrew, e);
 		}
 		return null;
 	}

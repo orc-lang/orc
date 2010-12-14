@@ -46,49 +46,53 @@ import edu.utexas.cs.orc.orceclipse.Activator;
 @SuppressWarnings("restriction")
 public class OrcHoverUtils {
 
-	private static final Pattern orcWikiLinkPattern = Pattern.compile("\\[\\[OrcWiki\\:([A-Za-z0-9_\\-\\#\\%]+)\\]\\]");
+	private static final Pattern orcWikiLinkPattern = Pattern.compile("\\[\\[OrcWiki\\:([A-Za-z0-9_\\-\\#\\%]+)\\]\\]"); //$NON-NLS-1$
 	private static final String orcWikiUri = "http://orc.csres.utexas.edu/wiki/Wiki.jsp?page="; //$NON-NLS-1$
+
+	static IInformationControlCreator sharedInformationControlCreator;
+
 	/*
 	 * Derived from org.eclipse.jdt.ui/JavadocHoverStyleSheet.css,
 	 * Revision 1.12 (24 Apr 2010), trunk rev as of 12 Dec 2010 
 	 */
-	private static final String hoverHtmlHead = "<html><head><style type=\"text/css\">\n" +
-	"/* Font definitions */\n" +
-	"html        { font-family: \""+JFaceResources.getDialogFont().getFontData()[0].getName()+"\"; font-size: "+JFaceResources.getDialogFont().getFontData()[0].getHeight()+"px; font-style: normal; font-weight: normal; }\n" +
-	"body, h1, h2, h3, h4, h5, h6, p, table, td, caption, th, ul, ol, dl, li, dd, dt { font-size: 1em; }\n" +
-	"pre         { font-family: monospace; }\n" +
-	"\n" +
-	"/* Margins */\n" +
-	"body        { overflow: auto; margin-top: 0px; margin-bottom: 0.5em; margin-left: 0.3em; margin-right: 0px; }\n" +
-	"h1          { margin-top: 0.3em; margin-bottom: 0.04em; }\n" +
-	"h2          { margin-top: 2em; margin-bottom: 0.25em; }\n" +
-	"h3          { margin-top: 1.7em; margin-bottom: 0.25em; }\n" +
-	"h4          { margin-top: 2em; margin-bottom: 0.3em; }\n" +
-	"h5          { margin-top: 0px; margin-bottom: 0px; }\n" +
-	"p           { margin-top: 1em; margin-bottom: 1em; }\n" +
-	"pre         { margin-left: 0.6em; }\n" +
-	"ul	         { margin-top: 0px; margin-bottom: 1em; margin-left: 1em; padding-left: 1em; }\n" +
-	"li	         { margin-top: 0px; margin-bottom: 0px; }\n" +
-	"li p        { margin-top: 0px; margin-bottom: 0px; }\n" +
-	"ol	         { margin-top: 0px; margin-bottom: 1em; margin-left: 1em; padding-left: 1em; }\n" +
-	"dl	         { margin-top: 0px; margin-bottom: 1em; }\n" +
-	"dt	         { margin-top: 0px; margin-bottom: 0px; font-weight: bold; }\n" +
-	"dd	         { margin-top: 0px; margin-bottom: 0px; }\n" +
-	"\n" +
-	"/* Styles and colors */\n" +
-	"a:link	     { color: #0000FF; }\n" +
-	"a:hover     { color: #000080; }\n" +
-	"a:visited   { text-decoration: underline; }\n" +
-	"a.header:link    { text-decoration: none; color: #000000/*InfoText*/ }\n" +
-	"a.header:visited { text-decoration: none; color: #000000/*InfoText*/ }\n" +
-	"a.header:hover   { text-decoration: underline; color: #000080; }\n" +
-	"h4          { font-style: italic; }\n" +
-	"strong	     { font-weight: bold; }\n" +
-	"em	         { font-style: italic; }\n" +
-	"var	     { font-style: italic; }\n" +
-	"th	         { font-weight: bold; }\n" +
-	"</style></head>";
-	static IInformationControlCreator sharedInformationControlCreator;
+	private static String getHoverHtmlHead() {
+		return "<html><head><style type=\"text/css\">\n" + //$NON-NLS-1$
+				"/* Font definitions */\n" + //$NON-NLS-1$
+				"html        { font-family: \"" + JFaceResources.getDialogFont().getFontData()[0].getName() + "\"; font-size: " + JFaceResources.getDialogFont().getFontData()[0].getHeight() + "px; font-style: normal; font-weight: normal; }\n" + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				"body, h1, h2, h3, h4, h5, h6, p, table, td, caption, th, ul, ol, dl, li, dd, dt { font-size: 1em; }\n" + //$NON-NLS-1$
+				"pre         { font-family: monospace; }\n" + //$NON-NLS-1$
+				"\n" + //$NON-NLS-1$
+				"/* Margins */\n" + //$NON-NLS-1$
+				"body        { overflow: auto; margin-top: 0px; margin-bottom: 0.5em; margin-left: 0.3em; margin-right: 0px; }\n" + //$NON-NLS-1$
+				"h1          { margin-top: 0.3em; margin-bottom: 0.04em; }\n" + //$NON-NLS-1$
+				"h2          { margin-top: 2em; margin-bottom: 0.25em; }\n" + //$NON-NLS-1$
+				"h3          { margin-top: 1.7em; margin-bottom: 0.25em; }\n" + //$NON-NLS-1$
+				"h4          { margin-top: 2em; margin-bottom: 0.3em; }\n" + //$NON-NLS-1$
+				"h5          { margin-top: 0px; margin-bottom: 0px; }\n" + //$NON-NLS-1$
+				"p           { margin-top: 1em; margin-bottom: 1em; }\n" + //$NON-NLS-1$
+				"pre         { margin-left: 0.6em; }\n" + //$NON-NLS-1$
+				"ul	         { margin-top: 0px; margin-bottom: 1em; margin-left: 1em; padding-left: 1em; }\n" + //$NON-NLS-1$
+				"li	         { margin-top: 0px; margin-bottom: 0px; }\n" + //$NON-NLS-1$
+				"li p        { margin-top: 0px; margin-bottom: 0px; }\n" + //$NON-NLS-1$
+				"ol	         { margin-top: 0px; margin-bottom: 1em; margin-left: 1em; padding-left: 1em; }\n" + //$NON-NLS-1$
+				"dl	         { margin-top: 0px; margin-bottom: 1em; }\n" + //$NON-NLS-1$
+				"dt	         { margin-top: 0px; margin-bottom: 0px; font-weight: bold; }\n" + //$NON-NLS-1$
+				"dd	         { margin-top: 0px; margin-bottom: 0px; }\n" + //$NON-NLS-1$
+				"\n" + //$NON-NLS-1$
+				"/* Styles and colors */\n" + //$NON-NLS-1$
+				"a:link	     { color: #0000FF; }\n" + //$NON-NLS-1$
+				"a:hover     { color: #000080; }\n" + //$NON-NLS-1$
+				"a:visited   { text-decoration: underline; }\n" + //$NON-NLS-1$
+				"a.header:link    { text-decoration: none; color: #000000/*InfoText*/ }\n" + //$NON-NLS-1$
+				"a.header:visited { text-decoration: none; color: #000000/*InfoText*/ }\n" + //$NON-NLS-1$
+				"a.header:hover   { text-decoration: underline; color: #000080; }\n" + //$NON-NLS-1$
+				"h4          { font-style: italic; }\n" + //$NON-NLS-1$
+				"strong	     { font-weight: bold; }\n" + //$NON-NLS-1$
+				"em	         { font-style: italic; }\n" + //$NON-NLS-1$
+				"var	     { font-style: italic; }\n" + //$NON-NLS-1$
+				"th	         { font-weight: bold; }\n" + //$NON-NLS-1$
+				"</style></head>"; //$NON-NLS-1$
+	}
 
 	/**
 	 * Get an InformationControlCreator that creates a  BrowserInformationControl for use
@@ -103,7 +107,8 @@ public class OrcHoverUtils {
 				public IInformationControl createInformationControl(final Shell parent) {
 					final String tooltipAffordanceString = EditorsUI.getTooltipAffordanceString();
 					if (BrowserInformationControl.isAvailable(parent)) {
-						final BrowserInformationControl iControl = new BrowserInformationControl(parent, JFaceResources.DIALOG_FONT, tooltipAffordanceString)  {
+						final BrowserInformationControl iControl = new BrowserInformationControl(parent, JFaceResources.DIALOG_FONT, tooltipAffordanceString) {
+							@Override
 							public IInformationControlCreator getInformationPresenterControlCreator() {
 								return sharedInformationControlCreator;
 							}
@@ -169,9 +174,9 @@ public class OrcHoverUtils {
 			return null;
 		}
 		String s = impAnnotationText;
-		s = orcWikiLinkPattern.matcher(s).replaceAll("<a href=\"" + orcWikiUri + "$1\">$0</a>");
-		s = s.replaceAll("<font size=-1>", "").replaceAll("</font>", ""); //Remove IMP's attempt at formatting
-		s = hoverHtmlHead + s.substring(6);
+		s = orcWikiLinkPattern.matcher(s).replaceAll("<a href=\"" + orcWikiUri + "$1\">$0</a>"); //$NON-NLS-1$ //$NON-NLS-2$
+		s = s.replaceAll("<font size=-1>", "").replaceAll("</font>", ""); //Remove IMP's attempt at formatting //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		s = getHoverHtmlHead() + s.substring(6);
 		return s;
 	}
 

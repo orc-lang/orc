@@ -48,6 +48,7 @@ public class OrcSourcePositionLocator implements ISourcePositionLocator {
 	/* (non-Javadoc)
 	 * @see org.eclipse.imp.parser.ISourcePositionLocator#findNode(java.lang.Object, int)
 	 */
+	@Override
 	public Object findNode(final Object ast, final int offset) {
 		return findNode(ast, offset, offset);
 	}
@@ -55,6 +56,7 @@ public class OrcSourcePositionLocator implements ISourcePositionLocator {
 	/* (non-Javadoc)
 	 * @see org.eclipse.imp.parser.ISourcePositionLocator#findNode(java.lang.Object, int, int)
 	 */
+	@Override
 	public Object findNode(final Object ast, final int startOffset, final int endOffset) {
 		Object theWinner = null;
 		if (startOffset < 0 || endOffset < 0) {
@@ -76,6 +78,7 @@ public class OrcSourcePositionLocator implements ISourcePositionLocator {
 	/* (non-Javadoc)
 	 * @see org.eclipse.imp.parser.ISourcePositionLocator#getStartOffset(java.lang.Object)
 	 */
+	@Override
 	public int getStartOffset(final Object node) {
 		// node could be an AST node, a token, or a ModelTreeNode
 
@@ -107,6 +110,7 @@ public class OrcSourcePositionLocator implements ISourcePositionLocator {
 	/* (non-Javadoc)
 	 * @see org.eclipse.imp.parser.ISourcePositionLocator#getLength(java.lang.Object)
 	 */
+	@Override
 	public int getLength(final Object node) {
 		return getEndOffset(node) - getStartOffset(node) + 1;
 	}
@@ -114,6 +118,7 @@ public class OrcSourcePositionLocator implements ISourcePositionLocator {
 	/* (non-Javadoc)
 	 * @see org.eclipse.imp.parser.ISourcePositionLocator#getEndOffset(java.lang.Object)
 	 */
+	@Override
 	public int getEndOffset(final Object node) {
 		// node could be an AST node, a token, or a ModelTreeNode
 
@@ -150,6 +155,7 @@ public class OrcSourcePositionLocator implements ISourcePositionLocator {
 	/* (non-Javadoc)
 	 * @see org.eclipse.imp.parser.ISourcePositionLocator#getPath(java.lang.Object)
 	 */
+	@Override
 	public IPath getPath(final Object node) {
 		try {
 			final Positional n = (Positional) node;

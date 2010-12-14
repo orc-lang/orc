@@ -95,11 +95,11 @@ public class NewOrcFileWizard extends Wizard implements INewWizard {
 			return false;
 		}
 		try {
-			file.setCharset("UTF-8", new NullProgressMonitor());
-		} catch (CoreException e) {
+			file.setCharset("UTF-8", new NullProgressMonitor()); //$NON-NLS-1$
+		} catch (final CoreException e) {
 			Activator.logAndShow(e);
 		}
-		
+
 		selectAndReveal(file);
 
 		// Open editor on new file.

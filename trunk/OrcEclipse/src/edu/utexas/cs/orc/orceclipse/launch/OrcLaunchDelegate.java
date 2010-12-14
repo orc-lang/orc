@@ -89,6 +89,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 	/* (non-Javadoc)
 	 * @see org.eclipse.debug.core.model.ILaunchConfigurationDelegate#launch(org.eclipse.debug.core.ILaunchConfiguration, java.lang.String, org.eclipse.debug.core.ILaunch, org.eclipse.core.runtime.IProgressMonitor)
 	 */
+	@Override
 	public void launch(final ILaunchConfiguration configuration, final String mode, final ILaunch launch, final IProgressMonitor monitor) throws CoreException {
 
 		if (SelectedResourceManager.getDefault().getSelectedResource() == null) {
@@ -132,10 +133,10 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 			final String[] envp = getEnvironment(configuration);
 
 			// Program & VM arguments
-			String[] pgmArgArray = orcConfig.composeCmdLine();
-			String pgmArgs = "";
-			for (String arg : pgmArgArray) {
-				pgmArgs += "\"" + arg.replaceAll("\\\\", "\\\\").replaceAll("\"", "\\\"") + "\" ";
+			final String[] pgmArgArray = orcConfig.composeCmdLine();
+			String pgmArgs = ""; //$NON-NLS-1$
+			for (final String arg : pgmArgArray) {
+				pgmArgs += "\"" + arg.replaceAll("\\\\", "\\\\").replaceAll("\"", "\\\"") + "\" "; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
 			}
 			pgmArgs = VariablesPlugin.getDefault().getStringVariableManager().performStringSubstitution(pgmArgs);
 			final String vmArgs = getVMArguments(configuration);

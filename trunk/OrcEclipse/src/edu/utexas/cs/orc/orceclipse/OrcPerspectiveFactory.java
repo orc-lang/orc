@@ -37,6 +37,7 @@ public class OrcPerspectiveFactory implements IPerspectiveFactory {
 	/* (non-Javadoc)
 	 * @see org.eclipse.ui.IPerspectiveFactory#createInitialLayout(org.eclipse.ui.IPageLayout)
 	 */
+	@Override
 	public void createInitialLayout(final IPageLayout layout) {
 		addViews(layout);
 		addActionSets(layout);
