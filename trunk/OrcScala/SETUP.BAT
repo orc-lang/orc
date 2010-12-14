@@ -1,3 +1,3 @@
 @ECHO OFF
 ASSOC .orc=OrcScript
-FTYPE OrcScript=javaw -jar "%CD%\@orc.jar@" "%%1"
+FTYPE OrcScript=javaw -cp "%CD%\@orc.jar@:%CD%\lib/\*" orc.Main "%%1"
