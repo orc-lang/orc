@@ -66,7 +66,7 @@
 	<!--
 	  - target:  test
 	  -->
-	<target name="test" depends="clean,olinks,rm-build-html-chunk" description="Test build for modifications.">
+	<target name="test" depends="clean,olinks,rm-build-pdf" description="Test build for modifications.">
 		<echo message="Test build complete" />
 	</target>
 	
@@ -295,6 +295,49 @@
 
 	    <fop format="application/pdf" fofile="${build.dir}/fo/all.fo" 
 	        outfile="${build.dir}/pdf/all.pdf" />
+	</target>
+	
+	<!--
+	    - target:  rm-build-pdf
+	    - description:  Iterates through a directory and transforms
+	    -     .xml files into .fo files which can then be turned into DocBook XML
+	    -     files.  Used for the reference manual.
+	    -->
+	<target name="rm-build-pdf" depends="xinclude" 
+		    description="Generates PDF files from DocBook XML for the reference manual">
+	    <xslt style="${src.dir}/xsl/fo.xsl" extension=".fo" 
+			basedir="${src.dir}/refmanual" destdir="${build.dir}/fo/refmanual">
+	        <classpath refid="xalan.classpath" />
+	    	<param name="section.autolabel" expression="1"/>
+	    	<param name="section.label.includes.component.label" expression="1"/>
+	    	<param name="section.autolabel.max.depth" expression="8"/>
+		<!-- default to indented layout to match HTML dl -->
+	    	<param name="variablelist.as.blocks" expression="1"/>
+		<!-- when table layout is used, default to 12em width for terms -->
+		<param name="variablelist.max.termlength" expression="12"/>
+	        <include name="root_ref.xml" />
+	        	
+		<param name="highlight.source" expression="1"/>
+		<param name="highlight.default.language" expression="orc"/>
+	    	<param name="highlight.xslthl.config" expression="${xslthl.config}" />
+	    </xslt>
+
+	    <property name="fop.home" value="lib/fop" />
+
+	    <taskdef name="fop" classname="org.apache.fop.tools.anttasks.Fop">
+	        <classpath>
+	            <fileset dir="${fop.home}/lib">
+	                <include name="*.jar" />
+	            </fileset>
+	            <fileset dir="${fop.home}/build">
+	                <include name="fop.jar" />
+	                <include name="fop-hyph.jar" />
+	            </fileset>
+	        </classpath>
+	    </taskdef>
+
+	    <fop format="application/pdf" fofile="${build.dir}/fo/refmanual/refmanual.fo" 
+	        outfile="${build.dir}/pdf/refmanual/refmanual.pdf" />
 	</target>
 	
 </project>
