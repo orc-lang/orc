@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+<!DOCTYPE chapter PUBLIC " -//OASIS//DTD DocBook XML V5.0//EN" "../docbook-xml/dtd/docbook.dtd" >
+-->
+
+<book
+	id="root"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:xi="http://www.w3.org/2001/XInclude">
+<title>Orc User Guide v<xi:include href="../VERSION" parse="text"/></title>
+ 
+<preface><title>Introduction</title>
+	
+<para>
+Orc is a programming language designed to make distributed and
+concurrent programs simple and intuitive to write. Orc expresses
+orchestration, a type of structured concurrency. It emphasizes the
+flow of control and gives a global view of a concurrent system. Orc
+is well-suited for task orchestration, a form of
+concurrent programming with applications in workflow, business process
+management, and web service orchestration. Orc provides constructs to
+orchestrate the concurrent invocation of services while managing
+time-outs, priorities, and failures of services or communication.  To
+learn more about Orc and run your own Orc programs, visit the website:
+<link xlink:href="http://orc.csres.utexas.edu/"><code>http://orc.csres.utexas.edu/</code></link>.
+</para>
+
+<para>
+Unless otherwise noted, all material in this document pertains to the
+Orc language implementation version
+<xi:include href="../VERSION" parse="text"/>.
+</para>
+
+
+</preface>
+
+<!-- Chapters -->
+<xi:include href="content/language.xml"/>
+<xi:include href="content/methodology.xml"/>
+<xi:include href="content/services.xml"/>
+	
+<!-- Appendices -->
+<xi:include href="content/syntax.xml"/>
+<xi:include href="content/library.xml"/>
+	
+</book>

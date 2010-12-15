@@ -58,6 +58,10 @@ span.hl-literal, span.hl-number, span.hl-string {
 	left: 0px;
 }
 
+body {
+	padding-top: 95px;
+}
+
 /* Fix for Mozilla ignoring the <col valign="top"> */
 div.variablelist > table > tbody > tr > td:first-child {
 	vertical-align: top;

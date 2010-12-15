@@ -66,7 +66,7 @@
 	<!--
 	  - target:  test
 	  -->
-	<target name="test" depends="clean,olinks,rm-build-pdf" description="Test build for modifications.">
+	<target name="test" depends="clean,olinks,rm-build-html-chunk,build-html-single,rm-build-pdf" description="Test build for modifications.">
 		<echo message="Test build complete" />
 	</target>
 	
@@ -104,6 +104,7 @@
 		<mkdir dir="${build.dir}/html" />
 		<mkdir dir="${build.dir}/pdf" />
 		<mkdir dir="${build.dir}/fo" />
+		<mkdir dir="${build.dir}/pdf/refmanual" />
 	</target>
 	
 	<!--
@@ -118,6 +119,20 @@
 			</classpath>
 		</taskdef>
 		<xinclude in="${src.dir}/root.xml" out="${src.dir}/all.xml" />
+	</target>
+	
+	<!--
+      - target:  mod-xinclude
+      -->
+	<target name="mod-xinclude" depends="depends">
+		<taskdef name="xinclude" classname="gr.abiss.xcluder.XercesXcluder">
+			<classpath>
+				<fileset dir="lib">
+					<include name="*.jar" />
+				</fileset>
+			</classpath>
+		</taskdef>
+		<xinclude in="${src.dir}/root_mod.xml" out="${src.dir}/all.xml" />
 	</target>
 
 	<!--
@@ -143,10 +158,16 @@
 		</xslt>
 		<!-- Delete this because it confuses build-html-single otherwise -->
 		<delete file="${build.dir}/html/all.html" />
-		<!-- Copy the stylesheet to the same directory as the HTML files -->
-		<copy todir="${build.dir}/html">
+		<!-- Copy the stylesheet and navigational images -->
+		<copy todir="${build.dir}/html/refmanual">
 			<fileset dir="css">
 				<include name="style.css" />
+			</fileset>
+		</copy>
+		<copy todir="${build.dir}/html/refmanual/images">
+			<fileset dir="src/xsl/images">
+				<include name="next.gif" />
+				<include name="prev.gif" />
 			</fileset>
 		</copy>
 	</target>
@@ -179,6 +200,7 @@
 			<param name="chunk.quietly" expression="1"/>
 			<param name="chunk.section.depth" expression="1"/>
 			<param name="suppress.footer.navigation" expression="1"/>
+			<param name="navig.graphics" expression="1"/>
 			
 			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
 			<param name="current.docid" expression="refmanual"/> 
@@ -189,9 +211,16 @@
 		</xslt>
 		<!-- Delete this because it confuses rm-build-html-single otherwise -->
 		<delete file="${build.dir}/html/refmanual/refmanual.html" />
+		<!-- Copy the stylesheet and navigational images -->
 		<copy todir="${build.dir}/html/refmanual">
 			<fileset dir="css">
 				<include name="style.css" />
+			</fileset>
+		</copy>
+		<copy todir="${build.dir}/html/refmanual/images">
+			<fileset dir="src/xsl/images">
+				<include name="next.gif" />
+				<include name="prev.gif" />
 			</fileset>
 		</copy>
 	</target>
@@ -200,6 +229,33 @@
       - target:  build-html-single
       -->
 	<target name="build-html-single" depends="xinclude" description="Generates single User Guide HTML doc">
+		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html" 
+				basedir="${src.dir}" destdir="${build.dir}/html">
+			<include name="all.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="orc.demo" expression="1"/>
+			<param name="section.autolabel" expression="1"/>
+			<param name="section.label.includes.component.label" expression="1"/>
+			<param name="section.autolabel.max.depth" expression="8"/>
+			
+			<param name="target.database.document" expression="../${database.olink.dir}/olinkdb.xml"/>
+			<param name="current.docid" expression="root"/> 
+			
+			<param name="highlight.source" expression="1"/>
+			<param name="highlight.default.language" expression="orc"/>
+			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
+		</xslt>
+		<copy todir="${build.dir}/html">
+			<fileset dir="css">
+				<include name="style.css" />
+			</fileset>
+		</copy>
+	</target>
+	
+	<!--
+      - target:  mod-build-html-single
+      -->
+	<target name="mod-build-html-single" depends="mod-xinclude" description="Generates single User Guide HTML doc">
 		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html" 
 				basedir="${src.dir}" destdir="${build.dir}/html">
 			<include name="all.xml" />
@@ -316,7 +372,10 @@
 		<!-- when table layout is used, default to 12em width for terms -->
 		<param name="variablelist.max.termlength" expression="12"/>
 	        <include name="root_ref.xml" />
-	        	
+	        
+		<param name="target.database.document" expression="file://${user.dir}/${database.olink.dir}/olinkdb.xml"/>	
+		<param name="current.docid" expression="refmanual"/>
+			
 		<param name="highlight.source" expression="1"/>
 		<param name="highlight.default.language" expression="orc"/>
 	    	<param name="highlight.xslthl.config" expression="${xslthl.config}" />
@@ -336,8 +395,8 @@
 	        </classpath>
 	    </taskdef>
 
-	    <fop format="application/pdf" fofile="${build.dir}/fo/refmanual/refmanual.fo" 
-	        outfile="${build.dir}/pdf/refmanual/refmanual.pdf" />
+	    <fop format="application/pdf" fofile="${build.dir}/fo/refmanual/root_ref.fo" 
+	        outfile="${build.dir}/pdf/refmanual/root_ref.pdf" />
 	</target>
 	
 </project>
