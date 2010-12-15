@@ -12,7 +12,7 @@
 		  <para><emphasis role="strong">Associativity</emphasis>: left </para>
 		  <para><emphasis role="strong">Commutative</emphasis>: no </para>
 	  </section>
-	  <section id="ref.combinators.parallel.behavior">
+	  <section id="ref.combinators.pruning.behavior">
 		  <title>Behavior</title>
 		  <itemizedlist>
 			  <listitem>F <code><![CDATA[ <x< ]]></code> G
