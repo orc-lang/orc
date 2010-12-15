@@ -89,7 +89,7 @@ case class TypeInstance(tycon: TypeConstructor, args: List[Type]) extends Callab
   def call(typeArgs: List[Type], argTypes: List[Type]): Type = {
     tycon.instance(args) match {
       case u: TypeInstance => {
-        /* Avoiding an infinte regress. */
+        /* Avoiding an infinte loop */
         throw new UncallableTypeException(u) 
       }
       case ct: CallableType => {

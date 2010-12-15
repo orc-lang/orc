@@ -74,14 +74,17 @@ object Typeloader extends SiteClassLoading {
         val cl = loadClass(classname)
         liftJavaType(cl)
       }
-      case t@ syntactic.VariantType(Nil, variants) => {
-        val newVariants = 
-          for ((name, variant) <- variants) yield {
-            (name, variant map lift)
+      case syntactic.VariantType(self, Nil, variants) => {
+        val dt = new MonomorphicDatatype()
+        val newTypeContext = typeContext + { (self, dt) }
+        val constructorTypes =
+          for ((name, variantArgs) <- variants) yield {
+            val argTypes = variantArgs map { lift(_)(newTypeContext, typeOperatorContext) }
+            SimpleFunctionType(argTypes, dt)
           }
-        val d = new MonomorphicDatatype(newVariants.toList)
-        d.optionalDatatypeName = t.optionalVariableName
-        d
+        dt.optionalDatatypeName = self.optionalVariableName
+        dt.constructorTypes = Some(constructorTypes)
+        dt
       }
       case syntactic.UnboundTypevar(name) => {
         throw new UnboundTypeException(name)
@@ -106,18 +109,65 @@ object Typeloader extends SiteClassLoading {
           }
         }
       }
-      case tt@ syntactic.VariantType(typeformals, variants) if (!typeformals.isEmpty) => {
+      case syntactic.VariantType(self, typeformals, variants) if (!typeformals.isEmpty) => {
+          
         val newTypeFormals = typeformals map { u => new TypeVariable(u) }
         val typeBindings = typeformals zip newTypeFormals
         val newTypeContext = typeContext ++ typeBindings
-        val newVariants = 
-          for ((name, variant) <- variants) yield {
-            val newVariant = variant map { lift(_)(newTypeContext, typeOperatorContext) }
-            (name, newVariant)
+        
+        /*
+         * Given a datatype with a proposed set of variances,
+         * lift the variants to generate the constructor types.
+         */
+        def usingDatatype(dt: PolymorphicDatatype): List[List[Type]] = {
+          val newTypeOperatorContext = typeOperatorContext + { (self, dt) } 
+          val variantTypes =
+            for ((name, variantArgs) <- variants) yield {
+              val constructorArgTypes = variantArgs map { lift(_)(newTypeContext, newTypeOperatorContext) }
+              constructorArgTypes
+            }
+          variantTypes.toList
+        }
+        
+        /* Find the variance of X in this datatype by a search.
+         * 
+         * We assume that variances are linearly independent, i.e.
+         * that the variances of formals besides X cannot affect
+         * the variance of X.
+         */
+        def findVariance(X: TypeVariable): Variance = {
+          for (V <- List(Constant, Covariant, Contravariant)) {
+            val currentGuess = newTypeFormals map { Y => if (Y eq X) V else Invariant }
+            val dt = new PolymorphicDatatype(currentGuess)
+            val variantTypes = usingDatatype(dt)
+            val argVariances = variantTypes map { _ map { _ varianceOf X } }
+            val combinedVariances = (argVariances map { _.combined }).combined
+            if (combinedVariances eq V) {
+              return V
+            }
+            /* otherwise, try the next possibility */
           }
-        val d = new PolymorphicDatatype(newTypeFormals, newVariants)
-        d.optionalDatatypeName = tt.optionalVariableName
-        new TypeOperator { def operate(ts: List[Type]) = TypeInstance(d, ts) }
+          /* If no other variance is consistent, return Invariant
+           * by default, since it will always be consistent.
+           */
+          return Invariant
+        }
+        val stableVariances = newTypeFormals map findVariance
+        
+        val dt = new PolymorphicDatatype(stableVariances)
+        val variantTypes = usingDatatype(dt)
+        val constructorTypes = 
+          variantTypes map 
+            { argTypes =>
+              val funTypeFormals = newTypeFormals map { x => new TypeVariable(x) }
+              val funArgTypes = argTypes map { _ subst (funTypeFormals, newTypeFormals) }
+              val funReturnType = TypeInstance(dt, funTypeFormals)
+              FunctionType(funTypeFormals, funArgTypes, funReturnType)
+            }
+        
+        dt.constructorTypes = Some(constructorTypes)
+        dt.optionalDatatypeName = self.optionalVariableName 
+        dt   
       }
       case syntactic.TypeAbstraction(typeformals, t) => {
         val newTypeFormals = typeformals map { u => new TypeVariable(u) }

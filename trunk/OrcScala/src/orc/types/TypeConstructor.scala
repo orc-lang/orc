@@ -26,6 +26,11 @@ trait TypeConstructor extends TypeOperator {
   
   val variances: List[Variance]
   
+  def operate(ts: List[Type]): Type = {
+    assert(variances.size == ts.size)
+    TypeInstance(this, ts)
+  }
+  
   /* 
    * When an instance of this type is called, instantiate it at particular type parameters.
    * By default, a constructed type is uncallable.
@@ -36,17 +41,14 @@ trait TypeConstructor extends TypeOperator {
   }
 }
 
+
+/* Convenience class for the common case of type constructor usage */
 class SimpleTypeConstructor(val name: String, val givenVariances: Variance*) extends TypeConstructor {
   
   override def toString = name
   
   val variances = givenVariances.toList
-    
-  def operate(ts: List[Type]): Type = {
-    assert(variances.size == ts.size)
-    TypeInstance(this, ts)
-  }
-  
+
   def apply(ts: Type*): Type = {
     operate(ts.toList)
   }
