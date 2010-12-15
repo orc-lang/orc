@@ -98,11 +98,11 @@ class PrettyPrint {
       case TypeAbstraction(typeformals, t) => brack(typeformals) + "(" + reduce(t) + ")"
       case ImportedType(classname) => classname
       case ClassType(classname) => classname
-      case VariantType(typeformals, variants) => {
+      case VariantType(_, typeformals, variants) => {
         val variantSeq = 
-          (for ((name, variant) <- variants) yield {
-          name + "(" + (variant map reduce).mkString(",") + ")"
-        }).mkString(" | ")
+          for ((name, variant) <- variants) yield {
+            name + "(" + (variant map reduce).mkString(",") + ")"
+          }
         brack(typeformals) + "(" + variantSeq.mkString(" | ") + ")"
       }
       case _ => "???"

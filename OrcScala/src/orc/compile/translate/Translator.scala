@@ -161,8 +161,9 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.Declare(decl@ext.Datatype(name, typeformals, constructors), body) => {
         val d = new BoundTypevar(Some(name))
         val variantType = {
+          val selfVar = new BoundTypevar(Some(name))
           val (newTypeFormals, dtypecontext) = convertTypeFormals(typeformals, decl)
-          val newtypecontext = typecontext ++ dtypecontext + { (name, d) }
+          val newtypecontext = typecontext ++ dtypecontext + { (name, selfVar) }
           val variants =
             for (ext.Constructor(name, types) <- constructors) yield {
               val newtypes = types map { 
@@ -171,9 +172,8 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
               }
               (name, newtypes)
             }
-          VariantType(newTypeFormals, variants)
+          VariantType(selfVar, newTypeFormals, variants)
         }
-        variantType.optionalVariableName = Some(name)
 
         val names = constructors map { _.name }
         val p = ext.TuplePattern(names map { ext.VariablePattern(_) })

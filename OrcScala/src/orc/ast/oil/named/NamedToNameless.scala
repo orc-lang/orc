@@ -114,8 +114,8 @@ trait NamedToNameless {
       }
       case ImportedType(classname) => nameless.ImportedType(classname)
       case ClassType(classname) => nameless.ClassType(classname)
-      case VariantType(typeformals, variants) => {
-        val newTypeContext = typeformals ::: typecontext
+      case VariantType(self, typeformals, variants) => {
+        val newTypeContext = self :: typeformals ::: typecontext
         val newVariants =
           for ((name, variant) <- variants) yield {
             (name, variant map { namedToNameless(_, newTypeContext) })
