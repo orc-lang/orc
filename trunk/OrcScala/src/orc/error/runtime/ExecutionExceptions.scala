@@ -145,3 +145,6 @@ class JavaException(cause: Throwable) extends
         getMessageAndPositon() + "\n" + getOrcStacktraceAsString() + getJavaStacktraceAsString(getCause());
     }
 }
+
+class ProgramSignalledError(message: String) extends
+ SiteException(message)
