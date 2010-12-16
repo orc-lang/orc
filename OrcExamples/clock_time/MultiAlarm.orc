@@ -44,6 +44,8 @@ def class Multialarm() =
     def cancel() = run := false
   stop
 
+ class Map = java.util.HashMap
+
  val alarmlist = Map()
 
  def set(id,t) = 
