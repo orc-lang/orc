@@ -19,18 +19,15 @@ import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.Types;
 
-
-@SuppressWarnings("boxing")
 public class Ceil extends EvalSite {
 
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
 		final Number n = args.numberArg(0);
 		final int i = n.intValue();
-		return n.equals(i) ? i : i + 1;
+		return Integer.valueOf(n.equals(Integer.valueOf(i)) ? i : i + 1);
 	}
 
-	
 	public Type orcType() {
 		return Types.function(Types.number(), Types.integer());
 	}

@@ -31,7 +31,6 @@ import orc.types.Type;
  *
  * @author cawellington, dkitchin
  */
-@SuppressWarnings("boxing")
 public class Buffer extends EvalSite implements TypedSite {
 
 	/* (non-Javadoc)
@@ -153,7 +152,7 @@ public class Buffer extends EvalSite implements TypedSite {
 			addMember("isClosed", new EvalSite() {
 				@Override
 				public Object evaluate(final Args args) throws TokenException {
-					return closed;
+					return Boolean.valueOf(closed);
 				}
 			});
 			addMember("close", new SiteAdaptor() {

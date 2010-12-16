@@ -28,8 +28,8 @@ import orc.values.sites.compatibility.Types;
  * @author dkitchin
  *
  */
-@SuppressWarnings({ "boxing", "synthetic-access" })
 public class UMinus extends EvalSite implements TypedSite {
+	@SuppressWarnings("synthetic-access")
 	private static final MyOperator op = new MyOperator();
 
 	private static final class MyOperator implements NumericUnaryOperator<Number> {
@@ -45,32 +45,32 @@ public class UMinus extends EvalSite implements TypedSite {
 
 		@Override
 		public Number apply(final int a) {
-			return -a;
+			return Integer.valueOf(-a);
 		}
 
 		@Override
 		public Number apply(final long a) {
-			return -a;
+			return Long.valueOf(-a);
 		}
 
 		@Override
 		public Number apply(final byte a) {
-			return -a;
+			return Integer.valueOf(-a);
 		}
 
 		@Override
 		public Number apply(final short a) {
-			return -a;
+			return Integer.valueOf(-a);
 		}
 
 		@Override
 		public Number apply(final double a) {
-			return -a;
+			return Double.valueOf(-a);
 		}
 
 		@Override
 		public Number apply(final float a) {
-			return -a;
+			return Float.valueOf(-a);
 		}
 	}
 
@@ -81,9 +81,6 @@ public class UMinus extends EvalSite implements TypedSite {
 
 	@Override
 	public Type orcType() {
-      return Types.overload(
-               Types.function(Types.integer(), Types.integer()),
-               Types.function(Types.number(), Types.number())
-             );
-  }
+		return Types.overload(Types.function(Types.integer(), Types.integer()), Types.function(Types.number(), Types.number()));
+	}
 }

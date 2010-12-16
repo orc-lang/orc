@@ -23,7 +23,7 @@ import java.util.Iterator;
  * 
  * @author quark
  */
-@SuppressWarnings({"hiding","boxing"})
+@SuppressWarnings("hiding")
 public final class Set<E> extends AbstractSet<E> {
 	private final java.util.Set<Wrapper<E>> set = Collections.synchronizedSet(new HashSet<Wrapper<E>>());
 
@@ -54,12 +54,12 @@ public final class Set<E> extends AbstractSet<E> {
 
 		@Override
 		public Boolean read() {
-			return contains(key);
+			return Boolean.valueOf(contains(key));
 		}
 
 		@Override
 		public void write(final Boolean value) {
-			if (value) {
+			if (value.booleanValue()) {
 				add(key);
 			} else {
 				remove(key);

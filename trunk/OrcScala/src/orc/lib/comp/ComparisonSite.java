@@ -29,47 +29,47 @@ import orc.types.Type;
 /**
  * @author quark
  */
-@SuppressWarnings({"synthetic-access", "boxing"})
+@SuppressWarnings("synthetic-access")
 public abstract class ComparisonSite extends EvalSite implements TypedSite {
 	private static class MyOperator implements NumericBinaryOperator<Integer> {
 		@Override
 		public Integer apply(final BigInteger a, final BigInteger b) {
-			return a.compareTo(b);
+			return Integer.valueOf(a.compareTo(b));
 		}
 
 		@Override
 		public Integer apply(final BigDecimal a, final BigDecimal b) {
-			return a.compareTo(b);
+			return Integer.valueOf(a.compareTo(b));
 		}
 
 		@Override
 		public Integer apply(final int a, final int b) {
-			return a - b;
+			return Integer.valueOf(a - b);
 		}
 
 		@Override
 		public Integer apply(final long a, final long b) {
-			return (int) (a - b);
+			return Integer.valueOf((int) (a - b));
 		}
 
 		@Override
 		public Integer apply(final byte a, final byte b) {
-			return a - b;
+			return Integer.valueOf(a - b);
 		}
 
 		@Override
 		public Integer apply(final short a, final short b) {
-			return a - b;
+			return Integer.valueOf(a - b);
 		}
 
 		@Override
 		public Integer apply(final double a, final double b) {
-			return Double.compare(a, b);
+			return Integer.valueOf(Double.compare(a, b));
 		}
 
 		@Override
 		public Integer apply(final float a, final float b) {
-			return Float.compare(a, b);
+			return Integer.valueOf(Float.compare(a, b));
 		}
 	}
 
@@ -82,12 +82,12 @@ public abstract class ComparisonSite extends EvalSite implements TypedSite {
 		final Object arg1 = args.getArg(1);
 		try {
 			if (arg0 instanceof Number && arg1 instanceof Number) {
-				final int a = Args.applyNumericOperator((Number) arg0, (Number) arg1, new MyOperator());
-				return compare(a);
+				final int a = Args.applyNumericOperator((Number) arg0, (Number) arg1, new MyOperator()).intValue();
+				return Boolean.valueOf(compare(a));
 			} else {
 			    @SuppressWarnings("unchecked")
 				final int a = ((Comparable<Object>) arg0).compareTo(arg1);
-				return compare(a);
+				return Boolean.valueOf(compare(a));
 			}
 		} catch (final ClassCastException e) {
 			throw new JavaException(e); // TODO: Make more specific

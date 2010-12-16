@@ -13,6 +13,7 @@
 
 package orc.lib.state;
 
+import java.math.BigDecimal;
 import java.util.LinkedList;
 
 import orc.error.runtime.TokenException;
@@ -31,7 +32,7 @@ import orc.types.Type;
  * Factory for counters. 
  * @author quark
  */
-@SuppressWarnings({"boxing","hiding"})
+@SuppressWarnings("hiding")
 public class Counter extends EvalSite implements TypedSite {
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
@@ -87,7 +88,7 @@ public class Counter extends EvalSite implements TypedSite {
 				addMember("value", new EvalSite() {
 					@Override
 					public Object evaluate(final Args args) throws TokenException {
-						return count;
+						return BigDecimal.valueOf(count);
 					}
 				});
 			}

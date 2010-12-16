@@ -13,6 +13,7 @@
 
 package orc.lib.state;
 
+import java.math.BigInteger;
 import java.util.LinkedList;
 
 import orc.error.runtime.TokenException;
@@ -32,7 +33,6 @@ import orc.types.Type;
  * 
  * @author quark
  */
-@SuppressWarnings("boxing")
 public class BoundedBuffer extends EvalSite implements TypedSite {
 
 	/* (non-Javadoc)
@@ -194,19 +194,19 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 			addMember("getOpen", new EvalSite() {
 				@Override
 				public Object evaluate(final Args args) throws TokenException {
-					return open;
+					return BigInteger.valueOf(open);
 				}
 			});
 			addMember("getBound", new EvalSite() {
 				@Override
 				public Object evaluate(final Args args) throws TokenException {
-					return open + buffer.size() - writers.size();
+					return BigInteger.valueOf(open + buffer.size() - writers.size());
 				}
 			});
 			addMember("isClosed", new EvalSite() {
 				@Override
 				public Object evaluate(final Args args) throws TokenException {
-					return closed;
+					return Boolean.valueOf(closed);
 				}
 			});
 			addMember("close", new SiteAdaptor() {
