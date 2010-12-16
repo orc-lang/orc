@@ -25,7 +25,7 @@ import orc.error.OrcException;
 import orc.error.compiletime.CompilationException;
 
 /**
- * Test Orc by running annotated sample programs from the "examples" directory.
+ * Test Orc by running annotated sample programs from the "../OrcExamples" directory.
  * Each program is given at most 10 seconds to complete.
  * <p>
  * We look for one or more comment blocks formatted per
@@ -42,7 +42,7 @@ public class ExamplesTest {
 	public static TestSuite buildSuite() {
 		final TestSuite suite = new TestSuite("orc.test.ExamplesTest");
 		final LinkedList<File> files = new LinkedList<File>();
-		TestUtils.findOrcFiles(new File("examples"), files);
+		TestUtils.findOrcFiles(new File("../OrcExamples"), files);
 		for (final File file : files) {
 			final ExpectedOutput expecteds;
 			try {
