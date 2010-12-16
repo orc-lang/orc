@@ -16,7 +16,7 @@ Metalanguage operations.
 --}
 
 {--
-@site Site[A](A) :: A
+@site MakeSite[A](A) :: A
 
 This site promotes an Orc closure to a site; when the site is called, the
 closure is executed on those arguments. These executions behave
@@ -29,13 +29,13 @@ like site calls; in particular, the following four properties hold:
 <listitem> If the execution of the closure halts, so does the site call. </listitem>
 </itemizedlist>
 
-The typical usage of Site looks like:
+The typical usage of MakeSite looks like:
 
 <programlisting language="orc-demo"><![CDATA[
 def foo(...) = ...
-val Foo = Site(foo)]]></programlisting>
+val Foo = MakeSite(foo)]]></programlisting>
 
-The typing of Site will enforce the side condition that the type A is an arrow
+The typing of MakeSite will enforce the side condition that the type A is an arrow
 type.
 --}
 site MakeSite = "orc.lib.builtin.MakeSite"
