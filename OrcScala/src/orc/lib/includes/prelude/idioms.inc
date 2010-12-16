@@ -47,11 +47,8 @@ Uncurry a function of two arguments.
 
 @implementation
 --}
-{-
-FIXME: Support curried lambda type argument groups in parser
 def uncurry[A,B,C](lambda (A)(B) :: C)(A, B) :: C
 def uncurry(f)(x,y) = f(x)(y)
--}
 
 {--
 @def uncurry3[A,B,C,D](lambda (A)(B)(C) :: D)(A,B,C) :: D
@@ -59,11 +56,8 @@ Uncurry a function of three arguments.
 
 @implementation
 --}
-{-
-FIXME: Support curried lambda type argument groups in parser
 def uncurry3[A,B,C,D](lambda (A)(B)(C) :: D)(A,B,C) :: D
 def uncurry3(f)(x,y,z) = f(x)(y)(z)
--}
 
 {--
 @def flip[A,B,C](lambda (A, B) :: C)(B, A) :: C

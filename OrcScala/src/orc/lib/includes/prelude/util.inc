@@ -41,19 +41,6 @@ Return a random (type 4) UUID represented as a string.
 site UUID = "orc.lib.util.UUID"
 
 {--
-@site Thread(Top) :: Bot
-Given a site, return a new site which calls the original site
-in a separate thread.  This is necessary when calling
-a Java site which does not cooperate with Orc's scheduler
-and may block for an unpredictable amount of time.
-
-A limited number of threads are reserved in a pool for use
-by this site, so there is a limit to the number of blocking,
-uncooperative sites that can be called simultaneously.
---}
---FIXME:site Thread = "orc.lib.util.ThreadSite"
-
-{--
 @site Prompt(String) :: String
 Prompt the user for some input. The user may cancel the prompt,
 in which case the site fails silently. Otherwise their response
