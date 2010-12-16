@@ -151,31 +151,31 @@ the expression <code>a - (a/b)*b</code>. For a full description, see the
 site (%) = "orc.lib.math.Mod"
 
 {--
-@site (<:)(Signal, Signal) :: Boolean
+@site (<:)(Top, Top) :: Boolean
 <code>a &lt;: b</code> returns true if <code>a</code> is less than <code>b</code>, and false otherwise.
 --}
 site (<:) = "orc.lib.comp.Less"
 
 {--
-@site (<=)(Signal, Signal) :: Boolean
+@site (<=)(Top, Top) :: Boolean
 <code>a &lt;= b</code> returns true if <code>a</code> is less than or equal to <code>b</code>, and false otherwise.
 --}
 site (<=) = "orc.lib.comp.Leq"
 
 {--
-@site (:>)(Signal, Signal) :: Boolean
+@site (:>)(Top, Top) :: Boolean
 <code>a :> b</code> returns true if <code>a</code> is greater than <code>b</code>, and false otherwise.
 --}
 site (:>) = "orc.lib.comp.Greater"
 
 {--
-@site (>=)(Signal, Signal) :: Boolean
+@site (>=)(Top, Top) :: Boolean
 <code>a >= b</code> returns true if <code>a</code> is greater than or equal to <code>b</code>, and false otherwise.
 --}
 site (>=) = "orc.lib.comp.Greq"
 
 {--
-@site (=)(Signal, Signal) :: Boolean
+@site (=)(Top, Top) :: Boolean
 <code>a = b</code> returns true if <code>a</code> is equal to <code>b</code>,
 and false otherwise.  The precise definition of "equal" depends on the values
 being compared, but always obeys the rule that if two values are considered
@@ -195,7 +195,7 @@ always considered inequal, i.e. the comparison will return <code>false</code>.
 site (=) = "orc.lib.builtin.Eq"
 
 {--
-@site (/=)(Signal, Signal) :: Boolean
+@site (/=)(Top, Top) :: Boolean
 <code>a/=b</code> returns false if <code>a=b</code>, and true otherwise.
 --}
 site (/=) = "orc.lib.comp.Inequal"
