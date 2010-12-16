@@ -65,5 +65,9 @@ val m = Multialarm()
 | Rtimer(400) >> m.cancel("first") >> "first cancelled"
 | m.cancel("third") >> "No third alarm has been set"
 
-
-
+{-
+OUTPUT:
+"No third alarm has been set"
+"second alarm"
+"first cancelled"
+-}

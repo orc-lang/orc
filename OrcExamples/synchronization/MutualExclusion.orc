@@ -29,3 +29,8 @@ def Server(j) = j
 val serve = Servercall().main
 
 serve(5)
+
+{-
+OUTPUT:
+5
+-}

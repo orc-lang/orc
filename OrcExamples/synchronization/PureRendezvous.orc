@@ -17,3 +17,9 @@ stop
 val group = PureRendezvous()
 
  group.send() | Rtimer(1000) >> group.recv() 
+
+{-
+OUTPUT:
+signal
+signal
+-}

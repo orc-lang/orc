@@ -32,3 +32,9 @@ val store = BBTree(3)
 
 store.write(0,[]) >> store.write(5,[0,1]) -->> store.write(5,[0,1,0])
 >> (store.read([0,1]) | store.read([]))
+
+{-
+OUTPUT:
+0
+5
+-}

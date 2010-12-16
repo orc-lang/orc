@@ -18,3 +18,8 @@ add(n)
 val s = NewSemaphore(3)
 
 s.acquire() >> s.acquire() >> s.acquire()
+
+{-
+OUTPUT:
+signal
+-}
