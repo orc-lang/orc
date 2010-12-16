@@ -1,4 +1,4 @@
-{- BoundedChannel.orc
+{- BoundedChannel.inc
  - 
  - $Id$
  - 
@@ -64,9 +64,3 @@ def class Word() =
    gets.acquire()  >> w? >v> puts.release() >> v
 
 stop
-
-
-val c = BBuffer(2)
-  c.put(5) >> c.put(2) >> c.put(50) >> "yes"
-| Rtimer(2000) >> c.get()
-| Rtimer(4000) >> c.get() >> c.get()

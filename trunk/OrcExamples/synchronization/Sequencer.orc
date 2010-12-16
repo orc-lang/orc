@@ -21,8 +21,8 @@ the queue waiting to be served.
 The implementation uses the call-back mechanism used in the 
 Readers-Writers solution.
 -}
-include "http://userweb.cs.utexas.edu/users/misra/temporaryFiles.dir/BoundedChannel.inc"
-include "http://userweb.cs.utexas.edu/users/misra/temporaryFiles.dir/StopWatch.inc"
+include "../synchronization/BoundedChannel.inc"
+include "../clock_time/StopWatch.inc"
 
 def class Sequencer(n) = 
  val bb = BBuffer(n)  -- waiting customers' semaphores

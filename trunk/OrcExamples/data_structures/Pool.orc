@@ -39,3 +39,9 @@ sempool.allocate() >s> (
                         | Rtimer(50) >> sempool.deallocate(s) >> "gone"
                        )
 
+{-
+OUTPUT:
+"got it"
+"threw it"
+"gone"
+-}

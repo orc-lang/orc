@@ -29,10 +29,10 @@ def stringtoarray(s) =
     It writes the next non-white space in array position j.
  -}
  def rest(i,j) = 
-   If (i >= s.length?) >> j
- | If (i <: s.length?)  >> If(s.substring(i,i+1) /= " ") >> 
+   If (i >= s.length()) >> j
+ | If (i <: s.length())  >> If(s.substring(i,i+1) /= " ") >> 
       A(j) := s.substring(i,i+1) >> rest(i+1,j+1)
- | If (i <: s.length?)  >> If(s.substring(i,i+1)  = " ") >> rest(i+1,j)
+ | If (i <: s.length())  >> If(s.substring(i,i+1)  = " ") >> rest(i+1,j)
 
  rest(0,0)
 
