@@ -82,12 +82,13 @@
             nameFilter="*"
             id="edu.utexas.cs.orc.orceclipse.project.projectContextMenu">
          <action
-               label="Enable Orc Builder"
-               icon="orc16.gif"
-               tooltip="Enable the Orc builder for this project"
                class="edu.utexas.cs.orc.orceclipse.project.EnableOrcNature"
                enablesFor="+"
-               id="edu.utexas.cs.orc.orceclipse.project.enableNatureAction">
+               icon="orc16.gif"
+               id="edu.utexas.cs.orc.orceclipse.project.enableNatureAction"
+               label="Enable Orc Builder"
+               menubarPath="org.eclipse.ui.projectConfigure/additions"
+               tooltip="Enable the Orc builder for this project">
          </action>
       </objectContribution>
    </extension>
