@@ -33,7 +33,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.xml.sax.SAXException;
 
 /**
- * Test Orc by running annotated sample programs from the "examples" directory.
+ * Test Orc by running annotated sample programs from the "../OrcExamples" directory.
  * Each program is compiled, written to XML, subjected to validation against
  * an XML schema, and then read back as an AST. This second AST is run. 
  * Each program is given at most 10 seconds to complete.
@@ -52,7 +52,7 @@ public class XMLExamplesTest {
 	public static TestSuite buildSuite() {
 		final TestSuite suite = new TestSuite("orc.test.XMLExamplesTest");
 		final LinkedList<File> files = new LinkedList<File>();
-		TestUtils.findOrcFiles(new File("examples"), files);
+		TestUtils.findOrcFiles(new File("../OrcExamples"), files);
 		for (final File file : files) {
 			final ExpectedOutput expecteds;
 			try {
