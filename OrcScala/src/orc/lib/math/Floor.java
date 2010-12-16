@@ -14,23 +14,22 @@
 package orc.lib.math;
 
 import orc.error.runtime.TokenException;
+import orc.types.Type;
+import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.Types;
-import orc.values.sites.TypedSite;
-import orc.types.Type;
 
-@SuppressWarnings("boxing")
 public class Floor extends EvalSite implements TypedSite {
 
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
 		final Number n = args.numberArg(0);
-		return n.intValue();
+		return Integer.valueOf(n.intValue());
 	}
 
 	@Override
 	public Type orcType() {
-      return Types.function(Types.number(), Types.integer());
-   }
+		return Types.function(Types.number(), Types.integer());
+	}
 }
