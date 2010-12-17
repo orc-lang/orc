@@ -5,8 +5,7 @@
    SYSTEM "../docbook-xsl/common/targetdatabase.dtd" [
    <!ENTITY ugtargets SYSTEM "../build/html/ugtargets.db">
    <!ENTITY rmtargets SYSTEM "../build/html/refmanual/rmtargets.db">
-   <!ENTITY uguri SYSTEM "all.html">
-   <!ENTITY rmuri SYSTEM "refmanual.html">
+   <!ENTITY ref.combinators.otherwise SYSTEM "../build/html/refmanual/ref.combinators.otherwise.db">
    ]>
 <targetset>
    <targetsetinfo>
@@ -25,9 +24,15 @@
                      &ugtargets;
                   </document>
 				  <dir name="refmanual">
-					  <document targetdoc="refmanual" baseuri="refmanual.html">
+					  <dir name="content"/>
+					  <document targetdoc="refmanual" baseuri="ref.toc.html">
 						 &rmtargets;
 					  </document>
+					  <!--
+					  <document targetdoc="refmanual.combinators_otherwise" baseuri="ref.combinators.otherwise.html">
+						 &ref.combinators.otherwise;
+					  </document>
+						-->
 				  </dir>
                </dir>
             </dir>
