@@ -40,6 +40,7 @@ public class Messages extends NLS {
 	public static String OrcGeneralLaunchConfigurationTab_GeneralTabName;
 	public static String OrcGeneralLaunchConfigurationTab_LogLevelLabel;
 	public static String OrcGeneralLaunchConfigurationTab_MaxSiteThreadsLabel;
+	public static String OrcGeneralLaunchConfigurationTab_NoTcoLabel;
 	public static String OrcGeneralLaunchConfigurationTab_runtimeVersion;
 	public static String OrcGeneralLaunchConfigurationTab_StackSizeLabel;
 	public static String OrcGeneralLaunchConfigurationTab_TokenLimitLabel;
@@ -52,7 +53,8 @@ public class Messages extends NLS {
 	public static String OrcLaunchShortcut_UnableToLaunchTitle;
 	public static String OrcProjectPropertyPage_IncludePathLabel;
 	public static String OrcProjectPropertyPage_IncludePathMessage;
-	public static String OrcProjectPropertyPage_NoStdPreludeLabel;
+	public static String OrcProjectPropertyPage_RecursionCheckLabel;
+	public static String OrcProjectPropertyPage_UseStdPreludeLabel;
 	public static String OrcProjectPropertyPage_SiteClassPathLabel;
 	public static String OrcProjectPropertyPage_SiteClassPathMessage;
 	public static String OrcProjectPropertyPage_TypeCheckLabel;

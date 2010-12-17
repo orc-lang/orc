@@ -96,7 +96,7 @@ trait Orc extends OrcRuntime {
       }
 
     /* Find the root of this group tree. By default, a group is its own root. */
-    def root: Group = this
+    def root: Execution;
 
   }
 
@@ -201,6 +201,8 @@ trait Orc extends OrcRuntime {
     def notify(event: OrcEvent) {
       k(event)
     }
+
+    override def root = this
 
   }
 
@@ -383,7 +385,7 @@ trait Orc extends OrcRuntime {
         case BindingFrame(n) :: fs => { stack = (new BindingFrame(n + 1)) :: fs }
 
         /* Tail call optimization (part 1 of 2) */
-        case FunctionFrame(_, _) :: fs => { /* Do not push a binding frame over a tail call.*/ }
+        case FunctionFrame(_, _) :: fs if (!group.root.options.disableTailCallOpt) => { /* Do not push a binding frame over a tail call.*/ }
 
         case fs => { stack = BindingFrame(1) :: fs }
       }
@@ -468,7 +470,7 @@ trait Orc extends OrcRuntime {
          * Push a new FunctionFrame 
          * only if the call is not a tail call.
          */
-        case FunctionFrame(_, _) :: fs => {}
+        case FunctionFrame(_, _) :: fs if (!group.root.options.disableTailCallOpt) => {}
         case _ => push(new FunctionFrame(node, env))
       }
 

@@ -54,6 +54,7 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 	private Spinner maxSiteThreadsSpinner;
 	private Combo logLevelList;
 	private Button dumpStackButton;
+	private Button noTcoButton;
 	private Button echoOilButton;
 
 	protected static final String LOG_LEVELS[] = { "OFF", "SEVERE", "WARNING", "INFO", "CONFIG", "FINE", "FINER", "FINEST", "ALL" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$
@@ -97,14 +98,16 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 	@Override
 	public void setDefaults(final ILaunchConfigurationWorkingCopy configuration) {
 		configuration.removeAttribute(OrcConfigSettings.LOG_LEVEL_ATTR_NAME);
-		configuration.removeAttribute(OrcConfigSettings.NO_PRELUDE_ATTR_NAME);
+		configuration.removeAttribute(OrcConfigSettings.PRELUDE_ATTR_NAME);
 		configuration.removeAttribute(OrcConfigSettings.INCLUDE_PATH_ATTR_NAME);
 		configuration.removeAttribute(OrcConfigSettings.ADDITIONAL_INCLUDES_ATTR_NAME);
 		configuration.removeAttribute(OrcConfigSettings.TYPE_CHECK_ATTR_NAME);
+		configuration.removeAttribute(OrcConfigSettings.RECURSION_CHECK_ATTR_NAME);
 		configuration.removeAttribute(OrcConfigSettings.ECHO_OIL_ATTR_NAME);
 		//configuration.removeAttribute(OrcConfigSettings.OIL_OUT_ATTR_NAME);
 		configuration.removeAttribute(OrcConfigSettings.SITE_CLASSPATH_ATTR_NAME);
 		configuration.removeAttribute(OrcConfigSettings.SHOW_JAVA_STACK_TRACE_ATTR_NAME);
+		configuration.removeAttribute(OrcConfigSettings.NO_TCO_ATTR_NAME);
 		configuration.removeAttribute(OrcConfigSettings.MAX_STACK_DEPTH_ATTR_NAME);
 		configuration.removeAttribute(OrcConfigSettings.MAX_TOKENS_ATTR_NAME);
 		configuration.removeAttribute(OrcConfigSettings.MAX_SITE_THREADS_ATTR_NAME);
@@ -172,6 +175,16 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 		gd.grabExcessHorizontalSpace = false;
 		dumpStackButton.setLayoutData(gd);
 
+		noTcoButton = new Button(labelWidgetComp, SWT.CHECK);
+		noTcoButton.setFont(parent.getFont());
+		noTcoButton.setSelection(OrcConfigSettings.NO_TCO_DEFAULT);
+		noTcoButton.setText(Messages.OrcGeneralLaunchConfigurationTab_NoTcoLabel);
+		noTcoButton.addSelectionListener(ourSelectionAdapter);
+		final GridData gd3 = new GridData(GridData.FILL_HORIZONTAL);
+		gd3.horizontalSpan = 2;
+		gd3.grabExcessHorizontalSpace = false;
+		noTcoButton.setLayoutData(gd3);
+
 		echoOilButton = new Button(labelWidgetComp, SWT.CHECK);
 		echoOilButton.setFont(parent.getFont());
 		echoOilButton.setSelection(OrcConfigSettings.ECHO_OIL_DEFAULT);
@@ -222,6 +235,7 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 			maxSiteThreadsSpinner.setSelection(configuration.getAttribute(OrcConfigSettings.MAX_SITE_THREADS_ATTR_NAME, OrcConfigSettings.MAX_SITE_THREADS_DEFAULT));
 			logLevelList.select(indexOfLevel(configuration.getAttribute(OrcConfigSettings.LOG_LEVEL_ATTR_NAME, OrcConfigSettings.LOG_LEVEL_DEFAULT), LOG_LEVELS));
 			dumpStackButton.setSelection(configuration.getAttribute(OrcConfigSettings.SHOW_JAVA_STACK_TRACE_ATTR_NAME, OrcConfigSettings.SHOW_JAVA_STACK_TRACE_DEFAULT));
+			noTcoButton.setSelection(configuration.getAttribute(OrcConfigSettings.NO_TCO_ATTR_NAME, OrcConfigSettings.NO_TCO_DEFAULT));
 			echoOilButton.setSelection(configuration.getAttribute(OrcConfigSettings.ECHO_OIL_ATTR_NAME, OrcConfigSettings.ECHO_OIL_DEFAULT));
 		} catch (final CoreException e) {
 			Activator.logAndShow(e);
@@ -247,6 +261,7 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 		setOrUnsetIntAttr(configuration, OrcConfigSettings.MAX_SITE_THREADS_ATTR_NAME, maxSiteThreadsSpinner.getSelection(), OrcConfigSettings.MAX_SITE_THREADS_DEFAULT);
 		setOrUnsetTextAttr(configuration, OrcConfigSettings.LOG_LEVEL_ATTR_NAME, logLevelList.getText());
 		setOrUnsetBoolAttr(configuration, OrcConfigSettings.SHOW_JAVA_STACK_TRACE_ATTR_NAME, dumpStackButton.getSelection(), OrcConfigSettings.SHOW_JAVA_STACK_TRACE_DEFAULT);
+		setOrUnsetBoolAttr(configuration, OrcConfigSettings.NO_TCO_ATTR_NAME, noTcoButton.getSelection(), OrcConfigSettings.NO_TCO_DEFAULT);
 		setOrUnsetBoolAttr(configuration, OrcConfigSettings.ECHO_OIL_ATTR_NAME, echoOilButton.getSelection(), OrcConfigSettings.ECHO_OIL_DEFAULT);
 	}
 

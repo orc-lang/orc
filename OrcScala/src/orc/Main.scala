@@ -119,6 +119,8 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
 
   UnitOpt(()=>typecheck, ()=>typecheck=true, ' ', "typecheck", usage = "Enable typechecking, which is disabled by default.")
 
+  UnitOpt(()=>disableRecursionCheck, ()=>disableRecursionCheck=true, ' ', "no-recursion-warn", usage = "Disable unguarded recursion check.")
+
   UnitOpt(()=>echoOil, ()=>echoOil=true, ' ', "echo-oil", usage = "Write the compiled program in OIL format to stdout.")
 
   FileOpt(()=>oilOutputFile.getOrElse(null), f => oilOutputFile=Some(f), 'o', "output-oil", usage = "Write the compiled program in OIL format to the given filename.")
@@ -126,6 +128,8 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
   UnitOpt(()=>compileOnly, ()=>compileOnly=true, 'c', "compile-only", usage = "Compile this program, but do not run it.")
 
   UnitOpt(()=>showJavaStackTrace, ()=>showJavaStackTrace=true, ' ', "java-stack-trace", usage = "Show Java stack traces on thrown Java exceptions.")
+
+  UnitOpt(()=>disableTailCallOpt, ()=>disableTailCallOpt=true, ' ', "no-tco", usage = "Disable tail call optimization, for easier-to-debug stack traces.")
 
   IntOpt(()=>stackSize, stackSize=_, ' ', "stack-size", usage = "Terminate the program if this stack depth is exceeded. Default=infinity.")
 

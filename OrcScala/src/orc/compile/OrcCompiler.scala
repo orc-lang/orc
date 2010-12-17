@@ -182,7 +182,9 @@ abstract class CoreOrcCompiler extends OrcCompiler {
           def warn(e: orc.ast.oil.named.Expression) = {
             co.reportProblem(UnguardedRecursionException() at e)
           }
-          ast.checkGuarded(warn)
+          if (!co.options.disableRecursionCheck) {
+            ast.checkGuarded(warn)
+          }
           ast 
       }
   }
