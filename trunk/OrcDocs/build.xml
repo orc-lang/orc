@@ -66,14 +66,14 @@
 	<!--
 	  - target:  test
 	  -->
-	<target name="test" depends="clean,olinks,rm-build-html-chunk,build-html-single,rm-build-pdf" description="Test build for modifications.">
+	<target name="test" depends="clean,olinks,rm-build-html-chunk,build-html-single" description="Test build for modifications.">
 		<echo message="Test build complete" />
 	</target>
 	
 	<!--
 	  - target:  olinks
 	  -->
-	<target name="olinks" description="Builds the olink databases for mutual linking between documents">
+	<target name="olinks" depends="xinclude" description="Builds the olink databases for mutual linking between documents">
 		<echo message="Creating olink databases..."/>
 		<!-- Create database of links for user guide -->
 		<xslt style="${src.dir}/xsl/orc.xsl"
@@ -93,6 +93,17 @@
 			<param name="targets.filename" expression="rmtargets.db"/>
 			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
+		<!-- Create database of links for ref.combinators.otherwise (section) -->
+		<!--
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual">
+			<include name="combinators_otherwise.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="ref.combinators.otherwise.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		-->
 
 	</target>
 		
