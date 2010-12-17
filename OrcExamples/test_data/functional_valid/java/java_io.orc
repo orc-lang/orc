@@ -16,7 +16,7 @@ def GetContent(in) =
   loop(in.read(buf)) >>
   out.toString()
 
-InputStreamReader(FileInputStream("examples/java_io_sample.txt")) >reader>
+InputStreamReader(FileInputStream("../OrcExamples/test_data/functional_valid/java/java_io_sample.txt")) >reader>
 println(GetContent(reader)) >>
 stop
 
