@@ -47,6 +47,8 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def additionalIncludes_=(newVal: java.util.List[String]) = putPathList("orc.additionalIncludes", newVal)
   def typecheck: Boolean = getBoolean("orc.typecheck", false)
   def typecheck_=(newVal: Boolean) = putBoolean("orc.typecheck", newVal)
+  def disableRecursionCheck: Boolean = getBoolean("orc.disableRecursionCheck", false)
+  def disableRecursionCheck_=(newVal: Boolean) = putBoolean("orc.disableRecursionCheck", newVal)
   def echoOil: Boolean = getBoolean("orc.echoOil", false)
   def echoOil_=(newVal: Boolean) = putBoolean("orc.echoOil", newVal)
   def oilOutputFile: Option[File] = {
@@ -64,6 +66,8 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def classPath_=(newVal: java.util.List[String]) = putPathList("orc.classPath", newVal)
   def showJavaStackTrace: Boolean = getBoolean("orc.showJavaStackTrace", false)
   def showJavaStackTrace_=(newVal: Boolean) = putBoolean("orc.showJavaStackTrace", newVal)
+  def disableTailCallOpt: Boolean = getBoolean("orc.disableTailCallOpt", false)
+  def disableTailCallOpt_=(newVal: Boolean) = putBoolean("orc.disableTailCallOpt", newVal)
   def stackSize: Int = getInt("orc.stackSize", -1)
   def stackSize_=(newVal: Int) = putInt("orc.stackSize", newVal)
   def maxTokens: Int = getInt("orc.maxTokens", -1)

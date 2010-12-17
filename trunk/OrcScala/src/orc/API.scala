@@ -147,6 +147,8 @@ trait OrcOptions {
   def additionalIncludes_=(newVal: java.util.List[String])
   def typecheck: Boolean
   def typecheck_=(newVal: Boolean)
+  def disableRecursionCheck: Boolean
+  def disableRecursionCheck_=(newVal: Boolean)
   def echoOil: Boolean
   def echoOil_=(newVal: Boolean)
   def oilOutputFile: Option[File]
@@ -159,6 +161,8 @@ trait OrcOptions {
   def classPath_=(newVal: java.util.List[String])
   def showJavaStackTrace: Boolean
   def showJavaStackTrace_=(newVal: Boolean)
+  def disableTailCallOpt: Boolean
+  def disableTailCallOpt_=(newVal: Boolean)
   def stackSize: Int
   def stackSize_=(newVal: Int)
   def maxTokens: Int

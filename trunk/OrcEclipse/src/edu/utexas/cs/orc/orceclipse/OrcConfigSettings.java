@@ -43,14 +43,16 @@ import org.eclipse.imp.preferences.PreferencesService;
  */
 public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 	public static final String LOG_LEVEL_ATTR_NAME = Activator.getInstance().getID() + ".LOG_LEVEL"; //$NON-NLS-1$
-	public static final String NO_PRELUDE_ATTR_NAME = Activator.getInstance().getID() + ".NO_PRELUDE"; //$NON-NLS-1$
+	public static final String PRELUDE_ATTR_NAME = Activator.getInstance().getID() + ".USE_PRELUDE"; //$NON-NLS-1$
 	public static final String INCLUDE_PATH_ATTR_NAME = Activator.getInstance().getID() + ".INCLUDE_PATH"; //$NON-NLS-1$
 	public static final String ADDITIONAL_INCLUDES_ATTR_NAME = Activator.getInstance().getID() + ".ADDITIONAL_INCLUDES"; //$NON-NLS-1$
 	public static final String TYPE_CHECK_ATTR_NAME = Activator.getInstance().getID() + ".TYPE_CHECK"; //$NON-NLS-1$
+	public static final String RECURSION_CHECK_ATTR_NAME = Activator.getInstance().getID() + ".RECURSION_CHECK"; //$NON-NLS-1$
 	public static final String ECHO_OIL_ATTR_NAME = Activator.getInstance().getID() + ".ECHO_OIL"; //$NON-NLS-1$
 	//public static final String OIL_OUT_ATTR_NAME = Activator.getInstance().getID() + ".OIL_OUT"; //$NON-NLS-1$
 	public static final String SITE_CLASSPATH_ATTR_NAME = Activator.getInstance().getID() + ".SITE_CLASSPATH"; //$NON-NLS-1$
 	public static final String SHOW_JAVA_STACK_TRACE_ATTR_NAME = Activator.getInstance().getID() + ".SHOW_JAVA_STACK_TRACE"; //$NON-NLS-1$
+	public static final String NO_TCO_ATTR_NAME = Activator.getInstance().getID() + ".NO_TCO"; //$NON-NLS-1$
 	public static final String MAX_STACK_DEPTH_ATTR_NAME = Activator.getInstance().getID() + ".MAX_STACK_DEPTH"; //$NON-NLS-1$
 	public static final String MAX_TOKENS_ATTR_NAME = Activator.getInstance().getID() + ".MAX_TOKENS"; //$NON-NLS-1$
 	public static final String MAX_SITE_THREADS_ATTR_NAME = Activator.getInstance().getID() + ".MAX_SITE_THREADS"; //$NON-NLS-1$
@@ -58,14 +60,16 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 	private static final OrcBindings defaultConfig = new OrcBindings();
 
 	public static final String LOG_LEVEL_DEFAULT = defaultConfig.logLevel();
-	public static final boolean NO_PRELUDE_DEFAULT = !defaultConfig.usePrelude();
+	public static final boolean PRELUDE_DEFAULT = defaultConfig.usePrelude();
 	public static final String INCLUDE_PATH_DEFAULT = defaultConfig.includePath().isEmpty() ? "" : listMkString(defaultConfig.includePath(), ":").concat(":"); //Eclipse path pref entries always have a trailing : //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	public static final String ADDITIONAL_INCLUDES_DEFAULT = defaultConfig.additionalIncludes().isEmpty() ? "" : listMkString(defaultConfig.additionalIncludes(), ":").concat(":"); //Eclipse path pref entries always have a trailing : //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	public static final boolean TYPE_CHECK_DEFAULT = defaultConfig.typecheck();
+	public static final boolean RECURSION_CHECK_DEFAULT = !defaultConfig.disableRecursionCheck();
 	public static final boolean ECHO_OIL_DEFAULT = defaultConfig.echoOil();
 	//public static final String OIL_OUT_DEFAULT = defaultConfig.oilOutputFile().getPath();
 	public static final String SITE_CLASSPATH_DEFAULT = defaultConfig.classPath().isEmpty() ? "" : listMkString(defaultConfig.classPath(), ":").concat(":"); //Eclipse path pref entries always have a trailing : //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	public static final boolean SHOW_JAVA_STACK_TRACE_DEFAULT = defaultConfig.showJavaStackTrace();
+	public static final boolean NO_TCO_DEFAULT = defaultConfig.disableTailCallOpt();
 	public static final int MAX_STACK_DEPTH_DEFAULT = defaultConfig.stackSize();
 	public static final int MAX_TOKENS_DEFAULT = defaultConfig.maxTokens();
 	public static final int MAX_SITE_THREADS_DEFAULT = defaultConfig.maxSiteThreads();
@@ -96,8 +100,8 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 		if (prefSvc.isDefined(LOG_LEVEL_ATTR_NAME)) {
 			logLevel_$eq(prefSvc.getStringPreference(LOG_LEVEL_ATTR_NAME));
 		}
-		if (prefSvc.isDefined(NO_PRELUDE_ATTR_NAME)) {
-			usePrelude_$eq(!prefSvc.getBooleanPreference(NO_PRELUDE_ATTR_NAME));
+		if (prefSvc.isDefined(PRELUDE_ATTR_NAME)) {
+			usePrelude_$eq(prefSvc.getBooleanPreference(PRELUDE_ATTR_NAME));
 		}
 		if (prefSvc.isDefined(INCLUDE_PATH_ATTR_NAME)) {
 			includePath_$eq(Arrays.asList(prefSvc.getStringPreference(INCLUDE_PATH_ATTR_NAME).split(":"))); //$NON-NLS-1$
@@ -107,6 +111,9 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 		}
 		if (prefSvc.isDefined(TYPE_CHECK_ATTR_NAME)) {
 			typecheck_$eq(prefSvc.getBooleanPreference(TYPE_CHECK_ATTR_NAME));
+		}
+		if (prefSvc.isDefined(RECURSION_CHECK_ATTR_NAME)) {
+			disableRecursionCheck_$eq(!prefSvc.getBooleanPreference(RECURSION_CHECK_ATTR_NAME));
 		}
 		if (prefSvc.isDefined(ECHO_OIL_ATTR_NAME)) {
 			echoOil_$eq(prefSvc.getBooleanPreference(ECHO_OIL_ATTR_NAME));
@@ -118,7 +125,10 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 			classPath_$eq(Arrays.asList(prefSvc.getStringPreference(SITE_CLASSPATH_ATTR_NAME).split(":"))); //$NON-NLS-1$
 		}
 		if (prefSvc.isDefined(SHOW_JAVA_STACK_TRACE_ATTR_NAME)) {
-			echoOil_$eq(prefSvc.getBooleanPreference(SHOW_JAVA_STACK_TRACE_ATTR_NAME));
+			showJavaStackTrace_$eq(prefSvc.getBooleanPreference(SHOW_JAVA_STACK_TRACE_ATTR_NAME));
+		}
+		if (prefSvc.isDefined(NO_TCO_ATTR_NAME)) {
+			disableTailCallOpt_$eq(prefSvc.getBooleanPreference(NO_TCO_ATTR_NAME));
 		}
 		if (prefSvc.isDefined(MAX_STACK_DEPTH_ATTR_NAME)) {
 			stackSize_$eq(prefSvc.getIntPreference(MAX_STACK_DEPTH_ATTR_NAME));
@@ -138,16 +148,18 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 	private void fillFromLaunchConfig(final ILaunchConfiguration launchConfig) throws CoreException {
 
 		logLevel_$eq(launchConfig.getAttribute(LOG_LEVEL_ATTR_NAME, logLevel()));
-		usePrelude_$eq(!launchConfig.getAttribute(NO_PRELUDE_ATTR_NAME, !usePrelude()));
+		usePrelude_$eq(launchConfig.getAttribute(PRELUDE_ATTR_NAME, usePrelude()));
 		includePath_$eq(launchConfig.getAttribute(INCLUDE_PATH_ATTR_NAME, includePath()));
 		additionalIncludes_$eq(launchConfig.getAttribute(ADDITIONAL_INCLUDES_ATTR_NAME, additionalIncludes()));
 		typecheck_$eq(launchConfig.getAttribute(TYPE_CHECK_ATTR_NAME, typecheck()));
+		disableRecursionCheck_$eq(!launchConfig.getAttribute(RECURSION_CHECK_ATTR_NAME, !disableRecursionCheck()));
 		echoOil_$eq(launchConfig.getAttribute(ECHO_OIL_ATTR_NAME, echoOil()));
 		//if (launchConfig.getAttribute(OIL_OUT_ATTR_NAME, (String) null) != null) {
 		//	oilOutputFile_$eq(new File(launchConfig.getAttribute(OIL_OUT_ATTR_NAME, (String) null)));
 		//}
 		classPath_$eq(launchConfig.getAttribute(SITE_CLASSPATH_ATTR_NAME, classPath()));
 		showJavaStackTrace_$eq(launchConfig.getAttribute(SHOW_JAVA_STACK_TRACE_ATTR_NAME, showJavaStackTrace()));
+		disableTailCallOpt_$eq(launchConfig.getAttribute(NO_TCO_ATTR_NAME, disableTailCallOpt()));
 		stackSize_$eq(launchConfig.getAttribute(MAX_STACK_DEPTH_ATTR_NAME, stackSize()));
 		maxTokens_$eq(launchConfig.getAttribute(MAX_TOKENS_ATTR_NAME, maxTokens()));
 		maxSiteThreads_$eq(launchConfig.getAttribute(MAX_SITE_THREADS_ATTR_NAME, maxSiteThreads()));
@@ -158,14 +170,16 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 		// but instead get them from the OrcOptions class's defaults. Activator gives us the opportunity to set the defaults here.
 		final IEclipsePreferences defaultPrefs = new DefaultScope().getNode(Activator.getInstance().getLanguageID());
 		defaultPrefs.put(LOG_LEVEL_ATTR_NAME, LOG_LEVEL_DEFAULT);
-		defaultPrefs.putBoolean(NO_PRELUDE_ATTR_NAME, NO_PRELUDE_DEFAULT);
+		defaultPrefs.putBoolean(PRELUDE_ATTR_NAME, PRELUDE_DEFAULT);
 		defaultPrefs.put(INCLUDE_PATH_ATTR_NAME, INCLUDE_PATH_DEFAULT);
 		defaultPrefs.put(ADDITIONAL_INCLUDES_ATTR_NAME, ADDITIONAL_INCLUDES_DEFAULT);
 		defaultPrefs.putBoolean(TYPE_CHECK_ATTR_NAME, TYPE_CHECK_DEFAULT);
+		defaultPrefs.putBoolean(RECURSION_CHECK_ATTR_NAME, RECURSION_CHECK_DEFAULT);
 		defaultPrefs.putBoolean(ECHO_OIL_ATTR_NAME, ECHO_OIL_DEFAULT);
 		//defaultPrefs.put(OIL_OUT_ATTR_NAME, OIL_OUT_DEFAULT);
 		defaultPrefs.put(SITE_CLASSPATH_ATTR_NAME, SITE_CLASSPATH_DEFAULT);
 		defaultPrefs.putBoolean(SHOW_JAVA_STACK_TRACE_ATTR_NAME, SHOW_JAVA_STACK_TRACE_DEFAULT);
+		defaultPrefs.putBoolean(NO_TCO_ATTR_NAME, NO_TCO_DEFAULT);
 		defaultPrefs.putInt(MAX_STACK_DEPTH_ATTR_NAME, MAX_STACK_DEPTH_DEFAULT);
 		defaultPrefs.putInt(MAX_TOKENS_ATTR_NAME, MAX_TOKENS_DEFAULT);
 		defaultPrefs.putInt(MAX_SITE_THREADS_ATTR_NAME, MAX_SITE_THREADS_DEFAULT);
