@@ -15,6 +15,7 @@
 
 package orc.compile.parse
 
+import java.text.Normalizer
 import scala.util.parsing.combinator.lexical.StdLexical
 import scala.util.parsing.combinator.RegexParsers
 import scala.util.parsing.input.CharSequenceReader.EofCh
@@ -38,6 +39,7 @@ class OrcLexical() extends StdLexical() with RegexParsers {
 
   // Identifiers per Unicode Standard Annex #31, Unicode Identifier and Pattern Syntax
   val identifier: Parser[String] = """[\p{javaUnicodeIdentifierStart}][\p{javaUnicodeIdentifierPart}']*""".r
+  override protected def processIdent(name: String) = super.processIdent(Normalizer.normalize(name, Normalizer.Form.NFC))
 
   // StdLexical wants a func for legal identifier chars other than digits
   override def identChar = elem("identifier character", { ch => ch.isUnicodeIdentifierPart || ch == '\'' })
@@ -61,6 +63,7 @@ class OrcLexical() extends StdLexical() with RegexParsers {
   ////////
 
   /** The set of reserved identifiers: these will be returned as `Keyword's */
+  // All these string literals are assumed to be in Unicode Normalization Form C (NFC)
   override val reserved = new HashSet[String] ++ List(
     "true", "false", "signal", "stop", "null",
     "lambda", "if", "then", "else", "as", "_",
@@ -78,7 +81,7 @@ class OrcLexical() extends StdLexical() with RegexParsers {
     )
 
   /** The set of delimiters (ordering does not matter) */
-  override val delimiters = new HashSet[String] ++ (List(
+  override val delimiters /* and operators */ = new HashSet[String] ++ (List(
     "(", ")", "[", "]", "{.", ".}", ",",
     "|", ";",
     "::", ":!:"
@@ -91,7 +94,7 @@ class OrcLexical() extends StdLexical() with RegexParsers {
     o.toList.map(Pattern.quote(_)).mkString("|").r
   }
 
-  protected lazy val delimRegex = {
+  protected lazy val delimOperRegex = {
     val o = new Array[String](delimiters.size)
     delimiters.copyToArray(o, 0)
     scala.util.Sorting.quickSort(o)(new Ordering[String] { def compare(x: String, y: String) = y.length - x.length })
@@ -144,7 +147,7 @@ class OrcLexical() extends StdLexical() with RegexParsers {
     | stringLit               ^^ { StringLit(_) }
     | '\"' ~> err("unclosed string literal")
     | // Must be after other alternatives that a delim could be a prefix of
-    delimRegex                ^^ { Keyword(_) }
+    delimOperRegex            ^^ { Keyword(_) }
     | EofCh                   ^^^  EOF
     )
 
