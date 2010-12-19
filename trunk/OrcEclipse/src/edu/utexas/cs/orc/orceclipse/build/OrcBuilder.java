@@ -270,9 +270,8 @@ public class OrcBuilder extends BuilderBase {
 				new StandardOrcCompiler().apply(ic, config, compileLogger, prgsLstnr);
 				// Disregard returned OIL, we just want the errors
 			} catch (final IOException e) {
-				//TODO: Handle this differently?
 				getConsoleStream().println(Messages.OrcBuilder_IOErrorWhenBuilding + fileName + ": " + e.toString()); //$NON-NLS-1$
-				getPlugin().logException(e.toString(), e);
+				Activator.logAndShow(e);
 			}
 
 			doRefresh(file.getParent()); // N.B.: Assumes all generated files go into parent folder
@@ -280,7 +279,7 @@ public class OrcBuilder extends BuilderBase {
 			// catch Exception, because any exception could break the
 			// builder infrastructure.
 			getConsoleStream().println(Messages.OrcBuilder_CompilerInternalErrorOn + fileName + ": " + e.toString()); //$NON-NLS-1$
-			getPlugin().logException(e.toString(), e);
+			Activator.log(e);
 		} finally {
 			monitor.done();
 		}

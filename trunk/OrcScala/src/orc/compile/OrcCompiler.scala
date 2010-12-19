@@ -104,6 +104,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
     @throws(classOf[IOException])
     override def apply(co: CompilerOptions) = { source =>
       val options = co.options
+      val topLevelSourcePos = source.reader.pos
       var includeFileNames = options.additionalIncludes
       if (options.usePrelude) {
         includeFileNames = "prelude.inc" :: (includeFileNames).toList
@@ -119,7 +120,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
         case r: OrcProgramParser.SuccessT[_] => r.get.asInstanceOf[OrcProgramParser.ResultType]
         case n: OrcProgramParser.NoSuccess => throw new ParsingException(n.msg, n.next.pos)
       }
-      (includeAsts :\ progAst) { orc.ast.ext.Declare }
+      (includeAsts :\ progAst) { orc.ast.ext.Declare } setPos topLevelSourcePos
     }
   }
 
