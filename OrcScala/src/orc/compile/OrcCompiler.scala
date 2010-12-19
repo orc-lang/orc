@@ -296,7 +296,7 @@ class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
   @throws(classOf[IOException])
   def openInclude(includeFileName: String, relativeTo: OrcInputContext, options: OrcOptions): OrcInputContext = {
     val baseIC = if (relativeTo != null) relativeTo else OrcNullInputContext
-    Logger.finer("openInclude "+includeFileName+", relative to "+baseIC.getClass.getCanonicalName+"("+baseIC.descr+")")
+    Logger.finer("openInclude "+includeFileName+", relative to "+Option(baseIC.getClass.getCanonicalName).getOrElse(baseIC.getClass.getName)+"("+baseIC.descr+")")
 
     // Try filename under the include path list
     for (incPath <- scala.collection.JavaConversions.asIterable(options.includePath)) {
@@ -307,7 +307,7 @@ class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
         // them.  This seems a weak barrier, and in fact was broken.
         // We need an alternative way to control local file reads.
         val newIC = baseIC.newInputFromPath(incPath, includeFileName)
-        Logger.finer("include "+includeFileName+", found on include path entry "+incPath+", opened as "+newIC.getClass.getCanonicalName+"("+newIC.descr+")")
+        Logger.finer("include "+includeFileName+", found on include path entry "+incPath+", opened as "+Option(newIC.getClass.getCanonicalName).getOrElse(newIC.getClass.getName)+"("+newIC.descr+")")
         return newIC
       } catch {
         case _: IOException => /* Ignore, must not be here */
@@ -317,7 +317,7 @@ class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
     // Try in the bundled include resources
     try {
       val newIC = new OrcResourceInputContext("orc/lib/includes/" + includeFileName, getResource)
-        Logger.finer("include "+includeFileName+", found in bundled resources, opened as "+newIC.getClass.getCanonicalName+"("+newIC.descr+")")
+        Logger.finer("include "+includeFileName+", found in bundled resources, opened as "+Option(newIC.getClass.getCanonicalName).getOrElse(newIC.getClass.getName)+"("+newIC.descr+")")
         return newIC
     } catch {
       case _: IOException => /* Ignore, must not be here */

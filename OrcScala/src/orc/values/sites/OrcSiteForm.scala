@@ -39,7 +39,7 @@ object OrcSiteForm extends SiteForm {
         return loadedClass.asInstanceOf[Class[Site]].newInstance()
       } catch {
         case e =>
-          throw new SiteResolutionException(loadedClass.getCanonicalName(), e)
+          throw new SiteResolutionException(loadedClass.getName, e)
       }
     } else {
       try { // Maybe it's a Scala object....
@@ -48,7 +48,7 @@ object OrcSiteForm extends SiteForm {
       } catch {
         case _ => { } //Ignore -- It's not a Scala object, then.
       }
-      throw new SiteResolutionException(loadedClass.getCanonicalName(),new ClassCastException(loadedClass.getClass().getCanonicalName()+" cannot be cast to "+classOf[Site].getCanonicalName()))
+      throw new SiteResolutionException(loadedClass.getName,new ClassCastException(loadedClass.getClass.getName+" cannot be cast to "+classOf[Site].getName))
     }
   }
 }

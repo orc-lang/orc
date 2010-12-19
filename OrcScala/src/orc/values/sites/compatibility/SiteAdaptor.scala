@@ -40,8 +40,6 @@ abstract class SiteAdaptor extends Site with UntypedSite {
     callSite(new Args(jl), token)
   }
 
-  override def name: String = this.getClass().getName()
-
   /**
    * Must be implemented by subclasses to implement the site behavior
    * @param args          list of argument values
