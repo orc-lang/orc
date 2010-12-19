@@ -72,7 +72,7 @@ object OrcForTesting {
           Console.out.flush()
         }
         override def printed(s: String) { print(s); Console.out.flush(); output.append(s) }
-        override def caught(e: Throwable) { println("Error: "+e.getClass().getName()+": "+e.getMessage()); Console.out.flush(); output.append("Error: "+e.getClass().getName()+": "+e.getMessage()+"\n") }
+        override def caught(e: Throwable) { println("Error: "+Option(e.getClass.getCanonicalName).getOrElse(e.getClass.getName)+": "+e.getMessage()); Console.out.flush(); output.append("Error: "+e.getClass().getName()+": "+e.getMessage()+"\n") }
       }
 
       // run the engine with a fixed timeout

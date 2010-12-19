@@ -25,7 +25,7 @@ import orc.error.runtime.ArityMismatchException
 import orc.run.Logger
 
 trait SiteMetadata {
-  def name: String = this.getClass().getCanonicalName()
+  def name: String = Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName)
 
   /**
    * Virtual time taken by this site. By default, the virtual time
@@ -48,7 +48,7 @@ trait UntypedSite extends Site
 
 trait PartialSite extends Site {
   def call(args: List[AnyRef], token: TokenAPI) {
-    Logger.entering(this.getClass.getCanonicalName, "call", args)
+    Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
     evaluate(args) match {
       case Some(v) => token.publish(v)
       case None => token.halt
@@ -60,7 +60,7 @@ trait PartialSite extends Site {
 
 trait TotalSite extends Site {
   def call(args: List[AnyRef], token: TokenAPI) {
-    Logger.entering(this.getClass.getCanonicalName, "call", args)
+    Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
   	try { 
   	  token.publish(evaluate(args)) 
   	} catch { 

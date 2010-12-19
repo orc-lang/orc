@@ -32,7 +32,7 @@ object Error extends TotalSite with TotalSite1 with TypedSite {
   def eval(x: AnyRef) = {
     x match {
       case s: String => throw new ProgramSignalledError(s)
-      case _ => throw new ArgumentTypeMismatchException(0, "String", if (x != null) x.getClass().getCanonicalName() else "null")
+      case _ => throw new ArgumentTypeMismatchException(0, "String", if (x != null) Option(x.getClass.getCanonicalName).getOrElse(x.getClass.getName) else "null")
     }
   }
   

@@ -38,7 +38,5 @@ class Vtimer extends Site with TypedSite {
   var vtime : Int = 0
   override def virtualTime() : Int = vtime   // -1 represents infinity
 
-  override def name: String = this.getClass().getName()
-  
   def orcType = SimpleFunctionType(IntegerType, SignalType)
 }

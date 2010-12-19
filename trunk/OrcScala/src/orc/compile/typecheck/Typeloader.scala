@@ -221,7 +221,7 @@ object Typeloader extends SiteClassLoading {
         // by mistake.
         for (x <- cl.getTypeParameters()) {
           if (!(jctx contains x)) {
-            throw new FirstOrderTypeExpectedException(cl.getCanonicalName())
+            throw new FirstOrderTypeExpectedException(Option(cl.getClass.getCanonicalName).getOrElse(cl.getClass.getName))
           }
         }
         // Check if this is actually a primitive array class
@@ -290,7 +290,7 @@ object Typeloader extends SiteClassLoading {
       case cl: Class[_] => {
         val formals = cl.getTypeParameters().toList
         if (formals.isEmpty) {
-          throw new SecondOrderTypeExpectedException(cl.getCanonicalName())
+          throw new SecondOrderTypeExpectedException(Option(cl.getClass.getCanonicalName).getOrElse(cl.getClass.getName))
         }
         else {
           val name = cl.getName()
@@ -436,7 +436,7 @@ object Typeloader extends SiteClassLoading {
       catch {
         case _ => { } //Ignore -- It's not a Scala object, then.
       }
-      throw new TypeResolutionException(loadedClass.getName(),new ClassCastException(loadedClass.getCanonicalName()+" cannot be cast to "+classOf[Type].getCanonicalName()))
+      throw new TypeResolutionException(loadedClass.getName, new ClassCastException(loadedClass.getName+" cannot be cast to "+classOf[Type].getName))
     }
   }
   
@@ -465,7 +465,7 @@ object Typeloader extends SiteClassLoading {
       catch {
         case _ => { } //Ignore -- It's not a Scala object, then.
       }
-      throw new TypeOperatorResolutionException(loadedClass.getName(),new ClassCastException(loadedClass.getCanonicalName()+" cannot be cast to "+classOf[TypeOperator].getCanonicalName()))
+      throw new TypeOperatorResolutionException(loadedClass.getName, new ClassCastException(loadedClass.getName+" cannot be cast to "+classOf[TypeOperator].getName))
     }
   }
   

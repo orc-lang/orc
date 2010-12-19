@@ -29,7 +29,5 @@ class Vclock extends Site with TypedSite {
     token.publish(BigInt(0))//FIXME
   }
 
-  override def name: String = this.getClass().getName()
-  
   def orcType = SimpleFunctionType(IntegerType)
 }
