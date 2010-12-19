@@ -36,12 +36,29 @@ public final class Set<E> extends AbstractSet<E> {
 
 		@Override
 		public int hashCode() {
-			return value.hashCode();
+			return value == null ? 0 : value.hashCode();
 		}
 
-        @Override
+		@Override
 		public boolean equals(final Object that) {
-			return value.equals(((Wrapper<?>) that).value);  //FIXME:Check if this is OK vs. using Eq site
+			if (this == that) {
+				return true;
+			}
+			if (that == null) {
+				return false;
+			}
+			if (!(that instanceof Wrapper)) {
+				return false;
+			}
+			final Wrapper<?> other = (Wrapper<?>) that;
+			if (value == null) {
+				if (other.value != null) {
+					return false;
+				}
+			} else if (!value.equals(other.value)) {
+				return false;
+			}
+			return true;
 		}
 	}
 

@@ -25,11 +25,11 @@ import javax.swing.SwingUtilities;
 
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
+import orc.types.Type;
+import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.ThreadedPartialSite;
 import orc.values.sites.compatibility.Types;
-import orc.values.sites.TypedSite;
-import orc.types.Type;
 
 /**
  * A prompt dialog. Publishes the user's response. If the user hits Cancel,
@@ -45,7 +45,6 @@ public class Prompt extends ThreadedPartialSite implements TypedSite {
 		try {
 			return runPromptDialog("Orc", message, promptIcon);
 		} catch (final InterruptedException e) {
-			// TODO Auto-generated catch block
 			throw new JavaException(e);
 		}
 	}
@@ -55,7 +54,7 @@ public class Prompt extends ThreadedPartialSite implements TypedSite {
 		return Types.function(Types.string(), Types.string());
 	}
 
-	public String runPromptDialog(final String title, final String message, Icon icon) throws InterruptedException {
+	public String runPromptDialog(final String title, final String message, final Icon icon) throws InterruptedException {
 		final PromptWindowController pwc = new PromptWindowController(title, message, icon);
 		// Runs pwc.run on the AWT/Swing event dispatch thread
 		SwingUtilities.invokeLater(pwc);
@@ -70,9 +69,9 @@ public class Prompt extends ThreadedPartialSite implements TypedSite {
 		private JOptionPane pane;
 		private JDialog dialog;
 		private boolean done;
-		private Icon icon;
+		private final Icon icon;
 
-		protected PromptWindowController(final String dialogTitle, final String dialogMessage, Icon dialogIcon) {
+		protected PromptWindowController(final String dialogTitle, final String dialogMessage, final Icon dialogIcon) {
 			super();
 			this.title = dialogTitle;
 			this.message = dialogMessage;

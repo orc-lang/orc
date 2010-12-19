@@ -16,15 +16,14 @@ package orc.lib.comp;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import orc.error.runtime.JavaException;
+import orc.error.runtime.ArgumentTypeMismatchException;
 import orc.error.runtime.TokenException;
-import orc.values.sites.compatibility.Args;
-import orc.values.sites.compatibility.EvalSite;
-import orc.values.sites.compatibility.Args.NumericBinaryOperator;
-import orc.values.sites.compatibility.Types;
-import orc.values.sites.TypedSite;
 import orc.types.Type;
-
+import orc.values.sites.TypedSite;
+import orc.values.sites.compatibility.Args;
+import orc.values.sites.compatibility.Args.NumericBinaryOperator;
+import orc.values.sites.compatibility.EvalSite;
+import orc.values.sites.compatibility.Types;
 
 /**
  * @author quark
@@ -73,24 +72,20 @@ public abstract class ComparisonSite extends EvalSite implements TypedSite {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see orc.runtime.sites.EvalSite#evaluate(java.lang.Object[])
-	 */
-    @Override
+	@Override
 	public Object evaluate(final Args args) throws TokenException {
 		final Object arg0 = args.getArg(0);
 		final Object arg1 = args.getArg(1);
-		try {
-			if (arg0 instanceof Number && arg1 instanceof Number) {
-				final int a = Args.applyNumericOperator((Number) arg0, (Number) arg1, new MyOperator()).intValue();
-				return Boolean.valueOf(compare(a));
-			} else {
-			    @SuppressWarnings("unchecked")
-				final int a = ((Comparable<Object>) arg0).compareTo(arg1);
-				return Boolean.valueOf(compare(a));
+		if (arg0 instanceof Number && arg1 instanceof Number) {
+			final int a = Args.applyNumericOperator((Number) arg0, (Number) arg1, new MyOperator()).intValue();
+			return Boolean.valueOf(compare(a));
+		} else {
+			if (!(arg0 instanceof Comparable)) {
+				throw new ArgumentTypeMismatchException(0, "Comparable<Object>", args.getArg(0).getClass().getCanonicalName());
 			}
-		} catch (final ClassCastException e) {
-			throw new JavaException(e); // TODO: Make more specific
+			@SuppressWarnings("unchecked")
+			final int a = ((Comparable<Object>) arg0).compareTo(arg1);
+			return Boolean.valueOf(compare(a));
 		}
 	}
 
