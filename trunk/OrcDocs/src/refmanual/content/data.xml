@@ -16,7 +16,7 @@
 
 <title>Data Values</title>
 
-<para>TODO:Introduction paragraph about data values.  TODO:Different chapter name?</para>
+<para>TODO:Introduction paragraph about data values.</para>
 
 <xi:include href="data_boolean.xml"/>
 <xi:include href="data_numeric.xml"/>

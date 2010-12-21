@@ -16,15 +16,38 @@
 <para><emphasis role="strong">Type</emphasis>: <code>Integer</code></para>
 <para><emphasis role="strong">Type</emphasis>: <code>Number</code></para>
 
-<para>Orc's representation of two-valued logical values are the usual
-<literal>false</literal> and <literal>true</literal>.</para>
+<para>Orc includes two numeric types, <type>Integer</type> and <type>Number</type>.
+Orc's <type>Integer</type> is an arbitrary-precision two's complement integer. 
+Orc's <type>Number</type> is a floating point number, with an arbitrary-precision two's complement significand and a 32-bit two's complement exponent (base 10).
+<type>Number</type> behaves in accordance with the ANSI INCITS 274-1996 subset of ANSI/IEEE Std 754-2008.
+Namely, "infinite, NaN, or subnormal results are always treated as errors, and –0 results are hidden".
+</para>
+
+<para>
+Note that the divide operation on <type>Number</type>s can encounter a
+non-terminating decimal expansion, where there is no exact representable
+decimal result.  In this case, the divide operation falls back to division
+using IEEE 754 <type>binary64</type> (formerly called double precision)
+binary floating-point operands.
+This fall back may result in a loss of precision for this operation.
+</para>
+
+<para>
+Similiarly, the exponent operation may fall back to IEEE 754 <type>binary64</type>
+binary floating-point operands in the case of a fractional exponent.
+This fall back may result in a loss of precision for this operation.
+</para>
 
 <section id="ref.data.numeric.literals">
 <title>Literals</title>
 
-<para><emphasis role="strong">EBNF</emphasis>: Boolean ::= <code>false</code> | <code>true</code></para>
+<para><emphasis role="strong">EBNF</emphasis>: Number ::= ([0-9]+)([.][0-9]+)?([Ee][+-]?([0-9]+))?</para>
 
-<para>TODO:anything to say here?</para>
+<para>Numeric literals in Orc are specified in decimal.
+Leading zeros are allowed, but have no significance.  Trailing zeros after a decimal point also have no significance.
+If a numeric literal contains a decimal point or an "<code>E</code>", it is a <type>Number</type> (floating point) literal, otherwise it is an <type>Integer</type> literal.
+A prefix unary minus sign is provided for in the Orc syntax, but not a prefix unary plus sign.
+</para>
 
 </section>
 
@@ -32,18 +55,19 @@
 <section id="ref.data.numeric.operations">
 <title>Operations</title>
 
-<para>Notable boolean operations include:
+<para>Notable numeric operations include:
 <itemizedlist>
-<listitem>Complement or Not: <code>~</code></listitem>
-<listitem>And: <code>&amp;&amp;</code></listitem>
-<listitem>Or: <code>||</code></listitem>
-</itemizedlist>
-as well as the comparison operations:
-<itemizedlist>
-<listitem>Less than: <code>&lt;:</code></listitem>
-<listitem>Greater than: <code>:></code></listitem>
-<listitem>Less than or equal to: <code>&lt;=</code></listitem>
-<listitem>Greater than or equal to: <code>>=</code></listitem>
+<listitem><para>Add: <code>+</code></para></listitem>
+<listitem><para>Subtract: <code>-</code></para></listitem>
+<listitem><para>Negate (unary minus): <code>-</code></para></listitem>
+<listitem><para>Multiply: <code>*</code></para></listitem>
+<listitem><para>Divide: <code>/</code></para></listitem>
+<listitem><para>Exponent: <code>**</code></para></listitem>
+<listitem><para>Remainder: <code>%</code></para></listitem>
+<listitem><para>Absolute value: <code>abs</code></para></listitem>
+<listitem><para>Signum: <code>signum</code></para></listitem>
+<listitem><para>Floor: <code>floor</code></para></listitem>
+<listitem><para>Ceiling: <code>ceil</code></para></listitem>
 </itemizedlist>
 </para>
 
@@ -53,12 +77,23 @@ as well as the comparison operations:
 <title>Java calls</title>
 
 <para>
-class scala.math.BigInt
-class scala.math.BigDecimal
+Orc <type>Integer</type> values are passed in calls to and returns
+from Java code as <type>java.math.BigInteger</type>, or if the callee
+method expects a specific numeric type, an <type>Integer</type> will be
+converted to a <type>java.lang.Byte</type>, <type>java.lang.Short</type>,
+<type>java.lang.Integer</type>, <type>java.lang.Long</type>,
+<type>java.lang.Float</type>, or <type>java.lang.Double</type>, as appropriate.
+These values are boxed and unboxed per the Java Language Specification.
+</para>
 
-Orc <type>Boolean</type> values are passed in calls to and returns
-from Java code as <type>java.lang.Boolean</type>, which is boxed and
-unboxed per the Java Language Specification as <type>boolean</type>.</para>
+<para>
+Orc <type>Number</type> values are passed in calls to and returns
+from Java code as <type>java.math.BigDecimal</type>, or if the callee
+method expects a specific numeric type, a <type>Number</type> will be
+converted to a <type>java.lang.Float</type> or 
+<type>java.lang.Double</type>, as appropriate.
+These values are boxed and unboxed per the Java Language Specification.
+</para>
 
 </section>
 

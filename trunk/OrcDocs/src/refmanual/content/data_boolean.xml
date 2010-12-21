@@ -32,16 +32,16 @@
 
 <para>Notable boolean operations include:
 <itemizedlist>
-<listitem>Complement or Not: <code>~</code></listitem>
-<listitem>And: <code>&amp;&amp;</code></listitem>
-<listitem>Or: <code>||</code></listitem>
+<listitem><para>Complement or Not: <code>~</code></para></listitem>
+<listitem><para>And: <code>&amp;&amp;</code></para></listitem>
+<listitem><para>Or: <code>||</code></para></listitem>
 </itemizedlist>
 as well as the comparison operations:
 <itemizedlist>
-<listitem>Less than: <code>&lt;:</code></listitem>
-<listitem>Greater than: <code>:></code></listitem>
-<listitem>Less than or equal to: <code>&lt;=</code></listitem>
-<listitem>Greater than or equal to: <code>>=</code></listitem>
+<listitem><para>Less than: <code>&lt;:</code></para></listitem>
+<listitem><para>Greater than: <code>:></code></para></listitem>
+<listitem><para>Less than or equal to: <code>&lt;=</code></para></listitem>
+<listitem><para>Greater than or equal to: <code>>=</code></para></listitem>
 </itemizedlist>
 </para>
 
