@@ -10,7 +10,7 @@
    URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<section id="ref.data.boolean">
+<section xml:id="ref.data.boolean">
 <title>Boolean Values</title>
 
 <para><emphasis role="strong">Type</emphasis>: <code>Boolean</code></para>
@@ -18,23 +18,23 @@
 <para>Orc's representation of two-valued logical values are the usual
 <literal>false</literal> and <literal>true</literal>.</para>
 
-<section id="ref.data.boolean.literals">
+<section xml:id="ref.data.boolean.literals">
 <title>Literals</title>
 
-<para><emphasis role="strong">EBNF</emphasis>: Boolean ::= <code>false</code> | <code>true</code></para>
+<para><emphasis role="strong">EBNF</emphasis>: <replaceable>Boolean</replaceable> ::= <code>false</code> | <code>true</code></para>
 
 <para>TODO:anything to say here?</para>
 
 </section>
 
-<section id="ref.data.boolean.operations">
+<section xml:id="ref.data.boolean.operations">
 <title>Operations</title>
 
 <para>Notable boolean operations include:
 <itemizedlist>
-<listitem><para>Complement or Not: <code>~</code></para></listitem>
-<listitem><para>And: <code>&amp;&amp;</code></para></listitem>
-<listitem><para>Or: <code>||</code></para></listitem>
+<listitem><para>Logical complement or not: <code>~</code></para></listitem>
+<listitem><para>Logical and: <code>&amp;&amp;</code></para></listitem>
+<listitem><para>Logical or: <code>||</code></para></listitem>
 </itemizedlist>
 as well as the comparison operations:
 <itemizedlist>
@@ -47,7 +47,7 @@ as well as the comparison operations:
 
 </section>
 
-<section id="ref.data.boolean.javacalls">
+<section xml:id="ref.data.boolean.javacalls">
 <title>Java calls</title>
 
 <para>Orc <type>Boolean</type> values are passed in calls to and returns
@@ -56,43 +56,34 @@ unboxed per the Java Language Specification as <type>boolean</type>.</para>
 
 </section>
 
-<section id="ref.data.boolean.examples">
+<section xml:id="ref.data.boolean.examples">
 <title>Examples</title>
 <examplescript/>
 
-<example caption="Parallel Publication" id="ref.data.boolean.examples.one">
+<example caption="TODO:Example1" xml:id="ref.data.boolean.examples.one">
 <programlisting language="orc-demo"><![CDATA[
--- Publish 1 and 2 in parallel  
-1 | 1+1
-
--- Note the publication order may be either 1 then 2
--- or 2 then 1
+--TODO
+signal
 ]]></programlisting>
 </example>
 
-<example caption="Parallel Sites" id="ref.data.boolean.examples.two">
+<example caption="TODO:Example2" xml:id="ref.data.boolean.examples.two">
 <programlisting><![CDATA[
+--TODO
 {- 
- Access two search sites, Google and Yahoo, in parallel.
-
- Publish any results they return.
-
- Since each call may publish a value, the expression
- may publish up to two values.
--}  
-Google("cupcake") | Yahoo("cupcake")
+signal
 ]]></programlisting>
 </example>
 		  
 </section>
 
-<section id="ref.data.boolean.links">
+<section xml:id="ref.data.boolean.links">
 <title>Related Links</title>
 
-<informaltable frame='all'>
-  <tgroup cols='2' align='left' colsep='1' rowsep='1'>
-    <colspec colname='c1'/>
-    <colspec colname='c2'/> 
+<informaltable frame="all">
+  <tgroup cols="2" align="left" colsep="1" rowsep="1">
+    <colspec colname="c1"/>
+    <colspec colname="c2"/> 
     <thead>
       <row>
         <entry align="center">Related Reference Topics</entry>
@@ -101,24 +92,33 @@ Google("cupcake") | Yahoo("cupcake")
     </thead>
     <tbody>
       <row>
-        <entry>Combinators</entry>
-        <entry><olink targetdoc="root" targetptr="special.dot">The . notation</olink></entry>
+        <entry>-xref linkend="types.Boolean"/></entry>
+        <entry>-olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
       </row>
       <row>
-        <entry>Parallel Server Network</entry>
-        <entry><olink targetdoc="root" targetptr="terms.constant">Constants</olink></entry>
+        <entry>-xref linkend="library.core.Not"/></entry>
+        <entry>-olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
       </row>
       <row>
-        <entry>Site</entry>
-        <entry><olink targetdoc="root" targetptr="cor.closures">Closures</olink></entry>
+        <entry>-xref linkend="library.core.And"/></entry>
+        <entry>-olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
       </row>
       <row>
-        <entry>JavaCall</entry>
+        <entry>-xref linkend="library.core.Or"/></entry>
         <!-- Use the following entry to fill up any remaining empty slots in that column -->
-        <entry morerows='1' valign='middle'><para></para></entry>
+        <entry morerows="4" valign="middle"><para></para></entry>
       </row>
       <row>
-        <entry>Baz</entry>
+        <entry>-xref linkend="library.core.Less"/></entry>
+      </row>
+      <row>
+        <entry>-xref linkend="library.core.Leq"/></entry>
+      </row>
+      <row>
+        <entry>-xref linkend="library.core.Greater"/></entry>
+      </row>
+      <row>
+        <entry>-xref linkend="library.core.Geq"/></entry>
       </row>
     </tbody>
   </tgroup>
