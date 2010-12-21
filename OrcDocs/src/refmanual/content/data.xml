@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- data.xml - DocBook source for an Orc reference manual chapter
+
+     $Id$
+
+     Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+<chapter
+	id="ref.data"  
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<title>Data Values</title>
+
+<para>TODO:Introduction paragraph about data values.  TODO:Different chapter name?</para>
+
+<xi:include href="data_boolean.xml"/>
+<xi:include href="data_numeric.xml"/>
+<xi:include href="data_string.xml"/>
+<xi:include href="data_signal.xml"/>
+
+</chapter>
