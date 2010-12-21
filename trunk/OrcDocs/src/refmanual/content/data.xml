@@ -10,7 +10,7 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 <chapter
-	id="ref.data"  
+	xml:id="ref.data"  
 	xmlns:xlink="http://www.w3.org/1999/xlink"
 	xmlns:xi="http://www.w3.org/2001/XInclude">
 
@@ -22,5 +22,13 @@
 <xi:include href="data_numeric.xml"/>
 <xi:include href="data_string.xml"/>
 <xi:include href="data_signal.xml"/>
+
+<xi:include href="data_list.xml"/>
+<xi:include href="data_tuple.xml"/>
+<xi:include href="data_record.xml"/>
+<xi:include href="data_datatype.xml"/>
+
+<xi:include href="data_external.xml"/>
+<xi:include href="data_mutable.xml"/>
 
 </chapter>

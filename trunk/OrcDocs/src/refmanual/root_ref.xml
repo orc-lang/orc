@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- root_ref.xml - DocBook source for the Orc reference manual
+
+     $Id$
+
+     Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
 <!DOCTYPE page [
 <!ENTITY ug "../root.xml">  <!-- userguide -->
 ]>
@@ -9,7 +20,7 @@
 	rather than the root_ref as a whole -->
 
 <book 
-	id="refmanual"
+	xml:id="refmanual"
     xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en"
 	xmlns:xlink="http://www.w3.org/1999/xlink"
 	xmlns:xi="http://www.w3.org/2001/XInclude"><?dbhtml filename="ref.toc.html" ?>

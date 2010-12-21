@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- data_signal.xml - DocBook source for an Orc reference manual section
+<!-- data_external.xml - DocBook source for an Orc reference manual section
 
      $Id$
 
@@ -10,49 +10,44 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<section xml:id="ref.data.signal">
-<title>Signal Values</title>
+<section xml:id="ref.data.external">
+<title>External Values</title>
 
-<para><emphasis role="strong">Type</emphasis>: <code>Signal</code></para>
+<para><emphasis role="strong">Type</emphasis>: <code>TODO</code></para>
 
-<para>A <literal>signal</literal> represents the instance of the Orc unit type, <type>Signal</type>.
-<literal>signal</literal>s are most commonly used to provide for control flow
-when there is no associated data to propagate.  For example, <code>metronome(100)</code>
-function publishes every 100 milliseconds, since it has no other data of interest to publish.</para>
+<para>TODO.</para>
 
-<section xml:id="ref.data.signal.literals">
+<section xml:id="ref.data.external.literals">
 <title>Literals</title>
 
-<para><emphasis role="strong">EBNF</emphasis>: <replaceable>Signal</replaceable> ::= <code>signal</code></para>
+<para><emphasis role="strong">EBNF</emphasis>: <replaceable>NONTERM</replaceable> ::= <code>TODO</code> <replaceable>TODO</replaceable> <code>TODO</code></para>
 
-<para>TODO:anything to say here?</para>
+<para>TODO.</para>
 
 </section>
 
-<section xml:id="ref.data.signal.operations">
+<section xml:id="ref.data.external.operations">
 <title>Operations</title>
 
-<para>Notable signal operations include:
+<para>Notable TODO operations include:
 <itemizedlist>
-<listitem><para>Conditional publication of a <literal>signal</literal>: <code>If</code></para></listitem>
-<listitem><para>Negated conditional publication of a <literal>signal</literal>: <code>Unless</code></para></listitem>
-<listitem><para>Timed recurrent publication of a <literal>signal</literal>: <code>metronome</code></para></listitem>
-<listitem><para>Concurrent publication of a number of <literal>signal</literal>s: <code>signals</code></para></listitem>
+<listitem><para>TODO: <code>TODO</code></para></listitem>
+<listitem><para>TODO: <code>TODO</code></para></listitem>
+<listitem><para>TODO: <code>TODO</code></para></listitem>
+<listitem><para>TODO: <code>TODO</code></para></listitem>
 </itemizedlist>
 </para>
 
 </section>
 
-<section xml:id="ref.data.signal.javacalls">
+<section xml:id="ref.data.external.javacalls">
 <title>Java calls</title>
 
-<para>Orc <type>Signal</type>s don't correspond to any Java value, so if a <type>Signal</type>
-is passed to Java code, it will be as an <type>java.lang.Object</type> of a type not specified here.
-Returns of type <type>void</type> from Java code are converted into a publication of a <type>Signal</type>.</para>
+<para>TODO.</para>
 
 </section>
 
-<section xml:id="ref.data.signal.examples">
+<section xml:id="ref.data.external.examples">
 <title>Examples</title>
 <examplescript/>
 
@@ -73,7 +68,7 @@ signal
 
 </section>
 
-<section xml:id="ref.data.signal.links">
+<section xml:id="ref.data.external.links">
 <title>Related Links</title>
 
 <informaltable frame="all">
@@ -88,7 +83,7 @@ signal
     </thead>
     <tbody>
       <row>
-        <entry>-xref linkend="types.Signal"/></entry>
+        <entry>-xref linkend="types.TODO"/></entry>
         <entry>-olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
       </row>
       <row>
