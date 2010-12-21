@@ -29,18 +29,12 @@
 <section id="ref.data.signal.operations">
 <title>Operations</title>
 
-<para>Notable boolean operations include:
+<para>Notable signal operations include:
 <itemizedlist>
-<listitem>Complement or Not: <code>~</code></listitem>
-<listitem>And: <code>&amp;&amp;</code></listitem>
-<listitem>Or: <code>||</code></listitem>
-</itemizedlist>
-as well as the comparison operations:
-<itemizedlist>
-<listitem>Less than: <code>&lt;:</code></listitem>
-<listitem>Greater than: <code>:></code></listitem>
-<listitem>Less than or equal to: <code>&lt;=</code></listitem>
-<listitem>Greater than or equal to: <code>>=</code></listitem>
+<listitem><para>If: <code>If</code></para></listitem>
+<listitem><para>Unless: <code>Unless</code></para></listitem>
+<listitem><para>metronome: <code>metronome</code></para></listitem>
+<listitem><para>signals: <code>signals</code></para></listitem>
 </itemizedlist>
 </para>
 

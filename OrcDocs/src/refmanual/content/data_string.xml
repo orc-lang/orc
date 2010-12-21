@@ -15,15 +15,33 @@
 
 <para><emphasis role="strong">Type</emphasis>: <code>String</code></para>
 
-<para>Orc's representation of two-valued logical values are the usual
-<literal>false</literal> and <literal>true</literal>.</para>
+<para>Orc's character sequence representation is <type>String</type>.
+Characters in Orc <type>String</type>s are drawn from the Unicode
+character set, and are encoded in the UTF-16 encoding form.
+(Note that Orc source code files are encoded in the UTF-8 encoding form.)
+Orc <type>String</type>s have an explicit length and are not zero-terminated.
+<type>String</type>s are limited to a maximum length of 2^31-1 (2 147 483 647) characters.</para>
 
 <section id="ref.data.string.literals">
 <title>Literals</title>
 
-<para><emphasis role="strong">EBNF</emphasis>: Boolean ::= <code>false</code> | <code>true</code></para>
+<para><emphasis role="strong">EBNF</emphasis>: String ::= <code>"</code> TODO <code>"</code></para>
 
-<para>TODO:anything to say here?</para>
+<para>String literals are enclosed in quotation marks (U+0022).
+Any Unicode character can be placed between the quotation marks, except:
+line terminators (CR, LF, NEL [U+0085], LS [U+2028], FF, or PS [U+2029])
+or a quotation mark.
+A reverse solidus (backslash) and its subsequent character are treated as follows:
+<itemizedlist>
+<listitem><para><code>\f</code>: represents form feed (FF) (U+000C)</para></listitem>
+<listitem><para><code>\n</code>: represents line feed (LF) (U+000A)</para></listitem>
+<listitem><para><code>\r</code>: represents carriage return (CR) (U+000D)</para></listitem>
+<listitem><para><code>\t</code>: represents character tabulation (HT) (U+0009)</para></listitem>
+<listitem><para><code>\\</code>: represents reverse solidus (backslash) (U+005C)</para></listitem>
+<listitem><para><code>\"</code>: represents quotation mark (U+0022)</para></listitem>
+<listitem><para><code>\</code> followed by any other character: represents that character</para></listitem>
+</itemizedlist>
+</para>
 
 </section>
 
@@ -31,18 +49,14 @@
 <section id="ref.data.string.operations">
 <title>Operations</title>
 
-<para>Notable boolean operations include:
+<para>Notable string operations include:
 <itemizedlist>
-<listitem>Complement or Not: <code>~</code></listitem>
-<listitem>And: <code>&amp;&amp;</code></listitem>
-<listitem>Or: <code>||</code></listitem>
-</itemizedlist>
-as well as the comparison operations:
-<itemizedlist>
-<listitem>Less than: <code>&lt;:</code></listitem>
-<listitem>Greater than: <code>:></code></listitem>
-<listitem>Less than or equal to: <code>&lt;=</code></listitem>
-<listitem>Greater than or equal to: <code>>=</code></listitem>
+<listitem><para>All <type>java.lang.String</type> operations</para></listitem>
+<listitem><para>write: <code>write</code></para></listitem>
+<listitem><para>lines: <code>lines</code></para></listitem>
+<listitem><para>unlines: <code>unlines</code></para></listitem>
+<listitem><para>words: <code>words</code></para></listitem>
+<listitem><para>unwords: <code>unwords</code></para></listitem>
 </itemizedlist>
 </para>
 
@@ -54,9 +68,8 @@ as well as the comparison operations:
 <para>
 class java.lang.String
 
-Orc <type>Boolean</type> values are passed in calls to and returns
-from Java code as <type>java.lang.Boolean</type>, which is boxed and
-unboxed per the Java Language Specification as <type>boolean</type>.</para>
+Orc <type>String</type> values are passed in calls to and returns
+from Java code as <type>java.lang.String</type>.</para>
 
 </section>
 
