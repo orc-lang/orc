@@ -5,7 +5,12 @@
 	
 <title>Combinators</title>
 
-<para>Introduction paragraph about combinators.</para>
+<para>
+Orc has four combinators: parallel, sequential, pruning, and otherwise. A combinator forms an
+expression from two component expressions. Each combinator captures a different aspect of concurrency.
+Syntactically, the combinators are written infix, and have lower precedence than operators, but higher
+precedence than conditionals or declarations.
+</para>
 
 <xi:include href="combinators_otherwise.xml"/>	
 <xi:include href="combinators_parallel.xml"/>

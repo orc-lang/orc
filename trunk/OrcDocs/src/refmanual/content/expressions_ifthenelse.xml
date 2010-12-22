@@ -1,0 +1,142 @@
+<!-- IfThenElse -->
+	<section id="ref.expressions.ifthenelse">
+		<title>If Then Else</title>
+		<section id="ref.expressions.ifthenelse.body">
+			<para>
+A conditional expression in Cor is of the form 
+<code>if</code> E <code>then</code> F <code>else</code> G. 
+Its meaning is similar to that in other languages: the value
+of the expression is the value of F if and only if E evaluates to true, 
+or the value of G if and only if E evaluates to false. Note that G is not
+evaluated at all if E evaluates to true, and similarly F is not evaluated
+at all if E evaluates to false. Thus, for example, evaluation of 
+<code>if true then 2+3 else 1/0</code> does not evaluate <code>1/0</code>;
+it only evaluates <code>2+3</code>.
+</para>
+
+<para>
+Unlike other languages, expressions in Cor may be silent. If E is
+silent, then the entire expression is silent. And if E evaluates to true 
+but F is silent (or if E evaluates to false and G is silent) then the 
+expression is silent.
+</para>
+
+<para>
+Note that conditionals have lower precedence than any of the operators.
+For example, <code>if false then 1 else 2 + 3</code> is equivalent to
+<code>if false then 1 else (2 + 3)</code>, not <code>(if false then 1 else 2) + 3</code>.
+</para>
+
+<para>
+The behavior of conditionals is summarized by the following table
+(<emphasis>v</emphasis> denotes a value).
+
+<informaltable id="cond-table" frame="none" rowsep="0" colsep="0"> 
+<?dbhtml table-width="60%" ?>
+<?dbfo table-width="80%" ?>
+<?dbfo keep-together="always" ?>
+<tgroup cols="4" >
+<colspec colnum="1" colname="E" colwidth="1*" align="center"/>
+<colspec colnum="2" colname="F" colwidth="1*" align="center"/>
+<colspec colnum="3" colname="G" colwidth="1*" align="center"/>
+<colspec colnum="4" colname="result" colwidth="3*" align="center"/>
+<thead>
+<row>
+<entry>E</entry>
+<entry>F</entry>
+<entry>G</entry>
+<entry><code>if</code> E <code>then</code> F <code>else</code> G</entry>
+</row>
+</thead>
+<tbody>
+
+<row>
+<entry><code>true</code></entry>
+<entry><emphasis>v</emphasis></entry>
+<entry>-</entry>
+<entry><emphasis>v</emphasis></entry>
+</row>
+
+<row>
+<entry><code>true</code></entry>
+<entry>silent</entry>
+<entry>-</entry>
+<entry>silent</entry>
+</row>
+
+<row>
+<entry><code>false</code></entry>
+<entry>-</entry>
+<entry><emphasis>v</emphasis></entry>
+<entry><emphasis>v</emphasis></entry>
+</row>
+
+<row>
+<entry><code>false</code></entry>
+<entry>-</entry>
+<entry>silent</entry>
+<entry>silent</entry>
+</row>
+
+<row>
+<entry>silent</entry>
+<entry>-</entry>
+<entry>-</entry>
+<entry>silent</entry>
+</row>
+
+</tbody>
+</tgroup>
+</informaltable>
+
+</para>
+
+<para>
+<itemizedlist><title>Examples</title>
+<listitem><code>if true then 4 else 5</code> evaluates to <code>4</code>.</listitem>
+<listitem><code><![CDATA[if  2 < 3 && 5 < 4  then "blue" else "green"]]></code> evaluates to "green".</listitem>
+<listitem><code>if  true || "fish"  then "yes" else "no"</code> is silent.</listitem>
+<listitem><code>if  false || false  then 4+5 else 4+true</code> is silent.</listitem>
+<listitem><code><![CDATA[if 0 < 5 then 0/5 else 5/0]]></code> evaluates to 0.</listitem>
+</itemizedlist>
+</para>
+		</section>
+		
+		<section id="ref.expressions.ifthenelse.links">
+		  <title>Related Links</title>
+		  <informaltable frame='all'>
+			<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+			<colspec colname='c1'/>
+			<colspec colname='c2'/>
+			<thead>
+			<row>
+			  <entry align="center">Related Reference Topics</entry>
+			  <entry align="center">Related Tutorial Sections</entry>
+			</row>
+			</thead>
+			<tbody>
+			<row>
+			  <entry>Combinators</entry>
+			  <entry><olink targetdoc="root" targetptr="special.dot">Operators</olink></entry>
+			</row>
+			<row>
+			  <entry>Parallel Server Network</entry>
+			  <entry><olink targetdoc="root" targetptr="terms.constant">Constants</olink></entry>
+			</row>
+			<row>
+			  <entry>Site</entry>
+			  <entry><olink targetdoc="root" targetptr="cor.closures">Closures</olink></entry>
+			</row>
+			<row>
+			  <entry>JavaCall</entry>
+			  <!-- Use the following entry to fill up any remaining empty slots in that column -->
+			  <entry morerows='1' valign='middle'><para></para></entry>
+			</row>
+			<row>
+			  <entry>Baz</entry>
+			</row>
+			</tbody>
+			</tgroup>
+		  </informaltable>
+	  </section>
+	</section>

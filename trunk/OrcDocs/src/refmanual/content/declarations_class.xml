@@ -1,0 +1,109 @@
+<!-- Class -->
+	<section id="ref.declarations.class">
+		<title>Class</title>
+		<section id="ref.declarations.class.body">
+			<para> TODO: Integrate Dr. Misra's writeup on Class </para>
+			<para>
+A <code>class</code> is an abstraction mechanism in Orc, much like the
+<code>def</code> construct. It extends the <code>def</code> construct, by allowing
+us to convert an Orc program fragment into a site. Specifically, a
+class can be used to: (1) Define object classes with methods,
+(2) Create new sites and extend behaviors of existing sites, (3) Allow
+concurrent method invocation on objects, and (4) Create active
+objects, whose executions may be based on time or other external
+stimulus, not necessarily explicitly called methods. 
+</para>
+	
+<para>
+A class has the following properties:
+<orderedlist>
+<listitem>Encapsulation: Just like objects in an object-oriented language, classes 
+	also provide the encapsulation facility for the programmer. The data defined inside 
+	the class can only be accessed and modified through methods defined in class. Therefore, 
+	it hides the representation of the data and implementation of functions and methods 
+	which work on the data and manage the state. </listitem>
+<listitem>Methods instead of functions: These are the gateways to access and manipulate the 
+	data represented by class. They also enable the user of the class to access the service 
+	provided by that. Unlike functions in Orc, methods defined in a class can only publish 
+	one value. </listitem>
+<listitem>Termination protection: The execution of a class and its methods are protected from 
+	termination of the rest of the program. In other words, the execution of class cannot be 
+	interrupted. In the pruning combinator as soon as the right hand side expression publishes a 
+	value, all the on going executions in the right hand side will be terminated. However, if there 
+	is any call to a class in the right hand side, that call will proceed until completion. For 
+	example, in the following Orc expression, suppose that c is a class.
+	<programlisting><![CDATA[
+	 y <y< g() | c() 
+]]></programlisting>
+	If g() publishes a value before c() does, the execution of c() will continue. Although, the published 
+	value of c() (if any) will never be used. On the other hand, if c() publishes a value first, then the 
+	execution of g() will be interrupted since its execution is not protected. This property of classes is 
+	very important to prevent the data corruption and invalid state of an object. We will see using an 
+	example the significance of this property later on in the guide. 
+</listitem>
+	<listitem>Strict calls: unlike calls to ordinary function definitions in Orc, calls to class methods 
+		are strict. This means that the call will not happen unless all the parameters are bound. </listitem>
+</orderedlist>
+</para>
+		</section>
+		
+		<section id="ref.declarations.class.examples">
+		<title>Examples</title>
+		<examplescript/>
+		<example caption="Simple Stack" id="ref.declarations.class.examples.one">
+<programlisting><![CDATA[
+def class Stack(n) =
+  val store = Table(n, Ref)
+  val len = Ref (0) -- len is the current stack length
+
+  def push(x) = ift(len? <: n) >> store(len?) := x >> len := len? + 1
+
+  def pop() = ift(len? :> 0) >> len := len? - 1 >> store(len?)?
+
+  {- class goal -} stop
+
+----------- Test
+val st = Stack(5)
+st.push(3) >> st.push(5) >> st.pop() >> st.pop()
+]]></programlisting>
+		  </example>
+		  
+		</section>
+		<section id="ref.declarations.class.links">
+		  <title>Related Links</title>
+		  <informaltable frame='all'>
+			<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+			<colspec colname='c1'/>
+			<colspec colname='c2'/>
+			<thead>
+			<row>
+			  <entry align="center">Related Reference Topics</entry>
+			  <entry align="center">Related Tutorial Sections</entry>
+			</row>
+			</thead>
+			<tbody>
+			<row>
+			  <entry>Combinators</entry>
+			  <entry><olink targetdoc="root" targetptr="special.dot">Operators</olink></entry>
+			</row>
+			<row>
+			  <entry>Parallel Server Network</entry>
+			  <entry><olink targetdoc="root" targetptr="terms.constant">Constants</olink></entry>
+			</row>
+			<row>
+			  <entry>Site</entry>
+			  <entry><olink targetdoc="root" targetptr="cor.closures">Closures</olink></entry>
+			</row>
+			<row>
+			  <entry>JavaCall</entry>
+			  <!-- Use the following entry to fill up any remaining empty slots in that column -->
+			  <entry morerows='1' valign='middle'><para></para></entry>
+			</row>
+			<row>
+			  <entry>Baz</entry>
+			</row>
+			</tbody>
+			</tgroup>
+		  </informaltable>
+	  </section>
+	</section>
