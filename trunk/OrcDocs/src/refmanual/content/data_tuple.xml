@@ -15,28 +15,41 @@
 
 <para><emphasis role="strong">Type</emphasis>: <code>(T1, T2...)</code></para>
 
-<para>Orc's <type>Tuple</type> data type is a sequence of values of a specific length, greater than one.
+<para>
+Orc's <type>Tuple</type> data type is a sequence of values of a specific length, greater than one.
 (Orc does not provide for the construction of "0-tuples" or "1-tuples".)
+Tuples vary from lists in two significant ways:
+<itemizedlist>
+<listitem><para>Tuples are intended to be used where they have a fixed length.
+Lists may have varying lengths.</para></listitem>
+<listitem><para>Tuples may have elements of varying types in each position.
+Lists must be of a uniform type (though this may be <type>Top</type>).</para></listitem>
+</itemizedlist>
 </para>
 
-<section xml:id="ref.data.tuple.literals">
-<title>Literals</title>
+<para>
+Although one can explicitly project a tuple element by its index, it is
+idiomatic, safer, and far more common to use pattern matching to extract
+tuple elements.
+</para>
+
+<section xml:id="ref.data.tuple.constructors">
+<title>Constructors</title>
 
 <para><emphasis role="strong">EBNF</emphasis>: <replaceable>Tuple</replaceable> ::= <code>(</code> <replaceable>E</replaceable><code>,</code> ... <code>,</code> <replaceable>E</replaceable> <code>)</code></para>
 
-<para>TODO.</para>
+<para>Tuple are constructed simply with parenthesis-enclosed comma-separated lists of expressions.</para>
 
 </section>
 
 <section xml:id="ref.data.tuple.operations">
 <title>Operations</title>
 
-<para>Notable TODO operations include:
+<para>Notable tuple operations include:
 <itemizedlist>
-<listitem><para>TODO: <code>TODO</code></para></listitem>
-<listitem><para>TODO: <code>TODO</code></para></listitem>
-<listitem><para>TODO: <code>TODO</code></para></listitem>
-<listitem><para>TODO: <code>TODO</code></para></listitem>
+<listitem><para>Projection: <replaceable>tuple</replaceable><code>(</code> <replaceable>index</replaceable> <code>)</code></para></listitem>
+<listitem><para>Project first element of pair: <code>fst</code></para></listitem>
+<listitem><para>Project second element of pair: <code>snd</code></para></listitem>
 </itemizedlist>
 </para>
 
@@ -45,7 +58,8 @@
 <section xml:id="ref.data.tuple.javacalls">
 <title>Java calls</title>
 
-<para>TODO.</para>
+<para>Orc <type>Tuple</type>s don't correspond to any Java value, so if a <type>Tuple</type>
+is passed to Java code, it will be as an <type>java.lang.Object</type> of a type not specified here.</para>
 
 </section>
 
@@ -60,11 +74,12 @@ signal
 ]]></programlisting>
 </example>
 
-<example caption="TODO:Example2" xml:id="ref.data.boolean.examples.two">
+<example caption="Fork-Join" xml:id="ref.data.boolean.examples.forkjoin">
 <programlisting><![CDATA[
---TODO
-{- 
-signal
+def f() = println("f starting") >> Rtimer(450) >> println("f is done") >> "f"
+def g() = println("g starting") >> Rtimer(900) >> println("g is done") >> "g"
+
+Rtimer(100) >> (f(), g())
 ]]></programlisting>
 </example>
 
@@ -89,20 +104,12 @@ signal
         <entry>-olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
       </row>
       <row>
-        <entry>-xref linkend="library.core.If"/></entry>
+        <entry>-xref linkend="library.state.fst"/></entry>
         <entry>-olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
       </row>
       <row>
-        <entry>-xref linkend="library.core.Unless"/></entry>
+        <entry>-xref linkend="library.state.snd"/></entry>
         <entry>-olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
-      </row>
-      <row>
-        <entry>-xref linkend="library.time.metronome"/></entry>
-        <!-- Use the following entry to fill up any remaining empty slots in that column -->
-        <entry morerows="1" valign="middle"><para></para></entry>
-      </row>
-      <row>
-        <entry>-xref linkend="library.util.signals"/></entry>
       </row>
     </tbody>
   </tgroup>
