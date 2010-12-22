@@ -111,27 +111,27 @@ signal
     </thead>
     <tbody>
       <row>
-        <entry>-xref linkend="types.String"/></entry>
-        <entry>-olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
+        <entry><xref linkend="types.String"/></entry>
+        <entry><olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
       </row>
       <row>
-        <entry>-xref linkend="library.text.write"/></entry>
-        <entry>-olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
+        <entry><xref linkend="library.text.write"/></entry>
+        <entry><olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
       </row>
       <row>
-        <entry>-xref linkend="library.text.lines"/></entry>
-        <entry>-olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
+        <entry><xref linkend="library.text.lines"/></entry>
+        <entry><olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
       </row>
       <row>
-        <entry>-xref linkend="library.text.unlines"/></entry>
+        <entry><xref linkend="library.text.unlines"/></entry>
         <!-- Use the following entry to fill up any remaining empty slots in that column -->
         <entry morerows="2" valign="middle"><para></para></entry>
       </row>
       <row>
-        <entry>-xref linkend="library.text.words"/></entry>
+        <entry><xref linkend="library.text.words"/></entry>
       </row>
       <row>
-        <entry>-xref linkend="library.text.unwords"/></entry>
+        <entry><xref linkend="library.text.unwords"/></entry>
       </row>
     </tbody>
   </tgroup>

@@ -85,24 +85,24 @@ signal
     </thead>
     <tbody>
       <row>
-        <entry>-xref linkend="types.TODO"/></entry>
-        <entry>-olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
+        <entry><xref linkend="types.TODO"/></entry>
+        <entry><olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
       </row>
       <row>
-        <entry>-xref linkend="library.core.If"/></entry>
-        <entry>-olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
+        <entry><xref linkend="library.core.If"/></entry>
+        <entry><olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
       </row>
       <row>
-        <entry>-xref linkend="library.core.Unless"/></entry>
-        <entry>-olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
+        <entry><xref linkend="library.core.Unless"/></entry>
+        <entry><olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
       </row>
       <row>
-        <entry>-xref linkend="library.time.metronome"/></entry>
+        <entry><xref linkend="library.time.metronome"/></entry>
         <!-- Use the following entry to fill up any remaining empty slots in that column -->
         <entry morerows="1" valign="middle"><para></para></entry>
       </row>
       <row>
-        <entry>-xref linkend="library.util.signals"/></entry>
+        <entry><xref linkend="library.util.signals"/></entry>
       </row>
     </tbody>
   </tgroup>
