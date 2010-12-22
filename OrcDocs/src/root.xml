@@ -1430,7 +1430,7 @@ The original Cor grammar rules are abbreviated by ellipses (...).
 </para>
 
 		
-<section><title>Communicating with external services</title>
+<section id="orc.sites"><title>Communicating with external services</title>
 
 <para>
 An Orc expression may be a site call. Sites are called using the same syntax as a 
@@ -2515,7 +2515,7 @@ expression. If the call target expression never publishes, no call occurs.
 
 </section>
 
-<section><title>Extensions to pattern matching</title>
+<section id="patterns.extensions"><title>Extensions to pattern matching</title>
 
 <section><title>As pattern</title>
 

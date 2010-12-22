@@ -19,17 +19,20 @@
 	change the targetdoc pointers in the user guide to point to the smaller content documents,
 	rather than the root_ref as a whole -->
 
+<!-- xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en" -->
+
 <book 
 	xml:id="refmanual"
-    xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en"
 	xmlns:xlink="http://www.w3.org/1999/xlink"
 	xmlns:xi="http://www.w3.org/2001/XInclude"><?dbhtml filename="ref.toc.html" ?>
 	
 <title>Orc Reference Manual v<xi:include href="../../VERSION" parse="text"/></title>
 	
-<xi:include href="content/combinators.xml"/>
 <xi:include href="content/class.xml"/>
-<xi:include href="content/data.xml"/>
+<xi:include href="content/combinators.xml"/>
+<xi:include href="content/data.xml"/> 
+<!-- <xi:include href="content/declarations.xml"/> -->
+<xi:include href="content/expressions.xml"/> 
 <xi:include href="content/functions.xml"/>
 <xi:include href="content/patterns.xml"/>
 <xi:include href="content/syntax.xml"/>

@@ -1,0 +1,22 @@
+<chapter 
+	id="ref.expressions"  
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:xi="http://www.w3.org/2001/XInclude">
+	
+<title>Expressions</title>
+
+<para>
+As in Cor, an Orc program is an expression; Orc expressions are built up recursively from smaller
+expressions. Orc is a superset of Cor, i.e., all Cor expressions are also Orc expressions. Orc expressions are
+executed, rather than evaluated; an execution may call external services and publish some number of values
+(possibly zero). Different executions of the same expression may have completely different behaviors; they
+may call different services, may receive different responses from the same site, and may publish different
+values. Expressions in the functional subset, though, will display the same behavior in all executions.
+</para>
+
+<xi:include href="expressions_ifthenelse.xml"/>	
+<xi:include href="expressions_lambda.xml"/>
+<xi:include href="expressions_operators.xml"/> 
+<xi:include href="expressions_val.xml"/> 
+
+</chapter>

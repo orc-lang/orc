@@ -1,0 +1,79 @@
+<!-- Include -->
+	<section id="ref.declarations.include">
+		<title>Include</title>
+		<section id="ref.declarations.include.body">
+			<para>
+It is often convenient to group related declarations into units that can be
+shared between programs. The <code>include</code> declaration offers a simple
+way to do this. It names a source file containing a sequence of Orc declarations;
+those declarations are incorporated into the program as if they had textually
+replaced the include declaration. An included file may itself contain 
+<code>include</code> declarations.  Included files may come from local files, any
+URI recognized by the Java library (http, https, ftp, etc.), and include resources
+found in the Orc JAR files.
+			</para>
+		</section>
+		
+		<section id="ref.declarations.include.examples">
+		<title>Examples</title>
+		<examplescript/>
+		<example caption="fold.inc" id="ref.declarations.include.examples.one">
+<programlisting><![CDATA[
+{- Contents of fold.inc -}
+def foldl(f,[],s) = s
+def foldl(f,h:t,s) = foldl(f,t,f(h,s))
+
+def foldr(f,l,s) = foldl(f,rev(l),s)
+]]></programlisting>
+		  </example>
+		  
+		<example caption="Included file" id="ref.declarations.include.examples.two">
+		<programlisting><![CDATA[
+{- This is the same as inserting the contents of fold.inc here -}
+include "fold.inc"
+
+def sum(L) = foldl(lambda(a,b) = a+b, L, 0)
+
+sum([1,2,3])
+]]></programlisting>
+		</example>
+		</section>
+		
+		<section id="ref.declarations.include.links">
+		  <title>Related Links</title>
+		  <informaltable frame='all'>
+			<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+			<colspec colname='c1'/>
+			<colspec colname='c2'/>
+			<thead>
+			<row>
+			  <entry align="center">Related Reference Topics</entry>
+			  <entry align="center">Related Tutorial Sections</entry>
+			</row>
+			</thead>
+			<tbody>
+			<row>
+			  <entry>Combinators</entry>
+			  <entry><olink targetdoc="root" targetptr="special.dot">Operators</olink></entry>
+			</row>
+			<row>
+			  <entry>Parallel Server Network</entry>
+			  <entry><olink targetdoc="root" targetptr="terms.constant">Constants</olink></entry>
+			</row>
+			<row>
+			  <entry>Site</entry>
+			  <entry><olink targetdoc="root" targetptr="cor.closures">Closures</olink></entry>
+			</row>
+			<row>
+			  <entry>JavaCall</entry>
+			  <!-- Use the following entry to fill up any remaining empty slots in that column -->
+			  <entry morerows='1' valign='middle'><para></para></entry>
+			</row>
+			<row>
+			  <entry>Baz</entry>
+			</row>
+			</tbody>
+			</tgroup>
+		  </informaltable>
+	  </section>
+	</section>
