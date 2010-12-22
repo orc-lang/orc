@@ -22,14 +22,14 @@
 
 <para><emphasis role="strong">EBNF</emphasis>: <replaceable>NONTERM</replaceable> ::= <code>TODO</code> <replaceable>TODO</replaceable> <code>TODO</code></para>
 
-<para>TODO.</para>
+<para>TODO. Cover, as appropriate: Preconditions Required/Postconditions Asserted/Invariants Maintained; Side-Effects of Invocation/State Maintained; Abnormal Outcomes; External Dependencies; Performance Characteristics.</para>
 
 </section>
 
 <section xml:id="ref.data.datatype.operations">
 <title>Operations</title>
 
-<para>Notable TODO operations include:
+<para>Notable datatype operations include:
 <itemizedlist>
 <listitem><para>TODO: <code>TODO</code></para></listitem>
 <listitem><para>TODO: <code>TODO</code></para></listitem>
@@ -51,14 +51,16 @@
 <title>Examples</title>
 <examplescript/>
 
-<example caption="TODO:Example1" xml:id="ref.data.boolean.examples.one">
+<example xml:id="ref.data.datatypes.examples.one">
+<title>TODO:Example1</title>
 <programlisting language="orc-demo"><![CDATA[
 --TODO
 signal
 ]]></programlisting>
 </example>
 
-<example caption="TODO:Example2" xml:id="ref.data.boolean.examples.two">
+<example xml:id="ref.data.datatypes.examples.two">
+<title>TODO:Example2</title>
 <programlisting><![CDATA[
 --TODO
 {- 
