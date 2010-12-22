@@ -206,7 +206,8 @@
 		<!-- Hack to make sure the ref manual builds every time -->
 		<copy file="${src.dir}/refmanual/root_ref.xml" tofile="${src.dir}/refmanual/refmanual.xml"/>
 		<xslt style="${src.dir}/xsl/html-chunk.xsl" extension=".html" 
-				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual">
+				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
 			<include name="refmanual.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="orc.demo" expression="0"/>
