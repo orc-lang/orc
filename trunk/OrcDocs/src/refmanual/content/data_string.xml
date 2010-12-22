@@ -112,15 +112,15 @@ signal
     <tbody>
       <row>
         <entry><xref linkend="types.String"/></entry>
-        <entry><olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
+        <entry><olink targetdoc="root" targetptr="TODO">TODO</olink></entry>
       </row>
       <row>
         <entry><xref linkend="library.text.write"/></entry>
-        <entry><olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
+        <entry><olink targetdoc="root" targetptr="TODO">TODO</olink></entry>
       </row>
       <row>
         <entry><xref linkend="library.text.lines"/></entry>
-        <entry><olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
+        <entry><olink targetdoc="root" targetptr="TODO">TODO</olink></entry>
       </row>
       <row>
         <entry><xref linkend="library.text.unlines"/></entry>

@@ -95,15 +95,15 @@ signal
     <tbody>
       <row>
         <entry><xref linkend="types.Boolean"/></entry>
-        <entry><olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
+        <entry><olink targetdoc="root" targetptr="TODO">TODO</olink></entry>
       </row>
       <row>
         <entry><xref linkend="library.core.Not"/></entry>
-        <entry><olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
+        <entry><olink targetdoc="root" targetptr="TODO">TODO</olink></entry>
       </row>
       <row>
         <entry><xref linkend="library.core.And"/></entry>
-        <entry><olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
+        <entry><olink targetdoc="root" targetptr="TODO">TODO</olink></entry>
       </row>
       <row>
         <entry><xref linkend="library.core.Or"/></entry>
