@@ -1,7 +1,7 @@
 <!-- IfThenElse -->
-	<section id="ref.expressions.ifthenelse">
+	<section xml:id="ref.expressions.ifthenelse">
 		<title>If Then Else</title>
-		<section id="ref.expressions.ifthenelse.body">
+		<section xml:id="ref.expressions.ifthenelse.body">
 			<para>
 A conditional expression in Cor is of the form 
 <code>if</code> E <code>then</code> F <code>else</code> G. 
@@ -31,7 +31,7 @@ For example, <code>if false then 1 else 2 + 3</code> is equivalent to
 The behavior of conditionals is summarized by the following table
 (<emphasis>v</emphasis> denotes a value).
 
-<informaltable id="cond-table" frame="none" rowsep="0" colsep="0"> 
+<informaltable xml:id="cond-table" frame="none" rowsep="0" colsep="0"> 
 <?dbhtml table-width="60%" ?>
 <?dbfo table-width="80%" ?>
 <?dbfo keep-together="always" ?>
@@ -102,7 +102,7 @@ The behavior of conditionals is summarized by the following table
 </para>
 		</section>
 		
-		<section id="ref.expressions.ifthenelse.links">
+		<section xml:id="ref.expressions.ifthenelse.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>

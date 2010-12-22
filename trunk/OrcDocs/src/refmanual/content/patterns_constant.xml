@@ -1,7 +1,7 @@
 <!-- Constant Pattern -->
-	<section id="ref.patterns.constant">
+	<section xml:id="ref.patterns.constant">
 		<title>Constant Pattern</title>
-		<section id="ref.patterns.constant.body">
+		<section xml:id="ref.patterns.constant.body">
 			<para>
 				In Orc pattern matching, a constant pattern is a match only for the same constant value. 
 				It is especially useful in clausal and function definitions based on a constant input.  
@@ -10,10 +10,10 @@
 			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= C</emphasis></para>
 		</section>
 		
-		 <section id="ref.patterns.constant.examples">
+		 <section xml:id="ref.patterns.constant.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Base Case Definition" id="ref.patterns.constant.examples.one">
+		  <example caption="Base Case Definition" xml:id="ref.patterns.constant.examples.one">
 <programlisting><![CDATA[
 {- Use the format function(CONSTANT) = value for later pattern matching on the constant -}
 
@@ -25,7 +25,7 @@ def fib(n) = if (n < 0) then 0 else fib(n-1) + fib(n-2)
 		  </example>
 		</section>
 		
-		<section id="ref.patterns.constant.links">
+		<section xml:id="ref.patterns.constant.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>

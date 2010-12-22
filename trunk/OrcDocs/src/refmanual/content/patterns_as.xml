@@ -1,7 +1,7 @@
 <!-- As Pattern -->
-	<section id="ref.patterns.as">
+	<section xml:id="ref.patterns.as">
 		<title>As Pattern</title>
-		<section id="ref.patterns.as.body">
+		<section xml:id="ref.patterns.as.body">
 			<para>
 				In taking apart a value with a pattern, it is often useful to capture intermediate results.  
 				The 'as' keyword is used to simplify programs, giving a name to an entire sub-pattern.
@@ -9,10 +9,10 @@
 			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= P as X</emphasis></para>
 		</section>
 		
-		 <section id="ref.patterns.as.examples">
+		 <section xml:id="ref.patterns.as.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Simplified Fragment" id="ref.patterns.as.one">
+		  <example caption="Simplified Fragment" xml:id="ref.patterns.as.one">
 <programlisting><![CDATA[
 {- Consider this initial program fragment, without an 'as' pattern -}
 val (a,b) = ((1,2),(3,4))
@@ -25,7 +25,7 @@ val ((ax,ay) as a, (bx,by) as b) = ((1,2),(3,4))
 		  </example>
 		</section>
 		
-		<section id="ref.patterns.as.links">
+		<section xml:id="ref.patterns.as.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>

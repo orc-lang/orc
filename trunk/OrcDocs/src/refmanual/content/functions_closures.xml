@@ -1,7 +1,7 @@
 <!-- Closures -->
-   <section id="ref.functions.closure">
+   <section xml:id="ref.functions.closure">
       <title>Closures</title>
-	  <section id="ref.functions.closure.behavior">
+	  <section xml:id="ref.functions.closure.behavior">
 		  <title>Behavior</title>
 <para>
 Functions are actually values, just like any other value. Defining a function creates a special value called a 
@@ -16,10 +16,10 @@ stored in the closure. Then, when the closure is called, the evaluation of the f
 stored variable bindings.  
 </para>
 	  </section>
-	  <section id="ref.functions.closure.examples">
+	  <section xml:id="ref.functions.closure.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Simple example of a closure" id="ref.functions.closure.examples.one">
+		  <example caption="Simple example of a closure" xml:id="ref.functions.closure.examples.one">
 <programlisting language="orc-demo"><![CDATA[
 def onetwosum(f) = f(1) + f(2)
 def triple(x) = x * 3
@@ -29,7 +29,7 @@ onetwosum(triple)
 		  </example>
 
 	  </section>
-	  <section id="ref.functions.closure.links">
+	  <section xml:id="ref.functions.closure.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>

@@ -1,12 +1,12 @@
 <!-- Syntax: Keywords -->
-	<section id="ref.syntax.keywords">
+	<section xml:id="ref.syntax.keywords">
 		<title>Keywords</title>
-		<section id="ref.syntax.keywords.body">
+		<section xml:id="ref.syntax.keywords.body">
 			<para>
 				The reserved keywords in the Orc programming language are the following:
 			</para>
 			<para>
-<table id="orc-keyword-table" frame="none" rowsep="0" colsep="0">
+<table xml:id="orc-keyword-table" frame="none" rowsep="0" colsep="0">
 <title>Orc Keywords</title>  
 <?dbhtml table-width="80%" ?>
 <?dbfo table-width="80%" ?>
@@ -61,7 +61,7 @@
 </para>
 		</section>
 		
-		<section id="ref.syntax.keywords.links">
+		<section xml:id="ref.syntax.keywords.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>

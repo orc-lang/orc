@@ -1,7 +1,7 @@
 <!-- Otherwise Combinator -->
-   <section id="ref.combinators.otherwise">
+   <section xml:id="ref.combinators.otherwise">
       <title>Otherwise Combinator</title>
-	  <section id="ref.combinators.otherwise.syntax">
+	  <section xml:id="ref.combinators.otherwise.syntax">
 		  <title>Syntax</title>
 		  <para><emphasis role="strong">EBNF</emphasis>: <emphasis>E ::= <code><![CDATA[E ; E]]></code></emphasis></para>
 		  <para><emphasis role="strong">Precedence</emphasis>: 
@@ -12,7 +12,7 @@
 		  <para><emphasis role="strong">Associativity</emphasis>: left and right </para>
 		  <para><emphasis role="strong">Commutative</emphasis>: no </para>
 	  </section>
-	  <section id="ref.combinators.otherwise.behavior">
+	  <section xml:id="ref.combinators.otherwise.behavior">
 		  <title>Behavior</title>
 		  <itemizedlist>
 			  <listitem><code><![CDATA[F ; G]]></code>
@@ -56,10 +56,10 @@ stop completes immediately.
 			  </listitem>
 		  </itemizedlist>
 	  </section>
-	  <section id="ref.combinators.otherwise.examples">
+	  <section xml:id="ref.combinators.otherwise.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Fallback Search" id="ref.combinators.otherwise.examples.one">
+		  <example caption="Fallback Search" xml:id="ref.combinators.otherwise.examples.one">
 <programlisting><![CDATA[
 {- 
  Attempt to retrieve search results from Google.
@@ -71,7 +71,7 @@ Google("cupcake") ; Yahoo("cupcake")
 		  </example>
 		  
 	  </section>
-	  <section id="ref.combinators.otherwise.links">
+	  <section xml:id="ref.combinators.otherwise.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>

@@ -1,7 +1,7 @@
 <!-- Variable Pattern -->
-	<section id="ref.patterns.variable">
+	<section xml:id="ref.patterns.variable">
 		<title>Variable Pattern</title>
-		<section id="ref.patterns.variable.body">
+		<section xml:id="ref.patterns.variable.body">
 			<para>
 				In Orc pattern matching, when a variable occurs in a pattern, it is bound to the value 
 				being matched against that pattern.
@@ -9,10 +9,10 @@
 			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= X</emphasis></para>
 		</section>
 		
-		 <section id="ref.patterns.variable.examples">
+		 <section xml:id="ref.patterns.variable.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Variable Base Case Definition" id="ref.patterns.variable.examples.one">
+		  <example caption="Variable Base Case Definition" xml:id="ref.patterns.variable.examples.one">
 <programlisting><![CDATA[
 {- Define a fold left function base case based on the variable arguments -}
 def foldl(f,[],s) = s
@@ -20,7 +20,7 @@ def foldl(f,[],s) = s
 		  </example>
 		</section>
 		
-		<section id="ref.patterns.variable.links">
+		<section xml:id="ref.patterns.variable.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>

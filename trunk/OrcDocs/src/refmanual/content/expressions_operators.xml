@@ -1,7 +1,7 @@
 <!-- Operators -->
-	<section id="ref.expressions.operators">
+	<section xml:id="ref.expressions.operators">
 		<title>Operators</title>
-		<section id="ref.expressions.operators.body">
+		<section xml:id="ref.expressions.operators.body">
 			<para>
 				Cor has a standard set of arithmetic, logical, and comparison operators.
 				As in most other programming languages, they are written in the usual 
@@ -11,7 +11,7 @@
 			<para>
 Here is the full set of operators that Cor supports:
 
-<table id="ref.ops.table" frame="none" rowsep="0" colsep="0"> 
+<table xml:id="ref.ops.table" frame="none" rowsep="0" colsep="0"> 
 <?dbhtml table-width="80%" ?>
 <?dbfo table-width="95%" ?>
 <?dbfo keep-together="always" ?>
@@ -137,7 +137,7 @@ division and evaluate to <code>2.5</code>.
 </para>
 
 		</section>
-		<section id="ref.expressions.operators.links">
+		<section xml:id="ref.expressions.operators.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>

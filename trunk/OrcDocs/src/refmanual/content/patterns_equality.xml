@@ -1,7 +1,7 @@
 <!-- Equality Pattern -->
-	<section id="ref.patterns.equality">
+	<section xml:id="ref.patterns.equality">
 		<title>Equality Pattern</title>
-		<section id="ref.patterns.equality.body">
+		<section xml:id="ref.patterns.equality.body">
 			<para>
 				An equality pattern is a variable name preceded by =.  
 				When a variable occurs in a pattern, it is bound to the value being matched against that pattern.  
@@ -11,10 +11,10 @@
 			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= 	=X</emphasis></para>
 		</section>
 		
-		 <section id="ref.patterns.equality.examples">
+		 <section xml:id="ref.patterns.equality.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Equality Definition" id="ref.patterns.equality.examples.one">
+		  <example caption="Equality Definition" xml:id="ref.patterns.equality.examples.one">
 <programlisting><![CDATA[
 {- Consider the following definition, which compares its 
 argument to the value bound to variable x, returning true 
@@ -25,7 +25,7 @@ def isx(_) = false
 ]]></programlisting>
 		  </example>
 		
-		<example caption="Equality Definition II" id="ref.patterns.equality.examples.two">
+		<example caption="Equality Definition II" xml:id="ref.patterns.equality.examples.two">
 <programlisting><![CDATA[
 {- The equality pattern becomes much more useful when 
 it is embedded within other patterns. For example, consider 
@@ -39,7 +39,7 @@ def withz(x,=z) = x
 		  </example>
 		</section>
 		
-		<section id="ref.patterns.equality.links">
+		<section xml:id="ref.patterns.equality.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>

@@ -1,7 +1,7 @@
 <!-- Clausal Functions -->
-   <section id="ref.functions.clausal">
+   <section xml:id="ref.functions.clausal">
       <title>Clausal Functions</title>
-	  <section id="ref.functions.clausal.behavior">
+	  <section xml:id="ref.functions.clausal.behavior">
 		  <title>Behavior</title>
 		  <para>
 		  The combination of functions and pattern matching offers a powerful capability: clausal definition of
@@ -19,17 +19,17 @@ definition, where each individual declaration is a clause of the larger function
 If no clause matches, the call remains silent.
 		  </para>
 	  </section>
-	  <section id="ref.functions.clausal.examples">
+	  <section xml:id="ref.functions.clausal.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Simple example of a clausal function" id="ref.functions.clausal.examples.one">
+		  <example caption="Simple example of a clausal function" xml:id="ref.functions.clausal.examples.one">
 <programlisting language="orc-demo"><![CDATA[
 def sum([]) = 0
 def sum(h:t) = h + sum(t)
 ]]></programlisting>
 		  </example>
 
-		  <example caption="Clausal function with constant patterns" id="ref.functions.clausal.examples.two">
+		  <example caption="Clausal function with constant patterns" xml:id="ref.functions.clausal.examples.two">
 <programlisting language="orc-demo"><![CDATA[
 {- Fibonacci numbers -}
 def fib(0) = 1
@@ -38,7 +38,7 @@ def fib(n) = if (n < 0) then 0 else fib(n-1) + fib(n-2)
 ]]></programlisting>
 		  </example>
 
-		  <example caption="Clauses of mutually recursive functions" id="ref.functions.clausal.examples.three">
+		  <example caption="Clauses of mutually recursive functions" xml:id="ref.functions.clausal.examples.three">
 <programlisting language="orc-demo"><![CDATA[
 def even(0) = true
 def odd(0) = false
@@ -49,7 +49,7 @@ def odd(n) = even(if n > 0 then n-1 else n+1)
 
 		  
 	  </section>
-	  <section id="ref.functions.clausal.links">
+	  <section xml:id="ref.functions.clausal.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>

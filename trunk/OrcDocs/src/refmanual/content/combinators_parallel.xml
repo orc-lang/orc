@@ -1,7 +1,7 @@
 <!-- Parallel Combinator -->
-   <section id="ref.combinators.parallel">
+   <section xml:id="ref.combinators.parallel">
       <title>Parallel Combinator</title>
-	  <section id="ref.combinators.parallel.syntax">
+	  <section xml:id="ref.combinators.parallel.syntax">
 		  <title>Syntax</title>
 		  <para><emphasis role="strong">EBNF</emphasis>: <emphasis>E ::= <code><![CDATA[E | E]]></code></emphasis></para>
 		  <para><emphasis role="strong">Precedence</emphasis>: 
@@ -12,7 +12,7 @@
 		  <para><emphasis role="strong">Associativity</emphasis>: left and right </para>
 		  <para><emphasis role="strong">Commutative</emphasis>: yes </para>
 	  </section>
-	  <section id="ref.combinators.parallel.behavior">
+	  <section xml:id="ref.combinators.parallel.behavior">
 		  <title>Behavior</title>
 		  <itemizedlist><listitem><code><![CDATA[F | G]]></code></listitem></itemizedlist>
 		  <para>
@@ -22,10 +22,10 @@
 			  so as well. The resulting publications of <code><![CDATA[F | G]]></code> may be published in arbitrary order. 
 		  </para>
 	  </section>
-	  <section id="ref.combinators.parallel.examples">
+	  <section xml:id="ref.combinators.parallel.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Parallel Publication" id="ref.combinators.parallel.examples.one">
+		  <example caption="Parallel Publication" xml:id="ref.combinators.parallel.examples.one">
 <programlisting language="orc-demo"><![CDATA[
 -- Publish 1 and 2 in parallel  
 1 | 1+1
@@ -35,7 +35,7 @@
 ]]></programlisting>
 		  </example>
 
-		  <example caption="Parallel Sites" id="ref.combinators.parallel.examples.two">
+		  <example caption="Parallel Sites" xml:id="ref.combinators.parallel.examples.two">
 <programlisting><![CDATA[
 {- 
  Access two search sites, Google and Yahoo, in parallel.
@@ -50,7 +50,7 @@ Google("cupcake") | Yahoo("cupcake")
 		  </example>
 		  
 	  </section>
-	  <section id="ref.combinators.parallel.links">
+	  <section xml:id="ref.combinators.parallel.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>

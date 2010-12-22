@@ -1,8 +1,8 @@
 <!-- Class -->
-   <chapter id="ref.class">
+   <chapter xml:id="ref.class">
       <title>Class</title>
-	  <section id="ref.class.body"><title>Class</title>
-	  <section id="ref.class.syntax">
+	  <section xml:id="ref.class.body"><title>Class</title>
+	  <section xml:id="ref.class.syntax">
 		  <title>Syntax</title>
 		  <para><emphasis role="strong">EBNF</emphasis>:</para>
 		  <para>
@@ -18,7 +18,7 @@ CP::=                            Class Declaration
 ]]></programlisting>
 		  </para>
 	  </section>
-	  <section id="ref.class.behavior">
+	  <section xml:id="ref.class.behavior">
 		  <title>Behavior</title>
 <para>
 It is required for the class to have at least one internal definition. 
@@ -41,10 +41,10 @@ class_instance.X( V, ..., V )
 </para>
 </para>
 	  </section>
-	  <section id="ref.class.examples">
+	  <section xml:id="ref.class.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="A sequence number generator" id="ref.class.examples.one">
+		  <example caption="A sequence number generator" xml:id="ref.class.examples.one">
 <programlisting language="orc-demo"><![CDATA[
 def class gen_seq(init) =
   -- the mutable integer defined with seed init
@@ -60,13 +60,13 @@ g.next() >y> println(y) >> g.next() >y> println(y) >> stop
 ]]></programlisting>
 		  </example>
 
-		  <example caption="" id="ref.class.examples.two">
+		  <example caption="" xml:id="ref.class.examples.two">
 <programlisting language="orc-demo"><![CDATA[
 ]]></programlisting>
 		  </example>
 
 	  </section>
-	  <section id="ref.class.links">
+	  <section xml:id="ref.class.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>
