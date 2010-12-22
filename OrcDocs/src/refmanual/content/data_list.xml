@@ -86,15 +86,15 @@ signal
     <tbody>
       <row>
         <entry><xref linkend="types.List"/></entry>
-        <entry><olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
+        <entry><olink targetdoc="root" targetptr="TODO">TODO</olink></entry>
       </row>
       <row>
         <entry><xref linkend="library.core.If"/></entry>
-        <entry><olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
+        <entry><olink targetdoc="root" targetptr="TODO">TODO</olink></entry>
       </row>
       <row>
         <entry><xref linkend="library.core.Unless"/></entry>
-        <entry><olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
+        <entry><olink targetdoc="root" targetptr="TODO">TODO</olink></entry>
       </row>
       <row>
         <entry><xref linkend="library.time.metronome"/></entry>

@@ -107,15 +107,15 @@ Rtimer(100) >> (f(), g())
     <tbody>
       <row>
         <entry><xref linkend="types.Tuple"/></entry>
-        <entry><olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
+        <entry><olink targetdoc="root" targetptr="TODO">TODO</olink></entry>
       </row>
       <row>
         <entry><xref linkend="library.state.fst"/></entry>
-        <entry><olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
+        <entry><olink targetdoc="root" targetptr="TODO">TODO</olink></entry>
       </row>
       <row>
         <entry><xref linkend="library.state.snd"/></entry>
-        <entry><olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
+        <entry><olink targetdoc="root" targetptr="TODO">TODO</olink></entry>
       </row>
     </tbody>
   </tgroup>
