@@ -190,10 +190,7 @@
 			</fileset>
 		</copy>
 		<copy todir="${build.dir}/html/refmanual/images">
-			<fileset dir="src/xsl/images">
-				<include name="next.gif" />
-				<include name="prev.gif" />
-			</fileset>
+			<fileset dir="src/xsl/images"/>
 		</copy>
 	</target>
 		
@@ -221,6 +218,7 @@
 				chapter	  toc
 			"/>
 			<param name="toc.section.depth" expression="1" />
+			<param name="header.rule" expression="0"/>
 			<param name="use.id.as.filename" expression="1" />
 			
 			<param name="chunk.quietly" expression="1"/>
@@ -244,10 +242,7 @@
 			</fileset>
 		</copy>
 		<copy todir="${build.dir}/html/refmanual/images">
-			<fileset dir="src/xsl/images">
-				<include name="next.gif" />
-				<include name="prev.gif" />
-			</fileset>
+			<fileset dir="src/xsl/images"/>
 		</copy>
 	</target>
 	

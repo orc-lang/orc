@@ -10,11 +10,6 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<!DOCTYPE page [
-<!ENTITY ug "../root.xml">  <!-- userguide -->
-]>
-
-
 <!-- Keep in mind that for olinks to work now that we're using xinclude, we may have to
 	change the targetdoc pointers in the user guide to point to the smaller content documents,
 	rather than the root_ref as a whole -->
@@ -39,31 +34,3 @@
 <xi:include href="content/time.xml"/>
 
 </book>
-
-
-<!--  Sample xpointer possibilities
-   xpointer="xpointer(//section[@id='parallel'])"
-   xpointer="xpointer(/book/chapter/section[@id='parallel'])"
-   xmlns:xi="http://www.w3.org/2001/XInclude"
--->
-
-<!-- xpointer() scheme examples for direct copy with <frag> tags
-	 CAN'T BE USED WITH XALAN (use xsltproc etc.)
-	
-	  <xi:include
-         href="&ug;"
-         xpointer="&fx;combinators.parallel.frag.summary&xf;"
-      />
-	
-	 <xi:include
-		 href="&ug;"
-	     xpointer="&fx;combinators.parallel.frag.examples&xf;"
-	  />
--->
-
-<!--
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/combinators_parallel.xml"/> 
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/combinators_sequential.xml"/>
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/combinators_pruning.xml"/>
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="content/combinators_otherwise.xml"/>
--->
