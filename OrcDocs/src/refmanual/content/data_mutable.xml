@@ -17,12 +17,12 @@
 
 <para>TODO.</para>
 
-<section xml:id="ref.data.mutable.literals">
-<title>Literals</title>
+<section xml:id="ref.data.mutable.constructors">
+<title>Constructors</title>
 
 <para><emphasis role="strong">EBNF</emphasis>: <replaceable>NONTERM</replaceable> ::= <code>TODO</code> <replaceable>TODO</replaceable> <code>TODO</code></para>
 
-<para>TODO.</para>
+<para>TODO. Cover, as appropriate: Preconditions Required/Postconditions Asserted/Invariants Maintained; Side-Effects of Invocation/State Maintained; Abnormal Outcomes; External Dependencies; Performance Characteristics.</para>
 
 </section>
 

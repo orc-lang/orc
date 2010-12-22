@@ -17,8 +17,8 @@
 
 <para>TODO.</para>
 
-<section xml:id="ref.data.external.literals">
-<title>Literals</title>
+<section xml:id="ref.data.external.constructors">
+<title>Constructors</title>
 
 <para><emphasis role="strong">EBNF</emphasis>: <replaceable>NONTERM</replaceable> ::= <code>TODO</code> <replaceable>TODO</replaceable> <code>TODO</code></para>
 

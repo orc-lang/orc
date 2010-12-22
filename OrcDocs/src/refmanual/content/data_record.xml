@@ -17,19 +17,19 @@
 
 <para>TODO -- David is working on this section.</para>
 
-<section xml:id="ref.data.record.literals">
-<title>Literals</title>
+<section xml:id="ref.data.record.constructors">
+<title>Constructors</title>
 
 <para><emphasis role="strong">EBNF</emphasis>: <replaceable>NONTERM</replaceable> ::= <code>TODO</code> <replaceable>TODO</replaceable> <code>TODO</code></para>
 
-<para>TODO.</para>
+<para>TODO. Cover, as appropriate: Preconditions Required/Postconditions Asserted/Invariants Maintained; Side-Effects of Invocation/State Maintained; Abnormal Outcomes; External Dependencies; Performance Characteristics.</para>
 
 </section>
 
 <section xml:id="ref.data.record.operations">
 <title>Operations</title>
 
-<para>Notable TODO operations include:
+<para>Notable record operations include:
 <itemizedlist>
 <listitem><para>TODO: <code>TODO</code></para></listitem>
 <listitem><para>TODO: <code>TODO</code></para></listitem>
