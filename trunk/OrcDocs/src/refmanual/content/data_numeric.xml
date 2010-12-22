@@ -135,48 +135,48 @@ signal
     </thead>
     <tbody>
       <row>
-        <entry>-xref linkend="types.Integer"/></entry>
-        <entry>-olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
+        <entry><xref linkend="types.Integer"/></entry>
+        <entry><olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
       </row>
       <row>
-        <entry>-xref linkend="types.Number"/></entry>
-        <entry>-olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
+        <entry><xref linkend="types.Number"/></entry>
+        <entry><olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
       </row>
       <row>
-        <entry>-xref linkend="library.core.Add"/></entry>
-        <entry>-olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
+        <entry><xref linkend="library.core.Add"/></entry>
+        <entry><olink targetdoc="root" targetptr="TODO">TODO-/olink></entry>
       </row>
       <row>
-        <entry>-xref linkend="library.core.Sub"/></entry>
+        <entry><xref linkend="library.core.Sub"/></entry>
         <!-- Use the following entry to fill up any remaining empty slots in that column -->
         <entry morerows="9" valign="middle"><para></para></entry>
       </row>
       <row>
-        <entry>-xref linkend="library.core.UMinus"/></entry>
+        <entry><xref linkend="library.core.UMinus"/></entry>
       </row>
       <row>
-        <entry>-xref linkend="library.core.Mult"/></entry>
+        <entry><xref linkend="library.core.Mult"/></entry>
       </row>
       <row>
-        <entry>-xref linkend="library.core.Exponent"/></entry>
+        <entry><xref linkend="library.core.Exponent"/></entry>
       </row>
       <row>
-        <entry>-xref linkend="library.core.Div"/></entry>
+        <entry><xref linkend="library.core.Div"/></entry>
       </row>
       <row>
-        <entry>-xref linkend="library.core.Mod"/></entry>
+        <entry><xref linkend="library.core.Mod"/></entry>
       </row>
       <row>
-        <entry>-xref linkend="library.core.abs"/></entry>
+        <entry><xref linkend="library.core.abs"/></entry>
       </row>
       <row>
-        <entry>-xref linkend="library.core.signum"/></entry>
+        <entry><xref linkend="library.core.signum"/></entry>
       </row>
       <row>
-        <entry>-xref linkend="library.core.floor"/></entry>
+        <entry><xref linkend="library.core.floor"/></entry>
       </row>
       <row>
-        <entry>-xref linkend="library.core.ceil"/></entry>
+        <entry><xref linkend="library.core.ceil"/></entry>
       </row>
     </tbody>
   </tgroup>

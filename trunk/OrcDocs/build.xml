@@ -77,7 +77,8 @@
 		<echo message="Creating olink databases..."/>
 		<!-- Create database of links for user guide -->
 		<xslt style="${src.dir}/xsl/orc.xsl"
-				basedir="${src.dir}" destdir="${build.dir}/html">
+				basedir="${src.dir}" destdir="${build.dir}/html"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
 			<include name="root.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
@@ -86,7 +87,8 @@
 		</xslt>
 		<!-- Create database of links for reference manual -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual">
+				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
 			<include name="root_ref.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
@@ -96,7 +98,8 @@
 		<!-- Create database of links for ref.combinators.otherwise (section) -->
 		<!--
 		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual">
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
 			<include name="combinators_otherwise.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
@@ -165,7 +168,8 @@
       -->
 	<target name="build-html-chunk" depends="xinclude" description="Generates chunked User Guide HTML doc">
 		<xslt style="${src.dir}/xsl/html-chunk.xsl" extension=".html" 
-				basedir="${src.dir}" destdir="${build.dir}/html">
+				basedir="${src.dir}" destdir="${build.dir}/html"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
 			<include name="all.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="orc.demo" expression="1"/>
@@ -251,7 +255,8 @@
       -->
 	<target name="build-html-single" depends="xinclude" description="Generates single User Guide HTML doc">
 		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html" 
-				basedir="${src.dir}" destdir="${build.dir}/html">
+				basedir="${src.dir}" destdir="${build.dir}/html"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
 			<include name="all.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="orc.demo" expression="1"/>
@@ -278,7 +283,8 @@
       -->
 	<target name="mod-build-html-single" depends="mod-xinclude" description="Generates single User Guide HTML doc">
 		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html" 
-				basedir="${src.dir}" destdir="${build.dir}/html">
+				basedir="${src.dir}" destdir="${build.dir}/html"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
 			<include name="all.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="orc.demo" expression="1"/>
@@ -307,7 +313,8 @@
 		<!-- Hack to make sure the ref manual builds every time -->
 		<copy file="${src.dir}/refmanual/root_ref.xml" tofile="${src.dir}/refmanual/refmanual.xml"/>
 		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html" 
-				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual">
+				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
 			<include name="refmanual.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="orc.demo" expression="1"/>
@@ -340,7 +347,8 @@
 	<target name="build-pdf" depends="xinclude" 
 		    description="Generates PDF files from DocBook XML">
 	    <xslt style="${src.dir}/xsl/fo.xsl" extension=".fo" 
-			basedir="${src.dir}" destdir="${build.dir}/fo">
+			basedir="${src.dir}" destdir="${build.dir}/fo"
+			processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
 	        <classpath refid="xalan.classpath" />
 	    	<param name="section.autolabel" expression="1"/>
 	    	<param name="section.label.includes.component.label" expression="1"/>
@@ -383,7 +391,8 @@
 	<target name="rm-build-pdf" depends="xinclude" 
 		    description="Generates PDF files from DocBook XML for the reference manual">
 	    <xslt style="${src.dir}/xsl/fo.xsl" extension=".fo" 
-			basedir="${src.dir}/refmanual" destdir="${build.dir}/fo/refmanual">
+			basedir="${src.dir}/refmanual" destdir="${build.dir}/fo/refmanual"
+			processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
 	        <classpath refid="xalan.classpath" />
 	    	<param name="section.autolabel" expression="1"/>
 	    	<param name="section.label.includes.component.label" expression="1"/>
