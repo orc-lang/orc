@@ -131,6 +131,20 @@
 		</taskdef>
 		<xinclude in="${src.dir}/root.xml" out="${src.dir}/all.xml" />
 	</target>
+
+	<!--
+      - target:  xinclude-ref
+      -->
+	<target name="xinclude-ref" depends="depends">
+		<taskdef name="xinclude" classname="gr.abiss.xcluder.XercesXcluder">
+			<classpath>
+				<fileset dir="lib">
+					<include name="*.jar" />
+				</fileset>
+			</classpath>
+		</taskdef>
+		<xinclude in="${src.dir}/refmanual/root_ref.xml" out="${src.dir}/all.xml" />
+	</target>
 	
 	<!--
       - target:  mod-xinclude
