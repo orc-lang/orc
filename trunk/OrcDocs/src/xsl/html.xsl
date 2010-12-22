@@ -39,7 +39,7 @@ Orc examples must use the "orc" CSS class.
 	
 <!-- Match template for collapsible example boxes -->
 <xsl:template match="example">
-	<xsl:variable name="ex_id" select="./@id"/>
+	<xsl:variable name="ex_id" select="./@xml:id"/>
 	<xsl:variable name="ex_link" select="concat($ex_id,'_link')"/>
 	<xsl:variable name="ex_content" select="concat($ex_id,'_content')"/>
 	<table border="0" width="90%" align="center">

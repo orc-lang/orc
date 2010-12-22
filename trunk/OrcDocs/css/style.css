@@ -52,14 +52,16 @@ span.hl-literal, span.hl-number, span.hl-string {
 
 .navheader {
 	position: fixed;
-	background: #FFFFFF;
+	background: #BBBBBB;
 	width: 100%;
-	top: 0px;
+	top: auto;
+	bottom: 0px;
 	left: 0px;
+    border-top: 2px solid #555555;
 }
 
-body {
-	padding-top: 95px;
+html, body {
+	padding-bottom: 20em;
 }
 
 /* Fix for Mozilla ignoring the <col valign="top"> */

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- root_ref.xml - DocBook source for the Orc reference manual
 
-     $Id: root_ref.xml 2285 2010-12-21 22:24:15Z jthywissen $
+     $Id$
 
      Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 
@@ -9,11 +9,6 @@
      the LICENSE file found in the project's top-level directory and also found at
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
-
-<!DOCTYPE page [
-<!ENTITY ug "../root.xml">  <!-- userguide -->
-]>
-
 
 <!-- Keep in mind that for olinks to work now that we're using xinclude, we may have to
 	change the targetdoc pointers in the user guide to point to the smaller content documents,
@@ -31,7 +26,7 @@
 <xi:include href="content/class.xml"/>
 <xi:include href="content/combinators.xml"/>
 <xi:include href="content/data.xml"/> 
-<!-- <xi:include href="content/declarations.xml"/> -->
+<xi:include href="content/declarations.xml"/>
 <xi:include href="content/expressions.xml"/> 
 <xi:include href="content/functions.xml"/>
 <xi:include href="content/patterns.xml"/>
