@@ -77,14 +77,16 @@ from Java code as <type>java.lang.String</type>.</para>
 <title>Examples</title>
 <examplescript/>
 
-<example caption="TODO:Example1" xml:id="ref.data.boolean.examples.one">
+<example xml:id="ref.data.string.examples.one">
+<title>TODO:Example1</title>
 <programlisting language="orc-demo"><![CDATA[
 --TODO
 signal
 ]]></programlisting>
 </example>
 
-<example caption="TODO:Example2" xml:id="ref.data.boolean.examples.two">
+<example xml:id="ref.data.string.examples.two">
+<title>TODO:Example2</title>
 <programlisting><![CDATA[
 --TODO
 {- 

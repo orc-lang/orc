@@ -29,7 +29,7 @@
 <section xml:id="ref.data.external.operations">
 <title>Operations</title>
 
-<para>Notable TODO operations include:
+<para>Notable external value operations include:
 <itemizedlist>
 <listitem><para>TODO: <code>TODO</code></para></listitem>
 <listitem><para>TODO: <code>TODO</code></para></listitem>
@@ -51,14 +51,16 @@
 <title>Examples</title>
 <examplescript/>
 
-<example caption="TODO:Example1" xml:id="ref.data.boolean.examples.one">
+<example xml:id="ref.data.external.examples.one">
+<title>TODO:Example1</title>
 <programlisting language="orc-demo"><![CDATA[
 --TODO
 signal
 ]]></programlisting>
 </example>
 
-<example caption="TODO:Example2" xml:id="ref.data.boolean.examples.two">
+<example xml:id="ref.data.external.examples.two">
+<title>TODO:Example2</title>
 <programlisting><![CDATA[
 --TODO
 {- 

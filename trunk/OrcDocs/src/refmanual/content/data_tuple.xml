@@ -40,6 +40,11 @@ tuple elements.
 
 <para>Tuple are constructed simply with parenthesis-enclosed comma-separated lists of expressions.</para>
 
+<para>Construction proceeds by evaluating all the expressions in parallel, and using the
+first publication of each, as if each was under a pruning combinator.
+The tuple is published when all expressions have published a value.
+If any expression is silent, the tuple constructor is silent.</para>
+
 </section>
 
 <section xml:id="ref.data.tuple.operations">
@@ -67,14 +72,15 @@ is passed to Java code, it will be as an <type>java.lang.Object</type> of a type
 <title>Examples</title>
 <examplescript/>
 
-<example caption="TODO:Example1" xml:id="ref.data.boolean.examples.one">
+<example xml:id="ref.data.tuple.examples.one">
+<title>TODO:Example1</title>
 <programlisting language="orc-demo"><![CDATA[
 --TODO
 signal
 ]]></programlisting>
 </example>
 
-<example caption="Fork-Join" xml:id="ref.data.boolean.examples.forkjoin">
+<example xml:id="ref.data.tuple.examples.forkjoin" caption="Fork-Join">
 <programlisting><![CDATA[
 def f() = println("f starting") >> Rtimer(450) >> println("f is done") >> "f"
 def g() = println("g starting") >> Rtimer(900) >> println("g is done") >> "g"

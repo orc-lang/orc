@@ -56,14 +56,16 @@ Returns of type <type>void</type> from Java code are converted into a publicatio
 <title>Examples</title>
 <examplescript/>
 
-<example caption="TODO:Example1" xml:id="ref.data.boolean.examples.one">
+<example xml:id="ref.data.signal.examples.one">
+<title>TODO:Example1</title>
 <programlisting language="orc-demo"><![CDATA[
 --TODO
 signal
 ]]></programlisting>
 </example>
 
-<example caption="TODO:Example2" xml:id="ref.data.boolean.examples.two">
+<example xml:id="ref.data.signal.examples.two">
+<title>TODO:Example2</title>
 <programlisting><![CDATA[
 --TODO
 {- 
