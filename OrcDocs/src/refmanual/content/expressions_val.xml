@@ -1,7 +1,7 @@
 <!-- Val -->
-	<section id="ref.expressions.val">
+	<section xml:id="ref.expressions.val">
 		<title>Val</title>
-		<section id="ref.expressions.lambda.body">
+		<section xml:id="ref.expressions.lambda.body">
 			<para>
 The declaration <code>val x = </code>G, followed by expression F, is 
 actually just a different way of writing the expression F<code><![CDATA[ <x< ]]></code>G.
@@ -10,10 +10,10 @@ of variable name <code>x</code>).
 </para>
 		</section>
 		
-		<section id="ref.expressions.val.examples">
+		<section xml:id="ref.expressions.val.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="One Two Sum" id="ref.expressions.lambda.examples.one">
+		  <example caption="One Two Sum" xml:id="ref.expressions.lambda.examples.one">
 <programlisting><![CDATA[
 {- Assign 3 to x and 6 to y -}
 val x = 1 + 2
@@ -22,7 +22,7 @@ val y = x + x
 		  </example>
 	  </section>
 		
-		<section id="ref.expressions.val.links">
+		<section xml:id="ref.expressions.val.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>

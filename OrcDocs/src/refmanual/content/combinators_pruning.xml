@@ -1,7 +1,7 @@
 <!-- Pruning Combinator -->
-   <section id="ref.combinators.pruning">
+   <section xml:id="ref.combinators.pruning">
       <title>Pruning Combinator</title>
-	  <section id="ref.combinators.pruning.syntax">
+	  <section xml:id="ref.combinators.pruning.syntax">
 		  <title>Syntax</title>
 		  <para><emphasis role="strong">EBNF</emphasis>: <emphasis>E <code><![CDATA[ <P< ]]></code> E</emphasis></para>
 		  <para><emphasis role="strong">Precedence</emphasis>: 
@@ -12,7 +12,7 @@
 		  <para><emphasis role="strong">Associativity</emphasis>: left </para>
 		  <para><emphasis role="strong">Commutative</emphasis>: no </para>
 	  </section>
-	  <section id="ref.combinators.pruning.behavior">
+	  <section xml:id="ref.combinators.pruning.behavior">
 		  <title>Behavior</title>
 		  <itemizedlist>
 			  <listitem>F <code><![CDATA[ <x< ]]></code> G
@@ -33,17 +33,17 @@ of the pattern P are made in F. Otherwise, the published value is simply ignored
 			  </listitem>
 		  </itemizedlist>
 	  </section>
-	  <section id="ref.combinators.pruning.examples">
+	  <section xml:id="ref.combinators.pruning.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Exclusive Publication" id="ref.combinators.pruning.examples.one">
+		  <example caption="Exclusive Publication" xml:id="ref.combinators.pruning.examples.one">
 <programlisting language="orc-demo"><![CDATA[
 -- Publish either 5 or 6, but not both
 x+2 <x< (3 | 4)
 ]]></programlisting>
 		  </example>
 
-		  <example caption="Print First Result" id="ref.combinators.pruning.examples.two">
+		  <example caption="Print First Result" xml:id="ref.combinators.pruning.examples.two">
 <programlisting><![CDATA[
 -- Query Google and Yahoo for a search result
 -- Print out the result that arrives first; ignore the other result
@@ -51,7 +51,7 @@ println(result) <result< ( Google("cupcake") | Yahoo("cupcake") )
 ]]></programlisting>
 		  </example>
 		  
-		  <example caption="Console Output" id="ref.combinators.pruning.examples.three">
+		  <example caption="Console Output" xml:id="ref.combinators.pruning.examples.three">
 <programlisting><![CDATA[
 {-
 This example actually prints both "true" and "false" to the
@@ -61,7 +61,7 @@ stop <x< println("true") | println("false")
 ]]></programlisting>
 		  </example>
 		  
-		  <example caption="Pattern Publication" id="ref.combinators.pruning.examples.four">
+		  <example caption="Pattern Publication" xml:id="ref.combinators.pruning.examples.four">
 <programlisting><![CDATA[
 -- Publish either 9 or 25, but not 16.
 x*x <(x,true)< ( (3,true) | (4,false) | (5,true) )
@@ -69,7 +69,7 @@ x*x <(x,true)< ( (3,true) | (4,false) | (5,true) )
 		  </example>
 		  		  
 	  </section>
-	  <section id="ref.combinators.pruning.links">
+	  <section xml:id="ref.combinators.pruning.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>

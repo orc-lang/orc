@@ -1,7 +1,7 @@
 <!-- Include -->
-	<section id="ref.declarations.include">
+	<section xml:id="ref.declarations.include">
 		<title>Include</title>
-		<section id="ref.declarations.include.body">
+		<section xml:id="ref.declarations.include.body">
 			<para>
 It is often convenient to group related declarations into units that can be
 shared between programs. The <code>include</code> declaration offers a simple
@@ -14,10 +14,10 @@ found in the Orc JAR files.
 			</para>
 		</section>
 		
-		<section id="ref.declarations.include.examples">
+		<section xml:id="ref.declarations.include.examples">
 		<title>Examples</title>
 		<examplescript/>
-		<example caption="fold.inc" id="ref.declarations.include.examples.one">
+		<example caption="fold.inc" xml:id="ref.declarations.include.examples.one">
 <programlisting><![CDATA[
 {- Contents of fold.inc -}
 def foldl(f,[],s) = s
@@ -27,7 +27,7 @@ def foldr(f,l,s) = foldl(f,rev(l),s)
 ]]></programlisting>
 		  </example>
 		  
-		<example caption="Included file" id="ref.declarations.include.examples.two">
+		<example caption="Included file" xml:id="ref.declarations.include.examples.two">
 		<programlisting><![CDATA[
 {- This is the same as inserting the contents of fold.inc here -}
 include "fold.inc"
@@ -39,7 +39,7 @@ sum([1,2,3])
 		</example>
 		</section>
 		
-		<section id="ref.declarations.include.links">
+		<section xml:id="ref.declarations.include.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>

@@ -1,7 +1,7 @@
 <!-- Sequential Combinator -->
-   <section id="ref.combinators.sequential">
+   <section xml:id="ref.combinators.sequential">
       <title>Sequential Combinator</title>
-	  <section id="ref.combinators.sequential.syntax">
+	  <section xml:id="ref.combinators.sequential.syntax">
 		  <title>Syntax</title>
 		  <para><emphasis role="strong">EBNF</emphasis>: <emphasis><code><![CDATA[E >P> E]]></code></emphasis></para>
 		  <para><emphasis role="strong">Precedence</emphasis>: 
@@ -12,7 +12,7 @@
 		  <para><emphasis role="strong">Associativity</emphasis>: right </para>
 		  <para><emphasis role="strong">Commutative</emphasis>: no </para>
 	  </section>
-	  <section id="ref.combinators.sequential.behavior">
+	  <section xml:id="ref.combinators.sequential.behavior">
 		  <title>Behavior</title>
 		  <itemizedlist>
 			  <listitem><code><![CDATA[F >x> G]]></code>
@@ -40,17 +40,17 @@
 			  </listitem>		  
 		  </itemizedlist>
 	  </section>
-	  <section id="ref.combinators.sequential.examples">
+	  <section xml:id="ref.combinators.sequential.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Variable Binding" id="ref.combinators.sequential.examples.one">
+		  <example caption="Variable Binding" xml:id="ref.combinators.sequential.examples.one">
 <programlisting language="orc-demo"><![CDATA[
 -- Publish 1 and 2 in parallel  
 (0 | 1) >n> n+1
 ]]></programlisting>
 		  </example>
 
-		  <example caption="Variable Binding 2" id="ref.combinators.sequential.examples.two">
+		  <example caption="Variable Binding 2" xml:id="ref.combinators.sequential.examples.two">
 <programlisting><![CDATA[
 -- Prepend the site name to each published search result
 -- The cat site concatenates any number of arguments into one string  
@@ -59,14 +59,14 @@
 ]]></programlisting>
 		  </example>
 		  
-		  <example caption="Pattern Publication" id="ref.combinators.sequential.examples.three">
+		  <example caption="Pattern Publication" xml:id="ref.combinators.sequential.examples.three">
 <programlisting><![CDATA[
 -- Publish 3, 6, and 9 in arbitrary order.
 (3,6,9)  >(x,y,z)>  ( x | y | z )
 ]]></programlisting>
 		  </example>
 		  
-		  <example caption="Filtering" id="ref.combinators.sequential.examples.four">
+		  <example caption="Filtering" xml:id="ref.combinators.sequential.examples.four">
 <programlisting><![CDATA[
 -- Filter out values of the form (_,false)
 ( (4,true) | (5,false) | (6,true) )  >(x,true)> x
@@ -74,7 +74,7 @@
 ]]></programlisting>
 		  </example>
 		  
-		  <example caption="Suppressed Publication" id="ref.combinators.sequential.examples.five">
+		  <example caption="Suppressed Publication" xml:id="ref.combinators.sequential.examples.five">
 <programlisting><![CDATA[
 {- 
   Print two strings to the console,
@@ -85,7 +85,7 @@
 		  </example>
 		  
 	  </section>
-	  <section id="ref.combinators.sequential.links">
+	  <section xml:id="ref.combinators.sequential.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>

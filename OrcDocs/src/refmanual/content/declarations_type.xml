@@ -1,23 +1,23 @@
 <!-- Type -->
-	<section id="ref.declarations.type">
+	<section xml:id="ref.declarations.type">
 		<title>Type</title>
-		<section id="ref.declarations.type.body">
+		<section xml:id="ref.declarations.type.body">
 			<para>
 David?
 			</para>
 		</section>
 		
-		<section id="ref.declarations.type.examples">
+		<section xml:id="ref.declarations.type.examples">
 		<title>Examples</title>
 		<examplescript/>
-		<example caption="" id="ref.declarations.type.examples.one">
+		<example caption="" xml:id="ref.declarations.type.examples.one">
 <programlisting><![CDATA[
 --need examples
 ]]></programlisting>
 		  </example>
 		</section>
 		
-		<section id="ref.declarations.type.links">
+		<section xml:id="ref.declarations.type.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>

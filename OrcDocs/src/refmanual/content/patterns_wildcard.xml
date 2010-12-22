@@ -1,17 +1,17 @@
 <!-- Wildcard Pattern -->
-	<section id="ref.patterns.wildcard">
+	<section xml:id="ref.patterns.wildcard">
 		<title>Wildcard Pattern</title>
-		<section id="ref.patterns.wildcard.body">
+		<section xml:id="ref.patterns.wildcard.body">
 			<para>
 				The wildcard pattern, written _, matches any shape and binds no variables.
 			</para>
 			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= _</emphasis></para>
 		</section>
 		
-		 <section id="ref.patterns.wildcard.examples">
+		 <section xml:id="ref.patterns.wildcard.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Wildcard Assignments" id="ref.patterns.wildcard.one">
+		  <example caption="Wildcard Assignments" xml:id="ref.patterns.wildcard.one">
 <programlisting><![CDATA[
 val (x,_,_) = (1,(2,2),[3,3,3]) -- binds x to 1.
 
@@ -20,7 +20,7 @@ val [[_,x],[_,y]] = [[1,3],[2,4]] -- binds x to 3 and y to 4.
 		  </example>
 		</section>
 		
-		<section id="ref.patterns.wildcard.links">
+		<section xml:id="ref.patterns.wildcard.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>

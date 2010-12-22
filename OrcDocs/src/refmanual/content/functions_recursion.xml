@@ -1,7 +1,7 @@
 <!-- Recursive Functions -->
-   <section id="ref.functions.recursion">
+   <section xml:id="ref.functions.recursion">
       <title>Recursive Functions</title>
-	  <section id="ref.functions.recursion.behavior">
+	  <section xml:id="ref.functions.recursion.behavior">
 		  <title>Behavior</title>
 		  <para>
 Functions can be recursive; that is, the name of a function may be used in its own body.
@@ -11,16 +11,16 @@ Functions can be recursive; that is, the name of a function may be used in its o
 assumed to be mutually recursive.
 		  </para>
 	  </section>
-	  <section id="ref.functions.recursion.examples">
+	  <section xml:id="ref.functions.recursion.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Simple example of a recursive function" id="ref.functions.recursion.examples.one">
+		  <example caption="Simple example of a recursive function" xml:id="ref.functions.recursion.examples.one">
 <programlisting language="orc-demo"><![CDATA[
 def sumto(n) = if n < 1 then 0 else n + sumto(n-1)
 ]]></programlisting>
 		  </example>
 
-		  <example caption="Mutually recursive functions" id="ref.functions.recursion.examples.two">
+		  <example caption="Mutually recursive functions" xml:id="ref.functions.recursion.examples.two">
 <programlisting language="orc-demo"><![CDATA[
 def even(n) = 
   if (n > 0) then odd(n-1)
@@ -33,7 +33,7 @@ def odd(n) =
 ]]></programlisting>
 		  </example>
 	  </section>
-	  <section id="ref.functions.recursion.links">
+	  <section xml:id="ref.functions.recursion.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>

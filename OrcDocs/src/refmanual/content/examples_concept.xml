@@ -1,11 +1,11 @@
 <!-- Abstract Concepts -->
-	<chapter id="ref.concept">
+	<chapter xml:id="ref.concept">
 		<title>Concept</title>
-		<section id="ref.concept.body">
+		<section xml:id="ref.concept.body">
 			<para>For now, conceptual items are free form and have little to no formatting--a 
 				playground for the mind. </para>
 		</section>
-		<section id="ref.concept.links">
+		<section xml:id="ref.concept.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>

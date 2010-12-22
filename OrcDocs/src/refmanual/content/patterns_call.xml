@@ -1,7 +1,7 @@
 <!-- Call Pattern -->
-	<section id="ref.patterns.call">
+	<section xml:id="ref.patterns.call">
 		<title>Call Pattern</title>
-		<section id="ref.patterns.call.body">
+		<section xml:id="ref.patterns.call.body">
 			<para>
 				In Orc pattern matching, when a value is compared to a call, the value must match the
 				form of the call to be considered a successful pattern match.
@@ -9,10 +9,10 @@
 			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= X ( P , ... , P )</emphasis></para>
 		</section>
 		
-		 <section id="ref.patterns.call.examples">
+		 <section xml:id="ref.patterns.call.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Associative Folding" id="ref.patterns.call.examples.one">
+		  <example caption="Associative Folding" xml:id="ref.patterns.call.examples.one">
 <programlisting><![CDATA[
 {- Match and unwrap the arguments using a datatype (call) pattern -}
 
@@ -32,7 +32,7 @@ r >Node(_,k,_)>
 		  </example>
 		</section>
 		
-		<section id="ref.patterns.call.links">
+		<section xml:id="ref.patterns.call.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>

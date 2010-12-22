@@ -1,7 +1,7 @@
 <!-- Lambda -->
-	<section id="ref.expressions.lambda">
+	<section xml:id="ref.expressions.lambda">
 		<title>Lambda</title>
-		<section id="ref.expressions.lambda.body">
+		<section xml:id="ref.expressions.lambda.body">
 			<para>
 Sometimes one would like to create a closure directly, without bothering to give it a name. 
 There is a special keyword <code>lambda</code> for this purpose. By writing a function
@@ -14,10 +14,10 @@ a recursive function in this way. Only <code>def</code> can create a recursive f
 			</para>
 		</section>
 		
-		<section id="ref.expressions.lambda.examples">
+		<section xml:id="ref.expressions.lambda.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="One Two Sum" id="ref.expressions.lambda.examples.one">
+		  <example caption="One Two Sum" xml:id="ref.expressions.lambda.examples.one">
 <programlisting language="orc-demo"><![CDATA[
 def onetwosum(f) = f(1) + f(2)
 
@@ -30,7 +30,7 @@ onetwosum( lambda(x) = x * 3 )
 		  </example>
 	  </section>
 		
-		<section id="ref.expressions.lambda.links">
+		<section xml:id="ref.expressions.lambda.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>

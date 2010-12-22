@@ -1,24 +1,24 @@
 <!-- Cons Pattern -->
-	<section id="ref.patterns.cons">
+	<section xml:id="ref.patterns.cons">
 		<title>Cons Pattern</title>
-		<section id="ref.patterns.cons.body">
+		<section xml:id="ref.patterns.cons.body">
 			<para>
 				Fill in more about the cons pattern.
 			</para>
 			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= P : P</emphasis></para>
 		</section>
 		
-		 <section id="ref.patterns.cons.examples">
+		 <section xml:id="ref.patterns.cons.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Example Needed" id="ref.patterns.cons.examples.one">
+		  <example caption="Example Needed" xml:id="ref.patterns.cons.examples.one">
 <programlisting><![CDATA[
 {- Example needed -}
 ]]></programlisting>
 		  </example>
 		</section>
 		
-		<section id="ref.patterns.cons.links">
+		<section xml:id="ref.patterns.cons.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>

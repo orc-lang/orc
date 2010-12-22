@@ -1,7 +1,7 @@
 <!-- Rtimer -->
-   <section id="ref.time.rtimer">
+   <section xml:id="ref.time.rtimer">
       <title>Rtimer</title>
-	  <section id="ref.time.rtimer.behavior">
+	  <section xml:id="ref.time.rtimer.behavior">
 		  <title>Behavior</title>
 <para>
 The site <code>Rtimer</code> is a relative timer. It takes as an argument
@@ -9,17 +9,17 @@ a number of milliseconds to wait. It waits for exactly that amount of time,
 and then responds with a signal.
 </para>
 	  </section>
-	  <section id="ref.time.rtimer.examples">
+	  <section xml:id="ref.time.rtimer.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Simple example of using Rtimer" id="ref.time.rtimer.examples.one">
+		  <example caption="Simple example of using Rtimer" xml:id="ref.time.rtimer.examples.one">
 <programlisting language="orc-demo"><![CDATA[
 -- Print "red", wait for 3 seconds (3000 ms), and then print "green"
 println("red") >> Rtimer(3000) >> println("green") >> stop
 ]]></programlisting>
 		  </example>
 
-		  <example caption="Timeout" id="ref.time.rtimer.examples.two">
+		  <example caption="Timeout" xml:id="ref.time.rtimer.examples.two">
 <programlisting language="orc-demo"><![CDATA[
 {-
   Publish the result of a Google search.
@@ -32,7 +32,7 @@ result
 		  </example>
 
 	  </section>
-	  <section id="ref.time.rtimer.links">
+	  <section xml:id="ref.time.rtimer.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>

@@ -1,7 +1,7 @@
 <!-- Tuple Pattern -->
-	<section id="ref.patterns.tuple">
+	<section xml:id="ref.patterns.tuple">
 		<title>Tuple Pattern</title>
-		<section id="ref.patterns.tuple.body">
+		<section xml:id="ref.patterns.tuple.body">
 			<para>
 				In Orc pattern matching, when a value is compared to a tuple, the entire tuple must
 				be matched exactly to be considered a successful pattern match.
@@ -9,10 +9,10 @@
 			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= ( P , ... , P )</emphasis></para>
 		</section>
 		
-		 <section id="ref.patterns.tuple.examples">
+		 <section xml:id="ref.patterns.tuple.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Filtering" id="ref.patterns.tuple.examples.one">
+		  <example caption="Filtering" xml:id="ref.patterns.tuple.examples.one">
 <programlisting><![CDATA[
 {- Signal for each of the input tuples that have their first value as true -}
 (false, true, true) | (true, false, false) | (false, false, false) >(true, _, _)> signal
@@ -20,7 +20,7 @@
 		  </example>
 		</section>
 		
-		<section id="ref.patterns.tuple.links">
+		<section xml:id="ref.patterns.tuple.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>

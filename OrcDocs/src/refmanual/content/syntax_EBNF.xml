@@ -1,12 +1,12 @@
 <!-- Syntax: EBNF -->
-	<section id="ref.syntax.EBNF">
+	<section xml:id="ref.syntax.EBNF">
 		<title>EBNF Grammar</title>
-		<section id="ref.syntax.EBNF.body">
+		<section xml:id="ref.syntax.EBNF.body">
 			<para>
 				The Orc language grammar can be expressed in Extended Backus-Naur Form (EBNF):
 			</para>
 			<para>
-<table id="full-ebnf-grammar" frame="none" rowsep="0" colsep="0">
+<table xml:id="full-ebnf-grammar" frame="none" rowsep="0" colsep="0">
 <title>Complete Syntax of Orc</title> 
 <?dbhtml table-width="80%" ?>
 <?dbfo table-width="100%" ?>
@@ -673,7 +673,7 @@
 </para>
 		</section>
 		
-		<section id="ref.syntax.EBNF.links">
+		<section xml:id="ref.syntax.EBNF.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>

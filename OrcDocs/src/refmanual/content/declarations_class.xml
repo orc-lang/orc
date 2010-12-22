@@ -1,7 +1,7 @@
 <!-- Class -->
-	<section id="ref.declarations.class">
+	<section xml:id="ref.declarations.class">
 		<title>Class</title>
-		<section id="ref.declarations.class.body">
+		<section xml:id="ref.declarations.class.body">
 			<para> TODO: Integrate Dr. Misra's writeup on Class </para>
 			<para>
 A <code>class</code> is an abstraction mechanism in Orc, much like the
@@ -47,10 +47,10 @@ A class has the following properties:
 </para>
 		</section>
 		
-		<section id="ref.declarations.class.examples">
+		<section xml:id="ref.declarations.class.examples">
 		<title>Examples</title>
 		<examplescript/>
-		<example caption="Simple Stack" id="ref.declarations.class.examples.one">
+		<example caption="Simple Stack" xml:id="ref.declarations.class.examples.one">
 <programlisting><![CDATA[
 def class Stack(n) =
   val store = Table(n, Ref)
@@ -69,7 +69,7 @@ st.push(3) >> st.push(5) >> st.pop() >> st.pop()
 		  </example>
 		  
 		</section>
-		<section id="ref.declarations.class.links">
+		<section xml:id="ref.declarations.class.links">
 		  <title>Related Links</title>
 		  <informaltable frame='all'>
 			<tgroup cols='2' align='left' colsep='1' rowsep='1'>
