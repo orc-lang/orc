@@ -23,7 +23,7 @@ and then responds with a signal.
 	  </section>
 	  <section xml:id="ref.time.rtimer.examples">
 		  <title>Examples</title>
-		  <examplescript/>
+
 		  <example xml:id="ref.time.rtimer.examples.one"><title>Simple example of using Rtimer</title>
 <programlisting language="orc-demo"><![CDATA[
 -- Print "red", wait for 3 seconds (3000 ms), and then print "green"

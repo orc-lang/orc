@@ -36,7 +36,7 @@
 	  </section>
 	  <section xml:id="ref.combinators.parallel.examples">
 		  <title>Examples</title>
-		  <examplescript/>
+
 		  <example xml:id="ref.combinators.parallel.examples.one"><title>Parallel Publication</title>
 <programlisting language="orc-demo"><![CDATA[
 -- Publish 1 and 2 in parallel  

@@ -28,7 +28,7 @@ found in the Orc JAR files.
 		
 		<section xml:id="ref.declarations.include.examples">
 		<title>Examples</title>
-		<examplescript/>
+
 		<example xml:id="ref.declarations.include.examples.one"><title>fold.inc</title>
 <programlisting><![CDATA[
 {- Contents of fold.inc -}

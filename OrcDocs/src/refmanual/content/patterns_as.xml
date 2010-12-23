@@ -23,7 +23,7 @@
 		
 		 <section xml:id="ref.patterns.as.examples">
 		  <title>Examples</title>
-		  <examplescript/>
+
 		  <example xml:id="ref.patterns.as.one"><title>Simplified Fragment</title>
 <programlisting><![CDATA[
 {- Consider this initial program fragment, without an 'as' pattern -}

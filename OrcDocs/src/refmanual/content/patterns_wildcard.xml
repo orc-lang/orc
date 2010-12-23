@@ -22,7 +22,7 @@
 		
 		 <section xml:id="ref.patterns.wildcard.examples">
 		  <title>Examples</title>
-		  <examplescript/>
+
 		  <example xml:id="ref.patterns.wildcard.one"><title>Wildcard Assignments</title>
 <programlisting><![CDATA[
 val (x,_,_) = (1,(2,2),[3,3,3]) -- binds x to 1.

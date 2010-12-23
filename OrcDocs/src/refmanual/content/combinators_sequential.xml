@@ -54,7 +54,7 @@
 	  </section>
 	  <section xml:id="ref.combinators.sequential.examples">
 		  <title>Examples</title>
-		  <examplescript/>
+
 		  <example xml:id="ref.combinators.sequential.examples.one"><title>Variable Binding</title>
 <programlisting language="orc-demo"><![CDATA[
 -- Publish 1 and 2 in parallel  

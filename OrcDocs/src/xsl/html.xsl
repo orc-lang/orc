@@ -20,21 +20,7 @@ Orc examples must use the "orc" CSS class.
 <script src="/orchard/orc.js" type="text/javascript"></script>
 </xsl:if>	
 </xsl:template>
-	
-<!-- Include the script to toggle expansion of examples -->
-<xsl:template match="examplescript">
-	<script language="javascript">
-	// Expandable content script from flooble.com.
-	// For more information please visit:
-	//   http://www.flooble.com/scripts/expand.php
-	// Copyright 2002 Animus Pactum Consulting Inc.
-	//----------------------------------------------
-	function toggle(link, divId) { var lText = link.innerHTML; var d = document.getElementById(divId);
-	  if (lText == '+') { link.innerHTML = '&#8722;'; d.style.display = 'block';}
-	  else { link.innerHTML = '+'; d.style.display = 'none';} }
-	</script>
-</xsl:template>
-	
+
 <!-- Match template for collapsible example boxes -->
 <xsl:template match="example">
 	<xsl:variable name="ex_id" select="./@xml:id"/>
@@ -61,15 +47,25 @@ Orc examples must use the "orc" CSS class.
 		<xsl:apply-templates/>  <!-- Attempt to show the text, even if Javascript not present -->
 	</noscript>
 	<!-- Start the box collapsed -->
-	<script language="javascript">toggle(document.getElementById('<xsl:value-of select="$ex_link"/>'), '<xsl:value-of select="$ex_content"/>');</script>
+	<script type="text/javascript">toggle(document.getElementById('<xsl:value-of select="$ex_link"/>'), '<xsl:value-of select="$ex_content"/>');</script>
 </xsl:template>
 
-<!-- Include stylesheets, including orc.css if desired -->
+<!-- Include stylesheets, including orc.css if desired, and reveal/hide toggle Javascript -->
 <xsl:template name="user.head.content">
 <xsl:if test="$orc.demo">
 <link rel="stylesheet" type="text/css" href="/orchard/orc.css"/>
 </xsl:if>
 <link rel="stylesheet" type="text/css" href="style.css"/>
+<script type="text/javascript">
+// Expandable content script from flooble.com.
+// For more information please visit:
+//   http://www.flooble.com/scripts/expand.php
+// Copyright 2002 Animus Pactum Consulting Inc.
+//----------------------------------------------
+function toggle(link, divId) { var lText = link.innerHTML; var d = document.getElementById(divId);
+  if (lText == '+') { link.innerHTML = '&#8722;'; d.style.display = 'block';}
+  else { link.innerHTML = '+'; d.style.display = 'none';} }
+</script>
 </xsl:template>
 
 <!--

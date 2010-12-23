@@ -58,7 +58,7 @@ unboxed per the Java Language Specification as <type>boolean</type>.</para>
 
 <section xml:id="ref.data.boolean.examples">
 <title>Examples</title>
-<examplescript/>
+
 
 <example xml:id="ref.data.boolean.examples.one">
 <title>TODO:Example1</title>
@@ -72,7 +72,6 @@ signal
 <title>TODO:Example2</title>
 <programlisting><![CDATA[
 --TODO
-{- 
 signal
 ]]></programlisting>
 </example>

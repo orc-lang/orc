@@ -54,7 +54,7 @@ Returns of type <type>void</type> from Java code are converted into a publicatio
 
 <section xml:id="ref.data.signal.examples">
 <title>Examples</title>
-<examplescript/>
+
 
 <example xml:id="ref.data.signal.examples.one">
 <title>TODO:Example1</title>
@@ -68,7 +68,6 @@ signal
 <title>TODO:Example2</title>
 <programlisting><![CDATA[
 --TODO
-{- 
 signal
 ]]></programlisting>
 </example>

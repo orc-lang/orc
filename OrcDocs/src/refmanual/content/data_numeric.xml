@@ -99,7 +99,7 @@ These values are boxed and unboxed per the Java Language Specification.
 
 <section xml:id="ref.data.numeric.examples">
 <title>Examples</title>
-<examplescript/>
+
 
 <example xml:id="ref.data.numeric.examples.one">
 <title>TODO:Example1</title>
@@ -113,7 +113,6 @@ signal
 <title>TODO:Example2</title>
 <programlisting><![CDATA[
 --TODO
-{- 
 signal
 ]]></programlisting>
 </example>
