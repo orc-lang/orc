@@ -94,28 +94,26 @@ Rtimer(100) >> (f(), g())
 <section xml:id="ref.data.tuple.links">
 <title>Related Links</title>
 
-<informaltable frame="all">
-  <tgroup cols="2" align="left" colsep="1" rowsep="1">
-    <colspec colname="c1"/>
-    <colspec colname="c2"/> 
+<informaltable frame="none">
+  <tgroup cols="2" align="left">
     <thead>
       <row>
         <entry align="center">Related Reference Topics</entry>
         <entry align="center">Related Tutorial Sections</entry>
       </row>
     </thead>
-    <tbody>
+    <tbody valign="top">
       <row>
-        <entry><xref linkend="types.Tuple"/></entry>
-        <entry><olink targetdoc="root" targetptr="TODO">TODO</olink></entry>
-      </row>
-      <row>
-        <entry><xref linkend="library.state.fst"/></entry>
-        <entry><olink targetdoc="root" targetptr="TODO">TODO</olink></entry>
-      </row>
-      <row>
-        <entry><xref linkend="library.state.snd"/></entry>
-        <entry><olink targetdoc="root" targetptr="TODO">TODO</olink></entry>
+        <entry><itemizedlist>
+          <listitem><xref linkend="types.Tuple"/></listitem>
+          <listitem><xref linkend="library.state.fst"/></listitem>
+          <listitem><xref linkend="library.state.snd"/></listitem>
+        </itemizedlist></entry>
+        <entry><itemizedlist>
+          <listitem><olink targetdoc="root" targetptr="TODO">TODO</olink></listitem>
+          <listitem><olink targetdoc="root" targetptr="TODO">TODO</olink></listitem>
+          <listitem><olink targetdoc="root" targetptr="TODO">TODO</olink></listitem>
+        </itemizedlist></entry>
       </row>
     </tbody>
   </tgroup>
