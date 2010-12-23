@@ -8,6 +8,10 @@
 <xsl:import href="common.xsl"/>
 <xsl:output method="xml" indent="no"/>
 
+<xsl:attribute-set name="section.level1.properties">
+  <xsl:attribute name="break-before">page</xsl:attribute>
+</xsl:attribute-set>
+
 <xsl:template match='xslthl:literal' mode="xslthl">
   <xsl:apply-templates mode="xslthl"/>
 </xsl:template>
