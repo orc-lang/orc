@@ -24,14 +24,14 @@ and then responds with a signal.
 	  <section xml:id="ref.time.rtimer.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Simple example of using Rtimer" xml:id="ref.time.rtimer.examples.one">
+		  <example xml:id="ref.time.rtimer.examples.one"><title>Simple example of using Rtimer</title>
 <programlisting language="orc-demo"><![CDATA[
 -- Print "red", wait for 3 seconds (3000 ms), and then print "green"
 println("red") >> Rtimer(3000) >> println("green") >> stop
 ]]></programlisting>
 		  </example>
 
-		  <example caption="Timeout" xml:id="ref.time.rtimer.examples.two">
+		  <example xml:id="ref.time.rtimer.examples.two"><title>Timeout</title>
 <programlisting language="orc-demo"><![CDATA[
 {-
   Publish the result of a Google search.

@@ -29,7 +29,7 @@ a recursive function in this way. Only <code>def</code> can create a recursive f
 		<section xml:id="ref.expressions.lambda.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="One Two Sum" xml:id="ref.expressions.lambda.examples.one">
+		  <example xml:id="ref.expressions.lambda.examples.one"><title>One Two Sum</title>
 <programlisting language="orc-demo"><![CDATA[
 def onetwosum(f) = f(1) + f(2)
 

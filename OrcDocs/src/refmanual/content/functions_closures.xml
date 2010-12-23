@@ -31,7 +31,7 @@ stored variable bindings.
 	  <section xml:id="ref.functions.closure.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Simple example of a closure" xml:id="ref.functions.closure.examples.one">
+		  <example xml:id="ref.functions.closure.examples.one"><title>Simple example of a closure</title>
 <programlisting language="orc-demo"><![CDATA[
 def onetwosum(f) = f(1) + f(2)
 def triple(x) = x * 3

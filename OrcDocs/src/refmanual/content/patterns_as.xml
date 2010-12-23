@@ -24,7 +24,7 @@
 		 <section xml:id="ref.patterns.as.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Simplified Fragment" xml:id="ref.patterns.as.one">
+		  <example xml:id="ref.patterns.as.one"><title>Simplified Fragment</title>
 <programlisting><![CDATA[
 {- Consider this initial program fragment, without an 'as' pattern -}
 val (a,b) = ((1,2),(3,4))

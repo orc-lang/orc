@@ -24,7 +24,7 @@
 		 <section xml:id="ref.patterns.tuple.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Filtering" xml:id="ref.patterns.tuple.examples.one">
+		  <example xml:id="ref.patterns.tuple.examples.one"><title>Filtering</title>
 <programlisting><![CDATA[
 {- Signal for each of the input tuples that have their first value as true -}
 (false, true, true) | (true, false, false) | (false, false, false) >(true, _, _)> signal

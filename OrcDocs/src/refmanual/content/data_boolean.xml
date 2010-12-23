@@ -93,19 +93,19 @@ signal
     <tbody valign="top">
       <row>
         <entry><itemizedlist>
-          <listitem><xref linkend="types.Boolean"/></listitem>
-          <listitem><xref linkend="library.core.Not"/></listitem>
-          <listitem><xref linkend="library.core.And"/></listitem>
-          <listitem><xref linkend="library.core.Or"/></listitem>
-          <listitem><xref linkend="library.core.Less"/></listitem>
-          <listitem><xref linkend="library.core.Leq"/></listitem>
-          <listitem><xref linkend="library.core.Greater"/></listitem>
-          <listitem><xref linkend="library.core.Geq"/></listitem>
+          <listitem><para><xref linkend="types.Boolean"/></para></listitem>
+          <listitem><para><xref linkend="library.core.Not"/></para></listitem>
+          <listitem><para><xref linkend="library.core.And"/></para></listitem>
+          <listitem><para><xref linkend="library.core.Or"/></para></listitem>
+          <listitem><para><xref linkend="library.core.Less"/></para></listitem>
+          <listitem><para><xref linkend="library.core.Leq"/></para></listitem>
+          <listitem><para><xref linkend="library.core.Greater"/></para></listitem>
+          <listitem><para><xref linkend="library.core.Geq"/></para></listitem>
         </itemizedlist></entry>
         <entry><itemizedlist>
-          <listitem><olink targetdoc="root" targetptr="TODO">TODO</olink></listitem>
-          <listitem><olink targetdoc="root" targetptr="TODO">TODO</olink></listitem>
-          <listitem><olink targetdoc="root" targetptr="TODO">TODO</olink></listitem>
+          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
+          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
+          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
         </itemizedlist></entry>
       </row>
     </tbody>

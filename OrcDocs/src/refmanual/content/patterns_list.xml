@@ -24,7 +24,7 @@
 		 <section xml:id="ref.patterns.list.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Associative Folding" xml:id="ref.patterns.list.examples.one">
+		  <example xml:id="ref.patterns.list.examples.one"><title>Associative Folding</title>
 <programlisting><![CDATA[
 {- Define an associative folding function based on list pattern matching -}
 def afold(_, [x]) = x

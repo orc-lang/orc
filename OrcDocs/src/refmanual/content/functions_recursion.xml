@@ -26,13 +26,13 @@ assumed to be mutually recursive.
 	  <section xml:id="ref.functions.recursion.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Simple example of a recursive function" xml:id="ref.functions.recursion.examples.one">
+		  <example xml:id="ref.functions.recursion.examples.one"><title>Simple example of a recursive function</title>
 <programlisting language="orc-demo"><![CDATA[
 def sumto(n) = if n < 1 then 0 else n + sumto(n-1)
 ]]></programlisting>
 		  </example>
 
-		  <example caption="Mutually recursive functions" xml:id="ref.functions.recursion.examples.two">
+		  <example xml:id="ref.functions.recursion.examples.two"><title>Mutually recursive functions</title>
 <programlisting language="orc-demo"><![CDATA[
 def even(n) = 
   if (n > 0) then odd(n-1)

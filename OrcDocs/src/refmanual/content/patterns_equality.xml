@@ -26,7 +26,7 @@
 		 <section xml:id="ref.patterns.equality.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Equality Definition" xml:id="ref.patterns.equality.examples.one">
+		  <example xml:id="ref.patterns.equality.examples.one"><title>Equality Definition</title>
 <programlisting><![CDATA[
 {- Consider the following definition, which compares its 
 argument to the value bound to variable x, returning true 
@@ -37,7 +37,7 @@ def isx(_) = false
 ]]></programlisting>
 		  </example>
 		
-		<example caption="Equality Definition II" xml:id="ref.patterns.equality.examples.two">
+		<example xml:id="ref.patterns.equality.examples.two"><title>Equality Definition II</title>
 <programlisting><![CDATA[
 {- The equality pattern becomes much more useful when 
 it is embedded within other patterns. For example, consider 

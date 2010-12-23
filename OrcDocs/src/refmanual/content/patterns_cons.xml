@@ -23,7 +23,7 @@
 		 <section xml:id="ref.patterns.cons.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Example Needed" xml:id="ref.patterns.cons.examples.one">
+		  <example xml:id="ref.patterns.cons.examples.one"><title>Example Needed</title>
 <programlisting><![CDATA[
 {- Example needed -}
 ]]></programlisting>

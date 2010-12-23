@@ -37,7 +37,7 @@
 	  <section xml:id="ref.combinators.parallel.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Parallel Publication" xml:id="ref.combinators.parallel.examples.one">
+		  <example xml:id="ref.combinators.parallel.examples.one"><title>Parallel Publication</title>
 <programlisting language="orc-demo"><![CDATA[
 -- Publish 1 and 2 in parallel  
 1 | 1+1
@@ -47,7 +47,7 @@
 ]]></programlisting>
 		  </example>
 
-		  <example caption="Parallel Sites" xml:id="ref.combinators.parallel.examples.two">
+		  <example xml:id="ref.combinators.parallel.examples.two"><title>Parallel Sites</title>
 <programlisting><![CDATA[
 {- 
  Access two search sites, Google and Yahoo, in parallel.

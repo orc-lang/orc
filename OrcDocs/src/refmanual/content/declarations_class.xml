@@ -62,7 +62,7 @@ A class has the following properties:
 		<section xml:id="ref.declarations.class.examples">
 		<title>Examples</title>
 		<examplescript/>
-		<example caption="Simple Stack" xml:id="ref.declarations.class.examples.one">
+		<example xml:id="ref.declarations.class.examples.one"><title>Simple Stack</title>
 <programlisting><![CDATA[
 def class Stack(n) =
   val store = Table(n, Ref)

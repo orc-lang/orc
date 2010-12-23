@@ -25,7 +25,7 @@ of variable name <code>x</code>).
 		<section xml:id="ref.expressions.val.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="One Two Sum" xml:id="ref.expressions.lambda.examples.one">
+		  <example xml:id="ref.expressions.lambda.examples.one"><title>One Two Sum</title>
 <programlisting><![CDATA[
 {- Assign 3 to x and 6 to y -}
 val x = 1 + 2

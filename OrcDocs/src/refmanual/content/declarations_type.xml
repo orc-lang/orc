@@ -22,7 +22,7 @@ David?
 		<section xml:id="ref.declarations.type.examples">
 		<title>Examples</title>
 		<examplescript/>
-		<example caption="" xml:id="ref.declarations.type.examples.one">
+		<example xml:id="ref.declarations.type.examples.one"><title></title>
 <programlisting><![CDATA[
 --need examples
 ]]></programlisting>
