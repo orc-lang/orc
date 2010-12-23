@@ -120,7 +120,14 @@
 			 <tr>
               <td width="20%" align="left">
                 <xsl:if test="$navig.showtitles != 0">
-                  <xsl:apply-templates select="$prev" mode="object.title.markup"/>
+                  <a>
+                    <xsl:attribute name="href">
+                      <xsl:call-template name="href.target">
+                        <xsl:with-param name="object" select="$prev"/>
+                      </xsl:call-template>
+                    </xsl:attribute>
+                    <xsl:apply-templates select="$prev" mode="object.title.markup"/>
+                  </a>
                 </xsl:if>
                 <xsl:text>&#160;</xsl:text>
               </td>
@@ -129,7 +136,14 @@
               </th>
               <td width="20%" align="right">
                <xsl:if test="$navig.showtitles != 0">
-                  <xsl:apply-templates select="$next" mode="object.title.markup"/>
+                  <a>
+                    <xsl:attribute name="href">
+                      <xsl:call-template name="href.target">
+                        <xsl:with-param name="object" select="$next"/>
+                      </xsl:call-template>
+                    </xsl:attribute>
+                    <xsl:apply-templates select="$next" mode="object.title.markup"/>
+                  </a>
                 </xsl:if>
                 <xsl:text>&#160;</xsl:text>
               </td>

@@ -29,9 +29,7 @@ Orc examples must use the "orc" CSS class.
 	//   http://www.flooble.com/scripts/expand.php
 	// Copyright 2002 Animus Pactum Consulting Inc.
 	//----------------------------------------------
-	var ie4 = false; if(document.all) { ie4 = true; }
-	function getObject(id) { if (ie4) { return document.all[id]; } else { return document.getElementById(id); } }
-	function toggle(link, divId) { var lText = link.innerHTML; var d = getObject(divId);
+	function toggle(link, divId) { var lText = link.innerHTML; var d = document.getElementById(divId);
 	  if (lText == '+') { link.innerHTML = '&#8722;'; d.style.display = 'block';}
 	  else { link.innerHTML = '+'; d.style.display = 'none';} }
 	</script>
@@ -42,38 +40,31 @@ Orc examples must use the "orc" CSS class.
 	<xsl:variable name="ex_id" select="./@xml:id"/>
 	<xsl:variable name="ex_link" select="concat($ex_id,'_link')"/>
 	<xsl:variable name="ex_content" select="concat($ex_id,'_content')"/>
-	<table border="0" width="90%" align="center">
-		<tr><td>
-			<div style="border: 1px solid #000000; padding: 0px; background: #FFFFFF;">
-				<table border="0" cellspacing="0" cellpadding="2" width="100%" style="background: #66CCFF; color: #000000; ">
-					<tr>
-						<td align="left" width="30px">
-							[<a title="show/hide" href="javascript: void(0);" style="text-decoration: none; color: #000000; ">
-							<xsl:attribute name="id"><xsl:value-of select="$ex_link" /></xsl:attribute>
-							<xsl:attribute name="onclick">toggle(this, '<xsl:value-of select="$ex_content"/>')</xsl:attribute>&#8722;</a>]
-						</td>
-						<td align="left">
-							<xsl:value-of select="./@caption"></xsl:value-of>
-						</td>
-					</tr>
-				</table>
-				<div style="padding: 3px;">
-					<xsl:attribute name="id">
-						<xsl:value-of select="$ex_content"/>
-					</xsl:attribute>
-				<xsl:apply-templates/>
-				</div>
-			</div>	
-	</td></tr></table>	
+	<div class="example">
+		<div class="exampleHeading">
+			<a title="show/hide" href="javascript: void(0);" class="showHideToggle">
+			<xsl:attribute name="id"><xsl:value-of select="$ex_link" /></xsl:attribute>
+			<xsl:attribute name="onclick">toggle(this, '<xsl:value-of select="$ex_content"/>')</xsl:attribute>&#8722;</a>
+			<span class="exampleCaption">
+				<xsl:value-of select="./@caption"></xsl:value-of>
+			</span>
+		</div>
+		<div class="exampleBody">
+			<xsl:attribute name="id">
+				<xsl:value-of select="$ex_content"/>
+			</xsl:attribute>
+		<xsl:apply-templates/>
+		</div>
+	</div>	
 	<noscript>
-		<para>"WARNING:  This example requires javascript to be rendered correctly."</para>
-		<xsl:apply-templates/>  <!-- Attempt to show the text, even if javascript not present -->
+		<p>"WARNING:  This example requires Javascript to be rendered correctly."</p>
+		<xsl:apply-templates/>  <!-- Attempt to show the text, even if Javascript not present -->
 	</noscript>
 	<!-- Start the box collapsed -->
-	<script language="javascript">toggle(getObject('<xsl:value-of select="$ex_link"/>'), '<xsl:value-of select="$ex_content"/>');</script>
+	<script language="javascript">toggle(document.getElementById('<xsl:value-of select="$ex_link"/>'), '<xsl:value-of select="$ex_content"/>');</script>
 </xsl:template>
 
-<!-- Include stylsheets, including orc.css if desired -->
+<!-- Include stylesheets, including orc.css if desired -->
 <xsl:template name="user.head.content">
 <xsl:if test="$orc.demo">
 <link rel="stylesheet" type="text/css" href="/orchard/orc.css"/>
