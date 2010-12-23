@@ -123,60 +123,36 @@ signal
 <section xml:id="ref.data.numeric.links">
 <title>Related Links</title>
 
-<informaltable frame="all">
-  <tgroup cols="2" align="left" colsep="1" rowsep="1">
-    <colspec colname="c1"/>
-    <colspec colname="c2"/> 
+<informaltable frame="none">
+  <tgroup cols="2" align="left">
     <thead>
       <row>
         <entry align="center">Related Reference Topics</entry>
         <entry align="center">Related Tutorial Sections</entry>
       </row>
     </thead>
-    <tbody>
+    <tbody valign="top">
       <row>
-        <entry><xref linkend="types.Integer"/></entry>
-        <entry><olink targetdoc="root" targetptr="TODO">TODO</olink></entry>
-      </row>
-      <row>
-        <entry><xref linkend="types.Number"/></entry>
-        <entry><olink targetdoc="root" targetptr="TODO">TODO</olink></entry>
-      </row>
-      <row>
-        <entry><xref linkend="library.core.Add"/></entry>
-        <entry><olink targetdoc="root" targetptr="TODO">TODO</olink></entry>
-      </row>
-      <row>
-        <entry><xref linkend="library.core.Sub"/></entry>
-        <!-- Use the following entry to fill up any remaining empty slots in that column -->
-        <entry morerows="9" valign="middle"><para></para></entry>
-      </row>
-      <row>
-        <entry><xref linkend="library.core.UMinus"/></entry>
-      </row>
-      <row>
-        <entry><xref linkend="library.core.Mult"/></entry>
-      </row>
-      <row>
-        <entry><xref linkend="library.core.Exponent"/></entry>
-      </row>
-      <row>
-        <entry><xref linkend="library.core.Div"/></entry>
-      </row>
-      <row>
-        <entry><xref linkend="library.core.Mod"/></entry>
-      </row>
-      <row>
-        <entry><xref linkend="library.core.abs"/></entry>
-      </row>
-      <row>
-        <entry><xref linkend="library.core.signum"/></entry>
-      </row>
-      <row>
-        <entry><xref linkend="library.core.floor"/></entry>
-      </row>
-      <row>
-        <entry><xref linkend="library.core.ceil"/></entry>
+        <entry><itemizedlist>
+          <listitem><xref linkend="types.Integer"/></listitem>
+          <listitem><xref linkend="types.Number"/></listitem>
+          <listitem><xref linkend="library.core.Add"/></listitem>
+          <listitem><xref linkend="library.core.Sub"/></listitem>
+          <listitem><xref linkend="library.core.UMinus"/></listitem>
+          <listitem><xref linkend="library.core.Mult"/></listitem>
+          <listitem><xref linkend="library.core.Exponent"/></listitem>
+          <listitem><xref linkend="library.core.Div"/></listitem>
+          <listitem><xref linkend="library.core.Mod"/></listitem>
+          <listitem><xref linkend="library.core.abs"/></listitem>
+          <listitem><xref linkend="library.core.signum"/></listitem>
+          <listitem><xref linkend="library.core.floor"/></listitem>
+          <listitem><xref linkend="library.core.ceil"/></listitem>
+        </itemizedlist></entry>
+        <entry><itemizedlist>
+          <listitem><olink targetdoc="root" targetptr="TODO">TODO</olink></listitem>
+          <listitem><olink targetdoc="root" targetptr="TODO">TODO</olink></listitem>
+          <listitem><olink targetdoc="root" targetptr="TODO">TODO</olink></listitem>
+        </itemizedlist></entry>
       </row>
     </tbody>
   </tgroup>
