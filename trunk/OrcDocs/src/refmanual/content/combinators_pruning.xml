@@ -47,7 +47,7 @@ of the pattern P are made in F. Otherwise, the published value is simply ignored
 	  </section>
 	  <section xml:id="ref.combinators.pruning.examples">
 		  <title>Examples</title>
-		  <examplescript/>
+
 		  <example xml:id="ref.combinators.pruning.examples.one"><title>Exclusive Publication</title>
 <programlisting language="orc-demo"><![CDATA[
 -- Publish either 5 or 6, but not both

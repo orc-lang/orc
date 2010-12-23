@@ -61,7 +61,7 @@ A class has the following properties:
 		
 		<section xml:id="ref.declarations.class.examples">
 		<title>Examples</title>
-		<examplescript/>
+
 		<example xml:id="ref.declarations.class.examples.one"><title>Simple Stack</title>
 <programlisting><![CDATA[
 def class Stack(n) =

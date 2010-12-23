@@ -23,7 +23,7 @@
 		
 		 <section xml:id="ref.patterns.variable.examples">
 		  <title>Examples</title>
-		  <examplescript/>
+
 		  <example xml:id="ref.patterns.variable.examples.one"><title>Variable Base Case Definition</title>
 <programlisting><![CDATA[
 {- Define a fold left function base case based on the variable arguments -}

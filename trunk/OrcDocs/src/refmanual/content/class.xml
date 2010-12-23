@@ -55,7 +55,7 @@ class_instance.X( V, ..., V )
 	  </section>
 	  <section xml:id="ref.class.examples">
 		  <title>Examples</title>
-		  <examplescript/>
+
 		  <example xml:id="ref.class.examples.one"><title>A sequence number generator</title>
 <programlisting language="orc-demo"><![CDATA[
 def class gen_seq(init) =

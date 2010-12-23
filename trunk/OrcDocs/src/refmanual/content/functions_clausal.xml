@@ -33,7 +33,7 @@ If no clause matches, the call remains silent.
 	  </section>
 	  <section xml:id="ref.functions.clausal.examples">
 		  <title>Examples</title>
-		  <examplescript/>
+
 		  <example xml:id="ref.functions.clausal.examples.one"><title>Simple example of a clausal function</title>
 <programlisting language="orc-demo"><![CDATA[
 def sum([]) = 0

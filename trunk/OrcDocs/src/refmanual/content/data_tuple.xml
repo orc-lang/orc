@@ -70,7 +70,7 @@ is passed to Java code, it will be as an <type>java.lang.Object</type> of a type
 
 <section xml:id="ref.data.tuple.examples">
 <title>Examples</title>
-<examplescript/>
+
 
 <example xml:id="ref.data.tuple.examples.one">
 <title>TODO:Example1</title>

@@ -25,7 +25,7 @@
 		
 		 <section xml:id="ref.patterns.equality.examples">
 		  <title>Examples</title>
-		  <examplescript/>
+
 		  <example xml:id="ref.patterns.equality.examples.one"><title>Equality Definition</title>
 <programlisting><![CDATA[
 {- Consider the following definition, which compares its 

@@ -75,7 +75,7 @@ from Java code as <type>java.lang.String</type>.</para>
 
 <section xml:id="ref.data.string.examples">
 <title>Examples</title>
-<examplescript/>
+
 
 <example xml:id="ref.data.string.examples.one">
 <title>TODO:Example1</title>
@@ -89,7 +89,6 @@ signal
 <title>TODO:Example2</title>
 <programlisting><![CDATA[
 --TODO
-{- 
 signal
 ]]></programlisting>
 </example>

@@ -25,7 +25,7 @@ assumed to be mutually recursive.
 	  </section>
 	  <section xml:id="ref.functions.recursion.examples">
 		  <title>Examples</title>
-		  <examplescript/>
+
 		  <example xml:id="ref.functions.recursion.examples.one"><title>Simple example of a recursive function</title>
 <programlisting language="orc-demo"><![CDATA[
 def sumto(n) = if n < 1 then 0 else n + sumto(n-1)

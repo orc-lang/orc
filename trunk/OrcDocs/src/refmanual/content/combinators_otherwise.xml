@@ -70,7 +70,7 @@ stop completes immediately.
 	  </section>
 	  <section xml:id="ref.combinators.otherwise.examples">
 		  <title>Examples</title>
-		  <examplescript/>
+
 		  <example xml:id="ref.combinators.otherwise.examples.one"><title>Fallback Search</title>
 <programlisting><![CDATA[
 {- 
