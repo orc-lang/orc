@@ -13,6 +13,7 @@
 <!-- Class -->
    <chapter xml:id="ref.class">
       <title>Class</title>
+      <para>TODO: Integrate Dr. Misra's writeup on classes into this introduction</para>
 	  <section xml:id="ref.class.body"><title>Class</title>
 	  <section xml:id="ref.class.syntax">
 		  <title>Syntax</title>
@@ -69,11 +70,6 @@ def class gen_seq(init) =
 val g = gen_seq(1000)
 
 g.next() >y> println(y) >> g.next() >y> println(y) >> stop
-]]></programlisting>
-		  </example>
-
-		  <example xml:id="ref.class.examples.two"><title></title>
-<programlisting language="orc-demo"><![CDATA[
 ]]></programlisting>
 		  </example>
 

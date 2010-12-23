@@ -17,7 +17,11 @@
 	
 <title>Functions</title>
 
-<para>Introduction paragraph about functions.</para>
+<para>
+Like most other programming languages, Orc provides the capability to define <firstterm>functions</firstterm>,
+which are expressions that have a defined name, and have some number of parameters. Functions are declared 
+using the keyword <code>def</code>.
+</para>
 
 <xi:include href="functions_clausal.xml"/>
 <xi:include href="functions_recursion.xml"/>

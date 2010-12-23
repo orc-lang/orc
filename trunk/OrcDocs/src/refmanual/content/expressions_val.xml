@@ -13,7 +13,7 @@
 <!-- Val -->
 	<section xml:id="ref.expressions.val">
 		<title>Val</title>
-		<section xml:id="ref.expressions.lambda.body">
+		<section xml:id="ref.expressions.val.body">
 			<para>
 The declaration <code>val x = </code>G, followed by expression F, is 
 actually just a different way of writing the expression F<code><![CDATA[ <x< ]]></code>G.
@@ -25,7 +25,7 @@ of variable name <code>x</code>).
 		<section xml:id="ref.expressions.val.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.expressions.lambda.examples.one"><title>One Two Sum</title>
+		  <example xml:id="ref.expressions.val.examples.one"><title>One Two Sum</title>
 <programlisting><![CDATA[
 {- Assign 3 to x and 6 to y -}
 val x = 1 + 2
