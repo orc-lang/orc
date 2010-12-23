@@ -46,7 +46,7 @@ Orc examples must use the "orc" CSS class.
 			<xsl:attribute name="id"><xsl:value-of select="$ex_link" /></xsl:attribute>
 			<xsl:attribute name="onclick">toggle(this, '<xsl:value-of select="$ex_content"/>')</xsl:attribute>&#8722;</a>
 			<span class="exampleCaption">
-				<xsl:value-of select="./@caption"></xsl:value-of>
+				<xsl:value-of select="./title"></xsl:value-of>
 			</span>
 		</div>
 		<div class="exampleBody">

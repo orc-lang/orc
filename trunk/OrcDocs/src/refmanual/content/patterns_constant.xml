@@ -25,7 +25,7 @@
 		 <section xml:id="ref.patterns.constant.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Base Case Definition" xml:id="ref.patterns.constant.examples.one">
+		  <example xml:id="ref.patterns.constant.examples.one"><title>Base Case Definition</title>
 <programlisting><![CDATA[
 {- Use the format function(CONSTANT) = value for later pattern matching on the constant -}
 

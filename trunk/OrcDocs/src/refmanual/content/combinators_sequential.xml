@@ -55,14 +55,14 @@
 	  <section xml:id="ref.combinators.sequential.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Variable Binding" xml:id="ref.combinators.sequential.examples.one">
+		  <example xml:id="ref.combinators.sequential.examples.one"><title>Variable Binding</title>
 <programlisting language="orc-demo"><![CDATA[
 -- Publish 1 and 2 in parallel  
 (0 | 1) >n> n+1
 ]]></programlisting>
 		  </example>
 
-		  <example caption="Variable Binding 2" xml:id="ref.combinators.sequential.examples.two">
+		  <example xml:id="ref.combinators.sequential.examples.two"><title>Variable Binding 2</title>
 <programlisting><![CDATA[
 -- Prepend the site name to each published search result
 -- The cat site concatenates any number of arguments into one string  
@@ -71,14 +71,14 @@
 ]]></programlisting>
 		  </example>
 		  
-		  <example caption="Pattern Publication" xml:id="ref.combinators.sequential.examples.three">
+		  <example xml:id="ref.combinators.sequential.examples.three"><title>Pattern Publication</title>
 <programlisting><![CDATA[
 -- Publish 3, 6, and 9 in arbitrary order.
 (3,6,9)  >(x,y,z)>  ( x | y | z )
 ]]></programlisting>
 		  </example>
 		  
-		  <example caption="Filtering" xml:id="ref.combinators.sequential.examples.four">
+		  <example xml:id="ref.combinators.sequential.examples.four"><title>Filtering</title>
 <programlisting><![CDATA[
 -- Filter out values of the form (_,false)
 ( (4,true) | (5,false) | (6,true) )  >(x,true)> x
@@ -86,7 +86,7 @@
 ]]></programlisting>
 		  </example>
 		  
-		  <example caption="Suppressed Publication" xml:id="ref.combinators.sequential.examples.five">
+		  <example xml:id="ref.combinators.sequential.examples.five"><title>Suppressed Publication</title>
 <programlisting><![CDATA[
 {- 
   Print two strings to the console,

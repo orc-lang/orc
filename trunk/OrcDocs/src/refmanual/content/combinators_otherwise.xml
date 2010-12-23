@@ -71,7 +71,7 @@ stop completes immediately.
 	  <section xml:id="ref.combinators.otherwise.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Fallback Search" xml:id="ref.combinators.otherwise.examples.one">
+		  <example xml:id="ref.combinators.otherwise.examples.one"><title>Fallback Search</title>
 <programlisting><![CDATA[
 {- 
  Attempt to retrieve search results from Google.

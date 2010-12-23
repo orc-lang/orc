@@ -80,7 +80,7 @@ signal
 ]]></programlisting>
 </example>
 
-<example xml:id="ref.data.tuple.examples.forkjoin" caption="Fork-Join">
+<example xml:id="ref.data.tuple.examples.forkjoin"><title>Fork-Join</title>
 <programlisting><![CDATA[
 def f() = println("f starting") >> Rtimer(450) >> println("f is done") >> "f"
 def g() = println("g starting") >> Rtimer(900) >> println("g is done") >> "g"
@@ -105,14 +105,14 @@ Rtimer(100) >> (f(), g())
     <tbody valign="top">
       <row>
         <entry><itemizedlist>
-          <listitem><xref linkend="types.Tuple"/></listitem>
-          <listitem><xref linkend="library.state.fst"/></listitem>
-          <listitem><xref linkend="library.state.snd"/></listitem>
+          <listitem><para><xref linkend="types.Tuple"/></para></listitem>
+          <listitem><para><xref linkend="library.state.fst"/></para></listitem>
+          <listitem><para><xref linkend="library.state.snd"/></para></listitem>
         </itemizedlist></entry>
         <entry><itemizedlist>
-          <listitem><olink targetdoc="root" targetptr="TODO">TODO</olink></listitem>
-          <listitem><olink targetdoc="root" targetptr="TODO">TODO</olink></listitem>
-          <listitem><olink targetdoc="root" targetptr="TODO">TODO</olink></listitem>
+          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
+          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
+          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
         </itemizedlist></entry>
       </row>
     </tbody>

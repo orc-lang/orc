@@ -134,24 +134,24 @@ signal
     <tbody valign="top">
       <row>
         <entry><itemizedlist>
-          <listitem><xref linkend="types.Integer"/></listitem>
-          <listitem><xref linkend="types.Number"/></listitem>
-          <listitem><xref linkend="library.core.Add"/></listitem>
-          <listitem><xref linkend="library.core.Sub"/></listitem>
-          <listitem><xref linkend="library.core.UMinus"/></listitem>
-          <listitem><xref linkend="library.core.Mult"/></listitem>
-          <listitem><xref linkend="library.core.Exponent"/></listitem>
-          <listitem><xref linkend="library.core.Div"/></listitem>
-          <listitem><xref linkend="library.core.Mod"/></listitem>
-          <listitem><xref linkend="library.core.abs"/></listitem>
-          <listitem><xref linkend="library.core.signum"/></listitem>
-          <listitem><xref linkend="library.core.floor"/></listitem>
-          <listitem><xref linkend="library.core.ceil"/></listitem>
+          <listitem><para><xref linkend="types.Integer"/></para></listitem>
+          <listitem><para><xref linkend="types.Number"/></para></listitem>
+          <listitem><para><xref linkend="library.core.Add"/></para></listitem>
+          <listitem><para><xref linkend="library.core.Sub"/></para></listitem>
+          <listitem><para><xref linkend="library.core.UMinus"/></para></listitem>
+          <listitem><para><xref linkend="library.core.Mult"/></para></listitem>
+          <listitem><para><xref linkend="library.core.Exponent"/></para></listitem>
+          <listitem><para><xref linkend="library.core.Div"/></para></listitem>
+          <listitem><para><xref linkend="library.core.Mod"/></para></listitem>
+          <listitem><para><xref linkend="library.core.abs"/></para></listitem>
+          <listitem><para><xref linkend="library.core.signum"/></para></listitem>
+          <listitem><para><xref linkend="library.core.floor"/></para></listitem>
+          <listitem><para><xref linkend="library.core.ceil"/></para></listitem>
         </itemizedlist></entry>
         <entry><itemizedlist>
-          <listitem><olink targetdoc="root" targetptr="TODO">TODO</olink></listitem>
-          <listitem><olink targetdoc="root" targetptr="TODO">TODO</olink></listitem>
-          <listitem><olink targetdoc="root" targetptr="TODO">TODO</olink></listitem>
+          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
+          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
+          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
         </itemizedlist></entry>
       </row>
     </tbody>

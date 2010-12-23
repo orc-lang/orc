@@ -56,7 +56,7 @@ class_instance.X( V, ..., V )
 	  <section xml:id="ref.class.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="A sequence number generator" xml:id="ref.class.examples.one">
+		  <example xml:id="ref.class.examples.one"><title>A sequence number generator</title>
 <programlisting language="orc-demo"><![CDATA[
 def class gen_seq(init) =
   -- the mutable integer defined with seed init
@@ -72,7 +72,7 @@ g.next() >y> println(y) >> g.next() >y> println(y) >> stop
 ]]></programlisting>
 		  </example>
 
-		  <example caption="" xml:id="ref.class.examples.two">
+		  <example xml:id="ref.class.examples.two"><title></title>
 <programlisting language="orc-demo"><![CDATA[
 ]]></programlisting>
 		  </example>

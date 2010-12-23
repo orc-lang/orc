@@ -24,7 +24,7 @@ the keyword <code>lambda</code>, that definition becomes an expression which eva
 	  <section xml:id="ref.functions.lambda.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Simple example of a lambda" xml:id="ref.functions.closure.lambda.one">
+		  <example xml:id="ref.functions.closure.lambda.one"><title>Simple example of a lambda</title>
 <programlisting language="orc-demo"><![CDATA[
 def onetwosum(f) = f(1) + f(2)
 

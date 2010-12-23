@@ -48,14 +48,14 @@ of the pattern P are made in F. Otherwise, the published value is simply ignored
 	  <section xml:id="ref.combinators.pruning.examples">
 		  <title>Examples</title>
 		  <examplescript/>
-		  <example caption="Exclusive Publication" xml:id="ref.combinators.pruning.examples.one">
+		  <example xml:id="ref.combinators.pruning.examples.one"><title>Exclusive Publication</title>
 <programlisting language="orc-demo"><![CDATA[
 -- Publish either 5 or 6, but not both
 x+2 <x< (3 | 4)
 ]]></programlisting>
 		  </example>
 
-		  <example caption="Print First Result" xml:id="ref.combinators.pruning.examples.two">
+		  <example xml:id="ref.combinators.pruning.examples.two"><title>Print First Result</title>
 <programlisting><![CDATA[
 -- Query Google and Yahoo for a search result
 -- Print out the result that arrives first; ignore the other result
@@ -63,7 +63,7 @@ println(result) <result< ( Google("cupcake") | Yahoo("cupcake") )
 ]]></programlisting>
 		  </example>
 		  
-		  <example caption="Console Output" xml:id="ref.combinators.pruning.examples.three">
+		  <example xml:id="ref.combinators.pruning.examples.three"><title>Console Output</title>
 <programlisting><![CDATA[
 {-
 This example actually prints both "true" and "false" to the
@@ -73,7 +73,7 @@ stop <x< println("true") | println("false")
 ]]></programlisting>
 		  </example>
 		  
-		  <example caption="Pattern Publication" xml:id="ref.combinators.pruning.examples.four">
+		  <example xml:id="ref.combinators.pruning.examples.four"><title>Pattern Publication</title>
 <programlisting><![CDATA[
 -- Publish either 9 or 25, but not 16.
 x*x <(x,true)< ( (3,true) | (4,false) | (5,true) )

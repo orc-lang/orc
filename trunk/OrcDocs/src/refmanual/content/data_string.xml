@@ -110,17 +110,17 @@ signal
     <tbody valign="top">
       <row>
         <entry><itemizedlist>
-          <listitem><xref linkend="types.String"/></listitem>
-          <listitem><xref linkend="library.text.write"/></listitem>
-          <listitem><xref linkend="library.text.lines"/></listitem>
-          <listitem><xref linkend="library.text.unlines"/></listitem>
-          <listitem><xref linkend="library.text.words"/></listitem>
-          <listitem><xref linkend="library.text.unwords"/></listitem>
+          <listitem><para><xref linkend="types.String"/></para></listitem>
+          <listitem><para><xref linkend="library.text.write"/></para></listitem>
+          <listitem><para><xref linkend="library.text.lines"/></para></listitem>
+          <listitem><para><xref linkend="library.text.unlines"/></para></listitem>
+          <listitem><para><xref linkend="library.text.words"/></para></listitem>
+          <listitem><para><xref linkend="library.text.unwords"/></para></listitem>
         </itemizedlist></entry>
         <entry><itemizedlist>
-          <listitem><olink targetdoc="root" targetptr="TODO">TODO</olink></listitem>
-          <listitem><olink targetdoc="root" targetptr="TODO">TODO</olink></listitem>
-          <listitem><olink targetdoc="root" targetptr="TODO">TODO</olink></listitem>
+          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
+          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
+          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
         </itemizedlist></entry>
       </row>
     </tbody>

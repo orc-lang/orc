@@ -89,16 +89,16 @@ signal
     <tbody valign="top">
       <row>
         <entry><itemizedlist>
-          <listitem><xref linkend="types.Signal"/></listitem>
-          <listitem><xref linkend="library.core.If"/></listitem>
-          <listitem><xref linkend="library.core.Unless"/></listitem>
-          <listitem><xref linkend="library.time.metronome"/></listitem>
-          <listitem><xref linkend="library.util.signals"/></listitem>
+          <listitem><para><xref linkend="types.Signal"/></para></listitem>
+          <listitem><para><xref linkend="library.core.If"/></para></listitem>
+          <listitem><para><xref linkend="library.core.Unless"/></para></listitem>
+          <listitem><para><xref linkend="library.time.metronome"/></para></listitem>
+          <listitem><para><xref linkend="library.util.signals"/></para></listitem>
         </itemizedlist></entry>
         <entry><itemizedlist>
-          <listitem><olink targetdoc="root" targetptr="TODO">TODO</olink></listitem>
-          <listitem><olink targetdoc="root" targetptr="TODO">TODO</olink></listitem>
-          <listitem><olink targetdoc="root" targetptr="TODO">TODO</olink></listitem>
+          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
+          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
+          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
         </itemizedlist></entry>
       </row>
     </tbody>

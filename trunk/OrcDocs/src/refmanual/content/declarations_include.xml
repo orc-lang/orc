@@ -29,7 +29,7 @@ found in the Orc JAR files.
 		<section xml:id="ref.declarations.include.examples">
 		<title>Examples</title>
 		<examplescript/>
-		<example caption="fold.inc" xml:id="ref.declarations.include.examples.one">
+		<example xml:id="ref.declarations.include.examples.one"><title>fold.inc</title>
 <programlisting><![CDATA[
 {- Contents of fold.inc -}
 def foldl(f,[],s) = s
@@ -39,7 +39,7 @@ def foldr(f,l,s) = foldl(f,rev(l),s)
 ]]></programlisting>
 		  </example>
 		  
-		<example caption="Included file" xml:id="ref.declarations.include.examples.two">
+		<example xml:id="ref.declarations.include.examples.two"><title>Included file</title>
 		<programlisting><![CDATA[
 {- This is the same as inserting the contents of fold.inc here -}
 include "fold.inc"
