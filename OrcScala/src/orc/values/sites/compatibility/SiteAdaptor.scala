@@ -28,7 +28,7 @@ import orc.types.Type
  *
  * @author jthywiss
  */
-abstract class SiteAdaptor extends Site with UntypedSite {
+abstract class SiteAdaptor extends Site {
 
   def call(args: List[AnyRef], token: TokenAPI) {
     val jl = new java.util.ArrayList[Object](args.size)
