@@ -455,33 +455,35 @@ trait Orc extends OrcRuntime {
       if (params.size != d.arity) {
         this !! new ArityMismatchException(d.arity, params.size) /* Arity mismatch. */
       }
-
-      /* 1) If this is not a tail call, push a function frame referring to the current environment.
-       * 2) Change the current environment to the closure's saved environment.
-       * 3) Add bindings for the arguments to the new current environment.
-       * 
-       * Caution: The ordering of these operations is very important;
-       *          do not permute them.    
-       */
-
-      /* Tail call optimization (part 2 of 2) */
-      stack match {
-        /*
-         * Push a new FunctionFrame 
-         * only if the call is not a tail call.
+      else {
+      
+        /* 1) If this is not a tail call, push a function frame referring to the current environment.
+         * 2) Change the current environment to the closure's saved environment.
+         * 3) Add bindings for the arguments to the new current environment.
+         * 
+         * Caution: The ordering of these operations is very important;
+         *          do not permute them.    
          */
-        case FunctionFrame(_, _) :: fs if (!group.root.options.disableTailCallOpt) => {}
-        case _ => push(new FunctionFrame(node, env))
+  
+        /* Tail call optimization (part 2 of 2) */
+        stack match {
+          /*
+           * Push a new FunctionFrame 
+           * only if the call is not a tail call.
+           */
+          case FunctionFrame(_, _) :: fs if (!group.root.options.disableTailCallOpt) => {}
+          case _ => push(new FunctionFrame(node, env))
+        }
+  
+        /* Jump into the function context */
+        this.env = context
+  
+        /* Bind the args */
+        for (p <- params) { bind(p) }
+  
+        /* Jump into the function body */
+        schedule(this.move(d.body))
       }
-
-      /* Jump into the function context */
-      this.env = context
-
-      /* Bind the args */
-      for (p <- params) { bind(p) }
-
-      /* Jump into the function body */
-      schedule(this.move(d.body))
     }
 
     def siteCall(s: AnyRef, actuals: List[AnyRef]): Unit = {
