@@ -50,22 +50,13 @@ object ClassForms {
     if (dNames.isEmpty) {
       throw (DeflessClass() at body)
     }
-    val recordCall: ext.Call = new ext.Call(new ext.Constant(builtin.RecordConstructor), List(ext.Args(None, makeRecordArgs(dNames))))
-    ext.Parallel(ext.Sequential(body, None, ext.Stop()), recordCall)
-  }
-
-  /**
-   * Builds a list of Tuples (def-name,site-call) for every 
-   * definition name in the input list.
-   */
-  def makeRecordArgs(defNames: List[String]): List[ext.Expression] = {
-    var args: List[ext.Expression] = Nil
-    for (d <- defNames) {
-      val call = new ext.Call(new ext.Constant(builtin.MakeSite), List(ext.Args(None, List(new ext.Variable(d)))))
-      val tuple = ext.TupleExpr(List(new ext.Constant(d), call))
-      args = args ::: List(tuple)
-    }
-    args
+    val members =
+      for (d <- dNames) yield {
+        val call = new ext.Call(new ext.Constant(builtin.MakeSite), List(ext.Args(None, List(new ext.Variable(d)))))
+        (d, call)
+      }
+    val classRecord = new ext.RecordExpr(members.toList)
+    ext.Parallel(ext.Sequential(body, None, ext.Stop()), classRecord)
   }
 
 }
