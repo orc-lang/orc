@@ -372,6 +372,10 @@ object Typechecker {
   
   
   def typeValue(value: AnyRef): Type = {
+    
+    // FIXME: This is slightly too liberal. null is only at the bottom of the Java type lattice, not the Orc type lattice. This is similar to the equation of Object to Top.
+    if (value eq null) { return Bot } 
+    
     value match {
       case Signal => SignalType
       case _ : java.lang.Boolean => BooleanType
