@@ -55,8 +55,14 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.TupleExpr(es) => unfold(es map convert, makeTuple)
       case ext.ListExpr(es) => unfold(es map convert, makeList)
       case ext.RecordExpr(es) => {
-        val tuples = es map { case (s, e) => ext.TupleExpr(List(ext.Constant(s), e)) }
-        unfold(tuples map convert, makeRecord)
+        val tuples = es map 
+          { 
+            case (s, e) => { 
+              val f = Constant(Field(s))
+              unfold(List(f, convert(e)), makeTuple)
+            }
+          }
+        unfold(tuples, makeRecord)
       }
       case ext.Call(target, gs) => {
         var expr = convert(target)

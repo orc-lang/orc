@@ -28,7 +28,7 @@ import orc.compile.typecheck.Typeloader._
  */
 case class JavaClassType(val cl: Class[_], javaContext: Map[jvm.TypeVariable[_], Type] = Nil.toMap) extends CallableType with JavaType {
 
-  override def toString = "(class " + cl.getName() + ")"
+  override def toString = "(class " + Option(cl.getCanonicalName).getOrElse(cl.getName) + ")"
   
   /* JVM class types do not yet have an implementation of join or meet.
    * Such an implementation would require a time-intensive traversal of

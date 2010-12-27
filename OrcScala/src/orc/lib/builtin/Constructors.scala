@@ -90,7 +90,7 @@ object ConsConstructor extends TotalSite with Extractable with TypedSite {
 
 /* 
  * Input to a RecordConstructor is a sequence of tuples, each tuple
- * being a (string,site) mapping. Eg: (("x",Site(x)), ("y", Site(y)), ("z", Site(z))..))
+ * being a (field,site) mapping. Eg: ((."x",Site(x)), (."y", Site(y)), (."z", Site(z))..))
  * 
  * Note that even though a Record pattern exists, the RecordConstructor
  * is not Extractable, since record extraction is a specific two-step process,
@@ -103,9 +103,9 @@ object RecordConstructor extends TotalSite with TypedSite {
     args.zipWithIndex map
       { case (v: AnyRef, i: Int) =>
           v match {
-            case OrcTuple(List(key: String, value : AnyRef)) =>
+            case OrcTuple(List(Field(key), value : AnyRef)) =>
               valueMap += ( (key,value) )
-            case _ => throw new ArgumentTypeMismatchException(i, "(String, _)", if (v != null) v.getClass().toString() else "null")
+            case _ => throw new ArgumentTypeMismatchException(i, "(Field, _)", if (v != null) v.getClass().getCanonicalName() else "null")
           }
       }
     OrcRecord(scala.collection.immutable.HashMap.empty ++ valueMap)
