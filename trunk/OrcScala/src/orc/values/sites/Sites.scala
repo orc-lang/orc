@@ -16,13 +16,13 @@
 package orc.values.sites
 
 import orc.values.OrcValue
-import orc.ast.oil.nameless.Type
-import orc.ast.oil.nameless.Bot
 import orc.TokenAPI
 import orc.error.OrcException
 import orc.error.NotYetImplementedException
 import orc.error.runtime.ArityMismatchException
 import orc.run.Logger
+import orc.types.Type
+import orc.types.Bot
 
 trait SiteMetadata {
   def name: String = Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName)
@@ -41,10 +41,14 @@ trait Site extends OrcValue with SiteMetadata {
 }
 
 trait TypedSite extends Site {
-  def orcType(): orc.types.Type
+  def orcType(): Type
 }
 
-trait UntypedSite extends Site
+/* A site which explicitly lacks type information. */
+/* Use sparingly; this is equivalent to setting a type assertion */
+trait UntypedSite extends TypedSite {
+  def orcType() = Bot
+}
 
 trait PartialSite extends Site {
   def call(args: List[AnyRef], token: TokenAPI) {
