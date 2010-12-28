@@ -372,13 +372,23 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 
 		if (ttEntry != null && ttEntry.tokenType == TokenType.COMMENT_MULTILINE) {
 			int tokenLength = ttEntry.length();
+			int commentNestLevel = 0;
 			//FUTURE: Hard-coded to use "-}" as close -- 'twould be nice to use the token table somehow.
 			char lastChar = safeCharAt(text, offset + tokenLength);
-			while ((lastChar != '-' || safeCharAt(text, offset + tokenLength + 1) != '}') && lastChar != '\0') {
+			char lookAhead = safeCharAt(text, offset + tokenLength + 1);
+			while ((lastChar != '-' || lookAhead != '}' || commentNestLevel > 0) && lastChar != '\0') {
+				if (lastChar == '{' && lookAhead == '-') {
+					++commentNestLevel;
+					++tokenLength; // consume two chars, not just one
+				} else if (lastChar == '-' && lookAhead == '}' && commentNestLevel > 0) {
+					--commentNestLevel;
+					++tokenLength; // consume two chars, not just one
+				}
 				++tokenLength;
 				lastChar = safeCharAt(text, offset + tokenLength);
+				lookAhead = safeCharAt(text, offset + tokenLength + 1);
 			}
-			if (lastChar == '-' && safeCharAt(text, offset + tokenLength + 1) == '}') {
+			if (lastChar == '-' && lookAhead == '}') {
 				tokenLength += 2; // Include the close delimiter in the token, if we saw it
 			}
 			return newToken(TokenType.COMMENT_MULTILINE, text, offset, tokenLength);
