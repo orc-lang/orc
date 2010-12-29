@@ -13,24 +13,42 @@
 
 /* Copied from Orchard/web/orc-syntax.css */
 
+span.hl-whitespace {
+}
+
 span.hl-keyword {
-	color: blue;
+	font-weight: bold;
+	color: #808;
 }
 
 span.hl-variable {
 	font-style: italic;
+	color: #008;
+}
+
+span.hl-operator {
+	color: #000;
 }
 
 span.hl-combinator {
-	color: red;
+	font-weight: bold;
+	color: #F00;
 }
 
 span.hl-comment {
-	color: #A70;
+	color: #080;
 }
 
-span.hl-literal, span.hl-number, span.hl-string {
-	color: #090;
+span.hl-literal {
+	color: #00F;
+}
+
+span.hl-pattern {
+}
+
+span.hl-site {
+	font-style: italic;
+	color: #008;
 }
 
 /* Original stuff */
