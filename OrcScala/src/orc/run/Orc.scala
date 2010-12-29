@@ -26,6 +26,8 @@ import scala.actors.Actor._
 
 trait Orc extends OrcRuntime {
 
+  val tokenCount = new java.util.concurrent.atomic.AtomicInteger(0);
+  
   def run(node: Expression, k: OrcEvent => Unit, options: OrcOptions) {
     val exec = new Execution(node, k, options)
     val t = new Token(node, exec)
@@ -312,11 +314,13 @@ trait Orc extends OrcRuntime {
     var env: List[Binding] = Nil,
     var group: Group,
     var state: TokenState = Live) extends TokenAPI with GroupMember {
-
+    
     /** Public constructor */
     def this(start: Expression, g: Group) = {
       this(node = start, group = g, stack = List(GroupFrame))
     }
+    if (tokenCount.incrementAndGet > group.root.options.maxTokens)
+      throw new AssertionError("Reached maximum number of tokens allowed.") 
 
     /** Copy constructor with defaults */
     private def copy(
@@ -325,6 +329,7 @@ trait Orc extends OrcRuntime {
       env: List[Binding] = env,
       group: Group = group,
       state: TokenState = state): Token = {
+      
       new Token(node, stack, env, group, state)
     }
 
@@ -344,6 +349,7 @@ trait Orc extends OrcRuntime {
         }
         case Halted | Killed => {}
       }
+      tokenCount.decrementAndGet()
     }
 
     def suspend() = synchronized {
