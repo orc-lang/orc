@@ -37,6 +37,7 @@ object Main {
     class OrcCmdLineOptions() extends OrcBindings() with CmdLineOptions
     try {
       val options = new OrcCmdLineOptions()
+      options.maxTokens = scala.Int.MaxValue
       options.parseCmdLine(args)
       setupLogging(options)
       
