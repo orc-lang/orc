@@ -12,24 +12,42 @@
  * URL: http://orc.csres.utexas.edu/license.shtml .
  */
 
+span.whitespace {
+}
+
 span.keyword {
-	color: blue;
+	font-weight: bold;
+	color: #808;
 }
 
 span.variable {
 	font-style: italic;
+	color: #008;
+}
+
+span.operator {
+	color: #000;
 }
 
 span.combinator {
-	color: red;
+	font-weight: bold;
+	color: #F00;
 }
 
 span.comment {
-	color: #A70;
+	color: #080;
 }
 
 span.literal {
-	color: #090;
+	color: #00F;
+}
+
+span.pattern {
+}
+
+span.site {
+	font-style: italic;
+	color: #008;
 }
 
 .editbox {
