@@ -25,9 +25,8 @@ import scala.actors.Actor
 import scala.actors.Actor._
 
 trait Orc extends OrcRuntime {
-
-  val tokenCount = new java.util.concurrent.atomic.AtomicInteger(0);
   
+  val tokenCount = new java.util.concurrent.atomic.AtomicInteger(0);
   def run(node: Expression, k: OrcEvent => Unit, options: OrcOptions) {
     val exec = new Execution(node, k, options)
     val t = new Token(node, exec)
@@ -276,6 +275,7 @@ trait Orc extends OrcRuntime {
   case class FunctionFrame(private[run] var _callpoint: Expression, env: List[Binding]) extends Frame {
     def callpoint = _callpoint
     def apply(t: Token, v: AnyRef) {
+      t.functionFramesPushed = t.functionFramesPushed - 1
       t.env = env
       t.move(callpoint).publish(v)
     }
@@ -314,12 +314,14 @@ trait Orc extends OrcRuntime {
     var env: List[Binding] = Nil,
     var group: Group,
     var state: TokenState = Live) extends TokenAPI with GroupMember {
-    
+
+    var functionFramesPushed : Int = 0;
     /** Public constructor */
     def this(start: Expression, g: Group) = {
       this(node = start, group = g, stack = List(GroupFrame))
     }
-    if (tokenCount.incrementAndGet > group.root.options.maxTokens)
+    if (group.root.options.maxTokens > 0 && 
+        tokenCount.incrementAndGet > group.root.options.maxTokens)
       throw new AssertionError("Reached maximum number of tokens allowed.") 
 
     /** Copy constructor with defaults */
@@ -478,7 +480,13 @@ trait Orc extends OrcRuntime {
            * only if the call is not a tail call.
            */
           case FunctionFrame(_, _) :: fs if (!group.root.options.disableTailCallOpt) => {}
-          case _ => push(new FunctionFrame(node, env))
+          case _ => {            
+            functionFramesPushed = functionFramesPushed + 1
+            if (this.group.root.options.stackSize > 0 && 
+                functionFramesPushed > this.group.root.options.stackSize)
+              throw new AssertionError("Reached maximum stack-size allowed.")
+            push(new FunctionFrame(node, env))
+          }
         }
   
         /* Jump into the function context */
