@@ -115,10 +115,10 @@ function readToken(source, setState) {
 	var reader;
 	// try to match 2 and 1 character symbolic tokens,
 	// then try numbers, then try words
-	if (reader = ops2[ch2]) {
+	if ((reader = ops2[ch2])) {
 		source.next();
 		return reader(source, setState, ch2);
-	} else if (reader = ops1[ch1]) {
+	} else if ((reader = ops1[ch1])) {
 		return reader(source, setState, ch1);
 	} else if (isDigit(ch1)) {
 		return readNumber(source, setState, ch1);
@@ -182,7 +182,7 @@ function readString(source, setState, _) {
 			source.next();
 		}
 	}
-	return { type:"string", style:"literal" }
+	return { type:"string", style:"literal" };
 }
 
 function readCommentML(source, setState) {
@@ -195,7 +195,7 @@ function readCommentML(source, setState) {
 			break;
 		}
 	}
-	return { type:"comment", style:"comment" }
+	return { type:"comment", style:"comment" };
 }
 
 function readCommentSL(source, setState, _) {
@@ -270,8 +270,9 @@ function newParser(source) {
 			// change it to a "site"
 			if (out.type == "variable") {
 				startLooking();
+                var tmp;
 				do {
-					var tmp = look();
+					tmp = look();
 					if (!tmp) break;
 					if (tmp.type == "(" || tmp.type == "[") {
 						out.style = "site";
@@ -307,7 +308,7 @@ function newParser(source) {
 			tabstop = null;
 			inWhitespace = true;
 			return parser;
-		}
+		};
 	}
 	var parser = { next: next, copy: copy };
 	return parser;

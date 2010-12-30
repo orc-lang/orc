@@ -54,6 +54,6 @@ return {
 	query: query,
 	baseUrl: baseUrl,
 	mock: mock,
-	devKey: devKey }
+	devKey: devKey };
 
 })(); // end module
