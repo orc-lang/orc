@@ -32,11 +32,11 @@ import orc.util.PrintVersionAndMessageException
  * @author jthywiss
  */
 object Main {
+  class OrcCmdLineOptions() extends OrcBindings() with CmdLineOptions
+  val options = new OrcCmdLineOptions()
 
   def main(args: Array[String]) {
-    class OrcCmdLineOptions() extends OrcBindings() with CmdLineOptions
     try {
-      val options = new OrcCmdLineOptions()
       options.maxTokens = scala.Int.MaxValue
       options.parseCmdLine(args)
       setupLogging(options)
