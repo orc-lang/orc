@@ -308,6 +308,23 @@ trait Orc extends OrcRuntime {
   case object Killed extends TokenState
   case class Published(v: AnyRef) extends TokenState
 
+  val openSiteCalls = scala.collection.mutable.Map[SiteHandler, Boolean]()
+  
+  class SiteHandler(callingToken : TokenAPI, calledSite: AnyRef) extends TokenAPI {
+    def publish(v: AnyRef) = {
+      openSiteCalls.remove(this)
+      callingToken.publish(v)
+    }
+    def halt = {
+      openSiteCalls.remove(this)
+      callingToken.halt
+    }
+    def !!(e: OrcException) = callingToken !! e
+    def notify(event: orc.OrcEvent) = callingToken.notify(event)
+    val runtime = callingToken.runtime
+    def token = callingToken
+  }  
+  
   class Token private (
     var node: Expression,
     var stack: List[Frame] = Nil,
@@ -315,6 +332,7 @@ trait Orc extends OrcRuntime {
     var group: Group,
     var state: TokenState = Live) extends TokenAPI with GroupMember {
 
+    def token = this
     var functionFramesPushed : Int = 0;
     /** Public constructor */
     def this(start: Expression, g: Group) = {
@@ -502,7 +520,9 @@ trait Orc extends OrcRuntime {
 
     def siteCall(s: AnyRef, actuals: List[AnyRef]): Unit = {
       try {
-        invoke(this, s, actuals)
+        val sh = new SiteHandler(this, s)
+        openSiteCalls.put(sh, false)
+        invoke(sh, s, actuals)
       } catch {
         case e: OrcException => this !! e
         case e => { halt; notify(CaughtEvent(e)) }

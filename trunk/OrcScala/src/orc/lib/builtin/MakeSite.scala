@@ -39,7 +39,7 @@ class RunLikeSite(closure: AnyRef) extends UntypedSite {
   def call(args: List[AnyRef], caller: TokenAPI) {
     val node = Call(Constant(closure), args map Constant, Some(Nil))
     caller.runtime match {
-      case r: SupportForClasses => r.runEncapsulated(node, caller.asInstanceOf[r.Token])
+      case r: SupportForClasses => r.runEncapsulated(node, caller.token.asInstanceOf[r.Token])
       case _ => caller !! new RuntimeSupportException("encapsulated execution")
     }
   }

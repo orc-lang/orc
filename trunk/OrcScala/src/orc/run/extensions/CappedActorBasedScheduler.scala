@@ -28,7 +28,9 @@ import scala.collection.mutable.Queue
 trait CappedActorBasedScheduler extends Orc {
   scala.actors.Scheduler.impl.shutdown
   scala.actors.Scheduler.impl = {
-    val s = new scala.actors.scheduler.OrcResizableThreadPoolScheduler(orc.Main.options.maxSiteThreads, true, false)
+    val s = new scala.actors.scheduler.OrcResizableThreadPoolScheduler(
+        if (orc.Main.options.maxSiteThreads > 0) orc.Main.options.maxSiteThreads else 256, 
+        true, false)
     s.start()
     s
   }
