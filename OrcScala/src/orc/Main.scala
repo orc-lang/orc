@@ -37,7 +37,6 @@ object Main {
 
   def main(args: Array[String]) {
     try {
-      options.maxTokens = scala.Int.MaxValue
       options.parseCmdLine(args)
       setupLogging(options)
       

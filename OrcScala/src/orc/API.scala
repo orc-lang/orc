@@ -89,6 +89,7 @@ trait TokenAPI {
   def !!(e: OrcException): Unit
   def notify(event: OrcEvent): Unit
   val runtime: OrcRuntime
+  def token : TokenAPI
 }
 
 /**
