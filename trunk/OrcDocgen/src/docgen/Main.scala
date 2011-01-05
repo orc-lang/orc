@@ -17,14 +17,21 @@ package docgen
 import java.io.File
 import scala.xml._
 
-object DocGen {
+object Main {
 
+	def isDocFile(f: File): Boolean = {
+		// TODO: Make more permissive (currently allows only .inc files)
+		f.isFile() && """\.inc$""".r.findFirstIn(f.getName()).isDefined
+	}
+	
   def main(args: Array[String]) {
 	  
-	val sourcedir = new File(args(0))
-	val target = new File(args(1))
-	val files = sourcedir.listFiles().toList
+	  val sourcedir = new File(args(0))
+	  val target = new File(args(1))
+	  
+	  val files = sourcedir.listFiles().toList filter { isDocFile(_) }
     val xml = DocMaker.makeDoc(files)
+    
     val writer = new java.io.FileWriter(target)
     XML.write(writer, xml, "UTF-8", true, null)
     writer.close()
