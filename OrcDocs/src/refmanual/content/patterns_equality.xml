@@ -20,7 +20,7 @@
 				However, when an equality pattern allows use of the value of the bound variable as the test pattern 
 				in a way analogous to a literal. 
 			</para>
-			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= 	=X</emphasis></para>
+			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= 	<code>=X</code></emphasis></para>
 		</section>
 		
 		 <section xml:id="ref.patterns.equality.examples">

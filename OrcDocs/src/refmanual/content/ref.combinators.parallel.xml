@@ -57,6 +57,7 @@
  Since each call may publish a value, the expression
  may publish up to two values.
 -}  
+
 Google("cupcake") | Yahoo("cupcake")
 ]]></programlisting>
 		  </example>

@@ -15,8 +15,8 @@
 		<title>Val</title>
 		<section xml:id="ref.expressions.val.body">
 			<para>
-The declaration <code>val x = </code>G, followed by expression F, is 
-actually just a different way of writing the expression F<code><![CDATA[ <x< ]]></code>G.
+The declaration <code>val x = G</code>, followed by expression <code>F</code>, is 
+actually just a different way of writing the expression <code><![CDATA[F <x< G]]></code>.
 Thus, <code>val</code> shares all of the behavior of the pruning combinator. (This is also true when a pattern is used instead
 of variable name <code>x</code>).
 </para>

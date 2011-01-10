@@ -24,9 +24,9 @@ Syntactically, the combinators are written infix, and have lower precedence than
 precedence than conditionals or declarations.
 </para>
 
-<xi:include href="combinators_otherwise.xml"/>	
-<xi:include href="combinators_parallel.xml"/>
-<xi:include href="combinators_pruning.xml"/> 
-<xi:include href="combinators_sequential.xml"/> 
+<xi:include href="ref.combinators.parallel.xml"/>	
+<xi:include href="ref.combinators.sequential.xml"/>
+<xi:include href="ref.combinators.pruning.xml"/> 
+<xi:include href="ref.combinators.otherwise.xml"/> 
 
 </chapter>

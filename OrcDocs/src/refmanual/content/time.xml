@@ -17,7 +17,13 @@
 	
 <title>Time</title>
 
-<para>Introduction paragraph about time.</para>
+<para>
+Orc is designed to communicate with the external world, and one of the
+most important characteristics of the external world is the passage of
+time. Orc implicitly interacts with the passage of time by calling external
+services which take time to respond. However, Orc can also explicitly
+wait for some amount of time, using the special site <code>Rtimer</code>. 
+</para>
 
 <xi:include href="time_rtimer.xml"/>
 

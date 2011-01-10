@@ -18,7 +18,7 @@
 				In Orc pattern matching, when a value is compared to a list, the entire list must
 				be matched exactly to be considered a successful pattern match.
 			</para>
-			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= [ P , ... , P ]</emphasis></para>
+			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= <code>[ P , ... , P ]</code></emphasis></para>
 		</section>
 		
 		 <section xml:id="ref.patterns.list.examples">

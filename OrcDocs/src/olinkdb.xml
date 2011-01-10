@@ -3,9 +3,17 @@
 <!-- Double check these file paths are correct if you're having problems -->
 <!DOCTYPE targetset
    SYSTEM "../docbook-xsl/common/targetdatabase.dtd" [
-   <!ENTITY ugtargets SYSTEM "../build/html/ugtargets.db">
-   <!ENTITY rmtargets SYSTEM "../build/html/refmanual/rmtargets.db">
-   <!ENTITY ref.combinators.otherwise SYSTEM "../build/html/refmanual/ref.combinators.otherwise.db">
+   <!ENTITY targets.userguide SYSTEM "../build/html/targets.userguide.db">
+   <!ENTITY targets.refmanual SYSTEM "../build/html/refmanual/targets.refmanual.db">
+   <!ENTITY targets.ref.class SYSTEM "../build/html/refmanual/targets.ref.class.db">
+   <!ENTITY targets.ref.combinators.otherwise SYSTEM "../build/html/refmanual/targets.ref.combinators.otherwise.db">
+   <!ENTITY targets.ref.combinators.parallel SYSTEM "../build/html/refmanual/targets.ref.combinators.parallel.db">
+   <!ENTITY targets.ref.combinators.pruning SYSTEM "../build/html/refmanual/targets.ref.combinators.pruning.db">
+   <!ENTITY targets.ref.combinators.sequential SYSTEM "../build/html/refmanual/targets.ref.combinators.sequential.db">
+   <!ENTITY targets.ref.combinators SYSTEM "../build/html/refmanual/targets.ref.combinators.db">
+   <!ENTITY targets.ref.data.boolean SYSTEM "../build/html/refmanual/targets.ref.data.boolean.db">
+   <!ENTITY targets.ref.data.datatype SYSTEM "../build/html/refmanual/targets.ref.data.datatype.db">
+   <!ENTITY targets.ref.data.external SYSTEM "../build/html/refmanual/targets.ref.data.external.db">
    ]>
 <targetset>
    <targetsetinfo>
@@ -21,18 +29,42 @@
             <dir name="build">
                <dir name="html">
 				  <document targetdoc="root" baseuri="all.html"> 
-                     &ugtargets;
+                     &targets.userguide;
                   </document>
 				  <dir name="refmanual">
-					  <dir name="content"/>
-					  <document targetdoc="refmanual" baseuri="ref.toc.html">
-						 &rmtargets;
+					  <dir name="content">
+						<!--  "content" contains source content, no output documents -->
+					  </dir>
+					  <document targetdoc="refmanual">
+						&targets.refmanual;
 					  </document>
-					  <!--
-					  <document targetdoc="refmanual.combinators_otherwise" baseuri="ref.combinators.otherwise.html">
-						 &ref.combinators.otherwise;
+					  <document targetdoc="ref.class" baseuri="ref.class.html">
+					  	&targets.ref.class;
 					  </document>
-						-->
+					  <document targetdoc="ref.combinators.otherwise" baseuri="ref.combinators.otherwise.html">
+					  	&targets.ref.combinators.otherwise;
+	  			  	  </document>
+					  <document targetdoc="ref.combinators.parallel" baseuri="ref.combinators.parallel.html">
+					  	&targets.ref.combinators.parallel;
+					  </document>
+					  <document targetdoc="ref.combinators.pruning" baseuri="ref.combinators.pruning.html">
+					  	&targets.ref.combinators.pruning;
+					  </document>
+					  <document targetdoc="ref.combinators.sequential" baseuri="ref.combinators.sequential.html">
+					  	&targets.ref.combinators.sequential;
+					  </document>
+					  <document targetdoc="ref.combinators" baseuri="ref.combinators.html">
+					  	&targets.ref.combinators;
+					  </document>
+					  <document targetdoc="ref.data.boolean" baseuri="ref.data.boolean.html">
+					  	&targets.ref.data.boolean;
+					  </document>
+					  <document targetdoc="ref.data.datatype" baseuri="ref.data.datatype.html">
+					  	&targets.ref.data.datatype;
+					  </document>
+					  <document targetdoc="ref.data.external" baseuri="ref.data.external">
+					  	&ref.data.external;
+					  </document>
 				  </dir>
                </dir>
             </dir>

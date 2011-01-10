@@ -18,7 +18,7 @@
 				In taking apart a value with a pattern, it is often useful to capture intermediate results.  
 				The 'as' keyword is used to simplify programs, giving a name to an entire sub-pattern.
 			</para>
-			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= P as X</emphasis></para>
+			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= <code>P as X</code></emphasis></para>
 		</section>
 		
 		 <section xml:id="ref.patterns.as.examples">
